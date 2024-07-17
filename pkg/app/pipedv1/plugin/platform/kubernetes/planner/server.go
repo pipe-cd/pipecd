@@ -17,17 +17,17 @@ package planner
 import (
 	"context"
 	"fmt"
-	"io"
-	"os"
 	"time"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
+	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/platform"
 	"github.com/pipe-cd/pipecd/pkg/regexpool"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/internal/status"
 )
 
 type secretDecrypter interface {
@@ -79,32 +79,10 @@ func (ps *PlannerService) DetermineStrategy(ctx context.Context, in *platform.De
 func (ps *PlannerService) QuickSyncPlan(ctx context.Context, in *platform.QuickSyncPlanRequest) (*platform.QuickSyncPlanResponse, error) {
 	now := time.Now()
 
-	cloner, err := plugin.GetPlanSourceCloner(in.GetInput())
+	// TODO: handle kind and apiVersion
+	cfg, err := plugin.DecodeApplicationSpec[config.KubernetesApplicationSpec](in.GetInput().GetDeploySource().GetConfig())
 	if err != nil {
-		return nil, err
-	}
-
-	d, err := os.MkdirTemp("", "") // TODO
-	if err != nil {
-		return nil, fmt.Errorf("failed to prepare temporary directory (%w)", err)
-	}
-	defer os.RemoveAll(d)
-
-	p := deploysource.NewProvider(
-		d,
-		cloner,
-		*in.GetInput().GetDeployment().GetGitPath(),
-		ps.Decrypter,
-	)
-
-	ds, err := p.Get(ctx, io.Discard /* TODO */)
-	if err != nil {
-		return nil, err
-	}
-
-	cfg := ds.ApplicationConfig.KubernetesApplicationSpec
-	if cfg == nil {
-		return nil, fmt.Errorf("missing KubernetesApplicationSpec in application configuration")
+		return nil, status.Errorf(codes.InvalidArgument, "failed to decode application specification (%v)", err)
 	}
 
 	return &platform.QuickSyncPlanResponse{

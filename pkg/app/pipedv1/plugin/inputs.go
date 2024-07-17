@@ -15,24 +15,27 @@
 package plugin
 
 import (
-	"os/exec"
+	"bytes"
+	"encoding/json"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
-	"github.com/pipe-cd/pipecd/pkg/git"
+	"github.com/creasty/defaults"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/platform"
 )
 
-func GetPlanSourceCloner(input *platform.PlanPluginInput) (deploysource.SourceCloner, error) {
-	gitPath, err := exec.LookPath("git")
-	if err != nil {
+// DecodeApplicationSpec decodes the spec field of the given ApplicationConfig
+func DecodeApplicationSpec[T any](src *platform.ApplicationConfig) (*T, error) {
+	dec := json.NewDecoder(bytes.NewReader(src.GetSpec()))
+	dec.DisallowUnknownFields()
+
+	dest := new(T)
+
+	if err := dec.Decode(dest); err != nil {
 		return nil, err
 	}
 
-	cloner := deploysource.NewLocalSourceCloner(
-		git.NewRepo(input.GetSourceRemoteUrl(), gitPath, input.GetSourceRemoteUrl(), input.GetDeployment().GetGitPath().GetRepo().GetBranch(), nil),
-		"target",
-		input.GetDeployment().GetGitPath().GetRepo().GetBranch(),
-	)
+	if err := defaults.Set(dest); err != nil {
+		return nil, err
+	}
 
-	return cloner, nil
+	return dest, nil
 }

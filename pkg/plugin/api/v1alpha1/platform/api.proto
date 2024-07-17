@@ -74,14 +74,34 @@ message PipelineSyncPlanResponse {
 message PlanPluginInput {
     // The deployment to build a plan for.
     model.Deployment deployment = 1 [(validate.rules).message.required = true];
-    // The remote URL of the deployment source, where plugin can find the deployments sources (manifests).
-    string source_remote_url = 2 [(validate.rules).string.min_len = 1];
-    // Last successful commit hash and config file name.
-    // Use to build deployment source object for last successful deployment.
-    string last_successful_commit_hash = 3;
-    string last_successful_config_file_name = 4;
     // The configuration of plugin that handles the deployment.
-    bytes plugin_config = 5;
+    bytes plugin_config = 2;
+    // The source of the deployment.
+    DeploySource deploy_source = 3;
+    // The source of the last successful deployment.
+    DeploySource last_successful_deploy_source = 4;
+}
+
+message DeploySource {
+    // The repository directory to deploy for.
+    string repo_dir = 1;
+    // The applicaiton directory to deploy for.
+    string app_dir = 2;
+    // The commit hash of the deployment source.
+    string revision = 3;
+    // The application configuration of the deployment.
+    ApplicationConfig config = 4;
+}
+
+message ApplicationConfig {
+    // The kind of the application.
+    string kind = 1 ;
+    // The version of the API.
+    string api_version = 2;
+    // The application specification of the deployment.
+    // We store this spec in bytes because we don't want to define the structure of the plugin-specific config.
+    // The serialization format is JSON.
+    bytes spec = 3;
 }
 
 service ExecutorService {
