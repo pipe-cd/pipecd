@@ -27,10 +27,6 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/driftdetector/cloudrun"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/driftdetector/kubernetes"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/driftdetector/terraform"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -78,7 +74,6 @@ type providerDetector interface {
 func NewDetector(
 	appLister applicationLister,
 	gitClient gitClient,
-	stateGetter livestatestore.Getter,
 	apiClient apiClient,
 	appManifestsCache cache.Cache,
 	cfg *config.PipedSpec,
@@ -97,60 +92,6 @@ func NewDetector(
 
 	for _, cp := range cfg.PlatformProviders {
 		switch cp.Type {
-		case model.PlatformProviderKubernetes:
-			sg, ok := stateGetter.KubernetesGetter(cp.Name)
-			if !ok {
-				return nil, fmt.Errorf(format, cp.Name)
-			}
-			d.detectors = append(d.detectors, kubernetes.NewDetector(
-				cp,
-				appLister,
-				gitClient,
-				sg,
-				d,
-				appManifestsCache,
-				cfg,
-				sd,
-				logger,
-			))
-
-		case model.PlatformProviderCloudRun:
-			sg, ok := stateGetter.CloudRunGetter(cp.Name)
-			if !ok {
-				return nil, fmt.Errorf(format, cp.Name)
-			}
-			d.detectors = append(d.detectors, cloudrun.NewDetector(
-				cp,
-				appLister,
-				gitClient,
-				sg,
-				d,
-				appManifestsCache,
-				cfg,
-				sd,
-				logger,
-			))
-
-		case model.PlatformProviderTerraform:
-			if !*cp.TerraformConfig.DriftDetectionEnabled {
-				continue
-			}
-			sg, ok := stateGetter.TerraformGetter(cp.Name)
-			if !ok {
-				return nil, fmt.Errorf(format, cp.Name)
-			}
-			d.detectors = append(d.detectors, terraform.NewDetector(
-				cp,
-				appLister,
-				gitClient,
-				sg,
-				d,
-				appManifestsCache,
-				cfg,
-				sd,
-				logger,
-			))
-
 		default:
 		}
 	}
