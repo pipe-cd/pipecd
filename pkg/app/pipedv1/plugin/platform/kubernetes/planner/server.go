@@ -97,7 +97,7 @@ func (ps *PlannerService) QuickSyncPlan(ctx context.Context, in *platform.QuickS
 		ps.Decrypter,
 	)
 
-	ds, err := p.GetReadOnly(ctx, io.Discard /* TODO */)
+	ds, err := p.Get(ctx, io.Discard /* TODO */)
 	if err != nil {
 		return nil, err
 	}

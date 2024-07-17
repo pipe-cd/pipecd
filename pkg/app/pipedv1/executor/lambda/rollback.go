@@ -53,7 +53,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	runningDS, err := e.RunningDSP.GetReadOnly(ctx, e.LogPersister)
+	runningDS, err := e.RunningDSP.Get(ctx, e.LogPersister)
 	if err != nil {
 		e.LogPersister.Errorf("Failed to prepare running deploy source data (%v)", err)
 		return model.StageStatus_STAGE_FAILURE

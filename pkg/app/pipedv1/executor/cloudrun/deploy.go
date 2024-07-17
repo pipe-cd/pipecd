@@ -44,7 +44,7 @@ type deployExecutor struct {
 
 func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	ctx := sig.Context()
-	ds, err := e.TargetDSP.GetReadOnly(ctx, e.LogPersister)
+	ds, err := e.TargetDSP.Get(ctx, e.LogPersister)
 	if err != nil {
 		e.LogPersister.Errorf("Failed to prepare target deploy source data (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
@@ -152,7 +152,7 @@ func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	runningDS, err := e.RunningDSP.GetReadOnly(ctx, e.LogPersister)
+	runningDS, err := e.RunningDSP.Get(ctx, e.LogPersister)
 	if err != nil {
 		e.LogPersister.Errorf("Failed to prepare running deploy source data (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
