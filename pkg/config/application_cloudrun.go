@@ -37,6 +37,8 @@ type CloudRunDeploymentInput struct {
 	ServiceManifestFile string `json:"serviceManifestFile"`
 	// Automatically reverts to the previous state when the deployment is failed.
 	// Default is true.
+	//
+	// Deprecated: Use Planner.AutoRollback instead.
 	AutoRollback *bool `json:"autoRollback,omitempty" default:"true"`
 }
 
