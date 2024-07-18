@@ -53,6 +53,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/piped/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/driftdetector"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/eventwatcher"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatereporter"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore"
 	k8slivestatestoremetrics "github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/kubernetes/kubernetesmetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/notifier"
@@ -355,6 +356,14 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		liveStateGetter = s.Getter()
 	}
 
+	// Start running application live state reporter.
+	{
+		r := livestatereporter.NewReporter(applicationLister, liveStateGetter, apiClient, cfg, input.Logger)
+		group.Go(func() error {
+			return r.Run(ctx)
+		})
+	}
+
 	decrypter, err := p.initializeSecretDecrypter(cfg)
 	if err != nil {
 		input.Logger.Error("failed to initialize secret decrypter", zap.Error(err))
@@ -366,6 +375,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		d, err := driftdetector.NewDetector(
 			applicationLister,
 			gitClient,
+			liveStateGetter,
 			apiClient,
 			appManifestsCache,
 			cfg,

@@ -21,6 +21,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
+	provider "github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/git"
@@ -47,6 +48,10 @@ type LogPersister interface {
 
 type CommandLister interface {
 	ListCommands() []model.ReportableCommand
+}
+
+type AppLiveResourceLister interface {
+	ListKubernetesResources() ([]provider.Manifest, bool)
 }
 
 type AnalysisResultStore interface {
@@ -78,6 +83,7 @@ type Input struct {
 	LogPersister          LogPersister
 	MetadataStore         metadatastore.MetadataStore
 	AppManifestsCache     cache.Cache
+	AppLiveResourceLister AppLiveResourceLister
 	AnalysisResultStore   AnalysisResultStore
 	Logger                *zap.Logger
 	Notifier              Notifier
