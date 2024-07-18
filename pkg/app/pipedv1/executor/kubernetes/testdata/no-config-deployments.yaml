@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: simple
+  template:
+    metadata:
+      labels:
+        app: simple
+    spec:
+      containers:
+      - args:
+        - server
+        image: gcr.io/pipecd/helloworld:v0.1.0-73-ge191187
+        imagePullPolicy: IfNotPresent
+        name: helloworld
+        ports:
+        - containerPort: 9085
+          protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-canary
+  creationTimestamp: 
+spec:
+  replicas: 9
+  selector:
+    matchLabels:
+      app: simple
+      pipecd.dev/variant: canary-variant
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: 
+      labels:
+        app: simple
+        pipecd.dev/variant: canary-variant
+    spec:
+      containers:
+      - args:
+        - server
+        image: gcr.io/pipecd/helloworld:v0.1.0-73-ge191187
+        imagePullPolicy: IfNotPresent
+        name: helloworld
+        ports:
+        - containerPort: 9085
+          protocol: TCP
+        resources: {}
+status: {}

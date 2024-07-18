@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: envoy-config
+data:
+  envoy-config: |
+    admin:
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 9095
+    static_resources:
+      listeners:
+      - name: ingress
+        address:
+          socket_address:
+            address: 0.0.0.0
+            port_value: 9090
+      clusters:
+      - name: grpc-piped-service
+        http2_protocol_options: {}
+        connect_timeout: 0.25s
+        type: STRICT_DNS
+        lb_policy: ROUND_ROBIN
+      - name: grpc-web-service
+        http2_protocol_options: {}
+        connect_timeout: 0.25s
+        type: STRICT_DNS
+        lb_policy: ROUND_ROBIN
+      - name: grpc-api-service
+        http2_protocol_options: {}
+        connect_timeout: 0.25s
+        type: STRICT_DNS
+        lb_policy: ROUND_ROBIN
+      - name: server-http
+        connect_timeout: 0.25s
+        type: STRICT_DNS
+        lb_policy: ROUND_ROBIN
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: envoy-config
+data:
+  envoy-config: |
+    admin:
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 9096
+    static_resources:
+      listeners:
+      - name: ingress
+        address:
+          socket_address:
+            address: 0.0.0.0
+            port_value: 9090
+      clusters:
+      - name: grpc-piped-service
+        http2_protocol_options: {}
+        connect_timeout: 0.25s
+        type: STRICT_DNS
+        lb_policy: ROUND_ROBIN
+      - name: grpc-web-service
+        http2_protocol_options: {}
+        connect_timeout: 0.25s
+        type: STRICT_DNS
+        lb_policy: ROUND_ROBIN
+      - name: grpc-api-service
+        http2_protocol_options: {}
+        connect_timeout: 0.25s
+        type: STRICT_DNS
+        lb_policy: ROUND_ROBIN
+      - name: server-http
+        connect_timeout: 0.25s
+        type: STRICT_DNS
+        lb_policy: ROUND_ROBIN

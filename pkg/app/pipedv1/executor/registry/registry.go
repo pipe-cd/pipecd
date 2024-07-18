@@ -19,6 +19,16 @@ import (
 	"sync"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor/analysis"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor/cloudrun"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor/customsync"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor/ecs"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor/kubernetes"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor/lambda"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor/scriptrun"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor/terraform"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor/wait"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor/waitapproval"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
@@ -90,4 +100,18 @@ var defaultRegistry = &registry{
 
 func DefaultRegistry() Registry {
 	return defaultRegistry
+}
+
+// init registers all built-in executors to the default registry.
+func init() {
+	analysis.Register(defaultRegistry)
+	cloudrun.Register(defaultRegistry)
+	kubernetes.Register(defaultRegistry)
+	lambda.Register(defaultRegistry)
+	terraform.Register(defaultRegistry)
+	ecs.Register(defaultRegistry)
+	wait.Register(defaultRegistry)
+	waitapproval.Register(defaultRegistry)
+	customsync.Register(defaultRegistry)
+	scriptrun.Register(defaultRegistry)
 }

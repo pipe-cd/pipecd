@@ -25,6 +25,9 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 
+	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatereporter/cloudrun"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatereporter/kubernetes"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -53,7 +56,7 @@ type providerReporter interface {
 	ProviderName() string
 }
 
-func NewReporter(appLister applicationLister, apiClient apiClient, cfg *config.PipedSpec, logger *zap.Logger) Reporter {
+func NewReporter(appLister applicationLister, stateGetter livestatestore.Getter, apiClient apiClient, cfg *config.PipedSpec, logger *zap.Logger) Reporter {
 	r := &reporter{
 		reporters: make([]providerReporter, 0, len(cfg.PlatformProviders)),
 		logger:    logger.Named("live-state-reporter"),
@@ -62,6 +65,20 @@ func NewReporter(appLister applicationLister, apiClient apiClient, cfg *config.P
 	const errFmt = "unable to find live state getter for platform provider: %s"
 	for _, cp := range cfg.PlatformProviders {
 		switch cp.Type {
+		case model.PlatformProviderKubernetes:
+			sg, ok := stateGetter.KubernetesGetter(cp.Name)
+			if !ok {
+				r.logger.Error(fmt.Sprintf(errFmt, cp.Name))
+				continue
+			}
+			r.reporters = append(r.reporters, kubernetes.NewReporter(cp, appLister, sg, apiClient, logger))
+		case model.PlatformProviderCloudRun:
+			sg, ok := stateGetter.CloudRunGetter(cp.Name)
+			if !ok {
+				r.logger.Error(fmt.Sprintf(errFmt, cp.Name))
+				continue
+			}
+			r.reporters = append(r.reporters, cloudrun.NewReporter(cp, appLister, sg, apiClient, logger))
 		}
 	}
 
