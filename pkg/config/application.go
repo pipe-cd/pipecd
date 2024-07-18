@@ -592,20 +592,49 @@ func (a *Attachment) Validate() error {
 	return nil
 }
 
-// DeploymentNotification represents the way to send to users.
+// DeploymentNotification represents the way to send to users or groups.
 type DeploymentNotification struct {
 	// List of users to be notified for each event.
 	Mentions []NotificationMention `json:"mentions"`
 }
 
-func (n *DeploymentNotification) FindSlackAccounts(event model.NotificationEventType) []string {
+// FindSlackGroups returns a list of slack group IDs to be mentioned for the given event.
+func (n *DeploymentNotification) FindSlackGroups(event model.NotificationEventType) []string {
 	as := make(map[string]struct{})
 	for _, m := range n.Mentions {
 		if m.Event != allEventsSymbol && "EVENT_"+m.Event != event.String() {
 			continue
 		}
-		for _, s := range m.Slack {
-			as[s] = struct{}{}
+		if len(m.SlackGroups) > 0 {
+			for _, sg := range m.SlackGroups {
+				as[sg] = struct{}{}
+			}
+		}
+	}
+
+	approvers := make([]string, 0, len(as))
+	for a := range as {
+		approvers = append(approvers, a)
+	}
+	return approvers
+}
+
+// FindSlackUsers returns a list of slack user IDs to be mentioned for the given event.
+func (n *DeploymentNotification) FindSlackUsers(event model.NotificationEventType) []string {
+	as := make(map[string]struct{})
+	for _, m := range n.Mentions {
+		if m.Event != allEventsSymbol && "EVENT_"+m.Event != event.String() {
+			continue
+		}
+		if len(m.Slack) > 0 {
+			for _, s := range m.Slack {
+				as[s] = struct{}{}
+			}
+		}
+		if len(m.SlackUsers) > 0 {
+			for _, su := range m.SlackUsers {
+				as[su] = struct{}{}
+			}
 		}
 	}
 
@@ -619,16 +648,28 @@ func (n *DeploymentNotification) FindSlackAccounts(event model.NotificationEvent
 type NotificationMention struct {
 	// The event to be notified to users.
 	Event string `json:"event"`
+	// Deprecated: Please use SlackUsers instead
 	// List of user IDs for mentioning in Slack.
 	// See https://api.slack.com/reference/surfaces/formatting#mentioning-users
 	// for more information on how to check them.
 	Slack []string `json:"slack"`
+	// List of user IDs for mentioning in Slack.
+	// See https://api.slack.com/reference/surfaces/formatting#mentioning-users
+	// for more information on how to check them.
+	SlackUsers []string `json:"slackusers,omitempty"`
+	// List of group IDs for mentioning in Slack.
+	// See https://api.slack.com/reference/surfaces/formatting#mentioning-groups
+	// for more information on how to check them.
+	SlackGroups []string `json:"slackgroups,omitempty"`
 	// TODO: Support for email notification
 	// The email for notification.
 	Email []string `json:"email"`
 }
 
 func (n *NotificationMention) Validate() error {
+	if len(n.Slack) == 0 && len(n.SlackGroups) == 0 && len(n.SlackUsers) == 0 {
+		return fmt.Errorf("slack, slackusers or slackGroups must not be empty")
+	}
 	if n.Event == allEventsSymbol {
 		return nil
 	}

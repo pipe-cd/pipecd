@@ -1,4 +1,4 @@
-FROM alpine:3.13
+FROM alpine:3.20
 
 ARG PIPED_USER=piped
 ARG PIPED_USER_GROUP=piped
