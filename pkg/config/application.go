@@ -64,6 +64,9 @@ type DeploymentPlanner struct {
 	// Disable auto-detecting to use QUICK_SYNC or PROGRESSIVE_SYNC.
 	// Always use the speficied pipeline for all deployments.
 	AlwaysUsePipeline bool `json:"alwaysUsePipeline"`
+	// Automatically reverts all deployment changes on failure.
+	// Default is true.
+	AutoRollback *bool `json:"autoRollback,omitempty" default:"true"`
 }
 
 type Trigger struct {
