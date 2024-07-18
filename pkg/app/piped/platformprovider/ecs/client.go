@@ -120,16 +120,36 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 	return output.Service, nil
 }
 
+func (c *client) PruneServiceTasks(ctx context.Context, service types.Service) error {
+	input := &ecs.UpdateServiceInput{
+		Cluster:      service.ClusterArn,
+		Service:      service.ServiceName,
+		DesiredCount: aws.Int32(0),
+	}
+
+	_, err := c.ecsClient.UpdateService(ctx, input)
+	if err != nil {
+		return fmt.Errorf("failed to update ECS service %s: %w", *service.ServiceName, err)
+	}
+
+	return nil
+}
+
 func (c *client) UpdateService(ctx context.Context, service types.Service) (*types.Service, error) {
 	input := &ecs.UpdateServiceInput{
 		Cluster:              service.ClusterArn,
 		Service:              service.ServiceName,
-		DesiredCount:         aws.Int32(service.DesiredCount),
 		EnableExecuteCommand: aws.Bool(service.EnableExecuteCommand),
 		PlacementStrategy:    service.PlacementStrategy,
 		// TODO: Support update other properties of service.
 		// PlacementConstraints:    service.PlacementConstraints,
 	}
+
+	// If desiredCount is 0 or not set, keep current desiredCount because a user might use AutoScaling.
+	if service.DesiredCount != 0 {
+		input.DesiredCount = aws.Int32(service.DesiredCount)
+	}
+
 	output, err := c.ecsClient.UpdateService(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update ECS service %s: %w", *service.ServiceName, err)
