@@ -426,6 +426,9 @@ func TestGenericTriggerConfiguration(t *testing.T) {
 							Disabled: newBoolPointer(true),
 						},
 					},
+					Planner: DeploymentPlanner{
+						AutoRollback: newBoolPointer(true),
+					},
 				},
 				Input: KubernetesDeploymentInput{
 					AutoRollback: newBoolPointer(true),
@@ -477,6 +480,9 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 							Disabled: newBoolPointer(true),
 						},
 					},
+					Planner: DeploymentPlanner{
+						AutoRollback: newBoolPointer(true),
+					},
 				},
 				Input: KubernetesDeploymentInput{
 					AutoRollback: newBoolPointer(true),
@@ -506,6 +512,9 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 							Disabled: newBoolPointer(true),
 						},
 					},
+					Planner: DeploymentPlanner{
+						AutoRollback: newBoolPointer(true),
+					},
 				},
 				Input: KubernetesDeploymentInput{
 					AutoRollback: newBoolPointer(false),
@@ -534,6 +543,9 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 						OnChain: OnChain{
 							Disabled: newBoolPointer(true),
 						},
+					},
+					Planner: DeploymentPlanner{
+						AutoRollback: newBoolPointer(true),
 					},
 				},
 				Input: KubernetesDeploymentInput{
@@ -585,6 +597,9 @@ func TestGenericPostSyncConfiguration(t *testing.T) {
 						OnChain: OnChain{
 							Disabled: newBoolPointer(true),
 						},
+					},
+					Planner: DeploymentPlanner{
+						AutoRollback: newBoolPointer(true),
 					},
 					PostSync: &PostSync{
 						DeploymentChain: &DeploymentChain{
@@ -654,6 +669,9 @@ func TestGenericAnalysisConfiguration(t *testing.T) {
 						OnChain: OnChain{
 							Disabled: newBoolPointer(true),
 						},
+					},
+					Planner: DeploymentPlanner{
+						AutoRollback: newBoolPointer(true),
 					},
 					Pipeline: &DeploymentPipeline{
 						Stages: []PipelineStage{
@@ -789,6 +807,9 @@ func TestCustomSyncConfig(t *testing.T) {
 						OnChain: OnChain{
 							Disabled: newBoolPointer(true),
 						},
+					},
+					Planner: DeploymentPlanner{
+						AutoRollback: newBoolPointer(true),
 					},
 				},
 				Input: LambdaDeploymentInput{

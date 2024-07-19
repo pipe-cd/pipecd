@@ -93,6 +93,8 @@ type KubernetesDeploymentInput struct {
 
 	// Automatically reverts all deployment changes on failure.
 	// Default is true.
+	//
+	// Deprecated: Use Planner.AutoRollback instead.
 	AutoRollback *bool `json:"autoRollback,omitempty" default:"true"`
 
 	// Automatically create a new namespace if it does not exist.

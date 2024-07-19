@@ -518,6 +518,8 @@ One of `yamlField` or `regex` is required.
 
 There are some restrictions in configuring a service definition file.
 
+- As long as `desiredCount` is 0 or not set, `desiredCount` of your service will NOT be updated in deployments.
+  - If `desiredCount` is 0 or not set for a new service, the service's `desiredCount` will be 0.
 - `capacityProviderStrategy` is not supported.
 - `clientToken` is not supported.
 - `deploymentController` is required and must be `EXTERNAL`.
