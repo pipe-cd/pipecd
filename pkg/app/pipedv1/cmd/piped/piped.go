@@ -42,10 +42,6 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/pipe-cd/pipecd/pkg/admin"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/driftdetector"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatereporter"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/planpreview"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/planpreview/planpreviewmetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/apistore/analysisresultstore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/apistore/applicationstore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/apistore/commandstore"
@@ -285,10 +281,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	// Start running application live state reporter.
 	{
-		r := livestatereporter.NewReporter(applicationLister,  apiClient, cfg, input.Logger)
-		group.Go(func() error {
-			return r.Run(ctx)
-		})
+		// TODO: Implement the live state reporter controller.
 	}
 
 	decrypter, err := p.initializeSecretDecrypter(cfg)
@@ -299,23 +292,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	// Start running application application drift detector.
 	{
-		d, err := driftdetector.NewDetector(
-			applicationLister,
-			gitClient,
-			apiClient,
-			appManifestsCache,
-			cfg,
-			decrypter,
-			input.Logger,
-		)
-		if err != nil {
-			input.Logger.Error("failed to initialize application drift detector", zap.Error(err))
-			return err
-		}
-
-		group.Go(func() error {
-			return d.Run(ctx)
-		})
+		// TODO: Implement the drift detector controller.
 	}
 
 	cfgData, err := p.loadConfigByte(ctx)
@@ -348,7 +325,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	}
 
 	// Start running deployment trigger.
-	var lastTriggeredCommitGetter trigger.LastTriggeredCommitGetter
 	{
 		tr, err := trigger.NewTrigger(
 			apiClient,
@@ -364,7 +340,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			input.Logger.Error("failed to initialize trigger", zap.Error(err))
 			return err
 		}
-		lastTriggeredCommitGetter = tr.GetLastTriggeredCommitGetter()
 
 		group.Go(func() error {
 			return tr.Run(ctx)
@@ -387,39 +362,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	// Start running planpreview handler.
 	{
-		// Initialize a dedicated git client for plan-preview feature.
-		// Basically, this feature is an utility so it should not share any resource with the main components of piped.
-		gc, err := git.NewClient(
-			git.WithUserName(cfg.Git.Username),
-			git.WithEmail(cfg.Git.Email),
-			git.WithLogger(input.Logger),
-		)
-		if err != nil {
-			input.Logger.Error("failed to initialize git client for plan-preview", zap.Error(err))
-			return err
-		}
-		defer func() {
-			if err := gc.Clean(); err != nil {
-				input.Logger.Error("had an error while cleaning gitClient for plan-preview", zap.Error(err))
-				return
-			}
-			input.Logger.Info("successfully cleaned gitClient for plan-preview")
-		}()
-
-		h := planpreview.NewHandler(
-			gc,
-			apiClient,
-			commandLister,
-			applicationLister,
-			lastTriggeredCommitGetter,
-			decrypter,
-			appManifestsCache,
-			cfg,
-			planpreview.WithLogger(input.Logger),
-		)
-		group.Go(func() error {
-			return h.Run(ctx)
-		})
+		// TODO: Implement planpreview controller.
 	}
 
 	// Start running app-config-reporter.
@@ -823,31 +766,9 @@ func registerMetrics(pipedID, projectID, launcherVersion string) *prometheus.Reg
 	wrapped.Register(collectors.NewGoCollector())
 	wrapped.Register(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
 
-	planpreviewmetrics.Register(wrapped)
 	controllermetrics.Register(wrapped)
 
 	return r
-}
-
-func loginToOCIRegistry(ctx context.Context, execPath, address, username, password string) error {
-	args := []string{
-		"registry",
-		"login",
-		"-u",
-		username,
-		"-p",
-		password,
-		address,
-	}
-
-	var stderr bytes.Buffer
-	cmd := exec.CommandContext(ctx, execPath, args...)
-	cmd.Stderr = &stderr
-
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("%w: %s", err, stderr.String())
-	}
-	return nil
 }
 
 func stopCommandHandler(ctx context.Context, cmdLister commandstore.Lister, logger *zap.Logger) (bool, error) {
