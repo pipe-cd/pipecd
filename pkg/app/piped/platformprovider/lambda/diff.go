@@ -67,7 +67,7 @@ func (d *DiffResult) Render(opt DiffRenderOptions) string {
 	if !opt.UseDiffCommand {
 		b.WriteString(renderer.Render(d.Diff.Nodes()))
 	} else {
-		d, err := renderByCommand(diffCommand, d.Old, d.New)
+		d, err := diff.RenderByCommand(diffCommand, d.Old, d.New)
 		if err != nil {
 			b.WriteString(fmt.Sprintf("An error occurred while rendering diff (%v)", err))
 		} else {
@@ -77,13 +77,4 @@ func (d *DiffResult) Render(opt DiffRenderOptions) string {
 	b.WriteString("\n")
 
 	return b.String()
-}
-
-func renderByCommand(command string, old, new FunctionManifest) ([]byte, error) {
-	diff, err := diff.RenderByCommand(command, old, new)
-	if err != nil {
-		return nil, err
-	}
-
-	return diff, nil
 }
