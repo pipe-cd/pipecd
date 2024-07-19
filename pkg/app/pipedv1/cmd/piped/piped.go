@@ -48,21 +48,12 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/apistore/deploymentstore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/apistore/eventstore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/appconfigreporter"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/chartrepo"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/cmd/piped/grpcapi"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/driftdetector"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/eventwatcher"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/livestatereporter"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/livestatestore"
-	k8slivestatestoremetrics "github.com/pipe-cd/pipecd/pkg/app/pipedv1/livestatestore/kubernetes/kubernetesmetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/notifier"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/planpreview"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/planpreview/planpreviewmetrics"
-	k8scloudprovidermetrics "github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider/kubernetes/kubernetesmetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/statsreporter"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/trigger"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
@@ -75,11 +66,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcclient"
 	"github.com/pipe-cd/pipecd/pkg/version"
-
-	// Import to preload all built-in executors to the default registry.
-	_ "github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor/registry"
-	// Import to preload all planners to the default registry.
-	_ "github.com/pipe-cd/pipecd/pkg/app/pipedv1/planner/registry"
 )
 
 const (
@@ -173,52 +159,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		input.Logger.Info("successfully configured ssh-config")
 	}
 
-	// Initialize default tool registry.
-	if err := toolregistry.InitDefaultRegistry(p.toolsDir, input.Logger); err != nil {
-		input.Logger.Error("failed to initialize default tool registry", zap.Error(err))
-		return err
-	}
-
-	// Add configured Helm chart repositories.
-	if repos := cfg.HTTPHelmChartRepositories(); len(repos) > 0 {
-		reg := toolregistry.DefaultRegistry()
-		if err := chartrepo.Add(ctx, repos, reg, input.Logger); err != nil {
-			input.Logger.Error("failed to add configured chart repositories", zap.Error(err))
-			return err
-		}
-		if err := chartrepo.Update(ctx, reg, input.Logger); err != nil {
-			input.Logger.Error("failed to update Helm chart repositories", zap.Error(err))
-			return err
-		}
-	}
-
-	// Login to chart registries.
-	if regs := cfg.ChartRegistries; len(regs) > 0 {
-		reg := toolregistry.DefaultRegistry()
-		helm, _, err := reg.Helm(ctx, "")
-		if err != nil {
-			return fmt.Errorf("failed to find helm while login to chart registries (%w)", err)
-		}
-
-		for _, r := range regs {
-			switch r.Type {
-			case config.OCIHelmChartRegistry:
-				if r.Username == "" || r.Password == "" {
-					continue
-				}
-
-				if err := loginToOCIRegistry(ctx, helm, r.Address, r.Username, r.Password); err != nil {
-					input.Logger.Error(fmt.Sprintf("failed to login to %s Helm chart registry", r.Address), zap.Error(err))
-					return err
-				}
-				input.Logger.Info("successfully logged in to Helm chart registry", zap.String("address", r.Address))
-
-			default:
-				return fmt.Errorf("unsupported Helm chart registry type: %s", r.Type)
-			}
-		}
-	}
-
 	pipedKey, err := cfg.LoadPipedKey()
 	if err != nil {
 		input.Logger.Error("failed to load piped key", zap.Error(err))
@@ -286,13 +226,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		git.WithEmail(cfg.Git.Email),
 		git.WithLogger(input.Logger),
 	}
-	for _, repo := range cfg.GitHelmChartRepositories() {
-		if f := repo.SSHKeyFile; f != "" {
-			// Configure git client to use the specified SSH key while fetching private Helm charts.
-			env := fmt.Sprintf("GIT_SSH_COMMAND=ssh -i %s -o StrictHostKeyChecking=no -F /dev/null", f)
-			gitOptions = append(gitOptions, git.WithGitEnvForRepo(repo.GitRemote, env))
-		}
-	}
 	gitClient, err := git.NewClient(gitOptions...)
 	if err != nil {
 		input.Logger.Error("failed to initialize git client", zap.Error(err))
@@ -351,22 +284,9 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	// Create memory caches.
 	appManifestsCache := memorycache.NewTTLCache(ctx, time.Hour, time.Minute)
 
-	var liveStateGetter livestatestore.Getter
-	// Start running application live state store.
-	{
-		s := livestatestore.NewStore(ctx, cfg, applicationLister, p.gracePeriod, input.Logger)
-		group.Go(func() error {
-			return s.Run(ctx)
-		})
-		liveStateGetter = s.Getter()
-	}
-
 	// Start running application live state reporter.
 	{
-		r := livestatereporter.NewReporter(applicationLister, liveStateGetter, apiClient, cfg, input.Logger)
-		group.Go(func() error {
-			return r.Run(ctx)
-		})
+		// TODO: Implement the live state reporter controller.
 	}
 
 	// Start running plugin service server.
@@ -396,24 +316,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	// Start running application application drift detector.
 	{
-		d, err := driftdetector.NewDetector(
-			applicationLister,
-			gitClient,
-			liveStateGetter,
-			apiClient,
-			appManifestsCache,
-			cfg,
-			decrypter,
-			input.Logger,
-		)
-		if err != nil {
-			input.Logger.Error("failed to initialize application drift detector", zap.Error(err))
-			return err
-		}
-
-		group.Go(func() error {
-			return d.Run(ctx)
-		})
+		// TODO: Implement the drift detector controller.
 	}
 
 	cfgData, err := p.loadConfigByte(ctx)
@@ -430,7 +333,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			deploymentLister,
 			commandLister,
 			applicationLister,
-			livestatestore.LiveResourceLister{Getter: liveStateGetter},
 			analysisResultStore,
 			notifier,
 			decrypter,
@@ -447,7 +349,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	}
 
 	// Start running deployment trigger.
-	var lastTriggeredCommitGetter trigger.LastTriggeredCommitGetter
 	{
 		tr, err := trigger.NewTrigger(
 			apiClient,
@@ -463,7 +364,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			input.Logger.Error("failed to initialize trigger", zap.Error(err))
 			return err
 		}
-		lastTriggeredCommitGetter = tr.GetLastTriggeredCommitGetter()
 
 		group.Go(func() error {
 			return tr.Run(ctx)
@@ -486,39 +386,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	// Start running planpreview handler.
 	{
-		// Initialize a dedicated git client for plan-preview feature.
-		// Basically, this feature is an utility so it should not share any resource with the main components of piped.
-		gc, err := git.NewClient(
-			git.WithUserName(cfg.Git.Username),
-			git.WithEmail(cfg.Git.Email),
-			git.WithLogger(input.Logger),
-		)
-		if err != nil {
-			input.Logger.Error("failed to initialize git client for plan-preview", zap.Error(err))
-			return err
-		}
-		defer func() {
-			if err := gc.Clean(); err != nil {
-				input.Logger.Error("had an error while cleaning gitClient for plan-preview", zap.Error(err))
-				return
-			}
-			input.Logger.Info("successfully cleaned gitClient for plan-preview")
-		}()
-
-		h := planpreview.NewHandler(
-			gc,
-			apiClient,
-			commandLister,
-			applicationLister,
-			lastTriggeredCommitGetter,
-			decrypter,
-			appManifestsCache,
-			cfg,
-			planpreview.WithLogger(input.Logger),
-		)
-		group.Go(func() error {
-			return h.Run(ctx)
-		})
+		// TODO: Implement planpreview controller.
 	}
 
 	// Start running app-config-reporter.
@@ -923,33 +791,9 @@ func registerMetrics(pipedID, projectID, launcherVersion string) *prometheus.Reg
 	wrapped.Register(collectors.NewGoCollector())
 	wrapped.Register(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
 
-	k8scloudprovidermetrics.Register(wrapped)
-	k8slivestatestoremetrics.Register(wrapped)
-	planpreviewmetrics.Register(wrapped)
 	controllermetrics.Register(wrapped)
 
 	return r
-}
-
-func loginToOCIRegistry(ctx context.Context, execPath, address, username, password string) error {
-	args := []string{
-		"registry",
-		"login",
-		"-u",
-		username,
-		"-p",
-		password,
-		address,
-	}
-
-	var stderr bytes.Buffer
-	cmd := exec.CommandContext(ctx, execPath, args...)
-	cmd.Stderr = &stderr
-
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("%w: %s", err, stderr.String())
-	}
-	return nil
 }
 
 func stopCommandHandler(ctx context.Context, cmdLister commandstore.Lister, logger *zap.Logger) (bool, error) {

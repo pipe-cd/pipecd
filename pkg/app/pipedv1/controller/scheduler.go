@@ -28,10 +28,9 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor/registry"
+	registry "github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor/registry"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
-	pln "github.com/pipe-cd/pipecd/pkg/app/pipedv1/planner"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -48,7 +47,6 @@ type scheduler struct {
 	gitClient           gitClient
 	commandLister       commandLister
 	applicationLister   applicationLister
-	liveResourceLister  liveResourceLister
 	analysisResultStore analysisResultStore
 	logPersister        logpersister.Persister
 	metadataStore       metadatastore.MetadataStore
@@ -85,7 +83,6 @@ func newScheduler(
 	gitClient gitClient,
 	commandLister commandLister,
 	applicationLister applicationLister,
-	liveResourceLister liveResourceLister,
 	analysisResultStore analysisResultStore,
 	lp logpersister.Persister,
 	notifier notifier,
@@ -110,7 +107,6 @@ func newScheduler(
 		gitClient:            gitClient,
 		commandLister:        commandLister,
 		applicationLister:    applicationLister,
-		liveResourceLister:   liveResourceLister,
 		analysisResultStore:  analysisResultStore,
 		logPersister:         lp,
 		metadataStore:        metadatastore.NewMetadataStore(apiClient, d),
@@ -475,7 +471,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 	var stageConfig config.PipelineStage
 	var stageConfigFound bool
 	if ps.Predefined {
-		stageConfig, stageConfigFound = pln.GetPredefinedStage(ps.Id)
+		// FIXME: stageConfig, stageConfigFound = pln.GetPredefinedStage(ps.Id)
 	} else {
 		stageConfig, stageConfigFound = s.genericApplicationConfig.GetStage(ps.Index)
 	}
@@ -500,11 +496,6 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		deploymentID: s.deployment.Id,
 		stageID:      ps.Id,
 	}
-	alrLister := appLiveResourceLister{
-		lister:           s.liveResourceLister,
-		platformProvider: app.PlatformProvider,
-		appID:            app.Id,
-	}
 	aStore := appAnalysisResultStore{
 		store:         s.analysisResultStore,
 		applicationID: app.Id,
@@ -522,7 +513,6 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		LogPersister:          lp,
 		MetadataStore:         s.metadataStore,
 		AppManifestsCache:     s.appManifestsCache,
-		AppLiveResourceLister: alrLister,
 		AnalysisResultStore:   aStore,
 		Logger:                s.logger,
 		Notifier:              s.notifier,
