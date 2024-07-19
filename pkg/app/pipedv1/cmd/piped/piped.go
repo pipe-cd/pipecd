@@ -48,6 +48,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/apistore/deploymentstore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/apistore/eventstore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/appconfigreporter"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/cmd/piped/grpcapi"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/eventwatcher"
