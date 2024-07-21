@@ -210,6 +210,14 @@ func (p *planner) Run(ctx context.Context) error {
 	return p.reportDeploymentPlanned(ctx, out)
 }
 
+// buildPlan builds the deployment plan.
+// The strategy determination logic is based on the following order:
+//   - Direct trigger via web console
+//   - Force quick sync if there is no pipeline specified
+//   - Force pipeline if the `spec.planner.alwaysUsePipeline` was configured
+//   - CommitMatcher ensure pipeline/quick sync based on the commit message
+//   - Force quick sync if there is no previous deployment (aka. this is the first deploy)
+//   - Based on PlannerService.DetermineStrategy returned by plugins
 func (p *planner) buildPlan(ctx context.Context, targetDS *deploysource.DeploySource) (*plannerOutput, error) {
 	out := &plannerOutput{}
 
