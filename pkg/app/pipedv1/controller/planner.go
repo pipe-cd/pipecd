@@ -18,18 +18,34 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"path/filepath"
 	"time"
 
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/platform"
+	"github.com/pipe-cd/pipecd/pkg/regexpool"
 )
+
+const (
+	versionUnknown = "unknown"
+)
+
+type plannerOutput struct {
+	Version      string
+	Versions     []*model.ArtifactVersion
+	SyncStrategy model.SyncStrategy
+	Summary      string
+	Stages       []*model.PipelineStage
+}
 
 type planner struct {
 	// Readonly deployment model.
@@ -45,6 +61,9 @@ type planner struct {
 
 	// The apiClient is used to report the deployment status.
 	apiClient apiClient
+
+	// The gitClient is used to perform git commands.
+	gitClient gitClient
 
 	// The notifier and metadataStore are used for
 	// notification features.
@@ -134,9 +153,7 @@ func (p *planner) Cancel(cmd model.ReportableCommand) {
 }
 
 // What planner does:
-// - Wait until there is no PLANNED or RUNNING deployment
-// - Pick the oldest PENDING deployment to plan its pipeline
-// - <*> Perform planning a deployment by calling the pluggin's planner
+// - Call the plugin PlannerService to plan the deployment pipeline (perform in buildPlan)
 // - Update the deployment status to PLANNED or not based on the result
 func (p *planner) Run(ctx context.Context) error {
 	p.logger.Info("start running planner")
@@ -150,84 +167,223 @@ func (p *planner) Run(ctx context.Context) error {
 		controllermetrics.UpdateDeploymentStatus(p.deployment, p.doneDeploymentStatus)
 	}()
 
-	return nil
+	repoCfg := config.PipedRepository{
+		RepoID: p.deployment.GitPath.Repo.Id,
+		Remote: p.deployment.GitPath.Repo.Remote,
+		Branch: p.deployment.GitPath.Repo.Branch,
+	}
 
-	// in := &platform.BuildPlanRequest{
-	// 	Deployment:                   p.deployment,
-	// 	WorkingDir:                   p.workingDir,
-	// 	LastSuccessfulCommitHash:     p.lastSuccessfulCommitHash,
-	// 	LastSuccessfulConfigFileName: p.lastSuccessfulConfigFilename,
-	// 	PipedConfig:                  p.pipedConfig,
-	// }
+	// Prepare target deploy source.
+	targetDSP := deploysource.NewProvider(
+		filepath.Join(p.workingDir, "deploysource"),
+		deploysource.NewGitSourceCloner(p.gitClient, repoCfg, "target", p.deployment.Trigger.Commit.Hash),
+		*p.deployment.GitPath,
+		nil, // TODO: Revise this secret decryter, is this need?
+	)
 
-	// out, err := p.pluginClient.BuildPlan(ctx, in)
+	targetDS, err := targetDSP.Get(ctx, io.Discard)
+	if err != nil {
+		return fmt.Errorf("error while preparing deploy source data (%v)", err)
+	}
 
-	// // If the deployment was already cancelled, we ignore the plan result.
-	// select {
-	// case cmd := <-p.cancelledCh:
-	// 	if cmd != nil {
-	// 		p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
-	// 		desc := fmt.Sprintf("Deployment was cancelled by %s while planning", cmd.Commander)
-	// 		p.reportDeploymentCancelled(ctx, cmd.Commander, desc)
-	// 		return cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil)
-	// 	}
-	// default:
-	// }
+	// TODO: Pass running DS as well if need?
+	out, err := p.buildPlan(ctx, targetDS)
 
-	// if err != nil {
-	// 	p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
-	// 	return p.reportDeploymentFailed(ctx, fmt.Sprintf("Unable to plan the deployment (%v)", err))
-	// }
+	// If the deployment was already cancelled, we ignore the plan result.
+	select {
+	case cmd := <-p.cancelledCh:
+		if cmd != nil {
+			p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
+			desc := fmt.Sprintf("Deployment was cancelled by %s while planning", cmd.Commander)
+			p.reportDeploymentCancelled(ctx, cmd.Commander, desc)
+			return cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil)
+		}
+	default:
+	}
 
-	// p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_PLANNED
-	// return p.reportDeploymentPlanned(ctx, out.Plan)
+	if err != nil {
+		p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
+		return p.reportDeploymentFailed(ctx, fmt.Sprintf("Unable to plan the deployment (%v)", err))
+	}
+
+	p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_PLANNED
+	return p.reportDeploymentPlanned(ctx, out)
 }
 
-// func (p *planner) reportDeploymentPlanned(ctx context.Context, out *platform.DeploymentPlan) error {
-// 	var (
-// 		err   error
-// 		retry = pipedservice.NewRetry(10)
-// 		req   = &pipedservice.ReportDeploymentPlannedRequest{
-// 			DeploymentId:              p.deployment.Id,
-// 			Summary:                   out.Summary,
-// 			StatusReason:              "The deployment has been planned",
-// 			RunningCommitHash:         p.lastSuccessfulCommitHash,
-// 			RunningConfigFilename:     p.lastSuccessfulConfigFilename,
-// 			Versions:                  out.Versions,
-// 			Stages:                    out.Stages,
-// 			DeploymentChainId:         p.deployment.DeploymentChainId,
-// 			DeploymentChainBlockIndex: p.deployment.DeploymentChainBlockIndex,
-// 		}
-// 	)
+func (p *planner) buildPlan(ctx context.Context, targetDS *deploysource.DeploySource) (*plannerOutput, error) {
+	out := &plannerOutput{}
 
-// 	accounts, err := p.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED)
-// 	if err != nil {
-// 		p.logger.Error("failed to get the list of accounts", zap.Error(err))
-// 	}
+	input := &platform.PlanPluginInput{
+		Deployment: p.deployment,
+		// TODO: Add more planner input fields.
+		// NOTE: As discussed we pass targetDS & runningDS here.
+	}
 
-// 	defer func() {
-// 		p.notifier.Notify(model.NotificationEvent{
-// 			Type: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
-// 			Metadata: &model.NotificationEventDeploymentPlanned{
-// 				Deployment:        p.deployment,
-// 				Summary:           out.Summary,
-// 				MentionedAccounts: accounts,
-// 			},
-// 		})
-// 	}()
+	// Build deployment target versions.
+	versionRes, err := p.pluginClient.DetermineVersions(ctx, &platform.DetermineVersionsRequest{Input: input})
+	if err != nil {
+		p.logger.Warn("unable to determine versions", zap.Error(err))
+		out.Versions = []*model.ArtifactVersion{
+			{
+				Kind:    model.ArtifactVersion_UNKNOWN,
+				Version: versionUnknown,
+			},
+		}
+	} else {
+		out.Versions = versionRes.Versions
+	}
 
-// 	for retry.WaitNext(ctx) {
-// 		if _, err = p.apiClient.ReportDeploymentPlanned(ctx, req); err == nil {
-// 			return nil
-// 		}
-// 		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
-// 	}
+	// In case the strategy has been decided by trigger.
+	// For example: user triggered the deployment via web console.
+	switch p.deployment.Trigger.SyncStrategy {
+	case model.SyncStrategy_QUICK_SYNC:
+		if res, err := p.pluginClient.QuickSyncPlan(ctx, &platform.QuickSyncPlanRequest{Input: input}); err == nil {
+			out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
+			out.Summary = p.deployment.Trigger.StrategySummary
+			out.Stages = res.Stages
+			return out, nil
+		}
+	case model.SyncStrategy_PIPELINE:
+		if res, err := p.pluginClient.PipelineSyncPlan(ctx, &platform.PipelineSyncPlanRequest{Input: input}); err == nil {
+			out.SyncStrategy = model.SyncStrategy_PIPELINE
+			out.Summary = p.deployment.Trigger.StrategySummary
+			out.Stages = res.Stages
+			return out, nil
+		}
+	}
 
-// 	if err != nil {
-// 		p.logger.Error("failed to mark deployment to be planned", zap.Error(err))
-// 	}
-// 	return err
-// }
+	cfg := targetDS.GenericApplicationConfig
+
+	// When no pipeline was configured, do the quick sync.
+	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
+		if res, err := p.pluginClient.QuickSyncPlan(ctx, &platform.QuickSyncPlanRequest{Input: input}); err == nil {
+			out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
+			out.Summary = "Quick sync due to the pipeline was not configured"
+			out.Stages = res.Stages
+			return out, nil
+		}
+	}
+
+	// Force to use pipeline when the `spec.planner.alwaysUsePipeline` was configured.
+	if cfg.Planner.AlwaysUsePipeline {
+		if res, err := p.pluginClient.PipelineSyncPlan(ctx, &platform.PipelineSyncPlanRequest{Input: input}); err == nil {
+			out.SyncStrategy = model.SyncStrategy_PIPELINE
+			out.Summary = "Sync with the specified pipeline (alwaysUsePipeline was set)"
+			out.Stages = res.Stages
+			return out, nil
+		}
+	}
+
+	regexPool := regexpool.DefaultPool()
+
+	// This deployment is triggered by a commit with the intent to perform pipeline.
+	// Commit Matcher will be ignored when triggered by a command.
+	if pattern := cfg.CommitMatcher.Pipeline; pattern != "" && p.deployment.Trigger.Commander == "" {
+		if pipelineRegex, err := regexPool.Get(pattern); err == nil &&
+			pipelineRegex.MatchString(p.deployment.Trigger.Commit.Message) {
+			if res, err := p.pluginClient.PipelineSyncPlan(ctx, &platform.PipelineSyncPlanRequest{Input: input}); err == nil {
+				out.SyncStrategy = model.SyncStrategy_PIPELINE
+				out.Summary = fmt.Sprintf("Sync progressively because the commit message was matching %q", pattern)
+				out.Stages = res.Stages
+				return out, nil
+			}
+		}
+	}
+
+	// This deployment is triggered by a commit with the intent to synchronize.
+	// Commit Matcher will be ignored when triggered by a command.
+	if pattern := cfg.CommitMatcher.QuickSync; pattern != "" && p.deployment.Trigger.Commander == "" {
+		if syncRegex, err := regexPool.Get(pattern); err == nil &&
+			syncRegex.MatchString(p.deployment.Trigger.Commit.Message) {
+			if res, err := p.pluginClient.QuickSyncPlan(ctx, &platform.QuickSyncPlanRequest{Input: input}); err == nil {
+				out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
+				out.Summary = fmt.Sprintf("Quick sync because the commit message was matching %q", pattern)
+				out.Stages = res.Stages
+				return out, nil
+			}
+		}
+	}
+
+	// Quick sync if this is the first time to deploy this application or it was unable to retrieve running commit hash.
+	if p.lastSuccessfulCommitHash == "" {
+		if res, err := p.pluginClient.QuickSyncPlan(ctx, &platform.QuickSyncPlanRequest{Input: input}); err == nil {
+			out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
+			out.Summary = "Quick sync, it seems this is the first deployment of the application"
+			out.Stages = res.Stages
+			return out, nil
+		}
+	}
+
+	// Build plan based on plugin determined strategy
+	resp, err := p.pluginClient.DetermineStrategy(ctx, &platform.DetermineStrategyRequest{Input: input})
+	if err != nil {
+		return nil, fmt.Errorf("unable to plan the deployment: %w", err)
+	}
+
+	switch resp.SyncStrategy {
+	case model.SyncStrategy_QUICK_SYNC:
+		if res, err := p.pluginClient.QuickSyncPlan(ctx, &platform.QuickSyncPlanRequest{Input: input}); err == nil {
+			out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
+			out.Summary = resp.Summary
+			out.Stages = res.Stages
+			return out, nil
+		}
+	case model.SyncStrategy_PIPELINE:
+		if res, err := p.pluginClient.PipelineSyncPlan(ctx, &platform.PipelineSyncPlanRequest{Input: input}); err == nil {
+			out.SyncStrategy = model.SyncStrategy_PIPELINE
+			out.Summary = resp.Summary
+			out.Stages = res.Stages
+			return out, nil
+		}
+	}
+
+	return nil, fmt.Errorf("unable to plan the deployment")
+}
+
+func (p *planner) reportDeploymentPlanned(ctx context.Context, out *plannerOutput) error {
+	var (
+		err   error
+		retry = pipedservice.NewRetry(10)
+		req   = &pipedservice.ReportDeploymentPlannedRequest{
+			DeploymentId:              p.deployment.Id,
+			Summary:                   out.Summary,
+			StatusReason:              "The deployment has been planned",
+			RunningCommitHash:         p.lastSuccessfulCommitHash,
+			RunningConfigFilename:     p.lastSuccessfulConfigFilename,
+			Version:                   out.Version,
+			Versions:                  out.Versions,
+			Stages:                    out.Stages,
+			DeploymentChainId:         p.deployment.DeploymentChainId,
+			DeploymentChainBlockIndex: p.deployment.DeploymentChainBlockIndex,
+		}
+	)
+
+	users, groups, err := p.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED)
+
+	defer func() {
+		p.notifier.Notify(model.NotificationEvent{
+			Type: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
+			Metadata: &model.NotificationEventDeploymentPlanned{
+				Deployment:        p.deployment,
+				Summary:           out.Summary,
+				MentionedAccounts: users,
+				MentionedGroups:   groups,
+			},
+		})
+	}()
+
+	for retry.WaitNext(ctx) {
+		if _, err = p.apiClient.ReportDeploymentPlanned(ctx, req); err == nil {
+			return nil
+		}
+		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
+	}
+
+	if err != nil {
+		p.logger.Error("failed to mark deployment to be planned", zap.Error(err))
+	}
+	return err
+}
 
 func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) error {
 	var (
@@ -319,20 +475,6 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 		p.logger.Error("failed to mark deployment to be cancelled", zap.Error(err))
 	}
 	return err
-}
-
-func (p *planner) getMentionedUsers(event model.NotificationEventType) ([]string, error) {
-	n, ok := p.metadataStore.Shared().Get(model.MetadataKeyDeploymentNotification)
-	if !ok {
-		return []string{}, nil
-	}
-
-	var notification config.DeploymentNotification
-	if err := json.Unmarshal([]byte(n), &notification); err != nil {
-		return nil, fmt.Errorf("could not extract mentions config: %w", err)
-	}
-
-	return notification.FindSlackUsers(event), nil
 }
 
 // getApplicationNotificationMentions returns the list of users groups who should be mentioned in the notification.
