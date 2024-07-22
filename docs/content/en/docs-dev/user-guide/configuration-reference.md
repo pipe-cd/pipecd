@@ -300,7 +300,9 @@ One of `yamlField` or `regex` is required.
 | Field | Type | Description | Required |
 |-|-|-|-|
 | event | string | The event to be notified to users. | Yes |
-| slack | []string | List of user IDs for mentioning in Slack. See [here](https://api.slack.com/reference/surfaces/formatting#mentioning-users) for more information on how to check them. | No |
+| slack | []string | Deprecated: Please use `slackUsers` instead. List of user IDs for mentioning in Slack. See [here](https://api.slack.com/reference/surfaces/formatting#mentioning-users) for more information on how to check them. | No |
+| slackUsers | []string | List of user IDs for mentioning in Slack. See [here](https://api.slack.com/reference/surfaces/formatting#mentioning-users) for more information on how to check them. | No |
+| slackGroups | []string | List of group IDs for mentioning in Slack. See [here](https://api.slack.com/reference/surfaces/formatting#mentioning-groups) for more information on how to check them. | No |
 
 ## KubernetesDeploymentInput
 
@@ -516,6 +518,8 @@ One of `yamlField` or `regex` is required.
 
 There are some restrictions in configuring a service definition file.
 
+- As long as `desiredCount` is 0 or not set, `desiredCount` of your service will NOT be updated in deployments.
+  - If `desiredCount` is 0 or not set for a new service, the service's `desiredCount` will be 0.
 - `capacityProviderStrategy` is not supported.
 - `clientToken` is not supported.
 - `deploymentController` is required and must be `EXTERNAL`.

@@ -6,8 +6,6 @@ description: >
   This page describes how to configure Automated Deployment Analysis feature.
 ---
 
->NOTE: This feature is currently alpha status.
-
 Automated Deployment Analysis (ADA) evaluates the impact of the deployment you are in the middle of by analyzing the metrics data, log entries, and the responses of the configured HTTP requests.
 The analysis of the newly deployed application is often carried out in a manual, ad-hoc or statistically incorrect manner.
 ADA automates that and helps to build a robust deployment process.

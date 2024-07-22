@@ -39,7 +39,6 @@ type DeploySource struct {
 type Provider interface {
 	Revision() string
 	Get(ctx context.Context, logWriter io.Writer) (*DeploySource, error)
-	GetReadOnly(ctx context.Context, logWriter io.Writer) (*DeploySource, error)
 }
 
 type secretDecrypter interface {
@@ -104,25 +103,6 @@ func (p *provider) Get(ctx context.Context, lw io.Writer) (*DeploySource, error)
 
 	fmt.Fprintf(lw, "Successfully prepared deploy source at %s commit (%s)\n", p.revisionName, p.revision)
 	return ds, nil
-}
-
-func (p *provider) GetReadOnly(ctx context.Context, lw io.Writer) (*DeploySource, error) {
-	fmt.Fprintf(lw, "Preparing deploy source at %s commit (%s)\n", p.revisionName, p.revision)
-
-	p.mu.Lock()
-	defer p.mu.Unlock()
-
-	if !p.done {
-		p.source, p.err = p.prepare(ctx, lw)
-		p.done = true
-	}
-
-	if p.err != nil {
-		return nil, p.err
-	}
-
-	fmt.Fprintf(lw, "Successfully prepared deploy source at %s commit (%s)\n", p.revisionName, p.revision)
-	return p.source, nil
 }
 
 func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, error) {

@@ -54,6 +54,9 @@ func TestECSApplicationConfig(t *testing.T) {
 							Disabled: newBoolPointer(true),
 						},
 					},
+					Planner: DeploymentPlanner{
+						AutoRollback: newBoolPointer(true),
+					},
 				},
 				Input: ECSDeploymentInput{
 					ServiceDefinitionFile: "/path/to/servicedef.yaml",
@@ -95,6 +98,9 @@ func TestECSApplicationConfig(t *testing.T) {
 							Disabled: newBoolPointer(true),
 						},
 					},
+					Planner: DeploymentPlanner{
+						AutoRollback: newBoolPointer(true),
+					},
 				},
 				Input: ECSDeploymentInput{
 					ServiceDefinitionFile: "/path/to/servicedef.yaml",
@@ -128,6 +134,9 @@ func TestECSApplicationConfig(t *testing.T) {
 						OnChain: OnChain{
 							Disabled: newBoolPointer(true),
 						},
+					},
+					Planner: DeploymentPlanner{
+						AutoRollback: newBoolPointer(true),
 					},
 				},
 				Input: ECSDeploymentInput{

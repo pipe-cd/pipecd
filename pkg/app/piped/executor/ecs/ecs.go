@@ -278,8 +278,7 @@ func sync(ctx context.Context, in *executor.Input, platformProviderName string, 
 		cnt := service.DesiredCount
 		// Scale down the service tasks by set it to 0
 		in.LogPersister.Infof("Scale down ECS desired tasks count to 0")
-		service.DesiredCount = 0
-		if _, err = client.UpdateService(ctx, *service); err != nil {
+		if err = client.PruneServiceTasks(ctx, *service); err != nil {
 			in.LogPersister.Errorf("Failed to stop service tasks: %v", err)
 			return false
 		}

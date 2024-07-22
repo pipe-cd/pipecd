@@ -41,6 +41,7 @@ func TestKubernetesApplicationConfig(t *testing.T) {
 					Description: "application description first string\napplication description second string\n",
 					Planner: DeploymentPlanner{
 						AlwaysUsePipeline: true,
+						AutoRollback:      newBoolPointer(true),
 					},
 					Pipeline: &DeploymentPipeline{
 						Stages: []PipelineStage{
@@ -132,6 +133,9 @@ func TestKubernetesApplicationConfig(t *testing.T) {
 						OnChain: OnChain{
 							Disabled: newBoolPointer(true),
 						},
+					},
+					Planner: DeploymentPlanner{
+						AutoRollback: newBoolPointer(true),
 					},
 				},
 				Input: KubernetesDeploymentInput{

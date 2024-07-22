@@ -8,6 +8,8 @@ description: >
 
 A Piped requires some permissions to deploy applications, depending on the platform.
 
+Note: If you run a piped as an ECS task, you need to attach the permissions on the piped task's `task role`, not `task execution role`.
+
 ## For ECSApp
 
 You need IAM actions like the following example. You can restrict `Resource`.

@@ -17,6 +17,8 @@ spec:
       labels:
         {{- include "pipecd.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: gateway
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/envoy-configmap.yaml") . | sha256sum }} # ref; https://helm.sh/docs/howto/charts_tips_and_tricks/#automatically-roll-deployments
     spec:
       {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
       serviceAccountName: {{ include "pipecd.serviceAccountName" . }}
@@ -93,7 +95,7 @@ spec:
       {{- if .Values.quickstart.enabled }}
       initContainers:
         - name: dep-waiter
-          image: alpine:3.14
+          image: alpine:3.20
           command: ["sh", "-c"]
           args:
             - |
@@ -259,7 +261,7 @@ spec:
       {{- if .Values.quickstart.enabled }}
       initContainers:
         - name: dep-waiter
-          image: alpine:3.14
+          image: alpine:3.20
           command: ["sh", "-c"]
           args:
             - |

@@ -63,6 +63,8 @@ type ECSDeploymentInput struct {
 	TargetGroups ECSTargetGroups `json:"targetGroups,omitempty"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is true.
+	//
+	// Deprecated: Use Planner.AutoRollback instead.
 	AutoRollback *bool `json:"autoRollback,omitempty" default:"true"`
 	// Run standalone task during deployment.
 	// Default is true.

@@ -37,6 +37,8 @@ type LambdaDeploymentInput struct {
 	FunctionManifestFile string `json:"functionManifestFile" default:"function.yaml"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is true.
+	//
+	// Deprecated: Use Planner.AutoRollback instead.
 	AutoRollback *bool `json:"autoRollback,omitempty" default:"true"`
 }
 

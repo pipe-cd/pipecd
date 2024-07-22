@@ -48,6 +48,8 @@ type TerraformDeploymentInput struct {
 	VarFiles []string `json:"varFiles,omitempty"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is false.
+	//
+	// Deprecated: Use Planner.AutoRollback instead.
 	AutoRollback bool `json:"autoRollback"`
 	// List of additional flags will be used while executing terraform commands.
 	CommandFlags TerraformCommandFlags `json:"commandFlags"`
