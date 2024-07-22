@@ -54,6 +54,9 @@ func TestTerraformApplicationtConfig(t *testing.T) {
 							Disabled: newBoolPointer(true),
 						},
 					},
+					Planner: DeploymentPlanner{
+						AutoRollback: newBoolPointer(true),
+					},
 				},
 				Input: TerraformDeploymentInput{},
 			},
@@ -80,6 +83,9 @@ func TestTerraformApplicationtConfig(t *testing.T) {
 						OnChain: OnChain{
 							Disabled: newBoolPointer(true),
 						},
+					},
+					Planner: DeploymentPlanner{
+						AutoRollback: newBoolPointer(true),
 					},
 				},
 				Input: TerraformDeploymentInput{
@@ -110,6 +116,9 @@ func TestTerraformApplicationtConfig(t *testing.T) {
 						OnChain: OnChain{
 							Disabled: newBoolPointer(true),
 						},
+					},
+					Planner: DeploymentPlanner{
+						AutoRollback: newBoolPointer(true),
 					},
 					Encryption: &SecretEncryption{
 						EncryptedSecrets: map[string]string{
@@ -169,6 +178,9 @@ func TestTerraformApplicationtConfig(t *testing.T) {
 							Disabled: newBoolPointer(true),
 						},
 					},
+					Planner: DeploymentPlanner{
+						AutoRollback: newBoolPointer(true),
+					},
 				},
 				Input: TerraformDeploymentInput{
 					Workspace:        "dev",
@@ -220,6 +232,9 @@ func TestTerraformApplicationtConfig(t *testing.T) {
 						OnChain: OnChain{
 							Disabled: newBoolPointer(true),
 						},
+					},
+					Planner: DeploymentPlanner{
+						AutoRollback: newBoolPointer(true),
 					},
 				},
 				Input: TerraformDeploymentInput{

@@ -39,6 +39,284 @@ var (
 	_ = model.SyncStrategy(0)
 )
 
+// Validate checks the field values on DetermineVersionsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DetermineVersionsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DetermineVersionsRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DetermineVersionsRequestMultiError, or nil if none found.
+func (m *DetermineVersionsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DetermineVersionsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetInput() == nil {
+		err := DetermineVersionsRequestValidationError{
+			field:  "Input",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetInput()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, DetermineVersionsRequestValidationError{
+					field:  "Input",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, DetermineVersionsRequestValidationError{
+					field:  "Input",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetInput()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return DetermineVersionsRequestValidationError{
+				field:  "Input",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return DetermineVersionsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// DetermineVersionsRequestMultiError is an error wrapping multiple validation
+// errors returned by DetermineVersionsRequest.ValidateAll() if the designated
+// constraints aren't met.
+type DetermineVersionsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DetermineVersionsRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DetermineVersionsRequestMultiError) AllErrors() []error { return m }
+
+// DetermineVersionsRequestValidationError is the validation error returned by
+// DetermineVersionsRequest.Validate if the designated constraints aren't met.
+type DetermineVersionsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DetermineVersionsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DetermineVersionsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DetermineVersionsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DetermineVersionsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DetermineVersionsRequestValidationError) ErrorName() string {
+	return "DetermineVersionsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DetermineVersionsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDetermineVersionsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DetermineVersionsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DetermineVersionsRequestValidationError{}
+
+// Validate checks the field values on DetermineVersionsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DetermineVersionsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DetermineVersionsResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DetermineVersionsResponseMultiError, or nil if none found.
+func (m *DetermineVersionsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DetermineVersionsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetVersions() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, DetermineVersionsResponseValidationError{
+						field:  fmt.Sprintf("Versions[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, DetermineVersionsResponseValidationError{
+						field:  fmt.Sprintf("Versions[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return DetermineVersionsResponseValidationError{
+					field:  fmt.Sprintf("Versions[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return DetermineVersionsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// DetermineVersionsResponseMultiError is an error wrapping multiple validation
+// errors returned by DetermineVersionsResponse.ValidateAll() if the
+// designated constraints aren't met.
+type DetermineVersionsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DetermineVersionsResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DetermineVersionsResponseMultiError) AllErrors() []error { return m }
+
+// DetermineVersionsResponseValidationError is the validation error returned by
+// DetermineVersionsResponse.Validate if the designated constraints aren't met.
+type DetermineVersionsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DetermineVersionsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DetermineVersionsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DetermineVersionsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DetermineVersionsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DetermineVersionsResponseValidationError) ErrorName() string {
+	return "DetermineVersionsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DetermineVersionsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDetermineVersionsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DetermineVersionsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DetermineVersionsResponseValidationError{}
+
 // Validate checks the field values on DetermineStrategyRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.

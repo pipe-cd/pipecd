@@ -17,7 +17,12 @@ package planner
 import (
 	"context"
 	"fmt"
+	"io"
+	"os"
+	"time"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/platform"
 	"github.com/pipe-cd/pipecd/pkg/regexpool"
 
@@ -25,9 +30,14 @@ import (
 	"google.golang.org/grpc"
 )
 
+type secretDecrypter interface {
+	Decrypt(string) (string, error)
+}
+
 type PlannerService struct {
 	platform.UnimplementedPlannerServiceServer
 
+	Decrypter secretDecrypter
 	RegexPool *regexpool.Pool
 	Logger    *zap.Logger
 }
@@ -38,8 +48,12 @@ func (a *PlannerService) Register(server *grpc.Server) {
 }
 
 // NewPlannerService creates a new planService.
-func NewPlannerService(logger *zap.Logger) *PlannerService {
+func NewPlannerService(
+	decrypter secretDecrypter,
+	logger *zap.Logger,
+) *PlannerService {
 	return &PlannerService{
+		Decrypter: decrypter,
 		RegexPool: regexpool.DefaultPool(),
 		Logger:    logger.Named("planner"),
 	}
@@ -63,7 +77,39 @@ func (ps *PlannerService) DetermineStrategy(ctx context.Context, in *platform.De
 }
 
 func (ps *PlannerService) QuickSyncPlan(ctx context.Context, in *platform.QuickSyncPlanRequest) (*platform.QuickSyncPlanResponse, error) {
-	return nil, fmt.Errorf("not implemented yet")
+	now := time.Now()
+
+	cloner, err := plugin.GetPlanSourceCloner(in.GetInput())
+	if err != nil {
+		return nil, err
+	}
+
+	d, err := os.MkdirTemp("", "") // TODO
+	if err != nil {
+		return nil, fmt.Errorf("failed to prepare temporary directory (%w)", err)
+	}
+	defer os.RemoveAll(d)
+
+	p := deploysource.NewProvider(
+		d,
+		cloner,
+		*in.GetInput().GetDeployment().GetGitPath(),
+		ps.Decrypter,
+	)
+
+	ds, err := p.Get(ctx, io.Discard /* TODO */)
+	if err != nil {
+		return nil, err
+	}
+
+	cfg := ds.ApplicationConfig.KubernetesApplicationSpec
+	if cfg == nil {
+		return nil, fmt.Errorf("missing KubernetesApplicationSpec in application configuration")
+	}
+
+	return &platform.QuickSyncPlanResponse{
+		Stages: buildQuickSyncPipeline(*cfg.Planner.AutoRollback, now),
+	}, nil
 }
 
 func (ps *PlannerService) PipelineSyncPlan(ctx context.Context, in *platform.PipelineSyncPlanRequest) (*platform.PipelineSyncPlanResponse, error) {

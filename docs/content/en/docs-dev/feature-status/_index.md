@@ -99,8 +99,8 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Event watcher](../user-guide/event-watcher/) - Updating files in Git automatically for given events | Beta |
 | [Pipectl](../user-guide/command-line-tool/) - Command-line tool for interacting with Control Plane | Beta |
 | Deployment plugin - Allow executing user-created deployment plugin | Incubating |
-| [ADA](../user-guide/managing-application/customizing-deployment/automated-deployment-analysis/) (Automated Deployment Analysis) by Prometheus metrics | Alpha |
-| [ADA](../user-guide/managing-application/customizing-deployment/automated-deployment-analysis/) by Datadog metrics | Alpha |
+| [ADA](../user-guide/managing-application/customizing-deployment/automated-deployment-analysis/) (Automated Deployment Analysis) by Prometheus metrics | Beta |
+| [ADA](../user-guide/managing-application/customizing-deployment/automated-deployment-analysis/) by Datadog metrics | Beta |
 | [ADA](../user-guide/managing-application/customizing-deployment/automated-deployment-analysis/) by Stackdriver metrics | Incubating |
 | [ADA](../user-guide/managing-application/customizing-deployment/automated-deployment-analysis/) by Stackdriver log | Incubating |
 | [ADA](../user-guide/managing-application/customizing-deployment/automated-deployment-analysis/) by CloudWatch metrics | Incubating |
@@ -120,7 +120,6 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | RBAC on PipeCD resources such as Application, Piped... | Alpha |
 | Authentication by username/password for static admin | Beta |
 | GitHub & GitHub Enterprise Server SSO | Beta |
-| Google SSO | Incubating |
 | Support GCP [Firestore](https://cloud.google.com/firestore) as data store | Beta |
 | Support [MySQL v8.0](https://www.mysql.com/) as data store | Beta |
 | Support file store as data store | Alpha |

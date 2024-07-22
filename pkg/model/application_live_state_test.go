@@ -101,6 +101,29 @@ func TestApplicationLiveStateSnapshot_DetermineAppHealthStatus(t *testing.T) {
 			want: ApplicationLiveStateSnapshot_UNKNOWN,
 		},
 		{
+			name: "ecs: healthy",
+			snapshot: &ApplicationLiveStateSnapshot{
+				Kind: ApplicationKind_ECS,
+				Ecs: &ECSApplicationLiveState{
+					Resources: []*ECSResourceState{{HealthStatus: ECSResourceState_HEALTHY}},
+				},
+			},
+			want: ApplicationLiveStateSnapshot_HEALTHY,
+		},
+		{
+			name: "ecs: unhealthy",
+			snapshot: &ApplicationLiveStateSnapshot{
+				Kind: ApplicationKind_ECS,
+				Ecs: &ECSApplicationLiveState{
+					Resources: []*ECSResourceState{
+						{HealthStatus: ECSResourceState_HEALTHY},
+						{HealthStatus: ECSResourceState_OTHER},
+					},
+				},
+			},
+			want: ApplicationLiveStateSnapshot_OTHER,
+		},
+		{
 			name: "ecs: unknown",
 			snapshot: &ApplicationLiveStateSnapshot{
 				Kind: ApplicationKind_ECS,

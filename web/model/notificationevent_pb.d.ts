@@ -16,6 +16,11 @@ export class NotificationEventDeploymentTriggered extends jspb.Message {
   clearMentionedAccountsList(): NotificationEventDeploymentTriggered;
   addMentionedAccounts(value: string, index?: number): NotificationEventDeploymentTriggered;
 
+  getMentionedGroupsList(): Array<string>;
+  setMentionedGroupsList(value: Array<string>): NotificationEventDeploymentTriggered;
+  clearMentionedGroupsList(): NotificationEventDeploymentTriggered;
+  addMentionedGroups(value: string, index?: number): NotificationEventDeploymentTriggered;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): NotificationEventDeploymentTriggered.AsObject;
   static toObject(includeInstance: boolean, msg: NotificationEventDeploymentTriggered): NotificationEventDeploymentTriggered.AsObject;
@@ -28,6 +33,7 @@ export namespace NotificationEventDeploymentTriggered {
   export type AsObject = {
     deployment?: pkg_model_deployment_pb.Deployment.AsObject,
     mentionedAccountsList: Array<string>,
+    mentionedGroupsList: Array<string>,
   }
 }
 
@@ -45,6 +51,11 @@ export class NotificationEventDeploymentPlanned extends jspb.Message {
   clearMentionedAccountsList(): NotificationEventDeploymentPlanned;
   addMentionedAccounts(value: string, index?: number): NotificationEventDeploymentPlanned;
 
+  getMentionedGroupsList(): Array<string>;
+  setMentionedGroupsList(value: Array<string>): NotificationEventDeploymentPlanned;
+  clearMentionedGroupsList(): NotificationEventDeploymentPlanned;
+  addMentionedGroups(value: string, index?: number): NotificationEventDeploymentPlanned;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): NotificationEventDeploymentPlanned.AsObject;
   static toObject(includeInstance: boolean, msg: NotificationEventDeploymentPlanned): NotificationEventDeploymentPlanned.AsObject;
@@ -58,6 +69,7 @@ export namespace NotificationEventDeploymentPlanned {
     deployment?: pkg_model_deployment_pb.Deployment.AsObject,
     summary: string,
     mentionedAccountsList: Array<string>,
+    mentionedGroupsList: Array<string>,
   }
 }
 
@@ -75,6 +87,11 @@ export class NotificationEventDeploymentApproved extends jspb.Message {
   clearMentionedAccountsList(): NotificationEventDeploymentApproved;
   addMentionedAccounts(value: string, index?: number): NotificationEventDeploymentApproved;
 
+  getMentionedGroupsList(): Array<string>;
+  setMentionedGroupsList(value: Array<string>): NotificationEventDeploymentApproved;
+  clearMentionedGroupsList(): NotificationEventDeploymentApproved;
+  addMentionedGroups(value: string, index?: number): NotificationEventDeploymentApproved;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): NotificationEventDeploymentApproved.AsObject;
   static toObject(includeInstance: boolean, msg: NotificationEventDeploymentApproved): NotificationEventDeploymentApproved.AsObject;
@@ -88,6 +105,7 @@ export namespace NotificationEventDeploymentApproved {
     deployment?: pkg_model_deployment_pb.Deployment.AsObject,
     approver: string,
     mentionedAccountsList: Array<string>,
+    mentionedGroupsList: Array<string>,
   }
 }
 
@@ -122,6 +140,11 @@ export class NotificationEventDeploymentSucceeded extends jspb.Message {
   clearMentionedAccountsList(): NotificationEventDeploymentSucceeded;
   addMentionedAccounts(value: string, index?: number): NotificationEventDeploymentSucceeded;
 
+  getMentionedGroupsList(): Array<string>;
+  setMentionedGroupsList(value: Array<string>): NotificationEventDeploymentSucceeded;
+  clearMentionedGroupsList(): NotificationEventDeploymentSucceeded;
+  addMentionedGroups(value: string, index?: number): NotificationEventDeploymentSucceeded;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): NotificationEventDeploymentSucceeded.AsObject;
   static toObject(includeInstance: boolean, msg: NotificationEventDeploymentSucceeded): NotificationEventDeploymentSucceeded.AsObject;
@@ -134,6 +157,7 @@ export namespace NotificationEventDeploymentSucceeded {
   export type AsObject = {
     deployment?: pkg_model_deployment_pb.Deployment.AsObject,
     mentionedAccountsList: Array<string>,
+    mentionedGroupsList: Array<string>,
   }
 }
 
@@ -151,6 +175,11 @@ export class NotificationEventDeploymentFailed extends jspb.Message {
   clearMentionedAccountsList(): NotificationEventDeploymentFailed;
   addMentionedAccounts(value: string, index?: number): NotificationEventDeploymentFailed;
 
+  getMentionedGroupsList(): Array<string>;
+  setMentionedGroupsList(value: Array<string>): NotificationEventDeploymentFailed;
+  clearMentionedGroupsList(): NotificationEventDeploymentFailed;
+  addMentionedGroups(value: string, index?: number): NotificationEventDeploymentFailed;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): NotificationEventDeploymentFailed.AsObject;
   static toObject(includeInstance: boolean, msg: NotificationEventDeploymentFailed): NotificationEventDeploymentFailed.AsObject;
@@ -164,6 +193,7 @@ export namespace NotificationEventDeploymentFailed {
     deployment?: pkg_model_deployment_pb.Deployment.AsObject,
     reason: string,
     mentionedAccountsList: Array<string>,
+    mentionedGroupsList: Array<string>,
   }
 }
 
@@ -181,6 +211,11 @@ export class NotificationEventDeploymentCancelled extends jspb.Message {
   clearMentionedAccountsList(): NotificationEventDeploymentCancelled;
   addMentionedAccounts(value: string, index?: number): NotificationEventDeploymentCancelled;
 
+  getMentionedGroupsList(): Array<string>;
+  setMentionedGroupsList(value: Array<string>): NotificationEventDeploymentCancelled;
+  clearMentionedGroupsList(): NotificationEventDeploymentCancelled;
+  addMentionedGroups(value: string, index?: number): NotificationEventDeploymentCancelled;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): NotificationEventDeploymentCancelled.AsObject;
   static toObject(includeInstance: boolean, msg: NotificationEventDeploymentCancelled): NotificationEventDeploymentCancelled.AsObject;
@@ -194,6 +229,7 @@ export namespace NotificationEventDeploymentCancelled {
     deployment?: pkg_model_deployment_pb.Deployment.AsObject,
     commander: string,
     mentionedAccountsList: Array<string>,
+    mentionedGroupsList: Array<string>,
   }
 }
 
@@ -208,6 +244,11 @@ export class NotificationEventDeploymentWaitApproval extends jspb.Message {
   clearMentionedAccountsList(): NotificationEventDeploymentWaitApproval;
   addMentionedAccounts(value: string, index?: number): NotificationEventDeploymentWaitApproval;
 
+  getMentionedGroupsList(): Array<string>;
+  setMentionedGroupsList(value: Array<string>): NotificationEventDeploymentWaitApproval;
+  clearMentionedGroupsList(): NotificationEventDeploymentWaitApproval;
+  addMentionedGroups(value: string, index?: number): NotificationEventDeploymentWaitApproval;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): NotificationEventDeploymentWaitApproval.AsObject;
   static toObject(includeInstance: boolean, msg: NotificationEventDeploymentWaitApproval): NotificationEventDeploymentWaitApproval.AsObject;
@@ -220,6 +261,7 @@ export namespace NotificationEventDeploymentWaitApproval {
   export type AsObject = {
     deployment?: pkg_model_deployment_pb.Deployment.AsObject,
     mentionedAccountsList: Array<string>,
+    mentionedGroupsList: Array<string>,
   }
 }
 
@@ -243,6 +285,11 @@ export class NotificationEventDeploymentTriggerFailed extends jspb.Message {
   clearMentionedAccountsList(): NotificationEventDeploymentTriggerFailed;
   addMentionedAccounts(value: string, index?: number): NotificationEventDeploymentTriggerFailed;
 
+  getMentionedGroupsList(): Array<string>;
+  setMentionedGroupsList(value: Array<string>): NotificationEventDeploymentTriggerFailed;
+  clearMentionedGroupsList(): NotificationEventDeploymentTriggerFailed;
+  addMentionedGroups(value: string, index?: number): NotificationEventDeploymentTriggerFailed;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): NotificationEventDeploymentTriggerFailed.AsObject;
   static toObject(includeInstance: boolean, msg: NotificationEventDeploymentTriggerFailed): NotificationEventDeploymentTriggerFailed.AsObject;
@@ -258,6 +305,7 @@ export namespace NotificationEventDeploymentTriggerFailed {
     commitMessage: string,
     reason: string,
     mentionedAccountsList: Array<string>,
+    mentionedGroupsList: Array<string>,
   }
 }
 
