@@ -35,7 +35,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/ops/orphancommandcleaner"
 	"github.com/pipe-cd/pipecd/pkg/app/ops/pipedstatsbuilder"
 	"github.com/pipe-cd/pipecd/pkg/app/ops/planpreviewoutputcleaner"
-	"github.com/pipe-cd/pipecd/pkg/app/ops/platformprovidermigration"
 	"github.com/pipe-cd/pipecd/pkg/app/ops/staledpipedstatcleaner"
 	"github.com/pipe-cd/pipecd/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipecd/pkg/cli"
@@ -147,15 +146,6 @@ func (s *ops) run(ctx context.Context, input cli.Input) error {
 			input.Logger.Error("failed to close datastore client", zap.Error(err))
 		}
 	}()
-
-	// Start running CloudProvider to PlatformProvider migration task.
-	// TODO: Remove this task after a few releases.
-	{
-		runner := platformprovidermigration.NewRunner(ds, input.Logger)
-		group.Go(func() error {
-			return runner.Migrate(ctx)
-		})
-	}
 
 	statCache := rediscache.NewHashCache(rd, defaultPipedStatHashKey)
 	// Start running staled piped stat cleaner.
