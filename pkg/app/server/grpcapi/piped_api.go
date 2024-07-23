@@ -642,6 +642,14 @@ func (a *PipedAPI) ReportApplicationLiveState(ctx context.Context, req *pipedser
 		return nil, err
 	}
 
+	fmt.Printf("\n[DEBUG@piped_api]-------- \n")
+	if req.Snapshot.Ecs != nil {
+		for i, resource := range req.Snapshot.Ecs.Resources {
+			fmt.Printf("  %d. Resource: %s\n", i+1, resource)
+		}
+	}
+	fmt.Printf("[DEBUG]-------- \n\n")
+
 	if err := a.applicationLiveStateStore.PutStateSnapshot(ctx, req.Snapshot); err != nil {
 		return nil, status.Error(codes.Internal, "failed to report application live state")
 	}

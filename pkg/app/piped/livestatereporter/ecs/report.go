@@ -119,6 +119,12 @@ func (r *reporter) flushSnapshots(ctx context.Context) {
 			Snapshot: snapshot,
 		}
 
+		fmt.Printf("\n[DEBUG]-------- appId:%s\n", app.Id)
+		for i, resource := range state.Resources {
+			fmt.Printf("  %d. Kind: %s\n", i+1, resource.Kind)
+		}
+		fmt.Printf("[DEBUG]-------- \n\n")
+
 		if _, err := r.apiClient.ReportApplicationLiveState(ctx, req); err != nil {
 			r.logger.Error("failed to report application live state",
 				zap.String("application-id", app.Id),

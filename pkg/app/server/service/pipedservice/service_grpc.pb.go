@@ -8,6 +8,8 @@ package pipedservice
 
 import (
 	context "context"
+	"fmt"
+
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -325,6 +327,15 @@ func (c *pipedServiceClient) ReportCommandHandled(ctx context.Context, in *Repor
 
 func (c *pipedServiceClient) ReportApplicationLiveState(ctx context.Context, in *ReportApplicationLiveStateRequest, opts ...grpc.CallOption) (*ReportApplicationLiveStateResponse, error) {
 	out := new(ReportApplicationLiveStateResponse)
+
+	fmt.Printf("\n[DEBUG@service_grpc]-------- \n")
+	if in.Snapshot.Ecs != nil{
+		for i, resource := range in.Snapshot.Ecs.Resources{
+			fmt.Printf("  %d. Resource: %s\n", i+1, resource)
+		}
+	}
+	fmt.Printf("[DEBUG]-------- \n\n")
+
 	err := c.cc.Invoke(ctx, "/grpc.service.pipedservice.PipedService/ReportApplicationLiveState", in, out, opts...)
 	if err != nil {
 		return nil, err
