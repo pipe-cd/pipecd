@@ -32,4 +32,4 @@ area/pipedv1:
 - pkg/plugin/**/*
 
 area/only-pipedv1:
-- all: [pkg/app/pipedv1/**/*, cmd/pipedv1/**/*, pkg/plugin/**/*]
+- all: ['pkg/app/pipedv1/**/*', 'cmd/pipedv1/**/*', 'pkg/plugin/**/*']
