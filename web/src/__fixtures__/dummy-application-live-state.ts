@@ -67,6 +67,7 @@ export const dummyApplicationLiveState: ApplicationLiveState = {
   cloudrun: { resourcesList: [] },
   lambda: {},
   terraform: {},
+  ecs: { resourcesList: [] },
   kubernetes: { resourcesList },
 };
 
