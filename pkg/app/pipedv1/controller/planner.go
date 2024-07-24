@@ -16,8 +16,6 @@ package controller
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"time"
 
 	"go.uber.org/atomic"
@@ -25,10 +23,8 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
-	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
-	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
-	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/platform"
+	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
 )
 
 type planner struct {
@@ -41,7 +37,7 @@ type planner struct {
 
 	// The pluginClient is used to call pluggin that actually
 	// performs planning deployment.
-	pluginClient platform.PlatformPluginClient
+	pluginClient pluginapi.PluginClient
 
 	// The apiClient is used to report the deployment status.
 	apiClient apiClient
@@ -68,7 +64,7 @@ func newPlanner(
 	lastSuccessfulCommitHash string,
 	lastSuccessfulConfigFilename string,
 	workingDir string,
-	pluginClient platform.PlatformPluginClient,
+	pluginClient pluginapi.PluginClient,
 	apiClient apiClient,
 	notifier notifier,
 	pipedConfig []byte,
@@ -151,201 +147,4 @@ func (p *planner) Run(ctx context.Context) error {
 	}()
 
 	return nil
-
-	// in := &platform.BuildPlanRequest{
-	// 	Deployment:                   p.deployment,
-	// 	WorkingDir:                   p.workingDir,
-	// 	LastSuccessfulCommitHash:     p.lastSuccessfulCommitHash,
-	// 	LastSuccessfulConfigFileName: p.lastSuccessfulConfigFilename,
-	// 	PipedConfig:                  p.pipedConfig,
-	// }
-
-	// out, err := p.pluginClient.BuildPlan(ctx, in)
-
-	// // If the deployment was already cancelled, we ignore the plan result.
-	// select {
-	// case cmd := <-p.cancelledCh:
-	// 	if cmd != nil {
-	// 		p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
-	// 		desc := fmt.Sprintf("Deployment was cancelled by %s while planning", cmd.Commander)
-	// 		p.reportDeploymentCancelled(ctx, cmd.Commander, desc)
-	// 		return cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil)
-	// 	}
-	// default:
-	// }
-
-	// if err != nil {
-	// 	p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
-	// 	return p.reportDeploymentFailed(ctx, fmt.Sprintf("Unable to plan the deployment (%v)", err))
-	// }
-
-	// p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_PLANNED
-	// return p.reportDeploymentPlanned(ctx, out.Plan)
-}
-
-// func (p *planner) reportDeploymentPlanned(ctx context.Context, out *platform.DeploymentPlan) error {
-// 	var (
-// 		err   error
-// 		retry = pipedservice.NewRetry(10)
-// 		req   = &pipedservice.ReportDeploymentPlannedRequest{
-// 			DeploymentId:              p.deployment.Id,
-// 			Summary:                   out.Summary,
-// 			StatusReason:              "The deployment has been planned",
-// 			RunningCommitHash:         p.lastSuccessfulCommitHash,
-// 			RunningConfigFilename:     p.lastSuccessfulConfigFilename,
-// 			Versions:                  out.Versions,
-// 			Stages:                    out.Stages,
-// 			DeploymentChainId:         p.deployment.DeploymentChainId,
-// 			DeploymentChainBlockIndex: p.deployment.DeploymentChainBlockIndex,
-// 		}
-// 	)
-
-// 	accounts, err := p.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED)
-// 	if err != nil {
-// 		p.logger.Error("failed to get the list of accounts", zap.Error(err))
-// 	}
-
-// 	defer func() {
-// 		p.notifier.Notify(model.NotificationEvent{
-// 			Type: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
-// 			Metadata: &model.NotificationEventDeploymentPlanned{
-// 				Deployment:        p.deployment,
-// 				Summary:           out.Summary,
-// 				MentionedAccounts: accounts,
-// 			},
-// 		})
-// 	}()
-
-// 	for retry.WaitNext(ctx) {
-// 		if _, err = p.apiClient.ReportDeploymentPlanned(ctx, req); err == nil {
-// 			return nil
-// 		}
-// 		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
-// 	}
-
-// 	if err != nil {
-// 		p.logger.Error("failed to mark deployment to be planned", zap.Error(err))
-// 	}
-// 	return err
-// }
-
-func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) error {
-	var (
-		err error
-		now = p.nowFunc()
-		req = &pipedservice.ReportDeploymentCompletedRequest{
-			DeploymentId:              p.deployment.Id,
-			Status:                    model.DeploymentStatus_DEPLOYMENT_FAILURE,
-			StatusReason:              reason,
-			StageStatuses:             nil,
-			DeploymentChainId:         p.deployment.DeploymentChainId,
-			DeploymentChainBlockIndex: p.deployment.DeploymentChainBlockIndex,
-			CompletedAt:               now.Unix(),
-		}
-		retry = pipedservice.NewRetry(10)
-	)
-
-	users, groups, err := p.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_FAILED)
-	if err != nil {
-		p.logger.Error("failed to get the list of users or groups", zap.Error(err))
-	}
-
-	defer func() {
-		p.notifier.Notify(model.NotificationEvent{
-			Type: model.NotificationEventType_EVENT_DEPLOYMENT_FAILED,
-			Metadata: &model.NotificationEventDeploymentFailed{
-				Deployment:        p.deployment,
-				Reason:            reason,
-				MentionedAccounts: users,
-				MentionedGroups:   groups,
-			},
-		})
-	}()
-
-	for retry.WaitNext(ctx) {
-		if _, err = p.apiClient.ReportDeploymentCompleted(ctx, req); err == nil {
-			return nil
-		}
-		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
-	}
-
-	if err != nil {
-		p.logger.Error("failed to mark deployment to be failed", zap.Error(err))
-	}
-	return err
-}
-
-func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reason string) error {
-	var (
-		err error
-		now = p.nowFunc()
-		req = &pipedservice.ReportDeploymentCompletedRequest{
-			DeploymentId:              p.deployment.Id,
-			Status:                    model.DeploymentStatus_DEPLOYMENT_CANCELLED,
-			StatusReason:              reason,
-			StageStatuses:             nil,
-			DeploymentChainId:         p.deployment.DeploymentChainId,
-			DeploymentChainBlockIndex: p.deployment.DeploymentChainBlockIndex,
-			CompletedAt:               now.Unix(),
-		}
-		retry = pipedservice.NewRetry(10)
-	)
-
-	users, groups, err := p.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
-	if err != nil {
-		p.logger.Error("failed to get the list of users or groups", zap.Error(err))
-	}
-
-	defer func() {
-		p.notifier.Notify(model.NotificationEvent{
-			Type: model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED,
-			Metadata: &model.NotificationEventDeploymentCancelled{
-				Deployment:        p.deployment,
-				Commander:         commander,
-				MentionedAccounts: users,
-				MentionedGroups:   groups,
-			},
-		})
-	}()
-
-	for retry.WaitNext(ctx) {
-		if _, err = p.apiClient.ReportDeploymentCompleted(ctx, req); err == nil {
-			return nil
-		}
-		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
-	}
-
-	if err != nil {
-		p.logger.Error("failed to mark deployment to be cancelled", zap.Error(err))
-	}
-	return err
-}
-
-func (p *planner) getMentionedUsers(event model.NotificationEventType) ([]string, error) {
-	n, ok := p.metadataStore.Shared().Get(model.MetadataKeyDeploymentNotification)
-	if !ok {
-		return []string{}, nil
-	}
-
-	var notification config.DeploymentNotification
-	if err := json.Unmarshal([]byte(n), &notification); err != nil {
-		return nil, fmt.Errorf("could not extract mentions config: %w", err)
-	}
-
-	return notification.FindSlackUsers(event), nil
-}
-
-// getApplicationNotificationMentions returns the list of users groups who should be mentioned in the notification.
-func (p *planner) getApplicationNotificationMentions(event model.NotificationEventType) ([]string, []string, error) {
-	n, ok := p.metadataStore.Shared().Get(model.MetadataKeyDeploymentNotification)
-	if !ok {
-		return []string{}, []string{}, nil
-	}
-
-	var notification config.DeploymentNotification
-	if err := json.Unmarshal([]byte(n), &notification); err != nil {
-		return nil, nil, fmt.Errorf("could not extract mentions config: %w", err)
-	}
-
-	return notification.FindSlackUsers(event), notification.FindSlackGroups(event), nil
 }

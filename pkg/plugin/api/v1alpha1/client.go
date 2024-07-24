@@ -17,38 +17,36 @@
 // The planner bases on the changes from git commits
 // then builds the deployment manifests to know the behavior of the deployment.
 // From that behavior the planner can decides which pipeline should be applied.
-package platform
+package pluginapi
 
 import (
 	"context"
 
 	"google.golang.org/grpc"
 
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcclient"
 )
 
-type PlatformPluginClient interface {
-	PlannerServiceClient
-	ExecutorServiceClient
+type PluginClient interface {
+	deployment.DeploymentServiceClient
 	Close() error
 }
 
 type client struct {
-	PlannerServiceClient
-	ExecutorServiceClient
+	deployment.DeploymentServiceClient
 	conn *grpc.ClientConn
 }
 
-func NewClient(ctx context.Context, address string, opts ...rpcclient.DialOption) (PlatformPluginClient, error) {
+func NewClient(ctx context.Context, address string, opts ...rpcclient.DialOption) (PluginClient, error) {
 	conn, err := rpcclient.DialContext(ctx, address, opts...)
 	if err != nil {
 		return nil, err
 	}
 
 	return &client{
-		PlannerServiceClient:  NewPlannerServiceClient(conn),
-		ExecutorServiceClient: NewExecutorServiceClient(conn),
-		conn:                  conn,
+		DeploymentServiceClient: deployment.NewDeploymentServiceClient(conn),
+		conn:                    conn,
 	}, nil
 }
 
