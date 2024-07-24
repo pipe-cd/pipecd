@@ -329,7 +329,7 @@ func makeSyncState(r *provider.DiffResult, commit string) model.ApplicationSyncS
 		}
 	}
 
-	if onlyDesiredCountChanged(r) {
+	if ignoreDesiredCountDiff(r) {
 		return model.ApplicationSyncState{
 			Status:      model.ApplicationSyncStatus_SYNCED,
 			ShortReason: "Ignore diff of `desiredCount`.",
@@ -363,6 +363,9 @@ func makeSyncState(r *provider.DiffResult, commit string) model.ApplicationSyncS
 	}
 }
 
-func onlyDesiredCountChanged(r *provider.DiffResult) bool {
-	return r.Diff.NumNodes() == 1 && r.Old.ServiceDefinition.DesiredCount != r.New.ServiceDefinition.DesiredCount
+// ignoreDesiredCountDiff returns true if the diff contains only autoscaled desiredCount.
+func ignoreDesiredCountDiff(r *provider.DiffResult) bool {
+	return r.Diff.NumNodes() == 1 &&
+		r.New.ServiceDefinition.DesiredCount == 0 && // When desiredCount is 0 or not defined in the head manifest, which means autoscaling may be enabled.
+		r.Old.ServiceDefinition.DesiredCount != r.New.ServiceDefinition.DesiredCount
 }
