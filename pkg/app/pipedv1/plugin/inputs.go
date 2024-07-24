@@ -19,10 +19,10 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/git"
-	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/platform"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 )
 
-func GetPlanSourceCloner(input *platform.PlanPluginInput) (deploysource.SourceCloner, error) {
+func GetPlanSourceCloner(input *deployment.PlanPluginInput) (deploysource.SourceCloner, error) {
 	gitPath, err := exec.LookPath("git")
 	if err != nil {
 		return nil, err
