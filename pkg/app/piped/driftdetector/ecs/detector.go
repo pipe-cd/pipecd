@@ -193,20 +193,20 @@ func (d *detector) listGroupedApplication() map[string][]*model.Application {
 }
 
 func (d *detector) checkApplication(ctx context.Context, app *model.Application, repo git.Repo, headCommit git.Commit) error {
-	headManifests, appSpec, err := d.loadConfigs(app, repo, headCommit)
+	headManifests, err := d.loadConfigs(app, repo, headCommit)
 	if err != nil {
 		return err
 	}
 	d.logger.Info(fmt.Sprintf("application %s has ecs manifests at commit %s", app.Id, headCommit.Hash))
 
-	liveManifest, ok := d.stateGetter.GetECSManifests(app.Id)
+	liveManifests, ok := d.stateGetter.GetECSManifests(app.Id)
 	if !ok {
 		return fmt.Errorf("failed to get live ecs manifests")
 	}
 	d.logger.Info(fmt.Sprintf("application %s has live ecs manifests", app.Id))
 
 	result, err := provider.Diff(
-		liveManifest,
+		liveManifests,
 		headManifests,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),
@@ -216,13 +216,12 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		return err
 	}
 
-	// FIXME: Add IgnoreDesiredCount to ecsspec.
-	state := makeSyncState(result, headCommit.Hash, appSpec.Input.IgnoreDesiredCount)
+	state := makeSyncState(result, headCommit.Hash)
 
 	return d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
 }
 
-func (d *detector) loadConfigs(app *model.Application, repo git.Repo, headCommit git.Commit) (provider.ECSManifests, *config.ECSApplicationSpec, error) {
+func (d *detector) loadConfigs(app *model.Application, repo git.Repo, headCommit git.Commit) (provider.ECSManifests, error) {
 	var (
 		manifestCache = provider.ECSManifestsCache{
 			AppID:  app.Id,
@@ -235,18 +234,17 @@ func (d *detector) loadConfigs(app *model.Application, repo git.Repo, headCommit
 
 	manifest, ok := manifestCache.Get(headCommit.Hash)
 	if ok {
-		return manifest, nil, nil
+		return manifest, nil
 	}
 	// When the manifests were not in the cache we have to load them.
 	cfg, err := d.loadApplicationConfiguration(repoDir, app)
 	if err != nil {
-		return provider.ECSManifests{}, nil, fmt.Errorf("failed to load application configuration: %w", err)
+		return provider.ECSManifests{}, fmt.Errorf("failed to load application configuration: %w", err)
 	}
 
-	appSpec := cfg.ECSApplicationSpec
 	gds, ok := cfg.GetGenericApplication()
 	if !ok {
-		return provider.ECSManifests{}, appSpec, fmt.Errorf("unsupported application kind %s", cfg.Kind)
+		return provider.ECSManifests{}, fmt.Errorf("unsupported application kind %s", cfg.Kind)
 	}
 
 	var (
@@ -259,13 +257,13 @@ func (d *detector) loadConfigs(app *model.Application, repo git.Repo, headCommit
 	if attachmentUsed || encryptionUsed {
 		dir, err := os.MkdirTemp("", "detector-git-processing")
 		if err != nil {
-			return provider.ECSManifests{}, appSpec, fmt.Errorf("failed to prepare a temporary directory for git repository (%w)", err)
+			return provider.ECSManifests{}, fmt.Errorf("failed to prepare a temporary directory for git repository (%w)", err)
 		}
 		defer os.RemoveAll(dir)
 
 		repo, err = repo.Copy(filepath.Join(dir, "repo"))
 		if err != nil {
-			return provider.ECSManifests{}, appSpec, fmt.Errorf("failed to copy the cloned git repository (%w)", err)
+			return provider.ECSManifests{}, fmt.Errorf("failed to copy the cloned git repository (%w)", err)
 		}
 		repoDir := repo.GetPath()
 		appDir = filepath.Join(repoDir, app.GitPath.Path)
@@ -283,7 +281,7 @@ func (d *detector) loadConfigs(app *model.Application, repo git.Repo, headCommit
 	if len(templProcessors) > 0 {
 		sp := sourceprocesser.NewSourceProcessor(appDir, templProcessors...)
 		if err := sp.Process(); err != nil {
-			return provider.ECSManifests{}, appSpec, fmt.Errorf("failed to process source files: %w", err)
+			return provider.ECSManifests{}, fmt.Errorf("failed to process source files: %w", err)
 		}
 	}
 
@@ -295,11 +293,11 @@ func (d *detector) loadConfigs(app *model.Application, repo git.Repo, headCommit
 	}
 	serviceDef, err := provider.LoadServiceDefinition(appDir, serviceDefFile)
 	if err != nil {
-		return provider.ECSManifests{}, appSpec, fmt.Errorf("failed to load new service definition: %w", err)
+		return provider.ECSManifests{}, fmt.Errorf("failed to load new service definition: %w", err)
 	}
 	taskDef, err := provider.LoadTaskDefinition(appDir, taskDefFile)
 	if err != nil {
-		return provider.ECSManifests{}, appSpec, fmt.Errorf("failed to load new task definition: %w", err)
+		return provider.ECSManifests{}, fmt.Errorf("failed to load new task definition: %w", err)
 	}
 
 	manifests := provider.ECSManifests{
@@ -308,7 +306,7 @@ func (d *detector) loadConfigs(app *model.Application, repo git.Repo, headCommit
 	}
 	manifestCache.Put(headCommit.Hash, manifests)
 
-	return manifest, appSpec, nil
+	return manifest, nil
 }
 
 func (d *detector) loadApplicationConfiguration(repoPath string, app *model.Application) (*config.Config, error) {
@@ -323,7 +321,7 @@ func (d *detector) loadApplicationConfiguration(repoPath string, app *model.Appl
 	return cfg, nil
 }
 
-func makeSyncState(r *provider.DiffResult, commit string, ignoreDesiredCount bool) model.ApplicationSyncState {
+func makeSyncState(r *provider.DiffResult, commit string) model.ApplicationSyncState {
 	if r.NoChange() {
 		return model.ApplicationSyncState{
 			Status:    model.ApplicationSyncStatus_SYNCED,
@@ -331,11 +329,11 @@ func makeSyncState(r *provider.DiffResult, commit string, ignoreDesiredCount boo
 		}
 	}
 
-	if ignoreDesiredCount && onlyDesiredCountChanged(r) {
+	if onlyDesiredCountChanged(r) {
 		return model.ApplicationSyncState{
 			Status:      model.ApplicationSyncStatus_SYNCED,
-			ShortReason: "Ignore diff of desiredCount.",
-			Reason:      "You ignore desiredCount by config and only the desiredCount of the service is changed.",
+			ShortReason: "Ignore diff of `desiredCount`.",
+			Reason:      "`desiredCount` is 0 or not defined in your config (which means ignoring updating desiredCount) and only `desiredCount` is changed.",
 			Timestamp:   time.Now().Unix(),
 		}
 	}
