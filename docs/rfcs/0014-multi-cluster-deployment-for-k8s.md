@@ -178,6 +178,14 @@ Show livestate of all platform providers deployed by app.
 
 Performs Drift Detection based on the livestate of all platform providers deployed by the app.
 
+### [option] Improve kubeconfig setup on piped
+
+Currently, we need to prepare the kubeconfig file manually.
+But it would be nice to prepare it automatically.
+
+It might realize it by using cloud vender feature, for example using Workload Identity on GKE, or IRSA on EKS.
+It means piped get kubeconfig when it starts by using them.
+
 # Alternatives
 
 ## Idea: Execute Stages in parallel within a pipeline
