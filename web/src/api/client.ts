@@ -7,7 +7,7 @@ export const apiClient = new WebServiceClient(apiEndpoint, null, {
 });
 
 interface ApiCallback<Res> {
-  (err: grpcWeb.Error, response: { toObject: () => Res }): void;
+  (err: grpcWeb.RpcError, response: { toObject: () => Res }): void;
 }
 
 export async function apiRequest<Req, Res>(
