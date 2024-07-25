@@ -68,7 +68,7 @@
     "@reduxjs/toolkit": "^1.9.7",
     "@types/dagre": "^0.7.52",
     "@types/yup": "^0.29.14",
-    "clsx": "^1.1.1",
+    "clsx": "^1.2.1",
     "dagre": "^0.8.5",
     "dayjs": "^1.8.28",
     "dotenv": "^8.6.0",
