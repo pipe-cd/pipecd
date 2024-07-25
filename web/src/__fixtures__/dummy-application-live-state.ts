@@ -1,9 +1,9 @@
-import { ApplicationKind } from "pipecd/web/model/common_pb";
 import {
   ApplicationLiveStateVersion,
   KubernetesApplicationLiveState,
   KubernetesResourceState,
 } from "pipecd/web/model/application_live_state_pb";
+import { ApplicationKind } from "pipecd/web/model/common_pb";
 import {
   ApplicationLiveState,
   ApplicationLiveStateSnapshot,
@@ -65,6 +65,7 @@ export const dummyApplicationLiveState: ApplicationLiveState = {
   version: { index: 1, timestamp: 0 },
   projectId: "project-1",
   cloudrun: { resourcesList: [] },
+  ecs: { resourcesList: [] },
   lambda: {},
   terraform: {},
   kubernetes: { resourcesList },
