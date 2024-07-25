@@ -1749,7 +1749,7 @@ func (m *ECSResourceState) validate(all bool) error {
 	if utf8.RuneCountInString(m.GetKind()) < 1 {
 		err := ECSResourceStateValidationError{
 			field:  "Kind",
-			reason: fmt.Sprintf("value length must be at least 1 runes __debug__kind:%s", m.GetKind()),
+			reason: "value length must be at least 1 runes",
 		}
 		if !all {
 			return err
