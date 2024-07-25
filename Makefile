@@ -170,8 +170,10 @@ lint/web: FIX ?= false
 lint/web:
 ifeq ($(FIX),true)
 	yarn --cwd web lint:fix
+	yarn --cwd web typecheck
 else
 	yarn --cwd web lint
+	yarn --cwd web typecheck
 endif
 
 # Update commands
