@@ -20,6 +20,6 @@ jobs:
         run: |
           git config user.name "pipecd-bot"
           git config user.email "pipecd.dev@gmail.com"
-          make release/pick branch=${{ inputs.releaseBranch }} pull_numbers="$(gh pr list --label cherry-pick --label ${{ inputs.version }} --state merged | awk '{print $1}' | sort | paste -sd ' ' -)"
+          ./hack/cherry-pick.sh -q ${{ inputs.releaseBranch }} $(gh pr list --label cherry-pick --label ${{ inputs.version }} --state merged | awk '{print $1}' | sort | paste -sd ' ' -)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
