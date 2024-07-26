@@ -1,0 +1,22 @@
+name: cherry_pick
+
+on:
+  workflow_dispatch:
+    inputs:
+      releaseBranch:
+        description: 'release branch (e.g. release-v0.48.x)'
+        required: true
+        type: string
+      version:
+        description: 'release version (e.g. v0.48.1)'
+        required: true
+        type: string
+jobs:
+  tool:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: make a cherry-pick PR
+        run: make release/pick branch=${{ inputs.releaseBranch }} pull_numbers="$(gh pr list --label cherry-pick --label ${{ inputs.version }} --state merged | awk '{print $1}' | sort | paste -sd ' ' -)"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
