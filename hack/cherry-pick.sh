@@ -76,7 +76,7 @@ echo
 # Cherry-pick pull requests
 COMMITS=$(join " " "${COMMIT_HASHS[@]}")
 echo "+++ Cherry-picking pull requests"
-git cherry-pick ${COMMITS}
+git cherry-pick -s ${COMMITS}
 echo
 
 # Check whether to push commits and create a pull request or not
