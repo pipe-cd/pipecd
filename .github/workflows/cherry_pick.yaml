@@ -17,6 +17,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: make a cherry-pick PR
-        run: make release/pick branch=${{ inputs.releaseBranch }} pull_numbers="$(gh pr list --label cherry-pick --label ${{ inputs.version }} --state merged | awk '{print $1}' | sort | paste -sd ' ' -)"
+        run: |
+          git config user.name "pipecd-bot"
+          git config user.email "pipecd.dev@gmail.com"
+          make release/pick branch=${{ inputs.releaseBranch }} pull_numbers="$(gh pr list --label cherry-pick --label ${{ inputs.version }} --state merged | awk '{print $1}' | sort | paste -sd ' ' -)"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
