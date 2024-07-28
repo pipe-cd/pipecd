@@ -448,21 +448,27 @@ One of `yamlField` or `regex` is required.
 
 ### Specific function.yaml
 
+One of `image`, `s3Bucket`, or `sourceCode` is required.
+
+- If you use `s3Bucket`, `s3Key` and `s3ObjectVersion` are required.
+
+- If you use `s3Bucket` or `sourceCode`, `handler` and `runtime` are required.
+
 See [Configuring Lambda application](../managing-application/defining-app-configuration/lambda) for more details.
 
 | Field            | Type             | Description                        | Required |
 |------------------|------------------|------------------------------------|----------|
 | name             | string           | Name of the Lambda function        | Yes      |
 | role             | string           | IAM role ARN                       | Yes      |
-| image            | string           | URI of the container image         | Yes      |
-| s3Bucket         | string           | S3 bucket name for code package   | Yes      |
-| s3Key            | string           | S3 key for code package            | Yes      |
-| s3ObjectVersion  | string           | S3 object version for code package | Yes      |
-| sourceCode       | [SourceCode](#sourcecode)       | Git settings                | Yes      |
-| handler          | string           | Lambda function handler            | Yes      |
+| image            | string           | URI of the container image         | No      |
+| s3Bucket         | string           | S3 bucket name for code package   | No      |
+| s3Key            | string           | S3 key for code package            | No      |
+| s3ObjectVersion  | string           | S3 object version for code package | No      |
+| sourceCode       | [SourceCode](#sourcecode)       | Git settings                | No      |
+| handler          | string           | Lambda function handler            | No      |
+| runtime          | string           | Runtime environment                | No      |
 | architectures    | [[]Architecture](#architecture)   | Supported architectures            | No       |
 | ephemeralStorage | [EphemeralStorage](#ephemeralstorage)| Ephemeral storage configuration    | No       |
-| runtime          | string           | Runtime environment                | Yes      |
 | memory           | int32            | Memory allocation (in MB)          | Yes      |
 | timeout          | int32            | Function timeout (in seconds)      | Yes      |
 | tags             | map[string]string| Key-value pairs for tags           | No       |
@@ -488,7 +494,7 @@ See [Configuring Lambda application](../managing-application/defining-app-config
 
 | Field | Type  | Description                  | Required |
 |-------|-------|------------------------------|----------|
-| size  | int32 | Size of the ephemeral storage| No       |
+| size  | int32 | Size of the ephemeral storage| Yes       |
 
 ### VPCConfig
 
