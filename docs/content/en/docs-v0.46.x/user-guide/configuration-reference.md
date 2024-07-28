@@ -464,7 +464,7 @@ See [Configuring Lambda application](../managing-application/defining-app-config
 | sourceCode       | [SourceCode](#sourcecode)       | Git settings                | No      |
 | handler          | string           | Lambda function handler            | No      |
 | runtime          | string           | Runtime environment                | No      |
-| architectures    | [[]Architecture](#architecture)   | Supported architectures            | No       |
+| architectures    | [][Architecture](#architecture)   | Supported architectures            | No       |
 | ephemeralStorage | [EphemeralStorage](#ephemeralstorage)| Ephemeral storage configuration    | No       |
 | memory           | int32            | Memory allocation (in MB)          | Yes      |
 | timeout          | int32            | Function timeout (in seconds)      | Yes      |
