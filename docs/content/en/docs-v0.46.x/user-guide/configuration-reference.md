@@ -473,7 +473,7 @@ See [Configuring Lambda application](../managing-application/defining-app-config
 | vpcConfig        | [VPCConfig](#vpcconfig)       | VPC configuration                  | No       |
 | layers        | []string       | ARNs of [layers](https://docs.aws.amazon.com/lambda/latest/dg/chapter-layers.html) to depend on                | No       |
 
-### SourceCode
+#### SourceCode
 
 | Field | Type   | Description              | Required |
 |-------|--------|--------------------------|----------|
@@ -481,19 +481,19 @@ See [Configuring Lambda application](../managing-application/defining-app-config
 | ref   | string | Git branch/tag/reference| Yes      |
 | path  | string | Path within the repository | Yes    |
 
-### Architecture
+#### Architecture
 
 | Field | Type   | Description            | Required |
 |-------|--------|------------------------|----------|
 | name  | string | Name of the architecture | Yes     |
 
-### EphemeralStorage
+#### EphemeralStorage
 
 | Field | Type  | Description                  | Required |
 |-------|-------|------------------------------|----------|
 | size  | int32 | Size of the ephemeral storage| Yes       |
 
-### VPCConfig
+#### VPCConfig
 
 | Field           | Type     | Description                 | Required |
 |-----------------|----------|-----------------------------|----------|
