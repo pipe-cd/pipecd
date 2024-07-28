@@ -494,7 +494,7 @@ One of `yamlField` or `regex` is required.
 
 - Note
     - See more Details
-        - [Configuration Lambda application](../managing-application/defining-app-configuration/lambda)
+        - [Configuring Lambda application](../managing-application/defining-app-configuration/lambda)
 
 ## LambdaQuickSync
 
