@@ -491,8 +491,8 @@ See [Configuring Lambda application](../managing-application/defining-app-config
 
 | Field           | Type     | Description                 | Required |
 |-----------------|----------|-----------------------------|----------|
-| securityGroupIDs| []string | List of security group IDs  | No       |
-| subnetIDs       | []string | List of subnet IDs          | No       |
+| securityGroupIds| []string | List of security group IDs  | No       |
+| subnetIds       | []string | List of subnet IDs          | No       |
 
 
 ## LambdaQuickSync
