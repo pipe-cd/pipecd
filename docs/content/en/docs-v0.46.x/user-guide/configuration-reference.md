@@ -449,7 +449,7 @@ One of `yamlField` or `regex` is required.
 |------------------|------------------|------------------------------------|----------|
 | Name             | string           | Name of the Lambda function        | Yes      |
 | Role             | string           | IAM role ARN                       | Yes      |
-| ImageURI         | string           | URI of the container image         | Yes      |
+| Image            | string           | URI of the container image         | Yes      |
 | S3Bucket         | string           | S3 bucket name for code package   | Yes      |
 | S3Key            | string           | S3 key for code package            | Yes      |
 | S3ObjectVersion  | string           | S3 object version for code package | Yes      |
