@@ -445,11 +445,11 @@ One of `yamlField` or `regex` is required.
 
 ### Specific function.yaml
 
-One of `image`, `s3Bucket`, or `sourceCode` is required.
+One of `image`, `s3Bucket`, or `source` is required.
 
 - If you use `s3Bucket`, `s3Key` and `s3ObjectVersion` are required.
 
-- If you use `s3Bucket` or `sourceCode`, `handler` and `runtime` are required.
+- If you use `s3Bucket` or `source`, `handler` and `runtime` are required.
 
 See [Configuring Lambda application](../managing-application/defining-app-configuration/lambda) for more details.
 
@@ -461,7 +461,7 @@ See [Configuring Lambda application](../managing-application/defining-app-config
 | s3Bucket         | string           | S3 bucket name for code package   | No      |
 | s3Key            | string           | S3 key for code package            | No      |
 | s3ObjectVersion  | string           | S3 object version for code package | No      |
-| sourceCode       | [SourceCode](#sourcecode)       | Git settings                | No      |
+| source       | [Source](#sourcecode)       | Git settings                | No      |
 | handler          | string           | Lambda function handler            | No      |
 | runtime          | string           | Runtime environment                | No      |
 | architectures    | [][Architecture](#architecture)   | Supported architectures            | No       |
@@ -473,7 +473,7 @@ See [Configuring Lambda application](../managing-application/defining-app-config
 | vpcConfig        | [VPCConfig](#vpcconfig)       | VPC configuration                  | No       |
 | layers        | []string       | ARNs of [layers](https://docs.aws.amazon.com/lambda/latest/dg/chapter-layers.html) to depend on                | No       |
 
-#### SourceCode
+#### Source
 
 | Field | Type   | Description              | Required |
 |-------|--------|--------------------------|----------|
