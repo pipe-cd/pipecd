@@ -462,7 +462,7 @@ See [Configuring Lambda application](../managing-application/defining-app-config
 | s3Bucket         | string           | S3 bucket name for code package   | No      |
 | s3Key            | string           | S3 key for code package            | No      |
 | s3ObjectVersion  | string           | S3 object version for code package | No      |
-| source       | [Source](#sourcecode)       | Git settings                | No      |
+| source       | [Source](#source)       | Git settings                | No      |
 | handler          | string           | Lambda function handler            | No      |
 | runtime          | string           | Runtime environment                | No      |
 | architectures    | [][Architecture](#architecture)   | Supported architectures            | No       |
