@@ -445,6 +445,8 @@ One of `yamlField` or `regex` is required.
 
 ### Specific function.yaml
 
+See [Configuring Lambda application](../managing-application/defining-app-configuration/lambda) for more details.
+
 | Field            | Type             | Description                        | Required |
 |------------------|------------------|------------------------------------|----------|
 | Name             | string           | Name of the Lambda function        | Yes      |
@@ -492,9 +494,6 @@ One of `yamlField` or `regex` is required.
 | SecurityGroupIDs| []string | List of security group IDs  | No       |
 | SubnetIDs       | []string | List of subnet IDs          | No       |
 
-- Note
-    - See more Details
-        - [Configuring Lambda application](../managing-application/defining-app-configuration/lambda)
 
 ## LambdaQuickSync
 
