@@ -34,7 +34,6 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/logpersister"
-	provider "github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -78,10 +77,6 @@ type applicationLister interface {
 	Get(id string) (*model.Application, bool)
 }
 
-type liveResourceLister interface {
-	ListKubernetesAppLiveResources(platformProvider, appID string) ([]provider.Manifest, bool)
-}
-
 type analysisResultStore interface {
 	GetLatestAnalysisResult(ctx context.Context, applicationID string) (*model.AnalysisResult, error)
 	PutLatestAnalysisResult(ctx context.Context, applicationID string, analysisResult *model.AnalysisResult) error
@@ -111,7 +106,6 @@ type controller struct {
 	deploymentLister    deploymentLister
 	commandLister       commandLister
 	applicationLister   applicationLister
-	liveResourceLister  liveResourceLister
 	analysisResultStore analysisResultStore
 	notifier            notifier
 	pipedConfig         []byte
@@ -153,7 +147,6 @@ func NewController(
 	deploymentLister deploymentLister,
 	commandLister commandLister,
 	applicationLister applicationLister,
-	liveResourceLister liveResourceLister,
 	analysisResultStore analysisResultStore,
 	notifier notifier,
 	sd secretDecrypter,
@@ -175,7 +168,6 @@ func NewController(
 		deploymentLister:    deploymentLister,
 		commandLister:       commandLister,
 		applicationLister:   applicationLister,
-		liveResourceLister:  liveResourceLister,
 		analysisResultStore: analysisResultStore,
 		notifier:            notifier,
 		secretDecrypter:     sd,
@@ -625,7 +617,6 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		c.gitClient,
 		c.commandLister,
 		c.applicationLister,
-		c.liveResourceLister,
 		c.analysisResultStore,
 		c.logPersister,
 		c.notifier,
@@ -726,13 +717,8 @@ func (c *controller) cancelDeployment(ctx context.Context, d *model.Deployment, 
 }
 
 type appLiveResourceLister struct {
-	lister           liveResourceLister
 	platformProvider string
 	appID            string
-}
-
-func (l appLiveResourceLister) ListKubernetesResources() ([]provider.Manifest, bool) {
-	return l.lister.ListKubernetesAppLiveResources(l.platformProvider, l.appID)
 }
 
 func reportApplicationDeployingStatus(ctx context.Context, c apiClient, appID string, deploying bool) error {

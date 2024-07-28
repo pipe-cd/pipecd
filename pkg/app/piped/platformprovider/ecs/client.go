@@ -120,16 +120,36 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 	return output.Service, nil
 }
 
+func (c *client) PruneServiceTasks(ctx context.Context, service types.Service) error {
+	input := &ecs.UpdateServiceInput{
+		Cluster:      service.ClusterArn,
+		Service:      service.ServiceName,
+		DesiredCount: aws.Int32(0),
+	}
+
+	_, err := c.ecsClient.UpdateService(ctx, input)
+	if err != nil {
+		return fmt.Errorf("failed to update ECS service %s: %w", *service.ServiceName, err)
+	}
+
+	return nil
+}
+
 func (c *client) UpdateService(ctx context.Context, service types.Service) (*types.Service, error) {
 	input := &ecs.UpdateServiceInput{
 		Cluster:              service.ClusterArn,
 		Service:              service.ServiceName,
-		DesiredCount:         aws.Int32(service.DesiredCount),
 		EnableExecuteCommand: aws.Bool(service.EnableExecuteCommand),
 		PlacementStrategy:    service.PlacementStrategy,
 		// TODO: Support update other properties of service.
 		// PlacementConstraints:    service.PlacementConstraints,
 	}
+
+	// If desiredCount is 0 or not set, keep current desiredCount because a user might use AutoScaling.
+	if service.DesiredCount != 0 {
+		input.DesiredCount = aws.Int32(service.DesiredCount)
+	}
+
 	output, err := c.ecsClient.UpdateService(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update ECS service %s: %w", *service.ServiceName, err)
@@ -146,6 +166,17 @@ func (c *client) UpdateService(ctx context.Context, service types.Service) (*typ
 	return output.Service, nil
 }
 
+func (c *client) GetTaskDefinition(ctx context.Context, taskDefinitionArn string) (*types.TaskDefinition, error) {
+	input := &ecs.DescribeTaskDefinitionInput{
+		TaskDefinition: aws.String(taskDefinitionArn),
+	}
+	output, err := c.ecsClient.DescribeTaskDefinition(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get ECS task definition %s: %w", taskDefinitionArn, err)
+	}
+	return output.TaskDefinition, nil
+}
+
 func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error) {
 	input := &ecs.RegisterTaskDefinitionInput{
 		Family:                  taskDefinition.Family,
@@ -156,6 +187,7 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 		NetworkMode:             taskDefinition.NetworkMode,
 		Volumes:                 taskDefinition.Volumes,
 		RuntimePlatform:         taskDefinition.RuntimePlatform,
+		EphemeralStorage:        taskDefinition.EphemeralStorage,
 		// Requires defined at task level in case Fargate is used.
 		Cpu:    taskDefinition.Cpu,
 		Memory: taskDefinition.Memory,
@@ -505,4 +537,106 @@ func (c *client) TagResource(ctx context.Context, resourceArn string, tags []typ
 		return fmt.Errorf("failed to update tag of resource %s: %w", resourceArn, err)
 	}
 	return nil
+}
+
+func (c *client) ListClusters(ctx context.Context) ([]string, error) {
+	in := &ecs.ListClustersInput{
+		MaxResults: aws.Int32(100),
+	}
+	clusters := []string{}
+	for {
+		out, err := c.ecsClient.ListClusters(ctx, in)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list ECS clusters: %w", err)
+		}
+		clusters = append(clusters, out.ClusterArns...)
+		if out.NextToken == nil {
+			return clusters, nil
+		}
+		in.NextToken = out.NextToken
+	}
+}
+
+func (c *client) GetServices(ctx context.Context, clusterName string) ([]*types.Service, error) {
+	listIn := &ecs.ListServicesInput{
+		Cluster:    aws.String(clusterName),
+		MaxResults: aws.Int32(100),
+	}
+	var serviceArns []string
+	for {
+		listOut, err := c.ecsClient.ListServices(ctx, listIn)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list services of cluster %s: %w", clusterName, err)
+		}
+		serviceArns = append(serviceArns, listOut.ServiceArns...)
+		if listOut.NextToken == nil {
+			break
+		}
+		listIn.NextToken = listOut.NextToken
+	}
+
+	if len(serviceArns) == 0 {
+		return []*types.Service{}, nil
+	}
+
+	services := make([]*types.Service, 0, len(serviceArns))
+	// Split serviceArns into chunks of 10 to avoid the limitation in a single request of DescribeServices.
+	for i := 0; i < len(serviceArns); i += 10 {
+		end := i + 10
+		if end > len(serviceArns) {
+			end = len(serviceArns)
+		}
+		describeIn := &ecs.DescribeServicesInput{
+			Cluster:  aws.String(clusterName),
+			Services: serviceArns[i:end],
+			Include:  []types.ServiceField{types.ServiceFieldTags},
+		}
+		describeOut, err := c.ecsClient.DescribeServices(ctx, describeIn)
+		if err != nil {
+			return nil, fmt.Errorf("failed to describe services: %w", err)
+		}
+
+		for i := range describeOut.Services {
+			services = append(services, &describeOut.Services[i])
+		}
+	}
+
+	return services, nil
+}
+
+func (c *client) GetTaskSetTasks(ctx context.Context, taskSet types.TaskSet) ([]*types.Task, error) {
+	listIn := &ecs.ListTasksInput{
+		Cluster: taskSet.ClusterArn,
+		// Service tasks have the deployment ID, which is the same as taskSet's ID, as `startedBy` field.
+		StartedBy: taskSet.Id,
+	}
+	listOut, err := c.ecsClient.ListTasks(ctx, listIn)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list tasks of task set %s: %w", *taskSet.TaskSetArn, err)
+	}
+
+	taskArns := listOut.TaskArns
+	tasks := make([]*types.Task, 0, len(taskArns))
+	// Split taskArns into chunks of 100 to avoid the limitation in a single request of DescribeTasks.
+	for i := 0; i < len(taskArns); i += 100 {
+		end := i + 100
+		if end > len(taskArns) {
+			end = len(taskArns)
+		}
+
+		describeIn := &ecs.DescribeTasksInput{
+			Cluster: taskSet.ClusterArn,
+			Tasks:   listOut.TaskArns[i:end],
+		}
+		out, err := c.ecsClient.DescribeTasks(ctx, describeIn)
+		if err != nil {
+			return nil, fmt.Errorf("failed to describe tasks: %w", err)
+		}
+
+		for i := range out.Tasks {
+			tasks = append(tasks, &out.Tasks[i])
+		}
+	}
+
+	return tasks, nil
 }

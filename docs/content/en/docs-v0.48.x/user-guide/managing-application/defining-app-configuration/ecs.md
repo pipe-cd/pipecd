@@ -152,6 +152,7 @@ spec:
 ## NOTE
 
 - When you use an ELB for deployments, all listener rules that have the same target groups as configured in app.pipecd.yaml will be controlled.
+  - That means you need to link target groups to your listener rules before deployments.
   - For more information and diagrams, see [Issue#4733 [ECS] Modify ELB listener rules other than defaults without adding config](https://github.com/pipe-cd/pipecd/pull/4733).
 - When you use [Service Connect](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-connect.html), you cannot use Canary or Blue/Green deployment yet because Service Connect does not support the external deployment yet.
 

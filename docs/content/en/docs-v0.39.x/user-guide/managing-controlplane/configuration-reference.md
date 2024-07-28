@@ -125,7 +125,6 @@ Must be one of the following objects:
 | name | string | The unique name of the configuration. | Yes |
 | provider | string | The SSO service provider. Can be one of the following values<br>`GITHUB`, `GOOGLE`... | Yes |
 | github | [SSOConfigGitHub](#ssoconfiggithub) | GitHub sso configuration. | No |
-| google | [SSOConfigGoogle](#ssoconfiggoogle) | Google sso configuration. | No |
 
 ## SSOConfigGitHub
 
@@ -136,10 +135,3 @@ Must be one of the following objects:
 | baseUrl | string | The address of GitHub service. Required if enterprise. | No |
 | uploadUrl | string | The upload url of GitHub service. | No |
 | proxyUrl | string | The address of the proxy used while communicating with the GitHub service. | No |
-
-## SSOConfigGoogle
-
-| Field | Type | Description | Required |
-|-|-|-|-|
-| clientId | string | The client id string of Google oauth app. | Yes |
-| clientSecret | string | The client secret string of Google oauth app. | Yes |

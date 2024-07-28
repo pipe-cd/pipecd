@@ -16,7 +16,12 @@ After logging, the project admin should change the provided username and passwor
 
 ### Single Sign-On (SSO)
 
-Single sign-on (SSO) allows users to log in to PipeCD by relying on a trusted third-party service such as GitHub, GitHub Enterprise, Google Gmail, Bitbucket...
+Single sign-on (SSO) allows users to log in to PipeCD by relying on a trusted third-party service.
+
+**Supported service**
+- GitHub
+
+> Note: In the future, we want to support such as Google Gmail, Bitbucket...
 
 Before configuring the SSO, you need an OAuth application of the using service. For example, GitHub SSO requires creating a GitHub OAuth application as described in this page:
 

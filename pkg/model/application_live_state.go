@@ -67,6 +67,8 @@ func (s *ApplicationLiveStateSnapshot) DetermineAppHealthStatus() {
 		s.determineKubernetesAppHealthStatus()
 	case ApplicationKind_CLOUDRUN:
 		s.determineCloudRunAppHealthStatus()
+	case ApplicationKind_ECS:
+		s.determineECSAppHealthStatus()
 	}
 }
 
@@ -97,6 +99,25 @@ func (s *ApplicationLiveStateSnapshot) determineCloudRunAppHealthStatus() {
 		}
 
 		if r.HealthStatus == CloudRunResourceState_UNKNOWN {
+			s.HealthStatus = ApplicationLiveStateSnapshot_UNKNOWN
+			return
+		}
+	}
+	s.HealthStatus = ApplicationLiveStateSnapshot_HEALTHY
+}
+
+func (s *ApplicationLiveStateSnapshot) determineECSAppHealthStatus() {
+	app := s.Ecs
+	if app == nil {
+		return
+	}
+	for _, r := range app.Resources {
+		if r.HealthStatus == ECSResourceState_OTHER {
+			s.HealthStatus = ApplicationLiveStateSnapshot_OTHER
+			return
+		}
+
+		if r.HealthStatus == ECSResourceState_UNKNOWN {
 			s.HealthStatus = ApplicationLiveStateSnapshot_UNKNOWN
 			return
 		}

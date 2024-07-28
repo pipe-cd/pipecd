@@ -52,6 +52,9 @@ func TestCloudRunApplicationConfig(t *testing.T) {
 							Disabled: newBoolPointer(true),
 						},
 					},
+					Planner: DeploymentPlanner{
+						AutoRollback: newBoolPointer(true),
+					},
 				},
 				Input: CloudRunDeploymentInput{
 					AutoRollback: newBoolPointer(true),

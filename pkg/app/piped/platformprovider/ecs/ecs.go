@@ -42,12 +42,17 @@ type Client interface {
 }
 
 type ECS interface {
+	ListClusters(ctx context.Context) ([]string, error)
 	ServiceExists(ctx context.Context, clusterName string, servicesName string) (bool, error)
 	CreateService(ctx context.Context, service types.Service) (*types.Service, error)
 	UpdateService(ctx context.Context, service types.Service) (*types.Service, error)
+	PruneServiceTasks(ctx context.Context, service types.Service) error
 	WaitServiceStable(ctx context.Context, service types.Service) error
+	GetServices(ctx context.Context, clusterName string) ([]*types.Service, error)
+	GetTaskDefinition(ctx context.Context, taskDefinitionArn string) (*types.TaskDefinition, error)
 	RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error)
 	RunTask(ctx context.Context, taskDefinition types.TaskDefinition, clusterArn string, launchType string, awsVpcConfiguration *config.ECSVpcConfiguration, tags []types.Tag) error
+	GetTaskSetTasks(ctx context.Context, taskSet types.TaskSet) ([]*types.Task, error)
 	GetServiceTaskSets(ctx context.Context, service types.Service) ([]*types.TaskSet, error)
 	CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup *types.LoadBalancer, scale int) (*types.TaskSet, error)
 	DeleteTaskSet(ctx context.Context, taskSet types.TaskSet) error

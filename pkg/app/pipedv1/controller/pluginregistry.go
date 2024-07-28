@@ -24,19 +24,19 @@ import (
 	"sync"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
-	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/platform"
+	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
 )
 
 type PluginRegistry interface {
-	Plugin(k model.ApplicationKind) (platform.PlatformPluginClient, bool)
+	Plugin(k model.ApplicationKind) (pluginapi.PluginClient, bool)
 }
 
 type pluginRegistry struct {
-	plugins map[model.ApplicationKind]platform.PlatformPluginClient
+	plugins map[model.ApplicationKind]pluginapi.PluginClient
 	mu      sync.RWMutex
 }
 
-func (r *pluginRegistry) Plugin(k model.ApplicationKind) (platform.PlatformPluginClient, bool) {
+func (r *pluginRegistry) Plugin(k model.ApplicationKind) (pluginapi.PluginClient, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -49,7 +49,7 @@ func (r *pluginRegistry) Plugin(k model.ApplicationKind) (platform.PlatformPlugi
 }
 
 var defaultPluginRegistry = &pluginRegistry{
-	plugins: make(map[model.ApplicationKind]platform.PlatformPluginClient),
+	plugins: make(map[model.ApplicationKind]pluginapi.PluginClient),
 }
 
 func DefaultPluginRegistry() PluginRegistry {
