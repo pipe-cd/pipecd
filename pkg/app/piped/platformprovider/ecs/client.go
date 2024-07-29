@@ -176,6 +176,7 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 		NetworkMode:             taskDefinition.NetworkMode,
 		Volumes:                 taskDefinition.Volumes,
 		RuntimePlatform:         taskDefinition.RuntimePlatform,
+		EphemeralStorage:        taskDefinition.EphemeralStorage,
 		// Requires defined at task level in case Fargate is used.
 		Cpu:    taskDefinition.Cpu,
 		Memory: taskDefinition.Memory,
