@@ -275,9 +275,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		"Deploy",
 		trace.WithAttributes(
 			attribute.String("application-id", s.deployment.ApplicationId),
-			attribute.String("project-id", s.deployment.ProjectId),
 			attribute.String("kind", s.deployment.Kind.String()),
-			attribute.String("piped-id", s.pipedConfig.PipedID),
 			attribute.String("deployment-id", s.deployment.Id),
 		))
 	defer span.End()
@@ -326,9 +324,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		go func() {
 			_, span := s.tracer.Start(ctx, ps.Name, trace.WithAttributes(
 				attribute.String("application-id", s.deployment.ApplicationId),
-				attribute.String("project-id", s.deployment.ProjectId),
 				attribute.String("kind", s.deployment.Kind.String()),
-				attribute.String("piped-id", s.pipedConfig.PipedID),
 				attribute.String("deployment-id", s.deployment.Id),
 				attribute.String("stage-id", ps.Id),
 			))
@@ -435,9 +431,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 
 					_, span := s.tracer.Start(ctx, rbs.Name, trace.WithAttributes(
 						attribute.String("application-id", s.deployment.ApplicationId),
-						attribute.String("project-id", s.deployment.ProjectId),
 						attribute.String("kind", s.deployment.Kind.String()),
-						attribute.String("piped-id", s.pipedConfig.PipedID),
 						attribute.String("deployment-id", s.deployment.Id),
 						attribute.String("stage-id", rbs.Id),
 					))

@@ -161,9 +161,7 @@ func (p *planner) Run(ctx context.Context) error {
 		"Plan",
 		trace.WithAttributes(
 			attribute.String("application-id", p.deployment.ApplicationId),
-			attribute.String("project-id", p.deployment.ProjectId),
 			attribute.String("kind", p.deployment.Kind.String()),
-			attribute.String("piped-id", p.pipedConfig.PipedID),
 			attribute.String("deployment-id", p.deployment.Id),
 		))
 	defer span.End()
