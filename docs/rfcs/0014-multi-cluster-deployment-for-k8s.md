@@ -22,6 +22,19 @@ We propose the feature to apply the manifests to multiple-clusters in one applic
 
 ## How it works
 
+### Register Application with multiple platform providers
+
+On the application register part, we can choose multiple platform providers.
+At first, user add the first platform provider. 
+If we want to use the feature for deploying multi-cluster, we can set more platform providers. This is optional.
+Only the platform providers specified here can be configured for multi-target.
+
+![image](assets/0014-choose-multiple-providers.png)
+
+Also, we can can the list of platform providers on the piped list page to verify the platform providers.
+
+![image](assets/0014-piped-list.png)
+
 ### QickSync
 
 Piped asynchronously applies the resources to each environment based on the platform provider and resourceDir specified by the user.
