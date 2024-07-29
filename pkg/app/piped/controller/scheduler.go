@@ -334,14 +334,12 @@ func (s *scheduler) Run(ctx context.Context) error {
 				return s.executorRegistry.Executor(model.Stage(ps.Name), in)
 			})
 
-			defer func() {
-				switch result {
-				case model.StageStatus_STAGE_SUCCESS:
-					span.SetStatus(codes.Ok, statusReason)
-				case model.StageStatus_STAGE_FAILURE, model.StageStatus_STAGE_CANCELLED:
-					span.SetStatus(codes.Error, statusReason)
-				}
-			}()
+			switch result {
+			case model.StageStatus_STAGE_SUCCESS:
+				span.SetStatus(codes.Ok, statusReason)
+			case model.StageStatus_STAGE_FAILURE, model.StageStatus_STAGE_CANCELLED:
+				span.SetStatus(codes.Error, statusReason)
+			}
 
 			close(doneCh)
 		}()
@@ -441,14 +439,12 @@ func (s *scheduler) Run(ctx context.Context) error {
 						return s.executorRegistry.RollbackExecutor(s.deployment.Kind, in)
 					})
 
-					defer func() {
-						switch result {
-						case model.StageStatus_STAGE_SUCCESS:
-							span.SetStatus(codes.Ok, statusReason)
-						case model.StageStatus_STAGE_FAILURE, model.StageStatus_STAGE_CANCELLED:
-							span.SetStatus(codes.Error, statusReason)
-						}
-					}()
+					switch result {
+					case model.StageStatus_STAGE_SUCCESS:
+						span.SetStatus(codes.Ok, statusReason)
+					case model.StageStatus_STAGE_FAILURE, model.StageStatus_STAGE_CANCELLED:
+						span.SetStatus(codes.Error, statusReason)
+					}
 
 					close(doneCh)
 				}()
