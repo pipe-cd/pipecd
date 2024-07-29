@@ -23,6 +23,8 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/singleflight"
 
+	"github.com/aws/aws-sdk-go-v2/service/lambda"
+	"github.com/aws/aws-sdk-go-v2/service/lambda/types"
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
@@ -34,6 +36,8 @@ type Client interface {
 	UpdateFunction(ctx context.Context, fm FunctionManifest) error
 	UpdateFunctionFromSource(ctx context.Context, fm FunctionManifest, zip io.Reader) error
 	PublishFunction(ctx context.Context, fm FunctionManifest) (version string, err error)
+	ListFunctions(ctx context.Context) ([]types.FunctionConfiguration, error)
+	GetFunction(ctx context.Context, functionName string) (*lambda.GetFunctionOutput, error)
 	GetTrafficConfig(ctx context.Context, fm FunctionManifest) (routingTrafficCfg RoutingTrafficConfig, err error)
 	CreateTrafficConfig(ctx context.Context, fm FunctionManifest, version string) error
 	UpdateTrafficConfig(ctx context.Context, fm FunctionManifest, routingTraffic RoutingTrafficConfig) error

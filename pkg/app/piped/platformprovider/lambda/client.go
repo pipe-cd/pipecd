@@ -356,6 +356,37 @@ func (c *client) PublishFunction(ctx context.Context, fm FunctionManifest) (stri
 	return aws.ToString(cfg.Version), nil
 }
 
+func (c *client) ListFunctions(ctx context.Context) ([]types.FunctionConfiguration, error) {
+	input := &lambda.ListFunctionsInput{
+		MaxItems: aws.Int32(50),
+	}
+	funcs := []types.FunctionConfiguration{}
+	for {
+		output, err := c.client.ListFunctions(ctx, input)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list functions: %w", err)
+		}
+		funcs = append(funcs, output.Functions...)
+
+		if output.NextMarker == nil {
+			return funcs, nil
+		}
+		input.Marker = output.NextMarker
+	}
+}
+
+func (c *client) GetFunction(ctx context.Context, functionName string) (*lambda.GetFunctionOutput, error) {
+	input := &lambda.GetFunctionInput{
+		FunctionName: aws.String(functionName),
+	}
+	output, err := c.client.GetFunction(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get function %s: %w", functionName, err)
+	}
+
+	return output, nil
+}
+
 // GetTrafficConfig returns lambda provider.ErrNotFound in case remote traffic config is not existed.
 func (c *client) GetTrafficConfig(ctx context.Context, fm FunctionManifest) (routingTrafficCfg RoutingTrafficConfig, err error) {
 	input := &lambda.GetAliasInput{
