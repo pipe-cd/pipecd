@@ -66,6 +66,8 @@ spec:
 **Rollback**
 
 Similarly, when rolling back, multiple environments are rolled back at the same time based on the information specified in `multiTarget`.
+If at least one of the rollback processes succeeds, we consider the rollback successful.
+This ensures that the rollback is executed for other environments even if one of the deployment environments is inaccessible.
 
 ```
 apiVersion: pipecd.dev/v1beta1
@@ -146,6 +148,8 @@ spec:
 **Rollback**
 
 When rolling back, multiple environments are rolled back at the same time based on the information specified in `spec.quickSync.multiTarget`.
+If at least one of the rollback processes succeeds, we consider the rollback successful.
+This ensures that the rollback is executed for other environments even if one of the deployment environments is inaccessible.
 
 
 #### Stages to be supported
