@@ -55,9 +55,12 @@ type planner struct {
 	workingDir                   string
 	pipedConfig                  []byte
 
-	// The pluginClient is used to call pluggin that actually
+	// The plugin clients are used to call plugin that actually
 	// performs planning deployment.
-	pluginClients []pluginapi.PluginClient
+	plugins []pluginapi.PluginClient
+	// The map used to know which plugin is incharged for a given stage
+	// of the current deployment.
+	stageBasedPluginsMap map[string]pluginapi.PluginClient
 
 	// The apiClient is used to report the deployment status.
 	apiClient apiClient
@@ -103,12 +106,22 @@ func newPlanner(
 		zap.String("working-dir", workingDir),
 	)
 
+	// TODO: Fix this. Passed by args
+	tmp := make(map[string]pluginapi.PluginClient)
+	tmp["K8S_SYNC"] = pluginClient
+
+	plugins := make([]pluginapi.PluginClient, 0, len(tmp))
+	for _, v := range tmp {
+		plugins = append(plugins, v)
+	}
+
 	p := &planner{
 		deployment:                   d,
 		lastSuccessfulCommitHash:     lastSuccessfulCommitHash,
 		lastSuccessfulConfigFilename: lastSuccessfulConfigFilename,
 		workingDir:                   workingDir,
-		pluginClients:                []pluginapi.PluginClient{pluginClient}, // TODO: Fix this
+		stageBasedPluginsMap:         tmp,
+		plugins:                      plugins,
 		apiClient:                    apiClient,
 		gitClient:                    gitClient,
 		metadataStore:                metadatastore.NewMetadataStore(apiClient, d),
@@ -227,7 +240,7 @@ func (p *planner) buildPlan(ctx context.Context, targetDS *deploysource.DeploySo
 	}
 
 	// Build deployment target versions.
-	for _, plg := range p.pluginClients {
+	for _, plg := range p.plugins {
 		vRes, err := plg.DetermineVersions(ctx, &deployment.DetermineVersionsRequest{Input: input})
 		if err != nil {
 			p.logger.Warn("unable to determine versions", zap.Error(err))
@@ -245,20 +258,19 @@ func (p *planner) buildPlan(ctx context.Context, targetDS *deploysource.DeploySo
 	}
 
 	cfg := targetDS.GenericApplicationConfig
-	autoRollback := *cfg.Planner.AutoRollback
 
 	// In case the strategy has been decided by trigger.
 	// For example: user triggered the deployment via web console.
 	switch p.deployment.Trigger.SyncStrategy {
 	case model.SyncStrategy_QUICK_SYNC:
-		if stages, err := p.buildQuickSyncStages(ctx, autoRollback); err == nil {
+		if stages, err := p.buildQuickSyncStages(ctx, cfg); err == nil {
 			out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 			out.Summary = p.deployment.Trigger.StrategySummary
 			out.Stages = stages
 			return out, nil
 		}
 	case model.SyncStrategy_PIPELINE:
-		if stages, err := p.buildPipelineSyncStages(ctx, autoRollback); err == nil {
+		if stages, err := p.buildPipelineSyncStages(ctx, cfg); err == nil {
 			out.SyncStrategy = model.SyncStrategy_PIPELINE
 			out.Summary = p.deployment.Trigger.StrategySummary
 			out.Stages = stages
@@ -268,7 +280,7 @@ func (p *planner) buildPlan(ctx context.Context, targetDS *deploysource.DeploySo
 
 	// When no pipeline was configured, do the quick sync.
 	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
-		if stages, err := p.buildQuickSyncStages(ctx, autoRollback); err == nil {
+		if stages, err := p.buildQuickSyncStages(ctx, cfg); err == nil {
 			out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 			out.Summary = "Quick sync due to the pipeline was not configured"
 			out.Stages = stages
@@ -278,7 +290,7 @@ func (p *planner) buildPlan(ctx context.Context, targetDS *deploysource.DeploySo
 
 	// Force to use pipeline when the `spec.planner.alwaysUsePipeline` was configured.
 	if cfg.Planner.AlwaysUsePipeline {
-		if stages, err := p.buildPipelineSyncStages(ctx, autoRollback); err == nil {
+		if stages, err := p.buildPipelineSyncStages(ctx, cfg); err == nil {
 			out.SyncStrategy = model.SyncStrategy_PIPELINE
 			out.Summary = "Sync with the specified pipeline (alwaysUsePipeline was set)"
 			out.Stages = stages
@@ -293,7 +305,7 @@ func (p *planner) buildPlan(ctx context.Context, targetDS *deploysource.DeploySo
 	if pattern := cfg.CommitMatcher.Pipeline; pattern != "" && p.deployment.Trigger.Commander == "" {
 		if pipelineRegex, err := regexPool.Get(pattern); err == nil &&
 			pipelineRegex.MatchString(p.deployment.Trigger.Commit.Message) {
-			if stages, err := p.buildPipelineSyncStages(ctx, autoRollback); err == nil {
+			if stages, err := p.buildPipelineSyncStages(ctx, cfg); err == nil {
 				out.SyncStrategy = model.SyncStrategy_PIPELINE
 				out.Summary = fmt.Sprintf("Sync progressively because the commit message was matching %q", pattern)
 				out.Stages = stages
@@ -307,7 +319,7 @@ func (p *planner) buildPlan(ctx context.Context, targetDS *deploysource.DeploySo
 	if pattern := cfg.CommitMatcher.QuickSync; pattern != "" && p.deployment.Trigger.Commander == "" {
 		if syncRegex, err := regexPool.Get(pattern); err == nil &&
 			syncRegex.MatchString(p.deployment.Trigger.Commit.Message) {
-			if stages, err := p.buildQuickSyncStages(ctx, autoRollback); err == nil {
+			if stages, err := p.buildQuickSyncStages(ctx, cfg); err == nil {
 				out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 				out.Summary = fmt.Sprintf("Quick sync because the commit message was matching %q", pattern)
 				out.Stages = stages
@@ -318,7 +330,7 @@ func (p *planner) buildPlan(ctx context.Context, targetDS *deploysource.DeploySo
 
 	// Quick sync if this is the first time to deploy this application or it was unable to retrieve running commit hash.
 	if p.lastSuccessfulCommitHash == "" {
-		if stages, err := p.buildQuickSyncStages(ctx, autoRollback); err == nil {
+		if stages, err := p.buildQuickSyncStages(ctx, cfg); err == nil {
 			out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 			out.Summary = "Quick sync, it seems this is the first deployment of the application"
 			out.Stages = stages
@@ -331,7 +343,7 @@ func (p *planner) buildPlan(ctx context.Context, targetDS *deploysource.DeploySo
 		summary  string
 	)
 	// Build plan based on plugins determined strategy
-	for _, plg := range p.pluginClients {
+	for _, plg := range p.plugins {
 		res, err := plg.DetermineStrategy(ctx, &deployment.DetermineStrategyRequest{Input: input})
 		if err != nil {
 			p.logger.Warn("Unable to determine strategy using current plugin", zap.Error(err))
@@ -347,14 +359,14 @@ func (p *planner) buildPlan(ctx context.Context, targetDS *deploysource.DeploySo
 
 	switch strategy {
 	case model.SyncStrategy_QUICK_SYNC:
-		if stages, err := p.buildQuickSyncStages(ctx, autoRollback); err == nil {
+		if stages, err := p.buildQuickSyncStages(ctx, cfg); err == nil {
 			out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 			out.Summary = summary
 			out.Stages = stages
 			return out, nil
 		}
 	case model.SyncStrategy_PIPELINE:
-		if stages, err := p.buildPipelineSyncStages(ctx, autoRollback); err == nil {
+		if stages, err := p.buildPipelineSyncStages(ctx, cfg); err == nil {
 			out.SyncStrategy = model.SyncStrategy_PIPELINE
 			out.Summary = summary
 			out.Stages = stages
@@ -365,12 +377,16 @@ func (p *planner) buildPlan(ctx context.Context, targetDS *deploysource.DeploySo
 	return nil, fmt.Errorf("unable to plan the deployment")
 }
 
-func (p *planner) buildQuickSyncStages(ctx context.Context, autoRollback bool) ([]*model.PipelineStage, error) {
+func (p *planner) buildQuickSyncStages(ctx context.Context, cfg *config.GenericApplicationSpec) ([]*model.PipelineStage, error) {
 	// TODO: Call to all plugins for request quick sync stages and build the plan stages
+	// stages := make([]*model.PipelineStage, 0, 0)
+	// for _, plg := range p.plugins {
+
+	// }
 	return nil, nil
 }
 
-func (p *planner) buildPipelineSyncStages(ctx context.Context, autoRollback bool) ([]*model.PipelineStage, error) {
+func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.GenericApplicationSpec) ([]*model.PipelineStage, error) {
 	// TODO: Call to all plugins for request pipeline sync stages and build the plan stages
 	return nil, nil
 }

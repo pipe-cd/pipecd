@@ -33,7 +33,7 @@ type DeploySource struct {
 	AppDir                   string
 	Revision                 string
 	ApplicationConfig        *config.Config
-	GenericApplicationConfig config.GenericApplicationSpec
+	GenericApplicationConfig *config.GenericApplicationSpec
 }
 
 type Provider interface {
@@ -176,7 +176,7 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 		AppDir:                   appDir,
 		Revision:                 p.revision,
 		ApplicationConfig:        cfg,
-		GenericApplicationConfig: gac,
+		GenericApplicationConfig: &gac,
 	}, nil
 }
 
