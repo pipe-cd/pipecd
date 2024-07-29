@@ -16,50 +16,19 @@ package controller
 
 import (
 	"context"
-	"crypto/rand"
 	"hash/fnv"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
-	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
 )
 
-var _ (sdktrace.IDGenerator) = (*tracingIDGenerator)(nil)
-
 func newContextWithDeploymentSpan(ctx context.Context, deployment *model.Deployment) context.Context {
-	gen := &tracingIDGenerator{deployment: deployment}
-	return trace.ContextWithSpanContext(ctx, trace.NewSpanContext(trace.SpanContextConfig{TraceID: gen.deploymentTraceID()}))
+	return trace.ContextWithSpanContext(ctx, trace.NewSpanContext(trace.SpanContextConfig{TraceID: deploymentTraceID(deployment)}))
 }
 
-type tracingIDGenerator struct {
-	deployment *model.Deployment
-}
-
-func (gen *tracingIDGenerator) spanContextConfig() trace.SpanContextConfig {
-	tid, sid := gen.NewIDs(context.Background())
-	return trace.SpanContextConfig{
-		TraceID:    tid,
-		SpanID:     sid,
-		TraceFlags: trace.FlagsSampled,
-	}
-}
-
-// NewIDs implements trace.IDGenerator.
-func (gen *tracingIDGenerator) NewIDs(ctx context.Context) (trace.TraceID, trace.SpanID) {
-	tid := gen.deploymentTraceID()
-	return tid, gen.NewSpanID(ctx, tid)
-}
-
-// NewSpanID implements trace.IDGenerator.
-func (gen *tracingIDGenerator) NewSpanID(ctx context.Context, traceID trace.TraceID) trace.SpanID {
-	var sid trace.SpanID
-	_, _ = rand.Read(sid[:])
-	return sid
-}
-
-func (gen *tracingIDGenerator) deploymentTraceID() trace.TraceID {
+func deploymentTraceID(deployment *model.Deployment) trace.TraceID {
 	w := fnv.New128a()
-	w.Write([]byte(gen.deployment.Id))
+	w.Write([]byte(deployment.Id))
 
 	var id trace.TraceID
 	copy(id[:], w.Sum(nil))
