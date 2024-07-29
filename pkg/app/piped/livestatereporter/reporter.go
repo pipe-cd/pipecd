@@ -87,6 +87,13 @@ func NewReporter(appLister applicationLister, stateGetter livestatestore.Getter,
 				continue
 			}
 			r.reporters = append(r.reporters, ecs.NewReporter(cp, appLister, sg, apiClient, logger))
+		case model.PlatformProviderLambda:
+			sg, ok := stateGetter.ECSGetter(cp.Name)
+			if !ok {
+				r.logger.Error(fmt.Sprintf(errFmt, cp.Name))
+				continue
+			}
+			r.reporters = append(r.reporters, ecs.NewReporter(cp, appLister, sg, apiClient, logger))
 		}
 	}
 
