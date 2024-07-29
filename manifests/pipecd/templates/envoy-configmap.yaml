@@ -126,11 +126,13 @@ data:
                         envoy.filters.http.ext_authz:
                           "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
                           disabled: true
+{{- if .Values.monitoring.enabled }}
                     - match: # We want to protect the opentelemetry service with envoy ext_authz, so this route must not turn off ext_authz.
                         prefix: "/opentelemetry.proto.collector.trace.v1.TraceService/"
                         grpc:
                       route:
                         cluster: opentelemetry-collector
+{{- end }}
                     - match:
                         prefix: /
                       route:
@@ -232,6 +234,7 @@ data:
                     port_value: 9086
         track_cluster_stats:
           request_response_sizes: true
+{{- if .Values.monitoring.enabled }}
       - name: opentelemetry-collector
         http2_protocol_options: {}
         connect_timeout: 0.25s
@@ -248,3 +251,4 @@ data:
                     port_value: 4317
         track_cluster_stats:
           request_response_sizes: true
+{{- end }}
