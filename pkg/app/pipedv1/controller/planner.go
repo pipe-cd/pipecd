@@ -339,7 +339,7 @@ func (p *planner) buildPlan(ctx context.Context, targetDS *deploysource.DeploySo
 		}
 		strategy = res.SyncStrategy
 		summary = res.Summary
-		// If one of plugins return PIPELINE_SYNC, use that as strategy intermediately
+		// If one of plugins returns PIPELINE_SYNC, use that as strategy intermediately
 		if strategy == model.SyncStrategy_PIPELINE {
 			break
 		}
