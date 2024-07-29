@@ -68,6 +68,7 @@ message ECSApplicationLiveState{
 }
 
 message LambdaApplicationLiveState {
+    repeated LambdaResourceState resources = 1;
 }
 
 // KubernetesResourceState represents the state of a single kubernetes resource object.
@@ -173,6 +174,35 @@ message ECSResourceState {
     // The unique name for the type of resource.
     string name = 4 [(validate.rules).string.min_len = 1];
     // The kind of this resource. e.g. Service, TaskSet, Task.
+    string kind = 5 [(validate.rules).string.min_len = 1];
+
+    HealthStatus health_status = 6 [(validate.rules).enum.defined_only = true];
+    string health_description = 7;
+
+    // The timestamp when this resource was created.
+    int64 created_at = 8 [(validate.rules).int64.gt = 0];
+    // The timestamp of the last time when this resource was updated.
+    int64 updated_at = 9 [(validate.rules).int64.gt = 0];
+}
+
+// LambdaResourceState represents the state of a Lambda function resource.
+message LambdaResourceState {
+    enum HealthStatus {
+        UNKNOWN = 0;
+        HEALTHY = 1;
+        OTHER = 2;
+    }
+
+    // The arn of the Lambda resource.
+    string id = 1 [(validate.rules).string.min_len = 1];
+    // The sorted list of unique IDs of the owners on which this resource depends.
+    // The owner is another resource that created and manages this resource.
+    repeated string owner_ids = 2;
+    // The sorted list of unique IDs of the parents.
+    repeated string parent_ids = 3;
+    // The unique name for the type of resource.
+    string name = 4 [(validate.rules).string.min_len = 1];
+    // The kind of this resource. e.g. Function
     string kind = 5 [(validate.rules).string.min_len = 1];
 
     HealthStatus health_status = 6 [(validate.rules).enum.defined_only = true];

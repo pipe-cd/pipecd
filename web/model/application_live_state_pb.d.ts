@@ -177,6 +177,11 @@ export namespace ECSApplicationLiveState {
 }
 
 export class LambdaApplicationLiveState extends jspb.Message {
+  getResourcesList(): Array<LambdaResourceState>;
+  setResourcesList(value: Array<LambdaResourceState>): LambdaApplicationLiveState;
+  clearResourcesList(): LambdaApplicationLiveState;
+  addResources(value?: LambdaResourceState, index?: number): LambdaResourceState;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): LambdaApplicationLiveState.AsObject;
   static toObject(includeInstance: boolean, msg: LambdaApplicationLiveState): LambdaApplicationLiveState.AsObject;
@@ -187,6 +192,7 @@ export class LambdaApplicationLiveState extends jspb.Message {
 
 export namespace LambdaApplicationLiveState {
   export type AsObject = {
+    resourcesList: Array<LambdaResourceState.AsObject>,
   }
 }
 
@@ -421,6 +427,66 @@ export namespace ECSResourceState {
     name: string,
     kind: string,
     healthStatus: ECSResourceState.HealthStatus,
+    healthDescription: string,
+    createdAt: number,
+    updatedAt: number,
+  }
+
+  export enum HealthStatus { 
+    UNKNOWN = 0,
+    HEALTHY = 1,
+    OTHER = 2,
+  }
+}
+
+export class LambdaResourceState extends jspb.Message {
+  getId(): string;
+  setId(value: string): LambdaResourceState;
+
+  getOwnerIdsList(): Array<string>;
+  setOwnerIdsList(value: Array<string>): LambdaResourceState;
+  clearOwnerIdsList(): LambdaResourceState;
+  addOwnerIds(value: string, index?: number): LambdaResourceState;
+
+  getParentIdsList(): Array<string>;
+  setParentIdsList(value: Array<string>): LambdaResourceState;
+  clearParentIdsList(): LambdaResourceState;
+  addParentIds(value: string, index?: number): LambdaResourceState;
+
+  getName(): string;
+  setName(value: string): LambdaResourceState;
+
+  getKind(): string;
+  setKind(value: string): LambdaResourceState;
+
+  getHealthStatus(): LambdaResourceState.HealthStatus;
+  setHealthStatus(value: LambdaResourceState.HealthStatus): LambdaResourceState;
+
+  getHealthDescription(): string;
+  setHealthDescription(value: string): LambdaResourceState;
+
+  getCreatedAt(): number;
+  setCreatedAt(value: number): LambdaResourceState;
+
+  getUpdatedAt(): number;
+  setUpdatedAt(value: number): LambdaResourceState;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): LambdaResourceState.AsObject;
+  static toObject(includeInstance: boolean, msg: LambdaResourceState): LambdaResourceState.AsObject;
+  static serializeBinaryToWriter(message: LambdaResourceState, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): LambdaResourceState;
+  static deserializeBinaryFromReader(message: LambdaResourceState, reader: jspb.BinaryReader): LambdaResourceState;
+}
+
+export namespace LambdaResourceState {
+  export type AsObject = {
+    id: string,
+    ownerIdsList: Array<string>,
+    parentIdsList: Array<string>,
+    name: string,
+    kind: string,
+    healthStatus: LambdaResourceState.HealthStatus,
     healthDescription: string,
     createdAt: number,
     updatedAt: number,
