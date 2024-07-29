@@ -163,6 +163,13 @@ We introduce the feature into the stages where changes are made to resources on 
 - K8S_BASELINE_CLEAN
 - K8S_TRAFFIC_ROUTING
 
+### How to check the stage progress of each platform providers in the deployment
+
+Users can check stage logs for each platform provider.
+In the future, we will consider visualizing the deployment environment status for each platform provider.
+
+![image](assets/0014-stage-log.png)
+
 
 ### Livestate View & Drift Detection
 
