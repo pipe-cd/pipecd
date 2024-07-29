@@ -22,6 +22,10 @@ import (
 	"path/filepath"
 	"time"
 
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
@@ -57,6 +61,7 @@ type scheduler struct {
 	pipedConfig         *config.PipedSpec
 	appManifestsCache   cache.Cache
 	logger              *zap.Logger
+	tracer              trace.Tracer
 
 	targetDSP  deploysource.Provider
 	runningDSP deploysource.Provider
@@ -121,6 +126,7 @@ func newScheduler(
 		doneDeploymentStatus: d.Status,
 		cancelledCh:          make(chan *model.ReportableCommand, 1),
 		logger:               logger,
+		tracer:               otel.GetTracerProvider().Tracer("controller/scheduler"),
 		nowFunc:              time.Now,
 	}
 
@@ -264,6 +270,27 @@ func (s *scheduler) Run(ctx context.Context) error {
 	}
 	s.genericApplicationConfig = ds.GenericApplicationConfig
 
+	ctx, span := s.tracer.Start(
+		newContextWithDeploymentSpan(ctx, s.deployment),
+		"Deploy",
+		trace.WithAttributes(
+			attribute.String("application-id", s.deployment.ApplicationId),
+			attribute.String("project-id", s.deployment.ProjectId),
+			attribute.String("kind", s.deployment.Kind.String()),
+			attribute.String("piped-id", s.pipedConfig.PipedID),
+			attribute.String("deployment-id", s.deployment.Id),
+		))
+	defer span.End()
+
+	defer func() {
+		switch deploymentStatus {
+		case model.DeploymentStatus_DEPLOYMENT_SUCCESS:
+			span.SetStatus(codes.Ok, statusReason)
+		case model.DeploymentStatus_DEPLOYMENT_FAILURE, model.DeploymentStatus_DEPLOYMENT_CANCELLED:
+			span.SetStatus(codes.Error, statusReason)
+		}
+	}()
+
 	timer := time.NewTimer(s.genericApplicationConfig.Timeout.Duration())
 	defer timer.Stop()
 
@@ -297,9 +324,29 @@ func (s *scheduler) Run(ctx context.Context) error {
 		)
 
 		go func() {
+			_, span := s.tracer.Start(ctx, ps.Name, trace.WithAttributes(
+				attribute.String("application-id", s.deployment.ApplicationId),
+				attribute.String("project-id", s.deployment.ProjectId),
+				attribute.String("kind", s.deployment.Kind.String()),
+				attribute.String("piped-id", s.pipedConfig.PipedID),
+				attribute.String("deployment-id", s.deployment.Id),
+				attribute.String("stage-id", ps.Id),
+			))
+			defer span.End()
+
 			result = s.executeStage(sig, *ps, func(in executor.Input) (executor.Executor, bool) {
 				return s.executorRegistry.Executor(model.Stage(ps.Name), in)
 			})
+
+			defer func() {
+				switch result {
+				case model.StageStatus_STAGE_SUCCESS:
+					span.SetStatus(codes.Ok, statusReason)
+				case model.StageStatus_STAGE_FAILURE, model.StageStatus_STAGE_CANCELLED:
+					span.SetStatus(codes.Error, statusReason)
+				}
+			}()
+
 			close(doneCh)
 		}()
 
@@ -385,9 +432,30 @@ func (s *scheduler) Run(ctx context.Context) error {
 				go func() {
 					rbs := *stage
 					rbs.Requires = []string{lastStage.Id}
-					s.executeStage(sig, rbs, func(in executor.Input) (executor.Executor, bool) {
+
+					_, span := s.tracer.Start(ctx, rbs.Name, trace.WithAttributes(
+						attribute.String("application-id", s.deployment.ApplicationId),
+						attribute.String("project-id", s.deployment.ProjectId),
+						attribute.String("kind", s.deployment.Kind.String()),
+						attribute.String("piped-id", s.pipedConfig.PipedID),
+						attribute.String("deployment-id", s.deployment.Id),
+						attribute.String("stage-id", rbs.Id),
+					))
+					defer span.End()
+
+					result := s.executeStage(sig, rbs, func(in executor.Input) (executor.Executor, bool) {
 						return s.executorRegistry.RollbackExecutor(s.deployment.Kind, in)
 					})
+
+					defer func() {
+						switch result {
+						case model.StageStatus_STAGE_SUCCESS:
+							span.SetStatus(codes.Ok, statusReason)
+						case model.StageStatus_STAGE_FAILURE, model.StageStatus_STAGE_CANCELLED:
+							span.SetStatus(codes.Error, statusReason)
+						}
+					}()
+
 					close(doneCh)
 				}()
 
