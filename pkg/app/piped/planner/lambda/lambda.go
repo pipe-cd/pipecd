@@ -120,7 +120,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		return
 	}
 
-	// Load service manifest at the last deployed commit to decide running version.
+	// Load lambda function manifest at the last deployed commit to decide running version.
 	ds, err = in.RunningDSP.Get(ctx, io.Discard)
 	if err == nil {
 		if lastVersion, e := determineVersion(ds.AppDir, cfg.Input.FunctionManifestFile); e == nil {

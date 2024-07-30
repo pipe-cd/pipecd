@@ -285,7 +285,7 @@ func sync(ctx context.Context, in *executor.Input, platformProviderName string, 
 
 		in.LogPersister.Infof("Start rolling out ECS task set")
 		if err := createPrimaryTaskSet(ctx, client, *service, *td, targetGroup); err != nil {
-			in.LogPersister.Errorf("Failed to rolling out ECS task set for service %s: %v", *serviceDefinition.ServiceName, err)
+			in.LogPersister.Errorf("Failed to roll out ECS task set for service %s: %v", *serviceDefinition.ServiceName, err)
 			return false
 		}
 
@@ -299,7 +299,7 @@ func sync(ctx context.Context, in *executor.Input, platformProviderName string, 
 	} else {
 		in.LogPersister.Infof("Start rolling out ECS task set")
 		if err := createPrimaryTaskSet(ctx, client, *service, *td, targetGroup); err != nil {
-			in.LogPersister.Errorf("Failed to rolling out ECS task set for service %s: %v", *serviceDefinition.ServiceName, err)
+			in.LogPersister.Errorf("Failed to roll out ECS task set for service %s: %v", *serviceDefinition.ServiceName, err)
 			return false
 		}
 	}
@@ -340,7 +340,7 @@ func rollout(ctx context.Context, in *executor.Input, platformProviderName strin
 	if in.StageConfig.Name == model.StageECSPrimaryRollout {
 		// Create PRIMARY task set in case of Primary rollout.
 		if err := createPrimaryTaskSet(ctx, client, *service, *td, targetGroup); err != nil {
-			in.LogPersister.Errorf("Failed to rolling out ECS task set for service %s: %v", *serviceDefinition.ServiceName, err)
+			in.LogPersister.Errorf("Failed to roll out ECS task set for service %s: %v", *serviceDefinition.ServiceName, err)
 			return false
 		}
 	} else {
