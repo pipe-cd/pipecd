@@ -10,7 +10,7 @@ This RFC proposes a new feature for k8s app to deploy resources into multi-clust
 # Usecase
 - case 1. When applying the same manifest to multiple clusters for redundant configuration
 - case 2. When applying manifest with some patches applied to multiple clusters for redundant configuration
-- case 3. Blue/Green Deployment acress the clusters
+- case 3. Blue/Green Deployment across clusters
 
 # Detailed design
 
@@ -25,13 +25,13 @@ We propose the feature to apply the manifests to multiple-clusters in one applic
 ### Register Application with multiple platform providers
 
 On the application register part, we can choose multiple platform providers.
-At first, user add the first platform provider. 
+At first, we add the first platform provider.
 If we want to use the feature for deploying multi-cluster, we can set more platform providers. This is optional.
 Only the platform providers specified here can be configured for multi-target.
 
 ![image](assets/0014-choose-multiple-providers.png)
 
-Also, we can can the list of platform providers on the piped list page to verify the platform providers.
+Also, we can check the list of platform providers on the piped list page to verify the platform providers.
 
 ![image](assets/0014-piped-list.png)
 
@@ -176,7 +176,7 @@ We introduce the feature into the stages where changes are made to resources on 
 - K8S_BASELINE_CLEAN
 - K8S_TRAFFIC_ROUTING
 
-### How to check the stage progress of each platform providers in the deployment
+### How to check the stage progress of each platform provider in the deployment
 
 Users can check stage logs for each platform provider.
 In the future, we will consider visualizing the deployment environment status for each platform provider.
@@ -316,8 +316,6 @@ This is already implemented as PoC↓
 
 - When rolling back
     - Roll back in the all previous state.
-
-- Rollback時
     - You can select the following behavior by setting the stage.
         - Rollback if any app fails
         - Rollback if all apps fail
