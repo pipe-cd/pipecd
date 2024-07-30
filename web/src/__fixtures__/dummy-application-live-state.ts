@@ -68,7 +68,6 @@ export const dummyApplicationLiveState: ApplicationLiveState = {
   ecs: { resourcesList: [] },
   lambda: {},
   terraform: {},
-  ecs: { resourcesList: [] },
   kubernetes: { resourcesList },
 };
 
