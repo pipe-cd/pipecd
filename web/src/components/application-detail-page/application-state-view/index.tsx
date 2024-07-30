@@ -23,11 +23,13 @@ import {
 } from "~/modules/applications-live-state";
 import { KubernetesStateView } from "./kubernetes-state-view";
 import { CloudRunStateView } from "./cloudrun-state-view";
+import { ECSStateView } from "./ecs-state-view";
 
 const isDisplayLiveState = (app: Application.AsObject | undefined): boolean => {
   return (
     app?.kind === ApplicationKind.KUBERNETES ||
-    app?.kind === ApplicationKind.CLOUDRUN
+    app?.kind === ApplicationKind.CLOUDRUN ||
+    app?.kind === ApplicationKind.ECS
   );
 };
 
@@ -77,12 +79,12 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
 
     useInterval(
       () => {
-        // Only fetch kubernetes or cloud run application.
+        // Fetch only supported kind applications.
         if (app && isDisplayLiveState(app)) {
           dispatch(fetchApplicationStateById(app.id));
         }
       },
-      // Only fetch kubernetes or cloud run application.
+      // Fetch only supported kind applications.
       isDisplayLiveState(app) && hasError === false ? FETCH_INTERVAL : null
     );
 
@@ -148,6 +150,10 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
       case ApplicationKind.CLOUDRUN: {
         const resources = liveState.cloudrun?.resourcesList || [];
         return <CloudRunStateView resources={resources} />;
+      }
+      case ApplicationKind.ECS: {
+        const resources = liveState.ecs?.resourcesList || [];
+        return <ECSStateView resources={resources} />;
       }
       default:
     }
