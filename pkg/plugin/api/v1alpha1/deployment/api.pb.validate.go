@@ -565,27 +565,29 @@ var _ interface {
 	ErrorName() string
 } = DetermineStrategyResponseValidationError{}
 
-// Validate checks the field values on BuildStagesRequest with the rules
-// defined in the proto definition for this message. If any rules are
+// Validate checks the field values on BuildPipelineSyncStagesRequest with the
+// rules defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *BuildStagesRequest) Validate() error {
+func (m *BuildPipelineSyncStagesRequest) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on BuildStagesRequest with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// BuildStagesRequestMultiError, or nil if none found.
-func (m *BuildStagesRequest) ValidateAll() error {
+// ValidateAll checks the field values on BuildPipelineSyncStagesRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// BuildPipelineSyncStagesRequestMultiError, or nil if none found.
+func (m *BuildPipelineSyncStagesRequest) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *BuildStagesRequest) validate(all bool) error {
+func (m *BuildPipelineSyncStagesRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
+
+	// no validation rules for Rollback
 
 	for idx, item := range m.GetStages() {
 		_, _ = idx, item
@@ -594,7 +596,7 @@ func (m *BuildStagesRequest) validate(all bool) error {
 			switch v := interface{}(item).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, BuildStagesRequestValidationError{
+					errors = append(errors, BuildPipelineSyncStagesRequestValidationError{
 						field:  fmt.Sprintf("Stages[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -602,7 +604,7 @@ func (m *BuildStagesRequest) validate(all bool) error {
 				}
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
-					errors = append(errors, BuildStagesRequestValidationError{
+					errors = append(errors, BuildPipelineSyncStagesRequestValidationError{
 						field:  fmt.Sprintf("Stages[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -611,7 +613,7 @@ func (m *BuildStagesRequest) validate(all bool) error {
 			}
 		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				return BuildStagesRequestValidationError{
+				return BuildPipelineSyncStagesRequestValidationError{
 					field:  fmt.Sprintf("Stages[%v]", idx),
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -622,19 +624,19 @@ func (m *BuildStagesRequest) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return BuildStagesRequestMultiError(errors)
+		return BuildPipelineSyncStagesRequestMultiError(errors)
 	}
 
 	return nil
 }
 
-// BuildStagesRequestMultiError is an error wrapping multiple validation errors
-// returned by BuildStagesRequest.ValidateAll() if the designated constraints
-// aren't met.
-type BuildStagesRequestMultiError []error
+// BuildPipelineSyncStagesRequestMultiError is an error wrapping multiple
+// validation errors returned by BuildPipelineSyncStagesRequest.ValidateAll()
+// if the designated constraints aren't met.
+type BuildPipelineSyncStagesRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m BuildStagesRequestMultiError) Error() string {
+func (m BuildPipelineSyncStagesRequestMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -643,147 +645,12 @@ func (m BuildStagesRequestMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m BuildStagesRequestMultiError) AllErrors() []error { return m }
+func (m BuildPipelineSyncStagesRequestMultiError) AllErrors() []error { return m }
 
-// BuildStagesRequestValidationError is the validation error returned by
-// BuildStagesRequest.Validate if the designated constraints aren't met.
-type BuildStagesRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e BuildStagesRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e BuildStagesRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e BuildStagesRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e BuildStagesRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e BuildStagesRequestValidationError) ErrorName() string {
-	return "BuildStagesRequestValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e BuildStagesRequestValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sBuildStagesRequest.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = BuildStagesRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = BuildStagesRequestValidationError{}
-
-// Validate checks the field values on BuildStagesResponse with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *BuildStagesResponse) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on BuildStagesResponse with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// BuildStagesResponseMultiError, or nil if none found.
-func (m *BuildStagesResponse) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *BuildStagesResponse) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	for idx, item := range m.GetStages() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, BuildStagesResponseValidationError{
-						field:  fmt.Sprintf("Stages[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, BuildStagesResponseValidationError{
-						field:  fmt.Sprintf("Stages[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return BuildStagesResponseValidationError{
-					field:  fmt.Sprintf("Stages[%v]", idx),
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
-	}
-
-	if len(errors) > 0 {
-		return BuildStagesResponseMultiError(errors)
-	}
-
-	return nil
-}
-
-// BuildStagesResponseMultiError is an error wrapping multiple validation
-// errors returned by BuildStagesResponse.ValidateAll() if the designated
+// BuildPipelineSyncStagesRequestValidationError is the validation error
+// returned by BuildPipelineSyncStagesRequest.Validate if the designated
 // constraints aren't met.
-type BuildStagesResponseMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m BuildStagesResponseMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m BuildStagesResponseMultiError) AllErrors() []error { return m }
-
-// BuildStagesResponseValidationError is the validation error returned by
-// BuildStagesResponse.Validate if the designated constraints aren't met.
-type BuildStagesResponseValidationError struct {
+type BuildPipelineSyncStagesRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -791,24 +658,24 @@ type BuildStagesResponseValidationError struct {
 }
 
 // Field function returns field value.
-func (e BuildStagesResponseValidationError) Field() string { return e.field }
+func (e BuildPipelineSyncStagesRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e BuildStagesResponseValidationError) Reason() string { return e.reason }
+func (e BuildPipelineSyncStagesRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e BuildStagesResponseValidationError) Cause() error { return e.cause }
+func (e BuildPipelineSyncStagesRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e BuildStagesResponseValidationError) Key() bool { return e.key }
+func (e BuildPipelineSyncStagesRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e BuildStagesResponseValidationError) ErrorName() string {
-	return "BuildStagesResponseValidationError"
+func (e BuildPipelineSyncStagesRequestValidationError) ErrorName() string {
+	return "BuildPipelineSyncStagesRequestValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e BuildStagesResponseValidationError) Error() string {
+func (e BuildPipelineSyncStagesRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -820,14 +687,14 @@ func (e BuildStagesResponseValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sBuildStagesResponse.%s: %s%s",
+		"invalid %sBuildPipelineSyncStagesRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = BuildStagesResponseValidationError{}
+var _ error = BuildPipelineSyncStagesRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -835,7 +702,386 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = BuildStagesResponseValidationError{}
+} = BuildPipelineSyncStagesRequestValidationError{}
+
+// Validate checks the field values on BuildPipelineSyncStagesResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *BuildPipelineSyncStagesResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on BuildPipelineSyncStagesResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// BuildPipelineSyncStagesResponseMultiError, or nil if none found.
+func (m *BuildPipelineSyncStagesResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *BuildPipelineSyncStagesResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetStages() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, BuildPipelineSyncStagesResponseValidationError{
+						field:  fmt.Sprintf("Stages[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, BuildPipelineSyncStagesResponseValidationError{
+						field:  fmt.Sprintf("Stages[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return BuildPipelineSyncStagesResponseValidationError{
+					field:  fmt.Sprintf("Stages[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return BuildPipelineSyncStagesResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// BuildPipelineSyncStagesResponseMultiError is an error wrapping multiple
+// validation errors returned by BuildPipelineSyncStagesResponse.ValidateAll()
+// if the designated constraints aren't met.
+type BuildPipelineSyncStagesResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m BuildPipelineSyncStagesResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m BuildPipelineSyncStagesResponseMultiError) AllErrors() []error { return m }
+
+// BuildPipelineSyncStagesResponseValidationError is the validation error
+// returned by BuildPipelineSyncStagesResponse.Validate if the designated
+// constraints aren't met.
+type BuildPipelineSyncStagesResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e BuildPipelineSyncStagesResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e BuildPipelineSyncStagesResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e BuildPipelineSyncStagesResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e BuildPipelineSyncStagesResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e BuildPipelineSyncStagesResponseValidationError) ErrorName() string {
+	return "BuildPipelineSyncStagesResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e BuildPipelineSyncStagesResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sBuildPipelineSyncStagesResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = BuildPipelineSyncStagesResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = BuildPipelineSyncStagesResponseValidationError{}
+
+// Validate checks the field values on BuildQuickSyncStagesRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *BuildQuickSyncStagesRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on BuildQuickSyncStagesRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// BuildQuickSyncStagesRequestMultiError, or nil if none found.
+func (m *BuildQuickSyncStagesRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *BuildQuickSyncStagesRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Rollback
+
+	if len(errors) > 0 {
+		return BuildQuickSyncStagesRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// BuildQuickSyncStagesRequestMultiError is an error wrapping multiple
+// validation errors returned by BuildQuickSyncStagesRequest.ValidateAll() if
+// the designated constraints aren't met.
+type BuildQuickSyncStagesRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m BuildQuickSyncStagesRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m BuildQuickSyncStagesRequestMultiError) AllErrors() []error { return m }
+
+// BuildQuickSyncStagesRequestValidationError is the validation error returned
+// by BuildQuickSyncStagesRequest.Validate if the designated constraints
+// aren't met.
+type BuildQuickSyncStagesRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e BuildQuickSyncStagesRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e BuildQuickSyncStagesRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e BuildQuickSyncStagesRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e BuildQuickSyncStagesRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e BuildQuickSyncStagesRequestValidationError) ErrorName() string {
+	return "BuildQuickSyncStagesRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e BuildQuickSyncStagesRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sBuildQuickSyncStagesRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = BuildQuickSyncStagesRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = BuildQuickSyncStagesRequestValidationError{}
+
+// Validate checks the field values on BuildQuickSyncStagesResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *BuildQuickSyncStagesResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on BuildQuickSyncStagesResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// BuildQuickSyncStagesResponseMultiError, or nil if none found.
+func (m *BuildQuickSyncStagesResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *BuildQuickSyncStagesResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetStages() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, BuildQuickSyncStagesResponseValidationError{
+						field:  fmt.Sprintf("Stages[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, BuildQuickSyncStagesResponseValidationError{
+						field:  fmt.Sprintf("Stages[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return BuildQuickSyncStagesResponseValidationError{
+					field:  fmt.Sprintf("Stages[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return BuildQuickSyncStagesResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// BuildQuickSyncStagesResponseMultiError is an error wrapping multiple
+// validation errors returned by BuildQuickSyncStagesResponse.ValidateAll() if
+// the designated constraints aren't met.
+type BuildQuickSyncStagesResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m BuildQuickSyncStagesResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m BuildQuickSyncStagesResponseMultiError) AllErrors() []error { return m }
+
+// BuildQuickSyncStagesResponseValidationError is the validation error returned
+// by BuildQuickSyncStagesResponse.Validate if the designated constraints
+// aren't met.
+type BuildQuickSyncStagesResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e BuildQuickSyncStagesResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e BuildQuickSyncStagesResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e BuildQuickSyncStagesResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e BuildQuickSyncStagesResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e BuildQuickSyncStagesResponseValidationError) ErrorName() string {
+	return "BuildQuickSyncStagesResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e BuildQuickSyncStagesResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sBuildQuickSyncStagesResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = BuildQuickSyncStagesResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = BuildQuickSyncStagesResponseValidationError{}
 
 // Validate checks the field values on FetchDefinedStagesRequest with the rules
 // defined in the proto definition for this message. If any rules are
@@ -1198,22 +1444,24 @@ var _ interface {
 	ErrorName() string
 } = PlanPluginInputValidationError{}
 
-// Validate checks the field values on BuildStagesRequest_StageConfig with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *BuildStagesRequest_StageConfig) Validate() error {
+// Validate checks the field values on
+// BuildPipelineSyncStagesRequest_StageConfig with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *BuildPipelineSyncStagesRequest_StageConfig) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on BuildStagesRequest_StageConfig with
-// the rules defined in the proto definition for this message. If any rules
-// are violated, the result is a list of violation errors wrapped in
-// BuildStagesRequest_StageConfigMultiError, or nil if none found.
-func (m *BuildStagesRequest_StageConfig) ValidateAll() error {
+// ValidateAll checks the field values on
+// BuildPipelineSyncStagesRequest_StageConfig with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in
+// BuildPipelineSyncStagesRequest_StageConfigMultiError, or nil if none found.
+func (m *BuildPipelineSyncStagesRequest_StageConfig) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *BuildStagesRequest_StageConfig) validate(all bool) error {
+func (m *BuildPipelineSyncStagesRequest_StageConfig) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -1225,19 +1473,20 @@ func (m *BuildStagesRequest_StageConfig) validate(all bool) error {
 	// no validation rules for Config
 
 	if len(errors) > 0 {
-		return BuildStagesRequest_StageConfigMultiError(errors)
+		return BuildPipelineSyncStagesRequest_StageConfigMultiError(errors)
 	}
 
 	return nil
 }
 
-// BuildStagesRequest_StageConfigMultiError is an error wrapping multiple
-// validation errors returned by BuildStagesRequest_StageConfig.ValidateAll()
-// if the designated constraints aren't met.
-type BuildStagesRequest_StageConfigMultiError []error
+// BuildPipelineSyncStagesRequest_StageConfigMultiError is an error wrapping
+// multiple validation errors returned by
+// BuildPipelineSyncStagesRequest_StageConfig.ValidateAll() if the designated
+// constraints aren't met.
+type BuildPipelineSyncStagesRequest_StageConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m BuildStagesRequest_StageConfigMultiError) Error() string {
+func (m BuildPipelineSyncStagesRequest_StageConfigMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -1246,12 +1495,12 @@ func (m BuildStagesRequest_StageConfigMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m BuildStagesRequest_StageConfigMultiError) AllErrors() []error { return m }
+func (m BuildPipelineSyncStagesRequest_StageConfigMultiError) AllErrors() []error { return m }
 
-// BuildStagesRequest_StageConfigValidationError is the validation error
-// returned by BuildStagesRequest_StageConfig.Validate if the designated
-// constraints aren't met.
-type BuildStagesRequest_StageConfigValidationError struct {
+// BuildPipelineSyncStagesRequest_StageConfigValidationError is the validation
+// error returned by BuildPipelineSyncStagesRequest_StageConfig.Validate if
+// the designated constraints aren't met.
+type BuildPipelineSyncStagesRequest_StageConfigValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -1259,24 +1508,24 @@ type BuildStagesRequest_StageConfigValidationError struct {
 }
 
 // Field function returns field value.
-func (e BuildStagesRequest_StageConfigValidationError) Field() string { return e.field }
+func (e BuildPipelineSyncStagesRequest_StageConfigValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e BuildStagesRequest_StageConfigValidationError) Reason() string { return e.reason }
+func (e BuildPipelineSyncStagesRequest_StageConfigValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e BuildStagesRequest_StageConfigValidationError) Cause() error { return e.cause }
+func (e BuildPipelineSyncStagesRequest_StageConfigValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e BuildStagesRequest_StageConfigValidationError) Key() bool { return e.key }
+func (e BuildPipelineSyncStagesRequest_StageConfigValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e BuildStagesRequest_StageConfigValidationError) ErrorName() string {
-	return "BuildStagesRequest_StageConfigValidationError"
+func (e BuildPipelineSyncStagesRequest_StageConfigValidationError) ErrorName() string {
+	return "BuildPipelineSyncStagesRequest_StageConfigValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e BuildStagesRequest_StageConfigValidationError) Error() string {
+func (e BuildPipelineSyncStagesRequest_StageConfigValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -1288,14 +1537,14 @@ func (e BuildStagesRequest_StageConfigValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sBuildStagesRequest_StageConfig.%s: %s%s",
+		"invalid %sBuildPipelineSyncStagesRequest_StageConfig.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = BuildStagesRequest_StageConfigValidationError{}
+var _ error = BuildPipelineSyncStagesRequest_StageConfigValidationError{}
 
 var _ interface {
 	Field() string
@@ -1303,4 +1552,4 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = BuildStagesRequest_StageConfigValidationError{}
+} = BuildPipelineSyncStagesRequest_StageConfigValidationError{}

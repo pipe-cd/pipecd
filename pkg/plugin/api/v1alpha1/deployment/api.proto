@@ -29,8 +29,10 @@ service DeploymentService {
     rpc DetermineVersions(DetermineVersionsRequest) returns (DetermineVersionsResponse) {}
     // DetermineStrategy determines which strategy should be used for the given deployment.
     rpc DetermineStrategy(DetermineStrategyRequest) returns (DetermineStrategyResponse) {}
-    // BuildStages builds the deployment pipeline stages.
-    rpc BuildStages(BuildStagesRequest) returns (BuildStagesResponse) {}
+    // BuildPipelineSyncStages builds the deployment pipeline stages.
+    rpc BuildPipelineSyncStages(BuildPipelineSyncStagesRequest) returns (BuildPipelineSyncStagesResponse) {}
+    // BuildQuickSyncStages builds the deployment quick sync stages.
+    rpc BuildQuickSyncStages(BuildQuickSyncStagesRequest) returns (BuildQuickSyncStagesResponse) {}
 }
 
 message DetermineVersionsRequest {
@@ -53,17 +55,27 @@ message DetermineStrategyResponse {
     string summary = 2;
 }
 
-message BuildStagesRequest {
+message BuildPipelineSyncStagesRequest {
     message StageConfig {
         // The stage name.
         string name = 1;
         // The configuration of the stage.
         bytes config = 2;
     }
-    repeated StageConfig stages = 1;
+    bool rollback = 1;
+    repeated StageConfig stages = 2;
 }
 
-message BuildStagesResponse {
+message BuildPipelineSyncStagesResponse {
+    // The built stages of the deployment pipeline.
+    repeated model.PipelineStage stages = 1;
+}
+
+message BuildQuickSyncStagesRequest {
+    bool rollback = 1;
+}
+
+message BuildQuickSyncStagesResponse {
     // The built stages of the deployment pipeline.
     repeated model.PipelineStage stages = 1;
 }
