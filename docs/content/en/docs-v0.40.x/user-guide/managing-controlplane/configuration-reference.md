@@ -123,7 +123,7 @@ Must be one of the following objects:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | name | string | The unique name of the configuration. | Yes |
-| provider | string | The SSO service provider. Can be one of the following values<br>`GITHUB`, `GOOGLE`... | Yes |
+| provider | string | The SSO service provider. Currently, only `GITHUB` is supported. | Yes |
 | github | [SSOConfigGitHub](#ssoconfiggithub) | GitHub sso configuration. | No |
 
 ## SSOConfigGitHub
