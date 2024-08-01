@@ -9,11 +9,6 @@ CREATE INDEX application_disabled_updated_at_desc ON Application (Disabled, Upda
 ALTER TABLE Application ADD COLUMN Name VARCHAR(50) GENERATED ALWAYS AS (data->>"$.name") VIRTUAL NOT NULL;
 CREATE INDEX application_name_updated_at_desc ON Application (Name, UpdatedAt DESC);
 
--- index on `Deleted` and `CreatedAt` ASC
--- TODO: Reconsider make this Deleted column as STORED GENERATED COLUMN
-ALTER TABLE Application ADD COLUMN Deleted BOOL GENERATED ALWAYS AS (IF(data->>"$.deleted" = 'true', True, False)) VIRTUAL NOT NULL;
-CREATE INDEX application_deleted_created_at_asc ON Application (Deleted, CreatedAt);
-
 -- index on `Kind` ASC and `UpdatedAt` DESC
 ALTER TABLE Application ADD COLUMN Kind INT GENERATED ALWAYS AS (IFNULL(data->>"$.kind", 0)) VIRTUAL NOT NULL;
 CREATE INDEX application_kind_updated_at_desc ON Application (Kind, UpdatedAt DESC);
@@ -31,6 +26,9 @@ CREATE INDEX application_piped_id_updated_at_desc ON Application (PipedId, Updat
 
 -- TODO: Should remove this statement after few releases.
 DROP INDEX application_piped_id ON Application;
+
+-- TODO: Should remove this statement after few releases.
+DROP INDEX application_deleted_created_at_asc ON Application;
 
 --
 -- Command table indexes
