@@ -69,6 +69,7 @@ require (
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	cloud.google.com/go/iam v1.1.6 // indirect
 	cloud.google.com/go/longrunning v0.5.5 // indirect
+	dario.cat/mergo v1.0.0 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78 // indirect
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
 	github.com/Azure/go-autorest/autorest v0.11.18 // indirect
@@ -105,7 +106,7 @@ require (
 	github.com/cncf/xds/go v0.0.0-20240318125728-8a4994d93e50 // indirect
 	github.com/containerd/continuity v0.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/docker/cli v20.10.14+incompatible // indirect
+	github.com/docker/cli v26.1.4+incompatible // indirect
 	github.com/docker/docker v26.1.4+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
