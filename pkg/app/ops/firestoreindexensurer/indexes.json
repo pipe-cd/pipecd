@@ -4,11 +4,6 @@
     "queryScope": "COLLECTION",
     "fields": [
       {
-        "fieldPath": "Deleted",
-        "order": "ASCENDING",
-        "arrayConfig": ""
-      },
-      {
         "fieldPath": "CreatedAt",
         "order": "ASCENDING",
         "arrayConfig": ""
