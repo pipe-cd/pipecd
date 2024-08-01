@@ -62,6 +62,10 @@ message Application {
     // Unix time when the application was deleted.
     int64 deleted_at = 98 [(validate.rules).int64.gte = 0];
     // Whether the application is deleted or not.
+    //
+    // NOTE:
+    // PipeCD logic with application should NOT reply on this field.
+    // Use `disabled` field instead.
     bool deleted = 99;
     // Whether the application is disabled or not.
     bool disabled = 100;
