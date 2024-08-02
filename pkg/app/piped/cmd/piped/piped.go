@@ -99,6 +99,7 @@ type piped struct {
 	addLoginUserToPasswd                 bool
 	launcherVersion                      string
 	maxRecvMsgSize                       int
+	appManifestCacheCount                int
 }
 
 func NewCommand() *cobra.Command {
@@ -107,10 +108,11 @@ func NewCommand() *cobra.Command {
 		panic(fmt.Sprintf("failed to detect the current user's home directory: %v", err))
 	}
 	p := &piped{
-		adminPort:      9085,
-		toolsDir:       path.Join(home, ".piped", "tools"),
-		gracePeriod:    30 * time.Second,
-		maxRecvMsgSize: 1024 * 1024 * 10, // 10MB
+		adminPort:             9085,
+		toolsDir:              path.Join(home, ".piped", "tools"),
+		gracePeriod:           30 * time.Second,
+		maxRecvMsgSize:        1024 * 1024 * 10, // 10MB
+		appManifestCacheCount: 150,
 	}
 	cmd := &cobra.Command{
 		Use:   "piped",
@@ -131,6 +133,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&p.enableDefaultKubernetesCloudProvider, "enable-default-kubernetes-cloud-provider", p.enableDefaultKubernetesCloudProvider, "Whether the default kubernetes provider is enabled or not. This feature is deprecated.")
 	cmd.Flags().BoolVar(&p.addLoginUserToPasswd, "add-login-user-to-passwd", p.addLoginUserToPasswd, "Whether to add login user to $HOME/passwd. This is typically for applications running as a random user ID.")
 	cmd.Flags().DurationVar(&p.gracePeriod, "grace-period", p.gracePeriod, "How long to wait for graceful shutdown.")
+	cmd.Flags().IntVar(&p.appManifestCacheCount, "app-manifest-cache-count", p.appManifestCacheCount, "The number of app manifests to cache. The cache-key contains the commit hash. The default is 150.")
 
 	cmd.Flags().StringVar(&p.launcherVersion, "launcher-version", p.launcherVersion, "The version of launcher which initialized this Piped.")
 
@@ -344,7 +347,11 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	analysisResultStore := analysisresultstore.NewStore(apiClient, input.Logger)
 
 	// Create memory caches.
-	appManifestsCache := memorycache.NewTTLCache(ctx, time.Hour, time.Minute)
+	appManifestsCache, err := memorycache.NewLRUCache(p.appManifestCacheCount)
+	if err != nil {
+		input.Logger.Error("failed to create app manifests cache", zap.Error(err))
+		return err
+	}
 
 	var liveStateGetter livestatestore.Getter
 	// Start running application live state store.
