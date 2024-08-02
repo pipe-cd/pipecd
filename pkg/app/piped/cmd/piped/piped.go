@@ -358,7 +358,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	analysisResultStore := analysisresultstore.NewStore(apiClient, input.Logger)
 
 	// Create memory caches.
-	appManifestsCache, err := memorycache.NewLRUCache(150)
+	appManifestsCache, err := memorycache.NewLRUCache(p.appManifestCacheCount)
 	if err != nil {
 		input.Logger.Error("failed to create app manifests cache", zap.Error(err))
 		return err
