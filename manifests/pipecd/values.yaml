@@ -241,7 +241,7 @@ grafana:
           disableDeletion: false
           allowUiUpdates: false
           options:
-            path: /tmp/dashboards/cluster
+            path: /tmp/dashboards/Cluster
         - name: 'Control-Plane'
           orgId: 1
           folder: 'Control-Plane'
@@ -249,7 +249,7 @@ grafana:
           disableDeletion: false
           allowUiUpdates: false
           options:
-            path: /tmp/dashboards/control-plane
+            path: /tmp/dashboards/Control-Plane
         - name: 'Piped'
           orgId: 1
           folder: 'Piped'
@@ -257,7 +257,7 @@ grafana:
           disableDeletion: false
           allowUiUpdates: false
           options:
-            path: /tmp/dashboards/piped
+            path: /tmp/dashboards/Piped
 
 opentelemetry-collector:
   mode: "deployment"
