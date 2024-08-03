@@ -1220,7 +1220,22 @@ func (m *BuildStagesRequest_StageConfig) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Name
+	// no validation rules for Id
+
+	if utf8.RuneCountInString(m.GetName()) < 1 {
+		err := BuildStagesRequest_StageConfigValidationError{
+			field:  "Name",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Desc
+
+	// no validation rules for Timeout
 
 	// no validation rules for Config
 
