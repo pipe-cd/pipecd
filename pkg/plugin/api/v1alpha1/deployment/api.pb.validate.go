@@ -1485,6 +1485,17 @@ func (m *BuildPipelineSyncStagesRequest_StageConfig) validate(all bool) error {
 
 	// no validation rules for Timeout
 
+	if m.GetIndex() < 0 {
+		err := BuildPipelineSyncStagesRequest_StageConfigValidationError{
+			field:  "Index",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	// no validation rules for Config
 
 	if len(errors) > 0 {

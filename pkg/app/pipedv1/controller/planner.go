@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
+	"sort"
 	"time"
 
 	"go.uber.org/atomic"
@@ -377,7 +378,7 @@ func (p *planner) buildPlan(ctx context.Context, targetDS *deploysource.DeploySo
 	return nil, fmt.Errorf("unable to plan the deployment")
 }
 
-// buildQuickSyncStages requests all plugins and return quick sync stage
+// buildQuickSyncStages requests all plugins and returns quick sync stage
 // from each plugins to build the deployment pipeline.
 // NOTE:
 //   - For quick sync, we expect all stages given by plugins can be performed
@@ -410,8 +411,78 @@ func (p *planner) buildQuickSyncStages(ctx context.Context, cfg *config.GenericA
 	return stages, nil
 }
 
+// buildPipelineSyncStages requests all plugins and returns built stages which be used
+// to combine the deployment pipeline based on the application configuration `spec.pipeline.stages`.
+// NOTE:
+//   - The order of stages is determined by the application configuration `spec.pipeline.stages`.
+//   - The `Stage.Requires` field is used to specify by the order of stages.
+//   - Rollback stage will always be added as the trail.
 func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.GenericApplicationSpec) ([]*model.PipelineStage, error) {
-	return nil, nil
+	var (
+		rollback  = *cfg.Planner.AutoRollback
+		stagesCfg = cfg.Pipeline.Stages
+
+		stages         = make([]*model.PipelineStage, 0, len(stagesCfg))
+		rollbackStages = []*model.PipelineStage{}
+
+		stagesCfgPerPlugin = make(map[pluginapi.PluginClient][]*deployment.BuildPipelineSyncStagesRequest_StageConfig)
+	)
+
+	// Build stages config for each plugin.
+	for i := range stagesCfg {
+		stageCfg := stagesCfg[i]
+		plg, ok := p.stageBasedPluginsMap[stageCfg.Name.String()]
+		if !ok {
+			return nil, fmt.Errorf("unable to find plugin for stage %q", stageCfg.Name.String())
+		}
+
+		stagesCfgPerPlugin[plg] = append(stagesCfgPerPlugin[plg], &deployment.BuildPipelineSyncStagesRequest_StageConfig{
+			Id:      stageCfg.ID,
+			Name:    stageCfg.Name.String(),
+			Desc:    stageCfg.Desc,
+			Timeout: stageCfg.Timeout.Duration().String(),
+			Index:   int32(i),
+			Config:  stageCfg.With,
+		})
+	}
+
+	// Request each plugin to build stages.
+	for plg, stageCfgs := range stagesCfgPerPlugin {
+		res, err := plg.BuildPipelineSyncStages(ctx, &deployment.BuildPipelineSyncStagesRequest{
+			Stages:   stageCfgs,
+			Rollback: rollback,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("failed to build pipeline sync stages for deployment (%w)", err)
+		}
+		for i := range res.Stages {
+			if res.Stages[i].Visible {
+				stages = append(stages, res.Stages[i])
+			} else {
+				rollbackStages = append(rollbackStages, res.Stages[i])
+			}
+		}
+	}
+
+	// Sort stages by index.
+	sort.Sort(model.PipelineStages(stages))
+
+	// Build requires for each stage.
+	preStageID := ""
+	for _, s := range stages {
+		if preStageID != "" {
+			s.Requires = []string{preStageID}
+		}
+		preStageID = s.Id
+	}
+
+	// Append all rollback stages as the trail.
+	stages = append(stages, rollbackStages...)
+
+	if len(stages) == 0 {
+		return nil, fmt.Errorf("unable to build pipeline sync stages for deployment")
+	}
+	return stages, nil
 }
 
 func (p *planner) reportDeploymentPlanned(ctx context.Context, out *plannerOutput) error {

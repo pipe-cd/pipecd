@@ -68,8 +68,10 @@ message BuildPipelineSyncStagesRequest {
         // The stage timeout.
         // It should be a duration string (aka. 1m/10s/...).
         string timeout = 4;
+        // The stage index from the stage list in configuration.
+        int32 index = 5 [(validate.rules).int32.gte = 0];
         // The configuration of the stage.
-        bytes config = 5;
+        bytes config = 6;
     }
     bool rollback = 1;
     repeated StageConfig stages = 2;
