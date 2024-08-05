@@ -377,17 +377,40 @@ func (p *planner) buildPlan(ctx context.Context, targetDS *deploysource.DeploySo
 	return nil, fmt.Errorf("unable to plan the deployment")
 }
 
+// buildQuickSyncStages requests all plugins and return quick sync stage
+// from each plugins to build the deployment pipeline.
+// NOTE:
+//   - For quick sync, we expect all stages given by plugins can be performed
+//     at once regradless its order (aka. no `Stage.Requires` specified)
+//   - Rollback stage will always be added as the trail.
 func (p *planner) buildQuickSyncStages(ctx context.Context, cfg *config.GenericApplicationSpec) ([]*model.PipelineStage, error) {
-	// TODO: Call to all plugins for request quick sync stages and build the plan stages
-	// stages := make([]*model.PipelineStage, 0, 0)
-	// for _, plg := range p.plugins {
-
-	// }
-	return nil, nil
+	var (
+		stages         = []*model.PipelineStage{}
+		rollbackStages = []*model.PipelineStage{}
+		rollback       = *cfg.Planner.AutoRollback
+	)
+	for _, plg := range p.plugins {
+		res, err := plg.BuildQuickSyncStages(ctx, &deployment.BuildQuickSyncStagesRequest{Rollback: rollback})
+		if err != nil {
+			return nil, fmt.Errorf("failed to build quick sync stage deployment (%w)", err)
+		}
+		for i := range res.Stages {
+			// TODO: Consider add Stage.Rollback to specify a stage is a rollback stage or forward stage instead.
+			if res.Stages[i].Visible {
+				stages = append(stages, res.Stages[i])
+			} else {
+				rollbackStages = append(rollbackStages, res.Stages[i])
+			}
+		}
+	}
+	stages = append(stages, rollbackStages...)
+	if len(stages) == 0 {
+		return nil, fmt.Errorf("unable to build quick sync stages for deployment")
+	}
+	return stages, nil
 }
 
 func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.GenericApplicationSpec) ([]*model.PipelineStage, error) {
-	// TODO: Call to all plugins for request pipeline sync stages and build the plan stages
 	return nil, nil
 }
 

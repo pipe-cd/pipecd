@@ -1,0 +1,229 @@
+// Copyright 2024 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package controller
+
+import (
+	"context"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc"
+
+	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/model"
+	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
+)
+
+type fakePlugin struct {
+	pluginapi.PluginClient
+	quickStages    []*model.PipelineStage
+	pipelineStages []*model.PipelineStage
+	rollbackStages []*model.PipelineStage
+}
+
+func (p *fakePlugin) Close() error { return nil }
+func (p *fakePlugin) BuildQuickSyncStages(ctx context.Context, req *deployment.BuildQuickSyncStagesRequest, opts ...grpc.CallOption) (*deployment.BuildQuickSyncStagesResponse, error) {
+	if req.Rollback {
+		return &deployment.BuildQuickSyncStagesResponse{
+			Stages: append(p.quickStages, p.rollbackStages...),
+		}, nil
+	}
+	return &deployment.BuildQuickSyncStagesResponse{
+		Stages: p.quickStages,
+	}, nil
+}
+func (p *fakePlugin) BuildPipelineSyncStages(ctx context.Context, req *deployment.BuildPipelineSyncStagesRequest, opts ...grpc.CallOption) (*deployment.BuildPipelineSyncStagesResponse, error) {
+	return &deployment.BuildPipelineSyncStagesResponse{
+		Stages: p.pipelineStages,
+	}, nil
+}
+func (p *fakePlugin) DetermineStrategy(ctx context.Context, req *deployment.DetermineStrategyRequest, opts ...grpc.CallOption) (*deployment.DetermineStrategyResponse, error) {
+	return nil, nil
+}
+func (p *fakePlugin) DetermineVersions(ctx context.Context, req *deployment.DetermineVersionsRequest, opts ...grpc.CallOption) (*deployment.DetermineVersionsResponse, error) {
+	return nil, nil
+}
+func (p *fakePlugin) FetchDefinedStages(ctx context.Context, req *deployment.FetchDefinedStagesRequest, opts ...grpc.CallOption) (*deployment.FetchDefinedStagesResponse, error) {
+	return nil, nil
+}
+
+func pointerBool(b bool) *bool {
+	return &b
+}
+
+func TestBuildQuickSyncStages(t *testing.T) {
+	testcases := []struct {
+		name           string
+		plugins        []pluginapi.PluginClient
+		cfg            *config.GenericApplicationSpec
+		wantErr        bool
+		expectedStages []*model.PipelineStage
+	}{
+		{
+			name: "only one plugin",
+			plugins: []pluginapi.PluginClient{
+				&fakePlugin{
+					quickStages: []*model.PipelineStage{
+						{
+							Id:      "plugin-1-stage-1",
+							Visible: true,
+						},
+					},
+					rollbackStages: []*model.PipelineStage{
+						{
+							Id:      "plugin-1-rollback",
+							Visible: false,
+						},
+					},
+				},
+			},
+			cfg: &config.GenericApplicationSpec{
+				Planner: config.DeploymentPlanner{
+					AutoRollback: pointerBool(true),
+				},
+			},
+			wantErr: false,
+			expectedStages: []*model.PipelineStage{
+				{
+					Id:      "plugin-1-stage-1",
+					Visible: true,
+				},
+				{
+					Id:      "plugin-1-rollback",
+					Visible: false,
+				},
+			},
+		},
+		{
+			name: "multi plugins",
+			plugins: []pluginapi.PluginClient{
+				&fakePlugin{
+					quickStages: []*model.PipelineStage{
+						{
+							Id:      "plugin-1-stage-1",
+							Visible: true,
+						},
+					},
+					rollbackStages: []*model.PipelineStage{
+						{
+							Id:      "plugin-1-rollback",
+							Visible: false,
+						},
+					},
+				},
+				&fakePlugin{
+					quickStages: []*model.PipelineStage{
+						{
+							Id:      "plugin-2-stage-1",
+							Visible: true,
+						},
+					},
+					rollbackStages: []*model.PipelineStage{
+						{
+							Id:      "plugin-2-rollback",
+							Visible: false,
+						},
+					},
+				},
+			},
+			cfg: &config.GenericApplicationSpec{
+				Planner: config.DeploymentPlanner{
+					AutoRollback: pointerBool(true),
+				},
+			},
+			wantErr: false,
+			expectedStages: []*model.PipelineStage{
+				{
+					Id:      "plugin-1-stage-1",
+					Visible: true,
+				},
+				{
+					Id:      "plugin-2-stage-1",
+					Visible: true,
+				},
+				{
+					Id:      "plugin-1-rollback",
+					Visible: false,
+				},
+				{
+					Id:      "plugin-2-rollback",
+					Visible: false,
+				},
+			},
+		},
+		{
+			name: "multi plugins - no rollback",
+			plugins: []pluginapi.PluginClient{
+				&fakePlugin{
+					quickStages: []*model.PipelineStage{
+						{
+							Id:      "plugin-1-stage-1",
+							Visible: true,
+						},
+					},
+					rollbackStages: []*model.PipelineStage{
+						{
+							Id:      "plugin-1-rollback",
+							Visible: false,
+						},
+					},
+				},
+				&fakePlugin{
+					quickStages: []*model.PipelineStage{
+						{
+							Id:      "plugin-2-stage-1",
+							Visible: true,
+						},
+					},
+					rollbackStages: []*model.PipelineStage{
+						{
+							Id:      "plugin-2-rollback",
+							Visible: false,
+						},
+					},
+				},
+			},
+			cfg: &config.GenericApplicationSpec{
+				Planner: config.DeploymentPlanner{
+					AutoRollback: pointerBool(false),
+				},
+			},
+			wantErr: false,
+			expectedStages: []*model.PipelineStage{
+				{
+					Id:      "plugin-1-stage-1",
+					Visible: true,
+				},
+				{
+					Id:      "plugin-2-stage-1",
+					Visible: true,
+				},
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			planner := &planner{
+				plugins: tc.plugins,
+			}
+			stages, err := planner.buildQuickSyncStages(context.TODO(), tc.cfg)
+			require.Equal(t, tc.wantErr, err != nil)
+			assert.Equal(t, tc.expectedStages, stages)
+		})
+	}
+}

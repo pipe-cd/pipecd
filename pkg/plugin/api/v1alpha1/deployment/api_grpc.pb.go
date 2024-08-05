@@ -28,8 +28,10 @@ type DeploymentServiceClient interface {
 	DetermineVersions(ctx context.Context, in *DetermineVersionsRequest, opts ...grpc.CallOption) (*DetermineVersionsResponse, error)
 	// DetermineStrategy determines which strategy should be used for the given deployment.
 	DetermineStrategy(ctx context.Context, in *DetermineStrategyRequest, opts ...grpc.CallOption) (*DetermineStrategyResponse, error)
-	// BuildStages builds the deployment pipeline stages.
-	BuildStages(ctx context.Context, in *BuildStagesRequest, opts ...grpc.CallOption) (*BuildStagesResponse, error)
+	// BuildPipelineSyncStages builds the deployment pipeline stages.
+	BuildPipelineSyncStages(ctx context.Context, in *BuildPipelineSyncStagesRequest, opts ...grpc.CallOption) (*BuildPipelineSyncStagesResponse, error)
+	// BuildQuickSyncStages builds the deployment quick sync stages.
+	BuildQuickSyncStages(ctx context.Context, in *BuildQuickSyncStagesRequest, opts ...grpc.CallOption) (*BuildQuickSyncStagesResponse, error)
 }
 
 type deploymentServiceClient struct {
@@ -67,9 +69,18 @@ func (c *deploymentServiceClient) DetermineStrategy(ctx context.Context, in *Det
 	return out, nil
 }
 
-func (c *deploymentServiceClient) BuildStages(ctx context.Context, in *BuildStagesRequest, opts ...grpc.CallOption) (*BuildStagesResponse, error) {
-	out := new(BuildStagesResponse)
-	err := c.cc.Invoke(ctx, "/grpc.plugin.deploymentapi.v1alpha1.DeploymentService/BuildStages", in, out, opts...)
+func (c *deploymentServiceClient) BuildPipelineSyncStages(ctx context.Context, in *BuildPipelineSyncStagesRequest, opts ...grpc.CallOption) (*BuildPipelineSyncStagesResponse, error) {
+	out := new(BuildPipelineSyncStagesResponse)
+	err := c.cc.Invoke(ctx, "/grpc.plugin.deploymentapi.v1alpha1.DeploymentService/BuildPipelineSyncStages", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *deploymentServiceClient) BuildQuickSyncStages(ctx context.Context, in *BuildQuickSyncStagesRequest, opts ...grpc.CallOption) (*BuildQuickSyncStagesResponse, error) {
+	out := new(BuildQuickSyncStagesResponse)
+	err := c.cc.Invoke(ctx, "/grpc.plugin.deploymentapi.v1alpha1.DeploymentService/BuildQuickSyncStages", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -86,8 +97,10 @@ type DeploymentServiceServer interface {
 	DetermineVersions(context.Context, *DetermineVersionsRequest) (*DetermineVersionsResponse, error)
 	// DetermineStrategy determines which strategy should be used for the given deployment.
 	DetermineStrategy(context.Context, *DetermineStrategyRequest) (*DetermineStrategyResponse, error)
-	// BuildStages builds the deployment pipeline stages.
-	BuildStages(context.Context, *BuildStagesRequest) (*BuildStagesResponse, error)
+	// BuildPipelineSyncStages builds the deployment pipeline stages.
+	BuildPipelineSyncStages(context.Context, *BuildPipelineSyncStagesRequest) (*BuildPipelineSyncStagesResponse, error)
+	// BuildQuickSyncStages builds the deployment quick sync stages.
+	BuildQuickSyncStages(context.Context, *BuildQuickSyncStagesRequest) (*BuildQuickSyncStagesResponse, error)
 	mustEmbedUnimplementedDeploymentServiceServer()
 }
 
@@ -104,8 +117,11 @@ func (UnimplementedDeploymentServiceServer) DetermineVersions(context.Context, *
 func (UnimplementedDeploymentServiceServer) DetermineStrategy(context.Context, *DetermineStrategyRequest) (*DetermineStrategyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DetermineStrategy not implemented")
 }
-func (UnimplementedDeploymentServiceServer) BuildStages(context.Context, *BuildStagesRequest) (*BuildStagesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method BuildStages not implemented")
+func (UnimplementedDeploymentServiceServer) BuildPipelineSyncStages(context.Context, *BuildPipelineSyncStagesRequest) (*BuildPipelineSyncStagesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BuildPipelineSyncStages not implemented")
+}
+func (UnimplementedDeploymentServiceServer) BuildQuickSyncStages(context.Context, *BuildQuickSyncStagesRequest) (*BuildQuickSyncStagesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BuildQuickSyncStages not implemented")
 }
 func (UnimplementedDeploymentServiceServer) mustEmbedUnimplementedDeploymentServiceServer() {}
 
@@ -174,20 +190,38 @@ func _DeploymentService_DetermineStrategy_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DeploymentService_BuildStages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BuildStagesRequest)
+func _DeploymentService_BuildPipelineSyncStages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BuildPipelineSyncStagesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DeploymentServiceServer).BuildStages(ctx, in)
+		return srv.(DeploymentServiceServer).BuildPipelineSyncStages(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.plugin.deploymentapi.v1alpha1.DeploymentService/BuildStages",
+		FullMethod: "/grpc.plugin.deploymentapi.v1alpha1.DeploymentService/BuildPipelineSyncStages",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DeploymentServiceServer).BuildStages(ctx, req.(*BuildStagesRequest))
+		return srv.(DeploymentServiceServer).BuildPipelineSyncStages(ctx, req.(*BuildPipelineSyncStagesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DeploymentService_BuildQuickSyncStages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BuildQuickSyncStagesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DeploymentServiceServer).BuildQuickSyncStages(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.plugin.deploymentapi.v1alpha1.DeploymentService/BuildQuickSyncStages",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DeploymentServiceServer).BuildQuickSyncStages(ctx, req.(*BuildQuickSyncStagesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -212,8 +246,12 @@ var DeploymentService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _DeploymentService_DetermineStrategy_Handler,
 		},
 		{
-			MethodName: "BuildStages",
-			Handler:    _DeploymentService_BuildStages_Handler,
+			MethodName: "BuildPipelineSyncStages",
+			Handler:    _DeploymentService_BuildPipelineSyncStages_Handler,
+		},
+		{
+			MethodName: "BuildQuickSyncStages",
+			Handler:    _DeploymentService_BuildQuickSyncStages_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
