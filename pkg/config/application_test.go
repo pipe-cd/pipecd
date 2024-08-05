@@ -15,6 +15,7 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -706,6 +707,7 @@ func TestGenericAnalysisConfiguration(t *testing.T) {
 										},
 									},
 								},
+								With: json.RawMessage(`{"duration":"10m","metrics":[{"expected":{"max":0.1},"failureLimit":1,"interval":"1m","provider":"prometheus-dev","query":"grpc_error_percentage"},{"expected":{"min":0.9},"failureLimit":1,"interval":"1m","provider":"prometheus-dev","query":"grpc_succeed_percentage"}]}`),
 							},
 							{
 								Name: model.StageAnalysis,
@@ -722,6 +724,7 @@ func TestGenericAnalysisConfiguration(t *testing.T) {
 										},
 									},
 								},
+								With: json.RawMessage(`{"duration":"10m","logs":[{"failureLimit":3,"interval":"1m","provider":"stackdriver-dev","query":"resource.labels.pod_id=\"pod1\"\n"}]}`),
 							},
 							{
 								Name: model.StageAnalysis,
@@ -739,6 +742,7 @@ func TestGenericAnalysisConfiguration(t *testing.T) {
 										},
 									},
 								},
+								With: json.RawMessage(`{"duration":"10m","https":[{"expectedCode":200,"failureLimit":1,"interval":"1m","method":"GET","url":"https://canary-endpoint.dev"}]}`),
 							},
 						},
 					},
@@ -796,6 +800,7 @@ func TestCustomSyncConfig(t *testing.T) {
 									},
 									Run: "sam build\nsam deploy -g --profile $AWS_PROFILE\n",
 								},
+								With: json.RawMessage(`{"envs":{"AWS_PROFILE":"default"},"run":"sam build\nsam deploy -g --profile $AWS_PROFILE\n","timeout":"6h"}`),
 							},
 						},
 					},

@@ -15,6 +15,7 @@
 package config
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -155,6 +156,7 @@ func TestTerraformApplicationtConfig(t *testing.T) {
 									Timeout:        Duration(6 * time.Hour),
 									MinApproverNum: 1,
 								},
+								With: json.RawMessage(`{"approvers":["foo","bar"]}`),
 							},
 							{
 								Name:                       model.StageTerraformApply,
@@ -202,6 +204,7 @@ func TestTerraformApplicationtConfig(t *testing.T) {
 								TerraformPlanStageOptions: &TerraformPlanStageOptions{
 									ExitOnNoChanges: true,
 								},
+								With: json.RawMessage(`{"exitOnNoChanges":true}`),
 							},
 							{
 								Name: model.StageWaitApproval,
@@ -210,6 +213,7 @@ func TestTerraformApplicationtConfig(t *testing.T) {
 									Timeout:        Duration(6 * time.Hour),
 									MinApproverNum: 1,
 								},
+								With: json.RawMessage(`{"approvers":["foo","bar"]}`),
 							},
 							{
 								Name:                       model.StageTerraformApply,

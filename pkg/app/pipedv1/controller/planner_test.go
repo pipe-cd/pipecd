@@ -97,6 +97,8 @@ func pointerBool(b bool) *bool {
 }
 
 func TestBuildQuickSyncStages(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name           string
 		plugins        []pluginapi.PluginClient
@@ -260,6 +262,8 @@ func TestBuildQuickSyncStages(t *testing.T) {
 }
 
 func TestBuildPipelineSyncStages(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name           string
 		plugins        []pluginapi.PluginClient

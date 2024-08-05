@@ -15,6 +15,7 @@
 package config
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -53,6 +54,7 @@ func TestKubernetesApplicationConfig(t *testing.T) {
 										IsPercentage: true,
 									},
 								},
+								With: json.RawMessage(`{"replicas":"100%"}`),
 							},
 							{
 								Name: model.StageK8sTrafficRouting,
@@ -61,6 +63,7 @@ func TestKubernetesApplicationConfig(t *testing.T) {
 										Number: 100,
 									},
 								},
+								With: json.RawMessage(`{"canary":100}`),
 							},
 							{
 								Name:                          model.StageK8sPrimaryRollout,
@@ -73,6 +76,7 @@ func TestKubernetesApplicationConfig(t *testing.T) {
 										Number: 100,
 									},
 								},
+								With: json.RawMessage(`{"primary":100}`),
 							},
 							{
 								Name:                       model.StageK8sCanaryClean,
