@@ -55,10 +55,19 @@ message DetermineStrategyResponse {
 
 message BuildStagesRequest {
     message StageConfig {
+        // The stage identifier.
+        // If it's not set, plugin should set it under pattern:
+        // `pluginname-stage-index`.
+        string id = 1;
         // The stage name.
-        string name = 1;
+        string name = 2 [(validate.rules).string.min_len = 1];
+        // The stage description.
+        string desc = 3;
+        // The stage timeout.
+        // It should be a duration string (aka. 1m/10s/...).
+        string timeout = 4;
         // The configuration of the stage.
-        bytes config = 2;
+        bytes config = 5;
     }
     repeated StageConfig stages = 1;
 }
