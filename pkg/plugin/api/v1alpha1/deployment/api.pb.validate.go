@@ -1103,22 +1103,65 @@ func (m *PlanPluginInput) validate(all bool) error {
 		}
 	}
 
-	if utf8.RuneCountInString(m.GetSourceRemoteUrl()) < 1 {
-		err := PlanPluginInputValidationError{
-			field:  "SourceRemoteUrl",
-			reason: "value length must be at least 1 runes",
+	// no validation rules for PluginConfig
+
+	if all {
+		switch v := interface{}(m.GetRunningDeploymentSource()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, PlanPluginInputValidationError{
+					field:  "RunningDeploymentSource",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, PlanPluginInputValidationError{
+					field:  "RunningDeploymentSource",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
 		}
-		if !all {
-			return err
+	} else if v, ok := interface{}(m.GetRunningDeploymentSource()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return PlanPluginInputValidationError{
+				field:  "RunningDeploymentSource",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
 		}
-		errors = append(errors, err)
 	}
 
-	// no validation rules for LastSuccessfulCommitHash
-
-	// no validation rules for LastSuccessfulConfigFileName
-
-	// no validation rules for PluginConfig
+	if all {
+		switch v := interface{}(m.GetTargetDeploymentSource()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, PlanPluginInputValidationError{
+					field:  "TargetDeploymentSource",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, PlanPluginInputValidationError{
+					field:  "TargetDeploymentSource",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTargetDeploymentSource()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return PlanPluginInputValidationError{
+				field:  "TargetDeploymentSource",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
 
 	if len(errors) > 0 {
 		return PlanPluginInputMultiError(errors)
