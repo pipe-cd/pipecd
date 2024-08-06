@@ -29,8 +29,10 @@ service DeploymentService {
     rpc DetermineVersions(DetermineVersionsRequest) returns (DetermineVersionsResponse) {}
     // DetermineStrategy determines which strategy should be used for the given deployment.
     rpc DetermineStrategy(DetermineStrategyRequest) returns (DetermineStrategyResponse) {}
-    // BuildStages builds the deployment pipeline stages.
-    rpc BuildStages(BuildStagesRequest) returns (BuildStagesResponse) {}
+    // BuildPipelineSyncStages builds the deployment pipeline stages.
+    rpc BuildPipelineSyncStages(BuildPipelineSyncStagesRequest) returns (BuildPipelineSyncStagesResponse) {}
+    // BuildQuickSyncStages builds the deployment quick sync stages.
+    rpc BuildQuickSyncStages(BuildQuickSyncStagesRequest) returns (BuildQuickSyncStagesResponse) {}
 }
 
 message DetermineVersionsRequest {
@@ -53,7 +55,7 @@ message DetermineStrategyResponse {
     string summary = 2;
 }
 
-message BuildStagesRequest {
+message BuildPipelineSyncStagesRequest {
     message StageConfig {
         // The stage identifier.
         // If it's not set, plugin should set it under pattern:
@@ -66,13 +68,25 @@ message BuildStagesRequest {
         // The stage timeout.
         // It should be a duration string (aka. 1m/10s/...).
         string timeout = 4;
+        // The stage index from the stage list in configuration.
+        int32 index = 5 [(validate.rules).int32.gte = 0];
         // The configuration of the stage.
-        bytes config = 5;
+        bytes config = 6;
     }
-    repeated StageConfig stages = 1;
+    bool rollback = 1;
+    repeated StageConfig stages = 2;
 }
 
-message BuildStagesResponse {
+message BuildPipelineSyncStagesResponse {
+    // The built stages of the deployment pipeline.
+    repeated model.PipelineStage stages = 1;
+}
+
+message BuildQuickSyncStagesRequest {
+    bool rollback = 1;
+}
+
+message BuildQuickSyncStagesResponse {
     // The built stages of the deployment pipeline.
     repeated model.PipelineStage stages = 1;
 }

@@ -213,3 +213,18 @@ func (d *Deployment) IsInChainDeployment() bool {
 func (d *Deployment) SetUpdatedAt(t int64) {
 	d.UpdatedAt = t
 }
+
+// Implement sort.Interface for PipelineStages.
+type PipelineStages []*PipelineStage
+
+func (p PipelineStages) Len() int {
+	return len(p)
+}
+
+func (p PipelineStages) Swap(i, j int) {
+	p[i], p[j] = p[j], p[i]
+}
+
+func (p PipelineStages) Less(i, j int) bool {
+	return p[i].Index < p[j].Index
+}

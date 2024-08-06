@@ -223,6 +223,7 @@ type PipelineStage struct {
 	Name    model.Stage
 	Desc    string
 	Timeout Duration
+	With    json.RawMessage
 
 	CustomSyncOptions        *CustomSyncOptions
 	WaitStageOptions         *WaitStageOptions
@@ -273,6 +274,7 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 	s.Name = gs.Name
 	s.Desc = gs.Desc
 	s.Timeout = gs.Timeout
+	s.With = gs.With
 
 	switch s.Name {
 	case model.StageCustomSync:
