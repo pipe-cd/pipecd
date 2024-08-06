@@ -478,6 +478,7 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		workingDir,
 		pluginClient,
 		c.apiClient,
+		c.gitClient,
 		c.notifier,
 		c.pipedConfig,
 		c.logger,

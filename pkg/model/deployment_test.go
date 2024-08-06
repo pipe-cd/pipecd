@@ -15,6 +15,7 @@
 package model
 
 import (
+	"sort"
 	"testing"
 	"time"
 
@@ -640,4 +641,20 @@ func TestFindRollbackStags(t *testing.T) {
 			assert.Equal(t, tt.wantStageFound, found)
 		})
 	}
+}
+
+func TestSortPipelineStagesByIndex(t *testing.T) {
+	stages := []*PipelineStage{
+		{Index: 2},
+		{Index: 1},
+		{Index: 4},
+		{Index: 3},
+	}
+	sort.Sort(PipelineStages(stages))
+	assert.Equal(t, []*PipelineStage{
+		{Index: 1},
+		{Index: 2},
+		{Index: 3},
+		{Index: 4},
+	}, stages)
 }

@@ -15,6 +15,7 @@
 package config
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -86,6 +87,7 @@ func TestLambdaApplicationConfig(t *testing.T) {
 										HasSuffix: false,
 									},
 								},
+								With: json.RawMessage(`{"percent":10}`),
 							},
 							{
 								Name: model.StageLambdaPromote,
@@ -95,6 +97,7 @@ func TestLambdaApplicationConfig(t *testing.T) {
 										HasSuffix: false,
 									},
 								},
+								With: json.RawMessage(`{"percent":100}`),
 							},
 						},
 					},
@@ -139,6 +142,7 @@ func TestLambdaApplicationConfig(t *testing.T) {
 										HasSuffix: false,
 									},
 								},
+								With: json.RawMessage(`{"percent":100}`),
 							},
 						},
 					},
