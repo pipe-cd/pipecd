@@ -23,7 +23,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestIgnoreDesiredCountDiff(t *testing.T) {
+func TestIgnoreAutoScalingDiff(t *testing.T) {
 	t.Parallel()
 
 	testcases := []struct {
@@ -97,7 +97,7 @@ func TestIgnoreDesiredCountDiff(t *testing.T) {
 			)
 			assert.NoError(t, err)
 
-			ignore := ignoreDesiredCountDiff(diff)
+			ignore := ignoreAutoScalingDiff(diff)
 			assert.Equal(t, tc.ignoreDiff, ignore)
 		})
 	}

@@ -197,13 +197,13 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	if err != nil {
 		return err
 	}
-	d.logger.Info(fmt.Sprintf("application %s has ecs manifests at commit %s", app.Id, headCommit.Hash))
+	d.logger.Info(fmt.Sprintf("application %s has ecs definition files at commit %s", app.Id, headCommit.Hash))
 
 	liveManifests, ok := d.stateGetter.GetECSManifests(app.Id)
 	if !ok {
-		return fmt.Errorf("failed to get live ecs manifests")
+		return fmt.Errorf("failed to get live ecs definition files")
 	}
-	d.logger.Info(fmt.Sprintf("application %s has live ecs manifests", app.Id))
+	d.logger.Info(fmt.Sprintf("application %s has live ecs definition files", app.Id))
 
 	result, err := provider.Diff(
 		liveManifests,
@@ -232,9 +232,9 @@ func (d *detector) loadConfigs(app *model.Application, repo git.Repo, headCommit
 		appDir  = filepath.Join(repoDir, app.GitPath.Path)
 	)
 
-	manifest, ok := manifestCache.Get(headCommit.Hash)
+	manifests, ok := manifestCache.Get(headCommit.Hash)
 	if ok {
-		return manifest, nil
+		return manifests, nil
 	}
 	// When the manifests were not in the cache we have to load them.
 	cfg, err := d.loadApplicationConfiguration(repoDir, app)
@@ -300,13 +300,13 @@ func (d *detector) loadConfigs(app *model.Application, repo git.Repo, headCommit
 		return provider.ECSManifests{}, fmt.Errorf("failed to load new task definition: %w", err)
 	}
 
-	manifests := provider.ECSManifests{
+	manifests = provider.ECSManifests{
 		ServiceDefinition: &serviceDef,
 		TaskDefinition:    &taskDef,
 	}
 	manifestCache.Put(headCommit.Hash, manifests)
 
-	return manifest, nil
+	return manifests, nil
 }
 
 func (d *detector) loadApplicationConfiguration(repoPath string, app *model.Application) (*config.Config, error) {
@@ -329,7 +329,7 @@ func makeSyncState(r *provider.DiffResult, commit string) model.ApplicationSyncS
 		}
 	}
 
-	if ignoreDesiredCountDiff(r) {
+	if ignoreAutoScalingDiff(r) {
 		return model.ApplicationSyncState{
 			Status:      model.ApplicationSyncStatus_SYNCED,
 			ShortReason: "Ignore diff of `desiredCount`.",
@@ -338,7 +338,7 @@ func makeSyncState(r *provider.DiffResult, commit string) model.ApplicationSyncS
 		}
 	}
 
-	shortReason := "The ecs manifests is not synced"
+	shortReason := "The ecs definition files are not synced"
 	if len(commit) >= 7 {
 		commit = commit[:7]
 	}
@@ -363,9 +363,9 @@ func makeSyncState(r *provider.DiffResult, commit string) model.ApplicationSyncS
 	}
 }
 
-// ignoreDesiredCountDiff returns true if the diff contains only autoscaled desiredCount.
-func ignoreDesiredCountDiff(r *provider.DiffResult) bool {
+// ignoreAutoScalingDiff returns true if the diff contains only autoscaled desiredCount.
+func ignoreAutoScalingDiff(r *provider.DiffResult) bool {
 	return r.Diff.NumNodes() == 1 &&
-		r.New.ServiceDefinition.DesiredCount == 0 && // When desiredCount is 0 or not defined in the head manifest, which means autoscaling may be enabled.
+		r.New.ServiceDefinition.DesiredCount == 0 && // When desiredCount is 0 or not defined in the head manifest, autoscaling may be enabled.
 		r.Old.ServiceDefinition.DesiredCount != r.New.ServiceDefinition.DesiredCount
 }
