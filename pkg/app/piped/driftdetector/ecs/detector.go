@@ -208,7 +208,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	}
 	d.logger.Info(fmt.Sprintf("application %s has live ecs definition files", app.Id))
 
-	// Ignore some fields whech are not necessary to detect diff.
+	// Ignore some fields whech are not necessary or unable to detect diff.
 	ignoreFields(liveManifests, headManifests)
 
 	result, err := provider.Diff(
@@ -242,7 +242,8 @@ func ignoreFields(liveManifests provider.ECSManifests, headManifests provider.EC
 	liveService.CreatedAt = nil
 	liveService.CreatedBy = nil
 	liveService.Events = nil
-	liveService.LoadBalancers = nil  // TODO: We should set values in headService from the head manifests .
+	liveService.LoadBalancers = nil // TODO: We should set values in headService from the head manifests .
+	liveService.PendingCount = 0
 	liveService.PlatformFamily = nil // Users cannot specify PlatformFamily in a service definition file. It is automatically set by ECS.
 	liveService.RunningCount = 0
 	liveService.ServiceArn = nil

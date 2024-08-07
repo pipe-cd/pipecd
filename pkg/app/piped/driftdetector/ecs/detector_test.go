@@ -49,10 +49,11 @@ func TestIgnoreFields(t *testing.T) {
 					SecurityGroups: []string{"1_test-sg", "0_test-sg"},
 				},
 			},
-			RunningCount:    10,
-			RoleArn:         aws.String("test-role-arn"),
+			PendingCount:    3,
 			PlatformFamily:  aws.String("LINUX"),
 			PlatformVersion: aws.String("1.4"),
+			RunningCount:    10,
+			RoleArn:         aws.String("test-role-arn"),
 			ServiceArn:      aws.String("test-service-arn"),
 			Status:          aws.String("ACTIVE"),
 			Tags: []types.Tag{
