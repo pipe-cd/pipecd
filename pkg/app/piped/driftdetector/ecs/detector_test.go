@@ -16,12 +16,163 @@ package ecs
 
 import (
 	"testing"
+	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/ecs"
 	"github.com/pipe-cd/pipecd/pkg/diff"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestIgnoreFields(t *testing.T) {
+	t.Parallel()
+
+	livestate := provider.ECSManifests{
+		ServiceDefinition: &types.Service{
+			CreatedAt: aws.Time(time.Now()),
+			CreatedBy: aws.String("test-createdby"),
+			Events: []types.ServiceEvent{
+				{
+					Id: aws.String("test-event"),
+				},
+			},
+			LoadBalancers: []types.LoadBalancer{
+				{
+					LoadBalancerName: aws.String("test-lb"),
+				},
+			},
+			NetworkConfiguration: &types.NetworkConfiguration{
+				AwsvpcConfiguration: &types.AwsVpcConfiguration{
+					AssignPublicIp: types.AssignPublicIpDisabled,
+					Subnets:        []string{"0_test-subnet", "1_test-subnet"}, // sorted
+					SecurityGroups: []string{"1_test-sg", "0_test-sg"},
+				},
+			},
+			RunningCount:    10,
+			RoleArn:         aws.String("test-role-arn"),
+			PlatformFamily:  aws.String("LINUX"),
+			PlatformVersion: aws.String("1.4"),
+			ServiceArn:      aws.String("test-service-arn"),
+			Status:          aws.String("ACTIVE"),
+			Tags: []types.Tag{
+				{
+					Key:   aws.String("a_test-tag"),
+					Value: aws.String("test-value-a"),
+				},
+				{
+					Key:   aws.String("pipecd-dev-managed-by"),
+					Value: aws.String("piped"),
+				},
+				{
+					Key:   aws.String("pipecd-dev-piped"),
+					Value: aws.String("test-piped"),
+				},
+				{
+					Key:   aws.String("pipecd-dev-application"),
+					Value: aws.String("test-application"),
+				},
+				{
+					Key:   aws.String("pipecd-dev-commit-hash"),
+					Value: aws.String("test-commit-hash"),
+				},
+				{
+					Key:   aws.String("test-tag_b"),
+					Value: aws.String("test-value-b"),
+				},
+			},
+			TaskDefinition: aws.String("test-taskdef"),
+			TaskSets: []types.TaskSet{
+				{
+					Id: aws.String("test-taskset"),
+				},
+			},
+		},
+		TaskDefinition: &types.TaskDefinition{
+			Compatibilities: []types.Compatibility{types.CompatibilityEc2, types.CompatibilityFargate},
+			ContainerDefinitions: []types.ContainerDefinition{
+				{
+					Essential: aws.Bool(false),
+					PortMappings: []types.PortMapping{
+						{
+							HostPort: aws.Int32(80),
+							Protocol: types.TransportProtocolTcp,
+						},
+						{
+							HostPort: aws.Int32(443),
+							Protocol: types.TransportProtocolTcp,
+						},
+					},
+				},
+				{
+					Essential: aws.Bool(true),
+					PortMappings: []types.PortMapping{
+						{
+							HostPort: aws.Int32(80),
+							Protocol: types.TransportProtocolTcp,
+						},
+					},
+				},
+			},
+			RegisteredAt:       aws.Time(time.Now()),
+			RegisteredBy:       aws.String("test-registeredby"),
+			RequiresAttributes: []types.Attribute{},
+			Revision:           10,
+			Status:             types.TaskDefinitionStatusActive,
+			TaskDefinitionArn:  aws.String("test-taskdef-arn"),
+		},
+	}
+
+	headManifest := provider.ECSManifests{
+		ServiceDefinition: &types.Service{
+			NetworkConfiguration: &types.NetworkConfiguration{
+				AwsvpcConfiguration: &types.AwsVpcConfiguration{
+					Subnets:        []string{"1_test-subnet", "0_test-subnet"}, // not sorted
+					SecurityGroups: []string{"1_test-sg", "0_test-sg"},
+				},
+			},
+			Tags: []types.Tag{
+				// Currently, tags are ignored.
+				{
+					Key:   aws.String("c_test-tag"),
+					Value: aws.String("test-value-c"),
+				},
+			},
+		},
+		TaskDefinition: &types.TaskDefinition{
+			ContainerDefinitions: []types.ContainerDefinition{
+				{
+					Essential: aws.Bool(false),
+					PortMappings: []types.PortMapping{
+						// HostPort will be ignored
+						// Protocol will be automatically tcp
+						{}, {},
+					},
+				},
+				{
+					// Use default value for 'Essential'
+					PortMappings: []types.PortMapping{
+						// HostPort will be ignored
+						// Protocol will be automatically tcp
+						{},
+					},
+				},
+			},
+		},
+	}
+
+	ignoreFields(livestate, headManifest)
+	result, err := provider.Diff(
+		livestate,
+		headManifest,
+		diff.WithEquateEmpty(),
+		diff.WithIgnoreAddingMapKeys(),
+		diff.WithCompareNumberAndNumericString(),
+	)
+
+	assert.NoError(t, err)
+	assert.Equal(t, false, result.Diff.HasDiff())
+}
 
 func TestIgnoreAutoScalingDiff(t *testing.T) {
 	t.Parallel()

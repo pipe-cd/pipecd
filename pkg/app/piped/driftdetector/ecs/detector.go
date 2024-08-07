@@ -19,11 +19,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
 	"go.uber.org/zap"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/ecs"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/ecs"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/sourceprocesser"
@@ -205,6 +208,9 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	}
 	d.logger.Info(fmt.Sprintf("application %s has live ecs definition files", app.Id))
 
+	// Ignore some fields whech are not necessary to detect diff.
+	ignoreFields(liveManifests, headManifests)
+
 	result, err := provider.Diff(
 		liveManifests,
 		headManifests,
@@ -219,6 +225,88 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	state := makeSyncState(result, headCommit.Hash)
 
 	return d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
+}
+
+// ignoreFields adjusts the fields to ignore unnecessary diff.
+//
+// TODO: We should check diff of following fields. Currently they are ignored:
+//   - service.LoadBalancers
+//   - service.Tags
+//   - taskDefinition.ContainerDefinitions[].PortMappings[].HostPort
+//
+// TODO: Maybe we should check diff of following fields when not set in the head manifests in some way. Currently they are ignored:
+//   - service.PlatformVersion
+//   - service.RoleArn
+func ignoreFields(liveManifests provider.ECSManifests, headManifests provider.ECSManifests) {
+	liveService := liveManifests.ServiceDefinition
+	liveService.CreatedAt = nil
+	liveService.CreatedBy = nil
+	liveService.Events = nil
+	liveService.LoadBalancers = nil  // TODO: We should set values in headService from the head manifests .
+	liveService.PlatformFamily = nil // Users cannot specify PlatformFamily in a service definition file. It is automatically set by ECS.
+	liveService.RunningCount = 0
+	liveService.ServiceArn = nil
+	liveService.Status = nil         // Service's Status is shown on the WebUI as healthStatus. So we don't need Status in the driftdetection.
+	liveService.TaskDefinition = nil // TODO: Find a way to compare the task definition if possible.
+	liveService.TaskSets = nil
+
+	liveTask := liveManifests.TaskDefinition
+	liveTask.RegisteredAt = nil
+	liveTask.RegisteredBy = nil
+	liveTask.RequiresAttributes = nil
+	liveTask.Revision = 0 // TODO: Find a way to compare the revision if possible.
+	liveTask.TaskDefinitionArn = nil
+	for i := range liveTask.ContainerDefinitions {
+		for j := range liveTask.ContainerDefinitions[i].PortMappings {
+			// We ignore diff of HostPort because it has several default values. See https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_ContainerDefinition.html#ECS-Type-ContainerDefinition-portMappings.
+			liveTask.ContainerDefinitions[i].PortMappings[j].HostPort = nil
+		}
+	}
+
+	headService := headManifests.ServiceDefinition
+	if headService.PlatformVersion == nil {
+		// The LATEST platform version is used by default if PlatformVersion is not specified.
+		// See https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CreateService.html#ECS-CreateService-request-platformVersion.
+		headService.PlatformVersion = liveService.PlatformVersion
+	}
+	if headService.RoleArn == nil || len(*headService.RoleArn) == 0 {
+		// User's ECS service-linked role is used by default if RoleArn is not specified.
+		// See https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CreateService.html#ECS-CreateService-request-role.
+		headService.RoleArn = liveService.RoleArn
+	}
+	if headService.NetworkConfiguration != nil && headService.NetworkConfiguration.AwsvpcConfiguration != nil {
+		awsvpcCfg := headService.NetworkConfiguration.AwsvpcConfiguration
+		slices.Sort(awsvpcCfg.Subnets) // Livestate's Subnets are sorted by ECS. (SecurityGroups and ContainerDefinitions are not sorted)
+		if len(awsvpcCfg.AssignPublicIp) == 0 {
+			// AssignPublicIp is DISABLED by default.
+			// See https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_AwsVpcConfiguration.html#ECS-Type-AwsVpcConfiguration-assignPublicIp.
+			awsvpcCfg.AssignPublicIp = types.AssignPublicIpDisabled
+		}
+	}
+
+	// TODO: In order to check diff of the tags, we need to add pipecd-managed tags and sort.
+	liveService.Tags = nil
+	headService.Tags = nil
+
+	headTask := headManifests.TaskDefinition
+	headTask.Status = types.TaskDefinitionStatusActive  // If livestate's status is not ACTIVE, we should re-deploy a new task definition.
+	headTask.Compatibilities = liveTask.Compatibilities // Users can specify Compatibilities in a task definition file, but it is not used when registering a task definition.
+
+	for i := range headTask.ContainerDefinitions {
+		cd := &headTask.ContainerDefinitions[i]
+		if cd.Essential == nil {
+			// Essential is true by default. See https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_ContainerDefinition.html#ECS-Type-ContainerDefinition-es.
+			cd.Essential = aws.Bool(true)
+		}
+		for j := range cd.PortMappings {
+			pm := &cd.PortMappings[j]
+			if len(pm.Protocol) == 0 {
+				// Protocol is tcp by default. See https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_PortMapping.html#ECS-Type-PortMapping-protocol.
+				pm.Protocol = types.TransportProtocolTcp
+			}
+			pm.HostPort = nil // We ignore diff of HostPort because it has several default values.
+		}
+	}
 }
 
 func (d *detector) loadConfigs(app *model.Application, repo git.Repo, headCommit git.Commit) (provider.ECSManifests, error) {
