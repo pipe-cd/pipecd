@@ -28,28 +28,6 @@ Therefore, you mainly need to:
 1. integrate a step to push an Event to the Control Plane using `pipectl` into your CI workflow.
 
 ### 1. Defining Events
-#### Use the `.pipe/` directory
->NOTE: This way is deprecated and will be removed in the future, so please use the application configuration.
-
-Prepare EventWatcher configuration files under the `.pipe/` directory at the root of your Git repository.
-In that files, you define which values in which files should be updated when the Piped found out a new Event.
-
-For instance, suppose you want to update the Kubernetes manifest defined in `helloworld/deployment.yaml` when an Event with the name `helloworld-image-update` occurs:
-
-```yaml
-apiVersion: pipecd.dev/v1beta1
-kind: EventWatcher
-spec:
-  events:
-    - name: helloworld-image-update
-      replacements:
-        - file: helloworld/deployment.yaml
-          yamlField: $.spec.template.spec.containers[0].image
-```
-
-The full list of configurable `EventWatcher` fields are [here](../configuration-reference/#event-watcher-configuration-deprecated).
-
-#### Use the application configuration
 
 Define what to do for which event in the application configuration file of the target application.
 
@@ -117,22 +95,7 @@ Event watcher is a project-wide feature, hence an event name is unique inside a 
 On the contrary, if you want to explicitly distinguish those, we recommend using labels. You can make an event definition unique by using any number of labels with arbitrary keys and values.
 Suppose you define an event with the labels `env: dev` and `appName: helloworld`:
 
-When you use the `.pipe/` directory, you can configure like below.
-```yaml
-apiVersion: pipecd.dev/v1beta1
-kind: EventWatcher
-spec:
-  events:
-    - name: image-update
-      labels:
-        env: dev
-        appName: helloworld
-      replacements:
-        - file: helloworld/deployment.yaml
-          yamlField: $.spec.template.spec.containers[0].image
-```
-
-The other example is like below.
+You can configure like below.
 ```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: ApplicationKind

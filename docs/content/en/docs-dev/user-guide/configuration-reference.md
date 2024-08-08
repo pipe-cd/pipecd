@@ -182,34 +182,6 @@ spec:
 |-|-|-|-|
 | metrics | map[string][AnalysisMetrics](#analysismetrics) | Template for metrics. | No |
 
-## Event Watcher Configuration (deprecated)
-
-```yaml
-apiVersion: pipecd.dev/v1beta1
-kind: EventWatcher
-spec:
-  events:
-    - name: helloworld-image-update
-      replacements:
-        - file: helloworld/deployment.yaml
-          yamlField: $.spec.template.spec.containers[0].image
-```
-
-| Field | Type | Description | Required |
-|-|-|-|-|
-| name | string | The event name. | Yes |
-| labels | map[string]string | Additional attributes of event. This can make an event definition unique even if the one with the same name exists. | No |
-| replacements | [][EventWatcherReplacement](#eventwatcherreplacement) | List of places where will be replaced when the new event matches. | Yes |
-
-### EventWatcherReplacement
-One of `yamlField` or `regex` is required.
-
-| Field | Type | Description | Required |
-|-|-|-|-|
-| file | string | The relative path from the repository root to the file to be updated. | Yes |
-| yamlField | string | The yaml path to the field to be updated. It requires to start with `$` which represents the root element. e.g. `$.foo.bar[0].baz`. | No |
-| regex | string | The regex string that specify what should be replaced. The only first capturing group enclosed by `()` will be replaced with the new value. e.g. `host.xz/foo/bar:(v[0-9].[0-9].[0-9])` | No |
-
 ## CommitMatcher
 
 | Field | Type | Description | Required |
@@ -802,6 +774,15 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 | commitMessage | string | The commit message used to push after replacing values. Default message is used if not given. | No |
 | makePullRequest | bool | Whether to create a new branch or not when commit changes in event watcher. Default is `false`. | No |
 | replacements | [][EventWatcherReplacement](#eventwatcherreplacement) | List of places where will be replaced when the new event matches. | Yes |
+
+### EventWatcherReplacement
+One of `yamlField` or `regex` is required.
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| file | string | The relative path from the repository root to the file to be updated. | Yes |
+| yamlField | string | The yaml path to the field to be updated. It requires to start with `$` which represents the root element. e.g. `$.foo.bar[0].baz`. | No |
+| regex | string | The regex string that specify what should be replaced. The only first capturing group enclosed by `()` will be replaced with the new value. e.g. `host.xz/foo/bar:(v[0-9].[0-9].[0-9])` | No |
 
 ## DriftDetection
 
