@@ -199,6 +199,8 @@ prometheus:
       size: 4Gi
     strategy:
       type: Recreate
+    extraFlags:
+      - enable-feature=remote-write-receiver # To write trace metrics from Grafana Tempo
 
 # All directives inside this section will be directly sent to the grafana chart.
 # Head to the below link to see all available values.
@@ -259,6 +261,15 @@ grafana:
           options:
             path: /tmp/dashboards/Piped
 
+# All directives inside this section will be directly sent to the grafana-tempo chart.
+# Head to the below link to see all available values.
+# https://github.com/grafana/helm-charts/tree/main/charts/tempo
+tempo:
+  tempo:
+    metricsGenerator:
+      enabled: true
+      remoteWriteUrl: "http://pipecd-prometheus-server/api/v1/write" # TODO rewrite this like {{ include "pipecd.fullname" . }}-prometheus-server or like {{ include "prometheus.fullname" . }}-server
+
 opentelemetry-collector:
   mode: "deployment"
   replicaCount: 1
@@ -276,10 +287,17 @@ opentelemetry-collector:
           grpc:
             endpoint: 0.0.0.0:4317 # collector is deployed mith deployment mode, so listen not only for local.
           http: null
+    exporters:
+      otlp:
+        endpoint: pipecd-tempo:4317 # TODO rewrite this like {{ include "pipecd.fullname" . }}-tempo or like {{ include "tempo.fullname" }}
+        tls:
+          insecure: true
     service:
       pipelines:
         traces:
           receivers:
+            - otlp
+          exporters:
             - otlp
         metrics: null
         logs: null
