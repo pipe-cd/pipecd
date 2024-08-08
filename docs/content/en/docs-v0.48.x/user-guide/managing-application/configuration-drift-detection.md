@@ -50,7 +50,9 @@ This status means the application is deploying and the configuration drift detec
 
 ### How to enable
 
-By default, drift detection is **NOT** enabled. You can enable it for each application by configuring application's [OnOutOfSync.disabled](../configuration-reference/#onoutofsync).
+This feature is automatically enabled for all applications.
+
+If you want to deploy automatically when `OUT_OF_SYNC` occures, configure each application's [OnOutOfSync](../configuration-reference/#onoutofsync).
 
 You can change the checking interval as well as [configure the notification](../../managing-piped/configuring-notifications/) for these events in `piped` configuration.
 
