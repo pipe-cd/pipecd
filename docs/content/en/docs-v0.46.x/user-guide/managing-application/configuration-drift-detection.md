@@ -52,7 +52,7 @@ This status means the application is deploying and the configuration drift detec
 
 This feature is automatically enabled for all applications.
 
-If you want to deploy automatically when `OUT_OF_SYNC` occures, configure each application's [OnOutOfSync](../configuration-reference/#onoutofsync).
+If you want to trigger deployment automatically when `OUT_OF_SYNC` occurs, see [Trigger configuration](./triggering-a-deployment/#trigger-configuration).
 
 You can change the checking interval as well as [configure the notification](../../managing-piped/configuring-notifications/) for these events in `piped` configuration.
 
