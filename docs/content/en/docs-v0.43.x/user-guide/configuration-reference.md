@@ -661,7 +661,7 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| ignoreFields | []string | List of fields path in manifests, which its diff should be ignored. | No |
+| ignoreFields | []string | List of fields path in manifests, which its diff should be ignored. This is available for only `KubernetesApp`.| No |
 
 ## PipeCD rich defined types
 

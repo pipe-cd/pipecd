@@ -54,6 +54,8 @@ This feature is automatically enabled for all applications.
 
 You can change the checking interval as well as [configure the notification](../../managing-piped/configuring-notifications/) for these events in `piped` configuration.
 
+Note: If you want to trigger deployment automatically when `OUT_OF_SYNC` occurs, see [Trigger configuration](./triggering-a-deployment/#trigger-configuration).
+
 ### Ignore drift detection for specific fields
 
 >  Note: This feature is currently supported for only Kubernetes application.  
