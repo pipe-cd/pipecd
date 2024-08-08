@@ -85,7 +85,6 @@ type Config struct {
 	PipedSpec            *PipedSpec
 	ControlPlaneSpec     *ControlPlaneSpec
 	AnalysisTemplateSpec *AnalysisTemplateSpec
-	EventWatcherSpec     *EventWatcherSpec
 }
 
 type genericConfig struct {
@@ -130,10 +129,6 @@ func (c *Config) init(kind Kind, apiVersion string) error {
 	case KindAnalysisTemplate:
 		c.AnalysisTemplateSpec = &AnalysisTemplateSpec{}
 		c.spec = c.AnalysisTemplateSpec
-
-	case KindEventWatcher:
-		c.EventWatcherSpec = &EventWatcherSpec{}
-		c.spec = c.EventWatcherSpec
 
 	default:
 		return fmt.Errorf("unsupported kind: %s", c.Kind)
