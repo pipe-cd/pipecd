@@ -209,7 +209,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	d.logger.Info(fmt.Sprintf("application %s has live ecs definition files", app.Id))
 
 	// Ignore some fields whech are not necessary or unable to detect diff.
-	ignoreFields(liveManifests, headManifests)
+	ignoreParameters(liveManifests, headManifests)
 
 	result, err := provider.Diff(
 		liveManifests,
@@ -227,7 +227,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	return d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
 }
 
-// ignoreFields adjusts the fields to ignore unnecessary diff.
+// ignoreParameters adjusts the fields to ignore unnecessary diff.
 //
 // TODO: We should check diff of following fields. Currently they are ignored:
 //   - service.LoadBalancers
@@ -237,7 +237,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 // TODO: Maybe we should check diff of following fields when not set in the head manifests in some way. Currently they are ignored:
 //   - service.PlatformVersion
 //   - service.RoleArn
-func ignoreFields(liveManifests provider.ECSManifests, headManifests provider.ECSManifests) {
+func ignoreParameters(liveManifests provider.ECSManifests, headManifests provider.ECSManifests) {
 	liveService := liveManifests.ServiceDefinition
 	liveService.CreatedAt = nil
 	liveService.CreatedBy = nil

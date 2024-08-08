@@ -25,7 +25,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestIgnoreFields(t *testing.T) {
+func TestIgnoreParameters(t *testing.T) {
 	t.Parallel()
 
 	livestate := provider.ECSManifests{
@@ -162,7 +162,7 @@ func TestIgnoreFields(t *testing.T) {
 		},
 	}
 
-	ignoreFields(livestate, headManifest)
+	ignoreParameters(livestate, headManifest)
 	result, err := provider.Diff(
 		livestate,
 		headManifest,
