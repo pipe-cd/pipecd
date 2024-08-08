@@ -319,12 +319,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		// TODO: Implement the drift detector controller.
 	}
 
-	cfgData, err := p.loadConfigByte(ctx)
-	if err != nil {
-		input.Logger.Error("failed to load piped configuration", zap.Error(err))
-		return err
-	}
-
 	// Start running deployment controller.
 	{
 		c := controller.NewController(
@@ -337,7 +331,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			notifier,
 			decrypter,
 			cfg,
-			cfgData,
 			appManifestsCache,
 			p.gracePeriod,
 			input.Logger,
@@ -535,44 +528,6 @@ func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 			return nil, err
 		}
 		return extract(cfg)
-	}
-
-	return nil, fmt.Errorf("one of config-file, config-gcp-secret or config-aws-secret must be set")
-}
-
-// loadConfig reads the Piped configuration data from the specified source.
-func (p *piped) loadConfigByte(ctx context.Context) ([]byte, error) {
-	// HACK: When the version of cobra is updated to >=v1.8.0, this should be replaced with https://pkg.go.dev/github.com/spf13/cobra#Command.MarkFlagsMutuallyExclusive.
-	if err := p.hasTooManyConfigFlags(); err != nil {
-		return nil, err
-	}
-
-	if p.configFile != "" {
-		return os.ReadFile(p.configFile)
-	}
-
-	if p.configData != "" {
-		data, err := base64.StdEncoding.DecodeString(p.configData)
-		if err != nil {
-			return nil, fmt.Errorf("the given config-data isn't base64 encoded: %w", err)
-		}
-		return data, nil
-	}
-
-	if p.configGCPSecret != "" {
-		data, err := p.getConfigDataFromSecretManager(ctx)
-		if err != nil {
-			return nil, fmt.Errorf("failed to load config from SecretManager (%w)", err)
-		}
-		return data, nil
-	}
-
-	if p.configAWSSecret != "" {
-		data, err := p.getConfigDataFromAWSSecretsManager(ctx)
-		if err != nil {
-			return nil, fmt.Errorf("failed to load config from AWS Secrets Manager (%w)", err)
-		}
-		return data, nil
 	}
 
 	return nil, fmt.Errorf("one of config-file, config-gcp-secret or config-aws-secret must be set")
