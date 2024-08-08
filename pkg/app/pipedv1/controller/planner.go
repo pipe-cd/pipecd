@@ -54,7 +54,6 @@ type planner struct {
 	lastSuccessfulCommitHash     string
 	lastSuccessfulConfigFilename string
 	workingDir                   string
-	pipedConfig                  []byte
 
 	// The plugin clients are used to call plugin that actually
 	// performs planning deployment.
@@ -95,7 +94,6 @@ func newPlanner(
 	apiClient apiClient,
 	gitClient gitClient,
 	notifier notifier,
-	pipedConfig []byte,
 	logger *zap.Logger,
 ) *planner {
 
@@ -127,7 +125,6 @@ func newPlanner(
 		gitClient:                    gitClient,
 		metadataStore:                metadatastore.NewMetadataStore(apiClient, d),
 		notifier:                     notifier,
-		pipedConfig:                  pipedConfig,
 		doneDeploymentStatus:         d.Status,
 		cancelledCh:                  make(chan *model.ReportableCommand, 1),
 		nowFunc:                      time.Now,
