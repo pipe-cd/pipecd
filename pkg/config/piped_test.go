@@ -15,6 +15,7 @@
 package config
 
 import (
+	"errors"
 	"testing"
 	"time"
 
@@ -607,6 +608,7 @@ func TestPipedConfigMask(t *testing.T) {
 					HostName:          "foo",
 					SSHKeyFile:        "foo",
 					SSHKeyData:        "foo",
+					Password:          "foo",
 				},
 				Repositories: []PipedRepository{
 					{
@@ -770,6 +772,7 @@ func TestPipedConfigMask(t *testing.T) {
 					HostName:          "foo",
 					SSHKeyFile:        maskString,
 					SSHKeyData:        maskString,
+					Password:          maskString,
 				},
 				Repositories: []PipedRepository{
 					{
@@ -948,6 +951,7 @@ func TestPipedSpecClone(t *testing.T) {
 					Username:   "username",
 					Email:      "username@email.com",
 					SSHKeyFile: "/etc/piped-secret/ssh-key",
+					Password:   "Password",
 				},
 				Repositories: []PipedRepository{
 					{
@@ -1145,6 +1149,7 @@ func TestPipedSpecClone(t *testing.T) {
 					Username:   "username",
 					Email:      "username@email.com",
 					SSHKeyFile: "/etc/piped-secret/ssh-key",
+					Password:   "Password",
 				},
 				Repositories: []PipedRepository{
 					{
@@ -1432,6 +1437,84 @@ func TestFindPlatformProvidersByLabel(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			got := pipedSpec.FindPlatformProvidersByLabels(tc.labels, model.ApplicationKind_KUBERNETES)
 			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestPipeGitValidate(t *testing.T) {
+	t.Parallel()
+	testcases := []struct {
+		name string
+		git  PipedGit
+		err  error
+	}{
+		{
+			name: "Both SSH and Password are not valid",
+			git: PipedGit{
+				SSHKeyData: "sshkey1",
+				Password:   "Password",
+			},
+			err: errors.New("cannot configure both sshKeyData or sshKeyFile and password authentication"),
+		},
+		{
+			name: "Both SSH and Password is not valid",
+			git: PipedGit{
+				SSHKeyFile: "sshkeyfile",
+				SSHKeyData: "sshkeydata",
+				Password:   "Password",
+			},
+			err: errors.New("cannot configure both sshKeyData or sshKeyFile and password authentication"),
+		},
+		{
+			name: "SSH key data is not empty",
+			git: PipedGit{
+				SSHKeyData: "sshkey2",
+			},
+			err: nil,
+		},
+		{
+			name: "SSH key file is not empty",
+			git: PipedGit{
+				SSHKeyFile: "sshkey2",
+			},
+			err: nil,
+		},
+		{
+			name: "Both SSH file and data is not empty",
+			git: PipedGit{
+				SSHKeyData: "sshkeydata",
+				SSHKeyFile: "sshkeyfile",
+			},
+			err: errors.New("only either sshKeyFile or sshKeyData can be set"),
+		},
+		{
+			name: "Password is valid",
+			git: PipedGit{
+				Username: "Username",
+				Password: "Password",
+			},
+			err: nil,
+		},
+		{
+			name: "Username is empty",
+			git: PipedGit{
+				Username: "",
+				Password: "Password",
+			},
+			err: errors.New("both username and password must be set"),
+		},
+		{
+			name: "Git config is empty",
+			git:  PipedGit{},
+			err:  nil,
+		},
+	}
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.git.SSHKeyData, func(t *testing.T) {
+			t.Parallel()
+			err := tc.git.Validate()
+			assert.Equal(t, tc.err, err)
 		})
 	}
 }
