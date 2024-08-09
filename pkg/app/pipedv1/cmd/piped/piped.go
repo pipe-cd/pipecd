@@ -36,6 +36,12 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/spf13/cobra"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/sdk/resource"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/credentials"
@@ -171,6 +177,13 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		input.Logger.Error("failed to create gRPC client to control plane", zap.Error(err))
 		return err
 	}
+
+	tracerProvider, err := p.createTracerProvider(ctx, cfg.APIAddress, cfg.ProjectID, cfg.PipedID, pipedKey)
+	if err != nil {
+		input.Logger.Error("failed to create tracer provider", zap.Error(err))
+		return err
+	}
+	otel.SetTracerProvider(tracerProvider)
 
 	// Send the newest piped meta to the control-plane.
 	if err := p.sendPipedMeta(ctx, apiClient, cfg, input.Logger); err != nil {
@@ -466,6 +479,62 @@ func (p *piped) createAPIClient(ctx context.Context, address, projectID, pipedID
 		return nil, err
 	}
 	return client, nil
+}
+
+// createTracerProvider makes a OpenTelemetry Trace's TracerProvider.
+func (p *piped) createTracerProvider(ctx context.Context, address, projectID, pipedID string, pipedKey []byte) (trace.TracerProvider, error) {
+	options := []otlptracegrpc.Option{
+		otlptracegrpc.WithEndpoint(address),
+		otlptracegrpc.WithHeaders(map[string]string{
+			"authorization": "Bearer " + rpcauth.MakePipedToken(projectID, pipedID, string(pipedKey)),
+		}),
+	}
+
+	if !p.insecure {
+		if p.certFile != "" {
+			creds, err := credentials.NewClientTLSFromFile(p.certFile, "")
+			if err != nil {
+				return nil, fmt.Errorf("failed to load client TLS credentials: %w", err)
+			}
+			options = append(options, otlptracegrpc.WithTLSCredentials(creds))
+		} else {
+			config := &tls.Config{}
+			options = append(options, otlptracegrpc.WithTLSCredentials(credentials.NewTLS(config)))
+		}
+	} else {
+		options = append(options, otlptracegrpc.WithInsecure())
+	}
+
+	otlpTraceExporter, err := otlptracegrpc.New(ctx, options...)
+	if err != nil {
+		return nil, err
+	}
+
+	otlpResource, err := resource.New(ctx, resource.WithAttributes(
+		// Set common attributes for all spans.
+		attribute.String("service.name", "piped"),
+		attribute.String("service.version", version.Get().Version),
+		attribute.String("service.namespace", projectID),
+		attribute.String("service.instance.id", pipedID),
+
+		// Set the project and piped IDs as attributes.
+		attribute.String("project-id", projectID),
+		attribute.String("piped-id", pipedID),
+	))
+	if err != nil {
+		return nil, err
+	}
+
+	otlpResource, err = resource.Merge(resource.Default(), otlpResource) // the later one has higher priority
+	if err != nil {
+		return nil, err
+	}
+
+	return sdktrace.NewTracerProvider(
+		sdktrace.WithResource(otlpResource),
+		sdktrace.WithBatcher(otlpTraceExporter),
+		sdktrace.WithSampler(sdktrace.AlwaysSample()),
+	), nil
 }
 
 // loadConfig reads the Piped configuration data from the specified source.
