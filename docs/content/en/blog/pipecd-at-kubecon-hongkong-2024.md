@@ -1,5 +1,5 @@
 ---
-date: 2024-07-22
+date: 2024-08-09
 title: "PipeCD at CNCF KubeCon Hong Kong 2024"
 linkTitle: "PipeCD at CNCF KubeCon Hong Kong 2024"
 weight: 987
@@ -8,7 +8,7 @@ categories: ["Announcement"]
 tags: ["Conference", "News"]
 ---
 
-[KubeCon Hong Kong 2024](https://events.linuxfoundation.org/kubecon-cloudnativecon-open-source-summit-ai-dev-china/) is only four more weeks away!
+[KubeCon Hong Kong 2024](https://events.linuxfoundation.org/kubecon-cloudnativecon-open-source-summit-ai-dev-china/) is only two weeks away!
 PipeCD team is excited to announce upcoming activities at KubeCon. Let's come to meet each other and share insights and knowledge 🙌
 
 ### PipeCD's session with Karmada
@@ -22,16 +22,16 @@ We will have a presentation as below.
 
 ### PipeCD's booth
 
-We will also be around the project booth. Let's come and discuss.
+We will also be around the project booth. Let's come and discuss!
 
-Booth information
+Booth information:
 
  <!-- TODO: Input the booth info -->
 ```
-Project: PipeCD
-Kiosk #: 
-Kiosk Shift: 
-Location: 
+Project: PipeCDi
+Kiosk #: TBA
+Kiosk Shift: TBA
+Location: TBA
 ```
 
 That's all! Have a great KubeCon 🙌
