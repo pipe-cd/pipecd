@@ -79,7 +79,7 @@ spec:
 └── script.sh
 ```
 
-## Builtin command
+## Builtin commands
 
 Currently, you can use the commands which are installed in the environment for the piped.
 
@@ -90,7 +90,7 @@ For example, If you are using the container platform and the offcial piped conta
 - curl
 - and the builtin commands installed in the base image.
 
-The public piped image available in PipeCD main repo (ref: [Dockerfile](https://github.com/pipe-cd/pipecd/blob/master/cmd/piped/Dockerfile)) is based on [alpine](https://hub.docker.com/_/alpine/) and only has a few UNIX command available (ref: [piped-base Dockerfile](https://github.com/pipe-cd/pipecd/blob/master/tool/piped-base/Dockerfile)). 
+The public piped image available in PipeCD main repo (ref: [Dockerfile](https://github.com/pipe-cd/pipecd/blob/master/cmd/piped/Dockerfile)) is based on [alpine](https://hub.docker.com/_/alpine/) and only has a few UNIX commands available (ref: [piped-base Dockerfile](https://github.com/pipe-cd/pipecd/blob/master/tool/piped-base/Dockerfile)). 
 
 If you want to use your commands, you can realize it with either step below.
 - Prepare your own environment container image then add [piped binary](https://github.com/pipe-cd/pipecd/releases) to it.
