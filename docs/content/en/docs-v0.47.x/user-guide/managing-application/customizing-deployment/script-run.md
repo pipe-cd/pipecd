@@ -65,9 +65,6 @@ apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
   name: script-run
-  labels:
-    env: example
-    team: product
   pipeline:
     stages:
       - name: SCRIPT_RUN
