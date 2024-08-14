@@ -35,11 +35,9 @@ type store struct {
 }
 
 type app struct {
-	// ServiceDefinition and its primary taskset's TaskDefinition.
 	functionManifest provider.FunctionManifest
 
-	// States of services, tasksets, and tasks.
-	// NOTE: Standalone tasks are NOT included yet.
+	// States of functions
 	states  []*model.LambdaResourceState
 	version model.ApplicationLiveStateVersion
 }
