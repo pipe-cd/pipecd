@@ -1,4 +1,4 @@
-import { createTheme } from "@material-ui/core/styles";
+import { createMuiTheme } from "@material-ui/core/styles";
 import cyan from "@material-ui/core/colors/cyan";
 
 declare module "@material-ui/core/styles/createTypography" {
@@ -11,7 +11,7 @@ declare module "@material-ui/core/styles/createTypography" {
   }
 }
 
-export const theme = createTheme({
+export const theme = createMuiTheme({
   props: {
     MuiButtonBase: {
       disableRipple: true,

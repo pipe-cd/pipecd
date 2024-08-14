@@ -102,13 +102,7 @@ export const SealedSecretDialog: FC<SealedSecretDialogProps> = memo(
     }
 
     return (
-      <Dialog
-        open={open}
-        TransitionProps={{
-          onEnter: handleOnEnter,
-        }}
-        onClose={handleClose}
-      >
+      <Dialog open={open} onEnter={handleOnEnter} onClose={handleClose}>
         {sealedSecret ? (
           <>
             <DialogTitle>{DIALOG_TITLE}</DialogTitle>

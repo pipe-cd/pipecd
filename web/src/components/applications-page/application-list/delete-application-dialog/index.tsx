@@ -83,14 +83,7 @@ export const DeleteApplicationDialog: FC<DeleteApplicationDialogProps> = memo(
     }, [dispatch]);
 
     return (
-      <Dialog
-        open={Boolean(application)}
-        onClose={(_event, reason) => {
-          if (reason !== "backdropClick" || !isDeleting) {
-            handleCancel();
-          }
-        }}
-      >
+      <Dialog open={Boolean(application)} disableBackdropClick={isDeleting}>
         <DialogTitle>{TITLE}</DialogTitle>
         <DialogContent>
           <Alert severity="error" className={classes.description}>

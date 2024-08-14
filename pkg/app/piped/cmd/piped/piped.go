@@ -36,10 +36,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/spf13/cobra"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
-	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/credentials"
@@ -103,7 +99,6 @@ type piped struct {
 	addLoginUserToPasswd                 bool
 	launcherVersion                      string
 	maxRecvMsgSize                       int
-	appManifestCacheCount                int
 }
 
 func NewCommand() *cobra.Command {
@@ -112,11 +107,10 @@ func NewCommand() *cobra.Command {
 		panic(fmt.Sprintf("failed to detect the current user's home directory: %v", err))
 	}
 	p := &piped{
-		adminPort:             9085,
-		toolsDir:              path.Join(home, ".piped", "tools"),
-		gracePeriod:           30 * time.Second,
-		maxRecvMsgSize:        1024 * 1024 * 10, // 10MB
-		appManifestCacheCount: 150,
+		adminPort:      9085,
+		toolsDir:       path.Join(home, ".piped", "tools"),
+		gracePeriod:    30 * time.Second,
+		maxRecvMsgSize: 1024 * 1024 * 10, // 10MB
 	}
 	cmd := &cobra.Command{
 		Use:   "piped",
@@ -137,7 +131,6 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&p.enableDefaultKubernetesCloudProvider, "enable-default-kubernetes-cloud-provider", p.enableDefaultKubernetesCloudProvider, "Whether the default kubernetes provider is enabled or not. This feature is deprecated.")
 	cmd.Flags().BoolVar(&p.addLoginUserToPasswd, "add-login-user-to-passwd", p.addLoginUserToPasswd, "Whether to add login user to $HOME/passwd. This is typically for applications running as a random user ID.")
 	cmd.Flags().DurationVar(&p.gracePeriod, "grace-period", p.gracePeriod, "How long to wait for graceful shutdown.")
-	cmd.Flags().IntVar(&p.appManifestCacheCount, "app-manifest-cache-count", p.appManifestCacheCount, "The number of app manifests to cache. The cache-key contains the commit hash. The default is 150.")
 
 	cmd.Flags().StringVar(&p.launcherVersion, "launcher-version", p.launcherVersion, "The version of launcher which initialized this Piped.")
 
@@ -233,13 +226,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		input.Logger.Error("failed to create gRPC client to control plane", zap.Error(err))
 		return err
 	}
-
-	tracerProvider, err := p.createTracerProvider(ctx, cfg.APIAddress, cfg.ProjectID, cfg.PipedID, pipedKey)
-	if err != nil {
-		input.Logger.Error("failed to create tracer provider", zap.Error(err))
-		return err
-	}
-	otel.SetTracerProvider(tracerProvider)
 
 	// Send the newest piped meta to the control-plane.
 	if err := p.sendPipedMeta(ctx, apiClient, cfg, input.Logger); err != nil {
@@ -358,11 +344,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	analysisResultStore := analysisresultstore.NewStore(apiClient, input.Logger)
 
 	// Create memory caches.
-	appManifestsCache, err := memorycache.NewLRUCache(p.appManifestCacheCount)
-	if err != nil {
-		input.Logger.Error("failed to create app manifests cache", zap.Error(err))
-		return err
-	}
+	appManifestsCache := memorycache.NewTTLCache(ctx, time.Hour, time.Minute)
 
 	var liveStateGetter livestatestore.Getter
 	// Start running application live state store.
@@ -592,41 +574,6 @@ func (p *piped) createAPIClient(ctx context.Context, address, projectID, pipedID
 		return nil, err
 	}
 	return client, nil
-}
-
-// createTracerProvider makes a OpenTelemetry Trace's TracerProvider.
-func (p *piped) createTracerProvider(ctx context.Context, address, projectID, pipeID string, pipedKey []byte) (trace.TracerProvider, error) {
-	options := []otlptracegrpc.Option{
-		otlptracegrpc.WithEndpoint(address),
-		otlptracegrpc.WithHeaders(map[string]string{
-			"authorization": "Bearer " + rpcauth.MakePipedToken(projectID, pipeID, string(pipedKey)),
-		}),
-	}
-
-	if !p.insecure {
-		if p.certFile != "" {
-			creds, err := credentials.NewClientTLSFromFile(p.certFile, "")
-			if err != nil {
-				return nil, fmt.Errorf("failed to load client TLS credentials: %w", err)
-			}
-			options = append(options, otlptracegrpc.WithTLSCredentials(creds))
-		} else {
-			config := &tls.Config{}
-			options = append(options, otlptracegrpc.WithTLSCredentials(credentials.NewTLS(config)))
-		}
-	} else {
-		options = append(options, otlptracegrpc.WithInsecure())
-	}
-
-	otlpTraceExporter, err := otlptracegrpc.New(ctx, options...)
-	if err != nil {
-		return nil, err
-	}
-
-	return sdktrace.NewTracerProvider(
-		sdktrace.WithBatcher(otlpTraceExporter),
-		sdktrace.WithSampler(sdktrace.AlwaysSample()),
-	), nil
 }
 
 // loadConfig reads the Piped configuration data from the specified source.
