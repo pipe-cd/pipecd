@@ -74,7 +74,7 @@ func findPlatformProvider(in *executor.Input) (name string, cfg *config.Platform
 }
 
 func loadFunctionManifest(in *executor.Input, functionManifestFile string, ds *deploysource.DeploySource) (provider.FunctionManifest, bool) {
-	in.LogPersister.Infof("Loading service manifest at commit %s", ds.Revision)
+	in.LogPersister.Infof("Loading lambda function manifest at commit %s", ds.Revision)
 
 	fm, err := provider.LoadFunctionManifest(ds.AppDir, functionManifestFile)
 	if err != nil {

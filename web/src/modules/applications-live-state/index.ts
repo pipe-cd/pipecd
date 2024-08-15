@@ -86,4 +86,5 @@ export {
   ApplicationLiveStateSnapshot,
   KubernetesResourceState,
   CloudRunResourceState,
+  ECSResourceState,
 } from "pipecd/web/model/application_live_state_pb";

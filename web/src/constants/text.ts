@@ -1,3 +1,3 @@
 export const STATIC_ADMIN_DESCRIPTION = `An admin account that was automatically generated while initializing the project. This admin account can be logged in by using the provided or configured username and password.`;
-export const SSO_DESCRIPTION = `Single sign-on (SSO) allows to user to log in to PipeCD by relying on a trusted third party service such as GitHub, GitHub Enterprise Server, Google Gmail, BitBucket...`;
+export const SSO_DESCRIPTION = `Single sign-on (SSO) allows users to log in to PipeCD by relying on a trusted third party service. Currently, only GitHub is supported.`;
 export const RBAC_DESCRIPTION = `Role-based access control (RBAC) allows restricting the access on PipeCD web based on the roles of user groups within the project. Before using this feature, the SSO must be configured.`;

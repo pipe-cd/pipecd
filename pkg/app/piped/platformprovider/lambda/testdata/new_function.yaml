@@ -1,0 +1,12 @@
+apiVersion: pipecd.dev/v1beta1
+kind: LambdaFunction
+spec:
+  name: TestFunction
+  role: arn:aws:iam:region:account-id:role/lambda-role
+  image: ecr.ap-northeast-1.amazonaws.com/lambda-test:v0.0.2
+  memory: 512
+  timeout: 30
+  environments:
+    FOO: bar2
+  tags:
+    app: test

@@ -235,16 +235,17 @@ func (x *DetermineStrategyResponse) GetSummary() string {
 	return ""
 }
 
-type BuildStagesRequest struct {
+type BuildPipelineSyncStagesRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Stages []*BuildStagesRequest_StageConfig `protobuf:"bytes,1,rep,name=stages,proto3" json:"stages,omitempty"`
+	Rollback bool                                          `protobuf:"varint,1,opt,name=rollback,proto3" json:"rollback,omitempty"`
+	Stages   []*BuildPipelineSyncStagesRequest_StageConfig `protobuf:"bytes,2,rep,name=stages,proto3" json:"stages,omitempty"`
 }
 
-func (x *BuildStagesRequest) Reset() {
-	*x = BuildStagesRequest{}
+func (x *BuildPipelineSyncStagesRequest) Reset() {
+	*x = BuildPipelineSyncStagesRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -252,13 +253,13 @@ func (x *BuildStagesRequest) Reset() {
 	}
 }
 
-func (x *BuildStagesRequest) String() string {
+func (x *BuildPipelineSyncStagesRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*BuildStagesRequest) ProtoMessage() {}
+func (*BuildPipelineSyncStagesRequest) ProtoMessage() {}
 
-func (x *BuildStagesRequest) ProtoReflect() protoreflect.Message {
+func (x *BuildPipelineSyncStagesRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -270,19 +271,26 @@ func (x *BuildStagesRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use BuildStagesRequest.ProtoReflect.Descriptor instead.
-func (*BuildStagesRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use BuildPipelineSyncStagesRequest.ProtoReflect.Descriptor instead.
+func (*BuildPipelineSyncStagesRequest) Descriptor() ([]byte, []int) {
 	return file_pkg_plugin_api_v1alpha1_deployment_api_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *BuildStagesRequest) GetStages() []*BuildStagesRequest_StageConfig {
+func (x *BuildPipelineSyncStagesRequest) GetRollback() bool {
+	if x != nil {
+		return x.Rollback
+	}
+	return false
+}
+
+func (x *BuildPipelineSyncStagesRequest) GetStages() []*BuildPipelineSyncStagesRequest_StageConfig {
 	if x != nil {
 		return x.Stages
 	}
 	return nil
 }
 
-type BuildStagesResponse struct {
+type BuildPipelineSyncStagesResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -291,8 +299,8 @@ type BuildStagesResponse struct {
 	Stages []*model.PipelineStage `protobuf:"bytes,1,rep,name=stages,proto3" json:"stages,omitempty"`
 }
 
-func (x *BuildStagesResponse) Reset() {
-	*x = BuildStagesResponse{}
+func (x *BuildPipelineSyncStagesResponse) Reset() {
+	*x = BuildPipelineSyncStagesResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -300,13 +308,13 @@ func (x *BuildStagesResponse) Reset() {
 	}
 }
 
-func (x *BuildStagesResponse) String() string {
+func (x *BuildPipelineSyncStagesResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*BuildStagesResponse) ProtoMessage() {}
+func (*BuildPipelineSyncStagesResponse) ProtoMessage() {}
 
-func (x *BuildStagesResponse) ProtoReflect() protoreflect.Message {
+func (x *BuildPipelineSyncStagesResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -318,12 +326,107 @@ func (x *BuildStagesResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use BuildStagesResponse.ProtoReflect.Descriptor instead.
-func (*BuildStagesResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use BuildPipelineSyncStagesResponse.ProtoReflect.Descriptor instead.
+func (*BuildPipelineSyncStagesResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_plugin_api_v1alpha1_deployment_api_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *BuildStagesResponse) GetStages() []*model.PipelineStage {
+func (x *BuildPipelineSyncStagesResponse) GetStages() []*model.PipelineStage {
+	if x != nil {
+		return x.Stages
+	}
+	return nil
+}
+
+type BuildQuickSyncStagesRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Rollback bool `protobuf:"varint,1,opt,name=rollback,proto3" json:"rollback,omitempty"`
+}
+
+func (x *BuildQuickSyncStagesRequest) Reset() {
+	*x = BuildQuickSyncStagesRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *BuildQuickSyncStagesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BuildQuickSyncStagesRequest) ProtoMessage() {}
+
+func (x *BuildQuickSyncStagesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BuildQuickSyncStagesRequest.ProtoReflect.Descriptor instead.
+func (*BuildQuickSyncStagesRequest) Descriptor() ([]byte, []int) {
+	return file_pkg_plugin_api_v1alpha1_deployment_api_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *BuildQuickSyncStagesRequest) GetRollback() bool {
+	if x != nil {
+		return x.Rollback
+	}
+	return false
+}
+
+type BuildQuickSyncStagesResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// The built stages of the deployment pipeline.
+	Stages []*model.PipelineStage `protobuf:"bytes,1,rep,name=stages,proto3" json:"stages,omitempty"`
+}
+
+func (x *BuildQuickSyncStagesResponse) Reset() {
+	*x = BuildQuickSyncStagesResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *BuildQuickSyncStagesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BuildQuickSyncStagesResponse) ProtoMessage() {}
+
+func (x *BuildQuickSyncStagesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BuildQuickSyncStagesResponse.ProtoReflect.Descriptor instead.
+func (*BuildQuickSyncStagesResponse) Descriptor() ([]byte, []int) {
+	return file_pkg_plugin_api_v1alpha1_deployment_api_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *BuildQuickSyncStagesResponse) GetStages() []*model.PipelineStage {
 	if x != nil {
 		return x.Stages
 	}
@@ -339,7 +442,7 @@ type FetchDefinedStagesRequest struct {
 func (x *FetchDefinedStagesRequest) Reset() {
 	*x = FetchDefinedStagesRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[6]
+		mi := &file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -352,7 +455,7 @@ func (x *FetchDefinedStagesRequest) String() string {
 func (*FetchDefinedStagesRequest) ProtoMessage() {}
 
 func (x *FetchDefinedStagesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[6]
+	mi := &file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -365,7 +468,7 @@ func (x *FetchDefinedStagesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FetchDefinedStagesRequest.ProtoReflect.Descriptor instead.
 func (*FetchDefinedStagesRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_plugin_api_v1alpha1_deployment_api_proto_rawDescGZIP(), []int{6}
+	return file_pkg_plugin_api_v1alpha1_deployment_api_proto_rawDescGZIP(), []int{8}
 }
 
 type FetchDefinedStagesResponse struct {
@@ -380,7 +483,7 @@ type FetchDefinedStagesResponse struct {
 func (x *FetchDefinedStagesResponse) Reset() {
 	*x = FetchDefinedStagesResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[7]
+		mi := &file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -393,7 +496,7 @@ func (x *FetchDefinedStagesResponse) String() string {
 func (*FetchDefinedStagesResponse) ProtoMessage() {}
 
 func (x *FetchDefinedStagesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[7]
+	mi := &file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -406,7 +509,7 @@ func (x *FetchDefinedStagesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FetchDefinedStagesResponse.ProtoReflect.Descriptor instead.
 func (*FetchDefinedStagesResponse) Descriptor() ([]byte, []int) {
-	return file_pkg_plugin_api_v1alpha1_deployment_api_proto_rawDescGZIP(), []int{7}
+	return file_pkg_plugin_api_v1alpha1_deployment_api_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *FetchDefinedStagesResponse) GetStages() []string {
@@ -436,7 +539,7 @@ type PlanPluginInput struct {
 func (x *PlanPluginInput) Reset() {
 	*x = PlanPluginInput{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[8]
+		mi := &file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -449,7 +552,7 @@ func (x *PlanPluginInput) String() string {
 func (*PlanPluginInput) ProtoMessage() {}
 
 func (x *PlanPluginInput) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[8]
+	mi := &file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -462,7 +565,7 @@ func (x *PlanPluginInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlanPluginInput.ProtoReflect.Descriptor instead.
 func (*PlanPluginInput) Descriptor() ([]byte, []int) {
-	return file_pkg_plugin_api_v1alpha1_deployment_api_proto_rawDescGZIP(), []int{8}
+	return file_pkg_plugin_api_v1alpha1_deployment_api_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *PlanPluginInput) GetDeployment() *model.Deployment {
@@ -500,34 +603,45 @@ func (x *PlanPluginInput) GetPluginConfig() []byte {
 	return nil
 }
 
-type BuildStagesRequest_StageConfig struct {
+type BuildPipelineSyncStagesRequest_StageConfig struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// The stage identifier.
+	// If it's not set, plugin should set it under pattern:
+	// `pluginname-stage-index`.
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// The stage name.
-	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// The stage description.
+	Desc string `protobuf:"bytes,3,opt,name=desc,proto3" json:"desc,omitempty"`
+	// The stage timeout.
+	// It should be a duration string (aka. 1m/10s/...).
+	Timeout string `protobuf:"bytes,4,opt,name=timeout,proto3" json:"timeout,omitempty"`
+	// The stage index from the stage list in configuration.
+	Index int32 `protobuf:"varint,5,opt,name=index,proto3" json:"index,omitempty"`
 	// The configuration of the stage.
-	Config []byte `protobuf:"bytes,2,opt,name=config,proto3" json:"config,omitempty"`
+	Config []byte `protobuf:"bytes,6,opt,name=config,proto3" json:"config,omitempty"`
 }
 
-func (x *BuildStagesRequest_StageConfig) Reset() {
-	*x = BuildStagesRequest_StageConfig{}
+func (x *BuildPipelineSyncStagesRequest_StageConfig) Reset() {
+	*x = BuildPipelineSyncStagesRequest_StageConfig{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[9]
+		mi := &file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
 }
 
-func (x *BuildStagesRequest_StageConfig) String() string {
+func (x *BuildPipelineSyncStagesRequest_StageConfig) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*BuildStagesRequest_StageConfig) ProtoMessage() {}
+func (*BuildPipelineSyncStagesRequest_StageConfig) ProtoMessage() {}
 
-func (x *BuildStagesRequest_StageConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[9]
+func (x *BuildPipelineSyncStagesRequest_StageConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -538,19 +652,47 @@ func (x *BuildStagesRequest_StageConfig) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use BuildStagesRequest_StageConfig.ProtoReflect.Descriptor instead.
-func (*BuildStagesRequest_StageConfig) Descriptor() ([]byte, []int) {
+// Deprecated: Use BuildPipelineSyncStagesRequest_StageConfig.ProtoReflect.Descriptor instead.
+func (*BuildPipelineSyncStagesRequest_StageConfig) Descriptor() ([]byte, []int) {
 	return file_pkg_plugin_api_v1alpha1_deployment_api_proto_rawDescGZIP(), []int{4, 0}
 }
 
-func (x *BuildStagesRequest_StageConfig) GetName() string {
+func (x *BuildPipelineSyncStagesRequest_StageConfig) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *BuildPipelineSyncStagesRequest_StageConfig) GetName() string {
 	if x != nil {
 		return x.Name
 	}
 	return ""
 }
 
-func (x *BuildStagesRequest_StageConfig) GetConfig() []byte {
+func (x *BuildPipelineSyncStagesRequest_StageConfig) GetDesc() string {
+	if x != nil {
+		return x.Desc
+	}
+	return ""
+}
+
+func (x *BuildPipelineSyncStagesRequest_StageConfig) GetTimeout() string {
+	if x != nil {
+		return x.Timeout
+	}
+	return ""
+}
+
+func (x *BuildPipelineSyncStagesRequest_StageConfig) GetIndex() int32 {
+	if x != nil {
+		return x.Index
+	}
+	return 0
+}
+
+func (x *BuildPipelineSyncStagesRequest_StageConfig) GetConfig() []byte {
 	if x != nil {
 		return x.Config
 	}
@@ -596,18 +738,37 @@ var file_pkg_plugin_api_v1alpha1_deployment_api_proto_rawDesc = []byte{
 	0x79, 0x6e, 0x63, 0x53, 0x74, 0x72, 0x61, 0x74, 0x65, 0x67, 0x79, 0x52, 0x0c, 0x73, 0x79, 0x6e,
 	0x63, 0x53, 0x74, 0x72, 0x61, 0x74, 0x65, 0x67, 0x79, 0x12, 0x18, 0x0a, 0x07, 0x73, 0x75, 0x6d,
 	0x6d, 0x61, 0x72, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x73, 0x75, 0x6d, 0x6d,
-	0x61, 0x72, 0x79, 0x22, 0xab, 0x01, 0x0a, 0x12, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x53, 0x74, 0x61,
-	0x67, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x5a, 0x0a, 0x06, 0x73, 0x74,
-	0x61, 0x67, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x42, 0x2e, 0x67, 0x72, 0x70,
-	0x63, 0x2e, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x2e, 0x64, 0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d,
-	0x65, 0x6e, 0x74, 0x61, 0x70, 0x69, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x31, 0x2e,
-	0x42, 0x75, 0x69, 0x6c, 0x64, 0x53, 0x74, 0x61, 0x67, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x2e, 0x53, 0x74, 0x61, 0x67, 0x65, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x52, 0x06,
-	0x73, 0x74, 0x61, 0x67, 0x65, 0x73, 0x1a, 0x39, 0x0a, 0x0b, 0x53, 0x74, 0x61, 0x67, 0x65, 0x43,
-	0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x63, 0x6f, 0x6e,
-	0x66, 0x69, 0x67, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x06, 0x63, 0x6f, 0x6e, 0x66, 0x69,
-	0x67, 0x22, 0x43, 0x0a, 0x13, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x53, 0x74, 0x61, 0x67, 0x65, 0x73,
+	0x61, 0x72, 0x79, 0x22, 0xc6, 0x02, 0x0a, 0x1e, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x50, 0x69, 0x70,
+	0x65, 0x6c, 0x69, 0x6e, 0x65, 0x53, 0x79, 0x6e, 0x63, 0x53, 0x74, 0x61, 0x67, 0x65, 0x73, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1a, 0x0a, 0x08, 0x72, 0x6f, 0x6c, 0x6c, 0x62, 0x61,
+	0x63, 0x6b, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x08, 0x72, 0x6f, 0x6c, 0x6c, 0x62, 0x61,
+	0x63, 0x6b, 0x12, 0x66, 0x0a, 0x06, 0x73, 0x74, 0x61, 0x67, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03,
+	0x28, 0x0b, 0x32, 0x4e, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e,
+	0x2e, 0x64, 0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x61, 0x70, 0x69, 0x2e, 0x76,
+	0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x31, 0x2e, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x50, 0x69, 0x70,
+	0x65, 0x6c, 0x69, 0x6e, 0x65, 0x53, 0x79, 0x6e, 0x63, 0x53, 0x74, 0x61, 0x67, 0x65, 0x73, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x53, 0x74, 0x61, 0x67, 0x65, 0x43, 0x6f, 0x6e, 0x66,
+	0x69, 0x67, 0x52, 0x06, 0x73, 0x74, 0x61, 0x67, 0x65, 0x73, 0x1a, 0x9f, 0x01, 0x0a, 0x0b, 0x53,
+	0x74, 0x61, 0x67, 0x65, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x1b, 0x0a, 0x04, 0x6e, 0x61,
+	0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x07, 0xfa, 0x42, 0x04, 0x72, 0x02, 0x10,
+	0x01, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x64, 0x65, 0x73, 0x63, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x64, 0x65, 0x73, 0x63, 0x12, 0x18, 0x0a, 0x07, 0x74,
+	0x69, 0x6d, 0x65, 0x6f, 0x75, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x74, 0x69,
+	0x6d, 0x65, 0x6f, 0x75, 0x74, 0x12, 0x1d, 0x0a, 0x05, 0x69, 0x6e, 0x64, 0x65, 0x78, 0x18, 0x05,
+	0x20, 0x01, 0x28, 0x05, 0x42, 0x07, 0xfa, 0x42, 0x04, 0x1a, 0x02, 0x28, 0x00, 0x52, 0x05, 0x69,
+	0x6e, 0x64, 0x65, 0x78, 0x12, 0x16, 0x0a, 0x06, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x18, 0x06,
+	0x20, 0x01, 0x28, 0x0c, 0x52, 0x06, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x22, 0x4f, 0x0a, 0x1f,
+	0x42, 0x75, 0x69, 0x6c, 0x64, 0x50, 0x69, 0x70, 0x65, 0x6c, 0x69, 0x6e, 0x65, 0x53, 0x79, 0x6e,
+	0x63, 0x53, 0x74, 0x61, 0x67, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
+	0x2c, 0x0a, 0x06, 0x73, 0x74, 0x61, 0x67, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32,
+	0x14, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x2e, 0x50, 0x69, 0x70, 0x65, 0x6c, 0x69, 0x6e, 0x65,
+	0x53, 0x74, 0x61, 0x67, 0x65, 0x52, 0x06, 0x73, 0x74, 0x61, 0x67, 0x65, 0x73, 0x22, 0x39, 0x0a,
+	0x1b, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x51, 0x75, 0x69, 0x63, 0x6b, 0x53, 0x79, 0x6e, 0x63, 0x53,
+	0x74, 0x61, 0x67, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1a, 0x0a, 0x08,
+	0x72, 0x6f, 0x6c, 0x6c, 0x62, 0x61, 0x63, 0x6b, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x08,
+	0x72, 0x6f, 0x6c, 0x6c, 0x62, 0x61, 0x63, 0x6b, 0x22, 0x4c, 0x0a, 0x1c, 0x42, 0x75, 0x69, 0x6c,
+	0x64, 0x51, 0x75, 0x69, 0x63, 0x6b, 0x53, 0x79, 0x6e, 0x63, 0x53, 0x74, 0x61, 0x67, 0x65, 0x73,
 	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2c, 0x0a, 0x06, 0x73, 0x74, 0x61, 0x67,
 	0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c,
 	0x2e, 0x50, 0x69, 0x70, 0x65, 0x6c, 0x69, 0x6e, 0x65, 0x53, 0x74, 0x61, 0x67, 0x65, 0x52, 0x06,
@@ -635,7 +796,7 @@ var file_pkg_plugin_api_v1alpha1_deployment_api_proto_rawDesc = []byte{
 	0x63, 0x63, 0x65, 0x73, 0x73, 0x66, 0x75, 0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x46, 0x69,
 	0x6c, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x23, 0x0a, 0x0d, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e,
 	0x5f, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x0c, 0x70,
-	0x6c, 0x75, 0x67, 0x69, 0x6e, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x32, 0xd8, 0x04, 0x0a, 0x11,
+	0x6c, 0x75, 0x67, 0x69, 0x6e, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x32, 0x9a, 0x06, 0x0a, 0x11,
 	0x44, 0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63,
 	0x65, 0x12, 0x95, 0x01, 0x0a, 0x12, 0x46, 0x65, 0x74, 0x63, 0x68, 0x44, 0x65, 0x66, 0x69, 0x6e,
 	0x65, 0x64, 0x53, 0x74, 0x61, 0x67, 0x65, 0x73, 0x12, 0x3d, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e,
@@ -665,19 +826,31 @@ var file_pkg_plugin_api_v1alpha1_deployment_api_proto_rawDesc = []byte{
 	0x2e, 0x64, 0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x61, 0x70, 0x69, 0x2e, 0x76,
 	0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x31, 0x2e, 0x44, 0x65, 0x74, 0x65, 0x72, 0x6d, 0x69, 0x6e,
 	0x65, 0x53, 0x74, 0x72, 0x61, 0x74, 0x65, 0x67, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x22, 0x00, 0x12, 0x80, 0x01, 0x0a, 0x0b, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x53, 0x74, 0x61,
-	0x67, 0x65, 0x73, 0x12, 0x36, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x70, 0x6c, 0x75, 0x67, 0x69,
+	0x65, 0x22, 0x00, 0x12, 0xa4, 0x01, 0x0a, 0x17, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x50, 0x69, 0x70,
+	0x65, 0x6c, 0x69, 0x6e, 0x65, 0x53, 0x79, 0x6e, 0x63, 0x53, 0x74, 0x61, 0x67, 0x65, 0x73, 0x12,
+	0x42, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x2e, 0x64, 0x65,
+	0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x61, 0x70, 0x69, 0x2e, 0x76, 0x31, 0x61, 0x6c,
+	0x70, 0x68, 0x61, 0x31, 0x2e, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x50, 0x69, 0x70, 0x65, 0x6c, 0x69,
+	0x6e, 0x65, 0x53, 0x79, 0x6e, 0x63, 0x53, 0x74, 0x61, 0x67, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x1a, 0x43, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x70, 0x6c, 0x75, 0x67, 0x69,
 	0x6e, 0x2e, 0x64, 0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x61, 0x70, 0x69, 0x2e,
-	0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x31, 0x2e, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x53, 0x74,
-	0x61, 0x67, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x37, 0x2e, 0x67, 0x72,
-	0x70, 0x63, 0x2e, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x2e, 0x64, 0x65, 0x70, 0x6c, 0x6f, 0x79,
-	0x6d, 0x65, 0x6e, 0x74, 0x61, 0x70, 0x69, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x31,
-	0x2e, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x53, 0x74, 0x61, 0x67, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x42, 0x3e, 0x5a, 0x3c, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
-	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x70, 0x69, 0x70, 0x65, 0x2d, 0x63, 0x64, 0x2f, 0x70, 0x69, 0x70,
-	0x65, 0x63, 0x64, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x2f, 0x61,
-	0x70, 0x69, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x31, 0x2f, 0x64, 0x65, 0x70, 0x6c,
-	0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x31, 0x2e, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x50, 0x69,
+	0x70, 0x65, 0x6c, 0x69, 0x6e, 0x65, 0x53, 0x79, 0x6e, 0x63, 0x53, 0x74, 0x61, 0x67, 0x65, 0x73,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x9b, 0x01, 0x0a, 0x14, 0x42,
+	0x75, 0x69, 0x6c, 0x64, 0x51, 0x75, 0x69, 0x63, 0x6b, 0x53, 0x79, 0x6e, 0x63, 0x53, 0x74, 0x61,
+	0x67, 0x65, 0x73, 0x12, 0x3f, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x70, 0x6c, 0x75, 0x67, 0x69,
+	0x6e, 0x2e, 0x64, 0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x61, 0x70, 0x69, 0x2e,
+	0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x31, 0x2e, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x51, 0x75,
+	0x69, 0x63, 0x6b, 0x53, 0x79, 0x6e, 0x63, 0x53, 0x74, 0x61, 0x67, 0x65, 0x73, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x40, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x70, 0x6c, 0x75, 0x67,
+	0x69, 0x6e, 0x2e, 0x64, 0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x61, 0x70, 0x69,
+	0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x31, 0x2e, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x51,
+	0x75, 0x69, 0x63, 0x6b, 0x53, 0x79, 0x6e, 0x63, 0x53, 0x74, 0x61, 0x67, 0x65, 0x73, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x42, 0x3e, 0x5a, 0x3c, 0x67, 0x69, 0x74, 0x68,
+	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x70, 0x69, 0x70, 0x65, 0x2d, 0x63, 0x64, 0x2f, 0x70,
+	0x69, 0x70, 0x65, 0x63, 0x64, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e,
+	0x2f, 0x61, 0x70, 0x69, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x31, 0x2f, 0x64, 0x65,
+	0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -692,44 +865,49 @@ func file_pkg_plugin_api_v1alpha1_deployment_api_proto_rawDescGZIP() []byte {
 	return file_pkg_plugin_api_v1alpha1_deployment_api_proto_rawDescData
 }
 
-var file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_pkg_plugin_api_v1alpha1_deployment_api_proto_goTypes = []interface{}{
-	(*DetermineVersionsRequest)(nil),       // 0: grpc.plugin.deploymentapi.v1alpha1.DetermineVersionsRequest
-	(*DetermineVersionsResponse)(nil),      // 1: grpc.plugin.deploymentapi.v1alpha1.DetermineVersionsResponse
-	(*DetermineStrategyRequest)(nil),       // 2: grpc.plugin.deploymentapi.v1alpha1.DetermineStrategyRequest
-	(*DetermineStrategyResponse)(nil),      // 3: grpc.plugin.deploymentapi.v1alpha1.DetermineStrategyResponse
-	(*BuildStagesRequest)(nil),             // 4: grpc.plugin.deploymentapi.v1alpha1.BuildStagesRequest
-	(*BuildStagesResponse)(nil),            // 5: grpc.plugin.deploymentapi.v1alpha1.BuildStagesResponse
-	(*FetchDefinedStagesRequest)(nil),      // 6: grpc.plugin.deploymentapi.v1alpha1.FetchDefinedStagesRequest
-	(*FetchDefinedStagesResponse)(nil),     // 7: grpc.plugin.deploymentapi.v1alpha1.FetchDefinedStagesResponse
-	(*PlanPluginInput)(nil),                // 8: grpc.plugin.deploymentapi.v1alpha1.PlanPluginInput
-	(*BuildStagesRequest_StageConfig)(nil), // 9: grpc.plugin.deploymentapi.v1alpha1.BuildStagesRequest.StageConfig
-	(*model.ArtifactVersion)(nil),          // 10: model.ArtifactVersion
-	(model.SyncStrategy)(0),                // 11: model.SyncStrategy
-	(*model.PipelineStage)(nil),            // 12: model.PipelineStage
-	(*model.Deployment)(nil),               // 13: model.Deployment
+	(*DetermineVersionsRequest)(nil),                   // 0: grpc.plugin.deploymentapi.v1alpha1.DetermineVersionsRequest
+	(*DetermineVersionsResponse)(nil),                  // 1: grpc.plugin.deploymentapi.v1alpha1.DetermineVersionsResponse
+	(*DetermineStrategyRequest)(nil),                   // 2: grpc.plugin.deploymentapi.v1alpha1.DetermineStrategyRequest
+	(*DetermineStrategyResponse)(nil),                  // 3: grpc.plugin.deploymentapi.v1alpha1.DetermineStrategyResponse
+	(*BuildPipelineSyncStagesRequest)(nil),             // 4: grpc.plugin.deploymentapi.v1alpha1.BuildPipelineSyncStagesRequest
+	(*BuildPipelineSyncStagesResponse)(nil),            // 5: grpc.plugin.deploymentapi.v1alpha1.BuildPipelineSyncStagesResponse
+	(*BuildQuickSyncStagesRequest)(nil),                // 6: grpc.plugin.deploymentapi.v1alpha1.BuildQuickSyncStagesRequest
+	(*BuildQuickSyncStagesResponse)(nil),               // 7: grpc.plugin.deploymentapi.v1alpha1.BuildQuickSyncStagesResponse
+	(*FetchDefinedStagesRequest)(nil),                  // 8: grpc.plugin.deploymentapi.v1alpha1.FetchDefinedStagesRequest
+	(*FetchDefinedStagesResponse)(nil),                 // 9: grpc.plugin.deploymentapi.v1alpha1.FetchDefinedStagesResponse
+	(*PlanPluginInput)(nil),                            // 10: grpc.plugin.deploymentapi.v1alpha1.PlanPluginInput
+	(*BuildPipelineSyncStagesRequest_StageConfig)(nil), // 11: grpc.plugin.deploymentapi.v1alpha1.BuildPipelineSyncStagesRequest.StageConfig
+	(*model.ArtifactVersion)(nil),                      // 12: model.ArtifactVersion
+	(model.SyncStrategy)(0),                            // 13: model.SyncStrategy
+	(*model.PipelineStage)(nil),                        // 14: model.PipelineStage
+	(*model.Deployment)(nil),                           // 15: model.Deployment
 }
 var file_pkg_plugin_api_v1alpha1_deployment_api_proto_depIdxs = []int32{
-	8,  // 0: grpc.plugin.deploymentapi.v1alpha1.DetermineVersionsRequest.input:type_name -> grpc.plugin.deploymentapi.v1alpha1.PlanPluginInput
-	10, // 1: grpc.plugin.deploymentapi.v1alpha1.DetermineVersionsResponse.versions:type_name -> model.ArtifactVersion
-	8,  // 2: grpc.plugin.deploymentapi.v1alpha1.DetermineStrategyRequest.input:type_name -> grpc.plugin.deploymentapi.v1alpha1.PlanPluginInput
-	11, // 3: grpc.plugin.deploymentapi.v1alpha1.DetermineStrategyResponse.sync_strategy:type_name -> model.SyncStrategy
-	9,  // 4: grpc.plugin.deploymentapi.v1alpha1.BuildStagesRequest.stages:type_name -> grpc.plugin.deploymentapi.v1alpha1.BuildStagesRequest.StageConfig
-	12, // 5: grpc.plugin.deploymentapi.v1alpha1.BuildStagesResponse.stages:type_name -> model.PipelineStage
-	13, // 6: grpc.plugin.deploymentapi.v1alpha1.PlanPluginInput.deployment:type_name -> model.Deployment
-	6,  // 7: grpc.plugin.deploymentapi.v1alpha1.DeploymentService.FetchDefinedStages:input_type -> grpc.plugin.deploymentapi.v1alpha1.FetchDefinedStagesRequest
-	0,  // 8: grpc.plugin.deploymentapi.v1alpha1.DeploymentService.DetermineVersions:input_type -> grpc.plugin.deploymentapi.v1alpha1.DetermineVersionsRequest
-	2,  // 9: grpc.plugin.deploymentapi.v1alpha1.DeploymentService.DetermineStrategy:input_type -> grpc.plugin.deploymentapi.v1alpha1.DetermineStrategyRequest
-	4,  // 10: grpc.plugin.deploymentapi.v1alpha1.DeploymentService.BuildStages:input_type -> grpc.plugin.deploymentapi.v1alpha1.BuildStagesRequest
-	7,  // 11: grpc.plugin.deploymentapi.v1alpha1.DeploymentService.FetchDefinedStages:output_type -> grpc.plugin.deploymentapi.v1alpha1.FetchDefinedStagesResponse
-	1,  // 12: grpc.plugin.deploymentapi.v1alpha1.DeploymentService.DetermineVersions:output_type -> grpc.plugin.deploymentapi.v1alpha1.DetermineVersionsResponse
-	3,  // 13: grpc.plugin.deploymentapi.v1alpha1.DeploymentService.DetermineStrategy:output_type -> grpc.plugin.deploymentapi.v1alpha1.DetermineStrategyResponse
-	5,  // 14: grpc.plugin.deploymentapi.v1alpha1.DeploymentService.BuildStages:output_type -> grpc.plugin.deploymentapi.v1alpha1.BuildStagesResponse
-	11, // [11:15] is the sub-list for method output_type
-	7,  // [7:11] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	10, // 0: grpc.plugin.deploymentapi.v1alpha1.DetermineVersionsRequest.input:type_name -> grpc.plugin.deploymentapi.v1alpha1.PlanPluginInput
+	12, // 1: grpc.plugin.deploymentapi.v1alpha1.DetermineVersionsResponse.versions:type_name -> model.ArtifactVersion
+	10, // 2: grpc.plugin.deploymentapi.v1alpha1.DetermineStrategyRequest.input:type_name -> grpc.plugin.deploymentapi.v1alpha1.PlanPluginInput
+	13, // 3: grpc.plugin.deploymentapi.v1alpha1.DetermineStrategyResponse.sync_strategy:type_name -> model.SyncStrategy
+	11, // 4: grpc.plugin.deploymentapi.v1alpha1.BuildPipelineSyncStagesRequest.stages:type_name -> grpc.plugin.deploymentapi.v1alpha1.BuildPipelineSyncStagesRequest.StageConfig
+	14, // 5: grpc.plugin.deploymentapi.v1alpha1.BuildPipelineSyncStagesResponse.stages:type_name -> model.PipelineStage
+	14, // 6: grpc.plugin.deploymentapi.v1alpha1.BuildQuickSyncStagesResponse.stages:type_name -> model.PipelineStage
+	15, // 7: grpc.plugin.deploymentapi.v1alpha1.PlanPluginInput.deployment:type_name -> model.Deployment
+	8,  // 8: grpc.plugin.deploymentapi.v1alpha1.DeploymentService.FetchDefinedStages:input_type -> grpc.plugin.deploymentapi.v1alpha1.FetchDefinedStagesRequest
+	0,  // 9: grpc.plugin.deploymentapi.v1alpha1.DeploymentService.DetermineVersions:input_type -> grpc.plugin.deploymentapi.v1alpha1.DetermineVersionsRequest
+	2,  // 10: grpc.plugin.deploymentapi.v1alpha1.DeploymentService.DetermineStrategy:input_type -> grpc.plugin.deploymentapi.v1alpha1.DetermineStrategyRequest
+	4,  // 11: grpc.plugin.deploymentapi.v1alpha1.DeploymentService.BuildPipelineSyncStages:input_type -> grpc.plugin.deploymentapi.v1alpha1.BuildPipelineSyncStagesRequest
+	6,  // 12: grpc.plugin.deploymentapi.v1alpha1.DeploymentService.BuildQuickSyncStages:input_type -> grpc.plugin.deploymentapi.v1alpha1.BuildQuickSyncStagesRequest
+	9,  // 13: grpc.plugin.deploymentapi.v1alpha1.DeploymentService.FetchDefinedStages:output_type -> grpc.plugin.deploymentapi.v1alpha1.FetchDefinedStagesResponse
+	1,  // 14: grpc.plugin.deploymentapi.v1alpha1.DeploymentService.DetermineVersions:output_type -> grpc.plugin.deploymentapi.v1alpha1.DetermineVersionsResponse
+	3,  // 15: grpc.plugin.deploymentapi.v1alpha1.DeploymentService.DetermineStrategy:output_type -> grpc.plugin.deploymentapi.v1alpha1.DetermineStrategyResponse
+	5,  // 16: grpc.plugin.deploymentapi.v1alpha1.DeploymentService.BuildPipelineSyncStages:output_type -> grpc.plugin.deploymentapi.v1alpha1.BuildPipelineSyncStagesResponse
+	7,  // 17: grpc.plugin.deploymentapi.v1alpha1.DeploymentService.BuildQuickSyncStages:output_type -> grpc.plugin.deploymentapi.v1alpha1.BuildQuickSyncStagesResponse
+	13, // [13:18] is the sub-list for method output_type
+	8,  // [8:13] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_pkg_plugin_api_v1alpha1_deployment_api_proto_init() }
@@ -787,7 +965,7 @@ func file_pkg_plugin_api_v1alpha1_deployment_api_proto_init() {
 			}
 		}
 		file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BuildStagesRequest); i {
+			switch v := v.(*BuildPipelineSyncStagesRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -799,7 +977,7 @@ func file_pkg_plugin_api_v1alpha1_deployment_api_proto_init() {
 			}
 		}
 		file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BuildStagesResponse); i {
+			switch v := v.(*BuildPipelineSyncStagesResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -811,7 +989,7 @@ func file_pkg_plugin_api_v1alpha1_deployment_api_proto_init() {
 			}
 		}
 		file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*FetchDefinedStagesRequest); i {
+			switch v := v.(*BuildQuickSyncStagesRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -823,7 +1001,7 @@ func file_pkg_plugin_api_v1alpha1_deployment_api_proto_init() {
 			}
 		}
 		file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*FetchDefinedStagesResponse); i {
+			switch v := v.(*BuildQuickSyncStagesResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -835,7 +1013,7 @@ func file_pkg_plugin_api_v1alpha1_deployment_api_proto_init() {
 			}
 		}
 		file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PlanPluginInput); i {
+			switch v := v.(*FetchDefinedStagesRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -847,7 +1025,31 @@ func file_pkg_plugin_api_v1alpha1_deployment_api_proto_init() {
 			}
 		}
 		file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BuildStagesRequest_StageConfig); i {
+			switch v := v.(*FetchDefinedStagesResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*PlanPluginInput); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_plugin_api_v1alpha1_deployment_api_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*BuildPipelineSyncStagesRequest_StageConfig); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -865,7 +1067,7 @@ func file_pkg_plugin_api_v1alpha1_deployment_api_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_pkg_plugin_api_v1alpha1_deployment_api_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

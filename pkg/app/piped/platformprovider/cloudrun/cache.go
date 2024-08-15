@@ -55,7 +55,7 @@ func (c ServiceManifestCache) Get(commit string) (ServiceManifest, bool) {
 func (c ServiceManifestCache) Put(commit string, sm ServiceManifest) {
 	key := serviceManifestCacheKey(c.AppID, commit)
 	if err := c.Cache.Put(key, sm); err != nil {
-		c.Logger.Error("failed while putting service manifest from cache",
+		c.Logger.Error("failed while putting service manifest into cache",
 			zap.String("app-id", c.AppID),
 			zap.String("commit-hash", commit),
 			zap.Error(err),

@@ -108,7 +108,6 @@ type controller struct {
 	applicationLister   applicationLister
 	analysisResultStore analysisResultStore
 	notifier            notifier
-	pipedConfig         []byte
 	secretDecrypter     secretDecrypter   // TODO: Remove this
 	pipedCfg            *config.PipedSpec // TODO: Remove this, use pipedConfig instead
 	appManifestsCache   cache.Cache
@@ -151,7 +150,6 @@ func NewController(
 	notifier notifier,
 	sd secretDecrypter,
 	pipedCfg *config.PipedSpec,
-	pipedConfig []byte,
 	appManifestsCache cache.Cache,
 	gracePeriod time.Duration,
 	logger *zap.Logger,
@@ -173,7 +171,6 @@ func NewController(
 		secretDecrypter:     sd,
 		appManifestsCache:   appManifestsCache,
 		pipedCfg:            pipedCfg,
-		pipedConfig:         pipedConfig,
 		logPersister:        lp,
 
 		planners:                              make(map[string]*planner),
@@ -478,8 +475,8 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		workingDir,
 		pluginClient,
 		c.apiClient,
+		c.gitClient,
 		c.notifier,
-		c.pipedConfig,
 		c.logger,
 	)
 

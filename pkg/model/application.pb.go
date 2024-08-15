@@ -133,6 +133,10 @@ type Application struct {
 	// Unix time when the application was deleted.
 	DeletedAt int64 `protobuf:"varint,98,opt,name=deleted_at,json=deletedAt,proto3" json:"deleted_at,omitempty"`
 	// Whether the application is deleted or not.
+	//
+	// NOTE:
+	// PipeCD logic with application should NOT reply on this field.
+	// Use `disabled` field instead.
 	Deleted bool `protobuf:"varint,99,opt,name=deleted,proto3" json:"deleted,omitempty"`
 	// Whether the application is disabled or not.
 	Disabled bool `protobuf:"varint,100,opt,name=disabled,proto3" json:"disabled,omitempty"`

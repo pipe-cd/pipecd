@@ -1,7 +1,7 @@
 ---
 title: "Connect between CI and CD with event watcher"
 linkTitle: "Event watcher"
-weight: 3
+weight: 5
 description: >
   A helper facility to automatically update files when it finds out a new event.
 ---

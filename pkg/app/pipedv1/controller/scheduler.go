@@ -258,7 +258,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		s.reportDeploymentCompleted(ctx, deploymentStatus, statusReason, "")
 		return err
 	}
-	s.genericApplicationConfig = ds.GenericApplicationConfig
+	s.genericApplicationConfig = *ds.GenericApplicationConfig
 
 	timer := time.NewTimer(s.genericApplicationConfig.Timeout.Duration())
 	defer timer.Stop()
@@ -501,21 +501,21 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		applicationID: app.Id,
 	}
 	input := executor.Input{
-		Stage:                 &ps,
-		StageConfig:           stageConfig,
-		Deployment:            s.deployment,
-		Application:           app,
-		PipedConfig:           s.pipedConfig,
-		TargetDSP:             s.targetDSP,
-		RunningDSP:            s.runningDSP,
-		GitClient:             s.gitClient,
-		CommandLister:         cmdLister,
-		LogPersister:          lp,
-		MetadataStore:         s.metadataStore,
-		AppManifestsCache:     s.appManifestsCache,
-		AnalysisResultStore:   aStore,
-		Logger:                s.logger,
-		Notifier:              s.notifier,
+		Stage:               &ps,
+		StageConfig:         stageConfig,
+		Deployment:          s.deployment,
+		Application:         app,
+		PipedConfig:         s.pipedConfig,
+		TargetDSP:           s.targetDSP,
+		RunningDSP:          s.runningDSP,
+		GitClient:           s.gitClient,
+		CommandLister:       cmdLister,
+		LogPersister:        lp,
+		MetadataStore:       s.metadataStore,
+		AppManifestsCache:   s.appManifestsCache,
+		AnalysisResultStore: aStore,
+		Logger:              s.logger,
+		Notifier:            s.notifier,
 	}
 
 	// Find the executor for this stage.

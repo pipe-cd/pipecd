@@ -446,56 +446,61 @@ One of `yamlField` or `regex` is required.
 
 ### Specific function.yaml
 
+One of `image`, `s3Bucket`, or `source` is required.
+
+- If you use `s3Bucket`, `s3Key` and `s3ObjectVersion` are required.
+
+- If you use `s3Bucket` or `source`, `handler` and `runtime` are required.
+
+See [Configuring Lambda application](../managing-application/defining-app-configuration/lambda) for more details.
+
 | Field            | Type             | Description                        | Required |
 |------------------|------------------|------------------------------------|----------|
-| Name             | string           | Name of the Lambda function        | Yes      |
-| Role             | string           | IAM role ARN                       | Yes      |
-| ImageURI         | string           | URI of the container image         | Yes      |
-| S3Bucket         | string           | S3 bucket name for code package   | Yes      |
-| S3Key            | string           | S3 key for code package            | Yes      |
-| S3ObjectVersion  | string           | S3 object version for code package | Yes      |
-| SourceCode       | [SourceCode](#sourcecode)       | Git settings                | Yes      |
-| Handler          | string           | Lambda function handler            | Yes      |
-| Architectures    | [[]Architecture](#architecture)   | Supported architectures            | No       |
-| EphemeralStorage | [EphemeralStorage](#ephemeralstorage)| Ephemeral storage configuration    | No       |
-| Runtime          | string           | Runtime environment                | Yes      |
-| Memory           | int32            | Memory allocation (in MB)          | Yes      |
-| Timeout          | int32            | Function timeout (in seconds)      | Yes      |
-| Tags             | map[string]string| Key-value pairs for tags           | No       |
-| Environments     | map[string]string| Environment variables              | No       |
-| VPCConfig        | [VPCConfig](#vpcconfig)       | VPC configuration                  | No       |
-| Layers        | []string       | ARNs of [layers](https://docs.aws.amazon.com/lambda/latest/dg/chapter-layers.html) to depend on                | No       |
+| name             | string           | Name of the Lambda function        | Yes      |
+| role             | string           | IAM role ARN                       | Yes      |
+| image            | string           | URI of the container image         | No      |
+| s3Bucket         | string           | S3 bucket name for code package   | No      |
+| s3Key            | string           | S3 key for code package            | No      |
+| s3ObjectVersion  | string           | S3 object version for code package | No      |
+| source       | [Source](#source)       | Git settings                | No      |
+| handler          | string           | Lambda function handler            | No      |
+| runtime          | string           | Runtime environment                | No      |
+| architectures    | [][Architecture](#architecture)   | Supported architectures            | No       |
+| ephemeralStorage | [EphemeralStorage](#ephemeralstorage)| Ephemeral storage configuration    | No       |
+| memory           | int32            | Memory allocation (in MB)          | Yes      |
+| timeout          | int32            | Function timeout (in seconds)      | Yes      |
+| tags             | map[string]string| Key-value pairs for tags           | No       |
+| environments     | map[string]string| Environment variables              | No       |
+| vpcConfig        | [VPCConfig](#vpcconfig)       | VPC configuration                  | No       |
+| layers        | []string       | ARNs of [layers](https://docs.aws.amazon.com/lambda/latest/dg/chapter-layers.html) to depend on                | No       |
 
-### SourceCode
+#### Source
 
 | Field | Type   | Description              | Required |
 |-------|--------|--------------------------|----------|
-| Git   | string | Git repository URL       | Yes      |
-| Ref   | string | Git branch/tag/reference| Yes      |
-| Path  | string | Path within the repository | Yes    |
+| git   | string | Git repository URL       | Yes      |
+| ref   | string | Git branch/tag/reference| Yes      |
+| path  | string | Path within the repository | Yes    |
 
-### Architecture
+#### Architecture
 
 | Field | Type   | Description            | Required |
 |-------|--------|------------------------|----------|
-| Name  | string | Name of the architecture | Yes     |
+| name  | string | Name of the architecture | Yes     |
 
-### EphemeralStorage
+#### EphemeralStorage
 
 | Field | Type  | Description                  | Required |
 |-------|-------|------------------------------|----------|
-| Size  | int32 | Size of the ephemeral storage| No       |
+| size  | int32 | Size of the ephemeral storage| Yes       |
 
-### VPCConfig
+#### VPCConfig
 
 | Field           | Type     | Description                 | Required |
 |-----------------|----------|-----------------------------|----------|
-| SecurityGroupIDs| []string | List of security group IDs  | No       |
-| SubnetIDs       | []string | List of subnet IDs          | No       |
+| securityGroupIds| []string | List of security group IDs  | No       |
+| subnetIds       | []string | List of subnet IDs          | No       |
 
-- Note
-    - See more Details
-        - [Configuration Lambda application](../managing-application/defining-app-configuration/lambda)
 
 ## LambdaQuickSync
 
