@@ -478,7 +478,7 @@ func (c *client) UpdateTrafficConfig(ctx context.Context, fm FunctionManifest, r
 
 	if secondary, ok := routingTraffic[TrafficSecondaryVersionKeyName]; ok {
 		routingTrafficMap := make(map[string]float64)
-		routingTrafficMap[secondary.Version] = precentToPercentage(secondary.Percent)
+		routingTrafficMap[secondary.Version] = percentToPercentage(secondary.Percent)
 		input.RoutingConfig = &types.AliasRoutingConfiguration{
 			AdditionalVersionWeights: routingTrafficMap,
 		}
@@ -586,7 +586,7 @@ func makeFlowControlTagsMaps(remoteTags, definedTags map[string]string) (newDefi
 	return
 }
 
-func precentToPercentage(in float64) float64 {
+func percentToPercentage(in float64) float64 {
 	return in / 100.0
 }
 
