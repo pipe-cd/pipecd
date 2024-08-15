@@ -24,7 +24,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/lambda"
-	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
@@ -93,8 +92,8 @@ func convertToManifest(f *lambda.GetFunctionOutput) provider.FunctionManifest {
 	}
 
 	return provider.FunctionManifest{
-		Kind:       "LambdaFunction",
-		APIVersion: config.VersionV1Beta1,
+		Kind:       provider.FunctionManifestKind,
+		APIVersion: provider.VersionV1Beta1,
 		Spec: provider.FunctionManifestSpec{
 			Name: *f.Configuration.FunctionName,
 			Role: *f.Configuration.Role,
