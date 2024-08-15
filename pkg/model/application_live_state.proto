@@ -185,7 +185,7 @@ message ECSResourceState {
     int64 updated_at = 9 [(validate.rules).int64.gt = 0];
 }
 
-// LambdaResourceState represents the state of a Lambda function resource.
+// LambdaResourceState represents the state of a Lambda resource.
 message LambdaResourceState {
     enum HealthStatus {
         UNKNOWN = 0;
@@ -200,7 +200,7 @@ message LambdaResourceState {
     repeated string owner_ids = 2;
     // The sorted list of unique IDs of the parents.
     repeated string parent_ids = 3;
-    // The unique name for the type of resource.
+    // The name of this resource.
     string name = 4 [(validate.rules).string.min_len = 1];
     // The kind of this resource. e.g. Function
     string kind = 5 [(validate.rules).string.min_len = 1];
@@ -209,7 +209,7 @@ message LambdaResourceState {
     string health_description = 7;
 
     // The timestamp when this resource was created.
-    int64 created_at = 8 [(validate.rules).int64.gt = 0];
+    int64 created_at = 8;
     // The timestamp of the last time when this resource was updated.
-    int64 updated_at = 9 [(validate.rules).int64.gt = 0];
+    int64 updated_at = 9;
 }

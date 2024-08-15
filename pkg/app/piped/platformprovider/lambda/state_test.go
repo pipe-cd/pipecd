@@ -74,14 +74,11 @@ func TestMakeFunctionResourceState(t *testing.T) {
 
 				FunctionArn:  aws.String("test-function-arn"),
 				FunctionName: aws.String("test-function-name"),
-				// CreatedAt:    aws.Time(time.Now()),
 			}
 			state := MakeFunctionResourceState(f)
 
 			expected := &model.LambdaResourceState{
 				Id:                "test-function-arn",
-				OwnerIds:          nil, // TODO Remove here if not needed
-				ParentIds:         nil, // TODO Remove here if not needed
 				Name:              "test-function-name",
 				Kind:              "Function",
 				HealthStatus:      tc.expectedStatus,

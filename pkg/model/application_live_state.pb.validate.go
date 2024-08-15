@@ -1972,27 +1972,9 @@ func (m *LambdaResourceState) validate(all bool) error {
 
 	// no validation rules for HealthDescription
 
-	if m.GetCreatedAt() <= 0 {
-		err := LambdaResourceStateValidationError{
-			field:  "CreatedAt",
-			reason: "value must be greater than 0",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for CreatedAt
 
-	if m.GetUpdatedAt() <= 0 {
-		err := LambdaResourceStateValidationError{
-			field:  "UpdatedAt",
-			reason: "value must be greater than 0",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for UpdatedAt
 
 	if len(errors) > 0 {
 		return LambdaResourceStateMultiError(errors)

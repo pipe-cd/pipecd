@@ -25,9 +25,7 @@ import (
 func MakeFunctionResourceState(fc *types.FunctionConfiguration) *model.LambdaResourceState {
 	var healthStatus model.LambdaResourceState_HealthStatus
 
-	// TODO: What to do when LastUpdateStatus is Failed?
-	// fc.LastUpdateStatus
-	switch *&fc.State {
+	switch fc.State {
 	case types.StateActive:
 		healthStatus = model.LambdaResourceState_HEALTHY
 	case types.StatePending, types.StateInactive, types.StateFailed:
@@ -42,19 +40,12 @@ func MakeFunctionResourceState(fc *types.FunctionConfiguration) *model.LambdaRes
 	}
 
 	return &model.LambdaResourceState{
-		Id: *fc.FunctionArn,
-		// OwnerIds:  []string{*fc.ClusterArn},
-		// ParentIds: []string{*fc.ClusterArn},
+		Id:   *fc.FunctionArn,
 		Name: *fc.FunctionName,
 
 		Kind: "Function",
 
 		HealthStatus:      healthStatus,
 		HealthDescription: healthDesc,
-
-		// TODO: CreatedAt is not found in Lambda func.
-		// CreatedAt: createdAt,
-		// TODO: Convert from string to int
-		// UpdatedAt: fc.LastModified,
 	}
 }
