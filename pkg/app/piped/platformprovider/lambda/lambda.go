@@ -28,6 +28,14 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
+const (
+	LabelManagedBy   string = "pipecd-dev-managed-by"  // Always be piped.
+	LabelPiped       string = "pipecd-dev-piped"       // The id of piped handling this application.
+	LabelApplication string = "pipecd-dev-application" // The application this resource belongs to.
+	LabelCommitHash  string = "pipecd-dev-commit-hash" // Hash value of the deployed commit.
+	ManagedByPiped   string = "piped"
+)
+
 // Client is wrapper of AWS client.
 type Client interface {
 	IsFunctionExist(ctx context.Context, name string) (bool, error)
