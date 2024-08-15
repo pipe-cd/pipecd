@@ -61,7 +61,7 @@ func TestConvertToManifest(t *testing.T) {
 		},
 	}
 
-	expected := &provider.FunctionManifest{
+	expected := provider.FunctionManifest{
 		Kind:       "LambdaFunction",
 		APIVersion: "pipecd.dev/v1beta1",
 		Spec: provider.FunctionManifestSpec{
