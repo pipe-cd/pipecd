@@ -99,12 +99,7 @@ func convertToManifest(f *lambda.GetFunctionOutput) provider.FunctionManifest {
 			Role: *f.Configuration.Role,
 
 			ImageURI: *f.Code.ImageUri,
-
-			// TODO:
-			// S3Bucket         : *f.Code.,
-			// S3Key            : *f.,
-			// S3ObjectVersion  : *f.,
-			// SourceCode       : *f. , Maybe not exist in Lambda's param
+			// S3Bucket, S3Key, S3ObjectVersion, and SourceCode cannot be retrieved from Lambda's response.
 
 			Handler:       *f.Configuration.Handler,
 			Architectures: architectures,
