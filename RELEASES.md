@@ -90,7 +90,7 @@ This may also contain some minor features, but ensure that it does NOT contain a
 1. Move on to [Releases > Draft a New Release](https://github.com/pipe-cd/pipecd/releases/new).
 2. Set values as below:
    1. `Choose a tag`: Create a new tag `vX.Y.Z-rcN`
-   2. `Target`(branch): `master`
+   2. `Target`(branch): use `master` for the minor rc, use `release-vX.Y.x` for the patch rc
    3. `Release title`: `Release vX.Y.Z-rcN`
    4. Body area
       1. Copy from the previous rc-release note.
