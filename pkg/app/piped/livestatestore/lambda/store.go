@@ -60,17 +60,9 @@ func (s *store) run(ctx context.Context) error {
 			return fmt.Errorf("failed to get Lambda function %s: %w", *funcCfg.FunctionName, err)
 		}
 
-		// TODO: Tag application-id to Lambda funcs on create/update
-		// Use the application ID tag as the key.
-		appId := ""
-		// for _, tag := range service.Tags {
-		// 	if *tag.Key == provider.LabelApplication {
-		// 		appId = *tag.Value
-		// 		break
-		// 	}
-		// }
-		if appId == "" {
-			// Skip a service which is not managed by PipeCD.
+		appId, ok := f.Tags[provider.LabelApplication]
+		if !ok {
+			// Skip a function not managed by PipeCD.
 			continue
 		}
 
