@@ -194,7 +194,7 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
                   onPageChange={(_, newPage) => {
                     onPageChange(newPage + 1);
                   }}
-                  onRowsPerPageChange={(e) => {
+                  onChangeRowsPerPage={(e) => {
                     setRowsPerPage(parseInt(e.target.value, 10));
                     onPageChange(1);
                   }}
