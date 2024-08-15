@@ -60,7 +60,7 @@ func (s *store) run(ctx context.Context) error {
 			return fmt.Errorf("failed to get Lambda function %s: %w", *funcCfg.FunctionName, err)
 		}
 
-		// TODO: Tag application-id to Lamdba funcs on create/update
+		// TODO: Tag application-id to Lambda funcs on create/update
 		// Use the application ID tag as the key.
 		appId := ""
 		// for _, tag := range service.Tags {
@@ -75,7 +75,7 @@ func (s *store) run(ctx context.Context) error {
 		}
 
 		apps[appId] = app{
-			functionManifest: *convertToManifest(f),
+			functionManifest: convertToManifest(f),
 			states: []*model.LambdaResourceState{
 				provider.MakeFunctionResourceState(f.Configuration),
 			},
@@ -89,7 +89,7 @@ func (s *store) run(ctx context.Context) error {
 	return nil
 }
 
-func convertToManifest(f *lambda.GetFunctionOutput) *provider.FunctionManifest {
+func convertToManifest(f *lambda.GetFunctionOutput) provider.FunctionManifest {
 	architectures := make([]provider.Architecture, 0, len(f.Configuration.Architectures))
 	for _, arch := range f.Configuration.Architectures {
 		architectures = append(architectures, provider.Architecture{Name: string(arch)})
@@ -100,7 +100,7 @@ func convertToManifest(f *lambda.GetFunctionOutput) *provider.FunctionManifest {
 		layerArns = append(layerArns, *layer.Arn)
 	}
 
-	return &provider.FunctionManifest{
+	return provider.FunctionManifest{
 		Kind:       "LambdaFunction",
 		APIVersion: config.VersionV1Beta1,
 		Spec: provider.FunctionManifestSpec{
@@ -123,7 +123,7 @@ func convertToManifest(f *lambda.GetFunctionOutput) *provider.FunctionManifest {
 			Runtime:      string(f.Configuration.Runtime),
 			Memory:       *f.Configuration.MemorySize,
 			Timeout:      *f.Configuration.Timeout,
-			Tags:         *&f.Tags,
+			Tags:         f.Tags,
 			Environments: f.Configuration.Environment.Variables,
 			VPCConfig: &provider.VPCConfig{
 				SecurityGroupIDs: f.Configuration.VpcConfig.SecurityGroupIds,
