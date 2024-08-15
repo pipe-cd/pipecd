@@ -81,43 +81,59 @@ func (s *store) run(ctx context.Context) error {
 }
 
 func convertToManifest(f *lambda.GetFunctionOutput) provider.FunctionManifest {
-	architectures := make([]provider.Architecture, 0, len(f.Configuration.Architectures))
-	for _, arch := range f.Configuration.Architectures {
+	fc := f.Configuration
+
+	architectures := make([]provider.Architecture, 0, len(fc.Architectures))
+	for _, arch := range fc.Architectures {
 		architectures = append(architectures, provider.Architecture{Name: string(arch)})
 	}
 
-	layerArns := make([]string, 0, len(f.Configuration.Layers))
-	for _, layer := range f.Configuration.Layers {
+	layerArns := make([]string, 0, len(fc.Layers))
+	for _, layer := range fc.Layers {
 		layerArns = append(layerArns, *layer.Arn)
 	}
 
-	return provider.FunctionManifest{
+	m := provider.FunctionManifest{
 		Kind:       provider.FunctionManifestKind,
 		APIVersion: provider.VersionV1Beta1,
 		Spec: provider.FunctionManifestSpec{
-			Name: *f.Configuration.FunctionName,
-			Role: *f.Configuration.Role,
-
-			ImageURI: *f.Code.ImageUri,
+			Name: *fc.FunctionName,
 			// S3Bucket, S3Key, S3ObjectVersion, and SourceCode cannot be retrieved from Lambda's response.
 
-			Handler:       *f.Configuration.Handler,
 			Architectures: architectures,
-			EphemeralStorage: &provider.EphemeralStorage{
-				Size: *f.Configuration.EphemeralStorage.Size,
-			},
-			Runtime:      string(f.Configuration.Runtime),
-			Memory:       *f.Configuration.MemorySize,
-			Timeout:      *f.Configuration.Timeout,
-			Tags:         f.Tags,
-			Environments: f.Configuration.Environment.Variables,
-			VPCConfig: &provider.VPCConfig{
-				SecurityGroupIDs: f.Configuration.VpcConfig.SecurityGroupIds,
-				SubnetIDs:        f.Configuration.VpcConfig.SubnetIds,
-			},
-			Layers: layerArns,
+			Runtime:       string(fc.Runtime),
+			Memory:        *fc.MemorySize,
+			Timeout:       *fc.Timeout,
+			Tags:          f.Tags,
+			Layers:        layerArns,
 		},
 	}
+
+	if fc.Role != nil {
+		m.Spec.Role = *fc.Role
+	}
+	if f.Code.ImageUri != nil {
+		m.Spec.ImageURI = *f.Code.ImageUri
+	}
+	if fc.Handler != nil {
+		m.Spec.Handler = *fc.Handler
+	}
+	if fc.EphemeralStorage != nil && fc.EphemeralStorage.Size != nil {
+		m.Spec.EphemeralStorage = &provider.EphemeralStorage{
+			Size: *fc.EphemeralStorage.Size,
+		}
+	}
+	if fc.Environment != nil {
+		m.Spec.Environments = fc.Environment.Variables
+	}
+	if fc.VpcConfig != nil {
+		m.Spec.VPCConfig = &provider.VPCConfig{
+			SecurityGroupIDs: fc.VpcConfig.SecurityGroupIds,
+			SubnetIDs:        fc.VpcConfig.SubnetIds,
+		}
+	}
+
+	return m
 }
 
 func (s *store) loadApps() map[string]app {

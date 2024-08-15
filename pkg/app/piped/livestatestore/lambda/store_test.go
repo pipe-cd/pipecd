@@ -27,78 +27,112 @@ import (
 func TestConvertToManifest(t *testing.T) {
 	t.Parallel()
 
-	f := &lambda.GetFunctionOutput{
-		Code: &types.FunctionCodeLocation{
-			ImageUri: aws.String("test-image-uri"),
-		},
-		Configuration: &types.FunctionConfiguration{
-			FunctionName:     aws.String("test-function"),
-			Architectures:    []types.Architecture{types.ArchitectureArm64},
-			Handler:          aws.String("test-handler"),
-			Runtime:          types.RuntimeGo1x,
-			EphemeralStorage: &types.EphemeralStorage{Size: aws.Int32(1024)},
-			Timeout:          aws.Int32(60),
-			MemorySize:       aws.Int32(128),
-			Environment: &types.EnvironmentResponse{
-				Variables: map[string]string{
-					"env1": "value1",
-					"env2": "value2",
+	testcases := []struct {
+		title    string
+		f        *lambda.GetFunctionOutput
+		expected provider.FunctionManifest
+	}{
+		{
+			title: "convert successfully",
+			f: &lambda.GetFunctionOutput{
+				Code: &types.FunctionCodeLocation{
+					ImageUri: aws.String("test-image-uri"),
+				},
+				Configuration: &types.FunctionConfiguration{
+					FunctionName:     aws.String("test-function"),
+					Architectures:    []types.Architecture{types.ArchitectureArm64},
+					Handler:          aws.String("test-handler"),
+					Runtime:          types.RuntimeGo1x,
+					EphemeralStorage: &types.EphemeralStorage{Size: aws.Int32(1024)},
+					Timeout:          aws.Int32(60),
+					MemorySize:       aws.Int32(128),
+					Environment: &types.EnvironmentResponse{
+						Variables: map[string]string{
+							"env1": "value1",
+							"env2": "value2",
+						},
+					},
+					VpcConfig: &types.VpcConfigResponse{
+						SubnetIds:        []string{"subnet-1", "subnet-2"},
+						SecurityGroupIds: []string{"sg-1", "sg-2"},
+					},
+					Role: aws.String("test-role"),
+					Layers: []types.Layer{
+						{Arn: aws.String("layer-1")},
+						{Arn: aws.String("layer-2")},
+					},
+				},
+				Tags: map[string]string{
+					"tag1": "value1",
+					"tag2": "value2",
 				},
 			},
-			VpcConfig: &types.VpcConfigResponse{
-				SubnetIds:        []string{"subnet-1", "subnet-2"},
-				SecurityGroupIds: []string{"sg-1", "sg-2"},
-			},
-			Role: aws.String("test-role"),
-			Layers: []types.Layer{
-				{Arn: aws.String("layer-1")},
-				{Arn: aws.String("layer-2")},
+			expected: provider.FunctionManifest{
+				Kind:       "LambdaFunction",
+				APIVersion: "pipecd.dev/v1beta1",
+				Spec: provider.FunctionManifestSpec{
+					Name:     "test-function",
+					ImageURI: "test-image-uri",
+					Role:     "test-role",
+					Handler:  "test-handler",
+					Architectures: []provider.Architecture{
+						{Name: "arm64"},
+					},
+					EphemeralStorage: &provider.EphemeralStorage{
+						Size: 1024,
+					},
+					Runtime: "go1.x",
+					Memory:  128,
+					Timeout: 60,
+					Tags: map[string]string{
+						"tag1": "value1",
+						"tag2": "value2",
+					},
+					Environments: map[string]string{
+						"env1": "value1",
+						"env2": "value2",
+					},
+					VPCConfig: &provider.VPCConfig{
+						SecurityGroupIDs: []string{"sg-1", "sg-2"},
+						SubnetIDs:        []string{"subnet-1", "subnet-2"},
+					},
+					Layers: []string{
+						"layer-1",
+						"layer-2",
+					},
+				},
 			},
 		},
-		Tags: map[string]string{
-			"tag1": "value1",
-			"tag2": "value2",
+		{
+			title: "can skip null values",
+			f: &lambda.GetFunctionOutput{
+				Configuration: &types.FunctionConfiguration{
+					FunctionName: aws.String("test-function"),
+					MemorySize:   aws.Int32(128),
+					Timeout:      aws.Int32(60),
+				},
+				Code: &types.FunctionCodeLocation{
+					ImageUri: nil,
+				},
+			},
+			expected: provider.FunctionManifest{
+				Kind:       "LambdaFunction",
+				APIVersion: "pipecd.dev/v1beta1",
+				Spec: provider.FunctionManifestSpec{
+					Name:          "test-function",
+					Memory:        128,
+					Timeout:       60,
+					Architectures: []provider.Architecture{},
+					Layers:        []string{},
+				},
+			},
 		},
 	}
 
-	expected := provider.FunctionManifest{
-		Kind:       "LambdaFunction",
-		APIVersion: "pipecd.dev/v1beta1",
-		Spec: provider.FunctionManifestSpec{
-			Name:     "test-function",
-			ImageURI: "test-image-uri",
-			Role:     "test-role",
-			Handler:  "test-handler",
-			Architectures: []provider.Architecture{
-				{Name: "arm64"},
-			},
-			EphemeralStorage: &provider.EphemeralStorage{
-				Size: 1024,
-			},
-			Runtime: "go1.x",
-			Memory:  128,
-			Timeout: 60,
-			Tags: map[string]string{
-				"tag1": "value1",
-				"tag2": "value2",
-			},
-			Environments: map[string]string{
-				"env1": "value1",
-				"env2": "value2",
-			},
-			VPCConfig: &provider.VPCConfig{
-				SecurityGroupIDs: []string{"sg-1", "sg-2"},
-				SubnetIDs:        []string{"subnet-1", "subnet-2"},
-			},
-			Layers: []string{
-				"layer-1",
-				"layer-2",
-			},
-		},
+	for _, tc := range testcases {
+		t.Run("convert successfully", func(t *testing.T) {
+			fm := convertToManifest(tc.f)
+			assert.Equal(t, tc.expected, fm)
+		})
 	}
-
-	t.Run("convert successfully", func(t *testing.T) {
-		fm := convertToManifest(f)
-		assert.Equal(t, expected, fm)
-	})
 }
