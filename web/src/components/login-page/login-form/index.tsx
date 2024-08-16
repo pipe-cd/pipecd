@@ -43,6 +43,7 @@ const useStyles = makeStyles((theme) => ({
   },
   oidcLoginButton: {
     background: "#4A90E2",
+    marginTop: theme.spacing(1),
   },
   divider: {
     display: "flex",
