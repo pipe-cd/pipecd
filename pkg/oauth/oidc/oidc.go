@@ -31,7 +31,7 @@ var usernameClaimKeys = []string{"username", "preferred_username", "name", "cogn
 var avatarUrlClaimKeys = []string{"picture", "avatar_url"}
 var roleClaimKeys = []string{"groups", "roles", "cognito:groups", "custom:roles", "custom:groups"}
 
-// OAuthClient is a oauth client for OIDC.
+// OAuthClient is an oauth client for OIDC.
 type OAuthClient struct {
 	*oidc.Provider
 	*oauth2.Token
@@ -88,7 +88,7 @@ func (c *OAuthClient) GetUser(ctx context.Context, clientId string) (*model.User
 
 	idTokenRAW, ok := c.Token.Extra("id_token").(string)
 	if !ok {
-		return nil, fmt.Errorf("no access_token in oauth2 token")
+		return nil, fmt.Errorf("no id_token in oauth2 token")
 	}
 
 	verifier := c.Provider.Verifier(&oidc.Config{ClientID: clientId})

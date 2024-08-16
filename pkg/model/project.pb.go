@@ -967,7 +967,7 @@ type ProjectSSOConfig_Oidc struct {
 	UserInfoEndpoint string `protobuf:"bytes,7,opt,name=user_info_endpoint,json=userInfoEndpoint,proto3" json:"user_info_endpoint,omitempty"`
 	// The address of the proxy used while communicating with the OpenID Connect service.
 	ProxyUrl string `protobuf:"bytes,8,opt,name=proxy_url,json=proxyUrl,proto3" json:"proxy_url,omitempty"`
-	// scopes to request from the OpenID Connect service.
+	// Scopes to request from the OpenID Connect service.
 	Scopes []string `protobuf:"bytes,9,rep,name=scopes,proto3" json:"scopes,omitempty"`
 }
 

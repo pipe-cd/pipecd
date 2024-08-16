@@ -114,7 +114,7 @@ message ProjectSSOConfig {
         string user_info_endpoint = 7;
         // The address of the proxy used while communicating with the OpenID Connect service.
         string proxy_url = 8;
-        // scopes to request from the OpenID Connect service.
+        // Scopes to request from the OpenID Connect service.
         repeated string scopes = 9;
     }
 
