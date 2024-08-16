@@ -854,7 +854,7 @@ func TestProject_DeleteRBACRole(t *testing.T) {
 	}
 }
 
-func TestGenerateAuthCodeURL(t *testing.T) {
+func TestGenerateAuthCodeURL_Oidc(t *testing.T) {
 	tests := []struct {
 		name                string
 		config              ProjectSSOConfig_Oidc
