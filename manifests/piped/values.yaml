@@ -16,6 +16,8 @@ args:
   addLoginUserToPasswd: false
   # Ensure that the pod will be restarted by random an annotation value to key rollme.
   forceRestart: true
+  # The number of app manifests to cache. The cache-key contains the commit hash. The default is 150. (default 150)
+  appManifestCacheCount: 150
 
 launcher:
   enabled: false
