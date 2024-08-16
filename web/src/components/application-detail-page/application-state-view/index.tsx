@@ -157,9 +157,10 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
         const resources = liveState.ecs?.resourcesList || [];
         return <ECSStateView resources={resources} />;
       }
-      case ApplicationKind.LAMBDA:
+      case ApplicationKind.LAMBDA: {
         const resources = liveState.lambda?.resourcesList || [];
         return <LambdaStateView resources={resources} />;
+      }
       default:
     }
 
