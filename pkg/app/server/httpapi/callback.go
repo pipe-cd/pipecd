@@ -178,10 +178,13 @@ func parseProjectAndState(r *http.Request) (string, string, error) {
 	if len(s) != 2 {
 		projectID := r.FormValue(projectFormKey)
 		if projectID == "" {
-			return "", "", fmt.Errorf("missing project id")
+			return s[0], "", fmt.Errorf("missing project id")
 		}
 		return state, projectID, nil
 	} else {
+		if s[1] == "" {
+			return s[0], "", fmt.Errorf("missing project id")
+		}
 		return s[0], s[1], nil
 	}
 }
