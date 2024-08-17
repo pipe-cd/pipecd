@@ -88,19 +88,3 @@
         }
     }
 }
-
-.corner-ribbon {
-    width: 220px;
-    background: rgb(238, 238, 51);
-    top: 25px;
-    right: -50px;
-    text-align: center;
-    line-height: 50px;
-    transform: rotate(45deg);
-    -webkit-transform: rotate(45deg);
-    z-index: 100;
-    position: fixed;
-    a {
-        color: #ff0000;
-    }
-}
