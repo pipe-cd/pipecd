@@ -381,6 +381,17 @@ func (g *PipedGit) Mask() {
 	}
 }
 
+func (g *PipedGit) DecodedPassword() (string, error) {
+	if len(g.Password) == 0 {
+		return "", nil
+	}
+	decoded, err := base64.StdEncoding.DecodeString(g.Password)
+	if err != nil {
+		return "", err
+	}
+	return string(decoded), nil
+}
+
 type PipedRepository struct {
 	// Unique identifier for this repository.
 	// This must be unique in the piped scope.
