@@ -43,7 +43,9 @@ The Pipectl command-line tool can be installed using one of the following method
     pipectl version
     ```
 
-### Using [Asdf](https://asdf-vm.com/)
+### Using Asdf
+
+About [Asdf](https://asdf-vm.com/)
 
 1. Add pipectl plugin to asdf. (If you have not yet `asdf add plugin add pipectl`.)
     ```console
@@ -66,7 +68,9 @@ The Pipectl command-line tool can be installed using one of the following method
     pipectl version
     ```
 
-### Using [Aqua](https://aquaproj.github.io/)
+### Using Aqua
+
+About [Aqua](https://aquaproj.github.io/)
 
 1. Add pipectl to `aqua.yaml`. (If you want to select a version, use `aqua g -i -s pipe-cd/pipecd/pipectl`)
     ```console
@@ -83,7 +87,9 @@ The Pipectl command-line tool can be installed using one of the following method
     pipectl version
     ```
 
-### Using [Homebrew](https://brew.sh/)
+### Using Homebrew
+
+About [Homebrew](https://brew.sh/)
 
 1. Add the `pipe-cd/tap` and fetch new formulae from GitHub.
     ```console
