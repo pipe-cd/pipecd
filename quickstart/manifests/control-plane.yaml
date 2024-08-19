@@ -1,0 +1,755 @@
+---
+# Source: pipecd/templates/secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pipecd
+  labels:
+    helm.sh/chart: pipecd-v0.48.6
+    app.kubernetes.io/name: pipecd
+    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/managed-by: Helm
+type: Opaque
+data:
+  encryption-key: "ZW5jcnlwdGlvbi1rZXktanVzdC11c2VkLWZvci1xdWlja3N0YXJ0"
+  minio-access-key: "cXVpY2tzdGFydC1hY2Nlc3Mta2V5"
+  minio-secret-key: "cXVpY2tzdGFydC1zZWNyZXQta2V5"
+---
+# Source: pipecd/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pipecd
+  labels:
+    helm.sh/chart: pipecd-v0.48.6
+    app.kubernetes.io/name: pipecd
+    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/managed-by: Helm
+data:
+  control-plane-config.yaml: |-
+    apiVersion: "pipecd.dev/v1beta1"
+    kind: ControlPlane
+    spec:
+      datastore:
+        type: MYSQL
+        config:
+          url: root:test@tcp(pipecd-mysql:3306)
+          database: quickstart
+      filestore:
+        type: MINIO
+        config:
+          endpoint: http://pipecd-minio:9000
+          bucket: quickstart
+          accessKeyFile: /etc/pipecd-secret/minio-access-key
+          secretKeyFile: /etc/pipecd-secret/minio-secret-key
+          autoCreateBucket: true
+      projects:
+        - id: quickstart
+          staticAdmin:
+            username: hello-pipecd
+            passwordHash: "$2a$10$ye96mUqUqTnjUqgwQJbJzel/LJibRhUnmzyypACkvrTSnQpVFZ7qK" # bcrypt value of "hello-pipecd"
+---
+# Source: pipecd/templates/envoy-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pipecd-gateway-envoy-config
+  labels:
+    helm.sh/chart: pipecd-v0.48.6
+    app.kubernetes.io/name: pipecd
+    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: gateway
+data:
+  envoy-config.yaml: |-
+    admin:
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 9095
+
+    static_resources:
+      listeners:
+      - name: ingress
+        address:
+          socket_address:
+            address: 0.0.0.0
+            port_value: 9090
+        filter_chains:
+        - filters:
+          - name: envoy.filters.network.http_connection_manager
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+              codec_type: AUTO
+              stat_prefix: ingress_http
+              access_log:
+              - name: envoy.access_loggers.stdout
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.access_loggers.stream.v3.StdoutAccessLog
+              http_filters:
+              - name: envoy.filters.http.grpc_web
+              - name: envoy.filters.http.grpc_stats
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_stats.v3.FilterConfig
+                  stats_for_all_methods: true
+                  enable_upstream_stats: true
+              - name: envoy.filters.http.router
+              route_config:
+                name: local_route
+                virtual_hosts:
+                - name: envoy
+                  domains:
+                    - '*'
+                  routes:
+                    - match:
+                        prefix: /grpc.service.pipedservice.PipedService/
+                        grpc:
+                      route:
+                        cluster: grpc-piped-service
+                    - match:
+                        prefix: /pipe.api.service.pipedservice.PipedService/
+                        grpc:
+                      route:
+                        cluster: grpc-piped-service
+                        prefix_rewrite: /grpc.service.pipedservice.PipedService/
+                    - match:
+                        prefix: /grpc.service.webservice.WebService/
+                        grpc:
+                      route:
+                        cluster: grpc-web-service
+                    - match:
+                        prefix: /pipe.api.service.webservice.WebService/
+                        grpc:
+                      route:
+                        cluster: grpc-web-service
+                        prefix_rewrite: /grpc.service.webservice.WebService/
+                    - match:
+                        prefix: /grpc.service.apiservice.APIService/
+                        grpc:
+                      route:
+                        cluster: grpc-api-service
+                    - match:
+                        prefix: /pipe.api.service.apiservice.APIService/
+                        grpc:
+                      route:
+                        cluster: grpc-api-service
+                        prefix_rewrite: /grpc.service.apiservice.APIService/
+                    - match:
+                        prefix: /
+                      route:
+                        cluster: server-http
+      clusters:
+      - name: grpc-piped-service
+        http2_protocol_options: {}
+        connect_timeout: 0.25s
+        type: STRICT_DNS
+        lb_policy: ROUND_ROBIN
+        load_assignment:
+          cluster_name: grpc-piped-service
+          endpoints:
+          - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: pipecd-server
+                    port_value: 9080
+        track_cluster_stats:
+          request_response_sizes: true
+      - name: grpc-web-service
+        http2_protocol_options: {}
+        connect_timeout: 0.25s
+        type: STRICT_DNS
+        lb_policy: ROUND_ROBIN
+        load_assignment:
+          cluster_name: grpc-web-service
+          endpoints:
+          - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: pipecd-server
+                    port_value: 9081
+        track_cluster_stats:
+          request_response_sizes: true
+      - name: grpc-api-service
+        http2_protocol_options: {}
+        connect_timeout: 0.25s
+        type: STRICT_DNS
+        lb_policy: ROUND_ROBIN
+        load_assignment:
+          cluster_name: grpc-api-service
+          endpoints:
+          - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: pipecd-server
+                    port_value: 9083
+        track_cluster_stats:
+          request_response_sizes: true
+      - name: server-http
+        connect_timeout: 0.25s
+        type: STRICT_DNS
+        lb_policy: ROUND_ROBIN
+        load_assignment:
+          cluster_name: server-http
+          endpoints:
+          - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: pipecd-server
+                    port_value: 9082
+        track_cluster_stats:
+          request_response_sizes: true
+---
+# Source: pipecd/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: pipecd
+  labels:
+    helm.sh/chart: pipecd-v0.48.6
+    app.kubernetes.io/name: pipecd
+    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: ingress
+  annotations:
+spec:
+  type: NodePort
+  ports:
+    - name: service
+      port: 8080
+      targetPort: ingress
+  selector:
+    app.kubernetes.io/name: pipecd
+    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/component: gateway
+---
+# Source: pipecd/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: pipecd-gateway
+  labels:
+    helm.sh/chart: pipecd-v0.48.6
+    app.kubernetes.io/name: pipecd
+    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: gateway
+spec:
+  type: ClusterIP
+  ports:
+    - name: envoy-admin
+      port: 9095
+      targetPort: envoy-admin
+  selector:
+    app.kubernetes.io/name: pipecd
+    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/component: gateway
+---
+# Source: pipecd/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: pipecd-server
+  labels:
+    helm.sh/chart: pipecd-v0.48.6
+    app.kubernetes.io/name: pipecd
+    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: server
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: piped-api
+      port: 9080
+      targetPort: piped-api
+    - name: web-api
+      port: 9081
+      targetPort: web-api
+    - name: http
+      port: 9082
+      targetPort: http
+    - name: api
+      port: 9083
+      targetPort: api
+    - name: admin
+      port: 9085
+      targetPort: admin
+  selector:
+    app.kubernetes.io/name: pipecd
+    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/component: server
+---
+# Source: pipecd/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: pipecd-cache
+  labels:
+    helm.sh/chart: pipecd-v0.48.6
+    app.kubernetes.io/name: pipecd
+    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: cache
+spec:
+  type: ClusterIP
+  ports:
+    - name: service
+      port: 6379
+      targetPort: redis
+  selector:
+    app.kubernetes.io/name: pipecd
+    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/component: cache
+---
+# Source: pipecd/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: pipecd-ops
+  labels:
+    helm.sh/chart: pipecd-v0.48.6
+    app.kubernetes.io/name: pipecd
+    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: ops
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: http
+      port: 9082
+      targetPort: http
+    - name: admin
+      port: 9085
+      targetPort: admin
+  selector:
+    app.kubernetes.io/name: pipecd
+    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/component: ops
+---
+# Source: pipecd/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: pipecd-mysql
+  labels:
+    helm.sh/chart: pipecd-v0.48.6
+    app.kubernetes.io/name: pipecd
+    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: mysql
+spec:
+  type: ClusterIP
+  ports:
+    - name: service
+      port: 3306
+      targetPort: mysql
+  selector:
+    app.kubernetes.io/name: pipecd
+    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/component: mysql
+---
+# Source: pipecd/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: pipecd-minio
+  labels:
+    helm.sh/chart: pipecd-v0.48.6
+    app.kubernetes.io/name: pipecd
+    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: minio
+spec:
+  type: ClusterIP
+  ports:
+    - name: service
+      port: 9000
+      targetPort: minio
+  selector:
+    app.kubernetes.io/name: pipecd
+    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/component: minio
+---
+# Source: pipecd/templates/deployment.yaml
+# Gateway workload by using Envoy proxy.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pipecd-gateway
+  labels:
+    helm.sh/chart: pipecd-v0.48.6
+    app.kubernetes.io/name: pipecd
+    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pipecd
+      app.kubernetes.io/instance: pipecd
+      app.kubernetes.io/component: gateway
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: pipecd
+        app.kubernetes.io/instance: pipecd
+        app.kubernetes.io/component: gateway
+    spec:
+      containers:
+        - name: envoy
+          image: envoyproxy/envoy-alpine:v1.18.3
+          imagePullPolicy: IfNotPresent
+          command:
+          - envoy
+          args:
+            - -c
+            - /etc/envoy/envoy-config.yaml
+          ports:
+          - name: ingress
+            containerPort: 9090
+            protocol: TCP
+          - name: envoy-admin
+            containerPort: 9095
+            protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: 15
+            httpGet:
+              path: /server_info
+              port: envoy-admin
+          readinessProbe:
+            initialDelaySeconds: 15
+            httpGet:
+              path: /server_info
+              port: envoy-admin
+          volumeMounts:
+          - name: envoy-config
+            mountPath: /etc/envoy
+            readOnly: true
+          - name: pipecd-secret
+            mountPath: /etc/pipecd-secret
+            readOnly: true
+      volumes:
+        - name: envoy-config
+          configMap:
+            name: pipecd-gateway-envoy-config
+        - name: pipecd-secret
+          secret:
+            secretName: pipecd
+---
+# Source: pipecd/templates/deployment.yaml
+# API workload.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pipecd-server
+  labels:
+    helm.sh/chart: pipecd-v0.48.6
+    app.kubernetes.io/name: pipecd
+    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pipecd
+      app.kubernetes.io/instance: pipecd
+      app.kubernetes.io/component: server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: pipecd
+        app.kubernetes.io/instance: pipecd
+        app.kubernetes.io/component: server
+    spec:
+      initContainers:
+        - name: dep-waiter
+          image: alpine:3.20
+          command: ["sh", "-c"]
+          args:
+            - |
+              until nc -z pipecd-minio 9000 && nc -z pipecd-mysql 3306
+              do
+                sleep 2;
+              done;
+      containers:
+        - name: server
+          image: "ghcr.io/pipe-cd/pipecd:v0.48.6"
+          imagePullPolicy: IfNotPresent
+          args:
+          - server
+          - --insecure-cookie=true
+          - --cache-address=pipecd-cache:6379
+          - --config-file=/etc/pipecd-config/control-plane-config.yaml
+          - --enable-grpc-reflection=false
+          - --encryption-key-file=/etc/pipecd-secret/encryption-key
+          - --log-encoding=humanize
+          - --log-level=info
+          - --metrics=true
+          ports:
+            - name: piped-api
+              containerPort: 9080
+              protocol: TCP
+            - name: web-api
+              containerPort: 9081
+              protocol: TCP
+            - name: http
+              containerPort: 9082
+              protocol: TCP
+            - name: api
+              containerPort: 9083
+              protocol: TCP
+            - name: admin
+              containerPort: 9085
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: admin
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: admin
+          volumeMounts:
+            - name: pipecd-secret
+              mountPath: /etc/pipecd-secret
+              readOnly: true
+            - name: pipecd-config
+              mountPath: /etc/pipecd-config
+              readOnly: true
+          lifecycle:
+            preStop:
+              exec:
+                command: [ "/bin/sh", "-c", "sleep 30" ]
+
+      volumes:
+        - name: pipecd-secret
+          secret:
+            secretName: pipecd
+        - name: pipecd-config
+          configMap:
+            name: pipecd
+---
+# Source: pipecd/templates/deployment.yaml
+# Cache workload.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pipecd-cache
+  labels:
+    helm.sh/chart: pipecd-v0.48.6
+    app.kubernetes.io/name: pipecd
+    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: cache
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pipecd
+      app.kubernetes.io/instance: pipecd
+      app.kubernetes.io/component: cache
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: pipecd
+        app.kubernetes.io/instance: pipecd
+        app.kubernetes.io/component: cache
+    spec:
+      containers:
+        - name: cache
+          image: redis:5.0.5-alpine3.9
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: redis
+              containerPort: 6379
+              protocol: TCP
+---
+# Source: pipecd/templates/deployment.yaml
+# Single ops pod.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pipecd-ops
+  labels:
+    helm.sh/chart: pipecd-v0.48.6
+    app.kubernetes.io/name: pipecd
+    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: ops
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pipecd
+      app.kubernetes.io/instance: pipecd
+      app.kubernetes.io/component: ops
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: pipecd
+        app.kubernetes.io/instance: pipecd
+        app.kubernetes.io/component: ops
+    spec:
+      initContainers:
+        - name: dep-waiter
+          image: alpine:3.20
+          command: ["sh", "-c"]
+          args:
+            - |
+              until nc -z pipecd-minio 9000 && nc -z pipecd-mysql 3306
+              do
+                sleep 2;
+              done;
+      containers:
+        - name: ops
+          image: "ghcr.io/pipe-cd/pipecd:v0.48.6"
+          imagePullPolicy: IfNotPresent
+          args:
+          - ops
+          - --cache-address=pipecd-cache:6379
+          - --config-file=/etc/pipecd-config/control-plane-config.yaml
+          - --log-encoding=humanize
+          - --log-level=info
+          - --metrics=true
+          ports:
+            - name: http
+              containerPort: 9082
+              protocol: TCP
+            - name: admin
+              containerPort: 9085
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: admin
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: admin
+          volumeMounts:
+            - name: pipecd-secret
+              mountPath: /etc/pipecd-secret
+              readOnly: true
+            - name: pipecd-config
+              mountPath: /etc/pipecd-config
+              readOnly: true
+      volumes:
+        - name: pipecd-secret
+          secret:
+            secretName: pipecd
+        - name: pipecd-config
+          configMap:
+            name: pipecd
+---
+# Source: pipecd/templates/deployment.yaml
+# MySQL datastore
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pipecd-mysql
+  labels:
+    helm.sh/chart: pipecd-v0.48.6
+    app.kubernetes.io/name: pipecd
+    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pipecd
+      app.kubernetes.io/instance: pipecd
+      app.kubernetes.io/component: mysql
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: pipecd
+        app.kubernetes.io/instance: pipecd
+        app.kubernetes.io/component: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0.33
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: test
+            - name: MYSQL_DATABASE
+              value: quickstart
+          ports:
+            - name: mysql
+              containerPort: 3306
+              protocol: TCP
+---
+# Source: pipecd/templates/deployment.yaml
+# MinIO File Store
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pipecd-minio
+  labels:
+    helm.sh/chart: pipecd-v0.48.6
+    app.kubernetes.io/name: pipecd
+    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pipecd
+      app.kubernetes.io/instance: pipecd
+      app.kubernetes.io/component: minio
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: pipecd
+        app.kubernetes.io/instance: pipecd
+        app.kubernetes.io/component: minio
+    spec:
+      containers:
+        - name: minio
+          image: minio/minio:RELEASE.2020-08-26T00-00-49Z
+          args:
+          - server
+          - /data
+          env:
+          - name: MINIO_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: pipecd
+                key: minio-access-key
+          - name: MINIO_SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: pipecd
+                key: minio-secret-key
+          ports:
+            - name: minio
+              containerPort: 9000
+              protocol: TCP

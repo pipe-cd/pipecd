@@ -1,0 +1,198 @@
+---
+# Source: piped/templates/rbac.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: piped
+  labels:
+    helm.sh/chart: piped-v0.48.6
+    app.kubernetes.io/name: piped
+    app.kubernetes.io/instance: piped
+    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: piped/templates/secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: piped
+  labels:
+    helm.sh/chart: piped-v0.48.6
+    app.kubernetes.io/name: piped
+    app.kubernetes.io/instance: piped
+    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/managed-by: Helm
+type: Opaque
+data:
+  piped-key: <YOUR_PIPED_KEY>
+---
+# Source: piped/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: piped
+  labels:
+    helm.sh/chart: piped-v0.48.6
+    app.kubernetes.io/name: piped
+    app.kubernetes.io/instance: piped
+    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/managed-by: Helm
+data:
+  piped-config.yaml: |-
+    apiVersion: pipecd.dev/v1beta1
+    kind: Piped
+    spec:
+      projectID: quickstart
+      pipedID: <YOUR_PIPED_ID>
+      pipedKeyFile: /etc/piped-secret/piped-key
+      apiAddress: pipecd:8080
+      syncInterval: 1m
+      repositories:
+        - repoId: examples
+          remote: <YOUR_MANIFESTS_REPO>
+          branch: master
+---
+# Source: piped/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: piped
+  labels:
+    helm.sh/chart: piped-v0.48.6
+    app.kubernetes.io/name: piped
+    app.kubernetes.io/instance: piped
+    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/managed-by: Helm
+rules:
+  
+  - apiGroups:
+    - '*'
+    resources:
+    - '*'
+    verbs:
+    - '*'
+  - nonResourceURLs:
+    - '*'
+    verbs:
+    - '*'
+---
+# Source: piped/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: piped
+  labels:
+    helm.sh/chart: piped-v0.48.6
+    app.kubernetes.io/name: piped
+    app.kubernetes.io/instance: piped
+    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/managed-by: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: piped
+subjects:
+- kind: ServiceAccount
+  name: piped
+  namespace: pipecd
+---
+# Source: piped/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: piped
+  labels:
+    helm.sh/chart: piped-v0.48.6
+    app.kubernetes.io/name: piped
+    app.kubernetes.io/instance: piped
+    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - name: admin
+      port: 9085
+      targetPort: admin
+  selector:
+    app.kubernetes.io/name: piped
+    app.kubernetes.io/instance: piped
+---
+# Source: piped/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: piped
+  labels:
+    helm.sh/chart: piped-v0.48.6
+    app.kubernetes.io/name: piped
+    app.kubernetes.io/instance: piped
+    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: piped
+      app.kubernetes.io/instance: piped
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: piped
+        app.kubernetes.io/instance: piped
+      annotations:
+        sidecar.istio.io/inject: "false"
+        rollme: "bn2xf"
+    spec:
+      serviceAccountName: piped
+      containers:
+        - name: piped
+          imagePullPolicy: IfNotPresent
+          image: "ghcr.io/pipe-cd/piped:v0.48.6"
+          args:
+            - piped
+            - --config-file=/etc/piped-config/piped-config.yaml
+            - --metrics=true
+            - --enable-default-kubernetes-cloud-provider=true
+            - --log-encoding=humanize
+            - --log-level=info
+            - --add-login-user-to-passwd=false
+            - --insecure=true
+          ports:
+            - name: admin
+              containerPort: 9085
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: admin
+            # We increase this period value since Launcher stops and starts Piped gracefully.
+            periodSeconds: 30
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: admin
+          volumeMounts:
+            - name: piped-secret
+              mountPath: /etc/piped-secret
+              readOnly: true
+            - name: piped-config
+              mountPath: /etc/piped-config
+              readOnly: true
+          resources:
+            {}
+      volumes:
+        - name: piped-secret
+          secret:
+            secretName: piped
+            defaultMode: 0400
+        - name: piped-config
+          configMap:
+            name: piped
+      securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
