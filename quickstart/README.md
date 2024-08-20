@@ -3,6 +3,39 @@
 This directory contains configuration files for `control-plane` and `piped` for [Quickstart](https://pipecd.dev/docs/quickstart) Guide.
 
 
+
+### Quickstart with raw manifests
+
+1. create namespace `pipecd`
+
+```
+kubectl create namespace pipecd
+```
+
+2. deploy Control Plane to the namespace: pipecd
+
+```
+kubectl apply -n pipecd -f ./manifests/control-plane.yaml
+```
+
+3. create piped on the Web UI
+
+4. overwrite some values in quickstart/manifests/piped.yaml
+
+| placeholder | description |
+| ---- | ---- |
+| <YOUR_PIPED_ID> | piped id |
+| <YOUR_PIPED_KEY> | base64-encoded piped key |
+| <YOUR_MANIFESTS_REPO> | the manifest repo url |
+
+5. deploy piped to the namespace: pipecd
+
+```
+kubectl apply -n pipecd -f ./manifests/piped.yaml
+```
+
+**About the Manifests**
+
 The manifests directory contains raw Kubernetes manifests files. The 2 files are built using `helm template` command.
 
 For `control-plane.yaml`
