@@ -33,7 +33,6 @@ Yes, you can use PipeCD for both mesh (Istio, SMI) applications and non-mesh app
     - Show configuration drift in realtime
 - Also supports Canary and BlueGreen for non-mesh applications
 - Has built-in secrets management
-- Supports gradual rollout of a single app to multiple clusters
 - Shows the delivery performance  insights
 
 ### 5. What are the differences between PipeCD and ArgoCD?
@@ -43,7 +42,6 @@ Yes, you can use PipeCD for both mesh (Istio, SMI) applications and non-mesh app
 - Don't need another CRD or changing the existing manifests for doing Canary/BlueGreen. PipeCD just uses the standard Kubernetes deployment object
 - Easier and safer to operate multi-tenancy, multi-cluster for multiple teams (even some teams are running in a private/restricted network)
 - Has built-in secrets management
-- Supports gradual rollout of a single app to multiple clusters
 - Shows the delivery performance  insights
 
 ### 6. What should I do if I lost my Piped key?
