@@ -414,7 +414,7 @@ func TestNoDiff(t *testing.T) {
 		manifest string
 	}{
 		{
-			name: "limits.memory",
+			name: "limits.memory 1.5Gi",
 			manifest: `apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -430,7 +430,7 @@ spec:
             memory: 1.5Gi`,
 		},
 		{
-			name: "limits.cpu",
+			name: "limits.cpu 1.5",
 			manifest: `apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -446,7 +446,7 @@ spec:
             cpu: "1.5"`,
 		},
 		{
-			name: "limits.memory",
+			name: "limits.memory 1Gi",
 			manifest: `apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -462,7 +462,7 @@ spec:
             memory: 1Gi`,
 		},
 		{
-			name: "limits.cpu",
+			name: "limits.cpu 1",
 			manifest: `apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -478,7 +478,7 @@ spec:
             cpu: "1"`,
 		},
 		{
-			name: "requests.memory",
+			name: "requests.memory 1.5Gi",
 			manifest: `apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -494,7 +494,7 @@ spec:
             memory: 1.5Gi`,
 		},
 		{
-			name: "requests.cpu",
+			name: "requests.cpu 1.5",
 			manifest: `apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -510,7 +510,7 @@ spec:
             cpu: "1.5"`,
 		},
 		{
-			name: "requests.memory",
+			name: "requests.memory 1Gi",
 			manifest: `apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -526,7 +526,7 @@ spec:
             memory: 1Gi`,
 		},
 		{
-			name: "requests.cpu",
+			name: "requests.cpu 1",
 			manifest: `apiVersion: apps/v1
 kind: Deployment
 metadata:
