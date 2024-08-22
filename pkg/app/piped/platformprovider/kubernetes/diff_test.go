@@ -405,3 +405,151 @@ spec:
 		})
 	}
 }
+
+func TestLoadAndDiff(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name           string
+		manifests      [2]string
+		noChangeAssert assert.BoolAssertionFunc
+	}{
+		{
+			name: "no diff",
+			manifests: [2]string{
+				`apiVersion: v1
+kind: Service
+metadata:
+  name: simple
+spec:
+  ports:
+  - port: 9085
+    protocol: TCP
+    targetPort: 9085
+  selector:
+    app: simple
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: simple
+  name: simple
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: simple
+      pipecd.dev/variant: primary
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+      labels:
+        app: simple
+        pipecd.dev/variant: primary
+    spec:
+      containers:
+      - args:
+        - server
+        env:
+        - name: JVM_MEM_MIN
+          value: 750m
+        - name: JVM_MEM_MAX
+          value: 2000m
+        image: ghcr.io/pipe-cd/helloworld:v0.32.0
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - sh
+              - -c
+              - sleep 20
+        name: helloworld
+        ports:
+        - containerPort: 9085
+        resources:
+          limits:
+            cpu: "3"
+            memory: 1.5Gi
+          requests:
+            cpu: 150m
+            memory: 1Gi
+`,
+				`apiVersion: v1
+kind: Service
+metadata:
+  name: simple
+spec:
+  ports:
+  - port: 9085
+    protocol: TCP
+    targetPort: 9085
+  selector:
+    app: simple
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: simple
+  name: simple
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: simple
+      pipecd.dev/variant: primary
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+      labels:
+        app: simple
+        pipecd.dev/variant: primary
+    spec:
+      containers:
+      - args:
+        - server
+        env:
+        - name: JVM_MEM_MIN
+          value: 750m
+        - name: JVM_MEM_MAX
+          value: 2000m
+        image: ghcr.io/pipe-cd/helloworld:v0.32.0
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - sh
+              - -c
+              - sleep 20
+        name: helloworld
+        ports:
+        - containerPort: 9085
+        resources:
+          limits:
+            cpu: "3"
+            memory: 1.5Gi
+          requests:
+            cpu: 150m
+            memory: 1Gi
+`,
+			},
+			noChangeAssert: assert.True,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			var manifests [2][]Manifest
+			manifests[0], _ = ParseManifests(tc.manifests[0])
+			manifests[1], _ = ParseManifests(tc.manifests[1])
+
+			result, err := DiffList(manifests[0], manifests[1], zap.NewNop(), diff.WithEquateEmpty(), diff.WithIgnoreAddingMapKeys(), diff.WithCompareNumberAndNumericString())
+			require.NoError(t, err)
+
+			tc.noChangeAssert(t, result.NoChange())
+		})
+	}
+}
