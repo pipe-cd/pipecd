@@ -414,65 +414,36 @@ func TestNoDiff(t *testing.T) {
 		manifest string
 	}{
 		{
-			name: "no diff",
-			manifest: `apiVersion: v1
-kind: Service
-metadata:
-  name: simple
-spec:
-  ports:
-  - port: 9085
-    protocol: TCP
-    targetPort: 9085
-  selector:
-    app: simple
----
-apiVersion: apps/v1
+			name: "limits.memory",
+			manifest: `apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    app: simple
   name: simple
 spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: simple
-      pipecd.dev/variant: primary
   template:
-    metadata:
-      annotations:
-        sidecar.istio.io/inject: "false"
-      labels:
-        app: simple
-        pipecd.dev/variant: primary
     spec:
       containers:
-      - args:
-        - server
-        env:
-        - name: JVM_MEM_MIN
-          value: 750m
-        - name: JVM_MEM_MAX
-          value: 2000m
-        image: ghcr.io/pipe-cd/helloworld:v0.32.0
-        lifecycle:
-          preStop:
-            exec:
-              command:
-              - sh
-              - -c
-              - sleep 20
+      - image: ghcr.io/pipe-cd/helloworld:v0.32.0
         name: helloworld
-        ports:
-        - containerPort: 9085
         resources:
           limits:
-            cpu: "3"
-            memory: 1.5Gi
-          requests:
-            cpu: 150m
-            memory: 1Gi`,
+            memory: 1.5Gi`,
+		},
+		{
+			name: "limits.cpu",
+			manifest: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  template:
+    spec:
+      containers:
+      - image: ghcr.io/pipe-cd/helloworld:v0.32.0
+        name: helloworld
+        resources:
+          limits:
+            cpu: "1.5"`,
 		},
 	}
 
