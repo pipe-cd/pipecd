@@ -445,6 +445,102 @@ spec:
           limits:
             cpu: "1.5"`,
 		},
+		{
+			name: "limits.memory",
+			manifest: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  template:
+    spec:
+      containers:
+      - image: ghcr.io/pipe-cd/helloworld:v0.32.0
+        name: helloworld
+        resources:
+          limits:
+            memory: 1Gi`,
+		},
+		{
+			name: "limits.cpu",
+			manifest: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  template:
+    spec:
+      containers:
+      - image: ghcr.io/pipe-cd/helloworld:v0.32.0
+        name: helloworld
+        resources:
+          limits:
+            cpu: "1"`,
+		},
+		{
+			name: "requests.memory",
+			manifest: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  template:
+    spec:
+      containers:
+      - image: ghcr.io/pipe-cd/helloworld:v0.32.0
+        name: helloworld
+        resources:
+          requests:
+            memory: 1.5Gi`,
+		},
+		{
+			name: "requests.cpu",
+			manifest: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  template:
+    spec:
+      containers:
+      - image: ghcr.io/pipe-cd/helloworld:v0.32.0
+        name: helloworld
+        resources:
+          requests:
+            cpu: "1.5"`,
+		},
+		{
+			name: "requests.memory",
+			manifest: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  template:
+    spec:
+      containers:
+      - image: ghcr.io/pipe-cd/helloworld:v0.32.0
+        name: helloworld
+        resources:
+          requests:
+            memory: 1Gi`,
+		},
+		{
+			name: "requests.cpu",
+			manifest: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  template:
+    spec:
+      containers:
+      - image: ghcr.io/pipe-cd/helloworld:v0.32.0
+        name: helloworld
+        resources:
+          requests:
+            cpu: "1"`,
+		},
 	}
 
 	for _, tc := range testcases {
