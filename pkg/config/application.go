@@ -672,9 +672,6 @@ type NotificationMention struct {
 }
 
 func (n *NotificationMention) Validate() error {
-	if len(n.Slack) == 0 && len(n.SlackGroups) == 0 && len(n.SlackUsers) == 0 {
-		return fmt.Errorf("slack, slackusers or slackGroups must not be empty")
-	}
 	if n.Event == allEventsSymbol {
 		return nil
 	}
@@ -779,7 +776,7 @@ func (dd *DriftDetection) Validate() error {
 }
 
 func LoadApplication(repoPath, configRelPath string, appKind model.ApplicationKind) (*GenericApplicationSpec, error) {
-	var absPath = filepath.Join(repoPath, configRelPath)
+	absPath := filepath.Join(repoPath, configRelPath)
 
 	cfg, err := LoadFromYAML(absPath)
 	if err != nil {
