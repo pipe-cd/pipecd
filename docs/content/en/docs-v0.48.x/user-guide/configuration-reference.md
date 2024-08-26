@@ -300,7 +300,9 @@ One of `yamlField` or `regex` is required.
 | Field | Type | Description | Required |
 |-|-|-|-|
 | event | string | The event to be notified to users. | Yes |
-| slack | []string | List of user IDs for mentioning in Slack. See [here](https://api.slack.com/reference/surfaces/formatting#mentioning-users) for more information on how to check them. | No |
+| slack | []string | Deprecated: Please use `slackUsers` instead. List of user IDs for mentioning in Slack. See [here](https://api.slack.com/reference/surfaces/formatting#mentioning-users) for more information on how to check them. | No |
+| slackUsers | []string | List of user IDs for mentioning in Slack. See [here](https://api.slack.com/reference/surfaces/formatting#mentioning-users) for more information on how to check them. | No |
+| slackGroups | []string | List of group IDs for mentioning in Slack. See [here](https://api.slack.com/reference/surfaces/formatting#mentioning-groups) for more information on how to check them. | No |
 
 ## KubernetesDeploymentInput
 
@@ -462,7 +464,7 @@ See [Configuring Lambda application](../managing-application/defining-app-config
 | s3Bucket         | string           | S3 bucket name for code package   | No      |
 | s3Key            | string           | S3 key for code package            | No      |
 | s3ObjectVersion  | string           | S3 object version for code package | No      |
-| source       | [Source](#source)       | Git settings                | No      |
+| source       | [source](#source)       | Git settings                | No      |
 | handler          | string           | Lambda function handler            | No      |
 | runtime          | string           | Runtime environment                | No      |
 | architectures    | [][Architecture](#architecture)   | Supported architectures            | No       |
@@ -521,6 +523,8 @@ See [Configuring Lambda application](../managing-application/defining-app-config
 
 There are some restrictions in configuring a service definition file.
 
+- As long as `desiredCount` is 0 or not set, `desiredCount` of your service will NOT be updated in deployments.
+  - If `desiredCount` is 0 or not set for a new service, the service's `desiredCount` will be 0.
 - `capacityProviderStrategy` is not supported.
 - `clientToken` is not supported.
 - `deploymentController` is required and must be `EXTERNAL`.
@@ -803,7 +807,7 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| ignoreFields | []string | List of fields path in manifests, which its diff should be ignored. | No |
+| ignoreFields | []string | List of fields path in manifests, which its diff should be ignored. This is available for only `KubernetesApp`. | No |
 
 ## PipeCD rich defined types
 
