@@ -60,13 +60,20 @@ func Diff(old, new Manifest, logger *zap.Logger, opts ...diff.Option) (*diff.Res
 	}
 
 	key := old.Key.String()
-	normalized, err := remarshal(new.u)
+
+	normalizedOld, err := remarshal(old.u)
 	if err != nil {
-		logger.Info("compare manifests directly since it was unable to remarshal Kubernetes manifest to normalize special fields", zap.Error(err))
+		logger.Info("compare manifests directly since it was unable to remarshal old Kubernetes manifest to normalize special fields", zap.Error(err))
 		return diff.DiffUnstructureds(*old.u, *new.u, key, opts...)
 	}
 
-	return diff.DiffUnstructureds(*old.u, *normalized, key, opts...)
+	normalizedNew, err := remarshal(new.u)
+	if err != nil {
+		logger.Info("compare manifests directly since it was unable to remarshal new Kubernetes manifest to normalize special fields", zap.Error(err))
+		return diff.DiffUnstructureds(*old.u, *new.u, key, opts...)
+	}
+
+	return diff.DiffUnstructureds(*normalizedOld, *normalizedNew, key, opts...)
 }
 
 func DiffList(olds, news []Manifest, logger *zap.Logger, opts ...diff.Option) (*DiffListResult, error) {

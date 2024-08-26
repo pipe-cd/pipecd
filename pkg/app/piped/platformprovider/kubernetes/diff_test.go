@@ -405,3 +405,168 @@ spec:
 		})
 	}
 }
+
+func TestNoDiff(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name     string
+		manifest string
+	}{
+		{
+			name: "limits.memory 1.5Gi",
+			manifest: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  template:
+    spec:
+      containers:
+      - image: ghcr.io/pipe-cd/helloworld:v0.32.0
+        name: helloworld
+        resources:
+          limits:
+            memory: 1.5Gi`,
+		},
+		{
+			name: "limits.cpu 1.5",
+			manifest: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  template:
+    spec:
+      containers:
+      - image: ghcr.io/pipe-cd/helloworld:v0.32.0
+        name: helloworld
+        resources:
+          limits:
+            cpu: "1.5"`,
+		},
+		{
+			name: "limits.memory 1Gi",
+			manifest: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  template:
+    spec:
+      containers:
+      - image: ghcr.io/pipe-cd/helloworld:v0.32.0
+        name: helloworld
+        resources:
+          limits:
+            memory: 1Gi`,
+		},
+		{
+			name: "limits.cpu 1",
+			manifest: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  template:
+    spec:
+      containers:
+      - image: ghcr.io/pipe-cd/helloworld:v0.32.0
+        name: helloworld
+        resources:
+          limits:
+            cpu: "1"`,
+		},
+		{
+			name: "requests.memory 1.5Gi",
+			manifest: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  template:
+    spec:
+      containers:
+      - image: ghcr.io/pipe-cd/helloworld:v0.32.0
+        name: helloworld
+        resources:
+          requests:
+            memory: 1.5Gi`,
+		},
+		{
+			name: "requests.cpu 1.5",
+			manifest: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  template:
+    spec:
+      containers:
+      - image: ghcr.io/pipe-cd/helloworld:v0.32.0
+        name: helloworld
+        resources:
+          requests:
+            cpu: "1.5"`,
+		},
+		{
+			name: "requests.memory 1Gi",
+			manifest: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  template:
+    spec:
+      containers:
+      - image: ghcr.io/pipe-cd/helloworld:v0.32.0
+        name: helloworld
+        resources:
+          requests:
+            memory: 1Gi`,
+		},
+		{
+			name: "requests.cpu 1",
+			manifest: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  template:
+    spec:
+      containers:
+      - image: ghcr.io/pipe-cd/helloworld:v0.32.0
+        name: helloworld
+        resources:
+          requests:
+            cpu: "1"`,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			manifests, err := ParseManifests(tc.manifest)
+			require.NoError(t, err)
+
+			result, err := DiffList(manifests, manifests, zap.NewNop(), diff.WithEquateEmpty(), diff.WithIgnoreAddingMapKeys(), diff.WithCompareNumberAndNumericString())
+			require.NoError(t, err)
+
+			assert.True(t, result.NoChange())
+			for _, change := range result.Changes {
+				t.Log(change.Old.Key, change.New.Key)
+				for _, node := range change.Diff.Nodes() {
+					t.Log(node.PathString)
+					t.Log(node.ValueX)
+					t.Log(node.ValueY)
+					t.Log("---")
+				}
+			}
+			for _, add := range result.Adds {
+				t.Log(add.Key)
+			}
+			for _, delete := range result.Deletes {
+				t.Log(delete.Key)
+			}
+		})
+	}
+}
