@@ -41,7 +41,7 @@ func (h *authHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 	// This is necessary because some providers don't support passing the project ID in the query parameters.
 	state, projectID, err := parseProjectAndState(r)
 	if err != nil {
-		h.handleError(w, r, err.Error(), nil)
+		h.handleError(w, r, "Failed to parse state", err)
 		return
 	}
 
