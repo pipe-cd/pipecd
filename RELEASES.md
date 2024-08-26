@@ -72,7 +72,13 @@ This may also contain some minor features, but ensure that it does NOT contain a
 - Get a review and merge.
 
 ### Backport fixes and Release note
-- Run release pick commits
+- Run `cherry_pick` workflow
+  - Label the merged PR you want to cherry pick with `cherry-pick` , `vX.Y.Z`
+    (e.g. v0.48.6 https://github.com/pipe-cd/pipecd/pulls?q=is%3Apr+label%3Acherry-pick+is%3Aclosed+label%3Av0.48.6)
+  - Execute the `cherry_pick` GitHub workflow with `release branch` and `release version` on master branch.
+    (e.g. if you want to release v0.48.6, `release branch` is `release-v0.48.x` and `release version` is `v0.48.6`)
+
+- If you have some trouble with the above, run release pick commits on local machine.
 
   This example assumes that the name of a release branch is `release-vX.Y.x` and the numbers of pull request are `#1234` and `#5678`:
   ```shell
