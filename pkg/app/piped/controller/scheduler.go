@@ -278,8 +278,6 @@ func (s *scheduler) Run(ctx context.Context) error {
 			attribute.String("kind", s.deployment.Kind.String()),
 			attribute.String("deployment-id", s.deployment.Id),
 		))
-	defer span.End()
-
 	defer func() {
 		switch deploymentStatus {
 		case model.DeploymentStatus_DEPLOYMENT_SUCCESS:
@@ -287,6 +285,8 @@ func (s *scheduler) Run(ctx context.Context) error {
 		case model.DeploymentStatus_DEPLOYMENT_FAILURE, model.DeploymentStatus_DEPLOYMENT_CANCELLED:
 			span.SetStatus(codes.Error, statusReason)
 		}
+		
+		span.End()
 	}()
 
 	timer := time.NewTimer(s.genericApplicationConfig.Timeout.Duration())
