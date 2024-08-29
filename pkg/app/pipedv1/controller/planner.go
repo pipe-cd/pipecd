@@ -23,6 +23,9 @@ import (
 	"sort"
 	"time"
 
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
@@ -75,6 +78,7 @@ type planner struct {
 
 	// TODO: Find a way to show log from pluggin's planner
 	logger *zap.Logger
+	tracer trace.Tracer
 
 	done                 atomic.Bool
 	doneTimestamp        time.Time
@@ -129,6 +133,7 @@ func newPlanner(
 		cancelledCh:                  make(chan *model.ReportableCommand, 1),
 		nowFunc:                      time.Now,
 		logger:                       logger,
+		tracer:                       otel.GetTracerProvider().Tracer("controller/planner"),
 	}
 	return p
 }
@@ -172,6 +177,16 @@ func (p *planner) Run(ctx context.Context) error {
 		p.doneTimestamp = p.nowFunc()
 		p.done.Store(true)
 	}()
+
+	ctx, span := p.tracer.Start(
+		newContextWithDeploymentSpan(ctx, p.deployment),
+		"Plan",
+		trace.WithAttributes(
+			attribute.String("application-id", p.deployment.ApplicationId),
+			attribute.String("kind", p.deployment.Kind.String()),
+			attribute.String("deployment-id", p.deployment.Id),
+		))
+	defer span.End()
 
 	defer func() {
 		controllermetrics.UpdateDeploymentStatus(p.deployment, p.doneDeploymentStatus)
