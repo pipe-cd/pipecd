@@ -123,4 +123,4 @@ rbac:
 quickstart:
   enabled: false
   pipedId: ""
-  gitRepoRemote: ""
+  pipedKeyData: ""

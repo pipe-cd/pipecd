@@ -13,12 +13,12 @@ data:
     spec:
       projectID: quickstart
       pipedID: {{ .Values.quickstart.pipedId }}
-      pipedKeyFile: /etc/piped-secret/piped-key
+      pipedKeyData: {{ .Values.quickstart.pipedKeyData }}
       apiAddress: pipecd:8080
       syncInterval: 1m
       repositories:
         - repoId: examples
-          remote: {{ .Values.quickstart.gitRepoRemote }}
+          remote: https://github.com/pipe-cd/examples.git
           branch: master
 {{- else }}
   {{ .Values.config.fileName }}: |-
