@@ -15,6 +15,7 @@
 syntax = "proto3";
 
 package model;
+
 option go_package = "github.com/pipe-cd/pipecd/pkg/model";
 
 message DeploymentSource {
@@ -22,14 +23,8 @@ message DeploymentSource {
   string application_directory = 1;
   // The git commit revision of the source code.
   string revision = 2;
-  // The configuration of the application which is independent for plugins.
-  GenericApplicationSpec generic_application_config = 3;
   // The configuration of the application which is specific for plugins.
-  PluginApplicationSpec application_config = 4; 
-}
-
-message GenericApplicationSpec {
-  // TODO: Add more fields to support generic application spec.
+  PluginApplicationSpec application_config = 3;
 }
 
 message PluginApplicationSpec {
