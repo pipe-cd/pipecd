@@ -165,12 +165,12 @@ Must be one of the following objects:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| ClientId | string | The client id string of OpenID Connect oauth app. | Yes |
-| ClientSecret | string | The client secret string of OpenID Connect oauth app. | Yes |
-| Issuer | string | The address of OpenID Connect service. | Yes |
-| RedirectUri | string | The address of the redirect URI. | Yes |
-| AuthorizationEndpoint | string | The address of the authorization endpoint. | No |
-| TokenEndpoint | string | The address of the token endpoint. | No |
-| UserInfoEndpoint | string | The address of the user info endpoint. | No |
-| ProxyUrl | string | The address of the proxy used while communicating with the OpenID Connect service. | No |
-| Scopes | []string | Scopes to request from the OpenID Connect service. Default is `openid`. Some providers may require other scopes. | No |
+| clientId | string | The client id string of OpenID Connect oauth app. | Yes |
+| clientSecret | string | The client secret string of OpenID Connect oauth app. | Yes |
+| issuer | string | The address of OpenID Connect service. | Yes |
+| redirectUri | string | The address of the redirect URI. | Yes |
+| authorizationEndpoint | string | The address of the authorization endpoint. | No |
+| tokenEndpoint | string | The address of the token endpoint. | No |
+| userInfoEndpoint | string | The address of the user info endpoint. | No |
+| proxyUrl | string | The address of the proxy used while communicating with the OpenID Connect service. | No |
+| scopes | []string | Scopes to request from the OpenID Connect service. Default is `openid`. Some providers may require other scopes. | No |
