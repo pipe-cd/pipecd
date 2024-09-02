@@ -9,11 +9,6 @@ export class DeploymentSource extends jspb.Message {
   getRevision(): string;
   setRevision(value: string): DeploymentSource;
 
-  getGenericApplicationConfig(): GenericApplicationSpec | undefined;
-  setGenericApplicationConfig(value?: GenericApplicationSpec): DeploymentSource;
-  hasGenericApplicationConfig(): boolean;
-  clearGenericApplicationConfig(): DeploymentSource;
-
   getApplicationConfig(): PluginApplicationSpec | undefined;
   setApplicationConfig(value?: PluginApplicationSpec): DeploymentSource;
   hasApplicationConfig(): boolean;
@@ -31,22 +26,7 @@ export namespace DeploymentSource {
   export type AsObject = {
     applicationDirectory: string,
     revision: string,
-    genericApplicationConfig?: GenericApplicationSpec.AsObject,
     applicationConfig?: PluginApplicationSpec.AsObject,
-  }
-}
-
-export class GenericApplicationSpec extends jspb.Message {
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): GenericApplicationSpec.AsObject;
-  static toObject(includeInstance: boolean, msg: GenericApplicationSpec): GenericApplicationSpec.AsObject;
-  static serializeBinaryToWriter(message: GenericApplicationSpec, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): GenericApplicationSpec;
-  static deserializeBinaryFromReader(message: GenericApplicationSpec, reader: jspb.BinaryReader): GenericApplicationSpec;
-}
-
-export namespace GenericApplicationSpec {
-  export type AsObject = {
   }
 }
 
