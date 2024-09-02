@@ -197,9 +197,10 @@ export const Header: FC = memo(function Header() {
                 aria-controls="user-menu"
                 aria-haspopup="true"
                 onClick={(e) => setUserAnchorEl(e.currentTarget)}
-              >
+                >
                 <Avatar className={classes.userAvatar} src={me.avatarUrl} />
               </IconButton>
+              <span>{me.subject}</span>
             </>
           ) : (
             <Link
