@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
@@ -157,17 +158,26 @@ func (p *persister) flush(ctx context.Context) (flushes, deletes int) {
 }
 
 func (p *persister) flushAll(ctx context.Context) int {
+	group, ctx := errgroup.WithContext(ctx)
 	var num = 0
 
 	p.stagePersisters.Range(func(_, v interface{}) bool {
 		sp := v.(*stageLogPersister)
 		if !sp.isStale(p.stalePeriod) {
+			group.Go(func() error {
+				return sp.flushFromLastCheckpoint(ctx)
+			})
 			num++
-			go sp.flushFromLastCheckpoint(ctx)
 		}
 		return true
 	})
-
+	if err := group.Wait(); err != nil {
+		p.logger.Error(
+			"failed to flush all stage persisters",
+			zap.Error(err),
+		)
+		return num
+	}
 	p.logger.Info(fmt.Sprintf("flushing all of %d stage persisters", num))
 	return num
 }
