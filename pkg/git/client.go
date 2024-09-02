@@ -177,20 +177,10 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 			return nil, fmt.Errorf("failed to clone from remote: %v", err)
 		}
 	} else {
-		// Cache hit. Do a git fetch to keep updated.
-		c.logger.Info(fmt.Sprintf("fetching %s to update the cache", repoID))
-		out, err := retryCommand(3, time.Second, c.logger, func() ([]byte, error) {
-			args := []string{"fetch"}
-			args = append(authArgs, args...)
-			return runGitCommand(ctx, c.gitPath, repoCachePath, c.envsForRepo(remote), args...)
-		})
-		if err != nil {
-			logger.Error("failed to fetch from remote",
-				zap.String("out", string(out)),
-				zap.Error(err),
-			)
-			return nil, fmt.Errorf("failed to fetch: %v", err)
-		}
+		// Before we used git worktree, we did a git fetch here to update the cache.
+		// We now use a git worktree to copy a repo from the cache.
+		// We don't need a git fetch to update the cache.
+		// Because we can fetch from remote directly at worktree copy.
 	}
 
 	if destination != "" {
