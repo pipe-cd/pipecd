@@ -86,7 +86,6 @@ Currently, you can use the commands which are installed in the environment for t
 For example, If you are using the container platform and the offcial piped container image, you can use the command below.
 - git
 - ssh
-- jq
 - curl
 - and the builtin commands installed in the base image.
 
