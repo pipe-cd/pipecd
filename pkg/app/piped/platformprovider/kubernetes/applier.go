@@ -139,7 +139,7 @@ func (a *applier) ReplaceManifest(ctx context.Context, manifest Manifest) error 
 	return err
 }
 
-// ReplaceManifest uses kubectl to replace the given manifests.
+// ForceReplaceManifest uses kubectl to forcefully replace the given manifests.
 func (a *applier) ForceReplaceManifest(ctx context.Context, manifest Manifest) error {
 	a.initOnce.Do(func() {
 		a.kubectl, a.initErr = a.findKubectl(ctx, a.getToolVersionToRun())
