@@ -159,6 +159,45 @@ func (c *Kubectl) Replace(ctx context.Context, kubeconfig, namespace string, man
 	return fmt.Errorf("failed to replace: %s (%w)", string(out), err)
 }
 
+func (c *Kubectl) ForceReplace(ctx context.Context, kubeconfig, namespace string, manifest Manifest) (err error) {
+	defer func() {
+		kubernetesmetrics.IncKubectlCallsCounter(
+			c.version,
+			kubernetesmetrics.LabelReplaceCommand,
+			err == nil,
+		)
+	}()
+
+	data, err := manifest.YamlBytes()
+	if err != nil {
+		return err
+	}
+
+	args := make([]string, 0, 7)
+	if kubeconfig != "" {
+		args = append(args, "--kubeconfig", kubeconfig)
+	}
+	if namespace != "" {
+		args = append(args, "--namespace", namespace)
+	}
+	args = append(args, "replace", "--force", "-f", "-")
+
+	cmd := exec.CommandContext(ctx, c.execPath, args...)
+	r := bytes.NewReader(data)
+	cmd.Stdin = r
+
+	out, err := cmd.CombinedOutput()
+	if err == nil {
+		return nil
+	}
+
+	if strings.Contains(string(out), errorNotFoundLiteral) {
+		return errorReplaceNotFound
+	}
+
+	return fmt.Errorf("failed to replace: %s (%w)", string(out), err)
+}
+
 func (c *Kubectl) Delete(ctx context.Context, kubeconfig, namespace string, r ResourceKey) (err error) {
 	defer func() {
 		kubernetesmetrics.IncKubectlCallsCounter(
