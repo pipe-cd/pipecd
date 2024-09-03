@@ -94,7 +94,7 @@ This may also contain some minor features, but ensure that it does NOT contain a
 
 ## RC Release
 
-1. (Only for the patch rc release) At first, we need to cherry-pick the fixes to the release branch. Please refer to [Backport fixes and Release note](https://github.com/pipe-cd/pipecd/blob/master/RELEASES.md#backport-fixes-and-release-note)
+1. Prepare: Ensure all changes you want to attach to the release are available in the release target branch (`master` for the minor, `release-vX.Y.x` for the patch). For the patch, please refer to [Backport fixes and Release note](#backport-fixes-and-release-note)
 2. Move on to [Releases > Draft a New Release](https://github.com/pipe-cd/pipecd/releases/new).
 3. Set values as below:
    1. `Choose a tag`: Create a new tag `vX.Y.Z-rcN`
