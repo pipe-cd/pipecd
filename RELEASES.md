@@ -93,8 +93,10 @@ This may also contain some minor features, but ensure that it does NOT contain a
 - Create a tagged release from the release branch `release-vX.Y.x`. The release should start with "v" and be followed by the version number.
 
 ## RC Release
-1. Move on to [Releases > Draft a New Release](https://github.com/pipe-cd/pipecd/releases/new).
-2. Set values as below:
+
+1. (Only for the patch rc release) At first, we need to cherry-pick the fixes to the release branch. Please refer to [Backport fixes and Release note](https://github.com/pipe-cd/pipecd/blob/master/RELEASES.md#backport-fixes-and-release-note)
+2. Move on to [Releases > Draft a New Release](https://github.com/pipe-cd/pipecd/releases/new).
+3. Set values as below:
    1. `Choose a tag`: Create a new tag `vX.Y.Z-rcN`
    2. `Target`(branch): use `master` for the minor rc, use `release-vX.Y.x` for the patch rc
    3. `Release title`: `Release vX.Y.Z-rcN`
@@ -122,4 +124,4 @@ This may also contain some minor features, but ensure that it does NOT contain a
          2. Classify the changes into 'Notable Changes' and 'Internal Changes'.
          3. Write them to the body area.
    5. **Select `Set as a pre-release`**, not `Set as the latest release`.
-3. Push `Publish Release`.
+4. Push `Publish Release`.
