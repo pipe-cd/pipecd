@@ -33,6 +33,8 @@ type Applier interface {
 	CreateManifest(ctx context.Context, manifest Manifest) error
 	// ReplaceManifest does replacing resource from given manifest.
 	ReplaceManifest(ctx context.Context, manifest Manifest) error
+	// ForceReplaceManifest does force replacing resource from given manifest.
+	ForceReplaceManifest(ctx context.Context, manifest Manifest) error
 	// Delete deletes the given resource from Kubernetes cluster.
 	Delete(ctx context.Context, key ResourceKey) error
 }
@@ -121,6 +123,32 @@ func (a *applier) ReplaceManifest(ctx context.Context, manifest Manifest) error 
 	}
 
 	err := a.kubectl.Replace(
+		ctx,
+		a.platformProvider.KubeConfigPath,
+		a.getNamespaceToRun(manifest.Key),
+		manifest,
+	)
+	if err == nil {
+		return nil
+	}
+
+	if errors.Is(err, errorReplaceNotFound) {
+		return ErrNotFound
+	}
+
+	return err
+}
+
+// ForceReplaceManifest uses kubectl to forcefully replace the given manifests.
+func (a *applier) ForceReplaceManifest(ctx context.Context, manifest Manifest) error {
+	a.initOnce.Do(func() {
+		a.kubectl, a.initErr = a.findKubectl(ctx, a.getToolVersionToRun())
+	})
+	if a.initErr != nil {
+		return a.initErr
+	}
+
+	err := a.kubectl.ForceReplace(
 		ctx,
 		a.platformProvider.KubeConfigPath,
 		a.getNamespaceToRun(manifest.Key),
@@ -231,6 +259,15 @@ func (a *multiApplier) CreateManifest(ctx context.Context, manifest Manifest) er
 func (a *multiApplier) ReplaceManifest(ctx context.Context, manifest Manifest) error {
 	for _, a := range a.appliers {
 		if err := a.ReplaceManifest(ctx, manifest); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (a *multiApplier) ForceReplaceManifest(ctx context.Context, manifest Manifest) error {
+	for _, a := range a.appliers {
+		if err := a.ForceReplaceManifest(ctx, manifest); err != nil {
 			return err
 		}
 	}

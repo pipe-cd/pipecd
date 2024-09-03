@@ -360,6 +360,32 @@ spec:
 			wantErr:   true,
 		},
 		{
+			name: "unable to force replace manifest",
+			applier: func() provider.Applier {
+				p := kubernetestest.NewMockApplier(ctrl)
+				p.EXPECT().ForceReplaceManifest(gomock.Any(), gomock.Any()).Return(errors.New("unexpected error"))
+				return p
+			}(),
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+  annotations:
+    pipecd.dev/force-sync-by-replace: "enabled"
+spec:
+  selector:
+    matchLabels:
+      app: simple
+  template:
+    metadata:
+      labels:
+        app: simple
+`,
+			namespace: "",
+			wantErr:   true,
+		},
+		{
 			name: "unable to create manifest",
 			applier: func() provider.Applier {
 				p := kubernetestest.NewMockApplier(ctrl)
@@ -374,6 +400,33 @@ metadata:
   name: simple
   annotations:
     pipecd.dev/sync-by-replace: "enabled"
+spec:
+  selector:
+    matchLabels:
+      app: simple
+  template:
+    metadata:
+      labels:
+        app: simple
+`,
+			namespace: "",
+			wantErr:   true,
+		},
+		{
+			name: "unable to create manifest",
+			applier: func() provider.Applier {
+				p := kubernetestest.NewMockApplier(ctrl)
+				p.EXPECT().ForceReplaceManifest(gomock.Any(), gomock.Any()).Return(provider.ErrNotFound)
+				p.EXPECT().CreateManifest(gomock.Any(), gomock.Any()).Return(errors.New("unexpected error"))
+				return p
+			}(),
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+  annotations:
+    pipecd.dev/force-sync-by-replace: "enabled"
 spec:
   selector:
     matchLabels:
@@ -437,6 +490,32 @@ spec:
 			wantErr:   false,
 		},
 		{
+			name: "successfully force replace manifest",
+			applier: func() provider.Applier {
+				p := kubernetestest.NewMockApplier(ctrl)
+				p.EXPECT().ForceReplaceManifest(gomock.Any(), gomock.Any()).Return(nil)
+				return p
+			}(),
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+  annotations:
+    pipecd.dev/force-sync-by-replace: "enabled"
+spec:
+  selector:
+    matchLabels:
+      app: simple
+  template:
+    metadata:
+      labels:
+        app: simple
+`,
+			namespace: "",
+			wantErr:   false,
+		},
+		{
 			name: "successfully create manifest",
 			applier: func() provider.Applier {
 				p := kubernetestest.NewMockApplier(ctrl)
@@ -451,6 +530,33 @@ metadata:
   name: simple
   annotations:
     pipecd.dev/sync-by-replace: "enabled"
+spec:
+  selector:
+    matchLabels:
+      app: simple
+  template:
+    metadata:
+      labels:
+        app: simple
+`,
+			namespace: "",
+			wantErr:   false,
+		},
+		{
+			name: "successfully force create manifest",
+			applier: func() provider.Applier {
+				p := kubernetestest.NewMockApplier(ctrl)
+				p.EXPECT().ForceReplaceManifest(gomock.Any(), gomock.Any()).Return(provider.ErrNotFound)
+				p.EXPECT().CreateManifest(gomock.Any(), gomock.Any()).Return(nil)
+				return p
+			}(),
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+  annotations:
+    pipecd.dev/force-sync-by-replace: "enabled"
 spec:
   selector:
     matchLabels:
