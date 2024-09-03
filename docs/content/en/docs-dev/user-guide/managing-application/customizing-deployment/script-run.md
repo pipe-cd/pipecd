@@ -88,6 +88,10 @@ For example, If you are using the container platform and the offcial piped conta
 - ssh
 - jq
 - curl
+- kubectl, helm, kustomize, terraform stored in $PIPED_TOOL_DIR 
+  - Binaries can be specified as "kubectl-${version}" or "kubectl". 
+  - If no version is specified on the piped config or app.pipecd.yaml, both the ones with and without default version suffix will be installed. 
+  - Please check the [code](https://github.com/pipe-cd/pipecd/blob/master/pkg/app/piped/toolregistry/install.go#L28C1-L33C2) about the default versions.
 - and the builtin commands installed in the base image.
 
 The public piped image available in PipeCD main repo (ref: [Dockerfile](https://github.com/pipe-cd/pipecd/blob/master/cmd/piped/Dockerfile)) is based on [alpine](https://hub.docker.com/_/alpine/) and only has a few UNIX commands available (ref: [piped-base Dockerfile](https://github.com/pipe-cd/pipecd/blob/master/tool/piped-base/Dockerfile)). 
