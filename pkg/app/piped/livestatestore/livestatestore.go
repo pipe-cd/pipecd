@@ -68,6 +68,7 @@ type cloudRunStore interface {
 
 type lambdaStore interface {
 	Run(ctx context.Context) error
+	lambda.Getter
 }
 
 type ecsStore interface {
@@ -123,7 +124,11 @@ func NewStore(ctx context.Context, cfg *config.PipedSpec, appLister applicationL
 			s.cloudrunStores[cp.Name] = store
 
 		case model.PlatformProviderLambda:
-			store := lambda.NewStore(cp.LambdaConfig, cp.Name, appLister, logger)
+			store, err := lambda.NewStore(cp.LambdaConfig, cp.Name, logger)
+			if err != nil {
+				logger.Error("failed to create a new lambda's livestatestore", zap.Error(err))
+				continue
+			}
 			s.lambdaStores[cp.Name] = store
 
 		case model.PlatformProviderECS:

@@ -23,7 +23,17 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/singleflight"
 
+	"github.com/aws/aws-sdk-go-v2/service/lambda"
+	"github.com/aws/aws-sdk-go-v2/service/lambda/types"
 	"github.com/pipe-cd/pipecd/pkg/config"
+)
+
+const (
+	LabelManagedBy   string = "pipecd-dev-managed-by"  // Always be piped.
+	LabelPiped       string = "pipecd-dev-piped"       // The id of piped handling this application.
+	LabelApplication string = "pipecd-dev-application" // The application this resource belongs to.
+	LabelCommitHash  string = "pipecd-dev-commit-hash" // Hash value of the deployed commit.
+	ManagedByPiped   string = "piped"
 )
 
 // Client is wrapper of AWS client.
@@ -34,6 +44,8 @@ type Client interface {
 	UpdateFunction(ctx context.Context, fm FunctionManifest) error
 	UpdateFunctionFromSource(ctx context.Context, fm FunctionManifest, zip io.Reader) error
 	PublishFunction(ctx context.Context, fm FunctionManifest) (version string, err error)
+	ListFunctions(ctx context.Context) ([]types.FunctionConfiguration, error)
+	GetFunction(ctx context.Context, functionName string) (*lambda.GetFunctionOutput, error)
 	GetTrafficConfig(ctx context.Context, fm FunctionManifest) (routingTrafficCfg RoutingTrafficConfig, err error)
 	CreateTrafficConfig(ctx context.Context, fm FunctionManifest, version string) error
 	UpdateTrafficConfig(ctx context.Context, fm FunctionManifest, routingTraffic RoutingTrafficConfig) error

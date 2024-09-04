@@ -24,12 +24,14 @@ import {
 import { KubernetesStateView } from "./kubernetes-state-view";
 import { CloudRunStateView } from "./cloudrun-state-view";
 import { ECSStateView } from "./ecs-state-view";
+import { LambdaStateView } from "./lambda-state-view";
 
 const isDisplayLiveState = (app: Application.AsObject | undefined): boolean => {
   return (
     app?.kind === ApplicationKind.KUBERNETES ||
     app?.kind === ApplicationKind.CLOUDRUN ||
-    app?.kind === ApplicationKind.ECS
+    app?.kind === ApplicationKind.ECS ||
+    app?.kind === ApplicationKind.LAMBDA
   );
 };
 
@@ -154,6 +156,10 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
       case ApplicationKind.ECS: {
         const resources = liveState.ecs?.resourcesList || [];
         return <ECSStateView resources={resources} />;
+      }
+      case ApplicationKind.LAMBDA: {
+        const resources = liveState.lambda?.resourcesList || [];
+        return <LambdaStateView resources={resources} />;
       }
       default:
     }
