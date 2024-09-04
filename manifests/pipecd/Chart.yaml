@@ -31,3 +31,7 @@ dependencies:
   version: "0.93.3"
   repository: "https://open-telemetry.github.io/opentelemetry-helm-charts"
   condition: monitoring.enabled
+- name: tempo
+  version: "1.10.2"
+  repository: "https://grafana.github.io/helm-charts"
+  condition: monitoring.enabled

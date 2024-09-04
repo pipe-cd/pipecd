@@ -84,6 +84,11 @@ data:
         access: proxy
         version: 1
         isDefault: true
+      - name: Tempo
+        type: tempo
+        url: http://{{ include "pipecd.fullname" . }}-tempo:3100
+        access: proxy
+        version: 1
 ---
 
 apiVersion: v1
