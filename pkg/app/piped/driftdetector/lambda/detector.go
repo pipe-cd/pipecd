@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
+	"sort"
 	"strings"
 	"time"
 
@@ -205,6 +207,8 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	}
 	d.logger.Info(fmt.Sprintf("application %s has a live function manifest", app.Id))
 
+	ignoreAndSortParameters(&liveManifest.Spec, &headManifest.Spec)
+
 	result, err := provider.Diff(
 		liveManifest,
 		headManifest,
@@ -219,6 +223,57 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	state := makeSyncState(result, headCommit.Hash)
 
 	return d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
+}
+
+// ignoreAndSortParameters removes parameters which cannot be compared and sorts specific parameters.
+// ignores:
+//   - pipecd managed tags in liveSpec
+//   - SourceCode, S3Bucket, S3Key, and S3ObjectVersion in headSpec
+//
+// sorts: (Lambda sorts them in liveSpec)
+//   - Architectures in headSpec
+//   - Environments in headSpec
+//   - SubnetIDs in headSpec
+//   - Tags in headSpec
+func ignoreAndSortParameters(liveSpec, headSpec *provider.FunctionManifestSpec) {
+	// We cannot compare SourceCode and S3 packaging because live states do not have them.
+	headSpec.SourceCode = provider.SourceCode{}
+	headSpec.S3Bucket = ""
+	headSpec.S3Key = ""
+	headSpec.S3ObjectVersion = ""
+
+	// Architectures, Environments, SubnetIDs, and Tags are sorted in live states.
+	if len(headSpec.Architectures) > 1 {
+		sort.Slice(headSpec.Architectures, func(i, j int) bool {
+			return strings.Compare(headSpec.Architectures[i].Name, headSpec.Architectures[j].Name) < 0
+		})
+	}
+	headSpec.Environments = sortMap(headSpec.Environments)
+	if headSpec.VPCConfig != nil && len(headSpec.VPCConfig.SubnetIDs) > 0 {
+		slices.Sort(headSpec.VPCConfig.SubnetIDs)
+	}
+
+	// Ignore pipecd managed tags
+	delete(liveSpec.Tags, provider.LabelManagedBy)
+	delete(liveSpec.Tags, provider.LabelPiped)
+	delete(liveSpec.Tags, provider.LabelApplication)
+	delete(liveSpec.Tags, provider.LabelCommitHash)
+	headSpec.Tags = sortMap(headSpec.Tags)
+}
+
+// sortMap sorts the given map by keys and returns a new map.
+func sortMap(m map[string]string) map[string]string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	slices.Sort(keys)
+
+	sorted := make(map[string]string)
+	for _, k := range keys {
+		sorted[k] = m[k]
+	}
+	return sorted
 }
 
 func (d *detector) loadHeadFunctionManifest(app *model.Application, repo git.Repo, headCommit git.Commit) (provider.FunctionManifest, error) {
