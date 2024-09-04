@@ -77,6 +77,20 @@ func (mr *MockApplierMockRecorder) Delete(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockApplier)(nil).Delete), arg0, arg1)
 }
 
+// ForceReplaceManifest mocks base method.
+func (m *MockApplier) ForceReplaceManifest(arg0 context.Context, arg1 kubernetes.Manifest) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ForceReplaceManifest", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ForceReplaceManifest indicates an expected call of ForceReplaceManifest.
+func (mr *MockApplierMockRecorder) ForceReplaceManifest(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForceReplaceManifest", reflect.TypeOf((*MockApplier)(nil).ForceReplaceManifest), arg0, arg1)
+}
+
 // ReplaceManifest mocks base method.
 func (m *MockApplier) ReplaceManifest(arg0 context.Context, arg1 kubernetes.Manifest) error {
 	m.ctrl.T.Helper()
