@@ -33,7 +33,7 @@ The PipeCD control plane will be installed with a default project named `quickst
 $ kubectl port-forward -n pipecd svc/pipecd 8080
 ```
 
-You can access to the PipeCD console at [http://localhost:8080?project=quickstart](http://localhost:8080?project=quickstart)
+You can access the PipeCD console at [http://localhost:8080?project=quickstart](http://localhost:8080?project=quickstart)
 
 To login, you can use the configured static admin account as below:
 - username: `hello-pipecd`
