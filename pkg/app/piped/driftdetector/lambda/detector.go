@@ -207,8 +207,13 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	}
 	d.logger.Info(fmt.Sprintf("application %s has a live function manifest", app.Id))
 
-	ignoreAndSortParameters(&liveManifest.Spec, &headManifest.Spec)
+	ignoreAndSortParameters(&headManifest.Spec)
 
+	// WithIgnoreAddingMapKeys option ignores all of followings:
+	//  - default value of Architecture
+	//  - default value of EphemeralStorage
+	//  - environments added in live states
+	//  - tags added in live states, including pipecd managed tags
 	result, err := provider.Diff(
 		liveManifest,
 		headManifest,
@@ -227,15 +232,15 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 
 // ignoreAndSortParameters removes parameters which cannot be compared and sorts specific parameters.
 // ignores:
-//   - pipecd managed tags in liveSpec
-//   - SourceCode, S3Bucket, S3Key, and S3ObjectVersion in headSpec
+//   - SourceCode in headSpec
+//   - S3Bucket, S3Key, and S3ObjectVersion in headSpec
 //
 // sorts: (Lambda sorts them in liveSpec)
 //   - Architectures in headSpec
 //   - Environments in headSpec
 //   - SubnetIDs in headSpec
 //   - Tags in headSpec
-func ignoreAndSortParameters(liveSpec, headSpec *provider.FunctionManifestSpec) {
+func ignoreAndSortParameters(headSpec *provider.FunctionManifestSpec) {
 	// We cannot compare SourceCode and S3 packaging because live states do not have them.
 	headSpec.SourceCode = provider.SourceCode{}
 	headSpec.S3Bucket = ""
@@ -249,15 +254,9 @@ func ignoreAndSortParameters(liveSpec, headSpec *provider.FunctionManifestSpec) 
 		})
 	}
 	headSpec.Environments = sortMap(headSpec.Environments)
-	if headSpec.VPCConfig != nil && len(headSpec.VPCConfig.SubnetIDs) > 0 {
+	if headSpec.VPCConfig != nil && len(headSpec.VPCConfig.SubnetIDs) > 1 {
 		slices.Sort(headSpec.VPCConfig.SubnetIDs)
 	}
-
-	// Ignore pipecd managed tags
-	delete(liveSpec.Tags, provider.LabelManagedBy)
-	delete(liveSpec.Tags, provider.LabelPiped)
-	delete(liveSpec.Tags, provider.LabelApplication)
-	delete(liveSpec.Tags, provider.LabelCommitHash)
 	headSpec.Tags = sortMap(headSpec.Tags)
 }
 

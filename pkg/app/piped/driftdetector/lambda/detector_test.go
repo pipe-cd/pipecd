@@ -52,7 +52,7 @@ func TestIgnoreAndSortParameters(t *testing.T) {
 			expectDiff: false,
 		},
 		{
-			name: "Ignore not sorted fields and pipecd managed tags",
+			name: "Ignore not sorted fields",
 			liveSpec: provider.FunctionManifestSpec{
 				Architectures: []provider.Architecture{
 					{Name: string(types.ArchitectureArm64)},
@@ -63,12 +63,8 @@ func TestIgnoreAndSortParameters(t *testing.T) {
 					"key2": "value2",
 				},
 				Tags: map[string]string{
-					"key1":                    "value1",
-					"key2":                    "value2",
-					provider.LabelApplication: "test-app",
-					provider.LabelCommitHash:  "test-hash",
-					provider.LabelManagedBy:   "piped",
-					provider.LabelPiped:       "test-piped",
+					"key1": "value1",
+					"key2": "value2",
 				},
 				VPCConfig: &provider.VPCConfig{
 					SubnetIDs: []string{"subnet-1", "subnet-2"},
@@ -93,13 +89,67 @@ func TestIgnoreAndSortParameters(t *testing.T) {
 			},
 			expectDiff: false,
 		},
+		{
+			name: "Ignore added fields in livestate",
+			liveSpec: provider.FunctionManifestSpec{
+				Architectures: []provider.Architecture{
+					{Name: string(types.ArchitectureX8664)},
+				},
+				Environments: map[string]string{
+					"key1": "value1",
+					"key2": "value2",
+				},
+				EphemeralStorage: &provider.EphemeralStorage{
+					Size: 1024,
+				},
+				Tags: map[string]string{
+					"key1":                    "value1",
+					"key2":                    "value2",
+					provider.LabelApplication: "test-app",
+					provider.LabelCommitHash:  "test-hash",
+					provider.LabelManagedBy:   "piped",
+					provider.LabelPiped:       "test-piped",
+				},
+			},
+			headSpec: provider.FunctionManifestSpec{
+				// When Architectures is not specified, the default value is used.
+				Environments: map[string]string{
+					"key1": "value1",
+				},
+				// When EphemeralStorage is not specified, the default value is used.
+				Tags: map[string]string{
+					"key1": "value1",
+				},
+			},
+			expectDiff: false,
+		},
+		{
+
+			name: "Not ignore added fields in headstate",
+			liveSpec: provider.FunctionManifestSpec{
+				Tags: map[string]string{
+					"key1":                    "value1",
+					provider.LabelApplication: "test-app",
+					provider.LabelCommitHash:  "test-hash",
+					provider.LabelManagedBy:   "piped",
+					provider.LabelPiped:       "test-piped",
+				},
+			},
+			headSpec: provider.FunctionManifestSpec{
+				Tags: map[string]string{
+					"key1": "value1",
+					"key3": "value3",
+				},
+			},
+			expectDiff: true,
+		},
 	}
 
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			ignoreAndSortParameters(&tc.liveSpec, &tc.headSpec)
+			ignoreAndSortParameters(&tc.headSpec)
 			result, err := provider.Diff(
 				provider.FunctionManifest{Spec: tc.liveSpec},
 				provider.FunctionManifest{Spec: tc.headSpec},
