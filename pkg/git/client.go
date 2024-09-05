@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+	"golang.org/x/sync/singleflight"
 )
 
 const (
@@ -42,14 +43,15 @@ type Client interface {
 }
 
 type client struct {
-	username     string
-	email        string
-	gcAutoDetach bool // whether to be executed `git gc`in the foreground when some git commands (e.g. merge, commit and so on) are executed.
-	gitPath      string
-	cacheDir     string
-	mu           sync.Mutex
-	repoLocks    map[string]*sync.Mutex
-	password     string
+	username          string
+	email             string
+	gcAutoDetach      bool // whether to be executed `git gc`in the foreground when some git commands (e.g. merge, commit and so on) are executed.
+	gitPath           string
+	cacheDir          string
+	mu                sync.Mutex
+	repoSingleFlights *singleflight.Group
+	repoLocks         map[string]*sync.Mutex
+	password          string
 
 	gitEnvs       []string
 	gitEnvsByRepo map[string][]string
@@ -114,14 +116,15 @@ func NewClient(opts ...Option) (Client, error) {
 	}
 
 	c := &client{
-		username:      defaultUsername,
-		email:         defaultEmail,
-		gcAutoDetach:  false, // Disable this by default. See issue #4760, discussion #4758.
-		gitPath:       gitPath,
-		cacheDir:      cacheDir,
-		repoLocks:     make(map[string]*sync.Mutex),
-		gitEnvsByRepo: make(map[string][]string, 0),
-		logger:        zap.NewNop(),
+		username:          defaultUsername,
+		email:             defaultEmail,
+		gcAutoDetach:      false, // Disable this by default. See issue #4760, discussion #4758.
+		gitPath:           gitPath,
+		cacheDir:          cacheDir,
+		repoSingleFlights: new(singleflight.Group),
+		repoLocks:         make(map[string]*sync.Mutex),
+		gitEnvsByRepo:     make(map[string][]string, 0),
+		logger:            zap.NewNop(),
 	}
 
 	for _, opt := range opts {
@@ -150,48 +153,54 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		authArgs = append(authArgs, "-c", fmt.Sprintf("http.extraHeader=%s", header))
 	}
 
-	c.lockRepo(repoID)
-	defer c.unlockRepo(repoID)
+	_, err, _ := c.repoSingleFlights.Do(repoID, func() (interface{}, error) {
+		_, err := os.Stat(repoCachePath)
+		if err != nil && !os.IsNotExist(err) {
+			return nil, err
+		}
 
-	_, err := os.Stat(repoCachePath)
-	if err != nil && !os.IsNotExist(err) {
+		if os.IsNotExist(err) {
+			// Cache miss, clone for the first time.
+			logger.Info(fmt.Sprintf("cloning %s for the first time", repoID))
+			if err := os.MkdirAll(filepath.Dir(repoCachePath), os.ModePerm); err != nil && !os.IsExist(err) {
+				return nil, err
+			}
+			out, err := retryCommand(3, time.Second, logger, func() ([]byte, error) {
+				args := []string{"clone", "--mirror", remote, repoCachePath}
+				args = append(authArgs, args...)
+				return runGitCommand(ctx, c.gitPath, "", c.envsForRepo(remote), args...)
+			})
+			if err != nil {
+				logger.Error("failed to clone from remote",
+					zap.String("out", string(out)),
+					zap.Error(err),
+				)
+				return nil, fmt.Errorf("failed to clone from remote: %v", err)
+			}
+		} else {
+			// Cache hit. Do a git fetch to keep updated.
+			c.logger.Info(fmt.Sprintf("fetching %s to update the cache", repoID))
+			out, err := retryCommand(3, time.Second, c.logger, func() ([]byte, error) {
+				args := []string{"fetch"}
+				args = append(authArgs, args...)
+				return runGitCommand(ctx, c.gitPath, repoCachePath, c.envsForRepo(remote), args...)
+			})
+			if err != nil {
+				logger.Error("failed to fetch from remote",
+					zap.String("out", string(out)),
+					zap.Error(err),
+				)
+				return nil, fmt.Errorf("failed to fetch: %v", err)
+			}
+		}
+		return nil, nil
+	})
+	if err != nil {
 		return nil, err
 	}
 
-	if os.IsNotExist(err) {
-		// Cache miss, clone for the first time.
-		logger.Info(fmt.Sprintf("cloning %s for the first time", repoID))
-		if err := os.MkdirAll(filepath.Dir(repoCachePath), os.ModePerm); err != nil && !os.IsExist(err) {
-			return nil, err
-		}
-		out, err := retryCommand(3, time.Second, logger, func() ([]byte, error) {
-			args := []string{"clone", "--mirror", remote, repoCachePath}
-			args = append(authArgs, args...)
-			return runGitCommand(ctx, c.gitPath, "", c.envsForRepo(remote), args...)
-		})
-		if err != nil {
-			logger.Error("failed to clone from remote",
-				zap.String("out", string(out)),
-				zap.Error(err),
-			)
-			return nil, fmt.Errorf("failed to clone from remote: %v", err)
-		}
-	} else {
-		// Cache hit. Do a git fetch to keep updated.
-		c.logger.Info(fmt.Sprintf("fetching %s to update the cache", repoID))
-		out, err := retryCommand(3, time.Second, c.logger, func() ([]byte, error) {
-			args := []string{"fetch"}
-			args = append(authArgs, args...)
-			return runGitCommand(ctx, c.gitPath, repoCachePath, c.envsForRepo(remote), args...)
-		})
-		if err != nil {
-			logger.Error("failed to fetch from remote",
-				zap.String("out", string(out)),
-				zap.Error(err),
-			)
-			return nil, fmt.Errorf("failed to fetch: %v", err)
-		}
-	}
+	c.lockRepo(repoID)
+	defer c.unlockRepo(repoID)
 
 	if destination != "" {
 		err = os.MkdirAll(destination, os.ModePerm)
