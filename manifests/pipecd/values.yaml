@@ -268,7 +268,43 @@ tempo:
   tempo:
     metricsGenerator:
       enabled: true
-      remoteWriteUrl: "http://pipecd-prometheus-server/api/v1/write" # TODO rewrite this like {{ include "pipecd.fullname" . }}-prometheus-server or like {{ include "prometheus.fullname" . }}-server
+      remoteWriteUrl: http://{{ .Release.Name }}-prometheus-server/api/v1/write # we cannot use pipecd.fullname because it returns tempo's fullname
+
+  # -- Tempo configuration file contents
+  # modified by @pipecd, to expand template remoteWriteUrl
+  # @default -- Dynamically generated tempo configmap
+  config: |
+    multitenancy_enabled: {{ .Values.tempo.multitenancyEnabled }}
+    usage_report:
+      reporting_enabled: {{ .Values.tempo.reportingEnabled }}
+    compactor:
+      compaction:
+        block_retention: {{ .Values.tempo.retention }}
+    distributor:
+      receivers:
+        {{- toYaml .Values.tempo.receivers | nindent 8 }}
+    ingester:
+      {{- toYaml .Values.tempo.ingester | nindent 6 }}
+    server:
+      {{- toYaml .Values.tempo.server | nindent 6 }}
+    storage:
+      {{- toYaml .Values.tempo.storage | nindent 6 }}
+    querier:
+      {{- toYaml .Values.tempo.querier | nindent 6 }}
+    query_frontend:
+      {{- toYaml .Values.tempo.queryFrontend | nindent 6 }}
+    overrides:
+      {{- toYaml .Values.tempo.global_overrides | nindent 6 }}
+      {{- if .Values.tempo.metricsGenerator.enabled }}
+          metrics_generator_processors:
+          - 'service-graphs'
+          - 'span-metrics'
+    metrics_generator:
+          storage:
+            path: "/tmp/tempo"
+            remote_write:
+              - url: {{ tpl .Values.tempo.metricsGenerator.remoteWriteUrl . }} # modified line is here
+      {{- end }}
 
 opentelemetry-collector:
   mode: "deployment"
@@ -289,7 +325,7 @@ opentelemetry-collector:
           http: null
     exporters:
       otlp:
-        endpoint: pipecd-tempo:4317 # TODO rewrite this like {{ include "pipecd.fullname" . }}-tempo or like {{ include "tempo.fullname" }}
+        endpoint: '{{ .Release.Name }}-tempo:4317' # we cannot use pipecd.fullname because it returns opentelemetry-collector's fullname
         tls:
           insecure: true
     service:
