@@ -278,11 +278,18 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		})
 	}
 
+	password, err := cfg.Git.DecodedPassword()
+	if err != nil {
+		input.Logger.Error("failed to decode password", zap.Error(err))
+		return err
+	}
+
 	// Initialize git client.
 	gitOptions := []git.Option{
 		git.WithUserName(cfg.Git.Username),
 		git.WithEmail(cfg.Git.Email),
 		git.WithLogger(input.Logger),
+		git.WithPassword(password),
 	}
 	for _, repo := range cfg.GitHelmChartRepositories() {
 		if f := repo.SSHKeyFile; f != "" {
@@ -462,12 +469,19 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	// Start running planpreview handler.
 	{
+		// Decode password for plan-preview feature.
+		password, err := cfg.Git.DecodedPassword()
+		if err != nil {
+			input.Logger.Error("failed to decode password", zap.Error(err))
+			return err
+		}
 		// Initialize a dedicated git client for plan-preview feature.
 		// Basically, this feature is an utility so it should not share any resource with the main components of piped.
 		gc, err := git.NewClient(
 			git.WithUserName(cfg.Git.Username),
 			git.WithEmail(cfg.Git.Email),
 			git.WithLogger(input.Logger),
+			git.WithPassword(password),
 		)
 		if err != nil {
 			input.Logger.Error("failed to initialize git client for plan-preview", zap.Error(err))
