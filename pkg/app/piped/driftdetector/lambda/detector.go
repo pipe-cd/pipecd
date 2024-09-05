@@ -237,9 +237,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 //
 // sorts: (Lambda sorts them in liveSpec)
 //   - Architectures in headSpec
-//   - Environments in headSpec
 //   - SubnetIDs in headSpec
-//   - Tags in headSpec
 func ignoreAndSortParameters(headSpec *provider.FunctionManifestSpec) {
 	// We cannot compare SourceCode and S3 packaging because live states do not have them.
 	headSpec.SourceCode = provider.SourceCode{}
@@ -253,26 +251,9 @@ func ignoreAndSortParameters(headSpec *provider.FunctionManifestSpec) {
 			return strings.Compare(headSpec.Architectures[i].Name, headSpec.Architectures[j].Name) < 0
 		})
 	}
-	headSpec.Environments = sortMap(headSpec.Environments)
 	if headSpec.VPCConfig != nil && len(headSpec.VPCConfig.SubnetIDs) > 1 {
 		slices.Sort(headSpec.VPCConfig.SubnetIDs)
 	}
-	headSpec.Tags = sortMap(headSpec.Tags)
-}
-
-// sortMap sorts the given map by keys and returns a new map.
-func sortMap(m map[string]string) map[string]string {
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	slices.Sort(keys)
-
-	sorted := make(map[string]string)
-	for _, k := range keys {
-		sorted[k] = m[k]
-	}
-	return sorted
 }
 
 func (d *detector) loadHeadFunctionManifest(app *model.Application, repo git.Repo, headCommit git.Commit) (provider.FunctionManifest, error) {
