@@ -145,15 +145,15 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		)
 	)
 
-	authArgs := []string{}
-	if c.username != "" && c.password != "" {
-		token := fmt.Sprintf("%s:%s", c.username, c.password)
-		encodedToken := base64.StdEncoding.EncodeToString([]byte(token))
-		header := fmt.Sprintf("Authorization: Basic %s", encodedToken)
-		authArgs = append(authArgs, "-c", fmt.Sprintf("http.extraHeader=%s", header))
-	}
-
 	_, err, _ := c.repoSingleFlights.Do(repoID, func() (interface{}, error) {
+		authArgs := []string{}
+		if c.username != "" && c.password != "" {
+			token := fmt.Sprintf("%s:%s", c.username, c.password)
+			encodedToken := base64.StdEncoding.EncodeToString([]byte(token))
+			header := fmt.Sprintf("Authorization: Basic %s", encodedToken)
+			authArgs = append(authArgs, "-c", fmt.Sprintf("http.extraHeader=%s", header))
+		}
+
 		_, err := os.Stat(repoCachePath)
 		if err != nil && !os.IsNotExist(err) {
 			return nil, err
