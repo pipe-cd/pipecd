@@ -152,6 +152,8 @@ const (
 
 	// Terraform plan format
 	prefixTerraformPlan = "Terraform will perform the following actions:"
+	// Terraform changes to outputs format
+	prefixTerraformChangesToOutput = "Changes to Outputs:"
 )
 
 func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
@@ -320,7 +322,7 @@ func generateTerraformShortPlanDetails(details string) (string, error) {
 	// NOTE: scanner.Scan() return false if the buffer size of one line exceed bufio.MaxScanTokenSize(65536 byte).
 	for scanner.Scan() {
 		line := scanner.Text()
-		if strings.Contains(line, prefixTerraformPlan) {
+		if strings.Contains(line, prefixTerraformPlan) || strings.Contains(line, prefixTerraformChangesToOutput) {
 			start = length
 			break
 		}
