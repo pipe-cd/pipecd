@@ -82,6 +82,10 @@ service WebService {
         option (model.rbac).resource = PIPED;
         option (model.rbac).action = LIST;
     }
+    rpc ListDeprecatedNotes(ListDeprecatedNotesRequest) returns (ListDeprecatedNotesResponse) {
+        option (model.rbac).resource = PIPED;
+        option (model.rbac).action = LIST;
+    }
 
     // Application
     rpc AddApplication(AddApplicationRequest) returns (AddApplicationResponse) {
@@ -341,6 +345,14 @@ message ListReleasedVersionsRequest {
 
 message ListReleasedVersionsResponse {
     repeated string versions = 1;
+}
+
+message ListDeprecatedNotesRequest {
+    string project_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message ListDeprecatedNotesResponse {
+    string notes = 1;
 }
 
 message AddApplicationRequest {
