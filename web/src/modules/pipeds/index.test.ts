@@ -14,6 +14,7 @@ const baseState = {
   registeredPiped: null,
   updating: false,
   releasedVersions: [],
+  breakingChangesNote: "",
 };
 
 describe("pipedsSlice reducer", () => {
