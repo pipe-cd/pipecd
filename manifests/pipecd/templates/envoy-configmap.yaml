@@ -38,6 +38,7 @@ data:
                   grpc_service:
                     envoy_grpc:
                       cluster_name: grpc-envoy-ext-authz
+                    timeout: 1s
                   transport_api_version: V3
                   include_peer_certificate: false
               - name: envoy.filters.http.grpc_web
