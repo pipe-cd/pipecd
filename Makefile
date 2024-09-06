@@ -150,7 +150,7 @@ run/web:
 
 .PHONY: run/site
 run/site:
-	env RELEASE=$(shell head -n 1 RELEASE | cut -d ' ' -f 2) hugo server --source=docs
+	env RELEASE=$(shell grep '^tag:' RELEASE | awk '{print $$2}') hugo server --source=docs
 
 # Lint commands
 
