@@ -237,17 +237,18 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		return err
 	}
 
+	// if control plane's flag monitoring.enabled is false, otel provider logs errors.
+	// it's no problem but we don't want to see it.
+	// so we discard the errors and the logs.
+	otel.SetErrorHandler(otel.ErrorHandlerFunc(func(err error) {}))
+	otel.SetLogger(logr.Discard())
+
 	tracerProvider, err := p.createTracerProvider(ctx, cfg.APIAddress, cfg.ProjectID, cfg.PipedID, pipedKey)
 	if err != nil {
 		input.Logger.Error("failed to create tracer provider", zap.Error(err))
 		return err
 	}
 	otel.SetTracerProvider(tracerProvider)
-
-	// if control plane's flag monitoring.enabled is false, otel provider logs errors.
-	// it's no problem but we don't want to see it.
-	// so we discard the logger.
-	otel.SetLogger(logr.Discard())
 
 	// Send the newest piped meta to the control-plane.
 	if err := p.sendPipedMeta(ctx, apiClient, cfg, input.Logger); err != nil {
