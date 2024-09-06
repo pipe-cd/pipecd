@@ -128,7 +128,7 @@ func buildProgressivePipeline(pp *config.DeploymentPipeline, autoRollback bool, 
 				}
 				ss, _ := planner.GetPredefinedStage(planner.PredefinedStageScriptRunRollback)
 				out = append(out, &model.PipelineStage{
-					Id:         ss.ID,
+					Id:         fmt.Sprintf("%d-%d", ss.ID, i),
 					Name:       ss.Name.String(),
 					Desc:       ss.Desc,
 					Predefined: true,
