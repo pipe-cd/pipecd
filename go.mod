@@ -53,6 +53,7 @@ require (
 	go.uber.org/atomic v1.7.0
 	go.uber.org/zap v1.10.1-0.20190709142728-9a9fa7d4b5f0
 	golang.org/x/crypto v0.25.0
+	golang.org/x/mod v0.17.0
 	golang.org/x/net v0.27.0
 	golang.org/x/oauth2 v0.21.0
 	golang.org/x/sync v0.7.0
