@@ -1917,7 +1917,7 @@ func (a *WebAPI) ListDeprecatedNotes(ctx context.Context, req *webservice.ListDe
 	notes := ""
 	for _, release := range releases {
 		// Ignore pre-release tagged or draft release.
-		if *release.Prerelease || *release.Draft {
+		if *release.Prerelease {
 			continue
 		}
 
