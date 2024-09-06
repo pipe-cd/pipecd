@@ -25,4 +25,4 @@ echo "Prepare release for version $1"
 
 # Update release file
 RELEASE_FILE=RELEASE
-sed -i '' "s/tag:.* #/tag: $1 #/" $RELEASE_FILE
+sed -i '' "s/tag:.*/tag: $1/" $RELEASE_FILE
