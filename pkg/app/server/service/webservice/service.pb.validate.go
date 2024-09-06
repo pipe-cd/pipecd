@@ -2496,6 +2496,224 @@ var _ interface {
 	ErrorName() string
 } = ListReleasedVersionsResponseValidationError{}
 
+// Validate checks the field values on ListDeprecatedNotesRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListDeprecatedNotesRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListDeprecatedNotesRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListDeprecatedNotesRequestMultiError, or nil if none found.
+func (m *ListDeprecatedNotesRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListDeprecatedNotesRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetProjectId()) < 1 {
+		err := ListDeprecatedNotesRequestValidationError{
+			field:  "ProjectId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return ListDeprecatedNotesRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListDeprecatedNotesRequestMultiError is an error wrapping multiple
+// validation errors returned by ListDeprecatedNotesRequest.ValidateAll() if
+// the designated constraints aren't met.
+type ListDeprecatedNotesRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListDeprecatedNotesRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListDeprecatedNotesRequestMultiError) AllErrors() []error { return m }
+
+// ListDeprecatedNotesRequestValidationError is the validation error returned
+// by ListDeprecatedNotesRequest.Validate if the designated constraints aren't met.
+type ListDeprecatedNotesRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListDeprecatedNotesRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListDeprecatedNotesRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListDeprecatedNotesRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListDeprecatedNotesRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListDeprecatedNotesRequestValidationError) ErrorName() string {
+	return "ListDeprecatedNotesRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListDeprecatedNotesRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListDeprecatedNotesRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListDeprecatedNotesRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListDeprecatedNotesRequestValidationError{}
+
+// Validate checks the field values on ListDeprecatedNotesResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListDeprecatedNotesResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListDeprecatedNotesResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListDeprecatedNotesResponseMultiError, or nil if none found.
+func (m *ListDeprecatedNotesResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListDeprecatedNotesResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Notes
+
+	if len(errors) > 0 {
+		return ListDeprecatedNotesResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListDeprecatedNotesResponseMultiError is an error wrapping multiple
+// validation errors returned by ListDeprecatedNotesResponse.ValidateAll() if
+// the designated constraints aren't met.
+type ListDeprecatedNotesResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListDeprecatedNotesResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListDeprecatedNotesResponseMultiError) AllErrors() []error { return m }
+
+// ListDeprecatedNotesResponseValidationError is the validation error returned
+// by ListDeprecatedNotesResponse.Validate if the designated constraints
+// aren't met.
+type ListDeprecatedNotesResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListDeprecatedNotesResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListDeprecatedNotesResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListDeprecatedNotesResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListDeprecatedNotesResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListDeprecatedNotesResponseValidationError) ErrorName() string {
+	return "ListDeprecatedNotesResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListDeprecatedNotesResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListDeprecatedNotesResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListDeprecatedNotesResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListDeprecatedNotesResponseValidationError{}
+
 // Validate checks the field values on AddApplicationRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.

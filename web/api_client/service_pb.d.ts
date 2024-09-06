@@ -445,6 +445,42 @@ export namespace ListReleasedVersionsResponse {
   }
 }
 
+export class ListDeprecatedNotesRequest extends jspb.Message {
+  getProjectId(): string;
+  setProjectId(value: string): ListDeprecatedNotesRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListDeprecatedNotesRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: ListDeprecatedNotesRequest): ListDeprecatedNotesRequest.AsObject;
+  static serializeBinaryToWriter(message: ListDeprecatedNotesRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListDeprecatedNotesRequest;
+  static deserializeBinaryFromReader(message: ListDeprecatedNotesRequest, reader: jspb.BinaryReader): ListDeprecatedNotesRequest;
+}
+
+export namespace ListDeprecatedNotesRequest {
+  export type AsObject = {
+    projectId: string,
+  }
+}
+
+export class ListDeprecatedNotesResponse extends jspb.Message {
+  getNotes(): string;
+  setNotes(value: string): ListDeprecatedNotesResponse;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListDeprecatedNotesResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: ListDeprecatedNotesResponse): ListDeprecatedNotesResponse.AsObject;
+  static serializeBinaryToWriter(message: ListDeprecatedNotesResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListDeprecatedNotesResponse;
+  static deserializeBinaryFromReader(message: ListDeprecatedNotesResponse, reader: jspb.BinaryReader): ListDeprecatedNotesResponse;
+}
+
+export namespace ListDeprecatedNotesResponse {
+  export type AsObject = {
+    notes: string,
+  }
+}
+
 export class AddApplicationRequest extends jspb.Message {
   getName(): string;
   setName(value: string): AddApplicationRequest;

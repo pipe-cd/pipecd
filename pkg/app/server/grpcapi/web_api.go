@@ -1858,3 +1858,7 @@ func (a *WebAPI) ListReleasedVersions(ctx context.Context, req *webservice.ListR
 		Versions: versions,
 	}, nil
 }
+
+func (a *WebAPI) ListDeprecatedNotes(ctx context.Context, req *webservice.ListDeprecatedNotesRequest) (*webservice.ListDeprecatedNotesResponse, error) {
+	return &webservice.ListDeprecatedNotesResponse{}, nil
+}

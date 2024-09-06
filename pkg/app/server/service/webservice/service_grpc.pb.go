@@ -34,6 +34,7 @@ type WebServiceClient interface {
 	UpdatePipedDesiredVersion(ctx context.Context, in *UpdatePipedDesiredVersionRequest, opts ...grpc.CallOption) (*UpdatePipedDesiredVersionResponse, error)
 	RestartPiped(ctx context.Context, in *RestartPipedRequest, opts ...grpc.CallOption) (*RestartPipedResponse, error)
 	ListReleasedVersions(ctx context.Context, in *ListReleasedVersionsRequest, opts ...grpc.CallOption) (*ListReleasedVersionsResponse, error)
+	ListDeprecatedNotes(ctx context.Context, in *ListDeprecatedNotesRequest, opts ...grpc.CallOption) (*ListDeprecatedNotesResponse, error)
 	// Application
 	AddApplication(ctx context.Context, in *AddApplicationRequest, opts ...grpc.CallOption) (*AddApplicationResponse, error)
 	UpdateApplication(ctx context.Context, in *UpdateApplicationRequest, opts ...grpc.CallOption) (*UpdateApplicationResponse, error)
@@ -184,6 +185,15 @@ func (c *webServiceClient) RestartPiped(ctx context.Context, in *RestartPipedReq
 func (c *webServiceClient) ListReleasedVersions(ctx context.Context, in *ListReleasedVersionsRequest, opts ...grpc.CallOption) (*ListReleasedVersionsResponse, error) {
 	out := new(ListReleasedVersionsResponse)
 	err := c.cc.Invoke(ctx, "/grpc.service.webservice.WebService/ListReleasedVersions", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *webServiceClient) ListDeprecatedNotes(ctx context.Context, in *ListDeprecatedNotesRequest, opts ...grpc.CallOption) (*ListDeprecatedNotesResponse, error) {
+	out := new(ListDeprecatedNotesResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.webservice.WebService/ListDeprecatedNotes", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -548,6 +558,7 @@ type WebServiceServer interface {
 	UpdatePipedDesiredVersion(context.Context, *UpdatePipedDesiredVersionRequest) (*UpdatePipedDesiredVersionResponse, error)
 	RestartPiped(context.Context, *RestartPipedRequest) (*RestartPipedResponse, error)
 	ListReleasedVersions(context.Context, *ListReleasedVersionsRequest) (*ListReleasedVersionsResponse, error)
+	ListDeprecatedNotes(context.Context, *ListDeprecatedNotesRequest) (*ListDeprecatedNotesResponse, error)
 	// Application
 	AddApplication(context.Context, *AddApplicationRequest) (*AddApplicationResponse, error)
 	UpdateApplication(context.Context, *UpdateApplicationRequest) (*UpdateApplicationResponse, error)
@@ -634,6 +645,9 @@ func (UnimplementedWebServiceServer) RestartPiped(context.Context, *RestartPiped
 }
 func (UnimplementedWebServiceServer) ListReleasedVersions(context.Context, *ListReleasedVersionsRequest) (*ListReleasedVersionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListReleasedVersions not implemented")
+}
+func (UnimplementedWebServiceServer) ListDeprecatedNotes(context.Context, *ListDeprecatedNotesRequest) (*ListDeprecatedNotesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListDeprecatedNotes not implemented")
 }
 func (UnimplementedWebServiceServer) AddApplication(context.Context, *AddApplicationRequest) (*AddApplicationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddApplication not implemented")
@@ -956,6 +970,24 @@ func _WebService_ListReleasedVersions_Handler(srv interface{}, ctx context.Conte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(WebServiceServer).ListReleasedVersions(ctx, req.(*ListReleasedVersionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WebService_ListDeprecatedNotes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListDeprecatedNotesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebServiceServer).ListDeprecatedNotes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.webservice.WebService/ListDeprecatedNotes",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebServiceServer).ListDeprecatedNotes(ctx, req.(*ListDeprecatedNotesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1694,6 +1726,10 @@ var WebService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListReleasedVersions",
 			Handler:    _WebService_ListReleasedVersions_Handler,
+		},
+		{
+			MethodName: "ListDeprecatedNotes",
+			Handler:    _WebService_ListDeprecatedNotes_Handler,
 		},
 		{
 			MethodName: "AddApplication",

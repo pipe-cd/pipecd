@@ -85,6 +85,13 @@ export class WebServiceClient {
                response: pkg_app_server_service_webservice_service_pb.ListReleasedVersionsResponse) => void
   ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.ListReleasedVersionsResponse>;
 
+  listDeprecatedNotes(
+    request: pkg_app_server_service_webservice_service_pb.ListDeprecatedNotesRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: pkg_app_server_service_webservice_service_pb.ListDeprecatedNotesResponse) => void
+  ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.ListDeprecatedNotesResponse>;
+
   addApplication(
     request: pkg_app_server_service_webservice_service_pb.AddApplicationRequest,
     metadata: grpcWeb.Metadata | undefined,
@@ -412,6 +419,11 @@ export class WebServicePromiseClient {
     request: pkg_app_server_service_webservice_service_pb.ListReleasedVersionsRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<pkg_app_server_service_webservice_service_pb.ListReleasedVersionsResponse>;
+
+  listDeprecatedNotes(
+    request: pkg_app_server_service_webservice_service_pb.ListDeprecatedNotesRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<pkg_app_server_service_webservice_service_pb.ListDeprecatedNotesResponse>;
 
   addApplication(
     request: pkg_app_server_service_webservice_service_pb.AddApplicationRequest,
