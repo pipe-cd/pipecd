@@ -42,8 +42,12 @@ data:
                   transport_api_version: V3
                   include_peer_certificate: false
               - name: envoy.filters.http.grpc_web
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_web.v3.GrpcWeb
 {{- if .Values.cors.enabled }}
               - name: envoy.filters.http.cors
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.cors.v3.Cors
 {{- end }}
               - name: envoy.filters.http.grpc_stats
                 typed_config:
@@ -51,6 +55,8 @@ data:
                   stats_for_all_methods: true
                   enable_upstream_stats: true
               - name: envoy.filters.http.router
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
               route_config:
                 name: local_route
                 virtual_hosts:

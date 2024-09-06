@@ -22,7 +22,7 @@ serviceAccount:
 # Workloads.
 gateway:
   replicasCount: 1
-  imageTag: v1.18.3
+  imageTag: v1.31.0
   resources: {}
   internalTLS:
     enabled: false

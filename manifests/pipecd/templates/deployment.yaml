@@ -25,7 +25,7 @@ spec:
       {{- end }}
       containers:
         - name: envoy
-          image: envoyproxy/envoy-alpine:{{ .Values.gateway.imageTag }}
+          image: envoyproxy/envoy:{{ .Values.gateway.imageTag }}
           imagePullPolicy: IfNotPresent
           command:
           - envoy
