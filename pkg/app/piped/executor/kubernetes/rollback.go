@@ -17,6 +17,7 @@ package kubernetes
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -26,6 +27,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/scriptrun"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
+	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
@@ -184,52 +186,69 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 func (e *rollbackExecutor) ensureScriptRunRollback(ctx context.Context) model.StageStatus {
 	e.LogPersister.Info("Runnnig commands for rollback...")
 
-	onRollback, ok := e.Stage.Metadata["onRollback"]
-	if !ok {
-		e.LogPersister.Error("onRollback metadata is missing")
+	targetScriptRunStageIDs := strings.Split(e.Stage.Metadata["scriptRunTargetStageIDs"], ",")
+
+	ds, err := e.TargetDSP.Get(ctx, e.LogPersister)
+	if err != nil {
+		e.LogPersister.Errorf("Failed to prepare target deploy source data (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if onRollback == "" {
-		e.LogPersister.Info("No commands to run")
-		return model.StageStatus_STAGE_SUCCESS
-	}
+	appDir := ds.AppDir
 
-	envStr, ok := e.Stage.Metadata["env"]
-	env := make(map[string]string, 0)
-	if ok {
-		_ = json.Unmarshal([]byte(envStr), &env)
-	}
+	for i, baseStageID := range targetScriptRunStageIDs {
+		e.LogPersister.Infof("Start executing rollback command for the %dth SCRIPT_RUN stage", i+1)
 
-	for _, v := range strings.Split(onRollback, "\n") {
-		if v != "" {
-			e.LogPersister.Infof("   %s", v)
+		optionKey := fmt.Sprintf("scriptRun.%s.option", baseStageID)
+
+		scriptRunOpt, ok := e.Stage.Metadata[optionKey]
+		if !ok {
+			e.LogPersister.Error("ScriptRun option metadata is missing")
+			return model.StageStatus_STAGE_FAILURE
+		}
+
+		var opts config.ScriptRunStageOptions
+		if err := json.Unmarshal([]byte(scriptRunOpt), &opts); err != nil {
+			e.LogPersister.Error("Failed to parse ScriptRun option")
+			return model.StageStatus_STAGE_FAILURE
+		}
+
+		if opts.OnRollback == "" {
+			e.LogPersister.Info("No commands to run")
+			continue
+		}
+
+		for _, v := range strings.Split(opts.OnRollback, "\n") {
+			if v != "" {
+				e.LogPersister.Infof("   %s", v)
+			}
+		}
+
+		ci := scriptrun.NewContextInfo(e.Deployment)
+		ciEnv, err := ci.BuildEnv()
+		if err != nil {
+			e.LogPersister.Errorf("failed to build srcipt run context info: %w", err)
+			return model.StageStatus_STAGE_FAILURE
+		}
+
+		envs := make([]string, 0, len(ciEnv)+len(opts.Env))
+		for key, value := range ciEnv {
+			envs = append(envs, key+"="+value)
+		}
+
+		for key, value := range opts.Env {
+			envs = append(envs, key+"="+value)
+		}
+
+		cmd := exec.Command("/bin/sh", "-l", "-c", opts.OnRollback)
+		cmd.Dir = appDir
+		cmd.Env = append(os.Environ(), envs...)
+		cmd.Stdout = e.LogPersister
+		cmd.Stderr = e.LogPersister
+		if err := cmd.Run(); err != nil {
+			return model.StageStatus_STAGE_FAILURE
 		}
 	}
 
-	ci := scriptrun.NewContextInfo(e.Deployment)
-	ciEnv, err := ci.BuildEnv()
-	if err != nil {
-		e.LogPersister.Errorf("failed to build srcipt run context info: %w", err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	envs := make([]string, 0, len(ciEnv)+len(env))
-	for key, value := range ciEnv {
-		envs = append(envs, key+"="+value)
-	}
-
-	for key, value := range env {
-		envs = append(envs, key+"="+value)
-	}
-
-	cmd := exec.Command("/bin/sh", "-l", "-c", onRollback)
-	cmd.Dir = e.appDir
-	cmd.Env = append(os.Environ(), envs...)
-	cmd.Stdout = e.LogPersister
-	cmd.Stderr = e.LogPersister
-	if err := cmd.Run(); err != nil {
-		return model.StageStatus_STAGE_FAILURE
-	}
 	return model.StageStatus_STAGE_SUCCESS
 }

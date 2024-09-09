@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"go.opentelemetry.io/otel"
@@ -285,7 +286,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		case model.DeploymentStatus_DEPLOYMENT_FAILURE, model.DeploymentStatus_DEPLOYMENT_CANCELLED:
 			span.SetStatus(codes.Error, statusReason)
 		}
-		
+
 		span.End()
 	}()
 
@@ -497,19 +498,28 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 	// Check whether to execute the script rollback stage or not.
 	// If the base stage is executed, the script rollback stage will be executed.
 	if ps.Name == model.StageScriptRunRollback.String() {
-		baseStageID := ps.Metadata["baseStageID"]
-		if baseStageID == "" {
+		baseStageIDs := strings.Split(ps.Metadata["scriptRunBaseStageIDs"], ",")
+		if len(baseStageIDs) == 0 {
 			return
 		}
 
-		baseStageStatus, ok := s.stageStatuses[baseStageID]
-		if !ok {
-			return
+		targetStageIDs := make([]string, 0, len(baseStageIDs))
+		for _, baseStageID := range baseStageIDs {
+			baseStageStatus, ok := s.stageStatuses[baseStageID]
+			if !ok {
+				continue
+			}
+
+			if baseStageStatus == model.StageStatus_STAGE_NOT_STARTED_YET || baseStageStatus == model.StageStatus_STAGE_SKIPPED {
+				continue
+			}
+
+			targetStageIDs = append(targetStageIDs, baseStageID)
 		}
 
-		if baseStageStatus == model.StageStatus_STAGE_NOT_STARTED_YET || baseStageStatus == model.StageStatus_STAGE_SKIPPED {
-			return
-		}
+		fmt.Println("ffjlabo-dev: baseStageIDs", baseStageIDs, len(baseStageIDs))
+		fmt.Println("ffjlabo-dev: targetStageIDs", targetStageIDs, len(targetStageIDs))
+		ps.Metadata["scriptRunTargetStageIDs"] = strings.Join(targetStageIDs, ",")
 	}
 
 	// Update stage status to RUNNING if needed.

@@ -17,6 +17,7 @@ package kubernetes
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/planner"
@@ -117,29 +118,41 @@ func buildProgressivePipeline(pp *config.DeploymentPipeline, autoRollback bool, 
 		})
 
 		// Add a stage for rolling back script run stages.
-		for i, s := range pp.Stages {
-			if s.Name == model.StageScriptRun {
+		metadata := make(map[string]string, 0)
+		baseStageIDs := make([]string, 0, len(pp.Stages))
+		for _, s := range out {
+			// TODO: check the base stage env and command
+			// maybe scriptRunBaseStageIDs => stage-1,stage-2
+			// stage-1.env json Marshaled value
+			// stage-1.onRollback => string
+
+			// scriptRunBaseStageIDs => stage-1,stage-2
+			// scriptRun.stage-1.option => Marshaled value
+
+			if s.Name == model.StageScriptRun.String() {
 				// Use metadata as a way to pass parameters to the stage.
-				envStr, _ := json.Marshal(s.ScriptRunStageOptions.Env)
-				metadata := map[string]string{
-					"baseStageID": out[i].Id,
-					"onRollback":  s.ScriptRunStageOptions.OnRollback,
-					"env":         string(envStr),
-				}
-				ss, _ := planner.GetPredefinedStage(planner.PredefinedStageScriptRunRollback)
-				out = append(out, &model.PipelineStage{
-					Id:         fmt.Sprintf("%d-%d", ss.ID, i),
-					Name:       ss.Name.String(),
-					Desc:       ss.Desc,
-					Predefined: true,
-					Visible:    false,
-					Status:     model.StageStatus_STAGE_NOT_STARTED_YET,
-					Metadata:   metadata,
-					CreatedAt:  now.Unix(),
-					UpdatedAt:  now.Unix(),
-				})
+				opts := pp.Stages[s.Index].ScriptRunStageOptions
+				optionStr, _ := json.Marshal(opts)
+
+				metadata[fmt.Sprintf("scriptRun.%s.option", s.Id)] = string(optionStr)
+				baseStageIDs = append(baseStageIDs, s.Id)
 			}
 		}
+
+		metadata["scriptRunBaseStageIDs"] = strings.Join(baseStageIDs, ",")
+
+		ss, _ := planner.GetPredefinedStage(planner.PredefinedStageScriptRunRollback)
+		out = append(out, &model.PipelineStage{
+			Id:         ss.ID,
+			Name:       ss.Name.String(),
+			Desc:       ss.Desc,
+			Predefined: true,
+			Visible:    false,
+			Status:     model.StageStatus_STAGE_NOT_STARTED_YET,
+			Metadata:   metadata,
+			CreatedAt:  now.Unix(),
+			UpdatedAt:  now.Unix(),
+		})
 	}
 
 	return out
