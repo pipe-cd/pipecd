@@ -37,6 +37,16 @@ export const fetchReleasedVersions = createAsyncThunk<string[]>(
   }
 );
 
+export const fetchBreakingChanges = createAsyncThunk<
+  string,
+  { projectId: string }
+>(`${MODULE_NAME}/fetchBreakingChanges`, async (props) => {
+  const { notes } = await pipedsApi.listBreakingChanges({
+    projectId: props.projectId,
+  });
+  return notes;
+});
+
 export const fetchPipeds = createAsyncThunk<Piped.AsObject[], boolean>(
   `${MODULE_NAME}/fetchList`,
   async (withStatus: boolean) => {
@@ -120,10 +130,12 @@ export const pipedsSlice = createSlice({
     registeredPiped: RegisteredPiped | null;
     updating: boolean;
     releasedVersions: string[];
+    breakingChangesNote: string;
   }>({
     registeredPiped: null,
     updating: false,
     releasedVersions: [],
+    breakingChangesNote: "",
   }),
   reducers: {
     clearRegisteredPipedInfo(state) {
@@ -157,6 +169,9 @@ export const pipedsSlice = createSlice({
       })
       .addCase(fetchReleasedVersions.fulfilled, (state, action) => {
         state.releasedVersions = action.payload;
+      })
+      .addCase(fetchBreakingChanges.fulfilled, (state, action) => {
+        state.breakingChangesNote = action.payload;
       });
   },
 });

@@ -22,6 +22,8 @@ import {
   ListReleasedVersionsRequest,
   RestartPipedRequest,
   RestartPipedResponse,
+  ListDeprecatedNotesRequest,
+  ListDeprecatedNotesResponse,
 } from "pipecd/web/api_client/service_pb";
 
 export const getPipeds = ({
@@ -37,6 +39,16 @@ export const listReleasedVersions = (): Promise<
 > => {
   const req = new ListReleasedVersionsRequest();
   return apiRequest(req, apiClient.listReleasedVersions);
+};
+
+export const listBreakingChanges = ({
+  projectId,
+}: ListDeprecatedNotesRequest.AsObject): Promise<
+  ListDeprecatedNotesResponse.AsObject
+> => {
+  const req = new ListDeprecatedNotesRequest();
+  req.setProjectId(projectId);
+  return apiRequest(req, apiClient.listDeprecatedNotes);
 };
 
 export const registerPiped = ({
