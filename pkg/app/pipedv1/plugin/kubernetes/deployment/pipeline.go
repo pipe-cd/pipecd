@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package planner
+package deployment
 
 import (
 	"fmt"
@@ -24,10 +24,10 @@ import (
 )
 
 const (
-	PredefinedStageK8sSync            = "K8sSync"
-	PredefinedStageRollback           = "Rollback"
+	PredefinedStageK8sSync  = "K8sSync"
+	PredefinedStageRollback = "Rollback"
 )
-	
+
 var predefinedStages = map[string]config.PipelineStage{
 	PredefinedStageK8sSync: {
 		ID:   PredefinedStageK8sSync,
@@ -53,7 +53,6 @@ func MakeInitialStageMetadata(cfg config.PipelineStage) map[string]string {
 		return nil
 	}
 }
-
 
 func buildQuickSyncPipeline(autoRollback bool, now time.Time) []*model.PipelineStage {
 	var (
