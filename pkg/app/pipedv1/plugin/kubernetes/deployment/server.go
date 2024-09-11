@@ -54,6 +54,7 @@ func (a *DeploymentService) DetermineStrategy(context.Context, *deployment.Deter
 
 // DetermineVersions implements deployment.DeploymentServiceServer.
 func (a *DeploymentService) DetermineVersions(context.Context, *deployment.DetermineVersionsRequest) (*deployment.DetermineVersionsResponse, error) {
+	// TODO: how to determine whether the runnning or target deployment to use?
 	panic("unimplemented")
 }
 
