@@ -68,5 +68,12 @@ func (a *DeploymentService) BuildQuickSyncStages(context.Context, *deployment.Bu
 
 // FetchDefinedStages implements deployment.DeploymentServiceServer.
 func (a *DeploymentService) FetchDefinedStages(context.Context, *deployment.FetchDefinedStagesRequest) (*deployment.FetchDefinedStagesResponse, error) {
-	panic("unimplemented")
+	stages := make([]string, 0, len(AllStages))
+	for _, s := range AllStages {
+		stages = append(stages, string(s))
+	}
+
+	return &deployment.FetchDefinedStagesResponse{
+		Stages: stages,
+	}, nil
 }

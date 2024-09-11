@@ -23,6 +23,42 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
+type Stage string
+
+const (
+	// StageK8sSync represents the state where
+	// all resources should be synced with the Git state.
+	StageK8sSync Stage = "K8S_SYNC"
+	// StageK8sPrimaryRollout represents the state where
+	// the PRIMARY variant resources has been updated to the new version/configuration.
+	StageK8sPrimaryRollout Stage = "K8S_PRIMARY_ROLLOUT"
+	// StageK8sCanaryRollout represents the state where
+	// the CANARY variant resources has been rolled out with the new version/configuration.
+	StageK8sCanaryRollout Stage = "K8S_CANARY_ROLLOUT"
+	// StageK8sCanaryClean represents the state where
+	// the CANARY variant resources has been cleaned.
+	StageK8sCanaryClean Stage = "K8S_CANARY_CLEAN"
+	// StageK8sBaselineRollout represents the state where
+	// the BASELINE variant resources has been rolled out.
+	StageK8sBaselineRollout Stage = "K8S_BASELINE_ROLLOUT"
+	// StageK8sBaselineClean represents the state where
+	// the BASELINE variant resources has been cleaned.
+	StageK8sBaselineClean Stage = "K8S_BASELINE_CLEAN"
+	// StageK8sTrafficRouting represents the state where the traffic to application
+	// should be splitted as the specified percentage to PRIMARY, CANARY, BASELINE variants.
+	StageK8sTrafficRouting Stage = "K8S_TRAFFIC_ROUTING"
+)
+
+var AllStages = []Stage{
+	StageK8sSync,
+	StageK8sPrimaryRollout,
+	StageK8sCanaryRollout,
+	StageK8sCanaryClean,
+	StageK8sBaselineRollout,
+	StageK8sBaselineClean,
+	StageK8sTrafficRouting,
+}
+
 const (
 	PredefinedStageK8sSync  = "K8sSync"
 	PredefinedStageRollback = "Rollback"
