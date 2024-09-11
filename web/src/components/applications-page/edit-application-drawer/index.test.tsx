@@ -38,6 +38,7 @@ const initialState = {
     registeredPiped: null,
     updating: false,
     releasedVersions: [],
+    breakingChangesNote: "",
   },
   applications: {
     loading: false,

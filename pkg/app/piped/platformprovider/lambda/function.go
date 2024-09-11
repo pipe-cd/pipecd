@@ -26,8 +26,8 @@ import (
 )
 
 const (
-	versionV1Beta1       = "pipecd.dev/v1beta1"
-	functionManifestKind = "LambdaFunction"
+	VersionV1Beta1       = "pipecd.dev/v1beta1"
+	FunctionManifestKind = "LambdaFunction"
 	// Memory and Timeout lower and upper limit as noted via
 	// https://docs.aws.amazon.com/sdk-for-go/api/service/lambda/#UpdateFunctionConfigurationInput
 	memoryLowerLimit           = 1
@@ -44,10 +44,10 @@ type FunctionManifest struct {
 }
 
 func (fm *FunctionManifest) validate() error {
-	if fm.APIVersion != versionV1Beta1 {
+	if fm.APIVersion != VersionV1Beta1 {
 		return fmt.Errorf("unsupported version: %s", fm.APIVersion)
 	}
-	if fm.Kind != functionManifestKind {
+	if fm.Kind != FunctionManifestKind {
 		return fmt.Errorf("invalid manifest kind given: %s", fm.Kind)
 	}
 	if err := fm.Spec.validate(); err != nil {

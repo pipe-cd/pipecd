@@ -23,6 +23,9 @@ import (
 	"sort"
 	"time"
 
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
@@ -54,7 +57,6 @@ type planner struct {
 	lastSuccessfulCommitHash     string
 	lastSuccessfulConfigFilename string
 	workingDir                   string
-	pipedConfig                  []byte
 
 	// The plugin clients are used to call plugin that actually
 	// performs planning deployment.
@@ -76,6 +78,7 @@ type planner struct {
 
 	// TODO: Find a way to show log from pluggin's planner
 	logger *zap.Logger
+	tracer trace.Tracer
 
 	done                 atomic.Bool
 	doneTimestamp        time.Time
@@ -95,7 +98,6 @@ func newPlanner(
 	apiClient apiClient,
 	gitClient gitClient,
 	notifier notifier,
-	pipedConfig []byte,
 	logger *zap.Logger,
 ) *planner {
 
@@ -127,11 +129,11 @@ func newPlanner(
 		gitClient:                    gitClient,
 		metadataStore:                metadatastore.NewMetadataStore(apiClient, d),
 		notifier:                     notifier,
-		pipedConfig:                  pipedConfig,
 		doneDeploymentStatus:         d.Status,
 		cancelledCh:                  make(chan *model.ReportableCommand, 1),
 		nowFunc:                      time.Now,
 		logger:                       logger,
+		tracer:                       otel.GetTracerProvider().Tracer("controller/planner"),
 	}
 	return p
 }
@@ -175,6 +177,16 @@ func (p *planner) Run(ctx context.Context) error {
 		p.doneTimestamp = p.nowFunc()
 		p.done.Store(true)
 	}()
+
+	ctx, span := p.tracer.Start(
+		newContextWithDeploymentSpan(ctx, p.deployment),
+		"Plan",
+		trace.WithAttributes(
+			attribute.String("application-id", p.deployment.ApplicationId),
+			attribute.String("kind", p.deployment.Kind.String()),
+			attribute.String("deployment-id", p.deployment.Id),
+		))
+	defer span.End()
 
 	defer func() {
 		controllermetrics.UpdateDeploymentStatus(p.deployment, p.doneDeploymentStatus)

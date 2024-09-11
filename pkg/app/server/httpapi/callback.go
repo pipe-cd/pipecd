@@ -20,6 +20,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"go.uber.org/zap"
@@ -28,25 +29,30 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/jwt"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/oauth/github"
+	"github.com/pipe-cd/pipecd/pkg/oauth/oidc"
 )
 
 func (h *authHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
 	// Validate request's payload.
-	projectID := r.FormValue(projectFormKey)
-	if projectID == "" {
-		h.handleError(w, r, "Missing project id", nil)
-		return
-	}
-	authCode := r.FormValue(authCodeFormKey)
-	if authCode == "" {
-		h.handleError(w, r, "Missing auth code", nil)
+
+	// split the project ID from the state, if it exists.
+	// This is necessary because some providers don't support passing the project ID in the query parameters.
+	state, projectID, err := parseProjectAndState(r)
+	if err != nil {
+		h.handleError(w, r, "Failed to parse state", err)
 		return
 	}
 
-	if err := checkState(r, h.stateKey); err != nil {
+	if err := checkState(r, h.stateKey, state); err != nil {
 		h.handleError(w, r, "Unauthorized access", err)
+		return
+	}
+
+	authCode := r.FormValue(authCodeFormKey)
+	if authCode == "" {
+		h.handleError(w, r, "Missing auth code", nil)
 		return
 	}
 
@@ -112,8 +118,7 @@ func (h *authHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, rootPath, http.StatusFound)
 }
 
-func checkState(r *http.Request, key string) error {
-	state := r.FormValue(stateFormKey)
+func checkState(r *http.Request, key string, state string) error {
 	rawStateToken, err := hex.DecodeString(state)
 	if err != nil {
 		return err
@@ -148,8 +153,38 @@ func getUser(ctx context.Context, sso *model.ProjectSSOConfig, project *model.Pr
 			return nil, err
 		}
 		return cli.GetUser(ctx)
-
+	case model.ProjectSSOConfig_OIDC:
+		if sso.Oidc == nil {
+			return nil, fmt.Errorf("missing OIDC oauth in the SSO configuration")
+		}
+		cli, err := oidc.NewOAuthClient(ctx, sso.Oidc, project, code)
+		if err != nil {
+			return nil, err
+		}
+		return cli.GetUser(ctx, sso.Oidc.ClientId)
 	default:
 		return nil, fmt.Errorf("not implemented")
+	}
+}
+
+func parseProjectAndState(r *http.Request) (string, string, error) {
+	state := r.FormValue(stateFormKey)
+	if state == "" {
+		return "", "", fmt.Errorf("missing state")
+	}
+
+	// When using OIDC SSO, the state is in the format of "state-token:project-id".
+	s := strings.Split(state, ":")
+	if len(s) != 2 {
+		projectID := r.FormValue(projectFormKey)
+		if projectID == "" {
+			return s[0], "", fmt.Errorf("missing project id")
+		}
+		return state, projectID, nil
+	} else {
+		if s[1] == "" {
+			return s[0], "", fmt.Errorf("missing project id")
+		}
+		return s[0], s[1], nil
 	}
 }

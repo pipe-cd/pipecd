@@ -101,6 +101,36 @@ func TestApplicationLiveStateSnapshot_DetermineAppHealthStatus(t *testing.T) {
 			want: ApplicationLiveStateSnapshot_UNKNOWN,
 		},
 		{
+			name: "lambda: healthy",
+			snapshot: &ApplicationLiveStateSnapshot{
+				Kind: ApplicationKind_LAMBDA,
+				Lambda: &LambdaApplicationLiveState{
+					Resources: []*LambdaResourceState{{HealthStatus: LambdaResourceState_HEALTHY}},
+				},
+			},
+			want: ApplicationLiveStateSnapshot_HEALTHY,
+		},
+		{
+			name: "lambda: unhealthy",
+			snapshot: &ApplicationLiveStateSnapshot{
+				Kind: ApplicationKind_LAMBDA,
+				Lambda: &LambdaApplicationLiveState{
+					Resources: []*LambdaResourceState{
+						{HealthStatus: LambdaResourceState_HEALTHY},
+						{HealthStatus: LambdaResourceState_OTHER},
+					},
+				},
+			},
+			want: ApplicationLiveStateSnapshot_OTHER,
+		},
+		{
+			name: "lambda: unknown",
+			snapshot: &ApplicationLiveStateSnapshot{
+				Kind: ApplicationKind_LAMBDA,
+			},
+			want: ApplicationLiveStateSnapshot_UNKNOWN,
+		},
+		{
 			name: "ecs: healthy",
 			snapshot: &ApplicationLiveStateSnapshot{
 				Kind: ApplicationKind_ECS,

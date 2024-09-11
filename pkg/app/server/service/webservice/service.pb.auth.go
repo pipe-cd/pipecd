@@ -191,6 +191,8 @@ func (a *authorizer) Authorize(ctx context.Context, method string, r model.Role)
 		return verify(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/ListReleasedVersions":
 		return verify(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_LIST)
+	case "/grpc.service.webservice.WebService/ListDeprecatedNotes":
+		return verify(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_LIST)
 	case "/grpc.service.webservice.WebService/GetProject":
 		return verify(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_GET)
 	case "/grpc.service.webservice.WebService/UpdateProjectStaticAdmin":

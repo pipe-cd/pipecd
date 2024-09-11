@@ -200,6 +200,7 @@ export const Header: FC = memo(function Header() {
               >
                 <Avatar className={classes.userAvatar} src={me.avatarUrl} />
               </IconButton>
+              <span>{me.subject}</span>
             </>
           ) : (
             <Link

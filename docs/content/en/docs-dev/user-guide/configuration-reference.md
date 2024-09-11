@@ -49,6 +49,7 @@ Kubernetes resources can be managed by some annotations provided by PipeCD.
 | `pipecd.dev/ignore-drift-detection` | any | "true" | Whether the drift detection should ignore this resource. |
 | `pipecd.dev/server-side-apply` | any | "true" | Use server side apply instead of client side apply. |
 | `pipecd.dev/sync-by-replace` | any | "enabled" | Use `replace` instead of `apply`. |
+| `pipecd.dev/force-sync-by-replace` | any | "enabled" | Use `replace --force` instead of `apply`. |
 
 ## Terraform application
 
@@ -807,7 +808,7 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| ignoreFields | []string | List of fields path in manifests, which its diff should be ignored. | No |
+| ignoreFields | []string | List of fields path in manifests, which its diff should be ignored. This is available for only `KubernetesApp`. | No |
 
 ## PipeCD rich defined types
 

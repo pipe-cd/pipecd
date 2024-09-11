@@ -39,7 +39,7 @@ jobs:
           cd docs
           npm install autoprefixer
           npm install postcss-cli
-          env HUGO_ENV="production" RELEASE="$(head -n 1 ../RELEASE | cut -d ' ' -f 2)" hugo
+          env HUGO_ENV="production" RELEASE="$(grep '^tag:' ../RELEASE | awk '{print $2}')" hugo
 
       # Building and pushing container images.
       - name: Log in to the container registry

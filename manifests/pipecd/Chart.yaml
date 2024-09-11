@@ -24,10 +24,14 @@ dependencies:
   repository: "https://prometheus-community.github.io/helm-charts"
   condition: monitoring.enabled
 - name: grafana
-  version: "6.16.2"
+  version: "8.4.0"
   repository: "https://grafana.github.io/helm-charts"
   condition: monitoring.enabled
 - name: opentelemetry-collector
   version: "0.93.3"
   repository: "https://open-telemetry.github.io/opentelemetry-helm-charts"
+  condition: monitoring.enabled
+- name: tempo
+  version: "1.10.2"
+  repository: "https://grafana.github.io/helm-charts"
   condition: monitoring.enabled

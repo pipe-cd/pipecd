@@ -33,11 +33,14 @@ import (
 	secretmanagerpb "cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	awssecretsmanager "github.com/aws/aws-sdk-go-v2/service/secretsmanager"
+	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/spf13/cobra"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
@@ -234,6 +237,12 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		return err
 	}
 
+	// if control plane's flag monitoring.enabled is false, otel provider logs errors.
+	// it's no problem but we don't want to see it.
+	// so we discard the errors and the logs.
+	otel.SetErrorHandler(otel.ErrorHandlerFunc(func(err error) {}))
+	otel.SetLogger(logr.Discard())
+
 	tracerProvider, err := p.createTracerProvider(ctx, cfg.APIAddress, cfg.ProjectID, cfg.PipedID, pipedKey)
 	if err != nil {
 		input.Logger.Error("failed to create tracer provider", zap.Error(err))
@@ -289,11 +298,18 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		})
 	}
 
+	password, err := cfg.Git.DecodedPassword()
+	if err != nil {
+		input.Logger.Error("failed to decode password", zap.Error(err))
+		return err
+	}
+
 	// Initialize git client.
 	gitOptions := []git.Option{
 		git.WithUserName(cfg.Git.Username),
 		git.WithEmail(cfg.Git.Email),
 		git.WithLogger(input.Logger),
+		git.WithPassword(password),
 	}
 	for _, repo := range cfg.GitHelmChartRepositories() {
 		if f := repo.SSHKeyFile; f != "" {
@@ -473,12 +489,19 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	// Start running planpreview handler.
 	{
+		// Decode password for plan-preview feature.
+		password, err := cfg.Git.DecodedPassword()
+		if err != nil {
+			input.Logger.Error("failed to decode password", zap.Error(err))
+			return err
+		}
 		// Initialize a dedicated git client for plan-preview feature.
 		// Basically, this feature is an utility so it should not share any resource with the main components of piped.
 		gc, err := git.NewClient(
 			git.WithUserName(cfg.Git.Username),
 			git.WithEmail(cfg.Git.Email),
 			git.WithLogger(input.Logger),
+			git.WithPassword(password),
 		)
 		if err != nil {
 			input.Logger.Error("failed to initialize git client for plan-preview", zap.Error(err))
@@ -595,11 +618,11 @@ func (p *piped) createAPIClient(ctx context.Context, address, projectID, pipedID
 }
 
 // createTracerProvider makes a OpenTelemetry Trace's TracerProvider.
-func (p *piped) createTracerProvider(ctx context.Context, address, projectID, pipeID string, pipedKey []byte) (trace.TracerProvider, error) {
+func (p *piped) createTracerProvider(ctx context.Context, address, projectID, pipedID string, pipedKey []byte) (trace.TracerProvider, error) {
 	options := []otlptracegrpc.Option{
 		otlptracegrpc.WithEndpoint(address),
 		otlptracegrpc.WithHeaders(map[string]string{
-			"authorization": "Bearer " + rpcauth.MakePipedToken(projectID, pipeID, string(pipedKey)),
+			"authorization": "Bearer " + rpcauth.MakePipedToken(projectID, pipedID, string(pipedKey)),
 		}),
 	}
 
@@ -623,7 +646,28 @@ func (p *piped) createTracerProvider(ctx context.Context, address, projectID, pi
 		return nil, err
 	}
 
+	otlpResource, err := resource.New(ctx, resource.WithAttributes(
+		// Set common attributes for all spans.
+		attribute.String("service.name", "piped"),
+		attribute.String("service.version", version.Get().Version),
+		attribute.String("service.namespace", projectID),
+		attribute.String("service.instance.id", pipedID),
+
+		// Set the project and piped IDs as attributes.
+		attribute.String("project-id", projectID),
+		attribute.String("piped-id", pipedID),
+	))
+	if err != nil {
+		return nil, err
+	}
+
+	otlpResource, err = resource.Merge(resource.Default(), otlpResource) // the later one has higher priority
+	if err != nil {
+		return nil, err
+	}
+
 	return sdktrace.NewTracerProvider(
+		sdktrace.WithResource(otlpResource),
 		sdktrace.WithBatcher(otlpTraceExporter),
 		sdktrace.WithSampler(sdktrace.AlwaysSample()),
 	), nil

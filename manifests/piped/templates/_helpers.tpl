@@ -163,6 +163,7 @@ A set of args for Piped.
 - --log-encoding={{ .Values.args.logEncoding }}
 - --log-level={{ .Values.args.logLevel }}
 - --add-login-user-to-passwd={{ .Values.args.addLoginUserToPasswd }}
+- --app-manifest-cache-count={{ .Values.args.appManifestCacheCount }}
 {{- if .Values.quickstart.enabled }}
 - --insecure=true
 {{- else }}

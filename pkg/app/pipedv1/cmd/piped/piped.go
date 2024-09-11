@@ -36,6 +36,12 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/spf13/cobra"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/sdk/resource"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/credentials"
@@ -171,6 +177,13 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		input.Logger.Error("failed to create gRPC client to control plane", zap.Error(err))
 		return err
 	}
+
+	tracerProvider, err := p.createTracerProvider(ctx, cfg.APIAddress, cfg.ProjectID, cfg.PipedID, pipedKey)
+	if err != nil {
+		input.Logger.Error("failed to create tracer provider", zap.Error(err))
+		return err
+	}
+	otel.SetTracerProvider(tracerProvider)
 
 	// Send the newest piped meta to the control-plane.
 	if err := p.sendPipedMeta(ctx, apiClient, cfg, input.Logger); err != nil {
@@ -319,12 +332,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		// TODO: Implement the drift detector controller.
 	}
 
-	cfgData, err := p.loadConfigByte(ctx)
-	if err != nil {
-		input.Logger.Error("failed to load piped configuration", zap.Error(err))
-		return err
-	}
-
 	// Start running deployment controller.
 	{
 		c := controller.NewController(
@@ -337,7 +344,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			notifier,
 			decrypter,
 			cfg,
-			cfgData,
 			appManifestsCache,
 			p.gracePeriod,
 			input.Logger,
@@ -475,6 +481,62 @@ func (p *piped) createAPIClient(ctx context.Context, address, projectID, pipedID
 	return client, nil
 }
 
+// createTracerProvider makes a OpenTelemetry Trace's TracerProvider.
+func (p *piped) createTracerProvider(ctx context.Context, address, projectID, pipedID string, pipedKey []byte) (trace.TracerProvider, error) {
+	options := []otlptracegrpc.Option{
+		otlptracegrpc.WithEndpoint(address),
+		otlptracegrpc.WithHeaders(map[string]string{
+			"authorization": "Bearer " + rpcauth.MakePipedToken(projectID, pipedID, string(pipedKey)),
+		}),
+	}
+
+	if !p.insecure {
+		if p.certFile != "" {
+			creds, err := credentials.NewClientTLSFromFile(p.certFile, "")
+			if err != nil {
+				return nil, fmt.Errorf("failed to load client TLS credentials: %w", err)
+			}
+			options = append(options, otlptracegrpc.WithTLSCredentials(creds))
+		} else {
+			config := &tls.Config{}
+			options = append(options, otlptracegrpc.WithTLSCredentials(credentials.NewTLS(config)))
+		}
+	} else {
+		options = append(options, otlptracegrpc.WithInsecure())
+	}
+
+	otlpTraceExporter, err := otlptracegrpc.New(ctx, options...)
+	if err != nil {
+		return nil, err
+	}
+
+	otlpResource, err := resource.New(ctx, resource.WithAttributes(
+		// Set common attributes for all spans.
+		attribute.String("service.name", "piped"),
+		attribute.String("service.version", version.Get().Version),
+		attribute.String("service.namespace", projectID),
+		attribute.String("service.instance.id", pipedID),
+
+		// Set the project and piped IDs as attributes.
+		attribute.String("project-id", projectID),
+		attribute.String("piped-id", pipedID),
+	))
+	if err != nil {
+		return nil, err
+	}
+
+	otlpResource, err = resource.Merge(resource.Default(), otlpResource) // the later one has higher priority
+	if err != nil {
+		return nil, err
+	}
+
+	return sdktrace.NewTracerProvider(
+		sdktrace.WithResource(otlpResource),
+		sdktrace.WithBatcher(otlpTraceExporter),
+		sdktrace.WithSampler(sdktrace.AlwaysSample()),
+	), nil
+}
+
 // loadConfig reads the Piped configuration data from the specified source.
 func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 	// HACK: When the version of cobra is updated to >=v1.8.0, this should be replaced with https://pkg.go.dev/github.com/spf13/cobra#Command.MarkFlagsMutuallyExclusive.
@@ -535,44 +597,6 @@ func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 			return nil, err
 		}
 		return extract(cfg)
-	}
-
-	return nil, fmt.Errorf("one of config-file, config-gcp-secret or config-aws-secret must be set")
-}
-
-// loadConfig reads the Piped configuration data from the specified source.
-func (p *piped) loadConfigByte(ctx context.Context) ([]byte, error) {
-	// HACK: When the version of cobra is updated to >=v1.8.0, this should be replaced with https://pkg.go.dev/github.com/spf13/cobra#Command.MarkFlagsMutuallyExclusive.
-	if err := p.hasTooManyConfigFlags(); err != nil {
-		return nil, err
-	}
-
-	if p.configFile != "" {
-		return os.ReadFile(p.configFile)
-	}
-
-	if p.configData != "" {
-		data, err := base64.StdEncoding.DecodeString(p.configData)
-		if err != nil {
-			return nil, fmt.Errorf("the given config-data isn't base64 encoded: %w", err)
-		}
-		return data, nil
-	}
-
-	if p.configGCPSecret != "" {
-		data, err := p.getConfigDataFromSecretManager(ctx)
-		if err != nil {
-			return nil, fmt.Errorf("failed to load config from SecretManager (%w)", err)
-		}
-		return data, nil
-	}
-
-	if p.configAWSSecret != "" {
-		data, err := p.getConfigDataFromAWSSecretsManager(ctx)
-		if err != nil {
-			return nil, fmt.Errorf("failed to load config from AWS Secrets Manager (%w)", err)
-		}
-		return data, nil
 	}
 
 	return nil, fmt.Errorf("one of config-file, config-gcp-secret or config-aws-secret must be set")

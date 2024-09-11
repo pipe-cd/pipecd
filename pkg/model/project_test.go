@@ -853,3 +853,66 @@ func TestProject_DeleteRBACRole(t *testing.T) {
 		})
 	}
 }
+
+func TestGenerateAuthCodeURL_Oidc(t *testing.T) {
+	tests := []struct {
+		name                string
+		config              ProjectSSOConfig_Oidc
+		project             string
+		state               string
+		expectedAuthCodeURL string
+		expectedError       bool
+	}{
+		{
+			name: "valid config with default scope",
+			config: ProjectSSOConfig_Oidc{
+				Issuer:      "https://accounts.google.com",
+				ClientId:    "test-client-id",
+				RedirectUri: "https://example.com/callback",
+				Scopes:      []string{},
+			},
+			project:             "test-project",
+			state:               "test-state",
+			expectedAuthCodeURL: "https://accounts.google.com/o/oauth2/v2/auth?access_type=online&client_id=test-client-id&prompt=consent&redirect_uri=https%3A%2F%2Fexample.com%2Fcallback&response_type=code&scope=openid&state=test-state%3Atest-project",
+			expectedError:       false,
+		},
+		{
+			name: "valid config with custom scopes",
+			config: ProjectSSOConfig_Oidc{
+				Issuer:      "https://accounts.google.com",
+				ClientId:    "test-client-id",
+				RedirectUri: "https://example.com/callback",
+				Scopes:      []string{"openid", "profile", "email"},
+			},
+			project:             "test-project",
+			state:               "test-state",
+			expectedAuthCodeURL: "https://accounts.google.com/o/oauth2/v2/auth?access_type=online&client_id=test-client-id&prompt=consent&redirect_uri=https%3A%2F%2Fexample.com%2Fcallback&response_type=code&scope=openid+profile+email&state=test-state%3Atest-project",
+			expectedError:       false,
+		},
+		{
+			name: "invalid issuer",
+			config: ProjectSSOConfig_Oidc{
+				Issuer:      "https://invalid-issuer.com",
+				ClientId:    "test-client-id",
+				RedirectUri: "https://example.com/callback",
+				Scopes:      []string{},
+			},
+			project:             "test-project",
+			state:               "test-state",
+			expectedAuthCodeURL: "",
+			expectedError:       true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			authURL, err := tt.config.GenerateAuthCodeURL(tt.project, tt.state)
+			if tt.expectedError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expectedAuthCodeURL, authURL)
+			}
+		})
+	}
+}

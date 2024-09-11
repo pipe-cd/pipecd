@@ -1029,6 +1029,40 @@ func (m *LambdaApplicationLiveState) validate(all bool) error {
 
 	var errors []error
 
+	for idx, item := range m.GetResources() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, LambdaApplicationLiveStateValidationError{
+						field:  fmt.Sprintf("Resources[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, LambdaApplicationLiveStateValidationError{
+						field:  fmt.Sprintf("Resources[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return LambdaApplicationLiveStateValidationError{
+					field:  fmt.Sprintf("Resources[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
 	if len(errors) > 0 {
 		return LambdaApplicationLiveStateMultiError(errors)
 	}
@@ -1869,3 +1903,155 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ECSResourceStateValidationError{}
+
+// Validate checks the field values on LambdaResourceState with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *LambdaResourceState) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on LambdaResourceState with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// LambdaResourceStateMultiError, or nil if none found.
+func (m *LambdaResourceState) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *LambdaResourceState) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetId()) < 1 {
+		err := LambdaResourceStateValidationError{
+			field:  "Id",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetName()) < 1 {
+		err := LambdaResourceStateValidationError{
+			field:  "Name",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetKind()) < 1 {
+		err := LambdaResourceStateValidationError{
+			field:  "Kind",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if _, ok := LambdaResourceState_HealthStatus_name[int32(m.GetHealthStatus())]; !ok {
+		err := LambdaResourceStateValidationError{
+			field:  "HealthStatus",
+			reason: "value must be one of the defined enum values",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for HealthDescription
+
+	// no validation rules for CreatedAt
+
+	// no validation rules for UpdatedAt
+
+	if len(errors) > 0 {
+		return LambdaResourceStateMultiError(errors)
+	}
+
+	return nil
+}
+
+// LambdaResourceStateMultiError is an error wrapping multiple validation
+// errors returned by LambdaResourceState.ValidateAll() if the designated
+// constraints aren't met.
+type LambdaResourceStateMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m LambdaResourceStateMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m LambdaResourceStateMultiError) AllErrors() []error { return m }
+
+// LambdaResourceStateValidationError is the validation error returned by
+// LambdaResourceState.Validate if the designated constraints aren't met.
+type LambdaResourceStateValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e LambdaResourceStateValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e LambdaResourceStateValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e LambdaResourceStateValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e LambdaResourceStateValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e LambdaResourceStateValidationError) ErrorName() string {
+	return "LambdaResourceStateValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e LambdaResourceStateValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sLambdaResourceState.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = LambdaResourceStateValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = LambdaResourceStateValidationError{}

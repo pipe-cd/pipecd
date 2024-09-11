@@ -50,6 +50,13 @@ spec:
             name: {{ include "pipecd.fullname" . }}
             port:
               number: {{ .Values.service.port }}
+      - path: /opentelemetry.proto.collector.trace.v1.TraceService/*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: {{ include "pipecd.fullname" . }}
+            port:
+              number: {{ .Values.service.port }}
   {{ else }}
   defaultBackend:
     service:

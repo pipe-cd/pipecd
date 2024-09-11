@@ -22,7 +22,7 @@ metadata:
     {{- include "pipecd.labels" . | nindent 4 }}
     grafana_dashboard: "1"
   annotations:
-    k8s-sidecar-target-directory: "/tmp/dashboards/cluster"
+    k8s-sidecar-target-directory: "/tmp/dashboards/Cluster"
 data:
 {{ range $path, $_ :=  .Files.Glob  "grafana-dashboards/cluster/**.json" }}
   {{ trimPrefix "grafana-dashboards/cluster/" $path | nindent 2 }}: |-
@@ -39,7 +39,7 @@ metadata:
     {{- include "pipecd.labels" . | nindent 4 }}
     grafana_dashboard: "1"
   annotations:
-    k8s-sidecar-target-directory: "/tmp/dashboards/control-plane"
+    k8s-sidecar-target-directory: "/tmp/dashboards/Control-Plane"
 data:
 {{ range $path, $_ :=  .Files.Glob  "grafana-dashboards/control-plane/**.json" }}
   {{ trimPrefix "grafana-dashboards/control-plane/" $path | nindent 2 }}: |-
@@ -55,7 +55,7 @@ metadata:
     {{- include "pipecd.labels" . | nindent 4 }}
     grafana_dashboard: "1"
   annotations:
-    k8s-sidecar-target-directory: "/tmp/dashboards/piped"
+    k8s-sidecar-target-directory: "/tmp/dashboards/Piped"
 data:
 {{ range $path, $_ :=  .Files.Glob  "grafana-dashboards/piped/**.json" }}
   {{ trimPrefix "grafana-dashboards/piped/" $path | nindent 2 }}: |-
@@ -84,6 +84,11 @@ data:
         access: proxy
         version: 1
         isDefault: true
+      - name: Tempo
+        type: tempo
+        url: http://{{ include "pipecd.fullname" . }}-tempo:3100
+        access: proxy
+        version: 1
 ---
 
 apiVersion: v1

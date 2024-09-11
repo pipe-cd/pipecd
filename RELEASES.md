@@ -72,7 +72,13 @@ This may also contain some minor features, but ensure that it does NOT contain a
 - Get a review and merge.
 
 ### Backport fixes and Release note
-- Run release pick commits
+- Run `cherry_pick` workflow
+  - Label the merged PR you want to cherry pick with `cherry-pick` , `vX.Y.Z`
+    (e.g. v0.48.6 https://github.com/pipe-cd/pipecd/pulls?q=is%3Apr+label%3Acherry-pick+is%3Aclosed+label%3Av0.48.6)
+  - Execute the `cherry_pick` GitHub workflow with `release branch` and `release version` on master branch.
+    (e.g. if you want to release v0.48.6, `release branch` is `release-v0.48.x` and `release version` is `v0.48.6`)
+
+- If you have some trouble with the above, run release pick commits on local machine.
 
   This example assumes that the name of a release branch is `release-vX.Y.x` and the numbers of pull request are `#1234` and `#5678`:
   ```shell
@@ -87,10 +93,12 @@ This may also contain some minor features, but ensure that it does NOT contain a
 - Create a tagged release from the release branch `release-vX.Y.x`. The release should start with "v" and be followed by the version number.
 
 ## RC Release
-1. Move on to [Releases > Draft a New Release](https://github.com/pipe-cd/pipecd/releases/new).
-2. Set values as below:
+
+1. Prepare: Ensure all changes you want to attach to the release are available in the release target branch (`master` for the minor, `release-vX.Y.x` for the patch). For the patch, please refer to [Backport fixes and Release note](#backport-fixes-and-release-note)
+2. Move on to [Releases > Draft a New Release](https://github.com/pipe-cd/pipecd/releases/new).
+3. Set values as below:
    1. `Choose a tag`: Create a new tag `vX.Y.Z-rcN`
-   2. `Target`(branch): `master`
+   2. `Target`(branch): use `master` for the minor rc, use `release-vX.Y.x` for the patch rc
    3. `Release title`: `Release vX.Y.Z-rcN`
    4. Body area
       1. Copy from the previous rc-release note.
@@ -116,4 +124,4 @@ This may also contain some minor features, but ensure that it does NOT contain a
          2. Classify the changes into 'Notable Changes' and 'Internal Changes'.
          3. Write them to the body area.
    5. **Select `Set as a pre-release`**, not `Set as the latest release`.
-3. Push `Publish Release`.
+4. Push `Publish Release`.

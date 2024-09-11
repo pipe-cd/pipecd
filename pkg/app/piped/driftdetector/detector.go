@@ -28,7 +28,9 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/driftdetector/cloudrun"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/driftdetector/ecs"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/driftdetector/kubernetes"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/driftdetector/lambda"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/driftdetector/terraform"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
@@ -140,6 +142,40 @@ func NewDetector(
 				return nil, fmt.Errorf(format, cp.Name)
 			}
 			d.detectors = append(d.detectors, terraform.NewDetector(
+				cp,
+				appLister,
+				gitClient,
+				sg,
+				d,
+				appManifestsCache,
+				cfg,
+				sd,
+				logger,
+			))
+
+		case model.PlatformProviderECS:
+			sg, ok := stateGetter.ECSGetter(cp.Name)
+			if !ok {
+				return nil, fmt.Errorf(format, cp.Name)
+			}
+			d.detectors = append(d.detectors, ecs.NewDetector(
+				cp,
+				appLister,
+				gitClient,
+				sg,
+				d,
+				appManifestsCache,
+				cfg,
+				sd,
+				logger,
+			))
+
+		case model.PlatformProviderLambda:
+			sg, ok := stateGetter.LambdaGetter(cp.Name)
+			if !ok {
+				return nil, fmt.Errorf(format, cp.Name)
+			}
+			d.detectors = append(d.detectors, lambda.NewDetector(
 				cp,
 				appLister,
 				gitClient,

@@ -778,6 +778,67 @@ proto.grpc.service.webservice.WebServicePromiseClient.prototype.listReleasedVers
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
+ *   !proto.grpc.service.webservice.ListDeprecatedNotesRequest,
+ *   !proto.grpc.service.webservice.ListDeprecatedNotesResponse>}
+ */
+const methodDescriptor_WebService_ListDeprecatedNotes = new grpc.web.MethodDescriptor(
+  '/grpc.service.webservice.WebService/ListDeprecatedNotes',
+  grpc.web.MethodType.UNARY,
+  proto.grpc.service.webservice.ListDeprecatedNotesRequest,
+  proto.grpc.service.webservice.ListDeprecatedNotesResponse,
+  /**
+   * @param {!proto.grpc.service.webservice.ListDeprecatedNotesRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.grpc.service.webservice.ListDeprecatedNotesResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.grpc.service.webservice.ListDeprecatedNotesRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.grpc.service.webservice.ListDeprecatedNotesResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.grpc.service.webservice.ListDeprecatedNotesResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.grpc.service.webservice.WebServiceClient.prototype.listDeprecatedNotes =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/ListDeprecatedNotes',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_ListDeprecatedNotes,
+      callback);
+};
+
+
+/**
+ * @param {!proto.grpc.service.webservice.ListDeprecatedNotesRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.grpc.service.webservice.ListDeprecatedNotesResponse>}
+ *     Promise that resolves to the response
+ */
+proto.grpc.service.webservice.WebServicePromiseClient.prototype.listDeprecatedNotes =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/ListDeprecatedNotes',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_ListDeprecatedNotes);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
  *   !proto.grpc.service.webservice.AddApplicationRequest,
  *   !proto.grpc.service.webservice.AddApplicationResponse>}
  */

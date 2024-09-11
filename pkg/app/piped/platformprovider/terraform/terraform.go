@@ -154,20 +154,24 @@ func (t *Terraform) SelectWorkspace(ctx context.Context, workspace string) error
 }
 
 type PlanResult struct {
-	Adds     int
-	Changes  int
-	Destroys int
-	Imports  int
+	Adds            int
+	Changes         int
+	Destroys        int
+	Imports         int
+	HasStateChanges bool
 
 	PlanOutput string
 }
 
 func (r PlanResult) NoChanges() bool {
-	return r.Adds == 0 && r.Changes == 0 && r.Destroys == 0 && r.Imports == 0
+	return r.Adds == 0 && r.Changes == 0 && r.Destroys == 0 && r.Imports == 0 && !r.HasStateChanges
 }
 
 func (r PlanResult) Render() (string, error) {
 	terraformDiffStart := "Terraform will perform the following actions:"
+	if !strings.Contains(r.PlanOutput, terraformDiffStart) {
+		return "", nil
+	}
 	startIndex := strings.Index(r.PlanOutput, terraformDiffStart) + len(terraformDiffStart)
 
 	terraformDiffEnd := fmt.Sprintf("Plan: %d to import, %d to add, %d to change, %d to destroy.", r.Imports, r.Adds, r.Changes, r.Destroys)
@@ -319,8 +323,8 @@ func (t *Terraform) makeCommonCommandArgs() (args []string) {
 var (
 	// Import block was introduced from Terraform v1.5.0.
 	// Keep this regex for backward compatibility.
-	planHasChangeRegex = regexp.MustCompile(`(?m)^Plan:(?: (\d+) to import,)?? (\d+) to add, (\d+) to change, (\d+) to destroy.$`)
-	planNoChangesRegex = regexp.MustCompile(`(?m)^No changes. Infrastructure is up-to-date.$`)
+	planHasChangeRegex  = regexp.MustCompile(`(?m)^Plan:(?: (\d+) to import,)?? (\d+) to add, (\d+) to change, (\d+) to destroy\.$`)
+	planHasOutputsRegex = regexp.MustCompile(`(?m)^Changes to Outputs:$`)
 )
 
 // Borrowed from https://github.com/acarl005/stripansi
@@ -369,17 +373,17 @@ func parsePlanResult(out string, ansiIncluded bool) (PlanResult, error) {
 		imports, adds, changes, destroys, err := parseNums(s[1:]...)
 		if err == nil {
 			return PlanResult{
-				Adds:       adds,
-				Changes:    changes,
-				Destroys:   destroys,
-				Imports:    imports,
-				PlanOutput: out,
+				Adds:            adds,
+				Changes:         changes,
+				Destroys:        destroys,
+				Imports:         imports,
+				HasStateChanges: true,
+				PlanOutput:      out,
 			}, nil
 		}
 	}
-
-	if s := planNoChangesRegex.FindStringSubmatch(out); len(s) > 0 {
-		return PlanResult{}, nil
+	if planHasOutputsRegex.MatchString(out) {
+		return PlanResult{HasStateChanges: true, PlanOutput: out}, nil
 	}
 
 	return PlanResult{}, fmt.Errorf("unable to parse plan output")

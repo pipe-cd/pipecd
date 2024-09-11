@@ -42,6 +42,7 @@ import {
   restartPiped,
   fetchPipeds,
   fetchReleasedVersions,
+  fetchBreakingChanges,
   Piped,
   RegisteredPiped,
   selectAllPipeds,
@@ -95,6 +96,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
     enabled: true,
   });
   const dispatch = useAppDispatch();
+  const projectId = useAppSelector((state) => state.project.id);
   const pipeds = useAppSelector<Piped.AsObject[]>((state) =>
     selectFilteredPipeds(state, filterValues)
   );
@@ -103,9 +105,21 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
     dispatch(fetchReleasedVersions());
   }, [dispatch]);
 
+  useEffect(() => {
+    if (projectId) {
+      dispatch(fetchBreakingChanges({ projectId: projectId }));
+    }
+  }, [dispatch, projectId]);
+
   const releasedVersions = useAppSelector<string[]>(
     (state) => state.pipeds.releasedVersions
   );
+
+  const breakingChangesNote = useAppSelector<string | null>(
+    (state) => state.pipeds.breakingChangesNote
+  );
+  // TODO: Remove this console.log
+  console.log("[DEBUG]", breakingChangesNote);
 
   const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
   const handleUpgradeDialogClose = (): void => setIsUpgradeDialogOpen(false);

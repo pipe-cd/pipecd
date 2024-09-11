@@ -28,6 +28,7 @@ describe("DeploymentDetailPage", () => {
         registeredPiped: null,
         updating: false,
         releasedVersions: [],
+        breakingChangesNote: "",
       },
     });
 

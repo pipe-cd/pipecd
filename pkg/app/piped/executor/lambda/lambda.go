@@ -82,6 +82,11 @@ func loadFunctionManifest(in *executor.Input, functionManifestFile string, ds *d
 		return provider.FunctionManifest{}, false
 	}
 
+	fm.Spec.Tags[provider.LabelManagedBy] = provider.ManagedByPiped
+	fm.Spec.Tags[provider.LabelPiped] = in.PipedConfig.PipedID
+	fm.Spec.Tags[provider.LabelApplication] = in.Deployment.ApplicationId
+	fm.Spec.Tags[provider.LabelCommitHash] = in.Deployment.CommitHash()
+
 	in.LogPersister.Infof("Successfully loaded the lambda function manifest at commit %s", ds.Revision)
 	return fm, true
 }

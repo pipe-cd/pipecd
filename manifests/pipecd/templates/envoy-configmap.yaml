@@ -38,11 +38,16 @@ data:
                   grpc_service:
                     envoy_grpc:
                       cluster_name: grpc-envoy-ext-authz
+                    timeout: 10s
                   transport_api_version: V3
                   include_peer_certificate: false
               - name: envoy.filters.http.grpc_web
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_web.v3.GrpcWeb
 {{- if .Values.cors.enabled }}
               - name: envoy.filters.http.cors
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.cors.v3.Cors
 {{- end }}
               - name: envoy.filters.http.grpc_stats
                 typed_config:
@@ -50,6 +55,8 @@ data:
                   stats_for_all_methods: true
                   enable_upstream_stats: true
               - name: envoy.filters.http.router
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
               route_config:
                 name: local_route
                 virtual_hosts:
@@ -126,11 +133,13 @@ data:
                         envoy.filters.http.ext_authz:
                           "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
                           disabled: true
+{{- if .Values.monitoring.enabled }}
                     - match: # We want to protect the opentelemetry service with envoy ext_authz, so this route must not turn off ext_authz.
                         prefix: "/opentelemetry.proto.collector.trace.v1.TraceService/"
                         grpc:
                       route:
                         cluster: opentelemetry-collector
+{{- end }}
                     - match:
                         prefix: /
                       route:
@@ -232,6 +241,7 @@ data:
                     port_value: 9086
         track_cluster_stats:
           request_response_sizes: true
+{{- if .Values.monitoring.enabled }}
       - name: opentelemetry-collector
         http2_protocol_options: {}
         connect_timeout: 0.25s
@@ -248,3 +258,4 @@ data:
                     port_value: 4317
         track_cluster_stats:
           request_response_sizes: true
+{{- end }}

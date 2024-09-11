@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -26,6 +27,7 @@ import (
 	"github.com/google/go-github/v29/github"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"golang.org/x/mod/semver"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -42,6 +44,10 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/insight"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
+)
+
+var (
+	breakingChangesRegex = regexp.MustCompile(`(?s)### Breaking Changes(.*?)(### |$)`)
 )
 
 type encrypter interface {
@@ -1856,5 +1862,79 @@ func (a *WebAPI) ListReleasedVersions(ctx context.Context, req *webservice.ListR
 
 	return &webservice.ListReleasedVersionsResponse{
 		Versions: versions,
+	}, nil
+}
+
+func (a *WebAPI) ListDeprecatedNotes(ctx context.Context, req *webservice.ListDeprecatedNotesRequest) (*webservice.ListDeprecatedNotesResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	opts := datastore.ListOptions{
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "ProjectId",
+				Operator: datastore.OperatorEqual,
+				Value:    claims.Role.ProjectId,
+			},
+			{
+				Field:    "Disabled",
+				Operator: datastore.OperatorEqual,
+				Value:    false,
+			},
+		},
+	}
+
+	pipeds, err := a.pipedStore.List(ctx, opts)
+	if err != nil {
+		return nil, gRPCStoreError(err, "list pipeds")
+	}
+
+	// No Pipeds for given project.
+	if len(pipeds) == 0 {
+		return &webservice.ListDeprecatedNotesResponse{}, nil
+	}
+
+	versions := make([]string, 0, len(pipeds))
+	for _, piped := range pipeds {
+		if !semver.IsValid(piped.Version) {
+			continue
+		}
+		versions = append(versions, piped.Version)
+	}
+
+	semver.Sort(versions)
+	oldestVersion := versions[0]
+
+	// Github fecth release notes.
+	releases, _, err := a.githubCli.Repositories.ListReleases(ctx, "pipe-cd", "pipecd", nil)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "Failed to list released versions")
+	}
+
+	notes := ""
+	for _, release := range releases {
+		// Ignore pre-release tagged or draft release.
+		if *release.Prerelease || *release.Draft {
+			continue
+		}
+
+		// Ignore the release that is older than the oldest version of the piped.
+		if semver.Compare(*release.TagName, oldestVersion) < 0 {
+			continue
+		}
+
+		matches := breakingChangesRegex.FindStringSubmatch(*release.Body)
+		if len(matches) < 2 {
+			continue
+		}
+
+		notes += fmt.Sprintf("## %s\n%s\n", *release.TagName, matches[1])
+	}
+
+	return &webservice.ListDeprecatedNotesResponse{
+		Notes: notes,
 	}, nil
 }

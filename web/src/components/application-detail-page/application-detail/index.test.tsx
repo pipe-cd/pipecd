@@ -69,6 +69,7 @@ const baseState: Partial<AppState> = {
     registeredPiped: null,
     updating: false,
     releasedVersions: [],
+    breakingChangesNote: "",
   },
 };
 

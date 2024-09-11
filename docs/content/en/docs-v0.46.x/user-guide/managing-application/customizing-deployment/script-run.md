@@ -55,6 +55,51 @@ The commands run in the directory where this application configuration file exis
 
 ![](/images/script-run.png)
 
+### Execute the script file
+
+If your script is so long, you can separate the script as a file.
+You can put the file with the app.pipecd.yaml in the same dir and then you can execute the script like this.
+
+```
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  name: script-run
+  pipeline:
+    stages:
+      - name: SCRIPT_RUN
+        with:
+          run: |
+            sh script.sh
+```
+
+```
+.
+├── app.pipecd.yaml
+└── script.sh
+```
+
+## Builtin commands
+
+Currently, you can use the commands which are installed in the environment for the piped.
+
+For example, If you are using the container platform and the offcial piped container image, you can use the command below.
+- git
+- ssh
+- curl
+- kubectl, helm, kustomize, terraform stored in $PIPED_TOOL_DIR
+  - Be careful. These tools are sometimes absent because they are installed when the first deployment has been done using each tool. Please check $PIPED_TOOL_DIR before you use them.
+  - Binaries can be specified as "kubectl-${version}" or "kubectl". 
+  - If no version is specified on the piped config or app.pipecd.yaml, both the ones with and without default version suffix will be installed. 
+  - Please check the [code](https://github.com/pipe-cd/pipecd/blob/master/pkg/app/piped/toolregistry/install.go#L28C1-L33C2) about the default versions.
+- and the builtin commands installed in the base image.
+
+The public piped image available in PipeCD main repo (ref: [Dockerfile](https://github.com/pipe-cd/pipecd/blob/master/cmd/piped/Dockerfile)) is based on [alpine](https://hub.docker.com/_/alpine/) and only has a few UNIX commands available (ref: [piped-base Dockerfile](https://github.com/pipe-cd/pipecd/blob/master/tool/piped-base/Dockerfile)). 
+
+If you want to use your commands, you can realize it with either step below.
+- Prepare your own environment container image then add [piped binary](https://github.com/pipe-cd/pipecd/releases) to it.
+- Build your own container image based on `ghcr.io/pipe-cd/piped` image.
+
 # When to rollback
 
 You can define the command as `onRollback` to execute when to rollback similar to `run`.
@@ -113,12 +158,3 @@ Then
 - If 3 is canceled or fails while running, only SCRIPT_RUN of 3 will be rollbacked.
 - If 4 is canceled or fails while running, only SCRIPT_RUN of 3 will be rollbacked.
 - If 6 is canceled or fails while running, only SCRIPT_RUNs 3 and 5 will be rollbacked. The order of executing is 3 -> 5.
-
-# Note
-1. You can use `SCRIPT_RUN` stage with only the application kind of `KubernetesApp`. Soon we will implement it. for other application kinds.
-
-2. The public piped image available in PipeCD main repo (ref: [Dockerfile](https://github.com/pipe-cd/pipecd/blob/master/cmd/piped/Dockerfile)) is based on [alpine](https://hub.docker.com/_/alpine/) and only has a few UNIX command available (ref: [piped-base Dockerfile](https://github.com/pipe-cd/pipecd/blob/master/tool/piped-base/Dockerfile)). If you want to use your commands, you can:
-
-- Prepare your own environment container image then add [piped binary](https://github.com/pipe-cd/pipecd/releases) to it.
-- Build your own container image based on `ghcr.io/pipe-cd/piped` image.
-- Manually update your running piped container (not recommended).
