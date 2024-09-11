@@ -16,6 +16,7 @@ package deployment
 
 import (
 	"context"
+	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/regexpool"
@@ -62,8 +63,12 @@ func (a *DeploymentService) BuildPipelineSyncStages(context.Context, *deployment
 }
 
 // BuildQuickSyncStages implements deployment.DeploymentServiceServer.
-func (a *DeploymentService) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
-	panic("unimplemented")
+func (a *DeploymentService) BuildQuickSyncStages(ctx context.Context, request *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
+	now := time.Now()
+	stages := buildQuickSyncPipeline(request.GetRollback(), now)
+	return &deployment.BuildQuickSyncStagesResponse{
+		Stages: stages,
+	}, nil
 }
 
 // FetchDefinedStages implements deployment.DeploymentServiceServer.
