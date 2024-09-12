@@ -265,6 +265,8 @@ grafana:
 # Head to the below link to see all available values.
 # https://github.com/grafana/helm-charts/tree/main/charts/tempo
 tempo:
+  persistence:
+    enabled: true
   tempo:
     metricsGenerator:
       enabled: true
