@@ -67,9 +67,9 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Quick sync deployment | Beta |
 | Deployment with a defined pipeline (e.g. canary, analysis) | Beta |
 | [Automated rollback](../user-guide/managing-application/rolling-back-a-deployment/) | Beta |
-| [Automated configuration drift detection](../user-guide/managing-application/configuration-drift-detection/) | Incubating |
-| [Application live state](../user-guide/managing-application/application-live-state/) | Incubating |
-| [Plan preview](../user-guide/plan-preview) | Incubating |
+| [Automated configuration drift detection](../user-guide/managing-application/configuration-drift-detection/) | Alpha |
+| [Application live state](../user-guide/managing-application/application-live-state/) | Alpha |
+| [Plan preview](../user-guide/plan-preview) | Alpha |
 | [Manifest attachment](../user-guide/managing-application/manifest-attachment) | Alpha |
 
 ### Amazon ECS
@@ -79,13 +79,15 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Quick sync deployment | Alpha |
 | Deployment with a defined pipeline (e.g. canary, analysis) | Alpha |
 | [Automated rollback](../user-guide/managing-application/rolling-back-a-deployment/) | Beta |
-| [Automated configuration drift detection](../user-guide/managing-application/configuration-drift-detection/) | Incubating |
-| [Application live state](../user-guide/managing-application/application-live-state/) | Incubating |
+| [Automated configuration drift detection](../user-guide/managing-application/configuration-drift-detection/) | Alpha *1 |
+| [Application live state](../user-guide/managing-application/application-live-state/) | Alpha *1 |
 | Quick sync deployment for [ECS Service Discovery](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-discovery.html) | Alpha |
 | Deployment with a defined pipeline for [ECS Service Discovery](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-discovery.html) | Alpha |
 | Support [AWS App Mesh](https://aws.amazon.com/app-mesh/) | Incubating |
 | [Plan preview](../user-guide/plan-preview) | Alpha |
 | [Manifest attachment](../user-guide/managing-application/manifest-attachment) | Alpha |
+
+*1.  Not supported yet for standalone tasks.
 
 ## Piped Agent
 
