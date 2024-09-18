@@ -90,7 +90,7 @@ func (p *provider) Get(ctx context.Context, lw io.Writer) (*DeploySource, error)
 
 	if !p.done {
 		p.source, p.err = p.prepare(ctx, lw)
-		p.done = true
+		p.done = p.err == nil // If there is an error, we should re-prepare it next time.
 	}
 
 	if p.err != nil {
