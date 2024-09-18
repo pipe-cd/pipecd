@@ -138,6 +138,9 @@ type controller struct {
 	// WaitGroup for waiting the completions of all planners, schedulers.
 	wg sync.WaitGroup
 
+	// workingDirRemovalCh is used to single-threaded removal of working directory.
+	workingDirRemovalCh chan string
+
 	workspaceDir string
 	syncInternal time.Duration
 	gracePeriod  time.Duration
@@ -186,6 +189,8 @@ func NewController(
 		mostRecentlySuccessfulCommits:         make(map[string]string),
 		mostRecentlySuccessfulConfigFilenames: make(map[string]string),
 
+		workingDirRemovalCh: make(chan string),
+
 		syncInternal: 10 * time.Second,
 		gracePeriod:  gracePeriod,
 		logger:       lg,
@@ -219,6 +224,16 @@ func (c *controller) Run(ctx context.Context) error {
 		close(lpStoppedCh)
 	}()
 
+	// Start workspace cleaner.
+	// This will remove the workspace directory of the completed planner/scheduler.
+	go func() {
+		for ws := range c.workingDirRemovalCh {
+			if err := os.RemoveAll(ws); err != nil {
+				c.logger.Error("failed to remove working directory", zap.String("workDir", ws), zap.Error(err))
+			}
+		}
+	}()
+
 	ticker := time.NewTicker(c.syncInternal)
 	defer ticker.Stop()
 	c.logger.Info("start syncing planners and schedulers")
@@ -248,6 +263,10 @@ func (c *controller) shutdown(cancel func(), stoppedCh <-chan error) error {
 
 	c.logger.Info("controller has been stopped")
 	return err
+}
+
+func (c *controller) removeWorkingDir(ws string) {
+	c.workingDirRemovalCh <- ws
 }
 
 // checkCommands lists all unhandled commands for running deployments
@@ -483,10 +502,8 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 	)
 
 	cleanup := func() {
-		logger.Info("cleaning up working directory for planner")
-		if err := os.RemoveAll(workingDir); err != nil {
-			logger.Warn("failed to clean working directory", zap.Error(err))
-		}
+		c.removeWorkingDir(workingDir)
+		logger.Info("cleaned working directory for planner")
 	}
 
 	// Start running planner.
@@ -627,15 +644,8 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 	)
 
 	cleanup := func() {
-		logger.Info("cleaning up working directory for scheduler", zap.String("working-dir", workingDir))
-		err := os.RemoveAll(workingDir)
-		if err == nil {
-			return
-		}
-		logger.Warn("failed to clean working directory",
-			zap.String("working-dir", workingDir),
-			zap.Error(err),
-		)
+		c.removeWorkingDir(workingDir)
+		logger.Info("cleaned working directory for scheduler", zap.String("working-dir", workingDir))
 	}
 
 	// Start running scheduler.
