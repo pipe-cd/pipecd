@@ -6,7 +6,7 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import { FC, memo } from "react";
-import { NavLink, Redirect, Route, Switch } from "react-router-dom";
+import { NavLink, Redirect, Route, Routes } from "react-router-dom";
 import {
   PAGE_PATH_SETTINGS,
   PAGE_PATH_SETTINGS_API_KEY,
@@ -85,7 +85,7 @@ export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
         </div>
       </Drawer>
       <main className={classes.content}>
-        <Switch>
+        <Routes>
           <Route
             exact
             path={PAGE_PATH_SETTINGS}
@@ -106,7 +106,7 @@ export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
             path={PAGE_PATH_SETTINGS_API_KEY}
             component={APIKeyPage}
           />
-        </Switch>
+        </Routes>
       </main>
     </div>
   );

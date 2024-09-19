@@ -7,6 +7,7 @@ import {
   Switch,
   useLocation,
   RouteComponentProps,
+  Routes as ReactRoutes,
 } from "react-router-dom";
 import { ApplicationIndexPage } from "~/components/applications-page";
 import { WarningBanner } from "~/components/warning-banner";
@@ -140,7 +141,7 @@ export const Routes: FC = () => {
     return (
       <>
         <Header />
-        <Switch>
+        <ReactRoutes>
           <Route exact path={PAGE_PATH_LOGIN}>
             <LoginPage />
           </Route>
@@ -156,7 +157,7 @@ export const Routes: FC = () => {
               );
             }}
           />
-        </Switch>
+        </ReactRoutes>
       </>
     );
   }
@@ -172,7 +173,7 @@ export const Routes: FC = () => {
         <WarningBanner onClose={handleCloseWarningBanner} />
       )}
       <Header />
-      <Switch>
+      <ReactRoutes>
         <Route
           exact
           path={PAGE_PATH_APPLICATIONS}
@@ -210,7 +211,7 @@ export const Routes: FC = () => {
             return <Redirect to={path} />;
           }}
         />
-      </Switch>
+      </ReactRoutes>
       <Toasts />
     </>
   );
