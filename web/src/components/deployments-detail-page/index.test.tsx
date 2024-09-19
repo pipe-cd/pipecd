@@ -38,9 +38,10 @@ describe("DeploymentDetailPage", () => {
         initialIndex={0}
       >
         <Routes>
-          <Route path="/deployments/:deploymentId">
-            <DeploymentDetailPage />
-          </Route>
+          <Route
+            path="/deployments/:deploymentId"
+            element={<DeploymentDetailPage />}
+          />
         </Routes>
       </MemoryRouter>,
       { store }
