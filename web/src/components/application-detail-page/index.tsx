@@ -1,7 +1,7 @@
 import { IconButton, makeStyles, Menu, MenuItem } from "@material-ui/core";
 import DehazeIcon from "@material-ui/icons/Dehaze";
 import { FC, memo, useCallback, useEffect, useState } from "react";
-import { useHistory, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { PAGE_PATH_APPLICATIONS } from "~/constants/path";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { useInterval } from "~/hooks/use-interval";
@@ -37,7 +37,7 @@ const useStyles = makeStyles(() => ({
 
 export const ApplicationDetailPage: FC = memo(function ApplicationDetailPage() {
   const classes = useStyles();
-  const history = useHistory();
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const params = useParams<{ applicationId: string }>();
   const applicationId = decodeURIComponent(params.applicationId);
@@ -143,7 +143,7 @@ export const ApplicationDetailPage: FC = memo(function ApplicationDetailPage() {
       />
 
       <DeleteApplicationDialog
-        onDeleted={() => history.push(PAGE_PATH_APPLICATIONS)}
+        onDeleted={() => navigate(PAGE_PATH_APPLICATIONS)}
       />
     </>
   );

@@ -12,7 +12,7 @@ import CloseIcon from "@material-ui/icons/Close";
 import FilterIcon from "@material-ui/icons/FilterList";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import { FC, useCallback, useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { PAGE_PATH_APPLICATIONS } from "~/constants/path";
 import {
   UI_TEXT_ADD,
@@ -59,7 +59,7 @@ const useStyles = makeStyles((theme) => ({
 export const ApplicationIndexPage: FC = () => {
   const classes = useStyles();
   const dispatch = useAppDispatch();
-  const history = useHistory();
+  const navigate = useNavigate();
   const filterOptions = useSearchParams();
   const [openAddForm, setOpenAddForm] = useState(false);
   const [openFilter, setOpenFilter] = useState(true);
@@ -80,14 +80,15 @@ export const ApplicationIndexPage: FC = () => {
 
   const updateURL = useCallback(
     (options: Record<string, string | number | boolean | undefined>) => {
-      history.replace(
+      navigate(
         `${PAGE_PATH_APPLICATIONS}?${stringifySearchParams(
           { ...options },
           { arrayFormat: arrayFormat }
-        )}`
+        )}`,
+        { replace: true }
       );
     },
-    [history]
+    [navigate]
   );
 
   const handleFilterChange = useCallback(

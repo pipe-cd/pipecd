@@ -14,7 +14,7 @@ import RefreshIcon from "@material-ui/icons/Refresh";
 import dayjs from "dayjs";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { PAGE_PATH_DEPLOYMENTS } from "~/constants/path";
 import {
   UI_TEXT_FILTER,
@@ -91,7 +91,7 @@ const useGroupedDeployments = (): Record<string, Deployment.AsObject[]> => {
 export const DeploymentIndexPage: FC = () => {
   const classes = useStyles();
   const buttonClasses = useButtonStyles();
-  const history = useHistory();
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const listRef = useRef(null);
   const status = useAppSelector((state) => state.deployments.status);
@@ -123,18 +123,19 @@ export const DeploymentIndexPage: FC = () => {
   // filter handlers
   const handleFilterChange = useCallback(
     (options: DeploymentFilterOptions) => {
-      history.replace(
+      navigate(
         `${PAGE_PATH_DEPLOYMENTS}?${stringifySearchParams(
           { ...options },
           { arrayFormat: arrayFormat }
-        )}`
+        )}`,
+        { replace: true }
       );
     },
-    [history]
+    [navigate]
   );
   const handleFilterClear = useCallback(() => {
-    history.replace(PAGE_PATH_DEPLOYMENTS);
-  }, [history]);
+    navigate(PAGE_PATH_DEPLOYMENTS, { replace: true });
+  }, [navigate]);
 
   const handleRefreshClick = useCallback(() => {
     dispatch(fetchDeployments(filterOptions));

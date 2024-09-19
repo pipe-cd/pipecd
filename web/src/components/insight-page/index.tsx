@@ -1,6 +1,6 @@
 import { Box } from "@material-ui/core";
 import { FC, memo, useEffect, useCallback } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { PAGE_PATH_APPLICATIONS } from "~/constants/path";
 import {
@@ -23,7 +23,7 @@ import { fetchDeploymentFrequency } from "~/modules/deployment-frequency";
 
 export const InsightIndexPage: FC = memo(function InsightIndexPage() {
   const dispatch = useAppDispatch();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [applicationId, labels, range, resolution] = useAppSelector<
     [string, Array<string>, InsightRange, InsightResolution]
@@ -87,9 +87,9 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
 
   const updateURL = useCallback(
     (kind: ApplicationKind) => {
-      history.replace(`${PAGE_PATH_APPLICATIONS}?kind=${kind}`);
+      navigate(`${PAGE_PATH_APPLICATIONS}?kind=${kind}`, { replace: true });
     },
-    [history]
+    [navigate]
   );
 
   const handleApplicationCountClick = useCallback(
