@@ -251,3 +251,242 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = DecryptSecretResponseValidationError{}
+
+// Validate checks the field values on InstallToolRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *InstallToolRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on InstallToolRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// InstallToolRequestMultiError, or nil if none found.
+func (m *InstallToolRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *InstallToolRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetName()) < 1 {
+		err := InstallToolRequestValidationError{
+			field:  "Name",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetVersion()) < 1 {
+		err := InstallToolRequestValidationError{
+			field:  "Version",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetInstallScript()) < 1 {
+		err := InstallToolRequestValidationError{
+			field:  "InstallScript",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return InstallToolRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// InstallToolRequestMultiError is an error wrapping multiple validation errors
+// returned by InstallToolRequest.ValidateAll() if the designated constraints
+// aren't met.
+type InstallToolRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m InstallToolRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m InstallToolRequestMultiError) AllErrors() []error { return m }
+
+// InstallToolRequestValidationError is the validation error returned by
+// InstallToolRequest.Validate if the designated constraints aren't met.
+type InstallToolRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e InstallToolRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e InstallToolRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e InstallToolRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e InstallToolRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e InstallToolRequestValidationError) ErrorName() string {
+	return "InstallToolRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e InstallToolRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sInstallToolRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = InstallToolRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = InstallToolRequestValidationError{}
+
+// Validate checks the field values on InstallToolResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *InstallToolResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on InstallToolResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// InstallToolResponseMultiError, or nil if none found.
+func (m *InstallToolResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *InstallToolResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for InstalledPath
+
+	if len(errors) > 0 {
+		return InstallToolResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// InstallToolResponseMultiError is an error wrapping multiple validation
+// errors returned by InstallToolResponse.ValidateAll() if the designated
+// constraints aren't met.
+type InstallToolResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m InstallToolResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m InstallToolResponseMultiError) AllErrors() []error { return m }
+
+// InstallToolResponseValidationError is the validation error returned by
+// InstallToolResponse.Validate if the designated constraints aren't met.
+type InstallToolResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e InstallToolResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e InstallToolResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e InstallToolResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e InstallToolResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e InstallToolResponseValidationError) ErrorName() string {
+	return "InstallToolResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e InstallToolResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sInstallToolResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = InstallToolResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = InstallToolResponseValidationError{}

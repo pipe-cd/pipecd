@@ -23,6 +23,9 @@ import "validate/validate.proto";
 service PluginService {
     // DecryptSecret decrypts the given secret.
     rpc DecryptSecret(DecryptSecretRequest) returns (DecryptSecretResponse) {}
+    // InstallTool installs the given tool.
+    // installed binary's filename becomes `name-version`.
+    rpc InstallTool(InstallToolRequest) returns (InstallToolResponse) {}
 }
 
 message DecryptSecretRequest {
@@ -31,4 +34,32 @@ message DecryptSecretRequest {
 
 message DecryptSecretResponse {
     string decrypted_secret = 1;
+}
+
+message InstallToolRequest {
+    // Name of the tool.
+    string name = 1 [(validate.rules).string.min_len = 1];
+    // Version of the tool.
+    string version = 2 [(validate.rules).string.min_len = 1];
+    // Install script to install the tool.
+    // This script is templated with the following variables:
+    // - {{ .Name }}: name of the tool.
+    // - {{ .Version }}: version of the tool.
+    // - {{ .OutPath }}: file path where the tool will be installed.
+    // - {{ .TmpDir }}: directory where the tool will be downloaded and extracted.
+    // - {{ .Arch }}: GOARCH of the current machine.
+    // - {{ .Os }}: GOOS of the current machine.
+    //
+    // The script should return 0 if the installation is successful.
+    // Otherwise, it should return a non-zero value.
+    //
+    // The tool should be placed at {{ .OutPath }}
+    // e.g.) cp path/to/kubectl {{ .OutPath }}
+    // Then piped move it to the correct directory / filename and make it executable.
+    string install_script = 3 [(validate.rules).string.min_len = 1];
+}
+
+message InstallToolResponse {
+    // Installed path of the tool.
+    string installed_path = 1;
 }
