@@ -151,33 +151,37 @@ export const Header: FC = memo(function Header() {
             <>
               <Link
                 component={RouterLink}
-                className={classes.link}
-                activeClassName={classes.activeLink}
+                className={
+                  location.pathname === PAGE_PATH_APPLICATIONS
+                    ? classes.activeLink
+                    : classes.link
+                }
                 color="inherit"
                 to={PAGE_PATH_APPLICATIONS}
-                isActive={() => location.pathname === PAGE_PATH_APPLICATIONS}
               >
                 Applications
               </Link>
               <Link
                 component={RouterLink}
-                className={classes.link}
-                activeClassName={classes.activeLink}
+                className={
+                  location.pathname === PAGE_PATH_DEPLOYMENTS
+                    ? classes.activeLink
+                    : classes.link
+                }
                 color="inherit"
                 to={PAGE_PATH_DEPLOYMENTS}
-                isActive={() => location.pathname === PAGE_PATH_DEPLOYMENTS}
               >
                 Deployments
               </Link>
               <Link
                 component={RouterLink}
-                className={classes.link}
-                activeClassName={classes.activeLink}
+                className={
+                  location.pathname === PAGE_PATH_DEPLOYMENT_CHAINS
+                    ? classes.activeLink
+                    : classes.link
+                }
                 color="inherit"
                 to={PAGE_PATH_DEPLOYMENT_CHAINS}
-                isActive={() =>
-                  location.pathname === PAGE_PATH_DEPLOYMENT_CHAINS
-                }
               >
                 Chains
               </Link>
