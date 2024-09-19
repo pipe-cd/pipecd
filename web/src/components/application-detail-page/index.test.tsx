@@ -15,7 +15,7 @@ describe("ApplicationDetailPage", () => {
         <ReactRoutes>
           <Route
             path={`${PAGE_PATH_APPLICATIONS}/:applicationId`}
-            component={ApplicationDetailPage}
+            element={ApplicationDetailPage}
           />
         </ReactRoutes>
       </MemoryRouter>,
