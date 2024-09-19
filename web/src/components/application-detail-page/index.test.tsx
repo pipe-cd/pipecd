@@ -13,7 +13,6 @@ describe("ApplicationDetailPage", () => {
         initialIndex={0}
       >
         <Route
-          exact
           path={`${PAGE_PATH_APPLICATIONS}/:applicationId`}
           component={ApplicationDetailPage}
         />

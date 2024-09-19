@@ -142,7 +142,7 @@ export const Routes: FC = () => {
       <>
         <Header />
         <ReactRoutes>
-          <Route exact path={PAGE_PATH_LOGIN}>
+          <Route path={PAGE_PATH_LOGIN}>
             <LoginPage />
           </Route>
           <Route
@@ -174,28 +174,17 @@ export const Routes: FC = () => {
       )}
       <Header />
       <ReactRoutes>
+        <Route path={PAGE_PATH_APPLICATIONS} component={ApplicationIndexPage} />
         <Route
-          exact
-          path={PAGE_PATH_APPLICATIONS}
-          component={ApplicationIndexPage}
-        />
-        <Route
-          exact
           path={`${PAGE_PATH_APPLICATIONS}/:applicationId`}
           component={ApplicationDetailPage}
         />
+        <Route path={PAGE_PATH_DEPLOYMENTS} component={DeploymentIndexPage} />
         <Route
-          exact
-          path={PAGE_PATH_DEPLOYMENTS}
-          component={DeploymentIndexPage}
-        />
-        <Route
-          exact
           path={`${PAGE_PATH_DEPLOYMENTS}/:deploymentId`}
           component={DeploymentDetailPage}
         />
         <Route
-          exact
           path={PAGE_PATH_DEPLOYMENT_CHAINS}
           component={DeploymentChainsIndexPage}
         />

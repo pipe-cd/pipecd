@@ -87,25 +87,18 @@ export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
       <main className={classes.content}>
         <Routes>
           <Route
-            exact
             path={PAGE_PATH_SETTINGS}
             component={() => <Redirect to={PAGE_PATH_SETTINGS_PIPED} />}
           />
           <Route
-            exact
             path={PAGE_PATH_SETTINGS_PIPED}
             component={SettingsPipedPage}
           />
           <Route
-            exact
             path={PAGE_PATH_SETTINGS_PROJECT}
             component={SettingsProjectPage}
           />
-          <Route
-            exact
-            path={PAGE_PATH_SETTINGS_API_KEY}
-            component={APIKeyPage}
-          />
+          <Route path={PAGE_PATH_SETTINGS_API_KEY} component={APIKeyPage} />
         </Routes>
       </main>
     </div>
