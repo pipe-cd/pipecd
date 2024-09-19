@@ -6,7 +6,7 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import { FC, memo } from "react";
-import { NavLink, Redirect, Route, Routes } from "react-router-dom";
+import { Navigate, NavLink, Redirect, Route, Routes } from "react-router-dom";
 import {
   PAGE_PATH_SETTINGS,
   PAGE_PATH_SETTINGS_API_KEY,
@@ -88,7 +88,7 @@ export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
         <Routes>
           <Route
             path={PAGE_PATH_SETTINGS}
-            component={() => <Redirect to={PAGE_PATH_SETTINGS_PIPED} />}
+            component={() => <Navigate to={PAGE_PATH_SETTINGS_PIPED} replace />}
           />
           <Route
             path={PAGE_PATH_SETTINGS_PIPED}

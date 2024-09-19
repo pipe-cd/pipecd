@@ -9,7 +9,7 @@ import ArrowRightAltIcon from "@material-ui/icons/ArrowRightAlt";
 import MuiAlert from "@material-ui/lab/Alert";
 import { FC, memo, useState } from "react";
 import { useCookies } from "react-cookie";
-import { Redirect } from "react-router-dom";
+import { Navigate, Redirect } from "react-router-dom";
 import { PAGE_PATH_APPLICATIONS, PAGE_PATH_LOGIN } from "~/constants/path";
 import { getQueryStringValue } from "~/hooks/use-query-string";
 import { useAppSelector } from "~/hooks/redux";
@@ -76,7 +76,7 @@ export const LoginPage: FC = memo(function LoginPage() {
 
   return (
     <div className={classes.root}>
-      {me && me.isLogin && <Redirect to={PAGE_PATH_APPLICATIONS} />}
+      {me && me.isLogin && <Navigate to={PAGE_PATH_APPLICATIONS} replace />}
       {cookies.error && (
         <MuiAlert
           severity="error"

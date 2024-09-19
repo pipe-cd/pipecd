@@ -8,6 +8,7 @@ import {
   useLocation,
   RouteComponentProps,
   Routes as ReactRoutes,
+  Navigate,
 } from "react-router-dom";
 import { ApplicationIndexPage } from "~/components/applications-page";
 import { WarningBanner } from "~/components/warning-banner";
@@ -153,7 +154,10 @@ export const Routes: FC = () => {
                 `${props.location.pathname}${props.location.search}`
               );
               return (
-                <Redirect to={`${PAGE_PATH_LOGIN}${props.location.search}`} />
+                <Navigate
+                  to={`${PAGE_PATH_LOGIN}${props.location.search}`}
+                  replace
+                />
               );
             }}
           />
@@ -197,7 +201,7 @@ export const Routes: FC = () => {
             const path =
               localStorage.getItem(REDIRECT_PATH_KEY) || PAGE_PATH_APPLICATIONS;
             localStorage.removeItem(REDIRECT_PATH_KEY);
-            return <Redirect to={path} />;
+            return <Navigate to={path} replace />;
           }}
         />
       </ReactRoutes>
