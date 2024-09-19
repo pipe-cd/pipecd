@@ -261,6 +261,11 @@ func (c *controller) shutdown(cancel func(), stoppedCh <-chan error) error {
 	cancel()
 	err := <-stoppedCh
 
+	// Stop the workspace cleaner.
+	// all calls of removeWorkingDir is completed because the c.wg.Wait() is done.
+	// so we can close the channel safely.
+	close(c.workingDirRemovalCh)
+
 	c.logger.Info("controller has been stopped")
 	return err
 }
