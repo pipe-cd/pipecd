@@ -4,7 +4,6 @@ import { FC, useEffect, useState } from "react";
 import {
   Route,
   useLocation,
-  RouteComponentProps,
   Routes as ReactRoutes,
   Navigate,
 } from "react-router-dom";
@@ -101,6 +100,15 @@ const useCommandsStatusChecking = (): void => {
   );
 };
 
+const RedirectToLogin: FC = () => {
+  const location = useLocation();
+  localStorage.setItem(
+    REDIRECT_PATH_KEY,
+    `${location.pathname}${location.search}`
+  );
+  return <Navigate to={`${PAGE_PATH_LOGIN}${location.search}`} replace />;
+};
+
 export const Routes: FC = () => {
   const dispatch = useAppDispatch();
   const me = useAppSelector((state) => state.me);
@@ -141,24 +149,8 @@ export const Routes: FC = () => {
       <>
         <Header />
         <ReactRoutes>
-          <Route path={PAGE_PATH_LOGIN}>
-            <LoginPage />
-          </Route>
-          <Route
-            path={PAGE_PATH_TOP}
-            component={(props: RouteComponentProps) => {
-              localStorage.setItem(
-                REDIRECT_PATH_KEY,
-                `${props.location.pathname}${props.location.search}`
-              );
-              return (
-                <Navigate
-                  to={`${PAGE_PATH_LOGIN}${props.location.search}`}
-                  replace
-                />
-              );
-            }}
-          />
+          <Route path={PAGE_PATH_LOGIN} element={<LoginPage />} />
+          <Route path={PAGE_PATH_TOP} element={<RedirectToLogin />} />
         </ReactRoutes>
       </>
     );
@@ -176,26 +168,29 @@ export const Routes: FC = () => {
       )}
       <Header />
       <ReactRoutes>
-        <Route path={PAGE_PATH_APPLICATIONS} component={ApplicationIndexPage} />
+        <Route
+          path={PAGE_PATH_APPLICATIONS}
+          element={<ApplicationIndexPage />}
+        />
         <Route
           path={`${PAGE_PATH_APPLICATIONS}/:applicationId`}
-          component={ApplicationDetailPage}
+          element={<ApplicationDetailPage />}
         />
-        <Route path={PAGE_PATH_DEPLOYMENTS} component={DeploymentIndexPage} />
+        <Route path={PAGE_PATH_DEPLOYMENTS} element={<DeploymentIndexPage />} />
         <Route
           path={`${PAGE_PATH_DEPLOYMENTS}/:deploymentId`}
-          component={DeploymentDetailPage}
+          element={<DeploymentDetailPage />}
         />
         <Route
           path={PAGE_PATH_DEPLOYMENT_CHAINS}
-          component={DeploymentChainsIndexPage}
+          element={<DeploymentChainsIndexPage />}
         />
-        <Route path={PAGE_PATH_SETTINGS} component={SettingsIndexPage} />
-        <Route path={PAGE_PATH_INSIGHTS} component={InsightIndexPage} />
-        <Route path={PAGE_PATH_EVENTS} component={EventIndexPage} />
+        <Route path={PAGE_PATH_SETTINGS} element={<SettingsIndexPage />} />
+        <Route path={PAGE_PATH_INSIGHTS} element={<InsightIndexPage />} />
+        <Route path={PAGE_PATH_EVENTS} element={<EventIndexPage />} />
         <Route
           path={PAGE_PATH_TOP}
-          component={() => {
+          element={() => {
             const path =
               localStorage.getItem(REDIRECT_PATH_KEY) || PAGE_PATH_APPLICATIONS;
             localStorage.removeItem(REDIRECT_PATH_KEY);

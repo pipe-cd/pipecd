@@ -88,17 +88,17 @@ export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
         <Routes>
           <Route
             path={PAGE_PATH_SETTINGS}
-            component={() => <Navigate to={PAGE_PATH_SETTINGS_PIPED} replace />}
+            element={<Navigate to={PAGE_PATH_SETTINGS_PIPED} replace />}
           />
           <Route
             path={PAGE_PATH_SETTINGS_PIPED}
-            component={SettingsPipedPage}
+            element={<SettingsPipedPage />}
           />
           <Route
             path={PAGE_PATH_SETTINGS_PROJECT}
-            component={SettingsProjectPage}
+            element={<SettingsProjectPage />}
           />
-          <Route path={PAGE_PATH_SETTINGS_API_KEY} component={APIKeyPage} />
+          <Route path={PAGE_PATH_SETTINGS_API_KEY} element={<APIKeyPage />} />
         </Routes>
       </main>
     </div>
