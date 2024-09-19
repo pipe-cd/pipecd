@@ -1,4 +1,4 @@
-import { MemoryRouter, Route } from "react-router-dom";
+import { MemoryRouter, Route, Routes as ReactRoutes } from "react-router-dom";
 import { PAGE_PATH_APPLICATIONS } from "~/constants/path";
 import { fetchApplication } from "~/modules/applications";
 import { createStore, render } from "~~/test-utils";
@@ -12,10 +12,12 @@ describe("ApplicationDetailPage", () => {
         initialEntries={[`${PAGE_PATH_APPLICATIONS}/application-1`]}
         initialIndex={0}
       >
-        <Route
-          path={`${PAGE_PATH_APPLICATIONS}/:applicationId`}
-          component={ApplicationDetailPage}
-        />
+        <ReactRoutes>
+          <Route
+            path={`${PAGE_PATH_APPLICATIONS}/:applicationId`}
+            component={ApplicationDetailPage}
+          />
+        </ReactRoutes>
       </MemoryRouter>,
       { store }
     );
