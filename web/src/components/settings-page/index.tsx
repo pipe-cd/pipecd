@@ -6,7 +6,7 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import { FC, memo } from "react";
-import { Navigate, NavLink, Redirect, Route, Routes } from "react-router-dom";
+import { Navigate, NavLink, Route, Routes } from "react-router-dom";
 import {
   PAGE_PATH_SETTINGS,
   PAGE_PATH_SETTINGS_API_KEY,

@@ -9,7 +9,7 @@ import ArrowRightAltIcon from "@material-ui/icons/ArrowRightAlt";
 import MuiAlert from "@material-ui/lab/Alert";
 import { FC, memo, useState } from "react";
 import { useCookies } from "react-cookie";
-import { Navigate, Redirect } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { PAGE_PATH_APPLICATIONS, PAGE_PATH_LOGIN } from "~/constants/path";
 import { getQueryStringValue } from "~/hooks/use-query-string";
 import { useAppSelector } from "~/hooks/redux";

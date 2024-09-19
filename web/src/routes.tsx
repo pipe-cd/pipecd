@@ -2,9 +2,7 @@ import loadable from "@loadable/component";
 import { EntityId } from "@reduxjs/toolkit";
 import { FC, useEffect, useState } from "react";
 import {
-  Redirect,
   Route,
-  Switch,
   useLocation,
   RouteComponentProps,
   Routes as ReactRoutes,
