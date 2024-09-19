@@ -75,7 +75,7 @@ export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
                 button
                 component={NavLink}
                 to={link}
-                activeClassName={classes.activeNav}
+                className={link === location.pathname ? classes.activeNav : ""}
                 selected={link === location.pathname}
               >
                 <ListItemText primary={text} />
