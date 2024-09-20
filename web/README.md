@@ -28,7 +28,19 @@ src
 
 ## Development
 
+### Prerequisites
+
+- [NodeJS v20 or later](https://nodejs.org/en/)
+- [Yarn](https://yarnpkg.com/)
+
 ### Running with Mocks(msw)
+
+First time running, you need to install dependencies.
+
+```bash
+make update/web-deps
+```
+
 We use `msw` for mocking API, so you can see UI without running API server.
 
 ```bash
