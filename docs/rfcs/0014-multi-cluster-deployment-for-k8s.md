@@ -41,7 +41,7 @@ Piped asynchronously applies the resources to each environment based on the plat
 
 For example, consider deploying a microservice called `microservice-a` to the clusters called `cluster-hoge`, `cluster-fuga`.
 At first, we will prepare one application with one `app.pipecd.yaml` and some manifests like this.
-Set the item `multiTarget` in spec.quickSync of app.pipecd.yaml, and set the dir containing the manifests you want to deploy and the platform provider to which you want to deploy.
+Set the item `multiTarget` in spec.input of app.pipecd.yaml, and set the dir containing the manifests you want to deploy and the platform provider to which you want to deploy.
 This will deploy to `cluster-hoge` and `cluster-fuga` at the same time when quickSync is executed.
 
 ```
@@ -54,26 +54,41 @@ microservice-a
     │   └── service.yaml
     ├── cluster-hoge
     │   └── kustomization.yaml
-    ├── cluster-fuga
-    │   └── kustomization.yaml
-    └── kustomization.yaml
+    └── cluster-fuga
+        └── kustomization.yaml
 ```
 
 ```app.pipecd.yaml
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
-  name: multi-cluster-app
+  name: microservice-a
   labels:
     env: prd
+    team: product
   quickSync:
+    prune: true
+  input:
     multiTarget:
-      - provider:
+      - targetID: hoge
+        provider:
           name: cluster-hoge # platform provider name
-        resourceDir: ./cluster-hoge # the resource dir
-      - provider:
-          name: cluster-fuga
-        resourceDir: ./cluster-fuga
+        manifests: ./cluster-hoge # the resource dir
+        kubectlVersion: 1.30
+        kustomizeDir: ./cluster-hoge
+        kustomizeVersion: v5.4.3
+        kustomizeOptions:
+          enable-helm: ""
+          load-restrictor: "LoadRestrictionsNone"
+      - targetID: fuga
+        provider:
+          name: cluster-fuga # platform provider name
+        kubectlVersion: 1.30
+        kustomizeDir: ./cluster-fuga
+        kustomizeVersion: v5.4.3
+        kustomizeOptions:
+          enable-helm: ""
+          load-restrictor: "LoadRestrictionsNone"
 ```
 
 **Rollback**
@@ -82,21 +97,37 @@ Similarly, when rolling back, multiple environments are rolled back at the same 
 If at least one of the rollback processes succeeds, we consider the rollback successful.
 This ensures that the rollback is executed for other environments even if one of the deployment environments is inaccessible.
 
-```
+```app.pipecd.yaml
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
-  name: multi-cluster-app
+  name: microservice-a
   labels:
     env: prd
+    team: product
   quickSync:
+    prune: true
+  input:
     multiTarget:
-      - provider:
+      - targetID: hoge
+        provider:
           name: cluster-hoge # platform provider name
-        resourceDir: ./cluster-hoge # the resource dir
-      - provider:
-          name: cluster-fuga
-        resourceDir: ./cluster-fuga
+        manifests: ./cluster-hoge # the resource dir
+        kubectlVersion: 1.30
+        kustomizeDir: ./cluster-hoge
+        kustomizeVersion: v5.4.3
+        kustomizeOptions:
+          enable-helm: ""
+          load-restrictor: "LoadRestrictionsNone"
+      - targetID: fuga
+        provider:
+          name: cluster-fuga # platform provider name
+        kubectlVersion: 1.30
+        kustomizeDir: ./cluster-fuga
+        kustomizeVersion: v5.4.3
+        kustomizeOptions:
+          enable-helm: ""
+          load-restrictor: "LoadRestrictionsNone"
 ```
 
 
@@ -107,7 +138,7 @@ Piped asynchronously applies to each environment based on the platform provider 
 
 For example, consider deploying a microservice called `microservice-a` to the clusters called `cluster-hoge`, `cluster-fuga`.
 At first, we will prepare one application with one `app.pipecd.yaml` and some manifests like this.
-Set the item `multiTarget` in spec.quickSync of app.pipecd.yaml, and set the dir containing the manifests you want to deploy and the platform provider to which you want to deploy.
+Set the item `multiTarget` in spec.input of app.pipecd.yaml, and set the dir containing the manifests you want to deploy and the platform provider to which you want to deploy.
 Also, set the item `multiTarget` in each stage config.
 This allows applications to be applied to multiple environments at the same time when one stage is executed.
 
@@ -121,46 +152,55 @@ microservice-a
     │   └── service.yaml
     ├── cluster-hoge
     │   └── kustomization.yaml
-    ├── cluster-fuga
-    │   └── kustomization.yaml
-    └── kustomization.yaml
+    └── cluster-fuga
+        └── kustomization.yaml
 ```
 
 ```
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
-  name: multi-cluster-app
+  name: microservice-a
   labels:
-    env: example
+    env: prd
     team: product
   quickSync:
     prune: true
+  input:
     multiTarget:
-      - provider:
-          name: cluster-hoge
-        resourceDir: ./cluster-hoge
-      - provider:
-          name: cluster-fuga
-        resourceDir: ./cluster-fuga
+      - targetID: hoge
+        provider:
+          name: cluster-hoge # platform provider name
+        manifests: ./cluster-hoge # the resource dir
+        kubectlVersion: 1.30
+        kustomizeDir: ./cluster-hoge
+        kustomizeVersion: v5.4.3
+        kustomizeOptions:
+          enable-helm: ""
+          load-restrictor: "LoadRestrictionsNone"
+      - targetID: fuga
+        provider:
+          name: cluster-fuga # platform provider name
+        kubectlVersion: 1.30
+        kustomizeDir: ./cluster-fuga
+        kustomizeVersion: v5.4.3
+        kustomizeOptions:
+          enable-helm: ""
+          load-restrictor: "LoadRestrictionsNone"
   pipeline:
     stages:
       - name: K8S_CANARY_ROLLOUT
         with:
           replicas: 10%
           multiTarget:
-            - provider:
-                name: cluster-hoge
-              resourceDir: ./cluster-hoge
-            - provider:
-                name: cluster-fuga
-              resourceDir: ./cluster-fuga
+            - targetID: hoge
+            - targetID: fuga
 ...
 ```
 
 **Rollback**
 
-When rolling back, multiple environments are rolled back at the same time based on the information specified in `spec.quickSync.multiTarget`.
+When rolling back, multiple environments are rolled back at the same time based on the information specified in `spec.input.multiTarget`.
 If at least one of the rollback processes succeeds, we consider the rollback successful.
 This ensures that the rollback is executed for other environments even if one of the deployment environments is inaccessible.
 
