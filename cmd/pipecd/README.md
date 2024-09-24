@@ -4,6 +4,7 @@
 ## Prerequisites
 
 - [Go 1.22 or later](https://go.dev/)
+- [NodeJS v20 or later](https://nodejs.org/en/)
 - [Docker](https://www.docker.com/)
 - [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) (If you want to run Control Plane locally)
 - [helm 3.8](https://helm.sh/docs/intro/install/) (If you want to run Control Plane locally)
@@ -22,7 +23,7 @@ For the full list of available commands, please see the Makefile at the root of 
 
 ## How to run Control Plane locally
 
-1. Start running a Kubernetes cluster
+1. Start running a Kubernetes cluster (If you don't have any Kubernetes cluster to use)
 
     ``` console
     make kind-up
