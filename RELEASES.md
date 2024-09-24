@@ -18,29 +18,20 @@ Note: The team can release Release candidates(vX.Y.Z-rcXYZ) for versions at any 
 ## Major release
 This refers to the release of new features or breaking changes.
 
-### Confirm the changelog and Create Release Note
-- Run the release script
+### Confirm the changelog and generate docs
+- Run `make release`.
 
   This example assumes that `vX.Y.Z` will be released:
   ```shell
-  make release/init version=vX.Y.Z
-  ````
+  make release version=vX.Y.Z
+  ```
 
-  `RELEASE` file will be updated.
+  The `RELEASE` file will be updated and docs `vX.Y.x` will be generated.
 
-- Push the above changes and Create a pull request to confirm the changelog.
-  You can confirm the changelog through the reviewing comment in pull request by GitHub Actions.
-  For more information, Please see [actions-gh-release](https://github.com/pipe-cd/actions-gh-release).
+- Push the above changes and create a pull request to confirm the changelog.
+  You can confirm the changelog through the reviewing comment in the pull request by [actions-gh-release](https://github.com/pipe-cd/actions-gh-release).
 
-### Generate document for new version
-- Run the release document script
-
-  This example assumes that `vX.Y.Z` will be released:
-  ```shell
-  make release/docs version=vX.Y.Z
-  ````
-
-- Make a pull request to `master` branch with the above changes and get reviews and merge.
+- Get reviews and merge.
 
 ### Cut a new release
 - Before cutting a new release, wait for all jobs in GitHub Actions to pass on the master branch.
@@ -66,12 +57,20 @@ This may also contain some minor features, but ensure that it does NOT contain a
 
 - Get reviews and merge.
 
-### Confirm the changelog and Create Release Note
-- As well as [Major release](https://github.com/pipe-cd/pipecd/blob/master/RELEASES.md#confirm-the-changelog-and-create-release-note), create a pull request to create a release note on the `master` branch.
+### Confirm the changelog and create Release Note
+
+- Run `make release/init`.
+  ```shell
+  make release/init version=vX.Y.Z
+  ```
+
+  The `RELEASE` file will be updated.
+
+- Push the above changes and create a pull request to `master` to confirm the changelog.
 
 - Get a review and merge.
 
-### Backport fixes and Release note
+### Backport fixes and Release Note
 - Run `cherry_pick` workflow
   - Label the merged PR you want to cherry pick with `cherry-pick` , `vX.Y.Z`
     (e.g. v0.48.6 https://github.com/pipe-cd/pipecd/pulls?q=is%3Apr+label%3Acherry-pick+is%3Aclosed+label%3Av0.48.6)
