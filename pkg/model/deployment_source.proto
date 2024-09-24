@@ -24,17 +24,5 @@ message DeploymentSource {
   // The git commit revision of the source code.
   string revision = 2;
   // The configuration of the application which is specific for plugins.
-  PluginApplicationSpec application_config = 3;
-}
-
-message PluginApplicationSpec {
-  // The kind of the application spec.
-  string kind = 1;
-  // The version of the application spec.
-  string api_version = 2;
-
-  // The raw data of the application spec.
-  // We store this spec in bytes because we don't want to define the structure of the plugin-specific config.
-  // The serialization format is JSON.
-  bytes spec = 3;
+  bytes application_config = 3;
 }
