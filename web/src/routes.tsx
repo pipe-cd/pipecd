@@ -141,14 +141,18 @@ export const Routes: FC = () => {
         <Header />
         <ReactRoutes>
           <Route path={PAGE_PATH_LOGIN} element={<LoginPage />} />
-          <Route path={PAGE_PATH_TOP} Component={() => {
-            const location = useLocation();
-            localStorage.setItem(
-              REDIRECT_PATH_KEY,
-              `${location.pathname}${location.search}`
-            );
-            return <Navigate to={`${PAGE_PATH_LOGIN}${location.search}`} replace />;
-          }} />
+          <Route
+            path={PAGE_PATH_TOP}
+            Component={() => {
+              localStorage.setItem(
+                REDIRECT_PATH_KEY,
+                `${location.pathname}${location.search}`
+              );
+              return (
+                <Navigate to={`${PAGE_PATH_LOGIN}${location.search}`} replace />
+              );
+            }}
+          />
         </ReactRoutes>
       </>
     );
