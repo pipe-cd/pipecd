@@ -100,15 +100,6 @@ const useCommandsStatusChecking = (): void => {
   );
 };
 
-const RedirectToLogin: FC = () => {
-  const location = useLocation();
-  localStorage.setItem(
-    REDIRECT_PATH_KEY,
-    `${location.pathname}${location.search}`
-  );
-  return <Navigate to={`${PAGE_PATH_LOGIN}${location.search}`} replace />;
-};
-
 export const Routes: FC = () => {
   const dispatch = useAppDispatch();
   const me = useAppSelector((state) => state.me);
@@ -150,7 +141,14 @@ export const Routes: FC = () => {
         <Header />
         <ReactRoutes>
           <Route path={PAGE_PATH_LOGIN} element={<LoginPage />} />
-          <Route path={PAGE_PATH_TOP} element={<RedirectToLogin />} />
+          <Route path={PAGE_PATH_TOP} Component={() => {
+            const location = useLocation();
+            localStorage.setItem(
+              REDIRECT_PATH_KEY,
+              `${location.pathname}${location.search}`
+            );
+            return <Navigate to={`${PAGE_PATH_LOGIN}${location.search}`} replace />;
+          }} />
         </ReactRoutes>
       </>
     );
@@ -190,7 +188,7 @@ export const Routes: FC = () => {
         <Route path={PAGE_PATH_EVENTS} element={<EventIndexPage />} />
         <Route
           path={PAGE_PATH_TOP}
-          element={() => {
+          Component={() => {
             const path =
               localStorage.getItem(REDIRECT_PATH_KEY) || PAGE_PATH_APPLICATIONS;
             localStorage.removeItem(REDIRECT_PATH_KEY);
