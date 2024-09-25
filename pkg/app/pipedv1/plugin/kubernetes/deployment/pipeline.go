@@ -47,6 +47,8 @@ const (
 	// StageK8sTrafficRouting represents the state where the traffic to application
 	// should be splitted as the specified percentage to PRIMARY, CANARY, BASELINE variants.
 	StageK8sTrafficRouting Stage = "K8S_TRAFFIC_ROUTING"
+	// StageK8sRollback represents the state where all deployed resources should be rollbacked.
+	StageK8sRollback Stage = "K8S_ROLLBACK"
 )
 
 var AllStages = []Stage{
@@ -57,18 +59,31 @@ var AllStages = []Stage{
 	StageK8sBaselineRollout,
 	StageK8sBaselineClean,
 	StageK8sTrafficRouting,
+	StageK8sRollback,
+}
+
+func (s Stage) String() string {
+	return string(s)
 }
 
 const (
 	PredefinedStageK8sSync  = "K8sSync"
-	PredefinedStageRollback = "Rollback"
+	PredefinedStageRollback = "K8sRollback"
 )
 
 var predefinedStages = map[string]config.PipelineStage{
 	PredefinedStageK8sSync: {
-		ID:   PredefinedStageK8sSync,
-		Name: model.StageK8sSync,
+		ID: PredefinedStageK8sSync,
+		// TODO: we have to change config.PipelineStage.Name to string before releasing pipedv1?
+		// because we don't want to define stages at piped side. We want to define them at the plugin side.
+		// Or plugins should use the model.Stage type instead of string or some defined type.
+		Name: model.Stage(StageK8sSync),
 		Desc: "Sync by applying all manifests",
+	},
+	PredefinedStageRollback: {
+		ID:   PredefinedStageRollback,
+		Name: model.Stage(StageK8sRollback),
+		Desc: "Rollback the deployment",
 	},
 }
 
