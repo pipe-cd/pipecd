@@ -148,12 +148,14 @@ func TestBuildQuickSyncStages(t *testing.T) {
 					quickStages: []*model.PipelineStage{
 						{
 							Id:      "plugin-1-stage-1",
+							Index:   1,
 							Visible: true,
 						},
 					},
 					rollbackStages: []*model.PipelineStage{
 						{
 							Id:      "plugin-1-rollback",
+							Index:   1,
 							Visible: false,
 						},
 					},
@@ -162,12 +164,14 @@ func TestBuildQuickSyncStages(t *testing.T) {
 					quickStages: []*model.PipelineStage{
 						{
 							Id:      "plugin-2-stage-1",
+							Index:   2,
 							Visible: true,
 						},
 					},
 					rollbackStages: []*model.PipelineStage{
 						{
 							Id:      "plugin-2-rollback",
+							Index:   2,
 							Visible: false,
 						},
 					},
@@ -182,18 +186,22 @@ func TestBuildQuickSyncStages(t *testing.T) {
 			expectedStages: []*model.PipelineStage{
 				{
 					Id:      "plugin-1-stage-1",
+					Index:   1,
 					Visible: true,
 				},
 				{
 					Id:      "plugin-2-stage-1",
+					Index:   2,
 					Visible: true,
 				},
 				{
 					Id:      "plugin-1-rollback",
+					Index:   1,
 					Visible: false,
 				},
 				{
 					Id:      "plugin-2-rollback",
+					Index:   2,
 					Visible: false,
 				},
 			},
@@ -458,16 +466,19 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 					pipelineStages: []*model.PipelineStage{
 						{
 							Id:      "plugin-1-stage-1",
+							Index:   0,
 							Name:    "plugin-1-stage-1",
 							Visible: true,
 						},
 						{
 							Id:      "plugin-1-stage-2",
+							Index:   1,
 							Name:    "plugin-1-stage-2",
 							Visible: true,
 						},
 						{
 							Id:      "plugin-1-stage-3",
+							Index:   2,
 							Name:    "plugin-1-stage-3",
 							Visible: true,
 						},
@@ -475,6 +486,7 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 					rollbackStages: []*model.PipelineStage{
 						{
 							Id:      "plugin-1-rollback",
+							Index:   0,
 							Name:    "plugin-1-rollback",
 							Visible: false,
 						},
@@ -484,6 +496,7 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 					pipelineStages: []*model.PipelineStage{
 						{
 							Id:      "plugin-2-stage-1",
+							Index:   3,
 							Name:    "plugin-2-stage-1",
 							Visible: true,
 						},
@@ -491,6 +504,7 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 					rollbackStages: []*model.PipelineStage{
 						{
 							Id:      "plugin-2-rollback",
+							Index:   3,
 							Name:    "plugin-2-rollback",
 							Visible: false,
 						},
@@ -553,11 +567,13 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 				},
 				{
 					Id:      "plugin-1-rollback",
+					Index:   0,
 					Name:    "plugin-1-rollback",
 					Visible: false,
 				},
 				{
 					Id:      "plugin-2-rollback",
+					Index:   3,
 					Name:    "plugin-2-rollback",
 					Visible: false,
 				},
