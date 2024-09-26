@@ -15,11 +15,10 @@
 package controller
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
-	"path/filepath"
 	"sort"
 	"time"
 
@@ -30,7 +29,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -192,27 +190,30 @@ func (p *planner) Run(ctx context.Context) error {
 		controllermetrics.UpdateDeploymentStatus(p.deployment, p.doneDeploymentStatus)
 	}()
 
-	repoCfg := config.PipedRepository{
-		RepoID: p.deployment.GitPath.Repo.Id,
-		Remote: p.deployment.GitPath.Repo.Remote,
-		Branch: p.deployment.GitPath.Repo.Branch,
-	}
+	// TODO: Prepare running deploy source and target deploy source.
+	var runningDS, targetDS *model.DeploymentSource
+
+	// repoCfg := config.PipedRepository{
+	// 	RepoID: p.deployment.GitPath.Repo.Id,
+	// 	Remote: p.deployment.GitPath.Repo.Remote,
+	// 	Branch: p.deployment.GitPath.Repo.Branch,
+	// }
 
 	// Prepare target deploy source.
-	targetDSP := deploysource.NewProvider(
-		filepath.Join(p.workingDir, "deploysource"),
-		deploysource.NewGitSourceCloner(p.gitClient, repoCfg, "target", p.deployment.Trigger.Commit.Hash),
-		*p.deployment.GitPath,
-		nil, // TODO: Revise this secret decryter, is this need?
-	)
+	// targetDSP := deploysource.NewProvider(
+	// 	filepath.Join(p.workingDir, "deploysource"),
+	// 	deploysource.NewGitSourceCloner(p.gitClient, repoCfg, "target", p.deployment.Trigger.Commit.Hash),
+	// 	*p.deployment.GitPath,
+	// 	nil, // TODO: Revise this secret decryter, is this need?
+	// )
 
-	targetDS, err := targetDSP.Get(ctx, io.Discard)
-	if err != nil {
-		return fmt.Errorf("error while preparing deploy source data (%v)", err)
-	}
+	// targetDS, err := targetDSP.Get(ctx, io.Discard)
+	// if err != nil {
+	// 	return fmt.Errorf("error while preparing deploy source data (%v)", err)
+	// }
 
 	// TODO: Pass running DS as well if need?
-	out, err := p.buildPlan(ctx, targetDS)
+	out, err := p.buildPlan(ctx, runningDS, targetDS)
 
 	// If the deployment was already cancelled, we ignore the plan result.
 	select {
@@ -243,13 +244,15 @@ func (p *planner) Run(ctx context.Context) error {
 //   - CommitMatcher ensure pipeline/quick sync based on the commit message
 //   - Force quick sync if there is no previous deployment (aka. this is the first deploy)
 //   - Based on PlannerService.DetermineStrategy returned by plugins
-func (p *planner) buildPlan(ctx context.Context, targetDS *deploysource.DeploySource) (*plannerOutput, error) {
+func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *model.DeploymentSource) (*plannerOutput, error) {
 	out := &plannerOutput{}
 
 	input := &deployment.PlanPluginInput{
-		Deployment: p.deployment,
+		Deployment:              p.deployment,
+		RunningDeploymentSource: runningDS,
+		TargetDeploymentSource:  targetDS,
 		// TODO: Add more planner input fields.
-		// NOTE: As discussed we pass targetDS & runningDS here.
+		// we need passing PluginConfig
 	}
 
 	// Build deployment target versions.
@@ -270,7 +273,11 @@ func (p *planner) buildPlan(ctx context.Context, targetDS *deploysource.DeploySo
 		}
 	}
 
-	cfg := targetDS.GenericApplicationConfig
+	cfg := new(config.GenericApplicationSpec)
+	if err := json.NewDecoder(bytes.NewReader(targetDS.ApplicationConfig)).Decode(cfg); err != nil {
+		p.logger.Error("unable to parse application config", zap.Error(err))
+		return nil, err
+	}
 
 	// In case the strategy has been decided by trigger.
 	// For example: user triggered the deployment via web console.

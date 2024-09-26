@@ -17,6 +17,7 @@ package controller
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -73,7 +74,9 @@ func (p *fakePlugin) DetermineStrategy(ctx context.Context, req *deployment.Dete
 	return nil, nil
 }
 func (p *fakePlugin) DetermineVersions(ctx context.Context, req *deployment.DetermineVersionsRequest, opts ...grpc.CallOption) (*deployment.DetermineVersionsResponse, error) {
-	return nil, nil
+	return &deployment.DetermineVersionsResponse{
+		Versions: []*model.ArtifactVersion{},
+	}, nil
 }
 func (p *fakePlugin) FetchDefinedStages(ctx context.Context, req *deployment.FetchDefinedStagesRequest, opts ...grpc.CallOption) (*deployment.FetchDefinedStagesResponse, error) {
 	stages := make([]string, 0, len(p.quickStages)+len(p.pipelineStages)+len(p.rollbackStages))
@@ -571,6 +574,296 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 			stages, err := planner.buildPipelineSyncStages(context.TODO(), tc.cfg)
 			require.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.expectedStages, stages)
+		})
+	}
+}
+
+func TestPlanner_BuildPlan(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name           string
+		plugins        []pluginapi.PluginClient
+		cfg            *config.GenericApplicationSpec
+		deployment     *model.Deployment
+		wantErr        bool
+		expectedOutput *plannerOutput
+	}{
+		{
+			name: "quick sync strategy triggered by web console",
+			plugins: []pluginapi.PluginClient{
+				&fakePlugin{
+					quickStages: []*model.PipelineStage{
+						{
+							Id:      "plugin-1-stage-1",
+							Visible: true,
+						},
+					},
+				},
+			},
+			cfg: &config.GenericApplicationSpec{
+				Planner: config.DeploymentPlanner{
+					AutoRollback: pointerBool(true),
+				},
+			},
+			deployment: &model.Deployment{
+				Trigger: &model.DeploymentTrigger{
+					SyncStrategy:    model.SyncStrategy_QUICK_SYNC,
+					StrategySummary: "Triggered by web console",
+				},
+			},
+			wantErr: false,
+			expectedOutput: &plannerOutput{
+				SyncStrategy: model.SyncStrategy_QUICK_SYNC,
+				Summary:      "Triggered by web console",
+				Stages: []*model.PipelineStage{
+					{
+						Id:      "plugin-1-stage-1",
+						Visible: true,
+					},
+				},
+				Versions: []*model.ArtifactVersion{
+					{
+						Kind:    model.ArtifactVersion_UNKNOWN,
+						Version: versionUnknown,
+					},
+				},
+			},
+		},
+		{
+			name: "pipeline sync strategy triggered by web console",
+			plugins: []pluginapi.PluginClient{
+				&fakePlugin{
+					pipelineStages: []*model.PipelineStage{
+						{
+							Id:      "plugin-1-stage-1",
+							Name:    "plugin-1-stage-1",
+							Visible: true,
+						},
+					},
+				},
+			},
+			cfg: &config.GenericApplicationSpec{
+				Planner: config.DeploymentPlanner{
+					AutoRollback: pointerBool(true),
+				},
+				Pipeline: &config.DeploymentPipeline{
+					Stages: []config.PipelineStage{
+						{
+							ID:   "plugin-1-stage-1",
+							Name: "plugin-1-stage-1",
+						},
+					},
+				},
+			},
+			deployment: &model.Deployment{
+				Trigger: &model.DeploymentTrigger{
+					SyncStrategy:    model.SyncStrategy_PIPELINE,
+					StrategySummary: "Triggered by web console",
+				},
+			},
+			wantErr: false,
+			expectedOutput: &plannerOutput{
+				SyncStrategy: model.SyncStrategy_PIPELINE,
+				Summary:      "Triggered by web console",
+				Stages: []*model.PipelineStage{
+					{
+						Id:      "plugin-1-stage-1",
+						Name:    "plugin-1-stage-1",
+						Index:   0,
+						Visible: true,
+					},
+				},
+			},
+		},
+		{
+			name: "quick sync due to no pipeline configured",
+			plugins: []pluginapi.PluginClient{
+				&fakePlugin{
+					quickStages: []*model.PipelineStage{
+						{
+							Id:      "plugin-1-stage-1",
+							Visible: true,
+						},
+					},
+				},
+			},
+			cfg: &config.GenericApplicationSpec{
+				Planner: config.DeploymentPlanner{
+					AutoRollback: pointerBool(true),
+				},
+			},
+			deployment: &model.Deployment{
+				Trigger: &model.DeploymentTrigger{},
+			},
+			wantErr: false,
+			expectedOutput: &plannerOutput{
+				SyncStrategy: model.SyncStrategy_QUICK_SYNC,
+				Summary:      "Quick sync due to the pipeline was not configured",
+				Stages: []*model.PipelineStage{
+					{
+						Id:      "plugin-1-stage-1",
+						Visible: true,
+					},
+				},
+			},
+		},
+		{
+			name: "pipeline sync due to alwaysUsePipeline",
+			plugins: []pluginapi.PluginClient{
+				&fakePlugin{
+					pipelineStages: []*model.PipelineStage{
+						{
+							Id:      "plugin-1-stage-1",
+							Name:    "plugin-1-stage-1",
+							Visible: true,
+						},
+					},
+				},
+			},
+			cfg: &config.GenericApplicationSpec{
+				Planner: config.DeploymentPlanner{
+					AlwaysUsePipeline: true,
+					AutoRollback:      pointerBool(true),
+				},
+				Pipeline: &config.DeploymentPipeline{
+					Stages: []config.PipelineStage{
+						{
+							ID:   "plugin-1-stage-1",
+							Name: "plugin-1-stage-1",
+						},
+					},
+				},
+			},
+			deployment: &model.Deployment{
+				Trigger: &model.DeploymentTrigger{},
+			},
+			wantErr: false,
+			expectedOutput: &plannerOutput{
+				SyncStrategy: model.SyncStrategy_PIPELINE,
+				Summary:      "Sync with the specified pipeline (alwaysUsePipeline was set)",
+				Stages: []*model.PipelineStage{
+					{
+						Id:      "plugin-1-stage-1",
+						Name:    "plugin-1-stage-1",
+						Index:   0,
+						Visible: true,
+					},
+				},
+			},
+		},
+		{
+			name: "quick sync due to first deployment",
+			plugins: []pluginapi.PluginClient{
+				&fakePlugin{
+					quickStages: []*model.PipelineStage{
+						{
+							Id:      "plugin-1-stage-1",
+							Visible: true,
+						},
+					},
+				},
+			},
+			cfg: &config.GenericApplicationSpec{
+				Planner: config.DeploymentPlanner{
+					AutoRollback: pointerBool(true),
+				},
+			},
+			deployment: &model.Deployment{
+				Trigger: &model.DeploymentTrigger{},
+			},
+			wantErr: false,
+			expectedOutput: &plannerOutput{
+				SyncStrategy: model.SyncStrategy_QUICK_SYNC,
+				Summary:      "Quick sync, it seems this is the first deployment of the application",
+				Stages: []*model.PipelineStage{
+					{
+						Id:      "plugin-1-stage-1",
+						Visible: true,
+					},
+				},
+			},
+		},
+		{
+			name: "pipeline sync determined by plugin",
+			plugins: []pluginapi.PluginClient{
+				&fakePlugin{
+					pipelineStages: []*model.PipelineStage{
+						{
+							Id:      "plugin-1-stage-1",
+							Name:    "plugin-1-stage-1",
+							Visible: true,
+						},
+					},
+					quickStages: []*model.PipelineStage{
+						{
+							Id:      "plugin-1-quick-stage-1",
+							Visible: true,
+						},
+					},
+				},
+			},
+			cfg: &config.GenericApplicationSpec{
+				Planner: config.DeploymentPlanner{
+					AutoRollback: pointerBool(true),
+				},
+				Pipeline: &config.DeploymentPipeline{
+					Stages: []config.PipelineStage{
+						{
+							ID:   "plugin-1-stage-1",
+							Name: "plugin-1-stage-1",
+						},
+					},
+				},
+			},
+			deployment: &model.Deployment{
+				Trigger: &model.DeploymentTrigger{},
+			},
+			wantErr: false,
+			expectedOutput: &plannerOutput{
+				SyncStrategy: model.SyncStrategy_PIPELINE,
+				Summary:      "",
+				Stages: []*model.PipelineStage{
+					{
+						Id:      "plugin-1-stage-1",
+						Name:    "plugin-1-stage-1",
+						Index:   0,
+						Visible: true,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			stageBasedPluginMap := make(map[string]pluginapi.PluginClient)
+			for _, p := range tc.plugins {
+				stages, _ := p.FetchDefinedStages(context.TODO(), &deployment.FetchDefinedStagesRequest{})
+				for _, s := range stages.Stages {
+					stageBasedPluginMap[s] = p
+				}
+			}
+			planner := &planner{
+				plugins:                      tc.plugins,
+				stageBasedPluginsMap:         stageBasedPluginMap,
+				deployment:                   tc.deployment,
+				lastSuccessfulCommitHash:     "",
+				lastSuccessfulConfigFilename: "",
+				workingDir:                   "",
+				apiClient:                    nil,
+				gitClient:                    nil,
+				notifier:                     nil,
+				logger:                       nil,
+				nowFunc:                      func() time.Time { return time.Now() },
+			}
+			runningDS := &model.DeploymentSource{}
+			targetDS := &model.DeploymentSource{
+				ApplicationConfig: []byte(`{}`),
+			}
+			out, err := planner.buildPlan(context.TODO(), runningDS, targetDS)
+			require.Equal(t, tc.wantErr, err != nil)
+			assert.Equal(t, tc.expectedOutput, out)
 		})
 	}
 }

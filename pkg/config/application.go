@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/creasty/defaults"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
@@ -58,6 +59,22 @@ type GenericApplicationSpec struct {
 	EventWatcher []EventWatcherConfig `json:"eventWatcher"`
 	// Configuration for drift detection
 	DriftDetection *DriftDetection `json:"driftDetection"`
+}
+
+func (s *GenericApplicationSpec) UnmarshalJSON(data []byte) error {
+	type Alias GenericApplicationSpec
+	var aux Alias
+
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+
+	if err := defaults.Set(&aux); err != nil {
+		return err
+	}
+
+	*s = GenericApplicationSpec(aux)
+	return nil
 }
 
 type DeploymentPlanner struct {
