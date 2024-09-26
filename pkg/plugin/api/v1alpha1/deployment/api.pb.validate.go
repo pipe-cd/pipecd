@@ -863,6 +863,8 @@ func (m *BuildQuickSyncStagesRequest) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for StageIndex
+
 	// no validation rules for Rollback
 
 	if len(errors) > 0 {
