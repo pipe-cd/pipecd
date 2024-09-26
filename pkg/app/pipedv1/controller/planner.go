@@ -402,8 +402,9 @@ func (p *planner) buildQuickSyncStages(ctx context.Context, cfg *config.GenericA
 		rollbackStages = []*model.PipelineStage{}
 		rollback       = *cfg.Planner.AutoRollback
 	)
-	for _, plg := range p.plugins {
-		res, err := plg.BuildQuickSyncStages(ctx, &deployment.BuildQuickSyncStagesRequest{Rollback: rollback})
+	// TODO: Consider how to define the order of plugins.
+	for i, plg := range p.plugins {
+		res, err := plg.BuildQuickSyncStages(ctx, &deployment.BuildQuickSyncStagesRequest{StageIndex: int32(i), Rollback: rollback})
 		if err != nil {
 			return nil, fmt.Errorf("failed to build quick sync stage deployment (%w)", err)
 		}
