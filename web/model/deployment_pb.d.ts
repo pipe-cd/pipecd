@@ -198,6 +198,9 @@ export class PipelineStage extends jspb.Message {
   getRetriedCount(): number;
   setRetriedCount(value: number): PipelineStage;
 
+  getRollback(): boolean;
+  setRollback(value: boolean): PipelineStage;
+
   getCompletedAt(): number;
   setCompletedAt(value: number): PipelineStage;
 
@@ -228,6 +231,7 @@ export namespace PipelineStage {
     statusReason: string,
     metadataMap: Array<[string, string]>,
     retriedCount: number,
+    rollback: boolean,
     completedAt: number,
     createdAt: number,
     updatedAt: number,
