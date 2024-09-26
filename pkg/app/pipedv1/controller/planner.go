@@ -478,6 +478,7 @@ func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.Gener
 
 	// Sort stages by index.
 	sort.Sort(model.PipelineStages(stages))
+	sort.Sort(model.PipelineStages(rollbackStages))
 
 	// Build requires for each stage.
 	preStageID := ""
