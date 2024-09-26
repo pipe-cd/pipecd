@@ -18,7 +18,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/planner"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/deployment"
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	"github.com/pipe-cd/pipecd/pkg/rpc"
 	"github.com/spf13/cobra"
@@ -71,8 +71,7 @@ func (s *server) run(ctx context.Context, input cli.Input) (runErr error) {
 	// Start a gRPC server for handling external API requests.
 	{
 		var (
-			service = planner.NewPlannerService(
-				nil, // TODO: Inject the real secret decrypter. It should be a instance of pipedv1/plugin/secrets.Decrypter.
+			service = deployment.NewDeploymentService(
 				input.Logger,
 			)
 			opts = []rpc.Option{
