@@ -132,7 +132,7 @@ message PipelineStage {
     // Stage index from the stage list in configuration.
     int32 index = 4;
     // Whether this stage is the predefined one by planner.
-    bool predefined = 5;
+    bool predefined = 5 [deprecated=true];
     repeated string requires = 6;
     // Whether this stage should be rendered or not.
     bool visible = 7;
