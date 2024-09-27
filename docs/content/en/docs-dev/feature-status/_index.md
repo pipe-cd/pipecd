@@ -32,7 +32,6 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Support Kustomize | Beta |
 | Support Istio service mesh | Beta |
 | Support SMI service mesh | Incubating |
-| Support [AWS App Mesh](https://aws.amazon.com/app-mesh/) | Incubating |
 | [Plan preview](../user-guide/plan-preview) | Beta |
 | [Manifest attachment](../user-guide/managing-application/manifest-attachment) | Alpha |
 
@@ -83,7 +82,6 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Application live state](../user-guide/managing-application/application-live-state/) | Alpha *1 |
 | Quick sync deployment for [ECS Service Discovery](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-discovery.html) | Alpha |
 | Deployment with a defined pipeline for [ECS Service Discovery](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-discovery.html) | Alpha |
-| Support [AWS App Mesh](https://aws.amazon.com/app-mesh/) | Incubating |
 | [Plan preview](../user-guide/plan-preview) | Alpha |
 | [Manifest attachment](../user-guide/managing-application/manifest-attachment) | Alpha |
 
