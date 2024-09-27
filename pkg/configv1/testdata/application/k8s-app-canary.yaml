@@ -1,0 +1,298 @@
+# Progressive delivery with canary strategy.
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  pipeline:
+    stages:
+      # Deploy the workloads of CANARY variant. In this case, the number of
+      # workload replicas of CANARY variant is 10% of the replicas number of PRIMARY variant.
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 10%
+      # Update the workload of PRIMARY variant to the new version.
+      - name: K8S_PRIMARY_ROLLOUT
+      # Destroy all workloads of CANARY variant.
+      - name: K8S_CANARY_CLEAN
+
+---
+# Progressive delivery with canary strategy.
+# This also adds an Approval stage to wait until got
+# an approval from one of the specified approvers.
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  pipeline:
+    stages:
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 2
+      - name: WAIT_APPROVAL
+        with:
+          approvers:
+            - user-foo
+            - user-bar
+      - name: K8S_PRIMARY_ROLLOUT
+      - name: K8S_CANARY_CLEAN
+
+---
+# Progressive delivery with canary strategy.
+# This has an Analysis stage for verifying the deployment process.
+# The analysis is just based on the metrics, log, http response from canary version.
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  pipeline:
+    stages:
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 10%
+      - name: ANALYSIS
+        with:
+          duration: 10m
+          metrics:
+            - query: grpc_error_percentage
+              expected:
+                max: 0.1
+              interval: 1m
+              failureLimit: 1
+              provider: prometheus-dev
+          logs:
+            - query: |
+                resource.type="k8s_container"
+                resource.labels.cluster_name="cluster-1"
+                resource.labels.namespace_name="stg"
+                resource.labels.pod_id="pod1"
+              interval: 1m
+              failureLimit: 3
+              provider: stackdriver-dev
+          https:
+            - url: https://canary-endpoint.dev
+              method: GET
+              expectedCode: 200
+              failureLimit: 1
+              interval: 1m
+      - name: K8S_PRIMARY_ROLLOUT
+      - name: K8S_CANARY_CLEAN
+
+---
+# Progressive delivery with canary strategy.
+# The canary process has multiple phases: from 10% then analysis
+# then up to 20% then analysis then 100%.
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  pipeline:
+    stages:
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 10%
+      - name: ANALYSIS
+        with:
+          duration: 10m
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 20%
+      - name: ANALYSIS
+        with:
+          duration: 10m
+      - name: K8S_PRIMARY_ROLLOUT
+      - name: K8S_CANARY_CLEAN
+
+---
+# Progressive delivery with canary strategy.
+# This has an Analysis stage for verifying the deployment process.
+# The analysis stage is configured to use metrics templates at .pipe directory.
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  pipeline:
+    stages:
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 10%
+      - name: ANALYSIS
+        with:
+          duration: 10m
+          metrics:
+            - template:
+                name: prometheus_grpc_error_percentage
+            - template:
+                name: prometheus_grpc_error_percentage
+          logs:
+            - template:
+                name: stackdriver_log_error
+          https:
+            - template:
+                name: http_canary_check
+      - name: K8S_PRIMARY_ROLLOUT
+      - name: K8S_CANARY_CLEAN
+
+---
+# Progressive delivery with canary strategy.
+# This has an Analysis stage for verifying the deployment process.
+# The analysis stage is configured to use metrics with custom args.
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  pipeline:
+    stages:
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 10%
+      - name: ANALYSIS
+        with:
+          duration: 10m
+          metrics:
+            - template:
+                name: grpc_error_rate_percentage
+                args:
+                  namespace: default
+      - name: K8S_PRIMARY_ROLLOUT
+      - name: K8S_CANARY_CLEAN
+
+---
+# Canary deployment that has an analysis stage to verify canary.
+# This deploys both canary and baseline version.
+# The baseline pod is a pod that is based on our currently running production version.
+# We want to collect metrics against a “new” copy of our old container so
+# we don’t muddy the waters testing against a pod that might have been running for a long time.
+# The analysis stage is based on the comparision between baseline and stage workloads.
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  pipeline:
+    stages:
+      - name: K8S_BASELINE_ROLLOUT
+        with:
+          replicas: 10%
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 10%
+      - name: ANALYSIS
+        with:
+          duration: 10m
+      - name: K8S_PRIMARY_ROLLOUT
+      - name: K8S_BASELINE_CLEAN
+      - name: K8S_CANARY_CLEAN
+
+# Progressive delivery with canary strategy.
+# This has an Analysis stage for verifying the deployment process.
+# This is run the analysis with dynamic data as well as one with static data.
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  pipeline:
+    stages:
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 10%
+      - name: ANALYSIS
+        with:
+          duration: 10m
+          metrics:
+            - template:
+                name: prometheus_grpc_error_percentage
+          logs:
+            - template:
+                name: stackdriver_log_error
+          https:
+            - template:
+                name: http_canary_check
+          dynamic:
+            metrics:
+              - query: grpc_error_percentage
+                provider: prometheus-dev
+                #sensitivity: SENSITIVE
+            logs:
+              - query: |
+                  resource.type="k8s_container"
+                  resource.labels.cluster_name="cluster-1"
+                  resource.labels.namespace_name="stg"
+                provider: stackdriver-dev
+            https:
+              - url: https://canary-endpoint.dev
+                method: GET
+                expectedCode: 200
+                interval: 1m
+      - name: K8S_PRIMARY_ROLLOUT
+      - name: K8S_CANARY_CLEAN
+
+# Stage represents a temporary desired state for the application.
+# Users can declarative a list of stages to archive the final desired state.
+# This is a pod that is based on our currently running production version.
+# We want to collect metrics against a “new” copy of our old container so
+# we don’t muddy the waters testing against a pod that might have been running for a long time.
+# https://www.spinnaker.io/guides/user/canary/best-practices/#compare-canary-against-baseline-not-against-production
+# K8S_BASELINE_ROLLOUT
+
+# Requirements:
+# Multiple canary stages
+# Automated analysis
+# - between baseline and canary
+# - based on metrics, logs of only canary
+# Various targets: deployment, daemonset, statefulset
+
+#   # List of deployments for the same commit
+#   # that must be succeeded before running the deployment for this application.
+#   requireDeployments:
+#     - app: demoapp
+#       env: dev
+#     - app: anotherapp
+#   # Make a pull request to promote other applicationzwww
+#   # (or promote changes through environments of the same application)
+#   # after the success of this deployment.
+#   promote:
+#     - app: demoapp
+#       env: prod
+#       transforms:
+#       - source: pipe.yaml
+#         destination: pipe.yaml
+#         regex: git@github.com:org/config-repo.git:charts/demoapp?ref=(.*)
+#         replacement: git@github.com:org/config-repo.git:charts/demoapp?ref={{ $1 }}
+#       pullRequest:
+#         title: Update demoapp service in prod
+#         commit: Update demo app service in prod
+#         desc: |
+#           Update demoapp service to {{ .App.Input.Version }}
+
+---
+# Progressive delivery with canary strategy.
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  pipeline:
+    stages:
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 10%
+          patches:
+          - target:
+              kind: ConfigMap
+              name: envoy-config
+              documentRoot: $.data.envoy-config
+            yamlOps:
+            - op: replace
+              path: $.resources[0].virtual_hosts[0].routes[0].route.weighted_clusters.clusters[0].weight
+              value: 50
+            - op: replace
+              path: $.resources[0].virtual_hosts[0].routes[0].route.weighted_clusters.clusters[1].weight
+              value: 50
+
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 10%
+          patches:
+          - target:
+              kind: ConfigMap
+              name: envoy-config
+              documentRoot: $.data.envoy-config
+            yamlOps:
+            - op: replace
+              path: $.resources[0].virtual_hosts[0].routes[0].route.weighted_clusters.clusters[0].weight
+              value: 10
+            - op: replace
+              path: $.resources[0].virtual_hosts[0].routes[0].route.weighted_clusters.clusters[1].weight
+              value: 90
+
+      - name: K8S_PRIMARY_ROLLOUT
+      - name: K8S_CANARY_CLEAN

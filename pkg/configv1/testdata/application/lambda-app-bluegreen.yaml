@@ -1,0 +1,16 @@
+# Using version, alias, additional version to do canary, bluegreen.
+# https://docs.aws.amazon.com/lambda/latest/dg/configuration-aliases.html
+apiVersion: pipecd.dev/v1beta1
+kind: LambdaApp
+spec:
+  pipeline:
+    stages:
+      # Deploy workloads of the new version.
+      # But this is still receiving no traffic.
+      - name: LAMBDA_CANARY_ROLLOUT
+      # Change the traffic routing state where
+      # the new version will receive 100% of the traffic as soon as possible.
+      # This is known as blue-green strategy.
+      - name: LAMBDA_PROMOTE
+        with:
+          percent: 100
