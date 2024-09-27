@@ -185,8 +185,9 @@ func TestBuildQuickSyncStages(t *testing.T) {
 					Index: 0,
 				},
 				{
-					Id:    "plugin-2-stage-1",
-					Index: 1,
+					Id:       "plugin-2-stage-1",
+					Index:    1,
+					Requires: []string{"plugin-1-stage-1"},
 				},
 				{
 					Id:       "plugin-1-rollback",
@@ -244,8 +245,9 @@ func TestBuildQuickSyncStages(t *testing.T) {
 					Index: 0,
 				},
 				{
-					Id:    "plugin-2-stage-1",
-					Index: 1,
+					Id:       "plugin-2-stage-1",
+					Index:    1,
+					Requires: []string{"plugin-1-stage-1"},
 				},
 			},
 		},
