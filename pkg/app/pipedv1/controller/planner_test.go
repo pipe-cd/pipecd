@@ -25,7 +25,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
-	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
@@ -33,6 +33,7 @@ import (
 
 type fakePlugin struct {
 	pluginapi.PluginClient
+	syncStrategy   *deployment.DetermineStrategyResponse
 	quickStages    []*model.PipelineStage
 	pipelineStages []*model.PipelineStage
 	rollbackStages []*model.PipelineStage
@@ -73,7 +74,7 @@ func (p *fakePlugin) BuildPipelineSyncStages(ctx context.Context, req *deploymen
 	}, nil
 }
 func (p *fakePlugin) DetermineStrategy(ctx context.Context, req *deployment.DetermineStrategyRequest, opts ...grpc.CallOption) (*deployment.DetermineStrategyResponse, error) {
-	return nil, nil
+	return p.syncStrategy, nil
 }
 func (p *fakePlugin) DetermineVersions(ctx context.Context, req *deployment.DetermineVersionsRequest, opts ...grpc.CallOption) (*deployment.DetermineVersionsResponse, error) {
 	return &deployment.DetermineVersionsResponse{
@@ -585,6 +586,7 @@ func TestPlanner_BuildPlan(t *testing.T) {
 
 	testcases := []struct {
 		name           string
+		isFirstDeploy  bool
 		plugins        []pluginapi.PluginClient
 		cfg            *config.GenericApplicationSpec
 		deployment     *model.Deployment
@@ -592,7 +594,8 @@ func TestPlanner_BuildPlan(t *testing.T) {
 		expectedOutput *plannerOutput
 	}{
 		{
-			name: "quick sync strategy triggered by web console",
+			name:          "quick sync strategy triggered by web console",
+			isFirstDeploy: false,
 			plugins: []pluginapi.PluginClient{
 				&fakePlugin{
 					quickStages: []*model.PipelineStage{
@@ -633,7 +636,8 @@ func TestPlanner_BuildPlan(t *testing.T) {
 			},
 		},
 		{
-			name: "pipeline sync strategy triggered by web console",
+			name:          "pipeline sync strategy triggered by web console",
+			isFirstDeploy: false,
 			plugins: []pluginapi.PluginClient{
 				&fakePlugin{
 					pipelineStages: []*model.PipelineStage{
@@ -676,10 +680,17 @@ func TestPlanner_BuildPlan(t *testing.T) {
 						Visible: true,
 					},
 				},
+				Versions: []*model.ArtifactVersion{
+					{
+						Kind:    model.ArtifactVersion_UNKNOWN,
+						Version: versionUnknown,
+					},
+				},
 			},
 		},
 		{
-			name: "quick sync due to no pipeline configured",
+			name:          "quick sync due to no pipeline configured",
+			isFirstDeploy: false,
 			plugins: []pluginapi.PluginClient{
 				&fakePlugin{
 					quickStages: []*model.PipelineStage{
@@ -708,10 +719,17 @@ func TestPlanner_BuildPlan(t *testing.T) {
 						Visible: true,
 					},
 				},
+				Versions: []*model.ArtifactVersion{
+					{
+						Kind:    model.ArtifactVersion_UNKNOWN,
+						Version: versionUnknown,
+					},
+				},
 			},
 		},
 		{
-			name: "pipeline sync due to alwaysUsePipeline",
+			name:          "pipeline sync due to alwaysUsePipeline",
+			isFirstDeploy: false,
 			plugins: []pluginapi.PluginClient{
 				&fakePlugin{
 					pipelineStages: []*model.PipelineStage{
@@ -752,10 +770,17 @@ func TestPlanner_BuildPlan(t *testing.T) {
 						Visible: true,
 					},
 				},
+				Versions: []*model.ArtifactVersion{
+					{
+						Kind:    model.ArtifactVersion_UNKNOWN,
+						Version: versionUnknown,
+					},
+				},
 			},
 		},
 		{
-			name: "quick sync due to first deployment",
+			name:          "quick sync due to first deployment",
+			isFirstDeploy: true,
 			plugins: []pluginapi.PluginClient{
 				&fakePlugin{
 					quickStages: []*model.PipelineStage{
@@ -769,6 +794,14 @@ func TestPlanner_BuildPlan(t *testing.T) {
 			cfg: &config.GenericApplicationSpec{
 				Planner: config.DeploymentPlanner{
 					AutoRollback: pointerBool(true),
+				},
+				Pipeline: &config.DeploymentPipeline{
+					Stages: []config.PipelineStage{
+						{
+							ID:   "plugin-1-stage-1",
+							Name: "plugin-1-stage-1",
+						},
+					},
 				},
 			},
 			deployment: &model.Deployment{
@@ -784,12 +817,23 @@ func TestPlanner_BuildPlan(t *testing.T) {
 						Visible: true,
 					},
 				},
+				Versions: []*model.ArtifactVersion{
+					{
+						Kind:    model.ArtifactVersion_UNKNOWN,
+						Version: versionUnknown,
+					},
+				},
 			},
 		},
 		{
-			name: "pipeline sync determined by plugin",
+			name:          "pipeline sync determined by plugin",
+			isFirstDeploy: false,
 			plugins: []pluginapi.PluginClient{
 				&fakePlugin{
+					syncStrategy: &deployment.DetermineStrategyResponse{
+						SyncStrategy: model.SyncStrategy_PIPELINE,
+						Summary:      "determined by plugin",
+					},
 					pipelineStages: []*model.PipelineStage{
 						{
 							Id:      "plugin-1-stage-1",
@@ -824,13 +868,19 @@ func TestPlanner_BuildPlan(t *testing.T) {
 			wantErr: false,
 			expectedOutput: &plannerOutput{
 				SyncStrategy: model.SyncStrategy_PIPELINE,
-				Summary:      "",
+				Summary:      "determined by plugin",
 				Stages: []*model.PipelineStage{
 					{
 						Id:      "plugin-1-stage-1",
 						Name:    "plugin-1-stage-1",
 						Index:   0,
 						Visible: true,
+					},
+				},
+				Versions: []*model.ArtifactVersion{
+					{
+						Kind:    model.ArtifactVersion_UNKNOWN,
+						Version: versionUnknown,
 					},
 				},
 			},
@@ -859,6 +909,11 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				logger:                       zap.NewNop(),
 				nowFunc:                      func() time.Time { return time.Now() },
 			}
+
+			if !tc.isFirstDeploy {
+				planner.lastSuccessfulCommitHash = "123"
+			}
+
 			runningDS := &model.DeploymentSource{}
 
 			jsonBytes, err := json.Marshal(tc.cfg)
