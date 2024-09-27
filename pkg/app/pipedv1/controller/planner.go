@@ -402,20 +402,26 @@ func (p *planner) buildQuickSyncStages(ctx context.Context, cfg *config.GenericA
 		rollbackStages = []*model.PipelineStage{}
 		rollback       = *cfg.Planner.AutoRollback
 	)
-	for _, plg := range p.plugins {
-		res, err := plg.BuildQuickSyncStages(ctx, &deployment.BuildQuickSyncStagesRequest{Rollback: rollback})
+	// TODO: Consider how to define the order of plugins.
+	for i, plg := range p.plugins {
+		res, err := plg.BuildQuickSyncStages(ctx, &deployment.BuildQuickSyncStagesRequest{StageIndex: int32(i), Rollback: rollback})
 		if err != nil {
 			return nil, fmt.Errorf("failed to build quick sync stage deployment (%w)", err)
 		}
+		// TODO: Ensure responsed stages indexies is valid.
 		for i := range res.Stages {
-			// TODO: Consider add Stage.Rollback to specify a stage is a rollback stage or forward stage instead.
-			if res.Stages[i].Visible {
-				stages = append(stages, res.Stages[i])
-			} else {
+			if res.Stages[i].Rollback {
 				rollbackStages = append(rollbackStages, res.Stages[i])
+			} else {
+				stages = append(stages, res.Stages[i])
 			}
 		}
 	}
+
+	// Sort stages by index.
+	sort.Sort(model.PipelineStages(stages))
+	sort.Sort(model.PipelineStages(rollbackStages))
+
 	stages = append(stages, rollbackStages...)
 	if len(stages) == 0 {
 		return nil, fmt.Errorf("unable to build quick sync stages for deployment")
@@ -467,17 +473,19 @@ func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.Gener
 		if err != nil {
 			return nil, fmt.Errorf("failed to build pipeline sync stages for deployment (%w)", err)
 		}
+		// TODO: Ensure responsed stages indexies is valid.
 		for i := range res.Stages {
-			if res.Stages[i].Visible {
-				stages = append(stages, res.Stages[i])
-			} else {
+			if res.Stages[i].Rollback {
 				rollbackStages = append(rollbackStages, res.Stages[i])
+			} else {
+				stages = append(stages, res.Stages[i])
 			}
 		}
 	}
 
 	// Sort stages by index.
 	sort.Sort(model.PipelineStages(stages))
+	sort.Sort(model.PipelineStages(rollbackStages))
 
 	// Build requires for each stage.
 	preStageID := ""

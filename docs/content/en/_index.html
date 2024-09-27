@@ -35,26 +35,15 @@ linkTitle = "PipeCD"
 
 <div class="row justify-content-md-center">
 	<div class="col core-values">
-        {{< blocks/value title="Visibility" image="visibility.png" image_position="left" >}}
+        {{< blocks/value title="Multi-provider & Multi-Tenancy" image="multi-provider.png" image_position="left" >}}
         <ul class="core-value-detail">
-            <li>Deployment pipeline UI shows clarify what is happening</li>
-            <li>Separate logs viewer for each individual deployment</li>
-            <li>Realtime visualization of application state</li>
-            <li>Deployment notifications to slack, webhook endpoints</li>
-            <li>Insights show the delivery performance</li>
+            <li>Support multiple application kinds on multi-cloud including Kubernetes, Terraform, Cloud Run, AWS Lambda, Amazon ECS</li>
+            <li>Support multiple analysis providers including Prometheus, Datadog, Stackdriver, and more</li>
+            <li>Easy to operate multi-cluster, multi-tenancy by separating control-plane and piped</li>
         </ul>
         {{< /blocks/value >}}
 
-        {{< blocks/value title="Automation" image="automation.png" image_position="right" >}}
-        <ul class="core-value-detail">
-            <li>Automated deployment analysis based on metrics, logs, emitted requests</li>
-            <li>Automatically roll back to the previous state as soon as analysis or a pipeline stage fails</li>
-            <li>Automatically detect configuration drift to notify and render the changes</li>
-            <li>Automatically trigger a new deployment when a defined event has occurred (e.g. container image pushed, helm chart published, etc)</li>
-        </ul>
-        {{< /blocks/value >}}
-
-        {{< blocks/value title="Secure" image="secure.png" image_position="left" >}}
+        {{< blocks/value title="Secure" image="secure.png" image_position="right" >}}
         <ul class="core-value-detail">
             <li>Support single sign-on and role-based access control</li>
             <li>Credentials are not exposed outside the cluster and not saved in the control-plane</li>
@@ -63,11 +52,22 @@ linkTitle = "PipeCD"
         </ul>
         {{< /blocks/value >}}
 
-        {{< blocks/value title="Multi-provider & Multi-Tenancy" image="multi-provider.png" image_position="right" >}}
+        {{< blocks/value title="Automation" image="automation.png" image_position="left" >}}
         <ul class="core-value-detail">
-            <li>Support multiple application kinds on multi-cloud including Kubernetes, Terraform, Cloud Run, AWS Lambda, Amazon ECS</li>
-            <li>Support multiple analysis providers including Prometheus, Datadog, Stackdriver, and more</li>
-            <li>Easy to operate multi-cluster, multi-tenancy by separating control-plane and piped</li>
+            <li>Automated deployment analysis based on metrics, logs, emitted requests</li>
+            <li>Automatically roll back to the previous state as soon as analysis or a pipeline stage fails</li>
+            <li>Automatically detect configuration drift to notify and render the changes</li>
+            <li>Automatically trigger a new deployment when a defined event has occurred (e.g. container image pushed, helm chart published, etc)</li>
+        </ul>
+        {{< /blocks/value >}}
+
+        {{< blocks/value title="Visibility" image="visibility.png" image_position="right" >}}
+        <ul class="core-value-detail">
+            <li>Deployment pipeline UI shows clarify what is happening</li>
+            <li>Separate logs viewer for each individual deployment</li>
+            <li>Realtime visualization of application state</li>
+            <li>Deployment notifications to slack, webhook endpoints</li>
+            <li>Insights show the delivery performance</li>
         </ul>
         {{< /blocks/value >}}
     </div>

@@ -112,14 +112,13 @@ func TestBuildQuickSyncStages(t *testing.T) {
 				&fakePlugin{
 					quickStages: []*model.PipelineStage{
 						{
-							Id:      "plugin-1-stage-1",
-							Visible: true,
+							Id: "plugin-1-stage-1",
 						},
 					},
 					rollbackStages: []*model.PipelineStage{
 						{
-							Id:      "plugin-1-rollback",
-							Visible: false,
+							Id:       "plugin-1-rollback",
+							Rollback: true,
 						},
 					},
 				},
@@ -132,12 +131,11 @@ func TestBuildQuickSyncStages(t *testing.T) {
 			wantErr: false,
 			expectedStages: []*model.PipelineStage{
 				{
-					Id:      "plugin-1-stage-1",
-					Visible: true,
+					Id: "plugin-1-stage-1",
 				},
 				{
-					Id:      "plugin-1-rollback",
-					Visible: false,
+					Id:       "plugin-1-rollback",
+					Rollback: true,
 				},
 			},
 		},
@@ -147,28 +145,30 @@ func TestBuildQuickSyncStages(t *testing.T) {
 				&fakePlugin{
 					quickStages: []*model.PipelineStage{
 						{
-							Id:      "plugin-1-stage-1",
-							Visible: true,
+							Id:    "plugin-1-stage-1",
+							Index: 0,
 						},
 					},
 					rollbackStages: []*model.PipelineStage{
 						{
-							Id:      "plugin-1-rollback",
-							Visible: false,
+							Id:       "plugin-1-rollback",
+							Index:    0,
+							Rollback: true,
 						},
 					},
 				},
 				&fakePlugin{
 					quickStages: []*model.PipelineStage{
 						{
-							Id:      "plugin-2-stage-1",
-							Visible: true,
+							Id:    "plugin-2-stage-1",
+							Index: 1,
 						},
 					},
 					rollbackStages: []*model.PipelineStage{
 						{
-							Id:      "plugin-2-rollback",
-							Visible: false,
+							Id:       "plugin-2-rollback",
+							Index:    1,
+							Rollback: true,
 						},
 					},
 				},
@@ -181,20 +181,22 @@ func TestBuildQuickSyncStages(t *testing.T) {
 			wantErr: false,
 			expectedStages: []*model.PipelineStage{
 				{
-					Id:      "plugin-1-stage-1",
-					Visible: true,
+					Id:    "plugin-1-stage-1",
+					Index: 0,
 				},
 				{
-					Id:      "plugin-2-stage-1",
-					Visible: true,
+					Id:    "plugin-2-stage-1",
+					Index: 1,
 				},
 				{
-					Id:      "plugin-1-rollback",
-					Visible: false,
+					Id:       "plugin-1-rollback",
+					Index:    0,
+					Rollback: true,
 				},
 				{
-					Id:      "plugin-2-rollback",
-					Visible: false,
+					Id:       "plugin-2-rollback",
+					Index:    1,
+					Rollback: true,
 				},
 			},
 		},
@@ -204,28 +206,28 @@ func TestBuildQuickSyncStages(t *testing.T) {
 				&fakePlugin{
 					quickStages: []*model.PipelineStage{
 						{
-							Id:      "plugin-1-stage-1",
-							Visible: true,
+							Id:    "plugin-1-stage-1",
+							Index: 0,
 						},
 					},
 					rollbackStages: []*model.PipelineStage{
 						{
-							Id:      "plugin-1-rollback",
-							Visible: false,
+							Id:       "plugin-1-rollback",
+							Rollback: true,
 						},
 					},
 				},
 				&fakePlugin{
 					quickStages: []*model.PipelineStage{
 						{
-							Id:      "plugin-2-stage-1",
-							Visible: true,
+							Id:    "plugin-2-stage-1",
+							Index: 1,
 						},
 					},
 					rollbackStages: []*model.PipelineStage{
 						{
-							Id:      "plugin-2-rollback",
-							Visible: false,
+							Id:       "plugin-2-rollback",
+							Rollback: true,
 						},
 					},
 				},
@@ -238,12 +240,12 @@ func TestBuildQuickSyncStages(t *testing.T) {
 			wantErr: false,
 			expectedStages: []*model.PipelineStage{
 				{
-					Id:      "plugin-1-stage-1",
-					Visible: true,
+					Id:    "plugin-1-stage-1",
+					Index: 0,
 				},
 				{
-					Id:      "plugin-2-stage-1",
-					Visible: true,
+					Id:    "plugin-2-stage-1",
+					Index: 1,
 				},
 			},
 		},
@@ -277,21 +279,22 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 				&fakePlugin{
 					pipelineStages: []*model.PipelineStage{
 						{
-							Id:      "plugin-1-stage-1",
-							Name:    "plugin-1-stage-1",
-							Visible: true,
+							Id:    "plugin-1-stage-1",
+							Index: 0,
+							Name:  "plugin-1-stage-1",
 						},
 						{
-							Id:      "plugin-1-stage-2",
-							Name:    "plugin-1-stage-2",
-							Visible: true,
+							Id:    "plugin-1-stage-2",
+							Index: 1,
+							Name:  "plugin-1-stage-2",
 						},
 					},
 					rollbackStages: []*model.PipelineStage{
 						{
-							Id:      "plugin-1-rollback",
-							Name:    "plugin-1-rollback",
-							Visible: false,
+							Id:       "plugin-1-rollback",
+							Index:    0,
+							Name:     "plugin-1-rollback",
+							Rollback: true,
 						},
 					},
 				},
@@ -316,22 +319,21 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 			wantErr: false,
 			expectedStages: []*model.PipelineStage{
 				{
-					Id:      "plugin-1-stage-1",
-					Name:    "plugin-1-stage-1",
-					Index:   0,
-					Visible: true,
+					Id:    "plugin-1-stage-1",
+					Name:  "plugin-1-stage-1",
+					Index: 0,
 				},
 				{
 					Id:       "plugin-1-stage-2",
 					Name:     "plugin-1-stage-2",
 					Index:    1,
 					Requires: []string{"plugin-1-stage-1"},
-					Visible:  true,
 				},
 				{
-					Id:      "plugin-1-rollback",
-					Name:    "plugin-1-rollback",
-					Visible: false,
+					Id:       "plugin-1-rollback",
+					Name:     "plugin-1-rollback",
+					Index:    0,
+					Rollback: true,
 				},
 			},
 		},
@@ -341,40 +343,36 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 				&fakePlugin{
 					pipelineStages: []*model.PipelineStage{
 						{
-							Id:      "plugin-1-stage-1",
-							Name:    "plugin-1-stage-1",
-							Visible: true,
+							Id:   "plugin-1-stage-1",
+							Name: "plugin-1-stage-1",
 						},
 						{
-							Id:      "plugin-1-stage-2",
-							Name:    "plugin-1-stage-2",
-							Visible: true,
+							Id:   "plugin-1-stage-2",
+							Name: "plugin-1-stage-2",
 						},
 						{
-							Id:      "plugin-1-stage-3",
-							Name:    "plugin-1-stage-3",
-							Visible: true,
+							Id:   "plugin-1-stage-3",
+							Name: "plugin-1-stage-3",
 						},
 					},
 					rollbackStages: []*model.PipelineStage{
 						{
-							Id:      "plugin-1-rollback",
-							Name:    "plugin-1-rollback",
-							Visible: false,
+							Id:       "plugin-1-rollback",
+							Index:    0,
+							Name:     "plugin-1-rollback",
+							Rollback: true,
 						},
 					},
 				},
 				&fakePlugin{
 					pipelineStages: []*model.PipelineStage{
 						{
-							Id:      "plugin-2-stage-1",
-							Name:    "plugin-2-stage-1",
-							Visible: true,
+							Id:   "plugin-2-stage-1",
+							Name: "plugin-2-stage-1",
 						},
 						{
-							Id:      "plugin-2-stage-2",
-							Name:    "plugin-2-stage-2",
-							Visible: true,
+							Id:   "plugin-2-stage-2",
+							Name: "plugin-2-stage-2",
 						},
 					},
 				},
@@ -411,43 +409,39 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 			wantErr: false,
 			expectedStages: []*model.PipelineStage{
 				{
-					Id:      "plugin-1-stage-1",
-					Name:    "plugin-1-stage-1",
-					Index:   0,
-					Visible: true,
+					Id:    "plugin-1-stage-1",
+					Name:  "plugin-1-stage-1",
+					Index: 0,
 				},
 				{
 					Id:       "plugin-1-stage-2",
 					Name:     "plugin-1-stage-2",
 					Index:    1,
 					Requires: []string{"plugin-1-stage-1"},
-					Visible:  true,
 				},
 				{
 					Id:       "plugin-2-stage-1",
 					Name:     "plugin-2-stage-1",
 					Index:    2,
 					Requires: []string{"plugin-1-stage-2"},
-					Visible:  true,
 				},
 				{
 					Id:       "plugin-1-stage-3",
 					Name:     "plugin-1-stage-3",
 					Index:    3,
 					Requires: []string{"plugin-2-stage-1"},
-					Visible:  true,
 				},
 				{
 					Id:       "plugin-2-stage-2",
 					Name:     "plugin-2-stage-2",
 					Index:    4,
 					Requires: []string{"plugin-1-stage-3"},
-					Visible:  true,
 				},
 				{
-					Id:      "plugin-1-rollback",
-					Name:    "plugin-1-rollback",
-					Visible: false,
+					Id:       "plugin-1-rollback",
+					Name:     "plugin-1-rollback",
+					Index:    0,
+					Rollback: true,
 				},
 			},
 		},
@@ -457,42 +451,40 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 				&fakePlugin{
 					pipelineStages: []*model.PipelineStage{
 						{
-							Id:      "plugin-1-stage-1",
-							Name:    "plugin-1-stage-1",
-							Visible: true,
+							Id:   "plugin-1-stage-1",
+							Name: "plugin-1-stage-1",
 						},
 						{
-							Id:      "plugin-1-stage-2",
-							Name:    "plugin-1-stage-2",
-							Visible: true,
+							Id:   "plugin-1-stage-2",
+							Name: "plugin-1-stage-2",
 						},
 						{
-							Id:      "plugin-1-stage-3",
-							Name:    "plugin-1-stage-3",
-							Visible: true,
+							Id:   "plugin-1-stage-3",
+							Name: "plugin-1-stage-3",
 						},
 					},
 					rollbackStages: []*model.PipelineStage{
 						{
-							Id:      "plugin-1-rollback",
-							Name:    "plugin-1-rollback",
-							Visible: false,
+							Id:       "plugin-1-rollback",
+							Index:    0,
+							Name:     "plugin-1-rollback",
+							Rollback: true,
 						},
 					},
 				},
 				&fakePlugin{
 					pipelineStages: []*model.PipelineStage{
 						{
-							Id:      "plugin-2-stage-1",
-							Name:    "plugin-2-stage-1",
-							Visible: true,
+							Id:   "plugin-2-stage-1",
+							Name: "plugin-2-stage-1",
 						},
 					},
 					rollbackStages: []*model.PipelineStage{
 						{
-							Id:      "plugin-2-rollback",
-							Name:    "plugin-2-rollback",
-							Visible: false,
+							Id:       "plugin-2-rollback",
+							Index:    2,
+							Name:     "plugin-2-rollback",
+							Rollback: true,
 						},
 					},
 				},
@@ -525,41 +517,39 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 			wantErr: false,
 			expectedStages: []*model.PipelineStage{
 				{
-					Id:      "plugin-1-stage-1",
-					Name:    "plugin-1-stage-1",
-					Index:   0,
-					Visible: true,
+					Id:    "plugin-1-stage-1",
+					Name:  "plugin-1-stage-1",
+					Index: 0,
 				},
 				{
 					Id:       "plugin-1-stage-2",
 					Name:     "plugin-1-stage-2",
 					Index:    1,
 					Requires: []string{"plugin-1-stage-1"},
-					Visible:  true,
 				},
 				{
 					Id:       "plugin-2-stage-1",
 					Name:     "plugin-2-stage-1",
 					Index:    2,
 					Requires: []string{"plugin-1-stage-2"},
-					Visible:  true,
 				},
 				{
 					Id:       "plugin-1-stage-3",
 					Name:     "plugin-1-stage-3",
 					Index:    3,
 					Requires: []string{"plugin-2-stage-1"},
-					Visible:  true,
 				},
 				{
-					Id:      "plugin-1-rollback",
-					Name:    "plugin-1-rollback",
-					Visible: false,
+					Id:       "plugin-1-rollback",
+					Index:    0,
+					Name:     "plugin-1-rollback",
+					Rollback: true,
 				},
 				{
-					Id:      "plugin-2-rollback",
-					Name:    "plugin-2-rollback",
-					Visible: false,
+					Id:       "plugin-2-rollback",
+					Index:    2,
+					Name:     "plugin-2-rollback",
+					Rollback: true,
 				},
 			},
 		},

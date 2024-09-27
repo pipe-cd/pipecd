@@ -25,11 +25,16 @@ import (
 	"google.golang.org/grpc"
 )
 
+type toolRegistry interface {
+	InstallTool(ctx context.Context, name, version string) (path string, err error)
+}
+
 type DeploymentService struct {
 	deployment.UnimplementedDeploymentServiceServer
 
-	RegexPool *regexpool.Pool
-	Logger    *zap.Logger
+	RegexPool    *regexpool.Pool
+	Logger       *zap.Logger
+	ToolRegistry toolRegistry
 }
 
 // NewDeploymentService creates a new planService.
@@ -37,8 +42,9 @@ func NewDeploymentService(
 	logger *zap.Logger,
 ) *DeploymentService {
 	return &DeploymentService{
-		RegexPool: regexpool.DefaultPool(),
-		Logger:    logger.Named("planner"),
+		RegexPool:    regexpool.DefaultPool(),
+		Logger:       logger.Named("planner"),
+		ToolRegistry: nil, // TODO: set the tool registry
 	}
 }
 

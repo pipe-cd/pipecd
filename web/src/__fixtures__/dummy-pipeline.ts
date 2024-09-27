@@ -16,6 +16,7 @@ export const dummyPipelineStage: PipelineStage.AsObject = {
   statusReason: "",
   metadataMap: [],
   retriedCount: 0,
+  rollback: false,
   completedAt: completedAt.unix(),
   createdAt: createdAt.unix(),
   updatedAt: updatedAt.unix(),
