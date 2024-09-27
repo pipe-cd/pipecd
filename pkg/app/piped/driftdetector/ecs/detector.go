@@ -252,15 +252,18 @@ func ignoreParameters(liveManifests provider.ECSManifests, headManifests provide
 	liveService.TaskSets = nil
 
 	liveTask := liveManifests.TaskDefinition
-	liveTask.RegisteredAt = nil
-	liveTask.RegisteredBy = nil
-	liveTask.RequiresAttributes = nil
-	liveTask.Revision = 0 // TODO: Find a way to compare the revision if possible.
-	liveTask.TaskDefinitionArn = nil
-	for i := range liveTask.ContainerDefinitions {
-		for j := range liveTask.ContainerDefinitions[i].PortMappings {
-			// We ignore diff of HostPort because it has several default values. See https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_ContainerDefinition.html#ECS-Type-ContainerDefinition-portMappings.
-			liveTask.ContainerDefinitions[i].PortMappings[j].HostPort = nil
+	// When liveTask does not exist, e.g. right after the service is created.
+	if liveTask != nil {
+		liveTask.RegisteredAt = nil
+		liveTask.RegisteredBy = nil
+		liveTask.RequiresAttributes = nil
+		liveTask.Revision = 0 // TODO: Find a way to compare the revision if possible.
+		liveTask.TaskDefinitionArn = nil
+		for i := range liveTask.ContainerDefinitions {
+			for j := range liveTask.ContainerDefinitions[i].PortMappings {
+				// We ignore diff of HostPort because it has several default values. See https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_ContainerDefinition.html#ECS-Type-ContainerDefinition-portMappings.
+				liveTask.ContainerDefinitions[i].PortMappings[j].HostPort = nil
+			}
 		}
 	}
 
@@ -290,8 +293,10 @@ func ignoreParameters(liveManifests provider.ECSManifests, headManifests provide
 	headService.Tags = nil
 
 	headTask := headManifests.TaskDefinition
-	headTask.Status = types.TaskDefinitionStatusActive  // If livestate's status is not ACTIVE, we should re-deploy a new task definition.
-	headTask.Compatibilities = liveTask.Compatibilities // Users can specify Compatibilities in a task definition file, but it is not used when registering a task definition.
+	headTask.Status = types.TaskDefinitionStatusActive // If livestate's status is not ACTIVE, we should re-deploy a new task definition.
+	if liveTask != nil {
+		headTask.Compatibilities = liveTask.Compatibilities // Users can specify Compatibilities in a task definition file, but it is not used when registering a task definition.
+	}
 
 	for i := range headTask.ContainerDefinitions {
 		cd := &headTask.ContainerDefinitions[i]
