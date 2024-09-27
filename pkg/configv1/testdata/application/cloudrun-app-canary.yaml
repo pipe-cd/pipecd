@@ -1,0 +1,26 @@
+# https://cloud.google.com/run/docs/rollouts-rollbacks-traffic-migration
+apiVersion: pipecd.dev/v1beta1
+kind: CloudRunApp
+spec:
+  input:
+    image: gcr.io/demo-project/demoapp:v1.0.0
+  pipeline:
+    stages:
+      # Deploy workloads of the new version.
+      # But this is still receiving no traffic.
+      - name: CLOUDRUN_PROMOTE
+      # Change the traffic routing state where
+      # the new version will receive the specified percentage of traffic.
+      # This is known as multi-phase canary strategy.
+      - name: CLOUDRUN_PROMOTE
+        with:
+          canary: 10
+      # Optional: We can also add an ANALYSIS stage to verify the new version.
+      # If this stage finds any not good metrics of the new version,
+      # a rollback process to the previous version will be executed.
+      - name: ANALYSIS
+      # Change the traffic routing state where
+      # thre new version will receive 100% of the traffic.
+      - name: CLOUDRUN_PROMOTE
+        with:
+          canary: 100

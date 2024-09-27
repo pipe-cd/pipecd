@@ -1,0 +1,15 @@
+apiVersion: "pipecd.dev/v1beta1"
+kind: SealedSecret
+spec:
+  template: |
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: mysecret
+    type: Opaque
+    data:
+      username: {{ .encryptedItems.username }}
+      password: {{ .encryptedItems.password }}
+  encryptedItems:
+    username: encrypted-username
+    password: encrypted-password

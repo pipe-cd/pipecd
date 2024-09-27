@@ -1,0 +1,41 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  pipeline:
+    stages:
+      # Deploy the workloads of CANARY variant. In this case, the number of
+      # workload replicas of CANARY variant is the same with PRIMARY variant.
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 100%
+      # The percentage of traffic each variant should receive.
+      # In this case, CANARY variant will receive all of the traffic.
+      - name: K8S_TRAFFIC_ROUTING
+        with:
+          all: canary
+      # Update the workload of PRIMARY variant to the new version.
+      - name: K8S_PRIMARY_ROLLOUT
+      # The percentage of traffic each variant should receive.
+      # In this case, PRIMARY variant will receive all of the traffic.
+      - name: K8S_TRAFFIC_ROUTING
+        with:
+          all: primary
+      # Destroy all workloads of CANARY variant.
+      - name: K8S_CANARY_CLEAN
+  # Specify application service.
+  service:
+    name: demoapp
+  # Specify application workloads.
+  workloads:
+    - name: demoapp
+  # Configuration for CANARY variant.
+  canaryVariant:
+    suffix: canary
+    createService: true
+  # Configuration for BASELINE variant.
+  baselineVariant:
+    suffix: baseline
+    createService: true
+  # Configuration for traffic splitting.
+  trafficRouting:
+    method: istio # pod (change label in service to switch traffic), smi, envoy
