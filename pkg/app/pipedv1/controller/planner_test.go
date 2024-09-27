@@ -16,11 +16,13 @@ package controller
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -854,15 +856,22 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				apiClient:                    nil,
 				gitClient:                    nil,
 				notifier:                     nil,
-				logger:                       nil,
+				logger:                       zap.NewNop(),
 				nowFunc:                      func() time.Time { return time.Now() },
 			}
 			runningDS := &model.DeploymentSource{}
+
+			jsonBytes, err := json.Marshal(tc.cfg)
+			require.NoError(t, err)
 			targetDS := &model.DeploymentSource{
-				ApplicationConfig: []byte(`{}`),
+				ApplicationConfig: jsonBytes,
 			}
 			out, err := planner.buildPlan(context.TODO(), runningDS, targetDS)
-			require.Equal(t, tc.wantErr, err != nil)
+			if tc.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
 			assert.Equal(t, tc.expectedOutput, out)
 		})
 	}
