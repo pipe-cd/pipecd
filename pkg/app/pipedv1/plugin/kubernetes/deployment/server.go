@@ -72,7 +72,7 @@ func (a *DeploymentService) BuildPipelineSyncStages(context.Context, *deployment
 // BuildQuickSyncStages implements deployment.DeploymentServiceServer.
 func (a *DeploymentService) BuildQuickSyncStages(ctx context.Context, request *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	now := time.Now()
-	stages := buildQuickSyncPipeline(request.GetRollback(), now)
+	stages := buildQuickSyncPipeline(request.GetStageIndex(), request.GetRollback(), now)
 	return &deployment.BuildQuickSyncStagesResponse{
 		Stages: stages,
 	}, nil
