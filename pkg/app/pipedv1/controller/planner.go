@@ -422,6 +422,18 @@ func (p *planner) buildQuickSyncStages(ctx context.Context, cfg *config.GenericA
 	sort.Sort(model.PipelineStages(stages))
 	sort.Sort(model.PipelineStages(rollbackStages))
 
+	// In case there is more than one forward stage, build requires for each stage
+	// based on the order of stages.
+	if len(stages) > 1 {
+		preStageID := ""
+		for _, s := range stages {
+			if preStageID != "" {
+				s.Requires = []string{preStageID}
+			}
+			preStageID = s.Id
+		}
+	}
+
 	stages = append(stages, rollbackStages...)
 	if len(stages) == 0 {
 		return nil, fmt.Errorf("unable to build quick sync stages for deployment")
