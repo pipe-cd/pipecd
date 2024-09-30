@@ -21,6 +21,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -29,7 +30,8 @@ import (
 
 type command struct {
 	cmd       *exec.Cmd
-	stoppedCh chan error
+	stoppedCh chan struct{}
+	result    atomic.Pointer[error]
 }
 
 func (c *command) IsRunning() bool {
@@ -50,9 +52,16 @@ func (c *command) GracefulStop(period time.Duration) error {
 	select {
 	case <-timer.C:
 		c.cmd.Process.Kill()
-		return <-c.stoppedCh
-	case err := <-c.stoppedCh:
-		return err
+		<-c.stoppedCh
+		if perr := c.result.Load(); perr != nil {
+			return *perr
+		}
+		return nil
+	case <-c.stoppedCh:
+		if perr := c.result.Load(); perr != nil {
+			return *perr
+		}
+		return nil
 	}
 }
 
@@ -68,11 +77,12 @@ func runBinary(execPath string, args []string) (*command, error) {
 
 	c := &command{
 		cmd:       cmd,
-		stoppedCh: make(chan error, 1),
+		stoppedCh: make(chan struct{}),
+		result:    atomic.Pointer[error]{},
 	}
 	go func() {
 		err := cmd.Wait()
-		c.stoppedCh <- err
+		c.result.Store(&err)
 		close(c.stoppedCh)
 	}()
 
