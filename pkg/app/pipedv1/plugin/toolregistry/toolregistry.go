@@ -24,10 +24,11 @@ type ToolRegistry struct {
 	client service.PluginServiceClient
 }
 
-func (r *ToolRegistry) InstallTool(ctx context.Context, name, version string) (path string, err error) {
+func (r *ToolRegistry) InstallTool(ctx context.Context, name, version, script string) (path string, err error) {
 	res, err := r.client.InstallTool(ctx, &service.InstallToolRequest{
-		Name:    name,
-		Version: version,
+		Name:          name,
+		Version:       version,
+		InstallScript: script,
 	})
 
 	if err != nil {
