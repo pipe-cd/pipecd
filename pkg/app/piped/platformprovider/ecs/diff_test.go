@@ -102,7 +102,7 @@ func TestDiffResult_Render(t *testing.T) {
  Events: null
 
 # 2. TaskDefinition
-@@ -17,7 +17,7 @@
+@@ -18,7 +18,7 @@
    FirelensConfiguration: null
    HealthCheck: null
    Hostname: null

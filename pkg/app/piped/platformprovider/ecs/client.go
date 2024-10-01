@@ -505,7 +505,7 @@ func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, rou
 			}
 
 			// The default rule needs to be modified by ModifyListener API.
-			if rule.IsDefault {
+			if aws.ToBool(rule.IsDefault) {
 				_, err := c.elbClient.ModifyListener(ctx, &elasticloadbalancingv2.ModifyListenerInput{
 					ListenerArn:    &listenerArn,
 					DefaultActions: modifiedActions,

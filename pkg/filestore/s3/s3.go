@@ -183,7 +183,7 @@ func (s *Store) List(ctx context.Context, prefix string) ([]filestore.ObjectAttr
 		for _, obj := range page.Contents {
 			objects = append(objects, filestore.ObjectAttrs{
 				Path:      aws.ToString(obj.Key),
-				Size:      obj.Size,
+				Size:      aws.ToInt64(obj.Size),
 				Etag:      aws.ToString(obj.ETag),
 				UpdatedAt: aws.ToTime(obj.LastModified).Unix(),
 			})
