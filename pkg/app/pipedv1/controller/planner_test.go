@@ -916,7 +916,18 @@ func TestPlanner_BuildPlan(t *testing.T) {
 
 			runningDS := &model.DeploymentSource{}
 
-			jsonBytes, err := json.Marshal(tc.cfg)
+			type genericConfig struct {
+				Kind       config.Kind `json:"kind"`
+				APIVersion string      `json:"apiVersion,omitempty"`
+				Spec       any         `json:"spec"`
+			}
+
+			jsonBytes, err := json.Marshal(genericConfig{
+				Kind:       config.KindApplication,
+				APIVersion: config.VersionV1Beta1,
+				Spec:       tc.cfg,
+			})
+
 			require.NoError(t, err)
 			targetDS := &model.DeploymentSource{
 				ApplicationConfig: jsonBytes,

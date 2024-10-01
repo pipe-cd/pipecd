@@ -272,24 +272,25 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *model.Depl
 		}
 	}
 
-	cfg, err := config.ParseApplication(targetDS.GetApplicationConfig())
+	cfg, err := config.DecodeYAML(targetDS.GetApplicationConfig())
 	if err != nil {
 		p.logger.Error("unable to parse application config", zap.Error(err))
 		return nil, err
 	}
+	spec := cfg.ApplicationSpec
 
 	// In case the strategy has been decided by trigger.
 	// For example: user triggered the deployment via web console.
 	switch p.deployment.Trigger.SyncStrategy {
 	case model.SyncStrategy_QUICK_SYNC:
-		if stages, err := p.buildQuickSyncStages(ctx, cfg); err == nil {
+		if stages, err := p.buildQuickSyncStages(ctx, spec); err == nil {
 			out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 			out.Summary = p.deployment.Trigger.StrategySummary
 			out.Stages = stages
 			return out, nil
 		}
 	case model.SyncStrategy_PIPELINE:
-		if stages, err := p.buildPipelineSyncStages(ctx, cfg); err == nil {
+		if stages, err := p.buildPipelineSyncStages(ctx, spec); err == nil {
 			out.SyncStrategy = model.SyncStrategy_PIPELINE
 			out.Summary = p.deployment.Trigger.StrategySummary
 			out.Stages = stages
@@ -298,8 +299,8 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *model.Depl
 	}
 
 	// When no pipeline was configured, do the quick sync.
-	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
-		if stages, err := p.buildQuickSyncStages(ctx, cfg); err == nil {
+	if spec.Pipeline == nil || len(spec.Pipeline.Stages) == 0 {
+		if stages, err := p.buildQuickSyncStages(ctx, spec); err == nil {
 			out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 			out.Summary = "Quick sync due to the pipeline was not configured"
 			out.Stages = stages
@@ -308,8 +309,8 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *model.Depl
 	}
 
 	// Force to use pipeline when the `spec.planner.alwaysUsePipeline` was configured.
-	if cfg.Planner.AlwaysUsePipeline {
-		if stages, err := p.buildPipelineSyncStages(ctx, cfg); err == nil {
+	if spec.Planner.AlwaysUsePipeline {
+		if stages, err := p.buildPipelineSyncStages(ctx, spec); err == nil {
 			out.SyncStrategy = model.SyncStrategy_PIPELINE
 			out.Summary = "Sync with the specified pipeline (alwaysUsePipeline was set)"
 			out.Stages = stages
@@ -321,10 +322,10 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *model.Depl
 
 	// This deployment is triggered by a commit with the intent to perform pipeline.
 	// Commit Matcher will be ignored when triggered by a command.
-	if pattern := cfg.CommitMatcher.Pipeline; pattern != "" && p.deployment.Trigger.Commander == "" {
+	if pattern := spec.CommitMatcher.Pipeline; pattern != "" && p.deployment.Trigger.Commander == "" {
 		if pipelineRegex, err := regexPool.Get(pattern); err == nil &&
 			pipelineRegex.MatchString(p.deployment.Trigger.Commit.Message) {
-			if stages, err := p.buildPipelineSyncStages(ctx, cfg); err == nil {
+			if stages, err := p.buildPipelineSyncStages(ctx, spec); err == nil {
 				out.SyncStrategy = model.SyncStrategy_PIPELINE
 				out.Summary = fmt.Sprintf("Sync progressively because the commit message was matching %q", pattern)
 				out.Stages = stages
@@ -335,10 +336,10 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *model.Depl
 
 	// This deployment is triggered by a commit with the intent to synchronize.
 	// Commit Matcher will be ignored when triggered by a command.
-	if pattern := cfg.CommitMatcher.QuickSync; pattern != "" && p.deployment.Trigger.Commander == "" {
+	if pattern := spec.CommitMatcher.QuickSync; pattern != "" && p.deployment.Trigger.Commander == "" {
 		if syncRegex, err := regexPool.Get(pattern); err == nil &&
 			syncRegex.MatchString(p.deployment.Trigger.Commit.Message) {
-			if stages, err := p.buildQuickSyncStages(ctx, cfg); err == nil {
+			if stages, err := p.buildQuickSyncStages(ctx, spec); err == nil {
 				out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 				out.Summary = fmt.Sprintf("Quick sync because the commit message was matching %q", pattern)
 				out.Stages = stages
@@ -349,7 +350,7 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *model.Depl
 
 	// Quick sync if this is the first time to deploy this application or it was unable to retrieve running commit hash.
 	if p.lastSuccessfulCommitHash == "" {
-		if stages, err := p.buildQuickSyncStages(ctx, cfg); err == nil {
+		if stages, err := p.buildQuickSyncStages(ctx, spec); err == nil {
 			out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 			out.Summary = "Quick sync, it seems this is the first deployment of the application"
 			out.Stages = stages
@@ -378,14 +379,14 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *model.Depl
 
 	switch strategy {
 	case model.SyncStrategy_QUICK_SYNC:
-		if stages, err := p.buildQuickSyncStages(ctx, cfg); err == nil {
+		if stages, err := p.buildQuickSyncStages(ctx, spec); err == nil {
 			out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 			out.Summary = summary
 			out.Stages = stages
 			return out, nil
 		}
 	case model.SyncStrategy_PIPELINE:
-		if stages, err := p.buildPipelineSyncStages(ctx, cfg); err == nil {
+		if stages, err := p.buildPipelineSyncStages(ctx, spec); err == nil {
 			out.SyncStrategy = model.SyncStrategy_PIPELINE
 			out.Summary = summary
 			out.Stages = stages

@@ -49,6 +49,8 @@ const (
 	KindCloudRunApp Kind = "CloudRunApp"
 	// KindECSApp represents application configuration for an AWS ECS.
 	KindECSApp Kind = "ECSApp"
+	// KindApplication represents a generic application configuration.
+	KindApplication Kind = "Application"
 )
 
 const (
@@ -76,6 +78,9 @@ type Config struct {
 	APIVersion string
 	spec       interface{}
 
+	ApplicationSpec *GenericApplicationSpec
+
+	// TODO: remove these fields
 	KubernetesApplicationSpec *KubernetesApplicationSpec
 	TerraformApplicationSpec  *TerraformApplicationSpec
 	CloudRunApplicationSpec   *CloudRunApplicationSpec
@@ -99,6 +104,10 @@ func (c *Config) init(kind Kind, apiVersion string) error {
 	c.APIVersion = apiVersion
 
 	switch kind {
+	case KindApplication:
+		c.ApplicationSpec = &GenericApplicationSpec{}
+		c.spec = c.ApplicationSpec
+
 	case KindKubernetesApp:
 		c.KubernetesApplicationSpec = &KubernetesApplicationSpec{}
 		c.spec = c.KubernetesApplicationSpec
@@ -240,6 +249,8 @@ func (k Kind) ToApplicationKind() (model.ApplicationKind, bool) {
 
 func (c *Config) GetGenericApplication() (GenericApplicationSpec, bool) {
 	switch c.Kind {
+	case KindApplication:
+		return *c.ApplicationSpec, true
 	case KindKubernetesApp:
 		return c.KubernetesApplicationSpec.GenericApplicationSpec, true
 	case KindTerraformApp:
