@@ -1,0 +1,245 @@
+apiVersion: pipecd.dev/v1beta1
+kind: Piped
+spec:
+  projectID: test-project
+  pipedID: test-piped
+  pipedKeyFile: etc/piped/key
+  apiAddress: your-pipecd.domain
+  webAddress: https://your-pipecd.domain
+  syncInterval: 1m
+
+  git:
+    username: username
+    email: username@email.com
+    sshKeyFile: /etc/piped-secret/ssh-key
+
+  repositories:
+    - repoId: repo1
+      remote: git@github.com:org/repo1.git
+      branch: master
+    - repoId: repo2
+      remote: git@github.com:org/repo2.git
+      branch: master
+
+  chartRepositories:
+    - name: fantastic-charts
+      address: https://fantastic-charts.storage.googleapis.com
+    - name: private-charts
+      address: https://private-charts.com
+      username: basic-username
+      password: basic-password
+      insecure: true
+  
+  chartRegistries:
+    - type: OCI
+      address: registry.example.com
+      username: sample-username
+      password: sample-password
+
+  platformProviders:
+    - name: kubernetes-default
+      type: KUBERNETES
+      labels:
+        group: workload
+      config:
+        masterURL: https://example.com
+        kubeConfigPath: /etc/kube/config
+        appStateInformer:
+          includeResources:
+            - apiVersion: pipecd.dev/v1beta1
+            - apiVersion: networking.gke.io/v1beta1
+              kind: ManagedCertificate
+          excludeResources:
+            - apiVersion: v1
+              kind: Endpoints
+
+    - name: kubernetes-dev
+      type: KUBERNETES
+      labels:
+        group: config
+
+    - name: terraform
+      type: TERRAFORM
+      config:
+        vars:
+          - "project=gcp-project"
+          - "region=us-centra1"
+        driftDetectionEnabled: false
+
+    - name: cloudrun
+      type: CLOUDRUN
+      config:
+        project: gcp-project-id
+        region: cloud-run-region
+        credentialsFile: /etc/piped-secret/gcp-service-account.json
+
+    - name: lambda
+      type: LAMBDA
+      config:
+        region: us-east-1
+
+  analysisProviders:
+    - name: prometheus-dev
+      type: PROMETHEUS
+      config:
+        address: https://your-prometheus.dev
+    - name: datadog-dev
+      type: DATADOG
+      config:
+        address: https://your-datadog.dev
+        apiKeyFile: /etc/piped-secret/datadog-api-key
+        applicationKeyFile: /etc/piped-secret/datadog-application-key
+    - name: stackdriver-dev
+      type: STACKDRIVER
+      config:
+        serviceAccountFile: /etc/piped-secret/gcp-service-account.json
+
+  notifications:
+    routes:
+      - name: dev-slack
+        labels:
+          env: dev
+          team: pipecd
+        receiver: dev-slack-channel
+      - name: prod-slack
+        events:
+          - DEPLOYMENT_TRIGGERED
+          - DEPLOYMENT_SUCCEEDED
+        labels:
+          env: dev
+        receiver: prod-slack-channel
+      - name: integration-slack
+        receiver: integration-slack-api
+      - name: all-events-to-ci
+        receiver: ci-webhook
+    receivers:
+      - name: dev-slack-channel
+        slack:
+          hookURL: https://slack.com/dev
+      - name: prod-slack-channel
+        slack:
+          hookURL: https://slack.com/prod
+      - name: integration-slack-api
+        slack:
+          oauthToken: token
+          channelID: testid
+      - name: hookurl-with-mentioned-groups
+        slack:
+          hookURL: https://slack.com/dev
+          mentionedGroups:
+            - 'group1'
+            - '<!subteam^group2>'
+      - name: hookurl-with-mentioned-accounts
+        slack:
+          hookURL: https://slack.com/dev
+          mentionedAccounts:
+            - 'user1'
+            - '@user2'
+      - name: hookurl-with-mentioned-both-accounts-and-groups
+        slack:
+          hookURL: https://slack.com/dev
+          mentionedAccounts:
+            - 'user1'
+            - '@user2'
+          mentionedGroups:
+            - 'group1'
+            - '<!subteam^group2>'
+      - name: integration-slack-api-with-mentioned-accounts
+        slack:
+          oauthToken: token
+          channelID: testid
+          mentionedAccounts:
+            - 'user1'
+            - '@user2'
+      - name: integration-slack-api-with-mentioned-groups
+        slack:
+          oauthToken: token
+          channelID: testid
+          mentionedGroups:
+            - 'group1'
+            - '<!subteam^group2>'
+      - name: integration-slack-api-with-mentioned-both-accounts-groups
+        slack:
+          oauthToken: token
+          channelID: testid
+          mentionedAccounts:
+            - 'user1'
+            - '@user2'
+          mentionedGroups:
+            - 'group1'
+            - '<!subteam^group2>'
+      - name: integration-slack-api-with-oauthTokenData
+        slack:
+          oauthTokenData: token
+          channelID: testid
+      - name: integration-slack-api-with-oauthTokenFile
+        slack:
+          oauthTokenFile: 'foo/bar'
+          channelID: testid
+      - name: integration-slack-api-with-oauthTokenFile-and-mentioned-accounts
+        slack:
+          oauthTokenFile: 'foo/bar'
+          channelID: testid
+          mentionedAccounts:
+            - 'user1'
+            - '@user2'
+      - name: integration-slack-api-with-oauthTokenFile-and-mentioned-groups
+        slack:
+          oauthTokenFile: 'foo/bar'
+          channelID: testid
+          mentionedGroups:
+            - 'group1'
+            - '<!subteam^group2>'
+      - name: integration-slack-api-with-oauthTokenFile-and-mentioned-both-accounts-and-groups
+        slack:
+          oauthTokenFile: 'foo/bar'
+          channelID: testid
+          mentionedAccounts:
+            - 'user1'
+            - '@user2'
+          mentionedGroups:
+            - 'group1'
+            - '<!subteam^group2>'
+      - name: integration-slack-api-with-oauthTokenData-and-mentioned-accounts
+        slack:
+          oauthTokenData: token
+          channelID: testid
+          mentionedAccounts:
+            - 'user1'
+            - '@user2'
+      - name: integration-slack-api-with-oauthTokenData-and-mentioned-groups
+        slack:
+          oauthTokenData: token
+          channelID: testid
+          mentionedGroups:
+            - 'group1'
+            - '<!subteam^group2>'
+      - name: integration-slack-api-with-oauthTokenData-and-mentioned-both-accounts-and-groups
+        slack:
+          oauthTokenData: token
+          channelID: testid
+          mentionedAccounts:
+            - 'user1'
+            - '@user2'
+          mentionedGroups:
+            - 'group1'
+            - '<!subteam^group2>'
+      - name: ci-webhook
+        webhook:
+          url: https://pipecd.dev/dev-hook
+          signatureValue: random-signature-string
+
+  secretManagement:
+    type: KEY_PAIR
+    config:
+      privateKeyFile: /etc/piped-secret/pair-private-key
+      publicKeyFile: /etc/piped-secret/pair-public-key
+
+  eventWatcher:
+    checkInterval: 10m
+    gitRepos:
+      - repoId: repo-1
+        commitMessage: Update values by Event watcher
+        includes:
+          - event-watcher-dev.yaml
+          - event-watcher-stg.yaml

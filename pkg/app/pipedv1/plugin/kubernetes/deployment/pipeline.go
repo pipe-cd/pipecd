@@ -105,7 +105,7 @@ func MakeInitialStageMetadata(cfg config.PipelineStage) map[string]string {
 	}
 }
 
-func buildQuickSyncPipeline(autoRollback bool, now time.Time) []*model.PipelineStage {
+func buildQuickSyncPipeline(index int32, autoRollback bool, now time.Time) []*model.PipelineStage {
 	var (
 		preStageID = ""
 		stage, _   = GetPredefinedStage(PredefinedStageK8sSync)
@@ -113,16 +113,16 @@ func buildQuickSyncPipeline(autoRollback bool, now time.Time) []*model.PipelineS
 		out        = make([]*model.PipelineStage, 0, len(stages))
 	)
 
-	for i, s := range stages {
+	for _, s := range stages {
 		id := s.ID
 		if id == "" {
-			id = fmt.Sprintf("stage-%d", i)
+			id = fmt.Sprintf("kubernetes-stage-%d", index)
 		}
 		stage := &model.PipelineStage{
 			Id:         id,
 			Name:       s.Name.String(),
 			Desc:       s.Desc,
-			Index:      int32(i),
+			Index:      int32(index),
 			Predefined: true,
 			Visible:    true,
 			Status:     model.StageStatus_STAGE_NOT_STARTED_YET,

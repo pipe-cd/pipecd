@@ -1,0 +1,5 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  input:
+    kubectlVersion: 3.1.1

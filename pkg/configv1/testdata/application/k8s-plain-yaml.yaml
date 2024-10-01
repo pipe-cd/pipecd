@@ -1,0 +1,9 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  input:
+    manifests:
+      - demoapp-deployment.yaml
+    kubectlVersion: 2.1.1
+  sealedSecrets:
+    - path: sealed-secret.yaml

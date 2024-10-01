@@ -18,8 +18,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
-	"path/filepath"
 	"sort"
 	"time"
 
@@ -30,10 +28,9 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
-	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
@@ -192,27 +189,30 @@ func (p *planner) Run(ctx context.Context) error {
 		controllermetrics.UpdateDeploymentStatus(p.deployment, p.doneDeploymentStatus)
 	}()
 
-	repoCfg := config.PipedRepository{
-		RepoID: p.deployment.GitPath.Repo.Id,
-		Remote: p.deployment.GitPath.Repo.Remote,
-		Branch: p.deployment.GitPath.Repo.Branch,
-	}
+	// TODO: Prepare running deploy source and target deploy source.
+	var runningDS, targetDS *model.DeploymentSource
+
+	// repoCfg := config.PipedRepository{
+	// 	RepoID: p.deployment.GitPath.Repo.Id,
+	// 	Remote: p.deployment.GitPath.Repo.Remote,
+	// 	Branch: p.deployment.GitPath.Repo.Branch,
+	// }
 
 	// Prepare target deploy source.
-	targetDSP := deploysource.NewProvider(
-		filepath.Join(p.workingDir, "deploysource"),
-		deploysource.NewGitSourceCloner(p.gitClient, repoCfg, "target", p.deployment.Trigger.Commit.Hash),
-		*p.deployment.GitPath,
-		nil, // TODO: Revise this secret decryter, is this need?
-	)
+	// targetDSP := deploysource.NewProvider(
+	// 	filepath.Join(p.workingDir, "deploysource"),
+	// 	deploysource.NewGitSourceCloner(p.gitClient, repoCfg, "target", p.deployment.Trigger.Commit.Hash),
+	// 	*p.deployment.GitPath,
+	// 	nil, // TODO: Revise this secret decryter, is this need?
+	// )
 
-	targetDS, err := targetDSP.Get(ctx, io.Discard)
-	if err != nil {
-		return fmt.Errorf("error while preparing deploy source data (%v)", err)
-	}
+	// targetDS, err := targetDSP.Get(ctx, io.Discard)
+	// if err != nil {
+	// 	return fmt.Errorf("error while preparing deploy source data (%v)", err)
+	// }
 
 	// TODO: Pass running DS as well if need?
-	out, err := p.buildPlan(ctx, targetDS)
+	out, err := p.buildPlan(ctx, runningDS, targetDS)
 
 	// If the deployment was already cancelled, we ignore the plan result.
 	select {
@@ -243,13 +243,15 @@ func (p *planner) Run(ctx context.Context) error {
 //   - CommitMatcher ensure pipeline/quick sync based on the commit message
 //   - Force quick sync if there is no previous deployment (aka. this is the first deploy)
 //   - Based on PlannerService.DetermineStrategy returned by plugins
-func (p *planner) buildPlan(ctx context.Context, targetDS *deploysource.DeploySource) (*plannerOutput, error) {
+func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *model.DeploymentSource) (*plannerOutput, error) {
 	out := &plannerOutput{}
 
 	input := &deployment.PlanPluginInput{
-		Deployment: p.deployment,
+		Deployment:              p.deployment,
+		RunningDeploymentSource: runningDS,
+		TargetDeploymentSource:  targetDS,
 		// TODO: Add more planner input fields.
-		// NOTE: As discussed we pass targetDS & runningDS here.
+		// we need passing PluginConfig
 	}
 
 	// Build deployment target versions.
@@ -270,20 +272,25 @@ func (p *planner) buildPlan(ctx context.Context, targetDS *deploysource.DeploySo
 		}
 	}
 
-	cfg := targetDS.GenericApplicationConfig
+	cfg, err := config.DecodeYAML(targetDS.GetApplicationConfig())
+	if err != nil {
+		p.logger.Error("unable to parse application config", zap.Error(err))
+		return nil, err
+	}
+	spec := cfg.ApplicationSpec
 
 	// In case the strategy has been decided by trigger.
 	// For example: user triggered the deployment via web console.
 	switch p.deployment.Trigger.SyncStrategy {
 	case model.SyncStrategy_QUICK_SYNC:
-		if stages, err := p.buildQuickSyncStages(ctx, cfg); err == nil {
+		if stages, err := p.buildQuickSyncStages(ctx, spec); err == nil {
 			out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 			out.Summary = p.deployment.Trigger.StrategySummary
 			out.Stages = stages
 			return out, nil
 		}
 	case model.SyncStrategy_PIPELINE:
-		if stages, err := p.buildPipelineSyncStages(ctx, cfg); err == nil {
+		if stages, err := p.buildPipelineSyncStages(ctx, spec); err == nil {
 			out.SyncStrategy = model.SyncStrategy_PIPELINE
 			out.Summary = p.deployment.Trigger.StrategySummary
 			out.Stages = stages
@@ -292,8 +299,8 @@ func (p *planner) buildPlan(ctx context.Context, targetDS *deploysource.DeploySo
 	}
 
 	// When no pipeline was configured, do the quick sync.
-	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
-		if stages, err := p.buildQuickSyncStages(ctx, cfg); err == nil {
+	if spec.Pipeline == nil || len(spec.Pipeline.Stages) == 0 {
+		if stages, err := p.buildQuickSyncStages(ctx, spec); err == nil {
 			out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 			out.Summary = "Quick sync due to the pipeline was not configured"
 			out.Stages = stages
@@ -302,8 +309,8 @@ func (p *planner) buildPlan(ctx context.Context, targetDS *deploysource.DeploySo
 	}
 
 	// Force to use pipeline when the `spec.planner.alwaysUsePipeline` was configured.
-	if cfg.Planner.AlwaysUsePipeline {
-		if stages, err := p.buildPipelineSyncStages(ctx, cfg); err == nil {
+	if spec.Planner.AlwaysUsePipeline {
+		if stages, err := p.buildPipelineSyncStages(ctx, spec); err == nil {
 			out.SyncStrategy = model.SyncStrategy_PIPELINE
 			out.Summary = "Sync with the specified pipeline (alwaysUsePipeline was set)"
 			out.Stages = stages
@@ -315,10 +322,10 @@ func (p *planner) buildPlan(ctx context.Context, targetDS *deploysource.DeploySo
 
 	// This deployment is triggered by a commit with the intent to perform pipeline.
 	// Commit Matcher will be ignored when triggered by a command.
-	if pattern := cfg.CommitMatcher.Pipeline; pattern != "" && p.deployment.Trigger.Commander == "" {
+	if pattern := spec.CommitMatcher.Pipeline; pattern != "" && p.deployment.Trigger.Commander == "" {
 		if pipelineRegex, err := regexPool.Get(pattern); err == nil &&
 			pipelineRegex.MatchString(p.deployment.Trigger.Commit.Message) {
-			if stages, err := p.buildPipelineSyncStages(ctx, cfg); err == nil {
+			if stages, err := p.buildPipelineSyncStages(ctx, spec); err == nil {
 				out.SyncStrategy = model.SyncStrategy_PIPELINE
 				out.Summary = fmt.Sprintf("Sync progressively because the commit message was matching %q", pattern)
 				out.Stages = stages
@@ -329,10 +336,10 @@ func (p *planner) buildPlan(ctx context.Context, targetDS *deploysource.DeploySo
 
 	// This deployment is triggered by a commit with the intent to synchronize.
 	// Commit Matcher will be ignored when triggered by a command.
-	if pattern := cfg.CommitMatcher.QuickSync; pattern != "" && p.deployment.Trigger.Commander == "" {
+	if pattern := spec.CommitMatcher.QuickSync; pattern != "" && p.deployment.Trigger.Commander == "" {
 		if syncRegex, err := regexPool.Get(pattern); err == nil &&
 			syncRegex.MatchString(p.deployment.Trigger.Commit.Message) {
-			if stages, err := p.buildQuickSyncStages(ctx, cfg); err == nil {
+			if stages, err := p.buildQuickSyncStages(ctx, spec); err == nil {
 				out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 				out.Summary = fmt.Sprintf("Quick sync because the commit message was matching %q", pattern)
 				out.Stages = stages
@@ -343,7 +350,7 @@ func (p *planner) buildPlan(ctx context.Context, targetDS *deploysource.DeploySo
 
 	// Quick sync if this is the first time to deploy this application or it was unable to retrieve running commit hash.
 	if p.lastSuccessfulCommitHash == "" {
-		if stages, err := p.buildQuickSyncStages(ctx, cfg); err == nil {
+		if stages, err := p.buildQuickSyncStages(ctx, spec); err == nil {
 			out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 			out.Summary = "Quick sync, it seems this is the first deployment of the application"
 			out.Stages = stages
@@ -372,14 +379,14 @@ func (p *planner) buildPlan(ctx context.Context, targetDS *deploysource.DeploySo
 
 	switch strategy {
 	case model.SyncStrategy_QUICK_SYNC:
-		if stages, err := p.buildQuickSyncStages(ctx, cfg); err == nil {
+		if stages, err := p.buildQuickSyncStages(ctx, spec); err == nil {
 			out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 			out.Summary = summary
 			out.Stages = stages
 			return out, nil
 		}
 	case model.SyncStrategy_PIPELINE:
-		if stages, err := p.buildPipelineSyncStages(ctx, cfg); err == nil {
+		if stages, err := p.buildPipelineSyncStages(ctx, spec); err == nil {
 			out.SyncStrategy = model.SyncStrategy_PIPELINE
 			out.Summary = summary
 			out.Stages = stages
@@ -421,6 +428,18 @@ func (p *planner) buildQuickSyncStages(ctx context.Context, cfg *config.GenericA
 	// Sort stages by index.
 	sort.Sort(model.PipelineStages(stages))
 	sort.Sort(model.PipelineStages(rollbackStages))
+
+	// In case there is more than one forward stage, build requires for each stage
+	// based on the order of stages.
+	if len(stages) > 1 {
+		preStageID := ""
+		for _, s := range stages {
+			if preStageID != "" {
+				s.Requires = []string{preStageID}
+			}
+			preStageID = s.Id
+		}
+	}
 
 	stages = append(stages, rollbackStages...)
 	if len(stages) == 0 {
