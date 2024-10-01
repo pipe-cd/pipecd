@@ -15,6 +15,7 @@
 package config
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -592,4 +593,14 @@ func LoadApplication(repoPath, configRelPath string, appKind model.ApplicationKi
 	}
 
 	return &spec, nil
+}
+
+// ParseApplication parses the given byte slice into a GenericApplicationSpec.
+func ParseApplication(b []byte) (*GenericApplicationSpec, error) {
+	cfg := new(GenericApplicationSpec)
+	if err := json.NewDecoder(bytes.NewReader(b)).Decode(cfg); err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
 }

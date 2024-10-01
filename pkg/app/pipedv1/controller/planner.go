@@ -15,7 +15,6 @@
 package controller
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -273,8 +272,8 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *model.Depl
 		}
 	}
 
-	cfg := new(config.GenericApplicationSpec)
-	if err := json.NewDecoder(bytes.NewReader(targetDS.ApplicationConfig)).Decode(cfg); err != nil {
+	cfg, err := config.ParseApplication(targetDS.GetApplicationConfig())
+	if err != nil {
 		p.logger.Error("unable to parse application config", zap.Error(err))
 		return nil, err
 	}
