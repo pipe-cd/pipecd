@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package toolregistry_test
+package toolregistry
 
 import (
 	"context"
@@ -20,10 +20,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/toolregistry/toolregistrytest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/toolregistry/toolregistrytest"
 )
 
 func TestRegistry_Kubectl(t *testing.T) {
@@ -32,7 +32,7 @@ func TestRegistry_Kubectl(t *testing.T) {
 	c, err := toolregistrytest.NewToolRegistry(t)
 	require.NoError(t, err)
 
-	r := toolregistry.NewRegistry(c)
+	r := NewRegistry(c)
 
 	t.Cleanup(func() { c.Close() })
 
@@ -54,7 +54,7 @@ func TestRegistry_Kustomize(t *testing.T) {
 	c, err := toolregistrytest.NewToolRegistry(t)
 	require.NoError(t, err)
 
-	r := toolregistry.NewRegistry(c)
+	r := NewRegistry(c)
 
 	t.Cleanup(func() { c.Close() })
 
@@ -76,7 +76,7 @@ func TestRegistry_Helm(t *testing.T) {
 	c, err := toolregistrytest.NewToolRegistry(t)
 	require.NoError(t, err)
 
-	r := toolregistry.NewRegistry(c)
+	r := NewRegistry(c)
 
 	t.Cleanup(func() { c.Close() })
 
