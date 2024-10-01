@@ -82,3 +82,7 @@ Take Chrome for example;
 2. Open the developer tools and go to the network panel.
 3. Find the `GetMe` request and select it.
 4. Copy the whole value of the `Cookie` in "Request Headers" and paste it to `API_COOKIE={COOKIE}` in the `.env` file.
+
+![](https://github.com/pipe-cd/pipecd/blob/master/docs/static/images/play-environment-get-me.png)
+
+TIP: If you don't want to step up (or don't have) a PipeCD controlplane API server, you can login to [https://play.pipecd.dev](https://play.pipecd.dev/login?project=play) and use its API with your authenticated account.
