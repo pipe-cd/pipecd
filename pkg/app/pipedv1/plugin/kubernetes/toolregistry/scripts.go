@@ -14,26 +14,20 @@
 
 package toolregistry
 
-import (
-	"context"
+const kubectlInstallScript = `
+cd {{ .TmpDir }}
+curl -LO https://storage.googleapis.com/kubernetes-release/release/v{{ .Version }}/bin/{{ .Os }}/{{ .Arch }}/kubectl
+mv kubectl {{ .OutPath }}
+`
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/cmd/piped/service"
-)
+const kustomizeInstallScript = `
+cd {{ .TmpDir }}
+curl -L https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v{{ .Version }}/kustomize_v{{ .Version }}_{{ .Os }}_{{ .Arch }}.tar.gz | tar xvz
+mv kustomize {{ .OutPath }}
+`
 
-type ToolRegistry struct {
-	client service.PluginServiceClient
-}
-
-func (r *ToolRegistry) InstallTool(ctx context.Context, name, version, script string) (path string, err error) {
-	res, err := r.client.InstallTool(ctx, &service.InstallToolRequest{
-		Name:          name,
-		Version:       version,
-		InstallScript: script,
-	})
-
-	if err != nil {
-		return "", err
-	}
-
-	return res.GetInstalledPath(), nil
-}
+const helmInstallScript = `
+cd {{ .TmpDir }}
+curl -L https://get.helm.sh/helm-v{{ .Version }}-{{ .Os }}-{{ .Arch }}.tar.gz | tar xvz
+mv {{ .Os }}-{{ .Arch }}/helm {{ .OutPath }}
+`
