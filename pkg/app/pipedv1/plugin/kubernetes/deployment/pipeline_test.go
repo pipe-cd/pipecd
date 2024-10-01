@@ -29,11 +29,13 @@ func TestBuildQuickSyncPipeline(t *testing.T) {
 
 	tests := []struct {
 		name         string
+		index        int32
 		autoRollback bool
 		expected     []*model.PipelineStage
 	}{
 		{
 			name:         "without auto rollback",
+			index:        0,
 			autoRollback: false,
 			expected: []*model.PipelineStage{
 				{
@@ -52,6 +54,7 @@ func TestBuildQuickSyncPipeline(t *testing.T) {
 		},
 		{
 			name:         "with auto rollback",
+			index:        0,
 			autoRollback: true,
 			expected: []*model.PipelineStage{
 				{
@@ -82,7 +85,7 @@ func TestBuildQuickSyncPipeline(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			actual := buildQuickSyncPipeline(tt.autoRollback, now)
+			actual := buildQuickSyncPipeline(tt.index, tt.autoRollback, now)
 			assert.Equal(t, tt.expected, actual)
 		})
 	}
