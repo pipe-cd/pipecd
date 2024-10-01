@@ -22,7 +22,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/toolregistry/toolregistrytest"
 )
 
 func TestKustomizeTemplate(t *testing.T) {
@@ -34,12 +35,17 @@ func TestKustomizeTemplate(t *testing.T) {
 		appDir  = "testdata/testkustomize"
 	)
 
-	kustomizePath, _, err := toolregistry.DefaultRegistry().Kustomize(ctx, "")
+	r, err := toolregistrytest.NewToolRegistry(t)
+	require.NoError(t, err)
+	t.Cleanup(func() { r.Close() })
+
+	registry := toolregistry.NewRegistry(r)
+	kustomizePath, err := registry.Kustomize(ctx, "5.4.3")
 	require.NoError(t, err)
 
 	kustomize := NewKustomize("", kustomizePath, zap.NewNop())
 	out, err := kustomize.Template(ctx, appName, appDir, map[string]string{
-		"load_restrictor": "LoadRestrictionsNone",
+		"load-restrictor": "LoadRestrictionsNone",
 	})
 	require.NoError(t, err)
 	assert.True(t, len(out) > 0)

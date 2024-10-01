@@ -23,7 +23,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/toolregistry/toolregistrytest"
 )
 
 func TestTemplateLocalChart(t *testing.T) {
@@ -36,11 +37,15 @@ func TestTemplateLocalChart(t *testing.T) {
 		chartPath = "testchart"
 	)
 
-	// TODO: Preinstall a helm version inside CI runner to avoid installing.
-	helmPath, _, err := toolregistry.DefaultRegistry().Helm(ctx, "")
+	r, err := toolregistrytest.NewToolRegistry(t)
+	require.NoError(t, err)
+	t.Cleanup(func() { r.Close() })
+
+	registry := toolregistry.NewRegistry(r)
+	helmPath, err := registry.Helm(ctx, "3.8.2")
 	require.NoError(t, err)
 
-	helm := NewHelm("", helmPath, zap.NewNop())
+	helm := NewHelm("", helmPath, zap.NewNop(), registry)
 	out, err := helm.TemplateLocalChart(ctx, appName, appDir, "", chartPath, nil)
 	require.NoError(t, err)
 
@@ -60,11 +65,15 @@ func TestTemplateLocalChart_WithNamespace(t *testing.T) {
 		namespace = "testnamespace"
 	)
 
-	// TODO: Preinstall a helm version inside CI runner to avoid installing.
-	helmPath, _, err := toolregistry.DefaultRegistry().Helm(ctx, "")
+	r, err := toolregistrytest.NewToolRegistry(t)
+	require.NoError(t, err)
+	t.Cleanup(func() { r.Close() })
+
+	registry := toolregistry.NewRegistry(r)
+	helmPath, err := registry.Helm(ctx, "3.8.2")
 	require.NoError(t, err)
 
-	helm := NewHelm("", helmPath, zap.NewNop())
+	helm := NewHelm("", helmPath, zap.NewNop(), registry)
 	out, err := helm.TemplateLocalChart(ctx, appName, appDir, namespace, chartPath, nil)
 	require.NoError(t, err)
 

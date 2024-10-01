@@ -29,7 +29,7 @@ import (
 var updateGroup = &singleflight.Group{}
 
 type registry interface {
-	Helm(ctx context.Context, version string) (string, bool, error)
+	Helm(ctx context.Context, version string) (string, error)
 }
 
 // Add installs all specified Helm Chart repositories.
@@ -37,7 +37,7 @@ type registry interface {
 // helm repo add fantastic-charts https://fantastic-charts.storage.googleapis.com
 // helm repo add fantastic-charts https://fantastic-charts.storage.googleapis.com --username my-username --password my-password
 func Add(ctx context.Context, repos []config.HelmChartRepository, reg registry, logger *zap.Logger) error {
-	helm, _, err := reg.Helm(ctx, "")
+	helm, err := reg.Helm(ctx, "")
 	if err != nil {
 		return fmt.Errorf("failed to find helm to add repos (%w)", err)
 	}
@@ -70,7 +70,7 @@ func Update(ctx context.Context, reg registry, logger *zap.Logger) error {
 func update(ctx context.Context, reg registry, logger *zap.Logger) error {
 	logger.Info("start updating Helm chart repositories")
 
-	helm, _, err := reg.Helm(ctx, "")
+	helm, err := reg.Helm(ctx, "")
 	if err != nil {
 		return fmt.Errorf("failed to find helm to update repos (%w)", err)
 	}

@@ -22,7 +22,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
@@ -43,17 +43,19 @@ type applier struct {
 	input            config.KubernetesDeploymentInput
 	platformProvider config.PlatformProviderKubernetesConfig
 	logger           *zap.Logger
+	toolregistry     toolregistry.Registry
 
 	kubectl  *Kubectl
 	initOnce sync.Once
 	initErr  error
 }
 
-func NewApplier(input config.KubernetesDeploymentInput, cp config.PlatformProviderKubernetesConfig, logger *zap.Logger) Applier {
+func NewApplier(input config.KubernetesDeploymentInput, cp config.PlatformProviderKubernetesConfig, logger *zap.Logger, toolregistry toolregistry.Registry) Applier {
 	return &applier{
 		input:            input,
 		platformProvider: cp,
 		logger:           logger.Named("kubernetes-applier"),
+		toolregistry:     toolregistry,
 	}
 }
 
@@ -217,12 +219,9 @@ func (a *applier) getToolVersionToRun() string {
 }
 
 func (a *applier) findKubectl(ctx context.Context, version string) (*Kubectl, error) {
-	path, installed, err := toolregistry.DefaultRegistry().Kubectl(ctx, version)
+	path, err := a.toolregistry.Kubectl(ctx, version)
 	if err != nil {
 		return nil, fmt.Errorf("no kubectl %s (%v)", version, err)
-	}
-	if installed {
-		a.logger.Info(fmt.Sprintf("kubectl %s has just been installed because of no pre-installed binary for that version", version))
 	}
 	return NewKubectl(version, path), nil
 }

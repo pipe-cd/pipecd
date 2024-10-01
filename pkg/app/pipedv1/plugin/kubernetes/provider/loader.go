@@ -26,7 +26,6 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/git"
 )
@@ -48,6 +47,12 @@ type gitClient interface {
 	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
 }
 
+type registry interface {
+	Kubectl(ctx context.Context, version string) (string, error)
+	Kustomize(ctx context.Context, version string) (string, error)
+	Helm(ctx context.Context, version string) (string, error)
+}
+
 type loader struct {
 	appName        string
 	appDir         string
@@ -56,6 +61,7 @@ type loader struct {
 	input          config.KubernetesDeploymentInput
 	gc             gitClient
 	logger         *zap.Logger
+	toolregistry   registry
 
 	templatingMethod TemplatingMethod
 	kustomize        *Kustomize
@@ -69,6 +75,7 @@ func NewLoader(
 	input config.KubernetesDeploymentInput,
 	gc gitClient,
 	logger *zap.Logger,
+	toolregistry registry,
 ) Loader {
 
 	return &loader{
@@ -79,6 +86,7 @@ func NewLoader(
 		input:          input,
 		gc:             gc,
 		logger:         logger.Named("kubernetes-loader"),
+		toolregistry:   toolregistry,
 	}
 }
 
@@ -196,25 +204,19 @@ func sortManifests(manifests []Manifest) {
 }
 
 func (l *loader) findKustomize(ctx context.Context, version string) (*Kustomize, error) {
-	path, installed, err := toolregistry.DefaultRegistry().Kustomize(ctx, version)
+	path, err := l.toolregistry.Kustomize(ctx, version)
 	if err != nil {
 		return nil, fmt.Errorf("no kustomize %s (%v)", version, err)
-	}
-	if installed {
-		l.logger.Info(fmt.Sprintf("kustomize %s has just been installed because of no pre-installed binary for that version", version))
 	}
 	return NewKustomize(version, path, l.logger), nil
 }
 
 func (l *loader) findHelm(ctx context.Context, version string) (*Helm, error) {
-	path, installed, err := toolregistry.DefaultRegistry().Helm(ctx, version)
+	path, err := l.toolregistry.Helm(ctx, version)
 	if err != nil {
 		return nil, fmt.Errorf("no helm %s (%v)", version, err)
 	}
-	if installed {
-		l.logger.Info(fmt.Sprintf("helm %s has just been installed because of no pre-installed binary for that version", version))
-	}
-	return NewHelm(version, path, l.logger), nil
+	return NewHelm(version, path, l.logger, l.toolregistry), nil
 }
 
 func determineTemplatingMethod(input config.KubernetesDeploymentInput, appDirPath string) TemplatingMethod {

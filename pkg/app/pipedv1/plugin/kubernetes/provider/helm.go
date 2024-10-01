@@ -26,7 +26,6 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider/chartrepo"
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
@@ -35,17 +34,23 @@ var (
 	allowedURLSchemes = []string{"http", "https"}
 )
 
-type Helm struct {
-	version  string
-	execPath string
-	logger   *zap.Logger
+type helmRegistry interface {
+	Helm(ctx context.Context, version string) (string, error)
 }
 
-func NewHelm(version, path string, logger *zap.Logger) *Helm {
+type Helm struct {
+	version      string
+	execPath     string
+	logger       *zap.Logger
+	toolregistry helmRegistry
+}
+
+func NewHelm(version, path string, logger *zap.Logger, toolregistry helmRegistry) *Helm {
 	return &Helm{
-		version:  version,
-		execPath: path,
-		logger:   logger,
+		version:      version,
+		execPath:     path,
+		logger:       logger,
+		toolregistry: toolregistry,
 	}
 }
 
@@ -214,7 +219,7 @@ func (h *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespa
 	}
 
 	// If the error is a "Not Found", we update the repositories and try again.
-	if e := chartrepo.Update(ctx, toolregistry.DefaultRegistry(), h.logger); e != nil {
+	if e := chartrepo.Update(ctx, h.toolregistry, h.logger); e != nil {
 		h.logger.Error("failed to update Helm chart repositories", zap.Error(e))
 		return "", err
 	}
@@ -416,7 +421,7 @@ func (h *Helm) UpgradeRemoteChart(ctx context.Context, appName, appDir, namespac
 	}
 
 	// If the error is a "Not Found", we update the repositories and try again.
-	if e := chartrepo.Update(ctx, toolregistry.DefaultRegistry(), h.logger); e != nil {
+	if e := chartrepo.Update(ctx, h.toolregistry, h.logger); e != nil {
 		h.logger.Error("failed to update Helm chart repositories", zap.Error(e))
 		return "", err
 	}
