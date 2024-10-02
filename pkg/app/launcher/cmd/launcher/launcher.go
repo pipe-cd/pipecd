@@ -58,25 +58,24 @@ const (
 var ignoreFlags map[string]struct{}
 
 type launcher struct {
-	configFile              string
-	configData              string
-	configFromGCPSecret     bool
-	gcpSecretID             string
-	configFromAWSSecret     bool
-	awsSecretID             string
-	configFromGitRepo       bool
-	gitRepoURL              string
-	gitBranch               string
-	gitPipedConfigFile      string
-	gitSSHKeyFile           string
-	configFilePathInGitRepo string
-	insecure                bool
-	certFile                string
-	homeDir                 string
-	defaultVersion          string
-	launcherAdminPort       int
-	checkInterval           time.Duration
-	gracePeriod             time.Duration
+	configFile          string
+	configData          string
+	configFromGCPSecret bool
+	gcpSecretID         string
+	configFromAWSSecret bool
+	awsSecretID         string
+	configFromGitRepo   bool
+	gitRepoURL          string
+	gitBranch           string
+	gitPipedConfigFile  string
+	gitSSHKeyFile       string
+	insecure            bool
+	certFile            string
+	homeDir             string
+	defaultVersion      string
+	launcherAdminPort   int
+	checkInterval       time.Duration
+	gracePeriod         time.Duration
 
 	runningVersion    string
 	runningConfigData []byte
