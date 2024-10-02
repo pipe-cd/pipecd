@@ -30,8 +30,10 @@ import (
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	secretmanagerpb "cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	awssecretsmanager "github.com/aws/aws-sdk-go-v2/service/secretsmanager"
+	awsssm "github.com/aws/aws-sdk-go-v2/service/ssm"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -58,25 +60,27 @@ const (
 var ignoreFlags map[string]struct{}
 
 type launcher struct {
-	configFile              string
-	configData              string
-	configFromGCPSecret     bool
-	gcpSecretID             string
-	configFromAWSSecret     bool
-	awsSecretID             string
-	configFromGitRepo       bool
-	gitRepoURL              string
-	gitBranch               string
-	gitPipedConfigFile      string
-	gitSSHKeyFile           string
-	configFilePathInGitRepo string
-	insecure                bool
-	certFile                string
-	homeDir                 string
-	defaultVersion          string
-	launcherAdminPort       int
-	checkInterval           time.Duration
-	gracePeriod             time.Duration
+	configFile                     string
+	configData                     string
+	configFromGCPSecret            bool
+	gcpSecretID                    string
+	configFromAWSSecret            bool
+	awsSecretID                    string
+	configFromAWSSsmParameterStore bool
+	awsSsmParameter                string
+	configFromGitRepo              bool
+	gitRepoURL                     string
+	gitBranch                      string
+	gitPipedConfigFile             string
+	gitSSHKeyFile                  string
+	configFilePathInGitRepo        string
+	insecure                       bool
+	certFile                       string
+	homeDir                        string
+	defaultVersion                 string
+	launcherAdminPort              int
+	checkInterval                  time.Duration
+	gracePeriod                    time.Duration
 
 	runningVersion    string
 	runningConfigData []byte
@@ -109,6 +113,9 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&l.configFromAWSSecret, "config-from-aws-secret", l.configFromAWSSecret, "Whether to load Piped config that is being stored in AWS Secrets Manager service.")
 	cmd.Flags().StringVar(&l.awsSecretID, "aws-secret-id", l.awsSecretID, "The ARN of secret that contains Piped config in AWS Secrets Manager service.")
 
+	cmd.Flags().BoolVar(&l.configFromAWSSsmParameterStore, "config-from-aws-ssm-parameter-store", l.configFromAWSSsmParameterStore, "Whether to load Piped config that is being stored in AWS Systems Manager Parameter Store.")
+	cmd.Flags().StringVar(&l.awsSsmParameter, "aws-ssm-parameter", l.awsSsmParameter, "The name of parameter of Piped config stored in AWS Systems Manager Parameter Store. SecureString is also supported.")
+
 	cmd.Flags().BoolVar(&l.configFromGitRepo, "config-from-git-repo", l.configFromGitRepo, "Whether to load Piped config that is being stored in a git repository.")
 	cmd.Flags().StringVar(&l.gitRepoURL, "git-repo-url", l.gitRepoURL, "The remote URL of git repository to fetch Piped config.")
 	cmd.Flags().StringVar(&l.gitBranch, "git-branch", l.gitBranch, "Branch of git repository to for Piped config.")
@@ -127,21 +134,23 @@ func NewCommand() *cobra.Command {
 
 	// TODO: Find a better way to automatically maintain this ignore list.
 	ignoreFlags = map[string]struct{}{
-		"config-file":            {},
-		"config-data":            {},
-		"config-from-gcp-secret": {},
-		"gcp-secret-id":          {},
-		"config-from-git-repo":   {},
-		"config-from-aws-secret": {},
-		"aws-secret-id":          {},
-		"git-repo-url":           {},
-		"git-branch":             {},
-		"git-piped-config-file":  {},
-		"git-ssh-key-file":       {},
-		"home-dir":               {},
-		"default-version":        {},
-		"launcher-admin-port":    {},
-		"check-interval":         {},
+		"config-file":                         {},
+		"config-data":                         {},
+		"config-from-gcp-secret":              {},
+		"gcp-secret-id":                       {},
+		"config-from-git-repo":                {},
+		"config-from-aws-secret":              {},
+		"aws-secret-id":                       {},
+		"config-from-aws-ssm-parameter-store": {},
+		"aws-ssm-parameter":                   {},
+		"git-repo-url":                        {},
+		"git-branch":                          {},
+		"git-piped-config-file":               {},
+		"git-ssh-key-file":                    {},
+		"home-dir":                            {},
+		"default-version":                     {},
+		"launcher-admin-port":                 {},
+		"check-interval":                      {},
 	}
 
 	return cmd
@@ -156,6 +165,11 @@ func (l *launcher) validateFlags() error {
 	if l.configFromAWSSecret {
 		if l.awsSecretID == "" {
 			return fmt.Errorf("aws-secret-id must be set to load Piped config from AWS Secrets Manager service")
+		}
+	}
+	if l.configFromAWSSsmParameterStore {
+		if l.awsSsmParameter == "" {
+			return fmt.Errorf("aws-ssm-parameter must be set to load Piped config from AWS Systems Manager Parameter Store")
 		}
 	}
 	if l.configFromGitRepo {
@@ -456,6 +470,27 @@ func (l *launcher) loadConfigData(ctx context.Context) ([]byte, error) {
 		return decoded, nil
 	}
 
+	if l.configFromAWSSsmParameterStore {
+		cfg, err := awsconfig.LoadDefaultConfig(ctx)
+		if err != nil {
+			return nil, err
+		}
+		client := awsssm.NewFromConfig(cfg)
+		in := &awsssm.GetParameterInput{
+			Name:           &l.awsSsmParameter,
+			WithDecryption: aws.Bool(true),
+		}
+		result, err := client.GetParameter(ctx, in)
+		if err != nil {
+			return nil, err
+		}
+		decoded, err := base64.StdEncoding.DecodeString(*result.Parameter.Value)
+		if err != nil {
+			return nil, err
+		}
+		return decoded, nil
+	}
+
 	if l.configFromGitRepo {
 		// Pull to update the local data.
 		if err := l.configRepo.Pull(ctx, l.gitBranch); err != nil {
@@ -469,6 +504,7 @@ func (l *launcher) loadConfigData(ctx context.Context) ([]byte, error) {
 		"config-data",
 		"config-from-gcp-secret",
 		"config-from-aws-secret",
+		"config-from-aws-ssm-parameter-store",
 		"config-from-git-repo",
 	}, ", "))
 }
