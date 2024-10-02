@@ -18,35 +18,31 @@ package toolregistry
 
 import (
 	"context"
-
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/toolregistry"
 )
 
-// Registry provides functions to get path to the needed tools.
-type Registry interface {
-	Kubectl(ctx context.Context, version string) (string, error)
-	Kustomize(ctx context.Context, version string) (string, error)
-	Helm(ctx context.Context, version string) (string, error)
+type client interface {
+	InstallTool(ctx context.Context, name, version, script string) (string, error)
 }
 
-func NewRegistry(client toolregistry.ToolRegistry) Registry {
-	return &registry{
+func NewRegistry(client client) *Registry {
+	return &Registry{
 		client: client,
 	}
 }
 
-type registry struct {
-	client toolregistry.ToolRegistry
+// Registry provides functions to get path to the needed tools.
+type Registry struct {
+	client client
 }
 
-func (r *registry) Kubectl(ctx context.Context, version string) (string, error) {
+func (r *Registry) Kubectl(ctx context.Context, version string) (string, error) {
 	return r.client.InstallTool(ctx, "kubectl", version, kubectlInstallScript)
 }
 
-func (r *registry) Kustomize(ctx context.Context, version string) (string, error) {
+func (r *Registry) Kustomize(ctx context.Context, version string) (string, error) {
 	return r.client.InstallTool(ctx, "kustomize", version, kustomizeInstallScript)
 }
 
-func (r *registry) Helm(ctx context.Context, version string) (string, error) {
+func (r *Registry) Helm(ctx context.Context, version string) (string, error) {
 	return r.client.InstallTool(ctx, "helm", version, helmInstallScript)
 }
