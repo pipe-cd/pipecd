@@ -73,7 +73,6 @@ type launcher struct {
 	gitBranch                      string
 	gitPipedConfigFile             string
 	gitSSHKeyFile                  string
-	configFilePathInGitRepo        string
 	insecure                       bool
 	certFile                       string
 	homeDir                        string
