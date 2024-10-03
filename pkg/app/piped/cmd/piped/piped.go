@@ -31,8 +31,10 @@ import (
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	secretmanagerpb "cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	awssecretsmanager "github.com/aws/aws-sdk-go-v2/service/secretsmanager"
+	awsssm "github.com/aws/aws-sdk-go-v2/service/ssm"
 	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
@@ -92,10 +94,11 @@ const (
 )
 
 type piped struct {
-	configFile      string
-	configData      string
-	configGCPSecret string
-	configAWSSecret string
+	configFile            string
+	configData            string
+	configGCPSecret       string
+	configAWSSecret       string
+	configAWSSsmParameter string
 
 	insecure                             bool
 	certFile                             string
@@ -131,6 +134,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&p.configData, "config-data", p.configData, "The base64 encoded string of the configuration data.")
 	cmd.Flags().StringVar(&p.configGCPSecret, "config-gcp-secret", p.configGCPSecret, "The resource ID of secret that contains Piped config and be stored in GCP SecretManager.")
 	cmd.Flags().StringVar(&p.configAWSSecret, "config-aws-secret", p.configAWSSecret, "The ARN of secret that contains Piped config and be stored in AWS Secrets Manager.")
+	cmd.Flags().StringVar(&p.configAWSSsmParameter, "config-aws-ssm-parameter", p.configAWSSsmParameter, "The name of parameter of Piped config stored in AWS Systems Manager Parameter Store. SecureString is also supported.")
 
 	cmd.Flags().BoolVar(&p.insecure, "insecure", p.insecure, "Whether disabling transport security while connecting to control-plane.")
 	cmd.Flags().StringVar(&p.certFile, "cert-file", p.certFile, "The path to the TLS certificate file.")
@@ -735,6 +739,18 @@ func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 		return extract(cfg)
 	}
 
+	if p.configAWSSsmParameter != "" {
+		data, err := p.getConfigDataFromAWSSsmParameterStore(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load config from AWS Systems Manager Parameter Store (%w)", err)
+		}
+		cfg, err := config.DecodeYAML(data)
+		if err != nil {
+			return nil, err
+		}
+		return extract(cfg)
+	}
+
 	return nil, fmt.Errorf("one of config-file, config-gcp-secret or config-aws-secret must be set")
 }
 
@@ -935,6 +951,29 @@ func (p *piped) getConfigDataFromAWSSecretsManager(ctx context.Context) ([]byte,
 	return decoded, nil
 }
 
+func (p *piped) getConfigDataFromAWSSsmParameterStore(ctx context.Context) ([]byte, error) {
+	cfg, err := awsconfig.LoadDefaultConfig(ctx)
+	if err != nil {
+		return nil, err
+	}
+	client := awsssm.NewFromConfig(cfg)
+
+	in := &awsssm.GetParameterInput{
+		Name:           &p.configAWSSsmParameter,
+		WithDecryption: aws.Bool(true),
+	}
+	result, err := client.GetParameter(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+
+	decoded, err := base64.StdEncoding.DecodeString(*result.Parameter.Value)
+	if err != nil {
+		return nil, err
+	}
+	return decoded, nil
+}
+
 func registerMetrics(pipedID, projectID, launcherVersion string) *prometheus.Registry {
 	r := prometheus.NewRegistry()
 	wrapped := prometheus.WrapRegistererWith(
@@ -1009,13 +1048,13 @@ func stopCommandHandler(ctx context.Context, cmdLister commandstore.Lister, logg
 
 func (p *piped) hasTooManyConfigFlags() error {
 	cnt := 0
-	for _, v := range []string{p.configFile, p.configGCPSecret, p.configAWSSecret} {
+	for _, v := range []string{p.configFile, p.configGCPSecret, p.configAWSSecret, p.configAWSSsmParameter} {
 		if v != "" {
 			cnt++
 		}
 	}
 	if cnt > 1 {
-		return fmt.Errorf("only one of config-file, config-gcp-secret or config-aws-secret could be set")
+		return fmt.Errorf("only one of config-file, config-gcp-secret, config-aws-secret, or config-aws-ssm-parameter could be set")
 	}
 	return nil
 }
