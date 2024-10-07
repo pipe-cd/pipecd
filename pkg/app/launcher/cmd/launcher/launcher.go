@@ -242,7 +242,7 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 			if err != nil {
 				return fmt.Errorf("failed to create a temp file for SSH key data (%w)", err)
 			}
-			if _, err = tmpKeyFile.WriteString(string(decodedKey)); err != nil {
+			if _, err = tmpKeyFile.Write(decodedKey); err != nil {
 				return fmt.Errorf("failed to write SSH key data to a temp file  (%w)", err)
 			}
 
