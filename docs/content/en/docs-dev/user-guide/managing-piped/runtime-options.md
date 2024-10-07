@@ -62,7 +62,8 @@ Flags:
       --git-branch string                     Branch of git repository to for Piped config.
       --git-piped-config-file string          Relative path within git repository to locate Piped config file.
       --git-repo-url string                   The remote URL of git repository to fetch Piped config.
-      --git-ssh-key-file string               The path to SSH private key to fetch private git repository.
+      --git-ssh-key-data string               Base64 encoded value of SSH private key to fetch Piped config from the private git repository.
+      --git-ssh-key-file string               The path to SSH private key to fetch Piped config from private git repository.
       --grace-period duration                 How long to wait for graceful shutdown. (default 30s)
   -h, --help                                  help for launcher
       --home-dir string                       The working directory of Launcher.
