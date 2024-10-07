@@ -239,8 +239,57 @@ spec:
         image: 12345
 `,
 			},
-			want: nil,
+			want:    nil,
 			wantErr: true,
+		},
+		{
+			name: "manifest with no containers field",
+			manifests: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: no-containers-deployment
+spec:
+  template:
+    spec: {}
+`,
+			},
+			want:    []*model.ArtifactVersion{},
+			wantErr: false,
+		},
+		{
+			name: "manifest with invalid containers field -- returns error",
+			manifests: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: no-containers-deployment
+spec:
+  template:
+    spec:
+      containers: "invalid-containers-field"
+`,
+			},
+			wantErr: true,
+		},
+		{
+			name: "manifest with invalid containers field -- skipped",
+			manifests: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: no-containers-deployment
+spec:
+  template:
+    spec:
+      containers:
+        - "invalid-containers-field"
+`,
+			},
+			wantErr: false,
 		},
 	}
 

@@ -49,12 +49,13 @@ func determineVersions(manifests []provider.Manifest) ([]*model.ArtifactVersion,
 	for _, m := range manifests {
 		// TODO: we should consider other fields like spec.jobTempate.spec.template.spec.containers because CronJob uses this format.
 		containers, ok, err := unstructured.NestedSlice(m.Body.Object, "spec", "template", "spec", "containers")
-		if !ok {
-			continue
-		}
 		if err != nil {
 			// if the containers field is not an array, it will return an error.
+			// we define this as error because the 'containers' is plural form, so it should be an array.
 			return nil, err
+		}
+		if !ok {
+			continue
 		}
 		// Remove duplicate images on multiple manifests.
 		for _, c := range containers {
