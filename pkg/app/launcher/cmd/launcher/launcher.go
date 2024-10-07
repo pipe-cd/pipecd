@@ -121,7 +121,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&l.gitBranch, "git-branch", l.gitBranch, "Branch of git repository to for Piped config.")
 	cmd.Flags().StringVar(&l.gitPipedConfigFile, "git-piped-config-file", l.gitPipedConfigFile, "Relative path within git repository to locate Piped config file.")
 	cmd.Flags().StringVar(&l.gitSSHKeyFile, "git-ssh-key-file", l.gitSSHKeyFile, "The path to SSH private key to fetch Piped config from the private git repository.")
-	cmd.Flags().StringVar(&l.gitSSHKeyData, "git-ssh-key-data", l.gitSSHKeyData, "The value of SSH private key to fetch Piped config from the private git repository.")
+	cmd.Flags().StringVar(&l.gitSSHKeyData, "git-ssh-key-data", l.gitSSHKeyData, "The base64 encoded value of SSH private key to fetch Piped config from the private git repository.")
 
 	cmd.Flags().BoolVar(&l.insecure, "insecure", l.insecure, "Whether disabling transport security while connecting to control-plane.")
 	cmd.Flags().StringVar(&l.certFile, "cert-file", l.certFile, "The path to the TLS certificate file.")
