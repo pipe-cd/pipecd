@@ -73,6 +73,7 @@ type launcher struct {
 	gitBranch                      string
 	gitPipedConfigFile             string
 	gitSSHKeyFile                  string
+	gitSSHKeyData                  string
 	insecure                       bool
 	certFile                       string
 	homeDir                        string
@@ -119,7 +120,8 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&l.gitRepoURL, "git-repo-url", l.gitRepoURL, "The remote URL of git repository to fetch Piped config.")
 	cmd.Flags().StringVar(&l.gitBranch, "git-branch", l.gitBranch, "Branch of git repository to for Piped config.")
 	cmd.Flags().StringVar(&l.gitPipedConfigFile, "git-piped-config-file", l.gitPipedConfigFile, "Relative path within git repository to locate Piped config file.")
-	cmd.Flags().StringVar(&l.gitSSHKeyFile, "git-ssh-key-file", l.gitSSHKeyFile, "The path to SSH private key to fetch private git repository.")
+	cmd.Flags().StringVar(&l.gitSSHKeyFile, "git-ssh-key-file", l.gitSSHKeyFile, "The path to SSH private key to fetch Piped config from the private git repository.")
+	cmd.Flags().StringVar(&l.gitSSHKeyData, "git-ssh-key-data", l.gitSSHKeyData, "The base64 encoded value of SSH private key to fetch Piped config from the private git repository.")
 
 	cmd.Flags().BoolVar(&l.insecure, "insecure", l.insecure, "Whether disabling transport security while connecting to control-plane.")
 	cmd.Flags().StringVar(&l.certFile, "cert-file", l.certFile, "The path to the TLS certificate file.")
@@ -146,6 +148,7 @@ func NewCommand() *cobra.Command {
 		"git-branch":                          {},
 		"git-piped-config-file":               {},
 		"git-ssh-key-file":                    {},
+		"git-ssh-key-data":                    {},
 		"home-dir":                            {},
 		"default-version":                     {},
 		"launcher-admin-port":                 {},
@@ -180,6 +183,9 @@ func (l *launcher) validateFlags() error {
 		}
 		if l.gitPipedConfigFile == "" {
 			return fmt.Errorf("git-piped-config-path must be set to load config from a git repository")
+		}
+		if l.gitSSHKeyFile != "" && l.gitSSHKeyData != "" {
+			return fmt.Errorf("only one of git-ssh-key-file or git-ssh-key-data can be set")
 		}
 	}
 	return nil
@@ -227,6 +233,23 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 		if l.gitSSHKeyFile != "" {
 			options = append(options, git.WithGitEnv(fmt.Sprintf("GIT_SSH_COMMAND=ssh -i %s -o StrictHostKeyChecking=no -F /dev/null", l.gitSSHKeyFile)))
 		}
+		if l.gitSSHKeyData != "" {
+			decodedKey, err := base64.StdEncoding.DecodeString(l.gitSSHKeyData)
+			if err != nil {
+				return fmt.Errorf("failed to decode SSH key data, (%w)", err)
+			}
+			tmpKeyFile, err := os.CreateTemp("", "git-ssh-key-data")
+			if err != nil {
+				return fmt.Errorf("failed to create a temp file for SSH key data (%w)", err)
+			}
+			if _, err = tmpKeyFile.Write(decodedKey); err != nil {
+				return fmt.Errorf("failed to write SSH key data to a temp file  (%w)", err)
+			}
+
+			options = append(options, git.WithGitEnv(fmt.Sprintf("GIT_SSH_COMMAND=ssh -i %s -o StrictHostKeyChecking=no -F /dev/null", tmpKeyFile.Name())))
+			defer os.Remove(tmpKeyFile.Name())
+		}
+
 		gc, err := git.NewClient(options...)
 		if err != nil {
 			input.Logger.Error("failed to initialize git client", zap.Error(err))
