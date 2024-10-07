@@ -185,7 +185,7 @@ func (l *launcher) validateFlags() error {
 			return fmt.Errorf("git-piped-config-path must be set to load config from a git repository")
 		}
 		if l.gitSSHKeyFile != "" && l.gitSSHKeyData != "" {
-			return fmt.Errorf("only one of git-ssh-key-file and git-ssh-key-data can be set")
+			return fmt.Errorf("only one of git-ssh-key-file or git-ssh-key-data can be set")
 		}
 	}
 	return nil
