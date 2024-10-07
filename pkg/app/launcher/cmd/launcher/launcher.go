@@ -239,8 +239,8 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 			if err != nil {
 				return fmt.Errorf("failed to create a temp file for SSH key from env (%w)", err)
 			}
-
-			if _, err = tmpKeyFile.Write([]byte(key)); err != nil {
+			key += "\n" // Without this, the key will be invalid.
+			if _, err = tmpKeyFile.WriteString(key); err != nil {
 				return fmt.Errorf("failed to write SSH key to a temp file from env %s (%w)", l.gitSSHKeyEnv, err)
 			}
 
