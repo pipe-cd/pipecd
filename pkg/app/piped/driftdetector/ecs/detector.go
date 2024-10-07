@@ -280,12 +280,18 @@ func ignoreParameters(liveManifests provider.ECSManifests, headManifests provide
 	}
 	if headService.NetworkConfiguration != nil && headService.NetworkConfiguration.AwsvpcConfiguration != nil {
 		awsvpcCfg := headService.NetworkConfiguration.AwsvpcConfiguration
-		slices.Sort(awsvpcCfg.Subnets) // Livestate's Subnets are sorted by ECS. (SecurityGroups and ContainerDefinitions are not sorted)
+		slices.Sort(awsvpcCfg.Subnets)
 		if len(awsvpcCfg.AssignPublicIp) == 0 {
 			// AssignPublicIp is DISABLED by default.
 			// See https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_AwsVpcConfiguration.html#ECS-Type-AwsVpcConfiguration-assignPublicIp.
 			awsvpcCfg.AssignPublicIp = types.AssignPublicIpDisabled
 		}
+	}
+
+	// Sort the subnets of the live service as well
+	if liveService.NetworkConfiguration != nil && liveService.NetworkConfiguration.AwsvpcConfiguration != nil {
+		awsvpcCfg := liveService.NetworkConfiguration.AwsvpcConfiguration
+		slices.Sort(awsvpcCfg.Subnets)
 	}
 
 	// TODO: In order to check diff of the tags, we need to add pipecd-managed tags and sort.
