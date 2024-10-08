@@ -6,6 +6,8 @@ on:
       - master
     tags:
       - 'v*'
+  release:
+    types: [created]
 
 env:
   GHCR: ghcr.io
@@ -146,3 +148,26 @@ jobs:
           event-name: helm-release
           labels: helmRepo=pipecd
           data: ${{ env.PIPECD_VERSION }}
+
+      # Building and publishing quickstart manifests.
+      - name: Build quickstart manifests
+        if: ${{ github.event_name == 'release' }}
+        run: |
+          helm template pipecd oci://ghcr.io/pipe-cd/chart/pipecd --version ${{ env.PIPECD_VERSION }} -n pipecd -f quickstart/control-plane-values.yaml > quickstart/manifests/control-plane.yaml
+          helm template piped oci://ghcr.io/pipe-cd/chart/piped --version ${{ env.PIPECD_VERSION }} -n pipecd --set quickstart.enabled=true --set quickstart.pipedId=\<YOUR_PIPED_ID\> --set quickstart.pipedKeyData=\<YOUR_PIPED_KEY_DATA\> > quickstart/manifests/piped.yaml
+      - name: Publish quickstart manifests
+        if: ${{ github.event_name == 'release' }}
+        uses: peter-evans/create-pull-request@v6
+        with:
+          title: "[bot] Publish quickstart manifests"
+          commit-message: "[bot] Publish quickstart manifests"
+          branch: "create-pull-request/publish-quickstart-manifests"
+          body: |
+            Automated changes by [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action.
+            The workflow is defined [here](https://github.com/pipe-cd/pipecd/blob/master/.github/workflows/publish_binary.yaml).
+
+            **Note:** You need to **close and reopen this PR** manually to trigger status check workflows. (Or just click `Update branch` if possible.)
+            For details, see https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#triggering-further-workflow-runs.
+          delete-branch: true
+          signoff: true
+          token: ${{ secrets.GITHUB_TOKEN }}
