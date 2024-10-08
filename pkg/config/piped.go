@@ -712,6 +712,10 @@ type PlatformProviderLambdaConfig struct {
 	// If empty, the environment variable "AWS_PROFILE" is used.
 	// "default" is populated if the environment variable is also not set.
 	Profile string `json:"profile,omitempty"`
+	// Whether to enable LiveState feature or not.
+	// If this is false, LiveStateStore and DriftDetection will be disabled.
+	// Default is true.
+	EnableLiveState *bool `json:"enableLiveState,omitempty" default:"true"`
 }
 
 func (c *PlatformProviderLambdaConfig) Mask() {

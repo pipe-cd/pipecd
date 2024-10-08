@@ -171,6 +171,9 @@ func NewDetector(
 			))
 
 		case model.PlatformProviderLambda:
+			if !*cp.LambdaConfig.EnableLiveState {
+				continue
+			}
 			sg, ok := stateGetter.LambdaGetter(cp.Name)
 			if !ok {
 				return nil, fmt.Errorf(format, cp.Name)

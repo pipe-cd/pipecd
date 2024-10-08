@@ -124,6 +124,9 @@ func NewStore(ctx context.Context, cfg *config.PipedSpec, appLister applicationL
 			s.cloudrunStores[cp.Name] = store
 
 		case model.PlatformProviderLambda:
+			if !*cp.LambdaConfig.EnableLiveState {
+				continue
+			}
 			store, err := lambda.NewStore(cp.LambdaConfig, cp.Name, logger)
 			if err != nil {
 				logger.Error("failed to create a new lambda's livestatestore", zap.Error(err))
