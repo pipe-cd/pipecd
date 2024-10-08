@@ -66,6 +66,13 @@ This may also contain some minor features, but ensure that it does NOT contain a
 
   The `RELEASE` file will be updated.
 
+- (Optional) if the patch contains changes with docs update, also need to run `make release/docs`
+  ```shell
+  make release/docs version=vX.Y.Z
+  ```
+
+  Note: You can use `make release version=vX.Y.Z` command to perform both init and docs sync tasks.
+
 - Push the above changes and create a pull request to `master` to confirm the changelog.
 
 - Get a review and merge.
