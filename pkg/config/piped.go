@@ -712,6 +712,10 @@ type PlatformProviderLambdaConfig struct {
 	// If empty, the environment variable "AWS_PROFILE" is used.
 	// "default" is populated if the environment variable is also not set.
 	Profile string `json:"profile,omitempty"`
+	// The interval to fetch the live state of Lambda functions.
+	// Default is 15s.
+	// To reduce AWS API calls, this interval should be larger.
+	LiveStateInterval Duration `json:"liveStateInterval,omitempty" default:"15s"`
 }
 
 func (c *PlatformProviderLambdaConfig) Mask() {
