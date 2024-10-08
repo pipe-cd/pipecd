@@ -18,15 +18,23 @@ import (
 	"context"
 	"time"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/regexpool"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type toolRegistry interface {
 	InstallTool(ctx context.Context, name, version string) (path string, err error)
+}
+
+type loader interface {
+	// LoadManifests renders and loads all manifests for application.
+	LoadManifests(ctx context.Context, input provider.LoaderInput) ([]provider.Manifest, error)
 }
 
 type DeploymentService struct {
@@ -35,6 +43,7 @@ type DeploymentService struct {
 	RegexPool    *regexpool.Pool
 	Logger       *zap.Logger
 	ToolRegistry toolRegistry
+	Loader       loader
 }
 
 // NewDeploymentService creates a new planService.
@@ -59,9 +68,23 @@ func (a *DeploymentService) DetermineStrategy(context.Context, *deployment.Deter
 }
 
 // DetermineVersions implements deployment.DeploymentServiceServer.
-func (a *DeploymentService) DetermineVersions(context.Context, *deployment.DetermineVersionsRequest) (*deployment.DetermineVersionsResponse, error) {
-	// TODO: how to determine whether the runnning or target deployment to use?
-	panic("unimplemented")
+func (a *DeploymentService) DetermineVersions(ctx context.Context, request *deployment.DetermineVersionsRequest) (*deployment.DetermineVersionsResponse, error) {
+	manifests, err := a.Loader.LoadManifests(ctx, provider.LoaderInput{
+		// TODO: fill the input
+	})
+
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	versions, err := determineVersions(manifests)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &deployment.DetermineVersionsResponse{
+		Versions: versions,
+	}, nil
 }
 
 // BuildPipelineSyncStages implements deployment.DeploymentServiceServer.
