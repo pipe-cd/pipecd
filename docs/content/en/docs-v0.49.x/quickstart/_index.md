@@ -6,7 +6,9 @@ description: >
   This page describes how to quickly get started with PipeCD on Kubernetes.
 ---
 
-This page is a guideline for installing PipeCD into your Kubernetes cluster and deploying a "hello world" application to that same Kubernetes cluster.
+PipeCD is constructed by two components: the Control plane and the piped (agent) (ref: [PipeCD concepts](../concepts/)). The control plane can be thought of as a regular web service application that can be installed anywhere, while the piped agent is a single binary that can run as a pod in a Kubernetes cluster, a container on ECS, a serverless function like Lambda, Cloud Run, or a process running directly on your local machine.
+
+This page is a guideline for installing PipeCD (both two components) into your Kubernetes cluster and deploying a "hello world" application to that same Kubernetes cluster.
 
 Note:
 
