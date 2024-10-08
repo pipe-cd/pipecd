@@ -187,3 +187,4 @@ jobs:
           delete-branch: true
           signoff: true
           token: ${{ secrets.GITHUB_TOKEN }}
+          base: master
