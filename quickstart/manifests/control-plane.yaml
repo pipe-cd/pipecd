@@ -5,10 +5,10 @@ kind: Secret
 metadata:
   name: pipecd
   labels:
-    helm.sh/chart: pipecd-v0.48.6
+    helm.sh/chart: pipecd-v0.49.1
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/version: "v0.49.1"
     app.kubernetes.io/managed-by: Helm
 type: Opaque
 data:
@@ -22,10 +22,10 @@ kind: ConfigMap
 metadata:
   name: pipecd
   labels:
-    helm.sh/chart: pipecd-v0.48.6
+    helm.sh/chart: pipecd-v0.49.1
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/version: "v0.49.1"
     app.kubernetes.io/managed-by: Helm
 data:
   control-plane-config.yaml: |-
@@ -57,10 +57,10 @@ kind: ConfigMap
 metadata:
   name: pipecd-gateway-envoy-config
   labels:
-    helm.sh/chart: pipecd-v0.48.6
+    helm.sh/chart: pipecd-v0.49.1
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/version: "v0.49.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: gateway
 data:
@@ -78,7 +78,7 @@ data:
           socket_address:
             address: 0.0.0.0
             port_value: 9090
-        filter_chains:
+        filter_chains: # We cannot turn off ext_authz by default, so we have to turn it off in config for each route that doesn't need authz.
         - filters:
           - name: envoy.filters.network.http_connection_manager
             typed_config:
@@ -90,13 +90,26 @@ data:
                 typed_config:
                   "@type": type.googleapis.com/envoy.extensions.access_loggers.stream.v3.StdoutAccessLog
               http_filters:
+              - name: envoy.filters.http.ext_authz
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+                  grpc_service:
+                    envoy_grpc:
+                      cluster_name: grpc-envoy-ext-authz
+                    timeout: 10s
+                  transport_api_version: V3
+                  include_peer_certificate: false
               - name: envoy.filters.http.grpc_web
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_web.v3.GrpcWeb
               - name: envoy.filters.http.grpc_stats
                 typed_config:
                   "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_stats.v3.FilterConfig
                   stats_for_all_methods: true
                   enable_upstream_stats: true
               - name: envoy.filters.http.router
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
               route_config:
                 name: local_route
                 virtual_hosts:
@@ -109,38 +122,66 @@ data:
                         grpc:
                       route:
                         cluster: grpc-piped-service
+                      typed_per_filter_config:
+                        envoy.filters.http.ext_authz:
+                          "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                          disabled: true
                     - match:
                         prefix: /pipe.api.service.pipedservice.PipedService/
                         grpc:
                       route:
                         cluster: grpc-piped-service
                         prefix_rewrite: /grpc.service.pipedservice.PipedService/
+                      typed_per_filter_config:
+                        envoy.filters.http.ext_authz:
+                          "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                          disabled: true
                     - match:
                         prefix: /grpc.service.webservice.WebService/
                         grpc:
                       route:
                         cluster: grpc-web-service
+                      typed_per_filter_config:
+                        envoy.filters.http.ext_authz:
+                          "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                          disabled: true
                     - match:
                         prefix: /pipe.api.service.webservice.WebService/
                         grpc:
                       route:
                         cluster: grpc-web-service
                         prefix_rewrite: /grpc.service.webservice.WebService/
+                      typed_per_filter_config:
+                        envoy.filters.http.ext_authz:
+                          "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                          disabled: true
                     - match:
                         prefix: /grpc.service.apiservice.APIService/
                         grpc:
                       route:
                         cluster: grpc-api-service
+                      typed_per_filter_config:
+                        envoy.filters.http.ext_authz:
+                          "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                          disabled: true
                     - match:
                         prefix: /pipe.api.service.apiservice.APIService/
                         grpc:
                       route:
                         cluster: grpc-api-service
                         prefix_rewrite: /grpc.service.apiservice.APIService/
+                      typed_per_filter_config:
+                        envoy.filters.http.ext_authz:
+                          "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                          disabled: true
                     - match:
                         prefix: /
                       route:
                         cluster: server-http
+                      typed_per_filter_config:
+                        envoy.filters.http.ext_authz:
+                          "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                          disabled: true
       clusters:
       - name: grpc-piped-service
         http2_protocol_options: {}
@@ -205,6 +246,22 @@ data:
                     port_value: 9082
         track_cluster_stats:
           request_response_sizes: true
+      - name: grpc-envoy-ext-authz
+        http2_protocol_options: {}
+        connect_timeout: 0.25s
+        type: STRICT_DNS
+        lb_policy: ROUND_ROBIN
+        load_assignment:
+          cluster_name: grpc-envoy-ext-authz
+          endpoints:
+          - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: pipecd-server
+                    port_value: 9086
+        track_cluster_stats:
+          request_response_sizes: true
 ---
 # Source: pipecd/templates/service.yaml
 apiVersion: v1
@@ -212,10 +269,10 @@ kind: Service
 metadata:
   name: pipecd
   labels:
-    helm.sh/chart: pipecd-v0.48.6
+    helm.sh/chart: pipecd-v0.49.1
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/version: "v0.49.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: ingress
   annotations:
@@ -236,10 +293,10 @@ kind: Service
 metadata:
   name: pipecd-gateway
   labels:
-    helm.sh/chart: pipecd-v0.48.6
+    helm.sh/chart: pipecd-v0.49.1
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/version: "v0.49.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: gateway
 spec:
@@ -259,10 +316,10 @@ kind: Service
 metadata:
   name: pipecd-server
   labels:
-    helm.sh/chart: pipecd-v0.48.6
+    helm.sh/chart: pipecd-v0.49.1
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/version: "v0.49.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: server
 spec:
@@ -295,10 +352,10 @@ kind: Service
 metadata:
   name: pipecd-cache
   labels:
-    helm.sh/chart: pipecd-v0.48.6
+    helm.sh/chart: pipecd-v0.49.1
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/version: "v0.49.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: cache
 spec:
@@ -318,10 +375,10 @@ kind: Service
 metadata:
   name: pipecd-ops
   labels:
-    helm.sh/chart: pipecd-v0.48.6
+    helm.sh/chart: pipecd-v0.49.1
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/version: "v0.49.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: ops
 spec:
@@ -345,10 +402,10 @@ kind: Service
 metadata:
   name: pipecd-mysql
   labels:
-    helm.sh/chart: pipecd-v0.48.6
+    helm.sh/chart: pipecd-v0.49.1
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/version: "v0.49.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: mysql
 spec:
@@ -368,10 +425,10 @@ kind: Service
 metadata:
   name: pipecd-minio
   labels:
-    helm.sh/chart: pipecd-v0.48.6
+    helm.sh/chart: pipecd-v0.49.1
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/version: "v0.49.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: minio
 spec:
@@ -392,10 +449,10 @@ kind: Deployment
 metadata:
   name: pipecd-gateway
   labels:
-    helm.sh/chart: pipecd-v0.48.6
+    helm.sh/chart: pipecd-v0.49.1
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/version: "v0.49.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: gateway
 spec:
@@ -411,10 +468,12 @@ spec:
         app.kubernetes.io/name: pipecd
         app.kubernetes.io/instance: pipecd
         app.kubernetes.io/component: gateway
+      annotations:
+        checksum/config: 13ac2a3f8ea383423fa098e13fda490d4c01ea04fcf4de03b4318de43a8a5607 # ref; https://helm.sh/docs/howto/charts_tips_and_tricks/#automatically-roll-deployments
     spec:
       containers:
         - name: envoy
-          image: envoyproxy/envoy-alpine:v1.18.3
+          image: envoyproxy/envoy:v1.31.0
           imagePullPolicy: IfNotPresent
           command:
           - envoy
@@ -460,10 +519,10 @@ kind: Deployment
 metadata:
   name: pipecd-server
   labels:
-    helm.sh/chart: pipecd-v0.48.6
+    helm.sh/chart: pipecd-v0.49.1
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/version: "v0.49.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: server
 spec:
@@ -492,7 +551,7 @@ spec:
               done;
       containers:
         - name: server
-          image: "ghcr.io/pipe-cd/pipecd:v0.48.6"
+          image: "ghcr.io/pipe-cd/pipecd:v0.49.1"
           imagePullPolicy: IfNotPresent
           args:
           - server
@@ -555,10 +614,10 @@ kind: Deployment
 metadata:
   name: pipecd-cache
   labels:
-    helm.sh/chart: pipecd-v0.48.6
+    helm.sh/chart: pipecd-v0.49.1
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/version: "v0.49.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: cache
 spec:
@@ -591,10 +650,10 @@ kind: Deployment
 metadata:
   name: pipecd-ops
   labels:
-    helm.sh/chart: pipecd-v0.48.6
+    helm.sh/chart: pipecd-v0.49.1
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/version: "v0.49.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: ops
 spec:
@@ -625,7 +684,7 @@ spec:
               done;
       containers:
         - name: ops
-          image: "ghcr.io/pipe-cd/pipecd:v0.48.6"
+          image: "ghcr.io/pipe-cd/pipecd:v0.49.1"
           imagePullPolicy: IfNotPresent
           args:
           - ops
@@ -671,10 +730,10 @@ kind: Deployment
 metadata:
   name: pipecd-mysql
   labels:
-    helm.sh/chart: pipecd-v0.48.6
+    helm.sh/chart: pipecd-v0.49.1
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/version: "v0.49.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: mysql
 spec:
@@ -712,10 +771,10 @@ kind: Deployment
 metadata:
   name: pipecd-minio
   labels:
-    helm.sh/chart: pipecd-v0.48.6
+    helm.sh/chart: pipecd-v0.49.1
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/version: "v0.49.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: minio
 spec:
