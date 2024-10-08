@@ -153,6 +153,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     permissions:
       contents: write
+      pull-requests: write
     steps:
       # setup tools and repositories
       - name: Install helm
