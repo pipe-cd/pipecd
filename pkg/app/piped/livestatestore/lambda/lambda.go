@@ -58,7 +58,7 @@ func NewStore(cfg *config.PlatformProviderLambdaConfig, platformProvider string,
 			client: client,
 			logger: logger.Named("store"),
 		},
-		interval:      15 * time.Second,
+		interval:      time.Duration(cfg.AwsAPIPollingInterval),
 		logger:        logger,
 		firstSyncedCh: make(chan error, 1),
 	}
