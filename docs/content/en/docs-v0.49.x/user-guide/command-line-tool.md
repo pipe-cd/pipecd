@@ -151,7 +151,6 @@ Available Commands:
   init         Generate an application config (app.pipecd.yaml) easily and interactively.
   piped        Manage piped resources.
   plan-preview Show plan preview against the specified commit.
-  quickstart   Quick prepare PipeCD control plane in quickstart mode.
   version      Print the information of current binary.
 
 Flags:

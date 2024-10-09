@@ -24,7 +24,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/initialize"
 	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/piped"
 	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/planpreview"
-	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/quickstart"
 	"github.com/pipe-cd/pipecd/pkg/cli"
 )
 
@@ -41,7 +40,6 @@ func main() {
 		planpreview.NewCommand(),
 		piped.NewCommand(),
 		encrypt.NewCommand(),
-		quickstart.NewCommand(),
 		initialize.NewCommand(),
 	)
 
