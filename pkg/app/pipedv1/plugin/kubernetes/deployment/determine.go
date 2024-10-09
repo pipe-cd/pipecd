@@ -106,6 +106,8 @@ func findManifests(kind, name string, manifests []provider.Manifest) []provider.
 	return out
 }
 
+// findWorkloadManifests returns the manifests that have the specified references.
+// the default kind is Deployment if it is not specified.
 func findWorkloadManifests(manifests []provider.Manifest, refs []config.K8sResourceReference) []provider.Manifest {
 	if len(refs) == 0 {
 		return findManifests(provider.KindDeployment, "", manifests)
