@@ -712,6 +712,12 @@ type PlatformProviderLambdaConfig struct {
 	// If empty, the environment variable "AWS_PROFILE" is used.
 	// "default" is populated if the environment variable is also not set.
 	Profile string `json:"profile,omitempty"`
+	// The interval of periodical calls of AWS APIs.
+	// Currently this is used for live state of Lambda functions,
+	// but in the future, this might also be used for other polling features.
+	// Default is 15s.
+	// To reduce AWS API calls, this interval should be larger.
+	AwsAPIPollingInterval Duration `json:"awsAPIPollingInterval,omitempty" default:"15s"`
 }
 
 func (c *PlatformProviderLambdaConfig) Mask() {
