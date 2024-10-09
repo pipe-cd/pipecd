@@ -130,6 +130,7 @@ Must be one of the following structs:
 | roleARN | string | The IAM role arn to use when assuming an role. Required if you want to use the AWS SecurityTokenService. | No |
 | tokenFile | string | The path to the WebIdentity token the SDK should use to assume a role with. Required if you want to use the AWS SecurityTokenService. | No |
 | profile | string | The profile to use for logging into AWS cluster. The default value is `default`. | No |
+| awsAPIPollingInterval | duration | The interval of periodical calls of AWS APIs. Currently, this is an interval of refreshing the live state of Lambda functions. Default is 15s. | No |
 
 ### PlatformProviderECSConfig
 
