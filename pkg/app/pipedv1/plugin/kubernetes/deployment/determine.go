@@ -91,6 +91,7 @@ func determineVersions(manifests []provider.Manifest) ([]*model.ArtifactVersion,
 	return versions, nil
 }
 
+// findManifests returns the manifests that have the specified kind and name.
 func findManifests(kind, name string, manifests []provider.Manifest) []provider.Manifest {
 	out := make([]provider.Manifest, 0, len(manifests))
 	for _, m := range manifests {
