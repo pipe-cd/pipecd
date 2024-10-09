@@ -310,3 +310,130 @@ spec:
 		})
 	}
 }
+
+func TestFindManifests(t *testing.T) {
+	tests := []struct {
+		name      string
+		kind      string
+		nameField string
+		manifests []string
+		want      []provider.Manifest
+	}{
+		{
+			name: "find by kind",
+			kind: "Deployment",
+			manifests: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+				`
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx
+`,
+			},
+			want: []provider.Manifest{
+				mustUnmarshalYAML[provider.Manifest](t, []byte(strings.TrimSpace(`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`))),
+			},
+		},
+		{
+			name:      "find by kind and name",
+			kind:      "Deployment",
+			nameField: "nginx-deployment",
+			manifests: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis
+        image: redis:6.0.9
+`,
+			},
+			want: []provider.Manifest{
+				mustUnmarshalYAML[provider.Manifest](t, []byte(strings.TrimSpace(`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`))),
+			},
+		},
+		{
+			name: "no match",
+			kind: "StatefulSet",
+			manifests: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			want: []provider.Manifest{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var manifests []provider.Manifest
+			for _, data := range tt.manifests {
+				manifests = append(manifests, mustUnmarshalYAML[provider.Manifest](t, []byte(strings.TrimSpace(data))))
+			}
+			got := findManifests(tt.kind, tt.nameField, manifests)
+			assert.ElementsMatch(t, tt.want, got)
+		})
+	}
+}
