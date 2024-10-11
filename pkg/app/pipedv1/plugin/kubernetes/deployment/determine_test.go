@@ -23,6 +23,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"sigs.k8s.io/yaml"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -306,6 +307,316 @@ spec:
 			} else {
 				require.NoError(t, err)
 			}
+			assert.ElementsMatch(t, tt.want, got)
+		})
+	}
+}
+
+func TestFindManifests(t *testing.T) {
+	tests := []struct {
+		name      string
+		kind      string
+		nameField string
+		manifests []string
+		want      []provider.Manifest
+	}{
+		{
+			name: "find by kind",
+			kind: "Deployment",
+			manifests: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+				`
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx
+`,
+			},
+			want: []provider.Manifest{
+				mustUnmarshalYAML[provider.Manifest](t, []byte(strings.TrimSpace(`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`))),
+			},
+		},
+		{
+			name:      "find by kind and name",
+			kind:      "Deployment",
+			nameField: "nginx-deployment",
+			manifests: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis
+        image: redis:6.0.9
+`,
+			},
+			want: []provider.Manifest{
+				mustUnmarshalYAML[provider.Manifest](t, []byte(strings.TrimSpace(`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`))),
+			},
+		},
+		{
+			name: "no match",
+			kind: "StatefulSet",
+			manifests: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			want: []provider.Manifest{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var manifests []provider.Manifest
+			for _, data := range tt.manifests {
+				manifests = append(manifests, mustUnmarshalYAML[provider.Manifest](t, []byte(strings.TrimSpace(data))))
+			}
+			got := findManifests(tt.kind, tt.nameField, manifests)
+			assert.ElementsMatch(t, tt.want, got)
+		})
+	}
+}
+
+func TestFindWorkloadManifests(t *testing.T) {
+	tests := []struct {
+		name      string
+		manifests []string
+		refs      []config.K8sResourceReference
+		want      []provider.Manifest
+	}{
+		{
+			name: "default to Deployment kind",
+			manifests: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+				`
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx
+`,
+			},
+			refs: nil,
+			want: []provider.Manifest{
+				mustUnmarshalYAML[provider.Manifest](t, []byte(strings.TrimSpace(`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`))),
+			},
+		},
+		{
+			name: "specified kind and name",
+			manifests: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis
+        image: redis:6.0.9
+`,
+			},
+			refs: []config.K8sResourceReference{
+				{
+					Kind: "Deployment",
+					Name: "nginx-deployment",
+				},
+			},
+			want: []provider.Manifest{
+				mustUnmarshalYAML[provider.Manifest](t, []byte(strings.TrimSpace(`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`))),
+			},
+		},
+		{
+			name: "specified kind only",
+			manifests: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+				`
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-statefulset
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis
+        image: redis:6.0.9
+`,
+			},
+			refs: []config.K8sResourceReference{
+				{
+					Kind: "StatefulSet",
+				},
+			},
+			want: []provider.Manifest{
+				mustUnmarshalYAML[provider.Manifest](t, []byte(strings.TrimSpace(`
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-statefulset
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis
+        image: redis:6.0.9
+`))),
+			},
+		},
+		{
+			name: "no match",
+			manifests: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			refs: []config.K8sResourceReference{
+				{
+					Kind: "StatefulSet",
+					Name: "redis-statefulset",
+				},
+			},
+			want: []provider.Manifest{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var manifests []provider.Manifest
+			for _, data := range tt.manifests {
+				manifests = append(manifests, mustUnmarshalYAML[provider.Manifest](t, []byte(strings.TrimSpace(data))))
+			}
+			got := findWorkloadManifests(manifests, tt.refs)
 			assert.ElementsMatch(t, tt.want, got)
 		})
 	}
