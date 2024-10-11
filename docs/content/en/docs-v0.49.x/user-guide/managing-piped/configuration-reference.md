@@ -30,7 +30,6 @@ spec:
 | repositories | [][Repository](#gitrepository) | List of Git repositories this piped will handle. | No |
 | chartRepositories | [][ChartRepository](#chartrepository) | List of Helm chart repositories that should be added while starting up. | No |
 | chartRegistries | [][ChartRegistry](#chartregistry) | List of helm chart registries that should be logged in while starting up. | No |
-| cloudProviders | [][CloudProvider](#cloudprovider) | List of cloud providers can be used by this piped. This field is deprecated, use `platformProviders` instead. | No |
 | platformProviders | [][PlatformProvider](#platformprovider) | List of platform providers can be used by this piped. | No |
 | analysisProviders | [][AnalysisProvider](#analysisprovider) | List of analysis providers can be used by this piped. | No |
 | eventWatcher | [EventWatcher](#eventwatcher) | Optional Event watcher settings. | No |
@@ -80,10 +79,6 @@ spec:
 | address | string | The address to the registry. | Yes |
 | username | string | Username used for the registry authentication. | No |
 | password | string | Password used for the registry authentication. | No |
-
-## CloudProvider
-
-This field is deprecated, please use [PlatformProvider](#platformprovider) instead.
 
 ## PlatformProvider
 
