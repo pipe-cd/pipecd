@@ -26,6 +26,6 @@ message DeploymentSource {
   // The configuration of the application which is specific for plugins.
   bytes application_config = 3;
   // The filename of the application configuration file.
-  // The plugins can use this to avoid mistakenly reading this file as a manifests.
+  // The plugins can use this to avoid mistakenly reading this file as a manifest.
   string application_config_filename = 4;
 }
