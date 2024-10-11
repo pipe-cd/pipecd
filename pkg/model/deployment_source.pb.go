@@ -46,7 +46,7 @@ type DeploymentSource struct {
 	// The configuration of the application which is specific for plugins.
 	ApplicationConfig []byte `protobuf:"bytes,3,opt,name=application_config,json=applicationConfig,proto3" json:"application_config,omitempty"`
 	// The filename of the application configuration file.
-	// The plugins can use this to avoid mistakenly reading this file as a manifests.
+	// The plugins can use this to avoid mistakenly reading this file as a manifest.
 	ApplicationConfigFilename string `protobuf:"bytes,4,opt,name=application_config_filename,json=applicationConfigFilename,proto3" json:"application_config_filename,omitempty"`
 }
 
