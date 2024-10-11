@@ -14,6 +14,9 @@ export class DeploymentSource extends jspb.Message {
   getApplicationConfig_asB64(): string;
   setApplicationConfig(value: Uint8Array | string): DeploymentSource;
 
+  getApplicationConfigFilename(): string;
+  setApplicationConfigFilename(value: string): DeploymentSource;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DeploymentSource.AsObject;
   static toObject(includeInstance: boolean, msg: DeploymentSource): DeploymentSource.AsObject;
@@ -27,6 +30,7 @@ export namespace DeploymentSource {
     applicationDirectory: string,
     revision: string,
     applicationConfig: Uint8Array | string,
+    applicationConfigFilename: string,
   }
 }
 
