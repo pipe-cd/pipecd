@@ -77,7 +77,8 @@ proto.model.DeploymentSource.toObject = function(includeInstance, msg) {
   var f, obj = {
     applicationDirectory: jspb.Message.getFieldWithDefault(msg, 1, ""),
     revision: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    applicationConfig: msg.getApplicationConfig_asB64()
+    applicationConfig: msg.getApplicationConfig_asB64(),
+    applicationConfigFilename: jspb.Message.getFieldWithDefault(msg, 4, "")
   };
 
   if (includeInstance) {
@@ -126,6 +127,10 @@ proto.model.DeploymentSource.deserializeBinaryFromReader = function(msg, reader)
       var value = /** @type {!Uint8Array} */ (reader.readBytes());
       msg.setApplicationConfig(value);
       break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setApplicationConfigFilename(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -173,6 +178,13 @@ proto.model.DeploymentSource.serializeBinaryToWriter = function(message, writer)
   if (f.length > 0) {
     writer.writeBytes(
       3,
+      f
+    );
+  }
+  f = message.getApplicationConfigFilename();
+  if (f.length > 0) {
+    writer.writeString(
+      4,
       f
     );
   }
@@ -254,6 +266,24 @@ proto.model.DeploymentSource.prototype.getApplicationConfig_asU8 = function() {
  */
 proto.model.DeploymentSource.prototype.setApplicationConfig = function(value) {
   return jspb.Message.setProto3BytesField(this, 3, value);
+};
+
+
+/**
+ * optional string application_config_filename = 4;
+ * @return {string}
+ */
+proto.model.DeploymentSource.prototype.getApplicationConfigFilename = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.model.DeploymentSource} returns this
+ */
+proto.model.DeploymentSource.prototype.setApplicationConfigFilename = function(value) {
+  return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 
