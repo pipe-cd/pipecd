@@ -69,7 +69,7 @@ We are storing every version of docker image for pipectl on Google Cloud Contain
 Available versions are [here](https://github.com/pipe-cd/pipecd/releases).
 
 ```
-docker run --rm gcr.io/pipecd/pipectl:{VERSION} -h
+docker run --rm ghcr.io/pipe-cd/pipectl:{VERSION} -h
 ```
 
 ## Authentication
