@@ -1,4 +1,4 @@
-import { MemoryRouter, Route } from "react-router-dom";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { server } from "~/mocks/server";
 import { dummyDeployment } from "~/__fixtures__/dummy-deployment";
 import { dummyPiped } from "~/__fixtures__/dummy-piped";
@@ -37,9 +37,12 @@ describe("DeploymentDetailPage", () => {
         initialEntries={[`/deployments/${dummyDeployment.id}`]}
         initialIndex={0}
       >
-        <Route path="/deployments/:deploymentId">
-          <DeploymentDetailPage />
-        </Route>
+        <Routes>
+          <Route
+            path="/deployments/:deploymentId"
+            element={<DeploymentDetailPage />}
+          />
+        </Routes>
       </MemoryRouter>,
       { store }
     );
