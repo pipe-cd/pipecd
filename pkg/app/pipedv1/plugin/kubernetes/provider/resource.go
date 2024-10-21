@@ -14,4 +14,37 @@
 
 package provider
 
+import (
+	"fmt"
+
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+)
+
+
+
 const KindDeployment = "Deployment"
+
+type ResourceKey struct {
+	APIVersion string
+	Kind      string
+	Namespace string
+	Name      string
+}
+
+func (k ResourceKey) String() string {
+	return fmt.Sprintf("%s:%s:%s:%s", k.APIVersion, k.Kind, k.Namespace, k.Name)
+}
+
+func (k ResourceKey) ReadableString() string {
+	return fmt.Sprintf("name=%q, kind=%q, namespace=%q, apiVersion=%q", k.Name, k.Kind, k.Namespace, k.APIVersion)
+}
+
+func MakeResourceKey(obj *unstructured.Unstructured) ResourceKey {
+	k := ResourceKey{
+		APIVersion: obj.GetAPIVersion(),
+		Kind:       obj.GetKind(),
+		Namespace:  obj.GetNamespace(),
+		Name:       obj.GetName(),
+	}
+	return k
+}
