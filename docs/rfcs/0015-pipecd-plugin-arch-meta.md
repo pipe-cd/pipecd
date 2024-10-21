@@ -48,7 +48,7 @@ spec:
             kubeConfigPath: ./kubeconfig-dev
 ```
 
-For kind
+**For kind**
 
 Instead of Kind, we plan to introduce the label to represent the application kind.
 
