@@ -67,7 +67,7 @@ The control plane will be updated so that it can accept platform provider from p
 ### The protocol
 
 The protocol means to protocol used to connect between piped and its plugins.
-As at the starting point, we have 2 options
+As at the starting point, we had 2 options
 - WASM
 - gRPC
 
