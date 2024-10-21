@@ -9,7 +9,7 @@ This can be consider as the biggest step forward to make PipeCD fit its vision: 
 
 Up to this time, PipeCD archived serveral goals as its defined design in the initial stage, which included "bing a consistent interface which can be used to make progressive delivery process easy for many application platforms". As its goal, the PipeCD currently supports 5 kind of application platforms, which are Kubernetes, ECS, Terraform, Lambda, and Cloud Run. But we want it not just like that, we want to make PipeCD support progressive delivery for whatever application platforms the market use today.
 
-To archive that goal, there is only one way, which is enable the PipeCD accept new platforms as plugin of the piped agent, which can free the limit of what platform PipeCD could support as a CD system.
+To achieve that goal, there is only one way, which enables PipeCD to accept new platforms as plugin of the piped agent, which can free the limit of what platform PipeCD could support as a CD system.
 
 Also, with the power of plugin architecture, PipeCD can allow multi-versions of the same platform plugin, say the same plugin for CD on Kubernetes, but one is built-in and the other implemented by other developers. That is the future of PipeCD, and the maintainer team wants to bring it to.
 
