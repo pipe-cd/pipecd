@@ -27,7 +27,7 @@ The key point of the control plane supports both pipedv0 and v1 approach is: pla
 
 As at this point, we have migration plan for platform related concepts in configuration as below
 
-For platform provider
+**For platform provider**
 
 Instead of Platform Provider, we plan to introduce the config for the plugin and define deployTargets.
 
