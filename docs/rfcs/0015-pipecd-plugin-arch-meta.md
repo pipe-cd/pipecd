@@ -75,10 +75,28 @@ For less study maintaining cost, we choose gRPC. Also, other components connecti
 
 ![](assets/0015-piped-protocol.png)
 
+Sample piped plugins configuration
+
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: Piped
+spec:
+...
+  plugin:
+    - name: k8s_plugin
+      port: 8081
+      sourceURL: # http or local path
+      deployTargets:
+        - name: dev
+          labels:
+            env: dev
+          config: # depends on plugins
+```
+
 Boostrap flow:
 - Start piped (as entrypoint of piped pod container for example)
 - Piped loads plugins' configuration
-- Piped pull plugins from registry (if it's remote URI specified)
+- Piped pull plugins from sourceURL and places it to piped plugins dir
 - Piped starts plugins with plugins configuration passed at this point
 - Plugins start its grpc servers
 - Plugins ping and send status ready to piped plugin management grpc server
@@ -89,6 +107,8 @@ In case of failure:
 - Plugins failured:
   - Ping failed -> piped will be notified that plugins are not working
   - Based on piped logic, will restart the failured plugins (plugin management grpc logic)
+
+Left over question: In case of using launcher to managing piped, and the piped failured, the launcher will restart the piped, not the plugins, in that case, how should we manage the plugins' instances effectively?
 
 ### The configuration
 
