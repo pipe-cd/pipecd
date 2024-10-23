@@ -5,13 +5,20 @@
 {{ $gh_branch := (default "master" ($.Param "github_branch")) }}
 {{ if $gh_repo }}
 <div class="td-page-meta ml-2 pb-1 pt-2 mb-0">
-{{ $editURL := "" }}
+{{ $editURL := printf "%s/edit/%s" $gh_repo $gh_branch }}
 {{ if .File }}
   {{ if .File.LogicalName }}
+    {{ if $gh_subdir }}
+      {{ $editURL = printf "%s/%s" $editURL $gh_subdir }}
+    {{ end }}
+    {{ $editURL = printf "%s/content" $editURL }}
+    {{ if .Site.Language.Lang }}
+      {{ $editURL = printf "%s/%s" $editURL .Site.Language.Lang }}
+    {{ end }}
     {{ if eq .File.LogicalName "_index.md" }}
-      {{ $editURL = printf "%s/edit/%s/%s/content/%s/%s" $gh_repo $gh_branch $gh_subdir .Site.Language.Lang (path.Dir .File.Path) }}
+      {{ $editURL = printf "%s/%s" $editURL (path.Dir .File.Path) }}
     {{ else }}
-      {{ $editURL = printf "%s/edit/%s/%s/content/%s/%s" $gh_repo $gh_branch $gh_subdir .Site.Language.Lang .File.Path }}
+      {{ $editURL = printf "%s/%s" $editURL .File.Path }}
     {{ end }}
   {{ end }}
 {{ end }}
