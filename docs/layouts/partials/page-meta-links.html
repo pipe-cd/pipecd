@@ -15,11 +15,7 @@
     {{ if .Site.Language.Lang }}
       {{ $editURL = printf "%s/%s" $editURL .Site.Language.Lang }}
     {{ end }}
-    {{ if eq .File.LogicalName "_index.md" }}
-      {{ $editURL = printf "%s/%s" $editURL (path.Dir .File.Path) }}
-    {{ else }}
-      {{ $editURL = printf "%s/%s" $editURL .File.Path }}
-    {{ end }}
+    {{ $editURL = printf "%s/%s" $editURL .File.Path }}
   {{ end }}
 {{ end }}
 
