@@ -190,7 +190,7 @@ func (p *planner) Run(ctx context.Context) error {
 	}()
 
 	// TODO: Prepare running deploy source and target deploy source.
-	var runningDS, targetDS *model.DeploymentSource
+	var runningDS, targetDS *deployment.DeploymentSource
 
 	// repoCfg := config.PipedRepository{
 	// 	RepoID: p.deployment.GitPath.Repo.Id,
@@ -243,7 +243,7 @@ func (p *planner) Run(ctx context.Context) error {
 //   - CommitMatcher ensure pipeline/quick sync based on the commit message
 //   - Force quick sync if there is no previous deployment (aka. this is the first deploy)
 //   - Based on PlannerService.DetermineStrategy returned by plugins
-func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *model.DeploymentSource) (*plannerOutput, error) {
+func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *deployment.DeploymentSource) (*plannerOutput, error) {
 	out := &plannerOutput{}
 
 	input := &deployment.PlanPluginInput{

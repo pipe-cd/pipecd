@@ -20,7 +20,6 @@ option go_package = "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deploymen
 import "validate/validate.proto";
 import "pkg/model/common.proto";
 import "pkg/model/deployment.proto";
-import "pkg/model/deployment_source.proto";
 
 // PlannerService defines the public APIs for remote planners.
 service DeploymentService {
@@ -107,7 +106,19 @@ message PlanPluginInput {
     bytes plugin_config = 2;
 
     // The running deployment source.
-    model.DeploymentSource running_deployment_source = 3;
+    DeploymentSource running_deployment_source = 3;
     // The target deployment source.
-    model.DeploymentSource target_deployment_source = 4;
+    DeploymentSource target_deployment_source = 4;
+}
+
+message DeploymentSource {
+  // The application directory where the source code is located.
+  string application_directory = 1;
+  // The git commit revision of the source code.
+  string revision = 2;
+  // The configuration of the application which is specific for plugins.
+  bytes application_config = 3;
+  // The filename of the application configuration file.
+  // The plugins can use this to avoid mistakenly reading this file as a manifest.
+  string application_config_filename = 4;
 }
