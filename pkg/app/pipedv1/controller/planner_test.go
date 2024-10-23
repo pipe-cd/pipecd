@@ -916,7 +916,7 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				planner.lastSuccessfulCommitHash = "123"
 			}
 
-			runningDS := &model.DeploymentSource{}
+			runningDS := &deployment.DeploymentSource{}
 
 			type genericConfig struct {
 				Kind       config.Kind `json:"kind"`
@@ -931,7 +931,7 @@ func TestPlanner_BuildPlan(t *testing.T) {
 			})
 
 			require.NoError(t, err)
-			targetDS := &model.DeploymentSource{
+			targetDS := &deployment.DeploymentSource{
 				ApplicationConfig: jsonBytes,
 			}
 			out, err := planner.buildPlan(context.TODO(), runningDS, targetDS)
