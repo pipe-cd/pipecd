@@ -109,7 +109,7 @@ About [Homebrew](https://brew.sh/)
 
 ### Run in Docker container
 
-We are storing every version of docker image for pipectl on Google Cloud Container Registry.
+We are storing every version of docker image for pipectl on GitHub Container Registry.
 Available versions are [here](https://github.com/pipe-cd/pipecd/releases).
 
 ```
