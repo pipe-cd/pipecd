@@ -25,7 +25,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
-	"github.com/pipe-cd/pipecd/pkg/configv1"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
@@ -151,14 +151,12 @@ func TestBuildQuickSyncStages(t *testing.T) {
 				&fakePlugin{
 					quickStages: []*model.PipelineStage{
 						{
-							Id:    "plugin-1-stage-1",
-							Index: 0,
+							Id: "plugin-1-stage-1",
 						},
 					},
 					rollbackStages: []*model.PipelineStage{
 						{
 							Id:       "plugin-1-rollback",
-							Index:    0,
 							Rollback: true,
 						},
 					},
@@ -166,14 +164,12 @@ func TestBuildQuickSyncStages(t *testing.T) {
 				&fakePlugin{
 					quickStages: []*model.PipelineStage{
 						{
-							Id:    "plugin-2-stage-1",
-							Index: 1,
+							Id: "plugin-2-stage-1",
 						},
 					},
 					rollbackStages: []*model.PipelineStage{
 						{
 							Id:       "plugin-2-rollback",
-							Index:    1,
 							Rollback: true,
 						},
 					},
@@ -187,22 +183,17 @@ func TestBuildQuickSyncStages(t *testing.T) {
 			wantErr: false,
 			expectedStages: []*model.PipelineStage{
 				{
-					Id:    "plugin-1-stage-1",
-					Index: 0,
+					Id: "plugin-1-stage-1",
 				},
 				{
-					Id:       "plugin-2-stage-1",
-					Index:    1,
-					Requires: []string{"plugin-1-stage-1"},
+					Id: "plugin-2-stage-1",
 				},
 				{
 					Id:       "plugin-1-rollback",
-					Index:    0,
 					Rollback: true,
 				},
 				{
 					Id:       "plugin-2-rollback",
-					Index:    1,
 					Rollback: true,
 				},
 			},
@@ -213,8 +204,7 @@ func TestBuildQuickSyncStages(t *testing.T) {
 				&fakePlugin{
 					quickStages: []*model.PipelineStage{
 						{
-							Id:    "plugin-1-stage-1",
-							Index: 0,
+							Id: "plugin-1-stage-1",
 						},
 					},
 					rollbackStages: []*model.PipelineStage{
@@ -227,8 +217,7 @@ func TestBuildQuickSyncStages(t *testing.T) {
 				&fakePlugin{
 					quickStages: []*model.PipelineStage{
 						{
-							Id:    "plugin-2-stage-1",
-							Index: 1,
+							Id: "plugin-2-stage-1",
 						},
 					},
 					rollbackStages: []*model.PipelineStage{
@@ -247,13 +236,10 @@ func TestBuildQuickSyncStages(t *testing.T) {
 			wantErr: false,
 			expectedStages: []*model.PipelineStage{
 				{
-					Id:    "plugin-1-stage-1",
-					Index: 0,
+					Id: "plugin-1-stage-1",
 				},
 				{
-					Id:       "plugin-2-stage-1",
-					Index:    1,
-					Requires: []string{"plugin-1-stage-1"},
+					Id: "plugin-2-stage-1",
 				},
 			},
 		},
@@ -266,7 +252,7 @@ func TestBuildQuickSyncStages(t *testing.T) {
 			}
 			stages, err := planner.buildQuickSyncStages(context.TODO(), tc.cfg)
 			require.Equal(t, tc.wantErr, err != nil)
-			assert.Equal(t, tc.expectedStages, stages)
+			assert.ElementsMatch(t, tc.expectedStages, stages)
 		})
 	}
 }

@@ -83,8 +83,7 @@ message BuildPipelineSyncStagesResponse {
 }
 
 message BuildQuickSyncStagesRequest {
-    int32 stage_index = 1;
-    bool rollback = 2;
+    bool rollback = 1;
 }
 
 message BuildQuickSyncStagesResponse {
