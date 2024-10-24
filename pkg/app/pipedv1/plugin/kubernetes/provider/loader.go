@@ -15,6 +15,7 @@
 package provider
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -24,6 +25,7 @@ import (
 	"strconv"
 	"strings"
 
+	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/yaml"
 
@@ -39,6 +41,7 @@ const (
 )
 
 type LoaderInput struct {
+	AppName        string
 	AppDir         string
 	ConfigFilename string
 	Manifests      []string
@@ -46,13 +49,22 @@ type LoaderInput struct {
 	Namespace        string
 	TemplatingMethod TemplatingMethod
 
+	KustomizeVersion string
+	KustomizeOptions map[string]string
+
 	// TODO: define fields for LoaderInput.
 }
 
 type Loader struct {
+	toolRegistry ToolRegistry
 }
 
-func (l *Loader) LoadManifests(input LoaderInput) (manifests []Manifest, err error) {
+type ToolRegistry interface {
+	Kustomize(ctx context.Context, version string) (string, error)
+	Helm(ctx context.Context, version string) (string, error)
+}
+
+func (l *Loader) LoadManifests(ctx context.Context, input LoaderInput) (manifests []Manifest, err error) {
 	defer func() {
 		// Override namespace if set because ParseManifests does not parse it
 		// if namespace is not explicitly specified in the manifests.
@@ -64,7 +76,18 @@ func (l *Loader) LoadManifests(input LoaderInput) (manifests []Manifest, err err
 	case TemplatingMethodHelm:
 		return nil, errors.New("not implemented yet")
 	case TemplatingMethodKustomize:
-		return nil, errors.New("not implemented yet")
+		kustomizePath, err := l.toolRegistry.Kustomize(ctx, input.KustomizeVersion)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get kustomize tool: %w", err)
+		}
+
+		k := NewKustomize(kustomizePath, zap.NewNop()) // TODO: pass logger
+		data, err := k.Template(ctx, input.AppName, input.AppDir, input.KustomizeOptions)
+		if err != nil {
+			return nil, fmt.Errorf("failed to template kustomize manifests: %w", err)
+		}
+
+		return ParseManifests(data)
 	case TemplatingMethodNone:
 		return LoadPlainYAMLManifests(input.AppDir, input.Manifests, input.ConfigFilename)
 	default:
