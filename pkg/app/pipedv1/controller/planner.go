@@ -30,7 +30,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
-	"github.com/pipe-cd/pipecd/pkg/configv1"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
@@ -409,35 +409,17 @@ func (p *planner) buildQuickSyncStages(ctx context.Context, cfg *config.GenericA
 		rollbackStages = []*model.PipelineStage{}
 		rollback       = *cfg.Planner.AutoRollback
 	)
-	// TODO: Consider how to define the order of plugins.
-	for i, plg := range p.plugins {
-		res, err := plg.BuildQuickSyncStages(ctx, &deployment.BuildQuickSyncStagesRequest{StageIndex: int32(i), Rollback: rollback})
+	for _, plg := range p.plugins {
+		res, err := plg.BuildQuickSyncStages(ctx, &deployment.BuildQuickSyncStagesRequest{Rollback: rollback})
 		if err != nil {
 			return nil, fmt.Errorf("failed to build quick sync stage deployment (%w)", err)
 		}
-		// TODO: Ensure responsed stages indexies is valid.
 		for i := range res.Stages {
 			if res.Stages[i].Rollback {
 				rollbackStages = append(rollbackStages, res.Stages[i])
 			} else {
 				stages = append(stages, res.Stages[i])
 			}
-		}
-	}
-
-	// Sort stages by index.
-	sort.Sort(model.PipelineStages(stages))
-	sort.Sort(model.PipelineStages(rollbackStages))
-
-	// In case there is more than one forward stage, build requires for each stage
-	// based on the order of stages.
-	if len(stages) > 1 {
-		preStageID := ""
-		for _, s := range stages {
-			if preStageID != "" {
-				s.Requires = []string{preStageID}
-			}
-			preStageID = s.Id
 		}
 	}
 
