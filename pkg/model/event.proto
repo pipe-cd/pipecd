@@ -38,13 +38,17 @@ message Event {
     // The ID of the project this event belongs to.
     string project_id = 4 [(validate.rules).string.min_len = 1];
     // The key/value pairs that are attached to event.
-    // This is intended to be used to specify additional attributes of event.
+    // This is mainly used to control the behavior of the piped on event watcher.
     map<string,string> labels = 5;
     // A fixed-length identifier consists of its own name and labels.
     string event_key = 6 [(validate.rules).string.min_len = 1];
     // The handle status of event.
     EventStatus status = 8 [(validate.rules).enum.defined_only = true];
     string status_description = 9;
+    // The key/value pairs that are attached to event.
+    // This is intended to add more information from event trigger side.
+    // E.g. send the app code commit hash to Deployment.
+    map<string,string> contexts = 10;
 
     // Unix time when the event was handled.
     int64 handled_at = 13;

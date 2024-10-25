@@ -86,6 +86,7 @@ proto.model.Event.toObject = function(includeInstance, msg) {
     eventKey: jspb.Message.getFieldWithDefault(msg, 6, ""),
     status: jspb.Message.getFieldWithDefault(msg, 8, 0),
     statusDescription: jspb.Message.getFieldWithDefault(msg, 9, ""),
+    contextsMap: (f = msg.getContextsMap()) ? f.toObject(includeInstance, undefined) : [],
     handledAt: jspb.Message.getFieldWithDefault(msg, 13, 0),
     createdAt: jspb.Message.getFieldWithDefault(msg, 14, 0),
     updatedAt: jspb.Message.getFieldWithDefault(msg, 15, 0)
@@ -158,6 +159,12 @@ proto.model.Event.deserializeBinaryFromReader = function(msg, reader) {
     case 9:
       var value = /** @type {string} */ (reader.readString());
       msg.setStatusDescription(value);
+      break;
+    case 10:
+      var value = msg.getContextsMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
+         });
       break;
     case 13:
       var value = /** @type {number} */ (reader.readInt64());
@@ -252,6 +259,10 @@ proto.model.Event.serializeBinaryToWriter = function(message, writer) {
       9,
       f
     );
+  }
+  f = message.getContextsMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(10, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
   }
   f = message.getHandledAt();
   if (f !== 0) {
@@ -423,6 +434,29 @@ proto.model.Event.prototype.getStatusDescription = function() {
  */
 proto.model.Event.prototype.setStatusDescription = function(value) {
   return jspb.Message.setProto3StringField(this, 9, value);
+};
+
+
+/**
+ * map<string, string> contexts = 10;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,string>}
+ */
+proto.model.Event.prototype.getContextsMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,string>} */ (
+      jspb.Message.getMapField(this, 10, opt_noLazyCreate,
+      null));
+};
+
+
+/**
+ * Clears values from the map. The map will be non-null.
+ * @return {!proto.model.Event} returns this
+ */
+proto.model.Event.prototype.clearContextsMap = function() {
+  this.getContextsMap().clear();
+  return this;
 };
 
 

@@ -792,6 +792,7 @@ func (a *API) RegisterEvent(ctx context.Context, req *apiservice.RegisterEventRe
 		Name:              req.Name,
 		Data:              req.Data,
 		Labels:            req.Labels,
+		Contexts:          req.Contexts,
 		EventKey:          model.MakeEventKey(req.Name, req.Labels),
 		ProjectId:         key.ProjectId,
 		Status:            model.EventStatus_EVENT_NOT_HANDLED,
