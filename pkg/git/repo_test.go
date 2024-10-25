@@ -60,7 +60,7 @@ func TestChangedFiles(t *testing.T) {
 	err = os.WriteFile(readmeFilePath, []byte("new content"), os.ModePerm)
 	require.NoError(t, err)
 
-	err = r.addCommit(ctx, "Added new file")
+	err = r.addCommit(ctx, "Added new file", nil)
 	require.NoError(t, err)
 
 	headCommit, err := r.GetCommitForRev(ctx, "HEAD")
@@ -105,16 +105,17 @@ func TestAddCommit(t *testing.T) {
 	err = os.WriteFile(path, []byte("content"), os.ModePerm)
 	require.NoError(t, err)
 
-	err = r.addCommit(ctx, "Added new file")
+	err = r.addCommit(ctx, "Added new file", map[string]string{"Test-Hoge": "fuga"})
 	require.NoError(t, err)
 
-	err = r.addCommit(ctx, "No change")
+	err = r.addCommit(ctx, "No change", nil)
 	require.Equal(t, ErrNoChange, err)
 
 	commits, err = r.ListCommits(ctx, "")
 	require.NoError(t, err)
 	require.Equal(t, 2, len(commits))
 	assert.Equal(t, "Added new file", commits[0].Message)
+	assert.Equal(t, "Test-Hoge: fuga", commits[0].Body)
 }
 
 func TestCommitChanges(t *testing.T) {
@@ -143,7 +144,7 @@ func TestCommitChanges(t *testing.T) {
 		"README.md":     []byte("new-readme"),
 		"a/b/c/new.txt": []byte("new-hello"),
 	}
-	err = r.CommitChanges(ctx, "new-branch", "New commit with changes", true, changes)
+	err = r.CommitChanges(ctx, "new-branch", "New commit with changes", true, changes, nil)
 	require.NoError(t, err)
 
 	commits, err = r.ListCommits(ctx, "")
