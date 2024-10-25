@@ -21,6 +21,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"regexp/syntax"
@@ -386,7 +387,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 			}
 			switch handler.Type {
 			case config.EventWatcherHandlerTypeGitUpdate:
-				branchName, err := w.commitFiles(ctx, latestEvent.Data, matcher.Name, handler.Config.CommitMessage, e.GitPath, handler.Config.Replacements, tmpRepo, handler.Config.MakePullRequest)
+				branchName, err := w.commitFiles(ctx, latestEvent, matcher.Name, handler.Config.CommitMessage, e.GitPath, handler.Config.Replacements, tmpRepo, handler.Config.MakePullRequest)
 				if err != nil {
 					w.logger.Error("failed to commit outdated files", zap.Error(err))
 					handledEvent := &pipedservice.ReportEventStatusesRequest_Event{
@@ -538,7 +539,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 			})
 			continue
 		}
-		_, err := w.commitFiles(ctx, latestEvent.Data, e.Name, commitMsg, "", e.Replacements, tmpRepo, false)
+		_, err := w.commitFiles(ctx, latestEvent, e.Name, commitMsg, "", e.Replacements, tmpRepo, false)
 		if err != nil {
 			w.logger.Error("failed to commit outdated files", zap.Error(err))
 			handledEvents = append(handledEvents, &pipedservice.ReportEventStatusesRequest_Event{
@@ -602,7 +603,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 }
 
 // commitFiles commits changes if the data in Git is different from the latest event.
-func (w *watcher) commitFiles(ctx context.Context, latestData, eventName, commitMsg, gitPath string, replacements []config.EventWatcherReplacement, repo git.Repo, newBranch bool) (string, error) {
+func (w *watcher) commitFiles(ctx context.Context, latestEvent *model.Event, eventName, commitMsg, gitPath string, replacements []config.EventWatcherReplacement, repo git.Repo, newBranch bool) (string, error) {
 	// Determine files to be changed by comparing with the latest event.
 	changes := make(map[string][]byte, len(replacements))
 	for _, r := range replacements {
@@ -619,13 +620,13 @@ func (w *watcher) commitFiles(ctx context.Context, latestData, eventName, commit
 		path := filepath.Join(repo.GetPath(), filePath)
 		switch {
 		case r.YAMLField != "":
-			newContent, upToDate, err = modifyYAML(path, r.YAMLField, latestData)
+			newContent, upToDate, err = modifyYAML(path, r.YAMLField, latestEvent.Data)
 		case r.JSONField != "":
 			// TODO: Empower Event watcher to parse JSON format
 		case r.HCLField != "":
 			// TODO: Empower Event watcher to parse HCL format
 		case r.Regex != "":
-			newContent, upToDate, err = modifyText(path, r.Regex, latestData)
+			newContent, upToDate, err = modifyText(path, r.Regex, latestEvent.Data)
 		}
 		if err != nil {
 			return "", err
@@ -644,12 +645,13 @@ func (w *watcher) commitFiles(ctx context.Context, latestData, eventName, commit
 	}
 
 	args := argsTemplate{
-		Value:     latestData,
+		Value:     latestEvent.Data,
 		EventName: eventName,
 	}
 	commitMsg = parseCommitMsg(commitMsg, args)
 	branch := makeBranchName(newBranch, eventName, repo.GetClonedBranch())
-	if err := repo.CommitChanges(ctx, branch, commitMsg, newBranch, changes); err != nil {
+	trailers := maps.Clone(latestEvent.Contexts)
+	if err := repo.CommitChanges(ctx, branch, commitMsg, newBranch, changes, trailers); err != nil {
 		return "", fmt.Errorf("failed to perform git commit: %w", err)
 	}
 	w.logger.Info(fmt.Sprintf("event watcher will update values of Event %q", eventName))

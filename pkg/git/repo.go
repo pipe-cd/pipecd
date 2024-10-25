@@ -224,7 +224,7 @@ func (r *repo) Push(ctx context.Context, branch string) error {
 }
 
 // CommitChanges commits some changes into a branch.
-func (r *repo) CommitChanges(ctx context.Context, branch, message string, newBranch bool, changes map[string][]byte) error {
+func (r *repo) CommitChanges(ctx context.Context, branch, message string, newBranch bool, changes map[string][]byte, trailers map[string]string) error {
 	if newBranch {
 		if err := r.checkoutNewBranch(ctx, branch); err != nil {
 			return fmt.Errorf("failed to checkout new branch, branch: %v, error: %v", branch, err)
@@ -248,7 +248,7 @@ func (r *repo) CommitChanges(ctx context.Context, branch, message string, newBra
 		}
 	}
 	// Commit the changes.
-	if err := r.addCommit(ctx, message); err != nil {
+	if err := r.addCommit(ctx, message, trailers); err != nil {
 		return fmt.Errorf("failed to commit, branch: %s, error: %v", branch, err)
 	}
 	return nil
