@@ -229,6 +229,7 @@ message RegisterEventRequest {
     string name = 1 [(validate.rules).string.min_len = 1];
     string data = 2 [(validate.rules).string.min_len = 1];
     map<string,string> labels = 3 [(validate.rules).map.keys.string.min_len = 1, (validate.rules).map.values.string.min_len = 1];
+    map<string,string> contexts = 4;
 }
 
 message RegisterEventResponse {

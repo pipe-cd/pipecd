@@ -4180,6 +4180,8 @@ func (m *RegisterEventRequest) validate(all bool) error {
 		}
 	}
 
+	// no validation rules for Contexts
+
 	if len(errors) > 0 {
 		return RegisterEventRequestMultiError(errors)
 	}
