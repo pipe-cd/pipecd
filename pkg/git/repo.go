@@ -47,7 +47,7 @@ type Repo interface {
 	Pull(ctx context.Context, branch string) error
 	MergeRemoteBranch(ctx context.Context, branch, commit, mergeCommitMessage string) error
 	Push(ctx context.Context, branch string) error
-	CommitChanges(ctx context.Context, branch, message string, newBranch bool, changes map[string][]byte) error
+	CommitChanges(ctx context.Context, branch, message string, newBranch bool, changes map[string][]byte, trailers map[string]string) error
 }
 
 type repo struct {
@@ -267,12 +267,17 @@ func (r *repo) checkoutNewBranch(ctx context.Context, branch string) error {
 	return nil
 }
 
-func (r repo) addCommit(ctx context.Context, message string) error {
+func (r repo) addCommit(ctx context.Context, message string, trailers map[string]string) error {
 	out, err := r.runGitCommand(ctx, "add", ".")
 	if err != nil {
 		return formatCommandError(err, out)
 	}
-	out, err = r.runGitCommand(ctx, "commit", "-m", message)
+
+	args := []string{"commit", "-m", message}
+	for k, v := range trailers {
+		args = append(args, fmt.Sprintf("--trailer=%s: %s", k, v))
+	}
+	out, err = r.runGitCommand(ctx, args...)
 	if err != nil {
 		msg := string(out)
 		if strings.Contains(msg, "nothing to commit, working tree clean") {
