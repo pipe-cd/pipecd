@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Foo
+metadata:
+  name: simple
+  labels:
+    app: simple
+    pipecd.dev/managed-by: piped
+    pipecd.dev/resource-key: apps/v1:Foo:default:simple
+    pipecd.dev/variant: primary
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: simple
+  template:
+    metadata:
+      labels:
+        app: simple
+    spec:
+      newSliceFields:
+        - a
+        - b
+      containers:
+      - name: helloworld
+        image: gcr.io/pipecd/helloworld:v1.0.0
+        args:
+          - hi
+          - hello
+        ports:
+        - containerPort: 9085
+status:
+    desc: ok
+---
+apiVersion: apps/v1
+kind: Foo
+metadata:
+  name: simple
+  labels:
+    pipecd.dev/managed-by: piped
+    app: simple
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: simple
+  template:
+    metadata:
+      labels:
+        app: simple
+    spec:
+      containers:
+      - name: helloworld
+        image: gcr.io/pipecd/helloworld:v1.0.0
+        args:
+          - hi
+          - hello
+        ports:
+        - containerPort: 9085
