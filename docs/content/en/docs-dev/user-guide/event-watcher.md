@@ -183,8 +183,8 @@ pipectl event register \
 ```
 
 ```bash
-# For manifest repository
-% git show                                                                        
+# In manifest repository
+$ git show                                                                        
 commit ff46cdc9a3ce87a9a66436269251a4870ac55183 (HEAD -> main, origin/main, origin/HEAD)
 Author: ffjlabo <pipecd.dev@gmail.com>
 Date:   Wed Oct 30 16:56:36 2024 +0900
