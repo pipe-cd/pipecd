@@ -179,7 +179,7 @@ pipectl event register \
     --api-key=API_KEY \
     --name=sample \
     --data=gcr.io/pipecd/helloworld:v0.48.0 \
-    --contexts Source-Commit-Hash=xxxxxxx, Source-Commit-URL=https://github.com/pipe-cd/pipecd/commit/xxxxxxx
+    --contexts Source-Commit-Hash=xxxxxxx,Source-Commit-URL=https://github.com/pipe-cd/pipecd/commit/xxxxxxx
 ```
 
 ```bash
