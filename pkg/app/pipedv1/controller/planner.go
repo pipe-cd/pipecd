@@ -272,12 +272,12 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *deployment
 		}
 	}
 
-	cfg, err := config.DecodeYAML(targetDS.GetApplicationConfig())
+	cfg, err := config.DecodeYAML[*config.GenericApplicationSpec](targetDS.GetApplicationConfig())
 	if err != nil {
 		p.logger.Error("unable to parse application config", zap.Error(err))
 		return nil, err
 	}
-	spec := cfg.ApplicationSpec
+	spec := cfg.Spec
 
 	// In case the strategy has been decided by trigger.
 	// For example: user triggered the deployment via web console.

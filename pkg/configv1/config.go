@@ -15,7 +15,6 @@
 package config
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -79,126 +78,71 @@ var (
 	ErrNotFound = errors.New("not found")
 )
 
-// Config represents configuration data load from file.
-// The spec is depend on the kind of configuration.
-type Config struct {
-	Kind       Kind
-	APIVersion string
-	spec       interface{}
-
-	ApplicationSpec *GenericApplicationSpec
-
-	PipedSpec            *PipedSpec
-	ControlPlaneSpec     *ControlPlaneSpec
-	AnalysisTemplateSpec *AnalysisTemplateSpec
-	EventWatcherSpec     *EventWatcherSpec
-}
-
-type genericConfig struct {
-	Kind       Kind            `json:"kind"`
-	APIVersion string          `json:"apiVersion,omitempty"`
-	Spec       json.RawMessage `json:"spec"`
-}
-
-func (c *Config) init(kind Kind, apiVersion string) error {
-	c.Kind = kind
-	c.APIVersion = apiVersion
-
-	switch kind {
-	case KindApplication, KindKubernetesApp, KindTerraformApp, KindCloudRunApp, KindLambdaApp, KindECSApp:
-		c.ApplicationSpec = &GenericApplicationSpec{}
-		c.spec = c.ApplicationSpec
-
-	case KindPiped:
-		c.PipedSpec = &PipedSpec{}
-		c.spec = c.PipedSpec
-
-	case KindControlPlane:
-		c.ControlPlaneSpec = &ControlPlaneSpec{}
-		c.spec = c.ControlPlaneSpec
-
-	case KindAnalysisTemplate:
-		c.AnalysisTemplateSpec = &AnalysisTemplateSpec{}
-		c.spec = c.AnalysisTemplateSpec
-
-	case KindEventWatcher:
-		c.EventWatcherSpec = &EventWatcherSpec{}
-		c.spec = c.EventWatcherSpec
-
-	default:
-		return fmt.Errorf("unsupported kind: %s", c.Kind)
-	}
-	return nil
-}
-
-// UnmarshalJSON customizes the way to unmarshal json data into Config struct.
-// Firstly, this unmarshal to a generic config and then unmarshal the spec
-// which depend on the kind of configuration.
-func (c *Config) UnmarshalJSON(data []byte) error {
-	var (
-		err error
-		gc  = genericConfig{}
-	)
-	dec := json.NewDecoder(bytes.NewReader(data))
-	dec.DisallowUnknownFields()
-	if err := dec.Decode(&gc); err != nil {
-		return err
-	}
-	if err = c.init(gc.Kind, gc.APIVersion); err != nil {
-		return err
-	}
-
-	if len(gc.Spec) > 0 {
-		dec := json.NewDecoder(bytes.NewReader(gc.Spec))
-		dec.DisallowUnknownFields()
-		err = dec.Decode(c.spec)
-	}
-	return err
-}
-
-type validator interface {
+// Spec[T] represents both of follows
+// - the type is pointer type of T
+// - the type has Validate method
+type Spec[T any] interface {
+	*T
 	Validate() error
 }
 
+// Config represents configuration data load from file.
+// The spec is depend on the kind of configuration.
+type Config[T Spec[RT], RT any] struct {
+	Kind       Kind
+	APIVersion string
+	Spec       T
+}
+
+func (c *Config[T, RT]) UnmarshalJSON(data []byte) error {
+	// Define a type alias Config[T, RT] to avoid infinite recursion.
+	type alias Config[T, RT]
+	a := alias{}
+	if err := json.Unmarshal(data, &a); err != nil {
+		return err
+	}
+	*c = Config[T, RT](a)
+
+	// Set default values.
+	if c.Spec == nil {
+		c.Spec = new(RT)
+	}
+
+	return nil
+}
+
 // Validate validates the value of all fields.
-func (c *Config) Validate() error {
+func (c *Config[T, RT]) Validate() error {
 	if c.APIVersion != VersionV1Beta1 {
 		return fmt.Errorf("unsupported version: %s", c.APIVersion)
 	}
 	if c.Kind == "" {
 		return fmt.Errorf("kind is required")
 	}
-	if c.spec == nil {
-		return fmt.Errorf("spec is required")
-	}
 
-	spec, ok := c.spec.(validator)
-	if !ok {
-		return fmt.Errorf("spec must have Validate function")
-	}
-	if err := spec.Validate(); err != nil {
+	if err := c.Spec.Validate(); err != nil {
 		return err
 	}
 	return nil
 }
 
 // LoadFromYAML reads and decodes a yaml file to construct the Config.
-func LoadFromYAML(file string) (*Config, error) {
+func LoadFromYAML[T Spec[RT], RT any](file string) (*Config[T, RT], error) {
 	data, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}
-	return DecodeYAML(data)
+	return DecodeYAML[T, RT](data)
 }
 
 // DecodeYAML unmarshals config YAML data to config struct.
 // It also validates the configuration after decoding.
-func DecodeYAML(data []byte) (*Config, error) {
+func DecodeYAML[T Spec[RT], RT any](data []byte) (*Config[T, RT], error) {
 	js, err := yaml.YAMLToJSON(data)
 	if err != nil {
 		return nil, err
 	}
-	c := &Config{}
+	c := &Config[T, RT]{}
 	if err := json.Unmarshal(js, c); err != nil {
 		return nil, err
 	}
