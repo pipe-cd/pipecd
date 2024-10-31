@@ -23,8 +23,6 @@ import (
 
 	"github.com/creasty/defaults"
 	"sigs.k8s.io/yaml"
-
-	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 const (
@@ -39,15 +37,25 @@ const (
 	// KindKubernetesApp represents application configuration for a Kubernetes application.
 	// This application can be a group of plain-YAML Kubernetes manifests,
 	// or kustomization manifests or helm manifests.
+	//
+	// Deprecated: use KindApplication instead.
 	KindKubernetesApp Kind = "KubernetesApp"
 	// KindTerraformApp represents application configuration for a Terraform application.
 	// This application contains a single workspace of a terraform root module.
+	//
+	// Deprecated: use KindApplication instead.
 	KindTerraformApp Kind = "TerraformApp"
 	// KindLambdaApp represents application configuration for an AWS Lambda application.
+	//
+	// Deprecated: use KindApplication instead.
 	KindLambdaApp Kind = "LambdaApp"
 	// KindCloudRunApp represents application configuration for a CloudRun application.
+	//
+	// Deprecated: use KindApplication instead.
 	KindCloudRunApp Kind = "CloudRunApp"
 	// KindECSApp represents application configuration for an AWS ECS.
+	//
+	// Deprecated: use KindApplication instead.
 	KindECSApp Kind = "ECSApp"
 	// KindApplication represents a generic application configuration.
 	KindApplication Kind = "Application"
@@ -80,13 +88,6 @@ type Config struct {
 
 	ApplicationSpec *GenericApplicationSpec
 
-	// TODO: remove these fields
-	KubernetesApplicationSpec *KubernetesApplicationSpec
-	TerraformApplicationSpec  *TerraformApplicationSpec
-	CloudRunApplicationSpec   *CloudRunApplicationSpec
-	LambdaApplicationSpec     *LambdaApplicationSpec
-	ECSApplicationSpec        *ECSApplicationSpec
-
 	PipedSpec            *PipedSpec
 	ControlPlaneSpec     *ControlPlaneSpec
 	AnalysisTemplateSpec *AnalysisTemplateSpec
@@ -104,29 +105,9 @@ func (c *Config) init(kind Kind, apiVersion string) error {
 	c.APIVersion = apiVersion
 
 	switch kind {
-	case KindApplication:
+	case KindApplication, KindKubernetesApp, KindTerraformApp, KindCloudRunApp, KindLambdaApp, KindECSApp:
 		c.ApplicationSpec = &GenericApplicationSpec{}
 		c.spec = c.ApplicationSpec
-
-	case KindKubernetesApp:
-		c.KubernetesApplicationSpec = &KubernetesApplicationSpec{}
-		c.spec = c.KubernetesApplicationSpec
-
-	case KindTerraformApp:
-		c.TerraformApplicationSpec = &TerraformApplicationSpec{}
-		c.spec = c.TerraformApplicationSpec
-
-	case KindCloudRunApp:
-		c.CloudRunApplicationSpec = &CloudRunApplicationSpec{}
-		c.spec = c.CloudRunApplicationSpec
-
-	case KindLambdaApp:
-		c.LambdaApplicationSpec = &LambdaApplicationSpec{}
-		c.spec = c.LambdaApplicationSpec
-
-	case KindECSApp:
-		c.ECSApplicationSpec = &ECSApplicationSpec{}
-		c.spec = c.ECSApplicationSpec
 
 	case KindPiped:
 		c.PipedSpec = &PipedSpec{}
@@ -228,39 +209,4 @@ func DecodeYAML(data []byte) (*Config, error) {
 		return nil, err
 	}
 	return c, nil
-}
-
-// ToApplicationKind converts configuration kind to application kind.
-func (k Kind) ToApplicationKind() (model.ApplicationKind, bool) {
-	switch k {
-	case KindKubernetesApp:
-		return model.ApplicationKind_KUBERNETES, true
-	case KindTerraformApp:
-		return model.ApplicationKind_TERRAFORM, true
-	case KindLambdaApp:
-		return model.ApplicationKind_LAMBDA, true
-	case KindCloudRunApp:
-		return model.ApplicationKind_CLOUDRUN, true
-	case KindECSApp:
-		return model.ApplicationKind_ECS, true
-	}
-	return model.ApplicationKind_KUBERNETES, false
-}
-
-func (c *Config) GetGenericApplication() (GenericApplicationSpec, bool) {
-	switch c.Kind {
-	case KindApplication:
-		return *c.ApplicationSpec, true
-	case KindKubernetesApp:
-		return c.KubernetesApplicationSpec.GenericApplicationSpec, true
-	case KindTerraformApp:
-		return c.TerraformApplicationSpec.GenericApplicationSpec, true
-	case KindCloudRunApp:
-		return c.CloudRunApplicationSpec.GenericApplicationSpec, true
-	case KindLambdaApp:
-		return c.LambdaApplicationSpec.GenericApplicationSpec, true
-	case KindECSApp:
-		return c.ECSApplicationSpec.GenericApplicationSpec, true
-	}
-	return GenericApplicationSpec{}, false
 }

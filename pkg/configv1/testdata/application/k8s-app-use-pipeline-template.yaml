@@ -1,5 +1,0 @@
-apiVersion: pipecd.dev/v1beta1
-kind: KubernetesApp
-spec:
-  pipeline:
-    useTemplate: k8s-canary-with-analysis

@@ -24,6 +24,10 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
+func newBoolPointer(b bool) *bool {
+	return &b
+}
+
 func TestHasStage(t *testing.T) {
 	testcases := []struct {
 		name  string
@@ -379,36 +383,25 @@ func TestGenericTriggerConfiguration(t *testing.T) {
 			fileName:           "testdata/application/generic-trigger.yaml",
 			expectedKind:       KindKubernetesApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &KubernetesApplicationSpec{
-				GenericApplicationSpec: GenericApplicationSpec{
-					Timeout: Duration(6 * time.Hour),
-					Trigger: Trigger{
-						OnCommit: OnCommit{
-							Disabled: false,
-							Paths: []string{
-								"deployment.yaml",
-							},
-						},
-						OnOutOfSync: OnOutOfSync{
-							Disabled:  newBoolPointer(true),
-							MinWindow: Duration(5 * time.Minute),
-						},
-						OnChain: OnChain{
-							Disabled: newBoolPointer(true),
+			expectedSpec: &GenericApplicationSpec{
+				Timeout: Duration(6 * time.Hour),
+				Trigger: Trigger{
+					OnCommit: OnCommit{
+						Disabled: false,
+						Paths: []string{
+							"deployment.yaml",
 						},
 					},
-					Planner: DeploymentPlanner{
-						AutoRollback: newBoolPointer(true),
+					OnOutOfSync: OnOutOfSync{
+						Disabled:  newBoolPointer(true),
+						MinWindow: Duration(5 * time.Minute),
+					},
+					OnChain: OnChain{
+						Disabled: newBoolPointer(true),
 					},
 				},
-				Input: KubernetesDeploymentInput{
+				Planner: DeploymentPlanner{
 					AutoRollback: newBoolPointer(true),
-				},
-				VariantLabel: KubernetesVariantLabel{
-					Key:           "pipecd.dev/variant",
-					PrimaryValue:  "primary",
-					BaselineValue: "baseline",
-					CanaryValue:   "canary",
 				},
 			},
 			expectedError: nil,
@@ -439,30 +432,19 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 			fileName:           "testdata/application/truebydefaultbool-not-specified.yaml",
 			expectedKind:       KindKubernetesApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &KubernetesApplicationSpec{
-				GenericApplicationSpec: GenericApplicationSpec{
-					Timeout: Duration(6 * time.Hour),
-					Trigger: Trigger{
-						OnOutOfSync: OnOutOfSync{
-							Disabled:  newBoolPointer(true),
-							MinWindow: Duration(5 * time.Minute),
-						},
-						OnChain: OnChain{
-							Disabled: newBoolPointer(true),
-						},
+			expectedSpec: &GenericApplicationSpec{
+				Timeout: Duration(6 * time.Hour),
+				Trigger: Trigger{
+					OnOutOfSync: OnOutOfSync{
+						Disabled:  newBoolPointer(true),
+						MinWindow: Duration(5 * time.Minute),
 					},
-					Planner: DeploymentPlanner{
-						AutoRollback: newBoolPointer(true),
+					OnChain: OnChain{
+						Disabled: newBoolPointer(true),
 					},
 				},
-				Input: KubernetesDeploymentInput{
+				Planner: DeploymentPlanner{
 					AutoRollback: newBoolPointer(true),
-				},
-				VariantLabel: KubernetesVariantLabel{
-					Key:           "pipecd.dev/variant",
-					PrimaryValue:  "primary",
-					BaselineValue: "baseline",
-					CanaryValue:   "canary",
 				},
 			},
 			expectedError: nil,
@@ -471,30 +453,19 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 			fileName:           "testdata/application/truebydefaultbool-false-explicitly.yaml",
 			expectedKind:       KindKubernetesApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &KubernetesApplicationSpec{
-				GenericApplicationSpec: GenericApplicationSpec{
-					Timeout: Duration(6 * time.Hour),
-					Trigger: Trigger{
-						OnOutOfSync: OnOutOfSync{
-							Disabled:  newBoolPointer(false),
-							MinWindow: Duration(5 * time.Minute),
-						},
-						OnChain: OnChain{
-							Disabled: newBoolPointer(true),
-						},
+			expectedSpec: &GenericApplicationSpec{
+				Timeout: Duration(6 * time.Hour),
+				Trigger: Trigger{
+					OnOutOfSync: OnOutOfSync{
+						Disabled:  newBoolPointer(false),
+						MinWindow: Duration(5 * time.Minute),
 					},
-					Planner: DeploymentPlanner{
-						AutoRollback: newBoolPointer(true),
+					OnChain: OnChain{
+						Disabled: newBoolPointer(true),
 					},
 				},
-				Input: KubernetesDeploymentInput{
-					AutoRollback: newBoolPointer(false),
-				},
-				VariantLabel: KubernetesVariantLabel{
-					Key:           "pipecd.dev/variant",
-					PrimaryValue:  "primary",
-					BaselineValue: "baseline",
-					CanaryValue:   "canary",
+				Planner: DeploymentPlanner{
+					AutoRollback: newBoolPointer(true),
 				},
 			},
 			expectedError: nil,
@@ -503,30 +474,19 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 			fileName:           "testdata/application/truebydefaultbool-true-explicitly.yaml",
 			expectedKind:       KindKubernetesApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &KubernetesApplicationSpec{
-				GenericApplicationSpec: GenericApplicationSpec{
-					Timeout: Duration(6 * time.Hour),
-					Trigger: Trigger{
-						OnOutOfSync: OnOutOfSync{
-							Disabled:  newBoolPointer(true),
-							MinWindow: Duration(5 * time.Minute),
-						},
-						OnChain: OnChain{
-							Disabled: newBoolPointer(true),
-						},
+			expectedSpec: &GenericApplicationSpec{
+				Timeout: Duration(6 * time.Hour),
+				Trigger: Trigger{
+					OnOutOfSync: OnOutOfSync{
+						Disabled:  newBoolPointer(true),
+						MinWindow: Duration(5 * time.Minute),
 					},
-					Planner: DeploymentPlanner{
-						AutoRollback: newBoolPointer(true),
+					OnChain: OnChain{
+						Disabled: newBoolPointer(true),
 					},
 				},
-				Input: KubernetesDeploymentInput{
+				Planner: DeploymentPlanner{
 					AutoRollback: newBoolPointer(true),
-				},
-				VariantLabel: KubernetesVariantLabel{
-					Key:           "pipecd.dev/variant",
-					PrimaryValue:  "primary",
-					BaselineValue: "baseline",
-					CanaryValue:   "canary",
 				},
 			},
 			expectedError: nil,
@@ -557,48 +517,37 @@ func TestGenericPostSyncConfiguration(t *testing.T) {
 			fileName:           "testdata/application/generic-postsync.yaml",
 			expectedKind:       KindKubernetesApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &KubernetesApplicationSpec{
-				GenericApplicationSpec: GenericApplicationSpec{
-					Timeout: Duration(6 * time.Hour),
-					Trigger: Trigger{
-						OnOutOfSync: OnOutOfSync{
-							Disabled:  newBoolPointer(true),
-							MinWindow: Duration(5 * time.Minute),
-						},
-						OnChain: OnChain{
-							Disabled: newBoolPointer(true),
-						},
+			expectedSpec: &GenericApplicationSpec{
+				Timeout: Duration(6 * time.Hour),
+				Trigger: Trigger{
+					OnOutOfSync: OnOutOfSync{
+						Disabled:  newBoolPointer(true),
+						MinWindow: Duration(5 * time.Minute),
 					},
-					Planner: DeploymentPlanner{
-						AutoRollback: newBoolPointer(true),
+					OnChain: OnChain{
+						Disabled: newBoolPointer(true),
 					},
-					PostSync: &PostSync{
-						DeploymentChain: &DeploymentChain{
-							ApplicationMatchers: []ChainApplicationMatcher{
-								{
-									Name: "app-1",
+				},
+				Planner: DeploymentPlanner{
+					AutoRollback: newBoolPointer(true),
+				},
+				PostSync: &PostSync{
+					DeploymentChain: &DeploymentChain{
+						ApplicationMatchers: []ChainApplicationMatcher{
+							{
+								Name: "app-1",
+							},
+							{
+								Labels: map[string]string{
+									"env": "staging",
+									"foo": "bar",
 								},
-								{
-									Labels: map[string]string{
-										"env": "staging",
-										"foo": "bar",
-									},
-								},
-								{
-									Kind: "ECSApp",
-								},
+							},
+							{
+								Kind: "ECSApp",
 							},
 						},
 					},
-				},
-				Input: KubernetesDeploymentInput{
-					AutoRollback: newBoolPointer(true),
-				},
-				VariantLabel: KubernetesVariantLabel{
-					Key:           "pipecd.dev/variant",
-					PrimaryValue:  "primary",
-					BaselineValue: "baseline",
-					CanaryValue:   "canary",
 				},
 			},
 			expectedError: nil,
@@ -613,35 +562,6 @@ func TestGenericPostSyncConfiguration(t *testing.T) {
 				assert.Equal(t, tc.expectedAPIVersion, cfg.APIVersion)
 				assert.Equal(t, tc.expectedSpec, cfg.spec)
 			}
-		})
-	}
-}
-
-func TestScriptSycConfiguration(t *testing.T) {
-	testcases := []struct {
-		name    string
-		opts    ScriptRunStageOptions
-		wantErr bool
-	}{
-		{
-			name: "valid",
-			opts: ScriptRunStageOptions{
-				Run: "echo 'hello world'",
-			},
-			wantErr: false,
-		},
-		{
-			name: "invalid",
-			opts: ScriptRunStageOptions{
-				Run: "",
-			},
-			wantErr: true,
-		},
-	}
-	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			err := tc.opts.Validate()
-			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}
 }
