@@ -4,5 +4,3 @@ spec:
   trigger:
     onOutOfSync:
       disabled: true
-  input:
-    autoRollback: true

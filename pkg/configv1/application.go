@@ -17,8 +17,6 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -303,23 +301,6 @@ func (a *AnalysisStageOptions) Validate() error {
 	return nil
 }
 
-// ScriptRunStageOptions contains all configurable values for a SCRIPT_RUN stage.
-type ScriptRunStageOptions struct {
-	Env        map[string]string `json:"env"`
-	Run        string            `json:"run"`
-	Timeout    Duration          `json:"timeout" default:"6h"`
-	OnRollback string            `json:"onRollback"`
-	SkipOn     SkipOptions       `json:"skipOn,omitempty"`
-}
-
-// Validate checks the required fields of ScriptRunStageOptions.
-func (s *ScriptRunStageOptions) Validate() error {
-	if s.Run == "" {
-		return fmt.Errorf("SCRIPT_RUN stage requires run field")
-	}
-	return nil
-}
-
 type AnalysisTemplateRef struct {
 	Name    string            `json:"name"`
 	AppArgs map[string]string `json:"appArgs"`
@@ -570,26 +551,4 @@ func (dd *DriftDetection) Validate() error {
 		}
 	}
 	return nil
-}
-
-func LoadApplication(repoPath, configRelPath string, appKind model.ApplicationKind) (*GenericApplicationSpec, error) {
-	absPath := filepath.Join(repoPath, configRelPath)
-
-	cfg, err := LoadFromYAML(absPath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("application config file %s was not found in Git", configRelPath)
-		}
-		return nil, err
-	}
-	if kind, ok := cfg.Kind.ToApplicationKind(); !ok || kind != appKind {
-		return nil, fmt.Errorf("invalid application kind in the application config file, got: %s, expected: %s", kind, appKind)
-	}
-
-	spec, ok := cfg.GetGenericApplication()
-	if !ok {
-		return nil, fmt.Errorf("unsupported application kind: %s", appKind)
-	}
-
-	return &spec, nil
 }
