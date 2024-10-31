@@ -132,12 +132,12 @@ func LoadEventWatcher(repoRoot string, includePatterns, excludePatterns []string
 	}
 	for _, f := range filtered {
 		path := filepath.Join(dir, f)
-		cfg, err := LoadFromYAML(path)
+		cfg, err := LoadFromYAML[*EventWatcherSpec](path)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load config file %s: %w", path, err)
 		}
 		if cfg.Kind == KindEventWatcher {
-			spec.Events = append(spec.Events, cfg.EventWatcherSpec.Events...)
+			spec.Events = append(spec.Events, cfg.Spec.Events...)
 		}
 	}
 
