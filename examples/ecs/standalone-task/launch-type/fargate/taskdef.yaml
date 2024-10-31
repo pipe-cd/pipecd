@@ -9,8 +9,6 @@ containerDefinitions:
     name: web
     portMappings:
       - containerPort: 80
-compatibilities:
-  - FARGATE
 requiresCompatibilities:
   - FARGATE
 networkMode: awsvpc

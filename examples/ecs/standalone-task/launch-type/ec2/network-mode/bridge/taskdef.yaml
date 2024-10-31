@@ -9,8 +9,6 @@ containerDefinitions:
     name: web
     portMappings:
       - containerPort: 80
-compatibilities:
-  - EC2
 requiresCompatibilities:
   - EC2
 networkMode: bridge
