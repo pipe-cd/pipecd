@@ -65,8 +65,8 @@ func TestDetermineStageStatus(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			tc.got = DetermineStageStatus(tc.sig, tc.ori, tc.got)
-			assert.Equal(t, tc.expected, tc.got)
+			got := DetermineStageStatus(tc.sig, tc.ori, tc.got)
+			assert.Equal(t, tc.expected, got)
 		})
 	}
 }
