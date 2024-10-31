@@ -366,12 +366,12 @@ func TestPipedConfig(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.fileName, func(t *testing.T) {
-			cfg, err := LoadFromYAML(tc.fileName)
+			cfg, err := LoadFromYAML[*PipedSpec](tc.fileName)
 			require.Equal(t, tc.expectedError, err)
 			if err == nil {
 				assert.Equal(t, tc.expectedKind, cfg.Kind)
 				assert.Equal(t, tc.expectedAPIVersion, cfg.APIVersion)
-				assert.Equal(t, tc.expectedSpec, cfg.spec)
+				assert.Equal(t, tc.expectedSpec, cfg.Spec)
 			}
 		})
 	}

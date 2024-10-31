@@ -96,20 +96,20 @@ func TestControlPlaneConfig(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.fileName, func(t *testing.T) {
-			cfg, err := LoadFromYAML(tc.fileName)
+			cfg, err := LoadFromYAML[*ControlPlaneSpec](tc.fileName)
 			require.Equal(t, tc.expectedError, err)
 			if err == nil {
 				assert.Equal(t, tc.expectedKind, cfg.Kind)
 				assert.Equal(t, tc.expectedAPIVersion, cfg.APIVersion)
 				require.Equal(t, 1, len(tc.expectedSpec.SharedSSOConfigs))
-				require.Equal(t, 1, len(cfg.ControlPlaneSpec.SharedSSOConfigs))
+				require.Equal(t, 1, len(cfg.Spec.SharedSSOConfigs))
 				// Why don't we use assert.Equal to compare?
 				// https://github.com/stretchr/testify/issues/758
-				assert.True(t, proto.Equal(&tc.expectedSpec.SharedSSOConfigs[0].ProjectSSOConfig, &cfg.ControlPlaneSpec.SharedSSOConfigs[0].ProjectSSOConfig))
+				assert.True(t, proto.Equal(&tc.expectedSpec.SharedSSOConfigs[0].ProjectSSOConfig, &cfg.Spec.SharedSSOConfigs[0].ProjectSSOConfig))
 
 				tc.expectedSpec.SharedSSOConfigs = nil
-				cfg.ControlPlaneSpec.SharedSSOConfigs = nil
-				assert.Equal(t, tc.expectedSpec, cfg.ControlPlaneSpec)
+				cfg.Spec.SharedSSOConfigs = nil
+				assert.Equal(t, tc.expectedSpec, cfg.Spec)
 			}
 		})
 	}

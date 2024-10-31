@@ -47,12 +47,12 @@ func LoadAnalysisTemplate(repoRoot string) (*AnalysisTemplateSpec, error) {
 			continue
 		}
 		path := filepath.Join(dir, f.Name())
-		cfg, err := LoadFromYAML(path)
+		cfg, err := LoadFromYAML[*AnalysisTemplateSpec](path)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load config file %s: %w", path, err)
 		}
 		if cfg.Kind == KindAnalysisTemplate {
-			return cfg.AnalysisTemplateSpec, nil
+			return cfg.Spec, nil
 		}
 	}
 	return nil, ErrNotFound
