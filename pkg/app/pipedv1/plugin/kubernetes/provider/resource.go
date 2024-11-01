@@ -60,6 +60,8 @@ var builtInAPIVersions = map[string]struct{}{
 const (
 	KindDeployment = "Deployment"
 	KindSecret     = "Secret"
+
+	DefaultNamespace = "default"
 )
 
 type ResourceKey struct {

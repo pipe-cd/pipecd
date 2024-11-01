@@ -124,3 +124,35 @@ func findWorkloadManifests(manifests []provider.Manifest, refs []config.K8sResou
 	}
 	return workloads
 }
+
+type workloadPair struct {
+	old provider.Manifest
+	new provider.Manifest
+}
+
+func findUpdatedWorkloads(olds, news []provider.Manifest) []workloadPair {
+	pairs := make([]workloadPair, 0)
+	oldMap := make(map[provider.ResourceKey]provider.Manifest, len(olds))
+	nomalizeKey := func(k provider.ResourceKey) provider.ResourceKey {
+		// Ignoring APIVersion because user can upgrade to the new APIVersion for the same workload.
+		k.APIVersion = ""
+		if k.Namespace == provider.DefaultNamespace {
+			k.Namespace = ""
+		}
+		return k
+	}
+	for _, m := range olds {
+		key := nomalizeKey(m.Key)
+		oldMap[key] = m
+	}
+	for _, n := range news {
+		key := nomalizeKey(n.Key)
+		if o, ok := oldMap[key]; ok {
+			pairs = append(pairs, workloadPair{
+				old: o,
+				new: n,
+			})
+		}
+	}
+	return pairs
+}
