@@ -642,6 +642,8 @@ func (m *PipelineStage) validate(all bool) error {
 
 	// no validation rules for RetriedCount
 
+	// no validation rules for Rollback
+
 	if m.GetCompletedAt() < 0 {
 		err := PipelineStageValidationError{
 			field:  "CompletedAt",

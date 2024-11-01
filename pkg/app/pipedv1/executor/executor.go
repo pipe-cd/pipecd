@@ -72,17 +72,19 @@ type Input struct {
 	// Deploy source at target commit
 	TargetDSP deploysource.Provider
 	// Deploy source at running commit
-	RunningDSP            deploysource.Provider
-	GitClient             GitClient
-	CommandLister         CommandLister
-	LogPersister          LogPersister
-	MetadataStore         metadatastore.MetadataStore
-	AppManifestsCache     cache.Cache
-	AnalysisResultStore   AnalysisResultStore
-	Logger                *zap.Logger
-	Notifier              Notifier
+	RunningDSP          deploysource.Provider
+	GitClient           GitClient
+	CommandLister       CommandLister
+	LogPersister        LogPersister
+	MetadataStore       metadatastore.MetadataStore
+	AppManifestsCache   cache.Cache
+	AnalysisResultStore AnalysisResultStore
+	Logger              *zap.Logger
+	Notifier            Notifier
 }
 
+// DetermineStageStatus determines the final status of the stage based on the given stop signal.
+// Normal is the case when the stop signal is StopSignalNone.
 func DetermineStageStatus(sig StopSignalType, ori, got model.StageStatus) model.StageStatus {
 	switch sig {
 	case StopSignalNone:
@@ -93,6 +95,7 @@ func DetermineStageStatus(sig StopSignalType, ori, got model.StageStatus) model.
 		return model.StageStatus_STAGE_CANCELLED
 	case StopSignalTimeout:
 		return model.StageStatus_STAGE_FAILURE
+	default:
+		return model.StageStatus_STAGE_FAILURE
 	}
-	return model.StageStatus_STAGE_FAILURE
 }

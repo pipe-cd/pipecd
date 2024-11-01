@@ -28,6 +28,9 @@ export class Event extends jspb.Message {
   getStatusDescription(): string;
   setStatusDescription(value: string): Event;
 
+  getContextsMap(): jspb.Map<string, string>;
+  clearContextsMap(): Event;
+
   getHandledAt(): number;
   setHandledAt(value: number): Event;
 
@@ -55,6 +58,7 @@ export namespace Event {
     eventKey: string,
     status: EventStatus,
     statusDescription: string,
+    contextsMap: Array<[string, string]>,
     handledAt: number,
     createdAt: number,
     updatedAt: number,

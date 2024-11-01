@@ -146,7 +146,8 @@ func TestPipedConfig(t *testing.T) {
 						Name: "lambda",
 						Type: model.PlatformProviderLambda,
 						LambdaConfig: &PlatformProviderLambdaConfig{
-							Region: "us-east-1",
+							Region:                "us-east-1",
+							AwsAPIPollingInterval: Duration(15 * time.Second),
 						},
 					},
 				},

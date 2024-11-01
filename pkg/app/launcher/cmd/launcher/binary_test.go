@@ -15,6 +15,7 @@
 package launcher
 
 import (
+	"strconv"
 	"testing"
 	"time"
 
@@ -45,6 +46,37 @@ func TestGracefulStopCommand(t *testing.T) {
 
 			assert.True(t, cmd.IsRunning())
 			cmd.GracefulStop(tc.stopAfter)
+			assert.False(t, cmd.IsRunning())
+		})
+	}
+}
+
+func TestGracefulStopCommandResult(t *testing.T) {
+	testcases := []struct {
+		name      string
+		exitCode  int
+		assertion assert.ErrorAssertionFunc
+	}{
+		{
+			name:      "successfully exit",
+			exitCode:  0,
+			assertion: assert.NoError,
+		},
+		{
+			name:      "exit with an error",
+			exitCode:  1,
+			assertion: assert.Error,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			cmd, err := runBinary("sh", []string{"-c", "exit " + strconv.Itoa(tc.exitCode)})
+			require.NoError(t, err)
+			require.NotNil(t, cmd)
+
+			time.Sleep(100 * time.Millisecond) // to avoid GracefulStop executed before the command exits
+			tc.assertion(t, cmd.GracefulStop(time.Second))
 			assert.False(t, cmd.IsRunning())
 		})
 	}

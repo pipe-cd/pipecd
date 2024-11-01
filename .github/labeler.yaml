@@ -28,3 +28,5 @@ area/tool:
 
 area/pipedv1:
 - pkg/app/pipedv1/**/*
+- pkg/configv1/*
+- pkg/configv1/**/*

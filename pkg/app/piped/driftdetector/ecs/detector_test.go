@@ -162,10 +162,11 @@ func TestIgnoreParameters(t *testing.T) {
 		},
 	}
 
-	ignoreParameters(livestate, headManifest)
+	ignoredLive, ignoredHead := ignoreParameters(livestate, headManifest)
+
 	result, err := provider.Diff(
-		livestate,
-		headManifest,
+		ignoredLive,
+		ignoredHead,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),
 		diff.WithCompareNumberAndNumericString(),
@@ -173,6 +174,13 @@ func TestIgnoreParameters(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, false, result.Diff.HasDiff())
+
+	// Check if the original manifests are not modified.
+	assert.Equal(t, []string{"1_test-subnet", "0_test-subnet"}, headManifest.ServiceDefinition.NetworkConfiguration.AwsvpcConfiguration.Subnets)
+	assert.Equal(t, []string{"1_test-sg", "0_test-sg"}, livestate.ServiceDefinition.NetworkConfiguration.AwsvpcConfiguration.SecurityGroups)
+	assert.Equal(t, 0, len(headManifest.TaskDefinition.Status))
+	assert.Nil(t, headManifest.TaskDefinition.ContainerDefinitions[1].Essential)
+	assert.Equal(t, 0, len(headManifest.TaskDefinition.ContainerDefinitions[0].PortMappings[0].Protocol))
 }
 
 func TestIgnoreAutoScalingDiff(t *testing.T) {

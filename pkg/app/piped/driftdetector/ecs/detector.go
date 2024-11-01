@@ -209,11 +209,11 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	d.logger.Info(fmt.Sprintf("application %s has live ecs definition files", app.Id))
 
 	// Ignore some fields whech are not necessary or unable to detect diff.
-	ignoreParameters(liveManifests, headManifests)
+	live, head := ignoreParameters(liveManifests, headManifests)
 
 	result, err := provider.Diff(
-		liveManifests,
-		headManifests,
+		live,
+		head,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),
 		diff.WithCompareNumberAndNumericString(),
@@ -237,8 +237,8 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 // TODO: Maybe we should check diff of following fields when not set in the head manifests in some way. Currently they are ignored:
 //   - service.PlatformVersion
 //   - service.RoleArn
-func ignoreParameters(liveManifests provider.ECSManifests, headManifests provider.ECSManifests) {
-	liveService := liveManifests.ServiceDefinition
+func ignoreParameters(liveManifests provider.ECSManifests, headManifests provider.ECSManifests) (live, head provider.ECSManifests) {
+	liveService := *liveManifests.ServiceDefinition
 	liveService.CreatedAt = nil
 	liveService.CreatedBy = nil
 	liveService.Events = nil
@@ -251,20 +251,24 @@ func ignoreParameters(liveManifests provider.ECSManifests, headManifests provide
 	liveService.TaskDefinition = nil // TODO: Find a way to compare the task definition if possible.
 	liveService.TaskSets = nil
 
-	liveTask := liveManifests.TaskDefinition
-	liveTask.RegisteredAt = nil
-	liveTask.RegisteredBy = nil
-	liveTask.RequiresAttributes = nil
-	liveTask.Revision = 0 // TODO: Find a way to compare the revision if possible.
-	liveTask.TaskDefinitionArn = nil
-	for i := range liveTask.ContainerDefinitions {
-		for j := range liveTask.ContainerDefinitions[i].PortMappings {
-			// We ignore diff of HostPort because it has several default values. See https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_ContainerDefinition.html#ECS-Type-ContainerDefinition-portMappings.
-			liveTask.ContainerDefinitions[i].PortMappings[j].HostPort = nil
+	var liveTask types.TaskDefinition
+	if liveManifests.TaskDefinition != nil {
+		// When liveTask does not exist, e.g. right after the service is created.
+		liveTask = *liveManifests.TaskDefinition
+		liveTask.RegisteredAt = nil
+		liveTask.RegisteredBy = nil
+		liveTask.RequiresAttributes = nil
+		liveTask.Revision = 0 // TODO: Find a way to compare the revision if possible.
+		liveTask.TaskDefinitionArn = nil
+		for i := range liveTask.ContainerDefinitions {
+			for j := range liveTask.ContainerDefinitions[i].PortMappings {
+				// We ignore diff of HostPort because it has several default values. See https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_ContainerDefinition.html#ECS-Type-ContainerDefinition-portMappings.
+				liveTask.ContainerDefinitions[i].PortMappings[j].HostPort = nil
+			}
 		}
 	}
 
-	headService := headManifests.ServiceDefinition
+	headService := *headManifests.ServiceDefinition
 	if headService.PlatformVersion == nil {
 		// The LATEST platform version is used by default if PlatformVersion is not specified.
 		// See https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CreateService.html#ECS-CreateService-request-platformVersion.
@@ -276,29 +280,43 @@ func ignoreParameters(liveManifests provider.ECSManifests, headManifests provide
 		headService.RoleArn = liveService.RoleArn
 	}
 	if headService.NetworkConfiguration != nil && headService.NetworkConfiguration.AwsvpcConfiguration != nil {
-		awsvpcCfg := headService.NetworkConfiguration.AwsvpcConfiguration
-		slices.Sort(awsvpcCfg.Subnets) // Livestate's Subnets are sorted by ECS. (SecurityGroups and ContainerDefinitions are not sorted)
+		awsvpcCfg := *headService.NetworkConfiguration.AwsvpcConfiguration
+		awsvpcCfg.Subnets = slices.Clone(awsvpcCfg.Subnets)
+		slices.Sort(awsvpcCfg.Subnets)
 		if len(awsvpcCfg.AssignPublicIp) == 0 {
 			// AssignPublicIp is DISABLED by default.
 			// See https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_AwsVpcConfiguration.html#ECS-Type-AwsVpcConfiguration-assignPublicIp.
 			awsvpcCfg.AssignPublicIp = types.AssignPublicIpDisabled
 		}
+		headService.NetworkConfiguration = &types.NetworkConfiguration{AwsvpcConfiguration: &awsvpcCfg}
+	}
+
+	// Sort the subnets of the live service as well
+	if liveService.NetworkConfiguration != nil && liveService.NetworkConfiguration.AwsvpcConfiguration != nil {
+		awsvpcCfg := *liveService.NetworkConfiguration.AwsvpcConfiguration
+		awsvpcCfg.Subnets = slices.Clone(awsvpcCfg.Subnets)
+		slices.Sort(awsvpcCfg.Subnets)
+		liveService.NetworkConfiguration = &types.NetworkConfiguration{AwsvpcConfiguration: &awsvpcCfg}
 	}
 
 	// TODO: In order to check diff of the tags, we need to add pipecd-managed tags and sort.
 	liveService.Tags = nil
 	headService.Tags = nil
 
-	headTask := headManifests.TaskDefinition
-	headTask.Status = types.TaskDefinitionStatusActive  // If livestate's status is not ACTIVE, we should re-deploy a new task definition.
-	headTask.Compatibilities = liveTask.Compatibilities // Users can specify Compatibilities in a task definition file, but it is not used when registering a task definition.
+	headTask := *headManifests.TaskDefinition
+	headTask.Status = types.TaskDefinitionStatusActive // If livestate's status is not ACTIVE, we should re-deploy a new task definition.
+	if liveManifests.TaskDefinition != nil {
+		headTask.Compatibilities = liveTask.Compatibilities // Users can specify Compatibilities in a task definition file, but it is not used when registering a task definition.
+	}
 
+	headTask.ContainerDefinitions = slices.Clone(headManifests.TaskDefinition.ContainerDefinitions)
 	for i := range headTask.ContainerDefinitions {
 		cd := &headTask.ContainerDefinitions[i]
 		if cd.Essential == nil {
 			// Essential is true by default. See https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_ContainerDefinition.html#ECS-Type-ContainerDefinition-es.
 			cd.Essential = aws.Bool(true)
 		}
+		cd.PortMappings = slices.Clone(cd.PortMappings)
 		for j := range cd.PortMappings {
 			pm := &cd.PortMappings[j]
 			if len(pm.Protocol) == 0 {
@@ -308,6 +326,10 @@ func ignoreParameters(liveManifests provider.ECSManifests, headManifests provide
 			pm.HostPort = nil // We ignore diff of HostPort because it has several default values.
 		}
 	}
+
+	live = provider.ECSManifests{ServiceDefinition: &liveService, TaskDefinition: &liveTask}
+	head = provider.ECSManifests{ServiceDefinition: &headService, TaskDefinition: &headTask}
+	return live, head
 }
 
 func (d *detector) loadConfigs(app *model.Application, repo git.Repo, headCommit git.Commit) (provider.ECSManifests, error) {

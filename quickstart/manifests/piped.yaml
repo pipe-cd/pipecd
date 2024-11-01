@@ -5,10 +5,10 @@ kind: ServiceAccount
 metadata:
   name: piped
   labels:
-    helm.sh/chart: piped-v0.48.6
+    helm.sh/chart: piped-v0.49.2
     app.kubernetes.io/name: piped
     app.kubernetes.io/instance: piped
-    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/version: "v0.49.2"
     app.kubernetes.io/managed-by: Helm
 ---
 # Source: piped/templates/secret.yaml
@@ -17,10 +17,10 @@ kind: Secret
 metadata:
   name: piped
   labels:
-    helm.sh/chart: piped-v0.48.6
+    helm.sh/chart: piped-v0.49.2
     app.kubernetes.io/name: piped
     app.kubernetes.io/instance: piped
-    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/version: "v0.49.2"
     app.kubernetes.io/managed-by: Helm
 type: Opaque
 data:
@@ -31,10 +31,10 @@ kind: ConfigMap
 metadata:
   name: piped
   labels:
-    helm.sh/chart: piped-v0.48.6
+    helm.sh/chart: piped-v0.49.2
     app.kubernetes.io/name: piped
     app.kubernetes.io/instance: piped
-    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/version: "v0.49.2"
     app.kubernetes.io/managed-by: Helm
 data:
   piped-config.yaml: |-
@@ -57,10 +57,10 @@ kind: ClusterRole
 metadata:
   name: piped
   labels:
-    helm.sh/chart: piped-v0.48.6
+    helm.sh/chart: piped-v0.49.2
     app.kubernetes.io/name: piped
     app.kubernetes.io/instance: piped
-    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/version: "v0.49.2"
     app.kubernetes.io/managed-by: Helm
 rules:
   
@@ -81,10 +81,10 @@ kind: ClusterRoleBinding
 metadata:
   name: piped
   labels:
-    helm.sh/chart: piped-v0.48.6
+    helm.sh/chart: piped-v0.49.2
     app.kubernetes.io/name: piped
     app.kubernetes.io/instance: piped
-    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/version: "v0.49.2"
     app.kubernetes.io/managed-by: Helm
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -101,10 +101,10 @@ kind: Service
 metadata:
   name: piped
   labels:
-    helm.sh/chart: piped-v0.48.6
+    helm.sh/chart: piped-v0.49.2
     app.kubernetes.io/name: piped
     app.kubernetes.io/instance: piped
-    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/version: "v0.49.2"
     app.kubernetes.io/managed-by: Helm
 spec:
   type: ClusterIP
@@ -122,10 +122,10 @@ kind: Deployment
 metadata:
   name: piped
   labels:
-    helm.sh/chart: piped-v0.48.6
+    helm.sh/chart: piped-v0.49.2
     app.kubernetes.io/name: piped
     app.kubernetes.io/instance: piped
-    app.kubernetes.io/version: "v0.48.6"
+    app.kubernetes.io/version: "v0.49.2"
     app.kubernetes.io/managed-by: Helm
 spec:
   replicas: 1
@@ -142,13 +142,13 @@ spec:
         app.kubernetes.io/instance: piped
       annotations:
         sidecar.istio.io/inject: "false"
-        rollme: "F9ME0"
+        rollme: "qZ3uW"
     spec:
       serviceAccountName: piped
       containers:
         - name: piped
           imagePullPolicy: IfNotPresent
-          image: "ghcr.io/pipe-cd/piped:v0.48.6"
+          image: "ghcr.io/pipe-cd/piped:v0.49.2"
           args:
             - piped
             - --config-file=/etc/piped-config/piped-config.yaml
@@ -157,6 +157,7 @@ spec:
             - --log-encoding=humanize
             - --log-level=info
             - --add-login-user-to-passwd=false
+            - --app-manifest-cache-count=150
             - --insecure=true
           ports:
             - name: admin

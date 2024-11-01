@@ -172,8 +172,8 @@ helm upgrade -i dev-piped oci://ghcr.io/pipe-cd/chart/piped --version={{< blocks
 
 OpenShift uses an arbitrarily assigned user ID when it starts a container.
 Starting from OpenShift 4.2, it also inserts that user into `/etc/passwd` for using by the application inside the container,
-but before that version, the assigned user is missing in that file. That blocks workloads of `gcr.io/pipecd/piped` image.
-Therefore if you are running on OpenShift with a version before 4.2, please use `gcr.io/pipecd/piped-okd` image with the following command:
+but before that version, the assigned user is missing in that file. That blocks workloads of `ghcr.io/pipe-cd/piped` image.
+Therefore if you are running on OpenShift with a version before 4.2, please use `ghcr.io/pipe-cd/piped-okd` image with the following command:
 
 - Installing by using [Helm](https://helm.sh/docs/intro/install/) (3.8.0 or later)
 

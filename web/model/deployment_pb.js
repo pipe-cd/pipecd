@@ -1390,6 +1390,7 @@ proto.model.PipelineStage.toObject = function(includeInstance, msg) {
     statusReason: jspb.Message.getFieldWithDefault(msg, 9, ""),
     metadataMap: (f = msg.getMetadataMap()) ? f.toObject(includeInstance, undefined) : [],
     retriedCount: jspb.Message.getFieldWithDefault(msg, 11, 0),
+    rollback: jspb.Message.getBooleanFieldWithDefault(msg, 12, false),
     completedAt: jspb.Message.getFieldWithDefault(msg, 13, 0),
     createdAt: jspb.Message.getFieldWithDefault(msg, 14, 0),
     updatedAt: jspb.Message.getFieldWithDefault(msg, 15, 0)
@@ -1474,6 +1475,10 @@ proto.model.PipelineStage.deserializeBinaryFromReader = function(msg, reader) {
     case 11:
       var value = /** @type {number} */ (reader.readInt32());
       msg.setRetriedCount(value);
+      break;
+    case 12:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setRollback(value);
       break;
     case 13:
       var value = /** @type {number} */ (reader.readInt64());
@@ -1587,6 +1592,13 @@ proto.model.PipelineStage.serializeBinaryToWriter = function(message, writer) {
   if (f !== 0) {
     writer.writeInt32(
       11,
+      f
+    );
+  }
+  f = message.getRollback();
+  if (f) {
+    writer.writeBool(
+      12,
       f
     );
   }
@@ -1833,6 +1845,24 @@ proto.model.PipelineStage.prototype.getRetriedCount = function() {
  */
 proto.model.PipelineStage.prototype.setRetriedCount = function(value) {
   return jspb.Message.setProto3IntField(this, 11, value);
+};
+
+
+/**
+ * optional bool rollback = 12;
+ * @return {boolean}
+ */
+proto.model.PipelineStage.prototype.getRollback = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 12, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.model.PipelineStage} returns this
+ */
+proto.model.PipelineStage.prototype.setRollback = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 12, value);
 };
 
 

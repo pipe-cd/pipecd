@@ -1349,22 +1349,65 @@ func (m *PlanPluginInput) validate(all bool) error {
 		}
 	}
 
-	if utf8.RuneCountInString(m.GetSourceRemoteUrl()) < 1 {
-		err := PlanPluginInputValidationError{
-			field:  "SourceRemoteUrl",
-			reason: "value length must be at least 1 runes",
+	// no validation rules for PluginConfig
+
+	if all {
+		switch v := interface{}(m.GetRunningDeploymentSource()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, PlanPluginInputValidationError{
+					field:  "RunningDeploymentSource",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, PlanPluginInputValidationError{
+					field:  "RunningDeploymentSource",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
 		}
-		if !all {
-			return err
+	} else if v, ok := interface{}(m.GetRunningDeploymentSource()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return PlanPluginInputValidationError{
+				field:  "RunningDeploymentSource",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
 		}
-		errors = append(errors, err)
 	}
 
-	// no validation rules for LastSuccessfulCommitHash
-
-	// no validation rules for LastSuccessfulConfigFileName
-
-	// no validation rules for PluginConfig
+	if all {
+		switch v := interface{}(m.GetTargetDeploymentSource()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, PlanPluginInputValidationError{
+					field:  "TargetDeploymentSource",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, PlanPluginInputValidationError{
+					field:  "TargetDeploymentSource",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTargetDeploymentSource()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return PlanPluginInputValidationError{
+				field:  "TargetDeploymentSource",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
 
 	if len(errors) > 0 {
 		return PlanPluginInputMultiError(errors)
@@ -1443,6 +1486,114 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = PlanPluginInputValidationError{}
+
+// Validate checks the field values on DeploymentSource with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *DeploymentSource) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeploymentSource with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DeploymentSourceMultiError, or nil if none found.
+func (m *DeploymentSource) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeploymentSource) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ApplicationDirectory
+
+	// no validation rules for Revision
+
+	// no validation rules for ApplicationConfig
+
+	// no validation rules for ApplicationConfigFilename
+
+	if len(errors) > 0 {
+		return DeploymentSourceMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeploymentSourceMultiError is an error wrapping multiple validation errors
+// returned by DeploymentSource.ValidateAll() if the designated constraints
+// aren't met.
+type DeploymentSourceMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeploymentSourceMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeploymentSourceMultiError) AllErrors() []error { return m }
+
+// DeploymentSourceValidationError is the validation error returned by
+// DeploymentSource.Validate if the designated constraints aren't met.
+type DeploymentSourceValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeploymentSourceValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeploymentSourceValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeploymentSourceValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeploymentSourceValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeploymentSourceValidationError) ErrorName() string { return "DeploymentSourceValidationError" }
+
+// Error satisfies the builtin error interface
+func (e DeploymentSourceValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeploymentSource.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeploymentSourceValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeploymentSourceValidationError{}
 
 // Validate checks the field values on
 // BuildPipelineSyncStagesRequest_StageConfig with the rules defined in the

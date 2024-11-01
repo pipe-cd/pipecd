@@ -2,6 +2,7 @@
 
 If you're interested in contributing to PipeCD, this document will provide clear instructions on how to get involved.
 
+> Note: Don't bother reading policies and flows, just want to manipulate the code? Jump to the [Development](#development) section.
 
 The [Open Source Guides](https://opensource.guide/) website offers a collection of resources for individuals, communities, and companies who want to learn how to run and contribute to an open source project. Both contributors and newcomers to open source will find the following guides especially helpful:
 

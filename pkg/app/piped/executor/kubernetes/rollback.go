@@ -195,6 +195,13 @@ func (e *rollbackExecutor) ensureScriptRunRollback(ctx context.Context) model.St
 		return model.StageStatus_STAGE_SUCCESS
 	}
 
+	ds, err := e.TargetDSP.Get(ctx, e.LogPersister)
+	if err != nil {
+		e.LogPersister.Errorf("Failed to prepare target deploy source data (%v)", err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+	e.appDir = ds.AppDir
+
 	envStr, ok := e.Stage.Metadata["env"]
 	env := make(map[string]string, 0)
 	if ok {

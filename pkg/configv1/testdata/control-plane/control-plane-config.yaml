@@ -1,0 +1,39 @@
+apiVersion: pipecd.dev/v1beta1
+kind: ControlPlane
+spec:
+  projects:
+    - id: abc
+      staticAdmin:
+        username: test-user
+        passwordHash: test-password
+
+  sharedSSOConfigs:
+    - name: github
+      provider: GITHUB
+      github:
+        clientId: client-id
+        clientSecret: client-secret
+        baseUrl: base-url
+        uploadUrl: upload-url
+
+  datastore:
+    type: FIRESTORE
+    config:
+      namespace: pipecd-test
+      environment: unit-test
+      project: project
+      credentialsFile: "datastore-credentials-file.json"
+
+  filestore:
+    type: GCS
+    config:
+      bucket: bucket
+      credentialsFile: "filestore-credentials-file.json"
+
+  cache:
+    ttl: 5m
+
+  insightCollector:
+    deployment:
+      enabled: true
+      schedule: "0 10 * * *"

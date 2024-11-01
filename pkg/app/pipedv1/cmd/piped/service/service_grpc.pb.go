@@ -24,6 +24,9 @@ const _ = grpc.SupportPackageIsVersion7
 type PluginServiceClient interface {
 	// DecryptSecret decrypts the given secret.
 	DecryptSecret(ctx context.Context, in *DecryptSecretRequest, opts ...grpc.CallOption) (*DecryptSecretResponse, error)
+	// InstallTool installs the given tool.
+	// installed binary's filename becomes `name-version`.
+	InstallTool(ctx context.Context, in *InstallToolRequest, opts ...grpc.CallOption) (*InstallToolResponse, error)
 }
 
 type pluginServiceClient struct {
@@ -43,12 +46,24 @@ func (c *pluginServiceClient) DecryptSecret(ctx context.Context, in *DecryptSecr
 	return out, nil
 }
 
+func (c *pluginServiceClient) InstallTool(ctx context.Context, in *InstallToolRequest, opts ...grpc.CallOption) (*InstallToolResponse, error) {
+	out := new(InstallToolResponse)
+	err := c.cc.Invoke(ctx, "/grpc.piped.service.PluginService/InstallTool", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PluginServiceServer is the server API for PluginService service.
 // All implementations must embed UnimplementedPluginServiceServer
 // for forward compatibility
 type PluginServiceServer interface {
 	// DecryptSecret decrypts the given secret.
 	DecryptSecret(context.Context, *DecryptSecretRequest) (*DecryptSecretResponse, error)
+	// InstallTool installs the given tool.
+	// installed binary's filename becomes `name-version`.
+	InstallTool(context.Context, *InstallToolRequest) (*InstallToolResponse, error)
 	mustEmbedUnimplementedPluginServiceServer()
 }
 
@@ -58,6 +73,9 @@ type UnimplementedPluginServiceServer struct {
 
 func (UnimplementedPluginServiceServer) DecryptSecret(context.Context, *DecryptSecretRequest) (*DecryptSecretResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DecryptSecret not implemented")
+}
+func (UnimplementedPluginServiceServer) InstallTool(context.Context, *InstallToolRequest) (*InstallToolResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method InstallTool not implemented")
 }
 func (UnimplementedPluginServiceServer) mustEmbedUnimplementedPluginServiceServer() {}
 
@@ -90,6 +108,24 @@ func _PluginService_DecryptSecret_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PluginService_InstallTool_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InstallToolRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServiceServer).InstallTool(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.piped.service.PluginService/InstallTool",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServiceServer).InstallTool(ctx, req.(*InstallToolRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PluginService_ServiceDesc is the grpc.ServiceDesc for PluginService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -100,6 +136,10 @@ var PluginService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DecryptSecret",
 			Handler:    _PluginService_DecryptSecret_Handler,
+		},
+		{
+			MethodName: "InstallTool",
+			Handler:    _PluginService_InstallTool_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

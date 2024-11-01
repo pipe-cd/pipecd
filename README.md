@@ -1,3 +1,4 @@
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/7489/badge)](https://www.bestpractices.dev/projects/7489)
 [![Build](https://github.com/pipe-cd/pipecd/actions/workflows/build.yaml/badge.svg)](https://github.com/pipe-cd/pipecd/actions/workflows/build.yaml)
 [![Test](https://github.com/pipe-cd/pipecd/actions/workflows/test.yaml/badge.svg)](https://github.com/pipe-cd/pipecd/actions/workflows/test.yaml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/pipe-cd/pipecd)](https://goreportcard.com/report/github.com/pipe-cd/pipecd)
@@ -86,14 +87,14 @@ You can find a list of publicly recognized users of the PipeCD in the [ADOPTERS.
 <a href="https://github.com/cakecatz"><img src="https://avatars.githubusercontent.com/u/6136383?v=4" title="cakecatz" width="80" height="80"></a>
 <a href="https://github.com/knanao"><img src="https://avatars.githubusercontent.com/u/50069775?v=4" title="knanao" width="80" height="80"></a>
 <a href="https://github.com/t-kikuc"><img src="https://avatars.githubusercontent.com/u/97105818?v=4" title="t-kikuc" width="80" height="80"></a>
-<a href="https://github.com/apps/dependabot"><img src="https://avatars.githubusercontent.com/in/29110?v=4" title="dependabot[bot]" width="80" height="80"></a>
 <a href="https://github.com/ffjlabo"><img src="https://avatars.githubusercontent.com/u/40124947?v=4" title="ffjlabo" width="80" height="80"></a>
+<a href="https://github.com/apps/dependabot"><img src="https://avatars.githubusercontent.com/in/29110?v=4" title="dependabot[bot]" width="80" height="80"></a>
+<a href="https://github.com/Warashi"><img src="https://avatars.githubusercontent.com/u/3600530?v=4" title="Warashi" width="80" height="80"></a>
 <a href="https://github.com/kentakozuka"><img src="https://avatars.githubusercontent.com/u/16733673?v=4" title="kentakozuka" width="80" height="80"></a>
 <a href="https://github.com/stormcat24"><img src="https://avatars.githubusercontent.com/u/919840?v=4" title="stormcat24" width="80" height="80"></a>
 <a href="https://github.com/Hosshii"><img src="https://avatars.githubusercontent.com/u/49914427?v=4" title="Hosshii" width="80" height="80"></a>
 <a href="https://github.com/funera1"><img src="https://avatars.githubusercontent.com/u/60760935?v=4" title="funera1" width="80" height="80"></a>
 <a href="https://github.com/sanposhiho"><img src="https://avatars.githubusercontent.com/u/44139130?v=4" title="sanposhiho" width="80" height="80"></a>
-<a href="https://github.com/Warashi"><img src="https://avatars.githubusercontent.com/u/3600530?v=4" title="Warashi" width="80" height="80"></a>
 <a href="https://github.com/Szarny"><img src="https://avatars.githubusercontent.com/u/26561120?v=4" title="Szarny" width="80" height="80"></a>
 <a href="https://github.com/sivchari"><img src="https://avatars.githubusercontent.com/u/55221074?v=4" title="sivchari" width="80" height="80"></a>
 <a href="https://github.com/kevin-namba"><img src="https://avatars.githubusercontent.com/u/68955641?v=4" title="kevin-namba" width="80" height="80"></a>
@@ -103,10 +104,10 @@ You can find a list of publicly recognized users of the PipeCD in the [ADOPTERS.
 <a href="https://github.com/caniszczyk"><img src="https://avatars.githubusercontent.com/u/63777?v=4" title="caniszczyk" width="80" height="80"></a>
 <a href="https://github.com/chaspy"><img src="https://avatars.githubusercontent.com/u/10370988?v=4" title="chaspy" width="80" height="80"></a>
 <a href="https://github.com/gkuga"><img src="https://avatars.githubusercontent.com/u/33643470?v=4" title="gkuga" width="80" height="80"></a>
-<a href="https://github.com/nnnkkk7"><img src="https://avatars.githubusercontent.com/u/68233204?v=4" title="nnnkkk7" width="80" height="80"></a>
 <a href="https://github.com/golemiso"><img src="https://avatars.githubusercontent.com/u/3282656?v=4" title="golemiso" width="80" height="80"></a>
-<a href="https://github.com/karamaru-alpha"><img src="https://avatars.githubusercontent.com/u/38310693?v=4" title="karamaru-alpha" width="80" height="80"></a>
+<a href="https://github.com/nnnkkk7"><img src="https://avatars.githubusercontent.com/u/68233204?v=4" title="nnnkkk7" width="80" height="80"></a>
 <a href="https://github.com/ouchi2501"><img src="https://avatars.githubusercontent.com/u/11391317?v=4" title="ouchi2501" width="80" height="80"></a>
+<a href="https://github.com/karamaru-alpha"><img src="https://avatars.githubusercontent.com/u/38310693?v=4" title="karamaru-alpha" width="80" height="80"></a>
 <a href="https://github.com/TonkyH"><img src="https://avatars.githubusercontent.com/u/50762864?v=4" title="TonkyH" width="80" height="80"></a>
 <a href="https://github.com/dgannon991"><img src="https://avatars.githubusercontent.com/u/19214156?v=4" title="dgannon991" width="80" height="80"></a>
 <a href="https://github.com/tnqv"><img src="https://avatars.githubusercontent.com/u/23372024?v=4" title="tnqv" width="80" height="80"></a>
@@ -118,6 +119,7 @@ You can find a list of publicly recognized users of the PipeCD in the [ADOPTERS.
 <a href="https://github.com/TakumaKurosawa"><img src="https://avatars.githubusercontent.com/u/39955827?v=4" title="TakumaKurosawa" width="80" height="80"></a>
 <a href="https://github.com/khanhtc3010"><img src="https://avatars.githubusercontent.com/u/9603918?v=4" title="khanhtc3010" width="80" height="80"></a>
 <a href="https://github.com/tennashi"><img src="https://avatars.githubusercontent.com/u/10219626?v=4" title="tennashi" width="80" height="80"></a>
+<a href="https://github.com/naonao2323"><img src="https://avatars.githubusercontent.com/u/74669884?v=4" title="naonao2323" width="80" height="80"></a>
 <a href="https://github.com/ShotaKitazawa"><img src="https://avatars.githubusercontent.com/u/19530785?v=4" title="ShotaKitazawa" width="80" height="80"></a>
 <a href="https://github.com/Exzrgs"><img src="https://avatars.githubusercontent.com/u/140805585?v=4" title="Exzrgs" width="80" height="80"></a>
 <a href="https://github.com/gotyoooo"><img src="https://avatars.githubusercontent.com/u/6133219?v=4" title="gotyoooo" width="80" height="80"></a>
@@ -136,12 +138,13 @@ You can find a list of publicly recognized users of the PipeCD in the [ADOPTERS.
 <a href="https://github.com/mura-s"><img src="https://avatars.githubusercontent.com/u/4702673?v=4" title="mura-s" width="80" height="80"></a>
 <a href="https://github.com/butterv"><img src="https://avatars.githubusercontent.com/u/15773082?v=4" title="butterv" width="80" height="80"></a>
 <a href="https://github.com/Abirdcfly"><img src="https://avatars.githubusercontent.com/u/5100555?v=4" title="Abirdcfly" width="80" height="80"></a>
+<a href="https://github.com/ntheanh201"><img src="https://avatars.githubusercontent.com/u/29043139?v=4" title="ntheanh201" width="80" height="80"></a>
 <a href="https://github.com/yoiki"><img src="https://avatars.githubusercontent.com/u/39365493?v=4" title="yoiki" width="80" height="80"></a>
 <a href="https://github.com/JohnTitor"><img src="https://avatars.githubusercontent.com/u/25030997?v=4" title="JohnTitor" width="80" height="80"></a>
 <a href="https://github.com/ponkio-o"><img src="https://avatars.githubusercontent.com/u/29038315?v=4" title="ponkio-o" width="80" height="80"></a>
 <a href="https://github.com/testwill"><img src="https://avatars.githubusercontent.com/u/8717479?v=4" title="testwill" width="80" height="80"></a>
 <a href="https://github.com/mugioka"><img src="https://avatars.githubusercontent.com/u/62197019?v=4" title="mugioka" width="80" height="80"></a>
-<a href="https://github.com/naonao2323"><img src="https://avatars.githubusercontent.com/u/74669884?v=4" title="naonao2323" width="80" height="80"></a>
+<a href="https://github.com/Reimei1213"><img src="https://avatars.githubusercontent.com/u/34594195?v=4" title="Reimei1213" width="80" height="80"></a>
 <a href="https://github.com/sZma5a"><img src="https://avatars.githubusercontent.com/u/35451404?v=4" title="sZma5a" width="80" height="80"></a>
 <a href="https://github.com/tatsuya0429"><img src="https://avatars.githubusercontent.com/u/29541999?v=4" title="tatsuya0429" width="80" height="80"></a>
 <a href="https://github.com/tokku5552"><img src="https://avatars.githubusercontent.com/u/69064290?v=4" title="tokku5552" width="80" height="80"></a>
@@ -151,6 +154,7 @@ You can find a list of publicly recognized users of the PipeCD in the [ADOPTERS.
 <a href="https://github.com/pheianox"><img src="https://avatars.githubusercontent.com/u/72671586?v=4" title="pheianox" width="80" height="80"></a>
 <a href="https://github.com/ductnn"><img src="https://avatars.githubusercontent.com/u/22121217?v=4" title="ductnn" width="80" height="80"></a>
 <a href="https://github.com/Forget-C"><img src="https://avatars.githubusercontent.com/u/25631506?v=4" title="Forget-C" width="80" height="80"></a>
+<a href="https://github.com/HoangNguyen689"><img src="https://avatars.githubusercontent.com/u/40779936?v=4" title="HoangNguyen689" width="80" height="80"></a>
 <a href="https://github.com/hongchaodeng"><img src="https://avatars.githubusercontent.com/u/920884?v=4" title="hongchaodeng" width="80" height="80"></a>
 <a href="https://github.com/hori-ryota"><img src="https://avatars.githubusercontent.com/u/2936501?v=4" title="hori-ryota" width="80" height="80"></a>
 <a href="https://github.com/eltociear"><img src="https://avatars.githubusercontent.com/u/22633385?v=4" title="eltociear" width="80" height="80"></a>
@@ -163,7 +167,7 @@ You can find a list of publicly recognized users of the PipeCD in the [ADOPTERS.
 <a href="https://github.com/Lennie"><img src="https://avatars.githubusercontent.com/u/330102?v=4" title="Lennie" width="80" height="80"></a>
 <a href="https://github.com/gitbluf"><img src="https://avatars.githubusercontent.com/u/22802784?v=4" title="gitbluf" width="80" height="80"></a>
 <a href="https://github.com/mi11km"><img src="https://avatars.githubusercontent.com/u/54844746?v=4" title="mi11km" width="80" height="80"></a>
-<a href="https://github.com/foodatbar"><img src="https://avatars.githubusercontent.com/u/60810674?v=4" title="foodatbar" width="80" height="80"></a>
+<a href="https://github.com/phuongdnguyen"><img src="https://avatars.githubusercontent.com/u/60810674?v=4" title="phuongdnguyen" width="80" height="80"></a>
 <a href="https://github.com/chalin"><img src="https://avatars.githubusercontent.com/u/4140793?v=4" title="chalin" width="80" height="80"></a>
 <a href="https://github.com/GotoRen"><img src="https://avatars.githubusercontent.com/u/63791288?v=4" title="GotoRen" width="80" height="80"></a>
 <a href="https://github.com/RikiyaFujii"><img src="https://avatars.githubusercontent.com/u/23261497?v=4" title="RikiyaFujii" width="80" height="80"></a>

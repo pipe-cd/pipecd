@@ -101,12 +101,23 @@ message FetchDefinedStagesResponse {
 message PlanPluginInput {
     // The deployment to build a plan for.
     model.Deployment deployment = 1 [(validate.rules).message.required = true];
-    // The remote URL of the deployment source, where plugin can find the deployments sources (manifests).
-    string source_remote_url = 2 [(validate.rules).string.min_len = 1];
-    // Last successful commit hash and config file name.
-    // Use to build deployment source object for last successful deployment.
-    string last_successful_commit_hash = 3;
-    string last_successful_config_file_name = 4;
     // The configuration of plugin that handles the deployment.
-    bytes plugin_config = 5;
+    bytes plugin_config = 2;
+
+    // The running deployment source.
+    DeploymentSource running_deployment_source = 3;
+    // The target deployment source.
+    DeploymentSource target_deployment_source = 4;
+}
+
+message DeploymentSource {
+  // The application directory where the source code is located.
+  string application_directory = 1;
+  // The git commit revision of the source code.
+  string revision = 2;
+  // The configuration of the application which is specific for plugins.
+  bytes application_config = 3;
+  // The filename of the application configuration file.
+  // The plugins can use this to avoid mistakenly reading this file as a manifest.
+  string application_config_filename = 4;
 }

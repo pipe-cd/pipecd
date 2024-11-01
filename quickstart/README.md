@@ -26,7 +26,6 @@ kubectl apply -n pipecd -f ./manifests/control-plane.yaml
 | ---- | ---- |
 | <YOUR_PIPED_ID> | piped id |
 | <YOUR_PIPED_KEY> | base64-encoded piped key |
-| <YOUR_MANIFESTS_REPO> | the manifest repo url |
 
 5. deploy piped to the namespace: pipecd
 
@@ -41,7 +40,7 @@ The manifests directory contains raw Kubernetes manifests files. The 2 files are
 For `control-plane.yaml`
 
 ```shell
-$ helm template pipecd oci://ghcr.io/pipe-cd/chart/pipecd --version v0.48.6 -n pipecd --create-namespace -f quickstart/control-plane-values.yaml
+$ helm template pipecd oci://ghcr.io/pipe-cd/chart/pipecd --version v0.48.6 -n pipecd -f quickstart/control-plane-values.yaml
 ```
 
 For `piped.yaml`
