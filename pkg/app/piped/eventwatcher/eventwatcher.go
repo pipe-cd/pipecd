@@ -56,7 +56,7 @@ const (
 	numToMakeOutdated = 10
 )
 
-var errNoChanges = errors.New("no changes to commit")
+var errNoChanges = errors.New("nothing to commit")
 
 type Watcher interface {
 	Run(context.Context) error
@@ -407,7 +407,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 					Status: model.EventStatus_EVENT_SUCCESS,
 				}
 				if errors.Is(err, errNoChanges) {
-					handledEvent.StatusDescription = "No changes to commit"
+					handledEvent.StatusDescription = "Nothing to commit"
 					gitNoChangeEvents = append(gitNoChangeEvents, handledEvent)
 				} else {
 					handledEvent.StatusDescription = fmt.Sprintf("Successfully updated %d files in the %q repository", len(handler.Config.Replacements), repoID)
