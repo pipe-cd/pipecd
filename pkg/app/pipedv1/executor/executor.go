@@ -20,8 +20,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
-	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -45,42 +43,21 @@ type LogPersister interface {
 	Errorf(format string, a ...interface{})
 }
 
-type CommandLister interface {
-	ListCommands() []model.ReportableCommand
-}
-
-type AnalysisResultStore interface {
-	GetLatestAnalysisResult(ctx context.Context) (*model.AnalysisResult, error)
-	PutLatestAnalysisResult(ctx context.Context, analysisResult *model.AnalysisResult) error
-}
-
-type Notifier interface {
-	Notify(event model.NotificationEvent)
-}
-
 type GitClient interface {
 	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
 }
 
 type Input struct {
 	Stage       *model.PipelineStage
-	StageConfig config.PipelineStage
-	// Readonly deployment model.
 	Deployment  *model.Deployment
-	Application *model.Application
+	StageConfig config.PipelineStage
 	PipedConfig *config.PipedSpec
 	// Deploy source at target commit
 	TargetDSP deploysource.Provider
 	// Deploy source at running commit
-	RunningDSP          deploysource.Provider
-	GitClient           GitClient
-	CommandLister       CommandLister
-	LogPersister        LogPersister
-	MetadataStore       metadatastore.MetadataStore
-	AppManifestsCache   cache.Cache
-	AnalysisResultStore AnalysisResultStore
-	Logger              *zap.Logger
-	Notifier            Notifier
+	RunningDSP   deploysource.Provider
+	LogPersister LogPersister
+	Logger       *zap.Logger
 }
 
 // DetermineStageStatus determines the final status of the stage based on the given stop signal.

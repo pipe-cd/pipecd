@@ -36,30 +36,23 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
-	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 // scheduler is a dedicated object for a specific deployment of a single application.
 type scheduler struct {
-	// Readonly deployment model.
-	deployment          *model.Deployment
-	workingDir          string
-	executorRegistry    registry.Registry
-	apiClient           apiClient
-	gitClient           gitClient
-	commandLister       commandLister
-	applicationLister   applicationLister
-	analysisResultStore analysisResultStore
-	logPersister        logpersister.Persister
-	metadataStore       metadatastore.MetadataStore
-	notifier            notifier
-	secretDecrypter     secretDecrypter
-	pipedConfig         *config.PipedSpec
-	appManifestsCache   cache.Cache
-	logger              *zap.Logger
-	tracer              trace.Tracer
+	deployment       *model.Deployment
+	workingDir       string
+	executorRegistry registry.Registry
+	apiClient        apiClient
+	gitClient        gitClient
+	logPersister     logpersister.Persister
+	metadataStore    metadatastore.MetadataStore
+	notifier         notifier
+	pipedConfig      *config.PipedSpec
+	logger           *zap.Logger
+	tracer           trace.Tracer
 
 	targetDSP  deploysource.Provider
 	runningDSP deploysource.Provider
@@ -86,14 +79,9 @@ func newScheduler(
 	workingDir string,
 	apiClient apiClient,
 	gitClient gitClient,
-	commandLister commandLister,
-	applicationLister applicationLister,
-	analysisResultStore analysisResultStore,
 	lp logpersister.Persister,
 	notifier notifier,
-	sd secretDecrypter,
 	pipedConfig *config.PipedSpec,
-	appManifestsCache cache.Cache,
 	logger *zap.Logger,
 ) *scheduler {
 	logger = logger.Named("scheduler").With(
@@ -110,15 +98,10 @@ func newScheduler(
 		executorRegistry:     registry.DefaultRegistry(),
 		apiClient:            apiClient,
 		gitClient:            gitClient,
-		commandLister:        commandLister,
-		applicationLister:    applicationLister,
-		analysisResultStore:  analysisResultStore,
 		logPersister:         lp,
 		metadataStore:        metadatastore.NewMetadataStore(apiClient, d),
 		notifier:             notifier,
-		secretDecrypter:      sd,
 		pipedConfig:          pipedConfig,
-		appManifestsCache:    appManifestsCache,
 		doneDeploymentStatus: d.Status,
 		cancelledCh:          make(chan *model.ReportableCommand, 1),
 		logger:               logger,
@@ -228,13 +211,15 @@ func (s *scheduler) Run(ctx context.Context) error {
 		Branch: s.deployment.GitPath.Repo.Branch,
 	}
 
+	// TODO: make this targetDS
 	s.targetDSP = deploysource.NewProvider(
 		filepath.Join(s.workingDir, "target-deploysource"),
 		deploysource.NewGitSourceCloner(s.gitClient, repoCfg, "target", s.deployment.Trigger.Commit.Hash),
 		*s.deployment.GitPath,
-		s.secretDecrypter,
+		nil,
 	)
 
+	// TODO: make this runningDS
 	if s.deployment.RunningCommitHash != "" {
 		gp := *s.deployment.GitPath
 		gp.ConfigFilename = s.deployment.RunningConfigFilename
@@ -243,7 +228,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 			filepath.Join(s.workingDir, "running-deploysource"),
 			deploysource.NewGitSourceCloner(s.gitClient, repoCfg, "running", s.deployment.RunningCommitHash),
 			gp,
-			s.secretDecrypter,
+			nil,
 		)
 	}
 
@@ -474,7 +459,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 	return nil
 }
 
-// executeStage finds the executor for the given stage and execute.
+// executeStage finds the plugin for the given stage and execute.
 func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage, executorFactory func(executor.Input) (executor.Executor, bool)) (finalStatus model.StageStatus) {
 	var (
 		ctx            = sig.Context()
@@ -492,7 +477,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 
 	// Check whether to execute the script rollback stage or not.
 	// If the base stage is executed, the script rollback stage will be executed.
-	if ps.Name == model.StageScriptRunRollback.String() {
+	if ps.Rollback {
 		baseStageID := ps.Metadata["baseStageID"]
 		if baseStageID == "" {
 			return
@@ -542,38 +527,15 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	app, ok := s.applicationLister.Get(s.deployment.ApplicationId)
-	if !ok {
-		lp.Errorf("Application %s for this deployment was not found (Maybe it was disabled).", s.deployment.ApplicationId)
-		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	cmdLister := stageCommandLister{
-		lister:       s.commandLister,
-		deploymentID: s.deployment.Id,
-		stageID:      ps.Id,
-	}
-	aStore := appAnalysisResultStore{
-		store:         s.analysisResultStore,
-		applicationID: app.Id,
-	}
 	input := executor.Input{
-		Stage:               &ps,
-		StageConfig:         stageConfig,
-		Deployment:          s.deployment,
-		Application:         app,
-		PipedConfig:         s.pipedConfig,
-		TargetDSP:           s.targetDSP,
-		RunningDSP:          s.runningDSP,
-		GitClient:           s.gitClient,
-		CommandLister:       cmdLister,
-		LogPersister:        lp,
-		MetadataStore:       s.metadataStore,
-		AppManifestsCache:   s.appManifestsCache,
-		AnalysisResultStore: aStore,
-		Logger:              s.logger,
-		Notifier:            s.notifier,
+		Stage:        &ps,
+		StageConfig:  stageConfig,
+		Deployment:   s.deployment,
+		PipedConfig:  s.pipedConfig,
+		TargetDSP:    s.targetDSP,
+		RunningDSP:   s.runningDSP,
+		LogPersister: lp,
+		Logger:       s.logger,
 	}
 
 	// Find the executor for this stage.
@@ -782,27 +744,4 @@ func (s *scheduler) reportMostRecentlySuccessfulDeployment(ctx context.Context) 
 	}
 
 	return err
-}
-
-type stageCommandLister struct {
-	lister       commandLister
-	deploymentID string
-	stageID      string
-}
-
-func (s stageCommandLister) ListCommands() []model.ReportableCommand {
-	return s.lister.ListStageCommands(s.deploymentID, s.stageID)
-}
-
-type appAnalysisResultStore struct {
-	store         analysisResultStore
-	applicationID string
-}
-
-func (a appAnalysisResultStore) GetLatestAnalysisResult(ctx context.Context) (*model.AnalysisResult, error) {
-	return a.store.GetLatestAnalysisResult(ctx, a.applicationID)
-}
-
-func (a appAnalysisResultStore) PutLatestAnalysisResult(ctx context.Context, analysisResult *model.AnalysisResult) error {
-	return a.store.PutLatestAnalysisResult(ctx, a.applicationID, analysisResult)
 }
