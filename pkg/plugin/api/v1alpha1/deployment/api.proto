@@ -33,6 +33,9 @@ service DeploymentService {
     rpc BuildPipelineSyncStages(BuildPipelineSyncStagesRequest) returns (BuildPipelineSyncStagesResponse) {}
     // BuildQuickSyncStages builds the deployment quick sync stages.
     rpc BuildQuickSyncStages(BuildQuickSyncStagesRequest) returns (BuildQuickSyncStagesResponse) {}
+
+    // ExecuteStage executes the given stage.
+    rpc ExecuteStage(ExecuteStageRequest) returns (ExecuteStageResponse) {}
 }
 
 message DetermineVersionsRequest {
@@ -98,6 +101,17 @@ message FetchDefinedStagesResponse {
     repeated string stages = 1;
 }
 
+message ExecuteStageRequest {
+    ExecutePluginInput input = 1 [(validate.rules).message.required = true];
+}
+
+message ExecuteStageResponse {
+    // The result of the stage execution.
+    model.StageStatus status = 1;
+    // The detailed message of the stage execution.
+    string message = 2;
+}
+
 message PlanPluginInput {
     // The deployment to build a plan for.
     model.Deployment deployment = 1 [(validate.rules).message.required = true];
@@ -108,6 +122,21 @@ message PlanPluginInput {
     DeploymentSource running_deployment_source = 3;
     // The target deployment source.
     DeploymentSource target_deployment_source = 4;
+}
+
+message ExecutePluginInput {
+    // The deployment to execute the stage for.
+    model.Deployment deployment = 1 [(validate.rules).message.required = true];
+    // The stage to execute.
+    model.PipelineStage stage = 2 [(validate.rules).message.required = true];
+
+    // The configuration of plugin that handles the deployment.
+    bytes plugin_config = 3;
+
+    // The running deployment source.
+    DeploymentSource running_deployment_source = 4;
+    // The target deployment source.
+    DeploymentSource target_deployment_source = 5;
 }
 
 message DeploymentSource {

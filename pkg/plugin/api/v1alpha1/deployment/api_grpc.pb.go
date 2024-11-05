@@ -32,6 +32,8 @@ type DeploymentServiceClient interface {
 	BuildPipelineSyncStages(ctx context.Context, in *BuildPipelineSyncStagesRequest, opts ...grpc.CallOption) (*BuildPipelineSyncStagesResponse, error)
 	// BuildQuickSyncStages builds the deployment quick sync stages.
 	BuildQuickSyncStages(ctx context.Context, in *BuildQuickSyncStagesRequest, opts ...grpc.CallOption) (*BuildQuickSyncStagesResponse, error)
+	// ExecuteStage executes the given stage.
+	ExecuteStage(ctx context.Context, in *ExecuteStageRequest, opts ...grpc.CallOption) (*ExecuteStageResponse, error)
 }
 
 type deploymentServiceClient struct {
@@ -87,6 +89,15 @@ func (c *deploymentServiceClient) BuildQuickSyncStages(ctx context.Context, in *
 	return out, nil
 }
 
+func (c *deploymentServiceClient) ExecuteStage(ctx context.Context, in *ExecuteStageRequest, opts ...grpc.CallOption) (*ExecuteStageResponse, error) {
+	out := new(ExecuteStageResponse)
+	err := c.cc.Invoke(ctx, "/grpc.plugin.deploymentapi.v1alpha1.DeploymentService/ExecuteStage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DeploymentServiceServer is the server API for DeploymentService service.
 // All implementations must embed UnimplementedDeploymentServiceServer
 // for forward compatibility
@@ -101,6 +112,8 @@ type DeploymentServiceServer interface {
 	BuildPipelineSyncStages(context.Context, *BuildPipelineSyncStagesRequest) (*BuildPipelineSyncStagesResponse, error)
 	// BuildQuickSyncStages builds the deployment quick sync stages.
 	BuildQuickSyncStages(context.Context, *BuildQuickSyncStagesRequest) (*BuildQuickSyncStagesResponse, error)
+	// ExecuteStage executes the given stage.
+	ExecuteStage(context.Context, *ExecuteStageRequest) (*ExecuteStageResponse, error)
 	mustEmbedUnimplementedDeploymentServiceServer()
 }
 
@@ -122,6 +135,9 @@ func (UnimplementedDeploymentServiceServer) BuildPipelineSyncStages(context.Cont
 }
 func (UnimplementedDeploymentServiceServer) BuildQuickSyncStages(context.Context, *BuildQuickSyncStagesRequest) (*BuildQuickSyncStagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BuildQuickSyncStages not implemented")
+}
+func (UnimplementedDeploymentServiceServer) ExecuteStage(context.Context, *ExecuteStageRequest) (*ExecuteStageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExecuteStage not implemented")
 }
 func (UnimplementedDeploymentServiceServer) mustEmbedUnimplementedDeploymentServiceServer() {}
 
@@ -226,6 +242,24 @@ func _DeploymentService_BuildQuickSyncStages_Handler(srv interface{}, ctx contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DeploymentService_ExecuteStage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExecuteStageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DeploymentServiceServer).ExecuteStage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.plugin.deploymentapi.v1alpha1.DeploymentService/ExecuteStage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DeploymentServiceServer).ExecuteStage(ctx, req.(*ExecuteStageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DeploymentService_ServiceDesc is the grpc.ServiceDesc for DeploymentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -252,6 +286,10 @@ var DeploymentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "BuildQuickSyncStages",
 			Handler:    _DeploymentService_BuildQuickSyncStages_Handler,
+		},
+		{
+			MethodName: "ExecuteStage",
+			Handler:    _DeploymentService_ExecuteStage_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
