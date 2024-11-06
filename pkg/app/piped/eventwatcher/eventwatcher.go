@@ -391,7 +391,8 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 			switch handler.Type {
 			case config.EventWatcherHandlerTypeGitUpdate:
 				branchName, err := w.commitFiles(ctx, latestEvent, matcher.Name, handler.Config.CommitMessage, e.GitPath, handler.Config.Replacements, tmpRepo, handler.Config.MakePullRequest)
-				if err != nil && !errors.Is(err, errNoChanges) {
+				noChange := errors.Is(err, errNoChanges)
+				if err != nil && !noChange {
 					w.logger.Error("failed to commit outdated files", zap.Error(err))
 					handledEvent := &pipedservice.ReportEventStatusesRequest_Event{
 						Id:                latestEvent.Id,
@@ -406,7 +407,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 					Id:     latestEvent.Id,
 					Status: model.EventStatus_EVENT_SUCCESS,
 				}
-				if errors.Is(err, errNoChanges) {
+				if noChange {
 					handledEvent.StatusDescription = "Nothing to commit"
 					gitNoChangeEvents = append(gitNoChangeEvents, handledEvent)
 				} else {
