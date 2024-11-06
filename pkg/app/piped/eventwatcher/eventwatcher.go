@@ -56,6 +56,8 @@ const (
 	numToMakeOutdated = 10
 )
 
+var errNoChanges = errors.New("nothing to commit")
+
 type Watcher interface {
 	Run(context.Context) error
 }
@@ -336,6 +338,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 		outDatedDuration    = time.Hour
 		gitUpdateEvent      = false
 		branchHandledEvents = make(map[string][]*pipedservice.ReportEventStatusesRequest_Event, len(eventCfgs))
+		gitNoChangeEvents   = make([]*pipedservice.ReportEventStatusesRequest_Event, 0)
 	)
 	for _, e := range eventCfgs {
 		for _, cfg := range e.Configs {
@@ -388,7 +391,8 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 			switch handler.Type {
 			case config.EventWatcherHandlerTypeGitUpdate:
 				branchName, err := w.commitFiles(ctx, latestEvent, matcher.Name, handler.Config.CommitMessage, e.GitPath, handler.Config.Replacements, tmpRepo, handler.Config.MakePullRequest)
-				if err != nil {
+				noChange := errors.Is(err, errNoChanges)
+				if err != nil && !noChange {
 					w.logger.Error("failed to commit outdated files", zap.Error(err))
 					handledEvent := &pipedservice.ReportEventStatusesRequest_Event{
 						Id:                latestEvent.Id,
@@ -398,12 +402,18 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 					branchHandledEvents[branchName] = append(branchHandledEvents[branchName], handledEvent)
 					continue
 				}
+
 				handledEvent := &pipedservice.ReportEventStatusesRequest_Event{
-					Id:                latestEvent.Id,
-					Status:            model.EventStatus_EVENT_SUCCESS,
-					StatusDescription: fmt.Sprintf("Successfully updated %d files in the %q repository", len(handler.Config.Replacements), repoID),
+					Id:     latestEvent.Id,
+					Status: model.EventStatus_EVENT_SUCCESS,
 				}
-				branchHandledEvents[branchName] = append(branchHandledEvents[branchName], handledEvent)
+				if noChange {
+					handledEvent.StatusDescription = "Nothing to commit"
+					gitNoChangeEvents = append(gitNoChangeEvents, handledEvent)
+				} else {
+					handledEvent.StatusDescription = fmt.Sprintf("Successfully updated %d files in the %q repository", len(handler.Config.Replacements), repoID)
+					branchHandledEvents[branchName] = append(branchHandledEvents[branchName], handledEvent)
+				}
 				if latestEvent.CreatedAt > maxTimestamp {
 					maxTimestamp = latestEvent.CreatedAt
 				}
@@ -426,6 +436,13 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 
 	if !gitUpdateEvent {
 		return nil
+	}
+
+	if len(gitNoChangeEvents) > 0 {
+		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: gitNoChangeEvents}); err != nil {
+			w.logger.Error("failed to report event statuses", zap.Error(err))
+		}
+		w.executionMilestoneMap.Store(repoID, maxTimestamp)
 	}
 
 	var responseError error
@@ -603,6 +620,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 }
 
 // commitFiles commits changes if the data in Git is different from the latest event.
+// If there are no changes to commit, it returns errNoChanges.
 func (w *watcher) commitFiles(ctx context.Context, latestEvent *model.Event, eventName, commitMsg, gitPath string, replacements []config.EventWatcherReplacement, repo git.Repo, newBranch bool) (string, error) {
 	// Determine files to be changed by comparing with the latest event.
 	changes := make(map[string][]byte, len(replacements))
@@ -641,7 +659,7 @@ func (w *watcher) commitFiles(ctx context.Context, latestEvent *model.Event, eve
 		changes[filePath] = newContent
 	}
 	if len(changes) == 0 {
-		return "", nil
+		return "", errNoChanges
 	}
 
 	args := argsTemplate{
