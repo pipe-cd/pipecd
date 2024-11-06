@@ -279,3 +279,48 @@ func TestGetCommitForRev(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, commits[0].Hash, commit.Hash)
 }
+
+func TestCleanPartially(t *testing.T) {
+	faker, err := newFaker()
+	require.NoError(t, err)
+	defer faker.clean()
+
+	var (
+		org      = "test-repo-org"
+		repoName = "repo-clean-partially"
+		ctx      = context.Background()
+	)
+
+	err = faker.makeRepo(org, repoName)
+	require.NoError(t, err)
+	r := &repo{
+		dir:     faker.repoDir(org, repoName),
+		gitPath: faker.gitPath,
+	}
+
+	// create two directories and a file in each
+	// repo-dir/part1/new-file.txt
+	// repo-dir/part2/new-file.txt
+	dirs := []string{"part1", "part2"}
+	for _, dir := range dirs {
+		partDir := filepath.Join(r.dir, dir)
+		err = os.MkdirAll(partDir, os.ModePerm)
+		require.NoError(t, err)
+
+		path := filepath.Join(partDir, "new-file.txt")
+		err = os.WriteFile(path, []byte("content"), os.ModePerm)
+		require.NoError(t, err)
+	}
+
+	// clean the repo-dir/part1
+	err = r.CleanPartially(ctx, "part1")
+	require.NoError(t, err)
+
+	// check the repo-dir/part1 is removed
+	_, err = os.Stat(filepath.Join(r.dir, "part1"))
+	assert.True(t, os.IsNotExist(err))
+
+	// check the repo-dir/part2 is still there
+	_, err = os.Stat(filepath.Join(r.dir, "part2"))
+	assert.NoError(t, err)
+}

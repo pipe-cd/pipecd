@@ -92,6 +92,20 @@ func (mr *MockRepoMockRecorder) Clean() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clean", reflect.TypeOf((*MockRepo)(nil).Clean))
 }
 
+// CleanPartially mocks base method.
+func (m *MockRepo) CleanPartially(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CleanPartially", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CleanPartially indicates an expected call of CleanPartially.
+func (mr *MockRepoMockRecorder) CleanPartially(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CleanPartially", reflect.TypeOf((*MockRepo)(nil).CleanPartially), arg0, arg1)
+}
+
 // CommitChanges mocks base method.
 func (m *MockRepo) CommitChanges(arg0 context.Context, arg1, arg2 string, arg3 bool, arg4 map[string][]byte, arg5 map[string]string) error {
 	m.ctrl.T.Helper()
