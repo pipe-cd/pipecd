@@ -126,6 +126,8 @@ func (m *Event) validate(all bool) error {
 
 	// no validation rules for StatusDescription
 
+	// no validation rules for Contexts
+
 	// no validation rules for HandledAt
 
 	if m.GetCreatedAt() <= 0 {

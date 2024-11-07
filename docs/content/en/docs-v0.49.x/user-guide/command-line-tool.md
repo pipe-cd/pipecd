@@ -328,6 +328,8 @@ pipectl event register \
     --data=gcr.io/pipecd/example:v0.1.0
 ```
 
+See more on [usage of Event Watcher](./event-watcher.md).
+
 ### Encrypting the data you want to use when deploying
 
 Encrypt the plaintext entered either in stdin or via the `--input-file` flag.

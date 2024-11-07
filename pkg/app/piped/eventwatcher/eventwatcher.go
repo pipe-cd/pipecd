@@ -21,6 +21,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"regexp/syntax"
@@ -54,6 +55,8 @@ const (
 	// NOTE: We don't support batch update, that's why we have a constant number of updates to make.
 	numToMakeOutdated = 10
 )
+
+var errNoChanges = errors.New("nothing to commit")
 
 type Watcher interface {
 	Run(context.Context) error
@@ -335,6 +338,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 		outDatedDuration    = time.Hour
 		gitUpdateEvent      = false
 		branchHandledEvents = make(map[string][]*pipedservice.ReportEventStatusesRequest_Event, len(eventCfgs))
+		gitNoChangeEvents   = make([]*pipedservice.ReportEventStatusesRequest_Event, 0)
 	)
 	for _, e := range eventCfgs {
 		for _, cfg := range e.Configs {
@@ -386,8 +390,9 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 			}
 			switch handler.Type {
 			case config.EventWatcherHandlerTypeGitUpdate:
-				branchName, err := w.commitFiles(ctx, latestEvent.Data, matcher.Name, handler.Config.CommitMessage, e.GitPath, handler.Config.Replacements, tmpRepo, handler.Config.MakePullRequest)
-				if err != nil {
+				branchName, err := w.commitFiles(ctx, latestEvent, matcher.Name, handler.Config.CommitMessage, e.GitPath, handler.Config.Replacements, tmpRepo, handler.Config.MakePullRequest)
+				noChange := errors.Is(err, errNoChanges)
+				if err != nil && !noChange {
 					w.logger.Error("failed to commit outdated files", zap.Error(err))
 					handledEvent := &pipedservice.ReportEventStatusesRequest_Event{
 						Id:                latestEvent.Id,
@@ -397,12 +402,18 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 					branchHandledEvents[branchName] = append(branchHandledEvents[branchName], handledEvent)
 					continue
 				}
+
 				handledEvent := &pipedservice.ReportEventStatusesRequest_Event{
-					Id:                latestEvent.Id,
-					Status:            model.EventStatus_EVENT_SUCCESS,
-					StatusDescription: fmt.Sprintf("Successfully updated %d files in the %q repository", len(handler.Config.Replacements), repoID),
+					Id:     latestEvent.Id,
+					Status: model.EventStatus_EVENT_SUCCESS,
 				}
-				branchHandledEvents[branchName] = append(branchHandledEvents[branchName], handledEvent)
+				if noChange {
+					handledEvent.StatusDescription = "Nothing to commit"
+					gitNoChangeEvents = append(gitNoChangeEvents, handledEvent)
+				} else {
+					handledEvent.StatusDescription = fmt.Sprintf("Successfully updated %d files in the %q repository", len(handler.Config.Replacements), repoID)
+					branchHandledEvents[branchName] = append(branchHandledEvents[branchName], handledEvent)
+				}
 				if latestEvent.CreatedAt > maxTimestamp {
 					maxTimestamp = latestEvent.CreatedAt
 				}
@@ -425,6 +436,13 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 
 	if !gitUpdateEvent {
 		return nil
+	}
+
+	if len(gitNoChangeEvents) > 0 {
+		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: gitNoChangeEvents}); err != nil {
+			w.logger.Error("failed to report event statuses", zap.Error(err))
+		}
+		w.executionMilestoneMap.Store(repoID, maxTimestamp)
 	}
 
 	var responseError error
@@ -538,7 +556,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 			})
 			continue
 		}
-		_, err := w.commitFiles(ctx, latestEvent.Data, e.Name, commitMsg, "", e.Replacements, tmpRepo, false)
+		_, err := w.commitFiles(ctx, latestEvent, e.Name, commitMsg, "", e.Replacements, tmpRepo, false)
 		if err != nil {
 			w.logger.Error("failed to commit outdated files", zap.Error(err))
 			handledEvents = append(handledEvents, &pipedservice.ReportEventStatusesRequest_Event{
@@ -602,7 +620,8 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 }
 
 // commitFiles commits changes if the data in Git is different from the latest event.
-func (w *watcher) commitFiles(ctx context.Context, latestData, eventName, commitMsg, gitPath string, replacements []config.EventWatcherReplacement, repo git.Repo, newBranch bool) (string, error) {
+// If there are no changes to commit, it returns errNoChanges.
+func (w *watcher) commitFiles(ctx context.Context, latestEvent *model.Event, eventName, commitMsg, gitPath string, replacements []config.EventWatcherReplacement, repo git.Repo, newBranch bool) (string, error) {
 	// Determine files to be changed by comparing with the latest event.
 	changes := make(map[string][]byte, len(replacements))
 	for _, r := range replacements {
@@ -619,13 +638,13 @@ func (w *watcher) commitFiles(ctx context.Context, latestData, eventName, commit
 		path := filepath.Join(repo.GetPath(), filePath)
 		switch {
 		case r.YAMLField != "":
-			newContent, upToDate, err = modifyYAML(path, r.YAMLField, latestData)
+			newContent, upToDate, err = modifyYAML(path, r.YAMLField, latestEvent.Data)
 		case r.JSONField != "":
 			// TODO: Empower Event watcher to parse JSON format
 		case r.HCLField != "":
 			// TODO: Empower Event watcher to parse HCL format
 		case r.Regex != "":
-			newContent, upToDate, err = modifyText(path, r.Regex, latestData)
+			newContent, upToDate, err = modifyText(path, r.Regex, latestEvent.Data)
 		}
 		if err != nil {
 			return "", err
@@ -640,16 +659,17 @@ func (w *watcher) commitFiles(ctx context.Context, latestData, eventName, commit
 		changes[filePath] = newContent
 	}
 	if len(changes) == 0 {
-		return "", nil
+		return "", errNoChanges
 	}
 
 	args := argsTemplate{
-		Value:     latestData,
+		Value:     latestEvent.Data,
 		EventName: eventName,
 	}
 	commitMsg = parseCommitMsg(commitMsg, args)
 	branch := makeBranchName(newBranch, eventName, repo.GetClonedBranch())
-	if err := repo.CommitChanges(ctx, branch, commitMsg, newBranch, changes); err != nil {
+	trailers := maps.Clone(latestEvent.Contexts)
+	if err := repo.CommitChanges(ctx, branch, commitMsg, newBranch, changes, trailers); err != nil {
 		return "", fmt.Errorf("failed to perform git commit: %w", err)
 	}
 	w.logger.Info(fmt.Sprintf("event watcher will update values of Event %q", eventName))

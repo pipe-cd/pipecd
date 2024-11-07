@@ -165,6 +165,38 @@ pipectl event register \
 
 Note that it is considered a match only when labels are an exact match.
 
+### [optional] Using contexts
+
+You can also attach additional metadata to the event.
+This information can be added as a trailer to the git commit when Event Watcher using the GIT_UPDATE handler.
+This can be useful when attaching information from the source code repository to the manifest repository.
+
+For example, you can attach the source code commit link to the manifest repository.
+
+```bash
+pipectl event register \
+    --address=CONTROL_PLANE_API_ADDRESS \
+    --api-key=API_KEY \
+    --name=sample \
+    --data=gcr.io/pipecd/helloworld:v0.48.0 \
+    --contexts Source-Commit-Hash=xxxxxxx,Source-Commit-URL=https://github.com/pipe-cd/pipecd/commit/xxxxxxx
+```
+
+```bash
+# In manifest repository
+$ git show                                                                        
+commit ff46cdc9a3ce87a9a66436269251a4870ac55183 (HEAD -> main, origin/main, origin/HEAD)
+Author: ffjlabo <pipecd.dev@gmail.com>
+Date:   Wed Oct 30 16:56:36 2024 +0900
+
+    Replace values with "gcr.io/pipecd/helloworld:v0.48.0" set by Event "simple"
+
+    Source-Commit-Hash: xxxxxxx
+    Source-Commit-URL: https://github.com/pipe-cd/pipecd/commit/xxxxxxx
+```
+
+![](/images/event-watcher-contexts.png)
+
 ## Examples
 Suppose you want to update your configuration file after releasing a new Helm chart.
 
