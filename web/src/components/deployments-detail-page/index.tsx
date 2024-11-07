@@ -31,7 +31,7 @@ export const DeploymentDetailPage: FC = memo(function DeploymentDetailPage() {
   const dispatch = useAppDispatch();
   const { deploymentId } = useParams<{ deploymentId: string }>();
   const deployment = useAppSelector<Deployment.AsObject | undefined>((state) =>
-    selectDeploymentById(state.deployments, deploymentId)
+    selectDeploymentById(state.deployments, deploymentId ?? "")
   );
 
   const fetchData = (): void => {
@@ -59,8 +59,8 @@ export const DeploymentDetailPage: FC = memo(function DeploymentDetailPage() {
   return (
     <div className={classes.root}>
       <Box flex={1}>
-        <DeploymentDetail deploymentId={deploymentId} />
-        <Pipeline deploymentId={deploymentId} />
+        <DeploymentDetail deploymentId={deploymentId ?? ""} />
+        <Pipeline deploymentId={deploymentId ?? ""} />
       </Box>
       <LogViewer />
     </div>

@@ -6,7 +6,7 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import { FC, memo } from "react";
-import { NavLink, Redirect, Route, Switch } from "react-router-dom";
+import { Navigate, NavLink, Route, Routes } from "react-router-dom";
 import {
   PAGE_PATH_SETTINGS,
   PAGE_PATH_SETTINGS_API_KEY,
@@ -75,7 +75,7 @@ export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
                 button
                 component={NavLink}
                 to={link}
-                activeClassName={classes.activeNav}
+                className={link === location.pathname ? classes.activeNav : ""}
                 selected={link === location.pathname}
               >
                 <ListItemText primary={text} />
@@ -85,28 +85,21 @@ export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
         </div>
       </Drawer>
       <main className={classes.content}>
-        <Switch>
+        <Routes>
           <Route
-            exact
             path={PAGE_PATH_SETTINGS}
-            component={() => <Redirect to={PAGE_PATH_SETTINGS_PIPED} />}
+            element={<Navigate to={PAGE_PATH_SETTINGS_PIPED} replace />}
           />
           <Route
-            exact
             path={PAGE_PATH_SETTINGS_PIPED}
-            component={SettingsPipedPage}
+            element={<SettingsPipedPage />}
           />
           <Route
-            exact
             path={PAGE_PATH_SETTINGS_PROJECT}
-            component={SettingsProjectPage}
+            element={<SettingsProjectPage />}
           />
-          <Route
-            exact
-            path={PAGE_PATH_SETTINGS_API_KEY}
-            component={APIKeyPage}
-          />
-        </Switch>
+          <Route path={PAGE_PATH_SETTINGS_API_KEY} element={<APIKeyPage />} />
+        </Routes>
       </main>
     </div>
   );

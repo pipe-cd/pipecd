@@ -5,8 +5,7 @@ import { theme } from "./theme";
 import { Provider } from "react-redux";
 import { store } from "./store";
 import { Routes } from "./routes";
-import { Router } from "react-router-dom";
-import { history } from "./history";
+import { BrowserRouter } from "react-router-dom";
 import { setupDayjs } from "./utils/setup-dayjs";
 import { fetchMe } from "./modules/me";
 
@@ -47,10 +46,10 @@ Happy PipeCD-ing 🙌
   render(
     <Provider store={store}>
       <ThemeProvider theme={theme}>
-        <Router history={history}>
+        <BrowserRouter>
           <CssBaseline />
           <Routes />
-        </Router>
+        </BrowserRouter>
       </ThemeProvider>
     </Provider>,
     document.getElementById("root")

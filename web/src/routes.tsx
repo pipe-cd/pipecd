@@ -2,11 +2,10 @@ import loadable from "@loadable/component";
 import { EntityId } from "@reduxjs/toolkit";
 import { FC, useEffect, useState } from "react";
 import {
-  Redirect,
   Route,
-  Switch,
   useLocation,
-  RouteComponentProps,
+  Routes as ReactRoutes,
+  Navigate,
 } from "react-router-dom";
 import { ApplicationIndexPage } from "~/components/applications-page";
 import { WarningBanner } from "~/components/warning-banner";
@@ -140,23 +139,21 @@ export const Routes: FC = () => {
     return (
       <>
         <Header />
-        <Switch>
-          <Route exact path={PAGE_PATH_LOGIN}>
-            <LoginPage />
-          </Route>
+        <ReactRoutes>
+          <Route path={PAGE_PATH_LOGIN} element={<LoginPage />} />
           <Route
             path={PAGE_PATH_TOP}
-            component={(props: RouteComponentProps) => {
+            Component={() => {
               localStorage.setItem(
                 REDIRECT_PATH_KEY,
-                `${props.location.pathname}${props.location.search}`
+                `${location.pathname}${location.search}`
               );
               return (
-                <Redirect to={`${PAGE_PATH_LOGIN}${props.location.search}`} />
+                <Navigate to={`${PAGE_PATH_LOGIN}${location.search}`} replace />
               );
             }}
           />
-        </Switch>
+        </ReactRoutes>
       </>
     );
   }
@@ -172,45 +169,37 @@ export const Routes: FC = () => {
         <WarningBanner onClose={handleCloseWarningBanner} />
       )}
       <Header />
-      <Switch>
+      <ReactRoutes>
         <Route
-          exact
           path={PAGE_PATH_APPLICATIONS}
-          component={ApplicationIndexPage}
+          element={<ApplicationIndexPage />}
         />
         <Route
-          exact
           path={`${PAGE_PATH_APPLICATIONS}/:applicationId`}
-          component={ApplicationDetailPage}
+          element={<ApplicationDetailPage />}
         />
+        <Route path={PAGE_PATH_DEPLOYMENTS} element={<DeploymentIndexPage />} />
         <Route
-          exact
-          path={PAGE_PATH_DEPLOYMENTS}
-          component={DeploymentIndexPage}
-        />
-        <Route
-          exact
           path={`${PAGE_PATH_DEPLOYMENTS}/:deploymentId`}
-          component={DeploymentDetailPage}
+          element={<DeploymentDetailPage />}
         />
         <Route
-          exact
           path={PAGE_PATH_DEPLOYMENT_CHAINS}
-          component={DeploymentChainsIndexPage}
+          element={<DeploymentChainsIndexPage />}
         />
-        <Route path={PAGE_PATH_SETTINGS} component={SettingsIndexPage} />
-        <Route path={PAGE_PATH_INSIGHTS} component={InsightIndexPage} />
-        <Route path={PAGE_PATH_EVENTS} component={EventIndexPage} />
+        <Route path={PAGE_PATH_SETTINGS} element={<SettingsIndexPage />} />
+        <Route path={PAGE_PATH_INSIGHTS} element={<InsightIndexPage />} />
+        <Route path={PAGE_PATH_EVENTS} element={<EventIndexPage />} />
         <Route
           path={PAGE_PATH_TOP}
-          component={() => {
+          Component={() => {
             const path =
               localStorage.getItem(REDIRECT_PATH_KEY) || PAGE_PATH_APPLICATIONS;
             localStorage.removeItem(REDIRECT_PATH_KEY);
-            return <Redirect to={path} />;
+            return <Navigate to={path} replace />;
           }}
         />
-      </Switch>
+      </ReactRoutes>
       <Toasts />
     </>
   );
