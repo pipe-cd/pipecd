@@ -285,7 +285,7 @@ func (r repo) addCommit(ctx context.Context, message string, trailers map[string
 
 	args := []string{"commit", "-m", message}
 	for k, v := range trailers {
-		args = append(args, fmt.Sprintf("--trailer=%s: %s", k, v))
+		args = append(args, fmt.Sprintf("--trailer=%s:%s", k, v))
 	}
 	out, err = r.runGitCommand(ctx, args...)
 	if err != nil {
