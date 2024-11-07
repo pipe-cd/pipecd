@@ -287,7 +287,7 @@ func TestCleanPath(t *testing.T) {
 
 	var (
 		org      = "test-repo-org"
-		repoName = "repo-clean-partially"
+		repoName = "repo-clean-path"
 		ctx      = context.Background()
 	)
 
@@ -299,8 +299,8 @@ func TestCleanPath(t *testing.T) {
 	}
 
 	// create two directories and a file in each
-	// repo-dir/part1/new-file.txt
-	// repo-dir/part2/new-file.txt
+	// repo-clean-path/part1/new-file.txt
+	// repo-clean-path/part2/new-file.txt
 	dirs := []string{"part1", "part2"}
 	for _, dir := range dirs {
 		partDir := filepath.Join(r.dir, dir)
@@ -311,6 +311,18 @@ func TestCleanPath(t *testing.T) {
 		err = os.WriteFile(path, []byte("content"), os.ModePerm)
 		require.NoError(t, err)
 	}
+
+	// create other dir outside the repo
+	// repo-clean-path/outside-dir/new-file.txt
+	outsideDir := filepath.Join(r.dir, "..", "outside-dir")
+	require.NoError(t, err)
+
+	err = os.MkdirAll(outsideDir, os.ModePerm)
+	require.NoError(t, err)
+
+	path := filepath.Join(outsideDir, "new-file.txt")
+	err = os.WriteFile(path, []byte("content"), os.ModePerm)
+	require.NoError(t, err)
 
 	// clean the repo-dir/part1
 	err = r.CleanPath(ctx, "part1")
@@ -323,4 +335,12 @@ func TestCleanPath(t *testing.T) {
 	// check the repo-dir/part2 is still there
 	_, err = os.Stat(filepath.Join(r.dir, "part2"))
 	assert.NoError(t, err)
+
+	// check the outside dir can't be cleaned with relative path
+	err = r.CleanPath(ctx, "../outside-dir")
+	require.Error(t, err)
+
+	// check the outside dir can't be cleaned with relative path
+	err = r.CleanPath(ctx, outsideDir)
+	require.Error(t, err)
 }
