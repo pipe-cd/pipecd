@@ -43,7 +43,7 @@ type Repo interface {
 	Checkout(ctx context.Context, commitish string) error
 	CheckoutPullRequest(ctx context.Context, number int, branch string) error
 	Clean() error
-	CleanPartially(ctx context.Context, relativePath string) error
+	CleanPath(ctx context.Context, relativePath string) error
 
 	Pull(ctx context.Context, branch string) error
 	MergeRemoteBranch(ctx context.Context, branch, commit, mergeCommitMessage string) error
@@ -260,8 +260,8 @@ func (r repo) Clean() error {
 	return os.RemoveAll(r.dir)
 }
 
-// CleanPartially deletes data in the given relative path in the repo with git clean.
-func (r repo) CleanPartially(ctx context.Context, relativePath string) error {
+// CleanPath deletes data in the given relative path in the repo with git clean.
+func (r repo) CleanPath(ctx context.Context, relativePath string) error {
 	out, err := r.runGitCommand(ctx, "clean", "-f", relativePath)
 	if err != nil {
 		return formatCommandError(err, out)

@@ -179,7 +179,7 @@ func (d *detector) check(ctx context.Context) {
 				zap.String("app-id", app.Id),
 				zap.String("app-path", app.GitPath.Path),
 			)
-			if err := gitRepo.CleanPartially(ctx, app.GitPath.Path); err != nil {
+			if err := gitRepo.CleanPath(ctx, app.GitPath.Path); err != nil {
 				d.logger.Error("failed to clean partially cloned repository",
 					zap.String("repo-id", repoID),
 					zap.String("app-id", app.Id),

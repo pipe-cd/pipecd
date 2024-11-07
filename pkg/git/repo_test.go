@@ -280,7 +280,7 @@ func TestGetCommitForRev(t *testing.T) {
 	assert.Equal(t, commits[0].Hash, commit.Hash)
 }
 
-func TestCleanPartially(t *testing.T) {
+func TestCleanPath(t *testing.T) {
 	faker, err := newFaker()
 	require.NoError(t, err)
 	defer faker.clean()
@@ -313,7 +313,7 @@ func TestCleanPartially(t *testing.T) {
 	}
 
 	// clean the repo-dir/part1
-	err = r.CleanPartially(ctx, "part1")
+	err = r.CleanPath(ctx, "part1")
 	require.NoError(t, err)
 
 	// check the repo-dir/part1 is removed
