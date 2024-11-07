@@ -5,10 +5,10 @@ kind: Secret
 metadata:
   name: pipecd
   labels:
-    helm.sh/chart: pipecd-v0.49.2
+    helm.sh/chart: pipecd-v0.49.3
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.49.2"
+    app.kubernetes.io/version: "v0.49.3"
     app.kubernetes.io/managed-by: Helm
 type: Opaque
 data:
@@ -22,10 +22,10 @@ kind: ConfigMap
 metadata:
   name: pipecd
   labels:
-    helm.sh/chart: pipecd-v0.49.2
+    helm.sh/chart: pipecd-v0.49.3
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.49.2"
+    app.kubernetes.io/version: "v0.49.3"
     app.kubernetes.io/managed-by: Helm
 data:
   control-plane-config.yaml: |-
@@ -57,10 +57,10 @@ kind: ConfigMap
 metadata:
   name: pipecd-gateway-envoy-config
   labels:
-    helm.sh/chart: pipecd-v0.49.2
+    helm.sh/chart: pipecd-v0.49.3
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.49.2"
+    app.kubernetes.io/version: "v0.49.3"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: gateway
 data:
@@ -269,10 +269,10 @@ kind: Service
 metadata:
   name: pipecd
   labels:
-    helm.sh/chart: pipecd-v0.49.2
+    helm.sh/chart: pipecd-v0.49.3
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.49.2"
+    app.kubernetes.io/version: "v0.49.3"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: ingress
   annotations:
@@ -293,10 +293,10 @@ kind: Service
 metadata:
   name: pipecd-gateway
   labels:
-    helm.sh/chart: pipecd-v0.49.2
+    helm.sh/chart: pipecd-v0.49.3
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.49.2"
+    app.kubernetes.io/version: "v0.49.3"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: gateway
 spec:
@@ -316,10 +316,10 @@ kind: Service
 metadata:
   name: pipecd-server
   labels:
-    helm.sh/chart: pipecd-v0.49.2
+    helm.sh/chart: pipecd-v0.49.3
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.49.2"
+    app.kubernetes.io/version: "v0.49.3"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: server
 spec:
@@ -352,10 +352,10 @@ kind: Service
 metadata:
   name: pipecd-cache
   labels:
-    helm.sh/chart: pipecd-v0.49.2
+    helm.sh/chart: pipecd-v0.49.3
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.49.2"
+    app.kubernetes.io/version: "v0.49.3"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: cache
 spec:
@@ -375,10 +375,10 @@ kind: Service
 metadata:
   name: pipecd-ops
   labels:
-    helm.sh/chart: pipecd-v0.49.2
+    helm.sh/chart: pipecd-v0.49.3
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.49.2"
+    app.kubernetes.io/version: "v0.49.3"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: ops
 spec:
@@ -402,10 +402,10 @@ kind: Service
 metadata:
   name: pipecd-mysql
   labels:
-    helm.sh/chart: pipecd-v0.49.2
+    helm.sh/chart: pipecd-v0.49.3
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.49.2"
+    app.kubernetes.io/version: "v0.49.3"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: mysql
 spec:
@@ -425,10 +425,10 @@ kind: Service
 metadata:
   name: pipecd-minio
   labels:
-    helm.sh/chart: pipecd-v0.49.2
+    helm.sh/chart: pipecd-v0.49.3
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.49.2"
+    app.kubernetes.io/version: "v0.49.3"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: minio
 spec:
@@ -449,10 +449,10 @@ kind: Deployment
 metadata:
   name: pipecd-gateway
   labels:
-    helm.sh/chart: pipecd-v0.49.2
+    helm.sh/chart: pipecd-v0.49.3
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.49.2"
+    app.kubernetes.io/version: "v0.49.3"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: gateway
 spec:
@@ -469,7 +469,7 @@ spec:
         app.kubernetes.io/instance: pipecd
         app.kubernetes.io/component: gateway
       annotations:
-        checksum/config: ac80f8a16c58c8ffa66de6834af83e26be00331ccd2e02990fd0d4df72a17088 # ref; https://helm.sh/docs/howto/charts_tips_and_tricks/#automatically-roll-deployments
+        checksum/config: 829e072d333bbf39ddcfc03cbbc19170bf3de2d509515fdff679a9622e63544a # ref; https://helm.sh/docs/howto/charts_tips_and_tricks/#automatically-roll-deployments
     spec:
       containers:
         - name: envoy
@@ -519,10 +519,10 @@ kind: Deployment
 metadata:
   name: pipecd-server
   labels:
-    helm.sh/chart: pipecd-v0.49.2
+    helm.sh/chart: pipecd-v0.49.3
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.49.2"
+    app.kubernetes.io/version: "v0.49.3"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: server
 spec:
@@ -551,7 +551,7 @@ spec:
               done;
       containers:
         - name: server
-          image: "ghcr.io/pipe-cd/pipecd:v0.49.2"
+          image: "ghcr.io/pipe-cd/pipecd:v0.49.3"
           imagePullPolicy: IfNotPresent
           args:
           - server
@@ -614,10 +614,10 @@ kind: Deployment
 metadata:
   name: pipecd-cache
   labels:
-    helm.sh/chart: pipecd-v0.49.2
+    helm.sh/chart: pipecd-v0.49.3
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.49.2"
+    app.kubernetes.io/version: "v0.49.3"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: cache
 spec:
@@ -650,10 +650,10 @@ kind: Deployment
 metadata:
   name: pipecd-ops
   labels:
-    helm.sh/chart: pipecd-v0.49.2
+    helm.sh/chart: pipecd-v0.49.3
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.49.2"
+    app.kubernetes.io/version: "v0.49.3"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: ops
 spec:
@@ -684,7 +684,7 @@ spec:
               done;
       containers:
         - name: ops
-          image: "ghcr.io/pipe-cd/pipecd:v0.49.2"
+          image: "ghcr.io/pipe-cd/pipecd:v0.49.3"
           imagePullPolicy: IfNotPresent
           args:
           - ops
@@ -730,10 +730,10 @@ kind: Deployment
 metadata:
   name: pipecd-mysql
   labels:
-    helm.sh/chart: pipecd-v0.49.2
+    helm.sh/chart: pipecd-v0.49.3
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.49.2"
+    app.kubernetes.io/version: "v0.49.3"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: mysql
 spec:
@@ -771,10 +771,10 @@ kind: Deployment
 metadata:
   name: pipecd-minio
   labels:
-    helm.sh/chart: pipecd-v0.49.2
+    helm.sh/chart: pipecd-v0.49.3
     app.kubernetes.io/name: pipecd
     app.kubernetes.io/instance: pipecd
-    app.kubernetes.io/version: "v0.49.2"
+    app.kubernetes.io/version: "v0.49.3"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: minio
 spec:
