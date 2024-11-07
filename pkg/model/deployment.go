@@ -157,6 +157,11 @@ func (d *Deployment) FindRollbackStage() (*PipelineStage, bool) {
 func (d *Deployment) FindRollbackStages() ([]*PipelineStage, bool) {
 	rollbackStages := make([]*PipelineStage, 0, len(d.Stages))
 	for i, stage := range d.Stages {
+		if d.Stages[i].Rollback {
+			rollbackStages = append(rollbackStages, stage)
+		}
+		// TODO: Remove this condition after all deployments have the rollback field.
+		// Probally when all piped are updated to v1.
 		if d.Stages[i].Name == StageRollback.String() || d.Stages[i].Name == StageScriptRunRollback.String() {
 			rollbackStages = append(rollbackStages, stage)
 		}

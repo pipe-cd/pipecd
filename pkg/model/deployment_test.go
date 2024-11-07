@@ -621,6 +621,16 @@ func TestFindRollbackStags(t *testing.T) {
 			wantStageFound: true,
 		},
 		{
+			name: "found based on rollback field",
+			stages: []*PipelineStage{
+				{Name: "Some-plugin-stage-name", Rollback: true},
+			},
+			wantStages: []*PipelineStage{
+				{Name: "Some-plugin-stage-name", Rollback: true},
+			},
+			wantStageFound: true,
+		},
+		{
 			name: "not found",
 			stages: []*PipelineStage{
 				{Name: StageK8sSync.String()},
