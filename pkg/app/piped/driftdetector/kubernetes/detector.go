@@ -169,6 +169,23 @@ func (d *detector) check(ctx context.Context) {
 			if err := d.checkApplication(ctx, app, gitRepo, headCommit); err != nil {
 				d.logger.Error(fmt.Sprintf("failed to check application: %s", app.Id), zap.Error(err))
 			}
+
+			// Reset the app dir to the head commit.
+			// Some tools may create temporary files locally to render manifests.
+			// The detector reuses the same located local repository and it causes unexpected behavior by reusing such temporary files.
+			// So regularly run git clean on the app dir after each detection.
+			d.logger.Info("cleaning partially cloned repository",
+				zap.String("repo-id", repoID),
+				zap.String("app-id", app.Id),
+				zap.String("app-path", app.GitPath.Path),
+			)
+			if err := gitRepo.CleanPath(ctx, app.GitPath.Path); err != nil {
+				d.logger.Error("failed to clean partially cloned repository",
+					zap.String("repo-id", repoID),
+					zap.String("app-id", app.Id),
+					zap.String("app-path", app.GitPath.Path),
+					zap.Error(err))
+			}
 		}
 	}
 }
