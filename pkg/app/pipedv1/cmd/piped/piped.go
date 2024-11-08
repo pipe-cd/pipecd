@@ -327,7 +327,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			deploymentLister,
 			commandLister,
 			notifier,
-			cfg,
 			p.gracePeriod,
 			input.Logger,
 		)

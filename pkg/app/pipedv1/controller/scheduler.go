@@ -18,8 +18,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
-	"path/filepath"
 	"time"
 
 	"go.opentelemetry.io/otel"
@@ -30,14 +28,14 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor"
 	registry "github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor/registry"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
-	"github.com/pipe-cd/pipecd/pkg/config"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 )
 
 // scheduler is a dedicated object for a specific deployment of a single application.
@@ -50,12 +48,11 @@ type scheduler struct {
 	logPersister     logpersister.Persister
 	metadataStore    metadatastore.MetadataStore
 	notifier         notifier
-	pipedConfig      *config.PipedSpec
 	logger           *zap.Logger
 	tracer           trace.Tracer
 
-	targetDSP  deploysource.Provider
-	runningDSP deploysource.Provider
+	targetDS  *deployment.DeploymentSource
+	runningDS *deployment.DeploymentSource
 
 	// Current status of each stages.
 	// We stores their current statuses into this field
@@ -63,7 +60,7 @@ type scheduler struct {
 	// We may need a mutex for this field in the future
 	// when the stages can be executed concurrently.
 	stageStatuses            map[string]model.StageStatus
-	genericApplicationConfig config.GenericApplicationSpec
+	genericApplicationConfig *config.GenericApplicationSpec
 
 	done                 atomic.Bool
 	doneTimestamp        time.Time
@@ -81,7 +78,6 @@ func newScheduler(
 	gitClient gitClient,
 	lp logpersister.Persister,
 	notifier notifier,
-	pipedConfig *config.PipedSpec,
 	logger *zap.Logger,
 ) *scheduler {
 	logger = logger.Named("scheduler").With(
@@ -101,7 +97,6 @@ func newScheduler(
 		logPersister:         lp,
 		metadataStore:        metadatastore.NewMetadataStore(apiClient, d),
 		notifier:             notifier,
-		pipedConfig:          pipedConfig,
 		doneDeploymentStatus: d.Status,
 		cancelledCh:          make(chan *model.ReportableCommand, 1),
 		logger:               logger,
@@ -205,51 +200,41 @@ func (s *scheduler) Run(ctx context.Context) error {
 	)
 	deploymentStatus = model.DeploymentStatus_DEPLOYMENT_SUCCESS
 
-	repoCfg := config.PipedRepository{
-		RepoID: s.deployment.GitPath.Repo.Id,
-		Remote: s.deployment.GitPath.Repo.Remote,
-		Branch: s.deployment.GitPath.Repo.Branch,
-	}
+	// repoCfg := config.PipedRepository{
+	// 	RepoID: s.deployment.GitPath.Repo.Id,
+	// 	Remote: s.deployment.GitPath.Repo.Remote,
+	// 	Branch: s.deployment.GitPath.Repo.Branch,
+	// }
 
-	// TODO: make this targetDS
-	s.targetDSP = deploysource.NewProvider(
-		filepath.Join(s.workingDir, "target-deploysource"),
-		deploysource.NewGitSourceCloner(s.gitClient, repoCfg, "target", s.deployment.Trigger.Commit.Hash),
-		*s.deployment.GitPath,
-		nil,
-	)
+	// s.targetDSP = deploysource.NewProvider(
+	// 	filepath.Join(s.workingDir, "target-deploysource"),
+	// 	deploysource.NewGitSourceCloner(s.gitClient, repoCfg, "target", s.deployment.Trigger.Commit.Hash),
+	// 	*s.deployment.GitPath,
+	// 	nil,
+	// )
 
-	// TODO: make this runningDS
-	if s.deployment.RunningCommitHash != "" {
-		gp := *s.deployment.GitPath
-		gp.ConfigFilename = s.deployment.RunningConfigFilename
+	// if s.deployment.RunningCommitHash != "" {
+	// 	gp := *s.deployment.GitPath
+	// 	gp.ConfigFilename = s.deployment.RunningConfigFilename
 
-		s.runningDSP = deploysource.NewProvider(
-			filepath.Join(s.workingDir, "running-deploysource"),
-			deploysource.NewGitSourceCloner(s.gitClient, repoCfg, "running", s.deployment.RunningCommitHash),
-			gp,
-			nil,
-		)
-	}
+	// 	s.runningDSP = deploysource.NewProvider(
+	// 		filepath.Join(s.workingDir, "running-deploysource"),
+	// 		deploysource.NewGitSourceCloner(s.gitClient, repoCfg, "running", s.deployment.RunningCommitHash),
+	// 		gp,
+	// 		nil,
+	// 	)
+	// }
 
-	// We use another deploy source provider to load the application configuration at the target commit.
-	// This provider is configured with a nil secretDecrypter
-	// because decrypting the sealed secrets is not required.
-	// We need only the application configuration spec.
-	configDSP := deploysource.NewProvider(
-		filepath.Join(s.workingDir, "target-config"),
-		deploysource.NewGitSourceCloner(s.gitClient, repoCfg, "target", s.deployment.Trigger.Commit.Hash),
-		*s.deployment.GitPath,
-		nil,
-	)
-	ds, err := configDSP.Get(ctx, io.Discard)
+	/// TODO: prepare the targetDS and runningDS
+	var targetDS *deployment.DeploymentSource
+	cfg, err := config.DecodeYAML[*config.GenericApplicationSpec](targetDS.GetApplicationConfig())
 	if err != nil {
 		deploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
-		statusReason = fmt.Sprintf("Unable to prepare application configuration source data at target commit (%v)", err)
+		statusReason = fmt.Sprintf("Failed to decode application configuration at target commit (%v)", err)
 		s.reportDeploymentCompleted(ctx, deploymentStatus, statusReason, "")
 		return err
 	}
-	s.genericApplicationConfig = *ds.GenericApplicationConfig
+	s.genericApplicationConfig = cfg.Spec
 
 	ctx, span := s.tracer.Start(
 		newContextWithDeploymentSpan(ctx, s.deployment),
@@ -277,10 +262,12 @@ func (s *scheduler) Run(ctx context.Context) error {
 	for i, ps := range s.deployment.Stages {
 		lastStage = s.deployment.Stages[i]
 
+		// Ignore the stage if it is already completed.
 		if ps.Status == model.StageStatus_STAGE_SUCCESS {
 			continue
 		}
-		if !ps.Visible || ps.Name == model.StageRollback.String() {
+		// Ignore the rollback stage, we did it later by another loop.
+		if ps.Rollback {
 			continue
 		}
 
@@ -501,14 +488,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		originalStatus = model.StageStatus_STAGE_RUNNING
 	}
 
-	// Check the existence of the specified cloud provider.
-	if !s.pipedConfig.HasPlatformProvider(s.deployment.PlatformProvider, s.deployment.Kind) {
-		lp.Errorf("This piped is not having the specified platform provider in this deployment: %v", s.deployment.PlatformProvider)
-		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
-			s.logger.Error("failed to report stage status", zap.Error(err))
-		}
-		return model.StageStatus_STAGE_FAILURE
-	}
+	// TODO: Check plugin which could handle the stage are available or not.
 
 	// Load the stage configuration.
 	var stageConfig config.PipelineStage
@@ -529,11 +509,10 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 
 	input := executor.Input{
 		Stage:        &ps,
-		StageConfig:  stageConfig,
+		StageConfig:  &stageConfig,
 		Deployment:   s.deployment,
-		PipedConfig:  s.pipedConfig,
-		TargetDSP:    s.targetDSP,
-		RunningDSP:   s.runningDSP,
+		TargetDS:     s.targetDS,  // TODO: prepare this
+		RunningDS:    s.runningDS, // TODO: prepare this
 		LogPersister: lp,
 		Logger:       s.logger,
 	}

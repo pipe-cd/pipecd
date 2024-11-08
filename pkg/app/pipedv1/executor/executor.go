@@ -19,10 +19,10 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
-	"github.com/pipe-cd/pipecd/pkg/config"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 )
 
 type Executor interface {
@@ -50,12 +50,11 @@ type GitClient interface {
 type Input struct {
 	Stage       *model.PipelineStage
 	Deployment  *model.Deployment
-	StageConfig config.PipelineStage
-	PipedConfig *config.PipedSpec
+	StageConfig *config.PipelineStage
 	// Deploy source at target commit
-	TargetDSP deploysource.Provider
+	TargetDS *deployment.DeploymentSource
 	// Deploy source at running commit
-	RunningDSP   deploysource.Provider
+	RunningDS    *deployment.DeploymentSource
 	LogPersister LogPersister
 	Logger       *zap.Logger
 }

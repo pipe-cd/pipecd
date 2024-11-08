@@ -35,7 +35,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
-	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -92,7 +91,6 @@ type controller struct {
 	deploymentLister deploymentLister
 	commandLister    commandLister
 	notifier         notifier
-	pipedCfg         *config.PipedSpec // TODO: Remove this, use pipedConfig instead
 	logPersister     logpersister.Persister
 
 	// Map from application ID to the planner
@@ -128,7 +126,6 @@ func NewController(
 	deploymentLister deploymentLister,
 	commandLister commandLister,
 	notifier notifier,
-	pipedCfg *config.PipedSpec,
 	gracePeriod time.Duration,
 	logger *zap.Logger,
 ) DeploymentController {
@@ -144,7 +141,6 @@ func NewController(
 		deploymentLister: deploymentLister,
 		commandLister:    commandLister,
 		notifier:         notifier,
-		pipedCfg:         pipedCfg,
 		logPersister:     lp,
 
 		planners:                              make(map[string]*planner),
@@ -588,7 +584,6 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		c.gitClient,
 		c.logPersister,
 		c.notifier,
-		c.pipedCfg,
 		c.logger,
 	)
 
