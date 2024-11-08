@@ -207,7 +207,12 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	}
 	d.logger.Info(fmt.Sprintf("application %s has a live function manifest", app.Id))
 
-	ignoreAndSortParameters(&headManifest.Spec)
+	clonedSpec := ignoreAndSortParameters(headManifest.Spec)
+	head := provider.FunctionManifest{
+		Kind:       headManifest.Kind,
+		APIVersion: headManifest.APIVersion,
+		Spec:       clonedSpec,
+	}
 
 	// WithIgnoreAddingMapKeys option ignores all of followings:
 	//  - default value of Architecture
@@ -216,7 +221,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	//  - tags added in live states, including pipecd managed tags
 	result, err := provider.Diff(
 		liveManifest,
-		headManifest,
+		head,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),
 		diff.WithCompareNumberAndNumericString(),
@@ -238,22 +243,31 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 // sorts: (Lambda sorts them in liveSpec)
 //   - Architectures in headSpec
 //   - SubnetIDs in headSpec
-func ignoreAndSortParameters(headSpec *provider.FunctionManifestSpec) {
+func ignoreAndSortParameters(headSpec provider.FunctionManifestSpec) provider.FunctionManifestSpec {
+	cloneSpec := headSpec
 	// We cannot compare SourceCode and S3 packaging because live states do not have them.
-	headSpec.SourceCode = provider.SourceCode{}
-	headSpec.S3Bucket = ""
-	headSpec.S3Key = ""
-	headSpec.S3ObjectVersion = ""
+	cloneSpec.SourceCode = provider.SourceCode{}
+	cloneSpec.S3Bucket = ""
+	cloneSpec.S3Key = ""
+	cloneSpec.S3ObjectVersion = ""
 
 	// Architectures, Environments, SubnetIDs, and Tags are sorted in live states.
 	if len(headSpec.Architectures) > 1 {
-		sort.Slice(headSpec.Architectures, func(i, j int) bool {
-			return strings.Compare(headSpec.Architectures[i].Name, headSpec.Architectures[j].Name) < 0
+		cloneSpec.Architectures = slices.Clone(headSpec.Architectures)
+		sort.Slice(cloneSpec.Architectures, func(i, j int) bool {
+			return strings.Compare(cloneSpec.Architectures[i].Name, cloneSpec.Architectures[j].Name) < 0
 		})
 	}
 	if headSpec.VPCConfig != nil && len(headSpec.VPCConfig.SubnetIDs) > 1 {
-		slices.Sort(headSpec.VPCConfig.SubnetIDs)
+		cloneSubnets := slices.Clone(headSpec.VPCConfig.SubnetIDs)
+		slices.Sort(cloneSubnets)
+		cloneSpec.VPCConfig = &provider.VPCConfig{
+			SecurityGroupIDs: headSpec.VPCConfig.SecurityGroupIDs,
+			SubnetIDs:        cloneSubnets,
+		}
 	}
+
+	return cloneSpec
 }
 
 func (d *detector) loadHeadFunctionManifest(app *model.Application, repo git.Repo, headCommit git.Commit) (provider.FunctionManifest, error) {
