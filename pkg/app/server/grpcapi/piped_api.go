@@ -49,6 +49,7 @@ type pipedAPIApplicationStore interface {
 	UpdateDeployingStatus(ctx context.Context, id string, deploying bool) error
 	UpdateBasicInfo(ctx context.Context, id, name, desc string, labels map[string]string) error
 	UpdateMostRecentDeployment(ctx context.Context, id string, status model.DeploymentStatus, d *model.ApplicationDeploymentReference) error
+	UpdateGitPath(ctx context.Context, id string, gitPath *model.ApplicationGitPath) error
 }
 
 type pipedAPIDeploymentStore interface {
@@ -199,6 +200,12 @@ func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.Report
 	if err != nil {
 		return nil, err
 	}
+
+	// application git path may be changed.
+	if err := a.updateApplicationsGitPath(ctx, piped); err != nil {
+		return nil, err
+	}
+
 	return &pipedservice.ReportPipedMetaResponse{
 		Name:       piped.Name,
 		WebBaseUrl: a.webBaseURL,
@@ -1180,5 +1187,52 @@ func (a *PipedAPI) validateDeploymentBelongsToPiped(ctx context.Context, deploym
 		return status.Error(codes.PermissionDenied, "requested deployment doesn't belong to the piped")
 	}
 
+	return nil
+}
+
+// updateApplicationsGitPath updates the git path in order to reflect the changes in the piped.
+func (a *PipedAPI) updateApplicationsGitPath(ctx context.Context, piped *model.Piped) error {
+	opts := datastore.ListOptions{
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "ProjectId",
+				Operator: datastore.OperatorEqual,
+				Value:    piped.ProjectId,
+			},
+			{
+				Field:    "PipedId",
+				Operator: datastore.OperatorEqual,
+				Value:    piped.Id,
+			},
+			{
+				Field:    "Disabled",
+				Operator: datastore.OperatorEqual,
+				Value:    false,
+			},
+		},
+	}
+	apps, _, err := a.applicationStore.List(ctx, opts)
+	if err != nil {
+		return gRPCStoreError(err, "fetch applications")
+	}
+	for _, app := range apps {
+		gitpath, err := makeGitPath(
+			app.GitPath.Repo.Id,
+			app.GitPath.Path,
+			app.GitPath.ConfigFilename,
+			piped,
+			a.logger,
+		)
+		if err != nil {
+			return err
+		}
+		if gitpath.Repo.Branch == app.GitPath.Repo.Branch &&
+			gitpath.Repo.Remote == app.GitPath.Repo.Remote {
+			continue
+		}
+		if err := a.applicationStore.UpdateGitPath(ctx, app.Id, gitpath); err != nil {
+			return gRPCStoreError(err, fmt.Sprintf("update git path of application %s", app.Id))
+		}
+	}
 	return nil
 }
