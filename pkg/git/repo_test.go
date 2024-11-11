@@ -151,6 +151,7 @@ func TestCommitChanges(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 2, len(commits))
 	assert.Equal(t, "New commit with changes", commits[0].Message)
+	assert.Equal(t, "", commits[0].Body)
 
 	// Commit with trailers
 	trailers := map[string]string{
@@ -166,6 +167,7 @@ func TestCommitChanges(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 3, len(commits))
 	assert.Equal(t, "New commit with changes and trailers", commits[0].Message)
+	assert.Equal(t, "test: hoge", commits[0].Body)
 
 	// Check the content of the latest commit
 	bytes, err := os.ReadFile(filepath.Join(r.dir, "README.md"))
