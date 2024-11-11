@@ -67,6 +67,7 @@ type ReleaseCommitMatcherConfig struct {
 	ParentOfMergeCommit bool     `json:"parentOfMergeCommit,omitempty"`
 	Prefixes            []string `json:"prefixes,omitempty"`
 	Contains            []string `json:"contains,omitempty"`
+	Labels              []string `json:"labels,omitempty"`
 }
 
 func (c ReleaseCommitMatcherConfig) Empty() bool {
@@ -87,6 +88,17 @@ func (c ReleaseCommitMatcherConfig) Match(commit Commit, mergeCommit *Commit) bo
 	for _, s := range c.Contains {
 		if strings.Contains(commit.Body, s) {
 			return true
+		}
+	}
+	return false
+}
+
+func (c ReleaseCommitMatcherConfig) MatchLabels(labels []*github.Label) bool {
+	for _, cl := range c.Labels {
+		for _, l := range labels {
+			if l.GetName() == cl {
+				return true
+			}
 		}
 	}
 	return false
@@ -279,6 +291,14 @@ func buildReleaseCommits(ctx context.Context, ghClient *githubClient, commits []
 		return pr, nil
 	}
 
+	// Whether commitCategory is decided by PR's labels or not.
+	useLabels := false
+	for _, ctg := range cfg.CommitCategories {
+		if len(ctg.Labels) > 0 {
+			useLabels = true
+			break
+		}
+	}
 	out := make([]ReleaseCommit, 0, len(commits))
 	for _, commit := range commits {
 
@@ -298,16 +318,21 @@ func buildReleaseCommits(ctx context.Context, ghClient *githubClient, commits []
 			CategoryName: determineCommitCategory(commit, mergeCommits[commit.Hash], cfg.CommitCategories),
 		}
 
-		if gen.UsePullRequestMetadata {
+		if gen.UsePullRequestMetadata || useLabels {
 			pr, err := getPullRequest(commit)
 			if err != nil {
 				// only error logging, ignore error
 				log.Printf("Failed to get pull request: %v\n", err)
 			}
-			if pr != nil {
+
+			if pr != nil && gen.UsePullRequestMetadata {
 				c.PullRequestNumber = pr.GetNumber()
 				c.PullRequestOwner = pr.GetUser().GetLogin()
 				c.ReleaseNote = extractReleaseNote(pr.GetTitle(), pr.GetBody(), gen.UseReleaseNoteBlock)
+			}
+
+			if pr != nil && useLabels {
+				c.CategoryName = determineCommitCategoryOfPR(pr, cfg.CommitCategories)
 			}
 		}
 
@@ -337,6 +362,15 @@ func determineCommitCategory(commit Commit, mergeCommit *Commit, categories []Re
 			return c.ID
 		}
 		if c.ReleaseCommitMatcherConfig.Match(commit, mergeCommit) {
+			return c.ID
+		}
+	}
+	return ""
+}
+
+func determineCommitCategoryOfPR(pr *github.PullRequest, categories []ReleaseCommitCategoryConfig) string {
+	for _, c := range categories {
+		if c.ReleaseCommitMatcherConfig.MatchLabels(pr.Labels) {
 			return c.ID
 		}
 	}

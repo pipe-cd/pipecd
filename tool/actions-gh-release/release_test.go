@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/google/go-github/v39/github"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -302,6 +303,79 @@ func TestBuildReleaseCommits(t *testing.T) {
 			got, err := buildReleaseCommits(ctx, nil, tc.commits, tc.config, nil)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.expected, got)
+		})
+	}
+}
+
+func TestBuildReleaseCommitsForCategoryLabel(t *testing.T) {
+	t.Parallel()
+
+	cfgs := []ReleaseCommitCategoryConfig{
+		{
+			ID:    "breaking-change",
+			Title: "Breaking Changes",
+			ReleaseCommitMatcherConfig: ReleaseCommitMatcherConfig{
+				Labels: []string{"change-category/breaking-change"},
+			},
+		},
+		{
+			ID:    "notable-change",
+			Title: "Notable Changes",
+			ReleaseCommitMatcherConfig: ReleaseCommitMatcherConfig{
+				Labels: []string{"change-category/notable-change"},
+			},
+		},
+		{
+			ID:                         "internal-change",
+			Title:                      "Internal Changes",
+			ReleaseCommitMatcherConfig: ReleaseCommitMatcherConfig{},
+		},
+	}
+
+	testcases := []struct {
+		title            string
+		labels           []*github.Label
+		categories       []ReleaseCommitCategoryConfig
+		expectedCategory string
+	}{
+		{
+			title:            "no categories config provided",
+			labels:           []*github.Label{},
+			categories:       []ReleaseCommitCategoryConfig{},
+			expectedCategory: "",
+		},
+		{
+			title:            "breaking-change",
+			labels:           []*github.Label{{Name: github.String("change-category/breaking-change")}},
+			categories:       cfgs,
+			expectedCategory: "breaking-change",
+		},
+		{
+			title:            "not match any category",
+			labels:           []*github.Label{{Name: github.String("foo")}},
+			categories:       cfgs,
+			expectedCategory: "",
+		},
+		{
+			title: "matching multiple labels results in the first one defined in config",
+			labels: []*github.Label{
+				{Name: github.String("change-category/notable-change")},
+				{Name: github.String("change-category/breaking-change")},
+			},
+			categories:       cfgs,
+			expectedCategory: "breaking-change",
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.title, func(t *testing.T) {
+			t.Parallel()
+
+			pr := &github.PullRequest{
+				Labels: tc.labels,
+			}
+			got := determineCommitCategoryOfPR(pr, tc.categories)
+			assert.Equal(t, tc.expectedCategory, got)
 		})
 	}
 }
