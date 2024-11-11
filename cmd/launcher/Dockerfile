@@ -1,5 +1,5 @@
-# https://github.com/pipe-cd/pipecd/pkgs/container/piped-base/237191877?tag=v0.47.3-rc0-21-ge20cd0b
-FROM ghcr.io/pipe-cd/piped-base@sha256:361a027e368eccab8978924e6cecbe516a65d726a485a7299501d1e77052ebad
+# https://github.com/pipe-cd/pipecd/pkgs/container/piped-base/301720292?tag=v0.49.3
+FROM ghcr.io/pipe-cd/piped-base@sha256:e5ce81bfd81b6d8d24b2caf9ec482c3f6d11fff7ab96f6cc6fc854e82376fb3d
 
 ADD .artifacts/launcher /usr/local/bin/launcher
 
