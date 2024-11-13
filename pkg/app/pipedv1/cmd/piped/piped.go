@@ -36,7 +36,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/spf13/cobra"
-	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -183,7 +182,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		input.Logger.Error("failed to create tracer provider", zap.Error(err))
 		return err
 	}
-	otel.SetTracerProvider(tracerProvider)
+	// we don't set the global tracer provider because 3rd-party library may use the global one.
 
 	// Send the newest piped meta to the control-plane.
 	if err := p.sendPipedMeta(ctx, apiClient, cfg, input.Logger); err != nil {
@@ -347,6 +346,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			appManifestsCache,
 			p.gracePeriod,
 			input.Logger,
+			tracerProvider,
 		)
 
 		group.Go(func() error {
