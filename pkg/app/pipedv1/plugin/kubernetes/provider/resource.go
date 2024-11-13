@@ -60,6 +60,7 @@ var builtInAPIVersions = map[string]struct{}{
 const (
 	KindDeployment = "Deployment"
 	KindSecret     = "Secret"
+	KindConfigMap  = "ConfigMap"
 
 	DefaultNamespace = "default"
 )
@@ -87,6 +88,16 @@ func MakeResourceKey(obj *unstructured.Unstructured) ResourceKey {
 		Name:       obj.GetName(),
 	}
 	return k
+}
+
+func (k ResourceKey) IsConfigMap() bool {
+	if k.Kind != KindConfigMap {
+		return false
+	}
+	if !IsKubernetesBuiltInResource(k.APIVersion) {
+		return false
+	}
+	return true
 }
 
 func (k ResourceKey) IsSecret() bool {

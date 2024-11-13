@@ -156,3 +156,17 @@ func findUpdatedWorkloads(olds, news []provider.Manifest) []workloadPair {
 	}
 	return pairs
 }
+
+// findConfigsAndSecrets returns the manifests that are ConfigMap or Secret.
+func findConfigsAndSecrets(manifests []provider.Manifest) map[provider.ResourceKey]provider.Manifest {
+	configs := make(map[provider.ResourceKey]provider.Manifest)
+	for _, m := range manifests {
+		if m.Key.IsConfigMap() {
+			configs[m.Key] = m
+		}
+		if m.Key.IsSecret() {
+			configs[m.Key] = m
+		}
+	}
+	return configs
+}
