@@ -23,6 +23,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/plugin/diff"
 )
 
 type containerImage struct {
@@ -169,4 +170,26 @@ func findConfigsAndSecrets(manifests []provider.Manifest) map[provider.ResourceK
 		}
 	}
 	return configs
+}
+
+func checkImageChange(ns diff.Nodes) (string, bool) {
+	const containerImageQuery = `^spec\.template\.spec\.containers\.\d+.image$`
+	nodes, _ := ns.Find(containerImageQuery)
+	if len(nodes) == 0 {
+		return "", false
+	}
+
+	images := make([]string, 0, len(ns))
+	for _, n := range nodes {
+		beforeImg := parseContainerImage(n.StringX())
+		afterImg := parseContainerImage(n.StringY())
+
+		if beforeImg.name == afterImg.name {
+			images = append(images, fmt.Sprintf("image %s from %s to %s", beforeImg.name, beforeImg.tag, afterImg.tag))
+		} else {
+			images = append(images, fmt.Sprintf("image %s:%s to %s:%s", beforeImg.name, beforeImg.tag, afterImg.name, afterImg.tag))
+		}
+	}
+	desc := fmt.Sprintf("Sync progressively because of updating %s", strings.Join(images, ", "))
+	return desc, true
 }
