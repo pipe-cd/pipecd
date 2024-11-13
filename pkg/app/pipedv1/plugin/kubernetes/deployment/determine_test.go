@@ -1059,7 +1059,7 @@ data:
 			for _, data := range tt.manifests {
 				manifests = append(manifests, mustParseManifests(t, data)...)
 			}
-			got := findConfigs(manifests)
+			got := findConfigsAndSecrets(manifests)
 			assert.Equal(t, tt.want, got)
 		})
 	}
