@@ -21,7 +21,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -84,6 +83,7 @@ func newPlanner(
 	pipedConfig *config.PipedSpec,
 	appManifestsCache cache.Cache,
 	logger *zap.Logger,
+	tracerProvider trace.TracerProvider,
 ) *planner {
 
 	logger = logger.Named("planner").With(
@@ -111,7 +111,7 @@ func newPlanner(
 		cancelledCh:                  make(chan *model.ReportableCommand, 1),
 		nowFunc:                      time.Now,
 		logger:                       logger,
-		tracer:                       otel.GetTracerProvider().Tracer("controller/planner"),
+		tracer:                       tracerProvider.Tracer("controller/planner"),
 	}
 	return p
 }
