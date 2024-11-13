@@ -21,7 +21,6 @@ import (
 	"sort"
 	"time"
 
-	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/atomic"
@@ -96,6 +95,7 @@ func newPlanner(
 	gitClient gitClient,
 	notifier notifier,
 	logger *zap.Logger,
+	tracerProvider trace.TracerProvider,
 ) *planner {
 
 	logger = logger.Named("planner").With(
@@ -130,7 +130,7 @@ func newPlanner(
 		cancelledCh:                  make(chan *model.ReportableCommand, 1),
 		nowFunc:                      time.Now,
 		logger:                       logger,
-		tracer:                       otel.GetTracerProvider().Tracer("controller/planner"),
+		tracer:                       tracerProvider.Tracer("controller/planner"),
 	}
 	return p
 }

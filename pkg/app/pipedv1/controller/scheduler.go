@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"time"
 
-	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -79,6 +78,7 @@ func newScheduler(
 	lp logpersister.Persister,
 	notifier notifier,
 	logger *zap.Logger,
+	tracerProvider trace.TracerProvider,
 ) *scheduler {
 	logger = logger.Named("scheduler").With(
 		zap.String("deployment-id", d.Id),
@@ -100,7 +100,7 @@ func newScheduler(
 		doneDeploymentStatus: d.Status,
 		cancelledCh:          make(chan *model.ReportableCommand, 1),
 		logger:               logger,
-		tracer:               otel.GetTracerProvider().Tracer("controller/scheduler"),
+		tracer:               tracerProvider.Tracer("controller/scheduler"),
 		nowFunc:              time.Now,
 	}
 

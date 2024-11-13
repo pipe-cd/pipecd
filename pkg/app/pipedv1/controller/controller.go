@@ -27,6 +27,7 @@ import (
 	"sync"
 	"time"
 
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -117,6 +118,7 @@ type controller struct {
 	syncInternal time.Duration
 	gracePeriod  time.Duration
 	logger       *zap.Logger
+	tracerProvider trace.TracerProvider
 }
 
 // NewController creates a new instance for DeploymentController.
@@ -128,6 +130,7 @@ func NewController(
 	notifier notifier,
 	gracePeriod time.Duration,
 	logger *zap.Logger,
+	tracerProvider trace.TracerProvider,
 ) DeploymentController {
 
 	var (
@@ -153,6 +156,7 @@ func NewController(
 		syncInternal: 10 * time.Second,
 		gracePeriod:  gracePeriod,
 		logger:       lg,
+		tracerProvider: tracerProvider,
 	}
 }
 
@@ -448,6 +452,7 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		c.gitClient,
 		c.notifier,
 		c.logger,
+		c.tracerProvider,
 	)
 
 	cleanup := func() {
@@ -585,6 +590,7 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		c.logPersister,
 		c.notifier,
 		c.logger,
+		c.tracerProvider,
 	)
 
 	cleanup := func() {

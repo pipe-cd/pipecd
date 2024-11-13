@@ -151,10 +151,28 @@ func TestCommitChanges(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 2, len(commits))
 	assert.Equal(t, "New commit with changes", commits[0].Message)
+	assert.Equal(t, "", commits[0].Body)
 
+	// Commit with trailers
+	trailers := map[string]string{
+		"test": "hoge",
+	}
+	changes2 := map[string][]byte{
+		"README.md": []byte("new-readme2"),
+	}
+	err = r.CommitChanges(ctx, "new-branch2", "New commit with changes and trailers", true, changes2, trailers)
+	require.NoError(t, err)
+
+	commits, err = r.ListCommits(ctx, "")
+	require.NoError(t, err)
+	require.Equal(t, 3, len(commits))
+	assert.Equal(t, "New commit with changes and trailers", commits[0].Message)
+	assert.Equal(t, "test: hoge", commits[0].Body)
+
+	// Check the content of the latest commit
 	bytes, err := os.ReadFile(filepath.Join(r.dir, "README.md"))
 	require.NoError(t, err)
-	assert.Equal(t, string(changes["README.md"]), string(bytes))
+	assert.Equal(t, string(changes2["README.md"]), string(bytes))
 
 	bytes, err = os.ReadFile(filepath.Join(r.dir, "a/b/c/new.txt"))
 	require.NoError(t, err)
