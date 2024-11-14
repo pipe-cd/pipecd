@@ -47,7 +47,7 @@ func newRegisterCommand(root *command) *cobra.Command {
 	cmd.Flags().StringVar(&r.name, "name", r.name, "The name of event.")
 	cmd.Flags().StringVar(&r.data, "data", r.data, "The string value of event data.")
 	cmd.Flags().StringToStringVar(&r.labels, "labels", r.labels, "The list of labels for event. Format: key=value,key2=value2")
-	cmd.Flags().StringToStringVar(&r.contexts, "contexts", r.contexts, "The list of the values for the event context. Format: key=value,key2=value2")
+	cmd.Flags().StringToStringVar(&r.contexts, "contexts", r.contexts, "The list of the values for the event context. Format: key=value,key2=value2. The Key Format is [a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$")
 
 	cmd.MarkFlagRequired("name")
 	cmd.MarkFlagRequired("data")
