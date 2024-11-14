@@ -21,6 +21,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 	"sigs.k8s.io/yaml"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
@@ -1060,6 +1061,184 @@ data:
 				manifests = append(manifests, mustParseManifests(t, data)...)
 			}
 			got := findConfigsAndSecrets(manifests)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestCheckImageChange(t *testing.T) {
+	tests := []struct {
+		name   string
+		old    string
+		new    string
+		want   string
+		wantOk bool
+	}{
+		{
+			name: "image updated",
+			old: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			new: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.4
+`,
+			want:   "Sync progressively because of updating image nginx from 1.19.3 to 1.19.4",
+			wantOk: true,
+		},
+		{
+			name: "image name changed",
+			old: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			new: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis
+        image: redis:6.0.9
+`,
+			want:   "Sync progressively because of updating image nginx:1.19.3 to redis:6.0.9",
+			wantOk: true,
+		},
+		{
+			name: "no image change",
+			old: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			new: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			want:   "",
+			wantOk: false,
+		},
+		{
+			name: "multiple image updates",
+			old: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+      - name: redis
+        image: redis:6.0.9
+`,
+			new: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.4
+      - name: redis
+        image: redis:6.0.10
+`,
+			want:   "Sync progressively because of updating image nginx from 1.19.3 to 1.19.4, image redis from 6.0.9 to 6.0.10",
+			wantOk: true,
+		},
+		{
+			name: "change the order cause multi-image update",
+			old: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+      - name: redis
+        image: redis:6.0.9
+`,
+			new: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis
+        image: redis:6.0.9
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			want:   "Sync progressively because of updating image nginx:1.19.3 to redis:6.0.9, image redis:6.0.9 to nginx:1.19.3",
+			wantOk: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			oldManifests := mustParseManifests(t, tt.old)
+			newManifests := mustParseManifests(t, tt.new)
+			logger := zap.NewNop() // or use a real logger if available
+			diffs, err := provider.Diff(oldManifests[0], newManifests[0], logger)
+			require.NoError(t, err)
+
+			got, ok := checkImageChange(diffs.Nodes())
+			assert.Equal(t, tt.wantOk, ok)
 			assert.Equal(t, tt.want, got)
 		})
 	}
