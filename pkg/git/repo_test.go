@@ -105,17 +105,24 @@ func TestAddCommit(t *testing.T) {
 	err = os.WriteFile(path, []byte("content"), os.ModePerm)
 	require.NoError(t, err)
 
-	err = r.addCommit(ctx, "Added new file", map[string]string{"Test-Hoge": "fuga"})
+	err = r.addCommit(ctx, "Added new file with trailers", map[string]string{"Test-Hoge": "fuga", "abc": "def", "ABC": "def", "abe": "def"})
 	require.NoError(t, err)
 
 	err = r.addCommit(ctx, "No change", nil)
 	require.Equal(t, ErrNoChange, err)
 
+	err = os.WriteFile(path, []byte("fixed content"), os.ModePerm)
+	require.NoError(t, err)
+	err = r.addCommit(ctx, "Fixed new file without trailers", nil)
+	require.NoError(t, err)
+
 	commits, err = r.ListCommits(ctx, "")
 	require.NoError(t, err)
-	require.Equal(t, 2, len(commits))
-	assert.Equal(t, "Added new file", commits[0].Message)
-	assert.Equal(t, "Test-Hoge: fuga", commits[0].Body)
+	require.Equal(t, 3, len(commits))
+	assert.Equal(t, "Fixed new file without trailers", commits[0].Message)
+	assert.Equal(t, "", commits[0].Body)
+	assert.Equal(t, "Added new file with trailers", commits[1].Message)
+	assert.Equal(t, "ABC: def\nTest-Hoge: fuga\nabc: def\nabe: def", commits[1].Body)
 }
 
 func TestCommitChanges(t *testing.T) {
