@@ -18,7 +18,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -289,9 +288,14 @@ func (r repo) addCommit(ctx context.Context, message string, trailers map[string
 
 	if len(trailers) > 0 {
 		// ensure keys order every time
-		trailerKeys := slices.Sorted(maps.Keys(trailers))
-		for _, k := range trailerKeys {
-			args = append(args, fmt.Sprintf("--trailer=%s: %s", k, trailers[k]))
+		trailerKeys := make([]string, 0, len(trailers))
+		for k := range trailers {
+			trailerKeys = append(trailerKeys, k)
+		}
+		slices.Sort(trailerKeys)
+
+		for _, key := range trailerKeys {
+			args = append(args, fmt.Sprintf("--trailer=%s: %s", key, trailers[key]))
 		}
 	}
 
