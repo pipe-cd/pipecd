@@ -1194,6 +1194,39 @@ spec:
 			want:   "Sync progressively because of updating image nginx from 1.19.3 to 1.19.4, image redis from 6.0.9 to 6.0.10",
 			wantOk: true,
 		},
+		{
+			name: "change the order cause multi-image update",
+			old: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+      - name: redis
+        image: redis:6.0.9
+`,
+			new: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis
+        image: redis:6.0.9
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			want:   "Sync progressively because of updating image nginx:1.19.3 to redis:6.0.9, image redis:6.0.9 to nginx:1.19.3",
+			wantOk: true,
+		},
 	}
 
 	for _, tt := range tests {
