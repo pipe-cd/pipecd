@@ -21,6 +21,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -284,9 +285,20 @@ func (r repo) addCommit(ctx context.Context, message string, trailers map[string
 	}
 
 	args := []string{"commit", "-m", message}
-	for k, v := range trailers {
-		args = append(args, fmt.Sprintf("--trailer=%s: %s", k, v))
+
+	if len(trailers) > 0 {
+		// ensure keys order every time
+		trailerKeys := make([]string, 0, len(trailers))
+		for k := range trailers {
+			trailerKeys = append(trailerKeys, k)
+		}
+		slices.Sort(trailerKeys)
+
+		for _, key := range trailerKeys {
+			args = append(args, fmt.Sprintf("--trailer=%s: %s", key, trailers[key]))
+		}
 	}
+
 	out, err = r.runGitCommand(ctx, args...)
 	if err != nil {
 		msg := string(out)
