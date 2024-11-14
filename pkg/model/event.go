@@ -18,16 +18,11 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"regexp"
 	"sort"
 	"strings"
 )
 
-var (
-	hashFunc = sha256.New
-
-	eventKeyFormatRegex = regexp.MustCompile(`^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$`)
-)
+var hashFunc = sha256.New
 
 func (e *Event) IsHandled() bool {
 	return e.Status == EventStatus_EVENT_SUCCESS || e.Status == EventStatus_EVENT_FAILURE
