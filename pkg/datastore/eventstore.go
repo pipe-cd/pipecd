@@ -101,7 +101,7 @@ func (s *eventStore) Add(ctx context.Context, e model.Event) error {
 		e.UpdatedAt = now
 	}
 	if err := e.Validate(); err != nil {
-		return err
+		return fmt.Errorf("failed to validate event: %w: %w", ErrInvalidArgument, err)
 	}
 	return s.ds.Create(ctx, s.col, e.Id, &e)
 }
