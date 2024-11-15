@@ -1243,3 +1243,156 @@ spec:
 		})
 	}
 }
+
+func TestCheckReplicasChange(t *testing.T) {
+	tests := []struct {
+		name        string
+		old         string
+		new         string
+		wantBefore  string
+		wantAfter   string
+		wantChanged bool
+	}{
+		{
+			name: "replicas updated",
+			old: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    ame: nginx-deployment
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			new: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 5
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			wantBefore:  "3",
+			wantAfter:   "5",
+			wantChanged: true,
+		},
+		{
+			name: "replicas not changed",
+			old: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			new: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			wantBefore:  "",
+			wantAfter:   "",
+			wantChanged: false,
+		},
+		{
+			name: "replicas field removed",
+			old: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			new: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			wantBefore:  "3",
+			wantAfter:   "",
+			wantChanged: true,
+		},
+		{
+			name: "replicas field added",
+			old: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			new: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			wantBefore:  "",
+			wantAfter:   "3",
+			wantChanged: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			oldManifests := mustParseManifests(t, tt.old)
+			newManifests := mustParseManifests(t, tt.new)
+			logger := zap.NewNop() // or use a real logger if available
+			diffs, err := provider.Diff(oldManifests[0], newManifests[0], logger)
+			require.NoError(t, err)
+
+			before, after, changed := checkReplicasChange(diffs.Nodes())
+			assert.Equal(t, tt.wantChanged, changed, "changed")
+			assert.Equal(t, tt.wantBefore, before, "before")
+			assert.Equal(t, tt.wantAfter, after, "after")
+		})
+	}
+}
