@@ -31,6 +31,7 @@ enum NotificationEventType {
     EVENT_DEPLOYMENT_CANCELLED = 6;
     EVENT_DEPLOYMENT_WAIT_APPROVAL = 7;
     EVENT_DEPLOYMENT_TRIGGER_FAILED = 8;
+    EVENT_DEPLOYMENT_STARTED = 9;
 
     EVENT_APPLICATION_SYNCED = 100;
     EVENT_APPLICATION_OUT_OF_SYNC = 101;
@@ -61,6 +62,12 @@ message NotificationEventDeploymentPlanned {
     string summary = 3;
     repeated string mentioned_accounts = 4;
     repeated string mentioned_groups = 5;
+}
+
+message NotificationEventDeploymentStarted {
+    Deployment deployment = 1 [(validate.rules).message.required = true];
+    repeated string mentioned_accounts = 3;
+    repeated string mentioned_groups = 4;
 }
 
 message NotificationEventDeploymentApproved {

@@ -212,6 +212,21 @@ func (s *scheduler) Run(ctx context.Context) error {
 			return err
 		}
 		controllermetrics.UpdateDeploymentStatus(s.deployment, model.DeploymentStatus_DEPLOYMENT_RUNNING)
+
+		// notify the deployment started event
+		users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_STARTED)
+		if err != nil {
+			s.logger.Error("failed to get the list of users or groups", zap.Error(err))
+		}
+
+		s.notifier.Notify(model.NotificationEvent{
+			Type: model.NotificationEventType_EVENT_DEPLOYMENT_STARTED,
+			Metadata: &model.NotificationEventDeploymentStarted{
+				Deployment:        s.deployment,
+				MentionedAccounts: users,
+				MentionedGroups:   groups,
+			},
+		})
 	}
 
 	var (
