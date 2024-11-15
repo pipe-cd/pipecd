@@ -304,7 +304,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	// Start running plugin service server.
 	{
 		var (
-			service = grpcapi.NewPluginAPI(cfg, input.Logger)
+			service = grpcapi.NewPluginAPI(cfg, apiClient, input.Logger)
 			opts    = []rpc.Option{
 				rpc.WithPort(p.pluginServicePort),
 				rpc.WithGracePeriod(p.gracePeriod),

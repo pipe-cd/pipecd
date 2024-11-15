@@ -490,3 +490,537 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = InstallToolResponseValidationError{}
+
+// Validate checks the field values on ReportStageLogsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ReportStageLogsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ReportStageLogsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ReportStageLogsRequestMultiError, or nil if none found.
+func (m *ReportStageLogsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ReportStageLogsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetDeploymentId()) < 1 {
+		err := ReportStageLogsRequestValidationError{
+			field:  "DeploymentId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetStageId()) < 1 {
+		err := ReportStageLogsRequestValidationError{
+			field:  "StageId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for RetriedCount
+
+	for idx, item := range m.GetBlocks() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ReportStageLogsRequestValidationError{
+						field:  fmt.Sprintf("Blocks[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ReportStageLogsRequestValidationError{
+						field:  fmt.Sprintf("Blocks[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ReportStageLogsRequestValidationError{
+					field:  fmt.Sprintf("Blocks[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return ReportStageLogsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ReportStageLogsRequestMultiError is an error wrapping multiple validation
+// errors returned by ReportStageLogsRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ReportStageLogsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ReportStageLogsRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ReportStageLogsRequestMultiError) AllErrors() []error { return m }
+
+// ReportStageLogsRequestValidationError is the validation error returned by
+// ReportStageLogsRequest.Validate if the designated constraints aren't met.
+type ReportStageLogsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ReportStageLogsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ReportStageLogsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ReportStageLogsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ReportStageLogsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ReportStageLogsRequestValidationError) ErrorName() string {
+	return "ReportStageLogsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ReportStageLogsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sReportStageLogsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ReportStageLogsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ReportStageLogsRequestValidationError{}
+
+// Validate checks the field values on ReportStageLogsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ReportStageLogsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ReportStageLogsResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ReportStageLogsResponseMultiError, or nil if none found.
+func (m *ReportStageLogsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ReportStageLogsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return ReportStageLogsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ReportStageLogsResponseMultiError is an error wrapping multiple validation
+// errors returned by ReportStageLogsResponse.ValidateAll() if the designated
+// constraints aren't met.
+type ReportStageLogsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ReportStageLogsResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ReportStageLogsResponseMultiError) AllErrors() []error { return m }
+
+// ReportStageLogsResponseValidationError is the validation error returned by
+// ReportStageLogsResponse.Validate if the designated constraints aren't met.
+type ReportStageLogsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ReportStageLogsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ReportStageLogsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ReportStageLogsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ReportStageLogsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ReportStageLogsResponseValidationError) ErrorName() string {
+	return "ReportStageLogsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ReportStageLogsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sReportStageLogsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ReportStageLogsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ReportStageLogsResponseValidationError{}
+
+// Validate checks the field values on ReportStageLogsFromLastCheckpointRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *ReportStageLogsFromLastCheckpointRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on
+// ReportStageLogsFromLastCheckpointRequest with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in
+// ReportStageLogsFromLastCheckpointRequestMultiError, or nil if none found.
+func (m *ReportStageLogsFromLastCheckpointRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ReportStageLogsFromLastCheckpointRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetDeploymentId()) < 1 {
+		err := ReportStageLogsFromLastCheckpointRequestValidationError{
+			field:  "DeploymentId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetStageId()) < 1 {
+		err := ReportStageLogsFromLastCheckpointRequestValidationError{
+			field:  "StageId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for RetriedCount
+
+	for idx, item := range m.GetBlocks() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ReportStageLogsFromLastCheckpointRequestValidationError{
+						field:  fmt.Sprintf("Blocks[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ReportStageLogsFromLastCheckpointRequestValidationError{
+						field:  fmt.Sprintf("Blocks[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ReportStageLogsFromLastCheckpointRequestValidationError{
+					field:  fmt.Sprintf("Blocks[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for Completed
+
+	if len(errors) > 0 {
+		return ReportStageLogsFromLastCheckpointRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ReportStageLogsFromLastCheckpointRequestMultiError is an error wrapping
+// multiple validation errors returned by
+// ReportStageLogsFromLastCheckpointRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ReportStageLogsFromLastCheckpointRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ReportStageLogsFromLastCheckpointRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ReportStageLogsFromLastCheckpointRequestMultiError) AllErrors() []error { return m }
+
+// ReportStageLogsFromLastCheckpointRequestValidationError is the validation
+// error returned by ReportStageLogsFromLastCheckpointRequest.Validate if the
+// designated constraints aren't met.
+type ReportStageLogsFromLastCheckpointRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ReportStageLogsFromLastCheckpointRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ReportStageLogsFromLastCheckpointRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ReportStageLogsFromLastCheckpointRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ReportStageLogsFromLastCheckpointRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ReportStageLogsFromLastCheckpointRequestValidationError) ErrorName() string {
+	return "ReportStageLogsFromLastCheckpointRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ReportStageLogsFromLastCheckpointRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sReportStageLogsFromLastCheckpointRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ReportStageLogsFromLastCheckpointRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ReportStageLogsFromLastCheckpointRequestValidationError{}
+
+// Validate checks the field values on
+// ReportStageLogsFromLastCheckpointResponse with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *ReportStageLogsFromLastCheckpointResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on
+// ReportStageLogsFromLastCheckpointResponse with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in
+// ReportStageLogsFromLastCheckpointResponseMultiError, or nil if none found.
+func (m *ReportStageLogsFromLastCheckpointResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ReportStageLogsFromLastCheckpointResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return ReportStageLogsFromLastCheckpointResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ReportStageLogsFromLastCheckpointResponseMultiError is an error wrapping
+// multiple validation errors returned by
+// ReportStageLogsFromLastCheckpointResponse.ValidateAll() if the designated
+// constraints aren't met.
+type ReportStageLogsFromLastCheckpointResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ReportStageLogsFromLastCheckpointResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ReportStageLogsFromLastCheckpointResponseMultiError) AllErrors() []error { return m }
+
+// ReportStageLogsFromLastCheckpointResponseValidationError is the validation
+// error returned by ReportStageLogsFromLastCheckpointResponse.Validate if the
+// designated constraints aren't met.
+type ReportStageLogsFromLastCheckpointResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ReportStageLogsFromLastCheckpointResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ReportStageLogsFromLastCheckpointResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ReportStageLogsFromLastCheckpointResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ReportStageLogsFromLastCheckpointResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ReportStageLogsFromLastCheckpointResponseValidationError) ErrorName() string {
+	return "ReportStageLogsFromLastCheckpointResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ReportStageLogsFromLastCheckpointResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sReportStageLogsFromLastCheckpointResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ReportStageLogsFromLastCheckpointResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ReportStageLogsFromLastCheckpointResponseValidationError{}

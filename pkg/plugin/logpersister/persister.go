@@ -26,20 +26,24 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
-	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/cmd/piped/service"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type apiClient interface {
-	ReportStageLogs(ctx context.Context, in *pipedservice.ReportStageLogsRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogsResponse, error)
-	ReportStageLogsFromLastCheckpoint(ctx context.Context, in *pipedservice.ReportStageLogsFromLastCheckpointRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogsFromLastCheckpointResponse, error)
+	ReportStageLogs(ctx context.Context, in *service.ReportStageLogsRequest, opts ...grpc.CallOption) (*service.ReportStageLogsResponse, error)
+	ReportStageLogsFromLastCheckpoint(ctx context.Context, in *service.ReportStageLogsFromLastCheckpointRequest, opts ...grpc.CallOption) (*service.ReportStageLogsFromLastCheckpointResponse, error)
 }
 
+// Persister is responsible for saving the stage logs into server's storage.
+// It sends the logs to the piped plugin-api grpc server through the apiClient.
 type Persister interface {
 	Run(ctx context.Context) error
 	StageLogPersister(deploymentID, stageID string) StageLogPersister
 }
 
+// StageLogPersister is a child persister instance for a specific stage.
+// Use this to persist the stage logs and make it viewable on the UI.
 type StageLogPersister interface {
 	Write(log []byte) (int, error)
 	Info(log string)
@@ -173,7 +177,7 @@ func (p *persister) flushAll(ctx context.Context) int {
 }
 
 func (p *persister) reportStageLogs(ctx context.Context, k key, blocks []*model.LogBlock) error {
-	req := &pipedservice.ReportStageLogsRequest{
+	req := &service.ReportStageLogsRequest{
 		DeploymentId: k.DeploymentID,
 		StageId:      k.StageID,
 		Blocks:       blocks,
@@ -189,7 +193,7 @@ func (p *persister) reportStageLogs(ctx context.Context, k key, blocks []*model.
 }
 
 func (p *persister) reportStageLogsFromLastCheckpoint(ctx context.Context, k key, blocks []*model.LogBlock, completed bool) error {
-	req := &pipedservice.ReportStageLogsFromLastCheckpointRequest{
+	req := &service.ReportStageLogsFromLastCheckpointRequest{
 		DeploymentId: k.DeploymentID,
 		StageId:      k.StageID,
 		Blocks:       blocks,

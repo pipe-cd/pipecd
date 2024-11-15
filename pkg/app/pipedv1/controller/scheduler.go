@@ -32,7 +32,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor"
 	registry "github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor/registry"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/cache"
@@ -51,7 +50,6 @@ type scheduler struct {
 	commandLister       commandLister
 	applicationLister   applicationLister
 	analysisResultStore analysisResultStore
-	logPersister        logpersister.Persister
 	metadataStore       metadatastore.MetadataStore
 	notifier            notifier
 	secretDecrypter     secretDecrypter
@@ -88,7 +86,6 @@ func newScheduler(
 	commandLister commandLister,
 	applicationLister applicationLister,
 	analysisResultStore analysisResultStore,
-	lp logpersister.Persister,
 	notifier notifier,
 	sd secretDecrypter,
 	pipedConfig *config.PipedSpec,
@@ -113,7 +110,6 @@ func newScheduler(
 		commandLister:        commandLister,
 		applicationLister:    applicationLister,
 		analysisResultStore:  analysisResultStore,
-		logPersister:         lp,
 		metadataStore:        metadatastore.NewMetadataStore(apiClient, d),
 		notifier:             notifier,
 		secretDecrypter:      sd,
@@ -494,7 +490,6 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 	var (
 		ctx            = sig.Context()
 		originalStatus = ps.Status
-		lp             = s.logPersister.StageLogPersister(s.deployment.Id, ps.Id)
 	)
 	defer func() {
 		// When the piped has been terminated (PS kill) while the stage is still running
@@ -502,7 +497,6 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		if !finalStatus.IsCompleted() && sig.Terminated() {
 			return
 		}
-		lp.Complete(time.Minute)
 	}()
 
 	// Check whether to execute the script rollback stage or not.
@@ -533,7 +527,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 
 	// Check the existence of the specified cloud provider.
 	if !s.pipedConfig.HasPlatformProvider(s.deployment.PlatformProvider, s.deployment.Kind) {
-		lp.Errorf("This piped is not having the specified platform provider in this deployment: %v", s.deployment.PlatformProvider)
+		s.logger.Error(fmt.Sprintf("This piped is not having the specified platform provider in this deployment: %v", s.deployment.PlatformProvider))
 		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
 			s.logger.Error("failed to report stage status", zap.Error(err))
 		}
@@ -550,7 +544,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 	}
 
 	if !stageConfigFound {
-		lp.Error("Unable to find the stage configuration")
+		s.logger.Error("Unable to find the stage configuration")
 		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
 			s.logger.Error("failed to report stage status", zap.Error(err))
 		}
@@ -559,7 +553,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 
 	app, ok := s.applicationLister.Get(s.deployment.ApplicationId)
 	if !ok {
-		lp.Errorf("Application %s for this deployment was not found (Maybe it was disabled).", s.deployment.ApplicationId)
+		s.logger.Error(fmt.Sprintf("Application %s for this deployment was not found (Maybe it was disabled).", s.deployment.ApplicationId))
 		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -583,7 +577,6 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		RunningDSP:          s.runningDSP,
 		GitClient:           s.gitClient,
 		CommandLister:       cmdLister,
-		LogPersister:        lp,
 		MetadataStore:       s.metadataStore,
 		AppManifestsCache:   s.appManifestsCache,
 		AnalysisResultStore: aStore,
@@ -595,7 +588,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 	ex, ok := executorFactory(input)
 	if !ok {
 		err := fmt.Errorf("no registered executor for stage %s", ps.Name)
-		lp.Error(err.Error())
+		s.logger.Error(err.Error())
 		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
 		return model.StageStatus_STAGE_FAILURE
 	}

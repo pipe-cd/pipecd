@@ -24,7 +24,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
-	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/cmd/piped/service"
 )
 
 type fakeAPIClient struct {
@@ -32,14 +32,14 @@ type fakeAPIClient struct {
 	reportStageLogsFromLastCheckpointCount atomic.Uint32
 }
 
-func (c *fakeAPIClient) ReportStageLogs(ctx context.Context, in *pipedservice.ReportStageLogsRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogsResponse, error) {
+func (c *fakeAPIClient) ReportStageLogs(ctx context.Context, in *service.ReportStageLogsRequest, opts ...grpc.CallOption) (*service.ReportStageLogsResponse, error) {
 	c.reportStageLogsCount.Inc()
-	return &pipedservice.ReportStageLogsResponse{}, nil
+	return &service.ReportStageLogsResponse{}, nil
 }
 
-func (c *fakeAPIClient) ReportStageLogsFromLastCheckpoint(ctx context.Context, in *pipedservice.ReportStageLogsFromLastCheckpointRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogsFromLastCheckpointResponse, error) {
+func (c *fakeAPIClient) ReportStageLogsFromLastCheckpoint(ctx context.Context, in *service.ReportStageLogsFromLastCheckpointRequest, opts ...grpc.CallOption) (*service.ReportStageLogsFromLastCheckpointResponse, error) {
 	c.reportStageLogsFromLastCheckpointCount.Inc()
-	return &pipedservice.ReportStageLogsFromLastCheckpointResponse{}, nil
+	return &service.ReportStageLogsFromLastCheckpointResponse{}, nil
 }
 
 func (c *fakeAPIClient) NumberOfReportStageLogs() int {
