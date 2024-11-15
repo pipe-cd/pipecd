@@ -35,11 +35,15 @@ type apiClient interface {
 	ReportStageLogsFromLastCheckpoint(ctx context.Context, in *service.ReportStageLogsFromLastCheckpointRequest, opts ...grpc.CallOption) (*service.ReportStageLogsFromLastCheckpointResponse, error)
 }
 
+// Persister is responsible for saving the stage logs into server's storage.
+// It sends the logs to the piped plugin-api grpc server through the apiClient.
 type Persister interface {
 	Run(ctx context.Context) error
 	StageLogPersister(deploymentID, stageID string) StageLogPersister
 }
 
+// StageLogPersister is a child persister instance for a specific stage.
+// Use this to persist the stage logs and make it viewable on the UI.
 type StageLogPersister interface {
 	Write(log []byte) (int, error)
 	Info(log string)

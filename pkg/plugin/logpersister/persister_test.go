@@ -18,12 +18,13 @@ import (
 	"context"
 	"testing"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/cmd/piped/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/cmd/piped/service"
 )
 
 type fakeAPIClient struct {
