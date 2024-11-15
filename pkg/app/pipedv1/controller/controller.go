@@ -34,7 +34,6 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -53,8 +52,6 @@ type apiClient interface {
 
 	ReportStageStatusChanged(ctx context.Context, req *pipedservice.ReportStageStatusChangedRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageStatusChangedResponse, error)
 	SaveStageMetadata(ctx context.Context, req *pipedservice.SaveStageMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveStageMetadataResponse, error)
-	ReportStageLogs(ctx context.Context, req *pipedservice.ReportStageLogsRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogsResponse, error)
-	ReportStageLogsFromLastCheckpoint(ctx context.Context, in *pipedservice.ReportStageLogsFromLastCheckpointRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogsFromLastCheckpointResponse, error)
 
 	InChainDeploymentPlannable(ctx context.Context, in *pipedservice.InChainDeploymentPlannableRequest, opts ...grpc.CallOption) (*pipedservice.InChainDeploymentPlannableResponse, error)
 }
@@ -112,7 +109,6 @@ type controller struct {
 	secretDecrypter     secretDecrypter   // TODO: Remove this
 	pipedCfg            *config.PipedSpec // TODO: Remove this, use pipedConfig instead
 	appManifestsCache   cache.Cache
-	logPersister        logpersister.Persister
 
 	// Map from application ID to the planner
 	// of a pending deployment of that application.
@@ -134,10 +130,10 @@ type controller struct {
 	// WaitGroup for waiting the completions of all planners, schedulers.
 	wg sync.WaitGroup
 
-	workspaceDir string
-	syncInternal time.Duration
-	gracePeriod  time.Duration
-	logger       *zap.Logger
+	workspaceDir   string
+	syncInternal   time.Duration
+	gracePeriod    time.Duration
+	logger         *zap.Logger
 	tracerProvider trace.TracerProvider
 }
 
@@ -158,10 +154,6 @@ func NewController(
 	tracerProvider trace.TracerProvider,
 ) DeploymentController {
 
-	var (
-		lp = logpersister.NewPersister(apiClient, logger)
-		lg = logger.Named("controller")
-	)
 	return &controller{
 		apiClient:           apiClient,
 		pluginRegistry:      DefaultPluginRegistry(),
@@ -174,7 +166,6 @@ func NewController(
 		secretDecrypter:     sd,
 		appManifestsCache:   appManifestsCache,
 		pipedCfg:            pipedCfg,
-		logPersister:        lp,
 
 		planners:                              make(map[string]*planner),
 		donePlanners:                          make(map[string]time.Time),
@@ -183,9 +174,9 @@ func NewController(
 		mostRecentlySuccessfulCommits:         make(map[string]string),
 		mostRecentlySuccessfulConfigFilenames: make(map[string]string),
 
-		syncInternal: 10 * time.Second,
-		gracePeriod:  gracePeriod,
-		logger:       lg,
+		syncInternal:   10 * time.Second,
+		gracePeriod:    gracePeriod,
+		logger:         logger.Named("controller"),
 		tracerProvider: tracerProvider,
 	}
 }
@@ -205,18 +196,6 @@ func (c *controller) Run(ctx context.Context) error {
 	c.workspaceDir = dir
 	c.logger.Info(fmt.Sprintf("workspace directory was configured to %s", c.workspaceDir))
 
-	// Start running log persister to buffer and flush the log blocks.
-	// We do not use the passed ctx directly because we want log persister
-	// component to be stopped at the last order to avoid lossing log from other components.
-	var (
-		lpStoppedCh     = make(chan error, 1)
-		lpCtx, lpCancel = context.WithCancel(context.Background())
-	)
-	go func() {
-		lpStoppedCh <- c.logPersister.Run(lpCtx)
-		close(lpStoppedCh)
-	}()
-
 	ticker := time.NewTicker(c.syncInternal)
 	defer ticker.Stop()
 	c.logger.Info("start syncing planners and schedulers")
@@ -224,7 +203,7 @@ func (c *controller) Run(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
-			return c.shutdown(lpCancel, lpStoppedCh)
+			return c.shutdown()
 
 		case <-ticker.C:
 			// syncSchedulers must be called before syncPlanners because
@@ -236,16 +215,11 @@ func (c *controller) Run(ctx context.Context) error {
 	}
 }
 
-func (c *controller) shutdown(cancel func(), stoppedCh <-chan error) error {
+func (c *controller) shutdown() error {
 	c.logger.Info("waiting for stopping all planners and schedulers")
 	c.wg.Wait()
-
-	// Stop log persiter and wait for its stopping.
-	cancel()
-	err := <-stoppedCh
-
 	c.logger.Info("controller has been stopped")
-	return err
+	return nil
 }
 
 // checkCommands lists all unhandled commands for running deployments
@@ -620,7 +594,6 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		c.commandLister,
 		c.applicationLister,
 		c.analysisResultStore,
-		c.logPersister,
 		c.notifier,
 		c.secretDecrypter,
 		c.pipedCfg,

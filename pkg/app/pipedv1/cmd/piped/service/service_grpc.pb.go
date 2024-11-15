@@ -27,6 +27,10 @@ type PluginServiceClient interface {
 	// InstallTool installs the given tool.
 	// installed binary's filename becomes `name-version`.
 	InstallTool(ctx context.Context, in *InstallToolRequest, opts ...grpc.CallOption) (*InstallToolResponse, error)
+	// ReportStageLogs is used to save the log of a pipeline stage.
+	ReportStageLogs(ctx context.Context, in *ReportStageLogsRequest, opts ...grpc.CallOption) (*ReportStageLogsResponse, error)
+	// ReportStageLogsFromLastCheckpoint is used to save the full logs from the most recently saved point.
+	ReportStageLogsFromLastCheckpoint(ctx context.Context, in *ReportStageLogsFromLastCheckpointRequest, opts ...grpc.CallOption) (*ReportStageLogsFromLastCheckpointResponse, error)
 }
 
 type pluginServiceClient struct {
@@ -55,6 +59,24 @@ func (c *pluginServiceClient) InstallTool(ctx context.Context, in *InstallToolRe
 	return out, nil
 }
 
+func (c *pluginServiceClient) ReportStageLogs(ctx context.Context, in *ReportStageLogsRequest, opts ...grpc.CallOption) (*ReportStageLogsResponse, error) {
+	out := new(ReportStageLogsResponse)
+	err := c.cc.Invoke(ctx, "/grpc.piped.service.PluginService/ReportStageLogs", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *pluginServiceClient) ReportStageLogsFromLastCheckpoint(ctx context.Context, in *ReportStageLogsFromLastCheckpointRequest, opts ...grpc.CallOption) (*ReportStageLogsFromLastCheckpointResponse, error) {
+	out := new(ReportStageLogsFromLastCheckpointResponse)
+	err := c.cc.Invoke(ctx, "/grpc.piped.service.PluginService/ReportStageLogsFromLastCheckpoint", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PluginServiceServer is the server API for PluginService service.
 // All implementations must embed UnimplementedPluginServiceServer
 // for forward compatibility
@@ -64,6 +86,10 @@ type PluginServiceServer interface {
 	// InstallTool installs the given tool.
 	// installed binary's filename becomes `name-version`.
 	InstallTool(context.Context, *InstallToolRequest) (*InstallToolResponse, error)
+	// ReportStageLogs is used to save the log of a pipeline stage.
+	ReportStageLogs(context.Context, *ReportStageLogsRequest) (*ReportStageLogsResponse, error)
+	// ReportStageLogsFromLastCheckpoint is used to save the full logs from the most recently saved point.
+	ReportStageLogsFromLastCheckpoint(context.Context, *ReportStageLogsFromLastCheckpointRequest) (*ReportStageLogsFromLastCheckpointResponse, error)
 	mustEmbedUnimplementedPluginServiceServer()
 }
 
@@ -76,6 +102,12 @@ func (UnimplementedPluginServiceServer) DecryptSecret(context.Context, *DecryptS
 }
 func (UnimplementedPluginServiceServer) InstallTool(context.Context, *InstallToolRequest) (*InstallToolResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InstallTool not implemented")
+}
+func (UnimplementedPluginServiceServer) ReportStageLogs(context.Context, *ReportStageLogsRequest) (*ReportStageLogsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReportStageLogs not implemented")
+}
+func (UnimplementedPluginServiceServer) ReportStageLogsFromLastCheckpoint(context.Context, *ReportStageLogsFromLastCheckpointRequest) (*ReportStageLogsFromLastCheckpointResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReportStageLogsFromLastCheckpoint not implemented")
 }
 func (UnimplementedPluginServiceServer) mustEmbedUnimplementedPluginServiceServer() {}
 
@@ -126,6 +158,42 @@ func _PluginService_InstallTool_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PluginService_ReportStageLogs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReportStageLogsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServiceServer).ReportStageLogs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.piped.service.PluginService/ReportStageLogs",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServiceServer).ReportStageLogs(ctx, req.(*ReportStageLogsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PluginService_ReportStageLogsFromLastCheckpoint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReportStageLogsFromLastCheckpointRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServiceServer).ReportStageLogsFromLastCheckpoint(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.piped.service.PluginService/ReportStageLogsFromLastCheckpoint",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServiceServer).ReportStageLogsFromLastCheckpoint(ctx, req.(*ReportStageLogsFromLastCheckpointRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PluginService_ServiceDesc is the grpc.ServiceDesc for PluginService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -140,6 +208,14 @@ var PluginService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "InstallTool",
 			Handler:    _PluginService_InstallTool_Handler,
+		},
+		{
+			MethodName: "ReportStageLogs",
+			Handler:    _PluginService_ReportStageLogs_Handler,
+		},
+		{
+			MethodName: "ReportStageLogsFromLastCheckpoint",
+			Handler:    _PluginService_ReportStageLogsFromLastCheckpoint_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

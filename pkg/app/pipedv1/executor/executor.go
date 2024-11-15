@@ -35,16 +35,6 @@ type Executor interface {
 
 type Factory func(in Input) Executor
 
-type LogPersister interface {
-	Write(log []byte) (int, error)
-	Info(log string)
-	Infof(format string, a ...interface{})
-	Success(log string)
-	Successf(format string, a ...interface{})
-	Error(log string)
-	Errorf(format string, a ...interface{})
-}
-
 type CommandLister interface {
 	ListCommands() []model.ReportableCommand
 }
@@ -75,7 +65,6 @@ type Input struct {
 	RunningDSP          deploysource.Provider
 	GitClient           GitClient
 	CommandLister       CommandLister
-	LogPersister        LogPersister
 	MetadataStore       metadatastore.MetadataStore
 	AppManifestsCache   cache.Cache
 	AnalysisResultStore AnalysisResultStore

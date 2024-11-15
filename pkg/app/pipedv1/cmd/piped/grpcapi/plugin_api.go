@@ -19,6 +19,7 @@ import (
 	"fmt"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/cmd/piped/service"
+	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/crypto"
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -30,8 +31,15 @@ import (
 type PluginAPI struct {
 	service.PluginServiceServer
 
-	cfg    *config.PipedSpec
+	cfg       *config.PipedSpec
+	apiClient apiClient
+
 	Logger *zap.Logger
+}
+
+type apiClient interface {
+	ReportStageLogs(ctx context.Context, req *pipedservice.ReportStageLogsRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogsResponse, error)
+	ReportStageLogsFromLastCheckpoint(ctx context.Context, in *pipedservice.ReportStageLogsFromLastCheckpointRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogsFromLastCheckpointResponse, error)
 }
 
 // Register registers all handling of this service into the specified gRPC server.
@@ -39,10 +47,11 @@ func (a *PluginAPI) Register(server *grpc.Server) {
 	service.RegisterPluginServiceServer(server, a)
 }
 
-func NewPluginAPI(cfg *config.PipedSpec, logger *zap.Logger) *PluginAPI {
+func NewPluginAPI(cfg *config.PipedSpec, apiClient apiClient, logger *zap.Logger) *PluginAPI {
 	return &PluginAPI{
-		cfg:    cfg,
-		Logger: logger.Named("plugin-api"),
+		cfg:       cfg,
+		apiClient: apiClient,
+		Logger:    logger.Named("plugin-api"),
 	}
 }
 
@@ -69,6 +78,43 @@ func (a *PluginAPI) DecryptSecret(ctx context.Context, req *service.DecryptSecre
 	return &service.DecryptSecretResponse{
 		DecryptedSecret: decrypted,
 	}, nil
+}
+
+func (a *PluginAPI) ReportStageLogs(ctx context.Context, req *service.ReportStageLogsRequest) (*service.ReportStageLogsResponse, error) {
+	_, err := a.apiClient.ReportStageLogs(ctx, &pipedservice.ReportStageLogsRequest{
+		DeploymentId: req.DeploymentId,
+		StageId:      req.StageId,
+		RetriedCount: req.RetriedCount,
+		Blocks:       req.Blocks,
+	})
+	if err != nil {
+		a.Logger.Error("failed to report stage logs",
+			zap.String("deploymentID", req.DeploymentId),
+			zap.String("stageID", req.StageId),
+			zap.Error(err))
+		return nil, err
+	}
+
+	return &service.ReportStageLogsResponse{}, nil
+}
+
+func (a *PluginAPI) ReportStageLogsFromLastCheckpoint(ctx context.Context, req *service.ReportStageLogsFromLastCheckpointRequest) (*service.ReportStageLogsFromLastCheckpointResponse, error) {
+	_, err := a.apiClient.ReportStageLogsFromLastCheckpoint(ctx, &pipedservice.ReportStageLogsFromLastCheckpointRequest{
+		DeploymentId: req.DeploymentId,
+		StageId:      req.StageId,
+		RetriedCount: req.RetriedCount,
+		Blocks:       req.Blocks,
+		Completed:    req.Completed,
+	})
+	if err != nil {
+		a.Logger.Error("failed to report stage logs from last checkpoint",
+			zap.String("deploymentID", req.DeploymentId),
+			zap.String("stageID", req.StageId),
+			zap.Error(err))
+		return nil, err
+	}
+
+	return &service.ReportStageLogsFromLastCheckpointResponse{}, nil
 }
 
 func initializeSecretDecrypter(sm *config.SecretManagement) (crypto.Decrypter, error) {
