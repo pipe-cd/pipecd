@@ -271,6 +271,13 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 		text = md.Summary
 		generateDeploymentEventData(md.Deployment, md.MentionedAccounts, md.MentionedGroups)
 
+	case model.NotificationEventType_EVENT_DEPLOYMENT_STARTED:
+		md := event.Metadata.(*model.NotificationEventDeploymentStarted)
+		md.MentionedAccounts = append(md.MentionedAccounts, s.config.MentionedAccounts...)
+		md.MentionedGroups = append(md.MentionedGroups, s.config.MentionedGroups...)
+		title = fmt.Sprintf("Deployment for %q was started", md.Deployment.ApplicationName)
+		generateDeploymentEventData(md.Deployment, md.MentionedAccounts, md.MentionedGroups)
+
 	case model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL:
 		md := event.Metadata.(*model.NotificationEventDeploymentWaitApproval)
 		md.MentionedAccounts = append(md.MentionedAccounts, s.config.MentionedAccounts...)
