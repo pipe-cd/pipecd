@@ -421,17 +421,29 @@ func checkImageChange(ns diff.Nodes) (string, bool) {
 	return desc, true
 }
 
+// checkReplicasChange checks if the replicas field is changed.
 func checkReplicasChange(ns diff.Nodes) (before, after string, changed bool) {
 	const replicasQuery = `^spec\.replicas$`
 	node, err := ns.FindOne(replicasQuery)
 	if err != nil {
-		return
+		// not found or unknown error
+		return "", "", false
 	}
 
 	before = node.StringX()
+	if node.TypeX == nil {
+		// The replicas field is not found in the old manifest.
+		before = ""
+	}
+
 	after = node.StringY()
+	if node.TypeY == nil {
+		// The replicas field is not found in the new manifest.
+		after = ""
+	}
+
 	changed = true
-	return
+	return before, after, changed
 }
 
 type containerImage struct {
