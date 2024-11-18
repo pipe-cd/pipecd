@@ -18,6 +18,7 @@ package grpc.piped.service;
 option go_package = "github.com/pipe-cd/pipecd/pkg/app/pipedv1/cmd/piped/service";
 
 import "validate/validate.proto";
+import "pkg/model/logblock.proto";
 
 // PluginService provides the ability to interact with plugins.
 service PluginService {
@@ -26,6 +27,10 @@ service PluginService {
     // InstallTool installs the given tool.
     // installed binary's filename becomes `name-version`.
     rpc InstallTool(InstallToolRequest) returns (InstallToolResponse) {}
+     // ReportStageLogs is used to save the log of a pipeline stage.
+    rpc ReportStageLogs(ReportStageLogsRequest) returns (ReportStageLogsResponse) {}
+    // ReportStageLogsFromLastCheckpoint is used to save the full logs from the most recently saved point.
+    rpc ReportStageLogsFromLastCheckpoint(ReportStageLogsFromLastCheckpointRequest) returns (ReportStageLogsFromLastCheckpointResponse) {}
 }
 
 message DecryptSecretRequest {
@@ -62,4 +67,25 @@ message InstallToolRequest {
 message InstallToolResponse {
     // Installed path of the tool.
     string installed_path = 1;
+}
+
+message ReportStageLogsRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string stage_id = 2 [(validate.rules).string.min_len = 1];
+    int32 retried_count = 3;
+    repeated model.LogBlock blocks = 4;
+}
+
+message ReportStageLogsResponse {
+}
+
+message ReportStageLogsFromLastCheckpointRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string stage_id = 2 [(validate.rules).string.min_len = 1];
+    int32 retried_count = 3;
+    repeated model.LogBlock blocks = 4;
+    bool completed = 5;
+}
+
+message ReportStageLogsFromLastCheckpointResponse {
 }

@@ -20,6 +20,7 @@ Below is the list of supporting event names and their groups.
 |-|-|-|-|
 | DEPLOYMENT_TRIGGERED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |  |
 | DEPLOYMENT_PLANNED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |  |
+| DEPLOYMENT_STARTED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |  |
 | DEPLOYMENT_APPROVED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |  |
 | DEPLOYMENT_WAIT_APPROVAL | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |  |
 | DEPLOYMENT_ROLLING_BACK | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" disabled></p> | PipeCD sends a notification when a deployment is completed, while it does not send a notification when a deployment status changes to DEPLOYMENT_ROLLING_BACK because it is not a completion status. See [#4547](https://github.com/pipe-cd/pipecd/issues/4547) |

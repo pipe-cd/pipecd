@@ -29,7 +29,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor"
 	registry "github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor/registry"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
@@ -44,7 +43,6 @@ type scheduler struct {
 	executorRegistry registry.Registry
 	apiClient        apiClient
 	gitClient        gitClient
-	logPersister     logpersister.Persister
 	metadataStore    metadatastore.MetadataStore
 	notifier         notifier
 	logger           *zap.Logger
@@ -75,7 +73,6 @@ func newScheduler(
 	workingDir string,
 	apiClient apiClient,
 	gitClient gitClient,
-	lp logpersister.Persister,
 	notifier notifier,
 	logger *zap.Logger,
 	tracerProvider trace.TracerProvider,
@@ -94,7 +91,6 @@ func newScheduler(
 		executorRegistry:     registry.DefaultRegistry(),
 		apiClient:            apiClient,
 		gitClient:            gitClient,
-		logPersister:         lp,
 		metadataStore:        metadatastore.NewMetadataStore(apiClient, d),
 		notifier:             notifier,
 		doneDeploymentStatus: d.Status,
@@ -190,6 +186,21 @@ func (s *scheduler) Run(ctx context.Context) error {
 			return err
 		}
 		controllermetrics.UpdateDeploymentStatus(s.deployment, model.DeploymentStatus_DEPLOYMENT_RUNNING)
+
+		// notify the deployment started event
+		users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_STARTED)
+		if err != nil {
+			s.logger.Error("failed to get the list of users or groups", zap.Error(err))
+		}
+
+		s.notifier.Notify(model.NotificationEvent{
+			Type: model.NotificationEventType_EVENT_DEPLOYMENT_STARTED,
+			Metadata: &model.NotificationEventDeploymentStarted{
+				Deployment:        s.deployment,
+				MentionedAccounts: users,
+				MentionedGroups:   groups,
+			},
+		})
 	}
 
 	var (
@@ -451,7 +462,6 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 	var (
 		ctx            = sig.Context()
 		originalStatus = ps.Status
-		lp             = s.logPersister.StageLogPersister(s.deployment.Id, ps.Id)
 	)
 	defer func() {
 		// When the piped has been terminated (PS kill) while the stage is still running
@@ -459,7 +469,6 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		if !finalStatus.IsCompleted() && sig.Terminated() {
 			return
 		}
-		lp.Complete(time.Minute)
 	}()
 
 	// Check whether to execute the script rollback stage or not.
@@ -500,7 +509,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 	}
 
 	if !stageConfigFound {
-		lp.Error("Unable to find the stage configuration")
+		s.logger.Error("Unable to find the stage configuration")
 		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
 			s.logger.Error("failed to report stage status", zap.Error(err))
 		}
@@ -513,7 +522,6 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		Deployment:   s.deployment,
 		TargetDS:     s.targetDS,  // TODO: prepare this
 		RunningDS:    s.runningDS, // TODO: prepare this
-		LogPersister: lp,
 		Logger:       s.logger,
 	}
 
@@ -521,7 +529,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 	ex, ok := executorFactory(input)
 	if !ok {
 		err := fmt.Errorf("no registered executor for stage %s", ps.Name)
-		lp.Error(err.Error())
+		s.logger.Error(err.Error())
 		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
 		return model.StageStatus_STAGE_FAILURE
 	}

@@ -33,16 +33,6 @@ type Executor interface {
 
 type Factory func(in Input) Executor
 
-type LogPersister interface {
-	Write(log []byte) (int, error)
-	Info(log string)
-	Infof(format string, a ...interface{})
-	Success(log string)
-	Successf(format string, a ...interface{})
-	Error(log string)
-	Errorf(format string, a ...interface{})
-}
-
 type GitClient interface {
 	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
 }
@@ -55,7 +45,6 @@ type Input struct {
 	TargetDS *deployment.DeploymentSource
 	// Deploy source at running commit
 	RunningDS    *deployment.DeploymentSource
-	LogPersister LogPersister
 	Logger       *zap.Logger
 }
 
