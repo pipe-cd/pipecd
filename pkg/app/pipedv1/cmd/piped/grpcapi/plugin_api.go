@@ -17,6 +17,7 @@ package grpcapi
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/cmd/piped/service"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
@@ -34,7 +35,8 @@ type PluginAPI struct {
 	cfg       *config.PipedSpec
 	apiClient apiClient
 
-	Logger *zap.Logger
+	toolRegistry *toolRegistry
+	Logger       *zap.Logger
 }
 
 type apiClient interface {
@@ -47,12 +49,18 @@ func (a *PluginAPI) Register(server *grpc.Server) {
 	service.RegisterPluginServiceServer(server, a)
 }
 
-func NewPluginAPI(cfg *config.PipedSpec, apiClient apiClient, logger *zap.Logger) *PluginAPI {
-	return &PluginAPI{
-		cfg:       cfg,
-		apiClient: apiClient,
-		Logger:    logger.Named("plugin-api"),
+func NewPluginAPI(cfg *config.PipedSpec, apiClient apiClient, toolsDir string, logger *zap.Logger) (*PluginAPI, error) {
+	toolRegistry, err := newToolRegistry(toolsDir, os.TempDir())
+	if err != nil {
+		return nil, fmt.Errorf("failed to create tool registry: %w", err)
 	}
+
+	return &PluginAPI{
+		cfg:          cfg,
+		apiClient:    apiClient,
+		toolRegistry: toolRegistry,
+		Logger:       logger.Named("plugin-api"),
+	}, nil
 }
 
 func (a *PluginAPI) DecryptSecret(ctx context.Context, req *service.DecryptSecretRequest) (*service.DecryptSecretResponse, error) {
@@ -77,6 +85,22 @@ func (a *PluginAPI) DecryptSecret(ctx context.Context, req *service.DecryptSecre
 
 	return &service.DecryptSecretResponse{
 		DecryptedSecret: decrypted,
+	}, nil
+}
+
+// InstallTool installs the given tool.
+// installed binary's filename becomes `name-version`.
+func (a *PluginAPI) InstallTool(ctx context.Context, req *service.InstallToolRequest) (*service.InstallToolResponse, error) {
+	p, err := a.toolRegistry.InstallTool(ctx, req.GetName(), req.GetVersion(), req.GetInstallScript())
+	if err != nil {
+		a.Logger.Error("failed to install tool",
+			zap.String("name", req.GetName()),
+			zap.String("version", req.GetVersion()),
+			zap.Error(err))
+		return nil, err
+	}
+	return &service.InstallToolResponse{
+		InstalledPath: p,
 	}, nil
 }
 
