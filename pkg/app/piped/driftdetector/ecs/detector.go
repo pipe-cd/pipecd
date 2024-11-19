@@ -236,6 +236,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 //   - taskDefinition.ContainerDefinitions[].PortMappings[].HostPort
 //
 // TODO: Maybe we should check diff of following fields when not set in the head manifests in some way. Currently they are ignored:
+//   - service.DeploymentConfiguration
 //   - service.PlatformVersion
 //   - service.RoleArn
 func ignoreParameters(liveManifests provider.ECSManifests, headManifests provider.ECSManifests) (live, head provider.ECSManifests) {
@@ -262,10 +263,7 @@ func ignoreParameters(liveManifests provider.ECSManifests, headManifests provide
 		liveTask.Revision = 0 // TODO: Find a way to compare the revision if possible.
 		liveTask.TaskDefinitionArn = nil
 		for i := range liveTask.ContainerDefinitions {
-			// Sort the live environment variables by name.
-			envs := slices.Clone(liveTask.ContainerDefinitions[i].Environment)
-			envs = sortKeyPairs(envs)
-			liveTask.ContainerDefinitions[i].Environment = envs
+			liveTask.ContainerDefinitions[i].Environment = sortKeyPairs(liveTask.ContainerDefinitions[i].Environment)
 
 			for j := range liveTask.ContainerDefinitions[i].PortMappings {
 				// We ignore diff of HostPort because it has several default values. See https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_ContainerDefinition.html#ECS-Type-ContainerDefinition-portMappings.
@@ -305,7 +303,6 @@ func ignoreParameters(liveManifests provider.ECSManifests, headManifests provide
 		liveService.NetworkConfiguration = &types.NetworkConfiguration{AwsvpcConfiguration: &awsvpcCfg}
 	}
 
-	// Ignore the diff of DeploymentConfiguration if it's not specified.
 	if headService.DeploymentConfiguration == nil {
 		liveService.DeploymentConfiguration = nil
 	}
@@ -328,10 +325,7 @@ func ignoreParameters(liveManifests provider.ECSManifests, headManifests provide
 			cd.Essential = aws.Bool(true)
 		}
 
-		// Sort the head environment variables by name.
-		envs := slices.Clone(cd.Environment)
-		envs = sortKeyPairs(envs)
-		cd.Environment = envs
+		cd.Environment = sortKeyPairs(cd.Environment)
 
 		cd.PortMappings = slices.Clone(cd.PortMappings)
 		for j := range cd.PortMappings {
@@ -499,8 +493,7 @@ func ignoreAutoScalingDiff(r *provider.DiffResult) bool {
 }
 
 func sortKeyPairs(kps []types.KeyValuePair) []types.KeyValuePair {
-	sorted := make([]types.KeyValuePair, len(kps))
-	copy(sorted, kps)
+	sorted := slices.Clone(kps)
 	sort.Slice(sorted, func(i, j int) bool {
 		return *sorted[i].Name < *sorted[j].Name
 	})
