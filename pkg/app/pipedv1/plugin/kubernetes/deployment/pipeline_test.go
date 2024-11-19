@@ -18,8 +18,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 func TestBuildQuickSyncPipeline(t *testing.T) {
@@ -37,16 +38,15 @@ func TestBuildQuickSyncPipeline(t *testing.T) {
 			autoRollback: false,
 			expected: []*model.PipelineStage{
 				{
-					Id:         PredefinedStageK8sSync,
-					Name:       StageK8sSync.String(),
-					Desc:       "Sync by applying all manifests",
-					Index:      0,
-					Predefined: true,
-					Visible:    true,
-					Status:     model.StageStatus_STAGE_NOT_STARTED_YET,
-					Metadata:   nil,
-					CreatedAt:  now.Unix(),
-					UpdatedAt:  now.Unix(),
+					Id:        PredefinedStageK8sSync,
+					Name:      StageK8sSync.String(),
+					Desc:      "Sync by applying all manifests",
+					Index:     0,
+					Rollback:  false,
+					Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
+					Metadata:  nil,
+					CreatedAt: now.Unix(),
+					UpdatedAt: now.Unix(),
 				},
 			},
 		},
@@ -55,26 +55,24 @@ func TestBuildQuickSyncPipeline(t *testing.T) {
 			autoRollback: true,
 			expected: []*model.PipelineStage{
 				{
-					Id:         PredefinedStageK8sSync,
-					Name:       StageK8sSync.String(),
-					Desc:       "Sync by applying all manifests",
-					Index:      0,
-					Predefined: true,
-					Visible:    true,
-					Status:     model.StageStatus_STAGE_NOT_STARTED_YET,
-					Metadata:   nil,
-					CreatedAt:  now.Unix(),
-					UpdatedAt:  now.Unix(),
+					Id:        PredefinedStageK8sSync,
+					Name:      StageK8sSync.String(),
+					Desc:      "Sync by applying all manifests",
+					Index:     0,
+					Rollback:  false,
+					Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
+					Metadata:  nil,
+					CreatedAt: now.Unix(),
+					UpdatedAt: now.Unix(),
 				},
 				{
-					Id:         PredefinedStageRollback,
-					Name:       StageK8sRollback.String(),
-					Desc:       "Rollback the deployment",
-					Predefined: true,
-					Visible:    false,
-					Status:     model.StageStatus_STAGE_NOT_STARTED_YET,
-					CreatedAt:  now.Unix(),
-					UpdatedAt:  now.Unix(),
+					Id:        PredefinedStageRollback,
+					Name:      StageK8sRollback.String(),
+					Desc:      "Rollback the deployment",
+					Rollback:  true,
+					Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
+					CreatedAt: now.Unix(),
+					UpdatedAt: now.Unix(),
 				},
 			},
 		},
