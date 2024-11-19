@@ -49,6 +49,10 @@ func TestIgnoreParameters(t *testing.T) {
 					SecurityGroups: []string{"1_test-sg", "0_test-sg"},
 				},
 			},
+			DeploymentConfiguration: &types.DeploymentConfiguration{
+				MaximumPercent:        aws.Int32(200),
+				MinimumHealthyPercent: aws.Int32(100),
+			},
 			PendingCount:    3,
 			PlatformFamily:  aws.String("LINUX"),
 			PlatformVersion: aws.String("1.4"),
@@ -104,6 +108,16 @@ func TestIgnoreParameters(t *testing.T) {
 							Protocol: types.TransportProtocolTcp,
 						},
 					},
+					Environment: []types.KeyValuePair{
+						{
+							Name:  aws.String("A-TEST-ENV"),
+							Value: aws.String("a-test-value"),
+						},
+						{
+							Name:  aws.String("B-TEST-ENV"),
+							Value: aws.String("b-test-value"),
+						},
+					},
 				},
 				{
 					Essential: aws.Bool(true),
@@ -148,6 +162,16 @@ func TestIgnoreParameters(t *testing.T) {
 						// HostPort will be ignored
 						// Protocol will be automatically tcp
 						{}, {},
+					},
+					Environment: []types.KeyValuePair{
+						{
+							Name:  aws.String("B-TEST-ENV"),
+							Value: aws.String("b-test-value"),
+						},
+						{
+							Name:  aws.String("A-TEST-ENV"),
+							Value: aws.String("a-test-value"),
+						},
 					},
 				},
 				{
