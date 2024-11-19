@@ -4180,7 +4180,53 @@ func (m *RegisterEventRequest) validate(all bool) error {
 		}
 	}
 
-	// no validation rules for Contexts
+	{
+		sorted_keys := make([]string, len(m.GetContexts()))
+		i := 0
+		for key := range m.GetContexts() {
+			sorted_keys[i] = key
+			i++
+		}
+		sort.Slice(sorted_keys, func(i, j int) bool { return sorted_keys[i] < sorted_keys[j] })
+		for _, key := range sorted_keys {
+			val := m.GetContexts()[key]
+			_ = val
+
+			if utf8.RuneCountInString(key) < 1 {
+				err := RegisterEventRequestValidationError{
+					field:  fmt.Sprintf("Contexts[%v]", key),
+					reason: "value length must be at least 1 runes",
+				}
+				if !all {
+					return err
+				}
+				errors = append(errors, err)
+			}
+
+			if !_RegisterEventRequest_Contexts_Pattern.MatchString(key) {
+				err := RegisterEventRequestValidationError{
+					field:  fmt.Sprintf("Contexts[%v]", key),
+					reason: "value does not match regex pattern \"^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$\"",
+				}
+				if !all {
+					return err
+				}
+				errors = append(errors, err)
+			}
+
+			if utf8.RuneCountInString(val) < 1 {
+				err := RegisterEventRequestValidationError{
+					field:  fmt.Sprintf("Contexts[%v]", key),
+					reason: "value length must be at least 1 runes",
+				}
+				if !all {
+					return err
+				}
+				errors = append(errors, err)
+			}
+
+		}
+	}
 
 	if len(errors) > 0 {
 		return RegisterEventRequestMultiError(errors)
@@ -4261,6 +4307,8 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = RegisterEventRequestValidationError{}
+
+var _RegisterEventRequest_Contexts_Pattern = regexp.MustCompile("^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$")
 
 // Validate checks the field values on RegisterEventResponse with the rules
 // defined in the proto definition for this message. If any rules are

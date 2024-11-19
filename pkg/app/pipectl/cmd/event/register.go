@@ -17,6 +17,7 @@ package event
 import (
 	"context"
 	"fmt"
+	"regexp"
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -24,6 +25,8 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/apiservice"
 	"github.com/pipe-cd/pipecd/pkg/cli"
 )
+
+var eventKeyFormatRegex = regexp.MustCompile(`^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$`)
 
 type register struct {
 	root *command
@@ -47,7 +50,7 @@ func newRegisterCommand(root *command) *cobra.Command {
 	cmd.Flags().StringVar(&r.name, "name", r.name, "The name of event.")
 	cmd.Flags().StringVar(&r.data, "data", r.data, "The string value of event data.")
 	cmd.Flags().StringToStringVar(&r.labels, "labels", r.labels, "The list of labels for event. Format: key=value,key2=value2")
-	cmd.Flags().StringToStringVar(&r.contexts, "contexts", r.contexts, "The list of the values for the event context. Format: key=value,key2=value2")
+	cmd.Flags().StringToStringVar(&r.contexts, "contexts", r.contexts, "The list of the values for the event context. Format: key=value,key2=value2. The Key Format is [a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$")
 
 	cmd.MarkFlagRequired("name")
 	cmd.MarkFlagRequired("data")
@@ -56,6 +59,10 @@ func newRegisterCommand(root *command) *cobra.Command {
 }
 
 func (r *register) run(ctx context.Context, input cli.Input) error {
+	if err := r.validateEventContexts(); err != nil {
+		return fmt.Errorf("failed to validate event context: %w", err)
+	}
+
 	cli, err := r.root.clientOptions.NewClient(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to initialize client: %w", err)
@@ -77,5 +84,15 @@ func (r *register) run(ctx context.Context, input cli.Input) error {
 	input.Logger.Info("Successfully registered event",
 		zap.String("id", res.EventId),
 	)
+	return nil
+}
+
+func (r *register) validateEventContexts() error {
+	for key := range r.contexts {
+		if !eventKeyFormatRegex.MatchString(key) {
+			return fmt.Errorf("invalid format key '%s', should be ^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$", key)
+		}
+	}
+
 	return nil
 }

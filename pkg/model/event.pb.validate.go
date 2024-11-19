@@ -126,7 +126,32 @@ func (m *Event) validate(all bool) error {
 
 	// no validation rules for StatusDescription
 
-	// no validation rules for Contexts
+	{
+		sorted_keys := make([]string, len(m.GetContexts()))
+		i := 0
+		for key := range m.GetContexts() {
+			sorted_keys[i] = key
+			i++
+		}
+		sort.Slice(sorted_keys, func(i, j int) bool { return sorted_keys[i] < sorted_keys[j] })
+		for _, key := range sorted_keys {
+			val := m.GetContexts()[key]
+			_ = val
+
+			if !_Event_Contexts_Pattern.MatchString(key) {
+				err := EventValidationError{
+					field:  fmt.Sprintf("Contexts[%v]", key),
+					reason: "value does not match regex pattern \"^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$\"",
+				}
+				if !all {
+					return err
+				}
+				errors = append(errors, err)
+			}
+
+			// no validation rules for Contexts[key]
+		}
+	}
 
 	// no validation rules for HandledAt
 
@@ -228,3 +253,5 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = EventValidationError{}
+
+var _Event_Contexts_Pattern = regexp.MustCompile("^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$")
