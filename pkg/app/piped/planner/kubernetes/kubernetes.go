@@ -426,24 +426,25 @@ func checkReplicasChange(ns diff.Nodes) (before, after string, changed bool) {
 	const replicasQuery = `^spec\.replicas$`
 	node, err := ns.FindOne(replicasQuery)
 	if err != nil {
-		// not found or unknown error
+		// no difference between the before and after manifests, or unknown error occurred.
 		return "", "", false
 	}
 
-	before = node.StringX()
 	if node.TypeX == nil {
-		// The replicas field is not found in the old manifest.
-		before = ""
+		// The replicas field is not found in the before manifest.
+		// There is difference between the before and after manifests, So it means the replicas field is added in the after manifest.
+		// So the replicas field in the before manifest is nil, we should return "<nil>" as the before value.
+		return "<nil>", node.StringY(), true
 	}
 
-	after = node.StringY()
 	if node.TypeY == nil {
-		// The replicas field is not found in the new manifest.
-		after = ""
+		// The replicas field is not found in the after manifest.
+		// There is difference between the before and after manifests, So it means the replicas field is removed in the after manifest.
+		// So the replicas field in the after manifest is nil, we should return "<nil>" as the after value.
+		return node.StringX(), "<nil>", true
 	}
 
-	changed = true
-	return before, after, changed
+	return node.StringX(), node.StringY(), true
 }
 
 type containerImage struct {

@@ -1345,7 +1345,7 @@ spec:
         image: nginx:1.19.3
 `,
 			wantBefore:  "3",
-			wantAfter:   "",
+			wantAfter:   "<nil>",
 			wantChanged: true,
 		},
 		{
@@ -1375,7 +1375,7 @@ spec:
       - name: nginx
         image: nginx:1.19.3
 `,
-			wantBefore:  "",
+			wantBefore:  "<nil>",
 			wantAfter:   "3",
 			wantChanged: true,
 		},
