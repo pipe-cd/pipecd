@@ -15,9 +15,12 @@
 package deployment
 
 import (
+	"fmt"
+	"slices"
 	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 )
 
 type Stage string
@@ -113,6 +116,50 @@ func buildQuickSyncPipeline(autoRollback bool, now time.Time) []*model.PipelineS
 			Id:        s.GetId(),
 			Name:      s.GetName(),
 			Desc:      s.GetDesc(),
+			Rollback:  s.GetRollback(),
+			Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
+			CreatedAt: now.Unix(),
+			UpdatedAt: now.Unix(),
+		})
+	}
+
+	return out
+}
+
+func buildPipelineStages(stages []*deployment.BuildPipelineSyncStagesRequest_StageConfig, autoRollback bool, now time.Time) []*model.PipelineStage {
+	out := make([]*model.PipelineStage, 0, len(stages)+1)
+
+	for _, s := range stages {
+		id := s.GetId()
+		if id == "" {
+			id = fmt.Sprintf("stage-%d", s.GetIndex())
+		}
+		stage := &model.PipelineStage{
+			Id:        id,
+			Name:      s.GetName(),
+			Desc:      s.GetDesc(),
+			Index:     s.GetIndex(),
+			Rollback:  false,
+			Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
+			CreatedAt: now.Unix(),
+			UpdatedAt: now.Unix(),
+		}
+		out = append(out, stage)
+	}
+
+	if autoRollback {
+		// we set the index of the rollback stage to the minimum index of all stages.
+		minIndex := slices.MinFunc(stages, func(a, b *deployment.BuildPipelineSyncStagesRequest_StageConfig) int {
+			return int(a.GetIndex() - b.GetIndex())
+		}).GetIndex()
+
+		s, _ := GetPredefinedStage(PredefinedStageRollback)
+		// we copy the predefined stage to avoid modifying the original one.
+		out = append(out, &model.PipelineStage{
+			Id:        s.GetId(),
+			Name:      s.GetName(),
+			Desc:      s.GetDesc(),
+			Index:     minIndex,
 			Rollback:  s.GetRollback(),
 			Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
 			CreatedAt: now.Unix(),

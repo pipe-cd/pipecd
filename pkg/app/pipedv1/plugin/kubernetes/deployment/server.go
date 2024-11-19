@@ -88,8 +88,12 @@ func (a *DeploymentService) DetermineVersions(ctx context.Context, request *depl
 }
 
 // BuildPipelineSyncStages implements deployment.DeploymentServiceServer.
-func (a *DeploymentService) BuildPipelineSyncStages(context.Context, *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
-	panic("unimplemented")
+func (a *DeploymentService) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
+	now := time.Now()
+	stages := buildPipelineStages(request.GetStages(), request.GetRollback(), now)
+	return &deployment.BuildPipelineSyncStagesResponse{
+		Stages: stages,
+	}, nil
 }
 
 // BuildQuickSyncStages implements deployment.DeploymentServiceServer.
