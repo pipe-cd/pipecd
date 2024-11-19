@@ -45,8 +45,8 @@ type templateValues struct {
 	Os      string
 }
 
-func newToolRegistry(toolsDir, tmpDir string) (*toolRegistry, error) {
-	tmpDir, err := os.MkdirTemp(tmpDir, "tool-registry")
+func newToolRegistry(toolsDir string) (*toolRegistry, error) {
+	tmpDir, err := os.MkdirTemp("", "tool-registry")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create a temporary directory: %w", err)
 	}

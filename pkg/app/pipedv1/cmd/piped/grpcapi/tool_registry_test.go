@@ -31,10 +31,8 @@ func TestToolRegistry_InstallTool(t *testing.T) {
 
 	toolsDir, err := os.MkdirTemp(t.TempDir(), "tools")
 	require.NoError(t, err)
-	tmpDir, err := os.MkdirTemp(t.TempDir(), "tmp")
-	require.NoError(t, err)
 
-	registry, err := newToolRegistry(toolsDir, tmpDir)
+	registry, err := newToolRegistry(toolsDir)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -90,10 +88,8 @@ func TestToolRegistry_InstallTool_CacheHit(t *testing.T) {
 
 	toolsDir, err := os.MkdirTemp(t.TempDir(), "tools")
 	require.NoError(t, err)
-	tmpDir, err := os.MkdirTemp(t.TempDir(), "tmp")
-	require.NoError(t, err)
 
-	registry, err := newToolRegistry(toolsDir, tmpDir)
+	registry, err := newToolRegistry(toolsDir)
 	require.NoError(t, err)
 
 	toolName := "tool-a"

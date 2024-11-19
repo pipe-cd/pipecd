@@ -17,7 +17,6 @@ package grpcapi
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/cmd/piped/service"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
@@ -50,7 +49,7 @@ func (a *PluginAPI) Register(server *grpc.Server) {
 }
 
 func NewPluginAPI(cfg *config.PipedSpec, apiClient apiClient, toolsDir string, logger *zap.Logger) (*PluginAPI, error) {
-	toolRegistry, err := newToolRegistry(toolsDir, os.TempDir())
+	toolRegistry, err := newToolRegistry(toolsDir)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create tool registry: %w", err)
 	}
