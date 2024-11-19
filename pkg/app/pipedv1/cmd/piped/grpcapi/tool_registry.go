@@ -22,15 +22,18 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"sync"
 	"text/template"
 
 	"golang.org/x/sync/singleflight"
 )
 
 type toolRegistry struct {
-	toolsDir string
-	tmpDir   string
-	group    singleflight.Group
+	toolsDir       string
+	tmpDir         string
+	installedTools map[string]struct{}
+	mu             sync.Mutex
+	group          singleflight.Group
 }
 
 type templateValues struct {
@@ -48,8 +51,9 @@ func newToolRegistry(toolsDir, tmpDir string) (*toolRegistry, error) {
 		return nil, fmt.Errorf("failed to create a temporary directory: %w", err)
 	}
 	return &toolRegistry{
-		toolsDir: toolsDir,
-		tmpDir:   tmpDir,
+		toolsDir:       toolsDir,
+		tmpDir:         tmpDir,
+		installedTools: make(map[string]struct{}),
 	}, nil
 }
 
@@ -76,6 +80,16 @@ func (r *toolRegistry) InstallTool(ctx context.Context, name, version, script st
 }
 
 func (r *toolRegistry) installTool(ctx context.Context, name, version, script string) (path string, err error) {
+	target := fmt.Sprintf("%s-%s", name, version)
+	toolPath := filepath.Join(r.toolsDir, target)
+
+	r.mu.Lock()
+	_, ok := r.installedTools[target]
+	r.mu.Unlock()
+	if ok {
+		return toolPath, nil
+	}
+
 	outPath, err := r.outPath()
 	if err != nil {
 		return "", err
@@ -113,8 +127,7 @@ func (r *toolRegistry) installTool(ctx context.Context, name, version, script st
 		return "", err
 	}
 
-	target := filepath.Join(r.toolsDir, fmt.Sprintf("%s-%s", name, version))
-	if out, err := exec.CommandContext(ctx, "/bin/sh", "-c", "mv "+outPath+" "+target).CombinedOutput(); err != nil {
+	if out, err := exec.CommandContext(ctx, "/bin/sh", "-c", "mv "+outPath+" "+toolPath).CombinedOutput(); err != nil {
 		return "", fmt.Errorf("failed to move the installed binary: %w, output: %s", err, string(out))
 	}
 
@@ -122,7 +135,11 @@ func (r *toolRegistry) installTool(ctx context.Context, name, version, script st
 		return "", err
 	}
 
-	return target, nil
+	r.mu.Lock()
+	r.installedTools[target] = struct{}{}
+	r.mu.Unlock()
+
+	return toolPath, nil
 }
 
 func (r *toolRegistry) Close() error {

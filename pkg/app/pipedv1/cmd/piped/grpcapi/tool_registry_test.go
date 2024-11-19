@@ -34,10 +34,8 @@ func TestToolRegistry_InstallTool(t *testing.T) {
 	tmpDir, err := os.MkdirTemp(t.TempDir(), "tmp")
 	require.NoError(t, err)
 
-	registry := &toolRegistry{
-		toolsDir: toolsDir,
-		tmpDir:   tmpDir,
-	}
+	registry, err := newToolRegistry(toolsDir, tmpDir)
+	require.NoError(t, err)
 
 	tests := []struct {
 		name        string
@@ -83,4 +81,34 @@ func TestToolRegistry_InstallTool(t *testing.T) {
 			assert.True(t, strings.HasSuffix(out, tt.toolName+"-"+tt.toolVersion), "output path should have the tool {name}-{version}, got %s", out)
 		})
 	}
+}
+
+func TestToolRegistry_InstallTool_CacheHit(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	toolsDir, err := os.MkdirTemp(t.TempDir(), "tools")
+	require.NoError(t, err)
+	tmpDir, err := os.MkdirTemp(t.TempDir(), "tmp")
+	require.NoError(t, err)
+
+	registry, err := newToolRegistry(toolsDir, tmpDir)
+	require.NoError(t, err)
+
+	toolName := "tool-a"
+	toolVersion := "1.0.0"
+
+	out, err := registry.InstallTool(ctx, toolName, toolVersion, "touch {{ .OutPath }}") // success
+	require.NoError(t, err)
+	assert.FileExists(t, out)
+
+	// cache hit and should not run the script, so success again even if the script is invalid.
+	// because the cache key is constructed from the tool name and version.
+	// we don't expect the script to be changed between the first and second calls, it's just for testing.
+	out2, err := registry.InstallTool(ctx, toolName, toolVersion, "exit 1")
+	require.NoError(t, err)
+	assert.FileExists(t, out2)
+
+	assert.Equal(t, out, out2)
 }
