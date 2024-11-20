@@ -55,7 +55,7 @@ type LoaderInput struct {
 
 	HelmVersion string
 	HelmChart   *config.InputHelmChart
-	HelmOptions  *config.InputHelmOptions
+	HelmOptions *config.InputHelmOptions
 
 	Logger *zap.Logger
 
