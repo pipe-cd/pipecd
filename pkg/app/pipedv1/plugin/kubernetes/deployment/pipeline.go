@@ -16,11 +16,11 @@ package deployment
 
 import (
 	"fmt"
-	"strings"
+	"slices"
 	"time"
 
-	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 )
 
 type Stage string
@@ -71,82 +71,99 @@ const (
 	PredefinedStageRollback = "K8sRollback"
 )
 
-var predefinedStages = map[string]config.PipelineStage{
+var predefinedStages = map[string]*model.PipelineStage{
 	PredefinedStageK8sSync: {
-		ID: PredefinedStageK8sSync,
-		// TODO: we have to change config.PipelineStage.Name to string before releasing pipedv1?
-		// because we don't want to define stages at piped side. We want to define them at the plugin side.
-		// Or plugins should use the model.Stage type instead of string or some defined type.
-		Name: model.Stage(StageK8sSync),
-		Desc: "Sync by applying all manifests",
+		Id:       PredefinedStageK8sSync,
+		Name:     string(StageK8sSync),
+		Desc:     "Sync by applying all manifests",
+		Rollback: false,
 	},
 	PredefinedStageRollback: {
-		ID:   PredefinedStageRollback,
-		Name: model.Stage(StageK8sRollback),
-		Desc: "Rollback the deployment",
+		Id:       PredefinedStageRollback,
+		Name:     string(StageK8sRollback),
+		Desc:     "Rollback the deployment",
+		Rollback: true,
 	},
 }
 
 // GetPredefinedStage finds and returns the predefined stage for the given id.
-func GetPredefinedStage(id string) (config.PipelineStage, bool) {
+func GetPredefinedStage(id string) (*model.PipelineStage, bool) {
 	stage, ok := predefinedStages[id]
 	return stage, ok
 }
 
-// MakeInitialStageMetadata makes the initial metadata for the given state configuration.
-func MakeInitialStageMetadata(cfg config.PipelineStage) map[string]string {
-	switch cfg.Name {
-	case model.StageWaitApproval:
-		return map[string]string{
-			"Approvers": strings.Join(cfg.WaitApprovalStageOptions.Approvers, ","),
-		}
-	default:
-		return nil
-	}
-}
-
 func buildQuickSyncPipeline(autoRollback bool, now time.Time) []*model.PipelineStage {
-	var (
-		preStageID = ""
-		stage, _   = GetPredefinedStage(PredefinedStageK8sSync)
-		stages     = []config.PipelineStage{stage}
-		out        = make([]*model.PipelineStage, 0, len(stages))
+	out := make([]*model.PipelineStage, 0, 2)
+
+	stage, _ := GetPredefinedStage(PredefinedStageK8sSync)
+	// we copy the predefined stage to avoid modifying the original one.
+	out = append(out, &model.PipelineStage{
+		Id:        stage.GetId(),
+		Name:      stage.GetName(),
+		Desc:      stage.GetDesc(),
+		Rollback:  stage.GetRollback(),
+		Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
+		Metadata:  nil,
+		CreatedAt: now.Unix(),
+		UpdatedAt: now.Unix(),
+	},
 	)
 
-	for i, s := range stages {
-		id := s.ID
+	if autoRollback {
+		s, _ := GetPredefinedStage(PredefinedStageRollback)
+		// we copy the predefined stage to avoid modifying the original one.
+		out = append(out, &model.PipelineStage{
+			Id:        s.GetId(),
+			Name:      s.GetName(),
+			Desc:      s.GetDesc(),
+			Rollback:  s.GetRollback(),
+			Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
+			CreatedAt: now.Unix(),
+			UpdatedAt: now.Unix(),
+		})
+	}
+
+	return out
+}
+
+func buildPipelineStages(stages []*deployment.BuildPipelineSyncStagesRequest_StageConfig, autoRollback bool, now time.Time) []*model.PipelineStage {
+	out := make([]*model.PipelineStage, 0, len(stages)+1)
+
+	for _, s := range stages {
+		id := s.GetId()
 		if id == "" {
-			id = fmt.Sprintf("kubernetes-stage-%d", i)
+			id = fmt.Sprintf("stage-%d", s.GetIndex())
 		}
 		stage := &model.PipelineStage{
-			Id:         id,
-			Name:       s.Name.String(),
-			Desc:       s.Desc,
-			Predefined: true,
-			Visible:    true,
-			Status:     model.StageStatus_STAGE_NOT_STARTED_YET,
-			Metadata:   MakeInitialStageMetadata(s),
-			CreatedAt:  now.Unix(),
-			UpdatedAt:  now.Unix(),
+			Id:        id,
+			Name:      s.GetName(),
+			Desc:      s.GetDesc(),
+			Index:     s.GetIndex(),
+			Rollback:  false,
+			Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
+			CreatedAt: now.Unix(),
+			UpdatedAt: now.Unix(),
 		}
-		if preStageID != "" {
-			stage.Requires = []string{preStageID}
-		}
-		preStageID = id
 		out = append(out, stage)
 	}
 
 	if autoRollback {
+		// we set the index of the rollback stage to the minimum index of all stages.
+		minIndex := slices.MinFunc(stages, func(a, b *deployment.BuildPipelineSyncStagesRequest_StageConfig) int {
+			return int(a.GetIndex() - b.GetIndex())
+		}).GetIndex()
+
 		s, _ := GetPredefinedStage(PredefinedStageRollback)
+		// we copy the predefined stage to avoid modifying the original one.
 		out = append(out, &model.PipelineStage{
-			Id:         s.ID,
-			Name:       s.Name.String(),
-			Desc:       s.Desc,
-			Predefined: true,
-			Visible:    false,
-			Status:     model.StageStatus_STAGE_NOT_STARTED_YET,
-			CreatedAt:  now.Unix(),
-			UpdatedAt:  now.Unix(),
+			Id:        s.GetId(),
+			Name:      s.GetName(),
+			Desc:      s.GetDesc(),
+			Index:     minIndex,
+			Rollback:  s.GetRollback(),
+			Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
+			CreatedAt: now.Unix(),
+			UpdatedAt: now.Unix(),
 		})
 	}
 
