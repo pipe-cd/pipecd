@@ -20,6 +20,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"sort"
 	"strings"
 	"time"
 
@@ -235,6 +236,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 //   - taskDefinition.ContainerDefinitions[].PortMappings[].HostPort
 //
 // TODO: Maybe we should check diff of following fields when not set in the head manifests in some way. Currently they are ignored:
+//   - service.DeploymentConfiguration
 //   - service.PlatformVersion
 //   - service.RoleArn
 func ignoreParameters(liveManifests provider.ECSManifests, headManifests provider.ECSManifests) (live, head provider.ECSManifests) {
@@ -261,6 +263,8 @@ func ignoreParameters(liveManifests provider.ECSManifests, headManifests provide
 		liveTask.Revision = 0 // TODO: Find a way to compare the revision if possible.
 		liveTask.TaskDefinitionArn = nil
 		for i := range liveTask.ContainerDefinitions {
+			liveTask.ContainerDefinitions[i].Environment = sortKeyPairs(liveTask.ContainerDefinitions[i].Environment)
+
 			for j := range liveTask.ContainerDefinitions[i].PortMappings {
 				// We ignore diff of HostPort because it has several default values. See https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_ContainerDefinition.html#ECS-Type-ContainerDefinition-portMappings.
 				liveTask.ContainerDefinitions[i].PortMappings[j].HostPort = nil
@@ -299,6 +303,10 @@ func ignoreParameters(liveManifests provider.ECSManifests, headManifests provide
 		liveService.NetworkConfiguration = &types.NetworkConfiguration{AwsvpcConfiguration: &awsvpcCfg}
 	}
 
+	if headService.DeploymentConfiguration == nil {
+		liveService.DeploymentConfiguration = nil
+	}
+
 	// TODO: In order to check diff of the tags, we need to add pipecd-managed tags and sort.
 	liveService.Tags = nil
 	headService.Tags = nil
@@ -316,6 +324,9 @@ func ignoreParameters(liveManifests provider.ECSManifests, headManifests provide
 			// Essential is true by default. See https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_ContainerDefinition.html#ECS-Type-ContainerDefinition-es.
 			cd.Essential = aws.Bool(true)
 		}
+
+		cd.Environment = sortKeyPairs(cd.Environment)
+
 		cd.PortMappings = slices.Clone(cd.PortMappings)
 		for j := range cd.PortMappings {
 			pm := &cd.PortMappings[j]
@@ -479,4 +490,13 @@ func ignoreAutoScalingDiff(r *provider.DiffResult) bool {
 	return r.Diff.NumNodes() == 1 &&
 		r.New.ServiceDefinition.DesiredCount == 0 && // When desiredCount is 0 or not defined in the head manifest, autoscaling may be enabled.
 		r.Old.ServiceDefinition.DesiredCount != r.New.ServiceDefinition.DesiredCount
+}
+
+func sortKeyPairs(kps []types.KeyValuePair) []types.KeyValuePair {
+	sorted := slices.Clone(kps)
+	sort.Slice(sorted, func(i, j int) bool {
+		return *sorted[i].Name < *sorted[j].Name
+	})
+
+	return sorted
 }
