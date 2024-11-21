@@ -78,6 +78,17 @@ func (a *Application) ContainLabels(labels map[string]string) bool {
 	return true
 }
 
+func (a *Application) GetKindString() string {
+	// First, check the application is supported by the plugin architecture. It means that the kind is set to "Application".
+	// If so, return the kind from the labels.
+	if a.Kind == ApplicationKind_APPLICATION {
+		return a.Labels["kind"]
+	}
+
+	// For backward compatibility, return the kind as string
+	return a.Kind.String()
+}
+
 func (a *Application) IsOutOfSync() bool {
 	if a.SyncState == nil {
 		return false

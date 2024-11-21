@@ -98,6 +98,57 @@ func TestApplication_ContainLabels(t *testing.T) {
 	}
 }
 
+func TestGetKindString(t *testing.T) {
+	tests := []struct {
+		name     string
+		app      *Application
+		expected string
+	}{
+		{
+			name:     "Kubernetes Application",
+			app:      &Application{Kind: ApplicationKind_KUBERNETES},
+			expected: "KUBERNETES",
+		},
+		{
+			name:     "Terraform Application",
+			app:      &Application{Kind: ApplicationKind_TERRAFORM},
+			expected: "TERRAFORM",
+		},
+		{
+			name:     "Lambda Application",
+			app:      &Application{Kind: ApplicationKind_LAMBDA},
+			expected: "LAMBDA",
+		},
+		{
+			name:     "CloudRun Application",
+			app:      &Application{Kind: ApplicationKind_CLOUDRUN},
+			expected: "CLOUDRUN",
+		},
+		{
+			name:     "ECS Application",
+			app:      &Application{Kind: ApplicationKind_ECS},
+			expected: "ECS",
+		},
+		{
+			name:     "Application",
+			app:      &Application{Kind: ApplicationKind_APPLICATION, Labels: map[string]string{"kind": "KUBERNETES"}},
+			expected: "KUBERNETES",
+		},
+		{
+			name:     "Application with no kind label",
+			app:      &Application{Kind: ApplicationKind_APPLICATION, Labels: map[string]string{}},
+			expected: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			actual := tt.app.GetKindString()
+			assert.Equal(t, tt.expected, actual)
+		})
+	}
+}
+
 func TestCompatiblePlatformProviderType(t *testing.T) {
 	tests := []struct {
 		name     string
