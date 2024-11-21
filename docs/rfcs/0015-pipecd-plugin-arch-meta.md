@@ -167,6 +167,8 @@ enum ApplicationKind {
 }
 ```
 
+**Application**
+
 ```golang
 func (a * Application) GetKind() string {
 	// First, check the application is supported by the plugin architecture. It means that the kind is set to "Application".
@@ -180,6 +182,7 @@ func (a * Application) GetKind() string {
 }
 ```
 
+**Deployment**
 ```golang
 func (d *Deployment) GetKind() string {
 	// First, check the application is supported by the plugin architecture. It means that the kind is set to "Application".
