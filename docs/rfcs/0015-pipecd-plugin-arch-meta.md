@@ -141,6 +141,58 @@ spec:
   name: myApp
 ```
 
+For the builtin plugins, we define 5 labels as string.
+- KUBERNETES
+- ECS
+- LAMBDA
+- CLOUDRUN
+- TERRAFORM
+
+#### For the backward compatibility
+
+We need to support both before and after creating plugin architecture for now.
+So, I propose the way to decide the application kind like this.
+
+- Define `APPLICATION` as `ApplicationKind`
+- Add new method to decide the actual kind for Application and Deployment.
+
+```proto
+enum ApplicationKind {
+    KUBERNETES = 0;
+    TERRAFORM = 1;
+    LAMBDA = 3;
+    CLOUDRUN = 4;
+    ECS = 5;
+    APPLICATION = 6; <- new! 
+}
+```
+
+```golang
+func (a * Application) GetKind() string {
+	// First, check the application is supported by the plugin architecture. It means that the kind is set to "Application".
+	// If so, return the kind from the labels.
+	if a.Kind == ApplicationKind_Application {
+		return a.Labels["kind"]
+	}
+
+	// For backward compatibility, return the kind as string
+	return a.Kind.String()
+}
+```
+
+```golang
+func (d *Deployment) GetKind() string {
+	// First, check the application is supported by the plugin architecture. It means that the kind is set to "Application".
+	// If so, return the kind from the labels.
+	if d.Kind == ApplicationKind_Application {
+		return d.Labels["kind"]
+	}
+
+	// For backward compatibility, return the kind as string
+	return d.Kind.String()
+}
+```
+
 The control plane will be updated so that it can accept platform provider from pipedv0 and deployTargets from pipedv1.
 
 ### The protocol
