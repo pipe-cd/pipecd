@@ -214,6 +214,17 @@ func (d *Deployment) SetUpdatedAt(t int64) {
 	d.UpdatedAt = t
 }
 
+func (d *Deployment) GetKindString() string {
+	// First, check the application is supported by the plugin architecture. It means that the kind is set to "Application".
+	// If so, return the kind from the labels.
+	if d.Kind == ApplicationKind_APPLICATION {
+		return d.Labels["kind"]
+	}
+
+	// For backward compatibility, return the kind as string
+	return d.Kind.String()
+}
+
 // Implement sort.Interface for PipelineStages.
 type PipelineStages []*PipelineStage
 

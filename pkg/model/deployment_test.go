@@ -658,3 +658,54 @@ func TestSortPipelineStagesByIndex(t *testing.T) {
 		{Index: 4},
 	}, stages)
 }
+
+func TestDeployment_GetKindString(t *testing.T) {
+	tests := []struct {
+		name       string
+		deployment *Deployment
+		expected   string
+	}{
+		{
+			name:       "Kubernetes Deployment",
+			deployment: &Deployment{Kind: ApplicationKind_KUBERNETES},
+			expected:   "KUBERNETES",
+		},
+		{
+			name:       "Terraform Deployment",
+			deployment: &Deployment{Kind: ApplicationKind_TERRAFORM},
+			expected:   "TERRAFORM",
+		},
+		{
+			name:       "Lambda Deployment",
+			deployment: &Deployment{Kind: ApplicationKind_LAMBDA},
+			expected:   "LAMBDA",
+		},
+		{
+			name:       "CloudRun Deployment",
+			deployment: &Deployment{Kind: ApplicationKind_CLOUDRUN},
+			expected:   "CLOUDRUN",
+		},
+		{
+			name:       "ECS Deployment",
+			deployment: &Deployment{Kind: ApplicationKind_ECS},
+			expected:   "ECS",
+		},
+		{
+			name:       "Application",
+			deployment: &Deployment{Kind: ApplicationKind_APPLICATION, Labels: map[string]string{"kind": "KUBERNETES"}},
+			expected:   "KUBERNETES",
+		},
+		{
+			name:       "Application with no kind label",
+			deployment: &Deployment{Kind: ApplicationKind_APPLICATION, Labels: map[string]string{}},
+			expected:   "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			actual := tt.deployment.GetKindString()
+			assert.Equal(t, tt.expected, actual)
+		})
+	}
+}
