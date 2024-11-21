@@ -25,6 +25,7 @@ enum ApplicationKind {
     LAMBDA = 3;
     CLOUDRUN = 4;
     ECS = 5;
+    APPLICATION = 6;
 }
 
 enum RollbackKind {

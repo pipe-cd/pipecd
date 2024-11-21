@@ -155,6 +155,7 @@ export enum ApplicationKind {
   LAMBDA = 3,
   CLOUDRUN = 4,
   ECS = 5,
+  APPLICATION = 6,
 }
 export enum RollbackKind { 
   ROLLBACK_KUBERNETES = 0,

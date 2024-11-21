@@ -1160,7 +1160,8 @@ proto.model.ApplicationKind = {
   TERRAFORM: 1,
   LAMBDA: 3,
   CLOUDRUN: 4,
-  ECS: 5
+  ECS: 5,
+  APPLICATION: 6
 };
 
 /**
