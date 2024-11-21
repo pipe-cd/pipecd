@@ -31,6 +31,7 @@ As at this point, we have migration plan for platform related concepts in config
 
 Instead of Platform Provider, we plan to introduce the config for the plugin and define deployTargets.
 
+**piped config**
 ```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: Piped
@@ -46,6 +47,84 @@ spec:
           config: # depends on plugins
             masterURL: http://cluster-dev
             kubeConfigPath: ./kubeconfig-dev
+```
+
+```golang
+type PipedDeployTarget struct {
+	Name   string                     `json:"name"`
+	Labels map[string]string          `json:"labels,omitempty"`
+	Config json.RawMessage            `json:"config"`
+}
+```
+
+We also plan to deploy the app to multiple targets at once in a multicluster feature for k8s.
+So, we define `DeployTargets` as an array in Application and Deployment.
+
+**Application**
+
+```proto
+message Application {
+    reserved 3;
+    ...
+    // TODO: Add validation for this field.
+    string platform_provider = 15;
+    // 
+    repeated string deploy_targets = 16;
+    ...
+}
+```
+
+**Deployment**
+
+```proto
+message Deployment {
+    reserved 4;
+    ...
+    // The name of platform provider where to deploy this application.
+    // This must be one of the provider names registered in the piped.
+    string platform_provider = 11;
+    
+    repeated string deploy_targets = 12;
+}
+```
+
+#### For the backward compatibility
+
+During the migration, there might be both platform providers and deploy targets in the piped config.
+So we need to convert the platform providers to deploy targets internally.
+
+**Refer the Platform Provider or Deploy Target**
+
+- If the ApplicationKind is `Application`, just use `DeployTarget`
+- If the ApplicationKind is old one, convert `PlatformProvider` to `DeployTarget`
+
+This is a draft function.
+```golang
+func (s *PipedSpec) FindDeployTarget(name string, t model.ApplicationKind) (*PipedDeployTarget, bool) {
+	// First, check the application is supported by the plugin architecture. It means that the kind is set to "Application".
+	// If not, the deploy target is the platform provider.
+	// For backward compatibility, the deploy target is the platform provider.
+	if t != model.ApplicationKind_APPLICATION {
+		p, found := s.FindPlatformProvider(name, t)
+		if !found {
+			return &PipedDeployTarget{}, false
+		}
+		return &PipedDeployTarget{
+				Name:   p.Name,
+				Labels: p.Labels,
+				Config: p.Config,
+			}, true
+	}
+
+	// If the application is supported by the plugin architecture, the deploy target is the deploy target.
+	for _, dt := range s.DeployTargets {
+		if dt.Name == name {
+			return dt, true
+		}
+	}
+
+	return &PipedDeployTarget{}, false
+}
 ```
 
 **For kind**
