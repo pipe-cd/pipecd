@@ -18,7 +18,9 @@ import (
 	"context"
 	"time"
 
+	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/regexpool"
 
@@ -69,8 +71,20 @@ func (a *DeploymentService) DetermineStrategy(context.Context, *deployment.Deter
 
 // DetermineVersions implements deployment.DeploymentServiceServer.
 func (a *DeploymentService) DetermineVersions(ctx context.Context, request *deployment.DetermineVersionsRequest) (*deployment.DetermineVersionsResponse, error) {
+	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](request.GetInput().GetTargetDeploymentSource().GetApplicationConfig())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
 	manifests, err := a.Loader.LoadManifests(ctx, provider.LoaderInput{
-		// TODO: fill the input
+		AppName:          request.GetInput().GetDeployment().GetApplicationName(),
+		AppDir:           request.GetInput().GetTargetDeploymentSource().GetApplicationDirectory(),
+		ConfigFilename:   request.GetInput().GetTargetDeploymentSource().GetApplicationConfigFilename(),
+		Manifests:        cfg.Spec.Input.Manifests,
+		Namespace:        cfg.Spec.Input.Namespace,
+		TemplatingMethod: provider.TemplatingMethodNone, // TODO: Implement detection of templating method or add it to the config spec.
+
+		// TODO: Define other fields for LoaderInput
 	})
 
 	if err != nil {
