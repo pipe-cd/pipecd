@@ -19,7 +19,7 @@ At the time this RFC is writen, there was serveral issues created on PipeCD main
 
 After this line in the documentation, pipedv1 is a mention to plugin-arch piped, while pipedv0 is a mention to up-to-now piped.
 
-### The approach
+## The approach
 
 We agreed that pipedv0 will be supported as least until the end of 2025, which mean we have to find a way to ensure our single PipeCD control plane can work with both pipedv0 and pipedv1 at the same time. That leads to this issue at [pipecd/issues/5252](https://github.com/pipe-cd/pipecd/issues/5252).
 
@@ -27,7 +27,7 @@ The key point of the control plane supports both pipedv0 and v1 approach is: pla
 
 As at this point, we have migration plan for platform related concepts in configuration as below
 
-**For platform provider**
+### For platform provider
 
 Instead of Platform Provider, we plan to introduce the config for the plugin and define deployTargets.
 
@@ -127,7 +127,7 @@ func (s *PipedSpec) FindDeployTarget(name string, t model.ApplicationKind) (*Pip
 }
 ```
 
-**For kind**
+### For kind
 
 Instead of Kind, we plan to introduce the label to represent the application kind.
 
