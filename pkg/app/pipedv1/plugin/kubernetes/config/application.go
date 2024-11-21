@@ -20,3 +20,28 @@ type K8sResourceReference struct {
 	Kind string `json:"kind"`
 	Name string `json:"name"`
 }
+
+// KubernetesApplicationSpec represents an application configuration for Kubernetes application.
+type KubernetesApplicationSpec struct {
+	// Input for Kubernetes deployment such as kubectl version, helm version, manifests filter...
+	Input KubernetesDeploymentInput `json:"input"`
+
+	// TODO: Define fields for KubernetesApplicationSpec.
+}
+
+func (s *KubernetesApplicationSpec) Validate() error {
+	// TODO: Validate KubernetesApplicationSpec fields.
+	return nil
+}
+
+// KubernetesDeploymentInput represents needed input for triggering a Kubernetes deployment.
+type KubernetesDeploymentInput struct {
+	// List of manifest files in the application directory used to deploy.
+	// Empty means all manifest files in the directory will be used.
+	Manifests []string `json:"manifests,omitempty"`
+
+	// The namespace where manifests will be applied.
+	Namespace string `json:"namespace,omitempty"`
+
+	// TODO: Define fields for KubernetesDeploymentInput.
+}
