@@ -96,6 +96,13 @@ export const dummyApps: Record<ApplicationKind, Application.AsObject> = {
     kind: ApplicationKind.ECS,
     platformProvider: "ecs-default",
   },
+  [ApplicationKind.APPLICATION]: {
+    ...dummyApplication,
+    id: randomUUID(),
+    name: "Application App",
+    kind: ApplicationKind.APPLICATION,
+    platformProvider: "application-default",
+  },
 };
 
 function createAppSyncStateFromObject(

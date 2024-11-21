@@ -98,6 +98,11 @@ export const dummyLiveStates: Record<ApplicationKind, ApplicationLiveState> = {
     applicationId: dummyApps[ApplicationKind.ECS].id,
     kind: ApplicationKind.ECS,
   },
+  [ApplicationKind.APPLICATION]: {
+    ...dummyApplicationLiveState,
+    applicationId: dummyApps[ApplicationKind.APPLICATION].id,
+    kind: ApplicationKind.APPLICATION,
+  },
 };
 
 function createKubernetesResourceStateFromObject(
