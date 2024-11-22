@@ -188,6 +188,14 @@ func TestRenderPrimitiveValue(t *testing.T) {
 			expected: "1.25",
 		},
 		{
+			name: "pointer to int",
+			value: func() *int {
+				v := 1
+				return &v
+			}(),
+			expected: "1",
+		},
+		{
 			name: "map",
 			value: map[string]int{
 				"one": 1,

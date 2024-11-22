@@ -193,3 +193,29 @@ func checkImageChange(ns diff.Nodes) (string, bool) {
 	desc := fmt.Sprintf("Sync progressively because of updating %s", strings.Join(images, ", "))
 	return desc, true
 }
+
+// checkReplicasChange checks if the replicas field is changed.
+func checkReplicasChange(ns diff.Nodes) (before, after string, changed bool) {
+	const replicasQuery = `^spec\.replicas$`
+	node, err := ns.FindOne(replicasQuery)
+	if err != nil {
+		// no difference between the before and after manifests, or unknown error occurred.
+		return "", "", false
+	}
+
+	if node.TypeX == nil {
+		// The replicas field is not found in the before manifest.
+		// There is difference between the before and after manifests, So it means the replicas field is added in the after manifest.
+		// So the replicas field in the before manifest is nil, we should return "<nil>" as the before value.
+		return "<nil>", node.StringY(), true
+	}
+
+	if node.TypeY == nil {
+		// The replicas field is not found in the after manifest.
+		// There is difference between the before and after manifests, So it means the replicas field is removed in the after manifest.
+		// So the replicas field in the after manifest is nil, we should return "<nil>" as the after value.
+		return node.StringX(), "<nil>", true
+	}
+
+	return node.StringX(), node.StringY(), true
+}
