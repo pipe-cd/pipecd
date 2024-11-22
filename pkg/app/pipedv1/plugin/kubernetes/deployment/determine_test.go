@@ -1396,3 +1396,487 @@ spec:
 		})
 	}
 }
+
+func TestDetermineStrategy(t *testing.T) {
+	tests := []struct {
+		name         string
+		olds         []string
+		news         []string
+		workloadRefs []config.K8sResourceReference
+		wantStrategy model.SyncStrategy
+		wantSummary  string
+	}{
+		{
+			name: "no old workloads",
+			olds: []string{},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			wantStrategy: model.SyncStrategy_QUICK_SYNC,
+			wantSummary:  "Quick sync by applying all manifests because it was unable to find the currently running workloads",
+		},
+		{
+			name: "no new workloads",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			news:         []string{},
+			wantStrategy: model.SyncStrategy_QUICK_SYNC,
+			wantSummary:  "Quick sync by applying all manifests because it was unable to find workloads in the new manifests",
+		},
+		{
+			name: "image updated",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.4
+`,
+			},
+			wantStrategy: model.SyncStrategy_PIPELINE,
+			wantSummary:  "Sync progressively because of updating image nginx from 1.19.3 to 1.19.4",
+		},
+		{
+			name: "configmap updated",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+  namespace: default
+data:
+  key: value
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+  namespace: default
+data:
+  key: new-value
+`,
+			},
+			wantStrategy: model.SyncStrategy_PIPELINE,
+			wantSummary:  "Sync progressively because ConfigMap my-config was updated",
+		},
+		{
+			name: "scaling",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 5
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			wantStrategy: model.SyncStrategy_QUICK_SYNC,
+			wantSummary:  "Quick sync to scale Deployment/nginx-deployment from 3 to 5",
+		},
+		{
+			name: "scaling nil to 1",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			wantStrategy: model.SyncStrategy_QUICK_SYNC,
+			wantSummary:  "Quick sync to scale Deployment/nginx-deployment from <nil> to 1",
+		},
+		{
+			name: "scaling 1 to nil",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			wantStrategy: model.SyncStrategy_QUICK_SYNC,
+			wantSummary:  "Quick sync to scale Deployment/nginx-deployment from 1 to <nil>",
+		},
+		{
+			name: "multiple updated scaling",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 3
+  template:
+      spec:
+        containers:
+        - name: nginx
+          image: nginx:1.19.3
+`,
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+spec:
+  replicas: 2
+  template:
+    spec:
+      containers:
+      - name: redis
+        image: redis:6.0.9
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 5
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+spec:
+  replicas: 4
+  template:
+    spec:
+      containers:
+      - name: redis
+        image: redis:6.0.9
+`,
+			},
+			wantStrategy: model.SyncStrategy_QUICK_SYNC,
+			wantSummary:  "Quick sync to scale Deployment/nginx-deployment from 3 to 5, Deployment/redis-deployment from 2 to 4",
+		},
+		{
+			name: "multiple updated image tags",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+      - name: redis
+        image: redis:6.0.9
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.4
+      - name: redis
+        image: redis:6.0.10
+`,
+			},
+			wantStrategy: model.SyncStrategy_PIPELINE,
+			wantSummary:  "Sync progressively because of updating image nginx from 1.19.3 to 1.19.4, image redis from 6.0.9 to 6.0.10",
+		},
+		{
+			name: "change order of containers",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+      - name: redis
+        image: redis:6.0.9
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis
+        image: redis:6.0.9
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			wantStrategy: model.SyncStrategy_PIPELINE,
+			wantSummary:  "Sync progressively because of updating image nginx:1.19.3 to redis:6.0.9, image redis:6.0.9 to nginx:1.19.3",
+		},
+		{
+			name: "workloadRef specified",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis
+        image: redis:6.0.9
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.4
+`,
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis
+        image: redis:6.0.10
+`,
+			},
+			workloadRefs: []config.K8sResourceReference{
+				{
+					Kind: "Deployment",
+					Name: "nginx-deployment",
+				},
+			},
+			wantStrategy: model.SyncStrategy_PIPELINE,
+			wantSummary:  "Sync progressively because of updating image nginx from 1.19.3 to 1.19.4",
+		},
+		{
+			name: "no changes",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			wantStrategy: model.SyncStrategy_QUICK_SYNC,
+			wantSummary:  "Quick sync by applying all manifests",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var oldManifests, newManifests []provider.Manifest
+			for _, data := range tt.olds {
+				oldManifests = append(oldManifests, mustParseManifests(t, strings.TrimSpace(data))...)
+			}
+			for _, data := range tt.news {
+				newManifests = append(newManifests, mustParseManifests(t, strings.TrimSpace(data))...)
+			}
+			logger := zap.NewNop()
+			gotStrategy, gotSummary := determineStrategy(oldManifests, newManifests, tt.workloadRefs, logger)
+			assert.Equal(t, tt.wantStrategy.String(), gotStrategy.String())
+			assert.Equal(t, tt.wantSummary, gotSummary)
+		})
+	}
+}
