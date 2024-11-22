@@ -14,6 +14,16 @@
 
 package provider
 
+import "errors"
+
+var (
+	ErrNotFound = errors.New("not found")
+)
+
 const (
-	AnnotationOrder = "pipecd.dev/order" // The order number of resource used to sort them before using.
+	LabelSyncReplace      = "pipecd.dev/sync-by-replace"       // Use replace instead of apply.
+	LabelForceSyncReplace = "pipecd.dev/force-sync-by-replace" // Use replace --force instead of apply.
+	AnnotationOrder       = "pipecd.dev/order"                 // The order number of resource used to sort them before using.
+
+	UseReplaceEnabled = "enabled"
 )
