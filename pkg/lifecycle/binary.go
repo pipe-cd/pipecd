@@ -26,8 +26,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/pipe-cd/pipecd/pkg/backoff"
 	"go.uber.org/zap"
+
+	"github.com/pipe-cd/pipecd/pkg/backoff"
 )
 
 const runBinaryRetryCount = 3
