@@ -39,6 +39,17 @@ type loader interface {
 	LoadManifests(ctx context.Context, input provider.LoaderInput) ([]provider.Manifest, error)
 }
 
+type applier interface {
+	// ApplyManifest does applying the given manifest.
+	ApplyManifest(ctx context.Context, manifest provider.Manifest) error
+	// CreateManifest does creating resource from given manifest.
+	CreateManifest(ctx context.Context, manifest provider.Manifest) error
+	// ReplaceManifest does replacing resource from given manifest.
+	ReplaceManifest(ctx context.Context, manifest provider.Manifest) error
+	// ForceReplaceManifest does force replacing resource from given manifest.
+	ForceReplaceManifest(ctx context.Context, manifest provider.Manifest) error
+}
+
 type DeploymentService struct {
 	deployment.UnimplementedDeploymentServiceServer
 
