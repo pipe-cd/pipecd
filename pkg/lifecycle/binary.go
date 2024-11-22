@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package launcher
+package lifecycle
 
 import (
 	"fmt"
@@ -28,13 +28,13 @@ import (
 	"go.uber.org/zap"
 )
 
-type command struct {
+type Command struct {
 	cmd       *exec.Cmd
 	stoppedCh chan struct{}
 	result    atomic.Pointer[error]
 }
 
-func (c *command) IsRunning() bool {
+func (c *Command) IsRunning() bool {
 	select {
 	case _, notClosed := <-c.stoppedCh:
 		return notClosed
@@ -43,7 +43,7 @@ func (c *command) IsRunning() bool {
 	}
 }
 
-func (c *command) GracefulStop(period time.Duration) error {
+func (c *Command) GracefulStop(period time.Duration) error {
 	// For graceful shutdown, we send SIGTERM signal to old Piped process
 	// and wait grace-period of time before force killing it.
 	c.cmd.Process.Signal(syscall.SIGTERM)
@@ -65,7 +65,7 @@ func (c *command) GracefulStop(period time.Duration) error {
 	}
 }
 
-func runBinary(execPath string, args []string) (*command, error) {
+func RunBinary(execPath string, args []string) (*Command, error) {
 	cmd := exec.Command(execPath, args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -75,7 +75,7 @@ func runBinary(execPath string, args []string) (*command, error) {
 		return nil, err
 	}
 
-	c := &command{
+	c := &Command{
 		cmd:       cmd,
 		stoppedCh: make(chan struct{}),
 		result:    atomic.Pointer[error]{},
@@ -89,9 +89,9 @@ func runBinary(execPath string, args []string) (*command, error) {
 	return c, nil
 }
 
-// downloadBinary downloads a file from the given URL into the specified path
+// DownloadBinary downloads a file from the given URL into the specified path
 // this also marks it executable and returns its full path.
-func downloadBinary(url, destDir, destFile string, logger *zap.Logger) (string, error) {
+func DownloadBinary(url, destDir, destFile string, logger *zap.Logger) (string, error) {
 	if err := os.MkdirAll(destDir, 0755); err != nil {
 		return "", fmt.Errorf("could not create directory %s (%w)", destDir, err)
 	}
@@ -119,7 +119,7 @@ func downloadBinary(url, destDir, destFile string, logger *zap.Logger) (string, 
 		}
 	}()
 
-	logger.Info(fmt.Sprintf("LAUNCHER: downloading %s...", url))
+	logger.Info("downloading binary", zap.String("url", url))
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {

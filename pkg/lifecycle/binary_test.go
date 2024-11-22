@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package launcher
+package lifecycle
 
 import (
 	"strconv"
@@ -40,7 +40,7 @@ func TestGracefulStopCommand(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			cmd, err := runBinary("sh", []string{"sleep", "1m"})
+			cmd, err := RunBinary("sh", []string{"sleep", "1m"})
 			require.NoError(t, err)
 			require.NotNil(t, cmd)
 
@@ -71,7 +71,7 @@ func TestGracefulStopCommandResult(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			cmd, err := runBinary("sh", []string{"-c", "exit " + strconv.Itoa(tc.exitCode)})
+			cmd, err := RunBinary("sh", []string{"-c", "exit " + strconv.Itoa(tc.exitCode)})
 			require.NoError(t, err)
 			require.NotNil(t, cmd)
 
