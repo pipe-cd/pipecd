@@ -15,6 +15,7 @@
 package lifecycle
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -25,8 +26,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/pipe-cd/pipecd/pkg/backoff"
 	"go.uber.org/zap"
 )
+
+const runBinaryRetryCount = 3
 
 type Command struct {
 	cmd       *exec.Cmd
@@ -66,27 +70,35 @@ func (c *Command) GracefulStop(period time.Duration) error {
 }
 
 func RunBinary(execPath string, args []string) (*Command, error) {
-	cmd := exec.Command(execPath, args...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd, err := backoff.NewRetry(runBinaryRetryCount, backoff.NewConstant(5*time.Second)).Do(context.Background(), func() (interface{}, error) {
+		cmd := exec.Command(execPath, args...)
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
 
-	if err := cmd.Start(); err != nil {
+		if err := cmd.Start(); err != nil {
+			return nil, err
+		}
+
+		c := &Command{
+			cmd:       cmd,
+			stoppedCh: make(chan struct{}),
+			result:    atomic.Pointer[error]{},
+		}
+		go func() {
+			err := cmd.Wait()
+			c.result.Store(&err)
+			close(c.stoppedCh)
+		}()
+
+		return c, nil
+	})
+
+	if err != nil {
 		return nil, err
 	}
 
-	c := &Command{
-		cmd:       cmd,
-		stoppedCh: make(chan struct{}),
-		result:    atomic.Pointer[error]{},
-	}
-	go func() {
-		err := cmd.Wait()
-		c.result.Store(&err)
-		close(c.stoppedCh)
-	}()
-
-	return c, nil
+	return cmd.(*Command), nil // The return type is always *Command.
 }
 
 // DownloadBinary downloads a file from the given URL into the specified path
