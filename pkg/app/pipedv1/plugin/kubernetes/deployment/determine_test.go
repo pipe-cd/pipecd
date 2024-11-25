@@ -1830,6 +1830,327 @@ spec:
 			wantSummary:  "Sync progressively because of updating image nginx from 1.19.3 to 1.19.4",
 		},
 		{
+			name: "workload spec.template.spec.containers.name changed",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx-new
+        image: nginx:1.19.3
+`,
+			},
+			wantStrategy: model.SyncStrategy_PIPELINE,
+			wantSummary:  "Sync progressively because pod template of workload nginx-deployment was changed",
+		},
+		{
+			name: "workload spec.template.spec.containers.resources changed",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+        resources:
+          limits:
+          cpu: "500m"
+          memory: "512Mi"
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+        resources:
+          limits:
+          cpu: "1"
+          memory: "1Gi"
+`,
+			},
+			wantStrategy: model.SyncStrategy_PIPELINE,
+			wantSummary:  "Sync progressively because pod template of workload nginx-deployment was changed",
+		},
+		{
+			name: "configmap deleted",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+  namespace: default
+data:
+  key: value
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			wantStrategy: model.SyncStrategy_PIPELINE,
+			wantSummary:  "Sync progressively because 1 configmap/secret deleted",
+		},
+		{
+			name: "secret deleted",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`, `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+  namespace: default
+data:
+  key: dmFsdWU=
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			wantStrategy: model.SyncStrategy_PIPELINE,
+			wantSummary:  "Sync progressively because 1 configmap/secret deleted",
+		},
+		{
+			name: "configmap added",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+  namespace: default
+data:
+  key: value
+`,
+			},
+			wantStrategy: model.SyncStrategy_PIPELINE,
+			wantSummary:  "Sync progressively because new 1 configmap/secret added",
+		},
+		{
+			name: "secret added",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`, `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+  namespace: default
+data:
+  key: dmFsdWU=
+`,
+			},
+			wantStrategy: model.SyncStrategy_PIPELINE,
+			wantSummary:  "Sync progressively because new 1 configmap/secret added",
+		},
+		{
+			name: "configmap deleted and added",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: old-config
+  namespace: default
+data:
+  key: old-value
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: new-config
+  namespace: default
+data:
+  key: new-value
+`,
+			},
+			wantStrategy: model.SyncStrategy_PIPELINE,
+			wantSummary:  "Sync progressively because ConfigMap old-config was deleted",
+		},
+		{
+			name: "namespace default specified and unspecified",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: default
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			wantStrategy: model.SyncStrategy_QUICK_SYNC,
+			wantSummary:  "Quick sync by applying all manifests",
+		},
+		{
 			name: "no changes",
 			olds: []string{
 				`
