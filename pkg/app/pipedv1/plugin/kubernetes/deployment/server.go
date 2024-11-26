@@ -21,6 +21,7 @@ import (
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
+	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/regexpool"
 
@@ -82,31 +83,13 @@ func (a *DeploymentService) DetermineStrategy(ctx context.Context, request *depl
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	runnings, err := a.Loader.LoadManifests(ctx, provider.LoaderInput{
-		AppName:          request.GetInput().GetDeployment().GetApplicationName(),
-		AppDir:           request.GetInput().GetRunningDeploymentSource().GetApplicationDirectory(),
-		ConfigFilename:   request.GetInput().GetRunningDeploymentSource().GetApplicationConfigFilename(),
-		Manifests:        cfg.Spec.Input.Manifests,
-		Namespace:        cfg.Spec.Input.Namespace,
-		TemplatingMethod: provider.TemplatingMethodNone, // TODO: Implement detection of templating method or add it to the config spec.
-
-		// TODO: Define other fields for LoaderInput
-	})
+	runnings, err := a.loadManifests(ctx, request.GetInput().GetDeployment(), cfg.Spec, request.GetInput().GetRunningDeploymentSource())
 
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	targets, err := a.Loader.LoadManifests(ctx, provider.LoaderInput{
-		AppName:          request.GetInput().GetDeployment().GetApplicationName(),
-		AppDir:           request.GetInput().GetTargetDeploymentSource().GetApplicationDirectory(),
-		ConfigFilename:   request.GetInput().GetTargetDeploymentSource().GetApplicationConfigFilename(),
-		Manifests:        cfg.Spec.Input.Manifests,
-		Namespace:        cfg.Spec.Input.Namespace,
-		TemplatingMethod: provider.TemplatingMethodNone, // TODO: Implement detection of templating method or add it to the config spec.
-
-		// TODO: Define other fields for LoaderInput
-	})
+	targets, err := a.loadManifests(ctx, request.GetInput().GetDeployment(), cfg.Spec, request.GetInput().GetTargetDeploymentSource())
 
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -128,16 +111,7 @@ func (a *DeploymentService) DetermineVersions(ctx context.Context, request *depl
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	manifests, err := a.Loader.LoadManifests(ctx, provider.LoaderInput{
-		AppName:          request.GetInput().GetDeployment().GetApplicationName(),
-		AppDir:           request.GetInput().GetTargetDeploymentSource().GetApplicationDirectory(),
-		ConfigFilename:   request.GetInput().GetTargetDeploymentSource().GetApplicationConfigFilename(),
-		Manifests:        cfg.Spec.Input.Manifests,
-		Namespace:        cfg.Spec.Input.Namespace,
-		TemplatingMethod: provider.TemplatingMethodNone, // TODO: Implement detection of templating method or add it to the config spec.
-
-		// TODO: Define other fields for LoaderInput
-	})
+	manifests, err := a.loadManifests(ctx, request.GetInput().GetDeployment(), cfg.Spec, request.GetInput().GetTargetDeploymentSource())
 
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -181,4 +155,23 @@ func (a *DeploymentService) FetchDefinedStages(context.Context, *deployment.Fetc
 	return &deployment.FetchDefinedStagesResponse{
 		Stages: stages,
 	}, nil
+}
+
+func (a *DeploymentService) loadManifests(ctx context.Context, deploy *model.Deployment, spec *kubeconfig.KubernetesApplicationSpec, deploymentSource *deployment.DeploymentSource) ([]provider.Manifest, error) {
+	manifests, err := a.Loader.LoadManifests(ctx, provider.LoaderInput{
+		AppName:          deploy.GetApplicationName(),
+		AppDir:           deploymentSource.GetApplicationDirectory(),
+		ConfigFilename:   deploymentSource.GetApplicationConfigFilename(),
+		Manifests:        spec.Input.Manifests,
+		Namespace:        spec.Input.Namespace,
+		TemplatingMethod: provider.TemplatingMethodNone, // TODO: Implement detection of templating method or add it to the config spec.
+
+		// TODO: Define other fields for LoaderInput
+	})
+
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return manifests, nil
 }
