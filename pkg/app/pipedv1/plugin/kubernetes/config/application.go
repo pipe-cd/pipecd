@@ -26,6 +26,15 @@ type KubernetesApplicationSpec struct {
 	// Input for Kubernetes deployment such as kubectl version, helm version, manifests filter...
 	Input KubernetesDeploymentInput `json:"input"`
 
+	// Which resources should be considered as the Workload of application.
+	// Empty means all Deployments.
+	// e.g.
+	// - kind: Deployment
+	//   name: deployment-name
+	// - kind: ReplicationController
+	//   name: replication-controller-name
+	Workloads []K8sResourceReference `json:"workloads"`
+
 	// TODO: Define fields for KubernetesApplicationSpec.
 }
 
