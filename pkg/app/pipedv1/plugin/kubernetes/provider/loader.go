@@ -29,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/yaml"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
@@ -52,6 +53,12 @@ type LoaderInput struct {
 	KustomizeVersion string
 	KustomizeOptions map[string]string
 
+	HelmVersion string
+	HelmChart   *config.InputHelmChart
+	HelmOptions *config.InputHelmOptions
+
+	Logger *zap.Logger
+
 	// TODO: define fields for LoaderInput.
 }
 
@@ -74,14 +81,19 @@ func (l *Loader) LoadManifests(ctx context.Context, input LoaderInput) (manifest
 
 	switch input.TemplatingMethod {
 	case TemplatingMethodHelm:
-		return nil, errors.New("not implemented yet")
+		data, err := l.templateHelmChart(ctx, input)
+		if err != nil {
+			return nil, fmt.Errorf("failed to template helm chart: %w", err)
+		}
+
+		return ParseManifests(data)
 	case TemplatingMethodKustomize:
 		kustomizePath, err := l.toolRegistry.Kustomize(ctx, input.KustomizeVersion)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get kustomize tool: %w", err)
 		}
 
-		k := NewKustomize(kustomizePath, zap.NewNop()) // TODO: pass logger
+		k := NewKustomize(kustomizePath, input.Logger)
 		data, err := k.Template(ctx, input.AppName, input.AppDir, input.KustomizeOptions)
 		if err != nil {
 			return nil, fmt.Errorf("failed to template kustomize manifests: %w", err)
@@ -120,6 +132,26 @@ func sortManifests(manifests []Manifest) {
 
 		return iIndex - jIndex
 	})
+}
+
+func (l *Loader) templateHelmChart(ctx context.Context, input LoaderInput) (string, error) {
+	helmPath, err := l.toolRegistry.Helm(ctx, input.HelmVersion)
+	if err != nil {
+		return "", fmt.Errorf("failed to get helm tool: %w", err)
+	}
+
+	h := NewHelm(helmPath, input.Logger)
+
+	switch {
+	case input.HelmChart.GitRemote != "":
+		return "", errors.New("not implemented yet")
+
+	case input.HelmChart.Repository != "":
+		return "", errors.New("not implemented yet")
+
+	default:
+		return h.TemplateLocalChart(ctx, input.AppName, input.AppDir, input.Namespace, input.HelmChart.Path, input.HelmOptions)
+	}
 }
 
 func LoadPlainYAMLManifests(dir string, names []string, configFilename string) ([]Manifest, error) {
