@@ -25,6 +25,12 @@ We agreed that pipedv0 will be supported as least until the end of 2025, which m
 
 The key point of the control plane supports both pipedv0 and v1 approach is: platform related concepts like platform provider and kind are remained on the data model (for pipedv0), but we don't adding logic based on those concepts anymore. Pipedv1 logic will be built only around the plugins.
 
+[draft] migration process.
+1. Update data for the pipedv1
+  - Add the label `kind` based on the current Application Kind to the Application.
+  - Add `deployTarget`  based on the current Application Platform Provider to the Application.
+2. update to pipedv1 (users can use existing application at the time)
+
 As at this point, we have migration plan for platform related concepts in configuration as below
 
 ### For platform provider
@@ -90,42 +96,8 @@ message Deployment {
 
 #### For the backward compatibility
 
-During the migration, there might be both platform providers and deploy targets in the piped config.
-So we need to convert the platform providers to deploy targets internally.
-
-**Refer the Platform Provider or Deploy Target**
-
-- If the ApplicationKind is `Application`, just use `DeployTarget`
-- If the ApplicationKind is old one, convert `PlatformProvider` to `DeployTarget`
-
-This is a draft function.
-```golang
-func (s *PipedSpec) FindDeployTarget(name string, t model.ApplicationKind) (*PipedDeployTarget, bool) {
-	// First, check the application is supported by the plugin architecture. It means that the kind is set to "Application".
-	// If not, the deploy target is the platform provider.
-	// For backward compatibility, the deploy target is the platform provider.
-	if t != model.ApplicationKind_APPLICATION {
-		p, found := s.FindPlatformProvider(name, t)
-		if !found {
-			return &PipedDeployTarget{}, false
-		}
-		return &PipedDeployTarget{
-				Name:   p.Name,
-				Labels: p.Labels,
-				Config: p.Config,
-			}, true
-	}
-
-	// If the application is supported by the plugin architecture, the deploy target is the deploy target.
-	for _, dt := range s.DeployTargets {
-		if dt.Name == name {
-			return dt, true
-		}
-	}
-
-	return &PipedDeployTarget{}, false
-}
-```
+Before updating the piped, users should migrate the current data on DB.
+The pipedv1 uses `Platform Provider` instead of `Deploy Target`.
 
 ### For kind
 
@@ -150,53 +122,8 @@ For the builtin plugins, we define 5 labels as string.
 
 #### For the backward compatibility
 
-We need to support both before and after creating plugin architecture for now.
-So, I propose the way to decide the application kind like this.
-
-- Define `APPLICATION` as `ApplicationKind`
-- Add new method to decide the actual kind for Application and Deployment.
-
-```proto
-enum ApplicationKind {
-    KUBERNETES = 0;
-    TERRAFORM = 1;
-    LAMBDA = 3;
-    CLOUDRUN = 4;
-    ECS = 5;
-    APPLICATION = 6; <- new! 
-}
-```
-
-**Application**
-
-```golang
-func (a * Application) GetKind() string {
-	// First, check the application is supported by the plugin architecture. It means that the kind is set to "Application".
-	// If so, return the kind from the labels.
-	if a.Kind == ApplicationKind_Application {
-		return a.Labels["kind"]
-	}
-
-	// For backward compatibility, return the kind as string
-	return a.Kind.String()
-}
-```
-
-**Deployment**
-```golang
-func (d *Deployment) GetKind() string {
-	// First, check the application is supported by the plugin architecture. It means that the kind is set to "Application".
-	// If so, return the kind from the labels.
-	if d.Kind == ApplicationKind_Application {
-		return d.Labels["kind"]
-	}
-
-	// For backward compatibility, return the kind as string
-	return d.Kind.String()
-}
-```
-
-The control plane will be updated so that it can accept platform provider from pipedv0 and deployTargets from pipedv1.
+Before updating the piped, users should migrate the current data on DB.
+The pipedv1 uses `Application.Labels["kind"]` instead of `Application.Kind`.
 
 ### The protocol
 
