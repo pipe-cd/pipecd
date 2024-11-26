@@ -170,7 +170,7 @@ func (a *DeploymentService) loadManifests(ctx context.Context, deploy *model.Dep
 	})
 
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, err
 	}
 
 	return manifests, nil
