@@ -27,26 +27,25 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor"
-	registry "github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor/registry"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 )
 
 // scheduler is a dedicated object for a specific deployment of a single application.
 type scheduler struct {
-	deployment       *model.Deployment
-	workingDir       string
-	executorRegistry registry.Registry
-	apiClient        apiClient
-	gitClient        gitClient
-	metadataStore    metadatastore.MetadataStore
-	notifier         notifier
-	logger           *zap.Logger
-	tracer           trace.Tracer
+	deployment *model.Deployment
+	workingDir string
+
+	stageBasedPluginsMap map[string]pluginapi.PluginClient
+
+	apiClient     apiClient
+	gitClient     gitClient
+	metadataStore metadatastore.MetadataStore
+	notifier      notifier
 
 	targetDS  *deployment.DeploymentSource
 	runningDS *deployment.DeploymentSource
@@ -58,6 +57,9 @@ type scheduler struct {
 	// when the stages can be executed concurrently.
 	stageStatuses            map[string]model.StageStatus
 	genericApplicationConfig *config.GenericApplicationSpec
+
+	logger *zap.Logger
+	tracer trace.Tracer
 
 	done                 atomic.Bool
 	doneTimestamp        time.Time
@@ -88,7 +90,7 @@ func newScheduler(
 	s := &scheduler{
 		deployment:           d,
 		workingDir:           workingDir,
-		executorRegistry:     registry.DefaultRegistry(),
+		stageBasedPluginsMap: make(map[string]pluginapi.PluginClient), // TODO: prepare this
 		apiClient:            apiClient,
 		gitClient:            gitClient,
 		metadataStore:        metadatastore.NewMetadataStore(apiClient, d),
@@ -211,31 +213,6 @@ func (s *scheduler) Run(ctx context.Context) error {
 	)
 	deploymentStatus = model.DeploymentStatus_DEPLOYMENT_SUCCESS
 
-	// repoCfg := config.PipedRepository{
-	// 	RepoID: s.deployment.GitPath.Repo.Id,
-	// 	Remote: s.deployment.GitPath.Repo.Remote,
-	// 	Branch: s.deployment.GitPath.Repo.Branch,
-	// }
-
-	// s.targetDSP = deploysource.NewProvider(
-	// 	filepath.Join(s.workingDir, "target-deploysource"),
-	// 	deploysource.NewGitSourceCloner(s.gitClient, repoCfg, "target", s.deployment.Trigger.Commit.Hash),
-	// 	*s.deployment.GitPath,
-	// 	nil,
-	// )
-
-	// if s.deployment.RunningCommitHash != "" {
-	// 	gp := *s.deployment.GitPath
-	// 	gp.ConfigFilename = s.deployment.RunningConfigFilename
-
-	// 	s.runningDSP = deploysource.NewProvider(
-	// 		filepath.Join(s.workingDir, "running-deploysource"),
-	// 		deploysource.NewGitSourceCloner(s.gitClient, repoCfg, "running", s.deployment.RunningCommitHash),
-	// 		gp,
-	// 		nil,
-	// 	)
-	// }
-
 	/// TODO: prepare the targetDS and runningDS
 	var targetDS *deployment.DeploymentSource
 	cfg, err := config.DecodeYAML[*config.GenericApplicationSpec](targetDS.GetApplicationConfig())
@@ -296,7 +273,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 
 		var (
 			result       model.StageStatus
-			sig, handler = executor.NewStopSignal()
+			sig, handler = NewStopSignal()
 			doneCh       = make(chan struct{})
 		)
 
@@ -309,9 +286,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 			))
 			defer span.End()
 
-			result = s.executeStage(sig, *ps, func(in executor.Input) (executor.Executor, bool) {
-				return s.executorRegistry.Executor(model.Stage(ps.Name), in)
-			})
+			result = s.executeStage(sig, ps)
 
 			switch result {
 			case model.StageStatus_STAGE_SUCCESS:
@@ -366,7 +341,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		if result == model.StageStatus_STAGE_FAILURE {
 			deploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
 			// The stage was failed because of timing out.
-			if sig.Signal() == executor.StopSignalTimeout {
+			if sig.Signal() == StopSignalTimeout {
 				statusReason = fmt.Sprintf("Timed out while executing stage %s", ps.Id)
 			} else {
 				statusReason = fmt.Sprintf("Failed while executing stage %s", ps.Id)
@@ -399,11 +374,11 @@ func (s *scheduler) Run(ctx context.Context) error {
 			for _, stage := range rollbackStages {
 				// Start running rollback stage.
 				var (
-					sig, handler = executor.NewStopSignal()
+					sig, handler = NewStopSignal()
 					doneCh       = make(chan struct{})
 				)
 				go func() {
-					rbs := *stage
+					rbs := stage
 					rbs.Requires = []string{lastStage.Id}
 
 					_, span := s.tracer.Start(ctx, rbs.Name, trace.WithAttributes(
@@ -414,9 +389,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 					))
 					defer span.End()
 
-					result := s.executeStage(sig, rbs, func(in executor.Input) (executor.Executor, bool) {
-						return s.executorRegistry.RollbackExecutor(s.deployment.Kind, in)
-					})
+					result := s.executeStage(sig, rbs)
 
 					switch result {
 					case model.StageStatus_STAGE_SUCCESS:
@@ -458,7 +431,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 }
 
 // executeStage finds the plugin for the given stage and execute.
-func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage, executorFactory func(executor.Input) (executor.Executor, bool)) (finalStatus model.StageStatus) {
+func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (finalStatus model.StageStatus) {
 	var (
 		ctx            = sig.Context()
 		originalStatus = ps.Status
@@ -497,17 +470,18 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		originalStatus = model.StageStatus_STAGE_RUNNING
 	}
 
-	// TODO: Check plugin which could handle the stage are available or not.
-
-	// Load the stage configuration.
-	var stageConfig config.PipelineStage
-	var stageConfigFound bool
-	if ps.Predefined {
-		// FIXME: stageConfig, stageConfigFound = pln.GetPredefinedStage(ps.Id)
-	} else {
-		stageConfig, stageConfigFound = s.genericApplicationConfig.GetStage(ps.Index)
+	// Find the executor plugin for this stage.
+	plugin, ok := s.stageBasedPluginsMap[ps.Name]
+	if !ok {
+		err := fmt.Errorf("no registered plugin that can perform for stage %s", ps.Name)
+		s.logger.Error(err.Error())
+		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
+		return model.StageStatus_STAGE_FAILURE
 	}
 
+	// Load the stage configuration.
+	// TODO: Check this works with pre-defined stages. (stages added to the pipeline without user-defined configuration)
+	stageConfig, stageConfigFound := s.genericApplicationConfig.GetStageByte(ps.Index)
 	if !stageConfigFound {
 		s.logger.Error("Unable to find the stage configuration")
 		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
@@ -516,26 +490,25 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	input := executor.Input{
-		Stage:        &ps,
-		StageConfig:  &stageConfig,
-		Deployment:   s.deployment,
-		TargetDS:     s.targetDS,  // TODO: prepare this
-		RunningDS:    s.runningDS, // TODO: prepare this
-		Logger:       s.logger,
-	}
-
-	// Find the executor for this stage.
-	ex, ok := executorFactory(input)
-	if !ok {
-		err := fmt.Errorf("no registered executor for stage %s", ps.Name)
-		s.logger.Error(err.Error())
+	// Start running executor.
+	res, err := plugin.ExecuteStage(sig.Context(), &deployment.ExecuteStageRequest{
+		Input: &deployment.ExecutePluginInput{
+			Deployment:              s.deployment,
+			Stage:                   ps,
+			StageConfig:             stageConfig,
+			RunningDeploymentSource: s.runningDS, // TODO: prepare this
+			TargetDeploymentSource:  s.targetDS,  // TODO: prepare this
+			// TODO: Prepare plugin config? should pass each time or one time on plugin start?
+		},
+	})
+	if err != nil {
+		s.logger.Error("failed to execute stage", zap.Error(err))
 		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	// Start running executor.
-	status := ex.Execute(sig)
+	// Determine the final status of the stage.
+	status := determineStageStatus(sig.Signal(), originalStatus, res.Status)
 
 	// Commit deployment state status in the following cases:
 	// - Apply state successfully.
@@ -556,6 +529,23 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 	// In case piped process got killed (Terminated signal occurred)
 	// the original state status will be returned.
 	return originalStatus
+}
+
+// determineStageStatus determines the final status of the stage based on the given stop signal.
+// Normal is the case when the stop signal is StopSignalNone.
+func determineStageStatus(sig StopSignalType, ori, got model.StageStatus) model.StageStatus {
+	switch sig {
+	case StopSignalNone:
+		return got
+	case StopSignalTerminate:
+		return ori
+	case StopSignalCancel:
+		return model.StageStatus_STAGE_CANCELLED
+	case StopSignalTimeout:
+		return model.StageStatus_STAGE_FAILURE
+	default:
+		return model.StageStatus_STAGE_FAILURE
+	}
 }
 
 func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, status model.StageStatus, requires []string) error {

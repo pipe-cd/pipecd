@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package executor
+package controller
 
 import (
 	"testing"
@@ -65,7 +65,7 @@ func TestDetermineStageStatus(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := DetermineStageStatus(tc.sig, tc.ori, tc.got)
+			got := determineStageStatus(tc.sig, tc.ori, tc.got)
 			assert.Equal(t, tc.expected, got)
 		})
 	}

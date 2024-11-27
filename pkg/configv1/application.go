@@ -165,6 +165,18 @@ func (s GenericApplicationSpec) GetStage(index int32) (PipelineStage, bool) {
 	return s.Pipeline.Stages[index], true
 }
 
+func (s GenericApplicationSpec) GetStageByte(index int32) ([]byte, bool) {
+	stage, ok := s.GetStage(index)
+	if !ok {
+		return nil, false
+	}
+	b, err := json.Marshal(stage)
+	if err != nil {
+		return nil, false
+	}
+	return b, true
+}
+
 // HasStage checks if the given stage is included in the pipeline.
 func (s GenericApplicationSpec) HasStage(stage model.Stage) bool {
 	if s.Pipeline == nil {
