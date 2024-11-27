@@ -25,13 +25,25 @@ We agreed that pipedv0 will be supported as least until the end of 2025, which m
 
 The key point of the control plane supports both pipedv0 and v1 approach is: platform related concepts like platform provider and kind are remained on the data model (for pipedv0), but we don't adding logic based on those concepts anymore. Pipedv1 logic will be built only around the plugins.
 
-[draft] migration process.
-1. Update data for the pipedv1
-  - Add the label `kind` based on the current Application Kind to the Application.
-  - Add `deployTarget`  based on the current Application Platform Provider to the Application.
-2. update to pipedv1 (users can use existing application at the time)
-
 As at this point, we have migration plan for platform related concepts in configuration as below
+
+### Migration process
+
+**Requirement**
+- No downtime
+- The timing of Piped updates can be freely decided by each Project's Piped administrator
+
+**Implementation Policy**
+- Pre-migrate the data so that pipedv1 can build logic using the newly added data
+
+**Ideas for Implementation**
+
+There are some ways to do migration for now.
+We will consider the way during the development.
+
+Ideas.
+1. Have users perform migration using commands like pipectl before updating to pipedv1
+2. Implement a migration worker on the ops side to update the application data regularly
 
 ### For platform provider
 
