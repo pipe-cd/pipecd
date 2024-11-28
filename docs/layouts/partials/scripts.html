@@ -18,3 +18,11 @@
 <script src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.Integrity }}" crossorigin="anonymous"></script>
 {{ end }}
 {{ partial "hooks/body-end.html" . }}
+
+{{/*  Enable rendering Mermaid diagrams. See https://gohugo.io/content-management/diagrams/#mermaid-diagrams.   */}}
+{{ if .Store.Get "hasMermaid" }}
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true });
+  </script>
+{{ end }}

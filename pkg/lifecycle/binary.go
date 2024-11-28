@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package launcher
+package lifecycle
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -26,15 +27,19 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+
+	"github.com/pipe-cd/pipecd/pkg/backoff"
 )
 
-type command struct {
+const runBinaryRetryCount = 3
+
+type Command struct {
 	cmd       *exec.Cmd
 	stoppedCh chan struct{}
 	result    atomic.Pointer[error]
 }
 
-func (c *command) IsRunning() bool {
+func (c *Command) IsRunning() bool {
 	select {
 	case _, notClosed := <-c.stoppedCh:
 		return notClosed
@@ -43,7 +48,7 @@ func (c *command) IsRunning() bool {
 	}
 }
 
-func (c *command) GracefulStop(period time.Duration) error {
+func (c *Command) GracefulStop(period time.Duration) error {
 	// For graceful shutdown, we send SIGTERM signal to old Piped process
 	// and wait grace-period of time before force killing it.
 	c.cmd.Process.Signal(syscall.SIGTERM)
@@ -65,33 +70,41 @@ func (c *command) GracefulStop(period time.Duration) error {
 	}
 }
 
-func runBinary(execPath string, args []string) (*command, error) {
-	cmd := exec.Command(execPath, args...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+func RunBinary(execPath string, args []string) (*Command, error) {
+	cmd, err := backoff.NewRetry(runBinaryRetryCount, backoff.NewConstant(5*time.Second)).Do(context.Background(), func() (interface{}, error) {
+		cmd := exec.Command(execPath, args...)
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
 
-	if err := cmd.Start(); err != nil {
+		if err := cmd.Start(); err != nil {
+			return nil, err
+		}
+
+		c := &Command{
+			cmd:       cmd,
+			stoppedCh: make(chan struct{}),
+			result:    atomic.Pointer[error]{},
+		}
+		go func() {
+			err := cmd.Wait()
+			c.result.Store(&err)
+			close(c.stoppedCh)
+		}()
+
+		return c, nil
+	})
+
+	if err != nil {
 		return nil, err
 	}
 
-	c := &command{
-		cmd:       cmd,
-		stoppedCh: make(chan struct{}),
-		result:    atomic.Pointer[error]{},
-	}
-	go func() {
-		err := cmd.Wait()
-		c.result.Store(&err)
-		close(c.stoppedCh)
-	}()
-
-	return c, nil
+	return cmd.(*Command), nil // The return type is always *Command.
 }
 
-// downloadBinary downloads a file from the given URL into the specified path
+// DownloadBinary downloads a file from the given URL into the specified path
 // this also marks it executable and returns its full path.
-func downloadBinary(url, destDir, destFile string, logger *zap.Logger) (string, error) {
+func DownloadBinary(url, destDir, destFile string, logger *zap.Logger) (string, error) {
 	if err := os.MkdirAll(destDir, 0755); err != nil {
 		return "", fmt.Errorf("could not create directory %s (%w)", destDir, err)
 	}
@@ -119,7 +132,7 @@ func downloadBinary(url, destDir, destFile string, logger *zap.Logger) (string, 
 		}
 	}()
 
-	logger.Info(fmt.Sprintf("LAUNCHER: downloading %s...", url))
+	logger.Info("downloading binary", zap.String("url", url))
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {

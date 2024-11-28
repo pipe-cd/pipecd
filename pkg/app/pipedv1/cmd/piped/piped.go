@@ -297,8 +297,8 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	// Start running plugin service server.
 	{
 		var (
-			service = grpcapi.NewPluginAPI(cfg, apiClient, input.Logger)
-			opts    = []rpc.Option{
+			service, err = grpcapi.NewPluginAPI(cfg, apiClient, p.toolsDir, input.Logger)
+			opts         = []rpc.Option{
 				rpc.WithPort(p.pluginServicePort),
 				rpc.WithGracePeriod(p.gracePeriod),
 				rpc.WithLogger(input.Logger),
@@ -306,6 +306,10 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 				rpc.WithRequestValidationUnaryInterceptor(),
 			}
 		)
+		if err != nil {
+			input.Logger.Error("failed to create plugin service", zap.Error(err))
+			return err
+		}
 		// TODO: Ensure piped <-> plugin communication is secure.
 		server := rpc.NewServer(service, opts...)
 		group.Go(func() error {

@@ -16,8 +16,10 @@ package deployment
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
+	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
@@ -192,4 +194,104 @@ func checkImageChange(ns diff.Nodes) (string, bool) {
 	}
 	desc := fmt.Sprintf("Sync progressively because of updating %s", strings.Join(images, ", "))
 	return desc, true
+}
+
+// checkReplicasChange checks if the replicas field is changed.
+func checkReplicasChange(ns diff.Nodes) (before, after string, changed bool) {
+	const replicasQuery = `^spec\.replicas$`
+	node, err := ns.FindOne(replicasQuery)
+	if err != nil {
+		// no difference between the before and after manifests, or unknown error occurred.
+		return "", "", false
+	}
+
+	if node.TypeX == nil {
+		// The replicas field is not found in the before manifest.
+		// There is difference between the before and after manifests, So it means the replicas field is added in the after manifest.
+		// So the replicas field in the before manifest is nil, we should return "<nil>" as the before value.
+		return "<nil>", node.StringY(), true
+	}
+
+	if node.TypeY == nil {
+		// The replicas field is not found in the after manifest.
+		// There is difference between the before and after manifests, So it means the replicas field is removed in the after manifest.
+		// So the replicas field in the after manifest is nil, we should return "<nil>" as the after value.
+		return node.StringX(), "<nil>", true
+	}
+
+	return node.StringX(), node.StringY(), true
+}
+
+// First up, checks to see if the workload's `spec.template` has been changed,
+// and then checks if the configmap/secret's data.
+func determineStrategy(olds, news []provider.Manifest, workloadRefs []config.K8sResourceReference, logger *zap.Logger) (strategy model.SyncStrategy, summary string) {
+	oldWorkloads := findWorkloadManifests(olds, workloadRefs)
+	if len(oldWorkloads) == 0 {
+		return model.SyncStrategy_QUICK_SYNC, "Quick sync by applying all manifests because it was unable to find the currently running workloads"
+	}
+	newWorkloads := findWorkloadManifests(news, workloadRefs)
+	if len(newWorkloads) == 0 {
+		return model.SyncStrategy_QUICK_SYNC, "Quick sync by applying all manifests because it was unable to find workloads in the new manifests"
+	}
+
+	workloads := findUpdatedWorkloads(oldWorkloads, newWorkloads)
+	diffs := make(map[provider.ResourceKey]diff.Nodes, len(workloads))
+
+	for _, w := range workloads {
+		// If the workload's pod template was touched
+		// do progressive deployment with the specified pipeline.
+		diffResult, err := provider.Diff(w.old, w.new, logger)
+		if err != nil {
+			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively due to an error while calculating the diff (%v)", err)
+		}
+		diffNodes := diffResult.Nodes()
+		diffs[w.new.Key] = diffNodes
+
+		templateDiffs := diffNodes.FindByPrefix("spec.template")
+		if len(templateDiffs) > 0 {
+			if msg, changed := checkImageChange(templateDiffs); changed {
+				return model.SyncStrategy_PIPELINE, msg
+			}
+			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because pod template of workload %s was changed", w.new.Key.Name)
+		}
+	}
+
+	// If the config/secret was touched, we also need to do progressive
+	// deployment to check run with the new config/secret content.
+	oldConfigs := findConfigsAndSecrets(olds)
+	newConfigs := findConfigsAndSecrets(news)
+	if len(oldConfigs) > len(newConfigs) {
+		return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because %d configmap/secret deleted", len(oldConfigs)-len(newConfigs))
+	}
+	if len(oldConfigs) < len(newConfigs) {
+		return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because new %d configmap/secret added", len(newConfigs)-len(oldConfigs))
+	}
+	for k, oc := range oldConfigs {
+		nc, ok := newConfigs[k]
+		if !ok {
+			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because %s %s was deleted", oc.Key.Kind, oc.Key.Name)
+		}
+		result, err := provider.Diff(oc, nc, logger)
+		if err != nil {
+			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively due to an error while calculating the diff (%v)", err)
+		}
+		if result.HasDiff() {
+			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because %s %s was updated", oc.Key.Kind, oc.Key.Name)
+		}
+	}
+
+	// Check if this is a scaling commit.
+	scales := make([]string, 0, len(diffs))
+	for k, d := range diffs {
+		if before, after, changed := checkReplicasChange(d); changed {
+			scales = append(scales, fmt.Sprintf("%s/%s from %s to %s", k.Kind, k.Name, before, after))
+		}
+
+	}
+	if len(scales) > 0 {
+		slices.Sort(scales)
+		return model.SyncStrategy_QUICK_SYNC, fmt.Sprintf("Quick sync to scale %s", strings.Join(scales, ", "))
+	}
+
+	return model.SyncStrategy_QUICK_SYNC, "Quick sync by applying all manifests"
 }
