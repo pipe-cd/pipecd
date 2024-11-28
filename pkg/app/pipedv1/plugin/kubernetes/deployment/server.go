@@ -175,3 +175,22 @@ func (a *DeploymentService) loadManifests(ctx context.Context, deploy *model.Dep
 
 	return manifests, nil
 }
+
+func (a *DeploymentService) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (*deployment.ExecuteStageResponse, error) {
+	switch request.GetInput().GetStage().GetName() {
+	case StageK8sSync.String():
+		return a.executeK8sSyncStage(ctx, request.GetInput())
+	case StageK8sRollback.String():
+		return a.executeK8sRollbackStage(ctx, request.GetInput())
+	default:
+		return nil, status.Error(codes.InvalidArgument, "unimplemented or unsupported stage")
+	}
+}
+
+func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, input *deployment.ExecutePluginInput) (*deployment.ExecuteStageResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "not implemented")
+}
+
+func (a *DeploymentService) executeK8sRollbackStage(ctx context.Context, input *deployment.ExecutePluginInput) (*deployment.ExecuteStageResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "not implemented")
+}
