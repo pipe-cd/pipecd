@@ -15,11 +15,19 @@
 package controller
 
 import (
+	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap/zaptest"
+	"google.golang.org/grpc"
 
+	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 )
 
 func TestDetermineStageStatus(t *testing.T) {
@@ -69,4 +77,234 @@ func TestDetermineStageStatus(t *testing.T) {
 			assert.Equal(t, tc.expected, got)
 		})
 	}
+}
+
+type fakeExecutorPluginClient struct {
+	pluginapi.PluginClient
+}
+
+func (m *fakeExecutorPluginClient) ExecuteStage(ctx context.Context, req *deployment.ExecuteStageRequest, opts ...grpc.CallOption) (*deployment.ExecuteStageResponse, error) {
+	return &deployment.ExecuteStageResponse{
+		Status: model.StageStatus_STAGE_SUCCESS,
+	}, nil
+}
+
+type fakeApiClient struct {
+	apiClient
+}
+
+func (f *fakeApiClient) ReportStageStatusChanged(ctx context.Context, req *pipedservice.ReportStageStatusChangedRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageStatusChangedResponse, error) {
+	return nil, nil
+}
+
+func TestExecuteStage(t *testing.T) {
+	logger := zaptest.NewLogger(t)
+
+	testcases := []struct {
+		name              string
+		deployment        *model.Deployment
+		stageStatuses     map[string]model.StageStatus
+		applicationConfig *config.GenericApplicationSpec
+		expected          model.StageStatus
+	}{
+		{
+			name: "stage not started yet, everything go right",
+			deployment: &model.Deployment{
+				Stages: []*model.PipelineStage{
+					{
+						Id:     "stage-id",
+						Name:   "stage-name",
+						Index:  0,
+						Status: model.StageStatus_STAGE_NOT_STARTED_YET,
+					},
+				},
+			},
+			stageStatuses: map[string]model.StageStatus{
+				"stage-id": model.StageStatus_STAGE_NOT_STARTED_YET,
+			},
+			expected: model.StageStatus_STAGE_SUCCESS,
+		},
+		{
+			name: "stage is rollback but base stage not started yet, should not trigger anything",
+			deployment: &model.Deployment{
+				Stages: []*model.PipelineStage{
+					{
+						Id:       "stage-rollback-id",
+						Name:     "stage-rollback-name",
+						Status:   model.StageStatus_STAGE_NOT_STARTED_YET,
+						Rollback: true,
+						Metadata: map[string]string{
+							"baseStageId": "stage-id",
+						},
+					},
+				},
+			},
+			stageStatuses: map[string]model.StageStatus{
+				"stage-id": model.StageStatus_STAGE_NOT_STARTED_YET,
+			},
+			expected: model.StageStatus_STAGE_NOT_STARTED_YET,
+		},
+		{
+			name: "stage is rollback but base stage is skipped, should not trigger anything",
+			deployment: &model.Deployment{
+				Stages: []*model.PipelineStage{
+					{
+						Id:       "stage-rollback-id",
+						Name:     "stage-rollback-name",
+						Status:   model.StageStatus_STAGE_NOT_STARTED_YET,
+						Rollback: true,
+						Metadata: map[string]string{
+							"baseStageId": "stage-id",
+						},
+					},
+				},
+			},
+			stageStatuses: map[string]model.StageStatus{
+				"stage-id": model.StageStatus_STAGE_SKIPPED,
+			},
+			expected: model.StageStatus_STAGE_NOT_STARTED_YET,
+		},
+		{
+			name: "stage which can not be handled by the current scheduler, should be set as failed",
+			deployment: &model.Deployment{
+				Stages: []*model.PipelineStage{
+					{
+						Id:     "stage-id",
+						Name:   "stage-name-not-found",
+						Status: model.StageStatus_STAGE_NOT_STARTED_YET,
+					},
+				},
+			},
+			stageStatuses: map[string]model.StageStatus{
+				"stage-id": model.StageStatus_STAGE_NOT_STARTED_YET,
+			},
+			expected: model.StageStatus_STAGE_FAILURE,
+		},
+		{
+			name: "stage without config, should be set as failed",
+			deployment: &model.Deployment{
+				Stages: []*model.PipelineStage{
+					{
+						Id:     "stage-id",
+						Name:   "stage-name",
+						Index:  0,
+						Status: model.StageStatus_STAGE_NOT_STARTED_YET,
+					},
+				},
+			},
+			stageStatuses: map[string]model.StageStatus{
+				"stage-id": model.StageStatus_STAGE_NOT_STARTED_YET,
+			},
+			applicationConfig: &config.GenericApplicationSpec{
+				Pipeline: &config.DeploymentPipeline{
+					Stages: []config.PipelineStage{},
+				},
+			},
+			expected: model.StageStatus_STAGE_FAILURE,
+		},
+	}
+
+	sig, handler := NewStopSignal()
+	defer handler.Terminate()
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			s := &scheduler{
+				apiClient: &fakeApiClient{},
+				stageBasedPluginsMap: map[string]pluginapi.PluginClient{
+					"stage-name": &fakeExecutorPluginClient{},
+				},
+				genericApplicationConfig: &config.GenericApplicationSpec{
+					Pipeline: &config.DeploymentPipeline{
+						Stages: []config.PipelineStage{
+							{ID: "stage-id", Name: "stage-name"},
+						},
+					},
+				},
+				deployment:    tc.deployment,
+				stageStatuses: tc.stageStatuses,
+				logger:        logger,
+				nowFunc:       time.Now,
+			}
+
+			if tc.applicationConfig != nil {
+				s.genericApplicationConfig = tc.applicationConfig
+			}
+
+			finalStatus := s.executeStage(sig, s.deployment.Stages[0])
+			assert.Equal(t, tc.expected, finalStatus)
+		})
+	}
+}
+
+func TestExecuteStage_SignalTerminated(t *testing.T) {
+	logger := zaptest.NewLogger(t)
+	sig, handler := NewStopSignal()
+
+	s := &scheduler{
+		apiClient: &fakeApiClient{},
+		stageBasedPluginsMap: map[string]pluginapi.PluginClient{
+			"stage-name": &fakeExecutorPluginClient{},
+		},
+		genericApplicationConfig: &config.GenericApplicationSpec{
+			Pipeline: &config.DeploymentPipeline{
+				Stages: []config.PipelineStage{
+					{ID: "stage-id", Name: "stage-name"},
+				},
+			},
+		},
+		deployment: &model.Deployment{
+			Stages: []*model.PipelineStage{
+				{
+					Id:     "stage-id",
+					Name:   "stage-name",
+					Index:  0,
+					Status: model.StageStatus_STAGE_NOT_STARTED_YET,
+				},
+			},
+		},
+		stageStatuses: map[string]model.StageStatus{},
+		logger:        logger,
+		nowFunc:       time.Now,
+	}
+
+	handler.Terminate()
+	finalStatus := s.executeStage(sig, s.deployment.Stages[0])
+	assert.Equal(t, model.StageStatus_STAGE_RUNNING, finalStatus)
+}
+
+func TestExecuteStage_SignalCancelled(t *testing.T) {
+	logger := zaptest.NewLogger(t)
+	sig, handler := NewStopSignal()
+
+	s := &scheduler{
+		apiClient: &fakeApiClient{},
+		stageBasedPluginsMap: map[string]pluginapi.PluginClient{
+			"stage-name": &fakeExecutorPluginClient{},
+		},
+		genericApplicationConfig: &config.GenericApplicationSpec{
+			Pipeline: &config.DeploymentPipeline{
+				Stages: []config.PipelineStage{
+					{ID: "stage-id", Name: "stage-name"},
+				},
+			},
+		},
+		deployment: &model.Deployment{
+			Stages: []*model.PipelineStage{
+				{
+					Id:     "stage-id",
+					Name:   "stage-name",
+					Index:  0,
+					Status: model.StageStatus_STAGE_NOT_STARTED_YET,
+				},
+			},
+		},
+		stageStatuses: map[string]model.StageStatus{},
+		logger:        logger,
+		nowFunc:       time.Now,
+	}
+
+	handler.Cancel()
+	finalStatus := s.executeStage(sig, s.deployment.Stages[0])
+	assert.Equal(t, model.StageStatus_STAGE_CANCELLED, finalStatus)
 }

@@ -431,18 +431,14 @@ func (s *scheduler) Run(ctx context.Context) error {
 }
 
 // executeStage finds the plugin for the given stage and execute.
+// At the time this executeStage is called, the stage status is before model.StageStatus_STAGE_RUNNING.
+// As the first step, it updates the stage status to model.StageStatus_STAGE_RUNNING.
+// And that will be treated as the original status of the given stage.
 func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (finalStatus model.StageStatus) {
 	var (
 		ctx            = sig.Context()
 		originalStatus = ps.Status
 	)
-	defer func() {
-		// When the piped has been terminated (PS kill) while the stage is still running
-		// we should not mark the log persister as completed.
-		if !finalStatus.IsCompleted() && sig.Terminated() {
-			return
-		}
-	}()
 
 	// Check whether to execute the script rollback stage or not.
 	// If the base stage is executed, the script rollback stage will be executed.
@@ -491,14 +487,13 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 	}
 
 	// Start running executor.
-	res, err := plugin.ExecuteStage(sig.Context(), &deployment.ExecuteStageRequest{
+	res, err := plugin.ExecuteStage(ctx, &deployment.ExecuteStageRequest{
 		Input: &deployment.ExecutePluginInput{
 			Deployment:              s.deployment,
 			Stage:                   ps,
 			StageConfig:             stageConfig,
 			RunningDeploymentSource: s.runningDS, // TODO: prepare this
 			TargetDeploymentSource:  s.targetDS,  // TODO: prepare this
-			// TODO: Prepare plugin config? should pass each time or one time on plugin start?
 		},
 	})
 	if err != nil {
