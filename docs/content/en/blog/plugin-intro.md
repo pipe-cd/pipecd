@@ -28,13 +28,13 @@ In this article, we introduce the overview of the "Pluginnable" feature, a signi
 In the Plugginable Architecture, Plugins are actors who execute deployments on behalf of a Piped.
 
 **Current: A Piped deploys to each platform by itself**
-![h:3.3em w:18em](/images/pipecd-plugin-intro/mechanism-cur.drawio.png)
+![h:3.3em w:18em](/images/plugin-intro-mechanism-cur.drawio.png)
 <!-- *Current Piped* -->
 
 **In Plugginable version: Plugins deploy to each platform**
 Piped's core will control deployment flows.
 
-![h:6.1em w:18em](/images/pipecd-plugin-intro/mechanism-new.drawio.png)
+![h:6.1em w:18em](/images/plugin-intro-mechanism-new.drawio.png)
 <!-- *Piped and Plugins* -->
 
 ### Where Plugins come from?
@@ -67,7 +67,7 @@ A Plugin runs as a gRPC server.
 On a Piped starts, the Piped core will load the binary of each specified plugin and launch it as a gRPC server.
 While a deployment, a Plugin communicate with Piped core.
 
-![h:11em](/images/pipecd-plugin-intro/running.drawio.png)
+![h:11em](/images/plugin-intro-running.drawio.png)
 <!-- *動作時のイメージ* -->
 
 ### How to develop a Plugin?
@@ -109,7 +109,7 @@ These effects will be more powerful as more Plugins come out since you can use p
 
 ## Schedule overview
 
-![](/images/pipecd-plugin-intro/schedule.drawio.png)
+![](/images/plugin-intro-schedule.drawio.png)
 
 Pluginnable PipeCD will be released around Feburary 2025.
 
