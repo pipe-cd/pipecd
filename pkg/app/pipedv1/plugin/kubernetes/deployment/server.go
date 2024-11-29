@@ -23,6 +23,7 @@ import (
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
+	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/regexpool"
 
 	"go.uber.org/zap"
@@ -51,6 +52,10 @@ type applier interface {
 	ForceReplaceManifest(ctx context.Context, manifest provider.Manifest) error
 }
 
+type logPersister interface {
+	StageLogPersister(deploymentID, stageID string) logpersister.StageLogPersister
+}
+
 type DeploymentService struct {
 	deployment.UnimplementedDeploymentServiceServer
 
@@ -58,6 +63,7 @@ type DeploymentService struct {
 	Logger       *zap.Logger
 	ToolRegistry toolRegistry
 	Loader       loader
+	LogPersister logPersister
 }
 
 // NewDeploymentService creates a new planService.
@@ -188,9 +194,76 @@ func (a *DeploymentService) ExecuteStage(ctx context.Context, request *deploymen
 }
 
 func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, input *deployment.ExecutePluginInput) (*deployment.ExecuteStageResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "not implemented")
+	lp := a.LogPersister.StageLogPersister(input.GetDeployment().GetId(), input.GetStage().GetId())
+	lp.Infof("Start syncing the deployment")
+
+	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](input.GetTargetDeploymentSource().GetApplicationConfig())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	lp.Infof("Loading manifests at commit %s for handling", input.GetDeployment().GetTrigger().GetCommit().GetHash())
+	manifests, err := a.loadManifests(ctx, input.GetDeployment(), cfg.Spec, input.GetTargetDeploymentSource())
+	if err != nil {
+		lp.Errorf("Failed while loading manifests (%v)", err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	lp.Successf("Successfully loaded %d manifests", len(manifests))
+
+	// Because the loaded manifests are read-only
+	// we duplicate them to avoid updating the shared manifests data in cache.
+	// TODO: implement duplicateManifests function
+
+	// When addVariantLabelToSelector is true, ensure that all workloads
+	// have the variant label in their selector.
+	var (
+		variantLabel   = cfg.Spec.VariantLabel.Key
+		primaryVariant = cfg.Spec.VariantLabel.PrimaryValue
+	)
+	// TODO: handle cfg.Spec.QuickSync.AddVariantLabelToSelector
+
+	// Add builtin annotations for tracking application live state.
+	addBuiltinAnnotations(
+		manifests,
+		variantLabel,
+		primaryVariant,
+		input.GetDeployment().GetTrigger().GetCommit().GetHash(),
+		input.GetDeployment().GetPipedId(),
+		input.GetDeployment().GetApplicationId(),
+	)
+
+	// TODO: implement annotateConfigHash to ensure restart of workloads when config changes
+
+	// Get the applier for the target cluster.
+	var applier applier // TODO: build applier from the plugin config
+
+	// Start applying all manifests to add or update running resources.
+	if err := applyManifests(ctx, applier, manifests, cfg.Spec.Input.Namespace, lp); err != nil {
+		lp.Errorf("Failed while applying manifests (%v)", err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	// TODO: implement prune resources
+
+	return &deployment.ExecuteStageResponse{
+		Status: model.StageStatus_STAGE_SUCCESS,
+	}, nil
 }
 
 func (a *DeploymentService) executeK8sRollbackStage(ctx context.Context, input *deployment.ExecutePluginInput) (*deployment.ExecuteStageResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "not implemented")
+}
+
+func addBuiltinAnnotations(manifests []provider.Manifest, variantLabel, variant, hash, pipedID, appID string) {
+	for i := range manifests {
+		manifests[i].AddAnnotations(map[string]string{
+			provider.LabelManagedBy:          provider.ManagedByPiped,
+			provider.LabelPiped:              pipedID,
+			provider.LabelApplication:        appID,
+			variantLabel:                     variant,
+			provider.LabelOriginalAPIVersion: manifests[i].Key.APIVersion,
+			provider.LabelResourceKey:        manifests[i].Key.String(),
+			provider.LabelCommitHash:         hash,
+		})
+	}
 }
