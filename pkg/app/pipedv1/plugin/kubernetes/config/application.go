@@ -35,6 +35,9 @@ type KubernetesApplicationSpec struct {
 	//   name: replication-controller-name
 	Workloads []K8sResourceReference `json:"workloads"`
 
+	// The label will be configured to variant manifests used to distinguish them.
+	VariantLabel KubernetesVariantLabel `json:"variantLabel"`
+
 	// TODO: Define fields for KubernetesApplicationSpec.
 }
 
@@ -53,4 +56,19 @@ type KubernetesDeploymentInput struct {
 	Namespace string `json:"namespace,omitempty"`
 
 	// TODO: Define fields for KubernetesDeploymentInput.
+}
+
+type KubernetesVariantLabel struct {
+	// The key of the label.
+	// Default is pipecd.dev/variant.
+	Key string `json:"key" default:"pipecd.dev/variant"`
+	// The label value for PRIMARY variant.
+	// Default is primary.
+	PrimaryValue string `json:"primaryValue" default:"primary"`
+	// The label value for CANARY variant.
+	// Default is canary.
+	CanaryValue string `json:"canaryValue" default:"canary"`
+	// The label value for BASELINE variant.
+	// Default is baseline.
+	BaselineValue string `json:"baselineValue" default:"baseline"`
 }
