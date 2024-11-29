@@ -5,21 +5,16 @@ linkTitle: "Overview of the Plan for Pluginnable PipeCD"
 weight: 985
 author: Tetsuya Kikuchi ([@t-kikuc](https://github.com/t-kikuc))
 categories: ["Announcement"]
-tags: ["Plugin", "Development"]
+tags: ["Architecture"]
 ---
 
-
-<!-- TODO -->
-In this article, our big progress "Pluginnable PipeCD"
-
-<!-- この記事では、[PipeCD](https://pipecd.dev/)で絶賛開発中かつ大きな進歩である「プラグイン化」の概要を紹介します。 -->
+In this article, we introduce the overview of the "Pluginnable" feature, a significant progress currently under development.
 
 **Note:** The content may be change in the future since it's still under development.
 
 ## Summary
 
 - In the Pluginnable PipeCD, Plugins execute deployments instead of Piped's core.
-<!-- - プラグイン化とは、デプロイ処理をPiped本体ではなく**プラグイン**が行うようにする構想 -->
 - Anyone can develop Plugins and **you can use someone's Plugins**.
 - It will enable users to deploy to **more various platform** with **more various Stages**.
   - platform example:  Cloudflare, Azure, and AWS CloudFormation/CDK
@@ -30,42 +25,41 @@ In this article, our big progress "Pluginnable PipeCD"
 
 ### Role of Plugins
 
-まず「プラグイン」がPipeCD全体でどこに位置付けられるかというと、「Pipedのデプロイ処理を代理する」立ち位置になります。
+In the Plugginable Architecture, Plugins are actors who execute deployments on behalf of a Piped.
 
-**現在: Pipedが各デプロイ先へのデプロイ全てを担っている**
+**Current: A Piped deploys to each platform by itself**
 ![h:3.3em w:18em](/images/pipecd-plugin-intro/mechanism-cur.drawio.png)
-*現在のPiped*
+<!-- *Current Piped* -->
 
-**プラグイン対応後: 各デプロイ先へのデプロイはプラグインが担う**
-Piped本体は主にデプロイのフロー制御を担います。
+**In Plugginable version: Plugins deploy to each platform**
+Piped's core will control deployment flows.
 
 ![h:6.1em w:18em](/images/pipecd-plugin-intro/mechanism-new.drawio.png)
-*Piped本体とプラグインとで分担*
+<!-- *Piped and Plugins* -->
 
 ### Where Plugins come from?
 
+Plugins are fetched from outside a Piped. They are not PipeCD built-in code.
 
-Plugins are fetched  not PipeCD built-in code.
+Plugin's binary is placed in GitHub or something, and a Piped loads it on launch.
 
-各プラグインはPipeCD組込みのコードではなく、外部から取得します。
-GitHubなどにプラグインのバイナリが配置され、それをPipedが起動時にロードする形式です。
 
-設定イメージ:
+Configuration would be like this:
 ```yaml
-# Pipedのconfig YAMLファイル
+# Piped's config YAML
 apiVersion: pipecd.dev/v1beta1
 kind: Piped
 spec:
-    plugin: # [新設項目]
+    plugin: # [New Area]
        - name: k8s_plugin
-         # [ここに指定] ※ URLの指定方法は今後変更の可能性もあります
+         # [HERE] (The URL format might be changed)
          sourceURL: https://github.com/xxxx/k8s-plugin
          ...
 ```
 
-ポイントとして、プラグインは自作でもよいし、**他の誰かが開発したものも利用可能**です。
+The key point is that you can develop your own plugins, or **use plugins developed by others**.
 
-なお、現在PipeCDがサポートしているK8s/CloudRun/Terraform/ECS/Lambdaへのデプロイについては、公式プラグインとしてサポートします。
+Addiitonally, deployments to Kubernetes, CloudRun, Terraform, ECS, and Lambda, which are currently supported by PipeCD, will be supported as official plugins.
 
 ### How does a Plugin run?
 
@@ -99,12 +93,12 @@ There are three big advantages. Thanks to them, users will not need to manage ad
 
 Currently, PipeCD supports deploying to Kubernetes, CloudRun, Terraform, ECS, and Lambda.
 
-Plugins enable you to deploy to the other platforms. For example, Cloudflare, Azure, and Amazon CloudFormation/CDK.
+Plugins enable you to deploy to the other platforms, for example, Cloudflare, Azure, and Amazon CloudFormation/CDK.
 
-### 2. Users can choose behaviors different from built-in ones
-<!-- - 例）標準ではK8sはXXなデプロイだが、YYな挙動でデプロイしたい -->
+### 2. Users can choose behaviors as they want
 
-<!-- For example, by PipeCD default -->
+- Example 1: Deploy in a way different from built-in.
+- Example 2: For Kubernetes (or any platform), deploy simply for some Applications with Plugin-A, and deploy in a complicated way for the other Applications with Plugin-B.
 
 
 ### 3. Users can develop and use custom Stages
