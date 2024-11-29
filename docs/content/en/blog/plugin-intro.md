@@ -8,34 +8,32 @@ categories: ["Announcement"]
 tags: ["Architecture"]
 ---
 
-In this article, we introduce the overview of the "Pluginnable" feature, a significant progress currently under development.
+In this article, we introduce the overview of the "Pluginnable" architecture of PipeCD, a significant progress currently under development.
 
 **Note:** The content may be change in the future since it's still under development.
 
 ## Summary
 
-- In the Pluginnable PipeCD, Plugins execute deployments instead of Piped's core.
+- In Pluginnable PipeCD, Plugins execute deployments instead of Piped's core.
 - Anyone can develop Plugins and **you can use someone's Plugins**.
 - It will enable users to deploy to **more various platform** with **more various Stages**.
   - platform example:  Cloudflare, Azure, and AWS CloudFormation/CDK
   - stage example:  [Automated Analysis](https://pipecd.dev/docs/user-guide/managing-application/customizing-deployment/automated-deployment-analysis/) by New Relic or Amazon CloudWatch
 
 
-## What's the Pluginnable Architecture?
+## What's Pluginnable PipeCD?
 
 ### Role of Plugins
 
-In the Plugginable Architecture, Plugins are actors who execute deployments on behalf of a Piped.
+In Pluginnable PipeCD, Plugins are actors who execute deployments on behalf of a Piped.
 
 **Current: A Piped deploys to each platform by itself**
 ![h:3.3em w:18em](/images/plugin-intro-mechanism-cur.drawio.png)
-<!-- *Current Piped* -->
 
-**In Plugginable version: Plugins deploy to each platform**
+**In Pluginnable PipeCD: Plugins deploy to each platform**
 Piped's core will control deployment flows.
 
 ![h:6.1em w:18em](/images/plugin-intro-mechanism-new.drawio.png)
-<!-- *Piped and Plugins* -->
 
 ### Where Plugins come from?
 
@@ -68,7 +66,6 @@ On a Piped starts, the Piped core will load the binary of each specified plugin 
 While a deployment, a Plugin communicate with Piped core.
 
 ![h:11em](/images/plugin-intro-running.drawio.png)
-<!-- *動作時のイメージ* -->
 
 ### How to develop a Plugin?
 
@@ -85,7 +82,7 @@ Developing a Plugin will not be so tough. Here I introduce somes reasons:
 - You don't need to put your plugin in PipeCD official repository.
   - You can determine review policy and release timing as you want.
 
-## Advantages of the Pluginnable Architecture
+## Advantages of Pluginnable PipeCD
 
 There are three big advantages. Thanks to them, users will not need to manage additional CD tools when adding a kind of platform or customizing behaviors.
 
@@ -121,7 +118,7 @@ We will share the details of migration ways later.  We've been making efforts to
 
 ## Conclusion
 
-The Pluginnable Architecture is a big step toward the PipeCD's vision - "**The One CD for All {applications, platforms, operations}**".  The community energy will be more important.
+Pluginnable PipeCD is a big step toward the PipeCD's vision - "**The One CD for All {applications, platforms, operations}**".  The community energy will be more important.
 
 To see the development progress, visit [the RFC](https://github.com/pipe-cd/pipecd/blob/master/docs/rfcs/0015-pipecd-plugin-arch-meta.md) or [the Meta Issue](https://github.com/pipe-cd/pipecd/issues/5259).
 
