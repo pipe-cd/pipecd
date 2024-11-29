@@ -42,6 +42,12 @@ const (
 )
 
 type LoaderInput struct {
+	// for annotations to manage the application live state.
+	PipedID    string
+	CommitHash string
+	AppID      string
+
+	// for templating manifests
 	AppName        string
 	AppDir         string
 	ConfigFilename string
@@ -76,6 +82,19 @@ func (l *Loader) LoadManifests(ctx context.Context, input LoaderInput) (manifest
 		// Override namespace if set because ParseManifests does not parse it
 		// if namespace is not explicitly specified in the manifests.
 		setNamespace(manifests, input.Namespace)
+
+		// Add builtin annotations for tracking application live state.
+		for i := range manifests {
+			manifests[i].AddAnnotations(map[string]string{
+				LabelManagedBy:          ManagedByPiped,
+				LabelPiped:              input.PipedID,
+				LabelApplication:        input.AppID,
+				LabelOriginalAPIVersion: manifests[i].Key.APIVersion,
+				LabelResourceKey:        manifests[i].Key.String(),
+				LabelCommitHash:         input.CommitHash,
+			})
+		}
+
 		sortManifests(manifests)
 	}()
 

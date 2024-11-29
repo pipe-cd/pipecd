@@ -165,6 +165,9 @@ func (a *DeploymentService) FetchDefinedStages(context.Context, *deployment.Fetc
 
 func (a *DeploymentService) loadManifests(ctx context.Context, deploy *model.Deployment, spec *kubeconfig.KubernetesApplicationSpec, deploymentSource *deployment.DeploymentSource) ([]provider.Manifest, error) {
 	manifests, err := a.Loader.LoadManifests(ctx, provider.LoaderInput{
+		PipedID:          deploy.GetPipedId(),
+		AppID:            deploy.GetApplicationId(),
+		CommitHash:       deploy.GetTrigger().GetCommit().GetHash(),
 		AppName:          deploy.GetApplicationName(),
 		AppDir:           deploymentSource.GetApplicationDirectory(),
 		ConfigFilename:   deploymentSource.GetApplicationConfigFilename(),
@@ -222,15 +225,12 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, input *depl
 	)
 	// TODO: handle cfg.Spec.QuickSync.AddVariantLabelToSelector
 
-	// Add builtin annotations for tracking application live state.
-	addBuiltinAnnotations(
-		manifests,
-		variantLabel,
-		primaryVariant,
-		input.GetDeployment().GetTrigger().GetCommit().GetHash(),
-		input.GetDeployment().GetPipedId(),
-		input.GetDeployment().GetApplicationId(),
-	)
+	// Add variant annotations to all manifests.
+	for i := range manifests {
+		manifests[i].AddAnnotations(map[string]string{
+			variantLabel: primaryVariant,
+		})
+	}
 
 	// TODO: implement annotateConfigHash to ensure restart of workloads when config changes
 
@@ -252,18 +252,4 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, input *depl
 
 func (a *DeploymentService) executeK8sRollbackStage(ctx context.Context, input *deployment.ExecutePluginInput) (*deployment.ExecuteStageResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "not implemented")
-}
-
-func addBuiltinAnnotations(manifests []provider.Manifest, variantLabel, variant, hash, pipedID, appID string) {
-	for i := range manifests {
-		manifests[i].AddAnnotations(map[string]string{
-			provider.LabelManagedBy:          provider.ManagedByPiped,
-			provider.LabelPiped:              pipedID,
-			provider.LabelApplication:        appID,
-			variantLabel:                     variant,
-			provider.LabelOriginalAPIVersion: manifests[i].Key.APIVersion,
-			provider.LabelResourceKey:        manifests[i].Key.String(),
-			provider.LabelCommitHash:         hash,
-		})
-	}
 }
