@@ -5,7 +5,7 @@ linkTitle: "Overview of the Plan for Pluginnable PipeCD"
 weight: 985
 author: Tetsuya Kikuchi ([@t-kikuc](https://github.com/t-kikuc))
 categories: ["Announcement"]
-tags: ["Architecture"]
+tags: ["New Feature"]
 ---
 
 In this article, we introduce the overview of the "Pluginnable" architecture of PipeCD, a significant progress currently under development.
@@ -15,7 +15,7 @@ In this article, we introduce the overview of the "Pluginnable" architecture of 
 ## Summary
 
 - In Pluginnable PipeCD, Plugins execute deployments instead of Piped's core.
-- Anyone can develop Plugins and **you can use someone's Plugins**.
+- Anyone can develop Plugins and **you can use Plugins developed by others**.
 - It will enable users to deploy to **more various platform** with **more various Stages**.
   - platform example:  Cloudflare, Azure, and AWS CloudFormation/CDK
   - stage example:  [Automated Analysis](https://pipecd.dev/docs/user-guide/managing-application/customizing-deployment/automated-deployment-analysis/) by New Relic or Amazon CloudWatch
@@ -31,6 +31,7 @@ In Pluginnable PipeCD, Plugins are actors who execute deployments on behalf of a
 ![h:3.3em w:18em](/images/plugin-intro-mechanism-cur.drawio.png)
 
 **In Pluginnable PipeCD: Plugins deploy to each platform**
+
 Piped's core will control deployment flows.
 
 ![h:6.1em w:18em](/images/plugin-intro-mechanism-new.drawio.png)
@@ -84,7 +85,7 @@ Developing a Plugin will not be so tough. Here I introduce somes reasons:
 
 ## Advantages of Pluginnable PipeCD
 
-There are three big advantages. Thanks to them, users will not need to manage additional CD tools when adding a kind of platform or customizing behaviors.
+There are three big advantages. Thanks to them, **users will not need to manage additional CD tools** when adding a kind of platform or customizing behaviors.
 
 ### 1. Users can deploy to platforms other than K8s/CloudRun/Terraform/ECS/Lambda
 
@@ -113,13 +114,12 @@ Pluginnable PipeCD will be released around Feburary 2025.
 The Plugin development guide will be published after March 2025. After that, new Plugins will come out.
 
 For the current PipeCD users, please migrate to the Pluginnable version.  New features will be added to the Pluginnable version.
-
 We will share the details of migration ways later.  We've been making efforts to minimize the amount of the migration tasks. The main tasks will be modifying Piped configs and Application configs.
 
 ## Conclusion
 
 Pluginnable PipeCD is a big step toward the PipeCD's vision - "**The One CD for All {applications, platforms, operations}**".  The community energy will be more important.
 
-To see the development progress, visit [the RFC](https://github.com/pipe-cd/pipecd/blob/master/docs/rfcs/0015-pipecd-plugin-arch-meta.md) or [the Meta Issue](https://github.com/pipe-cd/pipecd/issues/5259).
+To see the development progress, visit [the RFC](https://github.com/pipe-cd/pipecd/blob/master/docs/rfcs/0015-pipecd-plugin-arch-meta.md) or [the meta Issue](https://github.com/pipe-cd/pipecd/issues/5259).
 
 If you have any questions or opinions, feel free to talk in [CNCF Slack](https://cloud-native.slack.com/) > #pipecd-jp or [PipeCD Community Meeting](https://docs.google.com/document/d/1AtE0CQYbUV5wLfvAcl9mo9MyTCH52BuU7AngVUvE7vg/edit).
