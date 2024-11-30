@@ -19,12 +19,10 @@ RUN \
         make \
         jq \
         cmake && \
-
     # Install glibc to be used for building nss_wrapper.
     wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub && \
     wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.33-r0/glibc-2.33-r0.apk && \
     apk add glibc-2.33-r0.apk && \
-
     # Install nss_wrapper to add an random UID to "passwd" at runtime without having to directly modify /etc/passwd.
     /installer/install-nss-wrapper.sh && \
     # Remove what were used for installation.
