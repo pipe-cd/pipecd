@@ -10,4 +10,5 @@ RUN gcloud config set project $FIRESTORE_PROJECT_ID && gcloud components install
 ENV PORT=8080
 EXPOSE "$PORT"
 
+SHELL ["/bin/sh", "-c"]
 ENTRYPOINT gcloud beta emulators firestore start --host-port="0.0.0.0:${PORT}"
