@@ -1,5 +1,5 @@
 # Builder image to build go program.
-FROM golang:1.23 as BUILDER
+FROM golang:1.23 AS builder
 
 COPY protoc-gen-auth /protoc-gen-auth
 RUN cd /protoc-gen-auth \
