@@ -35,3 +35,4 @@ jobs:
         with:
           context: tool/${{ matrix.image }}
           tags: ${{ env.REGISTRY }}/pipe-cd/${{ matrix.image }}:${{ env.PIPECD_VERSION }}
+          platforms: linux/amd64,linux/arm64
