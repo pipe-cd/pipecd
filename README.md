@@ -88,8 +88,8 @@ You can find a list of publicly recognized users of the PipeCD in the [ADOPTERS.
 <a href="https://github.com/knanao"><img src="https://avatars.githubusercontent.com/u/50069775?v=4" title="knanao" width="80" height="80"></a>
 <a href="https://github.com/t-kikuc"><img src="https://avatars.githubusercontent.com/u/97105818?v=4" title="t-kikuc" width="80" height="80"></a>
 <a href="https://github.com/ffjlabo"><img src="https://avatars.githubusercontent.com/u/40124947?v=4" title="ffjlabo" width="80" height="80"></a>
-<a href="https://github.com/apps/dependabot"><img src="https://avatars.githubusercontent.com/in/29110?v=4" title="dependabot[bot]" width="80" height="80"></a>
 <a href="https://github.com/Warashi"><img src="https://avatars.githubusercontent.com/u/3600530?v=4" title="Warashi" width="80" height="80"></a>
+<a href="https://github.com/apps/dependabot"><img src="https://avatars.githubusercontent.com/in/29110?v=4" title="dependabot[bot]" width="80" height="80"></a>
 <a href="https://github.com/kentakozuka"><img src="https://avatars.githubusercontent.com/u/16733673?v=4" title="kentakozuka" width="80" height="80"></a>
 <a href="https://github.com/stormcat24"><img src="https://avatars.githubusercontent.com/u/919840?v=4" title="stormcat24" width="80" height="80"></a>
 <a href="https://github.com/Hosshii"><img src="https://avatars.githubusercontent.com/u/49914427?v=4" title="Hosshii" width="80" height="80"></a>
@@ -126,6 +126,7 @@ You can find a list of publicly recognized users of the PipeCD in the [ADOPTERS.
 <a href="https://github.com/seitarof"><img src="https://avatars.githubusercontent.com/u/51070449?v=4" title="seitarof" width="80" height="80"></a>
 <a href="https://github.com/minhquang4334"><img src="https://avatars.githubusercontent.com/u/22545967?v=4" title="minhquang4334" width="80" height="80"></a>
 <a href="https://github.com/p0tr3c"><img src="https://avatars.githubusercontent.com/u/12850042?v=4" title="p0tr3c" width="80" height="80"></a>
+<a href="https://github.com/HoangNguyen689"><img src="https://avatars.githubusercontent.com/u/40779936?v=4" title="HoangNguyen689" width="80" height="80"></a>
 <a href="https://github.com/tetsuya28"><img src="https://avatars.githubusercontent.com/u/11973270?v=4" title="tetsuya28" width="80" height="80"></a>
 <a href="https://github.com/tnir"><img src="https://avatars.githubusercontent.com/u/10229505?v=4" title="tnir" width="80" height="80"></a>
 <a href="https://github.com/ww24"><img src="https://avatars.githubusercontent.com/u/695166?v=4" title="ww24" width="80" height="80"></a>
@@ -152,9 +153,9 @@ You can find a list of publicly recognized users of the PipeCD in the [ADOPTERS.
 <a href="https://github.com/clubanderson"><img src="https://avatars.githubusercontent.com/u/407614?v=4" title="clubanderson" width="80" height="80"></a>
 <a href="https://github.com/fazledyn-or"><img src="https://avatars.githubusercontent.com/u/138655107?v=4" title="fazledyn-or" width="80" height="80"></a>
 <a href="https://github.com/pheianox"><img src="https://avatars.githubusercontent.com/u/72671586?v=4" title="pheianox" width="80" height="80"></a>
+<a href="https://github.com/cuongvd23"><img src="https://avatars.githubusercontent.com/u/77630688?v=4" title="cuongvd23" width="80" height="80"></a>
 <a href="https://github.com/ductnn"><img src="https://avatars.githubusercontent.com/u/22121217?v=4" title="ductnn" width="80" height="80"></a>
 <a href="https://github.com/Forget-C"><img src="https://avatars.githubusercontent.com/u/25631506?v=4" title="Forget-C" width="80" height="80"></a>
-<a href="https://github.com/HoangNguyen689"><img src="https://avatars.githubusercontent.com/u/40779936?v=4" title="HoangNguyen689" width="80" height="80"></a>
 <a href="https://github.com/hongchaodeng"><img src="https://avatars.githubusercontent.com/u/920884?v=4" title="hongchaodeng" width="80" height="80"></a>
 <a href="https://github.com/hori-ryota"><img src="https://avatars.githubusercontent.com/u/2936501?v=4" title="hori-ryota" width="80" height="80"></a>
 <a href="https://github.com/eltociear"><img src="https://avatars.githubusercontent.com/u/22633385?v=4" title="eltociear" width="80" height="80"></a>
