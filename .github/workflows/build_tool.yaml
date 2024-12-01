@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        image: 
+        image:
           - actions-gh-release
           - actions-plan-preview
           - codegen
