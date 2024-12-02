@@ -1288,3 +1288,15 @@ type PipedEventWatcherGitRepo struct {
 	// This is prioritized if both includes and this one are given.
 	Excludes []string `json:"excludes,omitempty"`
 }
+
+type PipedPlugin struct {
+	Name          string              `json:"name"`
+	Port          int                 `json:"port"`
+	DeployTargets []PipedDeployTarget `json:"deployTargets,omitempty"`
+}
+
+type PipedDeployTarget struct {
+	Name   string            `json:"name"`
+	Labels map[string]string `json:"labels,omitempty"`
+	Config json.RawMessage   `json:"config"`
+}
