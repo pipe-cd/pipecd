@@ -250,8 +250,6 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *deployment
 		Deployment:              p.deployment,
 		RunningDeploymentSource: runningDS,
 		TargetDeploymentSource:  targetDS,
-		// TODO: Add more planner input fields.
-		// we need passing PluginConfig
 	}
 
 	// Build deployment target versions.
