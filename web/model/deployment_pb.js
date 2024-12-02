@@ -122,7 +122,7 @@ if (goog.DEBUG && !COMPILED) {
  * @private {!Array<number>}
  * @const
  */
-proto.model.Deployment.repeatedFields_ = [24,32];
+proto.model.Deployment.repeatedFields_ = [12,24,32];
 
 
 
@@ -164,6 +164,7 @@ proto.model.Deployment.toObject = function(includeInstance, msg) {
     gitPath: (f = msg.getGitPath()) && pkg_model_common_pb.ApplicationGitPath.toObject(includeInstance, f),
     cloudProvider: jspb.Message.getFieldWithDefault(msg, 9, ""),
     platformProvider: jspb.Message.getFieldWithDefault(msg, 11, ""),
+    deployTargetsList: (f = jspb.Message.getRepeatedField(msg, 12)) == null ? undefined : f,
     labelsMap: (f = msg.getLabelsMap()) ? f.toObject(includeInstance, undefined) : [],
     trigger: (f = msg.getTrigger()) && proto.model.DeploymentTrigger.toObject(includeInstance, f),
     summary: jspb.Message.getFieldWithDefault(msg, 22, ""),
@@ -254,6 +255,10 @@ proto.model.Deployment.deserializeBinaryFromReader = function(msg, reader) {
     case 11:
       var value = /** @type {string} */ (reader.readString());
       msg.setPlatformProvider(value);
+      break;
+    case 12:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addDeployTargets(value);
       break;
     case 10:
       var value = msg.getLabelsMap();
@@ -416,6 +421,13 @@ proto.model.Deployment.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       11,
+      f
+    );
+  }
+  f = message.getDeployTargetsList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      12,
       f
     );
   }
@@ -709,6 +721,43 @@ proto.model.Deployment.prototype.getPlatformProvider = function() {
  */
 proto.model.Deployment.prototype.setPlatformProvider = function(value) {
   return jspb.Message.setProto3StringField(this, 11, value);
+};
+
+
+/**
+ * repeated string deploy_targets = 12;
+ * @return {!Array<string>}
+ */
+proto.model.Deployment.prototype.getDeployTargetsList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 12));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.model.Deployment} returns this
+ */
+proto.model.Deployment.prototype.setDeployTargetsList = function(value) {
+  return jspb.Message.setField(this, 12, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.model.Deployment} returns this
+ */
+proto.model.Deployment.prototype.addDeployTargets = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 12, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.model.Deployment} returns this
+ */
+proto.model.Deployment.prototype.clearDeployTargetsList = function() {
+  return this.setDeployTargetsList([]);
 };
 
 

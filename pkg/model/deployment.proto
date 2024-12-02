@@ -74,7 +74,8 @@ message Deployment {
     // The name of platform provider where to deploy this application.
     // This must be one of the provider names registered in the piped.
     string platform_provider = 11;
-
+    // The names of deploy taget where to deploy this application.
+    repeated string deploy_targets = 12;
     // Custom attributes to identify applications.
     map<string, string> labels = 10;
 
