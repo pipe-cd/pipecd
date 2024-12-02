@@ -132,11 +132,13 @@ message ExecutePluginInput {
 
     // The configuration of plugin that handles the deployment.
     bytes plugin_config = 3;
+    // The configuration of stage.
+    bytes stage_config = 4;
 
     // The running deployment source.
-    DeploymentSource running_deployment_source = 4;
+    DeploymentSource running_deployment_source = 5;
     // The target deployment source.
-    DeploymentSource target_deployment_source = 5;
+    DeploymentSource target_deployment_source = 6;
 }
 
 message DeploymentSource {

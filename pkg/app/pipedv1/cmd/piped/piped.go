@@ -47,7 +47,6 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/pipe-cd/pipecd/pkg/admin"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/apistore/analysisresultstore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/apistore/applicationstore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/apistore/commandstore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/apistore/deploymentstore"
@@ -61,7 +60,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/statsreporter"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/trigger"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
-	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/crypto"
@@ -291,11 +289,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		eventLister = store.Lister()
 	}
 
-	analysisResultStore := analysisresultstore.NewStore(apiClient, input.Logger)
-
-	// Create memory caches.
-	appManifestsCache := memorycache.NewTTLCache(ctx, time.Hour, time.Minute)
-
 	// Start running application live state reporter.
 	{
 		// TODO: Implement the live state reporter controller.
@@ -324,12 +317,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		})
 	}
 
-	decrypter, err := p.initializeSecretDecrypter(cfg)
-	if err != nil {
-		input.Logger.Error("failed to initialize secret decrypter", zap.Error(err))
-		return err
-	}
-
 	// Start running application application drift detector.
 	{
 		// TODO: Implement the drift detector controller.
@@ -342,12 +329,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			gitClient,
 			deploymentLister,
 			commandLister,
-			applicationLister,
-			analysisResultStore,
 			notifier,
-			decrypter,
-			cfg,
-			appManifestsCache,
 			p.gracePeriod,
 			input.Logger,
 			tracerProvider,

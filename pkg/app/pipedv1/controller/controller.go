@@ -35,8 +35,6 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
-	"github.com/pipe-cd/pipecd/pkg/cache"
-	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -71,21 +69,8 @@ type commandLister interface {
 	ListStageCommands(deploymentID, stageID string) []model.ReportableCommand
 }
 
-type applicationLister interface {
-	Get(id string) (*model.Application, bool)
-}
-
-type analysisResultStore interface {
-	GetLatestAnalysisResult(ctx context.Context, applicationID string) (*model.AnalysisResult, error)
-	PutLatestAnalysisResult(ctx context.Context, applicationID string, analysisResult *model.AnalysisResult) error
-}
-
 type notifier interface {
 	Notify(event model.NotificationEvent)
-}
-
-type secretDecrypter interface {
-	Decrypt(string) (string, error)
 }
 
 type DeploymentController interface {
@@ -98,17 +83,12 @@ var (
 )
 
 type controller struct {
-	apiClient           apiClient
-	pluginRegistry      PluginRegistry
-	gitClient           gitClient
-	deploymentLister    deploymentLister
-	commandLister       commandLister
-	applicationLister   applicationLister
-	analysisResultStore analysisResultStore
-	notifier            notifier
-	secretDecrypter     secretDecrypter   // TODO: Remove this
-	pipedCfg            *config.PipedSpec // TODO: Remove this, use pipedConfig instead
-	appManifestsCache   cache.Cache
+	apiClient        apiClient
+	pluginRegistry   PluginRegistry
+	gitClient        gitClient
+	deploymentLister deploymentLister
+	commandLister    commandLister
+	notifier         notifier
 
 	// Map from application ID to the planner
 	// of a pending deployment of that application.
@@ -143,29 +123,20 @@ func NewController(
 	gitClient gitClient,
 	deploymentLister deploymentLister,
 	commandLister commandLister,
-	applicationLister applicationLister,
-	analysisResultStore analysisResultStore,
 	notifier notifier,
-	sd secretDecrypter,
-	pipedCfg *config.PipedSpec,
-	appManifestsCache cache.Cache,
 	gracePeriod time.Duration,
 	logger *zap.Logger,
 	tracerProvider trace.TracerProvider,
 ) DeploymentController {
 
 	return &controller{
-		apiClient:           apiClient,
-		pluginRegistry:      DefaultPluginRegistry(),
-		gitClient:           gitClient,
-		deploymentLister:    deploymentLister,
-		commandLister:       commandLister,
-		applicationLister:   applicationLister,
-		analysisResultStore: analysisResultStore,
-		notifier:            notifier,
-		secretDecrypter:     sd,
-		appManifestsCache:   appManifestsCache,
-		pipedCfg:            pipedCfg,
+		apiClient:        apiClient,
+		pluginRegistry:   DefaultPluginRegistry(),
+		gitClient:        gitClient,
+		deploymentLister: deploymentLister,
+		commandLister:    commandLister,
+		notifier:         notifier,
+
 
 		planners:                              make(map[string]*planner),
 		donePlanners:                          make(map[string]time.Time),
@@ -591,13 +562,7 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		workingDir,
 		c.apiClient,
 		c.gitClient,
-		c.commandLister,
-		c.applicationLister,
-		c.analysisResultStore,
 		c.notifier,
-		c.secretDecrypter,
-		c.pipedCfg,
-		c.appManifestsCache,
 		c.logger,
 		c.tracerProvider,
 	)
