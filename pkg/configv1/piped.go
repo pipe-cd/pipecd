@@ -1291,14 +1291,22 @@ type PipedEventWatcherGitRepo struct {
 	Excludes []string `json:"excludes,omitempty"`
 }
 
+// PipedPlugin defines the plugin configuration for the piped.
 type PipedPlugin struct {
-	Name          string              `json:"name"`
-	Port          int                 `json:"port"`
+	// The name of the plugin.
+	Name string `json:"name"`
+	// The port which the plugin listens to.
+	Port int `json:"port"`
+	// The deploy target names.
 	DeployTargets []PipedDeployTarget `json:"deployTargets,omitempty"`
 }
 
+// PipedDeployTarget defines the deploy target configuration for the piped.
 type PipedDeployTarget struct {
-	Name   string            `json:"name"`
+	// The name of the deploy target.
+	Name string `json:"name"`
+	// The labes of the deploy target.
 	Labels map[string]string `json:"labels,omitempty"`
-	Config json.RawMessage   `json:"config"`
+	// The configuration of the deploy target.
+	Config json.RawMessage `json:"config"`
 }

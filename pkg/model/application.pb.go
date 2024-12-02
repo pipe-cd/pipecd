@@ -116,8 +116,9 @@ type Application struct {
 	// The name of platform provider where to deploy this application.
 	// This must be one of the provider names registered in the piped.
 	// TODO: Add validation for this field.
-	PlatformProvider string   `protobuf:"bytes,15,opt,name=platform_provider,json=platformProvider,proto3" json:"platform_provider,omitempty"`
-	DeployTargets    []string `protobuf:"bytes,16,rep,name=deploy_targets,json=deployTargets,proto3" json:"deploy_targets,omitempty"`
+	PlatformProvider string `protobuf:"bytes,15,opt,name=platform_provider,json=platformProvider,proto3" json:"platform_provider,omitempty"`
+	// The names of deploy taget where to deploy this application.
+	DeployTargets []string `protobuf:"bytes,16,rep,name=deploy_targets,json=deployTargets,proto3" json:"deploy_targets,omitempty"`
 	// Additional description about application.
 	Description string `protobuf:"bytes,9,opt,name=description,proto3" json:"description,omitempty"`
 	// Custom attributes to identify applications.

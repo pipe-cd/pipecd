@@ -246,8 +246,9 @@ type Deployment struct {
 	CloudProvider string `protobuf:"bytes,9,opt,name=cloud_provider,json=cloudProvider,proto3" json:"cloud_provider,omitempty"`
 	// The name of platform provider where to deploy this application.
 	// This must be one of the provider names registered in the piped.
-	PlatformProvider string   `protobuf:"bytes,11,opt,name=platform_provider,json=platformProvider,proto3" json:"platform_provider,omitempty"`
-	DeployTargets    []string `protobuf:"bytes,12,rep,name=deploy_targets,json=deployTargets,proto3" json:"deploy_targets,omitempty"`
+	PlatformProvider string `protobuf:"bytes,11,opt,name=platform_provider,json=platformProvider,proto3" json:"platform_provider,omitempty"`
+	// The names of deploy taget where to deploy this application.
+	DeployTargets []string `protobuf:"bytes,12,rep,name=deploy_targets,json=deployTargets,proto3" json:"deploy_targets,omitempty"`
 	// Custom attributes to identify applications.
 	Labels  map[string]string  `protobuf:"bytes,10,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	Trigger *DeploymentTrigger `protobuf:"bytes,20,opt,name=trigger,proto3" json:"trigger,omitempty"`
