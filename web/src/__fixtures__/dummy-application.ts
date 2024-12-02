@@ -25,6 +25,7 @@ export const dummyApplication: Application.AsObject = {
   id: randomUUID(),
   cloudProvider: "",
   platformProvider: "kubernetes-default",
+  deployTargetsList: ["kubernetes-default"],
   disabled: false,
   gitPath: {
     configFilename: "",
