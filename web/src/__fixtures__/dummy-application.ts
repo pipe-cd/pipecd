@@ -132,6 +132,7 @@ export function createApplicationFromObject(
   const app = new Application();
   app.setId(o.id);
   app.setPlatformProvider(o.platformProvider);
+  app.setDeployTargetsList(o.deployTargetsList);
   app.setDisabled(o.disabled);
   app.setKind(o.kind);
   app.setName(o.name);
