@@ -16,6 +16,7 @@ package deployment
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
@@ -196,8 +197,17 @@ func (a *DeploymentService) ExecuteStage(ctx context.Context, request *deploymen
 	}
 }
 
-func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, input *deployment.ExecutePluginInput) (*deployment.ExecuteStageResponse, error) {
+func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, input *deployment.ExecutePluginInput) (response *deployment.ExecuteStageResponse, err error) {
+	// TODO: move this to the ExecuteStage function and pass the log persister as an argument?
 	lp := a.LogPersister.StageLogPersister(input.GetDeployment().GetId(), input.GetStage().GetId())
+	defer func() {
+		// When the piped cancelled the RPC while the stage is still runnning, we should not mark the log persister as completed.
+		if !response.GetStatus().IsCompleted() && errors.Is(err, context.Canceled) {
+			return
+		}
+		lp.Complete(time.Minute)
+	}()
+
 	lp.Infof("Start syncing the deployment")
 
 	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](input.GetTargetDeploymentSource().GetApplicationConfig())
