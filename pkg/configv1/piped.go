@@ -70,6 +70,8 @@ type PipedSpec struct {
 	CloudProviders []PipedPlatformProvider `json:"cloudProviders,omitempty"`
 	// List of platform providers can be used by this piped.
 	PlatformProviders []PipedPlatformProvider `json:"platformProviders,omitempty"`
+	// List of plugiin configs
+	Plugins []PipedPlugin `json:"plugins,omitempty"`
 	// List of analysis providers can be used by this piped.
 	AnalysisProviders []PipedAnalysisProvider `json:"analysisProviders,omitempty"`
 	// Sending notification to Slack, Webhook…
