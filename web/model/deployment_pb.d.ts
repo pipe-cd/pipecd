@@ -34,6 +34,11 @@ export class Deployment extends jspb.Message {
   getPlatformProvider(): string;
   setPlatformProvider(value: string): Deployment;
 
+  getDeployTargetsList(): Array<string>;
+  setDeployTargetsList(value: Array<string>): Deployment;
+  clearDeployTargetsList(): Deployment;
+  addDeployTargets(value: string, index?: number): Deployment;
+
   getLabelsMap(): jspb.Map<string, string>;
   clearLabelsMap(): Deployment;
 
@@ -107,6 +112,7 @@ export namespace Deployment {
     gitPath?: pkg_model_common_pb.ApplicationGitPath.AsObject,
     cloudProvider: string,
     platformProvider: string,
+    deployTargetsList: Array<string>,
     labelsMap: Array<[string, string]>,
     trigger?: DeploymentTrigger.AsObject,
     summary: string,

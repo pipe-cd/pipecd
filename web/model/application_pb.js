@@ -42,7 +42,7 @@ goog.exportSymbol('proto.model.ApplicationSyncStatus', null, global);
  * @constructor
  */
 proto.model.Application = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.model.Application.repeatedFields_, null);
 };
 goog.inherits(proto.model.Application, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -95,6 +95,13 @@ if (goog.DEBUG && !COMPILED) {
   proto.model.ApplicationDeploymentReference.displayName = 'proto.model.ApplicationDeploymentReference';
 }
 
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.model.Application.repeatedFields_ = [16];
+
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -134,6 +141,7 @@ proto.model.Application.toObject = function(includeInstance, msg) {
     gitPath: (f = msg.getGitPath()) && pkg_model_common_pb.ApplicationGitPath.toObject(includeInstance, f),
     cloudProvider: jspb.Message.getFieldWithDefault(msg, 8, ""),
     platformProvider: jspb.Message.getFieldWithDefault(msg, 15, ""),
+    deployTargetsList: (f = jspb.Message.getRepeatedField(msg, 16)) == null ? undefined : f,
     description: jspb.Message.getFieldWithDefault(msg, 9, ""),
     labelsMap: (f = msg.getLabelsMap()) ? f.toObject(includeInstance, undefined) : [],
     mostRecentlySuccessfulDeployment: (f = msg.getMostRecentlySuccessfulDeployment()) && proto.model.ApplicationDeploymentReference.toObject(includeInstance, f),
@@ -213,6 +221,10 @@ proto.model.Application.deserializeBinaryFromReader = function(msg, reader) {
     case 15:
       var value = /** @type {string} */ (reader.readString());
       msg.setPlatformProvider(value);
+      break;
+    case 16:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addDeployTargets(value);
       break;
     case 9:
       var value = /** @type {string} */ (reader.readString());
@@ -346,6 +358,13 @@ proto.model.Application.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       15,
+      f
+    );
+  }
+  f = message.getDeployTargetsList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      16,
       f
     );
   }
@@ -589,6 +608,43 @@ proto.model.Application.prototype.getPlatformProvider = function() {
  */
 proto.model.Application.prototype.setPlatformProvider = function(value) {
   return jspb.Message.setProto3StringField(this, 15, value);
+};
+
+
+/**
+ * repeated string deploy_targets = 16;
+ * @return {!Array<string>}
+ */
+proto.model.Application.prototype.getDeployTargetsList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 16));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.model.Application} returns this
+ */
+proto.model.Application.prototype.setDeployTargetsList = function(value) {
+  return jspb.Message.setField(this, 16, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.model.Application} returns this
+ */
+proto.model.Application.prototype.addDeployTargets = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 16, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.model.Application} returns this
+ */
+proto.model.Application.prototype.clearDeployTargetsList = function() {
+  return this.setDeployTargetsList([]);
 };
 
 
