@@ -295,7 +295,7 @@ func TestExecuteStage_SignalCancelled(t *testing.T) {
 					Id:     "stage-id",
 					Name:   "stage-name",
 					Index:  0,
-					Status: model.StageStatus_STAGE_RUNNING,
+					Status: model.StageStatus_STAGE_NOT_STARTED_YET,
 				},
 			},
 		},
