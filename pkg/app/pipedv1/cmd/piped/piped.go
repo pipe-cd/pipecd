@@ -642,15 +642,12 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 		return err
 	}
 
-	var (
-		req = &pipedservice.ReportPipedMetaRequest{
-			Version:           version.Get().Version,
-			Config:            string(maskedCfg),
-			Repositories:      repos,
-			PlatformProviders: make([]*model.Piped_PlatformProvider, 0, len(cfg.PlatformProviders)),
-		}
-		retry = pipedservice.NewRetry(5)
-	)
+	req := &pipedservice.ReportPipedMetaRequest{
+		Version:           version.Get().Version,
+		Config:            string(maskedCfg),
+		Repositories:      repos,
+		PlatformProviders: make([]*model.Piped_PlatformProvider, 0, len(cfg.PlatformProviders)),
+	}
 
 	// Configure the list of specified platform providers.
 	for _, cp := range cfg.PlatformProviders {
@@ -677,19 +674,21 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 		}
 	}
 
-	for retry.WaitNext(ctx) {
+	retry := pipedservice.NewRetry(5)
+	_, err = retry.Do(ctx, func() (interface{}, error) {
 		if res, err := client.ReportPipedMeta(ctx, req); err == nil {
 			cfg.Name = res.Name
 			if cfg.WebAddress == "" {
 				cfg.WebAddress = res.WebBaseUrl
 			}
-			return nil
+			return nil, nil
 		}
 		logger.Warn("failed to report piped meta to control-plane, wait to the next retry",
 			zap.Int("calls", retry.Calls()),
 			zap.Error(err),
 		)
-	}
+		return nil, err
+	})
 
 	return err
 }

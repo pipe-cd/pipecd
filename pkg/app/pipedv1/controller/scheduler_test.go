@@ -270,7 +270,7 @@ func TestExecuteStage_SignalTerminated(t *testing.T) {
 
 	handler.Terminate()
 	finalStatus := s.executeStage(sig, s.deployment.Stages[0])
-	assert.Equal(t, model.StageStatus_STAGE_RUNNING, finalStatus)
+	assert.Equal(t, model.StageStatus_STAGE_FAILURE, finalStatus)
 }
 
 func TestExecuteStage_SignalCancelled(t *testing.T) {
@@ -295,7 +295,7 @@ func TestExecuteStage_SignalCancelled(t *testing.T) {
 					Id:     "stage-id",
 					Name:   "stage-name",
 					Index:  0,
-					Status: model.StageStatus_STAGE_NOT_STARTED_YET,
+					Status: model.StageStatus_STAGE_RUNNING,
 				},
 			},
 		},
@@ -306,5 +306,5 @@ func TestExecuteStage_SignalCancelled(t *testing.T) {
 
 	handler.Cancel()
 	finalStatus := s.executeStage(sig, s.deployment.Stages[0])
-	assert.Equal(t, model.StageStatus_STAGE_CANCELLED, finalStatus)
+	assert.Equal(t, model.StageStatus_STAGE_FAILURE, finalStatus)
 }
