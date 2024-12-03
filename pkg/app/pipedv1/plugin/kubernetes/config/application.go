@@ -51,9 +51,15 @@ type KubernetesDeploymentInput struct {
 	// List of manifest files in the application directory used to deploy.
 	// Empty means all manifest files in the directory will be used.
 	Manifests []string `json:"manifests,omitempty"`
+	// Version of kubectl will be used.
+	KubectlVersion string `json:"kubectlVersion,omitempty"`
 
 	// The namespace where manifests will be applied.
 	Namespace string `json:"namespace,omitempty"`
+
+	// Automatically create a new namespace if it does not exist.
+	// Default is false.
+	AutoCreateNamespace bool `json:"autoCreateNamespace,omitempty"`
 
 	// TODO: Define fields for KubernetesDeploymentInput.
 }
@@ -71,4 +77,15 @@ type KubernetesVariantLabel struct {
 	// The label value for BASELINE variant.
 	// Default is baseline.
 	BaselineValue string `json:"baselineValue" default:"baseline"`
+}
+
+type KubernetesDeployTargetConfig struct {
+	// The master URL of the kubernetes cluster.
+	// Empty means in-cluster.
+	MasterURL string `json:"masterURL,omitempty"`
+	// The path to the kubeconfig file.
+	// Empty means in-cluster.
+	KubeConfigPath string `json:"kubeConfigPath,omitempty"`
+	// Version of kubectl will be used.
+	KubectlVersion string `json:"kubectlVersion"`
 }
