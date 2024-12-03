@@ -33,53 +33,57 @@ type mockKubectl struct {
 	CreateNamespaceFunc func(ctx context.Context, kubeconfig, namespace string) error
 }
 
+var (
+	errUnexpectedCall = errors.New("unexpected call")
+)
+
 func (m *mockKubectl) Apply(ctx context.Context, kubeconfig, namespace string, manifest Manifest) error {
 	if m.ApplyFunc != nil {
 		return m.ApplyFunc(ctx, kubeconfig, namespace, manifest)
 	}
-	return nil
+	return errUnexpectedCall
 }
 
 func (m *mockKubectl) Create(ctx context.Context, kubeconfig, namespace string, manifest Manifest) error {
 	if m.CreateFunc != nil {
 		return m.CreateFunc(ctx, kubeconfig, namespace, manifest)
 	}
-	return nil
+	return errUnexpectedCall
 }
 
 func (m *mockKubectl) Replace(ctx context.Context, kubeconfig, namespace string, manifest Manifest) error {
 	if m.ReplaceFunc != nil {
 		return m.ReplaceFunc(ctx, kubeconfig, namespace, manifest)
 	}
-	return nil
+	return errUnexpectedCall
 }
 
 func (m *mockKubectl) ForceReplace(ctx context.Context, kubeconfig, namespace string, manifest Manifest) error {
 	if m.ForceReplaceFunc != nil {
 		return m.ForceReplaceFunc(ctx, kubeconfig, namespace, manifest)
 	}
-	return nil
+	return errUnexpectedCall
 }
 
 func (m *mockKubectl) Delete(ctx context.Context, kubeconfig, namespace string, key ResourceKey) error {
 	if m.DeleteFunc != nil {
 		return m.DeleteFunc(ctx, kubeconfig, namespace, key)
 	}
-	return nil
+	return errUnexpectedCall
 }
 
 func (m *mockKubectl) Get(ctx context.Context, kubeconfig, namespace string, key ResourceKey) (Manifest, error) {
 	if m.GetFunc != nil {
 		return m.GetFunc(ctx, kubeconfig, namespace, key)
 	}
-	return Manifest{}, nil
+	return Manifest{}, errUnexpectedCall
 }
 
 func (m *mockKubectl) CreateNamespace(ctx context.Context, kubeconfig, namespace string) error {
 	if m.CreateNamespaceFunc != nil {
 		return m.CreateNamespaceFunc(ctx, kubeconfig, namespace)
 	}
-	return nil
+	return errUnexpectedCall
 }
 
 func TestApplier_ApplyManifest(t *testing.T) {
