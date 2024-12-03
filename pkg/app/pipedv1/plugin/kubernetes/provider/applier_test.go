@@ -175,3 +175,93 @@ func TestApplier_ApplyManifest(t *testing.T) {
 		})
 	}
 }
+
+func TestApplier_CreateManifest(t *testing.T) {
+	t.Parallel()
+
+	var (
+		errNamespaceCreation = errors.New("namespace creation error")
+		errCreate            = errors.New("create error")
+	)
+
+	testCases := []struct {
+		name                string
+		autoCreateNamespace bool
+		createNamespaceErr  error
+		createErr           error
+		expectedErr         error
+	}{
+		{
+			name:                "successful create without namespace creation",
+			autoCreateNamespace: false,
+			expectedErr:         nil,
+		},
+		{
+			name:                "successful create with namespace creation",
+			autoCreateNamespace: true,
+			expectedErr:         nil,
+		},
+		{
+			name:                "namespace creation error",
+			autoCreateNamespace: true,
+			createNamespaceErr:  errNamespaceCreation,
+			expectedErr:         errNamespaceCreation,
+		},
+		{
+			name:                "create error",
+			autoCreateNamespace: false,
+			createErr:           errCreate,
+			expectedErr:         errCreate,
+		},
+		{
+			name:                "successful create with existing namespace",
+			autoCreateNamespace: true,
+			createNamespaceErr:  errResourceAlreadyExists,
+			expectedErr:         nil,
+		},
+		{
+			name:                "create error after successful namespace creation",
+			autoCreateNamespace: true,
+			createErr:           errCreate,
+			expectedErr:         errCreate,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			mockKubectl := &mockKubectl{
+				CreateNamespaceFunc: func(ctx context.Context, kubeconfig, namespace string) error {
+					return tc.createNamespaceErr
+				},
+				CreateFunc: func(ctx context.Context, kubeconfig, namespace string, manifest Manifest) error {
+					return tc.createErr
+				},
+			}
+
+			applier := NewApplier(
+				mockKubectl,
+				config.KubernetesDeploymentInput{
+					AutoCreateNamespace: tc.autoCreateNamespace,
+				},
+				config.KubernetesDeployTargetConfig{
+					KubeConfigPath: "test-kubeconfig",
+				},
+				zap.NewNop(),
+			)
+
+			manifest := Manifest{
+				Key: ResourceKey{
+					Namespace: "test-namespace",
+				},
+			}
+
+			err := applier.CreateManifest(context.Background(), manifest)
+			if !errors.Is(err, tc.expectedErr) {
+				t.Errorf("expected error %v, got %v", tc.expectedErr, err)
+			}
+		})
+	}
+}
