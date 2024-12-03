@@ -151,16 +151,16 @@ func TestApplier_ApplyManifest(t *testing.T) {
 				},
 			}
 
-			applier := &Applier{
-				kubectl: mockKubectl,
-				input: config.KubernetesDeploymentInput{
+			applier := NewApplier(
+				mockKubectl,
+				config.KubernetesDeploymentInput{
 					AutoCreateNamespace: tc.autoCreateNamespace,
 				},
-				deployTarget: config.KubernetesDeployTargetConfig{
+				config.KubernetesDeployTargetConfig{
 					KubeConfigPath: "test-kubeconfig",
 				},
-				logger: zap.NewNop(),
-			}
+				zap.NewNop(),
+			)
 
 			manifest := Manifest{
 				Key: ResourceKey{
