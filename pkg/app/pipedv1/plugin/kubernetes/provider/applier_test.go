@@ -537,3 +537,57 @@ metadata:
 		})
 	}
 }
+
+func TestApplier_getNamespaceToRun(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name           string
+		inputNamespace string
+		resourceKey    ResourceKey
+		expected       string
+	}{
+		{
+			name:           "input namespace is used",
+			inputNamespace: "input-namespace",
+			resourceKey: ResourceKey{
+				Namespace: "resource-namespace",
+			},
+			expected: "input-namespace",
+		},
+		{
+			name:           "resource key namespace is used",
+			inputNamespace: "",
+			resourceKey: ResourceKey{
+				Namespace: "resource-namespace",
+			},
+			expected: "resource-namespace",
+		},
+		{
+			name:           "both namespaces are empty",
+			inputNamespace: "",
+			resourceKey: ResourceKey{
+				Namespace: "",
+			},
+			expected: "",
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			applier := &Applier{
+				input: config.KubernetesDeploymentInput{
+					Namespace: tc.inputNamespace,
+				},
+			}
+
+			result := applier.getNamespaceToRun(tc.resourceKey)
+			if result != tc.expected {
+				t.Errorf("expected %v, got %v", tc.expected, result)
+			}
+		})
+	}
+}
