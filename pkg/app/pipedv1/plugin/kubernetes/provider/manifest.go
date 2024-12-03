@@ -14,7 +14,10 @@
 
 package provider
 
-import "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+import (
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"sigs.k8s.io/yaml"
+)
 
 // Manifest represents a Kubernetes resource manifest.
 type Manifest struct {
@@ -26,6 +29,10 @@ type Manifest struct {
 func (m *Manifest) UnmarshalJSON(data []byte) error {
 	m.Body = new(unstructured.Unstructured)
 	return m.Body.UnmarshalJSON(data)
+}
+
+func (m *Manifest) YamlBytes() ([]byte, error) {
+	return yaml.Marshal(m.Body)
 }
 
 func (m Manifest) AddAnnotations(annotations map[string]string) {
