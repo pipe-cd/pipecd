@@ -21,11 +21,11 @@ import (
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
-	"github.com/pipe-cd/pipecd/pkg/regexpool"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -33,8 +33,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type toolRegistry interface {
-	InstallTool(ctx context.Context, name, version string) (path string, err error)
+type toolClient interface {
+	InstallTool(ctx context.Context, name, version, script string) (string, error)
 }
 
 type loader interface {
@@ -60,21 +60,21 @@ type logPersister interface {
 type DeploymentService struct {
 	deployment.UnimplementedDeploymentServiceServer
 
-	RegexPool    *regexpool.Pool
-	Logger       *zap.Logger
-	ToolRegistry toolRegistry
-	Loader       loader
-	LogPersister logPersister
+	logger       *zap.Logger
+	loader       loader
+	logPersister logPersister
 }
 
 // NewDeploymentService creates a new planService.
 func NewDeploymentService(
 	logger *zap.Logger,
+	toolClient toolClient,
+	logPersister logPersister,
 ) *DeploymentService {
 	return &DeploymentService{
-		RegexPool:    regexpool.DefaultPool(),
-		Logger:       logger.Named("planner"),
-		ToolRegistry: nil, // TODO: set the tool registry
+		logger:       logger.Named("planner"),
+		loader:       provider.NewLoader(toolregistry.NewRegistry(toolClient)),
+		logPersister: logPersister,
 	}
 }
 
@@ -102,7 +102,7 @@ func (a *DeploymentService) DetermineStrategy(ctx context.Context, request *depl
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	strategy, summary := determineStrategy(runnings, targets, cfg.Spec.Workloads, a.Logger)
+	strategy, summary := determineStrategy(runnings, targets, cfg.Spec.Workloads, a.logger)
 
 	return &deployment.DetermineStrategyResponse{
 		SyncStrategy: strategy,
@@ -165,7 +165,7 @@ func (a *DeploymentService) FetchDefinedStages(context.Context, *deployment.Fetc
 }
 
 func (a *DeploymentService) loadManifests(ctx context.Context, deploy *model.Deployment, spec *kubeconfig.KubernetesApplicationSpec, deploymentSource *deployment.DeploymentSource) ([]provider.Manifest, error) {
-	manifests, err := a.Loader.LoadManifests(ctx, provider.LoaderInput{
+	manifests, err := a.loader.LoadManifests(ctx, provider.LoaderInput{
 		PipedID:          deploy.GetPipedId(),
 		AppID:            deploy.GetApplicationId(),
 		CommitHash:       deploy.GetTrigger().GetCommit().GetHash(),
@@ -199,7 +199,7 @@ func (a *DeploymentService) ExecuteStage(ctx context.Context, request *deploymen
 
 func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, input *deployment.ExecutePluginInput) (response *deployment.ExecuteStageResponse, err error) {
 	// TODO: move this to the ExecuteStage function and pass the log persister as an argument?
-	lp := a.LogPersister.StageLogPersister(input.GetDeployment().GetId(), input.GetStage().GetId())
+	lp := a.logPersister.StageLogPersister(input.GetDeployment().GetId(), input.GetStage().GetId())
 	defer func() {
 		// When the piped cancelled the RPC while the stage is still runnning, we should not mark the log persister as completed.
 		if !response.GetStatus().IsCompleted() && errors.Is(err, context.Canceled) {
