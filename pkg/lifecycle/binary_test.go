@@ -15,12 +15,16 @@
 package lifecycle
 
 import (
+	"context"
+	"net/http"
+	"net/http/httptest"
 	"strconv"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestGracefulStopCommand(t *testing.T) {
@@ -40,7 +44,7 @@ func TestGracefulStopCommand(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			cmd, err := RunBinary("sh", []string{"sleep", "1m"})
+			cmd, err := RunBinary(context.TODO(), "sh", []string{"sleep", "1m"})
 			require.NoError(t, err)
 			require.NotNil(t, cmd)
 
@@ -71,7 +75,7 @@ func TestGracefulStopCommandResult(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			cmd, err := RunBinary("sh", []string{"-c", "exit " + strconv.Itoa(tc.exitCode)})
+			cmd, err := RunBinary(context.TODO(), "sh", []string{"-c", "exit " + strconv.Itoa(tc.exitCode)})
 			require.NoError(t, err)
 			require.NotNil(t, cmd)
 
@@ -80,4 +84,43 @@ func TestGracefulStopCommandResult(t *testing.T) {
 			assert.False(t, cmd.IsRunning())
 		})
 	}
+}
+
+func TestDownloadBinary(t *testing.T) {
+	server := httpTestServer()
+	defer server.Close()
+
+	logger := zaptest.NewLogger(t)
+	destDir := t.TempDir()
+	destFile := "test-binary"
+
+	t.Run("successful download", func(t *testing.T) {
+		url := server.URL + "/binary"
+		path, err := DownloadBinary(url, destDir, destFile, logger)
+		require.NoError(t, err)
+		assert.FileExists(t, path)
+	})
+
+	t.Run("file already exists", func(t *testing.T) {
+		url := server.URL + "/binary"
+		path, err := DownloadBinary(url, destDir, destFile, logger)
+		require.NoError(t, err)
+		assert.FileExists(t, path)
+
+		// Try downloading again, should not error and file should still exist
+		path, err = DownloadBinary(url, destDir, destFile, logger)
+		require.NoError(t, err)
+		assert.FileExists(t, path)
+	})
+}
+
+func httpTestServer() *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/binary" {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("test binary content"))
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
 }

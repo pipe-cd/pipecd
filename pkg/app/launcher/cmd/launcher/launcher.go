@@ -306,7 +306,7 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 		}
 
 		// Start new piped process.
-		runningPiped, err = l.launchNewPiped(version, config, workingDir, input.Logger)
+		runningPiped, err = l.launchNewPiped(ctx, version, config, workingDir, input.Logger)
 		if err != nil {
 			input.Logger.Error("LAUNCHER: failed while launching new Piped", zap.Error(err))
 			return err
@@ -404,7 +404,7 @@ func (l *launcher) cleanOldPiped(cmd *lifecycle.Command, workingDir string, logg
 	return nil
 }
 
-func (l *launcher) launchNewPiped(version string, config []byte, workingDir string, logger *zap.Logger) (*lifecycle.Command, error) {
+func (l *launcher) launchNewPiped(ctx context.Context, version string, config []byte, workingDir string, logger *zap.Logger) (*lifecycle.Command, error) {
 	if err := os.MkdirAll(workingDir, 0755); err != nil {
 		return nil, fmt.Errorf("could not create working directory %s (%w)", workingDir, err)
 	}
@@ -436,7 +436,7 @@ func (l *launcher) launchNewPiped(version string, config []byte, workingDir stri
 	args := makePipedArgs(os.Args[2:], configFilePath)
 	logger.Info(fmt.Sprintf("LAUNCHER: start running Piped %s with args %v", version, args))
 
-	return lifecycle.RunBinary(pipedPath, args)
+	return lifecycle.RunBinary(ctx, pipedPath, args)
 }
 
 func (l *launcher) loadConfigData(ctx context.Context) ([]byte, error) {

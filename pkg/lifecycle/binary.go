@@ -70,8 +70,8 @@ func (c *Command) GracefulStop(period time.Duration) error {
 	}
 }
 
-func RunBinary(execPath string, args []string) (*Command, error) {
-	cmd, err := backoff.NewRetry(runBinaryRetryCount, backoff.NewConstant(5*time.Second)).Do(context.Background(), func() (interface{}, error) {
+func RunBinary(ctx context.Context, execPath string, args []string) (*Command, error) {
+	cmd, err := backoff.NewRetry(runBinaryRetryCount, backoff.NewConstant(5*time.Second)).Do(ctx, func() (interface{}, error) {
 		cmd := exec.Command(execPath, args...)
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
