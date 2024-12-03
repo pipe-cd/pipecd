@@ -389,3 +389,151 @@ func TestApplier_ForceReplaceManifest(t *testing.T) {
 		})
 	}
 }
+
+func TestApplier_Delete(t *testing.T) {
+	t.Parallel()
+
+	var (
+		errGet    = errors.New("get error")
+		errDelete = errors.New("delete error")
+	)
+
+	testCases := []struct {
+		name        string
+		getErr      error
+		deleteErr   error
+		manifest    string
+		resourceKey ResourceKey
+		expectedErr error
+	}{
+		{
+			name: "successful delete",
+			manifest: `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-config
+  annotations:
+    pipecd.dev/resource-key: "v1:ConfigMap::test-config"
+`,
+			resourceKey: ResourceKey{
+				APIVersion: "v1",
+				Kind:       "ConfigMap",
+				Namespace:  "",
+				Name:       "test-config",
+			},
+			expectedErr: nil,
+		},
+		{
+			name:   "get error",
+			getErr: errGet,
+			manifest: `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-config
+  annotations:
+    pipecd.dev/resource-key: "v1:ConfigMap::test-config"
+`,
+			resourceKey: ResourceKey{
+				APIVersion: "v1",
+				Kind:       "ConfigMap",
+				Namespace:  "",
+				Name:       "test-config",
+			},
+			expectedErr: errGet,
+		},
+		{
+			name:      "delete error",
+			deleteErr: errDelete,
+			manifest: `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-config
+  annotations:
+    pipecd.dev/resource-key: "v1:ConfigMap::test-config"
+`,
+			resourceKey: ResourceKey{
+				APIVersion: "v1",
+				Kind:       "ConfigMap",
+				Namespace:  "",
+				Name:       "test-config",
+			},
+			expectedErr: errDelete,
+		},
+		{
+			name: "resource key mismatch",
+			manifest: `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-config
+  annotations:
+    pipecd.dev/resource-key: "v1:ConfigMap::test-config"
+`,
+			resourceKey: ResourceKey{
+				APIVersion: "v1",
+				Kind:       "ConfigMap",
+				Namespace:  "",
+				Name:       "another-config",
+			},
+			expectedErr: ErrNotFound,
+		},
+		{
+			name: "successful delete with namespace",
+			manifest: `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-config
+  namespace: test-namespace
+  annotations:
+    pipecd.dev/resource-key: "v1:ConfigMap:test-namespace:test-config"
+`,
+			resourceKey: ResourceKey{
+				APIVersion: "v1",
+				Kind:       "ConfigMap",
+				Namespace:  "test-namespace",
+				Name:       "test-config",
+			},
+			expectedErr: nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			manifests := mustParseManifests(t, tc.manifest)
+			manifest := manifests[0]
+
+			mockKubectl := &mockKubectl{
+				GetFunc: func(ctx context.Context, kubeconfig, namespace string, key ResourceKey) (Manifest, error) {
+					if tc.getErr != nil {
+						return Manifest{}, tc.getErr
+					}
+					return manifest, nil
+				},
+				DeleteFunc: func(ctx context.Context, kubeconfig, namespace string, key ResourceKey) error {
+					return tc.deleteErr
+				},
+			}
+
+			applier := NewApplier(
+				mockKubectl,
+				config.KubernetesDeploymentInput{},
+				config.KubernetesDeployTargetConfig{
+					KubeConfigPath: "test-kubeconfig",
+				},
+				zap.NewNop(),
+			)
+
+			err := applier.Delete(context.Background(), tc.resourceKey)
+			if !errors.Is(err, tc.expectedErr) {
+				t.Errorf("expected error %v, got %v", tc.expectedErr, err)
+			}
+		})
+	}
+}
