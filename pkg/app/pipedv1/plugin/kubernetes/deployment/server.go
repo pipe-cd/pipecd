@@ -33,7 +33,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type toolRegistry interface {
+type toolClient interface {
 	InstallTool(ctx context.Context, name, version, script string) (string, error)
 }
 
@@ -68,12 +68,12 @@ type DeploymentService struct {
 // NewDeploymentService creates a new planService.
 func NewDeploymentService(
 	logger *zap.Logger,
-	toolRegistry toolRegistry,
+	toolClient toolClient,
 	logPersister logPersister,
 ) *DeploymentService {
 	return &DeploymentService{
 		logger:       logger.Named("planner"),
-		loader:       provider.NewLoader(toolregistry.NewRegistry(toolRegistry)),
+		loader:       provider.NewLoader(toolregistry.NewRegistry(toolClient)),
 		logPersister: logPersister,
 	}
 }

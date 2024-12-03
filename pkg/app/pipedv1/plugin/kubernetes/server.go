@@ -75,7 +75,7 @@ func (s *server) run(ctx context.Context, input cli.Input) (runErr error) {
 		var (
 			service = deployment.NewDeploymentService(
 				input.Logger,
-				nil, // TODO: set the tool registry here.
+				nil, // TODO: set the tool registry client here.
 				nil, // TODO: set the log persister here.
 			)
 			opts = []rpc.Option{
