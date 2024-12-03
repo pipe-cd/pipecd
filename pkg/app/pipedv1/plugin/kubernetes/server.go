@@ -16,6 +16,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"net"
 	"strconv"
 	"time"
@@ -46,7 +47,7 @@ type server struct {
 func NewServerCommand() *cobra.Command {
 	s := &server{
 		apiPort:                10000,
-		pipedPluginServicePort: 9087,
+		pipedPluginServicePort: -1, // default as error value
 		gracePeriod:            30 * time.Second,
 	}
 	cmd := &cobra.Command{
@@ -56,7 +57,7 @@ func NewServerCommand() *cobra.Command {
 	}
 
 	cmd.Flags().IntVar(&s.apiPort, "api-port", s.apiPort, "The port number used to run a grpc server for external apis.")
-	cmd.Flags().IntVar(&s.pipedPluginServicePort, "piped-plugin-service-port", s.pipedPluginServicePort, "The port number used to connect to the piped plugin service.")
+	cmd.Flags().IntVar(&s.pipedPluginServicePort, "piped-plugin-service-port", s.pipedPluginServicePort, "The port number used to connect to the piped plugin service.") // TODO: we should discuss about the name of this flag, or we should use environment variable instead.
 	cmd.Flags().DurationVar(&s.gracePeriod, "grace-period", s.gracePeriod, "How long to wait for graceful shutdown.")
 
 	cmd.Flags().BoolVar(&s.tls, "tls", s.tls, "Whether running the gRPC server with TLS or not.")
@@ -75,6 +76,11 @@ func (s *server) run(ctx context.Context, input cli.Input) (runErr error) {
 	defer cancel()
 
 	group, ctx := errgroup.WithContext(ctx)
+
+	if s.pipedPluginServicePort == -1 {
+		input.Logger.Error("piped-plugin-service-port is required")
+		return errors.New("piped-plugin-service-port is required")
+	}
 
 	pipedapiClient, err := pipedapi.NewClient(ctx, net.JoinHostPort("localhost", strconv.Itoa(s.pipedPluginServicePort)), nil)
 	if err != nil {
