@@ -327,3 +327,65 @@ func TestApplier_ReplaceManifest(t *testing.T) {
 		})
 	}
 }
+
+func TestApplier_ForceReplaceManifest(t *testing.T) {
+	t.Parallel()
+
+	var (
+		errForceReplace = errors.New("force replace error")
+	)
+
+	testCases := []struct {
+		name            string
+		forceReplaceErr error
+		expectedErr     error
+	}{
+		{
+			name:        "successful force replace",
+			expectedErr: nil,
+		},
+		{
+			name:            "force replace error",
+			forceReplaceErr: errForceReplace,
+			expectedErr:     errForceReplace,
+		},
+		{
+			name:            "force replace not found error",
+			forceReplaceErr: errorReplaceNotFound,
+			expectedErr:     ErrNotFound,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			mockKubectl := &mockKubectl{
+				ForceReplaceFunc: func(ctx context.Context, kubeconfig, namespace string, manifest Manifest) error {
+					return tc.forceReplaceErr
+				},
+			}
+
+			applier := NewApplier(
+				mockKubectl,
+				config.KubernetesDeploymentInput{},
+				config.KubernetesDeployTargetConfig{
+					KubeConfigPath: "test-kubeconfig",
+				},
+				zap.NewNop(),
+			)
+
+			manifest := Manifest{
+				Key: ResourceKey{
+					Namespace: "test-namespace",
+				},
+			}
+
+			err := applier.ForceReplaceManifest(context.Background(), manifest)
+			if !errors.Is(err, tc.expectedErr) {
+				t.Errorf("expected error %v, got %v", tc.expectedErr, err)
+			}
+		})
+	}
+}
