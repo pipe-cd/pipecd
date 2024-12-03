@@ -21,6 +21,7 @@ import (
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
@@ -33,7 +34,7 @@ import (
 )
 
 type toolRegistry interface {
-	InstallTool(ctx context.Context, name, version string) (path string, err error)
+	InstallTool(ctx context.Context, name, version, script string) (string, error)
 }
 
 type loader interface {
@@ -60,7 +61,6 @@ type DeploymentService struct {
 	deployment.UnimplementedDeploymentServiceServer
 
 	logger       *zap.Logger
-	toolRegistry toolRegistry
 	loader       loader
 	logPersister logPersister
 }
@@ -68,10 +68,13 @@ type DeploymentService struct {
 // NewDeploymentService creates a new planService.
 func NewDeploymentService(
 	logger *zap.Logger,
+	toolRegistry toolRegistry,
+	logPersister logPersister,
 ) *DeploymentService {
 	return &DeploymentService{
 		logger:       logger.Named("planner"),
-		toolRegistry: nil, // TODO: set the tool registry
+		loader:       provider.NewLoader(toolregistry.NewRegistry(toolRegistry)),
+		logPersister: logPersister,
 	}
 }
 

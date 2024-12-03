@@ -68,11 +68,15 @@ func (s *server) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	group, ctx := errgroup.WithContext(ctx)
 
+	// TODO: create the piped plugin gRPC client here.
+
 	// Start a gRPC server for handling external API requests.
 	{
 		var (
 			service = deployment.NewDeploymentService(
 				input.Logger,
+				nil, // TODO: set the tool registry here.
+				nil, // TODO: set the log persister here.
 			)
 			opts = []rpc.Option{
 				rpc.WithPort(s.apiPort),
