@@ -265,3 +265,65 @@ func TestApplier_CreateManifest(t *testing.T) {
 		})
 	}
 }
+
+func TestApplier_ReplaceManifest(t *testing.T) {
+	t.Parallel()
+
+	var (
+		errReplace = errors.New("replace error")
+	)
+
+	testCases := []struct {
+		name        string
+		replaceErr  error
+		expectedErr error
+	}{
+		{
+			name:        "successful replace",
+			expectedErr: nil,
+		},
+		{
+			name:        "replace error",
+			replaceErr:  errReplace,
+			expectedErr: errReplace,
+		},
+		{
+			name:        "replace not found error",
+			replaceErr:  errorReplaceNotFound,
+			expectedErr: ErrNotFound,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			mockKubectl := &mockKubectl{
+				ReplaceFunc: func(ctx context.Context, kubeconfig, namespace string, manifest Manifest) error {
+					return tc.replaceErr
+				},
+			}
+
+			applier := NewApplier(
+				mockKubectl,
+				config.KubernetesDeploymentInput{},
+				config.KubernetesDeployTargetConfig{
+					KubeConfigPath: "test-kubeconfig",
+				},
+				zap.NewNop(),
+			)
+
+			manifest := Manifest{
+				Key: ResourceKey{
+					Namespace: "test-namespace",
+				},
+			}
+
+			err := applier.ReplaceManifest(context.Background(), manifest)
+			if !errors.Is(err, tc.expectedErr) {
+				t.Errorf("expected error %v, got %v", tc.expectedErr, err)
+			}
+		})
+	}
+}
