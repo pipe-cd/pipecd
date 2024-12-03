@@ -77,6 +77,12 @@ type ToolRegistry interface {
 	Helm(ctx context.Context, version string) (string, error)
 }
 
+func NewLoader(registry ToolRegistry) *Loader {
+	return &Loader{
+		toolRegistry: registry,
+	}
+}
+
 func (l *Loader) LoadManifests(ctx context.Context, input LoaderInput) (manifests []Manifest, err error) {
 	defer func() {
 		// Override namespace if set because ParseManifests does not parse it
