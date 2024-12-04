@@ -207,7 +207,6 @@ func (a *DeploymentService) loadManifests(ctx context.Context, deploy *model.Dep
 }
 
 func (a *DeploymentService) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (response *deployment.ExecuteStageResponse, _ error) {
-	// TODO: move this to the ExecuteStage function and pass the log persister as an argument?
 	lp := a.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId())
 	defer func() {
 		// When the piped cancelled the RPC while the stage is still runnning, we should not mark the log persister as completed.
