@@ -109,29 +109,26 @@ func buildDeployment(
 }
 
 func reportMostRecentlyTriggeredDeployment(ctx context.Context, client apiClient, d *model.Deployment) error {
-	var (
-		err error
-		req = &pipedservice.ReportApplicationMostRecentDeploymentRequest{
-			ApplicationId: d.ApplicationId,
-			Status:        model.DeploymentStatus_DEPLOYMENT_PENDING,
-			Deployment: &model.ApplicationDeploymentReference{
-				DeploymentId: d.Id,
-				Trigger:      d.Trigger,
-				Summary:      d.Summary,
-				Version:      d.Version,
-				Versions:     d.Versions,
-				StartedAt:    d.CreatedAt,
-				CompletedAt:  d.CompletedAt,
-			},
-		}
-		retry = pipedservice.NewRetry(10)
-	)
-
-	for retry.WaitNext(ctx) {
-		if _, err = client.ReportApplicationMostRecentDeployment(ctx, req); err == nil {
-			return nil
-		}
-		err = fmt.Errorf("failed to report most recent successful deployment: %w", err)
+	req := &pipedservice.ReportApplicationMostRecentDeploymentRequest{
+		ApplicationId: d.ApplicationId,
+		Status:        model.DeploymentStatus_DEPLOYMENT_PENDING,
+		Deployment: &model.ApplicationDeploymentReference{
+			DeploymentId: d.Id,
+			Trigger:      d.Trigger,
+			Summary:      d.Summary,
+			Version:      d.Version,
+			Versions:     d.Versions,
+			StartedAt:    d.CreatedAt,
+			CompletedAt:  d.CompletedAt,
+		},
 	}
+	_, err := pipedservice.NewRetry(10).Do(ctx, func() (interface{}, error) {
+		_, err := client.ReportApplicationMostRecentDeployment(ctx, req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to report most recent successful deployment: %w", err)
+		}
+		return nil, nil
+	})
+
 	return err
 }
