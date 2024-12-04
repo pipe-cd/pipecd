@@ -206,28 +206,30 @@ func (a *DeploymentService) loadManifests(ctx context.Context, deploy *model.Dep
 	return manifests, nil
 }
 
-func (a *DeploymentService) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (*deployment.ExecuteStageResponse, error) {
-	switch request.GetInput().GetStage().GetName() {
-	case StageK8sSync.String():
-		return a.executeK8sSyncStage(ctx, request.GetInput())
-	case StageK8sRollback.String():
-		return a.executeK8sRollbackStage(ctx, request.GetInput())
-	default:
-		return nil, status.Error(codes.InvalidArgument, "unimplemented or unsupported stage")
-	}
-}
-
-func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, input *deployment.ExecutePluginInput) (response *deployment.ExecuteStageResponse, err error) {
+func (a *DeploymentService) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (response *deployment.ExecuteStageResponse, _ error) {
 	// TODO: move this to the ExecuteStage function and pass the log persister as an argument?
-	lp := a.logPersister.StageLogPersister(input.GetDeployment().GetId(), input.GetStage().GetId())
+	lp := a.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId())
 	defer func() {
 		// When the piped cancelled the RPC while the stage is still runnning, we should not mark the log persister as completed.
-		if !response.GetStatus().IsCompleted() && errors.Is(err, context.Canceled) {
+		// we use the context error to check if the RPC is cancelled by the piped.
+		// we don't use the response error to check context cancellation because the response error can be set without wrapping the context error.
+		if !response.GetStatus().IsCompleted() && errors.Is(ctx.Err(), context.Canceled) {
 			return
 		}
 		lp.Complete(time.Minute)
 	}()
 
+	switch request.GetInput().GetStage().GetName() {
+	case StageK8sSync.String():
+		return a.executeK8sSyncStage(ctx, lp, request.GetInput())
+	case StageK8sRollback.String():
+		return a.executeK8sRollbackStage(ctx, lp, request.GetInput())
+	default:
+		return nil, status.Error(codes.InvalidArgument, "unimplemented or unsupported stage")
+	}
+}
+
+func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersister.StageLogPersister, input *deployment.ExecutePluginInput) (response *deployment.ExecuteStageResponse, err error) {
 	lp.Infof("Start syncing the deployment")
 
 	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](input.GetTargetDeploymentSource().GetApplicationConfig())
@@ -295,6 +297,6 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, input *depl
 	}, nil
 }
 
-func (a *DeploymentService) executeK8sRollbackStage(ctx context.Context, input *deployment.ExecutePluginInput) (*deployment.ExecuteStageResponse, error) {
+func (a *DeploymentService) executeK8sRollbackStage(ctx context.Context, lp logpersister.StageLogPersister, input *deployment.ExecutePluginInput) (*deployment.ExecuteStageResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "not implemented")
 }
