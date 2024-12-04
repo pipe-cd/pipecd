@@ -45,9 +45,8 @@ type server struct {
 // NewServerCommand creates a new cobra command for executing api server.
 func NewServerCommand() *cobra.Command {
 	s := &server{
-		apiPort:                10000,
-		pipedPluginServicePort: -1, // default as error value
-		gracePeriod:            30 * time.Second,
+		apiPort:     10000,
+		gracePeriod: 30 * time.Second,
 	}
 	cmd := &cobra.Command{
 		Use:   "server",
