@@ -298,5 +298,76 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersi
 }
 
 func (a *DeploymentService) executeK8sRollbackStage(ctx context.Context, lp logpersister.StageLogPersister, input *deployment.ExecutePluginInput) (*deployment.ExecuteStageResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "not implemented")
+	if input.GetDeployment().GetRunningCommitHash() == "" {
+		lp.Errorf("Unable to determine the last deployed commit to rollback. It seems this is the first deployment.")
+		return nil, status.Error(codes.InvalidArgument, "running commit hash is required for rollback")
+	}
+
+	lp.Info("Start rolling back the deployment")
+
+	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](input.GetRunningDeploymentSource().GetApplicationConfig())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	lp.Infof("Loading manifests at commit %s for handling", input.GetDeployment().GetRunningCommitHash())
+	manifests, err := a.loadManifests(ctx, input.GetDeployment(), cfg.Spec, input.GetRunningDeploymentSource())
+	if err != nil {
+		lp.Errorf("Failed while loading manifests (%v)", err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	lp.Successf("Successfully loaded %d manifests", len(manifests))
+
+	// Because the loaded manifests are read-only
+	// we duplicate them to avoid updating the shared manifests data in cache.
+	// TODO: implement duplicateManifests function
+
+	// When addVariantLabelToSelector is true, ensure that all workloads
+	// have the variant label in their selector.
+	var (
+		variantLabel   = cfg.Spec.VariantLabel.Key
+		primaryVariant = cfg.Spec.VariantLabel.PrimaryValue
+	)
+	// TODO: handle cfg.Spec.QuickSync.AddVariantLabelToSelector
+
+	// Add variant annotations to all manifests.
+	for i := range manifests {
+		manifests[i].AddAnnotations(map[string]string{
+			variantLabel: primaryVariant,
+		})
+	}
+
+	// TODO: implement annotateConfigHash to ensure restart of workloads when config changes
+
+	// Get the deploy target config.
+	var deployTargetConfig kubeconfig.KubernetesDeployTargetConfig
+	deployTarget := a.pluginConfig.FindDeployTarget(input.GetDeployment().GetDeployTargets()[0]) // TODO: check if there is a deploy target
+	if err := json.Unmarshal(deployTarget.Config, &deployTargetConfig); err != nil {             // TODO: do not unmarshal the config here, but in the initialization of the plugin
+		lp.Errorf("Failed while unmarshalling deploy target config (%v)", err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	// Get the kubectl tool path.
+	kubectlPath, err := a.toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion, defaultKubectlVersion))
+	if err != nil {
+		lp.Errorf("Failed while getting kubectl tool (%v)", err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	// Create the applier for the target cluster.
+	applier := provider.NewApplier(provider.NewKubectl(kubectlPath), cfg.Spec.Input, deployTargetConfig, a.logger)
+
+	// Start applying all manifests to add or update running resources.
+	if err := applyManifests(ctx, applier, manifests, cfg.Spec.Input.Namespace, lp); err != nil {
+		lp.Errorf("Failed while applying manifests (%v)", err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	// TODO: implement prune resources
+	// TODO: delete all resources of CANARY variant
+	// TODO: delete all resources of BASELINE variant
+
+	return &deployment.ExecuteStageResponse{
+		Status: model.StageStatus_STAGE_SUCCESS,
+	}, nil
 }
