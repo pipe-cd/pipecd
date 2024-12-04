@@ -15,7 +15,9 @@
 package deployment
 
 import (
+	"cmp"
 	"context"
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -33,8 +35,18 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+const (
+	defaultKubectlVersion = "1.18.2"
+)
+
 type toolClient interface {
 	InstallTool(ctx context.Context, name, version, script string) (string, error)
+}
+
+type toolRegistry interface {
+	Kubectl(ctx context.Context, version string) (string, error)
+	Kustomize(ctx context.Context, version string) (string, error)
+	Helm(ctx context.Context, version string) (string, error)
 }
 
 type loader interface {
@@ -60,7 +72,12 @@ type logPersister interface {
 type DeploymentService struct {
 	deployment.UnimplementedDeploymentServiceServer
 
+	// this field is set with the plugin configuration
+	// the plugin configuration is sent from piped while initializing the plugin
+	pluginConfig *config.PipedPlugin
+
 	logger       *zap.Logger
+	toolRegistry toolRegistry
 	loader       loader
 	logPersister logPersister
 }
@@ -71,9 +88,12 @@ func NewDeploymentService(
 	toolClient toolClient,
 	logPersister logPersister,
 ) *DeploymentService {
+	toolRegistry := toolregistry.NewRegistry(toolClient)
+
 	return &DeploymentService{
 		logger:       logger.Named("planner"),
-		loader:       provider.NewLoader(toolregistry.NewRegistry(toolClient)),
+		toolRegistry: toolRegistry,
+		loader:       provider.NewLoader(toolRegistry),
 		logPersister: logPersister,
 	}
 }
@@ -244,8 +264,23 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, input *depl
 
 	// TODO: implement annotateConfigHash to ensure restart of workloads when config changes
 
-	// Get the applier for the target cluster.
-	var applier applier // TODO: build applier from the plugin config
+	// Get the deploy target config.
+	var deployTargetConfig kubeconfig.KubernetesDeployTargetConfig
+	deployTarget := a.pluginConfig.FindDeployTarget(input.GetDeployment().GetDeployTargets()[0]) // TODO: check if there is a deploy target
+	if err := json.Unmarshal(deployTarget.Config, &deployTargetConfig); err != nil {             // TODO: do not unmarshal the config here, but in the initialization of the plugin
+		lp.Errorf("Failed while unmarshalling deploy target config (%v)", err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	// Get the kubectl tool path.
+	kubectlPath, err := a.toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion, defaultKubectlVersion))
+	if err != nil {
+		lp.Errorf("Failed while getting kubectl tool (%v)", err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	// Create the applier for the target cluster.
+	applier := provider.NewApplier(provider.NewKubectl(kubectlPath), cfg.Spec.Input, deployTargetConfig, a.logger)
 
 	// Start applying all manifests to add or update running resources.
 	if err := applyManifests(ctx, applier, manifests, cfg.Spec.Input.Namespace, lp); err != nil {

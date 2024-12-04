@@ -1310,3 +1310,13 @@ type PipedDeployTarget struct {
 	// The configuration of the deploy target.
 	Config json.RawMessage `json:"config"`
 }
+
+// FindDeployTarget finds the deploy target by the given name.
+func (p *PipedPlugin) FindDeployTarget(name string) *PipedDeployTarget {
+	for _, dt := range p.DeployTargets {
+		if dt.Name == name {
+			return &dt
+		}
+	}
+	return nil
+}
