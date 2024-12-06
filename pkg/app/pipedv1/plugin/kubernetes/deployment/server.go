@@ -206,6 +206,9 @@ func (a *DeploymentService) loadManifests(ctx context.Context, deploy *model.Dep
 	return manifests, nil
 }
 
+// ExecuteStage performs stage-defined tasks.
+// It returns stage status after execution without error.
+// Error only be raised if the given stage is not supported.
 func (a *DeploymentService) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (response *deployment.ExecuteStageResponse, _ error) {
 	lp := a.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId())
 	defer func() {
