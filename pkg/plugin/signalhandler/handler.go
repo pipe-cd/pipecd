@@ -26,8 +26,6 @@ import (
 	"os/signal"
 	"sync/atomic"
 	"syscall"
-
-	"google.golang.org/grpc"
 )
 
 var (
@@ -48,12 +46,4 @@ func init() {
 // Terminated returns true if the signal handler has received a termination signal.
 func Terminated() bool {
 	return terminated.Load()
-}
-
-// CancelInterceptor is a gRPC interceptor that cancels the context when a termination signal is received.
-func CancelInterceptor(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
-	ctx, cancel := signal.NotifyContext(ctx, signals...)
-	defer cancel()
-
-	return handler(ctx, req)
 }
