@@ -90,7 +90,8 @@ func newPlanner(
 	lastSuccessfulCommitHash string,
 	lastSuccessfulConfigFilename string,
 	workingDir string,
-	pluginClient pluginapi.PluginClient,
+	pluginClients []pluginapi.PluginClient,
+	stageBasedPluginsMap map[string]pluginapi.PluginClient,
 	apiClient apiClient,
 	gitClient gitClient,
 	notifier notifier,
@@ -106,22 +107,13 @@ func newPlanner(
 		zap.String("working-dir", workingDir),
 	)
 
-	// TODO: Fix this. Passed by args
-	tmp := make(map[string]pluginapi.PluginClient)
-	tmp["K8S_SYNC"] = pluginClient
-
-	plugins := make([]pluginapi.PluginClient, 0, len(tmp))
-	for _, v := range tmp {
-		plugins = append(plugins, v)
-	}
-
 	p := &planner{
 		deployment:                   d,
 		lastSuccessfulCommitHash:     lastSuccessfulCommitHash,
 		lastSuccessfulConfigFilename: lastSuccessfulConfigFilename,
 		workingDir:                   workingDir,
-		stageBasedPluginsMap:         tmp,
-		plugins:                      plugins,
+		stageBasedPluginsMap:         stageBasedPluginsMap,
+		plugins:                      pluginClients,
 		apiClient:                    apiClient,
 		gitClient:                    gitClient,
 		metadataStore:                metadatastore.NewMetadataStore(apiClient, d),

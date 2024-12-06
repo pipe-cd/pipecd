@@ -75,6 +75,7 @@ func newScheduler(
 	workingDir string,
 	apiClient apiClient,
 	gitClient gitClient,
+	stageBasedPluginsMap map[string]pluginapi.PluginClient,
 	notifier notifier,
 	logger *zap.Logger,
 	tracerProvider trace.TracerProvider,
@@ -90,7 +91,7 @@ func newScheduler(
 	s := &scheduler{
 		deployment:           d,
 		workingDir:           workingDir,
-		stageBasedPluginsMap: make(map[string]pluginapi.PluginClient), // TODO: prepare this
+		stageBasedPluginsMap: stageBasedPluginsMap,
 		apiClient:            apiClient,
 		gitClient:            gitClient,
 		metadataStore:        metadatastore.NewMetadataStore(apiClient, d),

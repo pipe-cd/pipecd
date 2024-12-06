@@ -19,14 +19,18 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 	"net/http/pprof"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
@@ -64,7 +68,9 @@ import (
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/crypto"
 	"github.com/pipe-cd/pipecd/pkg/git"
+	"github.com/pipe-cd/pipecd/pkg/lifecycle"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
 	"github.com/pipe-cd/pipecd/pkg/rpc"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcclient"
@@ -86,6 +92,7 @@ type piped struct {
 	adminPort                            int
 	pluginServicePort                    int
 	toolsDir                             string
+	pluginsDir                           string
 	enableDefaultKubernetesCloudProvider bool
 	gracePeriod                          time.Duration
 	addLoginUserToPasswd                 bool
@@ -102,6 +109,7 @@ func NewCommand() *cobra.Command {
 		adminPort:         9085,
 		pluginServicePort: 9087,
 		toolsDir:          path.Join(home, ".piped", "tools"),
+		pluginsDir:        path.Join(home, ".piped", "plugins"),
 		gracePeriod:       30 * time.Second,
 		maxRecvMsgSize:    1024 * 1024 * 10, // 10MB
 	}
@@ -168,19 +176,20 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		return err
 	}
 
-	// Make gRPC client and connect to the API.
+	// Make gRPC client and connect to the Control Plane API.
 	apiClient, err := p.createAPIClient(ctx, cfg.APIAddress, cfg.ProjectID, cfg.PipedID, pipedKey, input.Logger)
 	if err != nil {
 		input.Logger.Error("failed to create gRPC client to control plane", zap.Error(err))
 		return err
 	}
 
+	// Setup the tracer provider.
+	// We don't set the global tracer provider because 3rd-party library may use the global one.
 	tracerProvider, err := p.createTracerProvider(ctx, cfg.APIAddress, cfg.ProjectID, cfg.PipedID, pipedKey)
 	if err != nil {
 		input.Logger.Error("failed to create tracer provider", zap.Error(err))
 		return err
 	}
-	// we don't set the global tracer provider because 3rd-party library may use the global one.
 
 	// Send the newest piped meta to the control-plane.
 	if err := p.sendPipedMeta(ctx, apiClient, cfg, input.Logger); err != nil {
@@ -289,11 +298,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		eventLister = store.Lister()
 	}
 
-	// Start running application live state reporter.
-	{
-		// TODO: Implement the live state reporter controller.
-	}
-
 	// Start running plugin service server.
 	{
 		var (
@@ -317,6 +321,51 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		})
 	}
 
+	// Start plugins that registered in the configuration.
+	{
+		// Start all plugins and keep their commands to stop them later.
+		plugins, err := p.runPlugins(ctx, cfg.Plugins, input.Logger)
+		if err != nil {
+			input.Logger.Error("failed to run plugins", zap.Error(err))
+			return err
+		}
+
+		group.Go(func() error {
+			<-ctx.Done()
+			wg := &sync.WaitGroup{}
+			for _, plg := range plugins {
+				wg.Add(1)
+				go func() {
+					defer wg.Done()
+					if err := plg.GracefulStop(p.gracePeriod); err != nil {
+						input.Logger.Error("failed to stop plugin", zap.Error(err))
+					}
+				}()
+			}
+			wg.Wait()
+			return nil
+		})
+	}
+
+	// Make grpc clients to connect to plugins.
+	pluginClis := make([]pluginapi.PluginClient, 0, len(cfg.Plugins))
+	options := []rpcclient.DialOption{
+		rpcclient.WithBlock(),
+		rpcclient.WithInsecure(),
+	}
+	for _, plg := range cfg.Plugins {
+		cli, err := pluginapi.NewClient(ctx, net.JoinHostPort("localhost", strconv.Itoa(plg.Port)), options...)
+		if err != nil {
+			input.Logger.Error("failed to create client to connect plugin", zap.String("plugin", plg.Name), zap.Error(err))
+		}
+		pluginClis = append(pluginClis, cli)
+	}
+
+	// Start running application live state reporter.
+	{
+		// TODO: Implement the live state reporter controller.
+	}
+
 	// Start running application application drift detector.
 	{
 		// TODO: Implement the drift detector controller.
@@ -327,6 +376,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		c := controller.NewController(
 			apiClient,
 			gitClient,
+			pluginClis,
 			deploymentLister,
 			commandLister,
 			notifier,
@@ -586,6 +636,35 @@ func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 	}
 
 	return nil, fmt.Errorf("one of config-file, config-gcp-secret or config-aws-secret must be set")
+}
+
+func (p *piped) runPlugins(ctx context.Context, pluginsCfg []config.PipedPlugin, logger *zap.Logger) ([]*lifecycle.Command, error) {
+	plugins := make([]*lifecycle.Command, 0, len(pluginsCfg))
+	for _, pCfg := range pluginsCfg {
+		// Download plugin binary to piped's pluginsDir.
+		pPath, err := lifecycle.DownloadBinary(pCfg.URL, p.pluginsDir, pCfg.Name, logger)
+		if err != nil {
+			return nil, fmt.Errorf("failed to download plugin %s: %w", pCfg.Name, err)
+		}
+
+		// Build plugin's args.
+		args := make([]string, 0, 0)
+		args = append(args, "--piped-plugin-service", net.JoinHostPort("localhost", strconv.Itoa(p.pluginServicePort)))
+		b, err := json.Marshal(pCfg)
+		if err != nil {
+			return nil, fmt.Errorf("failed to prepare plugin %s config: %w", pCfg.Name, err)
+		}
+		args = append(args, "--config", string(b))
+
+		// Run the plugin binary.
+		cmd, err := lifecycle.RunBinary(ctx, pPath, args)
+		if err != nil {
+			return nil, fmt.Errorf("failed to run plugin %s: %w", pCfg.Name, err)
+		}
+
+		plugins = append(plugins, cmd)
+	}
+	return plugins, nil
 }
 
 // TODO: Remove this once the decryption task by plugin call to the plugin service is implemented.
