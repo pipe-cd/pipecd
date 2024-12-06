@@ -18,7 +18,6 @@ import (
 	"cmp"
 	"context"
 	"encoding/json"
-	"errors"
 	"time"
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
@@ -28,6 +27,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
+	"github.com/pipe-cd/pipecd/pkg/plugin/signalhandler"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -209,10 +209,9 @@ func (a *DeploymentService) loadManifests(ctx context.Context, deploy *model.Dep
 func (a *DeploymentService) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (response *deployment.ExecuteStageResponse, _ error) {
 	lp := a.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId())
 	defer func() {
-		// When the piped cancelled the RPC while the stage is still runnning, we should not mark the log persister as completed.
-		// we use the context error to check if the RPC is cancelled by the piped.
-		// we don't use the response error to check context cancellation because the response error can be set without wrapping the context error.
-		if !response.GetStatus().IsCompleted() && errors.Is(ctx.Err(), context.Canceled) {
+		// When termination signal received and the stage is not completed yet, we should not mark the log persister as completed.
+		// This can occur when the piped is shutting down while the stage is still running.
+		if !response.GetStatus().IsCompleted() && signalhandler.Terminated() {
 			return
 		}
 		lp.Complete(time.Minute)
