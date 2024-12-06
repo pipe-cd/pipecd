@@ -1136,3 +1136,47 @@ func TestPatchManifests(t *testing.T) {
 		})
 	}
 }
+
+// func Test_envtest(t *testing.T) {
+// 	t.Setenv("KUBEBUILDER_ASSETS", "/Users/s14218/Library/Application Support/io.kubebuilder.envtest/k8s/1.30.0-darwin-arm64")
+
+// 	tEnv := new(envtest.Environment)
+// 	cfg, err := tEnv.Start()
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	defer tEnv.Stop()
+
+// 	fmt.Println(kubeconfigFromRestConfig(cfg))
+// }
+
+// func kubeconfigFromRestConfig(restConfig *rest.Config) (string, error) {
+// 	clusters := make(map[string]*clientcmdapi.Cluster)
+// 	clusters["default-cluster"] = &clientcmdapi.Cluster{
+// 		Server:                   restConfig.Host,
+// 		CertificateAuthorityData: restConfig.CAData,
+// 	}
+// 	contexts := make(map[string]*clientcmdapi.Context)
+// 	contexts["default-context"] = &clientcmdapi.Context{
+// 		Cluster:  "default-cluster",
+// 		AuthInfo: "default-user",
+// 	}
+// 	authinfos := make(map[string]*clientcmdapi.AuthInfo)
+// 	authinfos["default-user"] = &clientcmdapi.AuthInfo{
+// 		ClientCertificateData: restConfig.CertData,
+// 		ClientKeyData:         restConfig.KeyData,
+// 	}
+// 	clientConfig := clientcmdapi.Config{
+// 		Kind:           "Config",
+// 		APIVersion:     "v1",
+// 		Clusters:       clusters,
+// 		Contexts:       contexts,
+// 		CurrentContext: "default-context",
+// 		AuthInfos:      authinfos,
+// 	}
+// 	b, err := clientcmd.Write(clientConfig)
+// 	if err != nil {
+// 		return "", err
+// 	}
+// 	return string(b), nil
+// }
