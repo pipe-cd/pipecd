@@ -57,23 +57,22 @@ func (s *lastTriggeredCommitStore) Put(applicationID, commit string) error {
 }
 
 func (s *lastTriggeredCommitStore) getLastTriggeredDeployment(ctx context.Context, applicationID string) (*model.ApplicationDeploymentReference, error) {
-	var (
-		err   error
-		resp  *pipedservice.GetApplicationMostRecentDeploymentResponse
-		retry = pipedservice.NewRetry(3)
-		req   = &pipedservice.GetApplicationMostRecentDeploymentRequest{
-			ApplicationId: applicationID,
-			Status:        model.DeploymentStatus_DEPLOYMENT_PENDING,
-		}
-	)
+	req := &pipedservice.GetApplicationMostRecentDeploymentRequest{
+		ApplicationId: applicationID,
+		Status:        model.DeploymentStatus_DEPLOYMENT_PENDING,
+	}
 
-	for retry.WaitNext(ctx) {
-		if resp, err = s.apiClient.GetApplicationMostRecentDeployment(ctx, req); err == nil {
+	d, err := pipedservice.NewRetry(3).Do(ctx, func() (interface{}, error) {
+		resp, err := s.apiClient.GetApplicationMostRecentDeployment(ctx, req)
+		if err == nil {
 			return resp.Deployment, nil
 		}
-		if !pipedservice.Retriable(err) {
-			return nil, err
-		}
+		return nil, pipedservice.NewRetriableErr(err)
+	})
+
+	if err != nil {
+		return nil, err
 	}
-	return nil, err
+
+	return d.(*model.ApplicationDeploymentReference), nil
 }

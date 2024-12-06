@@ -250,8 +250,6 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *deployment
 		Deployment:              p.deployment,
 		RunningDeploymentSource: runningDS,
 		TargetDeploymentSource:  targetDS,
-		// TODO: Add more planner input fields.
-		// we need passing PluginConfig
 	}
 
 	// Build deployment target versions.
@@ -507,23 +505,10 @@ func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.Gener
 }
 
 func (p *planner) reportDeploymentPlanned(ctx context.Context, out *plannerOutput) error {
-	var (
-		err   error
-		retry = pipedservice.NewRetry(10)
-		req   = &pipedservice.ReportDeploymentPlannedRequest{
-			DeploymentId:              p.deployment.Id,
-			Summary:                   out.Summary,
-			StatusReason:              "The deployment has been planned",
-			RunningCommitHash:         p.lastSuccessfulCommitHash,
-			RunningConfigFilename:     p.lastSuccessfulConfigFilename,
-			Versions:                  out.Versions,
-			Stages:                    out.Stages,
-			DeploymentChainId:         p.deployment.DeploymentChainId,
-			DeploymentChainBlockIndex: p.deployment.DeploymentChainBlockIndex,
-		}
-	)
-
 	users, groups, err := p.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED)
+	if err != nil {
+		p.logger.Error("failed to get the list of users or groups", zap.Error(err))
+	}
 
 	defer func() {
 		p.notifier.Notify(model.NotificationEvent{
@@ -537,13 +522,25 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, out *plannerOutpu
 		})
 	}()
 
-	for retry.WaitNext(ctx) {
-		if _, err = p.apiClient.ReportDeploymentPlanned(ctx, req); err == nil {
-			return nil
-		}
-		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
+	req := &pipedservice.ReportDeploymentPlannedRequest{
+		DeploymentId:              p.deployment.Id,
+		Summary:                   out.Summary,
+		StatusReason:              "The deployment has been planned",
+		RunningCommitHash:         p.lastSuccessfulCommitHash,
+		RunningConfigFilename:     p.lastSuccessfulConfigFilename,
+		Versions:                  out.Versions,
+		Stages:                    out.Stages,
+		DeploymentChainId:         p.deployment.DeploymentChainId,
+		DeploymentChainBlockIndex: p.deployment.DeploymentChainBlockIndex,
 	}
 
+	_, err = pipedservice.NewRetry(10).Do(ctx, func() (interface{}, error) {
+		_, err := p.apiClient.ReportDeploymentPlanned(ctx, req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to report deployment status to control-plane: %w", err)
+		}
+		return nil, nil
+	})
 	if err != nil {
 		p.logger.Error("failed to mark deployment to be planned", zap.Error(err))
 	}
@@ -551,21 +548,6 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, out *plannerOutpu
 }
 
 func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) error {
-	var (
-		err error
-		now = p.nowFunc()
-		req = &pipedservice.ReportDeploymentCompletedRequest{
-			DeploymentId:              p.deployment.Id,
-			Status:                    model.DeploymentStatus_DEPLOYMENT_FAILURE,
-			StatusReason:              reason,
-			StageStatuses:             nil,
-			DeploymentChainId:         p.deployment.DeploymentChainId,
-			DeploymentChainBlockIndex: p.deployment.DeploymentChainBlockIndex,
-			CompletedAt:               now.Unix(),
-		}
-		retry = pipedservice.NewRetry(10)
-	)
-
 	users, groups, err := p.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_FAILED)
 	if err != nil {
 		p.logger.Error("failed to get the list of users or groups", zap.Error(err))
@@ -583,12 +565,23 @@ func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) err
 		})
 	}()
 
-	for retry.WaitNext(ctx) {
-		if _, err = p.apiClient.ReportDeploymentCompleted(ctx, req); err == nil {
-			return nil
-		}
-		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
+	req := &pipedservice.ReportDeploymentCompletedRequest{
+		DeploymentId:              p.deployment.Id,
+		Status:                    model.DeploymentStatus_DEPLOYMENT_FAILURE,
+		StatusReason:              reason,
+		StageStatuses:             nil,
+		DeploymentChainId:         p.deployment.DeploymentChainId,
+		DeploymentChainBlockIndex: p.deployment.DeploymentChainBlockIndex,
+		CompletedAt:               p.nowFunc().Unix(),
 	}
+
+	_, err = pipedservice.NewRetry(10).Do(ctx, func() (interface{}, error) {
+		_, err := p.apiClient.ReportDeploymentCompleted(ctx, req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to report deployment status to control-plane: %w", err)
+		}
+		return nil, nil
+	})
 
 	if err != nil {
 		p.logger.Error("failed to mark deployment to be failed", zap.Error(err))
@@ -597,21 +590,6 @@ func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) err
 }
 
 func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reason string) error {
-	var (
-		err error
-		now = p.nowFunc()
-		req = &pipedservice.ReportDeploymentCompletedRequest{
-			DeploymentId:              p.deployment.Id,
-			Status:                    model.DeploymentStatus_DEPLOYMENT_CANCELLED,
-			StatusReason:              reason,
-			StageStatuses:             nil,
-			DeploymentChainId:         p.deployment.DeploymentChainId,
-			DeploymentChainBlockIndex: p.deployment.DeploymentChainBlockIndex,
-			CompletedAt:               now.Unix(),
-		}
-		retry = pipedservice.NewRetry(10)
-	)
-
 	users, groups, err := p.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
 	if err != nil {
 		p.logger.Error("failed to get the list of users or groups", zap.Error(err))
@@ -629,12 +607,23 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 		})
 	}()
 
-	for retry.WaitNext(ctx) {
-		if _, err = p.apiClient.ReportDeploymentCompleted(ctx, req); err == nil {
-			return nil
-		}
-		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
+	req := &pipedservice.ReportDeploymentCompletedRequest{
+		DeploymentId:              p.deployment.Id,
+		Status:                    model.DeploymentStatus_DEPLOYMENT_CANCELLED,
+		StatusReason:              reason,
+		StageStatuses:             nil,
+		DeploymentChainId:         p.deployment.DeploymentChainId,
+		DeploymentChainBlockIndex: p.deployment.DeploymentChainBlockIndex,
+		CompletedAt:               p.nowFunc().Unix(),
 	}
+
+	_, err = pipedservice.NewRetry(10).Do(ctx, func() (interface{}, error) {
+		_, err := p.apiClient.ReportDeploymentCompleted(ctx, req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to report deployment status to control-plane: %w", err)
+		}
+		return nil, nil
+	})
 
 	if err != nil {
 		p.logger.Error("failed to mark deployment to be cancelled", zap.Error(err))

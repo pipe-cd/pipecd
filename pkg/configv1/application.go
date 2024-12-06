@@ -17,6 +17,8 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -163,6 +165,18 @@ func (s GenericApplicationSpec) GetStage(index int32) (PipelineStage, bool) {
 		return PipelineStage{}, false
 	}
 	return s.Pipeline.Stages[index], true
+}
+
+func (s GenericApplicationSpec) GetStageByte(index int32) ([]byte, bool) {
+	stage, ok := s.GetStage(index)
+	if !ok {
+		return nil, false
+	}
+	b, err := json.Marshal(stage)
+	if err != nil {
+		return nil, false
+	}
+	return b, true
 }
 
 // HasStage checks if the given stage is included in the pipeline.
@@ -551,4 +565,22 @@ func (dd *DriftDetection) Validate() error {
 		}
 	}
 	return nil
+}
+
+func LoadApplication(repoPath, configRelPath string) (*GenericApplicationSpec, error) {
+	absPath := filepath.Join(repoPath, configRelPath)
+
+	cfg, err := LoadFromYAML[*GenericApplicationSpec](absPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("application config file %s was not found in Git", configRelPath)
+		}
+		return nil, err
+	}
+
+	if !cfg.Kind.IsApplicationKind() {
+		return nil, fmt.Errorf("invalid application kind in the application config file, got: %s", cfg.Kind)
+	}
+
+	return cfg.Spec, nil
 }

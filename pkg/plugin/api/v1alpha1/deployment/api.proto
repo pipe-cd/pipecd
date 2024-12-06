@@ -115,13 +115,10 @@ message ExecuteStageResponse {
 message PlanPluginInput {
     // The deployment to build a plan for.
     model.Deployment deployment = 1 [(validate.rules).message.required = true];
-    // The configuration of plugin that handles the deployment.
-    bytes plugin_config = 2;
-
     // The running deployment source.
-    DeploymentSource running_deployment_source = 3;
+    DeploymentSource running_deployment_source = 2;
     // The target deployment source.
-    DeploymentSource target_deployment_source = 4;
+    DeploymentSource target_deployment_source = 3;
 }
 
 message ExecutePluginInput {
@@ -130,8 +127,8 @@ message ExecutePluginInput {
     // The stage to execute.
     model.PipelineStage stage = 2 [(validate.rules).message.required = true];
 
-    // The configuration of plugin that handles the deployment.
-    bytes plugin_config = 3;
+    // The configuration of stage.
+    bytes stage_config = 3;
 
     // The running deployment source.
     DeploymentSource running_deployment_source = 4;

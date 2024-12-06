@@ -47,7 +47,6 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/pipe-cd/pipecd/pkg/admin"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/apistore/analysisresultstore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/apistore/applicationstore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/apistore/commandstore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/apistore/deploymentstore"
@@ -61,9 +60,8 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/statsreporter"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/trigger"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
-	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipecd/pkg/cli"
-	"github.com/pipe-cd/pipecd/pkg/config"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/crypto"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -155,14 +153,14 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	// Register all metrics.
 	registry := registerMetrics(cfg.PipedID, cfg.ProjectID, p.launcherVersion)
 
-	// Configure SSH config if needed.
-	if cfg.Git.ShouldConfigureSSHConfig() {
-		if err := git.AddSSHConfig(cfg.Git); err != nil {
-			input.Logger.Error("failed to configure ssh-config", zap.Error(err))
-			return err
-		}
-		input.Logger.Info("successfully configured ssh-config")
-	}
+	// // Configure SSH config if needed.
+	// if cfg.Git.ShouldConfigureSSHConfig() {
+	// 	if err := git.AddSSHConfig(cfg.Git); err != nil {
+	// 		input.Logger.Error("failed to configure ssh-config", zap.Error(err))
+	// 		return err
+	// 	}
+	// 	input.Logger.Info("successfully configured ssh-config")
+	// }
 
 	pipedKey, err := cfg.LoadPipedKey()
 	if err != nil {
@@ -291,11 +289,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		eventLister = store.Lister()
 	}
 
-	analysisResultStore := analysisresultstore.NewStore(apiClient, input.Logger)
-
-	// Create memory caches.
-	appManifestsCache := memorycache.NewTTLCache(ctx, time.Hour, time.Minute)
-
 	// Start running application live state reporter.
 	{
 		// TODO: Implement the live state reporter controller.
@@ -324,12 +317,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		})
 	}
 
-	decrypter, err := p.initializeSecretDecrypter(cfg)
-	if err != nil {
-		input.Logger.Error("failed to initialize secret decrypter", zap.Error(err))
-		return err
-	}
-
 	// Start running application application drift detector.
 	{
 		// TODO: Implement the drift detector controller.
@@ -342,12 +329,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			gitClient,
 			deploymentLister,
 			commandLister,
-			applicationLister,
-			analysisResultStore,
 			notifier,
-			decrypter,
-			cfg,
-			appManifestsCache,
 			p.gracePeriod,
 			input.Logger,
 			tracerProvider,
@@ -548,18 +530,18 @@ func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 		return nil, err
 	}
 
-	extract := func(cfg *config.Config) (*config.PipedSpec, error) {
+	extract := func(cfg *config.Config[*config.PipedSpec, config.PipedSpec]) (*config.PipedSpec, error) {
 		if cfg.Kind != config.KindPiped {
 			return nil, fmt.Errorf("wrong configuration kind for piped: %v", cfg.Kind)
 		}
 		if p.enableDefaultKubernetesCloudProvider {
-			cfg.PipedSpec.EnableDefaultKubernetesPlatformProvider()
+			cfg.Spec.EnableDefaultKubernetesPlatformProvider()
 		}
-		return cfg.PipedSpec, nil
+		return cfg.Spec, nil
 	}
 
 	if p.configFile != "" {
-		cfg, err := config.LoadFromYAML(p.configFile)
+		cfg, err := config.LoadFromYAML[*config.PipedSpec](p.configFile)
 		if err != nil {
 			return nil, err
 		}
@@ -572,7 +554,7 @@ func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 			return nil, fmt.Errorf("the given config-data isn't base64 encoded: %w", err)
 		}
 
-		cfg, err := config.DecodeYAML(data)
+		cfg, err := config.DecodeYAML[*config.PipedSpec](data)
 		if err != nil {
 			return nil, err
 		}
@@ -584,7 +566,7 @@ func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to load config from SecretManager (%w)", err)
 		}
-		cfg, err := config.DecodeYAML(data)
+		cfg, err := config.DecodeYAML[*config.PipedSpec](data)
 		if err != nil {
 			return nil, err
 		}
@@ -596,7 +578,7 @@ func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to load config from AWS Secrets Manager (%w)", err)
 		}
-		cfg, err := config.DecodeYAML(data)
+		cfg, err := config.DecodeYAML[*config.PipedSpec](data)
 		if err != nil {
 			return nil, err
 		}
@@ -660,15 +642,12 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 		return err
 	}
 
-	var (
-		req = &pipedservice.ReportPipedMetaRequest{
-			Version:           version.Get().Version,
-			Config:            string(maskedCfg),
-			Repositories:      repos,
-			PlatformProviders: make([]*model.Piped_PlatformProvider, 0, len(cfg.PlatformProviders)),
-		}
-		retry = pipedservice.NewRetry(5)
-	)
+	req := &pipedservice.ReportPipedMetaRequest{
+		Version:           version.Get().Version,
+		Config:            string(maskedCfg),
+		Repositories:      repos,
+		PlatformProviders: make([]*model.Piped_PlatformProvider, 0, len(cfg.PlatformProviders)),
+	}
 
 	// Configure the list of specified platform providers.
 	for _, cp := range cfg.PlatformProviders {
@@ -695,19 +674,21 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 		}
 	}
 
-	for retry.WaitNext(ctx) {
+	retry := pipedservice.NewRetry(5)
+	_, err = retry.Do(ctx, func() (interface{}, error) {
 		if res, err := client.ReportPipedMeta(ctx, req); err == nil {
 			cfg.Name = res.Name
 			if cfg.WebAddress == "" {
 				cfg.WebAddress = res.WebBaseUrl
 			}
-			return nil
+			return nil, nil
 		}
 		logger.Warn("failed to report piped meta to control-plane, wait to the next retry",
 			zap.Int("calls", retry.Calls()),
 			zap.Error(err),
 		)
-	}
+		return nil, err
+	})
 
 	return err
 }

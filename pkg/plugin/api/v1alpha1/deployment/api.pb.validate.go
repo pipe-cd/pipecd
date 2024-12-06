@@ -1597,8 +1597,6 @@ func (m *PlanPluginInput) validate(all bool) error {
 		}
 	}
 
-	// no validation rules for PluginConfig
-
 	if all {
 		switch v := interface{}(m.GetRunningDeploymentSource()).(type) {
 		case interface{ ValidateAll() error }:
@@ -1837,7 +1835,7 @@ func (m *ExecutePluginInput) validate(all bool) error {
 		}
 	}
 
-	// no validation rules for PluginConfig
+	// no validation rules for StageConfig
 
 	if all {
 		switch v := interface{}(m.GetRunningDeploymentSource()).(type) {
