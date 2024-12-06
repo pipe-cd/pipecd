@@ -219,27 +219,32 @@ func (a *DeploymentService) ExecuteStage(ctx context.Context, request *deploymen
 
 	switch request.GetInput().GetStage().GetName() {
 	case StageK8sSync.String():
-		return a.executeK8sSyncStage(ctx, lp, request.GetInput())
+		return &deployment.ExecuteStageResponse{
+			Status: a.executeK8sSyncStage(ctx, lp, request.GetInput()),
+		}, nil
 	case StageK8sRollback.String():
-		return a.executeK8sRollbackStage(ctx, lp, request.GetInput())
+		return &deployment.ExecuteStageResponse{
+			Status: a.executeK8sRollbackStage(ctx, lp, request.GetInput()),
+		}, nil
 	default:
 		return nil, status.Error(codes.InvalidArgument, "unimplemented or unsupported stage")
 	}
 }
 
-func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersister.StageLogPersister, input *deployment.ExecutePluginInput) (response *deployment.ExecuteStageResponse, err error) {
+func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersister.StageLogPersister, input *deployment.ExecutePluginInput) model.StageStatus {
 	lp.Infof("Start syncing the deployment")
 
 	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](input.GetTargetDeploymentSource().GetApplicationConfig())
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		lp.Errorf("Failed while decoding application config (%v)", err)
+		return model.StageStatus_STAGE_FAILURE
 	}
 
 	lp.Infof("Loading manifests at commit %s for handling", input.GetDeployment().GetTrigger().GetCommit().GetHash())
 	manifests, err := a.loadManifests(ctx, input.GetDeployment(), cfg.Spec, input.GetTargetDeploymentSource())
 	if err != nil {
 		lp.Errorf("Failed while loading manifests (%v)", err)
-		return nil, status.Error(codes.Internal, err.Error())
+		return model.StageStatus_STAGE_FAILURE
 	}
 	lp.Successf("Successfully loaded %d manifests", len(manifests))
 
@@ -269,14 +274,14 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersi
 	deployTarget := a.pluginConfig.FindDeployTarget(input.GetDeployment().GetDeployTargets()[0]) // TODO: check if there is a deploy target
 	if err := json.Unmarshal(deployTarget.Config, &deployTargetConfig); err != nil {             // TODO: do not unmarshal the config here, but in the initialization of the plugin
 		lp.Errorf("Failed while unmarshalling deploy target config (%v)", err)
-		return nil, status.Error(codes.Internal, err.Error())
+		return model.StageStatus_STAGE_FAILURE
 	}
 
 	// Get the kubectl tool path.
 	kubectlPath, err := a.toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion, defaultKubectlVersion))
 	if err != nil {
 		lp.Errorf("Failed while getting kubectl tool (%v)", err)
-		return nil, status.Error(codes.Internal, err.Error())
+		return model.StageStatus_STAGE_FAILURE
 	}
 
 	// Create the applier for the target cluster.
@@ -285,34 +290,33 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersi
 	// Start applying all manifests to add or update running resources.
 	if err := applyManifests(ctx, applier, manifests, cfg.Spec.Input.Namespace, lp); err != nil {
 		lp.Errorf("Failed while applying manifests (%v)", err)
-		return nil, status.Error(codes.Internal, err.Error())
+		return model.StageStatus_STAGE_FAILURE
 	}
 
 	// TODO: implement prune resources
 
-	return &deployment.ExecuteStageResponse{
-		Status: model.StageStatus_STAGE_SUCCESS,
-	}, nil
+	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (a *DeploymentService) executeK8sRollbackStage(ctx context.Context, lp logpersister.StageLogPersister, input *deployment.ExecutePluginInput) (*deployment.ExecuteStageResponse, error) {
+func (a *DeploymentService) executeK8sRollbackStage(ctx context.Context, lp logpersister.StageLogPersister, input *deployment.ExecutePluginInput) model.StageStatus {
 	if input.GetDeployment().GetRunningCommitHash() == "" {
 		lp.Errorf("Unable to determine the last deployed commit to rollback. It seems this is the first deployment.")
-		return nil, status.Error(codes.InvalidArgument, "running commit hash is required for rollback")
+		return model.StageStatus_STAGE_FAILURE
 	}
 
 	lp.Info("Start rolling back the deployment")
 
 	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](input.GetRunningDeploymentSource().GetApplicationConfig())
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		lp.Errorf("Failed while decoding application config (%v)", err)
+		return model.StageStatus_STAGE_FAILURE
 	}
 
 	lp.Infof("Loading manifests at commit %s for handling", input.GetDeployment().GetRunningCommitHash())
 	manifests, err := a.loadManifests(ctx, input.GetDeployment(), cfg.Spec, input.GetRunningDeploymentSource())
 	if err != nil {
 		lp.Errorf("Failed while loading manifests (%v)", err)
-		return nil, status.Error(codes.Internal, err.Error())
+		return model.StageStatus_STAGE_FAILURE
 	}
 	lp.Successf("Successfully loaded %d manifests", len(manifests))
 
@@ -342,14 +346,14 @@ func (a *DeploymentService) executeK8sRollbackStage(ctx context.Context, lp logp
 	deployTarget := a.pluginConfig.FindDeployTarget(input.GetDeployment().GetDeployTargets()[0]) // TODO: check if there is a deploy target
 	if err := json.Unmarshal(deployTarget.Config, &deployTargetConfig); err != nil {             // TODO: do not unmarshal the config here, but in the initialization of the plugin
 		lp.Errorf("Failed while unmarshalling deploy target config (%v)", err)
-		return nil, status.Error(codes.Internal, err.Error())
+		return model.StageStatus_STAGE_FAILURE
 	}
 
 	// Get the kubectl tool path.
 	kubectlPath, err := a.toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion, defaultKubectlVersion))
 	if err != nil {
 		lp.Errorf("Failed while getting kubectl tool (%v)", err)
-		return nil, status.Error(codes.Internal, err.Error())
+		return model.StageStatus_STAGE_FAILURE
 	}
 
 	// Create the applier for the target cluster.
@@ -358,14 +362,12 @@ func (a *DeploymentService) executeK8sRollbackStage(ctx context.Context, lp logp
 	// Start applying all manifests to add or update running resources.
 	if err := applyManifests(ctx, applier, manifests, cfg.Spec.Input.Namespace, lp); err != nil {
 		lp.Errorf("Failed while applying manifests (%v)", err)
-		return nil, status.Error(codes.Internal, err.Error())
+		return model.StageStatus_STAGE_FAILURE
 	}
 
 	// TODO: implement prune resources
 	// TODO: delete all resources of CANARY variant
 	// TODO: delete all resources of BASELINE variant
 
-	return &deployment.ExecuteStageResponse{
-		Status: model.StageStatus_STAGE_SUCCESS,
-	}, nil
+	return model.StageStatus_STAGE_SUCCESS
 }
