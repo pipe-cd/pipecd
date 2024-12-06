@@ -96,6 +96,7 @@ func (s *server) run(ctx context.Context, input cli.Input) (runErr error) {
 				rpc.WithLogger(input.Logger),
 				rpc.WithLogUnaryInterceptor(input.Logger),
 				rpc.WithRequestValidationUnaryInterceptor(),
+				rpc.WithSignalHandlingUnaryInterceptor(),
 			}
 		)
 		if s.tls {
