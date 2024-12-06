@@ -35,6 +35,8 @@ var (
 )
 
 func init() {
+	// Listen for termination signals.
+	// When a termination signal is received, the signal handler will set the terminated flag to true.
 	ctx, cancel := signal.NotifyContext(context.Background(), signals...)
 	go func() {
 		defer cancel()
@@ -44,6 +46,7 @@ func init() {
 }
 
 // Terminated returns true if the signal handler has received a termination signal.
+// The termination signals are sent by the piped when it wants to stop running gracefully.
 func Terminated() bool {
 	return terminated.Load()
 }
