@@ -225,6 +225,9 @@ func (s *Server) init() error {
 	if s.requestValidationUnaryInterceptor != nil {
 		unaryInterceptors = append(unaryInterceptors, s.requestValidationUnaryInterceptor)
 	}
+	if s.signalHandlingUnaryInterceptor != nil {
+		unaryInterceptors = append(unaryInterceptors, s.signalHandlingUnaryInterceptor)
+	}
 	if s.prometheusUnaryInterceptor != nil {
 		unaryInterceptors = append(unaryInterceptors, s.prometheusUnaryInterceptor)
 	}
