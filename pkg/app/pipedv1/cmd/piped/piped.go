@@ -61,7 +61,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/trigger"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/cli"
-	"github.com/pipe-cd/pipecd/pkg/config"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/crypto"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -153,14 +153,14 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	// Register all metrics.
 	registry := registerMetrics(cfg.PipedID, cfg.ProjectID, p.launcherVersion)
 
-	// Configure SSH config if needed.
-	if cfg.Git.ShouldConfigureSSHConfig() {
-		if err := git.AddSSHConfig(cfg.Git); err != nil {
-			input.Logger.Error("failed to configure ssh-config", zap.Error(err))
-			return err
-		}
-		input.Logger.Info("successfully configured ssh-config")
-	}
+	// // Configure SSH config if needed.
+	// if cfg.Git.ShouldConfigureSSHConfig() {
+	// 	if err := git.AddSSHConfig(cfg.Git); err != nil {
+	// 		input.Logger.Error("failed to configure ssh-config", zap.Error(err))
+	// 		return err
+	// 	}
+	// 	input.Logger.Info("successfully configured ssh-config")
+	// }
 
 	pipedKey, err := cfg.LoadPipedKey()
 	if err != nil {
@@ -530,18 +530,18 @@ func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 		return nil, err
 	}
 
-	extract := func(cfg *config.Config) (*config.PipedSpec, error) {
+	extract := func(cfg *config.Config[*config.PipedSpec, config.PipedSpec]) (*config.PipedSpec, error) {
 		if cfg.Kind != config.KindPiped {
 			return nil, fmt.Errorf("wrong configuration kind for piped: %v", cfg.Kind)
 		}
 		if p.enableDefaultKubernetesCloudProvider {
-			cfg.PipedSpec.EnableDefaultKubernetesPlatformProvider()
+			cfg.Spec.EnableDefaultKubernetesPlatformProvider()
 		}
-		return cfg.PipedSpec, nil
+		return cfg.Spec, nil
 	}
 
 	if p.configFile != "" {
-		cfg, err := config.LoadFromYAML(p.configFile)
+		cfg, err := config.LoadFromYAML[*config.PipedSpec](p.configFile)
 		if err != nil {
 			return nil, err
 		}
@@ -554,7 +554,7 @@ func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 			return nil, fmt.Errorf("the given config-data isn't base64 encoded: %w", err)
 		}
 
-		cfg, err := config.DecodeYAML(data)
+		cfg, err := config.DecodeYAML[*config.PipedSpec](data)
 		if err != nil {
 			return nil, err
 		}
@@ -566,7 +566,7 @@ func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to load config from SecretManager (%w)", err)
 		}
-		cfg, err := config.DecodeYAML(data)
+		cfg, err := config.DecodeYAML[*config.PipedSpec](data)
 		if err != nil {
 			return nil, err
 		}
@@ -578,7 +578,7 @@ func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to load config from AWS Secrets Manager (%w)", err)
 		}
-		cfg, err := config.DecodeYAML(data)
+		cfg, err := config.DecodeYAML[*config.PipedSpec](data)
 		if err != nil {
 			return nil, err
 		}
