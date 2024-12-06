@@ -1,6 +1,6 @@
 ARG GOOGLE_CLOUD_SDK_VERSION=392.0.0-alpine
 
-FROM google/cloud-sdk:$GOOGLE_CLOUD_SDK_VERSION
+FROM gcr.io/google.com/cloudsdktool/google-cloud-cli:$GOOGLE_CLOUD_SDK_VERSION
 
 RUN apk add --update --no-cache openjdk11-jre-headless
 
