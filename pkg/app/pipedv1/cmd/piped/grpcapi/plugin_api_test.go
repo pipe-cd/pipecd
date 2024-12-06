@@ -17,7 +17,7 @@ package grpcapi
 import (
 	"testing"
 
-	"github.com/pipe-cd/pipecd/pkg/config"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
