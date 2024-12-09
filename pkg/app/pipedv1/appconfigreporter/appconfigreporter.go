@@ -27,7 +27,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
-	"github.com/pipe-cd/pipecd/pkg/config"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -375,26 +375,21 @@ func (r *Reporter) readApplicationInfo(repoDir, repoID, cfgRelPath string) (*mod
 	if err != nil {
 		return nil, fmt.Errorf("failed to open the configuration file: %w", err)
 	}
-	cfg, err := config.DecodeYAML(b)
+	cfg, err := config.DecodeYAML[*config.GenericApplicationSpec](b)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode configuration file: %w", err)
 	}
 
-	spec, ok := cfg.GetGenericApplication()
-	if !ok {
-		return nil, fmt.Errorf("unsupported application kind %q", cfg.Kind)
-	}
-
-	kind, ok := cfg.Kind.ToApplicationKind()
-	if !ok {
+	if !cfg.Kind.IsApplicationKind() {
 		return nil, fmt.Errorf("%q is not application config kind", cfg.Kind)
 	}
+
+	spec := cfg.Spec
 	if spec.Name == "" {
 		return nil, fmt.Errorf("missing application name: %w", errMissingRequiredField)
 	}
 	return &model.ApplicationInfo{
 		Name:           spec.Name,
-		Kind:           kind,
 		Labels:         spec.Labels,
 		RepoId:         repoID,
 		Path:           filepath.Dir(cfgRelPath),

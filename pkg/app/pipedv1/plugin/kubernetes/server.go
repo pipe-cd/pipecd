@@ -16,10 +16,15 @@ package main
 
 import (
 	"context"
+	"net"
+	"strconv"
 	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/deployment"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/cli"
+	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
+	"github.com/pipe-cd/pipecd/pkg/plugin/pipedapi"
 	"github.com/pipe-cd/pipecd/pkg/rpc"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -27,11 +32,12 @@ import (
 )
 
 type server struct {
-	apiPort     int
-	gracePeriod time.Duration
-	tls         bool
-	certFile    string
-	keyFile     string
+	apiPort                int
+	pipedPluginServicePort int
+	gracePeriod            time.Duration
+	tls                    bool
+	certFile               string
+	keyFile                string
 
 	enableGRPCReflection bool
 }
@@ -49,6 +55,8 @@ func NewServerCommand() *cobra.Command {
 	}
 
 	cmd.Flags().IntVar(&s.apiPort, "api-port", s.apiPort, "The port number used to run a grpc server for external apis.")
+	cmd.Flags().IntVar(&s.pipedPluginServicePort, "piped-plugin-service-port", s.pipedPluginServicePort, "The port number used to connect to the piped plugin service.") // TODO: we should discuss about the name of this flag, or we should use environment variable instead.
+	cmd.MarkFlagRequired("piped-plugin-service-port")
 	cmd.Flags().DurationVar(&s.gracePeriod, "grace-period", s.gracePeriod, "How long to wait for graceful shutdown.")
 
 	cmd.Flags().BoolVar(&s.tls, "tls", s.tls, "Whether running the gRPC server with TLS or not.")
@@ -68,11 +76,19 @@ func (s *server) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	group, ctx := errgroup.WithContext(ctx)
 
+	pipedapiClient, err := pipedapi.NewClient(ctx, net.JoinHostPort("localhost", strconv.Itoa(s.pipedPluginServicePort)), nil)
+	if err != nil {
+		input.Logger.Error("failed to create piped plugin service client", zap.Error(err))
+		return err
+	}
+
 	// Start a gRPC server for handling external API requests.
 	{
 		var (
 			service = deployment.NewDeploymentService(
 				input.Logger,
+				toolregistry.NewToolRegistry(pipedapiClient),
+				logpersister.NewPersister(pipedapiClient, input.Logger),
 			)
 			opts = []rpc.Option{
 				rpc.WithPort(s.apiPort),
@@ -80,6 +96,7 @@ func (s *server) run(ctx context.Context, input cli.Input) (runErr error) {
 				rpc.WithLogger(input.Logger),
 				rpc.WithLogUnaryInterceptor(input.Logger),
 				rpc.WithRequestValidationUnaryInterceptor(),
+				rpc.WithSignalHandlingUnaryInterceptor(),
 			}
 		)
 		if s.tls {

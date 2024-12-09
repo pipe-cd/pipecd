@@ -35,10 +35,10 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
-	"github.com/pipe-cd/pipecd/pkg/cache"
-	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 )
 
 type apiClient interface {
@@ -71,21 +71,8 @@ type commandLister interface {
 	ListStageCommands(deploymentID, stageID string) []model.ReportableCommand
 }
 
-type applicationLister interface {
-	Get(id string) (*model.Application, bool)
-}
-
-type analysisResultStore interface {
-	GetLatestAnalysisResult(ctx context.Context, applicationID string) (*model.AnalysisResult, error)
-	PutLatestAnalysisResult(ctx context.Context, applicationID string, analysisResult *model.AnalysisResult) error
-}
-
 type notifier interface {
 	Notify(event model.NotificationEvent)
-}
-
-type secretDecrypter interface {
-	Decrypt(string) (string, error)
 }
 
 type DeploymentController interface {
@@ -98,18 +85,16 @@ var (
 )
 
 type controller struct {
-	apiClient           apiClient
-	pluginRegistry      PluginRegistry
-	gitClient           gitClient
-	deploymentLister    deploymentLister
-	commandLister       commandLister
-	applicationLister   applicationLister
-	analysisResultStore analysisResultStore
-	notifier            notifier
-	secretDecrypter     secretDecrypter   // TODO: Remove this
-	pipedCfg            *config.PipedSpec // TODO: Remove this, use pipedConfig instead
-	appManifestsCache   cache.Cache
+	apiClient        apiClient
+	gitClient        gitClient
+	deploymentLister deploymentLister
+	commandLister    commandLister
+	notifier         notifier
 
+	// gRPC clients to communicate with plugins.
+	pluginClients []pluginapi.PluginClient
+	// Map from stage name to the plugin client.
+	stageBasedPluginsMap map[string]pluginapi.PluginClient
 	// Map from application ID to the planner
 	// of a pending deployment of that application.
 	planners map[string]*planner
@@ -141,31 +126,22 @@ type controller struct {
 func NewController(
 	apiClient apiClient,
 	gitClient gitClient,
+	pluginClients []pluginapi.PluginClient,
 	deploymentLister deploymentLister,
 	commandLister commandLister,
-	applicationLister applicationLister,
-	analysisResultStore analysisResultStore,
 	notifier notifier,
-	sd secretDecrypter,
-	pipedCfg *config.PipedSpec,
-	appManifestsCache cache.Cache,
 	gracePeriod time.Duration,
 	logger *zap.Logger,
 	tracerProvider trace.TracerProvider,
 ) DeploymentController {
 
 	return &controller{
-		apiClient:           apiClient,
-		pluginRegistry:      DefaultPluginRegistry(),
-		gitClient:           gitClient,
-		deploymentLister:    deploymentLister,
-		commandLister:       commandLister,
-		applicationLister:   applicationLister,
-		analysisResultStore: analysisResultStore,
-		notifier:            notifier,
-		secretDecrypter:     sd,
-		appManifestsCache:   appManifestsCache,
-		pipedCfg:            pipedCfg,
+		apiClient:        apiClient,
+		gitClient:        gitClient,
+		pluginClients:    pluginClients,
+		deploymentLister: deploymentLister,
+		commandLister:    commandLister,
+		notifier:         notifier,
 
 		planners:                              make(map[string]*planner),
 		donePlanners:                          make(map[string]time.Time),
@@ -195,6 +171,23 @@ func (c *controller) Run(ctx context.Context) error {
 	}
 	c.workspaceDir = dir
 	c.logger.Info(fmt.Sprintf("workspace directory was configured to %s", c.workspaceDir))
+
+	// Build the list of stages that can be handled by piped's plugins.
+	stagesBasedPluginsMap := make(map[string]pluginapi.PluginClient)
+	for _, plugin := range c.pluginClients {
+		resp, err := plugin.FetchDefinedStages(ctx, &deployment.FetchDefinedStagesRequest{})
+		if err != nil {
+			return err
+		}
+		for _, stage := range resp.GetStages() {
+			if _, ok := stagesBasedPluginsMap[stage]; ok {
+				c.logger.Error("duplicated stage name", zap.String("stage", stage))
+				return fmt.Errorf("duplicated stage name %s", stage)
+			}
+			stagesBasedPluginsMap[stage] = plugin
+		}
+	}
+	c.stageBasedPluginsMap = stagesBasedPluginsMap
 
 	ticker := time.NewTicker(c.syncInternal)
 	defer ticker.Stop()
@@ -440,18 +433,13 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		}
 	}
 
-	pluginClient, ok := c.pluginRegistry.Plugin(d.Kind)
-	if !ok {
-		logger.Error("no plugin client for the application kind", zap.String("kind", d.Kind.String()))
-		return nil, fmt.Errorf("no plugin client for the application kind %s", d.Kind.String())
-	}
-
 	planner := newPlanner(
 		d,
 		commitHash,
 		configFilename,
 		workingDir,
-		pluginClient,
+		c.pluginClients, // FIXME: Find a way to ensure the plugins only related to deployment.
+		c.stageBasedPluginsMap,
 		c.apiClient,
 		c.gitClient,
 		c.notifier,
@@ -591,13 +579,8 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		workingDir,
 		c.apiClient,
 		c.gitClient,
-		c.commandLister,
-		c.applicationLister,
-		c.analysisResultStore,
+		c.stageBasedPluginsMap,
 		c.notifier,
-		c.secretDecrypter,
-		c.pipedCfg,
-		c.appManifestsCache,
 		c.logger,
 		c.tracerProvider,
 	)
@@ -628,25 +611,22 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 }
 
 func (c *controller) getMostRecentlySuccessfulDeployment(ctx context.Context, applicationID string) (*model.ApplicationDeploymentReference, error) {
-	var (
-		err   error
-		resp  *pipedservice.GetApplicationMostRecentDeploymentResponse
-		retry = pipedservice.NewRetry(3)
-		req   = &pipedservice.GetApplicationMostRecentDeploymentRequest{
-			ApplicationId: applicationID,
-			Status:        model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-		}
-	)
+	req := &pipedservice.GetApplicationMostRecentDeploymentRequest{
+		ApplicationId: applicationID,
+		Status:        model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+	}
 
-	for retry.WaitNext(ctx) {
-		if resp, err = c.apiClient.GetApplicationMostRecentDeployment(ctx, req); err == nil {
+	d, err := pipedservice.NewRetry(3).Do(ctx, func() (interface{}, error) {
+		resp, err := c.apiClient.GetApplicationMostRecentDeployment(ctx, req)
+		if err == nil {
 			return resp.Deployment, nil
 		}
-		if !pipedservice.Retriable(err) {
-			return nil, err
-		}
+		return nil, pipedservice.NewRetriableErr(err)
+	})
+	if err != nil {
+		return nil, err
 	}
-	return nil, err
+	return d.(*model.ApplicationDeploymentReference), nil
 }
 
 func (c *controller) shouldStartPlanningDeployment(ctx context.Context, d *model.Deployment) (plannable, cancel bool, cancelReason string, err error) {
@@ -669,49 +649,38 @@ func (c *controller) shouldStartPlanningDeployment(ctx context.Context, d *model
 }
 
 func (c *controller) cancelDeployment(ctx context.Context, d *model.Deployment, reason string) error {
-	var (
-		err error
-		req = &pipedservice.ReportDeploymentCompletedRequest{
-			DeploymentId:              d.Id,
-			Status:                    model.DeploymentStatus_DEPLOYMENT_CANCELLED,
-			StatusReason:              reason,
-			StageStatuses:             nil,
-			DeploymentChainId:         d.DeploymentChainId,
-			DeploymentChainBlockIndex: d.DeploymentChainBlockIndex,
-			CompletedAt:               time.Now().Unix(),
-		}
-		retry = pipedservice.NewRetry(10)
-	)
-
-	for retry.WaitNext(ctx) {
-		if _, err = c.apiClient.ReportDeploymentCompleted(ctx, req); err == nil {
-			return nil
-		}
-		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
+	req := &pipedservice.ReportDeploymentCompletedRequest{
+		DeploymentId:              d.Id,
+		Status:                    model.DeploymentStatus_DEPLOYMENT_CANCELLED,
+		StatusReason:              reason,
+		StageStatuses:             nil,
+		DeploymentChainId:         d.DeploymentChainId,
+		DeploymentChainBlockIndex: d.DeploymentChainBlockIndex,
+		CompletedAt:               time.Now().Unix(),
 	}
+
+	_, err := pipedservice.NewRetry(10).Do(ctx, func() (interface{}, error) {
+		_, err := c.apiClient.ReportDeploymentCompleted(ctx, req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to report deployment status to control-plane: %w", err)
+		}
+		return nil, nil
+	})
 	return err
 }
 
-type appLiveResourceLister struct {
-	platformProvider string
-	appID            string
-}
-
 func reportApplicationDeployingStatus(ctx context.Context, c apiClient, appID string, deploying bool) error {
-	var (
-		err   error
-		retry = pipedservice.NewRetry(10)
-		req   = &pipedservice.ReportApplicationDeployingStatusRequest{
-			ApplicationId: appID,
-			Deploying:     deploying,
-		}
-	)
-
-	for retry.WaitNext(ctx) {
-		if _, err = c.ReportApplicationDeployingStatus(ctx, req); err == nil {
-			return nil
-		}
-		err = fmt.Errorf("failed to report application deploying status to control-plane: %w", err)
+	req := &pipedservice.ReportApplicationDeployingStatusRequest{
+		ApplicationId: appID,
+		Deploying:     deploying,
 	}
+
+	_, err := pipedservice.NewRetry(10).Do(ctx, func() (interface{}, error) {
+		_, err := c.ReportApplicationDeployingStatus(ctx, req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to report application deploying status to control-plane: %w", err)
+		}
+		return nil, nil
+	})
 	return err
 }

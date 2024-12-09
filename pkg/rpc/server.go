@@ -55,6 +55,7 @@ type Server struct {
 	requestValidationUnaryInterceptor grpc.UnaryServerInterceptor
 	logUnaryInterceptor               grpc.UnaryServerInterceptor
 	prometheusUnaryInterceptor        grpc.UnaryServerInterceptor
+	signalHandlingUnaryInterceptor    grpc.UnaryServerInterceptor
 }
 
 // Option defines a function to set configurable field of Server.
@@ -113,6 +114,12 @@ func WithLogUnaryInterceptor(logger *zap.Logger) Option {
 func WithPrometheusUnaryInterceptor() Option {
 	return func(s *Server) {
 		s.prometheusUnaryInterceptor = grpc_prometheus.UnaryServerInterceptor
+	}
+}
+
+func WithSignalHandlingUnaryInterceptor() Option {
+	return func(s *Server) {
+		s.signalHandlingUnaryInterceptor = SignalHandlingInterceptor
 	}
 }
 
@@ -217,6 +224,9 @@ func (s *Server) init() error {
 	}
 	if s.requestValidationUnaryInterceptor != nil {
 		unaryInterceptors = append(unaryInterceptors, s.requestValidationUnaryInterceptor)
+	}
+	if s.signalHandlingUnaryInterceptor != nil {
+		unaryInterceptors = append(unaryInterceptors, s.signalHandlingUnaryInterceptor)
 	}
 	if s.prometheusUnaryInterceptor != nil {
 		unaryInterceptors = append(unaryInterceptors, s.prometheusUnaryInterceptor)

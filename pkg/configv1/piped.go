@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"strings"
 
@@ -70,6 +71,8 @@ type PipedSpec struct {
 	CloudProviders []PipedPlatformProvider `json:"cloudProviders,omitempty"`
 	// List of platform providers can be used by this piped.
 	PlatformProviders []PipedPlatformProvider `json:"platformProviders,omitempty"`
+	// List of plugiin configs
+	Plugins []PipedPlugin `json:"plugins,omitempty"`
 	// List of analysis providers can be used by this piped.
 	AnalysisProviders []PipedAnalysisProvider `json:"analysisProviders,omitempty"`
 	// Sending notification to Slack, Webhook…
@@ -1287,4 +1290,53 @@ type PipedEventWatcherGitRepo struct {
 	// Patterns can be used like "foo/*.yaml".
 	// This is prioritized if both includes and this one are given.
 	Excludes []string `json:"excludes,omitempty"`
+}
+
+// PipedPlugin defines the plugin configuration for the piped.
+type PipedPlugin struct {
+	// The name of the plugin.
+	Name string `json:"name"`
+	// Source to download the plugin binary.
+	URL string `json:"url"`
+	// The port which the plugin listens to.
+	Port int `json:"port"`
+	// The deploy target names.
+	DeployTargets []PipedDeployTarget `json:"deployTargets,omitempty"`
+}
+
+// PipedDeployTarget defines the deploy target configuration for the piped.
+type PipedDeployTarget struct {
+	// The name of the deploy target.
+	Name string `json:"name"`
+	// The labes of the deploy target.
+	Labels map[string]string `json:"labels,omitempty"`
+	// The configuration of the deploy target.
+	Config json.RawMessage `json:"config"`
+}
+
+func (p *PipedPlugin) Validate() error {
+	if p.Name == "" {
+		return errors.New("name must be set")
+	}
+	if p.URL == "" {
+		return errors.New("url must be set")
+	}
+	u, err := url.Parse(p.URL)
+	if err != nil {
+		return fmt.Errorf("invalid plugin url: %w", err)
+	}
+	if u.Scheme != "file" && u.Scheme != "https" {
+		return errors.New("only file and https schemes are supported")
+	}
+	return nil
+}
+
+// FindDeployTarget finds the deploy target by the given name.
+func (p *PipedPlugin) FindDeployTarget(name string) *PipedDeployTarget {
+	for _, dt := range p.DeployTargets {
+		if dt.Name == name {
+			return &dt
+		}
+	}
+	return nil
 }

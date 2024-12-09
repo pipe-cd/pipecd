@@ -31,6 +31,15 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/toolregistry/toolregistrytest"
 )
 
+func mustParseManifests(t *testing.T, data string) []Manifest {
+	t.Helper()
+
+	manifests, err := ParseManifests(data)
+	require.NoError(t, err)
+
+	return manifests
+}
+
 func TestParseManifests(t *testing.T) {
 	tests := []struct {
 		name    string
