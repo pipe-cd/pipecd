@@ -18,6 +18,8 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path"
 	"strconv"
 	"testing"
 	"time"
@@ -91,10 +93,10 @@ func TestDownloadBinary(t *testing.T) {
 	defer server.Close()
 
 	logger := zaptest.NewLogger(t)
-	destDir := t.TempDir()
-	destFile := "test-binary"
 
 	t.Run("successful download", func(t *testing.T) {
+		destDir := t.TempDir()
+		destFile := "test-binary"
 		url := server.URL + "/binary"
 		path, err := DownloadBinary(url, destDir, destFile, logger)
 		require.NoError(t, err)
@@ -102,6 +104,8 @@ func TestDownloadBinary(t *testing.T) {
 	})
 
 	t.Run("file already exists", func(t *testing.T) {
+		destDir := t.TempDir()
+		destFile := "test-binary"
 		url := server.URL + "/binary"
 		path, err := DownloadBinary(url, destDir, destFile, logger)
 		require.NoError(t, err)
@@ -111,6 +115,35 @@ func TestDownloadBinary(t *testing.T) {
 		path, err = DownloadBinary(url, destDir, destFile, logger)
 		require.NoError(t, err)
 		assert.FileExists(t, path)
+	})
+
+	t.Run("file on local", func(t *testing.T) {
+		sourceDir := t.TempDir()
+		sourceFile := "test-binary"
+		sourcePath := path.Join(sourceDir, sourceFile)
+		err := os.WriteFile(sourcePath, []byte("test binary content"), 0755)
+		require.NoError(t, err)
+
+		destDir := t.TempDir()
+		destFile := "test-binary"
+		url := "file://" + sourcePath
+
+		path, err := DownloadBinary(url, destDir, destFile, logger)
+		require.NoError(t, err)
+		assert.FileExists(t, path)
+		content, err := os.ReadFile(path)
+		require.NoError(t, err)
+		assert.Equal(t, "test binary content", string(content))
+	})
+
+	t.Run("not valid source url given", func(t *testing.T) {
+		destDir := t.TempDir()
+		destFile := "test-binary"
+		url := "ftp://invalid-url"
+
+		path, err := DownloadBinary(url, destDir, destFile, logger)
+		require.Error(t, err)
+		assert.Empty(t, path)
 	})
 }
 
