@@ -186,13 +186,10 @@ func TestEnsureSync(t *testing.T) {
 func TestExecutor_ensureSync(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
-	// ensure the setup-envtest is executed
-	envtestPath := os.Getenv("KUBEBUILDER_ASSETS")
-	require.NotEmpty(t, envtestPath)
+	// initialize tool registry
+	toolregistry.InitDefaultRegistry("/tmp/piped-bin", zap.NewNop())
 
-	// initialize tool registry with the dir for envtest
-	toolregistry.InitDefaultRegistry(envtestPath, zap.NewNop())
-
+	// initialize envtest
 	tEnv := new(envtest.Environment)
 	cfg, err := tEnv.Start()
 	require.NoError(t, err)
@@ -204,6 +201,12 @@ func TestExecutor_ensureSync(t *testing.T) {
 	workDir := t.TempDir()
 	kubeconfigPath := path.Join(workDir, "kubeconfig")
 	err = os.WriteFile(kubeconfigPath, []byte(kubeconfig), 0755)
+	require.NoError(t, err)
+
+	manifests, err := provider.LoadManifestsFromYAMLFile("../../../../../examples/kubernetes/simple/deployment.yaml")
+	require.NoError(t, err)
+
+	appCfg, err := config.LoadFromYAML("../../../../../examples/kubernetes/simple/app.pipecd.yaml")
 	require.NoError(t, err)
 
 	executor := &deployExecutor{
@@ -236,47 +239,13 @@ func TestExecutor_ensureSync(t *testing.T) {
 		loader: func() provider.Loader {
 			p := kubernetestest.NewMockLoader(ctrl)
 			p.EXPECT().LoadManifests(gomock.Any()).Return(func() []provider.Manifest {
-				m, err := provider.ParseManifests(`
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: simple
-  labels:
-    app: simple
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: simple
-      pipecd.dev/variant: primary
-  template:
-    metadata:
-      labels:
-        app: simple
-        pipecd.dev/variant: primary
-      annotations:
-        sidecar.istio.io/inject: "false"
-    spec:
-      containers:
-      - name: helloworld
-        image: ghcr.io/pipe-cd/helloworld:v0.32.0
-        args:
-          - server
-        ports:
-        - containerPort: 9085
-`)
-				require.NoError(t, err)
-				return m
+				return manifests
 			}(), nil)
 			return p
 		}(),
-		appCfg: &config.KubernetesApplicationSpec{
-			VariantLabel: config.KubernetesVariantLabel{
-				Key: "pipecd.dev/variant",
-			},
-		},
+		appCfg: appCfg.KubernetesApplicationSpec,
 		applierGetter: func() applierGetter {
-			ag, err := newApplierGroup("default", config.KubernetesApplicationSpec{}, &config.PipedSpec{
+			ag, err := newApplierGroup("default", *appCfg.KubernetesApplicationSpec, &config.PipedSpec{
 				PlatformProviders: []config.PipedPlatformProvider{
 					{
 						Name: "default",
@@ -294,7 +263,7 @@ spec:
 	}
 
 	status := executor.ensureSync(context.Background())
-	assert.Equal(t, model.StageStatus_STAGE_SUCCESS, status)
+	assert.Equal(t, model.StageStatus_STAGE_SUCCESS.String(), status.String())
 
 	// check the deployment is created with client-go
 	dynamicClient, err := dynamic.NewForConfig(cfg)
