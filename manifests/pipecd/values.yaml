@@ -274,6 +274,8 @@ tempo:
   # modified by @pipecd, to expand template remoteWriteUrl
   # @default -- Dynamically generated tempo configmap
   config: |
+    memberlist:
+      cluster_label: "{{ .Release.Name }}.{{ .Release.Namespace }}"
     multitenancy_enabled: {{ .Values.tempo.multitenancyEnabled }}
     usage_report:
       reporting_enabled: {{ .Values.tempo.reportingEnabled }}
