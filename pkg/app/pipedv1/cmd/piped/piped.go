@@ -649,7 +649,7 @@ func (p *piped) runPlugins(ctx context.Context, pluginsCfg []config.PipedPlugin,
 
 		// Build plugin's args.
 		args := make([]string, 0, 0)
-		args = append(args, "--piped-plugin-service", net.JoinHostPort("localhost", strconv.Itoa(p.pluginServicePort)))
+		args = append(args, "start", "--piped-plugin-service", net.JoinHostPort("localhost", strconv.Itoa(p.pluginServicePort)))
 		b, err := json.Marshal(pCfg)
 		if err != nil {
 			return nil, fmt.Errorf("failed to prepare plugin %s config: %w", pCfg.Name, err)
