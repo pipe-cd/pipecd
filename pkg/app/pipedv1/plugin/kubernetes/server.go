@@ -80,7 +80,7 @@ func (s *plugin) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	group, ctx := errgroup.WithContext(ctx)
 
-	pipedapiClient, err := pipedapi.NewClient(ctx, s.pipedPluginService, nil)
+	pipedapiClient, err := pipedapi.NewClient(ctx, s.pipedPluginService)
 	if err != nil {
 		input.Logger.Error("failed to create piped plugin service client", zap.Error(err))
 		return err
