@@ -1314,6 +1314,18 @@ type PipedDeployTarget struct {
 	Config json.RawMessage `json:"config"`
 }
 
+// ParsePluginConfig parses the given JSON string and returns the PipedPlugin.
+func ParsePluginConfig(s string) (*PipedPlugin, error) {
+	p := &PipedPlugin{}
+	if err := json.Unmarshal([]byte(s), p); err != nil {
+		return nil, err
+	}
+	if err := p.Validate(); err != nil {
+		return nil, err
+	}
+	return p, nil
+}
+
 func (p *PipedPlugin) Validate() error {
 	if p.Name == "" {
 		return errors.New("name must be set")
