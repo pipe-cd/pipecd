@@ -31,7 +31,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-type server struct {
+type plugin struct {
 	apiPort                int
 	pipedPluginServicePort int
 	gracePeriod            time.Duration
@@ -42,15 +42,15 @@ type server struct {
 	enableGRPCReflection bool
 }
 
-// NewServerCommand creates a new cobra command for executing api server.
-func NewServerCommand() *cobra.Command {
-	s := &server{
+// NewPluginCommand creates a new cobra command for executing api server.
+func NewPluginCommand() *cobra.Command {
+	s := &plugin{
 		apiPort:     10000,
 		gracePeriod: 30 * time.Second,
 	}
 	cmd := &cobra.Command{
-		Use:   "server",
-		Short: "Start running server.",
+		Use:   "start",
+		Short: "Start running the kubernetes-plugin.",
 		RunE:  cli.WithContext(s.run),
 	}
 
@@ -69,7 +69,7 @@ func NewServerCommand() *cobra.Command {
 	return cmd
 }
 
-func (s *server) run(ctx context.Context, input cli.Input) (runErr error) {
+func (s *plugin) run(ctx context.Context, input cli.Input) (runErr error) {
 	// Make a cancellable context.
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
