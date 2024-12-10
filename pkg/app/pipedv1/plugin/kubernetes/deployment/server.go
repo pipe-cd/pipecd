@@ -84,6 +84,7 @@ type DeploymentService struct {
 
 // NewDeploymentService creates a new planService.
 func NewDeploymentService(
+	config *config.PipedPlugin,
 	logger *zap.Logger,
 	toolClient toolClient,
 	logPersister logPersister,
@@ -91,6 +92,7 @@ func NewDeploymentService(
 	toolRegistry := toolregistry.NewRegistry(toolClient)
 
 	return &DeploymentService{
+		pluginConfig: config,
 		logger:       logger.Named("planner"),
 		toolRegistry: toolRegistry,
 		loader:       provider.NewLoader(toolRegistry),
