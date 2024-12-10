@@ -552,6 +552,20 @@ func (mr *MockApplicationStoreMockRecorder) UpdateDeployingStatus(arg0, arg1, ar
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDeployingStatus", reflect.TypeOf((*MockApplicationStore)(nil).UpdateDeployingStatus), arg0, arg1, arg2)
 }
 
+// UpdateGitPath mocks base method.
+func (m *MockApplicationStore) UpdateGitPath(arg0 context.Context, arg1 string, arg2 *model.ApplicationGitPath) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateGitPath", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateGitPath indicates an expected call of UpdateGitPath.
+func (mr *MockApplicationStoreMockRecorder) UpdateGitPath(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateGitPath", reflect.TypeOf((*MockApplicationStore)(nil).UpdateGitPath), arg0, arg1, arg2)
+}
+
 // UpdateMostRecentDeployment mocks base method.
 func (m *MockApplicationStore) UpdateMostRecentDeployment(arg0 context.Context, arg1 string, arg2 model.DeploymentStatus, arg3 *model.ApplicationDeploymentReference) error {
 	m.ctrl.T.Helper()
