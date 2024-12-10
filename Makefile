@@ -55,6 +55,21 @@ else
 	helm package manifests/$(MOD) --version $(VERSION) --app-version $(VERSION) --dependency-update --destination .artifacts
 endif
 
+.PHONY: build/plugin
+build/plugin: PLUGINS ?= "" # comma separated list of plugins. eg: PLUGINS=kubernetes,ecs,lambda
+build/plugin: PLUGINS_BIN_DIR ?= ~/.piped/plugins
+build/plugin: PLUGINS_SRC_DIR ?= ./pkg/app/pipedv1/plugin
+build/plugin: PLUGINS_OUT_DIR ?= ./.artifacts/plugins
+build/plugin:
+	mkdir -p $(PLUGINS_BIN_DIR)
+	@echo "Building plugins..."
+	@for plugin in $(shell echo $(PLUGINS) | tr ',' ' '); do \
+		echo "Building plugin: $$plugin"; \
+		go build -o $(PLUGINS_OUT_DIR)/$$plugin $(PLUGINS_SRC_DIR)/$$plugin \
+			&& cp $(PLUGINS_OUT_DIR)/$$plugin $(PLUGINS_BIN_DIR)/$$plugin; \
+	done
+	@echo "Plugins are built and copied to $(PLUGINS_BIN_DIR)"
+
 .PHONY: push
 push/chart: BUCKET ?= charts.pipecd.dev
 push/chart: VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7)
