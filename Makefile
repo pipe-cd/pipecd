@@ -57,7 +57,7 @@ endif
 
 .PHONY: build/plugin
 build/plugin: PLUGINS ?= "" # comma separated list of plugins. eg: PLUGINS=kubernetes,ecs,lambda
-build/plugin: PLUGINS_BIN_DIR ?= ~/.pipecd/plugins
+build/plugin: PLUGINS_BIN_DIR ?= ~/.piped/plugins
 build/plugin: PLUGINS_SRC_DIR ?= ./pkg/app/pipedv1/plugin
 build/plugin: PLUGINS_OUT_DIR ?= ./.artifacts/plugins
 build/plugin:
