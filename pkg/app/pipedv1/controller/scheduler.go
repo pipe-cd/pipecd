@@ -18,6 +18,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"path/filepath"
 	"time"
 
 	"go.opentelemetry.io/otel/attribute"
@@ -27,6 +29,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
@@ -214,9 +217,37 @@ func (s *scheduler) Run(ctx context.Context) error {
 	)
 	deploymentStatus = model.DeploymentStatus_DEPLOYMENT_SUCCESS
 
-	/// TODO: prepare the targetDS and runningDS
-	var targetDS *deployment.DeploymentSource
-	cfg, err := config.DecodeYAML[*config.GenericApplicationSpec](targetDS.GetApplicationConfig())
+	repoCfg := config.PipedRepository{
+		RepoID: s.deployment.GitPath.Repo.Id,
+		Remote: s.deployment.GitPath.Repo.Remote,
+		Branch: s.deployment.GitPath.Repo.Branch,
+	}
+
+	runningDSP := deploysource.NewProvider(
+		filepath.Join(s.workingDir, "running-deploysource"),
+		deploysource.NewGitSourceCloner(s.gitClient, repoCfg, "running", s.deployment.RunningCommitHash),
+		s.deployment.GetGitPath(), nil, // TODO: pass secret decrypter?
+	)
+	rds, err := runningDSP.Get(ctx, io.Discard) // TODO: pass not io.Discard
+	if err != nil {
+		// TODO: log error
+		return fmt.Errorf("error while preparing deploy source data (%v)", err)
+	}
+	s.runningDS = rds.ToPluginDeploySource()
+
+	targetDSP := deploysource.NewProvider(
+		filepath.Join(s.workingDir, "target-deploysource"),
+		deploysource.NewGitSourceCloner(s.gitClient, repoCfg, "target", s.deployment.Trigger.Commit.Hash),
+		s.deployment.GetGitPath(), nil, // TODO: pass secret decrypter?
+	)
+	tds, err := targetDSP.Get(ctx, io.Discard) // TODO: pass not io.Discard
+	if err != nil {
+		// TODO: log error
+		return fmt.Errorf("error while preparing deploy source data (%v)", err)
+	}
+	s.targetDS = tds.ToPluginDeploySource()
+
+	cfg, err := config.DecodeYAML[*config.GenericApplicationSpec](s.targetDS.GetApplicationConfig())
 	if err != nil {
 		deploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
 		statusReason = fmt.Sprintf("Failed to decode application configuration at target commit (%v)", err)
