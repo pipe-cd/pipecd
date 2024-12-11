@@ -115,6 +115,12 @@ func (s *plugin) run(ctx context.Context, input cli.Input) (runErr error) {
 		})
 	}
 
+	// Start log persister
+	persister := logpersister.NewPersister(pipedapiClient, input.Logger)
+	group.Go(func() error {
+		return persister.Run(ctx)
+	})
+
 	// Start a gRPC server for handling external API requests.
 	{
 		var (
@@ -122,7 +128,7 @@ func (s *plugin) run(ctx context.Context, input cli.Input) (runErr error) {
 				cfg,
 				input.Logger,
 				toolregistry.NewToolRegistry(pipedapiClient),
-				logpersister.NewPersister(pipedapiClient, input.Logger),
+				persister,
 			)
 			opts = []rpc.Option{
 				rpc.WithPort(cfg.Port),
