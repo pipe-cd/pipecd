@@ -50,8 +50,8 @@ type scheduler struct {
 	metadataStore metadatastore.MetadataStore
 	notifier      notifier
 
-	targetDS  *deployment.DeploymentSource
-	runningDS *deployment.DeploymentSource
+	targetDSP  deploysource.Provider
+	runningDSP deploysource.Provider
 
 	// Current status of each stages.
 	// We stores their current statuses into this field
@@ -223,31 +223,26 @@ func (s *scheduler) Run(ctx context.Context) error {
 		Branch: s.deployment.GitPath.Repo.Branch,
 	}
 
-	runningDSP := deploysource.NewProvider(
+	s.runningDSP = deploysource.NewProvider(
 		filepath.Join(s.workingDir, "running-deploysource"),
 		deploysource.NewGitSourceCloner(s.gitClient, repoCfg, "running", s.deployment.RunningCommitHash),
 		s.deployment.GetGitPath(), nil, // TODO: pass secret decrypter?
 	)
-	rds, err := runningDSP.Get(ctx, io.Discard) // TODO: pass not io.Discard
-	if err != nil {
-		// TODO: log error
-		return fmt.Errorf("error while preparing deploy source data (%v)", err)
-	}
-	s.runningDS = rds.ToPluginDeploySource()
 
-	targetDSP := deploysource.NewProvider(
+	s.targetDSP = deploysource.NewProvider(
 		filepath.Join(s.workingDir, "target-deploysource"),
 		deploysource.NewGitSourceCloner(s.gitClient, repoCfg, "target", s.deployment.Trigger.Commit.Hash),
 		s.deployment.GetGitPath(), nil, // TODO: pass secret decrypter?
 	)
-	tds, err := targetDSP.Get(ctx, io.Discard) // TODO: pass not io.Discard
-	if err != nil {
-		// TODO: log error
-		return fmt.Errorf("error while preparing deploy source data (%v)", err)
-	}
-	s.targetDS = tds.ToPluginDeploySource()
 
-	cfg, err := config.DecodeYAML[*config.GenericApplicationSpec](s.targetDS.GetApplicationConfig())
+	ds, err := s.targetDSP.Get(ctx, io.Discard)
+	if err != nil {
+		deploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
+		statusReason = fmt.Sprintf("Failed to get deploy source at target commit (%v)", err)
+		s.reportDeploymentCompleted(ctx, deploymentStatus, statusReason, "")
+		return err
+	}
+	cfg, err := config.DecodeYAML[*config.GenericApplicationSpec](ds.ApplicationConfig)
 	if err != nil {
 		deploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
 		statusReason = fmt.Sprintf("Failed to decode application configuration at target commit (%v)", err)
@@ -472,6 +467,18 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 		originalStatus = ps.Status
 	)
 
+	rds, err := s.runningDSP.Get(ctx, io.Discard)
+	if err != nil {
+		s.logger.Error("failed to get running deployment source", zap.Error(err))
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	tds, err := s.targetDSP.Get(ctx, io.Discard)
+	if err != nil {
+		s.logger.Error("failed to get target deployment source", zap.Error(err))
+		return model.StageStatus_STAGE_FAILURE
+	}
+
 	// Check whether to execute the script rollback stage or not.
 	// If the base stage is executed, the script rollback stage will be executed.
 	if ps.Rollback {
@@ -524,8 +531,8 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 			Deployment:              s.deployment,
 			Stage:                   ps,
 			StageConfig:             stageConfig,
-			RunningDeploymentSource: s.runningDS, // TODO: prepare this
-			TargetDeploymentSource:  s.targetDS,  // TODO: prepare this
+			RunningDeploymentSource: rds.ToPluginDeploySource(),
+			TargetDeploymentSource:  tds.ToPluginDeploySource(),
 		},
 	})
 	if err != nil {
