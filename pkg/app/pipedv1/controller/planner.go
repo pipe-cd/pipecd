@@ -18,6 +18,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"path/filepath"
 	"sort"
 	"time"
 
@@ -27,6 +29,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
@@ -184,24 +187,35 @@ func (p *planner) Run(ctx context.Context) error {
 	// TODO: Prepare running deploy source and target deploy source.
 	var runningDS, targetDS *deployment.DeploymentSource
 
-	// repoCfg := config.PipedRepository{
-	// 	RepoID: p.deployment.GitPath.Repo.Id,
-	// 	Remote: p.deployment.GitPath.Repo.Remote,
-	// 	Branch: p.deployment.GitPath.Repo.Branch,
-	// }
+	repoCfg := config.PipedRepository{
+		RepoID: p.deployment.GitPath.Repo.Id,
+		Remote: p.deployment.GitPath.Repo.Remote,
+		Branch: p.deployment.GitPath.Repo.Branch,
+	}
 
-	// Prepare target deploy source.
-	// targetDSP := deploysource.NewProvider(
-	// 	filepath.Join(p.workingDir, "deploysource"),
-	// 	deploysource.NewGitSourceCloner(p.gitClient, repoCfg, "target", p.deployment.Trigger.Commit.Hash),
-	// 	*p.deployment.GitPath,
-	// 	nil, // TODO: Revise this secret decryter, is this need?
-	// )
+	runningDSP := deploysource.NewProvider(
+		filepath.Join(p.workingDir, "running-deploysource"),
+		deploysource.NewGitSourceCloner(p.gitClient, repoCfg, "running", p.lastSuccessfulCommitHash),
+		p.deployment.GetGitPath(), nil, // TODO: pass secret decrypter?
+	)
+	rds, err := runningDSP.Get(ctx, io.Discard) // TODO: pass not io.Discard
+	if err != nil {
+		// TODO: log error
+		return fmt.Errorf("error while preparing deploy source data (%v)", err)
+	}
+	runningDS = rds.ToPluginDeploySource()
 
-	// targetDS, err := targetDSP.Get(ctx, io.Discard)
-	// if err != nil {
-	// 	return fmt.Errorf("error while preparing deploy source data (%v)", err)
-	// }
+	targetDSP := deploysource.NewProvider(
+		filepath.Join(p.workingDir, "target-deploysource"),
+		deploysource.NewGitSourceCloner(p.gitClient, repoCfg, "target", p.deployment.Trigger.Commit.Hash),
+		p.deployment.GetGitPath(), nil, // TODO: pass secret decrypter?
+	)
+	tds, err := targetDSP.Get(ctx, io.Discard) // TODO: pass not io.Discard
+	if err != nil {
+		// TODO: log error
+		return fmt.Errorf("error while preparing deploy source data (%v)", err)
+	}
+	targetDS = tds.ToPluginDeploySource()
 
 	// TODO: Pass running DS as well if need?
 	out, err := p.buildPlan(ctx, runningDS, targetDS)
