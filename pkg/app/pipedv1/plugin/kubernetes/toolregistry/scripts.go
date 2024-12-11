@@ -16,7 +16,7 @@ package toolregistry
 
 const kubectlInstallScript = `
 cd {{ .TmpDir }}
-curl -LO https://storage.googleapis.com/kubernetes-release/release/v{{ .Version }}/bin/{{ .Os }}/{{ .Arch }}/kubectl
+curl -LO https://dl.k8s.io/release/v{{ .Version }}/bin/{{ .Os }}/{{ .Arch }}/kubectl
 mv kubectl {{ .OutPath }}
 `
 
