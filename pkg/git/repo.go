@@ -185,6 +185,11 @@ func (r *repo) CopyToModify(dest string) (Repo, error) {
 		return nil, err
 	}
 
+	// fetch the latest changes which doesn't exist in the local repository
+	if out, err := cloned.runGitCommand(context.Background(), "fetch"); err != nil {
+		return nil, formatCommandError(err, out)
+	}
+
 	return cloned, nil
 }
 
