@@ -99,7 +99,7 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 		PlacementConstraints:          service.PlacementConstraints,
 		PlacementStrategy:             service.PlacementStrategy,
 		PlatformVersion:               service.PlatformVersion,
-		PropagateTags:                 types.PropagateTagsService,
+		PropagateTags:                 service.PropagateTags,
 		Role:                          service.RoleArn,
 		SchedulingStrategy:            service.SchedulingStrategy,
 		Tags:                          service.Tags,
@@ -107,6 +107,11 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 	output, err := c.ecsClient.CreateService(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create ECS service %s: %w", *service.ServiceName, err)
+	}
+
+	if service.PropagateTags == "" {
+		// Use SERVICE by default to propagate pipecd managed tags.
+		input.PropagateTags = types.PropagateTagsService
 	}
 
 	// Hack: Since we use EXTERNAL deployment controller, the below configurations are not allowed to be passed
@@ -143,11 +148,17 @@ func (c *client) UpdateService(ctx context.Context, service types.Service) (*typ
 		PlacementStrategy:    service.PlacementStrategy,
 		// TODO: Support update other properties of service.
 		// PlacementConstraints:    service.PlacementConstraints,
+		PropagateTags: service.PropagateTags,
 	}
 
 	// If desiredCount is 0 or not set, keep current desiredCount because a user might use AutoScaling.
 	if service.DesiredCount != 0 {
 		input.DesiredCount = aws.Int32(service.DesiredCount)
+	}
+
+	if service.PropagateTags == "" {
+		// Use SERVICE by default to propagate pipecd managed tags.
+		input.PropagateTags = types.PropagateTagsService
 	}
 
 	output, err := c.ecsClient.UpdateService(ctx, input)
