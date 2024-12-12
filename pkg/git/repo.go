@@ -180,7 +180,7 @@ func (r *repo) CopyToModify(dest string) (Repo, error) {
 		gitEnvs:      r.gitEnvs,
 	}
 
-	// because we did a local cloning so the remote url of origin
+	// because we did a local cloning so set the remote url of origin
 	if err := cloned.setRemote(context.Background(), r.remote); err != nil {
 		return nil, err
 	}
