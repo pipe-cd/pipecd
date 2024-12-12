@@ -266,12 +266,7 @@ func TestCopy(t *testing.T) {
 	assert.Equal(t, 1, len(commits))
 
 	tmpDir := filepath.Join(faker.dir, "tmp-repo")
-	newRepo, err := r.Copy(tmpDir)
-	require.NoError(t, err)
-
-	// we can copy the repo to another directory multiple times
-	tmpDir2 := filepath.Join(faker.dir, "tmp-repo2")
-	newRepo2, err := r.Copy(tmpDir2)
+	newRepo, err := r.CopyToModify(tmpDir)
 	require.NoError(t, err)
 
 	assert.NotEqual(t, r, newRepo)
@@ -282,7 +277,6 @@ func TestCopy(t *testing.T) {
 
 	assert.Equal(t, commits, newRepoCommits)
 	assert.NoError(t, newRepo.Clean())
-	assert.NoError(t, newRepo2.Clean())
 }
 
 func TestCopyToModify(t *testing.T) {

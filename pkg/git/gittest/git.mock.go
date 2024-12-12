@@ -121,10 +121,10 @@ func (mr *MockRepoMockRecorder) CommitChanges(arg0, arg1, arg2, arg3, arg4, arg5
 }
 
 // Copy mocks base method.
-func (m *MockRepo) Copy(arg0 string) (git.Repo, error) {
+func (m *MockRepo) Copy(arg0 string) (git.Worktree, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Copy", arg0)
-	ret0, _ := ret[0].(git.Repo)
+	ret0, _ := ret[0].(git.Worktree)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
