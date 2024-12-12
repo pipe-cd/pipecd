@@ -290,6 +290,7 @@ func TestCopyToModify(t *testing.T) {
 	r := &repo{
 		dir:     faker.repoDir(org, repoName),
 		gitPath: faker.gitPath,
+		remote:  faker.repoDir(org, repoName), // use the same directory as remote, it's not a real remote. it's strange but it's ok for testing.
 	}
 
 	commits, err := r.ListCommits(ctx, "")
