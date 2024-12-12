@@ -343,7 +343,7 @@ func ignoreParameters(liveManifests provider.ECSManifests, headManifests provide
 	return live, head
 }
 
-func (d *detector) loadConfigs(app *model.Application, repo git.Repo, headCommit git.Commit) (provider.ECSManifests, error) {
+func (d *detector) loadConfigs(app *model.Application, repo git.Worktree, headCommit git.Commit) (provider.ECSManifests, error) {
 	var (
 		manifestCache = provider.ECSManifestsCache{
 			AppID:  app.Id,

@@ -169,7 +169,7 @@ func (d *detector) check(ctx context.Context) {
 	}
 }
 
-func (d *detector) checkApplication(ctx context.Context, app *model.Application, repo git.Repo, headCommit git.Commit) error {
+func (d *detector) checkApplication(ctx context.Context, app *model.Application, repo git.Worktree, headCommit git.Commit) error {
 	var (
 		repoDir = repo.GetPath()
 		appDir  = filepath.Join(repoDir, app.GitPath.Path)

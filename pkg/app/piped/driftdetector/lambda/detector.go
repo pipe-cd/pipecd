@@ -270,7 +270,7 @@ func ignoreAndSortParameters(headSpec provider.FunctionManifestSpec) provider.Fu
 	return cloneSpec
 }
 
-func (d *detector) loadHeadFunctionManifest(app *model.Application, repo git.Repo, headCommit git.Commit) (provider.FunctionManifest, error) {
+func (d *detector) loadHeadFunctionManifest(app *model.Application, repo git.Worktree, headCommit git.Commit) (provider.FunctionManifest, error) {
 	var (
 		manifestCache = provider.FunctionManifestCache{
 			AppID:  app.Id,

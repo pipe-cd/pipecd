@@ -221,7 +221,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	return d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
 }
 
-func (d *detector) loadHeadServiceManifest(app *model.Application, repo git.Repo, headCommit git.Commit) (provider.ServiceManifest, error) {
+func (d *detector) loadHeadServiceManifest(app *model.Application, repo git.Worktree, headCommit git.Commit) (provider.ServiceManifest, error) {
 	var (
 		manifestCache = provider.ServiceManifestCache{
 			AppID:  app.Id,
