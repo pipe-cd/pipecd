@@ -206,6 +206,8 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		if err != nil {
 			return fmt.Errorf("failed to copy the cloned git repository (%w)", err)
 		}
+		defer repo.Clean()
+
 		repoDir = repo.GetPath()
 		appDir = filepath.Join(repoDir, app.GitPath.Path)
 	}

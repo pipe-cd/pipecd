@@ -387,6 +387,8 @@ func (d *detector) loadConfigs(app *model.Application, repo git.Repo, headCommit
 		if err != nil {
 			return provider.ECSManifests{}, fmt.Errorf("failed to copy the cloned git repository (%w)", err)
 		}
+		defer repo.Clean()
+
 		repoDir := repo.GetPath()
 		appDir = filepath.Join(repoDir, app.GitPath.Path)
 	}

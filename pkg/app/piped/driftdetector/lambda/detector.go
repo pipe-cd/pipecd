@@ -312,6 +312,8 @@ func (d *detector) loadHeadFunctionManifest(app *model.Application, repo git.Rep
 			if err != nil {
 				return provider.FunctionManifest{}, fmt.Errorf("failed to copy the cloned git repository (%w)", err)
 			}
+			defer repo.Clean()
+
 			repoDir := repo.GetPath()
 			appDir = filepath.Join(repoDir, app.GitPath.Path)
 		}

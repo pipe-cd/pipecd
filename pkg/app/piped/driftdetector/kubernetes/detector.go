@@ -278,6 +278,8 @@ func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application
 			if err != nil {
 				return nil, fmt.Errorf("failed to copy the cloned git repository (%w)", err)
 			}
+			defer repo.Clean()
+
 			repoDir = repo.GetPath()
 			appDir = filepath.Join(repoDir, app.GitPath.Path)
 		}
