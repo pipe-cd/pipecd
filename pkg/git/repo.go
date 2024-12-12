@@ -36,6 +36,7 @@ type Repo interface {
 	GetPath() string
 	GetClonedBranch() string
 	Copy(dest string) (Repo, error)
+	CopyToModify(dest string) (Repo, error)
 
 	ListCommits(ctx context.Context, visionRange string) ([]Commit, error)
 	GetLatestCommit(ctx context.Context) (Commit, error)
@@ -60,6 +61,20 @@ type repo struct {
 	gitEnvs      []string
 }
 
+// worktree is a git worktree.
+// It is a separate checkout of the repository.
+type worktree struct {
+	repo
+	worktreePath string
+}
+
+func (r *worktree) Clean() error {
+	if out, err := r.runGitCommand(context.Background(), "worktree", "remove", r.worktreePath); err != nil {
+		return formatCommandError(err, out)
+	}
+	return nil
+}
+
 // NewRepo creates a new Repo instance.
 func NewRepo(dir, gitPath, remote, clonedBranch string, gitEnvs []string) *repo {
 	return &repo{
@@ -81,13 +96,32 @@ func (r *repo) GetClonedBranch() string {
 	return r.clonedBranch
 }
 
-// Copy does copying the repository to the given destination.
+// Copy does copying the repository to the given destination using git worktree.
+// The repository is cloned to the given destination with the detached HEAD.
+// NOTE: the given “dest” must be a path that doesn’t exist yet.
+// If you don't, you will get an error.
+func (r *repo) Copy(dest string) (Repo, error) {
+	// garbage collecting worktrees
+	if _, err := r.runGitCommand(context.Background(), "worktree", "prune"); err != nil {
+		// ignore the error
+	}
+
+	if out, err := r.runGitCommand(context.Background(), "worktree", "add", "--detach", dest); err != nil {
+		return nil, formatCommandError(err, out)
+	}
+
+	return &worktree{
+		repo:         *r,
+		worktreePath: dest,
+	}, nil
+}
+
+// CopyToModify does copying the repository to the given destination using git worktree.
 // NOTE: the given “dest” must be a path that doesn’t exist yet.
 // If you don't, it copies the repo root itself to the given dest as a subdirectory.
-func (r *repo) Copy(dest string) (Repo, error) {
+func (r *repo) CopyToModify(dest string) (Repo, error) {
 	cmd := exec.Command("cp", "-rf", r.dir, dest)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
+	if out, err := cmd.CombinedOutput(); err != nil {
 		return nil, formatCommandError(err, out)
 	}
 
@@ -96,6 +130,7 @@ func (r *repo) Copy(dest string) (Repo, error) {
 		gitPath:      r.gitPath,
 		remote:       r.remote,
 		clonedBranch: r.clonedBranch,
+		gitEnvs:      r.gitEnvs,
 	}, nil
 }
 
