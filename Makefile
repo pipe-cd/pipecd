@@ -56,7 +56,7 @@ else
 endif
 
 .PHONY: build/plugin
-build/plugin: PLUGINS ?= "" # comma separated list of plugins. eg: PLUGINS=kubernetes,ecs,lambda
+build/plugin: PLUGINS ?= $(shell find ./pkg/app/pipedv1/plugin -mindepth 1 -maxdepth 1 -type d | while read -r dir; do basename "$$dir"; done | paste -sd, -) # comma separated list of plugins. eg: PLUGINS=kubernetes,ecs,lambda
 build/plugin: PLUGINS_BIN_DIR ?= ~/.piped/plugins
 build/plugin: PLUGINS_SRC_DIR ?= ./pkg/app/pipedv1/plugin
 build/plugin: PLUGINS_OUT_DIR ?= ./.artifacts/plugins
