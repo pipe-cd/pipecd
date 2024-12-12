@@ -211,6 +211,13 @@ func (p *provider) copy(lw io.Writer) (*DeploySource, error) {
 		return nil, err
 	}
 
+	// To avoid the git operation on copied source.
+	// TODO: do not copy the .git directory to improve the performance.
+	if err := os.RemoveAll(filepath.Join(dest, ".git")); err != nil {
+		fmt.Fprintf(lw, "Unable to remove the .git directory from the copied deploy source (%v)\n", err)
+		return nil, err
+	}
+
 	return &DeploySource{
 		RepoDir:                  dest,
 		AppDir:                   filepath.Join(dest, p.appGitPath.Path),
