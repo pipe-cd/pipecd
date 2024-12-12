@@ -162,22 +162,30 @@ func (r *repo) Copy(dest string) (Worktree, error) {
 	}, nil
 }
 
-// CopyToModify does copying the repository to the given destination using git worktree.
+// CopyToModify does cloning the repository to the given destination.
+// The repository is cloned to the given destination with the .
 // NOTE: the given “dest” must be a path that doesn’t exist yet.
-// If you don't, it copies the repo root itself to the given dest as a subdirectory.
+// If you don't, you will get an error.
 func (r *repo) CopyToModify(dest string) (Repo, error) {
-	cmd := exec.Command("cp", "-rf", r.dir, dest)
+	cmd := exec.Command(r.gitPath, "clone", r.dir, dest)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		return nil, formatCommandError(err, out)
 	}
 
-	return &repo{
+	cloned := &repo{
 		dir:          dest,
 		gitPath:      r.gitPath,
 		remote:       r.remote,
 		clonedBranch: r.clonedBranch,
 		gitEnvs:      r.gitEnvs,
-	}, nil
+	}
+
+	// because we did a local cloning so the remote url of origin
+	if err := cloned.setRemote(context.Background(), r.remote); err != nil {
+		return nil, err
+	}
+
+	return cloned, nil
 }
 
 // ListCommits returns a list of commits in a given revision range.
