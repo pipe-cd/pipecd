@@ -16,6 +16,7 @@ package controller
 
 import (
 	"context"
+	"io"
 	"testing"
 	"time"
 
@@ -23,6 +24,7 @@ import (
 	"go.uber.org/zap/zaptest"
 	"google.golang.org/grpc"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -210,7 +212,9 @@ func TestExecuteStage(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := &scheduler{
-				apiClient: &fakeApiClient{},
+				apiClient:  &fakeApiClient{},
+				targetDSP:  &fakeDeploySourceProvider{},
+				runningDSP: &fakeDeploySourceProvider{},
 				stageBasedPluginsMap: map[string]pluginapi.PluginClient{
 					"stage-name": &fakeExecutorPluginClient{},
 				},
@@ -237,12 +241,22 @@ func TestExecuteStage(t *testing.T) {
 	}
 }
 
+type fakeDeploySourceProvider struct {
+	deploysource.Provider
+}
+
+func (f *fakeDeploySourceProvider) Get(ctx context.Context, logWriter io.Writer) (*deploysource.DeploySource, error) {
+	return &deploysource.DeploySource{}, nil
+}
+
 func TestExecuteStage_SignalTerminated(t *testing.T) {
 	logger := zaptest.NewLogger(t)
 	sig, handler := NewStopSignal()
 
 	s := &scheduler{
-		apiClient: &fakeApiClient{},
+		apiClient:  &fakeApiClient{},
+		targetDSP:  &fakeDeploySourceProvider{},
+		runningDSP: &fakeDeploySourceProvider{},
 		stageBasedPluginsMap: map[string]pluginapi.PluginClient{
 			"stage-name": &fakeExecutorPluginClient{},
 		},
@@ -278,7 +292,9 @@ func TestExecuteStage_SignalCancelled(t *testing.T) {
 	sig, handler := NewStopSignal()
 
 	s := &scheduler{
-		apiClient: &fakeApiClient{},
+		apiClient:  &fakeApiClient{},
+		targetDSP:  &fakeDeploySourceProvider{},
+		runningDSP: &fakeDeploySourceProvider{},
 		stageBasedPluginsMap: map[string]pluginapi.PluginClient{
 			"stage-name": &fakeExecutorPluginClient{},
 		},
