@@ -22,7 +22,7 @@ import (
 
 	"github.com/Masterminds/sprig/v3"
 
-	"github.com/pipe-cd/pipecd/pkg/config"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
 )
 
 type attachmentProcessor struct {

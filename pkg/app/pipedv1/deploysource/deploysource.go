@@ -24,7 +24,7 @@ import (
 	"sync"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/sourceprocesser"
-	config "github.com/pipe-cd/pipecd/pkg/config"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 )
@@ -150,7 +150,7 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 		fmt.Fprintf(lw, "Unable to load the application configuration file at %s (%v)\n", cfgFileRelPath, err)
 		return nil, err
 	}
-	cfg, err := config.DecodeYAML(cfgFileContent)
+	cfg, err := config.DecodeYAML[*config.GenericApplicationSpec](cfgFileContent)
 
 	if err != nil {
 		fmt.Fprintf(lw, "Unable to load the application configuration file at %s (%v)\n", cfgFileRelPath, err)
@@ -161,11 +161,8 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 		return nil, err
 	}
 
-	gac, ok := cfg.GetGenericApplication()
-	if !ok {
-		fmt.Fprintf(lw, "Invalid application kind %s\n", cfg.Kind)
-		return nil, fmt.Errorf("unsupport application kind %s", cfg.Kind)
-	}
+	gac := cfg.Spec
+
 	fmt.Fprintln(lw, "Successfully loaded the application configuration file")
 
 	var templProcessors []sourceprocesser.SourceTemplateProcessor
