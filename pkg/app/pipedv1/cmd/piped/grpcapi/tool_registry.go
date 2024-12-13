@@ -84,7 +84,6 @@ func (r *toolRegistry) InstallTool(ctx context.Context, name, version, script st
 }
 
 func (r *toolRegistry) installTool(ctx context.Context, name, version, script string) (path string, err error) {
-
 	target := fmt.Sprintf("%s-%s", name, version)
 	toolPath := filepath.Join(r.toolsDir, target)
 

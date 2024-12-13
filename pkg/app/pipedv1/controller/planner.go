@@ -184,7 +184,7 @@ func (p *planner) Run(ctx context.Context) error {
 		controllermetrics.UpdateDeploymentStatus(p.deployment, p.doneDeploymentStatus)
 	}()
 
-	// TODO: Prepare running deploy source and target deploy source.
+	// Prepare running deploy source and target deploy source.
 	var runningDS, targetDS *deployment.DeploymentSource
 
 	repoCfg := config.PipedRepository{
