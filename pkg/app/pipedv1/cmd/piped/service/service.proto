@@ -22,8 +22,6 @@ import "pkg/model/logblock.proto";
 
 // PluginService provides the ability to interact with plugins.
 service PluginService {
-    // DecryptSecret decrypts the given secret.
-    rpc DecryptSecret(DecryptSecretRequest) returns (DecryptSecretResponse) {}
     // InstallTool installs the given tool.
     // installed binary's filename becomes `name-version`.
     rpc InstallTool(InstallToolRequest) returns (InstallToolResponse) {}

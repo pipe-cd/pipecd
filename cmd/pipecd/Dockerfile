@@ -1,4 +1,4 @@
-FROM alpine:3.20
+FROM alpine:3.21.0
 
 ARG GOOGLE_CLOUD_SDK_VERSION=477.0.0
 

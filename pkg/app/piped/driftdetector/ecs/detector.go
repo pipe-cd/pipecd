@@ -343,7 +343,7 @@ func ignoreParameters(liveManifests provider.ECSManifests, headManifests provide
 	return live, head
 }
 
-func (d *detector) loadConfigs(app *model.Application, repo git.Repo, headCommit git.Commit) (provider.ECSManifests, error) {
+func (d *detector) loadConfigs(app *model.Application, repo git.Worktree, headCommit git.Commit) (provider.ECSManifests, error) {
 	var (
 		manifestCache = provider.ECSManifestsCache{
 			AppID:  app.Id,
@@ -387,6 +387,8 @@ func (d *detector) loadConfigs(app *model.Application, repo git.Repo, headCommit
 		if err != nil {
 			return provider.ECSManifests{}, fmt.Errorf("failed to copy the cloned git repository (%w)", err)
 		}
+		defer repo.Clean()
+
 		repoDir := repo.GetPath()
 		appDir = filepath.Join(repoDir, app.GitPath.Path)
 	}
