@@ -90,6 +90,16 @@ func MakeResourceKey(obj *unstructured.Unstructured) ResourceKey {
 	return k
 }
 
+func (k ResourceKey) IsDeployment() bool {
+	if k.Kind != KindDeployment {
+		return false
+	}
+	if !IsKubernetesBuiltInResource(k.APIVersion) {
+		return false
+	}
+	return true
+}
+
 func (k ResourceKey) IsConfigMap() bool {
 	if k.Kind != KindConfigMap {
 		return false

@@ -16,6 +16,7 @@ package provider
 
 import (
 	"encoding/json"
+	"maps"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/yaml"
@@ -68,4 +69,19 @@ func (m Manifest) AddAnnotations(annotations map[string]string) {
 		annos[k] = v
 	}
 	m.Body.SetAnnotations(annos)
+}
+
+// AddStringMapValues adds or overrides the given key-values into the string map
+// that can be found at the specified fields.
+func (m Manifest) AddStringMapValues(values map[string]string, fields ...string) error {
+	curMap, _, err := unstructured.NestedStringMap(m.Body.Object, fields...)
+	if err != nil {
+		return err
+	}
+
+	if curMap == nil {
+		return unstructured.SetNestedStringMap(m.Body.Object, values, fields...)
+	}
+	maps.Copy(curMap, values)
+	return unstructured.SetNestedStringMap(m.Body.Object, curMap, fields...)
 }
