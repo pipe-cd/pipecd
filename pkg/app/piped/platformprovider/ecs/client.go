@@ -109,11 +109,6 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 		return nil, fmt.Errorf("failed to create ECS service %s: %w", *service.ServiceName, err)
 	}
 
-	if service.PropagateTags == "" {
-		// Use SERVICE by default to propagate pipecd managed tags.
-		input.PropagateTags = types.PropagateTagsService
-	}
-
 	// Hack: Since we use EXTERNAL deployment controller, the below configurations are not allowed to be passed
 	// in CreateService step, but it required in further step (CreateTaskSet step). We reassign those values
 	// as part of service definition for that purpose.
@@ -155,11 +150,6 @@ func (c *client) UpdateService(ctx context.Context, service types.Service) (*typ
 	// If desiredCount is 0 or not set, keep current desiredCount because a user might use AutoScaling.
 	if service.DesiredCount != 0 {
 		input.DesiredCount = aws.Int32(service.DesiredCount)
-	}
-
-	if service.PropagateTags == "" {
-		// Use SERVICE by default to propagate pipecd managed tags.
-		input.PropagateTags = types.PropagateTagsService
 	}
 
 	output, err := c.ecsClient.UpdateService(ctx, input)
