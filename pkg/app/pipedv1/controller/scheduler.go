@@ -515,7 +515,6 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 	}
 
 	// Load the stage configuration.
-	// TODO: Check this works with pre-defined stages. (stages added to the pipeline without user-defined configuration)
 	stageConfig, stageConfigFound := s.genericApplicationConfig.GetStageByte(ps.Index)
 	if !stageConfigFound {
 		s.logger.Error("Unable to find the stage configuration")
