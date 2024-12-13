@@ -404,6 +404,7 @@ func TestGenericTriggerConfiguration(t *testing.T) {
 				Planner: DeploymentPlanner{
 					AutoRollback: newBoolPointer(true),
 				},
+				Pipeline: &DeploymentPipeline{},
 			},
 			expectedError: nil,
 		},
@@ -447,6 +448,7 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 				Planner: DeploymentPlanner{
 					AutoRollback: newBoolPointer(true),
 				},
+				Pipeline: &DeploymentPipeline{},
 			},
 			expectedError: nil,
 		},
@@ -468,6 +470,7 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 				Planner: DeploymentPlanner{
 					AutoRollback: newBoolPointer(true),
 				},
+				Pipeline: &DeploymentPipeline{},
 			},
 			expectedError: nil,
 		},
@@ -489,6 +492,7 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 				Planner: DeploymentPlanner{
 					AutoRollback: newBoolPointer(true),
 				},
+				Pipeline: &DeploymentPipeline{},
 			},
 			expectedError: nil,
 		},
@@ -550,6 +554,7 @@ func TestGenericPostSyncConfiguration(t *testing.T) {
 						},
 					},
 				},
+				Pipeline: &DeploymentPipeline{},
 			},
 			expectedError: nil,
 		},

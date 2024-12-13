@@ -183,7 +183,7 @@ func TestExecuteStage(t *testing.T) {
 			expected: model.StageStatus_STAGE_FAILURE,
 		},
 		{
-			name: "stage without config, should be set as failed",
+			name: "stage without config, should be success",
 			deployment: &model.Deployment{
 				Stages: []*model.PipelineStage{
 					{
@@ -202,7 +202,7 @@ func TestExecuteStage(t *testing.T) {
 					Stages: []config.PipelineStage{},
 				},
 			},
-			expected: model.StageStatus_STAGE_FAILURE,
+			expected: model.StageStatus_STAGE_SUCCESS,
 		},
 	}
 
