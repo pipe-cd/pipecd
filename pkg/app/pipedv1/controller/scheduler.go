@@ -18,6 +18,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"path/filepath"
 	"time"
 
 	"go.opentelemetry.io/otel/attribute"
@@ -27,6 +29,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
@@ -47,8 +50,8 @@ type scheduler struct {
 	metadataStore metadatastore.MetadataStore
 	notifier      notifier
 
-	targetDS  *deployment.DeploymentSource
-	runningDS *deployment.DeploymentSource
+	targetDSP  deploysource.Provider
+	runningDSP deploysource.Provider
 
 	// Current status of each stages.
 	// We stores their current statuses into this field
@@ -214,9 +217,32 @@ func (s *scheduler) Run(ctx context.Context) error {
 	)
 	deploymentStatus = model.DeploymentStatus_DEPLOYMENT_SUCCESS
 
-	/// TODO: prepare the targetDS and runningDS
-	var targetDS *deployment.DeploymentSource
-	cfg, err := config.DecodeYAML[*config.GenericApplicationSpec](targetDS.GetApplicationConfig())
+	repoCfg := config.PipedRepository{
+		RepoID: s.deployment.GitPath.Repo.Id,
+		Remote: s.deployment.GitPath.Repo.Remote,
+		Branch: s.deployment.GitPath.Repo.Branch,
+	}
+
+	s.runningDSP = deploysource.NewProvider(
+		filepath.Join(s.workingDir, "running-deploysource"),
+		deploysource.NewGitSourceCloner(s.gitClient, repoCfg, "running", s.deployment.RunningCommitHash),
+		s.deployment.GetGitPath(), nil, // TODO: pass secret decrypter?
+	)
+
+	s.targetDSP = deploysource.NewProvider(
+		filepath.Join(s.workingDir, "target-deploysource"),
+		deploysource.NewGitSourceCloner(s.gitClient, repoCfg, "target", s.deployment.Trigger.Commit.Hash),
+		s.deployment.GetGitPath(), nil, // TODO: pass secret decrypter?
+	)
+
+	ds, err := s.targetDSP.Get(ctx, io.Discard)
+	if err != nil {
+		deploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
+		statusReason = fmt.Sprintf("Failed to get deploy source at target commit (%v)", err)
+		s.reportDeploymentCompleted(ctx, deploymentStatus, statusReason, "")
+		return err
+	}
+	cfg, err := config.DecodeYAML[*config.GenericApplicationSpec](ds.ApplicationConfig)
 	if err != nil {
 		deploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
 		statusReason = fmt.Sprintf("Failed to decode application configuration at target commit (%v)", err)
@@ -441,6 +467,18 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 		originalStatus = ps.Status
 	)
 
+	rds, err := s.runningDSP.Get(ctx, io.Discard)
+	if err != nil {
+		s.logger.Error("failed to get running deployment source", zap.Error(err))
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	tds, err := s.targetDSP.Get(ctx, io.Discard)
+	if err != nil {
+		s.logger.Error("failed to get target deployment source", zap.Error(err))
+		return model.StageStatus_STAGE_FAILURE
+	}
+
 	// Check whether to execute the script rollback stage or not.
 	// If the base stage is executed, the script rollback stage will be executed.
 	if ps.Rollback {
@@ -477,7 +515,6 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 	}
 
 	// Load the stage configuration.
-	// TODO: Check this works with pre-defined stages. (stages added to the pipeline without user-defined configuration)
 	stageConfig, stageConfigFound := s.genericApplicationConfig.GetStageByte(ps.Index)
 	if !stageConfigFound {
 		s.logger.Error("Unable to find the stage configuration")
@@ -493,8 +530,8 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 			Deployment:              s.deployment,
 			Stage:                   ps,
 			StageConfig:             stageConfig,
-			RunningDeploymentSource: s.runningDS, // TODO: prepare this
-			TargetDeploymentSource:  s.targetDS,  // TODO: prepare this
+			RunningDeploymentSource: rds.ToPluginDeploySource(),
+			TargetDeploymentSource:  tds.ToPluginDeploySource(),
 		},
 	})
 	if err != nil {
