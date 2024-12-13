@@ -319,7 +319,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 	if err != nil {
 		return fmt.Errorf("failed to create a new temporary directory: %w", err)
 	}
-	tmpRepo, err := repo.Copy(filepath.Join(tmpDir, "tmp-repo"))
+	tmpRepo, err := repo.CopyToModify(filepath.Join(tmpDir, "tmp-repo"))
 	if err != nil {
 		return fmt.Errorf("failed to copy the repository to the temporary directory: %w", err)
 	}
@@ -495,7 +495,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 	if err != nil {
 		return fmt.Errorf("failed to create a new temporary directory: %w", err)
 	}
-	tmpRepo, err := repo.Copy(filepath.Join(tmpDir, "tmp-repo"))
+	tmpRepo, err := repo.CopyToModify(filepath.Join(tmpDir, "tmp-repo"))
 	if err != nil {
 		return fmt.Errorf("failed to copy the repository to the temporary directory: %w", err)
 	}
