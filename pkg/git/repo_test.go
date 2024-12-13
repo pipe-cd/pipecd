@@ -271,11 +271,50 @@ func TestCopy(t *testing.T) {
 
 	assert.NotEqual(t, r, newRepo)
 
+	assert.NoError(t, newRepo.Clean())
+}
+
+func TestCopyToModify(t *testing.T) {
+	faker, err := newFaker()
+	require.NoError(t, err)
+	defer faker.clean()
+
+	var (
+		org      = "test-repo-org"
+		repoName = "repo-copy"
+		ctx      = context.Background()
+	)
+
+	err = faker.makeRepo(org, repoName)
+	require.NoError(t, err)
+	r := &repo{
+		dir:     faker.repoDir(org, repoName),
+		gitPath: faker.gitPath,
+		remote:  faker.repoDir(org, repoName), // use the same directory as remote, it's not a real remote. it's strange but it's ok for testing.
+	}
+
+	commits, err := r.ListCommits(ctx, "")
+	require.NoError(t, err)
+	assert.Equal(t, 1, len(commits))
+
+	tmpDir := filepath.Join(faker.dir, "tmp-repo")
+	newRepo, err := r.CopyToModify(tmpDir)
+	require.NoError(t, err)
+
+	// we can copy the repo to another directory multiple times
+	tmpDir2 := filepath.Join(faker.dir, "tmp-repo2")
+	newRepo2, err := r.CopyToModify(tmpDir2)
+	require.NoError(t, err)
+
+	assert.NotEqual(t, r, newRepo)
+
 	newRepoCommits, err := newRepo.ListCommits(ctx, "")
 	require.NoError(t, err)
 	assert.Equal(t, 1, len(newRepoCommits))
 
 	assert.Equal(t, commits, newRepoCommits)
+	assert.NoError(t, newRepo.Clean())
+	assert.NoError(t, newRepo2.Clean())
 }
 
 func TestGetCommitForRev(t *testing.T) {
