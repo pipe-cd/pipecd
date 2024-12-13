@@ -121,10 +121,10 @@ func (mr *MockRepoMockRecorder) CommitChanges(arg0, arg1, arg2, arg3, arg4, arg5
 }
 
 // Copy mocks base method.
-func (m *MockRepo) Copy(arg0 string) (git.Repo, error) {
+func (m *MockRepo) Copy(arg0 string) (git.Worktree, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Copy", arg0)
-	ret0, _ := ret[0].(git.Repo)
+	ret0, _ := ret[0].(git.Worktree)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -133,6 +133,21 @@ func (m *MockRepo) Copy(arg0 string) (git.Repo, error) {
 func (mr *MockRepoMockRecorder) Copy(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Copy", reflect.TypeOf((*MockRepo)(nil).Copy), arg0)
+}
+
+// CopyToModify mocks base method.
+func (m *MockRepo) CopyToModify(arg0 string) (git.Repo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CopyToModify", arg0)
+	ret0, _ := ret[0].(git.Repo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CopyToModify indicates an expected call of CopyToModify.
+func (mr *MockRepoMockRecorder) CopyToModify(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopyToModify", reflect.TypeOf((*MockRepo)(nil).CopyToModify), arg0)
 }
 
 // GetClonedBranch mocks base method.
