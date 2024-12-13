@@ -15,6 +15,8 @@
 package provider
 
 import (
+	"encoding/json"
+
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/yaml"
 )
@@ -29,6 +31,23 @@ type Manifest struct {
 func (m *Manifest) UnmarshalJSON(data []byte) error {
 	m.Body = new(unstructured.Unstructured)
 	return m.Body.UnmarshalJSON(data)
+}
+
+// MarshalJSON implements the json.Marshaler interface.
+// It marshals the underlying unstructured.Unstructured object into JSON bytes.
+func (m *Manifest) MarshalJSON() ([]byte, error) {
+	return m.Body.MarshalJSON()
+}
+
+// ConvertToStructuredObject converts the manifest into a structured Kubernetes object.
+// The provided interface should be a pointer to a concrete Kubernetes type (e.g. *v1.Pod).
+// It first marshals the manifest to JSON and then unmarshals it into the provided object.
+func (m Manifest) ConvertToStructuredObject(o interface{}) error {
+	data, err := m.MarshalJSON()
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(data, o)
 }
 
 func (m *Manifest) YamlBytes() ([]byte, error) {
