@@ -1,5 +1,5 @@
 # web builder
-FROM node:20.18.1-alpine3.20 AS web
+FROM node:20.18.1-alpine3.21 AS web
 
 WORKDIR /app
 
@@ -21,7 +21,7 @@ COPY . ./
 
 RUN make build/go MOD=pipecd
 
-FROM alpine:3.20
+FROM alpine:3.21.0
 
 ARG GOOGLE_CLOUD_SDK_VERSION=477.0.0
 
