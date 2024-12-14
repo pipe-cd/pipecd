@@ -62,7 +62,7 @@ jobs:
           fetch-depth: 0
       - name: Determine version
 
-      # Setup QEMU and Buildx.      
+      # Setup QEMU and Buildx.
       - name: Set up QEMU
         uses: docker/setup-qemu-action@8b122486cedac8393e77aa9734c3528886e4a1a8 #v2.0.0
       - name: Set up Docker Buildx
@@ -85,14 +85,14 @@ jobs:
 
       # Building and pushing container images.
       - name: Build and push ${{ matrix.image }} image
-        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 #v5.0.0
+        uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355 # v6.10.0
         with:
           push: true
           context: .
           file: ${{ matrix.dockerfile }}
           platforms: linux/amd64,linux/arm64
           tags: ${{ matrix.container_registry }}/${{ matrix.image }}:${{ env.PIPECD_VERSION }}
-      
+
       # Building and pushing Helm charts.
       - name: Install helm
         uses: Azure/setup-helm@v1
@@ -145,9 +145,9 @@ jobs:
       - name: Publish quickstart manifests
         uses: peter-evans/create-pull-request@v6
         with:
-          title: "[bot] Publish quickstart manifests"
-          commit-message: "[bot] Publish quickstart manifests"
-          branch: "create-pull-request/publish-quickstart-manifests"
+          title: '[bot] Publish quickstart manifests'
+          commit-message: '[bot] Publish quickstart manifests'
+          branch: 'create-pull-request/publish-quickstart-manifests'
           body: |
             Automated changes by [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action.
             The workflow is defined [here](https://github.com/pipe-cd/pipecd/blob/master/.github/workflows/publish_image_chart.yaml).
