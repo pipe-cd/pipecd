@@ -46,6 +46,10 @@ type templateValues struct {
 }
 
 func newToolRegistry(toolsDir string) (*toolRegistry, error) {
+	if err := os.MkdirAll(toolsDir, 0o755); err != nil {
+		return nil, fmt.Errorf("failed to create the tools directory: %w", err)
+	}
+
 	tmpDir, err := os.MkdirTemp("", "tool-registry")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create a temporary directory: %w", err)

@@ -221,7 +221,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	return d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
 }
 
-func (d *detector) loadHeadServiceManifest(app *model.Application, repo git.Repo, headCommit git.Commit) (provider.ServiceManifest, error) {
+func (d *detector) loadHeadServiceManifest(app *model.Application, repo git.Worktree, headCommit git.Commit) (provider.ServiceManifest, error) {
 	var (
 		manifestCache = provider.ServiceManifestCache{
 			AppID:  app.Id,
@@ -263,6 +263,8 @@ func (d *detector) loadHeadServiceManifest(app *model.Application, repo git.Repo
 			if err != nil {
 				return provider.ServiceManifest{}, fmt.Errorf("failed to copy the cloned git repository (%w)", err)
 			}
+			defer repo.Clean()
+
 			repoDir := repo.GetPath()
 			appDir = filepath.Join(repoDir, app.GitPath.Path)
 		}

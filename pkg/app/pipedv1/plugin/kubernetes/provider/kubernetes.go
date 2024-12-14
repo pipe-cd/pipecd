@@ -33,7 +33,8 @@ const (
 	LabelOriginalAPIVersion = "pipecd.dev/original-api-version"  // The api version defined in git configuration. e.g. apps/v1
 
 	// annotations
-	AnnotationOrder = "pipecd.dev/order" // The order number of resource used to sort them before using.
+	AnnotationOrder      = "pipecd.dev/order"       // The order number of resource used to sort them before using.
+	AnnotationConfigHash = "pipecd.dev/config-hash" // The hash value of all mouting config resources.
 
 	// label/annotation values
 	ManagedByPiped     = "piped"

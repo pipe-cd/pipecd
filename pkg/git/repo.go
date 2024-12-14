@@ -35,7 +35,8 @@ var (
 type Repo interface {
 	GetPath() string
 	GetClonedBranch() string
-	Copy(dest string) (Repo, error)
+	Copy(dest string) (Worktree, error)
+	CopyToModify(dest string) (Repo, error)
 
 	ListCommits(ctx context.Context, visionRange string) ([]Commit, error)
 	GetLatestCommit(ctx context.Context) (Commit, error)
@@ -52,12 +53,72 @@ type Repo interface {
 	CommitChanges(ctx context.Context, branch, message string, newBranch bool, changes map[string][]byte, trailers map[string]string) error
 }
 
+// Worktree provides functions to get and handle git worktree.
+// It is a separate checkout of the repository.
+// It is used to make changes to the repository without affecting the main repository.
+// Worktree always does checkout with the detached HEAD, so it doesn't affect the main repository.
+type Worktree interface {
+	GetPath() string
+	Clean() error
+	Copy(dest string) (Worktree, error)
+	Checkout(ctx context.Context, commitish string) error
+}
+
 type repo struct {
 	dir          string
 	gitPath      string
 	remote       string
 	clonedBranch string
 	gitEnvs      []string
+}
+
+// worktree is a git worktree.
+// It is a separate checkout of the repository.
+type worktree struct {
+	base         *repo
+	worktreePath string
+}
+
+func (r *worktree) runGitCommand(ctx context.Context, args ...string) ([]byte, error) {
+	cmd := exec.CommandContext(ctx, r.base.gitPath, args...)
+	cmd.Dir = r.worktreePath
+	cmd.Env = append(os.Environ(), r.base.gitEnvs...)
+	return cmd.CombinedOutput()
+}
+
+func (r *worktree) Copy(dest string) (Worktree, error) {
+	// garbage collecting worktrees
+	if _, err := r.runGitCommand(context.Background(), "worktree", "prune"); err != nil {
+		// ignore the error
+	}
+
+	if out, err := r.runGitCommand(context.Background(), "worktree", "add", "--detach", dest); err != nil {
+		return nil, formatCommandError(err, out)
+	}
+
+	return &worktree{
+		base:         r.base,
+		worktreePath: dest,
+	}, nil
+}
+
+func (r *worktree) GetPath() string {
+	return r.worktreePath
+}
+
+func (r *worktree) Clean() error {
+	if out, err := r.base.runGitCommand(context.Background(), "worktree", "remove", r.worktreePath); err != nil {
+		return formatCommandError(err, out)
+	}
+	return nil
+}
+
+func (r *worktree) Checkout(ctx context.Context, commitish string) error {
+	out, err := r.runGitCommand(ctx, "checkout", "--detach", commitish)
+	if err != nil {
+		return formatCommandError(err, out)
+	}
+	return nil
 }
 
 // NewRepo creates a new Repo instance.
@@ -81,22 +142,55 @@ func (r *repo) GetClonedBranch() string {
 	return r.clonedBranch
 }
 
-// Copy does copying the repository to the given destination.
+// Copy does copying the repository to the given destination using git worktree.
+// The repository is cloned to the given destination with the detached HEAD.
 // NOTE: the given “dest” must be a path that doesn’t exist yet.
-// If you don't, it copies the repo root itself to the given dest as a subdirectory.
-func (r *repo) Copy(dest string) (Repo, error) {
-	cmd := exec.Command("cp", "-rf", r.dir, dest)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
+// If you don't, you will get an error.
+func (r *repo) Copy(dest string) (Worktree, error) {
+	// garbage collecting worktrees
+	if _, err := r.runGitCommand(context.Background(), "worktree", "prune"); err != nil {
+		// ignore the error
+	}
+
+	if out, err := r.runGitCommand(context.Background(), "worktree", "add", "--detach", dest); err != nil {
 		return nil, formatCommandError(err, out)
 	}
 
-	return &repo{
+	return &worktree{
+		base:         r,
+		worktreePath: dest,
+	}, nil
+}
+
+// CopyToModify does cloning the repository to the given destination.
+// The repository is cloned to the given destination with the .
+// NOTE: the given “dest” must be a path that doesn’t exist yet.
+// If you don't, you will get an error.
+func (r *repo) CopyToModify(dest string) (Repo, error) {
+	cmd := exec.Command(r.gitPath, "clone", r.dir, dest)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		return nil, formatCommandError(err, out)
+	}
+
+	cloned := &repo{
 		dir:          dest,
 		gitPath:      r.gitPath,
 		remote:       r.remote,
 		clonedBranch: r.clonedBranch,
-	}, nil
+		gitEnvs:      r.gitEnvs,
+	}
+
+	// because we did a local cloning so set the remote url of origin
+	if err := cloned.setRemote(context.Background(), r.remote); err != nil {
+		return nil, err
+	}
+
+	// fetch the latest changes which doesn't exist in the local repository
+	if out, err := cloned.runGitCommand(context.Background(), "fetch"); err != nil {
+		return nil, formatCommandError(err, out)
+	}
+
+	return cloned, nil
 }
 
 // ListCommits returns a list of commits in a given revision range.

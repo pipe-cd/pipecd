@@ -270,7 +270,7 @@ func ignoreAndSortParameters(headSpec provider.FunctionManifestSpec) provider.Fu
 	return cloneSpec
 }
 
-func (d *detector) loadHeadFunctionManifest(app *model.Application, repo git.Repo, headCommit git.Commit) (provider.FunctionManifest, error) {
+func (d *detector) loadHeadFunctionManifest(app *model.Application, repo git.Worktree, headCommit git.Commit) (provider.FunctionManifest, error) {
 	var (
 		manifestCache = provider.FunctionManifestCache{
 			AppID:  app.Id,
@@ -312,6 +312,8 @@ func (d *detector) loadHeadFunctionManifest(app *model.Application, repo git.Rep
 			if err != nil {
 				return provider.FunctionManifest{}, fmt.Errorf("failed to copy the cloned git repository (%w)", err)
 			}
+			defer repo.Clean()
+
 			repoDir := repo.GetPath()
 			appDir = filepath.Join(repoDir, app.GitPath.Path)
 		}

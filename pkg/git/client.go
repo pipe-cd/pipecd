@@ -166,7 +166,7 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 				return nil, err
 			}
 			out, err := retryCommand(3, time.Second, logger, func() ([]byte, error) {
-				args := []string{"clone", "--mirror", remote, repoCachePath}
+				args := []string{"clone", "--mirror", "--filter=blob:none", remote, repoCachePath}
 				args = append(authArgs, args...)
 				return runGitCommand(ctx, c.gitPath, "", c.envsForRepo(remote), args...)
 			})
@@ -214,11 +214,12 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		}
 	}
 
-	args := []string{"clone"}
+	// git worktree add [-f] [--detach] [--checkout] [--lock [--reason <string>]]
+	//                   [--orphan] [(-b | -B) <new-branch>] <path> [<commit-ish>]
+	args := []string{"-C", repoCachePath, "worktree", "add", "--detach", destination}
 	if branch != "" {
-		args = append(args, "-b", branch)
+		args = append(args, branch)
 	}
-	args = append(args, repoCachePath, destination)
 
 	logger.Info("cloning a repo from cached one in local",
 		zap.String("src", repoCachePath),
