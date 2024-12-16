@@ -22,11 +22,11 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/admin"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/deployment"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedapi"
+	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/rpc"
 	"github.com/pipe-cd/pipecd/pkg/version"
 	"github.com/spf13/cobra"
@@ -115,6 +115,12 @@ func (s *plugin) run(ctx context.Context, input cli.Input) (runErr error) {
 		})
 	}
 
+	// Start log persister
+	persister := logpersister.NewPersister(pipedapiClient, input.Logger)
+	group.Go(func() error {
+		return persister.Run(ctx)
+	})
+
 	// Start a gRPC server for handling external API requests.
 	{
 		var (
@@ -122,7 +128,7 @@ func (s *plugin) run(ctx context.Context, input cli.Input) (runErr error) {
 				cfg,
 				input.Logger,
 				toolregistry.NewToolRegistry(pipedapiClient),
-				logpersister.NewPersister(pipedapiClient, input.Logger),
+				persister,
 			)
 			opts = []rpc.Option{
 				rpc.WithPort(cfg.Port),

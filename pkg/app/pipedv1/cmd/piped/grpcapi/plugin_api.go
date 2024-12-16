@@ -21,8 +21,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/cmd/piped/service"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
-	"github.com/pipe-cd/pipecd/pkg/crypto"
-	"github.com/pipe-cd/pipecd/pkg/model"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -59,31 +57,6 @@ func NewPluginAPI(cfg *config.PipedSpec, apiClient apiClient, toolsDir string, l
 		apiClient:    apiClient,
 		toolRegistry: toolRegistry,
 		Logger:       logger.Named("plugin-api"),
-	}, nil
-}
-
-func (a *PluginAPI) DecryptSecret(ctx context.Context, req *service.DecryptSecretRequest) (*service.DecryptSecretResponse, error) {
-	decrypter, err := initializeSecretDecrypter(a.cfg.SecretManagement)
-	if err != nil {
-		a.Logger.Error("failed to initialize secret decrypter", zap.Error(err))
-		return nil, err
-	}
-
-	// Return the secret as is in case of no decrypter configured.
-	if decrypter == nil {
-		return &service.DecryptSecretResponse{
-			DecryptedSecret: req.Secret,
-		}, nil
-	}
-
-	decrypted, err := decrypter.Decrypt(req.Secret)
-	if err != nil {
-		a.Logger.Error("failed to decrypt the secret", zap.Error(err))
-		return nil, err
-	}
-
-	return &service.DecryptSecretResponse{
-		DecryptedSecret: decrypted,
 	}, nil
 }
 
@@ -138,35 +111,4 @@ func (a *PluginAPI) ReportStageLogsFromLastCheckpoint(ctx context.Context, req *
 	}
 
 	return &service.ReportStageLogsFromLastCheckpointResponse{}, nil
-}
-
-func initializeSecretDecrypter(sm *config.SecretManagement) (crypto.Decrypter, error) {
-	if sm == nil {
-		return nil, nil
-	}
-
-	switch sm.Type {
-	case model.SecretManagementTypeNone:
-		return nil, nil
-
-	case model.SecretManagementTypeKeyPair:
-		key, err := sm.KeyPair.LoadPrivateKey()
-		if err != nil {
-			return nil, err
-		}
-		decrypter, err := crypto.NewHybridDecrypter(key)
-		if err != nil {
-			return nil, fmt.Errorf("failed to initialize decrypter (%w)", err)
-		}
-		return decrypter, nil
-
-	case model.SecretManagementTypeGCPKMS:
-		return nil, fmt.Errorf("type %q is not implemented yet", sm.Type.String())
-
-	case model.SecretManagementTypeAWSKMS:
-		return nil, fmt.Errorf("type %q is not implemented yet", sm.Type.String())
-
-	default:
-		return nil, fmt.Errorf("unsupported secret management type: %s", sm.Type.String())
-	}
 }
