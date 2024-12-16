@@ -61,6 +61,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Determine version
+        run: echo "PIPECD_VERSION=$(git describe --tags --always --abbrev=7)" >> $GITHUB_ENV
 
       # Setup QEMU and Buildx.
       - name: Set up QEMU
