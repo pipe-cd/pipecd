@@ -538,8 +538,6 @@ There are some restrictions in configuring a service definition file.
 
 There are some restrictions in configuring a task definition file.
 
-- `placementConstraints` is not supported.
-- `proxyConfiguration` is not supported.
 - `tags` is not supported.
 
 ### ECSTargetGroupInput

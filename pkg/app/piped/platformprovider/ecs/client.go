@@ -188,9 +188,15 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 		Volumes:                 taskDefinition.Volumes,
 		RuntimePlatform:         taskDefinition.RuntimePlatform,
 		EphemeralStorage:        taskDefinition.EphemeralStorage,
-		// Requires defined at task level in case Fargate is used.
+		// Cpu and Memory must be defined if Fargate is used.
 		Cpu:    taskDefinition.Cpu,
 		Memory: taskDefinition.Memory,
+
+		InferenceAccelerators: taskDefinition.InferenceAccelerators,
+		IpcMode:               taskDefinition.IpcMode,
+		PidMode:               taskDefinition.PidMode,
+		PlacementConstraints:  taskDefinition.PlacementConstraints,
+		ProxyConfiguration:    taskDefinition.ProxyConfiguration,
 		// TODO: Support tags for registering task definition.
 	}
 	output, err := c.ecsClient.RegisterTaskDefinition(ctx, input)
