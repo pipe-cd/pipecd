@@ -14,6 +14,15 @@
 
 package config
 
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+
+	"github.com/creasty/defaults"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
+)
+
 // K8sResourceReference represents a reference to a Kubernetes resource.
 // It is used to specify the resources which are treated as the workload of an application.
 type K8sResourceReference struct {
@@ -88,4 +97,27 @@ type KubernetesDeployTargetConfig struct {
 	KubeConfigPath string `json:"kubeConfigPath,omitempty"`
 	// Version of kubectl will be used.
 	KubectlVersion string `json:"kubectlVersion"`
+}
+
+func FindDeployTarget(cfg *config.PipedPlugin, name string) (KubernetesDeployTargetConfig, error) {
+	if cfg == nil {
+		return KubernetesDeployTargetConfig{}, errors.New("missing plugin configuration")
+	}
+
+	deployTarget := cfg.FindDeployTarget(name)
+	if deployTarget == nil {
+		return KubernetesDeployTargetConfig{}, errors.New("missing deploy target configuration")
+	}
+
+	var targetCfg KubernetesDeployTargetConfig
+
+	if err := json.Unmarshal(deployTarget.Config, &targetCfg); err != nil { // TODO: not decode here but in the initialization of the plugin.
+		return KubernetesDeployTargetConfig{}, fmt.Errorf("failed to unmarshal deploy target configuration: %w", err)
+	}
+
+	if err := defaults.Set(&targetCfg); err != nil {
+		return KubernetesDeployTargetConfig{}, fmt.Errorf("failed to set default values for deploy target configuration: %w", err)
+	}
+
+	return targetCfg, nil
 }
