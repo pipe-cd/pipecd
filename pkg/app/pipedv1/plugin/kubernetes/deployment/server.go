@@ -272,7 +272,10 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersi
 		})
 	}
 
-	// TODO: implement annotateConfigHash to ensure restart of workloads when config changes
+	if err := annotateConfigHash(manifests); err != nil {
+		lp.Errorf("Unable to set %q annotation into the workload manifest (%v)", provider.AnnotationConfigHash, err)
+		return model.StageStatus_STAGE_FAILURE
+	}
 
 	// Get the deploy target config.
 	var deployTargetConfig kubeconfig.KubernetesDeployTargetConfig
@@ -344,7 +347,10 @@ func (a *DeploymentService) executeK8sRollbackStage(ctx context.Context, lp logp
 		})
 	}
 
-	// TODO: implement annotateConfigHash to ensure restart of workloads when config changes
+	if err := annotateConfigHash(manifests); err != nil {
+		lp.Errorf("Unable to set %q annotation into the workload manifest (%v)", provider.AnnotationConfigHash, err)
+		return model.StageStatus_STAGE_FAILURE
+	}
 
 	// Get the deploy target config.
 	var deployTargetConfig kubeconfig.KubernetesDeployTargetConfig
