@@ -100,6 +100,7 @@ type KubernetesDeployTargetConfig struct {
 	KubectlVersion string `json:"kubectlVersion"`
 }
 
+// FindDeployTarget finds the deploy target configuration by the given name.
 func FindDeployTarget(cfg *config.PipedPlugin, name string) (KubernetesDeployTargetConfig, error) {
 	if cfg == nil {
 		return KubernetesDeployTargetConfig{}, errors.New("missing plugin configuration")
