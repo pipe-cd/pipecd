@@ -17,7 +17,6 @@ package deployment
 import (
 	"cmp"
 	"context"
-	"encoding/json"
 	"time"
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
@@ -272,12 +271,14 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersi
 		})
 	}
 
-	// TODO: implement annotateConfigHash to ensure restart of workloads when config changes
+	if err := annotateConfigHash(manifests); err != nil {
+		lp.Errorf("Unable to set %q annotation into the workload manifest (%v)", provider.AnnotationConfigHash, err)
+		return model.StageStatus_STAGE_FAILURE
+	}
 
 	// Get the deploy target config.
-	var deployTargetConfig kubeconfig.KubernetesDeployTargetConfig
-	deployTarget := a.pluginConfig.FindDeployTarget(input.GetDeployment().GetDeployTargets()[0]) // TODO: check if there is a deploy target
-	if err := json.Unmarshal(deployTarget.Config, &deployTargetConfig); err != nil {             // TODO: do not unmarshal the config here, but in the initialization of the plugin
+	deployTargetConfig, err := kubeconfig.FindDeployTarget(a.pluginConfig, input.GetDeployment().GetDeployTargets()[0]) // TODO: check if there is a deploy target
+	if err != nil {
 		lp.Errorf("Failed while unmarshalling deploy target config (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -344,12 +345,14 @@ func (a *DeploymentService) executeK8sRollbackStage(ctx context.Context, lp logp
 		})
 	}
 
-	// TODO: implement annotateConfigHash to ensure restart of workloads when config changes
+	if err := annotateConfigHash(manifests); err != nil {
+		lp.Errorf("Unable to set %q annotation into the workload manifest (%v)", provider.AnnotationConfigHash, err)
+		return model.StageStatus_STAGE_FAILURE
+	}
 
 	// Get the deploy target config.
-	var deployTargetConfig kubeconfig.KubernetesDeployTargetConfig
-	deployTarget := a.pluginConfig.FindDeployTarget(input.GetDeployment().GetDeployTargets()[0]) // TODO: check if there is a deploy target
-	if err := json.Unmarshal(deployTarget.Config, &deployTargetConfig); err != nil {             // TODO: do not unmarshal the config here, but in the initialization of the plugin
+	deployTargetConfig, err := kubeconfig.FindDeployTarget(a.pluginConfig, input.GetDeployment().GetDeployTargets()[0]) // TODO: check if there is a deploy target
+	if err != nil {
 		lp.Errorf("Failed while unmarshalling deploy target config (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
