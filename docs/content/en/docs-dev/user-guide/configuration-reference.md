@@ -531,7 +531,6 @@ There are some restrictions in configuring a service definition file.
 - `deploymentController` is required and must be `EXTERNAL`.
 - `loadBalancers` is not supported. Use `targetGroups` in [ECSDeploymentInput](#ecsdeploymentinput) instead.
 - `platformFamily` is not supported.
-- `propagateTags` is always set as `SERVICE`.
 - `taskDefinition` is not supported. PipeCD uses the definition in `taskDefinitionFile` in [ECSDeploymentInput](#ecsdeploymentinput).
 
 ### Restrictions of Task Definition
