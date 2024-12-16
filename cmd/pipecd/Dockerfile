@@ -6,6 +6,11 @@ WORKDIR /app
 COPY . .
 
 RUN apk add --no-cache make git
+
+# because of this issue, we set network-timeout to 300000
+# https://github.com/pipe-cd/pipecd/issues/5422
+RUN yarn config set network-timeout 300000
+
 RUN make update/web-deps
 RUN make build/web
 
