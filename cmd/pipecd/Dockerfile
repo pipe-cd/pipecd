@@ -5,7 +5,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN apk add --no-cache make
+RUN apk add --no-cache make git
 RUN make update/web-deps
 RUN make build/web
 
