@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"github.com/creasty/defaults"
+
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 )
 
