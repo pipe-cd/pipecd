@@ -99,7 +99,7 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 		PlacementConstraints:          service.PlacementConstraints,
 		PlacementStrategy:             service.PlacementStrategy,
 		PlatformVersion:               service.PlatformVersion,
-		PropagateTags:                 types.PropagateTagsService,
+		PropagateTags:                 service.PropagateTags,
 		Role:                          service.RoleArn,
 		SchedulingStrategy:            service.SchedulingStrategy,
 		Tags:                          service.Tags,
@@ -143,6 +143,8 @@ func (c *client) UpdateService(ctx context.Context, service types.Service) (*typ
 		PlacementStrategy:    service.PlacementStrategy,
 		// TODO: Support update other properties of service.
 		// PlacementConstraints:    service.PlacementConstraints,
+		PropagateTags:        service.PropagateTags,
+		EnableECSManagedTags: aws.Bool(service.EnableECSManagedTags),
 	}
 
 	// If desiredCount is 0 or not set, keep current desiredCount because a user might use AutoScaling.
