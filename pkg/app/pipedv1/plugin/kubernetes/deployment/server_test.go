@@ -1,0 +1,216 @@
+// Copyright 2024 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package deployment
+
+import (
+	"context"
+	"encoding/json"
+	"os"
+	"path"
+	"path/filepath"
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"go.uber.org/zap/zaptest"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+	"sigs.k8s.io/controller-runtime/pkg/envtest"
+
+	kubeConfigPkg "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
+	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
+	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
+	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry/toolregistrytest"
+)
+
+// newTestLogPersister creates a new testLogPersister for testing.
+//
+// TODO: move to a common package
+func newTestLogPersister(t *testing.T) testLogPersister {
+	return testLogPersister{t}
+}
+
+// testLogPersister implements logpersister for testing.
+type testLogPersister struct {
+	t *testing.T
+}
+
+func (lp testLogPersister) StageLogPersister(deploymentID, stageID string) logpersister.StageLogPersister {
+	return lp
+}
+
+func (lp testLogPersister) Write(log []byte) (int, error) {
+	// Write the log to the test logger
+	lp.t.Log(string(log))
+	return 0, nil
+}
+func (lp testLogPersister) Info(log string) {
+	lp.t.Log("INFO", log)
+}
+func (lp testLogPersister) Infof(format string, a ...interface{}) {
+	lp.t.Logf("INFO "+format, a...)
+}
+func (lp testLogPersister) Success(log string) {
+	lp.t.Log("SUCCESS", log)
+}
+func (lp testLogPersister) Successf(format string, a ...interface{}) {
+	lp.t.Logf("SUCCESS "+format, a...)
+}
+func (lp testLogPersister) Error(log string) {
+	lp.t.Log("ERROR", log)
+}
+func (lp testLogPersister) Errorf(format string, a ...interface{}) {
+	lp.t.Logf("ERROR "+format, a...)
+}
+func (lp testLogPersister) Complete(timeout time.Duration) error {
+	lp.t.Logf("Complete stage log persister with timeout: %v", timeout)
+	return nil
+}
+
+// TODO: move to a common package
+func examplesDir() string {
+	d, _ := os.Getwd()
+	for {
+		if _, err := os.Stat(filepath.Join(d, "examples")); err == nil {
+			return filepath.Join(d, "examples")
+		}
+		d = filepath.Dir(d)
+	}
+}
+
+// TODO: move to a common package
+func kubeconfigFromRestConfig(restConfig *rest.Config) (string, error) {
+	clusters := make(map[string]*clientcmdapi.Cluster)
+	clusters["default-cluster"] = &clientcmdapi.Cluster{
+		Server:                   restConfig.Host,
+		CertificateAuthorityData: restConfig.CAData,
+	}
+	contexts := make(map[string]*clientcmdapi.Context)
+	contexts["default-context"] = &clientcmdapi.Context{
+		Cluster:  "default-cluster",
+		AuthInfo: "default-user",
+	}
+	authinfos := make(map[string]*clientcmdapi.AuthInfo)
+	authinfos["default-user"] = &clientcmdapi.AuthInfo{
+		ClientCertificateData: restConfig.CertData,
+		ClientKeyData:         restConfig.KeyData,
+	}
+	clientConfig := clientcmdapi.Config{
+		Kind:           "Config",
+		APIVersion:     "v1",
+		Clusters:       clusters,
+		Contexts:       contexts,
+		CurrentContext: "default-context",
+		AuthInfos:      authinfos,
+	}
+	b, err := clientcmd.Write(clientConfig)
+	if err != nil {
+		return "", err
+	}
+
+	return string(b), nil
+}
+
+func TestDeploymentService_executeK8sSyncStage(t *testing.T) {
+	ctx := context.Background()
+
+	// initialize tool registry
+	testRegistry, err := toolregistrytest.NewToolRegistry(t)
+	require.NoError(t, err)
+
+	// initialize envtest
+	tEnv := new(envtest.Environment)
+	kubeCfg, err := tEnv.Start()
+	require.NoError(t, err)
+	t.Cleanup(func() { tEnv.Stop() })
+
+	kubeconfig, err := kubeconfigFromRestConfig(kubeCfg)
+	require.NoError(t, err)
+
+	workDir := t.TempDir()
+	kubeconfigPath := path.Join(workDir, "kubeconfig")
+	err = os.WriteFile(kubeconfigPath, []byte(kubeconfig), 0755)
+	require.NoError(t, err)
+
+	deployTarget, err := json.Marshal(kubeConfigPkg.KubernetesDeployTargetConfig{KubeConfigPath: kubeconfigPath})
+	require.NoError(t, err)
+
+	// prepare the piped plugin config
+	pluginCfg := &config.PipedPlugin{
+		Name: "kubernetes",
+		URL:  "file:///path/to/kubernetes/plugin", // dummy for testing
+		Port: 0,                                   // dummy for testing
+		DeployTargets: []config.PipedDeployTarget{{
+			Name:   "default",
+			Labels: map[string]string{},
+			Config: json.RawMessage(deployTarget),
+		}},
+	}
+
+	cfg, err := os.ReadFile(filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
+	require.NoError(t, err)
+
+	req := &deployment.ExecuteStageRequest{
+		Input: &deployment.ExecutePluginInput{
+			Deployment: &model.Deployment{
+				PipedId:       "piped-id",
+				ApplicationId: "app-id",
+				DeployTargets: []string{"default"},
+			},
+			Stage: &model.PipelineStage{
+				Id:   "stage-id",
+				Name: "K8S_SYNC",
+			},
+			StageConfig:             []byte(``),
+			RunningDeploymentSource: nil,
+			TargetDeploymentSource: &deployment.DeploymentSource{
+				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
+				Revision:                  "0123456789",
+				ApplicationConfig:         cfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+		},
+	}
+
+	svc := NewDeploymentService(pluginCfg, zaptest.NewLogger(t), testRegistry, newTestLogPersister(t))
+	resp, err := svc.ExecuteStage(ctx, req)
+
+	require.NoError(t, err)
+	assert.Equal(t, model.StageStatus_STAGE_SUCCESS.String(), resp.GetStatus().String())
+
+	// check the deployment is created with client-go
+	dynamicClient, err := dynamic.NewForConfig(kubeCfg)
+	require.NoError(t, err)
+
+	deployment, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(context.Background(), "simple", metav1.GetOptions{})
+	require.NoError(t, err)
+
+	assert.Equal(t, "simple", deployment.GetName())
+	assert.Equal(t, "simple", deployment.GetLabels()["app"])
+	assert.Equal(t, "piped", deployment.GetAnnotations()["pipecd.dev/managed-by"])
+	assert.Equal(t, "piped-id", deployment.GetAnnotations()["pipecd.dev/piped"])
+	assert.Equal(t, "app-id", deployment.GetAnnotations()["pipecd.dev/application"])
+	assert.Equal(t, "apps/v1", deployment.GetAnnotations()["pipecd.dev/original-api-version"])
+	assert.Equal(t, "apps/v1:Deployment:default:simple", deployment.GetAnnotations()["pipecd.dev/resource-key"])
+	assert.Equal(t, "0123456789", deployment.GetAnnotations()["pipecd.dev/commit-hash"])
+
+}
