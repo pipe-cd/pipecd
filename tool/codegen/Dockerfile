@@ -17,7 +17,7 @@ ENV PROTOC_GEN_GO_VER=1.27.1
 ENV PROTOC_GEN_GRPC_WEB_VER=1.3.1
 ENV PROTOC_GEN_GO_GRPC_VER=1.2.0
 ENV PROTOC_GEN_VALIDATE_VER=0.6.6
-ENV GOMOCK_VER=1.6.0
+ENV GOMOCK_VER=0.5.0
 
 # dependecies and protoc
 RUN apt update && apt install -y protobuf-compiler
@@ -56,7 +56,7 @@ RUN for target in x86_64 aarch_64; do \
 COPY --from=builder /usr/local/bin/protoc-gen-auth /usr/local/bin/
 
 # gomock
-RUN go install github.com/golang/mock/mockgen@v${GOMOCK_VER}
+RUN go install go.uber.org/mock/mockgen@v${GOMOCK_VER}
 
 VOLUME /repo
 WORKDIR /repo
