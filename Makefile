@@ -91,13 +91,16 @@ test: test/go test/web
 test/go: COVERAGE ?= false
 test/go: COVERAGE_OPTS ?= -covermode=atomic
 test/go: COVERAGE_OUTPUT ?= coverage.out
+test/go: setup-envtest
+test/go: ENVTEST_BIN ?= ${PWD}/.dev/bin # We need an absolute path for setup-envtest
+test/go: KUBEBUILDER_ASSETS ?= "$(shell setup-envtest use --bin-dir $(ENVTEST_BIN) -p path)"
 test/go:
 ifeq ($(COVERAGE), true)
-	go test -failfast -race $(COVERAGE_OPTS) -coverprofile=$(COVERAGE_OUTPUT).tmp ./pkg/... ./cmd/...
+	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) go test -failfast -race $(COVERAGE_OPTS) -coverprofile=$(COVERAGE_OUTPUT).tmp ./pkg/... ./cmd/...
 	cat $(COVERAGE_OUTPUT).tmp | grep -v ".pb.go\|.pb.validate.go" > $(COVERAGE_OUTPUT)
 	rm -rf $(COVERAGE_OUTPUT).tmp
 else
-	go test -failfast -race ./pkg/... ./cmd/...
+	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) go test -failfast -race ./pkg/... ./cmd/...
 endif
 
 .PHONY: test/web
@@ -254,3 +257,7 @@ kind-up:
 .PHONY: kind-down
 kind-down:
 	kind delete cluster --name pipecd
+
+.PHONY: setup-envtest
+setup-envtest: ## Download setup-envtest locally if necessary.
+	test -s $(GOBIN)/setup-envtest || go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest

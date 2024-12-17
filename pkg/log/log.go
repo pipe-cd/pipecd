@@ -92,7 +92,7 @@ func newConfig(level zapcore.Level, encoding EncodingType) zap.Config {
 func newEncoderConfig(encoding EncodingType) zapcore.EncoderConfig {
 	if encoding == HumanizeEncoding {
 		return zapcore.EncoderConfig{
-			TimeKey:        "eventTime",
+			TimeKey:        "",
 			LevelKey:       "",
 			NameKey:        "",
 			CallerKey:      "",
