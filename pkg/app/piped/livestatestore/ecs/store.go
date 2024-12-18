@@ -17,10 +17,10 @@ package ecs
 import (
 	"context"
 	"fmt"
-	"sync/atomic"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
+	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/ecs"
@@ -80,19 +80,19 @@ func (s *store) run(ctx context.Context) error {
 			}
 
 			// Use the application ID tag as the key.
-			appId := ""
+			appID := ""
 			for _, tag := range service.Tags {
 				if *tag.Key == provider.LabelApplication {
-					appId = *tag.Value
+					appID = *tag.Value
 					break
 				}
 			}
-			if appId == "" {
+			if appID == "" {
 				// Skip a service which is not managed by PipeCD.
 				continue
 			}
 
-			apps[appId] = app{
+			apps[appID] = app{
 				ecsManifests: provider.ECSManifests{
 					ServiceDefinition: service,
 					TaskDefinition:    primaryTaskDef,

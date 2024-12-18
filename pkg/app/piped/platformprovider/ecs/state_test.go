@@ -62,7 +62,7 @@ func TestMakeServiceResourceState(t *testing.T) {
 			t.Parallel()
 			service := &types.Service{
 				Status: &tc.status,
-				// Folowing fields are required to avoid nil pointer panic.
+				// Following fields are required to avoid nil pointer panic.
 				ServiceArn:  aws.String("test-service-arn"),
 				ClusterArn:  aws.String("test-cluster-arn"),
 				ServiceName: aws.String("test-service-name"),
@@ -124,7 +124,7 @@ func TestMakeTaskSetResourceState(t *testing.T) {
 			now := time.Now()
 			taskSet := &types.TaskSet{
 				Status: &tc.status,
-				// Folowing fields are required to avoid nil pointer panic.
+				// Following fields are required to avoid nil pointer panic.
 				TaskSetArn: aws.String("test-task-set-arn"),
 				Id:         aws.String("test-task-set-id"),
 				ServiceArn: aws.String("test-service-arn"),
@@ -182,7 +182,7 @@ func TestMakeTaskResourceState(t *testing.T) {
 			now := time.Now()
 			task := &types.Task{
 				HealthStatus: tc.healthStatus,
-				// Folowing fields are required to avoid nil pointer panic.
+				// Following fields are required to avoid nil pointer panic.
 				LastStatus: aws.String("test-last-status"),
 				TaskArn:    aws.String("arn:aws:ecs:region:account-id:task/test-cluster/test-task-id"),
 				CreatedAt:  aws.Time(now),

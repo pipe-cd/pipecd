@@ -19,10 +19,11 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/git/gittest"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestSkipByCommitMessagePrefixes(t *testing.T) {

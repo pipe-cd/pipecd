@@ -142,10 +142,10 @@ type controller struct {
 	// workingDirRemovalCh is used to single-threaded removal of working directory.
 	workingDirRemovalCh chan string
 
-	workspaceDir string
-	syncInternal time.Duration
-	gracePeriod  time.Duration
-	logger       *zap.Logger
+	workspaceDir   string
+	syncInternal   time.Duration
+	gracePeriod    time.Duration
+	logger         *zap.Logger
 	tracerProvider trace.TracerProvider
 }
 
@@ -194,9 +194,9 @@ func NewController(
 
 		workingDirRemovalCh: make(chan string),
 
-		syncInternal: 10 * time.Second,
-		gracePeriod:  gracePeriod,
-		logger:       lg,
+		syncInternal:   10 * time.Second,
+		gracePeriod:    gracePeriod,
+		logger:         lg,
 		tracerProvider: tracerProvider,
 	}
 }

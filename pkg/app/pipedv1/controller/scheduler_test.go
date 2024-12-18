@@ -91,11 +91,11 @@ func (m *fakeExecutorPluginClient) ExecuteStage(ctx context.Context, req *deploy
 	}, nil
 }
 
-type fakeApiClient struct {
+type fakeAPIClient struct {
 	apiClient
 }
 
-func (f *fakeApiClient) ReportStageStatusChanged(ctx context.Context, req *pipedservice.ReportStageStatusChangedRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageStatusChangedResponse, error) {
+func (f *fakeAPIClient) ReportStageStatusChanged(ctx context.Context, req *pipedservice.ReportStageStatusChangedRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageStatusChangedResponse, error) {
 	return nil, nil
 }
 
@@ -212,7 +212,7 @@ func TestExecuteStage(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := &scheduler{
-				apiClient:  &fakeApiClient{},
+				apiClient:  &fakeAPIClient{},
 				targetDSP:  &fakeDeploySourceProvider{},
 				runningDSP: &fakeDeploySourceProvider{},
 				stageBasedPluginsMap: map[string]pluginapi.PluginClient{
@@ -254,7 +254,7 @@ func TestExecuteStage_SignalTerminated(t *testing.T) {
 	sig, handler := NewStopSignal()
 
 	s := &scheduler{
-		apiClient:  &fakeApiClient{},
+		apiClient:  &fakeAPIClient{},
 		targetDSP:  &fakeDeploySourceProvider{},
 		runningDSP: &fakeDeploySourceProvider{},
 		stageBasedPluginsMap: map[string]pluginapi.PluginClient{
@@ -292,7 +292,7 @@ func TestExecuteStage_SignalCancelled(t *testing.T) {
 	sig, handler := NewStopSignal()
 
 	s := &scheduler{
-		apiClient:  &fakeApiClient{},
+		apiClient:  &fakeAPIClient{},
 		targetDSP:  &fakeDeploySourceProvider{},
 		runningDSP: &fakeDeploySourceProvider{},
 		stageBasedPluginsMap: map[string]pluginapi.PluginClient{

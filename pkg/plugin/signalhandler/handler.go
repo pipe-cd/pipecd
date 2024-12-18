@@ -24,8 +24,9 @@ import (
 	"context"
 	"os"
 	"os/signal"
-	"sync/atomic"
 	"syscall"
+
+	"go.uber.org/atomic"
 )
 
 var (

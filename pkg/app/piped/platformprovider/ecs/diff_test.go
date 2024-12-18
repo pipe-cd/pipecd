@@ -20,6 +20,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+//nolint:unparam // appDir always be "testdata/", but it may be changed in the future.
 func loadManifests(appDir, taskDefFile, serviceDefFile string) (ECSManifests, error) {
 	taskDef, err := LoadTaskDefinition(appDir, taskDefFile)
 	if err != nil {
