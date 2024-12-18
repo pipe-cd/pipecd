@@ -17,10 +17,10 @@ package ecs
 import (
 	"context"
 	"fmt"
-	"sync/atomic"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
+	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/ecs"
