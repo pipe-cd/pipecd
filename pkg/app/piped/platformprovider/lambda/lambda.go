@@ -20,11 +20,10 @@ import (
 	"path/filepath"
 	"sync"
 
-	"go.uber.org/zap"
-	"golang.org/x/sync/singleflight"
-
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/lambda/types"
+	"go.uber.org/zap"
+	"golang.org/x/sync/singleflight"
 
 	"github.com/pipe-cd/pipecd/pkg/config"
 )

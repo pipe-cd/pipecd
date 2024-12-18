@@ -24,10 +24,9 @@ import (
 	"strings"
 	"time"
 
-	"go.uber.org/zap"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
+	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/ecs"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/ecs"

@@ -19,10 +19,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
-
-	"github.com/aws/aws-sdk-go-v2/service/lambda"
 
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/lambda"
 	"github.com/pipe-cd/pipecd/pkg/model"

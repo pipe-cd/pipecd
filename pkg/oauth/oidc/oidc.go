@@ -20,10 +20,9 @@ import (
 	"net/http"
 	"net/url"
 
-	"golang.org/x/oauth2"
-
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/golang-jwt/jwt"
+	"golang.org/x/oauth2"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
