@@ -60,7 +60,6 @@ metadata:
 					Key: ResourceKey{
 						APIVersion: "v1",
 						Kind:       "ConfigMap",
-						Namespace:  "default",
 						Name:       "test-config",
 					},
 					Body: &unstructured.Unstructured{
@@ -94,7 +93,6 @@ metadata:
 					Key: ResourceKey{
 						APIVersion: "v1",
 						Kind:       "ConfigMap",
-						Namespace:  "default",
 						Name:       "test-config",
 					},
 					Body: &unstructured.Unstructured{
@@ -111,7 +109,6 @@ metadata:
 					Key: ResourceKey{
 						APIVersion: "v1",
 						Kind:       "Service",
-						Namespace:  "default",
 						Name:       "test-service",
 					},
 					Body: &unstructured.Unstructured{
@@ -194,7 +191,6 @@ metadata:
 					Key: ResourceKey{
 						APIVersion: "v1",
 						Kind:       "ConfigMap",
-						Namespace:  "default",
 						Name:       "test-config",
 					},
 					Body: &unstructured.Unstructured{
@@ -237,7 +233,6 @@ metadata:
 					Key: ResourceKey{
 						APIVersion: "v1",
 						Kind:       "Service",
-						Namespace:  "default",
 						Name:       "test-service",
 					},
 					Body: &unstructured.Unstructured{
@@ -279,7 +274,6 @@ metadata:
 					Key: ResourceKey{
 						APIVersion: "v1",
 						Kind:       "ConfigMap",
-						Namespace:  "default",
 						Name:       "test-config",
 					},
 					Body: &unstructured.Unstructured{
@@ -296,7 +290,6 @@ metadata:
 					Key: ResourceKey{
 						APIVersion: "v1",
 						Kind:       "Service",
-						Namespace:  "default",
 						Name:       "test-service",
 					},
 					Body: &unstructured.Unstructured{
