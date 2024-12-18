@@ -68,6 +68,7 @@ func (s *store) Run(ctx context.Context) error {
 	s.logger.Info("start running appsatestore")
 
 	group, ctx := errgroup.WithContext(ctx)
+	_ = ctx // To ignore the linter. We have not implemented the logic yet, and we need to use ctx in the future.
 
 	err := group.Wait()
 	if err == nil {
