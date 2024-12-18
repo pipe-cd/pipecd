@@ -895,7 +895,7 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				gitClient:                    nil,
 				notifier:                     nil,
 				logger:                       zap.NewNop(),
-				nowFunc:                      func() time.Time { return time.Now() },
+				nowFunc:                      time.Now,
 			}
 
 			if !tc.isFirstDeploy {
