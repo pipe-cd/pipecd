@@ -108,13 +108,13 @@ func (c *OAuthClient) GetUser(ctx context.Context, clientID string) (*model.User
 		return nil, err
 	}
 
-	username, avatarUrl, err := c.decideUserInfos(claims)
+	username, avatarURL, err := c.decideUserInfos(claims)
 	if err != nil {
 		return nil, err
 	}
 	return &model.User{
 		Username:  username,
-		AvatarUrl: avatarUrl,
+		AvatarUrl: avatarURL,
 		Role:      role,
 	}, nil
 }
@@ -177,7 +177,7 @@ func (c *OAuthClient) decideRole(claims jwt.MapClaims) (role *model.Role, err er
 	return
 }
 
-func (c *OAuthClient) decideUserInfos(claims jwt.MapClaims) (username, avatarUrl string, err error) {
+func (c *OAuthClient) decideUserInfos(claims jwt.MapClaims) (username, avatarURL string, err error) {
 
 	username = ""
 	for _, key := range usernameClaimKeys {
@@ -195,16 +195,16 @@ func (c *OAuthClient) decideUserInfos(claims jwt.MapClaims) (username, avatarUrl
 		return
 	}
 
-	avatarUrl = ""
+	avatarURL = ""
 	for _, key := range avatarURLClaimKeys {
 		val, ok := claims[key]
 		if ok && val != nil {
 			if str, ok := val.(string); ok && str != "" {
-				avatarUrl = str
+				avatarURL = str
 				break
 			}
 		}
 	}
 
-	return username, avatarUrl, nil
+	return username, avatarURL, nil
 }
