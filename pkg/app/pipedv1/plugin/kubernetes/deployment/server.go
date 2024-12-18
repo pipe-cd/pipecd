@@ -189,7 +189,7 @@ func (a *DeploymentService) loadManifests(ctx context.Context, deploy *model.Dep
 	manifests, err := a.loader.LoadManifests(ctx, provider.LoaderInput{
 		PipedID:          deploy.GetPipedId(),
 		AppID:            deploy.GetApplicationId(),
-		CommitHash:       deploy.GetTrigger().GetCommit().GetHash(),
+		CommitHash:       deploymentSource.GetRevision(),
 		AppName:          deploy.GetApplicationName(),
 		AppDir:           deploymentSource.GetApplicationDirectory(),
 		ConfigFilename:   deploymentSource.GetApplicationConfigFilename(),
