@@ -17,9 +17,9 @@ package lambda
 import (
 	"context"
 	"fmt"
-	"sync/atomic"
 	"time"
 
+	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
