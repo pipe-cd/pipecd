@@ -21,7 +21,6 @@ import (
 	"path"
 	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -38,53 +37,9 @@ import (
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
-	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
+	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister/logpersistertest"
 	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry/toolregistrytest"
 )
-
-// newTestLogPersister creates a new testLogPersister for testing.
-//
-// TODO: move to a common package
-func newTestLogPersister(t *testing.T) testLogPersister {
-	return testLogPersister{t}
-}
-
-// testLogPersister implements logpersister for testing.
-type testLogPersister struct {
-	t *testing.T
-}
-
-func (lp testLogPersister) StageLogPersister(deploymentID, stageID string) logpersister.StageLogPersister {
-	return lp
-}
-
-func (lp testLogPersister) Write(log []byte) (int, error) {
-	// Write the log to the test logger
-	lp.t.Log(string(log))
-	return 0, nil
-}
-func (lp testLogPersister) Info(log string) {
-	lp.t.Log("INFO", log)
-}
-func (lp testLogPersister) Infof(format string, a ...interface{}) {
-	lp.t.Logf("INFO "+format, a...)
-}
-func (lp testLogPersister) Success(log string) {
-	lp.t.Log("SUCCESS", log)
-}
-func (lp testLogPersister) Successf(format string, a ...interface{}) {
-	lp.t.Logf("SUCCESS "+format, a...)
-}
-func (lp testLogPersister) Error(log string) {
-	lp.t.Log("ERROR", log)
-}
-func (lp testLogPersister) Errorf(format string, a ...interface{}) {
-	lp.t.Logf("ERROR "+format, a...)
-}
-func (lp testLogPersister) Complete(timeout time.Duration) error {
-	lp.t.Logf("Complete stage log persister with timeout: %v", timeout)
-	return nil
-}
 
 // TODO: move to a common package
 func examplesDir() string {
@@ -191,7 +146,7 @@ func TestDeploymentService_executeK8sSyncStage(t *testing.T) {
 		},
 	}
 
-	svc := NewDeploymentService(pluginCfg, zaptest.NewLogger(t), testRegistry, newTestLogPersister(t))
+	svc := NewDeploymentService(pluginCfg, zaptest.NewLogger(t), testRegistry, logpersistertest.NewTestLogPersister(t))
 	resp, err := svc.ExecuteStage(ctx, req)
 
 	require.NoError(t, err)
