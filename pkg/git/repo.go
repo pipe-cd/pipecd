@@ -88,9 +88,7 @@ func (r *worktree) runGitCommand(ctx context.Context, args ...string) ([]byte, e
 
 func (r *worktree) Copy(dest string) (Worktree, error) {
 	// garbage collecting worktrees
-	if _, err := r.runGitCommand(context.Background(), "worktree", "prune"); err != nil {
-		// ignore the error
-	}
+	_, _ = r.runGitCommand(context.Background(), "worktree", "prune") // ignore the error
 
 	if out, err := r.runGitCommand(context.Background(), "worktree", "add", "--detach", dest); err != nil {
 		return nil, formatCommandError(err, out)
@@ -148,9 +146,7 @@ func (r *repo) GetClonedBranch() string {
 // If you don't, you will get an error.
 func (r *repo) Copy(dest string) (Worktree, error) {
 	// garbage collecting worktrees
-	if _, err := r.runGitCommand(context.Background(), "worktree", "prune"); err != nil {
-		// ignore the error
-	}
+	_, _ = r.runGitCommand(context.Background(), "worktree", "prune") // ignore the error
 
 	if out, err := r.runGitCommand(context.Background(), "worktree", "add", "--detach", dest); err != nil {
 		return nil, formatCommandError(err, out)
