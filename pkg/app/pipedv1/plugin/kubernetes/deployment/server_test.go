@@ -52,7 +52,6 @@ func examplesDir() string {
 	}
 }
 
-// TODO: move to a common package
 func kubeconfigFromRestConfig(restConfig *rest.Config) (string, error) {
 	clusters := make(map[string]*clientcmdapi.Cluster)
 	clusters["default-cluster"] = &clientcmdapi.Cluster{
