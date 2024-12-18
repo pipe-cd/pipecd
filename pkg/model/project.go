@@ -158,9 +158,9 @@ func (p *Project) SetStaticAdmin(username, password string) error {
 	return nil
 }
 
-func (x *Project) GetStaticAdminUsername() string {
+func (p *Project) GetStaticAdminUsername() string {
 	var username = ""
-	staticAdmin := x.GetStaticAdmin()
+	staticAdmin := p.GetStaticAdmin()
 	if staticAdmin != nil {
 		username = staticAdmin.GetUsername()
 	}
