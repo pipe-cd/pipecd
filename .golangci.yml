@@ -1,16 +1,10 @@
 run:
   timeout: 15m
-  skip-files:
-    - ^.*\.(pb|y)\.go$
-  skip-dirs:
-    - "vendor$"
-    - "pkg/app/piped/executor/analysis/mannwhitney"
 
 linters:
   disable-all: true
   enable:
     - depguard
-    - exportloopref
     - gocritic
     - goimports
     - gosimple
@@ -28,6 +22,11 @@ linters:
     # - gosec
 
 issues:
+  exclude-files:
+    - ^.*\.(pb|y)\.go$
+  exclude-dirs:
+    - "vendor$"
+    - "pkg/app/piped/executor/analysis/mannwhitney"
   exclude-rules:
     - linters:
         - staticcheck
