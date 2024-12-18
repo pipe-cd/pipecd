@@ -29,7 +29,7 @@ import (
 )
 
 var usernameClaimKeys = []string{"username", "preferred_username", "name", "cognito:username"}
-var avatarUrlClaimKeys = []string{"picture", "avatar_url"}
+var avatarURLClaimKeys = []string{"picture", "avatar_url"}
 var roleClaimKeys = []string{"groups", "roles", "cognito:groups", "custom:roles", "custom:groups"}
 
 // OAuthClient is an oauth client for OIDC.
@@ -196,7 +196,7 @@ func (c *OAuthClient) decideUserInfos(claims jwt.MapClaims) (username, avatarUrl
 	}
 
 	avatarUrl = ""
-	for _, key := range avatarUrlClaimKeys {
+	for _, key := range avatarURLClaimKeys {
 		val, ok := claims[key]
 		if ok && val != nil {
 			if str, ok := val.(string); ok && str != "" {
