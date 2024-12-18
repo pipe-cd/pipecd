@@ -208,6 +208,9 @@ func (c *controller) Run(ctx context.Context) error {
 	}
 }
 
+// shutdown waits for stopping all planners and schedulers.
+//
+//nolint:unparam // returns error for future compatibility.
 func (c *controller) shutdown() error {
 	c.logger.Info("waiting for stopping all planners and schedulers")
 	c.wg.Wait()
