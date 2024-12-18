@@ -23,10 +23,10 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"sync/atomic"
 	"syscall"
 	"time"
 
+	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/backoff"

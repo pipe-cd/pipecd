@@ -18,9 +18,10 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/lambda/types"
+	"github.com/stretchr/testify/assert"
+
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/lambda"
 	"github.com/pipe-cd/pipecd/pkg/diff"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestIgnoreAndSortParameters(t *testing.T) {

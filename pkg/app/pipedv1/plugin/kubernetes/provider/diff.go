@@ -23,7 +23,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/diff"
 )
 
-
 func Diff(old, new Manifest, logger *zap.Logger, opts ...diff.Option) (*diff.Result, error) {
 	if old.Key.IsSecret() && new.Key.IsSecret() {
 		var err error

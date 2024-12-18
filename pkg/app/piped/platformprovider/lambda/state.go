@@ -18,6 +18,7 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/lambda/types"
+
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 

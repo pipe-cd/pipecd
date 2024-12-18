@@ -20,6 +20,10 @@ import (
 	"net/http/pprof"
 	"time"
 
+	"github.com/spf13/cobra"
+	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
+
 	"github.com/pipe-cd/pipecd/pkg/admin"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/deployment"
 	"github.com/pipe-cd/pipecd/pkg/cli"
@@ -29,9 +33,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/rpc"
 	"github.com/pipe-cd/pipecd/pkg/version"
-	"github.com/spf13/cobra"
-	"go.uber.org/zap"
-	"golang.org/x/sync/errgroup"
 )
 
 type plugin struct {

@@ -300,7 +300,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		case model.DeploymentStatus_DEPLOYMENT_FAILURE, model.DeploymentStatus_DEPLOYMENT_CANCELLED:
 			span.SetStatus(codes.Error, statusReason)
 		}
-		
+
 		span.End()
 	}()
 
@@ -785,8 +785,8 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 }
 
 // getApplicationNotificationMentions returns the list of users groups who should be mentioned in the notification.
-func (p *scheduler) getApplicationNotificationMentions(event model.NotificationEventType) ([]string, []string, error) {
-	n, ok := p.metadataStore.Shared().Get(model.MetadataKeyDeploymentNotification)
+func (s *scheduler) getApplicationNotificationMentions(event model.NotificationEventType) ([]string, []string, error) {
+	n, ok := s.metadataStore.Shared().Get(model.MetadataKeyDeploymentNotification)
 	if !ok {
 		return []string{}, []string{}, nil
 	}

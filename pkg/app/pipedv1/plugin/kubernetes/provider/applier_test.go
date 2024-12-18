@@ -19,8 +19,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"go.uber.org/zap"
+
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 )
 
 type mockKubectl struct {
