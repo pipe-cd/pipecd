@@ -75,7 +75,10 @@ type planner struct {
 	notifier      notifier
 	metadataStore metadatastore.MetadataStore
 
-	// TODO: Find a way to show log from pluggin's planner
+	// The secretDecrypter is used to decrypt secrets
+	// which encrypted using PipeCD built-in secret management.
+	secretDecrypter secretDecrypter
+
 	logger *zap.Logger
 	tracer trace.Tracer
 
@@ -98,6 +101,7 @@ func newPlanner(
 	apiClient apiClient,
 	gitClient gitClient,
 	notifier notifier,
+	secretDecrypter secretDecrypter,
 	logger *zap.Logger,
 	tracerProvider trace.TracerProvider,
 ) *planner {
@@ -121,6 +125,7 @@ func newPlanner(
 		gitClient:                    gitClient,
 		metadataStore:                metadatastore.NewMetadataStore(apiClient, d),
 		notifier:                     notifier,
+		secretDecrypter:              secretDecrypter,
 		doneDeploymentStatus:         d.Status,
 		cancelledCh:                  make(chan *model.ReportableCommand, 1),
 		nowFunc:                      time.Now,
@@ -193,31 +198,34 @@ func (p *planner) Run(ctx context.Context) error {
 		Branch: p.deployment.GitPath.Repo.Branch,
 	}
 
-	runningDSP := deploysource.NewProvider(
-		filepath.Join(p.workingDir, "running-deploysource"),
-		deploysource.NewGitSourceCloner(p.gitClient, repoCfg, "running", p.lastSuccessfulCommitHash),
-		p.deployment.GetGitPath(), nil, // TODO: pass secret decrypter?
-	)
-	rds, err := runningDSP.Get(ctx, io.Discard) // TODO: pass not io.Discard
-	if err != nil {
-		// TODO: log error
-		return fmt.Errorf("error while preparing deploy source data (%v)", err)
-	}
-	runningDS = rds.ToPluginDeploySource()
-
 	targetDSP := deploysource.NewProvider(
 		filepath.Join(p.workingDir, "target-deploysource"),
 		deploysource.NewGitSourceCloner(p.gitClient, repoCfg, "target", p.deployment.Trigger.Commit.Hash),
-		p.deployment.GetGitPath(), nil, // TODO: pass secret decrypter?
+		p.deployment.GetGitPath(),
+		p.secretDecrypter,
 	)
-	tds, err := targetDSP.Get(ctx, io.Discard) // TODO: pass not io.Discard
+	tds, err := targetDSP.Get(ctx, io.Discard)
 	if err != nil {
-		// TODO: log error
-		return fmt.Errorf("error while preparing deploy source data (%v)", err)
+		p.logger.Error("error while preparing target deploy source data", zap.Error(err))
+		return err
 	}
 	targetDS = tds.ToPluginDeploySource()
 
-	// TODO: Pass running DS as well if need?
+	if p.lastSuccessfulCommitHash != "" {
+		runningDSP := deploysource.NewProvider(
+			filepath.Join(p.workingDir, "running-deploysource"),
+			deploysource.NewGitSourceCloner(p.gitClient, repoCfg, "running", p.lastSuccessfulCommitHash),
+			p.deployment.GetGitPath(),
+			p.secretDecrypter,
+		)
+		rds, err := runningDSP.Get(ctx, io.Discard)
+		if err != nil {
+			p.logger.Error("error while preparing running deploy source data", zap.Error(err))
+			return err
+		}
+		runningDS = rds.ToPluginDeploySource()
+	}
+
 	out, err := p.buildPlan(ctx, runningDS, targetDS)
 
 	// If the deployment was already cancelled, we ignore the plan result.

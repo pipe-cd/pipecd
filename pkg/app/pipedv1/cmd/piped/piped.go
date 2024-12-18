@@ -371,6 +371,13 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		// TODO: Implement the drift detector controller.
 	}
 
+	// Initialize secret decrypter.
+	decrypter, err := p.initializeSecretDecrypter(cfg)
+	if err != nil {
+		input.Logger.Error("failed to initialize secret decrypter", zap.Error(err))
+		return err
+	}
+
 	// Start running deployment controller.
 	{
 		c := controller.NewController(
@@ -380,6 +387,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			deploymentLister,
 			commandLister,
 			notifier,
+			decrypter,
 			p.gracePeriod,
 			input.Logger,
 			tracerProvider,
@@ -667,7 +675,6 @@ func (p *piped) runPlugins(ctx context.Context, pluginsCfg []config.PipedPlugin,
 	return plugins, nil
 }
 
-// TODO: Remove this once the decryption task by plugin call to the plugin service is implemented.
 func (p *piped) initializeSecretDecrypter(cfg *config.PipedSpec) (crypto.Decrypter, error) {
 	sm := cfg.SecretManagement
 	if sm == nil {

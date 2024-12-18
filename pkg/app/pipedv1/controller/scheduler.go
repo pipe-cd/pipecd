@@ -45,10 +45,11 @@ type scheduler struct {
 
 	stageBasedPluginsMap map[string]pluginapi.PluginClient
 
-	apiClient     apiClient
-	gitClient     gitClient
-	metadataStore metadatastore.MetadataStore
-	notifier      notifier
+	apiClient       apiClient
+	gitClient       gitClient
+	metadataStore   metadatastore.MetadataStore
+	notifier        notifier
+	secretDecrypter secretDecrypter
 
 	targetDSP  deploysource.Provider
 	runningDSP deploysource.Provider
@@ -80,6 +81,7 @@ func newScheduler(
 	gitClient gitClient,
 	stageBasedPluginsMap map[string]pluginapi.PluginClient,
 	notifier notifier,
+	secretsDecrypter secretDecrypter,
 	logger *zap.Logger,
 	tracerProvider trace.TracerProvider,
 ) *scheduler {
@@ -99,6 +101,7 @@ func newScheduler(
 		gitClient:            gitClient,
 		metadataStore:        metadatastore.NewMetadataStore(apiClient, d),
 		notifier:             notifier,
+		secretDecrypter:      secretsDecrypter,
 		doneDeploymentStatus: d.Status,
 		cancelledCh:          make(chan *model.ReportableCommand, 1),
 		logger:               logger,
@@ -165,7 +168,7 @@ func (s *scheduler) Cancel(cmd model.ReportableCommand) {
 }
 
 // Run starts running the scheduler.
-// It determines what stage should be executed next by which executor.
+// It determines what stage should be executed next by which plugin.
 // The returning error does not mean that the pipeline was failed,
 // but it means that the scheduler could not finish its job normally.
 func (s *scheduler) Run(ctx context.Context) error {
@@ -193,7 +196,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		}
 		controllermetrics.UpdateDeploymentStatus(s.deployment, model.DeploymentStatus_DEPLOYMENT_RUNNING)
 
-		// notify the deployment started event
+		// Notify the deployment started event
 		users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_STARTED)
 		if err != nil {
 			s.logger.Error("failed to get the list of users or groups", zap.Error(err))
@@ -223,16 +226,20 @@ func (s *scheduler) Run(ctx context.Context) error {
 		Branch: s.deployment.GitPath.Repo.Branch,
 	}
 
-	s.runningDSP = deploysource.NewProvider(
-		filepath.Join(s.workingDir, "running-deploysource"),
-		deploysource.NewGitSourceCloner(s.gitClient, repoCfg, "running", s.deployment.RunningCommitHash),
-		s.deployment.GetGitPath(), nil, // TODO: pass secret decrypter?
-	)
+	if s.deployment.RunningCommitHash != "" {
+		s.runningDSP = deploysource.NewProvider(
+			filepath.Join(s.workingDir, "running-deploysource"),
+			deploysource.NewGitSourceCloner(s.gitClient, repoCfg, "running", s.deployment.RunningCommitHash),
+			s.deployment.GetGitPath(),
+			s.secretDecrypter,
+		)
+	}
 
 	s.targetDSP = deploysource.NewProvider(
 		filepath.Join(s.workingDir, "target-deploysource"),
 		deploysource.NewGitSourceCloner(s.gitClient, repoCfg, "target", s.deployment.Trigger.Commit.Hash),
-		s.deployment.GetGitPath(), nil, // TODO: pass secret decrypter?
+		s.deployment.GetGitPath(),
+		s.secretDecrypter,
 	)
 
 	ds, err := s.targetDSP.Get(ctx, io.Discard)
@@ -469,13 +476,13 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 
 	rds, err := s.runningDSP.Get(ctx, io.Discard)
 	if err != nil {
-		s.logger.Error("failed to get running deployment source", zap.Error(err))
+		s.logger.Error("failed to get running deployment source", zap.String("stage-name", ps.Name), zap.Error(err))
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	tds, err := s.targetDSP.Get(ctx, io.Discard)
 	if err != nil {
-		s.logger.Error("failed to get target deployment source", zap.Error(err))
+		s.logger.Error("failed to get target deployment source", zap.String("stage-name", ps.Name), zap.Error(err))
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -508,8 +515,7 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 	// Find the executor plugin for this stage.
 	plugin, ok := s.stageBasedPluginsMap[ps.Name]
 	if !ok {
-		err := fmt.Errorf("no registered plugin that can perform for stage %s", ps.Name)
-		s.logger.Error(err.Error())
+		s.logger.Error("failed to find the plugin for the stage", zap.String("stage-name", ps.Name))
 		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -517,7 +523,7 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 	// Load the stage configuration.
 	stageConfig, stageConfigFound := s.genericApplicationConfig.GetStageByte(ps.Index)
 	if !stageConfigFound {
-		s.logger.Error("Unable to find the stage configuration")
+		s.logger.Error("Unable to find the stage configuration", zap.String("stage-name", ps.Name))
 		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
 			s.logger.Error("failed to report stage status", zap.Error(err))
 		}
@@ -535,7 +541,7 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 		},
 	})
 	if err != nil {
-		s.logger.Error("failed to execute stage", zap.Error(err))
+		s.logger.Error("failed to execute stage", zap.String("stage-name", ps.Name), zap.Error(err))
 		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
 		return model.StageStatus_STAGE_FAILURE
 	}

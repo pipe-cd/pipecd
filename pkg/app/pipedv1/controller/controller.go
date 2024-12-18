@@ -75,6 +75,10 @@ type notifier interface {
 	Notify(event model.NotificationEvent)
 }
 
+type secretDecrypter interface {
+	Decrypt(string) (string, error)
+}
+
 type DeploymentController interface {
 	Run(ctx context.Context) error
 }
@@ -90,6 +94,7 @@ type controller struct {
 	deploymentLister deploymentLister
 	commandLister    commandLister
 	notifier         notifier
+	secretDecrypter  secretDecrypter
 
 	// gRPC clients to communicate with plugins.
 	pluginClients []pluginapi.PluginClient
@@ -130,6 +135,7 @@ func NewController(
 	deploymentLister deploymentLister,
 	commandLister commandLister,
 	notifier notifier,
+	secretDecrypter secretDecrypter,
 	gracePeriod time.Duration,
 	logger *zap.Logger,
 	tracerProvider trace.TracerProvider,
@@ -142,6 +148,7 @@ func NewController(
 		deploymentLister: deploymentLister,
 		commandLister:    commandLister,
 		notifier:         notifier,
+		secretDecrypter:  secretDecrypter,
 
 		planners:                              make(map[string]*planner),
 		donePlanners:                          make(map[string]time.Time),
@@ -446,6 +453,7 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		c.apiClient,
 		c.gitClient,
 		c.notifier,
+		c.secretDecrypter,
 		c.logger,
 		c.tracerProvider,
 	)
@@ -584,6 +592,7 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		c.gitClient,
 		c.stageBasedPluginsMap,
 		c.notifier,
+		c.secretDecrypter,
 		c.logger,
 		c.tracerProvider,
 	)
