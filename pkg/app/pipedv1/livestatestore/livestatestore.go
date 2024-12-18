@@ -54,8 +54,8 @@ func NewStore(ctx context.Context, cfg *config.PipedSpec, appLister applicationL
 	logger = logger.Named("livestatestore")
 
 	s := &store{
-		gracePeriod:      gracePeriod,
-		logger:           logger,
+		gracePeriod: gracePeriod,
+		logger:      logger,
 	}
 	for _, cp := range cfg.PlatformProviders {
 		_ = cp // TODO: general state from plugin from store fields

@@ -300,7 +300,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		case model.DeploymentStatus_DEPLOYMENT_FAILURE, model.DeploymentStatus_DEPLOYMENT_CANCELLED:
 			span.SetStatus(codes.Error, statusReason)
 		}
-		
+
 		span.End()
 	}()
 

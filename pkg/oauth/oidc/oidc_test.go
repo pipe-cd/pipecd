@@ -18,8 +18,9 @@ import (
 	"testing"
 
 	"github.com/golang-jwt/jwt"
-	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 func TestDecideRole(t *testing.T) {
