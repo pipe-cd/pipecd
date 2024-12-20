@@ -100,11 +100,13 @@ func FindConfigsAndSecrets(manifests []Manifest) map[ResourceKey]Manifest {
 	return configs
 }
 
+// WorkloadPair represents a pair of old and new manifests.
 type WorkloadPair struct {
 	Old Manifest
 	New Manifest
 }
 
+// FindSameManifests returns the pairs of old and new manifests that have the same key.
 func FindSameManifests(olds, news []Manifest) []WorkloadPair {
 	pairs := make([]WorkloadPair, 0)
 	oldMap := make(map[ResourceKey]Manifest, len(olds))
