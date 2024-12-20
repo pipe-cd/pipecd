@@ -17,6 +17,7 @@ RUN \
         git \
         openssh \
         jq \
+        tzdata \
         curl && \
     update-ca-certificates && \
     mkdir -p ${PIPED_TOOLS_DIR} && \
