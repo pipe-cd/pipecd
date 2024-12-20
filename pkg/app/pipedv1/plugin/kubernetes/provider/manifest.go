@@ -85,3 +85,17 @@ func (m Manifest) AddStringMapValues(values map[string]string, fields ...string)
 	maps.Copy(curMap, values)
 	return unstructured.SetNestedStringMap(m.Body.Object, curMap, fields...)
 }
+
+// FindConfigsAndSecrets returns the manifests that are ConfigMap or Secret.
+func FindConfigsAndSecrets(manifests []Manifest) map[ResourceKey]Manifest {
+	configs := make(map[ResourceKey]Manifest)
+	for _, m := range manifests {
+		if m.Key.IsConfigMap() {
+			configs[m.Key] = m
+		}
+		if m.Key.IsSecret() {
+			configs[m.Key] = m
+		}
+	}
+	return configs
+}
