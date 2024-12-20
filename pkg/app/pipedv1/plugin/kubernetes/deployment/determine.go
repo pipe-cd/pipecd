@@ -211,7 +211,7 @@ func determineStrategy(olds, news []provider.Manifest, workloadRefs []config.K8s
 			if msg, changed := checkImageChange(templateDiffs); changed {
 				return model.SyncStrategy_PIPELINE, msg
 			}
-			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because pod template of workload %s was changed", w.New.Key.Name)
+			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because pod template of workload %s was changed", w.New.Key.Name())
 		}
 	}
 
@@ -228,14 +228,14 @@ func determineStrategy(olds, news []provider.Manifest, workloadRefs []config.K8s
 	for k, oc := range oldConfigs {
 		nc, ok := newConfigs[k]
 		if !ok {
-			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because %s %s was deleted", oc.Key.Kind, oc.Key.Name)
+			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because %s %s was deleted", oc.Key.Kind(), oc.Key.Name())
 		}
 		result, err := provider.Diff(oc, nc, logger)
 		if err != nil {
 			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively due to an error while calculating the diff (%v)", err)
 		}
 		if result.HasDiff() {
-			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because %s %s was updated", oc.Key.Kind, oc.Key.Name)
+			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because %s %s was updated", oc.Key.Kind(), oc.Key.Name())
 		}
 	}
 
@@ -243,7 +243,7 @@ func determineStrategy(olds, news []provider.Manifest, workloadRefs []config.K8s
 	scales := make([]string, 0, len(diffs))
 	for k, d := range diffs {
 		if before, after, changed := checkReplicasChange(d); changed {
-			scales = append(scales, fmt.Sprintf("%s/%s from %s to %s", k.Kind, k.Name, before, after))
+			scales = append(scales, fmt.Sprintf("%s/%s from %s to %s", k.Kind(), k.Name(), before, after))
 		}
 
 	}

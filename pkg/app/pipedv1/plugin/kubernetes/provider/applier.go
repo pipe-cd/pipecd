@@ -162,5 +162,5 @@ func (a *Applier) getNamespaceToRun(k ResourceKey) string {
 	if a.input.Namespace != "" {
 		return a.input.Namespace
 	}
-	return k.Namespace
+	return k.namespace
 }

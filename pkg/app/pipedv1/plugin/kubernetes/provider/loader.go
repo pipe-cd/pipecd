@@ -95,7 +95,7 @@ func (l *Loader) LoadManifests(ctx context.Context, input LoaderInput) (manifest
 				LabelManagedBy:          ManagedByPiped,
 				LabelPiped:              input.PipedID,
 				LabelApplication:        input.AppID,
-				LabelOriginalAPIVersion: manifests[i].Key.APIVersion,
+				LabelOriginalAPIVersion: manifests[i].Key.apiVersion,
 				LabelResourceKey:        manifests[i].Key.String(),
 				LabelCommitHash:         input.CommitHash,
 			})
@@ -137,7 +137,7 @@ func setNamespace(manifests []Manifest, namespace string) {
 		return
 	}
 	for i := range manifests {
-		manifests[i].Key.Namespace = namespace
+		manifests[i].Key.namespace = namespace
 	}
 }
 

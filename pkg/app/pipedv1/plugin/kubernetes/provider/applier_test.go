@@ -165,7 +165,7 @@ func TestApplier_ApplyManifest(t *testing.T) {
 
 			manifest := Manifest{
 				Key: ResourceKey{
-					Namespace: "test-namespace",
+					namespace: "test-namespace",
 				},
 			}
 
@@ -255,7 +255,7 @@ func TestApplier_CreateManifest(t *testing.T) {
 
 			manifest := Manifest{
 				Key: ResourceKey{
-					Namespace: "test-namespace",
+					namespace: "test-namespace",
 				},
 			}
 
@@ -317,7 +317,7 @@ func TestApplier_ReplaceManifest(t *testing.T) {
 
 			manifest := Manifest{
 				Key: ResourceKey{
-					Namespace: "test-namespace",
+					namespace: "test-namespace",
 				},
 			}
 
@@ -379,7 +379,7 @@ func TestApplier_ForceReplaceManifest(t *testing.T) {
 
 			manifest := Manifest{
 				Key: ResourceKey{
-					Namespace: "test-namespace",
+					namespace: "test-namespace",
 				},
 			}
 
@@ -418,10 +418,10 @@ metadata:
     pipecd.dev/resource-key: "v1:ConfigMap::test-config"
 `,
 			resourceKey: ResourceKey{
-				APIVersion: "v1",
-				Kind:       "ConfigMap",
-				Namespace:  "",
-				Name:       "test-config",
+				apiVersion: "v1",
+				kind:       "ConfigMap",
+				namespace:  "",
+				name:       "test-config",
 			},
 			expectedErr: nil,
 		},
@@ -437,10 +437,10 @@ metadata:
     pipecd.dev/resource-key: "v1:ConfigMap::test-config"
 `,
 			resourceKey: ResourceKey{
-				APIVersion: "v1",
-				Kind:       "ConfigMap",
-				Namespace:  "",
-				Name:       "test-config",
+				apiVersion: "v1",
+				kind:       "ConfigMap",
+				namespace:  "",
+				name:       "test-config",
 			},
 			expectedErr: errGet,
 		},
@@ -456,10 +456,10 @@ metadata:
     pipecd.dev/resource-key: "v1:ConfigMap::test-config"
 `,
 			resourceKey: ResourceKey{
-				APIVersion: "v1",
-				Kind:       "ConfigMap",
-				Namespace:  "",
-				Name:       "test-config",
+				apiVersion: "v1",
+				kind:       "ConfigMap",
+				namespace:  "",
+				name:       "test-config",
 			},
 			expectedErr: errDelete,
 		},
@@ -474,10 +474,10 @@ metadata:
     pipecd.dev/resource-key: "v1:ConfigMap::test-config"
 `,
 			resourceKey: ResourceKey{
-				APIVersion: "v1",
-				Kind:       "ConfigMap",
-				Namespace:  "",
-				Name:       "another-config",
+				apiVersion: "v1",
+				kind:       "ConfigMap",
+				namespace:  "",
+				name:       "another-config",
 			},
 			expectedErr: ErrNotFound,
 		},
@@ -493,10 +493,10 @@ metadata:
     pipecd.dev/resource-key: "v1:ConfigMap:test-namespace:test-config"
 `,
 			resourceKey: ResourceKey{
-				APIVersion: "v1",
-				Kind:       "ConfigMap",
-				Namespace:  "test-namespace",
-				Name:       "test-config",
+				apiVersion: "v1",
+				kind:       "ConfigMap",
+				namespace:  "test-namespace",
+				name:       "test-config",
 			},
 			expectedErr: nil,
 		},
@@ -552,7 +552,7 @@ func TestApplier_getNamespaceToRun(t *testing.T) {
 			name:           "input namespace is used",
 			inputNamespace: "input-namespace",
 			resourceKey: ResourceKey{
-				Namespace: "resource-namespace",
+				namespace: "resource-namespace",
 			},
 			expected: "input-namespace",
 		},
@@ -560,7 +560,7 @@ func TestApplier_getNamespaceToRun(t *testing.T) {
 			name:           "resource key namespace is used",
 			inputNamespace: "",
 			resourceKey: ResourceKey{
-				Namespace: "resource-namespace",
+				namespace: "resource-namespace",
 			},
 			expected: "resource-namespace",
 		},
@@ -568,7 +568,7 @@ func TestApplier_getNamespaceToRun(t *testing.T) {
 			name:           "both namespaces are empty",
 			inputNamespace: "",
 			resourceKey: ResourceKey{
-				Namespace: "",
+				namespace: "",
 			},
 			expected: "",
 		},

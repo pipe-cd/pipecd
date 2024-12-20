@@ -58,9 +58,9 @@ metadata:
 			want: []Manifest{
 				{
 					Key: ResourceKey{
-						APIVersion: "v1",
-						Kind:       "ConfigMap",
-						Name:       "test-config",
+						apiVersion: "v1",
+						kind:       "ConfigMap",
+						name:       "test-config",
 					},
 					Body: &unstructured.Unstructured{
 						Object: map[string]interface{}{
@@ -91,9 +91,9 @@ metadata:
 			want: []Manifest{
 				{
 					Key: ResourceKey{
-						APIVersion: "v1",
-						Kind:       "ConfigMap",
-						Name:       "test-config",
+						apiVersion: "v1",
+						kind:       "ConfigMap",
+						name:       "test-config",
 					},
 					Body: &unstructured.Unstructured{
 						Object: map[string]interface{}{
@@ -107,9 +107,9 @@ metadata:
 				},
 				{
 					Key: ResourceKey{
-						APIVersion: "v1",
-						Kind:       "Service",
-						Name:       "test-service",
+						apiVersion: "v1",
+						kind:       "Service",
+						name:       "test-service",
 					},
 					Body: &unstructured.Unstructured{
 						Object: map[string]interface{}{
@@ -189,9 +189,9 @@ metadata:
 			want: []Manifest{
 				{
 					Key: ResourceKey{
-						APIVersion: "v1",
-						Kind:       "ConfigMap",
-						Name:       "test-config",
+						apiVersion: "v1",
+						kind:       "ConfigMap",
+						name:       "test-config",
 					},
 					Body: &unstructured.Unstructured{
 						Object: map[string]interface{}{
@@ -231,9 +231,9 @@ metadata:
 			want: []Manifest{
 				{
 					Key: ResourceKey{
-						APIVersion: "v1",
-						Kind:       "Service",
-						Name:       "test-service",
+						apiVersion: "v1",
+						kind:       "Service",
+						name:       "test-service",
 					},
 					Body: &unstructured.Unstructured{
 						Object: map[string]interface{}{
@@ -272,9 +272,9 @@ metadata:
 			want: []Manifest{
 				{
 					Key: ResourceKey{
-						APIVersion: "v1",
-						Kind:       "ConfigMap",
-						Name:       "test-config",
+						apiVersion: "v1",
+						kind:       "ConfigMap",
+						name:       "test-config",
 					},
 					Body: &unstructured.Unstructured{
 						Object: map[string]interface{}{
@@ -288,9 +288,9 @@ metadata:
 				},
 				{
 					Key: ResourceKey{
-						APIVersion: "v1",
-						Kind:       "Service",
-						Name:       "test-service",
+						apiVersion: "v1",
+						kind:       "Service",
+						name:       "test-service",
 					},
 					Body: &unstructured.Unstructured{
 						Object: map[string]interface{}{

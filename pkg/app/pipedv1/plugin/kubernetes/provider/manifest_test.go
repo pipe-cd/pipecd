@@ -155,10 +155,10 @@ spec:
 			},
 			want: map[ResourceKey]Manifest{
 				{
-					APIVersion: "v1",
-					Kind:       "ConfigMap",
-					Name:       "my-config",
-					Namespace:  "default",
+					apiVersion: "v1",
+					kind:       "ConfigMap",
+					name:       "my-config",
+					namespace:  "default",
 				}: mustParseManifests(t, `
 apiVersion: v1
 kind: ConfigMap
@@ -169,10 +169,10 @@ data:
   key: value
 `)[0],
 				{
-					APIVersion: "v1",
-					Kind:       "Secret",
-					Name:       "my-secret",
-					Namespace:  "default",
+					apiVersion: "v1",
+					kind:       "Secret",
+					name:       "my-secret",
+					namespace:  "default",
 				}: mustParseManifests(t, `
 apiVersion: v1
 kind: Secret
@@ -217,10 +217,10 @@ data:
 			},
 			want: map[ResourceKey]Manifest{
 				{
-					APIVersion: "v1",
-					Kind:       "ConfigMap",
-					Name:       "my-config",
-					Namespace:  "default",
+					apiVersion: "v1",
+					kind:       "ConfigMap",
+					name:       "my-config",
+					namespace:  "default",
 				}: mustParseManifests(t, `
 apiVersion: v1
 kind: ConfigMap
@@ -247,10 +247,10 @@ data:
 			},
 			want: map[ResourceKey]Manifest{
 				{
-					APIVersion: "v1",
-					Kind:       "Secret",
-					Name:       "my-secret",
-					Namespace:  "default",
+					apiVersion: "v1",
+					kind:       "Secret",
+					name:       "my-secret",
+					namespace:  "default",
 				}: mustParseManifests(t, `
 apiVersion: v1
 kind: Secret
@@ -286,10 +286,10 @@ data:
 			},
 			want: map[ResourceKey]Manifest{
 				{
-					APIVersion: "v1",
-					Kind:       "ConfigMap",
-					Name:       "my-config",
-					Namespace:  "custom-namespace",
+					apiVersion: "v1",
+					kind:       "ConfigMap",
+					name:       "my-config",
+					namespace:  "custom-namespace",
 				}: mustParseManifests(t, `
 apiVersion: v1
 kind: ConfigMap
@@ -300,10 +300,10 @@ data:
   key: value
 `)[0],
 				{
-					APIVersion: "v1",
-					Kind:       "Secret",
-					Name:       "my-secret",
-					Namespace:  "custom-namespace",
+					apiVersion: "v1",
+					kind:       "Secret",
+					name:       "my-secret",
+					namespace:  "custom-namespace",
 				}: mustParseManifests(t, `
 apiVersion: v1
 kind: Secret

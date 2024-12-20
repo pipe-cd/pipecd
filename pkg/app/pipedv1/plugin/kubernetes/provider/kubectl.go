@@ -184,7 +184,7 @@ func (c *Kubectl) Delete(ctx context.Context, kubeconfig, namespace string, r Re
 	if namespace != "" {
 		args = append(args, "--namespace", namespace)
 	}
-	args = append(args, "delete", r.Kind, r.Name)
+	args = append(args, "delete", r.Kind(), r.Name())
 
 	cmd := exec.CommandContext(ctx, c.execPath, args...)
 	out, err := cmd.CombinedOutput()
@@ -209,7 +209,7 @@ func (c *Kubectl) Get(ctx context.Context, kubeconfig, namespace string, r Resou
 	if namespace != "" {
 		args = append(args, "--namespace", namespace)
 	}
-	args = append(args, "get", r.Kind, r.Name, "-o", "yaml")
+	args = append(args, "get", r.Kind(), r.Name(), "-o", "yaml")
 
 	cmd := exec.CommandContext(ctx, c.execPath, args...)
 	out, err := cmd.CombinedOutput()
