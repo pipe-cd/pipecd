@@ -164,7 +164,7 @@ func TestApplier_ApplyManifest(t *testing.T) {
 			)
 
 			manifest := Manifest{
-				Key: ResourceKey{
+				key: ResourceKey{
 					namespace: "test-namespace",
 				},
 			}
@@ -254,7 +254,7 @@ func TestApplier_CreateManifest(t *testing.T) {
 			)
 
 			manifest := Manifest{
-				Key: ResourceKey{
+				key: ResourceKey{
 					namespace: "test-namespace",
 				},
 			}
@@ -316,7 +316,7 @@ func TestApplier_ReplaceManifest(t *testing.T) {
 			)
 
 			manifest := Manifest{
-				Key: ResourceKey{
+				key: ResourceKey{
 					namespace: "test-namespace",
 				},
 			}
@@ -378,7 +378,7 @@ func TestApplier_ForceReplaceManifest(t *testing.T) {
 			)
 
 			manifest := Manifest{
-				Key: ResourceKey{
+				key: ResourceKey{
 					namespace: "test-namespace",
 				},
 			}

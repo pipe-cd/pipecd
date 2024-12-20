@@ -22,7 +22,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry/toolregistrytest"
@@ -82,9 +81,10 @@ func TestTemplateLocalChart_WithNamespace(t *testing.T) {
 
 	manifests, _ := ParseManifests(out)
 	for _, manifest := range manifests {
-		metadata, _, err := unstructured.NestedMap(manifest.Body.Object, "metadata")
+		metadata, _, err := manifest.NestedMap("metadata")
 		require.NoError(t, err)
 		require.Equal(t, namespace, metadata["namespace"])
+		require.Equal(t, namespace, manifest.Key().Namespace())
 	}
 }
 

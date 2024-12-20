@@ -249,7 +249,7 @@ spec:
 			require.NoError(t, err)
 			require.Equal(t, 1, len(manifests))
 
-			out := FindReferencingConfigMaps(manifests[0].Body)
+			out := FindReferencingConfigMaps(manifests[0])
 			assert.Equal(t, tc.expected, out)
 		})
 	}
@@ -414,7 +414,130 @@ spec:
 			require.NoError(t, err)
 			require.Equal(t, 1, len(manifests))
 
-			out := FindReferencingSecrets(manifests[0].Body)
+			out := FindReferencingSecrets(manifests[0])
+			assert.Equal(t, tc.expected, out)
+		})
+	}
+}
+func TestFindContainerImages(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name     string
+		manifest string
+		expected []string
+	}{
+		{
+			name: "no container image",
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+  labels:
+    app: simple
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: simple
+      pipecd.dev/variant: primary
+  template:
+    metadata:
+      labels:
+        app: simple
+        pipecd.dev/variant: primary
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+        - name: helloworld
+          args:
+            - server
+          ports:
+            - containerPort: 9085
+`,
+			expected: nil,
+		},
+		{
+			name: "one container image",
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+  labels:
+    app: simple
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: simple
+      pipecd.dev/variant: primary
+  template:
+    metadata:
+      labels:
+        app: simple
+        pipecd.dev/variant: primary
+    spec:
+      containers:
+        - name: helloworld
+          image: gcr.io/pipecd/helloworld:v0.5.0
+          args:
+            - server
+          ports:
+            - containerPort: 9085
+`,
+			expected: []string{"gcr.io/pipecd/helloworld:v0.5.0"},
+		},
+		{
+			name: "multiple container images",
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+  labels:
+    app: simple
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: simple
+      pipecd.dev/variant: primary
+  template:
+    metadata:
+      labels:
+        app: simple
+        pipecd.dev/variant: primary
+    spec:
+      containers:
+        - name: helloworld
+          image: gcr.io/pipecd/helloworld:v0.5.0
+          args:
+            - server
+          ports:
+            - containerPort: 9085
+        - name: sidecar
+          image: gcr.io/pipecd/sidecar:v0.5.0
+          args:
+            - proxy
+          ports:
+            - containerPort: 9086
+`,
+			expected: []string{"gcr.io/pipecd/helloworld:v0.5.0", "gcr.io/pipecd/sidecar:v0.5.0"},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			manifests, err := ParseManifests(tc.manifest)
+			require.NoError(t, err)
+			require.Equal(t, 1, len(manifests))
+
+			out := FindContainerImages(manifests[0])
 			assert.Equal(t, tc.expected, out)
 		})
 	}

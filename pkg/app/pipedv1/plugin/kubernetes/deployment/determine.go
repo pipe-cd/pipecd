@@ -20,7 +20,6 @@ import (
 	"strings"
 
 	"go.uber.org/zap"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
@@ -51,32 +50,8 @@ func parseContainerImage(image string) (img containerImage) {
 func determineVersions(manifests []provider.Manifest) ([]*model.ArtifactVersion, error) {
 	imageMap := map[string]struct{}{}
 	for _, m := range manifests {
-		// TODO: we should consider other fields like spec.jobTempate.spec.template.spec.containers because CronJob uses this format.
-		containers, ok, err := unstructured.NestedSlice(m.Body.Object, "spec", "template", "spec", "containers")
-		if err != nil {
-			// if the containers field is not an array, it will return an error.
-			// we define this as error because the 'containers' is plural form, so it should be an array.
-			return nil, err
-		}
-		if !ok {
-			continue
-		}
-		// Remove duplicate images on multiple manifests.
-		for _, c := range containers {
-			m, ok := c.(map[string]interface{})
-			if !ok {
-				// TODO: Add logging.
-				continue
-			}
-			img, ok := m["image"]
-			if !ok {
-				continue
-			}
-			imgStr, ok := img.(string)
-			if !ok {
-				return nil, fmt.Errorf("invalid image format: %T(%v)", img, img)
-			}
-			imageMap[imgStr] = struct{}{}
+		for _, c := range provider.FindContainerImages(m) {
+			imageMap[c] = struct{}{}
 		}
 	}
 
@@ -98,10 +73,10 @@ func determineVersions(manifests []provider.Manifest) ([]*model.ArtifactVersion,
 func findManifests(kind, name string, manifests []provider.Manifest) []provider.Manifest {
 	out := make([]provider.Manifest, 0, len(manifests))
 	for _, m := range manifests {
-		if m.Body.GetKind() != kind {
+		if m.Key().Kind() != kind {
 			continue
 		}
-		if name != "" && m.Body.GetName() != name {
+		if name != "" && m.Key().Name() != name {
 			continue
 		}
 		out = append(out, m)
@@ -204,14 +179,14 @@ func determineStrategy(olds, news []provider.Manifest, workloadRefs []config.K8s
 			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively due to an error while calculating the diff (%v)", err)
 		}
 		diffNodes := diffResult.Nodes()
-		diffs[w.New.Key] = diffNodes
+		diffs[w.New.Key()] = diffNodes
 
 		templateDiffs := diffNodes.FindByPrefix("spec.template")
 		if len(templateDiffs) > 0 {
 			if msg, changed := checkImageChange(templateDiffs); changed {
 				return model.SyncStrategy_PIPELINE, msg
 			}
-			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because pod template of workload %s was changed", w.New.Key.Name())
+			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because pod template of workload %s was changed", w.New.Key().Name())
 		}
 	}
 
@@ -228,14 +203,14 @@ func determineStrategy(olds, news []provider.Manifest, workloadRefs []config.K8s
 	for k, oc := range oldConfigs {
 		nc, ok := newConfigs[k]
 		if !ok {
-			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because %s %s was deleted", oc.Key.Kind(), oc.Key.Name())
+			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because %s %s was deleted", oc.Key().Kind(), oc.Key().Name())
 		}
 		result, err := provider.Diff(oc, nc, logger)
 		if err != nil {
 			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively due to an error while calculating the diff (%v)", err)
 		}
 		if result.HasDiff() {
-			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because %s %s was updated", oc.Key.Kind(), oc.Key.Name())
+			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because %s %s was updated", oc.Key().Kind(), oc.Key().Name())
 		}
 	}
 

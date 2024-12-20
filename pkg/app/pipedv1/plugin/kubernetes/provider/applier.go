@@ -56,7 +56,7 @@ func (a *Applier) ApplyManifest(ctx context.Context, manifest Manifest) error {
 		err := a.kubectl.CreateNamespace(
 			ctx,
 			a.deployTarget.KubeConfigPath,
-			a.getNamespaceToRun(manifest.Key),
+			a.getNamespaceToRun(manifest.Key()),
 		)
 		if err != nil && !errors.Is(err, errResourceAlreadyExists) {
 			return err
@@ -66,7 +66,7 @@ func (a *Applier) ApplyManifest(ctx context.Context, manifest Manifest) error {
 	return a.kubectl.Apply(
 		ctx,
 		a.deployTarget.KubeConfigPath,
-		a.getNamespaceToRun(manifest.Key),
+		a.getNamespaceToRun(manifest.Key()),
 		manifest,
 	)
 }
@@ -77,7 +77,7 @@ func (a *Applier) CreateManifest(ctx context.Context, manifest Manifest) error {
 		err := a.kubectl.CreateNamespace(
 			ctx,
 			a.deployTarget.KubeConfigPath,
-			a.getNamespaceToRun(manifest.Key),
+			a.getNamespaceToRun(manifest.Key()),
 		)
 		if err != nil && !errors.Is(err, errResourceAlreadyExists) {
 			return err
@@ -87,7 +87,7 @@ func (a *Applier) CreateManifest(ctx context.Context, manifest Manifest) error {
 	return a.kubectl.Create(
 		ctx,
 		a.deployTarget.KubeConfigPath,
-		a.getNamespaceToRun(manifest.Key),
+		a.getNamespaceToRun(manifest.Key()),
 		manifest,
 	)
 }
@@ -97,7 +97,7 @@ func (a *Applier) ReplaceManifest(ctx context.Context, manifest Manifest) error 
 	err := a.kubectl.Replace(
 		ctx,
 		a.deployTarget.KubeConfigPath,
-		a.getNamespaceToRun(manifest.Key),
+		a.getNamespaceToRun(manifest.Key()),
 		manifest,
 	)
 	if err == nil {
@@ -116,7 +116,7 @@ func (a *Applier) ForceReplaceManifest(ctx context.Context, manifest Manifest) e
 	err := a.kubectl.ForceReplace(
 		ctx,
 		a.deployTarget.KubeConfigPath,
-		a.getNamespaceToRun(manifest.Key),
+		a.getNamespaceToRun(manifest.Key()),
 		manifest,
 	)
 	if err == nil {
@@ -144,7 +144,7 @@ func (a *Applier) Delete(ctx context.Context, k ResourceKey) (err error) {
 		return err
 	}
 
-	if k.String() != m.Body.GetAnnotations()[LabelResourceKey] {
+	if k.String() != m.body.GetAnnotations()[LabelResourceKey] {
 		return ErrNotFound
 	}
 

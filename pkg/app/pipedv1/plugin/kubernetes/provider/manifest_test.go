@@ -97,7 +97,7 @@ func TestManifest_AddStringMapValues(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			manifest := Manifest{
-				Body: &unstructured.Unstructured{
+				body: &unstructured.Unstructured{
 					Object: tt.initial,
 				},
 			}
@@ -106,7 +106,7 @@ func TestManifest_AddStringMapValues(t *testing.T) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 
-			if diff := cmp.Diff(tt.expected, manifest.Body.Object); diff != "" {
+			if diff := cmp.Diff(tt.expected, manifest.body.Object); diff != "" {
 				t.Errorf("unexpected result (-want +got):\n%s", diff)
 			}
 		})

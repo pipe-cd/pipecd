@@ -24,20 +24,24 @@ import (
 
 // Manifest represents a Kubernetes resource manifest.
 type Manifest struct {
-	Key  ResourceKey
-	Body *unstructured.Unstructured
+	key  ResourceKey
+	body *unstructured.Unstructured
+}
+
+func (m *Manifest) Key() ResourceKey {
+	return m.key
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
 func (m *Manifest) UnmarshalJSON(data []byte) error {
-	m.Body = new(unstructured.Unstructured)
-	return m.Body.UnmarshalJSON(data)
+	m.body = new(unstructured.Unstructured)
+	return m.body.UnmarshalJSON(data)
 }
 
 // MarshalJSON implements the json.Marshaler interface.
 // It marshals the underlying unstructured.Unstructured object into JSON bytes.
 func (m *Manifest) MarshalJSON() ([]byte, error) {
-	return m.Body.MarshalJSON()
+	return m.body.MarshalJSON()
 }
 
 // ConvertToStructuredObject converts the manifest into a structured Kubernetes object.
@@ -52,7 +56,15 @@ func (m Manifest) ConvertToStructuredObject(o interface{}) error {
 }
 
 func (m *Manifest) YamlBytes() ([]byte, error) {
-	return yaml.Marshal(m.Body)
+	return yaml.Marshal(m.body)
+}
+
+func (m Manifest) GetAnnotations() map[string]string {
+	return m.body.GetAnnotations()
+}
+
+func (m Manifest) NestedMap(fields ...string) (map[string]any, bool, error) {
+	return unstructured.NestedMap(m.body.Object, fields...)
 }
 
 func (m Manifest) AddAnnotations(annotations map[string]string) {
@@ -60,41 +72,41 @@ func (m Manifest) AddAnnotations(annotations map[string]string) {
 		return
 	}
 
-	annos := m.Body.GetAnnotations()
+	annos := m.body.GetAnnotations()
 	if annos == nil {
-		m.Body.SetAnnotations(annotations)
+		m.body.SetAnnotations(annotations)
 		return
 	}
 	for k, v := range annotations {
 		annos[k] = v
 	}
-	m.Body.SetAnnotations(annos)
+	m.body.SetAnnotations(annos)
 }
 
 // AddStringMapValues adds or overrides the given key-values into the string map
 // that can be found at the specified fields.
 func (m Manifest) AddStringMapValues(values map[string]string, fields ...string) error {
-	curMap, _, err := unstructured.NestedStringMap(m.Body.Object, fields...)
+	curMap, _, err := unstructured.NestedStringMap(m.body.Object, fields...)
 	if err != nil {
 		return err
 	}
 
 	if curMap == nil {
-		return unstructured.SetNestedStringMap(m.Body.Object, values, fields...)
+		return unstructured.SetNestedStringMap(m.body.Object, values, fields...)
 	}
 	maps.Copy(curMap, values)
-	return unstructured.SetNestedStringMap(m.Body.Object, curMap, fields...)
+	return unstructured.SetNestedStringMap(m.body.Object, curMap, fields...)
 }
 
 // FindConfigsAndSecrets returns the manifests that are ConfigMap or Secret.
 func FindConfigsAndSecrets(manifests []Manifest) map[ResourceKey]Manifest {
 	configs := make(map[ResourceKey]Manifest)
 	for _, m := range manifests {
-		if m.Key.IsConfigMap() {
-			configs[m.Key] = m
+		if m.Key().IsConfigMap() {
+			configs[m.Key()] = m
 		}
-		if m.Key.IsSecret() {
-			configs[m.Key] = m
+		if m.Key().IsSecret() {
+			configs[m.Key()] = m
 		}
 	}
 	return configs
@@ -119,11 +131,11 @@ func FindSameManifests(olds, news []Manifest) []WorkloadPair {
 		return k
 	}
 	for _, m := range olds {
-		key := nomalizeKey(m.Key)
+		key := nomalizeKey(m.Key())
 		oldMap[key] = m
 	}
 	for _, n := range news {
-		key := nomalizeKey(n.Key)
+		key := nomalizeKey(n.Key())
 		if o, ok := oldMap[key]; ok {
 			pairs = append(pairs, WorkloadPair{
 				Old: o,
