@@ -218,7 +218,7 @@ update/copyright:
 
 .PHONY: gen/code
 gen/code:
-	# NOTE: Keep this container image as same as defined in .github/workflows/codegen.yml 
+	# NOTE: Keep this container image as same as defined in .github/workflows/codegen.yml
 	docker run --rm -v ${PWD}:/repo -it --entrypoint ./tool/codegen/codegen.sh ghcr.io/pipe-cd/codegen@sha256:fcb600d82cc4acc76f532c292445f868dfa176d6db116b6c5b18b81a1b1c5fa9 /repo # v0.50.0-51-gb98a963
 
 .PHONY: gen/test-tls
