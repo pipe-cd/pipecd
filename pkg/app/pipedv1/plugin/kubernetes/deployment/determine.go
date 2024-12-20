@@ -193,7 +193,7 @@ func determineStrategy(olds, news []provider.Manifest, workloadRefs []config.K8s
 		return model.SyncStrategy_QUICK_SYNC, "Quick sync by applying all manifests because it was unable to find workloads in the new manifests"
 	}
 
-	workloads := provider.FindUpdatedWorkloads(oldWorkloads, newWorkloads)
+	workloads := provider.FindSameManifests(oldWorkloads, newWorkloads)
 	diffs := make(map[provider.ResourceKey]diff.Nodes, len(workloads))
 
 	for _, w := range workloads {

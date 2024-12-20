@@ -105,7 +105,7 @@ type WorkloadPair struct {
 	New Manifest
 }
 
-func FindUpdatedWorkloads(olds, news []Manifest) []WorkloadPair {
+func FindSameManifests(olds, news []Manifest) []WorkloadPair {
 	pairs := make([]WorkloadPair, 0)
 	oldMap := make(map[ResourceKey]Manifest, len(olds))
 	nomalizeKey := func(k ResourceKey) ResourceKey {

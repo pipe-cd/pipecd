@@ -329,7 +329,7 @@ data:
 	}
 }
 
-func TestFindUpdatedWorkloads(t *testing.T) {
+func TestFindSameManifests(t *testing.T) {
 	tests := []struct {
 		name string
 		olds []string
@@ -542,7 +542,7 @@ spec:
 		t.Run(tt.name, func(t *testing.T) {
 			oldManifests := mustParseManifests(t, strings.Join(tt.olds, "\n---\n"))
 			newManifests := mustParseManifests(t, strings.Join(tt.news, "\n---\n"))
-			got := FindUpdatedWorkloads(oldManifests, newManifests)
+			got := FindSameManifests(oldManifests, newManifests)
 			assert.Equal(t, tt.want, got)
 		})
 	}
