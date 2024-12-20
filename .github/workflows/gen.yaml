@@ -11,6 +11,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
     - name: Generate code
+      # NOTE: Keep this container image as same as defined in Makefile
       uses: docker://ghcr.io/pipe-cd/codegen:v0.50.0-51-gb98a963@sha256:fcb600d82cc4acc76f532c292445f868dfa176d6db116b6c5b18b81a1b1c5fa9
       with:
         entrypoint: ./tool/codegen/codegen.sh
