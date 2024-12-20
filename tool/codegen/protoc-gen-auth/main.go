@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"html/template"
 	"sort"
-	"strconv"
 	"strings"
 
 	"google.golang.org/protobuf/compiler/protogen"
@@ -120,26 +119,29 @@ func generateMethods(extTypes *protoregistry.Types, ms []*protogen.Method) ([]*M
 
 		method := &Method{Name: m.GoName}
 		opts.ProtoReflect().Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
-			if !fd.IsExtension() || fd.Name() != methodOptionsRBAC || v.String() == "" {
+			if !fd.IsExtension() || fd.Name() != methodOptionsRBAC || fd.Kind() != protoreflect.MessageKind {
 				return true
 			}
 
-			vs := strings.Split(v.String(), "  ")
-			for _, v := range vs {
-				kv := strings.SplitN(v, ":", 2)
-				key, value := kv[0], kv[1]
+			v.Message().Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
+				switch fd.Kind() {
+				case protoreflect.EnumKind:
+					if fd.Name() == keyMethodOptionsRBACResouce {
+						method.Resource = string(fd.Enum().Values().ByNumber(v.Enum()).Name())
+					}
 
-				switch key {
-				case keyMethodOptionsRBACResouce:
-					method.Resource = value
-				case keyMethodOptionsRBACAction:
-					method.Action = value
-				case keyMethodOptionsRBACIgnored:
-					if v, err := strconv.ParseBool(value); err == nil {
-						method.Ignored = v
+					if fd.Name() == keyMethodOptionsRBACAction {
+						method.Action = string(fd.Enum().Values().ByNumber(v.Enum()).Name())
+					}
+				case protoreflect.BoolKind:
+					if fd.Name() == keyMethodOptionsRBACIgnored {
+						method.Ignored = v.Bool()
 					}
 				}
-			}
+
+				return true
+			})
+
 			return true
 		})
 
