@@ -99,3 +99,35 @@ func FindConfigsAndSecrets(manifests []Manifest) map[ResourceKey]Manifest {
 	}
 	return configs
 }
+
+type WorkloadPair struct {
+	Old Manifest
+	New Manifest
+}
+
+func FindUpdatedWorkloads(olds, news []Manifest) []WorkloadPair {
+	pairs := make([]WorkloadPair, 0)
+	oldMap := make(map[ResourceKey]Manifest, len(olds))
+	nomalizeKey := func(k ResourceKey) ResourceKey {
+		// Ignoring APIVersion because user can upgrade to the new APIVersion for the same workload.
+		k.APIVersion = ""
+		if k.Namespace == DefaultNamespace {
+			k.Namespace = ""
+		}
+		return k
+	}
+	for _, m := range olds {
+		key := nomalizeKey(m.Key)
+		oldMap[key] = m
+	}
+	for _, n := range news {
+		key := nomalizeKey(n.Key)
+		if o, ok := oldMap[key]; ok {
+			pairs = append(pairs, WorkloadPair{
+				Old: o,
+				New: n,
+			})
+		}
+	}
+	return pairs
+}

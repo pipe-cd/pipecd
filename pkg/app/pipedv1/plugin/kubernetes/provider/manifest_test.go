@@ -15,6 +15,7 @@
 package provider
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -323,6 +324,225 @@ data:
 				manifests = append(manifests, mustParseManifests(t, data)...)
 			}
 			got := FindConfigsAndSecrets(manifests)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestFindUpdatedWorkloads(t *testing.T) {
+	tests := []struct {
+		name string
+		olds []string
+		news []string
+		want []WorkloadPair
+	}{
+		{
+			name: "single updated workload",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.4
+`,
+			},
+			want: []WorkloadPair{
+				{
+					Old: mustParseManifests(t, `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`)[0],
+					New: mustParseManifests(t, `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.4
+`)[0],
+				},
+			},
+		},
+		{
+			name: "multiple updated workloads",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis
+        image: redis:6.0.9
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.4
+`,
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis
+        image: redis:6.0.10
+`,
+			},
+			want: []WorkloadPair{
+				{
+					Old: mustParseManifests(t, `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`)[0],
+					New: mustParseManifests(t, `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.4
+`)[0],
+				},
+				{
+					Old: mustParseManifests(t, `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis
+        image: redis:6.0.9
+`)[0],
+					New: mustParseManifests(t, `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis
+        image: redis:6.0.10
+`)[0],
+				},
+			},
+		},
+		{
+			name: "no updated workloads",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis
+        image: redis:7.0.0
+`,
+			},
+			want: []WorkloadPair{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			oldManifests := mustParseManifests(t, strings.Join(tt.olds, "\n---\n"))
+			newManifests := mustParseManifests(t, strings.Join(tt.news, "\n---\n"))
+			got := FindUpdatedWorkloads(oldManifests, newManifests)
 			assert.Equal(t, tt.want, got)
 		})
 	}

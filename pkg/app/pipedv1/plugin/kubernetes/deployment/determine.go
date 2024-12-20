@@ -133,47 +133,6 @@ type workloadPair struct {
 	new provider.Manifest
 }
 
-func findUpdatedWorkloads(olds, news []provider.Manifest) []workloadPair {
-	pairs := make([]workloadPair, 0)
-	oldMap := make(map[provider.ResourceKey]provider.Manifest, len(olds))
-	nomalizeKey := func(k provider.ResourceKey) provider.ResourceKey {
-		// Ignoring APIVersion because user can upgrade to the new APIVersion for the same workload.
-		k.APIVersion = ""
-		if k.Namespace == provider.DefaultNamespace {
-			k.Namespace = ""
-		}
-		return k
-	}
-	for _, m := range olds {
-		key := nomalizeKey(m.Key)
-		oldMap[key] = m
-	}
-	for _, n := range news {
-		key := nomalizeKey(n.Key)
-		if o, ok := oldMap[key]; ok {
-			pairs = append(pairs, workloadPair{
-				old: o,
-				new: n,
-			})
-		}
-	}
-	return pairs
-}
-
-// findConfigsAndSecrets returns the manifests that are ConfigMap or Secret.
-func findConfigsAndSecrets(manifests []provider.Manifest) map[provider.ResourceKey]provider.Manifest {
-	configs := make(map[provider.ResourceKey]provider.Manifest)
-	for _, m := range manifests {
-		if m.Key.IsConfigMap() {
-			configs[m.Key] = m
-		}
-		if m.Key.IsSecret() {
-			configs[m.Key] = m
-		}
-	}
-	return configs
-}
-
 func checkImageChange(ns diff.Nodes) (string, bool) {
 	const containerImageQuery = `^spec\.template\.spec\.containers\.\d+.image$`
 	nodes, _ := ns.Find(containerImageQuery)
@@ -234,32 +193,32 @@ func determineStrategy(olds, news []provider.Manifest, workloadRefs []config.K8s
 		return model.SyncStrategy_QUICK_SYNC, "Quick sync by applying all manifests because it was unable to find workloads in the new manifests"
 	}
 
-	workloads := findUpdatedWorkloads(oldWorkloads, newWorkloads)
+	workloads := provider.FindUpdatedWorkloads(oldWorkloads, newWorkloads)
 	diffs := make(map[provider.ResourceKey]diff.Nodes, len(workloads))
 
 	for _, w := range workloads {
 		// If the workload's pod template was touched
 		// do progressive deployment with the specified pipeline.
-		diffResult, err := provider.Diff(w.old, w.new, logger)
+		diffResult, err := provider.Diff(w.Old, w.New, logger)
 		if err != nil {
 			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively due to an error while calculating the diff (%v)", err)
 		}
 		diffNodes := diffResult.Nodes()
-		diffs[w.new.Key] = diffNodes
+		diffs[w.New.Key] = diffNodes
 
 		templateDiffs := diffNodes.FindByPrefix("spec.template")
 		if len(templateDiffs) > 0 {
 			if msg, changed := checkImageChange(templateDiffs); changed {
 				return model.SyncStrategy_PIPELINE, msg
 			}
-			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because pod template of workload %s was changed", w.new.Key.Name)
+			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because pod template of workload %s was changed", w.New.Key.Name)
 		}
 	}
 
 	// If the config/secret was touched, we also need to do progressive
 	// deployment to check run with the new config/secret content.
-	oldConfigs := findConfigsAndSecrets(olds)
-	newConfigs := findConfigsAndSecrets(news)
+	oldConfigs := provider.FindConfigsAndSecrets(olds)
+	newConfigs := provider.FindConfigsAndSecrets(news)
 	if len(oldConfigs) > len(newConfigs) {
 		return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because %d configmap/secret deleted", len(oldConfigs)-len(newConfigs))
 	}
