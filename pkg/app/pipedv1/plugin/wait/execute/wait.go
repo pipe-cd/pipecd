@@ -50,10 +50,8 @@ func (s *deploymentServiceServer) execute(ctx context.Context, in *deployment.Ex
 	}
 
 	// Apply the stage configurations.
-	if opts != nil {
-		if opts.Duration > 0 {
-			duration = opts.Duration.Duration()
-		}
+	if opts != nil && opts.Duration > 0 {
+		duration = opts.Duration.Duration()
 	}
 	totalDuration := duration
 
@@ -69,6 +67,14 @@ func (s *deploymentServiceServer) execute(ctx context.Context, in *deployment.Ex
 	}
 	defer s.saveStartTime(ctx, startTime, in.Stage.Id)
 
+	if err := s.wait(ctx, duration, totalDuration, startTime, slp); err != nil {
+		slp.Errorf("failed to wait: %v", err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+	return model.StageStatus_STAGE_SUCCESS
+}
+
+func (s *deploymentServiceServer) wait(ctx context.Context, duration, totalDuration time.Duration, startTime time.Time, slp logpersister.StageLogPersister) error {
 	timer := time.NewTimer(duration)
 	defer timer.Stop()
 
@@ -80,7 +86,7 @@ func (s *deploymentServiceServer) execute(ctx context.Context, in *deployment.Ex
 		select {
 		case <-timer.C:
 			slp.Infof("Waited for %v", totalDuration)
-			return model.StageStatus_STAGE_SUCCESS
+			return nil
 
 		case <-ticker.C:
 			slp.Infof("%v elapsed...", time.Since(startTime))
