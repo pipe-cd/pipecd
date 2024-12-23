@@ -493,9 +493,52 @@ func (s *scheduler) Run(ctx context.Context) error {
 					))
 					defer span.End()
 
+					s.notifier.Notify(model.NotificationEvent{
+						Type: model.NotificationEventType_EVENT_STAGE_STARTED,
+						Metadata: &model.NotificationEventStageStarted{
+							Deployment: s.deployment,
+							Stage:      &rbs,
+						},
+					})
+
 					result := s.executeStage(sig, rbs, func(in executor.Input) (executor.Executor, bool) {
 						return s.executorRegistry.RollbackExecutor(s.deployment.Kind, in)
 					})
+
+					switch result {
+					case model.StageStatus_STAGE_SUCCESS, model.StageStatus_STAGE_EXITED: // Exit stage is treated as success.
+						s.notifier.Notify(model.NotificationEvent{
+							Type: model.NotificationEventType_EVENT_STAGE_SUCCEEDED,
+							Metadata: &model.NotificationEventStageSucceeded{
+								Deployment: s.deployment,
+								Stage:      &rbs,
+							},
+						})
+					case model.StageStatus_STAGE_FAILURE:
+						s.notifier.Notify(model.NotificationEvent{
+							Type: model.NotificationEventType_EVENT_STAGE_FAILED,
+							Metadata: &model.NotificationEventStageFailed{
+								Deployment: s.deployment,
+								Stage:      &rbs,
+							},
+						})
+					case model.StageStatus_STAGE_CANCELLED:
+						s.notifier.Notify(model.NotificationEvent{
+							Type: model.NotificationEventType_EVENT_STAGE_CANCELLED,
+							Metadata: &model.NotificationEventStageCancelled{
+								Deployment: s.deployment,
+								Stage:      &rbs,
+							},
+						})
+					case model.StageStatus_STAGE_SKIPPED:
+						s.notifier.Notify(model.NotificationEvent{
+							Type: model.NotificationEventType_EVENT_STAGE_SKIPPED,
+							Metadata: &model.NotificationEventStageSkipped{
+								Deployment: s.deployment,
+								Stage:      &rbs,
+							},
+						})
+					}
 
 					switch result {
 					case model.StageStatus_STAGE_SUCCESS:
