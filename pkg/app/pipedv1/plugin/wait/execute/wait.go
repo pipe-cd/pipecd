@@ -67,14 +67,10 @@ func (s *deploymentServiceServer) execute(ctx context.Context, in *deployment.Ex
 	}
 	defer s.saveStartTime(ctx, startTime, in.Stage.Id)
 
-	if err := s.wait(ctx, duration, totalDuration, startTime, slp); err != nil {
-		slp.Errorf("failed to wait: %v", err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-	return model.StageStatus_STAGE_SUCCESS
+	return s.wait(ctx, duration, totalDuration, startTime, slp)
 }
 
-func (s *deploymentServiceServer) wait(ctx context.Context, duration, totalDuration time.Duration, startTime time.Time, slp logpersister.StageLogPersister) error {
+func (s *deploymentServiceServer) wait(ctx context.Context, duration, totalDuration time.Duration, startTime time.Time, slp logpersister.StageLogPersister) model.StageStatus {
 	timer := time.NewTimer(duration)
 	defer timer.Stop()
 
@@ -84,31 +80,15 @@ func (s *deploymentServiceServer) wait(ctx context.Context, duration, totalDurat
 	slp.Infof("Waiting for %v...", duration)
 	for {
 		select {
-		case <-timer.C:
+		case <-timer.C: // on completed
 			slp.Infof("Waited for %v", totalDuration)
-			return nil
+			return model.StageStatus_STAGE_SUCCESS
 
-		case <-ticker.C:
+		case <-ticker.C: // on interval elapsed
 			slp.Infof("%v elapsed...", time.Since(startTime))
 
-			/** TODO: handle StopSignal
-			case s := <-sig.Ch():
-				switch s {
-				case executor.StopSignalCancel:
-					return &deployment.ExecuteStageResponse{
-						Status: model.StageStatus_STAGE_CANCELLED,
-					}, nil
-				case executor.StopSignalTerminate:
-					return &deployment.ExecuteStageResponse{
-						Status: originalStatus,
-					}, nil
-				default:
-					return &deployment.ExecuteStageResponse{
-						Status: model.StageStatus_STAGE_FAILURE,
-					}, nil // TODO: Return an error message like "received an unknown signal".
-				}
-			}
-			*/
+		case <-ctx.Done(): // on cancelled or terminated
+			return model.StageStatus_STAGE_CANCELLED // TODO: Is it correct when terminated?
 		}
 	}
 }
