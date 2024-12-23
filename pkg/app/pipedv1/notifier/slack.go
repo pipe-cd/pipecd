@@ -268,7 +268,6 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 			{"Triggered By", d.TriggeredBy(), true},
 			{"Mention To Users", accountsStr, true},
 			{"Mention To Groups", groupsStr, true},
-			{"Started At", makeSlackDate(d.CreatedAt), true},
 		}
 	}
 
