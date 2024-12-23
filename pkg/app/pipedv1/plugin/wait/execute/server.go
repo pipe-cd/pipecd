@@ -45,14 +45,16 @@ type logPersister interface {
 // NewDeploymentService creates a new planService.
 func NewDeploymentService(
 	config *config.PipedPlugin,
+	metadataStore metadatastore.MetadataStore,
 	logger *zap.Logger,
 	logPersister logPersister,
 ) *deploymentServiceServer {
 	return &deploymentServiceServer{
 		pluginConfig: config,
 		// TODO: Add metadataStore? or not?
-		logger:       logger.Named("planner"), // TODO: Is this 'planner'?
-		logPersister: logPersister,
+		metadataStore: metadataStore,
+		logger:        logger.Named("planner"), // TODO: Is this 'planner'?
+		logPersister:  logPersister,
 	}
 }
 

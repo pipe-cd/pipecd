@@ -125,6 +125,7 @@ func (s *plugin) run(ctx context.Context, input cli.Input) (runErr error) {
 		var (
 			service = execute.NewDeploymentService(
 				cfg,
+				nil, // TODO: Pass metadataStore
 				input.Logger,
 				persister,
 			)
