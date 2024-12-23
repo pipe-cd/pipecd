@@ -458,7 +458,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 	for branch, events := range branchHandledEvents {
 		_, err = retry.Do(ctx, func() (interface{}, error) {
 			if err := tmpRepo.Push(ctx, branch); err != nil {
-				w.logger.Error("failed to push commits", zap.Error(err))
+				w.logger.Error("failed to push commits", zap.String("repo-id", repoID), zap.String("branch", branch), zap.Error(err))
 				return nil, err
 			}
 			return nil, nil
@@ -603,7 +603,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 	retry := backoff.NewRetry(retryPushNum, backoff.NewConstant(retryPushInterval))
 	_, err = retry.Do(ctx, func() (interface{}, error) {
 		if err := tmpRepo.Push(ctx, tmpRepo.GetClonedBranch()); err != nil {
-			w.logger.Error("failed to push commits", zap.Error(err))
+			w.logger.Error("failed to push commits", zap.String("repo-id", repoID), zap.String("branch", tmpRepo.GetClonedBranch()), zap.Error(err))
 			return nil, err
 		}
 		return nil, nil
@@ -693,7 +693,11 @@ func (w *watcher) commitFiles(ctx context.Context, latestEvent *model.Event, eve
 	branch := makeBranchName(newBranch, eventName, repo.GetClonedBranch())
 	trailers := maps.Clone(latestEvent.Contexts)
 	if err := repo.CommitChanges(ctx, branch, commitMsg, newBranch, changes, trailers); err != nil {
-		w.logger.Error("failed to perform git commit", zap.Error(err))
+		w.logger.Error("failed to perform git commit",
+			zap.String("branch", branch),
+			zap.Bool("make-new-branch", newBranch),
+			zap.Int("changed-files", len(changes)),
+			zap.Error(err))
 		return "", err
 	}
 	w.logger.Info(fmt.Sprintf("event watcher will update values of Event %q", eventName))
