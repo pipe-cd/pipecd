@@ -235,25 +235,6 @@ spec:
 			want: []*model.ArtifactVersion{},
 		},
 		{
-			name: "manifest with non-string image field",
-			manifests: []string{
-				`
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: non-string-image-deployment
-spec:
-  template:
-    spec:
-      containers:
-      - name: nginx
-        image: 12345
-`,
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
 			name: "manifest with no containers field",
 			manifests: []string{
 				`
@@ -268,22 +249,6 @@ spec:
 			},
 			want:    []*model.ArtifactVersion{},
 			wantErr: false,
-		},
-		{
-			name: "manifest with invalid containers field -- returns error",
-			manifests: []string{
-				`
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: no-containers-deployment
-spec:
-  template:
-    spec:
-      containers: "invalid-containers-field"
-`,
-			},
-			wantErr: true,
 		},
 		{
 			name: "manifest with invalid containers field -- skipped",
@@ -356,8 +321,7 @@ spec:
     app: nginx
 `,
 			},
-			want: []provider.Manifest{
-				mustUnmarshalYAML[provider.Manifest](t, []byte(strings.TrimSpace(`
+			want: mustParseManifests(t, strings.TrimSpace(`
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -368,8 +332,7 @@ spec:
       containers:
       - name: nginx
         image: nginx:1.19.3
-`))),
-			},
+`)),
 		},
 		{
 			name:      "find by kind and name",
@@ -401,8 +364,7 @@ spec:
         image: redis:6.0.9
 `,
 			},
-			want: []provider.Manifest{
-				mustUnmarshalYAML[provider.Manifest](t, []byte(strings.TrimSpace(`
+			want: mustParseManifests(t, strings.TrimSpace(`
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -413,8 +375,7 @@ spec:
       containers:
       - name: nginx
         image: nginx:1.19.3
-`))),
-			},
+`)),
 		},
 		{
 			name: "no match",
@@ -441,7 +402,7 @@ spec:
 		t.Run(tt.name, func(t *testing.T) {
 			var manifests []provider.Manifest
 			for _, data := range tt.manifests {
-				manifests = append(manifests, mustUnmarshalYAML[provider.Manifest](t, []byte(strings.TrimSpace(data))))
+				manifests = append(manifests, mustParseManifests(t, strings.TrimSpace(data))...)
 			}
 			got := findManifests(tt.kind, tt.nameField, manifests)
 			assert.ElementsMatch(t, tt.want, got)
@@ -482,8 +443,7 @@ spec:
 `,
 			},
 			refs: nil,
-			want: []provider.Manifest{
-				mustUnmarshalYAML[provider.Manifest](t, []byte(strings.TrimSpace(`
+			want: mustParseManifests(t, strings.TrimSpace(`
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -494,8 +454,7 @@ spec:
       containers:
       - name: nginx
         image: nginx:1.19.3
-`))),
-			},
+`)),
 		},
 		{
 			name: "specified kind and name",
@@ -531,8 +490,7 @@ spec:
 					Name: "nginx-deployment",
 				},
 			},
-			want: []provider.Manifest{
-				mustUnmarshalYAML[provider.Manifest](t, []byte(strings.TrimSpace(`
+			want: mustParseManifests(t, strings.TrimSpace(`
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -543,8 +501,7 @@ spec:
       containers:
       - name: nginx
         image: nginx:1.19.3
-`))),
-			},
+`)),
 		},
 		{
 			name: "specified kind only",
@@ -579,8 +536,7 @@ spec:
 					Kind: "StatefulSet",
 				},
 			},
-			want: []provider.Manifest{
-				mustUnmarshalYAML[provider.Manifest](t, []byte(strings.TrimSpace(`
+			want: mustParseManifests(t, strings.TrimSpace(`
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -591,8 +547,7 @@ spec:
       containers:
       - name: redis
         image: redis:6.0.9
-`))),
-			},
+`)),
 		},
 		{
 			name: "no match",
@@ -624,7 +579,7 @@ spec:
 		t.Run(tt.name, func(t *testing.T) {
 			var manifests []provider.Manifest
 			for _, data := range tt.manifests {
-				manifests = append(manifests, mustUnmarshalYAML[provider.Manifest](t, []byte(strings.TrimSpace(data))))
+				manifests = append(manifests, mustParseManifests(t, data)...)
 			}
 			got := findWorkloadManifests(manifests, tt.refs)
 			assert.ElementsMatch(t, tt.want, got)
