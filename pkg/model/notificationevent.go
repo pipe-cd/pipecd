@@ -29,6 +29,8 @@ func (e NotificationEvent) Group() NotificationEventGroup {
 		return NotificationEventGroup_EVENT_APPLICATION_HEALTH
 	case e.Type < 400:
 		return NotificationEventGroup_EVENT_PIPED
+	case e.Type < 500:
+		return NotificationEventGroup_EVENT_STAGE
 	default:
 		return NotificationEventGroup_EVENT_NONE
 	}
