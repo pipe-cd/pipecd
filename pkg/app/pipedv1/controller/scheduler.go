@@ -363,6 +363,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 						Stage:      ps,
 					},
 				})
+			}
 
 			switch result {
 			case model.StageStatus_STAGE_SUCCESS:
@@ -469,7 +470,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 						Type: model.NotificationEventType_EVENT_STAGE_STARTED,
 						Metadata: &model.NotificationEventStageStarted{
 							Deployment: s.deployment,
-							Stage:      &rbs,
+							Stage:      rbs,
 						},
 					})
 
@@ -481,7 +482,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 							Type: model.NotificationEventType_EVENT_STAGE_SUCCEEDED,
 							Metadata: &model.NotificationEventStageSucceeded{
 								Deployment: s.deployment,
-								Stage:      &rbs,
+								Stage:      rbs,
 							},
 						})
 					case model.StageStatus_STAGE_FAILURE:
@@ -489,7 +490,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 							Type: model.NotificationEventType_EVENT_STAGE_FAILED,
 							Metadata: &model.NotificationEventStageFailed{
 								Deployment: s.deployment,
-								Stage:      &rbs,
+								Stage:      rbs,
 							},
 						})
 					case model.StageStatus_STAGE_CANCELLED:
@@ -497,7 +498,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 							Type: model.NotificationEventType_EVENT_STAGE_CANCELLED,
 							Metadata: &model.NotificationEventStageCancelled{
 								Deployment: s.deployment,
-								Stage:      &rbs,
+								Stage:      rbs,
 							},
 						})
 					case model.StageStatus_STAGE_SKIPPED:
@@ -505,7 +506,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 							Type: model.NotificationEventType_EVENT_STAGE_SKIPPED,
 							Metadata: &model.NotificationEventStageSkipped{
 								Deployment: s.deployment,
-								Stage:      &rbs,
+								Stage:      rbs,
 							},
 						})
 					}
