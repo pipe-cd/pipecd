@@ -140,6 +140,7 @@ type ContextInfo struct {
 	RepositoryURL       string            `json:"repositoryURL,omitempty"`
 	Summary             string            `json:"summary,omitempty"`
 	Labels              map[string]string `json:"labels,omitempty"`
+	IsRollback          bool              `json:"isRollback,omitempty"`
 }
 
 // NewContextInfo creates a new ContextInfo from the given deployment.
@@ -154,6 +155,7 @@ func NewContextInfo(d *model.Deployment) *ContextInfo {
 		RepositoryURL:       d.GitPath.Repo.Remote,
 		Summary:             d.Summary,
 		Labels:              d.Labels,
+		IsRollback:          d.Status == model.DeploymentStatus_DEPLOYMENT_ROLLING_BACK,
 	}
 }
 
@@ -173,6 +175,7 @@ func (src *ContextInfo) BuildEnv() (map[string]string, error) {
 		"SR_TRIGGERED_COMMANDER":   src.TriggeredCommander,
 		"SR_REPOSITORY_URL":        src.RepositoryURL,
 		"SR_SUMMARY":               src.Summary,
+		"SR_IS_ROLLBACK":           strconv.FormatBool(src.IsRollback),
 		"SR_CONTEXT_RAW":           string(b), // Add the raw json string as an environment variable.
 	}
 

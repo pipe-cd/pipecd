@@ -28,7 +28,8 @@ func Test_ContextInfo_BuildEnv(t *testing.T) {
 					"key1": "value1",
 					"key2": "value2",
 				},
-				Summary: "summary",
+				IsRollback: false,
+				Summary:    "summary",
 			},
 			want: map[string]string{
 				"SR_DEPLOYMENT_ID":         "deployment-id",
@@ -39,6 +40,7 @@ func Test_ContextInfo_BuildEnv(t *testing.T) {
 				"SR_TRIGGERED_COMMANDER":   "commander",
 				"SR_REPOSITORY_URL":        "repo-url",
 				"SR_SUMMARY":               "summary",
+				"SR_IS_ROLLBACK":           "false",
 				"SR_LABELS_KEY1":           "value1",
 				"SR_LABELS_KEY2":           "value2",
 			},
