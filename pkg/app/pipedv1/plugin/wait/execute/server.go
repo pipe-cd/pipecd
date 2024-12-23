@@ -16,6 +16,7 @@ package execute
 
 import (
 	"context"
+	"time"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -24,6 +25,7 @@ import (
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
+	"github.com/pipe-cd/pipecd/pkg/plugin/signalhandler"
 )
 
 type deploymentServiceServer struct {
@@ -60,9 +62,21 @@ func (a *deploymentServiceServer) Register(server *grpc.Server) {
 }
 
 // ExecuteStage implements deployment.ExecuteStage.
-func (s *deploymentServiceServer) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (*deployment.ExecuteStageResponse, error) {
+func (s *deploymentServiceServer) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (response *deployment.ExecuteStageResponse, err error) {
 	slp := s.logPersister.StageLogPersister(request.Input.GetDeployment().GetId(), request.Input.GetStage().GetId())
-	return s.execute(ctx, request.Input, slp)
+	defer func() {
+		// When termination signal received and the stage is not completed yet, we should not mark the log persister as completed.
+		// This can occur when the piped is shutting down while the stage is still running.
+		if !response.GetStatus().IsCompleted() && signalhandler.Terminated() {
+			return
+		}
+		slp.Complete(time.Minute)
+	}()
+
+	status := s.execute(ctx, request.Input, slp)
+	return &deployment.ExecuteStageResponse{
+		Status: status,
+	}, nil
 }
 
 // FetchDefinedStages implements deployment.FetchDefinedStages.

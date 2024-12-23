@@ -20,8 +20,6 @@ import (
 	"time"
 
 	"go.uber.org/zap"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/wait/config"
@@ -39,7 +37,7 @@ const (
 )
 
 // Execute starts waiting for the specified duration.
-func (s *deploymentServiceServer) execute(ctx context.Context, in *deployment.ExecutePluginInput, slp logpersister.StageLogPersister) (response *deployment.ExecuteStageResponse, err error) {
+func (s *deploymentServiceServer) execute(ctx context.Context, in *deployment.ExecutePluginInput, slp logpersister.StageLogPersister) model.StageStatus {
 	var (
 		// originalStatus = in.Stage.Status
 		duration = defaultDuration
@@ -47,7 +45,8 @@ func (s *deploymentServiceServer) execute(ctx context.Context, in *deployment.Ex
 
 	opts, err := config.DecodeStageOptionsYAML[waitStageOptions](in.StageConfig)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		slp.Errorf("failed to decode the stage configuration: %v", err)
+		return model.StageStatus_STAGE_FAILURE
 	}
 
 	// Apply the stage configurations.
@@ -81,9 +80,7 @@ func (s *deploymentServiceServer) execute(ctx context.Context, in *deployment.Ex
 		select {
 		case <-timer.C:
 			slp.Infof("Waited for %v", totalDuration)
-			return &deployment.ExecuteStageResponse{
-				Status: model.StageStatus_STAGE_SUCCESS,
-			}, nil
+			return model.StageStatus_STAGE_SUCCESS
 
 		case <-ticker.C:
 			slp.Infof("%v elapsed...", time.Since(startTime))
