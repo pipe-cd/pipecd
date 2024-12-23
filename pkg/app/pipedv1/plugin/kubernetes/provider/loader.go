@@ -95,8 +95,8 @@ func (l *Loader) LoadManifests(ctx context.Context, input LoaderInput) (manifest
 				LabelManagedBy:          ManagedByPiped,
 				LabelPiped:              input.PipedID,
 				LabelApplication:        input.AppID,
-				LabelOriginalAPIVersion: manifests[i].Key.APIVersion,
-				LabelResourceKey:        manifests[i].Key.String(),
+				LabelOriginalAPIVersion: manifests[i].Key().APIVersion(),
+				LabelResourceKey:        manifests[i].Key().String(),
 				LabelCommitHash:         input.CommitHash,
 			})
 		}
@@ -137,7 +137,8 @@ func setNamespace(manifests []Manifest, namespace string) {
 		return
 	}
 	for i := range manifests {
-		manifests[i].Key.Namespace = namespace
+		// TODO: consider way to not modify the original object.
+		manifests[i].key.namespace = namespace
 	}
 }
 
@@ -147,11 +148,11 @@ func sortManifests(manifests []Manifest) {
 	}
 
 	slices.SortFunc(manifests, func(a, b Manifest) int {
-		iAns := a.Body.GetAnnotations()
+		iAns := a.body.GetAnnotations()
 		// Ignore the converting error since it is not so much important.
 		iIndex, _ := strconv.Atoi(iAns[AnnotationOrder])
 
-		jAns := b.Body.GetAnnotations()
+		jAns := b.body.GetAnnotations()
 		// Ignore the converting error since it is not so much important.
 		jIndex, _ := strconv.Atoi(jAns[AnnotationOrder])
 
@@ -257,8 +258,8 @@ func ParseManifests(data string) ([]Manifest, error) {
 			continue
 		}
 		manifests = append(manifests, Manifest{
-			Key:  MakeResourceKey(&obj),
-			Body: &obj,
+			key:  MakeResourceKey(&obj),
+			body: &obj,
 		})
 	}
 	return manifests, nil

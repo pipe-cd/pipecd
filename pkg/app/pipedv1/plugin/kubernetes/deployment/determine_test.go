@@ -235,25 +235,6 @@ spec:
 			want: []*model.ArtifactVersion{},
 		},
 		{
-			name: "manifest with non-string image field",
-			manifests: []string{
-				`
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: non-string-image-deployment
-spec:
-  template:
-    spec:
-      containers:
-      - name: nginx
-        image: 12345
-`,
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
 			name: "manifest with no containers field",
 			manifests: []string{
 				`
@@ -268,22 +249,6 @@ spec:
 			},
 			want:    []*model.ArtifactVersion{},
 			wantErr: false,
-		},
-		{
-			name: "manifest with invalid containers field -- returns error",
-			manifests: []string{
-				`
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: no-containers-deployment
-spec:
-  template:
-    spec:
-      containers: "invalid-containers-field"
-`,
-			},
-			wantErr: true,
 		},
 		{
 			name: "manifest with invalid containers field -- skipped",
@@ -356,8 +321,7 @@ spec:
     app: nginx
 `,
 			},
-			want: []provider.Manifest{
-				mustUnmarshalYAML[provider.Manifest](t, []byte(strings.TrimSpace(`
+			want: mustParseManifests(t, strings.TrimSpace(`
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -368,8 +332,7 @@ spec:
       containers:
       - name: nginx
         image: nginx:1.19.3
-`))),
-			},
+`)),
 		},
 		{
 			name:      "find by kind and name",
@@ -401,8 +364,7 @@ spec:
         image: redis:6.0.9
 `,
 			},
-			want: []provider.Manifest{
-				mustUnmarshalYAML[provider.Manifest](t, []byte(strings.TrimSpace(`
+			want: mustParseManifests(t, strings.TrimSpace(`
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -413,8 +375,7 @@ spec:
       containers:
       - name: nginx
         image: nginx:1.19.3
-`))),
-			},
+`)),
 		},
 		{
 			name: "no match",
@@ -441,7 +402,7 @@ spec:
 		t.Run(tt.name, func(t *testing.T) {
 			var manifests []provider.Manifest
 			for _, data := range tt.manifests {
-				manifests = append(manifests, mustUnmarshalYAML[provider.Manifest](t, []byte(strings.TrimSpace(data))))
+				manifests = append(manifests, mustParseManifests(t, strings.TrimSpace(data))...)
 			}
 			got := findManifests(tt.kind, tt.nameField, manifests)
 			assert.ElementsMatch(t, tt.want, got)
@@ -482,8 +443,7 @@ spec:
 `,
 			},
 			refs: nil,
-			want: []provider.Manifest{
-				mustUnmarshalYAML[provider.Manifest](t, []byte(strings.TrimSpace(`
+			want: mustParseManifests(t, strings.TrimSpace(`
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -494,8 +454,7 @@ spec:
       containers:
       - name: nginx
         image: nginx:1.19.3
-`))),
-			},
+`)),
 		},
 		{
 			name: "specified kind and name",
@@ -531,8 +490,7 @@ spec:
 					Name: "nginx-deployment",
 				},
 			},
-			want: []provider.Manifest{
-				mustUnmarshalYAML[provider.Manifest](t, []byte(strings.TrimSpace(`
+			want: mustParseManifests(t, strings.TrimSpace(`
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -543,8 +501,7 @@ spec:
       containers:
       - name: nginx
         image: nginx:1.19.3
-`))),
-			},
+`)),
 		},
 		{
 			name: "specified kind only",
@@ -579,8 +536,7 @@ spec:
 					Kind: "StatefulSet",
 				},
 			},
-			want: []provider.Manifest{
-				mustUnmarshalYAML[provider.Manifest](t, []byte(strings.TrimSpace(`
+			want: mustParseManifests(t, strings.TrimSpace(`
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -591,8 +547,7 @@ spec:
       containers:
       - name: redis
         image: redis:6.0.9
-`))),
-			},
+`)),
 		},
 		{
 			name: "no match",
@@ -624,444 +579,10 @@ spec:
 		t.Run(tt.name, func(t *testing.T) {
 			var manifests []provider.Manifest
 			for _, data := range tt.manifests {
-				manifests = append(manifests, mustUnmarshalYAML[provider.Manifest](t, []byte(strings.TrimSpace(data))))
+				manifests = append(manifests, mustParseManifests(t, data)...)
 			}
 			got := findWorkloadManifests(manifests, tt.refs)
 			assert.ElementsMatch(t, tt.want, got)
-		})
-	}
-}
-
-func TestFindUpdatedWorkloads(t *testing.T) {
-	tests := []struct {
-		name string
-		olds []string
-		news []string
-		want []workloadPair
-	}{
-		{
-			name: "single updated workload",
-			olds: []string{
-				`
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nginx-deployment
-spec:
-  template:
-    spec:
-      containers:
-      - name: nginx
-        image: nginx:1.19.3
-`,
-			},
-			news: []string{
-				`
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nginx-deployment
-spec:
-  template:
-    spec:
-      containers:
-      - name: nginx
-        image: nginx:1.19.4
-`,
-			},
-			want: []workloadPair{
-				{
-					old: mustParseManifests(t, `
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nginx-deployment
-spec:
-  template:
-    spec:
-      containers:
-      - name: nginx
-        image: nginx:1.19.3
-`)[0],
-					new: mustParseManifests(t, `
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nginx-deployment
-spec:
-  template:
-    spec:
-      containers:
-      - name: nginx
-        image: nginx:1.19.4
-`)[0],
-				},
-			},
-		},
-		{
-			name: "multiple updated workloads",
-			olds: []string{
-				`
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nginx-deployment
-spec:
-  template:
-    spec:
-      containers:
-      - name: nginx
-        image: nginx:1.19.3
-`,
-				`
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: redis-deployment
-spec:
-  template:
-    spec:
-      containers:
-      - name: redis
-        image: redis:6.0.9
-`,
-			},
-			news: []string{
-				`
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nginx-deployment
-spec:
-  template:
-    spec:
-      containers:
-      - name: nginx
-        image: nginx:1.19.4
-`,
-				`
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: redis-deployment
-spec:
-  template:
-    spec:
-      containers:
-      - name: redis
-        image: redis:6.0.10
-`,
-			},
-			want: []workloadPair{
-				{
-					old: mustParseManifests(t, `
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nginx-deployment
-spec:
-  template:
-    spec:
-      containers:
-      - name: nginx
-        image: nginx:1.19.3
-`)[0],
-					new: mustParseManifests(t, `
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nginx-deployment
-spec:
-  template:
-    spec:
-      containers:
-      - name: nginx
-        image: nginx:1.19.4
-`)[0],
-				},
-				{
-					old: mustParseManifests(t, `
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: redis-deployment
-spec:
-  template:
-    spec:
-      containers:
-      - name: redis
-        image: redis:6.0.9
-`)[0],
-					new: mustParseManifests(t, `
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: redis-deployment
-spec:
-  template:
-    spec:
-      containers:
-      - name: redis
-        image: redis:6.0.10
-`)[0],
-				},
-			},
-		},
-		{
-			name: "no updated workloads",
-			olds: []string{
-				`
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nginx-deployment
-spec:
-  template:
-    spec:
-      containers:
-      - name: nginx
-        image: nginx:1.19.3
-`,
-			},
-			news: []string{
-				`
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: redis-deployment
-spec:
-  template:
-    spec:
-      containers:
-      - name: redis
-        image: redis:7.0.0
-`,
-			},
-			want: []workloadPair{},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			oldManifests := mustParseManifests(t, strings.Join(tt.olds, "\n---\n"))
-			newManifests := mustParseManifests(t, strings.Join(tt.news, "\n---\n"))
-			got := findUpdatedWorkloads(oldManifests, newManifests)
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-func TestFindConfigs(t *testing.T) {
-	tests := []struct {
-		name      string
-		manifests []string
-		want      map[provider.ResourceKey]provider.Manifest
-	}{
-		{
-			name: "find ConfigMap and Secret",
-			manifests: []string{
-				`
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: my-config
-  namespace: default
-data:
-  key: value
-`,
-				`
-apiVersion: v1
-kind: Secret
-metadata:
-  name: my-secret
-  namespace: default
-data:
-  key: dmFsdWU=
-`,
-				`
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nginx-deployment
-spec:
-  template:
-  spec:
-    containers:
-    - name: nginx
-    image: nginx:1.19.3
-`,
-			},
-			want: map[provider.ResourceKey]provider.Manifest{
-				{
-					APIVersion: "v1",
-					Kind:       "ConfigMap",
-					Name:       "my-config",
-					Namespace:  "default",
-				}: mustParseManifests(t, `
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: my-config
-  namespace: default
-data:
-  key: value
-`)[0],
-				{
-					APIVersion: "v1",
-					Kind:       "Secret",
-					Name:       "my-secret",
-					Namespace:  "default",
-				}: mustParseManifests(t, `
-apiVersion: v1
-kind: Secret
-metadata:
-  name: my-secret
-  namespace: default
-data:
-  key: dmFsdWU=
-`)[0],
-			},
-		},
-		{
-			name: "no ConfigMap or Secret",
-			manifests: []string{
-				`
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nginx-deployment
-spec:
-  template:
-  spec:
-    containers:
-    - name: nginx
-    image: nginx:1.19.3
-`,
-			},
-			want: map[provider.ResourceKey]provider.Manifest{},
-		},
-		{
-			name: "only ConfigMap",
-			manifests: []string{
-				`
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: my-config
-  namespace: default
-data:
-  key: value
-`,
-			},
-			want: map[provider.ResourceKey]provider.Manifest{
-				{
-					APIVersion: "v1",
-					Kind:       "ConfigMap",
-					Name:       "my-config",
-					Namespace:  "default",
-				}: mustParseManifests(t, `
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: my-config
-  namespace: default
-data:
-  key: value
-`)[0],
-			},
-		},
-		{
-			name: "only Secret",
-			manifests: []string{
-				`
-apiVersion: v1
-kind: Secret
-metadata:
-  name: my-secret
-  namespace: default
-data:
-  key: dmFsdWU=
-`,
-			},
-			want: map[provider.ResourceKey]provider.Manifest{
-				{
-					APIVersion: "v1",
-					Kind:       "Secret",
-					Name:       "my-secret",
-					Namespace:  "default",
-				}: mustParseManifests(t, `
-apiVersion: v1
-kind: Secret
-metadata:
-  name: my-secret
-  namespace: default
-data:
-  key: dmFsdWU=
-`)[0],
-			},
-		},
-		{
-			name: "non-default namespace",
-			manifests: []string{
-				`
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: my-config
-  namespace: custom-namespace
-data:
-  key: value
-`,
-				`
-apiVersion: v1
-kind: Secret
-metadata:
-  name: my-secret
-  namespace: custom-namespace
-data:
-  key: dmFsdWU=
-`,
-			},
-			want: map[provider.ResourceKey]provider.Manifest{
-				{
-					APIVersion: "v1",
-					Kind:       "ConfigMap",
-					Name:       "my-config",
-					Namespace:  "custom-namespace",
-				}: mustParseManifests(t, `
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: my-config
-  namespace: custom-namespace
-data:
-  key: value
-`)[0],
-				{
-					APIVersion: "v1",
-					Kind:       "Secret",
-					Name:       "my-secret",
-					Namespace:  "custom-namespace",
-				}: mustParseManifests(t, `
-apiVersion: v1
-kind: Secret
-metadata:
-  name: my-secret
-  namespace: custom-namespace
-data:
-  key: dmFsdWU=
-`)[0],
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			var manifests []provider.Manifest
-			for _, data := range tt.manifests {
-				manifests = append(manifests, mustParseManifests(t, data)...)
-			}
-			got := findConfigsAndSecrets(manifests)
-			assert.Equal(t, tt.want, got)
 		})
 	}
 }

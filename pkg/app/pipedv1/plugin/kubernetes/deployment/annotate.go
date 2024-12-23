@@ -31,12 +31,12 @@ func annotateConfigHash(manifests []provider.Manifest) error {
 	configMaps := make(map[string]provider.Manifest)
 	secrets := make(map[string]provider.Manifest)
 	for _, m := range manifests {
-		if m.Key.IsConfigMap() {
-			configMaps[m.Key.Name] = m
+		if m.Key().IsConfigMap() {
+			configMaps[m.Key().Name()] = m
 			continue
 		}
-		if m.Key.IsSecret() {
-			secrets[m.Key.Name] = m
+		if m.Key().IsSecret() {
+			secrets[m.Key().Name()] = m
 		}
 	}
 
@@ -47,7 +47,7 @@ func annotateConfigHash(manifests []provider.Manifest) error {
 	}
 
 	for _, m := range manifests {
-		if m.Key.IsDeployment() {
+		if m.Key().IsDeployment() {
 			if err := annotateConfigHashToWorkload(m, configMaps, secrets); err != nil {
 				return err
 			}
@@ -60,8 +60,8 @@ func annotateConfigHash(manifests []provider.Manifest) error {
 }
 
 func annotateConfigHashToWorkload(m provider.Manifest, managedConfigMaps, managedSecrets map[string]provider.Manifest) error {
-	configMaps := provider.FindReferencingConfigMaps(m.Body)
-	secrets := provider.FindReferencingSecrets(m.Body)
+	configMaps := provider.FindReferencingConfigMaps(m)
+	secrets := provider.FindReferencingSecrets(m)
 
 	// The deployment is not referencing any config resources.
 	if len(configMaps)+len(secrets) == 0 {

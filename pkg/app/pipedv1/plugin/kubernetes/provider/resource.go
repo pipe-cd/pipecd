@@ -66,55 +66,71 @@ const (
 )
 
 type ResourceKey struct {
-	APIVersion string
-	Kind       string
-	Namespace  string
-	Name       string
+	apiVersion string
+	kind       string
+	namespace  string
+	name       string
+}
+
+func (k ResourceKey) APIVersion() string {
+	return k.apiVersion
+}
+
+func (k ResourceKey) Kind() string {
+	return k.kind
+}
+
+func (k ResourceKey) Namespace() string {
+	return k.namespace
+}
+
+func (k ResourceKey) Name() string {
+	return k.name
 }
 
 func (k ResourceKey) String() string {
-	return fmt.Sprintf("%s:%s:%s:%s", k.APIVersion, k.Kind, k.Namespace, k.Name)
+	return fmt.Sprintf("%s:%s:%s:%s", k.apiVersion, k.kind, k.namespace, k.name)
 }
 
 func (k ResourceKey) ReadableString() string {
-	return fmt.Sprintf("name=%q, kind=%q, namespace=%q, apiVersion=%q", k.Name, k.Kind, k.Namespace, k.APIVersion)
+	return fmt.Sprintf("name=%q, kind=%q, namespace=%q, apiVersion=%q", k.name, k.kind, k.namespace, k.apiVersion)
 }
 
 func MakeResourceKey(obj *unstructured.Unstructured) ResourceKey {
 	k := ResourceKey{
-		APIVersion: obj.GetAPIVersion(),
-		Kind:       obj.GetKind(),
-		Namespace:  obj.GetNamespace(),
-		Name:       obj.GetName(),
+		apiVersion: obj.GetAPIVersion(),
+		kind:       obj.GetKind(),
+		namespace:  obj.GetNamespace(),
+		name:       obj.GetName(),
 	}
 	return k
 }
 
 func (k ResourceKey) IsDeployment() bool {
-	if k.Kind != KindDeployment {
+	if k.kind != KindDeployment {
 		return false
 	}
-	if !IsKubernetesBuiltInResource(k.APIVersion) {
+	if !IsKubernetesBuiltInResource(k.apiVersion) {
 		return false
 	}
 	return true
 }
 
 func (k ResourceKey) IsConfigMap() bool {
-	if k.Kind != KindConfigMap {
+	if k.kind != KindConfigMap {
 		return false
 	}
-	if !IsKubernetesBuiltInResource(k.APIVersion) {
+	if !IsKubernetesBuiltInResource(k.apiVersion) {
 		return false
 	}
 	return true
 }
 
 func (k ResourceKey) IsSecret() bool {
-	if k.Kind != KindSecret {
+	if k.kind != KindSecret {
 		return false
 	}
-	if !IsKubernetesBuiltInResource(k.APIVersion) {
+	if !IsKubernetesBuiltInResource(k.apiVersion) {
 		return false
 	}
 	return true

@@ -15,9 +15,11 @@
 package provider
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
@@ -95,7 +97,7 @@ func TestManifest_AddStringMapValues(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			manifest := Manifest{
-				Body: &unstructured.Unstructured{
+				body: &unstructured.Unstructured{
 					Object: tt.initial,
 				},
 			}
@@ -104,9 +106,444 @@ func TestManifest_AddStringMapValues(t *testing.T) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 
-			if diff := cmp.Diff(tt.expected, manifest.Body.Object); diff != "" {
+			if diff := cmp.Diff(tt.expected, manifest.body.Object); diff != "" {
 				t.Errorf("unexpected result (-want +got):\n%s", diff)
 			}
+		})
+	}
+}
+
+func TestFindConfigsAndSecrets(t *testing.T) {
+	tests := []struct {
+		name      string
+		manifests []string
+		want      map[ResourceKey]Manifest
+	}{
+		{
+			name: "find ConfigMap and Secret",
+			manifests: []string{
+				`
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+  namespace: default
+data:
+  key: value
+`,
+				`
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+  namespace: default
+data:
+  key: dmFsdWU=
+`,
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+  spec:
+    containers:
+    - name: nginx
+    image: nginx:1.19.3
+`,
+			},
+			want: map[ResourceKey]Manifest{
+				{
+					apiVersion: "v1",
+					kind:       "ConfigMap",
+					name:       "my-config",
+					namespace:  "default",
+				}: mustParseManifests(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+  namespace: default
+data:
+  key: value
+`)[0],
+				{
+					apiVersion: "v1",
+					kind:       "Secret",
+					name:       "my-secret",
+					namespace:  "default",
+				}: mustParseManifests(t, `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+  namespace: default
+data:
+  key: dmFsdWU=
+`)[0],
+			},
+		},
+		{
+			name: "no ConfigMap or Secret",
+			manifests: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+  spec:
+    containers:
+    - name: nginx
+    image: nginx:1.19.3
+`,
+			},
+			want: map[ResourceKey]Manifest{},
+		},
+		{
+			name: "only ConfigMap",
+			manifests: []string{
+				`
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+  namespace: default
+data:
+  key: value
+`,
+			},
+			want: map[ResourceKey]Manifest{
+				{
+					apiVersion: "v1",
+					kind:       "ConfigMap",
+					name:       "my-config",
+					namespace:  "default",
+				}: mustParseManifests(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+  namespace: default
+data:
+  key: value
+`)[0],
+			},
+		},
+		{
+			name: "only Secret",
+			manifests: []string{
+				`
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+  namespace: default
+data:
+  key: dmFsdWU=
+`,
+			},
+			want: map[ResourceKey]Manifest{
+				{
+					apiVersion: "v1",
+					kind:       "Secret",
+					name:       "my-secret",
+					namespace:  "default",
+				}: mustParseManifests(t, `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+  namespace: default
+data:
+  key: dmFsdWU=
+`)[0],
+			},
+		},
+		{
+			name: "non-default namespace",
+			manifests: []string{
+				`
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+  namespace: custom-namespace
+data:
+  key: value
+`,
+				`
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+  namespace: custom-namespace
+data:
+  key: dmFsdWU=
+`,
+			},
+			want: map[ResourceKey]Manifest{
+				{
+					apiVersion: "v1",
+					kind:       "ConfigMap",
+					name:       "my-config",
+					namespace:  "custom-namespace",
+				}: mustParseManifests(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+  namespace: custom-namespace
+data:
+  key: value
+`)[0],
+				{
+					apiVersion: "v1",
+					kind:       "Secret",
+					name:       "my-secret",
+					namespace:  "custom-namespace",
+				}: mustParseManifests(t, `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+  namespace: custom-namespace
+data:
+  key: dmFsdWU=
+`)[0],
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var manifests []Manifest
+			for _, data := range tt.manifests {
+				manifests = append(manifests, mustParseManifests(t, data)...)
+			}
+			got := FindConfigsAndSecrets(manifests)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestFindSameManifests(t *testing.T) {
+	tests := []struct {
+		name string
+		olds []string
+		news []string
+		want []WorkloadPair
+	}{
+		{
+			name: "single updated workload",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.4
+`,
+			},
+			want: []WorkloadPair{
+				{
+					Old: mustParseManifests(t, `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`)[0],
+					New: mustParseManifests(t, `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.4
+`)[0],
+				},
+			},
+		},
+		{
+			name: "multiple updated workloads",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis
+        image: redis:6.0.9
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.4
+`,
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis
+        image: redis:6.0.10
+`,
+			},
+			want: []WorkloadPair{
+				{
+					Old: mustParseManifests(t, `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`)[0],
+					New: mustParseManifests(t, `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.4
+`)[0],
+				},
+				{
+					Old: mustParseManifests(t, `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis
+        image: redis:6.0.9
+`)[0],
+					New: mustParseManifests(t, `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis
+        image: redis:6.0.10
+`)[0],
+				},
+			},
+		},
+		{
+			name: "no updated workloads",
+			olds: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			},
+			news: []string{
+				`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis
+        image: redis:7.0.0
+`,
+			},
+			want: []WorkloadPair{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			oldManifests := mustParseManifests(t, strings.Join(tt.olds, "\n---\n"))
+			newManifests := mustParseManifests(t, strings.Join(tt.news, "\n---\n"))
+			got := FindSameManifests(oldManifests, newManifests)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

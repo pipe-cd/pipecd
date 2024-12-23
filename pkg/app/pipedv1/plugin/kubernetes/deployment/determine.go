@@ -20,7 +20,6 @@ import (
 	"strings"
 
 	"go.uber.org/zap"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
@@ -51,32 +50,8 @@ func parseContainerImage(image string) (img containerImage) {
 func determineVersions(manifests []provider.Manifest) ([]*model.ArtifactVersion, error) {
 	imageMap := map[string]struct{}{}
 	for _, m := range manifests {
-		// TODO: we should consider other fields like spec.jobTempate.spec.template.spec.containers because CronJob uses this format.
-		containers, ok, err := unstructured.NestedSlice(m.Body.Object, "spec", "template", "spec", "containers")
-		if err != nil {
-			// if the containers field is not an array, it will return an error.
-			// we define this as error because the 'containers' is plural form, so it should be an array.
-			return nil, err
-		}
-		if !ok {
-			continue
-		}
-		// Remove duplicate images on multiple manifests.
-		for _, c := range containers {
-			m, ok := c.(map[string]interface{})
-			if !ok {
-				// TODO: Add logging.
-				continue
-			}
-			img, ok := m["image"]
-			if !ok {
-				continue
-			}
-			imgStr, ok := img.(string)
-			if !ok {
-				return nil, fmt.Errorf("invalid image format: %T(%v)", img, img)
-			}
-			imageMap[imgStr] = struct{}{}
+		for _, c := range provider.FindContainerImages(m) {
+			imageMap[c] = struct{}{}
 		}
 	}
 
@@ -98,10 +73,10 @@ func determineVersions(manifests []provider.Manifest) ([]*model.ArtifactVersion,
 func findManifests(kind, name string, manifests []provider.Manifest) []provider.Manifest {
 	out := make([]provider.Manifest, 0, len(manifests))
 	for _, m := range manifests {
-		if m.Body.GetKind() != kind {
+		if m.Key().Kind() != kind {
 			continue
 		}
-		if name != "" && m.Body.GetName() != name {
+		if name != "" && m.Key().Name() != name {
 			continue
 		}
 		out = append(out, m)
@@ -131,47 +106,6 @@ func findWorkloadManifests(manifests []provider.Manifest, refs []config.K8sResou
 type workloadPair struct {
 	old provider.Manifest
 	new provider.Manifest
-}
-
-func findUpdatedWorkloads(olds, news []provider.Manifest) []workloadPair {
-	pairs := make([]workloadPair, 0)
-	oldMap := make(map[provider.ResourceKey]provider.Manifest, len(olds))
-	nomalizeKey := func(k provider.ResourceKey) provider.ResourceKey {
-		// Ignoring APIVersion because user can upgrade to the new APIVersion for the same workload.
-		k.APIVersion = ""
-		if k.Namespace == provider.DefaultNamespace {
-			k.Namespace = ""
-		}
-		return k
-	}
-	for _, m := range olds {
-		key := nomalizeKey(m.Key)
-		oldMap[key] = m
-	}
-	for _, n := range news {
-		key := nomalizeKey(n.Key)
-		if o, ok := oldMap[key]; ok {
-			pairs = append(pairs, workloadPair{
-				old: o,
-				new: n,
-			})
-		}
-	}
-	return pairs
-}
-
-// findConfigsAndSecrets returns the manifests that are ConfigMap or Secret.
-func findConfigsAndSecrets(manifests []provider.Manifest) map[provider.ResourceKey]provider.Manifest {
-	configs := make(map[provider.ResourceKey]provider.Manifest)
-	for _, m := range manifests {
-		if m.Key.IsConfigMap() {
-			configs[m.Key] = m
-		}
-		if m.Key.IsSecret() {
-			configs[m.Key] = m
-		}
-	}
-	return configs
 }
 
 func checkImageChange(ns diff.Nodes) (string, bool) {
@@ -234,32 +168,32 @@ func determineStrategy(olds, news []provider.Manifest, workloadRefs []config.K8s
 		return model.SyncStrategy_QUICK_SYNC, "Quick sync by applying all manifests because it was unable to find workloads in the new manifests"
 	}
 
-	workloads := findUpdatedWorkloads(oldWorkloads, newWorkloads)
+	workloads := provider.FindSameManifests(oldWorkloads, newWorkloads)
 	diffs := make(map[provider.ResourceKey]diff.Nodes, len(workloads))
 
 	for _, w := range workloads {
 		// If the workload's pod template was touched
 		// do progressive deployment with the specified pipeline.
-		diffResult, err := provider.Diff(w.old, w.new, logger)
+		diffResult, err := provider.Diff(w.Old, w.New, logger)
 		if err != nil {
 			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively due to an error while calculating the diff (%v)", err)
 		}
 		diffNodes := diffResult.Nodes()
-		diffs[w.new.Key] = diffNodes
+		diffs[w.New.Key()] = diffNodes
 
 		templateDiffs := diffNodes.FindByPrefix("spec.template")
 		if len(templateDiffs) > 0 {
 			if msg, changed := checkImageChange(templateDiffs); changed {
 				return model.SyncStrategy_PIPELINE, msg
 			}
-			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because pod template of workload %s was changed", w.new.Key.Name)
+			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because pod template of workload %s was changed", w.New.Key().Name())
 		}
 	}
 
 	// If the config/secret was touched, we also need to do progressive
 	// deployment to check run with the new config/secret content.
-	oldConfigs := findConfigsAndSecrets(olds)
-	newConfigs := findConfigsAndSecrets(news)
+	oldConfigs := provider.FindConfigsAndSecrets(olds)
+	newConfigs := provider.FindConfigsAndSecrets(news)
 	if len(oldConfigs) > len(newConfigs) {
 		return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because %d configmap/secret deleted", len(oldConfigs)-len(newConfigs))
 	}
@@ -269,14 +203,14 @@ func determineStrategy(olds, news []provider.Manifest, workloadRefs []config.K8s
 	for k, oc := range oldConfigs {
 		nc, ok := newConfigs[k]
 		if !ok {
-			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because %s %s was deleted", oc.Key.Kind, oc.Key.Name)
+			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because %s %s was deleted", oc.Key().Kind(), oc.Key().Name())
 		}
 		result, err := provider.Diff(oc, nc, logger)
 		if err != nil {
 			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively due to an error while calculating the diff (%v)", err)
 		}
 		if result.HasDiff() {
-			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because %s %s was updated", oc.Key.Kind, oc.Key.Name)
+			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because %s %s was updated", oc.Key().Kind(), oc.Key().Name())
 		}
 	}
 
@@ -284,7 +218,7 @@ func determineStrategy(olds, news []provider.Manifest, workloadRefs []config.K8s
 	scales := make([]string, 0, len(diffs))
 	for k, d := range diffs {
 		if before, after, changed := checkReplicasChange(d); changed {
-			scales = append(scales, fmt.Sprintf("%s/%s from %s to %s", k.Kind, k.Name, before, after))
+			scales = append(scales, fmt.Sprintf("%s/%s from %s to %s", k.Kind(), k.Name(), before, after))
 		}
 
 	}

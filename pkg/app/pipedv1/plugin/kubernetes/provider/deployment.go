@@ -16,9 +16,24 @@ package provider
 
 import (
 	"slices"
-
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
+
+// FindContainerImages finds all container images that are referenced by the given manifest.
+//
+// It looks for container images in the following fields:
+// - spec.template.spec.containers.image
+//
+// TODO: we should consider other fields like spec.template.spec.initContainers.image, spec.jobTempate.spec.template.spec.containers.image
+func FindContainerImages(m Manifest) []string {
+	var images []string
+
+	if n := nestedStringSlice(m.body.Object, "spec", "template", "spec", "containers", "image"); len(n) > 0 {
+		images = append(images, n...)
+	}
+
+	slices.Sort(images)
+	return slices.Compact(images)
+}
 
 // FindReferencingConfigMaps finds all configmaps that are referenced by the given manifest.
 //
@@ -28,26 +43,26 @@ import (
 // - spec.template.spec.initContainers.envFrom.configMapRef.name
 // - spec.template.spec.containers.env.valueFrom.configMapKeyRef.name
 // - spec.template.spec.containers.envFrom.configMapRef.name
-func FindReferencingConfigMaps(m *unstructured.Unstructured) []string {
+func FindReferencingConfigMaps(m Manifest) []string {
 	var configMaps []string
 
-	if n := nestedStringSlice(m.Object, "spec", "template", "spec", "volumes", "configMap", "name"); len(n) > 0 {
+	if n := nestedStringSlice(m.body.Object, "spec", "template", "spec", "volumes", "configMap", "name"); len(n) > 0 {
 		configMaps = append(configMaps, n...)
 	}
 
-	if n := nestedStringSlice(m.Object, "spec", "template", "spec", "initContainers", "env", "valueFrom", "configMapKeyRef", "name"); len(n) > 0 {
+	if n := nestedStringSlice(m.body.Object, "spec", "template", "spec", "initContainers", "env", "valueFrom", "configMapKeyRef", "name"); len(n) > 0 {
 		configMaps = append(configMaps, n...)
 	}
 
-	if n := nestedStringSlice(m.Object, "spec", "template", "spec", "initContainers", "envFrom", "configMapRef", "name"); len(n) > 0 {
+	if n := nestedStringSlice(m.body.Object, "spec", "template", "spec", "initContainers", "envFrom", "configMapRef", "name"); len(n) > 0 {
 		configMaps = append(configMaps, n...)
 	}
 
-	if n := nestedStringSlice(m.Object, "spec", "template", "spec", "containers", "env", "valueFrom", "configMapKeyRef", "name"); len(n) > 0 {
+	if n := nestedStringSlice(m.body.Object, "spec", "template", "spec", "containers", "env", "valueFrom", "configMapKeyRef", "name"); len(n) > 0 {
 		configMaps = append(configMaps, n...)
 	}
 
-	if n := nestedStringSlice(m.Object, "spec", "template", "spec", "containers", "envFrom", "configMapRef", "name"); len(n) > 0 {
+	if n := nestedStringSlice(m.body.Object, "spec", "template", "spec", "containers", "envFrom", "configMapRef", "name"); len(n) > 0 {
 		configMaps = append(configMaps, n...)
 	}
 
@@ -63,26 +78,26 @@ func FindReferencingConfigMaps(m *unstructured.Unstructured) []string {
 // - spec.template.spec.initContainers.envFrom.secretRef.name
 // - spec.template.spec.containers.env.valueFrom.secretKeyRef.name
 // - spec.template.spec.containers.envFrom.secretRef.name
-func FindReferencingSecrets(m *unstructured.Unstructured) []string {
+func FindReferencingSecrets(m Manifest) []string {
 	var secrets []string
 
-	if n := nestedStringSlice(m.Object, "spec", "template", "spec", "volumes", "secret", "secretName"); len(n) > 0 {
+	if n := nestedStringSlice(m.body.Object, "spec", "template", "spec", "volumes", "secret", "secretName"); len(n) > 0 {
 		secrets = append(secrets, n...)
 	}
 
-	if n := nestedStringSlice(m.Object, "spec", "template", "spec", "initContainers", "env", "valueFrom", "secretKeyRef", "name"); len(n) > 0 {
+	if n := nestedStringSlice(m.body.Object, "spec", "template", "spec", "initContainers", "env", "valueFrom", "secretKeyRef", "name"); len(n) > 0 {
 		secrets = append(secrets, n...)
 	}
 
-	if n := nestedStringSlice(m.Object, "spec", "template", "spec", "initContainers", "envFrom", "secretRef", "name"); len(n) > 0 {
+	if n := nestedStringSlice(m.body.Object, "spec", "template", "spec", "initContainers", "envFrom", "secretRef", "name"); len(n) > 0 {
 		secrets = append(secrets, n...)
 	}
 
-	if n := nestedStringSlice(m.Object, "spec", "template", "spec", "containers", "env", "valueFrom", "secretKeyRef", "name"); len(n) > 0 {
+	if n := nestedStringSlice(m.body.Object, "spec", "template", "spec", "containers", "env", "valueFrom", "secretKeyRef", "name"); len(n) > 0 {
 		secrets = append(secrets, n...)
 	}
 
-	if n := nestedStringSlice(m.Object, "spec", "template", "spec", "containers", "envFrom", "secretRef", "name"); len(n) > 0 {
+	if n := nestedStringSlice(m.body.Object, "spec", "template", "spec", "containers", "envFrom", "secretRef", "name"); len(n) > 0 {
 		secrets = append(secrets, n...)
 	}
 

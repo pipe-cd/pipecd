@@ -34,43 +34,43 @@ func applyManifests(ctx context.Context, applier applier, manifests []provider.M
 		// 1. force-sync-by-replace
 		// 2. sync-by-replace
 		// 3. others
-		if annotation := m.Body.GetAnnotations()[provider.LabelForceSyncReplace]; annotation == provider.UseReplaceEnabled {
+		if annotation := m.GetAnnotations()[provider.LabelForceSyncReplace]; annotation == provider.UseReplaceEnabled {
 			// Always try to replace first and create if it fails due to resource not found error.
 			// This is because we cannot know whether resource already exists before executing command.
 			err := applier.ForceReplaceManifest(ctx, m)
 			if errors.Is(err, provider.ErrNotFound) {
-				lp.Infof("Specified resource does not exist, so create the resource: %s (%w)", m.Key.ReadableString(), err)
+				lp.Infof("Specified resource does not exist, so create the resource: %s (%w)", m.Key().ReadableString(), err)
 				err = applier.CreateManifest(ctx, m)
 			}
 			if err != nil {
-				lp.Errorf("Failed to forcefully replace or create manifest: %s (%w)", m.Key.ReadableString(), err)
+				lp.Errorf("Failed to forcefully replace or create manifest: %s (%w)", m.Key().ReadableString(), err)
 				return err
 			}
-			lp.Successf("- forcefully replaced or created manifest: %s", m.Key.ReadableString())
+			lp.Successf("- forcefully replaced or created manifest: %s", m.Key().ReadableString())
 			continue
 		}
 
-		if annotation := m.Body.GetAnnotations()[provider.LabelSyncReplace]; annotation == provider.UseReplaceEnabled {
+		if annotation := m.GetAnnotations()[provider.LabelSyncReplace]; annotation == provider.UseReplaceEnabled {
 			// Always try to replace first and create if it fails due to resource not found error.
 			// This is because we cannot know whether resource already exists before executing command.
 			err := applier.ReplaceManifest(ctx, m)
 			if errors.Is(err, provider.ErrNotFound) {
-				lp.Infof("Specified resource does not exist, so create the resource: %s (%w)", m.Key.ReadableString(), err)
+				lp.Infof("Specified resource does not exist, so create the resource: %s (%w)", m.Key().ReadableString(), err)
 				err = applier.CreateManifest(ctx, m)
 			}
 			if err != nil {
-				lp.Errorf("Failed to replace or create manifest: %s (%w)", m.Key.ReadableString(), err)
+				lp.Errorf("Failed to replace or create manifest: %s (%w)", m.Key().ReadableString(), err)
 				return err
 			}
-			lp.Successf("- replaced or created manifest: %s", m.Key.ReadableString())
+			lp.Successf("- replaced or created manifest: %s", m.Key().ReadableString())
 			continue
 		}
 
 		if err := applier.ApplyManifest(ctx, m); err != nil {
-			lp.Errorf("Failed to apply manifest: %s (%w)", m.Key.ReadableString(), err)
+			lp.Errorf("Failed to apply manifest: %s (%w)", m.Key().ReadableString(), err)
 			return err
 		}
-		lp.Successf("- applied manifest: %s", m.Key.ReadableString())
+		lp.Successf("- applied manifest: %s", m.Key().ReadableString())
 		continue
 
 	}
