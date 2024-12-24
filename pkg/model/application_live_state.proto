@@ -84,9 +84,7 @@ message ApplicationLiveState {
     Status health_status = 2;
 }
 
-// TODO: refine the actual state information
-// Existing fields: api_version, kind, namespace
-// Addtional fields: deploy_target
+// TODO: Add some more fields to consider about the deployment for multi clusters.
 message ResourceState {
     enum HealthStatus {
         UNKNOWN = 0;

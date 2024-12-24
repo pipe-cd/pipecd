@@ -900,9 +900,7 @@ func (x *ApplicationLiveState) GetHealthStatus() ApplicationLiveState_Status {
 	return ApplicationLiveState_UNKNOWN
 }
 
-// TODO: refine the actual state information
-// Existing fields: api_version, kind, namespace
-// Addtional fields: deploy_target
+// TODO: Add some more fields to consider about the deployment for multi clusters.
 type ResourceState struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
