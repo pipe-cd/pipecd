@@ -32,6 +32,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
+	"sigs.k8s.io/yaml"
 
 	kubeConfigPkg "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
@@ -167,4 +168,97 @@ func TestDeploymentService_executeK8sSyncStage(t *testing.T) {
 	assert.Equal(t, "apps/v1:Deployment::simple", deployment.GetAnnotations()["pipecd.dev/resource-key"]) // This assertion differs from the non-plugin-arched piped's Kubernetes platform provider, but we decided to change this behavior.
 	assert.Equal(t, "0123456789", deployment.GetAnnotations()["pipecd.dev/commit-hash"])
 
+}
+
+func TestDeploymentService_executeK8sSyncStage_withInputNamespace(t *testing.T) {
+	ctx := context.Background()
+
+	// initialize tool registry
+	testRegistry, err := toolregistrytest.NewToolRegistry(t)
+	require.NoError(t, err)
+
+	// initialize envtest
+	tEnv := new(envtest.Environment)
+	kubeCfg, err := tEnv.Start()
+	require.NoError(t, err)
+	t.Cleanup(func() { tEnv.Stop() })
+
+	kubeconfig, err := kubeconfigFromRestConfig(kubeCfg)
+	require.NoError(t, err)
+
+	workDir := t.TempDir()
+	kubeconfigPath := path.Join(workDir, "kubeconfig")
+	err = os.WriteFile(kubeconfigPath, []byte(kubeconfig), 0755)
+	require.NoError(t, err)
+
+	deployTarget, err := json.Marshal(kubeConfigPkg.KubernetesDeployTargetConfig{KubeConfigPath: kubeconfigPath})
+	require.NoError(t, err)
+
+	// prepare the piped plugin config
+	pluginCfg := &config.PipedPlugin{
+		Name: "kubernetes",
+		URL:  "file:///path/to/kubernetes/plugin", // dummy for testing
+		Port: 0,                                   // dummy for testing
+		DeployTargets: []config.PipedDeployTarget{{
+			Name:   "default",
+			Labels: map[string]string{},
+			Config: json.RawMessage(deployTarget),
+		}},
+	}
+
+	cfg, err := os.ReadFile(filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
+	require.NoError(t, err)
+
+	spec, err := config.DecodeYAML[*kubeConfigPkg.KubernetesApplicationSpec](cfg)
+	require.NoError(t, err)
+
+	// override the namespace and auto-create-namespace
+	spec.Spec.Input.Namespace = "test-namespace"
+	spec.Spec.Input.AutoCreateNamespace = true
+	cfg, err = yaml.Marshal(spec)
+	require.NoError(t, err)
+
+	req := &deployment.ExecuteStageRequest{
+		Input: &deployment.ExecutePluginInput{
+			Deployment: &model.Deployment{
+				PipedId:       "piped-id",
+				ApplicationId: "app-id",
+				DeployTargets: []string{"default"},
+			},
+			Stage: &model.PipelineStage{
+				Id:   "stage-id",
+				Name: "K8S_SYNC",
+			},
+			StageConfig:             []byte(``),
+			RunningDeploymentSource: nil,
+			TargetDeploymentSource: &deployment.DeploymentSource{
+				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
+				Revision:                  "0123456789",
+				ApplicationConfig:         cfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+		},
+	}
+
+	svc := NewDeploymentService(pluginCfg, zaptest.NewLogger(t), testRegistry, logpersistertest.NewTestLogPersister(t))
+	resp, err := svc.ExecuteStage(ctx, req)
+
+	require.NoError(t, err)
+	assert.Equal(t, model.StageStatus_STAGE_SUCCESS.String(), resp.GetStatus().String())
+
+	// check the deployment is created with client-go
+	dynamicClient, err := dynamic.NewForConfig(kubeCfg)
+	require.NoError(t, err)
+
+	deployment, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("test-namespace").Get(context.Background(), "simple", metav1.GetOptions{})
+	require.NoError(t, err)
+
+	assert.Equal(t, "simple", deployment.GetName())
+	assert.Equal(t, "simple", deployment.GetLabels()["app"])
+	assert.Equal(t, "piped", deployment.GetAnnotations()["pipecd.dev/managed-by"])
+	assert.Equal(t, "piped-id", deployment.GetAnnotations()["pipecd.dev/piped"])
+	assert.Equal(t, "app-id", deployment.GetAnnotations()["pipecd.dev/application"])
+	assert.Equal(t, "apps/v1", deployment.GetAnnotations()["pipecd.dev/original-api-version"])
+	assert.Equal(t, "apps/v1:Deployment::simple", deployment.GetAnnotations()["pipecd.dev/resource-key"]) // This assertion differs from the non-plugin-arched piped's Kubernetes platform provider, but we decided to change this behavior.
+	assert.Equal(t, "0123456789", deployment.GetAnnotations()["pipecd.dev/commit-hash"])
 }
