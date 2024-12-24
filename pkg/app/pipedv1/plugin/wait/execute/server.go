@@ -21,7 +21,6 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
@@ -33,28 +32,24 @@ type deploymentServiceServer struct {
 
 	pluginConfig *config.PipedPlugin
 
-	metadataStore metadatastore.MetadataStore
-	logger        *zap.Logger
-	logPersister  logPersister
+	logger       *zap.Logger
+	logPersister logPersister
 }
 
 type logPersister interface {
 	StageLogPersister(deploymentID, stageID string) logpersister.StageLogPersister
 }
 
-// NewDeploymentService creates a new planService.
+// NewDeploymentService creates a new deploymentServiceServer of Wait Stage plugin.
 func NewDeploymentService(
 	config *config.PipedPlugin,
-	metadataStore metadatastore.MetadataStore,
 	logger *zap.Logger,
 	logPersister logPersister,
 ) *deploymentServiceServer {
 	return &deploymentServiceServer{
 		pluginConfig: config,
-		// TODO: Add metadataStore? or not?
-		metadataStore: metadataStore,
-		logger:        logger.Named("planner"), // TODO: Is this 'planner'?
-		logPersister:  logPersister,
+		logger:       logger.Named("wait-stage-plugin"),
+		logPersister: logPersister,
 	}
 }
 

@@ -16,13 +16,8 @@ package execute
 
 import (
 	"context"
-	"strconv"
-	"time"
-
-	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/logpersister"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/wait/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 )
@@ -30,86 +25,11 @@ import (
 type Stage string
 
 const (
-	defaultDuration       = time.Minute
-	logInterval           = 10 * time.Second
-	startTimeKey          = "startTime"
-	stageWait       Stage = "WAIT"
+	stageWait Stage = "WAIT"
 )
 
 // Execute starts waiting for the specified duration.
 func (s *deploymentServiceServer) execute(ctx context.Context, in *deployment.ExecutePluginInput, slp logpersister.StageLogPersister) model.StageStatus {
-	var (
-		// originalStatus = in.Stage.Status
-		duration = defaultDuration
-	)
-
-	opts, err := config.DecodeStageOptionsYAML[waitStageOptions](in.StageConfig)
-	if err != nil {
-		slp.Errorf("failed to decode the stage configuration: %v", err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	// Apply the stage configurations.
-	if opts != nil && opts.Duration > 0 {
-		duration = opts.Duration.Duration()
-	}
-	totalDuration := duration
-
-	// Retrieve the saved startTime from the previous run.
-	startTime := s.retrieveStartTime(in.Stage.Id)
-	if !startTime.IsZero() {
-		duration -= time.Since(startTime)
-		if duration < 0 {
-			duration = 0
-		}
-	} else {
-		startTime = time.Now()
-	}
-	defer s.saveStartTime(ctx, startTime, in.Stage.Id)
-
-	return s.wait(ctx, duration, totalDuration, startTime, slp)
-}
-
-func (s *deploymentServiceServer) wait(ctx context.Context, duration, totalDuration time.Duration, startTime time.Time, slp logpersister.StageLogPersister) model.StageStatus {
-	timer := time.NewTimer(duration)
-	defer timer.Stop()
-
-	ticker := time.NewTicker(logInterval)
-	defer ticker.Stop()
-
-	slp.Infof("Waiting for %v...", duration)
-	for {
-		select {
-		case <-timer.C: // on completed
-			slp.Infof("Waited for %v", totalDuration)
-			return model.StageStatus_STAGE_SUCCESS
-
-		case <-ticker.C: // on interval elapsed
-			slp.Infof("%v elapsed...", time.Since(startTime))
-
-		case <-ctx.Done(): // on cancelled or terminated
-			return model.StageStatus_STAGE_CANCELLED // TODO: Is it correct when terminated?
-		}
-	}
-}
-
-func (s *deploymentServiceServer) retrieveStartTime(stageId string) (t time.Time) {
-	sec, ok := s.metadataStore.Stage(stageId).Get(startTimeKey)
-	if !ok {
-		return
-	}
-	ut, err := strconv.ParseInt(sec, 10, 64)
-	if err != nil {
-		return
-	}
-	return time.Unix(ut, 0)
-}
-
-func (s *deploymentServiceServer) saveStartTime(ctx context.Context, t time.Time, stageId string) {
-	metadata := map[string]string{
-		startTimeKey: strconv.FormatInt(t.Unix(), 10),
-	}
-	if err := s.metadataStore.Stage(stageId).PutMulti(ctx, metadata); err != nil {
-		s.logger.Error("failed to store metadata", zap.Error(err))
-	}
+	// TOD: implement the logic of waiting
+	return model.StageStatus_STAGE_FAILURE
 }
