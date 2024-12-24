@@ -48,8 +48,13 @@ func TestGroup(t *testing.T) {
 			want: NotificationEventGroup_EVENT_PIPED,
 		},
 		{
-			name: "returns EVENT_NONE for type >= 400",
-			typ:  400,
+			name: "returns EVENT_NONE for type < 500",
+			typ:  499,
+			want: NotificationEventGroup_EVENT_STAGE,
+		},
+		{
+			name: "returns EVENT_NONE for type >= 500",
+			typ:  500,
 			want: NotificationEventGroup_EVENT_NONE,
 		},
 	}
