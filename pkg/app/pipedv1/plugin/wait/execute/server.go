@@ -54,8 +54,8 @@ func NewDeploymentService(
 }
 
 // Register registers all handling of this service into the specified gRPC server.
-func (a *deploymentServiceServer) Register(server *grpc.Server) {
-	deployment.RegisterDeploymentServiceServer(server, a)
+func (s *deploymentServiceServer) Register(server *grpc.Server) {
+	deployment.RegisterDeploymentServiceServer(server, s)
 }
 
 // ExecuteStage implements deployment.ExecuteStage.
