@@ -85,10 +85,6 @@ func NewLoader(registry ToolRegistry) *Loader {
 
 func (l *Loader) LoadManifests(ctx context.Context, input LoaderInput) (manifests []Manifest, err error) {
 	defer func() {
-		// Override namespace if set because ParseManifests does not parse it
-		// if namespace is not explicitly specified in the manifests.
-		setNamespace(manifests, input.Namespace)
-
 		// Add builtin annotations for tracking application live state.
 		for i := range manifests {
 			manifests[i].AddAnnotations(map[string]string{
@@ -129,16 +125,6 @@ func (l *Loader) LoadManifests(ctx context.Context, input LoaderInput) (manifest
 		return LoadPlainYAMLManifests(input.AppDir, input.Manifests, input.ConfigFilename)
 	default:
 		return nil, fmt.Errorf("unsupported templating method %s", input.TemplatingMethod)
-	}
-}
-
-func setNamespace(manifests []Manifest, namespace string) {
-	if namespace == "" {
-		return
-	}
-	for i := range manifests {
-		// TODO: consider way to not modify the original object.
-		manifests[i].key.namespace = namespace
 	}
 }
 
@@ -258,7 +244,6 @@ func ParseManifests(data string) ([]Manifest, error) {
 			continue
 		}
 		manifests = append(manifests, Manifest{
-			key:  MakeResourceKey(&obj),
 			body: &obj,
 		})
 	}
