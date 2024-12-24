@@ -50,6 +50,11 @@ export class ApplicationLiveStateSnapshot extends jspb.Message {
   hasVersion(): boolean;
   clearVersion(): ApplicationLiveStateSnapshot;
 
+  getApplicationLiveState(): ApplicationLiveState | undefined;
+  setApplicationLiveState(value?: ApplicationLiveState): ApplicationLiveStateSnapshot;
+  hasApplicationLiveState(): boolean;
+  clearApplicationLiveState(): ApplicationLiveStateSnapshot;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ApplicationLiveStateSnapshot.AsObject;
   static toObject(includeInstance: boolean, msg: ApplicationLiveStateSnapshot): ApplicationLiveStateSnapshot.AsObject;
@@ -71,6 +76,7 @@ export namespace ApplicationLiveStateSnapshot {
     lambda?: LambdaApplicationLiveState.AsObject,
     ecs?: ECSApplicationLiveState.AsObject,
     version?: ApplicationLiveStateVersion.AsObject,
+    applicationLiveState?: ApplicationLiveState.AsObject,
   }
 
   export enum Status { 
@@ -193,6 +199,94 @@ export class LambdaApplicationLiveState extends jspb.Message {
 export namespace LambdaApplicationLiveState {
   export type AsObject = {
     resourcesList: Array<LambdaResourceState.AsObject>,
+  }
+}
+
+export class ApplicationLiveState extends jspb.Message {
+  getResourcesList(): Array<ResourceState>;
+  setResourcesList(value: Array<ResourceState>): ApplicationLiveState;
+  clearResourcesList(): ApplicationLiveState;
+  addResources(value?: ResourceState, index?: number): ResourceState;
+
+  getHealthStatus(): ApplicationLiveState.Status;
+  setHealthStatus(value: ApplicationLiveState.Status): ApplicationLiveState;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ApplicationLiveState.AsObject;
+  static toObject(includeInstance: boolean, msg: ApplicationLiveState): ApplicationLiveState.AsObject;
+  static serializeBinaryToWriter(message: ApplicationLiveState, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ApplicationLiveState;
+  static deserializeBinaryFromReader(message: ApplicationLiveState, reader: jspb.BinaryReader): ApplicationLiveState;
+}
+
+export namespace ApplicationLiveState {
+  export type AsObject = {
+    resourcesList: Array<ResourceState.AsObject>,
+    healthStatus: ApplicationLiveState.Status,
+  }
+
+  export enum Status { 
+    UNKNOWN = 0,
+    HEALTHY = 1,
+    OTHER = 2,
+  }
+}
+
+export class ResourceState extends jspb.Message {
+  getId(): string;
+  setId(value: string): ResourceState;
+
+  getParentIdsList(): Array<string>;
+  setParentIdsList(value: Array<string>): ResourceState;
+  clearParentIdsList(): ResourceState;
+  addParentIds(value: string, index?: number): ResourceState;
+
+  getName(): string;
+  setName(value: string): ResourceState;
+
+  getResourceType(): string;
+  setResourceType(value: string): ResourceState;
+
+  getResourceMetadataMap(): jspb.Map<string, string>;
+  clearResourceMetadataMap(): ResourceState;
+
+  getHealthStatus(): ResourceState.HealthStatus;
+  setHealthStatus(value: ResourceState.HealthStatus): ResourceState;
+
+  getHealthDescription(): string;
+  setHealthDescription(value: string): ResourceState;
+
+  getCreatedAt(): number;
+  setCreatedAt(value: number): ResourceState;
+
+  getUpdatedAt(): number;
+  setUpdatedAt(value: number): ResourceState;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ResourceState.AsObject;
+  static toObject(includeInstance: boolean, msg: ResourceState): ResourceState.AsObject;
+  static serializeBinaryToWriter(message: ResourceState, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ResourceState;
+  static deserializeBinaryFromReader(message: ResourceState, reader: jspb.BinaryReader): ResourceState;
+}
+
+export namespace ResourceState {
+  export type AsObject = {
+    id: string,
+    parentIdsList: Array<string>,
+    name: string,
+    resourceType: string,
+    resourceMetadataMap: Array<[string, string]>,
+    healthStatus: ResourceState.HealthStatus,
+    healthDescription: string,
+    createdAt: number,
+    updatedAt: number,
+  }
+
+  export enum HealthStatus { 
+    UNKNOWN = 0,
+    HEALTHY = 1,
+    UNHEALTHY = 2,
   }
 }
 
