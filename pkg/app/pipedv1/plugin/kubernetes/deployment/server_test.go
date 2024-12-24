@@ -25,6 +25,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
@@ -85,18 +86,19 @@ func kubeconfigFromRestConfig(restConfig *rest.Config) (string, error) {
 	return string(b), nil
 }
 
-func TestDeploymentService_executeK8sSyncStage(t *testing.T) {
-	ctx := context.Background()
+func setupEnvTest(t *testing.T) *rest.Config {
+	t.Helper()
 
-	// initialize tool registry
-	testRegistry, err := toolregistrytest.NewToolRegistry(t)
-	require.NoError(t, err)
-
-	// initialize envtest
 	tEnv := new(envtest.Environment)
 	kubeCfg, err := tEnv.Start()
 	require.NoError(t, err)
 	t.Cleanup(func() { tEnv.Stop() })
+
+	return kubeCfg
+}
+
+func setupTestPluginConfig(t *testing.T, kubeCfg *rest.Config) *config.PipedPlugin {
+	t.Helper()
 
 	kubeconfig, err := kubeconfigFromRestConfig(kubeCfg)
 	require.NoError(t, err)
@@ -110,7 +112,7 @@ func TestDeploymentService_executeK8sSyncStage(t *testing.T) {
 	require.NoError(t, err)
 
 	// prepare the piped plugin config
-	pluginCfg := &config.PipedPlugin{
+	return &config.PipedPlugin{
 		Name: "kubernetes",
 		URL:  "file:///path/to/kubernetes/plugin", // dummy for testing
 		Port: 0,                                   // dummy for testing
@@ -120,10 +122,28 @@ func TestDeploymentService_executeK8sSyncStage(t *testing.T) {
 			Config: json.RawMessage(deployTarget),
 		}},
 	}
+}
 
+func setupTestPluginConfigAndDynamicClient(t *testing.T) (*config.PipedPlugin, dynamic.Interface) {
+	t.Helper()
+
+	kubeCfg := setupEnvTest(t)
+	pluginCfg := setupTestPluginConfig(t, kubeCfg)
+
+	dynamicClient, err := dynamic.NewForConfig(kubeCfg)
+	require.NoError(t, err)
+
+	return pluginCfg, dynamicClient
+}
+
+func TestDeploymentService_executeK8sSyncStage(t *testing.T) {
+	ctx := context.Background()
+
+	// read the application config from the example file
 	cfg, err := os.ReadFile(filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
 	require.NoError(t, err)
 
+	// prepare the request
 	req := &deployment.ExecuteStageRequest{
 		Input: &deployment.ExecutePluginInput{
 			Deployment: &model.Deployment{
@@ -146,15 +166,18 @@ func TestDeploymentService_executeK8sSyncStage(t *testing.T) {
 		},
 	}
 
+	// initialize tool registry
+	testRegistry, err := toolregistrytest.NewToolRegistry(t)
+	require.NoError(t, err)
+
+	// initialize plugin config and dynamic client for assertions with envtest
+	pluginCfg, dynamicClient := setupTestPluginConfigAndDynamicClient(t)
+
 	svc := NewDeploymentService(pluginCfg, zaptest.NewLogger(t), testRegistry, logpersistertest.NewTestLogPersister(t))
 	resp, err := svc.ExecuteStage(ctx, req)
 
 	require.NoError(t, err)
 	assert.Equal(t, model.StageStatus_STAGE_SUCCESS.String(), resp.GetStatus().String())
-
-	// check the deployment is created with client-go
-	dynamicClient, err := dynamic.NewForConfig(kubeCfg)
-	require.NoError(t, err)
 
 	deployment, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(context.Background(), "simple", metav1.GetOptions{})
 	require.NoError(t, err)
@@ -173,51 +196,19 @@ func TestDeploymentService_executeK8sSyncStage(t *testing.T) {
 func TestDeploymentService_executeK8sSyncStage_withInputNamespace(t *testing.T) {
 	ctx := context.Background()
 
-	// initialize tool registry
-	testRegistry, err := toolregistrytest.NewToolRegistry(t)
-	require.NoError(t, err)
-
-	// initialize envtest
-	tEnv := new(envtest.Environment)
-	kubeCfg, err := tEnv.Start()
-	require.NoError(t, err)
-	t.Cleanup(func() { tEnv.Stop() })
-
-	kubeconfig, err := kubeconfigFromRestConfig(kubeCfg)
-	require.NoError(t, err)
-
-	workDir := t.TempDir()
-	kubeconfigPath := path.Join(workDir, "kubeconfig")
-	err = os.WriteFile(kubeconfigPath, []byte(kubeconfig), 0755)
-	require.NoError(t, err)
-
-	deployTarget, err := json.Marshal(kubeConfigPkg.KubernetesDeployTargetConfig{KubeConfigPath: kubeconfigPath})
-	require.NoError(t, err)
-
-	// prepare the piped plugin config
-	pluginCfg := &config.PipedPlugin{
-		Name: "kubernetes",
-		URL:  "file:///path/to/kubernetes/plugin", // dummy for testing
-		Port: 0,                                   // dummy for testing
-		DeployTargets: []config.PipedDeployTarget{{
-			Name:   "default",
-			Labels: map[string]string{},
-			Config: json.RawMessage(deployTarget),
-		}},
-	}
-
+	// read the application config from the example file
 	cfg, err := os.ReadFile(filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
 	require.NoError(t, err)
 
+	// decode and override the autoCreateNamespace and namespace
 	spec, err := config.DecodeYAML[*kubeConfigPkg.KubernetesApplicationSpec](cfg)
 	require.NoError(t, err)
-
-	// override the namespace and auto-create-namespace
-	spec.Spec.Input.Namespace = "test-namespace"
 	spec.Spec.Input.AutoCreateNamespace = true
+	spec.Spec.Input.Namespace = "test-namespace"
 	cfg, err = yaml.Marshal(spec)
 	require.NoError(t, err)
 
+	// prepare the request
 	req := &deployment.ExecuteStageRequest{
 		Input: &deployment.ExecutePluginInput{
 			Deployment: &model.Deployment{
@@ -240,15 +231,18 @@ func TestDeploymentService_executeK8sSyncStage_withInputNamespace(t *testing.T) 
 		},
 	}
 
+	// initialize tool registry
+	testRegistry, err := toolregistrytest.NewToolRegistry(t)
+	require.NoError(t, err)
+
+	// initialize plugin config and dynamic client for assertions with envtest
+	pluginCfg, dynamicClient := setupTestPluginConfigAndDynamicClient(t)
+
 	svc := NewDeploymentService(pluginCfg, zaptest.NewLogger(t), testRegistry, logpersistertest.NewTestLogPersister(t))
 	resp, err := svc.ExecuteStage(ctx, req)
 
 	require.NoError(t, err)
 	assert.Equal(t, model.StageStatus_STAGE_SUCCESS.String(), resp.GetStatus().String())
-
-	// check the deployment is created with client-go
-	dynamicClient, err := dynamic.NewForConfig(kubeCfg)
-	require.NoError(t, err)
 
 	deployment, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("test-namespace").Get(context.Background(), "simple", metav1.GetOptions{})
 	require.NoError(t, err)
