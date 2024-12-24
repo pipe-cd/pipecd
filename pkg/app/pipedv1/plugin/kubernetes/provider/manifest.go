@@ -24,12 +24,11 @@ import (
 
 // Manifest represents a Kubernetes resource manifest.
 type Manifest struct {
-	key  ResourceKey
 	body *unstructured.Unstructured
 }
 
 func (m *Manifest) Key() ResourceKey {
-	return m.key
+	return makeResourceKey(m.body)
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
