@@ -29,8 +29,17 @@ we want to provide the way to implement it for the specific platform in the plug
 
 **Modification idea**
 
-- Implement it on the plugin side because it is platform specific component.
-- Support multiple livestates for one application because we plan to create the new feature for k8s multi cluster.
+We decided not to implement this component to keep the plugin implementation as simple as possible.
+
+We had the concerns to decide so but after that we could allow them to reflect another ideas.
+- The pressure to the platform API (such as k8s, ecs...)
+  - -> We allow it because the platform API usually scale automatically.
+
+- The delay of the livestate view on the Web UI compared to the current speed especially k8s app case "updated by 5s".
+  - -> We allow it because each deployment for the one application don't finish such a short time.
+
+Also for detector, we decided to create livestate and sync status at one time in the plugin side.
+For controller (k8s stage's pruning), we decided to get the livestate for every pruning.
 
 ## Livestatereporter
 
@@ -44,12 +53,12 @@ we want to provide the way to implement it for the specific platform in the plug
 - piped side
   - Every minute, piped does below
     - List apps by plugin name
-    - Get the app livestate from the plugin via gRPC call e.g. `GetLivestate(app)`
+    - Get the app livestate and sync status from the plugin via gRPC call e.g. `GetLivestate(app)`
     - Send them to the Control Plane
 - plugin side
-  - Get the livestates grouped by deployTarget from livestatestore and return to the piped.
+  - Create the livestates and sync statuses grouped by deployTarget from the platform and return to the piped.
 - Control Plane side
-  - Receive and store the livestates 
+  - Receive and store the livestates and sync statuses
 
 ```mermaid
 sequenceDiagram
@@ -59,22 +68,17 @@ sequenceDiagram
     participant lr as livestateReporter
     end
     participant  plugin as plugin
+    participant  platform as platform
 
     loop Every minute
         lr->>cp: get applications by plugin name
         loop Every App
 	        lr->>plugin: call rpc GetLiveState(app) return ApplicationLivestate
+	        plugin->>platform: get actual resource state via API
+	        plugin->>plugin: check the sync status of the application
+	        plugin->>lr: return app livestate and sync status
 	        lr->>cp: report application live state
+	        lr->>cp: report application sync status
 		    end
     end
 ```
-
-**Concern**
-- There is a different way to update livestate on Control Plane between k8s and other platforms.
-  - other platform (ecs, cloud run, lambda) ref for cloud run: https://github.com/pipe-cd/pipecd/blob/2f86f7dca297f7f2d402c2040a4a4e14837587ab/pkg/app/piped/livestatereporter/cloudrun/report.go#L85-L86
-    - Just flush livestates to the Control Plane every minute.
-  - k8s: https://github.com/pipe-cd/pipecd/blob/2f86f7dca297f7f2d402c2040a4a4e14837587ab/pkg/app/piped/livestatereporter/kubernetes/reporter.go#L99-L103
-    - Flush livestates to the Control Plane every 10 minutes.
-    - Send the new livestates to the Control Plane every 5 seconds during the 10 minutes
-- I think this is mainly for the speed to show it on the UI. 
-- It would be nice to add an option like `livestateFlushInterval` to change them by users.
