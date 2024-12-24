@@ -183,6 +183,12 @@ func TestDeploymentService_executeK8sSyncStage(t *testing.T) {
 
 	assert.Equal(t, "simple", deployment.GetName())
 	assert.Equal(t, "simple", deployment.GetLabels()["app"])
+
+	assert.Equal(t, "piped", deployment.GetLabels()["pipecd.dev/managed-by"])
+	assert.Equal(t, "piped-id", deployment.GetLabels()["pipecd.dev/piped"])
+	assert.Equal(t, "app-id", deployment.GetLabels()["pipecd.dev/application"])
+	assert.Equal(t, "0123456789", deployment.GetLabels()["pipecd.dev/commit-hash"])
+
 	assert.Equal(t, "piped", deployment.GetAnnotations()["pipecd.dev/managed-by"])
 	assert.Equal(t, "piped-id", deployment.GetAnnotations()["pipecd.dev/piped"])
 	assert.Equal(t, "app-id", deployment.GetAnnotations()["pipecd.dev/application"])
@@ -245,6 +251,11 @@ func TestDeploymentService_executeK8sSyncStage_withInputNamespace(t *testing.T) 
 
 	deployment, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("test-namespace").Get(context.Background(), "simple", metav1.GetOptions{})
 	require.NoError(t, err)
+
+	assert.Equal(t, "piped", deployment.GetLabels()["pipecd.dev/managed-by"])
+	assert.Equal(t, "piped-id", deployment.GetLabels()["pipecd.dev/piped"])
+	assert.Equal(t, "app-id", deployment.GetLabels()["pipecd.dev/application"])
+	assert.Equal(t, "0123456789", deployment.GetLabels()["pipecd.dev/commit-hash"])
 
 	assert.Equal(t, "simple", deployment.GetName())
 	assert.Equal(t, "simple", deployment.GetLabels()["app"])

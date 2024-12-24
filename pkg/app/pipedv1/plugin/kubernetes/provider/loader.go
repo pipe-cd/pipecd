@@ -87,6 +87,13 @@ func (l *Loader) LoadManifests(ctx context.Context, input LoaderInput) (manifest
 	defer func() {
 		// Add builtin annotations for tracking application live state.
 		for i := range manifests {
+			manifests[i].AddLabels(map[string]string{
+				LabelManagedBy:   ManagedByPiped,
+				LabelPiped:       input.PipedID,
+				LabelApplication: input.AppID,
+				LabelCommitHash:  input.CommitHash,
+			})
+
 			manifests[i].AddAnnotations(map[string]string{
 				LabelManagedBy:          ManagedByPiped,
 				LabelPiped:              input.PipedID,

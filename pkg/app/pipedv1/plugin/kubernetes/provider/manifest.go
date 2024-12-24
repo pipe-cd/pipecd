@@ -115,6 +115,22 @@ func (m Manifest) NestedMap(fields ...string) (map[string]any, bool, error) {
 	return unstructured.NestedMap(m.body.Object, fields...)
 }
 
+func (m Manifest) AddLabels(labels map[string]string) {
+	if len(labels) == 0 {
+		return
+	}
+
+	lbs := m.body.GetLabels()
+	if lbs == nil {
+		m.body.SetLabels(labels)
+		return
+	}
+	for k, v := range labels {
+		lbs[k] = v
+	}
+	m.body.SetLabels(lbs)
+}
+
 func (m Manifest) AddAnnotations(annotations map[string]string) {
 	if len(annotations) == 0 {
 		return
