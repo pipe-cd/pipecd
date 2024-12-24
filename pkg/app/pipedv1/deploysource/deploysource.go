@@ -196,17 +196,8 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 func (p *provider) copy(lw io.Writer) (*DeploySource, error) {
 	p.copyNum++
 
-	src := p.source.RepoDir
 	dest := fmt.Sprintf("%s-%d", p.source.RepoDir, p.copyNum)
-
-	// use tar to exclude the .git directory
-	// the tar command does not create the destination directory if it does not exist.
-	// so we need to create it before running the command.
-	if err := os.MkdirAll(dest, 0700); err != nil {
-		fmt.Fprintf(lw, "Unable to create the directory to store the copied deploy source (%v)\n", err)
-		return nil, err
-	}
-	cmd := exec.Command("sh", "-c", fmt.Sprintf("tar c -f - -C '%s' --exclude='.git' . | tar x -f - -C '%s'", src, dest))
+	cmd := exec.Command("cp", "-rf", p.source.RepoDir, dest)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Fprintf(lw, "Unable to copy deploy source data (%v, %s)\n", err, string(out))
