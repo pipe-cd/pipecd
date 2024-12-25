@@ -40,7 +40,7 @@ type DeploySource struct {
 func (d *DeploySource) ToPluginDeploySource() *deployment.DeploymentSource {
 	return &deployment.DeploymentSource{
 		ApplicationDirectory:      d.AppDir,
-		Revision:                  d.Revision,
+		CommitHash:                d.Revision,
 		ApplicationConfig:         d.ApplicationConfig,
 		ApplicationConfigFilename: d.ApplicationConfigFilename,
 	}
