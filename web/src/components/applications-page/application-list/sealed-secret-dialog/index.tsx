@@ -144,7 +144,7 @@ export const SealedSecretDialog: FC<SealedSecretDialogProps> = memo(
                 label="Secret Data"
                 multiline
                 fullWidth
-                rows={4}
+                minRows={4}
                 required
                 autoFocus
                 onChange={formik.handleChange}
