@@ -547,3 +547,69 @@ spec:
 		})
 	}
 }
+
+func TestManifest_IsDeployment(t *testing.T) {
+	tests := []struct {
+		name     string
+		manifest string
+		want     bool
+	}{
+		{
+			name: "is deployment",
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			want: true,
+		},
+		{
+			name: "is not deployment",
+			manifest: `
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+`,
+			want: false,
+		},
+		{
+			name: "is not deployment with custom apigroup",
+			manifest: `
+apiVersion: custom.io/v1
+kind: Deployment
+metadata:
+  name: custom-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: custom
+        image: custom:1.0.0
+`,
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			manifest := mustParseManifests(t, strings.TrimSpace(tt.manifest))[0]
+			got := manifest.IsDeployment()
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
