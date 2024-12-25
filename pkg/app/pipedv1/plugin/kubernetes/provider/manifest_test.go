@@ -668,3 +668,58 @@ data:
 		})
 	}
 }
+
+func TestManifest_IsConfigMap(t *testing.T) {
+	tests := []struct {
+		name     string
+		manifest string
+		want     bool
+	}{
+		{
+			name: "is configmap",
+			manifest: `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+  namespace: default
+data:
+  key: value
+`,
+			want: true,
+		},
+		{
+			name: "is not configmap",
+			manifest: `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+  namespace: default
+data:
+  key: dmFsdWU=
+`,
+			want: false,
+		},
+		{
+			name: "is not configmap with custom apigroup",
+			manifest: `
+apiVersion: custom.io/v1
+kind: ConfigMap
+metadata:
+  name: custom-config
+data:
+  key: value
+`,
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			manifest := mustParseManifests(t, strings.TrimSpace(tt.manifest))[0]
+			got := manifest.IsConfigMap()
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
