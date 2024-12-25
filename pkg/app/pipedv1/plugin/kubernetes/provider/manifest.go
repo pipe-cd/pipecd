@@ -55,7 +55,7 @@ type Manifest struct {
 	body *unstructured.Unstructured
 }
 
-func (m *Manifest) Key() ResourceKey {
+func (m Manifest) Key() ResourceKey {
 	return makeResourceKey(m.body)
 }
 

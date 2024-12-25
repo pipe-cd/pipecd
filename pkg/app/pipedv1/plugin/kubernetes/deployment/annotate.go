@@ -47,7 +47,7 @@ func annotateConfigHash(manifests []provider.Manifest) error {
 	}
 
 	for _, m := range manifests {
-		if m.Key().IsDeployment() {
+		if m.IsDeployment() {
 			if err := annotateConfigHashToWorkload(m, configMaps, secrets); err != nil {
 				return err
 			}
