@@ -1999,7 +1999,7 @@ func (m *DeploymentSource) validate(all bool) error {
 
 	// no validation rules for ApplicationDirectory
 
-	// no validation rules for Revision
+	// no validation rules for CommitHash
 
 	// no validation rules for ApplicationConfig
 

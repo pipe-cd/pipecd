@@ -139,8 +139,8 @@ message ExecutePluginInput {
 message DeploymentSource {
   // The application directory where the source code is located.
   string application_directory = 1;
-  // The git commit revision of the source code.
-  string revision = 2;
+  // The git commit hash of the source code.
+  string commit_hash = 2;
   // The configuration of the application which is specific for plugins.
   bytes application_config = 3;
   // The filename of the application configuration file.
