@@ -98,7 +98,7 @@ func (l *Loader) LoadManifests(ctx context.Context, input LoaderInput) (manifest
 				LabelManagedBy:          ManagedByPiped,
 				LabelPiped:              input.PipedID,
 				LabelApplication:        input.AppID,
-				LabelOriginalAPIVersion: manifests[i].Key().APIVersion(),
+				LabelOriginalAPIVersion: manifests[i].body.GetAPIVersion(),
 				LabelResourceKey:        manifests[i].Key().String(),
 				LabelCommitHash:         input.CommitHash,
 			})

@@ -35,10 +35,6 @@ type ResourceKey struct {
 	name       string
 }
 
-func (k ResourceKey) APIVersion() string {
-	return k.apiVersion
-}
-
 func (k ResourceKey) Kind() string {
 	return k.kind
 }
