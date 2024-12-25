@@ -138,7 +138,7 @@ func TestDeploymentService_executeK8sSyncStage(t *testing.T) {
 			RunningDeploymentSource: nil,
 			TargetDeploymentSource: &deployment.DeploymentSource{
 				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
-				Revision:                  "0123456789",
+				CommitHash:                "0123456789",
 				ApplicationConfig:         cfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
 			},
