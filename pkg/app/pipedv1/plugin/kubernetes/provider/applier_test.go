@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"go.uber.org/zap"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 )
@@ -164,8 +165,12 @@ func TestApplier_ApplyManifest(t *testing.T) {
 			)
 
 			manifest := Manifest{
-				key: ResourceKey{
-					namespace: "test-namespace",
+				body: &unstructured.Unstructured{
+					Object: map[string]interface{}{
+						"metadata": map[string]interface{}{
+							"namespace": "test-namespace",
+						},
+					},
 				},
 			}
 
@@ -254,8 +259,12 @@ func TestApplier_CreateManifest(t *testing.T) {
 			)
 
 			manifest := Manifest{
-				key: ResourceKey{
-					namespace: "test-namespace",
+				body: &unstructured.Unstructured{
+					Object: map[string]interface{}{
+						"metadata": map[string]interface{}{
+							"namespace": "test-namespace",
+						},
+					},
 				},
 			}
 
@@ -316,11 +325,14 @@ func TestApplier_ReplaceManifest(t *testing.T) {
 			)
 
 			manifest := Manifest{
-				key: ResourceKey{
-					namespace: "test-namespace",
+				body: &unstructured.Unstructured{
+					Object: map[string]interface{}{
+						"metadata": map[string]interface{}{
+							"namespace": "test-namespace",
+						},
+					},
 				},
 			}
-
 			err := applier.ReplaceManifest(context.Background(), manifest)
 			if !errors.Is(err, tc.expectedErr) {
 				t.Errorf("expected error %v, got %v", tc.expectedErr, err)
@@ -378,11 +390,14 @@ func TestApplier_ForceReplaceManifest(t *testing.T) {
 			)
 
 			manifest := Manifest{
-				key: ResourceKey{
-					namespace: "test-namespace",
+				body: &unstructured.Unstructured{
+					Object: map[string]interface{}{
+						"metadata": map[string]interface{}{
+							"namespace": "test-namespace",
+						},
+					},
 				},
 			}
-
 			err := applier.ForceReplaceManifest(context.Background(), manifest)
 			if !errors.Is(err, tc.expectedErr) {
 				t.Errorf("expected error %v, got %v", tc.expectedErr, err)

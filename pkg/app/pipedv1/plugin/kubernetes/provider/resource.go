@@ -96,7 +96,7 @@ func (k ResourceKey) ReadableString() string {
 	return fmt.Sprintf("name=%q, kind=%q, namespace=%q, apiVersion=%q", k.name, k.kind, k.namespace, k.apiVersion)
 }
 
-func MakeResourceKey(obj *unstructured.Unstructured) ResourceKey {
+func makeResourceKey(obj *unstructured.Unstructured) ResourceKey {
 	k := ResourceKey{
 		apiVersion: obj.GetAPIVersion(),
 		kind:       obj.GetKind(),

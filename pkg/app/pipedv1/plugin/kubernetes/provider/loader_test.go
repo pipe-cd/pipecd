@@ -57,11 +57,6 @@ metadata:
 `,
 			want: []Manifest{
 				{
-					key: ResourceKey{
-						apiVersion: "v1",
-						kind:       "ConfigMap",
-						name:       "test-config",
-					},
 					body: &unstructured.Unstructured{
 						Object: map[string]interface{}{
 							"apiVersion": "v1",
@@ -90,11 +85,6 @@ metadata:
 `,
 			want: []Manifest{
 				{
-					key: ResourceKey{
-						apiVersion: "v1",
-						kind:       "ConfigMap",
-						name:       "test-config",
-					},
 					body: &unstructured.Unstructured{
 						Object: map[string]interface{}{
 							"apiVersion": "v1",
@@ -106,11 +96,6 @@ metadata:
 					},
 				},
 				{
-					key: ResourceKey{
-						apiVersion: "v1",
-						kind:       "Service",
-						name:       "test-service",
-					},
 					body: &unstructured.Unstructured{
 						Object: map[string]interface{}{
 							"apiVersion": "v1",
@@ -188,11 +173,6 @@ metadata:
 			},
 			want: []Manifest{
 				{
-					key: ResourceKey{
-						apiVersion: "v1",
-						kind:       "ConfigMap",
-						name:       "test-config",
-					},
 					body: &unstructured.Unstructured{
 						Object: map[string]interface{}{
 							"apiVersion": "v1",
@@ -230,11 +210,6 @@ metadata:
 			},
 			want: []Manifest{
 				{
-					key: ResourceKey{
-						apiVersion: "v1",
-						kind:       "Service",
-						name:       "test-service",
-					},
 					body: &unstructured.Unstructured{
 						Object: map[string]interface{}{
 							"apiVersion": "v1",
@@ -271,11 +246,6 @@ metadata:
 			},
 			want: []Manifest{
 				{
-					key: ResourceKey{
-						apiVersion: "v1",
-						kind:       "ConfigMap",
-						name:       "test-config",
-					},
 					body: &unstructured.Unstructured{
 						Object: map[string]interface{}{
 							"apiVersion": "v1",
@@ -287,11 +257,6 @@ metadata:
 					},
 				},
 				{
-					key: ResourceKey{
-						apiVersion: "v1",
-						kind:       "Service",
-						name:       "test-service",
-					},
 					body: &unstructured.Unstructured{
 						Object: map[string]interface{}{
 							"apiVersion": "v1",
