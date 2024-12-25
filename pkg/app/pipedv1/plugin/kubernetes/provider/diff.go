@@ -24,7 +24,7 @@ import (
 )
 
 func Diff(old, new Manifest, logger *zap.Logger, opts ...diff.Option) (*diff.Result, error) {
-	if old.Key().IsSecret() && new.Key().IsSecret() {
+	if old.IsSecret() && new.IsSecret() {
 		var err error
 		old.body, err = normalizeNewSecret(old.body, new.body)
 		if err != nil {

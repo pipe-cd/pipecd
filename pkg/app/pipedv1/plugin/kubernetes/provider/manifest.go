@@ -22,13 +22,62 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
+var builtinAPIGroups = map[string]struct{}{
+	"admissionregistration.k8s.io": {},
+	"apiextensions.k8s.io":         {},
+	"apiregistration.k8s.io":       {},
+	"apps":                         {},
+	"authentication.k8s.io":        {},
+	"authorization.k8s.io":         {},
+	"autoscaling":                  {},
+	"batch":                        {},
+	"certificates.k8s.io":          {},
+	"coordination.k8s.io":          {},
+	"extensions":                   {},
+	"internal.autoscaling.k8s.io":  {},
+	"metrics.k8s.io":               {},
+	"networking.k8s.io":            {},
+	"node.k8s.io":                  {},
+	"policy":                       {},
+	"rbac.authorization.k8s.io":    {},
+	"scheduling.k8s.io":            {},
+	"storage.k8s.io":               {},
+	"":                             {},
+}
+
+func isBuiltinAPIGroup(apiGroup string) bool {
+	_, ok := builtinAPIGroups[apiGroup]
+	return ok
+}
+
 // Manifest represents a Kubernetes resource manifest.
 type Manifest struct {
 	body *unstructured.Unstructured
 }
 
-func (m *Manifest) Key() ResourceKey {
+func (m Manifest) Key() ResourceKey {
 	return makeResourceKey(m.body)
+}
+
+// IsDeployment returns true if the manifest is a Deployment.
+// It checks the API group and the kind of the manifest.
+func (m Manifest) IsDeployment() bool {
+	// TODO: check the API group more strictly.
+	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindDeployment
+}
+
+// IsSecret returns true if the manifest is a Secret.
+// It checks the API group and the kind of the manifest.
+func (m Manifest) IsSecret() bool {
+	// TODO: check the API group more strictly.
+	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindSecret
+}
+
+// IsConfigMap returns true if the manifest is a ConfigMap.
+// It checks the API group and the kind of the manifest.
+func (m Manifest) IsConfigMap() bool {
+	// TODO: check the API group more strictly.
+	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindConfigMap
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
@@ -101,10 +150,10 @@ func (m Manifest) AddStringMapValues(values map[string]string, fields ...string)
 func FindConfigsAndSecrets(manifests []Manifest) map[ResourceKey]Manifest {
 	configs := make(map[ResourceKey]Manifest)
 	for _, m := range manifests {
-		if m.Key().IsConfigMap() {
+		if m.IsConfigMap() {
 			configs[m.Key()] = m
 		}
-		if m.Key().IsSecret() {
+		if m.IsSecret() {
 			configs[m.Key()] = m
 		}
 	}
