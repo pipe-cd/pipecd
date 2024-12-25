@@ -74,6 +74,8 @@ func NewReporter(appLister applicationLister, apiClient apiClient, plugins map[s
 func (r *reporter) Run(ctx context.Context) error {
 	group, ctx := errgroup.WithContext(ctx)
 
+	r.logger.Info(fmt.Sprintf("starting %d live state reporters of plugins", len(r.reporters)))
+
 	for _, reporter := range r.reporters {
 		// Avoid starting all reporters at the same time to reduce the API call burst.
 		time.Sleep(10 * time.Second)
