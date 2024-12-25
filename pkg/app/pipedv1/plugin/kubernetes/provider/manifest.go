@@ -59,6 +59,14 @@ func (m Manifest) Key() ResourceKey {
 	return makeResourceKey(m.body)
 }
 
+func (m Manifest) Kind() string {
+	return m.body.GetKind()
+}
+
+func (m Manifest) Name() string {
+	return m.body.GetName()
+}
+
 // IsDeployment returns true if the manifest is a Deployment.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsDeployment() bool {
