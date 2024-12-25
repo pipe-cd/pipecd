@@ -26,7 +26,6 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
-	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/livestate"
@@ -52,7 +51,7 @@ type reporter struct {
 }
 
 // NewReporter creates a new reporter.
-func NewReporter(appLister applicationLister, apiClient apiClient, cfg *config.PipedSpec, plugins map[string]pluginapi.PluginClient, logger *zap.Logger) Reporter {
+func NewReporter(appLister applicationLister, apiClient apiClient, plugins map[string]pluginapi.PluginClient, logger *zap.Logger) Reporter {
 	rlogger := logger.Named("live-state-reporter")
 	r := &reporter{
 		reporters: make([]pluginReporter, 0, len(plugins)),
@@ -76,7 +75,6 @@ func (r *reporter) Run(ctx context.Context) error {
 	group, ctx := errgroup.WithContext(ctx)
 
 	for i, reporter := range r.reporters {
-		reporter := reporter
 		// Avoid starting all reporters at the same time to reduce the API call burst.
 		time.Sleep(time.Duration(i) * 10 * time.Second)
 		r.logger.Info("starting app live state reporter for plugin")
