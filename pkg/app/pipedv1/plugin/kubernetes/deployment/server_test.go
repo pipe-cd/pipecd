@@ -193,7 +193,7 @@ func TestDeploymentService_executeK8sSyncStage(t *testing.T) {
 	assert.Equal(t, "piped-id", deployment.GetAnnotations()["pipecd.dev/piped"])
 	assert.Equal(t, "app-id", deployment.GetAnnotations()["pipecd.dev/application"])
 	assert.Equal(t, "apps/v1", deployment.GetAnnotations()["pipecd.dev/original-api-version"])
-	assert.Equal(t, "apps/v1:Deployment::simple", deployment.GetAnnotations()["pipecd.dev/resource-key"]) // This assertion differs from the non-plugin-arched piped's Kubernetes platform provider, but we decided to change this behavior.
+	assert.Equal(t, "apps:Deployment::simple", deployment.GetAnnotations()["pipecd.dev/resource-key"]) // This assertion differs from the non-plugin-arched piped's Kubernetes platform provider, but we decided to change this behavior.
 	assert.Equal(t, "0123456789", deployment.GetAnnotations()["pipecd.dev/commit-hash"])
 
 }
@@ -263,6 +263,6 @@ func TestDeploymentService_executeK8sSyncStage_withInputNamespace(t *testing.T) 
 	assert.Equal(t, "piped-id", deployment.GetAnnotations()["pipecd.dev/piped"])
 	assert.Equal(t, "app-id", deployment.GetAnnotations()["pipecd.dev/application"])
 	assert.Equal(t, "apps/v1", deployment.GetAnnotations()["pipecd.dev/original-api-version"])
-	assert.Equal(t, "apps/v1:Deployment::simple", deployment.GetAnnotations()["pipecd.dev/resource-key"]) // This assertion differs from the non-plugin-arched piped's Kubernetes platform provider, but we decided to change this behavior.
+	assert.Equal(t, "apps:Deployment::simple", deployment.GetAnnotations()["pipecd.dev/resource-key"]) // This assertion differs from the non-plugin-arched piped's Kubernetes platform provider, but we decided to change this behavior.
 	assert.Equal(t, "0123456789", deployment.GetAnnotations()["pipecd.dev/commit-hash"])
 }

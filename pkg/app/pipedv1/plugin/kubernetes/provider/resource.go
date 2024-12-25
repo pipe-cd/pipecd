@@ -18,6 +18,7 @@ import (
 	"fmt"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 const (
@@ -29,14 +30,13 @@ const (
 )
 
 type ResourceKey struct {
-	apiVersion string
-	kind       string
-	namespace  string
-	name       string
+	groupKind schema.GroupKind
+	namespace string
+	name      string
 }
 
 func (k ResourceKey) Kind() string {
-	return k.kind
+	return k.groupKind.Kind
 }
 
 func (k ResourceKey) Name() string {
@@ -44,19 +44,18 @@ func (k ResourceKey) Name() string {
 }
 
 func (k ResourceKey) String() string {
-	return fmt.Sprintf("%s:%s:%s:%s", k.apiVersion, k.kind, k.namespace, k.name)
+	return fmt.Sprintf("%s:%s:%s:%s", k.groupKind.Group, k.groupKind.Kind, k.namespace, k.name)
 }
 
 func (k ResourceKey) ReadableString() string {
-	return fmt.Sprintf("name=%q, kind=%q, namespace=%q, apiVersion=%q", k.name, k.kind, k.namespace, k.apiVersion)
+	return fmt.Sprintf("name=%q, kind=%q, namespace=%q, apiGroup=%q", k.name, k.groupKind.Kind, k.namespace, k.groupKind.Group)
 }
 
 func makeResourceKey(obj *unstructured.Unstructured) ResourceKey {
 	k := ResourceKey{
-		apiVersion: obj.GetAPIVersion(),
-		kind:       obj.GetKind(),
-		namespace:  obj.GetNamespace(),
-		name:       obj.GetName(),
+		groupKind: obj.GroupVersionKind().GroupKind(),
+		namespace: obj.GetNamespace(),
+		name:      obj.GetName(),
 	}
 	return k
 }

@@ -200,8 +200,7 @@ func FindSameManifests(olds, news []Manifest) []WorkloadPair {
 	pairs := make([]WorkloadPair, 0)
 	oldMap := make(map[ResourceKey]Manifest, len(olds))
 	nomalizeKey := func(k ResourceKey) ResourceKey {
-		// Ignoring APIVersion because user can upgrade to the new APIVersion for the same workload.
-		k.apiVersion = ""
+		// Normalize the key by removing the default namespace.
 		if k.namespace == DefaultNamespace {
 			k.namespace = ""
 		}
