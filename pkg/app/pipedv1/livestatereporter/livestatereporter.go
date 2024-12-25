@@ -77,9 +77,9 @@ func (r *reporter) Run(ctx context.Context) error {
 	for _, reporter := range r.reporters {
 		// Avoid starting all reporters at the same time to reduce the API call burst.
 		time.Sleep(10 * time.Second)
-		r.logger.Info("starting app live state reporter for plugin")
 
 		group.Go(func() error {
+			reporter.logger.Info("starting app live state reporter for plugin")
 			return reporter.Run(ctx)
 		})
 	}
