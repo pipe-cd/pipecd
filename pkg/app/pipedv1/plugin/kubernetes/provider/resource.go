@@ -43,10 +43,6 @@ func (k ResourceKey) Kind() string {
 	return k.kind
 }
 
-func (k ResourceKey) Namespace() string {
-	return k.namespace
-}
-
 func (k ResourceKey) Name() string {
 	return k.name
 }

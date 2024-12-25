@@ -84,7 +84,6 @@ func TestTemplateLocalChart_WithNamespace(t *testing.T) {
 		metadata, _, err := manifest.NestedMap("metadata")
 		require.NoError(t, err)
 		require.Equal(t, namespace, metadata["namespace"])
-		require.Equal(t, namespace, manifest.Key().Namespace())
 	}
 }
 
