@@ -613,3 +613,58 @@ spec:
 		})
 	}
 }
+
+func TestManifest_IsSecret(t *testing.T) {
+	tests := []struct {
+		name     string
+		manifest string
+		want     bool
+	}{
+		{
+			name: "is secret",
+			manifest: `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+  namespace: default
+data:
+  key: dmFsdWU=
+`,
+			want: true,
+		},
+		{
+			name: "is not secret",
+			manifest: `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+  namespace: default
+data:
+  key: value
+`,
+			want: false,
+		},
+		{
+			name: "is not secret with custom apigroup",
+			manifest: `
+apiVersion: custom.io/v1
+kind: Secret
+metadata:
+  name: custom-secret
+data:
+  key: dmFsdWU=
+`,
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			manifest := mustParseManifests(t, strings.TrimSpace(tt.manifest))[0]
+			got := manifest.IsSecret()
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
