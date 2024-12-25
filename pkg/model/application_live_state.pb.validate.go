@@ -288,6 +288,35 @@ func (m *ApplicationLiveStateSnapshot) validate(all bool) error {
 		}
 	}
 
+	if all {
+		switch v := interface{}(m.GetApplicationLiveState()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ApplicationLiveStateSnapshotValidationError{
+					field:  "ApplicationLiveState",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ApplicationLiveStateSnapshotValidationError{
+					field:  "ApplicationLiveState",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetApplicationLiveState()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ApplicationLiveStateSnapshotValidationError{
+				field:  "ApplicationLiveState",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
 	if len(errors) > 0 {
 		return ApplicationLiveStateSnapshotMultiError(errors)
 	}
@@ -1142,6 +1171,305 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = LambdaApplicationLiveStateValidationError{}
+
+// Validate checks the field values on ApplicationLiveState with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ApplicationLiveState) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ApplicationLiveState with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ApplicationLiveStateMultiError, or nil if none found.
+func (m *ApplicationLiveState) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ApplicationLiveState) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetResources() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ApplicationLiveStateValidationError{
+						field:  fmt.Sprintf("Resources[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ApplicationLiveStateValidationError{
+						field:  fmt.Sprintf("Resources[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ApplicationLiveStateValidationError{
+					field:  fmt.Sprintf("Resources[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for HealthStatus
+
+	if len(errors) > 0 {
+		return ApplicationLiveStateMultiError(errors)
+	}
+
+	return nil
+}
+
+// ApplicationLiveStateMultiError is an error wrapping multiple validation
+// errors returned by ApplicationLiveState.ValidateAll() if the designated
+// constraints aren't met.
+type ApplicationLiveStateMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ApplicationLiveStateMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ApplicationLiveStateMultiError) AllErrors() []error { return m }
+
+// ApplicationLiveStateValidationError is the validation error returned by
+// ApplicationLiveState.Validate if the designated constraints aren't met.
+type ApplicationLiveStateValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ApplicationLiveStateValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ApplicationLiveStateValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ApplicationLiveStateValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ApplicationLiveStateValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ApplicationLiveStateValidationError) ErrorName() string {
+	return "ApplicationLiveStateValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ApplicationLiveStateValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sApplicationLiveState.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ApplicationLiveStateValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ApplicationLiveStateValidationError{}
+
+// Validate checks the field values on ResourceState with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *ResourceState) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ResourceState with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in ResourceStateMultiError, or
+// nil if none found.
+func (m *ResourceState) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ResourceState) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetId()) < 1 {
+		err := ResourceStateValidationError{
+			field:  "Id",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetName()) < 1 {
+		err := ResourceStateValidationError{
+			field:  "Name",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for ResourceType
+
+	// no validation rules for ResourceMetadata
+
+	if _, ok := ResourceState_HealthStatus_name[int32(m.GetHealthStatus())]; !ok {
+		err := ResourceStateValidationError{
+			field:  "HealthStatus",
+			reason: "value must be one of the defined enum values",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for HealthDescription
+
+	if m.GetCreatedAt() <= 0 {
+		err := ResourceStateValidationError{
+			field:  "CreatedAt",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetUpdatedAt() <= 0 {
+		err := ResourceStateValidationError{
+			field:  "UpdatedAt",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return ResourceStateMultiError(errors)
+	}
+
+	return nil
+}
+
+// ResourceStateMultiError is an error wrapping multiple validation errors
+// returned by ResourceState.ValidateAll() if the designated constraints
+// aren't met.
+type ResourceStateMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ResourceStateMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ResourceStateMultiError) AllErrors() []error { return m }
+
+// ResourceStateValidationError is the validation error returned by
+// ResourceState.Validate if the designated constraints aren't met.
+type ResourceStateValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ResourceStateValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ResourceStateValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ResourceStateValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ResourceStateValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ResourceStateValidationError) ErrorName() string { return "ResourceStateValidationError" }
+
+// Error satisfies the builtin error interface
+func (e ResourceStateValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sResourceState.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ResourceStateValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ResourceStateValidationError{}
 
 // Validate checks the field values on KubernetesResourceState with the rules
 // defined in the proto definition for this message. If any rules are
