@@ -62,18 +62,21 @@ func (m Manifest) Key() ResourceKey {
 // IsDeployment returns true if the manifest is a Deployment.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsDeployment() bool {
+	// TODO: check the API group more strictly.
 	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindDeployment
 }
 
 // IsSecret returns true if the manifest is a Secret.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsSecret() bool {
+	// TODO: check the API group more strictly.
 	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindSecret
 }
 
 // IsConfigMap returns true if the manifest is a ConfigMap.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsConfigMap() bool {
+	// TODO: check the API group more strictly.
 	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindConfigMap
 }
 
