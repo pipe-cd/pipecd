@@ -145,7 +145,6 @@ func (pr *pluginReporter) flushSnapshots(ctx context.Context) {
 		// TODO: Implement DetermineAppHealthStatus for the case of plugin architecture.
 		snapshot.DetermineAppHealthStatus()
 
-		// TODO: Fix ReportApplicationLiveState to store ApplicationLiveState.
 		if _, err := pr.apiClient.ReportApplicationLiveState(ctx, &pipedservice.ReportApplicationLiveStateRequest{
 			Snapshot: snapshot,
 		}); err != nil {
