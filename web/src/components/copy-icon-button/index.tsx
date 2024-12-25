@@ -27,7 +27,7 @@ export const CopyIconButton: FC<CopyIconButtonProps> = memo(
         onClick={handleCopy}
         size={size}
       >
-        <CopyIcon fontSize={size === "small" ? "small" : "default"} />
+        <CopyIcon fontSize={size === "small" ? "small" : "medium"} />
       </IconButton>
     );
   }

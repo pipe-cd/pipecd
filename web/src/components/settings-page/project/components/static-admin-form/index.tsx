@@ -61,8 +61,10 @@ const StaticAdminDialog: FC<{
   return (
     <Dialog
       open={open}
-      onExited={() => {
-        formik.resetForm();
+      TransitionProps={{
+        onExited: () => {
+          formik.resetForm();
+        },
       }}
       onClose={onClose}
     >
