@@ -31,7 +31,7 @@ func annotateConfigHash(manifests []provider.Manifest) error {
 	configMaps := make(map[string]provider.Manifest)
 	secrets := make(map[string]provider.Manifest)
 	for _, m := range manifests {
-		if m.Key().IsConfigMap() {
+		if m.IsConfigMap() {
 			configMaps[m.Key().Name()] = m
 			continue
 		}

@@ -147,7 +147,7 @@ func (m Manifest) AddStringMapValues(values map[string]string, fields ...string)
 func FindConfigsAndSecrets(manifests []Manifest) map[ResourceKey]Manifest {
 	configs := make(map[ResourceKey]Manifest)
 	for _, m := range manifests {
-		if m.Key().IsConfigMap() {
+		if m.IsConfigMap() {
 			configs[m.Key()] = m
 		}
 		if m.Key().IsSecret() {

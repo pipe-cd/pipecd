@@ -48,7 +48,7 @@ func HashManifests(manifests []Manifest) (string, error) {
 		var err error
 
 		switch {
-		case m.Key().IsConfigMap():
+		case m.IsConfigMap():
 			obj := &v1.ConfigMap{}
 			if err := m.ConvertToStructuredObject(obj); err != nil {
 				return "", err
