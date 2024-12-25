@@ -150,7 +150,7 @@ func FindConfigsAndSecrets(manifests []Manifest) map[ResourceKey]Manifest {
 		if m.IsConfigMap() {
 			configs[m.Key()] = m
 		}
-		if m.Key().IsSecret() {
+		if m.IsSecret() {
 			configs[m.Key()] = m
 		}
 	}

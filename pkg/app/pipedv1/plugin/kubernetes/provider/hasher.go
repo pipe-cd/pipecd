@@ -54,7 +54,7 @@ func HashManifests(manifests []Manifest) (string, error) {
 				return "", err
 			}
 			encoded, err = encodeConfigMap(obj)
-		case m.Key().IsSecret():
+		case m.IsSecret():
 			obj := &v1.Secret{}
 			if err := m.ConvertToStructuredObject(obj); err != nil {
 				return "", err

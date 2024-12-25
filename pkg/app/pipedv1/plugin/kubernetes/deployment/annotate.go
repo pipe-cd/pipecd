@@ -35,7 +35,7 @@ func annotateConfigHash(manifests []provider.Manifest) error {
 			configMaps[m.Key().Name()] = m
 			continue
 		}
-		if m.Key().IsSecret() {
+		if m.IsSecret() {
 			secrets[m.Key().Name()] = m
 		}
 	}

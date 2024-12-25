@@ -106,16 +106,6 @@ func makeResourceKey(obj *unstructured.Unstructured) ResourceKey {
 	return k
 }
 
-func (k ResourceKey) IsSecret() bool {
-	if k.kind != KindSecret {
-		return false
-	}
-	if !IsKubernetesBuiltInResource(k.apiVersion) {
-		return false
-	}
-	return true
-}
-
 func IsKubernetesBuiltInResource(apiVersion string) bool {
 	_, ok := builtInAPIVersions[apiVersion]
 	// TODO: Change the way to detect whether an APIVersion is built-in or not
