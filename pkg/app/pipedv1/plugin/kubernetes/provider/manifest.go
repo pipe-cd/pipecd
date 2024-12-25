@@ -147,6 +147,11 @@ func (m Manifest) AddAnnotations(annotations map[string]string) {
 	m.body.SetAnnotations(annos)
 }
 
+// IsManagedByPiped returns true if the manifest is managed by Piped.
+func (m Manifest) IsManagedByPiped() bool {
+	return len(m.body.GetOwnerReferences()) == 0 && m.body.GetAnnotations()[LabelManagedBy] == ManagedByPiped
+}
+
 // AddStringMapValues adds or overrides the given key-values into the string map
 // that can be found at the specified fields.
 func (m Manifest) AddStringMapValues(values map[string]string, fields ...string) error {

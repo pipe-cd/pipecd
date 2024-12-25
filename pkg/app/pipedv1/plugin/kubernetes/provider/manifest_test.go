@@ -723,3 +723,71 @@ data:
 		})
 	}
 }
+
+func TestIsManagedByPiped(t *testing.T) {
+	testcases := []struct {
+		name       string
+		manifest   Manifest
+		wantResult bool
+	}{
+		{
+			name: "managed by Piped",
+			manifest: Manifest{
+				body: &unstructured.Unstructured{
+					Object: map[string]interface{}{
+						"metadata": map[string]interface{}{
+							"annotations": map[string]interface{}{
+								LabelManagedBy: ManagedByPiped,
+							},
+						},
+					},
+				},
+			},
+			wantResult: true,
+		},
+		{
+			name: "not managed by Piped",
+			manifest: Manifest{
+				body: &unstructured.Unstructured{
+					Object: map[string]interface{}{
+						"metadata": map[string]interface{}{
+							"annotations": map[string]interface{}{
+								"some-other-label": "some-value",
+							},
+						},
+					},
+				},
+			},
+			wantResult: false,
+		},
+		{
+			name: "has owner references",
+			manifest: Manifest{
+				body: &unstructured.Unstructured{
+					Object: map[string]interface{}{
+						"metadata": map[string]interface{}{
+							"annotations": map[string]interface{}{
+								LabelManagedBy: ManagedByPiped,
+							},
+							"ownerReferences": []interface{}{
+								map[string]interface{}{
+									"apiVersion": "v1",
+									"kind":       "ReplicaSet",
+									"name":       "example-replicaset",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantResult: false,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			gotResult := tc.manifest.IsManagedByPiped()
+			assert.Equal(t, tc.wantResult, gotResult)
+		})
+	}
+}
