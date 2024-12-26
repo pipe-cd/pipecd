@@ -86,8 +86,11 @@ func NewLoader(registry ToolRegistry) *Loader {
 func (l *Loader) LoadManifests(ctx context.Context, input LoaderInput) (manifests []Manifest, err error) {
 	defer func() {
 		for i := range manifests {
-			// Set the namespace for all manifests.
-			manifests[i].body.SetNamespace(input.Namespace)
+			// Set the namespace for all manifests if the namespace is not specified in the manifest,
+			// we have to do this to ensure that the namespace of loaded manifests are consistent with the applied resources.
+			if input.Namespace != "" {
+				manifests[i].body.SetNamespace(input.Namespace)
+			}
 
 			// Add builtin labels and annotations for tracking application live state.
 			manifests[i].AddLabels(map[string]string{
