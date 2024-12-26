@@ -136,6 +136,8 @@ func setupTestPluginConfigAndDynamicClient(t *testing.T) (*config.PipedPlugin, d
 }
 
 func TestDeploymentService_executeK8sSyncStage(t *testing.T) {
+	t.Parallel()
+
 	ctx := context.Background()
 
 	// read the application config from the example file
@@ -199,6 +201,8 @@ func TestDeploymentService_executeK8sSyncStage(t *testing.T) {
 }
 
 func TestDeploymentService_executeK8sSyncStage_withInputNamespace(t *testing.T) {
+	t.Parallel()
+
 	ctx := context.Background()
 
 	// read the application config from the example file
@@ -268,6 +272,8 @@ func TestDeploymentService_executeK8sSyncStage_withInputNamespace(t *testing.T) 
 }
 
 func TestDeploymentService_executeK8sSyncStage_withPrune(t *testing.T) {
+	t.Parallel()
+
 	ctx := context.Background()
 
 	// initialize tool registry
@@ -372,6 +378,8 @@ func TestDeploymentService_executeK8sSyncStage_withPrune(t *testing.T) {
 }
 
 func TestDeploymentService_executeK8sSyncStage_withPrune_changesNamespace(t *testing.T) {
+	t.Parallel()
+
 	ctx := context.Background()
 
 	// initialize tool registry
@@ -492,6 +500,8 @@ func TestDeploymentService_executeK8sSyncStage_withPrune_changesNamespace(t *tes
 }
 
 func TestDeploymentService_executeK8sSyncStage_withPrune_clusterScoped(t *testing.T) {
+	t.Parallel()
+
 	ctx := context.Background()
 
 	// initialize tool registry
