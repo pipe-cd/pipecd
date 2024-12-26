@@ -230,6 +230,34 @@ func (c *Kubectl) Get(ctx context.Context, kubeconfig, namespace string, r Resou
 	return ms[0], nil
 }
 
+func (c *Kubectl) GetAll(ctx context.Context, kubeconfig, namespace, kind string, selector ...string) (ms []Manifest, err error) {
+	args := make([]string, 0, 7)
+	if kubeconfig != "" {
+		args = append(args, "--kubeconfig", kubeconfig)
+	}
+	if namespace == "" {
+		args = append(args, "--all-namespaces")
+	} else {
+		args = append(args, "--namespace", namespace)
+	}
+	args = append(args, "get", kind, "-o", "yaml", "--selector", strings.Join(selector, ","))
+	cmd := exec.CommandContext(ctx, c.execPath, args...)
+	out, err := cmd.CombinedOutput()
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get: %s, %w", string(out), err)
+	}
+	if strings.Contains(string(out), "(NotFound)") {
+		// No resources found. Return nil. This is not an error.
+		return nil, nil
+	}
+	ms, err = ParseManifests(string(out))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse manifests %v: %w", kind, err)
+	}
+	return ms, nil
+}
+
 // CreateNamespace runs kubectl create namespace with the given namespace.
 func (c *Kubectl) CreateNamespace(ctx context.Context, kubeconfig, namespace string) (err error) {
 	// TODO: record the metrics for the kubectl create namespace command.

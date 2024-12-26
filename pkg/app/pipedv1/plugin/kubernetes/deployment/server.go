@@ -17,6 +17,8 @@ package deployment
 import (
 	"cmp"
 	"context"
+	"errors"
+	"fmt"
 	"time"
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
@@ -266,6 +268,9 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersi
 
 	// Add variant annotations to all manifests.
 	for i := range manifests {
+		manifests[i].AddLabels(map[string]string{
+			variantLabel: primaryVariant,
+		})
 		manifests[i].AddAnnotations(map[string]string{
 			variantLabel: primaryVariant,
 		})
@@ -290,8 +295,11 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersi
 		return model.StageStatus_STAGE_FAILURE
 	}
 
+	// Create the kubectl wrapper for the target cluster.
+	kubectl := provider.NewKubectl(kubectlPath)
+
 	// Create the applier for the target cluster.
-	applier := provider.NewApplier(provider.NewKubectl(kubectlPath), cfg.Spec.Input, deployTargetConfig, a.logger)
+	applier := provider.NewApplier(kubectl, cfg.Spec.Input, deployTargetConfig, a.logger)
 
 	// Start applying all manifests to add or update running resources.
 	if err := applyManifests(ctx, applier, manifests, cfg.Spec.Input.Namespace, lp); err != nil {
@@ -299,9 +307,78 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersi
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	// TODO: implement prune resources
+	// TODO: treat the stage options specified under "with"
+	if !cfg.Spec.QuickSync.Prune {
+		lp.Info("Resource GC was skipped because sync.prune was not configured")
+		return model.StageStatus_STAGE_SUCCESS
+	}
 
+	// Wait for all applied manifests to be stable.
+	// In theory, we don't need to wait for them to be stable before going to the next step
+	// but waiting for a while reduces the number of Kubernetes changes in a short time.
+	lp.Info("Waiting for the applied manifests to be stable")
+	select {
+	case <-time.After(15 * time.Second):
+		break
+	case <-ctx.Done():
+		break
+	}
+
+	lp.Info("Start finding all running resources but no longer defined in Git")
+	liveResources, err := kubectl.GetAll(ctx, deployTargetConfig.KubeConfigPath, "", "all",
+		fmt.Sprintf("%s=%s", provider.LabelApplication, input.GetDeployment().GetApplicationId()),
+		fmt.Sprintf("%s=%s", variantLabel, primaryVariant))
+	if err != nil {
+		lp.Errorf("Failed while getting live resources to prune (%v)", err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+	if len(liveResources) == 0 {
+		lp.Info("There is no data about live resource so no resource will be removed")
+		return model.StageStatus_STAGE_SUCCESS
+	}
+
+	lp.Successf("Successfully loaded %d live resources", len(liveResources))
+
+	removeKeys := findRemoveResources(manifests, liveResources)
+	if len(removeKeys) == 0 {
+		lp.Info("There are no live resources should be removed")
+		return model.StageStatus_STAGE_SUCCESS
+	}
+
+	lp.Infof("Start pruning %d resources", len(removeKeys))
+	var deletedCount int
+	for _, key := range removeKeys {
+		if err := kubectl.Delete(ctx, deployTargetConfig.KubeConfigPath, "", key); err != nil {
+			if errors.Is(err, provider.ErrNotFound) {
+				lp.Infof("Specified resource does not exist, so skip deleting the resource: %s (%v)", key.ReadableString(), err)
+				continue
+			}
+			lp.Errorf("Failed while deleting resource %s (%v)", key.ReadableString(), err)
+			continue // continue to delete other resources
+		}
+		deletedCount++
+		lp.Successf("- deleted resource: %s", key.ReadableString())
+	}
+
+	lp.Successf("Successfully deleted %d resources", deletedCount)
 	return model.StageStatus_STAGE_SUCCESS
+}
+
+func findRemoveResources(manifests []provider.Manifest, liveResources []provider.Manifest) []provider.ResourceKey {
+	var (
+		keys       = make(map[provider.ResourceKey]struct{}, len(manifests))
+		removeKeys = make([]provider.ResourceKey, 0, len(liveResources))
+	)
+	for _, m := range manifests {
+		keys[m.Key()] = struct{}{}
+	}
+	for _, m := range liveResources {
+		if _, ok := keys[m.Key()]; ok {
+			continue
+		}
+		removeKeys = append(removeKeys, m.Key())
+	}
+	return removeKeys
 }
 
 func (a *DeploymentService) executeK8sRollbackStage(ctx context.Context, lp logpersister.StageLogPersister, input *deployment.ExecutePluginInput) model.StageStatus {
