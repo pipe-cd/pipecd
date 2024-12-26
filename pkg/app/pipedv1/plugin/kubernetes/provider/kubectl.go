@@ -233,9 +233,65 @@ func (c *Kubectl) Get(ctx context.Context, kubeconfig, namespace string, r Resou
 	return ms[0], nil
 }
 
-func (c *Kubectl) GetAll(ctx context.Context, kubeconfig, namespace, kind string, selector ...string) (ms []Manifest, err error) {
+func (c *Kubectl) getAPIResources(ctx context.Context, kubeconfig string) ([]string, error) {
+	args := []string{"api-resources", "--namespaced=false", "--verbs=list,get,delete", "--output=name"}
+	if kubeconfig != "" {
+		args = append(args, "--kubeconfig", kubeconfig)
+	}
+	cmd := exec.CommandContext(ctx, c.execPath, args...)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get API resources: %s, %v", string(out), err)
+	}
+	lines := strings.Split(string(out), "\n")
+	resources := make([]string, 0, len(lines))
+	for _, line := range lines {
+		if line != "" {
+			resources = append(resources, line)
+		}
+	}
+
+	return resources, nil
+}
+
+func (c *Kubectl) GetAllClusterScoped(ctx context.Context, kubeconfig string, selector ...string) ([]Manifest, error) {
+	resources, err := c.getAPIResources(ctx, kubeconfig)
+	if err != nil {
+		return nil, err
+	}
+
 	args := make([]string, 0, 7)
-	args = append(args, "get", kind, "-o", "yaml", "--selector", strings.Join(selector, ","))
+	if kubeconfig != "" {
+		args = append(args, "--kubeconfig", kubeconfig)
+	}
+	args = append(args, "get", strings.Join(resources, ","), "-o", "yaml", "--selector", strings.Join(selector, ","))
+	cmd := exec.CommandContext(ctx, c.execPath, args...)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster-scoped resources: %s, %v", string(out), err)
+	}
+
+	// Unmarshal the output to the list of manifests.
+	var list v1.List
+	if err := yaml.Unmarshal(out, &list); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal the output: %w", err)
+	}
+
+	ms := make([]Manifest, 0, len(list.Items))
+	for _, item := range list.Items {
+		m, err := ParseManifests(string(item.Raw))
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse the manifest: %w", err)
+		}
+		ms = append(ms, m...)
+	}
+
+	return ms, nil
+}
+
+func (c *Kubectl) GetAll(ctx context.Context, kubeconfig, namespace string, selector ...string) (ms []Manifest, err error) {
+	args := make([]string, 0, 7)
+	args = append(args, "get", "all", "-o", "yaml", "--selector", strings.Join(selector, ","))
 	if kubeconfig != "" {
 		args = append(args, "--kubeconfig", kubeconfig)
 	}

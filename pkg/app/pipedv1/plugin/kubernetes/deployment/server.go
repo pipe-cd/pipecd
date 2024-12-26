@@ -325,21 +325,34 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersi
 	}
 
 	lp.Info("Start finding all running resources but no longer defined in Git")
-	liveResources, err := kubectl.GetAll(ctx, deployTargetConfig.KubeConfigPath, "", "all",
+
+	namespacedLiveResources, err := kubectl.GetAll(ctx, deployTargetConfig.KubeConfigPath,
+		"",
+		fmt.Sprintf("%s=%s", provider.LabelManagedBy, provider.ManagedByPiped),
 		fmt.Sprintf("%s=%s", provider.LabelApplication, input.GetDeployment().GetApplicationId()),
-		fmt.Sprintf("%s=%s", variantLabel, primaryVariant))
+	)
 	if err != nil {
-		lp.Errorf("Failed while getting live resources to prune (%v)", err)
+		lp.Errorf("Failed while listing all resources (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
-	if len(liveResources) == 0 {
+
+	clusterLiveResources, err := kubectl.GetAllClusterScoped(ctx, deployTargetConfig.KubeConfigPath,
+		fmt.Sprintf("%s=%s", provider.LabelManagedBy, provider.ManagedByPiped),
+		fmt.Sprintf("%s=%s", provider.LabelApplication, input.GetDeployment().GetApplicationId()),
+	)
+	if err != nil {
+		lp.Errorf("Failed while listing all cluster-scoped resources (%v)", err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	if len(namespacedLiveResources)+len(clusterLiveResources) == 0 {
 		lp.Info("There is no data about live resource so no resource will be removed")
 		return model.StageStatus_STAGE_SUCCESS
 	}
 
-	lp.Successf("Successfully loaded %d live resources", len(liveResources))
+	lp.Successf("Successfully loaded %d live resources", len(namespacedLiveResources)+len(clusterLiveResources))
 
-	removeKeys := provider.FindRemoveResources(manifests, liveResources)
+	removeKeys := provider.FindRemoveResources(manifests, namespacedLiveResources, clusterLiveResources)
 	if len(removeKeys) == 0 {
 		lp.Info("There are no live resources should be removed")
 		return model.StageStatus_STAGE_SUCCESS

@@ -16,6 +16,7 @@ package provider
 
 import (
 	"fmt"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -47,11 +48,23 @@ func (k ResourceKey) Namespace() string {
 	return k.namespace
 }
 
-// normalizeDefaultNamespace converts the default namespace to an empty string.
-func (k ResourceKey) normalizeDefaultNamespace() ResourceKey {
+// normalize converts the group and kind to lower case.
+// It also converts the default namespace to an empty string.
+func (k ResourceKey) normalize() ResourceKey {
+	k.groupKind = normalizeGroupKind(k.groupKind)
+	return k.normalizeNamespace()
+}
+
+// normalizeNamespace converts the default namespace to an empty string.
+func (k ResourceKey) normalizeNamespace() ResourceKey {
 	if k.namespace == DefaultNamespace {
-		k.namespace = ""
+		return k.withoutNamespace()
 	}
+	return k
+}
+
+func (k ResourceKey) withoutNamespace() ResourceKey {
+	k.namespace = ""
 	return k
 }
 
@@ -72,27 +85,46 @@ func makeResourceKey(obj *unstructured.Unstructured) ResourceKey {
 	return k
 }
 
-func FindRemoveResources(manifests []Manifest, liveResources []Manifest) []ResourceKey {
+func normalizeGroupKind(gk schema.GroupKind) schema.GroupKind {
+	gk.Group = strings.ToLower(gk.Group)
+	gk.Kind = strings.ToLower(gk.Kind)
+	return gk
+}
+
+func FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveResources []Manifest) []ResourceKey {
 	var (
-		keys       = make(map[ResourceKey]struct{}, len(manifests))
-		removeKeys = make([]ResourceKey, 0, len(liveResources))
+		removeKeys = make([]ResourceKey, 0, len(namespacedLiveResources)+len(clusterScopedLiveResources))
 	)
-	for _, m := range manifests {
-		keys[m.Key()] = struct{}{}
-		keys[m.Key().normalizeDefaultNamespace()] = struct{}{}
-	}
-	for _, m := range liveResources {
-		if !m.IsManagedByPiped() {
-			continue
-		}
-		if _, ok := keys[m.Key()]; ok {
-			continue
-		}
-		if _, ok := keys[m.Key().normalizeDefaultNamespace()]; ok {
-			continue
+
+	{
+		keys := make(map[ResourceKey]struct{}, len(manifests))
+		for _, m := range manifests {
+			keys[m.Key().normalize()] = struct{}{}
 		}
 
-		removeKeys = append(removeKeys, m.Key())
+		for _, r := range namespacedLiveResources {
+			ns := r.Key().namespace
+			k := r.Key().normalize()
+			if _, ok := keys[k]; !ok {
+				// The namespace should be set to the live resource's value.
+				k.namespace = ns
+				removeKeys = append(removeKeys, k)
+			}
+		}
 	}
+
+	{
+		keys := make(map[ResourceKey]struct{}, len(manifests))
+		for _, m := range manifests {
+			keys[m.Key().normalize().withoutNamespace()] = struct{}{}
+		}
+		for _, r := range clusterScopedLiveResources {
+			k := r.Key().normalize().withoutNamespace()
+			if _, ok := keys[k]; !ok {
+				removeKeys = append(removeKeys, k)
+			}
+		}
+	}
+
 	return removeKeys
 }
