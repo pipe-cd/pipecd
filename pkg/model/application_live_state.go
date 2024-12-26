@@ -152,19 +152,29 @@ func (s *ApplicationLiveStateSnapshot) DetermineApplicationHealthStatus() {
 		return
 	}
 
+	s.HealthStatus = ApplicationLiveStateSnapshot_HEALTHY
+
+	unhealthy := false
+	unknown := false
+
 	for _, r := range app.Resources {
 		if r.HealthStatus == ResourceState_UNHEALTHY {
-			s.HealthStatus = ApplicationLiveStateSnapshot_UNHEALTHY
-			return
+			unhealthy = true
 		}
-	}
 
-	for _, r := range app.Resources {
 		if r.HealthStatus == ResourceState_UNKNOWN {
-			s.HealthStatus = ApplicationLiveStateSnapshot_UNKNOWN
-			return
+			unknown = true
 		}
 	}
 
-	s.HealthStatus = ApplicationLiveStateSnapshot_HEALTHY
+	// prioritize unhealthy over unknown when these two statuses are both set.
+	if unhealthy {
+		s.HealthStatus = ApplicationLiveStateSnapshot_UNHEALTHY
+		return
+	}
+
+	if unknown {
+		s.HealthStatus = ApplicationLiveStateSnapshot_UNKNOWN
+		return
+	}
 }
