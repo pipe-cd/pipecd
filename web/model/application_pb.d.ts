@@ -1,4 +1,4 @@
-import * as jspb from 'google-protobuf';
+import * as jspb from 'google-protobuf'
 
 
 import * as pkg_model_common_pb from 'pipecd/web/model/common_pb';
