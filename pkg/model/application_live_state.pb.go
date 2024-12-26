@@ -900,7 +900,6 @@ func (x *ApplicationLiveState) GetHealthStatus() ApplicationLiveState_Status {
 	return ApplicationLiveState_UNKNOWN
 }
 
-// TODO: Add some more fields to consider about the deployment for multi clusters.
 type ResourceState struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

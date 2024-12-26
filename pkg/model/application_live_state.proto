@@ -84,7 +84,6 @@ message ApplicationLiveState {
     Status health_status = 2;
 }
 
-// TODO: Add some more fields to consider about the deployment for multi clusters.
 message ResourceState {
     enum HealthStatus {
         UNKNOWN = 0;
