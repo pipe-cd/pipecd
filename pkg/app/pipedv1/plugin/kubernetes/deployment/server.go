@@ -339,7 +339,7 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersi
 
 	lp.Successf("Successfully loaded %d live resources", len(liveResources))
 
-	removeKeys := findRemoveResources(manifests, liveResources)
+	removeKeys := provider.FindRemoveResources(manifests, liveResources)
 	if len(removeKeys) == 0 {
 		lp.Info("There are no live resources should be removed")
 		return model.StageStatus_STAGE_SUCCESS
@@ -362,23 +362,6 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersi
 
 	lp.Successf("Successfully deleted %d resources", deletedCount)
 	return model.StageStatus_STAGE_SUCCESS
-}
-
-func findRemoveResources(manifests []provider.Manifest, liveResources []provider.Manifest) []provider.ResourceKey {
-	var (
-		keys       = make(map[provider.ResourceKey]struct{}, len(manifests))
-		removeKeys = make([]provider.ResourceKey, 0, len(liveResources))
-	)
-	for _, m := range manifests {
-		keys[m.Key()] = struct{}{}
-	}
-	for _, m := range liveResources {
-		if _, ok := keys[m.Key()]; ok {
-			continue
-		}
-		removeKeys = append(removeKeys, m.Key())
-	}
-	return removeKeys
 }
 
 func (a *DeploymentService) executeK8sRollbackStage(ctx context.Context, lp logpersister.StageLogPersister, input *deployment.ExecutePluginInput) model.StageStatus {

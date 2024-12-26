@@ -43,6 +43,14 @@ func (k ResourceKey) Name() string {
 	return k.name
 }
 
+// normalizeDefaultNamespace converts the default namespace to an empty string.
+func (k ResourceKey) normalizeDefaultNamespace() ResourceKey {
+	if k.namespace == DefaultNamespace {
+		k.namespace = ""
+	}
+	return k
+}
+
 func (k ResourceKey) String() string {
 	return fmt.Sprintf("%s:%s:%s:%s", k.groupKind.Group, k.groupKind.Kind, k.namespace, k.name)
 }
@@ -58,4 +66,29 @@ func makeResourceKey(obj *unstructured.Unstructured) ResourceKey {
 		name:      obj.GetName(),
 	}
 	return k
+}
+
+func FindRemoveResources(manifests []Manifest, liveResources []Manifest) []ResourceKey {
+	var (
+		keys       = make(map[ResourceKey]struct{}, len(manifests))
+		removeKeys = make([]ResourceKey, 0, len(liveResources))
+	)
+	for _, m := range manifests {
+		keys[m.Key()] = struct{}{}
+		keys[m.Key().normalizeDefaultNamespace()] = struct{}{}
+	}
+	for _, m := range liveResources {
+		if !m.IsManagedByPiped() {
+			continue
+		}
+		if _, ok := keys[m.Key()]; ok {
+			continue
+		}
+		if _, ok := keys[m.Key().normalizeDefaultNamespace()]; ok {
+			continue
+		}
+
+		removeKeys = append(removeKeys, m.Key())
+	}
+	return removeKeys
 }

@@ -266,3 +266,107 @@ func TestDeploymentService_executeK8sSyncStage_withInputNamespace(t *testing.T) 
 	assert.Equal(t, "apps:Deployment::simple", deployment.GetAnnotations()["pipecd.dev/resource-key"]) // This assertion differs from the non-plugin-arched piped's Kubernetes platform provider, but we decided to change this behavior.
 	assert.Equal(t, "0123456789", deployment.GetAnnotations()["pipecd.dev/commit-hash"])
 }
+
+func TestDeploymentService_executeK8sSyncStage_withPrune(t *testing.T) {
+	ctx := context.Background()
+
+	// initialize tool registry
+	testRegistry, err := toolregistrytest.NewToolRegistry(t)
+	require.NoError(t, err)
+
+	// initialize plugin config and dynamic client for assertions with envtest
+	pluginCfg, dynamicClient := setupTestPluginConfigAndDynamicClient(t)
+
+	svc := NewDeploymentService(pluginCfg, zaptest.NewLogger(t), testRegistry, logpersistertest.NewTestLogPersister(t))
+
+	running := filepath.Join("./", "testdata", "prune", "running")
+
+	// read the running application config from the example file
+	runningCfg, err := os.ReadFile(filepath.Join(running, "app.pipecd.yaml"))
+	require.NoError(t, err)
+
+	// prepare the request to ensure the running deployment exists
+	runningRequest := &deployment.ExecuteStageRequest{
+		Input: &deployment.ExecutePluginInput{
+			Deployment: &model.Deployment{
+				PipedId:       "piped-id",
+				ApplicationId: "app-id",
+				DeployTargets: []string{"default"},
+			},
+			Stage: &model.PipelineStage{
+				Id:   "stage-id",
+				Name: "K8S_SYNC",
+			},
+			StageConfig:             []byte(``),
+			RunningDeploymentSource: nil,
+			TargetDeploymentSource: &deployment.DeploymentSource{
+				ApplicationDirectory:      running,
+				CommitHash:                "0123456789",
+				ApplicationConfig:         runningCfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+		},
+	}
+
+	resp, err := svc.ExecuteStage(ctx, runningRequest)
+
+	require.NoError(t, err)
+	require.Equal(t, model.StageStatus_STAGE_SUCCESS.String(), resp.GetStatus().String())
+
+	service, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(context.Background(), "simple", metav1.GetOptions{})
+	require.NoError(t, err)
+
+	require.Equal(t, "piped", service.GetLabels()["pipecd.dev/managed-by"])
+	require.Equal(t, "piped-id", service.GetLabels()["pipecd.dev/piped"])
+	require.Equal(t, "app-id", service.GetLabels()["pipecd.dev/application"])
+	require.Equal(t, "0123456789", service.GetLabels()["pipecd.dev/commit-hash"])
+
+	require.Equal(t, "simple", service.GetName())
+	require.Equal(t, "piped", service.GetAnnotations()["pipecd.dev/managed-by"])
+	require.Equal(t, "piped-id", service.GetAnnotations()["pipecd.dev/piped"])
+	require.Equal(t, "app-id", service.GetAnnotations()["pipecd.dev/application"])
+	require.Equal(t, "v1", service.GetAnnotations()["pipecd.dev/original-api-version"])
+	require.Equal(t, ":Service::simple", service.GetAnnotations()["pipecd.dev/resource-key"]) // This assertion differs from the non-plugin-arched piped's Kubernetes platform provider, but we decided to change this behavior.
+	require.Equal(t, "0123456789", service.GetAnnotations()["pipecd.dev/commit-hash"])
+
+	target := filepath.Join("./", "testdata", "prune", "target")
+
+	// read the running application config from the example file
+	targetCfg, err := os.ReadFile(filepath.Join(target, "app.pipecd.yaml"))
+	require.NoError(t, err)
+
+	// prepare the request to ensure the running deployment exists
+	targetRequest := &deployment.ExecuteStageRequest{
+		Input: &deployment.ExecutePluginInput{
+			Deployment: &model.Deployment{
+				PipedId:       "piped-id",
+				ApplicationId: "app-id",
+				DeployTargets: []string{"default"},
+			},
+			Stage: &model.PipelineStage{
+				Id:   "stage-id",
+				Name: "K8S_SYNC",
+			},
+			StageConfig: []byte(``),
+			RunningDeploymentSource: &deployment.DeploymentSource{
+				ApplicationDirectory:      running,
+				CommitHash:                "0123456789",
+				ApplicationConfig:         runningCfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+			TargetDeploymentSource: &deployment.DeploymentSource{
+				ApplicationDirectory:      target,
+				CommitHash:                "0012345678",
+				ApplicationConfig:         targetCfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+		},
+	}
+
+	resp, err = svc.ExecuteStage(ctx, targetRequest)
+	require.NoError(t, err)
+	require.Equal(t, model.StageStatus_STAGE_SUCCESS.String(), resp.GetStatus().String())
+
+	_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(context.Background(), "simple", metav1.GetOptions{})
+	require.Error(t, err)
+}

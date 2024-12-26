@@ -21,6 +21,9 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
+
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/yaml"
 )
 
 var (
@@ -232,6 +235,7 @@ func (c *Kubectl) Get(ctx context.Context, kubeconfig, namespace string, r Resou
 
 func (c *Kubectl) GetAll(ctx context.Context, kubeconfig, namespace, kind string, selector ...string) (ms []Manifest, err error) {
 	args := make([]string, 0, 7)
+	args = append(args, "get", kind, "-o", "yaml", "--selector", strings.Join(selector, ","))
 	if kubeconfig != "" {
 		args = append(args, "--kubeconfig", kubeconfig)
 	}
@@ -240,7 +244,6 @@ func (c *Kubectl) GetAll(ctx context.Context, kubeconfig, namespace, kind string
 	} else {
 		args = append(args, "--namespace", namespace)
 	}
-	args = append(args, "get", kind, "-o", "yaml", "--selector", strings.Join(selector, ","))
 	cmd := exec.CommandContext(ctx, c.execPath, args...)
 	out, err := cmd.CombinedOutput()
 
@@ -251,10 +254,22 @@ func (c *Kubectl) GetAll(ctx context.Context, kubeconfig, namespace, kind string
 		// No resources found. Return nil. This is not an error.
 		return nil, nil
 	}
-	ms, err = ParseManifests(string(out))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse manifests %v: %w", kind, err)
+
+	// Unmarshal the output to the list of manifests.
+	var list v1.List
+	if err := yaml.Unmarshal(out, &list); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal the output: %w", err)
 	}
+
+	ms = make([]Manifest, 0, len(list.Items))
+	for _, item := range list.Items {
+		m, err := ParseManifests(string(item.Raw))
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse the manifest: %w", err)
+		}
+		ms = append(ms, m...)
+	}
+
 	return ms, nil
 }
 
