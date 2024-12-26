@@ -45,6 +45,8 @@ message Application {
     string platform_provider = 15;
     // The names of deploy taget where to deploy this application.
     repeated string deploy_targets = 16;
+    // The name of plugin used to deploy this application.
+    string plugin = 17;
     // Additional description about application.
     string description = 9;
     // Custom attributes to identify applications.
