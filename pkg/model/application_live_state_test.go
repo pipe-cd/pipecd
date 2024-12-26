@@ -168,6 +168,7 @@ func TestApplicationLiveStateSnapshot_DetermineAppHealthStatus(t *testing.T) {
 		})
 	}
 }
+
 func TestApplicationLiveStateSnapshot_DetermineApplicationHealthStatus(t *testing.T) {
 	testcases := []struct {
 		name     string
@@ -199,6 +200,18 @@ func TestApplicationLiveStateSnapshot_DetermineApplicationHealthStatus(t *testin
 				ApplicationLiveState: &ApplicationLiveState{
 					Resources: []*ResourceState{
 						{HealthStatus: ResourceState_HEALTHY},
+						{HealthStatus: ResourceState_UNHEALTHY},
+					},
+				},
+			},
+			want: ApplicationLiveStateSnapshot_UNHEALTHY,
+		},
+		{
+			name: "unhealthy: prioritize unhealthy over unknown",
+			snapshot: &ApplicationLiveStateSnapshot{
+				ApplicationLiveState: &ApplicationLiveState{
+					Resources: []*ResourceState{
+						{HealthStatus: ResourceState_UNKNOWN},
 						{HealthStatus: ResourceState_UNHEALTHY},
 					},
 				},

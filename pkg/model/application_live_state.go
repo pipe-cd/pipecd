@@ -157,11 +157,14 @@ func (s *ApplicationLiveStateSnapshot) DetermineApplicationHealthStatus() {
 			s.HealthStatus = ApplicationLiveStateSnapshot_UNHEALTHY
 			return
 		}
+	}
 
+	for _, r := range app.Resources {
 		if r.HealthStatus == ResourceState_UNKNOWN {
 			s.HealthStatus = ApplicationLiveStateSnapshot_UNKNOWN
 			return
 		}
 	}
+
 	s.HealthStatus = ApplicationLiveStateSnapshot_HEALTHY
 }
