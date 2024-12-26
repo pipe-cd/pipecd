@@ -142,6 +142,7 @@ proto.model.Application.toObject = function(includeInstance, msg) {
     cloudProvider: jspb.Message.getFieldWithDefault(msg, 8, ""),
     platformProvider: jspb.Message.getFieldWithDefault(msg, 15, ""),
     deployTargetsList: (f = jspb.Message.getRepeatedField(msg, 16)) == null ? undefined : f,
+    plugin: jspb.Message.getFieldWithDefault(msg, 17, ""),
     description: jspb.Message.getFieldWithDefault(msg, 9, ""),
     labelsMap: (f = msg.getLabelsMap()) ? f.toObject(includeInstance, undefined) : [],
     mostRecentlySuccessfulDeployment: (f = msg.getMostRecentlySuccessfulDeployment()) && proto.model.ApplicationDeploymentReference.toObject(includeInstance, f),
@@ -225,6 +226,10 @@ proto.model.Application.deserializeBinaryFromReader = function(msg, reader) {
     case 16:
       var value = /** @type {string} */ (reader.readString());
       msg.addDeployTargets(value);
+      break;
+    case 17:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPlugin(value);
       break;
     case 9:
       var value = /** @type {string} */ (reader.readString());
@@ -365,6 +370,13 @@ proto.model.Application.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeRepeatedString(
       16,
+      f
+    );
+  }
+  f = message.getPlugin();
+  if (f.length > 0) {
+    writer.writeString(
+      17,
       f
     );
   }
@@ -645,6 +657,24 @@ proto.model.Application.prototype.addDeployTargets = function(value, opt_index) 
  */
 proto.model.Application.prototype.clearDeployTargetsList = function() {
   return this.setDeployTargetsList([]);
+};
+
+
+/**
+ * optional string plugin = 17;
+ * @return {string}
+ */
+proto.model.Application.prototype.getPlugin = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 17, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.model.Application} returns this
+ */
+proto.model.Application.prototype.setPlugin = function(value) {
+  return jspb.Message.setProto3StringField(this, 17, value);
 };
 
 
