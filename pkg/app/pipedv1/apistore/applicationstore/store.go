@@ -36,6 +36,8 @@ type Lister interface {
 	ListByPlatformProvider(name string) []*model.Application
 	// Get retrieves a specifiec deployment for the given id.
 	Get(id string) (*model.Application, bool)
+	// ListByPluginName lists all applications for a given plugin name.
+	ListByPluginName(name string) []*model.Application
 }
 
 type apiClient interface {
@@ -159,6 +161,19 @@ func (s *store) Get(id string) (*model.Application, bool) {
 
 // ListByPluginName lists all applications for a given plugin name.
 func (s *store) ListByPluginName(name string) []*model.Application {
-	// TODO: implement it
-	return nil
+	apps := s.applicationList.Load()
+	if apps == nil {
+		return nil
+	}
+
+	out := make([]*model.Application, 0)
+	list := apps.([]*model.Application)
+
+	for _, app := range list {
+		if app.Plugin == name {
+			out = append(out, app)
+		}
+	}
+
+	return out
 }
