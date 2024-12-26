@@ -2103,6 +2103,7 @@ proto.model.ResourceState.toObject = function(includeInstance, msg) {
     resourceMetadataMap: (f = msg.getResourceMetadataMap()) ? f.toObject(includeInstance, undefined) : [],
     healthStatus: jspb.Message.getFieldWithDefault(msg, 6, 0),
     healthDescription: jspb.Message.getFieldWithDefault(msg, 7, ""),
+    deployTarget: jspb.Message.getFieldWithDefault(msg, 8, ""),
     createdAt: jspb.Message.getFieldWithDefault(msg, 10, 0),
     updatedAt: jspb.Message.getFieldWithDefault(msg, 11, 0)
   };
@@ -2170,6 +2171,10 @@ proto.model.ResourceState.deserializeBinaryFromReader = function(msg, reader) {
     case 7:
       var value = /** @type {string} */ (reader.readString());
       msg.setHealthDescription(value);
+      break;
+    case 8:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setDeployTarget(value);
       break;
     case 10:
       var value = /** @type {number} */ (reader.readInt64());
@@ -2251,6 +2256,13 @@ proto.model.ResourceState.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       7,
+      f
+    );
+  }
+  f = message.getDeployTarget();
+  if (f.length > 0) {
+    writer.writeString(
+      8,
       f
     );
   }
@@ -2427,6 +2439,24 @@ proto.model.ResourceState.prototype.getHealthDescription = function() {
  */
 proto.model.ResourceState.prototype.setHealthDescription = function(value) {
   return jspb.Message.setProto3StringField(this, 7, value);
+};
+
+
+/**
+ * optional string deploy_target = 8;
+ * @return {string}
+ */
+proto.model.ResourceState.prototype.getDeployTarget = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 8, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.model.ResourceState} returns this
+ */
+proto.model.ResourceState.prototype.setDeployTarget = function(value) {
+  return jspb.Message.setProto3StringField(this, 8, value);
 };
 
 

@@ -256,6 +256,9 @@ export class ResourceState extends jspb.Message {
   getHealthDescription(): string;
   setHealthDescription(value: string): ResourceState;
 
+  getDeployTarget(): string;
+  setDeployTarget(value: string): ResourceState;
+
   getCreatedAt(): number;
   setCreatedAt(value: number): ResourceState;
 
@@ -279,6 +282,7 @@ export namespace ResourceState {
     resourceMetadataMap: Array<[string, string]>,
     healthStatus: ResourceState.HealthStatus,
     healthDescription: string,
+    deployTarget: string,
     createdAt: number,
     updatedAt: number,
   }
