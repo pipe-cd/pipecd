@@ -26,6 +26,7 @@ export const dummyApplication: Application.AsObject = {
   cloudProvider: "",
   platformProvider: "kubernetes-default",
   deployTargetsList: ["kubernetes-default"],
+  plugin: "",
   disabled: false,
   gitPath: {
     configFilename: "",
