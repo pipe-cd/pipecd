@@ -60,6 +60,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/eventwatcher"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/livestatereporter"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/notifier"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
@@ -377,7 +378,10 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	// Start running application live state reporter.
 	{
-		// TODO: Implement the live state reporter controller.
+		r := livestatereporter.NewReporter(applicationLister, apiClient, nameBasedPluginClis, input.Logger)
+		group.Go(func() error {
+			return r.Run(ctx)
+		})
 	}
 
 	// Start running application application drift detector.

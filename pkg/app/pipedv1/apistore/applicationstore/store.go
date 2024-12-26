@@ -156,3 +156,9 @@ func (s *store) Get(id string) (*model.Application, bool) {
 	app, ok := apps.(map[string]*model.Application)[id]
 	return app, ok
 }
+
+// ListByPluginName lists all applications for a given plugin name.
+func (s *store) ListByPluginName(name string) []*model.Application {
+	// TODO: implement it
+	return nil
+}
