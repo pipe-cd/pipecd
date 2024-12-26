@@ -85,8 +85,11 @@ func NewLoader(registry ToolRegistry) *Loader {
 
 func (l *Loader) LoadManifests(ctx context.Context, input LoaderInput) (manifests []Manifest, err error) {
 	defer func() {
-		// Add builtin annotations for tracking application live state.
 		for i := range manifests {
+			// Set the namespace for all manifests.
+			manifests[i].body.SetNamespace(input.Namespace)
+
+			// Add builtin labels and annotations for tracking application live state.
 			manifests[i].AddLabels(map[string]string{
 				LabelManagedBy:   ManagedByPiped,
 				LabelPiped:       input.PipedID,

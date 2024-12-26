@@ -348,7 +348,7 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersi
 	lp.Infof("Start pruning %d resources", len(removeKeys))
 	var deletedCount int
 	for _, key := range removeKeys {
-		if err := kubectl.Delete(ctx, deployTargetConfig.KubeConfigPath, "", key); err != nil {
+		if err := kubectl.Delete(ctx, deployTargetConfig.KubeConfigPath, key.Namespace(), key); err != nil {
 			if errors.Is(err, provider.ErrNotFound) {
 				lp.Infof("Specified resource does not exist, so skip deleting the resource: %s (%v)", key.ReadableString(), err)
 				continue

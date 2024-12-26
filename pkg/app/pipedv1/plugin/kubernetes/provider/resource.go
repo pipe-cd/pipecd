@@ -43,6 +43,10 @@ func (k ResourceKey) Name() string {
 	return k.name
 }
 
+func (k ResourceKey) Namespace() string {
+	return k.namespace
+}
+
 // normalizeDefaultNamespace converts the default namespace to an empty string.
 func (k ResourceKey) normalizeDefaultNamespace() ResourceKey {
 	if k.namespace == DefaultNamespace {
