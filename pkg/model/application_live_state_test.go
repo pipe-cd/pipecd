@@ -168,3 +168,65 @@ func TestApplicationLiveStateSnapshot_DetermineAppHealthStatus(t *testing.T) {
 		})
 	}
 }
+func TestApplicationLiveStateSnapshot_DetermineApplicationHealthStatus(t *testing.T) {
+	testcases := []struct {
+		name     string
+		snapshot *ApplicationLiveStateSnapshot
+		want     ApplicationLiveStateSnapshot_Status
+	}{
+		{
+			name: "healthy: all resources are healthy",
+			snapshot: &ApplicationLiveStateSnapshot{
+				ApplicationLiveState: &ApplicationLiveState{
+					Resources: []*ResourceState{
+						{HealthStatus: ResourceState_HEALTHY},
+						{HealthStatus: ResourceState_HEALTHY},
+					},
+				},
+			},
+			want: ApplicationLiveStateSnapshot_HEALTHY,
+		},
+		{
+			name: "healthy: no resources",
+			snapshot: &ApplicationLiveStateSnapshot{
+				ApplicationLiveState: &ApplicationLiveState{},
+			},
+			want: ApplicationLiveStateSnapshot_HEALTHY,
+		},
+		{
+			name: "unhealthy: one of the resources is unhealthy",
+			snapshot: &ApplicationLiveStateSnapshot{
+				ApplicationLiveState: &ApplicationLiveState{
+					Resources: []*ResourceState{
+						{HealthStatus: ResourceState_HEALTHY},
+						{HealthStatus: ResourceState_UNHEALTHY},
+					},
+				},
+			},
+			want: ApplicationLiveStateSnapshot_UNHEALTHY,
+		},
+		{
+			name: "unknown: one of the resources is unknown",
+			snapshot: &ApplicationLiveStateSnapshot{
+				ApplicationLiveState: &ApplicationLiveState{
+					Resources: []*ResourceState{
+						{HealthStatus: ResourceState_HEALTHY},
+						{HealthStatus: ResourceState_UNKNOWN},
+					},
+				},
+			},
+			want: ApplicationLiveStateSnapshot_UNKNOWN,
+		},
+		{
+			name:     "unknown: nil application live state",
+			snapshot: &ApplicationLiveStateSnapshot{},
+			want:     ApplicationLiveStateSnapshot_UNKNOWN,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.snapshot.DetermineApplicationHealthStatus()
+			assert.Equal(t, tc.want, tc.snapshot.HealthStatus)
+		})
+	}
+}
