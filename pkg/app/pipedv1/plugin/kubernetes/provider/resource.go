@@ -91,6 +91,7 @@ func normalizeGroupKind(gk schema.GroupKind) schema.GroupKind {
 	return gk
 }
 
+// FindRemoveResources identifies resources that are present in the live state but not in the desired manifests.
 func FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveResources []Manifest) []ResourceKey {
 	var (
 		removeKeys = make([]ResourceKey, 0, len(namespacedLiveResources)+len(clusterScopedLiveResources))

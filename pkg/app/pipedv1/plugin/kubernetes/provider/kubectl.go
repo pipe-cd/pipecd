@@ -233,6 +233,9 @@ func (c *Kubectl) Get(ctx context.Context, kubeconfig, namespace string, r Resou
 	return ms[0], nil
 }
 
+// getAPIResources retrieves the list of available API resources from the Kubernetes cluster.
+// It runs the `kubectl api-resources` command with the specified kubeconfig and returns the
+// names of the resources that support the "list", "get", and "delete" verbs.
 func (c *Kubectl) getAPIResources(ctx context.Context, kubeconfig string) ([]string, error) {
 	args := []string{"api-resources", "--namespaced=false", "--verbs=list,get,delete", "--output=name"}
 	if kubeconfig != "" {
@@ -254,6 +257,9 @@ func (c *Kubectl) getAPIResources(ctx context.Context, kubeconfig string) ([]str
 	return resources, nil
 }
 
+// GetAllClusterScoped retrieves all cluster-scoped resources from the Kubernetes cluster
+// using the provided kubeconfig and optional selectors. It returns a slice of Manifests
+// representing the resources or an error if the operation fails.
 func (c *Kubectl) GetAllClusterScoped(ctx context.Context, kubeconfig string, selector ...string) ([]Manifest, error) {
 	resources, err := c.getAPIResources(ctx, kubeconfig)
 	if err != nil {
@@ -289,6 +295,9 @@ func (c *Kubectl) GetAllClusterScoped(ctx context.Context, kubeconfig string, se
 	return ms, nil
 }
 
+// GetAll retrieves all Kubernetes resources in the specified namespace and matching the given selector.
+// It returns a list of manifests or an error if the retrieval or unmarshalling fails.
+// If no resources are found, it returns nil without an error.
 func (c *Kubectl) GetAll(ctx context.Context, kubeconfig, namespace string, selector ...string) (ms []Manifest, err error) {
 	args := make([]string, 0, 7)
 	args = append(args, "get", "all", "-o", "yaml", "--selector", strings.Join(selector, ","))
