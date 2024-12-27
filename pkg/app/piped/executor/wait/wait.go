@@ -74,7 +74,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	} else {
 		startTime = time.Now()
 	}
-	defer e.saveStartTime(sig.Context(), startTime)
+	e.saveStartTime(sig.Context(), startTime)
 
 	timer := time.NewTimer(duration)
 	defer timer.Stop()
