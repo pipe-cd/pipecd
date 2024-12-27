@@ -59,7 +59,8 @@ func (k ResourceKey) Namespace() string {
 // normalize converts the group and kind to lower case.
 // It also converts the default namespace to an empty string.
 func (k ResourceKey) normalize() ResourceKey {
-	k.groupKind = normalizeGroupKind(k.groupKind)
+	k.groupKind.Group = strings.ToLower(k.groupKind.Group)
+	k.groupKind.Kind = strings.ToLower(k.groupKind.Kind)
 	return k.normalizeNamespace()
 }
 
@@ -91,12 +92,6 @@ func makeResourceKey(obj *unstructured.Unstructured) ResourceKey {
 		name:      obj.GetName(),
 	}
 	return k
-}
-
-func normalizeGroupKind(gk schema.GroupKind) schema.GroupKind {
-	gk.Group = strings.ToLower(gk.Group)
-	gk.Kind = strings.ToLower(gk.Kind)
-	return gk
 }
 
 // FindRemoveResources identifies resources that are present in the live state but not in the desired manifests.
