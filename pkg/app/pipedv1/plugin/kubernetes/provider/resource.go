@@ -30,10 +30,18 @@ const (
 	DefaultNamespace = "default"
 )
 
+// ResourceKey represents a unique key of a Kubernetes resource.
+// We use GroupKind, namespace, and name to identify a resource.
 type ResourceKey struct {
+	// We use GroupKind instead of GroupVersionKind because we don't care about the version.
 	groupKind schema.GroupKind
+	// The namespace of the resource.
+	// We use namespace as a part of the key to identify a resource
+	// We have to distinguish the namespaces to prune the old resource when users change the namespace of a resource.
+	// If the resource is cluster-scoped, this field should be empty.
 	namespace string
-	name      string
+	// The name of the resource.
+	name string
 }
 
 func (k ResourceKey) Kind() string {
