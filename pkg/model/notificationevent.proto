@@ -41,6 +41,13 @@ enum NotificationEventType {
 
     EVENT_PIPED_STARTED = 300;
     EVENT_PIPED_STOPPED = 301;
+
+    // Stage Events
+    EVENT_STAGE_STARTED = 400;
+    EVENT_STAGE_SKIPPED = 401;
+    EVENT_STAGE_SUCCEEDED = 402;
+    EVENT_STAGE_FAILED = 403;
+    EVENT_STAGE_CANCELLED = 404;
 }
 
 enum NotificationEventGroup {
@@ -49,6 +56,7 @@ enum NotificationEventGroup {
     EVENT_APPLICATION_SYNC = 2;
     EVENT_APPLICATION_HEALTH = 3;
     EVENT_PIPED = 4;
+    EVENT_STAGE = 5;
 }
 
 message NotificationEventDeploymentTriggered {
@@ -138,4 +146,29 @@ message NotificationEventPipedStopped {
     string name = 2 [(validate.rules).string.min_len = 1];
     string version = 3;
     string project_id = 4 [(validate.rules).string.min_len = 1];
+}
+
+message NotificationEventStageStarted {
+    Deployment deployment = 1 [(validate.rules).message.required = true];
+    PipelineStage stage = 2 [(validate.rules).message.required = true];
+}
+
+message NotificationEventStageSkipped {
+    Deployment deployment = 1 [(validate.rules).message.required = true];
+    PipelineStage stage = 2 [(validate.rules).message.required = true];
+}
+
+message NotificationEventStageSucceeded {
+    Deployment deployment = 1 [(validate.rules).message.required = true];
+    PipelineStage stage = 2 [(validate.rules).message.required = true];
+}
+
+message NotificationEventStageFailed {
+    Deployment deployment = 1 [(validate.rules).message.required = true];
+    PipelineStage stage = 2 [(validate.rules).message.required = true];
+}
+
+message NotificationEventStageCancelled {
+    Deployment deployment = 1 [(validate.rules).message.required = true];
+    PipelineStage stage = 2 [(validate.rules).message.required = true];
 }
