@@ -233,10 +233,10 @@ func (c *Kubectl) Get(ctx context.Context, kubeconfig, namespace string, r Resou
 	return ms[0], nil
 }
 
-// getAPIResources retrieves the list of available API resources from the Kubernetes cluster.
+// getClusterScopedAPIResources retrieves the list of available API resources from the Kubernetes cluster.
 // It runs the `kubectl api-resources` command with the specified kubeconfig and returns the
-// names of the resources that support the "list", "get", and "delete" verbs.
-func (c *Kubectl) getAPIResources(ctx context.Context, kubeconfig string) ([]string, error) {
+// names of the resources that support the "list", "get", and "delete" verbs, and are cluster-scoped.
+func (c *Kubectl) getClusterScopedAPIResources(ctx context.Context, kubeconfig string) ([]string, error) {
 	args := []string{"api-resources", "--namespaced=false", "--verbs=list,get,delete", "--output=name"}
 	if kubeconfig != "" {
 		args = append(args, "--kubeconfig", kubeconfig)
@@ -261,7 +261,7 @@ func (c *Kubectl) getAPIResources(ctx context.Context, kubeconfig string) ([]str
 // using the provided kubeconfig and optional selectors. It returns a slice of Manifests
 // representing the resources or an error if the operation fails.
 func (c *Kubectl) GetAllClusterScoped(ctx context.Context, kubeconfig string, selector ...string) ([]Manifest, error) {
-	resources, err := c.getAPIResources(ctx, kubeconfig)
+	resources, err := c.getClusterScopedAPIResources(ctx, kubeconfig)
 	if err != nil {
 		return nil, err
 	}
