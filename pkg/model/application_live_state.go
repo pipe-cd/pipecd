@@ -166,6 +166,8 @@ func (s *ApplicationLiveStateSnapshot) DetermineApplicationHealthStatus() {
 		}
 	}
 
+	s.HealthStatus = ApplicationLiveStateSnapshot_HEALTHY
+
 	// prioritize unhealthy over unknown when these two statuses are both set.
 	if unhealthy {
 		s.HealthStatus = ApplicationLiveStateSnapshot_UNHEALTHY
@@ -176,6 +178,4 @@ func (s *ApplicationLiveStateSnapshot) DetermineApplicationHealthStatus() {
 		s.HealthStatus = ApplicationLiveStateSnapshot_UNKNOWN
 		return
 	}
-
-	s.HealthStatus = ApplicationLiveStateSnapshot_HEALTHY
 }
