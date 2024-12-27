@@ -156,8 +156,6 @@ func (m *Application) validate(all bool) error {
 
 	// no validation rules for PlatformProvider
 
-	// no validation rules for Plugin
-
 	// no validation rules for Description
 
 	// no validation rules for Labels
