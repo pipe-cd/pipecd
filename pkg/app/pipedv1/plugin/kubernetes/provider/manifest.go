@@ -199,19 +199,12 @@ type WorkloadPair struct {
 func FindSameManifests(olds, news []Manifest) []WorkloadPair {
 	pairs := make([]WorkloadPair, 0)
 	oldMap := make(map[ResourceKey]Manifest, len(olds))
-	nomalizeKey := func(k ResourceKey) ResourceKey {
-		// Normalize the key by removing the default namespace.
-		if k.namespace == DefaultNamespace {
-			k.namespace = ""
-		}
-		return k
-	}
 	for _, m := range olds {
-		key := nomalizeKey(m.Key())
+		key := m.Key().normalize()
 		oldMap[key] = m
 	}
 	for _, n := range news {
-		key := nomalizeKey(n.Key())
+		key := n.Key().normalize()
 		if o, ok := oldMap[key]; ok {
 			pairs = append(pairs, WorkloadPair{
 				Old: o,
