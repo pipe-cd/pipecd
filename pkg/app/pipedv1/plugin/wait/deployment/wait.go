@@ -48,7 +48,7 @@ func (s *deploymentServiceServer) execute(ctx context.Context, in *deployment.Ex
 		// When this is the first run.
 		initialStart = time.Now()
 	}
-	defer s.saveStartTime(ctx, initialStart, in.Stage.Id)
+	s.saveStartTime(ctx, initialStart, in.Stage.Id)
 
 	return wait(ctx, duration, initialStart, slp)
 }
