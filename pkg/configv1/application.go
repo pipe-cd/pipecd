@@ -232,13 +232,7 @@ type SkipOptions struct {
 	Paths                 []string `json:"paths,omitempty"`
 }
 
-// WaitStageOptions contains all configurable values for a WAIT stage.
-type WaitStageOptions struct {
-	Duration Duration    `json:"duration"`
-	SkipOn   SkipOptions `json:"skipOn,omitempty"`
-}
-
-// WaitStageOptions contains all configurable values for a WAIT_APPROVAL stage.
+// WaitApprovalStageOptions contains all configurable values for a WAIT_APPROVAL stage.
 type WaitApprovalStageOptions struct {
 	// The maximum length of time to wait before giving up.
 	// Defaults to 6h.
