@@ -136,7 +136,7 @@ With this feature released under [PipeCD v0.49.3](https://github.com/pipe-cd/pip
 After the release of the EventWatcher update, the community provided positive feedback about resolving the connection issues between CI and CD.
 However, we notice some limitations when using PipeCD in very complex projects with many microservices in the same repository.
 
-Each event sent to PipeCD to trigger a deployment can actually be shared to trigger multiple deployments. This is obvious because container images are shared across many different services. For example, changes related to protos or common shared libraries, such as logging and metrics libraries, lead to multiple deployments at once.
+Each event sent to PipeCD to trigger a deployment can actually be shared to trigger multiple deployments. This is obvious, for example, changes related to protos or common shared libraries, such as logging and metrics libraries, lead to multiple deployments at once.
 
 ![](/images/eventwatcher-trigger-multi-deployments.png)
 
@@ -146,7 +146,7 @@ This becomes problematic when a development team includes many people working on
 
 Naively, we could just add a `root_cause_commit_hash` or `codebase_commit_hash` field to PipeCD’s deployment model and use this information to filter deployments triggered by the same repository code change in the PipeCD UI.
 
-However, if users need to know more than just commit hash, this small change doesn't reliably achieve the goal. What users really want is a link from the code repository to the manifest repository, that the devs (who know the code change), can use to tracking which deployments shift those changes to the clusters.
+However, if users need to know more than just commit hash, this small change doesn't reliably achieve the goal. What users really want is a link from the code repository to the manifest repository, that the devs (who know the code change), can use to track which deployments shift those changes to the clusters.
 
 So we looked back at the design of PipeCD and EventWatcher and took the thinking a step further.
 
