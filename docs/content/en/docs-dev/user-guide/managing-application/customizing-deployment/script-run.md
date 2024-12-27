@@ -108,7 +108,7 @@ You can use the envrionment values related to the deployment.
 |SR_APPLICATION_NAME| The application name | example |
 |SR_TRIGGERED_AT| The timestamp when the deployment is triggered  | 1719571113 |
 |SR_TRIGGERED_COMMIT_HASH| The commit hash that triggered the deployment | 2bf969a3dad043aaf8ae6419943255e49377da0d |
-|TriggeredCommander| The ID of user who triggered the deployment. This will be empty if the deployment was triggered by your piped. | userid |
+|SR_TRIGGERED_COMMANDER| The ID of user who triggered the deployment. This will be empty if the deployment was triggered by your piped. | userid |
 |SR_REPOSITORY_URL| The repository url configured in the piped config  | git@github.com:org/repo.git, https://github.com/org/repo |
 |SR_SUMMARY| The summary of the deployment | Sync with the specified pipeline because piped received a command from user via web console or pipectl|
 |SR_CONTEXT_RAW| The json encoded string of above values | {"deploymentID":"877625fc-196a-40f9-b6a9-99decd5494a0","applicationID":"8d7609e0-9ff6-4dc7-a5ac-39660768606a","applicationName":"example","triggeredAt":1719571113,"triggeredCommitHash":"2bf969a3dad043aaf8ae6419943255e49377da0d","repositoryURL":"git@github.com:org/repo.git","labels":{"env":"example","team":"product"}} |
