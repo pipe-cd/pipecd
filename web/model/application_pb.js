@@ -100,7 +100,7 @@ if (goog.DEBUG && !COMPILED) {
  * @private {!Array<number>}
  * @const
  */
-proto.model.Application.repeatedFields_ = [16];
+proto.model.Application.repeatedFields_ = [16,17];
 
 
 
@@ -142,7 +142,7 @@ proto.model.Application.toObject = function(includeInstance, msg) {
     cloudProvider: jspb.Message.getFieldWithDefault(msg, 8, ""),
     platformProvider: jspb.Message.getFieldWithDefault(msg, 15, ""),
     deployTargetsList: (f = jspb.Message.getRepeatedField(msg, 16)) == null ? undefined : f,
-    plugin: jspb.Message.getFieldWithDefault(msg, 17, ""),
+    pluginsList: (f = jspb.Message.getRepeatedField(msg, 17)) == null ? undefined : f,
     description: jspb.Message.getFieldWithDefault(msg, 9, ""),
     labelsMap: (f = msg.getLabelsMap()) ? f.toObject(includeInstance, undefined) : [],
     mostRecentlySuccessfulDeployment: (f = msg.getMostRecentlySuccessfulDeployment()) && proto.model.ApplicationDeploymentReference.toObject(includeInstance, f),
@@ -229,7 +229,7 @@ proto.model.Application.deserializeBinaryFromReader = function(msg, reader) {
       break;
     case 17:
       var value = /** @type {string} */ (reader.readString());
-      msg.setPlugin(value);
+      msg.addPlugins(value);
       break;
     case 9:
       var value = /** @type {string} */ (reader.readString());
@@ -373,9 +373,9 @@ proto.model.Application.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getPlugin();
+  f = message.getPluginsList();
   if (f.length > 0) {
-    writer.writeString(
+    writer.writeRepeatedString(
       17,
       f
     );
@@ -661,20 +661,39 @@ proto.model.Application.prototype.clearDeployTargetsList = function() {
 
 
 /**
- * optional string plugin = 17;
- * @return {string}
+ * repeated string plugins = 17;
+ * @return {!Array<string>}
  */
-proto.model.Application.prototype.getPlugin = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 17, ""));
+proto.model.Application.prototype.getPluginsList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 17));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.model.Application} returns this
+ */
+proto.model.Application.prototype.setPluginsList = function(value) {
+  return jspb.Message.setField(this, 17, value || []);
 };
 
 
 /**
  * @param {string} value
+ * @param {number=} opt_index
  * @return {!proto.model.Application} returns this
  */
-proto.model.Application.prototype.setPlugin = function(value) {
-  return jspb.Message.setProto3StringField(this, 17, value);
+proto.model.Application.prototype.addPlugins = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 17, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.model.Application} returns this
+ */
+proto.model.Application.prototype.clearPluginsList = function() {
+  return this.setPluginsList([]);
 };
 
 

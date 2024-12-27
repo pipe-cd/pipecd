@@ -149,8 +149,11 @@ func (s *store) ListByPluginName(name string) []*model.Application {
 	list := apps.([]*model.Application)
 
 	for _, app := range list {
-		if app.Plugin == name {
-			out = append(out, app)
+		for _, p := range app.Plugins {
+			if p == name {
+				out = append(out, app)
+				break
+			}
 		}
 	}
 

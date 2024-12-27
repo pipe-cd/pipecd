@@ -26,7 +26,7 @@ export const dummyApplication: Application.AsObject = {
   cloudProvider: "",
   platformProvider: "kubernetes-default",
   deployTargetsList: ["kubernetes-default"],
-  plugin: "",
+  pluginsList: ["kubernetes"],
   disabled: false,
   gitPath: {
     configFilename: "",
@@ -134,6 +134,7 @@ export function createApplicationFromObject(
   app.setId(o.id);
   app.setPlatformProvider(o.platformProvider);
   app.setDeployTargetsList(o.deployTargetsList);
+  app.setPluginsList(o.pluginsList);
   app.setDisabled(o.disabled);
   app.setKind(o.kind);
   app.setName(o.name);
