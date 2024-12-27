@@ -1,0 +1,10 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  name: crd
+  quickSync:
+    prune: false
+  input:
+    manifests:
+      - crd.yaml
+    kubectlVersion: 1.31.0

@@ -73,10 +73,10 @@ func determineVersions(manifests []provider.Manifest) ([]*model.ArtifactVersion,
 func findManifests(kind, name string, manifests []provider.Manifest) []provider.Manifest {
 	out := make([]provider.Manifest, 0, len(manifests))
 	for _, m := range manifests {
-		if m.Key().Kind() != kind {
+		if m.Kind() != kind {
 			continue
 		}
-		if name != "" && m.Key().Name() != name {
+		if name != "" && m.Name() != name {
 			continue
 		}
 		out = append(out, m)
@@ -186,7 +186,7 @@ func determineStrategy(olds, news []provider.Manifest, workloadRefs []config.K8s
 			if msg, changed := checkImageChange(templateDiffs); changed {
 				return model.SyncStrategy_PIPELINE, msg
 			}
-			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because pod template of workload %s was changed", w.New.Key().Name())
+			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because pod template of workload %s was changed", w.New.Name())
 		}
 	}
 
@@ -203,14 +203,14 @@ func determineStrategy(olds, news []provider.Manifest, workloadRefs []config.K8s
 	for k, oc := range oldConfigs {
 		nc, ok := newConfigs[k]
 		if !ok {
-			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because %s %s was deleted", oc.Key().Kind(), oc.Key().Name())
+			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because %s %s was deleted", oc.Kind(), oc.Name())
 		}
 		result, err := provider.Diff(oc, nc, logger)
 		if err != nil {
 			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively due to an error while calculating the diff (%v)", err)
 		}
 		if result.HasDiff() {
-			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because %s %s was updated", oc.Key().Kind(), oc.Key().Name())
+			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because %s %s was updated", oc.Kind(), oc.Name())
 		}
 	}
 

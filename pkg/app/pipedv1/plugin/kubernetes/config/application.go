@@ -36,6 +36,9 @@ type KubernetesApplicationSpec struct {
 	// Input for Kubernetes deployment such as kubectl version, helm version, manifests filter...
 	Input KubernetesDeploymentInput `json:"input"`
 
+	// Configuration for quick sync.
+	QuickSync K8sSyncStageOptions `json:"quickSync"`
+
 	// Which resources should be considered as the Workload of application.
 	// Empty means all Deployments.
 	// e.g.
@@ -98,6 +101,14 @@ type KubernetesDeployTargetConfig struct {
 	KubeConfigPath string `json:"kubeConfigPath,omitempty"`
 	// Version of kubectl will be used.
 	KubectlVersion string `json:"kubectlVersion"`
+}
+
+// K8sSyncStageOptions contains all configurable values for a K8S_SYNC stage.
+type K8sSyncStageOptions struct {
+	// Whether the PRIMARY variant label should be added to manifests if they were missing.
+	AddVariantLabelToSelector bool `json:"addVariantLabelToSelector"`
+	// Whether the resources that are no longer defined in Git should be removed or not.
+	Prune bool `json:"prune"`
 }
 
 // FindDeployTarget finds the deploy target configuration by the given name.

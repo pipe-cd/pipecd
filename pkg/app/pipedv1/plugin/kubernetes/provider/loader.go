@@ -85,13 +85,26 @@ func NewLoader(registry ToolRegistry) *Loader {
 
 func (l *Loader) LoadManifests(ctx context.Context, input LoaderInput) (manifests []Manifest, err error) {
 	defer func() {
-		// Add builtin annotations for tracking application live state.
 		for i := range manifests {
+			// Set the namespace for all manifests if the namespace is not specified in the manifest,
+			// we have to do this to ensure that the namespace of loaded manifests are consistent with the applied resources.
+			if input.Namespace != "" {
+				manifests[i].body.SetNamespace(input.Namespace)
+			}
+
+			// Add builtin labels and annotations for tracking application live state.
+			manifests[i].AddLabels(map[string]string{
+				LabelManagedBy:   ManagedByPiped,
+				LabelPiped:       input.PipedID,
+				LabelApplication: input.AppID,
+				LabelCommitHash:  input.CommitHash,
+			})
+
 			manifests[i].AddAnnotations(map[string]string{
 				LabelManagedBy:          ManagedByPiped,
 				LabelPiped:              input.PipedID,
 				LabelApplication:        input.AppID,
-				LabelOriginalAPIVersion: manifests[i].Key().APIVersion(),
+				LabelOriginalAPIVersion: manifests[i].body.GetAPIVersion(),
 				LabelResourceKey:        manifests[i].Key().String(),
 				LabelCommitHash:         input.CommitHash,
 			})

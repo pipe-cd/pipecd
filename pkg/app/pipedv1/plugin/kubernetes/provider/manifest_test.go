@@ -21,6 +21,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 func TestManifest_AddStringMapValues(t *testing.T) {
@@ -155,10 +156,9 @@ spec:
 			},
 			want: map[ResourceKey]Manifest{
 				{
-					apiVersion: "v1",
-					kind:       "ConfigMap",
-					name:       "my-config",
-					namespace:  "default",
+					groupKind: schema.ParseGroupKind("ConfigMap"),
+					name:      "my-config",
+					namespace: "default",
 				}: mustParseManifests(t, `
 apiVersion: v1
 kind: ConfigMap
@@ -169,10 +169,9 @@ data:
   key: value
 `)[0],
 				{
-					apiVersion: "v1",
-					kind:       "Secret",
-					name:       "my-secret",
-					namespace:  "default",
+					groupKind: schema.ParseGroupKind("Secret"),
+					name:      "my-secret",
+					namespace: "default",
 				}: mustParseManifests(t, `
 apiVersion: v1
 kind: Secret
@@ -217,10 +216,9 @@ data:
 			},
 			want: map[ResourceKey]Manifest{
 				{
-					apiVersion: "v1",
-					kind:       "ConfigMap",
-					name:       "my-config",
-					namespace:  "default",
+					groupKind: schema.ParseGroupKind("ConfigMap"),
+					name:      "my-config",
+					namespace: "default",
 				}: mustParseManifests(t, `
 apiVersion: v1
 kind: ConfigMap
@@ -247,10 +245,9 @@ data:
 			},
 			want: map[ResourceKey]Manifest{
 				{
-					apiVersion: "v1",
-					kind:       "Secret",
-					name:       "my-secret",
-					namespace:  "default",
+					groupKind: schema.ParseGroupKind("Secret"),
+					name:      "my-secret",
+					namespace: "default",
 				}: mustParseManifests(t, `
 apiVersion: v1
 kind: Secret
@@ -286,10 +283,9 @@ data:
 			},
 			want: map[ResourceKey]Manifest{
 				{
-					apiVersion: "v1",
-					kind:       "ConfigMap",
-					name:       "my-config",
-					namespace:  "custom-namespace",
+					groupKind: schema.ParseGroupKind("ConfigMap"),
+					name:      "my-config",
+					namespace: "custom-namespace",
 				}: mustParseManifests(t, `
 apiVersion: v1
 kind: ConfigMap
@@ -300,10 +296,9 @@ data:
   key: value
 `)[0],
 				{
-					apiVersion: "v1",
-					kind:       "Secret",
-					name:       "my-secret",
-					namespace:  "custom-namespace",
+					groupKind: schema.ParseGroupKind("Secret"),
+					name:      "my-secret",
+					namespace: "custom-namespace",
 				}: mustParseManifests(t, `
 apiVersion: v1
 kind: Secret
@@ -720,6 +715,74 @@ data:
 			manifest := mustParseManifests(t, strings.TrimSpace(tt.manifest))[0]
 			got := manifest.IsConfigMap()
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestIsManagedByPiped(t *testing.T) {
+	testcases := []struct {
+		name       string
+		manifest   Manifest
+		wantResult bool
+	}{
+		{
+			name: "managed by Piped",
+			manifest: Manifest{
+				body: &unstructured.Unstructured{
+					Object: map[string]interface{}{
+						"metadata": map[string]interface{}{
+							"annotations": map[string]interface{}{
+								LabelManagedBy: ManagedByPiped,
+							},
+						},
+					},
+				},
+			},
+			wantResult: true,
+		},
+		{
+			name: "not managed by Piped",
+			manifest: Manifest{
+				body: &unstructured.Unstructured{
+					Object: map[string]interface{}{
+						"metadata": map[string]interface{}{
+							"annotations": map[string]interface{}{
+								"some-other-label": "some-value",
+							},
+						},
+					},
+				},
+			},
+			wantResult: false,
+		},
+		{
+			name: "has owner references",
+			manifest: Manifest{
+				body: &unstructured.Unstructured{
+					Object: map[string]interface{}{
+						"metadata": map[string]interface{}{
+							"annotations": map[string]interface{}{
+								LabelManagedBy: ManagedByPiped,
+							},
+							"ownerReferences": []interface{}{
+								map[string]interface{}{
+									"apiVersion": "v1",
+									"kind":       "ReplicaSet",
+									"name":       "example-replicaset",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantResult: false,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			gotResult := tc.manifest.IsManagedByPiped()
+			assert.Equal(t, tc.wantResult, gotResult)
 		})
 	}
 }
