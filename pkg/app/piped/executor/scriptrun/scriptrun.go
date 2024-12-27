@@ -101,7 +101,7 @@ func (e *Executor) executeCommand() model.StageStatus {
 		}
 	}
 
-	ci := NewContextInfo(e.Deployment)
+	ci := NewContextInfo(e.Deployment, false)
 	ciEnv, err := ci.BuildEnv()
 	if err != nil {
 		e.LogPersister.Errorf("failed to build srcipt run context info: %w", err)
@@ -144,7 +144,7 @@ type ContextInfo struct {
 }
 
 // NewContextInfo creates a new ContextInfo from the given deployment.
-func NewContextInfo(d *model.Deployment) *ContextInfo {
+func NewContextInfo(d *model.Deployment, isRollback bool) *ContextInfo {
 	return &ContextInfo{
 		DeploymentID:        d.Id,
 		ApplicationID:       d.ApplicationId,
@@ -155,7 +155,7 @@ func NewContextInfo(d *model.Deployment) *ContextInfo {
 		RepositoryURL:       d.GitPath.Repo.Remote,
 		Summary:             d.Summary,
 		Labels:              d.Labels,
-		IsRollback:          d.Status == model.DeploymentStatus_DEPLOYMENT_ROLLING_BACK,
+		IsRollback:          isRollback,
 	}
 }
 
