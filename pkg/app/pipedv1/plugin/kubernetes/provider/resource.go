@@ -112,12 +112,8 @@ func FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveRe
 		}
 
 		for _, r := range namespacedLiveResources {
-			ns := r.Key().namespace
-			k := r.Key().normalize()
-			if _, ok := keys[k]; !ok {
-				// The namespace should be set to the live resource's value.
-				k.namespace = ns
-				removeKeys = append(removeKeys, k)
+			if _, ok := keys[r.Key().normalize()]; !ok {
+				removeKeys = append(removeKeys, r.Key())
 			}
 		}
 	}
