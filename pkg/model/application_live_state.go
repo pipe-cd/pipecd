@@ -149,6 +149,7 @@ func (s *ApplicationLiveStateSnapshot) determineLambdaAppHealthStatus() {
 func (s *ApplicationLiveStateSnapshot) DetermineApplicationHealthStatus() {
 	app := s.ApplicationLiveState
 	if app == nil {
+		s.HealthStatus = ApplicationLiveStateSnapshot_UNKNOWN
 		return
 	}
 
