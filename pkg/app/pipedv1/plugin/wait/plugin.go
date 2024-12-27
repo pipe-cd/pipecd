@@ -25,7 +25,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/pipe-cd/pipecd/pkg/admin"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/wait/execute"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/wait/deployment"
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
@@ -124,7 +124,7 @@ func (s *plugin) run(ctx context.Context, input cli.Input) (runErr error) {
 	// Start a gRPC server for handling external API requests.
 	{
 		var (
-			service = execute.NewDeploymentService(
+			service = deployment.NewDeploymentService(
 				cfg,
 				input.Logger,
 				persister,
