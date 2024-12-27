@@ -142,7 +142,7 @@ Each event sent to PipeCD to trigger a deployment can actually be shared to trig
 
 This becomes problematic when a development team includes many people working on the same repository and the number of changes affecting many services is large enough: PipeCD's current UI deployment list makes it difficult to determine exactly which deployments were triggered by which code change.
 
-![](/images/problematic-deployment-list-ui.png)
+![](/images/problematic-deployment-list-ui.jpg)
 
 Naively, we could just add a `root_cause_commit_hash` or `codebase_commit_hash` field to PipeCD’s deployment model and use this information to filter deployments triggered by the same repository code change in the PipeCD UI.
 
