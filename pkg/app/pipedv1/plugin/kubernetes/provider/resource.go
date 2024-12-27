@@ -106,26 +106,28 @@ func FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveRe
 	)
 
 	{
-		keys := make(map[ResourceKey]struct{}, len(manifests))
+		normalizedKeys := make(map[ResourceKey]struct{}, len(manifests))
 		for _, m := range manifests {
-			keys[m.Key().normalize()] = struct{}{}
+			normalizedKeys[m.Key().normalize()] = struct{}{}
 		}
 
 		for _, r := range namespacedLiveResources {
-			if _, ok := keys[r.Key().normalize()]; !ok {
+			if _, ok := normalizedKeys[r.Key().normalize()]; !ok {
 				removeKeys = append(removeKeys, r.Key())
 			}
 		}
 	}
 
 	{
-		keys := make(map[ResourceKey]struct{}, len(manifests))
+		normalizedKeys := make(map[ResourceKey]struct{}, len(manifests))
 		for _, m := range manifests {
-			keys[m.Key().normalize().withoutNamespace()] = struct{}{}
+			// We don't care about the namespace of the cluster-scoped resources.
+			normalizedKeys[m.Key().normalize().withoutNamespace()] = struct{}{}
 		}
 		for _, r := range clusterScopedLiveResources {
+			// We don't care about the namespace of the cluster-scoped resources.
 			k := r.Key().normalize().withoutNamespace()
-			if _, ok := keys[k]; !ok {
+			if _, ok := normalizedKeys[k]; !ok {
 				removeKeys = append(removeKeys, k)
 			}
 		}
