@@ -29,6 +29,7 @@ message ApplicationLiveStateSnapshot {
         UNKNOWN = 0;
         HEALTHY = 1;
         OTHER = 2;
+        UNHEALTHY = 3;
     }
     string application_id = 1 [(validate.rules).string.min_len = 1];
     string piped_id = 3 [(validate.rules).string.min_len = 1];

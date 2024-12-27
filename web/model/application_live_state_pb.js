@@ -605,7 +605,8 @@ proto.model.ApplicationLiveStateSnapshot.serializeBinaryToWriter = function(mess
 proto.model.ApplicationLiveStateSnapshot.Status = {
   UNKNOWN: 0,
   HEALTHY: 1,
-  OTHER: 2
+  OTHER: 2,
+  UNHEALTHY: 3
 };
 
 /**

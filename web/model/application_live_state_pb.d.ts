@@ -83,6 +83,7 @@ export namespace ApplicationLiveStateSnapshot {
     UNKNOWN = 0,
     HEALTHY = 1,
     OTHER = 2,
+    UNHEALTHY = 3,
   }
 }
 
