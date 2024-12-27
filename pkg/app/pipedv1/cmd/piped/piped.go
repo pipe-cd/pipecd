@@ -60,6 +60,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/eventwatcher"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/livestatereporter"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/notifier"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/statsreporter"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/trigger"
@@ -349,6 +350,8 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	// Make grpc clients to connect to plugins.
 	pluginClis := make([]pluginapi.PluginClient, 0, len(cfg.Plugins))
+	nameBasedPluginClis := make(map[string]pluginapi.PluginClient, len(cfg.Plugins))
+
 	options := []rpcclient.DialOption{
 		rpcclient.WithBlock(),
 		rpcclient.WithInsecure(),
@@ -359,11 +362,15 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			input.Logger.Error("failed to create client to connect plugin", zap.String("plugin", plg.Name), zap.Error(err))
 		}
 		pluginClis = append(pluginClis, cli)
+		nameBasedPluginClis[plg.Name] = cli
 	}
 
 	// Start running application live state reporter.
 	{
-		// TODO: Implement the live state reporter controller.
+		r := livestatereporter.NewReporter(applicationLister, apiClient, nameBasedPluginClis, input.Logger)
+		group.Go(func() error {
+			return r.Run(ctx)
+		})
 	}
 
 	// Start running application application drift detector.

@@ -32,10 +32,10 @@ type Lister interface {
 	// List lists all applications that should be handled by this piped.
 	// All disabled applications will be ignored.
 	List() []*model.Application
-	// ListByPlatformProvider lists all applications for a given cloud provider name.
-	ListByPlatformProvider(name string) []*model.Application
 	// Get retrieves a specifiec deployment for the given id.
 	Get(id string) (*model.Application, bool)
+	// ListByPluginName lists all applications for a given plugin name.
+	ListByPluginName(name string) []*model.Application
 }
 
 type apiClient interface {
@@ -127,25 +127,6 @@ func (s *store) List() []*model.Application {
 	return apps.([]*model.Application)
 }
 
-// ListByPlatformProvider lists all applications for a given platform provider name.
-func (s *store) ListByPlatformProvider(name string) []*model.Application {
-	list := s.applicationList.Load()
-	if list == nil {
-		return nil
-	}
-
-	var (
-		apps = list.([]*model.Application)
-		out  = make([]*model.Application, 0, len(apps))
-	)
-	for _, app := range apps {
-		if app.PlatformProvider == name {
-			out = append(out, app)
-		}
-	}
-	return out
-}
-
 // Get retrieves a specific deployment for the given id.
 func (s *store) Get(id string) (*model.Application, bool) {
 	apps := s.applicationMap.Load()
@@ -155,4 +136,26 @@ func (s *store) Get(id string) (*model.Application, bool) {
 
 	app, ok := apps.(map[string]*model.Application)[id]
 	return app, ok
+}
+
+// ListByPluginName lists all applications for a given plugin name.
+func (s *store) ListByPluginName(name string) []*model.Application {
+	apps := s.applicationList.Load()
+	if apps == nil {
+		return nil
+	}
+
+	out := make([]*model.Application, 0)
+	list := apps.([]*model.Application)
+
+	for _, app := range list {
+		for _, p := range app.Plugins {
+			if p == name {
+				out = append(out, app)
+				break
+			}
+		}
+	}
+
+	return out
 }
