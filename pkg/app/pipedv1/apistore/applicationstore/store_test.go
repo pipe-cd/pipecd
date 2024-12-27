@@ -17,11 +17,11 @@ package applicationstore
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"go.uber.org/atomic"
 	"go.uber.org/zap/zaptest"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestListByPluginName(t *testing.T) {
