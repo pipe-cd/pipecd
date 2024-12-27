@@ -153,8 +153,6 @@ func (s *ApplicationLiveStateSnapshot) DetermineApplicationHealthStatus() {
 		return
 	}
 
-	s.HealthStatus = ApplicationLiveStateSnapshot_HEALTHY
-
 	unhealthy := false
 	unknown := false
 
@@ -178,4 +176,6 @@ func (s *ApplicationLiveStateSnapshot) DetermineApplicationHealthStatus() {
 		s.HealthStatus = ApplicationLiveStateSnapshot_UNKNOWN
 		return
 	}
+
+	s.HealthStatus = ApplicationLiveStateSnapshot_HEALTHY
 }
