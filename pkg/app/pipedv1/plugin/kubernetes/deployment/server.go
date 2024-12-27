@@ -336,7 +336,7 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersi
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	clusterLiveResources, err := kubectl.GetAllClusterScoped(ctx, deployTargetConfig.KubeConfigPath,
+	clusterScopedLiveResources, err := kubectl.GetAllClusterScoped(ctx, deployTargetConfig.KubeConfigPath,
 		fmt.Sprintf("%s=%s", provider.LabelManagedBy, provider.ManagedByPiped),
 		fmt.Sprintf("%s=%s", provider.LabelApplication, input.GetDeployment().GetApplicationId()),
 	)
@@ -345,14 +345,14 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersi
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if len(namespacedLiveResources)+len(clusterLiveResources) == 0 {
+	if len(namespacedLiveResources)+len(clusterScopedLiveResources) == 0 {
 		lp.Info("There is no data about live resource so no resource will be removed")
 		return model.StageStatus_STAGE_SUCCESS
 	}
 
-	lp.Successf("Successfully loaded %d live resources", len(namespacedLiveResources)+len(clusterLiveResources))
+	lp.Successf("Successfully loaded %d live resources", len(namespacedLiveResources)+len(clusterScopedLiveResources))
 
-	removeKeys := provider.FindRemoveResources(manifests, namespacedLiveResources, clusterLiveResources)
+	removeKeys := provider.FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveResources)
 	if len(removeKeys) == 0 {
 		lp.Info("There are no live resources should be removed")
 		return model.StageStatus_STAGE_SUCCESS
