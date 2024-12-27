@@ -121,9 +121,8 @@ func FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveRe
 		}
 		for _, r := range clusterScopedLiveResources {
 			// We don't care about the namespace of the cluster-scoped resources.
-			k := r.Key().normalize().withoutNamespace()
-			if _, ok := normalizedKeys[k]; !ok {
-				removeKeys = append(removeKeys, k)
+			if _, ok := normalizedKeys[r.Key().normalize().withoutNamespace()]; !ok {
+				removeKeys = append(removeKeys, r.Key())
 			}
 		}
 	}

@@ -125,12 +125,12 @@ metadata:
 `,
 			expectedRemoveKeys: []ResourceKey{
 				{
-					groupKind: schema.GroupKind{Group: "", Kind: "secret"},
+					groupKind: schema.GroupKind{Group: "", Kind: "Secret"},
 					namespace: "default",
 					name:      "old-secret",
 				},
 				{
-					groupKind: schema.GroupKind{Group: "", Kind: "namespace"},
+					groupKind: schema.GroupKind{Group: "", Kind: "Namespace"},
 					namespace: "",
 					name:      "test-namespace",
 				},
