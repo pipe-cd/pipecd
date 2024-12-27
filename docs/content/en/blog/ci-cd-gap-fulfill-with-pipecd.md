@@ -165,7 +165,7 @@ We are summarizing [this GitHub issue](https://github.com/pipe-cd/pipecd/issues/
 
 In this article, we shared the issues we encountered when using PipeCD in a highly complex project, how we solved them through the design and implementation of EventWatcher, and our next steps with deployment tracing.
 
-The deployment tracing feature is planned and will be implemented as soon as possible. It is expected to be released in Q2 of 2025.
+The deployment tracing feature is planned and will be implemented as soon as possible. It is expected to be released around March 2025.
 The PipeCD project is an open-source project; anyone can participate in the development of the project, and we welcome any contributions from the community.
 
 If you have any questions or opinions, feel free to talk in [CNCF Slack](https://cloud-native.slack.com/) > #pipecd or [PipeCD Community Meeting](https://docs.google.com/document/d/1AtE0CQYbUV5wLfvAcl9mo9MyTCH52BuU7AngVUvE7vg/edit).
