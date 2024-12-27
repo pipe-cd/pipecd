@@ -102,7 +102,7 @@ func (e *Executor) executeCommand() model.StageStatus {
 		}
 	}
 
-	ci := NewContextInfo(e.Deployment)
+	ci := NewContextInfo(e.Deployment, false)
 	ciEnv, err := ci.BuildEnv()
 	if err != nil {
 		e.LogPersister.Errorf("failed to build srcipt run context info: %w", err)
@@ -137,22 +137,26 @@ type ContextInfo struct {
 	ApplicationName     string            `json:"applicationName,omitempty"`
 	TriggeredAt         int64             `json:"triggeredAt,omitempty"`
 	TriggeredCommitHash string            `json:"triggeredCommitHash,omitempty"`
+	TriggeredCommander  string            `json:"triggeredCommander,omitempty"`
 	RepositoryURL       string            `json:"repositoryURL,omitempty"`
 	Summary             string            `json:"summary,omitempty"`
 	Labels              map[string]string `json:"labels,omitempty"`
+	IsRollback          bool              `json:"isRollback,omitempty"`
 }
 
 // NewContextInfo creates a new ContextInfo from the given deployment.
-func NewContextInfo(d *model.Deployment) *ContextInfo {
+func NewContextInfo(d *model.Deployment, isRollback bool) *ContextInfo {
 	return &ContextInfo{
 		DeploymentID:        d.Id,
 		ApplicationID:       d.ApplicationId,
 		ApplicationName:     d.ApplicationName,
 		TriggeredAt:         d.Trigger.Timestamp,
 		TriggeredCommitHash: d.Trigger.Commit.Hash,
+		TriggeredCommander:  d.Trigger.Commander,
 		RepositoryURL:       d.GitPath.Repo.Remote,
 		Summary:             d.Summary,
 		Labels:              d.Labels,
+		IsRollback:          isRollback,
 	}
 }
 
@@ -169,8 +173,10 @@ func (src *ContextInfo) BuildEnv() (map[string]string, error) {
 		"SR_APPLICATION_NAME":      src.ApplicationName,
 		"SR_TRIGGERED_AT":          strconv.FormatInt(src.TriggeredAt, 10),
 		"SR_TRIGGERED_COMMIT_HASH": src.TriggeredCommitHash,
+		"SR_TRIGGERED_COMMANDER":   src.TriggeredCommander,
 		"SR_REPOSITORY_URL":        src.RepositoryURL,
 		"SR_SUMMARY":               src.Summary,
+		"SR_IS_ROLLBACK":           strconv.FormatBool(src.IsRollback),
 		"SR_CONTEXT_RAW":           string(b), // Add the raw json string as an environment variable.
 	}
 
