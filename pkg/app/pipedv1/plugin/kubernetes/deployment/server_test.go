@@ -25,6 +25,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
@@ -375,6 +376,7 @@ func TestDeploymentService_executeK8sSyncStage_withPrune(t *testing.T) {
 
 	_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(context.Background(), "simple", metav1.GetOptions{})
 	require.Error(t, err)
+	require.Truef(t, apierrors.IsNotFound(err), "expected error to be NotFound, but got %v", err)
 }
 
 func TestDeploymentService_executeK8sSyncStage_withPrune_changesNamespace(t *testing.T) {
@@ -481,6 +483,7 @@ func TestDeploymentService_executeK8sSyncStage_withPrune_changesNamespace(t *tes
 	// The service should be removed from the previous namespace
 	_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("test-1").Get(context.Background(), "simple", metav1.GetOptions{})
 	require.Error(t, err)
+	require.Truef(t, apierrors.IsNotFound(err), "expected error to be NotFound, but got %v", err)
 
 	// The service should be created in the new namespace
 	service, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("test-2").Get(context.Background(), "simple", metav1.GetOptions{})
@@ -632,4 +635,5 @@ func TestDeploymentService_executeK8sSyncStage_withPrune_clusterScoped(t *testin
 	// The my-new-cron-object-2 should be removed
 	_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object-2", metav1.GetOptions{})
 	require.Error(t, err)
+	require.Truef(t, apierrors.IsNotFound(err), "expected error to be NotFound, but got %v", err)
 }
