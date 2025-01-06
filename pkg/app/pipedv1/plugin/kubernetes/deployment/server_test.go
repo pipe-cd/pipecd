@@ -292,91 +292,98 @@ func TestDeploymentService_executeK8sSyncStage_withPrune(t *testing.T) {
 	runningCfg, err := os.ReadFile(filepath.Join(running, "app.pipecd.yaml"))
 	require.NoError(t, err)
 
-	// prepare the request to ensure the running deployment exists
-	runningRequest := &deployment.ExecuteStageRequest{
-		Input: &deployment.ExecutePluginInput{
-			Deployment: &model.Deployment{
-				PipedId:       "piped-id",
-				ApplicationId: "app-id",
-				DeployTargets: []string{"default"},
+	ok := t.Run("prepare", func(t *testing.T) {
+		runningRequest := &deployment.ExecuteStageRequest{
+			Input: &deployment.ExecutePluginInput{
+				Deployment: &model.Deployment{
+					PipedId:       "piped-id",
+					ApplicationId: "app-id",
+					DeployTargets: []string{"default"},
+				},
+				Stage: &model.PipelineStage{
+					Id:   "stage-id",
+					Name: "K8S_SYNC",
+				},
+				StageConfig:             []byte(``),
+				RunningDeploymentSource: nil,
+				TargetDeploymentSource: &deployment.DeploymentSource{
+					ApplicationDirectory:      running,
+					CommitHash:                "0123456789",
+					ApplicationConfig:         runningCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
 			},
-			Stage: &model.PipelineStage{
-				Id:   "stage-id",
-				Name: "K8S_SYNC",
+		}
+
+		resp, err := svc.ExecuteStage(ctx, runningRequest)
+
+		require.NoError(t, err)
+		require.Equal(t, model.StageStatus_STAGE_SUCCESS.String(), resp.GetStatus().String())
+
+		service, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(context.Background(), "simple", metav1.GetOptions{})
+		require.NoError(t, err)
+
+		require.Equal(t, "piped", service.GetLabels()["pipecd.dev/managed-by"])
+		require.Equal(t, "piped-id", service.GetLabels()["pipecd.dev/piped"])
+		require.Equal(t, "app-id", service.GetLabels()["pipecd.dev/application"])
+		require.Equal(t, "0123456789", service.GetLabels()["pipecd.dev/commit-hash"])
+
+		require.Equal(t, "simple", service.GetName())
+		require.Equal(t, "piped", service.GetAnnotations()["pipecd.dev/managed-by"])
+		require.Equal(t, "piped-id", service.GetAnnotations()["pipecd.dev/piped"])
+		require.Equal(t, "app-id", service.GetAnnotations()["pipecd.dev/application"])
+		require.Equal(t, "v1", service.GetAnnotations()["pipecd.dev/original-api-version"])
+		require.Equal(t, ":Service::simple", service.GetAnnotations()["pipecd.dev/resource-key"]) // This assertion differs from the non-plugin-arched piped's Kubernetes platform provider, but we decided to change this behavior.
+		require.Equal(t, "0123456789", service.GetAnnotations()["pipecd.dev/commit-hash"])
+	})
+	require.Truef(t, ok, "expected prepare to succeed")
+
+	t.Run("run with prune", func(t *testing.T) {
+
+		// prepare the request to ensure the running deployment exists
+
+		target := filepath.Join("./", "testdata", "prune", "target")
+
+		// read the running application config from the testdata file
+		targetCfg, err := os.ReadFile(filepath.Join(target, "app.pipecd.yaml"))
+		require.NoError(t, err)
+
+		// prepare the request to ensure the running deployment exists
+		targetRequest := &deployment.ExecuteStageRequest{
+			Input: &deployment.ExecutePluginInput{
+				Deployment: &model.Deployment{
+					PipedId:       "piped-id",
+					ApplicationId: "app-id",
+					DeployTargets: []string{"default"},
+				},
+				Stage: &model.PipelineStage{
+					Id:   "stage-id",
+					Name: "K8S_SYNC",
+				},
+				StageConfig: []byte(``),
+				RunningDeploymentSource: &deployment.DeploymentSource{
+					ApplicationDirectory:      running,
+					CommitHash:                "0123456789",
+					ApplicationConfig:         runningCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+				TargetDeploymentSource: &deployment.DeploymentSource{
+					ApplicationDirectory:      target,
+					CommitHash:                "0012345678",
+					ApplicationConfig:         targetCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
 			},
-			StageConfig:             []byte(``),
-			RunningDeploymentSource: nil,
-			TargetDeploymentSource: &deployment.DeploymentSource{
-				ApplicationDirectory:      running,
-				CommitHash:                "0123456789",
-				ApplicationConfig:         runningCfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-		},
-	}
+		}
 
-	resp, err := svc.ExecuteStage(ctx, runningRequest)
+		resp, err := svc.ExecuteStage(ctx, targetRequest)
+		require.NoError(t, err)
+		require.Equal(t, model.StageStatus_STAGE_SUCCESS.String(), resp.GetStatus().String())
 
-	require.NoError(t, err)
-	require.Equal(t, model.StageStatus_STAGE_SUCCESS.String(), resp.GetStatus().String())
-
-	service, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(context.Background(), "simple", metav1.GetOptions{})
-	require.NoError(t, err)
-
-	require.Equal(t, "piped", service.GetLabels()["pipecd.dev/managed-by"])
-	require.Equal(t, "piped-id", service.GetLabels()["pipecd.dev/piped"])
-	require.Equal(t, "app-id", service.GetLabels()["pipecd.dev/application"])
-	require.Equal(t, "0123456789", service.GetLabels()["pipecd.dev/commit-hash"])
-
-	require.Equal(t, "simple", service.GetName())
-	require.Equal(t, "piped", service.GetAnnotations()["pipecd.dev/managed-by"])
-	require.Equal(t, "piped-id", service.GetAnnotations()["pipecd.dev/piped"])
-	require.Equal(t, "app-id", service.GetAnnotations()["pipecd.dev/application"])
-	require.Equal(t, "v1", service.GetAnnotations()["pipecd.dev/original-api-version"])
-	require.Equal(t, ":Service::simple", service.GetAnnotations()["pipecd.dev/resource-key"]) // This assertion differs from the non-plugin-arched piped's Kubernetes platform provider, but we decided to change this behavior.
-	require.Equal(t, "0123456789", service.GetAnnotations()["pipecd.dev/commit-hash"])
-
-	target := filepath.Join("./", "testdata", "prune", "target")
-
-	// read the running application config from the testdata file
-	targetCfg, err := os.ReadFile(filepath.Join(target, "app.pipecd.yaml"))
-	require.NoError(t, err)
-
-	// prepare the request to ensure the running deployment exists
-	targetRequest := &deployment.ExecuteStageRequest{
-		Input: &deployment.ExecutePluginInput{
-			Deployment: &model.Deployment{
-				PipedId:       "piped-id",
-				ApplicationId: "app-id",
-				DeployTargets: []string{"default"},
-			},
-			Stage: &model.PipelineStage{
-				Id:   "stage-id",
-				Name: "K8S_SYNC",
-			},
-			StageConfig: []byte(``),
-			RunningDeploymentSource: &deployment.DeploymentSource{
-				ApplicationDirectory:      running,
-				CommitHash:                "0123456789",
-				ApplicationConfig:         runningCfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-			TargetDeploymentSource: &deployment.DeploymentSource{
-				ApplicationDirectory:      target,
-				CommitHash:                "0012345678",
-				ApplicationConfig:         targetCfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-		},
-	}
-
-	resp, err = svc.ExecuteStage(ctx, targetRequest)
-	require.NoError(t, err)
-	require.Equal(t, model.StageStatus_STAGE_SUCCESS.String(), resp.GetStatus().String())
-
-	_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(context.Background(), "simple", metav1.GetOptions{})
-	require.Error(t, err)
-	require.Truef(t, apierrors.IsNotFound(err), "expected error to be NotFound, but got %v", err)
+		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(context.Background(), "simple", metav1.GetOptions{})
+		require.Error(t, err)
+		require.Truef(t, apierrors.IsNotFound(err), "expected error to be NotFound, but got %v", err)
+	})
 }
 
 func TestDeploymentService_executeK8sSyncStage_withPrune_changesNamespace(t *testing.T) {
@@ -399,109 +406,114 @@ func TestDeploymentService_executeK8sSyncStage_withPrune_changesNamespace(t *tes
 	runningCfg, err := os.ReadFile(filepath.Join(running, "app.pipecd.yaml"))
 	require.NoError(t, err)
 
-	// prepare the request to ensure the running deployment exists
-	runningRequest := &deployment.ExecuteStageRequest{
-		Input: &deployment.ExecutePluginInput{
-			Deployment: &model.Deployment{
-				PipedId:       "piped-id",
-				ApplicationId: "app-id",
-				DeployTargets: []string{"default"},
+	ok := t.Run("prepare", func(t *testing.T) {
+		// prepare the request to ensure the running deployment exists
+		runningRequest := &deployment.ExecuteStageRequest{
+			Input: &deployment.ExecutePluginInput{
+				Deployment: &model.Deployment{
+					PipedId:       "piped-id",
+					ApplicationId: "app-id",
+					DeployTargets: []string{"default"},
+				},
+				Stage: &model.PipelineStage{
+					Id:   "stage-id",
+					Name: "K8S_SYNC",
+				},
+				StageConfig:             []byte(``),
+				RunningDeploymentSource: nil,
+				TargetDeploymentSource: &deployment.DeploymentSource{
+					ApplicationDirectory:      running,
+					CommitHash:                "0123456789",
+					ApplicationConfig:         runningCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
 			},
-			Stage: &model.PipelineStage{
-				Id:   "stage-id",
-				Name: "K8S_SYNC",
+		}
+
+		resp, err := svc.ExecuteStage(ctx, runningRequest)
+
+		require.NoError(t, err)
+		require.Equal(t, model.StageStatus_STAGE_SUCCESS.String(), resp.GetStatus().String())
+
+		service, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("test-1").Get(context.Background(), "simple", metav1.GetOptions{})
+		require.NoError(t, err)
+
+		require.Equal(t, "piped", service.GetLabels()["pipecd.dev/managed-by"])
+		require.Equal(t, "piped-id", service.GetLabels()["pipecd.dev/piped"])
+		require.Equal(t, "app-id", service.GetLabels()["pipecd.dev/application"])
+		require.Equal(t, "0123456789", service.GetLabels()["pipecd.dev/commit-hash"])
+
+		require.Equal(t, "simple", service.GetName())
+		require.Equal(t, "piped", service.GetAnnotations()["pipecd.dev/managed-by"])
+		require.Equal(t, "piped-id", service.GetAnnotations()["pipecd.dev/piped"])
+		require.Equal(t, "app-id", service.GetAnnotations()["pipecd.dev/application"])
+		require.Equal(t, "v1", service.GetAnnotations()["pipecd.dev/original-api-version"])
+		require.Equal(t, "0123456789", service.GetAnnotations()["pipecd.dev/commit-hash"])
+		require.Equal(t, ":Service:test-1:simple", service.GetAnnotations()["pipecd.dev/resource-key"])
+	})
+	require.Truef(t, ok, "expected prepare to succeed")
+
+	t.Run("run with prune", func(t *testing.T) {
+		target := filepath.Join("./", "testdata", "prune_with_change_namespace", "target")
+
+		// read the running application config from the example file
+		targetCfg, err := os.ReadFile(filepath.Join(target, "app.pipecd.yaml"))
+		require.NoError(t, err)
+
+		// prepare the request to ensure the running deployment exists
+		targetRequest := &deployment.ExecuteStageRequest{
+			Input: &deployment.ExecutePluginInput{
+				Deployment: &model.Deployment{
+					PipedId:       "piped-id",
+					ApplicationId: "app-id",
+					DeployTargets: []string{"default"},
+				},
+				Stage: &model.PipelineStage{
+					Id:   "stage-id",
+					Name: "K8S_SYNC",
+				},
+				StageConfig: []byte(``),
+				RunningDeploymentSource: &deployment.DeploymentSource{
+					ApplicationDirectory:      running,
+					CommitHash:                "0123456789",
+					ApplicationConfig:         runningCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+				TargetDeploymentSource: &deployment.DeploymentSource{
+					ApplicationDirectory:      target,
+					CommitHash:                "0012345678",
+					ApplicationConfig:         targetCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
 			},
-			StageConfig:             []byte(``),
-			RunningDeploymentSource: nil,
-			TargetDeploymentSource: &deployment.DeploymentSource{
-				ApplicationDirectory:      running,
-				CommitHash:                "0123456789",
-				ApplicationConfig:         runningCfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-		},
-	}
+		}
 
-	resp, err := svc.ExecuteStage(ctx, runningRequest)
+		resp, err := svc.ExecuteStage(ctx, targetRequest)
+		require.NoError(t, err)
+		require.Equal(t, model.StageStatus_STAGE_SUCCESS.String(), resp.GetStatus().String())
 
-	require.NoError(t, err)
-	require.Equal(t, model.StageStatus_STAGE_SUCCESS.String(), resp.GetStatus().String())
+		// The service should be removed from the previous namespace
+		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("test-1").Get(context.Background(), "simple", metav1.GetOptions{})
+		require.Error(t, err)
+		require.Truef(t, apierrors.IsNotFound(err), "expected error to be NotFound, but got %v", err)
 
-	service, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("test-1").Get(context.Background(), "simple", metav1.GetOptions{})
-	require.NoError(t, err)
+		// The service should be created in the new namespace
+		service, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("test-2").Get(context.Background(), "simple", metav1.GetOptions{})
+		require.NoError(t, err)
 
-	require.Equal(t, "piped", service.GetLabels()["pipecd.dev/managed-by"])
-	require.Equal(t, "piped-id", service.GetLabels()["pipecd.dev/piped"])
-	require.Equal(t, "app-id", service.GetLabels()["pipecd.dev/application"])
-	require.Equal(t, "0123456789", service.GetLabels()["pipecd.dev/commit-hash"])
+		require.Equal(t, "piped", service.GetLabels()["pipecd.dev/managed-by"])
+		require.Equal(t, "piped-id", service.GetLabels()["pipecd.dev/piped"])
+		require.Equal(t, "app-id", service.GetLabels()["pipecd.dev/application"])
+		require.Equal(t, "0012345678", service.GetLabels()["pipecd.dev/commit-hash"])
 
-	require.Equal(t, "simple", service.GetName())
-	require.Equal(t, "piped", service.GetAnnotations()["pipecd.dev/managed-by"])
-	require.Equal(t, "piped-id", service.GetAnnotations()["pipecd.dev/piped"])
-	require.Equal(t, "app-id", service.GetAnnotations()["pipecd.dev/application"])
-	require.Equal(t, "v1", service.GetAnnotations()["pipecd.dev/original-api-version"])
-	require.Equal(t, "0123456789", service.GetAnnotations()["pipecd.dev/commit-hash"])
-	require.Equal(t, ":Service:test-1:simple", service.GetAnnotations()["pipecd.dev/resource-key"])
-
-	target := filepath.Join("./", "testdata", "prune_with_change_namespace", "target")
-
-	// read the running application config from the example file
-	targetCfg, err := os.ReadFile(filepath.Join(target, "app.pipecd.yaml"))
-	require.NoError(t, err)
-
-	// prepare the request to ensure the running deployment exists
-	targetRequest := &deployment.ExecuteStageRequest{
-		Input: &deployment.ExecutePluginInput{
-			Deployment: &model.Deployment{
-				PipedId:       "piped-id",
-				ApplicationId: "app-id",
-				DeployTargets: []string{"default"},
-			},
-			Stage: &model.PipelineStage{
-				Id:   "stage-id",
-				Name: "K8S_SYNC",
-			},
-			StageConfig: []byte(``),
-			RunningDeploymentSource: &deployment.DeploymentSource{
-				ApplicationDirectory:      running,
-				CommitHash:                "0123456789",
-				ApplicationConfig:         runningCfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-			TargetDeploymentSource: &deployment.DeploymentSource{
-				ApplicationDirectory:      target,
-				CommitHash:                "0012345678",
-				ApplicationConfig:         targetCfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-		},
-	}
-
-	resp, err = svc.ExecuteStage(ctx, targetRequest)
-	require.NoError(t, err)
-	require.Equal(t, model.StageStatus_STAGE_SUCCESS.String(), resp.GetStatus().String())
-
-	// The service should be removed from the previous namespace
-	_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("test-1").Get(context.Background(), "simple", metav1.GetOptions{})
-	require.Error(t, err)
-	require.Truef(t, apierrors.IsNotFound(err), "expected error to be NotFound, but got %v", err)
-
-	// The service should be created in the new namespace
-	service, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("test-2").Get(context.Background(), "simple", metav1.GetOptions{})
-	require.NoError(t, err)
-
-	require.Equal(t, "piped", service.GetLabels()["pipecd.dev/managed-by"])
-	require.Equal(t, "piped-id", service.GetLabels()["pipecd.dev/piped"])
-	require.Equal(t, "app-id", service.GetLabels()["pipecd.dev/application"])
-	require.Equal(t, "0012345678", service.GetLabels()["pipecd.dev/commit-hash"])
-
-	require.Equal(t, "simple", service.GetName())
-	require.Equal(t, "piped", service.GetAnnotations()["pipecd.dev/managed-by"])
-	require.Equal(t, "piped-id", service.GetAnnotations()["pipecd.dev/piped"])
-	require.Equal(t, "app-id", service.GetAnnotations()["pipecd.dev/application"])
-	require.Equal(t, "v1", service.GetAnnotations()["pipecd.dev/original-api-version"])
-	require.Equal(t, "0012345678", service.GetAnnotations()["pipecd.dev/commit-hash"])
-	require.Equal(t, ":Service:test-2:simple", service.GetAnnotations()["pipecd.dev/resource-key"])
+		require.Equal(t, "simple", service.GetName())
+		require.Equal(t, "piped", service.GetAnnotations()["pipecd.dev/managed-by"])
+		require.Equal(t, "piped-id", service.GetAnnotations()["pipecd.dev/piped"])
+		require.Equal(t, "app-id", service.GetAnnotations()["pipecd.dev/application"])
+		require.Equal(t, "v1", service.GetAnnotations()["pipecd.dev/original-api-version"])
+		require.Equal(t, "0012345678", service.GetAnnotations()["pipecd.dev/commit-hash"])
+		require.Equal(t, ":Service:test-2:simple", service.GetAnnotations()["pipecd.dev/resource-key"])
+	})
 }
 
 func TestDeploymentService_executeK8sSyncStage_withPrune_clusterScoped(t *testing.T) {
@@ -524,32 +536,35 @@ func TestDeploymentService_executeK8sSyncStage_withPrune_clusterScoped(t *testin
 	prepareCfg, err := os.ReadFile(filepath.Join(prepare, "app.pipecd.yaml"))
 	require.NoError(t, err)
 
-	prepareRequest := &deployment.ExecuteStageRequest{
-		Input: &deployment.ExecutePluginInput{
-			Deployment: &model.Deployment{
-				PipedId:       "piped-id",
-				ApplicationId: "prepare-app-id",
-				DeployTargets: []string{"default"},
+	ok := t.Run("prepare crd", func(t *testing.T) {
+		prepareRequest := &deployment.ExecuteStageRequest{
+			Input: &deployment.ExecutePluginInput{
+				Deployment: &model.Deployment{
+					PipedId:       "piped-id",
+					ApplicationId: "prepare-app-id",
+					DeployTargets: []string{"default"},
+				},
+				Stage: &model.PipelineStage{
+					Id:   "stage-id",
+					Name: "K8S_SYNC",
+				},
+				StageConfig:             []byte(``),
+				RunningDeploymentSource: nil,
+				TargetDeploymentSource: &deployment.DeploymentSource{
+					ApplicationDirectory:      prepare,
+					CommitHash:                "0123456789",
+					ApplicationConfig:         prepareCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
 			},
-			Stage: &model.PipelineStage{
-				Id:   "stage-id",
-				Name: "K8S_SYNC",
-			},
-			StageConfig:             []byte(``),
-			RunningDeploymentSource: nil,
-			TargetDeploymentSource: &deployment.DeploymentSource{
-				ApplicationDirectory:      prepare,
-				CommitHash:                "0123456789",
-				ApplicationConfig:         prepareCfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-		},
-	}
+		}
 
-	resp, err := svc.ExecuteStage(ctx, prepareRequest)
+		resp, err := svc.ExecuteStage(ctx, prepareRequest)
 
-	require.NoError(t, err)
-	require.Equal(t, model.StageStatus_STAGE_SUCCESS.String(), resp.GetStatus().String())
+		require.NoError(t, err)
+		require.Equal(t, model.StageStatus_STAGE_SUCCESS.String(), resp.GetStatus().String())
+	})
+	require.Truef(t, ok, "expected prepare to succeed")
 
 	// prepare the running resources
 	running := filepath.Join("./", "testdata", "prune_cluster_scoped_resource", "running")
@@ -558,84 +573,89 @@ func TestDeploymentService_executeK8sSyncStage_withPrune_clusterScoped(t *testin
 	runningCfg, err := os.ReadFile(filepath.Join(running, "app.pipecd.yaml"))
 	require.NoError(t, err)
 
-	// prepare the request to ensure the running deployment exists
-	runningRequest := &deployment.ExecuteStageRequest{
-		Input: &deployment.ExecutePluginInput{
-			Deployment: &model.Deployment{
-				PipedId:       "piped-id",
-				ApplicationId: "app-id",
-				DeployTargets: []string{"default"},
+	ok = t.Run("prepare running", func(t *testing.T) {
+		// prepare the request to ensure the running deployment exists
+		runningRequest := &deployment.ExecuteStageRequest{
+			Input: &deployment.ExecutePluginInput{
+				Deployment: &model.Deployment{
+					PipedId:       "piped-id",
+					ApplicationId: "app-id",
+					DeployTargets: []string{"default"},
+				},
+				Stage: &model.PipelineStage{
+					Id:   "stage-id",
+					Name: "K8S_SYNC",
+				},
+				StageConfig:             []byte(``),
+				RunningDeploymentSource: nil,
+				TargetDeploymentSource: &deployment.DeploymentSource{
+					ApplicationDirectory:      running,
+					CommitHash:                "0123456789",
+					ApplicationConfig:         runningCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
 			},
-			Stage: &model.PipelineStage{
-				Id:   "stage-id",
-				Name: "K8S_SYNC",
+		}
+
+		resp, err := svc.ExecuteStage(ctx, runningRequest)
+
+		require.NoError(t, err)
+		require.Equal(t, model.StageStatus_STAGE_SUCCESS.String(), resp.GetStatus().String())
+
+		// The my-new-cron-object/my-new-cron-object-2 should be created
+		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object", metav1.GetOptions{})
+		require.NoError(t, err)
+		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object-2", metav1.GetOptions{})
+		require.NoError(t, err)
+	})
+	require.Truef(t, ok, "expected prepare to succeed")
+
+	t.Run("sync", func(t *testing.T) {
+		// sync the target resources and assert the prune behavior
+		target := filepath.Join("./", "testdata", "prune_cluster_scoped_resource", "target")
+
+		// read the running application config from the example file
+		targetCfg, err := os.ReadFile(filepath.Join(target, "app.pipecd.yaml"))
+		require.NoError(t, err)
+
+		// prepare the request to ensure the running deployment exists
+		targetRequest := &deployment.ExecuteStageRequest{
+			Input: &deployment.ExecutePluginInput{
+				Deployment: &model.Deployment{
+					PipedId:       "piped-id",
+					ApplicationId: "app-id",
+					DeployTargets: []string{"default"},
+				},
+				Stage: &model.PipelineStage{
+					Id:   "stage-id",
+					Name: "K8S_SYNC",
+				},
+				StageConfig: []byte(``),
+				RunningDeploymentSource: &deployment.DeploymentSource{
+					ApplicationDirectory:      running,
+					CommitHash:                "0123456789",
+					ApplicationConfig:         runningCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+				TargetDeploymentSource: &deployment.DeploymentSource{
+					ApplicationDirectory:      target,
+					CommitHash:                "0012345678",
+					ApplicationConfig:         targetCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
 			},
-			StageConfig:             []byte(``),
-			RunningDeploymentSource: nil,
-			TargetDeploymentSource: &deployment.DeploymentSource{
-				ApplicationDirectory:      running,
-				CommitHash:                "0123456789",
-				ApplicationConfig:         runningCfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-		},
-	}
+		}
 
-	resp, err = svc.ExecuteStage(ctx, runningRequest)
+		resp, err := svc.ExecuteStage(ctx, targetRequest)
+		require.NoError(t, err)
+		require.Equal(t, model.StageStatus_STAGE_SUCCESS.String(), resp.GetStatus().String())
 
-	require.NoError(t, err)
-	require.Equal(t, model.StageStatus_STAGE_SUCCESS.String(), resp.GetStatus().String())
-
-	// The my-new-cron-object/my-new-cron-object-2 should be created
-	_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object", metav1.GetOptions{})
-	require.NoError(t, err)
-	_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object-2", metav1.GetOptions{})
-	require.NoError(t, err)
-
-	// sync the target resources and assert the prune behavior
-	target := filepath.Join("./", "testdata", "prune_cluster_scoped_resource", "target")
-
-	// read the running application config from the example file
-	targetCfg, err := os.ReadFile(filepath.Join(target, "app.pipecd.yaml"))
-	require.NoError(t, err)
-
-	// prepare the request to ensure the running deployment exists
-	targetRequest := &deployment.ExecuteStageRequest{
-		Input: &deployment.ExecutePluginInput{
-			Deployment: &model.Deployment{
-				PipedId:       "piped-id",
-				ApplicationId: "app-id",
-				DeployTargets: []string{"default"},
-			},
-			Stage: &model.PipelineStage{
-				Id:   "stage-id",
-				Name: "K8S_SYNC",
-			},
-			StageConfig: []byte(``),
-			RunningDeploymentSource: &deployment.DeploymentSource{
-				ApplicationDirectory:      running,
-				CommitHash:                "0123456789",
-				ApplicationConfig:         runningCfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-			TargetDeploymentSource: &deployment.DeploymentSource{
-				ApplicationDirectory:      target,
-				CommitHash:                "0012345678",
-				ApplicationConfig:         targetCfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-		},
-	}
-
-	resp, err = svc.ExecuteStage(ctx, targetRequest)
-	require.NoError(t, err)
-	require.Equal(t, model.StageStatus_STAGE_SUCCESS.String(), resp.GetStatus().String())
-
-	// The my-new-cron-object should not be removed
-	_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object", metav1.GetOptions{})
-	require.NoError(t, err)
-	// The my-new-cron-object-2 should be removed
-	_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object-2", metav1.GetOptions{})
-	require.Error(t, err)
-	require.Truef(t, apierrors.IsNotFound(err), "expected error to be NotFound, but got %v", err)
+		// The my-new-cron-object should not be removed
+		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object", metav1.GetOptions{})
+		require.NoError(t, err)
+		// The my-new-cron-object-2 should be removed
+		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object-2", metav1.GetOptions{})
+		require.Error(t, err)
+		require.Truef(t, apierrors.IsNotFound(err), "expected error to be NotFound, but got %v", err)
+	})
 }
