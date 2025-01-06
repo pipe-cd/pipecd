@@ -82,12 +82,11 @@ func (pr *pluginRegistry) GetPluginClientsByAppConfig(cfg *config.GenericApplica
 }
 
 func (pr *pluginRegistry) getPluginClientsByPipeline(pipeline *config.DeploymentPipeline) ([]pluginapi.PluginClient, error) {
-	plugins := make([]pluginapi.PluginClient, 0, len(pipeline.Stages))
-
 	if len(pipeline.Stages) == 0 {
-		return nil, fmt.Errorf("no plugin found for the specified stages")
+		return nil, fmt.Errorf("no stages are set in the pipeline")
 	}
 
+	plugins := make([]pluginapi.PluginClient, 0, len(pipeline.Stages))
 	for _, stage := range pipeline.Stages {
 		plugin, ok := pr.stageBasedPlugins[stage.Name.String()]
 		if ok {
@@ -96,7 +95,7 @@ func (pr *pluginRegistry) getPluginClientsByPipeline(pipeline *config.Deployment
 	}
 
 	if len(plugins) == 0 {
-		return nil, fmt.Errorf("no plugin found for the specified stages")
+		return nil, fmt.Errorf("no plugin found for each stages")
 	}
 
 	return plugins, nil
@@ -104,7 +103,7 @@ func (pr *pluginRegistry) getPluginClientsByPipeline(pipeline *config.Deployment
 
 func (pr *pluginRegistry) getPluginClientsByNames(names []string) ([]pluginapi.PluginClient, error) {
 	if len(names) == 0 {
-		return nil, fmt.Errorf("no plugin specified")
+		return nil, fmt.Errorf("no plugin names are set")
 	}
 
 	plugins := make([]pluginapi.PluginClient, 0, len(names))
@@ -116,7 +115,7 @@ func (pr *pluginRegistry) getPluginClientsByNames(names []string) ([]pluginapi.P
 	}
 
 	if len(plugins) == 0 {
-		return nil, fmt.Errorf("no plugin found for the specified stages")
+		return nil, fmt.Errorf("no plugin found for the given plugin names")
 	}
 
 	return plugins, nil
