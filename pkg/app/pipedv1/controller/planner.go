@@ -58,10 +58,6 @@ type planner struct {
 	lastSuccessfulConfigFilename string
 	workingDir                   string
 
-	// The map used to know which plugin is incharged for a given stage
-	// of the current deployment.
-	stageBasedPluginsMap map[string]pluginapi.PluginClient
-
 	// The apiClient is used to report the deployment status.
 	apiClient apiClient
 
