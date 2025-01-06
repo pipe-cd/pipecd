@@ -22,9 +22,10 @@ package registry
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
-	"github.com/stretchr/testify/assert"
 )
 
 type fakePluginClient struct {
