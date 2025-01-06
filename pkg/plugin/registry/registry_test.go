@@ -191,7 +191,7 @@ func TestPluginRegistry_getPluginClientsByPipeline(t *testing.T) {
 		})
 	}
 }
-func TestPluginRegistry_getPluginsByPluginNames(t *testing.T) {
+func TestPluginRegistry_getPluginClientsByNames(t *testing.T) {
 	tests := []struct {
 		name        string
 		pluginNames []string
@@ -247,7 +247,7 @@ func TestPluginRegistry_getPluginsByPluginNames(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			pr := tt.setup()
-			plugins, err := pr.getPluginsByPluginNames(tt.pluginNames)
+			plugins, err := pr.getPluginClientsByNames(tt.pluginNames)
 			assert.Equal(t, tt.expected, plugins)
 			assert.Equal(t, tt.wantErr, err != nil)
 		})

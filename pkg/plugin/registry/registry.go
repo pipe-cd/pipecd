@@ -75,7 +75,7 @@ func (pr *pluginRegistry) GetPluginClientsByAppConfig(cfg *config.GenericApplica
 	}
 
 	if cfg.Plugins != nil {
-		return pr.getPluginsByPluginNames(cfg.Plugins)
+		return pr.getPluginClientsByNames(cfg.Plugins)
 	}
 
 	return nil, fmt.Errorf("no plugin specified")
@@ -102,7 +102,7 @@ func (pr *pluginRegistry) getPluginClientsByPipeline(pipeline *config.Deployment
 	return plugins, nil
 }
 
-func (pr *pluginRegistry) getPluginsByPluginNames(names []string) ([]pluginapi.PluginClient, error) {
+func (pr *pluginRegistry) getPluginClientsByNames(names []string) ([]pluginapi.PluginClient, error) {
 	if len(names) == 0 {
 		return nil, fmt.Errorf("no plugin specified")
 	}
