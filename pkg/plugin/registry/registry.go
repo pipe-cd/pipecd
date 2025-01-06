@@ -18,7 +18,7 @@ type Plugin struct {
 // PluginRegistry is the interface that provides methods to get plugin clients.
 type PluginRegistry interface {
 	GetPluginClientByStageName(name string) (pluginapi.PluginClient, error)
-	GetPluginsByAppConfig(cfg *config.GenericApplicationSpec) ([]pluginapi.PluginClient, error)
+	GetPluginClientsByAppConfig(cfg *config.GenericApplicationSpec) ([]pluginapi.PluginClient, error)
 }
 
 type pluginRegistry struct {
@@ -64,12 +64,12 @@ func (pr *pluginRegistry) GetPluginClientByStageName(name string) (pluginapi.Plu
 	return plugin, nil
 }
 
-// GetPluginsByAppConfig returns the plugin clients based on the given configuration.
+// GetPluginClientsByAppConfig returns the plugin clients based on the given configuration.
 // The priority of determining plugins is as follows:
 //  1. If the pipeline is specified, it will determine the plugins based on the pipeline stages.
 //  2. If the plugins are specified, it will determine the plugins based on the plugin names.
 //  3. If neither the pipeline nor the plugins are specified, it will return an error.
-func (pr *pluginRegistry) GetPluginsByAppConfig(cfg *config.GenericApplicationSpec) ([]pluginapi.PluginClient, error) {
+func (pr *pluginRegistry) GetPluginClientsByAppConfig(cfg *config.GenericApplicationSpec) ([]pluginapi.PluginClient, error) {
 	if cfg.Pipeline != nil && len(cfg.Pipeline.Stages) > 0 {
 		return pr.getPluginsByPipeline(cfg.Pipeline)
 	}

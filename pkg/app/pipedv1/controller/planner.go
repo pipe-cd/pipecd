@@ -268,7 +268,7 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *deployment
 	}
 	spec := cfg.Spec
 
-	plugins, err := p.pluginRegistry.GetPluginsByAppConfig(spec)
+	plugins, err := p.pluginRegistry.GetPluginClientsByAppConfig(spec)
 
 	// Build deployment target versions.
 	for _, plg := range plugins {
@@ -419,7 +419,7 @@ func (p *planner) buildQuickSyncStages(ctx context.Context, cfg *config.GenericA
 		rollback       = *cfg.Planner.AutoRollback
 	)
 
-	plugins, err := p.pluginRegistry.GetPluginsByAppConfig(cfg)
+	plugins, err := p.pluginRegistry.GetPluginClientsByAppConfig(cfg)
 	if err != nil {
 		return nil, err
 	}

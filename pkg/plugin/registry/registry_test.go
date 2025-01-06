@@ -18,7 +18,7 @@ func createMockPluginClient(name string) pluginapi.PluginClient {
 		name: name,
 	}
 }
-func TestPluginDeterminer_GetPluginsByAppConfig(t *testing.T) {
+func TestPluginDeterminer_GetPluginClientsByAppConfig(t *testing.T) {
 	tests := []struct {
 		name     string
 		cfg      *config.GenericApplicationSpec
@@ -115,7 +115,7 @@ func TestPluginDeterminer_GetPluginsByAppConfig(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			pr := tt.setup()
-			plugins, err := pr.GetPluginsByAppConfig(tt.cfg)
+			plugins, err := pr.GetPluginClientsByAppConfig(tt.cfg)
 			assert.Equal(t, tt.expected, plugins)
 			assert.Equal(t, tt.wantErr, err != nil)
 		})
