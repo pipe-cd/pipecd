@@ -8,16 +8,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type mockPluginClient struct {
+type fakePluginClient struct {
 	pluginapi.PluginClient
 	name string
 }
 
-func createMockPluginClient(name string) pluginapi.PluginClient {
-	return &mockPluginClient{
-		name: name,
-	}
-}
 func TestPluginDeterminer_GetPluginClientsByAppConfig(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -40,14 +35,14 @@ func TestPluginDeterminer_GetPluginClientsByAppConfig(t *testing.T) {
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
 					stageBasedPlugins: map[string]pluginapi.PluginClient{
-						"stage1": createMockPluginClient("stage1"),
-						"stage2": createMockPluginClient("stage2"),
+						"stage1": fakePluginClient{name: "stage1"},
+						"stage2": fakePluginClient{name: "stage2"},
 					},
 				}
 			},
 			expected: []pluginapi.PluginClient{
-				createMockPluginClient("stage1"),
-				createMockPluginClient("stage2"),
+				fakePluginClient{name: "stage1"},
+				fakePluginClient{name: "stage2"},
 			},
 			wantErr: false,
 		},
@@ -60,14 +55,14 @@ func TestPluginDeterminer_GetPluginClientsByAppConfig(t *testing.T) {
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
 					nameBasedPlugins: map[string]pluginapi.PluginClient{
-						"plugin1": createMockPluginClient("plugin1"),
-						"plugin2": createMockPluginClient("plugin2"),
+						"plugin1": fakePluginClient{name: "plugin1"},
+						"plugin2": fakePluginClient{name: "plugin2"},
 					},
 				}
 			},
 			expected: []pluginapi.PluginClient{
-				createMockPluginClient("plugin1"),
-				createMockPluginClient("plugin2"),
+				fakePluginClient{name: "plugin1"},
+				fakePluginClient{name: "plugin2"},
 			},
 			wantErr: false,
 		},
@@ -85,18 +80,18 @@ func TestPluginDeterminer_GetPluginClientsByAppConfig(t *testing.T) {
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
 					stageBasedPlugins: map[string]pluginapi.PluginClient{
-						"stage1": createMockPluginClient("stage1"),
-						"stage2": createMockPluginClient("stage2"),
+						"stage1": fakePluginClient{name: "stage1"},
+						"stage2": fakePluginClient{name: "stage2"},
 					},
 					nameBasedPlugins: map[string]pluginapi.PluginClient{
-						"plugin1": createMockPluginClient("plugin1"),
-						"plugin2": createMockPluginClient("plugin2"),
+						"plugin1": fakePluginClient{name: "plugin1"},
+						"plugin2": fakePluginClient{name: "plugin2"},
 					},
 				}
 			},
 			expected: []pluginapi.PluginClient{
-				createMockPluginClient("stage1"),
-				createMockPluginClient("stage2"),
+				fakePluginClient{name: "stage1"},
+				fakePluginClient{name: "stage2"},
 			},
 			wantErr: false,
 		},
@@ -140,14 +135,14 @@ func TestPluginRegistry_getPluginClientsByPipeline(t *testing.T) {
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
 					stageBasedPlugins: map[string]pluginapi.PluginClient{
-						"stage1": createMockPluginClient("stage1"),
-						"stage2": createMockPluginClient("stage2"),
+						"stage1": fakePluginClient{name: "stage1"},
+						"stage2": fakePluginClient{name: "stage2"},
 					},
 				}
 			},
 			expected: []pluginapi.PluginClient{
-				createMockPluginClient("stage1"),
-				createMockPluginClient("stage2"),
+				fakePluginClient{name: "stage1"},
+				fakePluginClient{name: "stage2"},
 			},
 			wantErr: false,
 		},
@@ -205,14 +200,14 @@ func TestPluginRegistry_getPluginClientsByNames(t *testing.T) {
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
 					nameBasedPlugins: map[string]pluginapi.PluginClient{
-						"plugin1": createMockPluginClient("plugin1"),
-						"plugin2": createMockPluginClient("plugin2"),
+						"plugin1": fakePluginClient{name: "plugin1"},
+						"plugin2": fakePluginClient{name: "plugin2"},
 					},
 				}
 			},
 			expected: []pluginapi.PluginClient{
-				createMockPluginClient("plugin1"),
-				createMockPluginClient("plugin2"),
+				fakePluginClient{name: "plugin1"},
+				fakePluginClient{name: "plugin2"},
 			},
 			wantErr: false,
 		},
@@ -222,8 +217,8 @@ func TestPluginRegistry_getPluginClientsByNames(t *testing.T) {
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
 					nameBasedPlugins: map[string]pluginapi.PluginClient{
-						"plugin1": createMockPluginClient("plugin1"),
-						"plugin2": createMockPluginClient("plugin2"),
+						"plugin1": fakePluginClient{name: "plugin1"},
+						"plugin2": fakePluginClient{name: "plugin2"},
 					},
 				}
 			},
@@ -235,8 +230,8 @@ func TestPluginRegistry_getPluginClientsByNames(t *testing.T) {
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
 					nameBasedPlugins: map[string]pluginapi.PluginClient{
-						"plugin3": createMockPluginClient("plugin3"),
-						"plugin4": createMockPluginClient("plugin4"),
+						"plugin3": fakePluginClient{name: "plugin3"},
+						"plugin4": fakePluginClient{name: "plugin4"},
 					},
 				}
 			},
@@ -267,11 +262,11 @@ func TestPluginRegistry_GetPluginClientByStageName(t *testing.T) {
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
 					stageBasedPlugins: map[string]pluginapi.PluginClient{
-						"stage1": createMockPluginClient("stage1"),
+						"stage1": fakePluginClient{name: "stage1"},
 					},
 				}
 			},
-			expected: createMockPluginClient("stage1"),
+			expected: fakePluginClient{name: "stage1"},
 			wantErr:  false,
 		},
 		{
@@ -280,7 +275,7 @@ func TestPluginRegistry_GetPluginClientByStageName(t *testing.T) {
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
 					stageBasedPlugins: map[string]pluginapi.PluginClient{
-						"stage1": createMockPluginClient("stage1"),
+						"stage1": fakePluginClient{name: "stage1"},
 					},
 				}
 			},
