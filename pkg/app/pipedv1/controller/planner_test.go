@@ -38,6 +38,7 @@ type fakePlugin struct {
 	quickStages    []*model.PipelineStage
 	pipelineStages []*model.PipelineStage
 	rollbackStages []*model.PipelineStage
+	stageStatusMap map[string]model.StageStatus
 }
 
 func (p *fakePlugin) Close() error { return nil }
@@ -98,7 +99,18 @@ func (p *fakePlugin) FetchDefinedStages(ctx context.Context, req *deployment.Fet
 		Stages: stages,
 	}, nil
 }
+func (p *fakePlugin) ExecuteStage(ctx context.Context, req *deployment.ExecuteStageRequest, opts ...grpc.CallOption) (*deployment.ExecuteStageResponse, error) {
+	status, ok := p.stageStatusMap[req.Input.Stage.Id]
+	if !ok {
+		return &deployment.ExecuteStageResponse{
+			Status: model.StageStatus_STAGE_NOT_STARTED_YET,
+		}, nil
+	}
 
+	return &deployment.ExecuteStageResponse{
+		Status: status,
+	}, nil
+}
 func pointerBool(b bool) *bool {
 	return &b
 }

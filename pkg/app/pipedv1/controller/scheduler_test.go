@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 	"google.golang.org/grpc"
 
@@ -30,6 +31,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
+	"github.com/pipe-cd/pipecd/pkg/plugin/registry"
 )
 
 func TestDetermineStageStatus(t *testing.T) {
@@ -215,9 +217,27 @@ func TestExecuteStage(t *testing.T) {
 				apiClient:  &fakeAPIClient{},
 				targetDSP:  &fakeDeploySourceProvider{},
 				runningDSP: &fakeDeploySourceProvider{},
-				stageBasedPluginsMap: map[string]pluginapi.PluginClient{
-					"stage-name": &fakeExecutorPluginClient{},
-				},
+				pluginRegistry: func() registry.PluginRegistry {
+					pr, err := registry.NewPluginRegistry(context.TODO(), []registry.Plugin{
+						{
+							Name: "stage-name",
+							Cli: &fakePlugin{
+								pipelineStages: []*model.PipelineStage{
+									{
+										Id:   "stage-id",
+										Name: "stage-name",
+									},
+								},
+								stageStatusMap: map[string]model.StageStatus{
+									"stage-id": model.StageStatus_STAGE_SUCCESS,
+								},
+							},
+						},
+					})
+					require.NoError(t, err)
+
+					return pr
+				}(),
 				genericApplicationConfig: &config.GenericApplicationSpec{
 					Pipeline: &config.DeploymentPipeline{
 						Stages: []config.PipelineStage{
@@ -257,9 +277,27 @@ func TestExecuteStage_SignalTerminated(t *testing.T) {
 		apiClient:  &fakeAPIClient{},
 		targetDSP:  &fakeDeploySourceProvider{},
 		runningDSP: &fakeDeploySourceProvider{},
-		stageBasedPluginsMap: map[string]pluginapi.PluginClient{
-			"stage-name": &fakeExecutorPluginClient{},
-		},
+		pluginRegistry: func() registry.PluginRegistry {
+			pr, err := registry.NewPluginRegistry(context.TODO(), []registry.Plugin{
+				{
+					Name: "stage-name",
+					Cli: &fakePlugin{
+						pipelineStages: []*model.PipelineStage{
+							{
+								Id:   "stage-id",
+								Name: "stage-name",
+							},
+						},
+						stageStatusMap: map[string]model.StageStatus{
+							"stage-id": model.StageStatus_STAGE_SUCCESS,
+						},
+					},
+				},
+			})
+			require.NoError(t, err)
+
+			return pr
+		}(),
 		genericApplicationConfig: &config.GenericApplicationSpec{
 			Pipeline: &config.DeploymentPipeline{
 				Stages: []config.PipelineStage{
@@ -295,9 +333,27 @@ func TestExecuteStage_SignalCancelled(t *testing.T) {
 		apiClient:  &fakeAPIClient{},
 		targetDSP:  &fakeDeploySourceProvider{},
 		runningDSP: &fakeDeploySourceProvider{},
-		stageBasedPluginsMap: map[string]pluginapi.PluginClient{
-			"stage-name": &fakeExecutorPluginClient{},
-		},
+		pluginRegistry: func() registry.PluginRegistry {
+			pr, err := registry.NewPluginRegistry(context.TODO(), []registry.Plugin{
+				{
+					Name: "stage-name",
+					Cli: &fakePlugin{
+						pipelineStages: []*model.PipelineStage{
+							{
+								Id:   "stage-id",
+								Name: "stage-name",
+							},
+						},
+						stageStatusMap: map[string]model.StageStatus{
+							"stage-id": model.StageStatus_STAGE_SUCCESS,
+						},
+					},
+				},
+			})
+			require.NoError(t, err)
+
+			return pr
+		}(),
 		genericApplicationConfig: &config.GenericApplicationSpec{
 			Pipeline: &config.DeploymentPipeline{
 				Stages: []config.PipelineStage{

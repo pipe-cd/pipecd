@@ -595,7 +595,6 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		workingDir,
 		c.apiClient,
 		c.gitClient,
-		c.stageBasedPluginsMap,
 		c.notifier,
 		c.secretDecrypter,
 		c.logger,
