@@ -455,7 +455,6 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		configFilename,
 		workingDir,
 		c.pluginRegistry,
-		c.stageBasedPluginsMap,
 		c.apiClient,
 		c.gitClient,
 		c.notifier,
