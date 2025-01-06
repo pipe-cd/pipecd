@@ -287,7 +287,7 @@ func TestDeploymentService_executeK8sSyncStage_withPrune(t *testing.T) {
 
 	running := filepath.Join("./", "testdata", "prune", "running")
 
-	// read the running application config from the example file
+	// read the running application config from the testdata file
 	runningCfg, err := os.ReadFile(filepath.Join(running, "app.pipecd.yaml"))
 	require.NoError(t, err)
 
@@ -337,7 +337,7 @@ func TestDeploymentService_executeK8sSyncStage_withPrune(t *testing.T) {
 
 	target := filepath.Join("./", "testdata", "prune", "target")
 
-	// read the running application config from the example file
+	// read the running application config from the testdata file
 	targetCfg, err := os.ReadFile(filepath.Join(target, "app.pipecd.yaml"))
 	require.NoError(t, err)
 
