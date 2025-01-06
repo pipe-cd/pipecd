@@ -357,6 +357,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	for _, plg := range cfg.Plugins {
 		cli, err := pluginapi.NewClient(ctx, net.JoinHostPort("localhost", strconv.Itoa(plg.Port)), options...)
 		if err != nil {
+			input.Logger.Error("failed to create client to connect plugin", zap.String("plugin", plg.Name), zap.Error(err))
 			return err
 		}
 
