@@ -39,6 +39,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
+	"github.com/pipe-cd/pipecd/pkg/plugin/registry"
 )
 
 type apiClient interface {
@@ -98,6 +99,9 @@ type controller struct {
 
 	// gRPC clients to communicate with plugins.
 	pluginClients []pluginapi.PluginClient
+	// The registry of all plugins.
+	pluginRegistry registry.PluginRegistry
+
 	// Map from stage name to the plugin client.
 	stageBasedPluginsMap map[string]pluginapi.PluginClient
 	// Map from application ID to the planner
@@ -132,6 +136,7 @@ func NewController(
 	apiClient apiClient,
 	gitClient gitClient,
 	pluginClients []pluginapi.PluginClient,
+	pluginRegistry registry.PluginRegistry,
 	deploymentLister deploymentLister,
 	commandLister commandLister,
 	notifier notifier,
@@ -145,6 +150,7 @@ func NewController(
 		apiClient:        apiClient,
 		gitClient:        gitClient,
 		pluginClients:    pluginClients,
+		pluginRegistry:   pluginRegistry,
 		deploymentLister: deploymentLister,
 		commandLister:    commandLister,
 		notifier:         notifier,
@@ -449,6 +455,7 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		configFilename,
 		workingDir,
 		c.pluginClients, // FIXME: Find a way to ensure the plugins only related to deployment.
+		c.pluginRegistry,
 		c.stageBasedPluginsMap,
 		c.apiClient,
 		c.gitClient,

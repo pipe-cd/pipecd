@@ -36,6 +36,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
+	"github.com/pipe-cd/pipecd/pkg/plugin/registry"
 	"github.com/pipe-cd/pipecd/pkg/regexpool"
 )
 
@@ -79,6 +80,9 @@ type planner struct {
 	// which encrypted using PipeCD built-in secret management.
 	secretDecrypter secretDecrypter
 
+	// The pluginRegistry is used to determine which plugins to be used
+	pluginRegistry registry.PluginRegistry
+
 	logger *zap.Logger
 	tracer trace.Tracer
 
@@ -97,6 +101,7 @@ func newPlanner(
 	lastSuccessfulConfigFilename string,
 	workingDir string,
 	pluginClients []pluginapi.PluginClient,
+	pluginRegistry registry.PluginRegistry,
 	stageBasedPluginsMap map[string]pluginapi.PluginClient,
 	apiClient apiClient,
 	gitClient gitClient,
@@ -121,6 +126,7 @@ func newPlanner(
 		workingDir:                   workingDir,
 		stageBasedPluginsMap:         stageBasedPluginsMap,
 		plugins:                      pluginClients,
+		pluginRegistry:               pluginRegistry,
 		apiClient:                    apiClient,
 		gitClient:                    gitClient,
 		metadataStore:                metadatastore.NewMetadataStore(apiClient, d),
@@ -225,6 +231,20 @@ func (p *planner) Run(ctx context.Context) error {
 		}
 		runningDS = rds.ToPluginDeploySource()
 	}
+
+	// determine plugin based on the application config from targetDSP.
+	cfg, err := config.DecodeYAML[*config.GenericApplicationSpec](targetDS.GetApplicationConfig())
+	if err != nil {
+		p.logger.Error("unable to parse application config", zap.Error(err))
+		return err
+	}
+
+	plugins, err := p.pluginRegistry.GetPluginsByAppConfig(cfg.Spec)
+	if err != nil {
+		p.logger.Error("unable to determine plugin clients", zap.Error(err))
+		return err
+	}
+	p.plugins = plugins
 
 	out, err := p.buildPlan(ctx, runningDS, targetDS)
 
@@ -462,9 +482,9 @@ func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.Gener
 	// Build stages config for each plugin.
 	for i := range stagesCfg {
 		stageCfg := stagesCfg[i]
-		plg, ok := p.stageBasedPluginsMap[stageCfg.Name.String()]
-		if !ok {
-			return nil, fmt.Errorf("unable to find plugin for stage %q", stageCfg.Name.String())
+		plg, err := p.pluginRegistry.GetPluginClientByStageName(stageCfg.Name.String())
+		if err != nil {
+			return nil, err
 		}
 
 		stagesCfgPerPlugin[plg] = append(stagesCfgPerPlugin[plg], &deployment.BuildPipelineSyncStagesRequest_StageConfig{

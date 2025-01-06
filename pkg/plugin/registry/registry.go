@@ -1,11 +1,18 @@
 package registry
 
 import (
+	"context"
 	"fmt"
 
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 )
+
+type Plugin struct {
+	Name string
+	Cli  pluginapi.PluginClient
+}
 
 // PluginRegistry is the interface that provides methods to get plugin clients.
 type PluginRegistry interface {
@@ -18,6 +25,32 @@ type pluginRegistry struct {
 	stageBasedPlugins map[string]pluginapi.PluginClient
 
 	// TODO: add more fields if needed (e.g. deploymentBasedPlugins, livestateBasedPlugins)
+}
+
+// NewPluginRegistry creates a new PluginRegistry based on the given plugins.
+func NewPluginRegistry(ctx context.Context, plugins []Plugin) (PluginRegistry, error) {
+	nameBasedPlugins := make(map[string]pluginapi.PluginClient)
+	stageBasedPlugins := make(map[string]pluginapi.PluginClient)
+
+	for _, plg := range plugins {
+		// add the plugin to the name-based plugins
+		nameBasedPlugins[plg.Name] = plg.Cli
+
+		// add the plugin to the stage-based plugins
+		res, err := plg.Cli.FetchDefinedStages(ctx, &deployment.FetchDefinedStagesRequest{})
+		if err != nil {
+			return nil, err
+		}
+
+		for _, stage := range res.Stages {
+			stageBasedPlugins[stage] = plg.Cli
+		}
+	}
+
+	return &pluginRegistry{
+		nameBasedPlugins:  nameBasedPlugins,
+		stageBasedPlugins: stageBasedPlugins,
+	}, nil
 }
 
 // GetPluginClientByStageName returns the plugin client based on the given stage name.
@@ -36,7 +69,7 @@ func (pr *pluginRegistry) GetPluginClientByStageName(name string) (pluginapi.Plu
 //  2. If the plugins are specified, it will determine the plugins based on the plugin names.
 //  3. If neither the pipeline nor the plugins are specified, it will return an error.
 func (pr *pluginRegistry) GetPluginsByAppConfig(cfg *config.GenericApplicationSpec) ([]pluginapi.PluginClient, error) {
-	if cfg.Pipeline != nil {
+	if cfg.Pipeline != nil && len(cfg.Pipeline.Stages) > 0 {
 		return pr.getPluginsByPipeline(cfg.Pipeline)
 	}
 

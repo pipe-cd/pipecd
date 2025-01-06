@@ -71,6 +71,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/lifecycle"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
+	pluginRegistry "github.com/pipe-cd/pipecd/pkg/plugin/registry"
 	"github.com/pipe-cd/pipecd/pkg/rpc"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcclient"
@@ -349,6 +350,8 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	// Make grpc clients to connect to plugins.
 	pluginClis := make([]pluginapi.PluginClient, 0, len(cfg.Plugins))
+
+	plugins := make([]pluginRegistry.Plugin, 0, len(cfg.Plugins))
 	options := []rpcclient.DialOption{
 		rpcclient.WithBlock(),
 		rpcclient.WithInsecure(),
@@ -356,9 +359,19 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	for _, plg := range cfg.Plugins {
 		cli, err := pluginapi.NewClient(ctx, net.JoinHostPort("localhost", strconv.Itoa(plg.Port)), options...)
 		if err != nil {
-			input.Logger.Error("failed to create client to connect plugin", zap.String("plugin", plg.Name), zap.Error(err))
+			return err
 		}
-		pluginClis = append(pluginClis, cli)
+
+		plugins = append(plugins, pluginRegistry.Plugin{
+			Name: plg.Name,
+			Cli:  cli,
+		})
+	}
+
+	pluginRegistry, err := pluginRegistry.NewPluginRegistry(ctx, plugins)
+	if err != nil {
+		input.Logger.Error("failed to create plugin registry", zap.Error(err))
+		return err
 	}
 
 	// Start running application live state reporter.
@@ -384,6 +397,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			apiClient,
 			gitClient,
 			pluginClis,
+			pluginRegistry,
 			deploymentLister,
 			commandLister,
 			notifier,
