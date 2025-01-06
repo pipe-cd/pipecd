@@ -9,6 +9,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 )
 
+// Plugin represents a plugin with its name and client.
 type Plugin struct {
 	Name string
 	Cli  pluginapi.PluginClient
@@ -21,8 +22,8 @@ type PluginRegistry interface {
 }
 
 type pluginRegistry struct {
-	nameBasedPlugins  map[string]pluginapi.PluginClient
-	stageBasedPlugins map[string]pluginapi.PluginClient
+	nameBasedPlugins  map[string]pluginapi.PluginClient // key: plugin name
+	stageBasedPlugins map[string]pluginapi.PluginClient // key: stage name
 
 	// TODO: add more fields if needed (e.g. deploymentBasedPlugins, livestateBasedPlugins)
 }
