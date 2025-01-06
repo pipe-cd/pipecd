@@ -25,6 +25,23 @@ spec:
                 image:
                   type: string
                 replicas:
+    - name: v1beta1
+      # Each version can be enabled/disabled by Served flag.
+      served: true
+      # One and only one version must be marked as the storage version.
+      storage: false
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                cronSpec:
+                  type: string
+                image:
+                  type: string
+                replicas:
                   type: integer
   # either Namespaced or Cluster
   scope: Cluster

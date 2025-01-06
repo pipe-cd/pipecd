@@ -10,4 +10,5 @@ spec:
     manifests:
       - crontab.yaml
       - crontab-2.yaml
+      - crontab-v1beta1.yaml
     kubectlVersion: 1.31.0

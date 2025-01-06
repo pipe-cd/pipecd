@@ -602,10 +602,12 @@ func TestDeploymentService_executeK8sSyncStage_withPrune_clusterScoped(t *testin
 		require.NoError(t, err)
 		require.Equal(t, model.StageStatus_STAGE_SUCCESS.String(), resp.GetStatus().String())
 
-		// The my-new-cron-object/my-new-cron-object-2 should be created
+		// The my-new-cron-object/my-new-cron-object-2/my-new-cron-object-v1beta1 should be created
 		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object", metav1.GetOptions{})
 		require.NoError(t, err)
 		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object-2", metav1.GetOptions{})
+		require.NoError(t, err)
+		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object-v1beta1", metav1.GetOptions{})
 		require.NoError(t, err)
 	})
 	require.Truef(t, ok, "expected prepare to succeed")
@@ -655,6 +657,10 @@ func TestDeploymentService_executeK8sSyncStage_withPrune_clusterScoped(t *testin
 		require.NoError(t, err)
 		// The my-new-cron-object-2 should be removed
 		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object-2", metav1.GetOptions{})
+		require.Error(t, err)
+		require.Truef(t, apierrors.IsNotFound(err), "expected error to be NotFound, but got %v", err)
+		// The my-new-cron-object-v1beta1 should be removed
+		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object-v1beta1", metav1.GetOptions{})
 		require.Error(t, err)
 		require.Truef(t, apierrors.IsNotFound(err), "expected error to be NotFound, but got %v", err)
 	})
