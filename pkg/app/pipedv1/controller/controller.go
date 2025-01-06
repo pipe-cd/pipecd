@@ -38,7 +38,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
-	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/registry"
 )
 
@@ -97,8 +96,6 @@ type controller struct {
 	notifier         notifier
 	secretDecrypter  secretDecrypter
 
-	// gRPC clients to communicate with plugins.
-	pluginClients []pluginapi.PluginClient
 	// The registry of all plugins.
 	pluginRegistry registry.PluginRegistry
 
@@ -135,7 +132,6 @@ type controller struct {
 func NewController(
 	apiClient apiClient,
 	gitClient gitClient,
-	pluginClients []pluginapi.PluginClient,
 	pluginRegistry registry.PluginRegistry,
 	deploymentLister deploymentLister,
 	commandLister commandLister,
@@ -149,7 +145,6 @@ func NewController(
 	return &controller{
 		apiClient:        apiClient,
 		gitClient:        gitClient,
-		pluginClients:    pluginClients,
 		pluginRegistry:   pluginRegistry,
 		deploymentLister: deploymentLister,
 		commandLister:    commandLister,
@@ -184,22 +179,6 @@ func (c *controller) Run(ctx context.Context) error {
 	}
 	c.workspaceDir = dir
 	c.logger.Info(fmt.Sprintf("workspace directory was configured to %s", c.workspaceDir))
-
-	// Build the list of stages that can be handled by piped's plugins.
-	stagesBasedPluginsMap := make(map[string]pluginapi.PluginClient)
-	for _, plugin := range c.pluginClients {
-		resp, err := plugin.FetchDefinedStages(ctx, &deployment.FetchDefinedStagesRequest{})
-		if err != nil {
-			return err
-		}
-		for _, stage := range resp.GetStages() {
-			if _, ok := stagesBasedPluginsMap[stage]; ok {
-				c.logger.Error("duplicated stage name", zap.String("stage", stage))
-				return fmt.Errorf("duplicated stage name %s", stage)
-			}
-			stagesBasedPluginsMap[stage] = plugin
-		}
-	}
 
 	ticker := time.NewTicker(c.syncInternal)
 	defer ticker.Stop()
@@ -594,6 +573,7 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		workingDir,
 		c.apiClient,
 		c.gitClient,
+		c.pluginRegistry,
 		c.notifier,
 		c.secretDecrypter,
 		c.logger,

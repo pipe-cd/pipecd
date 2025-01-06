@@ -349,8 +349,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	}
 
 	// Make grpc clients to connect to plugins.
-	pluginClis := make([]pluginapi.PluginClient, 0, len(cfg.Plugins))
-
 	plugins := make([]pluginRegistry.Plugin, 0, len(cfg.Plugins))
 	options := []rpcclient.DialOption{
 		rpcclient.WithBlock(),
@@ -396,7 +394,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		c := controller.NewController(
 			apiClient,
 			gitClient,
-			pluginClis,
 			pluginRegistry,
 			deploymentLister,
 			commandLister,
