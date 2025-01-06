@@ -441,6 +441,7 @@ func TestDeploymentService_executeK8sSyncStage_withPrune_changesNamespace(t *tes
 	require.Equal(t, "app-id", service.GetAnnotations()["pipecd.dev/application"])
 	require.Equal(t, "v1", service.GetAnnotations()["pipecd.dev/original-api-version"])
 	require.Equal(t, "0123456789", service.GetAnnotations()["pipecd.dev/commit-hash"])
+	require.Equal(t, ":Service:test-1:simple", service.GetAnnotations()["pipecd.dev/resource-key"])
 
 	target := filepath.Join("./", "testdata", "prune_with_change_namespace", "target")
 
@@ -500,6 +501,7 @@ func TestDeploymentService_executeK8sSyncStage_withPrune_changesNamespace(t *tes
 	require.Equal(t, "app-id", service.GetAnnotations()["pipecd.dev/application"])
 	require.Equal(t, "v1", service.GetAnnotations()["pipecd.dev/original-api-version"])
 	require.Equal(t, "0012345678", service.GetAnnotations()["pipecd.dev/commit-hash"])
+	require.Equal(t, ":Service:test-2:simple", service.GetAnnotations()["pipecd.dev/resource-key"])
 }
 
 func TestDeploymentService_executeK8sSyncStage_withPrune_clusterScoped(t *testing.T) {
