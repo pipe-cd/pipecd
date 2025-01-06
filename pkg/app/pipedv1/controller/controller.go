@@ -454,7 +454,6 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		commitHash,
 		configFilename,
 		workingDir,
-		c.pluginClients, // FIXME: Find a way to ensure the plugins only related to deployment.
 		c.pluginRegistry,
 		c.stageBasedPluginsMap,
 		c.apiClient,

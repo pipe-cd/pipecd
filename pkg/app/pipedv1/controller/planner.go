@@ -58,9 +58,6 @@ type planner struct {
 	lastSuccessfulConfigFilename string
 	workingDir                   string
 
-	// The plugin clients are used to call plugin that actually
-	// performs planning deployment.
-	plugins []pluginapi.PluginClient
 	// The map used to know which plugin is incharged for a given stage
 	// of the current deployment.
 	stageBasedPluginsMap map[string]pluginapi.PluginClient
@@ -100,7 +97,6 @@ func newPlanner(
 	lastSuccessfulCommitHash string,
 	lastSuccessfulConfigFilename string,
 	workingDir string,
-	pluginClients []pluginapi.PluginClient,
 	pluginRegistry registry.PluginRegistry,
 	stageBasedPluginsMap map[string]pluginapi.PluginClient,
 	apiClient apiClient,
@@ -125,7 +121,6 @@ func newPlanner(
 		lastSuccessfulConfigFilename: lastSuccessfulConfigFilename,
 		workingDir:                   workingDir,
 		stageBasedPluginsMap:         stageBasedPluginsMap,
-		plugins:                      pluginClients,
 		pluginRegistry:               pluginRegistry,
 		apiClient:                    apiClient,
 		gitClient:                    gitClient,
@@ -232,20 +227,6 @@ func (p *planner) Run(ctx context.Context) error {
 		runningDS = rds.ToPluginDeploySource()
 	}
 
-	// determine plugin based on the application config from targetDSP.
-	cfg, err := config.DecodeYAML[*config.GenericApplicationSpec](targetDS.GetApplicationConfig())
-	if err != nil {
-		p.logger.Error("unable to parse application config", zap.Error(err))
-		return err
-	}
-
-	plugins, err := p.pluginRegistry.GetPluginsByAppConfig(cfg.Spec)
-	if err != nil {
-		p.logger.Error("unable to determine plugin clients", zap.Error(err))
-		return err
-	}
-	p.plugins = plugins
-
 	out, err := p.buildPlan(ctx, runningDS, targetDS)
 
 	// If the deployment was already cancelled, we ignore the plan result.
@@ -286,8 +267,17 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *deployment
 		TargetDeploymentSource:  targetDS,
 	}
 
+	cfg, err := config.DecodeYAML[*config.GenericApplicationSpec](targetDS.GetApplicationConfig())
+	if err != nil {
+		p.logger.Error("unable to parse application config", zap.Error(err))
+		return nil, err
+	}
+	spec := cfg.Spec
+
+	plugins, err := p.pluginRegistry.GetPluginsByAppConfig(spec)
+
 	// Build deployment target versions.
-	for _, plg := range p.plugins {
+	for _, plg := range plugins {
 		vRes, err := plg.DetermineVersions(ctx, &deployment.DetermineVersionsRequest{Input: input})
 		if err != nil {
 			p.logger.Warn("unable to determine versions", zap.Error(err))
@@ -303,13 +293,6 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *deployment
 			},
 		}
 	}
-
-	cfg, err := config.DecodeYAML[*config.GenericApplicationSpec](targetDS.GetApplicationConfig())
-	if err != nil {
-		p.logger.Error("unable to parse application config", zap.Error(err))
-		return nil, err
-	}
-	spec := cfg.Spec
 
 	// In case the strategy has been decided by trigger.
 	// For example: user triggered the deployment via web console.
@@ -395,7 +378,7 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *deployment
 		summary  string
 	)
 	// Build plan based on plugins determined strategy
-	for _, plg := range p.plugins {
+	for _, plg := range plugins {
 		res, err := plg.DetermineStrategy(ctx, &deployment.DetermineStrategyRequest{Input: input})
 		if err != nil {
 			p.logger.Warn("Unable to determine strategy using current plugin", zap.Error(err))
@@ -441,7 +424,12 @@ func (p *planner) buildQuickSyncStages(ctx context.Context, cfg *config.GenericA
 		rollbackStages = []*model.PipelineStage{}
 		rollback       = *cfg.Planner.AutoRollback
 	)
-	for _, plg := range p.plugins {
+
+	plugins, err := p.pluginRegistry.GetPluginsByAppConfig(cfg)
+	if err != nil {
+		return nil, err
+	}
+	for _, plg := range plugins {
 		res, err := plg.BuildQuickSyncStages(ctx, &deployment.BuildQuickSyncStagesRequest{Rollback: rollback})
 		if err != nil {
 			return nil, fmt.Errorf("failed to build quick sync stage deployment (%w)", err)
