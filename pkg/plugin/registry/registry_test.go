@@ -121,7 +121,7 @@ func TestPluginDeterminer_GetPluginClientsByAppConfig(t *testing.T) {
 		})
 	}
 }
-func TestPluginRegistry_getPluginsByPipeline(t *testing.T) {
+func TestPluginRegistry_getPluginClientsByPipeline(t *testing.T) {
 	tests := []struct {
 		name     string
 		pipeline *config.DeploymentPipeline
@@ -185,7 +185,7 @@ func TestPluginRegistry_getPluginsByPipeline(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			pr := tt.setup()
-			plugins, err := pr.getPluginsByPipeline(tt.pipeline)
+			plugins, err := pr.getPluginClientsByPipeline(tt.pipeline)
 			assert.Equal(t, tt.expected, plugins)
 			assert.Equal(t, tt.wantErr, err != nil)
 		})

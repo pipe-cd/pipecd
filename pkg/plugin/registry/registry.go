@@ -71,7 +71,7 @@ func (pr *pluginRegistry) GetPluginClientByStageName(name string) (pluginapi.Plu
 //  3. If neither the pipeline nor the plugins are specified, it will return an error.
 func (pr *pluginRegistry) GetPluginClientsByAppConfig(cfg *config.GenericApplicationSpec) ([]pluginapi.PluginClient, error) {
 	if cfg.Pipeline != nil && len(cfg.Pipeline.Stages) > 0 {
-		return pr.getPluginsByPipeline(cfg.Pipeline)
+		return pr.getPluginClientsByPipeline(cfg.Pipeline)
 	}
 
 	if cfg.Plugins != nil {
@@ -81,7 +81,7 @@ func (pr *pluginRegistry) GetPluginClientsByAppConfig(cfg *config.GenericApplica
 	return nil, fmt.Errorf("no plugin specified")
 }
 
-func (pr *pluginRegistry) getPluginsByPipeline(pipeline *config.DeploymentPipeline) ([]pluginapi.PluginClient, error) {
+func (pr *pluginRegistry) getPluginClientsByPipeline(pipeline *config.DeploymentPipeline) ([]pluginapi.PluginClient, error) {
 	plugins := make([]pluginapi.PluginClient, 0, len(pipeline.Stages))
 
 	if len(pipeline.Stages) == 0 {
