@@ -269,6 +269,10 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *deployment
 	spec := cfg.Spec
 
 	plugins, err := p.pluginRegistry.GetPluginClientsByAppConfig(spec)
+	if err != nil {
+		p.logger.Error("unable to get plugin clients by app config", zap.Error(err))
+		return nil, err
+	}
 
 	// Build deployment target versions.
 	for _, plg := range plugins {
