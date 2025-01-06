@@ -32,7 +32,7 @@ type fakePluginClient struct {
 	name string
 }
 
-func TestPluginDeterminer_GetPluginClientsByAppConfig(t *testing.T) {
+func TestPluginRegistry_GetPluginClientsByAppConfig(t *testing.T) {
 	tests := []struct {
 		name     string
 		cfg      *config.GenericApplicationSpec
