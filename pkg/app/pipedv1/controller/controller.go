@@ -200,7 +200,6 @@ func (c *controller) Run(ctx context.Context) error {
 			stagesBasedPluginsMap[stage] = plugin
 		}
 	}
-	c.stageBasedPluginsMap = stagesBasedPluginsMap
 
 	ticker := time.NewTicker(c.syncInternal)
 	defer ticker.Stop()
