@@ -34,6 +34,8 @@ type fakePluginClient struct {
 }
 
 func TestPluginRegistry_GetPluginClientsByAppConfig(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		cfg      *config.GenericApplicationSpec
@@ -129,6 +131,8 @@ func TestPluginRegistry_GetPluginClientsByAppConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			pr := tt.setup()
 			plugins, err := pr.GetPluginClientsByAppConfig(tt.cfg)
 			assert.Equal(t, tt.expected, plugins)
@@ -137,6 +141,8 @@ func TestPluginRegistry_GetPluginClientsByAppConfig(t *testing.T) {
 	}
 }
 func TestPluginRegistry_getPluginClientsByPipeline(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		pipeline *config.DeploymentPipeline
@@ -199,6 +205,8 @@ func TestPluginRegistry_getPluginClientsByPipeline(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			pr := tt.setup()
 			plugins, err := pr.getPluginClientsByPipeline(tt.pipeline)
 			assert.Equal(t, tt.expected, plugins)
@@ -207,6 +215,8 @@ func TestPluginRegistry_getPluginClientsByPipeline(t *testing.T) {
 	}
 }
 func TestPluginRegistry_getPluginClientsByNames(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name        string
 		pluginNames []string
@@ -261,6 +271,8 @@ func TestPluginRegistry_getPluginClientsByNames(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			pr := tt.setup()
 			plugins, err := pr.getPluginClientsByNames(tt.pluginNames)
 			assert.Equal(t, tt.expected, plugins)
@@ -269,6 +281,8 @@ func TestPluginRegistry_getPluginClientsByNames(t *testing.T) {
 	}
 }
 func TestPluginRegistry_GetPluginClientByStageName(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		stage    string
@@ -306,6 +320,8 @@ func TestPluginRegistry_GetPluginClientByStageName(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			pr := tt.setup()
 			plugin, err := pr.GetPluginClientByStageName(tt.stage)
 			assert.Equal(t, tt.expected, plugin)
