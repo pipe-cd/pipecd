@@ -58,6 +58,8 @@ type GenericApplicationSpec struct {
 	EventWatcher []EventWatcherConfig `json:"eventWatcher"`
 	// Configuration for drift detection
 	DriftDetection *DriftDetection `json:"driftDetection"`
+	// List of the plugin name
+	Plugins []string `json:"plugins"`
 }
 
 type DeploymentPlanner struct {
