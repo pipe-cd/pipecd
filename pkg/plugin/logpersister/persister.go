@@ -26,8 +26,8 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/cmd/piped/service"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	service "github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
 )
 
 type apiClient interface {

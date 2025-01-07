@@ -17,7 +17,7 @@ package toolregistry
 import (
 	"context"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/cmd/piped/service"
+	service "github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
 )
 
 type ToolRegistry struct {
