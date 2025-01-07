@@ -31,10 +31,10 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
-	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 )
 
@@ -43,7 +43,7 @@ type scheduler struct {
 	deployment *model.Deployment
 	workingDir string
 
-	stageBasedPluginsMap map[string]pluginapi.PluginClient
+	pluginRegistry plugin.PluginRegistry
 
 	apiClient       apiClient
 	gitClient       gitClient
@@ -79,7 +79,7 @@ func newScheduler(
 	workingDir string,
 	apiClient apiClient,
 	gitClient gitClient,
-	stageBasedPluginsMap map[string]pluginapi.PluginClient,
+	pluginRegistry plugin.PluginRegistry,
 	notifier notifier,
 	secretsDecrypter secretDecrypter,
 	logger *zap.Logger,
@@ -96,9 +96,9 @@ func newScheduler(
 	s := &scheduler{
 		deployment:           d,
 		workingDir:           workingDir,
-		stageBasedPluginsMap: stageBasedPluginsMap,
 		apiClient:            apiClient,
 		gitClient:            gitClient,
+		pluginRegistry:       pluginRegistry,
 		metadataStore:        metadatastore.NewMetadataStore(apiClient, d),
 		notifier:             notifier,
 		secretDecrypter:      secretsDecrypter,
@@ -513,9 +513,9 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 	}
 
 	// Find the executor plugin for this stage.
-	plugin, ok := s.stageBasedPluginsMap[ps.Name]
-	if !ok {
-		s.logger.Error("failed to find the plugin for the stage", zap.String("stage-name", ps.Name))
+	plugin, err := s.pluginRegistry.GetPluginClientByStageName(ps.Name)
+	if err != nil {
+		s.logger.Error("failed to find the plugin for the stage", zap.String("stage-name", ps.Name), zap.Error(err))
 		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
 		return model.StageStatus_STAGE_FAILURE
 	}
