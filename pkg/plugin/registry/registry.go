@@ -108,13 +108,10 @@ func (pr *pluginRegistry) getPluginClientsByPipeline(pipeline *config.Deployment
 	plugins := make([]pluginapi.PluginClient, 0, len(pipeline.Stages))
 	for _, stage := range pipeline.Stages {
 		plugin, ok := pr.stageBasedPlugins[stage.Name.String()]
-		if ok {
-			plugins = append(plugins, plugin)
+		if !ok {
+			return nil, fmt.Errorf("no plugin found for the stage %s", stage.Name.String())
 		}
-	}
-
-	if len(plugins) == 0 {
-		return nil, fmt.Errorf("no plugin found for each stages")
+		plugins = append(plugins, plugin)
 	}
 
 	return plugins, nil
@@ -128,13 +125,10 @@ func (pr *pluginRegistry) getPluginClientsByNames(names []string) ([]pluginapi.P
 	plugins := make([]pluginapi.PluginClient, 0, len(names))
 	for _, name := range names {
 		plugin, ok := pr.nameBasedPlugins[name]
-		if ok {
-			plugins = append(plugins, plugin)
+		if !ok {
+			return nil, fmt.Errorf("no plugin found for the given plugin name %v", name)
 		}
-	}
-
-	if len(plugins) == 0 {
-		return nil, fmt.Errorf("no plugin found for the given plugin names")
+		plugins = append(plugins, plugin)
 	}
 
 	return plugins, nil
