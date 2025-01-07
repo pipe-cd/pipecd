@@ -18,9 +18,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/cmd/piped/service"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
+	service "github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"

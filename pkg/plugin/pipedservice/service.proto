@@ -15,7 +15,7 @@
 syntax = "proto3";
 
 package grpc.piped.service;
-option go_package = "github.com/pipe-cd/pipecd/pkg/app/pipedv1/cmd/piped/service";
+option go_package = "github.com/pipe-cd/pipecd/pkg/plugin/pipedservice";
 
 import "validate/validate.proto";
 import "pkg/model/logblock.proto";

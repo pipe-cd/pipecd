@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.21.12
-// source: pkg/app/pipedv1/cmd/piped/service/service.proto
+// source: pkg/plugin/pipedservice/service.proto
 
-package service
+package pipedservice
 
 import (
 	context "context"
@@ -181,5 +181,5 @@ var PluginService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "pkg/app/pipedv1/cmd/piped/service/service.proto",
+	Metadata: "pkg/plugin/pipedservice/service.proto",
 }
