@@ -19,7 +19,7 @@ import (
 	"testing"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
-	api "github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
+	service "github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -57,7 +57,7 @@ func TestRegistry(t *testing.T) {
 		// Get
 		{
 			// Existing key
-			resp, err := r.GetDeploymentMetadata(ctx, &api.GetDeploymentMetadataRequest{
+			resp, err := r.GetDeploymentMetadata(ctx, &service.GetDeploymentMetadataRequest{
 				DeploymentId: d.Id,
 				Key:          "key-1",
 			})
@@ -66,7 +66,7 @@ func TestRegistry(t *testing.T) {
 			assert.Equal(t, "value-1", resp.Value)
 
 			// Nonexistent key
-			resp, err = r.GetDeploymentMetadata(ctx, &api.GetDeploymentMetadataRequest{
+			resp, err = r.GetDeploymentMetadata(ctx, &service.GetDeploymentMetadataRequest{
 				DeploymentId: d.Id,
 				Key:          "key-2",
 			})
@@ -75,7 +75,7 @@ func TestRegistry(t *testing.T) {
 			assert.Equal(t, "", resp.Value)
 
 			// Nonexistent deployment
-			resp, err = r.GetDeploymentMetadata(ctx, &api.GetDeploymentMetadataRequest{
+			resp, err = r.GetDeploymentMetadata(ctx, &service.GetDeploymentMetadataRequest{
 				DeploymentId: "not-exist-id",
 				Key:          "key-2",
 			})
@@ -86,7 +86,7 @@ func TestRegistry(t *testing.T) {
 		// Put
 		{
 			// New key
-			_, err := r.PutDeploymentMetadata(ctx, &api.PutDeploymentMetadataRequest{
+			_, err := r.PutDeploymentMetadata(ctx, &service.PutDeploymentMetadataRequest{
 				DeploymentId: d.Id,
 				Key:          "key-2",
 				Value:        "value-2",
@@ -98,7 +98,7 @@ func TestRegistry(t *testing.T) {
 			}, ac.shared)
 
 			// Nonexistent deployment
-			_, err = r.PutDeploymentMetadata(ctx, &api.PutDeploymentMetadataRequest{
+			_, err = r.PutDeploymentMetadata(ctx, &service.PutDeploymentMetadataRequest{
 				DeploymentId: "not-exist-id",
 				Key:          "key-2",
 				Value:        "value-2",
@@ -108,7 +108,7 @@ func TestRegistry(t *testing.T) {
 		// PutMulti
 		{
 			// New keys(3,4) with one existing key(1)
-			_, err := r.PutDeploymentMetadataMulti(ctx, &api.PutDeploymentMetadataMultiRequest{
+			_, err := r.PutDeploymentMetadataMulti(ctx, &service.PutDeploymentMetadataMultiRequest{
 				DeploymentId: d.Id,
 				Metadata: map[string]string{
 					"key-3": "value-3",
@@ -125,7 +125,7 @@ func TestRegistry(t *testing.T) {
 			}, ac.shared)
 
 			// Nonexistent deployment
-			_, err = r.PutDeploymentMetadataMulti(ctx, &api.PutDeploymentMetadataMultiRequest{
+			_, err = r.PutDeploymentMetadataMulti(ctx, &service.PutDeploymentMetadataMultiRequest{
 				DeploymentId: "not-exist-id",
 				Metadata: map[string]string{
 					"key-3": "value-3",
@@ -141,7 +141,7 @@ func TestRegistry(t *testing.T) {
 		// Get
 		{
 			// Existing key
-			resp, err := r.GetStageMetadata(ctx, &api.GetStageMetadataRequest{
+			resp, err := r.GetStageMetadata(ctx, &service.GetStageMetadataRequest{
 				DeploymentId: d.Id,
 				StageId:      "stage-2",
 				Key:          "stage-2-key-1",
@@ -151,7 +151,7 @@ func TestRegistry(t *testing.T) {
 			assert.Equal(t, "stage-2-value-1", resp.Value)
 
 			// Nonexistent key
-			resp, err = r.GetStageMetadata(ctx, &api.GetStageMetadataRequest{
+			resp, err = r.GetStageMetadata(ctx, &service.GetStageMetadataRequest{
 				DeploymentId: d.Id,
 				StageId:      "stage-1",
 				Key:          "not-exist-key",
@@ -161,7 +161,7 @@ func TestRegistry(t *testing.T) {
 			assert.Equal(t, "", resp.Value)
 
 			// Nonexistent stage
-			resp, err = r.GetStageMetadata(ctx, &api.GetStageMetadataRequest{
+			resp, err = r.GetStageMetadata(ctx, &service.GetStageMetadataRequest{
 				DeploymentId: d.Id,
 				StageId:      "not-exist-stage",
 				Key:          "key-1",
@@ -171,7 +171,7 @@ func TestRegistry(t *testing.T) {
 			assert.Equal(t, "", resp.Value)
 
 			// Nonexistent deployment
-			resp, err = r.GetStageMetadata(ctx, &api.GetStageMetadataRequest{
+			resp, err = r.GetStageMetadata(ctx, &service.GetStageMetadataRequest{
 				DeploymentId: "not-exist-id",
 				StageId:      "stage-1",
 				Key:          "key-1",
@@ -183,7 +183,7 @@ func TestRegistry(t *testing.T) {
 		// Put
 		{
 			// New key
-			_, err := r.PutStageMetadata(ctx, &api.PutStageMetadataRequest{
+			_, err := r.PutStageMetadata(ctx, &service.PutStageMetadataRequest{
 				DeploymentId: d.Id,
 				StageId:      "stage-1",
 				Key:          "stage-1-key-1",
@@ -195,7 +195,7 @@ func TestRegistry(t *testing.T) {
 			}, ac.stages["stage-1"])
 
 			// Nonexistent deployment
-			_, err = r.PutStageMetadata(ctx, &api.PutStageMetadataRequest{
+			_, err = r.PutStageMetadata(ctx, &service.PutStageMetadataRequest{
 				DeploymentId: "not-exist-id",
 				StageId:      "stage-1",
 				Key:          "stage-1-key-1",
@@ -206,7 +206,7 @@ func TestRegistry(t *testing.T) {
 		// PutMulti
 		{
 			// New key(2) with one existing key(1)
-			_, err := r.PutStageMetadataMulti(ctx, &api.PutStageMetadataMultiRequest{
+			_, err := r.PutStageMetadataMulti(ctx, &service.PutStageMetadataMultiRequest{
 				DeploymentId: d.Id,
 				StageId:      "stage-2",
 				Metadata: map[string]string{
@@ -226,7 +226,7 @@ func TestRegistry(t *testing.T) {
 			}, ac.stages)
 
 			// Nonexistent deployment
-			_, err = r.PutStageMetadataMulti(ctx, &api.PutStageMetadataMultiRequest{
+			_, err = r.PutStageMetadataMulti(ctx, &service.PutStageMetadataMultiRequest{
 				DeploymentId: "not-exist-id",
 				StageId:      "stage-1",
 				Metadata: map[string]string{

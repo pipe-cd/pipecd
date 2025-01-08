@@ -20,7 +20,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 
-	api "github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
+	service "github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
 )
 
 // MetadataStoreRegistry is a registry of metadata stores for deployments.
@@ -51,84 +51,84 @@ func (r *MetadataStoreRegistry) Delete(deploymentID string) {
 	delete(r.stores, deploymentID)
 }
 
-func (r *MetadataStoreRegistry) GetStageMetadata(ctx context.Context, req *api.GetStageMetadataRequest) (*api.GetStageMetadataResponse, error) {
+func (r *MetadataStoreRegistry) GetStageMetadata(ctx context.Context, req *service.GetStageMetadataRequest) (*service.GetStageMetadataResponse, error) {
 	mds, ok := r.stores[req.DeploymentId]
 	if !ok {
-		return &api.GetStageMetadataResponse{Found: false}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
+		return &service.GetStageMetadataResponse{Found: false}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
 	}
 
 	value, found := mds.Stage(req.StageId).Get(req.Key)
-	return &api.GetStageMetadataResponse{
+	return &service.GetStageMetadataResponse{
 		Value: value,
 		Found: found,
 	}, nil
 }
 
-func (r *MetadataStoreRegistry) PutStageMetadata(ctx context.Context, req *api.PutStageMetadataRequest) (*api.PutStageMetadataResponse, error) {
+func (r *MetadataStoreRegistry) PutStageMetadata(ctx context.Context, req *service.PutStageMetadataRequest) (*service.PutStageMetadataResponse, error) {
 	mds, ok := r.stores[req.DeploymentId]
 	if !ok {
-		return &api.PutStageMetadataResponse{}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
+		return &service.PutStageMetadataResponse{}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
 	}
 
 	err := mds.Stage(req.StageId).Put(ctx, req.Key, req.Value)
 	if err != nil {
-		return &api.PutStageMetadataResponse{}, err
+		return &service.PutStageMetadataResponse{}, err
 	}
 
-	return &api.PutStageMetadataResponse{}, nil
+	return &service.PutStageMetadataResponse{}, nil
 }
 
-func (r *MetadataStoreRegistry) PutStageMetadataMulti(ctx context.Context, req *api.PutStageMetadataMultiRequest) (*api.PutStageMetadataMultiResponse, error) {
+func (r *MetadataStoreRegistry) PutStageMetadataMulti(ctx context.Context, req *service.PutStageMetadataMultiRequest) (*service.PutStageMetadataMultiResponse, error) {
 	mds, ok := r.stores[req.DeploymentId]
 	if !ok {
-		return &api.PutStageMetadataMultiResponse{}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
+		return &service.PutStageMetadataMultiResponse{}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
 	}
 
 	err := mds.Stage(req.StageId).PutMulti(ctx, req.Metadata)
 	if err != nil {
-		return &api.PutStageMetadataMultiResponse{}, err
+		return &service.PutStageMetadataMultiResponse{}, err
 	}
 
-	return &api.PutStageMetadataMultiResponse{}, nil
+	return &service.PutStageMetadataMultiResponse{}, nil
 }
 
-func (r *MetadataStoreRegistry) GetDeploymentMetadata(ctx context.Context, req *api.GetDeploymentMetadataRequest) (*api.GetDeploymentMetadataResponse, error) {
+func (r *MetadataStoreRegistry) GetDeploymentMetadata(ctx context.Context, req *service.GetDeploymentMetadataRequest) (*service.GetDeploymentMetadataResponse, error) {
 	mds, ok := r.stores[req.DeploymentId]
 	if !ok {
-		return &api.GetDeploymentMetadataResponse{Found: false}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
+		return &service.GetDeploymentMetadataResponse{Found: false}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
 	}
 
 	value, found := mds.Shared().Get(req.Key)
-	return &api.GetDeploymentMetadataResponse{
+	return &service.GetDeploymentMetadataResponse{
 		Value: value,
 		Found: found,
 	}, nil
 }
 
-func (r *MetadataStoreRegistry) PutDeploymentMetadata(ctx context.Context, req *api.PutDeploymentMetadataRequest) (*api.PutDeploymentMetadataResponse, error) {
+func (r *MetadataStoreRegistry) PutDeploymentMetadata(ctx context.Context, req *service.PutDeploymentMetadataRequest) (*service.PutDeploymentMetadataResponse, error) {
 	mds, ok := r.stores[req.DeploymentId]
 	if !ok {
-		return &api.PutDeploymentMetadataResponse{}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
+		return &service.PutDeploymentMetadataResponse{}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
 	}
 
 	err := mds.Shared().Put(ctx, req.Key, req.Value)
 	if err != nil {
-		return &api.PutDeploymentMetadataResponse{}, err
+		return &service.PutDeploymentMetadataResponse{}, err
 	}
 
-	return &api.PutDeploymentMetadataResponse{}, nil
+	return &service.PutDeploymentMetadataResponse{}, nil
 }
 
-func (r *MetadataStoreRegistry) PutDeploymentMetadataMulti(ctx context.Context, req *api.PutDeploymentMetadataMultiRequest) (*api.PutDeploymentMetadataMultiResponse, error) {
+func (r *MetadataStoreRegistry) PutDeploymentMetadataMulti(ctx context.Context, req *service.PutDeploymentMetadataMultiRequest) (*service.PutDeploymentMetadataMultiResponse, error) {
 	mds, ok := r.stores[req.DeploymentId]
 	if !ok {
-		return &api.PutDeploymentMetadataMultiResponse{}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
+		return &service.PutDeploymentMetadataMultiResponse{}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
 	}
 
 	err := mds.Shared().PutMulti(ctx, req.Metadata)
 	if err != nil {
-		return &api.PutDeploymentMetadataMultiResponse{}, err
+		return &service.PutDeploymentMetadataMultiResponse{}, err
 	}
 
-	return &api.PutDeploymentMetadataMultiResponse{}, nil
+	return &service.PutDeploymentMetadataMultiResponse{}, nil
 }
