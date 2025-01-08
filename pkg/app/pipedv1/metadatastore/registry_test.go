@@ -18,9 +18,10 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/pipe-cd/pipecd/pkg/model"
 	service "github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestRegistry(t *testing.T) {

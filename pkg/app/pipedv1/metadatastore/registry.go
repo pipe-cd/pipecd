@@ -19,7 +19,6 @@ import (
 	"fmt"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
-
 	service "github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
 )
 
