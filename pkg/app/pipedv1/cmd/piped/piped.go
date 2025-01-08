@@ -60,6 +60,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/eventwatcher"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/notifier"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/statsreporter"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/trigger"
@@ -298,10 +299,11 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		eventLister = store.Lister()
 	}
 
+	metadataStoreRegistry := metadatastore.NewMetadataStoreRegistry(apiClient)
 	// Start running plugin service server.
 	{
 		var (
-			service, err = grpcapi.NewPluginAPI(cfg, apiClient, p.toolsDir, input.Logger)
+			service, err = grpcapi.NewPluginAPI(cfg, apiClient, p.toolsDir, input.Logger, metadataStoreRegistry)
 			opts         = []rpc.Option{
 				rpc.WithPort(p.pluginServicePort),
 				rpc.WithGracePeriod(p.gracePeriod),
