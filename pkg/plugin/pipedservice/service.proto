@@ -120,7 +120,6 @@ message PutStageMetadataRequest {
 }
 
 message PutStageMetadataResponse {
-    bool success = 1;
 }
 
 message PutStageMetadataMultiRequest {
@@ -130,7 +129,6 @@ message PutStageMetadataMultiRequest {
 }
 
 message PutStageMetadataMultiResponse {
-    bool success = 1;
 }
 
 message GetDeploymentMetadataRequest {
@@ -150,7 +148,6 @@ message PutDeploymentMetadataRequest {
 }
 
 message PutDeploymentMetadataResponse {
-    bool success = 1;
 }
 
 message PutDeploymentMetadataMultiRequest {
@@ -159,5 +156,4 @@ message PutDeploymentMetadataMultiRequest {
 }
 
 message PutDeploymentMetadataMultiResponse {
-    bool success = 1;
 }

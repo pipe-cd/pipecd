@@ -1425,8 +1425,6 @@ func (m *PutStageMetadataResponse) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Success
-
 	if len(errors) > 0 {
 		return PutStageMetadataResponseMultiError(errors)
 	}
@@ -1655,8 +1653,6 @@ func (m *PutStageMetadataMultiResponse) validate(all bool) error {
 	}
 
 	var errors []error
-
-	// no validation rules for Success
 
 	if len(errors) > 0 {
 		return PutStageMetadataMultiResponseMultiError(errors)
@@ -2120,8 +2116,6 @@ func (m *PutDeploymentMetadataResponse) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Success
-
 	if len(errors) > 0 {
 		return PutDeploymentMetadataResponseMultiError(errors)
 	}
@@ -2343,8 +2337,6 @@ func (m *PutDeploymentMetadataMultiResponse) validate(all bool) error {
 	}
 
 	var errors []error
-
-	// no validation rules for Success
 
 	if len(errors) > 0 {
 		return PutDeploymentMetadataMultiResponseMultiError(errors)
