@@ -56,8 +56,8 @@ type apiClient interface {
 type metadata map[string]string
 
 type metadataStore struct {
-	apiClient    apiClient
-	deploymentId string
+	apiClient  apiClient
+	deployment *model.Deployment
 
 	shared metadata
 	stages map[string]metadata
@@ -70,10 +70,10 @@ type metadataStore struct {
 // It keeps local data and makes sure that they are synced with the remote store.
 func NewMetadataStore(apiClient apiClient, d *model.Deployment) MetadataStore {
 	s := &metadataStore{
-		apiClient:    apiClient,
-		deploymentId: d.Id,
-		shared:       make(map[string]string, 0),
-		stages:       make(map[string]metadata, 0),
+		apiClient:  apiClient,
+		deployment: d,
+		shared:     make(map[string]string, 0),
+		stages:     make(map[string]metadata, 0),
 	}
 
 	// Initialize shared metadata of deployment.
@@ -130,7 +130,7 @@ func (s *metadataStore) syncSharedMetadata(ctx context.Context) error {
 
 	// Send full list of metadata to ensure that they will be synced.
 	_, err := s.apiClient.SaveDeploymentMetadata(ctx, &pipedservice.SaveDeploymentMetadataRequest{
-		DeploymentId: s.deploymentId,
+		DeploymentId: s.deployment.Id,
 		Metadata:     md,
 	})
 	return err
@@ -150,7 +150,7 @@ func (s *metadataStore) stagePutMulti(ctx context.Context, stageID string, md ma
 
 	// Send full list of metadata to ensure that they will be synced.
 	_, err := s.apiClient.SaveStageMetadata(ctx, &pipedservice.SaveStageMetadataRequest{
-		DeploymentId: s.deploymentId,
+		DeploymentId: s.deployment.Id,
 		StageId:      stageID,
 		Metadata:     merged,
 	})
