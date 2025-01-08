@@ -51,6 +51,7 @@ func (r *MetadataStoreRegistry) Delete(deploymentID string) {
 	delete(r.stores, deploymentID)
 }
 
+// GetStageMetadata implements the backend of PluginService.GetStageMetadata().
 func (r *MetadataStoreRegistry) GetStageMetadata(ctx context.Context, req *service.GetStageMetadataRequest) (*service.GetStageMetadataResponse, error) {
 	mds, ok := r.stores[req.DeploymentId]
 	if !ok {
@@ -64,6 +65,7 @@ func (r *MetadataStoreRegistry) GetStageMetadata(ctx context.Context, req *servi
 	}, nil
 }
 
+// PutStageMetadata implements the backend of PluginService.PutStageMetadata().
 func (r *MetadataStoreRegistry) PutStageMetadata(ctx context.Context, req *service.PutStageMetadataRequest) (*service.PutStageMetadataResponse, error) {
 	mds, ok := r.stores[req.DeploymentId]
 	if !ok {
@@ -78,6 +80,7 @@ func (r *MetadataStoreRegistry) PutStageMetadata(ctx context.Context, req *servi
 	return &service.PutStageMetadataResponse{}, nil
 }
 
+// PutStageMetadataMulti implements the backend of PluginService.PutStageMetadataMulti().
 func (r *MetadataStoreRegistry) PutStageMetadataMulti(ctx context.Context, req *service.PutStageMetadataMultiRequest) (*service.PutStageMetadataMultiResponse, error) {
 	mds, ok := r.stores[req.DeploymentId]
 	if !ok {
@@ -92,6 +95,7 @@ func (r *MetadataStoreRegistry) PutStageMetadataMulti(ctx context.Context, req *
 	return &service.PutStageMetadataMultiResponse{}, nil
 }
 
+// GetDeploymentMetadata implements the backend of PluginService.GetDeploymentMetadata().
 func (r *MetadataStoreRegistry) GetDeploymentMetadata(ctx context.Context, req *service.GetDeploymentMetadataRequest) (*service.GetDeploymentMetadataResponse, error) {
 	mds, ok := r.stores[req.DeploymentId]
 	if !ok {
@@ -105,6 +109,7 @@ func (r *MetadataStoreRegistry) GetDeploymentMetadata(ctx context.Context, req *
 	}, nil
 }
 
+// PutDeploymentMetadata implements the backend of PluginService.PutDeploymentMetadata().
 func (r *MetadataStoreRegistry) PutDeploymentMetadata(ctx context.Context, req *service.PutDeploymentMetadataRequest) (*service.PutDeploymentMetadataResponse, error) {
 	mds, ok := r.stores[req.DeploymentId]
 	if !ok {
@@ -119,6 +124,7 @@ func (r *MetadataStoreRegistry) PutDeploymentMetadata(ctx context.Context, req *
 	return &service.PutDeploymentMetadataResponse{}, nil
 }
 
+// PutDeploymentMetadataMulti implements the backend of PluginService.PutDeploymentMetadataMulti().
 func (r *MetadataStoreRegistry) PutDeploymentMetadataMulti(ctx context.Context, req *service.PutDeploymentMetadataMultiRequest) (*service.PutDeploymentMetadataMultiResponse, error) {
 	mds, ok := r.stores[req.DeploymentId]
 	if !ok {
