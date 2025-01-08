@@ -56,6 +56,9 @@ message DetermineStrategyResponse {
     model.SyncStrategy sync_strategy = 1;
     // Text summary of the determined strategy.
     string summary = 2;
+    // Whether the plugin does not support determining strategy. 
+    // For example, this should be true in plugins that support only executing stages.
+    bool unsupported = 3;
 }
 
 message BuildPipelineSyncStagesRequest {
