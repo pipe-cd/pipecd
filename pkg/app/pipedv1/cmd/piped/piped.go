@@ -390,6 +390,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			commandLister,
 			notifier,
 			decrypter,
+			*metadataStoreRegistry,
 			p.gracePeriod,
 			input.Logger,
 			tracerProvider,
