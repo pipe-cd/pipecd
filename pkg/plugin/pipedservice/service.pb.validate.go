@@ -1024,3 +1024,1406 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ReportStageLogsFromLastCheckpointResponseValidationError{}
+
+// Validate checks the field values on GetStageMetadataRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetStageMetadataRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetStageMetadataRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetStageMetadataRequestMultiError, or nil if none found.
+func (m *GetStageMetadataRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetStageMetadataRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetDeploymentId()) < 1 {
+		err := GetStageMetadataRequestValidationError{
+			field:  "DeploymentId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetStageId()) < 1 {
+		err := GetStageMetadataRequestValidationError{
+			field:  "StageId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetKey()) < 1 {
+		err := GetStageMetadataRequestValidationError{
+			field:  "Key",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return GetStageMetadataRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetStageMetadataRequestMultiError is an error wrapping multiple validation
+// errors returned by GetStageMetadataRequest.ValidateAll() if the designated
+// constraints aren't met.
+type GetStageMetadataRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetStageMetadataRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetStageMetadataRequestMultiError) AllErrors() []error { return m }
+
+// GetStageMetadataRequestValidationError is the validation error returned by
+// GetStageMetadataRequest.Validate if the designated constraints aren't met.
+type GetStageMetadataRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetStageMetadataRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetStageMetadataRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetStageMetadataRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetStageMetadataRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetStageMetadataRequestValidationError) ErrorName() string {
+	return "GetStageMetadataRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetStageMetadataRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetStageMetadataRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetStageMetadataRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetStageMetadataRequestValidationError{}
+
+// Validate checks the field values on GetStageMetadataResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetStageMetadataResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetStageMetadataResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetStageMetadataResponseMultiError, or nil if none found.
+func (m *GetStageMetadataResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetStageMetadataResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Value
+
+	// no validation rules for Found
+
+	if len(errors) > 0 {
+		return GetStageMetadataResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetStageMetadataResponseMultiError is an error wrapping multiple validation
+// errors returned by GetStageMetadataResponse.ValidateAll() if the designated
+// constraints aren't met.
+type GetStageMetadataResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetStageMetadataResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetStageMetadataResponseMultiError) AllErrors() []error { return m }
+
+// GetStageMetadataResponseValidationError is the validation error returned by
+// GetStageMetadataResponse.Validate if the designated constraints aren't met.
+type GetStageMetadataResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetStageMetadataResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetStageMetadataResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetStageMetadataResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetStageMetadataResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetStageMetadataResponseValidationError) ErrorName() string {
+	return "GetStageMetadataResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetStageMetadataResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetStageMetadataResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetStageMetadataResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetStageMetadataResponseValidationError{}
+
+// Validate checks the field values on PutStageMetadataRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *PutStageMetadataRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PutStageMetadataRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// PutStageMetadataRequestMultiError, or nil if none found.
+func (m *PutStageMetadataRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PutStageMetadataRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetDeploymentId()) < 1 {
+		err := PutStageMetadataRequestValidationError{
+			field:  "DeploymentId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetStageId()) < 1 {
+		err := PutStageMetadataRequestValidationError{
+			field:  "StageId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetKey()) < 1 {
+		err := PutStageMetadataRequestValidationError{
+			field:  "Key",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Value
+
+	if len(errors) > 0 {
+		return PutStageMetadataRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// PutStageMetadataRequestMultiError is an error wrapping multiple validation
+// errors returned by PutStageMetadataRequest.ValidateAll() if the designated
+// constraints aren't met.
+type PutStageMetadataRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PutStageMetadataRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PutStageMetadataRequestMultiError) AllErrors() []error { return m }
+
+// PutStageMetadataRequestValidationError is the validation error returned by
+// PutStageMetadataRequest.Validate if the designated constraints aren't met.
+type PutStageMetadataRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PutStageMetadataRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PutStageMetadataRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PutStageMetadataRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PutStageMetadataRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PutStageMetadataRequestValidationError) ErrorName() string {
+	return "PutStageMetadataRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e PutStageMetadataRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPutStageMetadataRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PutStageMetadataRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PutStageMetadataRequestValidationError{}
+
+// Validate checks the field values on PutStageMetadataResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *PutStageMetadataResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PutStageMetadataResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// PutStageMetadataResponseMultiError, or nil if none found.
+func (m *PutStageMetadataResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PutStageMetadataResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Success
+
+	if len(errors) > 0 {
+		return PutStageMetadataResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// PutStageMetadataResponseMultiError is an error wrapping multiple validation
+// errors returned by PutStageMetadataResponse.ValidateAll() if the designated
+// constraints aren't met.
+type PutStageMetadataResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PutStageMetadataResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PutStageMetadataResponseMultiError) AllErrors() []error { return m }
+
+// PutStageMetadataResponseValidationError is the validation error returned by
+// PutStageMetadataResponse.Validate if the designated constraints aren't met.
+type PutStageMetadataResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PutStageMetadataResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PutStageMetadataResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PutStageMetadataResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PutStageMetadataResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PutStageMetadataResponseValidationError) ErrorName() string {
+	return "PutStageMetadataResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e PutStageMetadataResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPutStageMetadataResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PutStageMetadataResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PutStageMetadataResponseValidationError{}
+
+// Validate checks the field values on PutStageMetadataMultiRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *PutStageMetadataMultiRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PutStageMetadataMultiRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// PutStageMetadataMultiRequestMultiError, or nil if none found.
+func (m *PutStageMetadataMultiRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PutStageMetadataMultiRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetDeploymentId()) < 1 {
+		err := PutStageMetadataMultiRequestValidationError{
+			field:  "DeploymentId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetStageId()) < 1 {
+		err := PutStageMetadataMultiRequestValidationError{
+			field:  "StageId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Metadata
+
+	if len(errors) > 0 {
+		return PutStageMetadataMultiRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// PutStageMetadataMultiRequestMultiError is an error wrapping multiple
+// validation errors returned by PutStageMetadataMultiRequest.ValidateAll() if
+// the designated constraints aren't met.
+type PutStageMetadataMultiRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PutStageMetadataMultiRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PutStageMetadataMultiRequestMultiError) AllErrors() []error { return m }
+
+// PutStageMetadataMultiRequestValidationError is the validation error returned
+// by PutStageMetadataMultiRequest.Validate if the designated constraints
+// aren't met.
+type PutStageMetadataMultiRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PutStageMetadataMultiRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PutStageMetadataMultiRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PutStageMetadataMultiRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PutStageMetadataMultiRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PutStageMetadataMultiRequestValidationError) ErrorName() string {
+	return "PutStageMetadataMultiRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e PutStageMetadataMultiRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPutStageMetadataMultiRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PutStageMetadataMultiRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PutStageMetadataMultiRequestValidationError{}
+
+// Validate checks the field values on PutStageMetadataMultiResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *PutStageMetadataMultiResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PutStageMetadataMultiResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// PutStageMetadataMultiResponseMultiError, or nil if none found.
+func (m *PutStageMetadataMultiResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PutStageMetadataMultiResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Success
+
+	if len(errors) > 0 {
+		return PutStageMetadataMultiResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// PutStageMetadataMultiResponseMultiError is an error wrapping multiple
+// validation errors returned by PutStageMetadataMultiResponse.ValidateAll()
+// if the designated constraints aren't met.
+type PutStageMetadataMultiResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PutStageMetadataMultiResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PutStageMetadataMultiResponseMultiError) AllErrors() []error { return m }
+
+// PutStageMetadataMultiResponseValidationError is the validation error
+// returned by PutStageMetadataMultiResponse.Validate if the designated
+// constraints aren't met.
+type PutStageMetadataMultiResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PutStageMetadataMultiResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PutStageMetadataMultiResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PutStageMetadataMultiResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PutStageMetadataMultiResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PutStageMetadataMultiResponseValidationError) ErrorName() string {
+	return "PutStageMetadataMultiResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e PutStageMetadataMultiResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPutStageMetadataMultiResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PutStageMetadataMultiResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PutStageMetadataMultiResponseValidationError{}
+
+// Validate checks the field values on GetDeploymentMetadataRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetDeploymentMetadataRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetDeploymentMetadataRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetDeploymentMetadataRequestMultiError, or nil if none found.
+func (m *GetDeploymentMetadataRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetDeploymentMetadataRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetDeploymentId()) < 1 {
+		err := GetDeploymentMetadataRequestValidationError{
+			field:  "DeploymentId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetKey()) < 1 {
+		err := GetDeploymentMetadataRequestValidationError{
+			field:  "Key",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return GetDeploymentMetadataRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetDeploymentMetadataRequestMultiError is an error wrapping multiple
+// validation errors returned by GetDeploymentMetadataRequest.ValidateAll() if
+// the designated constraints aren't met.
+type GetDeploymentMetadataRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetDeploymentMetadataRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetDeploymentMetadataRequestMultiError) AllErrors() []error { return m }
+
+// GetDeploymentMetadataRequestValidationError is the validation error returned
+// by GetDeploymentMetadataRequest.Validate if the designated constraints
+// aren't met.
+type GetDeploymentMetadataRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetDeploymentMetadataRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetDeploymentMetadataRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetDeploymentMetadataRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetDeploymentMetadataRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetDeploymentMetadataRequestValidationError) ErrorName() string {
+	return "GetDeploymentMetadataRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetDeploymentMetadataRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetDeploymentMetadataRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetDeploymentMetadataRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetDeploymentMetadataRequestValidationError{}
+
+// Validate checks the field values on GetDeploymentMetadataResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetDeploymentMetadataResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetDeploymentMetadataResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// GetDeploymentMetadataResponseMultiError, or nil if none found.
+func (m *GetDeploymentMetadataResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetDeploymentMetadataResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Value
+
+	// no validation rules for Found
+
+	if len(errors) > 0 {
+		return GetDeploymentMetadataResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetDeploymentMetadataResponseMultiError is an error wrapping multiple
+// validation errors returned by GetDeploymentMetadataResponse.ValidateAll()
+// if the designated constraints aren't met.
+type GetDeploymentMetadataResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetDeploymentMetadataResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetDeploymentMetadataResponseMultiError) AllErrors() []error { return m }
+
+// GetDeploymentMetadataResponseValidationError is the validation error
+// returned by GetDeploymentMetadataResponse.Validate if the designated
+// constraints aren't met.
+type GetDeploymentMetadataResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetDeploymentMetadataResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetDeploymentMetadataResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetDeploymentMetadataResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetDeploymentMetadataResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetDeploymentMetadataResponseValidationError) ErrorName() string {
+	return "GetDeploymentMetadataResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetDeploymentMetadataResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetDeploymentMetadataResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetDeploymentMetadataResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetDeploymentMetadataResponseValidationError{}
+
+// Validate checks the field values on PutDeploymentMetadataRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *PutDeploymentMetadataRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PutDeploymentMetadataRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// PutDeploymentMetadataRequestMultiError, or nil if none found.
+func (m *PutDeploymentMetadataRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PutDeploymentMetadataRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetDeploymentId()) < 1 {
+		err := PutDeploymentMetadataRequestValidationError{
+			field:  "DeploymentId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetKey()) < 1 {
+		err := PutDeploymentMetadataRequestValidationError{
+			field:  "Key",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Value
+
+	if len(errors) > 0 {
+		return PutDeploymentMetadataRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// PutDeploymentMetadataRequestMultiError is an error wrapping multiple
+// validation errors returned by PutDeploymentMetadataRequest.ValidateAll() if
+// the designated constraints aren't met.
+type PutDeploymentMetadataRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PutDeploymentMetadataRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PutDeploymentMetadataRequestMultiError) AllErrors() []error { return m }
+
+// PutDeploymentMetadataRequestValidationError is the validation error returned
+// by PutDeploymentMetadataRequest.Validate if the designated constraints
+// aren't met.
+type PutDeploymentMetadataRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PutDeploymentMetadataRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PutDeploymentMetadataRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PutDeploymentMetadataRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PutDeploymentMetadataRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PutDeploymentMetadataRequestValidationError) ErrorName() string {
+	return "PutDeploymentMetadataRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e PutDeploymentMetadataRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPutDeploymentMetadataRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PutDeploymentMetadataRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PutDeploymentMetadataRequestValidationError{}
+
+// Validate checks the field values on PutDeploymentMetadataResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *PutDeploymentMetadataResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PutDeploymentMetadataResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// PutDeploymentMetadataResponseMultiError, or nil if none found.
+func (m *PutDeploymentMetadataResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PutDeploymentMetadataResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Success
+
+	if len(errors) > 0 {
+		return PutDeploymentMetadataResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// PutDeploymentMetadataResponseMultiError is an error wrapping multiple
+// validation errors returned by PutDeploymentMetadataResponse.ValidateAll()
+// if the designated constraints aren't met.
+type PutDeploymentMetadataResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PutDeploymentMetadataResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PutDeploymentMetadataResponseMultiError) AllErrors() []error { return m }
+
+// PutDeploymentMetadataResponseValidationError is the validation error
+// returned by PutDeploymentMetadataResponse.Validate if the designated
+// constraints aren't met.
+type PutDeploymentMetadataResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PutDeploymentMetadataResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PutDeploymentMetadataResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PutDeploymentMetadataResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PutDeploymentMetadataResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PutDeploymentMetadataResponseValidationError) ErrorName() string {
+	return "PutDeploymentMetadataResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e PutDeploymentMetadataResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPutDeploymentMetadataResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PutDeploymentMetadataResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PutDeploymentMetadataResponseValidationError{}
+
+// Validate checks the field values on PutDeploymentMetadataMultiRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *PutDeploymentMetadataMultiRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PutDeploymentMetadataMultiRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// PutDeploymentMetadataMultiRequestMultiError, or nil if none found.
+func (m *PutDeploymentMetadataMultiRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PutDeploymentMetadataMultiRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetDeploymentId()) < 1 {
+		err := PutDeploymentMetadataMultiRequestValidationError{
+			field:  "DeploymentId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Metadata
+
+	if len(errors) > 0 {
+		return PutDeploymentMetadataMultiRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// PutDeploymentMetadataMultiRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// PutDeploymentMetadataMultiRequest.ValidateAll() if the designated
+// constraints aren't met.
+type PutDeploymentMetadataMultiRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PutDeploymentMetadataMultiRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PutDeploymentMetadataMultiRequestMultiError) AllErrors() []error { return m }
+
+// PutDeploymentMetadataMultiRequestValidationError is the validation error
+// returned by PutDeploymentMetadataMultiRequest.Validate if the designated
+// constraints aren't met.
+type PutDeploymentMetadataMultiRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PutDeploymentMetadataMultiRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PutDeploymentMetadataMultiRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PutDeploymentMetadataMultiRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PutDeploymentMetadataMultiRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PutDeploymentMetadataMultiRequestValidationError) ErrorName() string {
+	return "PutDeploymentMetadataMultiRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e PutDeploymentMetadataMultiRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPutDeploymentMetadataMultiRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PutDeploymentMetadataMultiRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PutDeploymentMetadataMultiRequestValidationError{}
+
+// Validate checks the field values on PutDeploymentMetadataMultiResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *PutDeploymentMetadataMultiResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PutDeploymentMetadataMultiResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// PutDeploymentMetadataMultiResponseMultiError, or nil if none found.
+func (m *PutDeploymentMetadataMultiResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PutDeploymentMetadataMultiResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Success
+
+	if len(errors) > 0 {
+		return PutDeploymentMetadataMultiResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// PutDeploymentMetadataMultiResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// PutDeploymentMetadataMultiResponse.ValidateAll() if the designated
+// constraints aren't met.
+type PutDeploymentMetadataMultiResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PutDeploymentMetadataMultiResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PutDeploymentMetadataMultiResponseMultiError) AllErrors() []error { return m }
+
+// PutDeploymentMetadataMultiResponseValidationError is the validation error
+// returned by PutDeploymentMetadataMultiResponse.Validate if the designated
+// constraints aren't met.
+type PutDeploymentMetadataMultiResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PutDeploymentMetadataMultiResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PutDeploymentMetadataMultiResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PutDeploymentMetadataMultiResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PutDeploymentMetadataMultiResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PutDeploymentMetadataMultiResponseValidationError) ErrorName() string {
+	return "PutDeploymentMetadataMultiResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e PutDeploymentMetadataMultiResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPutDeploymentMetadataMultiResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PutDeploymentMetadataMultiResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PutDeploymentMetadataMultiResponseValidationError{}
