@@ -485,6 +485,8 @@ func (m *DetermineStrategyResponse) validate(all bool) error {
 
 	// no validation rules for Summary
 
+	// no validation rules for Unsupported
+
 	if len(errors) > 0 {
 		return DetermineStrategyResponseMultiError(errors)
 	}
