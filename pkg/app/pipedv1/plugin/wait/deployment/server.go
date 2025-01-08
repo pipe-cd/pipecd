@@ -93,8 +93,11 @@ func (s *deploymentServiceServer) DetermineVersions(ctx context.Context, request
 
 // DetermineStrategy implements deployment.DeploymentServiceServer.
 func (s *deploymentServiceServer) DetermineStrategy(ctx context.Context, request *deployment.DetermineStrategyRequest) (*deployment.DetermineStrategyResponse, error) {
-	// TODO: Implement this func
-	return &deployment.DetermineStrategyResponse{}, nil
+	// Delegate other plugins to determine strategy and summary.
+	return &deployment.DetermineStrategyResponse{
+		SyncStrategy: model.SyncStrategy_QUICK_SYNC,
+		Summary:      "",
+	}, nil
 }
 
 // BuildPipelineSyncStages implements deployment.BuildPipelineSyncStages.

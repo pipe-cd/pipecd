@@ -382,7 +382,9 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *deployment
 			continue
 		}
 		strategy = res.SyncStrategy
-		summary = res.Summary
+		if res.Summary != "" {
+			summary = res.Summary
+		}
 		// If one of plugins returns PIPELINE_SYNC, use that as strategy intermediately
 		if strategy == model.SyncStrategy_PIPELINE {
 			break
