@@ -87,8 +87,10 @@ func (s *deploymentServiceServer) FetchDefinedStages(ctx context.Context, reques
 
 // DetermineVersions implements deployment.DeploymentServiceServer.
 func (s *deploymentServiceServer) DetermineVersions(ctx context.Context, request *deployment.DetermineVersionsRequest) (*deployment.DetermineVersionsResponse, error) {
-	// TODO: Implement this func
-	return &deployment.DetermineVersionsResponse{}, nil
+	// Wait Stage does not have any versioned resources.
+	return &deployment.DetermineVersionsResponse{
+		Versions: []*model.ArtifactVersion{},
+	}, nil
 }
 
 // DetermineStrategy implements deployment.DeploymentServiceServer.
