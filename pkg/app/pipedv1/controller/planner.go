@@ -30,7 +30,6 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -70,10 +69,8 @@ type planner struct {
 	// The gitClient is used to perform git commands.
 	gitClient gitClient
 
-	// The notifier and metadataStore are used for
-	// notification features.
-	notifier      notifier
-	metadataStore metadatastore.MetadataStore
+	// The notifier is used for notification features.
+	notifier notifier
 
 	// The secretDecrypter is used to decrypt secrets
 	// which encrypted using PipeCD built-in secret management.
@@ -123,7 +120,6 @@ func newPlanner(
 		plugins:                      pluginClients,
 		apiClient:                    apiClient,
 		gitClient:                    gitClient,
-		metadataStore:                metadatastore.NewMetadataStore(apiClient, d),
 		notifier:                     notifier,
 		secretDecrypter:              secretDecrypter,
 		doneDeploymentStatus:         d.Status,
@@ -647,7 +643,7 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 
 // getApplicationNotificationMentions returns the list of users groups who should be mentioned in the notification.
 func (p *planner) getApplicationNotificationMentions(event model.NotificationEventType) ([]string, []string, error) {
-	n, ok := p.metadataStore.Shared().Get(model.MetadataKeyDeploymentNotification)
+	n, ok := p.deployment.Metadata[model.MetadataKeyDeploymentNotification]
 	if !ok {
 		return []string{}, []string{}, nil
 	}
