@@ -16,12 +16,14 @@ package deployment
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
+	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/plugin/signalhandler"
@@ -97,12 +99,40 @@ func (s *deploymentServiceServer) DetermineStrategy(ctx context.Context, request
 
 // BuildPipelineSyncStages implements deployment.BuildPipelineSyncStages.
 func (s *deploymentServiceServer) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
-	// TODO: Implement this func
-	return &deployment.BuildPipelineSyncStagesResponse{}, nil
+	stages := make([]*model.PipelineStage, 0, len(request.GetStages()))
+	for _, stage := range request.GetStages() {
+		id := stage.GetId()
+		if id == "" {
+			id = fmt.Sprintf("stage-%d", stage.GetIndex())
+		}
+
+		waitStage := newWaitStage()
+		waitStage.Id = id
+		waitStage.Index = stage.GetIndex()
+		stages = append(stages, waitStage)
+	}
+
+	return &deployment.BuildPipelineSyncStagesResponse{Stages: stages}, nil
 }
 
 // BuildQuickSyncStages implements deployment.BuildQuickSyncStages.
 func (s *deploymentServiceServer) BuildQuickSyncStages(ctx context.Context, request *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
-	// TODO: Implement this func
-	return &deployment.BuildQuickSyncStagesResponse{}, nil
+	return &deployment.BuildQuickSyncStagesResponse{
+		Stages: []*model.PipelineStage{newWaitStage()},
+	}, nil
+}
+
+// newWaitStage returns a new WAIT stage with the current time.
+// WAIT Stages is not used in the Rollback.
+func newWaitStage() *model.PipelineStage {
+	now := time.Now()
+	return &model.PipelineStage{
+		Id:        string(stageWait),
+		Name:      string(stageWait),
+		Desc:      "Wait for the specified duration",
+		Rollback:  false,
+		Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
+		CreatedAt: now.Unix(),
+		UpdatedAt: now.Unix(),
+	}
 }
