@@ -378,10 +378,11 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *deployment
 			p.logger.Warn("Unable to determine strategy using current plugin", zap.Error(err))
 			continue
 		}
-		strategy = res.SyncStrategy
-		if res.Summary != "" {
-			summary = res.Summary
+		if res.Unsupported {
+			continue
 		}
+		strategy = res.SyncStrategy
+		summary = res.Summary
 		// If one of plugins returns PIPELINE_SYNC, use that as strategy intermediately
 		if strategy == model.SyncStrategy_PIPELINE {
 			break
