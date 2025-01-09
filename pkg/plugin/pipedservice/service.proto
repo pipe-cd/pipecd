@@ -29,6 +29,19 @@ service PluginService {
     rpc ReportStageLogs(ReportStageLogsRequest) returns (ReportStageLogsResponse) {}
     // ReportStageLogsFromLastCheckpoint is used to save the full logs from the most recently saved point.
     rpc ReportStageLogsFromLastCheckpoint(ReportStageLogsFromLastCheckpointRequest) returns (ReportStageLogsFromLastCheckpointResponse) {}
+
+    // GetStageMetadata gets one metadata value of the given stage.
+    rpc GetStageMetadata(GetStageMetadataRequest) returns (GetStageMetadataResponse) {}
+    // PutStageMetadata puts one metadata of the given stage.
+    rpc PutStageMetadata(PutStageMetadataRequest) returns (PutStageMetadataResponse) {}
+    // PutStageMetadataMulti puts the metadata pairs of the given stage.
+    rpc PutStageMetadataMulti(PutStageMetadataMultiRequest) returns (PutStageMetadataMultiResponse) {}
+    // GetDeploymentMetadata gets one metadata value of the given deployment.
+    rpc GetDeploymentMetadata(GetDeploymentMetadataRequest) returns (GetDeploymentMetadataResponse) {}
+    // PutDeploymentMetadata puts one metadata of the given deployment.
+    rpc PutDeploymentMetadata(PutDeploymentMetadataRequest) returns (PutDeploymentMetadataResponse) {}
+    // PutDeploymentMetadataMulti puts the metadata pairs of the given deployment.
+    rpc PutDeploymentMetadataMulti(PutDeploymentMetadataMultiRequest) returns (PutDeploymentMetadataMultiResponse) {}    
 }
 
 message DecryptSecretRequest {
@@ -86,4 +99,61 @@ message ReportStageLogsFromLastCheckpointRequest {
 }
 
 message ReportStageLogsFromLastCheckpointResponse {
+}
+
+message GetStageMetadataRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string stage_id = 2 [(validate.rules).string.min_len = 1];
+    string key = 3 [(validate.rules).string.min_len = 1];
+}
+
+message GetStageMetadataResponse {
+    string value = 1;
+    bool found = 2;
+}
+
+message PutStageMetadataRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string stage_id = 2 [(validate.rules).string.min_len = 1];
+    string key = 3 [(validate.rules).string.min_len = 1];
+    string value = 4;
+}
+
+message PutStageMetadataResponse {
+}
+
+message PutStageMetadataMultiRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string stage_id = 2 [(validate.rules).string.min_len = 1];
+    map<string, string> metadata = 3;
+}
+
+message PutStageMetadataMultiResponse {
+}
+
+message GetDeploymentMetadataRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string key = 2 [(validate.rules).string.min_len = 1];
+}
+
+message GetDeploymentMetadataResponse {
+    string value = 1;
+    bool found = 2;
+}
+
+message PutDeploymentMetadataRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string key = 2 [(validate.rules).string.min_len = 1];
+    string value = 3;
+}
+
+message PutDeploymentMetadataResponse {
+}
+
+message PutDeploymentMetadataMultiRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    map<string, string> metadata = 2;
+}
+
+message PutDeploymentMetadataMultiResponse {
 }

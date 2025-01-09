@@ -29,6 +29,18 @@ type PluginServiceClient interface {
 	ReportStageLogs(ctx context.Context, in *ReportStageLogsRequest, opts ...grpc.CallOption) (*ReportStageLogsResponse, error)
 	// ReportStageLogsFromLastCheckpoint is used to save the full logs from the most recently saved point.
 	ReportStageLogsFromLastCheckpoint(ctx context.Context, in *ReportStageLogsFromLastCheckpointRequest, opts ...grpc.CallOption) (*ReportStageLogsFromLastCheckpointResponse, error)
+	// GetStageMetadata gets one metadata value of the given stage.
+	GetStageMetadata(ctx context.Context, in *GetStageMetadataRequest, opts ...grpc.CallOption) (*GetStageMetadataResponse, error)
+	// PutStageMetadata puts one metadata of the given stage.
+	PutStageMetadata(ctx context.Context, in *PutStageMetadataRequest, opts ...grpc.CallOption) (*PutStageMetadataResponse, error)
+	// PutStageMetadataMulti puts the metadata pairs of the given stage.
+	PutStageMetadataMulti(ctx context.Context, in *PutStageMetadataMultiRequest, opts ...grpc.CallOption) (*PutStageMetadataMultiResponse, error)
+	// GetDeploymentMetadata gets one metadata value of the given deployment.
+	GetDeploymentMetadata(ctx context.Context, in *GetDeploymentMetadataRequest, opts ...grpc.CallOption) (*GetDeploymentMetadataResponse, error)
+	// PutDeploymentMetadata puts one metadata of the given deployment.
+	PutDeploymentMetadata(ctx context.Context, in *PutDeploymentMetadataRequest, opts ...grpc.CallOption) (*PutDeploymentMetadataResponse, error)
+	// PutDeploymentMetadataMulti puts the metadata pairs of the given deployment.
+	PutDeploymentMetadataMulti(ctx context.Context, in *PutDeploymentMetadataMultiRequest, opts ...grpc.CallOption) (*PutDeploymentMetadataMultiResponse, error)
 }
 
 type pluginServiceClient struct {
@@ -66,6 +78,60 @@ func (c *pluginServiceClient) ReportStageLogsFromLastCheckpoint(ctx context.Cont
 	return out, nil
 }
 
+func (c *pluginServiceClient) GetStageMetadata(ctx context.Context, in *GetStageMetadataRequest, opts ...grpc.CallOption) (*GetStageMetadataResponse, error) {
+	out := new(GetStageMetadataResponse)
+	err := c.cc.Invoke(ctx, "/grpc.piped.service.PluginService/GetStageMetadata", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *pluginServiceClient) PutStageMetadata(ctx context.Context, in *PutStageMetadataRequest, opts ...grpc.CallOption) (*PutStageMetadataResponse, error) {
+	out := new(PutStageMetadataResponse)
+	err := c.cc.Invoke(ctx, "/grpc.piped.service.PluginService/PutStageMetadata", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *pluginServiceClient) PutStageMetadataMulti(ctx context.Context, in *PutStageMetadataMultiRequest, opts ...grpc.CallOption) (*PutStageMetadataMultiResponse, error) {
+	out := new(PutStageMetadataMultiResponse)
+	err := c.cc.Invoke(ctx, "/grpc.piped.service.PluginService/PutStageMetadataMulti", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *pluginServiceClient) GetDeploymentMetadata(ctx context.Context, in *GetDeploymentMetadataRequest, opts ...grpc.CallOption) (*GetDeploymentMetadataResponse, error) {
+	out := new(GetDeploymentMetadataResponse)
+	err := c.cc.Invoke(ctx, "/grpc.piped.service.PluginService/GetDeploymentMetadata", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *pluginServiceClient) PutDeploymentMetadata(ctx context.Context, in *PutDeploymentMetadataRequest, opts ...grpc.CallOption) (*PutDeploymentMetadataResponse, error) {
+	out := new(PutDeploymentMetadataResponse)
+	err := c.cc.Invoke(ctx, "/grpc.piped.service.PluginService/PutDeploymentMetadata", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *pluginServiceClient) PutDeploymentMetadataMulti(ctx context.Context, in *PutDeploymentMetadataMultiRequest, opts ...grpc.CallOption) (*PutDeploymentMetadataMultiResponse, error) {
+	out := new(PutDeploymentMetadataMultiResponse)
+	err := c.cc.Invoke(ctx, "/grpc.piped.service.PluginService/PutDeploymentMetadataMulti", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PluginServiceServer is the server API for PluginService service.
 // All implementations must embed UnimplementedPluginServiceServer
 // for forward compatibility
@@ -77,6 +143,18 @@ type PluginServiceServer interface {
 	ReportStageLogs(context.Context, *ReportStageLogsRequest) (*ReportStageLogsResponse, error)
 	// ReportStageLogsFromLastCheckpoint is used to save the full logs from the most recently saved point.
 	ReportStageLogsFromLastCheckpoint(context.Context, *ReportStageLogsFromLastCheckpointRequest) (*ReportStageLogsFromLastCheckpointResponse, error)
+	// GetStageMetadata gets one metadata value of the given stage.
+	GetStageMetadata(context.Context, *GetStageMetadataRequest) (*GetStageMetadataResponse, error)
+	// PutStageMetadata puts one metadata of the given stage.
+	PutStageMetadata(context.Context, *PutStageMetadataRequest) (*PutStageMetadataResponse, error)
+	// PutStageMetadataMulti puts the metadata pairs of the given stage.
+	PutStageMetadataMulti(context.Context, *PutStageMetadataMultiRequest) (*PutStageMetadataMultiResponse, error)
+	// GetDeploymentMetadata gets one metadata value of the given deployment.
+	GetDeploymentMetadata(context.Context, *GetDeploymentMetadataRequest) (*GetDeploymentMetadataResponse, error)
+	// PutDeploymentMetadata puts one metadata of the given deployment.
+	PutDeploymentMetadata(context.Context, *PutDeploymentMetadataRequest) (*PutDeploymentMetadataResponse, error)
+	// PutDeploymentMetadataMulti puts the metadata pairs of the given deployment.
+	PutDeploymentMetadataMulti(context.Context, *PutDeploymentMetadataMultiRequest) (*PutDeploymentMetadataMultiResponse, error)
 	mustEmbedUnimplementedPluginServiceServer()
 }
 
@@ -92,6 +170,24 @@ func (UnimplementedPluginServiceServer) ReportStageLogs(context.Context, *Report
 }
 func (UnimplementedPluginServiceServer) ReportStageLogsFromLastCheckpoint(context.Context, *ReportStageLogsFromLastCheckpointRequest) (*ReportStageLogsFromLastCheckpointResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReportStageLogsFromLastCheckpoint not implemented")
+}
+func (UnimplementedPluginServiceServer) GetStageMetadata(context.Context, *GetStageMetadataRequest) (*GetStageMetadataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStageMetadata not implemented")
+}
+func (UnimplementedPluginServiceServer) PutStageMetadata(context.Context, *PutStageMetadataRequest) (*PutStageMetadataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PutStageMetadata not implemented")
+}
+func (UnimplementedPluginServiceServer) PutStageMetadataMulti(context.Context, *PutStageMetadataMultiRequest) (*PutStageMetadataMultiResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PutStageMetadataMulti not implemented")
+}
+func (UnimplementedPluginServiceServer) GetDeploymentMetadata(context.Context, *GetDeploymentMetadataRequest) (*GetDeploymentMetadataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDeploymentMetadata not implemented")
+}
+func (UnimplementedPluginServiceServer) PutDeploymentMetadata(context.Context, *PutDeploymentMetadataRequest) (*PutDeploymentMetadataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PutDeploymentMetadata not implemented")
+}
+func (UnimplementedPluginServiceServer) PutDeploymentMetadataMulti(context.Context, *PutDeploymentMetadataMultiRequest) (*PutDeploymentMetadataMultiResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PutDeploymentMetadataMulti not implemented")
 }
 func (UnimplementedPluginServiceServer) mustEmbedUnimplementedPluginServiceServer() {}
 
@@ -160,6 +256,114 @@ func _PluginService_ReportStageLogsFromLastCheckpoint_Handler(srv interface{}, c
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PluginService_GetStageMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetStageMetadataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServiceServer).GetStageMetadata(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.piped.service.PluginService/GetStageMetadata",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServiceServer).GetStageMetadata(ctx, req.(*GetStageMetadataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PluginService_PutStageMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PutStageMetadataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServiceServer).PutStageMetadata(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.piped.service.PluginService/PutStageMetadata",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServiceServer).PutStageMetadata(ctx, req.(*PutStageMetadataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PluginService_PutStageMetadataMulti_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PutStageMetadataMultiRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServiceServer).PutStageMetadataMulti(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.piped.service.PluginService/PutStageMetadataMulti",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServiceServer).PutStageMetadataMulti(ctx, req.(*PutStageMetadataMultiRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PluginService_GetDeploymentMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDeploymentMetadataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServiceServer).GetDeploymentMetadata(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.piped.service.PluginService/GetDeploymentMetadata",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServiceServer).GetDeploymentMetadata(ctx, req.(*GetDeploymentMetadataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PluginService_PutDeploymentMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PutDeploymentMetadataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServiceServer).PutDeploymentMetadata(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.piped.service.PluginService/PutDeploymentMetadata",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServiceServer).PutDeploymentMetadata(ctx, req.(*PutDeploymentMetadataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PluginService_PutDeploymentMetadataMulti_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PutDeploymentMetadataMultiRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServiceServer).PutDeploymentMetadataMulti(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.piped.service.PluginService/PutDeploymentMetadataMulti",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServiceServer).PutDeploymentMetadataMulti(ctx, req.(*PutDeploymentMetadataMultiRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PluginService_ServiceDesc is the grpc.ServiceDesc for PluginService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -178,6 +382,30 @@ var PluginService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ReportStageLogsFromLastCheckpoint",
 			Handler:    _PluginService_ReportStageLogsFromLastCheckpoint_Handler,
+		},
+		{
+			MethodName: "GetStageMetadata",
+			Handler:    _PluginService_GetStageMetadata_Handler,
+		},
+		{
+			MethodName: "PutStageMetadata",
+			Handler:    _PluginService_PutStageMetadata_Handler,
+		},
+		{
+			MethodName: "PutStageMetadataMulti",
+			Handler:    _PluginService_PutStageMetadataMulti_Handler,
+		},
+		{
+			MethodName: "GetDeploymentMetadata",
+			Handler:    _PluginService_GetDeploymentMetadata_Handler,
+		},
+		{
+			MethodName: "PutDeploymentMetadata",
+			Handler:    _PluginService_PutDeploymentMetadata_Handler,
+		},
+		{
+			MethodName: "PutDeploymentMetadataMulti",
+			Handler:    _PluginService_PutDeploymentMetadataMulti_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
