@@ -425,12 +425,14 @@ func (p *planner) buildQuickSyncStages(ctx context.Context, cfg *config.GenericA
 
 	plugins, err := p.pluginRegistry.GetPluginClientsByAppConfig(cfg)
 	if err != nil {
+		p.logger.Error("failed to get plugin clients by app config", zap.Error(err))
 		return nil, err
 	}
 	for _, plg := range plugins {
 		res, err := plg.BuildQuickSyncStages(ctx, &deployment.BuildQuickSyncStagesRequest{Rollback: rollback})
 		if err != nil {
-			return nil, fmt.Errorf("failed to build quick sync stage deployment (%w)", err)
+			p.logger.Error("failed to build quick sync stages for deployment", zap.Error(err))
+			return nil, err
 		}
 		for i := range res.Stages {
 			if res.Stages[i].Rollback {
@@ -470,6 +472,7 @@ func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.Gener
 		stageCfg := stagesCfg[i]
 		plg, err := p.pluginRegistry.GetPluginClientByStageName(stageCfg.Name.String())
 		if err != nil {
+			p.logger.Error("failed to get plugin client by stage name", zap.Error(err))
 			return nil, err
 		}
 
@@ -490,7 +493,8 @@ func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.Gener
 			Rollback: rollback,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("failed to build pipeline sync stages for deployment (%w)", err)
+			p.logger.Error("failed to build pipeline sync stages for deployment", zap.Error(err))
+			return nil, err
 		}
 		// TODO: Ensure responsed stages indexies is valid.
 		for i := range res.Stages {
