@@ -60,6 +60,7 @@ type pipedAPIDeploymentStore interface {
 	UpdateStatus(ctx context.Context, id string, status model.DeploymentStatus, reason string) error
 	UpdateStageStatus(ctx context.Context, id, stageID string, status model.StageStatus, reason string, requires []string, visible bool, retriedCount int32, completedAt int64) error
 	UpdateMetadata(ctx context.Context, id string, metadata map[string]string) error
+	UpdatePluginMetadata(ctx context.Context, deploymentID, pluginName string, metadata map[string]string) error
 	UpdateStageMetadata(ctx context.Context, deploymentID, stageID string, metadata map[string]string) error
 }
 
@@ -475,6 +476,22 @@ func (a *PipedAPI) SaveDeploymentMetadata(ctx context.Context, req *pipedservice
 		return nil, gRPCStoreError(err, fmt.Sprintf("update metadata of deployment %s", req.DeploymentId))
 	}
 	return &pipedservice.SaveDeploymentMetadataResponse{}, nil
+}
+
+// SaveDeploymentPluginMetadata is used by piped to persist the metadata of a plugin in a specific deployment.
+func (a *PipedAPI) SaveDeploymentPluginMetadata(ctx context.Context, req *pipedservice.SaveDeploymentPluginMetadataRequest) (*pipedservice.SaveDeploymentPluginMetadataResponse, error) {
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateDeploymentBelongsToPiped(ctx, req.DeploymentId, pipedID); err != nil {
+		return nil, err
+	}
+
+	if err = a.deploymentStore.UpdatePluginMetadata(ctx, req.DeploymentId, req.PluginName, req.Metadata); err != nil {
+		return nil, gRPCStoreError(err, fmt.Sprintf("update plugin metadata of deployment %s", req.DeploymentId))
+	}
+	return &pipedservice.SaveDeploymentPluginMetadataResponse{}, nil
 }
 
 // SaveStageMetadata used by piped to persist the metadata

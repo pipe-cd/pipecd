@@ -140,6 +140,7 @@ type DeploymentStore interface {
 	UpdateStatus(ctx context.Context, id string, status model.DeploymentStatus, reason string) error
 	UpdateStageStatus(ctx context.Context, id, stageID string, status model.StageStatus, reason string, requires []string, visible bool, retriedCount int32, completedAt int64) error
 	UpdateMetadata(ctx context.Context, id string, metadata map[string]string) error
+	UpdatePluginMetadata(ctx context.Context, deploymentID, pluginName string, metadata map[string]string) error
 	UpdateStageMetadata(ctx context.Context, deploymentID, stageID string, metadata map[string]string) error
 }
 
@@ -246,6 +247,20 @@ func (s *deploymentStore) UpdateStageStatus(ctx context.Context, id, stageID str
 func (s *deploymentStore) UpdateMetadata(ctx context.Context, id string, metadata map[string]string) error {
 	return s.update(ctx, id, func(d *model.Deployment) error {
 		d.Metadata = mergeMetadata(d.Metadata, metadata)
+		return nil
+	})
+}
+
+func (s *deploymentStore) UpdatePluginMetadata(ctx context.Context, deploymentID, pluginName string, metadata map[string]string) error {
+	return s.update(ctx, deploymentID, func(d *model.Deployment) error {
+		current, found := d.PluginMetadata[pluginName]
+		if found {
+			d.PluginMetadata[pluginName].KeyValues = mergeMetadata(current.KeyValues, metadata)
+		} else {
+			d.PluginMetadata[pluginName] = &model.KeyValues{
+				KeyValues: metadata,
+			}
+		}
 		return nil
 	})
 }

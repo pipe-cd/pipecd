@@ -685,6 +685,20 @@ func (mr *MockDeploymentStoreMockRecorder) UpdateMetadata(ctx, id, metadata any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMetadata", reflect.TypeOf((*MockDeploymentStore)(nil).UpdateMetadata), ctx, id, metadata)
 }
 
+// UpdatePluginMetadata mocks base method.
+func (m *MockDeploymentStore) UpdatePluginMetadata(ctx context.Context, deploymentID, pluginName string, metadata map[string]string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdatePluginMetadata", ctx, deploymentID, pluginName, metadata)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdatePluginMetadata indicates an expected call of UpdatePluginMetadata.
+func (mr *MockDeploymentStoreMockRecorder) UpdatePluginMetadata(ctx, deploymentID, pluginName, metadata any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePluginMetadata", reflect.TypeOf((*MockDeploymentStore)(nil).UpdatePluginMetadata), ctx, deploymentID, pluginName, metadata)
+}
+
 // UpdateStageMetadata mocks base method.
 func (m *MockDeploymentStore) UpdateStageMetadata(ctx context.Context, deploymentID, stageID string, metadata map[string]string) error {
 	m.ctrl.T.Helper()
