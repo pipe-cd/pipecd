@@ -128,14 +128,18 @@ func (a *PluginAPI) PutStageMetadataMulti(ctx context.Context, req *service.PutS
 	return a.metadataStoreRegistry.PutStageMetadataMulti(ctx, req)
 }
 
-func (a *PluginAPI) GetDeploymentMetadata(ctx context.Context, req *service.GetDeploymentMetadataRequest) (*service.GetDeploymentMetadataResponse, error) {
-	return a.metadataStoreRegistry.GetDeploymentMetadata(ctx, req)
+func (a *PluginAPI) GetDeploymentPluginMetadata(ctx context.Context, req *service.GetDeploymentPluginMetadataRequest) (*service.GetDeploymentPluginMetadataResponse, error) {
+	return a.metadataStoreRegistry.GetDeploymentPluginMetadata(ctx, req)
 }
 
-func (a *PluginAPI) PutDeploymentMetadata(ctx context.Context, req *service.PutDeploymentMetadataRequest) (*service.PutDeploymentMetadataResponse, error) {
-	return a.metadataStoreRegistry.PutDeploymentMetadata(ctx, req)
+func (a *PluginAPI) PutDeploymentPluginMetadata(ctx context.Context, req *service.PutDeploymentPluginMetadataRequest) (*service.PutDeploymentPluginMetadataResponse, error) {
+	return a.metadataStoreRegistry.PutDeploymentPluginMetadata(ctx, req)
 }
 
-func (a *PluginAPI) PutDeploymentMetadataMulti(ctx context.Context, req *service.PutDeploymentMetadataMultiRequest) (*service.PutDeploymentMetadataMultiResponse, error) {
-	return a.metadataStoreRegistry.PutDeploymentMetadataMulti(ctx, req)
+func (a *PluginAPI) PutDeploymentPluginMetadataMulti(ctx context.Context, req *service.PutDeploymentPluginMetadataMultiRequest) (*service.PutDeploymentPluginMetadataMultiResponse, error) {
+	return a.metadataStoreRegistry.PutDeploymentPluginMetadataMulti(ctx, req)
+}
+
+func (a *PluginAPI) GetDeploymentSharedMetadata(ctx context.Context, req *service.GetDeploymentSharedMetadataRequest) (*service.GetDeploymentSharedMetadataResponse, error) {
+	return a.metadataStoreRegistry.GetDeploymentSharedMetadata(ctx, req)
 }

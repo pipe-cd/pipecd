@@ -28,12 +28,19 @@ func TestRegistry(t *testing.T) {
 	t.Parallel()
 
 	ac := &fakeAPIClient{
-		shared: make(map[string]string, 0),
-		stages: make(map[string]metadata, 0),
+		plugins: make(map[string]metadata, 0),
+		stages:  make(map[string]metadata, 0),
 	}
 	d := &model.Deployment{
 		Metadata: map[string]string{
 			"key-1": "value-1",
+		},
+		PluginMetadata: map[string]*model.KeyValues{
+			"plugin-1": {
+				KeyValues: map[string]string{
+					"plugin-1-key-1": "plugin-1-value-1",
+				},
+			},
 		},
 		Stages: []*model.PipelineStage{
 			{
@@ -53,12 +60,12 @@ func TestRegistry(t *testing.T) {
 
 	ctx := context.Background()
 
-	// Deployment metadata.
+	// DeploymentShared metadata.
 	{
 		// Get
 		{
 			// Existing key
-			resp, err := r.GetDeploymentMetadata(ctx, &service.GetDeploymentMetadataRequest{
+			resp, err := r.GetDeploymentSharedMetadata(ctx, &service.GetDeploymentSharedMetadataRequest{
 				DeploymentId: d.Id,
 				Key:          "key-1",
 			})
@@ -67,18 +74,55 @@ func TestRegistry(t *testing.T) {
 			assert.Equal(t, "value-1", resp.Value)
 
 			// Nonexistent key
-			resp, err = r.GetDeploymentMetadata(ctx, &service.GetDeploymentMetadataRequest{
+			resp, err = r.GetDeploymentSharedMetadata(ctx, &service.GetDeploymentSharedMetadataRequest{
 				DeploymentId: d.Id,
-				Key:          "key-2",
+				Key:          "nonexistent-key",
+			})
+			assert.NoError(t, err)
+			assert.Equal(t, false, resp.Found)
+			assert.Equal(t, "", resp.Value)
+		}
+	}
+
+	// DeploymentPlugin metadata.
+	{
+		// Get
+		{
+			// Existing key
+			resp, err := r.GetDeploymentPluginMetadata(ctx, &service.GetDeploymentPluginMetadataRequest{
+				DeploymentId: d.Id,
+				PluginName:   "plugin-1",
+				Key:          "plugin-1-key-1",
+			})
+			assert.NoError(t, err)
+			assert.Equal(t, true, resp.Found)
+			assert.Equal(t, "plugin-1-value-1", resp.Value)
+
+			// Nonexistent key
+			resp, err = r.GetDeploymentPluginMetadata(ctx, &service.GetDeploymentPluginMetadataRequest{
+				DeploymentId: d.Id,
+				PluginName:   "plugin-1",
+				Key:          "nonexistent-key",
+			})
+			assert.NoError(t, err)
+			assert.Equal(t, false, resp.Found)
+			assert.Equal(t, "", resp.Value)
+
+			// Nonexistent plugin
+			resp, err = r.GetDeploymentPluginMetadata(ctx, &service.GetDeploymentPluginMetadataRequest{
+				DeploymentId: d.Id,
+				PluginName:   "nonexistent-plugin",
+				Key:          "plugin-1-key-1",
 			})
 			assert.NoError(t, err)
 			assert.Equal(t, false, resp.Found)
 			assert.Equal(t, "", resp.Value)
 
 			// Nonexistent deployment
-			resp, err = r.GetDeploymentMetadata(ctx, &service.GetDeploymentMetadataRequest{
+			resp, err = r.GetDeploymentPluginMetadata(ctx, &service.GetDeploymentPluginMetadataRequest{
 				DeploymentId: "not-exist-id",
-				Key:          "key-2",
+				PluginName:   "plugin-1",
+				Key:          "plugin-1-key-1",
 			})
 			assert.Error(t, err)
 			assert.Equal(t, false, resp.Found)
@@ -87,50 +131,54 @@ func TestRegistry(t *testing.T) {
 		// Put
 		{
 			// New key
-			_, err := r.PutDeploymentMetadata(ctx, &service.PutDeploymentMetadataRequest{
+			_, err := r.PutDeploymentPluginMetadata(ctx, &service.PutDeploymentPluginMetadataRequest{
 				DeploymentId: d.Id,
-				Key:          "key-2",
-				Value:        "value-2",
+				PluginName:   "plugin-1",
+				Key:          "plugin-1-key-2",
+				Value:        "plugin-1-value-2",
 			})
 			assert.NoError(t, err)
 			assert.Equal(t, metadata{
-				"key-1": "value-1",
-				"key-2": "value-2",
-			}, ac.shared)
+				"plugin-1-key-1": "plugin-1-value-1",
+				"plugin-1-key-2": "plugin-1-value-2",
+			}, ac.plugins["plugin-1"])
 
 			// Nonexistent deployment
-			_, err = r.PutDeploymentMetadata(ctx, &service.PutDeploymentMetadataRequest{
+			_, err = r.PutDeploymentPluginMetadata(ctx, &service.PutDeploymentPluginMetadataRequest{
 				DeploymentId: "not-exist-id",
-				Key:          "key-2",
-				Value:        "value-2",
+				PluginName:   "plugin-1",
+				Key:          "plugin-1-key-2",
+				Value:        "plugin-1-value-2",
 			})
 			assert.Error(t, err)
 		}
 		// PutMulti
 		{
 			// New keys(3,4) with one existing key(1)
-			_, err := r.PutDeploymentMetadataMulti(ctx, &service.PutDeploymentMetadataMultiRequest{
+			_, err := r.PutDeploymentPluginMetadataMulti(ctx, &service.PutDeploymentPluginMetadataMultiRequest{
 				DeploymentId: d.Id,
+				PluginName:   "plugin-1",
 				Metadata: map[string]string{
-					"key-3": "value-3",
-					"key-1": "value-12",
-					"key-4": "value-4",
+					"plugin-1-key-3": "plugin-1-value-3",
+					"plugin-1-key-1": "plugin-1-value-1-new",
+					"plugin-1-key-4": "plugin-1-value-4",
 				},
 			})
 			assert.NoError(t, err)
 			assert.Equal(t, metadata{
-				"key-1": "value-12",
-				"key-2": "value-2",
-				"key-3": "value-3",
-				"key-4": "value-4",
-			}, ac.shared)
+				"plugin-1-key-1": "plugin-1-value-1-new",
+				"plugin-1-key-2": "plugin-1-value-2",
+				"plugin-1-key-3": "plugin-1-value-3",
+				"plugin-1-key-4": "plugin-1-value-4",
+			}, ac.plugins["plugin-1"])
 
 			// Nonexistent deployment
-			_, err = r.PutDeploymentMetadataMulti(ctx, &service.PutDeploymentMetadataMultiRequest{
-				DeploymentId: "not-exist-id",
+			_, err = r.PutDeploymentPluginMetadataMulti(ctx, &service.PutDeploymentPluginMetadataMultiRequest{
+				DeploymentId: "nonexistent-id",
+				PluginName:   "plugin-1",
 				Metadata: map[string]string{
-					"key-3": "value-3",
-					"key-4": "value-4",
+					"plugin-1-key-3": "plugin-1-value-3",
+					"plugin-1-key-4": "plugin-1-value-4",
 				},
 			})
 			assert.Error(t, err)
