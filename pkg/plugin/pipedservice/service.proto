@@ -37,11 +37,14 @@ service PluginService {
     // PutStageMetadataMulti puts the metadata pairs of the given stage.
     rpc PutStageMetadataMulti(PutStageMetadataMultiRequest) returns (PutStageMetadataMultiResponse) {}
     // GetDeploymentMetadata gets one metadata value of the given deployment.
-    rpc GetDeploymentMetadata(GetDeploymentMetadataRequest) returns (GetDeploymentMetadataResponse) {}
+    rpc GetDeploymentPluginMetadata(GetDeploymentPluginMetadataRequest) returns (GetDeploymentPluginMetadataResponse) {}
     // PutDeploymentMetadata puts one metadata of the given deployment.
-    rpc PutDeploymentMetadata(PutDeploymentMetadataRequest) returns (PutDeploymentMetadataResponse) {}
+    rpc PutDeploymentPluginMetadata(PutDeploymentPluginMetadataRequest) returns (PutDeploymentPluginMetadataResponse) {}
     // PutDeploymentMetadataMulti puts the metadata pairs of the given deployment.
-    rpc PutDeploymentMetadataMulti(PutDeploymentMetadataMultiRequest) returns (PutDeploymentMetadataMultiResponse) {}    
+    rpc PutDeploymentPluginMetadataMulti(PutDeploymentPluginMetadataMultiRequest) returns (PutDeploymentPluginMetadataMultiResponse) {}    
+    // GetDeploymentSharedMetadata gets one shared metadata value of the given deployment.
+    // The shared metadata is read-only in plugins for safety since it is shared among piped and plugins.
+    rpc GetDeploymentSharedMetadata(GetDeploymentSharedMetadataRequest) returns (GetDeploymentSharedMetadataResponse) {}
 }
 
 message DecryptSecretRequest {
@@ -131,7 +134,7 @@ message PutStageMetadataMultiRequest {
 message PutStageMetadataMultiResponse {
 }
 
-message GetDeploymentMetadataRequest {
+message GetDeploymentPluginMetadataRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     // Plugin name to distinguish which plugin manages the metadata
     // since DeploymentMetadata is shared among plugins and contains metadata from piped.
@@ -141,12 +144,12 @@ message GetDeploymentMetadataRequest {
     string key = 3 [(validate.rules).string.min_len = 1];
 }
 
-message GetDeploymentMetadataResponse {
+message GetDeploymentPluginMetadataResponse {
     string value = 1;
     bool found = 2;
 }
 
-message PutDeploymentMetadataRequest {
+message PutDeploymentPluginMetadataRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     // Plugin name to distinguish which plugin manages the metadata
     // since DeploymentMetadata is shared among plugins and contains metadata from piped.
@@ -157,10 +160,10 @@ message PutDeploymentMetadataRequest {
     string value = 4;
 }
 
-message PutDeploymentMetadataResponse {
+message PutDeploymentPluginMetadataResponse {
 }
 
-message PutDeploymentMetadataMultiRequest {
+message PutDeploymentPluginMetadataMultiRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     // Plugin name to distinguish which plugin manages the metadata
     // since DeploymentMetadata is shared among plugins and contains metadata from piped.
@@ -170,5 +173,15 @@ message PutDeploymentMetadataMultiRequest {
     map<string, string> metadata = 3;
 }
 
-message PutDeploymentMetadataMultiResponse {
+message PutDeploymentPluginMetadataMultiResponse {
+}
+
+message GetDeploymentSharedMetadataRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string key = 2 [(validate.rules).string.min_len = 1];
+}
+
+message GetDeploymentSharedMetadataResponse {
+    string value = 1;
+    bool found = 2;
 }
