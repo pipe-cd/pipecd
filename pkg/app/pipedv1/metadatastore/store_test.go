@@ -26,11 +26,12 @@ import (
 )
 
 type fakeAPIClient struct {
-	shared metadata
-	stages map[string]metadata
+	shared  metadata
+	plugins map[string]metadata
+	stages  map[string]metadata
 }
 
-func (c *fakeAPIClient) SaveDeploymentMetadata(ctx context.Context, req *pipedservice.SaveDeploymentMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveDeploymentMetadataResponse, error) {
+func (c *fakeAPIClient) SaveDeploymentSharedMetadata(ctx context.Context, req *pipedservice.SaveDeploymentSharedMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveDeploymentSharedMetadataResponse, error) {
 	md := make(map[string]string, len(c.shared)+len(req.Metadata))
 	for k, v := range c.shared {
 		md[k] = v
@@ -39,7 +40,20 @@ func (c *fakeAPIClient) SaveDeploymentMetadata(ctx context.Context, req *pipedse
 		md[k] = v
 	}
 	c.shared = md
-	return &pipedservice.SaveDeploymentMetadataResponse{}, nil
+	return &pipedservice.SaveDeploymentSharedMetadataResponse{}, nil
+}
+
+func (c *fakeAPIClient) SaveDeploymentPluginMetadata(ctx context.Context, req *pipedservice.SaveDeploymentPluginMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveDeploymentPluginMetadataResponse, error) {
+	ori := c.plugins[req.PluginName]
+	md := make(map[string]string, len(ori)+len(req.Metadata))
+	for k, v := range ori {
+		md[k] = v
+	}
+	for k, v := range req.Metadata {
+		md[k] = v
+	}
+	c.plugins[req.PluginName] = md
+	return &pipedservice.SaveDeploymentPluginMetadataResponse{}, nil
 }
 
 func (c *fakeAPIClient) SaveStageMetadata(ctx context.Context, req *pipedservice.SaveStageMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveStageMetadataResponse, error) {
@@ -80,7 +94,7 @@ func TestStore(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	store := NewMetadataStore(ac, d)
+	store := newMetadataStore(ac, d)
 
 	// Shared metadata.
 	value, found := store.Shared().Get("key-1")

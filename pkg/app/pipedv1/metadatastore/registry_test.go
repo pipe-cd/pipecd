@@ -28,12 +28,24 @@ func TestRegistry(t *testing.T) {
 	t.Parallel()
 
 	ac := &fakeAPIClient{
-		shared: make(map[string]string, 0),
-		stages: make(map[string]metadata, 0),
+		shared:  make(map[string]string, 0),
+		plugins: make(map[string]metadata, 0),
+		stages:  make(map[string]metadata, 0),
 	}
 	d := &model.Deployment{
-		Metadata: map[string]string{
-			"key-1": "value-1",
+		MetadataV2: &model.DeploymentMetadata{
+			Shared: &model.DeploymentMetadata_KeyValues{
+				KeyValues: map[string]string{
+					"key-1": "value-1",
+				},
+			},
+			Plugins: map[string]*model.DeploymentMetadata_KeyValues{
+				"plugin-1": {
+					KeyValues: map[string]string{
+						"key-1": "value-1",
+					},
+				},
+			},
 		},
 		Stages: []*model.PipelineStage{
 			{
@@ -53,12 +65,12 @@ func TestRegistry(t *testing.T) {
 
 	ctx := context.Background()
 
-	// Deployment metadata.
+	// DeploymentPlugin metadata.
 	{
 		// Get
 		{
 			// Existing key
-			resp, err := r.GetDeploymentMetadata(ctx, &service.GetDeploymentMetadataRequest{
+			resp, err := r.GetDeploymentPluginMetadata(ctx, &service.GetDeploymentPluginMetadataRequest{
 				DeploymentId: d.Id,
 				Key:          "key-1",
 			})
@@ -67,7 +79,7 @@ func TestRegistry(t *testing.T) {
 			assert.Equal(t, "value-1", resp.Value)
 
 			// Nonexistent key
-			resp, err = r.GetDeploymentMetadata(ctx, &service.GetDeploymentMetadataRequest{
+			resp, err = r.GetDeploymentPluginMetadata(ctx, &service.GetDeploymentPluginMetadataRequest{
 				DeploymentId: d.Id,
 				Key:          "key-2",
 			})
@@ -76,7 +88,7 @@ func TestRegistry(t *testing.T) {
 			assert.Equal(t, "", resp.Value)
 
 			// Nonexistent deployment
-			resp, err = r.GetDeploymentMetadata(ctx, &service.GetDeploymentMetadataRequest{
+			resp, err = r.GetDeploymentPluginMetadata(ctx, &service.GetDeploymentPluginMetadataRequest{
 				DeploymentId: "not-exist-id",
 				Key:          "key-2",
 			})
@@ -87,7 +99,7 @@ func TestRegistry(t *testing.T) {
 		// Put
 		{
 			// New key
-			_, err := r.PutDeploymentMetadata(ctx, &service.PutDeploymentMetadataRequest{
+			_, err := r.PutDeploymentPluginMetadata(ctx, &service.PutDeploymentPluginMetadataRequest{
 				DeploymentId: d.Id,
 				Key:          "key-2",
 				Value:        "value-2",
@@ -99,7 +111,7 @@ func TestRegistry(t *testing.T) {
 			}, ac.shared)
 
 			// Nonexistent deployment
-			_, err = r.PutDeploymentMetadata(ctx, &service.PutDeploymentMetadataRequest{
+			_, err = r.PutDeploymentPluginMetadata(ctx, &service.PutDeploymentPluginMetadataRequest{
 				DeploymentId: "not-exist-id",
 				Key:          "key-2",
 				Value:        "value-2",
@@ -109,7 +121,7 @@ func TestRegistry(t *testing.T) {
 		// PutMulti
 		{
 			// New keys(3,4) with one existing key(1)
-			_, err := r.PutDeploymentMetadataMulti(ctx, &service.PutDeploymentMetadataMultiRequest{
+			_, err := r.PutDeploymentPluginMetadataMulti(ctx, &service.PutDeploymentPluginMetadataMultiRequest{
 				DeploymentId: d.Id,
 				Metadata: map[string]string{
 					"key-3": "value-3",
@@ -126,7 +138,7 @@ func TestRegistry(t *testing.T) {
 			}, ac.shared)
 
 			// Nonexistent deployment
-			_, err = r.PutDeploymentMetadataMulti(ctx, &service.PutDeploymentMetadataMultiRequest{
+			_, err = r.PutDeploymentPluginMetadataMulti(ctx, &service.PutDeploymentPluginMetadataMultiRequest{
 				DeploymentId: "not-exist-id",
 				Metadata: map[string]string{
 					"key-3": "value-3",
@@ -134,6 +146,30 @@ func TestRegistry(t *testing.T) {
 				},
 			})
 			assert.Error(t, err)
+		}
+	}
+
+	// DeploymentShared metadata.
+	{
+		// Get
+		{
+			// Existing key
+			resp, err := r.GetDeploymentSharedMetadata(ctx, &service.GetDeploymentSharedMetadataRequest{
+				DeploymentId: d.Id,
+				Key:          "key-1",
+			})
+			assert.NoError(t, err)
+			assert.Equal(t, true, resp.Found)
+			assert.Equal(t, "value-1", resp.Value)
+
+			// Nonexistent key
+			resp, err = r.GetDeploymentSharedMetadata(ctx, &service.GetDeploymentSharedMetadataRequest{
+				DeploymentId: d.Id,
+				Key:          "not-exist-key",
+			})
+			assert.NoError(t, err)
+			assert.Equal(t, false, resp.Found)
+			assert.Equal(t, "", resp.Value)
 		}
 	}
 

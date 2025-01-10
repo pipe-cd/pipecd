@@ -28,19 +28,19 @@ type MetadataStoreRegistry struct {
 
 	// stores is a map of metadata store for each deployment.
 	// The key is the deployment ID.
-	stores map[string]MetadataStore
+	stores map[string]*metadataStore
 }
 
 // NewMetadataStoreRegistry creates a new MetadataStoreRegistry.
 func NewMetadataStoreRegistry(apiClient apiClient) *MetadataStoreRegistry {
-	return &MetadataStoreRegistry{apiClient: apiClient, stores: make(map[string]MetadataStore, 0)}
+	return &MetadataStoreRegistry{apiClient: apiClient, stores: make(map[string]*metadataStore, 0)}
 }
 
 // Register creates a new metadata store for the given deployment.
 // This must be called before other Get/Put methods are called for the deployment.
 // If the metadata store already exists, the new one will replace the existing one.
 func (r *MetadataStoreRegistry) Register(d *model.Deployment) {
-	store := NewMetadataStore(r.apiClient, d)
+	store := newMetadataStore(r.apiClient, d)
 	r.stores[d.Id] = store
 }
 
@@ -95,45 +95,59 @@ func (r *MetadataStoreRegistry) PutStageMetadataMulti(ctx context.Context, req *
 }
 
 // GetDeploymentMetadata implements the backend of PluginService.GetDeploymentMetadata().
-func (r *MetadataStoreRegistry) GetDeploymentMetadata(ctx context.Context, req *service.GetDeploymentMetadataRequest) (*service.GetDeploymentMetadataResponse, error) {
+func (r *MetadataStoreRegistry) GetDeploymentPluginMetadata(ctx context.Context, req *service.GetDeploymentPluginMetadataRequest) (*service.GetDeploymentPluginMetadataResponse, error) {
 	mds, ok := r.stores[req.DeploymentId]
 	if !ok {
-		return &service.GetDeploymentMetadataResponse{Found: false}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
+		return &service.GetDeploymentPluginMetadataResponse{Found: false}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
 	}
 
-	value, found := mds.Shared().Get(req.Key)
-	return &service.GetDeploymentMetadataResponse{
+	value, found := mds.pluginGet(req.PluginName, req.Key)
+	return &service.GetDeploymentPluginMetadataResponse{
 		Value: value,
 		Found: found,
 	}, nil
 }
 
 // PutDeploymentMetadata implements the backend of PluginService.PutDeploymentMetadata().
-func (r *MetadataStoreRegistry) PutDeploymentMetadata(ctx context.Context, req *service.PutDeploymentMetadataRequest) (*service.PutDeploymentMetadataResponse, error) {
+func (r *MetadataStoreRegistry) PutDeploymentPluginMetadata(ctx context.Context, req *service.PutDeploymentPluginMetadataRequest) (*service.PutDeploymentPluginMetadataResponse, error) {
 	mds, ok := r.stores[req.DeploymentId]
 	if !ok {
-		return &service.PutDeploymentMetadataResponse{}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
+		return &service.PutDeploymentPluginMetadataResponse{}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
 	}
 
-	err := mds.Shared().Put(ctx, req.Key, req.Value)
+	err := mds.pluginPutMulti(ctx, req.PluginName, map[string]string{req.Key: req.Value})
 	if err != nil {
-		return &service.PutDeploymentMetadataResponse{}, err
+		return &service.PutDeploymentPluginMetadataResponse{}, err
 	}
 
-	return &service.PutDeploymentMetadataResponse{}, nil
+	return &service.PutDeploymentPluginMetadataResponse{}, nil
 }
 
 // PutDeploymentMetadataMulti implements the backend of PluginService.PutDeploymentMetadataMulti().
-func (r *MetadataStoreRegistry) PutDeploymentMetadataMulti(ctx context.Context, req *service.PutDeploymentMetadataMultiRequest) (*service.PutDeploymentMetadataMultiResponse, error) {
+func (r *MetadataStoreRegistry) PutDeploymentPluginMetadataMulti(ctx context.Context, req *service.PutDeploymentPluginMetadataMultiRequest) (*service.PutDeploymentPluginMetadataMultiResponse, error) {
 	mds, ok := r.stores[req.DeploymentId]
 	if !ok {
-		return &service.PutDeploymentMetadataMultiResponse{}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
+		return &service.PutDeploymentPluginMetadataMultiResponse{}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
 	}
 
-	err := mds.Shared().PutMulti(ctx, req.Metadata)
+	err := mds.pluginPutMulti(ctx, req.PluginName, req.Metadata)
 	if err != nil {
-		return &service.PutDeploymentMetadataMultiResponse{}, err
+		return &service.PutDeploymentPluginMetadataMultiResponse{}, err
 	}
 
-	return &service.PutDeploymentMetadataMultiResponse{}, nil
+	return &service.PutDeploymentPluginMetadataMultiResponse{}, nil
+}
+
+// GetDeploymentSharedMetadata implements the backend of PluginService.GetDeploymentSharedMetadata().
+func (r *MetadataStoreRegistry) GetDeploymentSharedMetadata(ctx context.Context, req *service.GetDeploymentSharedMetadataRequest) (*service.GetDeploymentSharedMetadataResponse, error) {
+	mds, ok := r.stores[req.DeploymentId]
+	if !ok {
+		return &service.GetDeploymentSharedMetadataResponse{Found: false}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
+	}
+
+	value, found := mds.Shared().Get(req.Key)
+	return &service.GetDeploymentSharedMetadataResponse{
+		Value: value,
+		Found: found,
+	}, nil
 }

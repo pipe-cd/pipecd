@@ -49,7 +49,8 @@ type MetadataStore interface {
 }
 
 type apiClient interface {
-	SaveDeploymentMetadata(ctx context.Context, req *pipedservice.SaveDeploymentMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveDeploymentMetadataResponse, error)
+	SaveDeploymentSharedMetadata(ctx context.Context, req *pipedservice.SaveDeploymentSharedMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveDeploymentSharedMetadataResponse, error)
+	SaveDeploymentPluginMetadata(ctx context.Context, req *pipedservice.SaveDeploymentPluginMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveDeploymentPluginMetadataResponse, error)
 	SaveStageMetadata(ctx context.Context, req *pipedservice.SaveStageMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveStageMetadataResponse, error)
 }
 
@@ -59,30 +60,38 @@ type metadataStore struct {
 	apiClient  apiClient
 	deployment *model.Deployment
 
-	shared metadata
-	stages map[string]metadata
+	shared  metadata
+	plugins map[string]metadata
+	stages  map[string]metadata
 
-	sharedMu sync.RWMutex
-	stagesMu sync.RWMutex
+	sharedMu  sync.RWMutex
+	pluginsMu sync.RWMutex
+	stagesMu  sync.RWMutex
 }
 
-// NewMetadataStore builds a metadata store for a given deployment.
+// newMetadataStore builds a metadata store for the given deployment.
 // It keeps local data and makes sure that they are synced with the remote store.
-func NewMetadataStore(apiClient apiClient, d *model.Deployment) MetadataStore {
+func newMetadataStore(apiClient apiClient, d *model.Deployment) *metadataStore {
 	s := &metadataStore{
 		apiClient:  apiClient,
 		deployment: d,
 		shared:     make(map[string]string, 0),
+		plugins:    make(map[string]metadata, 0),
 		stages:     make(map[string]metadata, 0),
 	}
 
 	// Initialize shared metadata of deployment.
-	for k, v := range d.Metadata {
+	for k, v := range d.GetMetadataV2().GetShared().GetKeyValues() {
 		s.shared[k] = v
 	}
 
+	// Initialize metadata of plugins of the deployment.
+	for _, pluginKV := range d.GetMetadataV2().GetPlugins() {
+		s.plugins[pluginKV.String()] = pluginKV.GetKeyValues()
+	}
+
 	// Initialize metadata of all stages.
-	for _, stage := range d.Stages {
+	for _, stage := range d.GetStages() {
 		if md := stage.Metadata; md != nil {
 			s.stages[stage.Id] = md
 		}
@@ -129,7 +138,7 @@ func (s *metadataStore) syncSharedMetadata(ctx context.Context) error {
 	s.sharedMu.RUnlock()
 
 	// Send full list of metadata to ensure that they will be synced.
-	_, err := s.apiClient.SaveDeploymentMetadata(ctx, &pipedservice.SaveDeploymentMetadataRequest{
+	_, err := s.apiClient.SaveDeploymentSharedMetadata(ctx, &pipedservice.SaveDeploymentSharedMetadataRequest{
 		DeploymentId: s.deployment.Id,
 		Metadata:     md,
 	})
@@ -152,6 +161,40 @@ func (s *metadataStore) stagePutMulti(ctx context.Context, stageID string, md ma
 	_, err := s.apiClient.SaveStageMetadata(ctx, &pipedservice.SaveStageMetadataRequest{
 		DeploymentId: s.deployment.Id,
 		StageId:      stageID,
+		Metadata:     merged,
+	})
+	return err
+}
+
+func (s *metadataStore) pluginGet(pluginName, key string) (value string, found bool) {
+	s.pluginsMu.RLock()
+	defer s.pluginsMu.RUnlock()
+
+	md, ok := s.plugins[pluginName]
+	if !ok {
+		return "", false
+	}
+
+	value, found = md[key]
+	return
+}
+
+func (s *metadataStore) pluginPutMulti(ctx context.Context, pluginName string, md map[string]string) error {
+	s.pluginsMu.Lock()
+	merged := make(map[string]string, len(md)+len(s.plugins[pluginName]))
+	for k, v := range s.plugins[pluginName] {
+		merged[k] = v
+	}
+	for k, v := range md {
+		merged[k] = v
+	}
+	s.plugins[pluginName] = merged
+	s.pluginsMu.Unlock()
+
+	// Persist to the remote store.
+	_, err := s.apiClient.SaveDeploymentPluginMetadata(ctx, &pipedservice.SaveDeploymentPluginMetadataRequest{
+		DeploymentId: s.deployment.Id,
+		PluginName:   pluginName,
 		Metadata:     merged,
 	})
 	return err
