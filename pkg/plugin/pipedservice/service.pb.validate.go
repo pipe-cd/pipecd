@@ -1769,7 +1769,16 @@ func (m *GetDeploymentPluginMetadataRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for PluginName
+	if utf8.RuneCountInString(m.GetPluginName()) < 1 {
+		err := GetDeploymentPluginMetadataRequestValidationError{
+			field:  "PluginName",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if utf8.RuneCountInString(m.GetKey()) < 1 {
 		err := GetDeploymentPluginMetadataRequestValidationError{

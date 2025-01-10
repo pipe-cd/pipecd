@@ -138,7 +138,7 @@ message GetDeploymentPluginMetadataRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     // Plugin name to distinguish which plugin manages the metadata.
     // e.g. "plugin-kubernetes", "plugin-wait-stage"
-    string plugin_name = 2;
+    string plugin_name = 2 [(validate.rules).string.min_len = 1];
     string key = 3 [(validate.rules).string.min_len = 1];
 }
 
