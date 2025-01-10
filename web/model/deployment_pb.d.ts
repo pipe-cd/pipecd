@@ -78,6 +78,9 @@ export class Deployment extends jspb.Message {
   getMetadataMap(): jspb.Map<string, string>;
   clearMetadataMap(): Deployment;
 
+  getPluginMetadataMap(): jspb.Map<string, KeyValues>;
+  clearPluginMetadataMap(): Deployment;
+
   getDeploymentChainId(): string;
   setDeploymentChainId(value: string): Deployment;
 
@@ -124,6 +127,7 @@ export namespace Deployment {
     statusReason: string,
     stagesList: Array<PipelineStage.AsObject>,
     metadataMap: Array<[string, string]>,
+    pluginMetadataMap: Array<[string, KeyValues.AsObject]>,
     deploymentChainId: string,
     deploymentChainBlockIndex: number,
     completedAt: number,
@@ -283,6 +287,24 @@ export namespace Commit {
     pullRequest: number,
     url: string,
     createdAt: number,
+  }
+}
+
+export class KeyValues extends jspb.Message {
+  getKeyvaluesMap(): jspb.Map<string, string>;
+  clearKeyvaluesMap(): KeyValues;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): KeyValues.AsObject;
+  static toObject(includeInstance: boolean, msg: KeyValues): KeyValues.AsObject;
+  static serializeBinaryToWriter(message: KeyValues, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): KeyValues;
+  static deserializeBinaryFromReader(message: KeyValues, reader: jspb.BinaryReader): KeyValues;
+}
+
+export namespace KeyValues {
+  export type AsObject = {
+    keyvaluesMap: Array<[string, string]>,
   }
 }
 

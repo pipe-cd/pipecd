@@ -96,7 +96,10 @@ message Deployment {
     // The human-readable description why the deployment is at current status.
     string status_reason = 31;
     repeated PipelineStage stages = 32;
-    map<string,string> metadata = 33;
+    // metadata is shared across piped and plugins. Use plugin_metadata instead for plugin-specific metadata.
+    map<string, string> metadata = 33;
+    // Plugin-specific metadata. The key is the plugin name.
+    map<string, KeyValues> plugin_metadata = 34;
 
     // Reference to the chain which the deployment belongs to.
     // Empty means the deployment is a standalone deployment.
@@ -156,4 +159,8 @@ message Commit {
     int64 pull_request = 5;
     string url = 6;
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
+}
+
+message KeyValues{
+    map<string, string> keyValues = 1;
 }
