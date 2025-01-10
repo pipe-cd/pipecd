@@ -1768,6 +1768,8 @@ func (m *GetDeploymentMetadataRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	// no validation rules for Plugin
+
 	if utf8.RuneCountInString(m.GetKey()) < 1 {
 		err := GetDeploymentMetadataRequestValidationError{
 			field:  "Key",
@@ -2000,6 +2002,17 @@ func (m *PutDeploymentMetadataRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if utf8.RuneCountInString(m.GetPlugin()) < 1 {
+		err := PutDeploymentMetadataRequestValidationError{
+			field:  "Plugin",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if utf8.RuneCountInString(m.GetKey()) < 1 {
 		err := PutDeploymentMetadataRequestValidationError{
 			field:  "Key",
@@ -2223,6 +2236,17 @@ func (m *PutDeploymentMetadataMultiRequest) validate(all bool) error {
 	if utf8.RuneCountInString(m.GetDeploymentId()) < 1 {
 		err := PutDeploymentMetadataMultiRequestValidationError{
 			field:  "DeploymentId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetPlugin()) < 1 {
+		err := PutDeploymentMetadataMultiRequestValidationError{
+			field:  "Plugin",
 			reason: "value length must be at least 1 runes",
 		}
 		if !all {

@@ -133,7 +133,12 @@ message PutStageMetadataMultiResponse {
 
 message GetDeploymentMetadataRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
-    string key = 2 [(validate.rules).string.min_len = 1];
+    // Plugin name to distinguish which plugin manages the metadata
+    // since DeploymentMetadata is shared among plugins and contains metadata from piped.
+    // If not specified, you can get the metadata made by piped.
+    // e.g. "plugin-kubernetes", "plugin-wait-stage"
+    string plugin = 2;
+    string key = 3 [(validate.rules).string.min_len = 1];
 }
 
 message GetDeploymentMetadataResponse {
@@ -143,8 +148,13 @@ message GetDeploymentMetadataResponse {
 
 message PutDeploymentMetadataRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
-    string key = 2 [(validate.rules).string.min_len = 1];
-    string value = 3;
+    // Plugin name to distinguish which plugin manages the metadata
+    // since DeploymentMetadata is shared among plugins and contains metadata from piped.
+    // This field is required.
+    // e.g. "plugin-kubernetes", "plugin-wait-stage"
+    string plugin = 2 [(validate.rules).string.min_len = 1];
+    string key = 3 [(validate.rules).string.min_len = 1];
+    string value = 4;
 }
 
 message PutDeploymentMetadataResponse {
@@ -152,7 +162,12 @@ message PutDeploymentMetadataResponse {
 
 message PutDeploymentMetadataMultiRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
-    map<string, string> metadata = 2;
+    // Plugin name to distinguish which plugin manages the metadata
+    // since DeploymentMetadata is shared among plugins and contains metadata from piped.
+    // This field is required.
+    // e.g. "plugin-kubernetes", "plugin-wait-stage"
+    string plugin = 2 [(validate.rules).string.min_len = 1];
+    map<string, string> metadata = 3;
 }
 
 message PutDeploymentMetadataMultiResponse {
