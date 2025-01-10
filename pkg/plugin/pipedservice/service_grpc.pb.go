@@ -35,11 +35,11 @@ type PluginServiceClient interface {
 	PutStageMetadata(ctx context.Context, in *PutStageMetadataRequest, opts ...grpc.CallOption) (*PutStageMetadataResponse, error)
 	// PutStageMetadataMulti puts the metadata pairs of the given stage.
 	PutStageMetadataMulti(ctx context.Context, in *PutStageMetadataMultiRequest, opts ...grpc.CallOption) (*PutStageMetadataMultiResponse, error)
-	// GetDeploymentMetadata gets one metadata value of the given deployment.
+	// GetDeploymentPluginMetadata gets one deployment metadata value of a plugin.
 	GetDeploymentPluginMetadata(ctx context.Context, in *GetDeploymentPluginMetadataRequest, opts ...grpc.CallOption) (*GetDeploymentPluginMetadataResponse, error)
-	// PutDeploymentMetadata puts one metadata of the given deployment.
+	// PutDeploymentPluginMetadata puts one deployment metadata of a plugin.
 	PutDeploymentPluginMetadata(ctx context.Context, in *PutDeploymentPluginMetadataRequest, opts ...grpc.CallOption) (*PutDeploymentPluginMetadataResponse, error)
-	// PutDeploymentMetadataMulti puts the metadata pairs of the given deployment.
+	// PutDeploymentPluginMetadataMulti puts the deployment metadata pairs of a plugin.
 	PutDeploymentPluginMetadataMulti(ctx context.Context, in *PutDeploymentPluginMetadataMultiRequest, opts ...grpc.CallOption) (*PutDeploymentPluginMetadataMultiResponse, error)
 	// GetDeploymentSharedMetadata gets one shared metadata value of the given deployment.
 	// The shared metadata is read-only in plugins for safety since it is shared among piped and plugins.
@@ -161,11 +161,11 @@ type PluginServiceServer interface {
 	PutStageMetadata(context.Context, *PutStageMetadataRequest) (*PutStageMetadataResponse, error)
 	// PutStageMetadataMulti puts the metadata pairs of the given stage.
 	PutStageMetadataMulti(context.Context, *PutStageMetadataMultiRequest) (*PutStageMetadataMultiResponse, error)
-	// GetDeploymentMetadata gets one metadata value of the given deployment.
+	// GetDeploymentPluginMetadata gets one deployment metadata value of a plugin.
 	GetDeploymentPluginMetadata(context.Context, *GetDeploymentPluginMetadataRequest) (*GetDeploymentPluginMetadataResponse, error)
-	// PutDeploymentMetadata puts one metadata of the given deployment.
+	// PutDeploymentPluginMetadata puts one deployment metadata of a plugin.
 	PutDeploymentPluginMetadata(context.Context, *PutDeploymentPluginMetadataRequest) (*PutDeploymentPluginMetadataResponse, error)
-	// PutDeploymentMetadataMulti puts the metadata pairs of the given deployment.
+	// PutDeploymentPluginMetadataMulti puts the deployment metadata pairs of a plugin.
 	PutDeploymentPluginMetadataMulti(context.Context, *PutDeploymentPluginMetadataMultiRequest) (*PutDeploymentPluginMetadataMultiResponse, error)
 	// GetDeploymentSharedMetadata gets one shared metadata value of the given deployment.
 	// The shared metadata is read-only in plugins for safety since it is shared among piped and plugins.

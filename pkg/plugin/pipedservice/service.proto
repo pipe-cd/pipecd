@@ -36,11 +36,11 @@ service PluginService {
     rpc PutStageMetadata(PutStageMetadataRequest) returns (PutStageMetadataResponse) {}
     // PutStageMetadataMulti puts the metadata pairs of the given stage.
     rpc PutStageMetadataMulti(PutStageMetadataMultiRequest) returns (PutStageMetadataMultiResponse) {}
-    // GetDeploymentMetadata gets one metadata value of the given deployment.
+    // GetDeploymentPluginMetadata gets one deployment metadata value of a plugin.
     rpc GetDeploymentPluginMetadata(GetDeploymentPluginMetadataRequest) returns (GetDeploymentPluginMetadataResponse) {}
-    // PutDeploymentMetadata puts one metadata of the given deployment.
+    // PutDeploymentPluginMetadata puts one deployment metadata of a plugin.
     rpc PutDeploymentPluginMetadata(PutDeploymentPluginMetadataRequest) returns (PutDeploymentPluginMetadataResponse) {}
-    // PutDeploymentMetadataMulti puts the metadata pairs of the given deployment.
+    // PutDeploymentPluginMetadataMulti puts the deployment metadata pairs of a plugin.
     rpc PutDeploymentPluginMetadataMulti(PutDeploymentPluginMetadataMultiRequest) returns (PutDeploymentPluginMetadataMultiResponse) {}    
     // GetDeploymentSharedMetadata gets one shared metadata value of the given deployment.
     // The shared metadata is read-only in plugins for safety since it is shared among piped and plugins.
