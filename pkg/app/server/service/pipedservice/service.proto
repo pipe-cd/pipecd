@@ -83,9 +83,14 @@ service PipedService {
     // of a specific deployment to SUCCESS | FAILURE | CANCELLED.
     rpc ReportDeploymentCompleted(ReportDeploymentCompletedRequest) returns (ReportDeploymentCompletedResponse) {}
 
-    // SaveDeploymentMetadata is used to persist the metadata of a specific deployment.
+    // SaveDeploymentMetadata persists the deployment metadata shared across piped and plugins.
     // Different value for the same key will overwrite the previous value for that key.
+    // For plugin-specific metadata, use SaveDeploymentPluginMetadata instead.
     rpc SaveDeploymentMetadata(SaveDeploymentMetadataRequest) returns (SaveDeploymentMetadataResponse) {}
+
+    // SaveDeploymentPluginMetadata persists the deployment metadata of a plugin.
+    // Different value for the same key will overwrite the previous value.
+    rpc SaveDeploymentPluginMetadata(SaveDeploymentPluginMetadataRequest) returns (SaveDeploymentPluginMetadataResponse) {}
 
     // SaveStageMetadata is used to persist the metadata
     // of a specific stage of a deployment.
@@ -337,6 +342,15 @@ message SaveDeploymentMetadataRequest {
 }
 
 message SaveDeploymentMetadataResponse {
+}
+
+message SaveDeploymentPluginMetadataRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string plugin_name = 2 [(validate.rules).string.min_len = 1];
+    map<string,string> metadata = 3;
+}
+
+message SaveDeploymentPluginMetadataResponse {
 }
 
 message SaveStageMetadataRequest {

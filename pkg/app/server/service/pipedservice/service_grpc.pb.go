@@ -61,9 +61,13 @@ type PipedServiceClient interface {
 	// ReportDeploymentCompleted is used to update the status
 	// of a specific deployment to SUCCESS | FAILURE | CANCELLED.
 	ReportDeploymentCompleted(ctx context.Context, in *ReportDeploymentCompletedRequest, opts ...grpc.CallOption) (*ReportDeploymentCompletedResponse, error)
-	// SaveDeploymentMetadata is used to persist the metadata of a specific deployment.
+	// SaveDeploymentMetadata persists the deployment metadata shared across piped and plugins.
 	// Different value for the same key will overwrite the previous value for that key.
+	// For plugin-specific metadata, use SaveDeploymentPluginMetadata instead.
 	SaveDeploymentMetadata(ctx context.Context, in *SaveDeploymentMetadataRequest, opts ...grpc.CallOption) (*SaveDeploymentMetadataResponse, error)
+	// SaveDeploymentPluginMetadata persists the deployment metadata of a plugin.
+	// Different value for the same key will overwrite the previous value.
+	SaveDeploymentPluginMetadata(ctx context.Context, in *SaveDeploymentPluginMetadataRequest, opts ...grpc.CallOption) (*SaveDeploymentPluginMetadataResponse, error)
 	// SaveStageMetadata is used to persist the metadata
 	// of a specific stage of a deployment.
 	// Different value for the same key will overwrite the previous value for that key.
@@ -263,6 +267,15 @@ func (c *pipedServiceClient) ReportDeploymentCompleted(ctx context.Context, in *
 func (c *pipedServiceClient) SaveDeploymentMetadata(ctx context.Context, in *SaveDeploymentMetadataRequest, opts ...grpc.CallOption) (*SaveDeploymentMetadataResponse, error) {
 	out := new(SaveDeploymentMetadataResponse)
 	err := c.cc.Invoke(ctx, "/grpc.service.pipedservice.PipedService/SaveDeploymentMetadata", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *pipedServiceClient) SaveDeploymentPluginMetadata(ctx context.Context, in *SaveDeploymentPluginMetadataRequest, opts ...grpc.CallOption) (*SaveDeploymentPluginMetadataResponse, error) {
+	out := new(SaveDeploymentPluginMetadataResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.pipedservice.PipedService/SaveDeploymentPluginMetadata", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -483,9 +496,13 @@ type PipedServiceServer interface {
 	// ReportDeploymentCompleted is used to update the status
 	// of a specific deployment to SUCCESS | FAILURE | CANCELLED.
 	ReportDeploymentCompleted(context.Context, *ReportDeploymentCompletedRequest) (*ReportDeploymentCompletedResponse, error)
-	// SaveDeploymentMetadata is used to persist the metadata of a specific deployment.
+	// SaveDeploymentMetadata persists the deployment metadata shared across piped and plugins.
 	// Different value for the same key will overwrite the previous value for that key.
+	// For plugin-specific metadata, use SaveDeploymentPluginMetadata instead.
 	SaveDeploymentMetadata(context.Context, *SaveDeploymentMetadataRequest) (*SaveDeploymentMetadataResponse, error)
+	// SaveDeploymentPluginMetadata persists the deployment metadata of a plugin.
+	// Different value for the same key will overwrite the previous value.
+	SaveDeploymentPluginMetadata(context.Context, *SaveDeploymentPluginMetadataRequest) (*SaveDeploymentPluginMetadataResponse, error)
 	// SaveStageMetadata is used to persist the metadata
 	// of a specific stage of a deployment.
 	// Different value for the same key will overwrite the previous value for that key.
@@ -603,6 +620,9 @@ func (UnimplementedPipedServiceServer) ReportDeploymentCompleted(context.Context
 }
 func (UnimplementedPipedServiceServer) SaveDeploymentMetadata(context.Context, *SaveDeploymentMetadataRequest) (*SaveDeploymentMetadataResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SaveDeploymentMetadata not implemented")
+}
+func (UnimplementedPipedServiceServer) SaveDeploymentPluginMetadata(context.Context, *SaveDeploymentPluginMetadataRequest) (*SaveDeploymentPluginMetadataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SaveDeploymentPluginMetadata not implemented")
 }
 func (UnimplementedPipedServiceServer) SaveStageMetadata(context.Context, *SaveStageMetadataRequest) (*SaveStageMetadataResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SaveStageMetadata not implemented")
@@ -922,6 +942,24 @@ func _PipedService_SaveDeploymentMetadata_Handler(srv interface{}, ctx context.C
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PipedServiceServer).SaveDeploymentMetadata(ctx, req.(*SaveDeploymentMetadataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PipedService_SaveDeploymentPluginMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SaveDeploymentPluginMetadataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PipedServiceServer).SaveDeploymentPluginMetadata(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.pipedservice.PipedService/SaveDeploymentPluginMetadata",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PipedServiceServer).SaveDeploymentPluginMetadata(ctx, req.(*SaveDeploymentPluginMetadataRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1330,6 +1368,10 @@ var PipedService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SaveDeploymentMetadata",
 			Handler:    _PipedService_SaveDeploymentMetadata_Handler,
+		},
+		{
+			MethodName: "SaveDeploymentPluginMetadata",
+			Handler:    _PipedService_SaveDeploymentPluginMetadata_Handler,
 		},
 		{
 			MethodName: "SaveStageMetadata",

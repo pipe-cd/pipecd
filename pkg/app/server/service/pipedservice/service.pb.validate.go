@@ -3632,6 +3632,240 @@ var _ interface {
 	ErrorName() string
 } = SaveDeploymentMetadataResponseValidationError{}
 
+// Validate checks the field values on SaveDeploymentPluginMetadataRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *SaveDeploymentPluginMetadataRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SaveDeploymentPluginMetadataRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// SaveDeploymentPluginMetadataRequestMultiError, or nil if none found.
+func (m *SaveDeploymentPluginMetadataRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SaveDeploymentPluginMetadataRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetDeploymentId()) < 1 {
+		err := SaveDeploymentPluginMetadataRequestValidationError{
+			field:  "DeploymentId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetPluginName()) < 1 {
+		err := SaveDeploymentPluginMetadataRequestValidationError{
+			field:  "PluginName",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Metadata
+
+	if len(errors) > 0 {
+		return SaveDeploymentPluginMetadataRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// SaveDeploymentPluginMetadataRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// SaveDeploymentPluginMetadataRequest.ValidateAll() if the designated
+// constraints aren't met.
+type SaveDeploymentPluginMetadataRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SaveDeploymentPluginMetadataRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SaveDeploymentPluginMetadataRequestMultiError) AllErrors() []error { return m }
+
+// SaveDeploymentPluginMetadataRequestValidationError is the validation error
+// returned by SaveDeploymentPluginMetadataRequest.Validate if the designated
+// constraints aren't met.
+type SaveDeploymentPluginMetadataRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SaveDeploymentPluginMetadataRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SaveDeploymentPluginMetadataRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SaveDeploymentPluginMetadataRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SaveDeploymentPluginMetadataRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SaveDeploymentPluginMetadataRequestValidationError) ErrorName() string {
+	return "SaveDeploymentPluginMetadataRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SaveDeploymentPluginMetadataRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSaveDeploymentPluginMetadataRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SaveDeploymentPluginMetadataRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SaveDeploymentPluginMetadataRequestValidationError{}
+
+// Validate checks the field values on SaveDeploymentPluginMetadataResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *SaveDeploymentPluginMetadataResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SaveDeploymentPluginMetadataResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// SaveDeploymentPluginMetadataResponseMultiError, or nil if none found.
+func (m *SaveDeploymentPluginMetadataResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SaveDeploymentPluginMetadataResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return SaveDeploymentPluginMetadataResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// SaveDeploymentPluginMetadataResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// SaveDeploymentPluginMetadataResponse.ValidateAll() if the designated
+// constraints aren't met.
+type SaveDeploymentPluginMetadataResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SaveDeploymentPluginMetadataResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SaveDeploymentPluginMetadataResponseMultiError) AllErrors() []error { return m }
+
+// SaveDeploymentPluginMetadataResponseValidationError is the validation error
+// returned by SaveDeploymentPluginMetadataResponse.Validate if the designated
+// constraints aren't met.
+type SaveDeploymentPluginMetadataResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SaveDeploymentPluginMetadataResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SaveDeploymentPluginMetadataResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SaveDeploymentPluginMetadataResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SaveDeploymentPluginMetadataResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SaveDeploymentPluginMetadataResponseValidationError) ErrorName() string {
+	return "SaveDeploymentPluginMetadataResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SaveDeploymentPluginMetadataResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSaveDeploymentPluginMetadataResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SaveDeploymentPluginMetadataResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SaveDeploymentPluginMetadataResponseValidationError{}
+
 // Validate checks the field values on SaveStageMetadataRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
