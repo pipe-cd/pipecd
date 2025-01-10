@@ -24,32 +24,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-type Getter interface {
-	// Get finds and returns value of a given key.
-	Get(key string) (string, bool)
-}
-
-type Putter interface {
-	// Put adds a single key, value into store.
-	// If the key is already existing, it overwrite the old value by the new one.
-	Put(ctx context.Context, key, value string) error
-	// PutMulti adds multiple (key, value) into store.
-	// If any key is already existing, it overwrite the old value by the new one.
-	PutMulti(ctx context.Context, md map[string]string) error
-}
-
-type Store interface {
-	Getter
-	Putter
-}
-
-type MetadataStore interface {
-	Shared() Store
-	Stage(stageID string) Store
-}
-
 type apiClient interface {
-	SaveDeploymentSharedMetadata(ctx context.Context, req *pipedservice.SaveDeploymentSharedMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveDeploymentSharedMetadataResponse, error)
 	SaveDeploymentPluginMetadata(ctx context.Context, req *pipedservice.SaveDeploymentPluginMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveDeploymentPluginMetadataResponse, error)
 	SaveStageMetadata(ctx context.Context, req *pipedservice.SaveStageMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveStageMetadataResponse, error)
 }
@@ -86,8 +61,8 @@ func newMetadataStore(apiClient apiClient, d *model.Deployment) *metadataStore {
 	}
 
 	// Initialize metadata of plugins of the deployment.
-	for _, pluginKV := range d.GetMetadataV2().GetPlugins() {
-		s.plugins[pluginKV.String()] = pluginKV.GetKeyValues()
+	for plugin, md := range d.GetMetadataV2().GetPlugins() {
+		s.plugins[plugin] = md.GetKeyValues()
 	}
 
 	// Initialize metadata of all stages.
@@ -99,71 +74,12 @@ func newMetadataStore(apiClient apiClient, d *model.Deployment) *metadataStore {
 	return s
 }
 
-func (s *metadataStore) Shared() Store {
-	return s
-}
-
-func (s *metadataStore) Get(key string) (value string, found bool) {
+func (s *metadataStore) sharedGet(key string) (value string, found bool) {
 	s.sharedMu.RLock()
 	defer s.sharedMu.RUnlock()
 
 	value, found = s.shared[key]
 	return
-}
-
-func (s *metadataStore) Put(ctx context.Context, key, value string) error {
-	s.sharedMu.Lock()
-	s.shared[key] = value
-	s.sharedMu.Unlock()
-
-	return s.syncSharedMetadata(ctx)
-}
-
-func (s *metadataStore) PutMulti(ctx context.Context, md map[string]string) error {
-	s.sharedMu.Lock()
-	for key, value := range md {
-		s.shared[key] = value
-	}
-	s.sharedMu.Unlock()
-
-	return s.syncSharedMetadata(ctx)
-}
-
-func (s *metadataStore) syncSharedMetadata(ctx context.Context) error {
-	s.sharedMu.RLock()
-	md := make(map[string]string, len(s.shared))
-	for k, v := range s.shared {
-		md[k] = v
-	}
-	s.sharedMu.RUnlock()
-
-	// Send full list of metadata to ensure that they will be synced.
-	_, err := s.apiClient.SaveDeploymentSharedMetadata(ctx, &pipedservice.SaveDeploymentSharedMetadataRequest{
-		DeploymentId: s.deployment.Id,
-		Metadata:     md,
-	})
-	return err
-}
-
-func (s *metadataStore) stagePutMulti(ctx context.Context, stageID string, md map[string]string) error {
-	s.stagesMu.Lock()
-	merged := make(map[string]string, len(md)+len(s.stages[stageID]))
-	for k, v := range s.stages[stageID] {
-		merged[k] = v
-	}
-	for k, v := range md {
-		merged[k] = v
-	}
-	s.stages[stageID] = merged
-	s.stagesMu.Unlock()
-
-	// Send full list of metadata to ensure that they will be synced.
-	_, err := s.apiClient.SaveStageMetadata(ctx, &pipedservice.SaveStageMetadataRequest{
-		DeploymentId: s.deployment.Id,
-		StageId:      stageID,
-		Metadata:     merged,
-	})
-	return err
 }
 
 func (s *metadataStore) pluginGet(pluginName, key string) (value string, found bool) {
@@ -213,23 +129,23 @@ func (s *metadataStore) stageGet(stageID, key string) (value string, found bool)
 	return
 }
 
-func (s *metadataStore) Stage(stageID string) Store {
-	return &stageMetadataStore{backend: s, stageID: stageID}
-}
+func (s *metadataStore) stagePutMulti(ctx context.Context, stageID string, md map[string]string) error {
+	s.stagesMu.Lock()
+	merged := make(map[string]string, len(md)+len(s.stages[stageID]))
+	for k, v := range s.stages[stageID] {
+		merged[k] = v
+	}
+	for k, v := range md {
+		merged[k] = v
+	}
+	s.stages[stageID] = merged
+	s.stagesMu.Unlock()
 
-type stageMetadataStore struct {
-	stageID string
-	backend *metadataStore
-}
-
-func (s *stageMetadataStore) PutMulti(ctx context.Context, md map[string]string) error {
-	return s.backend.stagePutMulti(ctx, s.stageID, md)
-}
-
-func (s *stageMetadataStore) Put(ctx context.Context, key, value string) error {
-	return s.backend.stagePutMulti(ctx, s.stageID, map[string]string{key: value})
-}
-
-func (s *stageMetadataStore) Get(key string) (string, bool) {
-	return s.backend.stageGet(s.stageID, key)
+	// Send full list of metadata to ensure that they will be synced.
+	_, err := s.apiClient.SaveStageMetadata(ctx, &pipedservice.SaveStageMetadataRequest{
+		DeploymentId: s.deployment.Id,
+		StageId:      stageID,
+		Metadata:     merged,
+	})
+	return err
 }

@@ -42,7 +42,7 @@ func TestRegistry(t *testing.T) {
 			Plugins: map[string]*model.DeploymentMetadata_KeyValues{
 				"plugin-1": {
 					KeyValues: map[string]string{
-						"key-1": "value-1",
+						"plugin-1-key-1": "plugin-1-value-1",
 					},
 				},
 			},
@@ -65,90 +65,6 @@ func TestRegistry(t *testing.T) {
 
 	ctx := context.Background()
 
-	// DeploymentPlugin metadata.
-	{
-		// Get
-		{
-			// Existing key
-			resp, err := r.GetDeploymentPluginMetadata(ctx, &service.GetDeploymentPluginMetadataRequest{
-				DeploymentId: d.Id,
-				Key:          "key-1",
-			})
-			assert.NoError(t, err)
-			assert.Equal(t, true, resp.Found)
-			assert.Equal(t, "value-1", resp.Value)
-
-			// Nonexistent key
-			resp, err = r.GetDeploymentPluginMetadata(ctx, &service.GetDeploymentPluginMetadataRequest{
-				DeploymentId: d.Id,
-				Key:          "key-2",
-			})
-			assert.NoError(t, err)
-			assert.Equal(t, false, resp.Found)
-			assert.Equal(t, "", resp.Value)
-
-			// Nonexistent deployment
-			resp, err = r.GetDeploymentPluginMetadata(ctx, &service.GetDeploymentPluginMetadataRequest{
-				DeploymentId: "not-exist-id",
-				Key:          "key-2",
-			})
-			assert.Error(t, err)
-			assert.Equal(t, false, resp.Found)
-			assert.Equal(t, "", resp.Value)
-		}
-		// Put
-		{
-			// New key
-			_, err := r.PutDeploymentPluginMetadata(ctx, &service.PutDeploymentPluginMetadataRequest{
-				DeploymentId: d.Id,
-				Key:          "key-2",
-				Value:        "value-2",
-			})
-			assert.NoError(t, err)
-			assert.Equal(t, metadata{
-				"key-1": "value-1",
-				"key-2": "value-2",
-			}, ac.shared)
-
-			// Nonexistent deployment
-			_, err = r.PutDeploymentPluginMetadata(ctx, &service.PutDeploymentPluginMetadataRequest{
-				DeploymentId: "not-exist-id",
-				Key:          "key-2",
-				Value:        "value-2",
-			})
-			assert.Error(t, err)
-		}
-		// PutMulti
-		{
-			// New keys(3,4) with one existing key(1)
-			_, err := r.PutDeploymentPluginMetadataMulti(ctx, &service.PutDeploymentPluginMetadataMultiRequest{
-				DeploymentId: d.Id,
-				Metadata: map[string]string{
-					"key-3": "value-3",
-					"key-1": "value-12",
-					"key-4": "value-4",
-				},
-			})
-			assert.NoError(t, err)
-			assert.Equal(t, metadata{
-				"key-1": "value-12",
-				"key-2": "value-2",
-				"key-3": "value-3",
-				"key-4": "value-4",
-			}, ac.shared)
-
-			// Nonexistent deployment
-			_, err = r.PutDeploymentPluginMetadataMulti(ctx, &service.PutDeploymentPluginMetadataMultiRequest{
-				DeploymentId: "not-exist-id",
-				Metadata: map[string]string{
-					"key-3": "value-3",
-					"key-4": "value-4",
-				},
-			})
-			assert.Error(t, err)
-		}
-	}
-
 	// DeploymentShared metadata.
 	{
 		// Get
@@ -165,11 +81,112 @@ func TestRegistry(t *testing.T) {
 			// Nonexistent key
 			resp, err = r.GetDeploymentSharedMetadata(ctx, &service.GetDeploymentSharedMetadataRequest{
 				DeploymentId: d.Id,
-				Key:          "not-exist-key",
+				Key:          "nonexistent-key",
 			})
 			assert.NoError(t, err)
 			assert.Equal(t, false, resp.Found)
 			assert.Equal(t, "", resp.Value)
+		}
+	}
+
+	// DeploymentPlugin metadata.
+	{
+		// Get
+		{
+			// Existing key
+			resp, err := r.GetDeploymentPluginMetadata(ctx, &service.GetDeploymentPluginMetadataRequest{
+				DeploymentId: d.Id,
+				PluginName:   "plugin-1",
+				Key:          "plugin-1-key-1",
+			})
+			assert.NoError(t, err)
+			assert.Equal(t, true, resp.Found)
+			assert.Equal(t, "plugin-1-value-1", resp.Value)
+
+			// Nonexistent key
+			resp, err = r.GetDeploymentPluginMetadata(ctx, &service.GetDeploymentPluginMetadataRequest{
+				DeploymentId: d.Id,
+				PluginName:   "plugin-1",
+				Key:          "nonexistent-key",
+			})
+			assert.NoError(t, err)
+			assert.Equal(t, false, resp.Found)
+			assert.Equal(t, "", resp.Value)
+
+			// Nonexistent plugin
+			resp, err = r.GetDeploymentPluginMetadata(ctx, &service.GetDeploymentPluginMetadataRequest{
+				DeploymentId: d.Id,
+				PluginName:   "nonexistent-plugin",
+				Key:          "plugin-1-key-1",
+			})
+			assert.NoError(t, err)
+			assert.Equal(t, false, resp.Found)
+			assert.Equal(t, "", resp.Value)
+
+			// Nonexistent deployment
+			resp, err = r.GetDeploymentPluginMetadata(ctx, &service.GetDeploymentPluginMetadataRequest{
+				DeploymentId: "not-exist-id",
+				PluginName:   "plugin-1",
+				Key:          "plugin-1-key-1",
+			})
+			assert.Error(t, err)
+			assert.Equal(t, false, resp.Found)
+			assert.Equal(t, "", resp.Value)
+		}
+		// Put
+		{
+			// New key
+			_, err := r.PutDeploymentPluginMetadata(ctx, &service.PutDeploymentPluginMetadataRequest{
+				DeploymentId: d.Id,
+				PluginName:   "plugin-1",
+				Key:          "plugin-1-key-2",
+				Value:        "plugin-1-value-2",
+			})
+			assert.NoError(t, err)
+			assert.Equal(t, metadata{
+				"plugin-1-key-1": "plugin-1-value-1",
+				"plugin-1-key-2": "plugin-1-value-2",
+			}, ac.plugins["plugin-1"])
+
+			// Nonexistent deployment
+			_, err = r.PutDeploymentPluginMetadata(ctx, &service.PutDeploymentPluginMetadataRequest{
+				DeploymentId: "not-exist-id",
+				PluginName:   "plugin-1",
+				Key:          "plugin-1-key-2",
+				Value:        "plugin-1-value-2",
+			})
+			assert.Error(t, err)
+		}
+		// PutMulti
+		{
+			// New keys(3,4) with one existing key(1)
+			_, err := r.PutDeploymentPluginMetadataMulti(ctx, &service.PutDeploymentPluginMetadataMultiRequest{
+				DeploymentId: d.Id,
+				PluginName:   "plugin-1",
+				Metadata: map[string]string{
+					"plugin-1-key-3": "plugin-1-value-3",
+					"plugin-1-key-1": "plugin-1-value-1-new",
+					"plugin-1-key-4": "plugin-1-value-4",
+				},
+			})
+			assert.NoError(t, err)
+			assert.Equal(t, metadata{
+				"plugin-1-key-1": "plugin-1-value-1-new",
+				"plugin-1-key-2": "plugin-1-value-2",
+				"plugin-1-key-3": "plugin-1-value-3",
+				"plugin-1-key-4": "plugin-1-value-4",
+			}, ac.plugins["plugin-1"])
+
+			// Nonexistent deployment
+			_, err = r.PutDeploymentPluginMetadataMulti(ctx, &service.PutDeploymentPluginMetadataMultiRequest{
+				DeploymentId: "nonexistent-id",
+				PluginName:   "plugin-1",
+				Metadata: map[string]string{
+					"plugin-1-key-3": "plugin-1-value-3",
+					"plugin-1-key-4": "plugin-1-value-4",
+				},
+			})
+			assert.Error(t, err)
 		}
 	}
 

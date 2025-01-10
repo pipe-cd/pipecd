@@ -57,7 +57,7 @@ func (r *MetadataStoreRegistry) GetStageMetadata(ctx context.Context, req *servi
 		return &service.GetStageMetadataResponse{Found: false}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
 	}
 
-	value, found := mds.Stage(req.StageId).Get(req.Key)
+	value, found := mds.stageGet(req.StageId, req.Key)
 	return &service.GetStageMetadataResponse{
 		Value: value,
 		Found: found,
@@ -71,7 +71,7 @@ func (r *MetadataStoreRegistry) PutStageMetadata(ctx context.Context, req *servi
 		return &service.PutStageMetadataResponse{}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
 	}
 
-	err := mds.Stage(req.StageId).Put(ctx, req.Key, req.Value)
+	err := mds.stagePutMulti(ctx, req.StageId, map[string]string{req.Key: req.Value})
 	if err != nil {
 		return &service.PutStageMetadataResponse{}, err
 	}
@@ -86,7 +86,7 @@ func (r *MetadataStoreRegistry) PutStageMetadataMulti(ctx context.Context, req *
 		return &service.PutStageMetadataMultiResponse{}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
 	}
 
-	err := mds.Stage(req.StageId).PutMulti(ctx, req.Metadata)
+	err := mds.stagePutMulti(ctx, req.StageId, req.Metadata)
 	if err != nil {
 		return &service.PutStageMetadataMultiResponse{}, err
 	}
@@ -145,7 +145,7 @@ func (r *MetadataStoreRegistry) GetDeploymentSharedMetadata(ctx context.Context,
 		return &service.GetDeploymentSharedMetadataResponse{Found: false}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
 	}
 
-	value, found := mds.Shared().Get(req.Key)
+	value, found := mds.sharedGet(req.Key)
 	return &service.GetDeploymentSharedMetadataResponse{
 		Value: value,
 		Found: found,
