@@ -18,7 +18,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/toolregistry"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
@@ -33,8 +33,7 @@ type toolClient interface {
 }
 
 type toolRegistry interface {
-	// TODO: Implement this method
-	// Terraform(ctx context.Context, version string) (string, error)
+	Terraform(ctx context.Context, version string) (string, error)
 }
 
 type logPersister interface {
