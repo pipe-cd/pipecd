@@ -110,9 +110,8 @@ func (s *DeploymentServiceServer) BuildQuickSyncStages(ctx context.Context, requ
 
 // FetchDefinedStages implements deployment.DeploymentServiceServer.
 func (s *DeploymentServiceServer) FetchDefinedStages(context.Context, *deployment.FetchDefinedStagesRequest) (*deployment.FetchDefinedStagesResponse, error) {
-	// TODO: Implement this func
 	return &deployment.FetchDefinedStagesResponse{
-		Stages: nil,
+		Stages: allStages,
 	}, nil
 }
 
