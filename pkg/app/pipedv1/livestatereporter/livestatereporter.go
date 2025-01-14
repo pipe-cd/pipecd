@@ -19,13 +19,18 @@ package livestatereporter
 import (
 	"context"
 	"fmt"
+	"io"
+	"os"
 	"time"
 
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
+	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/livestate"
@@ -97,12 +102,24 @@ func (r *reporter) Run(ctx context.Context) error {
 	return nil
 }
 
+type gitClient interface {
+	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
+}
+
+type secretDecrypter interface {
+	Decrypt(string) (string, error)
+}
+
 type pluginReporter struct {
 	pluginName            string
 	snapshotFlushInterval time.Duration
 	appLister             applicationLister
 	apiClient             apiClient
 	pluginClient          pluginapi.PluginClient
+	gitClient             gitClient
+	pipedConfig           config.PipedSpec
+	secretDecrypter       secretDecrypter
+	workingDir            string
 	logger                *zap.Logger
 }
 
@@ -127,8 +144,43 @@ func (pr *pluginReporter) Run(ctx context.Context) error {
 func (pr *pluginReporter) flushSnapshots(ctx context.Context) {
 	// TODO: Implement appLister.ListByPluginName.
 	apps := pr.appLister.ListByPluginName(pr.pluginName)
+
+	repoMap := make(map[string]git.Repo)
+	for id, cfgRepo := range pr.pipedConfig.GetRepositoryMap() {
+		repo, err := pr.gitClient.Clone(ctx, id, cfgRepo.Remote, cfgRepo.Branch, fmt.Sprintf("%s/%s", pr.workingDir, id))
+		if err != nil {
+			pr.logger.Error("failed to clone repository", zap.String("repo-id", id), zap.Error(err))
+			continue
+		}
+		defer repo.Clean()
+		repoMap[id] = repo
+	}
+
 	for _, app := range apps {
-		res, err := pr.pluginClient.GetLivestate(ctx, &livestate.GetLivestateRequest{ApplicationId: app.Id})
+		repo, ok := repoMap[app.GitPath.Repo.Id]
+		if !ok {
+			pr.logger.Error("failed to find repository for application", zap.String("application-id", app.Id))
+			continue
+		}
+
+		//
+		dir, err := os.MkdirTemp(pr.workingDir, "livestate-reporter-*")
+		if err != nil {
+			pr.logger.Error("failed to create temporary directory", zap.Error(err))
+			continue
+		}
+
+		dsp := deploysource.NewProvider(dir, deploysource.NewLocalSourceCloner(repo, "target", "HEAD"), app.GitPath, pr.secretDecrypter)
+		ds, err := dsp.Get(ctx, io.Discard)
+		if err != nil {
+			pr.logger.Error("failed to get deploy source", zap.String("application-id", app.Id), zap.Error(err))
+			continue
+		}
+
+		res, err := pr.pluginClient.GetLivestate(ctx, &livestate.GetLivestateRequest{
+			ApplicationId: app.Id,
+			DeploySource:  ds.ToPluginDeploySource(),
+		})
 		if err != nil {
 			pr.logger.Info(fmt.Sprintf("no app state of application %s to report", app.Id))
 			continue
@@ -167,5 +219,8 @@ func (pr *pluginReporter) flushSnapshots(ctx context.Context) {
 		}
 
 		pr.logger.Info(fmt.Sprintf("successfully reported application live state for application: %s", app.Id))
+
+		// ensure to reset repo directory.
+		os.RemoveAll(dir)
 	}
 }
