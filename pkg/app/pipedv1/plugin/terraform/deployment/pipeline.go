@@ -60,6 +60,10 @@ var (
 	}
 )
 
+func (s stage) String() string {
+	return string(s)
+}
+
 func buildQuickSyncStages(autoRollback bool, now time.Time) []*model.PipelineStage {
 	out := make([]*model.PipelineStage, 0, 2)
 
