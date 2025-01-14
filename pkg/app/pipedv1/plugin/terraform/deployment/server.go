@@ -83,7 +83,6 @@ func (s *DeploymentServiceServer) DetermineStrategy(ctx context.Context, request
 
 // DetermineVersions implements deployment.DeploymentServiceServer.
 func (s *DeploymentServiceServer) DetermineVersions(ctx context.Context, request *deployment.DetermineVersionsRequest) (*deployment.DetermineVersionsResponse, error) {
-	// TODO: Implement this func
 	return &deployment.DetermineVersionsResponse{
 		Versions: nil,
 	}, nil
