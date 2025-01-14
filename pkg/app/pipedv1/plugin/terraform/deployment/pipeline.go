@@ -14,6 +14,12 @@
 
 package deployment
 
+import (
+	"time"
+
+	"github.com/pipe-cd/pipecd/pkg/model"
+)
+
 type stage string
 
 const (
@@ -25,7 +31,7 @@ const (
 	// stageTerraformApply executes "apply" to sync infrastructure.
 	stageTerraformApply stage = "TERRAFORM_APPLY"
 
-	// TODO: Add TerraformRollback??
+	// stageTerraformRollback rollbacks the deployment.
 	stageTerraformRollback stage = "TERRAFORM_ROLLBACK"
 )
 
@@ -34,4 +40,49 @@ var allStages = []string{
 	string(stageTerraformPlan),
 	string(stageTerraformApply),
 	string(stageTerraformRollback),
+}
+
+var (
+	predefinedStageTerraformSync = model.PipelineStage{
+		Id:       "TerraformSync",
+		Name:     string(stageTerraformSync),
+		Desc:     "Sync by automatically applying all detected changes",
+		Rollback: false,
+	}
+	predefinedStageTerraformRollback = model.PipelineStage{
+		Id:       "TerraformRollback",
+		Name:     string(stageTerraformRollback),
+		Desc:     "Rollback the deployment",
+		Rollback: true,
+	}
+)
+
+func buildQuickSyncStages(autoRollback bool, now time.Time) []*model.PipelineStage {
+	out := make([]*model.PipelineStage, 0, 2)
+
+	out = append(out, &model.PipelineStage{
+		Id:        predefinedStageTerraformSync.GetId(),
+		Name:      predefinedStageTerraformSync.GetName(),
+		Desc:      predefinedStageTerraformSync.GetDesc(),
+		Rollback:  predefinedStageTerraformSync.GetRollback(),
+		Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
+		Metadata:  nil,
+		CreatedAt: now.Unix(),
+		UpdatedAt: now.Unix(),
+	})
+
+	// Append ROLLBACK stage if auto rollback is enabled.
+	if autoRollback {
+		out = append(out, &model.PipelineStage{
+			Id:        predefinedStageTerraformRollback.GetId(),
+			Name:      predefinedStageTerraformRollback.GetName(),
+			Desc:      predefinedStageTerraformRollback.GetDesc(),
+			Rollback:  predefinedStageTerraformRollback.GetRollback(),
+			Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
+			CreatedAt: now.Unix(),
+			UpdatedAt: now.Unix(),
+		})
+	}
+
+	return out
 }
