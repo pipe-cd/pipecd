@@ -22,6 +22,11 @@ type TerraformApplicationSpec struct {
 	QuickSync TerraformApplyStageOptions `json:"quickSync"`
 }
 
+func (s *TerraformApplicationSpec) Validate() error {
+	// TODO: Validate TerraformApplicationSpec fields.
+	return nil
+}
+
 type TerraformDeploymentInput struct {
 	// The terraform workspace name.
 	// Empty means "default" workpsace.
