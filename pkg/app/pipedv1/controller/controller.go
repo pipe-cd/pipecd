@@ -35,11 +35,10 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
-	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
-	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 )
 
 type apiClient interface {
@@ -98,10 +97,9 @@ type controller struct {
 	secretDecrypter       secretDecrypter
 	metadataStoreRegistry metadatastore.MetadataStoreRegistry
 
-	// gRPC clients to communicate with plugins.
-	pluginClients []pluginapi.PluginClient
-	// Map from stage name to the plugin client.
-	stageBasedPluginsMap map[string]pluginapi.PluginClient
+	// The registry of all plugins.
+	pluginRegistry plugin.PluginRegistry
+
 	// Map from application ID to the planner
 	// of a pending deployment of that application.
 	planners map[string]*planner
@@ -133,7 +131,7 @@ type controller struct {
 func NewController(
 	apiClient apiClient,
 	gitClient gitClient,
-	pluginClients []pluginapi.PluginClient,
+	pluginRegistry plugin.PluginRegistry,
 	deploymentLister deploymentLister,
 	commandLister commandLister,
 	notifier notifier,
@@ -147,7 +145,7 @@ func NewController(
 	return &controller{
 		apiClient:             apiClient,
 		gitClient:             gitClient,
-		pluginClients:         pluginClients,
+		pluginRegistry:        pluginRegistry,
 		deploymentLister:      deploymentLister,
 		commandLister:         commandLister,
 		notifier:              notifier,
@@ -182,23 +180,6 @@ func (c *controller) Run(ctx context.Context) error {
 	}
 	c.workspaceDir = dir
 	c.logger.Info(fmt.Sprintf("workspace directory was configured to %s", c.workspaceDir))
-
-	// Build the list of stages that can be handled by piped's plugins.
-	stagesBasedPluginsMap := make(map[string]pluginapi.PluginClient)
-	for _, plugin := range c.pluginClients {
-		resp, err := plugin.FetchDefinedStages(ctx, &deployment.FetchDefinedStagesRequest{})
-		if err != nil {
-			return err
-		}
-		for _, stage := range resp.GetStages() {
-			if _, ok := stagesBasedPluginsMap[stage]; ok {
-				c.logger.Error("duplicated stage name", zap.String("stage", stage))
-				return fmt.Errorf("duplicated stage name %s", stage)
-			}
-			stagesBasedPluginsMap[stage] = plugin
-		}
-	}
-	c.stageBasedPluginsMap = stagesBasedPluginsMap
 
 	ticker := time.NewTicker(c.syncInternal)
 	defer ticker.Stop()
@@ -452,8 +433,7 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		commitHash,
 		configFilename,
 		workingDir,
-		c.pluginClients, // FIXME: Find a way to ensure the plugins only related to deployment.
-		c.stageBasedPluginsMap,
+		c.pluginRegistry,
 		c.apiClient,
 		c.gitClient,
 		c.notifier,
@@ -594,7 +574,7 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		workingDir,
 		c.apiClient,
 		c.gitClient,
-		c.stageBasedPluginsMap,
+		c.pluginRegistry,
 		c.notifier,
 		c.secretDecrypter,
 		c.logger,

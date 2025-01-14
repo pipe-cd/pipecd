@@ -30,6 +30,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -56,13 +57,6 @@ type planner struct {
 	lastSuccessfulConfigFilename string
 	workingDir                   string
 
-	// The plugin clients are used to call plugin that actually
-	// performs planning deployment.
-	plugins []pluginapi.PluginClient
-	// The map used to know which plugin is incharged for a given stage
-	// of the current deployment.
-	stageBasedPluginsMap map[string]pluginapi.PluginClient
-
 	// The apiClient is used to report the deployment status.
 	apiClient apiClient
 
@@ -75,6 +69,9 @@ type planner struct {
 	// The secretDecrypter is used to decrypt secrets
 	// which encrypted using PipeCD built-in secret management.
 	secretDecrypter secretDecrypter
+
+	// The pluginRegistry is used to determine which plugins to be used
+	pluginRegistry plugin.PluginRegistry
 
 	logger *zap.Logger
 	tracer trace.Tracer
@@ -93,8 +90,7 @@ func newPlanner(
 	lastSuccessfulCommitHash string,
 	lastSuccessfulConfigFilename string,
 	workingDir string,
-	pluginClients []pluginapi.PluginClient,
-	stageBasedPluginsMap map[string]pluginapi.PluginClient,
+	pluginRegistry plugin.PluginRegistry,
 	apiClient apiClient,
 	gitClient gitClient,
 	notifier notifier,
@@ -116,8 +112,7 @@ func newPlanner(
 		lastSuccessfulCommitHash:     lastSuccessfulCommitHash,
 		lastSuccessfulConfigFilename: lastSuccessfulConfigFilename,
 		workingDir:                   workingDir,
-		stageBasedPluginsMap:         stageBasedPluginsMap,
-		plugins:                      pluginClients,
+		pluginRegistry:               pluginRegistry,
 		apiClient:                    apiClient,
 		gitClient:                    gitClient,
 		notifier:                     notifier,
@@ -262,8 +257,21 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *deployment
 		TargetDeploymentSource:  targetDS,
 	}
 
+	cfg, err := config.DecodeYAML[*config.GenericApplicationSpec](targetDS.GetApplicationConfig())
+	if err != nil {
+		p.logger.Error("unable to parse application config", zap.Error(err))
+		return nil, err
+	}
+	spec := cfg.Spec
+
+	plugins, err := p.pluginRegistry.GetPluginClientsByAppConfig(spec)
+	if err != nil {
+		p.logger.Error("unable to get plugin clients by app config", zap.Error(err))
+		return nil, err
+	}
+
 	// Build deployment target versions.
-	for _, plg := range p.plugins {
+	for _, plg := range plugins {
 		vRes, err := plg.DetermineVersions(ctx, &deployment.DetermineVersionsRequest{Input: input})
 		if err != nil {
 			p.logger.Warn("unable to determine versions", zap.Error(err))
@@ -279,13 +287,6 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *deployment
 			},
 		}
 	}
-
-	cfg, err := config.DecodeYAML[*config.GenericApplicationSpec](targetDS.GetApplicationConfig())
-	if err != nil {
-		p.logger.Error("unable to parse application config", zap.Error(err))
-		return nil, err
-	}
-	spec := cfg.Spec
 
 	// In case the strategy has been decided by trigger.
 	// For example: user triggered the deployment via web console.
@@ -371,7 +372,7 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *deployment
 		summary  string
 	)
 	// Build plan based on plugins determined strategy
-	for _, plg := range p.plugins {
+	for _, plg := range plugins {
 		res, err := plg.DetermineStrategy(ctx, &deployment.DetermineStrategyRequest{Input: input})
 		if err != nil {
 			p.logger.Warn("Unable to determine strategy using current plugin", zap.Error(err))
@@ -417,10 +418,17 @@ func (p *planner) buildQuickSyncStages(ctx context.Context, cfg *config.GenericA
 		rollbackStages = []*model.PipelineStage{}
 		rollback       = *cfg.Planner.AutoRollback
 	)
-	for _, plg := range p.plugins {
+
+	plugins, err := p.pluginRegistry.GetPluginClientsByAppConfig(cfg)
+	if err != nil {
+		p.logger.Error("failed to get plugin clients by app config", zap.Error(err))
+		return nil, err
+	}
+	for _, plg := range plugins {
 		res, err := plg.BuildQuickSyncStages(ctx, &deployment.BuildQuickSyncStagesRequest{Rollback: rollback})
 		if err != nil {
-			return nil, fmt.Errorf("failed to build quick sync stage deployment (%w)", err)
+			p.logger.Error("failed to build quick sync stages for deployment", zap.Error(err))
+			return nil, err
 		}
 		for i := range res.Stages {
 			if res.Stages[i].Rollback {
@@ -458,9 +466,10 @@ func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.Gener
 	// Build stages config for each plugin.
 	for i := range stagesCfg {
 		stageCfg := stagesCfg[i]
-		plg, ok := p.stageBasedPluginsMap[stageCfg.Name.String()]
-		if !ok {
-			return nil, fmt.Errorf("unable to find plugin for stage %q", stageCfg.Name.String())
+		plg, err := p.pluginRegistry.GetPluginClientByStageName(stageCfg.Name.String())
+		if err != nil {
+			p.logger.Error("failed to get plugin client by stage name", zap.Error(err))
+			return nil, err
 		}
 
 		stagesCfgPerPlugin[plg] = append(stagesCfgPerPlugin[plg], &deployment.BuildPipelineSyncStagesRequest_StageConfig{
@@ -480,7 +489,8 @@ func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.Gener
 			Rollback: rollback,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("failed to build pipeline sync stages for deployment (%w)", err)
+			p.logger.Error("failed to build pipeline sync stages for deployment", zap.Error(err))
+			return nil, err
 		}
 		// TODO: Ensure responsed stages indexies is valid.
 		for i := range res.Stages {
