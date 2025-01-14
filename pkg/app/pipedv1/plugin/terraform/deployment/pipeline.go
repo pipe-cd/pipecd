@@ -26,11 +26,12 @@ const (
 	stageTerraformApply stage = "TERRAFORM_APPLY"
 
 	// TODO: Add TerraformRollback??
-	// stageTerraformRollback stage = "TERRAFORM_ROLLBACK"
+	stageTerraformRollback stage = "TERRAFORM_ROLLBACK"
 )
 
 var allStages = []string{
 	string(stageTerraformSync),
 	string(stageTerraformPlan),
 	string(stageTerraformApply),
+	string(stageTerraformRollback),
 }
