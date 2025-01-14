@@ -59,6 +59,14 @@ func (m Manifest) Key() ResourceKey {
 	return makeResourceKey(m.body)
 }
 
+func (m Manifest) Kind() string {
+	return m.body.GetKind()
+}
+
+func (m Manifest) Name() string {
+	return m.body.GetName()
+}
+
 // IsDeployment returns true if the manifest is a Deployment.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsDeployment() bool {
@@ -115,6 +123,22 @@ func (m Manifest) NestedMap(fields ...string) (map[string]any, bool, error) {
 	return unstructured.NestedMap(m.body.Object, fields...)
 }
 
+func (m Manifest) AddLabels(labels map[string]string) {
+	if len(labels) == 0 {
+		return
+	}
+
+	lbs := m.body.GetLabels()
+	if lbs == nil {
+		m.body.SetLabels(labels)
+		return
+	}
+	for k, v := range labels {
+		lbs[k] = v
+	}
+	m.body.SetLabels(lbs)
+}
+
 func (m Manifest) AddAnnotations(annotations map[string]string) {
 	if len(annotations) == 0 {
 		return
@@ -129,6 +153,11 @@ func (m Manifest) AddAnnotations(annotations map[string]string) {
 		annos[k] = v
 	}
 	m.body.SetAnnotations(annos)
+}
+
+// IsManagedByPiped returns true if the manifest is managed by Piped.
+func (m Manifest) IsManagedByPiped() bool {
+	return len(m.body.GetOwnerReferences()) == 0 && m.body.GetAnnotations()[LabelManagedBy] == ManagedByPiped
 }
 
 // AddStringMapValues adds or overrides the given key-values into the string map
@@ -170,20 +199,12 @@ type WorkloadPair struct {
 func FindSameManifests(olds, news []Manifest) []WorkloadPair {
 	pairs := make([]WorkloadPair, 0)
 	oldMap := make(map[ResourceKey]Manifest, len(olds))
-	nomalizeKey := func(k ResourceKey) ResourceKey {
-		// Ignoring APIVersion because user can upgrade to the new APIVersion for the same workload.
-		k.apiVersion = ""
-		if k.namespace == DefaultNamespace {
-			k.namespace = ""
-		}
-		return k
-	}
 	for _, m := range olds {
-		key := nomalizeKey(m.Key())
+		key := m.Key().normalize()
 		oldMap[key] = m
 	}
 	for _, n := range news {
-		key := nomalizeKey(n.Key())
+		key := n.Key().normalize()
 		if o, ok := oldMap[key]; ok {
 			pairs = append(pairs, WorkloadPair{
 				Old: o,
