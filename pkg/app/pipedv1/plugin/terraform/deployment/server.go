@@ -76,12 +76,9 @@ func (s *DeploymentServiceServer) Register(server *grpc.Server) {
 
 // DetermineStrategy implements deployment.DeploymentServiceServer.
 func (s *DeploymentServiceServer) DetermineStrategy(ctx context.Context, request *deployment.DetermineStrategyRequest) (*deployment.DetermineStrategyResponse, error) {
-	// TODO: Implement this func
 	return &deployment.DetermineStrategyResponse{
-		// SyncStrategy: ,
-		Summary: "",
+		Unsupported: true,
 	}, nil
-
 }
 
 // DetermineVersions implements deployment.DeploymentServiceServer.
