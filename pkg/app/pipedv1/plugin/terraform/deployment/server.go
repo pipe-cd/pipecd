@@ -18,6 +18,7 @@ import (
 	"context"
 	"time"
 
+	tfconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/toolregistry"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
@@ -46,27 +47,39 @@ type DeploymentServiceServer struct {
 	// this field is set with the plugin configuration
 	// the plugin configuration is sent from piped while initializing the plugin
 	pluginConfig *config.PipedPlugin
+	// deployTargetConfig might be empty. e.g. when it's not specified in the piped config.
+	// For now, this plugin supports up to one deploy target.
+	deployTargetConfig tfconfig.TerraformDeployTargetConfig
 
 	logger       *zap.Logger
 	toolRegistry toolRegistry
 	logPersister logPersister
 }
 
-// NewDeploymentService creates a new planService.
-func NewDeploymentService(
+// NewDeploymentServiceServer creates a new DeploymentServiceServer of Terraform plugin.
+func NewDeploymentServiceServer(
 	config *config.PipedPlugin,
 	logger *zap.Logger,
 	toolClient toolClient,
 	logPersister logPersister,
-) *DeploymentServiceServer {
+) (*DeploymentServiceServer, error) {
 	toolRegistry := toolregistry.NewRegistry(toolClient)
 
-	return &DeploymentServiceServer{
-		pluginConfig: config,
-		logger:       logger.Named("terraform-plugin"),
-		toolRegistry: toolRegistry,
-		logPersister: logPersister,
+	deployTargetConfig := tfconfig.TerraformDeployTargetConfig{}
+	if len(config.DeployTargets) > 0 {
+		var err error
+		if deployTargetConfig, err = tfconfig.ParseDeployTargetConfig(config.DeployTargets[0]); err != nil {
+			return nil, err
+		}
 	}
+
+	return &DeploymentServiceServer{
+		pluginConfig:       config,
+		deployTargetConfig: deployTargetConfig,
+		logger:             logger.Named("terraform-plugin"),
+		toolRegistry:       toolRegistry,
+		logPersister:       logPersister,
+	}, nil
 }
 
 // Register registers all handling of this service into the specified gRPC server.

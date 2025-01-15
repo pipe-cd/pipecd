@@ -124,22 +124,26 @@ func (s *plugin) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	// Start a gRPC server for handling external API requests.
 	{
-		var (
-			service = deployment.NewDeploymentService(
-				cfg,
-				input.Logger,
-				toolregistry.NewToolRegistry(pipedapiClient),
-				persister,
-			)
-			opts = []rpc.Option{
-				rpc.WithPort(cfg.Port),
-				rpc.WithGracePeriod(s.gracePeriod),
-				rpc.WithLogger(input.Logger),
-				rpc.WithLogUnaryInterceptor(input.Logger),
-				rpc.WithRequestValidationUnaryInterceptor(),
-				rpc.WithSignalHandlingUnaryInterceptor(),
-			}
+		service, err := deployment.NewDeploymentServiceServer(
+			cfg,
+			input.Logger,
+			toolregistry.NewToolRegistry(pipedapiClient),
+			persister,
 		)
+		if err != nil {
+			input.Logger.Error("failed to create deployment service server", zap.Error(err))
+			return err
+		}
+
+		opts := []rpc.Option{
+			rpc.WithPort(cfg.Port),
+			rpc.WithGracePeriod(s.gracePeriod),
+			rpc.WithLogger(input.Logger),
+			rpc.WithLogUnaryInterceptor(input.Logger),
+			rpc.WithRequestValidationUnaryInterceptor(),
+			rpc.WithSignalHandlingUnaryInterceptor(),
+		}
+
 		if s.tls {
 			opts = append(opts, rpc.WithTLS(s.certFile, s.keyFile))
 		}
