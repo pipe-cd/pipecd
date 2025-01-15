@@ -60,8 +60,6 @@ type TerraformDeploymentInput struct {
 
 // TerraformSyncStageOptions contains all configurable values for a TERRAFORM_SYNC stage.
 type TerraformSyncStageOptions struct {
-	// How many times to retry applying terraform changes.
-	Retries int `json:"retries"`
 }
 
 // TerraformPlanStageOptions contains all configurable values for a TERRAFORM_PLAN stage.
@@ -72,8 +70,6 @@ type TerraformPlanStageOptions struct {
 
 // TerraformApplyStageOptions contains all configurable values for a TERRAFORM_APPLY stage.
 type TerraformApplyStageOptions struct {
-	// How many times to retry applying terraform changes.
-	Retries int `json:"retries"`
 }
 
 // TerraformCommandFlags contains all additional flags will be used while executing terraform commands.
