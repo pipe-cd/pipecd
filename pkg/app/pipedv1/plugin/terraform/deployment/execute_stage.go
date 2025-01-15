@@ -16,6 +16,7 @@ package deployment
 
 import (
 	"context"
+	"encoding/json"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -86,9 +87,15 @@ func (s *DeploymentServiceServer) executeStage(ctx context.Context, slp logpersi
 	switch input.GetStage().GetName() {
 	case stageTerraformSync.String():
 		return e.ensureSync(ctx), nil
-		// TODO: Add PLAN, APPLY Stages
-		// case stageTerraformPlan.String():
-		// case stageTerraformApply.String():
+	case stageTerraformPlan.String():
+		opts := &tfconfig.TerraformPlanStageOptions{}
+		if err := json.Unmarshal(input.GetStageConfig(), opts); err != nil {
+			slp.Errorf("Failed to unmarshal stage config (%v)", err)
+			return model.StageStatus_STAGE_FAILURE, err
+		}
+		return e.ensurePlan(ctx, opts), nil
+	// TODO: Add APPLY Stage
+	// case stageTerraformApply.String():
 	case stageTerraformRollback.String():
 		e.appDir = string(input.GetRunningDeploymentSource().GetApplicationDirectory())
 		return e.ensureRollback(ctx, input.GetDeployment().GetRunningCommitHash()), nil
@@ -123,6 +130,30 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	}
 
 	e.slp.Success("Successfully applied changes")
+	return model.StageStatus_STAGE_SUCCESS
+}
+
+func (e *deployExecutor) ensurePlan(ctx context.Context, opts *tfconfig.TerraformPlanStageOptions) model.StageStatus {
+	tfcmd, ok := e.initTerraformCommand(ctx)
+	if !ok {
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	planResult, err := tfcmd.Plan(ctx, e.slp)
+	if err != nil {
+		e.slp.Errorf("Failed to plan (%v)", err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	if planResult.NoChanges() {
+		e.slp.Success("No changes to apply")
+		if opts.ExitOnNoChanges {
+			return model.StageStatus_STAGE_EXITED
+		}
+		return model.StageStatus_STAGE_SUCCESS
+	}
+
+	e.slp.Successf("Detected %d import, %d add, %d change, %d destroy.", planResult.Imports, planResult.Adds, planResult.Changes, planResult.Destroys)
 	return model.StageStatus_STAGE_SUCCESS
 }
 
