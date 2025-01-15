@@ -29,11 +29,11 @@ import (
 )
 
 type toolClient interface {
-	InstallTool(ctx context.Context, name, version, script string) (string, error)
+	InstallTool(ctx context.Context, name, version, script string) (path string, err error)
 }
 
 type toolRegistry interface {
-	Terraform(ctx context.Context, version string) (string, error)
+	Terraform(ctx context.Context, version string) (path string, err error)
 }
 
 type logPersister interface {

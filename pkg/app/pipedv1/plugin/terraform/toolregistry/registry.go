@@ -21,7 +21,7 @@ import (
 )
 
 type client interface {
-	InstallTool(ctx context.Context, name, version, script string) (string, error)
+	InstallTool(ctx context.Context, name, version, script string) (path string, err error)
 }
 
 func NewRegistry(client client) *Registry {
@@ -35,6 +35,6 @@ type Registry struct {
 	client client
 }
 
-func (r *Registry) Terraform(ctx context.Context, version string) (string, error) {
+func (r *Registry) Terraform(ctx context.Context, version string) (path string, err error) {
 	return r.client.InstallTool(ctx, "terraform", version, terraformInstallScript)
 }
