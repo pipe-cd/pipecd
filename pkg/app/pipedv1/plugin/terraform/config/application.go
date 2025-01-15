@@ -14,8 +14,13 @@
 
 package config
 
+import (
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
+)
+
 // TerraformApplicationSpec represents an application configuration for Terraform application.
 type TerraformApplicationSpec struct {
+	config.GenericApplicationSpec
 	// Input for Terraform deployment such as terraform version, workspace...
 	Input TerraformDeploymentInput `json:"input"`
 	// Configuration for quick sync.

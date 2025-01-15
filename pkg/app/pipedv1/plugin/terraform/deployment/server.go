@@ -20,6 +20,8 @@ import (
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	tfconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/toolregistry"
@@ -89,8 +91,18 @@ func (s *DeploymentServiceServer) Register(server *grpc.Server) {
 
 // DetermineStrategy implements deployment.DeploymentServiceServer.
 func (s *DeploymentServiceServer) DetermineStrategy(ctx context.Context, request *deployment.DetermineStrategyRequest) (*deployment.DetermineStrategyResponse, error) {
+	cfg, err := config.DecodeYAML[*tfconfig.TerraformApplicationSpec](request.GetInput().GetTargetDeploymentSource().GetApplicationConfig())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	strategy, summary, err := determineStrategy(*cfg.Spec)
+	if err != nil {
+		return nil, err
+	}
 	return &deployment.DetermineStrategyResponse{
-		Unsupported: true,
+		SyncStrategy: strategy,
+		Summary:      summary,
 	}, nil
 }
 
