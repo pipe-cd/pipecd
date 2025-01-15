@@ -18,15 +18,15 @@ import (
 	"context"
 	"time"
 
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+
 	tfconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/toolregistry"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/plugin/signalhandler"
-
-	"go.uber.org/zap"
-	"google.golang.org/grpc"
 )
 
 type toolClient interface {
@@ -140,8 +140,11 @@ func (s *DeploymentServiceServer) ExecuteStage(ctx context.Context, request *dep
 		lp.Complete(time.Minute)
 	}()
 
-	// TODO: Implement this func
+	status, err := s.executeStage(ctx, lp, request.GetInput())
+	if err != nil {
+		return nil, err
+	}
 	return &deployment.ExecuteStageResponse{
-		// Status: ,
+		Status: status,
 	}, nil
 }
