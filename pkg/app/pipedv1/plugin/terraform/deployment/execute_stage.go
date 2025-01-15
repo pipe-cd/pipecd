@@ -32,6 +32,36 @@ type deployExecutor struct {
 	appDir        string
 	vars          []string
 	terraformPath string
+	input         tfconfig.TerraformDeploymentInput
+	slp           logpersister.StageLogPersister
+}
+
+func (e *deployExecutor) initTerraformCommand(ctx context.Context) (tfcmd *provider.Terraform, ok bool) {
+	flags := e.input.CommandFlags
+	envs := e.input.CommandEnvs
+	tfcmd = provider.NewTerraform(
+		e.terraformPath,
+		e.appDir,
+		provider.WithVars(e.vars),
+		provider.WithVarFiles(e.input.VarFiles),
+		provider.WithAdditionalFlags(flags.Shared, flags.Init, flags.Plan, flags.Apply),
+		provider.WithAdditionalEnvs(envs.Shared, envs.Init, envs.Plan, envs.Apply),
+	)
+
+	if ok := showUsingVersion(ctx, tfcmd, e.slp); !ok {
+		return nil, false
+	}
+
+	if err := tfcmd.Init(ctx, e.slp); err != nil {
+		e.slp.Errorf("Failed to init terraform (%v)", err)
+		return nil, false
+	}
+
+	if ok := selectWorkspace(ctx, tfcmd, e.input.Workspace, e.slp); !ok {
+		return nil, false
+	}
+
+	return tfcmd, true
 }
 
 // Memo: Copied from pkg/app/piped/executor/terraform/deploy.go > Execute()
@@ -42,119 +72,80 @@ func (s *DeploymentServiceServer) executeStage(ctx context.Context, slp logpersi
 		return model.StageStatus_STAGE_FAILURE, err
 	}
 
-	e := &deployExecutor{}
-	e.vars = mergeVars(&s.deployTargetConfig, cfg.Spec)
+	e := &deployExecutor{
+		input:  cfg.Spec.Input,
+		slp:    slp,
+		vars:   mergeVars(&s.deployTargetConfig, cfg.Spec),
+		appDir: string(input.GetTargetDeploymentSource().GetApplicationDirectory()),
+	}
 	e.terraformPath, err = s.toolRegistry.Terraform(ctx, cfg.Spec.Input.TerraformVersion)
 	if err != nil {
 		return model.StageStatus_STAGE_FAILURE, err
 	}
-	e.appDir = string(input.GetTargetDeploymentSource().GetApplicationDirectory())
 
 	switch input.GetStage().GetName() {
 	case stageTerraformSync.String():
-		return e.ensureSync(ctx, cfg.Spec, slp), nil
+		return e.ensureSync(ctx), nil
 		// TODO: Add PLAN, APPLY Stages
 		// case stageTerraformPlan.String():
 		// case stageTerraformApply.String():
 	case stageTerraformRollback.String():
 		e.appDir = string(input.GetRunningDeploymentSource().GetApplicationDirectory())
-		return e.ensureRollback(ctx, cfg.Spec, input.GetDeployment().GetRunningCommitHash(), slp), nil
+		return e.ensureRollback(ctx, input.GetDeployment().GetRunningCommitHash()), nil
 	default:
 		return model.StageStatus_STAGE_FAILURE, status.Error(codes.InvalidArgument, "unsupported stage")
 	}
 }
 
 // Memo: Copied from pkg/app/piped/executor/terraform/deploy.go > ensureSync()
-func (e *deployExecutor) ensureSync(ctx context.Context, cfg *tfconfig.TerraformApplicationSpec, slp logpersister.StageLogPersister) model.StageStatus {
-	var (
-		flags = cfg.Input.CommandFlags
-		envs  = cfg.Input.CommandEnvs
-		tfcmd = provider.NewTerraform(
-			e.terraformPath,
-			e.appDir,
-			provider.WithVars(e.vars),
-			provider.WithVarFiles(cfg.Input.VarFiles),
-			provider.WithAdditionalFlags(flags.Shared, flags.Init, flags.Plan, flags.Apply),
-			provider.WithAdditionalEnvs(envs.Shared, envs.Init, envs.Plan, envs.Apply),
-		)
-	)
-
-	if ok := showUsingVersion(ctx, tfcmd, slp); !ok {
+func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
+	tfcmd, ok := e.initTerraformCommand(ctx)
+	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if err := tfcmd.Init(ctx, slp); err != nil {
-		slp.Errorf("Failed to init (%v)", err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	if ok := selectWorkspace(ctx, tfcmd, cfg.Input.Workspace, slp); !ok {
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	planResult, err := tfcmd.Plan(ctx, slp)
+	planResult, err := tfcmd.Plan(ctx, e.slp)
 	if err != nil {
-		slp.Errorf("Failed to plan (%v)", err)
+		e.slp.Errorf("Failed to plan (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	if planResult.NoChanges() {
-		slp.Info("No changes to apply")
+		e.slp.Info("No changes to apply")
 		return model.StageStatus_STAGE_SUCCESS
 	}
 
-	slp.Infof("Detected %d import, %d add, %d change, %d destroy. Those changes will be applied automatically.", planResult.Imports, planResult.Adds, planResult.Changes, planResult.Destroys)
+	e.slp.Infof("Detected %d import, %d add, %d change, %d destroy. Those changes will be applied automatically.", planResult.Imports, planResult.Adds, planResult.Changes, planResult.Destroys)
 
-	if err := tfcmd.Apply(ctx, slp); err != nil {
-		slp.Errorf("Failed to apply changes (%v)", err)
+	if err := tfcmd.Apply(ctx, e.slp); err != nil {
+		e.slp.Errorf("Failed to apply changes (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	slp.Success("Successfully applied changes")
+	e.slp.Success("Successfully applied changes")
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *deployExecutor) ensureRollback(ctx context.Context, cfg *tfconfig.TerraformApplicationSpec, runningCommitHash string, slp logpersister.StageLogPersister) model.StageStatus {
+func (e *deployExecutor) ensureRollback(ctx context.Context, runningCommitHash string) model.StageStatus {
 	// There is nothing to do if this is the first deployment.
 	if runningCommitHash == "" {
-		slp.Errorf("Unable to determine the last deployed commit to rollback. It seems this is the first deployment.")
+		e.slp.Errorf("Unable to determine the last deployed commit to rollback. It seems this is the first deployment.")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	slp.Infof("Start rolling back to the state defined at commit %s", runningCommitHash)
+	e.slp.Infof("Start rolling back to the state defined at commit %s", runningCommitHash)
 
-	var (
-		flags = cfg.Input.CommandFlags
-		envs  = cfg.Input.CommandEnvs
-		tfcmd = provider.NewTerraform(
-			e.terraformPath,
-			e.appDir,
-			provider.WithVars(e.vars),
-			provider.WithVarFiles(cfg.Input.VarFiles),
-			provider.WithAdditionalFlags(flags.Shared, flags.Init, flags.Plan, flags.Apply),
-			provider.WithAdditionalEnvs(envs.Shared, envs.Init, envs.Plan, envs.Apply),
-		)
-	)
-
-	if ok := showUsingVersion(ctx, tfcmd, slp); !ok {
+	tfcmd, ok := e.initTerraformCommand(ctx)
+	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if err := tfcmd.Init(ctx, slp); err != nil {
-		slp.Errorf("Failed to init (%v)", err)
+	if err := tfcmd.Apply(ctx, e.slp); err != nil {
+		e.slp.Errorf("Failed to apply changes (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if ok := selectWorkspace(ctx, tfcmd, cfg.Input.Workspace, slp); !ok {
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	if err := tfcmd.Apply(ctx, slp); err != nil {
-		slp.Errorf("Failed to apply changes (%v)", err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	slp.Success("Successfully rolled back the changes")
+	e.slp.Success("Successfully rolled back the changes")
 	return model.StageStatus_STAGE_SUCCESS
 }
 
