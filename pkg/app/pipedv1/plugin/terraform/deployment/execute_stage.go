@@ -94,8 +94,8 @@ func (s *DeploymentServiceServer) executeStage(ctx context.Context, slp logpersi
 			return model.StageStatus_STAGE_FAILURE, err
 		}
 		return e.ensurePlan(ctx, opts), nil
-	// TODO: Add APPLY Stage
-	// case stageTerraformApply.String():
+	case stageTerraformApply.String():
+		return e.ensureApply(ctx), nil
 	case stageTerraformRollback.String():
 		e.appDir = string(input.GetRunningDeploymentSource().GetApplicationDirectory())
 		return e.ensureRollback(ctx, input.GetDeployment().GetRunningCommitHash()), nil
@@ -154,6 +154,21 @@ func (e *deployExecutor) ensurePlan(ctx context.Context, opts *tfconfig.Terrafor
 	}
 
 	e.slp.Successf("Detected %d import, %d add, %d change, %d destroy.", planResult.Imports, planResult.Adds, planResult.Changes, planResult.Destroys)
+	return model.StageStatus_STAGE_SUCCESS
+}
+
+func (e *deployExecutor) ensureApply(ctx context.Context) model.StageStatus {
+	tfcmd, ok := e.initTerraformCommand(ctx)
+	if !ok {
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	if err := tfcmd.Apply(ctx, e.slp); err != nil {
+		e.slp.Errorf("Failed to apply changes (%v)", err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	e.slp.Success("Successfully applied changes")
 	return model.StageStatus_STAGE_SUCCESS
 }
 
