@@ -65,6 +65,11 @@ type Worktree interface {
 }
 
 type repo struct {
+	// username and email are used to commit changes.
+	// these fields are optional, and set in the `setUser` method.
+	username string
+	email    string
+
 	dir          string
 	gitPath      string
 	remote       string
@@ -178,6 +183,12 @@ func (r *repo) CopyToModify(dest string) (Repo, error) {
 		remote:       r.remote,
 		clonedBranch: r.clonedBranch,
 		gitEnvs:      r.gitEnvs,
+	}
+
+	if r.username != "" || r.email != "" {
+		if err := cloned.setUser(context.Background(), r.username, r.email); err != nil {
+			return nil, fmt.Errorf("failed to set user: %v", err)
+		}
 	}
 
 	// because we did a local cloning so set the remote url of origin
@@ -406,6 +417,9 @@ func (r repo) addCommit(ctx context.Context, message string, trailers map[string
 
 // setUser configures username and email for local user of this repo.
 func (r *repo) setUser(ctx context.Context, username, email string) error {
+	r.username = username
+	r.email = email
+
 	if out, err := r.runGitCommand(ctx, "config", "user.name", username); err != nil {
 		return formatCommandError(err, out)
 	}
