@@ -190,7 +190,7 @@ func Test_reporter_flushSnapshots(t *testing.T) {
 			return r
 		}(),
 		gitClient: gitClient,
-		pipedConfig: config.PipedSpec{
+		pipedConfig: &config.PipedSpec{
 			Repositories: []config.PipedRepository{
 				{
 					RepoID: "repo-id",
@@ -273,7 +273,7 @@ func Benchmark_reporter_flushSnapshots(b *testing.B) {
 			return r
 		}(),
 		gitClient: gitClient,
-		pipedConfig: config.PipedSpec{
+		pipedConfig: &config.PipedSpec{
 			Repositories: []config.PipedRepository{
 				{
 					RepoID: "repo-id",
