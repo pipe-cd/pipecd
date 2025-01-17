@@ -26,7 +26,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
 )
 
-
 func (a *DeploymentService) executeK8sRollbackStage(ctx context.Context, lp logpersister.StageLogPersister, input *deployment.ExecutePluginInput) model.StageStatus {
 	if input.GetDeployment().GetRunningCommitHash() == "" {
 		lp.Errorf("Unable to determine the last deployed commit to rollback. It seems this is the first deployment.")

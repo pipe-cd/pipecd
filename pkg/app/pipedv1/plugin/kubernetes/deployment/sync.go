@@ -29,7 +29,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
 )
 
-
 func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersister.StageLogPersister, input *deployment.ExecutePluginInput) model.StageStatus {
 	lp.Infof("Start syncing the deployment")
 
