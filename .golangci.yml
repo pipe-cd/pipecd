@@ -51,9 +51,12 @@ linters-settings:
   goimports:
     local-prefixes: github.com/pipe-cd/pipecd
   goheader:
+    values:
+      regexp:
+        any-year: \d{4} # the year of copyright means the first published year, so it can be any year.
     # template does not contains the comment indicator '//' or '/*' '*/'
     template: |-
-      Copyright {{mod-year-range}} The PipeCD Authors.
+      Copyright {{any-year}} The PipeCD Authors.
 
       Licensed under the Apache License, Version 2.0 (the "License");
       you may not use this file except in compliance with the License.
