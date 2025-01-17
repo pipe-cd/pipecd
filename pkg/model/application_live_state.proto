@@ -108,6 +108,8 @@ message ResourceState {
     string health_description = 7;
     // The target where this resource is deployed.
     string deploy_target = 8;
+    // The plugin name that manages this resource.
+    string plugin_name = 9;
 
     // The timestamp when this resource was created.
     int64 created_at = 10 [(validate.rules).int64.gt = 0];
