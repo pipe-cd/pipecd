@@ -21,6 +21,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+	"go.uber.org/zap/zaptest"
+	"google.golang.org/grpc"
+
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
@@ -29,9 +33,6 @@ import (
 	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/livestate"
-	"github.com/stretchr/testify/require"
-	"go.uber.org/zap/zaptest"
-	"google.golang.org/grpc"
 )
 
 type fakeAPIClient struct {
@@ -120,12 +121,12 @@ func (p *fakePlugin) GetLivestate(ctx context.Context, in *livestate.GetLivestat
 	}, nil
 }
 
-type fakeApiLister struct {
+type fakeAPILister struct {
 	applicationLister
 	apps []*model.Application
 }
 
-func (f *fakeApiLister) List() []*model.Application {
+func (f *fakeAPILister) List() []*model.Application {
 	return f.apps
 }
 
@@ -135,7 +136,7 @@ func Test_reporter_flushSnapshots(t *testing.T) {
 
 	pr := &reporter{
 		snapshotFlushInterval: 1 * time.Minute,
-		appLister: &fakeApiLister{
+		appLister: &fakeAPILister{
 			apps: []*model.Application{
 				&model.Application{
 					Id:   "app-id",
@@ -213,7 +214,7 @@ func Benchmark_reporter_flushSnapshots(b *testing.B) {
 
 	pr := &reporter{
 		snapshotFlushInterval: 1 * time.Minute,
-		appLister: &fakeApiLister{
+		appLister: &fakeAPILister{
 			apps: func() []*model.Application {
 				apps := make([]*model.Application, 0, 100)
 				for i := 0; i < 100; i++ {
