@@ -65,14 +65,14 @@ type reporter struct {
 	apiClient             apiClient
 	gitClient             gitClient
 	pluginRegistry        plugin.PluginRegistry
-	pipedConfig           config.PipedSpec
+	pipedConfig           *config.PipedSpec
 	secretDecrypter       secretDecrypter
 	workingDir            string
 	logger                *zap.Logger
 }
 
 // NewReporter creates a new reporter.
-func NewReporther(appLister applicationLister, apiClient apiClient, gitClient gitClient, pluginRegistry plugin.PluginRegistry, pipedConfig config.PipedSpec, secretDecrypter secretDecrypter, logger *zap.Logger) (Reporter, error) {
+func NewReporter(appLister applicationLister, apiClient apiClient, gitClient gitClient, pluginRegistry plugin.PluginRegistry, pipedConfig *config.PipedSpec, secretDecrypter secretDecrypter, logger *zap.Logger) (Reporter, error) {
 	rlogger := logger.Named("live-state-reporter")
 
 	workingDir, err := os.MkdirTemp("", "livestate-reporter-*")
