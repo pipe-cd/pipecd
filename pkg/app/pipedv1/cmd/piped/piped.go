@@ -60,6 +60,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/eventwatcher"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/livestatereporter"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/notifier"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/statsreporter"
@@ -373,21 +374,22 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		return err
 	}
 
-	// Start running application live state reporter.
-	{
-		// TODO: Implement the live state reporter controller.
-	}
-
-	// Start running application application drift detector.
-	{
-		// TODO: Implement the drift detector controller.
-	}
-
 	// Initialize secret decrypter.
 	decrypter, err := p.initializeSecretDecrypter(cfg)
 	if err != nil {
 		input.Logger.Error("failed to initialize secret decrypter", zap.Error(err))
 		return err
+	}
+
+	// Start running application live state reporter.
+	{
+		r, err := livestatereporter.NewReporter(applicationLister, apiClient, gitClient, pluginRegistry, cfg, decrypter, input.Logger)
+		if err != nil {
+			input.Logger.Error("failed to create live state reporter", zap.Error(err))
+		}
+		group.Go(func() error {
+			return r.Run(ctx)
+		})
 	}
 
 	// Start running deployment controller.

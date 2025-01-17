@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 const (
@@ -108,4 +109,71 @@ func (ak ApplicationKind) CompatiblePlatformProviderType() PlatformProviderType 
 
 func IsApplicationConfigFile(filename string) bool {
 	return filename == DefaultApplicationConfigFilename || strings.HasSuffix(filename, applicationConfigFileExtention) || filename == oldDefaultApplicationConfigFilename
+}
+
+func determineSyncStatus(states []*ApplicationSyncState) ApplicationSyncStatus {
+	if len(states) == 0 {
+		return ApplicationSyncStatus_UNKNOWN
+	}
+
+	// Find the highest priority status.
+	deploying := false
+	invalidConfig := false
+	outOfSync := false
+	unknown := false
+
+	for _, s := range states {
+		switch s.GetStatus() {
+		case ApplicationSyncStatus_DEPLOYING:
+			deploying = true
+		case ApplicationSyncStatus_INVALID_CONFIG:
+			invalidConfig = true
+		case ApplicationSyncStatus_OUT_OF_SYNC:
+			outOfSync = true
+		case ApplicationSyncStatus_UNKNOWN:
+			unknown = true
+		}
+	}
+
+	if deploying {
+		return ApplicationSyncStatus_DEPLOYING
+	}
+
+	if invalidConfig {
+		return ApplicationSyncStatus_INVALID_CONFIG
+	}
+
+	if outOfSync {
+		return ApplicationSyncStatus_OUT_OF_SYNC
+	}
+
+	if unknown {
+		return ApplicationSyncStatus_UNKNOWN
+	}
+
+	return ApplicationSyncStatus_SYNCED
+}
+
+func MergeApplicationSyncState(states []*ApplicationSyncState) *ApplicationSyncState {
+	status := determineSyncStatus(states)
+	if status == ApplicationSyncStatus_DEPLOYING || status == ApplicationSyncStatus_SYNCED {
+		return &ApplicationSyncState{
+			Status:    status,
+			Timestamp: time.Now().Unix(),
+		}
+	}
+
+	shortReasons := make([]string, 0)
+	reasons := make([]string, 0)
+	for _, s := range states {
+		shortReasons = append(shortReasons, s.ShortReason)
+		reasons = append(reasons, s.Reason)
+	}
+
+	return &ApplicationSyncState{
+		Status:      status,
+		ShortReason: strings.Join(shortReasons, "\n"),
+		Reason:      strings.Join(reasons, "\n"),
+		Timestamp:   time.Now().Unix(),
+	}
 }

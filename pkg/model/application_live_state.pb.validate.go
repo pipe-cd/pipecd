@@ -1373,6 +1373,8 @@ func (m *ResourceState) validate(all bool) error {
 
 	// no validation rules for DeployTarget
 
+	// no validation rules for PluginName
+
 	if m.GetCreatedAt() <= 0 {
 		err := ResourceStateValidationError{
 			field:  "CreatedAt",
