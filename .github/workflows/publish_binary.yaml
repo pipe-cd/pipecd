@@ -10,12 +10,12 @@ env:
 
 jobs:
   gh_release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - run: echo "not implemented"
 
   binary:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: gh_release
     permissions:
       contents: write

@@ -17,7 +17,7 @@ env:
 
 jobs:
   go:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
@@ -32,7 +32,7 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   web:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -54,7 +54,7 @@ jobs:
         run: make test/web
 
   integration:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
