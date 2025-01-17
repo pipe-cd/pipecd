@@ -57,7 +57,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install helm
-        uses: Azure/setup-helm@v1
+        uses: azure/setup-helm@v4
         with:
           version: ${{ env.HELM_VERSION }}
       - name: Package helm charts
