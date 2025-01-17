@@ -95,6 +95,7 @@ func makeResourceKey(obj *unstructured.Unstructured) ResourceKey {
 }
 
 // FindRemoveResources identifies resources that are present in the live state but not in the desired manifests.
+// It doesn't return the resources that are not managed by Piped.
 func FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveResources []Manifest) []ResourceKey {
 	var (
 		removeKeys = make([]ResourceKey, 0, len(namespacedLiveResources)+len(clusterScopedLiveResources))
@@ -107,7 +108,7 @@ func FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveRe
 		}
 
 		for _, r := range namespacedLiveResources {
-			if _, ok := normalizedKeys[r.Key().normalize()]; !ok {
+			if _, ok := normalizedKeys[r.Key().normalize()]; !ok && r.IsManagedByPiped() {
 				removeKeys = append(removeKeys, r.Key())
 			}
 		}
@@ -121,7 +122,7 @@ func FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveRe
 		}
 		for _, r := range clusterScopedLiveResources {
 			// We don't care about the namespace of the cluster-scoped resources.
-			if _, ok := normalizedKeys[r.Key().normalize().withoutNamespace()]; !ok {
+			if _, ok := normalizedKeys[r.Key().normalize().withoutNamespace()]; !ok && r.IsManagedByPiped() {
 				removeKeys = append(removeKeys, r.Key())
 			}
 		}

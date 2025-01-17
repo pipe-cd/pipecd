@@ -136,6 +136,64 @@ metadata:
 				},
 			},
 		},
+		{
+			name: "resources not managed by piped",
+			manifestsYAML: `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-configmap
+  namespace: default
+`,
+			namespacedLiveResourcesYAML: `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-configmap
+  namespace: default
+`,
+			clusterScopedLiveResourcesYAML: `
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-namespace
+`,
+			expectedRemoveKeys: []ResourceKey{},
+		},
+		{
+			name: "mixed managed and unmanaged resources",
+			manifestsYAML: `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-configmap
+  namespace: default
+  annotations:
+    "pipecd.dev/managed-by": "piped"
+`,
+			namespacedLiveResourcesYAML: `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-configmap
+  namespace: default
+  annotations:
+    "pipecd.dev/managed-by": "piped"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: unmanaged-secret
+  namespace: default
+`,
+			clusterScopedLiveResourcesYAML: `
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: unmanaged-namespace
+`,
+			expectedRemoveKeys: []ResourceKey{},
+		},
 	}
 
 	for _, tt := range tests {
