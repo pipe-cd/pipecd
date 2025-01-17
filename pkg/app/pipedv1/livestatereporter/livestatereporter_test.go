@@ -46,6 +46,7 @@ func (f *fakeAPIClient) ReportApplicationSyncState(ctx context.Context, req *pip
 	return &pipedservice.ReportApplicationSyncStateResponse{}, nil
 }
 
+// TODO: make lib for fakePlugin to use in other tests
 type fakePlugin struct {
 	pluginapi.PluginClient
 	syncStrategy   *deployment.DetermineStrategyResponse
@@ -206,7 +207,7 @@ func Test_reporter_flushSnapshots(t *testing.T) {
 	pr.flushSnapshots(context.Background())
 }
 
-func Benchmark_pluginReporter_flushSnapshots(b *testing.B) {
+func Benchmark_reporter_flushSnapshots(b *testing.B) {
 	gitClient, err := git.NewClient()
 	require.NoError(b, err)
 
