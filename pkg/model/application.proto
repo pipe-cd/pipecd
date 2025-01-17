@@ -44,9 +44,7 @@ message Application {
     // TODO: Add validation for this field.
     string platform_provider = 15;
     // The names of deploy taget where to deploy this application.
-    repeated string deploy_targets = 16;
-    // The names of plugin used to deploy this application.
-    repeated string plugins = 17;
+    repeated string deploy_targets = 16;    
     // Additional description about application.
     string description = 9;
     // Custom attributes to identify applications.

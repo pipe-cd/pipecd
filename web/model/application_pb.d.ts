@@ -37,11 +37,6 @@ export class Application extends jspb.Message {
   clearDeployTargetsList(): Application;
   addDeployTargets(value: string, index?: number): Application;
 
-  getPluginsList(): Array<string>;
-  setPluginsList(value: Array<string>): Application;
-  clearPluginsList(): Application;
-  addPlugins(value: string, index?: number): Application;
-
   getDescription(): string;
   setDescription(value: string): Application;
 
@@ -100,7 +95,6 @@ export namespace Application {
     cloudProvider: string,
     platformProvider: string,
     deployTargetsList: Array<string>,
-    pluginsList: Array<string>,
     description: string,
     labelsMap: Array<[string, string]>,
     mostRecentlySuccessfulDeployment?: ApplicationDeploymentReference.AsObject,
