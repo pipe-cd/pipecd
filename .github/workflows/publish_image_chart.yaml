@@ -125,7 +125,7 @@ jobs:
       
       # Building and pushing Helm charts.
       - name: Install helm
-        uses: Azure/setup-helm@v1
+        uses: azure/setup-helm@v4
         with:
           version: ${{ env.HELM_VERSION }}
       - name: Login to OCI using Helm
@@ -158,7 +158,7 @@ jobs:
     steps:
       # setup tools and repositories
       - name: Install helm
-        uses: Azure/setup-helm@v1
+        uses: azure/setup-helm@v4
         with:
           version: ${{ env.HELM_VERSION }}
       - uses: actions/checkout@v3
