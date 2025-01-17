@@ -21,9 +21,11 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"runtime"
 	"time"
 
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
@@ -126,6 +128,42 @@ func (r *reporter) flushSnapshots(ctx context.Context) {
 		repoMap[id] = repo
 	}
 
+	// TODO: Set the limit based on the piped config
+	limit := runtime.GOMAXPROCS(0) / 2
+
+	appsPerReporter := len(apps) / limit
+	if appsPerReporter == 0 {
+		appsPerReporter = 1
+	}
+
+	appsGrouped := make([][]*model.Application, 0)
+	for i := 0; i < len(apps); i += appsPerReporter {
+		end := i + appsPerReporter
+		if end > len(apps) {
+			end = len(apps)
+		}
+		appsGrouped = append(appsGrouped, apps[i:end])
+	}
+
+	eg, ctx := errgroup.WithContext(ctx)
+	eg.SetLimit(limit)
+
+	r.logger.Info("start flushing snapshots", zap.Int("application-count", len(apps)), zap.Int("concurrency", limit))
+	for _, apps := range appsGrouped {
+		eg.Go(func() error {
+			r.flushAll(ctx, apps, repoMap)
+			return nil
+		})
+	}
+
+	if err := eg.Wait(); err != nil {
+		r.logger.Error("failed to flush snapshots", zap.Error(err))
+	}
+
+	r.logger.Info("successfully flushed snapshots")
+}
+
+func (r *reporter) flushAll(ctx context.Context, apps []*model.Application, repoMap map[string]git.Repo) {
 	for _, app := range apps {
 		repo, ok := repoMap[app.GitPath.Repo.Id]
 		if !ok {
@@ -133,83 +171,92 @@ func (r *reporter) flushSnapshots(ctx context.Context) {
 			continue
 		}
 
-		dir, err := os.MkdirTemp(r.workingDir, fmt.Sprintf("app-%s-*", app.Id))
-		if err != nil {
-			r.logger.Error("failed to create temporary directory", zap.Error(err))
+		if err := r.flush(ctx, app, repo); err != nil {
+			r.logger.Error("failed to flush application live state", zap.String("application-id", app.Id), zap.Error(err))
 			continue
 		}
-		defer os.RemoveAll(dir)
-
-		dsp := deploysource.NewProvider(dir, deploysource.NewLocalSourceCloner(repo, "target", "HEAD"), app.GitPath, r.secretDecrypter)
-		ds, err := dsp.Get(ctx, io.Discard)
-		if err != nil {
-			r.logger.Error("failed to get deploy source", zap.String("application-id", app.Id), zap.Error(err))
-			continue
-		}
-
-		cfg, err := config.DecodeYAML[*config.GenericApplicationSpec](ds.ApplicationConfig)
-		if err != nil {
-			r.logger.Error("unable to parse application config", zap.Error(err))
-			continue
-		}
-
-		pluginClis, err := r.pluginRegistry.GetPluginClientsByAppConfig(cfg.Spec)
-		if err != nil {
-			r.logger.Error("failed to get plugin clients", zap.Error(err))
-			continue
-		}
-
-		// Get the application live state from the plugins.
-		resourceStates := make([]*model.ResourceState, 0)
-		syncStates := make([]*model.ApplicationSyncState, 0)
-		for _, pluginClient := range pluginClis {
-			res, err := pluginClient.GetLivestate(ctx, &livestate.GetLivestateRequest{
-				ApplicationId: app.Id,
-				DeploySource:  ds.ToPluginDeploySource(),
-			})
-			if err != nil {
-				r.logger.Info(fmt.Sprintf("no app state of application %s to report", app.Id))
-				continue
-			}
-
-			resourceStates = append(resourceStates, res.GetApplicationLiveState().GetResources()...)
-			syncStates = append(syncStates, res.GetSyncState())
-		}
-
-		// Report the application live state to the control plane.
-		snapshot := &model.ApplicationLiveStateSnapshot{
-			ApplicationId: app.Id,
-			PipedId:       app.PipedId,
-			ProjectId:     app.ProjectId,
-			Kind:          app.Kind,
-			ApplicationLiveState: &model.ApplicationLiveState{
-				Resources: resourceStates,
-			},
-		}
-		snapshot.DetermineApplicationHealthStatus()
-
-		if _, err := r.apiClient.ReportApplicationLiveState(ctx, &pipedservice.ReportApplicationLiveStateRequest{
-			Snapshot: snapshot,
-		}); err != nil {
-			r.logger.Error("failed to report application live state",
-				zap.String("application-id", app.Id),
-				zap.Error(err),
-			)
-			continue
-		}
-
-		// Report the application sync state to the control plane.
-		if _, err := r.apiClient.ReportApplicationSyncState(ctx, &pipedservice.ReportApplicationSyncStateRequest{
-			ApplicationId: app.Id,
-			State:         model.MergeApplicationSyncState(syncStates),
-		}); err != nil {
-			r.logger.Error("failed to report application live state",
-				zap.String("application-id", app.Id),
-				zap.Error(err),
-			)
-			continue
-		}
-
-		r.logger.Info(fmt.Sprintf("successfully reported application live state for application: %s", app.Id))
 	}
+}
+
+func (r *reporter) flush(ctx context.Context, app *model.Application, repo git.Repo) error {
+	dir, err := os.MkdirTemp(r.workingDir, fmt.Sprintf("app-%s-*", app.Id))
+	if err != nil {
+		r.logger.Error("failed to create temporary directory", zap.Error(err))
+		return err
+	}
+
+	dsp := deploysource.NewProvider(dir, deploysource.NewLocalSourceCloner(repo, "target", "HEAD"), app.GitPath, r.secretDecrypter)
+	ds, err := dsp.Get(ctx, io.Discard)
+	if err != nil {
+		r.logger.Error("failed to get deploy source", zap.String("application-id", app.Id), zap.Error(err))
+		return err
+	}
+
+	cfg, err := config.DecodeYAML[*config.GenericApplicationSpec](ds.ApplicationConfig)
+	if err != nil {
+		r.logger.Error("unable to parse application config", zap.Error(err))
+		return err
+	}
+
+	pluginClis, err := r.pluginRegistry.GetPluginClientsByAppConfig(cfg.Spec)
+	if err != nil {
+		r.logger.Error("failed to get plugin clients", zap.Error(err))
+		return err
+	}
+
+	// Get the application live state from the plugins.
+	resourceStates := make([]*model.ResourceState, 0)
+	syncStates := make([]*model.ApplicationSyncState, 0)
+	for _, pluginClient := range pluginClis {
+		res, err := pluginClient.GetLivestate(ctx, &livestate.GetLivestateRequest{
+			ApplicationId: app.Id,
+			DeploySource:  ds.ToPluginDeploySource(),
+		})
+		if err != nil {
+			r.logger.Info(fmt.Sprintf("no app state of application %s to report", app.Id))
+			return err
+		}
+
+		resourceStates = append(resourceStates, res.GetApplicationLiveState().GetResources()...)
+		syncStates = append(syncStates, res.GetSyncState())
+	}
+
+	// Report the application live state to the control plane.
+	snapshot := &model.ApplicationLiveStateSnapshot{
+		ApplicationId: app.Id,
+		PipedId:       app.PipedId,
+		ProjectId:     app.ProjectId,
+		Kind:          app.Kind,
+		ApplicationLiveState: &model.ApplicationLiveState{
+			Resources: resourceStates,
+		},
+	}
+	snapshot.DetermineApplicationHealthStatus()
+
+	if _, err := r.apiClient.ReportApplicationLiveState(ctx, &pipedservice.ReportApplicationLiveStateRequest{
+		Snapshot: snapshot,
+	}); err != nil {
+		r.logger.Error("failed to report application live state",
+			zap.String("application-id", app.Id),
+			zap.Error(err),
+		)
+		return err
+	}
+
+	// Report the application sync state to the control plane.
+	if _, err := r.apiClient.ReportApplicationSyncState(ctx, &pipedservice.ReportApplicationSyncStateRequest{
+		ApplicationId: app.Id,
+		State:         model.MergeApplicationSyncState(syncStates),
+	}); err != nil {
+		r.logger.Error("failed to report application live state",
+			zap.String("application-id", app.Id),
+			zap.Error(err),
+		)
+		return err
+	}
+
+	r.logger.Info(fmt.Sprintf("successfully reported application live state for application: %s", app.Id))
+
+	os.RemoveAll(dir)
+	return nil
 }
