@@ -11,7 +11,7 @@ on:
 jobs:
   review:
     if: startsWith(github.event.comment.body, '/review')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: ca-dp/code-butler@v1
         with:
@@ -21,7 +21,7 @@ jobs:
           model: gpt-4-1106-preview
   chat:
     if: startsWith(github.event.comment.body, '/chat')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: ca-dp/code-butler@v1
         with:
