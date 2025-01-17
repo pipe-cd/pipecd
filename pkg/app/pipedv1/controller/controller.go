@@ -34,6 +34,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/git"
@@ -88,12 +89,13 @@ var (
 )
 
 type controller struct {
-	apiClient        apiClient
-	gitClient        gitClient
-	deploymentLister deploymentLister
-	commandLister    commandLister
-	notifier         notifier
-	secretDecrypter  secretDecrypter
+	apiClient             apiClient
+	gitClient             gitClient
+	deploymentLister      deploymentLister
+	commandLister         commandLister
+	notifier              notifier
+	secretDecrypter       secretDecrypter
+	metadataStoreRegistry metadatastore.MetadataStoreRegistry
 
 	// The registry of all plugins.
 	pluginRegistry plugin.PluginRegistry
@@ -134,19 +136,21 @@ func NewController(
 	commandLister commandLister,
 	notifier notifier,
 	secretDecrypter secretDecrypter,
+	metadataStoreRegistry metadatastore.MetadataStoreRegistry,
 	gracePeriod time.Duration,
 	logger *zap.Logger,
 	tracerProvider trace.TracerProvider,
 ) DeploymentController {
 
 	return &controller{
-		apiClient:        apiClient,
-		gitClient:        gitClient,
-		pluginRegistry:   pluginRegistry,
-		deploymentLister: deploymentLister,
-		commandLister:    commandLister,
-		notifier:         notifier,
-		secretDecrypter:  secretDecrypter,
+		apiClient:             apiClient,
+		gitClient:             gitClient,
+		pluginRegistry:        pluginRegistry,
+		deploymentLister:      deploymentLister,
+		commandLister:         commandLister,
+		notifier:              notifier,
+		secretDecrypter:       secretDecrypter,
+		metadataStoreRegistry: metadataStoreRegistry,
 
 		planners:                              make(map[string]*planner),
 		donePlanners:                          make(map[string]time.Time),
@@ -577,6 +581,8 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		c.tracerProvider,
 	)
 
+	c.metadataStoreRegistry.Register(d)
+
 	cleanup := func() {
 		logger.Info("cleaning up working directory for scheduler", zap.String("working-dir", workingDir))
 		err := os.RemoveAll(workingDir)
@@ -594,6 +600,7 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 	go func() {
 		defer c.wg.Done()
 		defer cleanup()
+		defer c.metadataStoreRegistry.Delete(d.Id)
 		if err := scheduler.Run(ctx); err != nil {
 			logger.Error("failed to run scheduler", zap.Error(err))
 		}

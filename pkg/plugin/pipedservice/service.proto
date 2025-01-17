@@ -37,11 +37,14 @@ service PluginService {
     // PutStageMetadataMulti puts the metadata pairs of the given stage.
     rpc PutStageMetadataMulti(PutStageMetadataMultiRequest) returns (PutStageMetadataMultiResponse) {}
     // GetDeploymentMetadata gets one metadata value of the given deployment.
-    rpc GetDeploymentMetadata(GetDeploymentMetadataRequest) returns (GetDeploymentMetadataResponse) {}
+    rpc GetDeploymentPluginMetadata(GetDeploymentPluginMetadataRequest) returns (GetDeploymentPluginMetadataResponse) {}
     // PutDeploymentMetadata puts one metadata of the given deployment.
-    rpc PutDeploymentMetadata(PutDeploymentMetadataRequest) returns (PutDeploymentMetadataResponse) {}
+    rpc PutDeploymentPluginMetadata(PutDeploymentPluginMetadataRequest) returns (PutDeploymentPluginMetadataResponse) {}
     // PutDeploymentMetadataMulti puts the metadata pairs of the given deployment.
-    rpc PutDeploymentMetadataMulti(PutDeploymentMetadataMultiRequest) returns (PutDeploymentMetadataMultiResponse) {}    
+    rpc PutDeploymentPluginMetadataMulti(PutDeploymentPluginMetadataMultiRequest) returns (PutDeploymentPluginMetadataMultiResponse) {}    
+    // GetDeploymentSharedMetadata gets one shared metadata value of the given deployment.
+    // The shared metadata is read-only in plugins for safety since it is shared among piped and plugins.
+    rpc GetDeploymentSharedMetadata(GetDeploymentSharedMetadataRequest) returns (GetDeploymentSharedMetadataResponse) {}
 }
 
 message DecryptSecretRequest {
@@ -131,29 +134,48 @@ message PutStageMetadataMultiRequest {
 message PutStageMetadataMultiResponse {
 }
 
-message GetDeploymentMetadataRequest {
+message GetDeploymentPluginMetadataRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
-    string key = 2 [(validate.rules).string.min_len = 1];
+    // Plugin name to distinguish which plugin manages the metadata.
+    // e.g. "plugin-kubernetes", "plugin-wait-stage"
+    string plugin_name = 2;
+    string key = 3 [(validate.rules).string.min_len = 1];
 }
 
-message GetDeploymentMetadataResponse {
+message GetDeploymentPluginMetadataResponse {
     string value = 1;
     bool found = 2;
 }
 
-message PutDeploymentMetadataRequest {
+message PutDeploymentPluginMetadataRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    // Plugin name to distinguish which plugin manages the metadata.
+    // e.g. "plugin-kubernetes", "plugin-wait-stage"
+    string plugin_name = 2 [(validate.rules).string.min_len = 1];
+    string key = 3 [(validate.rules).string.min_len = 1];
+    string value = 4;
+}
+
+message PutDeploymentPluginMetadataResponse {
+}
+
+message PutDeploymentPluginMetadataMultiRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    // Plugin name to distinguish which plugin manages the metadata.
+    // e.g. "plugin-kubernetes", "plugin-wait-stage"
+    string plugin_name = 2 [(validate.rules).string.min_len = 1];
+    map<string, string> metadata = 3;
+}
+
+message PutDeploymentPluginMetadataMultiResponse {
+}
+
+message GetDeploymentSharedMetadataRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string key = 2 [(validate.rules).string.min_len = 1];
-    string value = 3;
 }
 
-message PutDeploymentMetadataResponse {
-}
-
-message PutDeploymentMetadataMultiRequest {
-    string deployment_id = 1 [(validate.rules).string.min_len = 1];
-    map<string, string> metadata = 2;
-}
-
-message PutDeploymentMetadataMultiResponse {
+message GetDeploymentSharedMetadataResponse {
+    string value = 1;
+    bool found = 2;
 }
