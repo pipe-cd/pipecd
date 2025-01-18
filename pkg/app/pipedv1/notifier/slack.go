@@ -255,6 +255,22 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 		}
 	}
 
+	generateStageEventData := func(d *model.Deployment, s *model.PipelineStage, accounts []string, groups []string) {
+		accountsStr := getAccountsAsString(accounts)
+		groupsStr := getGroupsAsString(groups)
+		link = fmt.Sprintf("%s/deployments/%s?project=%s", webURL, d.Id, d.ProjectId)
+		fields = []slackField{
+			{"Project", truncateText(d.ProjectId, 8), true},
+			{"Application", makeSlackLink(d.ApplicationName, fmt.Sprintf("%s/applications/%s?project=%s", webURL, d.ApplicationId, d.ProjectId)), true},
+			{"Kind", strings.ToLower(d.Kind.String()), true},
+			{"Deployment", makeSlackLink(truncateText(d.Id, 8), link), true},
+			{"Stage", s.Name, true},
+			{"Triggered By", d.TriggeredBy(), true},
+			{"Mention To Users", accountsStr, true},
+			{"Mention To Groups", groupsStr, true},
+		}
+	}
+
 	switch event.Type {
 	case model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED:
 		md := event.Metadata.(*model.NotificationEventDeploymentTriggered)
@@ -336,6 +352,35 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 		md := event.Metadata.(*model.NotificationEventPipedStopped)
 		title = "A piped has been stopped"
 		generatePipedEventData(md.Id, md.Name, md.Version, md.ProjectId, s.config.MentionedAccounts, s.config.MentionedGroups)
+
+	case model.NotificationEventType_EVENT_STAGE_STARTED:
+		md := event.Metadata.(*model.NotificationEventStageStarted)
+		title = fmt.Sprintf("Stage %q was started", md.Stage.Name)
+		generateStageEventData(md.Deployment, md.Stage, s.config.MentionedAccounts, s.config.MentionedGroups)
+
+	case model.NotificationEventType_EVENT_STAGE_SKIPPED:
+		md := event.Metadata.(*model.NotificationEventStageSkipped)
+		title = fmt.Sprintf("Stage %q was skipped", md.Stage.Name)
+		generateStageEventData(md.Deployment, md.Stage, s.config.MentionedAccounts, s.config.MentionedGroups)
+
+	case model.NotificationEventType_EVENT_STAGE_SUCCEEDED:
+		md := event.Metadata.(*model.NotificationEventStageSucceeded)
+		title = fmt.Sprintf("Stage %q was completed successfully", md.Stage.Name)
+		color = slackSuccessColor
+		generateStageEventData(md.Deployment, md.Stage, s.config.MentionedAccounts, s.config.MentionedGroups)
+
+	case model.NotificationEventType_EVENT_STAGE_FAILED:
+		md := event.Metadata.(*model.NotificationEventStageFailed)
+		title = fmt.Sprintf("Stage %q was failed", md.Stage.Name)
+		text = md.Stage.StatusReason
+		color = slackErrorColor
+		generateStageEventData(md.Deployment, md.Stage, s.config.MentionedAccounts, s.config.MentionedGroups)
+
+	case model.NotificationEventType_EVENT_STAGE_CANCELLED:
+		md := event.Metadata.(*model.NotificationEventStageCancelled)
+		title = fmt.Sprintf("Stage %q was cancelled", md.Stage.Name)
+		color = slackWarnColor
+		generateStageEventData(md.Deployment, md.Stage, s.config.MentionedAccounts, s.config.MentionedGroups)
 
 	// TODO: Support application type of notification event.
 	default:

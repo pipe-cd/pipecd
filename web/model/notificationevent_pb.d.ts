@@ -453,6 +453,136 @@ export namespace NotificationEventPipedStopped {
   }
 }
 
+export class NotificationEventStageStarted extends jspb.Message {
+  getDeployment(): pkg_model_deployment_pb.Deployment | undefined;
+  setDeployment(value?: pkg_model_deployment_pb.Deployment): NotificationEventStageStarted;
+  hasDeployment(): boolean;
+  clearDeployment(): NotificationEventStageStarted;
+
+  getStage(): pkg_model_deployment_pb.PipelineStage | undefined;
+  setStage(value?: pkg_model_deployment_pb.PipelineStage): NotificationEventStageStarted;
+  hasStage(): boolean;
+  clearStage(): NotificationEventStageStarted;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): NotificationEventStageStarted.AsObject;
+  static toObject(includeInstance: boolean, msg: NotificationEventStageStarted): NotificationEventStageStarted.AsObject;
+  static serializeBinaryToWriter(message: NotificationEventStageStarted, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): NotificationEventStageStarted;
+  static deserializeBinaryFromReader(message: NotificationEventStageStarted, reader: jspb.BinaryReader): NotificationEventStageStarted;
+}
+
+export namespace NotificationEventStageStarted {
+  export type AsObject = {
+    deployment?: pkg_model_deployment_pb.Deployment.AsObject,
+    stage?: pkg_model_deployment_pb.PipelineStage.AsObject,
+  }
+}
+
+export class NotificationEventStageSkipped extends jspb.Message {
+  getDeployment(): pkg_model_deployment_pb.Deployment | undefined;
+  setDeployment(value?: pkg_model_deployment_pb.Deployment): NotificationEventStageSkipped;
+  hasDeployment(): boolean;
+  clearDeployment(): NotificationEventStageSkipped;
+
+  getStage(): pkg_model_deployment_pb.PipelineStage | undefined;
+  setStage(value?: pkg_model_deployment_pb.PipelineStage): NotificationEventStageSkipped;
+  hasStage(): boolean;
+  clearStage(): NotificationEventStageSkipped;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): NotificationEventStageSkipped.AsObject;
+  static toObject(includeInstance: boolean, msg: NotificationEventStageSkipped): NotificationEventStageSkipped.AsObject;
+  static serializeBinaryToWriter(message: NotificationEventStageSkipped, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): NotificationEventStageSkipped;
+  static deserializeBinaryFromReader(message: NotificationEventStageSkipped, reader: jspb.BinaryReader): NotificationEventStageSkipped;
+}
+
+export namespace NotificationEventStageSkipped {
+  export type AsObject = {
+    deployment?: pkg_model_deployment_pb.Deployment.AsObject,
+    stage?: pkg_model_deployment_pb.PipelineStage.AsObject,
+  }
+}
+
+export class NotificationEventStageSucceeded extends jspb.Message {
+  getDeployment(): pkg_model_deployment_pb.Deployment | undefined;
+  setDeployment(value?: pkg_model_deployment_pb.Deployment): NotificationEventStageSucceeded;
+  hasDeployment(): boolean;
+  clearDeployment(): NotificationEventStageSucceeded;
+
+  getStage(): pkg_model_deployment_pb.PipelineStage | undefined;
+  setStage(value?: pkg_model_deployment_pb.PipelineStage): NotificationEventStageSucceeded;
+  hasStage(): boolean;
+  clearStage(): NotificationEventStageSucceeded;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): NotificationEventStageSucceeded.AsObject;
+  static toObject(includeInstance: boolean, msg: NotificationEventStageSucceeded): NotificationEventStageSucceeded.AsObject;
+  static serializeBinaryToWriter(message: NotificationEventStageSucceeded, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): NotificationEventStageSucceeded;
+  static deserializeBinaryFromReader(message: NotificationEventStageSucceeded, reader: jspb.BinaryReader): NotificationEventStageSucceeded;
+}
+
+export namespace NotificationEventStageSucceeded {
+  export type AsObject = {
+    deployment?: pkg_model_deployment_pb.Deployment.AsObject,
+    stage?: pkg_model_deployment_pb.PipelineStage.AsObject,
+  }
+}
+
+export class NotificationEventStageFailed extends jspb.Message {
+  getDeployment(): pkg_model_deployment_pb.Deployment | undefined;
+  setDeployment(value?: pkg_model_deployment_pb.Deployment): NotificationEventStageFailed;
+  hasDeployment(): boolean;
+  clearDeployment(): NotificationEventStageFailed;
+
+  getStage(): pkg_model_deployment_pb.PipelineStage | undefined;
+  setStage(value?: pkg_model_deployment_pb.PipelineStage): NotificationEventStageFailed;
+  hasStage(): boolean;
+  clearStage(): NotificationEventStageFailed;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): NotificationEventStageFailed.AsObject;
+  static toObject(includeInstance: boolean, msg: NotificationEventStageFailed): NotificationEventStageFailed.AsObject;
+  static serializeBinaryToWriter(message: NotificationEventStageFailed, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): NotificationEventStageFailed;
+  static deserializeBinaryFromReader(message: NotificationEventStageFailed, reader: jspb.BinaryReader): NotificationEventStageFailed;
+}
+
+export namespace NotificationEventStageFailed {
+  export type AsObject = {
+    deployment?: pkg_model_deployment_pb.Deployment.AsObject,
+    stage?: pkg_model_deployment_pb.PipelineStage.AsObject,
+  }
+}
+
+export class NotificationEventStageCancelled extends jspb.Message {
+  getDeployment(): pkg_model_deployment_pb.Deployment | undefined;
+  setDeployment(value?: pkg_model_deployment_pb.Deployment): NotificationEventStageCancelled;
+  hasDeployment(): boolean;
+  clearDeployment(): NotificationEventStageCancelled;
+
+  getStage(): pkg_model_deployment_pb.PipelineStage | undefined;
+  setStage(value?: pkg_model_deployment_pb.PipelineStage): NotificationEventStageCancelled;
+  hasStage(): boolean;
+  clearStage(): NotificationEventStageCancelled;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): NotificationEventStageCancelled.AsObject;
+  static toObject(includeInstance: boolean, msg: NotificationEventStageCancelled): NotificationEventStageCancelled.AsObject;
+  static serializeBinaryToWriter(message: NotificationEventStageCancelled, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): NotificationEventStageCancelled;
+  static deserializeBinaryFromReader(message: NotificationEventStageCancelled, reader: jspb.BinaryReader): NotificationEventStageCancelled;
+}
+
+export namespace NotificationEventStageCancelled {
+  export type AsObject = {
+    deployment?: pkg_model_deployment_pb.Deployment.AsObject,
+    stage?: pkg_model_deployment_pb.PipelineStage.AsObject,
+  }
+}
+
 export enum NotificationEventType { 
   EVENT_DEPLOYMENT_TRIGGERED = 0,
   EVENT_DEPLOYMENT_PLANNED = 1,
@@ -469,6 +599,11 @@ export enum NotificationEventType {
   EVENT_APPLICATION_HEALTHY = 200,
   EVENT_PIPED_STARTED = 300,
   EVENT_PIPED_STOPPED = 301,
+  EVENT_STAGE_STARTED = 400,
+  EVENT_STAGE_SKIPPED = 401,
+  EVENT_STAGE_SUCCEEDED = 402,
+  EVENT_STAGE_FAILED = 403,
+  EVENT_STAGE_CANCELLED = 404,
 }
 export enum NotificationEventGroup { 
   EVENT_NONE = 0,
@@ -476,4 +611,5 @@ export enum NotificationEventGroup {
   EVENT_APPLICATION_SYNC = 2,
   EVENT_APPLICATION_HEALTH = 3,
   EVENT_PIPED = 4,
+  EVENT_STAGE = 5,
 }
