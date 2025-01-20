@@ -60,7 +60,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/eventwatcher"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/livestatereporter"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/notifier"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
@@ -384,15 +383,16 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	}
 
 	// Start running application live state reporter.
-	{
-		r, err := livestatereporter.NewReporter(applicationLister, apiClient, gitClient, pluginRegistry, cfg, decrypter, input.Logger)
-		if err != nil {
-			input.Logger.Error("failed to create live state reporter", zap.Error(err))
-		}
-		group.Go(func() error {
-			return r.Run(ctx)
-		})
-	}
+	// Currently, this feature is disabled beucause many errors are showed up if the app.pipecd.yaml is not migrated.
+	// {
+	// 	r, err := livestatereporter.NewReporter(applicationLister, apiClient, gitClient, pluginRegistry, cfg, decrypter, input.Logger)
+	// 	if err != nil {
+	// 		input.Logger.Error("failed to create live state reporter", zap.Error(err))
+	// 	}
+	// 	group.Go(func() error {
+	// 		return r.Run(ctx)
+	// 	})
+	// }
 
 	// Start running deployment controller.
 	{
