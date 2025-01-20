@@ -546,6 +546,20 @@ func (mr *MockApplicationStoreMockRecorder) UpdateConfiguration(ctx, id, pipedID
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateConfiguration", reflect.TypeOf((*MockApplicationStore)(nil).UpdateConfiguration), ctx, id, pipedID, platformProvider, configFilename)
 }
 
+// UpdateDeployTargets mocks base method.
+func (m *MockApplicationStore) UpdateDeployTargets(ctx context.Context, id string, targets []string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateDeployTargets", ctx, id, targets)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateDeployTargets indicates an expected call of UpdateDeployTargets.
+func (mr *MockApplicationStoreMockRecorder) UpdateDeployTargets(ctx, id, targets any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDeployTargets", reflect.TypeOf((*MockApplicationStore)(nil).UpdateDeployTargets), ctx, id, targets)
+}
+
 // UpdateDeployingStatus mocks base method.
 func (m *MockApplicationStore) UpdateDeployingStatus(ctx context.Context, id string, deploying bool) error {
 	m.ctrl.T.Helper()
