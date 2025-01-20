@@ -1047,6 +1047,7 @@ func (a *API) migrateApplication(ctx context.Context, app *apiservice.MigrateDat
 	if err := a.applicationStore.UpdateDeployTargets(ctx, app.ApplicationId, []string{application.PlatformProvider}); err != nil {
 		return gRPCStoreError(err, "update application")
 	}
+	return nil
 }
 
 // requireAPIKey checks the existence of an API key inside the given context
