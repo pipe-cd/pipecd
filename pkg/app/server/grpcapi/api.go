@@ -47,6 +47,7 @@ type apiApplicationStore interface {
 	Disable(ctx context.Context, id string) error
 	UpdateConfigFilename(ctx context.Context, id, filename string) error
 	UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string) error
+	UpdateDeployTargets(ctx context.Context, id string, targets []string) error
 }
 
 type apiDeploymentStore interface {
@@ -1020,6 +1021,31 @@ func (a *API) Encrypt(ctx context.Context, req *apiservice.EncryptRequest) (*api
 	return &apiservice.EncryptResponse{
 		Ciphertext: ciphertext,
 	}, nil
+}
+
+func (a *API) MigrateDatabase(ctx context.Context, req *apiservice.MigrateDatabaseRequest) (*apiservice.MigrateDatabaseResponse, error) {
+	if _, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger); err != nil {
+		return nil, err
+	}
+
+	switch { //nolint:gocritic // we plan to add more cases
+	case req.GetApplication() != nil:
+		if err := a.migrateApplication(ctx, req.GetApplication()); err != nil {
+			return nil, err
+		}
+		return &apiservice.MigrateDatabaseResponse{}, nil
+	}
+	return nil, status.Error(codes.Unimplemented, "Not implemented")
+}
+
+func (a *API) migrateApplication(ctx context.Context, app *apiservice.MigrateDatabaseRequest_Application) error {
+	application, err := getApplication(ctx, a.applicationStore, app.ApplicationId, a.logger)
+	if err != nil {
+		return gRPCStoreError(err, "get application")
+	}
+	if err := a.applicationStore.UpdateDeployTargets(ctx, app.ApplicationId, []string{application.PlatformProvider}); err != nil {
+		return gRPCStoreError(err, "update application")
+	}
 }
 
 // requireAPIKey checks the existence of an API key inside the given context
