@@ -1031,6 +1031,7 @@ func (a *API) MigrateDatabase(ctx context.Context, req *apiservice.MigrateDataba
 	switch { //nolint:gocritic // we plan to add more cases
 	case req.GetApplication() != nil:
 		if err := a.migrateApplication(ctx, req.GetApplication()); err != nil {
+			a.logger.Error("failed to migrate application", zap.Error(err))
 			return nil, err
 		}
 		return &apiservice.MigrateDatabaseResponse{}, nil
