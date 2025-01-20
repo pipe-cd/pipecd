@@ -154,6 +154,7 @@ func determineSyncStatus(states []*ApplicationSyncState) ApplicationSyncStatus {
 	return ApplicationSyncStatus_SYNCED
 }
 
+// MergeApplicationSyncState merges multiple application sync states into a single one.
 func MergeApplicationSyncState(states []*ApplicationSyncState) *ApplicationSyncState {
 	status := determineSyncStatus(states)
 	if status == ApplicationSyncStatus_DEPLOYING || status == ApplicationSyncStatus_SYNCED {
