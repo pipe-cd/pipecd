@@ -136,7 +136,6 @@ func (r *reporter) flushSnapshots(ctx context.Context) {
 			r.logger.Error("failed to clone repository", zap.String("repo-id", id), zap.Error(err))
 			continue
 		}
-		defer repo.Clean()
 		r.repoMap[id] = repo
 	}
 
