@@ -64,6 +64,7 @@ type reporter struct {
 	appLister             applicationLister
 	apiClient             apiClient
 	gitClient             gitClient
+	repoMap               map[string]git.Repo
 	pluginRegistry        plugin.PluginRegistry
 	pipedConfig           *config.PipedSpec
 	secretDecrypter       secretDecrypter
@@ -86,6 +87,7 @@ func NewReporter(appLister applicationLister, apiClient apiClient, gitClient git
 		appLister:             appLister,
 		apiClient:             apiClient,
 		gitClient:             gitClient,
+		repoMap:               make(map[string]git.Repo),
 		pluginRegistry:        pluginRegistry,
 		pipedConfig:           pipedConfig,
 		secretDecrypter:       secretDecrypter,
@@ -115,18 +117,30 @@ func (r *reporter) Run(ctx context.Context) error {
 }
 
 func (r *reporter) flushSnapshots(ctx context.Context) {
-	apps := r.appLister.List()
+	r.logger.Info("start flushing snapshots")
 
-	repoMap := make(map[string]git.Repo)
+	r.logger.Info("updating git repositories")
 	for id, cfgRepo := range r.pipedConfig.GetRepositoryMap() {
+		if _, ok := r.repoMap[id]; ok {
+			r.logger.Info("the repo is cloned, so pulling repository", zap.String("repo-id", id))
+			err := r.repoMap[id].Pull(ctx, cfgRepo.Branch)
+			if err != nil {
+				r.logger.Error("failed to pull repository", zap.String("repo-id", id), zap.Error(err))
+			}
+			continue
+		}
+
+		r.logger.Info("the repo is not cloned, so cloning repository", zap.String("repo-id", id))
 		repo, err := r.gitClient.Clone(ctx, id, cfgRepo.Remote, cfgRepo.Branch, fmt.Sprintf("%s/%s", r.workingDir, id))
 		if err != nil {
 			r.logger.Error("failed to clone repository", zap.String("repo-id", id), zap.Error(err))
 			continue
 		}
 		defer repo.Clean()
-		repoMap[id] = repo
+		r.repoMap[id] = repo
 	}
+
+	apps := r.appLister.List()
 
 	// TODO: Set the limit based on the piped config
 	limit := runtime.GOMAXPROCS(0) / 2
@@ -148,10 +162,10 @@ func (r *reporter) flushSnapshots(ctx context.Context) {
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.SetLimit(limit)
 
-	r.logger.Info("start flushing snapshots", zap.Int("application-count", len(apps)), zap.Int("concurrency", limit))
+	r.logger.Info("flushing snapshots", zap.Int("total-applications", len(apps)), zap.Int("parallel-count", len(appsGrouped)))
 	for _, apps := range appsGrouped {
 		eg.Go(func() error {
-			r.flushAll(ctx, apps, repoMap)
+			r.flushAll(ctx, apps, r.repoMap)
 			return nil
 		})
 	}

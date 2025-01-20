@@ -154,6 +154,7 @@ func Test_reporter_flushSnapshots(t *testing.T) {
 			},
 		},
 		apiClient: &fakeAPIClient{},
+		repoMap:   make(map[string]git.Repo),
 		pluginRegistry: func() plugin.PluginRegistry {
 			r, err := plugin.NewPluginRegistry(
 				context.Background(),
