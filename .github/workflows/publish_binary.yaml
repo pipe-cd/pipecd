@@ -10,12 +10,12 @@ env:
 
 jobs:
   gh_release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - run: echo "not implemented"
 
   binary:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: gh_release
     permissions:
       contents: write
@@ -42,7 +42,7 @@ jobs:
           make build/go MOD=pipectl BUILD_OS=darwin BUILD_ARCH=arm64 BIN_SUFFIX=_${{ env.PIPECD_VERSION }}_darwin_arm64
 
       - name: Publish binary artifacts
-        uses: softprops/action-gh-release@1e07f4398721186383de40550babbdf2b84acfc5 #v0.1.14
+        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda #v2.2.1
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |

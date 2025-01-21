@@ -1,0 +1,181 @@
+// Copyright 2024 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package grpc.piped.service;
+option go_package = "github.com/pipe-cd/pipecd/pkg/plugin/pipedservice";
+
+import "validate/validate.proto";
+import "pkg/model/logblock.proto";
+
+// PluginService provides the ability to interact with plugins.
+service PluginService {
+    // InstallTool installs the given tool.
+    // installed binary's filename becomes `name-version`.
+    rpc InstallTool(InstallToolRequest) returns (InstallToolResponse) {}
+     // ReportStageLogs is used to save the log of a pipeline stage.
+    rpc ReportStageLogs(ReportStageLogsRequest) returns (ReportStageLogsResponse) {}
+    // ReportStageLogsFromLastCheckpoint is used to save the full logs from the most recently saved point.
+    rpc ReportStageLogsFromLastCheckpoint(ReportStageLogsFromLastCheckpointRequest) returns (ReportStageLogsFromLastCheckpointResponse) {}
+
+    // GetStageMetadata gets one metadata value of the given stage.
+    rpc GetStageMetadata(GetStageMetadataRequest) returns (GetStageMetadataResponse) {}
+    // PutStageMetadata puts one metadata of the given stage.
+    rpc PutStageMetadata(PutStageMetadataRequest) returns (PutStageMetadataResponse) {}
+    // PutStageMetadataMulti puts the metadata pairs of the given stage.
+    rpc PutStageMetadataMulti(PutStageMetadataMultiRequest) returns (PutStageMetadataMultiResponse) {}
+    // GetDeploymentMetadata gets one metadata value of the given deployment.
+    rpc GetDeploymentPluginMetadata(GetDeploymentPluginMetadataRequest) returns (GetDeploymentPluginMetadataResponse) {}
+    // PutDeploymentMetadata puts one metadata of the given deployment.
+    rpc PutDeploymentPluginMetadata(PutDeploymentPluginMetadataRequest) returns (PutDeploymentPluginMetadataResponse) {}
+    // PutDeploymentMetadataMulti puts the metadata pairs of the given deployment.
+    rpc PutDeploymentPluginMetadataMulti(PutDeploymentPluginMetadataMultiRequest) returns (PutDeploymentPluginMetadataMultiResponse) {}    
+    // GetDeploymentSharedMetadata gets one shared metadata value of the given deployment.
+    // The shared metadata is read-only in plugins for safety since it is shared among piped and plugins.
+    rpc GetDeploymentSharedMetadata(GetDeploymentSharedMetadataRequest) returns (GetDeploymentSharedMetadataResponse) {}
+}
+
+message DecryptSecretRequest {
+    string secret = 1 [(validate.rules).string.min_len = 1];
+}
+
+message DecryptSecretResponse {
+    string decrypted_secret = 1;
+}
+
+message InstallToolRequest {
+    // Name of the tool.
+    string name = 1 [(validate.rules).string.min_len = 1];
+    // Version of the tool.
+    string version = 2 [(validate.rules).string.min_len = 1];
+    // Install script to install the tool.
+    // This script is templated with the following variables:
+    // - {{ .Name }}: name of the tool.
+    // - {{ .Version }}: version of the tool.
+    // - {{ .OutPath }}: file path where the tool will be installed.
+    // - {{ .TmpDir }}: directory where the tool will be downloaded and extracted.
+    // - {{ .Arch }}: GOARCH of the current machine.
+    // - {{ .Os }}: GOOS of the current machine.
+    //
+    // The script should return 0 if the installation is successful.
+    // Otherwise, it should return a non-zero value.
+    //
+    // The tool should be placed at {{ .OutPath }}
+    // e.g.) cp path/to/kubectl {{ .OutPath }}
+    // Then piped move it to the correct directory / filename and make it executable.
+    string install_script = 3 [(validate.rules).string.min_len = 1];
+}
+
+message InstallToolResponse {
+    // Installed path of the tool.
+    string installed_path = 1;
+}
+
+message ReportStageLogsRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string stage_id = 2 [(validate.rules).string.min_len = 1];
+    int32 retried_count = 3;
+    repeated model.LogBlock blocks = 4;
+}
+
+message ReportStageLogsResponse {
+}
+
+message ReportStageLogsFromLastCheckpointRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string stage_id = 2 [(validate.rules).string.min_len = 1];
+    int32 retried_count = 3;
+    repeated model.LogBlock blocks = 4;
+    bool completed = 5;
+}
+
+message ReportStageLogsFromLastCheckpointResponse {
+}
+
+message GetStageMetadataRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string stage_id = 2 [(validate.rules).string.min_len = 1];
+    string key = 3 [(validate.rules).string.min_len = 1];
+}
+
+message GetStageMetadataResponse {
+    string value = 1;
+    bool found = 2;
+}
+
+message PutStageMetadataRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string stage_id = 2 [(validate.rules).string.min_len = 1];
+    string key = 3 [(validate.rules).string.min_len = 1];
+    string value = 4;
+}
+
+message PutStageMetadataResponse {
+}
+
+message PutStageMetadataMultiRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string stage_id = 2 [(validate.rules).string.min_len = 1];
+    map<string, string> metadata = 3;
+}
+
+message PutStageMetadataMultiResponse {
+}
+
+message GetDeploymentPluginMetadataRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    // Plugin name to distinguish which plugin manages the metadata.
+    // e.g. "plugin-kubernetes", "plugin-wait-stage"
+    string plugin_name = 2;
+    string key = 3 [(validate.rules).string.min_len = 1];
+}
+
+message GetDeploymentPluginMetadataResponse {
+    string value = 1;
+    bool found = 2;
+}
+
+message PutDeploymentPluginMetadataRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    // Plugin name to distinguish which plugin manages the metadata.
+    // e.g. "plugin-kubernetes", "plugin-wait-stage"
+    string plugin_name = 2 [(validate.rules).string.min_len = 1];
+    string key = 3 [(validate.rules).string.min_len = 1];
+    string value = 4;
+}
+
+message PutDeploymentPluginMetadataResponse {
+}
+
+message PutDeploymentPluginMetadataMultiRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    // Plugin name to distinguish which plugin manages the metadata.
+    // e.g. "plugin-kubernetes", "plugin-wait-stage"
+    string plugin_name = 2 [(validate.rules).string.min_len = 1];
+    map<string, string> metadata = 3;
+}
+
+message PutDeploymentPluginMetadataMultiResponse {
+}
+
+message GetDeploymentSharedMetadataRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string key = 2 [(validate.rules).string.min_len = 1];
+}
+
+message GetDeploymentSharedMetadataResponse {
+    string value = 1;
+    bool found = 2;
+}

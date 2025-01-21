@@ -21,6 +21,7 @@ import (
 
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 )
@@ -430,13 +431,12 @@ kind: ConfigMap
 metadata:
   name: test-config
   annotations:
-    pipecd.dev/resource-key: "v1:ConfigMap::test-config"
+    pipecd.dev/resource-key: ":ConfigMap::test-config"
 `,
 			resourceKey: ResourceKey{
-				apiVersion: "v1",
-				kind:       "ConfigMap",
-				namespace:  "",
-				name:       "test-config",
+				groupKind: schema.ParseGroupKind("ConfigMap"),
+				namespace: "",
+				name:      "test-config",
 			},
 			expectedErr: nil,
 		},
@@ -449,13 +449,12 @@ kind: ConfigMap
 metadata:
   name: test-config
   annotations:
-    pipecd.dev/resource-key: "v1:ConfigMap::test-config"
+    pipecd.dev/resource-key: ":ConfigMap::test-config"
 `,
 			resourceKey: ResourceKey{
-				apiVersion: "v1",
-				kind:       "ConfigMap",
-				namespace:  "",
-				name:       "test-config",
+				groupKind: schema.ParseGroupKind("ConfigMap"),
+				namespace: "",
+				name:      "test-config",
 			},
 			expectedErr: errGet,
 		},
@@ -468,13 +467,12 @@ kind: ConfigMap
 metadata:
   name: test-config
   annotations:
-    pipecd.dev/resource-key: "v1:ConfigMap::test-config"
+    pipecd.dev/resource-key: ":ConfigMap::test-config"
 `,
 			resourceKey: ResourceKey{
-				apiVersion: "v1",
-				kind:       "ConfigMap",
-				namespace:  "",
-				name:       "test-config",
+				groupKind: schema.ParseGroupKind("ConfigMap"),
+				namespace: "",
+				name:      "test-config",
 			},
 			expectedErr: errDelete,
 		},
@@ -486,13 +484,12 @@ kind: ConfigMap
 metadata:
   name: test-config
   annotations:
-    pipecd.dev/resource-key: "v1:ConfigMap::test-config"
+    pipecd.dev/resource-key: ":ConfigMap::test-config"
 `,
 			resourceKey: ResourceKey{
-				apiVersion: "v1",
-				kind:       "ConfigMap",
-				namespace:  "",
-				name:       "another-config",
+				groupKind: schema.ParseGroupKind("ConfigMap"),
+				namespace: "",
+				name:      "another-config",
 			},
 			expectedErr: ErrNotFound,
 		},
@@ -505,13 +502,47 @@ metadata:
   name: test-config
   namespace: test-namespace
   annotations:
+    pipecd.dev/resource-key: ":ConfigMap:test-namespace:test-config"
+`,
+			resourceKey: ResourceKey{
+				groupKind: schema.ParseGroupKind("ConfigMap"),
+				namespace: "test-namespace",
+				name:      "test-config",
+			},
+			expectedErr: nil,
+		},
+		{
+			name: "successful delete with old format of resource key",
+			manifest: `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-config
+  annotations:
+    pipecd.dev/resource-key: "v1:ConfigMap::test-config"
+`,
+			resourceKey: ResourceKey{
+				groupKind: schema.ParseGroupKind("ConfigMap"),
+				namespace: "",
+				name:      "test-config",
+			},
+			expectedErr: nil,
+		},
+		{
+			name: "successful delete with namespace with old format of resource key",
+			manifest: `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-config
+  namespace: test-namespace
+  annotations:
     pipecd.dev/resource-key: "v1:ConfigMap:test-namespace:test-config"
 `,
 			resourceKey: ResourceKey{
-				apiVersion: "v1",
-				kind:       "ConfigMap",
-				namespace:  "test-namespace",
-				name:       "test-config",
+				groupKind: schema.ParseGroupKind("ConfigMap"),
+				namespace: "test-namespace",
+				name:      "test-config",
 			},
 			expectedErr: nil,
 		},

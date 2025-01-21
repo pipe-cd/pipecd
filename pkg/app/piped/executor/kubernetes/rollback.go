@@ -214,7 +214,7 @@ func (e *rollbackExecutor) ensureScriptRunRollback(ctx context.Context) model.St
 		}
 	}
 
-	ci := scriptrun.NewContextInfo(e.Deployment)
+	ci := scriptrun.NewContextInfo(e.Deployment, true)
 	ciEnv, err := ci.BuildEnv()
 	if err != nil {
 		e.LogPersister.Errorf("failed to build srcipt run context info: %w", err)

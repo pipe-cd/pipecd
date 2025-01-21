@@ -30,11 +30,10 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
-	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 )
 
@@ -43,11 +42,10 @@ type scheduler struct {
 	deployment *model.Deployment
 	workingDir string
 
-	stageBasedPluginsMap map[string]pluginapi.PluginClient
+	pluginRegistry plugin.PluginRegistry
 
 	apiClient       apiClient
 	gitClient       gitClient
-	metadataStore   metadatastore.MetadataStore
 	notifier        notifier
 	secretDecrypter secretDecrypter
 
@@ -79,7 +77,7 @@ func newScheduler(
 	workingDir string,
 	apiClient apiClient,
 	gitClient gitClient,
-	stageBasedPluginsMap map[string]pluginapi.PluginClient,
+	pluginRegistry plugin.PluginRegistry,
 	notifier notifier,
 	secretsDecrypter secretDecrypter,
 	logger *zap.Logger,
@@ -96,10 +94,9 @@ func newScheduler(
 	s := &scheduler{
 		deployment:           d,
 		workingDir:           workingDir,
-		stageBasedPluginsMap: stageBasedPluginsMap,
 		apiClient:            apiClient,
 		gitClient:            gitClient,
-		metadataStore:        metadatastore.NewMetadataStore(apiClient, d),
+		pluginRegistry:       pluginRegistry,
 		notifier:             notifier,
 		secretDecrypter:      secretsDecrypter,
 		doneDeploymentStatus: d.Status,
@@ -513,9 +510,9 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 	}
 
 	// Find the executor plugin for this stage.
-	plugin, ok := s.stageBasedPluginsMap[ps.Name]
-	if !ok {
-		s.logger.Error("failed to find the plugin for the stage", zap.String("stage-name", ps.Name))
+	plugin, err := s.pluginRegistry.GetPluginClientByStageName(ps.Name)
+	if err != nil {
+		s.logger.Error("failed to find the plugin for the stage", zap.String("stage-name", ps.Name), zap.Error(err))
 		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -717,7 +714,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 
 // getApplicationNotificationMentions returns the list of users groups who should be mentioned in the notification.
 func (s *scheduler) getApplicationNotificationMentions(event model.NotificationEventType) ([]string, []string, error) {
-	n, ok := s.metadataStore.Shared().Get(model.MetadataKeyDeploymentNotification)
+	n, ok := s.deployment.Metadata[model.MetadataKeyDeploymentNotification]
 	if !ok {
 		return []string{}, []string{}, nil
 	}

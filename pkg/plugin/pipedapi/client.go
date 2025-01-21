@@ -26,7 +26,7 @@ import (
 
 	"google.golang.org/grpc"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/cmd/piped/service"
+	service "github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcclient"
 )
 

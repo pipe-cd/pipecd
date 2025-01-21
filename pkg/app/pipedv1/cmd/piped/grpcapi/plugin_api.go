@@ -18,9 +18,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/cmd/piped/service"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
+	service "github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -32,8 +33,9 @@ type PluginAPI struct {
 	cfg       *config.PipedSpec
 	apiClient apiClient
 
-	toolRegistry *toolRegistry
-	Logger       *zap.Logger
+	toolRegistry          *toolRegistry
+	Logger                *zap.Logger
+	metadataStoreRegistry *metadatastore.MetadataStoreRegistry
 }
 
 type apiClient interface {
@@ -46,17 +48,18 @@ func (a *PluginAPI) Register(server *grpc.Server) {
 	service.RegisterPluginServiceServer(server, a)
 }
 
-func NewPluginAPI(cfg *config.PipedSpec, apiClient apiClient, toolsDir string, logger *zap.Logger) (*PluginAPI, error) {
+func NewPluginAPI(cfg *config.PipedSpec, apiClient apiClient, toolsDir string, logger *zap.Logger, metadataStoreRegistry *metadatastore.MetadataStoreRegistry) (*PluginAPI, error) {
 	toolRegistry, err := newToolRegistry(toolsDir)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create tool registry: %w", err)
 	}
 
 	return &PluginAPI{
-		cfg:          cfg,
-		apiClient:    apiClient,
-		toolRegistry: toolRegistry,
-		Logger:       logger.Named("plugin-api"),
+		cfg:                   cfg,
+		apiClient:             apiClient,
+		toolRegistry:          toolRegistry,
+		Logger:                logger.Named("plugin-api"),
+		metadataStoreRegistry: metadataStoreRegistry,
 	}, nil
 }
 
@@ -111,4 +114,32 @@ func (a *PluginAPI) ReportStageLogsFromLastCheckpoint(ctx context.Context, req *
 	}
 
 	return &service.ReportStageLogsFromLastCheckpointResponse{}, nil
+}
+
+func (a *PluginAPI) GetStageMetadata(ctx context.Context, req *service.GetStageMetadataRequest) (*service.GetStageMetadataResponse, error) {
+	return a.metadataStoreRegistry.GetStageMetadata(ctx, req)
+}
+
+func (a *PluginAPI) PutStageMetadata(ctx context.Context, req *service.PutStageMetadataRequest) (*service.PutStageMetadataResponse, error) {
+	return a.metadataStoreRegistry.PutStageMetadata(ctx, req)
+}
+
+func (a *PluginAPI) PutStageMetadataMulti(ctx context.Context, req *service.PutStageMetadataMultiRequest) (*service.PutStageMetadataMultiResponse, error) {
+	return a.metadataStoreRegistry.PutStageMetadataMulti(ctx, req)
+}
+
+func (a *PluginAPI) GetDeploymentPluginMetadata(ctx context.Context, req *service.GetDeploymentPluginMetadataRequest) (*service.GetDeploymentPluginMetadataResponse, error) {
+	return a.metadataStoreRegistry.GetDeploymentPluginMetadata(ctx, req)
+}
+
+func (a *PluginAPI) PutDeploymentPluginMetadata(ctx context.Context, req *service.PutDeploymentPluginMetadataRequest) (*service.PutDeploymentPluginMetadataResponse, error) {
+	return a.metadataStoreRegistry.PutDeploymentPluginMetadata(ctx, req)
+}
+
+func (a *PluginAPI) PutDeploymentPluginMetadataMulti(ctx context.Context, req *service.PutDeploymentPluginMetadataMultiRequest) (*service.PutDeploymentPluginMetadataMultiResponse, error) {
+	return a.metadataStoreRegistry.PutDeploymentPluginMetadataMulti(ctx, req)
+}
+
+func (a *PluginAPI) GetDeploymentSharedMetadata(ctx context.Context, req *service.GetDeploymentSharedMetadataRequest) (*service.GetDeploymentSharedMetadataResponse, error) {
+	return a.metadataStoreRegistry.GetDeploymentSharedMetadata(ctx, req)
 }
