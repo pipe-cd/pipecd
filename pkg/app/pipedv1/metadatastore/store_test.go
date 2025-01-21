@@ -16,7 +16,6 @@ package metadatastore
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -105,11 +104,11 @@ func TestStore(t *testing.T) {
 
 	ctx := context.Background()
 	store := newMetadataStore(ac, d)
-	fmt.Printf("[DEBUG] store.shared: %+v\n", store.shared)
-	fmt.Printf("[DEBUG] store.plugins: %+v\n", store.plugins)
-	fmt.Printf("[DEBUG] store.plugins[plugin-1]: %+v\n", store.plugins["plugin-1"])
-	fmt.Printf("[DEBUG] store.stages: %+v\n", store.stages)
-	fmt.Printf("[DEBUG] store.stages[stage-1]: %+v\n", store.stages["stage-1"])
+	t.Logf("[DEBUG] store.shared: %+v\n", store.shared)
+	t.Logf("[DEBUG] store.plugins: %+v\n", store.plugins)
+	t.Logf("[DEBUG] store.plugins[plugin-1]: %+v\n", store.plugins["plugin-1"])
+	t.Logf("[DEBUG] store.stages: %+v\n", store.stages)
+	t.Logf("[DEBUG] store.stages[stage-1]: %+v\n", store.stages["stage-1"])
 
 	// Shared metadata.
 	{
