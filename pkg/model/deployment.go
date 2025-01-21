@@ -228,3 +228,23 @@ func (p PipelineStages) Swap(i, j int) {
 func (p PipelineStages) Less(i, j int) bool {
 	return p[i].Index < p[j].Index
 }
+
+// func (d *Deployment) SharedMetadata() map[string]string {
+// 	if d.Metadata == nil {
+// 		d.Metadata = &DeploymentMetadata{}
+// 	}
+// 	if d.Metadata.Metadata == nil {
+// 		d.Metadata.Metadata = make(map[string]string)
+// 	}
+// 	return d.Metadata.Metadata
+// }
+
+// func (d *Deployment) PluginMetadata(pluginName string) map[string]string {
+// 	if d.Metadata == nil {
+// 		d.Metadata = &DeploymentMetadata{}
+// 	}
+// 	// if d.Metadata. == nil {
+// 	// d.Metadata.Metadata = make(map[string]string)
+// 	// return d.Metadata.Metadata[plugin]
+// 	return nil
+// }

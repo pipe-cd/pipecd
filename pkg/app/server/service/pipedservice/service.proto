@@ -85,7 +85,19 @@ service PipedService {
 
     // SaveDeploymentMetadata is used to persist the metadata of a specific deployment.
     // Different value for the same key will overwrite the previous value for that key.
-    rpc SaveDeploymentMetadata(SaveDeploymentMetadataRequest) returns (SaveDeploymentMetadataResponse) {}
+    // 
+    // Deprecated: Use SaveDeploymentSharedMetadata and SaveDeploymentPluginMetadata instead in pipedv1.
+    rpc SaveDeploymentMetadata(SaveDeploymentMetadataRequest) returns (SaveDeploymentMetadataResponse) { 
+        option deprecated = true; 
+    }
+
+    // SaveDeploymentSharedMetadata persists the shared metadata of a specific deployment.
+    // Different value for the same key will overwrite the previous value.
+    rpc SaveDeploymentSharedMetadata(SaveDeploymentSharedMetadataRequest) returns (SaveDeploymentSharedMetadataResponse) {}
+    
+    // SaveDeploymentPluginMetadata persists the metadata of a specific plugin of a deployment.
+    // Different value for the same key will overwrite the previous value.
+    rpc SaveDeploymentPluginMetadata(SaveDeploymentPluginMetadataRequest) returns (SaveDeploymentPluginMetadataResponse) {}
 
     // SaveStageMetadata is used to persist the metadata
     // of a specific stage of a deployment.
@@ -337,6 +349,23 @@ message SaveDeploymentMetadataRequest {
 }
 
 message SaveDeploymentMetadataResponse {
+}
+
+message SaveDeploymentSharedMetadataRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    map<string,string> metadata = 2;
+}
+
+message SaveDeploymentSharedMetadataResponse {
+}
+
+message SaveDeploymentPluginMetadataRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string plugin_name = 2 [(validate.rules).string.min_len = 1];
+    map<string,string> metadata = 3;
+}
+
+message SaveDeploymentPluginMetadataResponse {
 }
 
 message SaveStageMetadataRequest {

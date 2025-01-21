@@ -30,7 +30,6 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
@@ -47,7 +46,6 @@ type scheduler struct {
 
 	apiClient       apiClient
 	gitClient       gitClient
-	metadataStore   metadatastore.MetadataStore
 	notifier        notifier
 	secretDecrypter secretDecrypter
 
@@ -99,7 +97,6 @@ func newScheduler(
 		apiClient:            apiClient,
 		gitClient:            gitClient,
 		pluginRegistry:       pluginRegistry,
-		metadataStore:        metadatastore.NewMetadataStore(apiClient, d),
 		notifier:             notifier,
 		secretDecrypter:      secretsDecrypter,
 		doneDeploymentStatus: d.Status,
@@ -717,7 +714,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 
 // getApplicationNotificationMentions returns the list of users groups who should be mentioned in the notification.
 func (s *scheduler) getApplicationNotificationMentions(event model.NotificationEventType) ([]string, []string, error) {
-	n, ok := s.metadataStore.Shared().Get(model.MetadataKeyDeploymentNotification)
+	n, ok := s.deployment.Metadata[model.MetadataKeyDeploymentNotification]
 	if !ok {
 		return []string{}, []string{}, nil
 	}
