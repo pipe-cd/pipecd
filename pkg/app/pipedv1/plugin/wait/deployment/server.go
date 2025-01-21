@@ -108,12 +108,12 @@ func (s *deploymentServiceServer) DetermineStrategy(ctx context.Context, request
 func (s *deploymentServiceServer) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
 	stages := make([]*model.PipelineStage, 0, len(request.GetStages()))
 	for _, stage := range request.GetStages() {
+		waitStage := newWaitStage()
+
 		id := stage.GetId()
 		if id == "" {
 			id = fmt.Sprintf("stage-%d", stage.GetIndex())
 		}
-
-		waitStage := newWaitStage()
 		waitStage.Id = id
 		waitStage.Index = stage.GetIndex()
 		stages = append(stages, waitStage)
