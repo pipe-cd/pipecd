@@ -29,6 +29,12 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/signalhandler"
 )
 
+type Stage string
+
+const (
+	stageWait Stage = "WAIT"
+)
+
 type deploymentServiceServer struct {
 	deployment.UnimplementedDeploymentServiceServer
 

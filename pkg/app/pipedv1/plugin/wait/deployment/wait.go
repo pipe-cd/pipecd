@@ -24,12 +24,9 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 )
 
-type Stage string
-
 const (
-	logInterval        = 10 * time.Second
-	startTimeKey       = "startTime"
-	stageWait    Stage = "WAIT"
+	logInterval  = 10 * time.Second
+	startTimeKey = "startTime"
 )
 
 // Execute starts waiting for the specified duration.
