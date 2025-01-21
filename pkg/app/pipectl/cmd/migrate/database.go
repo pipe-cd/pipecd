@@ -37,6 +37,7 @@ func newDatabaseCommand(root *command) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "database",
 		Short: "Do migration tasks for database.",
+		Long:  "Make existing applications compatible with plugin-architectured piped. Once you execute this command for an application, it can be deployed using plugin-architectured piped.",
 		RunE:  cli.WithContext(c.run),
 	}
 
