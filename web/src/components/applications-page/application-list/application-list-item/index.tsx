@@ -12,7 +12,7 @@ import MenuIcon from "@material-ui/icons/MoreVert";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import clsx from "clsx";
 import dayjs from "dayjs";
-import { FC, memo, useState } from "react";
+import { FC, memo, useState, Fragment } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 import { PAGE_PATH_APPLICATIONS } from "~/constants/path";
@@ -160,10 +160,10 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
             <div className={classes.labels}>
               {app.labelsMap.length !== 0
                 ? app.labelsMap.map(([key, value]) => (
-                    <>
+                    <Fragment key={key}>
                       <span>{key + ": " + value}</span>
                       <br />
-                    </>
+                    </Fragment>
                   ))
                 : "-"}
             </div>
@@ -175,12 +175,12 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
                   {recentlyDeployment.versionsList.length !== 0 ? (
                     recentlyDeployment.versionsList.map((v) =>
                       v.name === "" ? (
-                        <>
+                        <Fragment key={v.version}>
                           <span>{v.version}</span>
                           <br />
-                        </>
+                        </Fragment>
                       ) : (
-                        <>
+                        <Fragment key={`${v.name}:${v.version}`}>
                           <Link
                             href={v.url.includes("://") ? v.url : `//${v.url}`}
                             target="_blank"
@@ -194,7 +194,7 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
                             <OpenInNewIcon className={classes.linkIcon} />
                           </Link>
                           <br />
-                        </>
+                        </Fragment>
                       )
                     )
                   ) : recentlyDeployment.version.includes(",") ? (
