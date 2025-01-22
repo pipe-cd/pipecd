@@ -25,10 +25,11 @@ import {
 } from "~/constants/path";
 import { APP_NAME } from "~/constants/common";
 import { LOGGING_IN_PROJECT, USER_PROJECTS } from "~/constants/localstorage";
-import { NavLink as RouterLink } from "react-router-dom";
+import { NavLink as RouterLink, useLocation } from "react-router-dom";
 import ArrowDownIcon from "@material-ui/icons/ArrowDropDown";
 import logo from "~~/assets/logo.svg";
 import { useAppSelector } from "~/hooks/redux";
+import clsx from "clsx";
 
 export const APP_HEADER_HEIGHT = 56;
 
@@ -94,6 +95,7 @@ const useStyles = makeStyles((theme) => ({
 
 export const Header: FC = memo(function Header() {
   const classes = useStyles();
+  const location = useLocation();
   const me = useAppSelector((state) => state.me);
   const [userAnchorEl, setUserAnchorEl] = useState<HTMLButtonElement | null>(
     null
@@ -151,11 +153,10 @@ export const Header: FC = memo(function Header() {
             <>
               <Link
                 component={RouterLink}
-                className={
-                  location.pathname === PAGE_PATH_APPLICATIONS
-                    ? classes.activeLink
-                    : classes.link
-                }
+                className={clsx(classes.link, {
+                  [classes.activeLink]:
+                    location.pathname === PAGE_PATH_APPLICATIONS,
+                })}
                 color="inherit"
                 to={PAGE_PATH_APPLICATIONS}
               >
@@ -163,11 +164,10 @@ export const Header: FC = memo(function Header() {
               </Link>
               <Link
                 component={RouterLink}
-                className={
-                  location.pathname === PAGE_PATH_DEPLOYMENTS
-                    ? classes.activeLink
-                    : classes.link
-                }
+                className={clsx(classes.link, {
+                  [classes.activeLink]:
+                    location.pathname === PAGE_PATH_DEPLOYMENTS,
+                })}
                 color="inherit"
                 to={PAGE_PATH_DEPLOYMENTS}
               >
@@ -175,11 +175,10 @@ export const Header: FC = memo(function Header() {
               </Link>
               <Link
                 component={RouterLink}
-                className={
-                  location.pathname === PAGE_PATH_DEPLOYMENT_CHAINS
-                    ? classes.activeLink
-                    : classes.link
-                }
+                className={clsx(classes.link, {
+                  [classes.activeLink]:
+                    location.pathname === PAGE_PATH_DEPLOYMENT_CHAINS,
+                })}
                 color="inherit"
                 to={PAGE_PATH_DEPLOYMENT_CHAINS}
               >
