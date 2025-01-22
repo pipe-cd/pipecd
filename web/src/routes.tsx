@@ -23,6 +23,9 @@ import {
   PAGE_PATH_LOGIN,
   PAGE_PATH_SETTINGS,
   PAGE_PATH_TOP,
+  PAGE_PATH_SETTINGS_PIPED,
+  PAGE_PATH_SETTINGS_PROJECT,
+  PAGE_PATH_SETTINGS_API_KEY,
 } from "~/constants/path";
 import {
   REDIRECT_PATH_KEY,
@@ -38,6 +41,9 @@ import {
 } from "~/modules/commands";
 import { fetchPipeds } from "~/modules/pipeds";
 import { sortedSet } from "~/utils/sorted-set";
+import { SettingsPipedPage } from "./components/settings-page/piped";
+import { SettingsProjectPage } from "./components/settings-page/project";
+import { APIKeyPage } from "./components/settings-page/api-key";
 
 const SettingsIndexPage = loadable(
   () => import(/* webpackChunkName: "settings" */ "~/components/settings-page"),
@@ -187,7 +193,21 @@ export const Routes: FC = () => {
           path={PAGE_PATH_DEPLOYMENT_CHAINS}
           element={<DeploymentChainsIndexPage />}
         />
-        <Route path={PAGE_PATH_SETTINGS} element={<SettingsIndexPage />} />
+        <Route path={PAGE_PATH_SETTINGS} element={<SettingsIndexPage />}>
+          <Route
+            path={PAGE_PATH_SETTINGS}
+            element={<Navigate to={PAGE_PATH_SETTINGS_PIPED} replace />}
+          />
+          <Route
+            path={PAGE_PATH_SETTINGS_PIPED}
+            element={<SettingsPipedPage />}
+          />
+          <Route
+            path={PAGE_PATH_SETTINGS_PROJECT}
+            element={<SettingsProjectPage />}
+          />
+          <Route path={PAGE_PATH_SETTINGS_API_KEY} element={<APIKeyPage />} />
+        </Route>
         <Route path={PAGE_PATH_INSIGHTS} element={<InsightIndexPage />} />
         <Route path={PAGE_PATH_EVENTS} element={<EventIndexPage />} />
         <Route
