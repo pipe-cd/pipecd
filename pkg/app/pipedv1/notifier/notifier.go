@@ -25,7 +25,7 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/pipe-cd/pipecd/pkg/config"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/version"
 )
@@ -57,31 +57,31 @@ func NewNotifier(cfg *config.PipedSpec, logger *zap.Logger) (*Notifier, error) {
 	}
 
 	handlers := make([]handler, 0, len(cfg.Notifications.Routes))
-	for _, route := range cfg.Notifications.Routes {
-		receiver, ok := receivers[route.Receiver]
-		if !ok {
-			return nil, fmt.Errorf("missing receiver %s that is used in route %s", route.Receiver, route.Name)
-		}
+	// for _, route := range cfg.Notifications.Routes {
+	// 	// receiver, ok := receivers[route.Receiver]
+	// 	// if !ok {
+	// 	// 	return nil, fmt.Errorf("missing receiver %s that is used in route %s", route.Receiver, route.Name)
+	// 	// }
 
-		var sd sender
-		switch {
-		case receiver.Slack != nil:
-			slacksender, err := newSlackSender(receiver.Name, *receiver.Slack, cfg.WebAddress, logger)
-			if err != nil {
-				return nil, fmt.Errorf("failed to create slack sender: %w", err)
-			}
-			sd = slacksender
-		case receiver.Webhook != nil:
-			sd = newWebhookSender(receiver.Name, *receiver.Webhook, cfg.WebAddress, logger)
-		default:
-			continue
-		}
+	// 	var sd sender
+	// 	switch {
+	// 	case receiver.Slack != nil:
+	// 		slacksender, err := newSlackSender(receiver.Name, *receiver.Slack, cfg.WebAddress, logger)
+	// 		if err != nil {
+	// 			return nil, fmt.Errorf("failed to create slack sender: %w", err)
+	// 		}
+	// 		sd = slacksender
+	// 	case receiver.Webhook != nil:
+	// 		sd = newWebhookSender(receiver.Name, *receiver.Webhook, cfg.WebAddress, logger)
+	// 	default:
+	// 		continue
+	// 	}
 
-		handlers = append(handlers, handler{
-			matcher: newMatcher(route),
-			sender:  sd,
-		})
-	}
+	// 	handlers = append(handlers, handler{
+	// 		matcher: newMatcher(route),
+	// 		sender:  sd,
+	// 	})
+	// }
 
 	return &Notifier{
 		config:      cfg,

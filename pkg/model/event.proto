@@ -46,9 +46,10 @@ message Event {
     EventStatus status = 8 [(validate.rules).enum.defined_only = true];
     string status_description = 9;
     // The key/value pairs that are attached to event.
+    // The key is like 'test-hoge-fuga'
     // This is intended to add more information from event trigger side.
     // E.g. send the app code commit hash to Deployment.
-    map<string,string> contexts = 10;
+    map<string,string> contexts = 10 [(validate.rules).map.keys.string.pattern = "^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$"];
 
     // Unix time when the event was handled.
     int64 handled_at = 13;

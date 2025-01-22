@@ -99,7 +99,7 @@ func (c *command) run(ctx context.Context, input cli.Input) error {
 	return generateConfig(ctx, input, p)
 }
 
-func generateConfig(ctx context.Context, input cli.Input, p prompt.Prompt) error {
+func generateConfig(_ context.Context, _ cli.Input, p prompt.Prompt) error {
 	// user's inputs
 	var (
 		platform   string

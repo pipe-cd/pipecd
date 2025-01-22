@@ -169,6 +169,23 @@ func (d *detector) check(ctx context.Context) {
 			if err := d.checkApplication(ctx, app, gitRepo, headCommit); err != nil {
 				d.logger.Error(fmt.Sprintf("failed to check application: %s", app.Id), zap.Error(err))
 			}
+
+			// Reset the app dir to the head commit.
+			// Some tools may create temporary files locally to render manifests.
+			// The detector reuses the same located local repository and it causes unexpected behavior by reusing such temporary files.
+			// So regularly run git clean on the app dir after each detection.
+			d.logger.Info("cleaning partially cloned repository",
+				zap.String("repo-id", repoID),
+				zap.String("app-id", app.Id),
+				zap.String("app-path", app.GitPath.Path),
+			)
+			if err := gitRepo.CleanPath(ctx, app.GitPath.Path); err != nil {
+				d.logger.Error("failed to clean partially cloned repository",
+					zap.String("repo-id", repoID),
+					zap.String("app-id", app.Id),
+					zap.String("app-path", app.GitPath.Path),
+					zap.Error(err))
+			}
 		}
 	}
 }
@@ -219,7 +236,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	return d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
 }
 
-func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application, repo git.Repo, headCommit git.Commit, watchingResourceKinds []provider.APIVersionKind) ([]provider.Manifest, error) {
+func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application, repo git.Worktree, headCommit git.Commit, watchingResourceKinds []provider.APIVersionKind) ([]provider.Manifest, error) {
 	var (
 		manifestCache = provider.AppManifestsCache{
 			AppID:  app.Id,
@@ -261,6 +278,8 @@ func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application
 			if err != nil {
 				return nil, fmt.Errorf("failed to copy the cloned git repository (%w)", err)
 			}
+			defer repo.Clean()
+
 			repoDir = repo.GetPath()
 			appDir = filepath.Join(repoDir, app.GitPath.Path)
 		}

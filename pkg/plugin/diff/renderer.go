@@ -218,6 +218,9 @@ func RenderPrimitiveValue(v reflect.Value) string {
 	case reflect.Float32, reflect.Float64:
 		return strconv.FormatFloat(v.Float(), 'f', -1, 64)
 
+	case reflect.Interface, reflect.Pointer:
+		return RenderPrimitiveValue(v.Elem())
+
 	default:
 		return v.String()
 	}

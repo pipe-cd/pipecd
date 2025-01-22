@@ -15,13 +15,13 @@
 package lambda
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/lambda/types"
+	"github.com/stretchr/testify/assert"
+
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/lambda"
 	"github.com/pipe-cd/pipecd/pkg/diff"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestIgnoreAndSortParameters(t *testing.T) {
@@ -124,8 +124,7 @@ func TestIgnoreAndSortParameters(t *testing.T) {
 			expectDiff: false,
 		},
 		{
-
-			name: "Not ignore added fields in headstate",
+			name: "Not ignore added fields in headspec",
 			liveSpec: provider.FunctionManifestSpec{
 				Tags: map[string]string{
 					"key1":                    "value1",
@@ -149,17 +148,50 @@ func TestIgnoreAndSortParameters(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			ignoreAndSortParameters(&tc.headSpec)
+			ignored := ignoreAndSortParameters(tc.headSpec)
 			result, err := provider.Diff(
 				provider.FunctionManifest{Spec: tc.liveSpec},
-				provider.FunctionManifest{Spec: tc.headSpec},
+				provider.FunctionManifest{Spec: ignored},
 				diff.WithEquateEmpty(),
 				diff.WithIgnoreAddingMapKeys(),
 				diff.WithCompareNumberAndNumericString(),
 			)
 			assert.NoError(t, err)
-			fmt.Println(result.Render(provider.DiffRenderOptions{}))
 			assert.Equal(t, tc.expectDiff, result.Diff.HasDiff())
 		})
 	}
+}
+
+func TestIgnoreAndSortParametersNotChangeOriginal(t *testing.T) {
+	t.Parallel()
+
+	headSpec := provider.FunctionManifestSpec{
+		S3Bucket: "test-bucket",
+		SourceCode: provider.SourceCode{
+			Git:  "https://test-repo.git",
+			Ref:  "test-ref",
+			Path: "test-path",
+		},
+		Architectures: []provider.Architecture{
+			{Name: string(types.ArchitectureX8664)},
+			{Name: string(types.ArchitectureArm64)},
+		},
+		VPCConfig: &provider.VPCConfig{
+			SubnetIDs: []string{"subnet-2", "subnet-1"},
+		},
+	}
+
+	_ = ignoreAndSortParameters(headSpec)
+
+	assert.Equal(t, "test-bucket", headSpec.S3Bucket)
+	assert.Equal(t, provider.SourceCode{
+		Git:  "https://test-repo.git",
+		Ref:  "test-ref",
+		Path: "test-path",
+	}, headSpec.SourceCode)
+	assert.Equal(t, []provider.Architecture{
+		{Name: string(types.ArchitectureX8664)},
+		{Name: string(types.ArchitectureArm64)}},
+		headSpec.Architectures)
+	assert.Equal(t, []string{"subnet-2", "subnet-1"}, headSpec.VPCConfig.SubnetIDs)
 }

@@ -138,6 +138,8 @@ func TestDo(t *testing.T) {
 				cancel()
 			}
 
+			defer cancel()
+
 			data, err := r.Do(ctx, tc.operation)
 			assert.Equal(t, tc.expected, data)
 			assert.Equal(t, tc.expectedErr, err)

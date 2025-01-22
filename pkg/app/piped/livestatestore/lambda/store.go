@@ -17,12 +17,12 @@ package lambda
 import (
 	"context"
 	"fmt"
-	"sync/atomic"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/service/lambda"
+	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
-	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/lambda"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -59,13 +59,13 @@ func (s *store) run(ctx context.Context) error {
 			return fmt.Errorf("failed to get Lambda function %s: %w", *funcCfg.FunctionName, err)
 		}
 
-		appId, ok := f.Tags[provider.LabelApplication]
+		appID, ok := f.Tags[provider.LabelApplication]
 		if !ok {
 			// Skip a function not managed by PipeCD.
 			continue
 		}
 
-		apps[appId] = app{
+		apps[appID] = app{
 			functionManifest: convertToManifest(f),
 			states: []*model.LambdaResourceState{
 				provider.MakeFunctionResourceState(f.Configuration),

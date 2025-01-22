@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
+
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
@@ -108,14 +109,14 @@ func makeTaskResourceState(task *types.Task, parentArn string) *model.ECSResourc
 	}
 
 	taskArnParts := strings.Split(*task.TaskArn, "/")
-	taskId := taskArnParts[len(taskArnParts)-1]
+	taskID := taskArnParts[len(taskArnParts)-1]
 
 	createdAt := task.CreatedAt.Unix()
 	return &model.ECSResourceState{
 		Id:        *task.TaskArn,
 		OwnerIds:  []string{parentArn},
 		ParentIds: []string{parentArn},
-		Name:      taskId,
+		Name:      taskID,
 
 		Kind: "Task",
 

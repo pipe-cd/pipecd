@@ -37,7 +37,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/backoff"
-	"github.com/pipe-cd/pipecd/pkg/config"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/regexpool"
@@ -257,7 +257,7 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 					}
 				}
 
-				appCfg, err := config.LoadApplication(repo.GetPath(), app.GitPath.GetApplicationConfigFilePath(), app.Kind)
+				appCfg, err := config.LoadApplication(repo.GetPath(), app.GitPath.GetApplicationConfigFilePath())
 				if err != nil {
 					w.logger.Error("failed to load application configuration", zap.Error(err))
 					continue
@@ -317,7 +317,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 	if err != nil {
 		return fmt.Errorf("failed to create a new temporary directory: %w", err)
 	}
-	tmpRepo, err := repo.Copy(filepath.Join(tmpDir, "tmp-repo"))
+	tmpRepo, err := repo.CopyToModify(filepath.Join(tmpDir, "tmp-repo"))
 	if err != nil {
 		return fmt.Errorf("failed to copy the repository to the temporary directory: %w", err)
 	}
@@ -478,7 +478,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 	if err != nil {
 		return fmt.Errorf("failed to create a new temporary directory: %w", err)
 	}
-	tmpRepo, err := repo.Copy(filepath.Join(tmpDir, "tmp-repo"))
+	tmpRepo, err := repo.CopyToModify(filepath.Join(tmpDir, "tmp-repo"))
 	if err != nil {
 		return fmt.Errorf("failed to copy the repository to the temporary directory: %w", err)
 	}

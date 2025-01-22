@@ -74,7 +74,8 @@ message Deployment {
     // The name of platform provider where to deploy this application.
     // This must be one of the provider names registered in the piped.
     string platform_provider = 11;
-
+    // The names of deploy taget where to deploy this application.
+    repeated string deploy_targets = 12;
     // Custom attributes to identify applications.
     map<string, string> labels = 10;
 
@@ -95,7 +96,9 @@ message Deployment {
     // The human-readable description why the deployment is at current status.
     string status_reason = 31;
     repeated PipelineStage stages = 32;
-    map<string,string> metadata = 33;
+    // Deprecated: Use metadata_v2 instead in pipedv1.
+    map<string, string> metadata = 33 [deprecated=true];
+    DeploymentMetadata metadata_v2 = 34;
 
     // Reference to the chain which the deployment belongs to.
     // Empty means the deployment is a standalone deployment.
@@ -155,4 +158,16 @@ message Commit {
     int64 pull_request = 5;
     string url = 6;
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
+}
+
+message DeploymentMetadata {
+    // shared is metadatas made by piped.
+    KeyValues shared = 1;
+    // plugins is metadatas made by plugins.
+    // The key is used to distinguish which plugin manages the metadata.
+    map<string, KeyValues> plugins = 2;
+
+    message KeyValues{
+        map<string, string> keyValues = 1;
+    }
 }

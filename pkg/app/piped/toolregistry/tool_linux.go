@@ -16,7 +16,7 @@ package toolregistry
 
 var kubectlInstallScript = `
 cd {{ .WorkingDir }}
-curl -LO https://storage.googleapis.com/kubernetes-release/release/v{{ .Version }}/bin/linux/amd64/kubectl
+curl -LO https://dl.k8s.io/release/v{{ .Version }}/bin/linux/amd64/kubectl
 mv kubectl {{ .BinDir }}/kubectl-{{ .Version }}
 chmod +x {{ .BinDir }}/kubectl-{{ .Version }}
 {{ if .AsDefault }}

@@ -19,12 +19,13 @@ import (
 	"fmt"
 	"time"
 
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/lambda"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
-	"go.uber.org/zap"
-	"google.golang.org/grpc"
 )
 
 type applicationLister interface {

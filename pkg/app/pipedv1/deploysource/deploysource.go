@@ -24,16 +24,26 @@ import (
 	"sync"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/sourceprocesser"
-	"github.com/pipe-cd/pipecd/pkg/config"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 )
 
 type DeploySource struct {
-	RepoDir                  string
-	AppDir                   string
-	Revision                 string
-	ApplicationConfig        *config.Config
-	GenericApplicationConfig *config.GenericApplicationSpec
+	RepoDir                   string
+	AppDir                    string
+	Revision                  string
+	ApplicationConfig         []byte
+	ApplicationConfigFilename string
+}
+
+func (d *DeploySource) ToPluginDeploySource() *deployment.DeploymentSource {
+	return &deployment.DeploymentSource{
+		ApplicationDirectory:      d.AppDir,
+		CommitHash:                d.Revision,
+		ApplicationConfig:         d.ApplicationConfig,
+		ApplicationConfigFilename: d.ApplicationConfigFilename,
+	}
 }
 
 type Provider interface {
@@ -50,7 +60,7 @@ type provider struct {
 	cloner          SourceCloner
 	revisionName    string
 	revision        string
-	appGitPath      model.ApplicationGitPath
+	appGitPath      *model.ApplicationGitPath
 	secretDecrypter secretDecrypter
 
 	done    bool
@@ -63,7 +73,7 @@ type provider struct {
 func NewProvider(
 	workingDir string,
 	cloner SourceCloner,
-	appGitPath model.ApplicationGitPath,
+	appGitPath *model.ApplicationGitPath,
 	sd secretDecrypter,
 ) Provider {
 
@@ -134,7 +144,14 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 		cfgFileRelPath = p.appGitPath.GetApplicationConfigFilePath()
 		cfgFileAbsPath = filepath.Join(repoDir, cfgFileRelPath)
 	)
-	cfg, err := config.LoadFromYAML(cfgFileAbsPath)
+
+	cfgFileContent, err := os.ReadFile(cfgFileAbsPath)
+	if err != nil {
+		fmt.Fprintf(lw, "Unable to load the application configuration file at %s (%v)\n", cfgFileRelPath, err)
+		return nil, err
+	}
+	cfg, err := config.DecodeYAML[*config.GenericApplicationSpec](cfgFileContent)
+
 	if err != nil {
 		fmt.Fprintf(lw, "Unable to load the application configuration file at %s (%v)\n", cfgFileRelPath, err)
 
@@ -144,11 +161,8 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 		return nil, err
 	}
 
-	gac, ok := cfg.GetGenericApplication()
-	if !ok {
-		fmt.Fprintf(lw, "Invalid application kind %s\n", cfg.Kind)
-		return nil, fmt.Errorf("unsupport application kind %s", cfg.Kind)
-	}
+	gac := cfg.Spec
+
 	fmt.Fprintln(lw, "Successfully loaded the application configuration file")
 
 	var templProcessors []sourceprocesser.SourceTemplateProcessor
@@ -172,11 +186,10 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 	}
 
 	return &DeploySource{
-		RepoDir:                  repoDir,
-		AppDir:                   appDir,
-		Revision:                 p.revision,
-		ApplicationConfig:        cfg,
-		GenericApplicationConfig: &gac,
+		RepoDir:           repoDir,
+		AppDir:            appDir,
+		Revision:          p.revision,
+		ApplicationConfig: cfgFileContent,
 	}, nil
 }
 
@@ -192,10 +205,9 @@ func (p *provider) copy(lw io.Writer) (*DeploySource, error) {
 	}
 
 	return &DeploySource{
-		RepoDir:                  dest,
-		AppDir:                   filepath.Join(dest, p.appGitPath.Path),
-		Revision:                 p.revision,
-		ApplicationConfig:        p.source.ApplicationConfig,
-		GenericApplicationConfig: p.source.GenericApplicationConfig,
+		RepoDir:           dest,
+		AppDir:            filepath.Join(dest, p.appGitPath.Path),
+		Revision:          p.revision,
+		ApplicationConfig: p.source.ApplicationConfig,
 	}, nil
 }

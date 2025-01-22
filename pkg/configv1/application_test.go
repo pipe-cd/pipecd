@@ -18,6 +18,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/creasty/defaults"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -403,6 +404,7 @@ func TestGenericTriggerConfiguration(t *testing.T) {
 				Planner: DeploymentPlanner{
 					AutoRollback: newBoolPointer(true),
 				},
+				Pipeline: &DeploymentPipeline{},
 			},
 			expectedError: nil,
 		},
@@ -446,6 +448,7 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 				Planner: DeploymentPlanner{
 					AutoRollback: newBoolPointer(true),
 				},
+				Pipeline: &DeploymentPipeline{},
 			},
 			expectedError: nil,
 		},
@@ -467,6 +470,7 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 				Planner: DeploymentPlanner{
 					AutoRollback: newBoolPointer(true),
 				},
+				Pipeline: &DeploymentPipeline{},
 			},
 			expectedError: nil,
 		},
@@ -488,6 +492,7 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 				Planner: DeploymentPlanner{
 					AutoRollback: newBoolPointer(true),
 				},
+				Pipeline: &DeploymentPipeline{},
 			},
 			expectedError: nil,
 		},
@@ -549,6 +554,7 @@ func TestGenericPostSyncConfiguration(t *testing.T) {
 						},
 					},
 				},
+				Pipeline: &DeploymentPipeline{},
 			},
 			expectedError: nil,
 		},
@@ -562,6 +568,61 @@ func TestGenericPostSyncConfiguration(t *testing.T) {
 				assert.Equal(t, tc.expectedAPIVersion, cfg.APIVersion)
 				assert.Equal(t, tc.expectedSpec, cfg.Spec)
 			}
+		})
+	}
+}
+func TestGetStageByte(t *testing.T) {
+	testcases := []struct {
+		name   string
+		s      GenericApplicationSpec
+		index  int32
+		want   []byte
+		wantOk bool
+	}{
+		{
+			name:   "pipeline not defined",
+			s:      GenericApplicationSpec{},
+			index:  0,
+			want:   nil,
+			wantOk: true,
+		},
+		{
+			name: "valid stage index",
+			s: GenericApplicationSpec{
+				Pipeline: &DeploymentPipeline{
+					Stages: []PipelineStage{
+						{
+							Name: model.StageK8sSync,
+						},
+					},
+				},
+			},
+			index:  0,
+			want:   []byte(`{"id":"","name":"K8S_SYNC","timeout":"0s","with":null}`),
+			wantOk: true,
+		},
+		{
+			name: "invalid stage index",
+			s: GenericApplicationSpec{
+				Pipeline: &DeploymentPipeline{
+					Stages: []PipelineStage{
+						{
+							Name: model.StageK8sSync,
+						},
+					},
+				},
+			},
+			index:  1,
+			want:   nil,
+			wantOk: false,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			defaults.Set(&tc.s)
+			got, ok := tc.s.GetStageByte(tc.index)
+			assert.Equal(t, tc.wantOk, ok)
+			assert.Equal(t, string(tc.want), string(got))
 		})
 	}
 }

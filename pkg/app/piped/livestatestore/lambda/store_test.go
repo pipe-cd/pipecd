@@ -20,8 +20,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/lambda/types"
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/lambda"
 	"github.com/stretchr/testify/assert"
+
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/lambda"
 )
 
 func TestConvertToManifest(t *testing.T) {

@@ -7,4 +7,5 @@ export const APPLICATION_HEALTH_STATUS_TEXT: Record<
   [ApplicationLiveStateSnapshot.Status.UNKNOWN]: "Unknown",
   [ApplicationLiveStateSnapshot.Status.HEALTHY]: "Healthy",
   [ApplicationLiveStateSnapshot.Status.OTHER]: "Other",
+  [ApplicationLiveStateSnapshot.Status.UNHEALTHY]: "Unhealthy",
 };

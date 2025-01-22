@@ -18,8 +18,9 @@ import (
 	"context"
 	"hash/fnv"
 
-	"github.com/pipe-cd/pipecd/pkg/model"
 	"go.opentelemetry.io/otel/trace"
+
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 func newContextWithDeploymentSpan(ctx context.Context, deployment *model.Deployment) context.Context {

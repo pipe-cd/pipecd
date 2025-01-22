@@ -1,7 +1,4 @@
-//import { waitFor } from "@testing-library/react";
-//import userEvent from "@testing-library/user-event";
 import { setupServer } from "msw/node";
-//import { UI_TEXT_SAVE } from "~/constants/ui-text";
 import {
   listApplicationsHandler,
   updateApplicationHandler,
@@ -65,29 +62,3 @@ test("Show target application info ", () => {
     screen.getByText(`${dummyPiped.name} (${dummyPiped.id})`)
   ).toBeInTheDocument();
 });
-
-// TODO: Uncomment out after it terns out why pointer-events set to "none"
-/*
-test("Edit an application ", async () => {
-  const store = createReduxStore(initialState);
-  render(<EditApplicationDrawer onUpdated={() => null} />, {
-    store,
-  });
-
-  expect(
-    screen.getByRole("heading", {
-      name: `Edit "${dummyApplication.name}"`,
-    })
-  );
-  userEvent.type(screen.getByRole("textbox", { name: /^name$/i }), "new-name");
-  userEvent.click(screen.getByRole("button", { name: UI_TEXT_SAVE }));
-
-  await waitFor(() =>
-    expect(
-      screen.queryByRole("heading", {
-        name: `Edit "${dummyApplication.name}"`,
-      })
-    ).not.toBeInTheDocument()
-  );
-});
-*/

@@ -55,6 +55,21 @@ else
 	helm package manifests/$(MOD) --version $(VERSION) --app-version $(VERSION) --dependency-update --destination .artifacts
 endif
 
+.PHONY: build/plugin
+build/plugin: PLUGINS_BIN_DIR ?= ~/.piped/plugins
+build/plugin: PLUGINS_SRC_DIR ?= ./pkg/app/pipedv1/plugin
+build/plugin: PLUGINS_OUT_DIR ?= ./.artifacts/plugins
+build/plugin: PLUGINS ?= $(shell find $(PLUGINS_SRC_DIR) -mindepth 1 -maxdepth 1 -type d | while read -r dir; do basename "$$dir"; done | paste -sd, -) # comma separated list of plugins. eg: PLUGINS=kubernetes,ecs,lambda
+build/plugin:
+	mkdir -p $(PLUGINS_BIN_DIR)
+	@echo "Building plugins..."
+	@for plugin in $(shell echo $(PLUGINS) | tr ',' ' '); do \
+		echo "Building plugin: $$plugin"; \
+		go build -o $(PLUGINS_OUT_DIR)/$$plugin $(PLUGINS_SRC_DIR)/$$plugin \
+			&& cp $(PLUGINS_OUT_DIR)/$$plugin $(PLUGINS_BIN_DIR)/$$plugin; \
+	done
+	@echo "Plugins are built and copied to $(PLUGINS_BIN_DIR)"
+
 .PHONY: push
 push/chart: BUCKET ?= charts.pipecd.dev
 push/chart: VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7)
@@ -76,13 +91,16 @@ test: test/go test/web
 test/go: COVERAGE ?= false
 test/go: COVERAGE_OPTS ?= -covermode=atomic
 test/go: COVERAGE_OUTPUT ?= coverage.out
+test/go: setup-envtest
+test/go: ENVTEST_BIN ?= ${PWD}/.dev/bin # We need an absolute path for setup-envtest
+test/go: KUBEBUILDER_ASSETS ?= "$(shell setup-envtest use --bin-dir $(ENVTEST_BIN) -p path)"
 test/go:
 ifeq ($(COVERAGE), true)
-	go test -failfast -race $(COVERAGE_OPTS) -coverprofile=$(COVERAGE_OUTPUT).tmp ./pkg/... ./cmd/...
+	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) go test -failfast -race $(COVERAGE_OPTS) -coverprofile=$(COVERAGE_OUTPUT).tmp ./pkg/... ./cmd/...
 	cat $(COVERAGE_OUTPUT).tmp | grep -v ".pb.go\|.pb.validate.go" > $(COVERAGE_OUTPUT)
 	rm -rf $(COVERAGE_OUTPUT).tmp
 else
-	go test -failfast -race ./pkg/... ./cmd/...
+	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) go test -failfast -race ./pkg/... ./cmd/...
 endif
 
 .PHONY: test/web
@@ -156,8 +174,8 @@ run/site:
 
 .PHONY: lint/go
 lint/go: FIX ?= false
-lint/go: VERSION ?= sha256:fb70c9b2e6d0763141f057abcafde7f88d5e4bb3b5882d6b14bc79382f04481c #v1.55.2
-lint/go: FLAGS ?= --rm --platform linux/amd64 -e GOCACHE=/repo/.cache/go-build -e GOLANGCI_LINT_CACHE=/repo/.cache/golangci-lint -v ${PWD}:/repo -w /repo -it
+lint/go: VERSION ?= sha256:4e53bfe25ef2f1e14a95da42d694211080f40d118730541ce1513a83cf7587ec # v1.62.2
+lint/go: FLAGS ?= --rm -e GOCACHE=/repo/.cache/go-build -e GOLANGCI_LINT_CACHE=/repo/.cache/golangci-lint -v ${PWD}:/repo -w /repo -it
 lint/go:
 ifeq ($(FIX),true)
 	docker run ${FLAGS} golangci/golangci-lint@${VERSION} golangci-lint run -v --fix
@@ -200,8 +218,8 @@ update/copyright:
 
 .PHONY: gen/code
 gen/code:
-	# NOTE: Specify a specific version temporally until the next release.
-	docker run --rm -v ${PWD}:/repo -it --entrypoint ./tool/codegen/codegen.sh ghcr.io/pipe-cd/codegen@sha256:3fd8e22eeab21bab2a2f6c1d2770b069922f4973465d57386d672574931943e8 /repo #v0.47.3-rc0-2-g462b842
+	# NOTE: Keep this container image as same as defined in .github/workflows/codegen.yml
+	docker run --rm -v ${PWD}:/repo -it --entrypoint ./tool/codegen/codegen.sh ghcr.io/pipe-cd/codegen@sha256:fcb600d82cc4acc76f532c292445f868dfa176d6db116b6c5b18b81a1b1c5fa9 /repo # v0.50.0-51-gb98a963
 
 .PHONY: gen/test-tls
 gen/test-tls:
@@ -239,3 +257,7 @@ kind-up:
 .PHONY: kind-down
 kind-down:
 	kind delete cluster --name pipecd
+
+.PHONY: setup-envtest
+setup-envtest: ## Download setup-envtest locally if necessary.
+	test -s $(GOBIN)/setup-envtest || go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest

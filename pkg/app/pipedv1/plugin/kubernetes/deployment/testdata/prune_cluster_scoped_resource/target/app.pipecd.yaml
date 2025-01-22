@@ -1,0 +1,12 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  name: namespace
+  quickSync:
+    prune: true
+  input:
+    autoCreateNamespace: true
+    namespace: test-1
+    manifests:
+      - crontab.yaml
+    kubectlVersion: 1.31.0

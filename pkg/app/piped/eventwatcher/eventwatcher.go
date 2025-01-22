@@ -56,6 +56,8 @@ const (
 	numToMakeOutdated = 10
 )
 
+var errNoChanges = errors.New("nothing to commit")
+
 type Watcher interface {
 	Run(context.Context) error
 }
@@ -124,7 +126,8 @@ func (w *watcher) Run(ctx context.Context) error {
 
 	workingDir, err := os.MkdirTemp("", "event-watcher")
 	if err != nil {
-		return fmt.Errorf("failed to create the working directory: %w", err)
+		w.logger.Error("failed to create the working directory", zap.Error(err))
+		return err
 	}
 	defer os.RemoveAll(workingDir)
 	w.workingDir = workingDir
@@ -132,6 +135,7 @@ func (w *watcher) Run(ctx context.Context) error {
 	for _, r := range w.config.Repositories {
 		repo, err := w.cloneRepo(ctx, r)
 		if err != nil {
+			w.logger.Error("failed to clone repository", zap.String("repo-id", r.RepoID), zap.Error(err))
 			return err
 		}
 		defer repo.Clean()
@@ -301,11 +305,13 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 func (w *watcher) cloneRepo(ctx context.Context, repoCfg config.PipedRepository) (git.Repo, error) {
 	dst, err := os.MkdirTemp(w.workingDir, repoCfg.RepoID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create a new temporary directory: %w", err)
+		w.logger.Error("failed to create a new temporary directory", zap.Error(err))
+		return nil, err
 	}
 	repo, err := w.gitClient.Clone(ctx, repoCfg.RepoID, repoCfg.Remote, repoCfg.Branch, dst)
 	if err != nil {
-		return nil, fmt.Errorf("failed to clone repository %s: %w", repoCfg.RepoID, err)
+		w.logger.Error("failed to clone repository", zap.String("repo-id", repoCfg.RepoID), zap.Error(err))
+		return nil, err
 	}
 	return repo, nil
 }
@@ -315,11 +321,13 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 	// Copy the repo to another directory to modify local file to avoid reverting previous changes.
 	tmpDir, err := os.MkdirTemp(w.workingDir, "repo")
 	if err != nil {
-		return fmt.Errorf("failed to create a new temporary directory: %w", err)
+		w.logger.Error("failed to create a new temporary directory", zap.Error(err))
+		return err
 	}
-	tmpRepo, err := repo.Copy(filepath.Join(tmpDir, "tmp-repo"))
+	tmpRepo, err := repo.CopyToModify(filepath.Join(tmpDir, "tmp-repo"))
 	if err != nil {
-		return fmt.Errorf("failed to copy the repository to the temporary directory: %w", err)
+		w.logger.Error("failed to copy the repository to the temporary directory", zap.Error(err))
+		return err
 	}
 	// nolint: errcheck
 	defer tmpRepo.Clean()
@@ -336,6 +344,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 		outDatedDuration    = time.Hour
 		gitUpdateEvent      = false
 		branchHandledEvents = make(map[string][]*pipedservice.ReportEventStatusesRequest_Event, len(eventCfgs))
+		gitNoChangeEvents   = make([]*pipedservice.ReportEventStatusesRequest_Event, 0)
 	)
 	for _, e := range eventCfgs {
 		for _, cfg := range e.Configs {
@@ -365,7 +374,8 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 					Labels: matcher.Labels,
 				})
 				if err != nil {
-					return fmt.Errorf("failed to get the latest event: %w", err)
+					w.logger.Error("failed to get the latest event", zap.Error(err))
+					return err
 				}
 				// The case where the latest event has already been handled.
 				if resp.Event.CreatedAt > latestEvent.CreatedAt {
@@ -388,7 +398,8 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 			switch handler.Type {
 			case config.EventWatcherHandlerTypeGitUpdate:
 				branchName, err := w.commitFiles(ctx, latestEvent, matcher.Name, handler.Config.CommitMessage, e.GitPath, handler.Config.Replacements, tmpRepo, handler.Config.MakePullRequest)
-				if err != nil {
+				noChange := errors.Is(err, errNoChanges)
+				if err != nil && !noChange {
 					w.logger.Error("failed to commit outdated files", zap.Error(err))
 					handledEvent := &pipedservice.ReportEventStatusesRequest_Event{
 						Id:                latestEvent.Id,
@@ -398,12 +409,18 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 					branchHandledEvents[branchName] = append(branchHandledEvents[branchName], handledEvent)
 					continue
 				}
+
 				handledEvent := &pipedservice.ReportEventStatusesRequest_Event{
-					Id:                latestEvent.Id,
-					Status:            model.EventStatus_EVENT_SUCCESS,
-					StatusDescription: fmt.Sprintf("Successfully updated %d files in the %q repository", len(handler.Config.Replacements), repoID),
+					Id:     latestEvent.Id,
+					Status: model.EventStatus_EVENT_SUCCESS,
 				}
-				branchHandledEvents[branchName] = append(branchHandledEvents[branchName], handledEvent)
+				if noChange {
+					handledEvent.StatusDescription = "Nothing to commit"
+					gitNoChangeEvents = append(gitNoChangeEvents, handledEvent)
+				} else {
+					handledEvent.StatusDescription = fmt.Sprintf("Successfully updated %d files in the %q repository", len(handler.Config.Replacements), repoID)
+					branchHandledEvents[branchName] = append(branchHandledEvents[branchName], handledEvent)
+				}
 				if latestEvent.CreatedAt > maxTimestamp {
 					maxTimestamp = latestEvent.CreatedAt
 				}
@@ -419,7 +436,8 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 	}
 	if len(outDatedEvents) > 0 {
 		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: outDatedEvents}); err != nil {
-			return fmt.Errorf("failed to report event statuses: %w", err)
+			w.logger.Error("failed to report event statuses", zap.Error(err))
+			return err
 		}
 		w.logger.Info(fmt.Sprintf("successfully made %d events OUTDATED", len(outDatedEvents)))
 	}
@@ -428,12 +446,22 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 		return nil
 	}
 
+	if len(gitNoChangeEvents) > 0 {
+		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: gitNoChangeEvents}); err != nil {
+			w.logger.Error("failed to report event statuses", zap.Error(err))
+		}
+		w.executionMilestoneMap.Store(repoID, maxTimestamp)
+	}
+
 	var responseError error
 	retry := backoff.NewRetry(retryPushNum, backoff.NewConstant(retryPushInterval))
 	for branch, events := range branchHandledEvents {
 		_, err = retry.Do(ctx, func() (interface{}, error) {
-			err := tmpRepo.Push(ctx, branch)
-			return nil, err
+			if err := tmpRepo.Push(ctx, branch); err != nil {
+				w.logger.Error("failed to push commits", zap.String("repo-id", repoID), zap.String("branch", branch), zap.Error(err))
+				return nil, err
+			}
+			return nil, nil
 		})
 
 		if err == nil {
@@ -476,11 +504,13 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 	// Copy the repo to another directory to modify local file to avoid reverting previous changes.
 	tmpDir, err := os.MkdirTemp(w.workingDir, "repo")
 	if err != nil {
-		return fmt.Errorf("failed to create a new temporary directory: %w", err)
+		w.logger.Error("failed to create a new temporary directory", zap.Error(err))
+		return err
 	}
-	tmpRepo, err := repo.Copy(filepath.Join(tmpDir, "tmp-repo"))
+	tmpRepo, err := repo.CopyToModify(filepath.Join(tmpDir, "tmp-repo"))
 	if err != nil {
-		return fmt.Errorf("failed to copy the repository to the temporary directory: %w", err)
+		w.logger.Error("failed to copy the repository to the temporary directory", zap.Error(err))
+		return err
 	}
 	defer tmpRepo.Clean()
 
@@ -519,7 +549,8 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 				Labels: e.Labels,
 			})
 			if err != nil {
-				return fmt.Errorf("failed to get the latest event: %w", err)
+				w.logger.Error("failed to get the latest event", zap.Error(err))
+				return err
 			}
 			// The case where the latest event has already been handled.
 			if resp.Event.CreatedAt > latestEvent.CreatedAt {
@@ -560,7 +591,8 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 	}
 	if len(outDatedEvents) > 0 {
 		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: outDatedEvents}); err != nil {
-			return fmt.Errorf("failed to report event statuses: %w", err)
+			w.logger.Error("failed to report event statuses", zap.Error(err))
+			return err
 		}
 		w.logger.Info(fmt.Sprintf("successfully made %d events OUTDATED", len(outDatedEvents)))
 	}
@@ -570,12 +602,16 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 
 	retry := backoff.NewRetry(retryPushNum, backoff.NewConstant(retryPushInterval))
 	_, err = retry.Do(ctx, func() (interface{}, error) {
-		err := tmpRepo.Push(ctx, tmpRepo.GetClonedBranch())
-		return nil, err
+		if err := tmpRepo.Push(ctx, tmpRepo.GetClonedBranch()); err != nil {
+			w.logger.Error("failed to push commits", zap.String("repo-id", repoID), zap.String("branch", tmpRepo.GetClonedBranch()), zap.Error(err))
+			return nil, err
+		}
+		return nil, nil
 	})
 	if err == nil {
 		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: handledEvents}); err != nil {
-			return fmt.Errorf("failed to report event statuses: %w", err)
+			w.logger.Error("failed to report event statuses", zap.Error(err))
+			return err
 		}
 		w.milestoneMap.Store(repoID, maxTimestamp)
 		return nil
@@ -596,13 +632,16 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 		handledEvents[i].StatusDescription = fmt.Sprintf("Failed to push changed files: %v", err)
 	}
 	if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: handledEvents}); err != nil {
-		return fmt.Errorf("failed to report event statuses: %w", err)
+		w.logger.Error("failed to report event statuses: %w", zap.Error(err))
+		return err
 	}
 	w.milestoneMap.Store(repoID, maxTimestamp)
-	return fmt.Errorf("failed to push commits: %w", err)
+	w.logger.Error("failed to push commits", zap.Error(err))
+	return err
 }
 
 // commitFiles commits changes if the data in Git is different from the latest event.
+// If there are no changes to commit, it returns errNoChanges.
 func (w *watcher) commitFiles(ctx context.Context, latestEvent *model.Event, eventName, commitMsg, gitPath string, replacements []config.EventWatcherReplacement, repo git.Repo, newBranch bool) (string, error) {
 	// Determine files to be changed by comparing with the latest event.
 	changes := make(map[string][]byte, len(replacements))
@@ -629,6 +668,7 @@ func (w *watcher) commitFiles(ctx context.Context, latestEvent *model.Event, eve
 			newContent, upToDate, err = modifyText(path, r.Regex, latestEvent.Data)
 		}
 		if err != nil {
+			w.logger.Error("failed to modify file", zap.Error(err))
 			return "", err
 		}
 		if upToDate {
@@ -636,12 +676,13 @@ func (w *watcher) commitFiles(ctx context.Context, latestEvent *model.Event, eve
 		}
 
 		if err := os.WriteFile(path, newContent, os.ModePerm); err != nil {
-			return "", fmt.Errorf("failed to write file: %w", err)
+			w.logger.Error("failed to write file", zap.Error(err))
+			return "", err
 		}
 		changes[filePath] = newContent
 	}
 	if len(changes) == 0 {
-		return "", nil
+		return "", errNoChanges
 	}
 
 	args := argsTemplate{
@@ -652,7 +693,12 @@ func (w *watcher) commitFiles(ctx context.Context, latestEvent *model.Event, eve
 	branch := makeBranchName(newBranch, eventName, repo.GetClonedBranch())
 	trailers := maps.Clone(latestEvent.Contexts)
 	if err := repo.CommitChanges(ctx, branch, commitMsg, newBranch, changes, trailers); err != nil {
-		return "", fmt.Errorf("failed to perform git commit: %w", err)
+		w.logger.Error("failed to perform git commit",
+			zap.String("branch", branch),
+			zap.Bool("make-new-branch", newBranch),
+			zap.Int("changed-files", len(changes)),
+			zap.Error(err))
+		return "", err
 	}
 	w.logger.Info(fmt.Sprintf("event watcher will update values of Event %q", eventName))
 	return branch, nil

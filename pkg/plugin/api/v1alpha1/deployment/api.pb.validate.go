@@ -485,6 +485,8 @@ func (m *DetermineStrategyResponse) validate(all bool) error {
 
 	// no validation rules for Summary
 
+	// no validation rules for Unsupported
+
 	if len(errors) > 0 {
 		return DetermineStrategyResponseMultiError(errors)
 	}
@@ -1287,6 +1289,254 @@ var _ interface {
 	ErrorName() string
 } = FetchDefinedStagesResponseValidationError{}
 
+// Validate checks the field values on ExecuteStageRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ExecuteStageRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ExecuteStageRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ExecuteStageRequestMultiError, or nil if none found.
+func (m *ExecuteStageRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ExecuteStageRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetInput() == nil {
+		err := ExecuteStageRequestValidationError{
+			field:  "Input",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetInput()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ExecuteStageRequestValidationError{
+					field:  "Input",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ExecuteStageRequestValidationError{
+					field:  "Input",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetInput()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ExecuteStageRequestValidationError{
+				field:  "Input",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return ExecuteStageRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ExecuteStageRequestMultiError is an error wrapping multiple validation
+// errors returned by ExecuteStageRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ExecuteStageRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ExecuteStageRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ExecuteStageRequestMultiError) AllErrors() []error { return m }
+
+// ExecuteStageRequestValidationError is the validation error returned by
+// ExecuteStageRequest.Validate if the designated constraints aren't met.
+type ExecuteStageRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ExecuteStageRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ExecuteStageRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ExecuteStageRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ExecuteStageRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ExecuteStageRequestValidationError) ErrorName() string {
+	return "ExecuteStageRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ExecuteStageRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sExecuteStageRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ExecuteStageRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ExecuteStageRequestValidationError{}
+
+// Validate checks the field values on ExecuteStageResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ExecuteStageResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ExecuteStageResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ExecuteStageResponseMultiError, or nil if none found.
+func (m *ExecuteStageResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ExecuteStageResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Status
+
+	// no validation rules for Message
+
+	if len(errors) > 0 {
+		return ExecuteStageResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ExecuteStageResponseMultiError is an error wrapping multiple validation
+// errors returned by ExecuteStageResponse.ValidateAll() if the designated
+// constraints aren't met.
+type ExecuteStageResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ExecuteStageResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ExecuteStageResponseMultiError) AllErrors() []error { return m }
+
+// ExecuteStageResponseValidationError is the validation error returned by
+// ExecuteStageResponse.Validate if the designated constraints aren't met.
+type ExecuteStageResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ExecuteStageResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ExecuteStageResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ExecuteStageResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ExecuteStageResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ExecuteStageResponseValidationError) ErrorName() string {
+	return "ExecuteStageResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ExecuteStageResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sExecuteStageResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ExecuteStageResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ExecuteStageResponseValidationError{}
+
 // Validate checks the field values on PlanPluginInput with the rules defined
 // in the proto definition for this message. If any rules are violated, the
 // first error encountered is returned, or nil if there are no violations.
@@ -1348,8 +1598,6 @@ func (m *PlanPluginInput) validate(all bool) error {
 			}
 		}
 	}
-
-	// no validation rules for PluginConfig
 
 	if all {
 		switch v := interface{}(m.GetRunningDeploymentSource()).(type) {
@@ -1487,6 +1735,248 @@ var _ interface {
 	ErrorName() string
 } = PlanPluginInputValidationError{}
 
+// Validate checks the field values on ExecutePluginInput with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ExecutePluginInput) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ExecutePluginInput with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ExecutePluginInputMultiError, or nil if none found.
+func (m *ExecutePluginInput) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ExecutePluginInput) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetDeployment() == nil {
+		err := ExecutePluginInputValidationError{
+			field:  "Deployment",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetDeployment()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ExecutePluginInputValidationError{
+					field:  "Deployment",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ExecutePluginInputValidationError{
+					field:  "Deployment",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetDeployment()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ExecutePluginInputValidationError{
+				field:  "Deployment",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if m.GetStage() == nil {
+		err := ExecutePluginInputValidationError{
+			field:  "Stage",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetStage()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ExecutePluginInputValidationError{
+					field:  "Stage",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ExecutePluginInputValidationError{
+					field:  "Stage",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetStage()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ExecutePluginInputValidationError{
+				field:  "Stage",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for StageConfig
+
+	if all {
+		switch v := interface{}(m.GetRunningDeploymentSource()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ExecutePluginInputValidationError{
+					field:  "RunningDeploymentSource",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ExecutePluginInputValidationError{
+					field:  "RunningDeploymentSource",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetRunningDeploymentSource()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ExecutePluginInputValidationError{
+				field:  "RunningDeploymentSource",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetTargetDeploymentSource()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ExecutePluginInputValidationError{
+					field:  "TargetDeploymentSource",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ExecutePluginInputValidationError{
+					field:  "TargetDeploymentSource",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTargetDeploymentSource()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ExecutePluginInputValidationError{
+				field:  "TargetDeploymentSource",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return ExecutePluginInputMultiError(errors)
+	}
+
+	return nil
+}
+
+// ExecutePluginInputMultiError is an error wrapping multiple validation errors
+// returned by ExecutePluginInput.ValidateAll() if the designated constraints
+// aren't met.
+type ExecutePluginInputMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ExecutePluginInputMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ExecutePluginInputMultiError) AllErrors() []error { return m }
+
+// ExecutePluginInputValidationError is the validation error returned by
+// ExecutePluginInput.Validate if the designated constraints aren't met.
+type ExecutePluginInputValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ExecutePluginInputValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ExecutePluginInputValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ExecutePluginInputValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ExecutePluginInputValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ExecutePluginInputValidationError) ErrorName() string {
+	return "ExecutePluginInputValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ExecutePluginInputValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sExecutePluginInput.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ExecutePluginInputValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ExecutePluginInputValidationError{}
+
 // Validate checks the field values on DeploymentSource with the rules defined
 // in the proto definition for this message. If any rules are violated, the
 // first error encountered is returned, or nil if there are no violations.
@@ -1511,7 +2001,7 @@ func (m *DeploymentSource) validate(all bool) error {
 
 	// no validation rules for ApplicationDirectory
 
-	// no validation rules for Revision
+	// no validation rules for CommitHash
 
 	// no validation rules for ApplicationConfig
 

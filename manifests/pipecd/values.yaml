@@ -271,9 +271,11 @@ tempo:
       remoteWriteUrl: http://{{ .Release.Name }}-prometheus-server/api/v1/write # we cannot use pipecd.fullname because it returns tempo's fullname
 
   # -- Tempo configuration file contents
-  # modified by @pipecd, to expand template remoteWriteUrl
+  # modified by @pipecd to add metrics_generator_processors and remote_write
   # @default -- Dynamically generated tempo configmap
   config: |
+    memberlist:
+      cluster_label: "{{ .Release.Name }}.{{ .Release.Namespace }}"
     multitenancy_enabled: {{ .Values.tempo.multitenancyEnabled }}
     usage_report:
       reporting_enabled: {{ .Values.tempo.reportingEnabled }}
@@ -299,11 +301,18 @@ tempo:
           metrics_generator_processors:
           - 'service-graphs'
           - 'span-metrics'
-    metrics_generator:
-          storage:
-            path: "/tmp/tempo"
-            remote_write:
-              - url: {{ tpl .Values.tempo.metricsGenerator.remoteWriteUrl . }} # modified line is here
+          - 'local-blocks' # this line is added by @pipecd
+    metrics_generator: # this block is modified by @pipecd
+      traces_storage:
+        path: "/tmp/tempo/generator/traces"
+      storage:
+        path: "/tmp/tempo/generator/wal"
+        remote_write:
+          - url: {{ tpl .Values.tempo.metricsGenerator.remoteWriteUrl . }}
+      processor: # this block is added by @pipecd
+        local_blocks:
+          filter_server_spans: false
+          flush_to_storage: true
       {{- end }}
 
 opentelemetry-collector:

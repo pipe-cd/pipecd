@@ -47,6 +47,12 @@ func Retriable(err error) bool {
 	}
 }
 
+// NewRetriableErr returns a new backoff.Error for the given error.
+// Based on the error code, it determines whether the error is retriable or not.
+func NewRetriableErr(err error) *backoff.Error {
+	return backoff.NewError(err, Retriable(err))
+}
+
 // NewRetry returns a new backoff.Retry for piped API caller.
 // 0s 997.867435ms 2.015381172s 3.485134345s 4.389600179s 18.118099328s 48.73058264s
 func NewRetry(maxRetries int) backoff.Retry {

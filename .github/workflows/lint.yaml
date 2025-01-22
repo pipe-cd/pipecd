@@ -12,11 +12,11 @@ on:
 env:
   GO_VERSION: 1.22.4
   NODE_VERSION: 16.13.0
-  GOLANGCI_LINT_VERSION: v1.46.2
+  GOLANGCI_LINT_VERSION: v1.62.2
 
 jobs:
   go:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
       - name: golangci-lint
@@ -24,9 +24,10 @@ jobs:
         with:
           go_version: ${{ env.GO_VERSION }}
           golangci_lint_version: ${{ env.GOLANGCI_LINT_VERSION }}
+          fail_on_error: true # this option is deprecated on v2.7.0, but we use v2.1.3, so it's still available
 
   web:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -35,7 +36,7 @@ jobs:
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         id: yarn-cache
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}

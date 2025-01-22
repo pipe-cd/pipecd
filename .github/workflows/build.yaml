@@ -18,7 +18,7 @@ env:
 
 jobs:
   go:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
@@ -29,7 +29,7 @@ jobs:
         run: make build/go
 
   web:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -38,7 +38,7 @@ jobs:
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         id: yarn-cache
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
@@ -51,13 +51,13 @@ jobs:
         run: make build/web
 
   chart:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Install helm
-        uses: Azure/setup-helm@v1
+        uses: azure/setup-helm@v4
         with:
           version: ${{ env.HELM_VERSION }}
       - name: Package helm charts

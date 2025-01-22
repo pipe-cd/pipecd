@@ -27,7 +27,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
-	"github.com/pipe-cd/pipecd/pkg/config"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -222,7 +222,7 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 			continue
 		}
 
-		appCfg, err := config.LoadApplication(gitRepo.GetPath(), app.GitPath.GetApplicationConfigFilePath(), app.Kind)
+		appCfg, err := config.LoadApplication(gitRepo.GetPath(), app.GitPath.GetApplicationConfigFilePath())
 		if err != nil {
 			t.logger.Error("failed to load application config file",
 				zap.String("app", app.Name),

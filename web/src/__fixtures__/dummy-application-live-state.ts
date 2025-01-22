@@ -69,6 +69,7 @@ export const dummyApplicationLiveState: ApplicationLiveState = {
   lambda: { resourcesList: [] },
   terraform: {},
   kubernetes: { resourcesList },
+  applicationLiveState: { resourcesList: [], healthStatus: 0 },
 };
 
 export const dummyLiveStates: Record<ApplicationKind, ApplicationLiveState> = {

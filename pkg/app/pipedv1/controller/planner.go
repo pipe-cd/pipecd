@@ -18,17 +18,19 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"path/filepath"
 	"sort"
 	"time"
 
-	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -55,25 +57,22 @@ type planner struct {
 	lastSuccessfulConfigFilename string
 	workingDir                   string
 
-	// The plugin clients are used to call plugin that actually
-	// performs planning deployment.
-	plugins []pluginapi.PluginClient
-	// The map used to know which plugin is incharged for a given stage
-	// of the current deployment.
-	stageBasedPluginsMap map[string]pluginapi.PluginClient
-
 	// The apiClient is used to report the deployment status.
 	apiClient apiClient
 
 	// The gitClient is used to perform git commands.
 	gitClient gitClient
 
-	// The notifier and metadataStore are used for
-	// notification features.
-	notifier      notifier
-	metadataStore metadatastore.MetadataStore
+	// The notifier is used for notification features.
+	notifier notifier
 
-	// TODO: Find a way to show log from pluggin's planner
+	// The secretDecrypter is used to decrypt secrets
+	// which encrypted using PipeCD built-in secret management.
+	secretDecrypter secretDecrypter
+
+	// The pluginRegistry is used to determine which plugins to be used
+	pluginRegistry plugin.PluginRegistry
+
 	logger *zap.Logger
 	tracer trace.Tracer
 
@@ -91,11 +90,13 @@ func newPlanner(
 	lastSuccessfulCommitHash string,
 	lastSuccessfulConfigFilename string,
 	workingDir string,
-	pluginClient pluginapi.PluginClient,
+	pluginRegistry plugin.PluginRegistry,
 	apiClient apiClient,
 	gitClient gitClient,
 	notifier notifier,
+	secretDecrypter secretDecrypter,
 	logger *zap.Logger,
+	tracerProvider trace.TracerProvider,
 ) *planner {
 
 	logger = logger.Named("planner").With(
@@ -106,31 +107,21 @@ func newPlanner(
 		zap.String("working-dir", workingDir),
 	)
 
-	// TODO: Fix this. Passed by args
-	tmp := make(map[string]pluginapi.PluginClient)
-	tmp["K8S_SYNC"] = pluginClient
-
-	plugins := make([]pluginapi.PluginClient, 0, len(tmp))
-	for _, v := range tmp {
-		plugins = append(plugins, v)
-	}
-
 	p := &planner{
 		deployment:                   d,
 		lastSuccessfulCommitHash:     lastSuccessfulCommitHash,
 		lastSuccessfulConfigFilename: lastSuccessfulConfigFilename,
 		workingDir:                   workingDir,
-		stageBasedPluginsMap:         tmp,
-		plugins:                      plugins,
+		pluginRegistry:               pluginRegistry,
 		apiClient:                    apiClient,
 		gitClient:                    gitClient,
-		metadataStore:                metadatastore.NewMetadataStore(apiClient, d),
 		notifier:                     notifier,
+		secretDecrypter:              secretDecrypter,
 		doneDeploymentStatus:         d.Status,
 		cancelledCh:                  make(chan *model.ReportableCommand, 1),
 		nowFunc:                      time.Now,
 		logger:                       logger,
-		tracer:                       otel.GetTracerProvider().Tracer("controller/planner"),
+		tracer:                       tracerProvider.Tracer("controller/planner"),
 	}
 	return p
 }
@@ -189,29 +180,43 @@ func (p *planner) Run(ctx context.Context) error {
 		controllermetrics.UpdateDeploymentStatus(p.deployment, p.doneDeploymentStatus)
 	}()
 
-	// TODO: Prepare running deploy source and target deploy source.
+	// Prepare running deploy source and target deploy source.
 	var runningDS, targetDS *deployment.DeploymentSource
 
-	// repoCfg := config.PipedRepository{
-	// 	RepoID: p.deployment.GitPath.Repo.Id,
-	// 	Remote: p.deployment.GitPath.Repo.Remote,
-	// 	Branch: p.deployment.GitPath.Repo.Branch,
-	// }
+	repoCfg := config.PipedRepository{
+		RepoID: p.deployment.GitPath.Repo.Id,
+		Remote: p.deployment.GitPath.Repo.Remote,
+		Branch: p.deployment.GitPath.Repo.Branch,
+	}
 
-	// Prepare target deploy source.
-	// targetDSP := deploysource.NewProvider(
-	// 	filepath.Join(p.workingDir, "deploysource"),
-	// 	deploysource.NewGitSourceCloner(p.gitClient, repoCfg, "target", p.deployment.Trigger.Commit.Hash),
-	// 	*p.deployment.GitPath,
-	// 	nil, // TODO: Revise this secret decryter, is this need?
-	// )
+	targetDSP := deploysource.NewProvider(
+		filepath.Join(p.workingDir, "target-deploysource"),
+		deploysource.NewGitSourceCloner(p.gitClient, repoCfg, "target", p.deployment.Trigger.Commit.Hash),
+		p.deployment.GetGitPath(),
+		p.secretDecrypter,
+	)
+	tds, err := targetDSP.Get(ctx, io.Discard)
+	if err != nil {
+		p.logger.Error("error while preparing target deploy source data", zap.Error(err))
+		return err
+	}
+	targetDS = tds.ToPluginDeploySource()
 
-	// targetDS, err := targetDSP.Get(ctx, io.Discard)
-	// if err != nil {
-	// 	return fmt.Errorf("error while preparing deploy source data (%v)", err)
-	// }
+	if p.lastSuccessfulCommitHash != "" {
+		runningDSP := deploysource.NewProvider(
+			filepath.Join(p.workingDir, "running-deploysource"),
+			deploysource.NewGitSourceCloner(p.gitClient, repoCfg, "running", p.lastSuccessfulCommitHash),
+			p.deployment.GetGitPath(),
+			p.secretDecrypter,
+		)
+		rds, err := runningDSP.Get(ctx, io.Discard)
+		if err != nil {
+			p.logger.Error("error while preparing running deploy source data", zap.Error(err))
+			return err
+		}
+		runningDS = rds.ToPluginDeploySource()
+	}
 
-	// TODO: Pass running DS as well if need?
 	out, err := p.buildPlan(ctx, runningDS, targetDS)
 
 	// If the deployment was already cancelled, we ignore the plan result.
@@ -250,12 +255,23 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *deployment
 		Deployment:              p.deployment,
 		RunningDeploymentSource: runningDS,
 		TargetDeploymentSource:  targetDS,
-		// TODO: Add more planner input fields.
-		// we need passing PluginConfig
+	}
+
+	cfg, err := config.DecodeYAML[*config.GenericApplicationSpec](targetDS.GetApplicationConfig())
+	if err != nil {
+		p.logger.Error("unable to parse application config", zap.Error(err))
+		return nil, err
+	}
+	spec := cfg.Spec
+
+	plugins, err := p.pluginRegistry.GetPluginClientsByAppConfig(spec)
+	if err != nil {
+		p.logger.Error("unable to get plugin clients by app config", zap.Error(err))
+		return nil, err
 	}
 
 	// Build deployment target versions.
-	for _, plg := range p.plugins {
+	for _, plg := range plugins {
 		vRes, err := plg.DetermineVersions(ctx, &deployment.DetermineVersionsRequest{Input: input})
 		if err != nil {
 			p.logger.Warn("unable to determine versions", zap.Error(err))
@@ -271,13 +287,6 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *deployment
 			},
 		}
 	}
-
-	cfg, err := config.DecodeYAML[*config.GenericApplicationSpec](targetDS.GetApplicationConfig())
-	if err != nil {
-		p.logger.Error("unable to parse application config", zap.Error(err))
-		return nil, err
-	}
-	spec := cfg.Spec
 
 	// In case the strategy has been decided by trigger.
 	// For example: user triggered the deployment via web console.
@@ -363,7 +372,7 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *deployment
 		summary  string
 	)
 	// Build plan based on plugins determined strategy
-	for _, plg := range p.plugins {
+	for _, plg := range plugins {
 		res, err := plg.DetermineStrategy(ctx, &deployment.DetermineStrategyRequest{Input: input})
 		if err != nil {
 			p.logger.Warn("Unable to determine strategy using current plugin", zap.Error(err))
@@ -409,10 +418,17 @@ func (p *planner) buildQuickSyncStages(ctx context.Context, cfg *config.GenericA
 		rollbackStages = []*model.PipelineStage{}
 		rollback       = *cfg.Planner.AutoRollback
 	)
-	for _, plg := range p.plugins {
+
+	plugins, err := p.pluginRegistry.GetPluginClientsByAppConfig(cfg)
+	if err != nil {
+		p.logger.Error("failed to get plugin clients by app config", zap.Error(err))
+		return nil, err
+	}
+	for _, plg := range plugins {
 		res, err := plg.BuildQuickSyncStages(ctx, &deployment.BuildQuickSyncStagesRequest{Rollback: rollback})
 		if err != nil {
-			return nil, fmt.Errorf("failed to build quick sync stage deployment (%w)", err)
+			p.logger.Error("failed to build quick sync stages for deployment", zap.Error(err))
+			return nil, err
 		}
 		for i := range res.Stages {
 			if res.Stages[i].Rollback {
@@ -450,9 +466,10 @@ func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.Gener
 	// Build stages config for each plugin.
 	for i := range stagesCfg {
 		stageCfg := stagesCfg[i]
-		plg, ok := p.stageBasedPluginsMap[stageCfg.Name.String()]
-		if !ok {
-			return nil, fmt.Errorf("unable to find plugin for stage %q", stageCfg.Name.String())
+		plg, err := p.pluginRegistry.GetPluginClientByStageName(stageCfg.Name.String())
+		if err != nil {
+			p.logger.Error("failed to get plugin client by stage name", zap.Error(err))
+			return nil, err
 		}
 
 		stagesCfgPerPlugin[plg] = append(stagesCfgPerPlugin[plg], &deployment.BuildPipelineSyncStagesRequest_StageConfig{
@@ -472,7 +489,8 @@ func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.Gener
 			Rollback: rollback,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("failed to build pipeline sync stages for deployment (%w)", err)
+			p.logger.Error("failed to build pipeline sync stages for deployment", zap.Error(err))
+			return nil, err
 		}
 		// TODO: Ensure responsed stages indexies is valid.
 		for i := range res.Stages {
@@ -507,23 +525,10 @@ func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.Gener
 }
 
 func (p *planner) reportDeploymentPlanned(ctx context.Context, out *plannerOutput) error {
-	var (
-		err   error
-		retry = pipedservice.NewRetry(10)
-		req   = &pipedservice.ReportDeploymentPlannedRequest{
-			DeploymentId:              p.deployment.Id,
-			Summary:                   out.Summary,
-			StatusReason:              "The deployment has been planned",
-			RunningCommitHash:         p.lastSuccessfulCommitHash,
-			RunningConfigFilename:     p.lastSuccessfulConfigFilename,
-			Versions:                  out.Versions,
-			Stages:                    out.Stages,
-			DeploymentChainId:         p.deployment.DeploymentChainId,
-			DeploymentChainBlockIndex: p.deployment.DeploymentChainBlockIndex,
-		}
-	)
-
 	users, groups, err := p.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED)
+	if err != nil {
+		p.logger.Error("failed to get the list of users or groups", zap.Error(err))
+	}
 
 	defer func() {
 		p.notifier.Notify(model.NotificationEvent{
@@ -537,13 +542,25 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, out *plannerOutpu
 		})
 	}()
 
-	for retry.WaitNext(ctx) {
-		if _, err = p.apiClient.ReportDeploymentPlanned(ctx, req); err == nil {
-			return nil
-		}
-		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
+	req := &pipedservice.ReportDeploymentPlannedRequest{
+		DeploymentId:              p.deployment.Id,
+		Summary:                   out.Summary,
+		StatusReason:              "The deployment has been planned",
+		RunningCommitHash:         p.lastSuccessfulCommitHash,
+		RunningConfigFilename:     p.lastSuccessfulConfigFilename,
+		Versions:                  out.Versions,
+		Stages:                    out.Stages,
+		DeploymentChainId:         p.deployment.DeploymentChainId,
+		DeploymentChainBlockIndex: p.deployment.DeploymentChainBlockIndex,
 	}
 
+	_, err = pipedservice.NewRetry(10).Do(ctx, func() (interface{}, error) {
+		_, err := p.apiClient.ReportDeploymentPlanned(ctx, req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to report deployment status to control-plane: %w", err)
+		}
+		return nil, nil
+	})
 	if err != nil {
 		p.logger.Error("failed to mark deployment to be planned", zap.Error(err))
 	}
@@ -551,21 +568,6 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, out *plannerOutpu
 }
 
 func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) error {
-	var (
-		err error
-		now = p.nowFunc()
-		req = &pipedservice.ReportDeploymentCompletedRequest{
-			DeploymentId:              p.deployment.Id,
-			Status:                    model.DeploymentStatus_DEPLOYMENT_FAILURE,
-			StatusReason:              reason,
-			StageStatuses:             nil,
-			DeploymentChainId:         p.deployment.DeploymentChainId,
-			DeploymentChainBlockIndex: p.deployment.DeploymentChainBlockIndex,
-			CompletedAt:               now.Unix(),
-		}
-		retry = pipedservice.NewRetry(10)
-	)
-
 	users, groups, err := p.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_FAILED)
 	if err != nil {
 		p.logger.Error("failed to get the list of users or groups", zap.Error(err))
@@ -583,12 +585,23 @@ func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) err
 		})
 	}()
 
-	for retry.WaitNext(ctx) {
-		if _, err = p.apiClient.ReportDeploymentCompleted(ctx, req); err == nil {
-			return nil
-		}
-		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
+	req := &pipedservice.ReportDeploymentCompletedRequest{
+		DeploymentId:              p.deployment.Id,
+		Status:                    model.DeploymentStatus_DEPLOYMENT_FAILURE,
+		StatusReason:              reason,
+		StageStatuses:             nil,
+		DeploymentChainId:         p.deployment.DeploymentChainId,
+		DeploymentChainBlockIndex: p.deployment.DeploymentChainBlockIndex,
+		CompletedAt:               p.nowFunc().Unix(),
 	}
+
+	_, err = pipedservice.NewRetry(10).Do(ctx, func() (interface{}, error) {
+		_, err := p.apiClient.ReportDeploymentCompleted(ctx, req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to report deployment status to control-plane: %w", err)
+		}
+		return nil, nil
+	})
 
 	if err != nil {
 		p.logger.Error("failed to mark deployment to be failed", zap.Error(err))
@@ -597,21 +610,6 @@ func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) err
 }
 
 func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reason string) error {
-	var (
-		err error
-		now = p.nowFunc()
-		req = &pipedservice.ReportDeploymentCompletedRequest{
-			DeploymentId:              p.deployment.Id,
-			Status:                    model.DeploymentStatus_DEPLOYMENT_CANCELLED,
-			StatusReason:              reason,
-			StageStatuses:             nil,
-			DeploymentChainId:         p.deployment.DeploymentChainId,
-			DeploymentChainBlockIndex: p.deployment.DeploymentChainBlockIndex,
-			CompletedAt:               now.Unix(),
-		}
-		retry = pipedservice.NewRetry(10)
-	)
-
 	users, groups, err := p.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
 	if err != nil {
 		p.logger.Error("failed to get the list of users or groups", zap.Error(err))
@@ -629,12 +627,23 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 		})
 	}()
 
-	for retry.WaitNext(ctx) {
-		if _, err = p.apiClient.ReportDeploymentCompleted(ctx, req); err == nil {
-			return nil
-		}
-		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
+	req := &pipedservice.ReportDeploymentCompletedRequest{
+		DeploymentId:              p.deployment.Id,
+		Status:                    model.DeploymentStatus_DEPLOYMENT_CANCELLED,
+		StatusReason:              reason,
+		StageStatuses:             nil,
+		DeploymentChainId:         p.deployment.DeploymentChainId,
+		DeploymentChainBlockIndex: p.deployment.DeploymentChainBlockIndex,
+		CompletedAt:               p.nowFunc().Unix(),
 	}
+
+	_, err = pipedservice.NewRetry(10).Do(ctx, func() (interface{}, error) {
+		_, err := p.apiClient.ReportDeploymentCompleted(ctx, req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to report deployment status to control-plane: %w", err)
+		}
+		return nil, nil
+	})
 
 	if err != nil {
 		p.logger.Error("failed to mark deployment to be cancelled", zap.Error(err))
@@ -644,7 +653,7 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 
 // getApplicationNotificationMentions returns the list of users groups who should be mentioned in the notification.
 func (p *planner) getApplicationNotificationMentions(event model.NotificationEventType) ([]string, []string, error) {
-	n, ok := p.metadataStore.Shared().Get(model.MetadataKeyDeploymentNotification)
+	n, ok := p.deployment.Metadata[model.MetadataKeyDeploymentNotification]
 	if !ok {
 		return []string{}, []string{}, nil
 	}

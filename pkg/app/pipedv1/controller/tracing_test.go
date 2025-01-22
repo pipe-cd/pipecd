@@ -17,8 +17,9 @@ package controller
 import (
 	"testing"
 
-	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 func TestDeploymentTraceID(t *testing.T) {

@@ -19,7 +19,7 @@ At the time this RFC is writen, there was serveral issues created on PipeCD main
 
 After this line in the documentation, pipedv1 is a mention to plugin-arch piped, while pipedv0 is a mention to up-to-now piped.
 
-### The approach
+## The approach
 
 We agreed that pipedv0 will be supported as least until the end of 2025, which mean we have to find a way to ensure our single PipeCD control plane can work with both pipedv0 and pipedv1 at the same time. That leads to this issue at [pipecd/issues/5252](https://github.com/pipe-cd/pipecd/issues/5252).
 
@@ -27,10 +27,29 @@ The key point of the control plane supports both pipedv0 and v1 approach is: pla
 
 As at this point, we have migration plan for platform related concepts in configuration as below
 
-**For platform provider**
+### Migration process
+
+**Requirement**
+- No downtime
+- The timing of Piped updates can be freely decided by each Project's Piped administrator
+
+**Implementation Policy**
+- Pre-migrate the data so that pipedv1 can build logic using the newly added data
+
+**Ideas for Implementation**
+
+There are some ways to do migration for now.
+We will consider the way during the development.
+
+Ideas.
+1. Have users perform migration using commands like pipectl before updating to pipedv1
+2. Implement a migration worker on the ops side to update the application data regularly
+
+### For platform provider
 
 Instead of Platform Provider, we plan to introduce the config for the plugin and define deployTargets.
 
+**piped config**
 ```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: Piped
@@ -48,7 +67,51 @@ spec:
             kubeConfigPath: ./kubeconfig-dev
 ```
 
-**For kind**
+```golang
+type PipedDeployTarget struct {
+	Name   string                     `json:"name"`
+	Labels map[string]string          `json:"labels,omitempty"`
+	Config json.RawMessage            `json:"config"`
+}
+```
+
+We also plan to deploy the app to multiple targets at once in a multicluster feature for k8s.
+So, we define `DeployTargets` as an array in Application and Deployment.
+
+**Application**
+
+```proto
+message Application {
+    reserved 3;
+    ...
+    // TODO: Add validation for this field.
+    string platform_provider = 15;
+    // 
+    repeated string deploy_targets = 16;
+    ...
+}
+```
+
+**Deployment**
+
+```proto
+message Deployment {
+    reserved 4;
+    ...
+    // The name of platform provider where to deploy this application.
+    // This must be one of the provider names registered in the piped.
+    string platform_provider = 11;
+    
+    repeated string deploy_targets = 12;
+}
+```
+
+#### For the backward compatibility
+
+Before updating the piped, users should migrate the current data on DB.
+The pipedv1 uses `Platform Provider` instead of `Deploy Target`.
+
+### For kind
 
 Instead of Kind, we plan to introduce the label to represent the application kind.
 
@@ -62,7 +125,17 @@ spec:
   name: myApp
 ```
 
-The control plane will be updated so that it can accept platform provider from pipedv0 and deployTargets from pipedv1.
+For the builtin plugins, we define 5 labels as string.
+- KUBERNETES
+- ECS
+- LAMBDA
+- CLOUDRUN
+- TERRAFORM
+
+#### For the backward compatibility
+
+Before updating the piped, users should migrate the current data on DB.
+The pipedv1 uses `Application.Labels["kind"]` instead of `Application.Kind`.
 
 ### The protocol
 

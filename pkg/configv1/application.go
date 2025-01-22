@@ -17,6 +17,8 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -38,7 +40,7 @@ type GenericApplicationSpec struct {
 	// Forcibly use QuickSync or Pipeline when commit message matched the specified pattern.
 	CommitMatcher DeploymentCommitMatcher `json:"commitMatcher"`
 	// Pipeline for deploying progressively.
-	Pipeline *DeploymentPipeline `json:"pipeline"`
+	Pipeline *DeploymentPipeline `json:"pipeline" default:"{}"`
 	// The trigger configuration use to determine trigger logic.
 	Trigger Trigger `json:"trigger"`
 	// Configuration to be used once the deployment is triggered successfully.
@@ -56,6 +58,8 @@ type GenericApplicationSpec struct {
 	EventWatcher []EventWatcherConfig `json:"eventWatcher"`
 	// Configuration for drift detection
 	DriftDetection *DriftDetection `json:"driftDetection"`
+	// List of the plugin name
+	Plugins []string `json:"plugins"`
 }
 
 type DeploymentPlanner struct {
@@ -165,6 +169,26 @@ func (s GenericApplicationSpec) GetStage(index int32) (PipelineStage, bool) {
 	return s.Pipeline.Stages[index], true
 }
 
+// GetStageByte returns the JSON-encoded byte representation of the stage at the specified index.
+// If the pipeline is not defined, it returns nil and true. This is QuickSync specific.
+// If the stage index is invalid, it returns nil and false.
+func (s GenericApplicationSpec) GetStageByte(index int32) ([]byte, bool) {
+	// Return empty byte if the pipeline is not defined.
+	if len(s.Pipeline.Stages) == 0 {
+		return nil, true
+	}
+
+	stage, ok := s.GetStage(index)
+	if !ok {
+		return nil, false
+	}
+	b, err := json.Marshal(stage)
+	if err != nil {
+		return nil, false
+	}
+	return b, true
+}
+
 // HasStage checks if the given stage is included in the pipeline.
 func (s GenericApplicationSpec) HasStage(stage model.Stage) bool {
 	if s.Pipeline == nil {
@@ -210,13 +234,7 @@ type SkipOptions struct {
 	Paths                 []string `json:"paths,omitempty"`
 }
 
-// WaitStageOptions contains all configurable values for a WAIT stage.
-type WaitStageOptions struct {
-	Duration Duration    `json:"duration"`
-	SkipOn   SkipOptions `json:"skipOn,omitempty"`
-}
-
-// WaitStageOptions contains all configurable values for a WAIT_APPROVAL stage.
+// WaitApprovalStageOptions contains all configurable values for a WAIT_APPROVAL stage.
 type WaitApprovalStageOptions struct {
 	// The maximum length of time to wait before giving up.
 	// Defaults to 6h.
@@ -551,4 +569,22 @@ func (dd *DriftDetection) Validate() error {
 		}
 	}
 	return nil
+}
+
+func LoadApplication(repoPath, configRelPath string) (*GenericApplicationSpec, error) {
+	absPath := filepath.Join(repoPath, configRelPath)
+
+	cfg, err := LoadFromYAML[*GenericApplicationSpec](absPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("application config file %s was not found in Git", configRelPath)
+		}
+		return nil, err
+	}
+
+	if !cfg.Kind.IsApplicationKind() {
+		return nil, fmt.Errorf("invalid application kind in the application config file, got: %s", cfg.Kind)
+	}
+
+	return cfg.Spec, nil
 }

@@ -26,7 +26,7 @@ func main() {
 		"Plugin component to deploy Kubernetes Application.",
 	)
 	app.AddCommands(
-		NewServerCommand(),
+		NewPluginCommand(),
 	)
 	if err := app.Run(); err != nil {
 		log.Fatal(err)

@@ -29,3 +29,21 @@ type InputHelmOptions struct {
 	// Kubernetes version used for Capabilities.KubeVersion
 	KubeVersion string `json:"kubeVersion,omitempty"`
 }
+
+type InputHelmChart struct {
+	// Git remote address where the chart is placing.
+	// Empty means the same repository.
+	GitRemote string `json:"gitRemote,omitempty"`
+	// The commit SHA or tag for remote git.
+	Ref string `json:"ref,omitempty"`
+	// Relative path from the repository root directory to the chart directory.
+	Path string `json:"path,omitempty"`
+
+	// The name of an added Helm Chart Repository.
+	Repository string `json:"repository,omitempty"`
+	Name       string `json:"name,omitempty"`
+	Version    string `json:"version,omitempty"`
+	// Whether to skip TLS certificate checks for the repository or not.
+	// This option will automatically set the value of HelmChartRepository.Insecure.
+	Insecure bool `json:"-"`
+}

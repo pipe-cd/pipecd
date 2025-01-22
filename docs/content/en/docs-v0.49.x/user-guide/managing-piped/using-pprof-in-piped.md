@@ -28,7 +28,7 @@ This document explains the basic usage of [pprof](https://pkg.go.dev/net/http/pp
     ```
     This will return an HTML page that lists the available profiling data.
 
-2. Get the Cpi Profile
+2. Get the CPU Profile
     ```bash
     curl http://localhost:9085/debug/pprof/profile > cpu.pprof
     ```
