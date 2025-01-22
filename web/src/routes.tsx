@@ -23,6 +23,9 @@ import {
   PAGE_PATH_LOGIN,
   PAGE_PATH_SETTINGS,
   PAGE_PATH_TOP,
+  PAGE_PATH_SETTINGS_PIPED,
+  PAGE_PATH_SETTINGS_PROJECT,
+  PAGE_PATH_SETTINGS_API_KEY,
 } from "~/constants/path";
 import {
   REDIRECT_PATH_KEY,
@@ -77,6 +80,36 @@ const ApplicationDetailPage = loadable(
     ),
   {
     resolveComponent: (components) => components.ApplicationDetailPage,
+  }
+);
+
+const SettingsPipedPage = loadable(
+  () =>
+    import(
+      /* webpackChunkName: "settings-piped" */ "~/components/settings-page/piped"
+    ),
+  {
+    resolveComponent: (components) => components.SettingsPipedPage,
+  }
+);
+
+const SettingsProjectPage = loadable(
+  () =>
+    import(
+      /* webpackChunkName: "settings-project" */ "~/components/settings-page/project"
+    ),
+  {
+    resolveComponent: (components) => components.SettingsProjectPage,
+  }
+);
+
+const APIKeyPage = loadable(
+  () =>
+    import(
+      /* webpackChunkName: "settings-api-key" */ "~/components/settings-page/api-key"
+    ),
+  {
+    resolveComponent: (components) => components.APIKeyPage,
   }
 );
 
@@ -187,7 +220,21 @@ export const Routes: FC = () => {
           path={PAGE_PATH_DEPLOYMENT_CHAINS}
           element={<DeploymentChainsIndexPage />}
         />
-        <Route path={PAGE_PATH_SETTINGS} element={<SettingsIndexPage />} />
+        <Route path={PAGE_PATH_SETTINGS} element={<SettingsIndexPage />}>
+          <Route
+            path={PAGE_PATH_SETTINGS}
+            element={<Navigate to={PAGE_PATH_SETTINGS_PIPED} replace />}
+          />
+          <Route
+            path={PAGE_PATH_SETTINGS_PIPED}
+            element={<SettingsPipedPage />}
+          />
+          <Route
+            path={PAGE_PATH_SETTINGS_PROJECT}
+            element={<SettingsProjectPage />}
+          />
+          <Route path={PAGE_PATH_SETTINGS_API_KEY} element={<APIKeyPage />} />
+        </Route>
         <Route path={PAGE_PATH_INSIGHTS} element={<InsightIndexPage />} />
         <Route path={PAGE_PATH_EVENTS} element={<EventIndexPage />} />
         <Route

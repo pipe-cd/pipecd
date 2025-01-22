@@ -6,16 +6,12 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import { FC, memo } from "react";
-import { Navigate, NavLink, Route, Routes } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 import {
-  PAGE_PATH_SETTINGS,
   PAGE_PATH_SETTINGS_API_KEY,
   PAGE_PATH_SETTINGS_PIPED,
   PAGE_PATH_SETTINGS_PROJECT,
 } from "~/constants/path";
-import { APIKeyPage } from "./api-key";
-import { SettingsPipedPage } from "./piped";
-import { SettingsProjectPage } from "./project";
 
 const drawerWidth = 240;
 
@@ -85,21 +81,7 @@ export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
         </div>
       </Drawer>
       <main className={classes.content}>
-        <Routes>
-          <Route
-            path={PAGE_PATH_SETTINGS}
-            element={<Navigate to={PAGE_PATH_SETTINGS_PIPED} replace />}
-          />
-          <Route
-            path={PAGE_PATH_SETTINGS_PIPED}
-            element={<SettingsPipedPage />}
-          />
-          <Route
-            path={PAGE_PATH_SETTINGS_PROJECT}
-            element={<SettingsProjectPage />}
-          />
-          <Route path={PAGE_PATH_SETTINGS_API_KEY} element={<APIKeyPage />} />
-        </Routes>
+        <Outlet />
       </main>
     </div>
   );
