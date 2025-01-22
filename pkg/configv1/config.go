@@ -154,3 +154,12 @@ func DecodeYAML[T Spec[RT], RT any](data []byte) (*Config[T, RT], error) {
 	}
 	return c, nil
 }
+
+// This logic to ensure the file app.pipecd.yaml is valid with kind defined by pipedv0.
+func (k Kind) IsApplicationKind() bool {
+	switch k {
+	case KindKubernetesApp, KindTerraformApp, KindLambdaApp, KindCloudRunApp, KindECSApp, KindApplication:
+		return true
+	}
+	return false
+}

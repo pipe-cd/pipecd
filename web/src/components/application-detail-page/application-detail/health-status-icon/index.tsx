@@ -15,6 +15,9 @@ const useStyles = makeStyles((theme) => ({
   other: {
     color: theme.palette.info.main,
   },
+  unhealthy: {
+    color: theme.palette.info.main,
+  },
 }));
 
 export interface ApplicationHealthStatusIconProps {
@@ -31,6 +34,8 @@ export const ApplicationHealthStatusIcon: FC<ApplicationHealthStatusIconProps> =
         return <FavoriteIcon className={classes.healthy} />;
       case ApplicationLiveStateSnapshot.Status.OTHER:
         return <OtherIcon className={classes.other} />;
+      case ApplicationLiveStateSnapshot.Status.UNHEALTHY:
+        return <OtherIcon className={classes.unhealthy} />;
     }
   }
 );

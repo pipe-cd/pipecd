@@ -29,6 +29,7 @@ message ApplicationLiveStateSnapshot {
         UNKNOWN = 0;
         HEALTHY = 1;
         OTHER = 2;
+        UNHEALTHY = 3;
     }
     string application_id = 1 [(validate.rules).string.min_len = 1];
     string piped_id = 3 [(validate.rules).string.min_len = 1];
@@ -43,6 +44,7 @@ message ApplicationLiveStateSnapshot {
     ECSApplicationLiveState ecs = 14;
 
     ApplicationLiveStateVersion version = 15 [(validate.rules).message.required = true];
+    ApplicationLiveState application_live_state = 16;
 }
 
 message ApplicationLiveStateVersion {
@@ -69,6 +71,48 @@ message ECSApplicationLiveState{
 
 message LambdaApplicationLiveState {
     repeated LambdaResourceState resources = 1;
+}
+
+message ApplicationLiveState {
+    repeated ResourceState resources = 1;
+
+    enum Status {
+        UNKNOWN = 0;
+        HEALTHY = 1;
+        OTHER = 2;
+    }
+    // The health status of the application.
+    Status health_status = 2;
+}
+
+message ResourceState {
+    enum HealthStatus {
+        UNKNOWN = 0;
+        HEALTHY = 1;
+        UNHEALTHY = 2;
+    }
+
+    // The unique ID.
+    string id = 1 [(validate.rules).string.min_len = 1];
+    // The sorted list of unique IDs of the parents.
+    repeated string parent_ids = 2;
+    // The name of resource.
+    string name = 3 [(validate.rules).string.min_len = 1];
+    // The type of this resource.
+    string resource_type = 4;
+    // The metadata of this resource.
+    map<string, string> resource_metadata = 5;
+    // The health status of this resource.
+    HealthStatus health_status = 6 [(validate.rules).enum.defined_only = true];
+    // The description of the health status.
+    string health_description = 7;
+    // The target where this resource is deployed.
+    string deploy_target = 8;
+
+    // The timestamp when this resource was created.
+    int64 created_at = 10 [(validate.rules).int64.gt = 0];
+    // The timestamp of the last time when this resource was updated.
+    int64 updated_at = 11 [(validate.rules).int64.gt = 0];
 }
 
 // KubernetesResourceState represents the state of a single kubernetes resource object.

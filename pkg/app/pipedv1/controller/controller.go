@@ -27,16 +27,16 @@ import (
 	"sync"
 	"time"
 
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/logpersister"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
-	"github.com/pipe-cd/pipecd/pkg/cache"
-	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -52,8 +52,6 @@ type apiClient interface {
 
 	ReportStageStatusChanged(ctx context.Context, req *pipedservice.ReportStageStatusChangedRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageStatusChangedResponse, error)
 	SaveStageMetadata(ctx context.Context, req *pipedservice.SaveStageMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveStageMetadataResponse, error)
-	ReportStageLogs(ctx context.Context, req *pipedservice.ReportStageLogsRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogsResponse, error)
-	ReportStageLogsFromLastCheckpoint(ctx context.Context, in *pipedservice.ReportStageLogsFromLastCheckpointRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogsFromLastCheckpointResponse, error)
 
 	InChainDeploymentPlannable(ctx context.Context, in *pipedservice.InChainDeploymentPlannableRequest, opts ...grpc.CallOption) (*pipedservice.InChainDeploymentPlannableResponse, error)
 }
@@ -71,15 +69,6 @@ type deploymentLister interface {
 type commandLister interface {
 	ListDeploymentCommands() []model.ReportableCommand
 	ListStageCommands(deploymentID, stageID string) []model.ReportableCommand
-}
-
-type applicationLister interface {
-	Get(id string) (*model.Application, bool)
-}
-
-type analysisResultStore interface {
-	GetLatestAnalysisResult(ctx context.Context, applicationID string) (*model.AnalysisResult, error)
-	PutLatestAnalysisResult(ctx context.Context, applicationID string, analysisResult *model.AnalysisResult) error
 }
 
 type notifier interface {
@@ -100,18 +89,16 @@ var (
 )
 
 type controller struct {
-	apiClient           apiClient
-	pluginRegistry      PluginRegistry
-	gitClient           gitClient
-	deploymentLister    deploymentLister
-	commandLister       commandLister
-	applicationLister   applicationLister
-	analysisResultStore analysisResultStore
-	notifier            notifier
-	secretDecrypter     secretDecrypter   // TODO: Remove this
-	pipedCfg            *config.PipedSpec // TODO: Remove this, use pipedConfig instead
-	appManifestsCache   cache.Cache
-	logPersister        logpersister.Persister
+	apiClient             apiClient
+	gitClient             gitClient
+	deploymentLister      deploymentLister
+	commandLister         commandLister
+	notifier              notifier
+	secretDecrypter       secretDecrypter
+	metadataStoreRegistry metadatastore.MetadataStoreRegistry
+
+	// The registry of all plugins.
+	pluginRegistry plugin.PluginRegistry
 
 	// Map from application ID to the planner
 	// of a pending deployment of that application.
@@ -133,45 +120,37 @@ type controller struct {
 	// WaitGroup for waiting the completions of all planners, schedulers.
 	wg sync.WaitGroup
 
-	workspaceDir string
-	syncInternal time.Duration
-	gracePeriod  time.Duration
-	logger       *zap.Logger
+	workspaceDir   string
+	syncInternal   time.Duration
+	gracePeriod    time.Duration
+	logger         *zap.Logger
+	tracerProvider trace.TracerProvider
 }
 
 // NewController creates a new instance for DeploymentController.
 func NewController(
 	apiClient apiClient,
 	gitClient gitClient,
+	pluginRegistry plugin.PluginRegistry,
 	deploymentLister deploymentLister,
 	commandLister commandLister,
-	applicationLister applicationLister,
-	analysisResultStore analysisResultStore,
 	notifier notifier,
-	sd secretDecrypter,
-	pipedCfg *config.PipedSpec,
-	appManifestsCache cache.Cache,
+	secretDecrypter secretDecrypter,
+	metadataStoreRegistry metadatastore.MetadataStoreRegistry,
 	gracePeriod time.Duration,
 	logger *zap.Logger,
+	tracerProvider trace.TracerProvider,
 ) DeploymentController {
 
-	var (
-		lp = logpersister.NewPersister(apiClient, logger)
-		lg = logger.Named("controller")
-	)
 	return &controller{
-		apiClient:           apiClient,
-		pluginRegistry:      DefaultPluginRegistry(),
-		gitClient:           gitClient,
-		deploymentLister:    deploymentLister,
-		commandLister:       commandLister,
-		applicationLister:   applicationLister,
-		analysisResultStore: analysisResultStore,
-		notifier:            notifier,
-		secretDecrypter:     sd,
-		appManifestsCache:   appManifestsCache,
-		pipedCfg:            pipedCfg,
-		logPersister:        lp,
+		apiClient:             apiClient,
+		gitClient:             gitClient,
+		pluginRegistry:        pluginRegistry,
+		deploymentLister:      deploymentLister,
+		commandLister:         commandLister,
+		notifier:              notifier,
+		secretDecrypter:       secretDecrypter,
+		metadataStoreRegistry: metadataStoreRegistry,
 
 		planners:                              make(map[string]*planner),
 		donePlanners:                          make(map[string]time.Time),
@@ -180,9 +159,10 @@ func NewController(
 		mostRecentlySuccessfulCommits:         make(map[string]string),
 		mostRecentlySuccessfulConfigFilenames: make(map[string]string),
 
-		syncInternal: 10 * time.Second,
-		gracePeriod:  gracePeriod,
-		logger:       lg,
+		syncInternal:   10 * time.Second,
+		gracePeriod:    gracePeriod,
+		logger:         logger.Named("controller"),
+		tracerProvider: tracerProvider,
 	}
 }
 
@@ -201,18 +181,6 @@ func (c *controller) Run(ctx context.Context) error {
 	c.workspaceDir = dir
 	c.logger.Info(fmt.Sprintf("workspace directory was configured to %s", c.workspaceDir))
 
-	// Start running log persister to buffer and flush the log blocks.
-	// We do not use the passed ctx directly because we want log persister
-	// component to be stopped at the last order to avoid lossing log from other components.
-	var (
-		lpStoppedCh     = make(chan error, 1)
-		lpCtx, lpCancel = context.WithCancel(context.Background())
-	)
-	go func() {
-		lpStoppedCh <- c.logPersister.Run(lpCtx)
-		close(lpStoppedCh)
-	}()
-
 	ticker := time.NewTicker(c.syncInternal)
 	defer ticker.Stop()
 	c.logger.Info("start syncing planners and schedulers")
@@ -220,7 +188,7 @@ func (c *controller) Run(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
-			return c.shutdown(lpCancel, lpStoppedCh)
+			return c.shutdown()
 
 		case <-ticker.C:
 			// syncSchedulers must be called before syncPlanners because
@@ -232,16 +200,14 @@ func (c *controller) Run(ctx context.Context) error {
 	}
 }
 
-func (c *controller) shutdown(cancel func(), stoppedCh <-chan error) error {
+// shutdown waits for stopping all planners and schedulers.
+//
+//nolint:unparam // returns error for future compatibility.
+func (c *controller) shutdown() error {
 	c.logger.Info("waiting for stopping all planners and schedulers")
 	c.wg.Wait()
-
-	// Stop log persiter and wait for its stopping.
-	cancel()
-	err := <-stoppedCh
-
 	c.logger.Info("controller has been stopped")
-	return err
+	return nil
 }
 
 // checkCommands lists all unhandled commands for running deployments
@@ -462,22 +428,18 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		}
 	}
 
-	pluginClient, ok := c.pluginRegistry.Plugin(d.Kind)
-	if !ok {
-		logger.Error("no plugin client for the application kind", zap.String("kind", d.Kind.String()))
-		return nil, fmt.Errorf("no plugin client for the application kind %s", d.Kind.String())
-	}
-
 	planner := newPlanner(
 		d,
 		commitHash,
 		configFilename,
 		workingDir,
-		pluginClient,
+		c.pluginRegistry,
 		c.apiClient,
 		c.gitClient,
 		c.notifier,
+		c.secretDecrypter,
 		c.logger,
+		c.tracerProvider,
 	)
 
 	cleanup := func() {
@@ -612,16 +574,14 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		workingDir,
 		c.apiClient,
 		c.gitClient,
-		c.commandLister,
-		c.applicationLister,
-		c.analysisResultStore,
-		c.logPersister,
+		c.pluginRegistry,
 		c.notifier,
 		c.secretDecrypter,
-		c.pipedCfg,
-		c.appManifestsCache,
 		c.logger,
+		c.tracerProvider,
 	)
+
+	c.metadataStoreRegistry.Register(d)
 
 	cleanup := func() {
 		logger.Info("cleaning up working directory for scheduler", zap.String("working-dir", workingDir))
@@ -640,6 +600,7 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 	go func() {
 		defer c.wg.Done()
 		defer cleanup()
+		defer c.metadataStoreRegistry.Delete(d.Id)
 		if err := scheduler.Run(ctx); err != nil {
 			logger.Error("failed to run scheduler", zap.Error(err))
 		}
@@ -649,25 +610,22 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 }
 
 func (c *controller) getMostRecentlySuccessfulDeployment(ctx context.Context, applicationID string) (*model.ApplicationDeploymentReference, error) {
-	var (
-		err   error
-		resp  *pipedservice.GetApplicationMostRecentDeploymentResponse
-		retry = pipedservice.NewRetry(3)
-		req   = &pipedservice.GetApplicationMostRecentDeploymentRequest{
-			ApplicationId: applicationID,
-			Status:        model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-		}
-	)
+	req := &pipedservice.GetApplicationMostRecentDeploymentRequest{
+		ApplicationId: applicationID,
+		Status:        model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+	}
 
-	for retry.WaitNext(ctx) {
-		if resp, err = c.apiClient.GetApplicationMostRecentDeployment(ctx, req); err == nil {
+	d, err := pipedservice.NewRetry(3).Do(ctx, func() (interface{}, error) {
+		resp, err := c.apiClient.GetApplicationMostRecentDeployment(ctx, req)
+		if err == nil {
 			return resp.Deployment, nil
 		}
-		if !pipedservice.Retriable(err) {
-			return nil, err
-		}
+		return nil, pipedservice.NewRetriableErr(err)
+	})
+	if err != nil {
+		return nil, err
 	}
-	return nil, err
+	return d.(*model.ApplicationDeploymentReference), nil
 }
 
 func (c *controller) shouldStartPlanningDeployment(ctx context.Context, d *model.Deployment) (plannable, cancel bool, cancelReason string, err error) {
@@ -690,49 +648,38 @@ func (c *controller) shouldStartPlanningDeployment(ctx context.Context, d *model
 }
 
 func (c *controller) cancelDeployment(ctx context.Context, d *model.Deployment, reason string) error {
-	var (
-		err error
-		req = &pipedservice.ReportDeploymentCompletedRequest{
-			DeploymentId:              d.Id,
-			Status:                    model.DeploymentStatus_DEPLOYMENT_CANCELLED,
-			StatusReason:              reason,
-			StageStatuses:             nil,
-			DeploymentChainId:         d.DeploymentChainId,
-			DeploymentChainBlockIndex: d.DeploymentChainBlockIndex,
-			CompletedAt:               time.Now().Unix(),
-		}
-		retry = pipedservice.NewRetry(10)
-	)
-
-	for retry.WaitNext(ctx) {
-		if _, err = c.apiClient.ReportDeploymentCompleted(ctx, req); err == nil {
-			return nil
-		}
-		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
+	req := &pipedservice.ReportDeploymentCompletedRequest{
+		DeploymentId:              d.Id,
+		Status:                    model.DeploymentStatus_DEPLOYMENT_CANCELLED,
+		StatusReason:              reason,
+		StageStatuses:             nil,
+		DeploymentChainId:         d.DeploymentChainId,
+		DeploymentChainBlockIndex: d.DeploymentChainBlockIndex,
+		CompletedAt:               time.Now().Unix(),
 	}
+
+	_, err := pipedservice.NewRetry(10).Do(ctx, func() (interface{}, error) {
+		_, err := c.apiClient.ReportDeploymentCompleted(ctx, req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to report deployment status to control-plane: %w", err)
+		}
+		return nil, nil
+	})
 	return err
 }
 
-type appLiveResourceLister struct {
-	platformProvider string
-	appID            string
-}
-
 func reportApplicationDeployingStatus(ctx context.Context, c apiClient, appID string, deploying bool) error {
-	var (
-		err   error
-		retry = pipedservice.NewRetry(10)
-		req   = &pipedservice.ReportApplicationDeployingStatusRequest{
-			ApplicationId: appID,
-			Deploying:     deploying,
-		}
-	)
-
-	for retry.WaitNext(ctx) {
-		if _, err = c.ReportApplicationDeployingStatus(ctx, req); err == nil {
-			return nil
-		}
-		err = fmt.Errorf("failed to report application deploying status to control-plane: %w", err)
+	req := &pipedservice.ReportApplicationDeployingStatusRequest{
+		ApplicationId: appID,
+		Deploying:     deploying,
 	}
+
+	_, err := pipedservice.NewRetry(10).Do(ctx, func() (interface{}, error) {
+		_, err := c.ReportApplicationDeployingStatus(ctx, req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to report application deploying status to control-plane: %w", err)
+		}
+		return nil, nil
+	})
 	return err
 }

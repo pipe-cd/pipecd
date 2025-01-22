@@ -180,8 +180,10 @@ export const ApplicationIndexPage: FC = () => {
       <Drawer
         anchor="right"
         open={!!addedApplicationId}
-        onClose={handleCloseApplicationAddedView}
-        ModalProps={{ disableBackdropClick: isAdding }}
+        onClose={(_, reason) => {
+          if (reason === "backdropClick" && isAdding) return;
+          handleCloseApplicationAddedView();
+        }}
       >
         <ApplicationAddedView onClose={handleCloseApplicationAddedView} />
       </Drawer>

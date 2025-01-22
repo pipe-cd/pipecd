@@ -54,8 +54,8 @@ func NewStore(ctx context.Context, cfg *config.PipedSpec, appLister applicationL
 	logger = logger.Named("livestatestore")
 
 	s := &store{
-		gracePeriod:      gracePeriod,
-		logger:           logger,
+		gracePeriod: gracePeriod,
+		logger:      logger,
 	}
 	for _, cp := range cfg.PlatformProviders {
 		_ = cp // TODO: general state from plugin from store fields
@@ -68,6 +68,7 @@ func (s *store) Run(ctx context.Context) error {
 	s.logger.Info("start running appsatestore")
 
 	group, ctx := errgroup.WithContext(ctx)
+	_ = ctx // To ignore the linter. We have not implemented the logic yet, and we need to use ctx in the future.
 
 	err := group.Wait()
 	if err == nil {

@@ -144,3 +144,38 @@ func (s *ApplicationLiveStateSnapshot) determineLambdaAppHealthStatus() {
 	}
 	s.HealthStatus = ApplicationLiveStateSnapshot_HEALTHY
 }
+
+// DetermineApplicationHealthStatus updates the health status of the application based on the health status of its resources.
+func (s *ApplicationLiveStateSnapshot) DetermineApplicationHealthStatus() {
+	app := s.ApplicationLiveState
+	if app == nil {
+		s.HealthStatus = ApplicationLiveStateSnapshot_UNKNOWN
+		return
+	}
+
+	unhealthy := false
+	unknown := false
+
+	for _, r := range app.Resources {
+		if r.HealthStatus == ResourceState_UNHEALTHY {
+			unhealthy = true
+		}
+
+		if r.HealthStatus == ResourceState_UNKNOWN {
+			unknown = true
+		}
+	}
+
+	s.HealthStatus = ApplicationLiveStateSnapshot_HEALTHY
+
+	// prioritize unhealthy over unknown when these two statuses are both set.
+	if unhealthy {
+		s.HealthStatus = ApplicationLiveStateSnapshot_UNHEALTHY
+		return
+	}
+
+	if unknown {
+		s.HealthStatus = ApplicationLiveStateSnapshot_UNKNOWN
+		return
+	}
+}

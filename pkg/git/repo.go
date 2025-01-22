@@ -21,6 +21,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -34,7 +35,8 @@ var (
 type Repo interface {
 	GetPath() string
 	GetClonedBranch() string
-	Copy(dest string) (Repo, error)
+	Copy(dest string) (Worktree, error)
+	CopyToModify(dest string) (Repo, error)
 
 	ListCommits(ctx context.Context, visionRange string) ([]Commit, error)
 	GetLatestCommit(ctx context.Context) (Commit, error)
@@ -43,6 +45,7 @@ type Repo interface {
 	Checkout(ctx context.Context, commitish string) error
 	CheckoutPullRequest(ctx context.Context, number int, branch string) error
 	Clean() error
+	CleanPath(ctx context.Context, relativePath string) error
 
 	Pull(ctx context.Context, branch string) error
 	MergeRemoteBranch(ctx context.Context, branch, commit, mergeCommitMessage string) error
@@ -50,12 +53,75 @@ type Repo interface {
 	CommitChanges(ctx context.Context, branch, message string, newBranch bool, changes map[string][]byte, trailers map[string]string) error
 }
 
+// Worktree provides functions to get and handle git worktree.
+// It is a separate checkout of the repository.
+// It is used to make changes to the repository without affecting the main repository.
+// Worktree always does checkout with the detached HEAD, so it doesn't affect the main repository.
+type Worktree interface {
+	GetPath() string
+	Clean() error
+	Copy(dest string) (Worktree, error)
+	Checkout(ctx context.Context, commitish string) error
+}
+
 type repo struct {
+	// username and email are used to commit changes.
+	// these fields are optional, and set in the `setUser` method.
+	username string
+	email    string
+
 	dir          string
 	gitPath      string
 	remote       string
 	clonedBranch string
 	gitEnvs      []string
+}
+
+// worktree is a git worktree.
+// It is a separate checkout of the repository.
+type worktree struct {
+	base         *repo
+	worktreePath string
+}
+
+func (r *worktree) runGitCommand(ctx context.Context, args ...string) ([]byte, error) {
+	cmd := exec.CommandContext(ctx, r.base.gitPath, args...)
+	cmd.Dir = r.worktreePath
+	cmd.Env = append(os.Environ(), r.base.gitEnvs...)
+	return cmd.CombinedOutput()
+}
+
+func (r *worktree) Copy(dest string) (Worktree, error) {
+	// garbage collecting worktrees
+	_, _ = r.runGitCommand(context.Background(), "worktree", "prune") // ignore the error
+
+	if out, err := r.runGitCommand(context.Background(), "worktree", "add", "--detach", dest); err != nil {
+		return nil, formatCommandError(err, out)
+	}
+
+	return &worktree{
+		base:         r.base,
+		worktreePath: dest,
+	}, nil
+}
+
+func (r *worktree) GetPath() string {
+	return r.worktreePath
+}
+
+func (r *worktree) Clean() error {
+	if out, err := r.base.runGitCommand(context.Background(), "worktree", "remove", r.worktreePath); err != nil {
+		return formatCommandError(err, out)
+	}
+	return nil
+}
+
+func (r *worktree) Checkout(ctx context.Context, commitish string) error {
+	out, err := r.runGitCommand(ctx, "checkout", "--detach", commitish)
+	if err != nil {
+		return formatCommandError(err, out)
+	}
+	return nil
 }
 
 // NewRepo creates a new Repo instance.
@@ -79,22 +145,59 @@ func (r *repo) GetClonedBranch() string {
 	return r.clonedBranch
 }
 
-// Copy does copying the repository to the given destination.
+// Copy does copying the repository to the given destination using git worktree.
+// The repository is cloned to the given destination with the detached HEAD.
 // NOTE: the given “dest” must be a path that doesn’t exist yet.
-// If you don't, it copies the repo root itself to the given dest as a subdirectory.
-func (r *repo) Copy(dest string) (Repo, error) {
-	cmd := exec.Command("cp", "-rf", r.dir, dest)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
+// If you don't, you will get an error.
+func (r *repo) Copy(dest string) (Worktree, error) {
+	// garbage collecting worktrees
+	_, _ = r.runGitCommand(context.Background(), "worktree", "prune") // ignore the error
+
+	if out, err := r.runGitCommand(context.Background(), "worktree", "add", "--detach", dest); err != nil {
 		return nil, formatCommandError(err, out)
 	}
 
-	return &repo{
+	return &worktree{
+		base:         r,
+		worktreePath: dest,
+	}, nil
+}
+
+// CopyToModify does cloning the repository to the given destination.
+// The repository is cloned to the given destination with the .
+// NOTE: the given “dest” must be a path that doesn’t exist yet.
+// If you don't, you will get an error.
+func (r *repo) CopyToModify(dest string) (Repo, error) {
+	cmd := exec.Command(r.gitPath, "clone", r.dir, dest)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		return nil, formatCommandError(err, out)
+	}
+
+	cloned := &repo{
 		dir:          dest,
 		gitPath:      r.gitPath,
 		remote:       r.remote,
 		clonedBranch: r.clonedBranch,
-	}, nil
+		gitEnvs:      r.gitEnvs,
+	}
+
+	if r.username != "" || r.email != "" {
+		if err := cloned.setUser(context.Background(), r.username, r.email); err != nil {
+			return nil, fmt.Errorf("failed to set user: %v", err)
+		}
+	}
+
+	// because we did a local cloning so set the remote url of origin
+	if err := cloned.setRemote(context.Background(), r.remote); err != nil {
+		return nil, err
+	}
+
+	// fetch the latest changes which doesn't exist in the local repository
+	if out, err := cloned.runGitCommand(context.Background(), "fetch"); err != nil {
+		return nil, formatCommandError(err, out)
+	}
+
+	return cloned, nil
 }
 
 // ListCommits returns a list of commits in a given revision range.
@@ -259,6 +362,15 @@ func (r repo) Clean() error {
 	return os.RemoveAll(r.dir)
 }
 
+// CleanPath deletes data in the given relative path in the repo with git clean.
+func (r repo) CleanPath(ctx context.Context, relativePath string) error {
+	out, err := r.runGitCommand(ctx, "clean", "-f", relativePath)
+	if err != nil {
+		return formatCommandError(err, out)
+	}
+	return nil
+}
+
 func (r *repo) checkoutNewBranch(ctx context.Context, branch string) error {
 	out, err := r.runGitCommand(ctx, "checkout", "-b", branch)
 	if err != nil {
@@ -274,9 +386,20 @@ func (r repo) addCommit(ctx context.Context, message string, trailers map[string
 	}
 
 	args := []string{"commit", "-m", message}
-	for k, v := range trailers {
-		args = append(args, fmt.Sprintf("--trailer=%s: %s", k, v))
+
+	if len(trailers) > 0 {
+		// ensure keys order every time
+		trailerKeys := make([]string, 0, len(trailers))
+		for k := range trailers {
+			trailerKeys = append(trailerKeys, k)
+		}
+		slices.Sort(trailerKeys)
+
+		for _, key := range trailerKeys {
+			args = append(args, fmt.Sprintf("--trailer=%s: %s", key, trailers[key]))
+		}
 	}
+
 	out, err = r.runGitCommand(ctx, args...)
 	if err != nil {
 		msg := string(out)
@@ -290,6 +413,9 @@ func (r repo) addCommit(ctx context.Context, message string, trailers map[string
 
 // setUser configures username and email for local user of this repo.
 func (r *repo) setUser(ctx context.Context, username, email string) error {
+	r.username = username
+	r.email = email
+
 	if out, err := r.runGitCommand(ctx, "config", "user.name", username); err != nil {
 		return formatCommandError(err, out)
 	}

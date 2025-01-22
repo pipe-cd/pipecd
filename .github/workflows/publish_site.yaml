@@ -13,7 +13,7 @@ env:
 
 jobs:
   site:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
@@ -58,7 +58,7 @@ jobs:
 
       # Building and pushing Helm charts.
       - name: Install helm
-        uses: Azure/setup-helm@v1
+        uses: azure/setup-helm@v4
         with:
           version: ${{ env.HELM_VERSION }}
       - name: Login to OCI using Helm

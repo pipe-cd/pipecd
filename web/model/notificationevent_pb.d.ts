@@ -73,6 +73,38 @@ export namespace NotificationEventDeploymentPlanned {
   }
 }
 
+export class NotificationEventDeploymentStarted extends jspb.Message {
+  getDeployment(): pkg_model_deployment_pb.Deployment | undefined;
+  setDeployment(value?: pkg_model_deployment_pb.Deployment): NotificationEventDeploymentStarted;
+  hasDeployment(): boolean;
+  clearDeployment(): NotificationEventDeploymentStarted;
+
+  getMentionedAccountsList(): Array<string>;
+  setMentionedAccountsList(value: Array<string>): NotificationEventDeploymentStarted;
+  clearMentionedAccountsList(): NotificationEventDeploymentStarted;
+  addMentionedAccounts(value: string, index?: number): NotificationEventDeploymentStarted;
+
+  getMentionedGroupsList(): Array<string>;
+  setMentionedGroupsList(value: Array<string>): NotificationEventDeploymentStarted;
+  clearMentionedGroupsList(): NotificationEventDeploymentStarted;
+  addMentionedGroups(value: string, index?: number): NotificationEventDeploymentStarted;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): NotificationEventDeploymentStarted.AsObject;
+  static toObject(includeInstance: boolean, msg: NotificationEventDeploymentStarted): NotificationEventDeploymentStarted.AsObject;
+  static serializeBinaryToWriter(message: NotificationEventDeploymentStarted, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): NotificationEventDeploymentStarted;
+  static deserializeBinaryFromReader(message: NotificationEventDeploymentStarted, reader: jspb.BinaryReader): NotificationEventDeploymentStarted;
+}
+
+export namespace NotificationEventDeploymentStarted {
+  export type AsObject = {
+    deployment?: pkg_model_deployment_pb.Deployment.AsObject,
+    mentionedAccountsList: Array<string>,
+    mentionedGroupsList: Array<string>,
+  }
+}
+
 export class NotificationEventDeploymentApproved extends jspb.Message {
   getDeployment(): pkg_model_deployment_pb.Deployment | undefined;
   setDeployment(value?: pkg_model_deployment_pb.Deployment): NotificationEventDeploymentApproved;
@@ -431,6 +463,7 @@ export enum NotificationEventType {
   EVENT_DEPLOYMENT_CANCELLED = 6,
   EVENT_DEPLOYMENT_WAIT_APPROVAL = 7,
   EVENT_DEPLOYMENT_TRIGGER_FAILED = 8,
+  EVENT_DEPLOYMENT_STARTED = 9,
   EVENT_APPLICATION_SYNCED = 100,
   EVENT_APPLICATION_OUT_OF_SYNC = 101,
   EVENT_APPLICATION_HEALTHY = 200,

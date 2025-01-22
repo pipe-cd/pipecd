@@ -1,5 +1,5 @@
 # Builder image to build go program.
-FROM golang:1.23 as BUILDER
+FROM golang:1.23 AS builder
 
 COPY protoc-gen-auth /protoc-gen-auth
 RUN cd /protoc-gen-auth \
@@ -17,7 +17,7 @@ ENV PROTOC_GEN_GO_VER=1.27.1
 ENV PROTOC_GEN_GRPC_WEB_VER=1.3.1
 ENV PROTOC_GEN_GO_GRPC_VER=1.2.0
 ENV PROTOC_GEN_VALIDATE_VER=0.6.6
-ENV GOMOCK_VER=1.6.0
+ENV GOMOCK_VER=0.5.0
 
 # dependecies and protoc
 RUN apt update && apt install -y protobuf-compiler
@@ -50,13 +50,13 @@ RUN for target in x86_64 aarch_64; do \
   && chmod +x bin/protoc-gen-js \
   && rm -rf protobuf-javascript-${PROTOC_GEN_JS_VER}-linux-${target}.tar.gz; \
   done && \
-  mv /protoc-gen-js-aarch_64/ /protoc-gen-js-aarch64/ 
+  mv /protoc-gen-js-aarch_64/ /protoc-gen-js-aarch64/
 
 # protoc-gen-auth
-COPY --from=BUILDER /usr/local/bin/protoc-gen-auth /usr/local/bin/
+COPY --from=builder /usr/local/bin/protoc-gen-auth /usr/local/bin/
 
 # gomock
-RUN go install github.com/golang/mock/mockgen@v${GOMOCK_VER}
+RUN go install go.uber.org/mock/mockgen@v${GOMOCK_VER}
 
 VOLUME /repo
 WORKDIR /repo

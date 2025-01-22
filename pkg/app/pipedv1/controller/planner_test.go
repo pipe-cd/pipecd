@@ -25,6 +25,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
@@ -37,6 +38,7 @@ type fakePlugin struct {
 	quickStages    []*model.PipelineStage
 	pipelineStages []*model.PipelineStage
 	rollbackStages []*model.PipelineStage
+	stageStatusMap map[string]model.StageStatus
 }
 
 func (p *fakePlugin) Close() error { return nil }
@@ -97,7 +99,18 @@ func (p *fakePlugin) FetchDefinedStages(ctx context.Context, req *deployment.Fet
 		Stages: stages,
 	}, nil
 }
+func (p *fakePlugin) ExecuteStage(ctx context.Context, req *deployment.ExecuteStageRequest, opts ...grpc.CallOption) (*deployment.ExecuteStageResponse, error) {
+	status, ok := p.stageStatusMap[req.Input.Stage.Id]
+	if !ok {
+		return &deployment.ExecuteStageResponse{
+			Status: model.StageStatus_STAGE_NOT_STARTED_YET,
+		}, nil
+	}
 
+	return &deployment.ExecuteStageResponse{
+		Status: status,
+	}, nil
+}
 func pointerBool(b bool) *bool {
 	return &b
 }
@@ -107,139 +120,190 @@ func TestBuildQuickSyncStages(t *testing.T) {
 
 	testcases := []struct {
 		name           string
-		plugins        []pluginapi.PluginClient
+		pluginRegistry plugin.PluginRegistry
 		cfg            *config.GenericApplicationSpec
 		wantErr        bool
 		expectedStages []*model.PipelineStage
 	}{
 		{
 			name: "only one plugin",
-			plugins: []pluginapi.PluginClient{
-				&fakePlugin{
-					quickStages: []*model.PipelineStage{
-						{
-							Id: "plugin-1-stage-1",
+			pluginRegistry: func() plugin.PluginRegistry {
+				pr, err := plugin.NewPluginRegistry(context.TODO(), []plugin.Plugin{
+					{
+						Name: "plugin-1",
+						Cli: &fakePlugin{
+							quickStages: []*model.PipelineStage{
+								{
+									Id:   "plugin-1-stage-1",
+									Name: "plugin-1-stage-1",
+								},
+							},
+							rollbackStages: []*model.PipelineStage{
+								{
+									Id:       "plugin-1-rollback",
+									Name:     "plugin-1-rollback",
+									Rollback: true,
+								},
+							},
 						},
 					},
-					rollbackStages: []*model.PipelineStage{
-						{
-							Id:       "plugin-1-rollback",
-							Rollback: true,
-						},
-					},
-				},
-			},
+				})
+				require.NoError(t, err)
+
+				return pr
+			}(),
 			cfg: &config.GenericApplicationSpec{
 				Planner: config.DeploymentPlanner{
 					AutoRollback: pointerBool(true),
 				},
+				Plugins: []string{"plugin-1"},
 			},
 			wantErr: false,
 			expectedStages: []*model.PipelineStage{
 				{
-					Id: "plugin-1-stage-1",
+					Id:   "plugin-1-stage-1",
+					Name: "plugin-1-stage-1",
 				},
 				{
 					Id:       "plugin-1-rollback",
+					Name:     "plugin-1-rollback",
 					Rollback: true,
 				},
 			},
 		},
 		{
 			name: "multi plugins",
-			plugins: []pluginapi.PluginClient{
-				&fakePlugin{
-					quickStages: []*model.PipelineStage{
-						{
-							Id: "plugin-1-stage-1",
+			pluginRegistry: func() plugin.PluginRegistry {
+				pr, err := plugin.NewPluginRegistry(context.TODO(), []plugin.Plugin{
+					{
+						Name: "plugin-1",
+						Cli: &fakePlugin{
+							quickStages: []*model.PipelineStage{
+								{
+									Id:   "plugin-1-stage-1",
+									Name: "plugin-1-stage-1",
+								},
+							},
+							rollbackStages: []*model.PipelineStage{
+								{
+									Id:       "plugin-1-rollback",
+									Name:     "plugin-1-rollback",
+									Rollback: true,
+								},
+							},
 						},
 					},
-					rollbackStages: []*model.PipelineStage{
-						{
-							Id:       "plugin-1-rollback",
-							Rollback: true,
+					{
+						Name: "plugin-2",
+						Cli: &fakePlugin{
+							quickStages: []*model.PipelineStage{
+								{
+									Id:   "plugin-2-stage-1",
+									Name: "plugin-2-stage-1",
+								},
+							},
+							rollbackStages: []*model.PipelineStage{
+								{
+									Id:       "plugin-2-rollback",
+									Name:     "plugin-2-rollback",
+									Rollback: true,
+								},
+							},
 						},
 					},
-				},
-				&fakePlugin{
-					quickStages: []*model.PipelineStage{
-						{
-							Id: "plugin-2-stage-1",
-						},
-					},
-					rollbackStages: []*model.PipelineStage{
-						{
-							Id:       "plugin-2-rollback",
-							Rollback: true,
-						},
-					},
-				},
-			},
+				})
+				require.NoError(t, err)
+
+				return pr
+			}(),
 			cfg: &config.GenericApplicationSpec{
 				Planner: config.DeploymentPlanner{
 					AutoRollback: pointerBool(true),
 				},
+				Plugins: []string{"plugin-1", "plugin-2"},
 			},
 			wantErr: false,
 			expectedStages: []*model.PipelineStage{
 				{
-					Id: "plugin-1-stage-1",
+					Id:   "plugin-1-stage-1",
+					Name: "plugin-1-stage-1",
 				},
 				{
-					Id: "plugin-2-stage-1",
+					Id:   "plugin-2-stage-1",
+					Name: "plugin-2-stage-1",
 				},
 				{
 					Id:       "plugin-1-rollback",
+					Name:     "plugin-1-rollback",
 					Rollback: true,
 				},
 				{
 					Id:       "plugin-2-rollback",
+					Name:     "plugin-2-rollback",
 					Rollback: true,
 				},
 			},
 		},
 		{
 			name: "multi plugins - no rollback",
-			plugins: []pluginapi.PluginClient{
-				&fakePlugin{
-					quickStages: []*model.PipelineStage{
-						{
-							Id: "plugin-1-stage-1",
+			pluginRegistry: func() plugin.PluginRegistry {
+				pr, err := plugin.NewPluginRegistry(context.TODO(), []plugin.Plugin{
+					{
+						Name: "plugin-1",
+						Cli: &fakePlugin{
+							quickStages: []*model.PipelineStage{
+								{
+									Id:   "plugin-1-stage-1",
+									Name: "plugin-1-stage-1",
+								},
+							},
+							rollbackStages: []*model.PipelineStage{
+								{
+									Id:       "plugin-1-rollback",
+									Name:     "plugin-1-rollback",
+									Rollback: true,
+								},
+							},
 						},
 					},
-					rollbackStages: []*model.PipelineStage{
-						{
-							Id:       "plugin-1-rollback",
-							Rollback: true,
+					{
+						Name: "plugin-2",
+						Cli: &fakePlugin{
+							quickStages: []*model.PipelineStage{
+								{
+									Id:   "plugin-2-stage-1",
+									Name: "plugin-2-stage-1",
+								},
+							},
+							rollbackStages: []*model.PipelineStage{
+								{
+									Id:       "plugin-2-rollback",
+									Name:     "plugin-2-rollback",
+									Rollback: true,
+								},
+							},
 						},
 					},
-				},
-				&fakePlugin{
-					quickStages: []*model.PipelineStage{
-						{
-							Id: "plugin-2-stage-1",
-						},
-					},
-					rollbackStages: []*model.PipelineStage{
-						{
-							Id:       "plugin-2-rollback",
-							Rollback: true,
-						},
-					},
-				},
-			},
+				})
+				require.NoError(t, err)
+
+				return pr
+			}(),
 			cfg: &config.GenericApplicationSpec{
 				Planner: config.DeploymentPlanner{
 					AutoRollback: pointerBool(false),
 				},
+				Plugins: []string{"plugin-1", "plugin-2"},
 			},
 			wantErr: false,
 			expectedStages: []*model.PipelineStage{
 				{
-					Id: "plugin-1-stage-1",
+					Id:   "plugin-1-stage-1",
+					Name: "plugin-1-stage-1",
 				},
 				{
-					Id: "plugin-2-stage-1",
+					Id:   "plugin-2-stage-1",
+					Name: "plugin-2-stage-1",
 				},
 			},
 		},
@@ -248,7 +312,7 @@ func TestBuildQuickSyncStages(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			planner := &planner{
-				plugins: tc.plugins,
+				pluginRegistry: tc.pluginRegistry,
 			}
 			stages, err := planner.buildQuickSyncStages(context.TODO(), tc.cfg)
 			require.Equal(t, tc.wantErr, err != nil)
@@ -262,37 +326,45 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 
 	testcases := []struct {
 		name           string
-		plugins        []pluginapi.PluginClient
+		pluginRegistry plugin.PluginRegistry
 		cfg            *config.GenericApplicationSpec
 		wantErr        bool
 		expectedStages []*model.PipelineStage
 	}{
 		{
 			name: "only one plugin",
-			plugins: []pluginapi.PluginClient{
-				&fakePlugin{
-					pipelineStages: []*model.PipelineStage{
-						{
-							Id:    "plugin-1-stage-1",
-							Index: 0,
-							Name:  "plugin-1-stage-1",
-						},
-						{
-							Id:    "plugin-1-stage-2",
-							Index: 1,
-							Name:  "plugin-1-stage-2",
+			pluginRegistry: func() plugin.PluginRegistry {
+				pr, err := plugin.NewPluginRegistry(context.TODO(), []plugin.Plugin{
+					{
+						Name: "plugin-1",
+						Cli: &fakePlugin{
+							pipelineStages: []*model.PipelineStage{
+								{
+									Id:    "plugin-1-stage-1",
+									Index: 0,
+									Name:  "plugin-1-stage-1",
+								},
+								{
+									Id:    "plugin-1-stage-2",
+									Index: 1,
+									Name:  "plugin-1-stage-2",
+								},
+							},
+							rollbackStages: []*model.PipelineStage{
+								{
+									Id:       "plugin-1-rollback",
+									Index:    0,
+									Name:     "plugin-1-rollback",
+									Rollback: true,
+								},
+							},
 						},
 					},
-					rollbackStages: []*model.PipelineStage{
-						{
-							Id:       "plugin-1-rollback",
-							Index:    0,
-							Name:     "plugin-1-rollback",
-							Rollback: true,
-						},
-					},
-				},
-			},
+				})
+				require.NoError(t, err)
+
+				return pr
+			}(),
 			cfg: &config.GenericApplicationSpec{
 				Planner: config.DeploymentPlanner{
 					AutoRollback: pointerBool(true),
@@ -333,44 +405,60 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 		},
 		{
 			name: "multi plugins single rollback",
-			plugins: []pluginapi.PluginClient{
-				&fakePlugin{
-					pipelineStages: []*model.PipelineStage{
-						{
-							Id:   "plugin-1-stage-1",
-							Name: "plugin-1-stage-1",
-						},
-						{
-							Id:   "plugin-1-stage-2",
-							Name: "plugin-1-stage-2",
-						},
-						{
-							Id:   "plugin-1-stage-3",
-							Name: "plugin-1-stage-3",
-						},
-					},
-					rollbackStages: []*model.PipelineStage{
-						{
-							Id:       "plugin-1-rollback",
-							Index:    0,
-							Name:     "plugin-1-rollback",
-							Rollback: true,
-						},
-					},
-				},
-				&fakePlugin{
-					pipelineStages: []*model.PipelineStage{
-						{
-							Id:   "plugin-2-stage-1",
-							Name: "plugin-2-stage-1",
-						},
-						{
-							Id:   "plugin-2-stage-2",
-							Name: "plugin-2-stage-2",
+			pluginRegistry: func() plugin.PluginRegistry {
+				pr, err := plugin.NewPluginRegistry(context.TODO(), []plugin.Plugin{
+					{
+						Name: "plugin-1",
+						Cli: &fakePlugin{
+							pipelineStages: []*model.PipelineStage{
+								{
+									Id:    "plugin-1-stage-1",
+									Index: 0,
+									Name:  "plugin-1-stage-1",
+								},
+								{
+									Id:    "plugin-1-stage-2",
+									Index: 1,
+									Name:  "plugin-1-stage-2",
+								},
+								{
+									Id:    "plugin-1-stage-3",
+									Index: 2,
+									Name:  "plugin-1-stage-3",
+								},
+							},
+							rollbackStages: []*model.PipelineStage{
+								{
+									Id:       "plugin-1-rollback",
+									Index:    0,
+									Name:     "plugin-1-rollback",
+									Rollback: true,
+								},
+							},
 						},
 					},
-				},
-			},
+					{
+						Name: "plugin-2",
+						Cli: &fakePlugin{
+							pipelineStages: []*model.PipelineStage{
+								{
+									Id:    "plugin-2-stage-1",
+									Index: 0,
+									Name:  "plugin-2-stage-1",
+								},
+								{
+									Id:    "plugin-2-stage-2",
+									Index: 1,
+									Name:  "plugin-2-stage-2",
+								},
+							},
+						},
+					},
+				})
+				require.NoError(t, err)
+
+				return pr
+			}(),
 			cfg: &config.GenericApplicationSpec{
 				Planner: config.DeploymentPlanner{
 					AutoRollback: pointerBool(true),
@@ -441,48 +529,63 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 		},
 		{
 			name: "multi plugins multi rollback",
-			plugins: []pluginapi.PluginClient{
-				&fakePlugin{
-					pipelineStages: []*model.PipelineStage{
-						{
-							Id:   "plugin-1-stage-1",
-							Name: "plugin-1-stage-1",
-						},
-						{
-							Id:   "plugin-1-stage-2",
-							Name: "plugin-1-stage-2",
-						},
-						{
-							Id:   "plugin-1-stage-3",
-							Name: "plugin-1-stage-3",
-						},
-					},
-					rollbackStages: []*model.PipelineStage{
-						{
-							Id:       "plugin-1-rollback",
-							Index:    0,
-							Name:     "plugin-1-rollback",
-							Rollback: true,
-						},
-					},
-				},
-				&fakePlugin{
-					pipelineStages: []*model.PipelineStage{
-						{
-							Id:   "plugin-2-stage-1",
-							Name: "plugin-2-stage-1",
-						},
-					},
-					rollbackStages: []*model.PipelineStage{
-						{
-							Id:       "plugin-2-rollback",
-							Index:    2,
-							Name:     "plugin-2-rollback",
-							Rollback: true,
+			pluginRegistry: func() plugin.PluginRegistry {
+				pr, err := plugin.NewPluginRegistry(context.TODO(), []plugin.Plugin{
+					{
+						Name: "plugin-1",
+						Cli: &fakePlugin{
+							pipelineStages: []*model.PipelineStage{
+								{
+									Id:    "plugin-1-stage-1",
+									Index: 0,
+									Name:  "plugin-1-stage-1",
+								},
+								{
+									Id:    "plugin-1-stage-2",
+									Index: 1,
+									Name:  "plugin-1-stage-2",
+								},
+								{
+									Id:    "plugin-1-stage-3",
+									Index: 2,
+									Name:  "plugin-1-stage-3",
+								},
+							},
+							rollbackStages: []*model.PipelineStage{
+								{
+									Id:       "plugin-1-rollback",
+									Index:    0,
+									Name:     "plugin-1-rollback",
+									Rollback: true,
+								},
+							},
 						},
 					},
-				},
-			},
+					{
+						Name: "plugin-2",
+						Cli: &fakePlugin{
+							pipelineStages: []*model.PipelineStage{
+								{
+									Id:    "plugin-2-stage-1",
+									Index: 0,
+									Name:  "plugin-2-stage-1",
+								},
+							},
+							rollbackStages: []*model.PipelineStage{
+								{
+									Id:       "plugin-2-rollback",
+									Index:    2,
+									Name:     "plugin-2-rollback",
+									Rollback: true,
+								},
+							},
+						},
+					},
+				})
+				require.NoError(t, err)
+
+				return pr
+			}(),
 			cfg: &config.GenericApplicationSpec{
 				Planner: config.DeploymentPlanner{
 					AutoRollback: pointerBool(true),
@@ -551,16 +654,8 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			stageBasedPluginMap := make(map[string]pluginapi.PluginClient)
-			for _, p := range tc.plugins {
-				stages, _ := p.FetchDefinedStages(context.TODO(), &deployment.FetchDefinedStagesRequest{})
-				for _, s := range stages.Stages {
-					stageBasedPluginMap[s] = p
-				}
-			}
 			planner := &planner{
-				plugins:              tc.plugins,
-				stageBasedPluginsMap: stageBasedPluginMap,
+				pluginRegistry: tc.pluginRegistry,
 			}
 			stages, err := planner.buildPipelineSyncStages(context.TODO(), tc.cfg)
 			require.Equal(t, tc.wantErr, err != nil)
@@ -576,6 +671,7 @@ func TestPlanner_BuildPlan(t *testing.T) {
 		name           string
 		isFirstDeploy  bool
 		plugins        []pluginapi.PluginClient
+		pluginRegistry plugin.PluginRegistry
 		cfg            *config.GenericApplicationSpec
 		deployment     *model.Deployment
 		wantErr        bool
@@ -584,20 +680,30 @@ func TestPlanner_BuildPlan(t *testing.T) {
 		{
 			name:          "quick sync strategy triggered by web console",
 			isFirstDeploy: false,
-			plugins: []pluginapi.PluginClient{
-				&fakePlugin{
-					quickStages: []*model.PipelineStage{
-						{
-							Id:      "plugin-1-stage-1",
-							Visible: true,
+			pluginRegistry: func() plugin.PluginRegistry {
+				pr, err := plugin.NewPluginRegistry(context.TODO(), []plugin.Plugin{
+					{
+						Name: "plugin-1",
+						Cli: &fakePlugin{
+							quickStages: []*model.PipelineStage{
+								{
+									Id:      "plugin-1-stage-1",
+									Name:    "plugin-1-stage-1",
+									Visible: true,
+								},
+							},
 						},
 					},
-				},
-			},
+				})
+				require.NoError(t, err)
+
+				return pr
+			}(),
 			cfg: &config.GenericApplicationSpec{
 				Planner: config.DeploymentPlanner{
 					AutoRollback: pointerBool(true),
 				},
+				Plugins: []string{"plugin-1"},
 			},
 			deployment: &model.Deployment{
 				Trigger: &model.DeploymentTrigger{
@@ -612,6 +718,7 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				Stages: []*model.PipelineStage{
 					{
 						Id:      "plugin-1-stage-1",
+						Name:    "plugin-1-stage-1",
 						Visible: true,
 					},
 				},
@@ -626,17 +733,26 @@ func TestPlanner_BuildPlan(t *testing.T) {
 		{
 			name:          "pipeline sync strategy triggered by web console",
 			isFirstDeploy: false,
-			plugins: []pluginapi.PluginClient{
-				&fakePlugin{
-					pipelineStages: []*model.PipelineStage{
-						{
-							Id:      "plugin-1-stage-1",
-							Name:    "plugin-1-stage-1",
-							Visible: true,
+			pluginRegistry: func() plugin.PluginRegistry {
+				pr, err := plugin.NewPluginRegistry(context.TODO(), []plugin.Plugin{
+					{
+						Name: "plugin-1",
+						Cli: &fakePlugin{
+							pipelineStages: []*model.PipelineStage{
+								{
+									Id:      "plugin-1-stage-1",
+									Index:   0,
+									Name:    "plugin-1-stage-1",
+									Visible: true,
+								},
+							},
 						},
 					},
-				},
-			},
+				})
+				require.NoError(t, err)
+
+				return pr
+			}(),
 			cfg: &config.GenericApplicationSpec{
 				Planner: config.DeploymentPlanner{
 					AutoRollback: pointerBool(true),
@@ -679,20 +795,30 @@ func TestPlanner_BuildPlan(t *testing.T) {
 		{
 			name:          "quick sync due to no pipeline configured",
 			isFirstDeploy: false,
-			plugins: []pluginapi.PluginClient{
-				&fakePlugin{
-					quickStages: []*model.PipelineStage{
-						{
-							Id:      "plugin-1-stage-1",
-							Visible: true,
+			pluginRegistry: func() plugin.PluginRegistry {
+				pr, err := plugin.NewPluginRegistry(context.TODO(), []plugin.Plugin{
+					{
+						Name: "plugin-1",
+						Cli: &fakePlugin{
+							quickStages: []*model.PipelineStage{
+								{
+									Id:      "plugin-1-stage-1",
+									Name:    "plugin-1-stage-1",
+									Visible: true,
+								},
+							},
 						},
 					},
-				},
-			},
+				})
+				require.NoError(t, err)
+
+				return pr
+			}(),
 			cfg: &config.GenericApplicationSpec{
 				Planner: config.DeploymentPlanner{
 					AutoRollback: pointerBool(true),
 				},
+				Plugins: []string{"plugin-1"},
 			},
 			deployment: &model.Deployment{
 				Trigger: &model.DeploymentTrigger{},
@@ -704,6 +830,7 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				Stages: []*model.PipelineStage{
 					{
 						Id:      "plugin-1-stage-1",
+						Name:    "plugin-1-stage-1",
 						Visible: true,
 					},
 				},
@@ -718,17 +845,26 @@ func TestPlanner_BuildPlan(t *testing.T) {
 		{
 			name:          "pipeline sync due to alwaysUsePipeline",
 			isFirstDeploy: false,
-			plugins: []pluginapi.PluginClient{
-				&fakePlugin{
-					pipelineStages: []*model.PipelineStage{
-						{
-							Id:      "plugin-1-stage-1",
-							Name:    "plugin-1-stage-1",
-							Visible: true,
+			pluginRegistry: func() plugin.PluginRegistry {
+				pr, err := plugin.NewPluginRegistry(context.TODO(), []plugin.Plugin{
+					{
+						Name: "plugin-1",
+						Cli: &fakePlugin{
+							pipelineStages: []*model.PipelineStage{
+								{
+									Id:      "plugin-1-stage-1",
+									Index:   0,
+									Name:    "plugin-1-stage-1",
+									Visible: true,
+								},
+							},
 						},
 					},
-				},
-			},
+				})
+				require.NoError(t, err)
+
+				return pr
+			}(),
 			cfg: &config.GenericApplicationSpec{
 				Planner: config.DeploymentPlanner{
 					AlwaysUsePipeline: true,
@@ -769,16 +905,25 @@ func TestPlanner_BuildPlan(t *testing.T) {
 		{
 			name:          "quick sync due to first deployment",
 			isFirstDeploy: true,
-			plugins: []pluginapi.PluginClient{
-				&fakePlugin{
-					quickStages: []*model.PipelineStage{
-						{
-							Id:      "plugin-1-stage-1",
-							Visible: true,
+			pluginRegistry: func() plugin.PluginRegistry {
+				pr, err := plugin.NewPluginRegistry(context.TODO(), []plugin.Plugin{
+					{
+						Name: "plugin-1",
+						Cli: &fakePlugin{
+							quickStages: []*model.PipelineStage{
+								{
+									Id:      "plugin-1-stage-1",
+									Name:    "plugin-1-stage-1",
+									Visible: true,
+								},
+							},
 						},
 					},
-				},
-			},
+				})
+				require.NoError(t, err)
+
+				return pr
+			}(),
 			cfg: &config.GenericApplicationSpec{
 				Planner: config.DeploymentPlanner{
 					AutoRollback: pointerBool(true),
@@ -802,6 +947,7 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				Stages: []*model.PipelineStage{
 					{
 						Id:      "plugin-1-stage-1",
+						Name:    "plugin-1-stage-1",
 						Visible: true,
 					},
 				},
@@ -837,6 +983,36 @@ func TestPlanner_BuildPlan(t *testing.T) {
 					},
 				},
 			},
+			pluginRegistry: func() plugin.PluginRegistry {
+				pr, err := plugin.NewPluginRegistry(context.TODO(), []plugin.Plugin{
+					{
+						Name: "plugin-1",
+						Cli: &fakePlugin{
+							syncStrategy: &deployment.DetermineStrategyResponse{
+								SyncStrategy: model.SyncStrategy_PIPELINE,
+								Summary:      "determined by plugin",
+							},
+							pipelineStages: []*model.PipelineStage{
+								{
+									Id:      "plugin-1-stage-1",
+									Index:   0,
+									Name:    "plugin-1-stage-1",
+									Visible: true,
+								},
+							},
+							quickStages: []*model.PipelineStage{
+								{
+									Id:      "plugin-1-quick-stage-1",
+									Visible: true,
+								},
+							},
+						},
+					},
+				})
+				require.NoError(t, err)
+
+				return pr
+			}(),
 			cfg: &config.GenericApplicationSpec{
 				Planner: config.DeploymentPlanner{
 					AutoRollback: pointerBool(true),
@@ -877,16 +1053,8 @@ func TestPlanner_BuildPlan(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			stageBasedPluginMap := make(map[string]pluginapi.PluginClient)
-			for _, p := range tc.plugins {
-				stages, _ := p.FetchDefinedStages(context.TODO(), &deployment.FetchDefinedStagesRequest{})
-				for _, s := range stages.Stages {
-					stageBasedPluginMap[s] = p
-				}
-			}
 			planner := &planner{
-				plugins:                      tc.plugins,
-				stageBasedPluginsMap:         stageBasedPluginMap,
+				pluginRegistry:               tc.pluginRegistry,
 				deployment:                   tc.deployment,
 				lastSuccessfulCommitHash:     "",
 				lastSuccessfulConfigFilename: "",
@@ -895,7 +1063,7 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				gitClient:                    nil,
 				notifier:                     nil,
 				logger:                       zap.NewNop(),
-				nowFunc:                      func() time.Time { return time.Now() },
+				nowFunc:                      time.Now,
 			}
 
 			if !tc.isFirstDeploy {

@@ -18,9 +18,14 @@ import (
 	"context"
 	"time"
 
+	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
+	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
-	"github.com/pipe-cd/pipecd/pkg/regexpool"
+	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
+	"github.com/pipe-cd/pipecd/pkg/plugin/signalhandler"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -28,8 +33,18 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+const (
+	defaultKubectlVersion = "1.18.2"
+)
+
+type toolClient interface {
+	InstallTool(ctx context.Context, name, version, script string) (string, error)
+}
+
 type toolRegistry interface {
-	InstallTool(ctx context.Context, name, version string) (path string, err error)
+	Kubectl(ctx context.Context, version string) (string, error)
+	Kustomize(ctx context.Context, version string) (string, error)
+	Helm(ctx context.Context, version string) (string, error)
 }
 
 type loader interface {
@@ -37,23 +52,49 @@ type loader interface {
 	LoadManifests(ctx context.Context, input provider.LoaderInput) ([]provider.Manifest, error)
 }
 
+type applier interface {
+	// ApplyManifest does applying the given manifest.
+	ApplyManifest(ctx context.Context, manifest provider.Manifest) error
+	// CreateManifest does creating resource from given manifest.
+	CreateManifest(ctx context.Context, manifest provider.Manifest) error
+	// ReplaceManifest does replacing resource from given manifest.
+	ReplaceManifest(ctx context.Context, manifest provider.Manifest) error
+	// ForceReplaceManifest does force replacing resource from given manifest.
+	ForceReplaceManifest(ctx context.Context, manifest provider.Manifest) error
+}
+
+type logPersister interface {
+	StageLogPersister(deploymentID, stageID string) logpersister.StageLogPersister
+}
+
 type DeploymentService struct {
 	deployment.UnimplementedDeploymentServiceServer
 
-	RegexPool    *regexpool.Pool
-	Logger       *zap.Logger
-	ToolRegistry toolRegistry
-	Loader       loader
+	// this field is set with the plugin configuration
+	// the plugin configuration is sent from piped while initializing the plugin
+	pluginConfig *config.PipedPlugin
+
+	logger       *zap.Logger
+	toolRegistry toolRegistry
+	loader       loader
+	logPersister logPersister
 }
 
 // NewDeploymentService creates a new planService.
 func NewDeploymentService(
+	config *config.PipedPlugin,
 	logger *zap.Logger,
+	toolClient toolClient,
+	logPersister logPersister,
 ) *DeploymentService {
+	toolRegistry := toolregistry.NewRegistry(toolClient)
+
 	return &DeploymentService{
-		RegexPool:    regexpool.DefaultPool(),
-		Logger:       logger.Named("planner"),
-		ToolRegistry: nil, // TODO: set the tool registry
+		pluginConfig: config,
+		logger:       logger.Named("planner"),
+		toolRegistry: toolRegistry,
+		loader:       provider.NewLoader(toolRegistry),
+		logPersister: logPersister,
 	}
 }
 
@@ -63,15 +104,41 @@ func (a *DeploymentService) Register(server *grpc.Server) {
 }
 
 // DetermineStrategy implements deployment.DeploymentServiceServer.
-func (a *DeploymentService) DetermineStrategy(context.Context, *deployment.DetermineStrategyRequest) (*deployment.DetermineStrategyResponse, error) {
-	panic("unimplemented")
+func (a *DeploymentService) DetermineStrategy(ctx context.Context, request *deployment.DetermineStrategyRequest) (*deployment.DetermineStrategyResponse, error) {
+	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](request.GetInput().GetTargetDeploymentSource().GetApplicationConfig())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	runnings, err := a.loadManifests(ctx, request.GetInput().GetDeployment(), cfg.Spec, request.GetInput().GetRunningDeploymentSource())
+
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	targets, err := a.loadManifests(ctx, request.GetInput().GetDeployment(), cfg.Spec, request.GetInput().GetTargetDeploymentSource())
+
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	strategy, summary := determineStrategy(runnings, targets, cfg.Spec.Workloads, a.logger)
+
+	return &deployment.DetermineStrategyResponse{
+		SyncStrategy: strategy,
+		Summary:      summary,
+	}, nil
+
 }
 
 // DetermineVersions implements deployment.DeploymentServiceServer.
 func (a *DeploymentService) DetermineVersions(ctx context.Context, request *deployment.DetermineVersionsRequest) (*deployment.DetermineVersionsResponse, error) {
-	manifests, err := a.Loader.LoadManifests(ctx, provider.LoaderInput{
-		// TODO: fill the input
-	})
+	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](request.GetInput().GetTargetDeploymentSource().GetApplicationConfig())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	manifests, err := a.loadManifests(ctx, request.GetInput().GetDeployment(), cfg.Spec, request.GetInput().GetTargetDeploymentSource())
 
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -88,8 +155,12 @@ func (a *DeploymentService) DetermineVersions(ctx context.Context, request *depl
 }
 
 // BuildPipelineSyncStages implements deployment.DeploymentServiceServer.
-func (a *DeploymentService) BuildPipelineSyncStages(context.Context, *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
-	panic("unimplemented")
+func (a *DeploymentService) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
+	now := time.Now()
+	stages := buildPipelineStages(request.GetStages(), request.GetRollback(), now)
+	return &deployment.BuildPipelineSyncStagesResponse{
+		Stages: stages,
+	}, nil
 }
 
 // BuildQuickSyncStages implements deployment.DeploymentServiceServer.
@@ -111,4 +182,54 @@ func (a *DeploymentService) FetchDefinedStages(context.Context, *deployment.Fetc
 	return &deployment.FetchDefinedStagesResponse{
 		Stages: stages,
 	}, nil
+}
+
+func (a *DeploymentService) loadManifests(ctx context.Context, deploy *model.Deployment, spec *kubeconfig.KubernetesApplicationSpec, deploymentSource *deployment.DeploymentSource) ([]provider.Manifest, error) {
+	manifests, err := a.loader.LoadManifests(ctx, provider.LoaderInput{
+		PipedID:          deploy.GetPipedId(),
+		AppID:            deploy.GetApplicationId(),
+		CommitHash:       deploymentSource.GetCommitHash(),
+		AppName:          deploy.GetApplicationName(),
+		AppDir:           deploymentSource.GetApplicationDirectory(),
+		ConfigFilename:   deploymentSource.GetApplicationConfigFilename(),
+		Manifests:        spec.Input.Manifests,
+		Namespace:        spec.Input.Namespace,
+		TemplatingMethod: provider.TemplatingMethodNone, // TODO: Implement detection of templating method or add it to the config spec.
+
+		// TODO: Define other fields for LoaderInput
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return manifests, nil
+}
+
+// ExecuteStage performs stage-defined tasks.
+// It returns stage status after execution without error.
+// Error only be raised if the given stage is not supported.
+func (a *DeploymentService) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (response *deployment.ExecuteStageResponse, _ error) {
+	lp := a.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId())
+	defer func() {
+		// When termination signal received and the stage is not completed yet, we should not mark the log persister as completed.
+		// This can occur when the piped is shutting down while the stage is still running.
+		if !response.GetStatus().IsCompleted() && signalhandler.Terminated() {
+			return
+		}
+		lp.Complete(time.Minute)
+	}()
+
+	switch request.GetInput().GetStage().GetName() {
+	case StageK8sSync.String():
+		return &deployment.ExecuteStageResponse{
+			Status: a.executeK8sSyncStage(ctx, lp, request.GetInput()),
+		}, nil
+	case StageK8sRollback.String():
+		return &deployment.ExecuteStageResponse{
+			Status: a.executeK8sRollbackStage(ctx, lp, request.GetInput()),
+		}, nil
+	default:
+		return nil, status.Error(codes.InvalidArgument, "unimplemented or unsupported stage")
+	}
 }

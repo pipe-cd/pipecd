@@ -22,7 +22,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -98,6 +97,7 @@ func newScheduler(
 	pipedConfig *config.PipedSpec,
 	appManifestsCache cache.Cache,
 	logger *zap.Logger,
+	tracerProvider trace.TracerProvider,
 ) *scheduler {
 	logger = logger.Named("scheduler").With(
 		zap.String("deployment-id", d.Id),
@@ -126,7 +126,7 @@ func newScheduler(
 		doneDeploymentStatus: d.Status,
 		cancelledCh:          make(chan *model.ReportableCommand, 1),
 		logger:               logger,
-		tracer:               otel.GetTracerProvider().Tracer("controller/scheduler"),
+		tracer:               tracerProvider.Tracer("controller/scheduler"),
 		nowFunc:              time.Now,
 	}
 
@@ -216,6 +216,21 @@ func (s *scheduler) Run(ctx context.Context) error {
 			return err
 		}
 		controllermetrics.UpdateDeploymentStatus(s.deployment, model.DeploymentStatus_DEPLOYMENT_RUNNING)
+
+		// notify the deployment started event
+		users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_STARTED)
+		if err != nil {
+			s.logger.Error("failed to get the list of users or groups", zap.Error(err))
+		}
+
+		s.notifier.Notify(model.NotificationEvent{
+			Type: model.NotificationEventType_EVENT_DEPLOYMENT_STARTED,
+			Metadata: &model.NotificationEventDeploymentStarted{
+				Deployment:        s.deployment,
+				MentionedAccounts: users,
+				MentionedGroups:   groups,
+			},
+		})
 	}
 
 	var (
@@ -285,7 +300,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		case model.DeploymentStatus_DEPLOYMENT_FAILURE, model.DeploymentStatus_DEPLOYMENT_CANCELLED:
 			span.SetStatus(codes.Error, statusReason)
 		}
-		
+
 		span.End()
 	}()
 
@@ -770,8 +785,8 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 }
 
 // getApplicationNotificationMentions returns the list of users groups who should be mentioned in the notification.
-func (p *scheduler) getApplicationNotificationMentions(event model.NotificationEventType) ([]string, []string, error) {
-	n, ok := p.metadataStore.Shared().Get(model.MetadataKeyDeploymentNotification)
+func (s *scheduler) getApplicationNotificationMentions(event model.NotificationEventType) ([]string, []string, error) {
+	n, ok := s.metadataStore.Shared().Get(model.MetadataKeyDeploymentNotification)
 	if !ok {
 		return []string{}, []string{}, nil
 	}

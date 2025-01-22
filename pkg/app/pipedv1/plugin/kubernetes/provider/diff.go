@@ -23,28 +23,27 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/diff"
 )
 
-
 func Diff(old, new Manifest, logger *zap.Logger, opts ...diff.Option) (*diff.Result, error) {
-	if old.Key.IsSecret() && new.Key.IsSecret() {
+	if old.IsSecret() && new.IsSecret() {
 		var err error
-		old.Body, err = normalizeNewSecret(old.Body, new.Body)
+		old.body, err = normalizeNewSecret(old.body, new.body)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	key := old.Key.String()
+	key := old.Key().String()
 
-	normalizedOld, err := remarshal(old.Body)
+	normalizedOld, err := remarshal(old.body)
 	if err != nil {
 		logger.Info("compare manifests directly since it was unable to remarshal old Kubernetes manifest to normalize special fields", zap.Error(err))
-		return diff.DiffUnstructureds(*old.Body, *new.Body, key, opts...)
+		return diff.DiffUnstructureds(*old.body, *new.body, key, opts...)
 	}
 
-	normalizedNew, err := remarshal(new.Body)
+	normalizedNew, err := remarshal(new.body)
 	if err != nil {
 		logger.Info("compare manifests directly since it was unable to remarshal new Kubernetes manifest to normalize special fields", zap.Error(err))
-		return diff.DiffUnstructureds(*old.Body, *new.Body, key, opts...)
+		return diff.DiffUnstructureds(*old.body, *new.body, key, opts...)
 	}
 
 	return diff.DiffUnstructureds(*normalizedOld, *normalizedNew, key, opts...)

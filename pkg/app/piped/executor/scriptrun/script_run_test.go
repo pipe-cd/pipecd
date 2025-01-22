@@ -1,3 +1,17 @@
+// Copyright 2024 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package scriptrun
 
 import (
@@ -22,12 +36,14 @@ func Test_ContextInfo_BuildEnv(t *testing.T) {
 				ApplicationName:     "application-name",
 				TriggeredAt:         1234567890,
 				TriggeredCommitHash: "commit-hash",
+				TriggeredCommander:  "commander",
 				RepositoryURL:       "repo-url",
 				Labels: map[string]string{
 					"key1": "value1",
 					"key2": "value2",
 				},
-				Summary: "summary",
+				IsRollback: false,
+				Summary:    "summary",
 			},
 			want: map[string]string{
 				"SR_DEPLOYMENT_ID":         "deployment-id",
@@ -35,8 +51,10 @@ func Test_ContextInfo_BuildEnv(t *testing.T) {
 				"SR_APPLICATION_NAME":      "application-name",
 				"SR_TRIGGERED_AT":          "1234567890",
 				"SR_TRIGGERED_COMMIT_HASH": "commit-hash",
+				"SR_TRIGGERED_COMMANDER":   "commander",
 				"SR_REPOSITORY_URL":        "repo-url",
 				"SR_SUMMARY":               "summary",
+				"SR_IS_ROLLBACK":           "false",
 				"SR_LABELS_KEY1":           "value1",
 				"SR_LABELS_KEY2":           "value2",
 			},

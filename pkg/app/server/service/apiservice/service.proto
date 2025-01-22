@@ -58,6 +58,8 @@ service APIService {
     rpc Encrypt(EncryptRequest) returns (EncryptResponse) {}
 
     rpc ListStageLogs(ListStageLogsRequest) returns (ListStageLogsResponse) {}
+
+    rpc MigrateDatabase(MigrateDatabaseRequest) returns (MigrateDatabaseResponse) {}
 }
 
 message AddApplicationRequest {
@@ -229,7 +231,7 @@ message RegisterEventRequest {
     string name = 1 [(validate.rules).string.min_len = 1];
     string data = 2 [(validate.rules).string.min_len = 1];
     map<string,string> labels = 3 [(validate.rules).map.keys.string.min_len = 1, (validate.rules).map.values.string.min_len = 1];
-    map<string,string> contexts = 4;
+    map<string,string> contexts = 4 [(validate.rules).map.keys.string.min_len = 1, (validate.rules).map.keys.string.pattern = "^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$", (validate.rules).map.values.string.min_len = 1];
 }
 
 message RegisterEventResponse {
@@ -281,4 +283,18 @@ message ListStageLogsRequest {
 
 message ListStageLogsResponse {
     map<string, StageLog> stage_logs = 1;
+}
+
+message MigrateDatabaseRequest {
+    message Application {
+        string application_id = 1 [(validate.rules).string.min_len = 1];
+    }
+    
+    oneof target {
+        Application application = 1;
+        // Add more migration targets here. for example, Piped, Project, etc.
+    }
+}
+
+message MigrateDatabaseResponse {
 }

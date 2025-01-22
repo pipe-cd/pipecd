@@ -1,6 +1,17 @@
-# https://github.com/pipe-cd/pipecd/pkgs/container/piped-base-okd/237191933?tag=v0.47.3-rc0-21-ge20cd0b
-FROM ghcr.io/pipe-cd/piped-base-okd@sha256:afb1bfee70d445986d04c2066d2887da7b1e2e454cecabec5bf37e3201cd7e7e
+FROM golang:1.23.3 AS builder
 
-ADD .artifacts/piped /usr/local/bin/piped
+WORKDIR /app
+
+COPY go.* ./
+RUN go mod download
+
+COPY . ./
+
+RUN make build/go MOD=piped
+
+# https://github.com/pipe-cd/pipecd/pkgs/container/piped-base-okd/321464518?tag=v0.50.0-26-ga8527d2
+FROM ghcr.io/pipe-cd/piped-base-okd@sha256:da9bd5a1dae3aa5c2df4baba81ff836ba4a55159d85984605549ef2d1f136895
+
+COPY --from=builder /app/.artifacts/piped /usr/local/bin/piped
 
 ENTRYPOINT ["piped"]

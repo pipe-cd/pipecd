@@ -1,0 +1,5 @@
+{{/*  Enable rendering Mermaid diagrams. See https://gohugo.io/content-management/diagrams/#mermaid-diagrams.  */}}
+<pre class="mermaid">
+    {{- .Inner | safeHTML }}
+</pre>
+{{ .Page.Store.Set "hasMermaid" true }}

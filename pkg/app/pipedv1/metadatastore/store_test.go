@@ -26,11 +26,12 @@ import (
 )
 
 type fakeAPIClient struct {
-	shared metadata
-	stages map[string]metadata
+	shared  metadata
+	plugins map[string]metadata
+	stages  map[string]metadata
 }
 
-func (c *fakeAPIClient) SaveDeploymentMetadata(ctx context.Context, req *pipedservice.SaveDeploymentMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveDeploymentMetadataResponse, error) {
+func (c *fakeAPIClient) SaveDeploymentSharedMetadata(ctx context.Context, req *pipedservice.SaveDeploymentSharedMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveDeploymentSharedMetadataResponse, error) {
 	md := make(map[string]string, len(c.shared)+len(req.Metadata))
 	for k, v := range c.shared {
 		md[k] = v
@@ -39,7 +40,20 @@ func (c *fakeAPIClient) SaveDeploymentMetadata(ctx context.Context, req *pipedse
 		md[k] = v
 	}
 	c.shared = md
-	return &pipedservice.SaveDeploymentMetadataResponse{}, nil
+	return &pipedservice.SaveDeploymentSharedMetadataResponse{}, nil
+}
+
+func (c *fakeAPIClient) SaveDeploymentPluginMetadata(ctx context.Context, req *pipedservice.SaveDeploymentPluginMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveDeploymentPluginMetadataResponse, error) {
+	ori := c.plugins[req.PluginName]
+	md := make(map[string]string, len(ori)+len(req.Metadata))
+	for k, v := range ori {
+		md[k] = v
+	}
+	for k, v := range req.Metadata {
+		md[k] = v
+	}
+	c.plugins[req.PluginName] = md
+	return &pipedservice.SaveDeploymentPluginMetadataResponse{}, nil
 }
 
 func (c *fakeAPIClient) SaveStageMetadata(ctx context.Context, req *pipedservice.SaveStageMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveStageMetadataResponse, error) {
@@ -59,97 +73,122 @@ func TestStore(t *testing.T) {
 	t.Parallel()
 
 	ac := &fakeAPIClient{
-		shared: make(map[string]string, 0),
-		stages: make(map[string]metadata, 0),
+		shared:  make(map[string]string, 0),
+		plugins: make(map[string]metadata, 0),
+		stages:  make(map[string]metadata, 0),
 	}
 	d := &model.Deployment{
-		Metadata: map[string]string{
-			"key-1": "value-1",
+		MetadataV2: &model.DeploymentMetadata{
+			Shared: &model.DeploymentMetadata_KeyValues{
+				KeyValues: map[string]string{
+					"key-1": "value-1",
+				},
+			},
+			Plugins: map[string]*model.DeploymentMetadata_KeyValues{
+				"plugin-1": {
+					KeyValues: map[string]string{
+						"plugin-1-key-1": "plugin-1-value-1",
+					},
+				},
+			},
 		},
 		Stages: []*model.PipelineStage{
 			{
 				Id: "stage-1",
-			},
-			{
-				Id: "stage-2",
 				Metadata: map[string]string{
-					"stage-2-key-1": "stage-2-value-1",
+					"stage-1-key-1": "stage-1-value-1",
 				},
 			},
 		},
 	}
 
 	ctx := context.Background()
-	store := NewMetadataStore(ac, d)
+	store := newMetadataStore(ac, d)
+	t.Logf("[DEBUG] store.shared: %+v\n", store.shared)
+	t.Logf("[DEBUG] store.plugins: %+v\n", store.plugins)
+	t.Logf("[DEBUG] store.plugins[plugin-1]: %+v\n", store.plugins["plugin-1"])
+	t.Logf("[DEBUG] store.stages: %+v\n", store.stages)
+	t.Logf("[DEBUG] store.stages[stage-1]: %+v\n", store.stages["stage-1"])
 
 	// Shared metadata.
-	value, found := store.Shared().Get("key-1")
-	assert.Equal(t, "value-1", value)
-	assert.Equal(t, true, found)
+	{
+		// existing key
+		value, found := store.sharedGet("key-1")
+		assert.Equal(t, "value-1", value)
+		assert.Equal(t, true, found)
 
-	value, found = store.Shared().Get("key-2")
-	assert.Equal(t, "", value)
-	assert.Equal(t, false, found)
+		// nonexistent key
+		value, found = store.sharedGet("key-2")
+		assert.Equal(t, "", value)
+		assert.Equal(t, false, found)
+	}
 
-	err := store.Shared().Put(ctx, "key-2", "value-2")
-	assert.Equal(t, nil, err)
+	// Plugin metadata.
+	{
+		// existing key
+		value, found := store.pluginGet("plugin-1", "plugin-1-key-1")
+		assert.Equal(t, "plugin-1-value-1", value)
+		assert.Equal(t, true, found)
 
-	assert.Equal(t, metadata{
-		"key-1": "value-1",
-		"key-2": "value-2",
-	}, ac.shared)
+		// nonexistent key
+		value, found = store.pluginGet("plugin-1", "plugin-1-key-2")
+		assert.Equal(t, "", value)
+		assert.Equal(t, false, found)
 
-	err = store.Shared().PutMulti(ctx, map[string]string{
-		"key-3": "value-3",
-		"key-1": "value-12",
-		"key-4": "value-4",
-	})
-	assert.Equal(t, nil, err)
+		// put new and existing keys
+		err := store.pluginPutMulti(ctx, "plugin-1", map[string]string{
+			"plugin-1-key-2": "plugin-1-value-2",
+			"plugin-1-key-1": "plugin-1-value-1-new",
+			"plugin-1-key-3": "plugin-1-value-3",
+		})
+		assert.Equal(t, nil, err)
+		value, found = store.pluginGet("plugin-1", "plugin-1-key-1")
+		assert.Equal(t, "plugin-1-value-1-new", value)
+		assert.Equal(t, true, found)
+		value, found = store.pluginGet("plugin-1", "plugin-1-key-2")
+		assert.Equal(t, "plugin-1-value-2", value)
+		assert.Equal(t, true, found)
+		value, found = store.pluginGet("plugin-1", "plugin-1-key-3")
+		assert.Equal(t, "plugin-1-value-3", value)
+		assert.Equal(t, true, found)
 
-	assert.Equal(t, metadata{
-		"key-1": "value-12",
-		"key-2": "value-2",
-		"key-3": "value-3",
-		"key-4": "value-4",
-	}, ac.shared)
+		assert.Equal(t, metadata{
+			"plugin-1-key-1": "plugin-1-value-1-new",
+			"plugin-1-key-2": "plugin-1-value-2",
+			"plugin-1-key-3": "plugin-1-value-3",
+		}, ac.plugins["plugin-1"])
+	}
 
 	// Stage metadata.
-	value, found = store.Stage("stage-1").Get("key-1")
-	assert.Equal(t, "", value)
-	assert.Equal(t, false, found)
+	{
+		// existing key
+		value, found := store.stageGet("stage-1", "stage-1-key-1")
+		assert.Equal(t, "stage-1-value-1", value)
+		assert.Equal(t, true, found)
 
-	value, found = store.Stage("stage-2").Get("stage-2-key-1")
-	assert.Equal(t, "stage-2-value-1", value)
-	assert.Equal(t, true, found)
+		// nonexistent key
+		value, found = store.stageGet("stage-1", "nonexistent-key")
+		assert.Equal(t, "", value)
+		assert.Equal(t, false, found)
 
-	err = store.Stage("stage-1").Put(ctx, "stage-1-key-1", "stage-1-value-1")
-	assert.Equal(t, nil, err)
+		// put new and existing keys
+		err := store.stagePutMulti(ctx, "stage-1", map[string]string{
+			"stage-1-key-1": "stage-1-value-1-new",
+			"stage-1-key-2": "stage-1-value-2",
+		})
+		assert.Equal(t, nil, err)
+		value, found = store.stageGet("stage-1", "stage-1-key-1")
+		assert.Equal(t, "stage-1-value-1-new", value)
+		assert.Equal(t, true, found)
+		value, found = store.stageGet("stage-1", "stage-1-key-2")
+		assert.Equal(t, "stage-1-value-2", value)
+		assert.Equal(t, true, found)
 
-	value, found = store.Stage("stage-1").Get("stage-1-key-1")
-	assert.Equal(t, "stage-1-value-1", value)
-	assert.Equal(t, true, found)
-
-	err = store.Stage("stage-2").PutMulti(ctx, map[string]string{
-		"stage-2-key-1": "stage-2-value-12",
-		"stage-2-key-2": "stage-2-value-2",
-	})
-	assert.Equal(t, nil, err)
-
-	value, found = store.Stage("stage-2").Get("stage-2-key-1")
-	assert.Equal(t, "stage-2-value-12", value)
-	assert.Equal(t, true, found)
-
-	value, found = store.Stage("stage-2").Get("stage-2-key-2")
-	assert.Equal(t, "stage-2-value-2", value)
-	assert.Equal(t, true, found)
-
-	assert.Equal(t, map[string]metadata{
-		"stage-1": {
-			"stage-1-key-1": "stage-1-value-1",
-		},
-		"stage-2": {
-			"stage-2-key-1": "stage-2-value-12",
-			"stage-2-key-2": "stage-2-value-2",
-		},
-	}, ac.stages)
+		assert.Equal(t, map[string]metadata{
+			"stage-1": {
+				"stage-1-key-1": "stage-1-value-1-new",
+				"stage-1-key-2": "stage-1-value-2",
+			},
+		}, ac.stages)
+	}
 }

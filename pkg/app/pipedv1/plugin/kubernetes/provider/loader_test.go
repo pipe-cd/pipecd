@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//  http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,6 +15,7 @@
 package provider
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -22,8 +23,22 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
+	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry/toolregistrytest"
 )
+
+func mustParseManifests(t *testing.T, data string) []Manifest {
+	t.Helper()
+
+	manifests, err := ParseManifests(data)
+	require.NoError(t, err)
+
+	return manifests
+}
 
 func TestParseManifests(t *testing.T) {
 	tests := []struct {
@@ -42,12 +57,7 @@ metadata:
 `,
 			want: []Manifest{
 				{
-					Key: ResourceKey{
-						APIVersion: "v1",
-						Kind:       "ConfigMap",
-						Name:       "test-config",
-					},
-					Body: &unstructured.Unstructured{
+					body: &unstructured.Unstructured{
 						Object: map[string]interface{}{
 							"apiVersion": "v1",
 							"kind":       "ConfigMap",
@@ -75,12 +85,7 @@ metadata:
 `,
 			want: []Manifest{
 				{
-					Key: ResourceKey{
-						APIVersion: "v1",
-						Kind:       "ConfigMap",
-						Name:       "test-config",
-					},
-					Body: &unstructured.Unstructured{
+					body: &unstructured.Unstructured{
 						Object: map[string]interface{}{
 							"apiVersion": "v1",
 							"kind":       "ConfigMap",
@@ -91,12 +96,7 @@ metadata:
 					},
 				},
 				{
-					Key: ResourceKey{
-						APIVersion: "v1",
-						Kind:       "Service",
-						Name:       "test-service",
-					},
-					Body: &unstructured.Unstructured{
+					body: &unstructured.Unstructured{
 						Object: map[string]interface{}{
 							"apiVersion": "v1",
 							"kind":       "Service",
@@ -173,12 +173,7 @@ metadata:
 			},
 			want: []Manifest{
 				{
-					Key: ResourceKey{
-						APIVersion: "v1",
-						Kind:       "ConfigMap",
-						Name:       "test-config",
-					},
-					Body: &unstructured.Unstructured{
+					body: &unstructured.Unstructured{
 						Object: map[string]interface{}{
 							"apiVersion": "v1",
 							"kind":       "ConfigMap",
@@ -215,12 +210,7 @@ metadata:
 			},
 			want: []Manifest{
 				{
-					Key: ResourceKey{
-						APIVersion: "v1",
-						Kind:       "Service",
-						Name:       "test-service",
-					},
-					Body: &unstructured.Unstructured{
+					body: &unstructured.Unstructured{
 						Object: map[string]interface{}{
 							"apiVersion": "v1",
 							"kind":       "Service",
@@ -256,12 +246,7 @@ metadata:
 			},
 			want: []Manifest{
 				{
-					Key: ResourceKey{
-						APIVersion: "v1",
-						Kind:       "ConfigMap",
-						Name:       "test-config",
-					},
-					Body: &unstructured.Unstructured{
+					body: &unstructured.Unstructured{
 						Object: map[string]interface{}{
 							"apiVersion": "v1",
 							"kind":       "ConfigMap",
@@ -272,12 +257,7 @@ metadata:
 					},
 				},
 				{
-					Key: ResourceKey{
-						APIVersion: "v1",
-						Kind:       "Service",
-						Name:       "test-service",
-					},
-					Body: &unstructured.Unstructured{
+					body: &unstructured.Unstructured{
 						Object: map[string]interface{}{
 							"apiVersion": "v1",
 							"kind":       "Service",
@@ -334,6 +314,73 @@ invalid yaml content
 				require.NoError(t, err)
 			}
 			assert.ElementsMatch(t, tt.want, got)
+		})
+	}
+}
+
+func TestLoader_templateHelmChart(t *testing.T) {
+	c, err := toolregistrytest.NewToolRegistry(t)
+	require.NoError(t, err)
+	t.Cleanup(func() { c.Close() })
+
+	loader := &Loader{
+		toolRegistry: toolregistry.NewRegistry(c),
+	}
+
+	tests := []struct {
+		name    string
+		input   LoaderInput
+		wantErr bool
+	}{
+		{
+			name: "local chart",
+			input: LoaderInput{
+				AppName:     "test-app",
+				AppDir:      "testdata/testhelm/appconfdir",
+				Namespace:   "default",
+				HelmVersion: "3.16.1",
+				HelmChart:   &config.InputHelmChart{Path: "../../testchart"},
+				HelmOptions: &config.InputHelmOptions{},
+				Logger:      zap.NewNop(),
+			},
+			wantErr: false,
+		},
+		{
+			name: "helm chart from git remote",
+			input: LoaderInput{
+				AppName:     "test-app",
+				AppDir:      "testdata/testhelm/appconfdir",
+				Namespace:   "default",
+				HelmVersion: "3.16.1",
+				HelmChart:   &config.InputHelmChart{GitRemote: "https://github.com/test/repo.git"},
+				HelmOptions: &config.InputHelmOptions{},
+				Logger:      zap.NewNop(),
+			},
+			wantErr: true, // it's not implemented yet
+		},
+		{
+			name: "helm chart from repository",
+			input: LoaderInput{
+				AppName:     "test-app",
+				AppDir:      "testdata/testhelm/appconfdir",
+				Namespace:   "default",
+				HelmVersion: "3.16.1",
+				HelmChart:   &config.InputHelmChart{Repository: "https://charts.helm.sh/stable"},
+				HelmOptions: &config.InputHelmOptions{},
+				Logger:      zap.NewNop(),
+			},
+			wantErr: true, // it's not implemented yet
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := loader.templateHelmChart(context.Background(), tt.input)
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
 		})
 	}
 }

@@ -99,7 +99,7 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 		PlacementConstraints:          service.PlacementConstraints,
 		PlacementStrategy:             service.PlacementStrategy,
 		PlatformVersion:               service.PlatformVersion,
-		PropagateTags:                 types.PropagateTagsService,
+		PropagateTags:                 service.PropagateTags,
 		Role:                          service.RoleArn,
 		SchedulingStrategy:            service.SchedulingStrategy,
 		Tags:                          service.Tags,
@@ -143,6 +143,8 @@ func (c *client) UpdateService(ctx context.Context, service types.Service) (*typ
 		PlacementStrategy:    service.PlacementStrategy,
 		// TODO: Support update other properties of service.
 		// PlacementConstraints:    service.PlacementConstraints,
+		PropagateTags:        service.PropagateTags,
+		EnableECSManagedTags: aws.Bool(service.EnableECSManagedTags),
 	}
 
 	// If desiredCount is 0 or not set, keep current desiredCount because a user might use AutoScaling.
@@ -188,9 +190,15 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 		Volumes:                 taskDefinition.Volumes,
 		RuntimePlatform:         taskDefinition.RuntimePlatform,
 		EphemeralStorage:        taskDefinition.EphemeralStorage,
-		// Requires defined at task level in case Fargate is used.
+		// Cpu and Memory must be defined if Fargate is used.
 		Cpu:    taskDefinition.Cpu,
 		Memory: taskDefinition.Memory,
+
+		InferenceAccelerators: taskDefinition.InferenceAccelerators,
+		IpcMode:               taskDefinition.IpcMode,
+		PidMode:               taskDefinition.PidMode,
+		PlacementConstraints:  taskDefinition.PlacementConstraints,
+		ProxyConfiguration:    taskDefinition.ProxyConfiguration,
 		// TODO: Support tags for registering task definition.
 	}
 	output, err := c.ecsClient.RegisterTaskDefinition(ctx, input)

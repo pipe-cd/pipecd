@@ -45,6 +45,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/git"
+	"github.com/pipe-cd/pipecd/pkg/lifecycle"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcclient"
 	"github.com/pipe-cd/pipecd/pkg/version"
@@ -271,7 +272,7 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 	}
 
 	var (
-		runningPiped *command
+		runningPiped *lifecycle.Command
 		workingDir   = filepath.Join(l.homeDir, "piped")
 		ticker       = time.NewTicker(l.checkInterval)
 	)
@@ -305,7 +306,7 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 		}
 
 		// Start new piped process.
-		runningPiped, err = l.launchNewPiped(version, config, workingDir, input.Logger)
+		runningPiped, err = l.launchNewPiped(ctx, version, config, workingDir, input.Logger)
 		if err != nil {
 			input.Logger.Error("LAUNCHER: failed while launching new Piped", zap.Error(err))
 			return err
@@ -384,7 +385,7 @@ func (l *launcher) shouldRelaunch(ctx context.Context, logger *zap.Logger) (vers
 	return
 }
 
-func (l *launcher) cleanOldPiped(cmd *command, workingDir string, logger *zap.Logger) error {
+func (l *launcher) cleanOldPiped(cmd *lifecycle.Command, workingDir string, logger *zap.Logger) error {
 	// Stop running Piped gracefully.
 	if cmd != nil {
 		if err := cmd.GracefulStop(l.gracePeriod); err != nil {
@@ -403,7 +404,7 @@ func (l *launcher) cleanOldPiped(cmd *command, workingDir string, logger *zap.Lo
 	return nil
 }
 
-func (l *launcher) launchNewPiped(version string, config []byte, workingDir string, logger *zap.Logger) (*command, error) {
+func (l *launcher) launchNewPiped(ctx context.Context, version string, config []byte, workingDir string, logger *zap.Logger) (*lifecycle.Command, error) {
 	if err := os.MkdirAll(workingDir, 0755); err != nil {
 		return nil, fmt.Errorf("could not create working directory %s (%w)", workingDir, err)
 	}
@@ -413,7 +414,7 @@ func (l *launcher) launchNewPiped(version string, config []byte, workingDir stri
 		binaryDir   = filepath.Join(workingDir, "bin")
 		downloadURL = makeDownloadURL(version)
 	)
-	pipedPath, err := downloadBinary(downloadURL, binaryDir, pipedBinaryFileName, logger)
+	pipedPath, err := lifecycle.DownloadBinary(downloadURL, binaryDir, pipedBinaryFileName, logger)
 	if err != nil {
 		return nil, fmt.Errorf("failed to download Piped from %s to %s (%w)", downloadURL, binaryDir, err)
 	}
@@ -435,7 +436,7 @@ func (l *launcher) launchNewPiped(version string, config []byte, workingDir stri
 	args := makePipedArgs(os.Args[2:], configFilePath)
 	logger.Info(fmt.Sprintf("LAUNCHER: start running Piped %s with args %v", version, args))
 
-	return runBinary(pipedPath, args)
+	return lifecycle.RunBinary(ctx, pipedPath, args)
 }
 
 func (l *launcher) loadConfigData(ctx context.Context) ([]byte, error) {

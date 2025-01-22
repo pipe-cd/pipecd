@@ -20,15 +20,15 @@ import (
 	"net/http"
 	"net/url"
 
-	"golang.org/x/oauth2"
-
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/golang-jwt/jwt"
+	"golang.org/x/oauth2"
+
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 var usernameClaimKeys = []string{"username", "preferred_username", "name", "cognito:username"}
-var avatarUrlClaimKeys = []string{"picture", "avatar_url"}
+var avatarURLClaimKeys = []string{"picture", "avatar_url"}
 var roleClaimKeys = []string{"groups", "roles", "cognito:groups", "custom:roles", "custom:groups"}
 
 // OAuthClient is an oauth client for OIDC.
@@ -84,14 +84,14 @@ func NewOAuthClient(ctx context.Context,
 }
 
 // GetUser returns a user model.
-func (c *OAuthClient) GetUser(ctx context.Context, clientId string) (*model.User, error) {
+func (c *OAuthClient) GetUser(ctx context.Context, clientID string) (*model.User, error) {
 
 	idTokenRAW, ok := c.Token.Extra("id_token").(string)
 	if !ok {
 		return nil, fmt.Errorf("no id_token in oauth2 token")
 	}
 
-	verifier := c.Provider.Verifier(&oidc.Config{ClientID: clientId})
+	verifier := c.Provider.Verifier(&oidc.Config{ClientID: clientID})
 	idToken, err := verifier.Verify(ctx, idTokenRAW)
 	if err != nil {
 		return nil, err
@@ -107,13 +107,13 @@ func (c *OAuthClient) GetUser(ctx context.Context, clientId string) (*model.User
 		return nil, err
 	}
 
-	username, avatarUrl, err := c.decideUserInfos(claims)
+	username, avatarURL, err := c.decideUserInfos(claims)
 	if err != nil {
 		return nil, err
 	}
 	return &model.User{
 		Username:  username,
-		AvatarUrl: avatarUrl,
+		AvatarUrl: avatarURL,
 		Role:      role,
 	}, nil
 }
@@ -176,7 +176,7 @@ func (c *OAuthClient) decideRole(claims jwt.MapClaims) (role *model.Role, err er
 	return
 }
 
-func (c *OAuthClient) decideUserInfos(claims jwt.MapClaims) (username, avatarUrl string, err error) {
+func (c *OAuthClient) decideUserInfos(claims jwt.MapClaims) (username, avatarURL string, err error) {
 
 	username = ""
 	for _, key := range usernameClaimKeys {
@@ -194,16 +194,16 @@ func (c *OAuthClient) decideUserInfos(claims jwt.MapClaims) (username, avatarUrl
 		return
 	}
 
-	avatarUrl = ""
-	for _, key := range avatarUrlClaimKeys {
+	avatarURL = ""
+	for _, key := range avatarURLClaimKeys {
 		val, ok := claims[key]
 		if ok && val != nil {
 			if str, ok := val.(string); ok && str != "" {
-				avatarUrl = str
+				avatarURL = str
 				break
 			}
 		}
 	}
 
-	return username, avatarUrl, nil
+	return username, avatarURL, nil
 }

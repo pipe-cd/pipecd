@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
+
 	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/ecs"
 	"github.com/pipe-cd/pipecd/pkg/diff"
@@ -118,9 +120,13 @@ func (b *builder) loadECSManifests(ctx context.Context, app model.Application, d
 	if err != nil {
 		return provider.ECSManifests{}, err
 	}
-	serviceDef, err := provider.LoadServiceDefinition(ds.AppDir, appCfg.Input.ServiceDefinitionFile)
-	if err != nil {
-		return provider.ECSManifests{}, err
+
+	serviceDef := types.Service{}
+	if !appCfg.Input.IsStandaloneTask() {
+		serviceDef, err = provider.LoadServiceDefinition(ds.AppDir, appCfg.Input.ServiceDefinitionFile)
+		if err != nil {
+			return provider.ECSManifests{}, err
+		}
 	}
 
 	manifests = provider.ECSManifests{
