@@ -55,7 +55,7 @@ func (c *database) run(ctx context.Context, input cli.Input) error {
 
 	for _, appID := range c.applications {
 		input.Logger.Info("migrating database", zap.String("application", appID))
-		if err := c.migrateApplication(ctx, client, appID); err != nil {
+		if err := c.migrateApplication(ctx, client, appID, input.Logger); err != nil {
 			input.Logger.Error("failed to migrate database", zap.String("application", appID), zap.Error(err))
 			return err
 		}
@@ -65,16 +65,33 @@ func (c *database) run(ctx context.Context, input cli.Input) error {
 	return nil
 }
 
-func (c *database) migrateApplication(ctx context.Context, client apiservice.Client, appID string) error {
-	req := &apiservice.MigrateDatabaseRequest{
-		Target: &apiservice.MigrateDatabaseRequest_Application_{
-			Application: &apiservice.MigrateDatabaseRequest_Application{
-				ApplicationId: appID,
-			},
-		},
-	}
-	if _, err := client.MigrateDatabase(ctx, req); err != nil {
+func (c *database) migrateApplication(ctx context.Context, client apiservice.Client, appID string, logger *zap.Logger) error {
+	app, err := client.GetApplication(ctx, &apiservice.GetApplicationRequest{ApplicationId: appID})
+	if err != nil {
+		logger.Error("failed to get application", zap.Error(err), zap.String("application", appID))
 		return err
 	}
+
+	if len(app.GetApplication().GetDeployTargets()) > 0 {
+		logger.Info("skip migrating database because the deploy target is already set", zap.String("application", appID))
+		return nil
+	}
+
+	provider := app.GetApplication().GetPlatformProvider()
+
+	if provider == "" {
+		logger.Info("skip migrating database because the platform provider is not set", zap.String("application", appID))
+		return nil
+	}
+
+	// Migrate database for the application.
+	if _, err := client.UpdateApplicationDeployTargets(ctx, &apiservice.UpdateApplicationDeployTargetsRequest{
+		ApplicationId: appID,
+		DeployTargets: []string{provider},
+	}); err != nil {
+		logger.Error("failed to update application deploy targets", zap.Error(err), zap.String("application", appID))
+		return err
+	}
+
 	return nil
 }
