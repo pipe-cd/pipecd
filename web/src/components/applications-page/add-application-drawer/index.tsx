@@ -69,8 +69,10 @@ export const AddApplicationDrawer: FC<AddApplicationDrawerProps> = memo(
         <Drawer
           anchor="right"
           open={open}
-          onClose={handleClose}
-          ModalProps={{ disableBackdropClick: formik.isSubmitting }}
+          onClose={(_, reason) => {
+            if (reason === "backdropClick" && formik.isSubmitting) return;
+            handleClose();
+          }}
         >
           <ApplicationFormTabs
             {...formik}
