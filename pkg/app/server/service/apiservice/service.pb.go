@@ -2517,158 +2517,6 @@ func (x *ListStageLogsResponse) GetStageLogs() map[string]*StageLog {
 	return nil
 }
 
-type MigrateDatabaseRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// Types that are assignable to Target:
-	//
-	//	*MigrateDatabaseRequest_Application_
-	Target isMigrateDatabaseRequest_Target `protobuf_oneof:"target"`
-}
-
-func (x *MigrateDatabaseRequest) Reset() {
-	*x = MigrateDatabaseRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_app_server_service_apiservice_service_proto_msgTypes[47]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *MigrateDatabaseRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*MigrateDatabaseRequest) ProtoMessage() {}
-
-func (x *MigrateDatabaseRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_app_server_service_apiservice_service_proto_msgTypes[47]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use MigrateDatabaseRequest.ProtoReflect.Descriptor instead.
-func (*MigrateDatabaseRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_app_server_service_apiservice_service_proto_rawDescGZIP(), []int{47}
-}
-
-func (m *MigrateDatabaseRequest) GetTarget() isMigrateDatabaseRequest_Target {
-	if m != nil {
-		return m.Target
-	}
-	return nil
-}
-
-func (x *MigrateDatabaseRequest) GetApplication() *MigrateDatabaseRequest_Application {
-	if x, ok := x.GetTarget().(*MigrateDatabaseRequest_Application_); ok {
-		return x.Application
-	}
-	return nil
-}
-
-type isMigrateDatabaseRequest_Target interface {
-	isMigrateDatabaseRequest_Target()
-}
-
-type MigrateDatabaseRequest_Application_ struct {
-	Application *MigrateDatabaseRequest_Application `protobuf:"bytes,1,opt,name=application,proto3,oneof"` // Add more migration targets here. for example, Piped, Project, etc.
-}
-
-func (*MigrateDatabaseRequest_Application_) isMigrateDatabaseRequest_Target() {}
-
-type MigrateDatabaseResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *MigrateDatabaseResponse) Reset() {
-	*x = MigrateDatabaseResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_app_server_service_apiservice_service_proto_msgTypes[48]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *MigrateDatabaseResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*MigrateDatabaseResponse) ProtoMessage() {}
-
-func (x *MigrateDatabaseResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_app_server_service_apiservice_service_proto_msgTypes[48]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use MigrateDatabaseResponse.ProtoReflect.Descriptor instead.
-func (*MigrateDatabaseResponse) Descriptor() ([]byte, []int) {
-	return file_pkg_app_server_service_apiservice_service_proto_rawDescGZIP(), []int{48}
-}
-
-type MigrateDatabaseRequest_Application struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	ApplicationId string `protobuf:"bytes,1,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
-}
-
-func (x *MigrateDatabaseRequest_Application) Reset() {
-	*x = MigrateDatabaseRequest_Application{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_app_server_service_apiservice_service_proto_msgTypes[54]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *MigrateDatabaseRequest_Application) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*MigrateDatabaseRequest_Application) ProtoMessage() {}
-
-func (x *MigrateDatabaseRequest_Application) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_app_server_service_apiservice_service_proto_msgTypes[54]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use MigrateDatabaseRequest_Application.ProtoReflect.Descriptor instead.
-func (*MigrateDatabaseRequest_Application) Descriptor() ([]byte, []int) {
-	return file_pkg_app_server_service_apiservice_service_proto_rawDescGZIP(), []int{47, 0}
-}
-
-func (x *MigrateDatabaseRequest_Application) GetApplicationId() string {
-	if x != nil {
-		return x.ApplicationId
-	}
-	return ""
-}
-
 var File_pkg_app_server_service_apiservice_service_proto protoreflect.FileDescriptor
 
 var file_pkg_app_server_service_apiservice_service_proto_rawDesc = []byte{
@@ -3007,21 +2855,7 @@ var file_pkg_app_server_service_apiservice_service_proto_rawDesc = []byte{
 	0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x21, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x73, 0x65,
 	0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
 	0x2e, 0x53, 0x74, 0x61, 0x67, 0x65, 0x4c, 0x6f, 0x67, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65,
-	0x3a, 0x02, 0x38, 0x01, 0x22, 0xc2, 0x01, 0x0a, 0x16, 0x4d, 0x69, 0x67, 0x72, 0x61, 0x74, 0x65,
-	0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
-	0x5f, 0x0a, 0x0b, 0x61, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x3b, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x73, 0x65, 0x72, 0x76,
-	0x69, 0x63, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x4d,
-	0x69, 0x67, 0x72, 0x61, 0x74, 0x65, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x52, 0x65,
-	0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f,
-	0x6e, 0x48, 0x00, 0x52, 0x0b, 0x61, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e,
-	0x1a, 0x3d, 0x0a, 0x0b, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12,
-	0x2e, 0x0a, 0x0e, 0x61, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69,
-	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x07, 0xfa, 0x42, 0x04, 0x72, 0x02, 0x10, 0x01,
-	0x52, 0x0d, 0x61, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x42,
-	0x08, 0x0a, 0x06, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x22, 0x19, 0x0a, 0x17, 0x4d, 0x69, 0x67,
-	0x72, 0x61, 0x74, 0x65, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x32, 0xde, 0x16, 0x0a, 0x0a, 0x41, 0x50, 0x49, 0x53, 0x65, 0x72, 0x76,
+	0x3a, 0x02, 0x38, 0x01, 0x32, 0xe6, 0x15, 0x0a, 0x0a, 0x41, 0x50, 0x49, 0x53, 0x65, 0x72, 0x76,
 	0x69, 0x63, 0x65, 0x12, 0x73, 0x0a, 0x0e, 0x41, 0x64, 0x64, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63,
 	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x2e, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x73, 0x65, 0x72,
 	0x76, 0x69, 0x63, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e,
@@ -3195,19 +3029,12 @@ var file_pkg_app_server_service_apiservice_service_proto_rawDesc = []byte{
 	0x4c, 0x6f, 0x67, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x2e, 0x2e, 0x67, 0x72,
 	0x70, 0x63, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x73, 0x65,
 	0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x53, 0x74, 0x61, 0x67, 0x65, 0x4c,
-	0x6f, 0x67, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x76, 0x0a,
-	0x0f, 0x4d, 0x69, 0x67, 0x72, 0x61, 0x74, 0x65, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65,
-	0x12, 0x2f, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e,
-	0x61, 0x70, 0x69, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x4d, 0x69, 0x67, 0x72, 0x61,
-	0x74, 0x65, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x1a, 0x30, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
-	0x2e, 0x61, 0x70, 0x69, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x4d, 0x69, 0x67, 0x72,
-	0x61, 0x74, 0x65, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x22, 0x00, 0x42, 0x3d, 0x5a, 0x3b, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e,
-	0x63, 0x6f, 0x6d, 0x2f, 0x70, 0x69, 0x70, 0x65, 0x2d, 0x63, 0x64, 0x2f, 0x70, 0x69, 0x70, 0x65,
-	0x63, 0x64, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70, 0x70, 0x2f, 0x73, 0x65, 0x72, 0x76, 0x65,
-	0x72, 0x2f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2f, 0x61, 0x70, 0x69, 0x73, 0x65, 0x72,
-	0x76, 0x69, 0x63, 0x65, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6f, 0x67, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x42, 0x3d, 0x5a,
+	0x3b, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x70, 0x69, 0x70, 0x65,
+	0x2d, 0x63, 0x64, 0x2f, 0x70, 0x69, 0x70, 0x65, 0x63, 0x64, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x61,
+	0x70, 0x70, 0x2f, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63,
+	0x65, 0x2f, 0x61, 0x70, 0x69, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x62, 0x06, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -3222,7 +3049,7 @@ func file_pkg_app_server_service_apiservice_service_proto_rawDescGZIP() []byte {
 	return file_pkg_app_server_service_apiservice_service_proto_rawDescData
 }
 
-var file_pkg_app_server_service_apiservice_service_proto_msgTypes = make([]protoimpl.MessageInfo, 55)
+var file_pkg_app_server_service_apiservice_service_proto_msgTypes = make([]protoimpl.MessageInfo, 52)
 var file_pkg_app_server_service_apiservice_service_proto_goTypes = []interface{}{
 	(*AddApplicationRequest)(nil),                  // 0: grpc.service.apiservice.AddApplicationRequest
 	(*AddApplicationResponse)(nil),                 // 1: grpc.service.apiservice.AddApplicationResponse
@@ -3271,95 +3098,89 @@ var file_pkg_app_server_service_apiservice_service_proto_goTypes = []interface{}
 	(*StageLog)(nil),                               // 44: grpc.service.apiservice.StageLog
 	(*ListStageLogsRequest)(nil),                   // 45: grpc.service.apiservice.ListStageLogsRequest
 	(*ListStageLogsResponse)(nil),                  // 46: grpc.service.apiservice.ListStageLogsResponse
-	(*MigrateDatabaseRequest)(nil),                 // 47: grpc.service.apiservice.MigrateDatabaseRequest
-	(*MigrateDatabaseResponse)(nil),                // 48: grpc.service.apiservice.MigrateDatabaseResponse
-	nil,                                            // 49: grpc.service.apiservice.ListApplicationsRequest.LabelsEntry
-	nil,                                            // 50: grpc.service.apiservice.ListDeploymentsRequest.LabelsEntry
-	nil,                                            // 51: grpc.service.apiservice.RegisterEventRequest.LabelsEntry
-	nil,                                            // 52: grpc.service.apiservice.RegisterEventRequest.ContextsEntry
-	nil,                                            // 53: grpc.service.apiservice.ListStageLogsResponse.StageLogsEntry
-	(*MigrateDatabaseRequest_Application)(nil),     // 54: grpc.service.apiservice.MigrateDatabaseRequest.Application
-	(*model.ApplicationGitPath)(nil),               // 55: model.ApplicationGitPath
-	(model.ApplicationKind)(0),                     // 56: model.ApplicationKind
-	(*model.Application)(nil),                      // 57: model.Application
-	(*model.Piped)(nil),                            // 58: model.Piped
-	(*model.Deployment)(nil),                       // 59: model.Deployment
-	(*model.Command)(nil),                          // 60: model.Command
-	(*model.PlanPreviewCommandResult)(nil),         // 61: model.PlanPreviewCommandResult
-	(*model.LogBlock)(nil),                         // 62: model.LogBlock
+	nil,                                            // 47: grpc.service.apiservice.ListApplicationsRequest.LabelsEntry
+	nil,                                            // 48: grpc.service.apiservice.ListDeploymentsRequest.LabelsEntry
+	nil,                                            // 49: grpc.service.apiservice.RegisterEventRequest.LabelsEntry
+	nil,                                            // 50: grpc.service.apiservice.RegisterEventRequest.ContextsEntry
+	nil,                                            // 51: grpc.service.apiservice.ListStageLogsResponse.StageLogsEntry
+	(*model.ApplicationGitPath)(nil),               // 52: model.ApplicationGitPath
+	(model.ApplicationKind)(0),                     // 53: model.ApplicationKind
+	(*model.Application)(nil),                      // 54: model.Application
+	(*model.Piped)(nil),                            // 55: model.Piped
+	(*model.Deployment)(nil),                       // 56: model.Deployment
+	(*model.Command)(nil),                          // 57: model.Command
+	(*model.PlanPreviewCommandResult)(nil),         // 58: model.PlanPreviewCommandResult
+	(*model.LogBlock)(nil),                         // 59: model.LogBlock
 }
 var file_pkg_app_server_service_apiservice_service_proto_depIdxs = []int32{
-	55, // 0: grpc.service.apiservice.AddApplicationRequest.git_path:type_name -> model.ApplicationGitPath
-	56, // 1: grpc.service.apiservice.AddApplicationRequest.kind:type_name -> model.ApplicationKind
-	57, // 2: grpc.service.apiservice.GetApplicationResponse.application:type_name -> model.Application
-	49, // 3: grpc.service.apiservice.ListApplicationsRequest.labels:type_name -> grpc.service.apiservice.ListApplicationsRequest.LabelsEntry
-	57, // 4: grpc.service.apiservice.ListApplicationsResponse.applications:type_name -> model.Application
-	58, // 5: grpc.service.apiservice.GetPipedResponse.piped:type_name -> model.Piped
-	55, // 6: grpc.service.apiservice.UpdateApplicationRequest.git_path:type_name -> model.ApplicationGitPath
-	59, // 7: grpc.service.apiservice.GetDeploymentResponse.deployment:type_name -> model.Deployment
-	50, // 8: grpc.service.apiservice.ListDeploymentsRequest.labels:type_name -> grpc.service.apiservice.ListDeploymentsRequest.LabelsEntry
-	59, // 9: grpc.service.apiservice.ListDeploymentsResponse.deployments:type_name -> model.Deployment
-	60, // 10: grpc.service.apiservice.GetCommandResponse.command:type_name -> model.Command
-	51, // 11: grpc.service.apiservice.RegisterEventRequest.labels:type_name -> grpc.service.apiservice.RegisterEventRequest.LabelsEntry
-	52, // 12: grpc.service.apiservice.RegisterEventRequest.contexts:type_name -> grpc.service.apiservice.RegisterEventRequest.ContextsEntry
-	61, // 13: grpc.service.apiservice.GetPlanPreviewResultsResponse.results:type_name -> model.PlanPreviewCommandResult
-	62, // 14: grpc.service.apiservice.StageLog.blocks:type_name -> model.LogBlock
-	53, // 15: grpc.service.apiservice.ListStageLogsResponse.stage_logs:type_name -> grpc.service.apiservice.ListStageLogsResponse.StageLogsEntry
-	54, // 16: grpc.service.apiservice.MigrateDatabaseRequest.application:type_name -> grpc.service.apiservice.MigrateDatabaseRequest.Application
-	44, // 17: grpc.service.apiservice.ListStageLogsResponse.StageLogsEntry.value:type_name -> grpc.service.apiservice.StageLog
-	0,  // 18: grpc.service.apiservice.APIService.AddApplication:input_type -> grpc.service.apiservice.AddApplicationRequest
-	2,  // 19: grpc.service.apiservice.APIService.SyncApplication:input_type -> grpc.service.apiservice.SyncApplicationRequest
-	4,  // 20: grpc.service.apiservice.APIService.GetApplication:input_type -> grpc.service.apiservice.GetApplicationRequest
-	6,  // 21: grpc.service.apiservice.APIService.ListApplications:input_type -> grpc.service.apiservice.ListApplicationsRequest
-	18, // 22: grpc.service.apiservice.APIService.UpdateApplication:input_type -> grpc.service.apiservice.UpdateApplicationRequest
-	20, // 23: grpc.service.apiservice.APIService.DeleteApplication:input_type -> grpc.service.apiservice.DeleteApplicationRequest
-	14, // 24: grpc.service.apiservice.APIService.EnableApplication:input_type -> grpc.service.apiservice.EnableApplicationRequest
-	16, // 25: grpc.service.apiservice.APIService.DisableApplication:input_type -> grpc.service.apiservice.DisableApplicationRequest
-	22, // 26: grpc.service.apiservice.APIService.RenameApplicationConfigFile:input_type -> grpc.service.apiservice.RenameApplicationConfigFileRequest
-	24, // 27: grpc.service.apiservice.APIService.UpdateApplicationDeployTargets:input_type -> grpc.service.apiservice.UpdateApplicationDeployTargetsRequest
-	26, // 28: grpc.service.apiservice.APIService.GetDeployment:input_type -> grpc.service.apiservice.GetDeploymentRequest
-	28, // 29: grpc.service.apiservice.APIService.ListDeployments:input_type -> grpc.service.apiservice.ListDeploymentsRequest
-	30, // 30: grpc.service.apiservice.APIService.GetCommand:input_type -> grpc.service.apiservice.GetCommandRequest
-	8,  // 31: grpc.service.apiservice.APIService.GetPiped:input_type -> grpc.service.apiservice.GetPipedRequest
-	10, // 32: grpc.service.apiservice.APIService.RegisterPiped:input_type -> grpc.service.apiservice.RegisterPipedRequest
-	12, // 33: grpc.service.apiservice.APIService.UpdatePiped:input_type -> grpc.service.apiservice.UpdatePipedRequest
-	32, // 34: grpc.service.apiservice.APIService.EnablePiped:input_type -> grpc.service.apiservice.EnablePipedRequest
-	34, // 35: grpc.service.apiservice.APIService.DisablePiped:input_type -> grpc.service.apiservice.DisablePipedRequest
-	36, // 36: grpc.service.apiservice.APIService.RegisterEvent:input_type -> grpc.service.apiservice.RegisterEventRequest
-	38, // 37: grpc.service.apiservice.APIService.RequestPlanPreview:input_type -> grpc.service.apiservice.RequestPlanPreviewRequest
-	40, // 38: grpc.service.apiservice.APIService.GetPlanPreviewResults:input_type -> grpc.service.apiservice.GetPlanPreviewResultsRequest
-	42, // 39: grpc.service.apiservice.APIService.Encrypt:input_type -> grpc.service.apiservice.EncryptRequest
-	45, // 40: grpc.service.apiservice.APIService.ListStageLogs:input_type -> grpc.service.apiservice.ListStageLogsRequest
-	47, // 41: grpc.service.apiservice.APIService.MigrateDatabase:input_type -> grpc.service.apiservice.MigrateDatabaseRequest
-	1,  // 42: grpc.service.apiservice.APIService.AddApplication:output_type -> grpc.service.apiservice.AddApplicationResponse
-	3,  // 43: grpc.service.apiservice.APIService.SyncApplication:output_type -> grpc.service.apiservice.SyncApplicationResponse
-	5,  // 44: grpc.service.apiservice.APIService.GetApplication:output_type -> grpc.service.apiservice.GetApplicationResponse
-	7,  // 45: grpc.service.apiservice.APIService.ListApplications:output_type -> grpc.service.apiservice.ListApplicationsResponse
-	19, // 46: grpc.service.apiservice.APIService.UpdateApplication:output_type -> grpc.service.apiservice.UpdateApplicationResponse
-	21, // 47: grpc.service.apiservice.APIService.DeleteApplication:output_type -> grpc.service.apiservice.DeleteApplicationResponse
-	15, // 48: grpc.service.apiservice.APIService.EnableApplication:output_type -> grpc.service.apiservice.EnableApplicationResponse
-	17, // 49: grpc.service.apiservice.APIService.DisableApplication:output_type -> grpc.service.apiservice.DisableApplicationResponse
-	23, // 50: grpc.service.apiservice.APIService.RenameApplicationConfigFile:output_type -> grpc.service.apiservice.RenameApplicationConfigFileResponse
-	25, // 51: grpc.service.apiservice.APIService.UpdateApplicationDeployTargets:output_type -> grpc.service.apiservice.UpdateApplicationDeployTargetsResponse
-	27, // 52: grpc.service.apiservice.APIService.GetDeployment:output_type -> grpc.service.apiservice.GetDeploymentResponse
-	29, // 53: grpc.service.apiservice.APIService.ListDeployments:output_type -> grpc.service.apiservice.ListDeploymentsResponse
-	31, // 54: grpc.service.apiservice.APIService.GetCommand:output_type -> grpc.service.apiservice.GetCommandResponse
-	9,  // 55: grpc.service.apiservice.APIService.GetPiped:output_type -> grpc.service.apiservice.GetPipedResponse
-	11, // 56: grpc.service.apiservice.APIService.RegisterPiped:output_type -> grpc.service.apiservice.RegisterPipedResponse
-	13, // 57: grpc.service.apiservice.APIService.UpdatePiped:output_type -> grpc.service.apiservice.UpdatePipedResponse
-	33, // 58: grpc.service.apiservice.APIService.EnablePiped:output_type -> grpc.service.apiservice.EnablePipedResponse
-	35, // 59: grpc.service.apiservice.APIService.DisablePiped:output_type -> grpc.service.apiservice.DisablePipedResponse
-	37, // 60: grpc.service.apiservice.APIService.RegisterEvent:output_type -> grpc.service.apiservice.RegisterEventResponse
-	39, // 61: grpc.service.apiservice.APIService.RequestPlanPreview:output_type -> grpc.service.apiservice.RequestPlanPreviewResponse
-	41, // 62: grpc.service.apiservice.APIService.GetPlanPreviewResults:output_type -> grpc.service.apiservice.GetPlanPreviewResultsResponse
-	43, // 63: grpc.service.apiservice.APIService.Encrypt:output_type -> grpc.service.apiservice.EncryptResponse
-	46, // 64: grpc.service.apiservice.APIService.ListStageLogs:output_type -> grpc.service.apiservice.ListStageLogsResponse
-	48, // 65: grpc.service.apiservice.APIService.MigrateDatabase:output_type -> grpc.service.apiservice.MigrateDatabaseResponse
-	42, // [42:66] is the sub-list for method output_type
-	18, // [18:42] is the sub-list for method input_type
-	18, // [18:18] is the sub-list for extension type_name
-	18, // [18:18] is the sub-list for extension extendee
-	0,  // [0:18] is the sub-list for field type_name
+	52, // 0: grpc.service.apiservice.AddApplicationRequest.git_path:type_name -> model.ApplicationGitPath
+	53, // 1: grpc.service.apiservice.AddApplicationRequest.kind:type_name -> model.ApplicationKind
+	54, // 2: grpc.service.apiservice.GetApplicationResponse.application:type_name -> model.Application
+	47, // 3: grpc.service.apiservice.ListApplicationsRequest.labels:type_name -> grpc.service.apiservice.ListApplicationsRequest.LabelsEntry
+	54, // 4: grpc.service.apiservice.ListApplicationsResponse.applications:type_name -> model.Application
+	55, // 5: grpc.service.apiservice.GetPipedResponse.piped:type_name -> model.Piped
+	52, // 6: grpc.service.apiservice.UpdateApplicationRequest.git_path:type_name -> model.ApplicationGitPath
+	56, // 7: grpc.service.apiservice.GetDeploymentResponse.deployment:type_name -> model.Deployment
+	48, // 8: grpc.service.apiservice.ListDeploymentsRequest.labels:type_name -> grpc.service.apiservice.ListDeploymentsRequest.LabelsEntry
+	56, // 9: grpc.service.apiservice.ListDeploymentsResponse.deployments:type_name -> model.Deployment
+	57, // 10: grpc.service.apiservice.GetCommandResponse.command:type_name -> model.Command
+	49, // 11: grpc.service.apiservice.RegisterEventRequest.labels:type_name -> grpc.service.apiservice.RegisterEventRequest.LabelsEntry
+	50, // 12: grpc.service.apiservice.RegisterEventRequest.contexts:type_name -> grpc.service.apiservice.RegisterEventRequest.ContextsEntry
+	58, // 13: grpc.service.apiservice.GetPlanPreviewResultsResponse.results:type_name -> model.PlanPreviewCommandResult
+	59, // 14: grpc.service.apiservice.StageLog.blocks:type_name -> model.LogBlock
+	51, // 15: grpc.service.apiservice.ListStageLogsResponse.stage_logs:type_name -> grpc.service.apiservice.ListStageLogsResponse.StageLogsEntry
+	44, // 16: grpc.service.apiservice.ListStageLogsResponse.StageLogsEntry.value:type_name -> grpc.service.apiservice.StageLog
+	0,  // 17: grpc.service.apiservice.APIService.AddApplication:input_type -> grpc.service.apiservice.AddApplicationRequest
+	2,  // 18: grpc.service.apiservice.APIService.SyncApplication:input_type -> grpc.service.apiservice.SyncApplicationRequest
+	4,  // 19: grpc.service.apiservice.APIService.GetApplication:input_type -> grpc.service.apiservice.GetApplicationRequest
+	6,  // 20: grpc.service.apiservice.APIService.ListApplications:input_type -> grpc.service.apiservice.ListApplicationsRequest
+	18, // 21: grpc.service.apiservice.APIService.UpdateApplication:input_type -> grpc.service.apiservice.UpdateApplicationRequest
+	20, // 22: grpc.service.apiservice.APIService.DeleteApplication:input_type -> grpc.service.apiservice.DeleteApplicationRequest
+	14, // 23: grpc.service.apiservice.APIService.EnableApplication:input_type -> grpc.service.apiservice.EnableApplicationRequest
+	16, // 24: grpc.service.apiservice.APIService.DisableApplication:input_type -> grpc.service.apiservice.DisableApplicationRequest
+	22, // 25: grpc.service.apiservice.APIService.RenameApplicationConfigFile:input_type -> grpc.service.apiservice.RenameApplicationConfigFileRequest
+	24, // 26: grpc.service.apiservice.APIService.UpdateApplicationDeployTargets:input_type -> grpc.service.apiservice.UpdateApplicationDeployTargetsRequest
+	26, // 27: grpc.service.apiservice.APIService.GetDeployment:input_type -> grpc.service.apiservice.GetDeploymentRequest
+	28, // 28: grpc.service.apiservice.APIService.ListDeployments:input_type -> grpc.service.apiservice.ListDeploymentsRequest
+	30, // 29: grpc.service.apiservice.APIService.GetCommand:input_type -> grpc.service.apiservice.GetCommandRequest
+	8,  // 30: grpc.service.apiservice.APIService.GetPiped:input_type -> grpc.service.apiservice.GetPipedRequest
+	10, // 31: grpc.service.apiservice.APIService.RegisterPiped:input_type -> grpc.service.apiservice.RegisterPipedRequest
+	12, // 32: grpc.service.apiservice.APIService.UpdatePiped:input_type -> grpc.service.apiservice.UpdatePipedRequest
+	32, // 33: grpc.service.apiservice.APIService.EnablePiped:input_type -> grpc.service.apiservice.EnablePipedRequest
+	34, // 34: grpc.service.apiservice.APIService.DisablePiped:input_type -> grpc.service.apiservice.DisablePipedRequest
+	36, // 35: grpc.service.apiservice.APIService.RegisterEvent:input_type -> grpc.service.apiservice.RegisterEventRequest
+	38, // 36: grpc.service.apiservice.APIService.RequestPlanPreview:input_type -> grpc.service.apiservice.RequestPlanPreviewRequest
+	40, // 37: grpc.service.apiservice.APIService.GetPlanPreviewResults:input_type -> grpc.service.apiservice.GetPlanPreviewResultsRequest
+	42, // 38: grpc.service.apiservice.APIService.Encrypt:input_type -> grpc.service.apiservice.EncryptRequest
+	45, // 39: grpc.service.apiservice.APIService.ListStageLogs:input_type -> grpc.service.apiservice.ListStageLogsRequest
+	1,  // 40: grpc.service.apiservice.APIService.AddApplication:output_type -> grpc.service.apiservice.AddApplicationResponse
+	3,  // 41: grpc.service.apiservice.APIService.SyncApplication:output_type -> grpc.service.apiservice.SyncApplicationResponse
+	5,  // 42: grpc.service.apiservice.APIService.GetApplication:output_type -> grpc.service.apiservice.GetApplicationResponse
+	7,  // 43: grpc.service.apiservice.APIService.ListApplications:output_type -> grpc.service.apiservice.ListApplicationsResponse
+	19, // 44: grpc.service.apiservice.APIService.UpdateApplication:output_type -> grpc.service.apiservice.UpdateApplicationResponse
+	21, // 45: grpc.service.apiservice.APIService.DeleteApplication:output_type -> grpc.service.apiservice.DeleteApplicationResponse
+	15, // 46: grpc.service.apiservice.APIService.EnableApplication:output_type -> grpc.service.apiservice.EnableApplicationResponse
+	17, // 47: grpc.service.apiservice.APIService.DisableApplication:output_type -> grpc.service.apiservice.DisableApplicationResponse
+	23, // 48: grpc.service.apiservice.APIService.RenameApplicationConfigFile:output_type -> grpc.service.apiservice.RenameApplicationConfigFileResponse
+	25, // 49: grpc.service.apiservice.APIService.UpdateApplicationDeployTargets:output_type -> grpc.service.apiservice.UpdateApplicationDeployTargetsResponse
+	27, // 50: grpc.service.apiservice.APIService.GetDeployment:output_type -> grpc.service.apiservice.GetDeploymentResponse
+	29, // 51: grpc.service.apiservice.APIService.ListDeployments:output_type -> grpc.service.apiservice.ListDeploymentsResponse
+	31, // 52: grpc.service.apiservice.APIService.GetCommand:output_type -> grpc.service.apiservice.GetCommandResponse
+	9,  // 53: grpc.service.apiservice.APIService.GetPiped:output_type -> grpc.service.apiservice.GetPipedResponse
+	11, // 54: grpc.service.apiservice.APIService.RegisterPiped:output_type -> grpc.service.apiservice.RegisterPipedResponse
+	13, // 55: grpc.service.apiservice.APIService.UpdatePiped:output_type -> grpc.service.apiservice.UpdatePipedResponse
+	33, // 56: grpc.service.apiservice.APIService.EnablePiped:output_type -> grpc.service.apiservice.EnablePipedResponse
+	35, // 57: grpc.service.apiservice.APIService.DisablePiped:output_type -> grpc.service.apiservice.DisablePipedResponse
+	37, // 58: grpc.service.apiservice.APIService.RegisterEvent:output_type -> grpc.service.apiservice.RegisterEventResponse
+	39, // 59: grpc.service.apiservice.APIService.RequestPlanPreview:output_type -> grpc.service.apiservice.RequestPlanPreviewResponse
+	41, // 60: grpc.service.apiservice.APIService.GetPlanPreviewResults:output_type -> grpc.service.apiservice.GetPlanPreviewResultsResponse
+	43, // 61: grpc.service.apiservice.APIService.Encrypt:output_type -> grpc.service.apiservice.EncryptResponse
+	46, // 62: grpc.service.apiservice.APIService.ListStageLogs:output_type -> grpc.service.apiservice.ListStageLogsResponse
+	40, // [40:63] is the sub-list for method output_type
+	17, // [17:40] is the sub-list for method input_type
+	17, // [17:17] is the sub-list for extension type_name
+	17, // [17:17] is the sub-list for extension extendee
+	0,  // [0:17] is the sub-list for field type_name
 }
 
 func init() { file_pkg_app_server_service_apiservice_service_proto_init() }
@@ -3932,45 +3753,6 @@ func file_pkg_app_server_service_apiservice_service_proto_init() {
 				return nil
 			}
 		}
-		file_pkg_app_server_service_apiservice_service_proto_msgTypes[47].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MigrateDatabaseRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_app_server_service_apiservice_service_proto_msgTypes[48].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MigrateDatabaseResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_app_server_service_apiservice_service_proto_msgTypes[54].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MigrateDatabaseRequest_Application); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-	}
-	file_pkg_app_server_service_apiservice_service_proto_msgTypes[47].OneofWrappers = []interface{}{
-		(*MigrateDatabaseRequest_Application_)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -3978,7 +3760,7 @@ func file_pkg_app_server_service_apiservice_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_pkg_app_server_service_apiservice_service_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   55,
+			NumMessages:   52,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
