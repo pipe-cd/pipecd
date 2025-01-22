@@ -38,6 +38,7 @@ service APIService {
     rpc EnableApplication(EnableApplicationRequest) returns (EnableApplicationResponse) {}
     rpc DisableApplication(DisableApplicationRequest) returns (DisableApplicationResponse) {}
     rpc RenameApplicationConfigFile(RenameApplicationConfigFileRequest) returns (RenameApplicationConfigFileResponse) {}
+    rpc UpdateApplicationDeployTargets(UpdateApplicationDeployTargetsRequest) returns (UpdateApplicationDeployTargetsResponse) {}
 
     rpc GetDeployment(GetDeploymentRequest) returns (GetDeploymentResponse) {}
     rpc ListDeployments(ListDeploymentsRequest) returns (ListDeploymentsResponse) {}
@@ -181,6 +182,13 @@ message RenameApplicationConfigFileRequest {
 
 message RenameApplicationConfigFileResponse {
 }
+
+message UpdateApplicationDeployTargetsRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+    repeated string deploy_targets = 2 [(validate.rules).repeated = {min_items: 1}];
+}
+
+message UpdateApplicationDeployTargetsResponse {}
 
 message GetDeploymentRequest {
     string deployment_id = 1;

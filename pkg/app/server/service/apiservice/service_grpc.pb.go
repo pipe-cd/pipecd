@@ -31,6 +31,7 @@ type APIServiceClient interface {
 	EnableApplication(ctx context.Context, in *EnableApplicationRequest, opts ...grpc.CallOption) (*EnableApplicationResponse, error)
 	DisableApplication(ctx context.Context, in *DisableApplicationRequest, opts ...grpc.CallOption) (*DisableApplicationResponse, error)
 	RenameApplicationConfigFile(ctx context.Context, in *RenameApplicationConfigFileRequest, opts ...grpc.CallOption) (*RenameApplicationConfigFileResponse, error)
+	UpdateApplicationDeployTargets(ctx context.Context, in *UpdateApplicationDeployTargetsRequest, opts ...grpc.CallOption) (*UpdateApplicationDeployTargetsResponse, error)
 	GetDeployment(ctx context.Context, in *GetDeploymentRequest, opts ...grpc.CallOption) (*GetDeploymentResponse, error)
 	ListDeployments(ctx context.Context, in *ListDeploymentsRequest, opts ...grpc.CallOption) (*ListDeploymentsResponse, error)
 	GetCommand(ctx context.Context, in *GetCommandRequest, opts ...grpc.CallOption) (*GetCommandResponse, error)
@@ -130,6 +131,15 @@ func (c *aPIServiceClient) DisableApplication(ctx context.Context, in *DisableAp
 func (c *aPIServiceClient) RenameApplicationConfigFile(ctx context.Context, in *RenameApplicationConfigFileRequest, opts ...grpc.CallOption) (*RenameApplicationConfigFileResponse, error) {
 	out := new(RenameApplicationConfigFileResponse)
 	err := c.cc.Invoke(ctx, "/grpc.service.apiservice.APIService/RenameApplicationConfigFile", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aPIServiceClient) UpdateApplicationDeployTargets(ctx context.Context, in *UpdateApplicationDeployTargetsRequest, opts ...grpc.CallOption) (*UpdateApplicationDeployTargetsResponse, error) {
+	out := new(UpdateApplicationDeployTargetsResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.apiservice.APIService/UpdateApplicationDeployTargets", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -275,6 +285,7 @@ type APIServiceServer interface {
 	EnableApplication(context.Context, *EnableApplicationRequest) (*EnableApplicationResponse, error)
 	DisableApplication(context.Context, *DisableApplicationRequest) (*DisableApplicationResponse, error)
 	RenameApplicationConfigFile(context.Context, *RenameApplicationConfigFileRequest) (*RenameApplicationConfigFileResponse, error)
+	UpdateApplicationDeployTargets(context.Context, *UpdateApplicationDeployTargetsRequest) (*UpdateApplicationDeployTargetsResponse, error)
 	GetDeployment(context.Context, *GetDeploymentRequest) (*GetDeploymentResponse, error)
 	ListDeployments(context.Context, *ListDeploymentsRequest) (*ListDeploymentsResponse, error)
 	GetCommand(context.Context, *GetCommandRequest) (*GetCommandResponse, error)
@@ -322,6 +333,9 @@ func (UnimplementedAPIServiceServer) DisableApplication(context.Context, *Disabl
 }
 func (UnimplementedAPIServiceServer) RenameApplicationConfigFile(context.Context, *RenameApplicationConfigFileRequest) (*RenameApplicationConfigFileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RenameApplicationConfigFile not implemented")
+}
+func (UnimplementedAPIServiceServer) UpdateApplicationDeployTargets(context.Context, *UpdateApplicationDeployTargetsRequest) (*UpdateApplicationDeployTargetsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateApplicationDeployTargets not implemented")
 }
 func (UnimplementedAPIServiceServer) GetDeployment(context.Context, *GetDeploymentRequest) (*GetDeploymentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDeployment not implemented")
@@ -536,6 +550,24 @@ func _APIService_RenameApplicationConfigFile_Handler(srv interface{}, ctx contex
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(APIServiceServer).RenameApplicationConfigFile(ctx, req.(*RenameApplicationConfigFileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _APIService_UpdateApplicationDeployTargets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateApplicationDeployTargetsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(APIServiceServer).UpdateApplicationDeployTargets(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.apiservice.APIService/UpdateApplicationDeployTargets",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(APIServiceServer).UpdateApplicationDeployTargets(ctx, req.(*UpdateApplicationDeployTargetsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -834,6 +866,10 @@ var APIService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RenameApplicationConfigFile",
 			Handler:    _APIService_RenameApplicationConfigFile_Handler,
+		},
+		{
+			MethodName: "UpdateApplicationDeployTargets",
+			Handler:    _APIService_UpdateApplicationDeployTargets_Handler,
 		},
 		{
 			MethodName: "GetDeployment",

@@ -2942,6 +2942,239 @@ var _ interface {
 	ErrorName() string
 } = RenameApplicationConfigFileResponseValidationError{}
 
+// Validate checks the field values on UpdateApplicationDeployTargetsRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *UpdateApplicationDeployTargetsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpdateApplicationDeployTargetsRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// UpdateApplicationDeployTargetsRequestMultiError, or nil if none found.
+func (m *UpdateApplicationDeployTargetsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpdateApplicationDeployTargetsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetApplicationId()) < 1 {
+		err := UpdateApplicationDeployTargetsRequestValidationError{
+			field:  "ApplicationId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(m.GetDeployTargets()) < 1 {
+		err := UpdateApplicationDeployTargetsRequestValidationError{
+			field:  "DeployTargets",
+			reason: "value must contain at least 1 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return UpdateApplicationDeployTargetsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpdateApplicationDeployTargetsRequestMultiError is an error wrapping
+// multiple validation errors returned by
+// UpdateApplicationDeployTargetsRequest.ValidateAll() if the designated
+// constraints aren't met.
+type UpdateApplicationDeployTargetsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpdateApplicationDeployTargetsRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpdateApplicationDeployTargetsRequestMultiError) AllErrors() []error { return m }
+
+// UpdateApplicationDeployTargetsRequestValidationError is the validation error
+// returned by UpdateApplicationDeployTargetsRequest.Validate if the
+// designated constraints aren't met.
+type UpdateApplicationDeployTargetsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpdateApplicationDeployTargetsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpdateApplicationDeployTargetsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpdateApplicationDeployTargetsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpdateApplicationDeployTargetsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpdateApplicationDeployTargetsRequestValidationError) ErrorName() string {
+	return "UpdateApplicationDeployTargetsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpdateApplicationDeployTargetsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpdateApplicationDeployTargetsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpdateApplicationDeployTargetsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpdateApplicationDeployTargetsRequestValidationError{}
+
+// Validate checks the field values on UpdateApplicationDeployTargetsResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *UpdateApplicationDeployTargetsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on
+// UpdateApplicationDeployTargetsResponse with the rules defined in the proto
+// definition for this message. If any rules are violated, the result is a
+// list of violation errors wrapped in
+// UpdateApplicationDeployTargetsResponseMultiError, or nil if none found.
+func (m *UpdateApplicationDeployTargetsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpdateApplicationDeployTargetsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return UpdateApplicationDeployTargetsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpdateApplicationDeployTargetsResponseMultiError is an error wrapping
+// multiple validation errors returned by
+// UpdateApplicationDeployTargetsResponse.ValidateAll() if the designated
+// constraints aren't met.
+type UpdateApplicationDeployTargetsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpdateApplicationDeployTargetsResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpdateApplicationDeployTargetsResponseMultiError) AllErrors() []error { return m }
+
+// UpdateApplicationDeployTargetsResponseValidationError is the validation
+// error returned by UpdateApplicationDeployTargetsResponse.Validate if the
+// designated constraints aren't met.
+type UpdateApplicationDeployTargetsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpdateApplicationDeployTargetsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpdateApplicationDeployTargetsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpdateApplicationDeployTargetsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpdateApplicationDeployTargetsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpdateApplicationDeployTargetsResponseValidationError) ErrorName() string {
+	return "UpdateApplicationDeployTargetsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpdateApplicationDeployTargetsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpdateApplicationDeployTargetsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpdateApplicationDeployTargetsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpdateApplicationDeployTargetsResponseValidationError{}
+
 // Validate checks the field values on GetDeploymentRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
