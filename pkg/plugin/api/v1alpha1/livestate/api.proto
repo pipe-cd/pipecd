@@ -19,7 +19,7 @@ option go_package = "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/livestate
 
 import "pkg/model/application_live_state.proto";
 import "pkg/model/application.proto";
-import "pkg/plugin/api/v1alpha1/deployment/api.proto";
+import "pkg/plugin/api/v1alpha1/common/common.proto";
 
 // LivestateService defines the public API for the livestate feature for plugin.
 service LivestateService {
@@ -29,7 +29,7 @@ service LivestateService {
 
 message GetLivestateRequest {
     string application_id = 1;
-    grpc.plugin.deploymentapi.v1alpha1.DeploymentSource deploy_source = 2;
+    grpc.plugin.common.v1alpha1.DeploymentSource deploy_source = 2;
 }
 
 message GetLivestateResponse {

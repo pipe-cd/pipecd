@@ -29,6 +29,7 @@ import (
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 )
 
@@ -1070,7 +1071,7 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				planner.lastSuccessfulCommitHash = "123"
 			}
 
-			runningDS := &deployment.DeploymentSource{}
+			runningDS := &common.DeploymentSource{}
 
 			type genericConfig struct {
 				Kind       config.Kind `json:"kind"`
@@ -1085,7 +1086,7 @@ func TestPlanner_BuildPlan(t *testing.T) {
 			})
 
 			require.NoError(t, err)
-			targetDS := &deployment.DeploymentSource{
+			targetDS := &common.DeploymentSource{
 				ApplicationConfig: jsonBytes,
 			}
 			out, err := planner.buildPlan(context.TODO(), runningDS, targetDS)

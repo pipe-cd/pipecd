@@ -35,6 +35,7 @@ import (
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/regexpool"
 )
@@ -181,7 +182,7 @@ func (p *planner) Run(ctx context.Context) error {
 	}()
 
 	// Prepare running deploy source and target deploy source.
-	var runningDS, targetDS *deployment.DeploymentSource
+	var runningDS, targetDS *common.DeploymentSource
 
 	repoCfg := config.PipedRepository{
 		RepoID: p.deployment.GitPath.Repo.Id,
@@ -248,7 +249,7 @@ func (p *planner) Run(ctx context.Context) error {
 //   - CommitMatcher ensure pipeline/quick sync based on the commit message
 //   - Force quick sync if there is no previous deployment (aka. this is the first deploy)
 //   - Based on PlannerService.DetermineStrategy returned by plugins
-func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *deployment.DeploymentSource) (*plannerOutput, error) {
+func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *common.DeploymentSource) (*plannerOutput, error) {
 	out := &plannerOutput{}
 
 	input := &deployment.PlanPluginInput{

@@ -23,6 +23,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/plugin/signalhandler"
@@ -184,7 +185,7 @@ func (a *DeploymentService) FetchDefinedStages(context.Context, *deployment.Fetc
 	}, nil
 }
 
-func (a *DeploymentService) loadManifests(ctx context.Context, deploy *model.Deployment, spec *kubeconfig.KubernetesApplicationSpec, deploymentSource *deployment.DeploymentSource) ([]provider.Manifest, error) {
+func (a *DeploymentService) loadManifests(ctx context.Context, deploy *model.Deployment, spec *kubeconfig.KubernetesApplicationSpec, deploymentSource *common.DeploymentSource) ([]provider.Manifest, error) {
 	manifests, err := a.loader.LoadManifests(ctx, provider.LoaderInput{
 		PipedID:          deploy.GetPipedId(),
 		AppID:            deploy.GetApplicationId(),

@@ -19,6 +19,7 @@ goProtoDirs=(
   "pkg/app/server/service/pipedservice"
   "pkg/app/server/service/webservice"
   "pkg/app/helloworld/service"
+  "pkg/plugin/api/v1alpha1/common"
   "pkg/plugin/api/v1alpha1/deployment"
   "pkg/plugin/api/v1alpha1/livestate"
   "pkg/plugin/pipedservice"
