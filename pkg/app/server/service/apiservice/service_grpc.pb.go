@@ -31,6 +31,7 @@ type APIServiceClient interface {
 	EnableApplication(ctx context.Context, in *EnableApplicationRequest, opts ...grpc.CallOption) (*EnableApplicationResponse, error)
 	DisableApplication(ctx context.Context, in *DisableApplicationRequest, opts ...grpc.CallOption) (*DisableApplicationResponse, error)
 	RenameApplicationConfigFile(ctx context.Context, in *RenameApplicationConfigFileRequest, opts ...grpc.CallOption) (*RenameApplicationConfigFileResponse, error)
+	UpdateApplicationDeployTargets(ctx context.Context, in *UpdateApplicationDeployTargetsRequest, opts ...grpc.CallOption) (*UpdateApplicationDeployTargetsResponse, error)
 	GetDeployment(ctx context.Context, in *GetDeploymentRequest, opts ...grpc.CallOption) (*GetDeploymentResponse, error)
 	ListDeployments(ctx context.Context, in *ListDeploymentsRequest, opts ...grpc.CallOption) (*ListDeploymentsResponse, error)
 	GetCommand(ctx context.Context, in *GetCommandRequest, opts ...grpc.CallOption) (*GetCommandResponse, error)
@@ -44,7 +45,6 @@ type APIServiceClient interface {
 	GetPlanPreviewResults(ctx context.Context, in *GetPlanPreviewResultsRequest, opts ...grpc.CallOption) (*GetPlanPreviewResultsResponse, error)
 	Encrypt(ctx context.Context, in *EncryptRequest, opts ...grpc.CallOption) (*EncryptResponse, error)
 	ListStageLogs(ctx context.Context, in *ListStageLogsRequest, opts ...grpc.CallOption) (*ListStageLogsResponse, error)
-	MigrateDatabase(ctx context.Context, in *MigrateDatabaseRequest, opts ...grpc.CallOption) (*MigrateDatabaseResponse, error)
 }
 
 type aPIServiceClient struct {
@@ -130,6 +130,15 @@ func (c *aPIServiceClient) DisableApplication(ctx context.Context, in *DisableAp
 func (c *aPIServiceClient) RenameApplicationConfigFile(ctx context.Context, in *RenameApplicationConfigFileRequest, opts ...grpc.CallOption) (*RenameApplicationConfigFileResponse, error) {
 	out := new(RenameApplicationConfigFileResponse)
 	err := c.cc.Invoke(ctx, "/grpc.service.apiservice.APIService/RenameApplicationConfigFile", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aPIServiceClient) UpdateApplicationDeployTargets(ctx context.Context, in *UpdateApplicationDeployTargetsRequest, opts ...grpc.CallOption) (*UpdateApplicationDeployTargetsResponse, error) {
+	out := new(UpdateApplicationDeployTargetsResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.apiservice.APIService/UpdateApplicationDeployTargets", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -253,15 +262,6 @@ func (c *aPIServiceClient) ListStageLogs(ctx context.Context, in *ListStageLogsR
 	return out, nil
 }
 
-func (c *aPIServiceClient) MigrateDatabase(ctx context.Context, in *MigrateDatabaseRequest, opts ...grpc.CallOption) (*MigrateDatabaseResponse, error) {
-	out := new(MigrateDatabaseResponse)
-	err := c.cc.Invoke(ctx, "/grpc.service.apiservice.APIService/MigrateDatabase", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // APIServiceServer is the server API for APIService service.
 // All implementations must embed UnimplementedAPIServiceServer
 // for forward compatibility
@@ -275,6 +275,7 @@ type APIServiceServer interface {
 	EnableApplication(context.Context, *EnableApplicationRequest) (*EnableApplicationResponse, error)
 	DisableApplication(context.Context, *DisableApplicationRequest) (*DisableApplicationResponse, error)
 	RenameApplicationConfigFile(context.Context, *RenameApplicationConfigFileRequest) (*RenameApplicationConfigFileResponse, error)
+	UpdateApplicationDeployTargets(context.Context, *UpdateApplicationDeployTargetsRequest) (*UpdateApplicationDeployTargetsResponse, error)
 	GetDeployment(context.Context, *GetDeploymentRequest) (*GetDeploymentResponse, error)
 	ListDeployments(context.Context, *ListDeploymentsRequest) (*ListDeploymentsResponse, error)
 	GetCommand(context.Context, *GetCommandRequest) (*GetCommandResponse, error)
@@ -288,7 +289,6 @@ type APIServiceServer interface {
 	GetPlanPreviewResults(context.Context, *GetPlanPreviewResultsRequest) (*GetPlanPreviewResultsResponse, error)
 	Encrypt(context.Context, *EncryptRequest) (*EncryptResponse, error)
 	ListStageLogs(context.Context, *ListStageLogsRequest) (*ListStageLogsResponse, error)
-	MigrateDatabase(context.Context, *MigrateDatabaseRequest) (*MigrateDatabaseResponse, error)
 	mustEmbedUnimplementedAPIServiceServer()
 }
 
@@ -322,6 +322,9 @@ func (UnimplementedAPIServiceServer) DisableApplication(context.Context, *Disabl
 }
 func (UnimplementedAPIServiceServer) RenameApplicationConfigFile(context.Context, *RenameApplicationConfigFileRequest) (*RenameApplicationConfigFileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RenameApplicationConfigFile not implemented")
+}
+func (UnimplementedAPIServiceServer) UpdateApplicationDeployTargets(context.Context, *UpdateApplicationDeployTargetsRequest) (*UpdateApplicationDeployTargetsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateApplicationDeployTargets not implemented")
 }
 func (UnimplementedAPIServiceServer) GetDeployment(context.Context, *GetDeploymentRequest) (*GetDeploymentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDeployment not implemented")
@@ -361,9 +364,6 @@ func (UnimplementedAPIServiceServer) Encrypt(context.Context, *EncryptRequest) (
 }
 func (UnimplementedAPIServiceServer) ListStageLogs(context.Context, *ListStageLogsRequest) (*ListStageLogsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListStageLogs not implemented")
-}
-func (UnimplementedAPIServiceServer) MigrateDatabase(context.Context, *MigrateDatabaseRequest) (*MigrateDatabaseResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method MigrateDatabase not implemented")
 }
 func (UnimplementedAPIServiceServer) mustEmbedUnimplementedAPIServiceServer() {}
 
@@ -536,6 +536,24 @@ func _APIService_RenameApplicationConfigFile_Handler(srv interface{}, ctx contex
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(APIServiceServer).RenameApplicationConfigFile(ctx, req.(*RenameApplicationConfigFileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _APIService_UpdateApplicationDeployTargets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateApplicationDeployTargetsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(APIServiceServer).UpdateApplicationDeployTargets(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.apiservice.APIService/UpdateApplicationDeployTargets",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(APIServiceServer).UpdateApplicationDeployTargets(ctx, req.(*UpdateApplicationDeployTargetsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -774,24 +792,6 @@ func _APIService_ListStageLogs_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _APIService_MigrateDatabase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MigrateDatabaseRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(APIServiceServer).MigrateDatabase(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/grpc.service.apiservice.APIService/MigrateDatabase",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(APIServiceServer).MigrateDatabase(ctx, req.(*MigrateDatabaseRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // APIService_ServiceDesc is the grpc.ServiceDesc for APIService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -834,6 +834,10 @@ var APIService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RenameApplicationConfigFile",
 			Handler:    _APIService_RenameApplicationConfigFile_Handler,
+		},
+		{
+			MethodName: "UpdateApplicationDeployTargets",
+			Handler:    _APIService_UpdateApplicationDeployTargets_Handler,
 		},
 		{
 			MethodName: "GetDeployment",
@@ -886,10 +890,6 @@ var APIService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListStageLogs",
 			Handler:    _APIService_ListStageLogs_Handler,
-		},
-		{
-			MethodName: "MigrateDatabase",
-			Handler:    _APIService_MigrateDatabase_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
