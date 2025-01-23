@@ -6,16 +6,12 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import { FC, memo } from "react";
-import { NavLink, Redirect, Route, Switch } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import {
-  PAGE_PATH_SETTINGS,
   PAGE_PATH_SETTINGS_API_KEY,
   PAGE_PATH_SETTINGS_PIPED,
   PAGE_PATH_SETTINGS_PROJECT,
 } from "~/constants/path";
-import { APIKeyPage } from "./api-key";
-import { SettingsPipedPage } from "./piped";
-import { SettingsProjectPage } from "./project";
 
 const drawerWidth = 240;
 
@@ -60,6 +56,7 @@ const MENU_ITEMS = [
 
 export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
   const classes = useStyles();
+  const location = useLocation();
   return (
     <div className={classes.root}>
       <Drawer
@@ -75,7 +72,7 @@ export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
                 button
                 component={NavLink}
                 to={link}
-                activeClassName={classes.activeNav}
+                className={link === location.pathname ? classes.activeNav : ""}
                 selected={link === location.pathname}
               >
                 <ListItemText primary={text} />
@@ -85,28 +82,7 @@ export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
         </div>
       </Drawer>
       <main className={classes.content}>
-        <Switch>
-          <Route
-            exact
-            path={PAGE_PATH_SETTINGS}
-            component={() => <Redirect to={PAGE_PATH_SETTINGS_PIPED} />}
-          />
-          <Route
-            exact
-            path={PAGE_PATH_SETTINGS_PIPED}
-            component={SettingsPipedPage}
-          />
-          <Route
-            exact
-            path={PAGE_PATH_SETTINGS_PROJECT}
-            component={SettingsProjectPage}
-          />
-          <Route
-            exact
-            path={PAGE_PATH_SETTINGS_API_KEY}
-            component={APIKeyPage}
-          />
-        </Switch>
+        <Outlet />
       </main>
     </div>
   );
