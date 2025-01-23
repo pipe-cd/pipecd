@@ -381,5 +381,7 @@ func Benchmark_reporter_flushSnapshots(b *testing.B) {
 		logger:          zaptest.NewLogger(b),
 	}
 
-	pr.flushSnapshots(context.Background())
+	for range b.N {
+		pr.flushSnapshots(context.Background())
+	}
 }
