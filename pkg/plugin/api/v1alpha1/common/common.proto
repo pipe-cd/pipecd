@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// package common defines common messages that are used for plugins.
+// package common defines common messages which are depended on by messages in packages under pkg/plugin/api/v1alpha1.
 syntax = "proto3";
 
 package grpc.plugin.common.v1alpha1;
