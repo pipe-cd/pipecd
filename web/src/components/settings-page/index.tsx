@@ -6,7 +6,7 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import { FC, memo } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import {
   PAGE_PATH_SETTINGS_API_KEY,
   PAGE_PATH_SETTINGS_PIPED,
@@ -56,6 +56,7 @@ const MENU_ITEMS = [
 
 export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
   const classes = useStyles();
+  const location = useLocation();
   return (
     <div className={classes.root}>
       <Drawer
