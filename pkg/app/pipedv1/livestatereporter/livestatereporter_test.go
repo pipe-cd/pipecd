@@ -18,9 +18,11 @@ package livestatereporter
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 	"google.golang.org/grpc"
@@ -131,6 +133,8 @@ func (f *fakeAPILister) List() []*model.Application {
 }
 
 func Test_reporter_flushSnapshots(t *testing.T) {
+	// NOTE: This test only checks no panic
+
 	gitClient, err := git.NewClient()
 	require.NoError(t, err)
 
@@ -207,6 +211,93 @@ func Test_reporter_flushSnapshots(t *testing.T) {
 	}
 
 	pr.flushSnapshots(context.Background())
+}
+
+func Test_reporter_flush(t *testing.T) {
+	workingDir := t.TempDir()
+
+	gitClient, err := git.NewClient()
+	require.NoError(t, err)
+
+	cfgRepo := config.PipedRepository{
+		RepoID: "repo-id",
+		Remote: "https://github.com/pipe-cd/examples.git",
+		Branch: "master",
+	}
+
+	repo, err := gitClient.Clone(context.Background(), cfgRepo.RepoID, cfgRepo.Remote, cfgRepo.Branch, fmt.Sprintf("%s/%s", workingDir, cfgRepo.RepoID))
+	require.NoError(t, err)
+
+	pr := &reporter{
+		snapshotFlushInterval: 1 * time.Minute,
+		apiClient:             &fakeAPIClient{},
+		pluginRegistry: func() plugin.PluginRegistry {
+			r, err := plugin.NewPluginRegistry(
+				context.Background(),
+				[]plugin.Plugin{
+					{
+						Name: "k8s",
+						Cli: &fakePlugin{
+							pipelineStages: []*model.PipelineStage{
+								{
+									Name: "K8S_CANARY_ROLLOUT",
+								},
+								{
+									Name: "K8S_CANARY_CLEAN",
+								},
+								{
+									Name: "K8S_PRIMARY_ROLLOUT",
+								},
+							},
+						},
+					},
+					{
+						Name: "wait",
+						Cli: &fakePlugin{
+							pipelineStages: []*model.PipelineStage{
+								{
+									Name: "WAIT",
+								},
+							},
+						},
+					},
+				},
+			)
+
+			require.NoError(t, err)
+			return r
+		}(),
+		gitClient: gitClient,
+		pipedConfig: &config.PipedSpec{
+			Repositories: []config.PipedRepository{
+				{
+					RepoID: "repo-id",
+					Remote: "https://github.com/pipe-cd/examples.git",
+					Branch: "master",
+				},
+			},
+		},
+		secretDecrypter: nil,
+		workingDir:      workingDir,
+		logger:          zaptest.NewLogger(t),
+	}
+
+	app := &model.Application{
+		Id:   "app-id",
+		Name: "app-name",
+		GitPath: &model.ApplicationGitPath{
+			Repo: &model.ApplicationGitRepository{
+				Id:     "repo-id",
+				Remote: "https://github.com/pipe-cd/examples.git",
+				Branch: "master",
+			},
+			Path:           "kubernetes/canary",
+			ConfigFilename: "app.pipecd.yaml",
+		},
+	}
+
+	err = pr.flush(context.Background(), app, repo)
+	assert.NoError(t, err)
 }
 
 func Benchmark_reporter_flushSnapshots(b *testing.B) {
