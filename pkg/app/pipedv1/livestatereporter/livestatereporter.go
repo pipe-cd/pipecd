@@ -22,10 +22,10 @@ import (
 	"io"
 	"os"
 	"runtime"
+	"sync"
 	"time"
 
 	"go.uber.org/zap"
-	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
@@ -87,7 +87,7 @@ func NewReporter(appLister applicationLister, apiClient apiClient, gitClient git
 		appLister:             appLister,
 		apiClient:             apiClient,
 		gitClient:             gitClient,
-		repoMap:               make(map[string]git.Repo),
+		repoMap:               make(map[string]git.Repo, 0),
 		pluginRegistry:        pluginRegistry,
 		pipedConfig:           pipedConfig,
 		secretDecrypter:       secretDecrypter,
@@ -155,22 +155,20 @@ func (r *reporter) flushSnapshots(ctx context.Context) {
 		appsGrouped = append(appsGrouped, apps[i:end])
 	}
 
-	eg, ctx := errgroup.WithContext(ctx)
-	eg.SetLimit(limit)
+	var wg sync.WaitGroup
 
 	r.logger.Info("flushing snapshots", zap.Int("total-applications", len(apps)), zap.Int("parallel-count", len(appsGrouped)))
 	for _, apps := range appsGrouped {
-		eg.Go(func() error {
+		wg.Add(1)
+		go func() {
 			r.flushAll(ctx, apps, r.repoMap)
-			return nil
-		})
+			wg.Done()
+		}()
 	}
 
-	if err := eg.Wait(); err != nil {
-		r.logger.Error("failed to flush snapshots", zap.Error(err))
-	}
+	wg.Wait()
 
-	r.logger.Info("successfully flushed snapshots")
+	r.logger.Info("finished flushing snapshots")
 }
 
 func (r *reporter) flushAll(ctx context.Context, apps []*model.Application, repoMap map[string]git.Repo) {

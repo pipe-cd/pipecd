@@ -154,7 +154,7 @@ func Test_reporter_flushSnapshots(t *testing.T) {
 			},
 		},
 		apiClient: &fakeAPIClient{},
-		repoMap:   make(map[string]git.Repo),
+		repoMap:   make(map[string]git.Repo, 0),
 		pluginRegistry: func() plugin.PluginRegistry {
 			r, err := plugin.NewPluginRegistry(
 				context.Background(),
@@ -275,6 +275,7 @@ func Benchmark_reporter_flushSnapshots(b *testing.B) {
 			return r
 		}(),
 		gitClient: gitClient,
+		repoMap:   make(map[string]git.Repo, 0),
 		pipedConfig: &config.PipedSpec{
 			Repositories: []config.PipedRepository{
 				{
