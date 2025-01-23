@@ -12,11 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package planner provides a piped component
-// that decides the deployment pipeline of a deployment.
-// The planner bases on the changes from git commits
-// then builds the deployment manifests to know the behavior of the deployment.
-// From that behavior the planner can decides which pipeline should be applied.
 package pluginapi
 
 import (
