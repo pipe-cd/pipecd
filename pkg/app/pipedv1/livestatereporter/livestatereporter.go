@@ -142,12 +142,9 @@ func (r *reporter) flushSnapshots(ctx context.Context) {
 	apps := r.appLister.List()
 
 	// TODO: Set the limit based on the piped config
-	limit := runtime.GOMAXPROCS(0) / 2
+	limit := max(runtime.GOMAXPROCS(0)/2, 1)
 
-	appsPerReporter := len(apps) / limit
-	if appsPerReporter == 0 {
-		appsPerReporter = 1
-	}
+	appsPerReporter := max(len(apps)/limit, 1)
 
 	appsGrouped := make([][]*model.Application, 0)
 	for i := 0; i < len(apps); i += appsPerReporter {
