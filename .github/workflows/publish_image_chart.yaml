@@ -113,6 +113,11 @@ jobs:
     runs-on: ubuntu-24.04
     needs: artifacts
     steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+      - name: Determine version
+        run: echo "PIPECD_VERSION=$(git describe --tags --always --abbrev=7)" >> $GITHUB_ENV
       # Notify PipeCD to trigger update dev environment via EventWatcher.
       - uses: pipe-cd/actions-event-register@v1.1.0
         with:
