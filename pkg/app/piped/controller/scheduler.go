@@ -345,9 +345,13 @@ func (s *scheduler) Run(ctx context.Context) error {
 			))
 			defer span.End()
 
+			s.notifyStageStartEvent(ps)
+
 			result = s.executeStage(sig, *ps, func(in executor.Input) (executor.Executor, bool) {
 				return s.executorRegistry.Executor(model.Stage(ps.Name), in)
 			})
+
+			s.notifyStageEndEvent(ps, result)
 
 			switch result {
 			case model.StageStatus_STAGE_SUCCESS:
@@ -450,9 +454,13 @@ func (s *scheduler) Run(ctx context.Context) error {
 					))
 					defer span.End()
 
+					s.notifyStageStartEvent(&rbs)
+
 					result := s.executeStage(sig, rbs, func(in executor.Input) (executor.Executor, bool) {
 						return s.executorRegistry.RollbackExecutor(s.deployment.Kind, in)
 					})
+
+					s.notifyStageEndEvent(&rbs, result)
 
 					switch result {
 					case model.StageStatus_STAGE_SUCCESS:
@@ -849,4 +857,53 @@ func (a appAnalysisResultStore) GetLatestAnalysisResult(ctx context.Context) (*m
 
 func (a appAnalysisResultStore) PutLatestAnalysisResult(ctx context.Context, analysisResult *model.AnalysisResult) error {
 	return a.store.PutLatestAnalysisResult(ctx, a.applicationID, analysisResult)
+}
+
+// notifyStageStartEvent sends notification evnet STAGE_STARTED
+func (s *scheduler) notifyStageStartEvent(stage *model.PipelineStage) {
+	s.notifier.Notify(model.NotificationEvent{
+		Type: model.NotificationEventType_EVENT_STAGE_STARTED,
+		Metadata: &model.NotificationEventStageStarted{
+			Deployment: s.deployment,
+			Stage:      stage,
+		},
+	})
+}
+
+// notifyStageEndEvent sends notification event based on the stage result.
+func (s *scheduler) notifyStageEndEvent(stage *model.PipelineStage, result model.StageStatus) {
+	switch result {
+	case model.StageStatus_STAGE_SUCCESS, model.StageStatus_STAGE_EXITED: // Exit stage is treated as success.
+		s.notifier.Notify(model.NotificationEvent{
+			Type: model.NotificationEventType_EVENT_STAGE_SUCCEEDED,
+			Metadata: &model.NotificationEventStageSucceeded{
+				Deployment: s.deployment,
+				Stage:      stage,
+			},
+		})
+	case model.StageStatus_STAGE_FAILURE:
+		s.notifier.Notify(model.NotificationEvent{
+			Type: model.NotificationEventType_EVENT_STAGE_FAILED,
+			Metadata: &model.NotificationEventStageFailed{
+				Deployment: s.deployment,
+				Stage:      stage,
+			},
+		})
+	case model.StageStatus_STAGE_CANCELLED:
+		s.notifier.Notify(model.NotificationEvent{
+			Type: model.NotificationEventType_EVENT_STAGE_CANCELLED,
+			Metadata: &model.NotificationEventStageCancelled{
+				Deployment: s.deployment,
+				Stage:      stage,
+			},
+		})
+	case model.StageStatus_STAGE_SKIPPED:
+		s.notifier.Notify(model.NotificationEvent{
+			Type: model.NotificationEventType_EVENT_STAGE_SKIPPED,
+			Metadata: &model.NotificationEventStageSkipped{
+				Deployment: s.deployment,
+				Stage:      stage,
+			},
+		})
+	}
 }
