@@ -109,6 +109,10 @@ jobs:
           helm push .artifacts/piped-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.GHCR }}/pipe-cd/chart
           helm push .artifacts/helloworld-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.GHCR }}/pipe-cd/chart
 
+  trigger-event-watcher:
+    runs-on: ubuntu-24.04
+    needs: artifacts
+    steps:
       # Notify PipeCD to trigger update dev environment via EventWatcher.
       - uses: pipe-cd/actions-event-register@v1.1.0
         with:
