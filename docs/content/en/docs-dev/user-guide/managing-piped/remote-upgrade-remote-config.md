@@ -30,7 +30,7 @@ Although the remote-upgrade allows you remotely restart your Pipeds to run any n
 
 Remote-config is the ability to load Piped config data from a remote location such as a Git repository. Not only that, but it also watches the config periodically to detect any changes on that config and restarts Piped to reflect the new configuration automatically.
 
-This feature requires the remote-upgrade feature to be enabled simultaneously. Currently, we only support remote config from a Git repository, but other remote locations could be supported in the future. Please check the [installation](../../../installation/install-piped/) guide on each environment to know how to configure Piped to load a remote config file.
+This feature requires the remote-upgrade feature to be enabled simultaneously. Please check [Runtime Options](runtime-options.md) and the [installation](../../../installation/install-piped/) guide on each environment to know how to configure Piped to load a remote config file.
 
 
 ## Summary
