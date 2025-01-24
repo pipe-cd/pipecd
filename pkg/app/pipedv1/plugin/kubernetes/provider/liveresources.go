@@ -17,6 +17,9 @@ package provider
 import (
 	"context"
 	"fmt"
+	"time"
+
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 // GetLiveResources returns all live resources that belong to the given application.
@@ -39,4 +42,39 @@ func GetLiveResources(ctx context.Context, kubectl *Kubectl, kubeconfig string, 
 	}
 
 	return namespacedLiveResources, clusterScopedLiveResources, nil
+}
+
+func BuildApplicationLiveState(deploytarget string, manifests []Manifest, now time.Time) *model.ApplicationLiveState {
+	states := make([]*model.ResourceState, 0, len(manifests))
+	for _, m := range manifests {
+		states = append(states, buildResourceState(m, now))
+	}
+
+	return &model.ApplicationLiveState{
+		Resources:    states,
+		HealthStatus: model.ApplicationLiveState_UNKNOWN, // TODO: Implement health status calculation
+	}
+}
+
+func buildResourceState(m Manifest, now time.Time) *model.ResourceState {
+	parents := make([]string, 0, len(m.body.GetOwnerReferences()))
+	for _, o := range m.body.GetOwnerReferences() {
+		parents = append(parents, string(o.UID))
+	}
+
+	return &model.ResourceState{
+		Id:                string(m.body.GetUID()),
+		Name:              m.body.GetName(),
+		ParentIds:         parents,
+		HealthStatus:      model.ResourceState_UNKNOWN, // TODO: Implement health status calculation
+		HealthDescription: "",                          // TODO: Implement health status calculation
+		ResourceType:      m.body.GetKind(),
+		ResourceMetadata: map[string]string{
+			"Namespace":   m.body.GetNamespace(),
+			"API Version": m.body.GetAPIVersion(),
+			"Kind":        m.body.GetKind(),
+		},
+		CreatedAt: m.body.GetCreationTimestamp().Unix(),
+		UpdatedAt: now.Unix(),
+	}
 }
