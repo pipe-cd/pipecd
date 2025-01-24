@@ -36,48 +36,6 @@ spec:
       username: sample-username
       password: sample-password
 
-  platformProviders:
-    - name: kubernetes-default
-      type: KUBERNETES
-      labels:
-        group: workload
-      config:
-        masterURL: https://example.com
-        kubeConfigPath: /etc/kube/config
-        appStateInformer:
-          includeResources:
-            - apiVersion: pipecd.dev/v1beta1
-            - apiVersion: networking.gke.io/v1beta1
-              kind: ManagedCertificate
-          excludeResources:
-            - apiVersion: v1
-              kind: Endpoints
-
-    - name: kubernetes-dev
-      type: KUBERNETES
-      labels:
-        group: config
-
-    - name: terraform
-      type: TERRAFORM
-      config:
-        vars:
-          - "project=gcp-project"
-          - "region=us-centra1"
-        driftDetectionEnabled: false
-
-    - name: cloudrun
-      type: CLOUDRUN
-      config:
-        project: gcp-project-id
-        region: cloud-run-region
-        credentialsFile: /etc/piped-secret/gcp-service-account.json
-
-    - name: lambda
-      type: LAMBDA
-      config:
-        region: us-east-1
-
   analysisProviders:
     - name: prometheus-dev
       type: PROMETHEUS
