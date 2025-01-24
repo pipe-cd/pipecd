@@ -2174,3 +2174,918 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = NotificationEventPipedStoppedValidationError{}
+
+// Validate checks the field values on NotificationEventStageStarted with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *NotificationEventStageStarted) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on NotificationEventStageStarted with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// NotificationEventStageStartedMultiError, or nil if none found.
+func (m *NotificationEventStageStarted) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *NotificationEventStageStarted) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetDeployment() == nil {
+		err := NotificationEventStageStartedValidationError{
+			field:  "Deployment",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetDeployment()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, NotificationEventStageStartedValidationError{
+					field:  "Deployment",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, NotificationEventStageStartedValidationError{
+					field:  "Deployment",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetDeployment()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return NotificationEventStageStartedValidationError{
+				field:  "Deployment",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if m.GetStage() == nil {
+		err := NotificationEventStageStartedValidationError{
+			field:  "Stage",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetStage()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, NotificationEventStageStartedValidationError{
+					field:  "Stage",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, NotificationEventStageStartedValidationError{
+					field:  "Stage",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetStage()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return NotificationEventStageStartedValidationError{
+				field:  "Stage",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return NotificationEventStageStartedMultiError(errors)
+	}
+
+	return nil
+}
+
+// NotificationEventStageStartedMultiError is an error wrapping multiple
+// validation errors returned by NotificationEventStageStarted.ValidateAll()
+// if the designated constraints aren't met.
+type NotificationEventStageStartedMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m NotificationEventStageStartedMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m NotificationEventStageStartedMultiError) AllErrors() []error { return m }
+
+// NotificationEventStageStartedValidationError is the validation error
+// returned by NotificationEventStageStarted.Validate if the designated
+// constraints aren't met.
+type NotificationEventStageStartedValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e NotificationEventStageStartedValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e NotificationEventStageStartedValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e NotificationEventStageStartedValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e NotificationEventStageStartedValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e NotificationEventStageStartedValidationError) ErrorName() string {
+	return "NotificationEventStageStartedValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e NotificationEventStageStartedValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sNotificationEventStageStarted.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = NotificationEventStageStartedValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = NotificationEventStageStartedValidationError{}
+
+// Validate checks the field values on NotificationEventStageSkipped with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *NotificationEventStageSkipped) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on NotificationEventStageSkipped with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// NotificationEventStageSkippedMultiError, or nil if none found.
+func (m *NotificationEventStageSkipped) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *NotificationEventStageSkipped) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetDeployment() == nil {
+		err := NotificationEventStageSkippedValidationError{
+			field:  "Deployment",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetDeployment()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, NotificationEventStageSkippedValidationError{
+					field:  "Deployment",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, NotificationEventStageSkippedValidationError{
+					field:  "Deployment",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetDeployment()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return NotificationEventStageSkippedValidationError{
+				field:  "Deployment",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if m.GetStage() == nil {
+		err := NotificationEventStageSkippedValidationError{
+			field:  "Stage",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetStage()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, NotificationEventStageSkippedValidationError{
+					field:  "Stage",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, NotificationEventStageSkippedValidationError{
+					field:  "Stage",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetStage()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return NotificationEventStageSkippedValidationError{
+				field:  "Stage",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return NotificationEventStageSkippedMultiError(errors)
+	}
+
+	return nil
+}
+
+// NotificationEventStageSkippedMultiError is an error wrapping multiple
+// validation errors returned by NotificationEventStageSkipped.ValidateAll()
+// if the designated constraints aren't met.
+type NotificationEventStageSkippedMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m NotificationEventStageSkippedMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m NotificationEventStageSkippedMultiError) AllErrors() []error { return m }
+
+// NotificationEventStageSkippedValidationError is the validation error
+// returned by NotificationEventStageSkipped.Validate if the designated
+// constraints aren't met.
+type NotificationEventStageSkippedValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e NotificationEventStageSkippedValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e NotificationEventStageSkippedValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e NotificationEventStageSkippedValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e NotificationEventStageSkippedValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e NotificationEventStageSkippedValidationError) ErrorName() string {
+	return "NotificationEventStageSkippedValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e NotificationEventStageSkippedValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sNotificationEventStageSkipped.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = NotificationEventStageSkippedValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = NotificationEventStageSkippedValidationError{}
+
+// Validate checks the field values on NotificationEventStageSucceeded with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *NotificationEventStageSucceeded) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on NotificationEventStageSucceeded with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// NotificationEventStageSucceededMultiError, or nil if none found.
+func (m *NotificationEventStageSucceeded) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *NotificationEventStageSucceeded) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetDeployment() == nil {
+		err := NotificationEventStageSucceededValidationError{
+			field:  "Deployment",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetDeployment()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, NotificationEventStageSucceededValidationError{
+					field:  "Deployment",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, NotificationEventStageSucceededValidationError{
+					field:  "Deployment",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetDeployment()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return NotificationEventStageSucceededValidationError{
+				field:  "Deployment",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if m.GetStage() == nil {
+		err := NotificationEventStageSucceededValidationError{
+			field:  "Stage",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetStage()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, NotificationEventStageSucceededValidationError{
+					field:  "Stage",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, NotificationEventStageSucceededValidationError{
+					field:  "Stage",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetStage()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return NotificationEventStageSucceededValidationError{
+				field:  "Stage",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return NotificationEventStageSucceededMultiError(errors)
+	}
+
+	return nil
+}
+
+// NotificationEventStageSucceededMultiError is an error wrapping multiple
+// validation errors returned by NotificationEventStageSucceeded.ValidateAll()
+// if the designated constraints aren't met.
+type NotificationEventStageSucceededMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m NotificationEventStageSucceededMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m NotificationEventStageSucceededMultiError) AllErrors() []error { return m }
+
+// NotificationEventStageSucceededValidationError is the validation error
+// returned by NotificationEventStageSucceeded.Validate if the designated
+// constraints aren't met.
+type NotificationEventStageSucceededValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e NotificationEventStageSucceededValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e NotificationEventStageSucceededValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e NotificationEventStageSucceededValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e NotificationEventStageSucceededValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e NotificationEventStageSucceededValidationError) ErrorName() string {
+	return "NotificationEventStageSucceededValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e NotificationEventStageSucceededValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sNotificationEventStageSucceeded.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = NotificationEventStageSucceededValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = NotificationEventStageSucceededValidationError{}
+
+// Validate checks the field values on NotificationEventStageFailed with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *NotificationEventStageFailed) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on NotificationEventStageFailed with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// NotificationEventStageFailedMultiError, or nil if none found.
+func (m *NotificationEventStageFailed) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *NotificationEventStageFailed) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetDeployment() == nil {
+		err := NotificationEventStageFailedValidationError{
+			field:  "Deployment",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetDeployment()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, NotificationEventStageFailedValidationError{
+					field:  "Deployment",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, NotificationEventStageFailedValidationError{
+					field:  "Deployment",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetDeployment()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return NotificationEventStageFailedValidationError{
+				field:  "Deployment",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if m.GetStage() == nil {
+		err := NotificationEventStageFailedValidationError{
+			field:  "Stage",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetStage()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, NotificationEventStageFailedValidationError{
+					field:  "Stage",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, NotificationEventStageFailedValidationError{
+					field:  "Stage",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetStage()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return NotificationEventStageFailedValidationError{
+				field:  "Stage",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return NotificationEventStageFailedMultiError(errors)
+	}
+
+	return nil
+}
+
+// NotificationEventStageFailedMultiError is an error wrapping multiple
+// validation errors returned by NotificationEventStageFailed.ValidateAll() if
+// the designated constraints aren't met.
+type NotificationEventStageFailedMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m NotificationEventStageFailedMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m NotificationEventStageFailedMultiError) AllErrors() []error { return m }
+
+// NotificationEventStageFailedValidationError is the validation error returned
+// by NotificationEventStageFailed.Validate if the designated constraints
+// aren't met.
+type NotificationEventStageFailedValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e NotificationEventStageFailedValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e NotificationEventStageFailedValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e NotificationEventStageFailedValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e NotificationEventStageFailedValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e NotificationEventStageFailedValidationError) ErrorName() string {
+	return "NotificationEventStageFailedValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e NotificationEventStageFailedValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sNotificationEventStageFailed.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = NotificationEventStageFailedValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = NotificationEventStageFailedValidationError{}
+
+// Validate checks the field values on NotificationEventStageCancelled with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *NotificationEventStageCancelled) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on NotificationEventStageCancelled with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// NotificationEventStageCancelledMultiError, or nil if none found.
+func (m *NotificationEventStageCancelled) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *NotificationEventStageCancelled) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetDeployment() == nil {
+		err := NotificationEventStageCancelledValidationError{
+			field:  "Deployment",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetDeployment()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, NotificationEventStageCancelledValidationError{
+					field:  "Deployment",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, NotificationEventStageCancelledValidationError{
+					field:  "Deployment",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetDeployment()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return NotificationEventStageCancelledValidationError{
+				field:  "Deployment",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if m.GetStage() == nil {
+		err := NotificationEventStageCancelledValidationError{
+			field:  "Stage",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetStage()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, NotificationEventStageCancelledValidationError{
+					field:  "Stage",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, NotificationEventStageCancelledValidationError{
+					field:  "Stage",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetStage()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return NotificationEventStageCancelledValidationError{
+				field:  "Stage",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return NotificationEventStageCancelledMultiError(errors)
+	}
+
+	return nil
+}
+
+// NotificationEventStageCancelledMultiError is an error wrapping multiple
+// validation errors returned by NotificationEventStageCancelled.ValidateAll()
+// if the designated constraints aren't met.
+type NotificationEventStageCancelledMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m NotificationEventStageCancelledMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m NotificationEventStageCancelledMultiError) AllErrors() []error { return m }
+
+// NotificationEventStageCancelledValidationError is the validation error
+// returned by NotificationEventStageCancelled.Validate if the designated
+// constraints aren't met.
+type NotificationEventStageCancelledValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e NotificationEventStageCancelledValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e NotificationEventStageCancelledValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e NotificationEventStageCancelledValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e NotificationEventStageCancelledValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e NotificationEventStageCancelledValidationError) ErrorName() string {
+	return "NotificationEventStageCancelledValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e NotificationEventStageCancelledValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sNotificationEventStageCancelled.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = NotificationEventStageCancelledValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = NotificationEventStageCancelledValidationError{}
