@@ -36,13 +36,14 @@ message Application {
     ApplicationKind kind = 6 [(validate.rules).enum.defined_only = true];
     // The path to the git directory of this application.
     ApplicationGitPath git_path = 7 [(validate.rules).message.required = true];
+    // NOTE: Fields `cloud_provider` and `platform_provider` are deprecated.
+    // Using `deploy_targets` to specify where to deploy instead.
     // The name of cloud provider where to deploy this application.
     // This must be one of the provider names registered in the piped.
     string cloud_provider = 8 [deprecated=true];
     // The name of platform provider where to deploy this application.
     // This must be one of the provider names registered in the piped.
-    // TODO: Add validation for this field.
-    string platform_provider = 15;
+    string platform_provider = 15 [deprecated=true];
     // The names of deploy taget where to deploy this application.
     repeated string deploy_targets = 16;
     // Additional description about application.
