@@ -375,22 +375,24 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		return err
 	}
 
-	// Start running application live state reporter.
-	{
-		// TODO: Implement the live state reporter controller.
-	}
-
-	// Start running application application drift detector.
-	{
-		// TODO: Implement the drift detector controller.
-	}
-
 	// Initialize secret decrypter.
 	decrypter, err := p.initializeSecretDecrypter(cfg)
 	if err != nil {
 		input.Logger.Error("failed to initialize secret decrypter", zap.Error(err))
 		return err
 	}
+
+	// Start running application live state reporter.
+	// Currently, this feature is disabled beucause many errors are showed up if the app.pipecd.yaml is not migrated.
+	// {
+	// 	r, err := livestatereporter.NewReporter(applicationLister, apiClient, gitClient, pluginRegistry, cfg, decrypter, input.Logger)
+	// 	if err != nil {
+	// 		input.Logger.Error("failed to create live state reporter", zap.Error(err))
+	// 	}
+	// 	group.Go(func() error {
+	// 		return r.Run(ctx)
+	// 	})
+	// }
 
 	// Start running deployment controller.
 	{

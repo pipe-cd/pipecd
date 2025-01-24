@@ -31,6 +31,7 @@ import (
 	kubeConfigPkg "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister/logpersistertest"
 	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry/toolregistrytest"
@@ -59,7 +60,7 @@ func TestDeploymentService_executeK8sSyncStage(t *testing.T) {
 			},
 			StageConfig:             []byte(``),
 			RunningDeploymentSource: nil,
-			TargetDeploymentSource: &deployment.DeploymentSource{
+			TargetDeploymentSource: &common.DeploymentSource{
 				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
 				CommitHash:                "0123456789",
 				ApplicationConfig:         cfg,
@@ -132,7 +133,7 @@ func TestDeploymentService_executeK8sSyncStage_withInputNamespace(t *testing.T) 
 			},
 			StageConfig:             []byte(``),
 			RunningDeploymentSource: nil,
-			TargetDeploymentSource: &deployment.DeploymentSource{
+			TargetDeploymentSource: &common.DeploymentSource{
 				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
 				CommitHash:                "0123456789",
 				ApplicationConfig:         cfg,
@@ -206,7 +207,7 @@ func TestDeploymentService_executeK8sSyncStage_withPrune(t *testing.T) {
 				},
 				StageConfig:             []byte(``),
 				RunningDeploymentSource: nil,
-				TargetDeploymentSource: &deployment.DeploymentSource{
+				TargetDeploymentSource: &common.DeploymentSource{
 					ApplicationDirectory:      running,
 					CommitHash:                "0123456789",
 					ApplicationConfig:         runningCfg,
@@ -261,13 +262,13 @@ func TestDeploymentService_executeK8sSyncStage_withPrune(t *testing.T) {
 					Name: "K8S_SYNC",
 				},
 				StageConfig: []byte(``),
-				RunningDeploymentSource: &deployment.DeploymentSource{
+				RunningDeploymentSource: &common.DeploymentSource{
 					ApplicationDirectory:      running,
 					CommitHash:                "0123456789",
 					ApplicationConfig:         runningCfg,
 					ApplicationConfigFilename: "app.pipecd.yaml",
 				},
-				TargetDeploymentSource: &deployment.DeploymentSource{
+				TargetDeploymentSource: &common.DeploymentSource{
 					ApplicationDirectory:      target,
 					CommitHash:                "0012345678",
 					ApplicationConfig:         targetCfg,
@@ -321,7 +322,7 @@ func TestDeploymentService_executeK8sSyncStage_withPrune_changesNamespace(t *tes
 				},
 				StageConfig:             []byte(``),
 				RunningDeploymentSource: nil,
-				TargetDeploymentSource: &deployment.DeploymentSource{
+				TargetDeploymentSource: &common.DeploymentSource{
 					ApplicationDirectory:      running,
 					CommitHash:                "0123456789",
 					ApplicationConfig:         runningCfg,
@@ -373,13 +374,13 @@ func TestDeploymentService_executeK8sSyncStage_withPrune_changesNamespace(t *tes
 					Name: "K8S_SYNC",
 				},
 				StageConfig: []byte(``),
-				RunningDeploymentSource: &deployment.DeploymentSource{
+				RunningDeploymentSource: &common.DeploymentSource{
 					ApplicationDirectory:      running,
 					CommitHash:                "0123456789",
 					ApplicationConfig:         runningCfg,
 					ApplicationConfigFilename: "app.pipecd.yaml",
 				},
-				TargetDeploymentSource: &deployment.DeploymentSource{
+				TargetDeploymentSource: &common.DeploymentSource{
 					ApplicationDirectory:      target,
 					CommitHash:                "0012345678",
 					ApplicationConfig:         targetCfg,
@@ -450,7 +451,7 @@ func TestDeploymentService_executeK8sSyncStage_withPrune_clusterScoped(t *testin
 				},
 				StageConfig:             []byte(``),
 				RunningDeploymentSource: nil,
-				TargetDeploymentSource: &deployment.DeploymentSource{
+				TargetDeploymentSource: &common.DeploymentSource{
 					ApplicationDirectory:      prepare,
 					CommitHash:                "0123456789",
 					ApplicationConfig:         prepareCfg,
@@ -488,7 +489,7 @@ func TestDeploymentService_executeK8sSyncStage_withPrune_clusterScoped(t *testin
 				},
 				StageConfig:             []byte(``),
 				RunningDeploymentSource: nil,
-				TargetDeploymentSource: &deployment.DeploymentSource{
+				TargetDeploymentSource: &common.DeploymentSource{
 					ApplicationDirectory:      running,
 					CommitHash:                "0123456789",
 					ApplicationConfig:         runningCfg,
@@ -533,13 +534,13 @@ func TestDeploymentService_executeK8sSyncStage_withPrune_clusterScoped(t *testin
 					Name: "K8S_SYNC",
 				},
 				StageConfig: []byte(``),
-				RunningDeploymentSource: &deployment.DeploymentSource{
+				RunningDeploymentSource: &common.DeploymentSource{
 					ApplicationDirectory:      running,
 					CommitHash:                "0123456789",
 					ApplicationConfig:         runningCfg,
 					ApplicationConfigFilename: "app.pipecd.yaml",
 				},
-				TargetDeploymentSource: &deployment.DeploymentSource{
+				TargetDeploymentSource: &common.DeploymentSource{
 					ApplicationDirectory:      target,
 					CommitHash:                "0012345678",
 					ApplicationConfig:         targetCfg,

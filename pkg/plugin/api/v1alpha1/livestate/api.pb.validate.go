@@ -59,6 +59,35 @@ func (m *GetLivestateRequest) validate(all bool) error {
 
 	// no validation rules for ApplicationId
 
+	if all {
+		switch v := interface{}(m.GetDeploySource()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, GetLivestateRequestValidationError{
+					field:  "DeploySource",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, GetLivestateRequestValidationError{
+					field:  "DeploySource",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetDeploySource()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GetLivestateRequestValidationError{
+				field:  "DeploySource",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
 	if len(errors) > 0 {
 		return GetLivestateRequestMultiError(errors)
 	}

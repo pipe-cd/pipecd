@@ -16,6 +16,7 @@ package model
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -238,6 +239,80 @@ func TestGetApplicationConfigFilename(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			actualName := tt.gitPath.GetApplicationConfigFilename()
 			assert.Equal(t, tt.expectedName, actualName)
+		})
+	}
+}
+func TestMergeApplicationSyncState(t *testing.T) {
+	tests := []struct {
+		name     string
+		states   []*ApplicationSyncState
+		expected *ApplicationSyncState
+	}{
+		{
+			name:     "No states",
+			states:   []*ApplicationSyncState{},
+			expected: &ApplicationSyncState{Status: ApplicationSyncStatus_UNKNOWN, Timestamp: time.Now().Unix()},
+		},
+		{
+			name: "Single state DEPLOYING",
+			states: []*ApplicationSyncState{
+				{Status: ApplicationSyncStatus_DEPLOYING},
+			},
+			expected: &ApplicationSyncState{Status: ApplicationSyncStatus_DEPLOYING, Timestamp: time.Now().Unix()},
+		},
+		{
+			name: "Multiple states with highest priority DEPLOYING",
+			states: []*ApplicationSyncState{
+				{Status: ApplicationSyncStatus_OUT_OF_SYNC},
+				{Status: ApplicationSyncStatus_DEPLOYING},
+				{Status: ApplicationSyncStatus_SYNCED},
+			},
+			expected: &ApplicationSyncState{Status: ApplicationSyncStatus_DEPLOYING, Timestamp: time.Now().Unix()},
+		},
+		{
+			name: "Multiple states with highest priority INVALID_CONFIG",
+			states: []*ApplicationSyncState{
+				{Status: ApplicationSyncStatus_OUT_OF_SYNC},
+				{Status: ApplicationSyncStatus_INVALID_CONFIG},
+				{Status: ApplicationSyncStatus_SYNCED},
+			},
+			expected: &ApplicationSyncState{
+				Status:      ApplicationSyncStatus_INVALID_CONFIG,
+				ShortReason: "\n\n",
+				Reason:      "\n\n",
+				Timestamp:   time.Now().Unix(),
+			},
+		},
+		{
+			name: "Multiple states with highest priority OUT_OF_SYNC",
+			states: []*ApplicationSyncState{
+				{Status: ApplicationSyncStatus_OUT_OF_SYNC, ShortReason: "reason1", Reason: "full reason1"},
+				{Status: ApplicationSyncStatus_SYNCED, ShortReason: "reason2", Reason: "full reason2"},
+			},
+			expected: &ApplicationSyncState{
+				Status:      ApplicationSyncStatus_OUT_OF_SYNC,
+				ShortReason: "reason1\nreason2",
+				Reason:      "full reason1\nfull reason2",
+				Timestamp:   time.Now().Unix(),
+			},
+		},
+		{
+			name: "All states are SYNCED",
+			states: []*ApplicationSyncState{
+				{Status: ApplicationSyncStatus_SYNCED},
+				{Status: ApplicationSyncStatus_SYNCED},
+			},
+			expected: &ApplicationSyncState{Status: ApplicationSyncStatus_SYNCED, Timestamp: time.Now().Unix()},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			actual := MergeApplicationSyncState(tt.states)
+			assert.Equal(t, tt.expected.Status, actual.Status)
+			assert.Equal(t, tt.expected.ShortReason, actual.ShortReason)
+			assert.Equal(t, tt.expected.Reason, actual.Reason)
+			assert.WithinDuration(t, time.Unix(tt.expected.Timestamp, 0), time.Unix(actual.Timestamp, 0), time.Second)
 		})
 	}
 }

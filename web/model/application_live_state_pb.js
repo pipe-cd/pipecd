@@ -2105,6 +2105,7 @@ proto.model.ResourceState.toObject = function(includeInstance, msg) {
     healthStatus: jspb.Message.getFieldWithDefault(msg, 6, 0),
     healthDescription: jspb.Message.getFieldWithDefault(msg, 7, ""),
     deployTarget: jspb.Message.getFieldWithDefault(msg, 8, ""),
+    pluginName: jspb.Message.getFieldWithDefault(msg, 9, ""),
     createdAt: jspb.Message.getFieldWithDefault(msg, 10, 0),
     updatedAt: jspb.Message.getFieldWithDefault(msg, 11, 0)
   };
@@ -2176,6 +2177,10 @@ proto.model.ResourceState.deserializeBinaryFromReader = function(msg, reader) {
     case 8:
       var value = /** @type {string} */ (reader.readString());
       msg.setDeployTarget(value);
+      break;
+    case 9:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPluginName(value);
       break;
     case 10:
       var value = /** @type {number} */ (reader.readInt64());
@@ -2264,6 +2269,13 @@ proto.model.ResourceState.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       8,
+      f
+    );
+  }
+  f = message.getPluginName();
+  if (f.length > 0) {
+    writer.writeString(
+      9,
       f
     );
   }
@@ -2458,6 +2470,24 @@ proto.model.ResourceState.prototype.getDeployTarget = function() {
  */
 proto.model.ResourceState.prototype.setDeployTarget = function(value) {
   return jspb.Message.setProto3StringField(this, 8, value);
+};
+
+
+/**
+ * optional string plugin_name = 9;
+ * @return {string}
+ */
+proto.model.ResourceState.prototype.getPluginName = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 9, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.model.ResourceState} returns this
+ */
+proto.model.ResourceState.prototype.setPluginName = function(value) {
+  return jspb.Message.setProto3StringField(this, 9, value);
 };
 
 
