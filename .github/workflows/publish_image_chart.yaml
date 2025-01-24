@@ -109,13 +109,22 @@ jobs:
           helm push .artifacts/piped-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.GHCR }}/pipe-cd/chart
           helm push .artifacts/helloworld-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.GHCR }}/pipe-cd/chart
 
-      # Notify PipeCD to trigger deployment via EventWatcher.
+      # Notify PipeCD to trigger update dev environment via EventWatcher.
       - uses: pipe-cd/actions-event-register@v1.1.0
         with:
           api-address: ${{ secrets.PIPECD_API_ADDRESS }}
           api-key: ${{ secrets.PIPECD_API_KEY }}
           event-name: helm-release
-          labels: helmRepo=pipecd
+          labels: helmRepo=pipecd,env=dev
+          data: ${{ env.PIPECD_VERSION }}
+          contexts: Source-Commit-URL=https://github.com/pipe-cd/pipecd/commit/${{ github.sha }}
+      # Notify PipeCD to trigger update demo environment via EventWatcher.
+      - uses: pipe-cd/actions-event-register@v1.1.0
+        with:
+          api-address: ${{ secrets.PIPECD_API_ADDRESS }}
+          api-key: ${{ secrets.PIPECD_API_KEY }}
+          event-name: helm-release
+          labels: helmRepo=pipecd,env=demo
           data: ${{ env.PIPECD_VERSION }}
           contexts: Source-Commit-URL=https://github.com/pipe-cd/pipecd/commit/${{ github.sha }}
 
