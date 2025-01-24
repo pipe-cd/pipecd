@@ -44,6 +44,7 @@ func GetLiveResources(ctx context.Context, kubectl *Kubectl, kubeconfig string, 
 	return namespacedLiveResources, clusterScopedLiveResources, nil
 }
 
+// BuildApplicationLiveState builds the live state of the application from the given manifests.
 func BuildApplicationLiveState(deploytarget string, manifests []Manifest, now time.Time) *model.ApplicationLiveState {
 	states := make([]*model.ResourceState, 0, len(manifests))
 	for _, m := range manifests {
@@ -56,6 +57,7 @@ func BuildApplicationLiveState(deploytarget string, manifests []Manifest, now ti
 	}
 }
 
+// buildResourceState builds the resource state from the given manifest.
 func buildResourceState(m Manifest, now time.Time) *model.ResourceState {
 	parents := make([]string, 0, len(m.body.GetOwnerReferences()))
 	for _, o := range m.body.GetOwnerReferences() {
