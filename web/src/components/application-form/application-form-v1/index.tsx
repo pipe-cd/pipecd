@@ -74,9 +74,14 @@ enum STEP {
 type Props = {
   title: string;
   onClose: () => void;
+  onAdded?: () => void;
 };
 
-const ApplicationFormSuggestionV1: FC<Props> = ({ title, onClose }) => {
+const ApplicationFormSuggestionV1: FC<Props> = ({
+  title,
+  onClose,
+  onAdded,
+}) => {
   const [activeStep, setActiveStep] = useState(STEP.SELECT_PIPED);
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedPipedId, setSelectedPipedId] = useState("");
@@ -168,8 +173,8 @@ const ApplicationFormSuggestionV1: FC<Props> = ({ title, onClose }) => {
     setShowConfirm(true);
   };
 
-  const onCreateApplication = (): void => {
-    dispatch(
+  const onCreateApplication = async (): Promise<void> => {
+    await dispatch(
       addApplication({
         ...appToAdd,
         // TODO: should remove application ['platformProvider', 'kind'] in body request, api need to be updated
@@ -178,6 +183,7 @@ const ApplicationFormSuggestionV1: FC<Props> = ({ title, onClose }) => {
       })
     );
     setShowConfirm(false);
+    onAdded?.();
     onClose();
   };
 

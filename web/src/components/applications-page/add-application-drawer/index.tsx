@@ -78,6 +78,7 @@ export const AddApplicationDrawer: FC<AddApplicationDrawerProps> = memo(
             {...formik}
             title={`Add a new application to "${projectName}" project`}
             onClose={handleClose}
+            onAdded={onAdded}
           />
         </Drawer>
         <Dialog open={showConfirm}>

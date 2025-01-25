@@ -332,6 +332,7 @@ export interface ApplicationFormValue {
 export type ApplicationFormProps = FormikProps<ApplicationFormValue> & {
   title: string;
   onClose: () => void;
+  onAdded?: () => void;
   disableApplicationInfo?: boolean;
 };
 
@@ -362,6 +363,7 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
     setFieldValue,
     setValues,
     onClose,
+    onAdded,
     disableApplicationInfo = false,
   }) {
     const classes = useStyles();
@@ -620,7 +622,7 @@ const PlatformProviderFilter: FC<PlatformProviderFilterProps> = memo(
 );
 
 const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
-  function ApplicationForm({ title, onClose }) {
+  function ApplicationForm({ title, onClose, onAdded }) {
     const dispatch = useAppDispatch();
     useEffect(() => {
       dispatch(fetchUnregisteredApplications());
@@ -832,6 +834,7 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
               onClick={() => {
                 dispatch(addApplication(appToAdd));
                 setShowConfirm(false);
+                onAdded?.();
                 onClose();
               }}
             >
