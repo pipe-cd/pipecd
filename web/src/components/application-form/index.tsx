@@ -50,6 +50,7 @@ import {
   addApplication,
   ApplicationGitRepository,
 } from "~/modules/applications";
+import ApplicationFormV1 from "./application-form-v1";
 
 const ADD_FROM_GIT_CONFIRM_DIALOG_TITLE = "Add Application";
 const ADD_FROM_GIT_CONFIRM_DIALOG_DESCRIPTION =
@@ -145,6 +146,7 @@ const useStyles = makeStyles((theme) => ({
     minHeight: 0,
     "& .MuiTab-wrapper": {
       flexDirection: "row-reverse",
+      maxWidth: 200,
     },
     "& .MuiTab-wrapper > *:first-child": {
       marginBottom: 0,
@@ -211,7 +213,7 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
         >
           <Tab
             className={classes.tabLabel}
-            label="ADD FROM SUGGESTIONS"
+            label="PIPED V0 ADD FROM SUGGESTIONS"
             icon={
               <IconButton
                 size="small"
@@ -226,9 +228,14 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
           />
           <Tab
             className={classes.tabLabel}
+            label="PIPED V1 ADD FROM SUGGESTIONS"
+            {...a11yProps(1)}
+          />
+          <Tab
+            className={classes.tabLabel}
             label="ADD MANUALLY"
             icon=" "
-            {...a11yProps(1)}
+            {...a11yProps(2)}
           />
         </Tabs>
       </Box>
@@ -236,6 +243,9 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
         <SelectFromSuggestionsForm {...props} />
       </TabPanel>
       <TabPanel selected={selectedTabIndex === 1} index={1}>
+        <ApplicationFormV1 {...props} />
+      </TabPanel>
+      <TabPanel selected={selectedTabIndex === 2} index={2}>
         <ApplicationForm {...props} />
       </TabPanel>
     </Box>
