@@ -125,7 +125,7 @@ func (s *deploymentServiceServer) BuildPipelineSyncStages(ctx context.Context, r
 // BuildQuickSyncStages implements deployment.BuildQuickSyncStages.
 func (s *deploymentServiceServer) BuildQuickSyncStages(ctx context.Context, request *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	return &deployment.BuildQuickSyncStagesResponse{
-		Stages: []*model.PipelineStage{newWaitStage()},
+		Stages: []*model.PipelineStage{},
 	}, nil
 }
 

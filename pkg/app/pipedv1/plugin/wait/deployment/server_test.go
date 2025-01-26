@@ -56,15 +56,7 @@ func TestBuildQuickSyncStages(t *testing.T) {
 	t.Parallel()
 
 	expected := &deployment.BuildQuickSyncStagesResponse{
-		Stages: []*model.PipelineStage{
-			{
-				Id:       "WAIT",
-				Name:     "WAIT",
-				Desc:     "Wait for the specified duration",
-				Rollback: false,
-				Status:   model.StageStatus_STAGE_NOT_STARTED_YET,
-			},
-		},
+		Stages: []*model.PipelineStage{},
 	}
 
 	server := NewDeploymentService(nil, zap.NewNop(), nil)
@@ -73,17 +65,6 @@ func TestBuildQuickSyncStages(t *testing.T) {
 		Rollback: false,
 	})
 	assert.NoError(t, err)
-	resp.Stages[0].CreatedAt = 0 // Ignore timestamps
-	resp.Stages[0].UpdatedAt = 0
-	assert.Equal(t, resp, expected)
-
-	// The response will be the same even if Rollback is true.
-	resp, err = server.BuildQuickSyncStages(context.Background(), &deployment.BuildQuickSyncStagesRequest{
-		Rollback: true,
-	})
-	assert.NoError(t, err)
-	resp.Stages[0].CreatedAt = 0 // Ignore timestamps
-	resp.Stages[0].UpdatedAt = 0
 	assert.Equal(t, resp, expected)
 }
 
