@@ -2,36 +2,41 @@ import {
   Box,
   Button,
   Divider,
-  makeStyles,
-  MenuItem,
-  TextField,
-  Typography,
   FormControl,
   InputLabel,
+  makeStyles,
+  MenuItem,
   Select,
-  Stepper,
   Step,
-  StepLabel,
   StepContent,
+  StepLabel,
+  Stepper,
+  TextField,
+  Typography,
 } from "@material-ui/core";
-import { FC, memo, useCallback, useState, useEffect, useMemo } from "react";
-import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
-import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
-import { useAppSelector, useAppDispatch, unwrapResult } from "~/hooks/redux";
-import { ApplicationKind } from "~/modules/applications";
+import { FC, memo, useEffect, useMemo, useState } from "react";
 import {
-  selectAllUnregisteredApplications,
-  fetchUnregisteredApplications,
-  ApplicationInfo,
-} from "~/modules/unregistered-applications";
+  APPLICATION_KIND_BY_NAME,
+  APPLICATION_KIND_TEXT,
+} from "~/constants/application-kind";
+import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
+import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import {
   addApplication,
   ApplicationGitRepository,
+  ApplicationKind,
 } from "~/modules/applications";
+import {
+  ApplicationInfo,
+  fetchUnregisteredApplications,
+  selectAllUnregisteredApplications,
+} from "~/modules/unregistered-applications";
 import { sortFunc } from "~/utils/common";
+import { ApplicationFormProps } from "..";
+
+import DialogConfirm from "~/components/dialog-confirm";
 import { selectAllPipeds } from "~/modules/pipeds";
 import { Autocomplete } from "@material-ui/lab";
-import DialogConfirm from "~/components/dialog-confirm";
 
 const ADD_FROM_GIT_CONFIRM_DIALOG_TITLE = "Add Application";
 const ADD_FROM_GIT_CONFIRM_DIALOG_DESCRIPTION =
@@ -66,26 +71,21 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 enum STEP {
-  SELECT_PIPED,
+  SELECT_PIPED_AND_PLATFORM,
   SELECT_APPLICATION,
   CONFIRM_INFORMATION,
 }
 
-type Props = {
-  title: string;
-  onClose: () => void;
-  onFinished: () => void;
-};
-
-const ApplicationFormSuggestionV1: FC<Props> = ({
+const ApplicationFormSuggestionV0: FC<ApplicationFormProps> = ({
   title,
   onClose,
   onFinished: onAdded,
 }) => {
-  const [loading, setLoading] = useState(false);
-  const [activeStep, setActiveStep] = useState(STEP.SELECT_PIPED);
+  const [activeStep, setActiveStep] = useState(STEP.SELECT_PIPED_AND_PLATFORM);
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedPipedId, setSelectedPipedId] = useState("");
+  const [selectedKind, setSelectedKind] = useState("");
+  const [selectedPlatformProvider, setSelectedPlatformProvider] = useState("");
   const [
     selectedApp,
     setSelectedApp,
@@ -96,6 +96,8 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
     repo: {} as ApplicationGitRepository.AsObject,
     repoPath: "",
     configFilename: "",
+    kind: ApplicationKind.KUBERNETES,
+    platformProvider: "",
     labels: new Array<[string, string]>(),
   });
   const dispatch = useAppDispatch();
@@ -108,19 +110,33 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
   const apps = useAppSelector(selectAllUnregisteredApplications);
   const ps = useAppSelector(selectAllPipeds);
 
-  const filteredApps = useMemo(
+  const appOptions = useMemo(
     () =>
       apps
-        .filter((app) => app.pipedId === selectedPipedId)
+        .filter(
+          (app) =>
+            app.pipedId === selectedPipedId &&
+            app.kind === APPLICATION_KIND_BY_NAME[selectedKind]
+        )
         .sort((a, b) => sortFunc(a.name, b.name)),
-    [apps, selectedPipedId]
+    [apps, selectedKind, selectedPipedId]
   );
 
-  const pipeds = useMemo(() => {
+  const pipedOptions = useMemo(() => {
     return ps
       .filter((piped) => !piped.disabled)
       .sort((a, b) => sortFunc(a.name, b.name));
   }, [ps]);
+
+  const platformProviderOptions = useMemo(() => {
+    const selectedPiped = ps.find((piped) => piped.id === selectedPipedId);
+
+    if (!selectedPiped) return [];
+    return [
+      ...selectedPiped.platformProvidersList,
+      ...selectedPiped.cloudProvidersList,
+    ];
+  }, [ps, selectedPipedId]);
 
   /**
    * Auto change step based on selectedApp and selectedPipedId
@@ -131,35 +147,12 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
       return;
     }
 
-    if (selectedPipedId) {
+    if (selectedPlatformProvider) {
       setActiveStep(STEP.SELECT_APPLICATION);
       return;
     }
-    setActiveStep(STEP.SELECT_PIPED);
-  }, [selectedApp, selectedPipedId]);
-
-  /**
-   * Init selectedPipedId if there is only one piped
-   */
-  useEffect(() => {
-    if (pipeds.length === 1 && !selectedApp) {
-      setSelectedPipedId(pipeds[0].id);
-    }
-  }, [pipeds, selectedApp]);
-
-  /**
-   * Init selectedApp if there is only one app
-   */
-  useEffect(() => {
-    if (filteredApps.length === 1 && !selectedApp) {
-      setSelectedApp(filteredApps[0]);
-    }
-  }, [apps.length, filteredApps, filteredApps.length, selectedApp]);
-
-  const onSelectPiped = useCallback((pipedId: string) => {
-    setSelectedPipedId(pipedId);
-    setSelectedApp(null);
-  }, []);
+    setActiveStep(STEP.SELECT_PIPED_AND_PLATFORM);
+  }, [selectedApp, selectedPipedId, selectedPlatformProvider]);
 
   const onSubmitForm = (): void => {
     if (!selectedApp) return;
@@ -167,34 +160,39 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
     setAppToAdd({
       name: selectedApp.name,
       pipedId: selectedApp.pipedId,
-      repo: {
-        id: selectedApp.repoId,
-      } as ApplicationGitRepository.AsObject,
+      repo: { id: selectedApp.repoId } as ApplicationGitRepository.AsObject,
       repoPath: selectedApp.path,
       configFilename: selectedApp.configFilename,
+      kind: selectedApp.kind,
+      platformProvider: selectedPlatformProvider,
       labels: selectedApp.labelsMap,
     });
     setShowConfirm(true);
   };
 
-  const onCreateApplication = (): void => {
-    setLoading(true);
-    dispatch(
-      addApplication({
-        ...appToAdd,
-        // TODO: should remove application ['platformProvider', 'kind'] in body request, api need to be updated
-        platformProvider: "KUBERNETES",
-        kind: ("" as unknown) as ApplicationKind,
-      })
-    )
-      .then(unwrapResult)
-      .then(() => {
-        onAdded();
-      })
-      .finally(() => {
-        setLoading(true);
-        setShowConfirm(false);
-      });
+  const onCreateApplication = async (): Promise<void> => {
+    await dispatch(addApplication(appToAdd));
+    setShowConfirm(false);
+    onAdded();
+  };
+
+  const onSelectPiped = (value: string): void => {
+    setSelectedApp(null);
+    setSelectedPipedId(value);
+    setSelectedPlatformProvider("");
+  };
+
+  const onSelectPlatformProvider = (platformName: string): void => {
+    const platformProvider = platformProviderOptions.find(
+      (item) => item.name === platformName
+    );
+    if (!platformProvider) return;
+
+    setSelectedApp(null);
+    const kind = platformProvider.type;
+    if (kind) setSelectedKind(kind);
+    if (platformProvider) setSelectedPlatformProvider(platformName);
+    if (platformProvider) setActiveStep(STEP.SELECT_APPLICATION);
   };
 
   return (
@@ -206,28 +204,50 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
         <Divider />
         <Stepper activeStep={activeStep} orientation="vertical">
           <Step key="Select piped and platform provider" active>
-            <StepLabel>Select piped</StepLabel>
+            <StepLabel>Select piped and platform provider</StepLabel>
             <StepContent>
-              <FormControl className={classes.formItem} variant="outlined">
-                <InputLabel id="filter-piped">Piped</InputLabel>
-                <Select
-                  labelId="filter-piped"
-                  id="filter-piped"
-                  label="Piped"
-                  value={selectedPipedId}
-                  className={classes.select}
-                  defaultValue={""}
-                  onChange={(e) => {
-                    onSelectPiped(e.target.value as string);
-                  }}
-                >
-                  {pipeds.map((e) => (
-                    <MenuItem value={e.id} key={`piped-${e.id}`}>
-                      {e.name} ({e.id})
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <div className={classes.inputGroup}>
+                <FormControl className={classes.formItem} variant="outlined">
+                  <InputLabel id="filter-piped">Piped</InputLabel>
+                  <Select
+                    labelId="filter-piped"
+                    id="filter-piped"
+                    label="Piped"
+                    value={selectedPipedId}
+                    className={classes.select}
+                    onChange={(e) => onSelectPiped(e.target.value as string)}
+                  >
+                    {pipedOptions.map((e) => (
+                      <MenuItem value={e.id} key={e.id}>
+                        {e.name} ({e.id})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <div className={classes.inputGroupSpace} />
+                <FormControl className={classes.formItem} variant="outlined">
+                  <InputLabel id="filter-platform-provider">
+                    Platform Provider
+                  </InputLabel>
+                  <Select
+                    labelId="filter-platform-provider"
+                    id="filter-platform-provider"
+                    label="PlatformProvider"
+                    className={classes.select}
+                    disabled={selectedPipedId === ""}
+                    value={selectedPlatformProvider}
+                    onChange={(e) =>
+                      onSelectPlatformProvider(e.target.value as string)
+                    }
+                  >
+                    {platformProviderOptions.map((e) => (
+                      <MenuItem value={e.name} key={e.name}>
+                        {e.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </div>
             </StepContent>
           </Step>
           <Step key="Select application to add" expanded={activeStep !== 0}>
@@ -236,7 +256,7 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
               <FormControl className={classes.formItem} variant="outlined">
                 <Autocomplete
                   id="filter-app"
-                  options={filteredApps}
+                  options={appOptions}
                   getOptionLabel={(app) =>
                     `name: ${app.name}, repo: ${app.repoId}`
                   }
@@ -322,6 +342,7 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
           >
             {UI_TEXT_SAVE}
           </Button>
+
           <Button onClick={onClose}>{UI_TEXT_CANCEL}</Button>
         </Box>
       </Box>
@@ -333,10 +354,9 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
         title={ADD_FROM_GIT_CONFIRM_DIALOG_TITLE}
         description={ADD_FROM_GIT_CONFIRM_DIALOG_DESCRIPTION}
         onConfirm={onCreateApplication}
-        loading={loading}
       />
     </>
   );
 };
 
-export default memo(ApplicationFormSuggestionV1);
+export default memo(ApplicationFormSuggestionV0);
