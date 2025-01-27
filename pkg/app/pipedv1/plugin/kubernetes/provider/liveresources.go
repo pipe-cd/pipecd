@@ -46,6 +46,12 @@ func GetLiveResources(ctx context.Context, kubectl *Kubectl, kubeconfig string, 
 
 // BuildApplicationLiveState builds the live state of the application from the given manifests.
 func BuildApplicationLiveState(deploytarget string, manifests []Manifest, now time.Time) *model.ApplicationLiveState {
+	if len(manifests) == 0 {
+		return &model.ApplicationLiveState{
+			HealthStatus: model.ApplicationLiveState_UNKNOWN,
+		}
+	}
+
 	states := make([]*model.ResourceState, 0, len(manifests))
 	for _, m := range manifests {
 		states = append(states, buildResourceState(m, now))
@@ -59,9 +65,12 @@ func BuildApplicationLiveState(deploytarget string, manifests []Manifest, now ti
 
 // buildResourceState builds the resource state from the given manifest.
 func buildResourceState(m Manifest, now time.Time) *model.ResourceState {
-	parents := make([]string, 0, len(m.body.GetOwnerReferences()))
-	for _, o := range m.body.GetOwnerReferences() {
-		parents = append(parents, string(o.UID))
+	var parents []string // default as nil
+	if len(m.body.GetOwnerReferences()) > 0 {
+		parents = make([]string, 0, len(m.body.GetOwnerReferences()))
+		for _, o := range m.body.GetOwnerReferences() {
+			parents = append(parents, string(o.UID))
+		}
 	}
 
 	return &model.ResourceState{
