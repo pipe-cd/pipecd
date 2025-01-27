@@ -18,9 +18,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 func TestBuildApplicationLiveState(t *testing.T) {
