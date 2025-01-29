@@ -2798,27 +2798,9 @@ func (m *AddApplicationRequest) validate(all bool) error {
 		}
 	}
 
-	if _, ok := model.ApplicationKind_name[int32(m.GetKind())]; !ok {
-		err := AddApplicationRequestValidationError{
-			field:  "Kind",
-			reason: "value must be one of the defined enum values",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Kind
 
-	if utf8.RuneCountInString(m.GetPlatformProvider()) < 1 {
-		err := AddApplicationRequestValidationError{
-			field:  "PlatformProvider",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for PlatformProvider
 
 	// no validation rules for Description
 
@@ -3072,27 +3054,9 @@ func (m *UpdateApplicationRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if _, ok := model.ApplicationKind_name[int32(m.GetKind())]; !ok {
-		err := UpdateApplicationRequestValidationError{
-			field:  "Kind",
-			reason: "value must be one of the defined enum values",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Kind
 
-	if utf8.RuneCountInString(m.GetPlatformProvider()) < 1 {
-		err := UpdateApplicationRequestValidationError{
-			field:  "PlatformProvider",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for PlatformProvider
 
 	// no validation rules for ConfigFilename
 
