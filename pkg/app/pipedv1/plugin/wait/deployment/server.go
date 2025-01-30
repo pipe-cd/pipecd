@@ -52,11 +52,13 @@ func NewDeploymentService(
 	config *config.PipedPlugin,
 	logger *zap.Logger,
 	logPersister logPersister,
+	metadataStore metadataStoreClient,
 ) *deploymentServiceServer {
 	return &deploymentServiceServer{
-		pluginConfig: config,
-		logger:       logger.Named("wait-stage-plugin"),
-		logPersister: logPersister,
+		pluginConfig:  config,
+		logger:        logger.Named("wait-stage-plugin"),
+		logPersister:  logPersister,
+		metadataStore: metadataStore,
 	}
 }
 
