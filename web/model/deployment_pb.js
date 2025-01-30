@@ -1537,7 +1537,9 @@ proto.model.PipelineStage.toObject = function(includeInstance, msg) {
     rollback: jspb.Message.getBooleanFieldWithDefault(msg, 12, false),
     completedAt: jspb.Message.getFieldWithDefault(msg, 13, 0),
     createdAt: jspb.Message.getFieldWithDefault(msg, 14, 0),
-    updatedAt: jspb.Message.getFieldWithDefault(msg, 15, 0)
+    updatedAt: jspb.Message.getFieldWithDefault(msg, 15, 0),
+    skippable: jspb.Message.getBooleanFieldWithDefault(msg, 16, false),
+    approvable: jspb.Message.getBooleanFieldWithDefault(msg, 17, false)
   };
 
   if (includeInstance) {
@@ -1635,6 +1637,14 @@ proto.model.PipelineStage.deserializeBinaryFromReader = function(msg, reader) {
     case 15:
       var value = /** @type {number} */ (reader.readInt64());
       msg.setUpdatedAt(value);
+      break;
+    case 16:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setSkippable(value);
+      break;
+    case 17:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setApprovable(value);
       break;
     default:
       reader.skipField();
@@ -1764,6 +1774,20 @@ proto.model.PipelineStage.serializeBinaryToWriter = function(message, writer) {
   if (f !== 0) {
     writer.writeInt64(
       15,
+      f
+    );
+  }
+  f = message.getSkippable();
+  if (f) {
+    writer.writeBool(
+      16,
+      f
+    );
+  }
+  f = message.getApprovable();
+  if (f) {
+    writer.writeBool(
+      17,
       f
     );
   }
@@ -2061,6 +2085,42 @@ proto.model.PipelineStage.prototype.getUpdatedAt = function() {
  */
 proto.model.PipelineStage.prototype.setUpdatedAt = function(value) {
   return jspb.Message.setProto3IntField(this, 15, value);
+};
+
+
+/**
+ * optional bool skippable = 16;
+ * @return {boolean}
+ */
+proto.model.PipelineStage.prototype.getSkippable = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 16, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.model.PipelineStage} returns this
+ */
+proto.model.PipelineStage.prototype.setSkippable = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 16, value);
+};
+
+
+/**
+ * optional bool approvable = 17;
+ * @return {boolean}
+ */
+proto.model.PipelineStage.prototype.getApprovable = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 17, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.model.PipelineStage} returns this
+ */
+proto.model.PipelineStage.prototype.setApprovable = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 17, value);
 };
 
 

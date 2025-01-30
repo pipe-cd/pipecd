@@ -222,6 +222,12 @@ export class PipelineStage extends jspb.Message {
   getUpdatedAt(): number;
   setUpdatedAt(value: number): PipelineStage;
 
+  getSkippable(): boolean;
+  setSkippable(value: boolean): PipelineStage;
+
+  getApprovable(): boolean;
+  setApprovable(value: boolean): PipelineStage;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): PipelineStage.AsObject;
   static toObject(includeInstance: boolean, msg: PipelineStage): PipelineStage.AsObject;
@@ -247,6 +253,8 @@ export namespace PipelineStage {
     completedAt: number,
     createdAt: number,
     updatedAt: number,
+    skippable: boolean,
+    approvable: boolean,
   }
 }
 

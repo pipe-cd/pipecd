@@ -706,6 +706,10 @@ func (m *PipelineStage) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	// no validation rules for Skippable
+
+	// no validation rules for Approvable
+
 	if len(errors) > 0 {
 		return PipelineStageMultiError(errors)
 	}

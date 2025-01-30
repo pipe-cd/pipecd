@@ -149,6 +149,11 @@ message PipelineStage {
     int64 completed_at = 13 [(validate.rules).int64.gte = 0];
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
     int64 updated_at = 15 [(validate.rules).int64.gt = 0];
+
+    // Whether this stage can be skipped by a user via UI.
+    bool skippable = 16;
+    // Whether this stage can be approved by a user via UI.
+    bool approvable = 17;
 }
 
 message Commit {
