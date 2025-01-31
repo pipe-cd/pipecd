@@ -222,11 +222,8 @@ export class PipelineStage extends jspb.Message {
   getUpdatedAt(): number;
   setUpdatedAt(value: number): PipelineStage;
 
-  getSkippable(): boolean;
-  setSkippable(value: boolean): PipelineStage;
-
-  getApprovable(): boolean;
-  setApprovable(value: boolean): PipelineStage;
+  getAvailableOperation(): ManualOperation;
+  setAvailableOperation(value: ManualOperation): PipelineStage;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): PipelineStage.AsObject;
@@ -253,8 +250,7 @@ export namespace PipelineStage {
     completedAt: number,
     createdAt: number,
     updatedAt: number,
-    skippable: boolean,
-    approvable: boolean,
+    availableOperation: ManualOperation,
   }
 }
 
@@ -366,4 +362,9 @@ export enum TriggerKind {
   ON_COMMAND = 1,
   ON_OUT_OF_SYNC = 2,
   ON_CHAIN = 3,
+}
+export enum ManualOperation { 
+  MANUAL_OPERATION_UNKNOWN = 0,
+  MANUAL_OPERATION_SKIP = 1,
+  MANUAL_OPERATION_APPROVE = 2,
 }

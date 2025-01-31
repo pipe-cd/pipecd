@@ -31,6 +31,7 @@ goog.exportSymbol('proto.model.DeploymentMetadata', null, global);
 goog.exportSymbol('proto.model.DeploymentMetadata.KeyValues', null, global);
 goog.exportSymbol('proto.model.DeploymentStatus', null, global);
 goog.exportSymbol('proto.model.DeploymentTrigger', null, global);
+goog.exportSymbol('proto.model.ManualOperation', null, global);
 goog.exportSymbol('proto.model.PipelineStage', null, global);
 goog.exportSymbol('proto.model.StageStatus', null, global);
 goog.exportSymbol('proto.model.TriggerKind', null, global);
@@ -1538,8 +1539,7 @@ proto.model.PipelineStage.toObject = function(includeInstance, msg) {
     completedAt: jspb.Message.getFieldWithDefault(msg, 13, 0),
     createdAt: jspb.Message.getFieldWithDefault(msg, 14, 0),
     updatedAt: jspb.Message.getFieldWithDefault(msg, 15, 0),
-    skippable: jspb.Message.getBooleanFieldWithDefault(msg, 16, false),
-    approvable: jspb.Message.getBooleanFieldWithDefault(msg, 17, false)
+    availableOperation: jspb.Message.getFieldWithDefault(msg, 16, 0)
   };
 
   if (includeInstance) {
@@ -1639,12 +1639,8 @@ proto.model.PipelineStage.deserializeBinaryFromReader = function(msg, reader) {
       msg.setUpdatedAt(value);
       break;
     case 16:
-      var value = /** @type {boolean} */ (reader.readBool());
-      msg.setSkippable(value);
-      break;
-    case 17:
-      var value = /** @type {boolean} */ (reader.readBool());
-      msg.setApprovable(value);
+      var value = /** @type {!proto.model.ManualOperation} */ (reader.readEnum());
+      msg.setAvailableOperation(value);
       break;
     default:
       reader.skipField();
@@ -1777,17 +1773,10 @@ proto.model.PipelineStage.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getSkippable();
-  if (f) {
-    writer.writeBool(
+  f = message.getAvailableOperation();
+  if (f !== 0.0) {
+    writer.writeEnum(
       16,
-      f
-    );
-  }
-  f = message.getApprovable();
-  if (f) {
-    writer.writeBool(
-      17,
       f
     );
   }
@@ -2089,38 +2078,20 @@ proto.model.PipelineStage.prototype.setUpdatedAt = function(value) {
 
 
 /**
- * optional bool skippable = 16;
- * @return {boolean}
+ * optional ManualOperation available_operation = 16;
+ * @return {!proto.model.ManualOperation}
  */
-proto.model.PipelineStage.prototype.getSkippable = function() {
-  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 16, false));
+proto.model.PipelineStage.prototype.getAvailableOperation = function() {
+  return /** @type {!proto.model.ManualOperation} */ (jspb.Message.getFieldWithDefault(this, 16, 0));
 };
 
 
 /**
- * @param {boolean} value
+ * @param {!proto.model.ManualOperation} value
  * @return {!proto.model.PipelineStage} returns this
  */
-proto.model.PipelineStage.prototype.setSkippable = function(value) {
-  return jspb.Message.setProto3BooleanField(this, 16, value);
-};
-
-
-/**
- * optional bool approvable = 17;
- * @return {boolean}
- */
-proto.model.PipelineStage.prototype.getApprovable = function() {
-  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 17, false));
-};
-
-
-/**
- * @param {boolean} value
- * @return {!proto.model.PipelineStage} returns this
- */
-proto.model.PipelineStage.prototype.setApprovable = function(value) {
-  return jspb.Message.setProto3BooleanField(this, 17, value);
+proto.model.PipelineStage.prototype.setAvailableOperation = function(value) {
+  return jspb.Message.setProto3EnumField(this, 16, value);
 };
 
 
@@ -2787,6 +2758,15 @@ proto.model.TriggerKind = {
   ON_COMMAND: 1,
   ON_OUT_OF_SYNC: 2,
   ON_CHAIN: 3
+};
+
+/**
+ * @enum {number}
+ */
+proto.model.ManualOperation = {
+  MANUAL_OPERATION_UNKNOWN: 0,
+  MANUAL_OPERATION_SKIP: 1,
+  MANUAL_OPERATION_APPROVE: 2
 };
 
 goog.object.extend(exports, proto.model);

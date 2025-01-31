@@ -706,9 +706,16 @@ func (m *PipelineStage) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for Skippable
-
-	// no validation rules for Approvable
+	if _, ok := ManualOperation_name[int32(m.GetAvailableOperation())]; !ok {
+		err := PipelineStageValidationError{
+			field:  "AvailableOperation",
+			reason: "value must be one of the defined enum values",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return PipelineStageMultiError(errors)
