@@ -108,6 +108,14 @@ func (e *NotificationEventDeploymentTriggerFailed) GetLabels() map[string]string
 	return e.Application.Labels
 }
 
+func (e *NotificationEventDeploymentStarted) GetAppName() string {
+	return e.Deployment.ApplicationName
+}
+
+func (e *NotificationEventDeploymentStarted) GetLabels() map[string]string {
+	return e.Deployment.Labels
+}
+
 func (e *NotificationEventApplicationSynced) GetAppName() string {
 	return e.Application.Name
 }
