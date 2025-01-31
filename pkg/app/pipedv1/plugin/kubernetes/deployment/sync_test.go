@@ -16,6 +16,7 @@ package deployment
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -26,6 +27,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/yaml"
 
 	kubeConfigPkg "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
@@ -601,4 +603,175 @@ func TestDeploymentService_executeK8sSyncStage_withPrune_clusterScoped(t *testin
 		require.Error(t, err)
 		require.Truef(t, apierrors.IsNotFound(err), "expected error to be NotFound, but got %v", err)
 	})
+}
+
+type cluster struct {
+	name         string
+	cli          dynamic.Interface
+	deployTarget config.PipedDeployTarget
+}
+
+func setupCluster(t *testing.T, name string) *cluster {
+	t.Helper()
+
+	clusterCfg := setupEnvTest(t)
+	pluginCfg := setupTestPluginConfig(t, clusterCfg)
+	deployTarget := pluginCfg.DeployTargets[0]
+	deployTarget.Name = name
+
+	cli, err := dynamic.NewForConfig(clusterCfg)
+	require.NoError(t, err)
+
+	return &cluster{
+		name:         name,
+		cli:          cli,
+		deployTarget: deployTarget,
+	}
+}
+
+func TestDeploymentService_executeK8sSyncStage_multiCluster(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	// read the application config from the example file
+	cfg, err := os.ReadFile(filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
+	require.NoError(t, err)
+
+	// prepare the request
+	req := &deployment.ExecuteStageRequest{
+		Input: &deployment.ExecutePluginInput{
+			Deployment: &model.Deployment{
+				PipedId:       "piped-id",
+				ApplicationId: "app-id",
+				DeployTargets: []string{"cluster1", "cluster2"},
+			},
+			Stage: &model.PipelineStage{
+				Id:   "stage-id",
+				Name: "K8S_SYNC",
+			},
+			StageConfig:             []byte(``),
+			RunningDeploymentSource: nil,
+			TargetDeploymentSource: &common.DeploymentSource{
+				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
+				CommitHash:                "0123456789",
+				ApplicationConfig:         cfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+		},
+	}
+
+	// initialize tool registry
+	testRegistry, err := toolregistrytest.NewToolRegistry(t)
+	require.NoError(t, err)
+
+	// prepare the first cluster
+	cluster1 := setupCluster(t, "cluster1")
+	cluster2 := setupCluster(t, "cluster2")
+
+	pluginCfg := &config.PipedPlugin{
+		DeployTargets: []config.PipedDeployTarget{
+			cluster1.deployTarget,
+			cluster2.deployTarget,
+		},
+	}
+
+	svc := NewDeploymentService(pluginCfg, zaptest.NewLogger(t), testRegistry, logpersistertest.NewTestLogPersister(t))
+	resp, err := svc.ExecuteStage(ctx, req)
+
+	require.NoError(t, err)
+	assert.Equal(t, model.StageStatus_STAGE_SUCCESS.String(), resp.GetStatus().String())
+
+	for _, cluster := range []*cluster{cluster1, cluster2} {
+		deployment, err := cluster.cli.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(context.Background(), "simple", metav1.GetOptions{})
+		require.NoError(t, err)
+		assert.Equal(t, "simple", deployment.GetName())
+		assert.Equal(t, "simple", deployment.GetLabels()["app"])
+
+		assert.Equal(t, "piped", deployment.GetLabels()["pipecd.dev/managed-by"])
+		assert.Equal(t, "piped-id", deployment.GetLabels()["pipecd.dev/piped"])
+		assert.Equal(t, "app-id", deployment.GetLabels()["pipecd.dev/application"])
+		assert.Equal(t, "0123456789", deployment.GetLabels()["pipecd.dev/commit-hash"])
+
+		assert.Equal(t, "piped", deployment.GetAnnotations()["pipecd.dev/managed-by"])
+		assert.Equal(t, "piped-id", deployment.GetAnnotations()["pipecd.dev/piped"])
+		assert.Equal(t, "app-id", deployment.GetAnnotations()["pipecd.dev/application"])
+		assert.Equal(t, "apps/v1", deployment.GetAnnotations()["pipecd.dev/original-api-version"])
+		assert.Equal(t, "apps:Deployment::simple", deployment.GetAnnotations()["pipecd.dev/resource-key"]) // This assertion differs from the non-plugin-arched piped's Kubernetes platform provider, but we decided to change this behavior.
+		assert.Equal(t, "0123456789", deployment.GetAnnotations()["pipecd.dev/commit-hash"])
+	}
+}
+
+func TestDeploymentService_executeK8sSyncStage_multiCluster_templateNone(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	target := filepath.Join("./", "testdata", "multicluster_template_none", "target")
+	// read the application config from the example file
+	cfg, err := os.ReadFile(filepath.Join(target, "app.pipecd.yaml"))
+	require.NoError(t, err)
+
+	// prepare the request
+	req := &deployment.ExecuteStageRequest{
+		Input: &deployment.ExecutePluginInput{
+			Deployment: &model.Deployment{
+				PipedId:       "piped-id",
+				ApplicationId: "app-id",
+				DeployTargets: []string{"cluster1", "cluster2"},
+			},
+			Stage: &model.PipelineStage{
+				Id:   "stage-id",
+				Name: "K8S_SYNC",
+			},
+			StageConfig:             []byte(``),
+			RunningDeploymentSource: nil,
+			TargetDeploymentSource: &common.DeploymentSource{
+				ApplicationDirectory:      target,
+				CommitHash:                "0123456789",
+				ApplicationConfig:         cfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+		},
+	}
+
+	// initialize tool registry
+	testRegistry, err := toolregistrytest.NewToolRegistry(t)
+	require.NoError(t, err)
+
+	// prepare the first cluster
+	cluster1 := setupCluster(t, "cluster1")
+	cluster2 := setupCluster(t, "cluster2")
+
+	pluginCfg := &config.PipedPlugin{
+		DeployTargets: []config.PipedDeployTarget{
+			cluster1.deployTarget,
+			cluster2.deployTarget,
+		},
+	}
+
+	svc := NewDeploymentService(pluginCfg, zaptest.NewLogger(t), testRegistry, logpersistertest.NewTestLogPersister(t))
+	resp, err := svc.ExecuteStage(ctx, req)
+
+	require.NoError(t, err)
+	assert.Equal(t, model.StageStatus_STAGE_SUCCESS.String(), resp.GetStatus().String())
+
+	for _, cluster := range []*cluster{cluster1, cluster2} {
+		deployment, err := cluster.cli.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(context.Background(), fmt.Sprintf("simple-%s", cluster.name), metav1.GetOptions{})
+		require.NoError(t, err)
+		assert.Equal(t, fmt.Sprintf("simple-%s", cluster.name), deployment.GetName())
+		assert.Equal(t, fmt.Sprintf("simple-%s", cluster.name), deployment.GetLabels()["app"])
+
+		assert.Equal(t, "piped", deployment.GetLabels()["pipecd.dev/managed-by"])
+		assert.Equal(t, "piped-id", deployment.GetLabels()["pipecd.dev/piped"])
+		assert.Equal(t, "app-id", deployment.GetLabels()["pipecd.dev/application"])
+		assert.Equal(t, "0123456789", deployment.GetLabels()["pipecd.dev/commit-hash"])
+
+		assert.Equal(t, "piped", deployment.GetAnnotations()["pipecd.dev/managed-by"])
+		assert.Equal(t, "piped-id", deployment.GetAnnotations()["pipecd.dev/piped"])
+		assert.Equal(t, "app-id", deployment.GetAnnotations()["pipecd.dev/application"])
+		assert.Equal(t, "apps/v1", deployment.GetAnnotations()["pipecd.dev/original-api-version"])
+		assert.Equal(t, "apps:Deployment::"+fmt.Sprintf("simple-%s", cluster.name), deployment.GetAnnotations()["pipecd.dev/resource-key"]) // This assertion differs from the non-plugin-arched piped's Kubernetes platform provider, but we decided to change this behavior.
+		assert.Equal(t, "0123456789", deployment.GetAnnotations()["pipecd.dev/commit-hash"])
+	}
 }

@@ -111,13 +111,14 @@ func (a *DeploymentService) DetermineStrategy(ctx context.Context, request *depl
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	runnings, err := a.loadManifests(ctx, request.GetInput().GetDeployment(), cfg.Spec, request.GetInput().GetRunningDeploymentSource())
+	// TODO: consider multiple multiTargets
+	runnings, err := a.loadManifests(ctx, request.GetInput().GetDeployment(), cfg.Spec, request.GetInput().GetRunningDeploymentSource(), kubeconfig.KubernetesDeployTargetConfig{})
 
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	targets, err := a.loadManifests(ctx, request.GetInput().GetDeployment(), cfg.Spec, request.GetInput().GetTargetDeploymentSource())
+	targets, err := a.loadManifests(ctx, request.GetInput().GetDeployment(), cfg.Spec, request.GetInput().GetTargetDeploymentSource(), kubeconfig.KubernetesDeployTargetConfig{})
 
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -139,7 +140,8 @@ func (a *DeploymentService) DetermineVersions(ctx context.Context, request *depl
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	manifests, err := a.loadManifests(ctx, request.GetInput().GetDeployment(), cfg.Spec, request.GetInput().GetTargetDeploymentSource())
+	// TODO: consider multiple multiTargets
+	manifests, err := a.loadManifests(ctx, request.GetInput().GetDeployment(), cfg.Spec, request.GetInput().GetTargetDeploymentSource(), kubeconfig.KubernetesDeployTargetConfig{})
 
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -185,7 +187,21 @@ func (a *DeploymentService) FetchDefinedStages(context.Context, *deployment.Fetc
 	}, nil
 }
 
-func (a *DeploymentService) loadManifests(ctx context.Context, deploy *model.Deployment, spec *kubeconfig.KubernetesApplicationSpec, deploymentSource *common.DeploymentSource) ([]provider.Manifest, error) {
+func (a *DeploymentService) loadManifests(ctx context.Context, deploy *model.Deployment, spec *kubeconfig.KubernetesApplicationSpec, deploymentSource *common.DeploymentSource, deployTargetConfig kubeconfig.KubernetesDeployTargetConfig) ([]provider.Manifest, error) {
+	multiTarget := kubeconfig.KubernetesMultiTarget{}
+	for _, target := range spec.Input.MultiTargets {
+		if target.Target.Name == deployTargetConfig.Name {
+			multiTarget = target
+			break
+		}
+	}
+
+	// override values if multiTarget has value.
+	manifestPathes := spec.Input.Manifests
+	if len(multiTarget.Manifests) > 0 {
+		manifestPathes = multiTarget.Manifests
+	}
+
 	manifests, err := a.loader.LoadManifests(ctx, provider.LoaderInput{
 		PipedID:          deploy.GetPipedId(),
 		AppID:            deploy.GetApplicationId(),
@@ -193,10 +209,9 @@ func (a *DeploymentService) loadManifests(ctx context.Context, deploy *model.Dep
 		AppName:          deploy.GetApplicationName(),
 		AppDir:           deploymentSource.GetApplicationDirectory(),
 		ConfigFilename:   deploymentSource.GetApplicationConfigFilename(),
-		Manifests:        spec.Input.Manifests,
+		Manifests:        manifestPathes,
 		Namespace:        spec.Input.Namespace,
 		TemplatingMethod: provider.TemplatingMethodNone, // TODO: Implement detection of templating method or add it to the config spec.
-
 		// TODO: Define other fields for LoaderInput
 	})
 

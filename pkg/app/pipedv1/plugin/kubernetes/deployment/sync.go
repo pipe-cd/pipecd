@@ -18,7 +18,10 @@ import (
 	"cmp"
 	"context"
 	"errors"
+	"fmt"
 	"time"
+
+	"golang.org/x/sync/errgroup"
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
@@ -29,6 +32,35 @@ import (
 )
 
 func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersister.StageLogPersister, input *deployment.ExecutePluginInput) model.StageStatus {
+	eg, ctx := errgroup.WithContext(ctx)
+
+	for _, target := range input.GetDeployment().GetDeployTargets() {
+		dt, err := kubeconfig.FindDeployTarget(a.pluginConfig, target)
+		if err != nil {
+			lp.Infof("Failed while unmarshalling deploy target config (%v)", err)
+			continue
+		}
+
+		// Start syncing the deployment to the target.
+		eg.Go(func() error {
+			lp.Infof("Start syncing the deployment to the target %s", target)
+			status := a.sync(ctx, lp, input, dt)
+			if status != model.StageStatus_STAGE_SUCCESS {
+				return fmt.Errorf("failed to sync the deployment to the target %s", target)
+			}
+			return nil
+		})
+	}
+
+	if err := eg.Wait(); err != nil {
+		lp.Errorf("Failed while syncing the deployment (%v)", err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	return model.StageStatus_STAGE_SUCCESS
+}
+
+func (a *DeploymentService) sync(ctx context.Context, lp logpersister.StageLogPersister, input *deployment.ExecutePluginInput, deployTargetConfig kubeconfig.KubernetesDeployTargetConfig) model.StageStatus {
 	lp.Infof("Start syncing the deployment")
 
 	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](input.GetTargetDeploymentSource().GetApplicationConfig())
@@ -38,7 +70,7 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersi
 	}
 
 	lp.Infof("Loading manifests at commit %s for handling", input.GetDeployment().GetTrigger().GetCommit().GetHash())
-	manifests, err := a.loadManifests(ctx, input.GetDeployment(), cfg.Spec, input.GetTargetDeploymentSource())
+	manifests, err := a.loadManifests(ctx, input.GetDeployment(), cfg.Spec, input.GetTargetDeploymentSource(), deployTargetConfig)
 	if err != nil {
 		lp.Errorf("Failed while loading manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE

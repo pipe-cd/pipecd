@@ -63,6 +63,7 @@ func TestFindDeployTarget(t *testing.T) {
 			},
 			targetName: "target",
 			expected: KubernetesDeployTargetConfig{
+				Name:           "target",
 				MasterURL:      "https://example.com",
 				KubeConfigPath: "/path/to/kubeconfig",
 				KubectlVersion: "v1.20.0",

@@ -75,6 +75,19 @@ type KubernetesDeploymentInput struct {
 	AutoCreateNamespace bool `json:"autoCreateNamespace,omitempty"`
 
 	// TODO: Define fields for KubernetesDeploymentInput.
+	MultiTargets []KubernetesMultiTarget `json:"multiTargets,omitempty"`
+}
+
+type KubernetesMultiTarget struct {
+	Target         KubernetesMultiTargetDeployTarget `json:"target"`
+	Manifests      []string                          `json:"manifests,omitempty"`
+	KubectlVersion string                            `json:"kubectlVersion,omitempty"`
+	KustomizeDir   string                            `json:"kustomizeDir,omitempty"`
+}
+
+type KubernetesMultiTargetDeployTarget struct {
+	Name   string            `json:"name"`
+	Labels map[string]string `json:"labels"`
 }
 
 type KubernetesVariantLabel struct {
@@ -93,6 +106,7 @@ type KubernetesVariantLabel struct {
 }
 
 type KubernetesDeployTargetConfig struct {
+	Name string `json:"-"`
 	// The master URL of the kubernetes cluster.
 	// Empty means in-cluster.
 	MasterURL string `json:"masterURL,omitempty"`
@@ -132,5 +146,6 @@ func FindDeployTarget(cfg *config.PipedPlugin, name string) (KubernetesDeployTar
 		return KubernetesDeployTargetConfig{}, fmt.Errorf("failed to set default values for deploy target configuration: %w", err)
 	}
 
+	targetCfg.Name = deployTarget.Name
 	return targetCfg, nil
 }
