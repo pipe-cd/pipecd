@@ -149,6 +149,9 @@ message PipelineStage {
     int64 completed_at = 13 [(validate.rules).int64.gte = 0];
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
     int64 updated_at = 15 [(validate.rules).int64.gt = 0];
+
+    // Available manual operation via Web UI for this stage.
+    ManualOperation available_operation = 16 [(validate.rules).enum.defined_only = true];
 }
 
 message Commit {
@@ -171,4 +174,14 @@ message DeploymentMetadata {
     message KeyValues{
         map<string, string> keyValues = 1;
     }
+}
+
+// ManualOperation represents the manual operation via Web UI for a stage.
+enum ManualOperation{
+    // No operation is available.
+    MANUAL_OPERATION_UNKNOWN = 0;
+    // Skipping a stage manually.
+    MANUAL_OPERATION_SKIP = 1;
+    // Approving a stage manually.
+    MANUAL_OPERATION_APPROVE = 2;
 }
