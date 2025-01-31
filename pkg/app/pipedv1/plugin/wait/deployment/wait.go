@@ -89,7 +89,7 @@ func wait(ctx context.Context, duration time.Duration, initialStart time.Time, s
 	}
 }
 
-func (s *deploymentServiceServer) retrieveStartTime(ctx context.Context, deploymentID, stageID string) (t time.Time) {
+func (s *deploymentServiceServer) retrieveStartTime(ctx context.Context, deploymentID, stageID string) time.Time {
 	sec, err := s.metadataStore.GetStageMetadata(ctx, &pipedservice.GetStageMetadataRequest{
 		DeploymentId: deploymentID,
 		StageId:      stageID,
@@ -97,12 +97,12 @@ func (s *deploymentServiceServer) retrieveStartTime(ctx context.Context, deploym
 	})
 	if err != nil {
 		s.logger.Error(fmt.Sprintf("failed to get stage metadata %s", startTimeKey), zap.Error(err))
-		return
+		return time.Time{}
 	}
 	ut, err := strconv.ParseInt(sec.Value, 10, 64)
 	if err != nil {
 		s.logger.Error(fmt.Sprintf("failed to parse stage metadata %s", startTimeKey), zap.Error(err))
-		return
+		return time.Time{}
 	}
 	return time.Unix(ut, 0)
 }
