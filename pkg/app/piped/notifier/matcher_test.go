@@ -148,6 +148,14 @@ func TestMatch(t *testing.T) {
 						},
 					},
 				}: true,
+				{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_STARTED,
+					Metadata: &model.NotificationEventDeploymentStarted{
+						Deployment: &model.Deployment{
+							ApplicationName: "canary",
+						},
+					},
+				}: true,
 			},
 		},
 		{
@@ -254,6 +262,28 @@ func TestMatch(t *testing.T) {
 					Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED,
 					Metadata: &model.NotificationEventDeploymentTriggerFailed{
 						Application: &model.Application{
+							Labels: map[string]string{
+								"env":  "dev",
+								"team": "pipecd",
+							},
+						},
+					},
+				}: true,
+				{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_STARTED,
+					Metadata: &model.NotificationEventDeploymentStarted{
+						Deployment: &model.Deployment{
+							Labels: map[string]string{
+								"env":  "stg",
+								"team": "pipecd",
+							},
+						},
+					},
+				}: false,
+				{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_STARTED,
+					Metadata: &model.NotificationEventDeploymentStarted{
+						Deployment: &model.Deployment{
 							Labels: map[string]string{
 								"env":  "dev",
 								"team": "pipecd",
