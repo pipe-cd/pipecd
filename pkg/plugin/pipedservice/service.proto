@@ -19,6 +19,7 @@ option go_package = "github.com/pipe-cd/pipecd/pkg/plugin/pipedservice";
 
 import "validate/validate.proto";
 import "pkg/model/logblock.proto";
+import "pkg/model/command.proto";
 
 // PluginService provides the ability to interact with plugins.
 service PluginService {
@@ -45,6 +46,10 @@ service PluginService {
     // GetDeploymentSharedMetadata gets one shared metadata value of the given deployment.
     // The shared metadata is read-only in plugins for safety since it is shared among piped and plugins.
     rpc GetDeploymentSharedMetadata(GetDeploymentSharedMetadataRequest) returns (GetDeploymentSharedMetadataResponse) {}
+
+    // ListStageCommands lists unhandled commands of the given stage and type.
+    // Currently, supported types are only APPROVE_STAGE and SKIP_STAGE.
+    rpc ListStageCommands(ListStageCommandsRequest) returns (ListStageCommandsResponse) {}
 }
 
 message DecryptSecretRequest {
@@ -178,4 +183,14 @@ message GetDeploymentSharedMetadataRequest {
 message GetDeploymentSharedMetadataResponse {
     string value = 1;
     bool found = 2;
+}
+
+message ListStageCommandsRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string stage_id = 2 [(validate.rules).string.min_len = 1];
+    model.Command.Type type = 3 [(validate.rules).enum.defined_only = true];
+}
+
+message ListStageCommandsResponse {
+    repeated model.Command commands = 1;
 }

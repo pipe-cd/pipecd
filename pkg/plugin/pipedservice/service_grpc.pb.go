@@ -44,6 +44,9 @@ type PluginServiceClient interface {
 	// GetDeploymentSharedMetadata gets one shared metadata value of the given deployment.
 	// The shared metadata is read-only in plugins for safety since it is shared among piped and plugins.
 	GetDeploymentSharedMetadata(ctx context.Context, in *GetDeploymentSharedMetadataRequest, opts ...grpc.CallOption) (*GetDeploymentSharedMetadataResponse, error)
+	// ListStageCommands lists unhandled commands of the given stage and type.
+	// Currently, supported types are only APPROVE_STAGE and SKIP_STAGE.
+	ListStageCommands(ctx context.Context, in *ListStageCommandsRequest, opts ...grpc.CallOption) (*ListStageCommandsResponse, error)
 }
 
 type pluginServiceClient struct {
@@ -144,6 +147,15 @@ func (c *pluginServiceClient) GetDeploymentSharedMetadata(ctx context.Context, i
 	return out, nil
 }
 
+func (c *pluginServiceClient) ListStageCommands(ctx context.Context, in *ListStageCommandsRequest, opts ...grpc.CallOption) (*ListStageCommandsResponse, error) {
+	out := new(ListStageCommandsResponse)
+	err := c.cc.Invoke(ctx, "/grpc.piped.service.PluginService/ListStageCommands", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PluginServiceServer is the server API for PluginService service.
 // All implementations must embed UnimplementedPluginServiceServer
 // for forward compatibility
@@ -170,6 +182,9 @@ type PluginServiceServer interface {
 	// GetDeploymentSharedMetadata gets one shared metadata value of the given deployment.
 	// The shared metadata is read-only in plugins for safety since it is shared among piped and plugins.
 	GetDeploymentSharedMetadata(context.Context, *GetDeploymentSharedMetadataRequest) (*GetDeploymentSharedMetadataResponse, error)
+	// ListStageCommands lists unhandled commands of the given stage and type.
+	// Currently, supported types are only APPROVE_STAGE and SKIP_STAGE.
+	ListStageCommands(context.Context, *ListStageCommandsRequest) (*ListStageCommandsResponse, error)
 	mustEmbedUnimplementedPluginServiceServer()
 }
 
@@ -206,6 +221,9 @@ func (UnimplementedPluginServiceServer) PutDeploymentPluginMetadataMulti(context
 }
 func (UnimplementedPluginServiceServer) GetDeploymentSharedMetadata(context.Context, *GetDeploymentSharedMetadataRequest) (*GetDeploymentSharedMetadataResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDeploymentSharedMetadata not implemented")
+}
+func (UnimplementedPluginServiceServer) ListStageCommands(context.Context, *ListStageCommandsRequest) (*ListStageCommandsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListStageCommands not implemented")
 }
 func (UnimplementedPluginServiceServer) mustEmbedUnimplementedPluginServiceServer() {}
 
@@ -400,6 +418,24 @@ func _PluginService_GetDeploymentSharedMetadata_Handler(srv interface{}, ctx con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PluginService_ListStageCommands_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListStageCommandsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServiceServer).ListStageCommands(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.piped.service.PluginService/ListStageCommands",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServiceServer).ListStageCommands(ctx, req.(*ListStageCommandsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PluginService_ServiceDesc is the grpc.ServiceDesc for PluginService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -446,6 +482,10 @@ var PluginService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDeploymentSharedMetadata",
 			Handler:    _PluginService_GetDeploymentSharedMetadata_Handler,
+		},
+		{
+			MethodName: "ListStageCommands",
+			Handler:    _PluginService_ListStageCommands_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
