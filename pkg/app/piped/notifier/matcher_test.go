@@ -152,6 +152,14 @@ func TestMatch(t *testing.T) {
 					Type: model.NotificationEventType_EVENT_DEPLOYMENT_STARTED,
 					Metadata: &model.NotificationEventDeploymentStarted{
 						Deployment: &model.Deployment{
+							ApplicationName: "bluegreen",
+						},
+					},
+				}: false,
+				{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_STARTED,
+					Metadata: &model.NotificationEventDeploymentStarted{
+						Deployment: &model.Deployment{
 							ApplicationName: "canary",
 						},
 					},
