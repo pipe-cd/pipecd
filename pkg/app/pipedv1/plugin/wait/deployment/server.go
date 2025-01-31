@@ -24,6 +24,7 @@ import (
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
+	"github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/plugin/signalhandler"
 )
 
@@ -32,12 +33,18 @@ type deploymentServiceServer struct {
 
 	pluginConfig *config.PipedPlugin
 
-	logger       *zap.Logger
-	logPersister logPersister
+	logger        *zap.Logger
+	logPersister  logPersister
+	metadataStore metadataStoreClient
 }
 
 type logPersister interface {
 	StageLogPersister(deploymentID, stageID string) logpersister.StageLogPersister
+}
+
+type metadataStoreClient interface {
+	GetStageMetadata(ctx context.Context, in *pipedservice.GetStageMetadataRequest, opts ...grpc.CallOption) (*pipedservice.GetStageMetadataResponse, error)
+	PutStageMetadata(ctx context.Context, in *pipedservice.PutStageMetadataRequest, opts ...grpc.CallOption) (*pipedservice.PutStageMetadataResponse, error)
 }
 
 // NewDeploymentService creates a new deploymentServiceServer of Wait Stage plugin.
@@ -45,11 +52,13 @@ func NewDeploymentService(
 	config *config.PipedPlugin,
 	logger *zap.Logger,
 	logPersister logPersister,
+	metadataStore metadataStoreClient,
 ) *deploymentServiceServer {
 	return &deploymentServiceServer{
-		pluginConfig: config,
-		logger:       logger.Named("wait-stage-plugin"),
-		logPersister: logPersister,
+		pluginConfig:  config,
+		logger:        logger.Named("wait-stage-plugin"),
+		logPersister:  logPersister,
+		metadataStore: metadataStore,
 	}
 }
 
