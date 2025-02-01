@@ -15,7 +15,7 @@ on:
 
 env:
   GO_VERSION: 1.22.4
-  NODE_VERSION: 16.13.0
+  NODE_VERSION: 18.12.0
 
 jobs:
   tool:
