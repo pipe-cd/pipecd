@@ -17,6 +17,8 @@ import (
 	"unicode/utf8"
 
 	"google.golang.org/protobuf/types/known/anypb"
+
+	model "github.com/pipe-cd/pipecd/pkg/model"
 )
 
 // ensure the imports are used
@@ -33,6 +35,8 @@ var (
 	_ = (*mail.Address)(nil)
 	_ = anypb.Any{}
 	_ = sort.Sort
+
+	_ = model.Command_Type(0)
 )
 
 // Validate checks the field values on DecryptSecretRequest with the rules
@@ -2689,3 +2693,274 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = GetDeploymentSharedMetadataResponseValidationError{}
+
+// Validate checks the field values on ListStageCommandsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListStageCommandsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListStageCommandsRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListStageCommandsRequestMultiError, or nil if none found.
+func (m *ListStageCommandsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListStageCommandsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetDeploymentId()) < 1 {
+		err := ListStageCommandsRequestValidationError{
+			field:  "DeploymentId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetStageId()) < 1 {
+		err := ListStageCommandsRequestValidationError{
+			field:  "StageId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if _, ok := model.Command_Type_name[int32(m.GetType())]; !ok {
+		err := ListStageCommandsRequestValidationError{
+			field:  "Type",
+			reason: "value must be one of the defined enum values",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return ListStageCommandsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListStageCommandsRequestMultiError is an error wrapping multiple validation
+// errors returned by ListStageCommandsRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ListStageCommandsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListStageCommandsRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListStageCommandsRequestMultiError) AllErrors() []error { return m }
+
+// ListStageCommandsRequestValidationError is the validation error returned by
+// ListStageCommandsRequest.Validate if the designated constraints aren't met.
+type ListStageCommandsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListStageCommandsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListStageCommandsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListStageCommandsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListStageCommandsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListStageCommandsRequestValidationError) ErrorName() string {
+	return "ListStageCommandsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListStageCommandsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListStageCommandsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListStageCommandsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListStageCommandsRequestValidationError{}
+
+// Validate checks the field values on ListStageCommandsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListStageCommandsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListStageCommandsResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListStageCommandsResponseMultiError, or nil if none found.
+func (m *ListStageCommandsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListStageCommandsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetCommands() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListStageCommandsResponseValidationError{
+						field:  fmt.Sprintf("Commands[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListStageCommandsResponseValidationError{
+						field:  fmt.Sprintf("Commands[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListStageCommandsResponseValidationError{
+					field:  fmt.Sprintf("Commands[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return ListStageCommandsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListStageCommandsResponseMultiError is an error wrapping multiple validation
+// errors returned by ListStageCommandsResponse.ValidateAll() if the
+// designated constraints aren't met.
+type ListStageCommandsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListStageCommandsResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListStageCommandsResponseMultiError) AllErrors() []error { return m }
+
+// ListStageCommandsResponseValidationError is the validation error returned by
+// ListStageCommandsResponse.Validate if the designated constraints aren't met.
+type ListStageCommandsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListStageCommandsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListStageCommandsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListStageCommandsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListStageCommandsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListStageCommandsResponseValidationError) ErrorName() string {
+	return "ListStageCommandsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListStageCommandsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListStageCommandsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListStageCommandsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListStageCommandsResponseValidationError{}

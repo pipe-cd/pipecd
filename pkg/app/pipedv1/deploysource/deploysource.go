@@ -26,7 +26,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/sourceprocesser"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
-	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
 )
 
 type DeploySource struct {
@@ -37,8 +37,8 @@ type DeploySource struct {
 	ApplicationConfigFilename string
 }
 
-func (d *DeploySource) ToPluginDeploySource() *deployment.DeploymentSource {
-	return &deployment.DeploymentSource{
+func (d *DeploySource) ToPluginDeploySource() *common.DeploymentSource {
+	return &common.DeploymentSource{
 		ApplicationDirectory:      d.AppDir,
 		CommitHash:                d.Revision,
 		ApplicationConfig:         d.ApplicationConfig,

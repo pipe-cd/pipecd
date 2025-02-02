@@ -20,6 +20,7 @@ option go_package = "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deploymen
 import "validate/validate.proto";
 import "pkg/model/common.proto";
 import "pkg/model/deployment.proto";
+import "pkg/plugin/api/v1alpha1/common/common.proto";
 
 // PlannerService defines the public APIs for remote planners.
 service DeploymentService {
@@ -119,9 +120,9 @@ message PlanPluginInput {
     // The deployment to build a plan for.
     model.Deployment deployment = 1 [(validate.rules).message.required = true];
     // The running deployment source.
-    DeploymentSource running_deployment_source = 2;
+    grpc.plugin.common.v1alpha1.DeploymentSource running_deployment_source = 2;
     // The target deployment source.
-    DeploymentSource target_deployment_source = 3;
+    grpc.plugin.common.v1alpha1.DeploymentSource target_deployment_source = 3;
 }
 
 message ExecutePluginInput {
@@ -134,19 +135,7 @@ message ExecutePluginInput {
     bytes stage_config = 3;
 
     // The running deployment source.
-    DeploymentSource running_deployment_source = 4;
+    grpc.plugin.common.v1alpha1.DeploymentSource running_deployment_source = 4;
     // The target deployment source.
-    DeploymentSource target_deployment_source = 5;
-}
-
-message DeploymentSource {
-  // The application directory where the source code is located.
-  string application_directory = 1;
-  // The git commit hash of the source code.
-  string commit_hash = 2;
-  // The configuration of the application which is specific for plugins.
-  bytes application_config = 3;
-  // The filename of the application configuration file.
-  // The plugins can use this to avoid mistakenly reading this file as a manifest.
-  string application_config_filename = 4;
+    grpc.plugin.common.v1alpha1.DeploymentSource target_deployment_source = 5;
 }

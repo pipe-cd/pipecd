@@ -1,5 +1,6 @@
-import { PipelineStage, StageStatus } from "~/modules/deployments";
 import * as jspb from "google-protobuf";
+import { PipelineStage, StageStatus } from "~/modules/deployments";
+import { ManualOperation } from "~~/model/deployment_pb";
 import { createRandTimes, randomUUID, randomWords } from "./utils";
 
 const [createdAt, updatedAt, completedAt] = createRandTimes(3);
@@ -20,6 +21,7 @@ export const dummyPipelineStage: PipelineStage.AsObject = {
   completedAt: completedAt.unix(),
   createdAt: createdAt.unix(),
   updatedAt: updatedAt.unix(),
+  availableOperation: ManualOperation.MANUAL_OPERATION_UNKNOWN,
 };
 
 export function createPipelineStage(

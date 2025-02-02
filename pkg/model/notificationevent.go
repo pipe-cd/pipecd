@@ -108,6 +108,14 @@ func (e *NotificationEventDeploymentTriggerFailed) GetLabels() map[string]string
 	return e.Application.Labels
 }
 
+func (e *NotificationEventDeploymentStarted) GetAppName() string {
+	return e.Deployment.ApplicationName
+}
+
+func (e *NotificationEventDeploymentStarted) GetLabels() map[string]string {
+	return e.Deployment.Labels
+}
+
 func (e *NotificationEventApplicationSynced) GetAppName() string {
 	return e.Application.Name
 }
@@ -122,4 +130,44 @@ func (e *NotificationEventApplicationOutOfSync) GetAppName() string {
 
 func (e *NotificationEventApplicationOutOfSync) GetLabels() map[string]string {
 	return e.Application.Labels
+}
+
+func (e *NotificationEventStageStarted) GetAppName() string {
+	return e.GetDeployment().GetApplicationName()
+}
+
+func (e *NotificationEventStageStarted) GetLabels() map[string]string {
+	return e.GetDeployment().GetLabels()
+}
+
+func (e *NotificationEventStageSkipped) GetAppName() string {
+	return e.GetDeployment().GetApplicationName()
+}
+
+func (e *NotificationEventStageSkipped) GetLabels() map[string]string {
+	return e.GetDeployment().GetLabels()
+}
+
+func (e *NotificationEventStageSucceeded) GetAppName() string {
+	return e.GetDeployment().GetApplicationName()
+}
+
+func (e *NotificationEventStageSucceeded) GetLabels() map[string]string {
+	return e.GetDeployment().GetLabels()
+}
+
+func (e *NotificationEventStageFailed) GetAppName() string {
+	return e.GetDeployment().GetApplicationName()
+}
+
+func (e *NotificationEventStageFailed) GetLabels() map[string]string {
+	return e.GetDeployment().GetLabels()
+}
+
+func (e *NotificationEventStageCancelled) GetAppName() string {
+	return e.GetDeployment().GetApplicationName()
+}
+
+func (e *NotificationEventStageCancelled) GetLabels() map[string]string {
+	return e.GetDeployment().GetLabels()
 }
