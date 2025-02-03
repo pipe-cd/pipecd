@@ -12,15 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// package pipedsdk provides software development kits for building PipeCD piped plugins.
 package pipedsdk
 
-// TODO is a placeholder for the real type.
-// This type will be replaced by the real type when implementing the sdk.
-type TODO struct{}
+import "github.com/pipe-cd/pipecd/pkg/plugin/pipedapi"
 
-// Run runs the registered plugins.
-// It will listen the gRPC server and handle all requests from piped.
-func Run() error {
-	panic("implement me")
+// Client is a toolkit for interacting with the piped service.
+// It provides methods to call the piped service APIs.
+// It's a wrapper around the raw piped service client.
+type Client struct {
+	raw pipedapi.PipedServiceClient
 }
