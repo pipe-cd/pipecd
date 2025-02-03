@@ -20,5 +20,14 @@ import "github.com/pipe-cd/pipecd/pkg/plugin/pipedapi"
 // It provides methods to call the piped service APIs.
 // It's a wrapper around the raw piped service client.
 type Client struct {
-	raw pipedapi.PipedServiceClient
+	base *pipedapi.PipedServiceClient
+
+	// applicationID is used to identify the application that the client is working with.
+	applicationID string
+	// deploymentID is used to identify the deployment that the client is working with.
+	// This field exists only when the client is working with a specific deployment; for example, when this client is passed as the deployoment plugin's argument.
+	deploymentID string
+	// stageID is used to identify the stage that the client is working with.
+	// This field exists only when the client is working with a specific stage; for example, when this client is passed as the ExecuteStage method's argument.
+	stageID string
 }

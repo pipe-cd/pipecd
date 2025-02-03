@@ -34,8 +34,11 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/rpc"
 )
 
+// Plugin is the interface that must be implemented by a piped plugin.
 type Plugin interface {
+	// Name returns the name of the plugin.
 	Name() string
+	// Version returns the version of the plugin.
 	Version() string
 }
 

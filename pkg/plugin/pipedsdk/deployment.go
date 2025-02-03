@@ -19,6 +19,8 @@ import (
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
@@ -42,27 +44,25 @@ type DeploymentPlugin[Config any] interface {
 	PipelineSyncPlugin[Config]
 
 	// DetermineVersions determines the versions of the resources that will be deployed.
-	DetermineVersions(context.Context, Config, Client, TODO) (TODO, error)
+	DetermineVersions(context.Context, *Config, *Client, TODO) (TODO, error)
 	// DetermineStrategy determines the strategy to deploy the resources.
-	DetermineStrategy(context.Context, Config, Client, TODO) (TODO, error)
+	DetermineStrategy(context.Context, *Config, *Client, TODO) (TODO, error)
 	// BuildQuickSyncStages builds the stages that will be executed during the quick sync process.
-	BuildQuickSyncStages(context.Context, Config, Client, TODO) (TODO, error)
+	BuildQuickSyncStages(context.Context, *Config, *Client, TODO) (TODO, error)
 }
 
 // PipelineSyncPlugin is the interface that be implemented by a pipeline sync plugin.
 // This kind of plugin may not implement quick sync stages, and will not manage resources like deployment plugin.
 // It only focuses on executing stages which is generic for all kinds of pipeline sync plugins.
 type PipelineSyncPlugin[Config any] interface {
-	// Name returns the name of the plugin.
-	Name() string
-	// Version returns the version of the plugin.
-	Version() string
+	Plugin
+
 	// FetchDefinedStages returns the list of stages that the plugin can execute.
 	FetchDefinedStages() []string
 	// BuildPipelineSyncStages builds the stages that will be executed by the plugin.
-	BuildPipelineSyncStages(context.Context, Config, Client, TODO) (TODO, error)
+	BuildPipelineSyncStages(context.Context, *Config, *Client, TODO) (TODO, error)
 	// ExecuteStage executes the given stage.
-	ExecuteStage(context.Context, Config, Client, TODO) (TODO, error)
+	ExecuteStage(context.Context, *Config, *Client, logpersister.StageLogPersister, TODO) (TODO, error)
 }
 
 // RegisterDeploymentPlugin registers the given deployment plugin.
@@ -114,6 +114,25 @@ func (s *DeploymentPluginServiceServer[Config]) setCommonFields(fields commonFie
 	s.commonFields = fields
 }
 
+func (s *DeploymentPluginServiceServer[Config]) FetchDefinedStages(context.Context, *deployment.FetchDefinedStagesRequest) (*deployment.FetchDefinedStagesResponse, error) {
+	return &deployment.FetchDefinedStagesResponse{Stages: s.base.FetchDefinedStages()}, nil
+}
+func (s *DeploymentPluginServiceServer[Config]) DetermineVersions(context.Context, *deployment.DetermineVersionsRequest) (*deployment.DetermineVersionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DetermineVersions not implemented")
+}
+func (s *DeploymentPluginServiceServer[Config]) DetermineStrategy(context.Context, *deployment.DetermineStrategyRequest) (*deployment.DetermineStrategyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DetermineStrategy not implemented")
+}
+func (s *DeploymentPluginServiceServer[Config]) BuildPipelineSyncStages(context.Context, *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BuildPipelineSyncStages not implemented")
+}
+func (s *DeploymentPluginServiceServer[Config]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BuildQuickSyncStages not implemented")
+}
+func (s *DeploymentPluginServiceServer[Config]) ExecuteStage(context.Context, *deployment.ExecuteStageRequest) (*deployment.ExecuteStageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExecuteStage not implemented")
+}
+
 // PipelineSyncPluginServiceServer is the gRPC server that handles requests from the piped.
 type PipelineSyncPluginServiceServer[Config any] struct {
 	deployment.UnimplementedDeploymentServiceServer
@@ -139,4 +158,23 @@ func (s *PipelineSyncPluginServiceServer[Config]) Register(server *grpc.Server) 
 
 func (s *PipelineSyncPluginServiceServer[Config]) setCommonFields(fields commonFields) {
 	s.commonFields = fields
+}
+
+func (s *PipelineSyncPluginServiceServer[Config]) FetchDefinedStages(context.Context, *deployment.FetchDefinedStagesRequest) (*deployment.FetchDefinedStagesResponse, error) {
+	return &deployment.FetchDefinedStagesResponse{Stages: s.base.FetchDefinedStages()}, nil
+}
+func (s *PipelineSyncPluginServiceServer[Config]) DetermineVersions(context.Context, *deployment.DetermineVersionsRequest) (*deployment.DetermineVersionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DetermineVersions not implemented")
+}
+func (s *PipelineSyncPluginServiceServer[Config]) DetermineStrategy(context.Context, *deployment.DetermineStrategyRequest) (*deployment.DetermineStrategyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DetermineStrategy not implemented")
+}
+func (s *PipelineSyncPluginServiceServer[Config]) BuildPipelineSyncStages(context.Context, *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BuildPipelineSyncStages not implemented")
+}
+func (s *PipelineSyncPluginServiceServer[Config]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BuildQuickSyncStages not implemented")
+}
+func (s *PipelineSyncPluginServiceServer[Config]) ExecuteStage(context.Context, *deployment.ExecuteStageRequest) (*deployment.ExecuteStageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExecuteStage not implemented")
 }
