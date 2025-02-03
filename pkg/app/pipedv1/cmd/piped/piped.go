@@ -280,7 +280,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	// Start running command store.
 	var commandLister commandstore.Lister
-	var stageCommandLister commandstore.StageCommandLister
 	var stageCommandHandledReporter commandstore.StageCommandHandledReporter
 	{
 		store := commandstore.NewStore(apiClient, p.gracePeriod, input.Logger)
@@ -288,7 +287,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			return store.Run(ctx)
 		})
 		commandLister = store.Lister()
-		stageCommandLister = store.StageCommandLister()
 		stageCommandHandledReporter = store.StageCommandHandledReporter()
 	}
 
@@ -306,7 +304,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	// Start running plugin service server.
 	{
 		var (
-			service, err = grpcapi.NewPluginAPI(cfg, apiClient, p.toolsDir, input.Logger, metadataStoreRegistry, stageCommandLister)
+			service, err = grpcapi.NewPluginAPI(cfg, apiClient, p.toolsDir, input.Logger, metadataStoreRegistry, commandLister)
 			opts         = []rpc.Option{
 				rpc.WithPort(p.pluginServicePort),
 				rpc.WithGracePeriod(p.gracePeriod),
