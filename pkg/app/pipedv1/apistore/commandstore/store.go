@@ -48,7 +48,10 @@ type Lister interface {
 
 // StageCommandStore stores stage commands that will be handled by plugins.
 type StageCommandStore interface {
+	// ListStageCommands returns all stage commands of the given deployment and stage.
+	// If the command type is not supported, it returns an error.
 	ListStageCommands(deploymentID, stageID string, commandType model.Command_Type) ([]*model.Command, error)
+	// ReportCommandsHandled reports all stage commands of the given deployment and stage as handled.
 	ReportCommandsHandled(ctx context.Context, deploymentID, stageID string) error
 }
 
@@ -275,6 +278,18 @@ func (s *store) ListStageCommands(deploymentID, stageID string, commandType mode
 	defer s.mu.RUnlock()
 
 	return list[deploymentID][stageID], nil
+}
+
+func (s *store) ReportCommandsHandled(ctx context.Context, deploymentID, stageID string) error {
+	maps := []stageCommandMap{s.stageApproveCommands, s.stageSkipCommands}
+	for _, m := range maps {
+		for _, c := range m[deploymentID][stageID] {
+			if err := s.reportCommandHandled(ctx, c, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func (m stageCommandMap) append(c *model.Command) {
