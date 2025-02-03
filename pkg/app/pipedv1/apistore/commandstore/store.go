@@ -258,12 +258,12 @@ func (s *store) reportCommandHandled(ctx context.Context, c *model.Command, stat
 }
 
 func (s *store) ListStageCommands(deploymentID, stageID string, commandType model.Command_Type) ([]*model.Command, error) {
-	var list stageCommandMap
+	var commands stageCommandMap
 	switch commandType {
 	case model.Command_APPROVE_STAGE:
-		list = s.stageApproveCommands
+		commands = s.stageApproveCommands
 	case model.Command_SKIP_STAGE:
-		list = s.stageSkipCommands
+		commands = s.stageSkipCommands
 	default:
 		s.logger.Error("invalid command type", zap.String("commandType", commandType.String()))
 		return nil, fmt.Errorf("invalid command type: %v", commandType.String())
@@ -272,7 +272,7 @@ func (s *store) ListStageCommands(deploymentID, stageID string, commandType mode
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	return list[deploymentID][stageID], nil
+	return commands[deploymentID][stageID], nil
 }
 
 func (m stageCommandMap) append(c *model.Command) {
