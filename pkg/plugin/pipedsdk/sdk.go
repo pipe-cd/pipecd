@@ -22,15 +22,16 @@ import (
 	"net/http/pprof"
 	"time"
 
+	"github.com/spf13/cobra"
+	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
+
 	"github.com/pipe-cd/pipecd/pkg/admin"
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedapi"
 	"github.com/pipe-cd/pipecd/pkg/rpc"
-	"github.com/spf13/cobra"
-	"go.uber.org/zap"
-	"golang.org/x/sync/errgroup"
 )
 
 type Plugin interface {
@@ -59,6 +60,8 @@ func Run() error {
 	if err := app.Run(); err != nil {
 		return err
 	}
+
+	return nil
 }
 
 type plugin struct {
@@ -123,7 +126,7 @@ func (s *plugin) run(ctx context.Context, input cli.Input) (runErr error) {
 	// Start running admin server.
 	{
 		var (
-			ver   = []byte(deploymentServiceServer.Version())                  // TODO: not use the deploymentServiceServer directly
+			ver   = []byte(deploymentServiceServer.Version())      // TODO: not use the deploymentServiceServer directly
 			admin = admin.NewAdmin(0, s.gracePeriod, input.Logger) // TODO: add config for admin port
 		)
 

@@ -17,12 +17,13 @@ package pipedsdk
 import (
 	"context"
 
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedapi"
-	"go.uber.org/zap"
-	"google.golang.org/grpc"
 )
 
 var (
@@ -81,10 +82,10 @@ type logPersister interface {
 }
 
 type commonFields struct {
-	config *config.PipedPlugin
-	logger *zap.Logger
+	config       *config.PipedPlugin
+	logger       *zap.Logger
 	logPersister logPersister
-	client *pipedapi.PipedServiceClient
+	client       *pipedapi.PipedServiceClient
 }
 
 // DeploymentPluginServiceServer is the gRPC server that handles requests from the piped.
