@@ -16,6 +16,7 @@ package commandstore
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -34,6 +35,7 @@ type apiClient interface {
 type Store interface {
 	Run(ctx context.Context) error
 	Lister() Lister
+	StageCommandHandledReporter() StageCommandHandledReporter
 }
 
 // Lister helps list commands.
@@ -41,25 +43,32 @@ type Store interface {
 type Lister interface {
 	ListApplicationCommands() []model.ReportableCommand
 	ListDeploymentCommands() []model.ReportableCommand
-	ListStageCommands(deploymentID, stageID string) []model.ReportableCommand
 	ListBuildPlanPreviewCommands() []model.ReportableCommand
 	ListPipedCommands() []model.ReportableCommand
+
+	// ListStageCommands returns all stage commands of the given deployment and stage.
+	// If the command type is not supported, it returns an error.
+	ListStageCommands(deploymentID, stageID string, commandType model.Command_Type) ([]*model.Command, error)
 }
+
+// stageCommandMap is a map of stage commands. Keys are deploymentID and stageID.
+type stageCommandMap map[string]map[string][]*model.Command
 
 type store struct {
 	apiClient    apiClient
 	syncInterval time.Duration
 	// TODO: Using atomic for storing a map of all commands
 	// instead of some separate lists + mutex as the current.
-	applicationCommands []model.ReportableCommand
-	deploymentCommands  []model.ReportableCommand
-	stageCommands       []model.ReportableCommand
-	planPreviewCommands []model.ReportableCommand
-	pipedCommands       []model.ReportableCommand
-	handledCommands     map[string]time.Time
-	mu                  sync.RWMutex
-	gracePeriod         time.Duration
-	logger              *zap.Logger
+	applicationCommands  []model.ReportableCommand
+	deploymentCommands   []model.ReportableCommand
+	planPreviewCommands  []model.ReportableCommand
+	pipedCommands        []model.ReportableCommand
+	stageApproveCommands stageCommandMap
+	stageSkipCommands    stageCommandMap
+	handledCommands      map[string]time.Time
+	mu                   sync.RWMutex
+	gracePeriod          time.Duration
+	logger               *zap.Logger
 }
 
 var (
@@ -117,11 +126,12 @@ func (s *store) sync(ctx context.Context) error {
 	}
 
 	var (
-		applicationCommands = make([]model.ReportableCommand, 0)
-		deploymentCommands  = make([]model.ReportableCommand, 0)
-		stageCommands       = make([]model.ReportableCommand, 0)
-		planPreviewCommands = make([]model.ReportableCommand, 0)
-		pipedCommands       = make([]model.ReportableCommand, 0)
+		applicationCommands  = make([]model.ReportableCommand, 0)
+		deploymentCommands   = make([]model.ReportableCommand, 0)
+		planPreviewCommands  = make([]model.ReportableCommand, 0)
+		pipedCommands        = make([]model.ReportableCommand, 0)
+		stageApproveCommands stageCommandMap
+		stageSkipCommands    stageCommandMap
 	)
 	for _, cmd := range resp.Commands {
 		switch cmd.Type {
@@ -129,21 +139,24 @@ func (s *store) sync(ctx context.Context) error {
 			applicationCommands = append(applicationCommands, s.makeReportableCommand(cmd))
 		case model.Command_CANCEL_DEPLOYMENT:
 			deploymentCommands = append(deploymentCommands, s.makeReportableCommand(cmd))
-		case model.Command_APPROVE_STAGE, model.Command_SKIP_STAGE:
-			stageCommands = append(stageCommands, s.makeReportableCommand(cmd))
 		case model.Command_BUILD_PLAN_PREVIEW:
 			planPreviewCommands = append(planPreviewCommands, s.makeReportableCommand(cmd))
 		case model.Command_RESTART_PIPED:
 			pipedCommands = append(pipedCommands, s.makeReportableCommand(cmd))
+		case model.Command_APPROVE_STAGE:
+			stageApproveCommands.append(cmd)
+		case model.Command_SKIP_STAGE:
+			stageSkipCommands.append(cmd)
 		}
 	}
 
 	s.mu.Lock()
 	s.applicationCommands = applicationCommands
 	s.deploymentCommands = deploymentCommands
-	s.stageCommands = stageCommands
 	s.planPreviewCommands = planPreviewCommands
 	s.pipedCommands = pipedCommands
+	s.stageApproveCommands = stageApproveCommands
+	s.stageSkipCommands = stageSkipCommands
 	s.mu.Unlock()
 
 	return nil
@@ -184,26 +197,6 @@ func (s *store) ListDeploymentCommands() []model.ReportableCommand {
 	commands := make([]model.ReportableCommand, 0, len(s.deploymentCommands))
 	for _, cmd := range s.deploymentCommands {
 		if _, ok := s.handledCommands[cmd.Id]; ok {
-			continue
-		}
-		commands = append(commands, cmd)
-	}
-	return commands
-}
-
-func (s *store) ListStageCommands(deploymentID, stageID string) []model.ReportableCommand {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	commands := make([]model.ReportableCommand, 0, len(s.stageCommands))
-	for _, cmd := range s.stageCommands {
-		if _, ok := s.handledCommands[cmd.Id]; ok {
-			continue
-		}
-		if cmd.DeploymentId != deploymentID {
-			continue
-		}
-		if cmd.StageId != stageID {
 			continue
 		}
 		commands = append(commands, cmd)
@@ -263,4 +256,31 @@ func (s *store) reportCommandHandled(ctx context.Context, c *model.Command, stat
 		Output:    output,
 	})
 	return err
+}
+
+func (s *store) ListStageCommands(deploymentID, stageID string, commandType model.Command_Type) ([]*model.Command, error) {
+	var list stageCommandMap
+	switch commandType {
+	case model.Command_APPROVE_STAGE:
+		list = s.stageApproveCommands
+	case model.Command_SKIP_STAGE:
+		list = s.stageSkipCommands
+	default:
+		s.logger.Error("invalid command type", zap.String("commandType", commandType.String()))
+		return nil, fmt.Errorf("invalid command type: %v", commandType.String())
+	}
+
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	return list[deploymentID][stageID], nil
+}
+
+func (m stageCommandMap) append(c *model.Command) {
+	deploymentID := c.DeploymentId
+	stageID := c.StageId
+	if _, ok := m[deploymentID]; !ok {
+		m[deploymentID] = make(map[string][]*model.Command)
+	}
+	m[deploymentID][stageID] = append(m[deploymentID][stageID], c)
 }
