@@ -18,7 +18,6 @@ import { FC, memo, useCallback, useState, useEffect, useMemo } from "react";
 import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
 import { useAppSelector, useAppDispatch, unwrapResult } from "~/hooks/redux";
-import { ApplicationKind } from "~/modules/applications";
 import {
   selectAllUnregisteredApplications,
   fetchUnregisteredApplications,
@@ -179,14 +178,7 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
 
   const onCreateApplication = (): void => {
     setLoading(true);
-    dispatch(
-      addApplication({
-        ...appToAdd,
-        // TODO: should remove application ['platformProvider', 'kind'] in body request, api need to be updated
-        platformProvider: "KUBERNETES",
-        kind: ("" as unknown) as ApplicationKind,
-      })
-    )
+    dispatch(addApplication(appToAdd))
       .then(unwrapResult)
       .then(() => {
         onAdded();
