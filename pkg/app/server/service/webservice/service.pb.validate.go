@@ -2798,7 +2798,16 @@ func (m *AddApplicationRequest) validate(all bool) error {
 		}
 	}
 
-	// no validation rules for Kind
+	if _, ok := model.ApplicationKind_name[int32(m.GetKind())]; !ok {
+		err := AddApplicationRequestValidationError{
+			field:  "Kind",
+			reason: "value must be one of the defined enum values",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for PlatformProvider
 
@@ -3054,7 +3063,16 @@ func (m *UpdateApplicationRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for Kind
+	if _, ok := model.ApplicationKind_name[int32(m.GetKind())]; !ok {
+		err := UpdateApplicationRequestValidationError{
+			field:  "Kind",
+			reason: "value must be one of the defined enum values",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for PlatformProvider
 

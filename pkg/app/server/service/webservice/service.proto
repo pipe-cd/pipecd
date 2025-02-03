@@ -361,7 +361,7 @@ message AddApplicationRequest {
     string name = 1 [(validate.rules).string.min_len = 1];
     string piped_id = 3 [(validate.rules).string.min_len = 1];
     model.ApplicationGitPath git_path = 4 [(validate.rules).message.required = true];
-    model.ApplicationKind kind = 5;
+    model.ApplicationKind kind = 5 [(validate.rules).enum.defined_only = true];
     string platform_provider = 9;
     string description = 7;
     map<string, string> labels = 8;
@@ -377,7 +377,7 @@ message UpdateApplicationRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
     string name = 2 [(validate.rules).string.min_len = 1];
     string piped_id = 4 [(validate.rules).string.min_len = 1];
-    model.ApplicationKind kind = 6;
+    model.ApplicationKind kind = 6 [(validate.rules).enum.defined_only = true];
     string platform_provider = 9;
     string config_filename = 8;
 }
