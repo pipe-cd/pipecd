@@ -21,12 +21,16 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedapi"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
 var (
 	deploymentServiceServer interface {
+		Plugin
+
 		Register(server *grpc.Server)
+		setCommonFields(commonFields)
 		deployment.DeploymentServiceServer
 	}
 )
@@ -50,6 +54,8 @@ type DeploymentPlugin[Config any] interface {
 type PipelineSyncPlugin[Config any] interface {
 	// Name returns the name of the plugin.
 	Name() string
+	// Version returns the version of the plugin.
+	Version() string
 	// FetchDefinedStages returns the list of stages that the plugin can execute.
 	FetchDefinedStages() []string
 	// BuildPipelineSyncStages builds the stages that will be executed by the plugin.
@@ -70,14 +76,32 @@ func RegisterPipelineSyncPlugin[Config any](plugin PipelineSyncPlugin[Config]) {
 	deploymentServiceServer = &PipelineSyncPluginServiceServer[Config]{base: plugin}
 }
 
+type logPersister interface {
+	StageLogPersister(deploymentID, stageID string) logpersister.StageLogPersister
+}
+
+type commonFields struct {
+	config *config.PipedPlugin
+	logger *zap.Logger
+	logPersister logPersister
+	client *pipedapi.PipedServiceClient
+}
+
 // DeploymentPluginServiceServer is the gRPC server that handles requests from the piped.
 type DeploymentPluginServiceServer[Config any] struct {
 	deployment.UnimplementedDeploymentServiceServer
+	commonFields
 
 	base DeploymentPlugin[Config]
-	config *config.PipedPlugin
-	logPersister logpersister.Persister
-	client pipedapi.PipedServiceClient
+}
+
+// Name returns the name of the plugin.
+func (s *DeploymentPluginServiceServer[Config]) Name() string {
+	return s.base.Name()
+}
+
+func (s *DeploymentPluginServiceServer[Config]) Version() string {
+	return s.base.Version()
 }
 
 // Register registers the server to the given gRPC server.
@@ -85,17 +109,33 @@ func (s *DeploymentPluginServiceServer[Config]) Register(server *grpc.Server) {
 	deployment.RegisterDeploymentServiceServer(server, s)
 }
 
+func (s *DeploymentPluginServiceServer[Config]) setCommonFields(fields commonFields) {
+	s.commonFields = fields
+}
+
 // PipelineSyncPluginServiceServer is the gRPC server that handles requests from the piped.
 type PipelineSyncPluginServiceServer[Config any] struct {
 	deployment.UnimplementedDeploymentServiceServer
+	commonFields
 
 	base PipelineSyncPlugin[Config]
-	config *config.PipedPlugin
-	logPersister logpersister.Persister
-	client pipedapi.PipedServiceClient
+}
+
+// Name returns the name of the plugin.
+func (s *PipelineSyncPluginServiceServer[Config]) Name() string {
+	return s.base.Name()
+}
+
+// Version returns the version of the plugin.
+func (s *PipelineSyncPluginServiceServer[Config]) Version() string {
+	return s.base.Version()
 }
 
 // Register registers the server to the given gRPC server.
 func (s *PipelineSyncPluginServiceServer[Config]) Register(server *grpc.Server) {
 	deployment.RegisterDeploymentServiceServer(server, s)
+}
+
+func (s *PipelineSyncPluginServiceServer[Config]) setCommonFields(fields commonFields) {
+	s.commonFields = fields
 }
