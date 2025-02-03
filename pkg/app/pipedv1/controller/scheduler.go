@@ -334,7 +334,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 				span.SetStatus(codes.Error, statusReason)
 			}
 
-			// Mark commands as handled regradless of the stage status because the commands will not be used anymore.
+			// Mark commands as handled regardless of the stage status because the commands will no longer be used.
 			s.stageCommandHandledReporter.ReportStageCommandsHandled(ctx, s.deployment.Id, ps.Id)
 
 			close(doneCh)
