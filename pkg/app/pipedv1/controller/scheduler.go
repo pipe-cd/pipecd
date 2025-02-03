@@ -28,6 +28,7 @@ import (
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/apistore/commandstore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
@@ -44,10 +45,11 @@ type scheduler struct {
 
 	pluginRegistry plugin.PluginRegistry
 
-	apiClient       apiClient
-	gitClient       gitClient
-	notifier        notifier
-	secretDecrypter secretDecrypter
+	apiClient                   apiClient
+	gitClient                   gitClient
+	notifier                    notifier
+	secretDecrypter             secretDecrypter
+	stageCommandHandledReporter commandstore.StageCommandHandledReporter
 
 	targetDSP  deploysource.Provider
 	runningDSP deploysource.Provider
@@ -80,6 +82,7 @@ func newScheduler(
 	pluginRegistry plugin.PluginRegistry,
 	notifier notifier,
 	secretsDecrypter secretDecrypter,
+	stageCommandHandledReporter commandstore.StageCommandHandledReporter,
 	logger *zap.Logger,
 	tracerProvider trace.TracerProvider,
 ) *scheduler {
@@ -92,18 +95,19 @@ func newScheduler(
 	)
 
 	s := &scheduler{
-		deployment:           d,
-		workingDir:           workingDir,
-		apiClient:            apiClient,
-		gitClient:            gitClient,
-		pluginRegistry:       pluginRegistry,
-		notifier:             notifier,
-		secretDecrypter:      secretsDecrypter,
-		doneDeploymentStatus: d.Status,
-		cancelledCh:          make(chan *model.ReportableCommand, 1),
-		logger:               logger,
-		tracer:               tracerProvider.Tracer("controller/scheduler"),
-		nowFunc:              time.Now,
+		deployment:                  d,
+		workingDir:                  workingDir,
+		apiClient:                   apiClient,
+		gitClient:                   gitClient,
+		pluginRegistry:              pluginRegistry,
+		notifier:                    notifier,
+		secretDecrypter:             secretsDecrypter,
+		stageCommandHandledReporter: stageCommandHandledReporter,
+		doneDeploymentStatus:        d.Status,
+		cancelledCh:                 make(chan *model.ReportableCommand, 1),
+		logger:                      logger,
+		tracer:                      tracerProvider.Tracer("controller/scheduler"),
+		nowFunc:                     time.Now,
 	}
 
 	// Initialize the map of current status of all stages.
@@ -329,6 +333,9 @@ func (s *scheduler) Run(ctx context.Context) error {
 			case model.StageStatus_STAGE_FAILURE, model.StageStatus_STAGE_CANCELLED:
 				span.SetStatus(codes.Error, statusReason)
 			}
+
+			// Mark commands as handled regradless of the stage status because the commands will not be used anymore.
+			s.stageCommandHandledReporter.ReportCommandsHandled(ctx, s.deployment.Id, ps.Id)
 
 			close(doneCh)
 		}()

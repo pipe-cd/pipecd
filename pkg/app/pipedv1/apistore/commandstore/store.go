@@ -35,6 +35,8 @@ type apiClient interface {
 type Store interface {
 	Run(ctx context.Context) error
 	Lister() Lister
+	StageCommandLister() StageCommandLister
+	StageCommandHandledReporter() StageCommandHandledReporter
 }
 
 // Lister helps list commands.
@@ -47,11 +49,15 @@ type Lister interface {
 }
 
 // StageCommandStore stores stage commands that will be handled by plugins.
-type StageCommandStore interface {
+type StageCommandLister interface {
 	// ListStageCommands returns all stage commands of the given deployment and stage.
 	// If the command type is not supported, it returns an error.
 	ListStageCommands(deploymentID, stageID string, commandType model.Command_Type) ([]*model.Command, error)
-	// ReportCommandsHandled reports all stage commands of the given deployment and stage as handled.
+}
+
+type StageCommandHandledReporter interface {
+	// ReportCommandsHandled reports all stage commands of the given deployment and stage as handled successfully.
+	// This should be called on piped side, not plugin side, to ensure reporting is called correctly.
 	ReportCommandsHandled(ctx context.Context, deploymentID, stageID string) error
 }
 
@@ -119,6 +125,14 @@ func (s *store) Run(ctx context.Context) error {
 }
 
 func (s *store) Lister() Lister {
+	return s
+}
+
+func (s *store) StageCommandLister() StageCommandLister {
+	return s
+}
+
+func (s *store) StageCommandHandledReporter() StageCommandHandledReporter {
 	return s
 }
 

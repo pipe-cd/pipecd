@@ -37,7 +37,7 @@ type PluginAPI struct {
 	toolRegistry          *toolRegistry
 	Logger                *zap.Logger
 	metadataStoreRegistry *metadatastore.MetadataStoreRegistry
-	stageCommandStore     commandstore.StageCommandStore
+	stageCommandLister    commandstore.StageCommandLister
 }
 
 type apiClient interface {
@@ -50,7 +50,7 @@ func (a *PluginAPI) Register(server *grpc.Server) {
 	service.RegisterPluginServiceServer(server, a)
 }
 
-func NewPluginAPI(cfg *config.PipedSpec, apiClient apiClient, toolsDir string, logger *zap.Logger, metadataStoreRegistry *metadatastore.MetadataStoreRegistry) (*PluginAPI, error) {
+func NewPluginAPI(cfg *config.PipedSpec, apiClient apiClient, toolsDir string, logger *zap.Logger, metadataStoreRegistry *metadatastore.MetadataStoreRegistry, stageCommandLister commandstore.StageCommandLister) (*PluginAPI, error) {
 	toolRegistry, err := newToolRegistry(toolsDir)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create tool registry: %w", err)
@@ -62,6 +62,7 @@ func NewPluginAPI(cfg *config.PipedSpec, apiClient apiClient, toolsDir string, l
 		toolRegistry:          toolRegistry,
 		Logger:                logger.Named("plugin-api"),
 		metadataStoreRegistry: metadataStoreRegistry,
+		stageCommandLister:    stageCommandLister,
 	}, nil
 }
 
@@ -147,7 +148,7 @@ func (a *PluginAPI) GetDeploymentSharedMetadata(ctx context.Context, req *servic
 }
 
 func (a *PluginAPI) ListStageCommands(ctx context.Context, req *service.ListStageCommandsRequest) (*service.ListStageCommandsResponse, error) {
-	commands, err := a.stageCommandStore.ListStageCommands(req.DeploymentId, req.StageId, req.Type)
+	commands, err := a.stageCommandLister.ListStageCommands(req.DeploymentId, req.StageId, req.Type)
 	if err != nil {
 		return nil, err
 	}
