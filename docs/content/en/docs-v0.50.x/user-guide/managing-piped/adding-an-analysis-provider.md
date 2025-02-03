@@ -28,7 +28,7 @@ spec:
       config:
         address: https://your-prometheus.dev
 ```
-The full list of configurable fields are [here](../configuration-reference/#analysisproviderprometheusconfig).
+The full list of configurable fields are [here](configuration-reference/#analysisproviderprometheusconfig).
 
 ## Datadog
 Piped queries the [MetricsApi.QueryMetrics](https://docs.datadoghq.com/api/latest/metrics/#query-timeseries-points) endpoint to obtain metrics used to evaluate the deployment.
@@ -45,7 +45,7 @@ spec:
         applicationKeyFile: /etc/piped-secret/datadog-application-key
 ```
 
-The full list of configurable fields are [here](../configuration-reference/#analysisproviderdatadogconfig).
+The full list of configurable fields are [here](configuration-reference/#analysisproviderdatadogconfig).
 
 If you choose `Helm` as the installation method, we recommend using `--set-file` to mount the key files while performing the [upgrading process](../../../installation/install-piped/installing-on-kubernetes/#in-the-cluster-wide-mode).
 
