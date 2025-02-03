@@ -35,7 +35,6 @@ type apiClient interface {
 type Store interface {
 	Run(ctx context.Context) error
 	Lister() Lister
-	StageCommandHandledReporter() StageCommandHandledReporter
 }
 
 // Lister helps list commands.
