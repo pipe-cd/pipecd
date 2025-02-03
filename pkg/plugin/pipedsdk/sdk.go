@@ -89,7 +89,7 @@ func NewPluginCommand() *cobra.Command {
 		RunE:  cli.WithContext(s.run),
 	}
 
-	cmd.Flags().StringVar(&s.pipedPluginService, "piped-plugin-service", s.pipedPluginService, "The port number used to connect to the piped plugin service.") // TODO: we should discuss about the name of this flag, or we should use environment variable instead.
+	cmd.Flags().StringVar(&s.pipedPluginService, "piped-plugin-service", s.pipedPluginService, "The address used to connect to the piped plugin service.")
 	cmd.Flags().StringVar(&s.config, "config", s.config, "The configuration for the plugin.")
 	cmd.Flags().DurationVar(&s.gracePeriod, "grace-period", s.gracePeriod, "How long to wait for graceful shutdown.")
 
