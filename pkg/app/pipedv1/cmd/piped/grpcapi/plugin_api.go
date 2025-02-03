@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/apistore/commandstore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
@@ -36,6 +37,7 @@ type PluginAPI struct {
 	toolRegistry          *toolRegistry
 	Logger                *zap.Logger
 	metadataStoreRegistry *metadatastore.MetadataStoreRegistry
+	stageCommandStore     commandstore.StageCommandStore
 }
 
 type apiClient interface {
@@ -142,4 +144,14 @@ func (a *PluginAPI) PutDeploymentPluginMetadataMulti(ctx context.Context, req *s
 
 func (a *PluginAPI) GetDeploymentSharedMetadata(ctx context.Context, req *service.GetDeploymentSharedMetadataRequest) (*service.GetDeploymentSharedMetadataResponse, error) {
 	return a.metadataStoreRegistry.GetDeploymentSharedMetadata(ctx, req)
+}
+
+func (a *PluginAPI) ListStageCommands(ctx context.Context, req *service.ListStageCommandsRequest) (*service.ListStageCommandsResponse, error) {
+	commands, err := a.stageCommandStore.ListStageCommands(req.DeploymentId, req.StageId, req.Type)
+	if err != nil {
+		return nil, err
+	}
+	return &service.ListStageCommandsResponse{
+		Commands: commands,
+	}, nil
 }
