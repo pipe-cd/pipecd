@@ -89,17 +89,16 @@ type piped struct {
 	configGCPSecret string
 	configAWSSecret string
 
-	insecure                             bool
-	certFile                             string
-	adminPort                            int
-	pluginServicePort                    int
-	toolsDir                             string
-	pluginsDir                           string
-	enableDefaultKubernetesCloudProvider bool
-	gracePeriod                          time.Duration
-	addLoginUserToPasswd                 bool
-	launcherVersion                      string
-	maxRecvMsgSize                       int
+	insecure             bool
+	certFile             string
+	adminPort            int
+	pluginServicePort    int
+	toolsDir             string
+	pluginsDir           string
+	gracePeriod          time.Duration
+	addLoginUserToPasswd bool
+	launcherVersion      string
+	maxRecvMsgSize       int
 }
 
 func NewCommand() *cobra.Command {
@@ -132,7 +131,6 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().IntVar(&p.pluginServicePort, "plugin-service-port", p.pluginServicePort, "The port number used to run a gRPC server for plugin services.")
 
 	cmd.Flags().StringVar(&p.toolsDir, "tools-dir", p.toolsDir, "The path to directory where to install needed tools such as kubectl, helm, kustomize.")
-	cmd.Flags().BoolVar(&p.enableDefaultKubernetesCloudProvider, "enable-default-kubernetes-cloud-provider", p.enableDefaultKubernetesCloudProvider, "Whether the default kubernetes provider is enabled or not. This feature is deprecated.")
 	cmd.Flags().BoolVar(&p.addLoginUserToPasswd, "add-login-user-to-passwd", p.addLoginUserToPasswd, "Whether to add login user to $HOME/passwd. This is typically for applications running as a random user ID.")
 	cmd.Flags().DurationVar(&p.gracePeriod, "grace-period", p.gracePeriod, "How long to wait for graceful shutdown.")
 
@@ -609,9 +607,6 @@ func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 		if cfg.Kind != config.KindPiped {
 			return nil, fmt.Errorf("wrong configuration kind for piped: %v", cfg.Kind)
 		}
-		if p.enableDefaultKubernetesCloudProvider {
-			cfg.Spec.EnableDefaultKubernetesPlatformProvider()
-		}
 		return cfg.Spec, nil
 	}
 
@@ -746,18 +741,9 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 	}
 
 	req := &pipedservice.ReportPipedMetaRequest{
-		Version:           version.Get().Version,
-		Config:            string(maskedCfg),
-		Repositories:      repos,
-		PlatformProviders: make([]*model.Piped_PlatformProvider, 0, len(cfg.PlatformProviders)),
-	}
-
-	// Configure the list of specified platform providers.
-	for _, cp := range cfg.PlatformProviders {
-		req.PlatformProviders = append(req.PlatformProviders, &model.Piped_PlatformProvider{
-			Name: cp.Name,
-			Type: cp.Type.String(),
-		})
+		Version:      version.Get().Version,
+		Config:       string(maskedCfg),
+		Repositories: repos,
 	}
 
 	// Configure secret management.

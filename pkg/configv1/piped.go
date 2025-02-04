@@ -30,12 +30,6 @@ const (
 	maskString = "******"
 )
 
-var defaultKubernetesPlatformProvider = PipedPlatformProvider{
-	Name:             "kubernetes-default",
-	Type:             model.PlatformProviderKubernetes,
-	KubernetesConfig: &PlatformProviderKubernetesConfig{},
-}
-
 // PipedSpec contains configurable data used to while running Piped.
 type PipedSpec struct {
 	// The identifier of the PipeCD project where this piped belongs to.
@@ -66,11 +60,6 @@ type PipedSpec struct {
 	ChartRepositories []HelmChartRepository `json:"chartRepositories,omitempty"`
 	// List of helm chart registries that should be logged in while starting up.
 	ChartRegistries []HelmChartRegistry `json:"chartRegistries,omitempty"`
-	// List of cloud providers can be used by this piped.
-	// Deprecated: use PlatformProvider instead.
-	CloudProviders []PipedPlatformProvider `json:"cloudProviders,omitempty"`
-	// List of platform providers can be used by this piped.
-	PlatformProviders []PipedPlatformProvider `json:"platformProviders,omitempty"`
 	// List of plugiin configs
 	Plugins []PipedPlugin `json:"plugins,omitempty"`
 	// List of analysis providers can be used by this piped.
@@ -96,9 +85,6 @@ func (s *PipedSpec) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	// Add all CloudProviders configuration as PlatformProviders configuration.
-	s.PlatformProviders = append(s.PlatformProviders, ps.CloudProviders...)
-	s.CloudProviders = nil
 	return nil
 }
 
@@ -188,9 +174,6 @@ func (s *PipedSpec) Mask() {
 	for i := 0; i < len(s.ChartRegistries); i++ {
 		s.ChartRegistries[i].Mask()
 	}
-	for _, p := range s.PlatformProviders {
-		p.Mask()
-	}
 	for _, p := range s.AnalysisProviders {
 		p.Mask()
 	}
@@ -198,67 +181,6 @@ func (s *PipedSpec) Mask() {
 	if s.SecretManagement != nil {
 		s.SecretManagement.Mask()
 	}
-}
-
-// EnableDefaultKubernetesPlatformProvider adds the default kubernetes cloud provider if it was not specified.
-func (s *PipedSpec) EnableDefaultKubernetesPlatformProvider() {
-	for _, cp := range s.PlatformProviders {
-		if cp.Name == defaultKubernetesPlatformProvider.Name {
-			return
-		}
-	}
-	s.PlatformProviders = append(s.PlatformProviders, defaultKubernetesPlatformProvider)
-}
-
-// HasPlatformProvider checks whether the given provider is configured or not.
-func (s *PipedSpec) HasPlatformProvider(name string, t model.ApplicationKind) bool {
-	_, contains := s.FindPlatformProvider(name, t)
-	return contains
-}
-
-// FindPlatformProvider finds and returns a Platform Provider by name and type.
-func (s *PipedSpec) FindPlatformProvider(name string, t model.ApplicationKind) (PipedPlatformProvider, bool) {
-	requiredProviderType := t.CompatiblePlatformProviderType()
-	for _, p := range s.PlatformProviders {
-		if p.Name != name {
-			continue
-		}
-		if p.Type != requiredProviderType {
-			continue
-		}
-		return p, true
-	}
-	return PipedPlatformProvider{}, false
-}
-
-// FindPlatformProvidersByLabels finds all PlatformProviders which match the provided labels.
-func (s *PipedSpec) FindPlatformProvidersByLabels(labels map[string]string, t model.ApplicationKind) []PipedPlatformProvider {
-	requiredProviderType := t.CompatiblePlatformProviderType()
-	out := make([]PipedPlatformProvider, 0)
-
-	labelMatch := func(providerLabels map[string]string) bool {
-		if len(providerLabels) < len(labels) {
-			return false
-		}
-
-		for k, v := range labels {
-			if v != providerLabels[k] {
-				return false
-			}
-		}
-		return true
-	}
-
-	for _, p := range s.PlatformProviders {
-		if p.Type != requiredProviderType {
-			continue
-		}
-		if !labelMatch(p.Labels) {
-			continue
-		}
-		out = append(out, p)
-	}
-	return out
 }
 
 // GetRepositoryMap returns a map of repositories where key is repo id.
@@ -533,112 +455,6 @@ func (r *HelmChartRegistry) Validate() error {
 func (r *HelmChartRegistry) Mask() {
 	if len(r.Password) != 0 {
 		r.Password = maskString
-	}
-}
-
-type PipedPlatformProvider struct {
-	Name   string                     `json:"name"`
-	Type   model.PlatformProviderType `json:"type"`
-	Labels map[string]string          `json:"labels,omitempty"`
-
-	KubernetesConfig *PlatformProviderKubernetesConfig
-	TerraformConfig  *PlatformProviderTerraformConfig
-	CloudRunConfig   *PlatformProviderCloudRunConfig
-	LambdaConfig     *PlatformProviderLambdaConfig
-	ECSConfig        *PlatformProviderECSConfig
-}
-
-type genericPipedPlatformProvider struct {
-	Name   string                     `json:"name"`
-	Type   model.PlatformProviderType `json:"type"`
-	Labels map[string]string          `json:"labels,omitempty"`
-	Config json.RawMessage            `json:"config"`
-}
-
-func (p *PipedPlatformProvider) MarshalJSON() ([]byte, error) {
-	var (
-		err    error
-		config json.RawMessage
-	)
-
-	switch p.Type {
-	case model.PlatformProviderKubernetes:
-		config, err = json.Marshal(p.KubernetesConfig)
-	case model.PlatformProviderTerraform:
-		config, err = json.Marshal(p.TerraformConfig)
-	case model.PlatformProviderCloudRun:
-		config, err = json.Marshal(p.CloudRunConfig)
-	case model.PlatformProviderLambda:
-		config, err = json.Marshal(p.LambdaConfig)
-	case model.PlatformProviderECS:
-		config, err = json.Marshal(p.ECSConfig)
-	default:
-		err = fmt.Errorf("unsupported platform provider type: %s", p.Name)
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	return json.Marshal(&genericPipedPlatformProvider{
-		Name:   p.Name,
-		Type:   p.Type,
-		Labels: p.Labels,
-		Config: config,
-	})
-}
-
-func (p *PipedPlatformProvider) UnmarshalJSON(data []byte) error {
-	var err error
-	gp := genericPipedPlatformProvider{}
-	if err = json.Unmarshal(data, &gp); err != nil {
-		return err
-	}
-	p.Name = gp.Name
-	p.Type = gp.Type
-	p.Labels = gp.Labels
-
-	switch p.Type {
-	case model.PlatformProviderKubernetes:
-		p.KubernetesConfig = &PlatformProviderKubernetesConfig{}
-		if len(gp.Config) > 0 {
-			err = json.Unmarshal(gp.Config, p.KubernetesConfig)
-		}
-	case model.PlatformProviderTerraform:
-		p.TerraformConfig = &PlatformProviderTerraformConfig{}
-		if len(gp.Config) > 0 {
-			err = json.Unmarshal(gp.Config, p.TerraformConfig)
-		}
-	case model.PlatformProviderCloudRun:
-		p.CloudRunConfig = &PlatformProviderCloudRunConfig{}
-		if len(gp.Config) > 0 {
-			err = json.Unmarshal(gp.Config, p.CloudRunConfig)
-		}
-	case model.PlatformProviderLambda:
-		p.LambdaConfig = &PlatformProviderLambdaConfig{}
-		if len(gp.Config) > 0 {
-			err = json.Unmarshal(gp.Config, p.LambdaConfig)
-		}
-	case model.PlatformProviderECS:
-		p.ECSConfig = &PlatformProviderECSConfig{}
-		if len(gp.Config) > 0 {
-			err = json.Unmarshal(gp.Config, p.ECSConfig)
-		}
-	default:
-		err = fmt.Errorf("unsupported platform provider type: %s", p.Name)
-	}
-	return err
-}
-
-func (p *PipedPlatformProvider) Mask() {
-	if p.CloudRunConfig != nil {
-		p.CloudRunConfig.Mask()
-	}
-	if p.LambdaConfig != nil {
-		p.LambdaConfig.Mask()
-	}
-	if p.ECSConfig != nil {
-		p.ECSConfig.Mask()
 	}
 }
 

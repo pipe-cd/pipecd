@@ -148,6 +148,102 @@ func TestMatch(t *testing.T) {
 						},
 					},
 				}: true,
+				{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_STARTED,
+					Metadata: &model.NotificationEventDeploymentStarted{
+						Deployment: &model.Deployment{
+							ApplicationName: "bluegreen",
+						},
+					},
+				}: false,
+				{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_STARTED,
+					Metadata: &model.NotificationEventDeploymentStarted{
+						Deployment: &model.Deployment{
+							ApplicationName: "canary",
+						},
+					},
+				}: true,
+				{
+					Type: model.NotificationEventType_EVENT_STAGE_STARTED,
+					Metadata: &model.NotificationEventStageStarted{
+						Deployment: &model.Deployment{
+							ApplicationName: "canary",
+						},
+					},
+				}: true,
+				{
+					Type: model.NotificationEventType_EVENT_STAGE_STARTED,
+					Metadata: &model.NotificationEventStageStarted{
+						Deployment: &model.Deployment{
+							ApplicationName: "bluegreen",
+						},
+					},
+				}: false,
+				{
+					Type: model.NotificationEventType_EVENT_STAGE_SKIPPED,
+					Metadata: &model.NotificationEventStageSkipped{
+						Deployment: &model.Deployment{
+							ApplicationName: "canary",
+						},
+					},
+				}: true,
+				{
+					Type: model.NotificationEventType_EVENT_STAGE_SKIPPED,
+					Metadata: &model.NotificationEventStageSkipped{
+						Deployment: &model.Deployment{
+							ApplicationName: "bluegreen",
+						},
+					},
+				}: false,
+				{
+					Type: model.NotificationEventType_EVENT_STAGE_SUCCEEDED,
+					Metadata: &model.NotificationEventStageSucceeded{
+						Deployment: &model.Deployment{
+							ApplicationName: "canary",
+						},
+					},
+				}: true,
+				{
+					Type: model.NotificationEventType_EVENT_STAGE_SUCCEEDED,
+					Metadata: &model.NotificationEventStageSucceeded{
+						Deployment: &model.Deployment{
+							ApplicationName: "bluegreen",
+						},
+					},
+				}: false,
+				{
+					Type: model.NotificationEventType_EVENT_STAGE_FAILED,
+					Metadata: &model.NotificationEventStageFailed{
+						Deployment: &model.Deployment{
+							ApplicationName: "canary",
+						},
+					},
+				}: true,
+				{
+					Type: model.NotificationEventType_EVENT_STAGE_FAILED,
+					Metadata: &model.NotificationEventStageFailed{
+						Deployment: &model.Deployment{
+							ApplicationName: "bluegreen",
+						},
+					},
+				}: false,
+				{
+					Type: model.NotificationEventType_EVENT_STAGE_CANCELLED,
+					Metadata: &model.NotificationEventStageCancelled{
+						Deployment: &model.Deployment{
+							ApplicationName: "canary",
+						},
+					},
+				}: true,
+				{
+					Type: model.NotificationEventType_EVENT_STAGE_CANCELLED,
+					Metadata: &model.NotificationEventStageCancelled{
+						Deployment: &model.Deployment{
+							ApplicationName: "bluegreen",
+						},
+					},
+				}: false,
 			},
 		},
 		{
@@ -254,6 +350,138 @@ func TestMatch(t *testing.T) {
 					Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED,
 					Metadata: &model.NotificationEventDeploymentTriggerFailed{
 						Application: &model.Application{
+							Labels: map[string]string{
+								"env":  "dev",
+								"team": "pipecd",
+							},
+						},
+					},
+				}: true,
+				{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_STARTED,
+					Metadata: &model.NotificationEventDeploymentStarted{
+						Deployment: &model.Deployment{
+							Labels: map[string]string{
+								"env":  "stg",
+								"team": "pipecd",
+							},
+						},
+					},
+				}: false,
+				{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_STARTED,
+					Metadata: &model.NotificationEventDeploymentStarted{
+						Deployment: &model.Deployment{
+							Labels: map[string]string{
+								"env":  "dev",
+								"team": "pipecd",
+							},
+						},
+					},
+				}: true,
+				{
+					Type: model.NotificationEventType_EVENT_STAGE_STARTED,
+					Metadata: &model.NotificationEventStageStarted{
+						Deployment: &model.Deployment{
+							Labels: map[string]string{
+								"env":  "stg",
+								"team": "pipecd",
+							},
+						},
+					},
+				}: false,
+				{
+					Type: model.NotificationEventType_EVENT_STAGE_STARTED,
+					Metadata: &model.NotificationEventStageStarted{
+						Deployment: &model.Deployment{
+							Labels: map[string]string{
+								"env":  "dev",
+								"team": "pipecd",
+							},
+						},
+					},
+				}: true,
+				{
+					Type: model.NotificationEventType_EVENT_STAGE_SKIPPED,
+					Metadata: &model.NotificationEventStageSkipped{
+						Deployment: &model.Deployment{
+							Labels: map[string]string{
+								"env":  "stg",
+								"team": "pipecd",
+							},
+						},
+					},
+				}: false,
+				{
+					Type: model.NotificationEventType_EVENT_STAGE_SKIPPED,
+					Metadata: &model.NotificationEventStageSkipped{
+						Deployment: &model.Deployment{
+							Labels: map[string]string{
+								"env":  "dev",
+								"team": "pipecd",
+							},
+						},
+					},
+				}: true,
+				{
+					Type: model.NotificationEventType_EVENT_STAGE_SUCCEEDED,
+					Metadata: &model.NotificationEventStageSucceeded{
+						Deployment: &model.Deployment{
+							Labels: map[string]string{
+								"env":  "stg",
+								"team": "pipecd",
+							},
+						},
+					},
+				}: false,
+				{
+					Type: model.NotificationEventType_EVENT_STAGE_SUCCEEDED,
+					Metadata: &model.NotificationEventStageSucceeded{
+						Deployment: &model.Deployment{
+							Labels: map[string]string{
+								"env":  "dev",
+								"team": "pipecd",
+							},
+						},
+					},
+				}: true,
+				{
+					Type: model.NotificationEventType_EVENT_STAGE_FAILED,
+					Metadata: &model.NotificationEventStageFailed{
+						Deployment: &model.Deployment{
+							Labels: map[string]string{
+								"env":  "stg",
+								"team": "pipecd",
+							},
+						},
+					},
+				}: false,
+				{
+					Type: model.NotificationEventType_EVENT_STAGE_FAILED,
+					Metadata: &model.NotificationEventStageFailed{
+						Deployment: &model.Deployment{
+							Labels: map[string]string{
+								"env":  "dev",
+								"team": "pipecd",
+							},
+						},
+					},
+				}: true,
+				{
+					Type: model.NotificationEventType_EVENT_STAGE_CANCELLED,
+					Metadata: &model.NotificationEventStageCancelled{
+						Deployment: &model.Deployment{
+							Labels: map[string]string{
+								"env":  "stg",
+								"team": "pipecd",
+							},
+						},
+					},
+				}: false,
+				{
+					Type: model.NotificationEventType_EVENT_STAGE_CANCELLED,
+					Metadata: &model.NotificationEventStageCancelled{
+						Deployment: &model.Deployment{
 							Labels: map[string]string{
 								"env":  "dev",
 								"team": "pipecd",

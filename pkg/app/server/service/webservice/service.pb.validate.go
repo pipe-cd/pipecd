@@ -2809,16 +2809,7 @@ func (m *AddApplicationRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetPlatformProvider()) < 1 {
-		err := AddApplicationRequestValidationError{
-			field:  "PlatformProvider",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for PlatformProvider
 
 	// no validation rules for Description
 
@@ -3083,16 +3074,7 @@ func (m *UpdateApplicationRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetPlatformProvider()) < 1 {
-		err := UpdateApplicationRequestValidationError{
-			field:  "PlatformProvider",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for PlatformProvider
 
 	// no validation rules for ConfigFilename
 

@@ -31,6 +31,7 @@ goog.exportSymbol('proto.model.DeploymentMetadata', null, global);
 goog.exportSymbol('proto.model.DeploymentMetadata.KeyValues', null, global);
 goog.exportSymbol('proto.model.DeploymentStatus', null, global);
 goog.exportSymbol('proto.model.DeploymentTrigger', null, global);
+goog.exportSymbol('proto.model.ManualOperation', null, global);
 goog.exportSymbol('proto.model.PipelineStage', null, global);
 goog.exportSymbol('proto.model.StageStatus', null, global);
 goog.exportSymbol('proto.model.TriggerKind', null, global);
@@ -1537,7 +1538,8 @@ proto.model.PipelineStage.toObject = function(includeInstance, msg) {
     rollback: jspb.Message.getBooleanFieldWithDefault(msg, 12, false),
     completedAt: jspb.Message.getFieldWithDefault(msg, 13, 0),
     createdAt: jspb.Message.getFieldWithDefault(msg, 14, 0),
-    updatedAt: jspb.Message.getFieldWithDefault(msg, 15, 0)
+    updatedAt: jspb.Message.getFieldWithDefault(msg, 15, 0),
+    availableOperation: jspb.Message.getFieldWithDefault(msg, 16, 0)
   };
 
   if (includeInstance) {
@@ -1635,6 +1637,10 @@ proto.model.PipelineStage.deserializeBinaryFromReader = function(msg, reader) {
     case 15:
       var value = /** @type {number} */ (reader.readInt64());
       msg.setUpdatedAt(value);
+      break;
+    case 16:
+      var value = /** @type {!proto.model.ManualOperation} */ (reader.readEnum());
+      msg.setAvailableOperation(value);
       break;
     default:
       reader.skipField();
@@ -1764,6 +1770,13 @@ proto.model.PipelineStage.serializeBinaryToWriter = function(message, writer) {
   if (f !== 0) {
     writer.writeInt64(
       15,
+      f
+    );
+  }
+  f = message.getAvailableOperation();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      16,
       f
     );
   }
@@ -2061,6 +2074,24 @@ proto.model.PipelineStage.prototype.getUpdatedAt = function() {
  */
 proto.model.PipelineStage.prototype.setUpdatedAt = function(value) {
   return jspb.Message.setProto3IntField(this, 15, value);
+};
+
+
+/**
+ * optional ManualOperation available_operation = 16;
+ * @return {!proto.model.ManualOperation}
+ */
+proto.model.PipelineStage.prototype.getAvailableOperation = function() {
+  return /** @type {!proto.model.ManualOperation} */ (jspb.Message.getFieldWithDefault(this, 16, 0));
+};
+
+
+/**
+ * @param {!proto.model.ManualOperation} value
+ * @return {!proto.model.PipelineStage} returns this
+ */
+proto.model.PipelineStage.prototype.setAvailableOperation = function(value) {
+  return jspb.Message.setProto3EnumField(this, 16, value);
 };
 
 
@@ -2727,6 +2758,15 @@ proto.model.TriggerKind = {
   ON_COMMAND: 1,
   ON_OUT_OF_SYNC: 2,
   ON_CHAIN: 3
+};
+
+/**
+ * @enum {number}
+ */
+proto.model.ManualOperation = {
+  MANUAL_OPERATION_UNKNOWN: 0,
+  MANUAL_OPERATION_SKIP: 1,
+  MANUAL_OPERATION_APPROVE: 2
 };
 
 goog.object.extend(exports, proto.model);

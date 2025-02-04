@@ -29,8 +29,9 @@ module.exports = (env) =>
       port: 9090,
       historyApiFallback: true,
       allowedHosts: "all",
-      proxy: {
-        "/api": {
+      proxy: [
+        {
+          context: ["/api"],
           changeOrigin: true,
           target: process.env.API_ENDPOINT,
           pathRewrite: { "^/api": "" },
@@ -39,7 +40,7 @@ module.exports = (env) =>
             Cookie: process.env.API_COOKIE,
           },
         },
-      },
+      ],
     },
     module: {
       rules: [

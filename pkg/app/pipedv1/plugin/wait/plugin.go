@@ -128,6 +128,7 @@ func (s *plugin) run(ctx context.Context, input cli.Input) (runErr error) {
 				cfg,
 				input.Logger,
 				persister,
+				pipedapiClient,
 			)
 			opts = []rpc.Option{
 				rpc.WithPort(cfg.Port),

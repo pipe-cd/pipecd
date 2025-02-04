@@ -59,7 +59,6 @@ message Piped {
     // Unix time when the piped is started up.
     int64 started_at = 8;
     // List of configured cloud providers.
-    // Deprecated: use PlatformProvider instead.
     repeated CloudProvider cloud_providers = 9 [deprecated=true];
     // List of configured repositories.
     repeated ApplicationGitRepository repositories = 10;
@@ -68,7 +67,7 @@ message Piped {
     // Currently applied config.
     string config = 12;
     // List of configured platform providers.
-    repeated PlatformProvider platform_providers = 16;
+    repeated PlatformProvider platform_providers = 16 [deprecated=true];
     // The public key/service account for encrypting the secret data.
     SecretEncryption secret_encryption = 21;
 

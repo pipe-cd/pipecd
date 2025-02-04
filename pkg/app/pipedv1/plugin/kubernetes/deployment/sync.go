@@ -18,7 +18,6 @@ import (
 	"cmp"
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
@@ -118,22 +117,9 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersi
 
 	lp.Info("Start finding all running resources but no longer defined in Git")
 
-	namespacedLiveResources, err := kubectl.GetAll(ctx, deployTargetConfig.KubeConfigPath,
-		"",
-		fmt.Sprintf("%s=%s", provider.LabelManagedBy, provider.ManagedByPiped),
-		fmt.Sprintf("%s=%s", provider.LabelApplication, input.GetDeployment().GetApplicationId()),
-	)
+	namespacedLiveResources, clusterScopedLiveResources, err := provider.GetLiveResources(ctx, kubectl, deployTargetConfig.KubeConfigPath, input.GetDeployment().GetApplicationId())
 	if err != nil {
-		lp.Errorf("Failed while listing all resources (%v)", err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	clusterScopedLiveResources, err := kubectl.GetAllClusterScoped(ctx, deployTargetConfig.KubeConfigPath,
-		fmt.Sprintf("%s=%s", provider.LabelManagedBy, provider.ManagedByPiped),
-		fmt.Sprintf("%s=%s", provider.LabelApplication, input.GetDeployment().GetApplicationId()),
-	)
-	if err != nil {
-		lp.Errorf("Failed while listing all cluster-scoped resources (%v)", err)
+		lp.Errorf("Failed while getting live resources (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 

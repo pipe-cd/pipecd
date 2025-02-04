@@ -85,71 +85,6 @@ func TestPipedConfig(t *testing.T) {
 						Password: "sample-password",
 					},
 				},
-				PlatformProviders: []PipedPlatformProvider{
-					{
-						Name: "kubernetes-default",
-						Type: model.PlatformProviderKubernetes,
-						Labels: map[string]string{
-							"group": "workload",
-						},
-						KubernetesConfig: &PlatformProviderKubernetesConfig{
-							MasterURL:      "https://example.com",
-							KubeConfigPath: "/etc/kube/config",
-							AppStateInformer: KubernetesAppStateInformer{
-								IncludeResources: []KubernetesResourceMatcher{
-									{
-										APIVersion: "pipecd.dev/v1beta1",
-									},
-									{
-										APIVersion: "networking.gke.io/v1beta1",
-										Kind:       "ManagedCertificate",
-									},
-								},
-								ExcludeResources: []KubernetesResourceMatcher{
-									{
-										APIVersion: "v1",
-										Kind:       "Endpoints",
-									},
-								},
-							},
-						},
-					},
-					{
-						Name: "kubernetes-dev",
-						Type: model.PlatformProviderKubernetes,
-						Labels: map[string]string{
-							"group": "config",
-						},
-						KubernetesConfig: &PlatformProviderKubernetesConfig{},
-					},
-					{
-						Name: "terraform",
-						Type: model.PlatformProviderTerraform,
-						TerraformConfig: &PlatformProviderTerraformConfig{
-							Vars: []string{
-								"project=gcp-project",
-								"region=us-centra1",
-							},
-							DriftDetectionEnabled: newBoolPointer(false),
-						},
-					},
-					{
-						Name: "cloudrun",
-						Type: model.PlatformProviderCloudRun,
-						CloudRunConfig: &PlatformProviderCloudRunConfig{
-							Project:         "gcp-project-id",
-							Region:          "cloud-run-region",
-							CredentialsFile: "/etc/piped-secret/gcp-service-account.json",
-						},
-					},
-					{
-						Name: "lambda",
-						Type: model.PlatformProviderLambda,
-						LambdaConfig: &PlatformProviderLambdaConfig{
-							Region: "us-east-1",
-						},
-					},
-				},
 				AnalysisProviders: []PipedAnalysisProvider{
 					{
 						Name: "prometheus-dev",
@@ -637,40 +572,6 @@ func TestPipedConfigMask(t *testing.T) {
 						Password: "foo",
 					},
 				},
-				PlatformProviders: []PipedPlatformProvider{
-					{
-						Name: "foo",
-						Type: model.PlatformProviderKubernetes,
-						KubernetesConfig: &PlatformProviderKubernetesConfig{
-							MasterURL:      "foo",
-							KubeConfigPath: "foo",
-							AppStateInformer: KubernetesAppStateInformer{
-								Namespace: "",
-								IncludeResources: []KubernetesResourceMatcher{
-									{
-										APIVersion: "foo",
-										Kind:       "foo",
-									},
-								},
-								ExcludeResources: []KubernetesResourceMatcher{
-									{
-										APIVersion: "foo",
-										Kind:       "foo",
-									},
-								},
-							},
-						},
-					},
-					{
-						Name: "bar",
-						Type: model.PlatformProviderCloudRun,
-						CloudRunConfig: &PlatformProviderCloudRunConfig{
-							Project:         "bar",
-							Region:          "bar",
-							CredentialsFile: "/etc/cloudrun/credentials",
-						},
-					},
-				},
 				AnalysisProviders: []PipedAnalysisProvider{
 					{
 						Name: "foo",
@@ -799,40 +700,6 @@ func TestPipedConfigMask(t *testing.T) {
 						Address:  "foo",
 						Username: "foo",
 						Password: maskString,
-					},
-				},
-				PlatformProviders: []PipedPlatformProvider{
-					{
-						Name: "foo",
-						Type: model.PlatformProviderKubernetes,
-						KubernetesConfig: &PlatformProviderKubernetesConfig{
-							MasterURL:      "foo",
-							KubeConfigPath: "foo",
-							AppStateInformer: KubernetesAppStateInformer{
-								Namespace: "",
-								IncludeResources: []KubernetesResourceMatcher{
-									{
-										APIVersion: "foo",
-										Kind:       "foo",
-									},
-								},
-								ExcludeResources: []KubernetesResourceMatcher{
-									{
-										APIVersion: "foo",
-										Kind:       "foo",
-									},
-								},
-							},
-						},
-					},
-					{
-						Name: "bar",
-						Type: model.PlatformProviderCloudRun,
-						CloudRunConfig: &PlatformProviderCloudRunConfig{
-							Project:         "bar",
-							Region:          "bar",
-							CredentialsFile: "******",
-						},
 					},
 				},
 				AnalysisProviders: []PipedAnalysisProvider{
@@ -988,64 +855,6 @@ func TestPipedSpecClone(t *testing.T) {
 						Password: "sample-password",
 					},
 				},
-				PlatformProviders: []PipedPlatformProvider{
-					{
-						Name: "kubernetes-default",
-						Type: model.PlatformProviderKubernetes,
-						KubernetesConfig: &PlatformProviderKubernetesConfig{
-							MasterURL:      "https://example.com",
-							KubeConfigPath: "/etc/kube/config",
-							AppStateInformer: KubernetesAppStateInformer{
-								IncludeResources: []KubernetesResourceMatcher{
-									{
-										APIVersion: "pipecd.dev/v1beta1",
-									},
-									{
-										APIVersion: "networking.gke.io/v1beta1",
-										Kind:       "ManagedCertificate",
-									},
-								},
-								ExcludeResources: []KubernetesResourceMatcher{
-									{
-										APIVersion: "v1",
-										Kind:       "Endpoints",
-									},
-								},
-							},
-						},
-					},
-					{
-						Name:             "kubernetes-dev",
-						Type:             model.PlatformProviderKubernetes,
-						KubernetesConfig: &PlatformProviderKubernetesConfig{},
-					},
-					{
-						Name: "terraform",
-						Type: model.PlatformProviderTerraform,
-						TerraformConfig: &PlatformProviderTerraformConfig{
-							Vars: []string{
-								"project=gcp-project",
-								"region=us-centra1",
-							},
-						},
-					},
-					{
-						Name: "cloudrun",
-						Type: model.PlatformProviderCloudRun,
-						CloudRunConfig: &PlatformProviderCloudRunConfig{
-							Project:         "gcp-project-id",
-							Region:          "cloud-run-region",
-							CredentialsFile: "/etc/piped-secret/gcp-service-account.json",
-						},
-					},
-					{
-						Name: "lambda",
-						Type: model.PlatformProviderLambda,
-						LambdaConfig: &PlatformProviderLambdaConfig{
-							Region: "us-east-1",
-						},
-					},
-				},
 				AnalysisProviders: []PipedAnalysisProvider{
 					{
 						Name: "prometheus-dev",
@@ -1186,64 +995,6 @@ func TestPipedSpecClone(t *testing.T) {
 						Password: "sample-password",
 					},
 				},
-				PlatformProviders: []PipedPlatformProvider{
-					{
-						Name: "kubernetes-default",
-						Type: model.PlatformProviderKubernetes,
-						KubernetesConfig: &PlatformProviderKubernetesConfig{
-							MasterURL:      "https://example.com",
-							KubeConfigPath: "/etc/kube/config",
-							AppStateInformer: KubernetesAppStateInformer{
-								IncludeResources: []KubernetesResourceMatcher{
-									{
-										APIVersion: "pipecd.dev/v1beta1",
-									},
-									{
-										APIVersion: "networking.gke.io/v1beta1",
-										Kind:       "ManagedCertificate",
-									},
-								},
-								ExcludeResources: []KubernetesResourceMatcher{
-									{
-										APIVersion: "v1",
-										Kind:       "Endpoints",
-									},
-								},
-							},
-						},
-					},
-					{
-						Name:             "kubernetes-dev",
-						Type:             model.PlatformProviderKubernetes,
-						KubernetesConfig: &PlatformProviderKubernetesConfig{},
-					},
-					{
-						Name: "terraform",
-						Type: model.PlatformProviderTerraform,
-						TerraformConfig: &PlatformProviderTerraformConfig{
-							Vars: []string{
-								"project=gcp-project",
-								"region=us-centra1",
-							},
-						},
-					},
-					{
-						Name: "cloudrun",
-						Type: model.PlatformProviderCloudRun,
-						CloudRunConfig: &PlatformProviderCloudRunConfig{
-							Project:         "gcp-project-id",
-							Region:          "cloud-run-region",
-							CredentialsFile: "/etc/piped-secret/gcp-service-account.json",
-						},
-					},
-					{
-						Name: "lambda",
-						Type: model.PlatformProviderLambda,
-						LambdaConfig: &PlatformProviderLambdaConfig{
-							Region: "us-east-1",
-						},
-					},
-				},
 				AnalysisProviders: []PipedAnalysisProvider{
 					{
 						Name: "prometheus-dev",
@@ -1345,98 +1096,6 @@ func TestPipedSpecClone(t *testing.T) {
 			if err == nil {
 				assert.Equal(t, tc.expectedSpec, cloned)
 			}
-		})
-	}
-}
-
-func TestFindPlatformProvidersByLabel(t *testing.T) {
-	pipedSpec := &PipedSpec{
-		PlatformProviders: []PipedPlatformProvider{
-			{
-				Name: "provider-1",
-				Type: model.PlatformProviderKubernetes,
-				Labels: map[string]string{
-					"group": "group-1",
-					"foo":   "foo-1",
-				},
-			},
-			{
-				Name: "provider-2",
-				Type: model.PlatformProviderKubernetes,
-				Labels: map[string]string{
-					"group": "group-2",
-					"foo":   "foo-2",
-				},
-			},
-			{
-				Name: "provider-3",
-				Type: model.PlatformProviderCloudRun,
-				Labels: map[string]string{
-					"group": "group-1",
-					"foo":   "foo-3",
-				},
-			},
-			{
-				Name: "provider-4",
-				Type: model.PlatformProviderKubernetes,
-				Labels: map[string]string{
-					"group": "group-2",
-					"foo":   "foo-4",
-				},
-			},
-		},
-	}
-
-	testcases := []struct {
-		name   string
-		labels map[string]string
-		want   []PipedPlatformProvider
-	}{
-		{
-			name: "empty due to missing label",
-			labels: map[string]string{
-				"group": "group-4",
-			},
-			want: []PipedPlatformProvider{},
-		},
-		{
-			name: "found exactly one provider",
-			labels: map[string]string{
-				"group": "group-1",
-			},
-			want: []PipedPlatformProvider{
-				{
-					Name: "provider-1",
-					Type: model.PlatformProviderKubernetes,
-					Labels: map[string]string{
-						"group": "group-1",
-						"foo":   "foo-1",
-					},
-				},
-			},
-		},
-		{
-			name: "found multiple providers",
-			labels: map[string]string{
-				"group": "group-1",
-			},
-			want: []PipedPlatformProvider{
-				{
-					Name: "provider-1",
-					Type: model.PlatformProviderKubernetes,
-					Labels: map[string]string{
-						"group": "group-1",
-						"foo":   "foo-1",
-					},
-				},
-			},
-		},
-	}
-
-	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			got := pipedSpec.FindPlatformProvidersByLabels(tc.labels, model.ApplicationKind_KUBERNETES)
-			assert.Equal(t, tc.want, got)
 		})
 	}
 }

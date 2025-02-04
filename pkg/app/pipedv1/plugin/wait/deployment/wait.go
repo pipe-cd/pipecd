@@ -16,12 +16,17 @@ package deployment
 
 import (
 	"context"
+	"fmt"
+	"strconv"
 	"time"
+
+	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/wait/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
+	"github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
 )
 
 type Stage string
@@ -43,12 +48,12 @@ func (s *deploymentServiceServer) execute(ctx context.Context, in *deployment.Ex
 	duration := opts.Duration.Duration()
 
 	// Retrieve the saved initialStart from the previous run.
-	initialStart := s.retrieveStartTime(in.Stage.Id)
+	initialStart := s.retrieveStartTime(ctx, in.Deployment.Id, in.Stage.Id)
 	if initialStart.IsZero() {
 		// When this is the first run.
 		initialStart = time.Now()
 	}
-	s.saveStartTime(ctx, initialStart, in.Stage.Id)
+	s.saveStartTime(ctx, initialStart, in.Deployment.Id, in.Stage.Id)
 
 	return wait(ctx, duration, initialStart, slp)
 }
@@ -84,27 +89,32 @@ func wait(ctx context.Context, duration time.Duration, initialStart time.Time, s
 	}
 }
 
-func (s *deploymentServiceServer) retrieveStartTime(stageID string) (t time.Time) {
-	// TODO: implement this func with metadataStore
-	return time.Time{}
-	// sec, ok := s.metadataStore.Stage(stageId).Get(startTimeKey)
-	// if !ok {
-	// 	return
-	// }
-	// ut, err := strconv.ParseInt(sec, 10, 64)
-	// if err != nil {
-	// 	return
-	// }
-	// return time.Unix(ut, 0)
+func (s *deploymentServiceServer) retrieveStartTime(ctx context.Context, deploymentID, stageID string) time.Time {
+	sec, err := s.metadataStore.GetStageMetadata(ctx, &pipedservice.GetStageMetadataRequest{
+		DeploymentId: deploymentID,
+		StageId:      stageID,
+		Key:          startTimeKey,
+	})
+	if err != nil {
+		s.logger.Error(fmt.Sprintf("failed to get stage metadata %s", startTimeKey), zap.Error(err))
+		return time.Time{}
+	}
+	ut, err := strconv.ParseInt(sec.Value, 10, 64)
+	if err != nil {
+		s.logger.Error(fmt.Sprintf("failed to parse stage metadata %s", startTimeKey), zap.Error(err))
+		return time.Time{}
+	}
+	return time.Unix(ut, 0)
 }
 
-func (s *deploymentServiceServer) saveStartTime(ctx context.Context, t time.Time, stageID string) {
-	// TODO: implement this func with metadataStore
-
-	// metadata := map[string]string{
-	// 	startTimeKey: strconv.FormatInt(t.Unix(), 10),
-	// }
-	// if err := s.metadataStore.Stage(stageId).PutMulti(ctx, metadata); err != nil {
-	// 	s.logger.Error("failed to store metadata", zap.Error(err))
-	// }
+func (s *deploymentServiceServer) saveStartTime(ctx context.Context, t time.Time, deploymentID, stageID string) {
+	req := &pipedservice.PutStageMetadataRequest{
+		DeploymentId: deploymentID,
+		StageId:      stageID,
+		Key:          startTimeKey,
+		Value:        strconv.FormatInt(t.Unix(), 10),
+	}
+	if _, err := s.metadataStore.PutStageMetadata(ctx, req); err != nil {
+		s.logger.Error(fmt.Sprintf("failed to store %s as stage metadata %s", req.Value, startTimeKey), zap.Error(err))
+	}
 }
