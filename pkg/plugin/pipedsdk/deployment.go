@@ -52,7 +52,7 @@ type DeploymentPlugin[Config any] interface {
 	BuildQuickSyncStages(context.Context, *Config, *Client, TODO) (TODO, error)
 }
 
-// PipelineSyncPlugin is the interface that be implemented by a pipeline sync plugin.
+// PipelineSyncPlugin is the interface implemented by a pipeline sync plugin.
 // This kind of plugin may not implement quick sync stages, and will not manage resources like deployment plugin.
 // It only focuses on executing stages which is generic for all kinds of pipeline sync plugins.
 type PipelineSyncPlugin[Config any] interface {

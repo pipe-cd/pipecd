@@ -85,7 +85,7 @@ func NewPluginCommand() *cobra.Command {
 	}
 	cmd := &cobra.Command{
 		Use:   "start",
-		Short: "Start running the kubernetes-plugin.",
+		Short: fmt.Sprintf("Start running a %s plugin.", deploymentServiceServer.Name())
 		RunE:  cli.WithContext(s.run),
 	}
 
