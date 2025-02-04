@@ -40,6 +40,7 @@ var (
 
 // DeploymentPlugin is the interface that be implemented by a full-spec deployment plugin.
 // This kind of plugin should implement all methods to manage resources and execute stages.
+// The Config parameter is the plugin's config defined in piped's config.
 type DeploymentPlugin[Config any] interface {
 	PipelineSyncPlugin[Config]
 
