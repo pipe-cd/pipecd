@@ -85,7 +85,7 @@ func NewPluginCommand() *cobra.Command {
 	}
 	cmd := &cobra.Command{
 		Use:   "start",
-		Short: fmt.Sprintf("Start running a %s plugin.", deploymentServiceServer.Name())
+		Short: fmt.Sprintf("Start running a %s plugin.", deploymentServiceServer.Name()),
 		RunE:  cli.WithContext(s.run),
 	}
 
