@@ -112,13 +112,13 @@ func (a *DeploymentService) DetermineStrategy(ctx context.Context, request *depl
 	}
 
 	// TODO: consider multiple multiTargets
-	runnings, err := a.loadManifests(ctx, request.GetInput().GetDeployment(), cfg.Spec, request.GetInput().GetRunningDeploymentSource(), kubeconfig.KubernetesDeployTargetConfig{})
+	runnings, err := a.loadManifests(ctx, request.GetInput().GetDeployment(), cfg.Spec, request.GetInput().GetRunningDeploymentSource(), kubeconfig.KubernetesMultiTarget{})
 
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	targets, err := a.loadManifests(ctx, request.GetInput().GetDeployment(), cfg.Spec, request.GetInput().GetTargetDeploymentSource(), kubeconfig.KubernetesDeployTargetConfig{})
+	targets, err := a.loadManifests(ctx, request.GetInput().GetDeployment(), cfg.Spec, request.GetInput().GetTargetDeploymentSource(), kubeconfig.KubernetesMultiTarget{})
 
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -141,7 +141,7 @@ func (a *DeploymentService) DetermineVersions(ctx context.Context, request *depl
 	}
 
 	// TODO: consider multiple multiTargets
-	manifests, err := a.loadManifests(ctx, request.GetInput().GetDeployment(), cfg.Spec, request.GetInput().GetTargetDeploymentSource(), kubeconfig.KubernetesDeployTargetConfig{})
+	manifests, err := a.loadManifests(ctx, request.GetInput().GetDeployment(), cfg.Spec, request.GetInput().GetTargetDeploymentSource(), kubeconfig.KubernetesMultiTarget{})
 
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -187,15 +187,7 @@ func (a *DeploymentService) FetchDefinedStages(context.Context, *deployment.Fetc
 	}, nil
 }
 
-func (a *DeploymentService) loadManifests(ctx context.Context, deploy *model.Deployment, spec *kubeconfig.KubernetesApplicationSpec, deploymentSource *common.DeploymentSource, deployTargetConfig kubeconfig.KubernetesDeployTargetConfig) ([]provider.Manifest, error) {
-	multiTarget := kubeconfig.KubernetesMultiTarget{}
-	for _, target := range spec.Input.MultiTargets {
-		if target.Target.Name == deployTargetConfig.Name {
-			multiTarget = target
-			break
-		}
-	}
-
+func (a *DeploymentService) loadManifests(ctx context.Context, deploy *model.Deployment, spec *kubeconfig.KubernetesApplicationSpec, deploymentSource *common.DeploymentSource, multiTarget kubeconfig.KubernetesMultiTarget) ([]provider.Manifest, error) {
 	// override values if multiTarget has value.
 	manifestPathes := spec.Input.Manifests
 	if len(multiTarget.Manifests) > 0 {

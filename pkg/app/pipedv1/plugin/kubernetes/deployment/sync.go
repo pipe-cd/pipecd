@@ -34,19 +34,49 @@ import (
 func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersister.StageLogPersister, input *deployment.ExecutePluginInput) model.StageStatus {
 	eg, ctx := errgroup.WithContext(ctx)
 
+	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](input.GetTargetDeploymentSource().GetApplicationConfig())
+	if err != nil {
+		lp.Errorf("Failed while decoding application config (%v)", err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	type targetConfig struct {
+		deployTarget kubeconfig.KubernetesDeployTargetConfig
+		multiTarget  kubeconfig.KubernetesMultiTarget
+	}
+	deployTargetMap := make(map[string]kubeconfig.KubernetesDeployTargetConfig, 0)
+	targetConfigs := make([]targetConfig, 0, len(input.GetDeployment().GetDeployTargets()))
+
 	for _, target := range input.GetDeployment().GetDeployTargets() {
 		dt, err := kubeconfig.FindDeployTarget(a.pluginConfig, target)
 		if err != nil {
-			lp.Infof("Failed while unmarshalling deploy target config (%v)", err)
+			lp.Errorf("Failed while finding deploy target (%v)", err)
+			return model.StageStatus_STAGE_FAILURE
+		}
+
+		deployTargetMap[dt.Name] = dt
+	}
+
+	for _, multiTarget := range cfg.Spec.Input.MultiTargets {
+		dt, ok := deployTargetMap[multiTarget.Target.Name]
+		if !ok {
+			lp.Infof("Ignore multi target '%s': not matched any deployTarget", multiTarget.Target.Name)
 			continue
 		}
 
+		targetConfigs = append(targetConfigs, targetConfig{
+			deployTarget: dt,
+			multiTarget:  multiTarget,
+		})
+	}
+
+	for _, tc := range targetConfigs {
 		// Start syncing the deployment to the target.
 		eg.Go(func() error {
-			lp.Infof("Start syncing the deployment to the target %s", target)
-			status := a.sync(ctx, lp, input, dt)
+			lp.Infof("Start syncing the deployment to the target %s", tc.multiTarget.Target.Name)
+			status := a.sync(ctx, lp, input, tc.deployTarget, tc.multiTarget)
 			if status != model.StageStatus_STAGE_SUCCESS {
-				return fmt.Errorf("failed to sync the deployment to the target %s", target)
+				return fmt.Errorf("failed to sync the deployment to the target %s", tc.multiTarget.Target.Name)
 			}
 			return nil
 		})
@@ -60,7 +90,7 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersi
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (a *DeploymentService) sync(ctx context.Context, lp logpersister.StageLogPersister, input *deployment.ExecutePluginInput, deployTargetConfig kubeconfig.KubernetesDeployTargetConfig) model.StageStatus {
+func (a *DeploymentService) sync(ctx context.Context, lp logpersister.StageLogPersister, input *deployment.ExecutePluginInput, deployTargetConfig kubeconfig.KubernetesDeployTargetConfig, multiTarget kubeconfig.KubernetesMultiTarget) model.StageStatus {
 	lp.Infof("Start syncing the deployment")
 
 	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](input.GetTargetDeploymentSource().GetApplicationConfig())
@@ -70,7 +100,7 @@ func (a *DeploymentService) sync(ctx context.Context, lp logpersister.StageLogPe
 	}
 
 	lp.Infof("Loading manifests at commit %s for handling", input.GetDeployment().GetTrigger().GetCommit().GetHash())
-	manifests, err := a.loadManifests(ctx, input.GetDeployment(), cfg.Spec, input.GetTargetDeploymentSource(), deployTargetConfig)
+	manifests, err := a.loadManifests(ctx, input.GetDeployment(), cfg.Spec, input.GetTargetDeploymentSource(), multiTarget)
 	if err != nil {
 		lp.Errorf("Failed while loading manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
@@ -117,7 +147,7 @@ func (a *DeploymentService) sync(ctx context.Context, lp logpersister.StageLogPe
 	}
 
 	// Get the kubectl tool path.
-	kubectlPath, err := a.toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion, defaultKubectlVersion))
+	kubectlPath, err := a.toolRegistry.Kubectl(ctx, cmp.Or(multiTarget.KubectlVersion, cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion, defaultKubectlVersion))
 	if err != nil {
 		lp.Errorf("Failed while getting kubectl tool (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
