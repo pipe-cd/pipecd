@@ -18,43 +18,27 @@ import (
 	"context"
 	"strings"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
-	"github.com/pipe-cd/pipecd/pkg/config"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/filematcher"
 	"github.com/pipe-cd/pipecd/pkg/git"
-	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-// checkSkipStage checks whether the stage should be skipped or not.
-func (s *scheduler) shouldSkipStage(ctx context.Context, in executor.Input) (skip bool, err error) {
-	stageConfig := in.StageConfig
-	var skipOptions config.SkipOptions
-	switch stageConfig.Name {
-	case model.StageAnalysis:
-		skipOptions = stageConfig.AnalysisStageOptions.SkipOn
-	case model.StageWait:
-		skipOptions = stageConfig.WaitStageOptions.SkipOn
-	case model.StageWaitApproval:
-		skipOptions = stageConfig.WaitApprovalStageOptions.SkipOn
-	case model.StageScriptRun:
-		skipOptions = stageConfig.ScriptRunStageOptions.SkipOn
-	default:
-		return false, nil
-	}
-
-	if len(skipOptions.Paths) == 0 && len(skipOptions.CommitMessagePrefixes) == 0 {
+// determineSkipStage checks whether the stage should be skipped or not.
+func (s *scheduler) determineSkipStage(ctx context.Context, skipOpts config.SkipOptions) (skip bool, err error) {
+	if len(skipOpts.Paths) == 0 && len(skipOpts.CommitMessagePrefixes) == 0 {
 		// When no condition is specified.
 		return false, nil
 	}
 
-	repoCfg := in.Application.GitPath.Repo
-	repo, err := in.GitClient.Clone(ctx, repoCfg.Id, repoCfg.Remote, repoCfg.Branch, "")
+	// TODO: Do not use clone here in order to avoid unnecessary cloning.
+	repoCfg := s.deployment.GetGitPath().Repo
+	repo, err := s.gitClient.Clone(ctx, repoCfg.Id, repoCfg.Remote, repoCfg.Branch, "")
 	if err != nil {
 		return false, err
 	}
 
 	// Check by path pattern
-	skip, err = skipByPathPattern(ctx, skipOptions, repo, in.RunningDSP.Revision(), in.TargetDSP.Revision())
+	skip, err = skipByPathPattern(ctx, skipOpts, repo, s.runningDSP.Revision(), s.targetDSP.Revision())
 	if err != nil {
 		return false, err
 	}
@@ -63,7 +47,7 @@ func (s *scheduler) shouldSkipStage(ctx context.Context, in executor.Input) (ski
 	}
 
 	// Check by prefix of commit message
-	skip, err = skipByCommitMessagePrefixes(ctx, skipOptions, repo, in.TargetDSP.Revision())
+	skip, err = skipByCommitMessagePrefixes(ctx, skipOpts, repo, s.targetDSP.Revision())
 	return skip, err
 }
 
