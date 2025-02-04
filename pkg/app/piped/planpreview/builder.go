@@ -19,6 +19,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sort"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -41,6 +42,7 @@ const (
 	workspacePattern    = "plan-preview-builder-*"
 	defaultWorkerAppNum = 3
 	maxWorkerNum        = 100
+	labelEnvKey         = "env"
 )
 
 var (
@@ -197,8 +199,23 @@ func (b *builder) build(ctx context.Context, id string, cmd model.Command_BuildP
 		results = append(results, r)
 	}
 
+	sortResults(results)
+
 	logger.Info("successfully collected plan-preview results of all applications")
 	return results, nil
+}
+
+func sortResults(results []*model.ApplicationPlanPreviewResult) {
+	sort.SliceStable(results, func(i, j int) bool {
+		a, b := results[i], results[j]
+		if a.ApplicationName != b.ApplicationName {
+			return a.ApplicationName < b.ApplicationName
+		}
+		if a.Labels[labelEnvKey] != b.Labels[labelEnvKey] {
+			return a.Labels[labelEnvKey] < b.Labels[labelEnvKey]
+		}
+		return a.ApplicationKind < b.ApplicationKind
+	})
 }
 
 func (b *builder) buildApp(ctx context.Context, worker int, command string, app *model.Application, repo git.Repo, mergedCommit string) *model.ApplicationPlanPreviewResult {
