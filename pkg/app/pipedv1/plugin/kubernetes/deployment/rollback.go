@@ -43,7 +43,7 @@ func (a *DeploymentService) executeK8sRollbackStage(ctx context.Context, lp logp
 	lp.Infof("Loading manifests at commit %s for handling", input.GetDeployment().GetRunningCommitHash())
 
 	// TODO: consider multiple multiTargets
-	manifests, err := a.loadManifests(ctx, input.GetDeployment(), cfg.Spec, input.GetRunningDeploymentSource(), kubeconfig.KubernetesMultiTarget{})
+	manifests, err := a.loadManifests(ctx, input.GetDeployment(), cfg.Spec, input.GetRunningDeploymentSource(), &kubeconfig.KubernetesMultiTarget{})
 	if err != nil {
 		lp.Errorf("Failed while loading manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE

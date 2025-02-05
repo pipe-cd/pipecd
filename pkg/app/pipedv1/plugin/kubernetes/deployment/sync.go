@@ -42,11 +42,12 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersi
 
 	type targetConfig struct {
 		deployTarget kubeconfig.KubernetesDeployTargetConfig
-		multiTarget  kubeconfig.KubernetesMultiTarget
+		multiTarget  *kubeconfig.KubernetesMultiTarget
 	}
 	deployTargetMap := make(map[string]kubeconfig.KubernetesDeployTargetConfig, 0)
 	targetConfigs := make([]targetConfig, 0, len(input.GetDeployment().GetDeployTargets()))
 
+	// prevent the deployment when its deployTarget is not found in the piped config
 	for _, target := range input.GetDeployment().GetDeployTargets() {
 		dt, err := kubeconfig.FindDeployTarget(a.pluginConfig, target)
 		if err != nil {
@@ -57,26 +58,37 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersi
 		deployTargetMap[dt.Name] = dt
 	}
 
-	for _, multiTarget := range cfg.Spec.Input.MultiTargets {
-		dt, ok := deployTargetMap[multiTarget.Target.Name]
-		if !ok {
-			lp.Infof("Ignore multi target '%s': not matched any deployTarget", multiTarget.Target.Name)
-			continue
+	// If no multi-targets are specified, sync to all deploy targets.
+	if len(cfg.Spec.Input.MultiTargets) == 0 {
+		for _, dt := range deployTargetMap {
+			targetConfigs = append(targetConfigs, targetConfig{
+				deployTarget: dt,
+				multiTarget:  nil,
+			})
 		}
+	} else {
+		// Sync to the specified multi-targets.
+		for _, multiTarget := range cfg.Spec.Input.MultiTargets {
+			dt, ok := deployTargetMap[multiTarget.Target.Name]
+			if !ok {
+				lp.Infof("Ignore multi target '%s': not matched any deployTarget", multiTarget.Target.Name)
+				continue
+			}
 
-		targetConfigs = append(targetConfigs, targetConfig{
-			deployTarget: dt,
-			multiTarget:  multiTarget,
-		})
+			targetConfigs = append(targetConfigs, targetConfig{
+				deployTarget: dt,
+				multiTarget:  &multiTarget,
+			})
+		}
 	}
 
 	for _, tc := range targetConfigs {
 		// Start syncing the deployment to the target.
 		eg.Go(func() error {
-			lp.Infof("Start syncing the deployment to the target %s", tc.multiTarget.Target.Name)
+			lp.Infof("Start syncing the deployment to the target %s", tc.deployTarget.Name)
 			status := a.sync(ctx, lp, input, tc.deployTarget, tc.multiTarget)
 			if status != model.StageStatus_STAGE_SUCCESS {
-				return fmt.Errorf("failed to sync the deployment to the target %s", tc.multiTarget.Target.Name)
+				return fmt.Errorf("failed to sync the deployment to the target %s", tc.deployTarget.Name)
 			}
 			return nil
 		})
@@ -90,7 +102,7 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersi
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (a *DeploymentService) sync(ctx context.Context, lp logpersister.StageLogPersister, input *deployment.ExecutePluginInput, deployTargetConfig kubeconfig.KubernetesDeployTargetConfig, multiTarget kubeconfig.KubernetesMultiTarget) model.StageStatus {
+func (a *DeploymentService) sync(ctx context.Context, lp logpersister.StageLogPersister, input *deployment.ExecutePluginInput, deployTargetConfig kubeconfig.KubernetesDeployTargetConfig, multiTarget *kubeconfig.KubernetesMultiTarget) model.StageStatus {
 	lp.Infof("Start syncing the deployment")
 
 	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](input.GetTargetDeploymentSource().GetApplicationConfig())
@@ -147,7 +159,12 @@ func (a *DeploymentService) sync(ctx context.Context, lp logpersister.StageLogPe
 	}
 
 	// Get the kubectl tool path.
-	kubectlPath, err := a.toolRegistry.Kubectl(ctx, cmp.Or(multiTarget.KubectlVersion, cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion, defaultKubectlVersion))
+	kubectlVersions := []string{cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion, defaultKubectlVersion}
+	// If multi-target is specified, use the kubectl version specified in it.
+	if multiTarget != nil {
+		kubectlVersions = append([]string{multiTarget.KubectlVersion}, kubectlVersions...)
+	}
+	kubectlPath, err := a.toolRegistry.Kubectl(ctx, cmp.Or(kubectlVersions...))
 	if err != nil {
 		lp.Errorf("Failed while getting kubectl tool (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
