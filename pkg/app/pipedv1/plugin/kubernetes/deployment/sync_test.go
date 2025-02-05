@@ -702,6 +702,60 @@ func TestDeploymentService_executeK8sSyncStage_multiCluster(t *testing.T) {
 	}
 }
 
+func TestDeploymentService_executeK8sSyncStage_multiCluster_one_of_deploy_target_is_not_found_in_piped_config(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	// read the application config from the example file
+	cfg, err := os.ReadFile(filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
+	require.NoError(t, err)
+
+	// prepare the request
+	req := &deployment.ExecuteStageRequest{
+		Input: &deployment.ExecutePluginInput{
+			Deployment: &model.Deployment{
+				PipedId:       "piped-id",
+				ApplicationId: "app-id",
+				DeployTargets: []string{"cluster1", "wrong_value"}, // include wrong deploy target
+			},
+			Stage: &model.PipelineStage{
+				Id:   "stage-id",
+				Name: "K8S_SYNC",
+			},
+			StageConfig:             []byte(``),
+			RunningDeploymentSource: nil,
+			TargetDeploymentSource: &common.DeploymentSource{
+				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
+				CommitHash:                "0123456789",
+				ApplicationConfig:         cfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+		},
+	}
+
+	// initialize tool registry
+	testRegistry, err := toolregistrytest.NewToolRegistry(t)
+	require.NoError(t, err)
+
+	// prepare the first cluster
+	cluster1 := setupCluster(t, "cluster1")
+	cluster2 := setupCluster(t, "cluster2")
+
+	pluginCfg := &config.PipedPlugin{
+		DeployTargets: []config.PipedDeployTarget{
+			cluster1.deployTarget,
+			cluster2.deployTarget,
+		},
+	}
+
+	svc := NewDeploymentService(pluginCfg, zaptest.NewLogger(t), testRegistry, logpersistertest.NewTestLogPersister(t))
+	resp, err := svc.ExecuteStage(ctx, req)
+
+	require.NoError(t, err)
+	assert.Equal(t, model.StageStatus_STAGE_FAILURE.String(), resp.GetStatus().String())
+}
+
 func TestDeploymentService_executeK8sSyncStage_multiCluster_templateNone(t *testing.T) {
 	t.Parallel()
 
