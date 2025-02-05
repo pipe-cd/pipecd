@@ -265,9 +265,7 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
             <MenuItem onClick={handleEnable}>Enable</MenuItem>
           ) : (
             <div>
-              <MenuItem disabled={!app.platformProvider} onClick={handleEdit}>
-                Edit
-              </MenuItem>
+              <MenuItem onClick={handleEdit}>Edit</MenuItem>
               <MenuItem onClick={handleGenerateSecret}>Encrypt Secret</MenuItem>
               <MenuItem onClick={handleDisable}>Disable</MenuItem>
             </div>

@@ -148,15 +148,22 @@ export const updateApplication = async ({
   name,
   pipedId,
   configFilename,
-}: Required<UpdateApplicationRequest.AsObject>): Promise<
-  UpdateApplicationResponse.AsObject
-> => {
+}: Required<
+  Omit<UpdateApplicationRequest.AsObject, "platformProvider" | "kind">
+> &
+  Partial<
+    Pick<UpdateApplicationRequest.AsObject, "platformProvider" | "kind">
+  >): Promise<UpdateApplicationResponse.AsObject> => {
   const req = new UpdateApplicationRequest();
   req.setApplicationId(applicationId);
   req.setName(name);
   req.setPipedId(pipedId);
-  req.setPlatformProvider(platformProvider);
-  req.setKind(kind);
+  if (platformProvider !== undefined) {
+    req.setPlatformProvider(platformProvider);
+  }
+  if (kind !== undefined) {
+    req.setKind(kind);
+  }
   req.setConfigFilename(configFilename);
   return apiRequest(req, apiClient.updateApplication);
 };

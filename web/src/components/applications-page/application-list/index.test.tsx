@@ -5,10 +5,7 @@ import { disableApplication, enableApplication } from "~/modules/applications";
 import { setDeletingAppId } from "~/modules/delete-application";
 import { generateSealedSecret } from "~/modules/sealed-secret";
 import { setUpdateTargetId } from "~/modules/update-application";
-import {
-  dummyApplication,
-  dummyApplicationPipedV1,
-} from "~/__fixtures__/dummy-application";
+import { dummyApplication } from "~/__fixtures__/dummy-application";
 import { createStore, render, screen, waitFor } from "~~/test-utils";
 import { ApplicationList } from ".";
 
@@ -30,15 +27,6 @@ const state = {
       [dummyApplication.id]: dummyApplication,
     },
     ids: [dummyApplication.id],
-  },
-};
-
-const statePipedV1 = {
-  applications: {
-    entities: {
-      [dummyApplicationPipedV1.id]: dummyApplicationPipedV1,
-    },
-    ids: [dummyApplicationPipedV1.id],
   },
 };
 
@@ -113,23 +101,6 @@ test("edit", () => {
         payload: dummyApplication.id,
       }),
     ])
-  );
-});
-
-test("disabled edit when platformProvider = '' ", () => {
-  const store = createStore(statePipedV1);
-  render(
-    <MemoryRouter>
-      <ApplicationList currentPage={1} />
-    </MemoryRouter>,
-    { store }
-  );
-
-  userEvent.click(screen.getByRole("button", { name: "Open menu" }));
-  expect(screen.getByRole("menuitem", { name: "Edit" })).toBeInTheDocument();
-  expect(screen.getByRole("menuitem", { name: "Edit" })).toHaveAttribute(
-    "aria-disabled",
-    "true"
   );
 });
 

@@ -8,9 +8,7 @@ import {
   Typography,
 } from "@material-ui/core";
 import { FC, useEffect } from "react";
-import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
-import { ApplicationKind } from "~/modules/applications";
 import { Piped, selectAllPipeds, selectPipedById } from "~/modules/pipeds";
 import { sortFunc } from "~/utils/common";
 import { ApplicationFormProps, ApplicationFormValue } from "..";
@@ -22,43 +20,19 @@ import { addApplication } from "~/modules/applications";
 import FormSelectInput from "../../form-select-input";
 import { updateApplication } from "~/modules/update-application";
 
-export const emptyFormValues: ApplicationFormValue = {
+type FormValues = Omit<ApplicationFormValue, "platformProvider" | "kind">;
+
+export const emptyFormValues: FormValues = {
   name: "",
-  kind: ApplicationKind.KUBERNETES,
   pipedId: "",
   repoPath: "",
   configFilename: "app.pipecd.yaml",
-  platformProvider: "",
   repo: {
     id: "",
     remote: "",
     branch: "",
   },
   labels: new Array<[string, string]>(),
-};
-
-const createPlatformProviderListFromPiped = ({
-  kind,
-  piped,
-}: {
-  piped?: Piped.AsObject;
-  kind: ApplicationKind;
-}): Array<{ name: string; value: string }> => {
-  if (!piped) {
-    return [{ name: "None", value: "" }];
-  }
-
-  const providerList: Array<{ name: string; type: string }> = [
-    ...piped.cloudProvidersList,
-    ...piped.platformProvidersList,
-  ];
-
-  return providerList
-    .filter((provider) => provider.type === APPLICATION_KIND_TEXT[kind])
-    .map((provider) => ({
-      name: provider.name,
-      value: provider.name,
-    }));
 };
 
 const createRepoListFromPiped = (
@@ -99,7 +73,6 @@ const useStyles = makeStyles((theme) => ({
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
     gap: theme.spacing(3),
-    // marginTop: theme.spacing(2),
   },
   buttonProgress: {
     color: theme.palette.primary.main,
@@ -109,40 +82,10 @@ const useStyles = makeStyles((theme) => ({
     marginTop: -12,
     marginLeft: -12,
   },
-  formItem: {
-    width: "100%",
-    marginTop: theme.spacing(4),
-  },
-  select: {
-    width: "100%",
-  },
-  accordionDetail: {
-    width: "100%",
-  },
-  button: {
-    margin: theme.spacing(2),
-  },
-  actionsContainer: {
-    marginBottom: theme.spacing(2),
-  },
-  tabLabel: {
-    minHeight: 0,
-    "& .MuiTab-wrapper": {
-      flexDirection: "row-reverse",
-      maxWidth: 200,
-    },
-    "& .MuiTab-wrapper > *:first-child": {
-      marginBottom: 0,
-    },
-    "& .MuiIconButton-sizeSmall": {
-      padding: "0 3px 3px 3px",
-    },
-  },
 }));
 
 const validationSchema = yup.object().shape({
   name: yup.string().required(),
-  kind: yup.number().required(),
   pipedId: yup.string().required(),
   repo: yup
     .object({
@@ -153,24 +96,21 @@ const validationSchema = yup.object().shape({
     .required(),
   repoPath: yup.string().required(),
   configFilename: yup.string().required(),
-  platformProvider: yup.string().required(),
 });
 
-const ApplicationFormManual: FC<ApplicationFormProps> = ({
+const ApplicationFormManualV1: FC<ApplicationFormProps> = ({
   title,
   onClose,
   onFinished,
-  disableApplicationInfo = false,
   setIsFormDirty,
   setIsSubmitting,
   detailApp: detailApp,
 }) => {
   const dispatch = useAppDispatch();
-  const formik = useFormik<ApplicationFormValue>({
+  const formik = useFormik<FormValues>({
     initialValues: detailApp
       ? {
           name: detailApp.name,
-          kind: detailApp.kind,
           pipedId: detailApp.pipedId,
           repoPath: detailApp.gitPath?.path || "",
           repo: detailApp.gitPath?.repo || {
@@ -179,12 +119,12 @@ const ApplicationFormManual: FC<ApplicationFormProps> = ({
             branch: "",
           },
           configFilename: detailApp.gitPath?.configFilename || "",
-          platformProvider: detailApp.platformProvider,
           labels: detailApp.labelsMap,
         }
       : emptyFormValues,
     validationSchema,
     enableReinitialize: true,
+
     async onSubmit(values) {
       if (detailApp) {
         await dispatch(
@@ -237,12 +177,9 @@ const ApplicationFormManual: FC<ApplicationFormProps> = ({
 
   const selectedPiped = useAppSelector(selectPipedById(values.pipedId));
 
-  const platformProviders = createPlatformProviderListFromPiped({
-    piped: selectedPiped,
-    kind: values.kind,
-  });
-
   const repositories = createRepoListFromPiped(selectedPiped);
+
+  const disableApplicationInfo = !!detailApp;
 
   return (
     <Box width="100%">
@@ -265,55 +202,23 @@ const ApplicationFormManual: FC<ApplicationFormProps> = ({
         />
 
         <FormSelectInput
-          id="kind"
-          label="Kind"
-          value={`${values.kind}`}
-          options={Object.entries(
-            APPLICATION_KIND_TEXT
-          ).map(([key, label]) => ({ value: String(key), label }))}
+          id="piped"
+          label="Piped"
+          value={values.pipedId}
           onChange={(value) => {
-            setFieldValue("kind", parseInt(value, 10));
+            setValues({
+              ...emptyFormValues,
+              name: values.name,
+              pipedId: value,
+            });
           }}
-          getOptionLabel={(option) => option.label}
+          options={pipeds.map((piped) => ({
+            label: `${piped.name} (${piped.id})`,
+            value: piped.id,
+          }))}
           required
-          disabled={isSubmitting || disableApplicationInfo}
+          disabled={isSubmitting || pipeds.length === 0}
         />
-
-        <div className={classes.inputGroup}>
-          <FormSelectInput
-            id="piped"
-            label="Piped"
-            value={values.pipedId}
-            onChange={(value) => {
-              setValues({
-                ...emptyFormValues,
-                name: values.name,
-                kind: values.kind,
-                pipedId: value,
-              });
-            }}
-            options={pipeds.map((piped) => ({
-              label: `${piped.name} (${piped.id})`,
-              value: piped.id,
-            }))}
-            required
-            disabled={isSubmitting || pipeds.length === 0}
-          />
-          <FormSelectInput
-            id="platformProvider"
-            label="Platform Provider"
-            value={values.platformProvider}
-            onChange={(value) => setFieldValue("platformProvider", value)}
-            getOptionLabel={(option) => option.name}
-            options={platformProviders}
-            required
-            disabled={
-              selectedPiped === undefined ||
-              platformProviders.length === 0 ||
-              isSubmitting
-            }
-          />
-        </div>
 
         <div className={classes.inputGroup}>
           <FormSelectInput
@@ -388,4 +293,4 @@ const ApplicationFormManual: FC<ApplicationFormProps> = ({
   );
 };
 
-export default ApplicationFormManual;
+export default ApplicationFormManualV1;

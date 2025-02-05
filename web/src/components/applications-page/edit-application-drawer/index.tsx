@@ -1,9 +1,10 @@
 import { Drawer } from "@material-ui/core";
-import { FC, useCallback, useState } from "react";
-import ApplicationFormManual from "~/components/application-form/application-form-manual";
+import { FC, useCallback, useMemo, useState } from "react";
+import ApplicationFormManualV0 from "~/components/application-form/application-form-manual-v0";
+import ApplicationFormManualV1 from "~/components/application-form/application-form-manual-v1";
 import DialogConfirm from "~/components/dialog-confirm";
-import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { UI_TEXT_CANCEL, UI_TEXT_DISCARD } from "~/constants/ui-text";
+import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import {
   Application,
   selectById as selectAppById,
@@ -13,6 +14,11 @@ import { clearUpdateTarget } from "~/modules/update-application";
 type Props = {
   onUpdated: () => void;
 };
+
+enum PipedVersion {
+  V0 = "v0",
+  V1 = "v1",
+}
 
 const CONFIRM_DIALOG_TITLE = "Quit editing application?";
 const CONFIRM_DIALOG_DESCRIPTION =
@@ -38,6 +44,26 @@ const EditApplicationDrawer: FC<Props> = ({ onUpdated }) => {
     }
   }, [dispatch, isFormDirty]);
 
+  const pipedVersion = useMemo(() => {
+    if (!app) return PipedVersion.V0;
+
+    if (!app.platformProvider) return PipedVersion.V1;
+
+    return PipedVersion.V0;
+  }, [app]);
+
+  const editProps = useMemo(
+    () => ({
+      title: `Edit "${app?.name}"`,
+      onClose: handleClose,
+      onFinished: onUpdated,
+      setIsFormDirty: setIsFormDirty,
+      setIsSubmitting: setIsSubmitting,
+      detailApp: app,
+    }),
+    [app, handleClose, onUpdated]
+  );
+
   return (
     <Drawer
       anchor="right"
@@ -47,15 +73,12 @@ const EditApplicationDrawer: FC<Props> = ({ onUpdated }) => {
         handleClose();
       }}
     >
-      <ApplicationFormManual
-        title={`Edit "${app?.name}"`}
-        onClose={handleClose}
-        disableApplicationInfo
-        onFinished={onUpdated}
-        setIsFormDirty={setIsFormDirty}
-        setIsSubmitting={setIsSubmitting}
-        detailApp={app}
-      />
+      {pipedVersion === PipedVersion.V0 && (
+        <ApplicationFormManualV0 {...editProps} />
+      )}
+      {pipedVersion === PipedVersion.V1 && (
+        <ApplicationFormManualV1 {...editProps} />
+      )}
       <DialogConfirm
         open={showConfirm}
         title={CONFIRM_DIALOG_TITLE}

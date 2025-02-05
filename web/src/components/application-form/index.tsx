@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Application, ApplicationKind } from "~/modules/applications";
 import ApplicationFormV1 from "./application-form-v1";
 import ApplicationFormV0 from "./application-form-v0";
-import ApplicationFormManual from "./application-form-manual";
+import ApplicationFormManualV0 from "./application-form-manual-v0";
 import TabPanel from "./tab-panel";
 
 const useStyles = makeStyles(() => ({
@@ -61,7 +61,6 @@ export type ApplicationFormProps = {
   title: string;
   onClose: () => void;
   onFinished: () => void;
-  disableApplicationInfo?: boolean;
   setIsFormDirty?: (state: boolean) => void;
   setIsSubmitting?: (state: boolean) => void;
   detailApp?: Application.AsObject;
@@ -139,7 +138,7 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
         selected={selectedTabIndex === TabKeys.MANUAL}
         {...tabPanelProps(TabKeys.MANUAL)}
       >
-        <ApplicationFormManual {...props} />
+        <ApplicationFormManualV0 {...props} />
       </TabPanel>
     </Box>
   );

@@ -1,9 +1,6 @@
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import {
-  dummyApplication,
-  dummyApplicationPipedV1,
-} from "~/__fixtures__/dummy-application";
+import { dummyApplication } from "~/__fixtures__/dummy-application";
 import { createStore, render, screen } from "~~/test-utils";
 import { ApplicationListItem } from ".";
 
@@ -13,15 +10,6 @@ const state = {
       [dummyApplication.id]: dummyApplication,
     },
     ids: [dummyApplication.id],
-  },
-};
-
-const statePipedV1 = {
-  applications: {
-    entities: {
-      [dummyApplicationPipedV1.id]: dummyApplicationPipedV1,
-    },
-    ids: [dummyApplicationPipedV1.id],
   },
 };
 
@@ -81,36 +69,6 @@ test("edit", () => {
   userEvent.click(screen.getByRole("menuitem", { name: "Edit" }));
 
   expect(handleEdit).toHaveBeenCalledWith(dummyApplication.id);
-});
-
-test("edit is disable with pipedV1", () => {
-  const handleEdit = jest.fn();
-  const store = createStore(statePipedV1);
-  render(
-    <MemoryRouter>
-      <table>
-        <tbody>
-          <ApplicationListItem
-            applicationId={dummyApplicationPipedV1.id}
-            onEdit={handleEdit}
-            onEnable={() => null}
-            onDisable={() => null}
-            onDelete={() => null}
-            onEncryptSecret={() => null}
-          />
-        </tbody>
-      </table>
-    </MemoryRouter>,
-    {
-      store,
-    }
-  );
-
-  userEvent.click(screen.getByRole("button", { name: "Open menu" }));
-  expect(screen.getByRole("menuitem", { name: "Edit" })).toHaveAttribute(
-    "aria-disabled",
-    "true"
-  );
 });
 
 test("disable", () => {
