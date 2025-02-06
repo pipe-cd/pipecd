@@ -479,16 +479,19 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 		originalStatus = ps.Status
 	)
 
-	rds, err := s.runningDSP.Get(ctx, io.Discard)
-	if err != nil {
-		s.logger.Error("failed to get running deployment source", zap.String("stage-name", ps.Name), zap.Error(err))
-		return model.StageStatus_STAGE_FAILURE
-	}
-
 	tds, err := s.targetDSP.Get(ctx, io.Discard)
 	if err != nil {
 		s.logger.Error("failed to get target deployment source", zap.String("stage-name", ps.Name), zap.Error(err))
 		return model.StageStatus_STAGE_FAILURE
+	}
+
+	rds := &deploysource.DeploySource{}
+	if s.runningDSP != nil {
+		rds, err = s.runningDSP.Get(ctx, io.Discard)
+		if err != nil {
+			s.logger.Error("failed to get running deployment source", zap.String("stage-name", ps.Name), zap.Error(err))
+			return model.StageStatus_STAGE_FAILURE
+		}
 	}
 
 	// Check whether to execute the script rollback stage or not.
