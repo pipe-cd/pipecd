@@ -33,6 +33,11 @@ message Piped {
         string type = 2 [(validate.rules).string.min_len = 1];
     }
 
+    message Plugin {
+        string name = 1 [(validate.rules).string.min_len = 1];
+        repeated string deploy_targets = 2;
+    }
+
     message SecretEncryption {
         string type = 1 [(validate.rules).string = {in: ["KEY_PAIR", "GCP_KMS", "AWS_KMS", "NONE"]}];
         string public_key = 2;
@@ -68,6 +73,8 @@ message Piped {
     string config = 12;
     // List of configured platform providers.
     repeated PlatformProvider platform_providers = 16 [deprecated=true];
+    // List of configured plugins.
+    repeated Plugin plugins = 17;
     // The public key/service account for encrypting the secret data.
     SecretEncryption secret_encryption = 21;
 

@@ -381,17 +381,17 @@ func (mr *MockPipedStoreMockRecorder) UpdateInfo(ctx, id, name, desc any) *gomoc
 }
 
 // UpdateMetadata mocks base method.
-func (m *MockPipedStore) UpdateMetadata(ctx context.Context, id, version, config string, pps []*model.Piped_PlatformProvider, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, startedAt int64) error {
+func (m *MockPipedStore) UpdateMetadata(ctx context.Context, id, version, config string, pps []*model.Piped_PlatformProvider, pls []*model.Piped_Plugin, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, startedAt int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateMetadata", ctx, id, version, config, pps, repos, se, startedAt)
+	ret := m.ctrl.Call(m, "UpdateMetadata", ctx, id, version, config, pps, pls, repos, se, startedAt)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateMetadata indicates an expected call of UpdateMetadata.
-func (mr *MockPipedStoreMockRecorder) UpdateMetadata(ctx, id, version, config, pps, repos, se, startedAt any) *gomock.Call {
+func (mr *MockPipedStoreMockRecorder) UpdateMetadata(ctx, id, version, config, pps, pls, repos, se, startedAt any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMetadata", reflect.TypeOf((*MockPipedStore)(nil).UpdateMetadata), ctx, id, version, config, pps, repos, se, startedAt)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMetadata", reflect.TypeOf((*MockPipedStore)(nil).UpdateMetadata), ctx, id, version, config, pps, pls, repos, se, startedAt)
 }
 
 // MockApplicationStore is a mock of ApplicationStore interface.
