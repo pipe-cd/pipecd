@@ -115,6 +115,7 @@ export const addApplication = createAsyncThunk<
       url: "",
     },
     platformProvider: props.platformProvider,
+    deployTargetsByPluginMap: [], // TODO: pass this from form
     kind: props.kind,
     description: "",
     labelsMap: props.labels,
