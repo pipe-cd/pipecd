@@ -15,6 +15,7 @@ import { thunkErrorHandler } from "~/middlewares/thunk-error-handler";
 import { reducers } from "~/modules";
 import type { AppState } from "~/store";
 import { theme } from "~/theme";
+import MemoryRouterTest from "./MemoryRouterTest";
 
 const middlewares = getDefaultMiddleware({
   immutableCheck: false,
@@ -72,3 +73,5 @@ const customRender = (
 export * from "@testing-library/react";
 // override render method
 export { customRender as render };
+
+export { MemoryRouterTest as MemoryRouter };

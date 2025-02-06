@@ -1,8 +1,8 @@
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import { server } from "~/mocks/server";
 import { dummyDeployment } from "~/__fixtures__/dummy-deployment";
 import { dummyPiped } from "~/__fixtures__/dummy-piped";
-import { createReduxStore, render, waitFor } from "~~/test-utils";
+import { createReduxStore, render, waitFor, MemoryRouter } from "~~/test-utils";
 import { DeploymentDetailPage } from ".";
 
 Element.prototype.scrollIntoView = jest.fn();

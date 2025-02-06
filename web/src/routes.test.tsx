@@ -1,9 +1,8 @@
 import { waitFor } from "@testing-library/react";
 import { setupServer } from "msw/node";
 import { GetMeResponse } from "pipecd/web/api_client/service_pb";
-import { MemoryRouter } from "react-router-dom";
 import { createHandler } from "~/mocks/create-handler";
-import { render, screen } from "~~/test-utils";
+import { MemoryRouter, render, screen } from "~~/test-utils";
 import { Routes } from "./routes";
 
 const server = setupServer(

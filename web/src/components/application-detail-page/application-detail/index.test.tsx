@@ -1,5 +1,4 @@
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
 import { server } from "~/mocks/server";
 import {
   Application,
@@ -11,7 +10,13 @@ import type { AppState } from "~/store";
 import { dummyApplication } from "~/__fixtures__/dummy-application";
 import { dummyApplicationLiveState } from "~/__fixtures__/dummy-application-live-state";
 import { dummyPiped } from "~/__fixtures__/dummy-piped";
-import { createStore, render, screen, waitFor } from "~~/test-utils";
+import {
+  createStore,
+  render,
+  screen,
+  waitFor,
+  MemoryRouter,
+} from "~~/test-utils";
 import { ApplicationDetail } from ".";
 
 beforeAll(() => {
