@@ -203,6 +203,7 @@ message ReportPipedMetaRequest {
     string version = 1;
     repeated model.Piped.CloudProvider cloud_providers = 2;
     repeated model.Piped.PlatformProvider platform_providers = 6;
+    repeated model.Piped.Plugin plugins = 7;
     repeated model.ApplicationGitRepository repositories = 3;
     model.Piped.SecretEncryption secret_encryption = 4;
     string config = 5;
