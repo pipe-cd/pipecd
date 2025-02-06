@@ -370,7 +370,7 @@ func (s *applicationStore) UpdateConfiguration(ctx context.Context, id, pipedID,
 		app.PlatformProvider = platformProvider
 		app.CloudProvider = platformProvider
 		app.GitPath.ConfigFilename = configFilename
-		app.DeployTargetsByPlugin = app.DeployTargetsByPlugin
+		app.DeployTargetsByPlugin = dpt
 		return nil
 	})
 }
