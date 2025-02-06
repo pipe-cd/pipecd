@@ -17,6 +17,7 @@ export const dummyPiped: Piped.AsObject = {
     },
   ],
   platformProvidersList: [],
+  pluginsList: [],
   desc: randomText(1),
   disabled: false,
   id: randomUUID(),
