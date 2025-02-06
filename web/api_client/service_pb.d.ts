@@ -1,5 +1,6 @@
 import * as jspb from 'google-protobuf'
 
+import * as google_protobuf_struct_pb from 'google-protobuf/google/protobuf/struct_pb';
 
 import * as pkg_model_common_pb from 'pipecd/web/model/common_pb';
 import * as pkg_model_insight_pb from 'pipecd/web/model/insight_pb';
@@ -499,6 +500,9 @@ export class AddApplicationRequest extends jspb.Message {
   getPlatformProvider(): string;
   setPlatformProvider(value: string): AddApplicationRequest;
 
+  getDeployTargetsByPluginMap(): jspb.Map<string, google_protobuf_struct_pb.ListValue>;
+  clearDeployTargetsByPluginMap(): AddApplicationRequest;
+
   getDescription(): string;
   setDescription(value: string): AddApplicationRequest;
 
@@ -520,6 +524,7 @@ export namespace AddApplicationRequest {
     gitPath?: pkg_model_common_pb.ApplicationGitPath.AsObject,
     kind: pkg_model_common_pb.ApplicationKind,
     platformProvider: string,
+    deployTargetsByPluginMap: Array<[string, google_protobuf_struct_pb.ListValue.AsObject]>,
     description: string,
     labelsMap: Array<[string, string]>,
   }
@@ -559,6 +564,9 @@ export class UpdateApplicationRequest extends jspb.Message {
   getPlatformProvider(): string;
   setPlatformProvider(value: string): UpdateApplicationRequest;
 
+  getDeployTargetsByPluginMap(): jspb.Map<string, google_protobuf_struct_pb.ListValue>;
+  clearDeployTargetsByPluginMap(): UpdateApplicationRequest;
+
   getConfigFilename(): string;
   setConfigFilename(value: string): UpdateApplicationRequest;
 
@@ -577,6 +585,7 @@ export namespace UpdateApplicationRequest {
     pipedId: string,
     kind: pkg_model_common_pb.ApplicationKind,
     platformProvider: string,
+    deployTargetsByPluginMap: Array<[string, google_protobuf_struct_pb.ListValue.AsObject]>,
     configFilename: string,
   }
 }

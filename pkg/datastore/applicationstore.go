@@ -20,8 +20,9 @@ import (
 	"fmt"
 	"time"
 
+	"google.golang.org/protobuf/types/known/structpb"
+
 	"github.com/pipe-cd/pipecd/pkg/model"
-	structpb "google.golang.org/protobuf/types/known/structpb"
 )
 
 type applicationCollection struct {
@@ -197,7 +198,7 @@ type ApplicationStore interface {
 	UpdateConfigFilename(ctx context.Context, id, configFilename string) error
 	UpdateDeployingStatus(ctx context.Context, id string, deploying bool) error
 	UpdateBasicInfo(ctx context.Context, id, name, description string, labels map[string]string) error
-	UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string) error
+	UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string, dpt map[string]*structpb.ListValue) error
 	UpdatePlatformProvider(ctx context.Context, id string, provider string) error
 	UpdateDeployTargets(ctx context.Context, id string, deployTargetsByPlugin map[string]*structpb.ListValue) error
 }
@@ -363,12 +364,13 @@ func (s *applicationStore) UpdateBasicInfo(ctx context.Context, id, name, descri
 	})
 }
 
-func (s *applicationStore) UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string) error {
+func (s *applicationStore) UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string, dpt map[string]*structpb.ListValue) error {
 	return s.update(ctx, id, func(app *model.Application) error {
 		app.PipedId = pipedID
 		app.PlatformProvider = platformProvider
 		app.CloudProvider = platformProvider
 		app.GitPath.ConfigFilename = configFilename
+		app.DeployTargetsByPlugin = app.DeployTargetsByPlugin
 		return nil
 	})
 }

@@ -19,7 +19,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
-	structpb "google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/apiservice"
 	"github.com/pipe-cd/pipecd/pkg/cli"

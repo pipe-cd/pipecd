@@ -16,6 +16,8 @@ const grpc = {};
 grpc.web = require('grpc-web');
 
 
+var google_protobuf_struct_pb = require('google-protobuf/google/protobuf/struct_pb.js')
+
 
 
 var pkg_model_common_pb = require('pipecd/web/model/common_pb.js')

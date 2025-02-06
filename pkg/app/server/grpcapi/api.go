@@ -26,6 +26,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/pipe-cd/pipecd/pkg/app/server/commandstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/apiservice"
@@ -36,7 +37,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/filestore"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
-	structpb "google.golang.org/protobuf/types/known/structpb"
 )
 
 type apiApplicationStore interface {
@@ -47,7 +47,7 @@ type apiApplicationStore interface {
 	Enable(ctx context.Context, id string) error
 	Disable(ctx context.Context, id string) error
 	UpdateConfigFilename(ctx context.Context, id, filename string) error
-	UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string) error
+	UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string, dpt map[string]*structpb.ListValue) error
 	UpdateDeployTargets(ctx context.Context, id string, deployTargetsByPlugin map[string]*structpb.ListValue) error
 }
 
@@ -361,7 +361,7 @@ func (a *API) UpdateApplication(ctx context.Context, req *apiservice.UpdateAppli
 		return nil, status.Error(codes.InvalidArgument, "Requested piped does not belong to your project")
 	}
 
-	if err := a.applicationStore.UpdateConfiguration(ctx, req.ApplicationId, req.PipedId, req.PlatformProvider, req.GitPath.ConfigFilename); err != nil {
+	if err := a.applicationStore.UpdateConfiguration(ctx, req.ApplicationId, req.PipedId, req.PlatformProvider, req.GitPath.ConfigFilename, nil); err != nil {
 		return nil, gRPCStoreError(err, fmt.Sprintf("failed to update application %s", req.ApplicationId))
 	}
 
