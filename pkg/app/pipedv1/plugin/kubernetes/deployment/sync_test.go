@@ -23,6 +23,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
+	"google.golang.org/protobuf/types/known/structpb"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -52,7 +53,17 @@ func TestDeploymentService_executeK8sSyncStage(t *testing.T) {
 			Deployment: &model.Deployment{
 				PipedId:       "piped-id",
 				ApplicationId: "app-id",
-				DeployTargets: []string{"default"},
+				DeployTargetsByPlugin: map[string]*structpb.ListValue{
+					"kubernetes": &structpb.ListValue{
+						Values: []*structpb.Value{
+							{
+								Kind: &structpb.Value_StringValue{
+									StringValue: "default",
+								},
+							},
+						},
+					},
+				},
 			},
 			Stage: &model.PipelineStage{
 				Id:   "stage-id",
@@ -125,7 +136,17 @@ func TestDeploymentService_executeK8sSyncStage_withInputNamespace(t *testing.T) 
 			Deployment: &model.Deployment{
 				PipedId:       "piped-id",
 				ApplicationId: "app-id",
-				DeployTargets: []string{"default"},
+				DeployTargetsByPlugin: map[string]*structpb.ListValue{
+					"kubernetes": &structpb.ListValue{
+						Values: []*structpb.Value{
+							{
+								Kind: &structpb.Value_StringValue{
+									StringValue: "default",
+								},
+							},
+						},
+					},
+				},
 			},
 			Stage: &model.PipelineStage{
 				Id:   "stage-id",
@@ -199,7 +220,17 @@ func TestDeploymentService_executeK8sSyncStage_withPrune(t *testing.T) {
 				Deployment: &model.Deployment{
 					PipedId:       "piped-id",
 					ApplicationId: "app-id",
-					DeployTargets: []string{"default"},
+					DeployTargetsByPlugin: map[string]*structpb.ListValue{
+						"kubernetes": &structpb.ListValue{
+							Values: []*structpb.Value{
+								{
+									Kind: &structpb.Value_StringValue{
+										StringValue: "default",
+									},
+								},
+							},
+						},
+					},
 				},
 				Stage: &model.PipelineStage{
 					Id:   "stage-id",
@@ -255,7 +286,17 @@ func TestDeploymentService_executeK8sSyncStage_withPrune(t *testing.T) {
 				Deployment: &model.Deployment{
 					PipedId:       "piped-id",
 					ApplicationId: "app-id",
-					DeployTargets: []string{"default"},
+					DeployTargetsByPlugin: map[string]*structpb.ListValue{
+						"kubernetes": &structpb.ListValue{
+							Values: []*structpb.Value{
+								{
+									Kind: &structpb.Value_StringValue{
+										StringValue: "default",
+									},
+								},
+							},
+						},
+					},
 				},
 				Stage: &model.PipelineStage{
 					Id:   "stage-id",
@@ -314,7 +355,17 @@ func TestDeploymentService_executeK8sSyncStage_withPrune_changesNamespace(t *tes
 				Deployment: &model.Deployment{
 					PipedId:       "piped-id",
 					ApplicationId: "app-id",
-					DeployTargets: []string{"default"},
+					DeployTargetsByPlugin: map[string]*structpb.ListValue{
+						"kubernetes": &structpb.ListValue{
+							Values: []*structpb.Value{
+								{
+									Kind: &structpb.Value_StringValue{
+										StringValue: "default",
+									},
+								},
+							},
+						},
+					},
 				},
 				Stage: &model.PipelineStage{
 					Id:   "stage-id",
@@ -367,7 +418,17 @@ func TestDeploymentService_executeK8sSyncStage_withPrune_changesNamespace(t *tes
 				Deployment: &model.Deployment{
 					PipedId:       "piped-id",
 					ApplicationId: "app-id",
-					DeployTargets: []string{"default"},
+					DeployTargetsByPlugin: map[string]*structpb.ListValue{
+						"kubernetes": &structpb.ListValue{
+							Values: []*structpb.Value{
+								{
+									Kind: &structpb.Value_StringValue{
+										StringValue: "default",
+									},
+								},
+							},
+						},
+					},
 				},
 				Stage: &model.PipelineStage{
 					Id:   "stage-id",
@@ -443,7 +504,17 @@ func TestDeploymentService_executeK8sSyncStage_withPrune_clusterScoped(t *testin
 				Deployment: &model.Deployment{
 					PipedId:       "piped-id",
 					ApplicationId: "prepare-app-id",
-					DeployTargets: []string{"default"},
+					DeployTargetsByPlugin: map[string]*structpb.ListValue{
+						"kubernetes": &structpb.ListValue{
+							Values: []*structpb.Value{
+								{
+									Kind: &structpb.Value_StringValue{
+										StringValue: "default",
+									},
+								},
+							},
+						},
+					},
 				},
 				Stage: &model.PipelineStage{
 					Id:   "stage-id",
@@ -481,7 +552,17 @@ func TestDeploymentService_executeK8sSyncStage_withPrune_clusterScoped(t *testin
 				Deployment: &model.Deployment{
 					PipedId:       "piped-id",
 					ApplicationId: "app-id",
-					DeployTargets: []string{"default"},
+					DeployTargetsByPlugin: map[string]*structpb.ListValue{
+						"kubernetes": &structpb.ListValue{
+							Values: []*structpb.Value{
+								{
+									Kind: &structpb.Value_StringValue{
+										StringValue: "default",
+									},
+								},
+							},
+						},
+					},
 				},
 				Stage: &model.PipelineStage{
 					Id:   "stage-id",
@@ -527,7 +608,17 @@ func TestDeploymentService_executeK8sSyncStage_withPrune_clusterScoped(t *testin
 				Deployment: &model.Deployment{
 					PipedId:       "piped-id",
 					ApplicationId: "app-id",
-					DeployTargets: []string{"default"},
+					DeployTargetsByPlugin: map[string]*structpb.ListValue{
+						"kubernetes": &structpb.ListValue{
+							Values: []*structpb.Value{
+								{
+									Kind: &structpb.Value_StringValue{
+										StringValue: "default",
+									},
+								},
+							},
+						},
+					},
 				},
 				Stage: &model.PipelineStage{
 					Id:   "stage-id",

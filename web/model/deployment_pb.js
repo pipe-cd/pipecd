@@ -21,6 +21,8 @@ var global =
     (function () { return this; }).call(null) ||
     Function('return this')();
 
+var google_protobuf_struct_pb = require('google-protobuf/google/protobuf/struct_pb.js');
+goog.object.extend(proto, google_protobuf_struct_pb);
 
 
 var pkg_model_common_pb = require('pipecd/web/model/common_pb.js');
@@ -167,7 +169,7 @@ if (goog.DEBUG && !COMPILED) {
  * @private {!Array<number>}
  * @const
  */
-proto.model.Deployment.repeatedFields_ = [12,24,32];
+proto.model.Deployment.repeatedFields_ = [24,32];
 
 
 
@@ -209,7 +211,7 @@ proto.model.Deployment.toObject = function(includeInstance, msg) {
     gitPath: (f = msg.getGitPath()) && pkg_model_common_pb.ApplicationGitPath.toObject(includeInstance, f),
     cloudProvider: jspb.Message.getFieldWithDefault(msg, 9, ""),
     platformProvider: jspb.Message.getFieldWithDefault(msg, 11, ""),
-    deployTargetsList: (f = jspb.Message.getRepeatedField(msg, 12)) == null ? undefined : f,
+    deployTargetsByPluginMap: (f = msg.getDeployTargetsByPluginMap()) ? f.toObject(includeInstance, proto.google.protobuf.ListValue.toObject) : [],
     labelsMap: (f = msg.getLabelsMap()) ? f.toObject(includeInstance, undefined) : [],
     trigger: (f = msg.getTrigger()) && proto.model.DeploymentTrigger.toObject(includeInstance, f),
     summary: jspb.Message.getFieldWithDefault(msg, 22, ""),
@@ -303,8 +305,10 @@ proto.model.Deployment.deserializeBinaryFromReader = function(msg, reader) {
       msg.setPlatformProvider(value);
       break;
     case 12:
-      var value = /** @type {string} */ (reader.readString());
-      msg.addDeployTargets(value);
+      var value = msg.getDeployTargetsByPluginMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readMessage, proto.google.protobuf.ListValue.deserializeBinaryFromReader, "", new proto.google.protobuf.ListValue());
+         });
       break;
     case 10:
       var value = msg.getLabelsMap();
@@ -475,12 +479,9 @@ proto.model.Deployment.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getDeployTargetsList();
-  if (f.length > 0) {
-    writer.writeRepeatedString(
-      12,
-      f
-    );
+  f = message.getDeployTargetsByPluginMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(12, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeMessage, proto.google.protobuf.ListValue.serializeBinaryToWriter);
   }
   f = message.getLabelsMap(true);
   if (f && f.getLength() > 0) {
@@ -784,39 +785,25 @@ proto.model.Deployment.prototype.setPlatformProvider = function(value) {
 
 
 /**
- * repeated string deploy_targets = 12;
- * @return {!Array<string>}
+ * map<string, google.protobuf.ListValue> deploy_targets_by_plugin = 12;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,!proto.google.protobuf.ListValue>}
  */
-proto.model.Deployment.prototype.getDeployTargetsList = function() {
-  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 12));
+proto.model.Deployment.prototype.getDeployTargetsByPluginMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,!proto.google.protobuf.ListValue>} */ (
+      jspb.Message.getMapField(this, 12, opt_noLazyCreate,
+      proto.google.protobuf.ListValue));
 };
 
 
 /**
- * @param {!Array<string>} value
+ * Clears values from the map. The map will be non-null.
  * @return {!proto.model.Deployment} returns this
  */
-proto.model.Deployment.prototype.setDeployTargetsList = function(value) {
-  return jspb.Message.setField(this, 12, value || []);
-};
-
-
-/**
- * @param {string} value
- * @param {number=} opt_index
- * @return {!proto.model.Deployment} returns this
- */
-proto.model.Deployment.prototype.addDeployTargets = function(value, opt_index) {
-  return jspb.Message.addToRepeatedField(this, 12, value, opt_index);
-};
-
-
-/**
- * Clears the list making it empty but non-null.
- * @return {!proto.model.Deployment} returns this
- */
-proto.model.Deployment.prototype.clearDeployTargetsList = function() {
-  return this.setDeployTargetsList([]);
+proto.model.Deployment.prototype.clearDeployTargetsByPluginMap = function() {
+  this.getDeployTargetsByPluginMap().clear();
+  return this;
 };
 
 
