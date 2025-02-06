@@ -67,6 +67,52 @@ export const dummyApplication: Application.AsObject = {
   deploying: false,
 };
 
+export const dummyApplicationPipedV1: Application.AsObject = {
+  id: randomUUID(),
+  cloudProvider: "",
+  platformProvider: "",
+  deployTargetsList: ["kubernetes-default"],
+  disabled: false,
+  gitPath: {
+    configFilename: "",
+    path: "dir/dir1",
+    url: "",
+    repo: dummyRepo,
+  },
+  kind: ApplicationKind.KUBERNETES,
+  name: "DemoAppForPipedV1",
+  pipedId: dummyPiped.id,
+  projectId: "project-1",
+  description: "",
+  labelsMap: [],
+  mostRecentlySuccessfulDeployment: {
+    deploymentId: "deployment-1",
+    completedAt: 0,
+    summary: "",
+    startedAt: startedAt.unix(),
+    version: "v1",
+    trigger: dummyTrigger,
+    configFilename: "",
+    versionsList: [],
+  },
+  mostRecentlyTriggeredDeployment: {
+    deploymentId: "deployment-1",
+    completedAt: 0,
+    summary: "summary",
+    startedAt: startedAt.unix(),
+    version: "v1",
+    trigger: dummyTrigger,
+    configFilename: "",
+    versionsList: [],
+  },
+  syncState: dummyApplicationSyncState,
+  updatedAt: updatedAt.unix(),
+  deletedAt: 0,
+  createdAt: createdAt.unix(),
+  deleted: false,
+  deploying: false,
+};
+
 export const dummyApps: Record<ApplicationKind, Application.AsObject> = {
   [ApplicationKind.KUBERNETES]: dummyApplication,
   [ApplicationKind.TERRAFORM]: {

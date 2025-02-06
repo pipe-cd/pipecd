@@ -26,15 +26,15 @@ import {
   fetchApplications,
 } from "~/modules/applications";
 import {
+  arrayFormat,
   stringifySearchParams,
   useSearchParams,
-  arrayFormat,
 } from "~/utils/search-params";
-import { AddApplicationDrawer } from "./add-application-drawer";
+import AddApplicationDrawer from "./add-application-drawer";
+import EditApplicationDrawer from "./edit-application-drawer";
+import { ApplicationAddedView } from "./application-added-view";
 import { ApplicationFilter } from "./application-filter";
 import { ApplicationList } from "./application-list";
-import { ApplicationAddedView } from "./application-added-view";
-import { EditApplicationDrawer } from "./edit-application-drawer";
 
 const useStyles = makeStyles((theme) => ({
   main: {
@@ -173,7 +173,10 @@ export const ApplicationIndexPage: FC = () => {
       <AddApplicationDrawer
         open={openAddForm}
         onClose={() => setOpenAddForm(false)}
-        onAdded={fetchApplicationsWithOptions}
+        onAdded={() => {
+          setOpenAddForm(false);
+          fetchApplicationsWithOptions();
+        }}
       />
       <EditApplicationDrawer onUpdated={fetchApplicationsWithOptions} />
 

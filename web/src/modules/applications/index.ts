@@ -100,8 +100,8 @@ export const addApplication = createAsyncThunk<
     repo: ApplicationGitRepository.AsObject;
     repoPath: string;
     configFilename?: string;
-    kind: ApplicationKind;
-    platformProvider: string;
+    kind?: ApplicationKind;
+    platformProvider?: string;
     labels: Array<[string, string]>;
   }
 >(`${MODULE_NAME}/add`, async (props) => {
