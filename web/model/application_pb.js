@@ -21,6 +21,8 @@ var global =
     (function () { return this; }).call(null) ||
     Function('return this')();
 
+var google_protobuf_struct_pb = require('google-protobuf/google/protobuf/struct_pb.js');
+goog.object.extend(proto, google_protobuf_struct_pb);
 
 
 var pkg_model_common_pb = require('pipecd/web/model/common_pb.js');
@@ -42,7 +44,7 @@ goog.exportSymbol('proto.model.ApplicationSyncStatus', null, global);
  * @constructor
  */
 proto.model.Application = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.model.Application.repeatedFields_, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
 goog.inherits(proto.model.Application, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -95,13 +97,6 @@ if (goog.DEBUG && !COMPILED) {
   proto.model.ApplicationDeploymentReference.displayName = 'proto.model.ApplicationDeploymentReference';
 }
 
-/**
- * List of repeated fields within this message type.
- * @private {!Array<number>}
- * @const
- */
-proto.model.Application.repeatedFields_ = [16];
-
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -141,7 +136,7 @@ proto.model.Application.toObject = function(includeInstance, msg) {
     gitPath: (f = msg.getGitPath()) && pkg_model_common_pb.ApplicationGitPath.toObject(includeInstance, f),
     cloudProvider: jspb.Message.getFieldWithDefault(msg, 8, ""),
     platformProvider: jspb.Message.getFieldWithDefault(msg, 15, ""),
-    deployTargetsList: (f = jspb.Message.getRepeatedField(msg, 16)) == null ? undefined : f,
+    deployTargetsByPluginMap: (f = msg.getDeployTargetsByPluginMap()) ? f.toObject(includeInstance, proto.google.protobuf.ListValue.toObject) : [],
     description: jspb.Message.getFieldWithDefault(msg, 9, ""),
     labelsMap: (f = msg.getLabelsMap()) ? f.toObject(includeInstance, undefined) : [],
     mostRecentlySuccessfulDeployment: (f = msg.getMostRecentlySuccessfulDeployment()) && proto.model.ApplicationDeploymentReference.toObject(includeInstance, f),
@@ -223,8 +218,10 @@ proto.model.Application.deserializeBinaryFromReader = function(msg, reader) {
       msg.setPlatformProvider(value);
       break;
     case 16:
-      var value = /** @type {string} */ (reader.readString());
-      msg.addDeployTargets(value);
+      var value = msg.getDeployTargetsByPluginMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readMessage, proto.google.protobuf.ListValue.deserializeBinaryFromReader, "", new proto.google.protobuf.ListValue());
+         });
       break;
     case 9:
       var value = /** @type {string} */ (reader.readString());
@@ -361,12 +358,9 @@ proto.model.Application.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getDeployTargetsList();
-  if (f.length > 0) {
-    writer.writeRepeatedString(
-      16,
-      f
-    );
+  f = message.getDeployTargetsByPluginMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(16, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeMessage, proto.google.protobuf.ListValue.serializeBinaryToWriter);
   }
   f = message.getDescription();
   if (f.length > 0) {
@@ -612,39 +606,25 @@ proto.model.Application.prototype.setPlatformProvider = function(value) {
 
 
 /**
- * repeated string deploy_targets = 16;
- * @return {!Array<string>}
+ * map<string, google.protobuf.ListValue> deploy_targets_by_plugin = 16;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,!proto.google.protobuf.ListValue>}
  */
-proto.model.Application.prototype.getDeployTargetsList = function() {
-  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 16));
+proto.model.Application.prototype.getDeployTargetsByPluginMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,!proto.google.protobuf.ListValue>} */ (
+      jspb.Message.getMapField(this, 16, opt_noLazyCreate,
+      proto.google.protobuf.ListValue));
 };
 
 
 /**
- * @param {!Array<string>} value
+ * Clears values from the map. The map will be non-null.
  * @return {!proto.model.Application} returns this
  */
-proto.model.Application.prototype.setDeployTargetsList = function(value) {
-  return jspb.Message.setField(this, 16, value || []);
-};
-
-
-/**
- * @param {string} value
- * @param {number=} opt_index
- * @return {!proto.model.Application} returns this
- */
-proto.model.Application.prototype.addDeployTargets = function(value, opt_index) {
-  return jspb.Message.addToRepeatedField(this, 16, value, opt_index);
-};
-
-
-/**
- * Clears the list making it empty but non-null.
- * @return {!proto.model.Application} returns this
- */
-proto.model.Application.prototype.clearDeployTargetsList = function() {
-  return this.setDeployTargetsList([]);
+proto.model.Application.prototype.clearDeployTargetsByPluginMap = function() {
+  this.getDeployTargetsByPluginMap().clear();
+  return this;
 };
 
 

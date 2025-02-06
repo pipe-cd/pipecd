@@ -17,6 +17,7 @@ import (
 	datastore "github.com/pipe-cd/pipecd/pkg/datastore"
 	model "github.com/pipe-cd/pipecd/pkg/model"
 	gomock "go.uber.org/mock/gomock"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 )
 
 // MockProjectStore is a mock of ProjectStore interface.
@@ -547,17 +548,17 @@ func (mr *MockApplicationStoreMockRecorder) UpdateConfiguration(ctx, id, pipedID
 }
 
 // UpdateDeployTargets mocks base method.
-func (m *MockApplicationStore) UpdateDeployTargets(ctx context.Context, id string, targets []string) error {
+func (m *MockApplicationStore) UpdateDeployTargets(ctx context.Context, id string, deployTargetsByPlugin map[string]*structpb.ListValue) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateDeployTargets", ctx, id, targets)
+	ret := m.ctrl.Call(m, "UpdateDeployTargets", ctx, id, deployTargetsByPlugin)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateDeployTargets indicates an expected call of UpdateDeployTargets.
-func (mr *MockApplicationStoreMockRecorder) UpdateDeployTargets(ctx, id, targets any) *gomock.Call {
+func (mr *MockApplicationStoreMockRecorder) UpdateDeployTargets(ctx, id, deployTargetsByPlugin any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDeployTargets", reflect.TypeOf((*MockApplicationStore)(nil).UpdateDeployTargets), ctx, id, targets)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDeployTargets", reflect.TypeOf((*MockApplicationStore)(nil).UpdateDeployTargets), ctx, id, deployTargetsByPlugin)
 }
 
 // UpdateDeployingStatus mocks base method.

@@ -17,6 +17,7 @@ syntax = "proto3";
 package grpc.service.apiservice;
 option go_package = "github.com/pipe-cd/pipecd/pkg/app/server/service/apiservice";
 
+import "google/protobuf/struct.proto";
 import "validate/validate.proto";
 import "pkg/model/common.proto";
 import "pkg/model/application.proto";
@@ -183,7 +184,7 @@ message RenameApplicationConfigFileResponse {
 
 message UpdateApplicationDeployTargetsRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
-    repeated string deploy_targets = 2 [(validate.rules).repeated = {min_items: 1}];
+    map<string, google.protobuf.ListValue> deploy_targets_by_plugin = 2 [(validate.rules).map.min_pairs = 1];
 }
 
 message UpdateApplicationDeployTargetsResponse {}

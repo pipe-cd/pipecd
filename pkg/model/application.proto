@@ -17,6 +17,7 @@ syntax = "proto3";
 package model;
 option go_package = "github.com/pipe-cd/pipecd/pkg/model";
 
+import "google/protobuf/struct.proto";
 import "validate/validate.proto";
 import "pkg/model/common.proto";
 import "pkg/model/deployment.proto";
@@ -44,8 +45,12 @@ message Application {
     // The name of platform provider where to deploy this application.
     // This must be one of the provider names registered in the piped.
     string platform_provider = 15 [deprecated=true];
-    // The names of deploy taget where to deploy this application.
-    repeated string deploy_targets = 16;    
+    // The map of plugin:deployTargets used to store all deploy targets which
+    // this application would be deploy to.
+    // NOTE: plugin as key of this map is not all plugins which should be
+    // used to perform deployment for this application, plugins without deploy target (eg. WAIT)
+    // are not listed in this map.
+    map<string, google.protobuf.ListValue> deploy_targets_by_plugin = 16;
     // Additional description about application.
     string description = 9;
     // Custom attributes to identify applications.
