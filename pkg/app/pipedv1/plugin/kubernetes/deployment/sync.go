@@ -44,11 +44,18 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersi
 		deployTarget kubeconfig.KubernetesDeployTargetConfig
 		multiTarget  *kubeconfig.KubernetesMultiTarget
 	}
+
+	deployTartgets, err := input.GetDeployment().GetDeployTargets(a.pluginConfig.Name)
+	if err != nil {
+		lp.Errorf("Failed while finding deploy tagets (%v)", err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+
 	deployTargetMap := make(map[string]kubeconfig.KubernetesDeployTargetConfig, 0)
-	targetConfigs := make([]targetConfig, 0, len(input.GetDeployment().GetDeployTargets()))
+	targetConfigs := make([]targetConfig, 0, len(deployTartgets))
 
 	// prevent the deployment when its deployTarget is not found in the piped config
-	for _, target := range input.GetDeployment().GetDeployTargets() {
+	for _, target := range deployTartgets {
 		dt, err := kubeconfig.FindDeployTarget(a.pluginConfig, target)
 		if err != nil {
 			lp.Errorf("Failed while finding deploy target (%v)", err)
@@ -152,12 +159,11 @@ func (a *DeploymentService) sync(ctx context.Context, lp logpersister.StageLogPe
 		lp.Errorf("Failed while finding deploy target config (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
-	deployTargetConfig, err := kubeconfig.FindDeployTarget(a.pluginConfig, targets[0]) // TODO: consider multiple targets
+	deployTargetConfig, err = kubeconfig.FindDeployTarget(a.pluginConfig, targets[0]) // TODO: consider multiple targets
 	if err != nil {
 		lp.Errorf("Failed while unmarshalling deploy target config (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
-
 	// Get the kubectl tool path.
 	kubectlVersions := []string{cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion, defaultKubectlVersion}
 	// If multi-target is specified, use the kubectl version specified in it.

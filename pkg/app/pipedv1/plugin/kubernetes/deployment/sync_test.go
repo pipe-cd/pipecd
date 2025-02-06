@@ -644,7 +644,22 @@ func TestDeploymentService_executeK8sSyncStage_multiCluster(t *testing.T) {
 			Deployment: &model.Deployment{
 				PipedId:       "piped-id",
 				ApplicationId: "app-id",
-				DeployTargets: []string{"cluster1", "cluster2"},
+				DeployTargetsByPlugin: map[string]*structpb.ListValue{
+					"kubernetes": &structpb.ListValue{
+						Values: []*structpb.Value{
+							{
+								Kind: &structpb.Value_StringValue{
+									StringValue: "cluster1",
+								},
+							},
+							{
+								Kind: &structpb.Value_StringValue{
+									StringValue: "cluster2",
+								},
+							},
+						},
+					},
+				},
 			},
 			Stage: &model.PipelineStage{
 				Id:   "stage-id",
@@ -670,6 +685,7 @@ func TestDeploymentService_executeK8sSyncStage_multiCluster(t *testing.T) {
 	cluster2 := setupCluster(t, "cluster2")
 
 	pluginCfg := &config.PipedPlugin{
+		Name: "kubernetes",
 		DeployTargets: []config.PipedDeployTarget{
 			cluster1.deployTarget,
 			cluster2.deployTarget,
@@ -717,7 +733,22 @@ func TestDeploymentService_executeK8sSyncStage_multiCluster_one_of_deploy_target
 			Deployment: &model.Deployment{
 				PipedId:       "piped-id",
 				ApplicationId: "app-id",
-				DeployTargets: []string{"cluster1", "wrong_value"}, // include wrong deploy target
+				DeployTargetsByPlugin: map[string]*structpb.ListValue{
+					"kubernetes": &structpb.ListValue{
+						Values: []*structpb.Value{
+							{
+								Kind: &structpb.Value_StringValue{
+									StringValue: "cluster1",
+								},
+							},
+							{
+								Kind: &structpb.Value_StringValue{
+									StringValue: "wrong_value", // include wrong deploy target
+								},
+							},
+						},
+					},
+				},
 			},
 			Stage: &model.PipelineStage{
 				Id:   "stage-id",
@@ -743,6 +774,7 @@ func TestDeploymentService_executeK8sSyncStage_multiCluster_one_of_deploy_target
 	cluster2 := setupCluster(t, "cluster2")
 
 	pluginCfg := &config.PipedPlugin{
+		Name: "kubernetes",
 		DeployTargets: []config.PipedDeployTarget{
 			cluster1.deployTarget,
 			cluster2.deployTarget,
@@ -772,7 +804,22 @@ func TestDeploymentService_executeK8sSyncStage_multiCluster_templateNone(t *test
 			Deployment: &model.Deployment{
 				PipedId:       "piped-id",
 				ApplicationId: "app-id",
-				DeployTargets: []string{"cluster1", "cluster2"},
+				DeployTargetsByPlugin: map[string]*structpb.ListValue{
+					"kubernetes": &structpb.ListValue{
+						Values: []*structpb.Value{
+							{
+								Kind: &structpb.Value_StringValue{
+									StringValue: "cluster1",
+								},
+							},
+							{
+								Kind: &structpb.Value_StringValue{
+									StringValue: "cluster2",
+								},
+							},
+						},
+					},
+				},
 			},
 			Stage: &model.PipelineStage{
 				Id:   "stage-id",
@@ -798,6 +845,7 @@ func TestDeploymentService_executeK8sSyncStage_multiCluster_templateNone(t *test
 	cluster2 := setupCluster(t, "cluster2")
 
 	pluginCfg := &config.PipedPlugin{
+		Name: "kubernetes",
 		DeployTargets: []config.PipedDeployTarget{
 			cluster1.deployTarget,
 			cluster2.deployTarget,
@@ -845,7 +893,22 @@ func TestDeploymentService_executeK8sSyncStage_multiCluster_failed_one_of_the_sy
 			Deployment: &model.Deployment{
 				PipedId:       "piped-id",
 				ApplicationId: "app-id",
-				DeployTargets: []string{"cluster1", "cluster2"},
+				DeployTargetsByPlugin: map[string]*structpb.ListValue{
+					"kubernetes": &structpb.ListValue{
+						Values: []*structpb.Value{
+							{
+								Kind: &structpb.Value_StringValue{
+									StringValue: "cluster1",
+								},
+							},
+							{
+								Kind: &structpb.Value_StringValue{
+									StringValue: "cluster2",
+								},
+							},
+						},
+					},
+				},
 			},
 			Stage: &model.PipelineStage{
 				Id:   "stage-id",
@@ -871,6 +934,7 @@ func TestDeploymentService_executeK8sSyncStage_multiCluster_failed_one_of_the_sy
 	cluster2 := setupCluster(t, "cluster2")
 
 	pluginCfg := &config.PipedPlugin{
+		Name: "kubernetes",
 		DeployTargets: []config.PipedDeployTarget{
 			cluster1.deployTarget,
 			cluster2.deployTarget,
