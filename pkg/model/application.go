@@ -89,9 +89,7 @@ func (a *Application) IsOutOfSync() bool {
 func (a *Application) GetDeployTargets() []string {
 	var deployTargets []string
 	for _, t := range a.DeployTargetsByPlugin {
-		for _, v := range t.GetDeployTargets() {
-			deployTargets = append(deployTargets, v)
-		}
+		deployTargets = append(deployTargets, t.GetDeployTargets()...)
 	}
 	return deployTargets
 }
