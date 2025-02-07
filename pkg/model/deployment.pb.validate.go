@@ -167,6 +167,52 @@ func (m *Deployment) validate(all bool) error {
 
 	// no validation rules for PlatformProvider
 
+	{
+		sorted_keys := make([]string, len(m.GetDeployTargetsByPlugin()))
+		i := 0
+		for key := range m.GetDeployTargetsByPlugin() {
+			sorted_keys[i] = key
+			i++
+		}
+		sort.Slice(sorted_keys, func(i, j int) bool { return sorted_keys[i] < sorted_keys[j] })
+		for _, key := range sorted_keys {
+			val := m.GetDeployTargetsByPlugin()[key]
+			_ = val
+
+			// no validation rules for DeployTargetsByPlugin[key]
+
+			if all {
+				switch v := interface{}(val).(type) {
+				case interface{ ValidateAll() error }:
+					if err := v.ValidateAll(); err != nil {
+						errors = append(errors, DeploymentValidationError{
+							field:  fmt.Sprintf("DeployTargetsByPlugin[%v]", key),
+							reason: "embedded message failed validation",
+							cause:  err,
+						})
+					}
+				case interface{ Validate() error }:
+					if err := v.Validate(); err != nil {
+						errors = append(errors, DeploymentValidationError{
+							field:  fmt.Sprintf("DeployTargetsByPlugin[%v]", key),
+							reason: "embedded message failed validation",
+							cause:  err,
+						})
+					}
+				}
+			} else if v, ok := interface{}(val).(interface{ Validate() error }); ok {
+				if err := v.Validate(); err != nil {
+					return DeploymentValidationError{
+						field:  fmt.Sprintf("DeployTargetsByPlugin[%v]", key),
+						reason: "embedded message failed validation",
+						cause:  err,
+					}
+				}
+			}
+
+		}
+	}
+
 	// no validation rules for Labels
 
 	if m.GetTrigger() == nil {
@@ -442,6 +488,106 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = DeploymentValidationError{}
+
+// Validate checks the field values on DeployTargets with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *DeployTargets) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeployTargets with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in DeployTargetsMultiError, or
+// nil if none found.
+func (m *DeployTargets) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeployTargets) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return DeployTargetsMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeployTargetsMultiError is an error wrapping multiple validation errors
+// returned by DeployTargets.ValidateAll() if the designated constraints
+// aren't met.
+type DeployTargetsMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeployTargetsMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeployTargetsMultiError) AllErrors() []error { return m }
+
+// DeployTargetsValidationError is the validation error returned by
+// DeployTargets.Validate if the designated constraints aren't met.
+type DeployTargetsValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeployTargetsValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeployTargetsValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeployTargetsValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeployTargetsValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeployTargetsValidationError) ErrorName() string { return "DeployTargetsValidationError" }
+
+// Error satisfies the builtin error interface
+func (e DeployTargetsValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeployTargets.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeployTargetsValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeployTargetsValidationError{}
 
 // Validate checks the field values on DeploymentTrigger with the rules defined
 // in the proto definition for this message. If any rules are violated, the
