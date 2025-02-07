@@ -22,6 +22,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/apiservice"
 	"github.com/pipe-cd/pipecd/pkg/cli"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type database struct {
@@ -87,11 +88,34 @@ func (c *database) migrateApplication(ctx context.Context, client apiservice.Cli
 	// Migrate database for the application.
 	if _, err := client.UpdateApplicationDeployTargets(ctx, &apiservice.UpdateApplicationDeployTargetsRequest{
 		ApplicationId: appID,
-		DeployTargets: []string{provider},
+		DeployTargetsByPlugin: map[string]*model.DeployTargets{
+			convertApplicationKindToPluginName(app.Application.Kind): {
+				DeployTargets: []string{provider},
+			},
+		},
 	}); err != nil {
 		logger.Error("failed to update application deploy targets", zap.Error(err), zap.String("application", appID))
 		return err
 	}
 
 	return nil
+}
+
+// NOTE: Convention for Application plugins migration
+// The plugins name for this migration task are defined based on the Application Kind
+// Eg: KubernetesApp -> kubernetes | ECSApp -> ecs | ...
+func convertApplicationKindToPluginName(k model.ApplicationKind) string {
+	switch k {
+	case model.ApplicationKind_KUBERNETES:
+		return "kubernetes"
+	case model.ApplicationKind_CLOUDRUN:
+		return "cloudrun"
+	case model.ApplicationKind_ECS:
+		return "ecs"
+	case model.ApplicationKind_LAMBDA:
+		return "lambda"
+	case model.ApplicationKind_TERRAFORM:
+		return "terraform"
+	}
+	return "" // Unexpected
 }

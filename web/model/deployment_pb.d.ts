@@ -34,10 +34,8 @@ export class Deployment extends jspb.Message {
   getPlatformProvider(): string;
   setPlatformProvider(value: string): Deployment;
 
-  getDeployTargetsList(): Array<string>;
-  setDeployTargetsList(value: Array<string>): Deployment;
-  clearDeployTargetsList(): Deployment;
-  addDeployTargets(value: string, index?: number): Deployment;
+  getDeployTargetsByPluginMap(): jspb.Map<string, DeployTargets>;
+  clearDeployTargetsByPluginMap(): Deployment;
 
   getLabelsMap(): jspb.Map<string, string>;
   clearLabelsMap(): Deployment;
@@ -117,7 +115,7 @@ export namespace Deployment {
     gitPath?: pkg_model_common_pb.ApplicationGitPath.AsObject,
     cloudProvider: string,
     platformProvider: string,
-    deployTargetsList: Array<string>,
+    deployTargetsByPluginMap: Array<[string, DeployTargets.AsObject]>,
     labelsMap: Array<[string, string]>,
     trigger?: DeploymentTrigger.AsObject,
     summary: string,
@@ -135,6 +133,26 @@ export namespace Deployment {
     completedAt: number,
     createdAt: number,
     updatedAt: number,
+  }
+}
+
+export class DeployTargets extends jspb.Message {
+  getDeployTargetsList(): Array<string>;
+  setDeployTargetsList(value: Array<string>): DeployTargets;
+  clearDeployTargetsList(): DeployTargets;
+  addDeployTargets(value: string, index?: number): DeployTargets;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): DeployTargets.AsObject;
+  static toObject(includeInstance: boolean, msg: DeployTargets): DeployTargets.AsObject;
+  static serializeBinaryToWriter(message: DeployTargets, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DeployTargets;
+  static deserializeBinaryFromReader(message: DeployTargets, reader: jspb.BinaryReader): DeployTargets;
+}
+
+export namespace DeployTargets {
+  export type AsObject = {
+    deployTargetsList: Array<string>,
   }
 }
 

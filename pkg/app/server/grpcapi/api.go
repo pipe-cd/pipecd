@@ -47,7 +47,7 @@ type apiApplicationStore interface {
 	Disable(ctx context.Context, id string) error
 	UpdateConfigFilename(ctx context.Context, id, filename string) error
 	UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string) error
-	UpdateDeployTargets(ctx context.Context, id string, targets []string) error
+	UpdateDeployTargets(ctx context.Context, id string, dp map[string]*model.DeployTargets) error
 }
 
 type apiDeploymentStore interface {
@@ -478,7 +478,7 @@ func (a *API) UpdateApplicationDeployTargets(ctx context.Context, req *apiservic
 		a.logger.Warn("requested application does not belong to your project", zap.String("applicationID", app.Id), zap.String("requestProjectID", key.ProjectId), zap.String("applicationProjectID", app.ProjectId))
 		return nil, status.Error(codes.PermissionDenied, fmt.Sprintf("requested application %s does not belong to your project", req.GetApplicationId()))
 	}
-	if err := a.applicationStore.UpdateDeployTargets(ctx, req.GetApplicationId(), req.GetDeployTargets()); err != nil {
+	if err := a.applicationStore.UpdateDeployTargets(ctx, req.GetApplicationId(), req.GetDeployTargetsByPlugin()); err != nil {
 		return nil, gRPCStoreError(err, fmt.Sprintf("failed to update application %s deploy targets", req.ApplicationId))
 	}
 	return &apiservice.UpdateApplicationDeployTargetsResponse{}, nil

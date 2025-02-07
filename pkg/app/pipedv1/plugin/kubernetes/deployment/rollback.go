@@ -73,7 +73,13 @@ func (a *DeploymentService) executeK8sRollbackStage(ctx context.Context, lp logp
 	}
 
 	// Get the deploy target config.
-	deployTargetConfig, err := kubeconfig.FindDeployTarget(a.pluginConfig, input.GetDeployment().GetDeployTargets()[0]) // TODO: check if there is a deploy target
+	targets, err := input.GetDeployment().GetDeployTargets(a.pluginConfig.Name)
+	if err != nil {
+		lp.Errorf("Failed while finding deploy target config (%v)", err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	deployTargetConfig, err := kubeconfig.FindDeployTarget(a.pluginConfig, targets[0]) // TODO: consider multiple targets
 	if err != nil {
 		lp.Errorf("Failed while unmarshalling deploy target config (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
