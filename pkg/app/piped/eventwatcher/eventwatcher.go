@@ -603,7 +603,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 	retry := backoff.NewRetry(retryPushNum, backoff.NewConstant(retryPushInterval))
 	_, err = retry.Do(ctx, func() (interface{}, error) {
 		if err := tmpRepo.Push(ctx, tmpRepo.GetClonedBranch()); err != nil {
-			w.logger.Error("failed to push commits", zap.String("repo-id", repoID), zap.String("branch", tmpRepo.GetClonedBranch()), zap.Error(err))
+			w.logger.Warn("failed to push commits", zap.String("repo-id", repoID), zap.String("branch", tmpRepo.GetClonedBranch()), zap.Error(err))
 			return nil, err
 		}
 		return nil, nil
