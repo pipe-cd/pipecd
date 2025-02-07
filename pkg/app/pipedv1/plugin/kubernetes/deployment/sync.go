@@ -153,17 +153,6 @@ func (a *DeploymentService) sync(ctx context.Context, lp logpersister.StageLogPe
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	// Get the deploy target config.
-	targets, err := input.GetDeployment().GetDeployTargets(a.pluginConfig.Name)
-	if err != nil {
-		lp.Errorf("Failed while finding deploy target config (%v)", err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-	deployTargetConfig, err = kubeconfig.FindDeployTarget(a.pluginConfig, targets[0]) // TODO: consider multiple targets
-	if err != nil {
-		lp.Errorf("Failed while unmarshalling deploy target config (%v)", err)
-		return model.StageStatus_STAGE_FAILURE
-	}
 	// Get the kubectl tool path.
 	kubectlVersions := []string{cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion, defaultKubectlVersion}
 	// If multi-target is specified, use the kubectl version specified in it.
