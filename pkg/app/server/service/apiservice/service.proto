@@ -183,7 +183,7 @@ message RenameApplicationConfigFileResponse {
 
 message UpdateApplicationDeployTargetsRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
-    repeated string deploy_targets = 2 [(validate.rules).repeated = {min_items: 1}];
+    map<string, model.DeployTargets> deploy_targets_by_plugin = 2 [(validate.rules).map.min_pairs = 1];
 }
 
 message UpdateApplicationDeployTargetsResponse {}

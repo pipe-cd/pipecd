@@ -25,7 +25,7 @@ export const dummyApplication: Application.AsObject = {
   id: randomUUID(),
   cloudProvider: "",
   platformProvider: "kubernetes-default",
-  deployTargetsList: ["kubernetes-default"],
+  deployTargetsByPluginMap: [],
   disabled: false,
   gitPath: {
     configFilename: "",
@@ -71,7 +71,7 @@ export const dummyApplicationPipedV1: Application.AsObject = {
   id: randomUUID(),
   cloudProvider: "",
   platformProvider: "",
-  deployTargetsList: ["kubernetes-default"],
+  deployTargetsByPluginMap: [],
   disabled: false,
   gitPath: {
     configFilename: "",
@@ -178,7 +178,6 @@ export function createApplicationFromObject(
   const app = new Application();
   app.setId(o.id);
   app.setPlatformProvider(o.platformProvider);
-  app.setDeployTargetsList(o.deployTargetsList);
   app.setDisabled(o.disabled);
   app.setKind(o.kind);
   app.setName(o.name);
