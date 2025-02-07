@@ -602,17 +602,27 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 		return nil
 	}
 
+	var eventIDs []string
+	for _, e := range handledEvents {
+		eventIDs = append(eventIDs, e.Id)
+	}
+	logger := w.logger.With(
+		zap.String("repo-id", repoID),
+		zap.String("branch", tmpRepo.GetClonedBranch()),
+		zap.Strings("event-ids", eventIDs),
+	)
+
 	retry := backoff.NewRetry(retryPushNum, backoff.NewConstant(retryPushInterval))
 	_, err = retry.Do(ctx, func() (interface{}, error) {
 		if err := tmpRepo.Push(ctx, tmpRepo.GetClonedBranch()); err != nil {
-			w.logger.Warn(fmt.Sprintf("failed to push commits: retry attempt %d/%d", retry.Calls(), retryPushNum), zap.String("repo-id", repoID), zap.String("branch", tmpRepo.GetClonedBranch()), zap.Error(err))
+			logger.Warn(fmt.Sprintf("failed to push commits: retry attempt %d/%d", retry.Calls(), retryPushNum), zap.Error(err))
 			return nil, err
 		}
 		return nil, nil
 	})
 	if err == nil {
 		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: handledEvents}); err != nil {
-			w.logger.Error("failed to report event statuses", zap.Error(err))
+			logger.Error("failed to report event statuses", zap.Error(err))
 			return err
 		}
 		w.milestoneMap.Store(repoID, maxTimestamp)
@@ -621,11 +631,11 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 
 	// If push fails because the local branch was not fresh, exit to retry again in the next interval.
 	if err == git.ErrBranchNotFresh {
-		w.logger.Warn("failed to push commits: local branch was not up-to-date; will retry in the next cycle", zap.Error(err))
+		logger.Warn("failed to push commits: local branch was not up-to-date; will retry in the next cycle", zap.Error(err))
 		return nil
 	}
 
-	w.logger.Error("failed to push commits", zap.Error(err))
+	logger.Error("failed to push commits", zap.Error(err))
 
 	// If push fails because of the other reason, re-set all statuses to FAILURE.
 	for i := range handledEvents {
@@ -636,7 +646,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 		handledEvents[i].StatusDescription = fmt.Sprintf("Failed to push changed files: %v", err)
 	}
 	if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: handledEvents}); err != nil {
-		w.logger.Error("failed to report event statuses: %w", zap.Error(err))
+		logger.Error("failed to report event statuses: %w", zap.Error(err))
 		return err
 	}
 	w.milestoneMap.Store(repoID, maxTimestamp)
