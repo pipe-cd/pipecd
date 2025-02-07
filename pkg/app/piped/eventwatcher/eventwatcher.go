@@ -458,7 +458,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 	for branch, events := range branchHandledEvents {
 		_, err = retry.Do(ctx, func() (interface{}, error) {
 			if err := tmpRepo.Push(ctx, branch); err != nil {
-				w.logger.Error("failed to push commits", zap.String("repo-id", repoID), zap.String("branch", branch), zap.Error(err))
+				w.logger.Warn(fmt.Sprintf("failed to push commits: retry attempt %d/%d", retry.Calls(), retryPushNum), zap.String("repo-id", repoID), zap.String("branch", tmpRepo.GetClonedBranch()), zap.Error(err))
 				return nil, err
 			}
 			return nil, nil
@@ -474,9 +474,11 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 
 		// If push fails because the local branch was not fresh, exit to retry again in the next interval.
 		if err == git.ErrBranchNotFresh {
-			w.logger.Warn("failed to push commits", zap.Error(err))
+			w.logger.Warn("failed to push commits: local branch was not up-to-date; will retry in the next cycle", zap.Error(err))
 			continue
 		}
+
+		w.logger.Error("failed to push commits", zap.Error(err))
 
 		// If push fails because of the other reason, re-set all statuses to FAILURE.
 		for i := range events {
@@ -603,7 +605,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 	retry := backoff.NewRetry(retryPushNum, backoff.NewConstant(retryPushInterval))
 	_, err = retry.Do(ctx, func() (interface{}, error) {
 		if err := tmpRepo.Push(ctx, tmpRepo.GetClonedBranch()); err != nil {
-			w.logger.Warn(fmt.Sprintf("failed to push commits. Retry attempt %d/%d", retry.Calls(), retryPushNum), zap.String("repo-id", repoID), zap.String("branch", tmpRepo.GetClonedBranch()), zap.Error(err))
+			w.logger.Warn(fmt.Sprintf("failed to push commits: retry attempt %d/%d", retry.Calls(), retryPushNum), zap.String("repo-id", repoID), zap.String("branch", tmpRepo.GetClonedBranch()), zap.Error(err))
 			return nil, err
 		}
 		return nil, nil
