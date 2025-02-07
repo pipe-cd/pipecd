@@ -147,3 +147,15 @@ func TestDo(t *testing.T) {
 		})
 	}
 }
+
+func TestDoCalls(t *testing.T) {
+	r := NewRetry(3, NewConstant(time.Millisecond))
+	assert.Equal(t, 0, r.Calls())
+	cnt := 0
+	r.Do(context.TODO(), func() (interface{}, error) {
+		cnt++
+		assert.Equal(t, cnt, r.Calls()) // Calls should be 1,2,3
+		return nil, errors.New("error-to-retry")
+	})
+	assert.Equal(t, 4, r.Calls())
+}
