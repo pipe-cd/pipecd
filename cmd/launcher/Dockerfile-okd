@@ -1,4 +1,7 @@
-FROM golang:1.23.3 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.23.3 AS builder
+
+ARG TARGETOS
+ARG TARGETARCH
 
 WORKDIR /app
 
@@ -7,7 +10,7 @@ RUN go mod download
 
 COPY . ./
 
-RUN make build/go MOD=launcher
+RUN make build/go MOD=launcher BUILD_OS=${TARGETOS} BUILD_ARCH=${TARGETARCH}
 
 # https://github.com/pipe-cd/pipecd/pkgs/container/piped-base-okd/321464518?tag=v0.50.0-26-ga8527d2
 FROM ghcr.io/pipe-cd/piped-base-okd@sha256:da9bd5a1dae3aa5c2df4baba81ff836ba4a55159d85984605549ef2d1f136895
