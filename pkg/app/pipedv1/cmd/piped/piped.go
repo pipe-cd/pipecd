@@ -744,6 +744,19 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 		Version:      version.Get().Version,
 		Config:       string(maskedCfg),
 		Repositories: repos,
+		Plugins:      make([]*model.Piped_Plugin, 0, len(cfg.Plugins)),
+	}
+
+	// Configure the list of plugins
+	for _, plg := range cfg.Plugins {
+		p := &model.Piped_Plugin{
+			Name:          plg.Name,
+			DeployTargets: make([]string, 0, len(plg.DeployTargets)),
+		}
+		for _, dt := range plg.DeployTargets {
+			p.DeployTargets = append(p.DeployTargets, dt.Name)
+		}
+		req.Plugins = append(req.Plugins, p)
 	}
 
 	// Configure secret management.
