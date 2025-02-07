@@ -24,8 +24,8 @@ export const updateApplication = createAsyncThunk<
     repo: ApplicationGitRepository.AsObject;
     repoPath: string;
     configFilename?: string;
-    kind: ApplicationKind;
-    platformProvider: string;
+    kind?: ApplicationKind;
+    platformProvider?: string;
   }
 >(`${MODULE_NAME}/update`, async (values) => {
   await applicationAPI.updateApplication({

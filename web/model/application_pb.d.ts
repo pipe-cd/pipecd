@@ -32,10 +32,8 @@ export class Application extends jspb.Message {
   getPlatformProvider(): string;
   setPlatformProvider(value: string): Application;
 
-  getDeployTargetsList(): Array<string>;
-  setDeployTargetsList(value: Array<string>): Application;
-  clearDeployTargetsList(): Application;
-  addDeployTargets(value: string, index?: number): Application;
+  getDeployTargetsByPluginMap(): jspb.Map<string, pkg_model_deployment_pb.DeployTargets>;
+  clearDeployTargetsByPluginMap(): Application;
 
   getDescription(): string;
   setDescription(value: string): Application;
@@ -94,7 +92,7 @@ export namespace Application {
     gitPath?: pkg_model_common_pb.ApplicationGitPath.AsObject,
     cloudProvider: string,
     platformProvider: string,
-    deployTargetsList: Array<string>,
+    deployTargetsByPluginMap: Array<[string, pkg_model_deployment_pb.DeployTargets.AsObject]>,
     description: string,
     labelsMap: Array<[string, string]>,
     mostRecentlySuccessfulDeployment?: ApplicationDeploymentReference.AsObject,

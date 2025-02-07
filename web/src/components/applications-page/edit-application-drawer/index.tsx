@@ -1,80 +1,98 @@
 import { Drawer } from "@material-ui/core";
-import { useFormik } from "formik";
-import { FC, memo, useCallback } from "react";
-import {
-  ApplicationForm,
-  ApplicationFormValue,
-  emptyFormValues,
-  validationSchema,
-} from "~/components/application-form";
+import { FC, useCallback, useMemo, useState } from "react";
+import ApplicationFormManualV0 from "~/components/application-form/application-form-manual-v0";
+import ApplicationFormManualV1 from "~/components/application-form/application-form-manual-v1";
+import DialogConfirm from "~/components/dialog-confirm";
+import { UI_TEXT_CANCEL, UI_TEXT_DISCARD } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import {
   Application,
   selectById as selectAppById,
 } from "~/modules/applications";
-import {
-  clearUpdateTarget,
-  updateApplication,
-} from "~/modules/update-application";
+import { clearUpdateTarget } from "~/modules/update-application";
 
-export interface EditApplicationDrawerProps {
+type Props = {
   onUpdated: () => void;
+};
+
+enum PipedVersion {
+  V0 = "v0",
+  V1 = "v1",
 }
 
-export const EditApplicationDrawer: FC<EditApplicationDrawerProps> = memo(
-  function EditApplicationDrawer({ onUpdated }) {
-    const dispatch = useAppDispatch();
+const CONFIRM_DIALOG_TITLE = "Quit editing application?";
+const CONFIRM_DIALOG_DESCRIPTION =
+  "Form values inputs so far will not be saved.";
 
-    const app = useAppSelector<Application.AsObject | undefined>((state) =>
-      state.updateApplication.targetId
-        ? selectAppById(state.applications, state.updateApplication.targetId)
-        : undefined
-    );
+const EditApplicationDrawer: FC<Props> = ({ onUpdated }) => {
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [isFormDirty, setIsFormDirty] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const dispatch = useAppDispatch();
 
-    const formik = useFormik<ApplicationFormValue>({
-      initialValues: app
-        ? {
-            name: app.name,
-            kind: app.kind,
-            pipedId: app.pipedId,
-            repoPath: app.gitPath?.path || "",
-            repo: app.gitPath?.repo || { id: "", remote: "", branch: "" },
-            configFilename: app.gitPath?.configFilename || "",
-            platformProvider: app.platformProvider,
-            labels: app.labelsMap,
-          }
-        : emptyFormValues,
-      validationSchema,
-      enableReinitialize: true,
-      async onSubmit(values) {
-        if (!app) {
-          return;
-        }
-        await dispatch(updateApplication({ ...values, applicationId: app.id }));
-        onUpdated();
-      },
-    });
+  const app = useAppSelector<Application.AsObject | undefined>((state) =>
+    state.updateApplication.targetId
+      ? selectAppById(state.applications, state.updateApplication.targetId)
+      : undefined
+  );
 
-    const handleClose = useCallback(() => {
+  const handleClose = useCallback(() => {
+    if (isFormDirty) {
+      setShowConfirm(true);
+    } else {
       dispatch(clearUpdateTarget());
-    }, [dispatch]);
+    }
+  }, [dispatch, isFormDirty]);
 
-    return (
-      <Drawer
-        anchor="right"
-        open={Boolean(app)}
-        onClose={(_, reason) => {
-          if (reason === "backdropClick" && formik.isSubmitting) return;
-          handleClose();
+  const pipedVersion = useMemo(() => {
+    if (!app) return PipedVersion.V0;
+
+    if (!app.platformProvider) return PipedVersion.V1;
+
+    return PipedVersion.V0;
+  }, [app]);
+
+  const editProps = useMemo(
+    () => ({
+      title: `Edit "${app?.name}"`,
+      onClose: handleClose,
+      onFinished: onUpdated,
+      setIsFormDirty: setIsFormDirty,
+      setIsSubmitting: setIsSubmitting,
+      detailApp: app,
+    }),
+    [app, handleClose, onUpdated]
+  );
+
+  return (
+    <Drawer
+      anchor="right"
+      open={Boolean(app)}
+      onClose={() => {
+        if (isSubmitting) return;
+        handleClose();
+      }}
+    >
+      {pipedVersion === PipedVersion.V0 && (
+        <ApplicationFormManualV0 {...editProps} />
+      )}
+      {pipedVersion === PipedVersion.V1 && (
+        <ApplicationFormManualV1 {...editProps} />
+      )}
+      <DialogConfirm
+        open={showConfirm}
+        title={CONFIRM_DIALOG_TITLE}
+        description={CONFIRM_DIALOG_DESCRIPTION}
+        onCancel={() => setShowConfirm(false)}
+        cancelText={UI_TEXT_CANCEL}
+        confirmText={UI_TEXT_DISCARD}
+        onConfirm={() => {
+          setShowConfirm(false);
+          dispatch(clearUpdateTarget());
         }}
-      >
-        <ApplicationForm
-          {...formik}
-          title={`Edit "${app?.name}"`}
-          onClose={handleClose}
-          disableApplicationInfo
-        />
-      </Drawer>
-    );
-  }
-);
+      />
+    </Drawer>
+  );
+};
+
+export default EditApplicationDrawer;

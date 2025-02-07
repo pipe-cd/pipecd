@@ -25,7 +25,7 @@ export const dummyApplication: Application.AsObject = {
   id: randomUUID(),
   cloudProvider: "",
   platformProvider: "kubernetes-default",
-  deployTargetsList: ["kubernetes-default"],
+  deployTargetsByPluginMap: [],
   disabled: false,
   gitPath: {
     configFilename: "",
@@ -35,6 +35,52 @@ export const dummyApplication: Application.AsObject = {
   },
   kind: ApplicationKind.KUBERNETES,
   name: "DemoApp",
+  pipedId: dummyPiped.id,
+  projectId: "project-1",
+  description: "",
+  labelsMap: [],
+  mostRecentlySuccessfulDeployment: {
+    deploymentId: "deployment-1",
+    completedAt: 0,
+    summary: "",
+    startedAt: startedAt.unix(),
+    version: "v1",
+    trigger: dummyTrigger,
+    configFilename: "",
+    versionsList: [],
+  },
+  mostRecentlyTriggeredDeployment: {
+    deploymentId: "deployment-1",
+    completedAt: 0,
+    summary: "summary",
+    startedAt: startedAt.unix(),
+    version: "v1",
+    trigger: dummyTrigger,
+    configFilename: "",
+    versionsList: [],
+  },
+  syncState: dummyApplicationSyncState,
+  updatedAt: updatedAt.unix(),
+  deletedAt: 0,
+  createdAt: createdAt.unix(),
+  deleted: false,
+  deploying: false,
+};
+
+export const dummyApplicationPipedV1: Application.AsObject = {
+  id: randomUUID(),
+  cloudProvider: "",
+  platformProvider: "",
+  deployTargetsByPluginMap: [],
+  disabled: false,
+  gitPath: {
+    configFilename: "",
+    path: "dir/dir1",
+    url: "",
+    repo: dummyRepo,
+  },
+  kind: ApplicationKind.KUBERNETES,
+  name: "DemoAppForPipedV1",
   pipedId: dummyPiped.id,
   projectId: "project-1",
   description: "",
@@ -132,7 +178,6 @@ export function createApplicationFromObject(
   const app = new Application();
   app.setId(o.id);
   app.setPlatformProvider(o.platformProvider);
-  app.setDeployTargetsList(o.deployTargetsList);
   app.setDisabled(o.disabled);
   app.setKind(o.kind);
   app.setName(o.name);

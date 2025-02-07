@@ -46,7 +46,12 @@ Happy PipeCD-ing 🙌
   render(
     <Provider store={store}>
       <ThemeProvider theme={theme}>
-        <BrowserRouter>
+        <BrowserRouter
+          future={{
+            v7_startTransition: false,
+            v7_relativeSplatPath: false,
+          }}
+        >
           <CssBaseline />
           <Routes />
         </BrowserRouter>

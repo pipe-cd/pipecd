@@ -70,7 +70,7 @@ type pipedAPIDeploymentChainStore interface {
 
 type pipedAPIPipedStore interface {
 	Get(ctx context.Context, id string) (*model.Piped, error)
-	UpdateMetadata(ctx context.Context, id, version, config string, pps []*model.Piped_PlatformProvider, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, startedAt int64) error
+	UpdateMetadata(ctx context.Context, id, version, config string, pps []*model.Piped_PlatformProvider, pls []*model.Piped_Plugin, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, startedAt int64) error
 }
 
 type pipedAPIEventStore interface {
@@ -187,6 +187,7 @@ func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.Report
 		req.Version,
 		req.Config,
 		platformProviders,
+		req.Plugins,
 		req.Repositories,
 		req.SecretEncryption,
 		now,

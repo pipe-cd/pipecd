@@ -2958,15 +2958,61 @@ func (m *UpdateApplicationDeployTargetsRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if len(m.GetDeployTargets()) < 1 {
+	if len(m.GetDeployTargetsByPlugin()) < 1 {
 		err := UpdateApplicationDeployTargetsRequestValidationError{
-			field:  "DeployTargets",
-			reason: "value must contain at least 1 item(s)",
+			field:  "DeployTargetsByPlugin",
+			reason: "value must contain at least 1 pair(s)",
 		}
 		if !all {
 			return err
 		}
 		errors = append(errors, err)
+	}
+
+	{
+		sorted_keys := make([]string, len(m.GetDeployTargetsByPlugin()))
+		i := 0
+		for key := range m.GetDeployTargetsByPlugin() {
+			sorted_keys[i] = key
+			i++
+		}
+		sort.Slice(sorted_keys, func(i, j int) bool { return sorted_keys[i] < sorted_keys[j] })
+		for _, key := range sorted_keys {
+			val := m.GetDeployTargetsByPlugin()[key]
+			_ = val
+
+			// no validation rules for DeployTargetsByPlugin[key]
+
+			if all {
+				switch v := interface{}(val).(type) {
+				case interface{ ValidateAll() error }:
+					if err := v.ValidateAll(); err != nil {
+						errors = append(errors, UpdateApplicationDeployTargetsRequestValidationError{
+							field:  fmt.Sprintf("DeployTargetsByPlugin[%v]", key),
+							reason: "embedded message failed validation",
+							cause:  err,
+						})
+					}
+				case interface{ Validate() error }:
+					if err := v.Validate(); err != nil {
+						errors = append(errors, UpdateApplicationDeployTargetsRequestValidationError{
+							field:  fmt.Sprintf("DeployTargetsByPlugin[%v]", key),
+							reason: "embedded message failed validation",
+							cause:  err,
+						})
+					}
+				}
+			} else if v, ok := interface{}(val).(interface{ Validate() error }); ok {
+				if err := v.Validate(); err != nil {
+					return UpdateApplicationDeployTargetsRequestValidationError{
+						field:  fmt.Sprintf("DeployTargetsByPlugin[%v]", key),
+						reason: "embedded message failed validation",
+						cause:  err,
+					}
+				}
+			}
+
+		}
 	}
 
 	if len(errors) > 0 {

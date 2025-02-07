@@ -63,7 +63,7 @@
     "@loadable/component": "^5.16.4",
     "@material-ui/core": "^4.12.4",
     "@material-ui/icons": "^4.11.3",
-    "@material-ui/lab": "^4.0.0-alpha.56",
+    "@material-ui/lab": "^4.0.0-alpha.61",
     "@primer/octicons-react": "^14.2.2",
     "@reduxjs/toolkit": "^1.9.7",
     "@types/dagre": "^0.7.52",
@@ -86,7 +86,7 @@
     "react-intersection-observer": "^8.26.2",
     "react-markdown": "^6.0.3",
     "react-redux": "^7.2.9",
-    "react-router-dom": "^6.0.0",
+    "react-router-dom": "^6.28.1",
     "react-syntax-highlighter": "^15.6.1",
     "redux-thunk": "^2.4.1",
     "yup": "^0.32.11"
