@@ -86,16 +86,6 @@ func (a *Application) IsOutOfSync() bool {
 	return a.SyncState.Status == ApplicationSyncStatus_OUT_OF_SYNC
 }
 
-func (a *Application) GetDeployTargets() []string {
-	var deployTargets []string
-	for _, t := range a.DeployTargetsByPlugin {
-		for _, v := range t.GetValues() {
-			deployTargets = append(deployTargets, v.GetStringValue())
-		}
-	}
-	return deployTargets
-}
-
 func (a *Application) SetUpdatedAt(t int64) {
 	a.UpdatedAt = t
 }

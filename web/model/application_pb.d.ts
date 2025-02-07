@@ -1,6 +1,5 @@
 import * as jspb from 'google-protobuf'
 
-import * as google_protobuf_struct_pb from 'google-protobuf/google/protobuf/struct_pb';
 
 import * as pkg_model_common_pb from 'pipecd/web/model/common_pb';
 import * as pkg_model_deployment_pb from 'pipecd/web/model/deployment_pb';
@@ -33,8 +32,10 @@ export class Application extends jspb.Message {
   getPlatformProvider(): string;
   setPlatformProvider(value: string): Application;
 
-  getDeployTargetsByPluginMap(): jspb.Map<string, google_protobuf_struct_pb.ListValue>;
-  clearDeployTargetsByPluginMap(): Application;
+  getDeployTargetsList(): Array<string>;
+  setDeployTargetsList(value: Array<string>): Application;
+  clearDeployTargetsList(): Application;
+  addDeployTargets(value: string, index?: number): Application;
 
   getDescription(): string;
   setDescription(value: string): Application;
@@ -93,7 +94,7 @@ export namespace Application {
     gitPath?: pkg_model_common_pb.ApplicationGitPath.AsObject,
     cloudProvider: string,
     platformProvider: string,
-    deployTargetsByPluginMap: Array<[string, google_protobuf_struct_pb.ListValue.AsObject]>,
+    deployTargetsList: Array<string>,
     description: string,
     labelsMap: Array<[string, string]>,
     mostRecentlySuccessfulDeployment?: ApplicationDeploymentReference.AsObject,
