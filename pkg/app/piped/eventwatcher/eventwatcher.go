@@ -458,7 +458,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 	var responseError error
 	retry := backoff.NewRetry(retryPushNum, backoff.NewConstant(retryPushInterval))
 	for branch, events := range branchHandledEvents {
-		var eventIDs []string
+		eventIDs := make([]string, 0, len(events))
 		for _, e := range events {
 			eventIDs = append(eventIDs, e.Id)
 		}
@@ -614,7 +614,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 		return nil
 	}
 
-	var eventIDs []string
+	eventIDs := make([]string, 0, len(handledEvents))
 	for _, e := range handledEvents {
 		eventIDs = append(eventIDs, e.Id)
 	}
