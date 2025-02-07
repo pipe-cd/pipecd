@@ -25,7 +25,7 @@ export const dummyDeployment: Deployment.AsObject = {
   versionsList: [],
   cloudProvider: "kube-1",
   platformProvider: "kube-1",
-  deployTargetsByPluginMap: [],
+  deployTargetsList: ["kube-1"],
   labelsMap: [],
   createdAt: createdAt.unix(),
   updatedAt: completedAt.unix(),
