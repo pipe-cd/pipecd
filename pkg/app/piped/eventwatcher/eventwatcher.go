@@ -623,6 +623,8 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 		return nil
 	}
 
+	w.logger.Error("failed to push commits", zap.Error(err))
+
 	// If push fails because of the other reason, re-set all statuses to FAILURE.
 	for i := range handledEvents {
 		if handledEvents[i].Status == model.EventStatus_EVENT_FAILURE {
@@ -636,7 +638,6 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 		return err
 	}
 	w.milestoneMap.Store(repoID, maxTimestamp)
-	w.logger.Error("failed to push commits", zap.Error(err))
 	return err
 }
 
