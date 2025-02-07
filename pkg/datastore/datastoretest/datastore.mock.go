@@ -533,17 +533,17 @@ func (mr *MockApplicationStoreMockRecorder) UpdateConfigFilename(ctx, id, config
 }
 
 // UpdateConfiguration mocks base method.
-func (m *MockApplicationStore) UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string) error {
+func (m *MockApplicationStore) UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string, deployTargetsByPlugin map[string]*model.DeployTargets) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateConfiguration", ctx, id, pipedID, platformProvider, configFilename)
+	ret := m.ctrl.Call(m, "UpdateConfiguration", ctx, id, pipedID, platformProvider, configFilename, deployTargetsByPlugin)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateConfiguration indicates an expected call of UpdateConfiguration.
-func (mr *MockApplicationStoreMockRecorder) UpdateConfiguration(ctx, id, pipedID, platformProvider, configFilename any) *gomock.Call {
+func (mr *MockApplicationStoreMockRecorder) UpdateConfiguration(ctx, id, pipedID, platformProvider, configFilename, deployTargetsByPlugin any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateConfiguration", reflect.TypeOf((*MockApplicationStore)(nil).UpdateConfiguration), ctx, id, pipedID, platformProvider, configFilename)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateConfiguration", reflect.TypeOf((*MockApplicationStore)(nil).UpdateConfiguration), ctx, id, pipedID, platformProvider, configFilename, deployTargetsByPlugin)
 }
 
 // UpdateDeployTargets mocks base method.
