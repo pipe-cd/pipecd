@@ -13,7 +13,7 @@ import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
 import { SerializedError } from "@reduxjs/toolkit";
 import clsx from "clsx";
 import dayjs from "dayjs";
-import { FC, memo, useState } from "react";
+import { FC, Fragment, memo, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { AppSyncStatus } from "~/components/app-sync-status";
@@ -138,7 +138,13 @@ const ArtifactVersions: FC<{
 
   if (deployment.versionsList.length <= defaultDisplayLimit) {
     return (
-      <>{deployment.versionsList.map((v) => buildLinkableArtifactVersion(v))}</>
+      <>
+        {deployment.versionsList.map((v) => (
+          <Fragment key={`${v.name}:${v.version}`}>
+            {buildLinkableArtifactVersion(v)}
+          </Fragment>
+        ))}
+      </>
     );
   }
 
@@ -146,7 +152,11 @@ const ArtifactVersions: FC<{
     <>
       {deployment.versionsList.map((v, idx) => {
         if (idx >= defaultDisplayLimit) return;
-        return buildLinkableArtifactVersion(v);
+        return (
+          <Fragment key={`${v.name}:${v.version}`}>
+            {buildLinkableArtifactVersion(v)}
+          </Fragment>
+        );
       })}
       <span
         className={classes.clickable}
@@ -157,7 +167,11 @@ const ArtifactVersions: FC<{
     </>
   ) : (
     <>
-      {deployment.versionsList.map((v) => buildLinkableArtifactVersion(v))}
+      {deployment.versionsList.map((v) => (
+        <Fragment key={`${v.name}:${v.version}`}>
+          {buildLinkableArtifactVersion(v)}
+        </Fragment>
+      ))}
       <span
         className={classes.clickable}
         onClick={() => setShowMore(!showMore)}
