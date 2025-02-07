@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 FROM --platform=$BUILDPLATFORM golang:1.23.3 AS builder
 
 ARG TARGETOS
