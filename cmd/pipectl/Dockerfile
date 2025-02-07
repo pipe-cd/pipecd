@@ -1,4 +1,7 @@
-FROM golang:1.23.3 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.23.3 AS builder
+
+ARG TARGETOS
+ARG TARGETARCH
 
 WORKDIR /app
 
@@ -7,7 +10,7 @@ RUN go mod download
 
 COPY . ./
 
-RUN make build/go MOD=pipectl
+RUN make build/go MOD=pipectl BUILD_OS=${TARGETOS} BUILD_ARCH=${TARGETARCH}
 
 FROM alpine:3.21.0
 
