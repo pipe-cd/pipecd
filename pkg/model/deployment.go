@@ -214,6 +214,15 @@ func (d *Deployment) SetUpdatedAt(t int64) {
 	d.UpdatedAt = t
 }
 
+func (d *Deployment) GetDeployTargets(pluginName string) ([]string, error) {
+	dps, ok := d.GetDeployTargetsByPlugin()[pluginName]
+	if !ok || len(dps.GetDeployTargets()) == 0 {
+		return nil, fmt.Errorf("deploy target not found for plugin %v", pluginName)
+	}
+
+	return dps.GetDeployTargets(), nil
+}
+
 // Implement sort.Interface for PipelineStages.
 type PipelineStages []*PipelineStage
 
