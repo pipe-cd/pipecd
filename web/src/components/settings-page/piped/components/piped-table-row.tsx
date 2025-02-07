@@ -191,6 +191,7 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
             >
               <Badge
                 variant="dot"
+                overlap="rectangular"
                 className={clsx({
                   [classes.onlineStatus]:
                     piped.status === Piped.ConnectionStatus.ONLINE,
