@@ -21,7 +21,6 @@ import (
 	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
-	structpb "google.golang.org/protobuf/types/known/structpb"
 )
 
 type applicationCollection struct {
@@ -199,7 +198,7 @@ type ApplicationStore interface {
 	UpdateBasicInfo(ctx context.Context, id, name, description string, labels map[string]string) error
 	UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string) error
 	UpdatePlatformProvider(ctx context.Context, id string, provider string) error
-	UpdateDeployTargets(ctx context.Context, id string, deployTargetsByPlugin map[string]*structpb.ListValue) error
+	UpdateDeployTargets(ctx context.Context, id string, targets []string) error
 }
 
 type applicationStore struct {
@@ -380,9 +379,9 @@ func (s *applicationStore) UpdatePlatformProvider(ctx context.Context, id string
 	})
 }
 
-func (s *applicationStore) UpdateDeployTargets(ctx context.Context, id string, deployTargetsByPlugin map[string]*structpb.ListValue) error {
+func (s *applicationStore) UpdateDeployTargets(ctx context.Context, id string, targets []string) error {
 	return s.update(ctx, id, func(app *model.Application) error {
-		app.DeployTargetsByPlugin = deployTargetsByPlugin
+		app.DeployTargets = targets
 		return nil
 	})
 }
