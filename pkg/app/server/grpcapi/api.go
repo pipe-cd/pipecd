@@ -848,6 +848,12 @@ func (a *API) RequestPlanPreview(ctx context.Context, req *apiservice.RequestPla
 				Value:    false,
 			},
 		},
+		Orders: []datastore.Order{
+			{
+				Field:     "Id",
+				Direction: datastore.Asc,
+			},
+		},
 	})
 	if err != nil {
 		return nil, gRPCStoreError(err, "list pipeds")
