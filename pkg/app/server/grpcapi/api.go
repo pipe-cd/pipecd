@@ -46,7 +46,7 @@ type apiApplicationStore interface {
 	Enable(ctx context.Context, id string) error
 	Disable(ctx context.Context, id string) error
 	UpdateConfigFilename(ctx context.Context, id, filename string) error
-	UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string) error
+	UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string, deployTargetsByPlugin map[string]*model.DeployTargets) error
 	UpdateDeployTargets(ctx context.Context, id string, dp map[string]*model.DeployTargets) error
 }
 
@@ -360,7 +360,7 @@ func (a *API) UpdateApplication(ctx context.Context, req *apiservice.UpdateAppli
 		return nil, status.Error(codes.InvalidArgument, "Requested piped does not belong to your project")
 	}
 
-	if err := a.applicationStore.UpdateConfiguration(ctx, req.ApplicationId, req.PipedId, req.PlatformProvider, req.GitPath.ConfigFilename); err != nil {
+	if err := a.applicationStore.UpdateConfiguration(ctx, req.ApplicationId, req.PipedId, req.PlatformProvider, req.GitPath.ConfigFilename, nil); err != nil {
 		return nil, gRPCStoreError(err, fmt.Sprintf("failed to update application %s", req.ApplicationId))
 	}
 

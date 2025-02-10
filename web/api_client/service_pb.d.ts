@@ -499,6 +499,9 @@ export class AddApplicationRequest extends jspb.Message {
   getPlatformProvider(): string;
   setPlatformProvider(value: string): AddApplicationRequest;
 
+  getDeployTargetsByPluginMap(): jspb.Map<string, pkg_model_deployment_pb.DeployTargets>;
+  clearDeployTargetsByPluginMap(): AddApplicationRequest;
+
   getDescription(): string;
   setDescription(value: string): AddApplicationRequest;
 
@@ -520,6 +523,7 @@ export namespace AddApplicationRequest {
     gitPath?: pkg_model_common_pb.ApplicationGitPath.AsObject,
     kind: pkg_model_common_pb.ApplicationKind,
     platformProvider: string,
+    deployTargetsByPluginMap: Array<[string, pkg_model_deployment_pb.DeployTargets.AsObject]>,
     description: string,
     labelsMap: Array<[string, string]>,
   }
@@ -559,6 +563,9 @@ export class UpdateApplicationRequest extends jspb.Message {
   getPlatformProvider(): string;
   setPlatformProvider(value: string): UpdateApplicationRequest;
 
+  getDeployTargetsByPluginMap(): jspb.Map<string, pkg_model_deployment_pb.DeployTargets>;
+  clearDeployTargetsByPluginMap(): UpdateApplicationRequest;
+
   getConfigFilename(): string;
   setConfigFilename(value: string): UpdateApplicationRequest;
 
@@ -577,6 +584,7 @@ export namespace UpdateApplicationRequest {
     pipedId: string,
     kind: pkg_model_common_pb.ApplicationKind,
     platformProvider: string,
+    deployTargetsByPluginMap: Array<[string, pkg_model_deployment_pb.DeployTargets.AsObject]>,
     configFilename: string,
   }
 }

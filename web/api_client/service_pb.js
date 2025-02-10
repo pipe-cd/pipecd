@@ -5823,6 +5823,7 @@ proto.grpc.service.webservice.AddApplicationRequest.toObject = function(includeI
     gitPath: (f = msg.getGitPath()) && pkg_model_common_pb.ApplicationGitPath.toObject(includeInstance, f),
     kind: jspb.Message.getFieldWithDefault(msg, 5, 0),
     platformProvider: jspb.Message.getFieldWithDefault(msg, 9, ""),
+    deployTargetsByPluginMap: (f = msg.getDeployTargetsByPluginMap()) ? f.toObject(includeInstance, proto.model.DeployTargets.toObject) : [],
     description: jspb.Message.getFieldWithDefault(msg, 7, ""),
     labelsMap: (f = msg.getLabelsMap()) ? f.toObject(includeInstance, undefined) : []
   };
@@ -5881,6 +5882,12 @@ proto.grpc.service.webservice.AddApplicationRequest.deserializeBinaryFromReader 
     case 9:
       var value = /** @type {string} */ (reader.readString());
       msg.setPlatformProvider(value);
+      break;
+    case 10:
+      var value = msg.getDeployTargetsByPluginMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readMessage, proto.model.DeployTargets.deserializeBinaryFromReader, "", new proto.model.DeployTargets());
+         });
       break;
     case 7:
       var value = /** @type {string} */ (reader.readString());
@@ -5956,6 +5963,10 @@ proto.grpc.service.webservice.AddApplicationRequest.serializeBinaryToWriter = fu
       9,
       f
     );
+  }
+  f = message.getDeployTargetsByPluginMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(10, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeMessage, proto.model.DeployTargets.serializeBinaryToWriter);
   }
   f = message.getDescription();
   if (f.length > 0) {
@@ -6077,6 +6088,29 @@ proto.grpc.service.webservice.AddApplicationRequest.prototype.getPlatformProvide
  */
 proto.grpc.service.webservice.AddApplicationRequest.prototype.setPlatformProvider = function(value) {
   return jspb.Message.setProto3StringField(this, 9, value);
+};
+
+
+/**
+ * map<string, model.DeployTargets> deploy_targets_by_plugin = 10;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,!proto.model.DeployTargets>}
+ */
+proto.grpc.service.webservice.AddApplicationRequest.prototype.getDeployTargetsByPluginMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,!proto.model.DeployTargets>} */ (
+      jspb.Message.getMapField(this, 10, opt_noLazyCreate,
+      proto.model.DeployTargets));
+};
+
+
+/**
+ * Clears values from the map. The map will be non-null.
+ * @return {!proto.grpc.service.webservice.AddApplicationRequest} returns this
+ */
+proto.grpc.service.webservice.AddApplicationRequest.prototype.clearDeployTargetsByPluginMap = function() {
+  this.getDeployTargetsByPluginMap().clear();
+  return this;
 };
 
 
@@ -6288,6 +6322,7 @@ proto.grpc.service.webservice.UpdateApplicationRequest.toObject = function(inclu
     pipedId: jspb.Message.getFieldWithDefault(msg, 4, ""),
     kind: jspb.Message.getFieldWithDefault(msg, 6, 0),
     platformProvider: jspb.Message.getFieldWithDefault(msg, 9, ""),
+    deployTargetsByPluginMap: (f = msg.getDeployTargetsByPluginMap()) ? f.toObject(includeInstance, proto.model.DeployTargets.toObject) : [],
     configFilename: jspb.Message.getFieldWithDefault(msg, 8, "")
   };
 
@@ -6344,6 +6379,12 @@ proto.grpc.service.webservice.UpdateApplicationRequest.deserializeBinaryFromRead
     case 9:
       var value = /** @type {string} */ (reader.readString());
       msg.setPlatformProvider(value);
+      break;
+    case 10:
+      var value = msg.getDeployTargetsByPluginMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readMessage, proto.model.DeployTargets.deserializeBinaryFromReader, "", new proto.model.DeployTargets());
+         });
       break;
     case 8:
       var value = /** @type {string} */ (reader.readString());
@@ -6412,6 +6453,10 @@ proto.grpc.service.webservice.UpdateApplicationRequest.serializeBinaryToWriter =
       9,
       f
     );
+  }
+  f = message.getDeployTargetsByPluginMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(10, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeMessage, proto.model.DeployTargets.serializeBinaryToWriter);
   }
   f = message.getConfigFilename();
   if (f.length > 0) {
@@ -6510,6 +6555,29 @@ proto.grpc.service.webservice.UpdateApplicationRequest.prototype.getPlatformProv
  */
 proto.grpc.service.webservice.UpdateApplicationRequest.prototype.setPlatformProvider = function(value) {
   return jspb.Message.setProto3StringField(this, 9, value);
+};
+
+
+/**
+ * map<string, model.DeployTargets> deploy_targets_by_plugin = 10;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,!proto.model.DeployTargets>}
+ */
+proto.grpc.service.webservice.UpdateApplicationRequest.prototype.getDeployTargetsByPluginMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,!proto.model.DeployTargets>} */ (
+      jspb.Message.getMapField(this, 10, opt_noLazyCreate,
+      proto.model.DeployTargets));
+};
+
+
+/**
+ * Clears values from the map. The map will be non-null.
+ * @return {!proto.grpc.service.webservice.UpdateApplicationRequest} returns this
+ */
+proto.grpc.service.webservice.UpdateApplicationRequest.prototype.clearDeployTargetsByPluginMap = function() {
+  this.getDeployTargetsByPluginMap().clear();
+  return this;
 };
 
 

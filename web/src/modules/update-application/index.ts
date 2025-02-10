@@ -34,6 +34,7 @@ export const updateApplication = createAsyncThunk<
     pipedId: values.pipedId,
     platformProvider: values.platformProvider,
     kind: values.kind,
+    deployTargetsByPluginMap: [], // TODO: pass this from form
     configFilename: values.configFilename || "",
   });
 });

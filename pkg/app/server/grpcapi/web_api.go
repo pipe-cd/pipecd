@@ -59,7 +59,7 @@ type webAPIApplicationStore interface {
 	Get(ctx context.Context, id string) (*model.Application, error)
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Application, string, error)
 	Delete(ctx context.Context, id string) error
-	UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string) error
+	UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string, deployTargetsByPlugin map[string]*model.DeployTargets) error
 	Enable(ctx context.Context, id string) error
 	Disable(ctx context.Context, id string) error
 }
@@ -512,16 +512,17 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 	}
 
 	app := model.Application{
-		Id:               uuid.New().String(),
-		Name:             req.Name,
-		PipedId:          req.PipedId,
-		ProjectId:        claims.Role.ProjectId,
-		GitPath:          gitpath,
-		Kind:             req.Kind,
-		PlatformProvider: req.PlatformProvider,
-		CloudProvider:    req.PlatformProvider,
-		Description:      req.Description,
-		Labels:           req.Labels,
+		Id:                    uuid.New().String(),
+		Name:                  req.Name,
+		PipedId:               req.PipedId,
+		ProjectId:             claims.Role.ProjectId,
+		GitPath:               gitpath,
+		Kind:                  req.Kind,
+		PlatformProvider:      req.PlatformProvider,
+		CloudProvider:         req.PlatformProvider,
+		DeployTargetsByPlugin: req.DeployTargetsByPlugin,
+		Description:           req.Description,
+		Labels:                req.Labels,
 	}
 	if err = a.applicationStore.Add(ctx, &app); err != nil {
 		return nil, gRPCStoreError(err, fmt.Sprintf("add application %s", app.Id))
@@ -548,7 +549,7 @@ func (a *WebAPI) UpdateApplication(ctx context.Context, req *webservice.UpdateAp
 		return nil, status.Error(codes.PermissionDenied, "Requested piped does not belong to your project")
 	}
 
-	if err := a.applicationStore.UpdateConfiguration(ctx, req.ApplicationId, req.PipedId, req.PlatformProvider, req.ConfigFilename); err != nil {
+	if err := a.applicationStore.UpdateConfiguration(ctx, req.ApplicationId, req.PipedId, req.PlatformProvider, req.ConfigFilename, req.DeployTargetsByPlugin); err != nil {
 		return nil, gRPCStoreError(err, fmt.Sprintf("failed to update application %s", req.ApplicationId))
 	}
 
