@@ -604,7 +604,7 @@ func determineStageStatus(sig StopSignalType, ori, got model.StageStatus) model.
 func (s *scheduler) shouldSkipStage(ctx context.Context, ps *model.PipelineStage) (skipOrError bool, status model.StageStatus) {
 	stage, found := s.genericApplicationConfig.GetStage(ps.Index)
 	if !found {
-		return true, model.StageStatus_STAGE_FAILURE
+		return false, model.StageStatus_STAGE_RUNNING
 	}
 
 	skip, err := s.determineSkipStage(ctx, stage.SkipOn)
