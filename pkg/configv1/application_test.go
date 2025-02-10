@@ -598,7 +598,7 @@ func TestGetStageByte(t *testing.T) {
 				},
 			},
 			index:  0,
-			want:   []byte(`{"id":"","name":"K8S_SYNC","timeout":"0s","with":null}`),
+			want:   []byte(`{"id":"","name":"K8S_SYNC","timeout":"0s","with":null,"skipOn":{}}`),
 			wantOk: true,
 		},
 		{
