@@ -16,9 +16,13 @@ package oidc
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
+	"mime"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/golang-jwt/jwt/v5"
@@ -49,17 +53,25 @@ func NewOAuthClient(ctx context.Context,
 		project: project,
 	}
 
-	provider, err := oidc.NewProvider(ctx, sso.Issuer)
-	if err != nil {
-		return nil, err
+	if sso.AuthorizationEndpoint != "" || sso.TokenEndpoint != "" || sso.UserInfoEndpoint != "" {
+		provider, err := createCustomOIDCProvider(ctx, sso)
+		if err != nil {
+			return nil, err
+		}
+		c.Provider = provider
+	} else {
+		provider, err := oidc.NewProvider(ctx, sso.Issuer)
+		if err != nil {
+			return nil, err
+		}
+		c.Provider = provider
 	}
-	c.Provider = provider
 
 	cfg := oauth2.Config{
 		ClientID:     sso.ClientId,
 		ClientSecret: sso.ClientSecret,
 		RedirectURL:  sso.RedirectUri,
-		Endpoint:     provider.Endpoint(),
+		Endpoint:     c.Provider.Endpoint(),
 		Scopes:       append(sso.Scopes, oidc.ScopeOpenID),
 	}
 
@@ -100,6 +112,22 @@ func (c *OAuthClient) GetUser(ctx context.Context, clientID string) (*model.User
 	var claims jwt.MapClaims
 	if err := idToken.Claims(&claims); err != nil {
 		return nil, err
+	}
+
+	if c.Provider.UserInfoEndpoint() != "" {
+		userInfo, err := c.Provider.UserInfo(ctx, oauth2.StaticTokenSource(c.Token))
+		if err != nil {
+			return nil, err
+		}
+
+		var userInfoClaims map[string]interface{}
+		if err := userInfo.Claims(&userInfoClaims); err != nil {
+			return nil, err
+		}
+
+		for k, v := range userInfoClaims {
+			claims[k] = v
+		}
 	}
 
 	role, err := c.decideRole(claims)
@@ -206,4 +234,95 @@ func (c *OAuthClient) decideUserInfos(claims jwt.MapClaims) (username, avatarURL
 	}
 
 	return username, avatarURL, nil
+}
+
+func createCustomOIDCProvider(ctx context.Context, sso *model.ProjectSSOConfig_Oidc) (*oidc.Provider, error) {
+	issuer := sso.Issuer
+
+	wellKnown := strings.TrimSuffix(issuer, "/") + "/.well-known/openid-configuration"
+	req, err := http.NewRequest("GET", wellKnown, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	client := http.DefaultClient
+	if c := getClient(ctx); c != nil {
+		client = c
+	}
+	resp, err := client.Do(req.WithContext(ctx))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read response body: %v", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("%s: %s", resp.Status, body)
+	}
+
+	var p providerJSON
+	err = unmarshalResp(resp, body, &p)
+	if err != nil {
+		return nil, fmt.Errorf("oidc: failed to decode provider discovery object: %v", err)
+	}
+
+	providerConfig := oidc.ProviderConfig{
+		IssuerURL: issuer,
+		AuthURL: func() string {
+			if sso.AuthorizationEndpoint != "" {
+				return sso.AuthorizationEndpoint
+			}
+			return p.AuthURL
+		}(),
+		TokenURL: func() string {
+			if sso.TokenEndpoint != "" {
+				return sso.TokenEndpoint
+			}
+			return p.TokenURL
+		}(),
+		DeviceAuthURL: p.DeviceAuthURL,
+		UserInfoURL: func() string {
+			if sso.UserInfoEndpoint != "" {
+				return sso.UserInfoEndpoint
+			}
+			return p.UserInfoURL
+		}(),
+		JWKSURL: p.JWKSURL,
+	}
+
+	return providerConfig.NewProvider(ctx), nil
+}
+
+func getClient(ctx context.Context) *http.Client {
+	if c, ok := ctx.Value(oauth2.HTTPClient).(*http.Client); ok {
+		return c
+	}
+	return nil
+}
+
+type providerJSON struct {
+	Issuer        string   `json:"issuer"`
+	AuthURL       string   `json:"authorization_endpoint"`
+	TokenURL      string   `json:"token_endpoint"`
+	DeviceAuthURL string   `json:"device_authorization_endpoint"`
+	JWKSURL       string   `json:"jwks_uri"`
+	UserInfoURL   string   `json:"userinfo_endpoint"`
+	Algorithms    []string `json:"id_token_signing_alg_values_supported"`
+}
+
+func unmarshalResp(r *http.Response, body []byte, v interface{}) error {
+	err := json.Unmarshal(body, &v)
+	if err == nil {
+		return nil
+	}
+	ct := r.Header.Get("Content-Type")
+	mediaType, _, parseErr := mime.ParseMediaType(ct)
+	if parseErr == nil && mediaType == "application/json" {
+		return fmt.Errorf("got Content-Type = application/json, but could not unmarshal as JSON: %v", err)
+	}
+	return fmt.Errorf("expected Content-Type = application/json, got %q: %v", ct, err)
 }
