@@ -18,6 +18,7 @@ import (
 	"testing"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
+
 	"github.com/stretchr/testify/require"
 )
 
