@@ -13,7 +13,7 @@ import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
 import { ApplicationKind } from "~/modules/applications";
 import { Piped, selectAllPipeds, selectPipedById } from "~/modules/pipeds";
 import { sortFunc } from "~/utils/common";
-import { ApplicationFormProps, ApplicationFormValue } from "..";
+import { ApplicationFormProps } from "..";
 import { useFormik } from "formik";
 import * as yup from "yup";
 
@@ -22,7 +22,22 @@ import { addApplication } from "~/modules/applications";
 import FormSelectInput from "../../form-select-input";
 import { updateApplication } from "~/modules/update-application";
 
-export const emptyFormValues: ApplicationFormValue = {
+type FormValues = {
+  name: string;
+  kind: ApplicationKind;
+  pipedId: string;
+  repoPath: string;
+  configFilename: string;
+  platformProvider: string;
+  repo: {
+    id: string;
+    remote: string;
+    branch: string;
+  };
+  labels: Array<[string, string]>;
+};
+
+export const emptyFormValues: FormValues = {
   name: "",
   kind: ApplicationKind.KUBERNETES,
   pipedId: "",
@@ -135,7 +150,7 @@ const ApplicationFormManualV0: FC<ApplicationFormProps> = ({
   detailApp: detailApp,
 }) => {
   const dispatch = useAppDispatch();
-  const formik = useFormik<ApplicationFormValue>({
+  const formik = useFormik<FormValues>({
     initialValues: detailApp
       ? {
           name: detailApp.name,

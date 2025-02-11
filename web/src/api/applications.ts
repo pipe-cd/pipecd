@@ -165,6 +165,7 @@ export const updateApplication = async ({
   name,
   pipedId,
   configFilename,
+  deployTargetsByPluginMap,
 }: Required<
   Omit<UpdateApplicationRequest.AsObject, "platformProvider" | "kind">
 > &
@@ -180,6 +181,13 @@ export const updateApplication = async ({
   }
   if (kind !== undefined) {
     req.setKind(kind);
+  }
+  if (deployTargetsByPluginMap) {
+    deployTargetsByPluginMap.forEach(([pluginName, deployTarget]) => {
+      const newDeployTarget = new DeployTargets();
+      newDeployTarget.setDeployTargetsList(deployTarget.deployTargetsList);
+      req.getDeployTargetsByPluginMap().set(pluginName, newDeployTarget);
+    });
   }
   req.setConfigFilename(configFilename);
   return apiRequest(req, apiClient.updateApplication);

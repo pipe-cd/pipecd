@@ -74,7 +74,7 @@ enum STEP {
 type DeployTargetOption = {
   pluginName: string;
   deployTarget: string;
-  disabled?: boolean;
+  value: string;
 };
 
 type Props = {
@@ -129,7 +129,11 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
 
     return selectedPiped.pluginsList.reduce((all, plugin) => {
       plugin.deployTargetsList.forEach((deployTarget) => {
-        all.push({ deployTarget, pluginName: plugin.name });
+        all.push({
+          deployTarget,
+          pluginName: plugin.name,
+          value: `${deployTarget} - ${plugin.name}`,
+        });
       });
       return all;
     }, [] as DeployTargetOption[]);
@@ -144,9 +148,7 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
   );
 
   const pipeds = useMemo(() => {
-    return ps
-      .filter((piped) => !piped.disabled)
-      .sort((a, b) => sortFunc(a.name, b.name));
+    return ps.sort((a, b) => sortFunc(a.name, b.name));
   }, [ps]);
 
   /**
@@ -204,7 +206,7 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
       repoPath: selectedApp.path,
       configFilename: selectedApp.configFilename,
       labels: selectedApp.labelsMap,
-      deployTargets: selectedDeployTargets.filter((item) => !item.disabled),
+      deployTargets: selectedDeployTargets,
     });
     setShowConfirm(true);
   };
@@ -257,16 +259,15 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
                 <FormControl className={classes.formItem} variant="outlined">
                   <Autocomplete
                     id="deploy-targets"
-                    options={deployTargetOptions}
-                    getOptionLabel={(item) =>
-                      `${item.deployTarget} - ${item.pluginName}`
-                    }
+                    options={deployTargetOptions.map(({ value }) => value)}
                     multiple={true}
-                    value={selectedDeployTargets}
-                    getOptionDisabled={(option) => !!option?.disabled}
+                    value={selectedDeployTargets.map((item) => item.value)}
                     disabled={!selectedPipedId}
                     onChange={(_e, value) => {
-                      onSelectDeployTargets(value);
+                      const selected = deployTargetOptions.filter((item) =>
+                        value.includes(item.value)
+                      );
+                      onSelectDeployTargets(selected);
                     }}
                     openOnFocus
                     autoComplete={false}
