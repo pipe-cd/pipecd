@@ -93,7 +93,7 @@ describe("ApplicationFormV1", () => {
     });
 
     it("Form should have 3 step", () => {
-      const step1 = screen.getByText("Select piped");
+      const step1 = screen.getByText("Select piped and deploy targets");
       const step2 = screen.getByText("Select application to add");
       const step3 = screen.getByText("Confirm information before adding");
       expect(step1).toBeInTheDocument();
@@ -106,6 +106,11 @@ describe("ApplicationFormV1", () => {
       userEvent.click(screen.getByRole("button", { name: /piped/i }));
       const optionName = `${dummyPiped.name} (${dummyPiped.id})`;
       userEvent.click(screen.getByRole("option", { name: optionName }));
+
+      // select deploy target
+      userEvent.click(screen.getByRole("textbox", { name: /deploy target/i }));
+      const optionDeployTarget = `${dummyPiped.pluginsList[0].deployTargetsList[0]} - ${dummyPiped.pluginsList[0].name}`;
+      userEvent.click(screen.getByRole("option", { name: optionDeployTarget }));
 
       // select Application
       userEvent.click(screen.getByRole("textbox", { name: "Application" }));

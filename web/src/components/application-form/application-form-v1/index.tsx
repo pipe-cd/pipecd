@@ -45,6 +45,7 @@ const useStyles = makeStyles((theme) => ({
   },
   inputGroup: {
     display: "flex",
+    gap: theme.spacing(2),
   },
   inputGroupSpace: {
     width: theme.spacing(3),
@@ -70,6 +71,12 @@ enum STEP {
   CONFIRM_INFORMATION,
 }
 
+type DeployTargetOption = {
+  pluginName: string;
+  deployTarget: string;
+  disabled?: boolean;
+};
+
 type Props = {
   title: string;
   onClose: () => void;
@@ -85,6 +92,9 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
   const [activeStep, setActiveStep] = useState(STEP.SELECT_PIPED);
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedPipedId, setSelectedPipedId] = useState("");
+  const [selectedDeployTargets, setSelectedDeployTargets] = useState<
+    DeployTargetOption[]
+  >([]);
   const [
     selectedApp,
     setSelectedApp,
@@ -96,6 +106,7 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
     repoPath: "",
     configFilename: "",
     labels: new Array<[string, string]>(),
+    deployTargets: new Array<DeployTargetOption>(),
   });
   const dispatch = useAppDispatch();
   const classes = useStyles();
@@ -106,6 +117,23 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
 
   const apps = useAppSelector(selectAllUnregisteredApplications);
   const ps = useAppSelector(selectAllPipeds);
+
+  const selectedPiped = useMemo(
+    () => ps.find((piped) => piped.id === selectedPipedId),
+    [ps, selectedPipedId]
+  );
+
+  const deployTargetOptions = useMemo(() => {
+    if (!selectedPiped) return [];
+    if (selectedPiped.pluginsList.length === 0) return [];
+
+    return selectedPiped.pluginsList.reduce((all, plugin) => {
+      plugin.deployTargetsList.forEach((deployTarget) => {
+        all.push({ deployTarget, pluginName: plugin.name });
+      });
+      return all;
+    }, [] as DeployTargetOption[]);
+  }, [selectedPiped]);
 
   const filteredApps = useMemo(
     () =>
@@ -130,12 +158,12 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
       return;
     }
 
-    if (selectedPipedId) {
+    if (selectedPipedId && selectedDeployTargets.length > 0) {
       setActiveStep(STEP.SELECT_APPLICATION);
       return;
     }
     setActiveStep(STEP.SELECT_PIPED);
-  }, [selectedApp, selectedPipedId]);
+  }, [selectedApp, selectedDeployTargets.length, selectedPipedId]);
 
   /**
    * Init selectedPipedId if there is only one piped
@@ -157,6 +185,12 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
 
   const onSelectPiped = useCallback((pipedId: string) => {
     setSelectedPipedId(pipedId);
+    setSelectedDeployTargets([]);
+    setSelectedApp(null);
+  }, []);
+
+  const onSelectDeployTargets = useCallback((targets: DeployTargetOption[]) => {
+    setSelectedDeployTargets(targets);
     setSelectedApp(null);
   }, []);
 
@@ -166,12 +200,11 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
     setAppToAdd({
       name: selectedApp.name,
       pipedId: selectedApp.pipedId,
-      repo: {
-        id: selectedApp.repoId,
-      } as ApplicationGitRepository.AsObject,
+      repo: { id: selectedApp.repoId } as ApplicationGitRepository.AsObject,
       repoPath: selectedApp.path,
       configFilename: selectedApp.configFilename,
       labels: selectedApp.labelsMap,
+      deployTargets: selectedDeployTargets.filter((item) => !item.disabled),
     });
     setShowConfirm(true);
   };
@@ -197,29 +230,57 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
         </Typography>
         <Divider />
         <Stepper activeStep={activeStep} orientation="vertical">
-          <Step key="Select piped and platform provider" active>
-            <StepLabel>Select piped</StepLabel>
+          <Step key="Select piped and deploy targets" active>
+            <StepLabel>Select piped and deploy targets</StepLabel>
             <StepContent>
-              <FormControl className={classes.formItem} variant="outlined">
-                <InputLabel id="filter-piped">Piped</InputLabel>
-                <Select
-                  labelId="filter-piped"
-                  id="filter-piped"
-                  label="Piped"
-                  value={selectedPipedId}
-                  className={classes.select}
-                  defaultValue={""}
-                  onChange={(e) => {
-                    onSelectPiped(e.target.value as string);
-                  }}
-                >
-                  {pipeds.map((e) => (
-                    <MenuItem value={e.id} key={`piped-${e.id}`}>
-                      {e.name} ({e.id})
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <div className={classes.inputGroup}>
+                <FormControl className={classes.formItem} variant="outlined">
+                  <InputLabel id="filter-piped">Piped</InputLabel>
+                  <Select
+                    labelId="filter-piped"
+                    id="filter-piped"
+                    label="Piped"
+                    value={selectedPipedId}
+                    className={classes.select}
+                    defaultValue={""}
+                    onChange={(e) => {
+                      onSelectPiped(e.target.value as string);
+                    }}
+                  >
+                    {pipeds.map((e) => (
+                      <MenuItem value={e.id} key={`piped-${e.id}`}>
+                        {e.name} ({e.id})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <FormControl className={classes.formItem} variant="outlined">
+                  <Autocomplete
+                    id="deploy-targets"
+                    options={deployTargetOptions}
+                    getOptionLabel={(item) =>
+                      `${item.deployTarget} - ${item.pluginName}`
+                    }
+                    multiple={true}
+                    value={selectedDeployTargets}
+                    getOptionDisabled={(option) => !!option?.disabled}
+                    disabled={!selectedPipedId}
+                    onChange={(_e, value) => {
+                      onSelectDeployTargets(value);
+                    }}
+                    openOnFocus
+                    autoComplete={false}
+                    noOptionsText="No deploy targets found"
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Deploy targets"
+                        variant="outlined"
+                      />
+                    )}
+                  />
+                </FormControl>
+              </div>
             </StepContent>
           </Step>
           <Step key="Select application to add" expanded={activeStep !== 0}>
@@ -275,7 +336,6 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
                       className={classes.textInput}
                       inputProps={{ readOnly: true }}
                     />
-                    <div className={classes.inputGroupSpace} />
                     <TextField
                       id={"configFilename-"}
                       label="Config Filename"
