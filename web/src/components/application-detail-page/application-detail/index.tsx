@@ -13,7 +13,7 @@ import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
 import { SerializedError } from "@reduxjs/toolkit";
 import clsx from "clsx";
 import dayjs from "dayjs";
-import { FC, Fragment, memo, useState } from "react";
+import { FC, Fragment, memo, useMemo, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { AppSyncStatus } from "~/components/app-sync-status";
@@ -230,6 +230,11 @@ const syncStrategyByIndex: SyncStrategy[] = [
   SyncStrategy.PIPELINE,
 ];
 
+enum PIPED_VERSION {
+  V0 = "v0",
+  V1 = "v1",
+}
+
 export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
   function ApplicationDetail({ applicationId }) {
     const classes = useStyles();
@@ -258,6 +263,13 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
           .catch(() => undefined);
       }
     };
+
+    const pipedVersion = useMemo(() => {
+      if (!app?.platformProvider) return PIPED_VERSION.V1;
+      if (app?.deployTargetsByPluginMap?.length) return PIPED_VERSION.V1;
+
+      return PIPED_VERSION.V0;
+    }, [app?.deployTargetsByPluginMap.length, app?.platformProvider]);
 
     if (fetchApplicationError) {
       return (
@@ -358,15 +370,31 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
                       </>
                     }
                   />
-                  <DetailTableRow
-                    label="Kind"
-                    value={APPLICATION_KIND_TEXT[app.kind]}
-                  />
+                  {pipedVersion === PIPED_VERSION.V0 && (
+                    <DetailTableRow
+                      label="Kind"
+                      value={APPLICATION_KIND_TEXT[app.kind]}
+                    />
+                  )}
                   <DetailTableRow label="Piped" value={piped.name} />
-                  <DetailTableRow
-                    label="Platform Provider"
-                    value={app.platformProvider}
-                  />
+                  {pipedVersion === PIPED_VERSION.V0 && (
+                    <DetailTableRow
+                      label="Platform Provider"
+                      value={app.platformProvider}
+                    />
+                  )}
+                  {pipedVersion === PIPED_VERSION.V1 && (
+                    <DetailTableRow
+                      label="Deploy Targets"
+                      value={app?.deployTargetsByPluginMap
+                        ?.map(([pluginName, { deployTargetsList }]) =>
+                          deployTargetsList.map(
+                            (deployTarget) => `${deployTarget} - ${pluginName}`
+                          )
+                        )
+                        .join(", ")}
+                    />
+                  )}
 
                   {app.gitPath && (
                     <DetailTableRow
