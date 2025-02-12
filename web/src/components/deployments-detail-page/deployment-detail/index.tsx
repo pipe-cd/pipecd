@@ -90,8 +90,6 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
     const deployment = useAppSelector<Deployment.AsObject | undefined>(
       (state) => selectDeploymentById(state.deployments, deploymentId)
     );
-
-    // console.log("❌ ~ DeploymentDetail ~ deployment:", deployment);
     const activeStage = useAppSelector((state) => state.activeStage);
     const piped = useAppSelector(selectPipedById(deployment?.pipedId));
     const isCanceling = useAppSelector(
