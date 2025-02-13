@@ -244,3 +244,92 @@ NOTE: An error occurred while building plan-preview for applications of the foll
 		})
 	}
 }
+func TestSortResults(t *testing.T) {
+	testcases := []struct {
+		name          string
+		results       []*model.PlanPreviewCommandResult
+		sortLabelKeys []string
+		expected      []*model.PlanPreviewCommandResult
+	}{
+		{
+			name: "sort by pipedID and application name",
+			results: []*model.PlanPreviewCommandResult{
+				{
+					PipedId: "piped-2",
+					Results: []*model.ApplicationPlanPreviewResult{
+						{ApplicationName: "app-2"},
+						{ApplicationName: "app-1"},
+					},
+				},
+				{
+					PipedId: "piped-1",
+					Results: []*model.ApplicationPlanPreviewResult{
+						{ApplicationName: "app-2"},
+						{ApplicationName: "app-1"},
+					},
+				},
+			},
+			sortLabelKeys: []string{},
+			expected: []*model.PlanPreviewCommandResult{
+				{
+					PipedId: "piped-1",
+					Results: []*model.ApplicationPlanPreviewResult{
+						{ApplicationName: "app-1"},
+						{ApplicationName: "app-2"},
+					},
+				},
+				{
+					PipedId: "piped-2",
+					Results: []*model.ApplicationPlanPreviewResult{
+						{ApplicationName: "app-1"},
+						{ApplicationName: "app-2"},
+					},
+				},
+			},
+		},
+		{
+			name: "sort by label keys",
+			results: []*model.PlanPreviewCommandResult{
+				{
+					PipedId: "piped-1",
+					Results: []*model.ApplicationPlanPreviewResult{
+						{ApplicationName: "app-1", Labels: map[string]string{"env": "staging"}},
+						{ApplicationName: "app-1", Labels: map[string]string{"env": "prod"}},
+					},
+				},
+				{
+					PipedId: "piped-2",
+					Results: []*model.ApplicationPlanPreviewResult{
+						{ApplicationName: "app-2", Labels: map[string]string{"env": "staging"}},
+						{ApplicationName: "app-2", Labels: map[string]string{"env": "prod"}},
+					},
+				},
+			},
+			sortLabelKeys: []string{"env"},
+			expected: []*model.PlanPreviewCommandResult{
+				{
+					PipedId: "piped-1",
+					Results: []*model.ApplicationPlanPreviewResult{
+						{ApplicationName: "app-1", Labels: map[string]string{"env": "prod"}},
+						{ApplicationName: "app-1", Labels: map[string]string{"env": "staging"}},
+					},
+				},
+				{
+					PipedId: "piped-2",
+					Results: []*model.ApplicationPlanPreviewResult{
+						{ApplicationName: "app-2", Labels: map[string]string{"env": "prod"}},
+						{ApplicationName: "app-2", Labels: map[string]string{"env": "staging"}},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			sortResults(tc.results, tc.sortLabelKeys)
+			assert.Equal(t, tc.expected, tc.results)
+		})
+	}
+}
