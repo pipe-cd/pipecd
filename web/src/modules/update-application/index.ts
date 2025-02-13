@@ -26,15 +26,32 @@ export const updateApplication = createAsyncThunk<
     configFilename?: string;
     kind?: ApplicationKind;
     platformProvider?: string;
+    deployTargets?: Array<{ pluginName: string; deployTarget: string }>;
   }
 >(`${MODULE_NAME}/update`, async (values) => {
+  const deployTargetsMap =
+    values.deployTargets?.reduce((all, { pluginName, deployTarget }) => {
+      if (!all[pluginName]) all[pluginName] = [];
+      all[pluginName].push(deployTarget);
+      return all;
+    }, {} as Record<string, string[]>) || {};
+
+  const deployTargetsByPluginMap = Object.entries(deployTargetsMap).map(
+    ([pluginName, deployTargetsList]) => {
+      return [pluginName, { deployTargetsList }] as [
+        string,
+        { deployTargetsList: string[] }
+      ];
+    }
+  );
+
   await applicationAPI.updateApplication({
     applicationId: values.applicationId,
     name: values.name,
     pipedId: values.pipedId,
     platformProvider: values.platformProvider,
     kind: values.kind,
-    deployTargetsByPluginMap: [], // TODO: pass this from form
+    deployTargetsByPluginMap,
     configFilename: values.configFilename || "",
   });
 });

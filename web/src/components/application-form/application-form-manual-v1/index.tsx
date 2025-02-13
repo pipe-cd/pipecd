@@ -3,15 +3,16 @@ import {
   Button,
   CircularProgress,
   Divider,
+  FormControl,
   makeStyles,
   TextField,
   Typography,
 } from "@material-ui/core";
-import { FC, useEffect } from "react";
+import { FC, useEffect, useMemo } from "react";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
 import { Piped, selectAllPipeds, selectPipedById } from "~/modules/pipeds";
 import { sortFunc } from "~/utils/common";
-import { ApplicationFormProps, ApplicationFormValue } from "..";
+import { ApplicationFormProps } from "..";
 import { useFormik } from "formik";
 import * as yup from "yup";
 
@@ -19,13 +20,33 @@ import { unwrapResult, useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { addApplication } from "~/modules/applications";
 import FormSelectInput from "../../form-select-input";
 import { updateApplication } from "~/modules/update-application";
+import { Autocomplete } from "@material-ui/lab";
 
-type FormValues = Omit<ApplicationFormValue, "platformProvider" | "kind">;
+type FormValues = {
+  name: string;
+  pipedId: string;
+  repoPath: string;
+  configFilename: string;
+  deployTargets: { pluginName: string; deployTarget: string }[];
+  repo: {
+    id: string;
+    remote: string;
+    branch: string;
+  };
+  labels: Array<[string, string]>;
+};
+
+type DeployTargetOption = {
+  pluginName: string;
+  deployTarget: string;
+  value: string;
+};
 
 export const emptyFormValues: FormValues = {
   name: "",
   pipedId: "",
   repoPath: "",
+  deployTargets: [],
   configFilename: "app.pipecd.yaml",
   repo: {
     id: "",
@@ -120,6 +141,16 @@ const ApplicationFormManualV1: FC<ApplicationFormProps> = ({
           },
           configFilename: detailApp.gitPath?.configFilename || "",
           labels: detailApp.labelsMap,
+          deployTargets: detailApp.deployTargetsByPluginMap.reduce(
+            (all, [pluginName, { deployTargetsList }]) => {
+              deployTargetsList.forEach((deployTarget) => {
+                all.push({ pluginName, deployTarget });
+              });
+
+              return all;
+            },
+            [] as { pluginName: string; deployTarget: string }[]
+          ),
         }
       : emptyFormValues,
     validationSchema,
@@ -181,6 +212,22 @@ const ApplicationFormManualV1: FC<ApplicationFormProps> = ({
 
   const disableApplicationInfo = !!detailApp;
 
+  const deployTargetOptions = useMemo(() => {
+    if (!selectedPiped) return [];
+    if (selectedPiped.pluginsList.length === 0) return [];
+
+    return selectedPiped.pluginsList.reduce((all, plugin) => {
+      plugin.deployTargetsList.forEach((deployTarget) => {
+        all.push({
+          deployTarget,
+          pluginName: plugin.name,
+          value: `${deployTarget} - ${plugin.name}`,
+        });
+      });
+      return all;
+    }, [] as DeployTargetOption[]);
+  }, [selectedPiped]);
+
   return (
     <Box width="100%">
       <Typography className={classes.title} variant="h6">
@@ -200,25 +247,54 @@ const ApplicationFormManualV1: FC<ApplicationFormProps> = ({
           disabled={isSubmitting || disableApplicationInfo}
           className={classes.textInput}
         />
+        <div className={classes.inputGroup}>
+          <FormSelectInput
+            id="piped"
+            label="Piped"
+            value={values.pipedId}
+            onChange={(value) => {
+              setValues({
+                ...emptyFormValues,
+                name: values.name,
+                pipedId: value,
+              });
+            }}
+            options={pipeds.map((piped) => ({
+              label: `${piped.name} (${piped.id})`,
+              value: piped.id,
+            }))}
+            required
+            disabled={isSubmitting || pipeds.length === 0}
+          />
 
-        <FormSelectInput
-          id="piped"
-          label="Piped"
-          value={values.pipedId}
-          onChange={(value) => {
-            setValues({
-              ...emptyFormValues,
-              name: values.name,
-              pipedId: value,
-            });
-          }}
-          options={pipeds.map((piped) => ({
-            label: `${piped.name} (${piped.id})`,
-            value: piped.id,
-          }))}
-          required
-          disabled={isSubmitting || pipeds.length === 0}
-        />
+          <FormControl variant="outlined">
+            <Autocomplete
+              id="deploy-targets"
+              options={deployTargetOptions.map(({ value }) => value)}
+              multiple={true}
+              value={values.deployTargets.map(
+                (item) => `${item.deployTarget} - ${item.pluginName}`
+              )}
+              disabled={isSubmitting || pipeds.length === 0}
+              onChange={(_e, value) => {
+                const selected = deployTargetOptions.filter((item) =>
+                  value.includes(item.value)
+                );
+                setFieldValue("deployTargets", selected);
+              }}
+              openOnFocus
+              autoComplete={false}
+              noOptionsText="No deploy targets found"
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Deploy targets"
+                  variant="outlined"
+                />
+              )}
+            />
+          </FormControl>
+        </div>
 
         <div className={classes.inputGroup}>
           <FormSelectInput

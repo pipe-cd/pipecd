@@ -103,8 +103,25 @@ export const addApplication = createAsyncThunk<
     kind?: ApplicationKind;
     platformProvider?: string;
     labels: Array<[string, string]>;
+    deployTargets?: Array<{ pluginName: string; deployTarget: string }>;
   }
 >(`${MODULE_NAME}/add`, async (props) => {
+  const deployTargetsMap =
+    props.deployTargets?.reduce((all, { pluginName, deployTarget }) => {
+      if (!all[pluginName]) all[pluginName] = [];
+      all[pluginName].push(deployTarget);
+      return all;
+    }, {} as Record<string, string[]>) || {};
+
+  const deployTargetsByPluginMap = Object.entries(deployTargetsMap).map(
+    ([pluginName, deployTargetsList]) => {
+      return [pluginName, { deployTargetsList }] as [
+        string,
+        { deployTargetsList: string[] }
+      ];
+    }
+  );
+
   const { applicationId } = await applicationsAPI.addApplication({
     name: props.name,
     pipedId: props.pipedId,
@@ -116,7 +133,7 @@ export const addApplication = createAsyncThunk<
     },
     platformProvider: props.platformProvider,
     kind: props.kind,
-    deployTargetsByPluginMap: [], // TODO: pass this from form
+    deployTargetsByPluginMap,
     description: "",
     labelsMap: props.labels,
   });
