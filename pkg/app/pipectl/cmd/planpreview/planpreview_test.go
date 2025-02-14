@@ -245,6 +245,7 @@ NOTE: An error occurred while building plan-preview for applications of the foll
 	}
 }
 func TestSortResults(t *testing.T) {
+	t.Parallel()
 	testcases := []struct {
 		name          string
 		results       []*model.PlanPreviewCommandResult
@@ -300,6 +301,8 @@ func TestSortResults(t *testing.T) {
 				{
 					PipedId: "piped-2",
 					Results: []*model.ApplicationPlanPreviewResult{
+						{ApplicationName: "app-3", Labels: map[string]string{"env": "staging"}},
+						{ApplicationName: "app-3", Labels: map[string]string{"env": "prod"}},
 						{ApplicationName: "app-2", Labels: map[string]string{"env": "staging"}},
 						{ApplicationName: "app-2", Labels: map[string]string{"env": "prod"}},
 					},
@@ -318,7 +321,35 @@ func TestSortResults(t *testing.T) {
 					PipedId: "piped-2",
 					Results: []*model.ApplicationPlanPreviewResult{
 						{ApplicationName: "app-2", Labels: map[string]string{"env": "prod"}},
+						{ApplicationName: "app-3", Labels: map[string]string{"env": "prod"}},
 						{ApplicationName: "app-2", Labels: map[string]string{"env": "staging"}},
+						{ApplicationName: "app-3", Labels: map[string]string{"env": "staging"}},
+					},
+				},
+			},
+		},
+		{
+			name: "sort by multiple label keys",
+			results: []*model.PlanPreviewCommandResult{
+				{
+					PipedId: "piped-1",
+					Results: []*model.ApplicationPlanPreviewResult{
+						{ApplicationName: "app-1", Labels: map[string]string{"env": "prod", "team": "team-2"}},
+						{ApplicationName: "app-1", Labels: map[string]string{"env": "staging", "team": "team-1"}},
+						{ApplicationName: "app-1", Labels: map[string]string{"env": "prod", "team": "team-1"}},
+						{ApplicationName: "app-2", Labels: map[string]string{"env": "prod", "team": "team-2"}},
+					},
+				},
+			},
+			sortLabelKeys: []string{"env", "team"},
+			expected: []*model.PlanPreviewCommandResult{
+				{
+					PipedId: "piped-1",
+					Results: []*model.ApplicationPlanPreviewResult{
+						{ApplicationName: "app-1", Labels: map[string]string{"env": "prod", "team": "team-1"}},
+						{ApplicationName: "app-1", Labels: map[string]string{"env": "prod", "team": "team-2"}},
+						{ApplicationName: "app-2", Labels: map[string]string{"env": "prod", "team": "team-2"}},
+						{ApplicationName: "app-1", Labels: map[string]string{"env": "staging", "team": "team-1"}},
 					},
 				},
 			},
