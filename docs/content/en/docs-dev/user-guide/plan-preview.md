@@ -38,7 +38,8 @@ pipectl plan-preview \
   --repo-remote-url={ REPO_REMOTE_GIT_SSH_URL } \
   --head-branch={ HEAD_BRANCH } \
   --head-commit={ HEAD_COMMIT } \
-  --base-branch={ BASE_BRANCH }
+  --base-branch={ BASE_BRANCH } \
+  --sort-label-keys={ SORT_LABEL_KEYS }
 ```
 
 You can run it locally or integrate it to your CI system to run automatically when a new pull request is opened/updated. Use `--help` to see more options.
