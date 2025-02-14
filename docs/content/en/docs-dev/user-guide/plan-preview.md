@@ -48,6 +48,13 @@ You can run it locally or integrate it to your CI system to run automatically wh
 pipectl plan-preview --help
 ```
 
+### Order of the results
+
+By default, the results are sorted by PipedID and Application Name.
+
+If you want to sort the results by labels, add `--sort-label-keys` option. For example, when you run with `--sort-label-keys=env,team`, the results will be sorted by PipedID, `env` label, `team` label, and then Application Name.
+
+
 ## GitHub Actions
 
 If you are using GitHub Actions, you can seamlessly integrate our prepared [actions-plan-preview](https://github.com/pipe-cd/actions-plan-preview) to your workflows. This automatically comments the plan-preview result on the pull request when it is opened or updated. You can also trigger to run plan-preview manually by leave a comment `/pipecd plan-preview` on the pull request.
