@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -25,6 +26,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
+	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedapi"
@@ -71,7 +73,7 @@ type PipelineSyncPlugin[Config, DeployTargetConfig any] interface {
 	// FetchDefinedStages returns the list of stages that the plugin can execute.
 	FetchDefinedStages() []string
 	// BuildPipelineSyncStages builds the stages that will be executed by the plugin.
-	BuildPipelineSyncStages(context.Context, *Config, *Client, *PipelineSyncStagesRequest) (*PipelineSyncStagesResponse, error)
+	BuildPipelineSyncStages(context.Context, *Config, *Client, *BuildPipelineSyncStagesRequest) (*BuildPipelineSyncStagesResponse, error)
 	// ExecuteStage executes the given stage.
 	ExecuteStage(context.Context, *Config, []*DeployTarget[DeployTargetConfig], *Client, logpersister.StageLogPersister, TODO) (TODO, error)
 }
@@ -156,7 +158,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineStr
 	return nil, status.Errorf(codes.Unimplemented, "method DetermineStrategy not implemented")
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method BuildPipelineSyncStages not implemented")
+	return buildPipelineSyncStages(ctx, s.base, nil, nil, request) // TODO: pass the real config and client
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BuildQuickSyncStages not implemented")
@@ -213,13 +215,22 @@ func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) DetermineS
 	return &deployment.DetermineStrategyResponse{Unsupported: true}, nil
 }
 func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method BuildPipelineSyncStages not implemented")
+	return buildPipelineSyncStages(ctx, s.base, nil, nil, request) // TODO: pass the real config and client
 }
 func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BuildQuickSyncStages not implemented")
 }
 func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(context.Context, *deployment.ExecuteStageRequest) (*deployment.ExecuteStageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ExecuteStage not implemented")
+}
+
+// buildPipelineSyncStages builds the stages that will be executed by the plugin.
+func buildPipelineSyncStages[Config any](ctx context.Context, plugin PipelineSyncPlugin[Config], config *Config, client *Client, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
+	resp, err := plugin.BuildPipelineSyncStages(ctx, config, client, newPipelineSyncStagesRequest(request))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to build pipeline sync stages: %v", err)
+	}
+	return newPipelineSyncStagesResponse(plugin, time.Now(), request, resp)
 }
 
 // ManualOperation represents the manual operation that the user can perform.
@@ -234,9 +245,75 @@ const (
 	ManualOperationApprove
 )
 
-// PipelineSyncStagesRequest is the request to build pipeline sync stages.
+// toModelEnum converts the ManualOperation to the model.ManualOperation.
+func (o ManualOperation) toModelEnum() model.ManualOperation {
+	switch o {
+	case ManualOperationSkip:
+		return model.ManualOperation_MANUAL_OPERATION_SKIP
+	case ManualOperationApprove:
+		return model.ManualOperation_MANUAL_OPERATION_APPROVE
+	default:
+		return model.ManualOperation_MANUAL_OPERATION_UNKNOWN
+	}
+}
+
+// newPipelineSyncStagesRequest converts the request to the internal representation.
+func newPipelineSyncStagesRequest(request *deployment.BuildPipelineSyncStagesRequest) *BuildPipelineSyncStagesRequest {
+	stages := make([]StageConfig, 0, len(request.Stages))
+	for _, s := range request.GetStages() {
+		stages = append(stages, StageConfig{
+			Index:  int(s.GetIndex()),
+			Name:   s.GetName(),
+			Config: s.GetConfig(),
+		})
+	}
+	return &BuildPipelineSyncStagesRequest{
+		Rollback: request.GetRollback(),
+		Stages:   stages,
+	}
+}
+
+// newPipelineSyncStagesResponse converts the response to the external representation.
+func newPipelineSyncStagesResponse(plugin Plugin, now time.Time, request *deployment.BuildPipelineSyncStagesRequest, response *BuildPipelineSyncStagesResponse) (*deployment.BuildPipelineSyncStagesResponse, error) {
+	// Convert the request stages to a map for easier access.
+	requestStages := make(map[int]*deployment.BuildPipelineSyncStagesRequest_StageConfig, len(request.GetStages()))
+	for _, s := range request.GetStages() {
+		requestStages[int(s.GetIndex())] = s
+	}
+
+	stages := make([]*model.PipelineStage, 0, len(response.Stages))
+	for _, s := range response.Stages {
+		// Find the corresponding stage in the request.
+		requestStage, ok := requestStages[s.Index]
+		if !ok {
+			return nil, status.Errorf(codes.Internal, "missing stage with index %d in the request, it's unexpected behavior of the plugin", s.Index)
+		}
+		id := requestStage.GetId()
+		if id == "" {
+			id = fmt.Sprintf("%s-stage-%d", plugin.Name(), s.Index)
+		}
+		stages = append(stages, &model.PipelineStage{
+			Id:                 id,
+			Name:               s.Name,
+			Desc:               requestStage.GetDesc(),
+			Index:              int32(s.Index),
+			Status:             model.StageStatus_STAGE_NOT_STARTED_YET,
+			StatusReason:       "", // TODO: set the reason
+			Metadata:           s.Metadata,
+			Rollback:           s.Rollback,
+			CreatedAt:          now.Unix(),
+			UpdatedAt:          now.Unix(),
+			AvailableOperation: s.AvailableOperation.toModelEnum(),
+		})
+	}
+	return &deployment.BuildPipelineSyncStagesResponse{
+		Stages: stages,
+	}, nil
+}
+
+// BuildPipelineSyncStagesRequest is the request to build pipeline sync stages.
 // Rollback indicates whether the stages for rollback are requested.
-type PipelineSyncStagesRequest struct {
+type BuildPipelineSyncStagesRequest struct {
 	// Rollback indicates whether the stages for rollback are requested.
 	Rollback bool
 	// Stages contains the stage names and their configurations.
@@ -256,8 +333,8 @@ type StageConfig struct {
 	Config []byte
 }
 
-// PipelineSyncStagesResponse is the response of the request to build pipeline sync stages.
-type PipelineSyncStagesResponse struct {
+// BuildPipelineSyncStagesResponse is the response of the request to build pipeline sync stages.
+type BuildPipelineSyncStagesResponse struct {
 	Stages []PipelineStage
 }
 
