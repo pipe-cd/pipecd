@@ -9,7 +9,7 @@ spec:
     manifests:
       - deployment.yaml
       - service.yaml
-    kubectlVersion: 1.18.5
+    kubectlVersion: 1.32.2
   description: |
     This app demonstrates how to deploy a Kubernetes application with [Quick Sync](https://pipecd.dev/docs/concepts/#sync-strategy) strategy.\
     No pipeline is specified then in each deployment PipeCD will roll out the new version and switch all traffic to it immediately.\
