@@ -71,7 +71,7 @@ type PipelineSyncPlugin[Config, DeployTargetConfig any] interface {
 	// FetchDefinedStages returns the list of stages that the plugin can execute.
 	FetchDefinedStages() []string
 	// BuildPipelineSyncStages builds the stages that will be executed by the plugin.
-	BuildPipelineSyncStages(context.Context, *Config, *Client, TODO) (TODO, error)
+	BuildPipelineSyncStages(context.Context, *Config, *Client, *PipelineSyncStagesRequest) (*PipelineSyncStagesResponse, error)
 	// ExecuteStage executes the given stage.
 	ExecuteStage(context.Context, *Config, []*DeployTarget[DeployTargetConfig], *Client, logpersister.StageLogPersister, TODO) (TODO, error)
 }
@@ -220,4 +220,60 @@ func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) BuildQuick
 }
 func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(context.Context, *deployment.ExecuteStageRequest) (*deployment.ExecuteStageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ExecuteStage not implemented")
+}
+
+// ManualOperation represents the manual operation that the user can perform.
+type ManualOperation int
+
+const (
+	// do not define zero value for ManualOperation
+	_ ManualOperation = iota
+	// ManualOperationSkip indicates that the manual operation is to skip the stage.
+	ManualOperationSkip
+	// ManualOperationApprove indicates that the manual operation is to approve the stage.
+	ManualOperationApprove
+)
+
+// PipelineSyncStagesRequest is the request to build pipeline sync stages.
+// Rollback indicates whether the stages for rollback are requested.
+type PipelineSyncStagesRequest struct {
+	// Rollback indicates whether the stages for rollback are requested.
+	Rollback bool
+	// Stages contains the stage names and their configurations.
+	Stages []StageConfig
+}
+
+// StageConfig represents the configuration of a stage.
+type StageConfig struct {
+	// Index is the order of the stage in the pipeline.
+	Index int
+	// Name is the name of the stage.
+	// It must be one of the stages returned by FetchDefinedStages.
+	Name string
+	// Config is the configuration of the stage.
+	// It should be marshaled to JSON bytes.
+	// The plugin should unmarshal it to the appropriate struct.
+	Config []byte
+}
+
+// PipelineSyncStagesResponse is the response of the request to build pipeline sync stages.
+type PipelineSyncStagesResponse struct {
+	Stages []PipelineStage
+}
+
+// PipelineStage represents a stage in the pipeline.
+type PipelineStage struct {
+	// Index is the order of the stage in the pipeline.
+	// The value must be one of the index of the stage in the request.
+	// The rollback stage should have the same index as the original stage.
+	Index int
+	// Name is the name of the stage.
+	// It must be one of the stages returned by FetchDefinedStages.
+	Name string
+	// Rollback indicates whether the stage is for rollback.
+	Rollback bool
+	// Metadata contains the metadata of the stage.
+	Metadata map[string]string
+	// AvailableOperation indicates the manual operation that the user can perform.
+	AvailableOperation ManualOperation
 }
