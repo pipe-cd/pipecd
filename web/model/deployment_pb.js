@@ -2929,7 +2929,8 @@ proto.model.TriggerKind = {
 proto.model.ManualOperation = {
   MANUAL_OPERATION_UNKNOWN: 0,
   MANUAL_OPERATION_SKIP: 1,
-  MANUAL_OPERATION_APPROVE: 2
+  MANUAL_OPERATION_APPROVE: 2,
+  MANUAL_OPERATION_NONE: 3
 };
 
 goog.object.extend(exports, proto.model);

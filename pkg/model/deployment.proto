@@ -186,10 +186,12 @@ message DeploymentMetadata {
 
 // ManualOperation represents the manual operation via Web UI for a stage.
 enum ManualOperation{
-    // No operation is available.
+    // The zero value. This should not be used.
     MANUAL_OPERATION_UNKNOWN = 0;
     // Skipping a stage manually.
     MANUAL_OPERATION_SKIP = 1;
     // Approving a stage manually.
     MANUAL_OPERATION_APPROVE = 2;
+    // No operation is available.
+    MANUAL_OPERATION_NONE = 3;
 }
