@@ -9,7 +9,7 @@ COPY . ./
 
 RUN make build/go MOD=helloworld
 
-FROM alpine:3.21.0
+FROM alpine:3.21.3
 
 COPY --from=builder /app/.artifacts/helloworld /usr/local/bin/helloworld
 
