@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
@@ -49,6 +50,7 @@ type command struct {
 	timeout            time.Duration
 	pipedHandleTimeout time.Duration
 	checkInterval      time.Duration
+	sortLabelKeys      []string
 
 	clientOptions *client.Options
 }
@@ -75,6 +77,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&c.out, "out", c.out, "Write planpreview result to the given path.")
 	cmd.Flags().DurationVar(&c.timeout, "timeout", c.timeout, "Maximum amount of time this command has to complete. Default is 10m.")
 	cmd.Flags().DurationVar(&c.pipedHandleTimeout, "piped-handle-timeout", c.pipedHandleTimeout, "Maximum amount of time that a Piped can take to handle. Default is 5m.")
+	cmd.Flags().StringSliceVar(&c.sortLabelKeys, "sort-label-keys", c.sortLabelKeys, "The application label keys to sort the results by. If not specified, the results will be sorted by only PipedID and ApplicationName.")
 
 	cmd.MarkFlagRequired("repo-remote-url")
 	cmd.MarkFlagRequired("head-branch")
@@ -147,8 +150,29 @@ func (c *command) run(ctx context.Context, _ cli.Input) error {
 				fmt.Printf("Failed to retrieve plan-preview results: %v\n", err)
 				return err
 			}
+			sortResults(results, c.sortLabelKeys)
 			return printResults(results, os.Stdout, c.out)
 		}
+	}
+}
+
+// sortResults sorts the given results by pipedID and the given sortLabelKeys.
+// If sortLabelKeys is not specified or the all values of sortLabelKeys are the same, it sorts by pipedID and ApplicationName.
+func sortResults(allResults []*model.PlanPreviewCommandResult, sortLabelKeys []string) {
+	sort.SliceStable(allResults, func(i, j int) bool {
+		return allResults[i].PipedId < allResults[j].PipedId
+	})
+	for _, resultsPerPiped := range allResults {
+		results := resultsPerPiped.Results
+		sort.SliceStable(results, func(i, j int) bool {
+			a, b := results[i], results[j]
+			for _, key := range sortLabelKeys {
+				if a.Labels[key] != b.Labels[key] {
+					return a.Labels[key] < b.Labels[key]
+				}
+			}
+			return a.ApplicationName < b.ApplicationName
+		})
 	}
 }
 
