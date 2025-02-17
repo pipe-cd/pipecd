@@ -1,19 +1,13 @@
 # syntax=docker/dockerfile:1
 # web builder
-# because of this issue, we choose node 18
-# https://github.com/pipe-cd/pipecd/issues/5422
-# https://github.com/nodejs/docker-node/issues/1335#issuecomment-2024344411
-FROM node:18.20.5-alpine3.21 AS web
+# because this stage builds only web assets, we can use any platform
+FROM --platform=$BUILDPLATFORM node:18.20.5-alpine3.21 AS web
 
 WORKDIR /app
 
 COPY . .
 
 RUN apk add --no-cache make git
-
-# because of this issue, we set network-timeout to 300000
-# https://github.com/pipe-cd/pipecd/issues/5422
-RUN yarn config set network-timeout 300000
 
 RUN make update/web-deps
 RUN make build/web
