@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # web builder
 # because of this issue, we choose node 18
 # https://github.com/pipe-cd/pipecd/issues/5422
@@ -18,7 +19,10 @@ RUN make update/web-deps
 RUN make build/web
 
 # pipecd builder
-FROM golang:1.23.3 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.23.3 AS builder
+
+ARG TARGETOS
+ARG TARGETARCH
 
 WORKDIR /app
 
@@ -27,7 +31,7 @@ RUN go mod download
 
 COPY . ./
 
-RUN make build/go MOD=pipecd
+RUN make build/go MOD=pipecd BUILD_OS=${TARGETOS} BUILD_ARCH=${TARGETARCH}
 
 FROM alpine:3.21.0
 
