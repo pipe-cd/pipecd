@@ -78,6 +78,8 @@ This may also contain some minor features, but ensure that it does NOT contain a
 - Get a review and merge.
 
 ### Backport fixes and Release Note
+
+- Tag 'cherry-pick' and 'vX.Y.Z' to the PR of updating the `RELEASE` file to prevent conflicts.
 - Run `cherry_pick` workflow
   - Label the merged PR you want to cherry pick with `cherry-pick` , `vX.Y.Z`
     (e.g. v0.48.6 https://github.com/pipe-cd/pipecd/pulls?q=is%3Apr+label%3Acherry-pick+is%3Aclosed+label%3Av0.48.6)
