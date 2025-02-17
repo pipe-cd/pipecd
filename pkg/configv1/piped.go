@@ -1118,7 +1118,7 @@ type PipedPlugin struct {
 	Port int `json:"port"`
 	// Configuration for the plugin.
 	Config json.RawMessage `json:"config,omitempty"`
-	// The deploy target names.
+	// The deploy targets.
 	DeployTargets []PipedDeployTarget `json:"deployTargets,omitempty"`
 }
 
