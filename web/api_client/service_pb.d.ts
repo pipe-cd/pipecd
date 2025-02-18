@@ -7,6 +7,7 @@ import * as pkg_model_application_pb from 'pipecd/web/model/application_pb';
 import * as pkg_model_application_live_state_pb from 'pipecd/web/model/application_live_state_pb';
 import * as pkg_model_command_pb from 'pipecd/web/model/command_pb';
 import * as pkg_model_deployment_pb from 'pipecd/web/model/deployment_pb';
+import * as pkg_model_deployment_trace_pb from 'pipecd/web/model/deployment_trace_pb';
 import * as pkg_model_deployment_chain_pb from 'pipecd/web/model/deployment_chain_pb';
 import * as pkg_model_logblock_pb from 'pipecd/web/model/logblock_pb';
 import * as pkg_model_piped_pb from 'pipecd/web/model/piped_pb';
@@ -1251,6 +1252,108 @@ export namespace ApproveStageResponse {
   export type AsObject = {
     commandId: string,
   }
+}
+
+export class ListDeploymentTracesRequest extends jspb.Message {
+  getOptions(): ListDeploymentTracesRequest.Options | undefined;
+  setOptions(value?: ListDeploymentTracesRequest.Options): ListDeploymentTracesRequest;
+  hasOptions(): boolean;
+  clearOptions(): ListDeploymentTracesRequest;
+
+  getPageSize(): number;
+  setPageSize(value: number): ListDeploymentTracesRequest;
+
+  getCursor(): string;
+  setCursor(value: string): ListDeploymentTracesRequest;
+
+  getPageMinUpdatedAt(): number;
+  setPageMinUpdatedAt(value: number): ListDeploymentTracesRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListDeploymentTracesRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: ListDeploymentTracesRequest): ListDeploymentTracesRequest.AsObject;
+  static serializeBinaryToWriter(message: ListDeploymentTracesRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListDeploymentTracesRequest;
+  static deserializeBinaryFromReader(message: ListDeploymentTracesRequest, reader: jspb.BinaryReader): ListDeploymentTracesRequest;
+}
+
+export namespace ListDeploymentTracesRequest {
+  export type AsObject = {
+    options?: ListDeploymentTracesRequest.Options.AsObject,
+    pageSize: number,
+    cursor: string,
+    pageMinUpdatedAt: number,
+  }
+
+  export class Options extends jspb.Message {
+    getCommitHash(): string;
+    setCommitHash(value: string): Options;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Options.AsObject;
+    static toObject(includeInstance: boolean, msg: Options): Options.AsObject;
+    static serializeBinaryToWriter(message: Options, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Options;
+    static deserializeBinaryFromReader(message: Options, reader: jspb.BinaryReader): Options;
+  }
+
+  export namespace Options {
+    export type AsObject = {
+      commitHash: string,
+    }
+  }
+
+}
+
+export class ListDeploymentTracesResponse extends jspb.Message {
+  getTracesList(): Array<ListDeploymentTracesResponse.DeploymentTraceRes>;
+  setTracesList(value: Array<ListDeploymentTracesResponse.DeploymentTraceRes>): ListDeploymentTracesResponse;
+  clearTracesList(): ListDeploymentTracesResponse;
+  addTraces(value?: ListDeploymentTracesResponse.DeploymentTraceRes, index?: number): ListDeploymentTracesResponse.DeploymentTraceRes;
+
+  getCursor(): string;
+  setCursor(value: string): ListDeploymentTracesResponse;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListDeploymentTracesResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: ListDeploymentTracesResponse): ListDeploymentTracesResponse.AsObject;
+  static serializeBinaryToWriter(message: ListDeploymentTracesResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListDeploymentTracesResponse;
+  static deserializeBinaryFromReader(message: ListDeploymentTracesResponse, reader: jspb.BinaryReader): ListDeploymentTracesResponse;
+}
+
+export namespace ListDeploymentTracesResponse {
+  export type AsObject = {
+    tracesList: Array<ListDeploymentTracesResponse.DeploymentTraceRes.AsObject>,
+    cursor: string,
+  }
+
+  export class DeploymentTraceRes extends jspb.Message {
+    getTrace(): pkg_model_deployment_trace_pb.DeploymentTrace | undefined;
+    setTrace(value?: pkg_model_deployment_trace_pb.DeploymentTrace): DeploymentTraceRes;
+    hasTrace(): boolean;
+    clearTrace(): DeploymentTraceRes;
+
+    getDeploymentsList(): Array<pkg_model_deployment_pb.Deployment>;
+    setDeploymentsList(value: Array<pkg_model_deployment_pb.Deployment>): DeploymentTraceRes;
+    clearDeploymentsList(): DeploymentTraceRes;
+    addDeployments(value?: pkg_model_deployment_pb.Deployment, index?: number): pkg_model_deployment_pb.Deployment;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): DeploymentTraceRes.AsObject;
+    static toObject(includeInstance: boolean, msg: DeploymentTraceRes): DeploymentTraceRes.AsObject;
+    static serializeBinaryToWriter(message: DeploymentTraceRes, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): DeploymentTraceRes;
+    static deserializeBinaryFromReader(message: DeploymentTraceRes, reader: jspb.BinaryReader): DeploymentTraceRes;
+  }
+
+  export namespace DeploymentTraceRes {
+    export type AsObject = {
+      trace?: pkg_model_deployment_trace_pb.DeploymentTrace.AsObject,
+      deploymentsList: Array<pkg_model_deployment_pb.Deployment.AsObject>,
+    }
+  }
+
 }
 
 export class GetApplicationLiveStateRequest extends jspb.Message {

@@ -53,6 +53,8 @@ type WebServiceClient interface {
 	CancelDeployment(ctx context.Context, in *CancelDeploymentRequest, opts ...grpc.CallOption) (*CancelDeploymentResponse, error)
 	SkipStage(ctx context.Context, in *SkipStageRequest, opts ...grpc.CallOption) (*SkipStageResponse, error)
 	ApproveStage(ctx context.Context, in *ApproveStageRequest, opts ...grpc.CallOption) (*ApproveStageResponse, error)
+	// Deployment tracing
+	ListDeploymentTraces(ctx context.Context, in *ListDeploymentTracesRequest, opts ...grpc.CallOption) (*ListDeploymentTracesResponse, error)
 	// ApplicationLiveState
 	GetApplicationLiveState(ctx context.Context, in *GetApplicationLiveStateRequest, opts ...grpc.CallOption) (*GetApplicationLiveStateResponse, error)
 	// Account
@@ -344,6 +346,15 @@ func (c *webServiceClient) ApproveStage(ctx context.Context, in *ApproveStageReq
 	return out, nil
 }
 
+func (c *webServiceClient) ListDeploymentTraces(ctx context.Context, in *ListDeploymentTracesRequest, opts ...grpc.CallOption) (*ListDeploymentTracesResponse, error) {
+	out := new(ListDeploymentTracesResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.webservice.WebService/ListDeploymentTraces", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *webServiceClient) GetApplicationLiveState(ctx context.Context, in *GetApplicationLiveStateRequest, opts ...grpc.CallOption) (*GetApplicationLiveStateResponse, error) {
 	out := new(GetApplicationLiveStateResponse)
 	err := c.cc.Invoke(ctx, "/grpc.service.webservice.WebService/GetApplicationLiveState", in, out, opts...)
@@ -577,6 +588,8 @@ type WebServiceServer interface {
 	CancelDeployment(context.Context, *CancelDeploymentRequest) (*CancelDeploymentResponse, error)
 	SkipStage(context.Context, *SkipStageRequest) (*SkipStageResponse, error)
 	ApproveStage(context.Context, *ApproveStageRequest) (*ApproveStageResponse, error)
+	// Deployment tracing
+	ListDeploymentTraces(context.Context, *ListDeploymentTracesRequest) (*ListDeploymentTracesResponse, error)
 	// ApplicationLiveState
 	GetApplicationLiveState(context.Context, *GetApplicationLiveStateRequest) (*GetApplicationLiveStateResponse, error)
 	// Account
@@ -696,6 +709,9 @@ func (UnimplementedWebServiceServer) SkipStage(context.Context, *SkipStageReques
 }
 func (UnimplementedWebServiceServer) ApproveStage(context.Context, *ApproveStageRequest) (*ApproveStageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ApproveStage not implemented")
+}
+func (UnimplementedWebServiceServer) ListDeploymentTraces(context.Context, *ListDeploymentTracesRequest) (*ListDeploymentTracesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListDeploymentTraces not implemented")
 }
 func (UnimplementedWebServiceServer) GetApplicationLiveState(context.Context, *GetApplicationLiveStateRequest) (*GetApplicationLiveStateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationLiveState not implemented")
@@ -1280,6 +1296,24 @@ func _WebService_ApproveStage_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _WebService_ListDeploymentTraces_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListDeploymentTracesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebServiceServer).ListDeploymentTraces(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.webservice.WebService/ListDeploymentTraces",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebServiceServer).ListDeploymentTraces(ctx, req.(*ListDeploymentTracesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _WebService_GetApplicationLiveState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetApplicationLiveStateRequest)
 	if err := dec(in); err != nil {
@@ -1794,6 +1828,10 @@ var WebService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ApproveStage",
 			Handler:    _WebService_ApproveStage_Handler,
+		},
+		{
+			MethodName: "ListDeploymentTraces",
+			Handler:    _WebService_ListDeploymentTraces_Handler,
 		},
 		{
 			MethodName: "GetApplicationLiveState",

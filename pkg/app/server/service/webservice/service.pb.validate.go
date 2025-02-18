@@ -6700,6 +6700,283 @@ var _ interface {
 	ErrorName() string
 } = ApproveStageResponseValidationError{}
 
+// Validate checks the field values on ListDeploymentTracesRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListDeploymentTracesRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListDeploymentTracesRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListDeploymentTracesRequestMultiError, or nil if none found.
+func (m *ListDeploymentTracesRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListDeploymentTracesRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetOptions()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ListDeploymentTracesRequestValidationError{
+					field:  "Options",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ListDeploymentTracesRequestValidationError{
+					field:  "Options",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetOptions()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ListDeploymentTracesRequestValidationError{
+				field:  "Options",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for PageSize
+
+	// no validation rules for Cursor
+
+	// no validation rules for PageMinUpdatedAt
+
+	if len(errors) > 0 {
+		return ListDeploymentTracesRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListDeploymentTracesRequestMultiError is an error wrapping multiple
+// validation errors returned by ListDeploymentTracesRequest.ValidateAll() if
+// the designated constraints aren't met.
+type ListDeploymentTracesRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListDeploymentTracesRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListDeploymentTracesRequestMultiError) AllErrors() []error { return m }
+
+// ListDeploymentTracesRequestValidationError is the validation error returned
+// by ListDeploymentTracesRequest.Validate if the designated constraints
+// aren't met.
+type ListDeploymentTracesRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListDeploymentTracesRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListDeploymentTracesRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListDeploymentTracesRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListDeploymentTracesRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListDeploymentTracesRequestValidationError) ErrorName() string {
+	return "ListDeploymentTracesRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListDeploymentTracesRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListDeploymentTracesRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListDeploymentTracesRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListDeploymentTracesRequestValidationError{}
+
+// Validate checks the field values on ListDeploymentTracesResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListDeploymentTracesResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListDeploymentTracesResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListDeploymentTracesResponseMultiError, or nil if none found.
+func (m *ListDeploymentTracesResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListDeploymentTracesResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetTraces() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListDeploymentTracesResponseValidationError{
+						field:  fmt.Sprintf("Traces[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListDeploymentTracesResponseValidationError{
+						field:  fmt.Sprintf("Traces[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListDeploymentTracesResponseValidationError{
+					field:  fmt.Sprintf("Traces[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for Cursor
+
+	if len(errors) > 0 {
+		return ListDeploymentTracesResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListDeploymentTracesResponseMultiError is an error wrapping multiple
+// validation errors returned by ListDeploymentTracesResponse.ValidateAll() if
+// the designated constraints aren't met.
+type ListDeploymentTracesResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListDeploymentTracesResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListDeploymentTracesResponseMultiError) AllErrors() []error { return m }
+
+// ListDeploymentTracesResponseValidationError is the validation error returned
+// by ListDeploymentTracesResponse.Validate if the designated constraints
+// aren't met.
+type ListDeploymentTracesResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListDeploymentTracesResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListDeploymentTracesResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListDeploymentTracesResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListDeploymentTracesResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListDeploymentTracesResponseValidationError) ErrorName() string {
+	return "ListDeploymentTracesResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListDeploymentTracesResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListDeploymentTracesResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListDeploymentTracesResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListDeploymentTracesResponseValidationError{}
+
 // Validate checks the field values on GetApplicationLiveStateRequest with the
 // rules defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
@@ -12392,6 +12669,309 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ListDeploymentsRequest_OptionsValidationError{}
+
+// Validate checks the field values on ListDeploymentTracesRequest_Options with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *ListDeploymentTracesRequest_Options) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListDeploymentTracesRequest_Options
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// ListDeploymentTracesRequest_OptionsMultiError, or nil if none found.
+func (m *ListDeploymentTracesRequest_Options) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListDeploymentTracesRequest_Options) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for CommitHash
+
+	if len(errors) > 0 {
+		return ListDeploymentTracesRequest_OptionsMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListDeploymentTracesRequest_OptionsMultiError is an error wrapping multiple
+// validation errors returned by
+// ListDeploymentTracesRequest_Options.ValidateAll() if the designated
+// constraints aren't met.
+type ListDeploymentTracesRequest_OptionsMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListDeploymentTracesRequest_OptionsMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListDeploymentTracesRequest_OptionsMultiError) AllErrors() []error { return m }
+
+// ListDeploymentTracesRequest_OptionsValidationError is the validation error
+// returned by ListDeploymentTracesRequest_Options.Validate if the designated
+// constraints aren't met.
+type ListDeploymentTracesRequest_OptionsValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListDeploymentTracesRequest_OptionsValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListDeploymentTracesRequest_OptionsValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListDeploymentTracesRequest_OptionsValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListDeploymentTracesRequest_OptionsValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListDeploymentTracesRequest_OptionsValidationError) ErrorName() string {
+	return "ListDeploymentTracesRequest_OptionsValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListDeploymentTracesRequest_OptionsValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListDeploymentTracesRequest_Options.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListDeploymentTracesRequest_OptionsValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListDeploymentTracesRequest_OptionsValidationError{}
+
+// Validate checks the field values on
+// ListDeploymentTracesResponse_DeploymentTraceRes with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *ListDeploymentTracesResponse_DeploymentTraceRes) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on
+// ListDeploymentTracesResponse_DeploymentTraceRes with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in
+// ListDeploymentTracesResponse_DeploymentTraceResMultiError, or nil if none found.
+func (m *ListDeploymentTracesResponse_DeploymentTraceRes) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListDeploymentTracesResponse_DeploymentTraceRes) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetTrace() == nil {
+		err := ListDeploymentTracesResponse_DeploymentTraceResValidationError{
+			field:  "Trace",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetTrace()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ListDeploymentTracesResponse_DeploymentTraceResValidationError{
+					field:  "Trace",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ListDeploymentTracesResponse_DeploymentTraceResValidationError{
+					field:  "Trace",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTrace()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ListDeploymentTracesResponse_DeploymentTraceResValidationError{
+				field:  "Trace",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(m.GetDeployments()) < 1 {
+		err := ListDeploymentTracesResponse_DeploymentTraceResValidationError{
+			field:  "Deployments",
+			reason: "value must contain at least 1 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	for idx, item := range m.GetDeployments() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListDeploymentTracesResponse_DeploymentTraceResValidationError{
+						field:  fmt.Sprintf("Deployments[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListDeploymentTracesResponse_DeploymentTraceResValidationError{
+						field:  fmt.Sprintf("Deployments[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListDeploymentTracesResponse_DeploymentTraceResValidationError{
+					field:  fmt.Sprintf("Deployments[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return ListDeploymentTracesResponse_DeploymentTraceResMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListDeploymentTracesResponse_DeploymentTraceResMultiError is an error
+// wrapping multiple validation errors returned by
+// ListDeploymentTracesResponse_DeploymentTraceRes.ValidateAll() if the
+// designated constraints aren't met.
+type ListDeploymentTracesResponse_DeploymentTraceResMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListDeploymentTracesResponse_DeploymentTraceResMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListDeploymentTracesResponse_DeploymentTraceResMultiError) AllErrors() []error { return m }
+
+// ListDeploymentTracesResponse_DeploymentTraceResValidationError is the
+// validation error returned by
+// ListDeploymentTracesResponse_DeploymentTraceRes.Validate if the designated
+// constraints aren't met.
+type ListDeploymentTracesResponse_DeploymentTraceResValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListDeploymentTracesResponse_DeploymentTraceResValidationError) Field() string {
+	return e.field
+}
+
+// Reason function returns reason value.
+func (e ListDeploymentTracesResponse_DeploymentTraceResValidationError) Reason() string {
+	return e.reason
+}
+
+// Cause function returns cause value.
+func (e ListDeploymentTracesResponse_DeploymentTraceResValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListDeploymentTracesResponse_DeploymentTraceResValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListDeploymentTracesResponse_DeploymentTraceResValidationError) ErrorName() string {
+	return "ListDeploymentTracesResponse_DeploymentTraceResValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListDeploymentTracesResponse_DeploymentTraceResValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListDeploymentTracesResponse_DeploymentTraceRes.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListDeploymentTracesResponse_DeploymentTraceResValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListDeploymentTracesResponse_DeploymentTraceResValidationError{}
 
 // Validate checks the field values on ListAPIKeysRequest_Options with the
 // rules defined in the proto definition for this message. If any rules are

@@ -87,6 +87,9 @@ export class Deployment extends jspb.Message {
   getDeploymentChainBlockIndex(): number;
   setDeploymentChainBlockIndex(value: number): Deployment;
 
+  getDeploymentTraceCommitHash(): string;
+  setDeploymentTraceCommitHash(value: string): Deployment;
+
   getCompletedAt(): number;
   setCompletedAt(value: number): Deployment;
 
@@ -130,6 +133,7 @@ export namespace Deployment {
     metadataV2?: DeploymentMetadata.AsObject,
     deploymentChainId: string,
     deploymentChainBlockIndex: number,
+    deploymentTraceCommitHash: string,
     completedAt: number,
     createdAt: number,
     updatedAt: number,

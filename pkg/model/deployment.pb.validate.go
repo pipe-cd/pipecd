@@ -379,6 +379,17 @@ func (m *Deployment) validate(all bool) error {
 
 	// no validation rules for DeploymentChainBlockIndex
 
+	if utf8.RuneCountInString(m.GetDeploymentTraceCommitHash()) < 1 {
+		err := DeploymentValidationError{
+			field:  "DeploymentTraceCommitHash",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if m.GetCompletedAt() < 0 {
 		err := DeploymentValidationError{
 			field:  "CompletedAt",
