@@ -379,6 +379,8 @@ func (m *Deployment) validate(all bool) error {
 
 	// no validation rules for DeploymentChainBlockIndex
 
+	// no validation rules for DeploymentTraceCommitHash
+
 	if m.GetCompletedAt() < 0 {
 		err := DeploymentValidationError{
 			field:  "CompletedAt",

@@ -24,6 +24,7 @@ import "pkg/model/application.proto";
 import "pkg/model/application_live_state.proto";
 import "pkg/model/command.proto";
 import "pkg/model/deployment.proto";
+import "pkg/model/deployment_trace.proto";
 import "pkg/model/deployment_chain.proto";
 import "pkg/model/logblock.proto";
 import "pkg/model/piped.proto";
@@ -153,6 +154,12 @@ service WebService {
     rpc ApproveStage(ApproveStageRequest) returns (ApproveStageResponse) {
         option (model.rbac).resource = DEPLOYMENT;
         option (model.rbac).action = UPDATE;
+    }
+
+    // Deployment tracing
+    rpc ListDeploymentTraces(ListDeploymentTracesRequest) returns (ListDeploymentTracesResponse) {
+        option (model.rbac).resource = DEPLOYMENT;
+        option (model.rbac).action = LIST;
     }
 
     // ApplicationLiveState
@@ -530,6 +537,28 @@ message ApproveStageRequest {
 
 message ApproveStageResponse {
     string command_id = 1;
+}
+
+message ListDeploymentTracesRequest {
+    message Options {
+        string commit_hash = 1;
+    }
+
+    Options options = 1;
+    int32 page_size = 2;
+    string cursor = 3;
+    // It will not return any data older than this timestamp, even if it does not meet the page size.
+    // This aims to prevent the server from scanning the entire database to look for deployments that have the specified fields in spite of nothing.
+    int64 page_min_updated_at = 4;
+}
+
+message ListDeploymentTracesResponse {
+    message DeploymentTraceRes {
+        model.DeploymentTrace trace = 1 [(validate.rules).message.required = true];
+        repeated model.Deployment deployments = 2 [(validate.rules).repeated.min_items = 1];
+    }
+    repeated DeploymentTraceRes traces = 1;
+    string cursor = 2;
 }
 
 message GetApplicationLiveStateRequest {

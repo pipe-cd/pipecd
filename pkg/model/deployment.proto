@@ -112,6 +112,9 @@ message Deployment {
     // belongs to.
     uint32 deployment_chain_block_index = 41;
 
+    // The commit hash of the deployment trace, which contains this deployment.
+    string deployment_trace_commit_hash = 50;
+
     int64 completed_at = 100 [(validate.rules).int64.gte = 0];
     int64 created_at = 101 [(validate.rules).int64.gte = 0];
     int64 updated_at = 102 [(validate.rules).int64.gte = 0];

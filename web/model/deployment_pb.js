@@ -248,6 +248,7 @@ proto.model.Deployment.toObject = function(includeInstance, msg) {
     metadataV2: (f = msg.getMetadataV2()) && proto.model.DeploymentMetadata.toObject(includeInstance, f),
     deploymentChainId: jspb.Message.getFieldWithDefault(msg, 40, ""),
     deploymentChainBlockIndex: jspb.Message.getFieldWithDefault(msg, 41, 0),
+    deploymentTraceCommitHash: jspb.Message.getFieldWithDefault(msg, 50, ""),
     completedAt: jspb.Message.getFieldWithDefault(msg, 100, 0),
     createdAt: jspb.Message.getFieldWithDefault(msg, 101, 0),
     updatedAt: jspb.Message.getFieldWithDefault(msg, 102, 0)
@@ -393,6 +394,10 @@ proto.model.Deployment.deserializeBinaryFromReader = function(msg, reader) {
     case 41:
       var value = /** @type {number} */ (reader.readUint32());
       msg.setDeploymentChainBlockIndex(value);
+      break;
+    case 50:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setDeploymentTraceCommitHash(value);
       break;
     case 100:
       var value = /** @type {number} */ (reader.readInt64());
@@ -596,6 +601,13 @@ proto.model.Deployment.serializeBinaryToWriter = function(message, writer) {
   if (f !== 0) {
     writer.writeUint32(
       41,
+      f
+    );
+  }
+  f = message.getDeploymentTraceCommitHash();
+  if (f.length > 0) {
+    writer.writeString(
+      50,
       f
     );
   }
@@ -1164,6 +1176,24 @@ proto.model.Deployment.prototype.getDeploymentChainBlockIndex = function() {
  */
 proto.model.Deployment.prototype.setDeploymentChainBlockIndex = function(value) {
   return jspb.Message.setProto3IntField(this, 41, value);
+};
+
+
+/**
+ * optional string deployment_trace_commit_hash = 50;
+ * @return {string}
+ */
+proto.model.Deployment.prototype.getDeploymentTraceCommitHash = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 50, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.model.Deployment} returns this
+ */
+proto.model.Deployment.prototype.setDeploymentTraceCommitHash = function(value) {
+  return jspb.Message.setProto3StringField(this, 50, value);
 };
 
 

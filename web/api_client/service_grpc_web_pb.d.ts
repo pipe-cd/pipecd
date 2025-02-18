@@ -204,6 +204,13 @@ export class WebServiceClient {
                response: pkg_app_server_service_webservice_service_pb.ApproveStageResponse) => void
   ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.ApproveStageResponse>;
 
+  listDeploymentTraces(
+    request: pkg_app_server_service_webservice_service_pb.ListDeploymentTracesRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: pkg_app_server_service_webservice_service_pb.ListDeploymentTracesResponse) => void
+  ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.ListDeploymentTracesResponse>;
+
   getApplicationLiveState(
     request: pkg_app_server_service_webservice_service_pb.GetApplicationLiveStateRequest,
     metadata: grpcWeb.Metadata | undefined,
@@ -504,6 +511,11 @@ export class WebServicePromiseClient {
     request: pkg_app_server_service_webservice_service_pb.ApproveStageRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<pkg_app_server_service_webservice_service_pb.ApproveStageResponse>;
+
+  listDeploymentTraces(
+    request: pkg_app_server_service_webservice_service_pb.ListDeploymentTracesRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<pkg_app_server_service_webservice_service_pb.ListDeploymentTracesResponse>;
 
   getApplicationLiveState(
     request: pkg_app_server_service_webservice_service_pb.GetApplicationLiveStateRequest,
