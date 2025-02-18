@@ -27,7 +27,7 @@ COPY . ./
 
 RUN make build/go MOD=pipecd BUILD_OS=${TARGETOS} BUILD_ARCH=${TARGETARCH}
 
-FROM alpine:3.21.0
+FROM alpine:3.21.3
 
 ARG GOOGLE_CLOUD_SDK_VERSION=477.0.0
 
