@@ -226,6 +226,7 @@ type PipelineStage struct {
 	Desc    string          `json:"desc,omitempty"`
 	Timeout Duration        `json:"timeout"`
 	With    json.RawMessage `json:"with"`
+	SkipOn  SkipOptions     `json:"skipOn,omitempty"`
 }
 
 // SkipOptions contains all configurable values for skipping a stage.

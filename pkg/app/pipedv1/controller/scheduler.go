@@ -494,6 +494,11 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 		}
 	}
 
+	// Skip the stage if needed based on the skip config.
+	if skipOrError, status := s.shouldSkipStage(ctx, ps); skipOrError {
+		return status
+	}
+
 	// Check whether to execute the script rollback stage or not.
 	// If the base stage is executed, the script rollback stage will be executed.
 	if ps.Rollback {
@@ -593,6 +598,34 @@ func determineStageStatus(sig StopSignalType, ori, got model.StageStatus) model.
 	default:
 		return model.StageStatus_STAGE_FAILURE
 	}
+}
+
+// shouldSkipStage checks whether the stage should be skipped based on the skip config of the stage, and reports the stage status.
+func (s *scheduler) shouldSkipStage(ctx context.Context, ps *model.PipelineStage) (skipOrError bool, status model.StageStatus) {
+	stage, found := s.genericApplicationConfig.GetStage(ps.Index)
+	if !found {
+		return false, model.StageStatus_STAGE_RUNNING
+	}
+
+	skip, err := s.determineSkipStage(ctx, stage.SkipOn)
+	if err != nil {
+		s.logger.Error("failed to check whether to skip the stage", zap.Error(err))
+		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
+			s.logger.Error("failed to report stage status", zap.Error(err))
+		}
+		return true, model.StageStatus_STAGE_FAILURE
+	}
+	if skip {
+		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_SKIPPED, ps.Requires); err != nil {
+			s.logger.Error("failed to report stage status", zap.Error(err))
+			return true, model.StageStatus_STAGE_FAILURE
+		}
+		// TODO: Send this log message to the control-plane. (e.g. Use the statusReason field and show it on UI)
+		s.logger.Info("The stage was successfully skipped due to the skip configuration of the stage.")
+		return true, model.StageStatus_STAGE_SKIPPED
+	}
+
+	return false, model.StageStatus_STAGE_RUNNING
 }
 
 func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, status model.StageStatus, requires []string) error {
