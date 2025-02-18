@@ -27,6 +27,7 @@ export const dummyDeployment: Deployment.AsObject = {
   platformProvider: "kube-1",
   deployTargetsByPluginMap: [],
   labelsMap: [],
+  deploymentTraceCommitHash: "",
   createdAt: createdAt.unix(),
   updatedAt: completedAt.unix(),
   completedAt: completedAt.unix(),
