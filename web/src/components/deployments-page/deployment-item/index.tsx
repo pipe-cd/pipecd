@@ -44,6 +44,11 @@ export interface DeploymentItemProps {
   id: string;
 }
 
+enum PipedVersion {
+  V0 = "v0",
+  V1 = "v1",
+}
+
 const NO_DESCRIPTION = "No description.";
 
 export const DeploymentItem: FC<DeploymentItemProps> = memo(
@@ -56,6 +61,12 @@ export const DeploymentItem: FC<DeploymentItemProps> = memo(
     if (!deployment) {
       return null;
     }
+
+    const pipedVersion =
+      !deployment.platformProvider ||
+      deployment?.deployTargetsByPluginMap?.length > 0
+        ? PipedVersion.V1
+        : PipedVersion.V0;
 
     return (
       <ListItem
@@ -92,7 +103,9 @@ export const DeploymentItem: FC<DeploymentItemProps> = memo(
               color="textSecondary"
               className={classes.info}
             >
-              {APPLICATION_KIND_TEXT[deployment.kind]}
+              {pipedVersion === PipedVersion.V0 &&
+                APPLICATION_KIND_TEXT[deployment.kind]}
+              {pipedVersion === PipedVersion.V1 && "APPLICATION"}
               {deployment?.labelsMap.map(([key, value], i) => (
                 <Chip
                   label={key + ": " + value}

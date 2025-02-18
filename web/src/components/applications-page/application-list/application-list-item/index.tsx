@@ -62,6 +62,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+enum PipedVersion {
+  V0 = "v0",
+  V1 = "v1",
+}
+
 const EmptyDeploymentData: FC<{ displayAllProperties: boolean }> = ({
   displayAllProperties,
 }) =>
@@ -136,6 +141,11 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
 
     const recentlyDeployment = app.mostRecentlySuccessfulDeployment;
 
+    const pipedVersion =
+      !app.platformProvider || app?.deployTargetsByPluginMap?.length > 0
+        ? PipedVersion.V1
+        : PipedVersion.V0;
+
     return (
       <>
         <TableRow className={clsx({ [classes.disabled]: app.disabled })}>
@@ -155,7 +165,11 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
               {app.name}
             </Link>
           </TableCell>
-          <TableCell>{APPLICATION_KIND_TEXT[app.kind]}</TableCell>
+          <TableCell>
+            {pipedVersion === PipedVersion.V0 &&
+              APPLICATION_KIND_TEXT[app.kind]}
+            {pipedVersion === PipedVersion.V1 && "APPLICATION"}
+          </TableCell>
           <TableCell>
             <div className={classes.labels}>
               {app.labelsMap.length !== 0
