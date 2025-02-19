@@ -77,9 +77,9 @@ type PipelineSyncPlugin[Config, DeployTargetConfig any] interface {
 	// FetchDefinedStages returns the list of stages that the plugin can execute.
 	FetchDefinedStages() []string
 	// BuildPipelineSyncStages builds the stages that will be executed by the plugin.
-	BuildPipelineSyncStages(context.Context, *Config, *Client, *BuildPipelineSyncStagesRequest) (*BuildPipelineSyncStagesResponse, error)
+	BuildPipelineSyncStages(context.Context, *Config, *BuildPipelineSyncStagesInput) (*BuildPipelineSyncStagesResponse, error)
 	// ExecuteStage executes the given stage.
-	ExecuteStage(context.Context, *Config, []*DeployTarget[DeployTargetConfig], *Client, *ExecuteStageRequest) (*ExecuteStageResponse, error)
+	ExecuteStage(context.Context, *Config, []*DeployTarget[DeployTargetConfig], *ExecuteStageInput) (*ExecuteStageResponse, error)
 }
 
 // DeployTarget defines the deploy target configuration for the piped.
@@ -162,7 +162,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineStr
 	return nil, status.Errorf(codes.Unimplemented, "method DetermineStrategy not implemented")
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
-	return buildPipelineSyncStages(ctx, s.base, &s.config, nil, request) // TODO: pass the real client
+	return buildPipelineSyncStages(ctx, s.base, &s.config, nil, request, s.logger) // TODO: pass the real client
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BuildQuickSyncStages not implemented")
@@ -219,7 +219,7 @@ func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) DetermineS
 	return &deployment.DetermineStrategyResponse{Unsupported: true}, nil
 }
 func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
-	return buildPipelineSyncStages(ctx, s.base, &s.config, nil, request) // TODO: pass the real client
+	return buildPipelineSyncStages(ctx, s.base, &s.config, nil, request, s.logger) // TODO: pass the real client
 }
 func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BuildQuickSyncStages not implemented")
@@ -229,8 +229,8 @@ func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) ExecuteSta
 }
 
 // buildPipelineSyncStages builds the stages that will be executed by the plugin.
-func buildPipelineSyncStages[Config, DeployTargetConfig any](ctx context.Context, plugin PipelineSyncPlugin[Config, DeployTargetConfig], config *Config, client *Client, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
-	resp, err := plugin.BuildPipelineSyncStages(ctx, config, client, newPipelineSyncStagesRequest(request))
+func buildPipelineSyncStages[Config, DeployTargetConfig any](ctx context.Context, plugin PipelineSyncPlugin[Config, DeployTargetConfig], config *Config, client *Client, request *deployment.BuildPipelineSyncStagesRequest, logger *zap.Logger) (*deployment.BuildPipelineSyncStagesResponse, error) {
+	resp, err := plugin.BuildPipelineSyncStages(ctx, config, newPipelineSyncStagesInput(request, client, logger))
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to build pipeline sync stages: %v", err)
 	}
@@ -263,8 +263,8 @@ func (o ManualOperation) toModelEnum() model.ManualOperation {
 	}
 }
 
-// newPipelineSyncStagesRequest converts the request to the internal representation.
-func newPipelineSyncStagesRequest(request *deployment.BuildPipelineSyncStagesRequest) *BuildPipelineSyncStagesRequest {
+// newPipelineSyncStagesInput converts the request to the internal representation.
+func newPipelineSyncStagesInput(request *deployment.BuildPipelineSyncStagesRequest, client *Client, logger *zap.Logger) *BuildPipelineSyncStagesInput {
 	stages := make([]StageConfig, 0, len(request.Stages))
 	for _, s := range request.GetStages() {
 		stages = append(stages, StageConfig{
@@ -273,9 +273,14 @@ func newPipelineSyncStagesRequest(request *deployment.BuildPipelineSyncStagesReq
 			Config: s.GetConfig(),
 		})
 	}
-	return &BuildPipelineSyncStagesRequest{
+	req := BuildPipelineSyncStagesRequest{
 		Rollback: request.GetRollback(),
 		Stages:   stages,
+	}
+	return &BuildPipelineSyncStagesInput{
+		Request: req,
+		Client:  client,
+		Logger:  logger,
 	}
 }
 
@@ -315,6 +320,16 @@ func newPipelineSyncStagesResponse(plugin Plugin, now time.Time, request *deploy
 	return &deployment.BuildPipelineSyncStagesResponse{
 		Stages: stages,
 	}, nil
+}
+
+// BuildPipelineSyncStagesInput is the input for the BuildPipelineSyncStages method.
+type BuildPipelineSyncStagesInput struct {
+	// Request is the request to build pipeline sync stages.
+	Request BuildPipelineSyncStagesRequest
+	// Client is the client to interact with the piped.
+	Client *Client
+	// Logger is the logger to log the events.
+	Logger *zap.Logger
 }
 
 // BuildPipelineSyncStagesRequest is the request to build pipeline sync stages.
@@ -359,6 +374,16 @@ type PipelineStage struct {
 	Metadata map[string]string
 	// AvailableOperation indicates the manual operation that the user can perform.
 	AvailableOperation ManualOperation
+}
+
+// ExecuteStageInput is the input for the ExecuteStage method.
+type ExecuteStageInput struct {
+	// Request is the request to execute a stage.
+	Request ExecuteStageRequest
+	// Client is the client to interact with the piped.
+	Client *Client
+	// Logger is the logger to log the events.
+	Logger *zap.Logger
 }
 
 // ExecuteStageRequest is the request to execute a stage.

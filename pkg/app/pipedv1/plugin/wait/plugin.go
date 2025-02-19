@@ -37,9 +37,9 @@ func (p *plugin) Version() string {
 }
 
 // BuildPipelineSyncStages implements sdk.PipelineSyncPlugin.
-func (p *plugin) BuildPipelineSyncStages(ctx context.Context, _ sdk.ConfigNone, client *sdk.Client, request *sdk.BuildPipelineSyncStagesRequest) (*sdk.BuildPipelineSyncStagesResponse, error) {
-	stages := make([]sdk.PipelineStage, 0, len(request.Stages))
-	for _, rs := range request.Stages {
+func (p *plugin) BuildPipelineSyncStages(ctx context.Context, _ sdk.ConfigNone, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
+	stages := make([]sdk.PipelineStage, 0, len(input.Request.Stages))
+	for _, rs := range input.Request.Stages {
 		stage := sdk.PipelineStage{
 			Index:              rs.Index,
 			Name:               rs.Name,
@@ -56,7 +56,7 @@ func (p *plugin) BuildPipelineSyncStages(ctx context.Context, _ sdk.ConfigNone, 
 }
 
 // ExecuteStage implements sdk.PipelineSyncPlugin.
-func (p *plugin) ExecuteStage(ctx context.Context, _ sdk.ConfigNone, _ sdk.DeployTargetsNone, client *sdk.Client, request *sdk.ExecuteStageRequest) (*sdk.ExecuteStageResponse, error) {
+func (p *plugin) ExecuteStage(ctx context.Context, _ sdk.ConfigNone, _ sdk.DeployTargetsNone, input *sdk.ExecuteStageInput) (*sdk.ExecuteStageResponse, error) {
 	return &sdk.ExecuteStageResponse{}, nil
 }
 
