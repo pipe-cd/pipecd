@@ -177,7 +177,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage
 		applicationID: request.GetInput().GetDeployment().GetApplicationId(),
 		deploymentID:  request.GetInput().GetDeployment().GetId(),
 		stageID:       request.GetInput().GetStage().GetId(),
-		LogPersister:  s.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId()),
+		logPersister:  s.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId()),
 	}
 	return executeStage(ctx, s.base, &s.config, nil, client, request, s.logger) // TODO: pass the deployTargets
 }
@@ -247,7 +247,7 @@ func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) ExecuteSta
 		applicationID: request.GetInput().GetDeployment().GetApplicationId(),
 		deploymentID:  request.GetInput().GetDeployment().GetId(),
 		stageID:       request.GetInput().GetStage().GetId(),
-		LogPersister:  s.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId()),
+		logPersister:  s.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId()),
 	}
 	return executeStage(ctx, s.base, &s.config, nil, client, request, s.logger) // TODO: pass the deployTargets
 }
