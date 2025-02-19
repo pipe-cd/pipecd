@@ -40,8 +40,22 @@ func (p *plugin) Version() string {
 }
 
 // BuildPipelineSyncStages implements sdk.PipelineSyncPlugin.
-func (p *plugin) BuildPipelineSyncStages(context.Context, *config, *sdk.Client, sdk.TODO) (sdk.TODO, error) {
-	return sdk.TODO{}, nil
+func (p *plugin) BuildPipelineSyncStages(ctx context.Context, cfg *config, client *sdk.Client, request *sdk.BuildPipelineSyncStagesRequest) (*sdk.BuildPipelineSyncStagesResponse, error) {
+	stages := make([]sdk.PipelineStage, 0, len(request.Stages))
+	for _, rs := range request.Stages {
+		stage := sdk.PipelineStage{
+			Index:              rs.Index,
+			Name:               rs.Name,
+			Rollback:           false,
+			Metadata:           map[string]string{},
+			AvailableOperation: sdk.ManualOperationNone,
+		}
+		stages = append(stages, stage)
+	}
+
+	return &sdk.BuildPipelineSyncStagesResponse{
+		Stages: stages,
+	}, nil
 }
 
 // ExecuteStage implements sdk.PipelineSyncPlugin.
