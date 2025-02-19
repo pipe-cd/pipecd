@@ -158,7 +158,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineStr
 	return nil, status.Errorf(codes.Unimplemented, "method DetermineStrategy not implemented")
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
-	return buildPipelineSyncStages(ctx, s.base, nil, nil, request) // TODO: pass the real config and client
+	return buildPipelineSyncStages(ctx, s.base, &s.config, nil, request) // TODO: pass the real client
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BuildQuickSyncStages not implemented")
@@ -215,7 +215,7 @@ func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) DetermineS
 	return &deployment.DetermineStrategyResponse{Unsupported: true}, nil
 }
 func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
-	return buildPipelineSyncStages(ctx, s.base, nil, nil, request) // TODO: pass the real config and client
+	return buildPipelineSyncStages(ctx, s.base, &s.config, nil, request) // TODO: pass the real client
 }
 func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BuildQuickSyncStages not implemented")
