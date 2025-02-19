@@ -224,8 +224,8 @@ func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) BuildPipel
 func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BuildQuickSyncStages not implemented")
 }
-func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(context.Context, *deployment.ExecuteStageRequest) (*deployment.ExecuteStageResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ExecuteStage not implemented")
+func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (*deployment.ExecuteStageResponse, error) {
+	return executeStage(ctx, s.base, &s.config, nil, nil, request, s.logger) // TODO: pass the real client and deployTargets
 }
 
 // buildPipelineSyncStages builds the stages that will be executed by the plugin.
@@ -235,6 +235,34 @@ func buildPipelineSyncStages[Config, DeployTargetConfig any](ctx context.Context
 		return nil, status.Errorf(codes.Internal, "failed to build pipeline sync stages: %v", err)
 	}
 	return newPipelineSyncStagesResponse(plugin, time.Now(), request, resp)
+}
+
+func executeStage[Config, DeployTargetConfig any](
+	ctx context.Context,
+	plugin PipelineSyncPlugin[Config, DeployTargetConfig],
+	config *Config,
+	deployTargets []*DeployTarget[DeployTargetConfig],
+	client *Client,
+	request *deployment.ExecuteStageRequest,
+	logger *zap.Logger,
+) (*deployment.ExecuteStageResponse, error) {
+	in := &ExecuteStageInput{
+		Request: ExecuteStageRequest{
+			StageName:   request.GetInput().GetStage().GetName(),
+			StageConfig: request.GetInput().GetStageConfig(),
+		},
+		Client: client,
+		Logger: logger,
+	}
+
+	resp, err := plugin.ExecuteStage(ctx, config, deployTargets, in)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to execute stage: %v", err)
+	}
+
+	return &deployment.ExecuteStageResponse{
+		Status: resp.Status.toModelEnum(),
+	}, nil
 }
 
 // ManualOperation represents the manual operation that the user can perform.
@@ -388,8 +416,43 @@ type ExecuteStageInput struct {
 
 // ExecuteStageRequest is the request to execute a stage.
 type ExecuteStageRequest struct {
+	// The name of the stage to execute.
+	StageName string
+	// Json encoded configuration of the stage.
+	StageConfig []byte
 }
 
 // ExecuteStageResponse is the response of the request to execute a stage.
 type ExecuteStageResponse struct {
+	Status StageStatus
+}
+
+// StageStatus represents the current status of a stage of a deployment.
+type StageStatus int
+
+const (
+	StageStatusSuccess   StageStatus = 2
+	StageStatusFailure   StageStatus = 3
+	StageStatusCancelled StageStatus = 4
+
+	// StageStatusSkipped         StageStatus = 5 // TODO: If SDK can handle whole skipping, this is unnecessary.
+
+	// StageStatusExited can be used when the stage succeeded and exit the pipeline without executing the following stages.
+	StageStatusExited StageStatus = 6
+)
+
+// toModelEnum converts the StageStatus to the model.StageStatus.
+func (o StageStatus) toModelEnum() model.StageStatus {
+	switch o {
+	case StageStatusSuccess:
+		return model.StageStatus_STAGE_SUCCESS
+	case StageStatusFailure:
+		return model.StageStatus_STAGE_FAILURE
+	case StageStatusCancelled:
+		return model.StageStatus_STAGE_CANCELLED
+	case StageStatusExited:
+		return model.StageStatus_STAGE_EXITED
+	default:
+		return model.StageStatus_STAGE_FAILURE
+	}
 }

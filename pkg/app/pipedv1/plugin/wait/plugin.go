@@ -57,7 +57,10 @@ func (p *plugin) BuildPipelineSyncStages(ctx context.Context, _ sdk.ConfigNone, 
 
 // ExecuteStage implements sdk.PipelineSyncPlugin.
 func (p *plugin) ExecuteStage(ctx context.Context, _ sdk.ConfigNone, _ sdk.DeployTargetsNone, input *sdk.ExecuteStageInput) (*sdk.ExecuteStageResponse, error) {
-	return &sdk.ExecuteStageResponse{}, nil
+	status := p.executeWait(ctx, input)
+	return &sdk.ExecuteStageResponse{
+		Status: status,
+	}, nil
 }
 
 // FetchDefinedStages implements sdk.PipelineSyncPlugin.
