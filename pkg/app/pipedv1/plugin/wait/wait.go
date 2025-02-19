@@ -89,6 +89,9 @@ func (p *plugin) retrieveStartTime(ctx context.Context, client *sdk.Client, logg
 		logger.Error(fmt.Sprintf("failed to get stage metadata %s", startTimeKey), zap.Error(err))
 		return time.Time{}
 	}
+	if sec == "" {
+		return time.Time{}
+	}
 
 	ut, err := strconv.ParseInt(sec, 10, 64)
 	if err != nil {
