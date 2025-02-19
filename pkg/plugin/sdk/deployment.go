@@ -49,6 +49,10 @@ var (
 // This utility is defined for plugins which has no deploy targets handling in ExecuteStage.
 type DeployTargetsNone = []*DeployTarget[struct{}]
 
+// ConfigNone is a type alias for a pointer to a struct with an empty struct as the generic type parameter.
+// This utility is defined for plugins which has no config handling in ExecuteStage.
+type ConfigNone = *struct{}
+
 // DeploymentPlugin is the interface that be implemented by a full-spec deployment plugin.
 // This kind of plugin should implement all methods to manage resources and execute stages.
 // The Config parameter is the plugin's config defined in piped's config.
@@ -73,9 +77,9 @@ type PipelineSyncPlugin[Config, DeployTargetConfig any] interface {
 	// FetchDefinedStages returns the list of stages that the plugin can execute.
 	FetchDefinedStages() []string
 	// BuildPipelineSyncStages builds the stages that will be executed by the plugin.
-	BuildPipelineSyncStages(context.Context, *Config, *Client, *BuildPipelineSyncStagesRequest) (*BuildPipelineSyncStagesResponse, error)
+	BuildPipelineSyncStages(context.Context, *Config, *BuildPipelineSyncStagesInput) (*BuildPipelineSyncStagesResponse, error)
 	// ExecuteStage executes the given stage.
-	ExecuteStage(context.Context, *Config, []*DeployTarget[DeployTargetConfig], *Client, logpersister.StageLogPersister, TODO) (TODO, error)
+	ExecuteStage(context.Context, *Config, []*DeployTarget[DeployTargetConfig], *ExecuteStageInput) (*ExecuteStageResponse, error)
 }
 
 // DeployTarget defines the deploy target configuration for the piped.
@@ -158,13 +162,25 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineStr
 	return nil, status.Errorf(codes.Unimplemented, "method DetermineStrategy not implemented")
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
-	return buildPipelineSyncStages(ctx, s.base, &s.config, nil, request) // TODO: pass the real client
+	client := &Client{
+		base:       s.client,
+		pluginName: s.Name(),
+	}
+	return buildPipelineSyncStages(ctx, s.base, &s.config, client, request, s.logger)
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BuildQuickSyncStages not implemented")
 }
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(context.Context, *deployment.ExecuteStageRequest) (*deployment.ExecuteStageResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ExecuteStage not implemented")
+func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (*deployment.ExecuteStageResponse, error) {
+	client := &Client{
+		base:          s.client,
+		pluginName:    s.Name(),
+		applicationID: request.GetInput().GetDeployment().GetApplicationId(),
+		deploymentID:  request.GetInput().GetDeployment().GetId(),
+		stageID:       request.GetInput().GetStage().GetId(),
+		LogPersister:  s.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId()),
+	}
+	return executeStage(ctx, s.base, &s.config, nil, client, request, s.logger) // TODO: pass the deployTargets
 }
 
 // PipelineSyncPluginServiceServer is the gRPC server that handles requests from the piped.
@@ -215,22 +231,63 @@ func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) DetermineS
 	return &deployment.DetermineStrategyResponse{Unsupported: true}, nil
 }
 func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
-	return buildPipelineSyncStages(ctx, s.base, &s.config, nil, request) // TODO: pass the real client
+	client := &Client{
+		base:       s.client,
+		pluginName: s.Name(),
+	}
+
+	return buildPipelineSyncStages(ctx, s.base, &s.config, client, request, s.logger) // TODO: pass the real client
 }
 func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BuildQuickSyncStages not implemented")
 }
-func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(context.Context, *deployment.ExecuteStageRequest) (*deployment.ExecuteStageResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ExecuteStage not implemented")
+func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (*deployment.ExecuteStageResponse, error) {
+	client := &Client{
+		base:          s.client,
+		pluginName:    s.Name(),
+		applicationID: request.GetInput().GetDeployment().GetApplicationId(),
+		deploymentID:  request.GetInput().GetDeployment().GetId(),
+		stageID:       request.GetInput().GetStage().GetId(),
+		LogPersister:  s.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId()),
+	}
+	return executeStage(ctx, s.base, &s.config, nil, client, request, s.logger) // TODO: pass the deployTargets
 }
 
 // buildPipelineSyncStages builds the stages that will be executed by the plugin.
-func buildPipelineSyncStages[Config, DeployTargetConfig any](ctx context.Context, plugin PipelineSyncPlugin[Config, DeployTargetConfig], config *Config, client *Client, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
-	resp, err := plugin.BuildPipelineSyncStages(ctx, config, client, newPipelineSyncStagesRequest(request))
+func buildPipelineSyncStages[Config, DeployTargetConfig any](ctx context.Context, plugin PipelineSyncPlugin[Config, DeployTargetConfig], config *Config, client *Client, request *deployment.BuildPipelineSyncStagesRequest, logger *zap.Logger) (*deployment.BuildPipelineSyncStagesResponse, error) {
+	resp, err := plugin.BuildPipelineSyncStages(ctx, config, newPipelineSyncStagesInput(request, client, logger))
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to build pipeline sync stages: %v", err)
 	}
 	return newPipelineSyncStagesResponse(plugin, time.Now(), request, resp)
+}
+
+func executeStage[Config, DeployTargetConfig any](
+	ctx context.Context,
+	plugin PipelineSyncPlugin[Config, DeployTargetConfig],
+	config *Config,
+	deployTargets []*DeployTarget[DeployTargetConfig],
+	client *Client,
+	request *deployment.ExecuteStageRequest,
+	logger *zap.Logger,
+) (*deployment.ExecuteStageResponse, error) {
+	in := &ExecuteStageInput{
+		Request: ExecuteStageRequest{
+			StageName:   request.GetInput().GetStage().GetName(),
+			StageConfig: request.GetInput().GetStageConfig(),
+		},
+		Client: client,
+		Logger: logger,
+	}
+
+	resp, err := plugin.ExecuteStage(ctx, config, deployTargets, in)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to execute stage: %v", err)
+	}
+
+	return &deployment.ExecuteStageResponse{
+		Status: resp.Status.toModelEnum(),
+	}, nil
 }
 
 // ManualOperation represents the manual operation that the user can perform.
@@ -259,8 +316,8 @@ func (o ManualOperation) toModelEnum() model.ManualOperation {
 	}
 }
 
-// newPipelineSyncStagesRequest converts the request to the internal representation.
-func newPipelineSyncStagesRequest(request *deployment.BuildPipelineSyncStagesRequest) *BuildPipelineSyncStagesRequest {
+// newPipelineSyncStagesInput converts the request to the internal representation.
+func newPipelineSyncStagesInput(request *deployment.BuildPipelineSyncStagesRequest, client *Client, logger *zap.Logger) *BuildPipelineSyncStagesInput {
 	stages := make([]StageConfig, 0, len(request.Stages))
 	for _, s := range request.GetStages() {
 		stages = append(stages, StageConfig{
@@ -269,9 +326,14 @@ func newPipelineSyncStagesRequest(request *deployment.BuildPipelineSyncStagesReq
 			Config: s.GetConfig(),
 		})
 	}
-	return &BuildPipelineSyncStagesRequest{
+	req := BuildPipelineSyncStagesRequest{
 		Rollback: request.GetRollback(),
 		Stages:   stages,
+	}
+	return &BuildPipelineSyncStagesInput{
+		Request: req,
+		Client:  client,
+		Logger:  logger,
 	}
 }
 
@@ -311,6 +373,16 @@ func newPipelineSyncStagesResponse(plugin Plugin, now time.Time, request *deploy
 	return &deployment.BuildPipelineSyncStagesResponse{
 		Stages: stages,
 	}, nil
+}
+
+// BuildPipelineSyncStagesInput is the input for the BuildPipelineSyncStages method.
+type BuildPipelineSyncStagesInput struct {
+	// Request is the request to build pipeline sync stages.
+	Request BuildPipelineSyncStagesRequest
+	// Client is the client to interact with the piped.
+	Client *Client
+	// Logger is the logger to log the events.
+	Logger *zap.Logger
 }
 
 // BuildPipelineSyncStagesRequest is the request to build pipeline sync stages.
@@ -355,4 +427,57 @@ type PipelineStage struct {
 	Metadata map[string]string
 	// AvailableOperation indicates the manual operation that the user can perform.
 	AvailableOperation ManualOperation
+}
+
+// ExecuteStageInput is the input for the ExecuteStage method.
+type ExecuteStageInput struct {
+	// Request is the request to execute a stage.
+	Request ExecuteStageRequest
+	// Client is the client to interact with the piped.
+	Client *Client
+	// Logger is the logger to log the events.
+	Logger *zap.Logger
+}
+
+// ExecuteStageRequest is the request to execute a stage.
+type ExecuteStageRequest struct {
+	// The name of the stage to execute.
+	StageName string
+	// Json encoded configuration of the stage.
+	StageConfig []byte
+}
+
+// ExecuteStageResponse is the response of the request to execute a stage.
+type ExecuteStageResponse struct {
+	Status StageStatus
+}
+
+// StageStatus represents the current status of a stage of a deployment.
+type StageStatus int
+
+const (
+	StageStatusSuccess   StageStatus = 2
+	StageStatusFailure   StageStatus = 3
+	StageStatusCancelled StageStatus = 4
+
+	// StageStatusSkipped         StageStatus = 5 // TODO: If SDK can handle whole skipping, this is unnecessary.
+
+	// StageStatusExited can be used when the stage succeeded and exit the pipeline without executing the following stages.
+	StageStatusExited StageStatus = 6
+)
+
+// toModelEnum converts the StageStatus to the model.StageStatus.
+func (o StageStatus) toModelEnum() model.StageStatus {
+	switch o {
+	case StageStatusSuccess:
+		return model.StageStatus_STAGE_SUCCESS
+	case StageStatusFailure:
+		return model.StageStatus_STAGE_FAILURE
+	case StageStatusCancelled:
+		return model.StageStatus_STAGE_CANCELLED
+	case StageStatusExited:
+		return model.StageStatus_STAGE_EXITED
+	default:
+		return model.StageStatus_STAGE_FAILURE
+	}
 }

@@ -17,6 +17,7 @@ package sdk
 import (
 	"context"
 
+	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedapi"
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
 )
@@ -38,6 +39,9 @@ type Client struct {
 	// stageID is used to identify the stage that the client is working with.
 	// This field exists only when the client is working with a specific stage; for example, when this client is passed as the ExecuteStage method's argument.
 	stageID string
+
+	// TODO: Define another interface (e.g. Remove Complete() method)
+	LogPersister logpersister.StageLogPersister
 }
 
 // GetStageMetadata gets the metadata of the current stage.

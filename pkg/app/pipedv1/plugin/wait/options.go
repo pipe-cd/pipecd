@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package config
+package main
 
 import (
 	"encoding/json"
@@ -24,8 +24,6 @@ import (
 // WaitStageOptions contains configurable values for a WAIT stage.
 type WaitStageOptions struct {
 	Duration config.Duration `json:"duration,omitempty"`
-	// TODO: Handle SkipOn options.
-	// SkipOn   config.SkipOptions `json:"skipOn,omitempty"`
 }
 
 func (o WaitStageOptions) validate() error {
@@ -35,8 +33,8 @@ func (o WaitStageOptions) validate() error {
 	return nil
 }
 
-// Decode decodes the raw JSON data and validates it.
-func Decode(data json.RawMessage) (WaitStageOptions, error) {
+// decode decodes the raw JSON data and validates it.
+func decode(data json.RawMessage) (WaitStageOptions, error) {
 	var opts WaitStageOptions
 	if err := json.Unmarshal(data, &opts); err != nil {
 		return WaitStageOptions{}, fmt.Errorf("failed to unmarshal the config: %w", err)

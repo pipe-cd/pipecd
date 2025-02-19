@@ -17,7 +17,6 @@ package main
 import (
 	"context"
 
-	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
@@ -36,13 +35,13 @@ func (p *plugin) Version() string {
 }
 
 // BuildPipelineSyncStages implements sdk.PipelineSyncPlugin.
-func (p *plugin) BuildPipelineSyncStages(context.Context, *config, *sdk.Client, *sdk.BuildPipelineSyncStagesRequest) (*sdk.BuildPipelineSyncStagesResponse, error) {
+func (p *plugin) BuildPipelineSyncStages(context.Context, *config, *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
 	return &sdk.BuildPipelineSyncStagesResponse{}, nil
 }
 
 // ExecuteStage implements sdk.PipelineSyncPlugin.
-func (p *plugin) ExecuteStage(context.Context, *config, sdk.DeployTargetsNone, *sdk.Client, logpersister.StageLogPersister, sdk.TODO) (sdk.TODO, error) {
-	return sdk.TODO{}, nil
+func (p *plugin) ExecuteStage(context.Context, *config, sdk.DeployTargetsNone, *sdk.ExecuteStageInput) (*sdk.ExecuteStageResponse, error) {
+	return &sdk.ExecuteStageResponse{}, nil
 }
 
 // FetchDefinedStages implements sdk.PipelineSyncPlugin.

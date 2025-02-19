@@ -1,4 +1,4 @@
-// Copyright 2024 The PipeCD Authors.
+// Copyright 2025 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package deployment
+package main
 
 import (
 	"context"
@@ -21,8 +21,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister/logpersistertest"
+	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
 func TestWait_Complete(t *testing.T) {
@@ -30,7 +30,7 @@ func TestWait_Complete(t *testing.T) {
 
 	duration := 50 * time.Millisecond
 
-	resultCh := make(chan model.StageStatus)
+	resultCh := make(chan sdk.StageStatus)
 	go func() {
 		result := wait(context.Background(), duration, time.Now(), logpersistertest.NewTestLogPersister(t))
 		resultCh <- result
@@ -46,7 +46,7 @@ func TestWait_Complete(t *testing.T) {
 	// Assert that wait() ends after the specified duration has passed.
 	select {
 	case result := <-resultCh:
-		assert.Equal(t, model.StageStatus_STAGE_SUCCESS, result)
+		assert.Equal(t, sdk.StageStatusSuccess, result)
 	case <-time.After(duration):
 		// Wait 1.1x duration in total to avoid flaky test.
 		t.Error("wait() did not end even after the specified duration has passed")
@@ -59,7 +59,7 @@ func TestWait_Cancel(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	resultCh := make(chan model.StageStatus)
+	resultCh := make(chan sdk.StageStatus)
 	go func() {
 		result := wait(ctx, 1*time.Second, time.Now(), logpersistertest.NewTestLogPersister(t))
 		resultCh <- result
@@ -69,7 +69,7 @@ func TestWait_Cancel(t *testing.T) {
 
 	select {
 	case result := <-resultCh:
-		assert.Equal(t, model.StageStatus_STAGE_CANCELLED, result)
+		assert.Equal(t, sdk.StageStatusCancelled, result)
 	case <-time.After(1 * time.Second):
 		t.Error("wait() did not ended even after the context was canceled")
 	}
@@ -82,7 +82,7 @@ func TestWait_RestartAfterLongTime(t *testing.T) {
 
 	result := wait(context.Background(), 1*time.Second, previousStart, logpersistertest.NewTestLogPersister(t))
 	// Immediately return success because the duration has already passed.
-	assert.Equal(t, model.StageStatus_STAGE_SUCCESS, result)
+	assert.Equal(t, sdk.StageStatusSuccess, result)
 }
 
 func TestWait_RestartAndContinue(t *testing.T) {
@@ -94,7 +94,7 @@ func TestWait_RestartAndContinue(t *testing.T) {
 	duration := 50 * time.Millisecond
 	previousStart := time.Now().Add(-30 * time.Millisecond)
 
-	resultCh := make(chan model.StageStatus)
+	resultCh := make(chan sdk.StageStatus)
 	go func() {
 		result := wait(context.Background(), duration, previousStart, logpersistertest.NewTestLogPersister(t))
 		resultCh <- result
@@ -110,7 +110,7 @@ func TestWait_RestartAndContinue(t *testing.T) {
 	// (2) Assert that wait() ends after the specified duration has passed.
 	select {
 	case result := <-resultCh:
-		assert.Equal(t, model.StageStatus_STAGE_SUCCESS, result)
+		assert.Equal(t, sdk.StageStatusSuccess, result)
 	case <-time.After(15 * time.Millisecond): // Not 50ms
 		// Wait 55ms in total to avoid flaky test.
 		t.Error("wait() did not end even after the specified duration has passed")

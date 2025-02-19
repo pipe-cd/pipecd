@@ -1,4 +1,4 @@
-// Copyright 2024 The PipeCD Authors.
+// Copyright 2025 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,18 +17,13 @@ package main
 import (
 	"log"
 
-	"github.com/pipe-cd/pipecd/pkg/cli"
+	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
 func main() {
-	app := cli.NewApp(
-		"pipecd-plugin-stage-wait",
-		"Plugin component to execute Wait Stage.",
-	)
-	app.AddCommands(
-		newPluginCommand(),
-	)
-	if err := app.Run(); err != nil {
-		log.Fatal(err)
+	sdk.RegisterPipelineSyncPlugin(&plugin{})
+
+	if err := sdk.Run(); err != nil {
+		log.Fatalln(err)
 	}
 }

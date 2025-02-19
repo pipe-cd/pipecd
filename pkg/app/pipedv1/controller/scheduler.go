@@ -534,7 +534,7 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 	}
 
 	// Load the stage configuration.
-	stageConfig, stageConfigFound := s.genericApplicationConfig.GetStageByte(ps.Index)
+	stageConfig, stageConfigFound := s.genericApplicationConfig.GetStageConfigByte(ps.Index)
 	if !stageConfigFound {
 		s.logger.Error("Unable to find the stage configuration", zap.String("stage-name", ps.Name))
 		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {

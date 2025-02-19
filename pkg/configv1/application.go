@@ -169,10 +169,10 @@ func (s GenericApplicationSpec) GetStage(index int32) (PipelineStage, bool) {
 	return s.Pipeline.Stages[index], true
 }
 
-// GetStageByte returns the JSON-encoded byte representation of the stage at the specified index.
+// GetStageConfigByte returns the JSON-encoded byte representation of the stage config at the specified index.
 // If the pipeline is not defined, it returns nil and true. This is QuickSync specific.
 // If the stage index is invalid, it returns nil and false.
-func (s GenericApplicationSpec) GetStageByte(index int32) ([]byte, bool) {
+func (s GenericApplicationSpec) GetStageConfigByte(index int32) ([]byte, bool) {
 	// Return empty byte if the pipeline is not defined.
 	if len(s.Pipeline.Stages) == 0 {
 		return nil, true
@@ -182,11 +182,13 @@ func (s GenericApplicationSpec) GetStageByte(index int32) ([]byte, bool) {
 	if !ok {
 		return nil, false
 	}
-	b, err := json.Marshal(stage)
-	if err != nil {
-		return nil, false
-	}
-	return b, true
+
+	return []byte(stage.With), true
+	// b, err := json.Marshal(stage)
+	// if err != nil {
+	// return nil, false
+	// }
+	// return b, true
 }
 
 // HasStage checks if the given stage is included in the pipeline.
