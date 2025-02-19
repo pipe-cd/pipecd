@@ -237,8 +237,8 @@ func buildPipelineSyncStages[Config, DeployTargetConfig any](ctx context.Context
 type ManualOperation int
 
 const (
-	// do not define zero value for ManualOperation
-	_ ManualOperation = iota
+	// ManualOperationNone indicates that there is no manual operation.
+	ManualOperationNone ManualOperation = iota
 	// ManualOperationSkip indicates that the manual operation is to skip the stage.
 	ManualOperationSkip
 	// ManualOperationApprove indicates that the manual operation is to approve the stage.
@@ -248,6 +248,8 @@ const (
 // toModelEnum converts the ManualOperation to the model.ManualOperation.
 func (o ManualOperation) toModelEnum() model.ManualOperation {
 	switch o {
+	case ManualOperationNone:
+		return model.ManualOperation_MANUAL_OPERATION_NONE
 	case ManualOperationSkip:
 		return model.ManualOperation_MANUAL_OPERATION_SKIP
 	case ManualOperationApprove:
