@@ -55,9 +55,9 @@ type ConfigNone = *struct{}
 
 // DeploymentPlugin is the interface that be implemented by a full-spec deployment plugin.
 // This kind of plugin should implement all methods to manage resources and execute stages.
-// The Config parameter is the plugin's config defined in piped's config.
+// The Config and DeployTargetConfig are the plugin's config defined in piped's config.
 type DeploymentPlugin[Config, DeployTargetConfig any] interface {
-	PipelineSyncPlugin[Config, DeployTargetConfig]
+	StagePlugin[Config, DeployTargetConfig]
 
 	// DetermineVersions determines the versions of the resources that will be deployed.
 	DetermineVersions(context.Context, *Config, *Client, TODO) (TODO, error)
@@ -67,11 +67,10 @@ type DeploymentPlugin[Config, DeployTargetConfig any] interface {
 	BuildQuickSyncStages(context.Context, *Config, *Client, TODO) (TODO, error)
 }
 
-// PipelineSyncPlugin is the interface implemented by a pipeline sync plugin.
-// This kind of plugin may not implement quick sync stages, and will not manage resources like deployment plugin.
-// It only focuses on executing stages which is generic for all kinds of pipeline sync plugins.
-// The Config parameter is the plugin's config defined in piped's config.
-type PipelineSyncPlugin[Config, DeployTargetConfig any] interface {
+// StagePlugin is the interface implemented by a plugin that focuses on executing generic stages.
+// This kind of plugin may not implement quick sync stages.
+// The Config and DeployTargetConfig are the plugin's config defined in piped's config.
+type StagePlugin[Config, DeployTargetConfig any] interface {
 	Plugin
 
 	// FetchDefinedStages returns the list of stages that the plugin can execute.
@@ -100,7 +99,7 @@ func RegisterDeploymentPlugin[Config, DeployTargetConfig any](plugin DeploymentP
 
 // RegisterPipelineSyncPlugin registers the given pipeline sync plugin.
 // It will be used when running the piped.
-func RegisterPipelineSyncPlugin[Config, DeployTargetConfig any](plugin PipelineSyncPlugin[Config, DeployTargetConfig]) {
+func RegisterPipelineSyncPlugin[Config, DeployTargetConfig any](plugin StagePlugin[Config, DeployTargetConfig]) {
 	deploymentServiceServer = &PipelineSyncPluginServiceServer[Config, DeployTargetConfig]{base: plugin}
 }
 
@@ -188,7 +187,7 @@ type PipelineSyncPluginServiceServer[Config, DeployTargetConfig any] struct {
 	deployment.UnimplementedDeploymentServiceServer
 	commonFields
 
-	base   PipelineSyncPlugin[Config, DeployTargetConfig]
+	base   StagePlugin[Config, DeployTargetConfig]
 	config Config
 }
 
@@ -254,7 +253,7 @@ func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) ExecuteSta
 }
 
 // buildPipelineSyncStages builds the stages that will be executed by the plugin.
-func buildPipelineSyncStages[Config, DeployTargetConfig any](ctx context.Context, plugin PipelineSyncPlugin[Config, DeployTargetConfig], config *Config, client *Client, request *deployment.BuildPipelineSyncStagesRequest, logger *zap.Logger) (*deployment.BuildPipelineSyncStagesResponse, error) {
+func buildPipelineSyncStages[Config, DeployTargetConfig any](ctx context.Context, plugin StagePlugin[Config, DeployTargetConfig], config *Config, client *Client, request *deployment.BuildPipelineSyncStagesRequest, logger *zap.Logger) (*deployment.BuildPipelineSyncStagesResponse, error) {
 	resp, err := plugin.BuildPipelineSyncStages(ctx, config, newPipelineSyncStagesInput(request, client, logger))
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to build pipeline sync stages: %v", err)
@@ -264,7 +263,7 @@ func buildPipelineSyncStages[Config, DeployTargetConfig any](ctx context.Context
 
 func executeStage[Config, DeployTargetConfig any](
 	ctx context.Context,
-	plugin PipelineSyncPlugin[Config, DeployTargetConfig],
+	plugin StagePlugin[Config, DeployTargetConfig],
 	config *Config,
 	deployTargets []*DeployTarget[DeployTargetConfig],
 	client *Client,
