@@ -23,7 +23,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/logpersister"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/wait/config"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/wait_old/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"

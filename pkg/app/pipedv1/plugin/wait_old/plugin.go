@@ -25,7 +25,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/pipe-cd/pipecd/pkg/admin"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/wait/deployment"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/wait_old/deployment"
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
