@@ -162,6 +162,10 @@ func (s *plugin) run(ctx context.Context, input cli.Input) (runErr error) {
 			logPersister: persister,
 			client:       pipedapiClient,
 		})
+		if err := deploymentServiceServer.setConfig(cfg.Config); err != nil {
+			input.Logger.Error("failed to set configuration", zap.Error(err))
+			return err
+		}
 		var (
 			opts = []rpc.Option{
 				rpc.WithPort(cfg.Port),
