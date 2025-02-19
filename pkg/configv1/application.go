@@ -184,11 +184,6 @@ func (s GenericApplicationSpec) GetStageConfigByte(index int32) ([]byte, bool) {
 	}
 
 	return []byte(stage.With), true
-	// b, err := json.Marshal(stage)
-	// if err != nil {
-	// return nil, false
-	// }
-	// return b, true
 }
 
 // HasStage checks if the given stage is included in the pipeline.
