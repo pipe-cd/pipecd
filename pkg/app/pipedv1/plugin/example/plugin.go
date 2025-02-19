@@ -36,8 +36,8 @@ func (p *plugin) Version() string {
 }
 
 // BuildPipelineSyncStages implements sdk.PipelineSyncPlugin.
-func (p *plugin) BuildPipelineSyncStages(context.Context, *config, *sdk.Client, sdk.TODO) (sdk.TODO, error) {
-	return sdk.TODO{}, nil
+func (p *plugin) BuildPipelineSyncStages(context.Context, *config, *sdk.Client, *sdk.BuildPipelineSyncStagesRequest) (*sdk.BuildPipelineSyncStagesResponse, error) {
+	return &sdk.BuildPipelineSyncStagesResponse{}, nil
 }
 
 // ExecuteStage implements sdk.PipelineSyncPlugin.
