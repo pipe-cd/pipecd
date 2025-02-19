@@ -162,13 +162,25 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineStr
 	return nil, status.Errorf(codes.Unimplemented, "method DetermineStrategy not implemented")
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
-	return buildPipelineSyncStages(ctx, s.base, &s.config, nil, request, s.logger) // TODO: pass the real client
+	client := &Client{
+		base:       s.client,
+		pluginName: s.Name(),
+	}
+	return buildPipelineSyncStages(ctx, s.base, &s.config, client, request, s.logger)
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BuildQuickSyncStages not implemented")
 }
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(context.Context, *deployment.ExecuteStageRequest) (*deployment.ExecuteStageResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ExecuteStage not implemented")
+func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (*deployment.ExecuteStageResponse, error) {
+	client := &Client{
+		base:          s.client,
+		pluginName:    s.Name(),
+		applicationID: request.GetInput().GetDeployment().GetApplicationId(),
+		deploymentID:  request.GetInput().GetDeployment().GetId(),
+		stageID:       request.GetInput().GetStage().GetId(),
+		LogPersister:  s.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId()),
+	}
+	return executeStage(ctx, s.base, &s.config, nil, client, request, s.logger) // TODO: pass the deployTargets
 }
 
 // PipelineSyncPluginServiceServer is the gRPC server that handles requests from the piped.
@@ -219,13 +231,26 @@ func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) DetermineS
 	return &deployment.DetermineStrategyResponse{Unsupported: true}, nil
 }
 func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
-	return buildPipelineSyncStages(ctx, s.base, &s.config, nil, request, s.logger) // TODO: pass the real client
+	client := &Client{
+		base:       s.client,
+		pluginName: s.Name(),
+	}
+
+	return buildPipelineSyncStages(ctx, s.base, &s.config, client, request, s.logger) // TODO: pass the real client
 }
 func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BuildQuickSyncStages not implemented")
 }
 func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (*deployment.ExecuteStageResponse, error) {
-	return executeStage(ctx, s.base, &s.config, nil, nil, request, s.logger) // TODO: pass the real client and deployTargets
+	client := &Client{
+		base:          s.client,
+		pluginName:    s.Name(),
+		applicationID: request.GetInput().GetDeployment().GetApplicationId(),
+		deploymentID:  request.GetInput().GetDeployment().GetId(),
+		stageID:       request.GetInput().GetStage().GetId(),
+		LogPersister:  s.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId()),
+	}
+	return executeStage(ctx, s.base, &s.config, nil, client, request, s.logger) // TODO: pass the deployTargets
 }
 
 // buildPipelineSyncStages builds the stages that will be executed by the plugin.
