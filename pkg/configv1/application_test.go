@@ -15,6 +15,7 @@
 package config
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -571,7 +572,7 @@ func TestGenericPostSyncConfiguration(t *testing.T) {
 		})
 	}
 }
-func TestGetStageByte(t *testing.T) {
+func TestGetStageConfigByte(t *testing.T) {
 	testcases := []struct {
 		name   string
 		s      GenericApplicationSpec
@@ -593,12 +594,28 @@ func TestGetStageByte(t *testing.T) {
 					Stages: []PipelineStage{
 						{
 							Name: model.StageK8sSync,
+							With: json.RawMessage(`{"duration":"1m"}`),
 						},
 					},
 				},
 			},
 			index:  0,
-			want:   []byte(`{"id":"","name":"K8S_SYNC","timeout":"0s","with":null,"skipOn":{}}`),
+			want:   []byte(`{"duration":"1m"}`),
+			wantOk: true,
+		},
+		{
+			name: "with is nil",
+			s: GenericApplicationSpec{
+				Pipeline: &DeploymentPipeline{
+					Stages: []PipelineStage{
+						{
+							Name: model.StageK8sSync,
+						},
+					},
+				},
+			},
+			index:  0,
+			want:   nil,
 			wantOk: true,
 		},
 		{
@@ -620,7 +637,7 @@ func TestGetStageByte(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			defaults.Set(&tc.s)
-			got, ok := tc.s.GetStageByte(tc.index)
+			got, ok := tc.s.GetStageConfigByte(tc.index)
 			assert.Equal(t, tc.wantOk, ok)
 			assert.Equal(t, string(tc.want), string(got))
 		})
