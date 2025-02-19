@@ -18,12 +18,13 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/creasty/defaults"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 )
 
 // WaitStageOptions contains configurable values for a WAIT stage.
 type WaitStageOptions struct {
-	Duration config.Duration `json:"duration,omitempty"`
+	Duration config.Duration `json:"duration,omitempty" default:"1m"`
 	// TODO: Handle SkipOn options.
 	// SkipOn   config.SkipOptions `json:"skipOn,omitempty"`
 }
@@ -35,11 +36,14 @@ func (o WaitStageOptions) validate() error {
 	return nil
 }
 
-// Decode decodes the raw JSON data and validates it.
-func Decode(data json.RawMessage) (WaitStageOptions, error) {
+// decode decodes the raw JSON data and validates it.
+func decode(data json.RawMessage) (WaitStageOptions, error) {
 	var opts WaitStageOptions
 	if err := json.Unmarshal(data, &opts); err != nil {
 		return WaitStageOptions{}, fmt.Errorf("failed to unmarshal the config: %w", err)
+	}
+	if err := defaults.Set(&opts); err != nil {
+		return WaitStageOptions{}, fmt.Errorf("failed to set default values: %w", err)
 	}
 	if err := opts.validate(); err != nil {
 		return WaitStageOptions{}, fmt.Errorf("failed to validate the config: %w", err)

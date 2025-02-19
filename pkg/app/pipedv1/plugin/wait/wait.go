@@ -23,7 +23,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/logpersister"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/wait_old/config"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
@@ -34,7 +33,7 @@ const (
 
 // executeWait starts waiting for the specified duration.
 func (p *plugin) executeWait(ctx context.Context, in *sdk.ExecuteStageInput) sdk.StageStatus {
-	opts, err := config.Decode(in.Request.StageConfig)
+	opts, err := decode(in.Request.StageConfig)
 	if err != nil {
 		in.Client.LogPersister.Errorf("failed to decode the stage config: %v", err)
 		return sdk.StageStatusFailure
