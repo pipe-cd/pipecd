@@ -55,7 +55,7 @@ type ConfigNone = *struct{}
 
 // DeploymentPlugin is the interface that be implemented by a full-spec deployment plugin.
 // This kind of plugin should implement all methods to manage resources and execute stages.
-// The Config parameter is the plugin's config defined in piped's config.
+// The Config and DeployTargetConfig are the plugin's config defined in piped's config.
 type DeploymentPlugin[Config, DeployTargetConfig any] interface {
 	StagePlugin[Config, DeployTargetConfig]
 
@@ -67,10 +67,9 @@ type DeploymentPlugin[Config, DeployTargetConfig any] interface {
 	BuildQuickSyncStages(context.Context, *Config, *Client, TODO) (TODO, error)
 }
 
-// StagePlugin is the interface implemented by a pipeline sync plugin.
-// This kind of plugin may not implement quick sync stages, and will not manage resources like deployment plugin.
-// It only focuses on executing stages which is generic for all kinds of pipeline sync plugins.
-// The Config parameter is the plugin's config defined in piped's config.
+// StagePlugin is the interface implemented by a plugin that focuses on executing generic stages.
+// This kind of plugin may not implement quick sync stages.
+// The Config and DeployTargetConfig are the plugin's config defined in piped's config.
 type StagePlugin[Config, DeployTargetConfig any] interface {
 	Plugin
 
