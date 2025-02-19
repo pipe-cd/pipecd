@@ -24,8 +24,6 @@ import (
 // WaitStageOptions contains configurable values for a WAIT stage.
 type WaitStageOptions struct {
 	Duration config.Duration `json:"duration,omitempty"`
-	// TODO: Handle SkipOn options.
-	// SkipOn   config.SkipOptions `json:"skipOn,omitempty"`
 }
 
 func (o WaitStageOptions) validate() error {
