@@ -26,8 +26,6 @@ const (
 
 type plugin struct{}
 
-type config struct{}
-
 // Name implements sdk.Plugin.
 func (p *plugin) Name() string {
 	return "wait"
@@ -39,7 +37,7 @@ func (p *plugin) Version() string {
 }
 
 // BuildPipelineSyncStages implements sdk.PipelineSyncPlugin.
-func (p *plugin) BuildPipelineSyncStages(ctx context.Context, cfg *config, client *sdk.Client, request *sdk.BuildPipelineSyncStagesRequest) (*sdk.BuildPipelineSyncStagesResponse, error) {
+func (p *plugin) BuildPipelineSyncStages(ctx context.Context, _ sdk.ConfigNone, client *sdk.Client, request *sdk.BuildPipelineSyncStagesRequest) (*sdk.BuildPipelineSyncStagesResponse, error) {
 	stages := make([]sdk.PipelineStage, 0, len(request.Stages))
 	for _, rs := range request.Stages {
 		stage := sdk.PipelineStage{
@@ -58,7 +56,7 @@ func (p *plugin) BuildPipelineSyncStages(ctx context.Context, cfg *config, clien
 }
 
 // ExecuteStage implements sdk.PipelineSyncPlugin.
-func (p *plugin) ExecuteStage(ctx context.Context, cfg *config, targets sdk.DeployTargetsNone, client *sdk.Client, request *sdk.ExecuteStageRequest) (*sdk.ExecuteStageResponse, error) {
+func (p *plugin) ExecuteStage(ctx context.Context, _ sdk.ConfigNone, _ sdk.DeployTargetsNone, client *sdk.Client, request *sdk.ExecuteStageRequest) (*sdk.ExecuteStageResponse, error) {
 	return &sdk.ExecuteStageResponse{}, nil
 }
 

@@ -49,6 +49,10 @@ var (
 // This utility is defined for plugins which has no deploy targets handling in ExecuteStage.
 type DeployTargetsNone = []*DeployTarget[struct{}]
 
+// ConfigNone is a type alias for a pointer to a struct with an empty struct as the generic type parameter.
+// This utility is defined for plugins which has no config handling in ExecuteStage.
+type ConfigNone = *struct{}
+
 // DeploymentPlugin is the interface that be implemented by a full-spec deployment plugin.
 // This kind of plugin should implement all methods to manage resources and execute stages.
 // The Config parameter is the plugin's config defined in piped's config.
