@@ -75,7 +75,7 @@ type PipelineSyncPlugin[Config, DeployTargetConfig any] interface {
 	// BuildPipelineSyncStages builds the stages that will be executed by the plugin.
 	BuildPipelineSyncStages(context.Context, *Config, *Client, *BuildPipelineSyncStagesRequest) (*BuildPipelineSyncStagesResponse, error)
 	// ExecuteStage executes the given stage.
-	ExecuteStage(context.Context, *Config, []*DeployTarget[DeployTargetConfig], *Client, logpersister.StageLogPersister, TODO) (TODO, error)
+	ExecuteStage(context.Context, *Config, []*DeployTarget[DeployTargetConfig], *Client, *ExecuteStageRequest) (*ExecuteStageResponse, error)
 }
 
 // DeployTarget defines the deploy target configuration for the piped.
@@ -355,4 +355,12 @@ type PipelineStage struct {
 	Metadata map[string]string
 	// AvailableOperation indicates the manual operation that the user can perform.
 	AvailableOperation ManualOperation
+}
+
+// ExecuteStageRequest is the request to execute a stage.
+type ExecuteStageRequest struct {
+}
+
+// ExecuteStageResponse is the response of the request to execute a stage.
+type ExecuteStageResponse struct {
 }

@@ -17,7 +17,6 @@ package main
 import (
 	"context"
 
-	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
@@ -41,8 +40,8 @@ func (p *plugin) BuildPipelineSyncStages(context.Context, *config, *sdk.Client, 
 }
 
 // ExecuteStage implements sdk.PipelineSyncPlugin.
-func (p *plugin) ExecuteStage(context.Context, *config, sdk.DeployTargetsNone, *sdk.Client, logpersister.StageLogPersister, sdk.TODO) (sdk.TODO, error) {
-	return sdk.TODO{}, nil
+func (p *plugin) ExecuteStage(context.Context, *config, sdk.DeployTargetsNone, *sdk.Client, *sdk.ExecuteStageRequest) (*sdk.ExecuteStageResponse, error) {
+	return &sdk.ExecuteStageResponse{}, nil
 }
 
 // FetchDefinedStages implements sdk.PipelineSyncPlugin.
