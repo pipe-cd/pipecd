@@ -13,7 +13,7 @@
 // limitations under the License.
 
 // package pipedsdk provides software development kits for building PipeCD piped plugins.
-package pipedsdk
+package sdk
 
 import (
 	"context"

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package pipedsdk
+package sdk
 
 import (
 	"context"
@@ -137,6 +137,9 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) setCommonFie
 }
 
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) setConfig(bytes []byte) error {
+	if bytes == nil {
+		return nil
+	}
 	if err := json.Unmarshal(bytes, &s.config); err != nil {
 		return fmt.Errorf("failed to unmarshal the plugin config: %v", err)
 	}
@@ -191,6 +194,9 @@ func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) setCommonF
 }
 
 func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) setConfig(bytes []byte) error {
+	if bytes == nil {
+		return nil
+	}
 	if err := json.Unmarshal(bytes, &s.config); err != nil {
 		return fmt.Errorf("failed to unmarshal the plugin config: %v", err)
 	}
@@ -201,10 +207,10 @@ func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) FetchDefin
 	return &deployment.FetchDefinedStagesResponse{Stages: s.base.FetchDefinedStages()}, nil
 }
 func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) DetermineVersions(context.Context, *deployment.DetermineVersionsRequest) (*deployment.DetermineVersionsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DetermineVersions not implemented")
+	return &deployment.DetermineVersionsResponse{}, nil
 }
 func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) DetermineStrategy(context.Context, *deployment.DetermineStrategyRequest) (*deployment.DetermineStrategyResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DetermineStrategy not implemented")
+	return &deployment.DetermineStrategyResponse{Unsupported: true}, nil
 }
 func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BuildPipelineSyncStages not implemented")
