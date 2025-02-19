@@ -225,7 +225,7 @@ func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) ExecuteSta
 }
 
 // buildPipelineSyncStages builds the stages that will be executed by the plugin.
-func buildPipelineSyncStages[Config any](ctx context.Context, plugin PipelineSyncPlugin[Config], config *Config, client *Client, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
+func buildPipelineSyncStages[Config, DeployTargetConfig any](ctx context.Context, plugin PipelineSyncPlugin[Config, DeployTargetConfig], config *Config, client *Client, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
 	resp, err := plugin.BuildPipelineSyncStages(ctx, config, client, newPipelineSyncStagesRequest(request))
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to build pipeline sync stages: %v", err)
