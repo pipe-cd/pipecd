@@ -207,10 +207,10 @@ func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) FetchDefin
 	return &deployment.FetchDefinedStagesResponse{Stages: s.base.FetchDefinedStages()}, nil
 }
 func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) DetermineVersions(context.Context, *deployment.DetermineVersionsRequest) (*deployment.DetermineVersionsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DetermineVersions not implemented")
+	return &deployment.DetermineVersionsResponse{}, nil
 }
 func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) DetermineStrategy(context.Context, *deployment.DetermineStrategyRequest) (*deployment.DetermineStrategyResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DetermineStrategy not implemented")
+	return &deployment.DetermineStrategyResponse{Unsupported: true}, nil
 }
 func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BuildPipelineSyncStages not implemented")
