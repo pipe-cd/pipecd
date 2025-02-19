@@ -137,6 +137,9 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) setCommonFie
 }
 
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) setConfig(bytes []byte) error {
+	if bytes == nil {
+		return nil
+	}
 	if err := json.Unmarshal(bytes, &s.config); err != nil {
 		return fmt.Errorf("failed to unmarshal the plugin config: %v", err)
 	}
@@ -191,6 +194,9 @@ func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) setCommonF
 }
 
 func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) setConfig(bytes []byte) error {
+	if bytes == nil {
+		return nil
+	}
 	if err := json.Unmarshal(bytes, &s.config); err != nil {
 		return fmt.Errorf("failed to unmarshal the plugin config: %v", err)
 	}
