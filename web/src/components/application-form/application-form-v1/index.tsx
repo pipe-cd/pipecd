@@ -147,8 +147,10 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
     [apps, selectedPipedId]
   );
 
-  const pipeds = useMemo(() => {
-    return ps.sort((a, b) => sortFunc(a.name, b.name));
+  const pipedOptions = useMemo(() => {
+    return ps
+      .filter((piped) => !piped.disabled)
+      .sort((a, b) => sortFunc(a.name, b.name));
   }, [ps]);
 
   /**
@@ -171,10 +173,10 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
    * Init selectedPipedId if there is only one piped
    */
   useEffect(() => {
-    if (pipeds.length === 1 && !selectedApp) {
-      setSelectedPipedId(pipeds[0].id);
+    if (pipedOptions.length === 1 && !selectedApp) {
+      setSelectedPipedId(pipedOptions[0].id);
     }
-  }, [pipeds, selectedApp]);
+  }, [pipedOptions, selectedApp]);
 
   /**
    * Init selectedApp if there is only one app
@@ -249,7 +251,7 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
                       onSelectPiped(e.target.value as string);
                     }}
                   >
-                    {pipeds.map((e) => (
+                    {pipedOptions.map((e) => (
                       <MenuItem value={e.id} key={`piped-${e.id}`}>
                         {e.name} ({e.id})
                       </MenuItem>

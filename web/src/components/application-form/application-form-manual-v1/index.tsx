@@ -202,8 +202,8 @@ const ApplicationFormManualV1: FC<ApplicationFormProps> = ({
 
   const classes = useStyles();
   const ps = useAppSelector((state) => selectAllPipeds(state));
-  const pipeds = ps
-    .filter((piped) => !piped.disabled)
+  const pipedOptions = ps
+    .filter((piped) => !piped.disabled || piped.id === detailApp?.pipedId)
     .sort((a, b) => sortFunc(a.name, b.name));
 
   const selectedPiped = useAppSelector(selectPipedById(values.pipedId));
@@ -259,12 +259,13 @@ const ApplicationFormManualV1: FC<ApplicationFormProps> = ({
                 pipedId: value,
               });
             }}
-            options={pipeds.map((piped) => ({
+            options={pipedOptions.map((piped) => ({
               label: `${piped.name} (${piped.id})`,
               value: piped.id,
+              disabled: piped.disabled,
             }))}
             required
-            disabled={isSubmitting || pipeds.length === 0}
+            disabled={isSubmitting || pipedOptions.length === 0}
           />
 
           <FormControl variant="outlined">
@@ -275,7 +276,7 @@ const ApplicationFormManualV1: FC<ApplicationFormProps> = ({
               value={values.deployTargets.map(
                 (item) => `${item.deployTarget} - ${item.pluginName}`
               )}
-              disabled={isSubmitting || pipeds.length === 0}
+              disabled={isSubmitting || pipedOptions.length === 0}
               onChange={(_e, value) => {
                 const selected = deployTargetOptions.filter((item) =>
                   value.includes(item.value)
