@@ -22,7 +22,6 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
@@ -35,7 +34,7 @@ const (
 func (p *plugin) executeWait(ctx context.Context, in *sdk.ExecuteStageInput) sdk.StageStatus {
 	opts, err := decode(in.Request.StageConfig)
 	if err != nil {
-		in.Client.LogPersister.Errorf("failed to decode the stage config: %v", err)
+		in.Client.LogPersister().Errorf("failed to decode the stage config: %v", err)
 		return sdk.StageStatusFailure
 	}
 
@@ -49,10 +48,10 @@ func (p *plugin) executeWait(ctx context.Context, in *sdk.ExecuteStageInput) sdk
 	}
 	p.saveStartTime(ctx, in.Client, initialStart, in.Logger)
 
-	return wait(ctx, duration, initialStart, in.Client.LogPersister)
+	return wait(ctx, duration, initialStart, in.Client.LogPersister())
 }
 
-func wait(ctx context.Context, duration time.Duration, initialStart time.Time, slp logpersister.StageLogPersister) sdk.StageStatus {
+func wait(ctx context.Context, duration time.Duration, initialStart time.Time, slp sdk.StageLogPersister) sdk.StageStatus {
 	remaining := duration - time.Since(initialStart)
 	if remaining <= 0 {
 		// When this stage restarted and the duration has already passed.

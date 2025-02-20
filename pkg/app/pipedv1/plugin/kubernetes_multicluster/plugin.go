@@ -26,7 +26,7 @@ type config struct{}
 
 // Name implements sdk.Plugin.
 func (p *plugin) Name() string {
-	return "example"
+	return "kubernetes_multicluster"
 }
 
 // Version implements sdk.Plugin.
@@ -46,5 +46,5 @@ func (p *plugin) ExecuteStage(context.Context, *config, sdk.DeployTargetsNone, *
 
 // FetchDefinedStages implements sdk.StagePlugin.
 func (p *plugin) FetchDefinedStages() []string {
-	return []string{"EXAMPLE_PLAN", "EXAMPLE_APPLY"}
+	return []string{"K8S_SYNC"}
 }

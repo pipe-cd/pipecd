@@ -2811,17 +2811,6 @@ func (m *AddApplicationRequest) validate(all bool) error {
 
 	// no validation rules for PlatformProvider
 
-	if len(m.GetDeployTargetsByPlugin()) < 1 {
-		err := AddApplicationRequestValidationError{
-			field:  "DeployTargetsByPlugin",
-			reason: "value must contain at least 1 pair(s)",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
 	{
 		sorted_keys := make([]string, len(m.GetDeployTargetsByPlugin()))
 		i := 0
@@ -3132,17 +3121,6 @@ func (m *UpdateApplicationRequest) validate(all bool) error {
 	}
 
 	// no validation rules for PlatformProvider
-
-	if len(m.GetDeployTargetsByPlugin()) < 1 {
-		err := UpdateApplicationRequestValidationError{
-			field:  "DeployTargetsByPlugin",
-			reason: "value must contain at least 1 pair(s)",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
 
 	{
 		sorted_keys := make([]string, len(m.GetDeployTargetsByPlugin()))
