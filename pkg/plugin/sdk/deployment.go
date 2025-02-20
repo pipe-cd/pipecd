@@ -30,6 +30,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedapi"
+	"github.com/pipe-cd/pipecd/pkg/plugin/signalhandler"
 )
 
 var (
@@ -170,14 +171,24 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildPipelin
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BuildQuickSyncStages not implemented")
 }
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (*deployment.ExecuteStageResponse, error) {
+func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (response *deployment.ExecuteStageResponse, _ error) {
+	lp := s.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId())
+	defer func() {
+		// When termination signal received and the stage is not completed yet, we should not mark the log persister as completed.
+		// This can occur when the piped is shutting down while the stage is still running.
+		if !response.GetStatus().IsCompleted() && signalhandler.Terminated() {
+			return
+		}
+		lp.Complete(time.Minute)
+	}()
+
 	client := &Client{
 		base:          s.client,
 		pluginName:    s.Name(),
 		applicationID: request.GetInput().GetDeployment().GetApplicationId(),
 		deploymentID:  request.GetInput().GetDeployment().GetId(),
 		stageID:       request.GetInput().GetStage().GetId(),
-		LogPersister:  s.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId()),
+		logPersister:  lp,
 	}
 	return executeStage(ctx, s.base, &s.config, nil, client, request, s.logger) // TODO: pass the deployTargets
 }
@@ -240,15 +251,26 @@ func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) BuildPipel
 func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BuildQuickSyncStages not implemented")
 }
-func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (*deployment.ExecuteStageResponse, error) {
+func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (response *deployment.ExecuteStageResponse, _ error) {
+	lp := s.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId())
+	defer func() {
+		// When termination signal received and the stage is not completed yet, we should not mark the log persister as completed.
+		// This can occur when the piped is shutting down while the stage is still running.
+		if !response.GetStatus().IsCompleted() && signalhandler.Terminated() {
+			return
+		}
+		lp.Complete(time.Minute)
+	}()
+
 	client := &Client{
 		base:          s.client,
 		pluginName:    s.Name(),
 		applicationID: request.GetInput().GetDeployment().GetApplicationId(),
 		deploymentID:  request.GetInput().GetDeployment().GetId(),
 		stageID:       request.GetInput().GetStage().GetId(),
-		LogPersister:  s.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId()),
+		logPersister:  lp,
 	}
+
 	return executeStage(ctx, s.base, &s.config, nil, client, request, s.logger) // TODO: pass the deployTargets
 }
 

@@ -17,7 +17,6 @@ package sdk
 import (
 	"context"
 
-	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedapi"
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
 )
@@ -40,8 +39,21 @@ type Client struct {
 	// This field exists only when the client is working with a specific stage; for example, when this client is passed as the ExecuteStage method's argument.
 	stageID string
 
-	// TODO: Define another interface (e.g. Remove Complete() method)
-	LogPersister logpersister.StageLogPersister
+	// logPersister is used to persist the stage logs.
+	// This field exists only when the client is working with a specific stage; for example, when this client is passed as the ExecuteStage method's argument.
+	logPersister StageLogPersister
+}
+
+// StageLogPersister is a interface for persisting the stage logs.
+// Use this to persist the stage logs and make it viewable on the UI.
+type StageLogPersister interface {
+	Write(log []byte) (int, error)
+	Info(log string)
+	Infof(format string, a ...interface{})
+	Success(log string)
+	Successf(format string, a ...interface{})
+	Error(log string)
+	Errorf(format string, a ...interface{})
 }
 
 // GetStageMetadata gets the metadata of the current stage.
@@ -117,4 +129,13 @@ func (c *Client) GetDeploymentSharedMetadata(ctx context.Context, key string) (s
 		Key:          key,
 	})
 	return resp.Value, err
+}
+
+// LogPersister returns the stage log persister.
+// Use this to persist the stage logs and make it viewable on the UI.
+// This method should be called only when the client is working with a specific stage, for example, when this client is passed as the ExecuteStage method's argument.
+// Otherwise, it will return nil.
+// TODO: we should consider returning an error instead of nil, or return logger which prints to stdout.
+func (c *Client) LogPersister() StageLogPersister {
+	return c.logPersister
 }
