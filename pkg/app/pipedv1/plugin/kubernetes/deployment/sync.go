@@ -55,7 +55,16 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersi
 		variantLabel   = cfg.Spec.VariantLabel.Key
 		primaryVariant = cfg.Spec.VariantLabel.PrimaryValue
 	)
-	// TODO: handle cfg.Spec.QuickSync.AddVariantLabelToSelector
+	// TODO: treat the stage options specified under "with"
+	if cfg.Spec.QuickSync.AddVariantLabelToSelector {
+		workloads := findWorkloadManifests(manifests, cfg.Spec.Workloads)
+		for _, m := range workloads {
+			if err := ensureVariantSelectorInWorkload(m, variantLabel, primaryVariant); err != nil {
+				lp.Errorf("Unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key().ReadableString(), err)
+				return model.StageStatus_STAGE_FAILURE
+			}
+		}
+	}
 
 	// Add variant annotations to all manifests.
 	for i := range manifests {
