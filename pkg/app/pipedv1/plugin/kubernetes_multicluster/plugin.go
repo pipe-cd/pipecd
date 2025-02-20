@@ -34,17 +34,17 @@ func (p *plugin) Version() string {
 	return "0.0.1"
 }
 
-// BuildPipelineSyncStages implements sdk.PipelineSyncPlugin.
+// BuildPipelineSyncStages implements sdk.StagePlugin.
 func (p *plugin) BuildPipelineSyncStages(context.Context, *config, *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
 	return &sdk.BuildPipelineSyncStagesResponse{}, nil
 }
 
-// ExecuteStage implements sdk.PipelineSyncPlugin.
+// ExecuteStage implements sdk.StagePlugin.
 func (p *plugin) ExecuteStage(context.Context, *config, sdk.DeployTargetsNone, *sdk.ExecuteStageInput) (*sdk.ExecuteStageResponse, error) {
 	return &sdk.ExecuteStageResponse{}, nil
 }
 
-// FetchDefinedStages implements sdk.PipelineSyncPlugin.
+// FetchDefinedStages implements sdk.StagePlugin.
 func (p *plugin) FetchDefinedStages() []string {
 	return []string{"K8S_SYNC"}
 }

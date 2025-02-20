@@ -21,7 +21,7 @@ import (
 )
 
 func main() {
-	sdk.RegisterPipelineSyncPlugin(&plugin{})
+	sdk.RegisterStagePlugin(&plugin{})
 
 	if err := sdk.Run(); err != nil {
 		log.Fatalln(err)

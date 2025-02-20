@@ -36,7 +36,7 @@ func (p *plugin) Version() string {
 	return "0.0.1" // TODO
 }
 
-// BuildPipelineSyncStages implements sdk.PipelineSyncPlugin.
+// BuildPipelineSyncStages implements sdk.StagePlugin.
 func (p *plugin) BuildPipelineSyncStages(ctx context.Context, _ sdk.ConfigNone, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
 	stages := make([]sdk.PipelineStage, 0, len(input.Request.Stages))
 	for _, rs := range input.Request.Stages {
@@ -55,7 +55,7 @@ func (p *plugin) BuildPipelineSyncStages(ctx context.Context, _ sdk.ConfigNone, 
 	}, nil
 }
 
-// ExecuteStage implements sdk.PipelineSyncPlugin.
+// ExecuteStage implements sdk.StagePlugin.
 func (p *plugin) ExecuteStage(ctx context.Context, _ sdk.ConfigNone, _ sdk.DeployTargetsNone, input *sdk.ExecuteStageInput) (*sdk.ExecuteStageResponse, error) {
 	status := p.executeWait(ctx, input)
 	return &sdk.ExecuteStageResponse{
@@ -63,7 +63,7 @@ func (p *plugin) ExecuteStage(ctx context.Context, _ sdk.ConfigNone, _ sdk.Deplo
 	}, nil
 }
 
-// FetchDefinedStages implements sdk.PipelineSyncPlugin.
+// FetchDefinedStages implements sdk.StagePlugin.
 func (p *plugin) FetchDefinedStages() []string {
 	return []string{stageWait}
 }

@@ -98,10 +98,10 @@ func RegisterDeploymentPlugin[Config, DeployTargetConfig any](plugin DeploymentP
 	deploymentServiceServer = &DeploymentPluginServiceServer[Config, DeployTargetConfig]{base: plugin}
 }
 
-// RegisterPipelineSyncPlugin registers the given pipeline sync plugin.
+// RegisterStagePlugin registers the given stage plugin.
 // It will be used when running the piped.
-func RegisterPipelineSyncPlugin[Config, DeployTargetConfig any](plugin StagePlugin[Config, DeployTargetConfig]) {
-	deploymentServiceServer = &PipelineSyncPluginServiceServer[Config, DeployTargetConfig]{base: plugin}
+func RegisterStagePlugin[Config, DeployTargetConfig any](plugin StagePlugin[Config, DeployTargetConfig]) {
+	deploymentServiceServer = &StagePluginServiceServer[Config, DeployTargetConfig]{base: plugin}
 }
 
 type logPersister interface {
@@ -193,8 +193,8 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage
 	return executeStage(ctx, s.base, &s.config, nil, client, request, s.logger) // TODO: pass the deployTargets
 }
 
-// PipelineSyncPluginServiceServer is the gRPC server that handles requests from the piped.
-type PipelineSyncPluginServiceServer[Config, DeployTargetConfig any] struct {
+// StagePluginServiceServer is the gRPC server that handles requests from the piped.
+type StagePluginServiceServer[Config, DeployTargetConfig any] struct {
 	deployment.UnimplementedDeploymentServiceServer
 	commonFields
 
@@ -203,25 +203,25 @@ type PipelineSyncPluginServiceServer[Config, DeployTargetConfig any] struct {
 }
 
 // Name returns the name of the plugin.
-func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) Name() string {
+func (s *StagePluginServiceServer[Config, DeployTargetConfig]) Name() string {
 	return s.base.Name()
 }
 
 // Version returns the version of the plugin.
-func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) Version() string {
+func (s *StagePluginServiceServer[Config, DeployTargetConfig]) Version() string {
 	return s.base.Version()
 }
 
 // Register registers the server to the given gRPC server.
-func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) Register(server *grpc.Server) {
+func (s *StagePluginServiceServer[Config, DeployTargetConfig]) Register(server *grpc.Server) {
 	deployment.RegisterDeploymentServiceServer(server, s)
 }
 
-func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) setCommonFields(fields commonFields) {
+func (s *StagePluginServiceServer[Config, DeployTargetConfig]) setCommonFields(fields commonFields) {
 	s.commonFields = fields
 }
 
-func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) setConfig(bytes []byte) error {
+func (s *StagePluginServiceServer[Config, DeployTargetConfig]) setConfig(bytes []byte) error {
 	if bytes == nil {
 		return nil
 	}
@@ -231,16 +231,16 @@ func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) setConfig(
 	return nil
 }
 
-func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) FetchDefinedStages(context.Context, *deployment.FetchDefinedStagesRequest) (*deployment.FetchDefinedStagesResponse, error) {
+func (s *StagePluginServiceServer[Config, DeployTargetConfig]) FetchDefinedStages(context.Context, *deployment.FetchDefinedStagesRequest) (*deployment.FetchDefinedStagesResponse, error) {
 	return &deployment.FetchDefinedStagesResponse{Stages: s.base.FetchDefinedStages()}, nil
 }
-func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) DetermineVersions(context.Context, *deployment.DetermineVersionsRequest) (*deployment.DetermineVersionsResponse, error) {
+func (s *StagePluginServiceServer[Config, DeployTargetConfig]) DetermineVersions(context.Context, *deployment.DetermineVersionsRequest) (*deployment.DetermineVersionsResponse, error) {
 	return &deployment.DetermineVersionsResponse{}, nil
 }
-func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) DetermineStrategy(context.Context, *deployment.DetermineStrategyRequest) (*deployment.DetermineStrategyResponse, error) {
+func (s *StagePluginServiceServer[Config, DeployTargetConfig]) DetermineStrategy(context.Context, *deployment.DetermineStrategyRequest) (*deployment.DetermineStrategyResponse, error) {
 	return &deployment.DetermineStrategyResponse{Unsupported: true}, nil
 }
-func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
+func (s *StagePluginServiceServer[Config, DeployTargetConfig]) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
 	client := &Client{
 		base:       s.client,
 		pluginName: s.Name(),
@@ -248,10 +248,10 @@ func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) BuildPipel
 
 	return buildPipelineSyncStages(ctx, s.base, &s.config, client, request, s.logger) // TODO: pass the real client
 }
-func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
+func (s *StagePluginServiceServer[Config, DeployTargetConfig]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BuildQuickSyncStages not implemented")
 }
-func (s *PipelineSyncPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (response *deployment.ExecuteStageResponse, _ error) {
+func (s *StagePluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (response *deployment.ExecuteStageResponse, _ error) {
 	lp := s.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId())
 	defer func() {
 		// When termination signal received and the stage is not completed yet, we should not mark the log persister as completed.
