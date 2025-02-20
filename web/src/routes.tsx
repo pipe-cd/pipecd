@@ -18,6 +18,7 @@ import {
   PAGE_PATH_APPLICATIONS,
   PAGE_PATH_DEPLOYMENTS,
   PAGE_PATH_DEPLOYMENT_CHAINS,
+  PAGE_PATH_DEPLOYMENT_TRACE,
   PAGE_PATH_INSIGHTS,
   PAGE_PATH_EVENTS,
   PAGE_PATH_LOGIN,
@@ -41,6 +42,7 @@ import {
 } from "~/modules/commands";
 import { fetchPipeds } from "~/modules/pipeds";
 import { sortedSet } from "~/utils/sorted-set";
+import DeploymentTracePage from "./components/deployment-trace-page";
 
 const SettingsIndexPage = loadable(
   () => import(/* webpackChunkName: "settings" */ "~/components/settings-page"),
@@ -212,6 +214,10 @@ export const Routes: FC = () => {
           element={<ApplicationDetailPage />}
         />
         <Route path={PAGE_PATH_DEPLOYMENTS} element={<DeploymentIndexPage />} />
+        <Route
+          path={PAGE_PATH_DEPLOYMENT_TRACE}
+          element={<DeploymentTracePage />}
+        />
         <Route
           path={`${PAGE_PATH_DEPLOYMENTS}/:deploymentId`}
           element={<DeploymentDetailPage />}

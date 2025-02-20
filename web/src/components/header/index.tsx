@@ -22,6 +22,7 @@ import {
   PAGE_PATH_INSIGHTS,
   PAGE_PATH_DEPLOYMENT_CHAINS,
   PAGE_PATH_EVENTS,
+  PAGE_PATH_DEPLOYMENT_TRACE,
 } from "~/constants/path";
 import { APP_NAME } from "~/constants/common";
 import { LOGGING_IN_PROJECT, USER_PROJECTS } from "~/constants/localstorage";
@@ -172,6 +173,17 @@ export const Header: FC = memo(function Header() {
                 to={PAGE_PATH_DEPLOYMENTS}
               >
                 Deployments
+              </Link>
+              <Link
+                component={RouterLink}
+                className={clsx(classes.link, {
+                  [classes.activeLink]:
+                    location.pathname === PAGE_PATH_DEPLOYMENT_TRACE,
+                })}
+                color="inherit"
+                to={PAGE_PATH_DEPLOYMENT_TRACE}
+              >
+                Deployment Traces
               </Link>
               <Link
                 component={RouterLink}
