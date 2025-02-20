@@ -551,6 +551,25 @@ type ExecuteStageRequest struct {
 	StageName string
 	// Json encoded configuration of the stage.
 	StageConfig []byte
+
+	// RunningDeploymentSource is the source of the running deployment.
+	RunningDeploymentSource DeploymentSource
+
+	// TargetDeploymentSource is the source of the target deployment.
+	TargetDeploymentSource DeploymentSource
+}
+
+// DeploymentSource represents the source of the deployment.
+type DeploymentSource struct {
+	// ApplicationDirectory is the directory where the source code is located.
+	ApplicationDirectory string
+	// CommitHash is the git commit hash of the source code.
+	CommitHash string
+	// ApplicationConfig is the configuration of the application.
+	ApplicationConfig []byte
+	// ApplicationConfigFilename is the name of the file that contains the application configuration.
+	// The plugins can use this to avoid mistakenly reading this file as a manifest to deploy.
+	ApplicationConfigFilename string
 }
 
 // ExecuteStageResponse is the response of the request to execute a stage.
