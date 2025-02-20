@@ -455,9 +455,8 @@ type ExecuteStageResponse struct {
 type StageStatus int
 
 const (
-	StageStatusSuccess   StageStatus = 2
-	StageStatusFailure   StageStatus = 3
-	StageStatusCancelled StageStatus = 4
+	StageStatusSuccess StageStatus = 2
+	StageStatusFailure StageStatus = 3
 
 	// StageStatusSkipped         StageStatus = 5 // TODO: If SDK can handle whole skipping, this is unnecessary.
 
@@ -472,8 +471,6 @@ func (o StageStatus) toModelEnum() model.StageStatus {
 		return model.StageStatus_STAGE_SUCCESS
 	case StageStatusFailure:
 		return model.StageStatus_STAGE_FAILURE
-	case StageStatusCancelled:
-		return model.StageStatus_STAGE_CANCELLED
 	case StageStatusExited:
 		return model.StageStatus_STAGE_EXITED
 	default:
