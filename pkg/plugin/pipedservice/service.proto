@@ -20,6 +20,7 @@ option go_package = "github.com/pipe-cd/pipecd/pkg/plugin/pipedservice";
 import "validate/validate.proto";
 import "pkg/model/logblock.proto";
 import "pkg/model/command.proto";
+import "pkg/model/notificationevent.proto";
 
 // PluginService provides the ability to interact with plugins.
 service PluginService {
@@ -50,6 +51,11 @@ service PluginService {
     // ListStageCommands lists unhandled commands of the given stage and type.
     // Currently, supported types are only APPROVE_STAGE and SKIP_STAGE.
     rpc ListStageCommands(ListStageCommandsRequest) returns (ListStageCommandsResponse) {}
+
+    // NotifyWaitApproval notifies the given deployment starts waiting for approval(s).
+    rpc NotifyWaitApproval(NotifyWaitApprovalRequest) returns (NotifyWaitApprovalResponse) {}
+    // NotifyApproved notifies the given deployment is approved by approver(s).
+    rpc NotifyApproved(NotifyApprovedRequest) returns (NotifyApprovedResponse) {}
 }
 
 message DecryptSecretRequest {
@@ -193,4 +199,18 @@ message ListStageCommandsRequest {
 
 message ListStageCommandsResponse {
     repeated model.Command commands = 1;
+}
+
+message NotifyWaitApprovalRequest {
+    model.NotificationEventDeploymentWaitApproval event = 1 [(validate.rules).message.required = true];
+}
+
+message NotifyWaitApprovalResponse {
+}
+
+message NotifyApprovedRequest {
+    model.NotificationEventDeploymentApproved event = 1 [(validate.rules).message.required = true];
+}
+
+message NotifyApprovedResponse {
 }
