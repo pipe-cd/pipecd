@@ -24,6 +24,10 @@ type plugin struct{}
 
 type config struct{}
 
+type deployTargetConfig struct{}
+
+var _ sdk.StagePlugin[config, deployTargetConfig] = (*plugin)(nil)
+
 // Name implements sdk.Plugin.
 func (p *plugin) Name() string {
 	return "kubernetes_multicluster"
@@ -40,7 +44,7 @@ func (p *plugin) BuildPipelineSyncStages(context.Context, *config, *sdk.BuildPip
 }
 
 // ExecuteStage implements sdk.StagePlugin.
-func (p *plugin) ExecuteStage(context.Context, *config, sdk.DeployTargetsNone, *sdk.ExecuteStageInput) (*sdk.ExecuteStageResponse, error) {
+func (p *plugin) ExecuteStage(context.Context, *config, []*sdk.DeployTarget[deployTargetConfig], *sdk.ExecuteStageInput) (*sdk.ExecuteStageResponse, error) {
 	return &sdk.ExecuteStageResponse{}, nil
 }
 
