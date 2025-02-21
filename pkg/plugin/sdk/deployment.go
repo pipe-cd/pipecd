@@ -65,7 +65,7 @@ type DeploymentPlugin[Config, DeployTargetConfig any] interface {
 	// DetermineStrategy determines the strategy to deploy the resources.
 	DetermineStrategy(context.Context, *Config, *Client, TODO) (TODO, error)
 	// BuildQuickSyncStages builds the stages that will be executed during the quick sync process.
-	BuildQuickSyncStages(context.Context, *Config, *Client, TODO) (TODO, error)
+	BuildQuickSyncStages(context.Context, *Config, *Client, *BuildQuickSyncStagesInput) (TODO, error)
 }
 
 // StagePlugin is the interface implemented by a plugin that focuses on executing generic stages.
@@ -402,6 +402,23 @@ type BuildPipelineSyncStagesRequest struct {
 	Rollback bool
 	// Stages contains the stage names and their configurations.
 	Stages []StageConfig
+}
+
+// BuildQuickSyncStagesInput is the input for the BuildQuickSyncStages method.
+type BuildQuickSyncStagesInput struct {
+	// Request is the request to build pipeline sync stages.
+	Request BuildQuickSyncStagesRequest
+	// Client is the client to interact with the piped.
+	Client *Client
+	// Logger is the logger to log the events.
+	Logger *zap.Logger
+}
+
+// BuildQuickSyncStagesRequest is the request to build quick sync stages.
+// Rollback indicates whether the stages for rollback are requested.
+type BuildQuickSyncStagesRequest struct {
+	// Rollback indicates whether the stages for rollback are requested.
+	Rollback bool
 }
 
 // StageConfig represents the configuration of a stage.
