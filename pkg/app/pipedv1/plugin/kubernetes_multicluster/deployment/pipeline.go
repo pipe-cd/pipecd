@@ -1,4 +1,4 @@
-// Copyright 202 The PipeCD Authors.
+// Copyright 2025 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -107,7 +107,7 @@ func BuildPipelineStages(input *sdk.BuildPipelineSyncStagesInput) []sdk.Pipeline
 	if input.Request.Rollback {
 		// we set the index of the rollback stage to the minimum index of all stages.
 		minIndex := slices.MinFunc(out, func(a, b sdk.PipelineStage) int {
-			return int(a.Index - b.Index)
+			return a.Index - b.Index
 		}).Index
 
 		s, _ := GetPredefinedStage(PredefinedStageRollback)
