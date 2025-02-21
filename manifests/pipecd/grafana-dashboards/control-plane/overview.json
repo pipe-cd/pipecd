@@ -466,7 +466,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum(grpcapi_create_deployment_total{project=~\"$project\"})",
+          "expr": "sum(increase(grpcapi_create_deployment_total{project=~\"$project\"}[24h]))",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
