@@ -65,7 +65,7 @@ type DeploymentPlugin[Config, DeployTargetConfig any] interface {
 	// DetermineStrategy determines the strategy to deploy the resources.
 	DetermineStrategy(context.Context, *Config, *Client, TODO) (TODO, error)
 	// BuildQuickSyncStages builds the stages that will be executed during the quick sync process.
-	BuildQuickSyncStages(context.Context, *Config, *Client, *BuildQuickSyncStagesInput) (TODO, error)
+	BuildQuickSyncStages(context.Context, *Config, *Client, *BuildQuickSyncStagesInput) (*BuildPipelineSyncStagesResponse, error)
 }
 
 // StagePlugin is the interface implemented by a plugin that focuses on executing generic stages.
@@ -385,6 +385,18 @@ func newPipelineSyncStagesResponse(plugin Plugin, now time.Time, request *deploy
 	}, nil
 }
 
+// newQuickSyncStagesResponse converts the response to the external representation.
+func newQuickSyncStagesResponse(plugin Plugin, now time.Time, response *BuildQuickSyncStagesResponse) (*deployment.BuildQuickSyncStagesResponse, error) {
+	stages := make([]*model.PipelineStage, 0, len(response.Stages))
+	for i, s := range response.Stages {
+		id := fmt.Sprintf("%s-stage-%d", plugin.Name(), i)
+		stages = append(stages, s.toModel(id, now))
+	}
+	return &deployment.BuildQuickSyncStagesResponse{
+		Stages: stages,
+	}, nil
+}
+
 // BuildPipelineSyncStagesInput is the input for the BuildPipelineSyncStages method.
 type BuildPipelineSyncStagesInput struct {
 	// Request is the request to build pipeline sync stages.
@@ -439,6 +451,11 @@ type BuildPipelineSyncStagesResponse struct {
 	Stages []PipelineStage
 }
 
+// BuildQuickSyncStagesResponse is the response of the request to build quick sync stages.
+type BuildQuickSyncStagesResponse struct {
+	Stages []QuickSyncStage
+}
+
 // PipelineStage represents a stage in the pipeline.
 type PipelineStage struct {
 	// Index is the order of the stage in the pipeline.
@@ -462,6 +479,37 @@ func (p *PipelineStage) toModel(id, description string, now time.Time) *model.Pi
 		Name:               p.Name,
 		Desc:               description,
 		Index:              int32(p.Index),
+		Status:             model.StageStatus_STAGE_NOT_STARTED_YET,
+		StatusReason:       "", // TODO: set the reason
+		Metadata:           p.Metadata,
+		Rollback:           p.Rollback,
+		CreatedAt:          now.Unix(),
+		UpdatedAt:          now.Unix(),
+		AvailableOperation: p.AvailableOperation.toModelEnum(),
+	}
+}
+
+// QuickSyncStage represents a stage in the pipeline.
+type QuickSyncStage struct {
+	// Name is the name of the stage.
+	// It must be one of the stages returned by FetchDefinedStages.
+	Name string
+	// Description is the description of the stage.
+	Description string
+	// Rollback indicates whether the stage is for rollback.
+	Rollback bool
+	// Metadata contains the metadata of the stage.
+	Metadata map[string]string
+	// AvailableOperation indicates the manual operation that the user can perform.
+	AvailableOperation ManualOperation
+}
+
+func (p *QuickSyncStage) toModel(id string, now time.Time) *model.PipelineStage {
+	return &model.PipelineStage{
+		Id:                 id,
+		Name:               p.Name,
+		Desc:               p.Description,
+		Index:              0,
 		Status:             model.StageStatus_STAGE_NOT_STARTED_YET,
 		StatusReason:       "", // TODO: set the reason
 		Metadata:           p.Metadata,
