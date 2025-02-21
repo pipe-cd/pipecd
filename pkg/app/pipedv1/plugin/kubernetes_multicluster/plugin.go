@@ -17,12 +17,17 @@ package main
 import (
 	"context"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
 type plugin struct{}
 
 type config struct{}
+
+type deployTargetConfig struct{}
+
+var _ sdk.StagePlugin[config, deployTargetConfig] = (*plugin)(nil)
 
 // Name implements sdk.Plugin.
 func (p *plugin) Name() string {
@@ -35,16 +40,18 @@ func (p *plugin) Version() string {
 }
 
 // BuildPipelineSyncStages implements sdk.StagePlugin.
-func (p *plugin) BuildPipelineSyncStages(context.Context, *config, *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
-	return &sdk.BuildPipelineSyncStagesResponse{}, nil
+func (p *plugin) BuildPipelineSyncStages(ctx context.Context, _ *config, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
+	return &sdk.BuildPipelineSyncStagesResponse{
+		Stages: deployment.BuildPipelineStages(input),
+	}, nil
 }
 
 // ExecuteStage implements sdk.StagePlugin.
-func (p *plugin) ExecuteStage(context.Context, *config, sdk.DeployTargetsNone, *sdk.ExecuteStageInput) (*sdk.ExecuteStageResponse, error) {
+func (p *plugin) ExecuteStage(context.Context, *config, []*sdk.DeployTarget[deployTargetConfig], *sdk.ExecuteStageInput) (*sdk.ExecuteStageResponse, error) {
 	return &sdk.ExecuteStageResponse{}, nil
 }
 
 // FetchDefinedStages implements sdk.StagePlugin.
 func (p *plugin) FetchDefinedStages() []string {
-	return []string{"K8S_SYNC"}
+	return deployment.AllStages
 }
