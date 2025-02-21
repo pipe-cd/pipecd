@@ -184,7 +184,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildQuickSy
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to build quick sync stages: %v", err)
 	}
-	return newQuickSyncStagesResponse(s.base, time.Now(), response)
+	return newQuickSyncStagesResponse(s.base, time.Now(), response), nil
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (response *deployment.ExecuteStageResponse, _ error) {
 	lp := s.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId())
@@ -401,7 +401,7 @@ func newPipelineSyncStagesResponse(plugin Plugin, now time.Time, request *deploy
 }
 
 // newQuickSyncStagesResponse converts the response to the external representation.
-func newQuickSyncStagesResponse(plugin Plugin, now time.Time, response *BuildQuickSyncStagesResponse) (*deployment.BuildQuickSyncStagesResponse, error) {
+func newQuickSyncStagesResponse(plugin Plugin, now time.Time, response *BuildQuickSyncStagesResponse) *deployment.BuildQuickSyncStagesResponse {
 	stages := make([]*model.PipelineStage, 0, len(response.Stages))
 	for i, s := range response.Stages {
 		id := fmt.Sprintf("%s-stage-%d", plugin.Name(), i)
@@ -409,7 +409,7 @@ func newQuickSyncStagesResponse(plugin Plugin, now time.Time, response *BuildQui
 	}
 	return &deployment.BuildQuickSyncStagesResponse{
 		Stages: stages,
-	}, nil
+	}
 }
 
 // BuildPipelineSyncStagesInput is the input for the BuildPipelineSyncStages method.
