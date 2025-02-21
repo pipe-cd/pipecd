@@ -65,7 +65,7 @@ type DeploymentPlugin[Config, DeployTargetConfig any] interface {
 	// DetermineStrategy determines the strategy to deploy the resources.
 	DetermineStrategy(context.Context, *Config, *Client, TODO) (TODO, error)
 	// BuildQuickSyncStages builds the stages that will be executed during the quick sync process.
-	BuildQuickSyncStages(context.Context, *Config, *Client, *BuildQuickSyncStagesInput) (*BuildPipelineSyncStagesResponse, error)
+	BuildQuickSyncStages(context.Context, *Config, *BuildQuickSyncStagesInput) (*BuildQuickSyncStagesResponse, error)
 }
 
 // StagePlugin is the interface implemented by a plugin that focuses on executing generic stages.
@@ -168,8 +168,23 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildPipelin
 	}
 	return buildPipelineSyncStages(ctx, s.base, &s.config, client, request, s.logger)
 }
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method BuildQuickSyncStages not implemented")
+func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildQuickSyncStages(ctx context.Context, request *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
+	input := &BuildQuickSyncStagesInput{
+		Request: BuildQuickSyncStagesRequest{
+			Rollback: request.GetRollback(),
+		},
+		Client: &Client{
+			base:       s.client,
+			pluginName: s.Name(),
+		},
+		Logger: s.logger,
+	}
+
+	response, err := s.base.BuildQuickSyncStages(ctx, &s.config, input)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to build quick sync stages: %v", err)
+	}
+	return newQuickSyncStagesResponse(s.base, time.Now(), response)
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (response *deployment.ExecuteStageResponse, _ error) {
 	lp := s.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId())
