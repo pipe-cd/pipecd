@@ -69,7 +69,7 @@ func TestWait_Cancel(t *testing.T) {
 
 	select {
 	case result := <-resultCh:
-		assert.Equal(t, sdk.StageStatusCancelled, result)
+		assert.Equal(t, sdk.StageStatusFailure, result)
 	case <-time.After(1 * time.Second):
 		t.Error("wait() did not ended even after the context was canceled")
 	}
