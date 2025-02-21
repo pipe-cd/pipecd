@@ -26,14 +26,14 @@ type Stage string
 const (
 	// StageK8sSync represents the state where
 	// all resources should be synced with the Git state.
-	StageK8sSync Stage = "K8S_SYNC"
+	StageK8sMultiSync Stage = "K8S_MULTI_SYNC"
 	// StageK8sRollback represents the state where all deployed resources should be rollbacked.
-	StageK8sRollback Stage = "K8S_ROLLBACK"
+	StageK8sMultiRollback Stage = "K8S_MULTI_ROLLBACK"
 )
 
 var AllStages = []Stage{
-	StageK8sSync,
-	StageK8sRollback,
+	StageK8sMultiSync,
+	StageK8sMultiRollback,
 }
 
 func (s Stage) String() string {
@@ -41,20 +41,20 @@ func (s Stage) String() string {
 }
 
 const (
-	PredefinedStageK8sSync  = "K8sSync"
-	PredefinedStageRollback = "K8sRollback"
+	PredefinedStageK8sMultiSync     = "K8sMultiSync"
+	PredefinedStageK8sMultiRollback = "K8sMultiRollback"
 )
 
 var predefinedStages = map[string]*model.PipelineStage{
-	PredefinedStageK8sSync: {
-		Id:       PredefinedStageK8sSync,
-		Name:     string(StageK8sSync),
+	PredefinedStageK8sMultiSync: {
+		Id:       PredefinedStageK8sMultiSync,
+		Name:     string(StageK8sMultiSync),
 		Desc:     "Sync by applying all manifests",
 		Rollback: false,
 	},
-	PredefinedStageRollback: {
-		Id:       PredefinedStageRollback,
-		Name:     string(StageK8sRollback),
+	PredefinedStageK8sMultiRollback: {
+		Id:       PredefinedStageK8sMultiRollback,
+		Name:     string(StageK8sMultiRollback),
 		Desc:     "Rollback the deployment",
 		Rollback: true,
 	},
@@ -86,7 +86,7 @@ func BuildPipelineStages(input *sdk.BuildPipelineSyncStagesInput) []sdk.Pipeline
 			return a.Index - b.Index
 		}).Index
 
-		s, _ := GetPredefinedStage(PredefinedStageRollback)
+		s, _ := GetPredefinedStage(PredefinedStageK8sMultiRollback)
 		// we copy the predefined stage to avoid modifying the original one.
 		out = append(out, sdk.PipelineStage{
 			Index:              minIndex,
