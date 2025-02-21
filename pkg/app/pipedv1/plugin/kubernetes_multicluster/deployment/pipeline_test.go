@@ -102,7 +102,7 @@ func TestBuildPipelineStages(t *testing.T) {
 				},
 				{
 					Index:              0,
-					Name:               string(StageK8sRollback),
+					Name:               string(StageK8sMultiRollback),
 					Rollback:           true,
 					Metadata:           make(map[string]string, 0),
 					AvailableOperation: sdk.ManualOperationNone,
