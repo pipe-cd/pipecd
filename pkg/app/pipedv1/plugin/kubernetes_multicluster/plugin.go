@@ -17,6 +17,7 @@ package main
 import (
 	"context"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
@@ -39,8 +40,12 @@ func (p *plugin) Version() string {
 }
 
 // BuildPipelineSyncStages implements sdk.StagePlugin.
-func (p *plugin) BuildPipelineSyncStages(context.Context, *config, *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
-	return &sdk.BuildPipelineSyncStagesResponse{}, nil
+func (p *plugin) BuildPipelineSyncStages(ctx context.Context, _ *config, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
+	stages := deployment.BuildPipelineStages(input)
+
+	return &sdk.BuildPipelineSyncStagesResponse{
+		Stages: stages,
+	}, nil
 }
 
 // ExecuteStage implements sdk.StagePlugin.
