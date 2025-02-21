@@ -377,19 +377,8 @@ func newPipelineSyncStagesResponse(plugin Plugin, now time.Time, request *deploy
 		if id == "" {
 			id = fmt.Sprintf("%s-stage-%d", plugin.Name(), s.Index)
 		}
-		stages = append(stages, &model.PipelineStage{
-			Id:                 id,
-			Name:               s.Name,
-			Desc:               requestStage.GetDesc(),
-			Index:              int32(s.Index),
-			Status:             model.StageStatus_STAGE_NOT_STARTED_YET,
-			StatusReason:       "", // TODO: set the reason
-			Metadata:           s.Metadata,
-			Rollback:           s.Rollback,
-			CreatedAt:          now.Unix(),
-			UpdatedAt:          now.Unix(),
-			AvailableOperation: s.AvailableOperation.toModelEnum(),
-		})
+
+		stages = append(stages, s.toModel(id, requestStage.GetDesc(), now))
 	}
 	return &deployment.BuildPipelineSyncStagesResponse{
 		Stages: stages,
@@ -448,6 +437,22 @@ type PipelineStage struct {
 	Metadata map[string]string
 	// AvailableOperation indicates the manual operation that the user can perform.
 	AvailableOperation ManualOperation
+}
+
+func (p *PipelineStage) toModel(id, description string, now time.Time) *model.PipelineStage {
+	return &model.PipelineStage{
+		Id:                 id,
+		Name:               p.Name,
+		Desc:               description,
+		Index:              int32(p.Index),
+		Status:             model.StageStatus_STAGE_NOT_STARTED_YET,
+		StatusReason:       "", // TODO: set the reason
+		Metadata:           p.Metadata,
+		Rollback:           p.Rollback,
+		CreatedAt:          now.Unix(),
+		UpdatedAt:          now.Unix(),
+		AvailableOperation: p.AvailableOperation.toModelEnum(),
+	}
 }
 
 // ExecuteStageInput is the input for the ExecuteStage method.
