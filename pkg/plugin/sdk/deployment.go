@@ -65,7 +65,7 @@ type DeploymentPlugin[Config, DeployTargetConfig any] interface {
 	// DetermineStrategy determines the strategy to deploy the resources.
 	DetermineStrategy(context.Context, *Config, *Client, TODO) (TODO, error)
 	// BuildQuickSyncStages builds the stages that will be executed during the quick sync process.
-	BuildQuickSyncStages(context.Context, *Config, *Client, TODO) (TODO, error)
+	BuildQuickSyncStages(context.Context, *Config, *BuildQuickSyncStagesInput) (*BuildQuickSyncStagesResponse, error)
 }
 
 // StagePlugin is the interface implemented by a plugin that focuses on executing generic stages.
@@ -168,8 +168,23 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildPipelin
 	}
 	return buildPipelineSyncStages(ctx, s.base, &s.config, client, request, s.logger)
 }
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method BuildQuickSyncStages not implemented")
+func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildQuickSyncStages(ctx context.Context, request *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
+	input := &BuildQuickSyncStagesInput{
+		Request: BuildQuickSyncStagesRequest{
+			Rollback: request.GetRollback(),
+		},
+		Client: &Client{
+			base:       s.client,
+			pluginName: s.Name(),
+		},
+		Logger: s.logger,
+	}
+
+	response, err := s.base.BuildQuickSyncStages(ctx, &s.config, input)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to build quick sync stages: %v", err)
+	}
+	return newQuickSyncStagesResponse(s.base, time.Now(), response), nil
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (response *deployment.ExecuteStageResponse, _ error) {
 	lp := s.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId())
@@ -377,23 +392,24 @@ func newPipelineSyncStagesResponse(plugin Plugin, now time.Time, request *deploy
 		if id == "" {
 			id = fmt.Sprintf("%s-stage-%d", plugin.Name(), s.Index)
 		}
-		stages = append(stages, &model.PipelineStage{
-			Id:                 id,
-			Name:               s.Name,
-			Desc:               requestStage.GetDesc(),
-			Index:              int32(s.Index),
-			Status:             model.StageStatus_STAGE_NOT_STARTED_YET,
-			StatusReason:       "", // TODO: set the reason
-			Metadata:           s.Metadata,
-			Rollback:           s.Rollback,
-			CreatedAt:          now.Unix(),
-			UpdatedAt:          now.Unix(),
-			AvailableOperation: s.AvailableOperation.toModelEnum(),
-		})
+
+		stages = append(stages, s.toModel(id, requestStage.GetDesc(), now))
 	}
 	return &deployment.BuildPipelineSyncStagesResponse{
 		Stages: stages,
 	}, nil
+}
+
+// newQuickSyncStagesResponse converts the response to the external representation.
+func newQuickSyncStagesResponse(plugin Plugin, now time.Time, response *BuildQuickSyncStagesResponse) *deployment.BuildQuickSyncStagesResponse {
+	stages := make([]*model.PipelineStage, 0, len(response.Stages))
+	for i, s := range response.Stages {
+		id := fmt.Sprintf("%s-stage-%d", plugin.Name(), i)
+		stages = append(stages, s.toModel(id, now))
+	}
+	return &deployment.BuildQuickSyncStagesResponse{
+		Stages: stages,
+	}
 }
 
 // BuildPipelineSyncStagesInput is the input for the BuildPipelineSyncStages method.
@@ -415,6 +431,23 @@ type BuildPipelineSyncStagesRequest struct {
 	Stages []StageConfig
 }
 
+// BuildQuickSyncStagesInput is the input for the BuildQuickSyncStages method.
+type BuildQuickSyncStagesInput struct {
+	// Request is the request to build pipeline sync stages.
+	Request BuildQuickSyncStagesRequest
+	// Client is the client to interact with the piped.
+	Client *Client
+	// Logger is the logger to log the events.
+	Logger *zap.Logger
+}
+
+// BuildQuickSyncStagesRequest is the request to build quick sync stages.
+// Rollback indicates whether the stages for rollback are requested.
+type BuildQuickSyncStagesRequest struct {
+	// Rollback indicates whether the stages for rollback are requested.
+	Rollback bool
+}
+
 // StageConfig represents the configuration of a stage.
 type StageConfig struct {
 	// Index is the order of the stage in the pipeline.
@@ -433,6 +466,11 @@ type BuildPipelineSyncStagesResponse struct {
 	Stages []PipelineStage
 }
 
+// BuildQuickSyncStagesResponse is the response of the request to build quick sync stages.
+type BuildQuickSyncStagesResponse struct {
+	Stages []QuickSyncStage
+}
+
 // PipelineStage represents a stage in the pipeline.
 type PipelineStage struct {
 	// Index is the order of the stage in the pipeline.
@@ -448,6 +486,53 @@ type PipelineStage struct {
 	Metadata map[string]string
 	// AvailableOperation indicates the manual operation that the user can perform.
 	AvailableOperation ManualOperation
+}
+
+func (p *PipelineStage) toModel(id, description string, now time.Time) *model.PipelineStage {
+	return &model.PipelineStage{
+		Id:                 id,
+		Name:               p.Name,
+		Desc:               description,
+		Index:              int32(p.Index),
+		Status:             model.StageStatus_STAGE_NOT_STARTED_YET,
+		StatusReason:       "", // TODO: set the reason
+		Metadata:           p.Metadata,
+		Rollback:           p.Rollback,
+		CreatedAt:          now.Unix(),
+		UpdatedAt:          now.Unix(),
+		AvailableOperation: p.AvailableOperation.toModelEnum(),
+	}
+}
+
+// QuickSyncStage represents a stage in the pipeline.
+type QuickSyncStage struct {
+	// Name is the name of the stage.
+	// It must be one of the stages returned by FetchDefinedStages.
+	Name string
+	// Description is the description of the stage.
+	Description string
+	// Rollback indicates whether the stage is for rollback.
+	Rollback bool
+	// Metadata contains the metadata of the stage.
+	Metadata map[string]string
+	// AvailableOperation indicates the manual operation that the user can perform.
+	AvailableOperation ManualOperation
+}
+
+func (p *QuickSyncStage) toModel(id string, now time.Time) *model.PipelineStage {
+	return &model.PipelineStage{
+		Id:                 id,
+		Name:               p.Name,
+		Desc:               p.Description,
+		Index:              0,
+		Status:             model.StageStatus_STAGE_NOT_STARTED_YET,
+		StatusReason:       "", // TODO: set the reason
+		Metadata:           p.Metadata,
+		Rollback:           p.Rollback,
+		CreatedAt:          now.Unix(),
+		UpdatedAt:          now.Unix(),
+		AvailableOperation: p.AvailableOperation.toModelEnum(),
+	}
 }
 
 // ExecuteStageInput is the input for the ExecuteStage method.
