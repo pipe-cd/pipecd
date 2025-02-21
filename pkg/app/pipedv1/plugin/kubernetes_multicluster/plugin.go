@@ -41,10 +41,8 @@ func (p *plugin) Version() string {
 
 // BuildPipelineSyncStages implements sdk.StagePlugin.
 func (p *plugin) BuildPipelineSyncStages(ctx context.Context, _ *config, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
-	stages := deployment.BuildPipelineStages(input)
-
 	return &sdk.BuildPipelineSyncStagesResponse{
-		Stages: stages,
+		Stages: deployment.BuildPipelineStages(input),
 	}, nil
 }
 
@@ -55,5 +53,5 @@ func (p *plugin) ExecuteStage(context.Context, *config, []*sdk.DeployTarget[depl
 
 // FetchDefinedStages implements sdk.StagePlugin.
 func (p *plugin) FetchDefinedStages() []string {
-	return []string{"K8S_SYNC"}
+	return deployment.AllStages
 }

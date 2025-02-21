@@ -17,53 +17,20 @@ package deployment
 import (
 	"slices"
 
-	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
-
-type Stage string
 
 const (
 	// StageK8sSync represents the state where
 	// all resources should be synced with the Git state.
-	StageK8sMultiSync Stage = "K8S_MULTI_SYNC"
+	StageK8sMultiSync string = "K8S_MULTI_SYNC"
 	// StageK8sRollback represents the state where all deployed resources should be rollbacked.
-	StageK8sMultiRollback Stage = "K8S_MULTI_ROLLBACK"
+	StageK8sMultiRollback string = "K8S_MULTI_ROLLBACK"
 )
 
-var AllStages = []Stage{
+var AllStages = []string{
 	StageK8sMultiSync,
 	StageK8sMultiRollback,
-}
-
-func (s Stage) String() string {
-	return string(s)
-}
-
-const (
-	PredefinedStageK8sMultiSync     = "K8sMultiSync"
-	PredefinedStageK8sMultiRollback = "K8sMultiRollback"
-)
-
-var predefinedStages = map[string]*model.PipelineStage{
-	PredefinedStageK8sMultiSync: {
-		Id:       PredefinedStageK8sMultiSync,
-		Name:     string(StageK8sMultiSync),
-		Desc:     "Sync by applying all manifests",
-		Rollback: false,
-	},
-	PredefinedStageK8sMultiRollback: {
-		Id:       PredefinedStageK8sMultiRollback,
-		Name:     string(StageK8sMultiRollback),
-		Desc:     "Rollback the deployment",
-		Rollback: true,
-	},
-}
-
-// GetPredefinedStage finds and returns the predefined stage for the given id.
-func GetPredefinedStage(id string) (*model.PipelineStage, bool) {
-	stage, ok := predefinedStages[id]
-	return stage, ok
 }
 
 func BuildPipelineStages(input *sdk.BuildPipelineSyncStagesInput) []sdk.PipelineStage {
@@ -86,11 +53,10 @@ func BuildPipelineStages(input *sdk.BuildPipelineSyncStagesInput) []sdk.Pipeline
 			return a.Index - b.Index
 		}).Index
 
-		s, _ := GetPredefinedStage(PredefinedStageK8sMultiRollback)
 		// we copy the predefined stage to avoid modifying the original one.
 		out = append(out, sdk.PipelineStage{
 			Index:              minIndex,
-			Name:               s.Name,
+			Name:               StageK8sMultiRollback,
 			Rollback:           true,
 			Metadata:           make(map[string]string, 0),
 			AvailableOperation: sdk.ManualOperationNone,
