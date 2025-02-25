@@ -466,7 +466,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum(grpcapi_create_deployment_total{project=~\"$project\"})",
+          "expr": "sum(round(increase(grpcapi_create_deployment_total{project=~\"$project\"}[24h])))",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -531,7 +531,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (project) (grpcapi_create_deployment_total)",
+          "expr": "sum by (project) (round(increase(grpcapi_create_deployment_total[24h])))",
           "interval": "",
           "legendFormat": "{{project}}",
           "refId": "A"
