@@ -455,16 +455,19 @@ type ExecuteStageResponse struct {
 type StageStatus int
 
 const (
-	StageStatusSuccess StageStatus = 2
-	StageStatusFailure StageStatus = 3
-
-	// StageStatusSkipped         StageStatus = 5 // TODO: If SDK can handle whole skipping, this is unnecessary.
-
+	_ StageStatus = iota
+	// StageStatusSuccess indicates that the stage succeeded.
+	StageStatusSuccess
+	// StageStatusFailure indicates that the stage failed.
+	StageStatusFailure
 	// StageStatusExited can be used when the stage succeeded and exit the pipeline without executing the following stages.
-	StageStatusExited StageStatus = 6
+	StageStatusExited
+
+	// StageStatusSkipped // TODO: If SDK can handle whole skipping, this is unnecessary.
 )
 
 // toModelEnum converts the StageStatus to the model.StageStatus.
+// It returns model.StageStatus_STAGE_FAILURE if the given value is invalid.
 func (o StageStatus) toModelEnum() model.StageStatus {
 	switch o {
 	case StageStatusSuccess:
