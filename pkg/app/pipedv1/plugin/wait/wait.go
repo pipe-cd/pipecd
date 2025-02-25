@@ -78,9 +78,8 @@ func wait(ctx context.Context, duration time.Duration, initialStart time.Time, s
 
 		case <-ctx.Done(): // on cancelled
 			slp.Info("Wait cancelled")
-			// The piped handles this case as cancelled by the user without using the plugin's result.
-			// So we don't need to consider which status should be returned.
-			// We return the failure here.
+			// We can return any status here because the piped handles this case as cancelled by a user, 
+			// ignoring the result from a plugin.
 			return sdk.StageStatusFailure
 		}
 	}
