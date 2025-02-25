@@ -21,10 +21,10 @@ import (
 )
 
 const (
-	// StageK8sSync represents the state where
+	// StageK8sMultiSync represents the state where
 	// all resources should be synced with the Git state.
 	StageK8sMultiSync string = "K8S_MULTI_SYNC"
-	// StageK8sRollback represents the state where all deployed resources should be rollbacked.
+	// StageK8sMultiRollback represents the state where all deployed resources should be rollbacked.
 	StageK8sMultiRollback string = "K8S_MULTI_ROLLBACK"
 )
 
@@ -53,7 +53,6 @@ func BuildPipelineStages(input *sdk.BuildPipelineSyncStagesInput) []sdk.Pipeline
 			return a.Index - b.Index
 		}).Index
 
-		// we copy the predefined stage to avoid modifying the original one.
 		out = append(out, sdk.PipelineStage{
 			Index:              minIndex,
 			Name:               StageK8sMultiRollback,
