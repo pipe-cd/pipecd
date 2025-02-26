@@ -30,7 +30,7 @@ func (m *mockStagePlugin) FetchDefinedStages() []string {
 }
 
 func (m *mockStagePlugin) BuildPipelineSyncStages(ctx context.Context, config *struct{}, input *BuildPipelineSyncStagesInput) (*BuildPipelineSyncStagesResponse, error) {
-	return &BuildPipelineSyncStagesResponse{}, nil
+	return &BuildPipelineSyncStagesResponse{}, m.err
 }
 
 func (m *mockStagePlugin) ExecuteStage(ctx context.Context, config *struct{}, targets []*DeployTarget[struct{}], input *ExecuteStageInput) (*ExecuteStageResponse, error) {
@@ -115,5 +115,69 @@ func TestStagePluginServiceServer_ExecuteStage(t *testing.T) {
 				t.Errorf("expected status %v, got %v", tt.expectedStatus, response.Status)
 			}
 		})
+	}
+}
+
+func TestStagePluginServiceServer_BuildPipelineSyncStages(t *testing.T) {
+	tests := []struct {
+		name      string
+		request   *deployment.BuildPipelineSyncStagesRequest
+		err       error
+		expectErr bool
+	}{
+		{
+			name:      "success",
+			request:   &deployment.BuildPipelineSyncStagesRequest{},
+			err:       nil,
+			expectErr: false,
+		},
+		{
+			name:      "error",
+			request:   &deployment.BuildPipelineSyncStagesRequest{},
+			err:       errors.New("some error"),
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			plugin := &mockStagePlugin{
+				err: tt.err,
+			}
+
+			server := newTestStagePluginServiceServer(t, plugin)
+
+			response, err := server.BuildPipelineSyncStages(context.Background(), tt.request)
+			if (err != nil) != tt.expectErr {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if !tt.expectErr && response == nil {
+				t.Errorf("expected non-nil response")
+			}
+		})
+	}
+}
+
+func TestStagePluginServiceServer_FetchDefinedStages(t *testing.T) {
+	plugin := &mockStagePlugin{}
+	server := newTestStagePluginServiceServer(t, plugin)
+
+	request := &deployment.FetchDefinedStagesRequest{}
+	response, err := server.FetchDefinedStages(context.Background(), request)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	stages := response.GetStages()
+	if len(stages) != 2 {
+		t.Errorf("expected 2 stages, got %d", len(stages))
+	}
+
+	expectedStages := []string{"stage1", "stage2"}
+	for i, stage := range stages {
+		if stage != expectedStages[i] {
+			t.Errorf("expected stage %s, got %s", expectedStages[i], stage)
+		}
 	}
 }
