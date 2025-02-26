@@ -78,7 +78,7 @@ A piped has been started
 </p>
 
 
-For detailed configuration, please check the [configuration reference for Notifications](../configuration-reference/#notifications) section.
+For detailed configuration, please check the [configuration reference for Notifications](configuration-reference/#notifications) section.
 
 ### Sending notifications to external services via webhook
 
@@ -98,4 +98,4 @@ spec:
           signatureValue: {RANDOM_SIGNATURE_STRING}
 ```
 
-For detailed configuration, please check the [configuration reference for NotificationReceiverWebhook](../configuration-reference/#notificationreceiverwebhook) section.
+For detailed configuration, please check the [configuration reference for NotificationReceiverWebhook](configuration-reference/#notificationreceiverwebhook) section.
