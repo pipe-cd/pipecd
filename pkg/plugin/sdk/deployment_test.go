@@ -155,6 +155,10 @@ func TestStagePluginServiceServer_BuildPipelineSyncStages(t *testing.T) {
 			if !tt.expectErr && response == nil {
 				t.Errorf("expected non-nil response")
 			}
+
+			if response != nil && len(response.GetStages()) != 0 {
+				t.Errorf("expected 0 stages, got %d", len(response.GetStages()))
+			}
 		})
 	}
 }
@@ -179,5 +183,58 @@ func TestStagePluginServiceServer_FetchDefinedStages(t *testing.T) {
 		if stage != expectedStages[i] {
 			t.Errorf("expected stage %s, got %s", expectedStages[i], stage)
 		}
+	}
+}
+
+func TestStagePluginServiceServer_DetermineVersions(t *testing.T) {
+	plugin := &mockStagePlugin{}
+	server := newTestStagePluginServiceServer(t, plugin)
+
+	request := &deployment.DetermineVersionsRequest{}
+	response, err := server.DetermineVersions(context.Background(), request)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if response == nil {
+		t.Errorf("expected non-nil response")
+	}
+
+	if len(response.GetVersions()) != 0 {
+		t.Errorf("expected 0 versions, got %d", len(response.GetVersions()))
+	}
+}
+
+func TestStagePluginServiceServer_DetermineStrategy(t *testing.T) {
+	plugin := &mockStagePlugin{}
+	server := newTestStagePluginServiceServer(t, plugin)
+
+	request := &deployment.DetermineStrategyRequest{}
+	response, err := server.DetermineStrategy(context.Background(), request)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if response == nil {
+		t.Errorf("expected non-nil response")
+	}
+
+	if !response.GetUnsupported() {
+		t.Errorf("expected unsupported strategy")
+	}
+}
+
+func TestStagePluginServiceServer_BuildQuickSyncStages(t *testing.T) {
+	plugin := &mockStagePlugin{}
+	server := newTestStagePluginServiceServer(t, plugin)
+
+	request := &deployment.BuildQuickSyncStagesRequest{}
+	response, err := server.BuildQuickSyncStages(context.Background(), request)
+	if err == nil {
+		t.Fatalf("expected error, got nil")
+	}
+
+	if response != nil {
+		t.Errorf("expected nil response, got %v", response)
 	}
 }
