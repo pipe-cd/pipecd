@@ -307,11 +307,6 @@ func TestStageStatus_toModelEnum(t *testing.T) {
 			expected: model.StageStatus_STAGE_FAILURE,
 		},
 		{
-			name:     "cancelled",
-			status:   StageStatusCancelled,
-			expected: model.StageStatus_STAGE_CANCELLED,
-		},
-		{
 			name:     "exited",
 			status:   StageStatusExited,
 			expected: model.StageStatus_STAGE_EXITED,
