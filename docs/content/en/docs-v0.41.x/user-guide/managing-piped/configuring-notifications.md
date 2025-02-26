@@ -13,7 +13,7 @@ Notification configuration including:
 - a list of `Route`s which used to match events and decide where the event should be sent to
 - a list of `Receiver`s which used to know how to send events to the external service
 
-[Notification Route](../configuration-reference/#notificationroute) matches events based on their metadata like `name`, `group`, `app`, `labels`.
+[Notification Route](configuration-reference/#notificationroute) matches events based on their metadata like `name`, `group`, `app`, `labels`.
 Below is the list of supporting event names and their groups.
 
 | Event | Group | Supported | Description |
