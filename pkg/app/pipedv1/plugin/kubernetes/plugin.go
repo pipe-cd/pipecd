@@ -165,42 +165,46 @@ func (s *plugin) run(ctx context.Context, input cli.Input) (runErr error) {
 	return nil
 }
 
-var _ sdk.DeploymentPlugin[sdk.ConfigNone, kubeconfig.KubernetesDeployTargetConfig] = (*plugin)(nil)
+// sdkPlugin implements the sdk.DeploymentPlugin interface.
+// TODO: Rename to 'plugin' after rewriting the current plugin logic with sdk.
+type sdkPlugin struct{}
 
-func (p *plugin) Name() string {
+var _ sdk.DeploymentPlugin[sdk.ConfigNone, kubeconfig.KubernetesDeployTargetConfig] = (*sdkPlugin)(nil)
+
+func (p *sdkPlugin) Name() string {
 	return "kubernetes"
 }
 
-func (p *plugin) Version() string {
+func (p *sdkPlugin) Version() string {
 	return "0.0.1" // TODO
 }
 
 // FIXME
-func (p *plugin) FetchDefinedStages() []string {
+func (p *sdkPlugin) FetchDefinedStages() []string {
 	return nil
 }
 
 // FIXME
-func (p *plugin) BuildPipelineSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
+func (p *sdkPlugin) BuildPipelineSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
 	return nil, nil
 }
 
 // FIXME
-func (p *plugin) ExecuteStage(context.Context, *sdk.ConfigNone, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], *sdk.ExecuteStageInput) (*sdk.ExecuteStageResponse, error) {
+func (p *sdkPlugin) ExecuteStage(context.Context, *sdk.ConfigNone, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], *sdk.ExecuteStageInput) (*sdk.ExecuteStageResponse, error) {
 	return nil, nil
 }
 
 // FIXME
-func (p *plugin) DetermineVersions(context.Context, *sdk.ConfigNone, *sdk.Client, sdk.TODO) (sdk.TODO, error) {
+func (p *sdkPlugin) DetermineVersions(context.Context, *sdk.ConfigNone, *sdk.Client, sdk.TODO) (sdk.TODO, error) {
 	return sdk.TODO{}, nil
 }
 
 // FIXME
-func (p *plugin) DetermineStrategy(context.Context, *sdk.ConfigNone, *sdk.Client, sdk.TODO) (sdk.TODO, error) {
+func (p *sdkPlugin) DetermineStrategy(context.Context, *sdk.ConfigNone, *sdk.Client, sdk.TODO) (sdk.TODO, error) {
 	return sdk.TODO{}, nil
 }
 
 // FIXME
-func (p *plugin) BuildQuickSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildQuickSyncStagesInput) (*sdk.BuildQuickSyncStagesResponse, error) {
+func (p *sdkPlugin) BuildQuickSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildQuickSyncStagesInput) (*sdk.BuildQuickSyncStagesResponse, error) {
 	return nil, nil
 }

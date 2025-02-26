@@ -37,7 +37,7 @@ func main() {
 
 // TODO: use this after rewriting the plugin with the sdk
 func _main() {
-	sdk.RegisterDeploymentPlugin[sdk.ConfigNone, kubeconfig.KubernetesDeployTargetConfig](&plugin{})
+	sdk.RegisterDeploymentPlugin[sdk.ConfigNone, kubeconfig.KubernetesDeployTargetConfig](&sdkPlugin{})
 	if err := sdk.Run(); err != nil {
 		log.Fatalln(err)
 	}
