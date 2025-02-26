@@ -19,10 +19,11 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/livestate"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/livestate"
 )
 
 var (
