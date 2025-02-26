@@ -30,7 +30,23 @@ func (m *mockStagePlugin) FetchDefinedStages() []string {
 }
 
 func (m *mockStagePlugin) BuildPipelineSyncStages(ctx context.Context, config *struct{}, input *BuildPipelineSyncStagesInput) (*BuildPipelineSyncStagesResponse, error) {
-	return &BuildPipelineSyncStagesResponse{}, m.err
+	return &BuildPipelineSyncStagesResponse{
+		Stages: []PipelineStage{
+			{
+				Index: 0,
+				Name:  "stage1",
+			},
+			{
+				Index: 1,
+				Name:  "stage2",
+			},
+			{
+				Index:    0,
+				Name:     "rollback",
+				Rollback: true,
+			},
+		},
+	}, m.err
 }
 
 func (m *mockStagePlugin) ExecuteStage(ctx context.Context, config *struct{}, targets []*DeployTarget[struct{}], input *ExecuteStageInput) (*ExecuteStageResponse, error) {
@@ -120,21 +136,48 @@ func TestStagePluginServiceServer_ExecuteStage(t *testing.T) {
 
 func TestStagePluginServiceServer_BuildPipelineSyncStages(t *testing.T) {
 	tests := []struct {
-		name      string
-		request   *deployment.BuildPipelineSyncStagesRequest
-		err       error
-		expectErr bool
+		name         string
+		request      *deployment.BuildPipelineSyncStagesRequest
+		err          error
+		expectStages int
+		expectErr    bool
 	}{
 		{
-			name:      "success",
-			request:   &deployment.BuildPipelineSyncStagesRequest{},
-			err:       nil,
-			expectErr: false,
+			name: "success",
+			request: &deployment.BuildPipelineSyncStagesRequest{
+				Stages: []*deployment.BuildPipelineSyncStagesRequest_StageConfig{
+					{
+						Index: 0,
+						Name:  "stage1",
+					},
+					{
+						Index: 1,
+						Name:  "stage2",
+					},
+				},
+				Rollback: true,
+			},
+			err:          nil,
+			expectStages: 3,
+			expectErr:    false,
 		},
 		{
-			name:      "error",
+			name:      "error on plugin",
 			request:   &deployment.BuildPipelineSyncStagesRequest{},
 			err:       errors.New("some error"),
+			expectErr: true,
+		},
+		{
+			name: "returned non-valid stage index",
+			request: &deployment.BuildPipelineSyncStagesRequest{
+				Stages: []*deployment.BuildPipelineSyncStagesRequest_StageConfig{
+					{
+						Index: 100,
+						Name:  "unknown",
+					},
+				},
+			},
+			err:       nil,
 			expectErr: true,
 		},
 	}
@@ -156,8 +199,8 @@ func TestStagePluginServiceServer_BuildPipelineSyncStages(t *testing.T) {
 				t.Errorf("expected non-nil response")
 			}
 
-			if response != nil && len(response.GetStages()) != 0 {
-				t.Errorf("expected 0 stages, got %d", len(response.GetStages()))
+			if response != nil && len(response.GetStages()) != tt.expectStages {
+				t.Errorf("expected %d stages, got %d", tt.expectStages, len(response.GetStages()))
 			}
 		})
 	}
