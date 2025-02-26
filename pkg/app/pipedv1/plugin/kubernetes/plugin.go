@@ -25,11 +25,13 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/pipe-cd/pipecd/pkg/admin"
+	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/deployment"
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedapi"
+	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/rpc"
 	"github.com/pipe-cd/pipecd/pkg/version"
@@ -161,4 +163,44 @@ func (s *plugin) run(ctx context.Context, input cli.Input) (runErr error) {
 		return err
 	}
 	return nil
+}
+
+var _ sdk.DeploymentPlugin[sdk.ConfigNone, kubeconfig.KubernetesDeployTargetConfig] = (*plugin)(nil)
+
+func (p *plugin) Name() string {
+	return "kubernetes"
+}
+
+func (p *plugin) Version() string {
+	return "0.0.1" // TODO
+}
+
+// FIXME
+func (p *plugin) FetchDefinedStages() []string {
+	return nil
+}
+
+// FIXME
+func (p *plugin) BuildPipelineSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
+	return nil, nil
+}
+
+// FIXME
+func (p *plugin) ExecuteStage(context.Context, *sdk.ConfigNone, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], *sdk.ExecuteStageInput) (*sdk.ExecuteStageResponse, error) {
+	return nil, nil
+}
+
+// FIXME
+func (p *plugin) DetermineVersions(context.Context, *sdk.ConfigNone, *sdk.Client, sdk.TODO) (sdk.TODO, error) {
+	return sdk.TODO{}, nil
+}
+
+// FIXME
+func (p *plugin) DetermineStrategy(context.Context, *sdk.ConfigNone, *sdk.Client, sdk.TODO) (sdk.TODO, error) {
+	return sdk.TODO{}, nil
+}
+
+// FIXME
+func (p *plugin) BuildQuickSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildQuickSyncStagesInput) (*sdk.BuildQuickSyncStagesResponse, error) {
+	return nil, nil
 }
