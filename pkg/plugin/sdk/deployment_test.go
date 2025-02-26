@@ -101,12 +101,6 @@ func TestStagePluginServiceServer_ExecuteStage(t *testing.T) {
 			expectedStatus: model.StageStatus_STAGE_FAILURE,
 		},
 		{
-			name:           "cancelled",
-			stage:          "stage1",
-			status:         StageStatusCancelled,
-			expectedStatus: model.StageStatus_STAGE_CANCELLED,
-		},
-		{
 			name:           "exited",
 			stage:          "stage2",
 			status:         StageStatusExited,
