@@ -27,6 +27,7 @@ import (
 
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedapi"
@@ -309,8 +310,10 @@ func executeStage[Config, DeployTargetConfig any](
 ) (*deployment.ExecuteStageResponse, error) {
 	in := &ExecuteStageInput{
 		Request: ExecuteStageRequest{
-			StageName:   request.GetInput().GetStage().GetName(),
-			StageConfig: request.GetInput().GetStageConfig(),
+			StageName:               request.GetInput().GetStage().GetName(),
+			StageConfig:             request.GetInput().GetStageConfig(),
+			RunningDeploymentSource: newDeploymentSource(request.GetInput().GetRunningDeploymentSource()),
+			TargetDeploymentSource:  newDeploymentSource(request.GetInput().GetTargetDeploymentSource()),
 		},
 		Client: client,
 		Logger: logger,
@@ -551,6 +554,35 @@ type ExecuteStageRequest struct {
 	StageName string
 	// Json encoded configuration of the stage.
 	StageConfig []byte
+
+	// RunningDeploymentSource is the source of the running deployment.
+	RunningDeploymentSource DeploymentSource
+
+	// TargetDeploymentSource is the source of the target deployment.
+	TargetDeploymentSource DeploymentSource
+}
+
+// DeploymentSource represents the source of the deployment.
+type DeploymentSource struct {
+	// ApplicationDirectory is the directory where the source code is located.
+	ApplicationDirectory string
+	// CommitHash is the git commit hash of the source code.
+	CommitHash string
+	// ApplicationConfig is the configuration of the application.
+	ApplicationConfig []byte
+	// ApplicationConfigFilename is the name of the file that contains the application configuration.
+	// The plugins can use this to avoid mistakenly reading this file as a manifest to deploy.
+	ApplicationConfigFilename string
+}
+
+// newDeploymentSource converts the common.DeploymentSource to the internal representation.
+func newDeploymentSource(source *common.DeploymentSource) DeploymentSource {
+	return DeploymentSource{
+		ApplicationDirectory:      source.GetApplicationDirectory(),
+		CommitHash:                source.GetCommitHash(),
+		ApplicationConfig:         source.GetApplicationConfig(),
+		ApplicationConfigFilename: source.GetApplicationConfigFilename(),
+	}
 }
 
 // ExecuteStageResponse is the response of the request to execute a stage.
