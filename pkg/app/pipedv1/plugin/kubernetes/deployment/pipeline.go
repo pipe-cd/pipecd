@@ -21,6 +21,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
+	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
 type Stage string
@@ -120,6 +121,33 @@ func buildQuickSyncPipeline(autoRollback bool, now time.Time) []*model.PipelineS
 			Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
 			CreatedAt: now.Unix(),
 			UpdatedAt: now.Unix(),
+		})
+	}
+
+	return out
+}
+
+func BuildQuickSyncPipeline(autoRollback bool, now time.Time) []sdk.QuickSyncStage {
+	out := make([]sdk.QuickSyncStage, 0, 2)
+
+	stage, _ := GetPredefinedStage(PredefinedStageK8sSync)
+	out = append(out, sdk.QuickSyncStage{
+		Name:               stage.GetName(),
+		Description:        stage.GetDesc(),
+		Rollback:           false,
+		Metadata:           make(map[string]string, 0),
+		AvailableOperation: sdk.ManualOperationNone,
+	},
+	)
+
+	if autoRollback {
+		s, _ := GetPredefinedStage(PredefinedStageRollback)
+		out = append(out, sdk.QuickSyncStage{
+			Name:               s.GetName(),
+			Description:        s.GetDesc(),
+			Rollback:           true,
+			Metadata:           make(map[string]string, 0),
+			AvailableOperation: sdk.ManualOperationNone,
 		})
 	}
 

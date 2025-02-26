@@ -22,9 +22,10 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
+	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
-func TestBuildQuickSyncPipeline(t *testing.T) {
+func Test_buildQuickSyncPipeline(t *testing.T) {
 	t.Parallel()
 
 	now := time.Now()
@@ -193,6 +194,61 @@ func TestBuildPipelineStages(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			actual := buildPipelineStages(tt.stages, tt.autoRollback, now)
+			assert.Equal(t, tt.expected, actual)
+		})
+	}
+}
+
+func TestBuildQuickSyncPipeline(t *testing.T) {
+	t.Parallel()
+
+	now := time.Now()
+
+	tests := []struct {
+		name     string
+		rollback bool
+		expected []sdk.QuickSyncStage
+	}{
+		{
+			name:     "without rollback",
+			rollback: false,
+			expected: []sdk.QuickSyncStage{
+				{
+					Name:               predefinedStages[PredefinedStageK8sSync].Name,
+					Description:        predefinedStages[PredefinedStageK8sSync].Desc,
+					Rollback:           false,
+					Metadata:           make(map[string]string, 0),
+					AvailableOperation: sdk.ManualOperationNone,
+				},
+			},
+		},
+		{
+			name:     "with rollback",
+			rollback: true,
+			expected: []sdk.QuickSyncStage{
+				{
+					Name:               predefinedStages[PredefinedStageK8sSync].Name,
+					Description:        predefinedStages[PredefinedStageK8sSync].Desc,
+					Rollback:           false,
+					Metadata:           make(map[string]string, 0),
+					AvailableOperation: sdk.ManualOperationNone,
+				},
+				{
+					Name:               predefinedStages[PredefinedStageRollback].Name,
+					Description:        predefinedStages[PredefinedStageRollback].Desc,
+					Rollback:           true,
+					Metadata:           make(map[string]string, 0),
+					AvailableOperation: sdk.ManualOperationNone,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			actual := BuildQuickSyncPipeline(tt.rollback, now)
 			assert.Equal(t, tt.expected, actual)
 		})
 	}

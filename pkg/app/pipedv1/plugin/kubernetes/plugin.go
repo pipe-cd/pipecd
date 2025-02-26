@@ -208,7 +208,8 @@ func (p *sdkPlugin) DetermineStrategy(context.Context, *sdk.ConfigNone, *sdk.Cli
 	return sdk.TODO{}, nil
 }
 
-// FIXME
 func (p *sdkPlugin) BuildQuickSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildQuickSyncStagesInput) (*sdk.BuildQuickSyncStagesResponse, error) {
-	return nil, nil
+	return &sdk.BuildQuickSyncStagesResponse{
+		Stages: deployment.BuildQuickSyncPipeline(input.Request.Rollback, time.Now()),
+	}, nil
 }
