@@ -43,7 +43,7 @@ var (
 type LivestatePlugin[Config, DeployTargetConfig any] interface {
 	Plugin
 
-	// GetLivestate returns the live state of the resources in the given deploy target.
+	// GetLivestate returns the live state of the resources in the given application.
 	// It returns the resources' live state and the difference between the desired state and the live state.
 	// It's allowed to return only the resources' live state if the difference is not available, or only the difference if the live state is not available.
 	GetLivestate(context.Context, *Config, []*DeployTarget[DeployTargetConfig], TODO) (TODO, error)
@@ -95,7 +95,7 @@ func (s *LivestatePluginServer[Config, DeployTargetConfig]) setConfig(bytes []by
 	return nil
 }
 
-// GetLivestate returns the live state of the resources in the given deploy target.
+// GetLivestate returns the live state of the resources in the given application.
 func (s *LivestatePluginServer[Config, DeployTargetConfig]) GetLivestate(context.Context, *livestate.GetLivestateRequest) (*livestate.GetLivestateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLivestate not implemented")
 }
