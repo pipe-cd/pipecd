@@ -17,7 +17,9 @@ package main
 import (
 	"log"
 
+	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/cli"
+	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
 func main() {
@@ -30,5 +32,13 @@ func main() {
 	)
 	if err := app.Run(); err != nil {
 		log.Fatal(err)
+	}
+}
+
+// TODO: use this after rewriting the plugin with the sdk
+func _main() {
+	sdk.RegisterDeploymentPlugin[sdk.ConfigNone, kubeconfig.KubernetesDeployTargetConfig](&sdkPlugin{})
+	if err := sdk.Run(); err != nil {
+		log.Fatalln(err)
 	}
 }
