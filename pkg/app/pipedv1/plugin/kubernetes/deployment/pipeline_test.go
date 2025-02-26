@@ -202,8 +202,6 @@ func TestBuildPipelineStages(t *testing.T) {
 func TestBuildQuickSyncPipeline(t *testing.T) {
 	t.Parallel()
 
-	now := time.Now()
-
 	tests := []struct {
 		name     string
 		rollback bool
@@ -248,7 +246,7 @@ func TestBuildQuickSyncPipeline(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			actual := BuildQuickSyncPipeline(tt.rollback, now)
+			actual := BuildQuickSyncPipeline(tt.rollback)
 			assert.Equal(t, tt.expected, actual)
 		})
 	}

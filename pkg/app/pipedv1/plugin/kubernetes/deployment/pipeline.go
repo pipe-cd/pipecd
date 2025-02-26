@@ -127,7 +127,7 @@ func buildQuickSyncPipeline(autoRollback bool, now time.Time) []*model.PipelineS
 	return out
 }
 
-func BuildQuickSyncPipeline(autoRollback bool, now time.Time) []sdk.QuickSyncStage {
+func BuildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
 	out := make([]sdk.QuickSyncStage, 0, 2)
 
 	stage, _ := GetPredefinedStage(PredefinedStageK8sSync)

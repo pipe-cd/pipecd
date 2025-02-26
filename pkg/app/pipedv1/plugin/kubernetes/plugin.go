@@ -210,6 +210,6 @@ func (p *sdkPlugin) DetermineStrategy(context.Context, *sdk.ConfigNone, *sdk.Cli
 
 func (p *sdkPlugin) BuildQuickSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildQuickSyncStagesInput) (*sdk.BuildQuickSyncStagesResponse, error) {
 	return &sdk.BuildQuickSyncStagesResponse{
-		Stages: deployment.BuildQuickSyncPipeline(input.Request.Rollback, time.Now()),
+		Stages: deployment.BuildQuickSyncPipeline(input.Request.Rollback),
 	}, nil
 }
