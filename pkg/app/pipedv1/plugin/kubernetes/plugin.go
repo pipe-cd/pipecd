@@ -179,9 +179,13 @@ func (p *sdkPlugin) Version() string {
 	return "0.0.1" // TODO
 }
 
-// FIXME
 func (p *sdkPlugin) FetchDefinedStages() []string {
-	return nil
+	stages := make([]string, 0, len(deployment.AllStages))
+	for _, s := range deployment.AllStages {
+		stages = append(stages, string(s))
+	}
+
+	return stages
 }
 
 // FIXME
