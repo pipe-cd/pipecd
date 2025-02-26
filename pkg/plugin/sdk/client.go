@@ -139,3 +139,20 @@ func (c *Client) GetDeploymentSharedMetadata(ctx context.Context, key string) (s
 func (c *Client) LogPersister() StageLogPersister {
 	return c.logPersister
 }
+
+// NotifyWaitApproval notifies the given deployment starts waiting for approval(s).
+func (c *Client) NotifyWaitApproval(ctx context.Context) error {
+	_, err := c.base.NotifyWaitApproval(ctx, &pipedservice.NotifyWaitApprovalRequest{
+		DeploymentId: c.deploymentID,
+	})
+	return err
+}
+
+// NotifyApproved notifies the given deployment is approved by approver(s).
+func (c *Client) NotifyApproved(ctx context.Context, approver string) error {
+	_, err := c.base.NotifyApproved(ctx, &pipedservice.NotifyApprovedRequest{
+		DeploymentId: c.deploymentID,
+		Approver:     approver,
+	})
+	return err
+}
