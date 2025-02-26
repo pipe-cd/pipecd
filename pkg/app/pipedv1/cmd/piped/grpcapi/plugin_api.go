@@ -21,6 +21,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
+	"github.com/pipe-cd/pipecd/pkg/model"
 	service "github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
 
 	"go.uber.org/zap"
@@ -36,6 +37,7 @@ type PluginAPI struct {
 	toolRegistry          *toolRegistry
 	Logger                *zap.Logger
 	metadataStoreRegistry *metadatastore.MetadataStoreRegistry
+	notifier              notifier
 }
 
 type apiClient interface {
@@ -43,12 +45,23 @@ type apiClient interface {
 	ReportStageLogsFromLastCheckpoint(ctx context.Context, in *pipedservice.ReportStageLogsFromLastCheckpointRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogsFromLastCheckpointResponse, error)
 }
 
+type notifier interface {
+	Notify(event model.NotificationEvent)
+}
+
 // Register registers all handling of this service into the specified gRPC server.
 func (a *PluginAPI) Register(server *grpc.Server) {
 	service.RegisterPluginServiceServer(server, a)
 }
 
-func NewPluginAPI(cfg *config.PipedSpec, apiClient apiClient, toolsDir string, logger *zap.Logger, metadataStoreRegistry *metadatastore.MetadataStoreRegistry) (*PluginAPI, error) {
+func NewPluginAPI(
+	cfg *config.PipedSpec,
+	apiClient apiClient,
+	toolsDir string,
+	logger *zap.Logger,
+	metadataStoreRegistry *metadatastore.MetadataStoreRegistry,
+	notifier notifier,
+) (*PluginAPI, error) {
 	toolRegistry, err := newToolRegistry(toolsDir)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create tool registry: %w", err)
@@ -60,6 +73,7 @@ func NewPluginAPI(cfg *config.PipedSpec, apiClient apiClient, toolsDir string, l
 		toolRegistry:          toolRegistry,
 		Logger:                logger.Named("plugin-api"),
 		metadataStoreRegistry: metadataStoreRegistry,
+		notifier:              notifier,
 	}, nil
 }
 
@@ -142,4 +156,20 @@ func (a *PluginAPI) PutDeploymentPluginMetadataMulti(ctx context.Context, req *s
 
 func (a *PluginAPI) GetDeploymentSharedMetadata(ctx context.Context, req *service.GetDeploymentSharedMetadataRequest) (*service.GetDeploymentSharedMetadataResponse, error) {
 	return a.metadataStoreRegistry.GetDeploymentSharedMetadata(ctx, req)
+}
+
+func (a *PluginAPI) NotifyWaitApproval(ctx context.Context, req *service.NotifyWaitApprovalRequest) (*service.NotifyWaitApprovalResponse, error) {
+	a.notifier.Notify(model.NotificationEvent{
+		Type:     model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL,
+		Metadata: req.Event,
+	})
+	return &service.NotifyWaitApprovalResponse{}, nil
+}
+
+func (a *PluginAPI) NotifyApproved(ctx context.Context, req *service.NotifyApprovedRequest) (*service.NotifyApprovedResponse, error) {
+	a.notifier.Notify(model.NotificationEvent{
+		Type:     model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED,
+		Metadata: req.Event,
+	})
+	return &service.NotifyApprovedResponse{}, nil
 }
