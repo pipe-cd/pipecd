@@ -13,7 +13,7 @@ Notification configuration including:
 - a list of `Route`s which used to match events and decide where the event should be sent to
 - a list of `Receiver`s which used to know how to send events to the external service
 
-[Notification Route](../configuration-reference/#notificationroute) matches events based on their metadata like `name`, `group`, `app`, `labels`.
+[Notification Route](configuration-reference/#notificationroute) matches events based on their metadata like `name`, `group`, `app`, `labels`.
 Below is the list of supporting event names and their groups.
 
 | Event | Group | Supported | Description |
@@ -115,7 +115,7 @@ A piped has been started
 </p>
 
 
-For detailed configuration, please check the [configuration reference for Notifications](../configuration-reference/#notifications) section.
+For detailed configuration, please check the [configuration reference for Notifications](configuration-reference/#notifications) section.
 
 ### Sending notifications to external services via webhook
 
@@ -135,4 +135,4 @@ spec:
           signatureValue: {RANDOM_SIGNATURE_STRING}
 ```
 
-For detailed configuration, please check the [configuration reference for NotificationReceiverWebhook](../configuration-reference/#notificationreceiverwebhook) section.
+For detailed configuration, please check the [configuration reference for NotificationReceiverWebhook](configuration-reference/#notificationreceiverwebhook) section.
