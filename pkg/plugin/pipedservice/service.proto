@@ -202,14 +202,15 @@ message ListStageCommandsResponse {
 }
 
 message NotifyWaitApprovalRequest {
-    model.NotificationEventDeploymentWaitApproval event = 1 [(validate.rules).message.required = true];
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
 }
 
 message NotifyWaitApprovalResponse {
 }
 
 message NotifyApprovedRequest {
-    model.NotificationEventDeploymentApproved event = 1 [(validate.rules).message.required = true];
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string approver = 2 [(validate.rules).string.min_len = 1];
 }
 
 message NotifyApprovedResponse {
