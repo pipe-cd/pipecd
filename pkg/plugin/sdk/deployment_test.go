@@ -281,3 +281,84 @@ func TestStagePluginServiceServer_BuildQuickSyncStages(t *testing.T) {
 		t.Errorf("expected nil response, got %v", response)
 	}
 }
+
+func TestStageStatus_toModelEnum(t *testing.T) {
+	tests := []struct {
+		name     string
+		status   StageStatus
+		expected model.StageStatus
+	}{
+		{
+			name:     "success",
+			status:   StageStatusSuccess,
+			expected: model.StageStatus_STAGE_SUCCESS,
+		},
+		{
+			name:     "failure",
+			status:   StageStatusFailure,
+			expected: model.StageStatus_STAGE_FAILURE,
+		},
+		{
+			name:     "cancelled",
+			status:   StageStatusCancelled,
+			expected: model.StageStatus_STAGE_CANCELLED,
+		},
+		{
+			name:     "exited",
+			status:   StageStatusExited,
+			expected: model.StageStatus_STAGE_EXITED,
+		},
+		{
+			name:     "unknown",
+			status:   StageStatus(999),
+			expected: model.StageStatus_STAGE_FAILURE,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.status.toModelEnum()
+			if result != tt.expected {
+				t.Errorf("expected %v, got %v", tt.expected, result)
+			}
+		})
+	}
+}
+
+func TestManualOperation_toModelEnum(t *testing.T) {
+	tests := []struct {
+		name     string
+		op       ManualOperation
+		expected model.ManualOperation
+	}{
+		{
+			name:     "none",
+			op:       ManualOperationNone,
+			expected: model.ManualOperation_MANUAL_OPERATION_NONE,
+		},
+		{
+			name:     "skip",
+			op:       ManualOperationSkip,
+			expected: model.ManualOperation_MANUAL_OPERATION_SKIP,
+		},
+		{
+			name:     "approve",
+			op:       ManualOperationApprove,
+			expected: model.ManualOperation_MANUAL_OPERATION_APPROVE,
+		},
+		{
+			name:     "unknown",
+			op:       ManualOperation(999),
+			expected: model.ManualOperation_MANUAL_OPERATION_UNKNOWN,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.op.toModelEnum()
+			if result != tt.expected {
+				t.Errorf("expected %v, got %v", tt.expected, result)
+			}
+		})
+	}
+}
