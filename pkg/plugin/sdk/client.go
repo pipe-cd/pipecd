@@ -143,16 +143,18 @@ func (c *Client) LogPersister() StageLogPersister {
 // NotifyWaitApproval notifies the given deployment starts waiting for approval(s).
 func (c *Client) NotifyWaitApproval(ctx context.Context) error {
 	_, err := c.base.NotifyWaitApproval(ctx, &pipedservice.NotifyWaitApprovalRequest{
-		DeploymentId: c.deploymentID,
+		// TODO: pass c.Deployment
+		// DeploymentId: c.deploymentID,
 	})
 	return err
 }
 
 // NotifyApproved notifies the given deployment is approved by approver(s).
-func (c *Client) NotifyApproved(ctx context.Context, approver string) error {
+func (c *Client) NotifyApproved(ctx context.Context, approvers []string) error {
 	_, err := c.base.NotifyApproved(ctx, &pipedservice.NotifyApprovedRequest{
-		DeploymentId: c.deploymentID,
-		Approver:     approver,
+		// TODO: pass c.Deployment
+		// DeploymentId: c.deploymentID,
+		Approvers: approvers,
 	})
 	return err
 }

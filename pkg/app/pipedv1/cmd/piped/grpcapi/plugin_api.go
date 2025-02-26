@@ -16,7 +16,9 @@ package grpcapi
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
@@ -159,17 +161,56 @@ func (a *PluginAPI) GetDeploymentSharedMetadata(ctx context.Context, req *servic
 }
 
 func (a *PluginAPI) NotifyWaitApproval(ctx context.Context, req *service.NotifyWaitApprovalRequest) (*service.NotifyWaitApprovalResponse, error) {
+	users, groups, err := getMentionTargets(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL, req.Deployment.Id, a.metadataStoreRegistry)
+	if err != nil {
+		return nil, err
+	}
+
 	a.notifier.Notify(model.NotificationEvent{
-		Type:     model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL,
-		Metadata: req.Event,
+		Type: model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL,
+		Metadata: &model.NotificationEventDeploymentWaitApproval{
+			Deployment:        req.Deployment,
+			MentionedAccounts: users,
+			MentionedGroups:   groups,
+		},
 	})
 	return &service.NotifyWaitApprovalResponse{}, nil
 }
 
 func (a *PluginAPI) NotifyApproved(ctx context.Context, req *service.NotifyApprovedRequest) (*service.NotifyApprovedResponse, error) {
+	users, groups, err := getMentionTargets(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED, req.Deployment.Id, a.metadataStoreRegistry)
+	if err != nil {
+		return nil, err
+	}
 	a.notifier.Notify(model.NotificationEvent{
-		Type:     model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED,
-		Metadata: req.Event,
+		Type: model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED,
+		Metadata: &model.NotificationEventDeploymentApproved{
+			Deployment:        req.Deployment,
+			Approver:          strings.Join(req.Approvers, ","),
+			MentionedAccounts: users,
+			MentionedGroups:   groups,
+		},
 	})
 	return &service.NotifyApprovedResponse{}, nil
+}
+
+// getMentionTargets returns the list of users and groups who should be mentioned in the notification.
+func getMentionTargets(ctx context.Context, e model.NotificationEventType, deploymentID string, msr *metadatastore.MetadataStoreRegistry) (users []string, groups []string, err error) {
+	n, err := msr.GetDeploymentSharedMetadata(ctx, &service.GetDeploymentSharedMetadataRequest{
+		DeploymentId: deploymentID,
+		Key:          model.MetadataKeyDeploymentNotification,
+	})
+	if err != nil {
+		return []string{}, []string{}, err
+	}
+	if !n.Found {
+		return []string{}, []string{}, nil
+	}
+
+	var notif config.DeploymentNotification
+	if err := json.Unmarshal([]byte(n.Value), &notif); err != nil {
+		return nil, nil, fmt.Errorf("could not extract mentions users and groups config: %w", err)
+	}
+
+	return notif.FindSlackUsers(e), notif.FindSlackGroups(e), nil
 }

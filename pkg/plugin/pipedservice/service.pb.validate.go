@@ -2987,15 +2987,44 @@ func (m *NotifyWaitApprovalRequest) validate(all bool) error {
 
 	var errors []error
 
-	if utf8.RuneCountInString(m.GetDeploymentId()) < 1 {
+	if m.GetDeployment() == nil {
 		err := NotifyWaitApprovalRequestValidationError{
-			field:  "DeploymentId",
-			reason: "value length must be at least 1 runes",
+			field:  "Deployment",
+			reason: "value is required",
 		}
 		if !all {
 			return err
 		}
 		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetDeployment()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, NotifyWaitApprovalRequestValidationError{
+					field:  "Deployment",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, NotifyWaitApprovalRequestValidationError{
+					field:  "Deployment",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetDeployment()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return NotifyWaitApprovalRequestValidationError{
+				field:  "Deployment",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
 	}
 
 	if len(errors) > 0 {
@@ -3202,10 +3231,10 @@ func (m *NotifyApprovedRequest) validate(all bool) error {
 
 	var errors []error
 
-	if utf8.RuneCountInString(m.GetDeploymentId()) < 1 {
+	if m.GetDeployment() == nil {
 		err := NotifyApprovedRequestValidationError{
-			field:  "DeploymentId",
-			reason: "value length must be at least 1 runes",
+			field:  "Deployment",
+			reason: "value is required",
 		}
 		if !all {
 			return err
@@ -3213,15 +3242,33 @@ func (m *NotifyApprovedRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetApprover()) < 1 {
-		err := NotifyApprovedRequestValidationError{
-			field:  "Approver",
-			reason: "value length must be at least 1 runes",
+	if all {
+		switch v := interface{}(m.GetDeployment()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, NotifyApprovedRequestValidationError{
+					field:  "Deployment",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, NotifyApprovedRequestValidationError{
+					field:  "Deployment",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
 		}
-		if !all {
-			return err
+	} else if v, ok := interface{}(m.GetDeployment()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return NotifyApprovedRequestValidationError{
+				field:  "Deployment",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
 		}
-		errors = append(errors, err)
 	}
 
 	if len(errors) > 0 {

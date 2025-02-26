@@ -20,7 +20,7 @@ option go_package = "github.com/pipe-cd/pipecd/pkg/plugin/pipedservice";
 import "validate/validate.proto";
 import "pkg/model/logblock.proto";
 import "pkg/model/command.proto";
-import "pkg/model/notificationevent.proto";
+import "pkg/model/deployment.proto";
 
 // PluginService provides the ability to interact with plugins.
 service PluginService {
@@ -202,15 +202,15 @@ message ListStageCommandsResponse {
 }
 
 message NotifyWaitApprovalRequest {
-    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    model.Deployment deployment = 1 [(validate.rules).message.required = true];
 }
 
 message NotifyWaitApprovalResponse {
 }
 
 message NotifyApprovedRequest {
-    string deployment_id = 1 [(validate.rules).string.min_len = 1];
-    string approver = 2 [(validate.rules).string.min_len = 1];
+    model.Deployment deployment = 1 [(validate.rules).message.required = true];
+    repeated string approvers = 2; 
 }
 
 message NotifyApprovedResponse {
