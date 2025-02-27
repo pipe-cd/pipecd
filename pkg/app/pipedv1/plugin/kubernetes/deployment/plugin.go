@@ -2,6 +2,7 @@ package deployment
 
 import (
 	"context"
+	"errors"
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
@@ -35,8 +36,29 @@ func (p *Plugin) BuildPipelineSyncStages(ctx context.Context, _ *sdk.ConfigNone,
 }
 
 // FIXME
-func (p *Plugin) ExecuteStage(context.Context, *sdk.ConfigNone, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], *sdk.ExecuteStageInput) (*sdk.ExecuteStageResponse, error) {
-	return nil, nil
+func (p *Plugin) ExecuteStage(ctx context.Context, _ *sdk.ConfigNone, dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.ExecuteStageInput) (*sdk.ExecuteStageResponse, error) {
+	switch input.Request.StageName {
+	case StageK8sSync.String():
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeK8sSyncStage(ctx, input),
+		}, nil
+	case StageK8sRollback.String():
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeK8sRollbackStage(ctx, input),
+		}, nil
+	default:
+		return nil, errors.New("unimplemented or unsupported stage")
+	}
+}
+
+// FIXME
+func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStageInput) sdk.StageStatus {
+	return sdk.StageStatusFailure
+}
+
+// FIXME
+func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.ExecuteStageInput) sdk.StageStatus {
+	return sdk.StageStatusFailure
 }
 
 // FIXME
