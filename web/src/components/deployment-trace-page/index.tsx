@@ -3,8 +3,6 @@ import {
   Button,
   CircularProgress,
   Divider,
-  List,
-  ListItem,
   makeStyles,
   Toolbar,
   Typography,
@@ -45,9 +43,6 @@ const useStyles = makeStyles((theme) => ({
     margin: 0,
     flex: 1,
     overflowY: "scroll",
-  },
-  listItem: {
-    backgroundColor: theme.palette.background.paper,
   },
   listDeployment: {
     backgroundColor: theme.palette.background.paper,
@@ -145,27 +140,19 @@ const DeploymentTracePage: FC = () => {
             </Box>
           )}
           {dates.map((date) => (
-            <Box key={date}>
+            <Box key={date} mb={1}>
               <Typography variant="subtitle1" className={classes.date}>
                 {date}
               </Typography>
-              <List className={classes.listDeployment}>
+              <Box className={classes.listDeployment}>
                 {deploymentTracesMap[date].map(({ trace, deploymentsList }) => (
-                  <ListItem
+                  <DeploymentTraceItem
                     key={trace?.id}
-                    dense
-                    divider
-                    color="primary"
-                    className={classes.listItem}
-                  >
-                    <DeploymentTraceItem
-                      key={trace?.id}
-                      trace={trace}
-                      deploymentList={deploymentsList}
-                    />
-                  </ListItem>
+                    trace={trace}
+                    deploymentList={deploymentsList}
+                  />
                 ))}
-              </List>
+              </Box>
             </Box>
           ))}
           {status === "succeeded" && <div ref={ref} />}
