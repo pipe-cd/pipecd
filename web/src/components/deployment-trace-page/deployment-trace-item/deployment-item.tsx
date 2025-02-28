@@ -17,15 +17,25 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(2),
     display: "flex",
     alignItems: "center",
-    // backgroundColor: theme.palette.background.paper,
+    overflow: "hidden",
+    columnGap: theme.spacing(2),
+    [theme.breakpoints.down("sm")]: {
+      flexDirection: "column",
+      alignItems: "flex-start",
+    },
   },
-  info: {
-    marginLeft: theme.spacing(1),
+  titleWrap: {
+    display: "flex",
+    alignItems: "baseline",
+    flexWrap: "wrap",
+    columnGap: theme.spacing(1),
+    [theme.breakpoints.down("sm")]: {
+      flexDirection: "column",
+    },
   },
   statusText: {
     marginLeft: theme.spacing(1),
     lineHeight: "1.5rem",
-    // Fix width to prevent misalignment of application name.
     width: "100px",
   },
   description: {
@@ -66,22 +76,12 @@ const DeploymentItem: FC<Props> = ({ deployment }) => {
           {DEPLOYMENT_STATE_TEXT[deployment.status]}
         </Typography>
       </Box>
-      <Box
-        display="flex"
-        flexDirection="column"
-        flex={1}
-        pl={2}
-        overflow="hidden"
-      >
-        <Box display="flex" alignItems="baseline">
+      <Box flex={1} overflow="hidden" maxWidth={"100%"}>
+        <Box className={classes.titleWrap}>
           <Typography variant="h6" component="span">
             {deployment.applicationName}
           </Typography>
-          <Typography
-            variant="body2"
-            color="textSecondary"
-            className={classes.info}
-          >
+          <Typography variant="body2" color="textSecondary">
             {pipedVersion === PipedVersion.V0 &&
               APPLICATION_KIND_TEXT[deployment.kind]}
             {pipedVersion === PipedVersion.V1 && "APPLICATION"}

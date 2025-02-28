@@ -26,12 +26,15 @@ describe("DeploymentTraceItem", () => {
     expect(
       screen.getByText(expectedValues.author + " authored")
     ).toBeInTheDocument();
-    expect(screen.getByText(expectedValues.commitMessage)).toBeInTheDocument();
     expect(screen.getByText(expectedValues.commitHash)).toBeInTheDocument();
     expect(screen.getByRole("link")).toHaveAttribute(
       "href",
       expectedValues.commitUrl
     );
+    fireEvent.click(
+      screen.getByRole("button", { name: /btn-commit-message/i })
+    );
+    expect(screen.getByText(expectedValues.commitMessage)).toBeInTheDocument();
   });
 
   it("should render deployment items", () => {

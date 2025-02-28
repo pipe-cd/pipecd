@@ -179,9 +179,13 @@ func (p *sdkPlugin) Version() string {
 	return "0.0.1" // TODO
 }
 
-// FIXME
 func (p *sdkPlugin) FetchDefinedStages() []string {
-	return nil
+	stages := make([]string, 0, len(deployment.AllStages))
+	for _, s := range deployment.AllStages {
+		stages = append(stages, string(s))
+	}
+
+	return stages
 }
 
 // FIXME
@@ -204,7 +208,8 @@ func (p *sdkPlugin) DetermineStrategy(context.Context, *sdk.ConfigNone, *sdk.Cli
 	return sdk.TODO{}, nil
 }
 
-// FIXME
 func (p *sdkPlugin) BuildQuickSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildQuickSyncStagesInput) (*sdk.BuildQuickSyncStagesResponse, error) {
-	return nil, nil
+	return &sdk.BuildQuickSyncStagesResponse{
+		Stages: deployment.BuildQuickSyncPipeline(input.Request.Rollback),
+	}, nil
 }

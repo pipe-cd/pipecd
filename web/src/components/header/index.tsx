@@ -62,6 +62,7 @@ const useStyles = makeStyles((theme) => ({
   },
   right: {
     height: "100%",
+    overflow: "hidden",
     "&:hover": {
       color: theme.palette.grey[400],
     },
@@ -183,7 +184,7 @@ export const Header: FC = memo(function Header() {
                 color="inherit"
                 to={PAGE_PATH_DEPLOYMENT_TRACE}
               >
-                Deployment Traces
+                Traces
               </Link>
               <Link
                 component={RouterLink}
