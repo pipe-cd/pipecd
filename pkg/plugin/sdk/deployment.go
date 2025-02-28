@@ -605,6 +605,9 @@ type Deployment struct {
 	TriggeredBy string
 	// CreatedAt is the time when the deployment was created.
 	CreatedAt int64
+
+	// Trigger is the trigger of the deployment.
+	trigger *model.DeploymentTrigger
 }
 
 // newDeployment converts the model.Deployment to the internal representation.
@@ -617,6 +620,19 @@ func newDeployment(deployment *model.Deployment) Deployment {
 		ProjectID:       deployment.GetProjectId(),
 		TriggeredBy:     deployment.TriggeredBy(),
 		CreatedAt:       deployment.GetCreatedAt(),
+		trigger:         deployment.GetTrigger(),
+	}
+}
+
+func (d *Deployment) toModel() *model.Deployment {
+	return &model.Deployment{
+		Id:              d.ID,
+		ApplicationId:   d.ApplicationID,
+		ApplicationName: d.ApplicationName,
+		PipedId:         d.PipedID,
+		ProjectId:       d.ProjectID,
+		CreatedAt:       d.CreatedAt,
+		Trigger:         d.trigger,
 	}
 }
 
