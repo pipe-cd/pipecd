@@ -127,6 +127,11 @@ func TestStagePluginServiceServer_ExecuteStage(t *testing.T) {
 					Stage: &model.PipelineStage{
 						Name: tt.stage,
 					},
+					Deployment: &model.Deployment{
+						Trigger: &model.DeploymentTrigger{
+							Commit: &model.Commit{},
+						},
+					},
 				},
 			}
 
