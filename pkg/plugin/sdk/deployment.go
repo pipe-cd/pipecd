@@ -607,6 +607,7 @@ type Deployment struct {
 	CreatedAt int64
 }
 
+// newDeployment converts the model.Deployment to the internal representation.
 func newDeployment(deployment *model.Deployment) Deployment {
 	return Deployment{
 		ID:              deployment.GetId(),
