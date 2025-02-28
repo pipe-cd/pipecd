@@ -314,6 +314,7 @@ func executeStage[Config, DeployTargetConfig any](
 			StageConfig:             request.GetInput().GetStageConfig(),
 			RunningDeploymentSource: newDeploymentSource(request.GetInput().GetRunningDeploymentSource()),
 			TargetDeploymentSource:  newDeploymentSource(request.GetInput().GetTargetDeploymentSource()),
+			Deployment:              newDeployment(request.GetInput().GetDeployment()),
 		},
 		Client: client,
 		Logger: logger,
@@ -560,6 +561,9 @@ type ExecuteStageRequest struct {
 
 	// TargetDeploymentSource is the source of the target deployment.
 	TargetDeploymentSource DeploymentSource
+
+	// The deployment that the stage is running.
+	Deployment Deployment
 }
 
 // DeploymentSource represents the source of the deployment.
@@ -582,6 +586,37 @@ func newDeploymentSource(source *common.DeploymentSource) DeploymentSource {
 		CommitHash:                source.GetCommitHash(),
 		ApplicationConfig:         source.GetApplicationConfig(),
 		ApplicationConfigFilename: source.GetApplicationConfigFilename(),
+	}
+}
+
+// Deployment represents the deployment that the stage is running. This is read-only.
+type Deployment struct {
+	// ID is the unique identifier of the deployment.
+	ID string
+	// ApplicationID is the unique identifier of the application.
+	ApplicationID string
+	// ApplicationName is the name of the application.
+	ApplicationName string
+	// PipedID is the unique identifier of the piped that is running the deployment.
+	PipedID string
+	// ProjectID is the unique identifier of the project that the application belongs to.
+	ProjectID string
+	// TriggeredBy is the name of the entity that triggered the deployment.
+	TriggeredBy string
+	// CreatedAt is the time when the deployment was created.
+	CreatedAt int64
+}
+
+// newDeployment converts the model.Deployment to the internal representation.
+func newDeployment(deployment *model.Deployment) Deployment {
+	return Deployment{
+		ID:              deployment.GetId(),
+		ApplicationID:   deployment.GetApplicationId(),
+		ApplicationName: deployment.GetApplicationName(),
+		PipedID:         deployment.GetPipedId(),
+		ProjectID:       deployment.GetProjectId(),
+		TriggeredBy:     deployment.TriggeredBy(),
+		CreatedAt:       deployment.GetCreatedAt(),
 	}
 }
 
