@@ -219,6 +219,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage
 			continue
 		}
 
+		// TODO: cache the unmarshaled config to avoid unmarshaling it multiple times.
 		var sdkDt DeployTargetConfig
 		if err := json.Unmarshal(dt.Config, &sdkDt); err != nil {
 			return nil, status.Errorf(codes.Internal, "failed to unmarshal deploy target config: %v", err)
