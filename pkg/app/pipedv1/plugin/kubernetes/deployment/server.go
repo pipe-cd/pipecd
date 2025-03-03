@@ -34,18 +34,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-const (
-	defaultKubectlVersion = "1.18.2"
-)
-
 type toolClient interface {
 	InstallTool(ctx context.Context, name, version, script string) (string, error)
-}
-
-type toolRegistry interface {
-	Kubectl(ctx context.Context, version string) (string, error)
-	Kustomize(ctx context.Context, version string) (string, error)
-	Helm(ctx context.Context, version string) (string, error)
 }
 
 type applier interface {

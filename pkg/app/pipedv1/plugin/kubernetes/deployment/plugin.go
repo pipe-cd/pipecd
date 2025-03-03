@@ -1,6 +1,7 @@
 package deployment
 
 import (
+	"cmp"
 	"context"
 	"errors"
 
@@ -8,16 +9,29 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
+	"go.uber.org/zap"
+)
+
+const (
+	defaultKubectlVersion = "1.18.2"
 )
 
 // Plugin implements the sdk.DeploymentPlugin interface.
 type Plugin struct {
-	loader loader
+	loader       loader
+	toolRegistry toolRegistry
+	logger       *zap.Logger
 }
 
 type loader interface {
 	// LoadManifests renders and loads all manifests for application.
 	LoadManifests(ctx context.Context, input provider.LoaderInput) ([]provider.Manifest, error)
+}
+
+type toolRegistry interface {
+	Kubectl(ctx context.Context, version string) (string, error)
+	Kustomize(ctx context.Context, version string) (string, error)
+	Helm(ctx context.Context, version string) (string, error)
 }
 
 var _ sdk.DeploymentPlugin[sdk.ConfigNone, kubeconfig.KubernetesDeployTargetConfig] = (*Plugin)(nil)
@@ -121,6 +135,19 @@ func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStag
 		return sdk.StageStatusFailure
 	}
 	deployTargetConfig := dts[0].Config
+
+	// Get the kubectl tool path.
+	kubectlPath, err := p.toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion, defaultKubectlVersion))
+	if err != nil {
+		lp.Errorf("Failed while getting kubectl tool (%v)", err)
+		return sdk.StageStatusFailure
+	}
+
+	// Create the kubectl wrapper for the target cluster.
+	kubectl := provider.NewKubectl(kubectlPath)
+
+	// Create the applier for the target cluster.
+	applier := provider.NewApplier(kubectl, cfg.Spec.Input, deployTargetConfig, p.logger)
 
 	return sdk.StageStatusFailure
 }
