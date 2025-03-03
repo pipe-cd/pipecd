@@ -49,11 +49,11 @@ func (p *Plugin) ExecuteStage(ctx context.Context, _ *sdk.ConfigNone, dts []*sdk
 	switch input.Request.StageName {
 	case StageK8sSync.String():
 		return &sdk.ExecuteStageResponse{
-			Status: p.executeK8sSyncStage(ctx, input),
+			Status: p.executeK8sSyncStage(ctx, input, dts),
 		}, nil
 	case StageK8sRollback.String():
 		return &sdk.ExecuteStageResponse{
-			Status: p.executeK8sRollbackStage(ctx, input),
+			Status: p.executeK8sRollbackStage(ctx, input, dts),
 		}, nil
 	default:
 		return nil, errors.New("unimplemented or unsupported stage")
@@ -61,7 +61,7 @@ func (p *Plugin) ExecuteStage(ctx context.Context, _ *sdk.ConfigNone, dts []*sdk
 }
 
 // FIXME
-func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStageInput) sdk.StageStatus {
+func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStageInput, dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
 	lp := input.Client.LogPersister()
 	lp.Info("Start syncing the deployment")
 
@@ -115,6 +115,13 @@ func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStag
 		return sdk.StageStatusFailure
 	}
 
+	// Get the deploy target config.
+	if len(dts) == 0 {
+		lp.Error("No deploy target was found")
+		return sdk.StageStatusFailure
+	}
+	deployTargetConfig := dts[0].Config
+
 	return sdk.StageStatusFailure
 }
 
@@ -141,7 +148,7 @@ func (p *Plugin) loadManifests(ctx context.Context, deploy *sdk.Deployment, spec
 }
 
 // FIXME
-func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.ExecuteStageInput) sdk.StageStatus {
+func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.ExecuteStageInput, dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
 	return sdk.StageStatusFailure
 }
 
