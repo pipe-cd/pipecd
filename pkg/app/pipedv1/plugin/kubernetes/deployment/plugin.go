@@ -7,6 +7,7 @@ import (
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 	"go.uber.org/zap"
@@ -18,9 +19,23 @@ const (
 
 // Plugin implements the sdk.DeploymentPlugin interface.
 type Plugin struct {
-	loader       loader
-	toolRegistry toolRegistry
 	logger       *zap.Logger
+	toolRegistry toolRegistry
+	loader       loader
+}
+
+// NewPlugin creates a new Plugin.
+func NewPlugin(
+	logger *zap.Logger,
+	toolClient toolClient,
+	logPersister logPersister,
+) *Plugin {
+	toolRegistry := toolregistry.NewRegistry(toolClient)
+	return &Plugin{
+		logger:       logger.Named("deployment-plugin"),
+		toolRegistry: toolRegistry,
+		loader:       provider.NewLoader(toolRegistry),
+	}
 }
 
 type loader interface {
