@@ -206,7 +206,34 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage
 		stageID:       request.GetInput().GetStage().GetId(),
 		logPersister:  lp,
 	}
-	return executeStage(ctx, s.base, &s.config, nil, client, request, s.logger) // TODO: pass the deployTargets
+
+	dtNames, err := request.GetInput().GetDeployment().GetDeployTargets(s.commonFields.config.Name)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to get deploy targets for plugin %s: %v", s.commonFields.config.Name, err)
+	}
+
+	deployTargets := make([]*DeployTarget[DeployTargetConfig], 0, len(dtNames))
+	for _, name := range dtNames {
+		if dt := s.commonFields.config.FindDeployTarget(name); dt != nil {
+			var sdkDt DeployTargetConfig
+			if err := json.Unmarshal(dt.Config, &sdkDt); err != nil {
+				return nil, status.Errorf(codes.Internal, "failed to unmarshal deploy target config: %v", err)
+			}
+
+			deployTargets = append(deployTargets, &DeployTarget[DeployTargetConfig]{
+				Name:   name,
+				Labels: dt.Labels,
+				Config: sdkDt,
+			})
+		}
+	}
+
+	// The number of deploy targets should be the same as the number of deploy target names set on the deployment.
+	if len(dtNames) != len(deployTargets) {
+		return nil, status.Errorf(codes.Internal, "the number of deploy targets in the piped plugin config should be the same as the ones set on the deployment")
+	}
+
+	return executeStage(ctx, s.base, &s.config, deployTargets, client, request, s.logger) // TODO: pass the deployTargets
 }
 
 // StagePluginServiceServer is the gRPC server that handles requests from the piped.
