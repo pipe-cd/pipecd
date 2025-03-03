@@ -38,17 +38,6 @@ type toolClient interface {
 	InstallTool(ctx context.Context, name, version, script string) (string, error)
 }
 
-type applier interface {
-	// ApplyManifest does applying the given manifest.
-	ApplyManifest(ctx context.Context, manifest provider.Manifest) error
-	// CreateManifest does creating resource from given manifest.
-	CreateManifest(ctx context.Context, manifest provider.Manifest) error
-	// ReplaceManifest does replacing resource from given manifest.
-	ReplaceManifest(ctx context.Context, manifest provider.Manifest) error
-	// ForceReplaceManifest does force replacing resource from given manifest.
-	ForceReplaceManifest(ctx context.Context, manifest provider.Manifest) error
-}
-
 type logPersister interface {
 	StageLogPersister(deploymentID, stageID string) logpersister.StageLogPersister
 }

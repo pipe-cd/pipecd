@@ -149,7 +149,20 @@ func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStag
 	// Create the applier for the target cluster.
 	applier := provider.NewApplier(kubectl, cfg.Spec.Input, deployTargetConfig, p.logger)
 
-	return sdk.StageStatusFailure
+	// Start applying all manifests to add or update running resources.
+	// TODO: use applyManifests instead of applyManifestsSDK
+	if err := applyManifestsSDK(ctx, applier, manifests, cfg.Spec.Input.Namespace, lp); err != nil {
+		lp.Errorf("Failed while applying manifests (%v)", err)
+		return sdk.StageStatusSuccess
+	}
+
+	// TODO: treat the stage options specified under "with"
+	if !cfg.Spec.QuickSync.Prune {
+		lp.Info("Resource GC was skipped because sync.prune was not configured")
+		return sdk.StageStatusSuccess
+	}
+
+	return sdk.StageStatusSuccess
 }
 
 func (p *Plugin) loadManifests(ctx context.Context, deploy *sdk.Deployment, spec *kubeconfig.KubernetesApplicationSpec, deploymentSource *sdk.DeploymentSource) ([]provider.Manifest, error) {
