@@ -82,9 +82,9 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersi
 	}
 
 	// Get the deploy target config.
-	targets, err := input.GetDeployment().GetDeployTargets(a.pluginConfig.Name)
-	if err != nil {
-		lp.Errorf("Failed while finding deploy target config (%v)", err)
+	targets := input.GetDeployment().GetDeployTargets(a.pluginConfig.Name)
+	if len(targets) == 0 {
+		lp.Errorf("No deploy target was found for the plugin %s", a.pluginConfig.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
 	deployTargetConfig, err := kubeconfig.FindDeployTarget(a.pluginConfig, targets[0]) // TODO: consider multiple targets

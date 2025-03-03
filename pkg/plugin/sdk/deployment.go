@@ -206,7 +206,30 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage
 		stageID:       request.GetInput().GetStage().GetId(),
 		logPersister:  lp,
 	}
-	return executeStage(ctx, s.base, &s.config, nil, client, request, s.logger) // TODO: pass the deployTargets
+
+	// Get the deploy targets set on the deployment from the piped plugin config.
+	dtNames := request.GetInput().GetDeployment().GetDeployTargets(s.commonFields.config.Name)
+	deployTargets := make([]*DeployTarget[DeployTargetConfig], 0, len(dtNames))
+	for _, name := range dtNames {
+		dt := s.commonFields.config.FindDeployTarget(name)
+		if dt == nil {
+			return nil, status.Errorf(codes.Internal, "the deploy target %s is not found in the piped plugin config", name)
+		}
+
+		// TODO: cache the unmarshaled config to avoid unmarshaling it multiple times.
+		var sdkDt DeployTargetConfig
+		if err := json.Unmarshal(dt.Config, &sdkDt); err != nil {
+			return nil, status.Errorf(codes.Internal, "failed to unmarshal deploy target config: %v", err)
+		}
+
+		deployTargets = append(deployTargets, &DeployTarget[DeployTargetConfig]{
+			Name:   name,
+			Labels: dt.Labels,
+			Config: sdkDt,
+		})
+	}
+
+	return executeStage(ctx, s.base, &s.config, deployTargets, client, request, s.logger)
 }
 
 // StagePluginServiceServer is the gRPC server that handles requests from the piped.
