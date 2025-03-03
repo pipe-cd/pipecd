@@ -110,6 +110,11 @@ func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStag
 		})
 	}
 
+	if err := annotateConfigHash(manifests); err != nil {
+		lp.Errorf("Unable to set %q annotation into the workload manifest (%v)", provider.AnnotationConfigHash, err)
+		return sdk.StageStatusFailure
+	}
+
 	return sdk.StageStatusFailure
 }
 
