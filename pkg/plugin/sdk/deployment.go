@@ -207,11 +207,8 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage
 		logPersister:  lp,
 	}
 
-	dtNames, err := request.GetInput().GetDeployment().GetDeployTargets(s.commonFields.config.Name)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to get deploy targets from deployment for plugin %s: %v", s.commonFields.config.Name, err)
-	}
-
+	// Get the deploy targets set on the deployment from the piped plugin config.
+	dtNames := request.GetInput().GetDeployment().GetDeployTargets(s.commonFields.config.Name)
 	deployTargets := make([]*DeployTarget[DeployTargetConfig], 0, len(dtNames))
 	for _, name := range dtNames {
 		dt := s.commonFields.config.FindDeployTarget(name)

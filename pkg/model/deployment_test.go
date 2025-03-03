@@ -658,3 +658,68 @@ func TestSortPipelineStagesByIndex(t *testing.T) {
 		{Index: 4},
 	}, stages)
 }
+
+func TestDeployment_GetDeployTargets(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		deployment *Deployment
+		pluginName string
+		expected   []string
+	}{
+		{
+			name: "plugin with deploy targets",
+			deployment: &Deployment{
+				DeployTargetsByPlugin: map[string]*DeployTargets{
+					"pluginA": {
+						DeployTargets: []string{"target1", "target2"},
+					},
+				},
+			},
+			pluginName: "pluginA",
+			expected:   []string{"target1", "target2"},
+		},
+		{
+			name: "plugin without deploy targets",
+			deployment: &Deployment{
+				DeployTargetsByPlugin: map[string]*DeployTargets{
+					"pluginA": {
+						DeployTargets: []string{},
+					},
+				},
+			},
+			pluginName: "pluginA",
+			expected:   []string{},
+		},
+		{
+			name: "plugin not found",
+			deployment: &Deployment{
+				DeployTargetsByPlugin: map[string]*DeployTargets{
+					"pluginA": {
+						DeployTargets: []string{"target1", "target2"},
+					},
+				},
+			},
+			pluginName: "pluginB",
+			expected:   []string{},
+		},
+		{
+			name: "no deploy targets by plugin",
+			deployment: &Deployment{
+				DeployTargetsByPlugin: map[string]*DeployTargets{},
+			},
+			pluginName: "pluginA",
+			expected:   []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := tt.deployment.GetDeployTargets(tt.pluginName)
+			assert.Equal(t, tt.expected, got)
+		})
+	}
+}
