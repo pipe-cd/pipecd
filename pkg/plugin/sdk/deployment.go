@@ -232,7 +232,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage
 	}
 
 	if len(dtNames) != len(deployTargets) {
-		return nil, status.Errorf(codes.Internal, "the number of deploy targets in the piped plugin config should be the same as the ones set on the deployment")
+		return nil, status.Errorf(codes.Internal, "the number of deploy targets in the piped plugin config should be the same as the ones set on the deployment: in the piped config = %d, in the deployment= %d", len(dtNames), len(deployTargets))
 	}
 
 	return executeStage(ctx, s.base, &s.config, deployTargets, client, request, s.logger)
