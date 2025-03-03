@@ -213,7 +213,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage
 	for _, name := range dtNames {
 		dt := s.commonFields.config.FindDeployTarget(name)
 		if dt == nil {
-			continue
+			return nil, status.Errorf(codes.Internal, "the deploy target %s is not found in the piped plugin config", name)
 		}
 
 		// TODO: cache the unmarshaled config to avoid unmarshaling it multiple times.
@@ -227,10 +227,6 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage
 			Labels: dt.Labels,
 			Config: sdkDt,
 		})
-	}
-
-	if len(dtNames) != len(deployTargets) {
-		return nil, status.Errorf(codes.Internal, "the number of deploy targets in the piped plugin config should be the same as the ones set on the deployment: in the piped config = %d, in the deployment= %d", len(dtNames), len(deployTargets))
 	}
 
 	return executeStage(ctx, s.base, &s.config, deployTargets, client, request, s.logger)
