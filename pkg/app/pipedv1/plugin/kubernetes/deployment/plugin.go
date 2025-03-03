@@ -5,11 +5,20 @@ import (
 	"errors"
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
 // Plugin implements the sdk.DeploymentPlugin interface.
-type Plugin struct{}
+type Plugin struct {
+	loader loader
+}
+
+type loader interface {
+	// LoadManifests renders and loads all manifests for application.
+	LoadManifests(ctx context.Context, input provider.LoaderInput) ([]provider.Manifest, error)
+}
 
 var _ sdk.DeploymentPlugin[sdk.ConfigNone, kubeconfig.KubernetesDeployTargetConfig] = (*Plugin)(nil)
 
@@ -53,7 +62,46 @@ func (p *Plugin) ExecuteStage(ctx context.Context, _ *sdk.ConfigNone, dts []*sdk
 
 // FIXME
 func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStageInput) sdk.StageStatus {
+	lp := input.Client.LogPersister()
+	lp.Info("Start syncing the deployment")
+
+	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](input.Request.TargetDeploymentSource.ApplicationConfig)
+	if err != nil {
+		lp.Errorf("Failed while decoding application config (%v)", err)
+		return sdk.StageStatusFailure
+	}
+
+	lp.Infof("Loading manifests at commit %s for handling", input.Request.TargetDeploymentSource.CommitHash)
+	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.TargetDeploymentSource)
+	if err != nil {
+		lp.Errorf("Failed while loading manifests (%v)", err)
+		return sdk.StageStatusFailure
+	}
+	lp.Successf("Successfully loaded %d manifests", len(manifests))
+
 	return sdk.StageStatusFailure
+}
+
+func (p *Plugin) loadManifests(ctx context.Context, deploy *sdk.Deployment, spec *kubeconfig.KubernetesApplicationSpec, deploymentSource *sdk.DeploymentSource) ([]provider.Manifest, error) {
+	manifests, err := p.loader.LoadManifests(ctx, provider.LoaderInput{
+		PipedID:          deploy.PipedID,
+		AppID:            deploy.ApplicationID,
+		CommitHash:       deploymentSource.CommitHash,
+		AppName:          deploy.ApplicationName,
+		AppDir:           deploymentSource.ApplicationDirectory,
+		ConfigFilename:   deploymentSource.ApplicationConfigFilename,
+		Manifests:        spec.Input.Manifests,
+		Namespace:        spec.Input.Namespace,
+		TemplatingMethod: provider.TemplatingMethodNone, // TODO: Implement detection of templating method or add it to the config spec.
+
+		// TODO: Define other fields for LoaderInput
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return manifests, nil
 }
 
 // FIXME

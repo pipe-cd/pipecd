@@ -48,11 +48,6 @@ type toolRegistry interface {
 	Helm(ctx context.Context, version string) (string, error)
 }
 
-type loader interface {
-	// LoadManifests renders and loads all manifests for application.
-	LoadManifests(ctx context.Context, input provider.LoaderInput) ([]provider.Manifest, error)
-}
-
 type applier interface {
 	// ApplyManifest does applying the given manifest.
 	ApplyManifest(ctx context.Context, manifest provider.Manifest) error
