@@ -228,12 +228,11 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage
 		}
 	}
 
-	// The number of deploy targets should be the same as the number of deploy target names set on the deployment.
 	if len(dtNames) != len(deployTargets) {
 		return nil, status.Errorf(codes.Internal, "the number of deploy targets in the piped plugin config should be the same as the ones set on the deployment")
 	}
 
-	return executeStage(ctx, s.base, &s.config, deployTargets, client, request, s.logger) // TODO: pass the deployTargets
+	return executeStage(ctx, s.base, &s.config, deployTargets, client, request, s.logger)
 }
 
 // StagePluginServiceServer is the gRPC server that handles requests from the piped.
