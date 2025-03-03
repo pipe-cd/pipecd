@@ -79,6 +79,37 @@ func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStag
 	}
 	lp.Successf("Successfully loaded %d manifests", len(manifests))
 
+	// Because the loaded manifests are read-only
+	// we duplicate them to avoid updating the shared manifests data in cache.
+	// TODO: implement duplicateManifests function
+
+	// When addVariantLabelToSelector is true, ensure that all workloads
+	// have the variant label in their selector.
+	var (
+		variantLabel   = cfg.Spec.VariantLabel.Key
+		primaryVariant = cfg.Spec.VariantLabel.PrimaryValue
+	)
+	// TODO: treat the stage options specified under "with"
+	if cfg.Spec.QuickSync.AddVariantLabelToSelector {
+		workloads := findWorkloadManifests(manifests, cfg.Spec.Workloads)
+		for _, m := range workloads {
+			if err := ensureVariantSelectorInWorkload(m, variantLabel, primaryVariant); err != nil {
+				lp.Errorf("Unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key().ReadableString(), err)
+				return sdk.StageStatusFailure
+			}
+		}
+	}
+
+	// Add variant annotations to all manifests.
+	for i := range manifests {
+		manifests[i].AddLabels(map[string]string{
+			variantLabel: primaryVariant,
+		})
+		manifests[i].AddAnnotations(map[string]string{
+			variantLabel: primaryVariant,
+		})
+	}
+
 	return sdk.StageStatusFailure
 }
 
