@@ -100,11 +100,12 @@ func TestParseContainerImage(t *testing.T) {
 	}
 }
 func TestDetermineVersions(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name      string
 		manifests []string
 		want      []*model.ArtifactVersion
-		wantErr   bool
 	}{
 		{
 			name: "single manifest with one container",
@@ -247,8 +248,7 @@ spec:
     spec: {}
 `,
 			},
-			want:    []*model.ArtifactVersion{},
-			wantErr: false,
+			want: []*model.ArtifactVersion{},
 		},
 		{
 			name: "manifest with invalid containers field -- skipped",
@@ -265,23 +265,18 @@ spec:
         - "invalid-containers-field"
 `,
 			},
-			wantErr: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			var manifests []provider.Manifest
 			for _, data := range tt.manifests {
 				manifests = append(manifests, mustUnmarshalYAML[provider.Manifest](t, []byte(strings.TrimSpace(data))))
 			}
-			got, err := determineVersions(manifests)
-			if tt.wantErr {
-				require.Error(t, err)
-				return
-			} else {
-				require.NoError(t, err)
-			}
+			got := determineVersions(manifests)
 			assert.ElementsMatch(t, tt.want, got)
 		})
 	}
