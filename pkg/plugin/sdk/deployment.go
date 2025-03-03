@@ -214,18 +214,21 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage
 
 	deployTargets := make([]*DeployTarget[DeployTargetConfig], 0, len(dtNames))
 	for _, name := range dtNames {
-		if dt := s.commonFields.config.FindDeployTarget(name); dt != nil {
-			var sdkDt DeployTargetConfig
-			if err := json.Unmarshal(dt.Config, &sdkDt); err != nil {
-				return nil, status.Errorf(codes.Internal, "failed to unmarshal deploy target config: %v", err)
-			}
-
-			deployTargets = append(deployTargets, &DeployTarget[DeployTargetConfig]{
-				Name:   name,
-				Labels: dt.Labels,
-				Config: sdkDt,
-			})
+		dt := s.commonFields.config.FindDeployTarget(name)
+		if dt == nil {
+			continue
 		}
+
+		var sdkDt DeployTargetConfig
+		if err := json.Unmarshal(dt.Config, &sdkDt); err != nil {
+			return nil, status.Errorf(codes.Internal, "failed to unmarshal deploy target config: %v", err)
+		}
+
+		deployTargets = append(deployTargets, &DeployTarget[DeployTargetConfig]{
+			Name:   name,
+			Labels: dt.Labels,
+			Config: sdkDt,
+		})
 	}
 
 	if len(dtNames) != len(deployTargets) {
