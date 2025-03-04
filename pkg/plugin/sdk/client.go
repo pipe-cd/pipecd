@@ -45,6 +45,7 @@ type Client struct {
 	logPersister StageLogPersister
 
 	// toolRegistry is used to install and get the path of the tools used in the plugin.
+	// TODO: We should consider installing the tools in other way.
 	toolRegistry *toolregistry.ToolRegistry
 }
 
