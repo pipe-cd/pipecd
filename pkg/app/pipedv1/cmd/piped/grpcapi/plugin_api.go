@@ -201,10 +201,10 @@ func getMentionTargets(ctx context.Context, e model.NotificationEventType, deplo
 		Key:          model.MetadataKeyDeploymentNotification,
 	})
 	if err != nil {
-		return []string{}, []string{}, err
+		return nil, nil, err
 	}
 	if !n.Found {
-		return []string{}, []string{}, nil
+		return nil, nil, nil
 	}
 
 	var notif config.DeploymentNotification
