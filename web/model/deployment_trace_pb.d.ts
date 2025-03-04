@@ -25,9 +25,6 @@ export class DeploymentTrace extends jspb.Message {
   getAuthor(): string;
   setAuthor(value: string): DeploymentTrace;
 
-  getCompletedAt(): number;
-  setCompletedAt(value: number): DeploymentTrace;
-
   getCreatedAt(): number;
   setCreatedAt(value: number): DeploymentTrace;
 
@@ -51,7 +48,6 @@ export namespace DeploymentTrace {
     commitMessage: string,
     commitTimestamp: number,
     author: string,
-    completedAt: number,
     createdAt: number,
     updatedAt: number,
   }
