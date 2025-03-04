@@ -15,7 +15,6 @@ export const dummyDeploymentTrace: ListDeploymentTracesResponse.DeploymentTraceR
     commitUrl: "commit-url",
     createdAt: createdAt.unix(),
     updatedAt: completedAt.unix(),
-    completedAt: completedAt.unix(),
   },
   deploymentsList: [dummyDeployment],
 };
