@@ -153,9 +153,6 @@ service PipedService {
 
     // ListEvents returns a list of Events inside the given range.
     rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {}
-    // ReportEventHandled marks the given all events as handled.
-    // Deprecated. This is only for the old Piped agents.
-    rpc ReportEventsHandled(ReportEventsHandledRequest) returns (ReportEventsHandledResponse) {}
     // ReportEventStatuses reports a status list of events.
     rpc ReportEventStatuses(ReportEventStatusesRequest) returns (ReportEventStatusesResponse) {}
 
