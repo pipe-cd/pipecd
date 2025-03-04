@@ -4489,6 +4489,18 @@ func (m *RegisterEventRequest) validate(all bool) error {
 		}
 	}
 
+	// no validation rules for CommitHash
+
+	// no validation rules for CommitUrl
+
+	// no validation rules for CommitTitle
+
+	// no validation rules for CommitMessage
+
+	// no validation rules for CommitAuthor
+
+	// no validation rules for CommitTimestamp
+
 	if len(errors) > 0 {
 		return RegisterEventRequestMultiError(errors)
 	}

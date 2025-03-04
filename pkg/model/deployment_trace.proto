@@ -22,9 +22,9 @@ import "validate/validate.proto";
 message DeploymentTrace {
     string id = 1 [(validate.rules).string.min_len = 1];
     string title = 2;
-    string commit_hash = 3 [(validate.rules).string.min_len = 1];
-    string commit_url = 4 [(validate.rules).string.min_len = 1];
-    string commit_message = 5;
+    string commit_message = 3;
+    string commit_hash = 4 [(validate.rules).string.min_len = 1];
+    string commit_url = 5 [(validate.rules).string.min_len = 1];
     int64 commit_timestamp = 6 [(validate.rules).int64.gte = 0];
     string author = 7;
 
