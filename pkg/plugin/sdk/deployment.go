@@ -32,6 +32,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedapi"
 	"github.com/pipe-cd/pipecd/pkg/plugin/signalhandler"
+	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry"
 )
 
 var (
@@ -114,6 +115,7 @@ type commonFields struct {
 	logger       *zap.Logger
 	logPersister logPersister
 	client       *pipedapi.PipedServiceClient
+	toolRegistry *toolregistry.ToolRegistry
 }
 
 // DeploymentPluginServiceServer is the gRPC server that handles requests from the piped.
@@ -205,6 +207,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage
 		deploymentID:  request.GetInput().GetDeployment().GetId(),
 		stageID:       request.GetInput().GetStage().GetId(),
 		logPersister:  lp,
+		toolRegistry:  s.toolRegistry,
 	}
 
 	// Get the deploy targets set on the deployment from the piped plugin config.
@@ -308,6 +311,7 @@ func (s *StagePluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(ctx 
 		deploymentID:  request.GetInput().GetDeployment().GetId(),
 		stageID:       request.GetInput().GetStage().GetId(),
 		logPersister:  lp,
+		toolRegistry:  s.toolRegistry,
 	}
 
 	return executeStage(ctx, s.base, &s.config, nil, client, request, s.logger) // TODO: pass the deployTargets
