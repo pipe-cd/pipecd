@@ -473,13 +473,6 @@ message ListEventsResponse {
     repeated model.Event events = 1;
 }
 
-message ReportEventsHandledRequest {
-    repeated string event_ids = 1 [(validate.rules).repeated.min_items = 1];
-}
-
-message ReportEventsHandledResponse {
-}
-
 message ReportEventStatusesRequest {
     message Event {
         string id = 1 [(validate.rules).string.min_len = 1];
