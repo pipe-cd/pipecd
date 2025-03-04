@@ -186,6 +186,20 @@ func (s *plugin) run(ctx context.Context, input cli.Input) (runErr error) {
 			opts = append(opts, rpc.WithPrometheusUnaryInterceptor())
 		}
 
+		if livestateServiceServer != nil {
+			livestateServiceServer.setCommonFields(commonFields{
+				config:       cfg,
+				logger:       input.Logger.Named("livestate-service"),
+				logPersister: persister,
+				client:       pipedapiClient,
+			})
+			if err := livestateServiceServer.setConfig(cfg.Config); err != nil {
+				input.Logger.Error("failed to set configuration", zap.Error(err))
+				return err
+			}
+			opts = append(opts, rpc.WithService(livestateServiceServer))
+		}
+
 		server := rpc.NewServer(deploymentServiceServer, opts...)
 		group.Go(func() error {
 			return server.Run(ctx)
