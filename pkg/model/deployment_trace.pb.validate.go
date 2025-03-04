@@ -70,6 +70,8 @@ func (m *DeploymentTrace) validate(all bool) error {
 
 	// no validation rules for Title
 
+	// no validation rules for CommitMessage
+
 	if utf8.RuneCountInString(m.GetCommitHash()) < 1 {
 		err := DeploymentTraceValidationError{
 			field:  "CommitHash",
@@ -91,8 +93,6 @@ func (m *DeploymentTrace) validate(all bool) error {
 		}
 		errors = append(errors, err)
 	}
-
-	// no validation rules for CommitMessage
 
 	if m.GetCommitTimestamp() < 0 {
 		err := DeploymentTraceValidationError{

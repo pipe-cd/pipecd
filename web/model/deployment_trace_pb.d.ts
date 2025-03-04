@@ -10,14 +10,14 @@ export class DeploymentTrace extends jspb.Message {
   getTitle(): string;
   setTitle(value: string): DeploymentTrace;
 
+  getCommitMessage(): string;
+  setCommitMessage(value: string): DeploymentTrace;
+
   getCommitHash(): string;
   setCommitHash(value: string): DeploymentTrace;
 
   getCommitUrl(): string;
   setCommitUrl(value: string): DeploymentTrace;
-
-  getCommitMessage(): string;
-  setCommitMessage(value: string): DeploymentTrace;
 
   getCommitTimestamp(): number;
   setCommitTimestamp(value: number): DeploymentTrace;
@@ -43,9 +43,9 @@ export namespace DeploymentTrace {
   export type AsObject = {
     id: string,
     title: string,
+    commitMessage: string,
     commitHash: string,
     commitUrl: string,
-    commitMessage: string,
     commitTimestamp: number,
     author: string,
     createdAt: number,

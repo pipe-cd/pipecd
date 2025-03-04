@@ -87,6 +87,7 @@ proto.model.Event.toObject = function(includeInstance, msg) {
     status: jspb.Message.getFieldWithDefault(msg, 8, 0),
     statusDescription: jspb.Message.getFieldWithDefault(msg, 9, ""),
     contextsMap: (f = msg.getContextsMap()) ? f.toObject(includeInstance, undefined) : [],
+    triggerCommitHash: jspb.Message.getFieldWithDefault(msg, 11, ""),
     handledAt: jspb.Message.getFieldWithDefault(msg, 13, 0),
     createdAt: jspb.Message.getFieldWithDefault(msg, 14, 0),
     updatedAt: jspb.Message.getFieldWithDefault(msg, 15, 0)
@@ -165,6 +166,10 @@ proto.model.Event.deserializeBinaryFromReader = function(msg, reader) {
       reader.readMessage(value, function(message, reader) {
         jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
          });
+      break;
+    case 11:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setTriggerCommitHash(value);
       break;
     case 13:
       var value = /** @type {number} */ (reader.readInt64());
@@ -263,6 +268,13 @@ proto.model.Event.serializeBinaryToWriter = function(message, writer) {
   f = message.getContextsMap(true);
   if (f && f.getLength() > 0) {
     f.serializeBinary(10, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
+  }
+  f = message.getTriggerCommitHash();
+  if (f.length > 0) {
+    writer.writeString(
+      11,
+      f
+    );
   }
   f = message.getHandledAt();
   if (f !== 0) {
@@ -457,6 +469,24 @@ proto.model.Event.prototype.getContextsMap = function(opt_noLazyCreate) {
 proto.model.Event.prototype.clearContextsMap = function() {
   this.getContextsMap().clear();
   return this;
+};
+
+
+/**
+ * optional string trigger_commit_hash = 11;
+ * @return {string}
+ */
+proto.model.Event.prototype.getTriggerCommitHash = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 11, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.model.Event} returns this
+ */
+proto.model.Event.prototype.setTriggerCommitHash = function(value) {
+  return jspb.Message.setProto3StringField(this, 11, value);
 };
 
 

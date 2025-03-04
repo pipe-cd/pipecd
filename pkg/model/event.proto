@@ -51,6 +51,9 @@ message Event {
     // E.g. send the app code commit hash to Deployment.
     map<string,string> contexts = 10 [(validate.rules).map.keys.string.pattern = "^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$"];
 
+    // The commit hash that triggered this event.
+    string trigger_commit_hash = 11;
+
     // Unix time when the event was handled.
     int64 handled_at = 13;
     // Unix time when the event was created.

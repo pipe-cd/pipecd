@@ -79,9 +79,9 @@ proto.model.DeploymentTrace.toObject = function(includeInstance, msg) {
   var f, obj = {
     id: jspb.Message.getFieldWithDefault(msg, 1, ""),
     title: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    commitHash: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    commitUrl: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    commitMessage: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    commitMessage: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    commitHash: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    commitUrl: jspb.Message.getFieldWithDefault(msg, 5, ""),
     commitTimestamp: jspb.Message.getFieldWithDefault(msg, 6, 0),
     author: jspb.Message.getFieldWithDefault(msg, 7, ""),
     createdAt: jspb.Message.getFieldWithDefault(msg, 101, 0),
@@ -132,15 +132,15 @@ proto.model.DeploymentTrace.deserializeBinaryFromReader = function(msg, reader) 
       break;
     case 3:
       var value = /** @type {string} */ (reader.readString());
-      msg.setCommitHash(value);
+      msg.setCommitMessage(value);
       break;
     case 4:
       var value = /** @type {string} */ (reader.readString());
-      msg.setCommitUrl(value);
+      msg.setCommitHash(value);
       break;
     case 5:
       var value = /** @type {string} */ (reader.readString());
-      msg.setCommitMessage(value);
+      msg.setCommitUrl(value);
       break;
     case 6:
       var value = /** @type {number} */ (reader.readInt64());
@@ -201,21 +201,21 @@ proto.model.DeploymentTrace.serializeBinaryToWriter = function(message, writer) 
       f
     );
   }
-  f = message.getCommitHash();
+  f = message.getCommitMessage();
   if (f.length > 0) {
     writer.writeString(
       3,
       f
     );
   }
-  f = message.getCommitUrl();
+  f = message.getCommitHash();
   if (f.length > 0) {
     writer.writeString(
       4,
       f
     );
   }
-  f = message.getCommitMessage();
+  f = message.getCommitUrl();
   if (f.length > 0) {
     writer.writeString(
       5,
@@ -290,10 +290,10 @@ proto.model.DeploymentTrace.prototype.setTitle = function(value) {
 
 
 /**
- * optional string commit_hash = 3;
+ * optional string commit_message = 3;
  * @return {string}
  */
-proto.model.DeploymentTrace.prototype.getCommitHash = function() {
+proto.model.DeploymentTrace.prototype.getCommitMessage = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
@@ -302,16 +302,16 @@ proto.model.DeploymentTrace.prototype.getCommitHash = function() {
  * @param {string} value
  * @return {!proto.model.DeploymentTrace} returns this
  */
-proto.model.DeploymentTrace.prototype.setCommitHash = function(value) {
+proto.model.DeploymentTrace.prototype.setCommitMessage = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
 /**
- * optional string commit_url = 4;
+ * optional string commit_hash = 4;
  * @return {string}
  */
-proto.model.DeploymentTrace.prototype.getCommitUrl = function() {
+proto.model.DeploymentTrace.prototype.getCommitHash = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
 };
 
@@ -320,16 +320,16 @@ proto.model.DeploymentTrace.prototype.getCommitUrl = function() {
  * @param {string} value
  * @return {!proto.model.DeploymentTrace} returns this
  */
-proto.model.DeploymentTrace.prototype.setCommitUrl = function(value) {
+proto.model.DeploymentTrace.prototype.setCommitHash = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 
 /**
- * optional string commit_message = 5;
+ * optional string commit_url = 5;
  * @return {string}
  */
-proto.model.DeploymentTrace.prototype.getCommitMessage = function() {
+proto.model.DeploymentTrace.prototype.getCommitUrl = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
 };
 
@@ -338,7 +338,7 @@ proto.model.DeploymentTrace.prototype.getCommitMessage = function() {
  * @param {string} value
  * @return {!proto.model.DeploymentTrace} returns this
  */
-proto.model.DeploymentTrace.prototype.setCommitMessage = function(value) {
+proto.model.DeploymentTrace.prototype.setCommitUrl = function(value) {
   return jspb.Message.setProto3StringField(this, 5, value);
 };
 
