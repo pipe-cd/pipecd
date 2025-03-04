@@ -836,20 +836,14 @@ func (a *API) RegisterEvent(ctx context.Context, req *apiservice.RegisterEventRe
 	if req.CommitHash != "" && req.CommitUrl != "" {
 		trace := model.DeploymentTrace{
 			Id:              uuid.New().String(),
+			Title:           req.CommitTitle,
+			Author:          req.CommitAuthor,
+			CommitMessage:   req.CommitMessage,
 			CommitHash:      req.CommitHash,
 			CommitUrl:       req.CommitUrl,
 			CommitTimestamp: time.Now().Unix(), // Use event sent time as default for commit timestamp.
 		}
 
-		if req.CommitTitle != "" {
-			trace.Title = req.CommitTitle
-		}
-		if req.CommitMessage != "" {
-			trace.CommitMessage = req.CommitMessage
-		}
-		if req.CommitAuthor != "" {
-			trace.Author = req.CommitAuthor
-		}
 		if req.CommitTimestamp != 0 {
 			trace.CommitTimestamp = req.CommitTimestamp
 		}
