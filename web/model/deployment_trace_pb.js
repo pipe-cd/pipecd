@@ -84,7 +84,6 @@ proto.model.DeploymentTrace.toObject = function(includeInstance, msg) {
     commitMessage: jspb.Message.getFieldWithDefault(msg, 5, ""),
     commitTimestamp: jspb.Message.getFieldWithDefault(msg, 6, 0),
     author: jspb.Message.getFieldWithDefault(msg, 7, ""),
-    completedAt: jspb.Message.getFieldWithDefault(msg, 100, 0),
     createdAt: jspb.Message.getFieldWithDefault(msg, 101, 0),
     updatedAt: jspb.Message.getFieldWithDefault(msg, 102, 0)
   };
@@ -150,10 +149,6 @@ proto.model.DeploymentTrace.deserializeBinaryFromReader = function(msg, reader) 
     case 7:
       var value = /** @type {string} */ (reader.readString());
       msg.setAuthor(value);
-      break;
-    case 100:
-      var value = /** @type {number} */ (reader.readInt64());
-      msg.setCompletedAt(value);
       break;
     case 101:
       var value = /** @type {number} */ (reader.readInt64());
@@ -238,13 +233,6 @@ proto.model.DeploymentTrace.serializeBinaryToWriter = function(message, writer) 
   if (f.length > 0) {
     writer.writeString(
       7,
-      f
-    );
-  }
-  f = message.getCompletedAt();
-  if (f !== 0) {
-    writer.writeInt64(
-      100,
       f
     );
   }
@@ -388,24 +376,6 @@ proto.model.DeploymentTrace.prototype.getAuthor = function() {
  */
 proto.model.DeploymentTrace.prototype.setAuthor = function(value) {
   return jspb.Message.setProto3StringField(this, 7, value);
-};
-
-
-/**
- * optional int64 completed_at = 100;
- * @return {number}
- */
-proto.model.DeploymentTrace.prototype.getCompletedAt = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 100, 0));
-};
-
-
-/**
- * @param {number} value
- * @return {!proto.model.DeploymentTrace} returns this
- */
-proto.model.DeploymentTrace.prototype.setCompletedAt = function(value) {
-  return jspb.Message.setProto3IntField(this, 100, value);
 };
 
 
