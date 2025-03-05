@@ -80,7 +80,7 @@ This PR was merged by Kapetanios.`,
 }
 
 func TestGetTrailerValueByKey(t *testing.T) {
-        t.Parallel()
+	t.Parallel()
 	testcases := []struct {
 		name string
 		body string
@@ -127,7 +127,7 @@ func TestGetTrailerValueByKey(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-                         t.Parallel()
+			t.Parallel()
 			c := &Commit{Body: tc.body}
 			got := c.GetTrailerValueByKey(tc.key)
 			assert.Equal(t, tc.want, got)
