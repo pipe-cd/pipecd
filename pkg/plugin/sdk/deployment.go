@@ -118,6 +118,12 @@ type commonFields struct {
 	toolRegistry *toolregistry.ToolRegistry
 }
 
+// withLogger copies the commonFields and sets the logger to the given one.
+func (c commonFields) withLogger(logger *zap.Logger) commonFields {
+	c.logger = logger
+	return c
+}
+
 // DeploymentPluginServiceServer is the gRPC server that handles requests from the piped.
 type DeploymentPluginServiceServer[Config, DeployTargetConfig any] struct {
 	deployment.UnimplementedDeploymentServiceServer

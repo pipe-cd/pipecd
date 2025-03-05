@@ -17,8 +17,8 @@ package sdk
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -31,8 +31,7 @@ var (
 		Plugin
 
 		Register(server *grpc.Server)
-		setCommonFields(commonFields)
-		setConfig([]byte) error
+		setFields(commonFields) error
 		livestate.LivestateServiceServer
 	}
 )
@@ -55,8 +54,9 @@ type LivestatePluginServer[Config, DeployTargetConfig any] struct {
 	livestate.UnimplementedLivestateServiceServer
 	commonFields
 
-	base   LivestatePlugin[Config, DeployTargetConfig]
-	config Config
+	base          LivestatePlugin[Config, DeployTargetConfig]
+	config        Config
+	deployTargets map[string]*DeployTarget[DeployTargetConfig]
 }
 
 // RegisterLivestatePlugin registers the given LivestatePlugin to the sdk.
@@ -79,23 +79,36 @@ func (s *LivestatePluginServer[Config, DeployTargetConfig]) Register(server *grp
 	livestate.RegisterLivestateServiceServer(server, s)
 }
 
-// setCommonFields sets the common fields to the plugin server.
-func (s *LivestatePluginServer[Config, DeployTargetConfig]) setCommonFields(c commonFields) {
-	s.commonFields = c
-}
+// setFields sets the common fields and configs to the server.
+func (s *LivestatePluginServer[Config, DeployTargetConfig]) setFields(fields commonFields) error {
+	s.commonFields = fields
 
-// setConfig sets the configuration to the plugin server.
-func (s *LivestatePluginServer[Config, DeployTargetConfig]) setConfig(bytes []byte) error {
-	if bytes == nil {
-		return nil
+	cfg := fields.config
+	if cfg.Config != nil {
+		if err := json.Unmarshal(cfg.Config, &s.config); err != nil {
+			s.logger.Fatal("failed to unmarshal the plugin config", zap.Error(err))
+			return err
+		}
 	}
-	if err := json.Unmarshal(bytes, &s.config); err != nil {
-		return fmt.Errorf("failed to unmarshal config: %w", err)
+
+	s.deployTargets = make(map[string]*DeployTarget[DeployTargetConfig], len(cfg.DeployTargets))
+	for _, dt := range cfg.DeployTargets {
+		var sdkDt DeployTargetConfig
+		if err := json.Unmarshal(dt.Config, &sdkDt); err != nil {
+			s.logger.Fatal("failed to unmarshal deploy target config", zap.Error(err))
+			return err
+		}
+		s.deployTargets[dt.Name] = &DeployTarget[DeployTargetConfig]{
+			Name:   dt.Name,
+			Labels: dt.Labels,
+			Config: sdkDt,
+		}
 	}
+
 	return nil
 }
 
 // GetLivestate returns the live state of the resources in the given application.
-func (s *LivestatePluginServer[Config, DeployTargetConfig]) GetLivestate(context.Context, *livestate.GetLivestateRequest) (*livestate.GetLivestateResponse, error) {
+func (s *LivestatePluginServer[Config, DeployTargetConfig]) GetLivestate(ctx context.Context, request *livestate.GetLivestateRequest) (*livestate.GetLivestateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLivestate not implemented")
 }
