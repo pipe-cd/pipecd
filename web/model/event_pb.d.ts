@@ -31,6 +31,9 @@ export class Event extends jspb.Message {
   getContextsMap(): jspb.Map<string, string>;
   clearContextsMap(): Event;
 
+  getTriggerCommitHash(): string;
+  setTriggerCommitHash(value: string): Event;
+
   getHandledAt(): number;
   setHandledAt(value: number): Event;
 
@@ -59,6 +62,7 @@ export namespace Event {
     status: EventStatus,
     statusDescription: string,
     contextsMap: Array<[string, string]>,
+    triggerCommitHash: string,
     handledAt: number,
     createdAt: number,
     updatedAt: number,

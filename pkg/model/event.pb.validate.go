@@ -153,6 +153,8 @@ func (m *Event) validate(all bool) error {
 		}
 	}
 
+	// no validation rules for TriggerCommitHash
+
 	// no validation rules for HandledAt
 
 	if m.GetCreatedAt() <= 0 {
