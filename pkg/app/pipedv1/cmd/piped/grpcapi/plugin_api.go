@@ -16,11 +16,14 @@ package grpcapi
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
+	"github.com/pipe-cd/pipecd/pkg/model"
 	service "github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
 
 	"go.uber.org/zap"
@@ -36,6 +39,7 @@ type PluginAPI struct {
 	toolRegistry          *toolRegistry
 	Logger                *zap.Logger
 	metadataStoreRegistry *metadatastore.MetadataStoreRegistry
+	notifier              notifier
 }
 
 type apiClient interface {
@@ -43,12 +47,23 @@ type apiClient interface {
 	ReportStageLogsFromLastCheckpoint(ctx context.Context, in *pipedservice.ReportStageLogsFromLastCheckpointRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogsFromLastCheckpointResponse, error)
 }
 
+type notifier interface {
+	Notify(event model.NotificationEvent)
+}
+
 // Register registers all handling of this service into the specified gRPC server.
 func (a *PluginAPI) Register(server *grpc.Server) {
 	service.RegisterPluginServiceServer(server, a)
 }
 
-func NewPluginAPI(cfg *config.PipedSpec, apiClient apiClient, toolsDir string, logger *zap.Logger, metadataStoreRegistry *metadatastore.MetadataStoreRegistry) (*PluginAPI, error) {
+func NewPluginAPI(
+	cfg *config.PipedSpec,
+	apiClient apiClient,
+	toolsDir string,
+	logger *zap.Logger,
+	metadataStoreRegistry *metadatastore.MetadataStoreRegistry,
+	notifier notifier,
+) (*PluginAPI, error) {
 	toolRegistry, err := newToolRegistry(toolsDir)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create tool registry: %w", err)
@@ -60,6 +75,7 @@ func NewPluginAPI(cfg *config.PipedSpec, apiClient apiClient, toolsDir string, l
 		toolRegistry:          toolRegistry,
 		Logger:                logger.Named("plugin-api"),
 		metadataStoreRegistry: metadataStoreRegistry,
+		notifier:              notifier,
 	}, nil
 }
 
@@ -142,4 +158,59 @@ func (a *PluginAPI) PutDeploymentPluginMetadataMulti(ctx context.Context, req *s
 
 func (a *PluginAPI) GetDeploymentSharedMetadata(ctx context.Context, req *service.GetDeploymentSharedMetadataRequest) (*service.GetDeploymentSharedMetadataResponse, error) {
 	return a.metadataStoreRegistry.GetDeploymentSharedMetadata(ctx, req)
+}
+
+func (a *PluginAPI) NotifyWaitApproval(ctx context.Context, req *service.NotifyWaitApprovalRequest) (*service.NotifyWaitApprovalResponse, error) {
+	users, groups, err := getMentionTargets(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL, req.Deployment.Id, a.metadataStoreRegistry)
+	if err != nil {
+		return nil, err
+	}
+
+	a.notifier.Notify(model.NotificationEvent{
+		Type: model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL,
+		Metadata: &model.NotificationEventDeploymentWaitApproval{
+			Deployment:        req.Deployment,
+			MentionedAccounts: users,
+			MentionedGroups:   groups,
+		},
+	})
+	return &service.NotifyWaitApprovalResponse{}, nil
+}
+
+func (a *PluginAPI) NotifyApproved(ctx context.Context, req *service.NotifyApprovedRequest) (*service.NotifyApprovedResponse, error) {
+	users, groups, err := getMentionTargets(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED, req.Deployment.Id, a.metadataStoreRegistry)
+	if err != nil {
+		return nil, err
+	}
+	a.notifier.Notify(model.NotificationEvent{
+		Type: model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED,
+		Metadata: &model.NotificationEventDeploymentApproved{
+			Deployment:        req.Deployment,
+			Approver:          strings.Join(req.Approvers, ","),
+			MentionedAccounts: users,
+			MentionedGroups:   groups,
+		},
+	})
+	return &service.NotifyApprovedResponse{}, nil
+}
+
+// getMentionTargets returns the list of users and groups who should be mentioned in the notification.
+func getMentionTargets(ctx context.Context, e model.NotificationEventType, deploymentID string, msr *metadatastore.MetadataStoreRegistry) (users []string, groups []string, err error) {
+	n, err := msr.GetDeploymentSharedMetadata(ctx, &service.GetDeploymentSharedMetadataRequest{
+		DeploymentId: deploymentID,
+		Key:          model.MetadataKeyDeploymentNotification,
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	if !n.Found {
+		return nil, nil, nil
+	}
+
+	var notif config.DeploymentNotification
+	if err := json.Unmarshal([]byte(n.Value), &notif); err != nil {
+		return nil, nil, fmt.Errorf("could not extract mentions users and groups config: %w", err)
+	}
+
+	return notif.FindSlackUsers(e), notif.FindSlackGroups(e), nil
 }
