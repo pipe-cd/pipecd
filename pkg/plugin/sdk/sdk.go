@@ -156,14 +156,13 @@ func (s *plugin) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	// Start a gRPC server for handling external API requests.
 	{
-		deploymentServiceServer.setCommonFields(commonFields{
+		if err := deploymentServiceServer.setFields(commonFields{
 			config:       cfg,
 			logger:       input.Logger.Named("deployment-service"),
 			logPersister: persister,
 			client:       pipedapiClient,
-		})
-		if err := deploymentServiceServer.setConfig(cfg.Config); err != nil {
-			input.Logger.Error("failed to set configuration", zap.Error(err))
+		}); err != nil {
+			input.Logger.Error("failed to set fields", zap.Error(err))
 			return err
 		}
 		var (

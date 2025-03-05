@@ -39,8 +39,8 @@ var (
 		Plugin
 
 		Register(server *grpc.Server)
-		setCommonFields(commonFields)
-		setConfig([]byte) error
+		// setFields sets the common fields and configs to the server.
+		setFields(commonFields) error
 		deployment.DeploymentServiceServer
 	}
 )
@@ -121,8 +121,9 @@ type DeploymentPluginServiceServer[Config, DeployTargetConfig any] struct {
 	deployment.UnimplementedDeploymentServiceServer
 	commonFields
 
-	base   DeploymentPlugin[Config, DeployTargetConfig]
-	config Config
+	base          DeploymentPlugin[Config, DeployTargetConfig]
+	config        Config
+	deployTargets map[string]*DeployTarget[DeployTargetConfig]
 }
 
 // Name returns the name of the plugin.
@@ -139,17 +140,32 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) Register(ser
 	deployment.RegisterDeploymentServiceServer(server, s)
 }
 
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) setCommonFields(fields commonFields) {
+// setFields sets the common fields and configs to the server.
+func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) setFields(fields commonFields) error {
 	s.commonFields = fields
-}
 
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) setConfig(bytes []byte) error {
-	if bytes == nil {
-		return nil
+	cfg := fields.config
+	if cfg.Config != nil {
+		if err := json.Unmarshal(cfg.Config, &s.config); err != nil {
+			s.logger.Fatal("failed to unmarshal the plugin config", zap.Error(err))
+			return err
+		}
 	}
-	if err := json.Unmarshal(bytes, &s.config); err != nil {
-		return fmt.Errorf("failed to unmarshal the plugin config: %v", err)
+
+	s.deployTargets = make(map[string]*DeployTarget[DeployTargetConfig], len(cfg.DeployTargets))
+	for _, dt := range cfg.DeployTargets {
+		var sdkDt DeployTargetConfig
+		if err := json.Unmarshal(dt.Config, &sdkDt); err != nil {
+			s.logger.Fatal("failed to unmarshal deploy target config", zap.Error(err))
+			return err
+		}
+		s.deployTargets[dt.Name] = &DeployTarget[DeployTargetConfig]{
+			Name:   dt.Name,
+			Labels: dt.Labels,
+			Config: sdkDt,
+		}
 	}
+
 	return nil
 }
 
@@ -211,22 +227,12 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage
 	dtNames := request.GetInput().GetDeployment().GetDeployTargets(s.commonFields.config.Name)
 	deployTargets := make([]*DeployTarget[DeployTargetConfig], 0, len(dtNames))
 	for _, name := range dtNames {
-		dt := s.commonFields.config.FindDeployTarget(name)
-		if dt == nil {
+		dt, ok := s.deployTargets[name]
+		if !ok {
 			return nil, status.Errorf(codes.Internal, "the deploy target %s is not found in the piped plugin config", name)
 		}
 
-		// TODO: cache the unmarshaled config to avoid unmarshaling it multiple times.
-		var sdkDt DeployTargetConfig
-		if err := json.Unmarshal(dt.Config, &sdkDt); err != nil {
-			return nil, status.Errorf(codes.Internal, "failed to unmarshal deploy target config: %v", err)
-		}
-
-		deployTargets = append(deployTargets, &DeployTarget[DeployTargetConfig]{
-			Name:   name,
-			Labels: dt.Labels,
-			Config: sdkDt,
-		})
+		deployTargets = append(deployTargets, dt)
 	}
 
 	return executeStage(ctx, s.base, &s.config, deployTargets, client, request, s.logger)
@@ -256,17 +262,18 @@ func (s *StagePluginServiceServer[Config, DeployTargetConfig]) Register(server *
 	deployment.RegisterDeploymentServiceServer(server, s)
 }
 
-func (s *StagePluginServiceServer[Config, DeployTargetConfig]) setCommonFields(fields commonFields) {
+// setFields sets the common fields and configs to the server.
+func (s *StagePluginServiceServer[Config, DeployTargetConfig]) setFields(fields commonFields) error {
 	s.commonFields = fields
-}
 
-func (s *StagePluginServiceServer[Config, DeployTargetConfig]) setConfig(bytes []byte) error {
-	if bytes == nil {
-		return nil
+	cfg := fields.config
+	if cfg.Config != nil {
+		if err := json.Unmarshal(cfg.Config, &s.config); err != nil {
+			s.logger.Fatal("failed to unmarshal the plugin config", zap.Error(err))
+			return err
+		}
 	}
-	if err := json.Unmarshal(bytes, &s.config); err != nil {
-		return fmt.Errorf("failed to unmarshal the plugin config: %v", err)
-	}
+
 	return nil
 }
 
