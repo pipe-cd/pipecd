@@ -80,6 +80,7 @@ This PR was merged by Kapetanios.`,
 }
 
 func TestGetTrailerValueByKey(t *testing.T) {
+        t.Parallel()
 	testcases := []struct {
 		name string
 		body string
