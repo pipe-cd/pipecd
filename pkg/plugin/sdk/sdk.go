@@ -31,6 +31,7 @@ import (
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedapi"
+	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/rpc"
 )
 
@@ -161,6 +162,7 @@ func (s *plugin) run(ctx context.Context, input cli.Input) (runErr error) {
 			logger:       input.Logger.Named("deployment-service"),
 			logPersister: persister,
 			client:       pipedapiClient,
+			toolRegistry: toolregistry.NewToolRegistry(pipedapiClient),
 		}); err != nil {
 			input.Logger.Error("failed to set fields", zap.Error(err))
 			return err
