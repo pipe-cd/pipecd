@@ -68,7 +68,6 @@ type deploymentLister interface {
 
 type commandLister interface {
 	ListDeploymentCommands() []model.ReportableCommand
-	ListStageCommands(deploymentID, stageID string) []model.ReportableCommand
 }
 
 type notifier interface {
