@@ -14,6 +14,12 @@
 
 package model
 
+const (
+	// The key to store the commit hash that triggers the event (in EventWatcher flow).
+	// It will be used as key to store the commit hash as metadata in the commit boy.
+	TraceTriggerCommitHashKey = "Trace-Trigger-Commit-Hash"
+)
+
 func (d *DeploymentTrace) SetUpdatedAt(t int64) {
 	d.UpdatedAt = t
 }

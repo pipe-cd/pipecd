@@ -78,3 +78,57 @@ This PR was merged by Kapetanios.`,
 	})
 	assert.Equal(t, expected, commits)
 }
+
+func TestGetTrailerValueByKey(t *testing.T) {
+	testcases := []struct {
+		name string
+		body string
+		key  string
+		want string
+	}{
+		{
+			name: "single line trailer",
+			body: "Some commit message\nKey: value",
+			key:  "Key",
+			want: "value",
+		},
+		{
+			name: "multiple line trailers",
+			body: "Some commit message\nKey1: value1\nKey2: value2",
+			key:  "Key2",
+			want: "value2",
+		},
+		{
+			name: "trailer with spaces",
+			body: "Some commit message\nKey:    spaced value    ",
+			key:  "Key",
+			want: "spaced value",
+		},
+		{
+			name: "no matching trailer",
+			body: "Some commit message\nOtherKey: value",
+			key:  "Key",
+			want: "",
+		},
+		{
+			name: "empty body",
+			body: "",
+			key:  "Key",
+			want: "",
+		},
+		{
+			name: "multiline value",
+			body: "Some commit message\nKey: first line\n second line",
+			key:  "Key",
+			want: "first line",
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := &Commit{Body: tc.body}
+			got := c.GetTrailerValueByKey(tc.key)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
