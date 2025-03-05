@@ -127,6 +127,7 @@ func TestGetTrailerValueByKey(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+                         t.Parallel()
 			c := &Commit{Body: tc.body}
 			got := c.GetTrailerValueByKey(tc.key)
 			assert.Equal(t, tc.want, got)
