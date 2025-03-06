@@ -145,12 +145,17 @@ func (s *LivestatePluginServer[Config, DeployTargetConfig]) GetLivestate(ctx con
 	return response.toModel(time.Now()), nil
 }
 
+// GetLivestateInput is the input for the GetLivestate method.
 type GetLivestateInput struct {
+	// Request is the request for getting the live state.
 	Request GetLivestateRequest
-	Client  *Client
-	Logger  *zap.Logger
+	// Client is the client for accessing the piped API.
+	Client *Client
+	// Logger is the logger for logging.
+	Logger *zap.Logger
 }
 
+// GetLivestateResponse is the response for the GetLivestate method.
 type GetLivestateRequest struct {
 	// ApplicationID is the ID of the application.
 	ApplicationID string
@@ -158,11 +163,15 @@ type GetLivestateRequest struct {
 	DeploymentSource DeploymentSource
 }
 
+// GetLivestateResponse is the response for the GetLivestate method.
 type GetLivestateResponse struct {
+	// LiveState is the live state of the application.
 	LiveState ApplicationLiveState
+	// SyncState is the sync state of the application.
 	SyncState ApplicationSyncState
 }
 
+// toModel converts the GetLivestateResponse to the model.GetLivestateResponse.
 func (r *GetLivestateResponse) toModel(now time.Time) *livestate.GetLivestateResponse {
 	return &livestate.GetLivestateResponse{
 		ApplicationLiveState: r.LiveState.toModel(now),
