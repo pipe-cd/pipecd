@@ -37,9 +37,7 @@ func TestTemplateLocalChart(t *testing.T) {
 		chartPath = "testchart"
 	)
 
-	c, err := toolregistrytest.NewToolRegistry(t)
-	require.NoError(t, err)
-	t.Cleanup(func() { c.Close() })
+	c := toolregistrytest.NewTestToolRegistry(t)
 
 	r := toolregistry.NewRegistry(c)
 	helmPath, err := r.Helm(ctx, "3.16.1")
@@ -65,9 +63,7 @@ func TestTemplateLocalChart_WithNamespace(t *testing.T) {
 		namespace = "testnamespace"
 	)
 
-	c, err := toolregistrytest.NewToolRegistry(t)
-	require.NoError(t, err)
-	t.Cleanup(func() { c.Close() })
+	c := toolregistrytest.NewTestToolRegistry(t)
 
 	r := toolregistry.NewRegistry(c)
 	helmPath, err := r.Helm(ctx, "3.16.1")

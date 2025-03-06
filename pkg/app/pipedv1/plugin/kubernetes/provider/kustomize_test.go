@@ -35,12 +35,8 @@ func TestKustomizeTemplate(t *testing.T) {
 		appDir  = "testdata/testkustomize"
 	)
 
-	c, err := toolregistrytest.NewToolRegistry(t)
-	require.NoError(t, err)
-
+	c := toolregistrytest.NewTestToolRegistry(t)
 	r := toolregistry.NewRegistry(c)
-
-	t.Cleanup(func() { c.Close() })
 
 	kustomizePath, err := r.Kustomize(context.Background(), "5.4.3")
 	require.NoError(t, err)
