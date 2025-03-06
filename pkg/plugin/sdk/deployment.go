@@ -32,6 +32,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedapi"
 	"github.com/pipe-cd/pipecd/pkg/plugin/signalhandler"
+	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry"
 )
 
 var (
@@ -39,8 +40,8 @@ var (
 		Plugin
 
 		Register(server *grpc.Server)
-		setCommonFields(commonFields)
-		setConfig([]byte) error
+		// setFields sets the common fields and configs to the server.
+		setFields(commonFields) error
 		deployment.DeploymentServiceServer
 	}
 )
@@ -114,6 +115,7 @@ type commonFields struct {
 	logger       *zap.Logger
 	logPersister logPersister
 	client       *pipedapi.PipedServiceClient
+	toolRegistry *toolregistry.ToolRegistry
 }
 
 // DeploymentPluginServiceServer is the gRPC server that handles requests from the piped.
@@ -121,8 +123,9 @@ type DeploymentPluginServiceServer[Config, DeployTargetConfig any] struct {
 	deployment.UnimplementedDeploymentServiceServer
 	commonFields
 
-	base   DeploymentPlugin[Config, DeployTargetConfig]
-	config Config
+	base          DeploymentPlugin[Config, DeployTargetConfig]
+	config        Config
+	deployTargets map[string]*DeployTarget[DeployTargetConfig]
 }
 
 // Name returns the name of the plugin.
@@ -139,17 +142,32 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) Register(ser
 	deployment.RegisterDeploymentServiceServer(server, s)
 }
 
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) setCommonFields(fields commonFields) {
+// setFields sets the common fields and configs to the server.
+func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) setFields(fields commonFields) error {
 	s.commonFields = fields
-}
 
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) setConfig(bytes []byte) error {
-	if bytes == nil {
-		return nil
+	cfg := fields.config
+	if cfg.Config != nil {
+		if err := json.Unmarshal(cfg.Config, &s.config); err != nil {
+			s.logger.Fatal("failed to unmarshal the plugin config", zap.Error(err))
+			return err
+		}
 	}
-	if err := json.Unmarshal(bytes, &s.config); err != nil {
-		return fmt.Errorf("failed to unmarshal the plugin config: %v", err)
+
+	s.deployTargets = make(map[string]*DeployTarget[DeployTargetConfig], len(cfg.DeployTargets))
+	for _, dt := range cfg.DeployTargets {
+		var sdkDt DeployTargetConfig
+		if err := json.Unmarshal(dt.Config, &sdkDt); err != nil {
+			s.logger.Fatal("failed to unmarshal deploy target config", zap.Error(err))
+			return err
+		}
+		s.deployTargets[dt.Name] = &DeployTarget[DeployTargetConfig]{
+			Name:   dt.Name,
+			Labels: dt.Labels,
+			Config: sdkDt,
+		}
 	}
+
 	return nil
 }
 
@@ -205,8 +223,22 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage
 		deploymentID:  request.GetInput().GetDeployment().GetId(),
 		stageID:       request.GetInput().GetStage().GetId(),
 		logPersister:  lp,
+		toolRegistry:  s.toolRegistry,
 	}
-	return executeStage(ctx, s.base, &s.config, nil, client, request, s.logger) // TODO: pass the deployTargets
+
+	// Get the deploy targets set on the deployment from the piped plugin config.
+	dtNames := request.GetInput().GetDeployment().GetDeployTargets(s.commonFields.config.Name)
+	deployTargets := make([]*DeployTarget[DeployTargetConfig], 0, len(dtNames))
+	for _, name := range dtNames {
+		dt, ok := s.deployTargets[name]
+		if !ok {
+			return nil, status.Errorf(codes.Internal, "the deploy target %s is not found in the piped plugin config", name)
+		}
+
+		deployTargets = append(deployTargets, dt)
+	}
+
+	return executeStage(ctx, s.base, &s.config, deployTargets, client, request, s.logger)
 }
 
 // StagePluginServiceServer is the gRPC server that handles requests from the piped.
@@ -233,17 +265,18 @@ func (s *StagePluginServiceServer[Config, DeployTargetConfig]) Register(server *
 	deployment.RegisterDeploymentServiceServer(server, s)
 }
 
-func (s *StagePluginServiceServer[Config, DeployTargetConfig]) setCommonFields(fields commonFields) {
+// setFields sets the common fields and configs to the server.
+func (s *StagePluginServiceServer[Config, DeployTargetConfig]) setFields(fields commonFields) error {
 	s.commonFields = fields
-}
 
-func (s *StagePluginServiceServer[Config, DeployTargetConfig]) setConfig(bytes []byte) error {
-	if bytes == nil {
-		return nil
+	cfg := fields.config
+	if cfg.Config != nil {
+		if err := json.Unmarshal(cfg.Config, &s.config); err != nil {
+			s.logger.Fatal("failed to unmarshal the plugin config", zap.Error(err))
+			return err
+		}
 	}
-	if err := json.Unmarshal(bytes, &s.config); err != nil {
-		return fmt.Errorf("failed to unmarshal the plugin config: %v", err)
-	}
+
 	return nil
 }
 
@@ -285,6 +318,7 @@ func (s *StagePluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(ctx 
 		deploymentID:  request.GetInput().GetDeployment().GetId(),
 		stageID:       request.GetInput().GetStage().GetId(),
 		logPersister:  lp,
+		toolRegistry:  s.toolRegistry,
 	}
 
 	return executeStage(ctx, s.base, &s.config, nil, client, request, s.logger) // TODO: pass the deployTargets
@@ -629,25 +663,25 @@ type ExecuteStageResponse struct {
 type StageStatus int
 
 const (
-	StageStatusSuccess   StageStatus = 2
-	StageStatusFailure   StageStatus = 3
-	StageStatusCancelled StageStatus = 4
-
-	// StageStatusSkipped         StageStatus = 5 // TODO: If SDK can handle whole skipping, this is unnecessary.
-
+	_ StageStatus = iota
+	// StageStatusSuccess indicates that the stage succeeded.
+	StageStatusSuccess
+	// StageStatusFailure indicates that the stage failed.
+	StageStatusFailure
 	// StageStatusExited can be used when the stage succeeded and exit the pipeline without executing the following stages.
-	StageStatusExited StageStatus = 6
+	StageStatusExited
+
+	// StageStatusSkipped // TODO: If SDK can handle whole skipping, this is unnecessary.
 )
 
 // toModelEnum converts the StageStatus to the model.StageStatus.
+// It returns model.StageStatus_STAGE_FAILURE if the given value is invalid.
 func (o StageStatus) toModelEnum() model.StageStatus {
 	switch o {
 	case StageStatusSuccess:
 		return model.StageStatus_STAGE_SUCCESS
 	case StageStatusFailure:
 		return model.StageStatus_STAGE_FAILURE
-	case StageStatusCancelled:
-		return model.StageStatus_STAGE_CANCELLED
 	case StageStatusExited:
 		return model.StageStatus_STAGE_EXITED
 	default:

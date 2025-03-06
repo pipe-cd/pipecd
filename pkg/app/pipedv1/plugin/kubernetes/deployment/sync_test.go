@@ -74,8 +74,7 @@ func TestDeploymentService_executeK8sSyncStage(t *testing.T) {
 	}
 
 	// initialize tool registry
-	testRegistry, err := toolregistrytest.NewToolRegistry(t)
-	require.NoError(t, err)
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
 
 	// initialize plugin config and dynamic client for assertions with envtest
 	pluginCfg, dynamicClient := setupTestPluginConfigAndDynamicClient(t)
@@ -151,8 +150,7 @@ func TestDeploymentService_executeK8sSyncStage_withInputNamespace(t *testing.T) 
 	}
 
 	// initialize tool registry
-	testRegistry, err := toolregistrytest.NewToolRegistry(t)
-	require.NoError(t, err)
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
 
 	// initialize plugin config and dynamic client for assertions with envtest
 	pluginCfg, dynamicClient := setupTestPluginConfigAndDynamicClient(t)
@@ -187,8 +185,7 @@ func TestDeploymentService_executeK8sSyncStage_withPrune(t *testing.T) {
 	ctx := context.Background()
 
 	// initialize tool registry
-	testRegistry, err := toolregistrytest.NewToolRegistry(t)
-	require.NoError(t, err)
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
 
 	// initialize plugin config and dynamic client for assertions with envtest
 	pluginCfg, dynamicClient := setupTestPluginConfigAndDynamicClient(t)
@@ -309,8 +306,7 @@ func TestDeploymentService_executeK8sSyncStage_withPrune_changesNamespace(t *tes
 	ctx := context.Background()
 
 	// initialize tool registry
-	testRegistry, err := toolregistrytest.NewToolRegistry(t)
-	require.NoError(t, err)
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
 
 	// initialize plugin config and dynamic client for assertions with envtest
 	pluginCfg, dynamicClient := setupTestPluginConfigAndDynamicClient(t)
@@ -447,8 +443,7 @@ func TestDeploymentService_executeK8sSyncStage_withPrune_clusterScoped(t *testin
 	ctx := context.Background()
 
 	// initialize tool registry
-	testRegistry, err := toolregistrytest.NewToolRegistry(t)
-	require.NoError(t, err)
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
 
 	// initialize plugin config and dynamic client for assertions with envtest
 	pluginCfg, dynamicClient := setupTestPluginConfigAndDynamicClient(t)

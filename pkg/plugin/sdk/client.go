@@ -19,6 +19,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedapi"
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
+	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry"
 )
 
 // Client is a toolkit for interacting with the piped service.
@@ -42,6 +43,24 @@ type Client struct {
 	// logPersister is used to persist the stage logs.
 	// This field exists only when the client is working with a specific stage; for example, when this client is passed as the ExecuteStage method's argument.
 	logPersister StageLogPersister
+
+	// toolRegistry is used to install and get the path of the tools used in the plugin.
+	// TODO: We should consider installing the tools in other way.
+	toolRegistry *toolregistry.ToolRegistry
+}
+
+// NewClient creates a new client.
+// DO NOT USE this function except in tests.
+// FIXME: Remove this function and make a better way for tests.
+func NewClient(base *pipedapi.PipedServiceClient, pluginName, applicationID, stageID string, lp StageLogPersister, tr *toolregistry.ToolRegistry) *Client {
+	return &Client{
+		base:          base,
+		pluginName:    pluginName,
+		applicationID: applicationID,
+		stageID:       stageID,
+		logPersister:  lp,
+		toolRegistry:  tr,
+	}
 }
 
 // StageLogPersister is a interface for persisting the stage logs.
@@ -138,4 +157,10 @@ func (c *Client) GetDeploymentSharedMetadata(ctx context.Context, key string) (s
 // TODO: we should consider returning an error instead of nil, or return logger which prints to stdout.
 func (c *Client) LogPersister() StageLogPersister {
 	return c.logPersister
+}
+
+// ToolRegistry returns the tool registry.
+// Use this to install and get the path of the tools used in the plugin.
+func (c *Client) ToolRegistry() *toolregistry.ToolRegistry {
+	return c.toolRegistry
 }

@@ -651,6 +651,8 @@ func (w *watcher) commitFiles(ctx context.Context, latestEvent *model.Event, eve
 	commitMsg = parseCommitMsg(commitMsg, args)
 	branch := makeBranchName(newBranch, eventName, repo.GetClonedBranch())
 	trailers := maps.Clone(latestEvent.Contexts)
+	// Store the commit hash of the commit that trigger this event as trailer of the manifest commit.
+	trailers[model.TraceTriggerCommitHashKey] = latestEvent.TriggerCommitHash
 	if err := repo.CommitChanges(ctx, branch, commitMsg, newBranch, changes, trailers); err != nil {
 		return "", fmt.Errorf("failed to perform git commit: %w", err)
 	}

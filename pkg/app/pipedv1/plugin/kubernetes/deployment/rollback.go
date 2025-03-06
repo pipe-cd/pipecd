@@ -83,9 +83,9 @@ func (a *DeploymentService) executeK8sRollbackStage(ctx context.Context, lp logp
 	}
 
 	// Get the deploy target config.
-	targets, err := input.GetDeployment().GetDeployTargets(a.pluginConfig.Name)
-	if err != nil {
-		lp.Errorf("Failed while finding deploy target config (%v)", err)
+	targets := input.GetDeployment().GetDeployTargets(a.pluginConfig.Name)
+	if len(targets) == 0 {
+		lp.Errorf("No deploy target was found for the plugin %s", a.pluginConfig.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
 

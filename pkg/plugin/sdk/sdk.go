@@ -31,6 +31,7 @@ import (
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedapi"
+	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/rpc"
 )
 
@@ -156,14 +157,14 @@ func (s *plugin) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	// Start a gRPC server for handling external API requests.
 	{
-		deploymentServiceServer.setCommonFields(commonFields{
+		if err := deploymentServiceServer.setFields(commonFields{
 			config:       cfg,
 			logger:       input.Logger.Named("deployment-service"),
 			logPersister: persister,
 			client:       pipedapiClient,
-		})
-		if err := deploymentServiceServer.setConfig(cfg.Config); err != nil {
-			input.Logger.Error("failed to set configuration", zap.Error(err))
+			toolRegistry: toolregistry.NewToolRegistry(pipedapiClient),
+		}); err != nil {
+			input.Logger.Error("failed to set fields", zap.Error(err))
 			return err
 		}
 		var (
@@ -184,6 +185,20 @@ func (s *plugin) run(ctx context.Context, input cli.Input) (runErr error) {
 		}
 		if input.Flags.Metrics {
 			opts = append(opts, rpc.WithPrometheusUnaryInterceptor())
+		}
+
+		if livestateServiceServer != nil {
+			livestateServiceServer.setCommonFields(commonFields{
+				config:       cfg,
+				logger:       input.Logger.Named("livestate-service"),
+				logPersister: persister,
+				client:       pipedapiClient,
+			})
+			if err := livestateServiceServer.setConfig(cfg.Config); err != nil {
+				input.Logger.Error("failed to set configuration", zap.Error(err))
+				return err
+			}
+			opts = append(opts, rpc.WithService(livestateServiceServer))
 		}
 
 		server := rpc.NewServer(deploymentServiceServer, opts...)

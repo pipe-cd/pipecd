@@ -319,9 +319,7 @@ invalid yaml content
 }
 
 func TestLoader_templateHelmChart(t *testing.T) {
-	c, err := toolregistrytest.NewToolRegistry(t)
-	require.NoError(t, err)
-	t.Cleanup(func() { c.Close() })
+	c := toolregistrytest.NewTestToolRegistry(t)
 
 	loader := &Loader{
 		toolRegistry: toolregistry.NewRegistry(c),
