@@ -112,7 +112,6 @@ mockPackageNames=(
   "gittest"
   "jwttest"
   "insightstoretest"
-  "pipedservicetest"
 )
 mockDestinations=(
   "pkg/redis/redistest/redis.mock.go"
@@ -123,7 +122,6 @@ mockDestinations=(
   "pkg/git/gittest/git.mock.go"
   "pkg/jwt/jwttest/jwt.mock.go"
   "pkg/insight/insighttest/insight.mock.go"
-  "pkg/plugin/pipedservice/pipedservicetest/pipedservice.mock.go"
 )
 mockSources=(
   "github.com/pipe-cd/pipecd/pkg/redis"
@@ -134,7 +132,6 @@ mockSources=(
   "github.com/pipe-cd/pipecd/pkg/git"
   "github.com/pipe-cd/pipecd/pkg/jwt"
   "github.com/pipe-cd/pipecd/pkg/insight"
-  "github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
 )
 mockInterfaces=(
   "Redis"
@@ -145,7 +142,6 @@ mockInterfaces=(
   "Repo"
   "Signer,Verifier"
   "Store"
-  "PluginServiceClient"
 )
 
 i=0

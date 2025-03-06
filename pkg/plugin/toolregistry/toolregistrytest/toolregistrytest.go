@@ -26,7 +26,6 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
-	"github.com/pipe-cd/pipecd/pkg/plugin/pipedservice/pipedservicetest"
 	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry"
 )
 
@@ -45,7 +44,7 @@ type templateValues struct {
 }
 
 type fakeClient struct {
-	pipedservicetest.MockPluginServiceClient
+	pipedservice.PluginServiceClient
 	testingT *testing.T
 	tmpDir   string
 }
@@ -112,8 +111,7 @@ func (c *fakeClient) InstallTool(ctx context.Context, in *pipedservice.InstallTo
 // NewTestToolRegistry returns a new instance of ToolRegistry for testing purpose.
 func NewTestToolRegistry(t *testing.T) *toolregistry.ToolRegistry {
 	return toolregistry.NewToolRegistry(&fakeClient{
-		MockPluginServiceClient: pipedservicetest.MockPluginServiceClient{},
-		testingT:                t,
-		tmpDir:                  t.TempDir(),
+		testingT: t,
+		tmpDir:   t.TempDir(),
 	})
 }
