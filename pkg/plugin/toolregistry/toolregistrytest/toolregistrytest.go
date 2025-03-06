@@ -22,6 +22,11 @@ import (
 	"runtime"
 	"testing"
 	"text/template"
+
+	"google.golang.org/grpc"
+
+	"github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
+	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry"
 )
 
 type ToolRegistry struct {
@@ -38,97 +43,75 @@ type templateValues struct {
 	Os      string
 }
 
-func NewToolRegistry(t *testing.T) (*ToolRegistry, error) {
-	tmpDir, err := os.MkdirTemp("", "tool-registry-test")
-	if err != nil {
-		return nil, err
-	}
-	return &ToolRegistry{
-		testingT: t,
-		tmpDir:   tmpDir,
-	}, nil
+type fakeClient struct {
+	pipedservice.PluginServiceClient
+	testingT *testing.T
+	tmpDir   string
 }
 
-func (r *ToolRegistry) newTmpDir() (string, error) {
-	return os.MkdirTemp(r.tmpDir, "")
-}
-
-func (r *ToolRegistry) binDir() (string, error) {
-	target := r.tmpDir + "/bin"
+func (c *fakeClient) binDir() (string, error) {
+	target := c.tmpDir + "/bin"
 	if err := os.MkdirAll(target, 0o755); err != nil {
 		return "", err
 	}
 	return target, nil
 }
 
-func (r *ToolRegistry) outPath() (string, error) {
-	target, err := r.newTmpDir()
-	if err != nil {
-		return "", err
-	}
-	return target + "/out", nil
+func (c *fakeClient) outPath() string {
+	return c.tmpDir + "/out"
 }
 
-func (r *ToolRegistry) InstallTool(ctx context.Context, name, version, script string) (path string, err error) {
-	outPath, err := r.outPath()
+func (c *fakeClient) InstallTool(ctx context.Context, in *pipedservice.InstallToolRequest, opts ...grpc.CallOption) (*pipedservice.InstallToolResponse, error) {
+	outPath := c.outPath()
+
+	binDir, err := c.binDir()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	tmpDir, err := r.newTmpDir()
+	t, err := template.New("install script").Parse(in.GetInstallScript())
 	if err != nil {
-		return "", err
-	}
-
-	binDir, err := r.binDir()
-	if err != nil {
-		return "", err
-	}
-
-	t, err := template.New("install script").Parse(script)
-	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	vars := templateValues{
-		Name:    name,
-		Version: version,
+		Name:    in.GetName(),
+		Version: in.GetVersion(),
 		OutPath: outPath,
-		TmpDir:  tmpDir,
+		TmpDir:  c.testingT.TempDir(),
 		Arch:    runtime.GOARCH,
 		Os:      runtime.GOOS,
 	}
 	var buf bytes.Buffer
 	if err := t.Execute(&buf, vars); err != nil {
-		return "", err
+		return nil, err
 	}
 
 	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", buf.String())
 	if out, err := cmd.CombinedOutput(); err != nil {
-		r.testingT.Log(string(out))
-		return "", err
+		c.testingT.Log(string(out))
+		return nil, err
 	}
 
 	if err := os.Chmod(outPath, 0o755); err != nil {
-		return "", err
+		return nil, err
 	}
 
-	target := binDir + "/" + name + "-" + version
+	target := binDir + "/" + in.GetName() + "-" + in.GetVersion()
 	if out, err := exec.CommandContext(ctx, "/bin/sh", "-c", "mv "+outPath+" "+target).CombinedOutput(); err != nil {
-		r.testingT.Log(string(out))
-		return "", err
+		c.testingT.Log(string(out))
+		return nil, err
 	}
 
-	if err := os.RemoveAll(tmpDir); err != nil {
-		return "", err
-	}
-
-	return target, nil
+	return &pipedservice.InstallToolResponse{
+		InstalledPath: target,
+	}, nil
 }
 
-func (r *ToolRegistry) Close() error {
-	if err := os.RemoveAll(r.tmpDir); err != nil {
-		return err
-	}
-	return nil
+// NewTestToolRegistry returns a new instance of ToolRegistry for testing purpose.
+func NewTestToolRegistry(t *testing.T) *toolregistry.ToolRegistry {
+	return toolregistry.NewToolRegistry(&fakeClient{
+		testingT: t,
+		tmpDir:   t.TempDir(),
+	})
 }
