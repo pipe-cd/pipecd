@@ -157,13 +157,16 @@ func (s *plugin) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	// Start a gRPC server for handling external API requests.
 	{
-		if err := deploymentServiceServer.setFields(commonFields{
+		commonFields := commonFields{
 			config:       cfg,
-			logger:       input.Logger.Named("deployment-service"),
 			logPersister: persister,
 			client:       pipedapiClient,
 			toolRegistry: toolregistry.NewToolRegistry(pipedapiClient),
-		}); err != nil {
+		}
+
+		if err := deploymentServiceServer.setFields(
+			commonFields.withLogger(input.Logger.Named("deployment-service")),
+		); err != nil {
 			input.Logger.Error("failed to set fields", zap.Error(err))
 			return err
 		}
@@ -188,14 +191,10 @@ func (s *plugin) run(ctx context.Context, input cli.Input) (runErr error) {
 		}
 
 		if livestateServiceServer != nil {
-			livestateServiceServer.setCommonFields(commonFields{
-				config:       cfg,
-				logger:       input.Logger.Named("livestate-service"),
-				logPersister: persister,
-				client:       pipedapiClient,
-			})
-			if err := livestateServiceServer.setConfig(cfg.Config); err != nil {
-				input.Logger.Error("failed to set configuration", zap.Error(err))
+			if err := livestateServiceServer.setFields(
+				commonFields.withLogger(input.Logger.Named("livestate-service")),
+			); err != nil {
+				input.Logger.Error("failed to set fields", zap.Error(err))
 				return err
 			}
 			opts = append(opts, rpc.WithService(livestateServiceServer))
