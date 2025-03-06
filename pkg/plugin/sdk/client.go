@@ -49,6 +49,20 @@ type Client struct {
 	toolRegistry *toolregistry.ToolRegistry
 }
 
+// NewClient creates a new client.
+// DO NOT USE this function except in tests.
+// FIXME: Remove this function and make a better way for tests.
+func NewClient(base *pipedapi.PipedServiceClient, pluginName, applicationID, stageID string, lp StageLogPersister, tr *toolregistry.ToolRegistry) *Client {
+	return &Client{
+		base:          base,
+		pluginName:    pluginName,
+		applicationID: applicationID,
+		stageID:       stageID,
+		logPersister:  lp,
+		toolRegistry:  tr,
+	}
+}
+
 // StageLogPersister is a interface for persisting the stage logs.
 // Use this to persist the stage logs and make it viewable on the UI.
 type StageLogPersister interface {

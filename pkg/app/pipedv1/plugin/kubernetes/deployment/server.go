@@ -34,34 +34,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-const (
-	defaultKubectlVersion = "1.18.2"
-)
-
 type toolClient interface {
 	InstallTool(ctx context.Context, name, version, script string) (string, error)
-}
-
-type toolRegistry interface {
-	Kubectl(ctx context.Context, version string) (string, error)
-	Kustomize(ctx context.Context, version string) (string, error)
-	Helm(ctx context.Context, version string) (string, error)
-}
-
-type loader interface {
-	// LoadManifests renders and loads all manifests for application.
-	LoadManifests(ctx context.Context, input provider.LoaderInput) ([]provider.Manifest, error)
-}
-
-type applier interface {
-	// ApplyManifest does applying the given manifest.
-	ApplyManifest(ctx context.Context, manifest provider.Manifest) error
-	// CreateManifest does creating resource from given manifest.
-	CreateManifest(ctx context.Context, manifest provider.Manifest) error
-	// ReplaceManifest does replacing resource from given manifest.
-	ReplaceManifest(ctx context.Context, manifest provider.Manifest) error
-	// ForceReplaceManifest does force replacing resource from given manifest.
-	ForceReplaceManifest(ctx context.Context, manifest provider.Manifest) error
 }
 
 type logPersister interface {
