@@ -14,6 +14,11 @@
 
 package model
 
+const (
+	// The key to store the commit hash that triggers the event (in EventWatcher flow) as metadata in the commit body.
+	TraceTriggerCommitHashKey = "Pipecd-Dev-Trace-Trigger-Commit-Hash"
+)
+
 func (d *DeploymentTrace) SetUpdatedAt(t int64) {
 	d.UpdatedAt = t
 }
