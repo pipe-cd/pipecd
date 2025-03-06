@@ -162,12 +162,12 @@ func TestStore(t *testing.T) {
 	// Stage metadata.
 	{
 		// existing key
-		value, found := store.stageGet("stage-1", "stage-1-key-1")
+		value, found := store.StageGet("stage-1", "stage-1-key-1")
 		assert.Equal(t, "stage-1-value-1", value)
 		assert.Equal(t, true, found)
 
 		// nonexistent key
-		value, found = store.stageGet("stage-1", "nonexistent-key")
+		value, found = store.StageGet("stage-1", "nonexistent-key")
 		assert.Equal(t, "", value)
 		assert.Equal(t, false, found)
 
@@ -177,10 +177,10 @@ func TestStore(t *testing.T) {
 			"stage-1-key-2": "stage-1-value-2",
 		})
 		assert.Equal(t, nil, err)
-		value, found = store.stageGet("stage-1", "stage-1-key-1")
+		value, found = store.StageGet("stage-1", "stage-1-key-1")
 		assert.Equal(t, "stage-1-value-1-new", value)
 		assert.Equal(t, true, found)
-		value, found = store.stageGet("stage-1", "stage-1-key-2")
+		value, found = store.StageGet("stage-1", "stage-1-key-2")
 		assert.Equal(t, "stage-1-value-2", value)
 		assert.Equal(t, true, found)
 

@@ -803,12 +803,16 @@ func (s *scheduler) notifyStageStartEvent(stage *model.PipelineStage) {
 	})
 
 	if stage.AvailableOperation == model.ManualOperation_MANUAL_OPERATION_APPROVE {
+		users, groups, err := getApplicationNotificationMentions(s.metadataStore, model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL)
+		if err != nil {
+			s.logger.Error("failed to get the list of users", zap.Error(err))
+		}
 		s.notifier.Notify(model.NotificationEvent{
 			Type: model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL,
 			Metadata: &model.NotificationEventDeploymentWaitApproval{
 				Deployment:        s.deployment,
-				MentionedAccounts: []string{}, // TODO
-				MentionedGroups:   []string{},
+				MentionedAccounts: users,
+				MentionedGroups:   groups,
 			},
 		})
 	}
@@ -820,13 +824,18 @@ func (s *scheduler) notifyStageEndEvent(stage *model.PipelineStage, result model
 	case model.StageStatus_STAGE_SUCCESS, model.StageStatus_STAGE_EXITED: // Exit stage is treated as success.
 
 		if stage.AvailableOperation == model.ManualOperation_MANUAL_OPERATION_APPROVE {
+			users, groups, err := getApplicationNotificationMentions(s.metadataStore, model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED)
+			if err != nil {
+				s.logger.Error("failed to get the list of users", zap.Error(err))
+			}
+			approver, _ := s.metadataStore.StageGet(stage.Id, "pipecd.dev.Approver") // TODO: Make the key to be a const.
 			s.notifier.Notify(model.NotificationEvent{
 				Type: model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED,
 				Metadata: &model.NotificationEventDeploymentApproved{
 					Deployment:        s.deployment,
-					Approver:          "", // TODO
-					MentionedAccounts: []string{},
-					MentionedGroups:   []string{},
+					Approver:          approver,
+					MentionedAccounts: users,
+					MentionedGroups:   groups,
 				},
 			})
 		}

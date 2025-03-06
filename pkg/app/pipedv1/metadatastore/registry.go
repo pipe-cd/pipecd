@@ -58,7 +58,7 @@ func (r *MetadataStoreRegistry) GetStageMetadata(ctx context.Context, req *servi
 		return &service.GetStageMetadataResponse{Found: false}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
 	}
 
-	value, found := mds.stageGet(req.StageId, req.Key)
+	value, found := mds.StageGet(req.StageId, req.Key)
 	return &service.GetStageMetadataResponse{
 		Value: value,
 		Found: found,

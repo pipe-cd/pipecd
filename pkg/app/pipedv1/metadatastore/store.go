@@ -116,7 +116,7 @@ func (s *MetadataStore) pluginPutMulti(ctx context.Context, pluginName string, m
 	return err
 }
 
-func (s *MetadataStore) stageGet(stageID, key string) (value string, found bool) {
+func (s *MetadataStore) StageGet(stageID, key string) (value string, found bool) {
 	s.stagesMu.RLock()
 	defer s.stagesMu.RUnlock()
 
