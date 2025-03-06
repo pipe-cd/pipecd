@@ -836,6 +836,7 @@ func (a *API) RegisterEvent(ctx context.Context, req *apiservice.RegisterEventRe
 	if req.CommitHash != "" && req.CommitUrl != "" {
 		trace := model.DeploymentTrace{
 			Id:              uuid.New().String(),
+			ProjectId:       key.ProjectId,
 			Title:           req.CommitTitle,
 			Author:          req.CommitAuthor,
 			CommitMessage:   req.CommitMessage,

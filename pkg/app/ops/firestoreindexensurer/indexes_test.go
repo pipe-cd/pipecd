@@ -312,6 +312,27 @@ func TestParseIndexes(t *testing.T) {
 			QueryScope:      "COLLECTION",
 			Fields: []field{
 				{
+					FieldPath:   "DeploymentTraceCommitHash",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "UpdatedAt",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+			},
+		},
+		{
+			CollectionGroup: "Deployment",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				{
 					FieldPath:   "CompletedAt",
 					Order:       "DESCENDING",
 					ArrayConfig: "",
@@ -580,6 +601,48 @@ func TestParseIndexes(t *testing.T) {
 			Fields: []field{
 				{
 					FieldPath:   "Status",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "UpdatedAt",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+			},
+		},
+		{
+			CollectionGroup: "DeploymentTrace",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				{
+					FieldPath:   "ProjectId",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "UpdatedAt",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+			},
+		},
+		{
+			CollectionGroup: "DeploymentTrace",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				{
+					FieldPath:   "CommitHash",
 					Order:       "ASCENDING",
 					ArrayConfig: "",
 				},
