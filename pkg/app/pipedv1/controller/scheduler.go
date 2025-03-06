@@ -16,7 +16,6 @@ package controller
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -30,6 +29,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
@@ -48,6 +48,7 @@ type scheduler struct {
 	gitClient       gitClient
 	notifier        notifier
 	secretDecrypter secretDecrypter
+	metadataStore   *metadatastore.MetadataStore
 
 	targetDSP  deploysource.Provider
 	runningDSP deploysource.Provider
@@ -80,6 +81,7 @@ func newScheduler(
 	pluginRegistry plugin.PluginRegistry,
 	notifier notifier,
 	secretsDecrypter secretDecrypter,
+	metadataStore *metadatastore.MetadataStore,
 	logger *zap.Logger,
 	tracerProvider trace.TracerProvider,
 ) *scheduler {
@@ -99,6 +101,7 @@ func newScheduler(
 		pluginRegistry:       pluginRegistry,
 		notifier:             notifier,
 		secretDecrypter:      secretsDecrypter,
+		metadataStore:        metadataStore,
 		doneDeploymentStatus: d.Status,
 		cancelledCh:          make(chan *model.ReportableCommand, 1),
 		logger:               logger,
@@ -194,7 +197,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		controllermetrics.UpdateDeploymentStatus(s.deployment, model.DeploymentStatus_DEPLOYMENT_RUNNING)
 
 		// Notify the deployment started event
-		users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_STARTED)
+		users, groups, err := getApplicationNotificationMentions(s.metadataStore, model.NotificationEventType_EVENT_DEPLOYMENT_STARTED)
 		if err != nil {
 			s.logger.Error("failed to get the list of users or groups", zap.Error(err))
 		}
@@ -701,7 +704,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	defer func() {
 		switch status {
 		case model.DeploymentStatus_DEPLOYMENT_SUCCESS:
-			users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
+			users, groups, err := getApplicationNotificationMentions(s.metadataStore, model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
 			if err != nil {
 				s.logger.Error("failed to get the list of users", zap.Error(err))
 			}
@@ -715,7 +718,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 			})
 
 		case model.DeploymentStatus_DEPLOYMENT_FAILURE:
-			users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
+			users, groups, err := getApplicationNotificationMentions(s.metadataStore, model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
 			if err != nil {
 				s.logger.Error("failed to get the list of users", zap.Error(err))
 			}
@@ -731,7 +734,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 			})
 
 		case model.DeploymentStatus_DEPLOYMENT_CANCELLED:
-			users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
+			users, groups, err := getApplicationNotificationMentions(s.metadataStore, model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
 			if err != nil {
 				s.logger.Error("failed to get the list of users", zap.Error(err))
 			}
@@ -757,21 +760,6 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	})
 
 	return err
-}
-
-// getApplicationNotificationMentions returns the list of users groups who should be mentioned in the notification.
-func (s *scheduler) getApplicationNotificationMentions(event model.NotificationEventType) ([]string, []string, error) {
-	n, ok := s.deployment.Metadata[model.MetadataKeyDeploymentNotification]
-	if !ok {
-		return []string{}, []string{}, nil
-	}
-
-	var notification config.DeploymentNotification
-	if err := json.Unmarshal([]byte(n), &notification); err != nil {
-		return nil, nil, fmt.Errorf("could not extract mentions config: %w", err)
-	}
-
-	return notification.FindSlackUsers(event), notification.FindSlackGroups(event), nil
 }
 
 func (s *scheduler) reportMostRecentlySuccessfulDeployment(ctx context.Context) error {
@@ -813,12 +801,36 @@ func (s *scheduler) notifyStageStartEvent(stage *model.PipelineStage) {
 			Stage:      stage,
 		},
 	})
+
+	if stage.AvailableOperation == model.ManualOperation_MANUAL_OPERATION_APPROVE {
+		s.notifier.Notify(model.NotificationEvent{
+			Type: model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL,
+			Metadata: &model.NotificationEventDeploymentWaitApproval{
+				Deployment:        s.deployment,
+				MentionedAccounts: []string{}, // TODO
+				MentionedGroups:   []string{},
+			},
+		})
+	}
 }
 
 // notifyStageEndEvent sends notification event based on the stage result.
 func (s *scheduler) notifyStageEndEvent(stage *model.PipelineStage, result model.StageStatus) {
 	switch result {
 	case model.StageStatus_STAGE_SUCCESS, model.StageStatus_STAGE_EXITED: // Exit stage is treated as success.
+
+		if stage.AvailableOperation == model.ManualOperation_MANUAL_OPERATION_APPROVE {
+			s.notifier.Notify(model.NotificationEvent{
+				Type: model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED,
+				Metadata: &model.NotificationEventDeploymentApproved{
+					Deployment:        s.deployment,
+					Approver:          "", // TODO
+					MentionedAccounts: []string{},
+					MentionedGroups:   []string{},
+				},
+			})
+		}
+
 		s.notifier.Notify(model.NotificationEvent{
 			Type: model.NotificationEventType_EVENT_STAGE_SUCCEEDED,
 			Metadata: &model.NotificationEventStageSucceeded{
@@ -826,6 +838,7 @@ func (s *scheduler) notifyStageEndEvent(stage *model.PipelineStage, result model
 				Stage:      stage,
 			},
 		})
+
 	case model.StageStatus_STAGE_FAILURE:
 		s.notifier.Notify(model.NotificationEvent{
 			Type: model.NotificationEventType_EVENT_STAGE_FAILED,

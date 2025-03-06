@@ -16,7 +16,6 @@ package controller
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -30,6 +29,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
@@ -74,6 +74,8 @@ type planner struct {
 	// The pluginRegistry is used to determine which plugins to be used
 	pluginRegistry plugin.PluginRegistry
 
+	metadataStore *metadatastore.MetadataStore
+
 	logger *zap.Logger
 	tracer trace.Tracer
 
@@ -96,6 +98,7 @@ func newPlanner(
 	gitClient gitClient,
 	notifier notifier,
 	secretDecrypter secretDecrypter,
+	metadataStore *metadatastore.MetadataStore,
 	logger *zap.Logger,
 	tracerProvider trace.TracerProvider,
 ) *planner {
@@ -118,6 +121,7 @@ func newPlanner(
 		gitClient:                    gitClient,
 		notifier:                     notifier,
 		secretDecrypter:              secretDecrypter,
+		metadataStore:                metadataStore,
 		doneDeploymentStatus:         d.Status,
 		cancelledCh:                  make(chan *model.ReportableCommand, 1),
 		nowFunc:                      time.Now,
@@ -526,7 +530,7 @@ func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.Gener
 }
 
 func (p *planner) reportDeploymentPlanned(ctx context.Context, out *plannerOutput) error {
-	users, groups, err := p.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED)
+	users, groups, err := getApplicationNotificationMentions(p.metadataStore, model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED)
 	if err != nil {
 		p.logger.Error("failed to get the list of users or groups", zap.Error(err))
 	}
@@ -569,7 +573,7 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, out *plannerOutpu
 }
 
 func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) error {
-	users, groups, err := p.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_FAILED)
+	users, groups, err := getApplicationNotificationMentions(p.metadataStore, model.NotificationEventType_EVENT_DEPLOYMENT_FAILED)
 	if err != nil {
 		p.logger.Error("failed to get the list of users or groups", zap.Error(err))
 	}
@@ -611,7 +615,7 @@ func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) err
 }
 
 func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reason string) error {
-	users, groups, err := p.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
+	users, groups, err := getApplicationNotificationMentions(p.metadataStore, model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
 	if err != nil {
 		p.logger.Error("failed to get the list of users or groups", zap.Error(err))
 	}
@@ -650,19 +654,4 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 		p.logger.Error("failed to mark deployment to be cancelled", zap.Error(err))
 	}
 	return err
-}
-
-// getApplicationNotificationMentions returns the list of users groups who should be mentioned in the notification.
-func (p *planner) getApplicationNotificationMentions(event model.NotificationEventType) ([]string, []string, error) {
-	n, ok := p.deployment.Metadata[model.MetadataKeyDeploymentNotification]
-	if !ok {
-		return []string{}, []string{}, nil
-	}
-
-	var notification config.DeploymentNotification
-	if err := json.Unmarshal([]byte(n), &notification); err != nil {
-		return nil, nil, fmt.Errorf("could not extract mentions config: %w", err)
-	}
-
-	return notification.FindSlackUsers(event), notification.FindSlackGroups(event), nil
 }

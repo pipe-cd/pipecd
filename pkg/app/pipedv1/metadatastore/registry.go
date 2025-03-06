@@ -39,21 +39,16 @@ func NewMetadataStoreRegistry(apiClient apiClient) *MetadataStoreRegistry {
 // Register creates a new metadata store for the given deployment.
 // This must be called before other Get/Put methods are called for the deployment.
 // If the metadata store already exists, the new one will replace the existing one.
-func (r *MetadataStoreRegistry) Register(d *model.Deployment) {
+func (r *MetadataStoreRegistry) Register(d *model.Deployment) *MetadataStore {
 	store := newMetadataStore(r.apiClient, d)
 	r.stores[d.Id] = store
+	return store
 }
 
 // Delete deletes the metadata store for the given deployment in order to release the resources.
 // If the metadata store is not found, it is a no-op.
 func (r *MetadataStoreRegistry) Delete(deploymentID string) {
 	delete(r.stores, deploymentID)
-}
-
-// GetStore returns the metadata store for the given deployment.
-func (r *MetadataStoreRegistry) GetStore(deploymentID string) (store *MetadataStore, found bool) {
-	store, found = r.stores[deploymentID]
-	return store, found
 }
 
 // GetStageMetadata implements the backend of PluginService.GetStageMetadata().
