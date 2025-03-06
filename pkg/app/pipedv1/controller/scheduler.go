@@ -198,7 +198,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		controllermetrics.UpdateDeploymentStatus(s.deployment, model.DeploymentStatus_DEPLOYMENT_RUNNING)
 
 		// Notify the deployment started event
-		users, groups, err := getApplicationNotificationMentions(s.metadataStore, model.NotificationEventType_EVENT_DEPLOYMENT_STARTED)
+		users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_STARTED)
 		if err != nil {
 			s.logger.Error("failed to get the list of users or groups", zap.Error(err))
 		}
@@ -819,7 +819,7 @@ func (s *scheduler) notifyStageStartEvent(stage *model.PipelineStage) {
 	})
 
 	if stage.AvailableOperation == model.ManualOperation_MANUAL_OPERATION_APPROVE {
-		users, groups, err := getApplicationNotificationMentions(s.metadataStore, model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL)
+		users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL)
 		if err != nil {
 			s.logger.Error("failed to get the list of users", zap.Error(err))
 		}
