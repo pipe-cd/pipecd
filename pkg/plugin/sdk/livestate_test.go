@@ -149,8 +149,8 @@ func TestApplicationLiveState_toModel(t *testing.T) {
 			input: ApplicationLiveState{
 				Resources: []ResourceState{
 					{
-						ID:   "resource1",
-						Name: "Resource 1",
+						ID:        "resource1",
+						Name:      "Resource 1",
 						CreatedAt: now,
 					},
 				},
@@ -159,8 +159,8 @@ func TestApplicationLiveState_toModel(t *testing.T) {
 			expected: &model.ApplicationLiveState{
 				Resources: []*model.ResourceState{
 					{
-						Id:   "resource1",
-						Name: "Resource 1",
+						Id:        "resource1",
+						Name:      "Resource 1",
 						CreatedAt: now.Unix(),
 						UpdatedAt: now.Unix(),
 					},
@@ -188,13 +188,13 @@ func TestResourceState_toModel(t *testing.T) {
 		{
 			name: "convert ResourceState to model",
 			input: ResourceState{
-				ID:   "resource1",
-				Name: "Resource 1",
+				ID:        "resource1",
+				Name:      "Resource 1",
 				CreatedAt: now,
 			},
 			expected: &model.ResourceState{
-				Id:   "resource1",
-				Name: "Resource 1",
+				Id:        "resource1",
+				Name:      "Resource 1",
 				CreatedAt: now.Unix(),
 				UpdatedAt: now.Unix(),
 			},
