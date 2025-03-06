@@ -28,12 +28,12 @@ type MetadataStoreRegistry struct {
 
 	// stores is a map of metadata store for each deployment.
 	// The key is the deployment ID.
-	stores map[string]*metadataStore
+	stores map[string]*MetadataStore
 }
 
 // NewMetadataStoreRegistry creates a new MetadataStoreRegistry.
 func NewMetadataStoreRegistry(apiClient apiClient) *MetadataStoreRegistry {
-	return &MetadataStoreRegistry{apiClient: apiClient, stores: make(map[string]*metadataStore, 0)}
+	return &MetadataStoreRegistry{apiClient: apiClient, stores: make(map[string]*MetadataStore, 0)}
 }
 
 // Register creates a new metadata store for the given deployment.
@@ -51,7 +51,7 @@ func (r *MetadataStoreRegistry) Delete(deploymentID string) {
 }
 
 // GetStore returns the metadata store for the given deployment.
-func (r *MetadataStoreRegistry) GetStore(deploymentID string) (store *metadataStore, found bool) {
+func (r *MetadataStoreRegistry) GetStore(deploymentID string) (store *MetadataStore, found bool) {
 	store, found = r.stores[deploymentID]
 	return store, found
 }

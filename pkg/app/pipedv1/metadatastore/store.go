@@ -31,7 +31,7 @@ type apiClient interface {
 
 type metadata map[string]string
 
-type metadataStore struct {
+type MetadataStore struct {
 	apiClient  apiClient
 	deployment *model.Deployment
 
@@ -46,8 +46,8 @@ type metadataStore struct {
 
 // newMetadataStore builds a metadata store for the given deployment.
 // It keeps local data and makes sure that they are synced with the remote store.
-func newMetadataStore(apiClient apiClient, d *model.Deployment) *metadataStore {
-	s := &metadataStore{
+func newMetadataStore(apiClient apiClient, d *model.Deployment) *MetadataStore {
+	s := &MetadataStore{
 		apiClient:  apiClient,
 		deployment: d,
 		shared:     make(map[string]string, 0),
@@ -74,7 +74,7 @@ func newMetadataStore(apiClient apiClient, d *model.Deployment) *metadataStore {
 	return s
 }
 
-func (s *metadataStore) SharedGet(key string) (value string, found bool) {
+func (s *MetadataStore) SharedGet(key string) (value string, found bool) {
 	s.sharedMu.RLock()
 	defer s.sharedMu.RUnlock()
 
@@ -82,7 +82,7 @@ func (s *metadataStore) SharedGet(key string) (value string, found bool) {
 	return
 }
 
-func (s *metadataStore) pluginGet(pluginName, key string) (value string, found bool) {
+func (s *MetadataStore) pluginGet(pluginName, key string) (value string, found bool) {
 	s.pluginsMu.RLock()
 	defer s.pluginsMu.RUnlock()
 
@@ -95,7 +95,7 @@ func (s *metadataStore) pluginGet(pluginName, key string) (value string, found b
 	return
 }
 
-func (s *metadataStore) pluginPutMulti(ctx context.Context, pluginName string, md map[string]string) error {
+func (s *MetadataStore) pluginPutMulti(ctx context.Context, pluginName string, md map[string]string) error {
 	s.pluginsMu.Lock()
 	merged := make(map[string]string, len(md)+len(s.plugins[pluginName]))
 	for k, v := range s.plugins[pluginName] {
@@ -116,7 +116,7 @@ func (s *metadataStore) pluginPutMulti(ctx context.Context, pluginName string, m
 	return err
 }
 
-func (s *metadataStore) stageGet(stageID, key string) (value string, found bool) {
+func (s *MetadataStore) stageGet(stageID, key string) (value string, found bool) {
 	s.stagesMu.RLock()
 	defer s.stagesMu.RUnlock()
 
@@ -129,7 +129,7 @@ func (s *metadataStore) stageGet(stageID, key string) (value string, found bool)
 	return
 }
 
-func (s *metadataStore) stagePutMulti(ctx context.Context, stageID string, md map[string]string) error {
+func (s *MetadataStore) stagePutMulti(ctx context.Context, stageID string, md map[string]string) error {
 	s.stagesMu.Lock()
 	merged := make(map[string]string, len(md)+len(s.stages[stageID]))
 	for k, v := range s.stages[stageID] {
