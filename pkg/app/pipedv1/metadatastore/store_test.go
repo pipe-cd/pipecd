@@ -113,12 +113,12 @@ func TestStore(t *testing.T) {
 	// Shared metadata.
 	{
 		// existing key
-		value, found := store.sharedGet("key-1")
+		value, found := store.SharedGet("key-1")
 		assert.Equal(t, "value-1", value)
 		assert.Equal(t, true, found)
 
 		// nonexistent key
-		value, found = store.sharedGet("key-2")
+		value, found = store.SharedGet("key-2")
 		assert.Equal(t, "", value)
 		assert.Equal(t, false, found)
 	}

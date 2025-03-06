@@ -50,6 +50,12 @@ func (r *MetadataStoreRegistry) Delete(deploymentID string) {
 	delete(r.stores, deploymentID)
 }
 
+// GetStore returns the metadata store for the given deployment.
+func (r *MetadataStoreRegistry) GetStore(deploymentID string) (store *metadataStore, found bool) {
+	store, found = r.stores[deploymentID]
+	return store, found
+}
+
 // GetStageMetadata implements the backend of PluginService.GetStageMetadata().
 func (r *MetadataStoreRegistry) GetStageMetadata(ctx context.Context, req *service.GetStageMetadataRequest) (*service.GetStageMetadataResponse, error) {
 	mds, ok := r.stores[req.DeploymentId]
@@ -145,7 +151,7 @@ func (r *MetadataStoreRegistry) GetDeploymentSharedMetadata(ctx context.Context,
 		return &service.GetDeploymentSharedMetadataResponse{Found: false}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
 	}
 
-	value, found := mds.sharedGet(req.Key)
+	value, found := mds.SharedGet(req.Key)
 	return &service.GetDeploymentSharedMetadataResponse{
 		Value: value,
 		Found: found,

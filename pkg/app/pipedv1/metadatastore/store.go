@@ -74,7 +74,7 @@ func newMetadataStore(apiClient apiClient, d *model.Deployment) *metadataStore {
 	return s
 }
 
-func (s *metadataStore) sharedGet(key string) (value string, found bool) {
+func (s *metadataStore) SharedGet(key string) (value string, found bool) {
 	s.sharedMu.RLock()
 	defer s.sharedMu.RUnlock()
 
