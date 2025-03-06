@@ -49,6 +49,8 @@ type Client struct {
 	toolRegistry *toolregistry.ToolRegistry
 }
 
+// NewClient creates a new client.
+// Currently, this is used to create the Client in the test for the plugin made by the SDK.
 func NewClient(base *pipedapi.PipedServiceClient, pluginName, applicationID, stageID string, lp StageLogPersister, tr *toolregistry.ToolRegistry) *Client {
 	return &Client{
 		base:          base,
