@@ -53,28 +53,28 @@ func TestParseReleaseConfig(t *testing.T) {
 					},
 				},
 				CommitCategories: []ReleaseCommitCategoryConfig{
-					ReleaseCommitCategoryConfig{
+					{
 						ID:    "_category_0",
 						Title: "Breaking Changes",
 						ReleaseCommitMatcherConfig: ReleaseCommitMatcherConfig{
 							Contains: []string{"change-category/breaking-change"},
 						},
 					},
-					ReleaseCommitCategoryConfig{
+					{
 						ID:    "_category_1",
 						Title: "New Features",
 						ReleaseCommitMatcherConfig: ReleaseCommitMatcherConfig{
 							Contains: []string{"change-category/new-feature"},
 						},
 					},
-					ReleaseCommitCategoryConfig{
+					{
 						ID:    "_category_2",
 						Title: "Notable Changes",
 						ReleaseCommitMatcherConfig: ReleaseCommitMatcherConfig{
 							Contains: []string{"change-category/notable-change"},
 						},
 					},
-					ReleaseCommitCategoryConfig{
+					{
 						ID:                         "_category_3",
 						Title:                      "Internal Changes",
 						ReleaseCommitMatcherConfig: ReleaseCommitMatcherConfig{},
@@ -117,28 +117,28 @@ func TestBuildReleaseCommits(t *testing.T) {
 			},
 		},
 		CommitCategories: []ReleaseCommitCategoryConfig{
-			ReleaseCommitCategoryConfig{
+			{
 				ID:    "breaking-change",
 				Title: "Breaking Changes",
 				ReleaseCommitMatcherConfig: ReleaseCommitMatcherConfig{
 					Contains: []string{"change-category/breaking-change"},
 				},
 			},
-			ReleaseCommitCategoryConfig{
+			{
 				ID:    "new-feature",
 				Title: "New Features",
 				ReleaseCommitMatcherConfig: ReleaseCommitMatcherConfig{
 					Contains: []string{"change-category/new-feature"},
 				},
 			},
-			ReleaseCommitCategoryConfig{
+			{
 				ID:    "notable-change",
 				Title: "Notable Changes",
 				ReleaseCommitMatcherConfig: ReleaseCommitMatcherConfig{
 					Contains: []string{"change-category/notable-change"},
 				},
 			},
-			ReleaseCommitCategoryConfig{
+			{
 				ID:                         "internal-change",
 				Title:                      "Internal Changes",
 				ReleaseCommitMatcherConfig: ReleaseCommitMatcherConfig{},
@@ -165,30 +165,30 @@ func TestBuildReleaseCommits(t *testing.T) {
 		{
 			name: "ok",
 			commits: []Commit{
-				Commit{
+				{
 					Subject: "Commit 1 message",
 					Body:    "commit 1\napp/hello\n- change-category/breaking-change",
 				},
-				Commit{
+				{
 					Subject: "Commit 2 message",
 					Body:    "commit 2\napp/hello",
 				},
-				Commit{
+				{
 					Subject: "Commit 3 message",
 					Body:    "commit 3\napp/hello\n- change-category/notable-change",
 				},
-				Commit{
+				{
 					Subject: "Commit 4 message",
 					Body:    "commit 4\napp/hello\n```release-note\nCommit 4 release note\n```\n- change-category/notable-change\n",
 				},
-				Commit{
+				{
 					Subject: "Commit 5 message",
 					Body:    "commit 5",
 				},
 			},
 			config: config,
 			expected: []ReleaseCommit{
-				ReleaseCommit{
+				{
 					Commit: Commit{
 						Subject: "Commit 1 message",
 						Body:    "commit 1\napp/hello\n- change-category/breaking-change",
@@ -196,7 +196,7 @@ func TestBuildReleaseCommits(t *testing.T) {
 					CategoryName: "breaking-change",
 					ReleaseNote:  "Commit 1 message",
 				},
-				ReleaseCommit{
+				{
 					Commit: Commit{
 						Subject: "Commit 2 message",
 						Body:    "commit 2\napp/hello",
@@ -204,7 +204,7 @@ func TestBuildReleaseCommits(t *testing.T) {
 					CategoryName: "internal-change",
 					ReleaseNote:  "Commit 2 message",
 				},
-				ReleaseCommit{
+				{
 					Commit: Commit{
 						Subject: "Commit 3 message",
 						Body:    "commit 3\napp/hello\n- change-category/notable-change",
@@ -212,7 +212,7 @@ func TestBuildReleaseCommits(t *testing.T) {
 					CategoryName: "notable-change",
 					ReleaseNote:  "Commit 3 message",
 				},
-				ReleaseCommit{
+				{
 					Commit: Commit{
 						Subject: "Commit 4 message",
 						Body:    "commit 4\napp/hello\n```release-note\nCommit 4 release note\n```\n- change-category/notable-change\n",
@@ -319,28 +319,28 @@ func TestRenderReleaseNote(t *testing.T) {
 				Tag:    "v0.2.0",
 				PreTag: "v0.1.0",
 				Commits: []ReleaseCommit{
-					ReleaseCommit{
+					{
 						Commit: Commit{
 							Subject: "Commit 1 message",
 							Body:    "commit 1\n- change-category/breaking-change",
 						},
 						ReleaseNote: "Commit 1 message",
 					},
-					ReleaseCommit{
+					{
 						Commit: Commit{
 							Subject: "Commit 2 message",
 							Body:    "commit 2",
 						},
 						ReleaseNote: "Commit 2 message",
 					},
-					ReleaseCommit{
+					{
 						Commit: Commit{
 							Subject: "Commit 3 message",
 							Body:    "commit 3\n- change-category/notable-change",
 						},
 						ReleaseNote: "Commit 3 message",
 					},
-					ReleaseCommit{
+					{
 						Commit: Commit{
 							Subject: "Commit 4 message",
 							Body:    "commit 4\n```release-note\nCommit 4 release note\n```\n- change-category/notable-change",
@@ -358,7 +358,7 @@ func TestRenderReleaseNote(t *testing.T) {
 				Tag:    "v0.2.0",
 				PreTag: "v0.1.0",
 				Commits: []ReleaseCommit{
-					ReleaseCommit{
+					{
 						Commit: Commit{
 							Subject: "Commit 1 message",
 							Body:    "commit 1\n- change-category/breaking-change",
@@ -366,7 +366,7 @@ func TestRenderReleaseNote(t *testing.T) {
 						CategoryName: "breaking-change",
 						ReleaseNote:  "Commit 1 message",
 					},
-					ReleaseCommit{
+					{
 						Commit: Commit{
 							Subject: "Commit 2 message",
 							Body:    "commit 2",
@@ -374,7 +374,7 @@ func TestRenderReleaseNote(t *testing.T) {
 						CategoryName: "internal-change",
 						ReleaseNote:  "Commit 2 message",
 					},
-					ReleaseCommit{
+					{
 						Commit: Commit{
 							Subject: "Commit 3 message",
 							Body:    "commit 3\n- change-category/notable-change",
@@ -382,7 +382,7 @@ func TestRenderReleaseNote(t *testing.T) {
 						CategoryName: "notable-change",
 						ReleaseNote:  "Commit 3 message",
 					},
-					ReleaseCommit{
+					{
 						Commit: Commit{
 							Subject: "Commit 4 message",
 							Body:    "commit 4\n```release-note\nCommit 4 release note\n```\n- change-category/notable-change",
@@ -394,19 +394,19 @@ func TestRenderReleaseNote(t *testing.T) {
 			},
 			config: ReleaseConfig{
 				CommitCategories: []ReleaseCommitCategoryConfig{
-					ReleaseCommitCategoryConfig{
+					{
 						ID:    "breaking-change",
 						Title: "Breaking Changes",
 					},
-					ReleaseCommitCategoryConfig{
+					{
 						ID:    "new-feature",
 						Title: "New Features",
 					},
-					ReleaseCommitCategoryConfig{
+					{
 						ID:    "notable-change",
 						Title: "Notable Changes",
 					},
-					ReleaseCommitCategoryConfig{
+					{
 						ID:    "internal-change",
 						Title: "Internal Changes",
 					},
