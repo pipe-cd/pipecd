@@ -49,13 +49,14 @@ type Client struct {
 	toolRegistry *toolregistry.ToolRegistry
 }
 
-func NewClient(base *pipedapi.PipedServiceClient, pluginName, applicationID, stageID string, lp StageLogPersister) *Client {
+func NewClient(base *pipedapi.PipedServiceClient, pluginName, applicationID, stageID string, lp StageLogPersister, tr *toolregistry.ToolRegistry) *Client {
 	return &Client{
 		base:          base,
 		pluginName:    pluginName,
 		applicationID: applicationID,
 		stageID:       stageID,
 		logPersister:  lp,
+		toolRegistry:  tr,
 	}
 }
 

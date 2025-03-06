@@ -74,6 +74,9 @@ func TestPlugin_executeK8sSyncStage(t *testing.T) {
 	cfg, err := os.ReadFile(filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
 	require.NoError(t, err)
 
+	// initialize tool registry
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
 	// prepare the input
 	input := &sdk.ExecuteStageInput{
 		Request: sdk.ExecuteStageRequest{
@@ -91,18 +94,14 @@ func TestPlugin_executeK8sSyncStage(t *testing.T) {
 				ApplicationID: "app-id",
 			},
 		},
-		Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t)),
+		Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
 		Logger: zaptest.NewLogger(t),
 	}
-
-	// initialize tool registry
-	testRegistry, err := toolregistrytest.NewToolRegistry(t)
-	require.NoError(t, err)
 
 	// initialize deploy target config and dynamic client for assertions with envtest
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
-	plugin := NewPlugin(zaptest.NewLogger(t), testRegistry, logpersistertest.NewTestLogPersister(t))
+	plugin := &Plugin{}
 
 	status := plugin.executeK8sSyncStage(ctx, input, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
 		{
@@ -149,6 +148,9 @@ func TestPlugin_executeK8sSyncStage_withInputNamespace(t *testing.T) {
 	cfg, err = yaml.Marshal(spec)
 	require.NoError(t, err)
 
+	// initialize tool registry
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
 	// prepare the input
 	input := &sdk.ExecuteStageInput{
 		Request: sdk.ExecuteStageRequest{
@@ -166,18 +168,14 @@ func TestPlugin_executeK8sSyncStage_withInputNamespace(t *testing.T) {
 				ApplicationID: "app-id",
 			},
 		},
-		Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t)),
+		Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
 		Logger: zaptest.NewLogger(t),
 	}
-
-	// initialize tool registry
-	testRegistry, err := toolregistrytest.NewToolRegistry(t)
-	require.NoError(t, err)
 
 	// initialize deploy target config and dynamic client for assertions with envtest
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
-	plugin := NewPlugin(zaptest.NewLogger(t), testRegistry, logpersistertest.NewTestLogPersister(t))
+	plugin := &Plugin{}
 
 	status := plugin.executeK8sSyncStage(ctx, input, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
 		{

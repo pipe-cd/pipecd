@@ -19,8 +19,6 @@ import (
 	"context"
 	"errors"
 
-	"go.uber.org/zap"
-
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
@@ -34,23 +32,6 @@ const (
 
 // Plugin implements the sdk.DeploymentPlugin interface.
 type Plugin struct {
-	logger       *zap.Logger
-	toolRegistry toolRegistry
-	loader       loader
-}
-
-// NewPlugin creates a new Plugin.
-func NewPlugin(
-	logger *zap.Logger,
-	toolClient toolClient,
-	logPersister logPersister,
-) *Plugin {
-	toolRegistry := toolregistry.NewRegistry(toolClient)
-	return &Plugin{
-		logger:       logger.Named("deployment-plugin"),
-		toolRegistry: toolRegistry,
-		loader:       provider.NewLoader(toolRegistry),
-	}
 }
 
 type loader interface {
@@ -115,8 +96,11 @@ func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStag
 		return sdk.StageStatusFailure
 	}
 
+	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
+	loader := provider.NewLoader(toolRegistry)
+
 	lp.Infof("Loading manifests at commit %s for handling", input.Request.TargetDeploymentSource.CommitHash)
-	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.TargetDeploymentSource)
+	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.TargetDeploymentSource, loader)
 	if err != nil {
 		lp.Errorf("Failed while loading manifests (%v)", err)
 		return sdk.StageStatusFailure
@@ -167,7 +151,7 @@ func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStag
 	deployTargetConfig := dts[0].Config
 
 	// Get the kubectl tool path.
-	kubectlPath, err := p.toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion, defaultKubectlVersion))
+	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion, defaultKubectlVersion))
 	if err != nil {
 		lp.Errorf("Failed while getting kubectl tool (%v)", err)
 		return sdk.StageStatusFailure
@@ -177,7 +161,7 @@ func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStag
 	kubectl := provider.NewKubectl(kubectlPath)
 
 	// Create the applier for the target cluster.
-	applier := provider.NewApplier(kubectl, cfg.Spec.Input, deployTargetConfig, p.logger)
+	applier := provider.NewApplier(kubectl, cfg.Spec.Input, deployTargetConfig, input.Logger)
 
 	// Start applying all manifests to add or update running resources.
 	// TODO: use applyManifests instead of applyManifestsSDK
@@ -195,8 +179,8 @@ func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStag
 	return sdk.StageStatusSuccess
 }
 
-func (p *Plugin) loadManifests(ctx context.Context, deploy *sdk.Deployment, spec *kubeconfig.KubernetesApplicationSpec, deploymentSource *sdk.DeploymentSource) ([]provider.Manifest, error) {
-	manifests, err := p.loader.LoadManifests(ctx, provider.LoaderInput{
+func (p *Plugin) loadManifests(ctx context.Context, deploy *sdk.Deployment, spec *kubeconfig.KubernetesApplicationSpec, deploymentSource *sdk.DeploymentSource, loader loader) ([]provider.Manifest, error) {
+	manifests, err := loader.LoadManifests(ctx, provider.LoaderInput{
 		PipedID:          deploy.PipedID,
 		AppID:            deploy.ApplicationID,
 		CommitHash:       deploymentSource.CommitHash,
