@@ -145,13 +145,8 @@ func (a *DeploymentService) DetermineVersions(ctx context.Context, request *depl
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	versions, err := determineVersions(manifests)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
 	return &deployment.DetermineVersionsResponse{
-		Versions: versions,
+		Versions: determineVersions(manifests),
 	}, nil
 }
 

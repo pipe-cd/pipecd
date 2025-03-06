@@ -30,6 +30,7 @@ service LivestateService {
 message GetLivestateRequest {
     string application_id = 1;
     grpc.plugin.common.v1alpha1.DeploymentSource deploy_source = 2;
+    repeated string deploy_targets = 3;
 }
 
 message GetLivestateResponse {

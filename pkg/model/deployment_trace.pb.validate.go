@@ -68,16 +68,9 @@ func (m *DeploymentTrace) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetTitle()) < 1 {
-		err := DeploymentTraceValidationError{
-			field:  "Title",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Title
+
+	// no validation rules for CommitMessage
 
 	if utf8.RuneCountInString(m.GetCommitHash()) < 1 {
 		err := DeploymentTraceValidationError{
@@ -101,8 +94,6 @@ func (m *DeploymentTrace) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for CommitMessage
-
 	if m.GetCommitTimestamp() < 0 {
 		err := DeploymentTraceValidationError{
 			field:  "CommitTimestamp",
@@ -114,27 +105,7 @@ func (m *DeploymentTrace) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetAuthor()) < 1 {
-		err := DeploymentTraceValidationError{
-			field:  "Author",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if m.GetCompletedAt() < 0 {
-		err := DeploymentTraceValidationError{
-			field:  "CompletedAt",
-			reason: "value must be greater than or equal to 0",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Author
 
 	if m.GetCreatedAt() < 0 {
 		err := DeploymentTraceValidationError{

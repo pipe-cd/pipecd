@@ -47,7 +47,7 @@ func parseContainerImage(image string) (img containerImage) {
 
 // determineVersions decides artifact versions of an application.
 // It finds all container images that are being specified in the workload manifests then returns their names and tags.
-func determineVersions(manifests []provider.Manifest) ([]*model.ArtifactVersion, error) {
+func determineVersions(manifests []provider.Manifest) []*model.ArtifactVersion {
 	imageMap := map[string]struct{}{}
 	for _, m := range manifests {
 		for _, c := range provider.FindContainerImages(m) {
@@ -66,7 +66,7 @@ func determineVersions(manifests []provider.Manifest) ([]*model.ArtifactVersion,
 		})
 	}
 
-	return versions, nil
+	return versions
 }
 
 // findManifests returns the manifests that have the specified kind and name.
