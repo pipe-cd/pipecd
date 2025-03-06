@@ -277,9 +277,52 @@ func (s ResourceHealthStatus) toModel() model.ResourceState_HealthStatus {
 	}
 }
 
+// ApplicationSyncState represents the sync state of an application.
 type ApplicationSyncState struct {
+	// Status is the sync status of the application.
+	Status ApplicationSyncStatus
+	// ShortReason is the short reason of the sync status.
+	// for example, "The service manifest doesn't be synced"
+	ShortReason string
+	// Reason is the reason of the sync status.
+	// actually, it's the difference between the desired state and the live state.
+	Reason string
 }
 
+// toModel converts the ApplicationSyncState to the model.ApplicationSyncState.
 func (s *ApplicationSyncState) toModel(now time.Time) *model.ApplicationSyncState {
-	return nil
+	return &model.ApplicationSyncState{
+		Status:      s.Status.toModel(),
+		ShortReason: s.ShortReason,
+		Reason:      s.Reason,
+		Timestamp:   now.Unix(),
+	}
+}
+
+// ApplicationSyncStatus represents the sync status of an application.
+type ApplicationSyncStatus int
+
+const (
+	// ApplicationSyncStateUnknown represents the unknown sync status of an application.
+	ApplicationSyncStateUnknown ApplicationSyncStatus = iota
+	// ApplicationSyncStateSynced represents the synced sync status of an application.
+	ApplicationSyncStateSynced
+	// ApplicationSyncStateOutOfSync represents the out-of-sync sync status of an application.
+	ApplicationSyncStateOutOfSync
+	// ApplicationSyncStateInvalidConfig represents the invalid-config sync status of an application.
+	ApplicationSyncStateInvalidConfig
+)
+
+// toModel converts the ApplicationSyncStatus to the model.ApplicationSyncStatus.
+func (s ApplicationSyncStatus) toModel() model.ApplicationSyncStatus {
+	switch s {
+	case ApplicationSyncStateSynced:
+		return model.ApplicationSyncStatus_SYNCED
+	case ApplicationSyncStateOutOfSync:
+		return model.ApplicationSyncStatus_OUT_OF_SYNC
+	case ApplicationSyncStateInvalidConfig:
+		return model.ApplicationSyncStatus_INVALID_CONFIG
+	default:
+		return model.ApplicationSyncStatus_UNKNOWN
+	}
 }
