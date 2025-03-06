@@ -22,6 +22,12 @@ import (
 	"runtime"
 	"testing"
 	"text/template"
+
+	"google.golang.org/grpc"
+
+	"github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
+	"github.com/pipe-cd/pipecd/pkg/plugin/pipedservice/pipedservicetest"
+	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry"
 )
 
 type ToolRegistry struct {
@@ -131,4 +137,78 @@ func (r *ToolRegistry) Close() error {
 		return err
 	}
 	return nil
+}
+
+type fakeClient struct {
+	pipedservicetest.MockPluginServiceClient
+	testingT *testing.T
+	tmpDir   string
+}
+
+func (c *fakeClient) binDir() (string, error) {
+	target := c.tmpDir + "/bin"
+	if err := os.MkdirAll(target, 0o755); err != nil {
+		return "", err
+	}
+	return target, nil
+}
+
+func (c *fakeClient) outPath() string {
+	return c.tmpDir + "/out"
+}
+
+func (c *fakeClient) InstallTool(ctx context.Context, in *pipedservice.InstallToolRequest, opts ...grpc.CallOption) (*pipedservice.InstallToolResponse, error) {
+	outPath := c.outPath()
+
+	binDir, err := c.binDir()
+	if err != nil {
+		return nil, err
+	}
+
+	t, err := template.New("install script").Parse(in.GetInstallScript())
+	if err != nil {
+		return nil, err
+	}
+
+	vars := templateValues{
+		Name:    in.GetName(),
+		Version: in.GetVersion(),
+		OutPath: outPath,
+		TmpDir:  c.testingT.TempDir(),
+		Arch:    runtime.GOARCH,
+		Os:      runtime.GOOS,
+	}
+	var buf bytes.Buffer
+	if err := t.Execute(&buf, vars); err != nil {
+		return nil, err
+	}
+
+	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", buf.String())
+	if out, err := cmd.CombinedOutput(); err != nil {
+		c.testingT.Log(string(out))
+		return nil, err
+	}
+
+	if err := os.Chmod(outPath, 0o755); err != nil {
+		return nil, err
+	}
+
+	target := binDir + "/" + in.GetName() + "-" + in.GetVersion()
+	if out, err := exec.CommandContext(ctx, "/bin/sh", "-c", "mv "+outPath+" "+target).CombinedOutput(); err != nil {
+		c.testingT.Log(string(out))
+		return nil, err
+	}
+
+	return &pipedservice.InstallToolResponse{
+		InstalledPath: target,
+	}, nil
+}
+
+// NewTestToolRegistry returns a new instance of ToolRegistry for testing purpose.
+func NewTestToolRegistry(t *testing.T) *toolregistry.ToolRegistry {
+	return toolregistry.NewToolRegistry(&fakeClient{
+		MockPluginServiceClient: pipedservicetest.MockPluginServiceClient{},
+		testingT:                t,
+		tmpDir:                  t.TempDir(),
+	})
 }
