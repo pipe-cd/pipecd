@@ -428,8 +428,6 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		}
 	}
 
-	metadataStore := c.metadataStoreRegistry.Register(d)
-
 	planner := newPlanner(
 		d,
 		commitHash,
@@ -440,7 +438,6 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		c.gitClient,
 		c.notifier,
 		c.secretDecrypter,
-		metadataStore,
 		c.logger,
 		c.tracerProvider,
 	)
@@ -457,7 +454,6 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 	go func() {
 		defer c.wg.Done()
 		defer cleanup()
-		defer c.metadataStoreRegistry.Delete(d.Id)
 		if err := planner.Run(ctx); err != nil {
 			logger.Error("failed to run planner", zap.Error(err))
 		}

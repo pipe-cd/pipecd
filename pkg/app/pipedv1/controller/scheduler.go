@@ -16,6 +16,7 @@ package controller
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -704,7 +705,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	defer func() {
 		switch status {
 		case model.DeploymentStatus_DEPLOYMENT_SUCCESS:
-			users, groups, err := getApplicationNotificationMentions(s.metadataStore, model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
+			users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
 			if err != nil {
 				s.logger.Error("failed to get the list of users", zap.Error(err))
 			}
@@ -718,7 +719,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 			})
 
 		case model.DeploymentStatus_DEPLOYMENT_FAILURE:
-			users, groups, err := getApplicationNotificationMentions(s.metadataStore, model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
+			users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
 			if err != nil {
 				s.logger.Error("failed to get the list of users", zap.Error(err))
 			}
@@ -734,7 +735,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 			})
 
 		case model.DeploymentStatus_DEPLOYMENT_CANCELLED:
-			users, groups, err := getApplicationNotificationMentions(s.metadataStore, model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
+			users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
 			if err != nil {
 				s.logger.Error("failed to get the list of users", zap.Error(err))
 			}
@@ -760,6 +761,21 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	})
 
 	return err
+}
+
+// getApplicationNotificationMentions returns the list of users groups who should be mentioned in the notification.
+func (s *scheduler) getApplicationNotificationMentions(event model.NotificationEventType) ([]string, []string, error) {
+	n, ok := s.metadataStore.SharedGet(model.MetadataKeyDeploymentNotification)
+	if !ok {
+		return []string{}, []string{}, nil
+	}
+
+	var notification config.DeploymentNotification
+	if err := json.Unmarshal([]byte(n), &notification); err != nil {
+		return nil, nil, fmt.Errorf("could not extract mentions config: %w", err)
+	}
+
+	return notification.FindSlackUsers(event), notification.FindSlackGroups(event), nil
 }
 
 func (s *scheduler) reportMostRecentlySuccessfulDeployment(ctx context.Context) error {
@@ -824,7 +840,7 @@ func (s *scheduler) notifyStageEndEvent(stage *model.PipelineStage, result model
 	case model.StageStatus_STAGE_SUCCESS, model.StageStatus_STAGE_EXITED: // Exit stage is treated as success.
 
 		if stage.AvailableOperation == model.ManualOperation_MANUAL_OPERATION_APPROVE {
-			users, groups, err := getApplicationNotificationMentions(s.metadataStore, model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED)
+			users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED)
 			if err != nil {
 				s.logger.Error("failed to get the list of users", zap.Error(err))
 			}
