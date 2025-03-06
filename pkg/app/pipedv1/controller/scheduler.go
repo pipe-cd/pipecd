@@ -847,7 +847,6 @@ func (s *scheduler) notifyStageEndEvent(stage *model.PipelineStage, result model
 				Stage:      stage,
 			},
 		})
-
 	case model.StageStatus_STAGE_FAILURE:
 		s.notifier.Notify(model.NotificationEvent{
 			Type: model.NotificationEventType_EVENT_STAGE_FAILED,
