@@ -95,6 +95,9 @@ type OnCommit struct {
 	// List of directories or files where their changes will be ignored.
 	// Regular expression can be used.
 	Ignores []string `json:"ignores,omitempty"`
+	// Whether to disable auto deploy right after registering the application.
+	// Default is false.
+	DisableOnRegister bool `json:"disableOnRegister,omitempty"`
 }
 
 type OnCommand struct {

@@ -81,6 +81,7 @@ type Trigger struct {
 	notifier          notifier
 	config            *config.PipedSpec
 	commitStore       *lastTriggeredCommitStore
+	onRegisterCommits onRegisterCommits
 	gitRepos          map[string]git.Repo
 	gracePeriod       time.Duration
 	logger            *zap.Logger
@@ -114,6 +115,7 @@ func NewTrigger(
 		notifier:          notifier,
 		config:            cfg,
 		commitStore:       commitStore,
+		onRegisterCommits: onRegisterCommits{},
 		gitRepos:          make(map[string]git.Repo, len(cfg.Repositories)),
 		gracePeriod:       gracePeriod,
 		logger:            logger.Named("trigger"),

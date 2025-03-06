@@ -134,11 +134,15 @@ type LastTriggeredCommitGetter interface {
 	Get(ctx context.Context, applicationID string) (string, error)
 }
 
+// map of applicationID to the commit hash at the time of registering the application
+type onRegisterCommits map[string]string
+
 type OnCommitDeterminer struct {
-	repo         git.Repo
-	targetCommit string
-	commitGetter LastTriggeredCommitGetter
-	logger       *zap.Logger
+	repo              git.Repo
+	targetCommit      string
+	commitGetter      LastTriggeredCommitGetter
+	onRegisterCommits onRegisterCommits
+	logger            *zap.Logger
 }
 
 func NewOnCommitDeterminer(repo git.Repo, targetCommit string, cg LastTriggeredCommitGetter, logger *zap.Logger) Determiner {
@@ -146,7 +150,8 @@ func NewOnCommitDeterminer(repo git.Repo, targetCommit string, cg LastTriggeredC
 		repo:         repo,
 		targetCommit: targetCommit,
 		commitGetter: cg,
-		logger:       logger.Named("determiner"),
+		// onRegisterCommits: onRegisterCommits, // TODO: Somehow pass this. Note that this is used in planpreview too.
+		logger: logger.Named("determiner"),
 	}
 }
 
@@ -170,11 +175,29 @@ func (d *OnCommitDeterminer) ShouldTrigger(ctx context.Context, app *model.Appli
 		return false, err
 	}
 
-	// There is no previous deployment so we don't need to check anymore.
-	// Just do it.
 	if preCommit == "" {
-		logger.Info("no previously triggered deployment was found")
-		return true, nil
+		if !appCfg.Trigger.OnCommit.DisableOnRegister {
+			// There is no previous deployment so we don't need to check anymore.
+			// Just do it.
+			logger.Info("no previously triggered deployment was found")
+			return true, nil
+		}
+
+		// If no new commit found after registering the app, we consider it as unnecessary to trigger deployment.
+		onRegisterCommit, ok := d.onRegisterCommits[app.Id]
+		if !ok {
+			d.onRegisterCommits[app.Id] = d.targetCommit
+			logger.Info(fmt.Sprintf("auto deployment right after registration is disabled for the application. Waiting for new commit after %s", d.targetCommit), zap.String("app", app.Name))
+			return false, nil
+		}
+		if onRegisterCommit == d.targetCommit {
+			logger.Info(fmt.Sprintf("auto deployment right after registration is disabled for the application. Waiting for new commit after %s", d.targetCommit), zap.String("app", app.Name))
+			return false, nil
+		} else {
+			logger.Info("new commit found after registration", zap.String("app", app.Name))
+			delete(d.onRegisterCommits, app.Id) // FIXME: What if an error occurs after deleting here before successfully triggering deployment?
+			return true, nil
+		}
 	}
 
 	// Check whether the most recently applied one is the target commit or not.
