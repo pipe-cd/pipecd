@@ -161,7 +161,7 @@ const PipedCount: FC = () => {
               key: "online",
               color: onlineColor,
               title: `${pipedSummary.online} online`,
-              description: `/ ${pipedSummary.enabled} total`,
+              description: `/ ${pipedSummary.enabled} enabled`,
             },
           ]}
         />
