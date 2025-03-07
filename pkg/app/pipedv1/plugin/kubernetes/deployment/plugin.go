@@ -200,7 +200,7 @@ func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStag
 
 	if len(namespacedLiveResources)+len(clusterScopedLiveResources) == 0 {
 		lp.Info("There is no data about live resource so no resource will be removed")
-		return sdk.StageStatusFailure
+		return sdk.StageStatusSuccess
 	}
 
 	lp.Successf("Successfully loaded %d live resources", len(namespacedLiveResources)+len(clusterScopedLiveResources))
