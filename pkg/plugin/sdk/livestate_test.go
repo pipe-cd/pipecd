@@ -64,6 +64,8 @@ func newTestLivestatePluginServer(t *testing.T, plugin *mockLivestatePlugin) *Li
 }
 
 func TestLivestatePluginServer_GetLivestate(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name           string
 		request        *livestate.GetLivestateRequest
@@ -116,6 +118,8 @@ func TestLivestatePluginServer_GetLivestate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			plugin := &mockLivestatePlugin{
 				result: tt.result,
 				err:    tt.err,
@@ -138,6 +142,8 @@ func TestLivestatePluginServer_GetLivestate(t *testing.T) {
 	}
 }
 func TestApplicationLiveState_toModel(t *testing.T) {
+	t.Parallel()
+
 	now := time.Now()
 	tests := []struct {
 		name     string
@@ -172,6 +178,8 @@ func TestApplicationLiveState_toModel(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			result := tt.input.toModel(now)
 			assert.Equal(t, tt.expected, result)
 		})
@@ -179,6 +187,8 @@ func TestApplicationLiveState_toModel(t *testing.T) {
 }
 
 func TestResourceState_toModel(t *testing.T) {
+	t.Parallel()
+
 	now := time.Now()
 	tests := []struct {
 		name     string
@@ -203,6 +213,8 @@ func TestResourceState_toModel(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			result := tt.input.toModel(now)
 			assert.Equal(t, tt.expected, result)
 		})
@@ -210,6 +222,8 @@ func TestResourceState_toModel(t *testing.T) {
 }
 
 func TestApplicationSyncState_toModel(t *testing.T) {
+	t.Parallel()
+
 	now := time.Now()
 	tests := []struct {
 		name     string
@@ -234,6 +248,8 @@ func TestApplicationSyncState_toModel(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			result := tt.input.toModel(now)
 			assert.Equal(t, tt.expected, result)
 		})
@@ -241,6 +257,8 @@ func TestApplicationSyncState_toModel(t *testing.T) {
 }
 
 func TestApplicationHealthStatus_toModel(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		input    ApplicationHealthStatus
@@ -265,6 +283,8 @@ func TestApplicationHealthStatus_toModel(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			result := tt.input.toModel()
 			assert.Equal(t, tt.expected, result)
 		})
@@ -272,6 +292,8 @@ func TestApplicationHealthStatus_toModel(t *testing.T) {
 }
 
 func TestResourceHealthStatus_toModel(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		input    ResourceHealthStatus
@@ -296,6 +318,8 @@ func TestResourceHealthStatus_toModel(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			result := tt.input.toModel()
 			assert.Equal(t, tt.expected, result)
 		})
@@ -303,6 +327,8 @@ func TestResourceHealthStatus_toModel(t *testing.T) {
 }
 
 func TestApplicationSyncStatus_toModel(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		input    ApplicationSyncStatus
@@ -332,6 +358,8 @@ func TestApplicationSyncStatus_toModel(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			result := tt.input.toModel()
 			assert.Equal(t, tt.expected, result)
 		})
