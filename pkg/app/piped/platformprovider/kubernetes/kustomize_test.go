@@ -37,6 +37,7 @@ func TestKustomizeTemplate(t *testing.T) {
 	kustomizePath, _, err := toolregistry.DefaultRegistry().Kustomize(ctx, "")
 	require.NoError(t, err)
 	helmPath, _, err := toolregistry.DefaultRegistry().Helm(ctx, "")
+	require.NoError(t, err)
 
 	kustomize := NewKustomize("", kustomizePath, zap.NewNop())
 	helm := NewHelm("", helmPath, zap.NewNop())
