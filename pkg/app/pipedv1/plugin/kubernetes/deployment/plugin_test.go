@@ -450,3 +450,150 @@ func TestPlugin_executeK8sSyncStage_withPrune_changesNamespace(t *testing.T) {
 		require.Equal(t, ":Service:test-2:simple", service.GetAnnotations()["pipecd.dev/resource-key"])
 	})
 }
+
+func TestPlugin_executeK8sSyncStage_withPrune_clusterScoped(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	// initialize tool registry
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
+	// initialize deploy target config and dynamic client for assertions with envtest
+	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
+
+	// prepare the custom resource definition
+	prepare := filepath.Join("./", "testdata", "prune_cluster_scoped_resource", "prepare")
+
+	prepareCfg, err := os.ReadFile(filepath.Join(prepare, "app.pipecd.yaml"))
+	require.NoError(t, err)
+
+	ok := t.Run("prepare crd", func(t *testing.T) {
+		// prepare the input to ensure the running deployment exists
+		prepareInput := &sdk.ExecuteStageInput{
+			Request: sdk.ExecuteStageRequest{
+				StageName:               "K8S_SYNC",
+				StageConfig:             []byte(``),
+				RunningDeploymentSource: sdk.DeploymentSource{},
+				TargetDeploymentSource: sdk.DeploymentSource{
+					ApplicationDirectory:      prepare,
+					CommitHash:                "0123456789",
+					ApplicationConfig:         prepareCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+				Deployment: sdk.Deployment{
+					PipedID:       "piped-id",
+					ApplicationID: "prepare-app-id",
+				},
+			},
+			Client: sdk.NewClient(nil, "kubernetes", "prepare-app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
+			Logger: zaptest.NewLogger(t),
+		}
+
+		plugin := &Plugin{}
+		status := plugin.executeK8sSyncStage(ctx, prepareInput, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
+			{
+				Name:   "default",
+				Config: *dtConfig,
+			},
+		})
+		require.Equal(t, sdk.StageStatusSuccess, status)
+	})
+	require.Truef(t, ok, "expected prepare to succeed")
+
+	// prepare the running resources
+	running := filepath.Join("./", "testdata", "prune_cluster_scoped_resource", "running")
+
+	// read the running application config from the example file
+	runningCfg, err := os.ReadFile(filepath.Join(running, "app.pipecd.yaml"))
+	require.NoError(t, err)
+
+	ok = t.Run("prepare running", func(t *testing.T) {
+		// prepare the input to ensure the running deployment exists
+		runningInput := &sdk.ExecuteStageInput{
+			Request: sdk.ExecuteStageRequest{
+				StageName:               "K8S_SYNC",
+				StageConfig:             []byte(``),
+				RunningDeploymentSource: sdk.DeploymentSource{},
+				TargetDeploymentSource: sdk.DeploymentSource{
+					ApplicationDirectory:      running,
+					CommitHash:                "0123456789",
+					ApplicationConfig:         runningCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+			},
+			Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
+			Logger: zaptest.NewLogger(t),
+		}
+
+		plugin := &Plugin{}
+		status := plugin.executeK8sSyncStage(ctx, runningInput, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
+			{
+				Name:   "default",
+				Config: *dtConfig,
+			},
+		})
+		require.Equal(t, sdk.StageStatusSuccess, status)
+
+		// The my-new-cron-object/my-new-cron-object-2/my-new-cron-object-v1beta1 should be created
+		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object", metav1.GetOptions{})
+		require.NoError(t, err)
+		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object-2", metav1.GetOptions{})
+		require.NoError(t, err)
+		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object-v1beta1", metav1.GetOptions{})
+		require.NoError(t, err)
+	})
+	require.Truef(t, ok, "expected prepare to succeed")
+
+	t.Run("sync", func(t *testing.T) {
+		// sync the target resources and assert the prune behavior
+		target := filepath.Join("./", "testdata", "prune_cluster_scoped_resource", "target")
+
+		// read the running application config from the example file
+		targetCfg, err := os.ReadFile(filepath.Join(target, "app.pipecd.yaml"))
+		require.NoError(t, err)
+
+		// prepare the input to ensure the running deployment exists
+		targetInput := sdk.ExecuteStageInput{
+			Request: sdk.ExecuteStageRequest{
+				StageName:   "K8S_SYNC",
+				StageConfig: []byte(``),
+				RunningDeploymentSource: sdk.DeploymentSource{
+					ApplicationDirectory:      running,
+					CommitHash:                "0123456789",
+					ApplicationConfig:         runningCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+				TargetDeploymentSource: sdk.DeploymentSource{
+					ApplicationDirectory:      target,
+					CommitHash:                "0012345678",
+					ApplicationConfig:         targetCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+			},
+			Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
+			Logger: zaptest.NewLogger(t),
+		}
+
+		plugin := &Plugin{}
+		status := plugin.executeK8sSyncStage(ctx, &targetInput, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
+			{
+				Name:   "default",
+				Config: *dtConfig,
+			},
+		})
+		require.Equal(t, sdk.StageStatusSuccess, status)
+
+		// The my-new-cron-object should not be removed
+		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object", metav1.GetOptions{})
+		require.NoError(t, err)
+		// The my-new-cron-object-2 should be removed
+		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object-2", metav1.GetOptions{})
+		require.Error(t, err)
+		require.Truef(t, apierrors.IsNotFound(err), "expected error to be NotFound, but got %v", err)
+		// The my-new-cron-object-v1beta1 should be removed
+		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object-v1beta1", metav1.GetOptions{})
+		require.Error(t, err)
+		require.Truef(t, apierrors.IsNotFound(err), "expected error to be NotFound, but got %v", err)
+	})
+}
