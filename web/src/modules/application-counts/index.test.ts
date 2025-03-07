@@ -50,6 +50,7 @@ describe("applicationCountsSlice reducer", () => {
         },
       },
       updatedAt: 0,
+      summary: { total: 0, enabled: 0, disabled: 0 },
     });
   });
 });
