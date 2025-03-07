@@ -142,7 +142,7 @@ func Test_reporter_flushSnapshots(t *testing.T) {
 		snapshotFlushInterval: 1 * time.Minute,
 		appLister: &fakeAPILister{
 			apps: []*model.Application{
-				&model.Application{
+				{
 					Id:   "app-id",
 					Name: "app-name",
 					GitPath: &model.ApplicationGitPath{
