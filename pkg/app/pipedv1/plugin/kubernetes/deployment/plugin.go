@@ -205,6 +205,12 @@ func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStag
 
 	lp.Successf("Successfully loaded %d live resources", len(namespacedLiveResources)+len(clusterScopedLiveResources))
 
+	removeKeys := provider.FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveResources)
+	if len(removeKeys) == 0 {
+		lp.Info("There are no live resources should be removed")
+		return sdk.StageStatusSuccess
+	}
+
 	return sdk.StageStatusSuccess
 }
 
