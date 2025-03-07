@@ -18,6 +18,7 @@ import (
 	"cmp"
 	"context"
 	"errors"
+	"time"
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
@@ -177,6 +178,55 @@ func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStag
 		lp.Info("Resource GC was skipped because sync.prune was not configured")
 		return sdk.StageStatusSuccess
 	}
+
+	// Wait for all applied manifests to be stable.
+	// In theory, we don't need to wait for them to be stable before going to the next step
+	// but waiting for a while reduces the number of Kubernetes changes in a short time.
+	lp.Info("Waiting for the applied manifests to be stable")
+	select {
+	case <-time.After(15 * time.Second):
+		break
+	case <-ctx.Done():
+		break
+	}
+
+	lp.Info("Start finding all running resources but no longer defined in Git")
+
+	namespacedLiveResources, clusterScopedLiveResources, err := provider.GetLiveResources(ctx, kubectl, deployTargetConfig.KubeConfigPath, input.Request.Deployment.ApplicationID)
+	if err != nil {
+		lp.Errorf("Failed while getting live resources (%v)", err)
+		return sdk.StageStatusFailure
+	}
+
+	if len(namespacedLiveResources)+len(clusterScopedLiveResources) == 0 {
+		lp.Info("There is no data about live resource so no resource will be removed")
+		return sdk.StageStatusSuccess
+	}
+
+	lp.Successf("Successfully loaded %d live resources", len(namespacedLiveResources)+len(clusterScopedLiveResources))
+
+	removeKeys := provider.FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveResources)
+	if len(removeKeys) == 0 {
+		lp.Info("There are no live resources should be removed")
+		return sdk.StageStatusSuccess
+	}
+
+	lp.Infof("Start pruning %d resources", len(removeKeys))
+	var deletedCount int
+	for _, key := range removeKeys {
+		if err := kubectl.Delete(ctx, deployTargetConfig.KubeConfigPath, key.Namespace(), key); err != nil {
+			if errors.Is(err, provider.ErrNotFound) {
+				lp.Infof("Specified resource does not exist, so skip deleting the resource: %s (%v)", key.ReadableString(), err)
+				continue
+			}
+			lp.Errorf("Failed while deleting resource %s (%v)", key.ReadableString(), err)
+			continue // continue to delete other resources
+		}
+		deletedCount++
+		lp.Successf("- deleted resource: %s", key.ReadableString())
+	}
+
+	lp.Successf("Successfully deleted %d resources", deletedCount)
 
 	return sdk.StageStatusSuccess
 }
