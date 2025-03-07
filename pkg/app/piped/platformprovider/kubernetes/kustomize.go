@@ -37,10 +37,17 @@ func NewKustomize(version, path string, logger *zap.Logger) *Kustomize {
 	}
 }
 
-func (c *Kustomize) Template(ctx context.Context, appName, appDir string, opts map[string]string) (string, error) {
+func (c *Kustomize) Template(ctx context.Context, appName, appDir string, opts map[string]string, helm *Helm) (string, error) {
 	args := []string{
 		"build",
 		".",
+	}
+
+	// Pass the Helm command path to kustomize to use the specified version of Helm.
+	// Unconditionally adding this flag as it's unharmful when Helm is not used.
+	// Note: It's only available on Kustomize v4.1.0 and higher.
+	if c.version >= "4.1.0" && helm != nil {
+		args = append(args, "--helm-command", helm.execPath)
 	}
 
 	for k, v := range opts {
