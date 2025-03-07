@@ -18,6 +18,7 @@ import (
 	"cmp"
 	"context"
 	"errors"
+	"time"
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
@@ -177,6 +178,32 @@ func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStag
 		lp.Info("Resource GC was skipped because sync.prune was not configured")
 		return sdk.StageStatusSuccess
 	}
+
+	// Wait for all applied manifests to be stable.
+	// In theory, we don't need to wait for them to be stable before going to the next step
+	// but waiting for a while reduces the number of Kubernetes changes in a short time.
+	lp.Info("Waiting for the applied manifests to be stable")
+	select {
+	case <-time.After(15 * time.Second):
+		break
+	case <-ctx.Done():
+		break
+	}
+
+	lp.Info("Start finding all running resources but no longer defined in Git")
+
+	namespacedLiveResources, clusterScopedLiveResources, err := provider.GetLiveResources(ctx, kubectl, deployTargetConfig.KubeConfigPath, input.Request.Deployment.ApplicationID)
+	if err != nil {
+		lp.Errorf("Failed while getting live resources (%v)", err)
+		return sdk.StageStatusFailure
+	}
+
+	if len(namespacedLiveResources)+len(clusterScopedLiveResources) == 0 {
+		lp.Info("There is no data about live resource so no resource will be removed")
+		return sdk.StageStatusFailure
+	}
+
+	lp.Successf("Successfully loaded %d live resources", len(namespacedLiveResources)+len(clusterScopedLiveResources))
 
 	return sdk.StageStatusSuccess
 }
