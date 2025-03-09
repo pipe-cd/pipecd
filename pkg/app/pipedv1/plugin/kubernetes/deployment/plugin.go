@@ -313,6 +313,13 @@ func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.Execute
 		return sdk.StageStatusFailure
 	}
 
+	// Get the deploy target config.
+	if len(dts) == 0 {
+		lp.Error("No deploy target was found")
+		return sdk.StageStatusFailure
+	}
+	deployTargetConfig := dts[0].Config
+
 	return sdk.StageStatusSuccess
 }
 
