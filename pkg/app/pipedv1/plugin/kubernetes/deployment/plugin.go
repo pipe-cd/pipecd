@@ -308,6 +308,11 @@ func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.Execute
 		})
 	}
 
+	if err := annotateConfigHash(manifests); err != nil {
+		lp.Errorf("Unable to set %q annotation into the workload manifest (%v)", provider.AnnotationConfigHash, err)
+		return sdk.StageStatusFailure
+	}
+
 	return sdk.StageStatusSuccess
 }
 
