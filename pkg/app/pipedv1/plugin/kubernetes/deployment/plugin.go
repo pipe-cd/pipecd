@@ -255,7 +255,14 @@ func (p *Plugin) loadManifests(ctx context.Context, deploy *sdk.Deployment, spec
 
 // FIXME
 func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.ExecuteStageInput, dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
-	return sdk.StageStatusFailure
+	lp := input.Client.LogPersister()
+
+	if input.Request.RunningDeploymentSource.CommitHash == "" {
+		lp.Errorf("Unable to determine the last deployed commit to rollback. It seems this is the first deployment.")
+		return sdk.StageStatusFailure
+	}
+
+	return sdk.StageStatusSuccess
 }
 
 // FIXME
