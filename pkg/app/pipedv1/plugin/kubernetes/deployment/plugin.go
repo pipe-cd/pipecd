@@ -262,6 +262,23 @@ func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.Execute
 		return sdk.StageStatusFailure
 	}
 
+	lp.Info("Start rolling back the deployment")
+
+	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](input.Request.RunningDeploymentSource.ApplicationConfig)
+	if err != nil {
+		lp.Errorf("Failed while decoding application config (%v)", err)
+		return sdk.StageStatusFailure
+	}
+
+	lp.Infof("Loading manifests at commit %s for handling", input.Request.RunningDeploymentSource.CommitHash)
+	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
+	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.RunningDeploymentSource, provider.NewLoader(toolRegistry))
+	if err != nil {
+		lp.Errorf("Failed while loading manifests (%v)", err)
+		return sdk.StageStatusFailure
+	}
+	lp.Successf("Successfully loaded %d manifests", len(manifests))
+
 	return sdk.StageStatusSuccess
 }
 
