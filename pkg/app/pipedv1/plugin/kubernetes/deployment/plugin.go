@@ -253,7 +253,6 @@ func (p *Plugin) loadManifests(ctx context.Context, deploy *sdk.Deployment, spec
 	return manifests, nil
 }
 
-// FIXME
 func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.ExecuteStageInput, dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
 	lp := input.Client.LogPersister()
 
@@ -335,6 +334,10 @@ func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.Execute
 		lp.Errorf("Failed while applying manifests (%v)", err)
 		return sdk.StageStatusFailure
 	}
+
+	// TODO: implement prune resources
+	// TODO: delete all resources of CANARY variant
+	// TODO: delete all resources of BASELINE variant
 
 	return sdk.StageStatusSuccess
 }
