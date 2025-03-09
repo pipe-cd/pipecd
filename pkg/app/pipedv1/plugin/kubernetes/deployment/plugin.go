@@ -320,6 +320,22 @@ func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.Execute
 	}
 	deployTargetConfig := dts[0].Config
 
+	// Get the kubectl tool path.
+	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion, defaultKubectlVersion))
+	if err != nil {
+		lp.Errorf("Failed while getting kubectl tool (%v)", err)
+		return sdk.StageStatusFailure
+	}
+
+	// Create the applier for the target cluster.
+	applier := provider.NewApplier(provider.NewKubectl(kubectlPath), cfg.Spec.Input, deployTargetConfig, input.Logger)
+
+	// Start applying all manifests to add or update running resources.
+	if err := applyManifestsSDK(ctx, applier, manifests, cfg.Spec.Input.Namespace, lp); err != nil {
+		lp.Errorf("Failed while applying manifests (%v)", err)
+		return sdk.StageStatusFailure
+	}
+
 	return sdk.StageStatusSuccess
 }
 
