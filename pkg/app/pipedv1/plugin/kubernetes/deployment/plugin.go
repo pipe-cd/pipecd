@@ -279,6 +279,28 @@ func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.Execute
 	}
 	lp.Successf("Successfully loaded %d manifests", len(manifests))
 
+	// Because the loaded manifests are read-only
+	// we duplicate them to avoid updating the shared manifests data in cache.
+	// TODO: implement duplicateManifests function
+
+	// When addVariantLabelToSelector is true, ensure that all workloads
+	// have the variant label in their selector.
+	var (
+		variantLabel   = cfg.Spec.VariantLabel.Key
+		primaryVariant = cfg.Spec.VariantLabel.PrimaryValue
+	)
+	// TODO: Consider other fields to configure whether to add a variant label to the selector
+	// because the rollback stage is executed in both quick sync and pipeline sync strategies.
+	if cfg.Spec.QuickSync.AddVariantLabelToSelector {
+		workloads := findWorkloadManifests(manifests, cfg.Spec.Workloads)
+		for _, m := range workloads {
+			if err := ensureVariantSelectorInWorkload(m, variantLabel, primaryVariant); err != nil {
+				lp.Errorf("Unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key().ReadableString(), err)
+				return sdk.StageStatusFailure
+			}
+		}
+	}
+
 	return sdk.StageStatusSuccess
 }
 
