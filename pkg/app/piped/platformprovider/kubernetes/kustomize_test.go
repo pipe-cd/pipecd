@@ -70,3 +70,14 @@ func TestKustomizeTemplate_WithHelm(t *testing.T) {
 	require.NoError(t, err)
 	assert.True(t, len(out) > 0)
 }
+
+func TestKustomizeIsHelmCommandFlagAvailable(t *testing.T) {
+	t.Parallel()
+
+	kustomize := NewKustomize("4.0.1337", "", zap.NewNop())
+	assert.False(t, kustomize.isHelmCommandFlagAvailable())
+	kustomize = NewKustomize("4.1.0", "", zap.NewNop())
+	assert.True(t, kustomize.isHelmCommandFlagAvailable())
+	kustomize = NewKustomize("10.0.0", "", zap.NewNop())
+	assert.True(t, kustomize.isHelmCommandFlagAvailable())
+}
