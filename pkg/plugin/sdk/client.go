@@ -16,10 +16,18 @@ package sdk
 
 import (
 	"context"
+	"iter"
+	"slices"
+	"time"
 
+	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedapi"
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry"
+)
+
+const (
+	listStageCommandsInterval = 5 * time.Second
 )
 
 // Client is a toolkit for interacting with the piped service.
@@ -163,4 +171,49 @@ func (c *Client) LogPersister() StageLogPersister {
 // Use this to install and get the path of the tools used in the plugin.
 func (c *Client) ToolRegistry() *toolregistry.ToolRegistry {
 	return c.toolRegistry
+}
+
+// ListStageCommands returns the list of stage commands of the given command types.
+func (c Client) ListStageCommands(ctx context.Context, commandTypes ...model.Command_Type) iter.Seq2[*StageCommand, error] {
+	return func(yield func(*StageCommand, error) bool) {
+		returned := map[string]struct{}{}
+
+		for {
+			resp, err := c.base.ListStageCommands(ctx, &pipedservice.ListStageCommandsRequest{
+				DeploymentId: c.deploymentID,
+				StageId:      c.stageID,
+			})
+			if err != nil {
+				if !yield(nil, err) {
+					return
+				}
+				continue
+			}
+
+			for _, command := range resp.Commands {
+				if !slices.Contains(commandTypes, command.Type) {
+					continue
+				}
+
+				if _, ok := returned[command.Id]; ok {
+					continue
+				}
+				returned[command.Id] = struct{}{}
+
+				stageCommand, err := newStageCommand(command)
+				if err != nil {
+					if !yield(nil, err) {
+						return
+					}
+					continue
+				}
+
+				if !yield(&stageCommand, nil) {
+					return
+				}
+			}
+
+			time.Sleep(listStageCommandsInterval)
+		}
+	}
 }
