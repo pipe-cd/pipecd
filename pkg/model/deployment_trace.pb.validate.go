@@ -68,6 +68,17 @@ func (m *DeploymentTrace) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if utf8.RuneCountInString(m.GetProjectId()) < 1 {
+		err := DeploymentTraceValidationError{
+			field:  "ProjectId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	// no validation rules for Title
 
 	// no validation rules for CommitMessage

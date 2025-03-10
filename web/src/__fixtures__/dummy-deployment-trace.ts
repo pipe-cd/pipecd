@@ -7,6 +7,7 @@ const [createdAt, completedAt] = createRandTimes(3);
 export const dummyDeploymentTrace: ListDeploymentTracesResponse.DeploymentTraceRes.AsObject = {
   trace: {
     id: randomUUID(),
+    projectId: "project-1",
     title: "title",
     author: "user",
     commitTimestamp: createdAt.unix(),

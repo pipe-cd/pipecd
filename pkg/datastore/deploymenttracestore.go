@@ -71,6 +71,7 @@ func (d *deploymentTraceCollection) Encode(entity interface{}) (map[Shard][]byte
 
 type DeploymentTraceStore interface {
 	Add(ctx context.Context, d model.DeploymentTrace) error
+	List(ctx context.Context, opts ListOptions) ([]*model.DeploymentTrace, string, error)
 }
 
 type deploymentTraceStore struct {
@@ -102,4 +103,33 @@ func (s *deploymentTraceStore) Add(ctx context.Context, d model.DeploymentTrace)
 		return fmt.Errorf("failed to validate deployment trace: %w: %w", ErrInvalidArgument, err)
 	}
 	return s.ds.Create(ctx, s.col, d.Id, &d)
+}
+
+func (s *deploymentTraceStore) List(ctx context.Context, opts ListOptions) ([]*model.DeploymentTrace, string, error) {
+	it, err := s.ds.Find(ctx, s.col, opts)
+	if err != nil {
+		return nil, "", err
+	}
+	dts := make([]*model.DeploymentTrace, 0)
+	for {
+		var dt model.DeploymentTrace
+		err := it.Next(&dt)
+		if err == ErrIteratorDone {
+			break
+		}
+		if err != nil {
+			return nil, "", err
+		}
+		dts = append(dts, &dt)
+	}
+
+	// In case there is no more data, cursor should be set to empty too.
+	if len(dts) == 0 {
+		return dts, "", nil
+	}
+	cursor, err := it.Cursor()
+	if err != nil {
+		return nil, "", err
+	}
+	return dts, cursor, nil
 }
