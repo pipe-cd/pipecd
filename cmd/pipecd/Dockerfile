@@ -13,7 +13,7 @@ RUN make update/web-deps
 RUN make build/web
 
 # pipecd builder
-FROM --platform=$BUILDPLATFORM golang:1.23.3 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.24.1 AS builder
 
 ARG TARGETOS
 ARG TARGETARCH
