@@ -568,6 +568,8 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 	}
 	logger.Info("created working directory for scheduler", zap.String("working-dir", workingDir))
 
+	metadataStore := c.metadataStoreRegistry.Register(d)
+
 	// Create a new scheduler and append to the list for tracking.
 	scheduler := newScheduler(
 		d,
@@ -577,11 +579,10 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		c.pluginRegistry,
 		c.notifier,
 		c.secretDecrypter,
+		metadataStore,
 		c.logger,
 		c.tracerProvider,
 	)
-
-	c.metadataStoreRegistry.Register(d)
 
 	cleanup := func() {
 		logger.Info("cleaning up working directory for scheduler", zap.String("working-dir", workingDir))
