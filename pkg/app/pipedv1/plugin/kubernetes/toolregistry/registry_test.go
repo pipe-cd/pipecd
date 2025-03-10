@@ -29,12 +29,9 @@ import (
 func TestRegistry_Kubectl(t *testing.T) {
 	t.Parallel()
 
-	c, err := toolregistrytest.NewToolRegistry(t)
-	require.NoError(t, err)
+	c := toolregistrytest.NewTestToolRegistry(t)
 
 	r := NewRegistry(c)
-
-	t.Cleanup(func() { c.Close() })
 
 	p, err := r.Kubectl(context.Background(), "1.30.2")
 	require.NoError(t, err)
@@ -51,12 +48,9 @@ func TestRegistry_Kubectl(t *testing.T) {
 func TestRegistry_Kustomize(t *testing.T) {
 	t.Parallel()
 
-	c, err := toolregistrytest.NewToolRegistry(t)
-	require.NoError(t, err)
+	c := toolregistrytest.NewTestToolRegistry(t)
 
 	r := NewRegistry(c)
-
-	t.Cleanup(func() { c.Close() })
 
 	p, err := r.Kustomize(context.Background(), "5.4.3")
 	require.NoError(t, err)
@@ -73,12 +67,9 @@ func TestRegistry_Kustomize(t *testing.T) {
 func TestRegistry_Helm(t *testing.T) {
 	t.Parallel()
 
-	c, err := toolregistrytest.NewToolRegistry(t)
-	require.NoError(t, err)
+	c := toolregistrytest.NewTestToolRegistry(t)
 
 	r := NewRegistry(c)
-
-	t.Cleanup(func() { c.Close() })
 
 	p, err := r.Helm(context.Background(), "3.16.1")
 	require.NoError(t, err)

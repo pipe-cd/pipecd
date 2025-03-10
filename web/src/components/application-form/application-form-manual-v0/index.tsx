@@ -13,7 +13,7 @@ import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
 import { ApplicationKind } from "~/modules/applications";
 import { Piped, selectAllPipeds, selectPipedById } from "~/modules/pipeds";
 import { sortFunc } from "~/utils/common";
-import { ApplicationFormProps, ApplicationFormValue } from "..";
+import { ApplicationFormProps } from "..";
 import { useFormik } from "formik";
 import * as yup from "yup";
 
@@ -22,7 +22,22 @@ import { addApplication } from "~/modules/applications";
 import FormSelectInput from "../../form-select-input";
 import { updateApplication } from "~/modules/update-application";
 
-export const emptyFormValues: ApplicationFormValue = {
+type FormValues = {
+  name: string;
+  kind: ApplicationKind;
+  pipedId: string;
+  repoPath: string;
+  configFilename: string;
+  platformProvider: string;
+  repo: {
+    id: string;
+    remote: string;
+    branch: string;
+  };
+  labels: Array<[string, string]>;
+};
+
+export const emptyFormValues: FormValues = {
   name: "",
   kind: ApplicationKind.KUBERNETES,
   pipedId: "",
@@ -135,7 +150,7 @@ const ApplicationFormManualV0: FC<ApplicationFormProps> = ({
   detailApp: detailApp,
 }) => {
   const dispatch = useAppDispatch();
-  const formik = useFormik<ApplicationFormValue>({
+  const formik = useFormik<FormValues>({
     initialValues: detailApp
       ? {
           name: detailApp.name,
@@ -200,8 +215,8 @@ const ApplicationFormManualV0: FC<ApplicationFormProps> = ({
 
   const classes = useStyles();
   const ps = useAppSelector((state) => selectAllPipeds(state));
-  const pipeds = ps
-    .filter((piped) => !piped.disabled)
+  const pipedOptions = ps
+    .filter((piped) => !piped.disabled || piped.id === detailApp?.pipedId)
     .sort((a, b) => sortFunc(a.name, b.name));
 
   const selectedPiped = useAppSelector(selectPipedById(values.pipedId));
@@ -263,12 +278,13 @@ const ApplicationFormManualV0: FC<ApplicationFormProps> = ({
                 pipedId: value,
               });
             }}
-            options={pipeds.map((piped) => ({
+            options={pipedOptions.map((piped) => ({
               label: `${piped.name} (${piped.id})`,
               value: piped.id,
+              disabled: piped.disabled,
             }))}
             required
-            disabled={isSubmitting || pipeds.length === 0}
+            disabled={isSubmitting || pipedOptions.length === 0}
           />
           <FormSelectInput
             id="platformProvider"

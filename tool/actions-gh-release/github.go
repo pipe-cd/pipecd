@@ -17,8 +17,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 	"net/http"
+	"os"
 	"regexp"
 
 	"github.com/google/go-github/v39/github"

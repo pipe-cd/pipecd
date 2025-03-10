@@ -25,16 +25,17 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/datastore/datastoretest"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-func createMockHandler(ctrl *gomock.Controller) (*MockprojectStore, *Handler) {
-	m := NewMockprojectStore(ctrl)
+func createMockHandler(ctrl *gomock.Controller) (*datastoretest.MockProjectStore, *Handler) {
+	m := datastoretest.NewMockProjectStore(ctrl)
 	logger, _ := zap.NewProduction()
 
 	h := NewHandler(

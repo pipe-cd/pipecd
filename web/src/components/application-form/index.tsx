@@ -1,7 +1,7 @@
 import { Box, makeStyles, Tabs, Tab, IconButton } from "@material-ui/core";
 import { Help } from "@material-ui/icons";
 import { useState } from "react";
-import { Application, ApplicationKind } from "~/modules/applications";
+import { Application } from "~/modules/applications";
 import ApplicationFormV1 from "./application-form-v1";
 import ApplicationFormV0 from "./application-form-v0";
 import ApplicationFormManualV0 from "./application-form-manual-v0";
@@ -38,21 +38,6 @@ const tabPanelProps = (
     "aria-labelledby": `tab-${tabKey}`,
   };
 };
-
-export interface ApplicationFormValue {
-  name: string;
-  kind: ApplicationKind;
-  pipedId: string;
-  repoPath: string;
-  configFilename: string;
-  platformProvider: string;
-  repo: {
-    id: string;
-    remote: string;
-    branch: string;
-  };
-  labels: Array<[string, string]>;
-}
 
 const FORM_SUGGESTION_DOC_URL =
   "https://pipecd.dev/docs/user-guide/managing-application/adding-an-application/#picking-from-a-list-of-unused-apps-suggested-by-pipeds";

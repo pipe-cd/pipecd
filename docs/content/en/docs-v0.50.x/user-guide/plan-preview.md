@@ -38,7 +38,8 @@ pipectl plan-preview \
   --repo-remote-url={ REPO_REMOTE_GIT_SSH_URL } \
   --head-branch={ HEAD_BRANCH } \
   --head-commit={ HEAD_COMMIT } \
-  --base-branch={ BASE_BRANCH }
+  --base-branch={ BASE_BRANCH } \
+  --sort-label-keys={ SORT_LABEL_KEYS }
 ```
 
 You can run it locally or integrate it to your CI system to run automatically when a new pull request is opened/updated. Use `--help` to see more options.
@@ -46,6 +47,13 @@ You can run it locally or integrate it to your CI system to run automatically wh
 ``` console
 pipectl plan-preview --help
 ```
+
+### Order of the results
+
+By default, the results are sorted by PipedID and Application Name.
+
+If you want to sort the results by labels, add `--sort-label-keys` option. For example, when you run with `--sort-label-keys=env,team`, the results will be sorted by PipedID, `env` label, `team` label, and then Application Name.
+
 
 ## GitHub Actions
 

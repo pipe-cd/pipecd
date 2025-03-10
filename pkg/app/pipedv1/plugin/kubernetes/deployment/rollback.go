@@ -58,7 +58,17 @@ func (a *DeploymentService) executeK8sRollbackStage(ctx context.Context, lp logp
 		variantLabel   = cfg.Spec.VariantLabel.Key
 		primaryVariant = cfg.Spec.VariantLabel.PrimaryValue
 	)
-	// TODO: handle cfg.Spec.QuickSync.AddVariantLabelToSelector
+	// TODO: Consider other fields to configure whether to add a variant label to the selector
+	// because the rollback stage is executed in both quick sync and pipeline sync strategies.
+	if cfg.Spec.QuickSync.AddVariantLabelToSelector {
+		workloads := findWorkloadManifests(manifests, cfg.Spec.Workloads)
+		for _, m := range workloads {
+			if err := ensureVariantSelectorInWorkload(m, variantLabel, primaryVariant); err != nil {
+				lp.Errorf("Unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key().ReadableString(), err)
+				return model.StageStatus_STAGE_FAILURE
+			}
+		}
+	}
 
 	// Add variant annotations to all manifests.
 	for i := range manifests {
@@ -73,9 +83,9 @@ func (a *DeploymentService) executeK8sRollbackStage(ctx context.Context, lp logp
 	}
 
 	// Get the deploy target config.
-	targets, err := input.GetDeployment().GetDeployTargets(a.pluginConfig.Name)
-	if err != nil {
-		lp.Errorf("Failed while finding deploy target config (%v)", err)
+	targets := input.GetDeployment().GetDeployTargets(a.pluginConfig.Name)
+	if len(targets) == 0 {
+		lp.Errorf("No deploy target was found for the plugin %s", a.pluginConfig.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
 

@@ -10,7 +10,7 @@ import {
 import CancelIcon from "@material-ui/icons/Cancel";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import dayjs from "dayjs";
-import { FC, memo } from "react";
+import { FC, memo, useMemo } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import { CopyIconButton } from "~/components/copy-icon-button";
 import { DeploymentStatusIcon } from "~/components/deployment-status-icon";
@@ -66,6 +66,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+enum PIPED_VERSION {
+  V0 = "v0",
+  V1 = "v1",
+}
+
 export interface DeploymentDetailProps {
   deploymentId: string;
 }
@@ -108,6 +113,12 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
         ? LOG_FETCH_INTERVAL
         : null
     );
+
+    const pipedVersion = useMemo(() => {
+      if (deployment?.deployTargetsByPluginMap?.length) return PIPED_VERSION.V1;
+
+      return PIPED_VERSION.V0;
+    }, [deployment?.deployTargetsByPluginMap?.length]);
 
     if (!deployment || !piped) {
       return (
@@ -181,10 +192,24 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
                     }
                   />
                   <DetailTableRow label="Piped" value={piped.name} />
-                  <DetailTableRow
-                    label="Platform Provider"
-                    value={deployment.platformProvider}
-                  />
+                  {pipedVersion === PIPED_VERSION.V0 && (
+                    <DetailTableRow
+                      label="Platform Provider"
+                      value={deployment.platformProvider}
+                    />
+                  )}
+                  {pipedVersion === PIPED_VERSION.V1 && (
+                    <DetailTableRow
+                      label="Deploy Targets"
+                      value={deployment?.deployTargetsByPluginMap
+                        ?.map(([pluginName, { deployTargetsList }]) =>
+                          deployTargetsList.map(
+                            (deployTarget) => `${deployTarget} - ${pluginName}`
+                          )
+                        )
+                        .join(", ")}
+                    />
+                  )}
                   <DetailTableRow label="Summary" value={deployment.summary} />
                 </tbody>
               </table>

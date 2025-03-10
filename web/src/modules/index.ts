@@ -19,9 +19,11 @@ import { toastsSlice } from "./toasts";
 import { updateApplicationSlice } from "./update-application";
 import { unregisteredApplicationsSlice } from "./unregistered-applications";
 import { eventsSlice } from "./events";
+import { deploymentTraceSlice } from "./deploymentTrace";
 
 export const reducers = combineReducers({
   deployments: deploymentsSlice.reducer,
+  deploymentTrace: deploymentTraceSlice.reducer,
   applicationLiveState: applicationLiveStateSlice.reducer,
   applications: applicationsSlice.reducer,
   updateApplication: updateApplicationSlice.reducer,

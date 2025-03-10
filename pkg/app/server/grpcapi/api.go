@@ -68,6 +68,10 @@ type apiEventStore interface {
 	Add(ctx context.Context, event model.Event) error
 }
 
+type apiDeploymentTraceStore interface {
+	Add(ctx context.Context, trace model.DeploymentTrace) error
+}
+
 type commandOutputGetter interface {
 	Get(ctx context.Context, commandID string) ([]byte, error)
 }
@@ -76,13 +80,14 @@ type commandOutputGetter interface {
 type API struct {
 	apiservice.UnimplementedAPIServiceServer
 
-	applicationStore    apiApplicationStore
-	deploymentStore     apiDeploymentStore
-	pipedStore          apiPipedStore
-	eventStore          apiEventStore
-	commandStore        commandstore.Store
-	stageLogStore       stagelogstore.Store
-	commandOutputGetter commandOutputGetter
+	applicationStore     apiApplicationStore
+	deploymentStore      apiDeploymentStore
+	pipedStore           apiPipedStore
+	eventStore           apiEventStore
+	deploymentTraceStore apiDeploymentTraceStore
+	commandStore         commandstore.Store
+	stageLogStore        stagelogstore.Store
+	commandOutputGetter  commandOutputGetter
 
 	encryptionKeyCache cache.Cache
 	pipedStatCache     cache.Cache
@@ -104,13 +109,14 @@ func NewAPI(
 ) *API {
 	w := datastore.PipectlCommander
 	a := &API{
-		applicationStore:    datastore.NewApplicationStore(ds, w),
-		deploymentStore:     datastore.NewDeploymentStore(ds, w),
-		pipedStore:          datastore.NewPipedStore(ds, w),
-		eventStore:          datastore.NewEventStore(ds, w),
-		commandStore:        commandstore.NewStore(w, ds, sc, logger),
-		stageLogStore:       stagelogstore.NewStore(fs, sc, logger),
-		commandOutputGetter: cog,
+		applicationStore:     datastore.NewApplicationStore(ds, w),
+		deploymentStore:      datastore.NewDeploymentStore(ds, w),
+		pipedStore:           datastore.NewPipedStore(ds, w),
+		eventStore:           datastore.NewEventStore(ds, w),
+		deploymentTraceStore: datastore.NewDeploymentTraceStore(ds, w),
+		commandStore:         commandstore.NewStore(w, ds, sc, logger),
+		stageLogStore:        stagelogstore.NewStore(fs, sc, logger),
+		commandOutputGetter:  cog,
 		// Public key is variable but likely to be accessed multiple times in a short period.
 		encryptionKeyCache: memorycache.NewTTLCache(ctx, 5*time.Minute, 5*time.Minute),
 		pipedStatCache:     psc,
@@ -815,6 +821,7 @@ func (a *API) RegisterEvent(ctx context.Context, req *apiservice.RegisterEventRe
 		Data:              req.Data,
 		Labels:            req.Labels,
 		Contexts:          req.Contexts,
+		TriggerCommitHash: req.CommitHash,
 		EventKey:          model.MakeEventKey(req.Name, req.Labels),
 		ProjectId:         key.ProjectId,
 		Status:            model.EventStatus_EVENT_NOT_HANDLED,
@@ -822,6 +829,29 @@ func (a *API) RegisterEvent(ctx context.Context, req *apiservice.RegisterEventRe
 	}
 	if err = a.eventStore.Add(ctx, event); err != nil {
 		return nil, gRPCStoreError(err, fmt.Sprintf("add event %s", id))
+	}
+
+	// Create DeploymentTrace object and store to datastore
+	// if users send information of the commit that trigger this event.
+	if req.CommitHash != "" && req.CommitUrl != "" {
+		trace := model.DeploymentTrace{
+			Id:              uuid.New().String(),
+			Title:           req.CommitTitle,
+			Author:          req.CommitAuthor,
+			CommitMessage:   req.CommitMessage,
+			CommitHash:      req.CommitHash,
+			CommitUrl:       req.CommitUrl,
+			CommitTimestamp: time.Now().Unix(), // Use event sent time as default for commit timestamp.
+		}
+
+		if req.CommitTimestamp != 0 {
+			trace.CommitTimestamp = req.CommitTimestamp
+		}
+
+		err = a.deploymentTraceStore.Add(ctx, trace)
+		if err != nil {
+			a.logger.Error("failed to store deployment trace", zap.String("commit_hash", req.CommitHash), zap.Error(err))
+		}
 	}
 
 	return &apiservice.RegisterEventResponse{EventId: id}, nil

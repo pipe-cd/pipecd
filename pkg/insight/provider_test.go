@@ -43,23 +43,23 @@ func TestBuildDeploymentFrequencyDataPoint(t *testing.T) {
 		{
 			name: "daily resolution",
 			ds: []*DeploymentData{
-				&DeploymentData{
+				{
 					CompletedAt: 1669574625,
 				},
-				&DeploymentData{
+				{
 					CompletedAt: 1669574635,
 				},
-				&DeploymentData{
+				{
 					CompletedAt: 1669661030,
 				},
 			},
 			resolution: model.InsightResolution_DAILY,
 			expected: []*model.InsightDataPoint{
-				&model.InsightDataPoint{
+				{
 					Timestamp: 1669507200,
 					Value:     2,
 				},
-				&model.InsightDataPoint{
+				{
 					Timestamp: 1669593600,
 					Value:     1,
 				},
@@ -68,23 +68,23 @@ func TestBuildDeploymentFrequencyDataPoint(t *testing.T) {
 		{
 			name: "monthly resolution",
 			ds: []*DeploymentData{
-				&DeploymentData{
+				{
 					CompletedAt: 1666982630,
 				},
-				&DeploymentData{
+				{
 					CompletedAt: 1666982635,
 				},
-				&DeploymentData{
+				{
 					CompletedAt: 1669661010,
 				},
 			},
 			resolution: model.InsightResolution_MONTHLY,
 			expected: []*model.InsightDataPoint{
-				&model.InsightDataPoint{
+				{
 					Timestamp: 1664582400,
 					Value:     2,
 				},
-				&model.InsightDataPoint{
+				{
 					Timestamp: 1667260800,
 					Value:     1,
 				},
@@ -121,35 +121,35 @@ func TestBuildDeploymentChangeFailureRateDataPoint(t *testing.T) {
 		{
 			name: "daily resolution",
 			ds: []*DeploymentData{
-				&DeploymentData{
+				{
 					CompletedAt: 1669340910,
 				},
-				&DeploymentData{
+				{
 					CompletedAt: 1669340920,
 				},
-				&DeploymentData{
+				{
 					CompletedAt:    1669600130,
 					CompleteStatus: model.DeploymentStatus_DEPLOYMENT_FAILURE.String(),
 				},
-				&DeploymentData{
+				{
 					CompletedAt:    1669686600,
 					CompleteStatus: model.DeploymentStatus_DEPLOYMENT_FAILURE.String(),
 				},
-				&DeploymentData{
+				{
 					CompletedAt: 1669686610,
 				},
 			},
 			resolution: model.InsightResolution_DAILY,
 			expected: []*model.InsightDataPoint{
-				&model.InsightDataPoint{
+				{
 					Timestamp: 1669334400,
 					Value:     0,
 				},
-				&model.InsightDataPoint{
+				{
 					Timestamp: 1669593600,
 					Value:     1,
 				},
-				&model.InsightDataPoint{
+				{
 					Timestamp: 1669680000,
 					Value:     0.5,
 				},
@@ -158,35 +158,35 @@ func TestBuildDeploymentChangeFailureRateDataPoint(t *testing.T) {
 		{
 			name: "monthly resolution",
 			ds: []*DeploymentData{
-				&DeploymentData{
+				{
 					CompletedAt: 1664416110,
 				},
-				&DeploymentData{
+				{
 					CompletedAt: 1664416120,
 				},
-				&DeploymentData{
+				{
 					CompletedAt:    1667008110,
 					CompleteStatus: model.DeploymentStatus_DEPLOYMENT_FAILURE.String(),
 				},
-				&DeploymentData{
+				{
 					CompletedAt:    1668908910,
 					CompleteStatus: model.DeploymentStatus_DEPLOYMENT_FAILURE.String(),
 				},
-				&DeploymentData{
+				{
 					CompletedAt: 1668908920,
 				},
 			},
 			resolution: model.InsightResolution_MONTHLY,
 			expected: []*model.InsightDataPoint{
-				&model.InsightDataPoint{
+				{
 					Timestamp: 1661990400,
 					Value:     0,
 				},
-				&model.InsightDataPoint{
+				{
 					Timestamp: 1664582400,
 					Value:     1,
 				},
-				&model.InsightDataPoint{
+				{
 					Timestamp: 1667260800,
 					Value:     0.5,
 				},
@@ -213,92 +213,92 @@ func TestFillUpDataPoints(t *testing.T) {
 		{
 			name: "daily resolution: missing head part",
 			ds: []*model.InsightDataPoint{
-				&model.InsightDataPoint{Timestamp: 172800, Value: 2},
-				&model.InsightDataPoint{Timestamp: 259200, Value: 3},
+				{Timestamp: 172800, Value: 2},
+				{Timestamp: 259200, Value: 3},
 			},
 			from:       86400,
 			to:         259200,
 			resolution: model.InsightResolution_DAILY,
 			want: []*model.InsightDataPoint{
-				&model.InsightDataPoint{Timestamp: 86400, Value: 0},
-				&model.InsightDataPoint{Timestamp: 172800, Value: 2},
-				&model.InsightDataPoint{Timestamp: 259200, Value: 3},
+				{Timestamp: 86400, Value: 0},
+				{Timestamp: 172800, Value: 2},
+				{Timestamp: 259200, Value: 3},
 			},
 		},
 		{
 			name: "daily resolution: missing tail part",
 			ds: []*model.InsightDataPoint{
-				&model.InsightDataPoint{Timestamp: 86400, Value: 1},
-				&model.InsightDataPoint{Timestamp: 172800, Value: 2},
+				{Timestamp: 86400, Value: 1},
+				{Timestamp: 172800, Value: 2},
 			},
 			from:       86400,
 			to:         259200,
 			resolution: model.InsightResolution_DAILY,
 			want: []*model.InsightDataPoint{
-				&model.InsightDataPoint{Timestamp: 86400, Value: 1},
-				&model.InsightDataPoint{Timestamp: 172800, Value: 2},
-				&model.InsightDataPoint{Timestamp: 259200, Value: 0},
+				{Timestamp: 86400, Value: 1},
+				{Timestamp: 172800, Value: 2},
+				{Timestamp: 259200, Value: 0},
 			},
 		},
 		{
 			name: "daily resolution: missing both parts",
 			ds: []*model.InsightDataPoint{
-				&model.InsightDataPoint{Timestamp: 172800, Value: 2},
+				{Timestamp: 172800, Value: 2},
 			},
 			from:       86400,
 			to:         259200,
 			resolution: model.InsightResolution_DAILY,
 			want: []*model.InsightDataPoint{
-				&model.InsightDataPoint{Timestamp: 86400, Value: 0},
-				&model.InsightDataPoint{Timestamp: 172800, Value: 2},
-				&model.InsightDataPoint{Timestamp: 259200, Value: 0},
+				{Timestamp: 86400, Value: 0},
+				{Timestamp: 172800, Value: 2},
+				{Timestamp: 259200, Value: 0},
 			},
 		},
 		{
 			name: "monthly resolution: missing head part",
 			ds: []*model.InsightDataPoint{
-				&model.InsightDataPoint{Timestamp: 1664582400, Value: 2}, // 2022/10
-				&model.InsightDataPoint{Timestamp: 1667260800, Value: 3}, // 2022/11
+				{Timestamp: 1664582400, Value: 2}, // 2022/10
+				{Timestamp: 1667260800, Value: 3}, // 2022/11
 			},
 			from:       1661990401, // 2022/9
 			to:         1667260801, // 2022/11
 			resolution: model.InsightResolution_MONTHLY,
 			want: []*model.InsightDataPoint{
-				&model.InsightDataPoint{Timestamp: 1661990400, Value: 0},
-				&model.InsightDataPoint{Timestamp: 1664582400, Value: 2},
-				&model.InsightDataPoint{Timestamp: 1667260800, Value: 3},
+				{Timestamp: 1661990400, Value: 0},
+				{Timestamp: 1664582400, Value: 2},
+				{Timestamp: 1667260800, Value: 3},
 			},
 		},
 		{
 			name: "monthly resolution: missing tail part",
 			ds: []*model.InsightDataPoint{
-				&model.InsightDataPoint{Timestamp: 1661990400, Value: 2}, // 2022/9
-				&model.InsightDataPoint{Timestamp: 1664582400, Value: 3}, // 2022/10
+				{Timestamp: 1661990400, Value: 2}, // 2022/9
+				{Timestamp: 1664582400, Value: 3}, // 2022/10
 			},
 			from:       1661990401, // 2022/9
 			to:         1667260801, // 2022/11
 			resolution: model.InsightResolution_MONTHLY,
 			want: []*model.InsightDataPoint{
-				&model.InsightDataPoint{Timestamp: 1661990400, Value: 2},
-				&model.InsightDataPoint{Timestamp: 1664582400, Value: 3},
-				&model.InsightDataPoint{Timestamp: 1667260800, Value: 0},
+				{Timestamp: 1661990400, Value: 2},
+				{Timestamp: 1664582400, Value: 3},
+				{Timestamp: 1667260800, Value: 0},
 			},
 		},
 		{
 			name: "monthly resolution: missing both parts",
 			ds: []*model.InsightDataPoint{
-				&model.InsightDataPoint{Timestamp: 1664582400, Value: 2}, // 2022/10
-				&model.InsightDataPoint{Timestamp: 1667260800, Value: 3}, // 2022/11
+				{Timestamp: 1664582400, Value: 2}, // 2022/10
+				{Timestamp: 1667260800, Value: 3}, // 2022/11
 			},
 			from:       1661990401, // 2022/9
 			to:         1673344801, // 2023/1
 			resolution: model.InsightResolution_MONTHLY,
 			want: []*model.InsightDataPoint{
-				&model.InsightDataPoint{Timestamp: 1661990400, Value: 0},
-				&model.InsightDataPoint{Timestamp: 1664582400, Value: 2},
-				&model.InsightDataPoint{Timestamp: 1667260800, Value: 3},
-				&model.InsightDataPoint{Timestamp: 1669852800, Value: 0},
-				&model.InsightDataPoint{Timestamp: 1672531200, Value: 0},
+				{Timestamp: 1661990400, Value: 0},
+				{Timestamp: 1664582400, Value: 2},
+				{Timestamp: 1667260800, Value: 3},
+				{Timestamp: 1669852800, Value: 0},
+				{Timestamp: 1672531200, Value: 0},
 			},
 		},
 	}

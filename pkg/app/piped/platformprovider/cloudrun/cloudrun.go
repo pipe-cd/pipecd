@@ -41,23 +41,23 @@ var (
 
 var (
 	TypeConditions = map[string]struct{}{
-		"Active":              struct{}{},
-		"Ready":               struct{}{},
-		"ConfigurationsReady": struct{}{},
-		"RoutesReady":         struct{}{},
-		"ContainerHealthy":    struct{}{},
-		"ResourcesAvailable":  struct{}{},
+		"Active":              {},
+		"Ready":               {},
+		"ConfigurationsReady": {},
+		"RoutesReady":         {},
+		"ContainerHealthy":    {},
+		"ResourcesAvailable":  {},
 	}
 	TypeHealthyServiceConditions = map[string]struct{}{
-		"Ready":               struct{}{},
-		"ConfigurationsReady": struct{}{},
-		"RoutesReady":         struct{}{},
+		"Ready":               {},
+		"ConfigurationsReady": {},
+		"RoutesReady":         {},
 	}
 	TypeHealthyRevisionConditions = map[string]struct{}{
-		"Ready":              struct{}{},
-		"Active":             struct{}{},
-		"ContainerHealthy":   struct{}{},
-		"ResourcesAvailable": struct{}{},
+		"Ready":              {},
+		"Active":             {},
+		"ContainerHealthy":   {},
+		"ResourcesAvailable": {},
 	}
 )
 

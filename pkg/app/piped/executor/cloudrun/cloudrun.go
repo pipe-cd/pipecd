@@ -139,16 +139,16 @@ func apply(ctx context.Context, client provider.Client, sm provider.ServiceManif
 
 func waitRevisionReady(ctx context.Context, client provider.Client, revisionName string, retryDuration, retryTimeout time.Duration, lp executor.LogPersister) error {
 	shouldCheckConditions := map[string]struct{}{
-		"Active":              struct{}{},
-		"Ready":               struct{}{},
-		"ConfigurationsReady": struct{}{},
-		"RoutesReady":         struct{}{},
-		"ContainerHealthy":    struct{}{},
-		"ResourcesAvailable":  struct{}{},
+		"Active":              {},
+		"Ready":               {},
+		"ConfigurationsReady": {},
+		"RoutesReady":         {},
+		"ContainerHealthy":    {},
+		"ResourcesAvailable":  {},
 	}
 	mustPassConditions := map[string]struct{}{
-		"Ready":  struct{}{},
-		"Active": struct{}{},
+		"Ready":  {},
+		"Active": {},
 	}
 
 	doCheck := func() (bool, error) {

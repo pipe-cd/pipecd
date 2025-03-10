@@ -2,11 +2,14 @@ import {
   deploymentChangeFailureRateSlice,
   DeploymentChangeFailureRateState,
   fetchDeploymentChangeFailureRate,
+  fetchDeploymentChangeFailureRate24h,
 } from "./";
 
 const initialState: DeploymentChangeFailureRateState = {
   status: "idle",
   data: [],
+  status24h: "idle",
+  data24h: [],
 };
 
 describe("deploymentChangeFailureRateSlice reducer", () => {
@@ -48,6 +51,39 @@ describe("deploymentChangeFailureRateSlice reducer", () => {
           }
         )
       ).toEqual({ ...initialState, data: [], status: "succeeded" });
+    });
+  });
+
+  describe("fetchDeploymentChangeFailureRate24h", () => {
+    it(`should handle ${fetchDeploymentChangeFailureRate24h.pending.type}`, () => {
+      expect(
+        deploymentChangeFailureRateSlice.reducer(initialState, {
+          type: fetchDeploymentChangeFailureRate24h.pending.type,
+        })
+      ).toEqual({ ...initialState, status24h: "loading" });
+    });
+
+    it(`should handle ${fetchDeploymentChangeFailureRate24h.rejected.type}`, () => {
+      expect(
+        deploymentChangeFailureRateSlice.reducer(
+          { ...initialState, status24h: "loading" },
+          {
+            type: fetchDeploymentChangeFailureRate24h.rejected.type,
+          }
+        )
+      ).toEqual({ ...initialState, status24h: "failed" });
+    });
+
+    it(`should handle ${fetchDeploymentChangeFailureRate24h.fulfilled.type}`, () => {
+      expect(
+        deploymentChangeFailureRateSlice.reducer(
+          { ...initialState, status24h: "loading" },
+          {
+            type: fetchDeploymentChangeFailureRate24h.fulfilled.type,
+            payload: [],
+          }
+        )
+      ).toEqual({ ...initialState, data24h: [], status24h: "succeeded" });
     });
   });
 });

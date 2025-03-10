@@ -807,22 +807,6 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 	}, nil
 }
 
-// Deprecated. This is only for the old Piped agents.
-func (a *PipedAPI) ReportEventsHandled(ctx context.Context, req *pipedservice.ReportEventsHandledRequest) (*pipedservice.ReportEventsHandledResponse, error) {
-	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, id := range req.EventIds {
-		if err := a.eventStore.UpdateStatus(ctx, id, model.EventStatus_EVENT_SUCCESS, fmt.Sprintf("successfully handled by %q piped", pipedID)); err != nil {
-			return nil, gRPCStoreError(err, fmt.Sprintf("update event %s as handled", id))
-		}
-	}
-
-	return &pipedservice.ReportEventsHandledResponse{}, nil
-}
-
 func (a *PipedAPI) ReportEventStatuses(ctx context.Context, req *pipedservice.ReportEventStatusesRequest) (*pipedservice.ReportEventStatusesResponse, error) {
 	_, _, _, err := rpcauth.ExtractPipedToken(ctx)
 	if err != nil {

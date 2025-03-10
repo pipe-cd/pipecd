@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package config
+package main
 
 import (
 	"encoding/json"
@@ -73,7 +73,7 @@ func TestDecode(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			got, err := Decode(tc.data)
+			got, err := decode(tc.data)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.expected, got)
 		})

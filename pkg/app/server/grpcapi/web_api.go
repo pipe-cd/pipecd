@@ -942,6 +942,93 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 	}, nil
 }
 
+// TODO: implement this method, currently only mock for frontend dev
+func (a *WebAPI) ListDeploymentTraces(ctx context.Context, req *webservice.ListDeploymentTracesRequest) (*webservice.ListDeploymentTracesResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	orders := []datastore.Order{
+		{
+			Field:     "UpdatedAt",
+			Direction: datastore.Desc,
+		},
+		{
+			Field:     "Id",
+			Direction: datastore.Asc,
+		},
+	}
+	filters := []datastore.ListFilter{
+		{
+			Field:    "ProjectId",
+			Operator: datastore.OperatorEqual,
+			Value:    claims.Role.ProjectId,
+		},
+		{
+			Field:    "UpdatedAt",
+			Operator: datastore.OperatorGreaterThanOrEqual,
+			Value:    req.PageMinUpdatedAt,
+		},
+	}
+
+	pageSize := int(req.PageSize)
+	options := datastore.ListOptions{
+		Filters: filters,
+		Orders:  orders,
+		Limit:   pageSize,
+		Cursor:  req.Cursor,
+	}
+	deployments, _, err := a.deploymentStore.List(ctx, options)
+	if err != nil {
+		a.logger.Error("failed to get deployments", zap.Error(err))
+		return nil, gRPCStoreError(err, "get deployments")
+	}
+
+	return &webservice.ListDeploymentTracesResponse{
+		Traces: []*webservice.ListDeploymentTracesResponse_DeploymentTraceRes{
+			{
+				Trace: &model.DeploymentTrace{
+					Id:              "trace-id-1",
+					CommitHash:      "commit-hash-1",
+					Title:           "Deployment of application 'app-name' to 'stage-name' stage",
+					CommitUrl:       "https://github.com/pipe-cd/pipecd/commit/14f3d0bd403964378593dabafe3baab9238d0424",
+					CommitMessage:   "Message mocked here",
+					CommitTimestamp: 125,
+					Author:          "author",
+				},
+				Deployments: deployments,
+			},
+			{
+				Trace: &model.DeploymentTrace{
+					Id:              "trace-id-2",
+					CommitHash:      "commit-hash-2",
+					Title:           "Deployment of application 'app-name' to 'stage-name' stage",
+					CommitUrl:       "https://github.com/pipe-cd/pipecd/commit/14f3d0bd403964378593dabafe3baab9238d0424",
+					CommitMessage:   "Message mocked here",
+					CommitTimestamp: 123,
+					Author:          "author",
+				},
+				Deployments: deployments,
+			},
+			{
+				Trace: &model.DeploymentTrace{
+					Id:              "trace-id-3",
+					CommitHash:      "comit-hash-3",
+					Title:           "Deployment of application 'app-name' to 'stage-name' stage",
+					CommitUrl:       "https://github.com/pipe-cd/pipecd/commit/14f3d0bd403964378593dabafe3baab9238d0424",
+					CommitMessage:   "Message mocked here",
+					CommitTimestamp: 123,
+					Author:          "author",
+				},
+				Deployments: deployments,
+			},
+		},
+		Cursor: "cursor",
+	}, nil
+}
+
 func (a *WebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeploymentRequest) (*webservice.GetDeploymentResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {

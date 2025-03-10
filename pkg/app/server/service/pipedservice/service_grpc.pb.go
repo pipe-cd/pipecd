@@ -118,9 +118,6 @@ type PipedServiceClient interface {
 	GetLatestEvent(ctx context.Context, in *GetLatestEventRequest, opts ...grpc.CallOption) (*GetLatestEventResponse, error)
 	// ListEvents returns a list of Events inside the given range.
 	ListEvents(ctx context.Context, in *ListEventsRequest, opts ...grpc.CallOption) (*ListEventsResponse, error)
-	// ReportEventHandled marks the given all events as handled.
-	// Deprecated. This is only for the old Piped agents.
-	ReportEventsHandled(ctx context.Context, in *ReportEventsHandledRequest, opts ...grpc.CallOption) (*ReportEventsHandledResponse, error)
 	// ReportEventStatuses reports a status list of events.
 	ReportEventStatuses(ctx context.Context, in *ReportEventStatusesRequest, opts ...grpc.CallOption) (*ReportEventStatusesResponse, error)
 	// GetLatestAnalysisResult returns the most successful analysis result.
@@ -387,15 +384,6 @@ func (c *pipedServiceClient) ListEvents(ctx context.Context, in *ListEventsReque
 	return out, nil
 }
 
-func (c *pipedServiceClient) ReportEventsHandled(ctx context.Context, in *ReportEventsHandledRequest, opts ...grpc.CallOption) (*ReportEventsHandledResponse, error) {
-	out := new(ReportEventsHandledResponse)
-	err := c.cc.Invoke(ctx, "/grpc.service.pipedservice.PipedService/ReportEventsHandled", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *pipedServiceClient) ReportEventStatuses(ctx context.Context, in *ReportEventStatusesRequest, opts ...grpc.CallOption) (*ReportEventStatusesResponse, error) {
 	out := new(ReportEventStatusesResponse)
 	err := c.cc.Invoke(ctx, "/grpc.service.pipedservice.PipedService/ReportEventStatuses", in, out, opts...)
@@ -568,9 +556,6 @@ type PipedServiceServer interface {
 	GetLatestEvent(context.Context, *GetLatestEventRequest) (*GetLatestEventResponse, error)
 	// ListEvents returns a list of Events inside the given range.
 	ListEvents(context.Context, *ListEventsRequest) (*ListEventsResponse, error)
-	// ReportEventHandled marks the given all events as handled.
-	// Deprecated. This is only for the old Piped agents.
-	ReportEventsHandled(context.Context, *ReportEventsHandledRequest) (*ReportEventsHandledResponse, error)
 	// ReportEventStatuses reports a status list of events.
 	ReportEventStatuses(context.Context, *ReportEventStatusesRequest) (*ReportEventStatusesResponse, error)
 	// GetLatestAnalysisResult returns the most successful analysis result.
@@ -676,9 +661,6 @@ func (UnimplementedPipedServiceServer) GetLatestEvent(context.Context, *GetLates
 }
 func (UnimplementedPipedServiceServer) ListEvents(context.Context, *ListEventsRequest) (*ListEventsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListEvents not implemented")
-}
-func (UnimplementedPipedServiceServer) ReportEventsHandled(context.Context, *ReportEventsHandledRequest) (*ReportEventsHandledResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ReportEventsHandled not implemented")
 }
 func (UnimplementedPipedServiceServer) ReportEventStatuses(context.Context, *ReportEventStatusesRequest) (*ReportEventStatusesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReportEventStatuses not implemented")
@@ -1185,24 +1167,6 @@ func _PipedService_ListEvents_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PipedService_ReportEventsHandled_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ReportEventsHandledRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PipedServiceServer).ReportEventsHandled(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/grpc.service.pipedservice.PipedService/ReportEventsHandled",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PipedServiceServer).ReportEventsHandled(ctx, req.(*ReportEventsHandledRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _PipedService_ReportEventStatuses_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ReportEventStatusesRequest)
 	if err := dec(in); err != nil {
@@ -1457,10 +1421,6 @@ var PipedService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListEvents",
 			Handler:    _PipedService_ListEvents_Handler,
-		},
-		{
-			MethodName: "ReportEventsHandled",
-			Handler:    _PipedService_ReportEventsHandled_Handler,
 		},
 		{
 			MethodName: "ReportEventStatuses",

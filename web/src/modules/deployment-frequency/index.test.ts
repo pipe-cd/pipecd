@@ -2,9 +2,15 @@ import {
   deploymentFrequencySlice,
   DeploymentFrequencyState,
   fetchDeploymentFrequency,
+  fetchDeployment24h,
 } from "./";
 
-const initialState: DeploymentFrequencyState = { status: "idle", data: [] };
+const initialState: DeploymentFrequencyState = {
+  status: "idle",
+  data: [],
+  status24h: "idle",
+  data24h: [],
+};
 
 describe("deploymentFrequencySlice reducer", () => {
   it("should return the initial state", () => {
@@ -45,6 +51,39 @@ describe("deploymentFrequencySlice reducer", () => {
           }
         )
       ).toEqual({ ...initialState, data: [], status: "succeeded" });
+    });
+  });
+
+  describe("fetchDeploymentFrequency24h", () => {
+    it(`should handle ${fetchDeployment24h.pending.type}`, () => {
+      expect(
+        deploymentFrequencySlice.reducer(initialState, {
+          type: fetchDeployment24h.pending.type,
+        })
+      ).toEqual({ ...initialState, status24h: "loading" });
+    });
+
+    it(`should handle ${fetchDeployment24h.rejected.type}`, () => {
+      expect(
+        deploymentFrequencySlice.reducer(
+          { ...initialState, status24h: "loading" },
+          {
+            type: fetchDeployment24h.rejected.type,
+          }
+        )
+      ).toEqual({ ...initialState, status24h: "failed" });
+    });
+
+    it(`should handle ${fetchDeployment24h.fulfilled.type}`, () => {
+      expect(
+        deploymentFrequencySlice.reducer(
+          { ...initialState, status24h: "loading" },
+          {
+            type: fetchDeployment24h.fulfilled.type,
+            payload: [],
+          }
+        )
+      ).toEqual({ ...initialState, data24h: [], status24h: "succeeded" });
     });
   });
 });

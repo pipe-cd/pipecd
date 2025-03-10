@@ -35,7 +35,7 @@ func TestMakeCommentBody(t *testing.T) {
 		{
 			name: "one release",
 			proposals: []ReleaseProposal{
-				ReleaseProposal{
+				{
 					ReleaseNote: "Release note for tag 1",
 				},
 			},
@@ -44,10 +44,10 @@ func TestMakeCommentBody(t *testing.T) {
 		{
 			name: "multiple releases",
 			proposals: []ReleaseProposal{
-				ReleaseProposal{
+				{
 					ReleaseNote: "Release note for tag 1",
 				},
-				ReleaseProposal{
+				{
 					ReleaseNote: "Release note for tag 2",
 				},
 			},

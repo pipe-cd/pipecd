@@ -22,6 +22,11 @@ export const INSIGHT_APPLICATION_COUNT_LABEL_KEY_TEXT: Record<
 export interface ApplicationCounts {
   updatedAt: number;
   counts: Record<string, Record<string, number>>;
+  summary: {
+    total: number;
+    enabled: number;
+    disabled: number;
+  };
 }
 
 const createInitialCount = (): Record<string, number> => ({
@@ -40,6 +45,7 @@ const createInitialCounts = (): Record<string, Record<string, number>> => ({
 const initialState: ApplicationCounts = {
   updatedAt: 0,
   counts: createInitialCounts(),
+  summary: { total: 0, enabled: 0, disabled: 0 },
 };
 
 export const fetchApplicationCount = createAsyncThunk(
@@ -86,7 +92,39 @@ export const fetchApplicationCount = createAsyncThunk(
       counts[kindName][activeStatusName] = count.count;
     });
 
-    return { updatedAt: res.updatedAt, counts };
+    const summary = {
+      total: 0,
+      enabled: 0,
+      disabled: 0,
+    };
+
+    res.countsList.forEach((count) => {
+      summary.total += count.count;
+      const [, activeStatusName] =
+        count.labelsMap.find(
+          (val) =>
+            val[0] ===
+            INSIGHT_APPLICATION_COUNT_LABEL_KEY_TEXT[
+              InsightApplicationCountLabelKey.ACTIVE_STATUS
+            ]
+        ) || [];
+      if (!activeStatusName) return;
+
+      if (
+        activeStatusName ===
+        APPLICATION_ACTIVE_STATUS_NAME[ApplicationActiveStatus.ENABLED]
+      ) {
+        summary.enabled += count.count;
+      }
+      if (
+        activeStatusName ===
+        APPLICATION_ACTIVE_STATUS_NAME[ApplicationActiveStatus.DISABLED]
+      ) {
+        summary.disabled += count.count;
+      }
+    });
+
+    return { updatedAt: res.updatedAt, counts, summary };
   }
 );
 

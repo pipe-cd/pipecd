@@ -81,7 +81,11 @@ const FormSelectInput = <T extends BaseOption>({
         disabled={disabled}
       >
         {options.map((op) => (
-          <MenuItem value={String(op.value)} key={String(op.value)}>
+          <MenuItem
+            value={String(op.value)}
+            key={String(op.value)}
+            disabled={!!op?.disabled}
+          >
             {getOptionLabel(op)}
           </MenuItem>
         ))}

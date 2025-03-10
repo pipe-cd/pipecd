@@ -55,6 +55,9 @@ jobs:
           context: docs
           file: docs/Dockerfile
           tags: ${{ env.GHCR }}/pipe-cd/site:${{ env.PIPECD_VERSION }}
+          # parameter to use inline cache. ref; https://docs.docker.com/build/ci/github-actions/cache/#inline-cache
+          cache-from: type=registry,ref=${{ env.GHCR }}/pipe-cd/site:latest
+          cache-to: type=inline
 
       # Building and pushing Helm charts.
       - name: Install helm

@@ -228,7 +228,7 @@ func makeUmemo(twoU, n1 int, t []int) []map[ukey]float64 {
 	// bounds. It might be worth turning these into directly
 	// indexible slices.
 	A := make([]map[ukey]float64, K+1)
-	A[K] = map[ukey]float64{ukey{n1: n1, twoU: twoU}: 0}
+	A[K] = map[ukey]float64{{n1: n1, twoU: twoU}: 0}
 
 	// Compute memo table (k, n1, twoU) triples from high K values
 	// to low K values. This drives the recurrence relation

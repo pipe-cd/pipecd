@@ -17,7 +17,16 @@ export const dummyPiped: Piped.AsObject = {
     },
   ],
   platformProvidersList: [],
-  pluginsList: [],
+  pluginsList: [
+    {
+      name: "kubernetes",
+      deployTargetsList: ["local"],
+    },
+    {
+      name: "wait",
+      deployTargetsList: ["local"],
+    },
+  ],
   desc: randomText(1),
   disabled: false,
   id: randomUUID(),

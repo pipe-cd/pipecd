@@ -56,11 +56,11 @@ func TestNewLoggerOK(t *testing.T) {
 
 func TestNewLoggerFailed(t *testing.T) {
 	configs := []Configs{
-		Configs{
+		{
 			Level:    "foo",
 			Encoding: "json",
 		},
-		Configs{
+		{
 			Level:    "info",
 			Encoding: "foo",
 		},
