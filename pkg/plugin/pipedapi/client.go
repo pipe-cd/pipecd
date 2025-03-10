@@ -24,12 +24,12 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcclient"
 )
 
-type PipedServiceClient struct {
+type PluginServiceClient struct {
 	service.PluginServiceClient
 	conn *grpc.ClientConn
 }
 
-func NewClient(ctx context.Context, address string, opts ...rpcclient.DialOption) (*PipedServiceClient, error) {
+func NewClient(ctx context.Context, address string, opts ...rpcclient.DialOption) (*PluginServiceClient, error) {
 	// Clone the opts to avoid modifying the original opts slice.
 	opts = slices.Clone(opts)
 
@@ -44,12 +44,12 @@ func NewClient(ctx context.Context, address string, opts ...rpcclient.DialOption
 		return nil, err
 	}
 
-	return &PipedServiceClient{
+	return &PluginServiceClient{
 		PluginServiceClient: service.NewPluginServiceClient(conn),
 		conn:                conn,
 	}, nil
 }
 
-func (c *PipedServiceClient) Close() error {
+func (c *PluginServiceClient) Close() error {
 	return c.conn.Close()
 }
