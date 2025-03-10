@@ -155,7 +155,7 @@ type GetLivestateInput struct {
 	Logger *zap.Logger
 }
 
-// GetLivestateResponse is the response for the GetLivestate method.
+// GetLivestateRequest is the request for the GetLivestate method.
 type GetLivestateRequest struct {
 	// ApplicationID is the ID of the application.
 	ApplicationID string
