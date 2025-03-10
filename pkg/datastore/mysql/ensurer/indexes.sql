@@ -82,8 +82,7 @@ ALTER TABLE Deployment MODIFY DeploymentChainId VARCHAR(36) GENERATED ALWAYS AS 
 CREATE INDEX deployment_chain_id_updated_at_desc ON Deployment (DeploymentChainId, UpdatedAt DESC);
 
 -- index on `DeploymentTraceCommitHash` ASC and `UpdatedAt` DESC
-ALTER TABLE Deployment ADD COLUMN DeploymentTraceCommitHash VARCHAR(40) GENERATED ALWAYS AS (data->>"$.deployment_trace_commit_hash") VIRTUAL NOT NULL;
-ALTER TABLE Deployment MODIFY DeploymentTraceCommitHash VARCHAR(40) GENERATED ALWAYS AS (IFNULL(data->>"$.deployment_trace_commit_hash", "")) VIRTUAL NOT NULL;
+ALTER TABLE Deployment ADD COLUMN DeploymentTraceCommitHash VARCHAR(40) GENERATED ALWAYS AS (IFNULL(data->>"$.deployment_trace_commit_hash", "")) VIRTUAL NOT NULL;
 CREATE INDEX deployment_trace_commit_hash_updated_at_desc ON Deployment (DeploymentTraceCommitHash, UpdatedAt DESC);
 
 --
@@ -146,6 +145,5 @@ CREATE INDEX deploymentchain_status_updated_at_desc ON Deployment (Status, Updat
 CREATE INDEX deploymenttrace_project_id_updated_at_desc ON DeploymentTrace (ProjectId, UpdatedAt DESC);
 
 -- index on `CommitHash` ASC and `UpdatedAt` DESC
-ALTER TABLE DeploymentTrace ADD COLUMN CommitHash VARCHAR(40) GENERATED ALWAYS AS (data->>"$.commit_hash") VIRTUAL NOT NULL;
-ALTER TABLE DeploymentTrace MODIFY CommitHash VARCHAR(40) GENERATED ALWAYS AS (IFNULL(data->>"$.commit_hash", "")) VIRTUAL NOT NULL;
+ALTER TABLE DeploymentTrace ADD COLUMN CommitHash VARCHAR(40) GENERATED ALWAYS AS (IFNULL(data->>"$.commit_hash", "")) VIRTUAL NOT NULL;
 CREATE INDEX deploymenttrace_commit_hash_updated_at_desc ON DeploymentTrace (CommitHash, UpdatedAt DESC);
