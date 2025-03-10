@@ -688,3 +688,32 @@ func (o StageStatus) toModelEnum() model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 }
+
+type StageCommand struct {
+	Commander string
+	Type      CommandType
+}
+
+type CommandType int32
+
+const (
+	CommandType_APPROVE_STAGE CommandType = iota
+	CommandType_SKIP_STAGE
+)
+
+func newStageCommand(c *model.Command) (StageCommand, error) {
+	switch c.Type {
+	case model.Command_APPROVE_STAGE:
+		return StageCommand{
+			Commander: c.GetCommander(),
+			Type:      CommandType_APPROVE_STAGE,
+		}, nil
+	case model.Command_SKIP_STAGE:
+		return StageCommand{
+			Commander: c.GetCommander(),
+			Type:      CommandType_SKIP_STAGE,
+		}, nil
+	default:
+		return StageCommand{}, fmt.Errorf("invalid command type: %d", c.Type)
+	}
+}
