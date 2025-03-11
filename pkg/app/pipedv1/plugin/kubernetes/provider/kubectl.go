@@ -33,6 +33,10 @@ var (
 	errAlreadyExistsLiteral  = "Error from server (AlreadyExists)"
 )
 
+const (
+	DefaultKubectlVersion = "1.18.2"
+)
+
 // Kubectl is a wrapper for kubectl command.
 type Kubectl struct {
 	execPath string

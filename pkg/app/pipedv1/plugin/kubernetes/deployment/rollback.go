@@ -96,7 +96,7 @@ func (a *DeploymentService) executeK8sRollbackStage(ctx context.Context, lp logp
 	}
 
 	// Get the kubectl tool path.
-	kubectlPath, err := a.toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion, defaultKubectlVersion))
+	kubectlPath, err := a.toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion, provider.DefaultKubectlVersion))
 	if err != nil {
 		lp.Errorf("Failed while getting kubectl tool (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
