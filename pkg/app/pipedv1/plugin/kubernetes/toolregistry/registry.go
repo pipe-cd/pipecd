@@ -17,7 +17,12 @@
 package toolregistry
 
 import (
+	"cmp"
 	"context"
+)
+
+const (
+	defaultKubectlVersion = "1.18.2"
 )
 
 type client interface {
@@ -35,8 +40,10 @@ type Registry struct {
 	client client
 }
 
+// Install the kubectl tool with the given version and return the path to the installed binary.
+// If the version is empty, the default version will be used.
 func (r *Registry) Kubectl(ctx context.Context, version string) (string, error) {
-	return r.client.InstallTool(ctx, "kubectl", version, kubectlInstallScript)
+	return r.client.InstallTool(ctx, "kubectl", cmp.Or(version, defaultKubectlVersion), kubectlInstallScript)
 }
 
 func (r *Registry) Kustomize(ctx context.Context, version string) (string, error) {

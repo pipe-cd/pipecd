@@ -50,7 +50,7 @@ func (p Plugin) GetLivestate(ctx context.Context, _ sdk.ConfigNone, deployTarget
 	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
 
 	// Get the kubectl tool path.
-	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion, provider.DefaultKubectlVersion))
+	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion))
 	if err != nil {
 		input.Logger.Error("Failed to get kubectl tool", zap.Error(err))
 		return nil, err
@@ -75,7 +75,7 @@ func (p Plugin) GetLivestate(ctx context.Context, _ sdk.ConfigNone, deployTarget
 
 	return &sdk.GetLivestateResponse{
 		LiveState: sdk.ApplicationLiveState{
-			Resources: resourceStates,
+			Resources:    resourceStates,
 			HealthStatus: sdk.ApplicationHealthStateUnknown, // TODO: Implement health status calculation
 		},
 		SyncState: sdk.ApplicationSyncState{}, // TODO: Implement sync state calculation

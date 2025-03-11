@@ -94,7 +94,7 @@ func (a *DeploymentService) executeK8sSyncStage(ctx context.Context, lp logpersi
 	}
 
 	// Get the kubectl tool path.
-	kubectlPath, err := a.toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion, provider.DefaultKubectlVersion))
+	kubectlPath, err := a.toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion))
 	if err != nil {
 		lp.Errorf("Failed while getting kubectl tool (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
