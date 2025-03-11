@@ -152,7 +152,7 @@ func (l *loader) LoadManifests(ctx context.Context) (manifests []Manifest, err e
 
 	case TemplatingMethodKustomize:
 		var data string
-		data, err = l.kustomize.Template(ctx, l.appName, l.appDir, l.input.KustomizeOptions)
+		data, err = l.kustomize.Template(ctx, l.appName, l.appDir, l.input.KustomizeOptions, l.helm)
 		if err != nil {
 			err = fmt.Errorf("unable to run kustomize template: %w", err)
 			return
