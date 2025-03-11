@@ -25,6 +25,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/livestate"
 )
@@ -51,6 +52,9 @@ func newTestLivestatePluginServer(t *testing.T, plugin *mockLivestatePlugin) *Li
 		base: plugin,
 		commonFields: commonFields{
 			logger: zaptest.NewLogger(t),
+			config: &config.PipedPlugin{
+				Name: "mockLivestatePlugin",
+			},
 		},
 		deployTargets: map[string]*DeployTarget[struct{}]{
 			"target1": {
@@ -165,10 +169,11 @@ func TestApplicationLiveState_toModel(t *testing.T) {
 			expected: &model.ApplicationLiveState{
 				Resources: []*model.ResourceState{
 					{
-						Id:        "resource1",
-						Name:      "Resource 1",
-						CreatedAt: now.Unix(),
-						UpdatedAt: now.Unix(),
+						Id:         "resource1",
+						Name:       "Resource 1",
+						PluginName: "test-plugin",
+						CreatedAt:  now.Unix(),
+						UpdatedAt:  now.Unix(),
 					},
 				},
 				HealthStatus: model.ApplicationLiveState_HEALTHY,
@@ -180,7 +185,7 @@ func TestApplicationLiveState_toModel(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			result := tt.input.toModel(now)
+			result := tt.input.toModel("test-plugin", now)
 			assert.Equal(t, tt.expected, result)
 		})
 	}
@@ -203,10 +208,11 @@ func TestResourceState_toModel(t *testing.T) {
 				CreatedAt: now,
 			},
 			expected: &model.ResourceState{
-				Id:        "resource1",
-				Name:      "Resource 1",
-				CreatedAt: now.Unix(),
-				UpdatedAt: now.Unix(),
+				Id:         "resource1",
+				Name:       "Resource 1",
+				PluginName: "test-plugin",
+				CreatedAt:  now.Unix(),
+				UpdatedAt:  now.Unix(),
 			},
 		},
 	}
@@ -215,7 +221,7 @@ func TestResourceState_toModel(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			result := tt.input.toModel(now)
+			result := tt.input.toModel("test-plugin", now)
 			assert.Equal(t, tt.expected, result)
 		})
 	}
