@@ -114,7 +114,7 @@ type commonFields struct {
 	config       *config.PipedPlugin
 	logger       *zap.Logger
 	logPersister logPersister
-	client       *pipedapi.PipedServiceClient
+	client       *pipedapi.PluginServiceClient
 	toolRegistry *toolregistry.ToolRegistry
 }
 

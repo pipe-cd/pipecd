@@ -34,7 +34,7 @@ const (
 // It provides methods to call the piped service APIs.
 // It's a wrapper around the raw piped service client.
 type Client struct {
-	base *pipedapi.PipedServiceClient
+	base *pipedapi.PluginServiceClient
 
 	// pluginName is used to identify which plugin sends requests to piped.
 	pluginName string
@@ -60,7 +60,7 @@ type Client struct {
 // NewClient creates a new client.
 // DO NOT USE this function except in tests.
 // FIXME: Remove this function and make a better way for tests.
-func NewClient(base *pipedapi.PipedServiceClient, pluginName, applicationID, stageID string, lp StageLogPersister, tr *toolregistry.ToolRegistry) *Client {
+func NewClient(base *pipedapi.PluginServiceClient, pluginName, applicationID, stageID string, lp StageLogPersister, tr *toolregistry.ToolRegistry) *Client {
 	return &Client{
 		base:          base,
 		pluginName:    pluginName,
