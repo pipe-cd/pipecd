@@ -22,9 +22,9 @@ import (
 )
 
 const (
-	defaultKubectlVersion = "1.18.2"
+	defaultKubectlVersion   = "1.18.2"
 	defaultKustomizeVersion = "3.8.1"
-	defaultHelmVersion    = "3.8.2"
+	defaultHelmVersion      = "3.8.2"
 )
 
 type client interface {
