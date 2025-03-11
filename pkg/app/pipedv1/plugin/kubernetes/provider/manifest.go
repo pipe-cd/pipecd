@@ -177,7 +177,7 @@ func (m Manifest) AddStringMapValues(values map[string]string, fields ...string)
 }
 
 // ToResourceState converts the manifest into a sdk.ResourceState.
-func (m Manifest) ToResourceState(pluginName, deployTarget string) sdk.ResourceState {
+func (m Manifest) ToResourceState(deployTarget string) sdk.ResourceState {
 	var parents []string // default as nil
 	if len(m.body.GetOwnerReferences()) > 0 {
 		parents = make([]string, 0, len(m.body.GetOwnerReferences()))
@@ -198,7 +198,6 @@ func (m Manifest) ToResourceState(pluginName, deployTarget string) sdk.ResourceS
 			"API Version": m.body.GetAPIVersion(),
 			"Kind":        m.body.GetKind(),
 		},
-		PluginName:   pluginName,
 		DeployTarget: deployTarget,
 		CreatedAt:    m.body.GetCreationTimestamp().Time,
 	}
