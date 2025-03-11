@@ -113,21 +113,25 @@ const DeploymentTraceItem: FC<Props> = ({ trace, deploymentList }) => {
           <Box>
             <Box>
               <Typography variant="h6" className={classes.title}>
-                {trace?.title}
+                {trace?.title || `Commit title ${trace?.commitHash}`}
               </Typography>
-              <IconButton
-                size="small"
-                aria-label="btn-commit-message"
-                className={clsx(classes.btnMore, {
-                  [classes.btnMoreActive]: visibleMessage,
-                })}
-                onClick={onViewCommitMessage}
-                title={
-                  visibleMessage ? "Hide commit message" : "View commit message"
-                }
-              >
-                <MoreHorizIcon />
-              </IconButton>
+              {trace?.commitMessage && (
+                <IconButton
+                  size="small"
+                  aria-label="btn-commit-message"
+                  className={clsx(classes.btnMore, {
+                    [classes.btnMoreActive]: visibleMessage,
+                  })}
+                  onClick={onViewCommitMessage}
+                  title={
+                    visibleMessage
+                      ? "Hide commit message"
+                      : "View commit message"
+                  }
+                >
+                  <MoreHorizIcon />
+                </IconButton>
+              )}
             </Box>
 
             <Box display="flex">
@@ -161,9 +165,11 @@ const DeploymentTraceItem: FC<Props> = ({ trace, deploymentList }) => {
         )}
 
         <Box display={"flex"} gridColumnGap={3}>
-          <Typography variant="body2" color="textSecondary">
-            {trace?.author} authored
-          </Typography>
+          {trace?.author && (
+            <Typography variant="body2" color="textSecondary">
+              {trace?.author} authored
+            </Typography>
+          )}
           <Typography
             variant="body2"
             color="textSecondary"
