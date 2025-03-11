@@ -18,9 +18,10 @@ import (
 	"encoding/json"
 	"maps"
 
-	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/yaml"
+
+	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
 var builtinAPIGroups = map[string]struct{}{
