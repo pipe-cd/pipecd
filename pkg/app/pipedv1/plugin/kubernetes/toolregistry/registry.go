@@ -23,6 +23,8 @@ import (
 
 const (
 	defaultKubectlVersion = "1.18.2"
+	defaultKustomizeVersion = "3.8.1"
+	defaultHelmVersion    = "3.8.2"
 )
 
 type client interface {
@@ -40,16 +42,20 @@ type Registry struct {
 	client client
 }
 
-// Install the kubectl tool with the given version and return the path to the installed binary.
+// Kubectl installs the kubectl tool with the given version and return the path to the installed binary.
 // If the version is empty, the default version will be used.
 func (r *Registry) Kubectl(ctx context.Context, version string) (string, error) {
 	return r.client.InstallTool(ctx, "kubectl", cmp.Or(version, defaultKubectlVersion), kubectlInstallScript)
 }
 
+// Kustringize installs the kustomize tool with the given version and return the path to the installed binary.
+// If the version is empty, the default version will be used.
 func (r *Registry) Kustomize(ctx context.Context, version string) (string, error) {
-	return r.client.InstallTool(ctx, "kustomize", version, kustomizeInstallScript)
+	return r.client.InstallTool(ctx, "kustomize", cmp.Or(version, defaultKustomizeVersion), kustomizeInstallScript)
 }
 
+// Helm installs the helm tool with the given version and return the path to the installed binary.
+// If the version is empty, the default version will be used.
 func (r *Registry) Helm(ctx context.Context, version string) (string, error) {
-	return r.client.InstallTool(ctx, "helm", version, helmInstallScript)
+	return r.client.InstallTool(ctx, "helm", cmp.Or(version, defaultHelmVersion), helmInstallScript)
 }
