@@ -16,17 +16,25 @@ package sdk
 
 import (
 	"context"
+	"iter"
+	"slices"
+	"time"
 
+	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedapi"
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry"
+)
+
+const (
+	listStageCommandsInterval = 5 * time.Second
 )
 
 // Client is a toolkit for interacting with the piped service.
 // It provides methods to call the piped service APIs.
 // It's a wrapper around the raw piped service client.
 type Client struct {
-	base *pipedapi.PipedServiceClient
+	base *pipedapi.PluginServiceClient
 
 	// pluginName is used to identify which plugin sends requests to piped.
 	pluginName string
@@ -52,7 +60,7 @@ type Client struct {
 // NewClient creates a new client.
 // DO NOT USE this function except in tests.
 // FIXME: Remove this function and make a better way for tests.
-func NewClient(base *pipedapi.PipedServiceClient, pluginName, applicationID, stageID string, lp StageLogPersister, tr *toolregistry.ToolRegistry) *Client {
+func NewClient(base *pipedapi.PluginServiceClient, pluginName, applicationID, stageID string, lp StageLogPersister, tr *toolregistry.ToolRegistry) *Client {
 	return &Client{
 		base:          base,
 		pluginName:    pluginName,
@@ -163,4 +171,49 @@ func (c *Client) LogPersister() StageLogPersister {
 // Use this to install and get the path of the tools used in the plugin.
 func (c *Client) ToolRegistry() *toolregistry.ToolRegistry {
 	return c.toolRegistry
+}
+
+// ListStageCommands returns the list of stage commands of the given command types.
+func (c Client) ListStageCommands(ctx context.Context, commandTypes ...model.Command_Type) iter.Seq2[*StageCommand, error] {
+	return func(yield func(*StageCommand, error) bool) {
+		returned := map[string]struct{}{}
+
+		for {
+			resp, err := c.base.ListStageCommands(ctx, &pipedservice.ListStageCommandsRequest{
+				DeploymentId: c.deploymentID,
+				StageId:      c.stageID,
+			})
+			if err != nil {
+				if !yield(nil, err) {
+					return
+				}
+				continue
+			}
+
+			for _, command := range resp.Commands {
+				if !slices.Contains(commandTypes, command.Type) {
+					continue
+				}
+
+				if _, ok := returned[command.Id]; ok {
+					continue
+				}
+				returned[command.Id] = struct{}{}
+
+				stageCommand, err := newStageCommand(command)
+				if err != nil {
+					if !yield(nil, err) {
+						return
+					}
+					continue
+				}
+
+				if !yield(&stageCommand, nil) {
+					return
+				}
+			}
+
+			time.Sleep(listStageCommandsInterval)
+		}
+	}
 }

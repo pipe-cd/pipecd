@@ -18,3 +18,12 @@ export const sortDateFunc = (
   const dateB = dayjs(b).valueOf();
   return sortFunc(dateA, dateB, direction);
 };
+
+export const getPercentage = (
+  num: number,
+  total: number,
+  precision?: number
+): number => {
+  const percentage = (num / (total || 1)) * 100;
+  return precision ? Number(percentage.toFixed(precision)) : percentage;
+};

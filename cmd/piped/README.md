@@ -3,7 +3,7 @@
 
 ## Prerequisites
 
-- [Go 1.22 or later](https://go.dev/)
+- [Go 1.24 or later](https://go.dev/)
 
 ## Repositories
 - [pipecd](https://github.com/pipe-cd/pipecd): contains all source code and documentation of PipeCD project.

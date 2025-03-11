@@ -17,8 +17,6 @@ import (
 	"unicode/utf8"
 
 	"google.golang.org/protobuf/types/known/anypb"
-
-	model "github.com/pipe-cd/pipecd/pkg/model"
 )
 
 // ensure the imports are used
@@ -35,8 +33,6 @@ var (
 	_ = (*mail.Address)(nil)
 	_ = anypb.Any{}
 	_ = sort.Sort
-
-	_ = model.Command_Type(0)
 )
 
 // Validate checks the field values on DecryptSecretRequest with the rules
@@ -2731,17 +2727,6 @@ func (m *ListStageCommandsRequest) validate(all bool) error {
 		err := ListStageCommandsRequestValidationError{
 			field:  "StageId",
 			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if _, ok := model.Command_Type_name[int32(m.GetType())]; !ok {
-		err := ListStageCommandsRequestValidationError{
-			field:  "Type",
-			reason: "value must be one of the defined enum values",
 		}
 		if !all {
 			return err

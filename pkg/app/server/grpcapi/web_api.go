@@ -104,6 +104,10 @@ type webAPIEventStore interface {
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Event, string, error)
 }
 
+type webAPIDeploymentTraceStore interface {
+	List(ctx context.Context, opts datastore.ListOptions) ([]*model.DeploymentTrace, string, error)
+}
+
 type webAPIAPIKeyStore interface {
 	Add(ctx context.Context, k *model.APIKey) error
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.APIKey, error)
@@ -121,6 +125,7 @@ type WebAPI struct {
 	applicationStore          webAPIApplicationStore
 	deploymentChainStore      webAPIDeploymentChainStore
 	deploymentStore           webAPIDeploymentStore
+	deploymentTraceStore      webAPIDeploymentTraceStore
 	pipedStore                webAPIPipedStore
 	projectStore              webAPIProjectStore
 	apiKeyStore               webAPIAPIKeyStore
@@ -163,6 +168,7 @@ func NewWebAPI(
 		applicationStore:          datastore.NewApplicationStore(ds, w),
 		deploymentChainStore:      datastore.NewDeploymentChainStore(ds, w),
 		deploymentStore:           datastore.NewDeploymentStore(ds, w),
+		deploymentTraceStore:      datastore.NewDeploymentTraceStore(ds, w),
 		pipedStore:                datastore.NewPipedStore(ds, w),
 		projectStore:              datastore.NewProjectStore(ds, w),
 		apiKeyStore:               datastore.NewAPIKeyStore(ds, w),
@@ -942,7 +948,6 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 	}, nil
 }
 
-// TODO: implement this method, currently only mock for frontend dev
 func (a *WebAPI) ListDeploymentTraces(ctx context.Context, req *webservice.ListDeploymentTracesRequest) (*webservice.ListDeploymentTracesResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
@@ -973,6 +978,16 @@ func (a *WebAPI) ListDeploymentTraces(ctx context.Context, req *webservice.ListD
 		},
 	}
 
+	if o := req.Options; o != nil {
+		if o.CommitHash != "" {
+			filters = append(filters, datastore.ListFilter{
+				Field:    "CommitHash",
+				Operator: datastore.OperatorEqual,
+				Value:    o.CommitHash,
+			})
+		}
+	}
+
 	pageSize := int(req.PageSize)
 	options := datastore.ListOptions{
 		Filters: filters,
@@ -980,52 +995,43 @@ func (a *WebAPI) ListDeploymentTraces(ctx context.Context, req *webservice.ListD
 		Limit:   pageSize,
 		Cursor:  req.Cursor,
 	}
-	deployments, _, err := a.deploymentStore.List(ctx, options)
+
+	traces, cursor, err := a.deploymentTraceStore.List(ctx, options)
 	if err != nil {
-		a.logger.Error("failed to get deployments", zap.Error(err))
-		return nil, gRPCStoreError(err, "get deployments")
+		a.logger.Error("failed to get deployment traces", zap.Error(err))
+		return nil, gRPCStoreError(err, "get deployment traces")
+	}
+	if len(traces) == 0 {
+		return &webservice.ListDeploymentTracesResponse{
+			Traces: []*webservice.ListDeploymentTracesResponse_DeploymentTraceRes{},
+			Cursor: cursor,
+		}, nil
+	}
+
+	dts := make([]*webservice.ListDeploymentTracesResponse_DeploymentTraceRes, 0, len(traces))
+	for _, t := range traces {
+		opts := datastore.ListOptions{
+			Filters: []datastore.ListFilter{
+				{
+					Field:    "DeploymentTraceCommitHash",
+					Operator: datastore.OperatorEqual,
+					Value:    t.CommitHash,
+				},
+			},
+		}
+		deployments, _, err := a.deploymentStore.List(ctx, opts)
+		if err != nil {
+			a.logger.Error("failed to get deployments for trace", zap.String("commit-hash", t.CommitHash), zap.Error(err))
+		}
+		dts = append(dts, &webservice.ListDeploymentTracesResponse_DeploymentTraceRes{
+			Trace:       t,
+			Deployments: deployments,
+		})
 	}
 
 	return &webservice.ListDeploymentTracesResponse{
-		Traces: []*webservice.ListDeploymentTracesResponse_DeploymentTraceRes{
-			{
-				Trace: &model.DeploymentTrace{
-					Id:              "trace-id-1",
-					CommitHash:      "commit-hash-1",
-					Title:           "Deployment of application 'app-name' to 'stage-name' stage",
-					CommitUrl:       "https://github.com/pipe-cd/pipecd/commit/14f3d0bd403964378593dabafe3baab9238d0424",
-					CommitMessage:   "Message mocked here",
-					CommitTimestamp: 125,
-					Author:          "author",
-				},
-				Deployments: deployments,
-			},
-			{
-				Trace: &model.DeploymentTrace{
-					Id:              "trace-id-2",
-					CommitHash:      "commit-hash-2",
-					Title:           "Deployment of application 'app-name' to 'stage-name' stage",
-					CommitUrl:       "https://github.com/pipe-cd/pipecd/commit/14f3d0bd403964378593dabafe3baab9238d0424",
-					CommitMessage:   "Message mocked here",
-					CommitTimestamp: 123,
-					Author:          "author",
-				},
-				Deployments: deployments,
-			},
-			{
-				Trace: &model.DeploymentTrace{
-					Id:              "trace-id-3",
-					CommitHash:      "comit-hash-3",
-					Title:           "Deployment of application 'app-name' to 'stage-name' stage",
-					CommitUrl:       "https://github.com/pipe-cd/pipecd/commit/14f3d0bd403964378593dabafe3baab9238d0424",
-					CommitMessage:   "Message mocked here",
-					CommitTimestamp: 123,
-					Author:          "author",
-				},
-				Deployments: deployments,
-			},
-		},
-		Cursor: "cursor",
+		Traces: dts,
+		Cursor: cursor,
 	}, nil
 }
 

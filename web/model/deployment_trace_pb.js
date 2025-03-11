@@ -78,12 +78,13 @@ proto.model.DeploymentTrace.prototype.toObject = function(opt_includeInstance) {
 proto.model.DeploymentTrace.toObject = function(includeInstance, msg) {
   var f, obj = {
     id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    title: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    commitMessage: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    commitHash: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    commitUrl: jspb.Message.getFieldWithDefault(msg, 5, ""),
-    commitTimestamp: jspb.Message.getFieldWithDefault(msg, 6, 0),
-    author: jspb.Message.getFieldWithDefault(msg, 7, ""),
+    projectId: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    title: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    commitMessage: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    commitHash: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    commitUrl: jspb.Message.getFieldWithDefault(msg, 6, ""),
+    commitTimestamp: jspb.Message.getFieldWithDefault(msg, 7, 0),
+    author: jspb.Message.getFieldWithDefault(msg, 8, ""),
     createdAt: jspb.Message.getFieldWithDefault(msg, 101, 0),
     updatedAt: jspb.Message.getFieldWithDefault(msg, 102, 0)
   };
@@ -128,25 +129,29 @@ proto.model.DeploymentTrace.deserializeBinaryFromReader = function(msg, reader) 
       break;
     case 2:
       var value = /** @type {string} */ (reader.readString());
-      msg.setTitle(value);
+      msg.setProjectId(value);
       break;
     case 3:
       var value = /** @type {string} */ (reader.readString());
-      msg.setCommitMessage(value);
+      msg.setTitle(value);
       break;
     case 4:
       var value = /** @type {string} */ (reader.readString());
-      msg.setCommitHash(value);
+      msg.setCommitMessage(value);
       break;
     case 5:
       var value = /** @type {string} */ (reader.readString());
-      msg.setCommitUrl(value);
+      msg.setCommitHash(value);
       break;
     case 6:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setCommitUrl(value);
+      break;
+    case 7:
       var value = /** @type {number} */ (reader.readInt64());
       msg.setCommitTimestamp(value);
       break;
-    case 7:
+    case 8:
       var value = /** @type {string} */ (reader.readString());
       msg.setAuthor(value);
       break;
@@ -194,45 +199,52 @@ proto.model.DeploymentTrace.serializeBinaryToWriter = function(message, writer) 
       f
     );
   }
-  f = message.getTitle();
+  f = message.getProjectId();
   if (f.length > 0) {
     writer.writeString(
       2,
       f
     );
   }
-  f = message.getCommitMessage();
+  f = message.getTitle();
   if (f.length > 0) {
     writer.writeString(
       3,
       f
     );
   }
-  f = message.getCommitHash();
+  f = message.getCommitMessage();
   if (f.length > 0) {
     writer.writeString(
       4,
       f
     );
   }
-  f = message.getCommitUrl();
+  f = message.getCommitHash();
   if (f.length > 0) {
     writer.writeString(
       5,
       f
     );
   }
+  f = message.getCommitUrl();
+  if (f.length > 0) {
+    writer.writeString(
+      6,
+      f
+    );
+  }
   f = message.getCommitTimestamp();
   if (f !== 0) {
     writer.writeInt64(
-      6,
+      7,
       f
     );
   }
   f = message.getAuthor();
   if (f.length > 0) {
     writer.writeString(
-      7,
+      8,
       f
     );
   }
@@ -272,10 +284,10 @@ proto.model.DeploymentTrace.prototype.setId = function(value) {
 
 
 /**
- * optional string title = 2;
+ * optional string project_id = 2;
  * @return {string}
  */
-proto.model.DeploymentTrace.prototype.getTitle = function() {
+proto.model.DeploymentTrace.prototype.getProjectId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -284,16 +296,16 @@ proto.model.DeploymentTrace.prototype.getTitle = function() {
  * @param {string} value
  * @return {!proto.model.DeploymentTrace} returns this
  */
-proto.model.DeploymentTrace.prototype.setTitle = function(value) {
+proto.model.DeploymentTrace.prototype.setProjectId = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
 /**
- * optional string commit_message = 3;
+ * optional string title = 3;
  * @return {string}
  */
-proto.model.DeploymentTrace.prototype.getCommitMessage = function() {
+proto.model.DeploymentTrace.prototype.getTitle = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
@@ -302,16 +314,16 @@ proto.model.DeploymentTrace.prototype.getCommitMessage = function() {
  * @param {string} value
  * @return {!proto.model.DeploymentTrace} returns this
  */
-proto.model.DeploymentTrace.prototype.setCommitMessage = function(value) {
+proto.model.DeploymentTrace.prototype.setTitle = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
 /**
- * optional string commit_hash = 4;
+ * optional string commit_message = 4;
  * @return {string}
  */
-proto.model.DeploymentTrace.prototype.getCommitHash = function() {
+proto.model.DeploymentTrace.prototype.getCommitMessage = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
 };
 
@@ -320,16 +332,16 @@ proto.model.DeploymentTrace.prototype.getCommitHash = function() {
  * @param {string} value
  * @return {!proto.model.DeploymentTrace} returns this
  */
-proto.model.DeploymentTrace.prototype.setCommitHash = function(value) {
+proto.model.DeploymentTrace.prototype.setCommitMessage = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 
 /**
- * optional string commit_url = 5;
+ * optional string commit_hash = 5;
  * @return {string}
  */
-proto.model.DeploymentTrace.prototype.getCommitUrl = function() {
+proto.model.DeploymentTrace.prototype.getCommitHash = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
 };
 
@@ -338,17 +350,35 @@ proto.model.DeploymentTrace.prototype.getCommitUrl = function() {
  * @param {string} value
  * @return {!proto.model.DeploymentTrace} returns this
  */
-proto.model.DeploymentTrace.prototype.setCommitUrl = function(value) {
+proto.model.DeploymentTrace.prototype.setCommitHash = function(value) {
   return jspb.Message.setProto3StringField(this, 5, value);
 };
 
 
 /**
- * optional int64 commit_timestamp = 6;
+ * optional string commit_url = 6;
+ * @return {string}
+ */
+proto.model.DeploymentTrace.prototype.getCommitUrl = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.model.DeploymentTrace} returns this
+ */
+proto.model.DeploymentTrace.prototype.setCommitUrl = function(value) {
+  return jspb.Message.setProto3StringField(this, 6, value);
+};
+
+
+/**
+ * optional int64 commit_timestamp = 7;
  * @return {number}
  */
 proto.model.DeploymentTrace.prototype.getCommitTimestamp = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 6, 0));
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 7, 0));
 };
 
 
@@ -357,16 +387,16 @@ proto.model.DeploymentTrace.prototype.getCommitTimestamp = function() {
  * @return {!proto.model.DeploymentTrace} returns this
  */
 proto.model.DeploymentTrace.prototype.setCommitTimestamp = function(value) {
-  return jspb.Message.setProto3IntField(this, 6, value);
+  return jspb.Message.setProto3IntField(this, 7, value);
 };
 
 
 /**
- * optional string author = 7;
+ * optional string author = 8;
  * @return {string}
  */
 proto.model.DeploymentTrace.prototype.getAuthor = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 7, ""));
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 8, ""));
 };
 
 
@@ -375,7 +405,7 @@ proto.model.DeploymentTrace.prototype.getAuthor = function() {
  * @return {!proto.model.DeploymentTrace} returns this
  */
 proto.model.DeploymentTrace.prototype.setAuthor = function(value) {
-  return jspb.Message.setProto3StringField(this, 7, value);
+  return jspb.Message.setProto3StringField(this, 8, value);
 };
 
 

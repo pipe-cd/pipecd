@@ -48,7 +48,6 @@ service PluginService {
     rpc GetDeploymentSharedMetadata(GetDeploymentSharedMetadataRequest) returns (GetDeploymentSharedMetadataResponse) {}
 
     // ListStageCommands lists unhandled commands of the given stage and type.
-    // Currently, supported types are only APPROVE_STAGE and SKIP_STAGE.
     rpc ListStageCommands(ListStageCommandsRequest) returns (ListStageCommandsResponse) {}
 }
 
@@ -188,7 +187,6 @@ message GetDeploymentSharedMetadataResponse {
 message ListStageCommandsRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
-    model.Command.Type type = 3 [(validate.rules).enum.defined_only = true];
 }
 
 message ListStageCommandsResponse {

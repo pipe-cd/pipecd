@@ -36,11 +36,48 @@ func TestKustomizeTemplate(t *testing.T) {
 
 	kustomizePath, _, err := toolregistry.DefaultRegistry().Kustomize(ctx, "")
 	require.NoError(t, err)
+	helmPath, _, err := toolregistry.DefaultRegistry().Helm(ctx, "")
+	require.NoError(t, err)
 
 	kustomize := NewKustomize("", kustomizePath, zap.NewNop())
+	helm := NewHelm("", helmPath, zap.NewNop())
 	out, err := kustomize.Template(ctx, appName, appDir, map[string]string{
 		"load_restrictor": "LoadRestrictionsNone",
-	})
+	}, helm)
 	require.NoError(t, err)
 	assert.True(t, len(out) > 0)
+}
+
+func TestKustomizeTemplate_WithHelm(t *testing.T) {
+	t.Parallel()
+
+	var (
+		ctx     = context.TODO()
+		appName = "testapp"
+		appDir  = "testdata/testkustomize-with-helm"
+	)
+
+	kustomizePath, _, err := toolregistry.DefaultRegistry().Kustomize(ctx, "5.6.0")
+	require.NoError(t, err)
+	helmPath, _, err := toolregistry.DefaultRegistry().Helm(ctx, "3.17.0")
+	require.NoError(t, err)
+
+	kustomize := NewKustomize("5.6.0", kustomizePath, zap.NewNop())
+	helm := NewHelm("3.17.0", helmPath, zap.NewNop())
+	out, err := kustomize.Template(ctx, appName, appDir, map[string]string{
+		"enable-helm": "",
+	}, helm)
+	require.NoError(t, err)
+	assert.True(t, len(out) > 0)
+}
+
+func TestKustomizeIsHelmCommandFlagAvailable(t *testing.T) {
+	t.Parallel()
+
+	kustomize := NewKustomize("4.0.1337", "", zap.NewNop())
+	assert.False(t, kustomize.isHelmCommandFlagAvailable())
+	kustomize = NewKustomize("4.1.0", "", zap.NewNop())
+	assert.True(t, kustomize.isHelmCommandFlagAvailable())
+	kustomize = NewKustomize("10.0.0", "", zap.NewNop())
+	assert.True(t, kustomize.isHelmCommandFlagAvailable())
 }

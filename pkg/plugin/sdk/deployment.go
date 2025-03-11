@@ -114,8 +114,14 @@ type commonFields struct {
 	config       *config.PipedPlugin
 	logger       *zap.Logger
 	logPersister logPersister
-	client       *pipedapi.PipedServiceClient
+	client       *pipedapi.PluginServiceClient
 	toolRegistry *toolregistry.ToolRegistry
+}
+
+// withLogger copies the commonFields and sets the logger to the given one.
+func (c commonFields) withLogger(logger *zap.Logger) commonFields {
+	c.logger = logger
+	return c
 }
 
 // DeploymentPluginServiceServer is the gRPC server that handles requests from the piped.
@@ -686,5 +692,37 @@ func (o StageStatus) toModelEnum() model.StageStatus {
 		return model.StageStatus_STAGE_EXITED
 	default:
 		return model.StageStatus_STAGE_FAILURE
+	}
+}
+
+// StageCommand represents a command for a stage.
+type StageCommand struct {
+	Commander string
+	Type      CommandType
+}
+
+// CommandType represents the type of the command.
+type CommandType int32
+
+const (
+	CommandTypeApproveStage CommandType = iota
+	CommandTypeSkipStage
+)
+
+// newStageCommand converts the model.Command to the internal representation.
+func newStageCommand(c *model.Command) (StageCommand, error) {
+	switch c.Type {
+	case model.Command_APPROVE_STAGE:
+		return StageCommand{
+			Commander: c.GetCommander(),
+			Type:      CommandTypeApproveStage,
+		}, nil
+	case model.Command_SKIP_STAGE:
+		return StageCommand{
+			Commander: c.GetCommander(),
+			Type:      CommandTypeSkipStage,
+		}, nil
+	default:
+		return StageCommand{}, fmt.Errorf("invalid command type: %d", c.Type)
 	}
 }

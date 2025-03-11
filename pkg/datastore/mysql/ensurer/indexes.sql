@@ -81,6 +81,10 @@ ALTER TABLE Deployment ADD COLUMN DeploymentChainId VARCHAR(36) GENERATED ALWAYS
 ALTER TABLE Deployment MODIFY DeploymentChainId VARCHAR(36) GENERATED ALWAYS AS (IFNULL(data->>"$.deployment_chain_id", "")) VIRTUAL NOT NULL;
 CREATE INDEX deployment_chain_id_updated_at_desc ON Deployment (DeploymentChainId, UpdatedAt DESC);
 
+-- index on `DeploymentTraceCommitHash` ASC and `UpdatedAt` DESC
+ALTER TABLE Deployment ADD COLUMN DeploymentTraceCommitHash VARCHAR(40) GENERATED ALWAYS AS (IFNULL(data->>"$.deployment_trace_commit_hash", "")) VIRTUAL NOT NULL;
+CREATE INDEX deployment_trace_commit_hash_updated_at_desc ON Deployment (DeploymentTraceCommitHash, UpdatedAt DESC);
+
 --
 -- Event table indexes
 --
@@ -132,3 +136,14 @@ CREATE INDEX deploymentchain_project_id_updated_at_desc ON DeploymentChain (Proj
 -- index on `Status` ASC and `UpdatedAt` DESC
 ALTER TABLE DeploymentChain ADD COLUMN Status INT GENERATED ALWAYS AS (IFNULL(data->>"$.status", 0)) VIRTUAL NOT NULL;
 CREATE INDEX deploymentchain_status_updated_at_desc ON Deployment (Status, UpdatedAt DESC);
+
+--
+-- DeploymentTrace table indexes
+--
+
+-- index on `ProjectId` ASC and `UpdatedAt` DESC
+CREATE INDEX deploymenttrace_project_id_updated_at_desc ON DeploymentTrace (ProjectId, UpdatedAt DESC);
+
+-- index on `CommitHash` ASC and `UpdatedAt` DESC
+ALTER TABLE DeploymentTrace ADD COLUMN CommitHash VARCHAR(40) GENERATED ALWAYS AS (IFNULL(data->>"$.commit_hash", "")) VIRTUAL NOT NULL;
+CREATE INDEX deploymenttrace_commit_hash_updated_at_desc ON DeploymentTrace (CommitHash, UpdatedAt DESC);

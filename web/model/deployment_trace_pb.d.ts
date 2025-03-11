@@ -7,6 +7,9 @@ export class DeploymentTrace extends jspb.Message {
   getId(): string;
   setId(value: string): DeploymentTrace;
 
+  getProjectId(): string;
+  setProjectId(value: string): DeploymentTrace;
+
   getTitle(): string;
   setTitle(value: string): DeploymentTrace;
 
@@ -42,6 +45,7 @@ export class DeploymentTrace extends jspb.Message {
 export namespace DeploymentTrace {
   export type AsObject = {
     id: string,
+    projectId: string,
     title: string,
     commitMessage: string,
     commitHash: string,
