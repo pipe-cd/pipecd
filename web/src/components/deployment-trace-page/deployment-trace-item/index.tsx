@@ -113,7 +113,7 @@ const DeploymentTraceItem: FC<Props> = ({ trace, deploymentList }) => {
           <Box>
             <Box>
               <Typography variant="h6" className={classes.title}>
-                {trace?.title || `Commit title ${trace?.commitHash}`}
+                {trace?.title || `Title of commit ${trace?.commitHash}`}
               </Typography>
               {trace?.commitMessage && (
                 <IconButton
