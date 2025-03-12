@@ -63,7 +63,7 @@ type DeploymentPlugin[Config, DeployTargetConfig any] interface {
 	StagePlugin[Config, DeployTargetConfig]
 
 	// DetermineVersions determines the versions of the resources that will be deployed.
-	DetermineVersions(context.Context, *Config, *Client, TODO) (TODO, error)
+	DetermineVersions(context.Context, *Config, *Client, *DetermineVersionsInput) (*DetermineVersionsResponse, error)
 	// DetermineStrategy determines the strategy to deploy the resources.
 	DetermineStrategy(context.Context, *Config, *Client, TODO) (TODO, error)
 	// BuildQuickSyncStages builds the stages that will be executed during the quick sync process.
@@ -180,8 +180,28 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) setFields(fi
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) FetchDefinedStages(context.Context, *deployment.FetchDefinedStagesRequest) (*deployment.FetchDefinedStagesResponse, error) {
 	return &deployment.FetchDefinedStagesResponse{Stages: s.base.FetchDefinedStages()}, nil
 }
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineVersions(context.Context, *deployment.DetermineVersionsRequest) (*deployment.DetermineVersionsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DetermineVersions not implemented")
+func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineVersions(ctx context.Context, request *deployment.DetermineVersionsRequest) (*deployment.DetermineVersionsResponse, error) {
+	client := &Client{
+		base:          s.client,
+		pluginName:    s.Name(),
+		applicationID: request.GetInput().GetDeployment().GetApplicationId(),
+		deploymentID:  request.GetInput().GetDeployment().GetId(),
+		toolRegistry:  s.toolRegistry,
+	}
+
+	input := &DetermineVersionsInput{
+		Request: newDetermineVersionsRequest(request),
+		Client:  client,
+		Logger:  s.logger,
+	}
+
+	versions, err := s.base.DetermineVersions(ctx, &s.config, client, input)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to determine versions: %v", err)
+	}
+	return &deployment.DetermineVersionsResponse{
+		Versions: versions.toModel(),
+	}, nil
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineStrategy(context.Context, *deployment.DetermineStrategyRequest) (*deployment.DetermineStrategyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DetermineStrategy not implemented")
@@ -724,5 +744,100 @@ func newStageCommand(c *model.Command) (StageCommand, error) {
 		}, nil
 	default:
 		return StageCommand{}, fmt.Errorf("invalid command type: %d", c.Type)
+	}
+}
+
+// DetermineVersionsInput is the input for the DetermineVersions method.
+type DetermineVersionsInput struct {
+	// Request is the request to determine versions.
+	Request DetermineVersionsRequest
+	// Client is the client to interact with the piped.
+	Client *Client
+	// Logger is the logger to log the events.
+	Logger *zap.Logger
+}
+
+// DetermineVersionsRequest is the request to determine versions.
+type DetermineVersionsRequest struct {
+	// Deloyment is the deployment that the versions will be determined.
+	Deployment Deployment
+	// DeploymentSource is the source of the deployment.
+	DeploymentSource DeploymentSource
+}
+
+// newDetermineVersionsRequest converts the common.DetermineVersionsRequest to the internal representation.
+func newDetermineVersionsRequest(request *deployment.DetermineVersionsRequest) DetermineVersionsRequest {
+	return DetermineVersionsRequest{
+		Deployment:       newDeployment(request.GetInput().GetDeployment()),
+		DeploymentSource: newDeploymentSource(request.GetInput().GetTargetDeploymentSource()),
+	}
+}
+
+// DetermineVersionsResponse is the response of the request to determine versions.
+type DetermineVersionsResponse struct {
+	// Versions contains the versions of the resources.
+	Versions []ArtifactVersion
+}
+
+// toModel converts the DetermineVersionsResponse to the model.ArtifactVersion.
+func (r *DetermineVersionsResponse) toModel() []*model.ArtifactVersion {
+	versions := make([]*model.ArtifactVersion, 0, len(r.Versions))
+	for _, v := range r.Versions {
+		versions = append(versions, v.toModel())
+	}
+	return versions
+}
+
+// ArtifactVersion represents the version of an artifact.
+type ArtifactVersion struct {
+	// Kind is the kind of the artifact.
+	Kind ArtifactKind
+	// Version is the version of the artifact.
+	Version string
+	// Name is the name of the artifact.
+	Name string
+	// URL is the URL of the artifact.
+	URL string
+}
+
+// toModel converts the ArtifactVersion to the model.ArtifactVersion.
+func (v *ArtifactVersion) toModel() *model.ArtifactVersion {
+	return &model.ArtifactVersion{
+		Kind:    v.Kind.toModelEnum(),
+		Version: v.Version,
+		Name:    v.Name,
+		Url:     v.URL,
+	}
+}
+
+// ArtifactKind represents the kind of the artifact.
+type ArtifactKind int
+
+const (
+	// ArtifactKindUnknown indicates that the kind of the artifact is unknown.
+	ArtifactKindUnknown ArtifactKind = iota
+	// ArtifactKindContainerImage indicates that the artifact is a container image.
+	ArtifactKindContainerImage
+	// ArtifactKindS3Object indicates that the artifact is an S3 object.
+	ArtifactKindS3Object
+	// ArtifactKindGitSource indicates that the artifact is a git source.
+	ArtifactKindGitSource
+	// ArtifactKindTerraformModule indicates that the artifact is a terraform module.
+	ArtifactKindTerraformModule
+)
+
+// toModelEnum converts the ArtifactKind to the model.ArtifactVersion_Kind.
+func (k ArtifactKind) toModelEnum() model.ArtifactVersion_Kind {
+	switch k {
+	case ArtifactKindContainerImage:
+		return model.ArtifactVersion_CONTAINER_IMAGE
+	case ArtifactKindS3Object:
+		return model.ArtifactVersion_S3_OBJECT
+	case ArtifactKindGitSource:
+		return model.ArtifactVersion_GIT_SOURCE
+	case ArtifactKindTerraformModule:
+		return model.ArtifactVersion_TERRAFORM_MODULE
+	default:
+		return model.ArtifactVersion_UNKNOWN
 	}
 }

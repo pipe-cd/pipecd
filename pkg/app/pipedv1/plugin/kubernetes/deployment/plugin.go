@@ -343,8 +343,8 @@ func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.Execute
 }
 
 // FIXME
-func (p *Plugin) DetermineVersions(context.Context, *sdk.ConfigNone, *sdk.Client, sdk.TODO) (sdk.TODO, error) {
-	return sdk.TODO{}, nil
+func (p *Plugin) DetermineVersions(context.Context, *sdk.ConfigNone, *sdk.Client, *sdk.DetermineVersionsInput) (*sdk.DetermineVersionsResponse, error) {
+	return &sdk.DetermineVersionsResponse{}, nil
 }
 
 // FIXME

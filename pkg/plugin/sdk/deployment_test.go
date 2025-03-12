@@ -19,9 +19,11 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap/zaptest"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister/logpersistertest"
 )
@@ -367,6 +369,292 @@ func TestManualOperation_toModelEnum(t *testing.T) {
 			if result != tt.expected {
 				t.Errorf("expected %v, got %v", tt.expected, result)
 			}
+		})
+	}
+}
+
+func TestNewDetermineVersionsRequest(t *testing.T) {
+	tests := []struct {
+		name     string
+		request  *deployment.DetermineVersionsRequest
+		expected DetermineVersionsRequest
+	}{
+		{
+			name: "valid request",
+			request: &deployment.DetermineVersionsRequest{
+				Input: &deployment.PlanPluginInput{
+					Deployment: &model.Deployment{
+						Id:              "deployment-id",
+						ApplicationId:   "app-id",
+						ApplicationName: "app-name",
+						PipedId:         "piped-id",
+						ProjectId:       "project-id",
+						CreatedAt:       1234567890,
+						Trigger: &model.DeploymentTrigger{
+							Commander: "triggered-by",
+						},
+					},
+					TargetDeploymentSource: &common.DeploymentSource{
+						ApplicationDirectory:      "app-dir",
+						CommitHash:                "commit-hash",
+						ApplicationConfig:         []byte("app-config"),
+						ApplicationConfigFilename: "app-config-filename",
+					},
+				},
+			},
+			expected: DetermineVersionsRequest{
+				Deployment: Deployment{
+					ID:              "deployment-id",
+					ApplicationID:   "app-id",
+					ApplicationName: "app-name",
+					PipedID:         "piped-id",
+					ProjectID:       "project-id",
+					TriggeredBy:     "triggered-by",
+					CreatedAt:       1234567890,
+				},
+				DeploymentSource: DeploymentSource{
+					ApplicationDirectory:      "app-dir",
+					CommitHash:                "commit-hash",
+					ApplicationConfig:         []byte("app-config"),
+					ApplicationConfigFilename: "app-config-filename",
+				},
+			},
+		},
+		{
+			name: "empty request",
+			request: &deployment.DetermineVersionsRequest{
+				Input: &deployment.PlanPluginInput{
+					Deployment: &model.Deployment{
+						Trigger: &model.DeploymentTrigger{
+							Commit: &model.Commit{},
+						},
+					},
+					TargetDeploymentSource: &common.DeploymentSource{},
+				},
+			},
+			expected: DetermineVersionsRequest{
+				Deployment:       Deployment{},
+				DeploymentSource: DeploymentSource{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := newDetermineVersionsRequest(tt.request)
+			assert.Equal(t, tt.expected.Deployment, result.Deployment)
+			assert.Equal(t, tt.expected.DeploymentSource, result.DeploymentSource)
+		})
+	}
+}
+
+func TestArtifactVersion_toModel(t *testing.T) {
+	tests := []struct {
+		name     string
+		version  ArtifactVersion
+		expected *model.ArtifactVersion
+	}{
+		{
+			name: "container image",
+			version: ArtifactVersion{
+				Kind:    ArtifactKindContainerImage,
+				Version: "v1.0.0",
+				Name:    "nginx",
+				URL:     "https://example.com/nginx:v1.0.0",
+			},
+			expected: &model.ArtifactVersion{
+				Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+				Version: "v1.0.0",
+				Name:    "nginx",
+				Url:     "https://example.com/nginx:v1.0.0",
+			},
+		},
+		{
+			name: "s3 object",
+			version: ArtifactVersion{
+				Kind:    ArtifactKindS3Object,
+				Version: "v1.0.0",
+				Name:    "backup",
+				URL:     "s3://bucket/backup/v1.0.0",
+			},
+			expected: &model.ArtifactVersion{
+				Kind:    model.ArtifactVersion_S3_OBJECT,
+				Version: "v1.0.0",
+				Name:    "backup",
+				Url:     "s3://bucket/backup/v1.0.0",
+			},
+		},
+		{
+			name: "git source",
+			version: ArtifactVersion{
+				Kind:    ArtifactKindGitSource,
+				Version: "commit-hash",
+				Name:    "repo",
+				URL:     "https://github.com/repo/commit/commit-hash",
+			},
+			expected: &model.ArtifactVersion{
+				Kind:    model.ArtifactVersion_GIT_SOURCE,
+				Version: "commit-hash",
+				Name:    "repo",
+				Url:     "https://github.com/repo/commit/commit-hash",
+			},
+		},
+		{
+			name: "terraform module",
+			version: ArtifactVersion{
+				Kind:    ArtifactKindTerraformModule,
+				Version: "v1.0.0",
+				Name:    "module",
+				URL:     "https://registry.terraform.io/modules/module/v1.0.0",
+			},
+			expected: &model.ArtifactVersion{
+				Kind:    model.ArtifactVersion_TERRAFORM_MODULE,
+				Version: "v1.0.0",
+				Name:    "module",
+				Url:     "https://registry.terraform.io/modules/module/v1.0.0",
+			},
+		},
+		{
+			name: "unknown kind",
+			version: ArtifactVersion{
+				Kind:    ArtifactKindUnknown,
+				Version: "v1.0.0",
+				Name:    "unknown",
+				URL:     "https://example.com/unknown:v1.0.0",
+			},
+			expected: &model.ArtifactVersion{
+				Kind:    model.ArtifactVersion_UNKNOWN,
+				Version: "v1.0.0",
+				Name:    "unknown",
+				Url:     "https://example.com/unknown:v1.0.0",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.version.toModel()
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestArtifactKind_toModelEnum(t *testing.T) {
+	tests := []struct {
+		name     string
+		kind     ArtifactKind
+		expected model.ArtifactVersion_Kind
+	}{
+		{
+			name:     "container image",
+			kind:     ArtifactKindContainerImage,
+			expected: model.ArtifactVersion_CONTAINER_IMAGE,
+		},
+		{
+			name:     "s3 object",
+			kind:     ArtifactKindS3Object,
+			expected: model.ArtifactVersion_S3_OBJECT,
+		},
+		{
+			name:     "git source",
+			kind:     ArtifactKindGitSource,
+			expected: model.ArtifactVersion_GIT_SOURCE,
+		},
+		{
+			name:     "terraform module",
+			kind:     ArtifactKindTerraformModule,
+			expected: model.ArtifactVersion_TERRAFORM_MODULE,
+		},
+		{
+			name:     "unknown",
+			kind:     ArtifactKindUnknown,
+			expected: model.ArtifactVersion_UNKNOWN,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.kind.toModelEnum()
+			if result != tt.expected {
+				t.Errorf("expected %v, got %v", tt.expected, result)
+			}
+		})
+	}
+}
+
+func TestDetermineVersionsResponse_toModel(t *testing.T) {
+	tests := []struct {
+		name     string
+		response DetermineVersionsResponse
+		expected []*model.ArtifactVersion
+	}{
+		{
+			name: "single version",
+			response: DetermineVersionsResponse{
+				Versions: []ArtifactVersion{
+					{
+						Kind:    ArtifactKindContainerImage,
+						Version: "v1.0.0",
+						Name:    "nginx",
+						URL:     "https://example.com/nginx:v1.0.0",
+					},
+				},
+			},
+			expected: []*model.ArtifactVersion{
+				{
+					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Version: "v1.0.0",
+					Name:    "nginx",
+					Url:     "https://example.com/nginx:v1.0.0",
+				},
+			},
+		},
+		{
+			name: "multiple versions",
+			response: DetermineVersionsResponse{
+				Versions: []ArtifactVersion{
+					{
+						Kind:    ArtifactKindContainerImage,
+						Version: "v1.0.0",
+						Name:    "nginx",
+						URL:     "https://example.com/nginx:v1.0.0",
+					},
+					{
+						Kind:    ArtifactKindS3Object,
+						Version: "v1.0.0",
+						Name:    "backup",
+						URL:     "s3://bucket/backup/v1.0.0",
+					},
+				},
+			},
+			expected: []*model.ArtifactVersion{
+				{
+					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Version: "v1.0.0",
+					Name:    "nginx",
+					Url:     "https://example.com/nginx:v1.0.0",
+				},
+				{
+					Kind:    model.ArtifactVersion_S3_OBJECT,
+					Version: "v1.0.0",
+					Name:    "backup",
+					Url:     "s3://bucket/backup/v1.0.0",
+				},
+			},
+		},
+		{
+			name: "empty versions",
+			response: DetermineVersionsResponse{
+				Versions: []ArtifactVersion{},
+			},
+			expected: []*model.ArtifactVersion{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.response.toModel()
+			assert.Equal(t, tt.expected, result)
 		})
 	}
 }
