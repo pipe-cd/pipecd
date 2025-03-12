@@ -59,6 +59,8 @@ func (p Plugin) GetLivestate(ctx context.Context, _ sdk.ConfigNone, deployTarget
 	// Create the kubectl wrapper for the target cluster.
 	kubectl := provider.NewKubectl(kubectlPath)
 
+	// TODO: We need to implement including/excluding resources.
+	// ref; https://pipecd.dev/docs-v0.50.x/user-guide/managing-piped/configuration-reference/#kubernetesappstateinformer
 	namespacedLiveResources, clusterScopedLiveResources, err := provider.GetLiveResources(ctx, kubectl, deployTargetConfig.KubeConfigPath, input.Request.ApplicationID)
 	if err != nil {
 		input.Logger.Error("Failed to get live resources", zap.Error(err))
