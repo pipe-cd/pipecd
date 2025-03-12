@@ -538,3 +538,46 @@ func TestArtifactVersion_toModel(t *testing.T) {
 		})
 	}
 }
+
+func TestArtifactKind_toModelEnum(t *testing.T) {
+	tests := []struct {
+		name     string
+		kind     ArtifactKind
+		expected model.ArtifactVersion_Kind
+	}{
+		{
+			name:     "container image",
+			kind:     ArtifactKindContainerImage,
+			expected: model.ArtifactVersion_CONTAINER_IMAGE,
+		},
+		{
+			name:     "s3 object",
+			kind:     ArtifactKindS3Object,
+			expected: model.ArtifactVersion_S3_OBJECT,
+		},
+		{
+			name:     "git source",
+			kind:     ArtifactKindGitSource,
+			expected: model.ArtifactVersion_GIT_SOURCE,
+		},
+		{
+			name:     "terraform module",
+			kind:     ArtifactKindTerraformModule,
+			expected: model.ArtifactVersion_TERRAFORM_MODULE,
+		},
+		{
+			name:     "unknown",
+			kind:     ArtifactKindUnknown,
+			expected: model.ArtifactVersion_UNKNOWN,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.kind.toModelEnum()
+			if result != tt.expected {
+				t.Errorf("expected %v, got %v", tt.expected, result)
+			}
+		})
+	}
+}
