@@ -104,6 +104,8 @@ func buildDeployment(
 		UpdatedAt:                 now.Unix(),
 		DeploymentChainId:         deploymentChainID,
 		DeploymentChainBlockIndex: deploymentChainBlockIndex,
+		// TODO: Add link to deployment trace design docs here.
+		DeploymentTraceCommitHash: commit.GetTrailerValueByKey(model.TraceTriggerCommitHashKey),
 	}
 
 	return deployment, nil
