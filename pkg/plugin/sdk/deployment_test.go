@@ -581,3 +581,80 @@ func TestArtifactKind_toModelEnum(t *testing.T) {
 		})
 	}
 }
+
+func TestDetermineVersionsResponse_toModel(t *testing.T) {
+	tests := []struct {
+		name     string
+		response DetermineVersionsResponse
+		expected []*model.ArtifactVersion
+	}{
+		{
+			name: "single version",
+			response: DetermineVersionsResponse{
+				Versions: []ArtifactVersion{
+					{
+						Kind:    ArtifactKindContainerImage,
+						Version: "v1.0.0",
+						Name:    "nginx",
+						URL:     "https://example.com/nginx:v1.0.0",
+					},
+				},
+			},
+			expected: []*model.ArtifactVersion{
+				{
+					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Version: "v1.0.0",
+					Name:    "nginx",
+					Url:     "https://example.com/nginx:v1.0.0",
+				},
+			},
+		},
+		{
+			name: "multiple versions",
+			response: DetermineVersionsResponse{
+				Versions: []ArtifactVersion{
+					{
+						Kind:    ArtifactKindContainerImage,
+						Version: "v1.0.0",
+						Name:    "nginx",
+						URL:     "https://example.com/nginx:v1.0.0",
+					},
+					{
+						Kind:    ArtifactKindS3Object,
+						Version: "v1.0.0",
+						Name:    "backup",
+						URL:     "s3://bucket/backup/v1.0.0",
+					},
+				},
+			},
+			expected: []*model.ArtifactVersion{
+				{
+					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Version: "v1.0.0",
+					Name:    "nginx",
+					Url:     "https://example.com/nginx:v1.0.0",
+				},
+				{
+					Kind:    model.ArtifactVersion_S3_OBJECT,
+					Version: "v1.0.0",
+					Name:    "backup",
+					Url:     "s3://bucket/backup/v1.0.0",
+				},
+			},
+		},
+		{
+			name: "empty versions",
+			response: DetermineVersionsResponse{
+				Versions: []ArtifactVersion{},
+			},
+			expected: []*model.ArtifactVersion{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.response.toModel()
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
