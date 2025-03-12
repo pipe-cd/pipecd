@@ -745,10 +745,27 @@ type DetermineVersionsRequest struct {
 	DeploymentSource DeploymentSource
 }
 
+// newDetermineVersionsRequest converts the common.DetermineVersionsRequest to the internal representation.
+func newDetermineVersionsRequest(request *deployment.DetermineVersionsRequest) DetermineVersionsRequest {
+	return DetermineVersionsRequest{
+		Deployment:       newDeployment(request.GetInput().GetDeployment()),
+		DeploymentSource: newDeploymentSource(request.GetInput().GetTargetDeploymentSource()),
+	}
+}
+
 // DetermineVersionsResponse is the response of the request to determine versions.
 type DetermineVersionsResponse struct {
 	// Versions contains the versions of the resources.
 	Versions []ArtifactVersion
+}
+
+// toModel converts the DetermineVersionsResponse to the model.ArtifactVersion.
+func (r *DetermineVersionsResponse) toModel() []*model.ArtifactVersion {
+	versions := make([]*model.ArtifactVersion, 0, len(r.Versions))
+	for _, v := range r.Versions {
+		versions = append(versions, v.toModel())
+	}
+	return versions
 }
 
 // ArtifactVersion represents the version of an artifact.
@@ -761,6 +778,16 @@ type ArtifactVersion struct {
 	Name string
 	// URL is the URL of the artifact.
 	URL string
+}
+
+// toModel converts the ArtifactVersion to the model.ArtifactVersion.
+func (v *ArtifactVersion) toModel() *model.ArtifactVersion {
+	return &model.ArtifactVersion{
+		Kind:    v.Kind.toModelEnum(),
+		Version: v.Version,
+		Name:    v.Name,
+		Url:     v.URL,
+	}
 }
 
 // ArtifactKind represents the kind of the artifact.
@@ -778,3 +805,19 @@ const (
 	// ArtifactKindTerraformModule indicates that the artifact is a terraform module.
 	ArtifactKindTerraformModule
 )
+
+// toModelEnum converts the ArtifactKind to the model.ArtifactVersion_Kind.
+func (k ArtifactKind) toModelEnum() model.ArtifactVersion_Kind {
+	switch k {
+	case ArtifactKindContainerImage:
+		return model.ArtifactVersion_CONTAINER_IMAGE
+	case ArtifactKindS3Object:
+		return model.ArtifactVersion_S3_OBJECT
+	case ArtifactKindGitSource:
+		return model.ArtifactVersion_GIT_SOURCE
+	case ArtifactKindTerraformModule:
+		return model.ArtifactVersion_TERRAFORM_MODULE
+	default:
+		return model.ArtifactVersion_UNKNOWN
+	}
+}
