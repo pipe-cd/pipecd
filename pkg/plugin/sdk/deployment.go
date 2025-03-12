@@ -63,7 +63,7 @@ type DeploymentPlugin[Config, DeployTargetConfig any] interface {
 	StagePlugin[Config, DeployTargetConfig]
 
 	// DetermineVersions determines the versions of the resources that will be deployed.
-	DetermineVersions(context.Context, *Config, *Client, TODO) (TODO, error)
+	DetermineVersions(context.Context, *Config, *Client, *DetermineVersionsInput) (*DetermineVersionsResponse, error)
 	// DetermineStrategy determines the strategy to deploy the resources.
 	DetermineStrategy(context.Context, *Config, *Client, TODO) (TODO, error)
 	// BuildQuickSyncStages builds the stages that will be executed during the quick sync process.
