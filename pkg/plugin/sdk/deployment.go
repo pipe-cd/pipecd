@@ -726,3 +726,55 @@ func newStageCommand(c *model.Command) (StageCommand, error) {
 		return StageCommand{}, fmt.Errorf("invalid command type: %d", c.Type)
 	}
 }
+
+// DetermineVersionsInput is the input for the DetermineVersions method.
+type DetermineVersionsInput struct {
+	// Request is the request to determine versions.
+	Request DetermineVersionsRequest
+	// Client is the client to interact with the piped.
+	Client *Client
+	// Logger is the logger to log the events.
+	Logger *zap.Logger
+}
+
+// DetermineVersionsRequest is the request to determine versions.
+type DetermineVersionsRequest struct {
+	// Deloyment is the deployment that the versions will be determined.
+	Deployment Deployment
+	// DeploymentSource is the source of the deployment.
+	DeploymentSource DeploymentSource
+}
+
+// DetermineVersionsResponse is the response of the request to determine versions.
+type DetermineVersionsResponse struct {
+	// Versions contains the versions of the resources.
+	Versions []ArtifactVersion
+}
+
+// ArtifactVersion represents the version of an artifact.
+type ArtifactVersion struct {
+	// Kind is the kind of the artifact.
+	Kind ArtifactKind
+	// Version is the version of the artifact.
+	Version string
+	// Name is the name of the artifact.
+	Name string
+	// URL is the URL of the artifact.
+	URL string
+}
+
+// ArtifactKind represents the kind of the artifact.
+type ArtifactKind int
+
+const (
+	// ArtifactKindUnknown indicates that the kind of the artifact is unknown.
+	ArtifactKindUnknown ArtifactKind = iota
+	// ArtifactKindContainerImage indicates that the artifact is a container image.
+	ArtifactKindContainerImage
+	// ArtifactKindS3Object indicates that the artifact is an S3 object.
+	ArtifactKindS3Object
+	// ArtifactKindGitSource indicates that the artifact is a git source.
+	ArtifactKindGitSource
+	// ArtifactKindTerraformModule indicates that the artifact is a terraform module.
+	ArtifactKindTerraformModule
+)
