@@ -37,11 +37,12 @@ type register struct {
 	contexts map[string]string
 
 	// information of commit that triggers the event
-	commitHash    string
-	commitTitle   string
-	commitMessage string
-	commitURL     string
-	commitAuthor  string
+	commitHash      string
+	commitTitle     string
+	commitMessage   string
+	commitURL       string
+	commitAuthor    string
+	commitTimestamp int64
 }
 
 func newRegisterCommand(root *command) *cobra.Command {
@@ -64,6 +65,7 @@ func newRegisterCommand(root *command) *cobra.Command {
 	cmd.Flags().StringVar(&r.commitMessage, "commit-message", r.commitMessage, "The message of commit that triggers the event.")
 	cmd.Flags().StringVar(&r.commitURL, "commit-url", r.commitURL, "The URL of commit that triggers the event.")
 	cmd.Flags().StringVar(&r.commitAuthor, "commit-author", r.commitAuthor, "The author of commit that triggers the event.")
+	cmd.Flags().Int64Var(&r.commitTimestamp, "commit-timestamp", r.commitTimestamp, "The timestamp of commit that triggers the event.")
 
 	cmd.MarkFlagRequired("name")
 	cmd.MarkFlagRequired("data")
@@ -83,15 +85,16 @@ func (r *register) run(ctx context.Context, input cli.Input) error {
 	defer cli.Close()
 
 	req := &apiservice.RegisterEventRequest{
-		Name:          r.name,
-		Data:          r.data,
-		Labels:        r.labels,
-		Contexts:      r.contexts,
-		CommitHash:    r.commitHash,
-		CommitTitle:   r.commitTitle,
-		CommitMessage: r.commitMessage,
-		CommitUrl:     r.commitURL,
-		CommitAuthor:  r.commitAuthor,
+		Name:            r.name,
+		Data:            r.data,
+		Labels:          r.labels,
+		Contexts:        r.contexts,
+		CommitHash:      r.commitHash,
+		CommitTitle:     r.commitTitle,
+		CommitMessage:   r.commitMessage,
+		CommitUrl:       r.commitURL,
+		CommitAuthor:    r.commitAuthor,
+		CommitTimestamp: r.commitTimestamp,
 	}
 
 	res, err := cli.RegisterEvent(ctx, req)
