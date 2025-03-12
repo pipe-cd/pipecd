@@ -35,6 +35,13 @@ type register struct {
 	data     string
 	labels   map[string]string
 	contexts map[string]string
+
+	// information of commit that triggers the event
+	commitHash    string
+	commitTitle   string
+	commitMessage string
+	commitURL     string
+	commitAuthor  string
 }
 
 func newRegisterCommand(root *command) *cobra.Command {
@@ -51,6 +58,12 @@ func newRegisterCommand(root *command) *cobra.Command {
 	cmd.Flags().StringVar(&r.data, "data", r.data, "The string value of event data.")
 	cmd.Flags().StringToStringVar(&r.labels, "labels", r.labels, "The list of labels for event. Format: key=value,key2=value2")
 	cmd.Flags().StringToStringVar(&r.contexts, "contexts", r.contexts, "The list of the values for the event context. Format: key=value,key2=value2. The Key Format is [a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$")
+
+	cmd.Flags().StringVar(&r.commitHash, "commit-hash", r.commitHash, "The commit hash that triggers the event.")
+	cmd.Flags().StringVar(&r.commitTitle, "commit-title", r.commitTitle, "The title of commit that triggers the event.")
+	cmd.Flags().StringVar(&r.commitMessage, "commit-message", r.commitMessage, "The message of commit that triggers the event.")
+	cmd.Flags().StringVar(&r.commitURL, "commit-url", r.commitURL, "The URL of commit that triggers the event.")
+	cmd.Flags().StringVar(&r.commitAuthor, "commit-author", r.commitAuthor, "The author of commit that triggers the event.")
 
 	cmd.MarkFlagRequired("name")
 	cmd.MarkFlagRequired("data")
@@ -70,10 +83,15 @@ func (r *register) run(ctx context.Context, input cli.Input) error {
 	defer cli.Close()
 
 	req := &apiservice.RegisterEventRequest{
-		Name:     r.name,
-		Data:     r.data,
-		Labels:   r.labels,
-		Contexts: r.contexts,
+		Name:          r.name,
+		Data:          r.data,
+		Labels:        r.labels,
+		Contexts:      r.contexts,
+		CommitHash:    r.commitHash,
+		CommitTitle:   r.commitTitle,
+		CommitMessage: r.commitMessage,
+		CommitUrl:     r.commitURL,
+		CommitAuthor:  r.commitAuthor,
 	}
 
 	res, err := cli.RegisterEvent(ctx, req)
