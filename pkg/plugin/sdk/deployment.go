@@ -180,8 +180,28 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) setFields(fi
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) FetchDefinedStages(context.Context, *deployment.FetchDefinedStagesRequest) (*deployment.FetchDefinedStagesResponse, error) {
 	return &deployment.FetchDefinedStagesResponse{Stages: s.base.FetchDefinedStages()}, nil
 }
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineVersions(context.Context, *deployment.DetermineVersionsRequest) (*deployment.DetermineVersionsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DetermineVersions not implemented")
+func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineVersions(ctx context.Context, request *deployment.DetermineVersionsRequest) (*deployment.DetermineVersionsResponse, error) {
+	client := &Client{
+		base:          s.client,
+		pluginName:    s.Name(),
+		applicationID: request.GetInput().GetDeployment().GetApplicationId(),
+		deploymentID:  request.GetInput().GetDeployment().GetId(),
+		toolRegistry:  s.toolRegistry,
+	}
+
+	input := &DetermineVersionsInput{
+		Request: newDetermineVersionsRequest(request),
+		Client:  client,
+		Logger:  s.logger,
+	}
+
+	versions, err := s.base.DetermineVersions(ctx, &s.config, client, input)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to determine versions: %v", err)
+	}
+	return &deployment.DetermineVersionsResponse{
+		Versions: versions.toModel(),
+	}, nil
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineStrategy(context.Context, *deployment.DetermineStrategyRequest) (*deployment.DetermineStrategyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DetermineStrategy not implemented")
