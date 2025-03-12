@@ -19,9 +19,11 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap/zaptest"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister/logpersistertest"
 )
@@ -367,6 +369,81 @@ func TestManualOperation_toModelEnum(t *testing.T) {
 			if result != tt.expected {
 				t.Errorf("expected %v, got %v", tt.expected, result)
 			}
+		})
+	}
+}
+
+func TestNewDetermineVersionsRequest(t *testing.T) {
+	tests := []struct {
+		name     string
+		request  *deployment.DetermineVersionsRequest
+		expected DetermineVersionsRequest
+	}{
+		{
+			name: "valid request",
+			request: &deployment.DetermineVersionsRequest{
+				Input: &deployment.PlanPluginInput{
+					Deployment: &model.Deployment{
+						Id:              "deployment-id",
+						ApplicationId:   "app-id",
+						ApplicationName: "app-name",
+						PipedId:         "piped-id",
+						ProjectId:       "project-id",
+						CreatedAt:       1234567890,
+						Trigger: &model.DeploymentTrigger{
+							Commander: "triggered-by",
+						},
+					},
+					TargetDeploymentSource: &common.DeploymentSource{
+						ApplicationDirectory:      "app-dir",
+						CommitHash:                "commit-hash",
+						ApplicationConfig:         []byte("app-config"),
+						ApplicationConfigFilename: "app-config-filename",
+					},
+				},
+			},
+			expected: DetermineVersionsRequest{
+				Deployment: Deployment{
+					ID:              "deployment-id",
+					ApplicationID:   "app-id",
+					ApplicationName: "app-name",
+					PipedID:         "piped-id",
+					ProjectID:       "project-id",
+					TriggeredBy:     "triggered-by",
+					CreatedAt:       1234567890,
+				},
+				DeploymentSource: DeploymentSource{
+					ApplicationDirectory:      "app-dir",
+					CommitHash:                "commit-hash",
+					ApplicationConfig:         []byte("app-config"),
+					ApplicationConfigFilename: "app-config-filename",
+				},
+			},
+		},
+		{
+			name: "empty request",
+			request: &deployment.DetermineVersionsRequest{
+				Input: &deployment.PlanPluginInput{
+					Deployment: &model.Deployment{
+						Trigger: &model.DeploymentTrigger{
+							Commit: &model.Commit{},
+						},
+					},
+					TargetDeploymentSource: &common.DeploymentSource{},
+				},
+			},
+			expected: DetermineVersionsRequest{
+				Deployment:       Deployment{},
+				DeploymentSource: DeploymentSource{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := newDetermineVersionsRequest(tt.request)
+			assert.Equal(t, tt.expected.Deployment, result.Deployment)
+			assert.Equal(t, tt.expected.DeploymentSource, result.DeploymentSource)
 		})
 	}
 }
