@@ -660,6 +660,8 @@ func TestDetermineVersionsResponse_toModel(t *testing.T) {
 }
 
 func TestNewDetermineStrategyRequest(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		request  *deployment.DetermineStrategyRequest
@@ -740,6 +742,8 @@ func TestNewDetermineStrategyRequest(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			result := newDetermineStrategyRequest(tt.request)
 			assert.Equal(t, tt.expected, result)
 		})
@@ -747,6 +751,8 @@ func TestNewDetermineStrategyRequest(t *testing.T) {
 }
 
 func TestNewDetermineStrategyResponse(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name      string
 		response  *DetermineStrategyResponse
@@ -790,6 +796,8 @@ func TestNewDetermineStrategyResponse(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			result, err := newDetermineStrategyResponse(tt.response)
 			if tt.expectErr {
 				assert.Error(t, err)
@@ -802,6 +810,8 @@ func TestNewDetermineStrategyResponse(t *testing.T) {
 }
 
 func TestSyncStrategy_toModelEnum(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name      string
 		strategy  SyncStrategy
@@ -830,6 +840,8 @@ func TestSyncStrategy_toModelEnum(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			result, err := tt.strategy.toModelEnum()
 			if tt.expectErr {
 				assert.Error(t, err)
