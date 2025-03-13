@@ -25,6 +25,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/diff"
+	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
 type containerImage struct {
@@ -63,6 +64,25 @@ func determineVersions(manifests []provider.Manifest) []*model.ArtifactVersion {
 			Version: image.tag,
 			Name:    image.name,
 			Url:     i,
+		})
+	}
+
+	return versions
+}
+
+// determineVersionsSDK decides artifact versions of an application.
+// It finds all container images that are being specified in the workload manifests then returns their names and tags.
+// TODO: rewrite this function to determineVersions after the current determineVersions is removed.
+func determineVersionsSDK(manifests []provider.Manifest) []sdk.ArtifactVersion {
+	values := determineVersions(manifests)
+
+	versions := make([]sdk.ArtifactVersion, 0, len(values))
+	for _, v := range values {
+		versions = append(versions, sdk.ArtifactVersion{
+			Kind:    sdk.ArtifactKindContainerImage,
+			Version: v.Version,
+			Name:    v.Name,
+			URL:     v.Url,
 		})
 	}
 

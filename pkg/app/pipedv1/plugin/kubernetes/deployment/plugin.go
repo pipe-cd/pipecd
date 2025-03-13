@@ -342,9 +342,25 @@ func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.Execute
 	return sdk.StageStatusSuccess
 }
 
-// FIXME
-func (p *Plugin) DetermineVersions(context.Context, *sdk.ConfigNone, *sdk.Client, *sdk.DetermineVersionsInput) (*sdk.DetermineVersionsResponse, error) {
-	return &sdk.DetermineVersionsResponse{}, nil
+func (p *Plugin) DetermineVersions(ctx context.Context, _ *sdk.ConfigNone, _ *sdk.Client, input *sdk.DetermineVersionsInput) (*sdk.DetermineVersionsResponse, error) {
+	lp := input.Client.LogPersister()
+
+	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](input.Request.DeploymentSource.ApplicationConfig)
+	if err != nil {
+		lp.Errorf("Failed while decoding application config", err)
+		return nil, err
+	}
+
+	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.DeploymentSource, provider.NewLoader(toolregistry.NewRegistry(input.Client.ToolRegistry())))
+
+	if err != nil {
+		lp.Errorf("Failed while loading manifests", err)
+		return nil, err
+	}
+
+	return &sdk.DetermineVersionsResponse{
+		Versions: determineVersionsSDK(manifests),
+	}, nil
 }
 
 // FIXME
