@@ -203,8 +203,26 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineVer
 		Versions: versions.toModel(),
 	}, nil
 }
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineStrategy(context.Context, *deployment.DetermineStrategyRequest) (*deployment.DetermineStrategyResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DetermineStrategy not implemented")
+func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineStrategy(ctx context.Context, request *deployment.DetermineStrategyRequest) (*deployment.DetermineStrategyResponse, error) {
+	client := &Client{
+		base:          s.client,
+		pluginName:    s.Name(),
+		applicationID: request.GetInput().GetDeployment().GetApplicationId(),
+		deploymentID:  request.GetInput().GetDeployment().GetId(),
+		toolRegistry:  s.toolRegistry,
+	}
+
+	input := &DetermineStrategyInput{
+		Request: newDetermineStrategyRequest(request),
+		Client:  client,
+		Logger:  s.logger,
+	}
+
+	response, err := s.base.DetermineStrategy(ctx, &s.config, client, input)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to determine strategy: %v", err)
+	}
+	return newDetermineStrategyResponse(response)
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
 	client := &Client{
