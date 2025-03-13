@@ -25,6 +25,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
+	"go.uber.org/zap"
 )
 
 const (
@@ -343,18 +344,18 @@ func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.Execute
 }
 
 func (p *Plugin) DetermineVersions(ctx context.Context, _ *sdk.ConfigNone, _ *sdk.Client, input *sdk.DetermineVersionsInput) (*sdk.DetermineVersionsResponse, error) {
-	lp := input.Client.LogPersister()
+	logger := input.Logger
 
 	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](input.Request.DeploymentSource.ApplicationConfig)
 	if err != nil {
-		lp.Errorf("Failed while decoding application config", err)
+		logger.Error("Failed while decoding application config", zap.Error(err))
 		return nil, err
 	}
 
 	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.DeploymentSource, provider.NewLoader(toolregistry.NewRegistry(input.Client.ToolRegistry())))
 
 	if err != nil {
-		lp.Errorf("Failed while loading manifests", err)
+		logger.Error("Failed while loading manifests", zap.Error(err))
 		return nil, err
 	}
 
