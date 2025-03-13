@@ -680,9 +680,15 @@ func TestNewDetermineStrategyRequest(t *testing.T) {
 							Commander: "triggered-by",
 						},
 					},
+					RunningDeploymentSource: &common.DeploymentSource{
+						ApplicationDirectory:      "app-dir",
+						CommitHash:                "commit-hash-1",
+						ApplicationConfig:         []byte("app-config"),
+						ApplicationConfigFilename: "app-config-filename",
+					},
 					TargetDeploymentSource: &common.DeploymentSource{
 						ApplicationDirectory:      "app-dir",
-						CommitHash:                "commit-hash",
+						CommitHash:                "commit-hash-2",
 						ApplicationConfig:         []byte("app-config"),
 						ApplicationConfigFilename: "app-config-filename",
 					},
@@ -698,9 +704,15 @@ func TestNewDetermineStrategyRequest(t *testing.T) {
 					TriggeredBy:     "triggered-by",
 					CreatedAt:       1234567890,
 				},
-				DeploymentSource: DeploymentSource{
+				RunningDeploymentSource: DeploymentSource{
 					ApplicationDirectory:      "app-dir",
-					CommitHash:                "commit-hash",
+					CommitHash:                "commit-hash-1",
+					ApplicationConfig:         []byte("app-config"),
+					ApplicationConfigFilename: "app-config-filename",
+				},
+				TargetDeploymentSource: DeploymentSource{
+					ApplicationDirectory:      "app-dir",
+					CommitHash:                "commit-hash-2",
 					ApplicationConfig:         []byte("app-config"),
 					ApplicationConfigFilename: "app-config-filename",
 				},
@@ -719,8 +731,9 @@ func TestNewDetermineStrategyRequest(t *testing.T) {
 				},
 			},
 			expected: DetermineStrategyRequest{
-				Deployment:       Deployment{},
-				DeploymentSource: DeploymentSource{},
+				Deployment:              Deployment{},
+				RunningDeploymentSource: DeploymentSource{},
+				TargetDeploymentSource:  DeploymentSource{},
 			},
 		},
 	}
@@ -728,8 +741,7 @@ func TestNewDetermineStrategyRequest(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := newDetermineStrategyRequest(tt.request)
-			assert.Equal(t, tt.expected.Deployment, result.Deployment)
-			assert.Equal(t, tt.expected.DeploymentSource, result.DeploymentSource)
+			assert.Equal(t, tt.expected, result)
 		})
 	}
 }

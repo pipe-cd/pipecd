@@ -874,15 +874,18 @@ type DetermineStrategyInput struct {
 type DetermineStrategyRequest struct {
 	// Deployment is the deployment that the strategy will be determined.
 	Deployment Deployment
-	// DeploymentSource is the source of the deployment.
-	DeploymentSource DeploymentSource
+	// RunningDeploymentSource is the source of the running deployment.
+	RunningDeploymentSource DeploymentSource
+	// TargetDeploymentSource is the source of the target deployment.
+	TargetDeploymentSource DeploymentSource
 }
 
 // newDetermineStrategyRequest converts the common.DetermineStrategyRequest to the internal representation.
 func newDetermineStrategyRequest(request *deployment.DetermineStrategyRequest) DetermineStrategyRequest {
 	return DetermineStrategyRequest{
-		Deployment:       newDeployment(request.GetInput().GetDeployment()),
-		DeploymentSource: newDeploymentSource(request.GetInput().GetTargetDeploymentSource()),
+		Deployment:              newDeployment(request.GetInput().GetDeployment()),
+		RunningDeploymentSource: newDeploymentSource(request.GetInput().GetRunningDeploymentSource()),
+		TargetDeploymentSource:  newDeploymentSource(request.GetInput().GetTargetDeploymentSource()),
 	}
 }
 
