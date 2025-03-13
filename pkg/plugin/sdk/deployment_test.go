@@ -733,3 +733,58 @@ func TestNewDetermineStrategyRequest(t *testing.T) {
 		})
 	}
 }
+
+func TestNewDetermineStrategyResponse(t *testing.T) {
+	tests := []struct {
+		name      string
+		response  *DetermineStrategyResponse
+		expected  *deployment.DetermineStrategyResponse
+		expectErr bool
+	}{
+		{
+			name: "valid quick sync strategy",
+			response: &DetermineStrategyResponse{
+				Strategy: SyncStrategyQuickSync,
+				Summary:  "quick sync strategy",
+			},
+			expected: &deployment.DetermineStrategyResponse{
+				SyncStrategy: model.SyncStrategy_QUICK_SYNC,
+				Summary:      "quick sync strategy",
+			},
+			expectErr: false,
+		},
+		{
+			name: "valid pipeline sync strategy",
+			response: &DetermineStrategyResponse{
+				Strategy: SyncStrategyPipelineSync,
+				Summary:  "pipeline sync strategy",
+			},
+			expected: &deployment.DetermineStrategyResponse{
+				SyncStrategy: model.SyncStrategy_PIPELINE,
+				Summary:      "pipeline sync strategy",
+			},
+			expectErr: false,
+		},
+		{
+			name: "invalid strategy",
+			response: &DetermineStrategyResponse{
+				Strategy: SyncStrategy(999),
+				Summary:  "invalid strategy",
+			},
+			expected:  nil,
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := newDetermineStrategyResponse(tt.response)
+			if tt.expectErr {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
