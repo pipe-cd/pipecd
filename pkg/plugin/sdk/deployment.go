@@ -841,3 +841,73 @@ func (k ArtifactKind) toModelEnum() model.ArtifactVersion_Kind {
 		return model.ArtifactVersion_UNKNOWN
 	}
 }
+
+// DetermineStrategyInput is the input for the DetermineStrategy method.
+type DetermineStrategyInput struct {
+	// Request is the request to determine the strategy.
+	Request DetermineStrategyRequest
+	// Client is the client to interact with the piped.
+	Client *Client
+	// Logger is the logger to log the events.
+	Logger *zap.Logger
+}
+
+// DetermineStrategyRequest is the request to determine the strategy.
+type DetermineStrategyRequest struct {
+	// Deployment is the deployment that the strategy will be determined.
+	Deployment Deployment
+	// DeploymentSource is the source of the deployment.
+	DeploymentSource DeploymentSource
+}
+
+// newDetermineStrategyRequest converts the common.DetermineStrategyRequest to the internal representation.
+func newDetermineStrategyRequest(request *deployment.DetermineStrategyRequest) DetermineStrategyRequest {
+	return DetermineStrategyRequest{
+		Deployment:       newDeployment(request.GetInput().GetDeployment()),
+		DeploymentSource: newDeploymentSource(request.GetInput().GetTargetDeploymentSource()),
+	}
+}
+
+// DetermineStrategyResponse is the response of the request to determine the strategy.
+type DetermineStrategyResponse struct {
+	// Strategy is the strategy to deploy the resources.
+	Strategy SyncStrategy
+	// Summary is the summary of the strategy.
+	Summary string
+}
+
+// newDetermineStrategyResponse converts the response to the external representation.
+func newDetermineStrategyResponse(response *DetermineStrategyResponse) (*deployment.DetermineStrategyResponse, error) {
+	strategy, err := response.Strategy.toModelEnum()
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to convert the strategy: %v", err)
+	}
+	return &deployment.DetermineStrategyResponse{
+		Summary:      response.Summary,
+		SyncStrategy: strategy,
+	}, nil
+}
+
+// SyncStrategy represents the strategy to deploy the resources.
+type SyncStrategy int
+
+const (
+	_ SyncStrategy = iota
+	// SyncStrategyQuickSync indicates that the resources will be deployed using the quick sync strategy.
+	SyncStrategyQuickSync
+	// SyncStrategyPipelineSync indicates that the resources will be deployed using the pipeline sync strategy.
+	SyncStrategyPipelineSync
+)
+
+// toModelEnum converts the SyncStrategy to the model.SyncStrategy.
+// It returns an error if the given value is invalid.
+func (s SyncStrategy) toModelEnum() (model.SyncStrategy, error) {
+	switch s {
+	case SyncStrategyQuickSync:
+		return model.SyncStrategy_QUICK_SYNC, nil
+	case SyncStrategyPipelineSync:
+		return model.SyncStrategy_PIPELINE, nil
+	default:
+		return 0, fmt.Errorf("invalid sync strategy: %d", s)
+	}
+}
