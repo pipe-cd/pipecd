@@ -20,6 +20,8 @@ import (
 	"errors"
 	"time"
 
+	"go.uber.org/zap"
+
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
@@ -342,9 +344,25 @@ func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.Execute
 	return sdk.StageStatusSuccess
 }
 
-// FIXME
-func (p *Plugin) DetermineVersions(context.Context, *sdk.ConfigNone, *sdk.Client, *sdk.DetermineVersionsInput) (*sdk.DetermineVersionsResponse, error) {
-	return &sdk.DetermineVersionsResponse{}, nil
+func (p *Plugin) DetermineVersions(ctx context.Context, _ *sdk.ConfigNone, _ *sdk.Client, input *sdk.DetermineVersionsInput) (*sdk.DetermineVersionsResponse, error) {
+	logger := input.Logger
+
+	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](input.Request.DeploymentSource.ApplicationConfig)
+	if err != nil {
+		logger.Error("Failed while decoding application config", zap.Error(err))
+		return nil, err
+	}
+
+	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.DeploymentSource, provider.NewLoader(toolregistry.NewRegistry(input.Client.ToolRegistry())))
+
+	if err != nil {
+		logger.Error("Failed while loading manifests", zap.Error(err))
+		return nil, err
+	}
+
+	return &sdk.DetermineVersionsResponse{
+		Versions: determineVersionsSDK(manifests),
+	}, nil
 }
 
 // FIXME
