@@ -788,3 +788,43 @@ func TestNewDetermineStrategyResponse(t *testing.T) {
 		})
 	}
 }
+
+func TestSyncStrategy_toModelEnum(t *testing.T) {
+	tests := []struct {
+		name      string
+		strategy  SyncStrategy
+		expected  model.SyncStrategy
+		expectErr bool
+	}{
+		{
+			name:      "quick sync",
+			strategy:  SyncStrategyQuickSync,
+			expected:  model.SyncStrategy_QUICK_SYNC,
+			expectErr: false,
+		},
+		{
+			name:      "pipeline sync",
+			strategy:  SyncStrategyPipelineSync,
+			expected:  model.SyncStrategy_PIPELINE,
+			expectErr: false,
+		},
+		{
+			name:      "invalid strategy",
+			strategy:  SyncStrategy(999),
+			expected:  0,
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := tt.strategy.toModelEnum()
+			if tt.expectErr {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
