@@ -18,6 +18,8 @@ After logging, the project admin should change the provided username and passwor
 
 Single sign-on (SSO) allows users to log in to PipeCD by relying on a trusted third-party service.
 
+The project can be configured to use a shared SSO configuration (shared OAuth application) instead of needing a new one. In that case, while creating the project, the PipeCD owner specifies the name of the shared SSO configuration should be used, and then the project admin can skip configuring SSO at the settings page.
+
 **Supported service**
 
 - GitHub
@@ -39,13 +41,18 @@ The authorization callback URL should be `https://YOUR_PIPECD_ADDRESS/auth/callb
 
 PipeCD supports any OIDC provider, with tested providers including Keycloak, Auth0, and AWS Cognito. The only supported authentication flow currently is the Authorization Code Grant.
 
-Requirements:
+Requirements and Troubleshooting:
 
-- The IdToken will be used to decide the user's role and username.
-- The IdToken must contain information about the Username and Role.
+- The OIDC provider must provide claims for user's roles and username.
+- Roles claim value must use same values as pre-configured project RBAC Roles.
+- - Claims can be retreived from the IdToken or UserInfo endpoint. The UserInfo endpoint will be used if issuer supports it.
+- You can use set a custom claim key name for roles and username in the OIDC provider. Using `usernameClaimKey` and `rolesClaimKey` in the configuration. If not set, the default value will be chosen in the following order:
+
   - Supported Claims Key for Username (in order of priority): `username`, `preferred_username`,`name`, `cognito:username`
   - Supported Claims Key for Role (in order of priority): `groups`, `roles`, `cognito:groups`, `custom:roles`, `custom:groups`
-  - Supported Claims Key for Avatar (in order of priority): `picture`, `avatar_url`
+
+- If no usable claims are found, `Unable to find user` error will be shown.
+- If no roles are found, user can not access any resources. (If `allowStrayAsViewer` is set to `true`, user can access as a viewer)
 
 Provider Configuration Examples:
 
@@ -68,10 +75,33 @@ Provider Configuration Examples:
           clientId: <CLIENT_ID>
           clientSecret: <CLIENT_SECRET>
           issuer: https://<KEYCLOAK_ADDRESS>/realms/<REALM>
-          redirect_uri: https://<PIPECD_ADDRESS>/auth/callback
+          redirectUri: https://<PIPECD_ADDRESS>/auth/callback
           scopes:
             - openid
             - profile
+  ```
+
+##### Okta
+
+- **Allowed Callback URLs**: `https://YOUR_PIPECD_ADDRESS/auth/callback`
+- **Control Plane configuration**:
+
+  ```yaml
+  apiVersion: "pipecd.dev/v1beta1"
+  kind: ControlPlane
+  spec:
+    sharedSSOConfigs:
+      - name: oidc
+        provider: OIDC
+        oidc:
+          clientId: <CLIENT_ID>
+          clientSecret: <CLIENT_SECRET>
+          issuer: https://<OKTA_ID>.okta.com
+          redirectUri: https://<PIPECD_ADDRESS>/auth/callback
+          scopes:
+            - openid
+            - profile
+            - groups
   ```
 
 ##### Auth0
@@ -90,7 +120,7 @@ Provider Configuration Examples:
           clientId: <CLIENT_ID>
           clientSecret: <CLIENT_SECRET>
           issuer: https://<AUTH0_ADDRESS>
-          redirect_uri: https://<PIPECD_ADDRESS>/auth/callback
+          redirectUri: https://<PIPECD_ADDRESS>/auth/callback
           scopes:
             - openid
             - profile
@@ -126,13 +156,61 @@ Provider Configuration Examples:
           clientId: <CLIENT_ID>
           clientSecret: <CLIENT_SECRET>
           issuer: https://cognito-idp.<AWS_REGION>.amazonaws.com/<USER_POOL_ID>
-          redirect_uri: https://<PIPECD_ADDRESS>/auth/callback
+          redirectUri: https://<PIPECD_ADDRESS>/auth/callback
           scopes:
             - openid
             - profile
   ```
 
-The project can be configured to use a shared SSO configuration (shared OAuth application) instead of needing a new one. In that case, while creating the project, the PipeCD owner specifies the name of the shared SSO configuration should be used, and then the project admin can skip configuring SSO at the settings page.
+##### Custom Claims Key
+
+In some cases, the OIDC provider may not provide the claims with the default key names like `groups`. You can set the custom claim key name for roles and username in the control plane configuration to map the claims from the OIDC provider. **To be cautious, OIDC providers can not be used if issuer discovery is not supported.**
+
+```yaml
+apiVersion: "pipecd.dev/v1beta1"
+kind: ControlPlane
+spec:
+  sharedSSOConfigs:
+    - name: oidc
+      provider: OIDC
+      oidc:
+        clientId: <CLIENT_ID>
+        clientSecret: <CLIENT_SECRET>
+        issuer: https://<OIDC_ADDRESS>
+        redirectUri: https://<PIPECD_ADDRESS>/auth/callback
+        scopes:
+          - openid
+          - profile
+        usernameClaimKey: username # change to your custom claim key
+        rolesClaimKey: roles # change to your custom claim key
+        avatarUrlClaimKey: picture # change to your custom claim key
+```
+
+(Optional) You can choose to use the avatar URL from the OIDC provider. Using `avatarUrlClaimKey` in the configuration. If not set, the default value will be chosen in the following order: `picture`, `avatar_url`
+
+##### Custom OIDC Configuration
+
+If you want to set your custom endpoint without using the endpoint from the issuer, you can set the `authorization_endpoint`, `token_endpoint`, `userinfo_endpoint` in the control plane configuration.
+
+```yaml
+apiVersion: "pipecd.dev/v1beta1"
+kind: ControlPlane
+spec:
+  sharedSSOConfigs:
+    - name: oidc
+      provider: OIDC
+      oidc:
+        clientId: <CLIENT_ID>
+        clientSecret: <CLIENT_SECRET>
+        issuer: https://<OIDC_ADDRESS>
+        redirectUri: https://<PIPECD_ADDRESS>/auth/callback
+        scopes:
+          - openid
+          - profile
+        authorization_endpoint: https://<OIDC_ADDRESS>/authorize # change to your custom endpoint
+        token_endpoint: https://<OIDC_ADDRESS>/token # change to your custom endpoint
+        userinfo_endpoint: https://<OIDC_ADDRESS>/userinfo # change to your custom endpoint
+```
 
 ### Role-Based Access Control (RBAC)
 
