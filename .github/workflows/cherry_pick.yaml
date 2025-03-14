@@ -22,6 +22,10 @@ jobs:
         run: |
           git config user.name "pipecd-bot"
           git config user.email "pipecd.dev@gmail.com"
-          ./hack/cherry-pick.sh -q ${{ inputs.releaseBranch }} $(gh pr list --label cherry-pick --label ${{ inputs.version }} --state merged | awk '{print $1}' | sort | paste -sd ' ' -)
+          #
+          # --limit 100 is to avoid the case where the number of PRs which included in a patch exceeds the default limit (30)
+          # if the number of PRs exceeds 100, the cherry-pick command will fail
+          #
+          ./hack/cherry-pick.sh -q ${{ inputs.releaseBranch }} $(gh pr list --label cherry-pick --label ${{ inputs.version }} --state merged --limit 100 | awk '{print $1}' | sort | paste -sd ' ' -)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
