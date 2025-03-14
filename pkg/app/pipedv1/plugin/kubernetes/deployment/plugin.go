@@ -362,8 +362,8 @@ func (p *Plugin) DetermineVersions(ctx context.Context, _ *sdk.ConfigNone, _ *sd
 }
 
 // FIXME
-func (p *Plugin) DetermineStrategy(context.Context, *sdk.ConfigNone, *sdk.Client, sdk.TODO) (sdk.TODO, error) {
-	return sdk.TODO{}, nil
+func (p *Plugin) DetermineStrategy(context.Context, *sdk.ConfigNone, *sdk.Client, *sdk.DetermineStrategyInput) (*sdk.DetermineStrategyResponse, error) {
+	return &sdk.DetermineStrategyResponse{}, nil
 }
 
 func (p *Plugin) BuildQuickSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildQuickSyncStagesInput) (*sdk.BuildQuickSyncStagesResponse, error) {

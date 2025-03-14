@@ -65,7 +65,7 @@ type DeploymentPlugin[Config, DeployTargetConfig any] interface {
 	// DetermineVersions determines the versions of the resources that will be deployed.
 	DetermineVersions(context.Context, *Config, *Client, *DetermineVersionsInput) (*DetermineVersionsResponse, error)
 	// DetermineStrategy determines the strategy to deploy the resources.
-	DetermineStrategy(context.Context, *Config, *Client, TODO) (TODO, error)
+	DetermineStrategy(context.Context, *Config, *Client, *DetermineStrategyInput) (*DetermineStrategyResponse, error)
 	// BuildQuickSyncStages builds the stages that will be executed during the quick sync process.
 	BuildQuickSyncStages(context.Context, *Config, *BuildQuickSyncStagesInput) (*BuildQuickSyncStagesResponse, error)
 }
@@ -203,8 +203,26 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineVer
 		Versions: versions.toModel(),
 	}, nil
 }
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineStrategy(context.Context, *deployment.DetermineStrategyRequest) (*deployment.DetermineStrategyResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DetermineStrategy not implemented")
+func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineStrategy(ctx context.Context, request *deployment.DetermineStrategyRequest) (*deployment.DetermineStrategyResponse, error) {
+	client := &Client{
+		base:          s.client,
+		pluginName:    s.Name(),
+		applicationID: request.GetInput().GetDeployment().GetApplicationId(),
+		deploymentID:  request.GetInput().GetDeployment().GetId(),
+		toolRegistry:  s.toolRegistry,
+	}
+
+	input := &DetermineStrategyInput{
+		Request: newDetermineStrategyRequest(request),
+		Client:  client,
+		Logger:  s.logger,
+	}
+
+	response, err := s.base.DetermineStrategy(ctx, &s.config, client, input)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to determine strategy: %v", err)
+	}
+	return newDetermineStrategyResponse(response)
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
 	client := &Client{
@@ -839,5 +857,78 @@ func (k ArtifactKind) toModelEnum() model.ArtifactVersion_Kind {
 		return model.ArtifactVersion_TERRAFORM_MODULE
 	default:
 		return model.ArtifactVersion_UNKNOWN
+	}
+}
+
+// DetermineStrategyInput is the input for the DetermineStrategy method.
+type DetermineStrategyInput struct {
+	// Request is the request to determine the strategy.
+	Request DetermineStrategyRequest
+	// Client is the client to interact with the piped.
+	Client *Client
+	// Logger is the logger to log the events.
+	Logger *zap.Logger
+}
+
+// DetermineStrategyRequest is the request to determine the strategy.
+type DetermineStrategyRequest struct {
+	// Deployment is the deployment that the strategy will be determined.
+	Deployment Deployment
+	// RunningDeploymentSource is the source of the running deployment.
+	RunningDeploymentSource DeploymentSource
+	// TargetDeploymentSource is the source of the target deployment.
+	TargetDeploymentSource DeploymentSource
+}
+
+// newDetermineStrategyRequest converts the common.DetermineStrategyRequest to the internal representation.
+func newDetermineStrategyRequest(request *deployment.DetermineStrategyRequest) DetermineStrategyRequest {
+	return DetermineStrategyRequest{
+		Deployment:              newDeployment(request.GetInput().GetDeployment()),
+		RunningDeploymentSource: newDeploymentSource(request.GetInput().GetRunningDeploymentSource()),
+		TargetDeploymentSource:  newDeploymentSource(request.GetInput().GetTargetDeploymentSource()),
+	}
+}
+
+// DetermineStrategyResponse is the response of the request to determine the strategy.
+type DetermineStrategyResponse struct {
+	// Strategy is the strategy to deploy the resources.
+	Strategy SyncStrategy
+	// Summary is the summary of the strategy.
+	Summary string
+}
+
+// newDetermineStrategyResponse converts the response to the external representation.
+func newDetermineStrategyResponse(response *DetermineStrategyResponse) (*deployment.DetermineStrategyResponse, error) {
+	strategy, err := response.Strategy.toModelEnum()
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to convert the strategy: %v", err)
+	}
+	return &deployment.DetermineStrategyResponse{
+		Summary:      response.Summary,
+		SyncStrategy: strategy,
+	}, nil
+}
+
+// SyncStrategy represents the strategy to deploy the resources.
+type SyncStrategy int
+
+const (
+	_ SyncStrategy = iota
+	// SyncStrategyQuickSync indicates that the resources will be deployed using the quick sync strategy.
+	SyncStrategyQuickSync
+	// SyncStrategyPipelineSync indicates that the resources will be deployed using the pipeline sync strategy.
+	SyncStrategyPipelineSync
+)
+
+// toModelEnum converts the SyncStrategy to the model.SyncStrategy.
+// It returns an error if the given value is invalid.
+func (s SyncStrategy) toModelEnum() (model.SyncStrategy, error) {
+	switch s {
+	case SyncStrategyQuickSync:
+		return model.SyncStrategy_QUICK_SYNC, nil
+	case SyncStrategyPipelineSync:
+		return model.SyncStrategy_PIPELINE, nil
+	default:
+		return 0, fmt.Errorf("invalid sync strategy: %d", s)
 	}
 }

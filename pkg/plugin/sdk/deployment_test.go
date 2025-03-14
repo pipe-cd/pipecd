@@ -658,3 +658,197 @@ func TestDetermineVersionsResponse_toModel(t *testing.T) {
 		})
 	}
 }
+
+func TestNewDetermineStrategyRequest(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		request  *deployment.DetermineStrategyRequest
+		expected DetermineStrategyRequest
+	}{
+		{
+			name: "valid request",
+			request: &deployment.DetermineStrategyRequest{
+				Input: &deployment.PlanPluginInput{
+					Deployment: &model.Deployment{
+						Id:              "deployment-id",
+						ApplicationId:   "app-id",
+						ApplicationName: "app-name",
+						PipedId:         "piped-id",
+						ProjectId:       "project-id",
+						CreatedAt:       1234567890,
+						Trigger: &model.DeploymentTrigger{
+							Commander: "triggered-by",
+						},
+					},
+					RunningDeploymentSource: &common.DeploymentSource{
+						ApplicationDirectory:      "app-dir",
+						CommitHash:                "commit-hash-1",
+						ApplicationConfig:         []byte("app-config"),
+						ApplicationConfigFilename: "app-config-filename",
+					},
+					TargetDeploymentSource: &common.DeploymentSource{
+						ApplicationDirectory:      "app-dir",
+						CommitHash:                "commit-hash-2",
+						ApplicationConfig:         []byte("app-config"),
+						ApplicationConfigFilename: "app-config-filename",
+					},
+				},
+			},
+			expected: DetermineStrategyRequest{
+				Deployment: Deployment{
+					ID:              "deployment-id",
+					ApplicationID:   "app-id",
+					ApplicationName: "app-name",
+					PipedID:         "piped-id",
+					ProjectID:       "project-id",
+					TriggeredBy:     "triggered-by",
+					CreatedAt:       1234567890,
+				},
+				RunningDeploymentSource: DeploymentSource{
+					ApplicationDirectory:      "app-dir",
+					CommitHash:                "commit-hash-1",
+					ApplicationConfig:         []byte("app-config"),
+					ApplicationConfigFilename: "app-config-filename",
+				},
+				TargetDeploymentSource: DeploymentSource{
+					ApplicationDirectory:      "app-dir",
+					CommitHash:                "commit-hash-2",
+					ApplicationConfig:         []byte("app-config"),
+					ApplicationConfigFilename: "app-config-filename",
+				},
+			},
+		},
+		{
+			name: "empty request",
+			request: &deployment.DetermineStrategyRequest{
+				Input: &deployment.PlanPluginInput{
+					Deployment: &model.Deployment{
+						Trigger: &model.DeploymentTrigger{
+							Commit: &model.Commit{},
+						},
+					},
+					TargetDeploymentSource: &common.DeploymentSource{},
+				},
+			},
+			expected: DetermineStrategyRequest{
+				Deployment:              Deployment{},
+				RunningDeploymentSource: DeploymentSource{},
+				TargetDeploymentSource:  DeploymentSource{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			result := newDetermineStrategyRequest(tt.request)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestNewDetermineStrategyResponse(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		response  *DetermineStrategyResponse
+		expected  *deployment.DetermineStrategyResponse
+		expectErr bool
+	}{
+		{
+			name: "valid quick sync strategy",
+			response: &DetermineStrategyResponse{
+				Strategy: SyncStrategyQuickSync,
+				Summary:  "quick sync strategy",
+			},
+			expected: &deployment.DetermineStrategyResponse{
+				SyncStrategy: model.SyncStrategy_QUICK_SYNC,
+				Summary:      "quick sync strategy",
+			},
+			expectErr: false,
+		},
+		{
+			name: "valid pipeline sync strategy",
+			response: &DetermineStrategyResponse{
+				Strategy: SyncStrategyPipelineSync,
+				Summary:  "pipeline sync strategy",
+			},
+			expected: &deployment.DetermineStrategyResponse{
+				SyncStrategy: model.SyncStrategy_PIPELINE,
+				Summary:      "pipeline sync strategy",
+			},
+			expectErr: false,
+		},
+		{
+			name: "invalid strategy",
+			response: &DetermineStrategyResponse{
+				Strategy: SyncStrategy(999),
+				Summary:  "invalid strategy",
+			},
+			expected:  nil,
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			result, err := newDetermineStrategyResponse(tt.response)
+			if tt.expectErr {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestSyncStrategy_toModelEnum(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		strategy  SyncStrategy
+		expected  model.SyncStrategy
+		expectErr bool
+	}{
+		{
+			name:      "quick sync",
+			strategy:  SyncStrategyQuickSync,
+			expected:  model.SyncStrategy_QUICK_SYNC,
+			expectErr: false,
+		},
+		{
+			name:      "pipeline sync",
+			strategy:  SyncStrategyPipelineSync,
+			expected:  model.SyncStrategy_PIPELINE,
+			expectErr: false,
+		},
+		{
+			name:      "invalid strategy",
+			strategy:  SyncStrategy(999),
+			expected:  0,
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			result, err := tt.strategy.toModelEnum()
+			if tt.expectErr {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
