@@ -47,9 +47,8 @@ for pull in "${PULL_REQUESTS[@]}"; do
 done
 
 function join { local IFS="$1"; shift; echo "$*"; }
-PULL_DASH=$(join - "${PULL_REQUESTS[@]/#/#}")
 PULL_SUBJ=$(join " " "${PULL_REQUESTS[@]/#/#}")
-NEWBRANCH="cherry-pick-${PULL_DASH}-to-${BRANCH}"
+NEWBRANCH="cherry-pick-to-${BRANCH}-$(date +%s)"
 
 # Update all remote branches
 echo "+++ Updating remote branches..."
@@ -95,7 +94,7 @@ echo
 
 # Create a pull request
 echo "+++ Creating a pull request..."
-pull_title="Cherry-pick ${PULL_SUBJ}"
+pull_title="Cherry-pick to ${BRANCH}"
 pull_body=$(cat <<EOF
 **What this PR does / why we need it**:
 Cherry pick of ${PULL_SUBJ}.
