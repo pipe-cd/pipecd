@@ -142,7 +142,7 @@ func (s *LivestatePluginServer[Config, DeployTargetConfig]) GetLivestate(ctx con
 		return nil, status.Errorf(codes.Internal, "failed to get the live state: %v", err)
 	}
 
-	return response.toModel(time.Now()), nil
+	return response.toModel(s.commonFields.config.Name, time.Now()), nil
 }
 
 // GetLivestateInput is the input for the GetLivestate method.
@@ -172,9 +172,9 @@ type GetLivestateResponse struct {
 }
 
 // toModel converts the GetLivestateResponse to the model.GetLivestateResponse.
-func (r *GetLivestateResponse) toModel(now time.Time) *livestate.GetLivestateResponse {
+func (r *GetLivestateResponse) toModel(pluginName string, now time.Time) *livestate.GetLivestateResponse {
 	return &livestate.GetLivestateResponse{
-		ApplicationLiveState: r.LiveState.toModel(now),
+		ApplicationLiveState: r.LiveState.toModel(pluginName, now),
 		SyncState:            r.SyncState.toModel(now),
 	}
 }
@@ -186,10 +186,10 @@ type ApplicationLiveState struct {
 }
 
 // toModel converts the ApplicationLiveState to the model.ApplicationLiveState.
-func (s *ApplicationLiveState) toModel(now time.Time) *model.ApplicationLiveState {
+func (s *ApplicationLiveState) toModel(pluginName string, now time.Time) *model.ApplicationLiveState {
 	resources := make([]*model.ResourceState, 0, len(s.Resources))
 	for _, rs := range s.Resources {
-		resources = append(resources, rs.toModel(now))
+		resources = append(resources, rs.toModel(pluginName, now))
 	}
 	return &model.ApplicationLiveState{
 		Resources:    resources,
@@ -215,14 +215,12 @@ type ResourceState struct {
 	HealthDescription string
 	// DeployTarget is the target where the resource is deployed.
 	DeployTarget string
-	// PluginName is the name of the plugin that provides the resource.
-	PluginName string
 	// CreatedAt is the time when the resource was created.
 	CreatedAt time.Time
 }
 
 // toModel converts the ResourceState to the model.ResourceState.
-func (s *ResourceState) toModel(now time.Time) *model.ResourceState {
+func (s *ResourceState) toModel(pluginName string, now time.Time) *model.ResourceState {
 	return &model.ResourceState{
 		Id:                s.ID,
 		ParentIds:         s.ParentIDs,
@@ -232,7 +230,7 @@ func (s *ResourceState) toModel(now time.Time) *model.ResourceState {
 		HealthStatus:      s.HealthStatus.toModel(),
 		HealthDescription: s.HealthDescription,
 		DeployTarget:      s.DeployTarget,
-		PluginName:        s.PluginName,
+		PluginName:        pluginName,
 		CreatedAt:         s.CreatedAt.Unix(),
 		UpdatedAt:         now.Unix(),
 	}

@@ -29,10 +29,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
-const (
-	defaultKubectlVersion = "1.18.2"
-)
-
 // Plugin implements the sdk.DeploymentPlugin interface.
 type Plugin struct {
 }
@@ -156,7 +152,7 @@ func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStag
 	deployTargetConfig := dts[0].Config
 
 	// Get the kubectl tool path.
-	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion, defaultKubectlVersion))
+	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion))
 	if err != nil {
 		lp.Errorf("Failed while getting kubectl tool (%v)", err)
 		return sdk.StageStatusFailure
@@ -322,7 +318,7 @@ func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.Execute
 	deployTargetConfig := dts[0].Config
 
 	// Get the kubectl tool path.
-	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion, defaultKubectlVersion))
+	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion))
 	if err != nil {
 		lp.Errorf("Failed while getting kubectl tool (%v)", err)
 		return sdk.StageStatusFailure

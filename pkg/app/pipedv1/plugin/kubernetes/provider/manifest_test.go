@@ -17,8 +17,10 @@ package provider
 import (
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -783,6 +785,97 @@ func TestIsManagedByPiped(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			gotResult := tc.manifest.IsManagedByPiped()
 			assert.Equal(t, tc.wantResult, gotResult)
+		})
+	}
+}
+
+func TestManifest_ToResourceState(t *testing.T) {
+	tests := []struct {
+		name         string
+		manifest     Manifest
+		deployTarget string
+		want         sdk.ResourceState
+	}{
+		{
+			name: "no owner references",
+			manifest: Manifest{
+				body: &unstructured.Unstructured{
+					Object: map[string]interface{}{
+						"metadata": map[string]interface{}{
+							"name":              "nginx-deployment",
+							"namespace":         "default",
+							"uid":               "12345",
+							"creationTimestamp": "2023-10-01T00:00:00Z",
+						},
+						"kind":       "Deployment",
+						"apiVersion": "apps/v1",
+					},
+				},
+			},
+			deployTarget: "target1",
+			want: sdk.ResourceState{
+				ID:                "12345",
+				Name:              "nginx-deployment",
+				ParentIDs:         nil,
+				HealthStatus:      sdk.ResourceHealthStateUnknown,
+				HealthDescription: "",
+				ResourceType:      "Deployment",
+				ResourceMetadata: map[string]string{
+					"Namespace":   "default",
+					"API Version": "apps/v1",
+					"Kind":        "Deployment",
+				},
+				DeployTarget: "target1",
+				CreatedAt:    time.Date(2023, 10, 1, 0, 0, 0, 0, time.UTC).Local(),
+			},
+		},
+		{
+			name: "with owner references",
+			manifest: Manifest{
+				body: &unstructured.Unstructured{
+					Object: map[string]interface{}{
+						"metadata": map[string]interface{}{
+							"name":              "nginx-deployment",
+							"namespace":         "default",
+							"uid":               "12345",
+							"creationTimestamp": "2023-10-01T00:00:00Z",
+							"ownerReferences": []interface{}{
+								map[string]interface{}{
+									"apiVersion": "apps/v1",
+									"kind":       "ReplicaSet",
+									"name":       "nginx-replicaset",
+									"uid":        "67890",
+								},
+							},
+						},
+						"kind":       "Deployment",
+						"apiVersion": "apps/v1",
+					},
+				},
+			},
+			deployTarget: "target2",
+			want: sdk.ResourceState{
+				ID:                "12345",
+				Name:              "nginx-deployment",
+				ParentIDs:         []string{"67890"},
+				HealthStatus:      sdk.ResourceHealthStateUnknown,
+				HealthDescription: "",
+				ResourceType:      "Deployment",
+				ResourceMetadata: map[string]string{
+					"Namespace":   "default",
+					"API Version": "apps/v1",
+					"Kind":        "Deployment",
+				},
+				DeployTarget: "target2",
+				CreatedAt:    time.Date(2023, 10, 1, 0, 0, 0, 0, time.UTC).Local(),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.manifest.ToResourceState(tt.deployTarget)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

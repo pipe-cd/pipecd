@@ -20,6 +20,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/yaml"
+
+	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
 var builtinAPIGroups = map[string]struct{}{
@@ -173,6 +175,33 @@ func (m Manifest) AddStringMapValues(values map[string]string, fields ...string)
 	}
 	maps.Copy(curMap, values)
 	return unstructured.SetNestedStringMap(m.body.Object, curMap, fields...)
+}
+
+// ToResourceState converts the manifest into a sdk.ResourceState.
+func (m Manifest) ToResourceState(deployTarget string) sdk.ResourceState {
+	var parents []string // default as nil
+	if len(m.body.GetOwnerReferences()) > 0 {
+		parents = make([]string, 0, len(m.body.GetOwnerReferences()))
+		for _, o := range m.body.GetOwnerReferences() {
+			parents = append(parents, string(o.UID))
+		}
+	}
+
+	return sdk.ResourceState{
+		ID:                string(m.body.GetUID()),
+		Name:              m.body.GetName(),
+		ParentIDs:         parents,
+		HealthStatus:      sdk.ResourceHealthStateUnknown, // TODO: Implement health status calculation
+		HealthDescription: "",                             // TODO: Implement health status calculation
+		ResourceType:      m.body.GetKind(),
+		ResourceMetadata: map[string]string{
+			"Namespace":   m.body.GetNamespace(),
+			"API Version": m.body.GetAPIVersion(),
+			"Kind":        m.body.GetKind(),
+		},
+		DeployTarget: deployTarget,
+		CreatedAt:    m.body.GetCreationTimestamp().Time,
+	}
 }
 
 // FindConfigsAndSecrets returns the manifests that are ConfigMap or Secret.
