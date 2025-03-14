@@ -61,6 +61,12 @@ const useStyles = makeStyles((theme) => ({
   commitMessage: {
     whiteSpace: "pre-wrap",
   },
+  emptyPlaceholder: {
+    padding: theme.spacing(2),
+    border: `1px solid ${theme.palette.grey[300]}`,
+    borderTop: "none",
+    backgroundColor: theme.palette.background.default,
+  },
 }));
 
 type Props = {
@@ -82,8 +88,9 @@ const DeploymentTraceItem: FC<Props> = ({ trace, deploymentList }) => {
 
   const timeStampCommit = useMemo(() => {
     if (!trace?.commitTimestamp) return "-";
-    const diff = dayjs().diff(trace.commitTimestamp, "month");
-    const date = dayjs(trace.commitTimestamp);
+    const timeStamp = trace.commitTimestamp * 1000;
+    const diff = dayjs().diff(timeStamp, "month");
+    const date = dayjs(timeStamp);
     const isCurrentYear = dayjs().isSame(date, "year");
 
     if (!isCurrentYear) {
@@ -110,7 +117,7 @@ const DeploymentTraceItem: FC<Props> = ({ trace, deploymentList }) => {
           justifyContent={"space-between"}
           pr={1}
         >
-          <Box>
+          <Box overflow={"hidden"} flex={1}>
             <Box>
               <Typography variant="h6" className={classes.title}>
                 {trace?.title || `Title of commit ${trace?.commitHash}`}
@@ -181,6 +188,13 @@ const DeploymentTraceItem: FC<Props> = ({ trace, deploymentList }) => {
       </Box>
 
       <Collapse in={visibleDeployments} unmountOnExit key={trace?.id}>
+        {deploymentList.length === 0 && (
+          <Box className={classes.emptyPlaceholder}>
+            <Typography variant="body2" color="textSecondary" align="center">
+              No deployment triggered
+            </Typography>
+          </Box>
+        )}
         <List>
           {deploymentList.map((deployment) => (
             <ListItem
