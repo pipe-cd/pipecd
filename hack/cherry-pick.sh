@@ -39,12 +39,16 @@ PULL_REQUESTS=($@)
 # Check gh authentication
 echo "+++ Checking gh authentication..."
 gh auth status
+echo
 
+echo "+++ Fetching pull requests..."
 COMMIT_HASHS=()
 for pull in "${PULL_REQUESTS[@]}"; do
+  echo "Fetching pull request #${pull}..."
   hash="$(gh pr view ${pull} --json mergeCommit --jq .mergeCommit.oid)"
   COMMIT_HASHS+=($hash)
 done
+echo
 
 function join { local IFS="$1"; shift; echo "$*"; }
 PULL_SUBJ=$(join " " "${PULL_REQUESTS[@]/#/#}")
