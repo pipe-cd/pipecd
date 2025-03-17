@@ -19,23 +19,8 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/deployment"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/livestate"
-	"github.com/pipe-cd/pipecd/pkg/cli"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
-
-// TODO: remote it
-func _main() {
-	app := cli.NewApp(
-		"pipecd-plugin-kubernetes",
-		"Plugin component to deploy Kubernetes Application.",
-	)
-	app.AddCommands(
-		NewPluginCommand(),
-	)
-	if err := app.Run(); err != nil {
-		log.Fatal(err)
-	}
-}
 
 func main() {
 	sdk.RegisterDeploymentPlugin(&deployment.Plugin{})
