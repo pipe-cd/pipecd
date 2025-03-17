@@ -113,11 +113,7 @@ func (a *DeploymentService) DetermineVersions(ctx context.Context, request *depl
 
 // BuildPipelineSyncStages implements deployment.DeploymentServiceServer.
 func (a *DeploymentService) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
-	now := time.Now()
-	stages := buildPipelineStages(request.GetStages(), request.GetRollback(), now)
-	return &deployment.BuildPipelineSyncStagesResponse{
-		Stages: stages,
-	}, nil
+	return &deployment.BuildPipelineSyncStagesResponse{}, nil
 }
 
 // BuildQuickSyncStages implements deployment.DeploymentServiceServer.

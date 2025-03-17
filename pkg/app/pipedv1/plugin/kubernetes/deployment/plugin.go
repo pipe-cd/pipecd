@@ -65,7 +65,7 @@ func (p *Plugin) FetchDefinedStages() []string {
 
 func (p *Plugin) BuildPipelineSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
 	return &sdk.BuildPipelineSyncStagesResponse{
-		Stages: buildPipelineStagesWithSDK(input.Request.Stages, input.Request.Rollback),
+		Stages: buildPipelineStages(input.Request.Stages, input.Request.Rollback),
 	}, nil
 }
 
