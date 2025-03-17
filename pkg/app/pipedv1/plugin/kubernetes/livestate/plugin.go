@@ -92,6 +92,7 @@ func (p Plugin) GetLivestate(ctx context.Context, _ sdk.ConfigNone, deployTarget
 	}
 
 	// Calculate SyncState by comparing live manifests with desired manifests
+	// TODO: Implement drift detection ignore configs
 	diffResult, err := provider.DiffList(liveManifests, manifests, input.Logger,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),
