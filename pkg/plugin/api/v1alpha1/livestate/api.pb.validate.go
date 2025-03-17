@@ -57,7 +57,11 @@ func (m *GetLivestateRequest) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for PipedId
+
 	// no validation rules for ApplicationId
+
+	// no validation rules for ApplicationName
 
 	if all {
 		switch v := interface{}(m.GetDeploySource()).(type) {
