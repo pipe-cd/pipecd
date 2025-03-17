@@ -251,3 +251,91 @@ func TestBuildQuickSyncPipeline(t *testing.T) {
 		})
 	}
 }
+
+func Test_buildPipelineStagesWithSDK(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name         string
+		stages       []sdk.StageConfig
+		autoRollback bool
+		expected     []sdk.PipelineStage
+	}{
+		{
+			name: "without auto rollback",
+			stages: []sdk.StageConfig{
+				{
+					Name:  "Stage 1",
+					Index: 0,
+				},
+				{
+					Name:  "Stage 2",
+					Index: 1,
+				},
+			},
+			autoRollback: false,
+			expected: []sdk.PipelineStage{
+				{
+					Name:               "Stage 1",
+					Index:              0,
+					Rollback:           false,
+					Metadata:           make(map[string]string, 0),
+					AvailableOperation: sdk.ManualOperationNone,
+				},
+				{
+					Name:               "Stage 2",
+					Index:              1,
+					Rollback:           false,
+					Metadata:           make(map[string]string, 0),
+					AvailableOperation: sdk.ManualOperationNone,
+				},
+			},
+		},
+		{
+			name: "with auto rollback",
+			stages: []sdk.StageConfig{
+				{
+					Name:  "Stage 1",
+					Index: 0,
+				},
+				{
+					Name:  "Stage 2",
+					Index: 1,
+				},
+			},
+			autoRollback: true,
+			expected: []sdk.PipelineStage{
+				{
+					Name:               "Stage 1",
+					Index:              0,
+					Rollback:           false,
+					Metadata:           make(map[string]string, 0),
+					AvailableOperation: sdk.ManualOperationNone,
+				},
+				{
+					Name:               "Stage 2",
+					Index:              1,
+					Rollback:           false,
+					Metadata:           make(map[string]string, 0),
+					AvailableOperation: sdk.ManualOperationNone,
+				},
+				{
+					Name:               StageK8sRollback.String(),
+					Index:              0,
+					Rollback:           true,
+					Metadata:           make(map[string]string, 0),
+					AvailableOperation: sdk.ManualOperationNone,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			actual := buildPipelineStagesWithSDK(tt.stages, tt.autoRollback)
+			assert.Equal(t, tt.expected, actual)
+		})
+	}
+}

@@ -154,6 +154,7 @@ func BuildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
 	return out
 }
 
+// TODO: Rename this function
 func buildPipelineStages(stages []*deployment.BuildPipelineSyncStagesRequest_StageConfig, autoRollback bool, now time.Time) []*model.PipelineStage {
 	out := make([]*model.PipelineStage, 0, len(stages)+1)
 
@@ -192,6 +193,41 @@ func buildPipelineStages(stages []*deployment.BuildPipelineSyncStagesRequest_Sta
 			Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
 			CreatedAt: now.Unix(),
 			UpdatedAt: now.Unix(),
+		})
+	}
+
+	return out
+}
+
+// buildPipelineStagesWithSDK builds the pipeline stages with the given SDK stages.
+// TODO: Rename this function to buildPipelineStages after removing the old one.
+func buildPipelineStagesWithSDK(stages []sdk.StageConfig, autoRollback bool) []sdk.PipelineStage {
+	out := make([]sdk.PipelineStage, 0, len(stages)+1)
+
+	for _, s := range stages {
+		out = append(out, sdk.PipelineStage{
+			Name:               s.Name,
+			Index:              s.Index,
+			Rollback:           false,
+			Metadata:           make(map[string]string, 0),
+			AvailableOperation: sdk.ManualOperationNone,
+		})
+	}
+
+	if autoRollback {
+		// we set the index of the rollback stage to the minimum index of all stages.
+		minIndex := slices.MinFunc(stages, func(a, b sdk.StageConfig) int {
+			return a.Index - b.Index
+		}).Index
+
+		s, _ := GetPredefinedStage(PredefinedStageRollback)
+		// we copy the predefined stage to avoid modifying the original one.
+		out = append(out, sdk.PipelineStage{
+			Name:               s.GetName(),
+			Index:              minIndex,
+			Rollback:           true,
+			Metadata:           make(map[string]string, 0),
+			AvailableOperation: sdk.ManualOperationNone,
 		})
 	}
 
