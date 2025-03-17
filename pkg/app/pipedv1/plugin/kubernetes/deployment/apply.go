@@ -17,10 +17,8 @@ package deployment
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
-	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
@@ -35,8 +33,7 @@ type applier interface {
 	ForceReplaceManifest(ctx context.Context, manifest provider.Manifest) error
 }
 
-// TODO: rewrite applyManifests with sdk.StageLogPersister
-func applyManifests(ctx context.Context, applier applier, manifests []provider.Manifest, namespace string, lp logpersister.StageLogPersister) error {
+func applyManifests(ctx context.Context, applier applier, manifests []provider.Manifest, namespace string, lp sdk.StageLogPersister) error {
 	if namespace == "" {
 		lp.Infof("Start applying %d manifests", len(manifests))
 	} else {
@@ -89,19 +86,5 @@ func applyManifests(ctx context.Context, applier applier, manifests []provider.M
 
 	}
 	lp.Successf("Successfully applied %d manifests", len(manifests))
-	return nil
-}
-
-// TODO: remove applyManifestsSDK and originalLogPersister after rewriting applyManifests
-func applyManifestsSDK(ctx context.Context, applier applier, manifests []provider.Manifest, namespace string, lp sdk.StageLogPersister) error {
-	originalLogPersister := &originalLogPersister{lp}
-	return applyManifests(ctx, applier, manifests, namespace, originalLogPersister)
-}
-
-type originalLogPersister struct {
-	sdk.StageLogPersister
-}
-
-func (lp *originalLogPersister) Complete(timeout time.Duration) error {
 	return nil
 }

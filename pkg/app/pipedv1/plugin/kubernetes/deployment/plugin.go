@@ -167,7 +167,7 @@ func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStag
 
 	// Start applying all manifests to add or update running resources.
 	// TODO: use applyManifests instead of applyManifestsSDK
-	if err := applyManifestsSDK(ctx, applier, manifests, cfg.Spec.Input.Namespace, lp); err != nil {
+	if err := applyManifests(ctx, applier, manifests, cfg.Spec.Input.Namespace, lp); err != nil {
 		lp.Errorf("Failed while applying manifests (%v)", err)
 		return sdk.StageStatusSuccess
 	}
@@ -329,7 +329,7 @@ func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.Execute
 	applier := provider.NewApplier(provider.NewKubectl(kubectlPath), cfg.Spec.Input, deployTargetConfig, input.Logger)
 
 	// Start applying all manifests to add or update running resources.
-	if err := applyManifestsSDK(ctx, applier, manifests, cfg.Spec.Input.Namespace, lp); err != nil {
+	if err := applyManifests(ctx, applier, manifests, cfg.Spec.Input.Namespace, lp); err != nil {
 		lp.Errorf("Failed while applying manifests (%v)", err)
 		return sdk.StageStatusFailure
 	}
