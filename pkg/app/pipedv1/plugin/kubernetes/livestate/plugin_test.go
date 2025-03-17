@@ -66,10 +66,10 @@ func makeTestDiffChange(t *testing.T, oldYAML, newYAML string) provider.DiffList
 
 func TestCalculateSyncState(t *testing.T) {
 	tests := []struct {
-		name           string
-		diffResult     *provider.DiffListResult
-		totalResources int
-		want           sdk.ApplicationSyncState
+		name       string
+		diffResult *provider.DiffListResult
+		commitHash string
+		want       sdk.ApplicationSyncState
 	}{
 		{
 			name: "all resources are in sync",
@@ -78,7 +78,7 @@ func TestCalculateSyncState(t *testing.T) {
 				Deletes: []provider.Manifest{},
 				Changes: []provider.DiffListChange{},
 			},
-			totalResources: 3,
+			commitHash: "1234567",
 			want: sdk.ApplicationSyncState{
 				Status:      sdk.ApplicationSyncStateSynced,
 				ShortReason: "",
@@ -130,14 +130,14 @@ spec:
 `),
 				},
 			},
-			totalResources: 1,
+			commitHash: "1234567",
 			want: sdk.ApplicationSyncState{
 				Status:      sdk.ApplicationSyncStateOutOfSync,
 				ShortReason: "There are 1 manifests not synced (0 adds, 0 deletes, 1 changes)",
-				Reason: `Diff between the actual state in cluster and expected state:
+				Reason: `Diff between the defined state in Git at commit 1234567 and actual state in cluster:
 
 --- Actual   (LiveState)
-+++ Expected (Desired)
++++ Expected (Git)
 
 # 1. name="test-deployment", kind="Deployment", namespace="default", apiGroup="apps"
 
@@ -226,14 +226,14 @@ spec:
 `),
 				},
 			},
-			totalResources: 2,
+			commitHash: "1234567",
 			want: sdk.ApplicationSyncState{
 				Status:      sdk.ApplicationSyncStateOutOfSync,
 				ShortReason: "There are 2 manifests not synced (0 adds, 0 deletes, 2 changes)",
-				Reason: `Diff between the actual state in cluster and expected state:
+				Reason: `Diff between the defined state in Git at commit 1234567 and actual state in cluster:
 
 --- Actual   (LiveState)
-+++ Expected (Desired)
++++ Expected (Git)
 
 # 1. name="test-service", kind="Service", namespace="default", apiGroup=""
 
@@ -303,14 +303,14 @@ spec:
 `),
 				},
 			},
-			totalResources: 2,
+			commitHash: "1234567",
 			want: sdk.ApplicationSyncState{
 				Status:      sdk.ApplicationSyncStateOutOfSync,
 				ShortReason: "There are 2 manifests not synced (1 adds, 1 deletes, 0 changes)",
-				Reason: `Diff between the actual state in cluster and expected state:
+				Reason: `Diff between the defined state in Git at commit 1234567 and actual state in cluster:
 
 --- Actual   (LiveState)
-+++ Expected (Desired)
++++ Expected (Git)
 
 - 1. name="test-pod", kind="Pod", namespace="default", apiGroup=""
 
@@ -342,14 +342,14 @@ data:
 `),
 				},
 			},
-			totalResources: 3,
+			commitHash: "1234567",
 			want: sdk.ApplicationSyncState{
 				Status:      sdk.ApplicationSyncStateOutOfSync,
 				ShortReason: "There are 1 manifests not synced (0 adds, 0 deletes, 1 changes)",
-				Reason: `Diff between the actual state in cluster and expected state:
+				Reason: `Diff between the defined state in Git at commit 1234567 and actual state in cluster:
 
 --- Actual   (LiveState)
-+++ Expected (Desired)
++++ Expected (Git)
 
 # 1. name="test-config", kind="ConfigMap", namespace="default", apiGroup=""
 
@@ -366,7 +366,7 @@ data:
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := calculateSyncState(tt.diffResult, tt.totalResources)
+			got := calculateSyncState(tt.diffResult, tt.commitHash)
 			assert.Equal(t, tt.want, got)
 		})
 	}

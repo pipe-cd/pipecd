@@ -103,7 +103,7 @@ func (p Plugin) GetLivestate(ctx context.Context, _ sdk.ConfigNone, deployTarget
 		return nil, err
 	}
 
-	syncState := calculateSyncState(diffResult, len(manifests))
+	syncState := calculateSyncState(diffResult, input.Request.DeploymentSource.CommitHash)
 
 	return &sdk.GetLivestateResponse{
 		LiveState: sdk.ApplicationLiveState{
@@ -114,7 +114,7 @@ func (p Plugin) GetLivestate(ctx context.Context, _ sdk.ConfigNone, deployTarget
 	}, nil
 }
 
-func calculateSyncState(diffResult *provider.DiffListResult, totalResources int) sdk.ApplicationSyncState {
+func calculateSyncState(diffResult *provider.DiffListResult, commit string) sdk.ApplicationSyncState {
 	if diffResult.NoChanges() {
 		return sdk.ApplicationSyncState{
 			Status:      sdk.ApplicationSyncStateSynced,
@@ -131,9 +131,13 @@ func calculateSyncState(diffResult *provider.DiffListResult, totalResources int)
 		len(diffResult.Changes),
 	)
 
+	if len(commit) > 7 {
+		commit = commit[:7]
+	}
+
 	var b strings.Builder
-	b.WriteString("Diff between the actual state in cluster and expected state:\n\n")
-	b.WriteString("--- Actual   (LiveState)\n+++ Expected (Desired)\n\n")
+	b.WriteString(fmt.Sprintf("Diff between the defined state in Git at commit %s and actual state in cluster:\n\n", commit))
+	b.WriteString("--- Actual   (LiveState)\n+++ Expected (Git)\n\n")
 
 	details := diffResult.Render(provider.DiffRenderOptions{
 		MaskSecret:          true,
