@@ -386,7 +386,7 @@ func (p *Plugin) DetermineStrategy(ctx context.Context, _ *sdk.ConfigNone, input
 		return nil, err
 	}
 
-	strategy, summary := determineStrategySDK(runnings, targets, cfg.Spec.Workloads, logger)
+	strategy, summary := determineStrategy(runnings, targets, cfg.Spec.Workloads, logger)
 
 	return &sdk.DetermineStrategyResponse{
 		Strategy: strategy,

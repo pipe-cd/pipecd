@@ -78,29 +78,7 @@ func (a *DeploymentService) Register(server *grpc.Server) {
 
 // DetermineStrategy implements deployment.DeploymentServiceServer.
 func (a *DeploymentService) DetermineStrategy(ctx context.Context, request *deployment.DetermineStrategyRequest) (*deployment.DetermineStrategyResponse, error) {
-	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](request.GetInput().GetTargetDeploymentSource().GetApplicationConfig())
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-
-	runnings, err := a.loadManifests(ctx, request.GetInput().GetDeployment(), cfg.Spec, request.GetInput().GetRunningDeploymentSource())
-
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	targets, err := a.loadManifests(ctx, request.GetInput().GetDeployment(), cfg.Spec, request.GetInput().GetTargetDeploymentSource())
-
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	strategy, summary := determineStrategy(runnings, targets, cfg.Spec.Workloads, a.logger)
-
-	return &deployment.DetermineStrategyResponse{
-		SyncStrategy: strategy,
-		Summary:      summary,
-	}, nil
+	return &deployment.DetermineStrategyResponse{}, nil
 
 }
 
