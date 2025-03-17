@@ -63,9 +63,10 @@ func (p *Plugin) FetchDefinedStages() []string {
 	return stages
 }
 
-// FIXME
 func (p *Plugin) BuildPipelineSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
-	return nil, nil
+	return &sdk.BuildPipelineSyncStagesResponse{
+		Stages: buildPipelineStagesWithSDK(input.Request.Stages, input.Request.Rollback),
+	}, nil
 }
 
 // FIXME
