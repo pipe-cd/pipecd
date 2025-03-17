@@ -29,6 +29,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	"sigs.k8s.io/yaml"
 
 	kubeConfigPkg "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
@@ -37,6 +40,60 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry/toolregistrytest"
 )
+
+// TODO: move to a common package
+func examplesDir() string {
+	d, _ := os.Getwd()
+	for {
+		if _, err := os.Stat(filepath.Join(d, "examples")); err == nil {
+			return filepath.Join(d, "examples")
+		}
+		d = filepath.Dir(d)
+	}
+}
+
+func kubeconfigFromRestConfig(restConfig *rest.Config) (string, error) {
+	clusters := make(map[string]*clientcmdapi.Cluster)
+	clusters["default-cluster"] = &clientcmdapi.Cluster{
+		Server:                   restConfig.Host,
+		CertificateAuthorityData: restConfig.CAData,
+	}
+	contexts := make(map[string]*clientcmdapi.Context)
+	contexts["default-context"] = &clientcmdapi.Context{
+		Cluster:  "default-cluster",
+		AuthInfo: "default-user",
+	}
+	authinfos := make(map[string]*clientcmdapi.AuthInfo)
+	authinfos["default-user"] = &clientcmdapi.AuthInfo{
+		ClientCertificateData: restConfig.CertData,
+		ClientKeyData:         restConfig.KeyData,
+	}
+	clientConfig := clientcmdapi.Config{
+		Kind:           "Config",
+		APIVersion:     "v1",
+		Clusters:       clusters,
+		Contexts:       contexts,
+		CurrentContext: "default-context",
+		AuthInfos:      authinfos,
+	}
+	b, err := clientcmd.Write(clientConfig)
+	if err != nil {
+		return "", err
+	}
+
+	return string(b), nil
+}
+
+func setupEnvTest(t *testing.T) *rest.Config {
+	t.Helper()
+
+	tEnv := new(envtest.Environment)
+	kubeCfg, err := tEnv.Start()
+	require.NoError(t, err)
+	t.Cleanup(func() { tEnv.Stop() })
+
+	return kubeCfg
+}
 
 func setupTestDeployTargetConfig(t *testing.T, kubeCfg *rest.Config) *kubeConfigPkg.KubernetesDeployTargetConfig {
 	t.Helper()
