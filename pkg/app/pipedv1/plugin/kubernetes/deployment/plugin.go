@@ -361,9 +361,36 @@ func (p *Plugin) DetermineVersions(ctx context.Context, _ *sdk.ConfigNone, _ *sd
 	}, nil
 }
 
-// FIXME
-func (p *Plugin) DetermineStrategy(context.Context, *sdk.ConfigNone, *sdk.Client, *sdk.DetermineStrategyInput) (*sdk.DetermineStrategyResponse, error) {
-	return &sdk.DetermineStrategyResponse{}, nil
+func (p *Plugin) DetermineStrategy(ctx context.Context, _ *sdk.ConfigNone, _ *sdk.Client, input *sdk.DetermineStrategyInput) (*sdk.DetermineStrategyResponse, error) {
+	logger := input.Logger
+	loader := provider.NewLoader(toolregistry.NewRegistry(input.Client.ToolRegistry()))
+
+	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](input.Request.TargetDeploymentSource.ApplicationConfig)
+	if err != nil {
+		logger.Error("Failed while decoding application config", zap.Error(err))
+		return nil, err
+	}
+
+	runnings, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.RunningDeploymentSource, loader)
+
+	if err != nil {
+		logger.Error("Failed while loading running manifests", zap.Error(err))
+		return nil, err
+	}
+
+	targets, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.TargetDeploymentSource, loader)
+
+	if err != nil {
+		logger.Error("Failed while loading target manifests", zap.Error(err))
+		return nil, err
+	}
+
+	strategy, summary := determineStrategySDK(runnings, targets, cfg.Spec.Workloads, logger)
+
+	return &sdk.DetermineStrategyResponse{
+		Strategy: strategy,
+		Summary:  summary,
+	}, nil
 }
 
 func (p *Plugin) BuildQuickSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildQuickSyncStagesInput) (*sdk.BuildQuickSyncStagesResponse, error) {
