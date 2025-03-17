@@ -19,25 +19,10 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/deployment"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/livestate"
-	"github.com/pipe-cd/pipecd/pkg/cli"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
 func main() {
-	app := cli.NewApp(
-		"pipecd-plugin-kubernetes",
-		"Plugin component to deploy Kubernetes Application.",
-	)
-	app.AddCommands(
-		NewPluginCommand(),
-	)
-	if err := app.Run(); err != nil {
-		log.Fatal(err)
-	}
-}
-
-// TODO: use this after rewriting the plugin with the sdk
-func _main() {
 	sdk.RegisterDeploymentPlugin(&deployment.Plugin{})
 	sdk.RegisterLivestatePlugin(livestate.Plugin{})
 	if err := sdk.Run(); err != nil {

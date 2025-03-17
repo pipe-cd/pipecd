@@ -26,7 +26,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
-	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
 func mustUnmarshalYAML[T any](t *testing.T, data []byte) T {
@@ -99,13 +99,13 @@ func TestParseContainerImage(t *testing.T) {
 		})
 	}
 }
-func TestDetermineVersions(t *testing.T) {
+func Test_determineVersions(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		name      string
 		manifests []string
-		want      []*model.ArtifactVersion
+		want      []sdk.ArtifactVersion
 	}{
 		{
 			name: "single manifest with one container",
@@ -123,12 +123,12 @@ spec:
         image: nginx:1.19.3
 `,
 			},
-			want: []*model.ArtifactVersion{
+			want: []sdk.ArtifactVersion{
 				{
-					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Kind:    sdk.ArtifactKindContainerImage,
 					Version: "1.19.3",
 					Name:    "nginx",
-					Url:     "nginx:1.19.3",
+					URL:     "nginx:1.19.3",
 				},
 			},
 		},
@@ -160,18 +160,18 @@ spec:
         image: redis:6.0.9
 `,
 			},
-			want: []*model.ArtifactVersion{
+			want: []sdk.ArtifactVersion{
 				{
-					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Kind:    sdk.ArtifactKindContainerImage,
 					Version: "1.19.3",
 					Name:    "nginx",
-					Url:     "nginx:1.19.3",
+					URL:     "nginx:1.19.3",
 				},
 				{
-					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Kind:    sdk.ArtifactKindContainerImage,
 					Version: "6.0.9",
 					Name:    "redis",
-					Url:     "redis:6.0.9",
+					URL:     "redis:6.0.9",
 				},
 			},
 		},
@@ -193,12 +193,12 @@ spec:
           image: nginx:1.19.3
 `,
 			},
-			want: []*model.ArtifactVersion{
+			want: []sdk.ArtifactVersion{
 				{
-					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Kind:    sdk.ArtifactKindContainerImage,
 					Version: "1.19.3",
 					Name:    "nginx",
-					Url:     "nginx:1.19.3",
+					URL:     "nginx:1.19.3",
 				},
 			},
 		},
@@ -216,7 +216,7 @@ spec:
       containers: []
 `,
 			},
-			want: []*model.ArtifactVersion{},
+			want: []sdk.ArtifactVersion{},
 		},
 		{
 			name: "manifest with missing image field",
@@ -233,7 +233,7 @@ spec:
         - name: nginx
 `,
 			},
-			want: []*model.ArtifactVersion{},
+			want: []sdk.ArtifactVersion{},
 		},
 		{
 			name: "manifest with no containers field",
@@ -248,7 +248,7 @@ spec:
     spec: {}
 `,
 			},
-			want: []*model.ArtifactVersion{},
+			want: []sdk.ArtifactVersion{},
 		},
 		{
 			name: "manifest with invalid containers field -- skipped",
@@ -913,13 +913,13 @@ spec:
 	}
 }
 
-func TestDetermineStrategy(t *testing.T) {
+func Test_determineStrategy(t *testing.T) {
 	tests := []struct {
 		name         string
 		olds         []string
 		news         []string
 		workloadRefs []config.K8sResourceReference
-		wantStrategy model.SyncStrategy
+		wantStrategy sdk.SyncStrategy
 		wantSummary  string
 	}{
 		{
@@ -939,7 +939,7 @@ spec:
         image: nginx:1.19.3
 `,
 			},
-			wantStrategy: model.SyncStrategy_QUICK_SYNC,
+			wantStrategy: sdk.SyncStrategyQuickSync,
 			wantSummary:  "Quick sync by applying all manifests because it was unable to find the currently running workloads",
 		},
 		{
@@ -959,7 +959,7 @@ spec:
 `,
 			},
 			news:         []string{},
-			wantStrategy: model.SyncStrategy_QUICK_SYNC,
+			wantStrategy: sdk.SyncStrategyQuickSync,
 			wantSummary:  "Quick sync by applying all manifests because it was unable to find workloads in the new manifests",
 		},
 		{
@@ -992,7 +992,7 @@ spec:
         image: nginx:1.19.4
 `,
 			},
-			wantStrategy: model.SyncStrategy_PIPELINE,
+			wantStrategy: sdk.SyncStrategyPipelineSync,
 			wantSummary:  "Sync progressively because of updating image nginx from 1.19.3 to 1.19.4",
 		},
 		{
@@ -1041,7 +1041,7 @@ data:
   key: new-value
 `,
 			},
-			wantStrategy: model.SyncStrategy_PIPELINE,
+			wantStrategy: sdk.SyncStrategyPipelineSync,
 			wantSummary:  "Sync progressively because ConfigMap my-config was updated",
 		},
 		{
@@ -1076,7 +1076,7 @@ spec:
         image: nginx:1.19.3
 `,
 			},
-			wantStrategy: model.SyncStrategy_QUICK_SYNC,
+			wantStrategy: sdk.SyncStrategyQuickSync,
 			wantSummary:  "Quick sync to scale Deployment/nginx-deployment from 3 to 5",
 		},
 		{
@@ -1110,7 +1110,7 @@ spec:
         image: nginx:1.19.3
 `,
 			},
-			wantStrategy: model.SyncStrategy_QUICK_SYNC,
+			wantStrategy: sdk.SyncStrategyQuickSync,
 			wantSummary:  "Quick sync to scale Deployment/nginx-deployment from <nil> to 1",
 		},
 		{
@@ -1144,7 +1144,7 @@ spec:
         image: nginx:1.19.3
 `,
 			},
-			wantStrategy: model.SyncStrategy_QUICK_SYNC,
+			wantStrategy: sdk.SyncStrategyQuickSync,
 			wantSummary:  "Quick sync to scale Deployment/nginx-deployment from 1 to <nil>",
 		},
 		{
@@ -1205,7 +1205,7 @@ spec:
         image: redis:6.0.9
 `,
 			},
-			wantStrategy: model.SyncStrategy_QUICK_SYNC,
+			wantStrategy: sdk.SyncStrategyQuickSync,
 			wantSummary:  "Quick sync to scale Deployment/nginx-deployment from 3 to 5, Deployment/redis-deployment from 2 to 4",
 		},
 		{
@@ -1242,7 +1242,7 @@ spec:
         image: redis:6.0.10
 `,
 			},
-			wantStrategy: model.SyncStrategy_PIPELINE,
+			wantStrategy: sdk.SyncStrategyPipelineSync,
 			wantSummary:  "Sync progressively because of updating image nginx from 1.19.3 to 1.19.4, image redis from 6.0.9 to 6.0.10",
 		},
 		{
@@ -1279,7 +1279,7 @@ spec:
         image: nginx:1.19.3
 `,
 			},
-			wantStrategy: model.SyncStrategy_PIPELINE,
+			wantStrategy: sdk.SyncStrategyPipelineSync,
 			wantSummary:  "Sync progressively because of updating image nginx:1.19.3 to redis:6.0.9, image redis:6.0.9 to nginx:1.19.3",
 		},
 		{
@@ -1342,7 +1342,7 @@ spec:
 					Name: "nginx-deployment",
 				},
 			},
-			wantStrategy: model.SyncStrategy_PIPELINE,
+			wantStrategy: sdk.SyncStrategyPipelineSync,
 			wantSummary:  "Sync progressively because of updating image nginx from 1.19.3 to 1.19.4",
 		},
 		{
@@ -1375,7 +1375,7 @@ spec:
         image: nginx:1.19.3
 `,
 			},
-			wantStrategy: model.SyncStrategy_PIPELINE,
+			wantStrategy: sdk.SyncStrategyPipelineSync,
 			wantSummary:  "Sync progressively because pod template of workload nginx-deployment was changed",
 		},
 		{
@@ -1416,7 +1416,7 @@ spec:
           memory: "1Gi"
 `,
 			},
-			wantStrategy: model.SyncStrategy_PIPELINE,
+			wantStrategy: sdk.SyncStrategyPipelineSync,
 			wantSummary:  "Sync progressively because pod template of workload nginx-deployment was changed",
 		},
 		{
@@ -1457,7 +1457,7 @@ spec:
         image: nginx:1.19.3
 `,
 			},
-			wantStrategy: model.SyncStrategy_PIPELINE,
+			wantStrategy: sdk.SyncStrategyPipelineSync,
 			wantSummary:  "Sync progressively because 1 configmap/secret deleted",
 		},
 		{
@@ -1498,7 +1498,7 @@ spec:
         image: nginx:1.19.3
 `,
 			},
-			wantStrategy: model.SyncStrategy_PIPELINE,
+			wantStrategy: sdk.SyncStrategyPipelineSync,
 			wantSummary:  "Sync progressively because 1 configmap/secret deleted",
 		},
 		{
@@ -1539,7 +1539,7 @@ data:
   key: value
 `,
 			},
-			wantStrategy: model.SyncStrategy_PIPELINE,
+			wantStrategy: sdk.SyncStrategyPipelineSync,
 			wantSummary:  "Sync progressively because new 1 configmap/secret added",
 		},
 		{
@@ -1580,7 +1580,7 @@ data:
   key: dmFsdWU=
 `,
 			},
-			wantStrategy: model.SyncStrategy_PIPELINE,
+			wantStrategy: sdk.SyncStrategyPipelineSync,
 			wantSummary:  "Sync progressively because new 1 configmap/secret added",
 		},
 		{
@@ -1629,7 +1629,7 @@ data:
   key: new-value
 `,
 			},
-			wantStrategy: model.SyncStrategy_PIPELINE,
+			wantStrategy: sdk.SyncStrategyPipelineSync,
 			wantSummary:  "Sync progressively because ConfigMap old-config was deleted",
 		},
 		{
@@ -1663,7 +1663,7 @@ spec:
         image: nginx:1.19.3
 `,
 			},
-			wantStrategy: model.SyncStrategy_QUICK_SYNC,
+			wantStrategy: sdk.SyncStrategyQuickSync,
 			wantSummary:  "Quick sync by applying all manifests",
 		},
 		{
@@ -1696,7 +1696,7 @@ spec:
         image: nginx:1.19.3
 `,
 			},
-			wantStrategy: model.SyncStrategy_QUICK_SYNC,
+			wantStrategy: sdk.SyncStrategyQuickSync,
 			wantSummary:  "Quick sync by applying all manifests",
 		},
 	}
@@ -1712,7 +1712,7 @@ spec:
 			}
 			logger := zap.NewNop()
 			gotStrategy, gotSummary := determineStrategy(oldManifests, newManifests, tt.workloadRefs, logger)
-			assert.Equal(t, tt.wantStrategy.String(), gotStrategy.String())
+			assert.Equal(t, tt.wantStrategy, gotStrategy)
 			assert.Equal(t, tt.wantSummary, gotSummary)
 		})
 	}

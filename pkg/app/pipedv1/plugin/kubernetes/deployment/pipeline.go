@@ -15,12 +15,9 @@
 package deployment
 
 import (
-	"fmt"
 	"slices"
-	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
-	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
@@ -93,41 +90,7 @@ func GetPredefinedStage(id string) (*model.PipelineStage, bool) {
 	return stage, ok
 }
 
-func buildQuickSyncPipeline(autoRollback bool, now time.Time) []*model.PipelineStage {
-	out := make([]*model.PipelineStage, 0, 2)
-
-	stage, _ := GetPredefinedStage(PredefinedStageK8sSync)
-	// we copy the predefined stage to avoid modifying the original one.
-	out = append(out, &model.PipelineStage{
-		Id:        stage.GetId(),
-		Name:      stage.GetName(),
-		Desc:      stage.GetDesc(),
-		Rollback:  stage.GetRollback(),
-		Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
-		Metadata:  nil,
-		CreatedAt: now.Unix(),
-		UpdatedAt: now.Unix(),
-	},
-	)
-
-	if autoRollback {
-		s, _ := GetPredefinedStage(PredefinedStageRollback)
-		// we copy the predefined stage to avoid modifying the original one.
-		out = append(out, &model.PipelineStage{
-			Id:        s.GetId(),
-			Name:      s.GetName(),
-			Desc:      s.GetDesc(),
-			Rollback:  s.GetRollback(),
-			Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
-			CreatedAt: now.Unix(),
-			UpdatedAt: now.Unix(),
-		})
-	}
-
-	return out
-}
-
-func BuildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
+func buildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
 	out := make([]sdk.QuickSyncStage, 0, 2)
 
 	stage, _ := GetPredefinedStage(PredefinedStageK8sSync)
@@ -154,54 +117,8 @@ func BuildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
 	return out
 }
 
-// TODO: Rename this function
-func buildPipelineStages(stages []*deployment.BuildPipelineSyncStagesRequest_StageConfig, autoRollback bool, now time.Time) []*model.PipelineStage {
-	out := make([]*model.PipelineStage, 0, len(stages)+1)
-
-	for _, s := range stages {
-		id := s.GetId()
-		if id == "" {
-			id = fmt.Sprintf("stage-%d", s.GetIndex())
-		}
-		stage := &model.PipelineStage{
-			Id:        id,
-			Name:      s.GetName(),
-			Desc:      s.GetDesc(),
-			Index:     s.GetIndex(),
-			Rollback:  false,
-			Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
-			CreatedAt: now.Unix(),
-			UpdatedAt: now.Unix(),
-		}
-		out = append(out, stage)
-	}
-
-	if autoRollback {
-		// we set the index of the rollback stage to the minimum index of all stages.
-		minIndex := slices.MinFunc(stages, func(a, b *deployment.BuildPipelineSyncStagesRequest_StageConfig) int {
-			return int(a.GetIndex() - b.GetIndex())
-		}).GetIndex()
-
-		s, _ := GetPredefinedStage(PredefinedStageRollback)
-		// we copy the predefined stage to avoid modifying the original one.
-		out = append(out, &model.PipelineStage{
-			Id:        s.GetId(),
-			Name:      s.GetName(),
-			Desc:      s.GetDesc(),
-			Index:     minIndex,
-			Rollback:  s.GetRollback(),
-			Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
-			CreatedAt: now.Unix(),
-			UpdatedAt: now.Unix(),
-		})
-	}
-
-	return out
-}
-
-// buildPipelineStagesWithSDK builds the pipeline stages with the given SDK stages.
-// TODO: Rename this function to buildPipelineStages after removing the old one.
-func buildPipelineStagesWithSDK(stages []sdk.StageConfig, autoRollback bool) []sdk.PipelineStage {
+// buildPipelineStages builds the pipeline stages with the given SDK stages.
+func buildPipelineStages(stages []sdk.StageConfig, autoRollback bool) []sdk.PipelineStage {
 	out := make([]sdk.PipelineStage, 0, len(stages)+1)
 
 	for _, s := range stages {

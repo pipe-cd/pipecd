@@ -23,7 +23,6 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
-	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/diff"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
@@ -48,7 +47,7 @@ func parseContainerImage(image string) (img containerImage) {
 
 // determineVersions decides artifact versions of an application.
 // It finds all container images that are being specified in the workload manifests then returns their names and tags.
-func determineVersions(manifests []provider.Manifest) []*model.ArtifactVersion {
+func determineVersions(manifests []provider.Manifest) []sdk.ArtifactVersion {
 	imageMap := map[string]struct{}{}
 	for _, m := range manifests {
 		for _, c := range provider.FindContainerImages(m) {
@@ -56,33 +55,14 @@ func determineVersions(manifests []provider.Manifest) []*model.ArtifactVersion {
 		}
 	}
 
-	versions := make([]*model.ArtifactVersion, 0, len(imageMap))
+	versions := make([]sdk.ArtifactVersion, 0, len(imageMap))
 	for i := range imageMap {
 		image := parseContainerImage(i)
-		versions = append(versions, &model.ArtifactVersion{
-			Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
-			Version: image.tag,
-			Name:    image.name,
-			Url:     i,
-		})
-	}
-
-	return versions
-}
-
-// determineVersionsSDK decides artifact versions of an application.
-// It finds all container images that are being specified in the workload manifests then returns their names and tags.
-// TODO: rewrite this function to determineVersions after the current determineVersions is removed.
-func determineVersionsSDK(manifests []provider.Manifest) []sdk.ArtifactVersion {
-	values := determineVersions(manifests)
-
-	versions := make([]sdk.ArtifactVersion, 0, len(values))
-	for _, v := range values {
 		versions = append(versions, sdk.ArtifactVersion{
 			Kind:    sdk.ArtifactKindContainerImage,
-			Version: v.Version,
-			Name:    v.Name,
-			URL:     v.Url,
+			Version: image.tag,
+			Name:    image.name,
+			URL:     i,
 		})
 	}
 
@@ -176,16 +156,17 @@ func checkReplicasChange(ns diff.Nodes) (before, after string, changed bool) {
 	return node.StringX(), node.StringY(), true
 }
 
+// determineStrategy decides the sync strategy and summary message based on the given manifests.
 // First up, checks to see if the workload's `spec.template` has been changed,
 // and then checks if the configmap/secret's data.
-func determineStrategy(olds, news []provider.Manifest, workloadRefs []config.K8sResourceReference, logger *zap.Logger) (strategy model.SyncStrategy, summary string) {
+func determineStrategy(olds, news []provider.Manifest, workloadRefs []config.K8sResourceReference, logger *zap.Logger) (strategy sdk.SyncStrategy, summary string) {
 	oldWorkloads := findWorkloadManifests(olds, workloadRefs)
 	if len(oldWorkloads) == 0 {
-		return model.SyncStrategy_QUICK_SYNC, "Quick sync by applying all manifests because it was unable to find the currently running workloads"
+		return sdk.SyncStrategyQuickSync, "Quick sync by applying all manifests because it was unable to find the currently running workloads"
 	}
 	newWorkloads := findWorkloadManifests(news, workloadRefs)
 	if len(newWorkloads) == 0 {
-		return model.SyncStrategy_QUICK_SYNC, "Quick sync by applying all manifests because it was unable to find workloads in the new manifests"
+		return sdk.SyncStrategyQuickSync, "Quick sync by applying all manifests because it was unable to find workloads in the new manifests"
 	}
 
 	workloads := provider.FindSameManifests(oldWorkloads, newWorkloads)
@@ -196,7 +177,7 @@ func determineStrategy(olds, news []provider.Manifest, workloadRefs []config.K8s
 		// do progressive deployment with the specified pipeline.
 		diffResult, err := provider.Diff(w.Old, w.New, logger)
 		if err != nil {
-			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively due to an error while calculating the diff (%v)", err)
+			return sdk.SyncStrategyPipelineSync, fmt.Sprintf("Sync progressively due to an error while calculating the diff (%v)", err)
 		}
 		diffNodes := diffResult.Nodes()
 		diffs[w.New.Key()] = diffNodes
@@ -204,9 +185,9 @@ func determineStrategy(olds, news []provider.Manifest, workloadRefs []config.K8s
 		templateDiffs := diffNodes.FindByPrefix("spec.template")
 		if len(templateDiffs) > 0 {
 			if msg, changed := checkImageChange(templateDiffs); changed {
-				return model.SyncStrategy_PIPELINE, msg
+				return sdk.SyncStrategyPipelineSync, msg
 			}
-			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because pod template of workload %s was changed", w.New.Name())
+			return sdk.SyncStrategyPipelineSync, fmt.Sprintf("Sync progressively because pod template of workload %s was changed", w.New.Name())
 		}
 	}
 
@@ -215,22 +196,22 @@ func determineStrategy(olds, news []provider.Manifest, workloadRefs []config.K8s
 	oldConfigs := provider.FindConfigsAndSecrets(olds)
 	newConfigs := provider.FindConfigsAndSecrets(news)
 	if len(oldConfigs) > len(newConfigs) {
-		return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because %d configmap/secret deleted", len(oldConfigs)-len(newConfigs))
+		return sdk.SyncStrategyPipelineSync, fmt.Sprintf("Sync progressively because %d configmap/secret deleted", len(oldConfigs)-len(newConfigs))
 	}
 	if len(oldConfigs) < len(newConfigs) {
-		return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because new %d configmap/secret added", len(newConfigs)-len(oldConfigs))
+		return sdk.SyncStrategyPipelineSync, fmt.Sprintf("Sync progressively because new %d configmap/secret added", len(newConfigs)-len(oldConfigs))
 	}
 	for k, oc := range oldConfigs {
 		nc, ok := newConfigs[k]
 		if !ok {
-			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because %s %s was deleted", oc.Kind(), oc.Name())
+			return sdk.SyncStrategyPipelineSync, fmt.Sprintf("Sync progressively because %s %s was deleted", oc.Kind(), oc.Name())
 		}
 		result, err := provider.Diff(oc, nc, logger)
 		if err != nil {
-			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively due to an error while calculating the diff (%v)", err)
+			return sdk.SyncStrategyPipelineSync, fmt.Sprintf("Sync progressively due to an error while calculating the diff (%v)", err)
 		}
 		if result.HasDiff() {
-			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because %s %s was updated", oc.Kind(), oc.Name())
+			return sdk.SyncStrategyPipelineSync, fmt.Sprintf("Sync progressively because %s %s was updated", oc.Kind(), oc.Name())
 		}
 	}
 
@@ -244,24 +225,8 @@ func determineStrategy(olds, news []provider.Manifest, workloadRefs []config.K8s
 	}
 	if len(scales) > 0 {
 		slices.Sort(scales)
-		return model.SyncStrategy_QUICK_SYNC, fmt.Sprintf("Quick sync to scale %s", strings.Join(scales, ", "))
+		return sdk.SyncStrategyQuickSync, fmt.Sprintf("Quick sync to scale %s", strings.Join(scales, ", "))
 	}
 
-	return model.SyncStrategy_QUICK_SYNC, "Quick sync by applying all manifests"
-}
-
-// determineStrategySDK decides the sync strategy and summary message based on the given manifests.
-// TODO: rewrite this function to determineStrategy after the current determineStrategy is removed.
-func determineStrategySDK(olds, news []provider.Manifest, workloadRefs []config.K8sResourceReference, logger *zap.Logger) (strategy sdk.SyncStrategy, summary string) {
-	mStrategy, summary := determineStrategy(olds, news, workloadRefs, logger)
-
-	var s sdk.SyncStrategy
-	switch mStrategy {
-	case model.SyncStrategy_QUICK_SYNC:
-		s = sdk.SyncStrategyQuickSync
-	case model.SyncStrategy_PIPELINE:
-		s = sdk.SyncStrategyQuickSync
-	}
-
-	return s, summary
+	return sdk.SyncStrategyQuickSync, "Quick sync by applying all manifests"
 }
