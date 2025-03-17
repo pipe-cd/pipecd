@@ -217,8 +217,11 @@ func (r *reporter) flush(ctx context.Context, app *model.Application, repo git.R
 	syncStates := make([]*model.ApplicationSyncState, 0)
 	for _, pluginClient := range pluginClis {
 		res, err := pluginClient.GetLivestate(ctx, &livestate.GetLivestateRequest{
-			ApplicationId: app.Id,
-			DeploySource:  ds.ToPluginDeploySource(),
+			PipedId:         app.GetPipedId(),
+			ApplicationId:   app.GetId(),
+			ApplicationName: app.GetName(),
+			DeploySource:    ds.ToPluginDeploySource(),
+			DeployTargets:   app.GetDeployTargets(),
 		})
 		if err != nil {
 			r.logger.Info(fmt.Sprintf("no app state of application %s to report", app.Id))
