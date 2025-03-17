@@ -23,7 +23,8 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
-func main() {
+// TODO: remote it
+func _main() {
 	app := cli.NewApp(
 		"pipecd-plugin-kubernetes",
 		"Plugin component to deploy Kubernetes Application.",
@@ -36,8 +37,7 @@ func main() {
 	}
 }
 
-// TODO: use this after rewriting the plugin with the sdk
-func _main() {
+func main() {
 	sdk.RegisterDeploymentPlugin(&deployment.Plugin{})
 	sdk.RegisterLivestatePlugin(livestate.Plugin{})
 	if err := sdk.Run(); err != nil {
