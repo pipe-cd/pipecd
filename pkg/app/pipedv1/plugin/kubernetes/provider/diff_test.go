@@ -237,3 +237,378 @@ spec:
 		})
 	}
 }
+
+func TestDiffList(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name     string
+		live     string
+		desired  string
+		wantAdds int
+		wantDels int
+		wantMods int
+	}{
+		{
+			name: "no changes",
+			live: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment
+spec:
+  replicas: 3`,
+			desired: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment
+spec:
+  replicas: 3`,
+			wantAdds: 0,
+			wantDels: 0,
+			wantMods: 0,
+		},
+		{
+			name: "one addition",
+			live: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-1
+spec:
+  replicas: 3`,
+			desired: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-1
+spec:
+  replicas: 3
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-2
+spec:
+  replicas: 3`,
+			wantAdds: 1,
+			wantDels: 0,
+			wantMods: 0,
+		},
+		{
+			name: "one deletion",
+			live: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-1
+spec:
+  replicas: 3
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-2
+spec:
+  replicas: 3`,
+			desired: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-1
+spec:
+  replicas: 3`,
+			wantAdds: 0,
+			wantDels: 1,
+			wantMods: 0,
+		},
+		{
+			name: "one modification",
+			live: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment
+spec:
+  replicas: 3`,
+			desired: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment
+spec:
+  replicas: 5`,
+			wantAdds: 0,
+			wantDels: 0,
+			wantMods: 1,
+		},
+		{
+			name: "mixed changes",
+			live: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-1
+spec:
+  replicas: 3
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-2
+spec:
+  replicas: 3`,
+			desired: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-1
+spec:
+  replicas: 5
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-3
+spec:
+  replicas: 3`,
+			wantAdds: 1,
+			wantDels: 1,
+			wantMods: 1,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			liveManifests, err := ParseManifests(tc.live)
+			require.NoError(t, err)
+			desiredManifests, err := ParseManifests(tc.desired)
+			require.NoError(t, err)
+
+			result, err := DiffList(liveManifests, desiredManifests, zap.NewNop(), diff.WithEquateEmpty(), diff.WithIgnoreAddingMapKeys(), diff.WithCompareNumberAndNumericString())
+			require.NoError(t, err)
+
+			assert.Equal(t, tc.wantAdds, len(result.Adds))
+			assert.Equal(t, tc.wantDels, len(result.Deletes))
+			assert.Equal(t, tc.wantMods, len(result.Changes))
+			assert.Equal(t, tc.wantAdds+tc.wantDels+tc.wantMods == 0, result.NoChanges())
+			assert.Equal(t, tc.wantAdds+tc.wantDels+tc.wantMods, result.TotalOutOfSync())
+		})
+	}
+}
+
+func TestGroupManifests(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name        string
+		olds        string
+		news        string
+		wantAdds    int
+		wantDeletes int
+		wantChanges int
+	}{
+		{
+			name:        "empty lists",
+			olds:        "",
+			news:        "",
+			wantAdds:    0,
+			wantDeletes: 0,
+			wantChanges: 0,
+		},
+		{
+			name: "only additions",
+			olds: "",
+			news: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-2`,
+			wantAdds:    2,
+			wantDeletes: 0,
+			wantChanges: 0,
+		},
+		{
+			name: "only deletions",
+			olds: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-2`,
+			news:        "",
+			wantAdds:    0,
+			wantDeletes: 2,
+			wantChanges: 0,
+		},
+		{
+			name: "only changes",
+			olds: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-2`,
+			news: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-2`,
+			wantAdds:    0,
+			wantDeletes: 0,
+			wantChanges: 2,
+		},
+		{
+			name: "mixed changes",
+			olds: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-2`,
+			news: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-3`,
+			wantAdds:    1,
+			wantDeletes: 1,
+			wantChanges: 1,
+		},
+		{
+			name: "different resource types with same name",
+			olds: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-1`,
+			news: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-1`,
+			wantAdds:    0,
+			wantDeletes: 0,
+			wantChanges: 2,
+		},
+		{
+			name: "different namespaces with same name",
+			olds: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-1
+  namespace: ns1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-1
+  namespace: ns2`,
+			news: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-1
+  namespace: ns1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-1
+  namespace: ns2`,
+			wantAdds:    0,
+			wantDeletes: 0,
+			wantChanges: 2,
+		},
+		{
+			name: "old list larger than new list",
+			olds: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-3`,
+			news: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-2`,
+			wantAdds:    0,
+			wantDeletes: 2,
+			wantChanges: 1,
+		},
+		{
+			name: "new list larger than old list",
+			olds: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-2`,
+			news: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-3`,
+			wantAdds:    2,
+			wantDeletes: 0,
+			wantChanges: 1,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			var olds, news []Manifest
+			var err error
+
+			if tc.olds != "" {
+				olds, err = ParseManifests(tc.olds)
+				require.NoError(t, err)
+			}
+
+			if tc.news != "" {
+				news, err = ParseManifests(tc.news)
+				require.NoError(t, err)
+			}
+
+			adds, deletes, newChanges, oldChanges := groupManifests(olds, news)
+			assert.Equal(t, tc.wantAdds, len(adds))
+			assert.Equal(t, tc.wantDeletes, len(deletes))
+			assert.Equal(t, tc.wantChanges, len(newChanges))
+			assert.Equal(t, len(newChanges), len(oldChanges))
+		})
+	}
+}
