@@ -16,7 +16,6 @@ package deployment
 
 import (
 	"context"
-	"time"
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
@@ -26,7 +25,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
-	"github.com/pipe-cd/pipecd/pkg/plugin/signalhandler"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -159,26 +157,5 @@ func (a *DeploymentService) loadManifests(ctx context.Context, deploy *model.Dep
 // It returns stage status after execution without error.
 // Error only be raised if the given stage is not supported.
 func (a *DeploymentService) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (response *deployment.ExecuteStageResponse, _ error) {
-	lp := a.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId())
-	defer func() {
-		// When termination signal received and the stage is not completed yet, we should not mark the log persister as completed.
-		// This can occur when the piped is shutting down while the stage is still running.
-		if !response.GetStatus().IsCompleted() && signalhandler.Terminated() {
-			return
-		}
-		lp.Complete(time.Minute)
-	}()
-
-	switch request.GetInput().GetStage().GetName() {
-	case StageK8sSync.String():
-		return &deployment.ExecuteStageResponse{
-			Status: a.executeK8sSyncStage(ctx, lp, request.GetInput()),
-		}, nil
-	case StageK8sRollback.String():
-		return &deployment.ExecuteStageResponse{
-			Status: a.executeK8sRollbackStage(ctx, lp, request.GetInput()),
-		}, nil
-	default:
-		return nil, status.Error(codes.InvalidArgument, "unimplemented or unsupported stage")
-	}
+	return nil, status.Error(codes.Unimplemented, "not implemented")
 }
