@@ -250,6 +250,8 @@ func determineStrategy(olds, news []provider.Manifest, workloadRefs []config.K8s
 	return model.SyncStrategy_QUICK_SYNC, "Quick sync by applying all manifests"
 }
 
+// determineStrategySDK decides the sync strategy and summary message based on the given manifests.
+// TODO: rewrite this function to determineStrategy after the current determineStrategy is removed.
 func determineStrategySDK(olds, news []provider.Manifest, workloadRefs []config.K8sResourceReference, logger *zap.Logger) (strategy sdk.SyncStrategy, summary string) {
 	mStrategy, summary := determineStrategy(olds, news, workloadRefs, logger)
 
