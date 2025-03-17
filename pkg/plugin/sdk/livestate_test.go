@@ -81,8 +81,10 @@ func TestLivestatePluginServer_GetLivestate(t *testing.T) {
 		{
 			name: "success",
 			request: &livestate.GetLivestateRequest{
-				ApplicationId: "app1",
-				DeployTargets: []string{"target1"},
+				PipedId:         "piped1",
+				ApplicationId:   "app1",
+				ApplicationName: "app1",
+				DeployTargets:   []string{"target1"},
 			},
 			result: &GetLivestateResponse{
 				LiveState: ApplicationLiveState{
@@ -103,8 +105,10 @@ func TestLivestatePluginServer_GetLivestate(t *testing.T) {
 		{
 			name: "failure when deploy target not found",
 			request: &livestate.GetLivestateRequest{
-				ApplicationId: "app1",
-				DeployTargets: []string{"target2"},
+				PipedId:         "piped1",
+				ApplicationId:   "app1",
+				ApplicationName: "app1",
+				DeployTargets:   []string{"target2"},
 			},
 			result:         &GetLivestateResponse{},
 			expectErr:      true,

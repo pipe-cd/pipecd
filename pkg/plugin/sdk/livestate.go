@@ -132,7 +132,9 @@ func (s *LivestatePluginServer[Config, DeployTargetConfig]) GetLivestate(ctx con
 
 	response, err := s.base.GetLivestate(ctx, &s.config, deployTargets, &GetLivestateInput{
 		Request: GetLivestateRequest{
+			PipedID:          request.PipedId,
 			ApplicationID:    request.ApplicationId,
+			ApplicationName:  request.ApplicationName,
 			DeploymentSource: newDeploymentSource(request.GetDeploySource()),
 		},
 		Client: client,
@@ -157,8 +159,12 @@ type GetLivestateInput struct {
 
 // GetLivestateRequest is the request for the GetLivestate method.
 type GetLivestateRequest struct {
+	// PipedID is the ID of the piped.
+	PipedID string
 	// ApplicationID is the ID of the application.
 	ApplicationID string
+	// ApplicationName is the name of the application.
+	ApplicationName string
 	// DeploymentSource is the source of the deployment.
 	DeploymentSource DeploymentSource
 }
