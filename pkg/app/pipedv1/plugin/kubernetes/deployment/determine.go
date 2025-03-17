@@ -48,7 +48,7 @@ func parseContainerImage(image string) (img containerImage) {
 
 // determineVersions decides artifact versions of an application.
 // It finds all container images that are being specified in the workload manifests then returns their names and tags.
-func determineVersions(manifests []provider.Manifest) []*model.ArtifactVersion {
+func determineVersions(manifests []provider.Manifest) []sdk.ArtifactVersion {
 	imageMap := map[string]struct{}{}
 	for _, m := range manifests {
 		for _, c := range provider.FindContainerImages(m) {
@@ -56,33 +56,14 @@ func determineVersions(manifests []provider.Manifest) []*model.ArtifactVersion {
 		}
 	}
 
-	versions := make([]*model.ArtifactVersion, 0, len(imageMap))
+	versions := make([]sdk.ArtifactVersion, 0, len(imageMap))
 	for i := range imageMap {
 		image := parseContainerImage(i)
-		versions = append(versions, &model.ArtifactVersion{
-			Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
-			Version: image.tag,
-			Name:    image.name,
-			Url:     i,
-		})
-	}
-
-	return versions
-}
-
-// determineVersionsSDK decides artifact versions of an application.
-// It finds all container images that are being specified in the workload manifests then returns their names and tags.
-// TODO: rewrite this function to determineVersions after the current determineVersions is removed.
-func determineVersionsSDK(manifests []provider.Manifest) []sdk.ArtifactVersion {
-	values := determineVersions(manifests)
-
-	versions := make([]sdk.ArtifactVersion, 0, len(values))
-	for _, v := range values {
 		versions = append(versions, sdk.ArtifactVersion{
 			Kind:    sdk.ArtifactKindContainerImage,
-			Version: v.Version,
-			Name:    v.Name,
-			URL:     v.Url,
+			Version: image.tag,
+			Name:    image.name,
+			URL:     i,
 		})
 	}
 

@@ -108,20 +108,7 @@ func (a *DeploymentService) DetermineStrategy(ctx context.Context, request *depl
 
 // DetermineVersions implements deployment.DeploymentServiceServer.
 func (a *DeploymentService) DetermineVersions(ctx context.Context, request *deployment.DetermineVersionsRequest) (*deployment.DetermineVersionsResponse, error) {
-	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](request.GetInput().GetTargetDeploymentSource().GetApplicationConfig())
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-
-	manifests, err := a.loadManifests(ctx, request.GetInput().GetDeployment(), cfg.Spec, request.GetInput().GetTargetDeploymentSource())
-
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	return &deployment.DetermineVersionsResponse{
-		Versions: determineVersions(manifests),
-	}, nil
+	return &deployment.DetermineVersionsResponse{}, nil
 }
 
 // BuildPipelineSyncStages implements deployment.DeploymentServiceServer.

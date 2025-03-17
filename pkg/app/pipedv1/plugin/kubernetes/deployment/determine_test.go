@@ -27,6 +27,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
 func mustUnmarshalYAML[T any](t *testing.T, data []byte) T {
@@ -99,13 +100,13 @@ func TestParseContainerImage(t *testing.T) {
 		})
 	}
 }
-func TestDetermineVersions(t *testing.T) {
+func Test_determineVersions(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		name      string
 		manifests []string
-		want      []*model.ArtifactVersion
+		want      []sdk.ArtifactVersion
 	}{
 		{
 			name: "single manifest with one container",
@@ -123,12 +124,12 @@ spec:
         image: nginx:1.19.3
 `,
 			},
-			want: []*model.ArtifactVersion{
+			want: []sdk.ArtifactVersion{
 				{
-					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Kind:    sdk.ArtifactKindContainerImage,
 					Version: "1.19.3",
 					Name:    "nginx",
-					Url:     "nginx:1.19.3",
+					URL:     "nginx:1.19.3",
 				},
 			},
 		},
@@ -160,18 +161,18 @@ spec:
         image: redis:6.0.9
 `,
 			},
-			want: []*model.ArtifactVersion{
+			want: []sdk.ArtifactVersion{
 				{
-					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Kind:    sdk.ArtifactKindContainerImage,
 					Version: "1.19.3",
 					Name:    "nginx",
-					Url:     "nginx:1.19.3",
+					URL:     "nginx:1.19.3",
 				},
 				{
-					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Kind:    sdk.ArtifactKindContainerImage,
 					Version: "6.0.9",
 					Name:    "redis",
-					Url:     "redis:6.0.9",
+					URL:     "redis:6.0.9",
 				},
 			},
 		},
@@ -193,12 +194,12 @@ spec:
           image: nginx:1.19.3
 `,
 			},
-			want: []*model.ArtifactVersion{
+			want: []sdk.ArtifactVersion{
 				{
-					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Kind:    sdk.ArtifactKindContainerImage,
 					Version: "1.19.3",
 					Name:    "nginx",
-					Url:     "nginx:1.19.3",
+					URL:     "nginx:1.19.3",
 				},
 			},
 		},
@@ -216,7 +217,7 @@ spec:
       containers: []
 `,
 			},
-			want: []*model.ArtifactVersion{},
+			want: []sdk.ArtifactVersion{},
 		},
 		{
 			name: "manifest with missing image field",
@@ -233,7 +234,7 @@ spec:
         - name: nginx
 `,
 			},
-			want: []*model.ArtifactVersion{},
+			want: []sdk.ArtifactVersion{},
 		},
 		{
 			name: "manifest with no containers field",
@@ -248,7 +249,7 @@ spec:
     spec: {}
 `,
 			},
-			want: []*model.ArtifactVersion{},
+			want: []sdk.ArtifactVersion{},
 		},
 		{
 			name: "manifest with invalid containers field -- skipped",

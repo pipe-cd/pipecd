@@ -358,7 +358,7 @@ func (p *Plugin) DetermineVersions(ctx context.Context, _ *sdk.ConfigNone, input
 	}
 
 	return &sdk.DetermineVersionsResponse{
-		Versions: determineVersionsSDK(manifests),
+		Versions: determineVersions(manifests),
 	}, nil
 }
 
