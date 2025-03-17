@@ -340,7 +340,7 @@ func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.Execute
 	return sdk.StageStatusSuccess
 }
 
-func (p *Plugin) DetermineVersions(ctx context.Context, _ *sdk.ConfigNone, _ *sdk.Client, input *sdk.DetermineVersionsInput) (*sdk.DetermineVersionsResponse, error) {
+func (p *Plugin) DetermineVersions(ctx context.Context, _ *sdk.ConfigNone, input *sdk.DetermineVersionsInput) (*sdk.DetermineVersionsResponse, error) {
 	logger := input.Logger
 
 	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](input.Request.DeploymentSource.ApplicationConfig)
@@ -361,7 +361,7 @@ func (p *Plugin) DetermineVersions(ctx context.Context, _ *sdk.ConfigNone, _ *sd
 	}, nil
 }
 
-func (p *Plugin) DetermineStrategy(ctx context.Context, _ *sdk.ConfigNone, _ *sdk.Client, input *sdk.DetermineStrategyInput) (*sdk.DetermineStrategyResponse, error) {
+func (p *Plugin) DetermineStrategy(ctx context.Context, _ *sdk.ConfigNone, input *sdk.DetermineStrategyInput) (*sdk.DetermineStrategyResponse, error) {
 	logger := input.Logger
 	loader := provider.NewLoader(toolregistry.NewRegistry(input.Client.ToolRegistry()))
 

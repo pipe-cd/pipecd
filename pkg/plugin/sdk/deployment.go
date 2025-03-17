@@ -63,9 +63,9 @@ type DeploymentPlugin[Config, DeployTargetConfig any] interface {
 	StagePlugin[Config, DeployTargetConfig]
 
 	// DetermineVersions determines the versions of the resources that will be deployed.
-	DetermineVersions(context.Context, *Config, *Client, *DetermineVersionsInput) (*DetermineVersionsResponse, error)
+	DetermineVersions(context.Context, *Config, *DetermineVersionsInput) (*DetermineVersionsResponse, error)
 	// DetermineStrategy determines the strategy to deploy the resources.
-	DetermineStrategy(context.Context, *Config, *Client, *DetermineStrategyInput) (*DetermineStrategyResponse, error)
+	DetermineStrategy(context.Context, *Config, *DetermineStrategyInput) (*DetermineStrategyResponse, error)
 	// BuildQuickSyncStages builds the stages that will be executed during the quick sync process.
 	BuildQuickSyncStages(context.Context, *Config, *BuildQuickSyncStagesInput) (*BuildQuickSyncStagesResponse, error)
 }
@@ -195,7 +195,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineVer
 		Logger:  s.logger,
 	}
 
-	versions, err := s.base.DetermineVersions(ctx, &s.config, client, input)
+	versions, err := s.base.DetermineVersions(ctx, &s.config, input)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to determine versions: %v", err)
 	}
@@ -218,7 +218,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineStr
 		Logger:  s.logger,
 	}
 
-	response, err := s.base.DetermineStrategy(ctx, &s.config, client, input)
+	response, err := s.base.DetermineStrategy(ctx, &s.config, input)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to determine strategy: %v", err)
 	}
