@@ -396,6 +396,6 @@ func (p *Plugin) DetermineStrategy(ctx context.Context, _ *sdk.ConfigNone, input
 
 func (p *Plugin) BuildQuickSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildQuickSyncStagesInput) (*sdk.BuildQuickSyncStagesResponse, error) {
 	return &sdk.BuildQuickSyncStagesResponse{
-		Stages: BuildQuickSyncPipeline(input.Request.Rollback),
+		Stages: buildQuickSyncPipeline(input.Request.Rollback),
 	}, nil
 }

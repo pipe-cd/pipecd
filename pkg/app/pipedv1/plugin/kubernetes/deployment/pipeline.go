@@ -16,7 +16,6 @@ package deployment
 
 import (
 	"slices"
-	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
@@ -91,41 +90,7 @@ func GetPredefinedStage(id string) (*model.PipelineStage, bool) {
 	return stage, ok
 }
 
-func buildQuickSyncPipeline(autoRollback bool, now time.Time) []*model.PipelineStage {
-	out := make([]*model.PipelineStage, 0, 2)
-
-	stage, _ := GetPredefinedStage(PredefinedStageK8sSync)
-	// we copy the predefined stage to avoid modifying the original one.
-	out = append(out, &model.PipelineStage{
-		Id:        stage.GetId(),
-		Name:      stage.GetName(),
-		Desc:      stage.GetDesc(),
-		Rollback:  stage.GetRollback(),
-		Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
-		Metadata:  nil,
-		CreatedAt: now.Unix(),
-		UpdatedAt: now.Unix(),
-	},
-	)
-
-	if autoRollback {
-		s, _ := GetPredefinedStage(PredefinedStageRollback)
-		// we copy the predefined stage to avoid modifying the original one.
-		out = append(out, &model.PipelineStage{
-			Id:        s.GetId(),
-			Name:      s.GetName(),
-			Desc:      s.GetDesc(),
-			Rollback:  s.GetRollback(),
-			Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
-			CreatedAt: now.Unix(),
-			UpdatedAt: now.Unix(),
-		})
-	}
-
-	return out
-}
-
-func BuildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
+func buildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
 	out := make([]sdk.QuickSyncStage, 0, 2)
 
 	stage, _ := GetPredefinedStage(PredefinedStageK8sSync)
