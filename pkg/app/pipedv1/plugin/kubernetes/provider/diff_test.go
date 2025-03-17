@@ -15,6 +15,7 @@
 package provider
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -22,6 +23,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/plugin/diff"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 func TestDiff(t *testing.T) {
@@ -609,6 +611,184 @@ metadata:
 			assert.Equal(t, tc.wantDeletes, len(deletes))
 			assert.Equal(t, tc.wantChanges, len(newChanges))
 			assert.Equal(t, len(newChanges), len(oldChanges))
+		})
+	}
+}
+
+func TestDiffListResult_Render(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name     string
+		result   *DiffListResult
+		opt      DiffRenderOptions
+		expected string
+	}{
+		{
+			name: "empty result",
+			result: &DiffListResult{
+				Adds:    []Manifest{},
+				Deletes: []Manifest{},
+				Changes: []DiffListChange{},
+			},
+			opt:      DiffRenderOptions{},
+			expected: "",
+		},
+		{
+			name: "only deletes",
+			result: &DiffListResult{
+				Deletes: []Manifest{
+					{
+						body: &unstructured.Unstructured{
+							Object: map[string]interface{}{
+								"apiVersion": "apps/v1",
+								"kind":       "Deployment",
+								"metadata": map[string]interface{}{
+									"name":      "test-deployment",
+									"namespace": "default",
+								},
+							},
+						},
+					},
+				},
+			},
+			opt:      DiffRenderOptions{},
+			expected: `- 1. name="test-deployment", kind="Deployment", namespace="default", apiGroup="apps"` + "\n\n",
+		},
+		{
+			name: "only adds",
+			result: &DiffListResult{
+				Adds: []Manifest{
+					{
+						body: &unstructured.Unstructured{
+							Object: map[string]interface{}{
+								"apiVersion": "apps/v1",
+								"kind":       "Deployment",
+								"metadata": map[string]interface{}{
+									"name":      "test-deployment",
+									"namespace": "default",
+								},
+							},
+						},
+					},
+				},
+			},
+			opt:      DiffRenderOptions{},
+			expected: `+ 1. name="test-deployment", kind="Deployment", namespace="default", apiGroup="apps"` + "\n\n",
+		},
+		{
+			name: "with changes",
+			result: func(t *testing.T) *DiffListResult {
+				old := Manifest{
+					body: &unstructured.Unstructured{
+						Object: map[string]interface{}{
+							"apiVersion": "v1",
+							"kind":       "Secret",
+							"metadata": map[string]interface{}{
+								"name":      "test-secret",
+								"namespace": "default",
+							},
+							"data": map[string]interface{}{
+								"password": "old-password",
+							},
+						},
+					},
+				}
+				new := Manifest{
+					body: &unstructured.Unstructured{
+						Object: map[string]interface{}{
+							"apiVersion": "v1",
+							"kind":       "Secret",
+							"metadata": map[string]interface{}{
+								"name":      "test-secret",
+								"namespace": "default",
+							},
+							"data": map[string]interface{}{
+								"password": "new-password",
+							},
+						},
+					},
+				}
+				diffResult, err := Diff(old, new, zap.NewNop(), diff.WithEquateEmpty(), diff.WithIgnoreAddingMapKeys())
+				if err != nil {
+					t.Fatal(err)
+				}
+				return &DiffListResult{
+					Changes: []DiffListChange{
+						{
+							Old:  old,
+							New:  new,
+							Diff: diffResult,
+						},
+					},
+				}
+			}(t),
+			opt: DiffRenderOptions{
+				MaskSecret: true,
+			},
+			expected: `# 1. name="test-secret", kind="Secret", namespace="default", apiGroup=""` + "\n\n  #data\n- data: *****\n+ data: *****\n\n\n",
+		},
+		{
+			name: "with max changed manifests",
+			result: func(t *testing.T) *DiffListResult {
+				changes := make([]DiffListChange, 0, 2)
+				for i := 1; i <= 2; i++ {
+					old := Manifest{
+						body: &unstructured.Unstructured{
+							Object: map[string]interface{}{
+								"apiVersion": "v1",
+								"kind":       "ConfigMap",
+								"metadata": map[string]interface{}{
+									"name":      fmt.Sprintf("test-cm-%d", i),
+									"namespace": "default",
+								},
+								"data": map[string]interface{}{
+									"key": "value1",
+								},
+							},
+						},
+					}
+					new := Manifest{
+						body: &unstructured.Unstructured{
+							Object: map[string]interface{}{
+								"apiVersion": "v1",
+								"kind":       "ConfigMap",
+								"metadata": map[string]interface{}{
+									"name":      fmt.Sprintf("test-cm-%d", i),
+									"namespace": "default",
+								},
+								"data": map[string]interface{}{
+									"key": "value2",
+								},
+							},
+						},
+					}
+					diffResult, err := Diff(old, new, zap.NewNop(), diff.WithEquateEmpty(), diff.WithIgnoreAddingMapKeys())
+					if err != nil {
+						t.Fatal(err)
+					}
+					changes = append(changes, DiffListChange{
+						Old:  old,
+						New:  new,
+						Diff: diffResult,
+					})
+				}
+				return &DiffListResult{
+					Changes: changes,
+				}
+			}(t),
+			opt: DiffRenderOptions{
+				MaxChangedManifests: 1,
+				MaskConfigMap:       true,
+			},
+			expected: `# 1. name="test-cm-1", kind="ConfigMap", namespace="default", apiGroup=""` + "\n\n  data:\n    #data.key\n-   key: *****\n+   key: *****\n\n\n... (omitted 1 other changed manifests)\n",
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := tc.result.Render(tc.opt)
+			assert.Equal(t, tc.expected, got)
 		})
 	}
 }
