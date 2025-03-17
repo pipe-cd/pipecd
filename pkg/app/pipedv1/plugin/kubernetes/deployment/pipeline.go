@@ -219,11 +219,9 @@ func buildPipelineStagesWithSDK(stages []sdk.StageConfig, autoRollback bool) []s
 		minIndex := slices.MinFunc(stages, func(a, b sdk.StageConfig) int {
 			return a.Index - b.Index
 		}).Index
-
-		s, _ := GetPredefinedStage(PredefinedStageRollback)
 		// we copy the predefined stage to avoid modifying the original one.
 		out = append(out, sdk.PipelineStage{
-			Name:               s.GetName(),
+			Name:               StageK8sRollback.String(),
 			Index:              minIndex,
 			Rollback:           true,
 			Metadata:           make(map[string]string, 0),
