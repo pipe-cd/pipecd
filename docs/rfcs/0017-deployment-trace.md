@@ -7,7 +7,7 @@ This is the design for PipeCD Deployment Trace feature
 
 # Motivation
 
-To fulfill the gap between CI & CD. The PipeCD Deployment Trace feature aims to give developer, who works with application code modification, a way to quick access and manage their deployments, which be triggered by the change they made.
+To fulfill the gap between CI & CD. The PipeCD Deployment Trace feature aims to give developers who work with application code modification, a way to quickly access and manage their deployments, which are triggered by the change they made.
 
 This gap is naturally born due to the disconnect between CI & CD, application/source repo & manifest repo.
 
