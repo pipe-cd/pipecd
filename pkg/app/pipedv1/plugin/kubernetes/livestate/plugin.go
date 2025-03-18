@@ -84,12 +84,8 @@ func (p Plugin) GetLivestate(ctx context.Context, _ sdk.ConfigNone, deployTarget
 	}
 
 	liveManifests := make([]provider.Manifest, 0, len(namespacedLiveResources)+len(clusterScopedLiveResources))
-	for _, m := range namespacedLiveResources {
-		liveManifests = append(liveManifests, m)
-	}
-	for _, m := range clusterScopedLiveResources {
-		liveManifests = append(liveManifests, m)
-	}
+	liveManifests = append(liveManifests, namespacedLiveResources...)
+	liveManifests = append(liveManifests, clusterScopedLiveResources...)
 
 	// Calculate SyncState by comparing live manifests with desired manifests
 	// TODO: Implement drift detection ignore configs

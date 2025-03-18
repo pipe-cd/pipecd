@@ -17,12 +17,13 @@ package livestate
 import (
 	"testing"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
-	"github.com/pipe-cd/pipecd/pkg/plugin/diff"
-	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
+	"github.com/pipe-cd/pipecd/pkg/plugin/diff"
+	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
 func makeTestManifest(t *testing.T, yaml string) provider.Manifest {
