@@ -56,12 +56,7 @@ func (p *Plugin) Version() string {
 
 // FetchDefinedStages returns the defined stages for this plugin.
 func (p *Plugin) FetchDefinedStages() []string {
-	stages := make([]string, 0, len(AllStages))
-	for _, s := range AllStages {
-		stages = append(stages, string(s))
-	}
-
-	return stages
+	return allStages
 }
 
 // BuildPipelineSyncStages returns the stages for the pipeline sync strategy.
@@ -74,11 +69,11 @@ func (p *Plugin) BuildPipelineSyncStages(ctx context.Context, _ *sdk.ConfigNone,
 // ExecuteStage executes the stage.
 func (p *Plugin) ExecuteStage(ctx context.Context, _ *sdk.ConfigNone, dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.ExecuteStageInput) (*sdk.ExecuteStageResponse, error) {
 	switch input.Request.StageName {
-	case StageK8sSync.String():
+	case StageK8sSync:
 		return &sdk.ExecuteStageResponse{
 			Status: p.executeK8sSyncStage(ctx, input, dts),
 		}, nil
-	case StageK8sRollback.String():
+	case StageK8sRollback:
 		return &sdk.ExecuteStageResponse{
 			Status: p.executeK8sRollbackStage(ctx, input, dts),
 		}, nil

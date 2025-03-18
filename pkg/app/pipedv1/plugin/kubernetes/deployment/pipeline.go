@@ -17,39 +17,36 @@ package deployment
 import (
 	"slices"
 
-	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
-
-type Stage string
 
 const (
 	// StageK8sSync represents the state where
 	// all resources should be synced with the Git state.
-	StageK8sSync Stage = "K8S_SYNC"
+	StageK8sSync = "K8S_SYNC"
 	// StageK8sPrimaryRollout represents the state where
 	// the PRIMARY variant resources has been updated to the new version/configuration.
-	StageK8sPrimaryRollout Stage = "K8S_PRIMARY_ROLLOUT"
+	StageK8sPrimaryRollout = "K8S_PRIMARY_ROLLOUT"
 	// StageK8sCanaryRollout represents the state where
 	// the CANARY variant resources has been rolled out with the new version/configuration.
-	StageK8sCanaryRollout Stage = "K8S_CANARY_ROLLOUT"
+	StageK8sCanaryRollout = "K8S_CANARY_ROLLOUT"
 	// StageK8sCanaryClean represents the state where
 	// the CANARY variant resources has been cleaned.
-	StageK8sCanaryClean Stage = "K8S_CANARY_CLEAN"
+	StageK8sCanaryClean = "K8S_CANARY_CLEAN"
 	// StageK8sBaselineRollout represents the state where
 	// the BASELINE variant resources has been rolled out.
-	StageK8sBaselineRollout Stage = "K8S_BASELINE_ROLLOUT"
+	StageK8sBaselineRollout = "K8S_BASELINE_ROLLOUT"
 	// StageK8sBaselineClean represents the state where
 	// the BASELINE variant resources has been cleaned.
-	StageK8sBaselineClean Stage = "K8S_BASELINE_CLEAN"
+	StageK8sBaselineClean = "K8S_BASELINE_CLEAN"
 	// StageK8sTrafficRouting represents the state where the traffic to application
 	// should be splitted as the specified percentage to PRIMARY, CANARY, BASELINE variants.
-	StageK8sTrafficRouting Stage = "K8S_TRAFFIC_ROUTING"
+	StageK8sTrafficRouting = "K8S_TRAFFIC_ROUTING"
 	// StageK8sRollback represents the state where all deployed resources should be rollbacked.
-	StageK8sRollback Stage = "K8S_ROLLBACK"
+	StageK8sRollback = "K8S_ROLLBACK"
 )
 
-var AllStages = []Stage{
+var allStages = []string{
 	StageK8sSync,
 	StageK8sPrimaryRollout,
 	StageK8sCanaryRollout,
@@ -60,43 +57,19 @@ var AllStages = []Stage{
 	StageK8sRollback,
 }
 
-func (s Stage) String() string {
-	return string(s)
-}
-
 const (
-	PredefinedStageK8sSync  = "K8sSync"
-	PredefinedStageRollback = "K8sRollback"
+	// StageDescriptionK8sSync represents the description of the K8sSync stage.
+	StageDescriptionK8sSync = "Sync by applying all manifests"
+	// StageDescriptionK8sRollback represents the description of the K8sRollback stage.
+	StageDescriptionK8sRollback = "Rollback the deployment"
 )
-
-var predefinedStages = map[string]*model.PipelineStage{
-	PredefinedStageK8sSync: {
-		Id:       PredefinedStageK8sSync,
-		Name:     string(StageK8sSync),
-		Desc:     "Sync by applying all manifests",
-		Rollback: false,
-	},
-	PredefinedStageRollback: {
-		Id:       PredefinedStageRollback,
-		Name:     string(StageK8sRollback),
-		Desc:     "Rollback the deployment",
-		Rollback: true,
-	},
-}
-
-// GetPredefinedStage finds and returns the predefined stage for the given id.
-func GetPredefinedStage(id string) (*model.PipelineStage, bool) {
-	stage, ok := predefinedStages[id]
-	return stage, ok
-}
 
 func buildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
 	out := make([]sdk.QuickSyncStage, 0, 2)
 
-	stage, _ := GetPredefinedStage(PredefinedStageK8sSync)
 	out = append(out, sdk.QuickSyncStage{
-		Name:               stage.GetName(),
-		Description:        stage.GetDesc(),
+		Name:               StageK8sSync,
+		Description:        StageDescriptionK8sSync,
 		Rollback:           false,
 		Metadata:           make(map[string]string, 0),
 		AvailableOperation: sdk.ManualOperationNone,
@@ -104,10 +77,9 @@ func buildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
 	)
 
 	if autoRollback {
-		s, _ := GetPredefinedStage(PredefinedStageRollback)
 		out = append(out, sdk.QuickSyncStage{
-			Name:               s.GetName(),
-			Description:        s.GetDesc(),
+			Name:               StageK8sRollback,
+			Description:        StageDescriptionK8sRollback,
 			Rollback:           true,
 			Metadata:           make(map[string]string, 0),
 			AvailableOperation: sdk.ManualOperationNone,
@@ -136,9 +108,9 @@ func buildPipelineStages(stages []sdk.StageConfig, autoRollback bool) []sdk.Pipe
 		minIndex := slices.MinFunc(stages, func(a, b sdk.StageConfig) int {
 			return a.Index - b.Index
 		}).Index
-		// we copy the predefined stage to avoid modifying the original one.
+
 		out = append(out, sdk.PipelineStage{
-			Name:               StageK8sRollback.String(),
+			Name:               StageK8sRollback,
 			Index:              minIndex,
 			Rollback:           true,
 			Metadata:           make(map[string]string, 0),
