@@ -66,6 +66,8 @@ func makeTestDiffChange(t *testing.T, oldYAML, newYAML string) provider.DiffList
 }
 
 func TestCalculateSyncState(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name       string
 		diffResult *provider.DiffListResult
@@ -367,6 +369,8 @@ data:
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := calculateSyncState(tt.diffResult, tt.commitHash)
 			assert.Equal(t, tt.want, got)
 		})
