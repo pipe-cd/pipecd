@@ -27,7 +27,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
-// TODO: implement pruing feature
 func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStageInput, dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
 	lp := input.Client.LogPersister()
 	lp.Info("Start syncing the deployment")

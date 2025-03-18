@@ -44,14 +44,17 @@ type toolRegistry interface {
 
 var _ sdk.DeploymentPlugin[sdk.ConfigNone, kubeconfig.KubernetesDeployTargetConfig] = (*Plugin)(nil)
 
+// Name returns the name of this plugin.
 func (p *Plugin) Name() string {
 	return "kubernetes"
 }
 
+// Version returns the version of this plugin.
 func (p *Plugin) Version() string {
 	return "0.0.1" // TODO
 }
 
+// FetchDefinedStages returns the defined stages for this plugin.
 func (p *Plugin) FetchDefinedStages() []string {
 	stages := make([]string, 0, len(AllStages))
 	for _, s := range AllStages {
@@ -61,13 +64,14 @@ func (p *Plugin) FetchDefinedStages() []string {
 	return stages
 }
 
+// BuildPipelineSyncStages returns the stages for the pipeline sync strategy.
 func (p *Plugin) BuildPipelineSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
 	return &sdk.BuildPipelineSyncStagesResponse{
 		Stages: buildPipelineStages(input.Request.Stages, input.Request.Rollback),
 	}, nil
 }
 
-// FIXME
+// ExecuteStage executes the stage.
 func (p *Plugin) ExecuteStage(ctx context.Context, _ *sdk.ConfigNone, dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.ExecuteStageInput) (*sdk.ExecuteStageResponse, error) {
 	switch input.Request.StageName {
 	case StageK8sSync.String():
@@ -105,6 +109,7 @@ func (p *Plugin) loadManifests(ctx context.Context, deploy *sdk.Deployment, spec
 	return manifests, nil
 }
 
+// DetermineVersions determines the versions of the application.
 func (p *Plugin) DetermineVersions(ctx context.Context, _ *sdk.ConfigNone, input *sdk.DetermineVersionsInput) (*sdk.DetermineVersionsResponse, error) {
 	logger := input.Logger
 
@@ -126,6 +131,7 @@ func (p *Plugin) DetermineVersions(ctx context.Context, _ *sdk.ConfigNone, input
 	}, nil
 }
 
+// DetermineStrategy determines the strategy for the deployment.
 func (p *Plugin) DetermineStrategy(ctx context.Context, _ *sdk.ConfigNone, input *sdk.DetermineStrategyInput) (*sdk.DetermineStrategyResponse, error) {
 	logger := input.Logger
 	loader := provider.NewLoader(toolregistry.NewRegistry(input.Client.ToolRegistry()))
@@ -158,6 +164,7 @@ func (p *Plugin) DetermineStrategy(ctx context.Context, _ *sdk.ConfigNone, input
 	}, nil
 }
 
+// BuildQuickSyncStages returns the stages for the quick sync strategy.
 func (p *Plugin) BuildQuickSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildQuickSyncStagesInput) (*sdk.BuildQuickSyncStagesResponse, error) {
 	return &sdk.BuildQuickSyncStagesResponse{
 		Stages: buildQuickSyncPipeline(input.Request.Rollback),
