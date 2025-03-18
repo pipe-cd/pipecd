@@ -20,7 +20,7 @@ This gap is naturally born due to the disconnect between CI & CD, application/so
 The trace page will be added to the PipeCD web console. It's a list of deployment trace item, which each item contains:
 
 - Deployment Trace Info: Information of commit that trigger the current deployments
-- List of deployments which triggered by the commit
+- List of deployments triggered by the commit
 
 ## Architecture
 
