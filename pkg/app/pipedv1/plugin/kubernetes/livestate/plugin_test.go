@@ -323,7 +323,7 @@ spec:
 			},
 		},
 		{
-			name: "some resources are out of sync",
+			name: "config map data is masked",
 			diffResult: &provider.DiffListResult{
 				Changes: []provider.DiffListChange{
 					makeTestDiffChange(t, `
