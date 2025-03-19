@@ -241,6 +241,9 @@ func (r *reporter) flush(ctx context.Context, app *model.Application, repo git.R
 		ApplicationLiveState: &model.ApplicationLiveState{
 			Resources: resourceStates,
 		},
+		Version: &model.ApplicationLiveStateVersion{
+			Timestamp: time.Now().Unix(),
+		},
 	}
 	snapshot.DetermineApplicationHealthStatus()
 
