@@ -18,6 +18,7 @@ import (
 	"cmp"
 	"context"
 	"fmt"
+	"strings"
 
 	"go.uber.org/zap"
 
@@ -25,6 +26,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
+	"github.com/pipe-cd/pipecd/pkg/plugin/diff"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
@@ -75,13 +77,76 @@ func (p Plugin) GetLivestate(ctx context.Context, _ sdk.ConfigNone, deployTarget
 		resourceStates = append(resourceStates, m.ToResourceState(deployTarget.Name))
 	}
 
+	manifests, err := p.loadManifests(ctx, input, cfg.Spec, provider.NewLoader(toolRegistry))
+	if err != nil {
+		input.Logger.Error("Failed to load manifests", zap.Error(err))
+		return nil, err
+	}
+
+	liveManifests := make([]provider.Manifest, 0, len(namespacedLiveResources)+len(clusterScopedLiveResources))
+	liveManifests = append(liveManifests, namespacedLiveResources...)
+	liveManifests = append(liveManifests, clusterScopedLiveResources...)
+
+	// Calculate SyncState by comparing live manifests with desired manifests
+	// TODO: Implement drift detection ignore configs
+	diffResult, err := provider.DiffList(liveManifests, manifests, input.Logger,
+		diff.WithEquateEmpty(),
+		diff.WithIgnoreAddingMapKeys(),
+		diff.WithCompareNumberAndNumericString(),
+	)
+	if err != nil {
+		input.Logger.Error("Failed to calculate diff", zap.Error(err))
+		return nil, err
+	}
+
+	syncState := calculateSyncState(diffResult, input.Request.DeploymentSource.CommitHash)
+
 	return &sdk.GetLivestateResponse{
 		LiveState: sdk.ApplicationLiveState{
 			Resources:    resourceStates,
 			HealthStatus: sdk.ApplicationHealthStateUnknown, // TODO: Implement health status calculation
 		},
-		SyncState: sdk.ApplicationSyncState{}, // TODO: Implement sync state calculation
+		SyncState: syncState,
 	}, nil
+}
+
+func calculateSyncState(diffResult *provider.DiffListResult, commit string) sdk.ApplicationSyncState {
+	if diffResult.NoChanges() {
+		return sdk.ApplicationSyncState{
+			Status:      sdk.ApplicationSyncStateSynced,
+			ShortReason: "",
+			Reason:      "",
+		}
+	}
+
+	total := len(diffResult.Adds) + len(diffResult.Deletes) + len(diffResult.Changes)
+	shortReason := fmt.Sprintf("There are %d manifests not synced (%d adds, %d deletes, %d changes)",
+		total,
+		len(diffResult.Adds),
+		len(diffResult.Deletes),
+		len(diffResult.Changes),
+	)
+
+	if len(commit) > 7 {
+		commit = commit[:7]
+	}
+
+	var b strings.Builder
+	b.WriteString(fmt.Sprintf("Diff between the defined state in Git at commit %s and actual state in cluster:\n\n", commit))
+	b.WriteString("--- Actual   (LiveState)\n+++ Expected (Git)\n\n")
+
+	details := diffResult.Render(provider.DiffRenderOptions{
+		MaskSecret:          true,
+		MaskConfigMap:       true,
+		MaxChangedManifests: 3,
+	})
+	b.WriteString(details)
+
+	return sdk.ApplicationSyncState{
+		Status:      sdk.ApplicationSyncStateOutOfSync,
+		ShortReason: shortReason,
+		Reason:      b.String(),
+	}
 }
 
 // Name implements sdk.LivestatePlugin.
@@ -92,4 +157,32 @@ func (p Plugin) Name() string {
 // Version implements sdk.LivestatePlugin.
 func (p Plugin) Version() string {
 	return "0.0.1" // TODO: make this constant to share with deployment plugin
+}
+
+type loader interface {
+	// LoadManifests renders and loads all manifests for application.
+	LoadManifests(ctx context.Context, input provider.LoaderInput) ([]provider.Manifest, error)
+}
+
+// TODO: share this implementation with the deployment plugin
+func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput, spec *kubeconfig.KubernetesApplicationSpec, loader loader) ([]provider.Manifest, error) {
+	manifests, err := loader.LoadManifests(ctx, provider.LoaderInput{
+		PipedID:          input.Request.PipedID,
+		AppID:            input.Request.ApplicationID,
+		CommitHash:       input.Request.DeploymentSource.CommitHash,
+		AppName:          input.Request.ApplicationName,
+		AppDir:           input.Request.DeploymentSource.ApplicationDirectory,
+		ConfigFilename:   input.Request.DeploymentSource.ApplicationConfigFilename,
+		Manifests:        spec.Input.Manifests,
+		Namespace:        spec.Input.Namespace,
+		TemplatingMethod: provider.TemplatingMethodNone, // TODO: Implement detection of templating method or add it to the config spec.
+
+		// TODO: Define other fields for LoaderInput
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return manifests, nil
 }
