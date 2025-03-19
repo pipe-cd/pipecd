@@ -72,8 +72,11 @@ func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.Execute
 		}
 	}
 
-	// Add variant annotations to all manifests.
+	// Add variant labels and annotations to all manifests.
 	for i := range manifests {
+		manifests[i].AddLabels(map[string]string{
+			variantLabel: primaryVariant,
+		})
 		manifests[i].AddAnnotations(map[string]string{
 			variantLabel: primaryVariant,
 		})
