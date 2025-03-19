@@ -365,6 +365,166 @@ data:
 `,
 			},
 		},
+		{
+			name: "secret data is masked",
+			diffResult: &provider.DiffListResult{
+				Changes: []provider.DiffListChange{
+					makeTestDiffChange(t, `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: test-secret
+  namespace: default
+data:
+  username: YWRtaW4=
+  password: c2VjcmV0
+`, `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: test-secret
+  namespace: default
+data:
+  username: dXNlcg==
+  password: bmV3c2VjcmV0
+`),
+				},
+			},
+			commitHash: "1234567",
+			want: sdk.ApplicationSyncState{
+				Status:      sdk.ApplicationSyncStateOutOfSync,
+				ShortReason: "There are 1 manifests not synced (0 adds, 0 deletes, 1 changes)",
+				Reason: `Diff between the defined state in Git at commit 1234567 and actual state in cluster:
+
+--- Actual   (LiveState)
++++ Expected (Git)
+
+# 1. name="test-secret", kind="Secret", namespace="default", apiGroup=""
+
+  data:
+    #data.password
+-   password: *****
++   password: *****
+
+    #data.username
+-   username: *****
++   username: *****
+
+
+`,
+			},
+		},
+		{
+			name: "maximum three changes are shown",
+			diffResult: &provider.DiffListResult{
+				Changes: []provider.DiffListChange{
+					makeTestDiffChange(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config1
+  namespace: default
+data:
+  key: value1
+`, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config1
+  namespace: default
+data:
+  key: new-value1
+`),
+					makeTestDiffChange(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config2
+  namespace: default
+data:
+  key: value2
+`, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config2
+  namespace: default
+data:
+  key: new-value2
+`),
+					makeTestDiffChange(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config3
+  namespace: default
+data:
+  key: value3
+`, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config3
+  namespace: default
+data:
+  key: new-value3
+`),
+					makeTestDiffChange(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config4
+  namespace: default
+data:
+  key: value4
+`, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config4
+  namespace: default
+data:
+  key: new-value4
+`),
+				},
+			},
+			commitHash: "1234567",
+			want: sdk.ApplicationSyncState{
+				Status:      sdk.ApplicationSyncStateOutOfSync,
+				ShortReason: "There are 4 manifests not synced (0 adds, 0 deletes, 4 changes)",
+				Reason: `Diff between the defined state in Git at commit 1234567 and actual state in cluster:
+
+--- Actual   (LiveState)
++++ Expected (Git)
+
+# 1. name="config1", kind="ConfigMap", namespace="default", apiGroup=""
+
+  data:
+    #data.key
+-   key: *****
++   key: *****
+
+
+# 2. name="config2", kind="ConfigMap", namespace="default", apiGroup=""
+
+  data:
+    #data.key
+-   key: *****
++   key: *****
+
+
+# 3. name="config3", kind="ConfigMap", namespace="default", apiGroup=""
+
+  data:
+    #data.key
+-   key: *****
++   key: *****
+
+
+... (omitted 1 other changed manifests)
+`,
+			},
+		},
 	}
 
 	for _, tt := range tests {
