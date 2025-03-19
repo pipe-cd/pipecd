@@ -89,7 +89,7 @@ func TestCalculateSyncState(t *testing.T) {
 			},
 		},
 		{
-			name: "deployment spec changes",
+			name: "changed one resource",
 			diffResult: &provider.DiffListResult{
 				Changes: []provider.DiffListChange{
 					makeTestDiffChange(t, `
@@ -162,7 +162,7 @@ spec:
 			},
 		},
 		{
-			name: "service and ingress changes",
+			name: "changed two resources",
 			diffResult: &provider.DiffListResult{
 				Changes: []provider.DiffListChange{
 					makeTestDiffChange(t, `
