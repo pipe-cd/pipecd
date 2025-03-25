@@ -34,12 +34,14 @@ var (
 )
 
 type Helm struct {
+	version  string
 	execPath string
 	logger   *zap.Logger
 }
 
-func NewHelm(path string, logger *zap.Logger) *Helm {
+func NewHelm(version, path string, logger *zap.Logger) *Helm {
 	return &Helm{
+		version:  version,
 		execPath: path,
 		logger:   logger,
 	}

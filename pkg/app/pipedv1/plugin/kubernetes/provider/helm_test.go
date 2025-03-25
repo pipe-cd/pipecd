@@ -21,7 +21,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry/toolregistrytest"
@@ -43,7 +43,7 @@ func TestTemplateLocalChart(t *testing.T) {
 	helmPath, err := r.Helm(ctx, "3.16.1")
 	require.NoError(t, err)
 
-	helm := NewHelm(helmPath, zap.NewNop())
+	helm := NewHelm("3.16.1", helmPath, zaptest.NewLogger(t))
 	out, err := helm.TemplateLocalChart(ctx, appName, appDir, "", chartPath, nil)
 	require.NoError(t, err)
 
@@ -69,7 +69,7 @@ func TestTemplateLocalChart_WithNamespace(t *testing.T) {
 	helmPath, err := r.Helm(ctx, "3.16.1")
 	require.NoError(t, err)
 
-	helm := NewHelm(helmPath, zap.NewNop())
+	helm := NewHelm("3.16.1", helmPath, zaptest.NewLogger(t))
 	out, err := helm.TemplateLocalChart(ctx, appName, appDir, namespace, chartPath, nil)
 	require.NoError(t, err)
 
