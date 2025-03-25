@@ -94,11 +94,11 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
             }
             {...tabProps(TabKeys.V0)}
           />
-          <Tab
+          {/* <Tab
             className={classes.tabLabel}
             label="PIPED V1 ADD FROM SUGGESTIONS"
             {...tabProps(TabKeys.V1)}
-          />
+          /> */}
           <Tab
             className={classes.tabLabel}
             label="ADD MANUALLY"
