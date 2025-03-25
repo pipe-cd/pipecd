@@ -21,12 +21,12 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
-func (p *Plugin) executeK8sCanaryRolloutStage(_ context.Context, input *sdk.ExecuteStageInput, _ []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
+func (p *DeploymentPlugin) executeK8sCanaryRolloutStage(_ context.Context, input *sdk.ExecuteStageInput, _ []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
 	input.Client.LogPersister().Error("Canary rollout is not yet implemented")
 	return sdk.StageStatusFailure
 }
 
-func (p *Plugin) executeK8sCanaryCleanStage(_ context.Context, input *sdk.ExecuteStageInput, _ []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
+func (p *DeploymentPlugin) executeK8sCanaryCleanStage(_ context.Context, input *sdk.ExecuteStageInput, _ []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
 	input.Client.LogPersister().Error("Canary clean is not yet implemented")
 	return sdk.StageStatusFailure
 }

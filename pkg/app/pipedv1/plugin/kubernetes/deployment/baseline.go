@@ -21,12 +21,12 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
-func (p *Plugin) executeK8sBaselineRolloutStage(_ context.Context, input *sdk.ExecuteStageInput, _ []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
+func (p *DeploymentPlugin) executeK8sBaselineRolloutStage(_ context.Context, input *sdk.ExecuteStageInput, _ []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
 	input.Client.LogPersister().Error("Baseline rollout is not yet implemented")
 	return sdk.StageStatusFailure
 }
 
-func (p *Plugin) executeK8sBaselineCleanStage(_ context.Context, input *sdk.ExecuteStageInput, _ []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
+func (p *DeploymentPlugin) executeK8sBaselineCleanStage(_ context.Context, input *sdk.ExecuteStageInput, _ []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
 	input.Client.LogPersister().Error("Baseline clean is not yet implemented")
 	return sdk.StageStatusFailure
 }

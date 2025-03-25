@@ -30,10 +30,10 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
-type Plugin struct{}
+type LivestatePlugin struct{}
 
-// GetLivestate implements sdk.LivestatePlugin.
-func (p Plugin) GetLivestate(ctx context.Context, _ sdk.ConfigNone, deployTargets []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.GetLivestateInput) (*sdk.GetLivestateResponse, error) {
+// GetLivestate implements sdk.LivestatePlugin without Name and Version.
+func (p LivestatePlugin) GetLivestate(ctx context.Context, _ sdk.ConfigNone, deployTargets []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.GetLivestateInput) (*sdk.GetLivestateResponse, error) {
 	if len(deployTargets) != 1 {
 		return nil, fmt.Errorf("only 1 deploy target is allowed but got %d", len(deployTargets))
 	}
@@ -149,23 +149,13 @@ func calculateSyncState(diffResult *provider.DiffListResult, commit string) sdk.
 	}
 }
 
-// Name implements sdk.LivestatePlugin.
-func (p Plugin) Name() string {
-	return "kubernetes" // TODO: make this constant to share with deployment plugin
-}
-
-// Version implements sdk.LivestatePlugin.
-func (p Plugin) Version() string {
-	return "0.0.1" // TODO: make this constant to share with deployment plugin
-}
-
 type loader interface {
 	// LoadManifests renders and loads all manifests for application.
 	LoadManifests(ctx context.Context, input provider.LoaderInput) ([]provider.Manifest, error)
 }
 
 // TODO: share this implementation with the deployment plugin
-func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput, spec *kubeconfig.KubernetesApplicationSpec, loader loader) ([]provider.Manifest, error) {
+func (p LivestatePlugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput, spec *kubeconfig.KubernetesApplicationSpec, loader loader) ([]provider.Manifest, error) {
 	manifests, err := loader.LoadManifests(ctx, provider.LoaderInput{
 		PipedID:          input.Request.PipedID,
 		AppID:            input.Request.ApplicationID,

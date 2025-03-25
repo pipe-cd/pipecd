@@ -67,7 +67,7 @@ func TestPlugin_executeK8sRollbackStage_NoPreviousDeployment(t *testing.T) {
 		Logger: zaptest.NewLogger(t),
 	}
 
-	plugin := &Plugin{}
+	plugin := &DeploymentPlugin{}
 	status := plugin.executeK8sRollbackStage(t.Context(), input, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
 		{
 			Name:   "default",
@@ -117,7 +117,7 @@ func TestPlugin_executeK8sRollbackStage_SuccessfulRollback(t *testing.T) {
 		Logger: zaptest.NewLogger(t),
 	}
 
-	plugin := &Plugin{}
+	plugin := &DeploymentPlugin{}
 	status := plugin.executeK8sRollbackStage(t.Context(), input, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
 		{
 			Name:   "default",
@@ -184,7 +184,7 @@ func TestPlugin_executeK8sRollbackStage_WithVariantLabels(t *testing.T) {
 		Logger: zaptest.NewLogger(t),
 	}
 
-	plugin := &Plugin{}
+	plugin := &DeploymentPlugin{}
 	status := plugin.executeK8sRollbackStage(t.Context(), input, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
 		{
 			Name:   "default",

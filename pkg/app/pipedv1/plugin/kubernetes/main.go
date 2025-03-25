@@ -22,9 +22,23 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
+type Plugin struct {
+	deployment.DeploymentPlugin
+	livestate.LivestatePlugin
+}
+
+func (p *Plugin) Name() string {
+	return "kubernetes"
+}
+
+func (p *Plugin) Version() string {
+	return "0.0.1" // TODO: update this value
+}
+
 func main() {
-	sdk.RegisterDeploymentPlugin(&deployment.Plugin{})
-	sdk.RegisterLivestatePlugin(livestate.Plugin{})
+	plugin := new(Plugin)
+	sdk.RegisterDeploymentPlugin(plugin)
+	sdk.RegisterLivestatePlugin(plugin)
 	if err := sdk.Run(); err != nil {
 		log.Fatalln(err)
 	}

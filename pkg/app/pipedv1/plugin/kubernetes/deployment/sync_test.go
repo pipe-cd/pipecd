@@ -71,7 +71,7 @@ func TestPlugin_executeK8sSyncStage(t *testing.T) {
 	// initialize deploy target config and dynamic client for assertions with envtest
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
-	plugin := &Plugin{}
+	plugin := &DeploymentPlugin{}
 
 	status := plugin.executeK8sSyncStage(ctx, input, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
 		{
@@ -145,7 +145,7 @@ func TestPlugin_executeK8sSyncStage_withInputNamespace(t *testing.T) {
 	// initialize deploy target config and dynamic client for assertions with envtest
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
-	plugin := &Plugin{}
+	plugin := &DeploymentPlugin{}
 
 	status := plugin.executeK8sSyncStage(ctx, input, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
 		{
@@ -213,7 +213,7 @@ func TestPlugin_executeK8sSyncStage_withPrune(t *testing.T) {
 			Logger: zaptest.NewLogger(t),
 		}
 
-		plugin := &Plugin{}
+		plugin := &DeploymentPlugin{}
 		status := plugin.executeK8sSyncStage(ctx, runningInput, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
 			{
 				Name:   "default",
@@ -273,7 +273,7 @@ func TestPlugin_executeK8sSyncStage_withPrune(t *testing.T) {
 			Logger: zaptest.NewLogger(t),
 		}
 
-		plugin := &Plugin{}
+		plugin := &DeploymentPlugin{}
 		status := plugin.executeK8sSyncStage(ctx, targetInput, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
 			{
 				Name:   "default",
@@ -327,7 +327,7 @@ func TestPlugin_executeK8sSyncStage_withPrune_changesNamespace(t *testing.T) {
 			Logger: zaptest.NewLogger(t),
 		}
 
-		plugin := &Plugin{}
+		plugin := &DeploymentPlugin{}
 		status := plugin.executeK8sSyncStage(ctx, runningInput, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
 			{
 				Name:   "default",
@@ -387,7 +387,7 @@ func TestPlugin_executeK8sSyncStage_withPrune_changesNamespace(t *testing.T) {
 			Logger: zaptest.NewLogger(t),
 		}
 
-		plugin := &Plugin{}
+		plugin := &DeploymentPlugin{}
 		status := plugin.executeK8sSyncStage(ctx, targetInput, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
 			{
 				Name:   "default",
@@ -459,7 +459,7 @@ func TestPlugin_executeK8sSyncStage_withPrune_clusterScoped(t *testing.T) {
 			Logger: zaptest.NewLogger(t),
 		}
 
-		plugin := &Plugin{}
+		plugin := &DeploymentPlugin{}
 		status := plugin.executeK8sSyncStage(ctx, prepareInput, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
 			{
 				Name:   "default",
@@ -495,7 +495,7 @@ func TestPlugin_executeK8sSyncStage_withPrune_clusterScoped(t *testing.T) {
 			Logger: zaptest.NewLogger(t),
 		}
 
-		plugin := &Plugin{}
+		plugin := &DeploymentPlugin{}
 		status := plugin.executeK8sSyncStage(ctx, runningInput, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
 			{
 				Name:   "default",
@@ -544,7 +544,7 @@ func TestPlugin_executeK8sSyncStage_withPrune_clusterScoped(t *testing.T) {
 			Logger: zaptest.NewLogger(t),
 		}
 
-		plugin := &Plugin{}
+		plugin := &DeploymentPlugin{}
 		status := plugin.executeK8sSyncStage(ctx, &targetInput, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
 			{
 				Name:   "default",
