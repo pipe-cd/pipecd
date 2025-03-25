@@ -122,13 +122,7 @@ func (l *Loader) LoadManifests(ctx context.Context, input LoaderInput) (manifest
 
 		return ParseManifests(data)
 	case TemplatingMethodKustomize:
-		kustomizePath, err := l.toolRegistry.Kustomize(ctx, input.KustomizeVersion)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get kustomize tool: %w", err)
-		}
-
-		k := NewKustomize(kustomizePath, input.Logger)
-		data, err := k.Template(ctx, input.AppName, input.AppDir, input.KustomizeOptions)
+		data, err := l.templateKustomizeManifests(ctx, input)
 		if err != nil {
 			return nil, fmt.Errorf("failed to template kustomize manifests: %w", err)
 		}
@@ -165,7 +159,7 @@ func (l *Loader) templateHelmChart(ctx context.Context, input LoaderInput) (stri
 		return "", fmt.Errorf("failed to get helm tool: %w", err)
 	}
 
-	h := NewHelm(helmPath, input.Logger)
+	h := NewHelm(input.HelmVersion, helmPath, input.Logger)
 
 	switch {
 	case input.HelmChart.GitRemote != "":
@@ -177,6 +171,24 @@ func (l *Loader) templateHelmChart(ctx context.Context, input LoaderInput) (stri
 	default:
 		return h.TemplateLocalChart(ctx, input.AppName, input.AppDir, input.Namespace, input.HelmChart.Path, input.HelmOptions)
 	}
+}
+
+func (l *Loader) templateKustomizeManifests(ctx context.Context, input LoaderInput) (string, error) {
+	helmPath, err := l.toolRegistry.Helm(ctx, input.HelmVersion)
+	if err != nil {
+		return "", fmt.Errorf("failed to get helm tool to pass to kustomize: %w", err)
+	}
+
+	kustomizePath, err := l.toolRegistry.Kustomize(ctx, input.KustomizeVersion)
+	if err != nil {
+		return "", fmt.Errorf("failed to get kustomize tool: %w", err)
+	}
+
+	h := NewHelm(input.HelmVersion, helmPath, input.Logger)
+
+	k := NewKustomize(input.KustomizeVersion, kustomizePath, input.Logger)
+
+	return k.Template(ctx, input.AppName, input.AppDir, input.KustomizeOptions, h)
 }
 
 func LoadPlainYAMLManifests(dir string, names []string, configFilename string) ([]Manifest, error) {
