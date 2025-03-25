@@ -4,6 +4,7 @@ import { GetMeResponse } from "pipecd/web/api_client/service_pb";
 import { createHandler } from "~/mocks/create-handler";
 import { MemoryRouter, render, screen } from "~~/test-utils";
 import { Routes } from "./routes";
+import { CookiesProvider } from "react-cookie";
 
 const server = setupServer(
   createHandler<GetMeResponse>("/GetMe", () => {
@@ -27,9 +28,11 @@ afterAll(() => {
 describe("Pages", () => {
   test("redirect to login page", async () => {
     render(
-      <MemoryRouter initialEntries={["/"]} initialIndex={0}>
-        <Routes />
-      </MemoryRouter>,
+      <CookiesProvider>
+        <MemoryRouter initialEntries={["/"]} initialIndex={0}>
+          <Routes />
+        </MemoryRouter>
+      </CookiesProvider>,
       { initialState: { me: { isLogin: false } } }
     );
     await waitFor(() =>
