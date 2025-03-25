@@ -73,6 +73,30 @@ func (p *Plugin) ExecuteStage(ctx context.Context, _ *sdk.ConfigNone, dts []*sdk
 		return &sdk.ExecuteStageResponse{
 			Status: p.executeK8sSyncStage(ctx, input, dts),
 		}, nil
+	case StageK8sPrimaryRollout:
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeK8sPrimaryRolloutStage(ctx, input, dts),
+		}, nil
+	case StageK8sCanaryRollout:
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeK8sCanaryRolloutStage(ctx, input, dts),
+		}, nil
+	case StageK8sCanaryClean:
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeK8sCanaryCleanStage(ctx, input, dts),
+		}, nil
+	case StageK8sBaselineRollout:
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeK8sBaselineRolloutStage(ctx, input, dts),
+		}, nil
+	case StageK8sBaselineClean:
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeK8sBaselineCleanStage(ctx, input, dts),
+		}, nil
+	case StageK8sTrafficRouting:
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeK8sTrafficRoutingStage(ctx, input, dts),
+		}, nil
 	case StageK8sRollback:
 		return &sdk.ExecuteStageResponse{
 			Status: p.executeK8sRollbackStage(ctx, input, dts),
