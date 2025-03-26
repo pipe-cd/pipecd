@@ -30,11 +30,13 @@ type deployTargetConfig struct{}
 var _ sdk.StagePlugin[config, deployTargetConfig] = (*plugin)(nil)
 
 // Name implements sdk.Plugin.
+// TODO: remove this method after changing the sdk.StagePlugin interface.
 func (p *plugin) Name() string {
 	return "kubernetes_multicluster"
 }
 
 // Version implements sdk.Plugin.
+// TODO: remove this method after changing the sdk.StagePlugin interface.
 func (p *plugin) Version() string {
 	return "0.0.1"
 }

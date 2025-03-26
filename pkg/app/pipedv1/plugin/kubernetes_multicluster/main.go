@@ -21,9 +21,15 @@ import (
 )
 
 func main() {
-	sdk.RegisterStagePlugin(&plugin{})
+	plugin, err := sdk.NewPlugin(
+		"kubernetes_multicluster", "0.0.1",
+		sdk.WithStagePlugin(&plugin{}),
+	)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
-	if err := sdk.Run(); err != nil {
+	if err := plugin.Run(); err != nil {
 		log.Fatalln(err)
 	}
 }
