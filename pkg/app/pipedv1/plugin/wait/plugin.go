@@ -27,11 +27,13 @@ const (
 type plugin struct{}
 
 // Name implements sdk.Plugin.
+// TODO: remove this method after changing the sdk.StagePlugin interface.
 func (p *plugin) Name() string {
 	return "wait"
 }
 
 // Version implements sdk.Plugin.
+// TODO: remove this method after changing the sdk.StagePlugin interface.
 func (p *plugin) Version() string {
 	return "0.0.1" // TODO
 }
