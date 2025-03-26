@@ -35,12 +35,12 @@ import (
 )
 
 // PluginOption is a function that configures the plugin.
-type PluginOption[Config, DeployTargetConfig any] func(*Plugin_[Config, DeployTargetConfig])
+type PluginOption[Config, DeployTargetConfig any] func(*Plugin[Config, DeployTargetConfig])
 
 // WithStagePlugin is a function that sets the stage plugin.
 // This is mutually exclusive with WithDeploymentPlugin.
 func WithStagePlugin[Config, DeployTargetConfig any](stagePlugin StagePlugin[Config, DeployTargetConfig]) PluginOption[Config, DeployTargetConfig] {
-	return func(plugin *Plugin_[Config, DeployTargetConfig]) {
+	return func(plugin *Plugin[Config, DeployTargetConfig]) {
 		plugin.stagePlugin = stagePlugin
 	}
 }
@@ -48,22 +48,21 @@ func WithStagePlugin[Config, DeployTargetConfig any](stagePlugin StagePlugin[Con
 // WithDeploymentPlugin is a function that sets the deployment plugin.
 // This is mutually exclusive with WithStagePlugin.
 func WithDeploymentPlugin[Config, DeployTargetConfig any](deploymentPlugin DeploymentPlugin[Config, DeployTargetConfig]) PluginOption[Config, DeployTargetConfig] {
-	return func(plugin *Plugin_[Config, DeployTargetConfig]) {
+	return func(plugin *Plugin[Config, DeployTargetConfig]) {
 		plugin.deploymentPlugin = deploymentPlugin
 	}
 }
 
 // WithLivestatePlugin is a function that sets the livestate plugin.
 func WithLivestatePlugin[Config, DeployTargetConfig any](livestatePlugin LivestatePlugin[Config, DeployTargetConfig]) PluginOption[Config, DeployTargetConfig] {
-	return func(plugin *Plugin_[Config, DeployTargetConfig]) {
+	return func(plugin *Plugin[Config, DeployTargetConfig]) {
 		plugin.livestatePlugin = livestatePlugin
 	}
 }
 
-// Plugin_ is a wrapper for the plugin.
+// Plugin is a wrapper for the plugin.
 // It provides a way to run the plugin with the given config and deploy target config.
-// TODO: This type name will be changed to Plugin.
-type Plugin_[Config, DeployTargetConfig any] struct {
+type Plugin[Config, DeployTargetConfig any] struct {
 	// plugin info
 	name    string
 	version string
@@ -84,8 +83,8 @@ type Plugin_[Config, DeployTargetConfig any] struct {
 }
 
 // NewPlugin creates a new plugin.
-func NewPlugin[Config, DeployTargetConfig any](name, version string, options ...PluginOption[Config, DeployTargetConfig]) (*Plugin_[Config, DeployTargetConfig], error) {
-	plugin := &Plugin_[Config, DeployTargetConfig]{
+func NewPlugin[Config, DeployTargetConfig any](name, version string, options ...PluginOption[Config, DeployTargetConfig]) (*Plugin[Config, DeployTargetConfig], error) {
+	plugin := &Plugin[Config, DeployTargetConfig]{
 		name:    name,
 		version: version,
 
@@ -113,7 +112,7 @@ func NewPlugin[Config, DeployTargetConfig any](name, version string, options ...
 }
 
 // Run runs the plugin.
-func (p *Plugin_[Config, DeployTargetConfig]) Run() error {
+func (p *Plugin[Config, DeployTargetConfig]) Run() error {
 	app := cli.NewApp(
 		fmt.Sprintf("pipecd-plugin-%s", p.name),
 		"Plugin component for Piped.",
@@ -131,7 +130,7 @@ func (p *Plugin_[Config, DeployTargetConfig]) Run() error {
 }
 
 // command returns the cobra command for the plugin.
-func (p *Plugin_[Config, DeployTargetConfig]) command() *cobra.Command {
+func (p *Plugin[Config, DeployTargetConfig]) command() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "start",
 		Short: fmt.Sprintf("Start running a %s plugin.", p.name),
@@ -156,7 +155,7 @@ func (p *Plugin_[Config, DeployTargetConfig]) command() *cobra.Command {
 }
 
 // run is the entrypoint of the plugin.
-func (p *Plugin_[Config, DeployTargetConfig]) run(ctx context.Context, input cli.Input) error {
+func (p *Plugin[Config, DeployTargetConfig]) run(ctx context.Context, input cli.Input) error {
 	var (
 		stagePluginServiceServer      *StagePluginServiceServer[Config, DeployTargetConfig]
 		deploymentPluginServiceServer *DeploymentPluginServiceServer[Config, DeployTargetConfig]
@@ -229,6 +228,8 @@ func (p *Plugin_[Config, DeployTargetConfig]) run(ctx context.Context, input cli
 	// Start a gRPC server for handling external API requests.
 	{
 		commonFields := commonFields{
+			name:         p.name,
+			version:      p.version,
 			config:       cfg,
 			logPersister: persister,
 			client:       pipedapiClient,

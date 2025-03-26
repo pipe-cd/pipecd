@@ -28,22 +28,10 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/livestate"
 )
 
-var (
-	livestateServiceServer interface {
-		Plugin
-
-		Register(server *grpc.Server)
-		setFields(commonFields) error
-		livestate.LivestateServiceServer
-	}
-)
-
 // LivestatePlugin is the interface that must be implemented by a Livestate plugin.
 // In addition to the Plugin interface, it provides a method to get the live state of the resources.
 // The Config and DeployTargetConfig are the plugin's config defined in piped's config.
 type LivestatePlugin[Config, DeployTargetConfig any] interface {
-	Plugin
-
 	// GetLivestate returns the live state of the resources in the given application.
 	// It returns the resources' live state and the difference between the desired state and the live state.
 	// It's allowed to return only the resources' live state if the difference is not available, or only the difference if the live state is not available.
@@ -59,21 +47,6 @@ type LivestatePluginServer[Config, DeployTargetConfig any] struct {
 	base          LivestatePlugin[Config, DeployTargetConfig]
 	config        Config
 	deployTargets map[string]*DeployTarget[DeployTargetConfig]
-}
-
-// RegisterLivestatePlugin registers the given LivestatePlugin to the sdk.
-func RegisterLivestatePlugin[Config, DeployTargetConfig any](plugin LivestatePlugin[Config, DeployTargetConfig]) {
-	livestateServiceServer = &LivestatePluginServer[Config, DeployTargetConfig]{base: plugin}
-}
-
-// Name returns the name of the plugin.
-func (s *LivestatePluginServer[Config, DeployTargetConfig]) Name() string {
-	return s.base.Name()
-}
-
-// Version returns the version of the plugin.
-func (s *LivestatePluginServer[Config, DeployTargetConfig]) Version() string {
-	return s.base.Version()
 }
 
 // Register registers the plugin to the gRPC server.
@@ -125,7 +98,7 @@ func (s *LivestatePluginServer[Config, DeployTargetConfig]) GetLivestate(ctx con
 
 	client := &Client{
 		base:          s.client,
-		pluginName:    s.Name(),
+		pluginName:    s.name,
 		applicationID: request.GetApplicationId(),
 		toolRegistry:  s.toolRegistry,
 	}
