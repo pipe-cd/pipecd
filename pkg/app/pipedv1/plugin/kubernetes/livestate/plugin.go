@@ -33,7 +33,7 @@ import (
 type Plugin struct{}
 
 // GetLivestate implements sdk.LivestatePlugin.
-func (p Plugin) GetLivestate(ctx context.Context, _ sdk.ConfigNone, deployTargets []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.GetLivestateInput) (*sdk.GetLivestateResponse, error) {
+func (p Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTargets []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.GetLivestateInput) (*sdk.GetLivestateResponse, error) {
 	if len(deployTargets) != 1 {
 		return nil, fmt.Errorf("only 1 deploy target is allowed but got %d", len(deployTargets))
 	}
@@ -150,11 +150,13 @@ func calculateSyncState(diffResult *provider.DiffListResult, commit string) sdk.
 }
 
 // Name implements sdk.LivestatePlugin.
+// TODO: remove this method after changing the sdk.LivestatePlugin interface.
 func (p Plugin) Name() string {
 	return "kubernetes" // TODO: make this constant to share with deployment plugin
 }
 
 // Version implements sdk.LivestatePlugin.
+// TODO: remove this method after changing the sdk.LivestatePlugin interface.
 func (p Plugin) Version() string {
 	return "0.0.1" // TODO: make this constant to share with deployment plugin
 }

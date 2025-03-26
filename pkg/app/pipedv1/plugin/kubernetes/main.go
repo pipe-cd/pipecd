@@ -23,9 +23,15 @@ import (
 )
 
 func main() {
-	sdk.RegisterDeploymentPlugin(&deployment.Plugin{})
-	sdk.RegisterLivestatePlugin(livestate.Plugin{})
-	if err := sdk.Run(); err != nil {
+	plugin, err := sdk.NewPlugin(
+		"kubernetes", "0.0.1",
+		sdk.WithDeploymentPlugin(&deployment.Plugin{}),
+		sdk.WithLivestatePlugin(&livestate.Plugin{}),
+	)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if err := plugin.Run(); err != nil {
 		log.Fatalln(err)
 	}
 }
