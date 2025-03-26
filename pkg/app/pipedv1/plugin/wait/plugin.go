@@ -26,18 +26,6 @@ const (
 
 type plugin struct{}
 
-// Name implements sdk.Plugin.
-// TODO: remove this method after changing the sdk.StagePlugin interface.
-func (p *plugin) Name() string {
-	return "wait"
-}
-
-// Version implements sdk.Plugin.
-// TODO: remove this method after changing the sdk.StagePlugin interface.
-func (p *plugin) Version() string {
-	return "0.0.1" // TODO
-}
-
 // BuildPipelineSyncStages implements sdk.StagePlugin.
 func (p *plugin) BuildPipelineSyncStages(ctx context.Context, _ sdk.ConfigNone, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
 	stages := make([]sdk.PipelineStage, 0, len(input.Request.Stages))
