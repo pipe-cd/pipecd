@@ -34,6 +34,46 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/rpc"
 )
 
+// DeployTargetsNone is a type alias for a slice of pointers to DeployTarget
+// with an empty struct as the generic type parameter. It represents a case
+// where there are no deployment targets.
+// This utility is defined for plugins which has no deploy targets handling in ExecuteStage.
+type DeployTargetsNone = []*DeployTarget[struct{}]
+
+// ConfigNone is a type alias for a pointer to a struct with an empty struct as the generic type parameter.
+// This utility is defined for plugins which has no config handling in ExecuteStage.
+type ConfigNone = *struct{}
+
+// DeployTarget defines the deploy target configuration for the piped.
+type DeployTarget[Config any] struct {
+	// The name of the deploy target.
+	Name string `json:"name"`
+	// The labes of the deploy target.
+	Labels map[string]string `json:"labels,omitempty"`
+	// The configuration of the deploy target.
+	Config Config `json:"config"`
+}
+
+type commonFields struct {
+	name         string
+	version      string
+	config       *config.PipedPlugin
+	logger       *zap.Logger
+	logPersister logPersister
+	client       *pipedapi.PluginServiceClient
+	toolRegistry *toolregistry.ToolRegistry
+}
+
+type logPersister interface {
+	StageLogPersister(deploymentID, stageID string) logpersister.StageLogPersister
+}
+
+// withLogger copies the commonFields and sets the logger to the given one.
+func (c commonFields) withLogger(logger *zap.Logger) commonFields {
+	c.logger = logger
+	return c
+}
+
 // PluginOption is a function that configures the plugin.
 type PluginOption[Config, DeployTargetConfig any] func(*Plugin[Config, DeployTargetConfig])
 

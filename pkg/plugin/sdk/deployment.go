@@ -25,25 +25,11 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
-	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
-	"github.com/pipe-cd/pipecd/pkg/plugin/pipedapi"
 	"github.com/pipe-cd/pipecd/pkg/plugin/signalhandler"
-	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry"
 )
-
-// DeployTargetsNone is a type alias for a slice of pointers to DeployTarget
-// with an empty struct as the generic type parameter. It represents a case
-// where there are no deployment targets.
-// This utility is defined for plugins which has no deploy targets handling in ExecuteStage.
-type DeployTargetsNone = []*DeployTarget[struct{}]
-
-// ConfigNone is a type alias for a pointer to a struct with an empty struct as the generic type parameter.
-// This utility is defined for plugins which has no config handling in ExecuteStage.
-type ConfigNone = *struct{}
 
 // DeploymentPlugin is the interface that be implemented by a full-spec deployment plugin.
 // This kind of plugin should implement all methods to manage resources and execute stages.
@@ -69,36 +55,6 @@ type StagePlugin[Config, DeployTargetConfig any] interface {
 	BuildPipelineSyncStages(context.Context, *Config, *BuildPipelineSyncStagesInput) (*BuildPipelineSyncStagesResponse, error)
 	// ExecuteStage executes the given stage.
 	ExecuteStage(context.Context, *Config, []*DeployTarget[DeployTargetConfig], *ExecuteStageInput) (*ExecuteStageResponse, error)
-}
-
-// DeployTarget defines the deploy target configuration for the piped.
-type DeployTarget[Config any] struct {
-	// The name of the deploy target.
-	Name string `json:"name"`
-	// The labes of the deploy target.
-	Labels map[string]string `json:"labels,omitempty"`
-	// The configuration of the deploy target.
-	Config Config `json:"config"`
-}
-
-type logPersister interface {
-	StageLogPersister(deploymentID, stageID string) logpersister.StageLogPersister
-}
-
-type commonFields struct {
-	name         string
-	version      string
-	config       *config.PipedPlugin
-	logger       *zap.Logger
-	logPersister logPersister
-	client       *pipedapi.PluginServiceClient
-	toolRegistry *toolregistry.ToolRegistry
-}
-
-// withLogger copies the commonFields and sets the logger to the given one.
-func (c commonFields) withLogger(logger *zap.Logger) commonFields {
-	c.logger = logger
-	return c
 }
 
 // DeploymentPluginServiceServer is the gRPC server that handles requests from the piped.
