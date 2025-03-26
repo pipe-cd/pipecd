@@ -1,7 +1,7 @@
 ---
 title: "PipeCD Terraform provider"
 linkTitle: "PipeCD Terraform provider"
-weight: 10
+weight: 997
 description: >
   This page describes how to manage PipeCD resources with Terraform using terraform-provider-pipecd.
 ---

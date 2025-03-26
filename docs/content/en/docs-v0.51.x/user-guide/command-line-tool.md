@@ -1,7 +1,7 @@
 ---
 title: "Command-line tool: pipectl"
 linkTitle: "Command-line tool: pipectl"
-weight: 9
+weight: 996
 description: >
   This page describes how to install and use pipectl to manage PipeCD's resources.
 ---
