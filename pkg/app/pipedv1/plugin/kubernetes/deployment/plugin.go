@@ -44,18 +44,6 @@ type toolRegistry interface {
 
 var _ sdk.DeploymentPlugin[sdk.ConfigNone, kubeconfig.KubernetesDeployTargetConfig] = (*Plugin)(nil)
 
-// Name returns the name of this plugin.
-// TODO: remove this method after changing the sdk.DeploymentPlugin interface.
-func (p *Plugin) Name() string {
-	return "kubernetes"
-}
-
-// Version returns the version of this plugin.
-// TODO: remove this method after changing the sdk.DeploymentPlugin interface.
-func (p *Plugin) Version() string {
-	return "0.0.1" // TODO
-}
-
 // FetchDefinedStages returns the defined stages for this plugin.
 func (p *Plugin) FetchDefinedStages() []string {
 	return allStages
