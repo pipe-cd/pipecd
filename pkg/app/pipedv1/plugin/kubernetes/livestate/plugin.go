@@ -149,18 +149,6 @@ func calculateSyncState(diffResult *provider.DiffListResult, commit string) sdk.
 	}
 }
 
-// Name implements sdk.LivestatePlugin.
-// TODO: remove this method after changing the sdk.LivestatePlugin interface.
-func (p Plugin) Name() string {
-	return "kubernetes" // TODO: make this constant to share with deployment plugin
-}
-
-// Version implements sdk.LivestatePlugin.
-// TODO: remove this method after changing the sdk.LivestatePlugin interface.
-func (p Plugin) Version() string {
-	return "0.0.1" // TODO: make this constant to share with deployment plugin
-}
-
 type loader interface {
 	// LoadManifests renders and loads all manifests for application.
 	LoadManifests(ctx context.Context, input provider.LoaderInput) ([]provider.Manifest, error)
