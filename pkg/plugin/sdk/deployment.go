@@ -25,36 +25,11 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
-	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
-	"github.com/pipe-cd/pipecd/pkg/plugin/pipedapi"
 	"github.com/pipe-cd/pipecd/pkg/plugin/signalhandler"
-	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry"
 )
-
-var (
-	deploymentServiceServer interface {
-		Plugin
-
-		Register(server *grpc.Server)
-		// setFields sets the common fields and configs to the server.
-		setFields(commonFields) error
-		deployment.DeploymentServiceServer
-	}
-)
-
-// DeployTargetsNone is a type alias for a slice of pointers to DeployTarget
-// with an empty struct as the generic type parameter. It represents a case
-// where there are no deployment targets.
-// This utility is defined for plugins which has no deploy targets handling in ExecuteStage.
-type DeployTargetsNone = []*DeployTarget[struct{}]
-
-// ConfigNone is a type alias for a pointer to a struct with an empty struct as the generic type parameter.
-// This utility is defined for plugins which has no config handling in ExecuteStage.
-type ConfigNone = *struct{}
 
 // DeploymentPlugin is the interface that be implemented by a full-spec deployment plugin.
 // This kind of plugin should implement all methods to manage resources and execute stages.
@@ -74,54 +49,12 @@ type DeploymentPlugin[Config, DeployTargetConfig any] interface {
 // This kind of plugin may not implement quick sync stages.
 // The Config and DeployTargetConfig are the plugin's config defined in piped's config.
 type StagePlugin[Config, DeployTargetConfig any] interface {
-	Plugin
-
 	// FetchDefinedStages returns the list of stages that the plugin can execute.
 	FetchDefinedStages() []string
 	// BuildPipelineSyncStages builds the stages that will be executed by the plugin.
 	BuildPipelineSyncStages(context.Context, *Config, *BuildPipelineSyncStagesInput) (*BuildPipelineSyncStagesResponse, error)
 	// ExecuteStage executes the given stage.
 	ExecuteStage(context.Context, *Config, []*DeployTarget[DeployTargetConfig], *ExecuteStageInput) (*ExecuteStageResponse, error)
-}
-
-// DeployTarget defines the deploy target configuration for the piped.
-type DeployTarget[Config any] struct {
-	// The name of the deploy target.
-	Name string `json:"name"`
-	// The labes of the deploy target.
-	Labels map[string]string `json:"labels,omitempty"`
-	// The configuration of the deploy target.
-	Config Config `json:"config"`
-}
-
-// RegisterDeploymentPlugin registers the given deployment plugin.
-// It will be used when running the piped.
-func RegisterDeploymentPlugin[Config, DeployTargetConfig any](plugin DeploymentPlugin[Config, DeployTargetConfig]) {
-	deploymentServiceServer = &DeploymentPluginServiceServer[Config, DeployTargetConfig]{base: plugin}
-}
-
-// RegisterStagePlugin registers the given stage plugin.
-// It will be used when running the piped.
-func RegisterStagePlugin[Config, DeployTargetConfig any](plugin StagePlugin[Config, DeployTargetConfig]) {
-	deploymentServiceServer = &StagePluginServiceServer[Config, DeployTargetConfig]{base: plugin}
-}
-
-type logPersister interface {
-	StageLogPersister(deploymentID, stageID string) logpersister.StageLogPersister
-}
-
-type commonFields struct {
-	config       *config.PipedPlugin
-	logger       *zap.Logger
-	logPersister logPersister
-	client       *pipedapi.PluginServiceClient
-	toolRegistry *toolregistry.ToolRegistry
-}
-
-// withLogger copies the commonFields and sets the logger to the given one.
-func (c commonFields) withLogger(logger *zap.Logger) commonFields {
-	c.logger = logger
-	return c
 }
 
 // DeploymentPluginServiceServer is the gRPC server that handles requests from the piped.
@@ -132,15 +65,6 @@ type DeploymentPluginServiceServer[Config, DeployTargetConfig any] struct {
 	base          DeploymentPlugin[Config, DeployTargetConfig]
 	config        Config
 	deployTargets map[string]*DeployTarget[DeployTargetConfig]
-}
-
-// Name returns the name of the plugin.
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) Name() string {
-	return s.base.Name()
-}
-
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) Version() string {
-	return s.base.Version()
 }
 
 // Register registers the server to the given gRPC server.
@@ -183,7 +107,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) FetchDefined
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineVersions(ctx context.Context, request *deployment.DetermineVersionsRequest) (*deployment.DetermineVersionsResponse, error) {
 	client := &Client{
 		base:          s.client,
-		pluginName:    s.Name(),
+		pluginName:    s.name,
 		applicationID: request.GetInput().GetDeployment().GetApplicationId(),
 		deploymentID:  request.GetInput().GetDeployment().GetId(),
 		toolRegistry:  s.toolRegistry,
@@ -206,7 +130,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineVer
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineStrategy(ctx context.Context, request *deployment.DetermineStrategyRequest) (*deployment.DetermineStrategyResponse, error) {
 	client := &Client{
 		base:          s.client,
-		pluginName:    s.Name(),
+		pluginName:    s.name,
 		applicationID: request.GetInput().GetDeployment().GetApplicationId(),
 		deploymentID:  request.GetInput().GetDeployment().GetId(),
 		toolRegistry:  s.toolRegistry,
@@ -227,9 +151,9 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineStr
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
 	client := &Client{
 		base:       s.client,
-		pluginName: s.Name(),
+		pluginName: s.name,
 	}
-	return buildPipelineSyncStages(ctx, s.base, &s.config, client, request, s.logger)
+	return buildPipelineSyncStages(ctx, s.name, s.base, &s.config, client, request, s.logger)
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildQuickSyncStages(ctx context.Context, request *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	input := &BuildQuickSyncStagesInput{
@@ -238,7 +162,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildQuickSy
 		},
 		Client: &Client{
 			base:       s.client,
-			pluginName: s.Name(),
+			pluginName: s.name,
 		},
 		Logger: s.logger,
 	}
@@ -247,7 +171,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildQuickSy
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to build quick sync stages: %v", err)
 	}
-	return newQuickSyncStagesResponse(s.base, time.Now(), response), nil
+	return newQuickSyncStagesResponse(s.name, time.Now(), response), nil
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (response *deployment.ExecuteStageResponse, _ error) {
 	lp := s.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId())
@@ -262,7 +186,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage
 
 	client := &Client{
 		base:          s.client,
-		pluginName:    s.Name(),
+		pluginName:    s.name,
 		applicationID: request.GetInput().GetDeployment().GetApplicationId(),
 		deploymentID:  request.GetInput().GetDeployment().GetId(),
 		stageID:       request.GetInput().GetStage().GetId(),
@@ -292,16 +216,6 @@ type StagePluginServiceServer[Config, DeployTargetConfig any] struct {
 
 	base   StagePlugin[Config, DeployTargetConfig]
 	config Config
-}
-
-// Name returns the name of the plugin.
-func (s *StagePluginServiceServer[Config, DeployTargetConfig]) Name() string {
-	return s.base.Name()
-}
-
-// Version returns the version of the plugin.
-func (s *StagePluginServiceServer[Config, DeployTargetConfig]) Version() string {
-	return s.base.Version()
 }
 
 // Register registers the server to the given gRPC server.
@@ -336,10 +250,10 @@ func (s *StagePluginServiceServer[Config, DeployTargetConfig]) DetermineStrategy
 func (s *StagePluginServiceServer[Config, DeployTargetConfig]) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
 	client := &Client{
 		base:       s.client,
-		pluginName: s.Name(),
+		pluginName: s.name,
 	}
 
-	return buildPipelineSyncStages(ctx, s.base, &s.config, client, request, s.logger) // TODO: pass the real client
+	return buildPipelineSyncStages(ctx, s.name, s.base, &s.config, client, request, s.logger)
 }
 func (s *StagePluginServiceServer[Config, DeployTargetConfig]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BuildQuickSyncStages not implemented")
@@ -357,7 +271,7 @@ func (s *StagePluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(ctx 
 
 	client := &Client{
 		base:          s.client,
-		pluginName:    s.Name(),
+		pluginName:    s.name,
 		applicationID: request.GetInput().GetDeployment().GetApplicationId(),
 		deploymentID:  request.GetInput().GetDeployment().GetId(),
 		stageID:       request.GetInput().GetStage().GetId(),
@@ -369,12 +283,12 @@ func (s *StagePluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(ctx 
 }
 
 // buildPipelineSyncStages builds the stages that will be executed by the plugin.
-func buildPipelineSyncStages[Config, DeployTargetConfig any](ctx context.Context, plugin StagePlugin[Config, DeployTargetConfig], config *Config, client *Client, request *deployment.BuildPipelineSyncStagesRequest, logger *zap.Logger) (*deployment.BuildPipelineSyncStagesResponse, error) {
+func buildPipelineSyncStages[Config, DeployTargetConfig any](ctx context.Context, pluginName string, plugin StagePlugin[Config, DeployTargetConfig], config *Config, client *Client, request *deployment.BuildPipelineSyncStagesRequest, logger *zap.Logger) (*deployment.BuildPipelineSyncStagesResponse, error) {
 	resp, err := plugin.BuildPipelineSyncStages(ctx, config, newPipelineSyncStagesInput(request, client, logger))
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to build pipeline sync stages: %v", err)
 	}
-	return newPipelineSyncStagesResponse(plugin, time.Now(), request, resp)
+	return newPipelineSyncStagesResponse(pluginName, time.Now(), request, resp)
 }
 
 func executeStage[Config, DeployTargetConfig any](
@@ -456,7 +370,7 @@ func newPipelineSyncStagesInput(request *deployment.BuildPipelineSyncStagesReque
 }
 
 // newPipelineSyncStagesResponse converts the response to the external representation.
-func newPipelineSyncStagesResponse(plugin Plugin, now time.Time, request *deployment.BuildPipelineSyncStagesRequest, response *BuildPipelineSyncStagesResponse) (*deployment.BuildPipelineSyncStagesResponse, error) {
+func newPipelineSyncStagesResponse(pluginName string, now time.Time, request *deployment.BuildPipelineSyncStagesRequest, response *BuildPipelineSyncStagesResponse) (*deployment.BuildPipelineSyncStagesResponse, error) {
 	// Convert the request stages to a map for easier access.
 	requestStages := make(map[int]*deployment.BuildPipelineSyncStagesRequest_StageConfig, len(request.GetStages()))
 	for _, s := range request.GetStages() {
@@ -472,7 +386,7 @@ func newPipelineSyncStagesResponse(plugin Plugin, now time.Time, request *deploy
 		}
 		id := requestStage.GetId()
 		if id == "" {
-			id = fmt.Sprintf("%s-stage-%d", plugin.Name(), s.Index)
+			id = fmt.Sprintf("%s-stage-%d", pluginName, s.Index)
 		}
 
 		stages = append(stages, s.toModel(id, requestStage.GetDesc(), now))
@@ -483,10 +397,10 @@ func newPipelineSyncStagesResponse(plugin Plugin, now time.Time, request *deploy
 }
 
 // newQuickSyncStagesResponse converts the response to the external representation.
-func newQuickSyncStagesResponse(plugin Plugin, now time.Time, response *BuildQuickSyncStagesResponse) *deployment.BuildQuickSyncStagesResponse {
+func newQuickSyncStagesResponse(pluginName string, now time.Time, response *BuildQuickSyncStagesResponse) *deployment.BuildQuickSyncStagesResponse {
 	stages := make([]*model.PipelineStage, 0, len(response.Stages))
 	for i, s := range response.Stages {
-		id := fmt.Sprintf("%s-stage-%d", plugin.Name(), i)
+		id := fmt.Sprintf("%s-stage-%d", pluginName, i)
 		stages = append(stages, s.toModel(id, now))
 	}
 	return &deployment.BuildQuickSyncStagesResponse{

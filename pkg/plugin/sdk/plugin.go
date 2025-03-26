@@ -34,13 +34,53 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/rpc"
 )
 
+// DeployTargetsNone is a type alias for a slice of pointers to DeployTarget
+// with an empty struct as the generic type parameter. It represents a case
+// where there are no deployment targets.
+// This utility is defined for plugins which has no deploy targets handling in ExecuteStage.
+type DeployTargetsNone = []*DeployTarget[struct{}]
+
+// ConfigNone is a type alias for a pointer to a struct with an empty struct as the generic type parameter.
+// This utility is defined for plugins which has no config handling in ExecuteStage.
+type ConfigNone = *struct{}
+
+// DeployTarget defines the deploy target configuration for the piped.
+type DeployTarget[Config any] struct {
+	// The name of the deploy target.
+	Name string `json:"name"`
+	// The labes of the deploy target.
+	Labels map[string]string `json:"labels,omitempty"`
+	// The configuration of the deploy target.
+	Config Config `json:"config"`
+}
+
+type commonFields struct {
+	name         string
+	version      string
+	config       *config.PipedPlugin
+	logger       *zap.Logger
+	logPersister logPersister
+	client       *pipedapi.PluginServiceClient
+	toolRegistry *toolregistry.ToolRegistry
+}
+
+type logPersister interface {
+	StageLogPersister(deploymentID, stageID string) logpersister.StageLogPersister
+}
+
+// withLogger copies the commonFields and sets the logger to the given one.
+func (c commonFields) withLogger(logger *zap.Logger) commonFields {
+	c.logger = logger
+	return c
+}
+
 // PluginOption is a function that configures the plugin.
-type PluginOption[Config, DeployTargetConfig any] func(*Plugin_[Config, DeployTargetConfig])
+type PluginOption[Config, DeployTargetConfig any] func(*Plugin[Config, DeployTargetConfig])
 
 // WithStagePlugin is a function that sets the stage plugin.
 // This is mutually exclusive with WithDeploymentPlugin.
 func WithStagePlugin[Config, DeployTargetConfig any](stagePlugin StagePlugin[Config, DeployTargetConfig]) PluginOption[Config, DeployTargetConfig] {
-	return func(plugin *Plugin_[Config, DeployTargetConfig]) {
+	return func(plugin *Plugin[Config, DeployTargetConfig]) {
 		plugin.stagePlugin = stagePlugin
 	}
 }
@@ -48,22 +88,21 @@ func WithStagePlugin[Config, DeployTargetConfig any](stagePlugin StagePlugin[Con
 // WithDeploymentPlugin is a function that sets the deployment plugin.
 // This is mutually exclusive with WithStagePlugin.
 func WithDeploymentPlugin[Config, DeployTargetConfig any](deploymentPlugin DeploymentPlugin[Config, DeployTargetConfig]) PluginOption[Config, DeployTargetConfig] {
-	return func(plugin *Plugin_[Config, DeployTargetConfig]) {
+	return func(plugin *Plugin[Config, DeployTargetConfig]) {
 		plugin.deploymentPlugin = deploymentPlugin
 	}
 }
 
 // WithLivestatePlugin is a function that sets the livestate plugin.
 func WithLivestatePlugin[Config, DeployTargetConfig any](livestatePlugin LivestatePlugin[Config, DeployTargetConfig]) PluginOption[Config, DeployTargetConfig] {
-	return func(plugin *Plugin_[Config, DeployTargetConfig]) {
+	return func(plugin *Plugin[Config, DeployTargetConfig]) {
 		plugin.livestatePlugin = livestatePlugin
 	}
 }
 
-// Plugin_ is a wrapper for the plugin.
+// Plugin is a wrapper for the plugin.
 // It provides a way to run the plugin with the given config and deploy target config.
-// TODO: This type name will be changed to Plugin.
-type Plugin_[Config, DeployTargetConfig any] struct {
+type Plugin[Config, DeployTargetConfig any] struct {
 	// plugin info
 	name    string
 	version string
@@ -84,8 +123,8 @@ type Plugin_[Config, DeployTargetConfig any] struct {
 }
 
 // NewPlugin creates a new plugin.
-func NewPlugin[Config, DeployTargetConfig any](name, version string, options ...PluginOption[Config, DeployTargetConfig]) (*Plugin_[Config, DeployTargetConfig], error) {
-	plugin := &Plugin_[Config, DeployTargetConfig]{
+func NewPlugin[Config, DeployTargetConfig any](name, version string, options ...PluginOption[Config, DeployTargetConfig]) (*Plugin[Config, DeployTargetConfig], error) {
+	plugin := &Plugin[Config, DeployTargetConfig]{
 		name:    name,
 		version: version,
 
@@ -113,7 +152,7 @@ func NewPlugin[Config, DeployTargetConfig any](name, version string, options ...
 }
 
 // Run runs the plugin.
-func (p *Plugin_[Config, DeployTargetConfig]) Run() error {
+func (p *Plugin[Config, DeployTargetConfig]) Run() error {
 	app := cli.NewApp(
 		fmt.Sprintf("pipecd-plugin-%s", p.name),
 		"Plugin component for Piped.",
@@ -131,7 +170,7 @@ func (p *Plugin_[Config, DeployTargetConfig]) Run() error {
 }
 
 // command returns the cobra command for the plugin.
-func (p *Plugin_[Config, DeployTargetConfig]) command() *cobra.Command {
+func (p *Plugin[Config, DeployTargetConfig]) command() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "start",
 		Short: fmt.Sprintf("Start running a %s plugin.", p.name),
@@ -156,27 +195,18 @@ func (p *Plugin_[Config, DeployTargetConfig]) command() *cobra.Command {
 }
 
 // run is the entrypoint of the plugin.
-func (p *Plugin_[Config, DeployTargetConfig]) run(ctx context.Context, input cli.Input) error {
-	var (
-		stagePluginServiceServer      *StagePluginServiceServer[Config, DeployTargetConfig]
-		deploymentPluginServiceServer *DeploymentPluginServiceServer[Config, DeployTargetConfig]
-		livestatePluginServiceServer  *LivestatePluginServer[Config, DeployTargetConfig]
-	)
-
+func (p *Plugin[Config, DeployTargetConfig]) run(ctx context.Context, input cli.Input) error {
 	if p.stagePlugin != nil && p.deploymentPlugin != nil {
-		return fmt.Errorf("stage plugin and deployment plugin cannot be registered at the same time")
-	}
-
-	if p.stagePlugin != nil {
-		stagePluginServiceServer = &StagePluginServiceServer[Config, DeployTargetConfig]{base: p.stagePlugin}
-	}
-
-	if p.deploymentPlugin != nil {
-		deploymentPluginServiceServer = &DeploymentPluginServiceServer[Config, DeployTargetConfig]{base: p.deploymentPlugin}
-	}
-
-	if p.livestatePlugin != nil {
-		livestatePluginServiceServer = &LivestatePluginServer[Config, DeployTargetConfig]{base: p.livestatePlugin}
+		// This is promised in the NewPlugin function.
+		// When this happens, it means that there is a bug in the SDK, because these are private fields.
+		input.Logger.Error(
+			"something went wrong in the SDK, please report this issue to the developers",
+			zap.String("name", p.name),
+			zap.String("version", p.version),
+			zap.String("reason", "stage plugin and deployment plugin cannot be registered at the same time"),
+			zap.String("report-url", "https://github.com/pipe-cd/pipecd/issues"),
+		)
+		return fmt.Errorf("something went wrong in the SDK, please report this issue to the developers")
 	}
 
 	// Make a cancellable context.
@@ -229,6 +259,8 @@ func (p *Plugin_[Config, DeployTargetConfig]) run(ctx context.Context, input cli
 	// Start a gRPC server for handling external API requests.
 	{
 		commonFields := commonFields{
+			name:         p.name,
+			version:      p.version,
 			config:       cfg,
 			logPersister: persister,
 			client:       pipedapiClient,
@@ -238,6 +270,7 @@ func (p *Plugin_[Config, DeployTargetConfig]) run(ctx context.Context, input cli
 		var services []rpc.Service
 
 		if p.stagePlugin != nil {
+			stagePluginServiceServer := &StagePluginServiceServer[Config, DeployTargetConfig]{base: p.stagePlugin}
 			if err := stagePluginServiceServer.setFields(
 				commonFields.withLogger(input.Logger.Named("stage-service")),
 			); err != nil {
@@ -248,6 +281,7 @@ func (p *Plugin_[Config, DeployTargetConfig]) run(ctx context.Context, input cli
 		}
 
 		if p.deploymentPlugin != nil {
+			deploymentPluginServiceServer := &DeploymentPluginServiceServer[Config, DeployTargetConfig]{base: p.deploymentPlugin}
 			if err := deploymentPluginServiceServer.setFields(
 				commonFields.withLogger(input.Logger.Named("deployment-service")),
 			); err != nil {
@@ -258,6 +292,7 @@ func (p *Plugin_[Config, DeployTargetConfig]) run(ctx context.Context, input cli
 		}
 
 		if p.livestatePlugin != nil {
+			livestatePluginServiceServer := &LivestatePluginServer[Config, DeployTargetConfig]{base: p.livestatePlugin}
 			if err := livestatePluginServiceServer.setFields(
 				commonFields.withLogger(input.Logger.Named("livestate-service")),
 			); err != nil {
@@ -270,7 +305,12 @@ func (p *Plugin_[Config, DeployTargetConfig]) run(ctx context.Context, input cli
 		if len(services) == 0 {
 			// This is promised in the NewPlugin function.
 			// When this happens, it means that *Plugin was initialized without using NewPlugin.
-			return fmt.Errorf("no plugin is registered, you must use NewPlugin to initialize the plugin")
+			input.Logger.Error(
+				"no plugin is registered, plugin implementation must use NewPlugin to initialize the plugin",
+				zap.String("name", p.name),
+				zap.String("version", p.version),
+			)
+			return fmt.Errorf("no plugin is registered, plugin implementation must use NewPlugin to initialize the plugin")
 		}
 
 		var (
