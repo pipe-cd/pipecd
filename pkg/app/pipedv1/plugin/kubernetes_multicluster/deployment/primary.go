@@ -1,4 +1,4 @@
-// Copyright 2024 The PipeCD Authors.
+// Copyright 2025 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,26 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package deployment
 
 import (
-	"log"
+	"context"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/deployment"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/livestate"
+	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
-func main() {
-	plugin, err := sdk.NewPlugin(
-		"kubernetes", "0.0.1",
-		sdk.WithDeploymentPlugin(&deployment.Plugin{}),
-		sdk.WithLivestatePlugin(&livestate.Plugin{}),
-	)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	if err := plugin.Run(); err != nil {
-		log.Fatalln(err)
-	}
+func (p *Plugin) executeK8sPrimaryRolloutStage(_ context.Context, input *sdk.ExecuteStageInput, _ []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
+	input.Client.LogPersister().Error("Primary rollout is not yet implemented")
+	return sdk.StageStatusFailure
 }

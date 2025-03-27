@@ -1,4 +1,4 @@
-// Copyright 2025 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,41 +21,97 @@ import (
 )
 
 const (
-	// StageK8sMultiSync represents the state where
+	// StageK8sSync represents the state where
 	// all resources should be synced with the Git state.
-	StageK8sMultiSync string = "K8S_MULTI_SYNC"
-	// StageK8sMultiRollback represents the state where all deployed resources should be rollbacked.
-	StageK8sMultiRollback string = "K8S_MULTI_ROLLBACK"
+	StageK8sSync = "K8S_SYNC"
+	// StageK8sPrimaryRollout represents the state where
+	// the PRIMARY variant resources has been updated to the new version/configuration.
+	StageK8sPrimaryRollout = "K8S_PRIMARY_ROLLOUT"
+	// StageK8sCanaryRollout represents the state where
+	// the CANARY variant resources has been rolled out with the new version/configuration.
+	StageK8sCanaryRollout = "K8S_CANARY_ROLLOUT"
+	// StageK8sCanaryClean represents the state where
+	// the CANARY variant resources has been cleaned.
+	StageK8sCanaryClean = "K8S_CANARY_CLEAN"
+	// StageK8sBaselineRollout represents the state where
+	// the BASELINE variant resources has been rolled out.
+	StageK8sBaselineRollout = "K8S_BASELINE_ROLLOUT"
+	// StageK8sBaselineClean represents the state where
+	// the BASELINE variant resources has been cleaned.
+	StageK8sBaselineClean = "K8S_BASELINE_CLEAN"
+	// StageK8sTrafficRouting represents the state where the traffic to application
+	// should be splitted as the specified percentage to PRIMARY, CANARY, BASELINE variants.
+	StageK8sTrafficRouting = "K8S_TRAFFIC_ROUTING"
+	// StageK8sRollback represents the state where all deployed resources should be rollbacked.
+	StageK8sRollback = "K8S_ROLLBACK"
 )
 
-var AllStages = []string{
-	StageK8sMultiSync,
-	StageK8sMultiRollback,
+var allStages = []string{
+	StageK8sSync,
+	StageK8sPrimaryRollout,
+	StageK8sCanaryRollout,
+	StageK8sCanaryClean,
+	StageK8sBaselineRollout,
+	StageK8sBaselineClean,
+	StageK8sTrafficRouting,
+	StageK8sRollback,
 }
 
-func BuildPipelineStages(input *sdk.BuildPipelineSyncStagesInput) []sdk.PipelineStage {
-	out := make([]sdk.PipelineStage, 0, len(input.Request.Stages)+1)
+const (
+	// StageDescriptionK8sSync represents the description of the K8sSync stage.
+	StageDescriptionK8sSync = "Sync by applying all manifests"
+	// StageDescriptionK8sRollback represents the description of the K8sRollback stage.
+	StageDescriptionK8sRollback = "Rollback the deployment"
+)
 
-	for _, s := range input.Request.Stages {
-		stage := sdk.PipelineStage{
-			Index:              s.Index,
+func buildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
+	out := make([]sdk.QuickSyncStage, 0, 2)
+
+	out = append(out, sdk.QuickSyncStage{
+		Name:               StageK8sSync,
+		Description:        StageDescriptionK8sSync,
+		Rollback:           false,
+		Metadata:           make(map[string]string, 0),
+		AvailableOperation: sdk.ManualOperationNone,
+	},
+	)
+
+	if autoRollback {
+		out = append(out, sdk.QuickSyncStage{
+			Name:               StageK8sRollback,
+			Description:        StageDescriptionK8sRollback,
+			Rollback:           true,
+			Metadata:           make(map[string]string, 0),
+			AvailableOperation: sdk.ManualOperationNone,
+		})
+	}
+
+	return out
+}
+
+// buildPipelineStages builds the pipeline stages with the given SDK stages.
+func buildPipelineStages(stages []sdk.StageConfig, autoRollback bool) []sdk.PipelineStage {
+	out := make([]sdk.PipelineStage, 0, len(stages)+1)
+
+	for _, s := range stages {
+		out = append(out, sdk.PipelineStage{
 			Name:               s.Name,
+			Index:              s.Index,
 			Rollback:           false,
 			Metadata:           make(map[string]string, 0),
 			AvailableOperation: sdk.ManualOperationNone,
-		}
-		out = append(out, stage)
+		})
 	}
 
-	if input.Request.Rollback {
+	if autoRollback {
 		// we set the index of the rollback stage to the minimum index of all stages.
-		minIndex := slices.MinFunc(out, func(a, b sdk.PipelineStage) int {
+		minIndex := slices.MinFunc(stages, func(a, b sdk.StageConfig) int {
 			return a.Index - b.Index
 		}).Index
 
 		out = append(out, sdk.PipelineStage{
+			Name:               StageK8sRollback,
 			Index:              minIndex,
-			Name:               StageK8sMultiRollback,
 			Rollback:           true,
 			Metadata:           make(map[string]string, 0),
 			AvailableOperation: sdk.ManualOperationNone,
