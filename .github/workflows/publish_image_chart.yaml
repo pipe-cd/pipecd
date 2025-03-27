@@ -132,9 +132,6 @@ jobs:
           commit-hash: ${{ github.sha }}
           commit-url: https://github.com/pipe-cd/pipecd/commit/${{ github.sha }}
           commit-author: ${{ github.actor }}
-          commit-message: ${{ github.event.head_commit.message }}
-          commit-title: ${{ github.event.head_commit.message }}
-          commit-timestamp: ${{ github.event.head_commit.timestamp }}
           contexts: Source-Commit-URL=https://github.com/pipe-cd/pipecd/commit/${{ github.sha }}
       # Notify PipeCD to trigger update demo environment via EventWatcher.
       - uses: pipe-cd/actions-event-register@v1.2.0
@@ -147,9 +144,6 @@ jobs:
           commit-hash: ${{ github.sha }}
           commit-url: https://github.com/pipe-cd/pipecd/commit/${{ github.sha }}
           commit-author: ${{ github.actor }}
-          commit-message: ${{ github.event.head_commit.message }}
-          commit-title: ${{ github.event.head_commit.message }}
-          commit-timestamp: ${{ github.event.head_commit.timestamp }}
           contexts: Source-Commit-URL=https://github.com/pipe-cd/pipecd/commit/${{ github.sha }}
 
   release-quickstart-manifests:
