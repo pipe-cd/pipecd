@@ -1,7 +1,7 @@
 ---
 title: "Insights"
 linkTitle: "Insights"
-weight: 7
+weight: 994
 description: >
   This page describes how to see delivery performance.
 ---
