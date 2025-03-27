@@ -1,7 +1,7 @@
 ---
 title: "Connect between CI and CD with event watcher"
 linkTitle: "Event watcher"
-weight: 992
+weight: 991
 description: >
   A helper facility to automatically update files when it finds out a new event.
 ---
@@ -196,6 +196,25 @@ Date:   Wed Oct 30 16:56:36 2024 +0900
 ```
 
 ![](/images/event-watcher-contexts.png)
+
+### [optional] Using commit-hash and commit-url for Deployment Trace
+
+You can attach `commit-hash` and `commit-url` of the commit that trigger the event as metadata to the event.
+Once you added these data to your event on registering, you would have a better way to understand what deployments are triggered by your application commit via PipeCD [Deployment Trace feature](./deployment-trace).
+
+To attach these values
+
+```bash
+pipectl event register \
+    --address=CONTROL_PLANE_API_ADDRESS \
+    --api-key=API_KEY \
+    --name=sample \
+    --data=gcr.io/pipecd/helloworld:v0.48.0 \
+    --commit-hash=20c98a503062021720b2fcf2058276b3245xxxxx
+    --commit-url=https://github.com/pipe-cd/pipecd/commit/20c98a503062021720b2fcf2058276b3245xxxxx
+```
+
+NOTE: There are few more information of the triggered commit you can attach as event metadata, find more in [DeploymentTrace](./deployment-trace) docs.
 
 ## Examples
 Suppose you want to update your configuration file after releasing a new Helm chart.
