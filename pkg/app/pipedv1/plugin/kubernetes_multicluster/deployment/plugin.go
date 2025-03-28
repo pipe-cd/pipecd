@@ -59,13 +59,13 @@ func (p *Plugin) BuildPipelineSyncStages(ctx context.Context, _ *sdk.ConfigNone,
 // ExecuteStage executes the stage.
 func (p *Plugin) ExecuteStage(ctx context.Context, _ *sdk.ConfigNone, dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.ExecuteStageInput) (*sdk.ExecuteStageResponse, error) {
 	switch input.Request.StageName {
-	case StageK8sSync:
+	case StageK8sMultiSync:
 		return &sdk.ExecuteStageResponse{
-			Status: p.executeK8sSyncStage(ctx, input, dts),
+			Status: p.executeK8sMultiSyncStage(ctx, input, dts),
 		}, nil
-	case StageK8sRollback:
+	case StageK8sMultiRollback:
 		return &sdk.ExecuteStageResponse{
-			Status: p.executeK8sRollbackStage(ctx, input, dts),
+			Status: p.executeK8sMultiRollbackStage(ctx, input, dts),
 		}, nil
 	default:
 		return nil, errors.New("unimplemented or unsupported stage")

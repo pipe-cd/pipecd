@@ -21,31 +21,31 @@ import (
 )
 
 const (
-	// StageK8sSync represents the state where
+	// StageK8sMultiSync represents the state where
 	// all resources should be synced with the Git state.
-	StageK8sSync = "K8S_SYNC"
-	// StageK8sRollback represents the state where all deployed resources should be rollbacked.
-	StageK8sRollback = "K8S_ROLLBACK"
+	StageK8sMultiSync = "K8S_MULTI_SYNC"
+	// StageK8sMultiRollback represents the state where all deployed resources should be rollbacked.
+	StageK8sMultiRollback = "K8S_MULTI_ROLLBACK"
 )
 
 var allStages = []string{
-	StageK8sSync,
-	StageK8sRollback,
+	StageK8sMultiSync,
+	StageK8sMultiRollback,
 }
 
 const (
-	// StageDescriptionK8sSync represents the description of the K8sSync stage.
-	StageDescriptionK8sSync = "Sync by applying all manifests"
-	// StageDescriptionK8sRollback represents the description of the K8sRollback stage.
-	StageDescriptionK8sRollback = "Rollback the deployment"
+	// StageDescriptionK8sMultiSync represents the description of the K8sSync stage.
+	StageDescriptionK8sMultiSync = "Sync by applying all manifests"
+	// StageDescriptionK8sMultiRollback represents the description of the K8sRollback stage.
+	StageDescriptionK8sMultiRollback = "Rollback the deployment"
 )
 
 func buildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
 	out := make([]sdk.QuickSyncStage, 0, 2)
 
 	out = append(out, sdk.QuickSyncStage{
-		Name:               StageK8sSync,
-		Description:        StageDescriptionK8sSync,
+		Name:               StageK8sMultiSync,
+		Description:        StageDescriptionK8sMultiSync,
 		Rollback:           false,
 		Metadata:           make(map[string]string, 0),
 		AvailableOperation: sdk.ManualOperationNone,
@@ -54,8 +54,8 @@ func buildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
 
 	if autoRollback {
 		out = append(out, sdk.QuickSyncStage{
-			Name:               StageK8sRollback,
-			Description:        StageDescriptionK8sRollback,
+			Name:               StageK8sMultiRollback,
+			Description:        StageDescriptionK8sMultiRollback,
 			Rollback:           true,
 			Metadata:           make(map[string]string, 0),
 			AvailableOperation: sdk.ManualOperationNone,
@@ -86,7 +86,7 @@ func buildPipelineStages(stages []sdk.StageConfig, autoRollback bool) []sdk.Pipe
 		}).Index
 
 		out = append(out, sdk.PipelineStage{
-			Name:               StageK8sRollback,
+			Name:               StageK8sMultiRollback,
 			Index:              minIndex,
 			Rollback:           true,
 			Metadata:           make(map[string]string, 0),

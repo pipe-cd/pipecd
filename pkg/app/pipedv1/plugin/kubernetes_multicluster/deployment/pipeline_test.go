@@ -35,8 +35,8 @@ func Test_buildQuickSyncPipeline(t *testing.T) {
 			rollback: false,
 			expected: []sdk.QuickSyncStage{
 				{
-					Name:               StageK8sSync,
-					Description:        StageDescriptionK8sSync,
+					Name:               StageK8sMultiSync,
+					Description:        StageDescriptionK8sMultiSync,
 					Rollback:           false,
 					Metadata:           make(map[string]string, 0),
 					AvailableOperation: sdk.ManualOperationNone,
@@ -48,15 +48,15 @@ func Test_buildQuickSyncPipeline(t *testing.T) {
 			rollback: true,
 			expected: []sdk.QuickSyncStage{
 				{
-					Name:               StageK8sSync,
-					Description:        StageDescriptionK8sSync,
+					Name:               StageK8sMultiSync,
+					Description:        StageDescriptionK8sMultiSync,
 					Rollback:           false,
 					Metadata:           make(map[string]string, 0),
 					AvailableOperation: sdk.ManualOperationNone,
 				},
 				{
-					Name:               StageK8sRollback,
-					Description:        StageDescriptionK8sRollback,
+					Name:               StageK8sMultiRollback,
+					Description:        StageDescriptionK8sMultiRollback,
 					Rollback:           true,
 					Metadata:           make(map[string]string, 0),
 					AvailableOperation: sdk.ManualOperationNone,
@@ -143,7 +143,7 @@ func Test_buildPipelineStages(t *testing.T) {
 					AvailableOperation: sdk.ManualOperationNone,
 				},
 				{
-					Name:               StageK8sRollback,
+					Name:               StageK8sMultiRollback,
 					Index:              0,
 					Rollback:           true,
 					Metadata:           make(map[string]string, 0),

@@ -31,7 +31,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry/toolregistrytest"
 )
 
-func TestPlugin_executeK8sRollbackStage_NoPreviousDeployment(t *testing.T) {
+func TestPlugin_executeK8sMultiRollbackStage_NoPreviousDeployment(t *testing.T) {
 	t.Parallel()
 
 	// Initialize tool registry
@@ -47,7 +47,7 @@ func TestPlugin_executeK8sRollbackStage_NoPreviousDeployment(t *testing.T) {
 	// Prepare the input
 	input := &sdk.ExecuteStageInput{
 		Request: sdk.ExecuteStageRequest{
-			StageName:   "K8S_ROLLBACK",
+			StageName:   "K8S_MULTI_ROLLBACK",
 			StageConfig: []byte(``),
 			RunningDeploymentSource: sdk.DeploymentSource{
 				CommitHash: "", // Empty commit hash indicates no previous deployment
@@ -68,7 +68,7 @@ func TestPlugin_executeK8sRollbackStage_NoPreviousDeployment(t *testing.T) {
 	}
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sRollbackStage(t.Context(), input, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
+	status := plugin.executeK8sMultiRollbackStage(t.Context(), input, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
 		{
 			Name:   "default",
 			Config: *dtConfig,
@@ -78,7 +78,7 @@ func TestPlugin_executeK8sRollbackStage_NoPreviousDeployment(t *testing.T) {
 	assert.Equal(t, sdk.StageStatusFailure, status)
 }
 
-func TestPlugin_executeK8sRollbackStage_SuccessfulRollback(t *testing.T) {
+func TestPlugin_executeK8sMultiRollbackStage_SuccessfulRollback(t *testing.T) {
 	t.Parallel()
 
 	// Initialize tool registry
@@ -94,7 +94,7 @@ func TestPlugin_executeK8sRollbackStage_SuccessfulRollback(t *testing.T) {
 	// Prepare the input
 	input := &sdk.ExecuteStageInput{
 		Request: sdk.ExecuteStageRequest{
-			StageName:   "K8S_ROLLBACK",
+			StageName:   "K8S_MULTI_ROLLBACK",
 			StageConfig: []byte(``),
 			RunningDeploymentSource: sdk.DeploymentSource{
 				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
@@ -118,7 +118,7 @@ func TestPlugin_executeK8sRollbackStage_SuccessfulRollback(t *testing.T) {
 	}
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sRollbackStage(t.Context(), input, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
+	status := plugin.executeK8sMultiRollbackStage(t.Context(), input, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
 		{
 			Name:   "default",
 			Config: *dtConfig,
@@ -145,7 +145,7 @@ func TestPlugin_executeK8sRollbackStage_SuccessfulRollback(t *testing.T) {
 	assert.Equal(t, "previous-hash", deployment.GetAnnotations()["pipecd.dev/commit-hash"])
 }
 
-func TestPlugin_executeK8sRollbackStage_WithVariantLabels(t *testing.T) {
+func TestPlugin_executeK8sMultiRollbackStage_WithVariantLabels(t *testing.T) {
 	t.Parallel()
 
 	// Initialize tool registry
@@ -161,7 +161,7 @@ func TestPlugin_executeK8sRollbackStage_WithVariantLabels(t *testing.T) {
 	// Prepare the input
 	input := &sdk.ExecuteStageInput{
 		Request: sdk.ExecuteStageRequest{
-			StageName:   "K8S_ROLLBACK",
+			StageName:   "K8S_MULTI_ROLLBACK",
 			StageConfig: []byte(``),
 			RunningDeploymentSource: sdk.DeploymentSource{
 				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
@@ -185,7 +185,7 @@ func TestPlugin_executeK8sRollbackStage_WithVariantLabels(t *testing.T) {
 	}
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sRollbackStage(t.Context(), input, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
+	status := plugin.executeK8sMultiRollbackStage(t.Context(), input, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
 		{
 			Name:   "default",
 			Config: *dtConfig,
