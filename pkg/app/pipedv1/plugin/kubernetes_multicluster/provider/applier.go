@@ -20,7 +20,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
 )
 
 type kubectl interface {

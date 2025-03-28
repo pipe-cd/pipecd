@@ -24,8 +24,8 @@ import (
 	"go.uber.org/zap"
 	"sigs.k8s.io/yaml"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 

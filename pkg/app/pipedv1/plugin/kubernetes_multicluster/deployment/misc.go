@@ -14,7 +14,7 @@
 
 package deployment
 
-import "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
+import "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
 
 func ensureVariantSelectorInWorkload(m provider.Manifest, variantLabel, variant string) error {
 	variantMap := map[string]string{

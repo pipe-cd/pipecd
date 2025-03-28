@@ -17,8 +17,8 @@ package main
 import (
 	"log"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/deployment"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/livestate"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/deployment"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/livestate"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 

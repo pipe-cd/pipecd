@@ -18,7 +18,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
