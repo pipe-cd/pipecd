@@ -22,44 +22,21 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
-func TestBuildPipelineStages(t *testing.T) {
+func Test_buildQuickSyncPipeline(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		name     string
-		input    *sdk.BuildPipelineSyncStagesInput
-		expected []sdk.PipelineStage
+		rollback bool
+		expected []sdk.QuickSyncStage
 	}{
 		{
-			name: "without auto rollback",
-			input: &sdk.BuildPipelineSyncStagesInput{
-				Request: sdk.BuildPipelineSyncStagesRequest{
-					Rollback: false,
-					Stages: []sdk.StageConfig{
-						{
-							Index:  0,
-							Name:   "Stage 1",
-							Config: []byte(""),
-						},
-						{
-							Index:  1,
-							Name:   "Stage 2",
-							Config: []byte(""),
-						},
-					},
-				},
-			},
-			expected: []sdk.PipelineStage{
+			name:     "without rollback",
+			rollback: false,
+			expected: []sdk.QuickSyncStage{
 				{
-					Index:              0,
-					Name:               "Stage 1",
-					Rollback:           false,
-					Metadata:           make(map[string]string, 0),
-					AvailableOperation: sdk.ManualOperationNone,
-				},
-				{
-					Index:              1,
-					Name:               "Stage 2",
+					Name:               StageK8sMultiSync,
+					Description:        StageDescriptionK8sMultiSync,
 					Rollback:           false,
 					Metadata:           make(map[string]string, 0),
 					AvailableOperation: sdk.ManualOperationNone,
@@ -67,42 +44,19 @@ func TestBuildPipelineStages(t *testing.T) {
 			},
 		},
 		{
-			name: "with auto rollback",
-			input: &sdk.BuildPipelineSyncStagesInput{
-				Request: sdk.BuildPipelineSyncStagesRequest{
-					Rollback: true,
-					Stages: []sdk.StageConfig{
-						{
-							Index:  0,
-							Name:   "Stage 1",
-							Config: []byte(""),
-						},
-						{
-							Index:  1,
-							Name:   "Stage 2",
-							Config: []byte(""),
-						},
-					},
-				},
-			},
-			expected: []sdk.PipelineStage{
+			name:     "with rollback",
+			rollback: true,
+			expected: []sdk.QuickSyncStage{
 				{
-					Index:              0,
-					Name:               "Stage 1",
+					Name:               StageK8sMultiSync,
+					Description:        StageDescriptionK8sMultiSync,
 					Rollback:           false,
 					Metadata:           make(map[string]string, 0),
 					AvailableOperation: sdk.ManualOperationNone,
 				},
 				{
-					Index:              1,
-					Name:               "Stage 2",
-					Rollback:           false,
-					Metadata:           make(map[string]string, 0),
-					AvailableOperation: sdk.ManualOperationNone,
-				},
-				{
-					Index:              0,
 					Name:               StageK8sMultiRollback,
+					Description:        StageDescriptionK8sMultiRollback,
 					Rollback:           true,
 					Metadata:           make(map[string]string, 0),
 					AvailableOperation: sdk.ManualOperationNone,
@@ -115,7 +69,95 @@ func TestBuildPipelineStages(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			actual := BuildPipelineStages(tt.input)
+			actual := buildQuickSyncPipeline(tt.rollback)
+			assert.Equal(t, tt.expected, actual)
+		})
+	}
+}
+
+func Test_buildPipelineStages(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name         string
+		stages       []sdk.StageConfig
+		autoRollback bool
+		expected     []sdk.PipelineStage
+	}{
+		{
+			name: "without auto rollback",
+			stages: []sdk.StageConfig{
+				{
+					Name:  "Stage 1",
+					Index: 0,
+				},
+				{
+					Name:  "Stage 2",
+					Index: 1,
+				},
+			},
+			autoRollback: false,
+			expected: []sdk.PipelineStage{
+				{
+					Name:               "Stage 1",
+					Index:              0,
+					Rollback:           false,
+					Metadata:           make(map[string]string, 0),
+					AvailableOperation: sdk.ManualOperationNone,
+				},
+				{
+					Name:               "Stage 2",
+					Index:              1,
+					Rollback:           false,
+					Metadata:           make(map[string]string, 0),
+					AvailableOperation: sdk.ManualOperationNone,
+				},
+			},
+		},
+		{
+			name: "with auto rollback",
+			stages: []sdk.StageConfig{
+				{
+					Name:  "Stage 1",
+					Index: 0,
+				},
+				{
+					Name:  "Stage 2",
+					Index: 1,
+				},
+			},
+			autoRollback: true,
+			expected: []sdk.PipelineStage{
+				{
+					Name:               "Stage 1",
+					Index:              0,
+					Rollback:           false,
+					Metadata:           make(map[string]string, 0),
+					AvailableOperation: sdk.ManualOperationNone,
+				},
+				{
+					Name:               "Stage 2",
+					Index:              1,
+					Rollback:           false,
+					Metadata:           make(map[string]string, 0),
+					AvailableOperation: sdk.ManualOperationNone,
+				},
+				{
+					Name:               StageK8sMultiRollback,
+					Index:              0,
+					Rollback:           true,
+					Metadata:           make(map[string]string, 0),
+					AvailableOperation: sdk.ManualOperationNone,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			actual := buildPipelineStages(tt.stages, tt.autoRollback)
 			assert.Equal(t, tt.expected, actual)
 		})
 	}
