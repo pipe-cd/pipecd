@@ -1,4 +1,4 @@
-// Copyright 2024 The PipeCD Authors.
+// Copyright 2025 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,26 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package deployment
 
-import (
-	"log"
+import "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/deployment"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/livestate"
-	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
-)
-
-func main() {
-	plugin, err := sdk.NewPlugin(
-		"kubernetes", "0.0.1",
-		sdk.WithDeploymentPlugin(&deployment.Plugin{}),
-		sdk.WithLivestatePlugin(&livestate.Plugin{}),
-	)
-	if err != nil {
-		log.Fatalln(err)
+func ensureVariantSelectorInWorkload(m provider.Manifest, variantLabel, variant string) error {
+	variantMap := map[string]string{
+		variantLabel: variant,
 	}
-	if err := plugin.Run(); err != nil {
-		log.Fatalln(err)
+	if err := m.AddStringMapValues(variantMap, "spec", "selector", "matchLabels"); err != nil {
+		return err
 	}
+	return m.AddStringMapValues(variantMap, "spec", "template", "metadata", "labels")
 }
