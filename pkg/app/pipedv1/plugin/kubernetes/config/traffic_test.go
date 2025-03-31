@@ -23,6 +23,8 @@ import (
 )
 
 func TestDetermineKubernetesTrafficRoutingMethod(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		cfg  *KubernetesTrafficRouting
@@ -58,6 +60,8 @@ func TestDetermineKubernetesTrafficRoutingMethod(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := DetermineKubernetesTrafficRoutingMethod(tt.cfg)
 			if got != tt.want {
 				t.Errorf("DetermineKubernetesTrafficRoutingMethod() = %v, want %v", got, tt.want)
@@ -67,6 +71,8 @@ func TestDetermineKubernetesTrafficRoutingMethod(t *testing.T) {
 }
 
 func TestK8sTrafficRoutingStageOptions_Percentages(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name         string
 		opts         K8sTrafficRoutingStageOptions
@@ -144,6 +150,8 @@ func TestK8sTrafficRoutingStageOptions_Percentages(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			gotPrimary, gotCanary, gotBaseline := tt.opts.Percentages()
 			assert.Equal(t, tt.wantPrimary, gotPrimary, "primary percentage")
 			assert.Equal(t, tt.wantCanary, gotCanary, "canary percentage")
