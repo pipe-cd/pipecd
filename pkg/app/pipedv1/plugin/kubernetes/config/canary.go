@@ -25,7 +25,7 @@ type K8sCanaryRolloutStageOptions struct {
 	Replicas config.Replicas `json:"replicas"`
 	// Suffix that should be used when naming the CANARY variant's resources.
 	// Default is "canary".
-	Suffix string `json:"suffix"`
+	Suffix string `json:"suffix" default:"canary"`
 	// Whether the CANARY service should be created.
 	CreateService bool `json:"createService"`
 	// List of patches used to customize manifests for CANARY variant.

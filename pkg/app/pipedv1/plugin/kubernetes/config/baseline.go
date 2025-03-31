@@ -25,7 +25,7 @@ type K8sBaselineRolloutStageOptions struct {
 	Replicas config.Replicas `json:"replicas"`
 	// Suffix that should be used when naming the BASELINE variant's resources.
 	// Default is "baseline".
-	Suffix string `json:"suffix"`
+	Suffix string `json:"suffix" default:"baseline"`
 	// Whether the BASELINE service should be created.
 	CreateService bool `json:"createService"`
 }

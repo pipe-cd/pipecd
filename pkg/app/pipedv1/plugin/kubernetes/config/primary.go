@@ -18,7 +18,7 @@ package config
 type K8sPrimaryRolloutStageOptions struct {
 	// Suffix that should be used when naming the PRIMARY variant's resources.
 	// Default is "primary".
-	Suffix string `json:"suffix"`
+	Suffix string `json:"suffix" default:"primary"`
 	// Whether the PRIMARY service should be created.
 	CreateService bool `json:"createService"`
 	// Whether the PRIMARY variant label should be added to manifests if they were missing.
