@@ -86,6 +86,8 @@ temporaryVolume:
   create: false
   # The name of the PersistentVolumeClaim to use when create is false.
   name: ""
+  # The storage class name of the persistent volume claim.
+  storageClassName: ""
   # The size of the persistent volume claim.
   size: 100Gi
 
