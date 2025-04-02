@@ -81,6 +81,14 @@ secret:
   # Each item of this list has 2 fields "fileName" and "data".
   kubeConfigs: []
 
+temporaryVolume:
+  # Specifies whether a PersistentVolumeClaim for storing temporary data should be created.
+  create: false
+  # The name of the PersistentVolumeClaim to use when create is false.
+  name: ""
+  # The size of the persistent volume claim.
+  size: 100Gi
+
 envs: []
 
 securityContext:

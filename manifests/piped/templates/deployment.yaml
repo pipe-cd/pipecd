@@ -40,6 +40,12 @@ spec:
           args:
             {{- include "piped.pipedArgs" . | nindent 12 }}
           {{- end }}
+          {{- if .Values.temporaryVolume.create }}
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/bin/rm", "-rf", "/tmp/*"]
+          {{- end }}
           ports:
             - name: admin
               containerPort: 9085
@@ -62,6 +68,11 @@ spec:
             - name: piped-config
               mountPath: /etc/piped-config
               readOnly: true
+            {{- if .Values.temporaryVolume.create }}
+            - name: piped-temporary-volume
+              mountPath: "/tmp"
+              readOnly: false
+            {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           {{- with .Values.envs }}
@@ -76,6 +87,11 @@ spec:
         - name: piped-config
           configMap:
             name: {{ include "piped.configMapName" . }}
+        {{- if .Values.temporaryVolume.create }}
+        - name: piped-temporary-volume
+          persistentVolumeClaim:
+            claimName: {{ include "piped.temporaryVolumeName" . }}
+        {{- end }}
       {{- with .Values.securityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}

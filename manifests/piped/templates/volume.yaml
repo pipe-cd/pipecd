@@ -1,0 +1,14 @@
+{{- if .Values.temporaryVolume.create -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "piped.temporaryVolumeName" . }}
+  labels:
+    {{- include "piped.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.temporaryVolume.size }}
+{{- end}}
