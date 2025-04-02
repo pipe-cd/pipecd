@@ -40,12 +40,6 @@ spec:
           args:
             {{- include "piped.pipedArgs" . | nindent 12 }}
           {{- end }}
-          {{- if .Values.temporaryVolume.create }}
-          lifecycle:
-            postStart:
-              exec:
-                command: ["/bin/rm", "-rf", "/tmp/*"]
-          {{- end }}
           ports:
             - name: admin
               containerPort: 9085
