@@ -74,6 +74,17 @@ Name of Secret containing sensitive data
 {{- end }}
 
 {{/*
+Name of Temporary Volume containing piped configuration
+*/}}
+{{- define "piped.temporaryVolumeName" -}}
+{{- if .Values.temporaryVolume.create }}
+{{- include "piped.fullname" . }}
+{{- else }}
+{{- .Values.temporaryVolume.name }}
+{{- end }}
+{{- end }}
+
+{{/*
 Name of ServiceAccount
 */}}
 {{- define "piped.serviceAccountName" -}}
