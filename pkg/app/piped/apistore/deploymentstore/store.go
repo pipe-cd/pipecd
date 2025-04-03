@@ -103,13 +103,13 @@ func (s *store) Lister() Lister {
 }
 
 func (s *store) sync(ctx context.Context) error {
+	// TODO: Call ListNotCompletedDeployments itervally until all required deployments are fetched.
 	resp, err := s.apiClient.ListNotCompletedDeployments(ctx, &pipedservice.ListNotCompletedDeploymentsRequest{})
 	if err != nil {
 		s.logger.Error("failed to list unhandled deployment", zap.Error(err))
 		return err
 	}
 
-	// TODO: Call ListNotCompletedDeployments itervally until all required deployments are fetched.
 	var pendings, planneds, runnings []*model.Deployment
 	for _, d := range resp.Deployments {
 		switch d.Status {
@@ -117,7 +117,7 @@ func (s *store) sync(ctx context.Context) error {
 			pendings = append(pendings, d)
 		case model.DeploymentStatus_DEPLOYMENT_PLANNED:
 			planneds = append(planneds, d)
-		case model.DeploymentStatus_DEPLOYMENT_RUNNING:
+		case model.DeploymentStatus_DEPLOYMENT_RUNNING, model.DeploymentStatus_DEPLOYMENT_ROLLING_BACK:
 			runnings = append(runnings, d)
 		}
 	}
