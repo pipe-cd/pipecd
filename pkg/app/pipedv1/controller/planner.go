@@ -654,7 +654,7 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 
 // getApplicationNotificationMentions returns the list of users groups who should be mentioned in the notification.
 func (p *planner) getApplicationNotificationMentions(event model.NotificationEventType) ([]string, []string, error) {
-	n, ok := p.deployment.Metadata[model.MetadataKeyDeploymentNotification]
+	n, ok := p.deployment.GetMetadataV2().GetShared().GetKeyValues()[model.MetadataKeyDeploymentNotification]
 	if !ok {
 		return []string{}, []string{}, nil
 	}
