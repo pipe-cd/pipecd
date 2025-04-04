@@ -55,10 +55,10 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Name of ConfigMap containing piped configuration
 */}}
 {{- define "piped.configMapName" -}}
-{{- if .Values.config.create }}
-{{- include "piped.fullname" . }}
-{{- else }}
+{{- if .Values.config.name }}
 {{- .Values.config.name }}
+{{- else }}
+{{- include "piped.fullname" . }}
 {{- end }}
 {{- end }}
 
