@@ -77,10 +77,10 @@ Name of Secret containing sensitive data
 Name of Temporary Volume containing piped configuration
 */}}
 {{- define "piped.temporaryVolumeName" -}}
-{{- if .Values.temporaryVolume.create }}
-{{- include "piped.fullname" . }}
-{{- else }}
+{{- if .Values.temporaryVolume.name }}
 {{- .Values.temporaryVolume.name }}
+{{- else }}
+{{- include "piped.fullname" . }}
 {{- end }}
 {{- end }}
 
