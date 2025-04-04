@@ -88,10 +88,10 @@ Name of Temporary Volume containing piped configuration
 Name of ServiceAccount
 */}}
 {{- define "piped.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create -}}
-{{ include "piped.fullname" . }}
-{{- else }}
+{{- if .Values.serviceAccount.name }}
 {{- .Values.serviceAccount.name }}
+{{- else }}
+{{- include "piped.fullname" . }}
 {{- end }}
 {{- end }}
 
