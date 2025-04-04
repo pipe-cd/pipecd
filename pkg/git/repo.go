@@ -164,11 +164,12 @@ func (r *repo) Copy(dest string) (Worktree, error) {
 }
 
 // CopyToModify does cloning the repository to the given destination.
+// This method clones the repository from remote origin to the given destination, not from local repository.
 // The repository is cloned to the given destination with the .
 // NOTE: the given “dest” must be a path that doesn’t exist yet.
 // If you don't, you will get an error.
 func (r *repo) CopyToModify(dest string) (Repo, error) {
-	cmd := exec.Command(r.gitPath, "clone", r.dir, dest)
+	cmd := exec.Command(r.gitPath, "clone", "--filter=tree:0", "--branch", r.clonedBranch, r.remote, dest)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		return nil, formatCommandError(err, out)
 	}
@@ -185,16 +186,6 @@ func (r *repo) CopyToModify(dest string) (Repo, error) {
 		if err := cloned.setUser(context.Background(), r.username, r.email); err != nil {
 			return nil, fmt.Errorf("failed to set user: %v", err)
 		}
-	}
-
-	// because we did a local cloning so set the remote url of origin
-	if err := cloned.setRemote(context.Background(), r.remote); err != nil {
-		return nil, err
-	}
-
-	// fetch the latest changes which doesn't exist in the local repository
-	if out, err := cloned.runGitCommand(context.Background(), "fetch"); err != nil {
-		return nil, formatCommandError(err, out)
 	}
 
 	return cloned, nil
