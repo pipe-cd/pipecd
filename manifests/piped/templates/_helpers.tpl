@@ -66,10 +66,10 @@ Name of ConfigMap containing piped configuration
 Name of Secret containing sensitive data
 */}}
 {{- define "piped.secretName" -}}
-{{- if .Values.secret.create }}
-{{- include "piped.fullname" . }}
-{{- else }}
+{{- if .Values.secret.name }}
 {{- .Values.secret.name }}
+{{- else }}
+{{- include "piped.fullname" . }}
 {{- end }}
 {{- end }}
 
