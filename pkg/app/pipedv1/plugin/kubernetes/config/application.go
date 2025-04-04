@@ -14,16 +14,6 @@
 
 package config
 
-import (
-	"encoding/json"
-	"errors"
-	"fmt"
-
-	"github.com/creasty/defaults"
-
-	config "github.com/pipe-cd/pipecd/pkg/configv1"
-)
-
 // K8sResourceReference represents a reference to a Kubernetes resource.
 // It is used to specify the resources which are treated as the workload of an application.
 type K8sResourceReference struct {
@@ -51,7 +41,8 @@ type KubernetesApplicationSpec struct {
 	// The label will be configured to variant manifests used to distinguish them.
 	VariantLabel KubernetesVariantLabel `json:"variantLabel"`
 
-	// TODO: Define fields for KubernetesApplicationSpec.
+	// Which method should be used for traffic routing.
+	TrafficRouting *KubernetesTrafficRouting `json:"trafficRouting"`
 }
 
 func (s *KubernetesApplicationSpec) Validate() error {
@@ -103,34 +94,43 @@ type KubernetesDeployTargetConfig struct {
 	KubectlVersion string `json:"kubectlVersion"`
 }
 
-// K8sSyncStageOptions contains all configurable values for a K8S_SYNC stage.
-type K8sSyncStageOptions struct {
-	// Whether the PRIMARY variant label should be added to manifests if they were missing.
-	AddVariantLabelToSelector bool `json:"addVariantLabelToSelector"`
-	// Whether the resources that are no longer defined in Git should be removed or not.
-	Prune bool `json:"prune"`
+// K8sResourcePatch represents a patch operation for a Kubernetes resource.
+type K8sResourcePatch struct {
+	// The target of the patch operation.
+	Target K8sResourcePatchTarget `json:"target"`
+	// The operations to be performed on the target.
+	Ops []K8sResourcePatchOp `json:"ops"`
 }
 
-// FindDeployTarget finds the deploy target configuration by the given name.
-func FindDeployTarget(cfg *config.PipedPlugin, name string) (KubernetesDeployTargetConfig, error) {
-	if cfg == nil {
-		return KubernetesDeployTargetConfig{}, errors.New("missing plugin configuration")
-	}
+// K8sResourcePatchTarget represents the target of a patch operation for a Kubernetes resource.
+type K8sResourcePatchTarget struct {
+	// The reference to the Kubernetes resource.
+	K8sResourceReference
+	// In case you want to manipulate the YAML or JSON data specified in a field
+	// of the manifest, specify that field's path. The string value of that field
+	// will be used as input for the patch operations.
+	// Otherwise, the whole manifest will be the target of patch operations.
+	DocumentRoot string `json:"documentRoot"`
+}
 
-	deployTarget := cfg.FindDeployTarget(name)
-	if deployTarget == nil {
-		return KubernetesDeployTargetConfig{}, errors.New("missing deploy target configuration")
-	}
+// K8sResourcePatchOpName represents the name of a patch operation for a Kubernetes resource.
+type K8sResourcePatchOpName string
 
-	var targetCfg KubernetesDeployTargetConfig
+const (
+	// K8sResourcePatchOpYAMLReplace is the name of the patch operation that replaces the target with a new YAML document.
+	K8sResourcePatchOpYAMLReplace = "yaml-replace"
+)
 
-	if err := json.Unmarshal(deployTarget.Config, &targetCfg); err != nil { // TODO: not decode here but in the initialization of the plugin.
-		return KubernetesDeployTargetConfig{}, fmt.Errorf("failed to unmarshal deploy target configuration: %w", err)
-	}
-
-	if err := defaults.Set(&targetCfg); err != nil {
-		return KubernetesDeployTargetConfig{}, fmt.Errorf("failed to set default values for deploy target configuration: %w", err)
-	}
-
-	return targetCfg, nil
+// K8sResourcePatchOp represents a patch operation for a Kubernetes resource.
+type K8sResourcePatchOp struct {
+	// The operation type.
+	// Currently, only "yaml-replace" is supported.
+	// Default is "yaml-replace".
+	// TODO: support "yaml-add", "yaml-remove", "json-replace" and "text-regex".
+	Op K8sResourcePatchOpName `json:"op" default:"yaml-replace"`
+	// The path string pointing to the manipulated field.
+	// E.g. "$.spec.foos[0].bar"
+	Path string `json:"path"`
+	// The value string whose content will be used as new value for the field.
+	Value string `json:"value"`
 }
