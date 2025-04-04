@@ -199,6 +199,7 @@ type ApplicationStore interface {
 	UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string, deployTargetsByPlugin map[string]*model.DeployTargets) error
 	UpdatePlatformProvider(ctx context.Context, id string, provider string) error
 	UpdateDeployTargets(ctx context.Context, id string, dp map[string]*model.DeployTargets) error
+	UpdateGitPath(ctx context.Context, id string, gitPath *model.ApplicationGitPath) error
 }
 
 type applicationStore struct {
@@ -383,6 +384,13 @@ func (s *applicationStore) UpdatePlatformProvider(ctx context.Context, id string
 func (s *applicationStore) UpdateDeployTargets(ctx context.Context, id string, dp map[string]*model.DeployTargets) error {
 	return s.update(ctx, id, func(app *model.Application) error {
 		app.DeployTargetsByPlugin = dp
+		return nil
+	})
+}
+
+func (s *applicationStore) UpdateGitPath(ctx context.Context, id string, gitPath *model.ApplicationGitPath) error {
+	return s.update(ctx, id, func(app *model.Application) error {
+		app.GitPath = gitPath
 		return nil
 	})
 }
