@@ -55,10 +55,10 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Name of ConfigMap containing piped configuration
 */}}
 {{- define "piped.configMapName" -}}
-{{- if .Values.config.create }}
-{{- include "piped.fullname" . }}
-{{- else }}
+{{- if .Values.config.name }}
 {{- .Values.config.name }}
+{{- else }}
+{{- include "piped.fullname" . }}
 {{- end }}
 {{- end }}
 
@@ -66,10 +66,10 @@ Name of ConfigMap containing piped configuration
 Name of Secret containing sensitive data
 */}}
 {{- define "piped.secretName" -}}
-{{- if .Values.secret.create }}
-{{- include "piped.fullname" . }}
-{{- else }}
+{{- if .Values.secret.name }}
 {{- .Values.secret.name }}
+{{- else }}
+{{- include "piped.fullname" . }}
 {{- end }}
 {{- end }}
 
@@ -77,10 +77,10 @@ Name of Secret containing sensitive data
 Name of Temporary Volume containing piped configuration
 */}}
 {{- define "piped.temporaryVolumeName" -}}
-{{- if .Values.temporaryVolume.create }}
-{{- include "piped.fullname" . }}
-{{- else }}
+{{- if .Values.temporaryVolume.name }}
 {{- .Values.temporaryVolume.name }}
+{{- else }}
+{{- include "piped.fullname" . }}
 {{- end }}
 {{- end }}
 
@@ -88,10 +88,10 @@ Name of Temporary Volume containing piped configuration
 Name of ServiceAccount
 */}}
 {{- define "piped.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create -}}
-{{ include "piped.fullname" . }}
-{{- else }}
+{{- if .Values.serviceAccount.name }}
 {{- .Values.serviceAccount.name }}
+{{- else }}
+{{- include "piped.fullname" . }}
 {{- end }}
 {{- end }}
 

@@ -47,7 +47,7 @@ service:
 config:
   # Specifies whether a ConfigMap for piped configuration should be created.
   create: true
-  # The name of the ConfigMap to use when create is false.
+  # The name of the ConfigMap.
   name: ""
   # The name of the configuration file.
   fileName: piped-config.yaml
@@ -71,7 +71,7 @@ config:
 secret:
   # Specifies whether a Secret for storing sensitive data should be created.
   create: true
-  # The name of the Secret to use when create is false.
+  # The name of the Secret.
   name: ""
   # Where the secret files will be mounted to.
   mountPath: /etc/piped-secret
@@ -84,7 +84,7 @@ secret:
 temporaryVolume:
   # Specifies whether a PersistentVolumeClaim for storing temporary data should be created.
   create: false
-  # The name of the PersistentVolumeClaim to use when create is false.
+  # The name of the PersistentVolumeClaim.
   name: ""
   # The storage class name of the persistent volume claim.
   storageClassName: ""
@@ -117,7 +117,7 @@ resources: {}
 serviceAccount:
   # Specifies whether a ServiceAccount to be used by Piped should be created.
   create: true
-  # The name of existing ServiceAccount to use when create is false.
+  # The name of ServiceAccount.
   name: ""
   annotations: {}
 
