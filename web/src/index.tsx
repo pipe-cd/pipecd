@@ -8,6 +8,7 @@ import { Routes } from "./routes";
 import { BrowserRouter } from "react-router-dom";
 import { setupDayjs } from "./utils/setup-dayjs";
 import { fetchMe } from "./modules/me";
+import { CookiesProvider } from "react-cookie";
 
 async function run(): Promise<void> {
   if (process.env.ENABLE_MOCK === "true") {
@@ -44,19 +45,21 @@ Happy PipeCD-ing 🙌
   store.dispatch(fetchMe());
 
   render(
-    <Provider store={store}>
-      <ThemeProvider theme={theme}>
-        <BrowserRouter
-          future={{
-            v7_startTransition: false,
-            v7_relativeSplatPath: false,
-          }}
-        >
-          <CssBaseline />
-          <Routes />
-        </BrowserRouter>
-      </ThemeProvider>
-    </Provider>,
+    <CookiesProvider>
+      <Provider store={store}>
+        <ThemeProvider theme={theme}>
+          <BrowserRouter
+            future={{
+              v7_startTransition: false,
+              v7_relativeSplatPath: false,
+            }}
+          >
+            <CssBaseline />
+            <Routes />
+          </BrowserRouter>
+        </ThemeProvider>
+      </Provider>
+    </CookiesProvider>,
     document.getElementById("root")
   );
 }
