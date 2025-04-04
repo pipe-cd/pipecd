@@ -20,6 +20,11 @@ import type { AppState } from "~/store";
 
 const MODULE_NAME = "applications";
 
+export enum PIPED_VERSION {
+  V0 = "v0",
+  V1 = "v1",
+}
+
 export type ApplicationSyncStatusKey = keyof typeof ApplicationSyncStatus;
 export type ApplicationKindKey = keyof typeof ApplicationKind;
 

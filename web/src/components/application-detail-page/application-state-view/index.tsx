@@ -6,13 +6,14 @@ import {
   makeStyles,
   Typography,
 } from "@material-ui/core";
-import { FC, memo, useEffect } from "react";
+import { FC, memo, useEffect, useMemo } from "react";
 import { UI_TEXT_REFRESH } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { useInterval } from "~/hooks/use-interval";
 import {
   Application,
   ApplicationKind,
+  PIPED_VERSION,
   selectById as selectAppById,
 } from "~/modules/applications";
 import {
@@ -25,8 +26,13 @@ import { KubernetesStateView } from "./kubernetes-state-view";
 import { CloudRunStateView } from "./cloudrun-state-view";
 import { ECSStateView } from "./ecs-state-view";
 import { LambdaStateView } from "./lambda-state-view";
+import { checkPipedAppVersion } from "~/utils/common";
+import { LiveStateView } from "./live-state-view";
 
 const isDisplayLiveState = (app: Application.AsObject | undefined): boolean => {
+  const result = checkPipedAppVersion(app);
+  if (result[PIPED_VERSION.V1]) return true;
+
   return (
     app?.kind === ApplicationKind.KUBERNETES ||
     app?.kind === ApplicationKind.CLOUDRUN ||
@@ -72,6 +78,8 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
       selectLiveStateById(state.applicationLiveState, applicationId),
       selectAppById(state.applications, applicationId),
     ]);
+
+    const pipedVersion = useMemo(() => checkPipedAppVersion(app), [app]);
 
     useEffect(() => {
       if (app && isDisplayLiveState(app)) {
@@ -142,6 +150,11 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
           )}
         </>
       );
+    }
+
+    if (pipedVersion[PIPED_VERSION.V1]) {
+      const resources = liveState.applicationLiveState.resourcesList || [];
+      return <LiveStateView resources={resources} />;
     }
 
     switch (liveState.kind) {
