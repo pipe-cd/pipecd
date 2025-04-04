@@ -6,7 +6,7 @@ import { ResourceFilterPopover } from "../resource-filter-popover";
 import { ResourceNode } from "./resource-node";
 import { ResourceDetail } from "../resource-detail";
 import dagre from "dagre";
-import ResourceConnector from "./resource-connector";
+import ResourceEdge from "./resource-edge";
 
 const useStyles = makeStyles((theme) => ({
   stateViewWrapper: {
@@ -121,7 +121,7 @@ const GraphView: FC<Props> = ({ resources }) => {
     .map((v) => graph.node(v))
     .filter(Boolean);
 
-  const lines = useMemo(() => {
+  const edges = useMemo(() => {
     return graph.edges().map((v) => {
       const edge = graph.edge(v);
       let baseX = Infinity;
@@ -176,8 +176,8 @@ const GraphView: FC<Props> = ({ resources }) => {
             />
           </Box>
         ))}
-        {lines?.map(({ top, left, width, height, points }, i) => (
-          <ResourceConnector
+        {edges?.map(({ top, left, width, height, points }, i) => (
+          <ResourceEdge
             key={points + i}
             top={top}
             left={left}
@@ -213,12 +213,4 @@ const GraphView: FC<Props> = ({ resources }) => {
   );
 };
 
-// export default memo(GraphView, (prevProps, nextProps) => {
-//   return (
-//     prevProps.resources.length === nextProps.resources.length &&
-//     prevProps.resources.every(
-//       (r, index) => r.id === nextProps.resources[index].id
-//     )
-//   );
-// });
 export default GraphView;

@@ -3,7 +3,7 @@ import clsx from "clsx";
 import { FC, useEffect, useMemo, useState } from "react";
 
 import { ResourceState } from "~~/model/application_live_state_pb";
-import DeploymentTabBar from "./deployment-tab-bar";
+import DeployTargetTabBar from "./deploy-target-tab-bar";
 import GraphView from "./graph-view";
 
 const useStyles = makeStyles(() => ({
@@ -28,52 +28,49 @@ type Props = {
 
 export const LiveStateView: FC<Props> = ({ resources: allResources }) => {
   const classes = useStyles();
-  const [deploymentTabSelected, setDeploymentTabSelected] = useState("");
+  const [deployTargetTabSelected, setDeployTargetTabSelected] = useState("");
 
-  const resourcesByDeployment = useMemo(() => {
-    const resourceMapByDeployment: Record<
-      string,
-      ResourceState.AsObject[]
-    > = {};
-    allResources.forEach((r) => {
-      const deployTarget = r.deployTarget;
-      if (!deployTarget) return;
+  const resourcesByDeployTarget = useMemo(() => {
+    return allResources.reduce((all, resource) => {
+      const deployTarget = resource.deployTarget;
+      if (!deployTarget) return all;
 
-      if (!resourceMapByDeployment[deployTarget]) {
-        resourceMapByDeployment[deployTarget] = [];
+      if (!all[deployTarget]) {
+        all[deployTarget] = [];
       }
-      resourceMapByDeployment[deployTarget].push(r);
-    });
-    return resourceMapByDeployment;
+      all[deployTarget].push(resource);
+      return all;
+    }, {} as Record<string, ResourceState.AsObject[]>);
   }, [allResources]);
 
-  const deploymentList = useMemo(() => Object.keys(resourcesByDeployment), [
-    resourcesByDeployment,
-  ]);
+  const deployTargetList = useMemo(
+    () => Object.keys(resourcesByDeployTarget).sort(),
+    [resourcesByDeployTarget]
+  );
 
   useEffect(() => {
-    if (deploymentTabSelected == "" && deploymentList.length > 0) {
-      setDeploymentTabSelected(deploymentList[0]);
+    if (deployTargetTabSelected == "" && deployTargetList.length > 0) {
+      setDeployTargetTabSelected(deployTargetList[0]);
     }
-  }, [deploymentList, deploymentTabSelected]);
+  }, [deployTargetList, deployTargetTabSelected]);
 
   const resources = useMemo(() => {
-    if (!deploymentTabSelected) return [];
-    return resourcesByDeployment[deploymentTabSelected];
-  }, [deploymentTabSelected, resourcesByDeployment]);
+    if (!deployTargetTabSelected) return [];
+    return resourcesByDeployTarget[deployTargetTabSelected];
+  }, [deployTargetTabSelected, resourcesByDeployTarget]);
 
   return (
     <div className={clsx(classes.root)}>
       <Box className={classes.floatLeft}>
-        <DeploymentTabBar
-          tabs={deploymentList}
-          selectedTab={deploymentTabSelected}
-          onSelectTab={setDeploymentTabSelected}
+        <DeployTargetTabBar
+          tabs={deployTargetList}
+          selectedTab={deployTargetTabSelected}
+          onSelectTab={setDeployTargetTabSelected}
         />
       </Box>
 
-      {deploymentTabSelected && (
-        <GraphView key={deploymentTabSelected} resources={resources} />
+      {deployTargetTabSelected && (
+        <GraphView key={deployTargetTabSelected} resources={resources} />
       )}
     </div>
   );

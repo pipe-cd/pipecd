@@ -11,7 +11,7 @@ type Props = {
 
 const STROKE_WIDTH = 2;
 
-const ResourceConnector: FC<Props> = ({
+const ResourceEdge: FC<Props> = ({
   top,
   left,
   width,
@@ -38,4 +38,4 @@ const ResourceConnector: FC<Props> = ({
   );
 };
 
-export default ResourceConnector;
+export default ResourceEdge;

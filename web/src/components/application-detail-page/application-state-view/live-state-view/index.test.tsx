@@ -7,6 +7,8 @@ import { LiveStateView } from ".";
 test("render resources on tab local", () => {
   render(<LiveStateView resources={resourcesApplicationList} />, {});
 
+  userEvent.click(screen.getByRole("tab", { name: "local" }));
+
   expect(screen.queryAllByTestId("application-resource")).toHaveLength(2);
 });
 

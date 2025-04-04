@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const DeploymentTabBar: FC<Props> = ({ tabs, selectedTab, onSelectTab }) => {
+const DeployTargetTabBar: FC<Props> = ({ tabs, selectedTab, onSelectTab }) => {
   const classes = useStyles();
 
   return (
@@ -58,4 +58,4 @@ const DeploymentTabBar: FC<Props> = ({ tabs, selectedTab, onSelectTab }) => {
   );
 };
 
-export default DeploymentTabBar;
+export default DeployTargetTabBar;
