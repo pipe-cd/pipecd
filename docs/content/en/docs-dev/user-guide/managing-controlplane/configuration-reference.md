@@ -169,8 +169,11 @@ Must be one of the following objects:
 | clientSecret | string | The client secret string of OpenID Connect oauth app. | Yes |
 | issuer | string | The address of OpenID Connect service. | Yes |
 | redirectUri | string | The address of the redirect URI. | Yes |
-| authorizationEndpoint | string | The address of the authorization endpoint. | No |
-| tokenEndpoint | string | The address of the token endpoint. | No |
-| userInfoEndpoint | string | The address of the user info endpoint. | No |
+| authorizationEndpoint | string | The address of the authorization endpoint. Only set if you want to use custom authorization endpoint (still need issuer discovery). | No |
+| tokenEndpoint | string | The address of the token endpoint. Only set if you want to use custom token endpoint (still need issuer discovery). | No |
+| userInfoEndpoint | string | The address of the user info endpoint. Only set if you want to use custom user info endpoint (still need issuer discovery). | No |
 | proxyUrl | string | The address of the proxy used while communicating with the OpenID Connect service. | No |
 | scopes | []string | Scopes to request from the OpenID Connect service. Default is `openid`. Some providers may require other scopes. | No |
+| usernameClaimKey | string | The key name of the claim that contains the username. If not set, the default value will be chosen in the following order: `username`, `preferred_username`, `name`, `cognito:username`. | No |
+| rolesClaimKey | string | The key name of the claim that contains the roles. If not set, the default value will be chosen in the following order: `groups`, `roles`, `custom:roles`, `custom:groups`. | No |
+| avatarUrlClaimKey | string | The key name of the claim that contains the avatar url. If not set, the default value will be chosen in the following order: `picture`, `avatar_url`. | No |
