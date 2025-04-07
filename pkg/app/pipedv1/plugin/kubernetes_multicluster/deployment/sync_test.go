@@ -604,11 +604,11 @@ func TestPlugin_executeK8sMultiSyncStage_multiCluster(t *testing.T) {
 	cluster2 := setupCluster(t, "cluster2")
 
 	dts := []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
-		&sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		{
 			Name:   "cluster1",
 			Config: *cluster1.dtc,
 		},
-		&sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		{
 			Name:   "cluster2",
 			Config: *cluster2.dtc,
 		},
@@ -676,11 +676,11 @@ func TestPlugin_executeK8sMultiSyncStage_multiCluster_templateNone(t *testing.T)
 	cluster2 := setupCluster(t, "cluster2")
 
 	dts := []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
-		&sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		{
 			Name:   "cluster1",
 			Config: *cluster1.dtc,
 		},
-		&sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		{
 			Name:   "cluster2",
 			Config: *cluster2.dtc,
 		},
@@ -747,11 +747,11 @@ func TestPlugin_executeK8sMultiSyncStage_multiCluster_failed_one_of_the_sync(t *
 	cluster2 := setupCluster(t, "cluster2")
 
 	dts := []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
-		&sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		{
 			Name:   "cluster1",
 			Config: *cluster1.dtc,
 		},
-		&sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		{
 			Name:   "cluster2",
 			Config: *cluster2.dtc,
 		},
