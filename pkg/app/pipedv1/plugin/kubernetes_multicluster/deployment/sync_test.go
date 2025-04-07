@@ -708,3 +708,55 @@ func TestPlugin_executeK8sMultiSyncStage_multiCluster_templateNone(t *testing.T)
 		assert.Equal(t, "0123456789", deployment.GetAnnotations()["pipecd.dev/commit-hash"])
 	}
 }
+
+func TestPlugin_executeK8sMultiSyncStage_multiCluster_failed_one_of_the_sync(t *testing.T) {
+	t.Parallel()
+
+	target := filepath.Join("./", "testdata", "multicluster_failed_one_of_the_sync", "target")
+	cfg, err := os.ReadFile(filepath.Join(target, "app.pipecd.yaml"))
+	require.NoError(t, err)
+
+	// initialize tool registry
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
+	// prepare the input
+	input := &sdk.ExecuteStageInput{
+		Request: sdk.ExecuteStageRequest{
+			StageName: "K8S_MULTI_SYNC",
+			Deployment: sdk.Deployment{
+				PipedID:       "piped-id",
+				ApplicationID: "app-id",
+			},
+			StageConfig:             []byte(``),
+			RunningDeploymentSource: sdk.DeploymentSource{},
+			TargetDeploymentSource: sdk.DeploymentSource{
+				ApplicationDirectory:      target,
+				CommitHash:                "0123456789",
+				ApplicationConfig:         cfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+		},
+		Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
+		Logger: zaptest.NewLogger(t),
+	}
+
+	// prepare the first cluster
+	cluster1 := setupCluster(t, "cluster1")
+	cluster2 := setupCluster(t, "cluster2")
+
+	dts := []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		&sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+			Name:   "cluster1",
+			Config: *cluster1.dtc,
+		},
+		&sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+			Name:   "cluster2",
+			Config: *cluster2.dtc,
+		},
+	}
+
+	plugin := &Plugin{}
+	status := plugin.executeK8sMultiSyncStage(t.Context(), input, dts)
+
+	require.Equal(t, sdk.StageStatusFailure, status)
+}
