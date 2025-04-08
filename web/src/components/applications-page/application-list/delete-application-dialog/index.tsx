@@ -1,5 +1,6 @@
 import { Application, selectById } from "~/modules/applications";
 import {
+  Box,
   Button,
   CircularProgress,
   Dialog,
@@ -87,6 +88,19 @@ export const DeleteApplicationDialog: FC<DeleteApplicationDialogProps> = memo(
       dispatch(clearDeletingApp());
     }, [dispatch]);
 
+    const renderLabels = useCallback(() => {
+      if (!application?.labelsMap) return <Skeleton height={24} width={200} />;
+
+      if (application.labelsMap.length === 0) return "-";
+
+      return application.labelsMap.map(([key, value]) => (
+        <Fragment key={key}>
+          <span>{`${key}: ${value}`}</span>
+          <br />
+        </Fragment>
+      ));
+    }, [application?.labelsMap]);
+
     return (
       <Dialog
         open={Boolean(application)}
@@ -109,23 +123,10 @@ export const DeleteApplicationDialog: FC<DeleteApplicationDialogProps> = memo(
               <Skeleton height={24} width={200} />
             )}
           </Typography>
-          <div style={{ height: 24 }} /> {/* Spacer */}
+          <Box height={24} />
           <Typography variant="caption">Labels</Typography>
           <Typography variant="body1" className={classes.applicationLabels}>
-            {application ? (
-              application.labelsMap.length !== 0 ? (
-                application.labelsMap.map(([key, value]) => (
-                  <Fragment key={key}>
-                    <span>{key + ": " + value}</span>
-                    <br />
-                  </Fragment>
-                ))
-              ) : (
-                "-"
-              )
-            ) : (
-              <Skeleton height={24} width={200} />
-            )}
+            {renderLabels()}
           </Typography>
         </DialogContent>
         <DialogActions>
