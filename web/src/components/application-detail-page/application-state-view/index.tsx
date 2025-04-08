@@ -153,7 +153,7 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
     }
 
     if (pipedVersion[PIPED_VERSION.V1]) {
-      const resources = liveState.applicationLiveState.resourcesList || [];
+      const resources = liveState.applicationLiveState?.resourcesList || [];
       return <LiveStateView resources={resources} />;
     }
 
