@@ -221,7 +221,7 @@ spec:
 			wantErr:      false,
 		},
 		{
-			name:     "replace text",
+			name:     "replace text for semantic version",
 			path:     "testdata/kustomization.yaml",
 			regex:    "newTag: (v[0-9].[0-9].[0-9])",
 			newValue: "v0.2.0",
@@ -231,6 +231,26 @@ spec:
 `),
 			wantUpToDate: false,
 			wantErr:      false,
+		},
+		{
+			name:     "replace text for non-semantic version (commit hash)",
+			path:     "testdata/kustomization2.yaml",
+			regex:    "newTag: ([0-9a-z]+)",
+			newValue: "cba4321",
+			want: []byte(`images:
+- name: gcr.io/pipecd/foo
+  newTag: cba4321
+`),
+		},
+		{
+			name:     "replace text for non-semantic version (sha256)",
+			path:     "testdata/kustomization3.yaml",
+			regex:    "newTag: sha256:([0-9a-z]+)",
+			newValue: "cba4321",
+			want: []byte(`images:
+- name: gcr.io/pipecd/foo
+  newTag: sha256:cba4321
+`),
 		},
 	}
 	for _, tc := range testcases {

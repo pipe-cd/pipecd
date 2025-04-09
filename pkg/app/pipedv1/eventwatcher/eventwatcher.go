@@ -18,6 +18,7 @@
 package eventwatcher
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -718,9 +719,17 @@ func convertStr(value interface{}) (out string, err error) {
 	return
 }
 
-// modifyText returns a new text replacing all matches of the given regex with the newValue.
-// The only first capturing group enclosed by `()` will be replaced.
-// True as a second returned value means it's already up-to-date.
+// modifyText returns a modified version of the file contents by replacing the first capturing group
+// of all matches of the provided regular expression with the specified newValue.
+// The replacement is applied only to the part of each match that corresponds to the first capturing
+// group (the portion enclosed in the first pair of parentheses `()`).
+//
+// It returns the updated content, a boolean indicating whether the file was already up-to-date,
+// and an error if any issue occurs during reading, regular expression parsing, or matching.
+//
+// If no matches are found, an error is returned.
+// If all first capturing groups already equal newValue, the original content is returned,
+// the boolean is true, and no changes are applied.
 func modifyText(path, regexText, newValue string) ([]byte, bool, error) {
 	content, err := os.ReadFile(path)
 	if err != nil {
@@ -748,17 +757,30 @@ func modifyText(path, regexText, newValue string) ([]byte, bool, error) {
 	if firstGroup == "" {
 		return nil, false, fmt.Errorf("capturing group not found in the given regex")
 	}
-	subRegex, err := pool.Get(firstGroup)
-	if err != nil {
-		return nil, false, fmt.Errorf("failed to compile the first capturing group: %w", err)
-	}
 
 	var touched, outDated bool
 	newText := regex.ReplaceAllFunc(content, func(match []byte) []byte {
 		touched = true
-		outDated = string(subRegex.Find(match)) != newValue
-		// Return text replacing the only first capturing group with the newValue.
-		return subRegex.ReplaceAll(match, []byte(newValue))
+		submatches := regex.FindSubmatchIndex(match)
+
+		if len(submatches) < 4 {
+			return match
+		}
+
+		groupStart, groupEnd := submatches[2], submatches[3]
+		if string(match[groupStart:groupEnd]) != newValue {
+			outDated = true
+		} else {
+			return match
+		}
+
+		var buf bytes.Buffer
+
+		buf.Write(match[:groupStart])
+		buf.WriteString(newValue)
+		buf.Write(match[groupEnd:])
+
+		return buf.Bytes()
 	})
 	if !touched {
 		return nil, false, fmt.Errorf("the content of %s doesn't match %s", path, regexText)
