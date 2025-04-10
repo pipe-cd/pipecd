@@ -19,10 +19,7 @@ import config "github.com/pipe-cd/pipecd/pkg/configv1"
 // Spec[T] represents both of follows
 // - the type is pointer type of T
 // - the type has Validate method
-type Spec[T any] interface {
-	*T
-	Validate() error
-}
+type Spec[T any] = config.Spec[T]
 
 // LoadConfigSpec loads the config spec from the application config.
 // The type T must be a pointer to a struct that has Validate method.
