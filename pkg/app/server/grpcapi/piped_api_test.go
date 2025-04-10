@@ -21,6 +21,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/cache/cachetest"
@@ -208,6 +209,288 @@ func TestValidateDeploymentBelongsToPiped(t *testing.T) {
 				deploymentStore:      tt.deploymentStore,
 			}
 			err := api.validateDeploymentBelongsToPiped(ctx, tt.deploymentID, tt.pipedID)
+			assert.Equal(t, tt.wantErr, err != nil)
+		})
+	}
+}
+
+func TestUpdateApplicationsGitPath(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	tests := []struct {
+		name             string
+		piped            *model.Piped
+		applicationStore datastore.ApplicationStore
+		wantErr          bool
+	}{
+		{
+			name: "failed to list applications",
+			piped: &model.Piped{
+				Id:        "pipedID",
+				ProjectId: "projectID",
+			},
+			applicationStore: func() datastore.ApplicationStore {
+				s := datastoretest.NewMockApplicationStore(ctrl)
+				opts := datastore.ListOptions{
+					Filters: []datastore.ListFilter{
+						{
+							Field:    "ProjectId",
+							Operator: datastore.OperatorEqual,
+							Value:    "projectID",
+						},
+						{
+							Field:    "PipedId",
+							Operator: datastore.OperatorEqual,
+							Value:    "pipedID",
+						},
+						{
+							Field:    "Disabled",
+							Operator: datastore.OperatorEqual,
+							Value:    false,
+						},
+					},
+				}
+				s.EXPECT().List(gomock.Any(), opts).
+					Return(nil, "", assert.AnError)
+				return s
+			}(),
+			wantErr: true,
+		},
+		{
+			name: "no need to update",
+			piped: &model.Piped{
+				Id:        "pipedID",
+				ProjectId: "projectID",
+				Repositories: []*model.ApplicationGitRepository{
+					{
+						Id:     "repoID",
+						Remote: "https://test-repo.git",
+						Branch: "branch",
+					},
+				},
+			},
+			applicationStore: func() datastore.ApplicationStore {
+				s := datastoretest.NewMockApplicationStore(ctrl)
+				opts := datastore.ListOptions{
+					Filters: []datastore.ListFilter{
+						{
+							Field:    "ProjectId",
+							Operator: datastore.OperatorEqual,
+							Value:    "projectID",
+						},
+						{
+							Field:    "PipedId",
+							Operator: datastore.OperatorEqual,
+							Value:    "pipedID",
+						},
+						{
+							Field:    "Disabled",
+							Operator: datastore.OperatorEqual,
+							Value:    false,
+						},
+					},
+				}
+				s.EXPECT().List(gomock.Any(), opts).
+					Return([]*model.Application{
+						{
+							Id: "appID",
+							GitPath: &model.ApplicationGitPath{
+								Repo: &model.ApplicationGitRepository{
+									Id:     "repoID",
+									Remote: "https://test-repo.git",
+									Branch: "branch",
+								},
+							},
+						},
+					}, "", nil)
+				return s
+			}(),
+			wantErr: false,
+		},
+		{
+			name: "failed to make git path",
+			piped: &model.Piped{
+				Id:        "pipedID",
+				ProjectId: "projectID",
+				Repositories: []*model.ApplicationGitRepository{
+					{
+						Id:     "repoID",
+						Remote: "https://test-repo.git",
+						Branch: "",
+					},
+				},
+			},
+			applicationStore: func() datastore.ApplicationStore {
+				s := datastoretest.NewMockApplicationStore(ctrl)
+				opts := datastore.ListOptions{
+					Filters: []datastore.ListFilter{
+						{
+							Field:    "ProjectId",
+							Operator: datastore.OperatorEqual,
+							Value:    "projectID",
+						},
+						{
+							Field:    "PipedId",
+							Operator: datastore.OperatorEqual,
+							Value:    "pipedID",
+						},
+						{
+							Field:    "Disabled",
+							Operator: datastore.OperatorEqual,
+							Value:    false,
+						},
+					},
+				}
+				s.EXPECT().List(gomock.Any(), opts).
+					Return([]*model.Application{
+						{
+							Id: "appID",
+							GitPath: &model.ApplicationGitPath{
+								Repo: &model.ApplicationGitRepository{
+									Id:     "repoID",
+									Remote: "https://test-repo.git",
+									Branch: "branch",
+								},
+							},
+						},
+					}, "", nil)
+				return s
+			}(),
+			wantErr: true,
+		},
+		{
+			name: "failed to update git path",
+			piped: &model.Piped{
+				Id:        "pipedID",
+				ProjectId: "projectID",
+				Repositories: []*model.ApplicationGitRepository{
+					{
+						Id:     "repoID",
+						Remote: "https://test-repo.git",
+						Branch: "branch-changed",
+					},
+				},
+			},
+			applicationStore: func() datastore.ApplicationStore {
+				s := datastoretest.NewMockApplicationStore(ctrl)
+				opts := datastore.ListOptions{
+					Filters: []datastore.ListFilter{
+						{
+							Field:    "ProjectId",
+							Operator: datastore.OperatorEqual,
+							Value:    "projectID",
+						},
+						{
+							Field:    "PipedId",
+							Operator: datastore.OperatorEqual,
+							Value:    "pipedID",
+						},
+						{
+							Field:    "Disabled",
+							Operator: datastore.OperatorEqual,
+							Value:    false,
+						},
+					},
+				}
+				s.EXPECT().List(gomock.Any(), opts).
+					Return([]*model.Application{
+						{
+							Id: "appID",
+							GitPath: &model.ApplicationGitPath{
+								Repo: &model.ApplicationGitRepository{
+									Id:     "repoID",
+									Remote: "https://test-repo.git",
+									Branch: "branch",
+								},
+							},
+						},
+					}, "", nil)
+				gitpath := &model.ApplicationGitPath{
+					Repo: &model.ApplicationGitRepository{
+						Id:     "repoID",
+						Remote: "https://test-repo.git",
+						Branch: "branch-changed",
+					},
+					Url: "https://test-repo.git//tree/branch-changed/",
+				}
+				s.EXPECT().UpdateGitPath(gomock.Any(), "appID", gitpath).
+					Return(assert.AnError)
+				return s
+			}(),
+			wantErr: true,
+		},
+		{
+			name: "successfully updated",
+			piped: &model.Piped{
+				Id:        "pipedID",
+				ProjectId: "projectID",
+				Repositories: []*model.ApplicationGitRepository{
+					{
+						Id:     "repoID",
+						Remote: "https://test-repo.git",
+						Branch: "branch-changed",
+					},
+				},
+			},
+			applicationStore: func() datastore.ApplicationStore {
+				s := datastoretest.NewMockApplicationStore(ctrl)
+				opts := datastore.ListOptions{
+					Filters: []datastore.ListFilter{
+						{
+							Field:    "ProjectId",
+							Operator: datastore.OperatorEqual,
+							Value:    "projectID",
+						},
+						{
+							Field:    "PipedId",
+							Operator: datastore.OperatorEqual,
+							Value:    "pipedID",
+						},
+						{
+							Field:    "Disabled",
+							Operator: datastore.OperatorEqual,
+							Value:    false,
+						},
+					},
+				}
+				s.EXPECT().List(gomock.Any(), opts).
+					Return([]*model.Application{
+						{
+							Id: "appID",
+							GitPath: &model.ApplicationGitPath{
+								Repo: &model.ApplicationGitRepository{
+									Id:     "repoID",
+									Remote: "https://test-repo.git",
+									Branch: "branch",
+								},
+							},
+						},
+					}, "", nil)
+				gitpath := &model.ApplicationGitPath{
+					Repo: &model.ApplicationGitRepository{
+						Id:     "repoID",
+						Remote: "https://test-repo.git",
+						Branch: "branch-changed",
+					},
+					Url: "https://test-repo.git//tree/branch-changed/",
+				}
+				s.EXPECT().UpdateGitPath(gomock.Any(), "appID", gitpath).
+					Return(nil)
+				return s
+			}(),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			api := &PipedAPI{
+				applicationStore: tt.applicationStore,
+				logger:           zap.NewNop(),
+			}
+			err := api.updateApplicationsGitPath(ctx, tt.piped)
 			assert.Equal(t, tt.wantErr, err != nil)
 		})
 	}
