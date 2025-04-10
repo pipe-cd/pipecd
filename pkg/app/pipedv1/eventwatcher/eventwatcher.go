@@ -719,7 +719,7 @@ func convertStr(value interface{}) (out string, err error) {
 	return
 }
 
-// modifyText returns a modified version of the file contents by replacing the first capturing group
+// modifyText returns a modified text of the file contents by replacing the first capturing group
 // of all matches of the provided regular expression with the specified newValue.
 // The replacement is applied only to the part of each match that corresponds to the first capturing
 // group (the portion enclosed in the first pair of parentheses `()`).
@@ -768,11 +768,13 @@ func modifyText(path, regexText, newValue string) ([]byte, bool, error) {
 		}
 
 		groupStart, groupEnd := submatches[2], submatches[3]
-		if string(match[groupStart:groupEnd]) != newValue {
-			outDated = true
-		} else {
+
+		// no update on the value
+		if string(match[groupStart:groupEnd]) == newValue {
 			return match
 		}
+
+		outDated = true
 
 		var buf bytes.Buffer
 
