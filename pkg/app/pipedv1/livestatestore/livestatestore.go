@@ -57,6 +57,7 @@ func NewStore(ctx context.Context, cfg *config.PipedSpec, appLister applicationL
 		gracePeriod: gracePeriod,
 		logger:      logger,
 	}
+	// TODO: general state from plugin from store fields
 
 	return s
 }
