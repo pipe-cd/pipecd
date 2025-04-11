@@ -25,7 +25,6 @@ import (
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
-	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/diff"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
@@ -41,7 +40,7 @@ func (p Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTarge
 	deployTarget := deployTargets[0]
 	deployTargetConfig := deployTarget.Config
 
-	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](input.Request.DeploymentSource.ApplicationConfig)
+	spec, err := sdk.LoadConfigSpec[*kubeconfig.KubernetesApplicationSpec](input.Request.DeploymentSource)
 	if err != nil {
 		input.Logger.Error("Failed to decode the application spec", zap.Error(err))
 		return nil, err
@@ -52,7 +51,7 @@ func (p Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTarge
 	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
 
 	// Get the kubectl tool path.
-	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion))
+	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion))
 	if err != nil {
 		input.Logger.Error("Failed to get kubectl tool", zap.Error(err))
 		return nil, err
@@ -77,7 +76,7 @@ func (p Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTarge
 		resourceStates = append(resourceStates, m.ToResourceState(deployTarget.Name))
 	}
 
-	manifests, err := p.loadManifests(ctx, input, cfg.Spec, provider.NewLoader(toolRegistry))
+	manifests, err := p.loadManifests(ctx, input, spec, provider.NewLoader(toolRegistry))
 	if err != nil {
 		input.Logger.Error("Failed to load manifests", zap.Error(err))
 		return nil, err

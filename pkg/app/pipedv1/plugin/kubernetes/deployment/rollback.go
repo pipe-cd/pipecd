@@ -21,7 +21,6 @@ import (
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
-	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
@@ -35,7 +34,7 @@ func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.Execute
 
 	lp.Info("Start rolling back the deployment")
 
-	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](input.Request.RunningDeploymentSource.ApplicationConfig)
+	spec, err := sdk.LoadConfigSpec[*kubeconfig.KubernetesApplicationSpec](input.Request.RunningDeploymentSource)
 	if err != nil {
 		lp.Errorf("Failed while decoding application config (%v)", err)
 		return sdk.StageStatusFailure
@@ -43,7 +42,7 @@ func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.Execute
 
 	lp.Infof("Loading manifests at commit %s for handling", input.Request.RunningDeploymentSource.CommitHash)
 	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
-	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.RunningDeploymentSource, provider.NewLoader(toolRegistry))
+	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, input.Request.RunningDeploymentSource, provider.NewLoader(toolRegistry))
 	if err != nil {
 		lp.Errorf("Failed while loading manifests (%v)", err)
 		return sdk.StageStatusFailure
@@ -57,13 +56,13 @@ func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.Execute
 	// When addVariantLabelToSelector is true, ensure that all workloads
 	// have the variant label in their selector.
 	var (
-		variantLabel   = cfg.Spec.VariantLabel.Key
-		primaryVariant = cfg.Spec.VariantLabel.PrimaryValue
+		variantLabel   = spec.VariantLabel.Key
+		primaryVariant = spec.VariantLabel.PrimaryValue
 	)
 	// TODO: Consider other fields to configure whether to add a variant label to the selector
 	// because the rollback stage is executed in both quick sync and pipeline sync strategies.
-	if cfg.Spec.QuickSync.AddVariantLabelToSelector {
-		workloads := findWorkloadManifests(manifests, cfg.Spec.Workloads)
+	if spec.QuickSync.AddVariantLabelToSelector {
+		workloads := findWorkloadManifests(manifests, spec.Workloads)
 		for _, m := range workloads {
 			if err := ensureVariantSelectorInWorkload(m, variantLabel, primaryVariant); err != nil {
 				lp.Errorf("Unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key().ReadableString(), err)
@@ -95,17 +94,17 @@ func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.Execute
 	deployTargetConfig := dts[0].Config
 
 	// Get the kubectl tool path.
-	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion))
+	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion))
 	if err != nil {
 		lp.Errorf("Failed while getting kubectl tool (%v)", err)
 		return sdk.StageStatusFailure
 	}
 
 	// Create the applier for the target cluster.
-	applier := provider.NewApplier(provider.NewKubectl(kubectlPath), cfg.Spec.Input, deployTargetConfig, input.Logger)
+	applier := provider.NewApplier(provider.NewKubectl(kubectlPath), spec.Input, deployTargetConfig, input.Logger)
 
 	// Start applying all manifests to add or update running resources.
-	if err := applyManifests(ctx, applier, manifests, cfg.Spec.Input.Namespace, lp); err != nil {
+	if err := applyManifests(ctx, applier, manifests, spec.Input.Namespace, lp); err != nil {
 		lp.Errorf("Failed while applying manifests (%v)", err)
 		return sdk.StageStatusFailure
 	}
