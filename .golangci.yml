@@ -46,6 +46,12 @@ linters-settings:
             desc: "Use go.uber.org/atomic instead of sync/atomic."
           - pkg: "io/ioutil"
             desc: "Use corresponding 'os' or 'io' functions instead."
+      pipedv1:
+        files:
+          - "**/pkg/app/pipedv1/**/*.go"
+        deny:
+          - pkg: "github.com/pipe-cd/pipecd/pkg/config$"
+            desc: "Use github.com/pipe-cd/pipecd/pkg/configv1 instead."
   gocritic:
     disabled-checks:
       - appendAssign
