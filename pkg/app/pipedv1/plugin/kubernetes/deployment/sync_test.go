@@ -111,7 +111,8 @@ func TestPlugin_executeK8sSyncStage_withInputNamespace(t *testing.T) {
 	require.NoError(t, err)
 
 	// decode and override the autoCreateNamespace and namespace
-	// TODO: Do not use configv1 package in this plugin
+	// TODO: Do not use configv1 package in this plugin.
+	// We cannot use LoadConfigSpec because this use case involves constructing the application config with modifications from base one; it means we need the full application config.
 	spec, err := config.DecodeYAML[*kubeConfigPkg.KubernetesApplicationSpec](cfg)
 	require.NoError(t, err)
 	spec.Spec.Input.AutoCreateNamespace = true
