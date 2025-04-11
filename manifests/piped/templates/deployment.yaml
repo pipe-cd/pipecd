@@ -62,8 +62,8 @@ spec:
             - name: piped-config
               mountPath: /etc/piped-config
               readOnly: true
-            {{- if .Values.temporaryVolume.create }}
-            - name: piped-temporary-volume
+            {{- if include "piped.temporaryVolumeName" . }}
+            - name: {{ include "piped.temporaryVolumeName" . }}
               mountPath: "/tmp"
               readOnly: false
             {{- end }}
@@ -81,8 +81,8 @@ spec:
         - name: piped-config
           configMap:
             name: {{ include "piped.configMapName" . }}
-        {{- if .Values.temporaryVolume.create }}
-        - name: piped-temporary-volume
+        {{- if include "piped.temporaryVolumeName" . }}
+        - name: {{ include "piped.temporaryVolumeName" . }}
           persistentVolumeClaim:
             claimName: {{ include "piped.temporaryVolumeName" . }}
         {{- end }}
