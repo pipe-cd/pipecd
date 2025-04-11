@@ -29,6 +29,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	kubeConfigPkg "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister/logpersistertest"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry/toolregistrytest"
@@ -110,13 +111,11 @@ func TestPlugin_executeK8sSyncStage_withInputNamespace(t *testing.T) {
 	require.NoError(t, err)
 
 	// decode and override the autoCreateNamespace and namespace
-	spec, err := sdk.LoadConfigSpec[*kubeConfigPkg.KubernetesApplicationSpec](sdk.DeploymentSource{
-		ApplicationConfig:         cfg,
-		ApplicationConfigFilename: "app.pipecd.yaml",
-	})
+	// TODO: Do not use configv1 package in this plugin
+	spec, err := config.DecodeYAML[*kubeConfigPkg.KubernetesApplicationSpec](cfg)
 	require.NoError(t, err)
-	spec.Input.AutoCreateNamespace = true
-	spec.Input.Namespace = "test-namespace"
+	spec.Spec.Input.AutoCreateNamespace = true
+	spec.Spec.Input.Namespace = "test-namespace"
 	cfg, err = yaml.Marshal(spec)
 	require.NoError(t, err)
 
