@@ -78,7 +78,7 @@ func applyManifests(ctx context.Context, applier applier, manifests []provider.M
 		}
 
 		if err := applier.ApplyManifest(ctx, m); err != nil {
-			lp.Errorf("Failed to apply manifest: %s (%w)", m.Key().ReadableString(), err)
+			lp.Errorf("Failed to apply manifest: %s (%v)", m.Key().ReadableString(), err)
 			return err
 		}
 		lp.Successf("- applied manifest: %s", m.Key().ReadableString())
