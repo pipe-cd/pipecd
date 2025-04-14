@@ -229,3 +229,59 @@ invalid-yaml-token
 		})
 	}
 }
+
+func TestStages_Has(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name   string
+		stages Stages
+		stage  string
+		want   bool
+	}{
+		{
+			name:   "stage exists",
+			stages: Stages{stages: []string{"STAGE1", "STAGE2", "STAGE3"}},
+			stage:  "STAGE2",
+			want:   true,
+		},
+		{
+			name:   "stage does not exist",
+			stages: Stages{stages: []string{"STAGE1", "STAGE3"}},
+			stage:  "STAGE2",
+			want:   false,
+		},
+		{
+			name:   "empty stages list",
+			stages: Stages{stages: []string{}},
+			stage:  "STAGE1",
+			want:   false,
+		},
+		{
+			name:   "nil stages list",
+			stages: Stages{stages: nil},
+			stage:  "STAGE1",
+			want:   false,
+		},
+		{
+			name:   "checking for empty string stage",
+			stages: Stages{stages: []string{"STAGE1", "", "STAGE3"}},
+			stage:  "",
+			want:   true,
+		},
+		{
+			name:   "checking for empty string stage when not present",
+			stages: Stages{stages: []string{"STAGE1", "STAGE3"}},
+			stage:  "",
+			want:   false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			got := tc.stages.Has(tc.stage)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
