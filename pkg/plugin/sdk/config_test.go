@@ -113,3 +113,119 @@ spec:
 		})
 	}
 }
+
+func TestLoadStages(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name       string
+		inputYAML  string
+		wantErr    bool
+		wantStages Stages
+	}{
+		{
+			name: "success with stages",
+			inputYAML: `
+apiVersion: pipecd.dev/v1beta1
+kind: TestApp
+spec:
+  pipeline:
+    stages:
+      - name: STAGE1
+        desc: Stage 1 description
+      - name: STAGE2
+        desc: Stage 2 description
+`,
+			wantErr: false,
+			wantStages: Stages{
+				stages: []string{"STAGE1", "STAGE2"},
+			},
+		},
+		{
+			name: "success with no pipeline",
+			inputYAML: `
+apiVersion: pipecd.dev/v1beta1
+kind: TestApp
+spec:
+  field: value
+`,
+			wantErr: false,
+			wantStages: Stages{
+				stages: nil, // Expecting nil slice, which serializes to null in JSON/YAML
+			},
+		},
+		{
+			name: "success with pipeline but no stages field",
+			inputYAML: `
+apiVersion: pipecd.dev/v1beta1
+kind: TestApp
+spec:
+  pipeline:
+    field: value
+`,
+			wantErr: false,
+			wantStages: Stages{
+				stages: nil, // Expecting nil slice
+			},
+		},
+		{
+			name: "success with empty stages list",
+			inputYAML: `
+apiVersion: pipecd.dev/v1beta1
+kind: TestApp
+spec:
+  pipeline:
+    stages: []
+`,
+			wantErr: false,
+			wantStages: Stages{
+				stages: nil, // Expecting nil slice
+			},
+		},
+		{
+			name: "invalid yaml",
+			inputYAML: `
+apiVersion: pipecd.dev/v1beta1
+kind: TestApp
+spec:
+  pipeline:
+    stages:
+      - name: STAGE1
+invalid-yaml-token
+`,
+			wantErr:    true,
+			wantStages: Stages{}, // Value doesn't matter on error
+		},
+		{
+			name:       "empty config",
+			inputYAML:  ``,
+			wantErr:    true, // The yaml decoder will return an error for empty config.
+			wantStages: Stages{},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			ds := DeploymentSource{
+				ApplicationConfig: []byte(tc.inputYAML),
+			}
+
+			stages, err := LoadStages(ds)
+
+			if tc.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				// Handle nil vs empty slice explicitly for clarity if needed,
+				// but assert.Equal should handle this correctly for struct comparison.
+				if tc.wantStages.stages == nil {
+					assert.Nil(t, stages.stages)
+				} else {
+					assert.Equal(t, tc.wantStages, stages)
+				}
+			}
+		})
+	}
+}
