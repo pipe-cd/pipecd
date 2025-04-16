@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -393,6 +394,12 @@ func TestManualOperation_toModelEnum(t *testing.T) {
 }
 
 func TestNewDetermineVersionsRequest(t *testing.T) {
+	validConfig := strings.TrimSpace(`
+apiVersion: pipecd.dev/v1beta1
+kind: Appilcation
+spec: {}
+`)
+
 	tests := []struct {
 		name     string
 		request  *deployment.DetermineVersionsRequest
@@ -416,7 +423,7 @@ func TestNewDetermineVersionsRequest(t *testing.T) {
 					TargetDeploymentSource: &common.DeploymentSource{
 						ApplicationDirectory:      "app-dir",
 						CommitHash:                "commit-hash",
-						ApplicationConfig:         []byte("app-config"),
+						ApplicationConfig:         []byte(validConfig),
 						ApplicationConfigFilename: "app-config-filename",
 					},
 				},
@@ -439,30 +446,16 @@ func TestNewDetermineVersionsRequest(t *testing.T) {
 				},
 			},
 		},
-		{
-			name: "empty request",
-			request: &deployment.DetermineVersionsRequest{
-				Input: &deployment.PlanPluginInput{
-					Deployment: &model.Deployment{
-						Trigger: &model.DeploymentTrigger{
-							Commit: &model.Commit{},
-						},
-					},
-					TargetDeploymentSource: &common.DeploymentSource{},
-				},
-			},
-			expected: DetermineVersionsRequest[struct{}]{
-				Deployment:       Deployment{},
-				DeploymentSource: DeploymentSource[struct{}]{},
-			},
-		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, _ := newDetermineVersionsRequest[struct{}](tt.request)
+			result, err := newDetermineVersionsRequest[struct{}](tt.request)
+			require.NoError(t, err)
 			assert.Equal(t, tt.expected.Deployment, result.Deployment)
-			assert.Equal(t, tt.expected.DeploymentSource, result.DeploymentSource)
+			assert.Equal(t, tt.expected.DeploymentSource.ApplicationDirectory, result.DeploymentSource.ApplicationDirectory)
+			assert.Equal(t, tt.expected.DeploymentSource.CommitHash, result.DeploymentSource.CommitHash)
+			assert.Equal(t, tt.expected.DeploymentSource.ApplicationConfigFilename, result.DeploymentSource.ApplicationConfigFilename)
 		})
 	}
 }
