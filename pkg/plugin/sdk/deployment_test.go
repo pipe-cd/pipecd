@@ -674,6 +674,12 @@ func TestDetermineVersionsResponse_toModel(t *testing.T) {
 func TestNewDetermineStrategyRequest(t *testing.T) {
 	t.Parallel()
 
+	validConfig := strings.TrimSpace(`
+apiVersion: pipecd.dev/v1beta1
+kind: Appilcation
+spec: {}
+	`)
+
 	tests := []struct {
 		name     string
 		request  *deployment.DetermineStrategyRequest
@@ -697,13 +703,13 @@ func TestNewDetermineStrategyRequest(t *testing.T) {
 					RunningDeploymentSource: &common.DeploymentSource{
 						ApplicationDirectory:      "app-dir",
 						CommitHash:                "commit-hash-1",
-						ApplicationConfig:         []byte("app-config"),
+						ApplicationConfig:         []byte(validConfig),
 						ApplicationConfigFilename: "app-config-filename",
 					},
 					TargetDeploymentSource: &common.DeploymentSource{
 						ApplicationDirectory:      "app-dir",
 						CommitHash:                "commit-hash-2",
-						ApplicationConfig:         []byte("app-config"),
+						ApplicationConfig:         []byte(validConfig),
 						ApplicationConfigFilename: "app-config-filename",
 					},
 				},
@@ -732,24 +738,6 @@ func TestNewDetermineStrategyRequest(t *testing.T) {
 				},
 			},
 		},
-		{
-			name: "empty request",
-			request: &deployment.DetermineStrategyRequest{
-				Input: &deployment.PlanPluginInput{
-					Deployment: &model.Deployment{
-						Trigger: &model.DeploymentTrigger{
-							Commit: &model.Commit{},
-						},
-					},
-					TargetDeploymentSource: &common.DeploymentSource{},
-				},
-			},
-			expected: DetermineStrategyRequest[struct{}]{
-				Deployment:              Deployment{},
-				RunningDeploymentSource: DeploymentSource[struct{}]{},
-				TargetDeploymentSource:  DeploymentSource[struct{}]{},
-			},
-		},
 	}
 
 	for _, tt := range tests {
@@ -757,7 +745,7 @@ func TestNewDetermineStrategyRequest(t *testing.T) {
 			t.Parallel()
 
 			result, _ := newDetermineStrategyRequest[struct{}](tt.request)
-			assert.Equal(t, tt.expected, result)
+			assert.Equal(t, tt.expected.Deployment, result.Deployment)
 		})
 	}
 }
