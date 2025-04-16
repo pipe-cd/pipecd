@@ -17,6 +17,7 @@ package sdk
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -27,6 +28,7 @@ import (
 
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/livestate"
 )
 
@@ -70,6 +72,12 @@ func newTestLivestatePluginServer(t *testing.T, plugin *mockLivestatePlugin) *Li
 func TestLivestatePluginServer_GetLivestate(t *testing.T) {
 	t.Parallel()
 
+	validConfig := strings.TrimSpace(`
+apiVersion: pipecd.dev/v1beta1
+kind: Appilcation
+spec: {}
+`)
+
 	tests := []struct {
 		name           string
 		request        *livestate.GetLivestateRequest
@@ -85,6 +93,12 @@ func TestLivestatePluginServer_GetLivestate(t *testing.T) {
 				ApplicationId:   "app1",
 				ApplicationName: "app1",
 				DeployTargets:   []string{"target1"},
+				DeploySource: &common.DeploymentSource{
+					ApplicationDirectory:      "app-dir",
+					CommitHash:                "commit-hash",
+					ApplicationConfig:         []byte(validConfig),
+					ApplicationConfigFilename: "app-config-filename",
+				},
 			},
 			result: &GetLivestateResponse{
 				LiveState: ApplicationLiveState{
