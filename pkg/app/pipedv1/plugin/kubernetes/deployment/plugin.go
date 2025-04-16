@@ -23,7 +23,6 @@ import (
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
-	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
@@ -42,7 +41,7 @@ type toolRegistry interface {
 	Helm(ctx context.Context, version string) (string, error)
 }
 
-var _ sdk.DeploymentPlugin[sdk.ConfigNone, kubeconfig.KubernetesDeployTargetConfig] = (*Plugin)(nil)
+var _ sdk.DeploymentPlugin[sdk.ConfigNone, kubeconfig.KubernetesDeployTargetConfig, kubeconfig.KubernetesApplicationSpec] = (*Plugin)(nil)
 
 // FetchDefinedStages returns the defined stages for this plugin.
 func (p *Plugin) FetchDefinedStages() []string {
@@ -57,7 +56,7 @@ func (p *Plugin) BuildPipelineSyncStages(ctx context.Context, _ *sdk.ConfigNone,
 }
 
 // ExecuteStage executes the stage.
-func (p *Plugin) ExecuteStage(ctx context.Context, _ *sdk.ConfigNone, dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.ExecuteStageInput) (*sdk.ExecuteStageResponse, error) {
+func (p *Plugin) ExecuteStage(ctx context.Context, _ *sdk.ConfigNone, dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.ExecuteStageResponse, error) {
 	switch input.Request.StageName {
 	case StageK8sSync:
 		return &sdk.ExecuteStageResponse{
@@ -96,7 +95,7 @@ func (p *Plugin) ExecuteStage(ctx context.Context, _ *sdk.ConfigNone, dts []*sdk
 	}
 }
 
-func (p *Plugin) loadManifests(ctx context.Context, deploy *sdk.Deployment, spec *kubeconfig.KubernetesApplicationSpec, deploymentSource *sdk.DeploymentSource, loader loader) ([]provider.Manifest, error) {
+func (p *Plugin) loadManifests(ctx context.Context, deploy *sdk.Deployment, spec *kubeconfig.KubernetesApplicationSpec, deploymentSource *sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec], loader loader) ([]provider.Manifest, error) {
 	manifests, err := loader.LoadManifests(ctx, provider.LoaderInput{
 		PipedID:          deploy.PipedID,
 		AppID:            deploy.ApplicationID,
@@ -119,17 +118,16 @@ func (p *Plugin) loadManifests(ctx context.Context, deploy *sdk.Deployment, spec
 }
 
 // DetermineVersions determines the versions of the application.
-func (p *Plugin) DetermineVersions(ctx context.Context, _ *sdk.ConfigNone, input *sdk.DetermineVersionsInput) (*sdk.DetermineVersionsResponse, error) {
+func (p *Plugin) DetermineVersions(ctx context.Context, _ *sdk.ConfigNone, input *sdk.DetermineVersionsInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.DetermineVersionsResponse, error) {
 	logger := input.Logger
 
-	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](input.Request.DeploymentSource.ApplicationConfig)
-	if err != nil {
-		logger.Error("Failed while decoding application config", zap.Error(err))
-		return nil, err
+	cfg := input.Request.DeploymentSource.ApplicationConfig.Spec
+	if cfg == nil {
+		logger.Error("Application config spec is nil")
+		return nil, errors.New("application config spec is nil")
 	}
 
-	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.DeploymentSource, provider.NewLoader(toolregistry.NewRegistry(input.Client.ToolRegistry())))
-
+	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg, &input.Request.DeploymentSource, provider.NewLoader(toolregistry.NewRegistry(input.Client.ToolRegistry())))
 	if err != nil {
 		logger.Error("Failed while loading manifests", zap.Error(err))
 		return nil, err
@@ -141,31 +139,29 @@ func (p *Plugin) DetermineVersions(ctx context.Context, _ *sdk.ConfigNone, input
 }
 
 // DetermineStrategy determines the strategy for the deployment.
-func (p *Plugin) DetermineStrategy(ctx context.Context, _ *sdk.ConfigNone, input *sdk.DetermineStrategyInput) (*sdk.DetermineStrategyResponse, error) {
+func (p *Plugin) DetermineStrategy(ctx context.Context, _ *sdk.ConfigNone, input *sdk.DetermineStrategyInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.DetermineStrategyResponse, error) {
 	logger := input.Logger
 	loader := provider.NewLoader(toolregistry.NewRegistry(input.Client.ToolRegistry()))
 
-	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](input.Request.TargetDeploymentSource.ApplicationConfig)
-	if err != nil {
-		logger.Error("Failed while decoding application config", zap.Error(err))
-		return nil, err
+	cfg := input.Request.TargetDeploymentSource.ApplicationConfig.Spec
+	if cfg == nil {
+		logger.Error("Application config spec is nil")
+		return nil, errors.New("application config spec is nil")
 	}
 
-	runnings, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.RunningDeploymentSource, loader)
-
+	runnings, err := p.loadManifests(ctx, &input.Request.Deployment, cfg, &input.Request.RunningDeploymentSource, loader)
 	if err != nil {
 		logger.Error("Failed while loading running manifests", zap.Error(err))
 		return nil, err
 	}
 
-	targets, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.TargetDeploymentSource, loader)
-
+	targets, err := p.loadManifests(ctx, &input.Request.Deployment, cfg, &input.Request.TargetDeploymentSource, loader)
 	if err != nil {
 		logger.Error("Failed while loading target manifests", zap.Error(err))
 		return nil, err
 	}
 
-	strategy, summary := determineStrategy(runnings, targets, cfg.Spec.Workloads, logger)
+	strategy, summary := determineStrategy(runnings, targets, cfg.Workloads, logger)
 
 	return &sdk.DetermineStrategyResponse{
 		Strategy: strategy,
