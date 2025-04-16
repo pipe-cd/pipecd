@@ -14,7 +14,9 @@
 
 package sdk
 
-import config "github.com/pipe-cd/pipecd/pkg/configv1"
+import (
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
+)
 
 // Spec[T] represents both of follows
 // - the type is pointer type of T
