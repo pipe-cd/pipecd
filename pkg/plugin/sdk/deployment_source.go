@@ -59,9 +59,12 @@ func DecodeYAML[Spec any](data []byte) (*ApplicationConfig[Spec], error) {
 	return cfg.Spec, nil
 }
 
+// ApplicationConfig is the configuration of the application.
 type ApplicationConfig[Spec any] struct {
+	// commonSpec is the common spec of the application.
 	commonSpec *config.GenericApplicationSpec
-	Spec       *Spec
+	// Spec is the plugin spec of the application.
+	Spec *Spec
 }
 
 func (c *ApplicationConfig[Spec]) UnmarshalJSON(data []byte) error {
