@@ -26,7 +26,6 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
-	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/signalhandler"
 )
@@ -556,29 +555,6 @@ type ExecuteStageRequest struct {
 
 	// The deployment that the stage is running.
 	Deployment Deployment
-}
-
-// DeploymentSource represents the source of the deployment.
-type DeploymentSource struct {
-	// ApplicationDirectory is the directory where the source code is located.
-	ApplicationDirectory string
-	// CommitHash is the git commit hash of the source code.
-	CommitHash string
-	// ApplicationConfig is the configuration of the application.
-	ApplicationConfig []byte
-	// ApplicationConfigFilename is the name of the file that contains the application configuration.
-	// The plugins can use this to avoid mistakenly reading this file as a manifest to deploy.
-	ApplicationConfigFilename string
-}
-
-// newDeploymentSource converts the common.DeploymentSource to the internal representation.
-func newDeploymentSource(source *common.DeploymentSource) DeploymentSource {
-	return DeploymentSource{
-		ApplicationDirectory:      source.GetApplicationDirectory(),
-		CommitHash:                source.GetCommitHash(),
-		ApplicationConfig:         source.GetApplicationConfig(),
-		ApplicationConfigFilename: source.GetApplicationConfigFilename(),
-	}
 }
 
 // Deployment represents the deployment that the stage is running. This is read-only.
