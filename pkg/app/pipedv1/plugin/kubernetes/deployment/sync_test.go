@@ -562,10 +562,6 @@ func TestPlugin_executeK8sSyncStage_withPrune_clusterScoped(t *testing.T) {
 					ApplicationConfig:         targetCfg,
 					ApplicationConfigFilename: "app.pipecd.yaml",
 				},
-				Deployment: sdk.Deployment{
-					PipedID:       "piped-id",
-					ApplicationID: "app-id",
-				},
 			},
 			Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
 			Logger: zaptest.NewLogger(t),
