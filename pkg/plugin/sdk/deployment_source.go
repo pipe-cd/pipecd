@@ -14,7 +14,13 @@
 
 package sdk
 
-import "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
+import (
+	"encoding/json"
+	"fmt"
+
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
+)
 
 // DeploymentSource represents the source of the deployment.
 type DeploymentSource struct {
@@ -37,4 +43,51 @@ func newDeploymentSource(source *common.DeploymentSource) DeploymentSource {
 		ApplicationConfig:         source.GetApplicationConfig(),
 		ApplicationConfigFilename: source.GetApplicationConfigFilename(),
 	}
+}
+
+type ApplicationConfig[Spec any] struct {
+	commonSpec *config.GenericApplicationSpec
+	Spec       *Spec
+}
+
+func (c *ApplicationConfig[Spec]) UnmarshalJSON(data []byte) error {
+	if c.commonSpec == nil {
+		c.commonSpec = new(config.GenericApplicationSpec)
+	}
+
+	if err := json.Unmarshal(data, c.commonSpec); err != nil {
+		return fmt.Errorf("failed to unmarshal application config: generic spec: %w", err)
+	}
+
+	if c.Spec == nil {
+		c.Spec = new(Spec)
+	}
+
+	if err := json.Unmarshal(data, c.Spec); err != nil {
+		return fmt.Errorf("failed to unmarshal application config: plugin spec: %w", err)
+	}
+
+	return nil
+}
+
+func (c *ApplicationConfig[Spec]) Validate() error {
+	if c.commonSpec == nil {
+		return fmt.Errorf("application config is not initialized")
+	}
+
+	if c.Spec == nil {
+		return fmt.Errorf("plugin spec is not initialized")
+	}
+
+	if err := c.commonSpec.Validate(); err != nil {
+		return fmt.Errorf("validation failed on generic spec: %w", err)
+	}
+
+	if v, ok := any(c.Spec).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return fmt.Errorf("validation failed on plugin spec: %w", err)
+		}
+	}
+
+	return nil
 }
