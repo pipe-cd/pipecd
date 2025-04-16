@@ -57,7 +57,7 @@ type StagePlugin[Config, DeployTargetConfig any] interface {
 }
 
 // DeploymentPluginServiceServer is the gRPC server that handles requests from the piped.
-type DeploymentPluginServiceServer[Config, DeployTargetConfig any] struct {
+type DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec any] struct {
 	deployment.UnimplementedDeploymentServiceServer
 	commonFields
 
@@ -67,12 +67,12 @@ type DeploymentPluginServiceServer[Config, DeployTargetConfig any] struct {
 }
 
 // Register registers the server to the given gRPC server.
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) Register(server *grpc.Server) {
+func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) Register(server *grpc.Server) {
 	deployment.RegisterDeploymentServiceServer(server, s)
 }
 
 // setFields sets the common fields and configs to the server.
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) setFields(fields commonFields) error {
+func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) setFields(fields commonFields) error {
 	s.commonFields = fields
 
 	cfg := fields.config
@@ -100,10 +100,10 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) setFields(fi
 	return nil
 }
 
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) FetchDefinedStages(context.Context, *deployment.FetchDefinedStagesRequest) (*deployment.FetchDefinedStagesResponse, error) {
+func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) FetchDefinedStages(context.Context, *deployment.FetchDefinedStagesRequest) (*deployment.FetchDefinedStagesResponse, error) {
 	return &deployment.FetchDefinedStagesResponse{Stages: s.base.FetchDefinedStages()}, nil
 }
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineVersions(ctx context.Context, request *deployment.DetermineVersionsRequest) (*deployment.DetermineVersionsResponse, error) {
+func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) DetermineVersions(ctx context.Context, request *deployment.DetermineVersionsRequest) (*deployment.DetermineVersionsResponse, error) {
 	client := &Client{
 		base:          s.client,
 		pluginName:    s.name,
@@ -126,7 +126,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineVer
 		Versions: versions.toModel(),
 	}, nil
 }
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineStrategy(ctx context.Context, request *deployment.DetermineStrategyRequest) (*deployment.DetermineStrategyResponse, error) {
+func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) DetermineStrategy(ctx context.Context, request *deployment.DetermineStrategyRequest) (*deployment.DetermineStrategyResponse, error) {
 	client := &Client{
 		base:          s.client,
 		pluginName:    s.name,
@@ -147,14 +147,14 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) DetermineStr
 	}
 	return newDetermineStrategyResponse(response)
 }
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
+func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
 	client := &Client{
 		base:       s.client,
 		pluginName: s.name,
 	}
 	return buildPipelineSyncStages(ctx, s.name, s.base, &s.config, client, request, s.logger)
 }
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildQuickSyncStages(ctx context.Context, request *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
+func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) BuildQuickSyncStages(ctx context.Context, request *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	input := &BuildQuickSyncStagesInput{
 		Request: BuildQuickSyncStagesRequest{
 			Rollback: request.GetRollback(),
@@ -172,7 +172,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) BuildQuickSy
 	}
 	return newQuickSyncStagesResponse(s.name, time.Now(), response), nil
 }
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (response *deployment.ExecuteStageResponse, _ error) {
+func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (response *deployment.ExecuteStageResponse, _ error) {
 	lp := s.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId())
 	defer func() {
 		// When termination signal received and the stage is not completed yet, we should not mark the log persister as completed.
@@ -205,11 +205,11 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig]) ExecuteStage
 		deployTargets = append(deployTargets, dt)
 	}
 
-	return executeStage(ctx, s.base, &s.config, deployTargets, client, request, s.logger)
+	return executeStage[Config, DeployTargetConfig, ApplicationConfigSpec](ctx, s.base, &s.config, deployTargets, client, request, s.logger)
 }
 
 // StagePluginServiceServer is the gRPC server that handles requests from the piped.
-type StagePluginServiceServer[Config, DeployTargetConfig any] struct {
+type StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec any] struct {
 	deployment.UnimplementedDeploymentServiceServer
 	commonFields
 
@@ -218,12 +218,12 @@ type StagePluginServiceServer[Config, DeployTargetConfig any] struct {
 }
 
 // Register registers the server to the given gRPC server.
-func (s *StagePluginServiceServer[Config, DeployTargetConfig]) Register(server *grpc.Server) {
+func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) Register(server *grpc.Server) {
 	deployment.RegisterDeploymentServiceServer(server, s)
 }
 
 // setFields sets the common fields and configs to the server.
-func (s *StagePluginServiceServer[Config, DeployTargetConfig]) setFields(fields commonFields) error {
+func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) setFields(fields commonFields) error {
 	s.commonFields = fields
 
 	cfg := fields.config
@@ -237,16 +237,16 @@ func (s *StagePluginServiceServer[Config, DeployTargetConfig]) setFields(fields 
 	return nil
 }
 
-func (s *StagePluginServiceServer[Config, DeployTargetConfig]) FetchDefinedStages(context.Context, *deployment.FetchDefinedStagesRequest) (*deployment.FetchDefinedStagesResponse, error) {
+func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) FetchDefinedStages(context.Context, *deployment.FetchDefinedStagesRequest) (*deployment.FetchDefinedStagesResponse, error) {
 	return &deployment.FetchDefinedStagesResponse{Stages: s.base.FetchDefinedStages()}, nil
 }
-func (s *StagePluginServiceServer[Config, DeployTargetConfig]) DetermineVersions(context.Context, *deployment.DetermineVersionsRequest) (*deployment.DetermineVersionsResponse, error) {
+func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) DetermineVersions(context.Context, *deployment.DetermineVersionsRequest) (*deployment.DetermineVersionsResponse, error) {
 	return &deployment.DetermineVersionsResponse{}, nil
 }
-func (s *StagePluginServiceServer[Config, DeployTargetConfig]) DetermineStrategy(context.Context, *deployment.DetermineStrategyRequest) (*deployment.DetermineStrategyResponse, error) {
+func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) DetermineStrategy(context.Context, *deployment.DetermineStrategyRequest) (*deployment.DetermineStrategyResponse, error) {
 	return &deployment.DetermineStrategyResponse{Unsupported: true}, nil
 }
-func (s *StagePluginServiceServer[Config, DeployTargetConfig]) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
+func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) BuildPipelineSyncStages(ctx context.Context, request *deployment.BuildPipelineSyncStagesRequest) (*deployment.BuildPipelineSyncStagesResponse, error) {
 	client := &Client{
 		base:       s.client,
 		pluginName: s.name,
@@ -254,10 +254,10 @@ func (s *StagePluginServiceServer[Config, DeployTargetConfig]) BuildPipelineSync
 
 	return buildPipelineSyncStages(ctx, s.name, s.base, &s.config, client, request, s.logger)
 }
-func (s *StagePluginServiceServer[Config, DeployTargetConfig]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
+func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BuildQuickSyncStages not implemented")
 }
-func (s *StagePluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (response *deployment.ExecuteStageResponse, _ error) {
+func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (response *deployment.ExecuteStageResponse, _ error) {
 	lp := s.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId())
 	defer func() {
 		// When termination signal received and the stage is not completed yet, we should not mark the log persister as completed.
@@ -278,7 +278,7 @@ func (s *StagePluginServiceServer[Config, DeployTargetConfig]) ExecuteStage(ctx 
 		toolRegistry:  s.toolRegistry,
 	}
 
-	return executeStage(ctx, s.base, &s.config, nil, client, request, s.logger) // TODO: pass the deployTargets
+	return executeStage[Config, DeployTargetConfig, ApplicationConfigSpec](ctx, s.base, &s.config, nil, client, request, s.logger) // TODO: pass the deployTargets
 }
 
 // buildPipelineSyncStages builds the stages that will be executed by the plugin.
@@ -290,7 +290,7 @@ func buildPipelineSyncStages[Config, DeployTargetConfig any](ctx context.Context
 	return newPipelineSyncStagesResponse(pluginName, time.Now(), request, resp)
 }
 
-func executeStage[Config, DeployTargetConfig any](
+func executeStage[Config, DeployTargetConfig, ApplicationConfigSpec any](
 	ctx context.Context,
 	plugin StagePlugin[Config, DeployTargetConfig],
 	config *Config,
@@ -299,12 +299,23 @@ func executeStage[Config, DeployTargetConfig any](
 	request *deployment.ExecuteStageRequest,
 	logger *zap.Logger,
 ) (*deployment.ExecuteStageResponse, error) {
+
+	runningDeploymentSource, err := newDeploymentSource[ApplicationConfigSpec](request.GetInput().GetRunningDeploymentSource())
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to create running deployment source: %v", err)
+	}
+
+	targetDeploymentSource, err := newDeploymentSource[ApplicationConfigSpec](request.GetInput().GetTargetDeploymentSource())
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to create target deployment source: %v", err)
+	}
+
 	in := &ExecuteStageInput{
 		Request: ExecuteStageRequest{
 			StageName:               request.GetInput().GetStage().GetName(),
 			StageConfig:             request.GetInput().GetStageConfig(),
-			RunningDeploymentSource: newDeploymentSource(request.GetInput().GetRunningDeploymentSource()),
-			TargetDeploymentSource:  newDeploymentSource(request.GetInput().GetTargetDeploymentSource()),
+			RunningDeploymentSource: runningDeploymentSource,
+			TargetDeploymentSource:  targetDeploymentSource,
 			Deployment:              newDeployment(request.GetInput().GetDeployment()),
 		},
 		Client: client,
