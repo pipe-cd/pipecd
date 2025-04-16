@@ -160,7 +160,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 		base:       s.client,
 		pluginName: s.name,
 	}
-	return buildPipelineSyncStages[Config, DeployTargetConfig, ApplicationConfigSpec](ctx, s.name, s.base, &s.config, client, request, s.logger)
+	return buildPipelineSyncStages(ctx, s.name, s.base, &s.config, client, request, s.logger)
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) BuildQuickSyncStages(ctx context.Context, request *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	input := &BuildQuickSyncStagesInput{
@@ -213,7 +213,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 		deployTargets = append(deployTargets, dt)
 	}
 
-	return executeStage[Config, DeployTargetConfig, ApplicationConfigSpec](ctx, s.base, &s.config, deployTargets, client, request, s.logger)
+	return executeStage(ctx, s.base, &s.config, deployTargets, client, request, s.logger)
 }
 
 // StagePluginServiceServer is the gRPC server that handles requests from the piped.
@@ -260,7 +260,7 @@ func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigS
 		pluginName: s.name,
 	}
 
-	return buildPipelineSyncStages[Config, DeployTargetConfig, ApplicationConfigSpec](ctx, s.name, s.base, &s.config, client, request, s.logger)
+	return buildPipelineSyncStages(ctx, s.name, s.base, &s.config, client, request, s.logger)
 }
 func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BuildQuickSyncStages not implemented")
@@ -286,7 +286,7 @@ func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigS
 		toolRegistry:  s.toolRegistry,
 	}
 
-	return executeStage[Config, DeployTargetConfig, ApplicationConfigSpec](ctx, s.base, &s.config, nil, client, request, s.logger) // TODO: pass the deployTargets
+	return executeStage(ctx, s.base, &s.config, nil, client, request, s.logger) // TODO: pass the deployTargets
 }
 
 // buildPipelineSyncStages builds the stages that will be executed by the plugin.

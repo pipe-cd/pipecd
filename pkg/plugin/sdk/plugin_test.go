@@ -121,9 +121,9 @@ func (e ExampleLivestatePlugin) Version() string {
 }
 
 func ExampleNewPlugin() {
-	plugin, err := NewPlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec]("test", "1.0.0",
-		WithDeploymentPlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec](ExampleDeploymentPlugin{}),
-		WithLivestatePlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec](ExampleLivestatePlugin{}),
+	plugin, err := NewPlugin("test", "1.0.0",
+		WithDeploymentPlugin(ExampleDeploymentPlugin{}),
+		WithLivestatePlugin(ExampleLivestatePlugin{}),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -141,8 +141,8 @@ func ExampleNewPlugin() {
 }
 
 func ExampleWithStagePlugin() {
-	plugin, err := NewPlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec]("test", "1.0.0",
-		WithStagePlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec](ExampleStagePlugin{}),
+	plugin, err := NewPlugin("test", "1.0.0",
+		WithStagePlugin(ExampleStagePlugin{}),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -153,8 +153,8 @@ func ExampleWithStagePlugin() {
 }
 
 func ExampleWithDeploymentPlugin() {
-	plugin, err := NewPlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec]("test", "1.0.0",
-		WithDeploymentPlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec](ExampleDeploymentPlugin{}),
+	plugin, err := NewPlugin("test", "1.0.0",
+		WithDeploymentPlugin(ExampleDeploymentPlugin{}),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -165,8 +165,8 @@ func ExampleWithDeploymentPlugin() {
 }
 
 func ExampleWithLivestatePlugin() {
-	plugin, err := NewPlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec]("test", "1.0.0",
-		WithLivestatePlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec](ExampleLivestatePlugin{}),
+	plugin, err := NewPlugin("test", "1.0.0",
+		WithLivestatePlugin(ExampleLivestatePlugin{}),
 	)
 	if err != nil {
 		log.Fatal(err)
