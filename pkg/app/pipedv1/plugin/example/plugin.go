@@ -24,13 +24,15 @@ type plugin struct{}
 
 type config struct{}
 
+type applicationConfigSpec struct{}
+
 // BuildPipelineSyncStages implements sdk.StagePlugin.
 func (p *plugin) BuildPipelineSyncStages(context.Context, *config, *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
 	return &sdk.BuildPipelineSyncStagesResponse{}, nil
 }
 
 // ExecuteStage implements sdk.StagePlugin.
-func (p *plugin) ExecuteStage(context.Context, *config, sdk.DeployTargetsNone, *sdk.ExecuteStageInput) (*sdk.ExecuteStageResponse, error) {
+func (p *plugin) ExecuteStage(context.Context, *config, sdk.DeployTargetsNone, *sdk.ExecuteStageInput[applicationConfigSpec]) (*sdk.ExecuteStageResponse, error) {
 	return &sdk.ExecuteStageResponse{}, nil
 }
 
