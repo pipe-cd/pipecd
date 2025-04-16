@@ -20,17 +20,18 @@ import (
 )
 
 var (
-	_ StagePlugin[ExampleConfig, ExampleDeployTargetConfig]      = ExampleStagePlugin{}
-	_ DeploymentPlugin[ExampleConfig, ExampleDeployTargetConfig] = ExampleDeploymentPlugin{}
-	_ LivestatePlugin[ExampleConfig, ExampleDeployTargetConfig]  = ExampleLivestatePlugin{}
+	_ StagePlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec]      = ExampleStagePlugin{}
+	_ DeploymentPlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec] = ExampleDeploymentPlugin{}
+	_ LivestatePlugin[ExampleConfig, ExampleDeployTargetConfig]                                = ExampleLivestatePlugin{}
 )
 
 type (
-	ExampleStagePlugin        struct{}
-	ExampleDeploymentPlugin   struct{}
-	ExampleLivestatePlugin    struct{}
-	ExampleConfig             struct{}
-	ExampleDeployTargetConfig struct{}
+	ExampleStagePlugin           struct{}
+	ExampleDeploymentPlugin      struct{}
+	ExampleLivestatePlugin       struct{}
+	ExampleConfig                struct{}
+	ExampleDeployTargetConfig    struct{}
+	ExampleApplicationConfigSpec struct{}
 )
 
 // BuildPipelineSyncStages implements StagePlugin.
@@ -39,7 +40,7 @@ func (e ExampleStagePlugin) BuildPipelineSyncStages(context.Context, *ExampleCon
 }
 
 // ExecuteStage implements StagePlugin.
-func (e ExampleStagePlugin) ExecuteStage(context.Context, *ExampleConfig, []*DeployTarget[ExampleDeployTargetConfig], *ExecuteStageInput) (*ExecuteStageResponse, error) {
+func (e ExampleStagePlugin) ExecuteStage(context.Context, *ExampleConfig, []*DeployTarget[ExampleDeployTargetConfig], *ExecuteStageInput[ExampleApplicationConfigSpec]) (*ExecuteStageResponse, error) {
 	panic("unimplemented")
 }
 
@@ -71,17 +72,17 @@ func (e ExampleDeploymentPlugin) BuildQuickSyncStages(context.Context, *ExampleC
 }
 
 // DetermineStrategy implements DeploymentPlugin.
-func (e ExampleDeploymentPlugin) DetermineStrategy(context.Context, *ExampleConfig, *DetermineStrategyInput) (*DetermineStrategyResponse, error) {
+func (e ExampleDeploymentPlugin) DetermineStrategy(context.Context, *ExampleConfig, *DetermineStrategyInput[ExampleApplicationConfigSpec]) (*DetermineStrategyResponse, error) {
 	panic("unimplemented")
 }
 
 // DetermineVersions implements DeploymentPlugin.
-func (e ExampleDeploymentPlugin) DetermineVersions(context.Context, *ExampleConfig, *DetermineVersionsInput) (*DetermineVersionsResponse, error) {
+func (e ExampleDeploymentPlugin) DetermineVersions(context.Context, *ExampleConfig, *DetermineVersionsInput[ExampleApplicationConfigSpec]) (*DetermineVersionsResponse, error) {
 	panic("unimplemented")
 }
 
 // ExecuteStage implements DeploymentPlugin.
-func (e ExampleDeploymentPlugin) ExecuteStage(context.Context, *ExampleConfig, []*DeployTarget[ExampleDeployTargetConfig], *ExecuteStageInput) (*ExecuteStageResponse, error) {
+func (e ExampleDeploymentPlugin) ExecuteStage(context.Context, *ExampleConfig, []*DeployTarget[ExampleDeployTargetConfig], *ExecuteStageInput[ExampleApplicationConfigSpec]) (*ExecuteStageResponse, error) {
 	panic("unimplemented")
 }
 
@@ -120,9 +121,9 @@ func (e ExampleLivestatePlugin) Version() string {
 }
 
 func ExampleNewPlugin() {
-	plugin, err := NewPlugin("test", "1.0.0",
-		WithDeploymentPlugin(ExampleDeploymentPlugin{}),
-		WithLivestatePlugin(ExampleLivestatePlugin{}),
+	plugin, err := NewPlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec]("test", "1.0.0",
+		WithDeploymentPlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec](ExampleDeploymentPlugin{}),
+		WithLivestatePlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec](ExampleLivestatePlugin{}),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -140,8 +141,8 @@ func ExampleNewPlugin() {
 }
 
 func ExampleWithStagePlugin() {
-	plugin, err := NewPlugin("test", "1.0.0",
-		WithStagePlugin(ExampleStagePlugin{}),
+	plugin, err := NewPlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec]("test", "1.0.0",
+		WithStagePlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec](ExampleStagePlugin{}),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -152,8 +153,8 @@ func ExampleWithStagePlugin() {
 }
 
 func ExampleWithDeploymentPlugin() {
-	plugin, err := NewPlugin("test", "1.0.0",
-		WithDeploymentPlugin(ExampleDeploymentPlugin{}),
+	plugin, err := NewPlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec]("test", "1.0.0",
+		WithDeploymentPlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec](ExampleDeploymentPlugin{}),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -164,8 +165,8 @@ func ExampleWithDeploymentPlugin() {
 }
 
 func ExampleWithLivestatePlugin() {
-	plugin, err := NewPlugin("test", "1.0.0",
-		WithLivestatePlugin(ExampleLivestatePlugin{}),
+	plugin, err := NewPlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec]("test", "1.0.0",
+		WithLivestatePlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec](ExampleLivestatePlugin{}),
 	)
 	if err != nil {
 		log.Fatal(err)
