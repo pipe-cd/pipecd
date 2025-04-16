@@ -23,26 +23,30 @@ import (
 )
 
 // DeploymentSource represents the source of the deployment.
-type DeploymentSource struct {
+type DeploymentSource[Spec any] struct {
 	// ApplicationDirectory is the directory where the source code is located.
 	ApplicationDirectory string
 	// CommitHash is the git commit hash of the source code.
 	CommitHash string
 	// ApplicationConfig is the configuration of the application.
-	ApplicationConfig []byte
+	ApplicationConfig *ApplicationConfig[Spec]
 	// ApplicationConfigFilename is the name of the file that contains the application configuration.
 	// The plugins can use this to avoid mistakenly reading this file as a manifest to deploy.
 	ApplicationConfigFilename string
 }
 
 // newDeploymentSource converts the common.DeploymentSource to the internal representation.
-func newDeploymentSource(source *common.DeploymentSource) DeploymentSource {
-	return DeploymentSource{
+func newDeploymentSource[Spec any](source *common.DeploymentSource) (DeploymentSource[Spec], error) {
+	cfg, err := config.DecodeYAML[*ApplicationConfig[Spec]](source.GetApplicationConfig())
+	if err != nil {
+		return DeploymentSource[Spec]{}, fmt.Errorf("failed to decode application config: %w", err)
+	}
+	return DeploymentSource[Spec]{
 		ApplicationDirectory:      source.GetApplicationDirectory(),
 		CommitHash:                source.GetCommitHash(),
-		ApplicationConfig:         source.GetApplicationConfig(),
+		ApplicationConfig:         cfg.Spec,
 		ApplicationConfigFilename: source.GetApplicationConfigFilename(),
-	}
+	}, nil
 }
 
 type ApplicationConfig[Spec any] struct {
