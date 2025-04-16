@@ -307,7 +307,6 @@ func executeStage[Config, DeployTargetConfig, ApplicationConfigSpec any](
 	request *deployment.ExecuteStageRequest,
 	logger *zap.Logger,
 ) (*deployment.ExecuteStageResponse, error) {
-
 	runningDeploymentSource, err := newDeploymentSource[ApplicationConfigSpec](request.GetInput().GetRunningDeploymentSource())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to create running deployment source: %v", err)
