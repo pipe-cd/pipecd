@@ -49,6 +49,16 @@ func newDeploymentSource[Spec any](source *common.DeploymentSource) (DeploymentS
 	}, nil
 }
 
+// DecodeYAML decodes the application config from YAML data.
+// This is intended to use in the tests.
+func DecodeYAML[Spec any](data []byte) (*ApplicationConfig[Spec], error) {
+	cfg, err := config.DecodeYAML[*ApplicationConfig[Spec]](data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode application config: %w", err)
+	}
+	return cfg.Spec, nil
+}
+
 type ApplicationConfig[Spec any] struct {
 	commonSpec *config.GenericApplicationSpec
 	Spec       *Spec
