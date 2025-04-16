@@ -94,7 +94,7 @@ func WithDeploymentPlugin[Config, DeployTargetConfig, ApplicationConfigSpec any]
 }
 
 // WithLivestatePlugin is a function that sets the livestate plugin.
-func WithLivestatePlugin[Config, DeployTargetConfig, ApplicationConfigSpec any](livestatePlugin LivestatePlugin[Config, DeployTargetConfig]) PluginOption[Config, DeployTargetConfig, ApplicationConfigSpec] {
+func WithLivestatePlugin[Config, DeployTargetConfig, ApplicationConfigSpec any](livestatePlugin LivestatePlugin[Config, DeployTargetConfig, ApplicationConfigSpec]) PluginOption[Config, DeployTargetConfig, ApplicationConfigSpec] {
 	return func(plugin *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) {
 		plugin.livestatePlugin = livestatePlugin
 	}
@@ -110,7 +110,7 @@ type Plugin[Config, DeployTargetConfig, ApplicationConfigSpec any] struct {
 	// plugin implementations
 	stagePlugin      StagePlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
 	deploymentPlugin DeploymentPlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
-	livestatePlugin  LivestatePlugin[Config, DeployTargetConfig]
+	livestatePlugin  LivestatePlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
 
 	// command line options
 	pipedPluginService   string
@@ -292,7 +292,7 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 		}
 
 		if p.livestatePlugin != nil {
-			livestatePluginServiceServer := &LivestatePluginServer[Config, DeployTargetConfig]{base: p.livestatePlugin}
+			livestatePluginServiceServer := &LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]{base: p.livestatePlugin}
 			if err := livestatePluginServiceServer.setFields(
 				commonFields.withLogger(input.Logger.Named("livestate-service")),
 			); err != nil {
