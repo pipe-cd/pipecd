@@ -17,6 +17,7 @@ package sdk
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -124,6 +125,12 @@ func TestStagePluginServiceServer_ExecuteStage(t *testing.T) {
 			}
 			server := newTestStagePluginServiceServer(t, plugin)
 
+			config := strings.TrimSpace(`
+apiVersion: pipecd.dev/v1beta1
+kind: Appilcation
+spec: {}
+`)
+
 			request := &deployment.ExecuteStageRequest{
 				Input: &deployment.ExecutePluginInput{
 					Stage: &model.PipelineStage{
@@ -133,6 +140,18 @@ func TestStagePluginServiceServer_ExecuteStage(t *testing.T) {
 						Trigger: &model.DeploymentTrigger{
 							Commit: &model.Commit{},
 						},
+					},
+					RunningDeploymentSource: &common.DeploymentSource{
+						ApplicationDirectory:      "app-dir",
+						CommitHash:                "commit-hash",
+						ApplicationConfig:         []byte(config),
+						ApplicationConfigFilename: "app-config-filename",
+					},
+					TargetDeploymentSource: &common.DeploymentSource{
+						ApplicationDirectory:      "app-dir",
+						CommitHash:                "commit-hash",
+						ApplicationConfig:         []byte(config),
+						ApplicationConfigFilename: "app-config-filename",
 					},
 				},
 			}
