@@ -43,19 +43,21 @@ func TestPlugin_executeK8sMultiRollbackStage_NoPreviousDeployment(t *testing.T) 
 	// Read the application config from the example file
 	cfg, err := os.ReadFile(filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
 	require.NoError(t, err)
+	appCfg, err := sdk.DecodeYAML[kubeConfigPkg.KubernetesApplicationSpec](cfg)
+	require.NoError(t, err)
 
 	// Prepare the input
-	input := &sdk.ExecuteStageInput{
-		Request: sdk.ExecuteStageRequest{
+	input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
 			StageName:   "K8S_MULTI_ROLLBACK",
 			StageConfig: []byte(``),
-			RunningDeploymentSource: sdk.DeploymentSource{
+			RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
 				CommitHash: "", // Empty commit hash indicates no previous deployment
 			},
-			TargetDeploymentSource: sdk.DeploymentSource{
+			TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
 				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
 				CommitHash:                "0123456789",
-				ApplicationConfig:         cfg,
+				ApplicationConfig:         appCfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
 			},
 			Deployment: sdk.Deployment{
@@ -90,22 +92,24 @@ func TestPlugin_executeK8sMultiRollbackStage_SuccessfulRollback(t *testing.T) {
 	// Read the application config from the example file
 	cfg, err := os.ReadFile(filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
 	require.NoError(t, err)
+	appCfg, err := sdk.DecodeYAML[kubeConfigPkg.KubernetesApplicationSpec](cfg)
+	require.NoError(t, err)
 
 	// Prepare the input
-	input := &sdk.ExecuteStageInput{
-		Request: sdk.ExecuteStageRequest{
+	input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
 			StageName:   "K8S_MULTI_ROLLBACK",
 			StageConfig: []byte(``),
-			RunningDeploymentSource: sdk.DeploymentSource{
+			RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
 				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
 				CommitHash:                "previous-hash",
-				ApplicationConfig:         cfg,
+				ApplicationConfig:         appCfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
 			},
-			TargetDeploymentSource: sdk.DeploymentSource{
+			TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
 				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
 				CommitHash:                "0123456789",
-				ApplicationConfig:         cfg,
+				ApplicationConfig:         appCfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
 			},
 			Deployment: sdk.Deployment{
@@ -157,22 +161,24 @@ func TestPlugin_executeK8sMultiRollbackStage_WithVariantLabels(t *testing.T) {
 	// Read the application config and modify it to include variant labels
 	cfg, err := os.ReadFile(filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
 	require.NoError(t, err)
+	appCfg, err := sdk.DecodeYAML[kubeConfigPkg.KubernetesApplicationSpec](cfg)
+	require.NoError(t, err)
 
 	// Prepare the input
-	input := &sdk.ExecuteStageInput{
-		Request: sdk.ExecuteStageRequest{
+	input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
 			StageName:   "K8S_MULTI_ROLLBACK",
 			StageConfig: []byte(``),
-			RunningDeploymentSource: sdk.DeploymentSource{
+			RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
 				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
 				CommitHash:                "previous-hash",
-				ApplicationConfig:         cfg,
+				ApplicationConfig:         appCfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
 			},
-			TargetDeploymentSource: sdk.DeploymentSource{
+			TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
 				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
 				CommitHash:                "0123456789",
-				ApplicationConfig:         cfg,
+				ApplicationConfig:         appCfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
 			},
 			Deployment: sdk.Deployment{
