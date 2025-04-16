@@ -65,14 +65,14 @@ func (m *mockStagePlugin) BuildPipelineSyncStages(ctx context.Context, config *s
 	}, m.err
 }
 
-func (m *mockStagePlugin) ExecuteStage(ctx context.Context, config *struct{}, targets []*DeployTarget[struct{}], input *ExecuteStageInput) (*ExecuteStageResponse, error) {
+func (m *mockStagePlugin) ExecuteStage(ctx context.Context, config *struct{}, targets []*DeployTarget[struct{}], input *ExecuteStageInput[struct{}]) (*ExecuteStageResponse, error) {
 	return &ExecuteStageResponse{
 		Status: m.result,
 	}, m.err
 }
 
-func newTestStagePluginServiceServer(t *testing.T, plugin *mockStagePlugin) *StagePluginServiceServer[struct{}, struct{}] {
-	return &StagePluginServiceServer[struct{}, struct{}]{
+func newTestStagePluginServiceServer(t *testing.T, plugin *mockStagePlugin) *StagePluginServiceServer[struct{}, struct{}, struct{}] {
+	return &StagePluginServiceServer[struct{}, struct{}, struct{}]{
 		base: plugin,
 		commonFields: commonFields{
 			logger:       zaptest.NewLogger(t),
@@ -377,7 +377,7 @@ func TestNewDetermineVersionsRequest(t *testing.T) {
 	tests := []struct {
 		name     string
 		request  *deployment.DetermineVersionsRequest
-		expected DetermineVersionsRequest
+		expected DetermineVersionsRequest[struct{}]
 	}{
 		{
 			name: "valid request",
@@ -402,7 +402,7 @@ func TestNewDetermineVersionsRequest(t *testing.T) {
 					},
 				},
 			},
-			expected: DetermineVersionsRequest{
+			expected: DetermineVersionsRequest[struct{}]{
 				Deployment: Deployment{
 					ID:              "deployment-id",
 					ApplicationID:   "app-id",
@@ -412,10 +412,10 @@ func TestNewDetermineVersionsRequest(t *testing.T) {
 					TriggeredBy:     "triggered-by",
 					CreatedAt:       1234567890,
 				},
-				DeploymentSource: DeploymentSource{
+				DeploymentSource: DeploymentSource[struct{}]{
 					ApplicationDirectory:      "app-dir",
 					CommitHash:                "commit-hash",
-					ApplicationConfig:         []byte("app-config"),
+					ApplicationConfig:         nil, // ApplicationConfig is a pointer, so nil is fine for this test
 					ApplicationConfigFilename: "app-config-filename",
 				},
 			},
@@ -432,16 +432,16 @@ func TestNewDetermineVersionsRequest(t *testing.T) {
 					TargetDeploymentSource: &common.DeploymentSource{},
 				},
 			},
-			expected: DetermineVersionsRequest{
+			expected: DetermineVersionsRequest[struct{}]{
 				Deployment:       Deployment{},
-				DeploymentSource: DeploymentSource{},
+				DeploymentSource: DeploymentSource[struct{}]{},
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := newDetermineVersionsRequest(tt.request)
+			result, _ := newDetermineVersionsRequest[struct{}](tt.request)
 			assert.Equal(t, tt.expected.Deployment, result.Deployment)
 			assert.Equal(t, tt.expected.DeploymentSource, result.DeploymentSource)
 		})
@@ -665,7 +665,7 @@ func TestNewDetermineStrategyRequest(t *testing.T) {
 	tests := []struct {
 		name     string
 		request  *deployment.DetermineStrategyRequest
-		expected DetermineStrategyRequest
+		expected DetermineStrategyRequest[struct{}]
 	}{
 		{
 			name: "valid request",
@@ -696,7 +696,7 @@ func TestNewDetermineStrategyRequest(t *testing.T) {
 					},
 				},
 			},
-			expected: DetermineStrategyRequest{
+			expected: DetermineStrategyRequest[struct{}]{
 				Deployment: Deployment{
 					ID:              "deployment-id",
 					ApplicationID:   "app-id",
@@ -706,16 +706,16 @@ func TestNewDetermineStrategyRequest(t *testing.T) {
 					TriggeredBy:     "triggered-by",
 					CreatedAt:       1234567890,
 				},
-				RunningDeploymentSource: DeploymentSource{
+				RunningDeploymentSource: DeploymentSource[struct{}]{
 					ApplicationDirectory:      "app-dir",
 					CommitHash:                "commit-hash-1",
-					ApplicationConfig:         []byte("app-config"),
+					ApplicationConfig:         nil,
 					ApplicationConfigFilename: "app-config-filename",
 				},
-				TargetDeploymentSource: DeploymentSource{
+				TargetDeploymentSource: DeploymentSource[struct{}]{
 					ApplicationDirectory:      "app-dir",
 					CommitHash:                "commit-hash-2",
-					ApplicationConfig:         []byte("app-config"),
+					ApplicationConfig:         nil,
 					ApplicationConfigFilename: "app-config-filename",
 				},
 			},
@@ -732,10 +732,10 @@ func TestNewDetermineStrategyRequest(t *testing.T) {
 					TargetDeploymentSource: &common.DeploymentSource{},
 				},
 			},
-			expected: DetermineStrategyRequest{
+			expected: DetermineStrategyRequest[struct{}]{
 				Deployment:              Deployment{},
-				RunningDeploymentSource: DeploymentSource{},
-				TargetDeploymentSource:  DeploymentSource{},
+				RunningDeploymentSource: DeploymentSource[struct{}]{},
+				TargetDeploymentSource:  DeploymentSource[struct{}]{},
 			},
 		},
 	}
@@ -744,7 +744,7 @@ func TestNewDetermineStrategyRequest(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			result := newDetermineStrategyRequest(tt.request)
+			result, _ := newDetermineStrategyRequest[struct{}](tt.request)
 			assert.Equal(t, tt.expected, result)
 		})
 	}

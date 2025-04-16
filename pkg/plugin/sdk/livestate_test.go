@@ -43,12 +43,12 @@ func (m *mockLivestatePlugin) Version() string {
 	return "v1.0.0"
 }
 
-func (m *mockLivestatePlugin) GetLivestate(ctx context.Context, config *struct{}, targets []*DeployTarget[struct{}], input *GetLivestateInput) (*GetLivestateResponse, error) {
+func (m *mockLivestatePlugin) GetLivestate(ctx context.Context, config *struct{}, targets []*DeployTarget[struct{}], input *GetLivestateInput[struct{}]) (*GetLivestateResponse, error) {
 	return m.result, m.err
 }
 
-func newTestLivestatePluginServer(t *testing.T, plugin *mockLivestatePlugin) *LivestatePluginServer[struct{}, struct{}] {
-	return &LivestatePluginServer[struct{}, struct{}]{
+func newTestLivestatePluginServer(t *testing.T, plugin *mockLivestatePlugin) *LivestatePluginServer[struct{}, struct{}, struct{}] {
+	return &LivestatePluginServer[struct{}, struct{}, struct{}]{
 		base: plugin,
 		commonFields: commonFields{
 			logger: zaptest.NewLogger(t),

@@ -22,7 +22,7 @@ import (
 var (
 	_ StagePlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec]      = ExampleStagePlugin{}
 	_ DeploymentPlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec] = ExampleDeploymentPlugin{}
-	_ LivestatePlugin[ExampleConfig, ExampleDeployTargetConfig]                                = ExampleLivestatePlugin{}
+	_ LivestatePlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec]  = ExampleLivestatePlugin{}
 )
 
 type (
@@ -104,7 +104,7 @@ func (e ExampleDeploymentPlugin) Version() string {
 }
 
 // GetLivestate implements LivestatePlugin.
-func (e ExampleLivestatePlugin) GetLivestate(context.Context, *ExampleConfig, []*DeployTarget[ExampleDeployTargetConfig], *GetLivestateInput) (*GetLivestateResponse, error) {
+func (e ExampleLivestatePlugin) GetLivestate(context.Context, *ExampleConfig, []*DeployTarget[ExampleDeployTargetConfig], *GetLivestateInput[ExampleApplicationConfigSpec]) (*GetLivestateResponse, error) {
 	panic("unimplemented")
 }
 
