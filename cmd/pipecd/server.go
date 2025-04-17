@@ -20,7 +20,7 @@ import (
 	"net/http"
 	"time"
 
-	jwtgo "github.com/golang-jwt/jwt"
+	jwtgo "github.com/golang-jwt/jwt/v5"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
@@ -65,7 +65,7 @@ import (
 )
 
 var (
-	defaultSigningMethod = jwtgo.SigningMethodHS256
+	defaultSigningMethod = jwtgo.SigningMethodRS256
 )
 
 const (

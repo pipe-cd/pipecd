@@ -19,7 +19,7 @@ import (
 	"os"
 	"time"
 
-	jwtgo "github.com/golang-jwt/jwt"
+	jwtgo "github.com/golang-jwt/jwt/v5"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -31,9 +31,9 @@ const (
 	SignedTokenKey = "token"
 )
 
-// Claims extends the StandardClaims with the role to access PipeCD resources.
+// Claims extends the RegisteredClaims with the role to access PipeCD resources.
 type Claims struct {
-	jwtgo.StandardClaims
+	jwtgo.RegisteredClaims
 	AvatarURL string     `json:"avatarUrl,omitempty"`
 	Role      model.Role `json:"role,omitempty"`
 }
@@ -42,13 +42,12 @@ type Claims struct {
 func NewClaims(githubUserID, avatarURL string, ttl time.Duration, role model.Role) *Claims {
 	now := time.Now().UTC()
 	return &Claims{
-		StandardClaims: jwtgo.StandardClaims{
+		RegisteredClaims: jwtgo.RegisteredClaims{
 			Subject:   githubUserID,
 			Issuer:    Issuer,
-			IssuedAt:  now.Unix(),
-			NotBefore: now.Unix(),
-			ExpiresAt: now.Add(ttl).Unix(),
-			Audience:  "",
+			IssuedAt:  jwtgo.NewNumericDate(now),
+			NotBefore: jwtgo.NewNumericDate(now),
+			ExpiresAt: jwtgo.NewNumericDate(now.Add(ttl)),
 		},
 		AvatarURL: avatarURL,
 		Role:      role,
