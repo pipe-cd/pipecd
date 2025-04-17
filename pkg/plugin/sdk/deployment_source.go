@@ -106,3 +106,14 @@ func (c *ApplicationConfig[Spec]) Validate() error {
 
 	return nil
 }
+
+// HasStage returns true if the application config has a stage with the given name.
+func (c *ApplicationConfig[Spec]) HasStage(name string) bool {
+	// linear search is enough because the number of stages is limited.
+	for _, stage := range c.commonSpec.Pipeline.Stages {
+		if string(stage.Name) == name {
+			return true
+		}
+	}
+	return false
+}
