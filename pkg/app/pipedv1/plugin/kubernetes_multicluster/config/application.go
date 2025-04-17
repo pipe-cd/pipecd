@@ -75,6 +75,8 @@ type KubernetesDeploymentInput struct {
 	AutoCreateNamespace bool `json:"autoCreateNamespace,omitempty"`
 
 	// TODO: Define fields for KubernetesDeploymentInput.
+
+	MultiTargets []KubernetesMultiTarget `json:"multiTargets,omitempty"`
 }
 
 type KubernetesVariantLabel struct {
@@ -133,4 +135,16 @@ func FindDeployTarget(cfg *config.PipedPlugin, name string) (KubernetesDeployTar
 	}
 
 	return targetCfg, nil
+}
+
+type KubernetesMultiTarget struct {
+	Target         KubernetesMultiTargetDeployTarget `json:"target"`
+	Manifests      []string                          `json:"manifests,omitempty"`
+	KubectlVersion string                            `json:"kubectlVersion,omitempty"`
+	KustomizeDir   string                            `json:"kustomizeDir,omitempty"`
+}
+
+type KubernetesMultiTargetDeployTarget struct {
+	Name   string            `json:"name"`
+	Labels map[string]string `json:"labels"`
 }

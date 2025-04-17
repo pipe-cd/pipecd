@@ -111,3 +111,25 @@ func setupTestDeployTargetConfigAndDynamicClient(t *testing.T) (*kubeConfigPkg.K
 
 	return deployTargetCfg, dynamicClient
 }
+
+type cluster struct {
+	name string
+	cli  dynamic.Interface
+	dtc  *kubeConfigPkg.KubernetesDeployTargetConfig
+}
+
+func setupCluster(t *testing.T, name string) *cluster {
+	t.Helper()
+
+	clusterCfg := setupEnvTest(t)
+	dtc := setupTestDeployTargetConfig(t, clusterCfg)
+
+	cli, err := dynamic.NewForConfig(clusterCfg)
+	require.NoError(t, err)
+
+	return &cluster{
+		name: name,
+		cli:  cli,
+		dtc:  dtc,
+	}
+}

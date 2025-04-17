@@ -16,7 +16,7 @@ package deployment
 
 import (
 	"context"
-	"os"
+	"fmt"
 	"path/filepath"
 	"testing"
 
@@ -26,10 +26,8 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"sigs.k8s.io/yaml"
 
-	kubeConfigPkg "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
-	config "github.com/pipe-cd/pipecd/pkg/configv1"
+	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister/logpersistertest"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk/sdktest"
@@ -42,18 +40,18 @@ func TestPlugin_executeK8sMultiSyncStage(t *testing.T) {
 	ctx := context.Background()
 
 	// read the application config from the example file
-	appCfg := sdktest.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
+	appCfg := sdktest.LoadApplicationConfig[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
 
 	// initialize tool registry
 	testRegistry := toolregistrytest.NewTestToolRegistry(t)
 
 	// prepare the input
-	input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
-		Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
 			StageName:               "K8S_MULTI_SYNC",
 			StageConfig:             []byte(``),
-			RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{},
-			TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+			RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{},
+			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
 				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
 				CommitHash:                "0123456789",
 				ApplicationConfig:         appCfg,
@@ -73,7 +71,7 @@ func TestPlugin_executeK8sMultiSyncStage(t *testing.T) {
 
 	plugin := &Plugin{}
 
-	status := plugin.executeK8sMultiSyncStage(ctx, input, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
+	status := plugin.executeK8sMultiSyncStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{
 			Name:   "default",
 			Config: *dtConfig,
@@ -107,34 +105,25 @@ func TestPlugin_executeK8sMultiSyncStage_withInputNamespace(t *testing.T) {
 	ctx := context.Background()
 
 	// read the application config from the example file
-	cfg, err := os.ReadFile(filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
-	require.NoError(t, err)
+	appCfg := sdktest.LoadApplicationConfig[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
 
-	// decode and override the autoCreateNamespace and namespace
-	// TODO: Prepare the application config under the testdata directory and use it here.
-	spec, err := config.DecodeYAML[*kubeConfigPkg.KubernetesApplicationSpec](cfg)
-	require.NoError(t, err)
-	spec.Spec.Input.AutoCreateNamespace = true
-	spec.Spec.Input.Namespace = "test-namespace"
-	cfg, err = yaml.Marshal(spec)
-	require.NoError(t, err)
-
-	appCfg, err := config.DecodeYAML[*sdk.ApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec]](cfg)
-	require.NoError(t, err)
+	// override the autoCreateNamespace and namespace
+	appCfg.Spec.Input.AutoCreateNamespace = true
+	appCfg.Spec.Input.Namespace = "test-namespace"
 
 	// initialize tool registry
 	testRegistry := toolregistrytest.NewTestToolRegistry(t)
 
 	// prepare the input
-	input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
-		Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
 			StageName:               "K8S_MULTI_SYNC",
 			StageConfig:             []byte(``),
-			RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{},
-			TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+			RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{},
+			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
 				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
 				CommitHash:                "0123456789",
-				ApplicationConfig:         appCfg.Spec,
+				ApplicationConfig:         appCfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
 			},
 			Deployment: sdk.Deployment{
@@ -151,7 +140,7 @@ func TestPlugin_executeK8sMultiSyncStage_withInputNamespace(t *testing.T) {
 
 	plugin := &Plugin{}
 
-	status := plugin.executeK8sMultiSyncStage(ctx, input, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
+	status := plugin.executeK8sMultiSyncStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{
 			Name:   "default",
 			Config: *dtConfig,
@@ -192,16 +181,16 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune(t *testing.T) {
 	running := filepath.Join("./", "testdata", "prune", "running")
 
 	// read the running application config from the testdata file
-	runningCfg := sdktest.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(running, "app.pipecd.yaml"))
+	runningCfg := sdktest.LoadApplicationConfig[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(running, "app.pipecd.yaml"))
 
 	ok := t.Run("prepare", func(t *testing.T) {
 		// prepare the input to ensure the running deployment exists
-		runningInput := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
-			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+		runningInput := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
 				StageName:               "K8S_MULTI_SYNC",
 				StageConfig:             []byte(``),
-				RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{},
-				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+				RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{},
+				TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
 					ApplicationDirectory:      running,
 					CommitHash:                "0123456789",
 					ApplicationConfig:         runningCfg,
@@ -217,7 +206,7 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune(t *testing.T) {
 		}
 
 		plugin := &Plugin{}
-		status := plugin.executeK8sMultiSyncStage(ctx, runningInput, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
+		status := plugin.executeK8sMultiSyncStage(ctx, runningInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 			{
 				Name:   "default",
 				Config: *dtConfig,
@@ -247,20 +236,20 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune(t *testing.T) {
 		target := filepath.Join("./", "testdata", "prune", "target")
 
 		// read the running application config from the testdata file
-		targetCfg := sdktest.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(target, "app.pipecd.yaml"))
+		targetCfg := sdktest.LoadApplicationConfig[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(target, "app.pipecd.yaml"))
 
 		// prepare the input to ensure the running deployment exists
-		targetInput := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
-			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+		targetInput := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
 				StageName:   "K8S_MULTI_SYNC",
 				StageConfig: []byte(``),
-				RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+				RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
 					ApplicationDirectory:      running,
 					CommitHash:                "0123456789",
 					ApplicationConfig:         runningCfg,
 					ApplicationConfigFilename: "app.pipecd.yaml",
 				},
-				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+				TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
 					ApplicationDirectory:      target,
 					CommitHash:                "0012345678",
 					ApplicationConfig:         targetCfg,
@@ -276,7 +265,7 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune(t *testing.T) {
 		}
 
 		plugin := &Plugin{}
-		status := plugin.executeK8sMultiSyncStage(ctx, targetInput, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
+		status := plugin.executeK8sMultiSyncStage(ctx, targetInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 			{
 				Name:   "default",
 				Config: *dtConfig,
@@ -304,16 +293,16 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_changesNamespace(t *testing.T
 	running := filepath.Join("./", "testdata", "prune_with_change_namespace", "running")
 
 	// read the running application config from the example file
-	runningCfg := sdktest.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(running, "app.pipecd.yaml"))
+	runningCfg := sdktest.LoadApplicationConfig[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(running, "app.pipecd.yaml"))
 
 	ok := t.Run("prepare", func(t *testing.T) {
 		// prepare the input to ensure the running deployment exists
-		runningInput := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
-			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+		runningInput := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
 				StageName:               "K8S_MULTI_SYNC",
 				StageConfig:             []byte(``),
-				RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{},
-				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+				RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{},
+				TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
 					ApplicationDirectory:      running,
 					CommitHash:                "0123456789",
 					ApplicationConfig:         runningCfg,
@@ -329,7 +318,7 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_changesNamespace(t *testing.T
 		}
 
 		plugin := &Plugin{}
-		status := plugin.executeK8sMultiSyncStage(ctx, runningInput, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
+		status := plugin.executeK8sMultiSyncStage(ctx, runningInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 			{
 				Name:   "default",
 				Config: *dtConfig,
@@ -359,20 +348,20 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_changesNamespace(t *testing.T
 		target := filepath.Join("./", "testdata", "prune_with_change_namespace", "target")
 
 		// read the running application config from the example file
-		targetCfg := sdktest.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(target, "app.pipecd.yaml"))
+		targetCfg := sdktest.LoadApplicationConfig[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(target, "app.pipecd.yaml"))
 
 		// prepare the input to ensure the running deployment exists
-		targetInput := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
-			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+		targetInput := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
 				StageName:   "K8S_MULTI_SYNC",
 				StageConfig: []byte(``),
-				RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+				RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
 					ApplicationDirectory:      running,
 					CommitHash:                "0123456789",
 					ApplicationConfig:         runningCfg,
 					ApplicationConfigFilename: "app.pipecd.yaml",
 				},
-				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+				TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
 					ApplicationDirectory:      target,
 					CommitHash:                "0012345678",
 					ApplicationConfig:         targetCfg,
@@ -388,7 +377,7 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_changesNamespace(t *testing.T
 		}
 
 		plugin := &Plugin{}
-		status := plugin.executeK8sMultiSyncStage(ctx, targetInput, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
+		status := plugin.executeK8sMultiSyncStage(ctx, targetInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 			{
 				Name:   "default",
 				Config: *dtConfig,
@@ -434,16 +423,16 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_clusterScoped(t *testing.T) {
 	// prepare the custom resource definition
 	prepare := filepath.Join("./", "testdata", "prune_cluster_scoped_resource", "prepare")
 
-	prepareCfg := sdktest.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(prepare, "app.pipecd.yaml"))
+	prepareCfg := sdktest.LoadApplicationConfig[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(prepare, "app.pipecd.yaml"))
 
 	ok := t.Run("prepare crd", func(t *testing.T) {
 		// prepare the input to ensure the running deployment exists
-		prepareInput := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
-			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+		prepareInput := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
 				StageName:               "K8S_MULTI_SYNC",
 				StageConfig:             []byte(``),
-				RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{},
-				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+				RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{},
+				TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
 					ApplicationDirectory:      prepare,
 					CommitHash:                "0123456789",
 					ApplicationConfig:         prepareCfg,
@@ -459,7 +448,7 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_clusterScoped(t *testing.T) {
 		}
 
 		plugin := &Plugin{}
-		status := plugin.executeK8sMultiSyncStage(ctx, prepareInput, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
+		status := plugin.executeK8sMultiSyncStage(ctx, prepareInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 			{
 				Name:   "default",
 				Config: *dtConfig,
@@ -473,16 +462,16 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_clusterScoped(t *testing.T) {
 	running := filepath.Join("./", "testdata", "prune_cluster_scoped_resource", "running")
 
 	// read the running application config from the example file
-	runningCfg := sdktest.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(running, "app.pipecd.yaml"))
+	runningCfg := sdktest.LoadApplicationConfig[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(running, "app.pipecd.yaml"))
 
 	ok = t.Run("prepare running", func(t *testing.T) {
 		// prepare the input to ensure the running deployment exists
-		runningInput := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
-			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+		runningInput := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
 				StageName:               "K8S_MULTI_SYNC",
 				StageConfig:             []byte(``),
-				RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{},
-				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+				RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{},
+				TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
 					ApplicationDirectory:      running,
 					CommitHash:                "0123456789",
 					ApplicationConfig:         runningCfg,
@@ -494,7 +483,7 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_clusterScoped(t *testing.T) {
 		}
 
 		plugin := &Plugin{}
-		status := plugin.executeK8sMultiSyncStage(ctx, runningInput, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
+		status := plugin.executeK8sMultiSyncStage(ctx, runningInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 			{
 				Name:   "default",
 				Config: *dtConfig,
@@ -517,20 +506,20 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_clusterScoped(t *testing.T) {
 		target := filepath.Join("./", "testdata", "prune_cluster_scoped_resource", "target")
 
 		// read the running application config from the example file
-		targetCfg := sdktest.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(target, "app.pipecd.yaml"))
+		targetCfg := sdktest.LoadApplicationConfig[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(target, "app.pipecd.yaml"))
 
 		// prepare the input to ensure the running deployment exists
-		targetInput := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
-			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+		targetInput := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
 				StageName:   "K8S_MULTI_SYNC",
 				StageConfig: []byte(``),
-				RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+				RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
 					ApplicationDirectory:      running,
 					CommitHash:                "0123456789",
 					ApplicationConfig:         runningCfg,
 					ApplicationConfigFilename: "app.pipecd.yaml",
 				},
-				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+				TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
 					ApplicationDirectory:      target,
 					CommitHash:                "0012345678",
 					ApplicationConfig:         targetCfg,
@@ -542,7 +531,7 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_clusterScoped(t *testing.T) {
 		}
 
 		plugin := &Plugin{}
-		status := plugin.executeK8sMultiSyncStage(ctx, targetInput, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
+		status := plugin.executeK8sMultiSyncStage(ctx, targetInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 			{
 				Name:   "default",
 				Config: *dtConfig,
@@ -562,4 +551,197 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_clusterScoped(t *testing.T) {
 		require.Error(t, err)
 		require.Truef(t, apierrors.IsNotFound(err), "expected error to be NotFound, but got %v", err)
 	})
+}
+
+func TestPlugin_executeK8sMultiSyncStage_multiCluster(t *testing.T) {
+	t.Parallel()
+
+	// read the application config from the example file
+	cfg := sdktest.LoadApplicationConfig[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
+
+	// initialize tool registry
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
+	// prepare the input
+	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
+			StageName: "K8S_MULTI_SYNC",
+			Deployment: sdk.Deployment{
+				PipedID:       "piped-id",
+				ApplicationID: "app-id",
+			},
+			StageConfig:             []byte(``),
+			RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{},
+			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
+				CommitHash:                "0123456789",
+				ApplicationConfig:         cfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+		},
+		Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
+		Logger: zaptest.NewLogger(t),
+	}
+
+	// prepare the first cluster
+	cluster1 := setupCluster(t, "cluster1")
+	cluster2 := setupCluster(t, "cluster2")
+
+	dts := []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		{
+			Name:   "cluster1",
+			Config: *cluster1.dtc,
+		},
+		{
+			Name:   "cluster2",
+			Config: *cluster2.dtc,
+		},
+	}
+
+	plugin := &Plugin{}
+	status := plugin.executeK8sMultiSyncStage(t.Context(), input, dts)
+
+	require.Equal(t, sdk.StageStatusSuccess, status)
+
+	for _, cluster := range []*cluster{cluster1, cluster2} {
+		deployment, err := cluster.cli.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(context.Background(), "simple", metav1.GetOptions{})
+		require.NoError(t, err)
+		assert.Equal(t, "simple", deployment.GetName())
+		assert.Equal(t, "simple", deployment.GetLabels()["app"])
+
+		assert.Equal(t, "piped", deployment.GetLabels()["pipecd.dev/managed-by"])
+		assert.Equal(t, "piped-id", deployment.GetLabels()["pipecd.dev/piped"])
+		assert.Equal(t, "app-id", deployment.GetLabels()["pipecd.dev/application"])
+		assert.Equal(t, "0123456789", deployment.GetLabels()["pipecd.dev/commit-hash"])
+
+		assert.Equal(t, "piped", deployment.GetAnnotations()["pipecd.dev/managed-by"])
+		assert.Equal(t, "piped-id", deployment.GetAnnotations()["pipecd.dev/piped"])
+		assert.Equal(t, "app-id", deployment.GetAnnotations()["pipecd.dev/application"])
+		assert.Equal(t, "apps/v1", deployment.GetAnnotations()["pipecd.dev/original-api-version"])
+		assert.Equal(t, "apps:Deployment::simple", deployment.GetAnnotations()["pipecd.dev/resource-key"]) // This assertion differs from the non-plugin-arched piped's Kubernetes platform provider, but we decided to change this behavior.
+		assert.Equal(t, "0123456789", deployment.GetAnnotations()["pipecd.dev/commit-hash"])
+	}
+}
+
+func TestPlugin_executeK8sMultiSyncStage_multiCluster_templateNone(t *testing.T) {
+	t.Parallel()
+
+	target := filepath.Join("./", "testdata", "multicluster_template_none", "target")
+	// read the application config from the example file
+	cfg := sdktest.LoadApplicationConfig[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(target, "app.pipecd.yaml"))
+
+	// initialize tool registry
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
+	// prepare the input
+	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
+			StageName: "K8S_MULTI_SYNC",
+			Deployment: sdk.Deployment{
+				PipedID:       "piped-id",
+				ApplicationID: "app-id",
+			},
+			StageConfig:             []byte(``),
+			RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{},
+			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+				ApplicationDirectory:      target,
+				CommitHash:                "0123456789",
+				ApplicationConfig:         cfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+		},
+		Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
+		Logger: zaptest.NewLogger(t),
+	}
+
+	// prepare the first cluster
+	cluster1 := setupCluster(t, "cluster1")
+	cluster2 := setupCluster(t, "cluster2")
+
+	dts := []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		{
+			Name:   "cluster1",
+			Config: *cluster1.dtc,
+		},
+		{
+			Name:   "cluster2",
+			Config: *cluster2.dtc,
+		},
+	}
+
+	plugin := &Plugin{}
+	status := plugin.executeK8sMultiSyncStage(t.Context(), input, dts)
+
+	require.Equal(t, sdk.StageStatusSuccess, status)
+
+	for _, cluster := range []*cluster{cluster1, cluster2} {
+		deployment, err := cluster.cli.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(context.Background(), fmt.Sprintf("simple-%s", cluster.name), metav1.GetOptions{})
+		require.NoError(t, err)
+		assert.Equal(t, fmt.Sprintf("simple-%s", cluster.name), deployment.GetName())
+		assert.Equal(t, fmt.Sprintf("simple-%s", cluster.name), deployment.GetLabels()["app"])
+
+		assert.Equal(t, "piped", deployment.GetLabels()["pipecd.dev/managed-by"])
+		assert.Equal(t, "piped-id", deployment.GetLabels()["pipecd.dev/piped"])
+		assert.Equal(t, "app-id", deployment.GetLabels()["pipecd.dev/application"])
+		assert.Equal(t, "0123456789", deployment.GetLabels()["pipecd.dev/commit-hash"])
+
+		assert.Equal(t, "piped", deployment.GetAnnotations()["pipecd.dev/managed-by"])
+		assert.Equal(t, "piped-id", deployment.GetAnnotations()["pipecd.dev/piped"])
+		assert.Equal(t, "app-id", deployment.GetAnnotations()["pipecd.dev/application"])
+		assert.Equal(t, "apps/v1", deployment.GetAnnotations()["pipecd.dev/original-api-version"])
+		assert.Equal(t, "apps:Deployment::"+fmt.Sprintf("simple-%s", cluster.name), deployment.GetAnnotations()["pipecd.dev/resource-key"]) // This assertion differs from the non-plugin-arched piped's Kubernetes platform provider, but we decided to change this behavior.
+		assert.Equal(t, "0123456789", deployment.GetAnnotations()["pipecd.dev/commit-hash"])
+	}
+}
+
+func TestPlugin_executeK8sMultiSyncStage_multiCluster_failed_one_of_the_sync(t *testing.T) {
+	t.Parallel()
+
+	target := filepath.Join("./", "testdata", "multicluster_failed_one_of_the_sync", "target")
+
+	cfg := sdktest.LoadApplicationConfig[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(target, "app.pipecd.yaml"))
+
+	// initialize tool registry
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
+	// prepare the input
+	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
+			StageName: "K8S_MULTI_SYNC",
+			Deployment: sdk.Deployment{
+				PipedID:       "piped-id",
+				ApplicationID: "app-id",
+			},
+			StageConfig:             []byte(``),
+			RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{},
+			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+				ApplicationDirectory:      target,
+				CommitHash:                "0123456789",
+				ApplicationConfig:         cfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+		},
+		Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
+		Logger: zaptest.NewLogger(t),
+	}
+
+	// prepare the first cluster
+	cluster1 := setupCluster(t, "cluster1")
+	cluster2 := setupCluster(t, "cluster2")
+
+	dts := []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		{
+			Name:   "cluster1",
+			Config: *cluster1.dtc,
+		},
+		{
+			Name:   "cluster2",
+			Config: *cluster2.dtc,
+		},
+	}
+
+	plugin := &Plugin{}
+	status := plugin.executeK8sMultiSyncStage(t.Context(), input, dts)
+
+	require.Equal(t, sdk.StageStatusFailure, status)
 }

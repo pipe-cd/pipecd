@@ -71,7 +71,15 @@ func (p *Plugin) ExecuteStage(ctx context.Context, _ *sdk.ConfigNone, dts []*sdk
 	}
 }
 
-func (p *Plugin) loadManifests(ctx context.Context, deploy *sdk.Deployment, spec *kubeconfig.KubernetesApplicationSpec, deploymentSource *sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec], loader loader) ([]provider.Manifest, error) {
+func (p *Plugin) loadManifests(ctx context.Context, deploy *sdk.Deployment, spec *kubeconfig.KubernetesApplicationSpec, deploymentSource *sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec], loader loader, multiTarget *kubeconfig.KubernetesMultiTarget) ([]provider.Manifest, error) {
+	// override values if multiTarget has value.
+	manifestPathes := spec.Input.Manifests
+	if multiTarget != nil {
+		if len(multiTarget.Manifests) > 0 {
+			manifestPathes = multiTarget.Manifests
+		}
+	}
+
 	manifests, err := loader.LoadManifests(ctx, provider.LoaderInput{
 		PipedID:          deploy.PipedID,
 		AppID:            deploy.ApplicationID,
@@ -79,7 +87,7 @@ func (p *Plugin) loadManifests(ctx context.Context, deploy *sdk.Deployment, spec
 		AppName:          deploy.ApplicationName,
 		AppDir:           deploymentSource.ApplicationDirectory,
 		ConfigFilename:   deploymentSource.ApplicationConfigFilename,
-		Manifests:        spec.Input.Manifests,
+		Manifests:        manifestPathes,
 		Namespace:        spec.Input.Namespace,
 		TemplatingMethod: provider.TemplatingMethodNone, // TODO: Implement detection of templating method or add it to the config spec.
 
@@ -103,7 +111,8 @@ func (p *Plugin) DetermineVersions(ctx context.Context, _ *sdk.ConfigNone, input
 		return nil, err
 	}
 
-	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.DeploymentSource, provider.NewLoader(toolregistry.NewRegistry(input.Client.ToolRegistry())))
+	// TODO: consider multiTarget later
+	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.DeploymentSource, provider.NewLoader(toolregistry.NewRegistry(input.Client.ToolRegistry())), &kubeconfig.KubernetesMultiTarget{})
 	if err != nil {
 		logger.Error("Failed while loading manifests", zap.Error(err))
 		return nil, err
@@ -125,14 +134,16 @@ func (p *Plugin) DetermineStrategy(ctx context.Context, _ *sdk.ConfigNone, input
 		return nil, err
 	}
 
-	runnings, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.RunningDeploymentSource, loader)
+	// TODO: consider multiTarget later
+	runnings, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.RunningDeploymentSource, loader, &kubeconfig.KubernetesMultiTarget{})
 
 	if err != nil {
 		logger.Error("Failed while loading running manifests", zap.Error(err))
 		return nil, err
 	}
 
-	targets, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.TargetDeploymentSource, loader)
+	// TODO: consider multiTarget later
+	targets, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.TargetDeploymentSource, loader, &kubeconfig.KubernetesMultiTarget{})
 
 	if err != nil {
 		logger.Error("Failed while loading target manifests", zap.Error(err))
