@@ -23,11 +23,15 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
 
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
+	oras "oras.land/oras-go/v2"
+	"oras.land/oras-go/v2/content/file"
+	"oras.land/oras-go/v2/registry/remote"
 
 	"github.com/pipe-cd/pipecd/pkg/backoff"
 )
@@ -141,6 +145,11 @@ func DownloadBinary(sourceURL, destDir, destFile string, logger *zap.Logger) (st
 	}
 
 	switch u.Scheme {
+	case "oci":
+		if err := downloadOCI(context.TODO(), destDir, tmpFile, sourceURL); err != nil {
+			return "", fmt.Errorf("could not download from %s to %s (%w)", sourceURL, tmpName, err)
+		}
+
 	case "http", "https":
 		if err := downloadHTTP(tmpFile, sourceURL); err != nil {
 			return "", fmt.Errorf("could not download from %s to %s (%w)", sourceURL, tmpName, err)
@@ -198,6 +207,80 @@ func downloadFile(dst io.Writer, source string) error {
 
 	if _, err = dst.Write(data); err != nil {
 		return fmt.Errorf("could not write to %s (%w)", source, err)
+	}
+
+	return nil
+}
+
+func parseOCIURL(sourceURL string) (repo string, ref string, _ error) {
+	u, err := url.Parse(sourceURL)
+	if err != nil {
+		return "", "", fmt.Errorf("could not parse URL %s (%w)", sourceURL, err)
+	}
+
+	if u.Scheme != "oci" {
+		return "", "", fmt.Errorf("unsupported scheme %s", u.Scheme)
+	}
+
+	if u.Host == "" {
+		return "", "", fmt.Errorf("host is required")
+	}
+
+	if u.Path == "" {
+		return "", "", fmt.Errorf("path is required")
+	}
+
+	if !strings.HasPrefix(u.Path, "/") {
+		return "", "", fmt.Errorf("path must start with a slash")
+	}
+
+	repo, ref, ok := strings.Cut(u.Path, ":")
+	if !ok {
+		return u.Host + u.Path, "latest", nil
+	}
+
+	return u.Host + repo, ref, nil
+}
+
+func downloadOCI(ctx context.Context, workdir string, dst io.Writer, sourceURL string) error {
+	r, ref, err := parseOCIURL(sourceURL)
+	if err != nil {
+		return fmt.Errorf("could not parse OCI URL %s (%w)", sourceURL, err)
+	}
+
+	repo, err := remote.NewRepository(r)
+	if err != nil {
+		return fmt.Errorf("could not create repository (%w)", err)
+	}
+
+	d, err := os.MkdirTemp(workdir, "oci-pull")
+	if err != nil {
+		return fmt.Errorf("could not create temporary directory (%w)", err)
+	}
+	defer os.RemoveAll(d)
+
+	store, err := file.New(d)
+	if err != nil {
+		return fmt.Errorf("could not create file system (%w)", err)
+	}
+	defer store.Close()
+
+	store.AllowPathTraversalOnWrite = false
+	store.DisableOverwrite = false
+
+	desc, err := oras.Copy(ctx, repo, ref, store, ref, oras.DefaultCopyOptions)
+	if err != nil {
+		return fmt.Errorf("could not copy OCI image (%w)", err)
+	}
+
+	reader, err := store.Fetch(ctx, desc)
+	if err != nil {
+		return fmt.Errorf("could not fetch OCI image (%w)", err)
+	}
+	defer reader.Close()
+
+	if _, err := io.Copy(dst, reader); err != nil {
+		return fmt.Errorf("could not copy OCI image (%w)", err)
 	}
 
 	return nil
