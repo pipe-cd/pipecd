@@ -21,11 +21,10 @@ import (
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/toolregistry"
-	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
-func (p *Plugin) executeK8sMultiRollbackStage(ctx context.Context, input *sdk.ExecuteStageInput, dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
+func (p *Plugin) executeK8sMultiRollbackStage(ctx context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
 	lp := input.Client.LogPersister()
 
 	if input.Request.RunningDeploymentSource.CommitHash == "" {
@@ -35,9 +34,9 @@ func (p *Plugin) executeK8sMultiRollbackStage(ctx context.Context, input *sdk.Ex
 
 	lp.Info("Start rolling back the deployment")
 
-	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](input.Request.RunningDeploymentSource.ApplicationConfig)
+	cfg, err := input.Request.RunningDeploymentSource.AppConfig()
 	if err != nil {
-		lp.Errorf("Failed while decoding application config (%v)", err)
+		lp.Errorf("Failed while loading application config (%v)", err)
 		return sdk.StageStatusFailure
 	}
 

@@ -32,6 +32,7 @@ import (
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister/logpersistertest"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
+	"github.com/pipe-cd/pipecd/pkg/plugin/sdk/sdktest"
 	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry/toolregistrytest"
 )
 
@@ -41,22 +42,21 @@ func TestPlugin_executeK8sMultiSyncStage(t *testing.T) {
 	ctx := context.Background()
 
 	// read the application config from the example file
-	cfg, err := os.ReadFile(filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
-	require.NoError(t, err)
+	appCfg := sdktest.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
 
 	// initialize tool registry
 	testRegistry := toolregistrytest.NewTestToolRegistry(t)
 
 	// prepare the input
-	input := &sdk.ExecuteStageInput{
-		Request: sdk.ExecuteStageRequest{
+	input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
 			StageName:               "K8S_MULTI_SYNC",
 			StageConfig:             []byte(``),
-			RunningDeploymentSource: sdk.DeploymentSource{},
-			TargetDeploymentSource: sdk.DeploymentSource{
+			RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{},
+			TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
 				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
 				CommitHash:                "0123456789",
-				ApplicationConfig:         cfg,
+				ApplicationConfig:         appCfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
 			},
 			Deployment: sdk.Deployment{
@@ -111,6 +111,7 @@ func TestPlugin_executeK8sMultiSyncStage_withInputNamespace(t *testing.T) {
 	require.NoError(t, err)
 
 	// decode and override the autoCreateNamespace and namespace
+	// TODO: Prepare the application config under the testdata directory and use it here.
 	spec, err := config.DecodeYAML[*kubeConfigPkg.KubernetesApplicationSpec](cfg)
 	require.NoError(t, err)
 	spec.Spec.Input.AutoCreateNamespace = true
@@ -118,19 +119,22 @@ func TestPlugin_executeK8sMultiSyncStage_withInputNamespace(t *testing.T) {
 	cfg, err = yaml.Marshal(spec)
 	require.NoError(t, err)
 
+	appCfg, err := config.DecodeYAML[*sdk.ApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec]](cfg)
+	require.NoError(t, err)
+
 	// initialize tool registry
 	testRegistry := toolregistrytest.NewTestToolRegistry(t)
 
 	// prepare the input
-	input := &sdk.ExecuteStageInput{
-		Request: sdk.ExecuteStageRequest{
+	input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
 			StageName:               "K8S_MULTI_SYNC",
 			StageConfig:             []byte(``),
-			RunningDeploymentSource: sdk.DeploymentSource{},
-			TargetDeploymentSource: sdk.DeploymentSource{
+			RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{},
+			TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
 				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
 				CommitHash:                "0123456789",
-				ApplicationConfig:         cfg,
+				ApplicationConfig:         appCfg.Spec,
 				ApplicationConfigFilename: "app.pipecd.yaml",
 			},
 			Deployment: sdk.Deployment{
@@ -188,17 +192,16 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune(t *testing.T) {
 	running := filepath.Join("./", "testdata", "prune", "running")
 
 	// read the running application config from the testdata file
-	runningCfg, err := os.ReadFile(filepath.Join(running, "app.pipecd.yaml"))
-	require.NoError(t, err)
+	runningCfg := sdktest.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(running, "app.pipecd.yaml"))
 
 	ok := t.Run("prepare", func(t *testing.T) {
 		// prepare the input to ensure the running deployment exists
-		runningInput := &sdk.ExecuteStageInput{
-			Request: sdk.ExecuteStageRequest{
+		runningInput := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
 				StageName:               "K8S_MULTI_SYNC",
 				StageConfig:             []byte(``),
-				RunningDeploymentSource: sdk.DeploymentSource{},
-				TargetDeploymentSource: sdk.DeploymentSource{
+				RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{},
+				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
 					ApplicationDirectory:      running,
 					CommitHash:                "0123456789",
 					ApplicationConfig:         runningCfg,
@@ -244,21 +247,20 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune(t *testing.T) {
 		target := filepath.Join("./", "testdata", "prune", "target")
 
 		// read the running application config from the testdata file
-		targetCfg, err := os.ReadFile(filepath.Join(target, "app.pipecd.yaml"))
-		require.NoError(t, err)
+		targetCfg := sdktest.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(target, "app.pipecd.yaml"))
 
 		// prepare the input to ensure the running deployment exists
-		targetInput := &sdk.ExecuteStageInput{
-			Request: sdk.ExecuteStageRequest{
+		targetInput := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
 				StageName:   "K8S_MULTI_SYNC",
 				StageConfig: []byte(``),
-				RunningDeploymentSource: sdk.DeploymentSource{
+				RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
 					ApplicationDirectory:      running,
 					CommitHash:                "0123456789",
 					ApplicationConfig:         runningCfg,
 					ApplicationConfigFilename: "app.pipecd.yaml",
 				},
-				TargetDeploymentSource: sdk.DeploymentSource{
+				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
 					ApplicationDirectory:      target,
 					CommitHash:                "0012345678",
 					ApplicationConfig:         targetCfg,
@@ -282,7 +284,7 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune(t *testing.T) {
 		})
 		assert.Equal(t, sdk.StageStatusSuccess, status)
 
-		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(context.Background(), "simple", metav1.GetOptions{})
+		_, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(context.Background(), "simple", metav1.GetOptions{})
 		require.Error(t, err)
 		require.Truef(t, apierrors.IsNotFound(err), "expected error to be NotFound, but got %v", err)
 	})
@@ -302,17 +304,16 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_changesNamespace(t *testing.T
 	running := filepath.Join("./", "testdata", "prune_with_change_namespace", "running")
 
 	// read the running application config from the example file
-	runningCfg, err := os.ReadFile(filepath.Join(running, "app.pipecd.yaml"))
-	require.NoError(t, err)
+	runningCfg := sdktest.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(running, "app.pipecd.yaml"))
 
 	ok := t.Run("prepare", func(t *testing.T) {
 		// prepare the input to ensure the running deployment exists
-		runningInput := &sdk.ExecuteStageInput{
-			Request: sdk.ExecuteStageRequest{
+		runningInput := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
 				StageName:               "K8S_MULTI_SYNC",
 				StageConfig:             []byte(``),
-				RunningDeploymentSource: sdk.DeploymentSource{},
-				TargetDeploymentSource: sdk.DeploymentSource{
+				RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{},
+				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
 					ApplicationDirectory:      running,
 					CommitHash:                "0123456789",
 					ApplicationConfig:         runningCfg,
@@ -358,21 +359,20 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_changesNamespace(t *testing.T
 		target := filepath.Join("./", "testdata", "prune_with_change_namespace", "target")
 
 		// read the running application config from the example file
-		targetCfg, err := os.ReadFile(filepath.Join(target, "app.pipecd.yaml"))
-		require.NoError(t, err)
+		targetCfg := sdktest.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(target, "app.pipecd.yaml"))
 
 		// prepare the input to ensure the running deployment exists
-		targetInput := &sdk.ExecuteStageInput{
-			Request: sdk.ExecuteStageRequest{
+		targetInput := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
 				StageName:   "K8S_MULTI_SYNC",
 				StageConfig: []byte(``),
-				RunningDeploymentSource: sdk.DeploymentSource{
+				RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
 					ApplicationDirectory:      running,
 					CommitHash:                "0123456789",
 					ApplicationConfig:         runningCfg,
 					ApplicationConfigFilename: "app.pipecd.yaml",
 				},
-				TargetDeploymentSource: sdk.DeploymentSource{
+				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
 					ApplicationDirectory:      target,
 					CommitHash:                "0012345678",
 					ApplicationConfig:         targetCfg,
@@ -397,7 +397,7 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_changesNamespace(t *testing.T
 		require.Equal(t, sdk.StageStatusSuccess, status)
 
 		// The service should be removed from the previous namespace
-		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("test-1").Get(context.Background(), "simple", metav1.GetOptions{})
+		_, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("test-1").Get(context.Background(), "simple", metav1.GetOptions{})
 		require.Error(t, err)
 		require.Truef(t, apierrors.IsNotFound(err), "expected error to be NotFound, but got %v", err)
 
@@ -434,17 +434,16 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_clusterScoped(t *testing.T) {
 	// prepare the custom resource definition
 	prepare := filepath.Join("./", "testdata", "prune_cluster_scoped_resource", "prepare")
 
-	prepareCfg, err := os.ReadFile(filepath.Join(prepare, "app.pipecd.yaml"))
-	require.NoError(t, err)
+	prepareCfg := sdktest.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(prepare, "app.pipecd.yaml"))
 
 	ok := t.Run("prepare crd", func(t *testing.T) {
 		// prepare the input to ensure the running deployment exists
-		prepareInput := &sdk.ExecuteStageInput{
-			Request: sdk.ExecuteStageRequest{
+		prepareInput := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
 				StageName:               "K8S_MULTI_SYNC",
 				StageConfig:             []byte(``),
-				RunningDeploymentSource: sdk.DeploymentSource{},
-				TargetDeploymentSource: sdk.DeploymentSource{
+				RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{},
+				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
 					ApplicationDirectory:      prepare,
 					CommitHash:                "0123456789",
 					ApplicationConfig:         prepareCfg,
@@ -474,17 +473,16 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_clusterScoped(t *testing.T) {
 	running := filepath.Join("./", "testdata", "prune_cluster_scoped_resource", "running")
 
 	// read the running application config from the example file
-	runningCfg, err := os.ReadFile(filepath.Join(running, "app.pipecd.yaml"))
-	require.NoError(t, err)
+	runningCfg := sdktest.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(running, "app.pipecd.yaml"))
 
 	ok = t.Run("prepare running", func(t *testing.T) {
 		// prepare the input to ensure the running deployment exists
-		runningInput := &sdk.ExecuteStageInput{
-			Request: sdk.ExecuteStageRequest{
+		runningInput := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
 				StageName:               "K8S_MULTI_SYNC",
 				StageConfig:             []byte(``),
-				RunningDeploymentSource: sdk.DeploymentSource{},
-				TargetDeploymentSource: sdk.DeploymentSource{
+				RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{},
+				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
 					ApplicationDirectory:      running,
 					CommitHash:                "0123456789",
 					ApplicationConfig:         runningCfg,
@@ -505,7 +503,7 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_clusterScoped(t *testing.T) {
 		require.Equal(t, sdk.StageStatusSuccess, status)
 
 		// The my-new-cron-object/my-new-cron-object-2/my-new-cron-object-v1beta1 should be created
-		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object", metav1.GetOptions{})
+		_, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object", metav1.GetOptions{})
 		require.NoError(t, err)
 		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object-2", metav1.GetOptions{})
 		require.NoError(t, err)
@@ -519,21 +517,20 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_clusterScoped(t *testing.T) {
 		target := filepath.Join("./", "testdata", "prune_cluster_scoped_resource", "target")
 
 		// read the running application config from the example file
-		targetCfg, err := os.ReadFile(filepath.Join(target, "app.pipecd.yaml"))
-		require.NoError(t, err)
+		targetCfg := sdktest.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(target, "app.pipecd.yaml"))
 
 		// prepare the input to ensure the running deployment exists
-		targetInput := sdk.ExecuteStageInput{
-			Request: sdk.ExecuteStageRequest{
+		targetInput := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
 				StageName:   "K8S_MULTI_SYNC",
 				StageConfig: []byte(``),
-				RunningDeploymentSource: sdk.DeploymentSource{
+				RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
 					ApplicationDirectory:      running,
 					CommitHash:                "0123456789",
 					ApplicationConfig:         runningCfg,
 					ApplicationConfigFilename: "app.pipecd.yaml",
 				},
-				TargetDeploymentSource: sdk.DeploymentSource{
+				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
 					ApplicationDirectory:      target,
 					CommitHash:                "0012345678",
 					ApplicationConfig:         targetCfg,
@@ -545,7 +542,7 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_clusterScoped(t *testing.T) {
 		}
 
 		plugin := &Plugin{}
-		status := plugin.executeK8sMultiSyncStage(ctx, &targetInput, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
+		status := plugin.executeK8sMultiSyncStage(ctx, targetInput, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
 			{
 				Name:   "default",
 				Config: *dtConfig,
@@ -554,7 +551,7 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_clusterScoped(t *testing.T) {
 		require.Equal(t, sdk.StageStatusSuccess, status)
 
 		// The my-new-cron-object should not be removed
-		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object", metav1.GetOptions{})
+		_, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object", metav1.GetOptions{})
 		require.NoError(t, err)
 		// The my-new-cron-object-2 should be removed
 		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "stable.example.com", Version: "v1", Resource: "crontabs"}).Get(context.Background(), "my-new-cron-object-2", metav1.GetOptions{})

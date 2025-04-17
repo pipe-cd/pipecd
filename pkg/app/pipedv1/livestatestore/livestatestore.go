@@ -25,7 +25,7 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/pipe-cd/pipecd/pkg/config"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
@@ -57,9 +57,7 @@ func NewStore(ctx context.Context, cfg *config.PipedSpec, appLister applicationL
 		gracePeriod: gracePeriod,
 		logger:      logger,
 	}
-	for _, cp := range cfg.PlatformProviders {
-		_ = cp // TODO: general state from plugin from store fields
-	}
+	// TODO: general state from plugin from store fields
 
 	return s
 }
