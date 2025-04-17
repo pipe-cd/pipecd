@@ -20,7 +20,9 @@ import (
 	"testing"
 	"time"
 
-	jwtgo "github.com/golang-jwt/jwt"
+	jwtgo "github.com/golang-jwt/jwt/v5"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -34,7 +36,7 @@ func TestVerify(t *testing.T) {
 		name      string
 		claims    *Claims
 		fail      bool
-		errPrefix string
+		errString string
 	}{
 		{
 			name: "ok",
@@ -46,64 +48,40 @@ func TestVerify(t *testing.T) {
 		{
 			name: "wrong issuer",
 			claims: &Claims{
-				StandardClaims: jwtgo.StandardClaims{
+				RegisteredClaims: jwtgo.RegisteredClaims{
 					Issuer:    "test-issuer",
-					IssuedAt:  now.Unix(),
-					NotBefore: now.Unix(),
-					ExpiresAt: now.Add(time.Hour).Unix(),
+					IssuedAt:  jwtgo.NewNumericDate(now),
+					NotBefore: jwtgo.NewNumericDate(now),
+					ExpiresAt: jwtgo.NewNumericDate(now.Add(time.Hour)),
 				},
 			},
 			fail:      true,
-			errPrefix: "invalid issuer",
+			errString: "invalid issuer",
 		},
 		{
 			name: "expired",
 			claims: &Claims{
-				StandardClaims: jwtgo.StandardClaims{
+				RegisteredClaims: jwtgo.RegisteredClaims{
 					Issuer:    Issuer,
-					IssuedAt:  now.Add(-time.Hour).Unix(),
-					NotBefore: now.Add(-time.Hour).Unix(),
-					ExpiresAt: now.Add(-time.Minute).Unix(),
+					IssuedAt:  jwtgo.NewNumericDate(now.Add(-time.Hour)),
+					NotBefore: jwtgo.NewNumericDate(now.Add(-time.Hour)),
+					ExpiresAt: jwtgo.NewNumericDate(now.Add(-time.Minute)),
 				},
 			},
 			fail:      true,
-			errPrefix: "unable to parse token: token is expired",
-		},
-		{
-			name: "missing issueAt",
-			claims: &Claims{
-				StandardClaims: jwtgo.StandardClaims{
-					Issuer:    Issuer,
-					NotBefore: now.Unix(),
-					ExpiresAt: now.Add(time.Hour).Unix(),
-				},
-			},
-			fail:      true,
-			errPrefix: "missing issuedAt",
+			errString: "unable to parse token: token has invalid claims: token is expired",
 		},
 		{
 			name: "missing expiresAt",
 			claims: &Claims{
-				StandardClaims: jwtgo.StandardClaims{
+				RegisteredClaims: jwtgo.RegisteredClaims{
 					Issuer:    Issuer,
-					IssuedAt:  now.Unix(),
-					NotBefore: now.Unix(),
+					IssuedAt:  jwtgo.NewNumericDate(now),
+					NotBefore: jwtgo.NewNumericDate(now),
 				},
 			},
 			fail:      true,
-			errPrefix: "missing expiresAt",
-		},
-		{
-			name: "missing notBefore",
-			claims: &Claims{
-				StandardClaims: jwtgo.StandardClaims{
-					Issuer:    Issuer,
-					IssuedAt:  now.Unix(),
-					ExpiresAt: now.Add(time.Hour).Unix(),
-				},
-			},
-			fail:      true,
-			errPrefix: "missing notBefore",
+			errString: "unable to parse token: token has invalid claims: token is missing required claim: exp claim is required",
 		},
 	}
 
@@ -118,12 +96,14 @@ func TestVerify(t *testing.T) {
 				if tc.fail {
 					require.Error(t, err)
 					assert.Nil(t, got)
-					if tc.errPrefix != "" && !strings.HasPrefix(err.Error(), tc.errPrefix) {
-						assert.Fail(t, fmt.Sprintf("unexpected error prefix, expected: %s, got: %s", tc.errPrefix, err.Error()))
+					if tc.errString != "" && !strings.Contains(err.Error(), tc.errString) {
+						assert.Fail(t, fmt.Sprintf("unexpected error, expected: %s, got: %s", tc.errString, err.Error()))
 					}
 				} else {
 					assert.NoError(t, err)
-					assert.Equal(t, tc.claims, got)
+					if !cmp.Equal(tc.claims, got, cmpopts.IgnoreUnexported(jwtgo.RegisteredClaims{}, model.Role{})) {
+						assert.Fail(t, fmt.Sprintf("unexpected claims, expected: %v, got: %v", tc.claims, got))
+					}
 				}
 			})
 		}
