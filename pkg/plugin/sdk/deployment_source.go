@@ -50,6 +50,14 @@ func newDeploymentSource[Spec any](source *common.DeploymentSource) (DeploymentS
 	}, nil
 }
 
+// AppConfig returns the application config.
+func (d *DeploymentSource[Spec]) AppConfig() (*ApplicationConfig[Spec], error) {
+	if d.ApplicationConfig == nil {
+		return nil, fmt.Errorf("application config is not set")
+	}
+	return d.ApplicationConfig, nil
+}
+
 // LoadApplicationConfig loads the application config from the given filename.
 // This is intended to use in the tests.
 func LoadApplicationConfig[Spec any](filename string) (*ApplicationConfig[Spec], error) {

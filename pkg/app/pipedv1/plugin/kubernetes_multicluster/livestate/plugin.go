@@ -40,14 +40,18 @@ func (p Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTarge
 	deployTarget := deployTargets[0]
 	deployTargetConfig := deployTarget.Config
 
-	cfg := input.Request.DeploymentSource.ApplicationConfig.Spec
+	cfg, err := input.Request.DeploymentSource.AppConfig()
+	if err != nil {
+		input.Logger.Error("Failed to load application config", zap.Error(err))
+		return nil, err
+	}
 
 	// TODO: find the way to hold the tool registry and loader in the plugin.
 	// Currently, we create them every time the stage is executed beucause we can't pass input.Client.toolRegistry to the plugin when starting the plugin.
 	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
 
 	// Get the kubectl tool path.
-	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(cfg.Input.KubectlVersion, deployTargetConfig.KubectlVersion))
+	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion))
 	if err != nil {
 		input.Logger.Error("Failed to get kubectl tool", zap.Error(err))
 		return nil, err
@@ -72,7 +76,7 @@ func (p Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTarge
 		resourceStates = append(resourceStates, m.ToResourceState(deployTarget.Name))
 	}
 
-	manifests, err := p.loadManifests(ctx, input, cfg, provider.NewLoader(toolRegistry))
+	manifests, err := p.loadManifests(ctx, input, cfg.Spec, provider.NewLoader(toolRegistry))
 	if err != nil {
 		input.Logger.Error("Failed to load manifests", zap.Error(err))
 		return nil, err

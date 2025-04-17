@@ -30,9 +30,9 @@ func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStag
 	lp := input.Client.LogPersister()
 	lp.Info("Start syncing the deployment")
 
-	cfg := input.Request.TargetDeploymentSource.ApplicationConfig.Spec
-	if cfg == nil {
-		lp.Errorf("Application config spec is nil")
+	cfg, err := input.Request.TargetDeploymentSource.AppConfig()
+	if err != nil {
+		lp.Errorf("Failed while loading application config (%v)", err)
 		return sdk.StageStatusFailure
 	}
 
@@ -42,7 +42,7 @@ func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStag
 	loader := provider.NewLoader(toolRegistry)
 
 	lp.Infof("Loading manifests at commit %s for handling", input.Request.TargetDeploymentSource.CommitHash)
-	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg, &input.Request.TargetDeploymentSource, loader)
+	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.TargetDeploymentSource, loader)
 	if err != nil {
 		lp.Errorf("Failed while loading manifests (%v)", err)
 		return sdk.StageStatusFailure
@@ -56,12 +56,12 @@ func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStag
 	// When addVariantLabelToSelector is true, ensure that all workloads
 	// have the variant label in their selector.
 	var (
-		variantLabel   = cfg.VariantLabel.Key
-		primaryVariant = cfg.VariantLabel.PrimaryValue
+		variantLabel   = cfg.Spec.VariantLabel.Key
+		primaryVariant = cfg.Spec.VariantLabel.PrimaryValue
 	)
 	// TODO: treat the stage options specified under "with"
-	if cfg.QuickSync.AddVariantLabelToSelector {
-		workloads := findWorkloadManifests(manifests, cfg.Workloads)
+	if cfg.Spec.QuickSync.AddVariantLabelToSelector {
+		workloads := findWorkloadManifests(manifests, cfg.Spec.Workloads)
 		for _, m := range workloads {
 			if err := ensureVariantSelectorInWorkload(m, variantLabel, primaryVariant); err != nil {
 				lp.Errorf("Unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key().ReadableString(), err)
@@ -93,7 +93,7 @@ func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStag
 	deployTargetConfig := dts[0].Config
 
 	// Get the kubectl tool path.
-	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(cfg.Input.KubectlVersion, deployTargetConfig.KubectlVersion))
+	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion))
 	if err != nil {
 		lp.Errorf("Failed while getting kubectl tool (%v)", err)
 		return sdk.StageStatusFailure
@@ -103,17 +103,17 @@ func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStag
 	kubectl := provider.NewKubectl(kubectlPath)
 
 	// Create the applier for the target cluster.
-	applier := provider.NewApplier(kubectl, cfg.Input, deployTargetConfig, input.Logger)
+	applier := provider.NewApplier(kubectl, cfg.Spec.Input, deployTargetConfig, input.Logger)
 
 	// Start applying all manifests to add or update running resources.
 	// TODO: use applyManifests instead of applyManifestsSDK
-	if err := applyManifests(ctx, applier, manifests, cfg.Input.Namespace, lp); err != nil {
+	if err := applyManifests(ctx, applier, manifests, cfg.Spec.Input.Namespace, lp); err != nil {
 		lp.Errorf("Failed while applying manifests (%v)", err)
 		return sdk.StageStatusSuccess
 	}
 
 	// TODO: treat the stage options specified under "with"
-	if !cfg.QuickSync.Prune {
+	if !cfg.Spec.QuickSync.Prune {
 		lp.Info("Resource GC was skipped because sync.prune was not configured")
 		return sdk.StageStatusSuccess
 	}

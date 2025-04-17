@@ -97,10 +97,13 @@ func (p *Plugin) loadManifests(ctx context.Context, deploy *sdk.Deployment, spec
 func (p *Plugin) DetermineVersions(ctx context.Context, _ *sdk.ConfigNone, input *sdk.DetermineVersionsInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.DetermineVersionsResponse, error) {
 	logger := input.Logger
 
-	cfg := input.Request.DeploymentSource.ApplicationConfig.Spec
+	cfg, err := input.Request.DeploymentSource.AppConfig()
+	if err != nil {
+		logger.Error("Failed while loading application config", zap.Error(err))
+		return nil, err
+	}
 
-	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg, &input.Request.DeploymentSource, provider.NewLoader(toolregistry.NewRegistry(input.Client.ToolRegistry())))
-
+	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.DeploymentSource, provider.NewLoader(toolregistry.NewRegistry(input.Client.ToolRegistry())))
 	if err != nil {
 		logger.Error("Failed while loading manifests", zap.Error(err))
 		return nil, err
@@ -116,23 +119,27 @@ func (p *Plugin) DetermineStrategy(ctx context.Context, _ *sdk.ConfigNone, input
 	logger := input.Logger
 	loader := provider.NewLoader(toolregistry.NewRegistry(input.Client.ToolRegistry()))
 
-	cfg := input.Request.TargetDeploymentSource.ApplicationConfig.Spec
+	cfg, err := input.Request.TargetDeploymentSource.AppConfig()
+	if err != nil {
+		logger.Error("Failed while loading application config", zap.Error(err))
+		return nil, err
+	}
 
-	runnings, err := p.loadManifests(ctx, &input.Request.Deployment, cfg, &input.Request.RunningDeploymentSource, loader)
+	runnings, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.RunningDeploymentSource, loader)
 
 	if err != nil {
 		logger.Error("Failed while loading running manifests", zap.Error(err))
 		return nil, err
 	}
 
-	targets, err := p.loadManifests(ctx, &input.Request.Deployment, cfg, &input.Request.TargetDeploymentSource, loader)
+	targets, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.TargetDeploymentSource, loader)
 
 	if err != nil {
 		logger.Error("Failed while loading target manifests", zap.Error(err))
 		return nil, err
 	}
 
-	strategy, summary := determineStrategy(runnings, targets, cfg.Workloads, logger)
+	strategy, summary := determineStrategy(runnings, targets, cfg.Spec.Workloads, logger)
 
 	return &sdk.DetermineStrategyResponse{
 		Strategy: strategy,
