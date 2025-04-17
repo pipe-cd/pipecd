@@ -21,7 +21,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
-func (p *Plugin) executeK8sPrimaryRolloutStage(_ context.Context, input *sdk.ExecuteStageInput, _ []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
+func (p *Plugin) executeK8sPrimaryRolloutStage(_ context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], _ []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
 	input.Client.LogPersister().Error("Primary rollout is not yet implemented")
 	return sdk.StageStatusFailure
 }

@@ -31,31 +31,31 @@ import (
 // LivestatePlugin is the interface that must be implemented by a Livestate plugin.
 // In addition to the Plugin interface, it provides a method to get the live state of the resources.
 // The Config and DeployTargetConfig are the plugin's config defined in piped's config.
-type LivestatePlugin[Config, DeployTargetConfig any] interface {
+type LivestatePlugin[Config, DeployTargetConfig, ApplicationConfigSpec any] interface {
 	// GetLivestate returns the live state of the resources in the given application.
 	// It returns the resources' live state and the difference between the desired state and the live state.
 	// It's allowed to return only the resources' live state if the difference is not available, or only the difference if the live state is not available.
-	GetLivestate(context.Context, *Config, []*DeployTarget[DeployTargetConfig], *GetLivestateInput) (*GetLivestateResponse, error)
+	GetLivestate(context.Context, *Config, []*DeployTarget[DeployTargetConfig], *GetLivestateInput[ApplicationConfigSpec]) (*GetLivestateResponse, error)
 }
 
 // LivestatePluginServer is a wrapper for LivestatePlugin to satisfy the LivestateServiceServer interface.
 // It is used to register the plugin to the gRPC server.
-type LivestatePluginServer[Config, DeployTargetConfig any] struct {
+type LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec any] struct {
 	livestate.UnimplementedLivestateServiceServer
 	commonFields
 
-	base          LivestatePlugin[Config, DeployTargetConfig]
+	base          LivestatePlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
 	config        Config
 	deployTargets map[string]*DeployTarget[DeployTargetConfig]
 }
 
 // Register registers the plugin to the gRPC server.
-func (s *LivestatePluginServer[Config, DeployTargetConfig]) Register(server *grpc.Server) {
+func (s *LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]) Register(server *grpc.Server) {
 	livestate.RegisterLivestateServiceServer(server, s)
 }
 
 // setFields sets the common fields and configs to the server.
-func (s *LivestatePluginServer[Config, DeployTargetConfig]) setFields(fields commonFields) error {
+func (s *LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]) setFields(fields commonFields) error {
 	s.commonFields = fields
 
 	cfg := fields.config
@@ -84,7 +84,7 @@ func (s *LivestatePluginServer[Config, DeployTargetConfig]) setFields(fields com
 }
 
 // GetLivestate returns the live state of the resources in the given application.
-func (s *LivestatePluginServer[Config, DeployTargetConfig]) GetLivestate(ctx context.Context, request *livestate.GetLivestateRequest) (*livestate.GetLivestateResponse, error) {
+func (s *LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]) GetLivestate(ctx context.Context, request *livestate.GetLivestateRequest) (*livestate.GetLivestateResponse, error) {
 	// Get the deploy targets set on the deployment from the piped plugin config.
 	deployTargets := make([]*DeployTarget[DeployTargetConfig], 0, len(request.GetDeployTargets()))
 	for _, name := range request.GetDeployTargets() {
@@ -103,12 +103,17 @@ func (s *LivestatePluginServer[Config, DeployTargetConfig]) GetLivestate(ctx con
 		toolRegistry:  s.toolRegistry,
 	}
 
-	response, err := s.base.GetLivestate(ctx, &s.config, deployTargets, &GetLivestateInput{
-		Request: GetLivestateRequest{
+	deploymentSource, err := newDeploymentSource[ApplicationConfigSpec](request.GetDeploySource())
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to parse deployment source: %v", err)
+	}
+
+	response, err := s.base.GetLivestate(ctx, &s.config, deployTargets, &GetLivestateInput[ApplicationConfigSpec]{
+		Request: GetLivestateRequest[ApplicationConfigSpec]{
 			PipedID:          request.GetPipedId(),
 			ApplicationID:    request.GetApplicationId(),
 			ApplicationName:  request.GetApplicationName(),
-			DeploymentSource: newDeploymentSource(request.GetDeploySource()),
+			DeploymentSource: deploymentSource,
 		},
 		Client: client,
 		Logger: s.logger,
@@ -121,9 +126,9 @@ func (s *LivestatePluginServer[Config, DeployTargetConfig]) GetLivestate(ctx con
 }
 
 // GetLivestateInput is the input for the GetLivestate method.
-type GetLivestateInput struct {
+type GetLivestateInput[ApplicationConfigSpec any] struct {
 	// Request is the request for getting the live state.
-	Request GetLivestateRequest
+	Request GetLivestateRequest[ApplicationConfigSpec]
 	// Client is the client for accessing the piped API.
 	Client *Client
 	// Logger is the logger for logging.
@@ -131,7 +136,7 @@ type GetLivestateInput struct {
 }
 
 // GetLivestateRequest is the request for the GetLivestate method.
-type GetLivestateRequest struct {
+type GetLivestateRequest[ApplicationConfigSpec any] struct {
 	// PipedID is the ID of the piped.
 	PipedID string
 	// ApplicationID is the ID of the application.
@@ -139,7 +144,7 @@ type GetLivestateRequest struct {
 	// ApplicationName is the name of the application.
 	ApplicationName string
 	// DeploymentSource is the source of the deployment.
-	DeploymentSource DeploymentSource
+	DeploymentSource DeploymentSource[ApplicationConfigSpec]
 }
 
 // GetLivestateResponse is the response for the GetLivestate method.

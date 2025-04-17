@@ -20,17 +20,18 @@ import (
 )
 
 var (
-	_ StagePlugin[ExampleConfig, ExampleDeployTargetConfig]      = ExampleStagePlugin{}
-	_ DeploymentPlugin[ExampleConfig, ExampleDeployTargetConfig] = ExampleDeploymentPlugin{}
-	_ LivestatePlugin[ExampleConfig, ExampleDeployTargetConfig]  = ExampleLivestatePlugin{}
+	_ StagePlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec]      = ExampleStagePlugin{}
+	_ DeploymentPlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec] = ExampleDeploymentPlugin{}
+	_ LivestatePlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec]  = ExampleLivestatePlugin{}
 )
 
 type (
-	ExampleStagePlugin        struct{}
-	ExampleDeploymentPlugin   struct{}
-	ExampleLivestatePlugin    struct{}
-	ExampleConfig             struct{}
-	ExampleDeployTargetConfig struct{}
+	ExampleStagePlugin           struct{}
+	ExampleDeploymentPlugin      struct{}
+	ExampleLivestatePlugin       struct{}
+	ExampleConfig                struct{}
+	ExampleDeployTargetConfig    struct{}
+	ExampleApplicationConfigSpec struct{}
 )
 
 // BuildPipelineSyncStages implements StagePlugin.
@@ -39,7 +40,7 @@ func (e ExampleStagePlugin) BuildPipelineSyncStages(context.Context, *ExampleCon
 }
 
 // ExecuteStage implements StagePlugin.
-func (e ExampleStagePlugin) ExecuteStage(context.Context, *ExampleConfig, []*DeployTarget[ExampleDeployTargetConfig], *ExecuteStageInput) (*ExecuteStageResponse, error) {
+func (e ExampleStagePlugin) ExecuteStage(context.Context, *ExampleConfig, []*DeployTarget[ExampleDeployTargetConfig], *ExecuteStageInput[ExampleApplicationConfigSpec]) (*ExecuteStageResponse, error) {
 	panic("unimplemented")
 }
 
@@ -71,17 +72,17 @@ func (e ExampleDeploymentPlugin) BuildQuickSyncStages(context.Context, *ExampleC
 }
 
 // DetermineStrategy implements DeploymentPlugin.
-func (e ExampleDeploymentPlugin) DetermineStrategy(context.Context, *ExampleConfig, *DetermineStrategyInput) (*DetermineStrategyResponse, error) {
+func (e ExampleDeploymentPlugin) DetermineStrategy(context.Context, *ExampleConfig, *DetermineStrategyInput[ExampleApplicationConfigSpec]) (*DetermineStrategyResponse, error) {
 	panic("unimplemented")
 }
 
 // DetermineVersions implements DeploymentPlugin.
-func (e ExampleDeploymentPlugin) DetermineVersions(context.Context, *ExampleConfig, *DetermineVersionsInput) (*DetermineVersionsResponse, error) {
+func (e ExampleDeploymentPlugin) DetermineVersions(context.Context, *ExampleConfig, *DetermineVersionsInput[ExampleApplicationConfigSpec]) (*DetermineVersionsResponse, error) {
 	panic("unimplemented")
 }
 
 // ExecuteStage implements DeploymentPlugin.
-func (e ExampleDeploymentPlugin) ExecuteStage(context.Context, *ExampleConfig, []*DeployTarget[ExampleDeployTargetConfig], *ExecuteStageInput) (*ExecuteStageResponse, error) {
+func (e ExampleDeploymentPlugin) ExecuteStage(context.Context, *ExampleConfig, []*DeployTarget[ExampleDeployTargetConfig], *ExecuteStageInput[ExampleApplicationConfigSpec]) (*ExecuteStageResponse, error) {
 	panic("unimplemented")
 }
 
@@ -103,7 +104,7 @@ func (e ExampleDeploymentPlugin) Version() string {
 }
 
 // GetLivestate implements LivestatePlugin.
-func (e ExampleLivestatePlugin) GetLivestate(context.Context, *ExampleConfig, []*DeployTarget[ExampleDeployTargetConfig], *GetLivestateInput) (*GetLivestateResponse, error) {
+func (e ExampleLivestatePlugin) GetLivestate(context.Context, *ExampleConfig, []*DeployTarget[ExampleDeployTargetConfig], *GetLivestateInput[ExampleApplicationConfigSpec]) (*GetLivestateResponse, error) {
 	panic("unimplemented")
 }
 

@@ -25,7 +25,6 @@ import (
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
-	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/diff"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
@@ -33,7 +32,7 @@ import (
 type Plugin struct{}
 
 // GetLivestate implements sdk.LivestatePlugin.
-func (p Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTargets []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.GetLivestateInput) (*sdk.GetLivestateResponse, error) {
+func (p Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTargets []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.GetLivestateResponse, error) {
 	if len(deployTargets) != 1 {
 		return nil, fmt.Errorf("only 1 deploy target is allowed but got %d", len(deployTargets))
 	}
@@ -41,9 +40,9 @@ func (p Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTarge
 	deployTarget := deployTargets[0]
 	deployTargetConfig := deployTarget.Config
 
-	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](input.Request.DeploymentSource.ApplicationConfig)
+	cfg, err := input.Request.DeploymentSource.AppConfig()
 	if err != nil {
-		input.Logger.Error("Failed to decode the application spec", zap.Error(err))
+		input.Logger.Error("Failed while loading application config", zap.Error(err))
 		return nil, err
 	}
 
@@ -155,7 +154,7 @@ type loader interface {
 }
 
 // TODO: share this implementation with the deployment plugin
-func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput, spec *kubeconfig.KubernetesApplicationSpec, loader loader) ([]provider.Manifest, error) {
+func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec], spec *kubeconfig.KubernetesApplicationSpec, loader loader) ([]provider.Manifest, error) {
 	manifests, err := loader.LoadManifests(ctx, provider.LoaderInput{
 		PipedID:          input.Request.PipedID,
 		AppID:            input.Request.ApplicationID,

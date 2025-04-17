@@ -17,6 +17,7 @@ package sdk
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -27,6 +28,7 @@ import (
 
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/livestate"
 )
 
@@ -43,12 +45,12 @@ func (m *mockLivestatePlugin) Version() string {
 	return "v1.0.0"
 }
 
-func (m *mockLivestatePlugin) GetLivestate(ctx context.Context, config *struct{}, targets []*DeployTarget[struct{}], input *GetLivestateInput) (*GetLivestateResponse, error) {
+func (m *mockLivestatePlugin) GetLivestate(ctx context.Context, config *struct{}, targets []*DeployTarget[struct{}], input *GetLivestateInput[struct{}]) (*GetLivestateResponse, error) {
 	return m.result, m.err
 }
 
-func newTestLivestatePluginServer(t *testing.T, plugin *mockLivestatePlugin) *LivestatePluginServer[struct{}, struct{}] {
-	return &LivestatePluginServer[struct{}, struct{}]{
+func newTestLivestatePluginServer(t *testing.T, plugin *mockLivestatePlugin) *LivestatePluginServer[struct{}, struct{}, struct{}] {
+	return &LivestatePluginServer[struct{}, struct{}, struct{}]{
 		base: plugin,
 		commonFields: commonFields{
 			logger: zaptest.NewLogger(t),
@@ -70,6 +72,12 @@ func newTestLivestatePluginServer(t *testing.T, plugin *mockLivestatePlugin) *Li
 func TestLivestatePluginServer_GetLivestate(t *testing.T) {
 	t.Parallel()
 
+	validConfig := strings.TrimSpace(`
+apiVersion: pipecd.dev/v1beta1
+kind: Appilcation
+spec: {}
+`)
+
 	tests := []struct {
 		name           string
 		request        *livestate.GetLivestateRequest
@@ -85,6 +93,12 @@ func TestLivestatePluginServer_GetLivestate(t *testing.T) {
 				ApplicationId:   "app1",
 				ApplicationName: "app1",
 				DeployTargets:   []string{"target1"},
+				DeploySource: &common.DeploymentSource{
+					ApplicationDirectory:      "app-dir",
+					CommitHash:                "commit-hash",
+					ApplicationConfig:         []byte(validConfig),
+					ApplicationConfigFilename: "app-config-filename",
+				},
 			},
 			result: &GetLivestateResponse{
 				LiveState: ApplicationLiveState{

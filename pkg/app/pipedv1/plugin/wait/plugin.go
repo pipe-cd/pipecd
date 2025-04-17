@@ -46,7 +46,7 @@ func (p *plugin) BuildPipelineSyncStages(ctx context.Context, _ sdk.ConfigNone, 
 }
 
 // ExecuteStage implements sdk.StagePlugin.
-func (p *plugin) ExecuteStage(ctx context.Context, _ sdk.ConfigNone, _ sdk.DeployTargetsNone, input *sdk.ExecuteStageInput) (*sdk.ExecuteStageResponse, error) {
+func (p *plugin) ExecuteStage(ctx context.Context, _ sdk.ConfigNone, _ sdk.DeployTargetsNone, input *sdk.ExecuteStageInput[struct{}]) (*sdk.ExecuteStageResponse, error) {
 	status := p.executeWait(ctx, input)
 	return &sdk.ExecuteStageResponse{
 		Status: status,

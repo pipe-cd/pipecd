@@ -31,7 +31,7 @@ const (
 )
 
 // executeWait starts waiting for the specified duration.
-func (p *plugin) executeWait(ctx context.Context, in *sdk.ExecuteStageInput) sdk.StageStatus {
+func (p *plugin) executeWait(ctx context.Context, in *sdk.ExecuteStageInput[struct{}]) sdk.StageStatus {
 	opts, err := decode(in.Request.StageConfig)
 	if err != nil {
 		in.Client.LogPersister().Errorf("failed to decode the stage config: %v", err)
