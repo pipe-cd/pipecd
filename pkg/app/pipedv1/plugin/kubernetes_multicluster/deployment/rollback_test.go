@@ -27,6 +27,7 @@ import (
 	kubeConfigPkg "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister/logpersistertest"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
+	"github.com/pipe-cd/pipecd/pkg/plugin/sdk/sdktest"
 	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry/toolregistrytest"
 )
 
@@ -40,8 +41,7 @@ func TestPlugin_executeK8sMultiRollbackStage_NoPreviousDeployment(t *testing.T) 
 	dtConfig, _ := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	// Read the application config from the example file
-	appCfg, err := sdk.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
-	require.NoError(t, err)
+	appCfg := sdktest.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
 
 	// Prepare the input
 	input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
@@ -87,8 +87,7 @@ func TestPlugin_executeK8sMultiRollbackStage_SuccessfulRollback(t *testing.T) {
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	// Read the application config from the example file
-	appCfg, err := sdk.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
-	require.NoError(t, err)
+	appCfg := sdktest.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
 
 	// Prepare the input
 	input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
@@ -154,8 +153,7 @@ func TestPlugin_executeK8sMultiRollbackStage_WithVariantLabels(t *testing.T) {
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	// Read the application config and modify it to include variant labels
-	appCfg, err := sdk.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
-	require.NoError(t, err)
+	appCfg := sdktest.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
 
 	// Prepare the input
 	input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
