@@ -17,6 +17,7 @@ package sdk
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
@@ -49,12 +50,19 @@ func newDeploymentSource[Spec any](source *common.DeploymentSource) (DeploymentS
 	}, nil
 }
 
-// DecodeYAML decodes the application config from YAML data.
+// LoadApplicationConfig loads the application config from the given filename.
 // This is intended to use in the tests.
-func DecodeYAML[Spec any](data []byte) (*ApplicationConfig[Spec], error) {
+func LoadApplicationConfig[Spec any](filename string) (*ApplicationConfig[Spec], error) {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read application config: %w", err)
+	}
 	cfg, err := config.DecodeYAML[*ApplicationConfig[Spec]](data)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode application config: %w", err)
+	}
+	if cfg.Spec == nil {
+		return nil, fmt.Errorf("application config is not set")
 	}
 	return cfg.Spec, nil
 }

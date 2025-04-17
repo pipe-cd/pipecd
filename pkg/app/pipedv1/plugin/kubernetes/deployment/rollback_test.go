@@ -15,7 +15,6 @@
 package deployment
 
 import (
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -41,9 +40,7 @@ func TestPlugin_executeK8sRollbackStage_NoPreviousDeployment(t *testing.T) {
 	dtConfig, _ := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	// Read the application config from the example file
-	cfgBytes, err := os.ReadFile(filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
-	require.NoError(t, err)
-	cfg, err := sdk.DecodeYAML[kubeConfigPkg.KubernetesApplicationSpec](cfgBytes)
+	cfg, err := sdk.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
 	require.NoError(t, err)
 
 	// Prepare the input
@@ -90,9 +87,7 @@ func TestPlugin_executeK8sRollbackStage_SuccessfulRollback(t *testing.T) {
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	// Read the application config from the example file
-	cfgBytes, err := os.ReadFile(filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
-	require.NoError(t, err)
-	cfg, err := sdk.DecodeYAML[kubeConfigPkg.KubernetesApplicationSpec](cfgBytes)
+	cfg, err := sdk.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
 	require.NoError(t, err)
 
 	// Prepare the input
@@ -159,9 +154,7 @@ func TestPlugin_executeK8sRollbackStage_WithVariantLabels(t *testing.T) {
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	// Read the application config and modify it to include variant labels
-	cfgBytes, err := os.ReadFile(filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
-	require.NoError(t, err)
-	cfg, err := sdk.DecodeYAML[kubeConfigPkg.KubernetesApplicationSpec](cfgBytes)
+	cfg, err := sdk.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
 	require.NoError(t, err)
 
 	// Prepare the input

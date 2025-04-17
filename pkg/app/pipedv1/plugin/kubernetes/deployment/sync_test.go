@@ -40,14 +40,11 @@ func TestPlugin_executeK8sSyncStage(t *testing.T) {
 
 	ctx := context.Background()
 
-	// read the application config from the example file
-	cfg, err := os.ReadFile(filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
-	require.NoError(t, err)
-
 	// initialize tool registry
 	testRegistry := toolregistrytest.NewTestToolRegistry(t)
 
-	appCfg, err := sdk.DecodeYAML[kubeConfigPkg.KubernetesApplicationSpec](cfg)
+	// read the application config from the example file
+	appCfg, err := sdk.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
 	require.NoError(t, err)
 
 	// prepare the input
@@ -116,6 +113,7 @@ func TestPlugin_executeK8sSyncStage_withInputNamespace(t *testing.T) {
 	require.NoError(t, err)
 
 	// decode and override the autoCreateNamespace and namespace
+	// TODO: Prepare the application config under the testdata directory and use it here.
 	spec, err := config.DecodeYAML[*kubeConfigPkg.KubernetesApplicationSpec](cfg)
 	require.NoError(t, err)
 	spec.Spec.Input.AutoCreateNamespace = true
@@ -123,12 +121,12 @@ func TestPlugin_executeK8sSyncStage_withInputNamespace(t *testing.T) {
 	cfg, err = yaml.Marshal(spec)
 	require.NoError(t, err)
 
+	// decode the config for ApplicationConfig
+	appCfg, err := config.DecodeYAML[*sdk.ApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec]](cfg)
+	require.NoError(t, err)
+
 	// initialize tool registry
 	testRegistry := toolregistrytest.NewTestToolRegistry(t)
-
-	// decode the config for ApplicationConfig
-	appCfg, err := sdk.DecodeYAML[kubeConfigPkg.KubernetesApplicationSpec](cfg)
-	require.NoError(t, err)
 
 	// prepare the input
 	input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
@@ -139,7 +137,7 @@ func TestPlugin_executeK8sSyncStage_withInputNamespace(t *testing.T) {
 			TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
 				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
 				CommitHash:                "0123456789",
-				ApplicationConfig:         appCfg,
+				ApplicationConfig:         appCfg.Spec,
 				ApplicationConfigFilename: "app.pipecd.yaml",
 			},
 			Deployment: sdk.Deployment{
@@ -197,9 +195,7 @@ func TestPlugin_executeK8sSyncStage_withPrune(t *testing.T) {
 	running := filepath.Join("./", "testdata", "prune", "running")
 
 	// read the running application config from the testdata file
-	runningCfgBytes, err := os.ReadFile(filepath.Join(running, "app.pipecd.yaml"))
-	require.NoError(t, err)
-	runningCfg, err := sdk.DecodeYAML[kubeConfigPkg.KubernetesApplicationSpec](runningCfgBytes)
+	runningCfg, err := sdk.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](filepath.Join(running, "app.pipecd.yaml"))
 	require.NoError(t, err)
 
 	ok := t.Run("prepare", func(t *testing.T) {
@@ -255,9 +251,7 @@ func TestPlugin_executeK8sSyncStage_withPrune(t *testing.T) {
 		target := filepath.Join("./", "testdata", "prune", "target")
 
 		// read the running application config from the testdata file
-		targetCfgBytes, err := os.ReadFile(filepath.Join(target, "app.pipecd.yaml"))
-		require.NoError(t, err)
-		targetCfg, err := sdk.DecodeYAML[kubeConfigPkg.KubernetesApplicationSpec](targetCfgBytes)
+		targetCfg, err := sdk.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](filepath.Join(target, "app.pipecd.yaml"))
 		require.NoError(t, err)
 
 		// prepare the input to ensure the running deployment exists
@@ -315,9 +309,7 @@ func TestPlugin_executeK8sSyncStage_withPrune_changesNamespace(t *testing.T) {
 	running := filepath.Join("./", "testdata", "prune_with_change_namespace", "running")
 
 	// read the running application config from the example file
-	runningCfgBytes, err := os.ReadFile(filepath.Join(running, "app.pipecd.yaml"))
-	require.NoError(t, err)
-	runningCfg, err := sdk.DecodeYAML[kubeConfigPkg.KubernetesApplicationSpec](runningCfgBytes)
+	runningCfg, err := sdk.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](filepath.Join(running, "app.pipecd.yaml"))
 	require.NoError(t, err)
 
 	ok := t.Run("prepare", func(t *testing.T) {
@@ -373,9 +365,7 @@ func TestPlugin_executeK8sSyncStage_withPrune_changesNamespace(t *testing.T) {
 		target := filepath.Join("./", "testdata", "prune_with_change_namespace", "target")
 
 		// read the running application config from the example file
-		targetCfgBytes, err := os.ReadFile(filepath.Join(target, "app.pipecd.yaml"))
-		require.NoError(t, err)
-		targetCfg, err := sdk.DecodeYAML[kubeConfigPkg.KubernetesApplicationSpec](targetCfgBytes)
+		targetCfg, err := sdk.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](filepath.Join(target, "app.pipecd.yaml"))
 		require.NoError(t, err)
 
 		// prepare the input to ensure the running deployment exists
@@ -451,9 +441,7 @@ func TestPlugin_executeK8sSyncStage_withPrune_clusterScoped(t *testing.T) {
 	// prepare the custom resource definition
 	prepare := filepath.Join("./", "testdata", "prune_cluster_scoped_resource", "prepare")
 
-	prepareCfgBytes, err := os.ReadFile(filepath.Join(prepare, "app.pipecd.yaml"))
-	require.NoError(t, err)
-	prepareCfg, err := sdk.DecodeYAML[kubeConfigPkg.KubernetesApplicationSpec](prepareCfgBytes)
+	prepareCfg, err := sdk.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](filepath.Join(prepare, "app.pipecd.yaml"))
 	require.NoError(t, err)
 
 	ok := t.Run("prepare crd", func(t *testing.T) {
@@ -493,9 +481,7 @@ func TestPlugin_executeK8sSyncStage_withPrune_clusterScoped(t *testing.T) {
 	running := filepath.Join("./", "testdata", "prune_cluster_scoped_resource", "running")
 
 	// read the running application config from the example file
-	runningCfgBytes, err := os.ReadFile(filepath.Join(running, "app.pipecd.yaml"))
-	require.NoError(t, err)
-	runningCfg, err := sdk.DecodeYAML[kubeConfigPkg.KubernetesApplicationSpec](runningCfgBytes)
+	runningCfg, err := sdk.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](filepath.Join(running, "app.pipecd.yaml"))
 	require.NoError(t, err)
 
 	ok = t.Run("prepare running", func(t *testing.T) {
@@ -540,9 +526,7 @@ func TestPlugin_executeK8sSyncStage_withPrune_clusterScoped(t *testing.T) {
 		target := filepath.Join("./", "testdata", "prune_cluster_scoped_resource", "target")
 
 		// read the running application config from the example file
-		targetCfgBytes, err := os.ReadFile(filepath.Join(target, "app.pipecd.yaml"))
-		require.NoError(t, err)
-		targetCfg, err := sdk.DecodeYAML[kubeConfigPkg.KubernetesApplicationSpec](targetCfgBytes)
+		targetCfg, err := sdk.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](filepath.Join(target, "app.pipecd.yaml"))
 		require.NoError(t, err)
 
 		// prepare the input to ensure the running deployment exists
