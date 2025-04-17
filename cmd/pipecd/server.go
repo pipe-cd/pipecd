@@ -65,7 +65,7 @@ import (
 )
 
 var (
-	defaultSigningMethod = jwtgo.SigningMethodRS256
+	defaultSigningMethod = jwtgo.SigningMethodHS256
 )
 
 const (
