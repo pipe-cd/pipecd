@@ -44,6 +44,30 @@ func TestApplicationConfig_HasStage(t *testing.T) {
 			want:      true,
 		},
 		{
+			name: "stage exists with different name",
+			appConfig: &ApplicationConfig[any]{
+				commonSpec: &config.GenericApplicationSpec{
+					Pipeline: &config.DeploymentPipeline{
+						Stages: []config.PipelineStage{{Name: "stage1"}},
+					},
+				},
+			},
+			stageName: "stage2",
+			want:      false,
+		},
+		{
+			name: "multiple stages",
+			appConfig: &ApplicationConfig[any]{
+				commonSpec: &config.GenericApplicationSpec{
+					Pipeline: &config.DeploymentPipeline{
+						Stages: []config.PipelineStage{{Name: "stage1"}, {Name: "stage2"}},
+					},
+				},
+			},
+			stageName: "stage2",
+			want:      true,
+		},
+		{
 			name: "stage does not exist",
 			appConfig: &ApplicationConfig[any]{
 				commonSpec: &config.GenericApplicationSpec{
