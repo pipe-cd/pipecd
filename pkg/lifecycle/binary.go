@@ -16,8 +16,11 @@ package lifecycle
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
+	"io/fs"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -27,6 +30,7 @@ import (
 	"syscall"
 	"time"
 
+	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
 	oras "oras.land/oras-go/v2"
@@ -146,7 +150,7 @@ func DownloadBinary(sourceURL, destDir, destFile string, logger *zap.Logger) (st
 
 	switch u.Scheme {
 	case "oci":
-		if err := downloadOCI(context.TODO(), destDir, tmpFile, sourceURL); err != nil {
+		if err := downloadOCI(context.TODO(), destDir, tmpFile, sourceURL, false); err != nil {
 			return "", fmt.Errorf("could not download from %s to %s (%w)", sourceURL, tmpName, err)
 		}
 
@@ -242,7 +246,7 @@ func parseOCIURL(sourceURL string) (repo string, ref string, _ error) {
 	return u.Host + repo, ref, nil
 }
 
-func downloadOCI(ctx context.Context, workdir string, dst io.Writer, sourceURL string) error {
+func downloadOCI(ctx context.Context, workdir string, dst io.Writer, sourceURL string, insecure bool) error {
 	r, ref, err := parseOCIURL(sourceURL)
 	if err != nil {
 		return fmt.Errorf("could not parse OCI URL %s (%w)", sourceURL, err)
@@ -252,6 +256,8 @@ func downloadOCI(ctx context.Context, workdir string, dst io.Writer, sourceURL s
 	if err != nil {
 		return fmt.Errorf("could not create repository (%w)", err)
 	}
+
+	repo.PlainHTTP = insecure
 
 	d, err := os.MkdirTemp(workdir, "oci-pull")
 	if err != nil {
@@ -268,10 +274,20 @@ func downloadOCI(ctx context.Context, workdir string, dst io.Writer, sourceURL s
 	store.AllowPathTraversalOnWrite = false
 	store.DisableOverwrite = false
 
-	desc, err := oras.Copy(ctx, repo, ref, store, ref, oras.DefaultCopyOptions)
+	desc, err := oras.Copy(ctx, repo, ref, store, "", oras.DefaultCopyOptions)
 	if err != nil {
 		return fmt.Errorf("could not copy OCI image (%w)", err)
 	}
+
+	fs.WalkDir(os.DirFS(d), ".", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		log.Println(path, d.Name())
+
+		return nil
+	})
 
 	reader, err := store.Fetch(ctx, desc)
 	if err != nil {
@@ -279,7 +295,24 @@ func downloadOCI(ctx context.Context, workdir string, dst io.Writer, sourceURL s
 	}
 	defer reader.Close()
 
-	if _, err := io.Copy(dst, reader); err != nil {
+	var spec ocispec.Manifest
+	if err := json.NewDecoder(reader).Decode(&spec); err != nil {
+		return fmt.Errorf("could not decode OCI image (%w)", err)
+	}
+
+	if len(spec.Layers) > 1 {
+		return fmt.Errorf("expected 1 layer, got %d", len(spec.Layers))
+	}
+
+	layer := spec.Layers[0]
+
+	layerReader, err := store.Fetch(ctx, layer)
+	if err != nil {
+		return fmt.Errorf("could not fetch OCI image (%w)", err)
+	}
+	defer layerReader.Close()
+
+	if _, err := io.Copy(dst, layerReader); err != nil {
 		return fmt.Errorf("could not copy OCI image (%w)", err)
 	}
 

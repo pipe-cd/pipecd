@@ -157,3 +157,18 @@ func httpTestServer() *httptest.Server {
 		}
 	}))
 }
+
+func TestDownloadOCI(t *testing.T) {
+	destDir := t.TempDir()
+	destFile, err := os.CreateTemp(destDir, "oci-pull")
+	require.NoError(t, err)
+	defer os.RemoveAll(destDir)
+
+	err = downloadOCI(context.TODO(), destDir, destFile, "oci://localhost:5001/hello-artifact:v3", true)
+	require.NoError(t, err)
+
+	content, err := os.ReadFile(destFile.Name())
+	require.NoError(t, err)
+
+	assert.Equal(t, "hello world\n", string(content))
+}
