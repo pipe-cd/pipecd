@@ -53,7 +53,7 @@ Next, in order to perform CD tasks, you need to install a Piped agent to the clu
 
 From your logged in tab, navigate to the PipeCD setting page at [http://localhost:8080/settings/piped?project=quickstart](http://localhost:8080/settings/piped?project=quickstart).
 
-You will find the `+ADD` button around the top left of this page, click there and insert information to register a `piped` named `dev`.
+You will find the `+ADD` button around the top left of this page, click there and insert information to register the Piped agent (for example, `dev`).
 
 ![](/images/quickstart-adding-piped.png)
 
