@@ -102,6 +102,8 @@ pull_title="Cherry-pick to ${BRANCH}"
 pull_body=$(cat <<EOF
 **What this PR does / why we need it**:
 Cherry pick of ${PULL_SUBJ}.
+
+**Note:** You need to **close and reopen this PR** manually to trigger status check workflows. (Or just click `Update branch` if possible.)
 EOF
 )
 gh pr create --title="${pull_title}" --body="${pull_body}" --head "${NEWBRANCH}" --base "${BRANCH}"
