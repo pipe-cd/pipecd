@@ -40,6 +40,7 @@ type Artifact struct {
 	FilePaths map[Platform]string
 }
 
+// TODO: functional options pattern for insecure
 func PushFilesToRegistry(ctx context.Context, workDir string, artifact *Artifact, targetURL string, insecure bool) error {
 	repo, ref, err := parseOCIURL(targetURL)
 	if err != nil {

@@ -34,6 +34,7 @@ const (
 	MediaTypePipedPlugin = "application/vnd.pipecd.piped.plugin"
 )
 
+// TODO: functional options pattern for insecure, targetOS, targetArch, mediaType
 func PullFileFromRegistry(ctx context.Context, workdir string, dst io.Writer, sourceURL string, insecure bool, targetOS, targetArch, mediaType string) error {
 	r, ref, err := parseOCIURL(sourceURL)
 	if err != nil {
