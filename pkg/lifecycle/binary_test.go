@@ -159,12 +159,12 @@ func httpTestServer() *httptest.Server {
 }
 
 func TestDownloadOCI(t *testing.T) {
-	destDir := t.TempDir()
-	destFile, err := os.CreateTemp(destDir, "oci-pull")
+	workDir := t.TempDir()
+	destFile, err := os.CreateTemp(workDir, "oci-pull")
 	require.NoError(t, err)
-	defer os.RemoveAll(destDir)
+	defer os.RemoveAll(workDir)
 
-	err = downloadOCI(context.TODO(), destDir, destFile, "oci://localhost:5001/hello-artifact@sha256:8bbed0bc1801da65469a40197f357c166af3bf33f2d59f806fbf69626a6d2da4", true, "linux", "amd64")
+	err = downloadOCI(context.TODO(), workDir, destFile, "oci://localhost:5001/hello-artifact@sha256:8bbed0bc1801da65469a40197f357c166af3bf33f2d59f806fbf69626a6d2da4", true, "linux", "amd64")
 	require.NoError(t, err)
 
 	content, err := os.ReadFile(destFile.Name())
