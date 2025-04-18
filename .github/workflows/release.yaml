@@ -1,0 +1,37 @@
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'release version (e.g. v0.48.1)'
+        required: true
+        type: string
+jobs:
+  tool:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Cut Release
+        run: |
+          git config user.name "pipecd-bot"
+          git config user.email "pipecd.dev@gmail.com"
+          # Run release command
+          make release version=${{ inputs.version }}
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          title: "[bot] Release ${{ inputs.version }}"
+          commit-message: "Cut release ${{ inputs.version }}"
+          branch: "create-pull-request/release-${{ github.sha }}"
+          body: |
+            Automated changes by [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action.
+            The workflow is defined [here](https://github.com/pipe-cd/pipecd/blob/master/.github/workflows/release.yaml).
+
+            **Note:** You need to **close and reopen this PR** manually to trigger status check workflows. (Or just click `Update branch` if possible.)
+            For details, see https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#triggering-further-workflow-runs.
+          delete-branch: true
+          signoff: true
+          token: ${{ secrets.GITHUB_TOKEN }}
