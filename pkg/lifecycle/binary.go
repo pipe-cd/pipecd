@@ -40,7 +40,10 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/backoff"
 )
 
-const runBinaryRetryCount = 3
+const (
+	runBinaryRetryCount  = 3
+	mediaTypePipedPlugin = "application/vnd.pipecd.piped.plugin"
+)
 
 type Command struct {
 	cmd       *exec.Cmd
@@ -321,19 +324,20 @@ func copyOCIArtifact(ctx context.Context, dst io.Writer, desc ocispec.Descriptor
 			return fmt.Errorf("could not decode OCI image manifest (%w)", err)
 		}
 
-		if len(manifest.Layers) != 1 {
-			return fmt.Errorf("expected exactly one layer, got %d", len(manifest.Layers))
-		}
+		for _, layer := range manifest.Layers {
+			if layer.MediaType != mediaTypePipedPlugin {
+				continue
+			}
 
-		layer := manifest.Layers[0]
-		r, err = fetcher.Fetch(ctx, layer)
-		if err != nil {
-			return fmt.Errorf("could not fetch OCI layer (%w)", err)
-		}
-		defer r.Close()
+			r, err = fetcher.Fetch(ctx, layer)
+			if err != nil {
+				return fmt.Errorf("could not fetch OCI layer (%w)", err)
+			}
+			defer r.Close()
 
-		if _, err := io.Copy(dst, r); err != nil {
-			return fmt.Errorf("could not copy OCI layer (%w)", err)
+			if _, err := io.Copy(dst, r); err != nil {
+				return fmt.Errorf("could not copy OCI layer (%w)", err)
+			}
 		}
 
 		return nil
