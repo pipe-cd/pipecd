@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # web builder
 # because this stage builds only web assets, we can use any platform
-FROM --platform=$BUILDPLATFORM node:18.20.5-alpine3.21 AS web
+FROM --platform=$BUILDPLATFORM node:20.19.0-alpine3.21 AS web
 
 WORKDIR /app
 

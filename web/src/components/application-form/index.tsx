@@ -2,7 +2,6 @@ import { Box, makeStyles, Tabs, Tab, IconButton } from "@material-ui/core";
 import { Help } from "@material-ui/icons";
 import { useState } from "react";
 import { Application } from "~/modules/applications";
-import ApplicationFormV1 from "./application-form-v1";
 import ApplicationFormV0 from "./application-form-v0";
 import ApplicationFormManualV0 from "./application-form-manual-v0";
 import TabPanel from "./tab-panel";
@@ -53,8 +52,7 @@ export type ApplicationFormProps = {
 
 enum TabKeys {
   V0 = 0,
-  V1 = 1,
-  MANUAL = 2,
+  MANUAL = 1,
 }
 
 export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
@@ -94,11 +92,6 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
             }
             {...tabProps(TabKeys.V0)}
           />
-          {/* <Tab
-            className={classes.tabLabel}
-            label="PIPED V1 ADD FROM SUGGESTIONS"
-            {...tabProps(TabKeys.V1)}
-          /> */}
           <Tab
             className={classes.tabLabel}
             label="ADD MANUALLY"
@@ -112,12 +105,6 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
         {...tabPanelProps(TabKeys.V0)}
       >
         <ApplicationFormV0 {...props} />
-      </TabPanel>
-      <TabPanel
-        selected={selectedTabIndex === TabKeys.V1}
-        {...tabPanelProps(TabKeys.V1)}
-      >
-        <ApplicationFormV1 {...props} />
       </TabPanel>
       <TabPanel
         selected={selectedTabIndex === TabKeys.MANUAL}

@@ -1,31 +1,37 @@
+import { Application, selectById } from "~/modules/applications";
 import {
+  Box,
   Button,
   CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  makeStyles,
   Typography,
+  makeStyles,
 } from "@material-ui/core";
-import { red } from "@material-ui/core/colors";
-import { Skeleton } from "@material-ui/lab";
-import Alert from "@material-ui/lab/Alert";
-import { FC, memo, useCallback } from "react";
-import { shallowEqual } from "react-redux";
-import { DELETE_APPLICATION_SUCCESS } from "~/constants/toast-text";
+import { FC, Fragment, memo, useCallback } from "react";
 import { UI_TEXT_CANCEL, UI_TEXT_DELETE } from "~/constants/ui-text";
-import { useAppSelector, useAppDispatch } from "~/hooks/redux";
-import { Application, selectById } from "~/modules/applications";
 import {
   clearDeletingApp,
   deleteApplication,
 } from "~/modules/delete-application";
+import { useAppDispatch, useAppSelector } from "~/hooks/redux";
+
+import Alert from "@material-ui/lab/Alert";
+import { DELETE_APPLICATION_SUCCESS } from "~/constants/toast-text";
+import { Skeleton } from "@material-ui/lab";
 import { addToast } from "~/modules/toasts";
+import { red } from "@material-ui/core/colors";
+import { shallowEqual } from "react-redux";
 import { useStyles as useButtonStyles } from "~/styles/button";
 
 const useStyles = makeStyles((theme) => ({
   applicationName: {
+    color: theme.palette.text.primary,
+    fontWeight: theme.typography.fontWeightMedium,
+  },
+  applicationLabels: {
     color: theme.palette.text.primary,
     fontWeight: theme.typography.fontWeightMedium,
   },
@@ -82,6 +88,19 @@ export const DeleteApplicationDialog: FC<DeleteApplicationDialogProps> = memo(
       dispatch(clearDeletingApp());
     }, [dispatch]);
 
+    const renderLabels = useCallback(() => {
+      if (!application?.labelsMap) return <Skeleton height={24} width={200} />;
+
+      if (application.labelsMap.length === 0) return "-";
+
+      return application.labelsMap.map(([key, value]) => (
+        <Fragment key={key}>
+          <span>{`${key}: ${value}`}</span>
+          <br />
+        </Fragment>
+      ));
+    }, [application?.labelsMap]);
+
     return (
       <Dialog
         open={Boolean(application)}
@@ -103,6 +122,11 @@ export const DeleteApplicationDialog: FC<DeleteApplicationDialogProps> = memo(
             ) : (
               <Skeleton height={24} width={200} />
             )}
+          </Typography>
+          <Box height={24} />
+          <Typography variant="caption">Labels</Typography>
+          <Typography variant="body1" className={classes.applicationLabels}>
+            {renderLabels()}
           </Typography>
         </DialogContent>
         <DialogActions>

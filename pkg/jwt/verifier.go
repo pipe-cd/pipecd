@@ -17,7 +17,7 @@ package jwt
 import (
 	"fmt"
 
-	jwtgo "github.com/golang-jwt/jwt"
+	jwtgo "github.com/golang-jwt/jwt/v5"
 )
 
 type Verifier interface {
@@ -42,7 +42,15 @@ func NewVerifier(method jwtgo.SigningMethod, keyFile string) (Verifier, error) {
 }
 
 func (v *verifier) Verify(tokenString string) (*Claims, error) {
-	token, err := jwtgo.ParseWithClaims(tokenString, &Claims{}, func(token *jwtgo.Token) (interface{}, error) {
+	// NOTE: The issuedAt and notBefore claims are set to "used if exists" by default.
+	// ref: https://github.com/golang-jwt/jwt/issues/411#issuecomment-2423818974
+	parser := jwtgo.NewParser(
+		jwtgo.WithIssuer(Issuer),
+		jwtgo.WithIssuedAt(),
+		jwtgo.WithExpirationRequired(),
+	)
+
+	token, err := parser.ParseWithClaims(tokenString, &Claims{}, func(token *jwtgo.Token) (interface{}, error) {
 		if v.method != token.Method {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Method.Alg())
 		}
@@ -57,18 +65,6 @@ func (v *verifier) Verify(tokenString string) (*Claims, error) {
 	claims, ok := token.Claims.(*Claims)
 	if !ok {
 		return nil, fmt.Errorf("unexpected claims type: %T", token.Claims)
-	}
-	if !claims.VerifyIssuer(Issuer, true) {
-		return nil, fmt.Errorf("invalid issuer: %s", claims.Issuer)
-	}
-	if claims.IssuedAt == 0 {
-		return nil, fmt.Errorf("missing issuedAt")
-	}
-	if claims.ExpiresAt == 0 {
-		return nil, fmt.Errorf("missing expiresAt")
-	}
-	if claims.NotBefore == 0 {
-		return nil, fmt.Errorf("missing notBefore")
 	}
 	return claims, nil
 }
