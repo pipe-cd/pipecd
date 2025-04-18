@@ -1,3 +1,5 @@
+// Copyright 2025 The PipeCD Authors.
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -18,9 +20,7 @@ import (
 	"testing"
 )
 
-func TestPushFilesToRegistry(t *testing.T) {
-	workDir := t.TempDir()
-
+func pushTestFiles(t *testing.T, workDir, ociURL string) map[Platform]string {
 	artifactsDir, err := os.MkdirTemp(workDir, "artifacts")
 	if err != nil {
 		t.Fatalf("could not create temporary directory: %s", err)
@@ -50,8 +50,6 @@ func TestPushFilesToRegistry(t *testing.T) {
 		}
 	}
 
-	const ociURL = "oci://localhost:5001/test"
-
 	artifact := &Artifact{
 		MediaType: "text/plain",
 		FilePaths: artifactFiles,
@@ -60,48 +58,21 @@ func TestPushFilesToRegistry(t *testing.T) {
 	if err := PushFilesToRegistry(t.Context(), workDir, artifact, ociURL, true); err != nil {
 		t.Fatalf("could not push files to OCI: %s", err)
 	}
+
+	results := make(map[Platform]string)
+	for platform := range artifactFiles {
+		results[platform] = fmt.Sprintf("test %s %s", platform.OS, platform.Arch)
+	}
+	return results
 }
 
-func TestPullFileFromRegistry(t *testing.T) {
+func TestPushFilesToRegistry(t *testing.T) {
 	t.Parallel()
 
-	TestPushFilesToRegistry(t)
-
+	// TODO: Use dockertest or something to start a local registry for testing.
 	const ociURL = "oci://localhost:5001/test"
 
-	testcases := []struct {
-		platform Platform
-		content  string
-	}{
-		{Platform{OS: "linux", Arch: "amd64"}, "test linux amd64"},
-		{Platform{OS: "linux", Arch: "arm64"}, "test linux arm64"},
-		{Platform{OS: "darwin", Arch: "amd64"}, "test darwin amd64"},
-		{Platform{OS: "darwin", Arch: "arm64"}, "test darwin arm64"},
-	}
+	workDir := t.TempDir()
 
-	for _, tc := range testcases {
-		t.Run(fmt.Sprintf("platform=%s", tc.platform), func(t *testing.T) {
-			t.Parallel()
-
-			workDir := t.TempDir()
-			dst, err := os.CreateTemp(workDir, "test.txt")
-			if err != nil {
-				t.Fatalf("could not create temporary file: %s", err)
-			}
-			defer os.Remove(dst.Name())
-
-			if err := PullFileFromRegistry(t.Context(), workDir, dst, ociURL, true, tc.platform.OS, tc.platform.Arch, "text/plain"); err != nil {
-				t.Fatalf("could not pull file from OCI: %s", err)
-			}
-
-			content, err := os.ReadFile(dst.Name())
-			if err != nil {
-				t.Fatalf("could not read file: %s", err)
-			}
-
-			if string(content) != tc.content {
-				t.Fatalf("file content is not expected: %s", string(content))
-			}
-		})
-	}
+	pushTestFiles(t, workDir, ociURL)
 }
