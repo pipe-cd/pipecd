@@ -20,6 +20,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path"
+	"runtime"
 	"strconv"
 	"testing"
 	"time"
@@ -164,7 +165,7 @@ func TestDownloadOCI(t *testing.T) {
 	require.NoError(t, err)
 	defer os.RemoveAll(workDir)
 
-	err = downloadOCI(context.TODO(), workDir, destFile, "oci://localhost:5001/hello-artifact@sha256:8bbed0bc1801da65469a40197f357c166af3bf33f2d59f806fbf69626a6d2da4", true, "linux", "amd64")
+	err = downloadOCI(context.TODO(), workDir, destFile, "oci://localhost:5001/hello-artifact:latest", true, runtime.GOOS, runtime.GOARCH)
 	require.NoError(t, err)
 
 	content, err := os.ReadFile(destFile.Name())
