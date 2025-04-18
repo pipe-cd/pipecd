@@ -61,3 +61,47 @@ func TestPushFilesToRegistry(t *testing.T) {
 		t.Fatalf("could not push files to OCI: %s", err)
 	}
 }
+
+func TestPullFileFromRegistry(t *testing.T) {
+	t.Parallel()
+
+	TestPushFilesToRegistry(t)
+
+	const ociURL = "oci://localhost:5001/test"
+
+	testcases := []struct {
+		platform Platform
+		content  string
+	}{
+		{Platform{OS: "linux", Arch: "amd64"}, "test linux amd64"},
+		{Platform{OS: "linux", Arch: "arm64"}, "test linux arm64"},
+		{Platform{OS: "darwin", Arch: "amd64"}, "test darwin amd64"},
+		{Platform{OS: "darwin", Arch: "arm64"}, "test darwin arm64"},
+	}
+
+	for _, tc := range testcases {
+		t.Run(fmt.Sprintf("platform=%s", tc.platform), func(t *testing.T) {
+			t.Parallel()
+
+			workDir := t.TempDir()
+			dst, err := os.CreateTemp(workDir, "test.txt")
+			if err != nil {
+				t.Fatalf("could not create temporary file: %s", err)
+			}
+			defer os.Remove(dst.Name())
+
+			if err := PullFileFromRegistry(t.Context(), workDir, dst, ociURL, true, tc.platform.OS, tc.platform.Arch, "text/plain"); err != nil {
+				t.Fatalf("could not pull file from OCI: %s", err)
+			}
+
+			content, err := os.ReadFile(dst.Name())
+			if err != nil {
+				t.Fatalf("could not read file: %s", err)
+			}
+
+			if string(content) != tc.content {
+				t.Fatalf("file content is not expected: %s", string(content))
+			}
+		})
+	}
+}

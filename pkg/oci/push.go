@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/opencontainers/image-spec/specs-go"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
@@ -99,7 +100,7 @@ func pushFile(ctx context.Context, workDir string, repo *remote.Repository, path
 		return ocispec.Descriptor{}, fmt.Errorf("could not create file system: %w", err)
 	}
 
-	desc, err := fs.Add(ctx, path, mediaType, "")
+	desc, err := fs.Add(ctx, filepath.Base(path), mediaType, path)
 	if err != nil {
 		return ocispec.Descriptor{}, fmt.Errorf("could not add file to file system: %w", err)
 	}
