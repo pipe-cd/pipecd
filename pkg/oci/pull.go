@@ -34,7 +34,7 @@ const (
 	MediaTypePipedPlugin = "application/vnd.pipecd.piped.plugin"
 )
 
-func DownloadOCIArtifact(ctx context.Context, workdir string, dst io.Writer, sourceURL string, insecure bool, targetOS, targetArch, mediaType string) error {
+func PullFileFromRegistry(ctx context.Context, workdir string, dst io.Writer, sourceURL string, insecure bool, targetOS, targetArch, mediaType string) error {
 	r, ref, err := parseOCIURL(sourceURL)
 	if err != nil {
 		return fmt.Errorf("could not parse OCI URL %s (%w)", sourceURL, err)

@@ -39,7 +39,7 @@ type Artifact struct {
 	FilePaths map[Platform]string
 }
 
-func PushFilesToOCI(ctx context.Context, workDir string, artifact *Artifact, targetURL string, insecure bool) error {
+func PushFilesToRegistry(ctx context.Context, workDir string, artifact *Artifact, targetURL string, insecure bool) error {
 	repo, ref, err := parseOCIURL(targetURL)
 	if err != nil {
 		return fmt.Errorf("could not parse OCI URL %s: %w", targetURL, err)

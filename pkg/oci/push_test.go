@@ -18,7 +18,7 @@ import (
 	"testing"
 )
 
-func TestPushFilesToOCI(t *testing.T) {
+func TestPushFilesToRegistry(t *testing.T) {
 	workDir := t.TempDir()
 
 	artifactsDir, err := os.MkdirTemp(workDir, "artifacts")
@@ -57,7 +57,7 @@ func TestPushFilesToOCI(t *testing.T) {
 		FilePaths: artifactFiles,
 	}
 
-	if err := PushFilesToOCI(t.Context(), workDir, artifact, ociURL, true); err != nil {
+	if err := PushFilesToRegistry(t.Context(), workDir, artifact, ociURL, true); err != nil {
 		t.Fatalf("could not push files to OCI: %s", err)
 	}
 }
