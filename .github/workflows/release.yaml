@@ -26,7 +26,7 @@ jobs:
           title: "[bot] Release ${{ inputs.version }}"
           commit-message: "Cut release ${{ inputs.version }}"
           branch: "create-pull-request/release-${{ github.sha }}"
-          labels: "${{ !endsWith(inputs.version, '.0') && 'cherry-pick, ${{ inputs.version }}' }}"
+          labels: "${{ !endsWith(inputs.version, '.0') && format('cherry-pick,{0}', inputs.version) }}"
           body: |
             Automated changes by [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action.
             The workflow is defined [here](https://github.com/pipe-cd/pipecd/blob/master/.github/workflows/release.yaml).
