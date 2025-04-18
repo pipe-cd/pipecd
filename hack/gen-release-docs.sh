@@ -31,7 +31,8 @@ CONTENT_DIR=docs/content/en
 # Create new $CONTENT_DIR/docs-$VERSION
 rm -rf $CONTENT_DIR/docs-$VERSION
 cp -rf $CONTENT_DIR/docs-dev $CONTENT_DIR/docs-$VERSION
-cp -rf docs/themes/docsy/layouts/docs/ docs/layouts/docs-$VERSION
+rm -rf docs/layouts/docs-$VERSION
+cp -rf docs/themes/docsy/layouts/docs docs/layouts/docs-$VERSION
 cat <<EOT > $CONTENT_DIR/docs-$VERSION/_index.md
 ---
 title: "Welcome to PipeCD"
