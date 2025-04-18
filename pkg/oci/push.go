@@ -84,6 +84,9 @@ func PushFilesToRegistry(ctx context.Context, workDir string, artifact *Artifact
 	if err := r.Push(ctx, desc, bytes.NewReader(b)); err != nil {
 		return fmt.Errorf("could not push index: %w", err)
 	}
+	if err := r.Tag(ctx, desc, ref); err != nil {
+		return fmt.Errorf("could not tag index: %w", err)
+	}
 
 	return nil
 }
