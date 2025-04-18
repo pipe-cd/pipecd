@@ -61,6 +61,7 @@ tail -n +$LINE_NUM docs/config.toml >> docs/config.toml.tmp
 mv docs/config.toml.tmp docs/config.toml
 
 # Update docs/main.go
-sed -i '' "s/const latestPath.*/const latestPath = \"\/docs-"$VERSION"\/\"/g" docs/main.go
+sed "s/const latestPath.*/const latestPath = \"\/docs-"$VERSION"\/\"/g" docs/main.go > docs/main.go.tmp
+mv docs/main.go.tmp docs/main.go
 
 echo "Version docs has been prepared successfully at $CONTENT_DIR/docs-$VERSION/"
