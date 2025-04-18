@@ -238,12 +238,17 @@ func parseOCIURL(sourceURL string) (repo string, ref string, _ error) {
 		return "", "", fmt.Errorf("path must start with a slash")
 	}
 
-	repo, ref, ok := strings.Cut(u.Path, ":")
-	if !ok {
-		return u.Host + u.Path, "latest", nil
+	repo, ref, ok := strings.Cut(u.Path, "@")
+	if ok {
+		return u.Host + repo, ref, nil
 	}
 
+	repo, ref, ok = strings.Cut(u.Path, ":")
+	if ok {
 	return u.Host + repo, ref, nil
+	}
+
+	return u.Host + u.Path, "latest", nil
 }
 
 func downloadOCI(ctx context.Context, workdir string, dst io.Writer, sourceURL string, insecure bool) error {
