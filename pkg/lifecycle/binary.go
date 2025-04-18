@@ -277,7 +277,7 @@ func downloadOCI(ctx context.Context, workdir string, dst io.Writer, sourceURL s
 	defer store.Close()
 
 	store.AllowPathTraversalOnWrite = false
-	store.DisableOverwrite = false
+	store.DisableOverwrite = true
 
 	desc, err := oras.Copy(ctx, repo, ref, store, "", oras.DefaultCopyOptions)
 	if err != nil {
