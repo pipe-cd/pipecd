@@ -50,6 +50,8 @@ func PushFilesToOCI(ctx context.Context, workDir string, artifact *Artifact, tar
 		return fmt.Errorf("could not create repository %s: %w", repo, err)
 	}
 
+	r.PlainHTTP = insecure
+
 	descriptors := make([]ocispec.Descriptor, 0, len(artifact.FilePaths))
 	for platform, path := range artifact.FilePaths {
 		d, err := pushFile(ctx, workDir, r, path, artifact.MediaType, ref)
@@ -102,7 +104,7 @@ func pushFile(ctx context.Context, workDir string, repo *remote.Repository, path
 		return ocispec.Descriptor{}, fmt.Errorf("could not add file to file system: %w", err)
 	}
 
-	manifest, err := oras.PackManifest(ctx, fs, oras.PackManifestVersion1_1, "", oras.PackManifestOptions{
+	manifest, err := oras.PackManifest(ctx, fs, oras.PackManifestVersion1_1, "application/vnd.pipecd.piped.plugin", oras.PackManifestOptions{
 		Layers: []ocispec.Descriptor{desc},
 	})
 	if err != nil {
