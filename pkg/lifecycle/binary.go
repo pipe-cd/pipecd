@@ -16,7 +16,6 @@ package lifecycle
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -25,24 +24,18 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"strings"
 	"syscall"
 	"time"
 
-	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
-	oras "oras.land/oras-go/v2"
-	"oras.land/oras-go/v2/content"
-	"oras.land/oras-go/v2/content/file"
-	"oras.land/oras-go/v2/registry/remote"
 
 	"github.com/pipe-cd/pipecd/pkg/backoff"
+	"github.com/pipe-cd/pipecd/pkg/oci"
 )
 
 const (
-	runBinaryRetryCount  = 3
-	mediaTypePipedPlugin = "application/vnd.pipecd.piped.plugin"
+	runBinaryRetryCount = 3
 )
 
 type Command struct {
@@ -153,7 +146,7 @@ func DownloadBinary(sourceURL, destDir, destFile string, logger *zap.Logger) (st
 
 	switch u.Scheme {
 	case "oci":
-		if err := downloadOCI(context.TODO(), destDir, tmpFile, sourceURL, false, runtime.GOOS, runtime.GOARCH); err != nil {
+		if err := oci.DownloadOCIArtifact(context.TODO(), destDir, tmpFile, sourceURL, false, runtime.GOOS, runtime.GOARCH, oci.MediaTypePipedPlugin); err != nil {
 			return "", fmt.Errorf("could not download from %s to %s (%w)", sourceURL, tmpName, err)
 		}
 
@@ -217,132 +210,4 @@ func downloadFile(dst io.Writer, source string) error {
 	}
 
 	return nil
-}
-
-func parseOCIURL(sourceURL string) (repo string, ref string, _ error) {
-	u, err := url.Parse(sourceURL)
-	if err != nil {
-		return "", "", fmt.Errorf("could not parse URL %s (%w)", sourceURL, err)
-	}
-
-	if u.Scheme != "oci" {
-		return "", "", fmt.Errorf("unsupported scheme %s", u.Scheme)
-	}
-
-	if u.Host == "" {
-		return "", "", fmt.Errorf("host is required")
-	}
-
-	if u.Path == "" {
-		return "", "", fmt.Errorf("path is required")
-	}
-
-	if !strings.HasPrefix(u.Path, "/") {
-		return "", "", fmt.Errorf("path must start with a slash")
-	}
-
-	repo, ref, ok := strings.Cut(u.Path, "@")
-	if ok {
-		return u.Host + repo, ref, nil
-	}
-
-	repo, ref, ok = strings.Cut(u.Path, ":")
-	if ok {
-		return u.Host + repo, ref, nil
-	}
-
-	return u.Host + u.Path, "latest", nil
-}
-
-func downloadOCI(ctx context.Context, workdir string, dst io.Writer, sourceURL string, insecure bool, targetOS, targetArch string) error {
-	r, ref, err := parseOCIURL(sourceURL)
-	if err != nil {
-		return fmt.Errorf("could not parse OCI URL %s (%w)", sourceURL, err)
-	}
-
-	repo, err := remote.NewRepository(r)
-	if err != nil {
-		return fmt.Errorf("could not create repository (%w)", err)
-	}
-
-	repo.PlainHTTP = insecure
-
-	d, err := os.MkdirTemp(workdir, "oci-pull")
-	if err != nil {
-		return fmt.Errorf("could not create temporary directory (%w)", err)
-	}
-	defer os.RemoveAll(d)
-
-	store, err := file.New(d)
-	if err != nil {
-		return fmt.Errorf("could not create file system (%w)", err)
-	}
-	defer store.Close()
-
-	store.AllowPathTraversalOnWrite = false
-	store.DisableOverwrite = true
-
-	desc, err := oras.Copy(ctx, repo, ref, store, "", oras.DefaultCopyOptions)
-	if err != nil {
-		return fmt.Errorf("could not copy OCI image (%w)", err)
-	}
-
-	return copyOCIArtifact(ctx, dst, desc, store, targetOS, targetArch)
-}
-
-func copyOCIArtifact(ctx context.Context, dst io.Writer, desc ocispec.Descriptor, fetcher content.Fetcher, targetOS, targetArch string) error {
-	switch desc.MediaType {
-	case ocispec.MediaTypeImageIndex:
-		r, err := fetcher.Fetch(ctx, desc)
-		if err != nil {
-			return fmt.Errorf("could not fetch OCI image index (%w)", err)
-		}
-		defer r.Close()
-
-		var idx ocispec.Index
-		if err := json.NewDecoder(r).Decode(&idx); err != nil {
-			return fmt.Errorf("could not decode OCI image index (%w)", err)
-		}
-
-		for _, m := range idx.Manifests {
-			if targetOS == m.Platform.OS && targetArch == m.Platform.Architecture {
-				return copyOCIArtifact(ctx, dst, m, fetcher, targetOS, targetArch)
-			}
-		}
-
-		return fmt.Errorf("no matching manifest found")
-
-	case ocispec.MediaTypeImageManifest:
-		r, err := fetcher.Fetch(ctx, desc)
-		if err != nil {
-			return fmt.Errorf("could not fetch OCI image manifest (%w)", err)
-		}
-		defer r.Close()
-
-		var manifest ocispec.Manifest
-		if err := json.NewDecoder(r).Decode(&manifest); err != nil {
-			return fmt.Errorf("could not decode OCI image manifest (%w)", err)
-		}
-
-		for _, layer := range manifest.Layers {
-			if layer.MediaType != mediaTypePipedPlugin {
-				continue
-			}
-
-			r, err = fetcher.Fetch(ctx, layer)
-			if err != nil {
-				return fmt.Errorf("could not fetch OCI layer (%w)", err)
-			}
-			defer r.Close()
-
-			if _, err := io.Copy(dst, r); err != nil {
-				return fmt.Errorf("could not copy OCI layer (%w)", err)
-			}
-		}
-
-		return nil
-
-	default:
-		return fmt.Errorf("unsupported media type %s", desc.MediaType)
-	}
 }

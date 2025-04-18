@@ -20,7 +20,6 @@ import (
 	"net/http/httptest"
 	"os"
 	"path"
-	"runtime"
 	"strconv"
 	"testing"
 	"time"
@@ -157,19 +156,4 @@ func httpTestServer() *httptest.Server {
 			w.WriteHeader(http.StatusNotFound)
 		}
 	}))
-}
-
-func TestDownloadOCI(t *testing.T) {
-	workDir := t.TempDir()
-	destFile, err := os.CreateTemp(workDir, "oci-pull")
-	require.NoError(t, err)
-	defer os.RemoveAll(workDir)
-
-	err = downloadOCI(context.TODO(), workDir, destFile, "oci://localhost:5001/hello-artifact:latest", true, runtime.GOOS, runtime.GOARCH)
-	require.NoError(t, err)
-
-	content, err := os.ReadFile(destFile.Name())
-	require.NoError(t, err)
-
-	assert.Equal(t, "hello world\n", string(content))
 }
