@@ -19,13 +19,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/fs"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"syscall"
 	"time"
@@ -34,6 +33,7 @@ import (
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
 	oras "oras.land/oras-go/v2"
+	"oras.land/oras-go/v2/content"
 	"oras.land/oras-go/v2/content/file"
 	"oras.land/oras-go/v2/registry/remote"
 
@@ -150,7 +150,7 @@ func DownloadBinary(sourceURL, destDir, destFile string, logger *zap.Logger) (st
 
 	switch u.Scheme {
 	case "oci":
-		if err := downloadOCI(context.TODO(), destDir, tmpFile, sourceURL, false); err != nil {
+		if err := downloadOCI(context.TODO(), destDir, tmpFile, sourceURL, false, runtime.GOOS, runtime.GOARCH); err != nil {
 			return "", fmt.Errorf("could not download from %s to %s (%w)", sourceURL, tmpName, err)
 		}
 
@@ -245,13 +245,13 @@ func parseOCIURL(sourceURL string) (repo string, ref string, _ error) {
 
 	repo, ref, ok = strings.Cut(u.Path, ":")
 	if ok {
-	return u.Host + repo, ref, nil
+		return u.Host + repo, ref, nil
 	}
 
 	return u.Host + u.Path, "latest", nil
 }
 
-func downloadOCI(ctx context.Context, workdir string, dst io.Writer, sourceURL string, insecure bool) error {
+func downloadOCI(ctx context.Context, workdir string, dst io.Writer, sourceURL string, insecure bool, targetOS, targetArch string) error {
 	r, ref, err := parseOCIURL(sourceURL)
 	if err != nil {
 		return fmt.Errorf("could not parse OCI URL %s (%w)", sourceURL, err)
@@ -284,42 +284,61 @@ func downloadOCI(ctx context.Context, workdir string, dst io.Writer, sourceURL s
 		return fmt.Errorf("could not copy OCI image (%w)", err)
 	}
 
-	fs.WalkDir(os.DirFS(d), ".", func(path string, d fs.DirEntry, err error) error {
+	return copyOCIArtifact(ctx, dst, desc, store, targetOS, targetArch)
+}
+
+func copyOCIArtifact(ctx context.Context, dst io.Writer, desc ocispec.Descriptor, fetcher content.Fetcher, targetOS, targetArch string) error {
+	switch desc.MediaType {
+	case ocispec.MediaTypeImageIndex:
+		r, err := fetcher.Fetch(ctx, desc)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not fetch OCI image index (%w)", err)
+		}
+		defer r.Close()
+
+		var idx ocispec.Index
+		if err := json.NewDecoder(r).Decode(&idx); err != nil {
+			return fmt.Errorf("could not decode OCI image index (%w)", err)
 		}
 
-		log.Println(path, d.Name())
+		for _, m := range idx.Manifests {
+			if targetOS == m.Platform.OS && targetArch == m.Platform.Architecture {
+				return copyOCIArtifact(ctx, dst, m, fetcher, targetOS, targetArch)
+			}
+		}
+
+		return fmt.Errorf("no matching manifest found")
+
+	case ocispec.MediaTypeImageManifest:
+		r, err := fetcher.Fetch(ctx, desc)
+		if err != nil {
+			return fmt.Errorf("could not fetch OCI image manifest (%w)", err)
+		}
+		defer r.Close()
+
+		var manifest ocispec.Manifest
+		if err := json.NewDecoder(r).Decode(&manifest); err != nil {
+			return fmt.Errorf("could not decode OCI image manifest (%w)", err)
+		}
+
+		if len(manifest.Layers) != 1 {
+			return fmt.Errorf("expected exactly one layer, got %d", len(manifest.Layers))
+		}
+
+		layer := manifest.Layers[0]
+		r, err = fetcher.Fetch(ctx, layer)
+		if err != nil {
+			return fmt.Errorf("could not fetch OCI layer (%w)", err)
+		}
+		defer r.Close()
+
+		if _, err := io.Copy(dst, r); err != nil {
+			return fmt.Errorf("could not copy OCI layer (%w)", err)
+		}
 
 		return nil
-	})
 
-	reader, err := store.Fetch(ctx, desc)
-	if err != nil {
-		return fmt.Errorf("could not fetch OCI image (%w)", err)
+	default:
+		return fmt.Errorf("unsupported media type %s", desc.MediaType)
 	}
-	defer reader.Close()
-
-	var spec ocispec.Manifest
-	if err := json.NewDecoder(reader).Decode(&spec); err != nil {
-		return fmt.Errorf("could not decode OCI image (%w)", err)
-	}
-
-	if len(spec.Layers) > 1 {
-		return fmt.Errorf("expected 1 layer, got %d", len(spec.Layers))
-	}
-
-	layer := spec.Layers[0]
-
-	layerReader, err := store.Fetch(ctx, layer)
-	if err != nil {
-		return fmt.Errorf("could not fetch OCI image (%w)", err)
-	}
-	defer layerReader.Close()
-
-	if _, err := io.Copy(dst, layerReader); err != nil {
-		return fmt.Errorf("could not copy OCI image (%w)", err)
-	}
-
-	return nil
 }
