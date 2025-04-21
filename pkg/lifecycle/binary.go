@@ -23,7 +23,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"syscall"
 	"time"
 
@@ -34,9 +33,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/oci"
 )
 
-const (
-	runBinaryRetryCount = 3
-)
+const runBinaryRetryCount = 3
 
 type Command struct {
 	cmd       *exec.Cmd
@@ -146,18 +143,42 @@ func DownloadBinary(sourceURL, destDir, destFile string, logger *zap.Logger) (st
 
 	switch u.Scheme {
 	case "oci":
-		if err := oci.PullFileFromRegistry(context.TODO(), destDir, tmpFile, sourceURL, oci.WithTargetOS(runtime.GOOS), oci.WithTargetArch(runtime.GOARCH), oci.WithMediaType(oci.MediaTypePipedPlugin)); err != nil {
-			return "", fmt.Errorf("could not download from %s to %s (%w)", sourceURL, tmpName, err)
+		// TODO: add context.Context as a argument for DownloadBinary.
+		ctx := context.Background()
+		ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
+
+		defer cancel()
+		if err := oci.PullFileFromRegistry(ctx, destDir, tmpFile, sourceURL); err != nil {
+			return "", fmt.Errorf("could not pull file from OCI (%w)", err)
+		}
+	case "http", "https":
+		req, err := http.NewRequest("GET", sourceURL, nil)
+		if err != nil {
+			return "", fmt.Errorf("could not create request (%w)", err)
+		}
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			return "", fmt.Errorf("HTTP GET %s failed (%w)", sourceURL, err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			return "", fmt.Errorf("HTTP GET %s failed with error %d", sourceURL, resp.StatusCode)
 		}
 
-	case "http", "https":
-		if err := downloadHTTP(tmpFile, sourceURL); err != nil {
-			return "", fmt.Errorf("could not download from %s to %s (%w)", sourceURL, tmpName, err)
+		if _, err = io.Copy(tmpFile, resp.Body); err != nil {
+			return "", fmt.Errorf("could not copy from %s to %s (%w)", sourceURL, tmpName, err)
 		}
 
 	case "file":
-		if err := downloadFile(tmpFile, u.Path); err != nil {
-			return "", fmt.Errorf("could not download from %s to %s (%w)", sourceURL, tmpName, err)
+		data, err := os.ReadFile(u.Path)
+		if err != nil {
+			return "", fmt.Errorf("could not read file %s (%w)", u.Path, err)
+		}
+
+		if _, err = tmpFile.Write(data); err != nil {
+			return "", fmt.Errorf("could not write to %s (%w)", tmpName, err)
 		}
 
 	default:
@@ -174,40 +195,4 @@ func DownloadBinary(sourceURL, destDir, destFile string, logger *zap.Logger) (st
 
 	done = true
 	return destPath, nil
-}
-
-func downloadHTTP(dst io.Writer, sourceURL string) error {
-	req, err := http.NewRequest("GET", sourceURL, nil)
-	if err != nil {
-		return fmt.Errorf("could not create request (%w)", err)
-	}
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("HTTP GET %s failed (%w)", sourceURL, err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("HTTP GET %s failed with error %d", sourceURL, resp.StatusCode)
-	}
-
-	if _, err = io.Copy(dst, resp.Body); err != nil {
-		return fmt.Errorf("could not copy from %s (%w)", sourceURL, err)
-	}
-
-	return nil
-}
-
-func downloadFile(dst io.Writer, source string) error {
-	data, err := os.ReadFile(source)
-	if err != nil {
-		return fmt.Errorf("could not read file %s (%w)", source, err)
-	}
-
-	if _, err = dst.Write(data); err != nil {
-		return fmt.Errorf("could not write to %s (%w)", source, err)
-	}
-
-	return nil
 }
