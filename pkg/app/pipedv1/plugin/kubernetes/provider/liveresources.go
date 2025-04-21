@@ -24,19 +24,22 @@ import (
 
 // GetLiveResources returns all live resources that belong to the given application.
 func GetLiveResources(ctx context.Context, kubectl *Kubectl, kubeconfig string, appID string, selector ...string) (namespaceScoped []Manifest, clusterScoped []Manifest, _ error) {
-	namespacedLiveResources, err := kubectl.GetAll(ctx, kubeconfig,
-		"",
+	selectors := make([]string, 0, len(selector)+2)
+	selectors = append(selectors,
 		fmt.Sprintf("%s=%s", LabelManagedBy, ManagedByPiped),
 		fmt.Sprintf("%s=%s", LabelApplication, appID),
 	)
+	if len(selector) > 0 {
+		selectors = append(selectors, selector...)
+	}
+
+	// pass empty namespace to get all namespace-scoped resources
+	namespacedLiveResources, err := kubectl.GetAll(ctx, kubeconfig, "", selectors...)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed while listing all namespace-scoped resources (%v)", err)
 	}
 
-	clusterScopedLiveResources, err := kubectl.GetAllClusterScoped(ctx, kubeconfig,
-		fmt.Sprintf("%s=%s", LabelManagedBy, ManagedByPiped),
-		fmt.Sprintf("%s=%s", LabelApplication, appID),
-	)
+	clusterScopedLiveResources, err := kubectl.GetAllClusterScoped(ctx, kubeconfig, selectors...)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed while listing all cluster-scoped resources (%v)", err)
 	}
