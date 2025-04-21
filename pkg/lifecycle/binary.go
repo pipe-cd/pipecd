@@ -23,6 +23,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"syscall"
 	"time"
 
@@ -148,7 +149,15 @@ func DownloadBinary(sourceURL, destDir, destFile string, logger *zap.Logger) (st
 		ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
 		defer cancel()
 
-		if err := oci.PullFileFromRegistry(ctx, destDir, tmpFile, sourceURL); err != nil {
+		if err := oci.PullFileFromRegistry(
+			ctx,
+			destDir,
+			tmpFile,
+			sourceURL,
+			oci.WithTargetOS(runtime.GOOS),
+			oci.WithTargetArch(runtime.GOARCH),
+			oci.WithMediaType(oci.MediaTypePipedPlugin),
+		); err != nil {
 			return "", fmt.Errorf("could not pull file from OCI (%w)", err)
 		}
 	case "http", "https":
