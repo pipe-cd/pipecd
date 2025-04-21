@@ -51,8 +51,9 @@ func pushTestFiles(t *testing.T, workDir, ociURL string) map[Platform]string {
 	}
 
 	artifact := &Artifact{
-		MediaType: "text/plain",
-		FilePaths: artifactFiles,
+		ArtifactType: "application/vnd.pipecd.test+type",
+		MediaType:    "text/plain",
+		FilePaths:    artifactFiles,
 	}
 
 	if err := PushFilesToRegistry(t.Context(), workDir, artifact, ociURL, WithInsecure()); err != nil {

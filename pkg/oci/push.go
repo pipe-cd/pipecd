@@ -36,8 +36,9 @@ type Platform struct {
 }
 
 type Artifact struct {
-	MediaType string
-	FilePaths map[Platform]string
+	MediaType    string
+	ArtifactType string
+	FilePaths    map[Platform]string
 }
 
 func PushFilesToRegistry(ctx context.Context, workDir string, artifact *Artifact, targetURL string, opts ...PushOption) error {
@@ -62,7 +63,7 @@ func PushFilesToRegistry(ctx context.Context, workDir string, artifact *Artifact
 
 	descriptors := make([]ocispec.Descriptor, 0, len(artifact.FilePaths))
 	for platform, path := range artifact.FilePaths {
-		d, err := pushFile(ctx, workDir, r, path, artifact.MediaType, ref)
+		d, err := pushFile(ctx, workDir, r, path, artifact.MediaType, artifact.ArtifactType, ref)
 		if err != nil {
 			return fmt.Errorf("could not push file %s: %w", path, err)
 		}
@@ -98,7 +99,7 @@ func PushFilesToRegistry(ctx context.Context, workDir string, artifact *Artifact
 	return nil
 }
 
-func pushFile(ctx context.Context, workDir string, repo *remote.Repository, path, mediaType, ref string) (ocispec.Descriptor, error) {
+func pushFile(ctx context.Context, workDir string, repo *remote.Repository, path, mediaType, artifactType, ref string) (ocispec.Descriptor, error) {
 	dir, err := os.MkdirTemp(workDir, "")
 	if err != nil {
 		return ocispec.Descriptor{}, fmt.Errorf("could not create temporary directory: %w", err)
@@ -115,7 +116,7 @@ func pushFile(ctx context.Context, workDir string, repo *remote.Repository, path
 		return ocispec.Descriptor{}, fmt.Errorf("could not add file to file system: %w", err)
 	}
 
-	manifest, err := oras.PackManifest(ctx, fs, oras.PackManifestVersion1_1, "application/vnd.pipecd.piped.plugin", oras.PackManifestOptions{
+	manifest, err := oras.PackManifest(ctx, fs, oras.PackManifestVersion1_1, artifactType, oras.PackManifestOptions{
 		Layers: []ocispec.Descriptor{desc},
 	})
 	if err != nil {
