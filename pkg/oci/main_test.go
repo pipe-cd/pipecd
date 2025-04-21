@@ -29,7 +29,7 @@ const (
 	env        = "OCI_REGISTRY_HOST"
 	port       = "5000"
 	repository = "registry"
-	tag        = "3.0.0@sha256:1fc7de654f2ac1247f0b67e8a459e273b0993be7d2beda1f3f56fbf1001ed3e7"
+	tag        = "3.0.0"
 )
 
 func TestMain(m *testing.M) {
