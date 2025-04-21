@@ -38,6 +38,10 @@ type DeploySource struct {
 }
 
 func (d *DeploySource) ToPluginDeploySource() *common.DeploymentSource {
+	if d == nil {
+		return nil
+	}
+
 	return &common.DeploymentSource{
 		ApplicationDirectory:      d.AppDir,
 		CommitHash:                d.Revision,

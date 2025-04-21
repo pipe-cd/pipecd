@@ -485,7 +485,7 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	rds := &deploysource.DeploySource{}
+	var rds *deploysource.DeploySource
 	if s.runningDSP != nil {
 		rds, err = s.runningDSP.Get(ctx, io.Discard)
 		if err != nil {
