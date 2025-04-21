@@ -146,8 +146,8 @@ func DownloadBinary(sourceURL, destDir, destFile string, logger *zap.Logger) (st
 		// TODO: add context.Context as a argument for DownloadBinary.
 		ctx := context.Background()
 		ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
-
 		defer cancel()
+
 		if err := oci.PullFileFromRegistry(ctx, destDir, tmpFile, sourceURL); err != nil {
 			return "", fmt.Errorf("could not pull file from OCI (%w)", err)
 		}
