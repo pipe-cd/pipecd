@@ -30,17 +30,21 @@ import (
 	"oras.land/oras-go/v2/registry/remote"
 )
 
+// Platform represents an OS/Arch platform for an OCI artifact.
 type Platform struct {
 	OS   string
 	Arch string
 }
 
+// Artifact describes an artifact to be pushed to an OCI registry.
 type Artifact struct {
 	MediaType    string
 	ArtifactType string
 	FilePaths    map[Platform]string
 }
 
+// PushFilesToRegistry pushes files described by the artifact to the target OCI registry URL.
+// It supports options for insecure connections.
 func PushFilesToRegistry(ctx context.Context, workDir string, artifact *Artifact, targetURL string, opts ...PushOption) error {
 	options := &PushOptions{
 		insecure: false,
@@ -99,6 +103,7 @@ func PushFilesToRegistry(ctx context.Context, workDir string, artifact *Artifact
 	return nil
 }
 
+// pushFile pushes a single file to the repository and returns its descriptor.
 func pushFile(ctx context.Context, workDir string, repo *remote.Repository, path, mediaType, artifactType, ref string) (ocispec.Descriptor, error) {
 	dir, err := os.MkdirTemp(workDir, "")
 	if err != nil {

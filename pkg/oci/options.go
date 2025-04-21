@@ -15,17 +15,21 @@
 package oci
 
 const (
+	// MediaTypePipedPlugin is the media type for PipeCD Agent plugins.
 	MediaTypePipedPlugin = "application/vnd.pipecd.piped.plugin"
 )
 
+// PushOptions holds options for pushing to an OCI registry.
 type PushOptions struct {
 	insecure bool
 }
 
+// PushOption is an interface for applying push options.
 type PushOption interface {
 	applyPushOption(*PushOptions)
 }
 
+// PullOptions holds options for pulling from an OCI registry.
 type PullOptions struct {
 	insecure   bool
 	targetOS   string
@@ -33,55 +37,70 @@ type PullOptions struct {
 	mediaType  string
 }
 
+// PullOption is an interface for applying pull options.
 type PullOption interface {
 	applyPullOption(*PullOptions)
 }
 
+// Option is an interface that combines PushOption and PullOption.
 type Option interface {
 	PushOption
 	PullOption
 }
 
+// insecureOption is an option to enable insecure connections.
 type insecureOption bool
 
+// applyPushOption applies the insecure option to PushOptions.
 func (o insecureOption) applyPushOption(opts *PushOptions) {
 	opts.insecure = bool(o)
 }
 
+// applyPullOption applies the insecure option to PullOptions.
 func (o insecureOption) applyPullOption(opts *PullOptions) {
 	opts.insecure = bool(o)
 }
 
+// WithInsecure returns an Option that enables insecure connections.
 func WithInsecure() Option {
 	return insecureOption(true)
 }
 
+// targetOSOption is an option to specify the target OS for pulling.
 type targetOSOption string
 
+// applyPullOption applies the target OS option to PullOptions.
 func (o targetOSOption) applyPullOption(opts *PullOptions) {
 	opts.targetOS = string(o)
 }
 
+// WithTargetOS returns a PullOption that sets the target OS.
 func WithTargetOS(os string) PullOption {
 	return targetOSOption(os)
 }
 
+// targetArchOption is an option to specify the target architecture for pulling.
 type targetArchOption string
 
+// applyPullOption applies the target architecture option to PullOptions.
 func (o targetArchOption) applyPullOption(opts *PullOptions) {
 	opts.targetArch = string(o)
 }
 
+// WithTargetArch returns a PullOption that sets the target architecture.
 func WithTargetArch(arch string) PullOption {
 	return targetArchOption(arch)
 }
 
+// mediaTypeOption is an option to specify the media type for pulling.
 type mediaTypeOption string
 
+// applyPullOption applies the media type option to PullOptions.
 func (o mediaTypeOption) applyPullOption(opts *PullOptions) {
 	opts.mediaType = string(o)
 }
 
+// WithMediaType returns a PullOption that sets the media type.
 func WithMediaType(mediaType string) PullOption {
 	return mediaTypeOption(mediaType)
 }

@@ -30,6 +30,8 @@ import (
 	"oras.land/oras-go/v2/registry/remote"
 )
 
+// PullFileFromRegistry pulls a file from an OCI registry and writes it to the provided destination writer.
+// It supports options for insecure connections and platform/media type targeting.
 func PullFileFromRegistry(ctx context.Context, workdir string, dst io.Writer, sourceURL string, opts ...PullOption) error {
 	options := &PullOptions{
 		insecure: false,
@@ -73,6 +75,7 @@ func PullFileFromRegistry(ctx context.Context, workdir string, dst io.Writer, so
 	return copyOCIArtifact(ctx, dst, desc, store, options.targetOS, options.targetArch, options.mediaType)
 }
 
+// parseOCIURL parses an OCI URL and returns the repository and reference parts.
 func parseOCIURL(sourceURL string) (repo string, ref string, _ error) {
 	u, err := url.Parse(sourceURL)
 	if err != nil {
@@ -110,6 +113,7 @@ func parseOCIURL(sourceURL string) (repo string, ref string, _ error) {
 	return u.Host + u.Path, "latest", nil
 }
 
+// copyOCIArtifact resolves the given OCI artifact and copies it to the destination writer.
 func copyOCIArtifact(ctx context.Context, dst io.Writer, desc ocispec.Descriptor, fetcher content.Fetcher, targetOS, targetArch, mediaType string) error {
 	switch desc.MediaType {
 	case ocispec.MediaTypeImageIndex:
