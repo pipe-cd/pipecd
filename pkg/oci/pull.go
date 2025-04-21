@@ -98,8 +98,8 @@ func parseOCIURL(sourceURL string) (repo string, ref string, _ error) {
 	repo, ref, ok := strings.Cut(u.Path, "@")
 	if ok {
 		// some OCI URLs are like oci://example.com/test:v1@sha256:1234567890
-		repo, _, _ := strings.Cut(repo, ":")
-		return u.Host + repo, ref, nil
+		repo, tag, _ := strings.Cut(repo, ":")
+		return u.Host + repo, tag + "@" + ref, nil
 	}
 
 	repo, ref, ok = strings.Cut(u.Path, ":")

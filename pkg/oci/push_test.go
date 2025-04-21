@@ -69,8 +69,8 @@ func pushTestFiles(t *testing.T, workDir, ociURL string) map[Platform]string {
 func TestPushFilesToRegistry(t *testing.T) {
 	t.Parallel()
 
-	// TODO: Use dockertest or something to start a local registry for testing.
-	const ociURL = "oci://localhost:5001/test"
+	// OCI_REGISTRY_HOST is set by TestMain in main_test.go
+	ociURL := fmt.Sprintf("oci://%s/test-push", os.Getenv("OCI_REGISTRY_HOST"))
 
 	workDir := t.TempDir()
 

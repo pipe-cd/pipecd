@@ -23,8 +23,8 @@ import (
 func TestPullFileFromRegistry(t *testing.T) {
 	t.Parallel()
 
-	// TODO: Use dockertest or something to start a local registry for testing.
-	const ociURL = "oci://localhost:5001/test"
+	// OCI_REGISTRY_HOST is set by TestMain in main_test.go
+	ociURL := fmt.Sprintf("oci://%s/test-pull", os.Getenv("OCI_REGISTRY_HOST"))
 
 	testcases := pushTestFiles(t, t.TempDir(), ociURL)
 
