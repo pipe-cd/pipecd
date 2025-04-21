@@ -38,9 +38,14 @@ type Platform struct {
 
 // Artifact describes an artifact to be pushed to an OCI registry.
 type Artifact struct {
-	MediaType    string
+	// MediaType is the media type of the artifact.
+	// e.g. "application/vnd.pipecd.piped.plugin"
+	MediaType string
+	// ArtifactType is the type of the artifact.
+	// e.g. "application/vnd.pipecd.piped.plugin+type"
 	ArtifactType string
-	FilePaths    map[Platform]string
+	// FilePaths maps platforms to file paths.
+	FilePaths map[Platform]string
 }
 
 // PushFilesToRegistry pushes files described by the artifact to the target OCI registry URL.

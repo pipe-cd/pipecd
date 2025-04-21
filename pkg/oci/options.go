@@ -31,10 +31,11 @@ type PushOption interface {
 
 // PullOptions holds options for pulling from an OCI registry.
 type PullOptions struct {
-	insecure   bool
-	targetOS   string
-	targetArch string
-	mediaType  string
+	insecure     bool
+	targetOS     string
+	targetArch   string
+	mediaType    string
+	artifactType string
 }
 
 // PullOption is an interface for applying pull options.
@@ -103,4 +104,17 @@ func (o mediaTypeOption) applyPullOption(opts *PullOptions) {
 // WithMediaType returns a PullOption that sets the media type.
 func WithMediaType(mediaType string) PullOption {
 	return mediaTypeOption(mediaType)
+}
+
+// artifactTypeOption is an option to specify the artifact type for pulling.
+type artifactTypeOption string
+
+// applyPullOption applies the artifact type option to PullOptions.
+func (o artifactTypeOption) applyPullOption(opts *PullOptions) {
+	opts.artifactType = string(o)
+}
+
+// WithArtifactType returns a PullOption that sets the artifact type.
+func WithArtifactType(artifactType string) PullOption {
+	return artifactTypeOption(artifactType)
 }

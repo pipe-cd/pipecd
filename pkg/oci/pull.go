@@ -72,7 +72,7 @@ func PullFileFromRegistry(ctx context.Context, workdir string, dst io.Writer, so
 		return fmt.Errorf("could not copy OCI image (%w)", err)
 	}
 
-	return copyOCIArtifact(ctx, dst, desc, store, options.targetOS, options.targetArch, options.mediaType)
+	return copyOCIArtifact(ctx, dst, desc, store, options.targetOS, options.targetArch, options.mediaType, options.artifactType)
 }
 
 // parseOCIURL parses an OCI URL and returns the repository and reference parts.
@@ -114,7 +114,7 @@ func parseOCIURL(sourceURL string) (repo string, ref string, _ error) {
 }
 
 // copyOCIArtifact resolves the given OCI artifact and copies it to the destination writer.
-func copyOCIArtifact(ctx context.Context, dst io.Writer, desc ocispec.Descriptor, fetcher content.Fetcher, targetOS, targetArch, mediaType string) error {
+func copyOCIArtifact(ctx context.Context, dst io.Writer, desc ocispec.Descriptor, fetcher content.Fetcher, targetOS, targetArch, mediaType, artifactType string) error {
 	switch desc.MediaType {
 	case ocispec.MediaTypeImageIndex:
 		r, err := fetcher.Fetch(ctx, desc)
@@ -135,7 +135,7 @@ func copyOCIArtifact(ctx context.Context, dst io.Writer, desc ocispec.Descriptor
 			if targetArch != "" && targetArch != m.Platform.Architecture {
 				continue
 			}
-			return copyOCIArtifact(ctx, dst, m, fetcher, targetOS, targetArch, mediaType)
+			return copyOCIArtifact(ctx, dst, m, fetcher, targetOS, targetArch, mediaType, artifactType)
 		}
 
 		return fmt.Errorf("no matching manifest found")
@@ -150,6 +150,10 @@ func copyOCIArtifact(ctx context.Context, dst io.Writer, desc ocispec.Descriptor
 		var manifest ocispec.Manifest
 		if err := json.NewDecoder(r).Decode(&manifest); err != nil {
 			return fmt.Errorf("could not decode OCI image manifest (%w)", err)
+		}
+
+		if artifactType != "" && artifactType != manifest.ArtifactType {
+			return fmt.Errorf("artifact type mismatch: %s != %s", manifest.ArtifactType, artifactType)
 		}
 
 		for _, layer := range manifest.Layers {
