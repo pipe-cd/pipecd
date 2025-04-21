@@ -39,7 +39,7 @@ func TestPullFileFromRegistry(t *testing.T) {
 			}
 			defer os.Remove(dst.Name())
 
-			if err := PullFileFromRegistry(t.Context(), workDir, dst, ociURL, true, platform.OS, platform.Arch, "text/plain"); err != nil {
+			if err := PullFileFromRegistry(t.Context(), workDir, dst, ociURL, WithInsecure(), WithTargetOS(platform.OS), WithTargetArch(platform.Arch), WithMediaType("text/plain")); err != nil {
 				t.Fatalf("could not pull file from OCI: %s", err)
 			}
 

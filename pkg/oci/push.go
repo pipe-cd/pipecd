@@ -40,8 +40,14 @@ type Artifact struct {
 	FilePaths map[Platform]string
 }
 
-// TODO: functional options pattern for insecure
-func PushFilesToRegistry(ctx context.Context, workDir string, artifact *Artifact, targetURL string, insecure bool) error {
+func PushFilesToRegistry(ctx context.Context, workDir string, artifact *Artifact, targetURL string, opts ...PushOption) error {
+	options := &PushOptions{
+		insecure: false,
+	}
+	for _, opt := range opts {
+		opt.applyPushOption(options)
+	}
+
 	repo, ref, err := parseOCIURL(targetURL)
 	if err != nil {
 		return fmt.Errorf("could not parse OCI URL %s: %w", targetURL, err)
@@ -52,7 +58,7 @@ func PushFilesToRegistry(ctx context.Context, workDir string, artifact *Artifact
 		return fmt.Errorf("could not create repository %s: %w", repo, err)
 	}
 
-	r.PlainHTTP = insecure
+	r.PlainHTTP = options.insecure
 
 	descriptors := make([]ocispec.Descriptor, 0, len(artifact.FilePaths))
 	for platform, path := range artifact.FilePaths {

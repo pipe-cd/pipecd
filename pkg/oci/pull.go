@@ -30,12 +30,14 @@ import (
 	"oras.land/oras-go/v2/registry/remote"
 )
 
-const (
-	MediaTypePipedPlugin = "application/vnd.pipecd.piped.plugin"
-)
+func PullFileFromRegistry(ctx context.Context, workdir string, dst io.Writer, sourceURL string, opts ...PullOption) error {
+	options := &PullOptions{
+		insecure: false,
+	}
+	for _, opt := range opts {
+		opt.applyPullOption(options)
+	}
 
-// TODO: functional options pattern for insecure, targetOS, targetArch, mediaType
-func PullFileFromRegistry(ctx context.Context, workdir string, dst io.Writer, sourceURL string, insecure bool, targetOS, targetArch, mediaType string) error {
 	r, ref, err := parseOCIURL(sourceURL)
 	if err != nil {
 		return fmt.Errorf("could not parse OCI URL %s (%w)", sourceURL, err)
@@ -46,7 +48,7 @@ func PullFileFromRegistry(ctx context.Context, workdir string, dst io.Writer, so
 		return fmt.Errorf("could not create repository (%w)", err)
 	}
 
-	repo.PlainHTTP = insecure
+	repo.PlainHTTP = options.insecure
 
 	d, err := os.MkdirTemp(workdir, "oci-pull")
 	if err != nil {
@@ -68,7 +70,7 @@ func PullFileFromRegistry(ctx context.Context, workdir string, dst io.Writer, so
 		return fmt.Errorf("could not copy OCI image (%w)", err)
 	}
 
-	return copyOCIArtifact(ctx, dst, desc, store, targetOS, targetArch, mediaType)
+	return copyOCIArtifact(ctx, dst, desc, store, options.targetOS, options.targetArch, options.mediaType)
 }
 
 func parseOCIURL(sourceURL string) (repo string, ref string, _ error) {
@@ -123,9 +125,13 @@ func copyOCIArtifact(ctx context.Context, dst io.Writer, desc ocispec.Descriptor
 		}
 
 		for _, m := range idx.Manifests {
-			if targetOS == m.Platform.OS && targetArch == m.Platform.Architecture {
-				return copyOCIArtifact(ctx, dst, m, fetcher, targetOS, targetArch, mediaType)
+			if targetOS != "" && targetOS != m.Platform.OS {
+				continue
 			}
+			if targetArch != "" && targetArch != m.Platform.Architecture {
+				continue
+			}
+			return copyOCIArtifact(ctx, dst, m, fetcher, targetOS, targetArch, mediaType)
 		}
 
 		return fmt.Errorf("no matching manifest found")
@@ -143,7 +149,7 @@ func copyOCIArtifact(ctx context.Context, dst io.Writer, desc ocispec.Descriptor
 		}
 
 		for _, layer := range manifest.Layers {
-			if layer.MediaType != mediaType {
+			if mediaType != "" && mediaType != layer.MediaType {
 				continue
 			}
 

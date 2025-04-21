@@ -146,7 +146,7 @@ func DownloadBinary(sourceURL, destDir, destFile string, logger *zap.Logger) (st
 
 	switch u.Scheme {
 	case "oci":
-		if err := oci.PullFileFromRegistry(context.TODO(), destDir, tmpFile, sourceURL, false, runtime.GOOS, runtime.GOARCH, oci.MediaTypePipedPlugin); err != nil {
+		if err := oci.PullFileFromRegistry(context.TODO(), destDir, tmpFile, sourceURL, oci.WithTargetOS(runtime.GOOS), oci.WithTargetArch(runtime.GOARCH), oci.WithMediaType(oci.MediaTypePipedPlugin)); err != nil {
 			return "", fmt.Errorf("could not download from %s to %s (%w)", sourceURL, tmpName, err)
 		}
 

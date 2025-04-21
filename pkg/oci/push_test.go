@@ -55,7 +55,7 @@ func pushTestFiles(t *testing.T, workDir, ociURL string) map[Platform]string {
 		FilePaths: artifactFiles,
 	}
 
-	if err := PushFilesToRegistry(t.Context(), workDir, artifact, ociURL, true); err != nil {
+	if err := PushFilesToRegistry(t.Context(), workDir, artifact, ociURL, WithInsecure()); err != nil {
 		t.Fatalf("could not push files to OCI: %s", err)
 	}
 
