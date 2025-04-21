@@ -25,12 +25,13 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	kubeConfigPkg "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
+	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister/logpersistertest"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry/toolregistrytest"
 )
 
-func TestPlugin_executeK8sMultiRollbackStage_NoPreviousDeployment(t *testing.T) {
+func TestPlugin_executeK8sMultiRollbackStage_compatibility_k8sPlugin_NoPreviousDeployment(t *testing.T) {
 	t.Parallel()
 
 	// Initialize tool registry
@@ -76,7 +77,7 @@ func TestPlugin_executeK8sMultiRollbackStage_NoPreviousDeployment(t *testing.T) 
 	assert.Equal(t, sdk.StageStatusFailure, status)
 }
 
-func TestPlugin_executeK8sMultiRollbackStage_SuccessfulRollback(t *testing.T) {
+func TestPlugin_executeK8sMultiRollbackStage_compatibility_k8sPlugin_SuccessfulRollback(t *testing.T) {
 	t.Parallel()
 
 	// Initialize tool registry
@@ -142,7 +143,7 @@ func TestPlugin_executeK8sMultiRollbackStage_SuccessfulRollback(t *testing.T) {
 	assert.Equal(t, "previous-hash", deployment.GetAnnotations()["pipecd.dev/commit-hash"])
 }
 
-func TestPlugin_executeK8sMultiRollbackStage_WithVariantLabels(t *testing.T) {
+func TestPlugin_executeK8sMultiRollbackStage_compatibility_k8sPlugin_WithVariantLabels(t *testing.T) {
 	t.Parallel()
 
 	// Initialize tool registry
@@ -208,4 +209,79 @@ func TestPlugin_executeK8sMultiRollbackStage_WithVariantLabels(t *testing.T) {
 	assert.Equal(t, "apps:Deployment::simple", deployment.GetAnnotations()["pipecd.dev/resource-key"])
 	assert.Equal(t, "previous-hash", deployment.GetAnnotations()["pipecd.dev/commit-hash"])
 	assert.Equal(t, "primary", deployment.GetAnnotations()["pipecd.dev/variant"])
+}
+
+func TestPlugin_executeK8sMultiRollbackStage_SuccessfulRollback(t *testing.T) {
+	t.Parallel()
+
+	// Initialize tool registry
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
+	// Read the application config from the example file
+	appCfg := sdktest.LoadApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
+
+	// Prepare the input
+	input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+			StageName:   "K8S_MULTI_ROLLBACK",
+			StageConfig: []byte(``),
+			RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
+				CommitHash:                "previous-hash",
+				ApplicationConfig:         appCfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+			TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
+				CommitHash:                "0123456789",
+				ApplicationConfig:         appCfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+			Deployment: sdk.Deployment{
+				PipedID:       "piped-id",
+				ApplicationID: "app-id",
+			},
+		},
+		Client: sdk.NewClient(nil, "kubernete_multicluster", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
+		Logger: zaptest.NewLogger(t),
+	}
+
+	// prepare the cluster
+	cluster1 := setupCluster(t, "cluster1")
+	cluster2 := setupCluster(t, "cluster2")
+
+	dts := []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		{
+			Name:   "cluster1",
+			Config: *cluster1.dtc,
+		},
+		{
+			Name:   "cluster2",
+			Config: *cluster2.dtc,
+		},
+	}
+
+	plugin := &Plugin{}
+	status := plugin.executeK8sMultiRollbackStage(t.Context(), input, dts)
+
+	assert.Equal(t, sdk.StageStatusSuccess, status)
+
+	// Verify the deployment was rolled back
+	for _, cluster := range []*cluster{cluster1, cluster2} {
+		deployment, err := cluster.cli.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(t.Context(), "simple", metav1.GetOptions{})
+		require.NoError(t, err)
+
+		// Verify labels and annotations
+		assert.Equal(t, "piped", deployment.GetLabels()["pipecd.dev/managed-by"])
+		assert.Equal(t, "piped-id", deployment.GetLabels()["pipecd.dev/piped"])
+		assert.Equal(t, "app-id", deployment.GetLabels()["pipecd.dev/application"])
+		assert.Equal(t, "previous-hash", deployment.GetLabels()["pipecd.dev/commit-hash"])
+
+		assert.Equal(t, "piped", deployment.GetAnnotations()["pipecd.dev/managed-by"])
+		assert.Equal(t, "piped-id", deployment.GetAnnotations()["pipecd.dev/piped"])
+		assert.Equal(t, "app-id", deployment.GetAnnotations()["pipecd.dev/application"])
+		assert.Equal(t, "apps/v1", deployment.GetAnnotations()["pipecd.dev/original-api-version"])
+		assert.Equal(t, "apps:Deployment::simple", deployment.GetAnnotations()["pipecd.dev/resource-key"])
+		assert.Equal(t, "previous-hash", deployment.GetAnnotations()["pipecd.dev/commit-hash"])
+	}
 }

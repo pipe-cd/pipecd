@@ -17,6 +17,9 @@ package deployment
 import (
 	"cmp"
 	"context"
+	"fmt"
+
+	"golang.org/x/sync/errgroup"
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
@@ -25,10 +28,73 @@ import (
 )
 
 func (p *Plugin) executeK8sMultiRollbackStage(ctx context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
-	return p.rollback(ctx, input, dts)
+	lp := input.Client.LogPersister()
+
+	cfg, err := input.Request.RunningDeploymentSource.AppConfig()
+	if err != nil {
+		lp.Errorf("Failed while decoding application config (%v)", err.Error())
+		return sdk.StageStatusFailure
+	}
+
+	type targetConfig struct {
+		deployTarget *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]
+		multiTarget  *kubeconfig.KubernetesMultiTarget
+	}
+
+	deployTargetMap := make(map[string]*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], 0)
+	targetConfigs := make([]targetConfig, 0, len(dts))
+
+	// prevent the deployment when its deployTarget is not found in the piped config
+	for _, target := range dts {
+		deployTargetMap[target.Name] = target
+	}
+
+	// If no multi-targets are specified, rollback all deploy targets.
+	if len(cfg.Spec.Input.MultiTargets) == 0 {
+		for _, dt := range dts {
+			targetConfigs = append(targetConfigs, targetConfig{
+				deployTarget: dt,
+				multiTarget:  nil,
+			})
+		}
+	} else {
+		// Sync to the specified multi-targets.
+		for _, multiTarget := range cfg.Spec.Input.MultiTargets {
+			dt, ok := deployTargetMap[multiTarget.Target.Name]
+			if !ok {
+				lp.Infof("Ignore multi target '%s': not matched any deployTarget", multiTarget.Target.Name)
+				continue
+			}
+
+			targetConfigs = append(targetConfigs, targetConfig{
+				deployTarget: dt,
+				multiTarget:  &multiTarget,
+			})
+		}
+	}
+
+	eg, ctx := errgroup.WithContext(ctx)
+	for _, tc := range targetConfigs {
+		// Start rollbacking the deployment to the target.
+		eg.Go(func() error {
+			lp.Infof("Start rollbacking the deployment to the target %s", tc.deployTarget.Name)
+			status := p.rollback(ctx, input, tc.deployTarget, tc.multiTarget)
+			if status == sdk.StageStatusFailure {
+				return fmt.Errorf("failed to rollback the deployment to the target %s", tc.deployTarget.Name)
+			}
+			return nil
+		})
+	}
+
+	if err := eg.Wait(); err != nil {
+		lp.Errorf("Failed while rollbacking the deployment (%v)", err)
+		return sdk.StageStatusFailure
+	}
+
+	return sdk.StageStatusSuccess
 }
 
-func (p *Plugin) rollback(ctx context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
+func (p *Plugin) rollback(ctx context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], dt *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], multiTarget *kubeconfig.KubernetesMultiTarget) sdk.StageStatus {
 	lp := input.Client.LogPersister()
 
 	if input.Request.RunningDeploymentSource.CommitHash == "" {
@@ -47,7 +113,7 @@ func (p *Plugin) rollback(ctx context.Context, input *sdk.ExecuteStageInput[kube
 	lp.Infof("Loading manifests at commit %s for handling", input.Request.RunningDeploymentSource.CommitHash)
 	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
 	// TODO: consider multiTarget later
-	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.RunningDeploymentSource, provider.NewLoader(toolRegistry), &kubeconfig.KubernetesMultiTarget{})
+	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.RunningDeploymentSource, provider.NewLoader(toolRegistry), multiTarget)
 	if err != nil {
 		lp.Errorf("Failed while loading manifests (%v)", err)
 		return sdk.StageStatusFailure
@@ -92,11 +158,7 @@ func (p *Plugin) rollback(ctx context.Context, input *sdk.ExecuteStageInput[kube
 	}
 
 	// Get the deploy target config.
-	if len(dts) == 0 {
-		lp.Error("No deploy target was found")
-		return sdk.StageStatusFailure
-	}
-	deployTargetConfig := dts[0].Config
+	deployTargetConfig := dt.Config
 
 	// Get the kubectl tool path.
 	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion))
