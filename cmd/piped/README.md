@@ -60,3 +60,5 @@ For the full list of available commands, please see the Makefile at the root of 
     ``` console
     make run/piped CONFIG_FILE=piped-config.yaml
     ```
+
+Note: If you have a problem with accessing the example repository, please follow [this guide](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) to register the SSH key or try specifying `remote: https://github.com/pipe-cd/examples.git` instead.
