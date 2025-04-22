@@ -72,8 +72,8 @@ func AddSSHConfig(cfg config.PipedGit) error {
 	if err != nil {
 		return err
 	}
+	defer os.Remove(sshKeyFile.Name())
 
-	// TODO: Remove this key file when Piped terminating.
 	if _, err := sshKeyFile.Write(sshKey); err != nil {
 		return err
 	}
