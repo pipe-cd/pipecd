@@ -34,6 +34,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 )
 
@@ -543,13 +544,20 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 		return model.StageStatus_STAGE_FAILURE
 	}
 
+	// ensure pass nil as running deployment source in case of the first deployment
+	// because the running deployment source is not available at this time.
+	var pRds *common.DeploymentSource
+	if rds != nil {
+		pRds = rds.ToPluginDeploySource()
+	}
+
 	// Start running executor.
 	res, err := plugin.ExecuteStage(ctx, &deployment.ExecuteStageRequest{
 		Input: &deployment.ExecutePluginInput{
 			Deployment:              s.deployment,
 			Stage:                   ps,
 			StageConfig:             stageConfig,
-			RunningDeploymentSource: rds.ToPluginDeploySource(),
+			RunningDeploymentSource: pRds,
 			TargetDeploymentSource:  tds.ToPluginDeploySource(),
 		},
 	})
