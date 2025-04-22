@@ -48,52 +48,61 @@ type sshConfig struct {
 	IdentityFile string
 }
 
-func AddSSHConfig(cfg config.PipedGit) error {
+func AddSSHConfig(cfg config.PipedGit) (string, error) {
 	cfgPath := cfg.SSHConfigFilePath
 	if cfgPath == "" {
 		home, err := os.UserHomeDir()
 		if err != nil {
-			return fmt.Errorf("failed to detect the current user's home directory: %w", err)
+			return "", fmt.Errorf("failed to detect the current user's home directory: %w", err)
 		}
 		cfgPath = path.Join(home, ".ssh", "config")
 	}
 	sshDir := filepath.Dir(cfgPath)
 
 	if err := os.MkdirAll(sshDir, 0700); err != nil {
-		return fmt.Errorf("failed to create a directory %s: %v", sshDir, err)
+		return "", fmt.Errorf("failed to create a directory %s: %v", sshDir, err)
 	}
 
 	sshKey, err := cfg.LoadSSHKey()
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	sshKeyFile, err := os.CreateTemp(sshDir, "piped-ssh-key-*")
 	if err != nil {
-		return err
+		return "", err
 	}
+	needCleanUp := false
+	defer func() {
+		if needCleanUp {
+			os.Remove(sshKeyFile.Name())
+		}
+	}()
 
-	// TODO: Remove this key file when Piped terminating.
 	if _, err := sshKeyFile.Write(sshKey); err != nil {
-		return err
+		needCleanUp = true
+		return "", err
 	}
 
 	configData, err := generateSSHConfig(cfg, sshKeyFile.Name())
 	if err != nil {
-		return err
+		needCleanUp = true
+		return "", err
 	}
 
 	f, err := os.OpenFile(cfgPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		return fmt.Errorf("could not create/append to %s: %v", cfgPath, err)
+		needCleanUp = true
+		return "", fmt.Errorf("could not create/append to %s: %v", cfgPath, err)
 	}
 	defer f.Close()
 
 	if _, err := f.Write([]byte(configData)); err != nil {
-		return fmt.Errorf("failed to write sshConfig to %s: %v", cfgPath, err)
+		needCleanUp = true
+		return "", fmt.Errorf("failed to write sshConfig to %s: %v", cfgPath, err)
 	}
 
-	return nil
+	return sshKeyFile.Name(), nil
 }
 
 func generateSSHConfig(cfg config.PipedGit, sshKeyFile string) (string, error) {
