@@ -265,6 +265,7 @@ func (c *OAuthClient) decideUserInfos(claims jwt.MapClaims, usernameClaimKey, av
 // https://pkg.go.dev/github.com/coreos/go-oidc/v3@v3.11.0/oidc#NewProvider
 // https://pkg.go.dev/github.com/coreos/go-oidc/v3@v3.11.0/oidc#ProviderConfig
 func createCustomOIDCProvider(ctx context.Context, sso *model.ProjectSSOConfig_Oidc) (*oidc.Provider, error) {
+	// Copied from go-oidc package
 	issuer := sso.Issuer
 
 	wellKnown := strings.TrimSuffix(issuer, "/") + "/.well-known/openid-configuration"
@@ -297,7 +298,9 @@ func createCustomOIDCProvider(ctx context.Context, sso *model.ProjectSSOConfig_O
 	if err != nil {
 		return nil, fmt.Errorf("oidc: failed to decode provider discovery object: %v", err)
 	}
+	// End of Copied from go-oidc package
 
+	// Override the endpoints with the user-provided URLs
 	providerConfig := oidc.ProviderConfig{
 		IssuerURL: issuer,
 		AuthURL: func() string {
