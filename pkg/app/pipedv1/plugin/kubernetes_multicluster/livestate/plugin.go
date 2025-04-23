@@ -131,9 +131,9 @@ func (p Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTarge
 
 	appSyncState := sdk.ApplicationSyncState{}
 	for _, ss := range syncStates {
-		appSyncState.Reason = fmt.Sprintf("%s\n", ss.Reason)
-		appSyncState.ShortReason = fmt.Sprintf("%s\n", ss.ShortReason)
-		appSyncState.Status = sdk.ApplicationSyncStateUnknown // TODO: Implement health status calculation
+		appSyncState.Reason = fmt.Sprintf("%s\n%s", appSyncState.Reason, ss.Reason)
+		appSyncState.ShortReason = fmt.Sprintf("%s\n%s", appSyncState.ShortReason, ss.ShortReason)
+		appSyncState.Status = sdk.ApplicationSyncStateOutOfSync // TODO: Implement health status calculation
 	}
 
 	return &sdk.GetLivestateResponse{
@@ -169,10 +169,10 @@ func (p Plugin) makeAppSyncState(liveManifests, gitManifests []provider.Manifest
 		return sdk.ApplicationSyncState{}, err
 	}
 
-	return calculateSyncState(diffResult, commit), nil
+	return calculateSyncState(diffResult, commit, dt), nil
 }
 
-func calculateSyncState(diffResult *provider.DiffListResult, commit string) sdk.ApplicationSyncState {
+func calculateSyncState(diffResult *provider.DiffListResult, commit string, dt *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.ApplicationSyncState {
 	if diffResult.NoChanges() {
 		return sdk.ApplicationSyncState{
 			Status:      sdk.ApplicationSyncStateSynced,
