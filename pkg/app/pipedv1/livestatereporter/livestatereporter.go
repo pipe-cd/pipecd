@@ -193,7 +193,13 @@ func (r *reporter) flush(ctx context.Context, app *model.Application, repo git.R
 		return err
 	}
 
-	dsp := deploysource.NewProvider(dir, deploysource.NewLocalSourceCloner(repo, "target", "HEAD"), app.GitPath, r.secretDecrypter)
+	headCommit, err := repo.GetLatestCommit(ctx)
+	if err != nil {
+		r.logger.Error("failed to get latest commit", zap.Error(err))
+		return err
+	}
+
+	dsp := deploysource.NewProvider(dir, deploysource.NewLocalSourceCloner(repo, "target", headCommit.Hash), app.GitPath, r.secretDecrypter)
 	ds, err := dsp.Get(ctx, io.Discard)
 	if err != nil {
 		r.logger.Error("failed to get deploy source", zap.String("application-id", app.Id), zap.Error(err))
