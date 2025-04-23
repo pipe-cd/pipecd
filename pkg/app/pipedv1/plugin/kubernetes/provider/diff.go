@@ -136,10 +136,10 @@ func DiffList(liveManifests, desiredManifests []Manifest, logger *zap.Logger, op
 func groupManifests(olds, news []Manifest) (adds, deletes, newChanges, oldChanges []Manifest) {
 	// Sort the manifests before comparing.
 	sort.Slice(news, func(i, j int) bool {
-		return news[i].Key().String() < news[j].Key().String()
+		return news[i].Key().normalize().String() < news[j].Key().normalize().String()
 	})
 	sort.Slice(olds, func(i, j int) bool {
-		return olds[i].Key().String() < olds[j].Key().String()
+		return olds[i].Key().normalize().String() < olds[j].Key().normalize().String()
 	})
 
 	var n, o int
@@ -147,7 +147,7 @@ func groupManifests(olds, news []Manifest) (adds, deletes, newChanges, oldChange
 		if n >= len(news) || o >= len(olds) {
 			break
 		}
-		if news[n].Key().String() == olds[o].Key().String() {
+		if news[n].Key().normalize().String() == olds[o].Key().normalize().String() {
 			newChanges = append(newChanges, news[n])
 			oldChanges = append(oldChanges, olds[o])
 			n++
@@ -155,7 +155,7 @@ func groupManifests(olds, news []Manifest) (adds, deletes, newChanges, oldChange
 			continue
 		}
 		// Has in news but not in olds so this should be a added one.
-		if news[n].Key().String() < olds[o].Key().String() {
+		if news[n].Key().normalize().String() < olds[o].Key().normalize().String() {
 			adds = append(adds, news[n])
 			n++
 			continue
