@@ -521,3 +521,99 @@ func TestPlugin_executeK8sMultiRollbackStage_SuccessfulRollback_when_removing_mu
 		assert.Equal(t, "previous-hash", deployment.GetAnnotations()["pipecd.dev/commit-hash"])
 	}
 }
+
+func TestPlugin_executeK8sMultiRollbackStage_FailureRollback_when_all_rollback_of_targets_are_failed(t *testing.T) {
+	t.Parallel()
+
+	// Initialize tool registry
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
+	// prepare the cluster
+	cluster1 := setupCluster(t, "cluster1")
+	cluster2 := setupCluster(t, "cluster2")
+
+	// Prepare the input
+	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
+			StageName:   "K8S_MULTI_ROLLBACK",
+			StageConfig: []byte(``),
+			RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+				ApplicationDirectory:      filepath.Join("testdata", "failed_all_of_rollback", "running"),
+				CommitHash:                "previous-hash",
+				ApplicationConfig:         sdktest.LoadApplicationConfig[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "failed_all_of_rollback", "running", "app.pipecd.yaml")),
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{},
+			Deployment: sdk.Deployment{
+				PipedID:       "piped-id",
+				ApplicationID: "app-id",
+			},
+		},
+		Client: sdk.NewClient(nil, "kubernete_multicluster", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
+		Logger: zaptest.NewLogger(t),
+	}
+
+	dts := []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		{
+			Name:   "cluster1",
+			Config: *cluster1.dtc,
+		},
+		{
+			Name:   "cluster2",
+			Config: *cluster2.dtc,
+		},
+	}
+
+	plugin := &Plugin{}
+	status := plugin.executeK8sMultiRollbackStage(t.Context(), input, dts)
+
+	assert.Equal(t, sdk.StageStatusFailure, status)
+}
+
+func TestPlugin_executeK8sMultiRollbackStage_FailureRollback_when_at_least_one_of_targets_are_success(t *testing.T) {
+	t.Parallel()
+
+	// Initialize tool registry
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
+	// prepare the cluster
+	cluster1 := setupCluster(t, "cluster1")
+	cluster2 := setupCluster(t, "cluster2")
+
+	// Prepare the input
+	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
+			StageName:   "K8S_MULTI_ROLLBACK",
+			StageConfig: []byte(``),
+			RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+				ApplicationDirectory:      filepath.Join("testdata", "succes_one_of_rollback", "running"),
+				CommitHash:                "previous-hash",
+				ApplicationConfig:         sdktest.LoadApplicationConfig[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "succes_one_of_rollback", "running", "app.pipecd.yaml")),
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{},
+			Deployment: sdk.Deployment{
+				PipedID:       "piped-id",
+				ApplicationID: "app-id",
+			},
+		},
+		Client: sdk.NewClient(nil, "kubernete_multicluster", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
+		Logger: zaptest.NewLogger(t),
+	}
+
+	dts := []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		{
+			Name:   "cluster1",
+			Config: *cluster1.dtc,
+		},
+		{
+			Name:   "cluster2",
+			Config: *cluster2.dtc,
+		},
+	}
+
+	plugin := &Plugin{}
+	status := plugin.executeK8sMultiRollbackStage(t.Context(), input, dts)
+
+	assert.Equal(t, sdk.StageStatusSuccess, status)
+}

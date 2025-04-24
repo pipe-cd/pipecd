@@ -17,9 +17,7 @@ package deployment
 import (
 	"cmp"
 	"context"
-	"fmt"
-
-	"golang.org/x/sync/errgroup"
+	"sync"
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
@@ -73,25 +71,46 @@ func (p *Plugin) executeK8sMultiRollbackStage(ctx context.Context, input *sdk.Ex
 		}
 	}
 
-	eg, ctx := errgroup.WithContext(ctx)
+	type result struct {
+		target string
+		status sdk.StageStatus
+	}
+
+	results := make([]result, 0, len(targetConfigs))
+	var (
+		wg sync.WaitGroup
+		mu sync.Mutex
+	)
+
 	for _, tc := range targetConfigs {
-		// Start rollbacking the deployment to the target.
-		eg.Go(func() error {
-			lp.Infof("Start rollbacking the deployment to the target %s", tc.deployTarget.Name)
+		wg.Add(1)
+		go func() {
+			lp.Infof("Start rollbacking the deployment for the target %s", tc.deployTarget.Name)
+
 			status := p.rollback(ctx, input, tc.deployTarget, tc.multiTarget)
-			if status == sdk.StageStatusFailure {
-				return fmt.Errorf("failed to rollback the deployment to the target %s", tc.deployTarget.Name)
-			}
-			return nil
-		})
+			mu.Lock()
+			results = append(results, result{
+				target: tc.deployTarget.Name,
+				status: status,
+			})
+			mu.Unlock()
+			wg.Done()
+		}()
 	}
 
-	if err := eg.Wait(); err != nil {
-		lp.Errorf("Failed while rollbacking the deployment (%v)", err)
-		return sdk.StageStatusFailure
+	wg.Wait()
+
+	finalStatus := sdk.StageStatusFailure
+	for _, result := range results {
+		// success at least one of the rollback succeed
+		if result.status != sdk.StageStatusFailure {
+			finalStatus = sdk.StageStatusSuccess
+		}
+
+		lp.Infof("target %s, status: %s", result.target, result.status.String())
 	}
 
-	return sdk.StageStatusSuccess
+	return finalStatus
 }
 
 func (p *Plugin) rollback(ctx context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], dt *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], multiTarget *kubeconfig.KubernetesMultiTarget) sdk.StageStatus {
@@ -161,7 +180,7 @@ func (p *Plugin) rollback(ctx context.Context, input *sdk.ExecuteStageInput[kube
 	deployTargetConfig := dt.Config
 
 	// Get the kubectl tool path.
-	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion))
+	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(multiTarget.KubectlVersion, cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion))
 	if err != nil {
 		lp.Errorf("Failed while getting kubectl tool (%v)", err)
 		return sdk.StageStatusFailure
