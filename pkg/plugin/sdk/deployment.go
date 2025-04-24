@@ -646,6 +646,19 @@ func (o StageStatus) toModelEnum() model.StageStatus {
 	}
 }
 
+func (o StageStatus) String() string {
+	switch o {
+	case StageStatusSuccess:
+		return model.StageStatus_STAGE_SUCCESS.String()
+	case StageStatusFailure:
+		return model.StageStatus_STAGE_FAILURE.String()
+	case StageStatusExited:
+		return model.StageStatus_STAGE_EXITED.String()
+	default:
+		return model.StageStatus_STAGE_FAILURE.String()
+	}
+}
+
 // StageCommand represents a command for a stage.
 type StageCommand struct {
 	Commander string
