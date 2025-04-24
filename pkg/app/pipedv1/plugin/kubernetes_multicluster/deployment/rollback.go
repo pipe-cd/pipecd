@@ -179,8 +179,14 @@ func (p *Plugin) rollback(ctx context.Context, input *sdk.ExecuteStageInput[kube
 	// Get the deploy target config.
 	deployTargetConfig := dt.Config
 
+	kubectlVersions := []string{cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion}
+	// If multi-target is specified, use the kubectl version specified in it.
+	if multiTarget != nil {
+		kubectlVersions = append([]string{multiTarget.KubectlVersion}, kubectlVersions...)
+	}
+
 	// Get the kubectl tool path.
-	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(multiTarget.KubectlVersion, cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion))
+	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(kubectlVersions...))
 	if err != nil {
 		lp.Errorf("Failed while getting kubectl tool (%v)", err)
 		return sdk.StageStatusFailure
