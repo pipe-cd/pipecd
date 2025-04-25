@@ -83,3 +83,54 @@ func TestPush_parseFilePaths(t *testing.T) {
 		})
 	}
 }
+
+func TestPush_parsePlatform(t *testing.T) {
+	t.Parallel()
+
+	p := &push{}
+	tests := []struct {
+		name    string
+		input   string
+		want    oci.Platform
+		wantErr bool
+	}{
+		{
+			name:    "valid linux/amd64",
+			input:   "linux/amd64",
+			want:    oci.Platform{OS: "linux", Arch: "amd64"},
+			wantErr: false,
+		},
+		{
+			name:    "valid darwin/arm64",
+			input:   "darwin/arm64",
+			want:    oci.Platform{OS: "darwin", Arch: "arm64"},
+			wantErr: false,
+		},
+		{
+			name:    "invalid (missing arch)",
+			input:   "linux",
+			want:    oci.Platform{},
+			wantErr: true,
+		},
+		{
+			name:    "invalid (extra part)",
+			input:   "linux/amd64/extra",
+			want:    oci.Platform{},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := p.parsePlatform(tt.input)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.want, got)
+			}
+		})
+	}
+}
