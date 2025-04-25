@@ -1155,8 +1155,8 @@ func (p *PipedPlugin) Validate() error {
 	if err != nil {
 		return fmt.Errorf("invalid plugin url: %w", err)
 	}
-	if u.Scheme != "file" && u.Scheme != "https" {
-		return errors.New("only file and https schemes are supported")
+	if u.Scheme != "file" && u.Scheme != "https" && u.Scheme != "oci" {
+		return errors.New("only file, https and oci schemes are supported")
 	}
 	return nil
 }
