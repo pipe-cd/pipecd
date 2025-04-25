@@ -121,6 +121,11 @@ func pushFile(ctx context.Context, workDir string, repo *remote.Repository, path
 		return ocispec.Descriptor{}, fmt.Errorf("could not create file system: %w", err)
 	}
 
+	path, err = filepath.Abs(path)
+	if err != nil {
+		return ocispec.Descriptor{}, fmt.Errorf("could not get absolute path: %w", err)
+	}
+
 	desc, err := fs.Add(ctx, filepath.Base(path), mediaType, path)
 	if err != nil {
 		return ocispec.Descriptor{}, fmt.Errorf("could not add file to file system: %w", err)
