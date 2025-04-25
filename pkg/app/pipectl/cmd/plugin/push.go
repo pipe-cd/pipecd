@@ -69,7 +69,7 @@ func (p *push) run(ctx context.Context, input cli.Input) error {
 	}
 	defer os.RemoveAll(workdir)
 
-	targetURL := fmt.Sprintf("%s/%s:%s", p.registry, p.repository, p.tag)
+	targetURL := fmt.Sprintf("oci://%s/%s:%s", p.registry, p.repository, p.tag)
 
 	opts := make([]oci.PushOption, 0, 1)
 	if p.insecure {
