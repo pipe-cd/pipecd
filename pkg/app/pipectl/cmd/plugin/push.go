@@ -71,6 +71,8 @@ func (p *push) run(ctx context.Context, input cli.Input) error {
 
 	targetURL := fmt.Sprintf("oci://%s/%s:%s", p.registry, p.repository, p.tag)
 
+	input.Logger.Info("pushing plugin to the server", zap.String("target", targetURL), zap.Strings("files", p.files))
+
 	opts := make([]oci.PushOption, 0, 1)
 	if p.insecure {
 		opts = append(opts, oci.WithInsecure())
@@ -81,8 +83,6 @@ func (p *push) run(ctx context.Context, input cli.Input) error {
 		input.Logger.Error("failed to parse file paths", zap.Error(err))
 		return err
 	}
-
-	input.Logger.Info("pushing plugin to the server", zap.String("target", targetURL), zap.Any("files", files))
 
 	artifact := &oci.Artifact{
 		MediaType:    oci.MediaTypePipedPlugin,
