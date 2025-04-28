@@ -19,7 +19,6 @@ type DataStoreType string
 const (
 	DataStoreFirestore DataStoreType = "FIRESTORE"
 	DataStoreMySQL     DataStoreType = "MYSQL"
-	DataStoreFileDB    DataStoreType = "FILEDB"
 )
 
 func (t DataStoreType) String() string {
