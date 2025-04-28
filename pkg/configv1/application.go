@@ -287,7 +287,7 @@ func (a *AnalysisStageOptions) Validate() error {
 			}
 			continue
 		}
-		if err := m.AnalysisMetrics.Validate(); err != nil {
+		if err := m.Validate(); err != nil {
 			return fmt.Errorf("one of metrics configurations of ANALYSIS stage is invalid: %w", err)
 		}
 	}
@@ -299,7 +299,7 @@ func (a *AnalysisStageOptions) Validate() error {
 			}
 			continue
 		}
-		if err := l.AnalysisLog.Validate(); err != nil {
+		if err := l.Validate(); err != nil {
 			return fmt.Errorf("one of log configurations of ANALYSIS stage is invalid: %w", err)
 		}
 	}
@@ -310,7 +310,7 @@ func (a *AnalysisStageOptions) Validate() error {
 			}
 			continue
 		}
-		if err := h.AnalysisHTTP.Validate(); err != nil {
+		if err := h.Validate(); err != nil {
 			return fmt.Errorf("one of http configurations of ANALYSIS stage is invalid: %w", err)
 		}
 	}

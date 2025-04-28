@@ -40,7 +40,7 @@ func pushTestFiles(t *testing.T, workDir, ociURL string) map[Platform]string {
 			t.Fatalf("could not create temporary file: %s", err)
 		}
 
-		if _, err := f.WriteString(fmt.Sprintf("test %s %s", platform.OS, platform.Arch)); err != nil {
+		if _, err := fmt.Fprintf(f, "test %s %s", platform.OS, platform.Arch); err != nil {
 			t.Fatalf("could not write to temporary file: %s", err)
 		}
 

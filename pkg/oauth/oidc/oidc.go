@@ -86,12 +86,12 @@ func NewOAuthClient(ctx context.Context,
 // GetUser returns a user model.
 func (c *OAuthClient) GetUser(ctx context.Context, clientID string) (*model.User, error) {
 
-	idTokenRAW, ok := c.Token.Extra("id_token").(string)
+	idTokenRAW, ok := c.Extra("id_token").(string)
 	if !ok {
 		return nil, fmt.Errorf("no id_token in oauth2 token")
 	}
 
-	verifier := c.Provider.Verifier(&oidc.Config{ClientID: clientID})
+	verifier := c.Verifier(&oidc.Config{ClientID: clientID})
 	idToken, err := verifier.Verify(ctx, idTokenRAW)
 	if err != nil {
 		return nil, err
