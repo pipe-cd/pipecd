@@ -1,6 +1,6 @@
 ---
 date: 2025-04-28
-title: "Introduction to EventWatcher: The way to connect CI to PipeCD"
+title: "Introduction to EventWatcher: Connecting CI to PipeCD"
 linkTitle: "Introduction to EventWatcher"
 weight: 983
 author: Tetsuya Kikuchi ([@t-kikuc](https://github.com/t-kikuc))
