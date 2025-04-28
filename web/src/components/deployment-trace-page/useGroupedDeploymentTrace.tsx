@@ -41,7 +41,10 @@ const useGroupedDeploymentTrace = (): GroupedDeploymentTrace => {
   }, [traceList]);
 
   const dates = useMemo(
-    () => Object.keys(deploymentTracesMap).sort(sortDateFunc),
+    () =>
+      Object.keys(deploymentTracesMap).sort((a, b) =>
+        sortDateFunc(a, b, "DESC")
+      ),
     [deploymentTracesMap]
   );
 
