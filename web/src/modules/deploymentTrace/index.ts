@@ -82,13 +82,13 @@ export const fetchMoreDeploymentTraces = createAsyncThunk<
   DeploymentTraceFilterOptions,
   { state: AppState }
 >("deploymentTrace/fetchMoreList", async (options, thunkAPI) => {
-  const { deployments } = thunkAPI.getState();
+  const { deploymentTrace } = thunkAPI.getState();
 
   const response = await deploymentTracesApi.getDeploymentTraces({
     options: convertFilterOptions(options),
     pageSize: FETCH_MORE_ITEMS_PER_PAGE,
-    cursor: deployments.cursor,
-    pageMinUpdatedAt: deployments.minUpdatedAt,
+    cursor: deploymentTrace.cursor,
+    pageMinUpdatedAt: deploymentTrace.minUpdatedAt,
   });
 
   return response;
