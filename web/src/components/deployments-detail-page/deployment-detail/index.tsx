@@ -3,12 +3,12 @@ import {
   Chip,
   CircularProgress,
   Link,
-  makeStyles,
   Paper,
   Typography,
-} from "@material-ui/core";
-import CancelIcon from "@material-ui/icons/Cancel";
-import OpenInNewIcon from "@material-ui/icons/OpenInNew";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
+import CancelIcon from "@mui/icons-material/Cancel";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import dayjs from "dayjs";
 import { FC, memo, useMemo } from "react";
 import { Link as RouterLink } from "react-router-dom";

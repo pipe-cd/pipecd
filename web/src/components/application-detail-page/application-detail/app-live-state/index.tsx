@@ -1,5 +1,6 @@
-import { Box, makeStyles, Typography } from "@material-ui/core";
-import Skeleton from "@material-ui/lab/Skeleton";
+import { Box, Typography } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
+import Skeleton from "@mui/material/Skeleton";
 import { FC, memo } from "react";
 import { APPLICATION_HEALTH_STATUS_TEXT } from "~/constants/health-status-text";
 import { UI_TEXT_NOT_AVAILABLE_TEXT } from "~/constants/ui-text";

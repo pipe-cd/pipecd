@@ -1,4 +1,5 @@
-import { makeStyles, Paper, Typography } from "@material-ui/core";
+import { Paper, Typography } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import { FC, memo } from "react";
 import { ResourceState } from "~~/model/application_live_state_pb";
 import { HealthStatusIcon } from "./health-status-icon";

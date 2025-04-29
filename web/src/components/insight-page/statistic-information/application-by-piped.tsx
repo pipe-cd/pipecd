@@ -1,10 +1,5 @@
-import {
-  Box,
-  Card,
-  CardContent,
-  makeStyles,
-  Typography,
-} from "@material-ui/core";
+import { Box, Card, CardContent, Typography } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import clsx from "clsx";
 import { FC, useEffect, useMemo } from "react";
 import {
@@ -16,13 +11,13 @@ import {
 import * as echarts from "echarts/core";
 import { BarChart } from "echarts/charts";
 import { CanvasRenderer } from "echarts/renderers";
-import grey from "@material-ui/core/colors/grey";
-import lineColor from "@material-ui/core/colors/purple";
 import { useAppSelector } from "~/hooks/redux";
 import { selectAll as selectAllApplications } from "~/modules/applications";
 import { selectAllPipeds } from "~/modules/pipeds";
 import ChartEmptyData from "~/components/chart-empty-data";
 import useEChartState from "~/hooks/useEChartState";
+
+import { grey, purple as lineColor } from "@mui/material/colors";
 
 const useStyles = makeStyles(() => ({
   root: {

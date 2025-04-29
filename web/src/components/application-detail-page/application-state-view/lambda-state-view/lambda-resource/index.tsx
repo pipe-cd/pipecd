@@ -1,4 +1,5 @@
-import { makeStyles, Paper, Typography } from "@material-ui/core";
+import { Paper, Typography } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import { FC, memo } from "react";
 import { LambdaResourceState } from "~/modules/applications-live-state";
 import { LambdaResourceHealthStatusIcon } from "./health-status-icon";

@@ -1,4 +1,4 @@
-import { makeStyles } from "@material-ui/core";
+import makeStyles from "@mui/styles/makeStyles";
 import { FC, memo } from "react";
 import ApplicationCount from "./application-count";
 import ApplicationByPiped from "./application-by-piped";

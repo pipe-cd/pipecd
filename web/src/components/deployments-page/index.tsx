@@ -4,13 +4,13 @@ import {
   CircularProgress,
   Divider,
   List,
-  makeStyles,
   Toolbar,
   Typography,
-} from "@material-ui/core";
-import CloseIcon from "@material-ui/icons/Close";
-import FilterIcon from "@material-ui/icons/FilterList";
-import RefreshIcon from "@material-ui/icons/Refresh";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
+import CloseIcon from "@mui/icons-material/Close";
+import FilterIcon from "@mui/icons-material/FilterList";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import dayjs from "dayjs";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";

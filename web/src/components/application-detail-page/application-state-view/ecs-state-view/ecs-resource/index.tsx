@@ -1,4 +1,5 @@
-import { makeStyles, Paper, Typography } from "@material-ui/core";
+import { Paper, Typography } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import { FC, memo } from "react";
 import { ECSResourceState } from "~/modules/applications-live-state";
 import { ECSResourceHealthStatusIcon } from "./health-status-icon";

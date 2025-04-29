@@ -1,8 +1,7 @@
-import { makeStyles } from "@material-ui/core";
-import green from "@material-ui/core/colors/green";
-import red from "@material-ui/core/colors/red";
-import yellow from "@material-ui/core/colors/yellow";
+import makeStyles from "@mui/styles/makeStyles";
 import { FC, memo } from "react";
+
+import { green, red, yellow } from "@mui/material/colors";
 
 const useStyles = makeStyles((theme) => ({
   root: {

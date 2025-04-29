@@ -3,15 +3,15 @@ import {
   AppBar,
   Toolbar,
   Typography,
-  makeStyles,
   Avatar,
   Link,
   Button,
   IconButton,
   MenuItem,
   Menu,
-} from "@material-ui/core";
-import { MoreVert, OpenInNew } from "@material-ui/icons";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
+import { MoreVert, OpenInNew } from "@mui/icons-material";
 import {
   PAGE_PATH_APPLICATIONS,
   PAGE_PATH_DEPLOYMENTS,
@@ -27,7 +27,7 @@ import {
 import { APP_NAME } from "~/constants/common";
 import { LOGGING_IN_PROJECT, USER_PROJECTS } from "~/constants/localstorage";
 import { NavLink as RouterLink, useLocation } from "react-router-dom";
-import ArrowDownIcon from "@material-ui/icons/ArrowDropDown";
+import ArrowDownIcon from "@mui/icons-material/ArrowDropDown";
 import logo from "~~/assets/logo.svg";
 import { useAppSelector } from "~/hooks/redux";
 import clsx from "clsx";
@@ -143,6 +143,7 @@ export const Header: FC = memo(function Header() {
             <Button
               color="inherit"
               className={classes.projectName}
+              // sx={{ textTransform: "none" }}
               endIcon={<ArrowDownIcon />}
               onClick={(e) => setProjectAnchorEl(e.currentTarget)}
             >
@@ -213,6 +214,7 @@ export const Header: FC = memo(function Header() {
                 aria-controls="user-menu"
                 aria-haspopup="true"
                 onClick={(e) => setUserAnchorEl(e.currentTarget)}
+                size="large"
               >
                 <Avatar className={classes.userAvatar} src={me.avatarUrl} />
               </IconButton>
@@ -230,7 +232,6 @@ export const Header: FC = memo(function Header() {
           )}
         </div>
       </Toolbar>
-
       <Menu
         id="project-selection"
         anchorEl={projectAnchorEl}
@@ -245,7 +246,6 @@ export const Header: FC = memo(function Header() {
           </MenuItem>
         ))}
       </Menu>
-
       <Menu
         id="user-menu"
         anchorEl={userAnchorEl}
@@ -258,12 +258,11 @@ export const Header: FC = memo(function Header() {
           Logout
         </MenuItem>
       </Menu>
-
       <Menu
         id="more-menu"
         anchorEl={moreAnchorEl}
         open={Boolean(moreAnchorEl)}
-        getContentAnchorEl={null}
+        // getContentAnchorEl={null} // TODO check this working normally
         anchorOrigin={{ vertical: 35, horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
         onClose={(): void => {
@@ -310,7 +309,11 @@ export const Header: FC = memo(function Header() {
           GitHub
           <OpenInNew className={classes.iconOpenInNew} />
         </MenuItem>
-        <MenuItem disabled={true} dense={true} button={false}>
+        <MenuItem
+          disabled={true}
+          dense={true}
+          // button={false} // TODO check this working normally
+        >
           {process.env.PIPECD_VERSION}
         </MenuItem>
       </Menu>

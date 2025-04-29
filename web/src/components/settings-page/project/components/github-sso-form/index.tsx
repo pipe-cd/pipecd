@@ -5,11 +5,12 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  Skeleton,
   TextField,
   Typography,
-} from "@material-ui/core";
-import EditIcon from "@material-ui/icons/Edit";
-import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
+} from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+
 import * as React from "react";
 import { FC, memo, useState } from "react";
 import { SSO_DESCRIPTION } from "~/constants/text";
@@ -77,7 +78,6 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
           {SECTION_TITLE}
         </Typography>
       </div>
-
       <Typography
         variant="body1"
         color="textSecondary"
@@ -85,7 +85,6 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
       >
         {SSO_DESCRIPTION}
       </Typography>
-
       <div className={projectSettingStyles.valuesWrapper}>
         {sso ? (
           <>
@@ -103,7 +102,7 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
             </div>
 
             <div>
-              <IconButton onClick={() => setIsEdit(true)}>
+              <IconButton onClick={() => setIsEdit(true)} size="large">
                 <EditIcon />
               </IconButton>
             </div>
@@ -127,14 +126,15 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
           </div>
         )}
       </div>
-
       <Dialog
         open={isEdit}
-        onEnter={() => {
-          setBaseUrl(sso?.baseUrl ?? "");
-          setUploadUrl(sso?.uploadUrl ?? "");
-        }}
         onClose={handleClose}
+        TransitionProps={{
+          onEnter: () => {
+            setBaseUrl(sso?.baseUrl ?? "");
+            setUploadUrl(sso?.uploadUrl ?? "");
+          },
+        }}
       >
         <form onSubmit={handleSave}>
           <DialogTitle>{DIALOG_TITLE}</DialogTitle>

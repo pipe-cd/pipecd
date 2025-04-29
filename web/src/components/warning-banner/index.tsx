@@ -1,6 +1,7 @@
 import { FC, memo } from "react";
-import { AppBar, makeStyles } from "@material-ui/core";
-import CloseIcon from "@material-ui/icons/Close";
+import { AppBar } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
+import CloseIcon from "@mui/icons-material/Close";
 
 const useStyles = makeStyles((theme) => ({
   container: {

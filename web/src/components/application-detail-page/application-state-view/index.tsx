@@ -1,11 +1,5 @@
-import {
-  Box,
-  Link,
-  Button,
-  CircularProgress,
-  makeStyles,
-  Typography,
-} from "@material-ui/core";
+import { Box, Link, Button, CircularProgress, Typography } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import { FC, memo, useEffect, useMemo } from "react";
 import { UI_TEXT_REFRESH } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";

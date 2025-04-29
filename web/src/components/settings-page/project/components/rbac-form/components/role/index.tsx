@@ -4,14 +4,14 @@ import {
   Table,
   TableBody,
   TableCell,
-  makeStyles,
   TableContainer,
   TableHead,
   TableRow,
   Typography,
-} from "@material-ui/core";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import { useProjectSettingStyles } from "~/styles/project-setting";
-import { Add as AddIcon } from "@material-ui/icons";
+import { Add as AddIcon } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import {
   fetchProject,

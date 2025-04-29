@@ -1,11 +1,11 @@
-import { makeStyles } from "@material-ui/core";
+import makeStyles from "@mui/styles/makeStyles";
 import {
   Cached,
   CheckCircle,
   Error,
   IndeterminateCheckBox,
   Cancel,
-} from "@material-ui/icons";
+} from "@mui/icons-material";
 import { DeploymentStatus } from "~/modules/deployments";
 import { FC } from "react";
 import clsx from "clsx";

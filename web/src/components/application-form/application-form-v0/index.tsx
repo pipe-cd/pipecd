@@ -4,7 +4,6 @@ import {
   Divider,
   FormControl,
   InputLabel,
-  makeStyles,
   MenuItem,
   Select,
   Step,
@@ -13,7 +12,8 @@ import {
   Stepper,
   TextField,
   Typography,
-} from "@material-ui/core";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import { FC, memo, useEffect, useMemo, useState } from "react";
 import {
   APPLICATION_KIND_BY_NAME,
@@ -36,7 +36,7 @@ import { ApplicationFormProps } from "..";
 
 import DialogConfirm from "~/components/dialog-confirm";
 import { selectAllPipeds } from "~/modules/pipeds";
-import { Autocomplete } from "@material-ui/lab";
+import { Autocomplete } from "@mui/material";
 
 const ADD_FROM_GIT_CONFIRM_DIALOG_TITLE = "Add Application";
 const ADD_FROM_GIT_CONFIRM_DIALOG_DESCRIPTION =

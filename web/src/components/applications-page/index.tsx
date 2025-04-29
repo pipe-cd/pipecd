@@ -4,13 +4,13 @@ import {
   CircularProgress,
   Divider,
   Drawer,
-  makeStyles,
   Toolbar,
-} from "@material-ui/core";
-import { Add } from "@material-ui/icons";
-import CloseIcon from "@material-ui/icons/Close";
-import FilterIcon from "@material-ui/icons/FilterList";
-import RefreshIcon from "@material-ui/icons/Refresh";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
+import { Add } from "@mui/icons-material";
+import CloseIcon from "@mui/icons-material/Close";
+import FilterIcon from "@mui/icons-material/FilterList";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import { FC, useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PAGE_PATH_APPLICATIONS } from "~/constants/path";

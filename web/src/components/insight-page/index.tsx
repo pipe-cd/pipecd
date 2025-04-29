@@ -1,4 +1,4 @@
-import { Box } from "@material-ui/core";
+import { Box } from "@mui/material";
 import { FC, memo, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { fetchApplications, selectById } from "~/modules/applications";
@@ -93,7 +93,7 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
       <InsightHeader />
       <Box
         display="grid"
-        gridGap="24px"
+        gap="24px"
         gridTemplateColumns="repeat(2, 1fr)"
         mt={2}
       >

@@ -5,7 +5,7 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-} from "@material-ui/core";
+} from "@mui/material";
 import { FormikProps } from "formik";
 import { FC, memo } from "react";
 import * as yup from "yup";

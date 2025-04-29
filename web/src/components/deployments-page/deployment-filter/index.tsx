@@ -1,12 +1,12 @@
 import {
   FormControl,
   InputLabel,
-  makeStyles,
   MenuItem,
   Select,
   TextField,
-} from "@material-ui/core";
-import Autocomplete from "@material-ui/lab/Autocomplete";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
+import Autocomplete from "@mui/material/Autocomplete";
 import { FC, memo, useCallback, useState, useEffect } from "react";
 import { FilterView } from "~/components/filter-view";
 import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
@@ -148,8 +148,9 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
             id="application-select"
             options={localApplications}
             getOptionLabel={(option) => option.id}
-            renderOption={(option) => (
-              <span>
+            renderOption={(props, option) => (
+              // TODO check this changes, add prop to span
+              <span {...props}>
                 {option.name} ({option.id})
               </span>
             )}

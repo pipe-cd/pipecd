@@ -6,8 +6,8 @@ import {
   DialogContent,
   DialogTitle,
   DialogProps,
-  makeStyles,
-} from "@material-ui/core";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import { FC } from "react";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
 
