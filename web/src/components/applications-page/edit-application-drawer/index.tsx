@@ -1,4 +1,4 @@
-import { Drawer } from "@material-ui/core";
+import { Drawer } from "@mui/material";
 import { FC, useCallback, useMemo, useState } from "react";
 import ApplicationFormManualV0 from "~/components/application-form/application-form-manual-v0";
 import ApplicationFormManualV1 from "~/components/application-form/application-form-manual-v1";

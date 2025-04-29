@@ -4,10 +4,10 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  makeStyles,
   Typography,
-} from "@material-ui/core";
-import Alert from "@material-ui/lab/Alert";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
+import Alert from "@mui/material/Alert";
 import { FC, memo } from "react";
 import { useAppSelector } from "~/hooks/redux";
 import { APIKey, selectById } from "~/modules/api-keys";

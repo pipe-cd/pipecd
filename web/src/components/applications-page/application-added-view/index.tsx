@@ -1,10 +1,5 @@
-import {
-  Box,
-  Button,
-  Divider,
-  makeStyles,
-  Typography,
-} from "@material-ui/core";
+import { Box, Button, Divider, Typography } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import { FC, memo } from "react";
 
 const useStyles = makeStyles((theme) => ({

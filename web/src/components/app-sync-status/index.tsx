@@ -1,4 +1,5 @@
-import { Box, makeStyles, Typography } from "@material-ui/core";
+import { Box, Typography } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import { FC } from "react";
 import { APPLICATION_SYNC_STATUS_TEXT } from "~/constants/application-sync-status-text";
 import { UI_TEXT_NOT_AVAILABLE_TEXT } from "~/constants/ui-text";

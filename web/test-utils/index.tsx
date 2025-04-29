@@ -1,4 +1,4 @@
-import { ThemeProvider } from "@material-ui/core";
+import { ThemeProvider, Theme, StyledEngineProvider } from "@mui/material";
 import {
   AnyAction,
   configureStore,
@@ -16,6 +16,11 @@ import { reducers } from "~/modules";
 import type { AppState } from "~/store";
 import { theme } from "~/theme";
 import MemoryRouterTest from "./MemoryRouterTest";
+
+declare module "@mui/styles/defaultTheme" {
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
+  interface DefaultTheme extends Theme {}
+}
 
 const middlewares = getDefaultMiddleware({
   immutableCheck: false,
@@ -59,11 +64,13 @@ const customRender = (
   }: {
     initialState?: DeepPartial<AppState>;
     store?: Store<AppState, AnyAction>;
-  } & Omit<RenderOptions, "queries">
+  } & Omit<RenderOptions, "queries"> = {}
 ): RenderResult => {
   const Wrapper: React.ComponentType = ({ children }) => (
     <Provider store={store}>
-      <ThemeProvider theme={theme}>{children}</ThemeProvider>
+      <StyledEngineProvider injectFirst>
+        <ThemeProvider theme={theme}>{children}</ThemeProvider>
+      </StyledEngineProvider>
     </Provider>
   );
   return render(ui, { wrapper: Wrapper, ...renderOptions });

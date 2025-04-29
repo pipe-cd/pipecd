@@ -1,5 +1,6 @@
-import { IconButton, makeStyles, Paper, Typography } from "@material-ui/core";
-import CloseIcon from "@material-ui/icons/Close";
+import { IconButton, Paper, Typography } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
+import CloseIcon from "@mui/icons-material/Close";
 import { FC } from "react";
 
 const DETAIL_WIDTH = 400;
@@ -59,13 +60,16 @@ export const CloudRunResourceDetail: FC<CloudRunResourceDetailProps> = ({
   const classes = useStyles();
   return (
     <Paper className={classes.root} square>
-      <IconButton className={classes.closeButton} onClick={onClose}>
+      <IconButton
+        className={classes.closeButton}
+        onClick={onClose}
+        size="large"
+      >
         <CloseIcon />
       </IconButton>
       <Typography variant="h6" className={classes.name}>
         {resource.name}
       </Typography>
-
       <div className={classes.section}>
         <Typography variant="subtitle1" className={classes.sectionTitle}>
           Kind
@@ -74,7 +78,6 @@ export const CloudRunResourceDetail: FC<CloudRunResourceDetailProps> = ({
           {resource.kind}
         </Typography>
       </div>
-
       <div className={classes.section}>
         <Typography variant="subtitle1" className={classes.sectionTitle}>
           Api Version
@@ -83,7 +86,6 @@ export const CloudRunResourceDetail: FC<CloudRunResourceDetailProps> = ({
           {resource.apiVersion}
         </Typography>
       </div>
-
       <div className={classes.multilineSection}>
         <Typography variant="subtitle1" className={classes.sectionTitle}>
           Health Description

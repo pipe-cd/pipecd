@@ -1,4 +1,5 @@
-import { Box, makeStyles, Typography } from "@material-ui/core";
+import { Box, Typography } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import { FC } from "react";
 
 type Props = {
@@ -35,7 +36,7 @@ const LegendRow: FC<Props> = ({ data }) => {
       display={"flex"}
       justifyContent={"center"}
       alignItems={"center"}
-      gridColumnGap={10}
+      columnGap={10}
       mt={2}
       width={"100%"}
     >
@@ -43,7 +44,7 @@ const LegendRow: FC<Props> = ({ data }) => {
         <Box
           display={"flex"}
           alignItems={"center"}
-          gridColumnGap={10}
+          columnGap={10}
           key={item.key}
         >
           <Box className={classes.labelDot} bgcolor={item.color} />

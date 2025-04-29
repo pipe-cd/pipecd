@@ -1,5 +1,4 @@
 import {
-  makeStyles,
   Paper,
   Table,
   TableBody,
@@ -9,7 +8,8 @@ import {
   TableHead,
   TablePagination,
   TableRow,
-} from "@material-ui/core";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import { FC, memo, useCallback, useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import {

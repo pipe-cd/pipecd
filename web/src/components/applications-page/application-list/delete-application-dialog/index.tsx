@@ -8,8 +8,8 @@ import {
   DialogContent,
   DialogTitle,
   Typography,
-  makeStyles,
-} from "@material-ui/core";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import { FC, Fragment, memo, useCallback } from "react";
 import { UI_TEXT_CANCEL, UI_TEXT_DELETE } from "~/constants/ui-text";
 import {
@@ -18,11 +18,11 @@ import {
 } from "~/modules/delete-application";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 
-import Alert from "@material-ui/lab/Alert";
+import Alert from "@mui/material/Alert";
 import { DELETE_APPLICATION_SUCCESS } from "~/constants/toast-text";
-import { Skeleton } from "@material-ui/lab";
+import { Skeleton } from "@mui/material";
 import { addToast } from "~/modules/toasts";
-import { red } from "@material-ui/core/colors";
+import { red } from "@mui/material/colors";
 import { shallowEqual } from "react-redux";
 import { useStyles as useButtonStyles } from "~/styles/button";
 

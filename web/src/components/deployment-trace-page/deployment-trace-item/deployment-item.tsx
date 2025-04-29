@@ -1,4 +1,5 @@
-import { Box, Chip, makeStyles, Typography } from "@material-ui/core";
+import { Box, Chip, Typography } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import dayjs from "dayjs";
 import { FC } from "react";
 import { DeploymentStatusIcon } from "~/components/deployment-status-icon";
@@ -19,7 +20,7 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center",
     overflow: "hidden",
     columnGap: theme.spacing(2),
-    [theme.breakpoints.down("sm")]: {
+    [theme.breakpoints.down("md")]: {
       flexDirection: "column",
       alignItems: "flex-start",
     },
@@ -29,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "baseline",
     flexWrap: "wrap",
     columnGap: theme.spacing(1),
-    [theme.breakpoints.down("sm")]: {
+    [theme.breakpoints.down("md")]: {
       flexDirection: "column",
     },
   },
@@ -40,7 +41,7 @@ const useStyles = makeStyles((theme) => ({
   },
   description: {
     ...ellipsis,
-    color: theme.palette.text.hint,
+    color: theme.palette.text.secondary, // TODO check this color from hint #aaa to secondary #666
   },
   labelChip: {
     marginLeft: theme.spacing(1),

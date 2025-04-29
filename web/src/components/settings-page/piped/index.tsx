@@ -5,7 +5,6 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
-  makeStyles,
   Paper,
   Table,
   TableBody,
@@ -14,14 +13,15 @@ import {
   TableHead,
   TableRow,
   Toolbar,
-} from "@material-ui/core";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import {
   Add as AddIcon,
   Close as CloseIcon,
   FilterList as FilterIcon,
   Update as UpgradeIcon,
-} from "@material-ui/icons";
-import Alert from "@material-ui/lab/Alert";
+} from "@mui/icons-material";
+import Alert from "@mui/material/Alert";
 import { createSelector } from "@reduxjs/toolkit";
 import { FC, memo, useCallback, useEffect, useState } from "react";
 import { TextWithCopyButton } from "~/components/text-with-copy-button";

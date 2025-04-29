@@ -1,5 +1,6 @@
-import { Box, makeStyles, Tabs, Tab, IconButton } from "@material-ui/core";
-import { Help } from "@material-ui/icons";
+import { Box, Tabs, Tab, IconButton } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
+import { Help } from "@mui/icons-material";
 import { useState } from "react";
 import { Application } from "~/modules/applications";
 import ApplicationFormV1 from "./application-form-v1";
@@ -62,10 +63,7 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
 
   const [selectedTabIndex, setSelectedTabIndex] = useState(TabKeys.V0);
 
-  const handleChange = (
-    _event: React.ChangeEvent<Record<string, unknown>>,
-    newValue: number
-  ): void => {
+  const handleChange = (_event: unknown, newValue: number): void => {
     setSelectedTabIndex(newValue);
     props.setIsFormDirty?.(false);
     props.setIsSubmitting?.(false);

@@ -15,7 +15,7 @@ import {
   TableRow,
   Typography,
   TextField,
-} from "@material-ui/core";
+} from "@mui/material";
 import { FC, memo, useCallback, useState, FormEvent } from "react";
 import { UPGRADE_PIPEDS_SUCCESS } from "~/constants/toast-text";
 import { useAppDispatch } from "~/hooks/redux";
@@ -23,7 +23,7 @@ import { UI_TEXT_CANCEL, UI_TEXT_UPGRADE } from "~/constants/ui-text";
 import { Piped, updatePipedDesiredVersion } from "~/modules/pipeds";
 import { addToast } from "~/modules/toasts";
 import { useSettingsStyles } from "../../../styles";
-import { Autocomplete } from "@material-ui/lab";
+import { Autocomplete } from "@mui/material";
 
 export interface UpgradePipedProps {
   open: boolean;

@@ -4,14 +4,14 @@ import {
   IconButton,
   List,
   ListItem,
-  makeStyles,
   Typography,
-} from "@material-ui/core";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import dayjs from "dayjs";
 import React, { FC, useMemo, useState } from "react";
 import { ListDeploymentTracesResponse } from "~~/api_client/service_pb";
-import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
-import { ArrowDropDown } from "@material-ui/icons";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import { ArrowDropDown } from "@mui/icons-material";
 import DeploymentItem from "./deployment-item";
 import { Link as RouterLink } from "react-router-dom";
 import { PAGE_PATH_DEPLOYMENTS } from "~/constants/path";
@@ -112,7 +112,7 @@ const DeploymentTraceItem: FC<Props> = ({ trace, deploymentList }) => {
       >
         <Box
           display="flex"
-          gridColumnGap={10}
+          columnGap={10}
           alignItems={"start"}
           justifyContent={"space-between"}
           pr={1}
@@ -154,6 +154,7 @@ const DeploymentTraceItem: FC<Props> = ({ trace, deploymentList }) => {
             aria-label="expand"
             className={visibleDeployments ? classes.btnRotate : ""}
             onClick={() => setVisibleDeployments(!visibleDeployments)}
+            size="large"
           >
             <ArrowDropDown />
           </IconButton>
@@ -171,7 +172,7 @@ const DeploymentTraceItem: FC<Props> = ({ trace, deploymentList }) => {
           </Box>
         )}
 
-        <Box display={"flex"} gridColumnGap={3}>
+        <Box display={"flex"} columnGap={3}>
           {trace?.author && (
             <Typography variant="body2" color="textSecondary">
               {trace?.author} authored
@@ -186,7 +187,6 @@ const DeploymentTraceItem: FC<Props> = ({ trace, deploymentList }) => {
           </Typography>
         </Box>
       </Box>
-
       <Collapse in={visibleDeployments} unmountOnExit key={trace?.id}>
         {deploymentList.length === 0 && (
           <Box className={classes.emptyPlaceholder}>

@@ -1,5 +1,6 @@
-import { Box, makeStyles, Typography } from "@material-ui/core";
-import { WarningOutlined } from "@material-ui/icons";
+import { Box, Typography } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
+import { WarningOutlined } from "@mui/icons-material";
 import { FC } from "react";
 
 type Props = {

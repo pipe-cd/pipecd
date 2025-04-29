@@ -1,10 +1,5 @@
-import {
-  Drawer,
-  List,
-  ListItem,
-  ListItemText,
-  makeStyles,
-} from "@material-ui/core";
+import { Drawer, List, ListItem, ListItemText } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import { FC, memo } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import {

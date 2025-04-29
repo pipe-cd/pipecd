@@ -5,13 +5,14 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  makeStyles,
+  Skeleton,
   Switch,
   TextField,
   Typography,
-} from "@material-ui/core";
-import EditIcon from "@material-ui/icons/Edit";
-import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
+import EditIcon from "@mui/icons-material/Edit";
+
 import clsx from "clsx";
 import { useFormik } from "formik";
 import { FC, memo, useState } from "react";
@@ -169,7 +170,6 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
           disabled={currentUsername === null}
         />
       </div>
-
       <Typography
         variant="body1"
         color="textSecondary"
@@ -177,7 +177,6 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
       >
         {STATIC_ADMIN_DESCRIPTION}
       </Typography>
-
       <div
         className={clsx(projectSettingClasses.valuesWrapper, {
           [classes.disabled]: isEnabled === false,
@@ -197,6 +196,7 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
                 aria-label="edit static admin user"
                 onClick={() => setIsEdit(true)}
                 disabled={isEnabled === false}
+                size="large"
               >
                 <EditIcon />
               </IconButton>
