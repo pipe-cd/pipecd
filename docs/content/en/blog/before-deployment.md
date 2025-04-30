@@ -106,7 +106,7 @@ This phase determines "how to deploy using which pipeline." It mainly does two t
 2. Determine stages
 
 The planner instance runs as a goroutine in a 1:1 relationship with Deployment, allowing multiple deployments to be processed concurrently.
-Also, control is implemented to prevent multiple deployments from running simultaneously for the same application.
+Also, piped is implemented to prevent multiple deployments from running simultaneously for the same application.
 
 #### 2.1. Determining Quick Sync or Pipeline Sync
 
