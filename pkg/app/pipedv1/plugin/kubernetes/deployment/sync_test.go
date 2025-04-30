@@ -16,7 +16,6 @@ package deployment
 
 import (
 	"context"
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -26,10 +25,8 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"sigs.k8s.io/yaml"
 
 	kubeConfigPkg "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
-	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister/logpersistertest"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry/toolregistrytest"
@@ -107,22 +104,7 @@ func TestPlugin_executeK8sSyncStage_withInputNamespace(t *testing.T) {
 
 	ctx := context.Background()
 
-	// read the application config from the example file
-	cfg, err := os.ReadFile(filepath.Join("testdata", "simple", "app.pipecd.yaml"))
-	require.NoError(t, err)
-
-	// decode and override the autoCreateNamespace and namespace
-	// TODO: Prepare the application config under the testdata directory and use it here.
-	spec, err := config.DecodeYAML[*kubeConfigPkg.KubernetesApplicationSpec](cfg)
-	require.NoError(t, err)
-	spec.Spec.Input.AutoCreateNamespace = true
-	spec.Spec.Input.Namespace = "test-namespace"
-	cfg, err = yaml.Marshal(spec)
-	require.NoError(t, err)
-
-	// decode the config for ApplicationConfig
-	appCfg, err := config.DecodeYAML[*sdk.ApplicationConfig[kubeConfigPkg.KubernetesApplicationSpec]](cfg)
-	require.NoError(t, err)
+	spec := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple_with_input_namespace", "app.pipecd.yaml"), "kubernetes")
 
 	// initialize tool registry
 	testRegistry := toolregistrytest.NewTestToolRegistry(t)
@@ -136,7 +118,7 @@ func TestPlugin_executeK8sSyncStage_withInputNamespace(t *testing.T) {
 			TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
 				ApplicationDirectory:      filepath.Join("testdata", "simple"),
 				CommitHash:                "0123456789",
-				ApplicationConfig:         appCfg.Spec,
+				ApplicationConfig:         spec,
 				ApplicationConfigFilename: "app.pipecd.yaml",
 			},
 			Deployment: sdk.Deployment{
