@@ -116,7 +116,7 @@ func TestPlugin_executeK8sSyncStage_withInputNamespace(t *testing.T) {
 			StageConfig:             []byte(``),
 			RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{},
 			TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "simple"),
+				ApplicationDirectory:      filepath.Join("testdata", "simple_with_input_namespace"),
 				CommitHash:                "0123456789",
 				ApplicationConfig:         spec,
 				ApplicationConfigFilename: "app.pipecd.yaml",
