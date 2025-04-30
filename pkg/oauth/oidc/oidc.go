@@ -262,9 +262,16 @@ func (c *OAuthClient) decideUserInfos(claims jwt.MapClaims, usernameClaimKey, av
 // NewOAuthClient needs to create a custom OIDC provider based on the provider created by the go-oidc package.
 // createCustomOIDCProvider will first call the openid-configuration endpoint to retrieve all endpoints from the issuer URL,
 // then pass user-provided URLs to override the existing URLs in the providerConfig struct.
+// Portions of this function are derived from the CoreOS Project:
 // https://pkg.go.dev/github.com/coreos/go-oidc/v3@v3.11.0/oidc#NewProvider
 // https://pkg.go.dev/github.com/coreos/go-oidc/v3@v3.11.0/oidc#ProviderConfig
 func createCustomOIDCProvider(ctx context.Context, sso *model.ProjectSSOConfig_Oidc) (*oidc.Provider, error) {
+	// NOTICE: https://github.com/coreos/go-oidc/blob/master/NOTICE
+	// CoreOS Project
+	// Copyright 2014 CoreOS, Inc
+	//
+	// This product includes software developed at CoreOS, Inc.
+	// (http://www.coreos.com/).
 	// Copied from go-oidc package
 	issuer := sso.Issuer
 
