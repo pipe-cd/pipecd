@@ -19,8 +19,7 @@ import {
 import { MoreVert as MoreVertIcon } from "@material-ui/icons";
 import clsx from "clsx";
 import dayjs from "dayjs";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { coy } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { Highlight, themes } from "prism-react-renderer";
 import * as React from "react";
 import { FC, memo, useCallback, useState } from "react";
 import { CopyIconButton } from "~/components/copy-icon-button";
@@ -74,6 +73,10 @@ const useStyles = makeStyles((theme) => ({
     "& span": {
       backgroundColor: "grey",
     },
+  },
+  codeBlock: {
+    padding: theme.spacing(2),
+    overflow: "auto",
   },
 }));
 
@@ -307,9 +310,19 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
           Piped configuration
         </DialogTitle>
         <DialogContent>
-          <SyntaxHighlighter language="yaml" style={coy}>
-            {piped.config}
-          </SyntaxHighlighter>
+          <Highlight theme={themes.github} code={piped.config} language="yaml">
+            {({ style, tokens, getLineProps, getTokenProps }) => (
+              <pre style={style} className={classes.codeBlock}>
+                {tokens.map((line, i) => (
+                  <div key={i} {...getLineProps({ line })}>
+                    {line.map((token, key) => (
+                      <span key={key} {...getTokenProps({ token })} />
+                    ))}
+                  </div>
+                ))}
+              </pre>
+            )}
+          </Highlight>
         </DialogContent>
       </Dialog>
     </>

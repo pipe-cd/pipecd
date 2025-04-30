@@ -502,21 +502,23 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 
 	// Check whether to execute the script rollback stage or not.
 	// If the base stage is executed, the script rollback stage will be executed.
-	if ps.Rollback {
-		baseStageID := ps.Metadata["baseStageID"]
-		if baseStageID == "" {
-			return
-		}
 
-		baseStageStatus, ok := s.stageStatuses[baseStageID]
-		if !ok {
-			return
-		}
+	// TODO: move this logic into the script run plugin and remove this later.
+	// if ps.Rollback {
+	// 	baseStageID := ps.Metadata["baseStageID"]
+	// 	if baseStageID == "" {
+	// 		return
+	// 	}
 
-		if baseStageStatus == model.StageStatus_STAGE_NOT_STARTED_YET || baseStageStatus == model.StageStatus_STAGE_SKIPPED {
-			return
-		}
-	}
+	// 	baseStageStatus, ok := s.stageStatuses[baseStageID]
+	// 	if !ok {
+	// 		return
+	// 	}
+
+	// 	if baseStageStatus == model.StageStatus_STAGE_NOT_STARTED_YET || baseStageStatus == model.StageStatus_STAGE_SKIPPED {
+	// 		return
+	// 	}
+	// }
 
 	// Update stage status to RUNNING if needed.
 	if model.CanUpdateStageStatus(ps.Status, model.StageStatus_STAGE_RUNNING) {

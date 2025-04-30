@@ -129,46 +129,6 @@ func TestExecuteStage(t *testing.T) {
 			expected: model.StageStatus_STAGE_SUCCESS,
 		},
 		{
-			name: "stage is rollback but base stage not started yet, should not trigger anything",
-			deployment: &model.Deployment{
-				Stages: []*model.PipelineStage{
-					{
-						Id:       "stage-rollback-id",
-						Name:     "stage-rollback-name",
-						Status:   model.StageStatus_STAGE_NOT_STARTED_YET,
-						Rollback: true,
-						Metadata: map[string]string{
-							"baseStageId": "stage-id",
-						},
-					},
-				},
-			},
-			stageStatuses: map[string]model.StageStatus{
-				"stage-id": model.StageStatus_STAGE_NOT_STARTED_YET,
-			},
-			expected: model.StageStatus_STAGE_NOT_STARTED_YET,
-		},
-		{
-			name: "stage is rollback but base stage is skipped, should not trigger anything",
-			deployment: &model.Deployment{
-				Stages: []*model.PipelineStage{
-					{
-						Id:       "stage-rollback-id",
-						Name:     "stage-rollback-name",
-						Status:   model.StageStatus_STAGE_NOT_STARTED_YET,
-						Rollback: true,
-						Metadata: map[string]string{
-							"baseStageId": "stage-id",
-						},
-					},
-				},
-			},
-			stageStatuses: map[string]model.StageStatus{
-				"stage-id": model.StageStatus_STAGE_SKIPPED,
-			},
-			expected: model.StageStatus_STAGE_NOT_STARTED_YET,
-		},
-		{
 			name: "stage which can not be handled by the current scheduler, should be set as failed",
 			deployment: &model.Deployment{
 				Stages: []*model.PipelineStage{

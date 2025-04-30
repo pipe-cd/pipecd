@@ -98,6 +98,25 @@ func (p *Plugin) loadManifests(ctx context.Context, deploy *sdk.Deployment, spec
 		return nil, err
 	}
 
+	// Add builtin labels and annotations for tracking application live state.
+	for i := range manifests {
+		manifests[i].AddLabels(map[string]string{
+			provider.LabelManagedBy:   provider.ManagedByPiped,
+			provider.LabelPiped:       deploy.PipedID,
+			provider.LabelApplication: deploy.ApplicationID,
+			provider.LabelCommitHash:  deploymentSource.CommitHash,
+		})
+
+		manifests[i].AddAnnotations(map[string]string{
+			provider.LabelManagedBy:          provider.ManagedByPiped,
+			provider.LabelPiped:              deploy.PipedID,
+			provider.LabelApplication:        deploy.ApplicationID,
+			provider.LabelOriginalAPIVersion: manifests[i].APIVersion(),
+			provider.LabelResourceKey:        manifests[i].Key().String(),
+			provider.LabelCommitHash:         deploymentSource.CommitHash,
+		})
+	}
+
 	return manifests, nil
 }
 

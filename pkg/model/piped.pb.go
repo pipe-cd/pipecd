@@ -101,6 +101,8 @@ type Piped struct {
 	Version string `protobuf:"bytes,7,opt,name=version,proto3" json:"version,omitempty"`
 	// Unix time when the piped is started up.
 	StartedAt int64 `protobuf:"varint,8,opt,name=started_at,json=startedAt,proto3" json:"started_at,omitempty"`
+	// NOTE: Fields `cloud_providers` and `platform_providers` are deprecated.
+	// Using `plugins` to specify where to deploy instead.
 	// List of configured cloud providers.
 	//
 	// Deprecated: Do not use.
@@ -111,6 +113,8 @@ type Piped struct {
 	Status Piped_ConnectionStatus `protobuf:"varint,11,opt,name=status,proto3,enum=model.Piped_ConnectionStatus" json:"status,omitempty"`
 	// Currently applied config.
 	Config string `protobuf:"bytes,12,opt,name=config,proto3" json:"config,omitempty"`
+	// NOTE: Fields `cloud_providers` and `platform_providers` are deprecated.
+	// Using `plugins` to specify where to deploy instead.
 	// List of configured platform providers.
 	//
 	// Deprecated: Do not use.

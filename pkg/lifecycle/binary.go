@@ -23,6 +23,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"syscall"
 	"time"
 
@@ -30,6 +31,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/backoff"
+	"github.com/pipe-cd/pipecd/pkg/oci"
 )
 
 const runBinaryRetryCount = 3
@@ -141,6 +143,23 @@ func DownloadBinary(sourceURL, destDir, destFile string, logger *zap.Logger) (st
 	}
 
 	switch u.Scheme {
+	case "oci":
+		// TODO: add context.Context as a argument for DownloadBinary.
+		ctx := context.Background()
+		ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
+		defer cancel()
+
+		if err := oci.PullFileFromRegistry(
+			ctx,
+			destDir,
+			tmpFile,
+			sourceURL,
+			oci.WithTargetOS(runtime.GOOS),
+			oci.WithTargetArch(runtime.GOARCH),
+			oci.WithMediaType(oci.MediaTypePipedPlugin),
+		); err != nil {
+			return "", fmt.Errorf("could not pull file from OCI (%w)", err)
+		}
 	case "http", "https":
 		req, err := http.NewRequest("GET", sourceURL, nil)
 		if err != nil {

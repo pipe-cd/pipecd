@@ -613,10 +613,12 @@ func TestFindRollbackStags(t *testing.T) {
 				{Name: StageK8sSync.String()},
 				{Name: StageRollback.String()},
 				{Name: StageScriptRunRollback.String()},
+				{Name: "CustomRollbackStage", Rollback: true},
 			},
 			wantStages: []*PipelineStage{
 				{Name: StageRollback.String()},
 				{Name: StageScriptRunRollback.String()},
+				{Name: "CustomRollbackStage", Rollback: true},
 			},
 			wantStageFound: true,
 		},
