@@ -18,6 +18,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/creasty/defaults"
+
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
 )
@@ -36,11 +38,16 @@ type DeploymentSource[Spec any] struct {
 }
 
 // newDeploymentSource converts the common.DeploymentSource to the internal representation.
-func newDeploymentSource[Spec any](source *common.DeploymentSource) (DeploymentSource[Spec], error) {
+func newDeploymentSource[Spec any](pluginName string, source *common.DeploymentSource) (DeploymentSource[Spec], error) {
 	cfg, err := config.DecodeYAML[*ApplicationConfig[Spec]](source.GetApplicationConfig())
 	if err != nil {
 		return DeploymentSource[Spec]{}, fmt.Errorf("failed to decode application config: %w", err)
 	}
+
+	if err := cfg.Spec.parsePluginConfig(pluginName); err != nil {
+		return DeploymentSource[Spec]{}, fmt.Errorf("failed to parse plugin config: %w", err)
+	}
+
 	return DeploymentSource[Spec]{
 		ApplicationDirectory:      source.GetApplicationDirectory(),
 		CommitHash:                source.GetCommitHash(),
@@ -61,8 +68,41 @@ func (d *DeploymentSource[Spec]) AppConfig() (*ApplicationConfig[Spec], error) {
 type ApplicationConfig[Spec any] struct {
 	// commonSpec is the common spec of the application.
 	commonSpec *config.GenericApplicationSpec
+	// pluginConfigs is the map of the plugin configs.
+	// The key is the plugin name.
+	// The value is the plugin config.
+	pluginConfigs map[string]json.RawMessage
 	// Spec is the plugin spec of the application.
 	Spec *Spec
+}
+
+func (c *ApplicationConfig[Spec]) parsePluginConfig(pluginName string) error {
+	if c.pluginConfigs == nil || c.pluginConfigs[pluginName] == nil {
+		// No config is set for this plugin.
+		return nil
+	}
+
+	var spec Spec
+	if err := json.Unmarshal(c.pluginConfigs[pluginName], &spec); err != nil {
+		return fmt.Errorf("failed to unmarshal application config: plugin spec: %w", err)
+	}
+
+	if err := defaults.Set(&spec); err != nil {
+		return fmt.Errorf("failed to set default values for plugin spec: %w", err)
+	}
+
+	if v, ok := any(spec).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return fmt.Errorf("failed to validate plugin spec: %w", err)
+		}
+	}
+
+	c.Spec = &spec
+
+	// Clear the plugin configs to avoid leaking the internal data.
+	c.pluginConfigs = nil
+
+	return nil
 }
 
 func (c *ApplicationConfig[Spec]) UnmarshalJSON(data []byte) error {
@@ -74,13 +114,16 @@ func (c *ApplicationConfig[Spec]) UnmarshalJSON(data []byte) error {
 		return fmt.Errorf("failed to unmarshal application config: generic spec: %w", err)
 	}
 
-	if c.Spec == nil {
-		c.Spec = new(Spec)
+	type pluginSpecs struct {
+		Plugins map[string]json.RawMessage `json:"plugins"`
 	}
 
-	if err := json.Unmarshal(data, c.Spec); err != nil {
-		return fmt.Errorf("failed to unmarshal application config: plugin spec: %w", err)
+	var p pluginSpecs
+	if err := json.Unmarshal(data, &p); err != nil {
+		return fmt.Errorf("failed to unmarshal application config: plugin specs: %w", err)
 	}
+
+	c.pluginConfigs = p.Plugins
 
 	return nil
 }
@@ -90,18 +133,8 @@ func (c *ApplicationConfig[Spec]) Validate() error {
 		return fmt.Errorf("application config is not initialized")
 	}
 
-	if c.Spec == nil {
-		return fmt.Errorf("plugin spec is not initialized")
-	}
-
 	if err := c.commonSpec.Validate(); err != nil {
 		return fmt.Errorf("validation failed on generic spec: %w", err)
-	}
-
-	if v, ok := any(c.Spec).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return fmt.Errorf("validation failed on plugin spec: %w", err)
-		}
 	}
 
 	return nil
