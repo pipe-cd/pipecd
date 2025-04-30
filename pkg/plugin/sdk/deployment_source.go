@@ -17,6 +17,8 @@ package sdk
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"testing"
 
 	"github.com/creasty/defaults"
 
@@ -74,6 +76,30 @@ type ApplicationConfig[Spec any] struct {
 	pluginConfigs map[string]json.RawMessage
 	// Spec is the plugin spec of the application.
 	Spec *Spec
+}
+
+// LoadApplicationConfigForTest loads the application config from the given filename.
+// When the error occurs, it will call t.Fatal/t.Fatalf and stop the test.
+// This function is only used in the tests.
+//
+// NOTE: we want to put this function under package for testing like sdktest, but we can't do that
+// because we don't want to make public parsePluginConfig in the ApplicationConfig struct.
+func LoadApplicationConfigForTest[Spec any](t *testing.T, filename string, pluginName string) *ApplicationConfig[Spec] {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		t.Fatalf("failed to read application config: %s", err)
+	}
+	cfg, err := config.DecodeYAML[*ApplicationConfig[Spec]](data)
+	if err != nil {
+		t.Fatalf("failed to decode application config: %s", err)
+	}
+	if cfg.Spec == nil {
+		t.Fatal("application config is not set")
+	}
+	if err := cfg.Spec.parsePluginConfig(pluginName); err != nil {
+		t.Fatalf("failed to parse plugin config: %s", err)
+	}
+	return cfg.Spec
 }
 
 func (c *ApplicationConfig[Spec]) parsePluginConfig(pluginName string) error {
