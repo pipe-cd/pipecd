@@ -73,7 +73,7 @@ func NewOAuthClient(ctx context.Context,
 		ClientID:     sso.ClientId,
 		ClientSecret: sso.ClientSecret,
 		RedirectURL:  sso.RedirectUri,
-		Endpoint:     c.Provider.Endpoint(),
+		Endpoint:     c.Endpoint(),
 		Scopes:       append(sso.Scopes, oidc.ScopeOpenID),
 	}
 
@@ -105,7 +105,7 @@ func (c *OAuthClient) GetUser(ctx context.Context) (*model.User, error) {
 		return nil, fmt.Errorf("no id_token in oauth2 token")
 	}
 
-	verifier := c.Provider.Verifier(&oidc.Config{ClientID: c.sharedSSOConfig.ClientId})
+	verifier := c.Verifier(&oidc.Config{ClientID: c.sharedSSOConfig.ClientId})
 	idToken, err := verifier.Verify(ctx, idTokenRAW)
 	if err != nil {
 		return nil, err
@@ -116,8 +116,8 @@ func (c *OAuthClient) GetUser(ctx context.Context) (*model.User, error) {
 		return nil, err
 	}
 
-	if c.Provider.UserInfoEndpoint() != "" {
-		userInfo, err := c.Provider.UserInfo(ctx, oauth2.StaticTokenSource(c.Token))
+	if c.UserInfoEndpoint() != "" {
+		userInfo, err := c.UserInfo(ctx, oauth2.StaticTokenSource(c.Token))
 		if err != nil {
 			return nil, err
 		}
