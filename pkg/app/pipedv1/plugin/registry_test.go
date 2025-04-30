@@ -67,7 +67,7 @@ func TestPluginRegistry_GetPluginClientsByAppConfig(t *testing.T) {
 			name: "get plugins by plugin names",
 			cfg: &config.GenericApplicationSpec{
 				Pipeline: nil,
-				Plugins:  []string{"plugin1", "plugin2"},
+				Plugins:  map[string]struct{}{"plugin1": {}, "plugin2": {}},
 			},
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
@@ -92,7 +92,7 @@ func TestPluginRegistry_GetPluginClientsByAppConfig(t *testing.T) {
 						{Name: "stage2"},
 					},
 				},
-				Plugins: []string{"plugin1", "plugin2"},
+				Plugins: map[string]struct{}{"plugin1": {}, "plugin2": {}},
 			},
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
@@ -214,14 +214,14 @@ func TestPluginRegistry_getPluginClientsByNames(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		pluginNames []string
+		pluginNames map[string]struct{}
 		setup       func() *pluginRegistry
 		expected    []pluginapi.PluginClient
 		wantErr     bool
 	}{
 		{
 			name:        "get plugins by valid plugin names",
-			pluginNames: []string{"plugin1", "plugin2"},
+			pluginNames: map[string]struct{}{"plugin1": {}, "plugin2": {}},
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
 					nameBasedPlugins: map[string]pluginapi.PluginClient{
@@ -238,7 +238,7 @@ func TestPluginRegistry_getPluginClientsByNames(t *testing.T) {
 		},
 		{
 			name:        "no plugins found for empty plugin names",
-			pluginNames: []string{},
+			pluginNames: map[string]struct{}{},
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
 					nameBasedPlugins: map[string]pluginapi.PluginClient{
@@ -251,7 +251,7 @@ func TestPluginRegistry_getPluginClientsByNames(t *testing.T) {
 		},
 		{
 			name:        "no plugins found for non-existent plugin names",
-			pluginNames: []string{"plugin1", "plugin2"},
+			pluginNames: map[string]struct{}{"plugin1": {}, "plugin2": {}},
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
 					nameBasedPlugins: map[string]pluginapi.PluginClient{
