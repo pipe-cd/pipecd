@@ -256,7 +256,7 @@ func signMatchBracket(l *[]rune, r rune) rune {
 
 func headRuneWithoutWhiteSpace(r []rune) (rune, int) {
 	for i, ri := range r {
-		if !(ri == '\t' || ri == ' ') {
+		if ri != '\t' && ri != ' ' {
 			return ri, i
 		}
 	}
