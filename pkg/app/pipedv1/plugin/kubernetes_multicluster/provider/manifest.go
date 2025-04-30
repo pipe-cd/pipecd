@@ -65,6 +65,10 @@ func (m Manifest) Kind() string {
 	return m.body.GetKind()
 }
 
+func (m Manifest) APIVersion() string {
+	return m.body.GetAPIVersion()
+}
+
 func (m Manifest) Name() string {
 	return m.body.GetName()
 }
