@@ -40,7 +40,7 @@ func TestPlugin_executeK8sMultiRollbackStage_NoPreviousDeployment(t *testing.T) 
 	dtConfig, _ := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	// Read the application config from the example file
-	appCfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple", "app.pipecd.yaml"), "kubernetes")
+	appCfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple", "app.pipecd.yaml"), "kubernetes_multicluster")
 
 	// Prepare the input
 	input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
@@ -86,7 +86,7 @@ func TestPlugin_executeK8sMultiRollbackStage_SuccessfulRollback(t *testing.T) {
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	// Read the application config from the example file
-	appCfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple", "app.pipecd.yaml"), "kubernetes")
+	appCfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple", "app.pipecd.yaml"), "kubernetes_multicluster")
 
 	// Prepare the input
 	input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
@@ -152,7 +152,7 @@ func TestPlugin_executeK8sMultiRollbackStage_WithVariantLabels(t *testing.T) {
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	// Read the application config and modify it to include variant labels
-	appCfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple", "app.pipecd.yaml"), "kubernetes")
+	appCfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple", "app.pipecd.yaml"), "kubernetes_multicluster")
 
 	// Prepare the input
 	input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
