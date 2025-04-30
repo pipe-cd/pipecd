@@ -59,7 +59,7 @@ type GenericApplicationSpec struct {
 	// Configuration for drift detection
 	DriftDetection *DriftDetection `json:"driftDetection"`
 	// List of the plugin name
-	Plugins []string `json:"plugins"`
+	Plugins map[string]struct{} `json:"plugins"`
 }
 
 type DeploymentPlanner struct {
