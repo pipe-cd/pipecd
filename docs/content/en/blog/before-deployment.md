@@ -81,7 +81,7 @@ This trigger is disabled by default, and manual repair is the basic approach aft
 Deployment is triggered when an application meets all four of the following conditions:
 
 1. "Automatic deployment on drift detection" is enabled
-   - Set the `trigger.onOutOfSync.disabled` item to `true` (**default is `false`**)
+   - Set the `trigger.onOutOfSync.disabled` item to `false` (**default is `true`**)
 2. Drift has occurred (status is `OutOfSync`)
 3. Not currently deploying
 4. A specified time has passed since the last deployment (default is 5 minutes)
