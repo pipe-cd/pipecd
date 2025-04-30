@@ -225,6 +225,15 @@ export namespace ProjectSSOConfig {
     clearScopesList(): Oidc;
     addScopes(value: string, index?: number): Oidc;
 
+    getRolesClaimKey(): string;
+    setRolesClaimKey(value: string): Oidc;
+
+    getUsernameClaimKey(): string;
+    setUsernameClaimKey(value: string): Oidc;
+
+    getAvatarUrlClaimKey(): string;
+    setAvatarUrlClaimKey(value: string): Oidc;
+
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): Oidc.AsObject;
     static toObject(includeInstance: boolean, msg: Oidc): Oidc.AsObject;
@@ -244,6 +253,9 @@ export namespace ProjectSSOConfig {
       userInfoEndpoint: string,
       proxyUrl: string,
       scopesList: Array<string>,
+      rolesClaimKey: string,
+      usernameClaimKey: string,
+      avatarUrlClaimKey: string,
     }
   }
 
