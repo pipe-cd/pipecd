@@ -40,7 +40,7 @@ func TestPlugin_executeK8sRollbackStage_NoPreviousDeployment(t *testing.T) {
 	dtConfig, _ := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	// Read the application config from the example file
-	cfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"), "kubernetes")
+	cfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple", "app.pipecd.yaml"), "kubernetes")
 
 	// Prepare the input
 	input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
@@ -51,7 +51,7 @@ func TestPlugin_executeK8sRollbackStage_NoPreviousDeployment(t *testing.T) {
 				CommitHash: "", // Empty commit hash indicates no previous deployment
 			},
 			TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
+				ApplicationDirectory:      filepath.Join("testdata", "simple"),
 				CommitHash:                "0123456789",
 				ApplicationConfig:         cfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
@@ -86,7 +86,7 @@ func TestPlugin_executeK8sRollbackStage_SuccessfulRollback(t *testing.T) {
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	// Read the application config from the example file
-	cfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"), "kubernetes")
+	cfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple", "app.pipecd.yaml"), "kubernetes")
 
 	// Prepare the input
 	input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
@@ -94,13 +94,13 @@ func TestPlugin_executeK8sRollbackStage_SuccessfulRollback(t *testing.T) {
 			StageName:   "K8S_ROLLBACK",
 			StageConfig: []byte(``),
 			RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
+				ApplicationDirectory:      filepath.Join("testdata", "simple"),
 				CommitHash:                "previous-hash",
 				ApplicationConfig:         cfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
 			},
 			TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
+				ApplicationDirectory:      filepath.Join("testdata", "simple"),
 				CommitHash:                "0123456789",
 				ApplicationConfig:         cfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
@@ -152,7 +152,7 @@ func TestPlugin_executeK8sRollbackStage_WithVariantLabels(t *testing.T) {
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	// Read the application config and modify it to include variant labels
-	cfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"), "kubernetes")
+	cfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple", "app.pipecd.yaml"), "kubernetes")
 
 	// Prepare the input
 	input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
@@ -160,13 +160,13 @@ func TestPlugin_executeK8sRollbackStage_WithVariantLabels(t *testing.T) {
 			StageName:   "K8S_ROLLBACK",
 			StageConfig: []byte(``),
 			RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
+				ApplicationDirectory:      filepath.Join("testdata", "simple"),
 				CommitHash:                "previous-hash",
 				ApplicationConfig:         cfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
 			},
 			TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
+				ApplicationDirectory:      filepath.Join("testdata", "simple"),
 				CommitHash:                "0123456789",
 				ApplicationConfig:         cfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",

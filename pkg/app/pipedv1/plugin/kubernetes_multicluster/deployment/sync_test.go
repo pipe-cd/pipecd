@@ -39,7 +39,7 @@ func TestPlugin_executeK8sMultiSyncStage(t *testing.T) {
 	ctx := context.Background()
 
 	// read the application config from the example file
-	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"), "kubernetes")
+	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple", "app.pipecd.yaml"), "kubernetes")
 
 	// initialize tool registry
 	testRegistry := toolregistrytest.NewTestToolRegistry(t)
@@ -51,7 +51,7 @@ func TestPlugin_executeK8sMultiSyncStage(t *testing.T) {
 			StageConfig:             []byte(``),
 			RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{},
 			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
+				ApplicationDirectory:      filepath.Join("testdata", "simple"),
 				CommitHash:                "0123456789",
 				ApplicationConfig:         appCfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
@@ -104,7 +104,7 @@ func TestPlugin_executeK8sMultiSyncStage_withInputNamespace(t *testing.T) {
 	ctx := context.Background()
 
 	// read the application config from the example file
-	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"), "kubernetes")
+	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple", "app.pipecd.yaml"), "kubernetes")
 
 	// override the autoCreateNamespace and namespace
 	appCfg.Spec.Input.AutoCreateNamespace = true
@@ -120,7 +120,7 @@ func TestPlugin_executeK8sMultiSyncStage_withInputNamespace(t *testing.T) {
 			StageConfig:             []byte(``),
 			RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{},
 			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
+				ApplicationDirectory:      filepath.Join("testdata", "simple"),
 				CommitHash:                "0123456789",
 				ApplicationConfig:         appCfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
@@ -556,7 +556,7 @@ func TestPlugin_executeK8sMultiSyncStage_multiCluster(t *testing.T) {
 	t.Parallel()
 
 	// read the application config from the example file
-	cfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"), "kubernetes")
+	cfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple", "app.pipecd.yaml"), "kubernetes")
 
 	// initialize tool registry
 	testRegistry := toolregistrytest.NewTestToolRegistry(t)
@@ -572,7 +572,7 @@ func TestPlugin_executeK8sMultiSyncStage_multiCluster(t *testing.T) {
 			StageConfig:             []byte(``),
 			RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{},
 			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
+				ApplicationDirectory:      filepath.Join("testdata", "simple"),
 				CommitHash:                "0123456789",
 				ApplicationConfig:         cfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",

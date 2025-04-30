@@ -44,7 +44,7 @@ func TestPlugin_executeK8sSyncStage(t *testing.T) {
 	testRegistry := toolregistrytest.NewTestToolRegistry(t)
 
 	// read the application config from the example file
-	appCfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"), "kubernetes")
+	appCfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple", "app.pipecd.yaml"), "kubernetes")
 
 	// prepare the input
 	input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
@@ -55,7 +55,7 @@ func TestPlugin_executeK8sSyncStage(t *testing.T) {
 				CommitHash: "", // Empty commit hash indicates no previous deployment
 			},
 			TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
+				ApplicationDirectory:      filepath.Join("testdata", "simple"),
 				CommitHash:                "0123456789",
 				ApplicationConfig:         appCfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
@@ -108,7 +108,7 @@ func TestPlugin_executeK8sSyncStage_withInputNamespace(t *testing.T) {
 	ctx := context.Background()
 
 	// read the application config from the example file
-	cfg, err := os.ReadFile(filepath.Join(examplesDir(), "kubernetes", "simple", "app.pipecd.yaml"))
+	cfg, err := os.ReadFile(filepath.Join("testdata", "simple", "app.pipecd.yaml"))
 	require.NoError(t, err)
 
 	// decode and override the autoCreateNamespace and namespace
@@ -134,7 +134,7 @@ func TestPlugin_executeK8sSyncStage_withInputNamespace(t *testing.T) {
 			StageConfig:             []byte(``),
 			RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{},
 			TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join(examplesDir(), "kubernetes", "simple"),
+				ApplicationDirectory:      filepath.Join("testdata", "simple"),
 				CommitHash:                "0123456789",
 				ApplicationConfig:         appCfg.Spec,
 				ApplicationConfigFilename: "app.pipecd.yaml",
