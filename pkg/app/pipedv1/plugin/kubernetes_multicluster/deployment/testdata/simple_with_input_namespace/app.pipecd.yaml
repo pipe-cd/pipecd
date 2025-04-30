@@ -12,6 +12,8 @@ spec:
   plugins:
     kubernetes_multicluster:
       input:
+        autoCreateNamespace: true
+        namespace: test-namespace
         manifests:
           - deployment.yaml
           - service.yaml

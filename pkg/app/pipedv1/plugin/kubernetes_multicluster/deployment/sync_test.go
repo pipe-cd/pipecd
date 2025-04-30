@@ -104,11 +104,7 @@ func TestPlugin_executeK8sMultiSyncStage_withInputNamespace(t *testing.T) {
 	ctx := context.Background()
 
 	// read the application config from the example file
-	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple", "app.pipecd.yaml"), "kubernetes_multicluster")
-
-	// override the autoCreateNamespace and namespace
-	appCfg.Spec.Input.AutoCreateNamespace = true
-	appCfg.Spec.Input.Namespace = "test-namespace"
+	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple_with_input_namespace", "app.pipecd.yaml"), "kubernetes_multicluster")
 
 	// initialize tool registry
 	testRegistry := toolregistrytest.NewTestToolRegistry(t)
@@ -120,7 +116,7 @@ func TestPlugin_executeK8sMultiSyncStage_withInputNamespace(t *testing.T) {
 			StageConfig:             []byte(``),
 			RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{},
 			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "simple"),
+				ApplicationDirectory:      filepath.Join("testdata", "simple_with_input_namespace"),
 				CommitHash:                "0123456789",
 				ApplicationConfig:         appCfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
