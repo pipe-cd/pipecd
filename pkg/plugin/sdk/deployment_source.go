@@ -102,7 +102,15 @@ func LoadApplicationConfigForTest[Spec any](t *testing.T, filename string, plugi
 	return cfg.Spec
 }
 
+// parsePluginConfig parses the plugin config for the given plugin name.
+// It returns nil if no config is set for the plugin.
+// After calling this method, the pluginConfigs is cleared to avoid leaking the internal data.
 func (c *ApplicationConfig[Spec]) parsePluginConfig(pluginName string) error {
+	defer func() {
+		// Clear the plugin configs after using it to avoid leaking the internal data.
+		c.pluginConfigs = nil
+	}()
+
 	if c.pluginConfigs == nil || c.pluginConfigs[pluginName] == nil {
 		// No config is set for this plugin.
 		return nil
@@ -117,16 +125,21 @@ func (c *ApplicationConfig[Spec]) parsePluginConfig(pluginName string) error {
 		return fmt.Errorf("failed to set default values for plugin spec: %w", err)
 	}
 
+	// Validate the spec if it implements the Validate method.
 	if v, ok := any(spec).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return fmt.Errorf("failed to validate plugin spec: %w", err)
 		}
 	}
 
-	c.Spec = &spec
+	// Sometimes the receiver of Validate method is pointer to the spec.
+	if v, ok := any(&spec).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return fmt.Errorf("failed to validate plugin spec: %w", err)
+		}
+	}
 
-	// Clear the plugin configs to avoid leaking the internal data.
-	c.pluginConfigs = nil
+	c.Spec = &spec
 
 	return nil
 }
