@@ -101,9 +101,19 @@ pipectl event register \
     --data=ghcr.io/xxx/helloworld:v0.2.0
 ```
 
-For GitHub Actions, using PipeCD's official `actions-event-register` is recommended (configurations are the same):
+If you use GitHub Actions for your CI, using PipeCD's official `actions-event-register` is recommended (configurations are the same):
 
 https://github.com/marketplace/actions/pipecd-register-event
+
+For example, triggering an event named `helloworld-image-update` to change the image URI to `ghcr.io/xxx/helloworld:v0.2.0`:
+```yaml
+      - uses: pipe-cd/actions-event-register@v1.2.0
+        with:
+          api-address: ${{ secrets.API_ADDRESS }}
+          api-key: ${{ secrets.API_KEY }}
+          event-name: helloworld-image-update
+          data: ghcr.io/xxx/helloworld:v0.2.0
+```
 
 You can also handle events differently by environment using the `--labels` option, even for events with the same name.
 
