@@ -125,7 +125,6 @@ func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStag
 		return sdk.StageStatusSuccess
 	}
 
-	// TODO: treat the stage options specified under "with"
 	if !stageCfg.Prune {
 		lp.Info("Resource GC was skipped because sync.prune was not configured")
 		return sdk.StageStatusSuccess
