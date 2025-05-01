@@ -22,9 +22,7 @@ Basically, PipeCD is a CD tool that continuously deploys specified config/manife
 
 ![](/images/eventwatcher-only-cd.drawio.png)
 
-Deployment typically requires manifest changes, and PipeCD doesn't directly trigger deployments from CI pushes.
-
-So, how can we "**deploy using a new image (etc.) after CI completion**"? It's annoying to manually update the manifest repo each time.
+Deployment typically requires manifest changes. So, how can we "**deploy using a new image (etc.) after CI completion**"? It's annoying to update the manifest repo manually each time.
 
 ![](/images/eventwatcher-problem.drawio.png)
 
@@ -47,7 +45,8 @@ The EventWatcher feature itself handles steps 4-6:
 - 1-3. Develop new app code and store the results (container images, etc.) in a container registry
 - **4.** Publish an event in CI to pass the new image URI to PipeCD
 - **5.** Piped detects the event
-- **6.** Update the manifest repo by replacing the image URI
+- **6.** Update the manifest repo using the data provided by the event (image URI, etc.)
+
 - 7-8. Automatic deployment occurs through the standard deployment flow of PipeCD
 
 ## Usage
