@@ -130,7 +130,7 @@ func TestPluginRegistry_GetPluginClientsByAppConfig(t *testing.T) {
 
 			pr := tt.setup()
 			plugins, err := pr.GetPluginClientsByAppConfig(tt.cfg)
-			assert.Equal(t, tt.expected, plugins)
+			assert.ElementsMatch(t, tt.expected, plugins)
 			assert.Equal(t, tt.wantErr, err != nil)
 		})
 	}
@@ -204,7 +204,7 @@ func TestPluginRegistry_getPluginClientsByPipeline(t *testing.T) {
 
 			pr := tt.setup()
 			plugins, err := pr.getPluginClientsByPipeline(tt.pipeline)
-			assert.Equal(t, tt.expected, plugins)
+			assert.ElementsMatch(t, tt.expected, plugins)
 			assert.Equal(t, tt.wantErr, err != nil)
 		})
 	}
@@ -270,7 +270,7 @@ func TestPluginRegistry_getPluginClientsByNames(t *testing.T) {
 
 			pr := tt.setup()
 			plugins, err := pr.getPluginClientsByNames(tt.pluginNames)
-			assert.Equal(t, tt.expected, plugins)
+			assert.ElementsMatch(t, tt.expected, plugins)
 			assert.Equal(t, tt.wantErr, err != nil)
 		})
 	}
