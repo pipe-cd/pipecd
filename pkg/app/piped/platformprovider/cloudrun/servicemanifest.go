@@ -167,12 +167,9 @@ func DecideRevisionName(sm ServiceManifest, commit string) (string, error) {
 }
 
 func FindImageTag(sm ServiceManifest) (string, error) {
-	containers, ok, err := unstructured.NestedSlice(sm.u.Object, "spec", "template", "spec", "containers")
+	containers, err := findContainers(sm)
 	if err != nil {
 		return "", err
-	}
-	if !ok || len(containers) == 0 {
-		return "", fmt.Errorf("spec.template.spec.containers was missing")
 	}
 
 	container, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&containers[0])
@@ -203,12 +200,9 @@ func parseContainerImage(image string) (name, tag string) {
 }
 
 func FindArtifactVersions(sm ServiceManifest) ([]*model.ArtifactVersion, error) {
-	containers, ok, err := unstructured.NestedSlice(sm.u.Object, "spec", "template", "spec", "containers")
+	containers, err := findContainers(sm)
 	if err != nil {
 		return nil, err
-	}
-	if !ok || len(containers) == 0 {
-		return nil, fmt.Errorf("spec.template.spec.containers was missing")
 	}
 
 	container, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&containers[0])
@@ -233,4 +227,27 @@ func FindArtifactVersions(sm ServiceManifest) ([]*model.ArtifactVersion, error) 
 			Url:     image,
 		},
 	}, nil
+}
+
+func findContainers(sm ServiceManifest) ([]interface{}, error) {
+	if sm.u.GetKind() == "Job" {
+		// [FIXME] Job should be treated as a different kind of resource with type `JobManifest`.
+		containers, ok, err := unstructured.NestedSlice(sm.u.Object, "spec", "template", "spec", "template", "spec", "containers")
+		if err != nil {
+			return nil, err
+		}
+		if !ok || len(containers) == 0 {
+			return nil, fmt.Errorf("spec.template.spec.template.spec.containers was missing")
+		}
+		return containers, nil
+	}
+
+	containers, ok, err := unstructured.NestedSlice(sm.u.Object, "spec", "template", "spec", "containers")
+	if err != nil {
+		return nil, err
+	}
+	if !ok || len(containers) == 0 {
+		return nil, fmt.Errorf("spec.template.spec.containers was missing")
+	}
+	return containers, nil
 }
