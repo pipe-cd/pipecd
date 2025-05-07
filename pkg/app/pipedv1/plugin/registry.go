@@ -89,7 +89,7 @@ func (pr *pluginRegistry) GetPluginClientsByAppConfig(cfg *config.GenericApplica
 	}
 
 	if cfg.Plugins != nil {
-		return pr.getPluginClientsByNames(cfg.Plugins)
+		return pr.getPluginClientsByPlugins(cfg.Plugins)
 	}
 
 	return nil, fmt.Errorf("no plugin specified")
@@ -112,19 +112,19 @@ func (pr *pluginRegistry) getPluginClientsByPipeline(pipeline *config.Deployment
 	return plugins, nil
 }
 
-func (pr *pluginRegistry) getPluginClientsByNames(names map[string]struct{}) ([]pluginapi.PluginClient, error) {
-	if len(names) == 0 {
-		return nil, fmt.Errorf("no plugin names are set")
+func (pr *pluginRegistry) getPluginClientsByPlugins(plugins map[string]struct{}) ([]pluginapi.PluginClient, error) {
+	if len(plugins) == 0 {
+		return nil, fmt.Errorf("no plugin config are set")
 	}
 
-	plugins := make([]pluginapi.PluginClient, 0, len(names))
-	for name := range names {
+	clients := make([]pluginapi.PluginClient, 0, len(plugins))
+	for name := range plugins {
 		plugin, ok := pr.nameBasedPlugins[name]
 		if !ok {
 			return nil, fmt.Errorf("no plugin found for the given plugin name %v", name)
 		}
-		plugins = append(plugins, plugin)
+		clients = append(clients, plugin)
 	}
 
-	return plugins, nil
+	return clients, nil
 }

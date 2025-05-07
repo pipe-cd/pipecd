@@ -209,19 +209,19 @@ func TestPluginRegistry_getPluginClientsByPipeline(t *testing.T) {
 		})
 	}
 }
-func TestPluginRegistry_getPluginClientsByNames(t *testing.T) {
+func TestPluginRegistry_getPluginClientsByPlugins(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name        string
-		pluginNames map[string]struct{}
-		setup       func() *pluginRegistry
-		expected    []pluginapi.PluginClient
-		wantErr     bool
+		name     string
+		plugins  map[string]struct{}
+		setup    func() *pluginRegistry
+		expected []pluginapi.PluginClient
+		wantErr  bool
 	}{
 		{
-			name:        "get plugins by valid plugin names",
-			pluginNames: map[string]struct{}{"plugin1": {}, "plugin2": {}},
+			name:    "get plugins by valid plugin names",
+			plugins: map[string]struct{}{"plugin1": {}, "plugin2": {}},
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
 					nameBasedPlugins: map[string]pluginapi.PluginClient{
@@ -237,8 +237,8 @@ func TestPluginRegistry_getPluginClientsByNames(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:        "no plugins found for empty plugin names",
-			pluginNames: map[string]struct{}{},
+			name:    "no plugins found for empty plugin names",
+			plugins: map[string]struct{}{},
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
 					nameBasedPlugins: map[string]pluginapi.PluginClient{
@@ -250,8 +250,8 @@ func TestPluginRegistry_getPluginClientsByNames(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name:        "no plugins found for non-existent plugin names",
-			pluginNames: map[string]struct{}{"plugin1": {}, "plugin2": {}},
+			name:    "no plugins found for non-existent plugin names",
+			plugins: map[string]struct{}{"plugin1": {}, "plugin2": {}},
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
 					nameBasedPlugins: map[string]pluginapi.PluginClient{
@@ -269,7 +269,7 @@ func TestPluginRegistry_getPluginClientsByNames(t *testing.T) {
 			t.Parallel()
 
 			pr := tt.setup()
-			plugins, err := pr.getPluginClientsByNames(tt.pluginNames)
+			plugins, err := pr.getPluginClientsByPlugins(tt.plugins)
 			assert.ElementsMatch(t, tt.expected, plugins)
 			assert.Equal(t, tt.wantErr, err != nil)
 		})
