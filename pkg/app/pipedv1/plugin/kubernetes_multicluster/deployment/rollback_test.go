@@ -26,7 +26,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	kubeConfigPkg "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister/logpersistertest"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
@@ -43,7 +42,7 @@ func TestPlugin_executeK8sMultiRollbackStage_compatibility_k8sPlugin_NoPreviousD
 	dtConfig, _ := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	// Read the application config from the example file
-	appCfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple", "app.pipecd.yaml"), "kubernetes_multicluster")
+	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple", "app.pipecd.yaml"), "kubernetes_multicluster")
 
 	// Prepare the input
 	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
@@ -53,7 +52,7 @@ func TestPlugin_executeK8sMultiRollbackStage_compatibility_k8sPlugin_NoPreviousD
 			RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
 				CommitHash: "", // Empty commit hash indicates no previous deployment
 			},
-			TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
 				ApplicationDirectory:      filepath.Join("testdata", "simple"),
 				CommitHash:                "0123456789",
 				ApplicationConfig:         appCfg,
@@ -89,20 +88,20 @@ func TestPlugin_executeK8sMultiRollbackStage_compatibility_k8sPlugin_SuccessfulR
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	// Read the application config from the example file
-	appCfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple", "app.pipecd.yaml"), "kubernetes_multicluster")
+	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple", "app.pipecd.yaml"), "kubernetes_multicluster")
 
 	// Prepare the input
 	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
 		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
 			StageName:   "K8S_MULTI_ROLLBACK",
 			StageConfig: []byte(``),
-			RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+			RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
 				ApplicationDirectory:      filepath.Join("testdata", "simple"),
 				CommitHash:                "previous-hash",
 				ApplicationConfig:         appCfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
 			},
-			TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
 				ApplicationDirectory:      filepath.Join("testdata", "simple"),
 				CommitHash:                "0123456789",
 				ApplicationConfig:         appCfg,
@@ -155,20 +154,20 @@ func TestPlugin_executeK8sMultiRollbackStage_compatibility_k8sPlugin_WithVariant
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	// Read the application config and modify it to include variant labels
-	appCfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple", "app.pipecd.yaml"), "kubernetes_multicluster")
+	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple", "app.pipecd.yaml"), "kubernetes_multicluster")
 
 	// Prepare the input
 	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
 		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
 			StageName:   "K8S_MULTI_ROLLBACK",
 			StageConfig: []byte(``),
-			RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+			RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
 				ApplicationDirectory:      filepath.Join("testdata", "simple"),
 				CommitHash:                "previous-hash",
 				ApplicationConfig:         appCfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
 			},
-			TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
 				ApplicationDirectory:      filepath.Join("testdata", "simple"),
 				CommitHash:                "0123456789",
 				ApplicationConfig:         appCfg,
@@ -220,7 +219,7 @@ func TestPlugin_executeK8sMultiRollbackStage_SuccessfulRollback(t *testing.T) {
 	testRegistry := toolregistrytest.NewTestToolRegistry(t)
 
 	// Read the application config from the example file
-	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "kubernetes", "simple", "app.pipecd.yaml"), "kubernetes_multicluster")
+	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple", "app.pipecd.yaml"), "kubernetes_multicluster")
 
 	// Prepare the input
 	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
@@ -228,13 +227,13 @@ func TestPlugin_executeK8sMultiRollbackStage_SuccessfulRollback(t *testing.T) {
 			StageName:   "K8S_MULTI_ROLLBACK",
 			StageConfig: []byte(``),
 			RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "kubernetes", "simple"),
+				ApplicationDirectory:      filepath.Join("testdata", "simple"),
 				CommitHash:                "previous-hash",
 				ApplicationConfig:         appCfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
 			},
 			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "kubernetes", "simple"),
+				ApplicationDirectory:      filepath.Join("testdata", "simple"),
 				CommitHash:                "0123456789",
 				ApplicationConfig:         appCfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
@@ -540,7 +539,7 @@ func TestPlugin_executeK8sMultiRollbackStage_FailureRollback_when_all_rollback_o
 			RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
 				ApplicationDirectory:      filepath.Join("testdata", "failed_all_of_rollback", "running"),
 				CommitHash:                "previous-hash",
-				ApplicationConfig:         sdktest.LoadApplicationConfig[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "failed_all_of_rollback", "running", "app.pipecd.yaml")),
+				ApplicationConfig:         sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "failed_all_of_rollback", "running", "app.pipecd.yaml"), "kubernetes_multicluster"),
 				ApplicationConfigFilename: "app.pipecd.yaml",
 			},
 			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{},
@@ -588,7 +587,7 @@ func TestPlugin_executeK8sMultiRollbackStage_FailureRollback_when_at_least_one_o
 			RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
 				ApplicationDirectory:      filepath.Join("testdata", "succes_one_of_rollback", "running"),
 				CommitHash:                "previous-hash",
-				ApplicationConfig:         sdktest.LoadApplicationConfig[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "succes_one_of_rollback", "running", "app.pipecd.yaml")),
+				ApplicationConfig:         sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "succes_one_of_rollback", "running", "app.pipecd.yaml"), "kubernetes_multicluster"),
 				ApplicationConfigFilename: "app.pipecd.yaml",
 			},
 			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{},
