@@ -971,3 +971,57 @@ data:
 		})
 	}
 }
+
+func TestDeepCopyManifests(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		yaml   string
+		mutate func(orig, copy []Manifest)
+	}{
+		{
+			name: "deep copy: changing label in copy does not affect original",
+			yaml: `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-config
+  labels:
+    foo: bar
+`,
+			mutate: func(orig, copy []Manifest) {
+				copy[0].AddLabels(map[string]string{"foo": "baz"})
+			},
+		},
+		{
+			name: "deep copy: changing annotation in original does not affect copy",
+			yaml: `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-config
+  annotations:
+    a: b
+`,
+			mutate: func(orig, copy []Manifest) {
+				orig[0].AddAnnotations(map[string]string{"a": "c"})
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			orig := mustParseManifests(t, tt.yaml)
+			copy := DeepCopyManifests(orig)
+
+			require.Equal(t, orig, copy, "copy should be equal to original before mutation")
+
+			// Mutate as per test case
+			tt.mutate(orig, copy)
+
+			// After mutation, the original and copy should differ
+			assert.NotEqual(t, orig, copy, "mutation should not affect the other slice")
+		})
+	}
+}
