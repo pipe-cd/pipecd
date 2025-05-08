@@ -17,6 +17,8 @@ package oci
 const (
 	// MediaTypePipedPlugin is the media type for PipeCD Agent plugins.
 	MediaTypePipedPlugin = "application/vnd.pipecd.piped.plugin"
+	// ArtifactTypePipedPlugin is the artifact type for PipeCD Agent plugins.
+	ArtifactTypePipedPlugin = "application/vnd.pipecd.piped.plugin+type"
 )
 
 // PushOptions holds options for pushing to an OCI registry.
