@@ -56,13 +56,11 @@ func PullFileFromRegistry(ctx context.Context, workdir string, dst io.Writer, so
 	r.PlainHTTP = options.insecure
 
 	if options.username != "" || options.password != "" {
-		// auth.DefaultClient plus a custom credential function
 		r.Client = &auth.Client{
 			Client: retry.DefaultClient,
 			Header: http.Header{
 				"User-Agent": {"oras-go"},
 			},
-			Cache: auth.DefaultCache,
 			Credential: func(_ context.Context, _ string) (auth.Credential, error) {
 				return auth.Credential{
 					Username: options.username,
