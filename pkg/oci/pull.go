@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
 	"os"
 	"strings"
@@ -28,6 +29,8 @@ import (
 	"oras.land/oras-go/v2/content"
 	"oras.land/oras-go/v2/content/file"
 	"oras.land/oras-go/v2/registry/remote"
+	"oras.land/oras-go/v2/registry/remote/auth"
+	"oras.land/oras-go/v2/registry/remote/retry"
 )
 
 // PullFileFromRegistry pulls a file from an OCI registry and writes it to the provided destination writer.
@@ -40,17 +43,34 @@ func PullFileFromRegistry(ctx context.Context, workdir string, dst io.Writer, so
 		opt.applyPullOption(options)
 	}
 
-	r, ref, err := parseOCIURL(sourceURL)
+	repo, ref, err := parseOCIURL(sourceURL)
 	if err != nil {
 		return fmt.Errorf("could not parse OCI URL %s (%w)", sourceURL, err)
 	}
 
-	repo, err := remote.NewRepository(r)
+	r, err := remote.NewRepository(repo)
 	if err != nil {
 		return fmt.Errorf("could not create repository (%w)", err)
 	}
 
-	repo.PlainHTTP = options.insecure
+	r.PlainHTTP = options.insecure
+
+	if options.username != "" || options.password != "" {
+		// auth.DefaultClient plus a custom credential function
+		r.Client = &auth.Client{
+			Client: retry.DefaultClient,
+			Header: http.Header{
+				"User-Agent": {"oras-go"},
+			},
+			Cache: auth.DefaultCache,
+			Credential: func(_ context.Context, _ string) (auth.Credential, error) {
+				return auth.Credential{
+					Username: options.username,
+					Password: options.password,
+				}, nil
+			},
+		}
+	}
 
 	d, err := os.MkdirTemp(workdir, "oci-pull")
 	if err != nil {
@@ -67,7 +87,7 @@ func PullFileFromRegistry(ctx context.Context, workdir string, dst io.Writer, so
 	store.AllowPathTraversalOnWrite = false
 	store.DisableOverwrite = true
 
-	desc, err := oras.Copy(ctx, repo, ref, store, "", oras.DefaultCopyOptions)
+	desc, err := oras.Copy(ctx, r, ref, store, "", oras.DefaultCopyOptions)
 	if err != nil {
 		return fmt.Errorf("could not copy OCI image (%w)", err)
 	}

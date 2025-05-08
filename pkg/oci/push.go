@@ -19,6 +19,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 
@@ -28,6 +29,8 @@ import (
 	"oras.land/oras-go/v2/content"
 	"oras.land/oras-go/v2/content/file"
 	"oras.land/oras-go/v2/registry/remote"
+	"oras.land/oras-go/v2/registry/remote/auth"
+	"oras.land/oras-go/v2/registry/remote/retry"
 )
 
 // Platform represents an OS/Arch platform for an OCI artifact.
@@ -69,6 +72,23 @@ func PushFilesToRegistry(ctx context.Context, workDir string, artifact *Artifact
 	}
 
 	r.PlainHTTP = options.insecure
+
+	if options.username != "" || options.password != "" {
+		// auth.DefaultClient plus a custom credential function
+		r.Client = &auth.Client{
+			Client: retry.DefaultClient,
+			Header: http.Header{
+				"User-Agent": {"oras-go"},
+			},
+			Cache: auth.DefaultCache,
+			Credential: func(_ context.Context, _ string) (auth.Credential, error) {
+				return auth.Credential{
+					Username: options.username,
+					Password: options.password,
+				}, nil
+			},
+		}
+	}
 
 	descriptors := make([]ocispec.Descriptor, 0, len(artifact.FilePaths))
 	for platform, path := range artifact.FilePaths {
