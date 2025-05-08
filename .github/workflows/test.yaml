@@ -17,7 +17,7 @@ env:
 
 jobs:
   go:
-    runs-on: ubuntu-latest-8-cores # we cannot use self-hosted oracle runners for go tests because it has no gcc installed but we need it for the go tests with race detector
+    runs-on: ubuntu-latest-8-cores
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
