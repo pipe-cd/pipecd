@@ -29,11 +29,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry"
 )
 
-type ToolRegistry struct {
-	testingT *testing.T
-	tmpDir   string
-}
-
 type templateValues struct {
 	Name    string
 	Version string
@@ -46,11 +41,10 @@ type templateValues struct {
 type fakeClient struct {
 	pipedservice.PluginServiceClient
 	testingT *testing.T
-	tmpDir   string
 }
 
 func (c *fakeClient) binDir() (string, error) {
-	target := c.tmpDir + "/bin"
+	target := c.testingT.TempDir() + "/bin"
 	if err := os.MkdirAll(target, 0o755); err != nil {
 		return "", err
 	}
@@ -58,7 +52,7 @@ func (c *fakeClient) binDir() (string, error) {
 }
 
 func (c *fakeClient) outPath() string {
-	return c.tmpDir + "/out"
+	return c.testingT.TempDir() + "/out"
 }
 
 func (c *fakeClient) InstallTool(ctx context.Context, in *pipedservice.InstallToolRequest, opts ...grpc.CallOption) (*pipedservice.InstallToolResponse, error) {
@@ -112,6 +106,5 @@ func (c *fakeClient) InstallTool(ctx context.Context, in *pipedservice.InstallTo
 func NewTestToolRegistry(t *testing.T) *toolregistry.ToolRegistry {
 	return toolregistry.NewToolRegistry(&fakeClient{
 		testingT: t,
-		tmpDir:   t.TempDir(),
 	})
 }
