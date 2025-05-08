@@ -17,7 +17,7 @@ env:
 
 jobs:
   go:
-    runs-on: oracle-8cpu-32gb-x86-64
+    runs-on: ubuntu-latest-8-cores # we cannot use self-hosted oracle runners for go tests because it has no gcc installed but we need it for the go tests with race detector
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
@@ -26,8 +26,6 @@ jobs:
           cache: true
       - name: Run unit tests
         run: make test/go COVERAGE=true
-        env:
-          CGO_ENABLED: 1
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         env:
