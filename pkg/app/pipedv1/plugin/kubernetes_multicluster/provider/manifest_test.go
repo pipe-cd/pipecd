@@ -21,6 +21,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -877,6 +880,94 @@ func TestManifest_ToResourceState(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.manifest.ToResourceState(tt.deployTarget)
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestManifest_ConvertToStructuredObject(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		yaml    string
+		want    interface{}
+		wantErr bool
+	}{
+		{
+			name: "ConfigMap conversion",
+			yaml: `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-config
+  namespace: default
+data:
+  key: value
+`,
+			want: &corev1.ConfigMap{
+				TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "ConfigMap"},
+				ObjectMeta: metav1.ObjectMeta{Name: "test-config", Namespace: "default"},
+				Data:       map[string]string{"key": "value"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Secret conversion",
+			yaml: `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: test-secret
+  namespace: default
+data:
+  password: cGFzc3dvcmQ=
+  username: dXNlcg==
+`,
+			want: &corev1.Secret{
+				TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Secret"},
+				ObjectMeta: metav1.ObjectMeta{Name: "test-secret", Namespace: "default"},
+				Data: map[string][]byte{
+					"password": []byte("password"),
+					"username": []byte("user"),
+				},
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			manifests := mustParseManifests(t, tt.yaml)
+			require.NotEmpty(t, manifests)
+			require.Len(t, manifests, 1)
+
+			switch want := tt.want.(type) {
+			case *corev1.ConfigMap:
+				var got corev1.ConfigMap
+				err := manifests[0].ConvertToStructuredObject(&got)
+				if tt.wantErr {
+					require.Error(t, err)
+					return
+				}
+				require.NoError(t, err)
+				assert.Equal(t, want.Name, got.Name)
+				assert.Equal(t, want.Namespace, got.Namespace)
+				assert.Equal(t, want.Data, got.Data)
+			case *corev1.Secret:
+				var got corev1.Secret
+				err := manifests[0].ConvertToStructuredObject(&got)
+				if tt.wantErr {
+					require.Error(t, err)
+					return
+				}
+				require.NoError(t, err)
+				assert.Equal(t, want.Name, got.Name)
+				assert.Equal(t, want.Namespace, got.Namespace)
+				assert.Equal(t, want.Data, got.Data)
+			default:
+				t.Fatalf("unsupported want type: %T", tt.want)
+			}
 		})
 	}
 }
