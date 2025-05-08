@@ -14,7 +14,9 @@
 
 package deployment
 
-import "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
+import (
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
+)
 
 func ensureVariantSelectorInWorkload(m provider.Manifest, variantLabel, variant string) error {
 	variantMap := map[string]string{
@@ -24,4 +26,9 @@ func ensureVariantSelectorInWorkload(m provider.Manifest, variantLabel, variant 
 		return err
 	}
 	return m.AddStringMapValues(variantMap, "spec", "template", "metadata", "labels")
+}
+
+func checkVariantSelectorInWorkload(manifest provider.Manifest, variantLabel, variant string) error {
+	// TODO: implement
+	return nil
 }

@@ -103,7 +103,7 @@ func (s *LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec
 		toolRegistry:  s.toolRegistry,
 	}
 
-	deploymentSource, err := newDeploymentSource[ApplicationConfigSpec](request.GetDeploySource())
+	deploymentSource, err := newDeploymentSource[ApplicationConfigSpec](s.name, request.GetDeploySource())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to parse deployment source: %v", err)
 	}
