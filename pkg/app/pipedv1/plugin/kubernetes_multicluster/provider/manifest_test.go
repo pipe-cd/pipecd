@@ -1025,3 +1025,69 @@ metadata:
 		})
 	}
 }
+
+func TestFromStructuredObject(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		input          any
+		wantKind       string
+		wantAPIVersion string
+		wantName       string
+		wantErr        bool
+		wantData       map[string]any
+	}{
+		{
+			name: "ConfigMap",
+			input: &corev1.ConfigMap{
+				TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "ConfigMap"},
+				ObjectMeta: metav1.ObjectMeta{Name: "test-config", Namespace: "default"},
+				Data:       map[string]string{"key": "value"},
+			},
+			wantKind:       "ConfigMap",
+			wantAPIVersion: "v1",
+			wantName:       "test-config",
+			wantErr:        false,
+			wantData:       map[string]any{"key": "value"},
+		},
+		{
+			name: "Secret",
+			input: &corev1.Secret{
+				TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Secret"},
+				ObjectMeta: metav1.ObjectMeta{Name: "test-secret", Namespace: "default"},
+				Data:       map[string][]byte{"password": []byte("password")},
+			},
+			wantKind:       "Secret",
+			wantAPIVersion: "v1",
+			wantName:       "test-secret",
+			wantErr:        false,
+			wantData:       map[string]any{"password": "cGFzc3dvcmQ="},
+		},
+		{
+			name:           "invalid object",
+			input:          struct{ Foo string }{Foo: "bar"},
+			wantKind:       "",
+			wantAPIVersion: "",
+			wantName:       "",
+			wantErr:        true,
+			wantData:       nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			m, err := FromStructuredObject(tt.input)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantKind, m.Kind())
+			assert.Equal(t, tt.wantAPIVersion, m.APIVersion())
+			assert.Equal(t, tt.wantName, m.Name())
+			assert.Equal(t, tt.wantData, m.body.Object["data"])
+		})
+	}
+}
