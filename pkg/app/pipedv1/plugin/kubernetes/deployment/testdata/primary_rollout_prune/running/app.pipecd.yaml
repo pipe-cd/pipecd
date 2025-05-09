@@ -1,0 +1,23 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  name: simple
+  labels:
+    env: example
+    team: product
+  description: |
+    This app demonstrates how to deploy a Kubernetes application with [Quick Sync](https://pipecd.dev/docs/concepts/#sync-strategy) strategy.\
+    No pipeline is specified then in each deployment PipeCD will roll out the new version and switch all traffic to it immediately.\
+    References: [adding a new app](https://pipecd.dev/docs/user-guide/managing-application/adding-an-application/), [app configuration](https://pipecd.dev/docs/user-guide/configuration-reference/)
+  pipeline:
+    stages:
+      - name: K8S_PRIMARY_ROLLOUT
+        with:
+          prune: true
+  plugins:
+    kubernetes:
+      input:
+        manifests:
+          - deployment.yaml
+          - service.yaml
+        kubectlVersion: 1.31.0
