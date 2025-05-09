@@ -40,7 +40,7 @@ func TestPlugin_executeK8sPrimaryRolloutStage(t *testing.T) {
 	testRegistry := toolregistrytest.NewTestToolRegistry(t)
 
 	// read the application config from the example file
-	appCfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple", "app.pipecd.yaml"), "kubernetes")
+	appCfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join("testdata", "primary_rollout", "app.pipecd.yaml"), "kubernetes")
 
 	input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
 		Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
@@ -106,7 +106,7 @@ func TestPlugin_executeK8sPrimaryRolloutStage_withPrune(t *testing.T) {
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	runningOk := t.Run("prepare running state", func(t *testing.T) {
-		running := filepath.Join("testdata", "prune", "running")
+		running := filepath.Join("testdata", "primary_rollout_prune", "running")
 		runningCfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(running, "app.pipecd.yaml"), "kubernetes")
 
 		runningInput := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
@@ -147,10 +147,10 @@ func TestPlugin_executeK8sPrimaryRolloutStage_withPrune(t *testing.T) {
 	require.True(t, runningOk, "prepare running state subtest failed, aborting")
 
 	t.Run("prune with target state", func(t *testing.T) {
-		target := filepath.Join("testdata", "prune", "target")
+		target := filepath.Join("testdata", "primary_rollout_prune", "target")
 		targetCfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(target, "app.pipecd.yaml"), "kubernetes")
 
-		running := filepath.Join("testdata", "prune", "running")
+		running := filepath.Join("testdata", "primary_rollout_prune", "running")
 		runningCfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(running, "app.pipecd.yaml"), "kubernetes")
 		targetInput := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
 			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
