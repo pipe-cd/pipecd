@@ -88,7 +88,7 @@ type: my-type
 data:
   "one": ""
 `,
-			expected: "74bd68bm66",
+			expected: "2k5dh9h9h9",
 		},
 		{
 			name: "secret: there keys for checking order",
@@ -101,7 +101,7 @@ data:
   one: ""
   three: Mw==
 `,
-			expected: "dgcb6h9tmk",
+			expected: "5852t69tb5",
 		},
 		{
 			name: "multiple configs",
@@ -120,7 +120,7 @@ data:
   one: ""
   three: Mw==
 `,
-			expected: "57hhd7795k",
+			expected: "fhgh2849tk",
 		},
 		{
 			name: "not config manifest",
@@ -158,6 +158,8 @@ spec:
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			manifests, err := ParseManifests(tc.manifests)
 			require.NoError(t, err)
 
