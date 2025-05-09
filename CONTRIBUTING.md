@@ -86,6 +86,72 @@ PipeCD consists of several components and docs:
 
 Note: While working with the PipeCD codebase, you may refer to [Makefile](./Makefile) for useful commands.
 
+### Starting a Local Development Environment
+
+#### Starting a local registry
+
+In order to start a local development environment, a registry needs to be running locally. 
+
+Run `make kind-up` to start a local registry. 
+
+This will create the kubernetes namespace `pipecd` if it does not exist and start a local registry in the namespace which can then be accessed by other components.
+
+When cleaning up, run `make kind-down` to stop and delete the registery and the cluster.
+
+#### Run PipeCD Control Plane
+
+Run `make run/pipecd` to run PipeCD Control Plane using your local code changes. This will build and run PipeCD Control Plane.
+
+Run `make stop/pipecd` to stop PipeCD Control Plane.
+
+#### Port Forward
+
+Run `kubectl port-forward -n pipecd svc/pipecd 8080` forward your local port to the `pipecd` pod port. 
+
+#### Access the PipeCD UI
+
+After port-forwarding, you can now access the PipeCD Control Plane console at `http://localhost:8080?project=quickstart`.
+
+To login, you can use the configured static admin account as below:
+
+- username: `hello-pipecd`
+- password: `hello-pipecd`
+
+#### Run Piped Agent
+
+1. Make sure that PipeCD Control Plane is running and you can access the UI and login.
+
+2. Access to Control Plane console, go to Piped list page and add a new piped. Then, copy generated Piped ID and base64 key for `piped-config.yaml`
+
+3. Create the piped configuration file `piped-config.yaml`. This is an example configuration. Use the PipeD ID and base64 key created in step 2.
+    ```yaml
+    apiVersion: pipecd.dev/v1beta1
+    kind: Piped
+    spec:
+      projectID: quickstart
+      # FIXME: Replace here with your piped ID.
+      pipedID: 7accd470-1786-49ee-ac09-3c4d4e31dc12
+      # Base64 encoded string of the piped private key.
+      # FIXME: Replace here with your piped base64 key.
+      pipedKeyData: OTl4c2RqdjUxNTF2OW1sOGw5ampndXUyZjB2aGJ4dGw0bHVkamF4Mmc3a3l1enFqY20K
+      # Write in a format like "host:443" because the communication is done via gRPC.
+      # FIXME: Replace here with your piped address if you connect Piped to a control plane that does not run locally.
+      apiAddress: localhost:8080
+      repositories:
+      - repoId: example
+        remote: git@github.com:pipe-cd/examples.git
+        branch: master
+      syncInterval: 1m
+      platformProviders:
+      - name: example-kubernetes
+        type: KUBERNETES
+        config:
+          # FIXME: Replace here with your kubeconfig absolute file path.
+          kubeConfigPath: /path/to/.kube/config
+    ```
+
+4. Run `make run/piped CONFIG_FILE=piped-config.yaml` to start Piped agent.
+
 ### Online one-click setup for contributing
 
 We are preparing Gitpod and Codespace to facilitate the setup process for contributing.
@@ -151,72 +217,6 @@ If your change introcudes a user-facing change, please update the following sect
 ```
 
 Note that if it's a new breaking change, make sure to complete the two latter questions.
-
-## Starting a Local Development Environment
-
-### Starting a local registry
-
-In order to start a local development environment, a registry needs to be running locally. 
-
-Run `make kind-up` to start a local registry. 
-
-This will create the kubernetes namespace `pipecd` if it does not exist and start a local registry in the namespace which can then be accessed by other components.
-
-When cleaning up, run `make kind-down` to stop and delete the registery and the cluster.
-
-### Run PipeCD Control Plane
-
-Run `make run/pipecd` to run PipeCD Control Plane using your local code changes. This will build and run PipeCD Control Plane.
-
-Run `make stop/pipecd` to stop PipeCD Control Plane.
-
-### Port Forward
-
-Run `kubectl port-forward -n pipecd svc/pipecd 8080` forward your local port to the `pipecd` pod port. 
-
-### Access the PipeCD UI
-
-After port-forwarding, you can now access the PipeCD Control Plane console at `http://localhost:8080?project=quickstart`.
-
-To login, you can use the configured static admin account as below:
-
-- username: `hello-pipecd`
-- password: `hello-pipecd`
-
-### Run Piped Agent
-
-1. Make sure that PipeCD Control Plane is running and you can access the UI and login.
-
-2. Access to Control Plane console, go to Piped list page and add a new piped. Then, copy generated Piped ID and base64 key for `piped-config.yaml`
-
-3. Create the piped configuration file `piped-config.yaml`. This is an example configuration. Use the PipeD ID and base64 key created in step 2.
-    ```yaml
-    apiVersion: pipecd.dev/v1beta1
-    kind: Piped
-    spec:
-      projectID: quickstart
-      # FIXME: Replace here with your piped ID.
-      pipedID: 7accd470-1786-49ee-ac09-3c4d4e31dc12
-      # Base64 encoded string of the piped private key.
-      # FIXME: Replace here with your piped base64 key.
-      pipedKeyData: OTl4c2RqdjUxNTF2OW1sOGw5ampndXUyZjB2aGJ4dGw0bHVkamF4Mmc3a3l1enFqY20K
-      # Write in a format like "host:443" because the communication is done via gRPC.
-      # FIXME: Replace here with your piped address if you connect Piped to a control plane that does not run locally.
-      apiAddress: localhost:8080
-      repositories:
-      - repoId: example
-        remote: git@github.com:pipe-cd/examples.git
-        branch: master
-      syncInterval: 1m
-      platformProviders:
-      - name: example-kubernetes
-        type: KUBERNETES
-        config:
-          # FIXME: Replace here with your kubeconfig absolute file path.
-          kubeConfigPath: /path/to/.kube/config
-    ```
-
-4. Run `make run/piped CONFIG_FILE=piped-config.yaml` to start Piped agent.
 
 ## Contributor License Agreement
 
