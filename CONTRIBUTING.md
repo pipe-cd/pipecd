@@ -197,8 +197,7 @@ To login, you can use the configured static admin account as below:
       projectID: quickstart
       # FIXME: Replace here with your piped ID.
       pipedID: 7accd470-1786-49ee-ac09-3c4d4e31dc12
-      # Base64 encoded string of the piped private key. You can generate it by the following command.
-      # echo -n "your-piped-key" | base64
+      # Base64 encoded string of the piped private key.
       # FIXME: Replace here with your piped base64 key.
       pipedKeyData: OTl4c2RqdjUxNTF2OW1sOGw5ampndXUyZjB2aGJ4dGw0bHVkamF4Mmc3a3l1enFqY20K
       # Write in a format like "host:443" because the communication is done via gRPC.
