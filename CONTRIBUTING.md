@@ -164,7 +164,7 @@ This will create the kubernetes namespace `pipecd` if it does not exist and star
 
 Run `make kind-down` to stop and delete the registery and the cluster.
 
-### Run Pipecd Control Plane
+### Run PipeCD Control Plane
 
 Run `make run/pipecd` to run PipeCD Control Plane using your local code changes. This will build and run PipeCD Control Plane.
 
