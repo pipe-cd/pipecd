@@ -90,7 +90,7 @@ Note: While working with the PipeCD codebase, you may refer to [Makefile](./Make
 
 #### Update dependencies
 
-Run `make update/go-deps` and `update/web-deps` to update the dependencies. Starting a local development environment might fail if the dependencies are not up to date.
+Run `make update/go-deps` and `make update/web-deps` to update the dependencies. Starting a local development environment might fail with errors if the dependencies are not up to date.
 
 #### Starting a local registry
 
