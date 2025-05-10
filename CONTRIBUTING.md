@@ -121,7 +121,11 @@ To login, you can use the configured static admin account as below:
 
 1. Make sure that PipeCD Control Plane is running and you can access the UI and login.
 
-2. Access to Control Plane console, go to Piped list page and add a new piped. Then, copy generated Piped ID and base64 key for `piped-config.yaml`
+2. Access to Control Plane console, go to Piped list page - click the three vertical dots on the top right corner and then click on settings. After clicking on settings you will land on the Piped settings page. Next, add a new piped. 
+
+Alternatively, you can go to `http://localhost:8080/settings/piped?project=quickstart`, please adjust the port and the project in the url if they are different from default. 
+
+Then, copy generated Piped ID and base64 key for `piped-config.yaml`
 
 3. Create the piped configuration file `piped-config.yaml`. This is an example configuration. Use the PipeD ID and base64 key created in step 2.
     ```yaml
