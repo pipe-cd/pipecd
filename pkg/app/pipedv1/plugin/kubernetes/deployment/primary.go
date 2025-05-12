@@ -199,7 +199,7 @@ func (p *Plugin) executeK8sPrimaryRolloutStage(ctx context.Context, input *sdk.E
 }
 
 // generatePrimaryManifests generates manifests for the PRIMARY variant.
-// It shallowly duplicates the input manifests, adds the variant label to workloads if needed,
+// It duplicates the input manifests, adds the variant label to workloads if needed,
 // and generates Service manifests with a name suffix and variant selector if requested.
 func generatePrimaryManifests(manifests []provider.Manifest, stageCfg kubeconfig.K8sPrimaryRolloutStageOptions, variantLabel, variant string) ([]provider.Manifest, error) {
 	suffix := variant
