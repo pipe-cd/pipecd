@@ -129,6 +129,8 @@ func (p Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTarge
 		appLiveState.HealthStatus = sdk.ApplicationHealthStateUnknown // TODO: Implement health status calculation
 	}
 
+	appLiveState.HealthStatus = calculateHealthStatus(liveStates)
+
 	appSyncState := sdk.ApplicationSyncState{}
 	for _, ss := range syncStates {
 		appSyncState.Reason = fmt.Sprintf("%s\n%s", appSyncState.Reason, ss.Reason)
@@ -170,6 +172,30 @@ func (p Plugin) makeAppSyncState(liveManifests, gitManifests []provider.Manifest
 	}
 
 	return calculateSyncState(diffResult, commit, dt), nil
+}
+
+func calculateHealthStatus(states []sdk.ApplicationLiveState) sdk.ApplicationHealthStatus {
+	var (
+		hasOther   bool
+		hasUnknown bool
+	)
+	for _, state := range states {
+		switch state.HealthStatus {
+		case sdk.ApplicationHealthStateOther:
+			hasOther = true
+		case sdk.ApplicationHealthStateUnknown:
+			hasUnknown = true
+		}
+	}
+
+	if hasUnknown {
+		return sdk.ApplicationHealthStateUnknown
+	}
+	if hasOther {
+		return sdk.ApplicationHealthStateOther
+	}
+
+	return sdk.ApplicationHealthStateHealthy
 }
 
 func calculateSyncState(diffResult *provider.DiffListResult, commit string, dt *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.ApplicationSyncState {

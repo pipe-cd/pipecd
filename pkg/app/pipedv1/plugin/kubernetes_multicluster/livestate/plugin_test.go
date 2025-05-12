@@ -660,3 +660,59 @@ func Test_calculateSyncStatus(t *testing.T) {
 		})
 	}
 }
+func Test_calculateHealthStatus(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		states []sdk.ApplicationLiveState
+		want   sdk.ApplicationHealthStatus
+	}{
+		{
+			name: "all states are Healthy",
+			states: []sdk.ApplicationLiveState{
+				{HealthStatus: sdk.ApplicationHealthStateHealthy},
+				{HealthStatus: sdk.ApplicationHealthStateHealthy},
+			},
+			want: sdk.ApplicationHealthStateHealthy,
+		},
+		{
+			name: "one state is Other",
+			states: []sdk.ApplicationLiveState{
+				{HealthStatus: sdk.ApplicationHealthStateHealthy},
+				{HealthStatus: sdk.ApplicationHealthStateOther},
+			},
+			want: sdk.ApplicationHealthStateOther,
+		},
+		{
+			name: "one state is Unknown",
+			states: []sdk.ApplicationLiveState{
+				{HealthStatus: sdk.ApplicationHealthStateHealthy},
+				{HealthStatus: sdk.ApplicationHealthStateUnknown},
+			},
+			want: sdk.ApplicationHealthStateUnknown,
+		},
+		{
+			name: "priority: Unknown > Other > Healthy",
+			states: []sdk.ApplicationLiveState{
+				{HealthStatus: sdk.ApplicationHealthStateOther},
+				{HealthStatus: sdk.ApplicationHealthStateUnknown},
+			},
+			want: sdk.ApplicationHealthStateUnknown,
+		},
+		{
+			name:   "empty states returns Healthy",
+			states: []sdk.ApplicationLiveState{},
+			want:   sdk.ApplicationHealthStateHealthy,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := calculateHealthStatus(tt.states)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
