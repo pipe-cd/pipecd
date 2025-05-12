@@ -201,6 +201,9 @@ func renderNodeValue(v reflect.Value, prefix string) (string, bool) {
 	case reflect.Float32, reflect.Float64:
 		return strconv.FormatFloat(v.Float(), 'f', -1, 64), false
 
+	case reflect.Bool:
+		return strconv.FormatBool(v.Bool()), false
+
 	default:
 		return v.String(), false
 	}
