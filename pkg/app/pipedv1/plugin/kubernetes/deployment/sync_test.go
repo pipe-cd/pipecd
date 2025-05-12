@@ -547,3 +547,117 @@ func TestPlugin_executeK8sSyncStage_withPrune_clusterScoped(t *testing.T) {
 		require.Truef(t, apierrors.IsNotFound(err), "expected error to be NotFound, but got %v", err)
 	})
 }
+
+func TestPlugin_executeK8sSyncStage_withPrune_withStageConfig(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	// initialize tool registry
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
+	// initialize deploy target config and dynamic client for assertions with envtest
+	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
+
+	running := filepath.Join("./", "testdata", "prune", "running")
+
+	// read the running application config from the testdata file
+	runningCfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(running, "app.pipecd.yaml"), "kubernetes")
+	runningCfg.Spec.QuickSync.Prune = false // This is to make sure the stage config is respected
+
+	ok := t.Run("prepare", func(t *testing.T) {
+		// prepare the input to ensure the running deployment exists
+		runningInput := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+				StageName:               "K8S_SYNC",
+				StageConfig:             []byte(`{"prune": true}`),
+				RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{},
+				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+					ApplicationDirectory:      running,
+					CommitHash:                "0123456789",
+					ApplicationConfig:         runningCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+				Deployment: sdk.Deployment{
+					PipedID:       "piped-id",
+					ApplicationID: "app-id",
+				},
+			},
+			Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
+			Logger: zaptest.NewLogger(t),
+		}
+
+		plugin := &Plugin{}
+		status := plugin.executeK8sSyncStage(ctx, runningInput, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
+			{
+				Name:   "default",
+				Config: *dtConfig,
+			},
+		})
+		require.Equal(t, sdk.StageStatusSuccess, status)
+
+		service, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(context.Background(), "simple", metav1.GetOptions{})
+		require.NoError(t, err)
+
+		require.Equal(t, "piped", service.GetLabels()["pipecd.dev/managed-by"])
+		require.Equal(t, "piped-id", service.GetLabels()["pipecd.dev/piped"])
+		require.Equal(t, "app-id", service.GetLabels()["pipecd.dev/application"])
+		require.Equal(t, "0123456789", service.GetLabels()["pipecd.dev/commit-hash"])
+
+		require.Equal(t, "simple", service.GetName())
+		require.Equal(t, "piped", service.GetAnnotations()["pipecd.dev/managed-by"])
+		require.Equal(t, "piped-id", service.GetAnnotations()["pipecd.dev/piped"])
+		require.Equal(t, "app-id", service.GetAnnotations()["pipecd.dev/application"])
+		require.Equal(t, "v1", service.GetAnnotations()["pipecd.dev/original-api-version"])
+		require.Equal(t, ":Service::simple", service.GetAnnotations()["pipecd.dev/resource-key"]) // This assertion differs from the non-plugin-arched piped's Kubernetes platform provider, but we decided to change this behavior.
+		require.Equal(t, "0123456789", service.GetAnnotations()["pipecd.dev/commit-hash"])
+	})
+	require.Truef(t, ok, "expected prepare to succeed")
+
+	t.Run("run with prune", func(t *testing.T) {
+		target := filepath.Join("./", "testdata", "prune", "target")
+
+		// read the running application config from the testdata file
+		targetCfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(target, "app.pipecd.yaml"), "kubernetes")
+		targetCfg.Spec.QuickSync.Prune = false // This is to make sure the stage config is respected
+
+		// prepare the input to ensure the running deployment exists
+		targetInput := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+				StageName:   "K8S_SYNC",
+				StageConfig: []byte(`{"prune": true}`),
+				RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+					ApplicationDirectory:      running,
+					CommitHash:                "0123456789",
+					ApplicationConfig:         runningCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+					ApplicationDirectory:      target,
+					CommitHash:                "0012345678",
+					ApplicationConfig:         targetCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+				Deployment: sdk.Deployment{
+					PipedID:       "piped-id",
+					ApplicationID: "app-id",
+				},
+			},
+			Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
+			Logger: zaptest.NewLogger(t),
+		}
+
+		plugin := &Plugin{}
+		status := plugin.executeK8sSyncStage(ctx, targetInput, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
+			{
+				Name:   "default",
+				Config: *dtConfig,
+			},
+		})
+		assert.Equal(t, sdk.StageStatusSuccess, status)
+
+		_, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(context.Background(), "simple", metav1.GetOptions{})
+		require.Error(t, err)
+		require.Truef(t, apierrors.IsNotFound(err), "expected error to be NotFound, but got %v", err)
+	})
+}
