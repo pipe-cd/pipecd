@@ -158,6 +158,18 @@ func applyServiceDefinition(ctx context.Context, cli provider.Client, serviceDef
 		if err != nil {
 			return nil, fmt.Errorf("failed to update ECS service %s: %w", *serviceDefinition.ServiceName, err)
 		}
+
+		currentTags, err := cli.ListTags(ctx, *service.ServiceArn)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list existing tags for ECS service %s: %w", *serviceDefinition.ServiceName, err)
+		}
+
+		tagsToRemove := findRemovedTags(currentTags, serviceDefinition.Tags)
+		if len(tagsToRemove) > 0 {
+			if err := cli.UntagResource(ctx, *service.ServiceArn, tagsToRemove); err != nil {
+				return nil, fmt.Errorf("failed to untag ECS service %s: %w", *serviceDefinition.ServiceName, err)
+			}
+		}
 		if err := cli.TagResource(ctx, *service.ServiceArn, serviceDefinition.Tags); err != nil {
 			return nil, fmt.Errorf("failed to update tags of ECS service %s: %w", *serviceDefinition.ServiceName, err)
 		}
@@ -172,6 +184,30 @@ func applyServiceDefinition(ctx context.Context, cli provider.Client, serviceDef
 	}
 
 	return service, nil
+}
+
+func findRemovedTags(currentTags, desiredTags []types.Tag) []string {
+	var tagsToRemove []string
+
+	for _, t := range currentTags {
+		if *t.Key == provider.LabelManagedBy || *t.Key == provider.LabelPiped || *t.Key == provider.LabelApplication || *t.Key == provider.LabelCommitHash {
+			continue
+		}
+
+		found := false
+		for _, desiredTag := range desiredTags {
+			if *desiredTag.Key == *t.Key {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			tagsToRemove = append(tagsToRemove, *t.Key)
+		}
+	}
+
+	return tagsToRemove
 }
 
 func runStandaloneTask(

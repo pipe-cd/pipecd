@@ -58,6 +58,8 @@ type ECS interface {
 	DeleteTaskSet(ctx context.Context, taskSet types.TaskSet) error
 	UpdateServicePrimaryTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) (*types.TaskSet, error)
 	TagResource(ctx context.Context, resourceArn string, tags []types.Tag) error
+	ListTags(ctx context.Context, resourceArn string) ([]types.Tag, error)
+	UntagResource(ctx context.Context, resourceArn string, tagKeys []string) error
 }
 
 type ELB interface {
