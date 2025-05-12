@@ -77,7 +77,6 @@ var (
 			d.StatusReason = statusReason
 			d.RunningCommitHash = runningCommitHash
 			d.RunningConfigFilename = runningConfigFilename
-			d.Version = version
 			d.Versions = versions
 			d.Stages = stages
 			return nil

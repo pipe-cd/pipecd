@@ -83,7 +83,6 @@ func TestDeploymentToPlannedUpdater(t *testing.T) {
 	assert.Equal(t, expectedStatusDesc, d.StatusReason)
 	assert.Equal(t, expectedRunningCommitHash, d.RunningCommitHash)
 	assert.Equal(t, expectedRunningConfigFilename, d.RunningConfigFilename)
-	assert.Equal(t, expectedVersion, d.Version)
 	assert.Equal(t, expectedVersions, d.Versions)
 	assert.Equal(t, expectedStages, d.Stages)
 }
