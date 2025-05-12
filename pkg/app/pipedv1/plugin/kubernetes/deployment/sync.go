@@ -65,7 +65,7 @@ func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStag
 
 	// Because the loaded manifests are read-only
 	// we duplicate them to avoid updating the shared manifests data in cache.
-	// TODO: implement duplicateManifests function
+	manifests = provider.DeepCopyManifests(manifests)
 
 	// When addVariantLabelToSelector is true, ensure that all workloads
 	// have the variant label in their selector.
