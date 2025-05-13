@@ -210,12 +210,14 @@ func (m Manifest) ToResourceState(deployTarget string) sdk.ResourceState {
 		}
 	}
 
+	status, desc := m.calculateHealthStatus()
+
 	return sdk.ResourceState{
 		ID:                string(m.body.GetUID()),
 		Name:              m.body.GetName(),
 		ParentIDs:         parents,
-		HealthStatus:      sdk.ResourceHealthStateUnknown, // TODO: Implement health status calculation
-		HealthDescription: "",                             // TODO: Implement health status calculation
+		HealthStatus:      status,
+		HealthDescription: desc,
 		ResourceType:      m.body.GetKind(),
 		ResourceMetadata: map[string]string{
 			"Namespace":   m.body.GetNamespace(),
