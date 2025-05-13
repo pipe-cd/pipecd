@@ -174,27 +174,21 @@ func (p Plugin) makeAppSyncState(liveManifests, gitManifests []provider.Manifest
 	return calculateSyncState(diffResult, commit, dt), nil
 }
 
+// calculateHealthStatus returns the overall health status with the following priority:
+// Unknown > Other > Healthy.
 func calculateHealthStatus(states []sdk.ApplicationLiveState) sdk.ApplicationHealthStatus {
-	var (
-		hasOther   bool
-		hasUnknown bool
-	)
-	for _, state := range states {
-		switch state.HealthStatus {
-		case sdk.ApplicationHealthStateOther:
-			hasOther = true
-		case sdk.ApplicationHealthStateUnknown:
-			hasUnknown = true
+	hasOther := false
+	for _, s := range states {
+		if s.HealthStatus == sdk.ApplicationHealthStateUnknown {
+			return sdk.ApplicationHealthStateUnknown
 		}
-	}
-
-	if hasUnknown {
-		return sdk.ApplicationHealthStateUnknown
+		if s.HealthStatus == sdk.ApplicationHealthStateOther {
+			hasOther = true
+		}
 	}
 	if hasOther {
 		return sdk.ApplicationHealthStateOther
 	}
-
 	return sdk.ApplicationHealthStateHealthy
 }
 
@@ -237,6 +231,8 @@ func calculateSyncState(diffResult *provider.DiffListResult, commit string, dt *
 	}
 }
 
+// calculateSyncStatus returns the highest-priority sync status among the given states.
+// Priority: InvalidConfig > Unknown > OutOfSync > Synced.
 func calculateSyncStatus(states []sdk.ApplicationSyncState) sdk.ApplicationSyncStatus {
 	var (
 		hasInvalidConfig bool
