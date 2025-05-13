@@ -189,6 +189,7 @@ func applyServiceDefinition(ctx context.Context, cli provider.Client, serviceDef
 func findRemovedTags(currentTags, desiredTags []types.Tag) []string {
 	var tagsToRemove []string
 
+	// Avoid removing PipeCD-managed tags, even though they're usually set in loadServiceDefinition()
 	for _, t := range currentTags {
 		if *t.Key == provider.LabelManagedBy || *t.Key == provider.LabelPiped || *t.Key == provider.LabelApplication || *t.Key == provider.LabelCommitHash {
 			continue
