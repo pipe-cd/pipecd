@@ -652,7 +652,6 @@ func Test_calculateSyncStatus(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			got := calculateSyncStatus(tt.args.states)
@@ -708,7 +707,6 @@ func Test_calculateHealthStatus(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			got := calculateHealthStatus(tt.states)
