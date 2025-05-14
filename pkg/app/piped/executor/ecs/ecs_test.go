@@ -1,4 +1,4 @@
-// Copyright 2024 The PipeCD Authors.
+// Copyright 2025 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,6 +26,9 @@ import (
 func TestFindRemovedTags(t *testing.T) {
 	currentTags := []types.Tag{
 		{Key: strPtr(provider.LabelManagedBy), Value: strPtr("piped")},
+		{Key: strPtr(provider.LabelPiped), Value: strPtr("piped-id")},
+		{Key: strPtr(provider.LabelApplication), Value: strPtr("app-id")},
+		{Key: strPtr(provider.LabelCommitHash), Value: strPtr("commit-sha")},
 		{Key: strPtr("region"), Value: strPtr("us-west-1")},
 		{Key: strPtr("project"), Value: strPtr("abc")},
 	}
