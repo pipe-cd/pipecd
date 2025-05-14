@@ -70,6 +70,9 @@ export const theme = createTheme({
       dark: "#9d0001",
     },
     secondary: cyan,
+    background: {
+      default: "#fafafa",
+    },
   },
   typography: {
     subtitle2: {
