@@ -261,3 +261,9 @@ kind-down:
 .PHONY: setup-envtest
 setup-envtest: ## Download setup-envtest locally if necessary.
 	test -s $(GOBIN)/setup-envtest || go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+
+.PHONY: setup-oidc
+setup-oidc: ## Setup a Keycloak OIDC provider for testing
+    @echo "Setting up Keycloak OIDC provider for testing..."
+    @chmod +x hack/setup-keycloak-oidc.sh
+    @hack/setup-keycloak-oidc.sh
