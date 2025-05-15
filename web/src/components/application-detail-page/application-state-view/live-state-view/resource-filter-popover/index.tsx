@@ -38,7 +38,11 @@ export const ResourceFilterPopover: FC<Props> = ({ filterState, onChange }) => {
 
   return (
     <>
-      <Box p={2}>
+      <Box
+        sx={{
+          p: 2,
+        }}
+      >
         <Button
           ref={buttonRef}
           startIcon={<FilterListIcon />}
@@ -49,9 +53,20 @@ export const ResourceFilterPopover: FC<Props> = ({ filterState, onChange }) => {
         </Button>
       </Box>
       <Popover open={open} anchorEl={buttonRef.current} onClose={handleClose}>
-        <Box p={2} minWidth={250}>
+        <Box
+          sx={{
+            p: 2,
+            minWidth: 250,
+          }}
+        >
           {Object.keys(filterState).map((resourceType) => (
-            <Box key={resourceType} display="flex" alignItems="center">
+            <Box
+              key={resourceType}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
               <FormControlLabel
                 control={
                   <Checkbox
@@ -69,7 +84,11 @@ export const ResourceFilterPopover: FC<Props> = ({ filterState, onChange }) => {
               />
             </Box>
           ))}
-          <Box textAlign="right">
+          <Box
+            sx={{
+              textAlign: "right",
+            }}
+          >
             <Button onClick={handleClose}>CANCEL</Button>
             <Button color="primary" onClick={handleApply}>
               APPLY

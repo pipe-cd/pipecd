@@ -40,7 +40,12 @@ const DeploymentItem: FC<Props> = ({ deployment }) => {
         },
       })}
     >
-      <Box display="flex" alignItems="center">
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
         <DeploymentStatusIcon status={deployment.status} />
         <Typography
           variant="subtitle2"
@@ -54,7 +59,13 @@ const DeploymentItem: FC<Props> = ({ deployment }) => {
           {DEPLOYMENT_STATE_TEXT[deployment.status]}
         </Typography>
       </Box>
-      <Box flex={1} overflow="hidden" maxWidth={"100%"}>
+      <Box
+        sx={{
+          flex: 1,
+          overflow: "hidden",
+          maxWidth: "100%",
+        }}
+      >
         <Box
           sx={(theme) => ({
             display: "flex",

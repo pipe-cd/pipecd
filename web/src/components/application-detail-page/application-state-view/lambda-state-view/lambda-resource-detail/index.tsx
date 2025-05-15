@@ -28,11 +28,21 @@ export const LambdaResourceDetail: FC<LambdaResourceDetailProps> = ({
         <CloseIcon />
       </CloseButton>
       <PanelTitle>{resource.name}</PanelTitle>
-      <Box pt={1} display={"flex"} alignItems={"center"}>
+      <Box
+        sx={{
+          pt: 1,
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
         <InfoRowTitle>Kind</InfoRowTitle>
         <InfoRowValue>{resource.kind}</InfoRowValue>
       </Box>
-      <Box pt={1}>
+      <Box
+        sx={{
+          pt: 1,
+        }}
+      >
         <InfoRowTitle>Health Description</InfoRowTitle>
         <InfoRowValue>{resource.healthDescription || "Empty"}</InfoRowValue>
       </Box>

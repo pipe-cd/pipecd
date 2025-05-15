@@ -89,10 +89,19 @@ const ApplicationCount: FC = () => {
   return (
     <CardWrapper raised>
       <CardContent>
-        <Typography color="textSecondary" fontWeight={"bold"}>
+        <Typography
+          color="textSecondary"
+          sx={{
+            fontWeight: "bold",
+          }}
+        >
           Applications
         </Typography>
-        <Box position={"relative"}>
+        <Box
+          sx={{
+            position: "relative",
+          }}
+        >
           <div style={{ width: "100%", height: 150 }} ref={chartElm} />
           <ChartEmptyData visible={!appSummary.total} />
         </Box>

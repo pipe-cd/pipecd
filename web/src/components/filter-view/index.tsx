@@ -19,7 +19,12 @@ export const FilterView: FC<FilterViewProps> = ({ onClear, children }) => {
         height: "100%",
       }}
     >
-      <Box display="flex" justifyContent="space-between">
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+        }}
+      >
         <Typography variant="h6" component="span">
           Filters
         </Typography>
@@ -27,7 +32,6 @@ export const FilterView: FC<FilterViewProps> = ({ onClear, children }) => {
           {UI_TEXT_CLEAR}
         </Button>
       </Box>
-
       {children}
     </Paper>
   );

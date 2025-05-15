@@ -41,7 +41,13 @@ export const ApplicationCount: FC<ApplicationCountProps> = memo(
           <Typography variant="h6" component="div" color="textSecondary">
             {kindName}
           </Typography>
-          <Box display="flex" justifyContent="center" alignItems="baseline">
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "baseline",
+            }}
+          >
             <Typography variant="h4" component="span">
               {enabledCount}
             </Typography>
@@ -66,7 +72,6 @@ export const ApplicationCount: FC<ApplicationCountProps> = memo(
             </Typography>
           </Box>
         </CardActionArea>
-
         <Popover
           id="mouse-over-popover"
           sx={{

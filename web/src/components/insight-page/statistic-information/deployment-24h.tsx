@@ -110,10 +110,19 @@ const Deployment24h: FC = () => {
   return (
     <CardWrapper raised>
       <CardContent>
-        <Typography color="textSecondary" fontWeight={"bold"}>
+        <Typography
+          color="textSecondary"
+          sx={{
+            fontWeight: "bold",
+          }}
+        >
           Deployments in 24h
         </Typography>
-        <Box position={"relative"}>
+        <Box
+          sx={{
+            position: "relative",
+          }}
+        >
           <div style={{ width: "100%", height: 150 }} ref={chartElm} />
           <ChartEmptyData visible={!deploymentSummary.totalDeployment} />
         </Box>

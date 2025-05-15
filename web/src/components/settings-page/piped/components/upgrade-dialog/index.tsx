@@ -86,7 +86,11 @@ export const UpgradePipedDialog: FC<UpgradePipedProps> = memo(
         <form onSubmit={handleSubmit}>
           <DialogTitle>Upgrade pipeds to a new version</DialogTitle>
           <DialogContent>
-            <Box mb={3}>
+            <Box
+              sx={{
+                mb: 3,
+              }}
+            >
               <Typography>1. Input your desired version</Typography>
               <Autocomplete
                 id="version"
@@ -103,7 +107,14 @@ export const UpgradePipedDialog: FC<UpgradePipedProps> = memo(
             </Box>
 
             <Typography>2. Select pipeds to upgrade</Typography>
-            <Box display="flex" flex={1} overflow="hidden" mt={1}>
+            <Box
+              sx={{
+                display: "flex",
+                flex: 1,
+                overflow: "hidden",
+                mt: 1,
+              }}
+            >
               <TableContainer component={Paper} square>
                 <Table aria-label="piped list" size="small" stickyHeader>
                   <TableHead>

@@ -85,10 +85,12 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
     if (!deployment || !piped) {
       return (
         <Box
-          flex={1}
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
+          sx={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
         >
           <CircularProgress />
         </Box>
@@ -104,11 +106,30 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
           position: "relative",
         }}
       >
-        <Box display="flex" flexDirection="column">
-          <Box flex={1}>
-            <Box display="flex" alignItems="center">
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <Box
+            sx={{
+              flex: 1,
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
               <DeploymentStatusIcon status={deployment.status} />
-              <Typography variant="h6" ml={1}>
+              <Typography
+                variant="h6"
+                sx={{
+                  ml: 1,
+                }}
+              >
                 {DEPLOYMENT_STATE_TEXT[deployment.status]}
               </Typography>
               <Typography
@@ -132,12 +153,27 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
                 />
               ))}
             </Box>
-            <Typography variant="body2" color="textSecondary" pt={1} pb={1}>
+            <Typography
+              variant="body2"
+              color="textSecondary"
+              sx={{
+                pt: 1,
+                pb: 1,
+              }}
+            >
               {deployment.statusReason}
             </Typography>
           </Box>
-          <Box display="flex">
-            <Box flex={1}>
+          <Box
+            sx={{
+              display: "flex",
+            }}
+          >
+            <Box
+              sx={{
+                flex: 1,
+              }}
+            >
               <table>
                 <tbody>
                   <DetailTableRow
@@ -188,17 +224,30 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
                 </tbody>
               </table>
             </Box>
-            <Box flex={1}>
+            <Box
+              sx={{
+                flex: 1,
+              }}
+            >
               <table>
                 <tbody>
                   {deployment.trigger?.commit && (
                     <DetailTableRow
                       label="Commit"
                       value={
-                        <Box display="flex">
+                        <Box
+                          sx={{
+                            display: "flex",
+                          }}
+                        >
                           <Typography variant="body2">
                             {deployment.trigger.commit.message}
-                            <Typography component={"span"} ml={1}>
+                            <Typography
+                              component={"span"}
+                              sx={{
+                                ml: 1,
+                              }}
+                            >
                               (
                               <Link
                                 variant="body2"

@@ -30,11 +30,21 @@ export const AppLiveState: FC<AppLiveStateProps> = memo(function AppLiveState({
   }
 
   return (
-    <Box display="flex" alignItems="center">
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+      }}
+    >
       {liveState ? (
         <ApplicationHealthStatusIcon health={liveState.healthStatus} />
       ) : null}
-      <Typography variant="h6" ml={0.5}>
+      <Typography
+        variant="h6"
+        sx={{
+          ml: 0.5,
+        }}
+      >
         {liveState
           ? APPLICATION_HEALTH_STATUS_TEXT[liveState.healthStatus]
           : UI_TEXT_NOT_AVAILABLE_TEXT}

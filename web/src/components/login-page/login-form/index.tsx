@@ -57,7 +57,11 @@ export const LoginForm: FC<LoginFormProps> = memo(function LoginForm({
             variant="contained"
             sx={{ bgcolor: "#24292E" }}
           >
-            <Box mr={1}>
+            <Box
+              sx={{
+                mr: 1,
+              }}
+            >
               <MarkGithubIcon />
             </Box>
             LOGIN WITH GITHUB

@@ -49,7 +49,12 @@ const LoadingSkelton = memo(function LoadingSkelton() {
         <Skeleton width={200} height={30} />
       </TableCell>
       <TableCell align="right">
-        <Box height={48} width={48} />
+        <Box
+          sx={{
+            height: 48,
+            width: 48,
+          }}
+        />
       </TableCell>
     </TableRow>
   );
@@ -62,7 +67,12 @@ const EmptyTableContent = memo(function EmptyTableContent() {
         <Typography>No API Keys</Typography>
       </TableCell>
       <TableCell align="right">
-        <Box height={48} width={48} />
+        <Box
+          sx={{
+            height: 48,
+            width: 48,
+          }}
+        />
       </TableCell>
     </TableRow>
   );

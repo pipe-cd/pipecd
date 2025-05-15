@@ -87,7 +87,12 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
           setSelectedLabels([]);
         }}
       >
-        <Box width={"100%"} mt={4}>
+        <Box
+          sx={{
+            width: "100%",
+            mt: 4,
+          }}
+        >
           <ApplicationAutocomplete
             value={options.applicationName ?? null}
             onChange={(value) =>
@@ -95,7 +100,6 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
             }
           />
         </Box>
-
         <FormControl sx={{ width: "100%", mt: 4 }} variant="outlined">
           <InputLabel id="filter-application-kind">Application Kind</InputLabel>
           <Select
@@ -131,7 +135,6 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
             ))}
           </Select>
         </FormControl>
-
         <Box sx={{ width: "100%", mt: 4 }}>
           <Autocomplete
             id="application-select"
@@ -139,9 +142,7 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
             getOptionLabel={(option) => option.id}
             renderOption={(props, option) => (
               // TODO check this changes, add prop to span
-              <span {...props}>
-                {option.name} ({option.id})
-              </span>
+              <span {...props}>{`${option.name} (${option.id})`}</span>
             )}
             value={selectedApp || null}
             onChange={(_, value) => {
@@ -161,7 +162,6 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
             )}
           />
         </Box>
-
         <FormControl sx={{ width: "100%", mt: 4 }} variant="outlined">
           <InputLabel id="filter-deployment-status">
             Deployment Status
@@ -199,7 +199,6 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
             ))}
           </Select>
         </FormControl>
-
         <FormControl sx={{ width: "100%", mt: 4 }} variant="outlined">
           <Autocomplete
             multiple
