@@ -3,10 +3,9 @@ import {
   Collapse,
   IconButton,
   List,
-  ListItem,
+  ListItemButton,
   Typography,
 } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
 import dayjs from "dayjs";
 import React, { FC, useMemo, useState } from "react";
 import { ListDeploymentTracesResponse } from "~~/api_client/service_pb";
@@ -15,59 +14,6 @@ import { ArrowDropDown } from "@mui/icons-material";
 import DeploymentItem from "./deployment-item";
 import { Link as RouterLink } from "react-router-dom";
 import { PAGE_PATH_DEPLOYMENTS } from "~/constants/path";
-import clsx from "clsx";
-
-const useStyles = makeStyles((theme) => ({
-  title: {
-    display: "inline",
-  },
-  btnMore: {
-    display: "inline-flex",
-    padding: "0 1px",
-    borderRadius: 5,
-    marginLeft: 5,
-    marginBottom: 4,
-  },
-  btnMoreActive: {
-    backgroundColor: theme.palette.grey[300],
-  },
-  btnRotate: {
-    transform: "rotate(180deg)",
-  },
-  traceItem: {
-    padding: theme.spacing(2),
-    paddingRight: theme.spacing(0),
-    borderBottom: `1px solid ${theme.palette.grey[300]}`,
-    backgroundColor: theme.palette.background.paper,
-    "&:hover": {
-      backgroundColor: theme.palette.grey[100],
-    },
-  },
-  traceStickyTop: {
-    position: "sticky",
-    top: 0,
-    zIndex: 50,
-    paddingBottom: theme.spacing(1),
-  },
-  commitMessageWrap: {
-    maxHeight: "20svh",
-    overflow: "hidden auto",
-    borderLeft: `0.5px  solid ${theme.palette.grey[500]}`,
-    paddingLeft: theme.spacing(1),
-    paddingTop: theme.spacing(1),
-    marginBottom: theme.spacing(1),
-    marginLeft: theme.spacing(1),
-  },
-  commitMessage: {
-    whiteSpace: "pre-wrap",
-  },
-  emptyPlaceholder: {
-    padding: theme.spacing(2),
-    border: `1px solid ${theme.palette.grey[300]}`,
-    borderTop: "none",
-    backgroundColor: theme.palette.background.default,
-  },
-}));
 
 type Props = {
   trace: ListDeploymentTracesResponse.DeploymentTraceRes.AsObject["trace"];
@@ -75,7 +21,6 @@ type Props = {
 };
 
 const DeploymentTraceItem: FC<Props> = ({ trace, deploymentList }) => {
-  const classes = useStyles();
   const [visibleMessage, setVisibleMessage] = useState(false);
   const [visibleDeployments, setVisibleDeployments] = useState(false);
 
@@ -106,8 +51,18 @@ const DeploymentTraceItem: FC<Props> = ({ trace, deploymentList }) => {
   return (
     <Box flex={1} width={"100%"}>
       <Box
-        className={clsx(classes.traceItem, {
-          [classes.traceStickyTop]: visibleDeployments,
+        sx={(theme) => ({
+          padding: theme.spacing(2),
+          paddingRight: theme.spacing(0),
+          borderBottom: `1px solid ${theme.palette.grey[300]}`,
+          backgroundColor: theme.palette.background.paper,
+          "&:hover": {
+            backgroundColor: theme.palette.grey[100],
+          },
+          position: visibleDeployments ? "sticky" : undefined,
+          top: visibleDeployments ? 0 : undefined,
+          zIndex: visibleDeployments ? 50 : undefined,
+          paddingBottom: visibleDeployments ? theme.spacing(1) : undefined,
         })}
       >
         <Box
@@ -119,16 +74,21 @@ const DeploymentTraceItem: FC<Props> = ({ trace, deploymentList }) => {
         >
           <Box overflow={"hidden"} flex={1}>
             <Box>
-              <Typography variant="h6" className={classes.title}>
+              <Typography variant="h6" sx={{ display: "inline" }}>
                 {trace?.title || `Title of commit ${trace?.commitHash}`}
               </Typography>
               {trace?.commitMessage && (
                 <IconButton
                   size="small"
                   aria-label="btn-commit-message"
-                  className={clsx(classes.btnMore, {
-                    [classes.btnMoreActive]: visibleMessage,
-                  })}
+                  sx={{
+                    display: "inline-flex",
+                    padding: "0 1px",
+                    borderRadius: "5px",
+                    marginLeft: "5px",
+                    marginBottom: "4px",
+                    backgroundColor: visibleMessage ? "grey.300" : undefined,
+                  }}
                   onClick={onViewCommitMessage}
                   title={
                     visibleMessage
@@ -152,7 +112,9 @@ const DeploymentTraceItem: FC<Props> = ({ trace, deploymentList }) => {
 
           <IconButton
             aria-label="expand"
-            className={visibleDeployments ? classes.btnRotate : ""}
+            sx={{
+              transform: visibleDeployments ? "rotate(180deg)" : undefined,
+            }}
             onClick={() => setVisibleDeployments(!visibleDeployments)}
             size="large"
           >
@@ -161,11 +123,21 @@ const DeploymentTraceItem: FC<Props> = ({ trace, deploymentList }) => {
         </Box>
 
         {visibleMessage && (
-          <Box className={classes.commitMessageWrap}>
+          <Box
+            sx={(theme) => ({
+              maxHeight: "20svh",
+              overflow: "hidden auto",
+              borderLeft: `0.5px  solid ${theme.palette.grey[500]}`,
+              paddingLeft: theme.spacing(1),
+              paddingTop: theme.spacing(1),
+              marginBottom: theme.spacing(1),
+              marginLeft: theme.spacing(1),
+            })}
+          >
             <Typography
               variant="body2"
               color="textSecondary"
-              className={classes.commitMessage}
+              sx={{ whiteSpace: "pre-wrap" }}
             >
               {trace?.commitMessage}
             </Typography>
@@ -189,7 +161,14 @@ const DeploymentTraceItem: FC<Props> = ({ trace, deploymentList }) => {
       </Box>
       <Collapse in={visibleDeployments} unmountOnExit key={trace?.id}>
         {deploymentList.length === 0 && (
-          <Box className={classes.emptyPlaceholder}>
+          <Box
+            sx={(theme) => ({
+              padding: theme.spacing(2),
+              border: `1px solid ${theme.palette.grey[300]}`,
+              borderTop: "none",
+              backgroundColor: theme.palette.background.default,
+            })}
+          >
             <Typography variant="body2" color="textSecondary" align="center">
               No deployment triggered
             </Typography>
@@ -197,16 +176,15 @@ const DeploymentTraceItem: FC<Props> = ({ trace, deploymentList }) => {
         )}
         <List>
           {deploymentList.map((deployment) => (
-            <ListItem
+            <ListItemButton
               key={deployment?.id}
-              button
               dense
               divider
               component={RouterLink}
               to={`${PAGE_PATH_DEPLOYMENTS}/${deployment.id}`}
             >
               <DeploymentItem key={deployment.id} deployment={deployment} />
-            </ListItem>
+            </ListItemButton>
           ))}
         </List>
       </Collapse>
