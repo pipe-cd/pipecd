@@ -271,9 +271,11 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
           onClose={() => setAnchorEl(null)}
-          PaperProps={{
-            style: {
-              width: "20ch",
+          slotProps={{
+            paper: {
+              style: {
+                width: "20ch",
+              },
             },
           }}
         >
