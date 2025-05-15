@@ -129,12 +129,14 @@ func (p Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTarge
 		appLiveState.HealthStatus = sdk.ApplicationHealthStateUnknown // TODO: Implement health status calculation
 	}
 
+	appLiveState.HealthStatus = calculateHealthStatus(liveStates)
+
 	appSyncState := sdk.ApplicationSyncState{}
 	for _, ss := range syncStates {
 		appSyncState.Reason = fmt.Sprintf("%s\n%s", appSyncState.Reason, ss.Reason)
 		appSyncState.ShortReason = fmt.Sprintf("%s\n%s", appSyncState.ShortReason, ss.ShortReason)
-		appSyncState.Status = sdk.ApplicationSyncStateOutOfSync // TODO: Implement health status calculation
 	}
+	appSyncState.Status = calculateSyncStatus(syncStates)
 
 	return &sdk.GetLivestateResponse{
 		LiveState: appLiveState,
@@ -170,6 +172,24 @@ func (p Plugin) makeAppSyncState(liveManifests, gitManifests []provider.Manifest
 	}
 
 	return calculateSyncState(diffResult, commit, dt), nil
+}
+
+// calculateHealthStatus returns the overall health status with the following priority:
+// Unknown > Other > Healthy.
+func calculateHealthStatus(states []sdk.ApplicationLiveState) sdk.ApplicationHealthStatus {
+	hasOther := false
+	for _, s := range states {
+		if s.HealthStatus == sdk.ApplicationHealthStateUnknown {
+			return sdk.ApplicationHealthStateUnknown
+		}
+		if s.HealthStatus == sdk.ApplicationHealthStateOther {
+			hasOther = true
+		}
+	}
+	if hasOther {
+		return sdk.ApplicationHealthStateOther
+	}
+	return sdk.ApplicationHealthStateHealthy
 }
 
 func calculateSyncState(diffResult *provider.DiffListResult, commit string, dt *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.ApplicationSyncState {
@@ -209,6 +229,40 @@ func calculateSyncState(diffResult *provider.DiffListResult, commit string, dt *
 		ShortReason: shortReason,
 		Reason:      b.String(),
 	}
+}
+
+// calculateSyncStatus returns the highest-priority sync status among the given states.
+// Priority: InvalidConfig > Unknown > OutOfSync > Synced.
+func calculateSyncStatus(states []sdk.ApplicationSyncState) sdk.ApplicationSyncStatus {
+	var (
+		hasInvalidConfig bool
+		hasUnknown       bool
+		hasOutOfSync     bool
+	)
+	for _, state := range states {
+		switch state.Status {
+		case sdk.ApplicationSyncStateInvalidConfig:
+			hasInvalidConfig = true
+		case sdk.ApplicationSyncStateUnknown:
+			hasUnknown = true
+		case sdk.ApplicationSyncStateOutOfSync:
+			hasOutOfSync = true
+		}
+	}
+
+	if hasInvalidConfig {
+		return sdk.ApplicationSyncStateInvalidConfig
+	}
+
+	if hasUnknown {
+		return sdk.ApplicationSyncStateUnknown
+	}
+
+	if hasOutOfSync {
+		return sdk.ApplicationSyncStateOutOfSync
+	}
+
+	return sdk.ApplicationSyncStateSynced
 }
 
 type loader interface {

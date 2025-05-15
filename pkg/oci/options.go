@@ -24,6 +24,8 @@ const (
 // PushOptions holds options for pushing to an OCI registry.
 type PushOptions struct {
 	insecure bool
+	username string
+	password string
 }
 
 // PushOption is an interface for applying push options.
@@ -34,6 +36,8 @@ type PushOption interface {
 // PullOptions holds options for pulling from an OCI registry.
 type PullOptions struct {
 	insecure     bool
+	username     string
+	password     string
 	targetOS     string
 	targetArch   string
 	mediaType    string
@@ -49,6 +53,39 @@ type PullOption interface {
 type Option interface {
 	PushOption
 	PullOption
+}
+
+// usernameOption is an option to specify the username for pushing.
+type usernameOption string
+
+// applyPushOption applies the username option to PushOptions.
+func (o usernameOption) applyPushOption(opts *PushOptions) {
+	opts.username = string(o)
+}
+
+func (o usernameOption) applyPullOption(opts *PullOptions) {
+	opts.username = string(o)
+}
+
+// WithUsername returns a Option that sets the username.
+func WithUsername(username string) Option {
+	return usernameOption(username)
+}
+
+type passwordOption string
+
+// applyPushOption applies the password option to PushOptions.
+func (o passwordOption) applyPushOption(opts *PushOptions) {
+	opts.password = string(o)
+}
+
+func (o passwordOption) applyPullOption(opts *PullOptions) {
+	opts.password = string(o)
+}
+
+// WithPassword returns a Option that sets the password.
+func WithPassword(password string) Option {
+	return passwordOption(password)
 }
 
 // insecureOption is an option to enable insecure connections.

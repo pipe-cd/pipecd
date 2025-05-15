@@ -559,3 +559,158 @@ data:
 		})
 	}
 }
+func Test_calculateSyncStatus(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		states []sdk.ApplicationSyncState
+	}
+	tests := []struct {
+		name string
+		args args
+		want sdk.ApplicationSyncStatus
+	}{
+		{
+			name: "all states are Synced",
+			args: args{
+				states: []sdk.ApplicationSyncState{
+					{Status: sdk.ApplicationSyncStateSynced},
+					{Status: sdk.ApplicationSyncStateSynced},
+				},
+			},
+			want: sdk.ApplicationSyncStateSynced,
+		},
+		{
+			name: "one state is OutOfSync",
+			args: args{
+				states: []sdk.ApplicationSyncState{
+					{Status: sdk.ApplicationSyncStateSynced},
+					{Status: sdk.ApplicationSyncStateOutOfSync},
+				},
+			},
+			want: sdk.ApplicationSyncStateOutOfSync,
+		},
+		{
+			name: "one state is Unknown",
+			args: args{
+				states: []sdk.ApplicationSyncState{
+					{Status: sdk.ApplicationSyncStateSynced},
+					{Status: sdk.ApplicationSyncStateUnknown},
+				},
+			},
+			want: sdk.ApplicationSyncStateUnknown,
+		},
+		{
+			name: "one state is InvalidConfig",
+			args: args{
+				states: []sdk.ApplicationSyncState{
+					{Status: sdk.ApplicationSyncStateSynced},
+					{Status: sdk.ApplicationSyncStateInvalidConfig},
+				},
+			},
+			want: sdk.ApplicationSyncStateInvalidConfig,
+		},
+		{
+			name: "priority: InvalidConfig > Unknown > OutOfSync > Synced",
+			args: args{
+				states: []sdk.ApplicationSyncState{
+					{Status: sdk.ApplicationSyncStateSynced},
+					{Status: sdk.ApplicationSyncStateOutOfSync},
+					{Status: sdk.ApplicationSyncStateUnknown},
+					{Status: sdk.ApplicationSyncStateInvalidConfig},
+				},
+			},
+			want: sdk.ApplicationSyncStateInvalidConfig,
+		},
+		{
+			name: "priority: Unknown > OutOfSync > Synced",
+			args: args{
+				states: []sdk.ApplicationSyncState{
+					{Status: sdk.ApplicationSyncStateSynced},
+					{Status: sdk.ApplicationSyncStateOutOfSync},
+					{Status: sdk.ApplicationSyncStateUnknown},
+				},
+			},
+			want: sdk.ApplicationSyncStateUnknown,
+		},
+		{
+			name: "priority: OutOfSync > Synced",
+			args: args{
+				states: []sdk.ApplicationSyncState{
+					{Status: sdk.ApplicationSyncStateSynced},
+					{Status: sdk.ApplicationSyncStateOutOfSync},
+				},
+			},
+			want: sdk.ApplicationSyncStateOutOfSync,
+		},
+		{
+			name: "empty states returns Synced",
+			args: args{
+				states: []sdk.ApplicationSyncState{},
+			},
+			want: sdk.ApplicationSyncStateSynced,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := calculateSyncStatus(tt.args.states)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+func Test_calculateHealthStatus(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		states []sdk.ApplicationLiveState
+		want   sdk.ApplicationHealthStatus
+	}{
+		{
+			name: "all states are Healthy",
+			states: []sdk.ApplicationLiveState{
+				{HealthStatus: sdk.ApplicationHealthStateHealthy},
+				{HealthStatus: sdk.ApplicationHealthStateHealthy},
+			},
+			want: sdk.ApplicationHealthStateHealthy,
+		},
+		{
+			name: "one state is Other",
+			states: []sdk.ApplicationLiveState{
+				{HealthStatus: sdk.ApplicationHealthStateHealthy},
+				{HealthStatus: sdk.ApplicationHealthStateOther},
+			},
+			want: sdk.ApplicationHealthStateOther,
+		},
+		{
+			name: "one state is Unknown",
+			states: []sdk.ApplicationLiveState{
+				{HealthStatus: sdk.ApplicationHealthStateHealthy},
+				{HealthStatus: sdk.ApplicationHealthStateUnknown},
+			},
+			want: sdk.ApplicationHealthStateUnknown,
+		},
+		{
+			name: "priority: Unknown > Other > Healthy",
+			states: []sdk.ApplicationLiveState{
+				{HealthStatus: sdk.ApplicationHealthStateOther},
+				{HealthStatus: sdk.ApplicationHealthStateUnknown},
+			},
+			want: sdk.ApplicationHealthStateUnknown,
+		},
+		{
+			name:   "empty states returns Healthy",
+			states: []sdk.ApplicationLiveState{},
+			want:   sdk.ApplicationHealthStateHealthy,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := calculateHealthStatus(tt.states)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
