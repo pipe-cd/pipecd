@@ -13,6 +13,7 @@ env:
   GO_VERSION: 1.24.1
   NODE_VERSION: 18.12.0
   GOLANGCI_LINT_VERSION: v1.64.7
+  HELM_VERSION: 3.17.3
 
 jobs:
   go:
@@ -47,3 +48,16 @@ jobs:
         run: make update/web-deps
       - name: Run lint
         run: make lint/web
+  helm:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      - name: Lint all Helm charts
+        run: helm lint ./manifests/pipecd ./manifests/piped ./manifests/helloworld ./manifests/site
