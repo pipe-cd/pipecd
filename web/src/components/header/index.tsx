@@ -62,9 +62,9 @@ const useStyles = makeStyles((theme) => ({
   },
   right: {
     height: "100%",
-    overflow: 'hidden',
-    display: 'flex',
-    alignItems: 'center',
+    overflow: "hidden",
+    display: "flex",
+    alignItems: "center",
     "&:hover": {
       color: theme.palette.grey[400],
     },
@@ -216,9 +216,17 @@ export const Header: FC = memo(function Header() {
                 aria-controls="user-menu"
                 aria-haspopup="true"
                 onClick={(e) => setUserAnchorEl(e.currentTarget)}
-                style={{ display: 'flex', alignItems: 'center', textTransform: 'none' }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  textTransform: "none",
+                }}
               >
-                <Avatar className={classes.userAvatar} src={me.avatarUrl} style={{ marginRight: 8 }} />
+                <Avatar
+                  className={classes.userAvatar}
+                  src={me.avatarUrl}
+                  style={{ marginRight: 8 }}
+                />
                 {me.subject}
               </Button>
             </>
@@ -256,8 +264,8 @@ export const Header: FC = memo(function Header() {
         open={Boolean(userAnchorEl)}
         getContentAnchorEl={null}
         anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
+          vertical: "bottom",
+          horizontal: "right",
         }}
         onClose={(): void => {
           setUserAnchorEl(null);
