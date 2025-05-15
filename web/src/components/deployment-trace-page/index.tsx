@@ -6,7 +6,6 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import FilterIcon from "@mui/icons-material/FilterList";
@@ -17,7 +16,7 @@ import {
   UI_TEXT_MORE,
   UI_TEXT_REFRESH,
 } from "~/constants/ui-text";
-import { useStyles as useButtonStyles } from "~/styles/button";
+import { SpinnerIcon } from "~/styles/button";
 import DeploymentTraceFilter from "./deployment-trace-filter";
 import { useNavigate } from "react-router-dom";
 import { PAGE_PATH_DEPLOYMENT_TRACE } from "~/constants/path";
@@ -35,28 +34,9 @@ import useGroupedDeploymentTrace from "./useGroupedDeploymentTrace";
 import DeploymentTraceItem from "./deployment-trace-item";
 import { useInView } from "react-intersection-observer";
 
-const useStyles = makeStyles((theme) => ({
-  list: {
-    listStyle: "none",
-    padding: theme.spacing(3),
-    paddingTop: 0,
-    margin: 0,
-    flex: 1,
-    overflowY: "scroll",
-  },
-  listDeployment: {
-    backgroundColor: theme.palette.background.paper,
-  },
-  date: {
-    marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(2),
-  },
-}));
 const DeploymentTracePage: FC = () => {
-  const classes = useStyles();
   const [openFilter, setOpenFilter] = useState(true);
   const dispatch = useAppDispatch();
-  const buttonClasses = useButtonStyles();
   const status = useAppSelector((state) => state.deploymentTrace.status);
   const hasMore = useAppSelector((state) => state.deploymentTrace.hasMore);
   const navigate = useNavigate();
@@ -113,9 +93,7 @@ const DeploymentTracePage: FC = () => {
           disabled={isLoading}
         >
           {UI_TEXT_REFRESH}
-          {isLoading && (
-            <CircularProgress size={24} className={buttonClasses.progress} />
-          )}
+          {isLoading && <SpinnerIcon />}
         </Button>
         <Button
           color="primary"
@@ -128,7 +106,18 @@ const DeploymentTracePage: FC = () => {
 
       <Divider />
       <Box display="flex" overflow="hidden" flex={1}>
-        <ol className={classes.list} ref={listRef}>
+        <Box
+          component={"ol"}
+          sx={{
+            listStyle: "none",
+            padding: 3,
+            paddingTop: 0,
+            margin: 0,
+            flex: 1,
+            overflowY: "scroll",
+          }}
+          ref={listRef}
+        >
           {dates.length === 0 && isLoading && (
             <Box display="flex" justifyContent="center" mt={3}>
               <CircularProgress />
@@ -141,10 +130,10 @@ const DeploymentTracePage: FC = () => {
           )}
           {dates.map((date) => (
             <Box key={date} mb={1}>
-              <Typography variant="subtitle1" className={classes.date}>
+              <Typography variant="subtitle1" sx={{ mt: 2, mb: 2 }}>
                 {date}
               </Typography>
-              <Box className={classes.listDeployment}>
+              <Box bgcolor={"background.paper"}>
                 {deploymentTracesMap[date].map(({ trace, deploymentsList }) => (
                   <DeploymentTraceItem
                     key={trace?.id}
@@ -166,15 +155,10 @@ const DeploymentTracePage: FC = () => {
               disabled={isLoading}
             >
               {UI_TEXT_MORE}
-              {isLoading && (
-                <CircularProgress
-                  size={24}
-                  className={buttonClasses.progress}
-                />
-              )}
+              {isLoading && <SpinnerIcon />}
             </Button>
           )}
-        </ol>
+        </Box>
 
         {openFilter && (
           <DeploymentTraceFilter
