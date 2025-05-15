@@ -1,37 +1,11 @@
 import { Box } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
-import clsx from "clsx";
 import dagre from "dagre";
 import { FC, useState } from "react";
 import { LambdaResourceState } from "~/modules/applications-live-state";
 import { theme } from "~/theme";
 import { LambdaResource } from "./lambda-resource";
 import { LambdaResourceDetail } from "./lambda-resource-detail";
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    display: "flex",
-    flex: 1,
-    justifyContent: "center",
-    overflow: "hidden",
-  },
-  stateViewWrapper: {
-    flex: 1,
-    display: "flex",
-    justifyContent: "center",
-    overflow: "hidden",
-  },
-  stateView: {
-    position: "relative",
-    overflow: "auto",
-  },
-  closeDetailButton: {
-    position: "absolute",
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
-}));
+import { StateView, StateViewRoot, StateViewWrapper } from "./styles";
 
 export interface LambdaStateViewProps {
   resources: LambdaResourceState.AsObject[];
@@ -74,7 +48,6 @@ function useGraph(
 }
 
 export const LambdaStateView: FC<LambdaStateViewProps> = ({ resources }) => {
-  const classes = useStyles();
   const [
     selectedResource,
     setSelectedResource,
@@ -89,9 +62,9 @@ export const LambdaStateView: FC<LambdaStateViewProps> = ({ resources }) => {
   const graphInstance = graph.graph();
 
   return (
-    <div className={clsx(classes.root)}>
-      <div className={classes.stateViewWrapper}>
-        <div className={classes.stateView}>
+    <StateViewRoot>
+      <StateViewWrapper>
+        <StateView>
           {nodes.map((node) => (
             <Box
               key={`${node.resource.kind}-${node.resource.name}`}
@@ -163,8 +136,8 @@ export const LambdaStateView: FC<LambdaStateViewProps> = ({ resources }) => {
               }}
             />
           )}
-        </div>
-      </div>
+        </StateView>
+      </StateViewWrapper>
 
       {selectedResource && (
         <LambdaResourceDetail
@@ -172,6 +145,6 @@ export const LambdaStateView: FC<LambdaStateViewProps> = ({ resources }) => {
           onClose={() => setSelectedResource(null)}
         />
       )}
-    </div>
+    </StateViewRoot>
   );
 };
