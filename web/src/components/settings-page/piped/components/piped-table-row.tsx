@@ -51,12 +51,6 @@ interface Props {
 }
 
 const ITEM_HEIGHT = 48;
-const menuStyle = {
-  style: {
-    maxHeight: ITEM_HEIGHT * 5.5,
-    width: "25ch",
-  },
-};
 
 export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
   pipedId,
@@ -221,7 +215,14 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
-        PaperProps={menuStyle}
+        slotProps={{
+          paper: {
+            style: {
+              maxHeight: ITEM_HEIGHT * 5.5,
+              width: "25ch",
+            },
+          },
+        }}
       >
         {piped.disabled ? (
           <MenuItem onClick={handleEnable}>{UI_TEXT_ENABLE}</MenuItem>
