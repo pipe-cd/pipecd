@@ -68,11 +68,13 @@ export const CloudRunStateView: FC<CloudRunStateViewProps> = ({
           {nodes.map((node) => (
             <Box
               key={`${node.resource.kind}-${node.resource.name}`}
-              position="absolute"
-              top={node.y}
-              left={node.x}
-              zIndex={1}
               data-testid="cloudrun-resource"
+              sx={{
+                position: "absolute",
+                top: node.y,
+                left: node.x,
+                zIndex: 1,
+              }}
             >
               <CloudRunResource
                 resource={node.resource}

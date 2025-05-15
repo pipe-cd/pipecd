@@ -33,7 +33,12 @@ export const EventItem: FC<EventItemProps> = memo(function EventItem({ id }) {
       dense
       divider
     >
-      <Box display="flex" alignItems="center">
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
         <EventStatusIcon status={event.status} />
         <Typography
           variant="subtitle2"
@@ -48,12 +53,30 @@ export const EventItem: FC<EventItemProps> = memo(function EventItem({ id }) {
           {EVENT_STATE_TEXT[event.status]}
         </Typography>
       </Box>
-      <Box display="flex" flexDirection="column" flex={1} pl={2}>
-        <Box display="flex" alignItems="baseline">
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          pl: 2,
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "baseline",
+          }}
+        >
           <Typography variant="h6" component="span">
             {event.name}
           </Typography>
-          <Typography variant="body2" color="textSecondary" ml={1}>
+          <Typography
+            variant="body2"
+            color="textSecondary"
+            sx={{
+              ml: 1,
+            }}
+          >
             {event.id}
             {event.labelsMap.map(([key, value], i) => (
               <Chip label={key + ": " + value} sx={{ ml: 1 }} key={i} />

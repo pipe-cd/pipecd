@@ -125,7 +125,6 @@ export const LogViewer: FC = memo(function LogViewer() {
           })}
         />
       </Draggable>
-
       <Box
         data-testid="log-viewer"
         sx={{
@@ -171,10 +170,21 @@ export const LogViewer: FC = memo(function LogViewer() {
                   SKIP
                 </Button>
               )}
-            <Typography variant="subtitle2" fontFamily={"fontFamilyMono"}>
+            <Typography
+              variant="subtitle2"
+              sx={{
+                fontFamily: "fontFamilyMono",
+              }}
+            >
               {activeStage.name}
             </Typography>
-            <Typography variant="body2" color={"text.secondary"} ml={2}>
+            <Typography
+              variant="body2"
+              sx={{
+                color: "text.secondary",
+                ml: 2,
+              }}
+            >
               {activeStage.desc}
             </Typography>
           </Box>

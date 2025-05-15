@@ -105,7 +105,11 @@ export const DeleteApplicationDialog: FC<DeleteApplicationDialogProps> = memo(
               <Skeleton height={24} width={200} />
             )}
           </Typography>
-          <Box height={24} />
+          <Box
+            sx={{
+              height: 24,
+            }}
+          />
           <Typography variant="caption">Labels</Typography>
           <Typography
             variant="body1"

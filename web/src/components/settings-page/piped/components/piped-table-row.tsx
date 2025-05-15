@@ -178,7 +178,13 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
             "&:hover button": { visibility: "visible" },
           }}
         >
-          <Box display="flex" alignItems="center" fontFamily="fontFamilyMono">
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              fontFamily: "fontFamilyMono",
+            }}
+          >
             {piped.id}
             <CopyIconButton name="Piped ID" value={piped.id} />
           </Box>

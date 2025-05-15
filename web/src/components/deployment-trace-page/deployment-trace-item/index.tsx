@@ -49,7 +49,12 @@ const DeploymentTraceItem: FC<Props> = ({ trace, deploymentList }) => {
   }, [trace?.commitTimestamp]);
 
   return (
-    <Box flex={1} width={"100%"}>
+    <Box
+      sx={{
+        flex: 1,
+        width: "100%",
+      }}
+    >
       <Box
         sx={(theme) => ({
           padding: theme.spacing(2),
@@ -66,13 +71,20 @@ const DeploymentTraceItem: FC<Props> = ({ trace, deploymentList }) => {
         })}
       >
         <Box
-          display="flex"
-          columnGap={10}
-          alignItems={"start"}
-          justifyContent={"space-between"}
-          pr={1}
+          sx={{
+            display: "flex",
+            columnGap: 10,
+            alignItems: "start",
+            justifyContent: "space-between",
+            pr: 1,
+          }}
         >
-          <Box overflow={"hidden"} flex={1}>
+          <Box
+            sx={{
+              overflow: "hidden",
+              flex: 1,
+            }}
+          >
             <Box>
               <Typography variant="h6" sx={{ display: "inline" }}>
                 {trace?.title || `Title of commit ${trace?.commitHash}`}
@@ -101,7 +113,11 @@ const DeploymentTraceItem: FC<Props> = ({ trace, deploymentList }) => {
               )}
             </Box>
 
-            <Box display="flex">
+            <Box
+              sx={{
+                display: "flex",
+              }}
+            >
               <RouterLink to={trace?.commitUrl || "#"} target="_blank">
                 <Typography variant="body2" color="textSecondary">
                   {trace?.commitHash}
@@ -144,7 +160,12 @@ const DeploymentTraceItem: FC<Props> = ({ trace, deploymentList }) => {
           </Box>
         )}
 
-        <Box display={"flex"} columnGap={3}>
+        <Box
+          sx={{
+            display: "flex",
+            columnGap: 3,
+          }}
+        >
           {trace?.author && (
             <Typography variant="body2" color="textSecondary">
               {trace?.author} authored

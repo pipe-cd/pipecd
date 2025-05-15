@@ -94,11 +94,13 @@ export const KubernetesStateView: FC<KubernetesStateViewProps> = ({
           {nodes.map((node) => (
             <Box
               key={`${node.resource.kind}-${node.resource.name}`}
-              position="absolute"
-              top={node.y}
-              left={node.x}
-              zIndex={1}
               data-testid="kubernetes-resource"
+              sx={{
+                position: "absolute",
+                top: node.y,
+                left: node.x,
+                zIndex: 1,
+              }}
             >
               <KubernetesResource
                 resource={node.resource}
@@ -164,14 +166,12 @@ export const KubernetesStateView: FC<KubernetesStateViewProps> = ({
           )}
         </StateView>
       </StateViewWrapper>
-
       <Box>
         <ResourceFilterPopover
           enables={filterState}
           onChange={(state) => setFilterState(state)}
         />
       </Box>
-
       {selectedResource && (
         <KubernetesResourceDetail
           resource={selectedResource}

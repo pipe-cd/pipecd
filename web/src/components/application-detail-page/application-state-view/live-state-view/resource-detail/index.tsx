@@ -26,25 +26,47 @@ export const ResourceDetail: FC<ResourceDetailProps> = ({
         <CloseIcon />
       </CloseButton>
       <PanelTitle>{resource.name}</PanelTitle>
-      <Box pt={1} display={"flex"} alignItems={"center"}>
+      <Box
+        sx={{
+          pt: 1,
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
         <InfoRowTitle>Kind</InfoRowTitle>
         <InfoRowValue>
           {findMetadataByKey(resource.resourceMetadataMap, "Kind")}
         </InfoRowValue>
       </Box>
-      <Box pt={1} display={"flex"} alignItems={"center"}>
+      <Box
+        sx={{
+          pt: 1,
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
         <InfoRowTitle>Namespace</InfoRowTitle>
         <InfoRowValue>
           {findMetadataByKey(resource.resourceMetadataMap, "Namespace")}
         </InfoRowValue>
       </Box>
-      <Box pt={1} display={"flex"} alignItems={"center"}>
+      <Box
+        sx={{
+          pt: 1,
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
         <InfoRowTitle>Api Version</InfoRowTitle>
         <InfoRowValue>
           {findMetadataByKey(resource.resourceMetadataMap, "API Version")}
         </InfoRowValue>
       </Box>
-      <Box pt={1}>
+      <Box
+        sx={{
+          pt: 1,
+        }}
+      >
         <InfoRowTitle>Health Description</InfoRowTitle>
         <InfoRowValue>{resource.healthDescription || "Empty"}</InfoRowValue>
       </Box>
