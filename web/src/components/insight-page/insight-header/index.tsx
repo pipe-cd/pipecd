@@ -7,7 +7,6 @@ import {
   FormControl,
   InputLabel,
 } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
 import { Autocomplete } from "@mui/material";
 import { FC, memo, useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
@@ -26,17 +25,7 @@ import {
   InsightRange,
 } from "~/modules/insight";
 
-const useStyles = makeStyles((theme) => ({
-  headerItemMargin: {
-    marginLeft: theme.spacing(2),
-  },
-  rangeMargin: {
-    marginLeft: theme.spacing(1),
-  },
-}));
-
 export const InsightHeader: FC = memo(function InsightHeader() {
-  const classes = useStyles();
   const dispatch = useAppDispatch();
 
   const selectedApp = useAppSelector<Application.AsObject | null>(
@@ -102,7 +91,7 @@ export const InsightHeader: FC = memo(function InsightHeader() {
             id="labels"
             noOptionsText="No selectable labels"
             style={{ minWidth: 300 }}
-            className={classes.headerItemMargin}
+            sx={{ ml: 2 }}
             options={allLabels}
             value={selectedLabels}
             onInputChange={(_, value) => {
@@ -131,7 +120,7 @@ export const InsightHeader: FC = memo(function InsightHeader() {
       </Grid>
       <Grid item xs={4}>
         <Box display="flex" alignItems="right" justifyContent="flex-end">
-          <FormControl className={classes.headerItemMargin} variant="outlined">
+          <FormControl sx={{ ml: 2 }} variant="outlined">
             <InputLabel id="range-input">Range</InputLabel>
             <Select
               id="range"
@@ -151,7 +140,7 @@ export const InsightHeader: FC = memo(function InsightHeader() {
             </Select>
           </FormControl>
 
-          <FormControl className={classes.headerItemMargin} variant="outlined">
+          <FormControl sx={{ ml: 2 }} variant="outlined">
             <InputLabel id="resolution-input">Resolution</InputLabel>
             <Select
               id="resolution"
