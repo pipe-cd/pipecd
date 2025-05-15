@@ -646,6 +646,8 @@ func TestGetStageConfigByte(t *testing.T) {
 }
 
 func TestLoadApplication(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		repoPath      string
@@ -725,6 +727,7 @@ func TestLoadApplication(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			got, err := LoadApplication(tc.repoPath, tc.configRelPath)
 			if tc.wantErr {
 				assert.Error(t, err)
