@@ -90,7 +90,7 @@ func TestDeploymentHealthStatus(t *testing.T) {
 				Status: appsv1.DeploymentStatus{Replicas: 3, UpdatedReplicas: 2, AvailableReplicas: 3},
 			},
 			health: sdk.ResourceHealthStateUnhealthy,
-			msg:    "old replicas are pending termination",
+			msg:    "Waiting for remaining",
 		},
 		{
 			name: "not enough available replicas",
