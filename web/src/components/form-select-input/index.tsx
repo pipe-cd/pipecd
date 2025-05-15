@@ -1,15 +1,5 @@
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
 import React, { useEffect } from "react";
-
-const useStyles = makeStyles(() => ({
-  formItem: {
-    width: "100%",
-  },
-  select: {
-    width: "100%",
-  },
-}));
 
 type BaseOption = {
   label?: string;
@@ -50,21 +40,15 @@ const FormSelectInput = <T extends BaseOption>({
     }
   }, [value]);
 
-  const classes = useStyles();
-
   return (
-    <FormControl
-      className={classes.formItem}
-      variant="outlined"
-      required={required}
-    >
+    <FormControl fullWidth variant="outlined" required={required}>
       {label && <InputLabel id={id}>{label}</InputLabel>}
       <Select
         labelId={id}
         id={id}
         label={label}
         value={internalValue}
-        className={classes.select}
+        fullWidth
         onChange={(e) => {
           const inputValue = e.target.value as string;
           const item = options.find((e) => e.value === inputValue);
