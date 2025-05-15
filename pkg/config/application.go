@@ -60,7 +60,6 @@ type GenericApplicationSpec struct {
 	DriftDetection *DriftDetection `json:"driftDetection"`
 	// NOTE: Do not use the field, only added here to avoid unmarshalling error.
 	// List of the configuration for plugin
-	// This field is plugin-specific, so intentionally restrict the access for the actual value here and decode it on the SDK side.
 	Plugins map[string]struct{} `json:"plugins"`
 }
 
