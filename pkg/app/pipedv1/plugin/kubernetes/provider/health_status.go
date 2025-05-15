@@ -55,8 +55,8 @@ func deploymentHealthStatus(obj *appsv1.Deployment) (sdk.ResourceHealthStatus, s
 	if obj.Spec.Replicas == nil {
 		return sdk.ResourceHealthStateUnknown, "The number of desired replicas is unspecified"
 	}
-	if obj.Status.Replicas < *obj.Spec.Replicas {
-		return sdk.ResourceHealthStateUnhealthy, fmt.Sprintf("Waiting for remaining %d/%d replicas to be updated", obj.Status.Replicas-obj.Status.AvailableReplicas, obj.Status.Replicas)
+	if obj.Status.UpdatedReplicas < *obj.Spec.Replicas {
+		return sdk.ResourceHealthStateUnhealthy, fmt.Sprintf("Waiting for remaining %d/%d replicas to be updated", obj.Status.UpdatedReplicas, *obj.Spec.Replicas)
 	}
 	if obj.Status.UpdatedReplicas < obj.Status.Replicas {
 		return sdk.ResourceHealthStateUnhealthy, fmt.Sprintf("%d old replicas are pending termination", obj.Status.Replicas-obj.Status.UpdatedReplicas)
