@@ -15,9 +15,7 @@ import {
   Typography,
   Tooltip,
 } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
 import { MoreVert as MoreVertIcon } from "@mui/icons-material";
-import clsx from "clsx";
 import dayjs from "dayjs";
 import { Highlight, themes } from "prism-react-renderer";
 import * as React from "react";
@@ -44,42 +42,6 @@ import {
 } from "~/modules/pipeds";
 import { addToast } from "~/modules/toasts";
 
-const useStyles = makeStyles((theme) => ({
-  disabledItem: {
-    background: theme.palette.grey[200],
-  },
-  idCell: {
-    "& button": {
-      visibility: "hidden",
-    },
-    "&:hover button": {
-      visibility: "visible",
-    },
-  },
-  connectionStatus: {
-    paddingLeft: theme.spacing(1.5),
-  },
-  onlineStatus: {
-    "& span": {
-      backgroundColor: "green",
-    },
-  },
-  offlineStatus: {
-    "& span": {
-      backgroundColor: "red",
-    },
-  },
-  unknownStatus: {
-    "& span": {
-      backgroundColor: "grey",
-    },
-  },
-  codeBlock: {
-    padding: theme.spacing(2),
-    overflow: "auto",
-  },
-}));
-
 interface Props {
   pipedId: string;
   onEdit: (id: string) => void;
@@ -103,7 +65,6 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
   onEdit,
   onRestart,
 }) {
-  const classes = useStyles();
   const piped = useAppSelector(selectPipedById(pipedId));
   const dispatch = useAppDispatch();
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
@@ -178,36 +139,45 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
     return null;
   }
 
+  const badgeColor = {
+    [Piped.ConnectionStatus.ONLINE]: "green",
+    [Piped.ConnectionStatus.OFFLINE]: "red",
+    [Piped.ConnectionStatus.UNKNOWN]: "grey",
+  };
+
   return (
     <>
       <TableRow
         key={`pipe-${piped.id}`}
-        className={clsx({ [classes.disabledItem]: piped.disabled })}
+        sx={{ bgcolor: piped.disabled ? "grey.200" : undefined }}
       >
         <TableCell>
           <Typography variant="subtitle2">
             {piped.name}
             <Tooltip
-              className={classes.connectionStatus}
               placement="top"
               title={PIPED_CONNECTION_STATUS_TEXT[piped.status]}
             >
               <Badge
                 variant="dot"
                 overlap="rectangular"
-                className={clsx({
-                  [classes.onlineStatus]:
-                    piped.status === Piped.ConnectionStatus.ONLINE,
-                  [classes.offlineStatus]:
-                    piped.status === Piped.ConnectionStatus.OFFLINE,
-                  [classes.unknownStatus]:
-                    piped.status === Piped.ConnectionStatus.UNKNOWN,
-                })}
+                sx={{
+                  paddingLeft: 1.5,
+                  "& span": {
+                    backgroundColor: badgeColor[piped.status],
+                  },
+                }}
               />
             </Tooltip>
           </Typography>
         </TableCell>
-        <TableCell title={piped.id} className={classes.idCell}>
+        <TableCell
+          title={piped.id}
+          sx={{
+            "& button": { visibility: "hidden" },
+            "&:hover button": { visibility: "visible" },
+          }}
+        >
           <Box display="flex" alignItems="center" fontFamily="fontFamilyMono">
             {piped.id}
             <CopyIconButton name="Piped ID" value={piped.id} />
@@ -310,7 +280,14 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
         <DialogContent>
           <Highlight theme={themes.github} code={piped.config} language="yaml">
             {({ style, tokens, getLineProps, getTokenProps }) => (
-              <pre style={style} className={classes.codeBlock}>
+              <Box
+                component={"pre"}
+                style={style}
+                sx={{
+                  padding: 2,
+                  overflow: "auto",
+                }}
+              >
                 {tokens.map((line, i) => (
                   <div key={i} {...getLineProps({ line })}>
                     {line.map((token, key) => (
@@ -318,7 +295,7 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
                     ))}
                   </div>
                 ))}
-              </pre>
+              </Box>
             )}
           </Highlight>
         </DialogContent>

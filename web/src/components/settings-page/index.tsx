@@ -1,5 +1,11 @@
-import { Drawer, List, ListItem, ListItemText } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
+import {
+  Box,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+} from "@mui/material";
 import { FC, memo } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import {
@@ -10,39 +16,6 @@ import {
 
 const drawerWidth = 240;
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    flex: 1,
-    display: "flex",
-    overflow: "hidden",
-  },
-  drawer: {
-    width: drawerWidth,
-    flexShrink: 0,
-  },
-  drawerPaper: {
-    top: "auto",
-    width: drawerWidth,
-  },
-  drawerContainer: {
-    overflow: "auto",
-  },
-  listGroup: {
-    paddingTop: 0,
-  },
-  content: {
-    display: "flex",
-    flexDirection: "column",
-    flexGrow: 1,
-  },
-  activeNav: {
-    backgroundColor: theme.palette.action.selected,
-  },
-  listItemIcon: {
-    minWidth: 110,
-  },
-}));
-
 const MENU_ITEMS = [
   ["Piped", PAGE_PATH_SETTINGS_PIPED],
   ["Project", PAGE_PATH_SETTINGS_PROJECT],
@@ -50,35 +23,53 @@ const MENU_ITEMS = [
 ];
 
 export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
-  const classes = useStyles();
   const location = useLocation();
   return (
-    <div className={classes.root}>
+    <Box sx={{ flex: 1, display: "flex", overflow: "hidden" }}>
       <Drawer
-        className={classes.drawer}
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+        }}
+        PaperProps={{
+          sx: {
+            top: "auto",
+            width: drawerWidth,
+          },
+        }}
         variant="permanent"
-        classes={{ paper: classes.drawerPaper }}
       >
-        <div className={classes.drawerContainer}>
-          <List className={classes.listGroup}>
+        <Box sx={{ overflow: "auto" }}>
+          <List sx={{ paddingTop: 0 }}>
             {MENU_ITEMS.map(([text, link]) => (
               <ListItem
                 key={`menu-item-${text}`}
-                button
                 component={NavLink}
                 to={link}
-                className={link === location.pathname ? classes.activeNav : ""}
-                selected={link === location.pathname}
+                disablePadding
               >
-                <ListItemText primary={text} />
+                <ListItemButton
+                  selected={link === location.pathname}
+                  sx={{
+                    color: "text.primary",
+                    "&.Mui-selected": {
+                      backgroundColor: (theme) => theme.palette.action.selected,
+                    },
+                  }}
+                >
+                  <ListItemText primary={text} />
+                </ListItemButton>
               </ListItem>
             ))}
           </List>
-        </div>
+        </Box>
       </Drawer>
-      <main className={classes.content}>
+      <Box
+        component={"main"}
+        sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}
+      >
         <Outlet />
-      </main>
-    </div>
+      </Box>
+    </Box>
   );
 });
