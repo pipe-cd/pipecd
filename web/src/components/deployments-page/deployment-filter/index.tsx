@@ -155,8 +155,10 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
                 {...params}
                 label="Application Id"
                 variant="outlined"
-                inputProps={{
-                  ...params.inputProps,
+                slotProps={{
+                  htmlInput: {
+                    ...params.inputProps,
+                  },
                 }}
               />
             )}

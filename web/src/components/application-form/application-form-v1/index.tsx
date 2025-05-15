@@ -303,7 +303,9 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
                     fullWidth
                     variant="outlined"
                     value={APPLICATION_KIND_TEXT[selectedApp.kind]}
-                    inputProps={{ readOnly: true }}
+                    slotProps={{
+                      htmlInput: { readOnly: true },
+                    }}
                   />
                   <GroupTwoCol>
                     <TextField
@@ -313,7 +315,9 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
                       variant="outlined"
                       value={selectedApp.path}
                       fullWidth
-                      inputProps={{ readOnly: true }}
+                      slotProps={{
+                        htmlInput: { readOnly: true },
+                      }}
                     />
                     <TextField
                       id={"configFilename-"}
@@ -322,7 +326,9 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
                       variant="outlined"
                       value={selectedApp.configFilename}
                       fullWidth
-                      inputProps={{ readOnly: true }}
+                      slotProps={{
+                        htmlInput: { readOnly: true },
+                      }}
                     />
                   </GroupTwoCol>
                   {selectedApp.labelsMap.map((label, index) => (
@@ -334,7 +340,9 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
                         variant="outlined"
                         value={label[0] + ": " + label[1]}
                         fullWidth
-                        inputProps={{ readOnly: true }}
+                        slotProps={{
+                          htmlInput: { readOnly: true },
+                        }}
                       />
                     </Box>
                   ))}
