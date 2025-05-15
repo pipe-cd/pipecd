@@ -1,6 +1,5 @@
 import { FC, memo } from "react";
-import { TextField, Button, Typography } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
+import { TextField, Button, Typography, Box } from "@mui/material";
 import {
   STATIC_LOGIN_ENDPOINT,
   LOGIN_ENDPOINT,
@@ -9,60 +8,6 @@ import {
 import { MarkGithubIcon } from "@primer/octicons-react";
 import { LOGGING_IN_PROJECT } from "~/constants/localstorage";
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    display: "flex",
-    alignItems: "center",
-    flexDirection: "column",
-    flex: 1,
-  },
-  content: {
-    width: 320,
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    textAlign: "center",
-    marginTop: theme.spacing(4),
-    width: "100%",
-  },
-  fields: {
-    display: "flex",
-    flexDirection: "column",
-    marginTop: theme.spacing(4),
-  },
-  buttons: {
-    display: "flex",
-    justifyContent: "flex-end",
-    marginTop: theme.spacing(3),
-  },
-  githubMark: {
-    marginRight: theme.spacing(1),
-  },
-  githubLoginButton: {
-    background: "#24292E",
-  },
-  oidcLoginButton: {
-    background: "#4A90E2",
-    marginTop: theme.spacing(1),
-  },
-  divider: {
-    display: "flex",
-    alignItems: "center",
-    marginTop: theme.spacing(3),
-    marginBottom: theme.spacing(3),
-  },
-  dividerText: {
-    marginLeft: theme.spacing(2),
-    marginRight: theme.spacing(2),
-  },
-  line: {
-    flex: 1,
-    border: "none",
-    borderTop: "1px solid #ddd",
-  },
-}));
-
 export interface LoginFormProps {
   projectName: string;
 }
@@ -70,8 +15,6 @@ export interface LoginFormProps {
 export const LoginForm: FC<LoginFormProps> = memo(function LoginForm({
   projectName,
 }) {
-  const classes = useStyles();
-
   const handleOnBack = (): void => {
     localStorage.removeItem(LOGGING_IN_PROJECT);
     setTimeout(() => {
@@ -80,10 +23,28 @@ export const LoginForm: FC<LoginFormProps> = memo(function LoginForm({
   };
 
   return (
-    <div className={classes.root}>
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        flexDirection: "column",
+        flex: 1,
+      }}
+    >
       <Typography variant="h4">Sign in to {projectName}</Typography>
-      <div className={classes.content}>
-        <form method="POST" action={LOGIN_ENDPOINT} className={classes.form}>
+      <Box sx={{ width: 320 }}>
+        <Box
+          component="form"
+          method="POST"
+          action={LOGIN_ENDPOINT}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            textAlign: "center",
+            marginTop: 4,
+            width: "100%",
+          }}
+        >
           <input
             type="hidden"
             id="project-gh"
@@ -94,9 +55,11 @@ export const LoginForm: FC<LoginFormProps> = memo(function LoginForm({
             type="submit"
             color="primary"
             variant="contained"
-            className={classes.githubLoginButton}
+            sx={{ bgcolor: "#24292E" }}
           >
-            <MarkGithubIcon className={classes.githubMark} />
+            <Box mr={1}>
+              <MarkGithubIcon />
+            </Box>
             LOGIN WITH GITHUB
           </Button>
 
@@ -104,22 +67,52 @@ export const LoginForm: FC<LoginFormProps> = memo(function LoginForm({
             type="submit"
             color="primary"
             variant="contained"
-            className={classes.oidcLoginButton}
+            sx={{
+              background: "#4A90E2",
+              marginTop: 1,
+            }}
           >
             LOGIN WITH OIDC
           </Button>
-        </form>
+        </Box>
 
-        <div className={classes.divider}>
-          <span className={classes.line} />
-          <div className={classes.dividerText}>OR</div>
-          <span className={classes.line} />
-        </div>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            marginTop: 3,
+            marginBottom: 3,
+          }}
+        >
+          <Box
+            sx={{
+              flex: 1,
+              border: "none",
+              borderTop: "1px solid #ddd",
+            }}
+          />
+          <Box sx={{ marginLeft: 2, marginRight: 2 }}>OR</Box>
+          <Box
+            sx={{
+              flex: 1,
+              border: "none",
+              borderTop: "1px solid #ddd",
+            }}
+          />
+        </Box>
 
-        <form
+        <Box
+          component="form"
           method="POST"
           action={STATIC_LOGIN_ENDPOINT}
-          className={classes.form}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            textAlign: "center",
+            marginTop: 4,
+            width: "100%",
+            gap: 2,
+          }}
         >
           <input
             type="hidden"
@@ -132,7 +125,7 @@ export const LoginForm: FC<LoginFormProps> = memo(function LoginForm({
             name="username"
             label="Username"
             variant="outlined"
-            margin="dense"
+            size="small"
             required
           />
           <TextField
@@ -141,19 +134,25 @@ export const LoginForm: FC<LoginFormProps> = memo(function LoginForm({
             label="Password"
             type="password"
             variant="outlined"
-            margin="dense"
+            size="small"
             required
           />
-          <div className={classes.buttons}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginTop: 3,
+            }}
+          >
             <Button type="reset" color="primary" onClick={handleOnBack}>
               back
             </Button>
             <Button type="submit" color="primary" variant="contained">
               login
             </Button>
-          </div>
-        </form>
-      </div>
-    </div>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 });
