@@ -22,7 +22,7 @@ import { useAppDispatch } from "~/hooks/redux";
 import { UI_TEXT_CANCEL, UI_TEXT_UPGRADE } from "~/constants/ui-text";
 import { Piped, updatePipedDesiredVersion } from "~/modules/pipeds";
 import { addToast } from "~/modules/toasts";
-import { useSettingsStyles } from "../../../styles";
+import { TableCellNoWrap } from "../../../styles";
 import { Autocomplete } from "@mui/material";
 
 export interface UpgradePipedProps {
@@ -34,7 +34,6 @@ export interface UpgradePipedProps {
 
 export const UpgradePipedDialog: FC<UpgradePipedProps> = memo(
   function UpgradePipedDialog({ open, pipeds, releasedVersions, onClose }) {
-    const settingsClasses = useSettingsStyles();
     const dispatch = useAppDispatch();
 
     const [upgradeVersion, setUpgradeVersion] = useState("");
@@ -109,12 +108,8 @@ export const UpgradePipedDialog: FC<UpgradePipedProps> = memo(
                 <Table aria-label="piped list" size="small" stickyHeader>
                   <TableHead>
                     <TableRow>
-                      <TableCell className={settingsClasses.tableCell}>
-                        Name
-                      </TableCell>
-                      <TableCell className={settingsClasses.tableCell}>
-                        Running Version
-                      </TableCell>
+                      <TableCellNoWrap>Name</TableCellNoWrap>
+                      <TableCellNoWrap>Running Version</TableCellNoWrap>
                       <TableCell align="right">Select</TableCell>
                     </TableRow>
                   </TableHead>

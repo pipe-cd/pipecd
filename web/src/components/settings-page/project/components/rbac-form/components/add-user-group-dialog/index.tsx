@@ -10,7 +10,6 @@ import {
   Select,
   TextField,
 } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
 import { useFormik } from "formik";
 import { FC } from "react";
 import * as yup from "yup";
@@ -22,12 +21,6 @@ export interface AddUserGroupDialogProps {
   onSubmit: (values: { ssoGroup: string; role: string }) => void;
 }
 
-const useStyles = makeStyles(() => ({
-  formItem: {
-    width: "50%",
-  },
-}));
-
 const validationSchema = yup.object({
   ssoGroup: yup.string().min(1).required(),
   role: yup.string().required(),
@@ -38,7 +31,6 @@ export const AddUserGroupDialog: FC<AddUserGroupDialogProps> = ({
   onSubmit,
   open,
 }) => {
-  const classes = useStyles();
   const formik = useFormik({
     initialValues: {
       ssoGroup: "",
@@ -76,11 +68,7 @@ export const AddUserGroupDialog: FC<AddUserGroupDialogProps> = ({
             required
             fullWidth
           />
-          <FormControl
-            className={classes.formItem}
-            variant="outlined"
-            margin="dense"
-          >
+          <FormControl sx={{ width: "50%" }} variant="outlined" margin="dense">
             <InputLabel id="role">Role</InputLabel>
             <Select
               id="role"
