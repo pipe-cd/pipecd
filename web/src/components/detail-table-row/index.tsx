@@ -1,19 +1,6 @@
 import { FC } from "react";
 import * as React from "react";
-import { Typography } from "@mui/material";
-
-import makeStyles from "@mui/styles/makeStyles";
-
-const useStyles = makeStyles((theme) => ({
-  head: {
-    textAlign: "left",
-    whiteSpace: "nowrap",
-    display: "block",
-  },
-  value: {
-    marginLeft: theme.spacing(1),
-  },
-}));
+import { Box, Typography } from "@mui/material";
 
 export interface DetailTableRowProps {
   label: string;
@@ -21,14 +8,20 @@ export interface DetailTableRowProps {
 }
 
 export const DetailTableRow: FC<DetailTableRowProps> = ({ label, value }) => {
-  const classes = useStyles();
   return (
     <tr>
-      <th className={classes.head}>
+      <Box
+        component="th"
+        sx={{
+          textAlign: "left",
+          whiteSpace: "nowrap",
+          display: "block",
+        }}
+      >
         <Typography variant="subtitle2">{label}</Typography>
-      </th>
+      </Box>
       <td>
-        <Typography variant="body2" className={classes.value}>
+        <Typography variant="body2" ml={1}>
           {value}
         </Typography>
       </td>
