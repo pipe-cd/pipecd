@@ -1,5 +1,4 @@
 import { Box, Link, Button, CircularProgress, Typography } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
 import { FC, memo, useEffect, useMemo } from "react";
 import { UI_TEXT_REFRESH } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
@@ -48,18 +47,8 @@ const FEATURE_STATUS_INTRO = "PipeCD feature status";
 const DISABLED_APPLICATION_MESSAGE =
   "This application is currently disabled. You can enable it from the application list page.";
 
-const useStyles = makeStyles(() => ({
-  container: {
-    flex: 1,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-}));
-
 export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
   function ApplicationStateView({ applicationId }) {
-    const classes = useStyles();
     const dispatch = useAppDispatch();
     const [hasError, liveState, app] = useAppSelector<
       [
@@ -109,7 +98,15 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
 
     if (hasError) {
       return (
-        <Box className={classes.container} flexDirection="column">
+        <Box
+          sx={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          flexDirection="column"
+        >
           <Typography variant="body1">{ERROR_MESSAGE}</Typography>
           <Button
             color="primary"
@@ -127,11 +124,26 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
       return (
         <>
           {isDisplayLiveState(app) ? (
-            <div className={classes.container}>
+            <Box
+              sx={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <CircularProgress />
-            </div>
+            </Box>
           ) : (
-            <Box className={classes.container} flexDirection="column">
+            <Box
+              sx={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              flexDirection="column"
+            >
               <Typography variant="body1">{COMING_SOON_MESSAGE}</Typography>
               <Link
                 href="https://pipecd.dev/docs/feature-status/"

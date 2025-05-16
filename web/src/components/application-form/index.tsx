@@ -1,5 +1,4 @@
 import { Box, Tabs, Tab, IconButton } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
 import { Help } from "@mui/icons-material";
 import { useState } from "react";
 import { Application } from "~/modules/applications";
@@ -7,22 +6,6 @@ import ApplicationFormV1 from "./application-form-v1";
 import ApplicationFormV0 from "./application-form-v0";
 import ApplicationFormManualV0 from "./application-form-manual-v0";
 import TabPanel from "./tab-panel";
-
-const useStyles = makeStyles(() => ({
-  tabLabel: {
-    minHeight: 0,
-    "& .MuiTab-wrapper": {
-      flexDirection: "row-reverse",
-      maxWidth: 200,
-    },
-    "& .MuiTab-wrapper > *:first-child": {
-      marginBottom: 0,
-    },
-    "& .MuiIconButton-sizeSmall": {
-      padding: "0 3px 3px 3px",
-    },
-  },
-}));
 
 const tabProps = (tabKey: number): { id: string; "aria-controls": string } => {
   return {
@@ -59,8 +42,6 @@ enum TabKeys {
 }
 
 export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
-  const classes = useStyles();
-
   const [selectedTabIndex, setSelectedTabIndex] = useState(TabKeys.V0);
 
   const handleChange = (_event: unknown, newValue: number): void => {
@@ -78,14 +59,16 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
           aria-label="basic tabs example"
         >
           <Tab
-            className={classes.tabLabel}
             label="PIPED V0 ADD FROM SUGGESTIONS"
+            iconPosition="end"
+            sx={{ maxWidth: "210px" }}
             icon={
               <IconButton
                 size="small"
                 href={FORM_SUGGESTION_DOC_URL}
                 target="_blank"
                 rel="noopener noreferrer"
+                sx={{ marginLeft: "0px !important" }}
               >
                 <Help fontSize="small" />
               </IconButton>
@@ -93,12 +76,12 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
             {...tabProps(TabKeys.V0)}
           />
           <Tab
-            className={classes.tabLabel}
+            sx={{ maxWidth: "180px" }}
             label="PIPED V1 ADD FROM SUGGESTIONS"
             {...tabProps(TabKeys.V1)}
           />
           <Tab
-            className={classes.tabLabel}
+            sx={{ maxWidth: "210px" }}
             label="ADD MANUALLY"
             icon=" "
             {...tabProps(TabKeys.MANUAL)}

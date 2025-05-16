@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Paper,
   Table,
@@ -7,10 +8,8 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography,
 } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
-import { useProjectSettingStyles } from "~/styles/project-setting";
+import { ProjectTitle } from "~/styles/project-setting";
 import { Add as AddIcon } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import {
@@ -33,20 +32,9 @@ import {
   UPDATE_RBAC_ROLE_SUCCESS,
 } from "~/constants/toast-text";
 
-const useStyles = makeStyles((theme) => ({
-  title: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingTop: theme.spacing(2),
-  },
-}));
-
 const SUB_SECTION_TITLE = "Role";
 
 export const RoleTable: FC = memo(function RoleTable() {
-  const classes = useStyles();
-  const projectSettingClasses = useProjectSettingStyles();
   const rbacRoles = useAppSelector((state) => state.project.rbacRoles);
   const dispatch = useAppDispatch();
   const [isOpenAddForm, setIsOpenAddForm] = useState(false);
@@ -124,13 +112,15 @@ export const RoleTable: FC = memo(function RoleTable() {
 
   return (
     <>
-      <div className={classes.title}>
-        <Typography
-          variant="h6"
-          className={projectSettingClasses.titleWithIcon}
-        >
-          {SUB_SECTION_TITLE}
-        </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingTop: 2,
+        }}
+      >
+        <ProjectTitle variant="h6">{SUB_SECTION_TITLE}</ProjectTitle>
         <Button
           color="primary"
           startIcon={<AddIcon />}
@@ -138,7 +128,7 @@ export const RoleTable: FC = memo(function RoleTable() {
         >
           {UI_TEXT_ADD}
         </Button>
-      </div>
+      </Box>
 
       <TableContainer component={Paper} square>
         <Table size="small" stickyHeader>

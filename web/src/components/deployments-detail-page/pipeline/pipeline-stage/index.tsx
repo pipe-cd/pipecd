@@ -1,53 +1,7 @@
-import { Paper, Typography } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
-import clsx from "clsx";
+import { Box, Paper, Typography } from "@mui/material";
 import { FC, memo } from "react";
 import { StageStatus } from "~/modules/deployments";
 import { StageStatusIcon } from "./stage-status-icon";
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    flex: 1,
-    display: "inline-flex",
-    flexDirection: "column",
-    padding: theme.spacing(2),
-    cursor: "pointer",
-    "&:hover": {
-      backgroundColor: theme.palette.action.hover,
-    },
-  },
-  active: {
-    // NOTE: 12%
-    backgroundColor: theme.palette.primary.main + "1e",
-  },
-  notStartedYet: {
-    color: theme.palette.text.disabled,
-    cursor: "unset",
-    "&:hover": {
-      backgroundColor: theme.palette.background.paper,
-    },
-  },
-  name: {
-    marginLeft: theme.spacing(1),
-    maxWidth: 200,
-    whiteSpace: "nowrap",
-    textOverflow: "ellipsis",
-    overflow: "hidden",
-  },
-  stageName: {
-    fontFamily: theme.typography.fontFamilyMono,
-  },
-  main: {
-    display: "flex",
-    justifyContent: "flex-start",
-    alignItems: "center",
-  },
-  metadata: {
-    color: theme.palette.text.secondary,
-    marginLeft: theme.spacing(4),
-    textAlign: "left",
-  },
-}));
 
 export interface PipelineStageProps {
   id: string;
@@ -119,7 +73,6 @@ export const PipelineStage: FC<PipelineStageProps> = memo(
     metadata,
     isDeploymentRunning,
   }) {
-    const classes = useStyles();
     const disabled =
       isDeploymentRunning === false &&
       status === StageStatus.STAGE_NOT_STARTED_YET;
@@ -136,41 +89,95 @@ export const PipelineStage: FC<PipelineStageProps> = memo(
     return (
       <Paper
         square
-        className={clsx(classes.root, {
-          [classes.active]: active,
-          [classes.notStartedYet]: disabled,
-        })}
+        // className={clsx(classes.root, {
+        //   [classes.active]: active,
+        //   [classes.notStartedYet]: disabled,
+        // })}
         onClick={handleOnClick}
+        sx={(theme) => ({
+          flex: 1,
+          display: "inline-flex",
+          flexDirection: "column",
+          padding: theme.spacing(2),
+          cursor: disabled ? "unset" : "pointer",
+          backgroundColor: active
+            ? theme.palette.primary.main + "1e" // NOTE: 12%
+            : undefined,
+          "&:hover": {
+            backgroundColor: disabled
+              ? theme.palette.background.paper
+              : theme.palette.action.hover,
+          },
+
+          color: disabled ? theme.palette.text.disabled : undefined,
+        })}
       >
-        <div className={classes.main}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-start",
+            alignItems: "center",
+          }}
+        >
           <StageStatusIcon status={status} />
-          <Typography variant="subtitle2" className={classes.name}>
-            <span title={name} className={classes.stageName}>
+          <Typography
+            variant="subtitle2"
+            sx={{
+              marginLeft: 1,
+              maxWidth: 200,
+              whiteSpace: "nowrap",
+              textOverflow: "ellipsis",
+              overflow: "hidden",
+            }}
+          >
+            <Box
+              title={name}
+              component={"span"}
+              sx={{ fontFamily: "fontFamilyMono" }}
+            >
               {name}
-            </span>
+            </Box>
           </Typography>
-        </div>
+        </Box>
         {approver !== undefined ? (
-          <div className={classes.metadata}>
+          <Box
+            sx={{
+              color: "text.secondary",
+              marginLeft: 4,
+              textAlign: "left",
+            }}
+          >
             <Typography
               variant="body2"
               color="inherit"
             >{`Approved by ${approver}`}</Typography>
-          </div>
+          </Box>
         ) : skipper !== undefined ? (
-          <div className={classes.metadata}>
+          <Box
+            sx={{
+              color: "text.secondary",
+              marginLeft: 4,
+              textAlign: "left",
+            }}
+          >
             <Typography
               variant="body2"
               color="inherit"
             >{`Skipped by ${skipper}`}</Typography>
-          </div>
+          </Box>
         ) : null}
         {trafficPercentage && (
-          <div className={classes.metadata}>
+          <Box
+            sx={{
+              color: "text.secondary",
+              marginLeft: 4,
+              textAlign: "left",
+            }}
+          >
             <Typography variant="body2" color="inherit">
               {trafficPercentage}
             </Typography>
-          </div>
+          </Box>
         )}
       </Paper>
     );

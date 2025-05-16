@@ -1,5 +1,4 @@
 import { Box, Typography } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
 import { FC } from "react";
 import { APPLICATION_SYNC_STATUS_TEXT } from "~/constants/application-sync-status-text";
 import { UI_TEXT_NOT_AVAILABLE_TEXT } from "~/constants/ui-text";
@@ -8,13 +7,6 @@ import {
   ApplicationSyncStatus,
 } from "~/modules/applications";
 import { SyncStatusIcon } from "./sync-status-icon";
-
-const useStyles = makeStyles((theme) => ({
-  statusText: {
-    marginLeft: theme.spacing(0.5),
-    whiteSpace: "nowrap",
-  },
-}));
 
 export interface AppSyncStatusProps {
   syncState?: ApplicationSyncState.AsObject;
@@ -29,7 +21,6 @@ export const AppSyncStatus: FC<AppSyncStatusProps> = ({
   className,
   size = "medium",
 }) => {
-  const classes = useStyles();
   const fontVariant = size === "medium" ? "body2" : "h6";
 
   if (deploying) {
@@ -37,8 +28,8 @@ export const AppSyncStatus: FC<AppSyncStatusProps> = ({
       <Box display="flex" alignItems="center" className={className}>
         <SyncStatusIcon status={ApplicationSyncStatus.DEPLOYING} />
         <Typography
-          className={classes.statusText}
           variant={fontVariant}
+          sx={{ ml: 0.5, whiteSpace: "nowrap" }}
           component="span"
         >
           {APPLICATION_SYNC_STATUS_TEXT[ApplicationSyncStatus.DEPLOYING]}
@@ -51,7 +42,7 @@ export const AppSyncStatus: FC<AppSyncStatusProps> = ({
     <Box display="flex" alignItems="center" className={className}>
       {syncState ? <SyncStatusIcon status={syncState.status} /> : null}
       <Typography
-        className={classes.statusText}
+        sx={{ ml: 0.5, whiteSpace: "nowrap" }}
         variant={fontVariant}
         component="span"
       >

@@ -6,7 +6,6 @@ import {
   DialogTitle,
   Typography,
 } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
 import Alert from "@mui/material/Alert";
 import { FC, memo } from "react";
 import { useAppSelector, useAppDispatch } from "~/hooks/redux";
@@ -15,16 +14,6 @@ import {
   disableApplication,
   selectById,
 } from "~/modules/applications";
-
-const useStyles = makeStyles((theme) => ({
-  disableTargetName: {
-    color: theme.palette.text.primary,
-    fontWeight: theme.typography.fontWeightMedium,
-  },
-  description: {
-    marginBottom: theme.spacing(2),
-  },
-}));
 
 export interface DisableApplicationDialogProps {
   open: boolean;
@@ -40,7 +29,6 @@ export const DisableApplicationDialog: FC<DisableApplicationDialogProps> = memo(
     onDisable,
     onCancel,
   }) {
-    const classes = useStyles();
     const dispatch = useAppDispatch();
 
     const application = useAppSelector<Application.AsObject | undefined>(
@@ -66,11 +54,22 @@ export const DisableApplicationDialog: FC<DisableApplicationDialogProps> = memo(
       <Dialog open={Boolean(application) && open}>
         <DialogTitle>Disable application</DialogTitle>
         <DialogContent>
-          <Alert severity="warning" className={classes.description}>
+          <Alert
+            severity="warning"
+            sx={{
+              marginBottom: 2,
+            }}
+          >
             Are you sure you want to disable the application?
           </Alert>
           <Typography variant="caption">NAME</Typography>
-          <Typography variant="body1" className={classes.disableTargetName}>
+          <Typography
+            variant="body1"
+            sx={(theme) => ({
+              color: theme.palette.text.primary,
+              fontWeight: theme.typography.fontWeightMedium,
+            })}
+          >
             {application.name}
           </Typography>
         </DialogContent>

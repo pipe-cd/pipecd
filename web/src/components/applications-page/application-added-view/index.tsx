@@ -1,20 +1,5 @@
 import { Box, Button, Divider, Typography } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
 import { FC, memo } from "react";
-
-const useStyles = makeStyles((theme) => ({
-  title: {
-    padding: theme.spacing(2),
-  },
-  contentBox: {
-    marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(4),
-  },
-  note: {
-    marginTop: theme.spacing(1),
-    color: theme.palette.text.secondary,
-  },
-}));
 
 const TEXT = {
   TITLE: "Congratulation!",
@@ -29,20 +14,21 @@ export interface ApplicationAddedViewProps {
 
 export const ApplicationAddedView: FC<ApplicationAddedViewProps> = memo(
   function ApplicationAddedView({ onClose }) {
-    const classes = useStyles();
-
     return (
       <Box width={600} flex={1} display="flex" flexDirection="column">
-        <Typography className={classes.title} variant="h6">
+        <Typography variant="h6" p={2}>
           {TEXT.TITLE}
         </Typography>
 
         <Divider />
 
         <Box p={2}>
-          <Box className={classes.contentBox}>
+          <Box mt={2} mb={2}>
             <Typography variant="subtitle1">{TEXT.MESSAGE}</Typography>
-            <Typography variant="body2" className={classes.note}>
+            <Typography
+              variant="body2"
+              sx={{ marginTop: 1, color: "text.secondary" }}
+            >
               {TEXT.NOTE}
             </Typography>
           </Box>

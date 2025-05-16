@@ -14,7 +14,6 @@ import {
   TableRow,
   Toolbar,
 } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
 import {
   Add as AddIcon,
   Close as CloseIcon,
@@ -49,18 +48,12 @@ import {
 } from "~/modules/pipeds";
 import { addToast } from "~/modules/toasts";
 import { AppState } from "~/store";
-import { useSettingsStyles } from "../styles";
 import { AddPipedDialog } from "./components/add-piped-dialog";
 import { EditPipedDialog } from "./components/edit-piped-dialog";
 import { FilterValues, PipedFilter } from "./components/piped-filter";
 import { PipedTableRow } from "./components/piped-table-row";
 import { UpgradePipedDialog } from "./components/upgrade-dialog";
-
-const useStyles = makeStyles(() => ({
-  toolbarSpacer: {
-    flexGrow: 1,
-  },
-}));
+import { TableCellNoWrap } from "../styles";
 
 const filterValue = (
   _: AppState,
@@ -87,8 +80,6 @@ const OLD_KEY_ALERT_MESSAGE =
 const FETCH_INTERVAL = 30000;
 
 export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
-  const classes = useStyles();
-  const settingsClasses = useSettingsStyles();
   const [openFilter, setOpenFilter] = useState(false);
   const [isOpenForm, setIsOpenForm] = useState(false);
   const [editPipedId, setEditPipedId] = useState<string | null>(null);
@@ -189,7 +180,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
         >
           {UI_TEXT_ADD}
         </Button>
-        <div className={classes.toolbarSpacer} />
+        <Box flexGrow={1} />
         <Button
           color="primary"
           startIcon={<UpgradeIcon />}
@@ -212,19 +203,11 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
           <Table aria-label="piped list" size="small" stickyHeader>
             <TableHead>
               <TableRow>
-                <TableCell className={settingsClasses.tableCell}>
-                  Name
-                </TableCell>
-                <TableCell className={settingsClasses.tableCell}>ID</TableCell>
-                <TableCell className={settingsClasses.tableCell}>
-                  Version
-                </TableCell>
-                <TableCell className={settingsClasses.tableCell}>
-                  Description
-                </TableCell>
-                <TableCell className={settingsClasses.tableCell}>
-                  Started At
-                </TableCell>
+                <TableCellNoWrap>Name</TableCellNoWrap>
+                <TableCellNoWrap>ID</TableCellNoWrap>
+                <TableCellNoWrap>Version</TableCellNoWrap>
+                <TableCellNoWrap>Description</TableCellNoWrap>
+                <TableCellNoWrap>Started At</TableCellNoWrap>
                 <TableCell align="right" />
               </TableRow>
             </TableHead>

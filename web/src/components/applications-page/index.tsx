@@ -1,12 +1,4 @@
-import {
-  Box,
-  Button,
-  CircularProgress,
-  Divider,
-  Drawer,
-  Toolbar,
-} from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
+import { Box, Button, Divider, Drawer, Toolbar } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import CloseIcon from "@mui/icons-material/Close";
 import FilterIcon from "@mui/icons-material/FilterList";
@@ -35,29 +27,9 @@ import EditApplicationDrawer from "./edit-application-drawer";
 import { ApplicationAddedView } from "./application-added-view";
 import { ApplicationFilter } from "./application-filter";
 import { ApplicationList } from "./application-list";
-
-const useStyles = makeStyles((theme) => ({
-  main: {
-    display: "flex",
-    overflowY: "hidden",
-    overflowX: "auto",
-    flex: 1,
-  },
-  toolbarSpacer: {
-    flexGrow: 1,
-  },
-  buttonProgress: {
-    color: theme.palette.primary.main,
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    marginTop: -12,
-    marginLeft: -12,
-  },
-}));
+import { SpinnerIcon } from "~/styles/button";
 
 export const ApplicationIndexPage: FC = () => {
-  const classes = useStyles();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const filterOptions = useSearchParams();
@@ -130,17 +102,16 @@ export const ApplicationIndexPage: FC = () => {
         >
           {UI_TEXT_ADD}
         </Button>
-        <div className={classes.toolbarSpacer} />
+        <Box flex={1} />
         <Button
           color="primary"
           startIcon={<RefreshIcon />}
           onClick={fetchApplicationsWithOptions}
+          sx={{ position: "relative" }}
           disabled={isLoading}
         >
           {UI_TEXT_REFRESH}
-          {isLoading && (
-            <CircularProgress size={24} className={classes.buttonProgress} />
-          )}
+          {isLoading && <SpinnerIcon />}
         </Button>
         <Button
           color="primary"
@@ -153,7 +124,14 @@ export const ApplicationIndexPage: FC = () => {
 
       <Divider />
 
-      <div className={classes.main}>
+      <Box
+        sx={{
+          display: "flex",
+          overflowY: "hidden",
+          overflowX: "auto",
+          flex: 1,
+        }}
+      >
         <Box display="flex" flexDirection="column" flex={1} p={2}>
           <ApplicationList
             currentPage={currentPage}
@@ -168,7 +146,7 @@ export const ApplicationIndexPage: FC = () => {
             onClear={handleFilterClear}
           />
         )}
-      </div>
+      </Box>
 
       <AddApplicationDrawer
         open={openAddForm}

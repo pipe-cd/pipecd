@@ -9,7 +9,6 @@ import {
   TablePagination,
   TableRow,
 } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
 import { FC, memo, useCallback, useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import {
@@ -23,16 +22,6 @@ import { ApplicationListItem } from "./application-list-item";
 import { DeleteApplicationDialog } from "./delete-application-dialog";
 import { DisableApplicationDialog } from "./disable-application-dialog";
 import { SealedSecretDialog } from "./sealed-secret-dialog";
-
-const useStyles = makeStyles(() => ({
-  container: {
-    flex: 1,
-  },
-  tooltip: {
-    paddingLeft: 2,
-    marginBottom: -4,
-  },
-}));
 
 const PAGER_ROWS_PER_PAGE = [20, 50, { label: "All", value: -1 }];
 const SMALL_SCREEN_SIZE = 1440;
@@ -49,7 +38,6 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
     onPageChange = () => null,
     onRefresh = () => null,
   }) {
-    const classes = useStyles();
     const dispatch = useAppDispatch();
     const [actionTarget, setActionTarget] = useState<string | null>(null);
     const [dialogState, setDialogState] = useState({
@@ -148,7 +136,7 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
 
     return (
       <>
-        <TableContainer component={Paper} className={classes.container} square>
+        <TableContainer component={Paper} sx={{ flex: 1 }} square>
           <Table stickyHeader>
             <TableHead>
               <TableRow>

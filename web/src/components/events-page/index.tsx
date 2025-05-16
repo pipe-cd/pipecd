@@ -7,7 +7,6 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
 import CloseIcon from "@mui/icons-material/Close";
 import FilterIcon from "@mui/icons-material/FilterList";
 import RefreshIcon from "@mui/icons-material/Refresh";
@@ -36,7 +35,7 @@ import {
   selectById as selectEventById,
   selectIds as selectEventIds,
 } from "~/modules/events";
-import { useStyles as useButtonStyles } from "~/styles/button";
+import { SpinnerIcon } from "~/styles/button";
 import {
   stringifySearchParams,
   useSearchParams,
@@ -44,21 +43,6 @@ import {
 } from "~/utils/search-params";
 import { EventFilter } from "./event-filter";
 import { EventItem } from "./event-item";
-
-const useStyles = makeStyles((theme) => ({
-  eventLists: {
-    listStyle: "none",
-    padding: theme.spacing(3),
-    paddingTop: 0,
-    margin: 0,
-    flex: 1,
-    overflowY: "scroll",
-  },
-  date: {
-    marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(2),
-  },
-}));
 
 const sortComp = (a: string | number, b: string | number): number => {
   return dayjs(b).valueOf() - dayjs(a).valueOf();
@@ -89,8 +73,6 @@ const useGroupedEvents = (): Record<string, Event.AsObject[]> => {
 };
 
 export const EventIndexPage: FC = () => {
-  const classes = useStyles();
-  const buttonClasses = useButtonStyles();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const listRef = useRef(null);
@@ -158,9 +140,7 @@ export const EventIndexPage: FC = () => {
           disabled={isLoading}
         >
           {UI_TEXT_REFRESH}
-          {isLoading && (
-            <CircularProgress size={24} className={buttonClasses.progress} />
-          )}
+          {isLoading && <SpinnerIcon />}
         </Button>
         <Button
           color="primary"
@@ -173,7 +153,18 @@ export const EventIndexPage: FC = () => {
 
       <Divider />
       <Box display="flex" overflow="hidden" flex={1}>
-        <ol className={classes.eventLists} ref={listRef}>
+        <Box
+          component={"ol"}
+          sx={{
+            listStyle: "none",
+            padding: 3,
+            paddingTop: 0,
+            margin: 0,
+            flex: 1,
+            overflowY: "scroll",
+          }}
+          ref={listRef}
+        >
           {dates.length === 0 &&
             (isLoading ? (
               <Box display="flex" justifyContent="center" mt={3}>
@@ -186,7 +177,12 @@ export const EventIndexPage: FC = () => {
             ))}
           {dates.map((date) => (
             <li key={date}>
-              <Typography variant="subtitle1" className={classes.date}>
+              <Typography
+                variant="subtitle1"
+                // className={classes.date}
+                mt={2}
+                mb={2}
+              >
                 {date}
               </Typography>
               <List>
@@ -209,15 +205,10 @@ export const EventIndexPage: FC = () => {
               disabled={isLoading}
             >
               {UI_TEXT_MORE}
-              {isLoading && (
-                <CircularProgress
-                  size={24}
-                  className={buttonClasses.progress}
-                />
-              )}
+              {isLoading && <SpinnerIcon />}
             </Button>
           )}
-        </ol>
+        </Box>
         {openFilter && (
           <EventFilter
             options={filterOptions}

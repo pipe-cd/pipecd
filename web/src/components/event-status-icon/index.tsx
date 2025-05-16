@@ -1,4 +1,3 @@
-import makeStyles from "@mui/styles/makeStyles";
 import {
   CheckCircle,
   Error,
@@ -7,61 +6,47 @@ import {
 } from "@mui/icons-material";
 import { EventStatus } from "~/modules/events";
 import { FC } from "react";
-import clsx from "clsx";
-
-const useStyles = makeStyles((theme) => ({
-  [EventStatus.EVENT_NOT_HANDLED]: {
-    color: theme.palette.grey[500],
-  },
-  [EventStatus.EVENT_SUCCESS]: {
-    color: theme.palette.success.main,
-  },
-  [EventStatus.EVENT_FAILURE]: {
-    color: theme.palette.error.main,
-  },
-  [EventStatus.EVENT_OUTDATED]: {
-    color: theme.palette.warning.main,
-  },
-}));
 
 export interface EventStatusIconProps {
   status: EventStatus;
-  className?: string;
 }
 
-export const EventStatusIcon: FC<EventStatusIconProps> = ({
-  status,
-  className,
-}) => {
-  const classes = useStyles();
-
+export const EventStatusIcon: FC<EventStatusIconProps> = ({ status }) => {
   switch (status) {
     case EventStatus.EVENT_NOT_HANDLED:
       return (
         <IndeterminateCheckBox
-          className={clsx(classes[status], className)}
           data-testid="event-not-handled-icon"
+          sx={{
+            color: "grey.500",
+          }}
         />
       );
     case EventStatus.EVENT_SUCCESS:
       return (
         <CheckCircle
-          className={clsx(classes[status], className)}
           data-testid="event-success-icon"
+          sx={{
+            color: "success.main",
+          }}
         />
       );
     case EventStatus.EVENT_FAILURE:
       return (
         <Error
-          className={clsx(classes[status], className)}
           data-testid="event-failure-icon"
+          sx={{
+            color: "error.main",
+          }}
         />
       );
     case EventStatus.EVENT_OUTDATED:
       return (
         <Block
-          className={clsx(classes[status], className)}
           data-testid="event-outdated-icon"
+          sx={{
+            color: "warning.main",
+          }}
         />
       );
   }

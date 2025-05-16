@@ -1,5 +1,4 @@
 import { Box, Paper, Typography } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
 import { WarningOutlined } from "@mui/icons-material";
 import dayjs from "dayjs";
 import { BarChart } from "echarts/charts";
@@ -25,23 +24,6 @@ echarts.use([
   CanvasRenderer,
   LegendComponent,
 ]);
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    minWidth: 600,
-    position: "relative",
-  },
-  noDataMessage: {
-    display: "flex",
-  },
-  noDataMessageIcon: {
-    marginRight: theme.spacing(1),
-  },
-  title: {
-    padding: theme.spacing(3),
-    paddingBottom: 0,
-  },
-}));
 
 const labelFormatter = (
   time: number | string,
@@ -80,7 +62,6 @@ export const ChartBase: FC<ChartBaseProps> = ({
   lineColor,
   areaColor,
 }) => {
-  const classes = useStyles();
   const [chart, setChart] = useState<echarts.ECharts | null>(null);
   const chartElm = useRef<HTMLDivElement | null>(null);
   const isNoData = data.length === 0;
@@ -158,8 +139,15 @@ export const ChartBase: FC<ChartBaseProps> = ({
   }, [handleResize]);
 
   return (
-    <Paper elevation={1} className={classes.root}>
-      <Typography variant="h6" component="div" className={classes.title}>
+    <Paper elevation={1} sx={{ minWidth: 600, position: "relative" }}>
+      <Typography
+        variant="h6"
+        component="div"
+        sx={{
+          padding: 3,
+          pb: 0,
+        }}
+      >
         {title}
       </Typography>
 
@@ -179,9 +167,9 @@ export const ChartBase: FC<ChartBaseProps> = ({
           <Typography
             variant="body1"
             color="textSecondary"
-            className={classes.noDataMessage}
+            sx={{ display: "flex" }}
           >
-            <WarningOutlined className={classes.noDataMessageIcon} />
+            <WarningOutlined sx={{ mr: 1 }} />
             {NO_DATA_TEXT}
           </Typography>
         </Box>

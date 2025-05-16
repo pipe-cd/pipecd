@@ -6,7 +6,6 @@ import {
   Paper,
   Typography,
 } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
 import CancelIcon from "@mui/icons-material/Cancel";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import dayjs from "dayjs";
@@ -30,42 +29,6 @@ import {
 import { selectPipedById } from "~/modules/pipeds";
 import { fetchStageLog } from "~/modules/stage-logs";
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    padding: theme.spacing(2),
-    position: "relative",
-  },
-  textMargin: {
-    marginLeft: theme.spacing(1),
-  },
-  age: {
-    color: theme.palette.text.secondary,
-    marginLeft: theme.spacing(1),
-  },
-  content: {
-    flex: 1,
-  },
-  actionButtons: {
-    color: theme.palette.error.main,
-    position: "absolute",
-    top: theme.spacing(2),
-    right: theme.spacing(2),
-  },
-  statusReason: {
-    paddingTop: theme.spacing(1),
-    paddingBottom: theme.spacing(1),
-  },
-  linkIcon: {
-    fontSize: 16,
-    verticalAlign: "text-bottom",
-    marginLeft: theme.spacing(0.5),
-  },
-  labelChip: {
-    marginLeft: theme.spacing(1),
-    marginBottom: theme.spacing(0.25),
-  },
-}));
-
 enum PIPED_VERSION {
   V0 = "v0",
   V1 = "v1",
@@ -84,7 +47,6 @@ const LOG_FETCH_INTERVAL = 2000;
 
 export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
   function DeploymentDetail({ deploymentId }) {
-    const classes = useStyles();
     const dispatch = useAppDispatch();
 
     const deployment = useAppSelector<Deployment.AsObject | undefined>(
@@ -134,36 +96,48 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
     }
 
     return (
-      <Paper square elevation={1} className={classes.root}>
+      <Paper
+        square
+        elevation={1}
+        sx={{
+          padding: 2,
+          position: "relative",
+        }}
+      >
         <Box display="flex" flexDirection="column">
-          <div className={classes.content}>
+          <Box flex={1}>
             <Box display="flex" alignItems="center">
               <DeploymentStatusIcon status={deployment.status} />
-              <Typography className={classes.textMargin} variant="h6">
+              <Typography variant="h6" ml={1}>
                 {DEPLOYMENT_STATE_TEXT[deployment.status]}
               </Typography>
-              <Typography variant="body1" className={classes.age}>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: "text.secondary",
+                  marginLeft: 1,
+                }}
+              >
                 {dayjs(deployment.createdAt * 1000).fromNow()}
               </Typography>
               {deployment.labelsMap.map(([key, value], i) => (
                 <Chip
                   label={key + ": " + value}
-                  className={classes.labelChip}
+                  sx={{
+                    marginLeft: 1,
+                    marginBottom: 0.25,
+                  }}
                   variant="outlined"
                   key={i}
                 />
               ))}
             </Box>
-            <Typography
-              variant="body2"
-              color="textSecondary"
-              className={classes.statusReason}
-            >
+            <Typography variant="body2" color="textSecondary" pt={1} pb={1}>
               {deployment.statusReason}
             </Typography>
-          </div>
+          </Box>
           <Box display="flex">
-            <div className={classes.content}>
+            <Box flex={1}>
               <table>
                 <tbody>
                   <DetailTableRow
@@ -213,8 +187,8 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
                   <DetailTableRow label="Summary" value={deployment.summary} />
                 </tbody>
               </table>
-            </div>
-            <div className={classes.content}>
+            </Box>
+            <Box flex={1}>
               <table>
                 <tbody>
                   {deployment.trigger?.commit && (
@@ -224,7 +198,7 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
                         <Box display="flex">
                           <Typography variant="body2">
                             {deployment.trigger.commit.message}
-                            <span className={classes.textMargin}>
+                            <Typography component={"span"} ml={1}>
                               (
                               <Link
                                 variant="body2"
@@ -236,10 +210,16 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
                                   0,
                                   7
                                 )}`}
-                                <OpenInNewIcon className={classes.linkIcon} />
+                                <OpenInNewIcon
+                                  sx={{
+                                    fontSize: 16,
+                                    verticalAlign: "text-bottom",
+                                    marginLeft: 0.5,
+                                  }}
+                                />
                               </Link>
                               )
-                            </span>
+                            </Typography>
                           </Typography>
                         </Box>
                       }
@@ -255,25 +235,34 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
                   />
                 </tbody>
               </table>
-            </div>
+            </Box>
             {isDeploymentRunning(deployment.status) && (
-              <SplitButton
-                className={classes.actionButtons}
-                options={CANCEL_OPTIONS}
-                label="select merge strategy"
-                onClick={(index) => {
-                  dispatch(
-                    cancelDeployment({
-                      deploymentId,
-                      forceRollback: index === 1,
-                      forceNoRollback: index === 2,
-                    })
-                  );
-                }}
-                startIcon={<CancelIcon />}
-                loading={isCanceling}
-                disabled={isCanceling}
-              />
+              <Box
+                sx={(theme) => ({
+                  color: "error.main",
+                  position: "absolute",
+                  top: theme.spacing(2),
+                  right: theme.spacing(2),
+                })}
+              >
+                <SplitButton
+                  // className={classes.actionButtons}
+                  options={CANCEL_OPTIONS}
+                  label="select merge strategy"
+                  onClick={(index) => {
+                    dispatch(
+                      cancelDeployment({
+                        deploymentId,
+                        forceRollback: index === 1,
+                        forceNoRollback: index === 2,
+                      })
+                    );
+                  }}
+                  startIcon={<CancelIcon />}
+                  loading={isCanceling}
+                  disabled={isCanceling}
+                />
+              </Box>
             )}
           </Box>
         </Box>

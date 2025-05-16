@@ -1,11 +1,11 @@
 import {
+  Box,
   FormControl,
   InputLabel,
   MenuItem,
   Select,
   TextField,
 } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
 import Autocomplete from "@mui/material/Autocomplete";
 import { FC, memo, useCallback, useState, useEffect } from "react";
 import { FilterView } from "~/components/filter-view";
@@ -26,16 +26,6 @@ import {
 } from "~/modules/deployments";
 import { ApplicationAutocomplete } from "../../applications-page/application-filter/application-autocomplete";
 
-const useStyles = makeStyles((theme) => ({
-  formItem: {
-    width: "100%",
-    marginTop: theme.spacing(4),
-  },
-  select: {
-    width: "100%",
-  },
-}));
-
 const ALL_VALUE = "ALL";
 
 export interface DeploymentFilterProps {
@@ -46,7 +36,6 @@ export interface DeploymentFilterProps {
 
 export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
   function DeploymentFilter({ options, onChange, onClear }) {
-    const classes = useStyles();
     const [localApplications, setLocalApplications] = useState<
       Application.AsObject[]
     >([]);
@@ -98,23 +87,23 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
           setSelectedLabels([]);
         }}
       >
-        <div className={classes.formItem}>
+        <Box width={"100%"} mt={4}>
           <ApplicationAutocomplete
             value={options.applicationName ?? null}
             onChange={(value) =>
               handleUpdateFilterValue({ applicationName: value })
             }
           />
-        </div>
+        </Box>
 
-        <FormControl className={classes.formItem} variant="outlined">
+        <FormControl sx={{ width: "100%", mt: 4 }} variant="outlined">
           <InputLabel id="filter-application-kind">Application Kind</InputLabel>
           <Select
             labelId="filter-application-kind"
             id="filter-application-kind"
             value={options.kind ?? ALL_VALUE}
             label="Application Kind"
-            className={classes.select}
+            fullWidth
             onChange={(e) => {
               handleUpdateFilterValue({
                 kind:
@@ -143,7 +132,7 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
           </Select>
         </FormControl>
 
-        <div className={classes.formItem}>
+        <Box sx={{ width: "100%", mt: 4 }}>
           <Autocomplete
             id="application-select"
             options={localApplications}
@@ -171,9 +160,9 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
               />
             )}
           />
-        </div>
+        </Box>
 
-        <FormControl className={classes.formItem} variant="outlined">
+        <FormControl sx={{ width: "100%", mt: 4 }} variant="outlined">
           <InputLabel id="filter-deployment-status">
             Deployment Status
           </InputLabel>
@@ -182,7 +171,7 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
             id="filter-deployment-status"
             value={options.status ?? ALL_VALUE}
             label="Deployment Status"
-            className={classes.select}
+            fullWidth
             onChange={(e) => {
               handleUpdateFilterValue({
                 status:
@@ -211,7 +200,7 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
           </Select>
         </FormControl>
 
-        <FormControl className={classes.formItem} variant="outlined">
+        <FormControl sx={{ width: "100%", mt: 4 }} variant="outlined">
           <Autocomplete
             multiple
             autoHighlight

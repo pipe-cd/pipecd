@@ -1,5 +1,4 @@
-import { Card, CardContent, Typography, Box } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
+import { CardContent, Typography, Box } from "@mui/material";
 import {
   GridComponent,
   LegendComponent,
@@ -7,7 +6,6 @@ import {
   TooltipComponent,
 } from "echarts/components";
 import * as echarts from "echarts/core";
-import clsx from "clsx";
 import { FC, useEffect, useMemo } from "react";
 import { useAppSelector } from "~/hooks/redux";
 import { GaugeChart } from "echarts/charts";
@@ -17,23 +15,11 @@ import dayjs from "dayjs";
 import ChartEmptyData from "~/components/chart-empty-data";
 import LegendRow from "./legend-row";
 import { red } from "@mui/material/colors";
+import { CardWrapper } from "./styles";
 
 const failColor = red[500];
 
-const useStyles = makeStyles(() => ({
-  root: {
-    minWidth: 300,
-    display: "inline-block",
-    overflow: "visible",
-    position: "relative",
-  },
-  pageTitle: {
-    fontWeight: "bold",
-  },
-}));
-
 const Deployment24h: FC = () => {
-  const classes = useStyles();
   const { chart, chartElm } = useEChartState({
     extensions: [
       TitleComponent,
@@ -122,9 +108,9 @@ const Deployment24h: FC = () => {
   }, [chart, deploymentSummary.totalDeployment, data]);
 
   return (
-    <Card raised className={clsx(classes.root)}>
+    <CardWrapper raised>
       <CardContent>
-        <Typography color="textSecondary" className={classes.pageTitle}>
+        <Typography color="textSecondary" fontWeight={"bold"}>
           Deployments in 24h
         </Typography>
         <Box position={"relative"}>
@@ -143,7 +129,7 @@ const Deployment24h: FC = () => {
           ]}
         />
       </CardContent>
-    </Card>
+    </CardWrapper>
   );
 };
 

@@ -2,7 +2,6 @@ import {
   Button,
   ButtonGroup,
   ButtonGroupOwnProps,
-  CircularProgress,
   ClickAwayListener,
   Grow,
   MenuItem,
@@ -10,21 +9,10 @@ import {
   Paper,
   Popper,
 } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { FC, useRef, useState } from "react";
 import * as React from "react";
-
-const useStyles = makeStyles((theme) => ({
-  buttonProgress: {
-    color: theme.palette.primary.main,
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    marginTop: -12,
-    marginLeft: -12,
-  },
-}));
+import { SpinnerIcon } from "~/styles/button";
 
 export interface SplitButtonProps {
   options: string[];
@@ -47,7 +35,6 @@ export const SplitButton: FC<SplitButtonProps> = ({
   color,
   label,
 }) => {
-  const classes = useStyles();
   const anchorRef = useRef<HTMLDivElement | null>(null);
   const [open, setOpen] = useState(false);
   const [selectedCancelOption, setSelectedCancelOption] = useState(0);
@@ -74,9 +61,7 @@ export const SplitButton: FC<SplitButtonProps> = ({
           disabled={disabled}
         >
           {options[selectedCancelOption]}
-          {loading && (
-            <CircularProgress size={24} className={classes.buttonProgress} />
-          )}
+          {loading && <SpinnerIcon />}
         </Button>
         <Button
           size="small"

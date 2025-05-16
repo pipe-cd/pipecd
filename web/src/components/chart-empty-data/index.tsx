@@ -1,5 +1,4 @@
 import { Box, Typography } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
 import { WarningOutlined } from "@mui/icons-material";
 import { FC } from "react";
 
@@ -8,20 +7,9 @@ type Props = {
   noDataText?: string;
 };
 
-const useStyles = makeStyles((theme) => ({
-  noDataMessage: {
-    display: "flex",
-  },
-  noDataMessageIcon: {
-    marginRight: theme.spacing(1),
-  },
-}));
-
 const NO_DATA_TEXT = "No data is available.";
 
 const ChartEmptyData: FC<Props> = ({ visible, noDataText = NO_DATA_TEXT }) => {
-  const classes = useStyles();
-
   return (
     <Box
       display={visible ? "flex" : "none"}
@@ -37,9 +25,13 @@ const ChartEmptyData: FC<Props> = ({ visible, noDataText = NO_DATA_TEXT }) => {
       <Typography
         variant="body1"
         color="textSecondary"
-        className={classes.noDataMessage}
+        // className={classes.noDataMessage}
+        display="flex"
       >
-        <WarningOutlined className={classes.noDataMessageIcon} />
+        <WarningOutlined
+          // className={classes.noDataMessageIcon}
+          sx={{ mr: 1 }}
+        />
         {noDataText}
       </Typography>
     </Box>

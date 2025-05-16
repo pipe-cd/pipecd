@@ -1,5 +1,4 @@
 import { Box, Typography } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
 import Skeleton from "@mui/material/Skeleton";
 import { FC, memo } from "react";
 import { APPLICATION_HEALTH_STATUS_TEXT } from "~/constants/health-status-text";
@@ -12,12 +11,6 @@ import {
 } from "~/modules/applications-live-state";
 import { ApplicationHealthStatusIcon } from "../health-status-icon";
 
-const useStyles = makeStyles((theme) => ({
-  liveStateText: {
-    marginLeft: theme.spacing(0.5),
-  },
-}));
-
 export interface AppLiveStateProps {
   applicationId: string;
 }
@@ -25,7 +18,6 @@ export interface AppLiveStateProps {
 export const AppLiveState: FC<AppLiveStateProps> = memo(function AppLiveState({
   applicationId,
 }) {
-  const classes = useStyles();
   const [liveState, liveStateLoading] = useAppSelector<
     [ApplicationLiveState | undefined, boolean]
   >((state) => [
@@ -42,7 +34,7 @@ export const AppLiveState: FC<AppLiveStateProps> = memo(function AppLiveState({
       {liveState ? (
         <ApplicationHealthStatusIcon health={liveState.healthStatus} />
       ) : null}
-      <Typography variant="h6" className={classes.liveStateText}>
+      <Typography variant="h6" ml={0.5}>
         {liveState
           ? APPLICATION_HEALTH_STATUS_TEXT[liveState.healthStatus]
           : UI_TEXT_NOT_AVAILABLE_TEXT}

@@ -1,32 +1,15 @@
-import { makeStyles } from "@mui/styles";
 import { Select, MenuItem, IconButton } from "@mui/material";
 import ClearIcon from "@mui/icons-material/Clear";
 import { FC } from "react";
 import { useAppSelector } from "~/hooks/redux";
 import { selectAllPipeds } from "~/modules/pipeds";
-import clsx from "clsx";
 
 interface Props {
   value: string;
   onChange: (value: string) => void;
 }
 
-const useStyles = makeStyles(() => ({
-  root: {
-    "&:hover $clearIndicatorDirty, & .Mui-focused $clearIndicatorDirty": {
-      visibility: "visible",
-    },
-  },
-  clearIndicatorDirty: {},
-  clearIndicator: {
-    visibility: "hidden",
-    right: 20,
-  },
-}));
-
 export const PipedSelect: FC<Props> = ({ value, onChange }) => {
-  const classes = useStyles();
-
   const ps = useAppSelector((state) => selectAllPipeds(state));
   const pipeds = ps
     .filter((piped) => !piped.disabled)
@@ -36,18 +19,24 @@ export const PipedSelect: FC<Props> = ({ value, onChange }) => {
     <Select
       labelId="filter-piped"
       id="filter-piped"
-      className={classes.root}
       label="Piped"
       value={value}
       onChange={(e) => {
         onChange(e.target.value as string);
       }}
+      sx={{
+        "&:hover .clearIndicator, &:focus-within .clearIndicator": {
+          visibility: value && value.length > 0 ? "visible" : "hidden",
+        },
+      }}
       endAdornment={
         <IconButton
-          className={clsx(classes.clearIndicator, {
-            [classes.clearIndicatorDirty]: value && value.length > 0,
-          })}
+          sx={{
+            visibility: "hidden",
+            right: 20,
+          }}
           size="small"
+          className="clearIndicator"
           onClick={() => {
             onChange("");
           }}

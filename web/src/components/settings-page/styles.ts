@@ -1,7 +1,5 @@
-import makeStyles from "@mui/styles/makeStyles";
+import { styled, TableCell } from "@mui/material";
 
-export const useSettingsStyles = makeStyles({
-  tableCell: {
-    whiteSpace: "nowrap",
-  },
+export const TableCellNoWrap = styled(TableCell)({
+  whiteSpace: "nowrap",
 });

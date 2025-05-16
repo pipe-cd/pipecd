@@ -1,24 +1,7 @@
-import { Paper, Typography } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
+import { Box, Paper, Typography } from "@mui/material";
 import { FC, memo } from "react";
 import { ECSResourceState } from "~/modules/applications-live-state";
 import { ECSResourceHealthStatusIcon } from "./health-status-icon";
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    display: "inline-flex",
-    flexDirection: "column",
-    padding: theme.spacing(2),
-    width: 300,
-    cursor: "pointer",
-  },
-  nameLine: {
-    display: "flex",
-  },
-  name: {
-    marginLeft: theme.spacing(0.5),
-  },
-}));
 
 export interface ECSResourceProps {
   resource: ECSResourceState.AsObject;
@@ -29,16 +12,25 @@ export const ECSResource: FC<ECSResourceProps> = memo(function ECSResource({
   resource,
   onClick,
 }) {
-  const classes = useStyles();
   return (
-    <Paper square className={classes.root} onClick={() => onClick(resource)}>
+    <Paper
+      square
+      sx={{
+        display: "inline-flex",
+        flexDirection: "column",
+        padding: 2,
+        width: 300,
+        cursor: "pointer",
+      }}
+      onClick={() => onClick(resource)}
+    >
       <Typography variant="caption">{resource.kind}</Typography>
-      <div className={classes.nameLine}>
+      <Box sx={{ display: "flex" }}>
         <ECSResourceHealthStatusIcon health={resource.healthStatus} />
-        <Typography variant="subtitle2" className={classes.name}>
+        <Typography variant="subtitle2" ml={0.5}>
           {resource.name}
         </Typography>
-      </div>
+      </Box>
     </Paper>
   );
 });

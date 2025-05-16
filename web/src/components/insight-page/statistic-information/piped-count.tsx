@@ -1,12 +1,10 @@
-import { Card, CardContent, Typography, Box } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
+import { CardContent, Typography, Box } from "@mui/material";
 import {
   GridComponent,
   LegendComponent,
   TitleComponent,
   TooltipComponent,
 } from "echarts/components";
-import clsx from "clsx";
 import { FC, useEffect, useMemo } from "react";
 import { useAppSelector } from "~/hooks/redux";
 import { Piped, selectAllPipeds } from "~/modules/pipeds";
@@ -17,24 +15,12 @@ import ChartEmptyData from "~/components/chart-empty-data";
 import LegendRow from "./legend-row";
 
 import { blue as cyan, green } from "@mui/material/colors";
+import { CardWrapper } from "./styles";
 
 const enabledColor = cyan[500];
 const onlineColor = green[500];
 
-const useStyles = makeStyles(() => ({
-  root: {
-    minWidth: 300,
-    display: "inline-block",
-    overflow: "visible",
-    position: "relative",
-  },
-  pageTitle: {
-    fontWeight: "bold",
-  },
-}));
-
 const PipedCount: FC = () => {
-  const classes = useStyles();
   const pipeds = useAppSelector(selectAllPipeds);
 
   const { chart, chartElm } = useEChartState({
@@ -134,9 +120,9 @@ const PipedCount: FC = () => {
   }, [chart, gaugeData, pipedSummary.total]);
 
   return (
-    <Card raised className={clsx(classes.root)}>
+    <CardWrapper raised>
       <CardContent>
-        <Typography color="textSecondary" className={classes.pageTitle}>
+        <Typography color="textSecondary" fontWeight={"bold"}>
           Piped
         </Typography>
         <Box position={"relative"}>
@@ -161,7 +147,7 @@ const PipedCount: FC = () => {
           ]}
         />
       </CardContent>
-    </Card>
+    </CardWrapper>
   );
 };
 
