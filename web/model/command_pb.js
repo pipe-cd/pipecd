@@ -267,6 +267,7 @@ proto.model.Command.toObject = function(includeInstance, msg) {
     status: jspb.Message.getFieldWithDefault(msg, 20, 0),
     metadataMap: (f = msg.getMetadataMap()) ? f.toObject(includeInstance, undefined) : [],
     handledAt: jspb.Message.getFieldWithDefault(msg, 22, 0),
+    errorReason: jspb.Message.getFieldWithDefault(msg, 23, ""),
     type: jspb.Message.getFieldWithDefault(msg, 30, 0),
     syncApplication: (f = msg.getSyncApplication()) && proto.model.Command.SyncApplication.toObject(includeInstance, f),
     updateApplicationConfig: (f = msg.getUpdateApplicationConfig()) && proto.model.Command.UpdateApplicationConfig.toObject(includeInstance, f),
@@ -355,6 +356,10 @@ proto.model.Command.deserializeBinaryFromReader = function(msg, reader) {
     case 22:
       var value = /** @type {number} */ (reader.readInt64());
       msg.setHandledAt(value);
+      break;
+    case 23:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setErrorReason(value);
       break;
     case 30:
       var value = /** @type {!proto.model.Command.Type} */ (reader.readEnum());
@@ -501,6 +506,13 @@ proto.model.Command.serializeBinaryToWriter = function(message, writer) {
   if (f !== 0) {
     writer.writeInt64(
       22,
+      f
+    );
+  }
+  f = message.getErrorReason();
+  if (f.length > 0) {
+    writer.writeString(
+      23,
       f
     );
   }
@@ -2248,6 +2260,24 @@ proto.model.Command.prototype.getHandledAt = function() {
  */
 proto.model.Command.prototype.setHandledAt = function(value) {
   return jspb.Message.setProto3IntField(this, 22, value);
+};
+
+
+/**
+ * optional string error_reason = 23;
+ * @return {string}
+ */
+proto.model.Command.prototype.getErrorReason = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 23, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.model.Command} returns this
+ */
+proto.model.Command.prototype.setErrorReason = function(value) {
+  return jspb.Message.setProto3StringField(this, 23, value);
 };
 
 

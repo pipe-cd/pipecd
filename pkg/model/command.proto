@@ -97,7 +97,7 @@ message Command {
     CommandStatus status = 20;
     map<string,string> metadata = 21;
     int64 handled_at = 22 [(validate.rules).int64.gte = 0];
-    // TODO: Add a new field to show why command was failed.
+    string error_reason = 23;
 
     Type type = 30 [(validate.rules).enum.defined_only = true];
     SyncApplication sync_application = 31;

@@ -103,6 +103,8 @@ func (m *Command) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	// no validation rules for ErrorReason
+
 	if _, ok := Command_Type_name[int32(m.GetType())]; !ok {
 		err := CommandValidationError{
 			field:  "Type",
