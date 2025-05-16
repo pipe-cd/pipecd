@@ -23,7 +23,7 @@ import (
 	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/hashicorp/hcl/v2/hclparse"
 
-	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
 // FileMapping is a schema for Terraform file.
@@ -111,15 +111,15 @@ func LoadTerraformFiles(dir string) ([]File, error) {
 
 // FindArtifactVersions parses artifact versions from Terraform files.
 // For Terraform, module version is an artifact version.
-func FindArtifactVersions(tfs []File) ([]*model.ArtifactVersion, error) {
-	versions := make([]*model.ArtifactVersion, 0)
+func FindArtifactVersions(tfs []File) ([]sdk.ArtifactVersion, error) {
+	versions := make([]sdk.ArtifactVersion, 0)
 	for _, tf := range tfs {
 		for _, m := range tf.Modules {
-			versions = append(versions, &model.ArtifactVersion{
-				Kind:    model.ArtifactVersion_TERRAFORM_MODULE,
+			versions = append(versions, sdk.ArtifactVersion{
+				Kind:    sdk.ArtifactKindTerraformModule,
 				Version: m.Version,
 				Name:    m.Name,
-				Url:     m.Source,
+				URL:     m.Source,
 			})
 		}
 	}
