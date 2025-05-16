@@ -23,5 +23,5 @@ BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
 CHECK="$(echo "$BRANCH/$HEAD" | sha256sum | cut -d ' ' -f 1)"
 
-echo "Please paste the following to the PR description or PR comment to ensure the check is passed:"
+echo "Please paste the following to the PR comment and send it to ensure the check is passed:"
 echo "/check-commit $CHECK"
