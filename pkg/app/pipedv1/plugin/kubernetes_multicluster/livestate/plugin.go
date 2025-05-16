@@ -126,10 +126,7 @@ func (p Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTarge
 	appLiveState := sdk.ApplicationLiveState{}
 	for _, ls := range liveStates {
 		appLiveState.Resources = append(appLiveState.Resources, ls.Resources...)
-		appLiveState.HealthStatus = sdk.ApplicationHealthStateUnknown // TODO: Implement health status calculation
 	}
-
-	appLiveState.HealthStatus = calculateHealthStatus(liveStates)
 
 	appSyncState := sdk.ApplicationSyncState{}
 	for _, ss := range syncStates {
@@ -154,8 +151,7 @@ func (p Plugin) makeAppLivestate(namespacedLiveResources, clusterScopedLiveResou
 	}
 
 	return sdk.ApplicationLiveState{
-		Resources:    resourceStates,
-		HealthStatus: sdk.ApplicationHealthStateUnknown, // TODO: Implement health status calculation
+		Resources: resourceStates,
 	}
 }
 
@@ -172,24 +168,6 @@ func (p Plugin) makeAppSyncState(liveManifests, gitManifests []provider.Manifest
 	}
 
 	return calculateSyncState(diffResult, commit, dt), nil
-}
-
-// calculateHealthStatus returns the overall health status with the following priority:
-// Unknown > Other > Healthy.
-func calculateHealthStatus(states []sdk.ApplicationLiveState) sdk.ApplicationHealthStatus {
-	hasOther := false
-	for _, s := range states {
-		if s.HealthStatus == sdk.ApplicationHealthStateUnknown {
-			return sdk.ApplicationHealthStateUnknown
-		}
-		if s.HealthStatus == sdk.ApplicationHealthStateOther {
-			hasOther = true
-		}
-	}
-	if hasOther {
-		return sdk.ApplicationHealthStateOther
-	}
-	return sdk.ApplicationHealthStateHealthy
 }
 
 func calculateSyncState(diffResult *provider.DiffListResult, commit string, dt *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.ApplicationSyncState {
