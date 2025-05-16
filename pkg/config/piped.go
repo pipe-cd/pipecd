@@ -500,37 +500,80 @@ const (
 	OCIHelmChartRegistry HelmChartRegistryType = "OCI"
 )
 
+type HelmChartRegistryAuthType string
+
+const (
+	BasicAuthHelmChartRegistryAuth HelmChartRegistryAuthType = "BASIC"
+	TokenAuthHelmChartRegistryAuth HelmChartRegistryAuthType = "TOKEN"
+	CertAuthHelmChartRegistryAuth  HelmChartRegistryAuthType = "CERT"
+)
+
 type HelmChartRegistry struct {
 	// The registry type. Currently, only OCI is supported.
 	Type HelmChartRegistryType `json:"type" default:"OCI"`
 
 	// The address to the Helm chart registry.
 	Address string `json:"address"`
-	// Username used for the registry authentication.
+
+	// The authentication type to use. Default is BASIC.
+	AuthType HelmChartRegistryAuthType `json:"authType" default:"BASIC"`
+
+	// Whether to allow connections to TLS registry without certs.
+	Insecure bool `json:"insecure"`
+
+	// Basic authentication fields
 	Username string `json:"username,omitempty"`
-	// Password used for the registry authentication.
 	Password string `json:"password,omitempty"`
+
+	// Token authentication fields
+	Token string `json:"token,omitempty"`
+
+	// Certificate authentication fields
+	CertFile string `json:"certFile,omitempty"`
+	KeyFile  string `json:"keyFile,omitempty"`
+	CAFile   string `json:"caFile,omitempty"`
 }
 
-func (r *HelmChartRegistry) IsOCI() bool {
-	return r.Type == OCIHelmChartRegistry
-}
-
+// Validate validates the HelmChartRegistry configuration.
 func (r *HelmChartRegistry) Validate() error {
-	if r.IsOCI() {
-		if r.Address == "" {
-			return errors.New("address must be set")
-		}
-		return nil
+	if r.Type == "" {
+		return fmt.Errorf("type must be set")
+	}
+	if r.Address == "" {
+		return fmt.Errorf("address must be set")
 	}
 
-	return fmt.Errorf("%s registry must be configured", OCIHelmChartRegistry)
+	switch r.AuthType {
+	case BasicAuthHelmChartRegistryAuth:
+		if r.Username == "" {
+			return fmt.Errorf("username must be set for basic authentication")
+		}
+		if r.Password == "" {
+			return fmt.Errorf("password must be set for basic authentication")
+		}
+	case TokenAuthHelmChartRegistryAuth:
+		if r.Token == "" {
+			return fmt.Errorf("token must be set for token authentication")
+		}
+	case CertAuthHelmChartRegistryAuth:
+		if r.CertFile == "" {
+			return fmt.Errorf("certFile must be set for certificate authentication")
+		}
+		if r.KeyFile == "" {
+			return fmt.Errorf("keyFile must be set for certificate authentication")
+		}
+	default:
+		return fmt.Errorf("unsupported authentication type: %s", r.AuthType)
+	}
+
+	return nil
 }
 
-func (r *HelmChartRegistry) Mask() {
-	if len(r.Password) != 0 {
-		r.Password = maskString
-	}
+func (r *HelmChartRegistry) Mask() *HelmChartRegistry {
+	masked := *r
+	masked.Password = "*****"
+	masked.Token = "*****"
+	return &masked
 }
 
 type PipedPlatformProvider struct {
