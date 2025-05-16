@@ -442,3 +442,60 @@ func TestApplicationSyncStatus_toModel(t *testing.T) {
 		})
 	}
 }
+
+func TestApplicationLiveState_healthStatus(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		resources []ResourceState
+		expected  ApplicationHealthStatus
+	}{
+		{
+			name: "all healthy",
+			resources: []ResourceState{
+				{HealthStatus: ResourceHealthStateHealthy},
+			},
+			expected: ApplicationHealthStateHealthy,
+		},
+		{
+			name: "one unhealthy, none unknown",
+			resources: []ResourceState{
+				{HealthStatus: ResourceHealthStateHealthy},
+				{HealthStatus: ResourceHealthStateUnhealthy},
+			},
+			expected: ApplicationHealthStateOther,
+		},
+		{
+			name: "one unknown, others healthy",
+			resources: []ResourceState{
+				{HealthStatus: ResourceHealthStateHealthy},
+				{HealthStatus: ResourceHealthStateUnknown},
+			},
+			expected: ApplicationHealthStateUnknown,
+		},
+		{
+			name: "one unknown, one unhealthy",
+			resources: []ResourceState{
+				{HealthStatus: ResourceHealthStateUnhealthy},
+				{HealthStatus: ResourceHealthStateUnknown},
+			},
+			expected: ApplicationHealthStateUnknown,
+		},
+		{
+			name:      "empty resources",
+			resources: []ResourceState{},
+			expected:  ApplicationHealthStateHealthy,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &ApplicationLiveState{Resources: tt.resources}
+			result := s.healthStatus()
+			if result != tt.expected {
+				t.Errorf("expected %v, got %v", tt.expected, result)
+			}
+		})
+	}
+}
