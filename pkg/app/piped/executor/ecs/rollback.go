@@ -171,6 +171,7 @@ func rollbackELB(ctx context.Context, in *executor.Input, client provider.Client
 			in.LogPersister.Infof("Skip rolling back ELB listeners because it seems the deployment failed before updating them")
 			return true
 		}
+		in.LogPersister.Infof("Successfully got canary target group ARN from metadata store, although it was not included in the last successful commit: %s", canaryTargetGroupArn)
 	} else {
 		// When canaryTargetGroup exists in the previous commit, simply use it.
 		canaryTargetGroupArn = *canaryTargetGroup.TargetGroupArn
@@ -198,5 +199,6 @@ func rollbackELB(ctx context.Context, in *executor.Input, client provider.Client
 		return false
 	}
 
+	in.LogPersister.Infof("Successfully rolled back ELB listeners of target groups %s (PRIMARY) and %s (CANARY)", *primaryTargetGroup.TargetGroupArn, canaryTargetGroupArn)
 	return true
 }
