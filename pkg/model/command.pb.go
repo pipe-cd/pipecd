@@ -166,7 +166,8 @@ type Command struct {
 	ProjectId               string                           `protobuf:"bytes,7,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
 	Status                  CommandStatus                    `protobuf:"varint,20,opt,name=status,proto3,enum=model.CommandStatus" json:"status,omitempty"`
 	Metadata                map[string]string                `protobuf:"bytes,21,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	HandledAt               int64                            `protobuf:"varint,22,opt,name=handled_at,json=handledAt,proto3" json:"handled_at,omitempty"` // TODO: Add a new field to show why command was failed.
+	HandledAt               int64                            `protobuf:"varint,22,opt,name=handled_at,json=handledAt,proto3" json:"handled_at,omitempty"`
+	ErrorReason             string                           `protobuf:"bytes,23,opt,name=error_reason,json=errorReason,proto3" json:"error_reason,omitempty"` 
 	Type                    Command_Type                     `protobuf:"varint,30,opt,name=type,proto3,enum=model.Command_Type" json:"type,omitempty"`
 	SyncApplication         *Command_SyncApplication         `protobuf:"bytes,31,opt,name=sync_application,json=syncApplication,proto3" json:"sync_application,omitempty"`
 	UpdateApplicationConfig *Command_UpdateApplicationConfig `protobuf:"bytes,32,opt,name=update_application_config,json=updateApplicationConfig,proto3" json:"update_application_config,omitempty"`

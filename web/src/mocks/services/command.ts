@@ -19,6 +19,7 @@ const createCommandModel = (commandObj: Command.AsObject): Command => {
   command.setCommander(commandObj.commander);
   command.setStatus(commandObj.status);
   command.setHandledAt(commandObj.handledAt);
+  command.setErrorReason(commandObj.errorReason);
   command.setType(commandObj.type);
   command.setCreatedAt(commandObj.createdAt);
   command.setUpdatedAt(commandObj.updatedAt);

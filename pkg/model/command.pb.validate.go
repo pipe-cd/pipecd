@@ -1264,7 +1264,7 @@ func (m *Command_SkipStage) validate(all bool) error {
 
 	return nil
 }
-
+ 
 // Command_SkipStageMultiError is an error wrapping multiple validation errors
 // returned by Command_SkipStage.ValidateAll() if the designated constraints
 // aren't met.
