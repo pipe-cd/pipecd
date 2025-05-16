@@ -19,6 +19,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 )
@@ -159,4 +160,107 @@ spec:
 		})
 	}
 
+}
+
+func TestGenerateVariantServiceManifests(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name         string
+		inputYAML    string
+		variantLabel string
+		variant      string
+		nameSuffix   string
+		expectYAML   string
+	}{
+		{
+			name: "basic service variant",
+			inputYAML: `
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  selector:
+    app: my-app
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 8080
+  externalIPs:
+    - 1.2.3.4
+  loadBalancerIP: 5.6.7.8
+  loadBalancerSourceRanges:
+    - 0.0.0.0/0
+`,
+			variantLabel: "pipecd.dev/variant",
+			variant:      "canary",
+			nameSuffix:   "canary",
+			expectYAML: `
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service-canary
+spec:
+  selector:
+    app: my-app
+    pipecd.dev/variant: canary
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8080
+`,
+		},
+		{
+			name: "service with no selector",
+			inputYAML: `
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-svc
+spec:
+  ports:
+    - port: 443
+      targetPort: 8443
+`,
+			variantLabel: "pipecd.dev/variant",
+			variant:      "primary",
+			nameSuffix:   "primary",
+			expectYAML: `
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-svc-primary
+spec:
+  selector:
+    pipecd.dev/variant: primary
+  type: ClusterIP
+  ports:
+    - port: 443
+      targetPort: 8443
+`,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			services, err := provider.ParseManifests(tc.inputYAML)
+			require.NoError(t, err)
+			got, err := generateVariantServiceManifests(services, tc.variantLabel, tc.variant, tc.nameSuffix)
+			require.NoError(t, err)
+			expects, err := provider.ParseManifests(tc.expectYAML)
+			require.NoError(t, err)
+			require.Equal(t, len(expects), len(got))
+
+			for i := range expects {
+				var wantSvc, gotSvc corev1.Service
+				err := expects[i].ConvertToStructuredObject(&wantSvc)
+				require.NoError(t, err)
+				err = got[i].ConvertToStructuredObject(&gotSvc)
+				require.NoError(t, err)
+
+				assert.Equal(t, wantSvc, gotSvc)
+			}
+		})
+	}
 }
