@@ -58,6 +58,8 @@ type ECS interface {
 	DeleteTaskSet(ctx context.Context, taskSet types.TaskSet) error
 	UpdateServicePrimaryTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) (*types.TaskSet, error)
 	TagResource(ctx context.Context, resourceArn string, tags []types.Tag) error
+	ListTags(ctx context.Context, resourceArn string) ([]types.Tag, error)
+	UntagResource(ctx context.Context, resourceArn string, tagKeys []string) error
 }
 
 type ELB interface {
@@ -134,4 +136,9 @@ func MakeTags(tags map[string]string) []types.Tag {
 		resourceTags = append(resourceTags, types.Tag{Key: aws.String(key), Value: aws.String(value)})
 	}
 	return resourceTags
+}
+
+// IsPipeCDManagedTag checks if the given tag key is managed by PipeCD.
+func IsPipeCDManagedTag(key string) bool {
+	return key == LabelManagedBy || key == LabelPiped || key == LabelApplication || key == LabelCommitHash
 }
