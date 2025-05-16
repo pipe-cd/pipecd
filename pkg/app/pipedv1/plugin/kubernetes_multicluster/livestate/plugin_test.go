@@ -21,6 +21,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
+	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
 	"github.com/pipe-cd/pipecd/pkg/plugin/diff"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
@@ -69,10 +70,11 @@ func TestCalculateSyncState(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name       string
-		diffResult *provider.DiffListResult
-		commitHash string
-		want       sdk.ApplicationSyncState
+		name         string
+		diffResult   *provider.DiffListResult
+		commitHash   string
+		deployTarget *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]
+		want         sdk.ApplicationSyncState
 	}{
 		{
 			name: "all resources are in sync",
@@ -82,6 +84,9 @@ func TestCalculateSyncState(t *testing.T) {
 				Changes: []provider.DiffListChange{},
 			},
 			commitHash: "1234567",
+			deployTarget: &sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+				Name: "cluster1",
+			},
 			want: sdk.ApplicationSyncState{
 				Status:      sdk.ApplicationSyncStateSynced,
 				ShortReason: "",
@@ -134,10 +139,13 @@ spec:
 				},
 			},
 			commitHash: "1234567",
+			deployTarget: &sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+				Name: "cluster1",
+			},
 			want: sdk.ApplicationSyncState{
 				Status:      sdk.ApplicationSyncStateOutOfSync,
 				ShortReason: "There are 1 manifests not synced (0 adds, 0 deletes, 1 changes)",
-				Reason: `Diff between the defined state in Git at commit 1234567 and actual state in cluster:
+				Reason: `Diff between the defined state in Git at commit 1234567 and actual state in cluster: cluster1
 
 --- Actual   (LiveState)
 +++ Expected (Git)
@@ -230,10 +238,13 @@ spec:
 				},
 			},
 			commitHash: "1234567",
+			deployTarget: &sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+				Name: "cluster1",
+			},
 			want: sdk.ApplicationSyncState{
 				Status:      sdk.ApplicationSyncStateOutOfSync,
 				ShortReason: "There are 2 manifests not synced (0 adds, 0 deletes, 2 changes)",
-				Reason: `Diff between the defined state in Git at commit 1234567 and actual state in cluster:
+				Reason: `Diff between the defined state in Git at commit 1234567 and actual state in cluster: cluster1
 
 --- Actual   (LiveState)
 +++ Expected (Git)
@@ -307,10 +318,13 @@ spec:
 				},
 			},
 			commitHash: "1234567",
+			deployTarget: &sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+				Name: "cluster1",
+			},
 			want: sdk.ApplicationSyncState{
 				Status:      sdk.ApplicationSyncStateOutOfSync,
 				ShortReason: "There are 2 manifests not synced (1 adds, 1 deletes, 0 changes)",
-				Reason: `Diff between the defined state in Git at commit 1234567 and actual state in cluster:
+				Reason: `Diff between the defined state in Git at commit 1234567 and actual state in cluster: cluster1
 
 --- Actual   (LiveState)
 +++ Expected (Git)
@@ -346,10 +360,13 @@ data:
 				},
 			},
 			commitHash: "1234567",
+			deployTarget: &sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+				Name: "cluster1",
+			},
 			want: sdk.ApplicationSyncState{
 				Status:      sdk.ApplicationSyncStateOutOfSync,
 				ShortReason: "There are 1 manifests not synced (0 adds, 0 deletes, 1 changes)",
-				Reason: `Diff between the defined state in Git at commit 1234567 and actual state in cluster:
+				Reason: `Diff between the defined state in Git at commit 1234567 and actual state in cluster: cluster1
 
 --- Actual   (LiveState)
 +++ Expected (Git)
@@ -391,10 +408,13 @@ data:
 				},
 			},
 			commitHash: "1234567",
+			deployTarget: &sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+				Name: "cluster1",
+			},
 			want: sdk.ApplicationSyncState{
 				Status:      sdk.ApplicationSyncStateOutOfSync,
 				ShortReason: "There are 1 manifests not synced (0 adds, 0 deletes, 1 changes)",
-				Reason: `Diff between the defined state in Git at commit 1234567 and actual state in cluster:
+				Reason: `Diff between the defined state in Git at commit 1234567 and actual state in cluster: cluster1
 
 --- Actual   (LiveState)
 +++ Expected (Git)
@@ -489,10 +509,13 @@ data:
 				},
 			},
 			commitHash: "1234567",
+			deployTarget: &sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+				Name: "cluster1",
+			},
 			want: sdk.ApplicationSyncState{
 				Status:      sdk.ApplicationSyncStateOutOfSync,
 				ShortReason: "There are 4 manifests not synced (0 adds, 0 deletes, 4 changes)",
-				Reason: `Diff between the defined state in Git at commit 1234567 and actual state in cluster:
+				Reason: `Diff between the defined state in Git at commit 1234567 and actual state in cluster: cluster1
 
 --- Actual   (LiveState)
 +++ Expected (Git)
@@ -531,7 +554,107 @@ data:
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got := calculateSyncState(tt.diffResult, tt.commitHash)
+			got := calculateSyncState(tt.diffResult, tt.commitHash, tt.deployTarget)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+func Test_calculateSyncStatus(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		states []sdk.ApplicationSyncState
+	}
+	tests := []struct {
+		name string
+		args args
+		want sdk.ApplicationSyncStatus
+	}{
+		{
+			name: "all states are Synced",
+			args: args{
+				states: []sdk.ApplicationSyncState{
+					{Status: sdk.ApplicationSyncStateSynced},
+					{Status: sdk.ApplicationSyncStateSynced},
+				},
+			},
+			want: sdk.ApplicationSyncStateSynced,
+		},
+		{
+			name: "one state is OutOfSync",
+			args: args{
+				states: []sdk.ApplicationSyncState{
+					{Status: sdk.ApplicationSyncStateSynced},
+					{Status: sdk.ApplicationSyncStateOutOfSync},
+				},
+			},
+			want: sdk.ApplicationSyncStateOutOfSync,
+		},
+		{
+			name: "one state is Unknown",
+			args: args{
+				states: []sdk.ApplicationSyncState{
+					{Status: sdk.ApplicationSyncStateSynced},
+					{Status: sdk.ApplicationSyncStateUnknown},
+				},
+			},
+			want: sdk.ApplicationSyncStateUnknown,
+		},
+		{
+			name: "one state is InvalidConfig",
+			args: args{
+				states: []sdk.ApplicationSyncState{
+					{Status: sdk.ApplicationSyncStateSynced},
+					{Status: sdk.ApplicationSyncStateInvalidConfig},
+				},
+			},
+			want: sdk.ApplicationSyncStateInvalidConfig,
+		},
+		{
+			name: "priority: InvalidConfig > Unknown > OutOfSync > Synced",
+			args: args{
+				states: []sdk.ApplicationSyncState{
+					{Status: sdk.ApplicationSyncStateSynced},
+					{Status: sdk.ApplicationSyncStateOutOfSync},
+					{Status: sdk.ApplicationSyncStateUnknown},
+					{Status: sdk.ApplicationSyncStateInvalidConfig},
+				},
+			},
+			want: sdk.ApplicationSyncStateInvalidConfig,
+		},
+		{
+			name: "priority: Unknown > OutOfSync > Synced",
+			args: args{
+				states: []sdk.ApplicationSyncState{
+					{Status: sdk.ApplicationSyncStateSynced},
+					{Status: sdk.ApplicationSyncStateOutOfSync},
+					{Status: sdk.ApplicationSyncStateUnknown},
+				},
+			},
+			want: sdk.ApplicationSyncStateUnknown,
+		},
+		{
+			name: "priority: OutOfSync > Synced",
+			args: args{
+				states: []sdk.ApplicationSyncState{
+					{Status: sdk.ApplicationSyncStateSynced},
+					{Status: sdk.ApplicationSyncStateOutOfSync},
+				},
+			},
+			want: sdk.ApplicationSyncStateOutOfSync,
+		},
+		{
+			name: "empty states returns Synced",
+			args: args{
+				states: []sdk.ApplicationSyncState{},
+			},
+			want: sdk.ApplicationSyncStateSynced,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := calculateSyncStatus(tt.args.states)
 			assert.Equal(t, tt.want, got)
 		})
 	}

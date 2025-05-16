@@ -143,10 +143,7 @@ func groupManifests(olds, news []Manifest) (adds, deletes, newChanges, oldChange
 	})
 
 	var n, o int
-	for {
-		if n >= len(news) || o >= len(olds) {
-			break
-		}
+	for n < len(news) && o < len(olds) {
 		if news[n].Key().normalize().String() == olds[o].Key().normalize().String() {
 			newChanges = append(newChanges, news[n])
 			oldChanges = append(oldChanges, olds[o])

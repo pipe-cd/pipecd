@@ -63,6 +63,8 @@ message Piped {
     string version = 7;
     // Unix time when the piped is started up.
     int64 started_at = 8;
+    // NOTE: Fields `cloud_providers` and `platform_providers` are deprecated.
+    // Using `plugins` to specify where to deploy instead.
     // List of configured cloud providers.
     repeated CloudProvider cloud_providers = 9 [deprecated=true];
     // List of configured repositories.
@@ -71,6 +73,8 @@ message Piped {
     ConnectionStatus status = 11 [(validate.rules).enum.defined_only = true];
     // Currently applied config.
     string config = 12;
+    // NOTE: Fields `cloud_providers` and `platform_providers` are deprecated.
+    // Using `plugins` to specify where to deploy instead.
     // List of configured platform providers.
     repeated PlatformProvider platform_providers = 16 [deprecated=true];
     // List of configured plugins.

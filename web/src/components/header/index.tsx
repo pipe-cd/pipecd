@@ -1,36 +1,36 @@
-import { FC, memo, useEffect, useState } from "react";
 import {
   AppBar,
-  Toolbar,
-  Typography,
   Avatar,
-  Link,
   Button,
   IconButton,
-  MenuItem,
+  Link,
   Menu,
+  MenuItem,
+  Toolbar,
+  Typography,
 } from "@mui/material";
+import { ExitToApp, MoreVert, OpenInNew } from "@mui/icons-material";
+import ArrowDownIcon from "@mui/icons-material/ArrowDropDown";
 import makeStyles from "@mui/styles/makeStyles";
-import { MoreVert, OpenInNew } from "@mui/icons-material";
-import {
-  PAGE_PATH_APPLICATIONS,
-  PAGE_PATH_DEPLOYMENTS,
-  PAGE_PATH_SETTINGS,
-  PAGE_PATH_LOGIN,
-  LOGOUT_ENDPOINT,
-  PAGE_PATH_TOP,
-  PAGE_PATH_INSIGHTS,
-  PAGE_PATH_DEPLOYMENT_CHAINS,
-  PAGE_PATH_EVENTS,
-  PAGE_PATH_DEPLOYMENT_TRACE,
-} from "~/constants/path";
+import clsx from "clsx";
+import { FC, memo, useEffect, useState } from "react";
+import { NavLink as RouterLink, useLocation } from "react-router-dom";
 import { APP_NAME } from "~/constants/common";
 import { LOGGING_IN_PROJECT, USER_PROJECTS } from "~/constants/localstorage";
-import { NavLink as RouterLink, useLocation } from "react-router-dom";
-import ArrowDownIcon from "@mui/icons-material/ArrowDropDown";
-import logo from "~~/assets/logo.svg";
+import {
+  LOGOUT_ENDPOINT,
+  PAGE_PATH_APPLICATIONS,
+  PAGE_PATH_DEPLOYMENTS,
+  PAGE_PATH_DEPLOYMENT_CHAINS,
+  PAGE_PATH_DEPLOYMENT_TRACE,
+  PAGE_PATH_EVENTS,
+  PAGE_PATH_INSIGHTS,
+  PAGE_PATH_LOGIN,
+  PAGE_PATH_SETTINGS,
+  PAGE_PATH_TOP,
+} from "~/constants/path";
 import { useAppSelector } from "~/hooks/redux";
-import clsx from "clsx";
+import logo from "~~/assets/logo.svg";
 
 export const APP_HEADER_HEIGHT = 56;
 
@@ -63,6 +63,8 @@ const useStyles = makeStyles((theme) => ({
   right: {
     height: "100%",
     overflow: "hidden",
+    display: "flex",
+    alignItems: "center",
     "&:hover": {
       color: theme.palette.grey[400],
     },
@@ -209,16 +211,25 @@ export const Header: FC = memo(function Header() {
               >
                 <MoreVert />
               </IconButton>
-              <IconButton
+              <Button
+                color="inherit"
                 aria-label="User Menu"
                 aria-controls="user-menu"
                 aria-haspopup="true"
                 onClick={(e) => setUserAnchorEl(e.currentTarget)}
-                size="large"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  textTransform: "none",
+                }}
               >
-                <Avatar className={classes.userAvatar} src={me.avatarUrl} />
-              </IconButton>
-              <span>{me.subject}</span>
+                <Avatar
+                  className={classes.userAvatar}
+                  src={me.avatarUrl}
+                  style={{ marginRight: 8 }}
+                />
+                {me.subject}
+              </Button>
             </>
           ) : (
             <Link
@@ -250,12 +261,16 @@ export const Header: FC = memo(function Header() {
         id="user-menu"
         anchorEl={userAnchorEl}
         open={Boolean(userAnchorEl)}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "right",
+        }}
         onClose={(): void => {
           setUserAnchorEl(null);
         }}
       >
         <MenuItem component={Link} href={LOGOUT_ENDPOINT}>
-          Logout
+          <ExitToApp style={{ marginRight: 8 }} /> Logout
         </MenuItem>
       </Menu>
       <Menu
@@ -309,11 +324,7 @@ export const Header: FC = memo(function Header() {
           GitHub
           <OpenInNew className={classes.iconOpenInNew} />
         </MenuItem>
-        <MenuItem
-          disabled={true}
-          dense={true}
-          // button={false} // TODO check this working normally
-        >
+        <MenuItem disabled={true} dense={true}>
           {process.env.PIPECD_VERSION}
         </MenuItem>
       </Menu>

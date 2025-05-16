@@ -15,7 +15,11 @@
 package sdk
 
 import (
+	"encoding/json"
+	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 )
@@ -79,6 +83,14 @@ func TestApplicationConfig_HasStage(t *testing.T) {
 			stageName: "stage1",
 			want:      false,
 		},
+		{
+			name: "pipeline is nil",
+			appConfig: &ApplicationConfig[any]{
+				commonSpec: &config.GenericApplicationSpec{},
+			},
+			stageName: "stage1",
+			want:      false,
+		},
 	}
 
 	for _, c := range cases {
@@ -89,6 +101,118 @@ func TestApplicationConfig_HasStage(t *testing.T) {
 			if got != c.want {
 				t.Errorf("HasStage(%q) = %v, want %v", c.stageName, got, c.want)
 			}
+		})
+	}
+}
+
+type testPluginSpec struct {
+	Name    string `json:"name"`
+	Value   int    `json:"value" default:"42"`
+	Require string `json:"require"`
+}
+
+func (s *testPluginSpec) Validate() error {
+	if s.Require == "" {
+		return fmt.Errorf("require must not be empty")
+	}
+	return nil
+}
+
+func TestApplicationConfig_ParsePluginConfig(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name       string
+		pluginName string
+		config     *ApplicationConfig[testPluginSpec]
+		wantSpec   *testPluginSpec
+		wantErr    bool
+	}{
+		{
+			name:       "no plugin config present",
+			pluginName: "test-plugin",
+			config: &ApplicationConfig[testPluginSpec]{
+				pluginConfigs: nil,
+			},
+			wantSpec: nil,
+			wantErr:  false,
+		},
+		{
+			name:       "empty plugin configs map",
+			pluginName: "test-plugin",
+			config: &ApplicationConfig[testPluginSpec]{
+				pluginConfigs: make(map[string]json.RawMessage),
+			},
+			wantSpec: nil,
+			wantErr:  false,
+		},
+		{
+			name:       "valid plugin config with defaults",
+			pluginName: "test-plugin",
+			config: &ApplicationConfig[testPluginSpec]{
+				pluginConfigs: map[string]json.RawMessage{
+					"test-plugin": json.RawMessage(`{"name": "test", "require": "yes"}`),
+				},
+			},
+			wantSpec: &testPluginSpec{
+				Name:    "test",
+				Value:   42,
+				Require: "yes",
+			},
+			wantErr: false,
+		},
+		{
+			name:       "invalid json in plugin config",
+			pluginName: "test-plugin",
+			config: &ApplicationConfig[testPluginSpec]{
+				pluginConfigs: map[string]json.RawMessage{
+					"test-plugin": json.RawMessage(`{invalid-json`),
+				},
+			},
+			wantSpec: nil,
+			wantErr:  true,
+		},
+		{
+			name:       "validation failure",
+			pluginName: "test-plugin",
+			config: &ApplicationConfig[testPluginSpec]{
+				pluginConfigs: map[string]json.RawMessage{
+					"test-plugin": json.RawMessage(`{"name": "test", "value": 10}`),
+				},
+			},
+			wantSpec: nil,
+			wantErr:  true,
+		},
+		{
+			name:       "custom values override defaults",
+			pluginName: "test-plugin",
+			config: &ApplicationConfig[testPluginSpec]{
+				pluginConfigs: map[string]json.RawMessage{
+					"test-plugin": json.RawMessage(`{"name": "test", "value": 100, "require": "yes"}`),
+				},
+			},
+			wantSpec: &testPluginSpec{
+				Name:    "test",
+				Value:   100,
+				Require: "yes",
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			err := tc.config.parsePluginConfig(tc.pluginName)
+			if tc.wantErr {
+				assert.Error(t, err)
+				return
+			}
+
+			assert.NoError(t, err)
+			assert.Equal(t, tc.wantSpec, tc.config.Spec)
+			assert.Nil(t, tc.config.pluginConfigs, "pluginConfigs should be cleared after successful parsing")
 		})
 	}
 }

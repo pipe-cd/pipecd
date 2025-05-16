@@ -91,23 +91,6 @@ func (l *Loader) LoadManifests(ctx context.Context, input LoaderInput) (manifest
 			if input.Namespace != "" {
 				manifests[i].body.SetNamespace(input.Namespace)
 			}
-
-			// Add builtin labels and annotations for tracking application live state.
-			manifests[i].AddLabels(map[string]string{
-				LabelManagedBy:   ManagedByPiped,
-				LabelPiped:       input.PipedID,
-				LabelApplication: input.AppID,
-				LabelCommitHash:  input.CommitHash,
-			})
-
-			manifests[i].AddAnnotations(map[string]string{
-				LabelManagedBy:          ManagedByPiped,
-				LabelPiped:              input.PipedID,
-				LabelApplication:        input.AppID,
-				LabelOriginalAPIVersion: manifests[i].body.GetAPIVersion(),
-				LabelResourceKey:        manifests[i].Key().String(),
-				LabelCommitHash:         input.CommitHash,
-			})
 		}
 
 		sortManifests(manifests)

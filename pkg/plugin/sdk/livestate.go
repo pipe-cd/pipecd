@@ -103,7 +103,7 @@ func (s *LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec
 		toolRegistry:  s.toolRegistry,
 	}
 
-	deploymentSource, err := newDeploymentSource[ApplicationConfigSpec](request.GetDeploySource())
+	deploymentSource, err := newDeploymentSource[ApplicationConfigSpec](s.name, request.GetDeploySource())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to parse deployment source: %v", err)
 	}
@@ -165,8 +165,38 @@ func (r *GetLivestateResponse) toModel(pluginName string, now time.Time) *livest
 
 // ApplicationLiveState represents the live state of an application.
 type ApplicationLiveState struct {
-	Resources    []ResourceState
-	HealthStatus ApplicationHealthStatus
+	Resources []ResourceState
+}
+
+// healthStatus returns the health status of the application.
+// It returns ApplicationHealthStateUnknown in the following priority:
+// 1. If there is any unknown health status resource, it returns ApplicationHealthStateUnknown.
+// 2. If there is any unhealthy resource, it returns ApplicationHealthStateOther.
+// 3. Otherwise, it returns ApplicationHealthStateHealthy.
+func (s *ApplicationLiveState) healthStatus() ApplicationHealthStatus {
+	var (
+		unhealthy bool
+		unknown   bool
+	)
+
+	for _, rs := range s.Resources {
+		switch rs.HealthStatus {
+		case ResourceHealthStateUnhealthy:
+			unhealthy = true
+		case ResourceHealthStateUnknown:
+			unknown = true
+		}
+	}
+
+	if unknown {
+		return ApplicationHealthStateUnknown
+	}
+
+	if unhealthy {
+		return ApplicationHealthStateOther
+	}
+
+	return ApplicationHealthStateHealthy
 }
 
 // toModel converts the ApplicationLiveState to the model.ApplicationLiveState.
@@ -177,7 +207,7 @@ func (s *ApplicationLiveState) toModel(pluginName string, now time.Time) *model.
 	}
 	return &model.ApplicationLiveState{
 		Resources:    resources,
-		HealthStatus: s.HealthStatus.toModel(),
+		HealthStatus: s.healthStatus().toModel(),
 	}
 }
 

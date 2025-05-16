@@ -43,6 +43,10 @@ func TestRenderNodeValue(t *testing.T) {
 			"one": []string{"one-1", "one-2"},
 			"two": []string{"two-1", "two-2"},
 		}
+		mapOfBool = map[string]interface{}{
+			"false": false,
+			"true":  true,
+		}
 	)
 
 	testcases := []struct {
@@ -64,6 +68,16 @@ func TestRenderNodeValue(t *testing.T) {
 			name:     "string value",
 			value:    reflect.ValueOf("hello"),
 			expected: "hello",
+		},
+		{
+			name:     "bool value (true)",
+			value:    reflect.ValueOf(true),
+			expected: "true",
+		},
+		{
+			name:     "bool value (false)",
+			value:    reflect.ValueOf(false),
+			expected: "false",
 		},
 		{
 			name: "slice of primitive elements",
@@ -141,6 +155,12 @@ two: two-value`,
   - a
   - b
 7-string: hi`,
+		},
+		{
+			name:  "map of bool",
+			value: reflect.ValueOf(mapOfBool),
+			expected: `false: false
+true: true`,
 		},
 	}
 

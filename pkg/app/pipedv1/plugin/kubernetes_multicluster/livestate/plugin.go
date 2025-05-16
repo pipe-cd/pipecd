@@ -31,85 +31,146 @@ import (
 
 type Plugin struct{}
 
-// GetLivestate implements sdk.LivestatePlugin.
 func (p Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTargets []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.GetLivestateResponse, error) {
-	if len(deployTargets) != 1 {
-		return nil, fmt.Errorf("only 1 deploy target is allowed but got %d", len(deployTargets))
-	}
-
-	deployTarget := deployTargets[0]
-	deployTargetConfig := deployTarget.Config
-
 	cfg, err := input.Request.DeploymentSource.AppConfig()
 	if err != nil {
 		input.Logger.Error("Failed to load application config", zap.Error(err))
 		return nil, err
 	}
 
+	logger := input.Logger
+
+	type targetConfig struct {
+		deployTarget *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]
+		multiTarget  *kubeconfig.KubernetesMultiTarget
+	}
+
+	deployTargetMap := make(map[string]*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], 0)
+	targetConfigs := make([]targetConfig, 0, len(deployTargets))
+
+	// prevent the deployment when its deployTarget is not found in the piped config
+	for _, target := range deployTargets {
+		deployTargetMap[target.Name] = target
+	}
+
+	// If no multi-targets are specified, sync to all deploy targets.
+	if len(cfg.Spec.Input.MultiTargets) == 0 {
+		for _, dt := range deployTargets {
+			targetConfigs = append(targetConfigs, targetConfig{
+				deployTarget: dt,
+				multiTarget:  nil,
+			})
+		}
+	} else {
+		// Sync to the specified multi-targets.
+		for _, multiTarget := range cfg.Spec.Input.MultiTargets {
+			dt, ok := deployTargetMap[multiTarget.Target.Name]
+			if !ok {
+				logger.Info("Ignore multi target '%s': not matched any deployTarget", zap.String("multiTargetName", multiTarget.Target.Name))
+				continue
+			}
+
+			targetConfigs = append(targetConfigs, targetConfig{
+				deployTarget: dt,
+				multiTarget:  &multiTarget,
+			})
+		}
+	}
+
 	// TODO: find the way to hold the tool registry and loader in the plugin.
 	// Currently, we create them every time the stage is executed beucause we can't pass input.Client.toolRegistry to the plugin when starting the plugin.
 	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
 
-	// Get the kubectl tool path.
-	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion))
-	if err != nil {
-		input.Logger.Error("Failed to get kubectl tool", zap.Error(err))
-		return nil, err
+	liveStates := make([]sdk.ApplicationLiveState, 0, len(targetConfigs))
+	syncStates := make([]sdk.ApplicationSyncState, 0, len(targetConfigs))
+	for _, tc := range targetConfigs {
+		// Get the kubectl tool path.
+		kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, tc.deployTarget.Config.KubectlVersion))
+		if err != nil {
+			input.Logger.Error("Failed to get kubectl tool", zap.Error(err))
+			return nil, err
+		}
+
+		// Create the kubectl wrapper for the target cluster.
+		kubectl := provider.NewKubectl(kubectlPath)
+
+		// TODO: We need to implement including/excluding resources.
+		// ref; https://pipecd.dev/docs-v0.50.x/user-guide/managing-piped/configuration-reference/#kubernetesappstateinformer
+		namespacedLiveResources, clusterScopedLiveResources, err := provider.GetLiveResources(ctx, kubectl, tc.deployTarget.Config.KubeConfigPath, input.Request.ApplicationID)
+		if err != nil {
+			input.Logger.Error("Failed to get live resources", zap.Error(err))
+			return nil, err
+		}
+
+		liveState := p.makeAppLivestate(namespacedLiveResources, clusterScopedLiveResources, tc.deployTarget)
+		liveStates = append(liveStates, liveState)
+
+		liveManifests := make([]provider.Manifest, 0, len(namespacedLiveResources)+len(clusterScopedLiveResources))
+		liveManifests = append(liveManifests, namespacedLiveResources...)
+		liveManifests = append(liveManifests, clusterScopedLiveResources...)
+
+		manifests, err := p.loadManifests(ctx, input, cfg.Spec, provider.NewLoader(toolRegistry), tc.multiTarget)
+		if err != nil {
+			input.Logger.Error("Failed to load manifests", zap.Error(err))
+			return nil, err
+		}
+
+		syncState, err := p.makeAppSyncState(liveManifests, manifests, tc.deployTarget, input.Request.DeploymentSource.CommitHash, logger)
+		if err != nil {
+			input.Logger.Error("Failed to make app sync state", zap.Error(err), zap.String("deployTarget", tc.deployTarget.Name))
+			return nil, err
+		}
+		syncStates = append(syncStates, syncState)
 	}
 
-	// Create the kubectl wrapper for the target cluster.
-	kubectl := provider.NewKubectl(kubectlPath)
-
-	// TODO: We need to implement including/excluding resources.
-	// ref; https://pipecd.dev/docs-v0.50.x/user-guide/managing-piped/configuration-reference/#kubernetesappstateinformer
-	namespacedLiveResources, clusterScopedLiveResources, err := provider.GetLiveResources(ctx, kubectl, deployTargetConfig.KubeConfigPath, input.Request.ApplicationID)
-	if err != nil {
-		input.Logger.Error("Failed to get live resources", zap.Error(err))
-		return nil, err
+	appLiveState := sdk.ApplicationLiveState{}
+	for _, ls := range liveStates {
+		appLiveState.Resources = append(appLiveState.Resources, ls.Resources...)
 	}
 
+	appSyncState := sdk.ApplicationSyncState{}
+	for _, ss := range syncStates {
+		appSyncState.Reason = fmt.Sprintf("%s\n%s", appSyncState.Reason, ss.Reason)
+		appSyncState.ShortReason = fmt.Sprintf("%s\n%s", appSyncState.ShortReason, ss.ShortReason)
+	}
+	appSyncState.Status = calculateSyncStatus(syncStates)
+
+	return &sdk.GetLivestateResponse{
+		LiveState: appLiveState,
+		SyncState: appSyncState,
+	}, nil
+}
+
+func (p Plugin) makeAppLivestate(namespacedLiveResources, clusterScopedLiveResources []provider.Manifest, dt *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.ApplicationLiveState {
 	resourceStates := make([]sdk.ResourceState, 0, len(namespacedLiveResources)+len(clusterScopedLiveResources))
 	for _, m := range namespacedLiveResources {
-		resourceStates = append(resourceStates, m.ToResourceState(deployTarget.Name))
+		resourceStates = append(resourceStates, m.ToResourceState(dt.Name))
 	}
 	for _, m := range clusterScopedLiveResources {
-		resourceStates = append(resourceStates, m.ToResourceState(deployTarget.Name))
+		resourceStates = append(resourceStates, m.ToResourceState(dt.Name))
 	}
 
-	manifests, err := p.loadManifests(ctx, input, cfg.Spec, provider.NewLoader(toolRegistry))
-	if err != nil {
-		input.Logger.Error("Failed to load manifests", zap.Error(err))
-		return nil, err
+	return sdk.ApplicationLiveState{
+		Resources: resourceStates,
 	}
+}
 
-	liveManifests := make([]provider.Manifest, 0, len(namespacedLiveResources)+len(clusterScopedLiveResources))
-	liveManifests = append(liveManifests, namespacedLiveResources...)
-	liveManifests = append(liveManifests, clusterScopedLiveResources...)
-
+func (p Plugin) makeAppSyncState(liveManifests, gitManifests []provider.Manifest, dt *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], commit string, logger *zap.Logger) (sdk.ApplicationSyncState, error) {
 	// Calculate SyncState by comparing live manifests with desired manifests
 	// TODO: Implement drift detection ignore configs
-	diffResult, err := provider.DiffList(liveManifests, manifests, input.Logger,
+	diffResult, err := provider.DiffList(liveManifests, gitManifests, logger,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),
 		diff.WithCompareNumberAndNumericString(),
 	)
 	if err != nil {
-		input.Logger.Error("Failed to calculate diff", zap.Error(err))
-		return nil, err
+		return sdk.ApplicationSyncState{}, err
 	}
 
-	syncState := calculateSyncState(diffResult, input.Request.DeploymentSource.CommitHash)
-
-	return &sdk.GetLivestateResponse{
-		LiveState: sdk.ApplicationLiveState{
-			Resources:    resourceStates,
-			HealthStatus: sdk.ApplicationHealthStateUnknown, // TODO: Implement health status calculation
-		},
-		SyncState: syncState,
-	}, nil
+	return calculateSyncState(diffResult, commit, dt), nil
 }
 
-func calculateSyncState(diffResult *provider.DiffListResult, commit string) sdk.ApplicationSyncState {
+func calculateSyncState(diffResult *provider.DiffListResult, commit string, dt *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.ApplicationSyncState {
 	if diffResult.NoChanges() {
 		return sdk.ApplicationSyncState{
 			Status:      sdk.ApplicationSyncStateSynced,
@@ -131,7 +192,7 @@ func calculateSyncState(diffResult *provider.DiffListResult, commit string) sdk.
 	}
 
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("Diff between the defined state in Git at commit %s and actual state in cluster:\n\n", commit))
+	b.WriteString(fmt.Sprintf("Diff between the defined state in Git at commit %s and actual state in cluster: %s\n\n", commit, dt.Name))
 	b.WriteString("--- Actual   (LiveState)\n+++ Expected (Git)\n\n")
 
 	details := diffResult.Render(provider.DiffRenderOptions{
@@ -148,13 +209,55 @@ func calculateSyncState(diffResult *provider.DiffListResult, commit string) sdk.
 	}
 }
 
+// calculateSyncStatus returns the highest-priority sync status among the given states.
+// Priority: InvalidConfig > Unknown > OutOfSync > Synced.
+func calculateSyncStatus(states []sdk.ApplicationSyncState) sdk.ApplicationSyncStatus {
+	var (
+		hasInvalidConfig bool
+		hasUnknown       bool
+		hasOutOfSync     bool
+	)
+	for _, state := range states {
+		switch state.Status {
+		case sdk.ApplicationSyncStateInvalidConfig:
+			hasInvalidConfig = true
+		case sdk.ApplicationSyncStateUnknown:
+			hasUnknown = true
+		case sdk.ApplicationSyncStateOutOfSync:
+			hasOutOfSync = true
+		}
+	}
+
+	if hasInvalidConfig {
+		return sdk.ApplicationSyncStateInvalidConfig
+	}
+
+	if hasUnknown {
+		return sdk.ApplicationSyncStateUnknown
+	}
+
+	if hasOutOfSync {
+		return sdk.ApplicationSyncStateOutOfSync
+	}
+
+	return sdk.ApplicationSyncStateSynced
+}
+
 type loader interface {
 	// LoadManifests renders and loads all manifests for application.
 	LoadManifests(ctx context.Context, input provider.LoaderInput) ([]provider.Manifest, error)
 }
 
 // TODO: share this implementation with the deployment plugin
-func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec], spec *kubeconfig.KubernetesApplicationSpec, loader loader) ([]provider.Manifest, error) {
+func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec], spec *kubeconfig.KubernetesApplicationSpec, loader loader, multiTarget *kubeconfig.KubernetesMultiTarget) ([]provider.Manifest, error) {
+	// override values if multiTarget has value.
+	manifestPathes := spec.Input.Manifests
+	if multiTarget != nil {
+		if len(multiTarget.Manifests) > 0 {
+			manifestPathes = multiTarget.Manifests
+		}
+	}
+
 	manifests, err := loader.LoadManifests(ctx, provider.LoaderInput{
 		PipedID:          input.Request.PipedID,
 		AppID:            input.Request.ApplicationID,
@@ -162,7 +265,7 @@ func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[
 		AppName:          input.Request.ApplicationName,
 		AppDir:           input.Request.DeploymentSource.ApplicationDirectory,
 		ConfigFilename:   input.Request.DeploymentSource.ApplicationConfigFilename,
-		Manifests:        spec.Input.Manifests,
+		Manifests:        manifestPathes,
 		Namespace:        spec.Input.Namespace,
 		TemplatingMethod: provider.TemplatingMethodNone, // TODO: Implement detection of templating method or add it to the config spec.
 

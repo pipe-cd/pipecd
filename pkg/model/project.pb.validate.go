@@ -1695,6 +1695,12 @@ func (m *ProjectSSOConfig_Oidc) validate(all bool) error {
 
 	// no validation rules for ProxyUrl
 
+	// no validation rules for RolesClaimKey
+
+	// no validation rules for UsernameClaimKey
+
+	// no validation rules for AvatarUrlClaimKey
+
 	if len(errors) > 0 {
 		return ProjectSSOConfig_OidcMultiError(errors)
 	}
