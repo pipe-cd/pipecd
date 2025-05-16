@@ -15,15 +15,34 @@ export interface ApplicationAddedViewProps {
 export const ApplicationAddedView: FC<ApplicationAddedViewProps> = memo(
   function ApplicationAddedView({ onClose }) {
     return (
-      <Box width={600} flex={1} display="flex" flexDirection="column">
-        <Typography variant="h6" p={2}>
+      <Box
+        sx={{
+          width: 600,
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{
+            p: 2,
+          }}
+        >
           {TEXT.TITLE}
         </Typography>
-
         <Divider />
-
-        <Box p={2}>
-          <Box mt={2} mb={2}>
+        <Box
+          sx={{
+            p: 2,
+          }}
+        >
+          <Box
+            sx={{
+              mt: 2,
+              mb: 2,
+            }}
+          >
             <Typography variant="subtitle1">{TEXT.MESSAGE}</Typography>
             <Typography
               variant="body2"
@@ -33,7 +52,12 @@ export const ApplicationAddedView: FC<ApplicationAddedViewProps> = memo(
             </Typography>
           </Box>
 
-          <Box mt={1} textAlign="right">
+          <Box
+            sx={{
+              mt: 1,
+              textAlign: "right",
+            }}
+          >
             <Button onClick={onClose} variant="outlined">
               CLOSE
             </Button>

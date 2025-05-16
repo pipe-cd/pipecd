@@ -43,8 +43,10 @@ export const ApprovalStage: FC<ApprovalStageProps> = memo(
           <WaitIcon sx={{ color: "warning.main" }} />
           <Typography
             variant="subtitle2"
-            ml={1}
-            sx={{ fontFamily: "fontFamilyMono" }}
+            sx={{
+              ml: 1,
+              fontFamily: "fontFamilyMono",
+            }}
           >
             {name}
           </Typography>

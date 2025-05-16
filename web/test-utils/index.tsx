@@ -1,4 +1,4 @@
-import { ThemeProvider, Theme, StyledEngineProvider } from "@mui/material";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material";
 import {
   AnyAction,
   configureStore,
@@ -16,11 +16,6 @@ import { reducers } from "~/modules";
 import type { AppState } from "~/store";
 import { theme } from "~/theme";
 import MemoryRouterTest from "./MemoryRouterTest";
-
-declare module "@mui/styles/defaultTheme" {
-  // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface DefaultTheme extends Theme {}
-}
 
 const middlewares = getDefaultMiddleware({
   immutableCheck: false,

@@ -148,11 +148,13 @@ const GraphView: FC<Props> = ({ resources }) => {
         {nodes.map((node) => (
           <Box
             key={`${node.resource.id}-${node.resource.name}`}
-            position="absolute"
-            top={node.y}
-            left={node.x}
-            zIndex={1}
             data-testid="application-resource"
+            sx={{
+              position: "absolute",
+              top: node.y,
+              left: node.x,
+              zIndex: 1,
+            }}
           >
             <ResourceNode
               resource={node.resource}

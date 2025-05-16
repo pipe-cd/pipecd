@@ -16,8 +16,10 @@ const DeployTargetTabBar: FC<Props> = ({ tabs, selectedTab, onSelectTab }) => {
       variant="scrollable"
       aria-label="icon label tabs"
       sx={{ minHeight: 10 }}
-      TabIndicatorProps={{
-        sx: { backgroundColor: grey[900] },
+      slotProps={{
+        indicator: {
+          sx: { backgroundColor: grey[900] },
+        },
       }}
     >
       {tabs.map((tab) => (

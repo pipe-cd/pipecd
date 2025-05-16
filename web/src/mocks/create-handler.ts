@@ -2,10 +2,10 @@ import { rest } from "msw";
 import { serialize } from "./serializer";
 import { createMask } from "./utils";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const DummyHandler = rest.post<Uint8Array | string>("", (_0, res, ctx) => {
   return res(ctx.status(200));
 });
-
 type HandlerType = typeof DummyHandler;
 
 const encoder = new TextEncoder();

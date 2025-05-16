@@ -37,7 +37,7 @@ export const fetchDeploymentChangeFailureRate = createAsyncThunk<
   if (state.insight.labels) {
     for (const label of state.insight.labels) {
       const pair = label.split(":");
-      pair.length === 2 && labels.push([pair[0], pair[1]]);
+      if (pair.length === 2) labels.push([pair[0], pair[1]]);
     }
   }
 

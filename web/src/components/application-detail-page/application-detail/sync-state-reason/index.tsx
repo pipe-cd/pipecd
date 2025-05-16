@@ -15,7 +15,12 @@ export const OutOfSyncReason: FC<SyncStateReasonProps> = ({
   const [showReason, setShowReason] = useState(false);
   return (
     <>
-      <Box display="flex" alignItems="center">
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
         <Typography variant="body2" color="textSecondary">
           {summary}
         </Typography>
@@ -39,7 +44,6 @@ export const OutOfSyncReason: FC<SyncStateReasonProps> = ({
           </>
         )}
       </Box>
-
       {showReason && (
         <Paper
           elevation={0}
@@ -69,7 +73,12 @@ export const InvalidConfigReason: FC<SyncStateReasonProps> = ({ detail }) => {
   if (detail.length < MAX_DISPLAY_LENGTH) {
     return (
       <>
-        <Box display="flex" alignItems="center">
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
           <Typography variant="body2" color="error">
             {msgHeader}
             <strong>{detail}</strong>
@@ -80,7 +89,12 @@ export const InvalidConfigReason: FC<SyncStateReasonProps> = ({ detail }) => {
   }
 
   return (
-    <Box display="flex" alignItems="center">
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+      }}
+    >
       {showReason ? (
         <Typography variant="body2" color="error">
           {msgHeader}
@@ -95,10 +109,12 @@ export const InvalidConfigReason: FC<SyncStateReasonProps> = ({ detail }) => {
       {detail && (
         <Typography
           variant="body2"
-          color={"grey.500"}
-          ml={0.5}
-          sx={{ cursor: "pointer" }}
           onClick={() => setShowReason(!showReason)}
+          sx={{
+            color: "grey.500",
+            ml: 0.5,
+            cursor: "pointer",
+          }}
         >
           {showReason ? "show less" : "show more"}
         </Typography>

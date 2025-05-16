@@ -84,10 +84,12 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
     if (app?.disabled) {
       return (
         <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          flex={1}
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            flex: 1,
+          }}
         >
           <Typography variant="h6" component="span">
             {DISABLED_APPLICATION_MESSAGE}
@@ -100,12 +102,12 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
       return (
         <Box
           sx={{
+            flexDirection: "column",
             flex: 1,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
           }}
-          flexDirection="column"
         >
           <Typography variant="body1">{ERROR_MESSAGE}</Typography>
           <Button
@@ -137,12 +139,12 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
           ) : (
             <Box
               sx={{
+                flexDirection: "column",
                 flex: 1,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
               }}
-              flexDirection="column"
             >
               <Typography variant="body1">{COMING_SOON_MESSAGE}</Typography>
               <Link

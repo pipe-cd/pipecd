@@ -163,19 +163,25 @@ export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
 
   return (
     <Box
-      textAlign="center"
-      overflow="scroll"
       sx={{
+        textAlign: "center",
+        overflow: "scroll",
+
         "&::-webkit-scrollbar": {
           height: "7px",
         },
+
         "&::-webkit-scrollbar-thumb": {
           borderRadius: 8,
           backgroundColor: "rgba(0,0,0,0.3)",
         },
       }}
     >
-      <Box display="inline-flex">
+      <Box
+        sx={{
+          display: "inline-flex",
+        }}
+      >
         {stages.map((stageColumn, columnIndex) => {
           let isPrevStageLarge = false;
           return (

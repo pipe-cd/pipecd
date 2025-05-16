@@ -1,4 +1,4 @@
-import { ThemeProvider, Theme, StyledEngineProvider } from "@mui/material";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material";
 import CssBaseline from "@mui/material/CssBaseline";
 import { render } from "react-dom";
 import { theme } from "./theme";
@@ -9,11 +9,6 @@ import { BrowserRouter } from "react-router-dom";
 import { setupDayjs } from "./utils/setup-dayjs";
 import { fetchMe } from "./modules/me";
 import { CookiesProvider } from "react-cookie";
-
-declare module "@mui/styles/defaultTheme" {
-  // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface DefaultTheme extends Theme {}
-}
 
 async function run(): Promise<void> {
   if (process.env.ENABLE_MOCK === "true") {

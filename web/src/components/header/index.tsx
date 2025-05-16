@@ -86,7 +86,9 @@ export const Header: FC = memo(function Header() {
           <Link
             component={RouterLink}
             to={PAGE_PATH_TOP}
-            height={APP_HEADER_HEIGHT}
+            sx={{
+              height: APP_HEADER_HEIGHT,
+            }}
           >
             <LogoImage src={logo} alt={APP_NAME} />
           </Link>
@@ -102,10 +104,12 @@ export const Header: FC = memo(function Header() {
           )}
         </Box>
         <Box
-          height={"100%"}
-          overflow={"hidden"}
-          display={"flex"}
-          alignItems={"center"}
+          sx={{
+            height: "100%",
+            overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+          }}
         >
           {me?.isLogin ? (
             <>

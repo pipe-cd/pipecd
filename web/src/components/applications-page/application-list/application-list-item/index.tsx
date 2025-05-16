@@ -110,7 +110,12 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
           })}
         >
           <TableCell>
-            <Box display="flex" alignItems="center">
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
               <AppSyncStatus
                 syncState={app.syncState}
                 deploying={app.deploying}
@@ -266,9 +271,11 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
           onClose={() => setAnchorEl(null)}
-          PaperProps={{
-            style: {
-              width: "20ch",
+          slotProps={{
+            paper: {
+              style: {
+                width: "20ch",
+              },
             },
           }}
         >

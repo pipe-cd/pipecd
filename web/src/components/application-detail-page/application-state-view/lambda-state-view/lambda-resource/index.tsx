@@ -25,7 +25,12 @@ export const LambdaResource: FC<LambdaResourceProps> = memo(
         <Typography variant="caption">{resource.kind}</Typography>
         <Box sx={{ display: "flex" }}>
           <LambdaResourceHealthStatusIcon health={resource.healthStatus} />
-          <Typography variant="subtitle2" ml={0.5}>
+          <Typography
+            variant="subtitle2"
+            sx={{
+              ml: 0.5,
+            }}
+          >
             {resource.name}
           </Typography>
         </Box>

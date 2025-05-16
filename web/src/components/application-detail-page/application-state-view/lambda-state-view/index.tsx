@@ -68,11 +68,13 @@ export const LambdaStateView: FC<LambdaStateViewProps> = ({ resources }) => {
           {nodes.map((node) => (
             <Box
               key={`${node.resource.kind}-${node.resource.name}`}
-              position="absolute"
-              top={node.y}
-              left={node.x}
-              zIndex={1}
               data-testid="lambda-resource"
+              sx={{
+                position: "absolute",
+                top: node.y,
+                left: node.x,
+                zIndex: 1,
+              }}
             >
               <LambdaResource
                 resource={node.resource}
@@ -138,7 +140,6 @@ export const LambdaStateView: FC<LambdaStateViewProps> = ({ resources }) => {
           )}
         </StateView>
       </StateViewWrapper>
-
       {selectedResource && (
         <LambdaResourceDetail
           resource={selectedResource}

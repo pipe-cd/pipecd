@@ -197,8 +197,17 @@ const ApplicationFormManualV0: FC<ApplicationFormProps> = ({
   const disableApplicationInfo = !!detailApp;
 
   return (
-    <Box width="100%">
-      <Typography variant="h6" p={2}>
+    <Box
+      sx={{
+        width: "100%",
+      }}
+    >
+      <Typography
+        variant="h6"
+        sx={{
+          p: 2,
+        }}
+      >
         {title}
       </Typography>
       <Divider />
@@ -318,7 +327,11 @@ const ApplicationFormManualV0: FC<ApplicationFormProps> = ({
           required
         />
 
-        <Box my={2}>
+        <Box
+          sx={{
+            my: 2,
+          }}
+        >
           <Button
             color="primary"
             type="submit"

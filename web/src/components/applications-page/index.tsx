@@ -102,7 +102,11 @@ export const ApplicationIndexPage: FC = () => {
         >
           {UI_TEXT_ADD}
         </Button>
-        <Box flex={1} />
+        <Box
+          sx={{
+            flex: 1,
+          }}
+        />
         <Button
           color="primary"
           startIcon={<RefreshIcon />}
@@ -121,9 +125,7 @@ export const ApplicationIndexPage: FC = () => {
           {openFilter ? UI_TEXT_HIDE_FILTER : UI_TEXT_FILTER}
         </Button>
       </Toolbar>
-
       <Divider />
-
       <Box
         sx={{
           display: "flex",
@@ -132,7 +134,14 @@ export const ApplicationIndexPage: FC = () => {
           flex: 1,
         }}
       >
-        <Box display="flex" flexDirection="column" flex={1} p={2}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            flex: 1,
+            p: 2,
+          }}
+        >
           <ApplicationList
             currentPage={currentPage}
             onPageChange={handlePageChange}
@@ -147,7 +156,6 @@ export const ApplicationIndexPage: FC = () => {
           />
         )}
       </Box>
-
       <AddApplicationDrawer
         open={openAddForm}
         onClose={() => setOpenAddForm(false)}
@@ -157,7 +165,6 @@ export const ApplicationIndexPage: FC = () => {
         }}
       />
       <EditApplicationDrawer onUpdated={fetchApplicationsWithOptions} />
-
       <Drawer
         anchor="right"
         open={!!addedApplicationId}

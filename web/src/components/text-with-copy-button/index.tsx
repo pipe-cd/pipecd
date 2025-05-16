@@ -37,7 +37,11 @@ export const TextWithCopyButton: FC<TextWithCopyButtonProps> = memo(
           }}
         />
         <legend>{name}</legend>
-        <Box ml={2}>
+        <Box
+          sx={{
+            ml: 2,
+          }}
+        >
           <CopyIconButton name={name} value={value} size="small" />
         </Box>
       </Box>

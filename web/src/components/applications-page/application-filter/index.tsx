@@ -66,13 +66,16 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
           setSelectedLabels([]);
         }}
       >
-        <Box mt={4}>
+        <Box
+          sx={{
+            mt: 4,
+          }}
+        >
           <ApplicationAutocomplete
             value={options.name ?? null}
             onChange={(value) => handleUpdateFilterValue({ name: value })}
           />
         </Box>
-
         <FormControl fullWidth sx={{ mt: 4 }} variant="outlined">
           <InputLabel id="filter-piped">Piped</InputLabel>
           <PipedSelect
@@ -80,7 +83,6 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
             onChange={(value) => handleUpdateFilterValue({ pipedId: value })}
           />
         </FormControl>
-
         <FormControl fullWidth sx={{ mt: 4 }} variant="outlined">
           <InputLabel id="filter-kind">Kind</InputLabel>
           <Select
@@ -116,7 +118,6 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
             ))}
           </Select>
         </FormControl>
-
         <FormControl fullWidth sx={{ mt: 4 }} variant="outlined">
           <InputLabel id="filter-sync-status">Sync Status</InputLabel>
           <Select
@@ -152,7 +153,6 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
             ))}
           </Select>
         </FormControl>
-
         <FormControl fullWidth sx={{ mt: 4 }} variant="outlined">
           <InputLabel id="filter-active-status">Active Status</InputLabel>
           <Select
@@ -181,7 +181,6 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
             <MenuItem value="disabled">Disabled</MenuItem>
           </Select>
         </FormControl>
-
         <FormControl fullWidth sx={{ mt: 4 }} variant="outlined">
           <Autocomplete
             multiple

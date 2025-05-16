@@ -83,9 +83,20 @@ const DeploymentTracePage: FC = () => {
   }, [navigate]);
 
   return (
-    <Box display="flex" overflow="hidden" flex={1} flexDirection="column">
+    <Box
+      sx={{
+        display: "flex",
+        overflow: "hidden",
+        flex: 1,
+        flexDirection: "column",
+      }}
+    >
       <Toolbar variant="dense">
-        <Box flexGrow={1} />
+        <Box
+          sx={{
+            flexGrow: 1,
+          }}
+        />
         <Button
           color="primary"
           startIcon={<RefreshIcon />}
@@ -103,9 +114,14 @@ const DeploymentTracePage: FC = () => {
           {openFilter ? UI_TEXT_HIDE_FILTER : UI_TEXT_FILTER}
         </Button>
       </Toolbar>
-
       <Divider />
-      <Box display="flex" overflow="hidden" flex={1}>
+      <Box
+        sx={{
+          display: "flex",
+          overflow: "hidden",
+          flex: 1,
+        }}
+      >
         <Box
           component={"ol"}
           sx={{
@@ -119,21 +135,42 @@ const DeploymentTracePage: FC = () => {
           ref={listRef}
         >
           {dates.length === 0 && isLoading && (
-            <Box display="flex" justifyContent="center" mt={3}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                mt: 3,
+              }}
+            >
               <CircularProgress />
             </Box>
           )}
           {dates.length === 0 && !isLoading && (
-            <Box display="flex" justifyContent="center" mt={3}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                mt: 3,
+              }}
+            >
               <Typography>No deployments</Typography>
             </Box>
           )}
           {dates.map((date) => (
-            <Box key={date} mb={1}>
+            <Box
+              key={date}
+              sx={{
+                mb: 1,
+              }}
+            >
               <Typography variant="subtitle1" sx={{ mt: 2, mb: 2 }}>
                 {date}
               </Typography>
-              <Box bgcolor={"background.paper"}>
+              <Box
+                sx={{
+                  bgcolor: "background.paper",
+                }}
+              >
                 {deploymentTracesMap[date].map(({ trace, deploymentsList }) => (
                   <DeploymentTraceItem
                     key={trace?.id}

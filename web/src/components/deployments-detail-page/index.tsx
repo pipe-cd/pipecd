@@ -55,7 +55,11 @@ export const DeploymentDetailPage: FC = memo(function DeploymentDetailPage() {
         overflow: "auto",
       }}
     >
-      <Box flex={1}>
+      <Box
+        sx={{
+          flex: 1,
+        }}
+      >
         <DeploymentDetail deploymentId={deploymentId ?? ""} />
         <Pipeline deploymentId={deploymentId ?? ""} />
       </Box>

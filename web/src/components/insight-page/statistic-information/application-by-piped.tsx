@@ -138,7 +138,11 @@ const ApplicationByPiped: FC = () => {
           Application by piped
         </Typography>
 
-        <Box position={"relative"}>
+        <Box
+          sx={{
+            position: "relative",
+          }}
+        >
           <div style={{ width: "100%", height: 200 }} ref={chartElm} />
           <ChartEmptyData visible={!data.length} />
         </Box>

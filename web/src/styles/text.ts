@@ -1,6 +1,4 @@
-import { CSSProperties } from "@mui/styles";
-
-export const ellipsis: CSSProperties = {
+export const ellipsis = {
   overflow: "hidden",
   whiteSpace: "nowrap",
   textOverflow: "ellipsis",

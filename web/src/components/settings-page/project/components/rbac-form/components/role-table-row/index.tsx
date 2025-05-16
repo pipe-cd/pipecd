@@ -13,12 +13,6 @@ interface Props {
 }
 
 const ITEM_HEIGHT = 48;
-const menuStyle = {
-  style: {
-    maxHeight: ITEM_HEIGHT * 4.5,
-    width: "15ch",
-  },
-};
 
 export const RoleTableRow: FC<Props> = memo(function RoleTableRow({
   role,
@@ -84,7 +78,14 @@ export const RoleTableRow: FC<Props> = memo(function RoleTableRow({
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
-        PaperProps={menuStyle}
+        slotProps={{
+          paper: {
+            style: {
+              maxHeight: ITEM_HEIGHT * 4.5,
+              width: "15ch",
+            },
+          },
+        }}
       >
         <MenuItem key="role-menu-edit" onClick={handleEdit}>
           {UI_TEXT_EDIT}

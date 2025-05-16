@@ -180,7 +180,11 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
         >
           {UI_TEXT_ADD}
         </Button>
-        <Box flexGrow={1} />
+        <Box
+          sx={{
+            flexGrow: 1,
+          }}
+        />
         <Button
           color="primary"
           startIcon={<UpgradeIcon />}
@@ -197,8 +201,13 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
         </Button>
       </Toolbar>
       <Divider />
-
-      <Box display="flex" flex={1} overflow="hidden">
+      <Box
+        sx={{
+          display: "flex",
+          flex: 1,
+          overflow: "hidden",
+        }}
+      >
         <TableContainer component={Paper} square>
           <Table aria-label="piped list" size="small" stickyHeader>
             <TableHead>
@@ -230,17 +239,14 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
           <PipedFilter values={filterValues} onChange={setFilterValues} />
         )}
       </Box>
-
       <AddPipedDialog open={isOpenForm} onClose={handleClose} />
       <EditPipedDialog pipedId={editPipedId} onClose={handleEditClose} />
-
       <UpgradePipedDialog
         open={isUpgradeDialogOpen}
         pipeds={pipeds}
         releasedVersions={releasedVersions}
         onClose={handleUpgradeDialogClose}
       />
-
       <Dialog fullWidth open={Boolean(registeredPiped)}>
         <DialogTitle>
           {registeredPiped?.isNewKey
@@ -267,7 +273,14 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
                 : ""
             }
           />
-          <Box display="flex" justifyContent="flex-end" m={1} mt={2}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              m: 1,
+              mt: 2,
+            }}
+          >
             <Button color="primary" onClick={handleClosePipedInfo}>
               {UI_TEXT_CLOSE}
             </Button>

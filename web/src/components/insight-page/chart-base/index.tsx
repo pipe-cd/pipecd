@@ -150,19 +150,20 @@ export const ChartBase: FC<ChartBaseProps> = ({
       >
         {title}
       </Typography>
-
       <div style={{ width: "100%", height: 400 }} ref={chartElm} />
       {data.length === 0 ? (
         <Box
-          width="100%"
-          height="100%"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          position="absolute"
-          top={0}
-          left={0}
-          bgcolor="#fafafabb"
+          sx={{
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            position: "absolute",
+            top: 0,
+            left: 0,
+            bgcolor: "#fafafabb",
+          }}
         >
           <Typography
             variant="body1"

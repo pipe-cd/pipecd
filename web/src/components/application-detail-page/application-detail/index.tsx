@@ -153,9 +153,19 @@ const MostRecentlySuccessfulDeployment: FC<{
 
   return (
     <>
-      <Box display="flex" alignItems="baseline">
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "baseline",
+        }}
+      >
         <Typography variant="subtitle1">Latest Deployment</Typography>
-        <Typography variant="body2" ml={1}>
+        <Typography
+          variant="body2"
+          sx={{
+            ml: 1,
+          }}
+        >
           <Link
             component={RouterLink}
             to={`${PAGE_PATH_DEPLOYMENTS}/${deployment.deploymentId}`}
@@ -164,7 +174,11 @@ const MostRecentlySuccessfulDeployment: FC<{
           </Link>
         </Typography>
       </Box>
-      <Box pl={2}>
+      <Box
+        sx={{
+          pl: 2,
+        }}
+      >
         <table>
           <tbody>
             <DetailTableRow
@@ -244,11 +258,13 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
           }}
         >
           <Box
-            height={200}
-            display="flex"
-            flexDirection="column"
-            justifyContent="center"
-            alignItems="center"
+            sx={{
+              height: 200,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
           >
             <Typography variant="body1">{ERROR_MESSAGE}</Typography>
             <Button
@@ -277,8 +293,17 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
           opacity: app?.disabled ? 0.6 : 1,
         }}
       >
-        <Box flex={1}>
-          <Box display="flex" alignItems="baseline">
+        <Box
+          sx={{
+            flex: 1,
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "baseline",
+            }}
+          >
             <Typography variant="h5">
               {app ? app.name : <Skeleton width={100} />}
             </Typography>
@@ -294,7 +319,13 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
 
           {app ? (
             <>
-              <Box display="flex" alignItems="center" gap={1}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
                 <AppSyncStatus
                   syncState={app.syncState}
                   deploying={app.deploying}
@@ -324,9 +355,17 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
             <Skeleton height={32} width={200} />
           )}
         </Box>
-
-        <Box mt={1} display="flex">
-          <Box flex={1}>
+        <Box
+          sx={{
+            mt: 1,
+            display: "flex",
+          }}
+        >
+          <Box
+            sx={{
+              flex: 1,
+            }}
+          >
             {app && piped ? (
               <table>
                 <tbody>
@@ -397,25 +436,37 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
             )}
           </Box>
 
-          <Box flex={1}>
+          <Box
+            sx={{
+              flex: 1,
+            }}
+          >
             <MostRecentlySuccessfulDeployment
               deployment={app?.mostRecentlySuccessfulDeployment}
             />
           </Box>
         </Box>
-
         {app && (
           <Box
-            borderLeft="2px solid"
-            borderColor="divider"
-            pl={2}
-            fontSize={"body2.fontSize"}
+            sx={{
+              borderLeft: "2px solid",
+              borderColor: "divider",
+              pl: 2,
+              fontSize: "body2.fontSize",
+            }}
           >
             <ReactMarkdown linkTarget="_blank">{description}</ReactMarkdown>
           </Box>
         )}
-
-        <Box top={0} right={0} pr={2} pt={2} position="absolute">
+        <Box
+          sx={{
+            top: 0,
+            right: 0,
+            pr: 2,
+            pt: 2,
+            position: "absolute",
+          }}
+        >
           <SplitButton
             label="select sync strategy"
             color="primary"

@@ -11,21 +11,24 @@ import { SyncStatusIcon } from "./sync-status-icon";
 export interface AppSyncStatusProps {
   syncState?: ApplicationSyncState.AsObject;
   deploying: boolean;
-  className?: string;
   size?: "medium" | "large";
 }
 
 export const AppSyncStatus: FC<AppSyncStatusProps> = ({
   syncState,
   deploying,
-  className,
   size = "medium",
 }) => {
   const fontVariant = size === "medium" ? "body2" : "h6";
 
   if (deploying) {
     return (
-      <Box display="flex" alignItems="center" className={className}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
         <SyncStatusIcon status={ApplicationSyncStatus.DEPLOYING} />
         <Typography
           variant={fontVariant}
@@ -39,7 +42,12 @@ export const AppSyncStatus: FC<AppSyncStatusProps> = ({
   }
 
   return (
-    <Box display="flex" alignItems="center" className={className}>
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+      }}
+    >
       {syncState ? <SyncStatusIcon status={syncState.status} /> : null}
       <Typography
         sx={{ ml: 0.5, whiteSpace: "nowrap" }}

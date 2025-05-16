@@ -35,7 +35,11 @@ export const PipedForm: FC<PipedFormProps> = memo(function PipedForm({
   isSubmitting,
 }) {
   return (
-    <Box width={600}>
+    <Box
+      sx={{
+        width: 600,
+      }}
+    >
       <form onSubmit={handleSubmit}>
         <DialogTitle>{title}</DialogTitle>
         <DialogContent>

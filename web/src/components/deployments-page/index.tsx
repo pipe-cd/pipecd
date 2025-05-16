@@ -130,9 +130,20 @@ export const DeploymentIndexPage: FC = () => {
   const dates = Object.keys(groupedDeployments).sort(sortComp);
 
   return (
-    <Box display="flex" overflow="hidden" flex={1} flexDirection="column">
+    <Box
+      sx={{
+        display: "flex",
+        overflow: "hidden",
+        flex: 1,
+        flexDirection: "column",
+      }}
+    >
       <Toolbar variant="dense">
-        <Box flexGrow={1} />
+        <Box
+          sx={{
+            flexGrow: 1,
+          }}
+        />
         <Button
           color="primary"
           startIcon={<RefreshIcon />}
@@ -150,9 +161,14 @@ export const DeploymentIndexPage: FC = () => {
           {openFilter ? UI_TEXT_HIDE_FILTER : UI_TEXT_FILTER}
         </Button>
       </Toolbar>
-
       <Divider />
-      <Box display="flex" overflow="hidden" flex={1}>
+      <Box
+        sx={{
+          display: "flex",
+          overflow: "hidden",
+          flex: 1,
+        }}
+      >
         <Box
           component={"ol"}
           sx={(theme) => ({
@@ -167,11 +183,23 @@ export const DeploymentIndexPage: FC = () => {
         >
           {dates.length === 0 &&
             (isLoading ? (
-              <Box display="flex" justifyContent="center" mt={3}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  mt: 3,
+                }}
+              >
                 <CircularProgress />
               </Box>
             ) : (
-              <Box display="flex" justifyContent="center" mt={3}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  mt: 3,
+                }}
+              >
                 <Typography>No deployments</Typography>
               </Box>
             ))}
