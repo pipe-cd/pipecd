@@ -59,7 +59,7 @@ export const InsightHeader: FC = memo(function InsightHeader() {
 
   return (
     <Grid container spacing={2} style={{ marginTop: 26, marginBottom: 26 }}>
-      <Grid item xs={8}>
+      <Grid size={8}>
         <Box
           sx={{
             display: "flex",
@@ -124,7 +124,7 @@ export const InsightHeader: FC = memo(function InsightHeader() {
           />
         </Box>
       </Grid>
-      <Grid item xs={4}>
+      <Grid size={4}>
         <Box
           sx={{
             display: "flex",
