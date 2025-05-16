@@ -1,6 +1,7 @@
 ####################
 # All make commands are following the format as "make action/target"
 # "action" can be either:
+#   check:   run checks which should be passed before committing
 #   build:   build artifacts such as binary, container image, chart
 #   test:    execute test
 #   run:     run a module locally
@@ -172,6 +173,9 @@ run/site:
 
 # Lint commands
 
+.PHONY: lint
+lint: lint/go lint/web lint/helm
+
 .PHONY: lint/go
 lint/go: FIX ?= false
 lint/go: VERSION ?= sha256:c2f5e6aaa7f89e7ab49f6bd45d8ce4ee5a030b132a5fbcac68b7959914a5a890 # golangci/golangci-lint:v1.64.7
@@ -267,3 +271,13 @@ kind-down:
 .PHONY: setup-envtest
 setup-envtest: ## Download setup-envtest locally if necessary.
 	test -s $(GOBIN)/setup-envtest || go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+
+# Check commands
+.PHONY: check
+check: build lint test check/gen/code
+	./hack/ensure-check.sh
+
+.PHONY: check/gen/code
+check/gen: gen/code
+	git add -N .
+	git diff --exit-code --quiet HEAD
