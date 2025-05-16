@@ -58,7 +58,7 @@ type GenericApplicationSpec struct {
 	EventWatcher []EventWatcherConfig `json:"eventWatcher"`
 	// Configuration for drift detection
 	DriftDetection *DriftDetection `json:"driftDetection"`
-	// NOTE: Do not use the field, only added here to avoid unmarshalling error.
+	// NOTE: Do not use the field in pipedv0, only added here to avoid unmarshalling error for compatibility with pipedv1.
 	// List of the configuration for plugin
 	Plugins map[string]struct{} `json:"plugins"`
 }
