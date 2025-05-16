@@ -136,7 +136,7 @@ func (p *Plugin) executeK8sPrimaryRolloutStage(ctx context.Context, input *sdk.E
 	applier := provider.NewApplier(kubectl, cfg.Spec.Input, deployTargetConfig, input.Logger)
 
 	// Start applying all manifests to add or update running resources.
-	if err := applyManifests(ctx, applier, manifests, cfg.Spec.Input.Namespace, lp); err != nil {
+	if err := applyManifests(ctx, applier, primaryManifests, cfg.Spec.Input.Namespace, lp); err != nil {
 		lp.Errorf("Failed while applying manifests (%v)", err)
 		return sdk.StageStatusSuccess
 	}
@@ -172,7 +172,7 @@ func (p *Plugin) executeK8sPrimaryRolloutStage(ctx context.Context, input *sdk.E
 
 	lp.Successf("Successfully loaded %d live resources", len(namespacedLiveResources)+len(clusterScopedLiveResources))
 
-	removeKeys := provider.FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveResources)
+	removeKeys := provider.FindRemoveResources(primaryManifests, namespacedLiveResources, clusterScopedLiveResources)
 	if len(removeKeys) == 0 {
 		lp.Info("There are no live resources should be removed")
 		return sdk.StageStatusSuccess
@@ -198,7 +198,39 @@ func (p *Plugin) executeK8sPrimaryRolloutStage(ctx context.Context, input *sdk.E
 	return sdk.StageStatusSuccess
 }
 
+// generatePrimaryManifests generates manifests for the PRIMARY variant.
+// It duplicates the input manifests, adds the variant label to workloads if needed,
+// and generates Service manifests with a name suffix and variant selector if requested.
 func generatePrimaryManifests(manifests []provider.Manifest, stageCfg kubeconfig.K8sPrimaryRolloutStageOptions, variantLabel, variant string) ([]provider.Manifest, error) {
-	// TODO: implement
-	return manifests, nil
+	suffix := variant
+	if stageCfg.Suffix != "" {
+		suffix = stageCfg.Suffix
+	}
+
+	primaryManifests := provider.DeepCopyManifests(manifests)
+
+	// Add the variant label to workload selectors if requested.
+	if stageCfg.AddVariantLabelToSelector {
+		workloads := findWorkloadManifests(primaryManifests, nil) // All Deployments if refs is nil.
+		for _, m := range workloads {
+			if err := ensureVariantSelectorInWorkload(m, variantLabel, variant); err != nil {
+				return nil, fmt.Errorf("unable to check/set %q in selector of workload %s (%w)", variantLabel+": "+variant, m.Key().ReadableString(), err)
+			}
+		}
+	}
+
+	// Generate Service manifests for the PRIMARY variant if requested.
+	if stageCfg.CreateService {
+		services := findManifests("Service", "", primaryManifests)
+		if len(services) == 0 {
+			return nil, fmt.Errorf("unable to find any service for PRIMARY variant")
+		}
+		generatedServices, err := generateVariantServiceManifests(services, variantLabel, variant, suffix)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate service manifests: %w", err)
+		}
+		primaryManifests = append(primaryManifests, generatedServices...)
+	}
+
+	return primaryManifests, nil
 }
