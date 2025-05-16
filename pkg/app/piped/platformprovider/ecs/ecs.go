@@ -64,7 +64,7 @@ type ELB interface {
 	GetListenerArns(ctx context.Context, targetGroup types.LoadBalancer) ([]string, error)
 	// ModifyListeners modifies the actions of type ActionTypeEnumForward to perform routing traffic
 	// to the given target groups. Other actions won't be modified.
-	ModifyListeners(ctx context.Context, listenerArns []string, routingTrafficCfg RoutingTrafficConfig) error
+	ModifyListeners(ctx context.Context, listenerArns []string, routingTrafficCfg RoutingTrafficConfig) ([]string, error)
 }
 
 // Registry holds a pool of aws client wrappers.
