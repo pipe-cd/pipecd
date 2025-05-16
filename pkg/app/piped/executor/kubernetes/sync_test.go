@@ -389,6 +389,56 @@ func TestFindRemoveResources(t *testing.T) {
 			},
 			want: []provider.ResourceKey{},
 		},
+		{
+			name:      "all resources removed when no manifests exist",
+			manifests: []provider.Manifest{},
+			liveResources: []provider.Manifest{
+				{
+					Key: provider.ResourceKey{
+						APIVersion: "v1",
+						Kind:       "Service",
+						Namespace:  "default",
+						Name:       "service1",
+					},
+				},
+				{
+					Key: provider.ResourceKey{
+						APIVersion: "apps/v1",
+						Kind:       "Deployment",
+						Namespace:  "default",
+						Name:       "deployment1",
+					},
+				},
+				{
+					Key: provider.ResourceKey{
+						APIVersion: "v1",
+						Kind:       "ConfigMap",
+						Namespace:  "default",
+						Name:       "config1",
+					},
+				},
+			},
+			want: []provider.ResourceKey{
+				{
+					APIVersion: "v1",
+					Kind:       "Service",
+					Namespace:  "default",
+					Name:       "service1",
+				},
+				{
+					APIVersion: "apps/v1",
+					Kind:       "Deployment",
+					Namespace:  "default",
+					Name:       "deployment1",
+				},
+				{
+					APIVersion: "v1",
+					Kind:       "ConfigMap",
+					Namespace:  "default",
+					Name:       "config1",
+				},
+			},
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {

@@ -124,6 +124,15 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 }
 
 func findRemoveResources(manifests []provider.Manifest, liveResources []provider.Manifest) []provider.ResourceKey {
+	// Special case of when no manifests exists
+	if len(manifests) == 0 {
+		// If there are no manifests in Git, all live resources should be removed
+		removeKeys := make([]provider.ResourceKey, 0, len(liveResources))
+		for _, m := range liveResources {
+			removeKeys = append(removeKeys, m.Key)
+		}
+		return removeKeys
+	}
 	var (
 		keys       = make(map[provider.ResourceKey]struct{}, len(manifests))
 		removeKeys = make([]provider.ResourceKey, 0)
