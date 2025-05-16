@@ -1,9 +1,11 @@
 #!/bin/bash
 
+echo "Setting up Keycloak OIDC provider for testing..."
+
 set -e
 
 KEYCLOAK_VERSION="22.0.1"
-KEYCLOAK_PORT=8080
+KEYCLOAK_PORT=8091
 KEYCLOAK_ADMIN="admin"
 KEYCLOAK_ADMIN_PASSWORD="admin"
 KEYCLOAK_CONTAINER_NAME="pipecd-keycloak"

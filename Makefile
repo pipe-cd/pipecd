@@ -264,6 +264,4 @@ setup-envtest: ## Download setup-envtest locally if necessary.
 
 .PHONY: setup-oidc
 setup-oidc: ## Setup a Keycloak OIDC provider for testing
-    @echo "Setting up Keycloak OIDC provider for testing..."
-    @chmod +x hack/setup-keycloak-oidc.sh
-    @hack/setup-keycloak-oidc.sh
+	./hack/setup-keycloak-oidc.sh
