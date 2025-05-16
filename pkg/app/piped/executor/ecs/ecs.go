@@ -191,7 +191,7 @@ func findRemovedTags(currentTags, desiredTags []types.Tag) []string {
 
 	for _, t := range currentTags {
 		// Avoid removing PipeCD-managed tags, even though they're usually set in loadServiceDefinition()
-		if *t.Key == provider.LabelManagedBy || *t.Key == provider.LabelPiped || *t.Key == provider.LabelApplication || *t.Key == provider.LabelCommitHash {
+		if provider.IsPipeCDManagedTag(*t.Key) {
 			continue
 		}
 

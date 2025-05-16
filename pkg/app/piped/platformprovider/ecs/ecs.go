@@ -137,3 +137,8 @@ func MakeTags(tags map[string]string) []types.Tag {
 	}
 	return resourceTags
 }
+
+// IsPipeCDManagedTag checks if the given tag key is managed by PipeCD.
+func IsPipeCDManagedTag(key string) bool {
+	return key == LabelManagedBy || key == LabelPiped || key == LabelApplication || key == LabelCommitHash
+}
