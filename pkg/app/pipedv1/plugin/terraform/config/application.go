@@ -14,6 +14,19 @@
 
 package config
 
+// TerraformDeployTargetConfig represents a deploy target configuration for Terraform applications.
+type TerraformDeployTargetConfig struct {
+	// List of variables that will be set directly on terraform commands with "-var" flag.
+	// The variable must be formatted by "key=value" as below:
+	// "image_id=ami-abc123"
+	// 'image_id_list=["ami-abc123","ami-def456"]'
+	// 'image_id_map={"us-east-1":"ami-abc123","us-east-2":"ami-def456"}'
+	Vars []string `json:"vars,omitempty"`
+	// Enable drift detection.
+	// TODO: This is a temporary option because Terraform drift detection is buggy and has performance issues. This will be possibly removed in the future release.
+	DriftDetectionEnabled *bool `json:"driftDetectionEnabled" default:"true"`
+}
+
 // TerraformApplicationSpec represents an application configuration for Terraform application.
 type TerraformApplicationSpec struct {
 	// Input for Terraform deployment such as terraform version, workspace...
