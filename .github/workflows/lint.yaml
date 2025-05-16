@@ -60,4 +60,4 @@ jobs:
           version: ${{ env.HELM_VERSION }}
 
       - name: Lint all Helm charts
-        run: helm lint ./manifests/pipecd ./manifests/piped ./manifests/helloworld ./manifests/site
+        run: make lint/helm
