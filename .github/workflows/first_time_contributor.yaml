@@ -1,0 +1,55 @@
+name: check for first time contributors
+
+on:
+  pull_request_target:
+    branches: [ master ]
+  issue_comment:
+    types: [ created ]
+
+jobs:
+  greeting:
+    if: github.event_name == 'pull_request_target'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/first-interaction@v1
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        pr-message: |
+          Thank you for your contribution! We look forward to seeing more from you.
+          Please run the `make check` command to ensure your changes are correct.
+          After successfully running the command on your local machine, the instructions will be printed out.
+          Please follow them to commit your changes.
+          If the check has not passed, please fix the issues and push the changes to your branch.
+          Then, please run the `make check` command again to ensure the issues are fixed.
+
+  check:
+    if: github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '/check-commit')
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check if the hash is valid
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          REPO_NAME: ${{ github.event.repository.full_name }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          COMMENT_HASH=$(echo "${COMMENT_BODY}" | cut -d' ' -f2)
+          if [ -z "${COMMENT_HASH}" ]; then
+            echo "No hash provided"
+            exit 1
+          fi
+
+          PR="$(gh api "/repos/${REPO_NAME}/pulls/${PR_NUMBER}")"
+          HEAD_SHA="$(echo "$PR" | jq -r '.head.sha')"
+          HEAD_REF="$(echo "$PR" | jq -r '.head.ref')"
+
+          EXPECTED_HASH="$(echo "$HEAD_REF/$HEAD_SHA" | sha256sum | cut -d' ' -f1)"
+
+          if [ "${COMMENT_HASH}" != "${EXPECTED_HASH}" ]; then
+            echo "Invalid hash"
+            exit 1
+          fi
+
+          echo "Valid hash"
+
+          gh pr comment "${PR_NUMBER}" --body "The check has passed. Thank you for your contribution!"
