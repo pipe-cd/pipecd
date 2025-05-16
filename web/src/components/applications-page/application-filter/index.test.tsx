@@ -22,7 +22,7 @@ test("Change filter values", () => {
   );
 
   userEvent.type(
-    screen.getByRole("textbox", { name: "Application Name" }),
+    screen.getByRole("combobox", { name: "Application Name" }),
     dummyApplication.name
   );
   userEvent.click(screen.getByRole("option", { name: dummyApplication.name }));
@@ -30,13 +30,13 @@ test("Change filter values", () => {
   expect(onChange).toHaveBeenCalledWith({ name: dummyApplication.name });
   onChange.mockClear();
 
-  userEvent.click(screen.getByRole("button", { name: /kind/i }));
+  userEvent.click(screen.getByRole("combobox", { name: /kind/i }));
   userEvent.click(screen.getByRole("option", { name: /kubernetes/i }));
 
   expect(onChange).toHaveBeenCalledWith({ kind: ApplicationKind.KUBERNETES });
   onChange.mockClear();
 
-  userEvent.click(screen.getByRole("button", { name: /sync status/i }));
+  userEvent.click(screen.getByRole("combobox", { name: /sync status/i }));
   userEvent.click(screen.getByRole("option", { name: /synced/i }));
 
   expect(onChange).toHaveBeenCalledWith({
@@ -44,7 +44,7 @@ test("Change filter values", () => {
   });
   onChange.mockClear();
 
-  userEvent.click(screen.getByRole("button", { name: /active status/i }));
+  userEvent.click(screen.getByRole("combobox", { name: /active status/i }));
   userEvent.click(screen.getByRole("option", { name: /enabled/i }));
 
   expect(onChange).toHaveBeenCalledWith({ activeStatus: "enabled" });

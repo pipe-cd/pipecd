@@ -1,4 +1,4 @@
-import { Typography } from "@material-ui/core";
+import { Typography } from "@mui/material";
 import { FC, memo } from "react";
 import { RBAC_DESCRIPTION } from "~/constants/text";
 import { useProjectSettingStyles } from "~/styles/project-setting";

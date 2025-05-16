@@ -1,10 +1,5 @@
-import {
-  Card,
-  CardContent,
-  Typography,
-  Box,
-  makeStyles,
-} from "@material-ui/core";
+import { Card, CardContent, Typography, Box } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import {
   GridComponent,
   LegendComponent,
@@ -17,11 +12,11 @@ import { FC, useEffect, useMemo } from "react";
 import { useAppSelector } from "~/hooks/redux";
 import { GaugeChart } from "echarts/charts";
 import { CanvasRenderer } from "echarts/renderers";
-import red from "@material-ui/core/colors/red";
 import useEChartState from "~/hooks/useEChartState";
 import dayjs from "dayjs";
 import ChartEmptyData from "~/components/chart-empty-data";
 import LegendRow from "./legend-row";
+import { red } from "@mui/material/colors";
 
 const failColor = red[500];
 

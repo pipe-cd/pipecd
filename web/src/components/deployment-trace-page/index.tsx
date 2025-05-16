@@ -3,14 +3,14 @@ import {
   Button,
   CircularProgress,
   Divider,
-  makeStyles,
   Toolbar,
   Typography,
-} from "@material-ui/core";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
-import CloseIcon from "@material-ui/icons/Close";
-import FilterIcon from "@material-ui/icons/FilterList";
-import RefreshIcon from "@material-ui/icons/Refresh";
+import CloseIcon from "@mui/icons-material/Close";
+import FilterIcon from "@mui/icons-material/FilterList";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import {
   UI_TEXT_FILTER,
   UI_TEXT_HIDE_FILTER,

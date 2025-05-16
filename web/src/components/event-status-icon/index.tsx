@@ -1,10 +1,10 @@
-import { makeStyles } from "@material-ui/core";
+import makeStyles from "@mui/styles/makeStyles";
 import {
   CheckCircle,
   Error,
   IndeterminateCheckBox,
   Block,
-} from "@material-ui/icons";
+} from "@mui/icons-material";
 import { EventStatus } from "~/modules/events";
 import { FC } from "react";
 import clsx from "clsx";

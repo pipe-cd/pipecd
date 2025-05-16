@@ -4,11 +4,11 @@ import {
   CircularProgress,
   Divider,
   Link,
-  makeStyles,
   Toolbar,
   Typography,
-} from "@material-ui/core";
-import RefreshIcon from "@material-ui/icons/Refresh";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import { FC } from "react";
 import { UI_TEXT_REFRESH } from "~/constants/ui-text";
 import { useStyles as useButtonStyles } from "~/styles/button";

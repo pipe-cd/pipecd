@@ -1,5 +1,6 @@
 import { FC, memo, useEffect, useRef } from "react";
-import { makeStyles, CircularProgress, Box } from "@material-ui/core";
+import { CircularProgress, Box } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import { LogLine } from "../log-line";
 import { DEFAULT_BACKGROUND_COLOR } from "~/constants/term-colors";
 import { LogBlock } from "~/modules/stage-logs";

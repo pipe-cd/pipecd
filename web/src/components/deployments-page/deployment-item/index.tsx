@@ -1,4 +1,6 @@
-import { Box, Chip, ListItem, makeStyles, Typography } from "@material-ui/core";
+import { Box, Chip, ListItem, Typography } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
+
 import dayjs from "dayjs";
 import { FC, memo } from "react";
 import { Link as RouterLink } from "react-router-dom";
@@ -32,7 +34,7 @@ const useStyles = makeStyles((theme) => ({
   },
   description: {
     ...ellipsis,
-    color: theme.palette.text.hint,
+    color: theme.palette.text.secondary, // TODO check this color from hint #aaa to secondary #666
   },
   labelChip: {
     marginLeft: theme.spacing(1),

@@ -2,14 +2,14 @@ import {
   Box,
   Button,
   Link,
-  makeStyles,
   Paper,
   Typography,
   Chip,
-} from "@material-ui/core";
-import SyncIcon from "@material-ui/icons/Cached";
-import OpenInNewIcon from "@material-ui/icons/OpenInNew";
-import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
+  Skeleton,
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
+import SyncIcon from "@mui/icons-material/Cached";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { SerializedError } from "@reduxjs/toolkit";
 import clsx from "clsx";
 import dayjs from "dayjs";

@@ -1,5 +1,5 @@
-import { TextField } from "@material-ui/core";
-import Autocomplete from "@material-ui/lab/Autocomplete";
+import { TextField } from "@mui/material";
+import Autocomplete from "@mui/material/Autocomplete";
 import { FC } from "react";
 import { useAppSelector } from "~/hooks/redux";
 import { selectAll as selectAllApplications } from "~/modules/applications";

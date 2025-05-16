@@ -1,10 +1,5 @@
-import {
-  FormControl,
-  InputLabel,
-  makeStyles,
-  MenuItem,
-  Select,
-} from "@material-ui/core";
+import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import { FC } from "react";
 import { FilterView } from "~/components/filter-view";
 

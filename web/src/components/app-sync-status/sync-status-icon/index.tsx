@@ -1,5 +1,5 @@
-import { makeStyles } from "@material-ui/core";
-import { Cached, CheckCircle, Error, Info, Warning } from "@material-ui/icons";
+import makeStyles from "@mui/styles/makeStyles";
+import { Cached, CheckCircle, Error, Info, Warning } from "@mui/icons-material";
 import { FC } from "react";
 import { ApplicationSyncStatus } from "~/modules/applications";
 

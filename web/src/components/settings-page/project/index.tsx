@@ -1,4 +1,4 @@
-import { makeStyles } from "@material-ui/core";
+import makeStyles from "@mui/styles/makeStyles";
 import { FC, memo, useEffect } from "react";
 import { useAppDispatch } from "~/hooks/redux";
 import { fetchProject } from "~/modules/project";

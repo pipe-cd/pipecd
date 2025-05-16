@@ -8,15 +8,15 @@ import {
   DialogContentText,
   DialogTitle,
   IconButton,
-  makeStyles,
   Menu,
   MenuItem,
   TableCell,
   TableRow,
   Typography,
   Tooltip,
-} from "@material-ui/core";
-import { MoreVert as MoreVertIcon } from "@material-ui/icons";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
+import { MoreVert as MoreVertIcon } from "@mui/icons-material";
 import clsx from "clsx";
 import dayjs from "dayjs";
 import { Highlight, themes } from "prism-react-renderer";
@@ -234,12 +234,12 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
             edge="end"
             aria-label="open menu"
             onClick={handleMenuOpen}
+            size="large"
           >
             <MoreVertIcon />
           </IconButton>
         </TableCell>
       </TableRow>
-
       <Menu
         id="piped-menu"
         anchorEl={anchorEl}
@@ -284,7 +284,6 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
           ]
         )}
       </Menu>
-
       <Dialog open={openOldKeyAlert} onClose={handleAlertClose}>
         <DialogTitle>There are already 2 keys for this piped</DialogTitle>
         <DialogContent>
@@ -298,7 +297,6 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
           </Button>
         </DialogActions>
       </Dialog>
-
       <Dialog
         fullWidth
         maxWidth="md"

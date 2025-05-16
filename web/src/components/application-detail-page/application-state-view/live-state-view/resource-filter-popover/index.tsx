@@ -4,8 +4,8 @@ import {
   Checkbox,
   FormControlLabel,
   Popover,
-} from "@material-ui/core";
-import FilterListIcon from "@material-ui/icons/FilterList";
+} from "@mui/material";
+import FilterListIcon from "@mui/icons-material/FilterList";
 import { FC, useEffect, useRef, useState } from "react";
 import { UI_TEXT_FILTER, UI_TEXT_FILTERED } from "~/constants/ui-text";
 
@@ -42,7 +42,7 @@ export const ResourceFilterPopover: FC<Props> = ({ filterState, onChange }) => {
         <Button
           ref={buttonRef}
           startIcon={<FilterListIcon />}
-          color={isFiltered ? "primary" : "default"}
+          color={isFiltered ? "primary" : "inherit"}
           onClick={() => setOpen(!open)}
         >
           {isFiltered ? UI_TEXT_FILTERED : UI_TEXT_FILTER}

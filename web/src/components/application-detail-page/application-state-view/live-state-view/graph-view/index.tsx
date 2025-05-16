@@ -1,4 +1,5 @@
-import { Box, makeStyles } from "@material-ui/core";
+import { Box } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import { FC, useMemo, useState } from "react";
 import { sortedSet } from "~/utils/sorted-set";
 import { ResourceState } from "~~/model/application_live_state_pb";

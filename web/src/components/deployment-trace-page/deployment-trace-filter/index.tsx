@@ -1,4 +1,5 @@
-import { makeStyles, TextField } from "@material-ui/core";
+import { TextField } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import { FC, useMemo, useState } from "react";
 import { FilterView } from "~/components/filter-view";
 import debounce from "~/utils/debounce";

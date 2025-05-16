@@ -1,5 +1,6 @@
 import { FC, memo } from "react";
-import { makeStyles, TextField, Button, Typography } from "@material-ui/core";
+import { TextField, Button, Typography } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import {
   STATIC_LOGIN_ENDPOINT,
   LOGIN_ENDPOINT,

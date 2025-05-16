@@ -1,12 +1,7 @@
-import {
-  Button,
-  Card,
-  makeStyles,
-  TextField,
-  Typography,
-} from "@material-ui/core";
-import ArrowRightAltIcon from "@material-ui/icons/ArrowRightAlt";
-import MuiAlert from "@material-ui/lab/Alert";
+import { Button, Card, TextField, Typography } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
+import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
+import MuiAlert from "@mui/material/Alert";
 import { FC, memo, useState } from "react";
 import { useCookies } from "react-cookie";
 import { Navigate } from "react-router-dom";

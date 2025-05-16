@@ -1,11 +1,5 @@
-import {
-  Box,
-  Card,
-  CardActionArea,
-  makeStyles,
-  Popover,
-  Typography,
-} from "@material-ui/core";
+import { Box, Card, CardActionArea, Popover, Typography } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import clsx from "clsx";
 import { FC, memo, useState } from "react";
 

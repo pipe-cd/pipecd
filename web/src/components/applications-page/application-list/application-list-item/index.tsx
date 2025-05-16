@@ -2,14 +2,14 @@ import {
   Box,
   IconButton,
   Link,
-  makeStyles,
   Menu,
   MenuItem,
   TableCell,
   TableRow,
-} from "@material-ui/core";
-import MenuIcon from "@material-ui/icons/MoreVert";
-import OpenInNewIcon from "@material-ui/icons/OpenInNew";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
+import MenuIcon from "@mui/icons-material/MoreVert";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import clsx from "clsx";
 import dayjs from "dayjs";
 import { FC, memo, useState, Fragment } from "react";
@@ -258,12 +258,12 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
               onClick={(e) => {
                 setAnchorEl(e.currentTarget);
               }}
+              size="large"
             >
               <MenuIcon />
             </IconButton>
           </TableCell>
         </TableRow>
-
         <Menu
           id="application-menu"
           anchorEl={anchorEl}

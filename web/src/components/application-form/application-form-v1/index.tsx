@@ -2,7 +2,6 @@ import {
   Box,
   Button,
   Divider,
-  makeStyles,
   MenuItem,
   TextField,
   Typography,
@@ -13,7 +12,8 @@ import {
   Step,
   StepLabel,
   StepContent,
-} from "@material-ui/core";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import { FC, memo, useCallback, useState, useEffect, useMemo } from "react";
 import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
@@ -29,7 +29,7 @@ import {
 } from "~/modules/applications";
 import { sortFunc } from "~/utils/common";
 import { selectAllPipeds } from "~/modules/pipeds";
-import { Autocomplete } from "@material-ui/lab";
+import { Autocomplete } from "@mui/material";
 import DialogConfirm from "~/components/dialog-confirm";
 
 const ADD_FROM_GIT_CONFIRM_DIALOG_TITLE = "Add Application";

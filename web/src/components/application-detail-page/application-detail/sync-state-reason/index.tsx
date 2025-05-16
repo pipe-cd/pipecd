@@ -1,4 +1,5 @@
-import { Button, makeStyles, Paper, Typography } from "@material-ui/core";
+import { Button, Paper, Typography } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import { FC, useState } from "react";
 import { CopyIconButton } from "~/components/copy-icon-button";
 import { DiffView } from "./diff-view";

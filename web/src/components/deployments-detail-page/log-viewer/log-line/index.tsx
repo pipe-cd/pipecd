@@ -1,5 +1,6 @@
-import { Box, makeStyles } from "@material-ui/core";
-import { Error } from "@material-ui/icons";
+import { Box } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
+import { Error } from "@mui/icons-material";
 import { FC } from "react";
 import {
   DEFAULT_BACKGROUND_COLOR,

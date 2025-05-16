@@ -1,6 +1,6 @@
-import { makeStyles } from "@material-ui/styles";
-import { Select, MenuItem, IconButton } from "@material-ui/core";
-import ClearIcon from "@material-ui/icons/Clear";
+import { makeStyles } from "@mui/styles";
+import { Select, MenuItem, IconButton } from "@mui/material";
+import ClearIcon from "@mui/icons-material/Clear";
 import { FC } from "react";
 import { useAppSelector } from "~/hooks/redux";
 import { selectAllPipeds } from "~/modules/pipeds";

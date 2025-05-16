@@ -4,10 +4,10 @@ import {
   DialogActions,
   DialogContent,
   Typography,
-  makeStyles,
   DialogTitle,
   TextField,
-} from "@material-ui/core";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import { useFormik } from "formik";
 import { FC, memo } from "react";
 import { useAppSelector } from "~/hooks/redux";

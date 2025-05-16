@@ -1,18 +1,18 @@
 import {
   Button,
   ButtonGroup,
-  PropTypes,
+  ButtonGroupOwnProps,
   CircularProgress,
   ClickAwayListener,
   Grow,
-  makeStyles,
   MenuItem,
   MenuList,
   Paper,
   Popper,
-} from "@material-ui/core";
-import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
-import { FC, useRef, useState, MouseEvent } from "react";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import { FC, useRef, useState } from "react";
 import * as React from "react";
 
 const useStyles = makeStyles((theme) => ({
@@ -33,7 +33,7 @@ export interface SplitButtonProps {
   startIcon?: React.ReactNode;
   disabled: boolean;
   loading: boolean;
-  color?: PropTypes.Color;
+  color?: ButtonGroupOwnProps["color"];
   className?: string;
 }
 
@@ -52,7 +52,7 @@ export const SplitButton: FC<SplitButtonProps> = ({
   const [open, setOpen] = useState(false);
   const [selectedCancelOption, setSelectedCancelOption] = useState(0);
 
-  const handleClose = (event: MouseEvent<Document>): void => {
+  const handleClose = (event: MouseEvent | TouchEvent): void => {
     if (anchorRef.current && anchorRef.current.contains(event.target as Node)) {
       return;
     }

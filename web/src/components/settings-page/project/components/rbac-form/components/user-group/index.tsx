@@ -3,7 +3,6 @@ import {
   Menu,
   MenuItem,
   IconButton,
-  makeStyles,
   Paper,
   Table,
   TableBody,
@@ -12,9 +11,10 @@ import {
   TableHead,
   TableRow,
   Typography,
-} from "@material-ui/core";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import * as React from "react";
-import { Add as AddIcon, MoreVert as MenuIcon } from "@material-ui/icons";
+import { Add as AddIcon, MoreVert as MenuIcon } from "@mui/icons-material";
 import { FC, memo, useCallback, useEffect, useState } from "react";
 import { UI_TEXT_ADD } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
@@ -128,7 +128,6 @@ export const UserGroupTable: FC = memo(function UserGroupTable() {
           {UI_TEXT_ADD}
         </Button>
       </div>
-
       <TableContainer component={Paper} square>
         <Table size="small" stickyHeader>
           <TableHead>
@@ -144,7 +143,11 @@ export const UserGroupTable: FC = memo(function UserGroupTable() {
                 <TableCell>{group.ssoGroup}</TableCell>
                 <TableCell>{group.role}</TableCell>
                 <TableCell align="right">
-                  <IconButton data-id={group.ssoGroup} onClick={handleOpenMenu}>
+                  <IconButton
+                    data-id={group.ssoGroup}
+                    onClick={handleOpenMenu}
+                    size="large"
+                  >
                     <MenuIcon />
                   </IconButton>
                 </TableCell>
@@ -153,7 +156,6 @@ export const UserGroupTable: FC = memo(function UserGroupTable() {
           </TableBody>
         </Table>
       </TableContainer>
-
       <Menu
         id="user-group-menu"
         open={Boolean(anchorEl)}
@@ -172,13 +174,11 @@ export const UserGroupTable: FC = memo(function UserGroupTable() {
           Delete
         </MenuItem>
       </Menu>
-
       <AddUserGroupDialog
         open={isOpenAddForm}
         onClose={() => setIsOpenAddForm(false)}
         onSubmit={handleSubmit}
       />
-
       <DeleteUserGroupConfirmDialog
         ssoGroup={deleteSSOGroup}
         onCancel={handleCancelDeleting}

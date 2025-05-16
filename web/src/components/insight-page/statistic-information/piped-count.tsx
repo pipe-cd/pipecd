@@ -1,10 +1,5 @@
-import {
-  Card,
-  CardContent,
-  Typography,
-  Box,
-  makeStyles,
-} from "@material-ui/core";
+import { Card, CardContent, Typography, Box } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import {
   GridComponent,
   LegendComponent,
@@ -17,11 +12,11 @@ import { useAppSelector } from "~/hooks/redux";
 import { Piped, selectAllPipeds } from "~/modules/pipeds";
 import { GaugeChart } from "echarts/charts";
 import { CanvasRenderer } from "echarts/renderers";
-import cyan from "@material-ui/core/colors/blue";
-import green from "@material-ui/core/colors/green";
 import useEChartState from "~/hooks/useEChartState";
 import ChartEmptyData from "~/components/chart-empty-data";
 import LegendRow from "./legend-row";
+
+import { blue as cyan, green } from "@mui/material/colors";
 
 const enabledColor = cyan[500];
 const onlineColor = green[500];

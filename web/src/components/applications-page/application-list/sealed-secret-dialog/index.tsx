@@ -6,10 +6,10 @@ import {
   DialogContent,
   DialogTitle,
   FormControlLabel,
-  makeStyles,
   TextField,
   Typography,
-} from "@material-ui/core";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import { useFormik } from "formik";
 import { FC, memo, useCallback } from "react";
 import * as yup from "yup";

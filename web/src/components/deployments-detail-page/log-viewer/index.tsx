@@ -1,7 +1,6 @@
 import {
   Divider,
   IconButton,
-  makeStyles,
   Toolbar,
   Typography,
   Dialog,
@@ -10,8 +9,9 @@ import {
   DialogContentText,
   DialogTitle,
   Button,
-} from "@material-ui/core";
-import { Close, SkipNext } from "@material-ui/icons";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
+import { Close, SkipNext } from "@mui/icons-material";
 import clsx from "clsx";
 import { FC, memo, useCallback, useState } from "react";
 import Draggable from "react-draggable";
@@ -171,7 +171,6 @@ export const LogViewer: FC = memo(function LogViewer() {
       >
         <div className={clsx("handle", classes.dividerWrapper)} />
       </Draggable>
-
       <div className={classes.root} data-testid="log-viewer">
         <Divider />
         <Toolbar variant="dense" className={classes.toolbar}>
@@ -196,7 +195,11 @@ export const LogViewer: FC = memo(function LogViewer() {
             </Typography>
           </div>
           <div className={classes.toolbarRight}>
-            <IconButton aria-label="close log" onClick={handleOnClickClose}>
+            <IconButton
+              aria-label="close log"
+              onClick={handleOnClickClose}
+              size="large"
+            >
               <Close />
             </IconButton>
           </div>

@@ -4,10 +4,10 @@ import {
   CircularProgress,
   Divider,
   FormControl,
-  makeStyles,
   TextField,
   Typography,
-} from "@material-ui/core";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import { FC, useEffect, useMemo } from "react";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
 import { Piped, selectAllPipeds, selectPipedById } from "~/modules/pipeds";
@@ -20,7 +20,7 @@ import { unwrapResult, useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { addApplication } from "~/modules/applications";
 import FormSelectInput from "../../form-select-input";
 import { updateApplication } from "~/modules/update-application";
-import { Autocomplete } from "@material-ui/lab";
+import { Autocomplete } from "@mui/material";
 
 type FormValues = {
   name: string;

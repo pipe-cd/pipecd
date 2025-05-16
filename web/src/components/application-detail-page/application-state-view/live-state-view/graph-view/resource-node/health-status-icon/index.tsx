@@ -1,7 +1,7 @@
-import { makeStyles } from "@material-ui/core";
-import UnknownIcon from "@material-ui/icons/ErrorOutline";
-import FavoriteIcon from "@material-ui/icons/Favorite";
-import OtherIcon from "@material-ui/icons/HelpOutline";
+import makeStyles from "@mui/styles/makeStyles";
+import UnknownIcon from "@mui/icons-material/ErrorOutline";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import OtherIcon from "@mui/icons-material/HelpOutline";
 import { FC, memo } from "react";
 import { ResourceState } from "~~/model/application_live_state_pb";
 

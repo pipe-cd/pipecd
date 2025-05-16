@@ -88,19 +88,19 @@ describe("ApplicationFormManualV0", () => {
     });
 
     it('form contain input label "Piped" and not disabled initially', () => {
-      const input = screen.getByRole("button", { name: "Piped" });
+      const input = screen.getByRole("combobox", { name: "Piped" });
       expect(input).toBeInTheDocument();
       expect(input).not.toHaveAttribute("aria-disabled", "true");
     });
 
     it('form contain input label "Platform Provider" and disabled', () => {
-      const input = screen.getByRole("button", { name: "Platform Provider" });
+      const input = screen.getByRole("combobox", { name: "Platform Provider" });
       expect(input).toBeInTheDocument();
       expect(input).toHaveAttribute("aria-disabled", "true");
     });
 
     it('form contain input label "Repository" and disabled', () => {
-      const input = screen.getByRole("button", { name: "Repository" });
+      const input = screen.getByRole("combobox", { name: "Repository" });
       expect(input).toBeInTheDocument();
       expect(input).toHaveAttribute("aria-disabled", "true");
     });
@@ -155,19 +155,19 @@ describe("ApplicationFormManualV0", () => {
     });
 
     it('form contain input label "Kind" and disabled initially', () => {
-      const input = screen.getByRole("button", { name: "Kind" });
+      const input = screen.getByRole("combobox", { name: "Kind" });
       expect(input).toBeInTheDocument();
       expect(input).toHaveAttribute("aria-disabled", "true");
     });
 
     it('form contain input label "Piped"', () => {
-      const input = screen.getByRole("button", { name: "Piped" });
+      const input = screen.getByRole("combobox", { name: "Piped" });
       expect(input).toBeInTheDocument();
       expect(input).not.toHaveAttribute("aria-disabled", "true");
     });
 
     it('form contain input label "Platform Provider"', () => {
-      const input = screen.getByRole("button", { name: "Platform Provider" });
+      const input = screen.getByRole("combobox", { name: "Platform Provider" });
       expect(input).toBeInTheDocument();
       expect(input).not.toHaveAttribute("aria-disabled", "true");
     });

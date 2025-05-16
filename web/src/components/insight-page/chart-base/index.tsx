@@ -1,6 +1,6 @@
-import { Box, makeStyles, Paper, Typography } from "@material-ui/core";
-import grey from "@material-ui/core/colors/grey";
-import { WarningOutlined } from "@material-ui/icons";
+import { Box, Paper, Typography } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
+import { WarningOutlined } from "@mui/icons-material";
 import dayjs from "dayjs";
 import { BarChart } from "echarts/charts";
 import {
@@ -14,6 +14,7 @@ import { CanvasRenderer } from "echarts/renderers";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { InsightDataPoint, InsightResolution } from "~/modules/insight";
 import { dummyDataPointsList } from "~/__fixtures__/dummy-insight";
+import { grey } from "@mui/material/colors";
 const placeholderData = [{ name: "All", points: dummyDataPointsList }];
 
 echarts.use([

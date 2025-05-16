@@ -15,9 +15,9 @@ import {
   Toolbar,
   Tooltip,
   Typography,
-} from "@material-ui/core";
-import { Add as AddIcon, MoreVert as MenuIcon } from "@material-ui/icons";
-import Skeleton from "@material-ui/lab/Skeleton";
+} from "@mui/material";
+import { Add as AddIcon, MoreVert as MenuIcon } from "@mui/icons-material";
+import Skeleton from "@mui/material/Skeleton";
 import dayjs from "dayjs";
 import * as React from "react";
 import { FC, memo, useCallback, useEffect, useState } from "react";
@@ -147,7 +147,6 @@ export const APIKeyPage: FC = memo(function APIKeyPage() {
         </Button>
       </Toolbar>
       <Divider />
-
       <TableContainer component={Paper} square>
         <Table size="small" stickyHeader>
           <TableHead>
@@ -190,7 +189,11 @@ export const APIKeyPage: FC = memo(function APIKeyPage() {
                     )}
                   </TableCell>
                   <TableCell align="right">
-                    <IconButton data-id={key.id} onClick={handleOpenMenu}>
+                    <IconButton
+                      data-id={key.id}
+                      onClick={handleOpenMenu}
+                      size="large"
+                    >
                       <MenuIcon />
                     </IconButton>
                   </TableCell>
@@ -200,7 +203,6 @@ export const APIKeyPage: FC = memo(function APIKeyPage() {
           </TableBody>
         </Table>
       </TableContainer>
-
       <Menu
         id="api-key-menu"
         open={Boolean(anchorEl)}
@@ -219,15 +221,12 @@ export const APIKeyPage: FC = memo(function APIKeyPage() {
           Disable API Key
         </MenuItem>
       </Menu>
-
       <GenerateAPIKeyDialog
         open={isOpenAddForm}
         onClose={() => setIsOpenAddForm(false)}
         onSubmit={handleSubmit}
       />
-
       <GeneratedAPIKeyDialog />
-
       <DisableAPIKeyConfirmDialog
         apiKeyId={disableTargetId}
         onCancel={handleCancelDisabling}

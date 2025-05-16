@@ -6,9 +6,9 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  makeStyles,
-} from "@material-ui/core";
-import { Autocomplete } from "@material-ui/lab";
+} from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
+import { Autocomplete } from "@mui/material";
 import { FC, memo, useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { Application, selectAll, selectById } from "~/modules/applications";

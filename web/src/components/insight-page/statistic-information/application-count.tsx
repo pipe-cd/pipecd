@@ -1,15 +1,8 @@
-import {
-  Box,
-  Card,
-  CardContent,
-  makeStyles,
-  Typography,
-} from "@material-ui/core";
+import { Box, Card, CardContent, Typography } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import clsx from "clsx";
 import { FC, useEffect, useMemo } from "react";
 import { useAppSelector } from "~/hooks/redux";
-import red from "@material-ui/core/colors/red";
-import green from "@material-ui/core/colors/green";
 import useEChartState from "~/hooks/useEChartState";
 import { PieChart } from "echarts/charts";
 import {
@@ -22,6 +15,8 @@ import { CanvasRenderer } from "echarts/renderers";
 import ChartEmptyData from "~/components/chart-empty-data";
 import LegendRow from "./legend-row";
 import { getPercentage } from "~/utils/common";
+
+import { red, green } from "@mui/material/colors";
 
 const enabledColor = green[500];
 const disabledColor = red[500];

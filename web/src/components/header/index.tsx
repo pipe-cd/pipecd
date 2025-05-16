@@ -8,10 +8,10 @@ import {
   MenuItem,
   Toolbar,
   Typography,
-  makeStyles,
-} from "@material-ui/core";
-import { ExitToApp, MoreVert, OpenInNew } from "@material-ui/icons";
-import ArrowDownIcon from "@material-ui/icons/ArrowDropDown";
+} from "@mui/material";
+import { ExitToApp, MoreVert, OpenInNew } from "@mui/icons-material";
+import ArrowDownIcon from "@mui/icons-material/ArrowDropDown";
+import makeStyles from "@mui/styles/makeStyles";
 import clsx from "clsx";
 import { FC, memo, useEffect, useState } from "react";
 import { NavLink as RouterLink, useLocation } from "react-router-dom";
@@ -145,6 +145,7 @@ export const Header: FC = memo(function Header() {
             <Button
               color="inherit"
               className={classes.projectName}
+              // sx={{ textTransform: "none" }}
               endIcon={<ArrowDownIcon />}
               onClick={(e) => setProjectAnchorEl(e.currentTarget)}
             >
@@ -242,7 +243,6 @@ export const Header: FC = memo(function Header() {
           )}
         </div>
       </Toolbar>
-
       <Menu
         id="project-selection"
         anchorEl={projectAnchorEl}
@@ -257,12 +257,10 @@ export const Header: FC = memo(function Header() {
           </MenuItem>
         ))}
       </Menu>
-
       <Menu
         id="user-menu"
         anchorEl={userAnchorEl}
         open={Boolean(userAnchorEl)}
-        getContentAnchorEl={null}
         anchorOrigin={{
           vertical: "bottom",
           horizontal: "right",
@@ -275,12 +273,11 @@ export const Header: FC = memo(function Header() {
           <ExitToApp style={{ marginRight: 8 }} /> Logout
         </MenuItem>
       </Menu>
-
       <Menu
         id="more-menu"
         anchorEl={moreAnchorEl}
         open={Boolean(moreAnchorEl)}
-        getContentAnchorEl={null}
+        // getContentAnchorEl={null} // TODO check this working normally
         anchorOrigin={{ vertical: 35, horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
         onClose={(): void => {
@@ -327,7 +324,7 @@ export const Header: FC = memo(function Header() {
           GitHub
           <OpenInNew className={classes.iconOpenInNew} />
         </MenuItem>
-        <MenuItem disabled={true} dense={true} button={false}>
+        <MenuItem disabled={true} dense={true}>
           {process.env.PIPECD_VERSION}
         </MenuItem>
       </Menu>

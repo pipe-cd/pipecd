@@ -1,10 +1,5 @@
-import {
-  FormControl,
-  InputLabel,
-  makeStyles,
-  MenuItem,
-  Select,
-} from "@material-ui/core";
+import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import React, { useEffect } from "react";
 
 const useStyles = makeStyles(() => ({

@@ -1,5 +1,6 @@
-import { IconButton, makeStyles, Menu, MenuItem } from "@material-ui/core";
-import DehazeIcon from "@material-ui/icons/Dehaze";
+import { IconButton, Menu, MenuItem } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
+import DehazeIcon from "@mui/icons-material/Dehaze";
 import { FC, memo, useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { PAGE_PATH_APPLICATIONS } from "~/constants/path";
@@ -98,10 +99,10 @@ export const ApplicationDetailPage: FC = memo(function ApplicationDetailPage() {
         onClick={(e) => {
           setAnchorEl(e.currentTarget);
         }}
+        size="large"
       >
         <DehazeIcon fontSize="large" htmlColor="#fff" />
       </IconButton>
-
       <Menu
         id="action-menu"
         anchorEl={anchorEl}
@@ -128,20 +129,17 @@ export const ApplicationDetailPage: FC = memo(function ApplicationDetailPage() {
           Delete
         </MenuItem>
       </Menu>
-
       <SealedSecretDialog
         open={openEncryptSecretDialog}
         applicationId={applicationId}
         onClose={() => setOpenEncryptSecretDialog(false)}
       />
-
       <DisableApplicationDialog
         open={openDisableDialog}
         applicationId={applicationId}
         onDisable={() => setOpenDisableDialog(false)}
         onCancel={() => setOpenDisableDialog(false)}
       />
-
       <DeleteApplicationDialog
         onDeleted={() => navigate(PAGE_PATH_APPLICATIONS)}
       />
