@@ -103,6 +103,8 @@ func (m *Command) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	// no validation rules for ErrorReason
+
 	if _, ok := Command_Type_name[int32(m.GetType())]; !ok {
 		err := CommandValidationError{
 			field:  "Type",
@@ -1264,7 +1266,7 @@ func (m *Command_SkipStage) validate(all bool) error {
 
 	return nil
 }
- 
+
 // Command_SkipStageMultiError is an error wrapping multiple validation errors
 // returned by Command_SkipStage.ValidateAll() if the designated constraints
 // aren't met.
