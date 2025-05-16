@@ -1638,7 +1638,10 @@ proto.model.ProjectSSOConfig.Oidc.toObject = function(includeInstance, msg) {
     tokenEndpoint: jspb.Message.getFieldWithDefault(msg, 6, ""),
     userInfoEndpoint: jspb.Message.getFieldWithDefault(msg, 7, ""),
     proxyUrl: jspb.Message.getFieldWithDefault(msg, 8, ""),
-    scopesList: (f = jspb.Message.getRepeatedField(msg, 9)) == null ? undefined : f
+    scopesList: (f = jspb.Message.getRepeatedField(msg, 9)) == null ? undefined : f,
+    rolesClaimKey: jspb.Message.getFieldWithDefault(msg, 10, ""),
+    usernameClaimKey: jspb.Message.getFieldWithDefault(msg, 11, ""),
+    avatarUrlClaimKey: jspb.Message.getFieldWithDefault(msg, 12, "")
   };
 
   if (includeInstance) {
@@ -1710,6 +1713,18 @@ proto.model.ProjectSSOConfig.Oidc.deserializeBinaryFromReader = function(msg, re
     case 9:
       var value = /** @type {string} */ (reader.readString());
       msg.addScopes(value);
+      break;
+    case 10:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setRolesClaimKey(value);
+      break;
+    case 11:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setUsernameClaimKey(value);
+      break;
+    case 12:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setAvatarUrlClaimKey(value);
       break;
     default:
       reader.skipField();
@@ -1800,6 +1815,27 @@ proto.model.ProjectSSOConfig.Oidc.serializeBinaryToWriter = function(message, wr
   if (f.length > 0) {
     writer.writeRepeatedString(
       9,
+      f
+    );
+  }
+  f = message.getRolesClaimKey();
+  if (f.length > 0) {
+    writer.writeString(
+      10,
+      f
+    );
+  }
+  f = message.getUsernameClaimKey();
+  if (f.length > 0) {
+    writer.writeString(
+      11,
+      f
+    );
+  }
+  f = message.getAvatarUrlClaimKey();
+  if (f.length > 0) {
+    writer.writeString(
+      12,
       f
     );
   }
@@ -1984,6 +2020,60 @@ proto.model.ProjectSSOConfig.Oidc.prototype.addScopes = function(value, opt_inde
  */
 proto.model.ProjectSSOConfig.Oidc.prototype.clearScopesList = function() {
   return this.setScopesList([]);
+};
+
+
+/**
+ * optional string roles_claim_key = 10;
+ * @return {string}
+ */
+proto.model.ProjectSSOConfig.Oidc.prototype.getRolesClaimKey = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 10, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.model.ProjectSSOConfig.Oidc} returns this
+ */
+proto.model.ProjectSSOConfig.Oidc.prototype.setRolesClaimKey = function(value) {
+  return jspb.Message.setProto3StringField(this, 10, value);
+};
+
+
+/**
+ * optional string username_claim_key = 11;
+ * @return {string}
+ */
+proto.model.ProjectSSOConfig.Oidc.prototype.getUsernameClaimKey = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 11, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.model.ProjectSSOConfig.Oidc} returns this
+ */
+proto.model.ProjectSSOConfig.Oidc.prototype.setUsernameClaimKey = function(value) {
+  return jspb.Message.setProto3StringField(this, 11, value);
+};
+
+
+/**
+ * optional string avatar_url_claim_key = 12;
+ * @return {string}
+ */
+proto.model.ProjectSSOConfig.Oidc.prototype.getAvatarUrlClaimKey = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 12, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.model.ProjectSSOConfig.Oidc} returns this
+ */
+proto.model.ProjectSSOConfig.Oidc.prototype.setAvatarUrlClaimKey = function(value) {
+  return jspb.Message.setProto3StringField(this, 12, value);
 };
 
 

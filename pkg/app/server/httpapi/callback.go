@@ -161,7 +161,7 @@ func getUser(ctx context.Context, sso *model.ProjectSSOConfig, project *model.Pr
 		if err != nil {
 			return nil, err
 		}
-		return cli.GetUser(ctx, sso.Oidc.ClientId)
+		return cli.GetUser(ctx)
 	default:
 		return nil, fmt.Errorf("not implemented")
 	}

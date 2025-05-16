@@ -194,6 +194,12 @@ else
 	yarn --cwd web typecheck
 endif
 
+.PHONY: lint/helm
+lint/helm:
+	@for dir in $$(find ./manifests -mindepth 1 -maxdepth 1 -type d); do \
+		helm lint $$dir || exit $$?; \
+	done
+
 # Update commands
 
 .PHONY: update/go-deps

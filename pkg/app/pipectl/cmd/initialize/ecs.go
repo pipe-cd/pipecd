@@ -34,9 +34,9 @@ type genericECSApplicationSpec struct {
 func generateECSConfig(p prompt.Prompt) (*genericConfig, error) {
 	// inputs
 	var (
-		appName        string = "<YOUR_APPLICATION_NAME>"
-		serviceDefFile string = "<YOUR_SERVICE_DEFINITION_FILE>"
-		taskDefFile    string = "<YOUR_TASK_DEFINITION_FILE>"
+		appName        = "<YOUR_APPLICATION_NAME>"
+		serviceDefFile = "<YOUR_SERVICE_DEFINITION_FILE>"
+		taskDefFile    = "<YOUR_TASK_DEFINITION_FILE>"
 
 		deploymentStrategy string = "0" // QuickSync by default
 	)
@@ -144,7 +144,7 @@ func inputECSCanary(p *prompt.Prompt) (*config.ECSDeploymentInput, *genericDeplo
 
 	// pipeline configs
 	var (
-		canaryTrafficPercent int = 10
+		canaryTrafficPercent = 10
 	)
 	inputs := []prompt.Input{
 		{
@@ -275,7 +275,7 @@ func inputECSTargetGroup(p *prompt.Prompt, annotation string) (*config.ECSTarget
 	var (
 		targetGroupArn string = "<YOUR_TARGET_GROUP_ARN>"
 		containerName  string = "<YOUR_CONTAINER_NAME>"
-		containerPort  int    = 80
+		containerPort         = 80
 	)
 
 	inputs := []prompt.Input{

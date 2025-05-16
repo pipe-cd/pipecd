@@ -206,6 +206,9 @@ func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageSt
 		return model.StageStatus_STAGE_FAILURE
 	}
 
+	// Persist to identify targetGroup in rollback.
+	e.Input.MetadataStore.Shared().Put(ctx, canaryTargetGroupArnKey, *canary.TargetGroupArn)
+
 	if !routing(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, *primary, *canary) {
 		return model.StageStatus_STAGE_FAILURE
 	}
