@@ -168,12 +168,12 @@ type ApplicationLiveState struct {
 	Resources []ResourceState
 }
 
-// HealthStatus returns the health status of the application.
+// healthStatus returns the health status of the application.
 // It returns ApplicationHealthStateUnknown in the following priority:
 // 1. If there is any unknown health status resource, it returns ApplicationHealthStateUnknown.
 // 2. If there is any unhealthy resource, it returns ApplicationHealthStateOther.
 // 3. Otherwise, it returns ApplicationHealthStateHealthy.
-func (s *ApplicationLiveState) HealthStatus() ApplicationHealthStatus {
+func (s *ApplicationLiveState) healthStatus() ApplicationHealthStatus {
 	var (
 		unhealthy bool
 		unknown   bool
@@ -207,7 +207,7 @@ func (s *ApplicationLiveState) toModel(pluginName string, now time.Time) *model.
 	}
 	return &model.ApplicationLiveState{
 		Resources:    resources,
-		HealthStatus: s.HealthStatus().toModel(),
+		HealthStatus: s.healthStatus().toModel(),
 	}
 }
 
