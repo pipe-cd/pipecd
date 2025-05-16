@@ -822,7 +822,7 @@ func TestManifest_ToResourceState(t *testing.T) {
 				Name:              "nginx-deployment",
 				ParentIDs:         nil,
 				HealthStatus:      sdk.ResourceHealthStateUnknown,
-				HealthDescription: "",
+				HealthDescription: "The number of desired replicas is unspecified",
 				ResourceType:      "Deployment",
 				ResourceMetadata: map[string]string{
 					"Namespace":   "default",
@@ -863,7 +863,7 @@ func TestManifest_ToResourceState(t *testing.T) {
 				Name:              "nginx-deployment",
 				ParentIDs:         []string{"67890"},
 				HealthStatus:      sdk.ResourceHealthStateUnknown,
-				HealthDescription: "",
+				HealthDescription: "The number of desired replicas is unspecified",
 				ResourceType:      "Deployment",
 				ResourceMetadata: map[string]string{
 					"Namespace":   "default",
