@@ -119,8 +119,6 @@ func reportMostRecentlyTriggeredDeployment(ctx context.Context, client apiClient
 			DeploymentId: d.Id,
 			Trigger:      d.Trigger,
 			Summary:      d.Summary,
-			Version:      d.Version,
-			Versions:     d.Versions,
 			StartedAt:    d.CreatedAt,
 			CompletedAt:  d.CompletedAt,
 		},
