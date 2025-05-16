@@ -141,7 +141,6 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
             options={localApplications}
             getOptionLabel={(option) => option.id}
             renderOption={(props, option) => (
-              // TODO check this changes, add prop to span
               <span {...props}>{`${option.name} (${option.id})`}</span>
             )}
             value={selectedApp || null}
