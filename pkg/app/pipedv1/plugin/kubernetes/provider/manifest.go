@@ -15,10 +15,10 @@
 package provider
 
 import (
-	"encoding/json"
 	"maps"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/yaml"
 
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
@@ -57,12 +57,39 @@ type Manifest struct {
 	body *unstructured.Unstructured
 }
 
+// FromStructuredObject creates a new Manifest from a structured Kubernetes object.
+func FromStructuredObject(o any) (Manifest, error) {
+	obj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(o)
+	if err != nil {
+		return Manifest{}, err
+	}
+	return Manifest{body: &unstructured.Unstructured{Object: obj}}, nil
+}
+
+// DeepCopyManifests returns a deep copy of the given manifests.
+func DeepCopyManifests(manifests []Manifest) []Manifest {
+	copied := make([]Manifest, len(manifests))
+	for i, m := range manifests {
+		copied[i] = m.DeepCopy()
+	}
+	return copied
+}
+
+// DeepCopy returns a deep copy of the manifest.
+func (m Manifest) DeepCopy() Manifest {
+	return Manifest{body: m.body.DeepCopy()}
+}
+
 func (m Manifest) Key() ResourceKey {
 	return makeResourceKey(m.body)
 }
 
 func (m Manifest) Kind() string {
 	return m.body.GetKind()
+}
+
+func (m Manifest) APIVersion() string {
+	return m.body.GetAPIVersion()
 }
 
 func (m Manifest) Name() string {
@@ -104,13 +131,9 @@ func (m *Manifest) MarshalJSON() ([]byte, error) {
 
 // ConvertToStructuredObject converts the manifest into a structured Kubernetes object.
 // The provided interface should be a pointer to a concrete Kubernetes type (e.g. *v1.Pod).
-// It first marshals the manifest to JSON and then unmarshals it into the provided object.
-func (m Manifest) ConvertToStructuredObject(o interface{}) error {
-	data, err := m.MarshalJSON()
-	if err != nil {
-		return err
-	}
-	return json.Unmarshal(data, o)
+// It uses the runtime.DefaultUnstructuredConverter to convert the manifest into the provided object.
+func (m Manifest) ConvertToStructuredObject(o any) error {
+	return runtime.DefaultUnstructuredConverter.FromUnstructured(m.body.Object, o)
 }
 
 func (m *Manifest) YamlBytes() ([]byte, error) {
@@ -123,6 +146,10 @@ func (m Manifest) GetAnnotations() map[string]string {
 
 func (m Manifest) NestedMap(fields ...string) (map[string]any, bool, error) {
 	return unstructured.NestedMap(m.body.Object, fields...)
+}
+
+func (m Manifest) NestedString(fields ...string) (string, bool, error) {
+	return unstructured.NestedString(m.body.Object, fields...)
 }
 
 func (m Manifest) AddLabels(labels map[string]string) {
@@ -187,12 +214,14 @@ func (m Manifest) ToResourceState(deployTarget string) sdk.ResourceState {
 		}
 	}
 
+	status, desc := m.calculateHealthStatus()
+
 	return sdk.ResourceState{
 		ID:                string(m.body.GetUID()),
 		Name:              m.body.GetName(),
 		ParentIDs:         parents,
-		HealthStatus:      sdk.ResourceHealthStateUnknown, // TODO: Implement health status calculation
-		HealthDescription: "",                             // TODO: Implement health status calculation
+		HealthStatus:      status,
+		HealthDescription: desc,
 		ResourceType:      m.body.GetKind(),
 		ResourceMetadata: map[string]string{
 			"Namespace":   m.body.GetNamespace(),

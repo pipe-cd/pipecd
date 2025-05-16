@@ -140,26 +140,8 @@ func rollback(ctx context.Context, in *executor.Input, platformProviderName stri
 	}
 
 	// Reset routing in case of rolling back progressive pipeline.
-	if primaryTargetGroup != nil && canaryTargetGroup != nil {
-		routingTrafficCfg := provider.RoutingTrafficConfig{
-			{
-				TargetGroupArn: *primaryTargetGroup.TargetGroupArn,
-				Weight:         100,
-			},
-			{
-				TargetGroupArn: *canaryTargetGroup.TargetGroupArn,
-				Weight:         0,
-			},
-		}
-
-		currListenerArns, err := client.GetListenerArns(ctx, *primaryTargetGroup)
-		if err != nil {
-			in.LogPersister.Errorf("Failed to get current active listeners: %v", err)
-			return false
-		}
-
-		if err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg); err != nil {
-			in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
+	if primaryTargetGroup != nil {
+		if !rollbackELB(ctx, in, client, primaryTargetGroup, canaryTargetGroup) {
 			return false
 		}
 	}
@@ -175,5 +157,48 @@ func rollback(ctx context.Context, in *executor.Input, platformProviderName stri
 	}
 
 	in.LogPersister.Infof("Rolled back the ECS service %s and task definition %s configuration to original stage", *serviceDefinition.ServiceName, *taskDefinition.Family)
+	return true
+}
+
+func rollbackELB(ctx context.Context, in *executor.Input, client provider.Client, primaryTargetGroup *types.LoadBalancer, canaryTargetGroup *types.LoadBalancer) bool {
+	var canaryTargetGroupArn string
+	if canaryTargetGroup == nil {
+		// Get the touched canary target group from a TRAFFIC_ROUTING stage.
+		// canaryTargetGroup does not exist in the previous commit when the attempted deployment newly introduced it.
+		var ok bool
+		canaryTargetGroupArn, ok = in.MetadataStore.Shared().Get(canaryTargetGroupArnKey)
+		if !ok {
+			in.LogPersister.Infof("Skip rolling back ELB listeners because it seems the deployment failed before updating them")
+			return true
+		}
+		in.LogPersister.Infof("Successfully got canary target group ARN from metadata store, although it was not included in the last successful commit: %s", canaryTargetGroupArn)
+	} else {
+		// When canaryTargetGroup exists in the previous commit, simply use it.
+		canaryTargetGroupArn = *canaryTargetGroup.TargetGroupArn
+	}
+
+	routingTrafficCfg := provider.RoutingTrafficConfig{
+		{
+			TargetGroupArn: *primaryTargetGroup.TargetGroupArn,
+			Weight:         100,
+		},
+		{
+			TargetGroupArn: canaryTargetGroupArn,
+			Weight:         0,
+		},
+	}
+
+	currListenerArns, err := client.GetListenerArns(ctx, *primaryTargetGroup)
+	if err != nil {
+		in.LogPersister.Errorf("Failed to get current active listeners: %v", err)
+		return false
+	}
+
+	if err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg); err != nil {
+		in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
+		return false
+	}
+
+	in.LogPersister.Infof("Successfully rolled back ELB listeners of target groups %s (PRIMARY) and %s (CANARY)", *primaryTargetGroup.TargetGroupArn, canaryTargetGroupArn)
 	return true
 }

@@ -1,36 +1,37 @@
-import { FC, memo, useEffect, useState } from "react";
 import {
   AppBar,
-  Toolbar,
-  Typography,
   Avatar,
-  Link,
   Button,
   IconButton,
-  MenuItem,
+  Link,
   Menu,
+  MenuItem,
+  Toolbar,
+  Typography,
   Box,
 } from "@mui/material";
-import { MoreVert } from "@mui/icons-material";
-import {
-  PAGE_PATH_APPLICATIONS,
-  PAGE_PATH_DEPLOYMENTS,
-  PAGE_PATH_SETTINGS,
-  PAGE_PATH_LOGIN,
-  LOGOUT_ENDPOINT,
-  PAGE_PATH_TOP,
-  PAGE_PATH_INSIGHTS,
-  PAGE_PATH_DEPLOYMENT_CHAINS,
-  PAGE_PATH_EVENTS,
-  PAGE_PATH_DEPLOYMENT_TRACE,
-} from "~/constants/path";
+import { ExitToApp, MoreVert } from "@mui/icons-material";
+import ArrowDownIcon from "@mui/icons-material/ArrowDropDown";
+import { FC, memo, useEffect, useState } from "react";
+import { NavLink as RouterLink } from "react-router-dom";
 import { APP_NAME } from "~/constants/common";
 import { LOGGING_IN_PROJECT, USER_PROJECTS } from "~/constants/localstorage";
-import { NavLink as RouterLink } from "react-router-dom";
-import ArrowDownIcon from "@mui/icons-material/ArrowDropDown";
-import logo from "~~/assets/logo.svg";
+import {
+  LOGOUT_ENDPOINT,
+  PAGE_PATH_APPLICATIONS,
+  PAGE_PATH_DEPLOYMENTS,
+  PAGE_PATH_DEPLOYMENT_CHAINS,
+  PAGE_PATH_DEPLOYMENT_TRACE,
+  PAGE_PATH_EVENTS,
+  PAGE_PATH_INSIGHTS,
+  PAGE_PATH_LOGIN,
+  PAGE_PATH_SETTINGS,
+  PAGE_PATH_TOP,
+} from "~/constants/path";
 import { useAppSelector } from "~/hooks/redux";
+import logo from "~~/assets/logo.svg";
 import NavLink from "./NavLink";
+
 import { IconOpenNewTab, LogoImage } from "./styles";
 
 export const APP_HEADER_HEIGHT = 56;
@@ -123,16 +124,24 @@ export const Header: FC = memo(function Header() {
               >
                 <MoreVert />
               </IconButton>
-              <IconButton
+              <Button
+                color="inherit"
                 aria-label="User Menu"
                 aria-controls="user-menu"
                 aria-haspopup="true"
                 onClick={(e) => setUserAnchorEl(e.currentTarget)}
-                size="large"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  textTransform: "none",
+                }}
               >
-                <Avatar sx={{ width: 32, height: 32 }} src={me.avatarUrl} />
-              </IconButton>
-              <Typography variant="body2">{me.subject}</Typography>
+                <Avatar
+                  sx={{ width: 32, height: 32, mr: 1 }}
+                  src={me.avatarUrl}
+                />
+                {me.subject}
+              </Button>
             </>
           ) : (
             <NavLink href={PAGE_PATH_LOGIN} active={false}>
@@ -159,12 +168,16 @@ export const Header: FC = memo(function Header() {
         id="user-menu"
         anchorEl={userAnchorEl}
         open={Boolean(userAnchorEl)}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "right",
+        }}
         onClose={(): void => {
           setUserAnchorEl(null);
         }}
       >
         <MenuItem component={Link} href={LOGOUT_ENDPOINT}>
-          Logout
+          <ExitToApp style={{ marginRight: 8 }} /> Logout
         </MenuItem>
       </Menu>
       <Menu

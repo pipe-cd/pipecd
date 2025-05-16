@@ -109,12 +109,14 @@ type Application struct {
 	// The path to the git directory of this application.
 	GitPath *ApplicationGitPath `protobuf:"bytes,7,opt,name=git_path,json=gitPath,proto3" json:"git_path,omitempty"`
 	// NOTE: Fields `cloud_provider` and `platform_provider` are deprecated.
-	// Using `deploy_targets` to specify where to deploy instead.
+	// Using `deploy_targets_by_plugin` to specify where to deploy instead.
 	// The name of cloud provider where to deploy this application.
 	// This must be one of the provider names registered in the piped.
 	//
 	// Deprecated: Do not use.
 	CloudProvider string `protobuf:"bytes,8,opt,name=cloud_provider,json=cloudProvider,proto3" json:"cloud_provider,omitempty"`
+	// NOTE: Fields `cloud_provider` and `platform_provider` are deprecated.
+	// Using `deploy_targets_by_plugin` to specify where to deploy instead.
 	// The name of platform provider where to deploy this application.
 	// This must be one of the provider names registered in the piped.
 	//

@@ -59,6 +59,8 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Plan preview](../user-guide/plan-preview) | Beta |
 | [Manifest attachment](../user-guide/managing-application/manifest-attachment) | Alpha |
 
+Note: These are statuses for Cloud Run service. Cloud Run job has not been supported yet.
+
 ### Lambda
 
 | Feature | Phase |

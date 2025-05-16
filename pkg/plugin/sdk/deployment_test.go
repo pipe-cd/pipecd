@@ -450,7 +450,7 @@ spec: {}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := newDetermineVersionsRequest[struct{}](tt.request)
+			result, err := newDetermineVersionsRequest[struct{}]("test-plugin", tt.request)
 			require.NoError(t, err)
 			assert.Equal(t, tt.expected.Deployment, result.Deployment)
 			assert.Equal(t, tt.expected.DeploymentSource.ApplicationDirectory, result.DeploymentSource.ApplicationDirectory)
@@ -744,7 +744,7 @@ spec: {}
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			result, _ := newDetermineStrategyRequest[struct{}](tt.request)
+			result, _ := newDetermineStrategyRequest[struct{}]("test-plugin", tt.request)
 			assert.Equal(t, tt.expected.Deployment, result.Deployment)
 		})
 	}

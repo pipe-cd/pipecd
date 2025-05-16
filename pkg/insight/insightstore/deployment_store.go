@@ -77,7 +77,7 @@ func (m *DeploymentBlockMetadata) FindChunks(from, to int64) []DeploymentChunkMe
 }
 
 func overlap(firstFrom, firstTo, secondFrom, secondTo int64) bool {
-	return !(firstTo < secondFrom || firstFrom > secondTo)
+	return firstTo >= secondFrom && firstFrom <= secondTo
 }
 
 func (s *store) ListCompletedDeployments(ctx context.Context, projectID string, from, to int64) ([]*insight.DeploymentData, error) {

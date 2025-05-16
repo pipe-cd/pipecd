@@ -112,13 +112,13 @@ func (pr *pluginRegistry) getPluginClientsByPipeline(pipeline *config.Deployment
 	return plugins, nil
 }
 
-func (pr *pluginRegistry) getPluginClientsByNames(names []string) ([]pluginapi.PluginClient, error) {
+func (pr *pluginRegistry) getPluginClientsByNames(names map[string]struct{}) ([]pluginapi.PluginClient, error) {
 	if len(names) == 0 {
 		return nil, fmt.Errorf("no plugin names are set")
 	}
 
 	plugins := make([]pluginapi.PluginClient, 0, len(names))
-	for _, name := range names {
+	for name := range names {
 		plugin, ok := pr.nameBasedPlugins[name]
 		if !ok {
 			return nil, fmt.Errorf("no plugin found for the given plugin name %v", name)

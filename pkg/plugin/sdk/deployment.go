@@ -112,7 +112,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 		toolRegistry:  s.toolRegistry,
 	}
 
-	req, err := newDetermineVersionsRequest[ApplicationConfigSpec](request)
+	req, err := newDetermineVersionsRequest[ApplicationConfigSpec](s.name, request)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to parse deployment source: %v", err)
 	}
@@ -139,7 +139,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 		toolRegistry:  s.toolRegistry,
 	}
 
-	req, err := newDetermineStrategyRequest[ApplicationConfigSpec](request)
+	req, err := newDetermineStrategyRequest[ApplicationConfigSpec](s.name, request)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to parse deployment source: %v", err)
 	}
@@ -213,7 +213,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 		deployTargets = append(deployTargets, dt)
 	}
 
-	return executeStage(ctx, s.base, &s.config, deployTargets, client, request, s.logger)
+	return executeStage(ctx, s.name, s.base, &s.config, deployTargets, client, request, s.logger)
 }
 
 // StagePluginServiceServer is the gRPC server that handles requests from the piped.
@@ -286,7 +286,7 @@ func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigS
 		toolRegistry:  s.toolRegistry,
 	}
 
-	return executeStage(ctx, s.base, &s.config, nil, client, request, s.logger) // TODO: pass the deployTargets
+	return executeStage(ctx, s.name, s.base, &s.config, nil, client, request, s.logger) // TODO: pass the deployTargets
 }
 
 // buildPipelineSyncStages builds the stages that will be executed by the plugin.
@@ -300,6 +300,7 @@ func buildPipelineSyncStages[Config, DeployTargetConfig, ApplicationConfigSpec a
 
 func executeStage[Config, DeployTargetConfig, ApplicationConfigSpec any](
 	ctx context.Context,
+	pluginName string,
 	plugin StagePlugin[Config, DeployTargetConfig, ApplicationConfigSpec],
 	config *Config,
 	deployTargets []*DeployTarget[DeployTargetConfig],
@@ -307,7 +308,7 @@ func executeStage[Config, DeployTargetConfig, ApplicationConfigSpec any](
 	request *deployment.ExecuteStageRequest,
 	logger *zap.Logger,
 ) (*deployment.ExecuteStageResponse, error) {
-	targetDeploymentSource, err := newDeploymentSource[ApplicationConfigSpec](request.GetInput().GetTargetDeploymentSource())
+	targetDeploymentSource, err := newDeploymentSource[ApplicationConfigSpec](pluginName, request.GetInput().GetTargetDeploymentSource())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to create target deployment source: %v", err)
 	}
@@ -315,7 +316,7 @@ func executeStage[Config, DeployTargetConfig, ApplicationConfigSpec any](
 	// running deploy source is empty on the first deployment
 	runningDeploymentSource := DeploymentSource[ApplicationConfigSpec]{}
 	if request.GetInput().GetRunningDeploymentSource() != nil {
-		runningDeploymentSource, err = newDeploymentSource[ApplicationConfigSpec](request.GetInput().GetRunningDeploymentSource())
+		runningDeploymentSource, err = newDeploymentSource[ApplicationConfigSpec](pluginName, request.GetInput().GetRunningDeploymentSource())
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "failed to create running deployment source: %v", err)
 		}
@@ -645,6 +646,19 @@ func (o StageStatus) toModelEnum() model.StageStatus {
 	}
 }
 
+func (o StageStatus) String() string {
+	switch o {
+	case StageStatusSuccess:
+		return model.StageStatus_STAGE_SUCCESS.String()
+	case StageStatusFailure:
+		return model.StageStatus_STAGE_FAILURE.String()
+	case StageStatusExited:
+		return model.StageStatus_STAGE_EXITED.String()
+	default:
+		return model.StageStatus_STAGE_FAILURE.String()
+	}
+}
+
 // StageCommand represents a command for a stage.
 type StageCommand struct {
 	Commander string
@@ -696,8 +710,8 @@ type DetermineVersionsRequest[ApplicationConfigSpec any] struct {
 }
 
 // newDetermineVersionsRequest converts the common.DetermineVersionsRequest to the internal representation.
-func newDetermineVersionsRequest[ApplicationConfigSpec any](request *deployment.DetermineVersionsRequest) (DetermineVersionsRequest[ApplicationConfigSpec], error) {
-	ds, err := newDeploymentSource[ApplicationConfigSpec](request.GetInput().GetTargetDeploymentSource())
+func newDetermineVersionsRequest[ApplicationConfigSpec any](pluginName string, request *deployment.DetermineVersionsRequest) (DetermineVersionsRequest[ApplicationConfigSpec], error) {
+	ds, err := newDeploymentSource[ApplicationConfigSpec](pluginName, request.GetInput().GetTargetDeploymentSource())
 	if err != nil {
 		return DetermineVersionsRequest[ApplicationConfigSpec]{}, fmt.Errorf("failed to parse target deployment source: %w", err)
 	}
@@ -797,12 +811,12 @@ type DetermineStrategyRequest[ApplicationConfigSpec any] struct {
 }
 
 // newDetermineStrategyRequest converts the common.DetermineStrategyRequest to the internal representation.
-func newDetermineStrategyRequest[ApplicationConfigSpec any](request *deployment.DetermineStrategyRequest) (DetermineStrategyRequest[ApplicationConfigSpec], error) {
-	rds, err := newDeploymentSource[ApplicationConfigSpec](request.GetInput().GetRunningDeploymentSource())
+func newDetermineStrategyRequest[ApplicationConfigSpec any](pluginName string, request *deployment.DetermineStrategyRequest) (DetermineStrategyRequest[ApplicationConfigSpec], error) {
+	rds, err := newDeploymentSource[ApplicationConfigSpec](pluginName, request.GetInput().GetRunningDeploymentSource())
 	if err != nil {
 		return DetermineStrategyRequest[ApplicationConfigSpec]{}, fmt.Errorf("failed to parse running deployment source: %w", err)
 	}
-	tds, err := newDeploymentSource[ApplicationConfigSpec](request.GetInput().GetTargetDeploymentSource())
+	tds, err := newDeploymentSource[ApplicationConfigSpec](pluginName, request.GetInput().GetTargetDeploymentSource())
 	if err != nil {
 		return DetermineStrategyRequest[ApplicationConfigSpec]{}, fmt.Errorf("failed to parse target deployment source: %w", err)
 	}
