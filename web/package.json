@@ -41,7 +41,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "faker": "^5.3.1",
-    "fork-ts-checker-webpack-plugin": "^6.2.10",
+    "fork-ts-checker-webpack-plugin": "^9.1.0",
     "html-webpack-plugin": "^5.5.0",
     "jest": "^29.5.0",
     "jest-environment-jsdom": "^29.5.0",
