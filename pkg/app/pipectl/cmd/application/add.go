@@ -81,6 +81,21 @@ func (c *add) run(ctx context.Context, input cli.Input) error {
 	if !ok {
 		return fmt.Errorf("unsupported application kind %s", c.appKind)
 	}
+	listResp, err := cli.ListApplications(ctx, &apiservice.ListApplicationsRequest{})
+	if err != nil {
+		return fmt.Errorf("failed to list existing applications: %w", err)
+	}
+	for _, app := range listResp.Applications {
+		if app.Name == c.appName {
+			return fmt.Errorf("duplicate application name detected: '%s'", c.appName)
+		}
+		if app.GitPath != nil &&
+			app.GitPath.Repo != nil &&
+			app.GitPath.Repo.Id == c.repoID &&
+			app.GitPath.Path == c.appDir {
+			return fmt.Errorf("duplicate application path detected: repo='%s', path='%s'", c.repoID, c.appDir)
+		}
+	}
 
 	req := &apiservice.AddApplicationRequest{
 		Name:    c.appName,
