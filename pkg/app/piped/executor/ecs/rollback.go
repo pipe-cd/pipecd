@@ -17,7 +17,6 @@ package ecs
 import (
 	"context"
 	"errors"
-	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 
@@ -198,14 +197,14 @@ func rollbackELB(ctx context.Context, in *executor.Input, client provider.Client
 	modifiedRules, err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg); 
 	if err != nil {
 		in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
+		
+		if len(modifiedRules) > 0 {
+			logModifiedRules(in.LogPersister, modifiedRules)
+		}
 		return false
 	}
-
-	if len(modifiedRules) > 0 {
-		in.LogPersister.Infof("Successfully modified ELB listener rules: %s", strings.Join(modifiedRules, ", "))
-	} else {
-		in.LogPersister.Info("No ELB listener rules were modified")
-	}
+	
+	logModifiedRules(in.LogPersister, modifiedRules)
   
 	in.LogPersister.Infof("Successfully rolled back ELB listeners of target groups %s (PRIMARY) and %s (CANARY)", *primaryTargetGroup.TargetGroupArn, canaryTargetGroupArn)
 	return true

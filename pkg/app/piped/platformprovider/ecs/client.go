@@ -521,7 +521,7 @@ func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, rou
 					DefaultActions: modifiedActions,
 				})
 				if err != nil {
-					return nil, fmt.Errorf("failed to modify default rule %s: %w", *rule.RuleArn, err)
+					return modifiedRuleArns, fmt.Errorf("failed to modify default rule %s: %w", *rule.RuleArn, err)
 				} 
 				modifiedRuleArns = append(modifiedRuleArns, fmt.Sprintf("default rule of listener %s", listenerArn))
 			} else {
@@ -530,7 +530,7 @@ func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, rou
 					Actions: modifiedActions,
 				})
 				if err != nil {
-					return nil, fmt.Errorf("failed to modify rule %s: %w", *rule.RuleArn, err)
+					return modifiedRuleArns, fmt.Errorf("failed to modify rule %s: %w", *rule.RuleArn, err)
 				}
 				modifiedRuleArns = append(modifiedRuleArns, *rule.RuleArn)
 			}

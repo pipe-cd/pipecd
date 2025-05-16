@@ -471,14 +471,31 @@ func routing(ctx context.Context, in *executor.Input, platformProviderName strin
 	modifiedRules, err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg);
 	if err != nil {
 		in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
+		
+		if len(modifiedRules) > 0 {
+			logModifiedRules(in.LogPersister, modifiedRules)
+		}
 		return false
 	}
+
+	logModifiedRules(in.LogPersister, modifiedRules)
 	
-	if len(modifiedRules) > 0 {
-		in.LogPersister.Infof("Successfully modified ELB listener rules: %s", strings.Join(modifiedRules, ", "))
-	} else {
-		in.LogPersister.Info("No ELB listener rules were modified")
+	return true
+}
+
+// Logs information about modified ELB listener rules.
+func logModifiedRules(logPersister executor.LogPersister, modifiedRules []string) {
+	if len(modifiedRules) == 0 {
+		logPersister.Info("No ELB listener rules were modified")
+		return
 	}
 
-	return true
+	if len(modifiedRules) == 1 {
+		logPersister.Infof("Modified ELB listener rule: %s", modifiedRules[0])
+	} else {
+		logPersister.Infof("Modified %d ELB listener rules:", len(modifiedRules))
+		for _, rule := range modifiedRules {
+			logPersister.Infof("  - %s", rule)
+		}
+	}
 }
