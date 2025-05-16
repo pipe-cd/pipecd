@@ -206,7 +206,7 @@ func rollbackELB(ctx context.Context, in *executor.Input, client provider.Client
 	} else {
 		in.LogPersister.Info("No ELB listener rules were modified")
 	}
-
+  
 	in.LogPersister.Infof("Successfully rolled back ELB listeners of target groups %s (PRIMARY) and %s (CANARY)", *primaryTargetGroup.TargetGroupArn, canaryTargetGroupArn)
 	return true
 }

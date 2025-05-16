@@ -148,6 +148,10 @@ func (m Manifest) NestedMap(fields ...string) (map[string]any, bool, error) {
 	return unstructured.NestedMap(m.body.Object, fields...)
 }
 
+func (m Manifest) NestedString(fields ...string) (string, bool, error) {
+	return unstructured.NestedString(m.body.Object, fields...)
+}
+
 func (m Manifest) AddLabels(labels map[string]string) {
 	if len(labels) == 0 {
 		return
