@@ -16,6 +16,7 @@ package deployment
 
 import (
 	"fmt"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 
@@ -33,7 +34,33 @@ func ensureVariantSelectorInWorkload(m provider.Manifest, variantLabel, variant 
 }
 
 func checkVariantSelectorInWorkload(manifest provider.Manifest, variantLabel, variant string) error {
-	// TODO: implement
+	var (
+		matchLabelsFields = []string{"spec", "selector", "matchLabels"}
+		labelsFields      = []string{"spec", "template", "metadata", "labels"}
+	)
+
+	value, ok, err := manifest.NestedString(append(matchLabelsFields, variantLabel)...)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return fmt.Errorf("missing %s key in spec.selector.matchLabels", variantLabel)
+	}
+	if value != variant {
+		return fmt.Errorf("require %s but got %s for %s key in %s", variant, value, variantLabel, strings.Join(matchLabelsFields, "."))
+	}
+
+	value, ok, err = manifest.NestedString(append(labelsFields, variantLabel)...)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return fmt.Errorf("missing %s key in spec.template.metadata.labels", variantLabel)
+	}
+	if value != variant {
+		return fmt.Errorf("require %s but got %s for %s key in %s", variant, value, variantLabel, strings.Join(labelsFields, "."))
+	}
+
 	return nil
 }
 

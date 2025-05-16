@@ -32,8 +32,9 @@ func TestCheckVariantSelectorInWorkload(t *testing.T) {
 		primaryVariant = "primary"
 	)
 	testcases := []struct {
-		name     string
-		manifest string
+		name      string
+		manifest  string
+		expectErr bool
 	}{
 		{
 			name: "missing variant in selector",
@@ -51,6 +52,7 @@ spec:
       labels:
         app: simple
 `,
+			expectErr: true,
 		},
 		{
 			name: "missing variant in template labels",
@@ -69,6 +71,7 @@ spec:
       labels:
         app: simple
 `,
+			expectErr: true,
 		},
 		{
 			name: "wrong variant in selector",
@@ -87,6 +90,7 @@ spec:
       labels:
         app: simple
 `,
+			expectErr: true,
 		},
 		{
 			name: "wrong variant in temlate labels",
@@ -106,6 +110,7 @@ spec:
         app: simple
         pipecd.dev/variant: canary
 `,
+			expectErr: true,
 		},
 		{
 			name: "ok",
@@ -153,6 +158,13 @@ spec:
 			manifests, err := provider.ParseManifests(tc.manifest)
 			require.NoError(t, err)
 			require.Equal(t, 1, len(manifests))
+
+			err = checkVariantSelectorInWorkload(manifests[0], variantLabel, primaryVariant)
+			if tc.expectErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
 
 			err = ensureVariantSelectorInWorkload(manifests[0], variantLabel, primaryVariant)
 			assert.NoError(t, err)
