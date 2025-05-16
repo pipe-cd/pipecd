@@ -55,3 +55,59 @@ For the full list of available commands, please see the Makefile at the root of 
 
 ## How to run Piped locally and add an application to your cluster
 See [How to run Piped agent locally](https://github.com/pipe-cd/pipecd/tree/master/cmd/piped#how-to-run-piped-agent-locally).
+
+
+##### Testing OIDC with Keycloak
+
+PipeCD provides a built-in tool to quickly set up a local Keycloak server for testing OIDC integration:
+
+```bash
+make setup-oidc
+```
+
+This command:
+1. Launches a Keycloak container with Docker
+2. Creates a pre-configured realm, client, and test users with appropriate roles
+3. Sets up protocol mappers to expose groups and username claims
+4. Outputs the configuration you need to set up PipeCD
+
+**Test Users**
+
+The setup creates three test users with different roles:
+
+| Username | Password | Role |
+|----------|----------|------|
+| admin-user | password | admin |
+| editor-user | password | editor |
+| viewer-user | password | viewer |
+
+**Control Plane Configuration**
+
+After running the setup, you'll receive a configuration similar to:
+
+```yaml
+apiVersion: "pipecd.dev/v1beta1"
+kind: ControlPlane
+spec:
+  stateKey: "random-string-for-oauth-security" # Required: Use any value
+  sharedSSOConfigs:
+    - name: oidc
+      provider: OIDC
+      oidc:
+        clientId: "pipecd-client"
+        clientSecret: "pipecd-client-secret"
+        issuer: "http://localhost:8080/realms/pipecd-test"
+        redirectUri: "http://localhost:8080/auth/callback"
+        scopes:
+          - openid
+          - profile
+```
+
+Start or restart your Control Plane with the above config.
+
+**Managing the Keycloak Instance**
+
+- Access the admin console at: http://localhost:8080/admin (admin/admin)
+- Stop the container: `docker stop pipecd-keycloak`
+- Remove the container: `docker rm pipecd-keycloak`
+

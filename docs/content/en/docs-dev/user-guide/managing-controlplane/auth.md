@@ -80,7 +80,7 @@ Provider Configuration Examples:
             - openid
             - profile
   ```
-
+  
 ##### Okta
 
 - **Allowed Callback URLs**: `https://YOUR_PIPECD_ADDRESS/auth/callback`
