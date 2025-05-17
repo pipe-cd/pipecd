@@ -218,7 +218,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 					continue
 				}
 
-				if err := loginToOCIRegistry(ctx, helm, r.Address, r.Username, r.Password); err != nil {
+				if err := loginToOCIRegistry(ctx, helm, &r); err != nil {
 					input.Logger.Error(fmt.Sprintf("failed to login to %s Helm chart registry", r.Address), zap.Error(err))
 					return err
 				}
@@ -1000,15 +1000,52 @@ func registerMetrics(pipedID, projectID, launcherVersion string) *prometheus.Reg
 	return r
 }
 
-func loginToOCIRegistry(ctx context.Context, execPath, address, username, password string) error {
-	args := []string{
-		"registry",
-		"login",
-		"-u",
-		username,
-		"-p",
-		password,
-		address,
+func loginToOCIRegistry(ctx context.Context, execPath string, registry *config.HelmChartRegistry) error {
+	var args []string
+
+	switch registry.AuthType {
+	case config.BasicAuthHelmChartRegistryAuth:
+		args = []string{
+			"registry",
+			"login",
+			"-u",
+			registry.Username,
+			"--password-stdin",
+			registry.Address,
+		}
+		cmd := exec.CommandContext(ctx, execPath, args...)
+		cmd.Stdin = strings.NewReader(registry.Password)
+
+	case config.TokenAuthHelmChartRegistryAuth:
+		args = []string{
+			"registry",
+			"login",
+			"--password-stdin",
+			registry.Address,
+		}
+		cmd := exec.CommandContext(ctx, execPath, args...)
+		cmd.Stdin = strings.NewReader(registry.Token)
+
+	case config.CertAuthHelmChartRegistryAuth:
+		args = []string{
+			"registry",
+			"login",
+			"--cert-file",
+			registry.CertFile,
+			"--key-file",
+			registry.KeyFile,
+		}
+		if registry.CAFile != "" {
+			args = append(args, "--ca-file", registry.CAFile)
+		}
+		args = append(args, registry.Address)
+
+	default:
+		return fmt.Errorf("unsupported authentication type: %s", registry.AuthType)
+	}
+
+	if registry.Insecure {
+		args = append(args, "--insecure")
 	}
 
 	var stderr bytes.Buffer
