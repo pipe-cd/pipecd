@@ -226,7 +226,6 @@ func (a *API) AddApplication(ctx context.Context, req *apiservice.AddApplication
 	}, nil
 }
 
-
 func (a *API) SyncApplication(ctx context.Context, req *apiservice.SyncApplicationRequest) (*apiservice.SyncApplicationResponse, error) {
 	key, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
 	if err != nil {
