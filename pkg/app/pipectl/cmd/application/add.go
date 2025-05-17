@@ -81,7 +81,6 @@ func (c *add) run(ctx context.Context, input cli.Input) error {
 	if !ok {
 		return fmt.Errorf("unsupported application kind %s", c.appKind)
 	}
-	
 	req := &apiservice.AddApplicationRequest{
 		Name:    c.appName,
 		PipedId: c.pipedID,
