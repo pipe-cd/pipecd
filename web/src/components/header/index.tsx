@@ -2,6 +2,7 @@ import {
   AppBar,
   Avatar,
   Button,
+  Divider,
   IconButton,
   Link,
   Menu,
@@ -41,6 +42,7 @@ const useStyles = makeStyles((theme) => ({
   },
   logo: {
     height: APP_HEADER_HEIGHT,
+    marginRight: theme.spacing(1),
   },
   left: {
     flexGrow: 1,
@@ -58,7 +60,12 @@ const useStyles = makeStyles((theme) => ({
   },
   projectName: {
     marginLeft: theme.spacing(1),
+    color: "#fff",
     textTransform: "none",
+    fontWeight: "normal",
+    "&:hover": {
+      backgroundColor: "#2a3a87",
+    },
   },
   right: {
     height: "100%",
@@ -94,6 +101,16 @@ const useStyles = makeStyles((theme) => ({
   menuItem: {
     color: "#283778",
     textDecorationLine: "none",
+    "&.Mui-selected, &:hover": {
+      backgroundColor: theme.palette.action.hover,
+    },
+  },
+  addButton: {
+    color: "#fff",
+    textTransform: "none",
+    "&:hover": {
+      backgroundColor: "#2a3a87",
+    },
   },
 }));
 
@@ -246,6 +263,11 @@ export const Header: FC = memo(function Header() {
       <Menu
         id="project-selection"
         anchorEl={projectAnchorEl}
+        getContentAnchorEl={null}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "center",
+        }}
         open={Boolean(projectAnchorEl) && selectableProjects.length !== 0}
         onClose={(): void => {
           setProjectAnchorEl(null);
@@ -256,6 +278,15 @@ export const Header: FC = memo(function Header() {
             {p}
           </MenuItem>
         ))}
+        {selectableProjects.length > 0 && <Divider />}
+        <MenuItem
+          onClick={() => {
+            window.location.href = PAGE_PATH_LOGIN;
+          }}
+        >
+          <OpenInNew style={{ marginRight: 8, fontSize: "1rem" }} />
+          Login to other project
+        </MenuItem>
       </Menu>
 
       <Menu
@@ -265,7 +296,7 @@ export const Header: FC = memo(function Header() {
         getContentAnchorEl={null}
         anchorOrigin={{
           vertical: "bottom",
-          horizontal: "right",
+          horizontal: "center",
         }}
         onClose={(): void => {
           setUserAnchorEl(null);
