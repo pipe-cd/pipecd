@@ -515,8 +515,8 @@ type HelmChartRegistry struct {
 	// The address to the Helm chart registry.
 	Address string `json:"address"`
 
-	// The authentication type to use. Default is BASIC.
-	AuthType HelmChartRegistryAuthType `json:"authType" default:"BASIC"`
+	// The authentication type to use.
+	AuthType HelmChartRegistryAuthType `json:"authType"`
 
 	// Whether to allow connections to TLS registry without certs.
 	Insecure bool `json:"insecure"`
@@ -569,11 +569,13 @@ func (r *HelmChartRegistry) Validate() error {
 	return nil
 }
 
-func (r *HelmChartRegistry) Mask() *HelmChartRegistry {
-	masked := *r
-	masked.Password = "*****"
-	masked.Token = "*****"
-	return &masked
+func (r *HelmChartRegistry) Mask() {
+	if len(r.Password) != 0 {
+		r.Password = maskString
+	}
+	if len(r.Token) != 0 {
+		r.Token = maskString
+	}
 }
 
 type PipedPlatformProvider struct {

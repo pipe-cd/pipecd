@@ -81,6 +81,7 @@ func TestPipedConfig(t *testing.T) {
 					{
 						Type:     OCIHelmChartRegistry,
 						Address:  "registry.example.com",
+						AuthType: BasicAuthHelmChartRegistryAuth,
 						Username: "sample-username",
 						Password: "sample-password",
 					},
@@ -634,6 +635,7 @@ func TestPipedConfigMask(t *testing.T) {
 					{
 						Type:     "foo",
 						Address:  "foo",
+						AuthType: BasicAuthHelmChartRegistryAuth,
 						Username: "foo",
 						Password: "foo",
 					},
@@ -798,6 +800,7 @@ func TestPipedConfigMask(t *testing.T) {
 					{
 						Type:     "foo",
 						Address:  "foo",
+						AuthType: BasicAuthHelmChartRegistryAuth,
 						Username: "foo",
 						Password: maskString,
 					},
@@ -985,6 +988,7 @@ func TestPipedSpecClone(t *testing.T) {
 					{
 						Type:     OCIHelmChartRegistry,
 						Address:  "registry.example.com",
+						AuthType: BasicAuthHelmChartRegistryAuth,
 						Username: "sample-username",
 						Password: "sample-password",
 					},
@@ -1183,6 +1187,7 @@ func TestPipedSpecClone(t *testing.T) {
 					{
 						Type:     OCIHelmChartRegistry,
 						Address:  "registry.example.com",
+						AuthType: BasicAuthHelmChartRegistryAuth,
 						Username: "sample-username",
 						Password: "sample-password",
 					},

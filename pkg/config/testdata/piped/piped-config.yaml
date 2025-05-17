@@ -33,6 +33,7 @@ spec:
   chartRegistries:
     - type: OCI
       address: registry.example.com
+      authType: BASIC
       username: sample-username
       password: sample-password
 
