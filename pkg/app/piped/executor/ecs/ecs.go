@@ -468,10 +468,10 @@ func routing(ctx context.Context, in *executor.Input, platformProviderName strin
 		return false
 	}
 
-	modifiedRules, err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg);
+	modifiedRules, err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
-		
+
 		if len(modifiedRules) > 0 {
 			logModifiedRules(in.LogPersister, modifiedRules)
 		}
@@ -479,7 +479,7 @@ func routing(ctx context.Context, in *executor.Input, platformProviderName strin
 	}
 
 	logModifiedRules(in.LogPersister, modifiedRules)
-	
+
 	return true
 }
 

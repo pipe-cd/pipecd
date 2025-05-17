@@ -522,7 +522,7 @@ func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, rou
 				})
 				if err != nil {
 					return modifiedRuleArns, fmt.Errorf("failed to modify default rule %s: %w", *rule.RuleArn, err)
-				} 
+				}
 				modifiedRuleArns = append(modifiedRuleArns, fmt.Sprintf("default rule of listener %s", listenerArn))
 			} else {
 				_, err := c.elbClient.ModifyRule(ctx, &elasticloadbalancingv2.ModifyRuleInput{

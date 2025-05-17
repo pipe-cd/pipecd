@@ -194,18 +194,18 @@ func rollbackELB(ctx context.Context, in *executor.Input, client provider.Client
 		return false
 	}
 
-	modifiedRules, err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg); 
+	modifiedRules, err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
-		
+
 		if len(modifiedRules) > 0 {
 			logModifiedRules(in.LogPersister, modifiedRules)
 		}
 		return false
 	}
-	
+
 	logModifiedRules(in.LogPersister, modifiedRules)
-  
+
 	in.LogPersister.Infof("Successfully rolled back ELB listeners of target groups %s (PRIMARY) and %s (CANARY)", *primaryTargetGroup.TargetGroupArn, canaryTargetGroupArn)
 	return true
 }
