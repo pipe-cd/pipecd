@@ -178,7 +178,6 @@ func (a *API) AddApplication(ctx context.Context, req *apiservice.AddApplication
 		return nil, err
 	}
 
-	
 	if req.GitPath != nil {
 		gitpathApps, _, err := a.applicationStore.List(ctx, datastore.ListOptions{
 			Filters: []datastore.ListFilter{
