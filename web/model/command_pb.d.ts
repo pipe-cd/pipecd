@@ -78,6 +78,11 @@ export class Command extends jspb.Message {
   hasRestartPiped(): boolean;
   clearRestartPiped(): Command;
 
+  getCancelPlanPreview(): Command.CancelPlanPreview | undefined;
+  setCancelPlanPreview(value?: Command.CancelPlanPreview): Command;
+  hasCancelPlanPreview(): boolean;
+  clearCancelPlanPreview(): Command;
+
   getCreatedAt(): number;
   setCreatedAt(value: number): Command;
 
@@ -113,6 +118,7 @@ export namespace Command {
     chainSyncApplication?: Command.ChainSyncApplication.AsObject,
     skipStage?: Command.SkipStage.AsObject,
     restartPiped?: Command.RestartPiped.AsObject,
+    cancelPlanPreview?: Command.CancelPlanPreview.AsObject,
     createdAt: number,
     updatedAt: number,
   }
@@ -252,6 +258,37 @@ export namespace Command {
   }
 
 
+  export class CancelPlanPreview extends jspb.Message {
+    getRepositoryId(): string;
+    setRepositoryId(value: string): CancelPlanPreview;
+
+    getHeadBranch(): string;
+    setHeadBranch(value: string): CancelPlanPreview;
+
+    getHeadCommit(): string;
+    setHeadCommit(value: string): CancelPlanPreview;
+
+    getBaseBranch(): string;
+    setBaseBranch(value: string): CancelPlanPreview;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): CancelPlanPreview.AsObject;
+    static toObject(includeInstance: boolean, msg: CancelPlanPreview): CancelPlanPreview.AsObject;
+    static serializeBinaryToWriter(message: CancelPlanPreview, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): CancelPlanPreview;
+    static deserializeBinaryFromReader(message: CancelPlanPreview, reader: jspb.BinaryReader): CancelPlanPreview;
+  }
+
+  export namespace CancelPlanPreview {
+    export type AsObject = {
+      repositoryId: string,
+      headBranch: string,
+      headCommit: string,
+      baseBranch: string,
+    }
+  }
+
+
   export class ChainSyncApplication extends jspb.Message {
     getDeploymentChainId(): string;
     setDeploymentChainId(value: string): ChainSyncApplication;
@@ -334,6 +371,7 @@ export namespace Command {
     CHAIN_SYNC_APPLICATION = 5,
     SKIP_STAGE = 6,
     RESTART_PIPED = 7,
+    CANCEL_PLAN_PREVIEW = 8,
   }
 }
 
