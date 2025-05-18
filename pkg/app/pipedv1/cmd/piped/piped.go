@@ -922,16 +922,3 @@ func stopCommandHandler(ctx context.Context, cmdLister commandstore.Lister, logg
 
 	return true, nil
 }
-
-func (p *piped) hasTooManyConfigFlags() error {
-	cnt := 0
-	for _, v := range []string{p.configFile, p.configGCPSecret, p.configAWSSecret} {
-		if v != "" {
-			cnt++
-		}
-	}
-	if cnt > 1 {
-		return fmt.Errorf("only one of config-file, config-gcp-secret or config-aws-secret could be set")
-	}
-	return nil
-}
