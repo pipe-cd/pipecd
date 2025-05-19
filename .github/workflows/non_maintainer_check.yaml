@@ -23,8 +23,9 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
+        TEMP_DIR: ${{ runner.temp }}
       run: |
-        cat <<EOF > ${{ runner.temp }}/greeting.md
+        cat <<EOF > "${TEMP_DIR}/greeting.md"
         Thank you for your contribution! We look forward to seeing more from you.
         Please run the `make check` command to ensure your changes are correct.
         After successfully running the command on your local machine, the instructions will be printed out.
@@ -33,7 +34,7 @@ jobs:
         Then, please run the `make check` command again to ensure the issues are fixed.
         EOF
 
-        gh pr comment "${PR_NUMBER}" --body-file ${{ runner.temp }}/greeting.md
+        gh pr comment "${PR_NUMBER}" --body-file "${TEMP_DIR}/greeting.md"
 
   check:
     if: github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '/check-commit')
