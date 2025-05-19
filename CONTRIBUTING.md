@@ -168,12 +168,15 @@ We are preparing Gitpod and Codespace to facilitate the setup process for contri
 
 So you've decided to contribute code back to the upstream by opening a pull request. You've put in a significant amount of time, and we appreciate your effort. We will do our best to work with you and review the pull request.
 
+Before working on an issue, please comment on the issue and wait for the assignment to reduce redundant work.
+
 Are you working on your first Pull Request? You can learn how to do it from this free video series:
 
 [**How to Contribute to an Open Source Project on GitHub**](https://egghead.io/courses/how-to-contribute-to-an-open-source-project-on-github)
 
 When submitting a pull request, please ensure the following:
 
+- **Issue assignment.** To avoid redundant work, make sure you are assigned to the issue.
 - **Keep your PR small.** Small pull requests (~300 lines of diff) are much easier to review and are more likely to get merged. Make sure the PR addresses only one thing. If not, please split it.
 - **Use descriptive titles.** It is recommended to follow the [commit message style](#commit-messages).
 - **DCO.** If you haven't signed off already, check the [Contributor License Agreement](#contributor-license-agreement).
