@@ -3,6 +3,7 @@ name: check for non-maintainers
 on:
   pull_request_target:
     branches: [ master ]
+    types: [ opened ]
   issue_comment:
     types: [ created ]
 
@@ -13,7 +14,6 @@ jobs:
       pull-requests: write
     if: >-
       (github.event_name == 'pull_request_target') &&
-      (github.event.action == 'opened') &&
       (github.event.pull_request.author_association != 'COLLABORATOR') &&
       (github.event.pull_request.author_association != 'MANNEQUIN') &&
       (github.event.pull_request.author_association != 'MEMBER') &&
