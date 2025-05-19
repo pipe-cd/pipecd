@@ -648,3 +648,33 @@ func (c *client) GetTaskSetTasks(ctx context.Context, taskSet types.TaskSet) ([]
 
 	return tasks, nil
 }
+
+func (c *client) ListTags(ctx context.Context, resourceArn string) ([]types.Tag, error) {
+	input := &ecs.ListTagsForResourceInput{
+		ResourceArn: aws.String(resourceArn),
+	}
+
+	output, err := c.ecsClient.ListTagsForResource(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	tags := make([]types.Tag, 0, len(output.Tags))
+	for _, t := range output.Tags {
+		tags = append(tags, types.Tag{
+			Key:   t.Key,
+			Value: t.Value,
+		})
+	}
+	return tags, nil
+}
+
+func (c *client) UntagResource(ctx context.Context, resourceArn string, tagKeys []string) error {
+	input := &ecs.UntagResourceInput{
+		ResourceArn: aws.String(resourceArn),
+		TagKeys:     tagKeys,
+	}
+
+	_, err := c.ecsClient.UntagResource(ctx, input)
+	return err
+}
