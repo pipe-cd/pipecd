@@ -274,10 +274,14 @@ setup-envtest: ## Download setup-envtest locally if necessary.
 
 # Check commands
 .PHONY: check
-check: build lint test check/gen/code
+check: build lint test check/gen/code check/dco
 	./hack/ensure-check.sh
 
 .PHONY: check/gen/code
 check/gen: gen/code
 	git add -N .
 	git diff --exit-code --quiet HEAD
+
+.PHONY: check/dco
+check/dco:
+	./hack/ensure-dco.sh
