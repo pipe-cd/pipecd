@@ -48,6 +48,7 @@ jobs:
           COMMENT_BODY: ${{ github.event.comment.body }}
           REPO_NAME: ${{ github.event.repository.full_name }}
           PR_NUMBER: ${{ github.event.issue.number }}
+          TEMP_DIR: ${{ runner.temp }}
         run: |
           COMMENT_HASH=$(echo "${COMMENT_BODY}" | cut -d' ' -f2)
           if [ -z "${COMMENT_HASH}" ]; then
@@ -56,6 +57,7 @@ jobs:
           fi
 
           PR="$(gh api "/repos/${REPO_NAME}/pulls/${PR_NUMBER}")"
+          AUTHOR="$(echo "$PR" | jq -r '.user.login')"
           HEAD_SHA="$(echo "$PR" | jq -r '.head.sha')"
           HEAD_REF="$(echo "$PR" | jq -r '.head.ref')"
 
@@ -68,4 +70,10 @@ jobs:
 
           echo "Valid hash"
 
-          gh pr comment "${PR_NUMBER}" --body "The check has passed. Thank you for your contribution!"
+          cat <<EOF > "${TEMP_DIR}/comment.md"
+          @${AUTHOR}
+          The check has passed.
+          Thank you for your contribution!
+          EOF
+
+          gh pr comment "${PR_NUMBER}" --body-file "${TEMP_DIR}/comment.md"
