@@ -89,4 +89,4 @@ jobs:
           Thank you for your contribution!
           EOF
 
-          gh pr comment "${PR_NUMBER}" --body-file "${TEMP_DIR}/comment.md"
+          gh --repo "${REPO_NAME}" pr comment "${PR_NUMBER}" --body-file "${TEMP_DIR}/comment.md"
