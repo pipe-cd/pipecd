@@ -1,6 +1,4 @@
-import { Box, Card, CardContent, Typography } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
-import clsx from "clsx";
+import { Box, CardContent, Typography } from "@mui/material";
 import { FC, useEffect, useMemo } from "react";
 import {
   GridComponent,
@@ -18,21 +16,9 @@ import ChartEmptyData from "~/components/chart-empty-data";
 import useEChartState from "~/hooks/useEChartState";
 
 import { grey, purple as lineColor } from "@mui/material/colors";
-
-const useStyles = makeStyles(() => ({
-  root: {
-    minWidth: 300,
-    display: "inline-block",
-    overflow: "visible",
-    position: "relative",
-  },
-  pageTitle: {
-    fontWeight: "bold",
-  },
-}));
+import { CardWrapper } from "./styles";
 
 const ApplicationByPiped: FC = () => {
-  const classes = useStyles();
   const { chart, chartElm } = useEChartState({
     extensions: [
       TitleComponent,
@@ -142,12 +128,12 @@ const ApplicationByPiped: FC = () => {
   }, [chart, data, isNoData, yMax]);
 
   return (
-    <Card raised className={clsx(classes.root)}>
+    <CardWrapper raised>
       <CardContent>
         <Typography
           color="textSecondary"
           gutterBottom
-          className={classes.pageTitle}
+          sx={{ fontWeight: "bold" }}
         >
           Application by piped
         </Typography>
@@ -157,7 +143,7 @@ const ApplicationByPiped: FC = () => {
           <ChartEmptyData visible={!data.length} />
         </Box>
       </CardContent>
-    </Card>
+    </CardWrapper>
   );
 };
 

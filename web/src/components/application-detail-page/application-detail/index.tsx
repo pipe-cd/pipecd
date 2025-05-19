@@ -7,11 +7,9 @@ import {
   Chip,
   Skeleton,
 } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
 import SyncIcon from "@mui/icons-material/Cached";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { SerializedError } from "@reduxjs/toolkit";
-import clsx from "clsx";
 import dayjs from "dayjs";
 import { FC, Fragment, memo, useMemo, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
@@ -38,51 +36,6 @@ import { OutOfSyncReason, InvalidConfigReason } from "./sync-state-reason";
 import { ArtifactVersion } from "~~/model/common_pb";
 import { CopyIconButton } from "~/components/copy-icon-button";
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    padding: theme.spacing(2),
-    display: "flex",
-    zIndex: theme.zIndex.appBar,
-    position: "relative",
-    flexDirection: "column",
-  },
-  disabled: {
-    opacity: 0.6,
-  },
-  content: {
-    flex: 1,
-  },
-  appSyncState: {
-    marginRight: theme.spacing(1),
-  },
-  buttonProgress: {
-    color: theme.palette.primary.main,
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    marginTop: -12,
-    marginLeft: -12,
-  },
-  linkIcon: {
-    fontSize: 16,
-    verticalAlign: "text-bottom",
-    marginLeft: theme.spacing(0.5),
-  },
-  latestDeploymentTable: {
-    paddingLeft: theme.spacing(2),
-  },
-  latestDeploymentLink: {
-    marginLeft: theme.spacing(1),
-  },
-  labelChip: {
-    marginLeft: theme.spacing(1),
-  },
-  markdown: { flex: 1 },
-  clickable: {
-    cursor: "pointer",
-  },
-}));
-
 export interface ApplicationDetailProps {
   applicationId: string;
 }
@@ -104,7 +57,6 @@ const ERROR_MESSAGE = "It was unable to fetch the application.";
 const ArtifactVersions: FC<{
   deployment: ApplicationDeploymentReference.AsObject;
 }> = ({ deployment }) => {
-  const classes = useStyles();
   const defaultDisplayLimit = 4;
 
   const [showMore, setShowMore] = useState(false);
@@ -129,7 +81,13 @@ const ArtifactVersions: FC<{
           rel="noreferrer"
         >
           {v.name}:{v.version}
-          <OpenInNewIcon className={classes.linkIcon} />
+          <OpenInNewIcon
+            sx={{
+              fontSize: 16,
+              verticalAlign: "text-bottom",
+              marginLeft: 0.5,
+            }}
+          />
         </Link>
         <br />
       </>
@@ -158,12 +116,13 @@ const ArtifactVersions: FC<{
           </Fragment>
         );
       })}
-      <span
-        className={classes.clickable}
+      <Box
+        component={"span"}
+        sx={{ cursor: "pointer" }}
         onClick={() => setShowMore(!showMore)}
       >
         show more...
-      </span>
+      </Box>
     </>
   ) : (
     <>
@@ -172,12 +131,13 @@ const ArtifactVersions: FC<{
           {buildLinkableArtifactVersion(v)}
         </Fragment>
       ))}
-      <span
-        className={classes.clickable}
+      <Box
+        component={"span"}
+        sx={{ cursor: "pointer" }}
         onClick={() => setShowMore(!showMore)}
       >
         show less...
-      </span>
+      </Box>
     </>
   );
 };
@@ -185,8 +145,6 @@ const ArtifactVersions: FC<{
 const MostRecentlySuccessfulDeployment: FC<{
   deployment?: ApplicationDeploymentReference.AsObject;
 }> = ({ deployment }) => {
-  const classes = useStyles();
-
   if (!deployment) {
     return <Skeleton height={105} width={500} />;
   }
@@ -197,7 +155,7 @@ const MostRecentlySuccessfulDeployment: FC<{
     <>
       <Box display="flex" alignItems="baseline">
         <Typography variant="subtitle1">Latest Deployment</Typography>
-        <Typography variant="body2" className={classes.latestDeploymentLink}>
+        <Typography variant="body2" ml={1}>
           <Link
             component={RouterLink}
             to={`${PAGE_PATH_DEPLOYMENTS}/${deployment.deploymentId}`}
@@ -206,19 +164,21 @@ const MostRecentlySuccessfulDeployment: FC<{
           </Link>
         </Typography>
       </Box>
-      <table className={classes.latestDeploymentTable}>
-        <tbody>
-          <DetailTableRow
-            label="Deployed At"
-            value={<span title={date.format()}>{date.fromNow()}</span>}
-          />
-          <DetailTableRow
-            label="Artifact Versions"
-            value={<ArtifactVersions deployment={deployment} />}
-          />
-          <DetailTableRow label="Summary" value={deployment.summary} />
-        </tbody>
-      </table>
+      <Box pl={2}>
+        <table>
+          <tbody>
+            <DetailTableRow
+              label="Deployed At"
+              value={<span title={date.format()}>{date.fromNow()}</span>}
+            />
+            <DetailTableRow
+              label="Artifact Versions"
+              value={<ArtifactVersions deployment={deployment} />}
+            />
+            <DetailTableRow label="Summary" value={deployment.summary} />
+          </tbody>
+        </table>
+      </Box>
     </>
   );
 };
@@ -237,7 +197,6 @@ enum PIPED_VERSION {
 
 export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
   function ApplicationDetail({ applicationId }) {
-    const classes = useStyles();
     const dispatch = useAppDispatch();
 
     const [app, fetchApplicationError] = useAppSelector<
@@ -273,7 +232,17 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
 
     if (fetchApplicationError) {
       return (
-        <Paper square elevation={1} className={classes.root}>
+        <Paper
+          square
+          elevation={1}
+          sx={{
+            padding: 2,
+            display: "flex",
+            zIndex: "appBar",
+            position: "relative",
+            flexDirection: "column",
+          }}
+        >
           <Box
             height={200}
             display="flex"
@@ -299,9 +268,14 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
       <Paper
         square
         elevation={1}
-        className={clsx(classes.root, {
-          [classes.disabled]: app?.disabled,
-        })}
+        sx={{
+          padding: 2,
+          display: "flex",
+          zIndex: "appBar",
+          position: "relative",
+          flexDirection: "column",
+          opacity: app?.disabled ? 0.6 : 1,
+        }}
       >
         <Box flex={1}>
           <Box display="flex" alignItems="baseline">
@@ -311,8 +285,8 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
             {app?.labelsMap.map(([key, value], i) => (
               <Chip
                 label={key + ": " + value}
-                className={classes.labelChip}
                 variant="outlined"
+                sx={{ ml: 1 }}
                 key={i}
               />
             ))}
@@ -320,12 +294,11 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
 
           {app ? (
             <>
-              <Box display="flex" alignItems="center">
+              <Box display="flex" alignItems="center" gap={1}>
                 <AppSyncStatus
                   syncState={app.syncState}
                   deploying={app.deploying}
                   size="large"
-                  className={classes.appSyncState}
                 />
                 <AppLiveState applicationId={applicationId} />
               </Box>
@@ -353,7 +326,7 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
         </Box>
 
         <Box mt={1} display="flex">
-          <div className={classes.content}>
+          <Box flex={1}>
             {app && piped ? (
               <table>
                 <tbody>
@@ -406,7 +379,13 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
                           rel="noreferrer"
                         >
                           {app.gitPath.path}
-                          <OpenInNewIcon className={classes.linkIcon} />
+                          <OpenInNewIcon
+                            sx={{
+                              fontSize: 16,
+                              verticalAlign: "text-bottom",
+                              marginLeft: 0.5,
+                            }}
+                          />
                         </Link>
                       }
                     />
@@ -416,13 +395,13 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
             ) : (
               <Skeleton height={105} width={500} />
             )}
-          </div>
+          </Box>
 
-          <div className={classes.content}>
+          <Box flex={1}>
             <MostRecentlySuccessfulDeployment
               deployment={app?.mostRecentlySuccessfulDeployment}
             />
-          </div>
+          </Box>
         </Box>
 
         {app && (
@@ -430,11 +409,9 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
             borderLeft="2px solid"
             borderColor="divider"
             pl={2}
-            display="flex"
+            fontSize={"body2.fontSize"}
           >
-            <ReactMarkdown linkTarget="_blank" className={classes.markdown}>
-              {description}
-            </ReactMarkdown>
+            <ReactMarkdown linkTarget="_blank">{description}</ReactMarkdown>
           </Box>
         )}
 

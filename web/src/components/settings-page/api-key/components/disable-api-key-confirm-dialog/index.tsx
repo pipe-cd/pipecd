@@ -6,21 +6,10 @@ import {
   DialogTitle,
   Typography,
 } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
 import Alert from "@mui/material/Alert";
 import { FC, memo } from "react";
 import { useAppSelector } from "~/hooks/redux";
 import { APIKey, selectById } from "~/modules/api-keys";
-
-const useStyles = makeStyles((theme) => ({
-  disableTargetName: {
-    color: theme.palette.text.primary,
-    fontWeight: theme.typography.fontWeightMedium,
-  },
-  description: {
-    marginBottom: theme.spacing(2),
-  },
-}));
 
 export interface DisableAPIKeyConfirmDialogProps {
   apiKeyId: string | null;
@@ -33,7 +22,6 @@ const DESCRIPTION = "Are you sure you want to disable the API key?";
 
 export const DisableAPIKeyConfirmDialog: FC<DisableAPIKeyConfirmDialogProps> = memo(
   function DisableAPIKeyConfirmDialog({ apiKeyId, onDisable, onCancel }) {
-    const classes = useStyles();
     const apiKey = useAppSelector<APIKey.AsObject | undefined>((state) =>
       apiKeyId ? selectById(state.apiKeys, apiKeyId) : undefined
     );
@@ -43,11 +31,17 @@ export const DisableAPIKeyConfirmDialog: FC<DisableAPIKeyConfirmDialogProps> = m
       <Dialog open={open} onClose={onCancel}>
         <DialogTitle>{DIALOG_TITLE}</DialogTitle>
         <DialogContent>
-          <Alert severity="warning" className={classes.description}>
+          <Alert severity="warning" sx={{ marginBottom: 2 }}>
             {DESCRIPTION}
           </Alert>
           <Typography variant="caption">NAME</Typography>
-          <Typography variant="body1" className={classes.disableTargetName}>
+          <Typography
+            variant="body1"
+            sx={(theme) => ({
+              color: theme.palette.text.primary,
+              fontWeight: theme.typography.fontWeightMedium,
+            })}
+          >
             {apiKey?.name}
           </Typography>
         </DialogContent>

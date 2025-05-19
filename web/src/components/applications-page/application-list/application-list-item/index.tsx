@@ -7,10 +7,8 @@ import {
   TableCell,
   TableRow,
 } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
 import MenuIcon from "@mui/icons-material/MoreVert";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import clsx from "clsx";
 import dayjs from "dayjs";
 import { FC, memo, useState, Fragment } from "react";
 import { Link as RouterLink } from "react-router-dom";
@@ -20,47 +18,6 @@ import { UI_TEXT_NOT_AVAILABLE_TEXT } from "~/constants/ui-text";
 import { useAppSelector } from "~/hooks/redux";
 import { Application, selectById } from "~/modules/applications";
 import { AppSyncStatus } from "~/components/app-sync-status";
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    padding: theme.spacing(2),
-    flex: 1,
-    overflow: "auto",
-  },
-  disabled: {
-    background: theme.palette.grey[200],
-  },
-  labels: {
-    maxHeight: 200,
-    overflowY: "scroll",
-    "&::-webkit-scrollbar": {
-      display: "none",
-    },
-  },
-  version: {
-    maxWidth: 300,
-    maxHeight: 200,
-    wordBreak: "break-word",
-    overflowY: "scroll",
-    "&::-webkit-scrollbar": {
-      display: "none",
-    },
-  },
-  deployedBy: {
-    maxWidth: 150,
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-  },
-  linkIcon: {
-    fontSize: 16,
-    verticalAlign: "text-bottom",
-    marginLeft: theme.spacing(0.5),
-  },
-  warning: {
-    color: "red",
-  },
-}));
 
 enum PipedVersion {
   V0 = "v0",
@@ -104,7 +61,6 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
     onDelete,
     onEncryptSecret,
   }) {
-    const classes = useStyles();
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
     const app = useAppSelector<Application.AsObject | undefined>((state) =>
       selectById(state.applications, applicationId)
@@ -148,7 +104,11 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
 
     return (
       <>
-        <TableRow className={clsx({ [classes.disabled]: app.disabled })}>
+        <TableRow
+          sx={(theme) => ({
+            backgroundColor: app.disabled ? theme.palette.grey[200] : "inherit",
+          })}
+        >
           <TableCell>
             <Box display="flex" alignItems="center">
               <AppSyncStatus
@@ -171,7 +131,15 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
             {pipedVersion === PipedVersion.V1 && "APPLICATION"}
           </TableCell>
           <TableCell>
-            <div className={classes.labels}>
+            <Box
+              sx={{
+                maxHeight: 200,
+                overflowY: "scroll",
+                "&::-webkit-scrollbar": {
+                  display: "none",
+                },
+              }}
+            >
               {app.labelsMap.length !== 0
                 ? app.labelsMap.map(([key, value]) => (
                     <Fragment key={key}>
@@ -180,12 +148,22 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
                     </Fragment>
                   ))
                 : "-"}
-            </div>
+            </Box>
           </TableCell>
           {recentlyDeployment ? (
             <>
               <TableCell>
-                <div className={classes.version}>
+                <Box
+                  sx={{
+                    maxWidth: 300,
+                    maxHeight: 200,
+                    wordBreak: "break-word",
+                    overflowY: "scroll",
+                    "&::-webkit-scrollbar": {
+                      display: "none",
+                    },
+                  }}
+                >
                   {recentlyDeployment.versionsList.length !== 0 ? (
                     recentlyDeployment.versionsList.map((v) =>
                       v.name === "" ? (
@@ -205,7 +183,13 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
                             {v.version.length > 7
                               ? `${v.version.slice(0, 7)}...`
                               : v.version}
-                            <OpenInNewIcon className={classes.linkIcon} />
+                            <OpenInNewIcon
+                              sx={{
+                                fontSize: 16,
+                                verticalAlign: "text-bottom",
+                                marginLeft: 0.5,
+                              }}
+                            />
                           </Link>
                           <br />
                         </Fragment>
@@ -224,7 +208,7 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
                   ) : (
                     <span>{recentlyDeployment.version}</span>
                   )}
-                </div>
+                </Box>
               </TableCell>
               {displayAllProperties && (
                 <TableCell>
@@ -235,13 +219,26 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
                       rel="noreferrer"
                     >
                       {recentlyDeployment.trigger.commit.hash.slice(0, 8)}
-                      <OpenInNewIcon className={classes.linkIcon} />
+                      <OpenInNewIcon
+                        sx={{
+                          fontSize: 16,
+                          verticalAlign: "text-bottom",
+                          marginLeft: 0.5,
+                        }}
+                      />
                     </Link>
                   )}
                 </TableCell>
               )}
               {displayAllProperties && (
-                <TableCell className={classes.deployedBy}>
+                <TableCell
+                  sx={{
+                    maxWidth: 150,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
                   {recentlyDeployment.trigger?.commander ||
                     recentlyDeployment.trigger?.commit?.author ||
                     UI_TEXT_NOT_AVAILABLE_TEXT}
@@ -284,7 +281,12 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
               <MenuItem onClick={handleDisable}>Disable</MenuItem>
             </div>
           )}
-          <MenuItem className={classes.warning} onClick={handleDelete}>
+          <MenuItem
+            sx={{
+              color: "red",
+            }}
+            onClick={handleDelete}
+          >
             Delete
           </MenuItem>
         </Menu>

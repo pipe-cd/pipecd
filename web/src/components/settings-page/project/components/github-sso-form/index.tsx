@@ -19,7 +19,13 @@ import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { fetchProject, GitHubSSO, updateGitHubSSO } from "~/modules/project";
 import { addToast } from "~/modules/toasts";
-import { useProjectSettingStyles } from "~/styles/project-setting";
+import {
+  ProjectDescription,
+  ProjectTitleWrap,
+  ProjectTitle,
+  ProjectValues,
+  ProjectValuesWrapper,
+} from "~/styles/project-setting";
 import { ProjectSettingLabeledText } from "../project-setting-labeled-text";
 export interface GitHubSSOFormParams {
   clientId: string;
@@ -36,7 +42,6 @@ const SECTION_TITLE = "Single Sign-On";
 const DIALOG_TITLE = `Edit ${SECTION_TITLE}`;
 
 export const GithubSSOForm: FC = memo(function GithubSSOForm() {
-  const projectSettingStyles = useProjectSettingStyles();
   const dispatch = useAppDispatch();
   const [isEdit, setIsEdit] = useState(false);
   const [clientId, setClientID] = useState("");
@@ -73,22 +78,16 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
 
   return (
     <>
-      <div className={projectSettingStyles.title}>
-        <Typography variant="h5" className={projectSettingStyles.titleWithIcon}>
-          {SECTION_TITLE}
-        </Typography>
-      </div>
-      <Typography
-        variant="body1"
-        color="textSecondary"
-        className={projectSettingStyles.description}
-      >
+      <ProjectTitleWrap>
+        <ProjectTitle variant="h5">{SECTION_TITLE}</ProjectTitle>
+      </ProjectTitleWrap>
+      <ProjectDescription variant="body1" color="textSecondary">
         {SSO_DESCRIPTION}
-      </Typography>
-      <div className={projectSettingStyles.valuesWrapper}>
+      </ProjectDescription>
+      <ProjectValuesWrapper>
         {sso ? (
           <>
-            <div className={projectSettingStyles.values}>
+            <ProjectValues>
               <ProjectSettingLabeledText label="Client ID" value="********" />
               <ProjectSettingLabeledText
                 label="Client Secret"
@@ -99,7 +98,7 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
                 label="Upload URL"
                 value={sso.uploadUrl}
               />
-            </div>
+            </ProjectValues>
 
             <div>
               <IconButton onClick={() => setIsEdit(true)} size="large">
@@ -108,7 +107,7 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
             </div>
           </>
         ) : (
-          <div className={projectSettingStyles.values}>
+          <ProjectValues>
             {sso === undefined ? (
               <>
                 <Skeleton width={200} height={28} />
@@ -123,9 +122,9 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
                 Not Configured
               </Typography>
             )}
-          </div>
+          </ProjectValues>
         )}
-      </div>
+      </ProjectValuesWrapper>
       <Dialog
         open={isEdit}
         onClose={handleClose}
@@ -142,7 +141,7 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
             <TextField
               value={clientId}
               variant="outlined"
-              margin="dense"
+              size="small"
               label="Client ID"
               fullWidth
               required
@@ -152,7 +151,7 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
             <TextField
               value={clientSecret}
               variant="outlined"
-              margin="dense"
+              size="small"
               label="Client Secret"
               fullWidth
               required
@@ -161,7 +160,7 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
             <TextField
               value={baseUrl}
               variant="outlined"
-              margin="dense"
+              size="small"
               label="Base URL"
               fullWidth
               onChange={(e) => setBaseUrl(e.currentTarget.value)}
@@ -169,7 +168,7 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
             <TextField
               value={uploadUrl}
               variant="outlined"
-              margin="dense"
+              size="small"
               label="Upload URL"
               fullWidth
               onChange={(e) => setUploadUrl(e.currentTarget.value)}

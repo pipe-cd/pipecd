@@ -1,5 +1,4 @@
-import { Button, Card, TextField, Typography } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
+import { Box, Button, Card, TextField, Typography } from "@mui/material";
 import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
 import MuiAlert from "@mui/material/Alert";
 import { FC, memo, useState } from "react";
@@ -13,44 +12,7 @@ import { LOGGING_IN_PROJECT } from "~/constants/localstorage";
 
 const CONTENT_WIDTH = 500;
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    padding: theme.spacing(2),
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexDirection: "column",
-    flex: 1,
-  },
-  content: {
-    display: "flex",
-    flexDirection: "column",
-    padding: theme.spacing(3),
-    width: CONTENT_WIDTH,
-    textAlign: "center",
-  },
-  fields: {
-    display: "flex",
-    flexDirection: "column",
-    marginTop: theme.spacing(4),
-  },
-  note: {
-    color: "orange",
-    textAlign: "right",
-  },
-  buttons: {
-    display: "flex",
-    justifyContent: "flex-end",
-    marginTop: theme.spacing(2),
-  },
-  loginError: {
-    width: CONTENT_WIDTH,
-    marginBottom: theme.spacing(2),
-  },
-}));
-
 export const LoginPage: FC = memo(function LoginPage() {
-  const classes = useStyles();
   const me = useAppSelector((state) => state.me);
   const [name, setName] = useState<string>("");
   const [cookies, , removeCookie] = useCookies(["error"]);
@@ -70,24 +32,50 @@ export const LoginPage: FC = memo(function LoginPage() {
   const isPlayEnvironment = window.location.hostname.includes("play.");
 
   return (
-    <div className={classes.root}>
+    <Box
+      sx={{
+        padding: 2,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "column",
+        flex: 1,
+      }}
+    >
       {me && me.isLogin && <Navigate to={PAGE_PATH_APPLICATIONS} replace />}
       {cookies.error && (
         <MuiAlert
           severity="error"
-          className={classes.loginError}
+          sx={{
+            width: CONTENT_WIDTH,
+            marginBottom: 2,
+          }}
           onClose={handleCloseErrorAlert}
         >
           {cookies.error}
         </MuiAlert>
       )}
-      <Card className={classes.content}>
+      <Card
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          padding: 3,
+          width: CONTENT_WIDTH,
+          textAlign: "center",
+        }}
+      >
         {project ? (
           <LoginForm projectName={project} />
         ) : (
           <div>
             <Typography variant="h4">Sign in to your project</Typography>
-            <div className={classes.fields}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                marginTop: 4,
+              }}
+            >
               <TextField
                 id="project-name"
                 name="project-name"
@@ -99,13 +87,19 @@ export const LoginPage: FC = memo(function LoginPage() {
                 onChange={(e) => setName(e.currentTarget.value)}
               />
               {isPlayEnvironment && (
-                <div className={classes.note}>
+                <Box sx={{ color: "orange", textAlign: "right" }}>
                   Input <strong>play</strong> if you want to join the playground
                   environment
-                </div>
+                </Box>
               )}
-            </div>
-            <div className={classes.buttons}>
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                marginTop: 2,
+              }}
+            >
               <Button
                 type="submit"
                 color="primary"
@@ -116,10 +110,10 @@ export const LoginPage: FC = memo(function LoginPage() {
               >
                 CONTINUE
               </Button>
-            </div>
+            </Box>
           </div>
         )}
       </Card>
-    </div>
+    </Box>
   );
 });

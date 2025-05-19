@@ -9,7 +9,6 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import makeStyles from "@mui/styles/makeStyles";
 import { useFormik } from "formik";
 import { FC, memo, useCallback } from "react";
 import * as yup from "yup";
@@ -21,22 +20,6 @@ import {
   clearSealedSecret,
   generateSealedSecret,
 } from "~/modules/sealed-secret";
-
-const useStyles = makeStyles((theme) => ({
-  targetApp: {
-    color: theme.palette.text.primary,
-    fontWeight: theme.typography.fontWeightMedium,
-  },
-  secretInput: {
-    border: "none",
-    fontSize: 14,
-    flex: 1,
-    textOverflow: "ellipsis",
-  },
-  encryptedSecret: {
-    wordBreak: "break-all",
-  },
-}));
 
 export interface SealedSecretDialogProps {
   applicationId: string | null;
@@ -55,7 +38,6 @@ const validationSchema = yup.object({
 
 export const SealedSecretDialog: FC<SealedSecretDialogProps> = memo(
   function SealedSecretDialog({ open, applicationId, onClose }) {
-    const classes = useStyles();
     const dispatch = useAppDispatch();
 
     const application = useAppSelector<Application.AsObject | undefined>(
@@ -132,7 +114,14 @@ export const SealedSecretDialog: FC<SealedSecretDialogProps> = memo(
               <Typography variant="caption" color="textSecondary">
                 Application
               </Typography>
-              <Typography variant="body1" className={classes.targetApp}>
+              <Typography
+                variant="body1"
+                // className={classes.targetApp}
+                sx={(theme) => ({
+                  color: theme.palette.text.primary,
+                  fontWeight: theme.typography.fontWeightMedium,
+                })}
+              >
                 {application.name}
               </Typography>
               <TextField
