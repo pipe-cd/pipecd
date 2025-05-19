@@ -64,6 +64,7 @@ type ELB interface {
 	GetListenerArns(ctx context.Context, targetGroup types.LoadBalancer) ([]string, error)
 	// ModifyListeners modifies the actions of type ActionTypeEnumForward to perform routing traffic
 	// to the given target groups. Other actions won't be modified.
+	// Note: This method will return any successfully modified rule ARNs even when returning an error.
 	ModifyListeners(ctx context.Context, listenerArns []string, routingTrafficCfg RoutingTrafficConfig) (modifiedRuleArns []string, err error)
 }
 
