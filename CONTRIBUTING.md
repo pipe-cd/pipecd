@@ -79,7 +79,7 @@ If you want to work on any of these issues, simply leave a message saying "I'd l
 
 We recommend you to focus only one issue at once if you are newcomer contributer.
 
-So you've decided to contribute code back to the upstream by opening a pull request. You've put in a significant amount of time, and we appreciate your effort. We will do our best to work with you and review the pull request.
+So you've decided to contribute back to the upstream by opening a pull request. You've put in a significant amount of time, and we appreciate your effort. We will do our best to work with you and review the pull request.
 
 ### Investigate an issue
 
