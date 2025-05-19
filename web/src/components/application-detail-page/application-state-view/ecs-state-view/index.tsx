@@ -68,11 +68,13 @@ export const ECSStateView: FC<ECSStateViewProps> = ({ resources }) => {
           {nodes.map((node) => (
             <Box
               key={`${node.resource.kind}-${node.resource.name}`}
-              position="absolute"
-              top={node.y}
-              left={node.x}
-              zIndex={1}
               data-testid="ecs-resource"
+              sx={{
+                position: "absolute",
+                top: node.y,
+                left: node.x,
+                zIndex: 1,
+              }}
             >
               <ECSResource
                 resource={node.resource}

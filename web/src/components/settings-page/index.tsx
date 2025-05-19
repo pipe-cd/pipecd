@@ -31,13 +31,15 @@ export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
           width: drawerWidth,
           flexShrink: 0,
         }}
-        PaperProps={{
-          sx: {
-            top: "auto",
-            width: drawerWidth,
+        variant="permanent"
+        slotProps={{
+          paper: {
+            sx: {
+              top: "auto",
+              width: drawerWidth,
+            },
           },
         }}
-        variant="permanent"
       >
         <Box sx={{ overflow: "auto" }}>
           <List sx={{ paddingTop: 0 }}>

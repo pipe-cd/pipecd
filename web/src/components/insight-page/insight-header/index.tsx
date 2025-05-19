@@ -60,7 +60,13 @@ export const InsightHeader: FC = memo(function InsightHeader() {
   return (
     <Grid container spacing={2} style={{ marginTop: 26, marginBottom: 26 }}>
       <Grid item xs={8}>
-        <Box display="flex" alignItems="left" justifyContent="flex-start">
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "left",
+            justifyContent: "flex-start",
+          }}
+        >
           <Autocomplete
             id="application"
             style={{ minWidth: 300 }}
@@ -119,7 +125,13 @@ export const InsightHeader: FC = memo(function InsightHeader() {
         </Box>
       </Grid>
       <Grid item xs={4}>
-        <Box display="flex" alignItems="right" justifyContent="flex-end">
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "right",
+            justifyContent: "flex-end",
+          }}
+        >
           <FormControl sx={{ ml: 2 }} variant="outlined">
             <InputLabel id="range-input">Range</InputLabel>
             <Select

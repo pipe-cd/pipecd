@@ -69,7 +69,13 @@ export const LogLine: FC<LogLineProps> = ({
           opacity: 0.8,
         })}
       >{`[${dayjs(createdAt * 1000).format(TIMESTAMP_FORMAT)}]`}</Box>
-      <Box pr={2} flex={1} style={{ wordBreak: "break-all" }}>
+      <Box
+        sx={{
+          wordBreak: "break-all",
+          pr: 2,
+          flex: 1,
+        }}
+      >
         {parseLog(body).map((cell, i) => (
           <span
             key={`log-cell-${i}`}

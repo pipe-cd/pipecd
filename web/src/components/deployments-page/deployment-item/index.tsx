@@ -55,7 +55,12 @@ export const DeploymentItem: FC<DeploymentItemProps> = memo(
         component={RouterLink}
         to={`${PAGE_PATH_DEPLOYMENTS}/${deployment.id}`}
       >
-        <Box display="flex" alignItems="center">
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
           <DeploymentStatusIcon status={deployment.status} />
           <Typography
             variant="subtitle2"
@@ -72,17 +77,30 @@ export const DeploymentItem: FC<DeploymentItemProps> = memo(
           </Typography>
         </Box>
         <Box
-          display="flex"
-          flexDirection="column"
-          flex={1}
-          pl={2}
-          overflow="hidden"
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            flex: 1,
+            pl: 2,
+            overflow: "hidden",
+          }}
         >
-          <Box display="flex" alignItems="baseline">
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "baseline",
+            }}
+          >
             <Typography variant="h6" component="span">
               {deployment.applicationName}
             </Typography>
-            <Typography variant="body2" color="textSecondary" ml={1}>
+            <Typography
+              variant="body2"
+              color="textSecondary"
+              sx={{
+                ml: 1,
+              }}
+            >
               {pipedVersion === PipedVersion.V0 &&
                 APPLICATION_KIND_TEXT[deployment.kind]}
               {pipedVersion === PipedVersion.V1 && "APPLICATION"}

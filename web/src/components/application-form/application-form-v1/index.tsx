@@ -198,8 +198,17 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
 
   return (
     <>
-      <Box width="100%">
-        <Typography variant="h6" p={2}>
+      <Box
+        sx={{
+          width: "100%",
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{
+            p: 2,
+          }}
+        >
           {title}
         </Typography>
         <Divider />
@@ -294,7 +303,9 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
                     fullWidth
                     variant="outlined"
                     value={APPLICATION_KIND_TEXT[selectedApp.kind]}
-                    inputProps={{ readOnly: true }}
+                    slotProps={{
+                      htmlInput: { readOnly: true },
+                    }}
                   />
                   <GroupTwoCol>
                     <TextField
@@ -304,7 +315,9 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
                       variant="outlined"
                       value={selectedApp.path}
                       fullWidth
-                      inputProps={{ readOnly: true }}
+                      slotProps={{
+                        htmlInput: { readOnly: true },
+                      }}
                     />
                     <TextField
                       id={"configFilename-"}
@@ -313,7 +326,9 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
                       variant="outlined"
                       value={selectedApp.configFilename}
                       fullWidth
-                      inputProps={{ readOnly: true }}
+                      slotProps={{
+                        htmlInput: { readOnly: true },
+                      }}
                     />
                   </GroupTwoCol>
                   {selectedApp.labelsMap.map((label, index) => (
@@ -325,7 +340,9 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
                         variant="outlined"
                         value={label[0] + ": " + label[1]}
                         fullWidth
-                        inputProps={{ readOnly: true }}
+                        slotProps={{
+                          htmlInput: { readOnly: true },
+                        }}
                       />
                     </Box>
                   ))}
@@ -335,7 +352,11 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
           </Step>
         </Stepper>
 
-        <Box pl={2}>
+        <Box
+          sx={{
+            pl: 2,
+          }}
+        >
           <Button
             color="primary"
             type="submit"
@@ -347,7 +368,6 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
           <Button onClick={onClose}>{UI_TEXT_CANCEL}</Button>
         </Box>
       </Box>
-
       <DialogConfirm
         open={showConfirm}
         onClose={() => setShowConfirm(false)}

@@ -21,7 +21,12 @@ export const DetailTableRow: FC<DetailTableRowProps> = ({ label, value }) => {
         <Typography variant="subtitle2">{label}</Typography>
       </Box>
       <td>
-        <Typography variant="body2" ml={1}>
+        <Typography
+          variant="body2"
+          sx={{
+            ml: 1,
+          }}
+        >
           {value}
         </Typography>
       </td>

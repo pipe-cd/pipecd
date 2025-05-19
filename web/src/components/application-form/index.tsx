@@ -51,7 +51,11 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
   };
 
   return (
-    <Box width={600}>
+    <Box
+      sx={{
+        width: 600,
+      }}
+    >
       <Box>
         <Tabs
           value={selectedTabIndex}
