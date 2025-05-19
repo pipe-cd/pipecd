@@ -484,7 +484,7 @@ func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, rou
 			ListenerArn: aws.String(listenerArn),
 		})
 		if err != nil {
-			return nil, fmt.Errorf("failed to describe rules of listener %s: %w", listenerArn, err)
+			return modifiedRuleArns, fmt.Errorf("failed to describe rules of listener %s: %w", listenerArn, err)
 		}
 
 		for _, rule := range describeRulesOutput.Rules {
