@@ -19,13 +19,14 @@ set -o nounset
 set -o pipefail
 
 MERGE_BASE=$(git merge-base HEAD origin/master)
-COMMIT_HASHES=$(git log --format=format:"%H" "$MERGE_BASE..HEAD")
+COMMIT_HASHES=$(git log --reverse --format=format:"%H" "$MERGE_BASE..HEAD")
 
 # check if the commit message contains the DCO sign-off
 for commit_hash in $COMMIT_HASHES; do
   sign_off=$(git log -1 --format="%(trailers:key=Signed-off-by,valueonly)%-C()" "$commit_hash")
   if [ -z "$sign_off" ]; then
     echo "Error: Commit $commit_hash is missing Signed-off-by line"
+    echo "Please run 'git rebase --signoff ${commit_hash}~1' to fix it"
     exit 1
   fi
 done
