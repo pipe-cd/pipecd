@@ -26,8 +26,9 @@ jobs:
         PR_NUMBER: ${{ github.event.pull_request.number }}
         TEMP_DIR: ${{ runner.temp }}
       run: |
-        cat <<EOF > "${TEMP_DIR}/greeting.md"
-        @${AUTHOR}
+        echo "@${AUTHOR}" > "${TEMP_DIR}/greeting.md"
+
+        cat <<'EOF' >> "${TEMP_DIR}/greeting.md"
         Thank you for your contribution! We look forward to seeing more from you.
         Please run the `make check` command to ensure your changes will pass the CI.
         After successfully running the command on your local machine, the instructions will be printed out.
