@@ -35,6 +35,9 @@ make setup-local-oidc
 | Default PipeCD OIDC Client | `pipecd-keycloak`                                       |
 | Issuer URL                 | `http://<private-ip>:8081/realms/pipecd-test-realm`     |
 | Redirect URI(PipeCD)       | `http://localhost:8080/auth/callback`                   |
+| Imported Groups            | `Admin`, `Editor`, `Viewer`                             |
+| Imported Realm Roles       | `Admin`, `Editor`, `Viewer`                             |
+| Imported Client Roles      | `Admin`, `Editor`, `Viewer`                             |
 
 ### ⚠️ Note
 
