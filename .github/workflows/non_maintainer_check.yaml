@@ -27,7 +27,7 @@ jobs:
       run: |
         cat <<EOF > "${TEMP_DIR}/greeting.md"
         Thank you for your contribution! We look forward to seeing more from you.
-        Please run the `make check` command to ensure your changes are correct.
+        Please run the `make check` command to ensure your changes will pass the CI.
         After successfully running the command on your local machine, the instructions will be printed out.
         Please follow them to commit your changes.
         If the check has not passed, please fix the issues and push the changes to your branch.
