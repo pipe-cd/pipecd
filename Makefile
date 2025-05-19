@@ -285,3 +285,7 @@ check/gen: gen/code
 .PHONY: check/dco
 check/dco:
 	./hack/ensure-dco.sh
+
+.PHONY: setup-local-oidc
+setup-local-oidc:
+	./hack/oidc/run-local-keycloak.sh

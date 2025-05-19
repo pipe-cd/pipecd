@@ -237,6 +237,10 @@ Then, copy generated Piped ID and base64 key for `piped-config.yaml`
 
 4. Run `make run/piped CONFIG_FILE=piped-config.yaml` to start Piped agent.
 
+#### Set Up Local OIDC Provider(Keycloak)
+
+Run `make setup-local-oidc` to set up local OIDC provider(keycloak). This will create a new Keycloak realm and an OIDC client for PipeCD. See [Local Keycloak](./hack/oidc/README.md) for more details.
+
 ### Online one-click setup for contributing
 
 We are preparing Gitpod and Codespace to facilitate the setup process for contributing.
