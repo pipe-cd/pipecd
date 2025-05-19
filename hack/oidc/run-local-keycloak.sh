@@ -15,7 +15,6 @@ get_private_ip() {
 
   # Linux
   if command -v ip >/dev/null 2>&1; then
-    # 優先的に wlan0 → eth0 → enp0s3 を探す
     for iface in wlan0 eth0 enp0s3; do
       ip=$(ip -4 addr show "$iface" 2>/dev/null | awk '/inet / {print $2}' | cut -d/ -f1)
       if [[ -n "$ip" && "$ip" != "127.0.0.1" ]]; then
@@ -24,7 +23,6 @@ get_private_ip() {
       fi
     done
 
-    # fallback: デフォルトルートの出口から推測
     ip=$(ip route get 1.1.1.1 2>/dev/null | awk '/src/ {print $NF; exit}')
     if [[ -n "$ip" && "$ip" != "127.0.0.1" ]]; then
       echo "$ip"
@@ -32,7 +30,7 @@ get_private_ip() {
     fi
   fi
 
-  # ifconfig fallback (BusyBoxなど)
+  # ifconfig fallback (BusyBox etc.)
   if command -v ifconfig >/dev/null 2>&1; then
     ip=$(ifconfig | awk '/inet / && $2 != "127.0.0.1" {print $2; exit}' | sed 's/addr://')
     echo "$ip"
