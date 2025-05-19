@@ -272,3 +272,8 @@ func FindSameManifests(olds, news []Manifest) []WorkloadPair {
 	}
 	return pairs
 }
+
+// Labels returns the labels of the manifest.
+func (m Manifest) Labels() map[string]string {
+	return m.body.GetLabels()
+}

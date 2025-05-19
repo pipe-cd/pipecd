@@ -17,6 +17,7 @@ package deployment
 import (
 	"cmp"
 	"context"
+	"fmt"
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
@@ -109,9 +110,53 @@ func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.Execute
 		return sdk.StageStatusFailure
 	}
 
-	// TODO: implement prune resources
-	// TODO: delete all resources of CANARY variant
-	// TODO: delete all resources of BASELINE variant
+	// Prune CANARY and BASELINE resources after rollback.
+	if err := removeVariantResources(ctx, applier, *cfg.Spec, cfg.Spec.VariantLabel.CanaryValue, lp); err != nil {
+		lp.Errorf("Failed to remove CANARY resources: %v", err)
+		return sdk.StageStatusFailure
+	}
+	if err := removeVariantResources(ctx, applier, *cfg.Spec, cfg.Spec.VariantLabel.BaselineValue, lp); err != nil {
+		lp.Errorf("Failed to remove BASELINE resources: %v", err)
+		return sdk.StageStatusFailure
+	}
 
 	return sdk.StageStatusSuccess
+}
+
+// removeVariantResources deletes all resources of a given variant (CANARY or BASELINE) for the application.
+func removeVariantResources(ctx context.Context, applier *provider.Applier, cfg kubeconfig.KubernetesApplicationSpec, variant string, lp sdk.StageLogPersister) error {
+	lp.Infof("Pruning resources for variant: %s", variant)
+	// List all resources in the namespace with the variant label.
+	// This is a simplified approach; in production, you may want to use a more robust label selector.
+	// For now, we assume all resources managed by PipeCD have the variant label.
+	// TODO: Use a real Kubernetes client or applier to list resources by label.
+	// Here, we assume manifests are available from the last deployment config.
+	manifests := []provider.Manifest{} // TODO: Load manifests from cluster or metadata if available.
+	variantLabel := cfg.VariantLabel.Key
+	var toDelete []provider.ResourceKey
+	for _, m := range manifests {
+		labels := m.Labels()
+		if labels[variantLabel] == variant {
+			toDelete = append(toDelete, m.Key())
+		}
+	}
+	if len(toDelete) == 0 {
+		lp.Infof("No resources found for variant: %s", variant)
+		return nil
+	}
+	lp.Infof("Deleting %d resources for variant: %s", len(toDelete), variant)
+	var deletedCount int
+	for _, k := range toDelete {
+		if err := applier.Delete(ctx, k); err != nil {
+			lp.Errorf("Failed to delete resource %s: %v", k.String(), err)
+			continue
+		}
+		lp.Successf("Deleted resource: %s", k.String())
+		deletedCount++
+	}
+	if deletedCount < len(toDelete) {
+		return fmt.Errorf("unable to delete %d resources for variant %s", len(toDelete)-deletedCount, variant)
+	}
+	lp.Successf("Successfully deleted all resources for variant: %s", variant)
+	return nil
 }

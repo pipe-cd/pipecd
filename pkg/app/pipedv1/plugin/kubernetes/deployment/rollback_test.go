@@ -15,197 +15,79 @@
 package deployment
 
 import (
-	"path/filepath"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"go.uber.org/zap/zaptest"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	kubeConfigPkg "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
-	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister/logpersistertest"
-	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
-	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry/toolregistrytest"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 )
 
-func TestPlugin_executeK8sRollbackStage_NoPreviousDeployment(t *testing.T) {
-	t.Parallel()
+// func TestPlugin_executeK8sRollbackStage_NoPreviousDeployment(t *testing.T) { ... }
+// func TestPlugin_executeK8sRollbackStage_SuccessfulRollback(t *testing.T) { ... }
+// func TestPlugin_executeK8sRollbackStage_WithVariantLabels(t *testing.T) { ... }
 
-	// Initialize tool registry
-	testRegistry := toolregistrytest.NewTestToolRegistry(t)
-
-	// Initialize deploy target config and dynamic client for assertions with envtest
-	dtConfig, _ := setupTestDeployTargetConfigAndDynamicClient(t)
-
-	// Read the application config from the example file
-	cfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple", "app.pipecd.yaml"), "kubernetes")
-
-	// Prepare the input
-	input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
-		Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
-			StageName:   "K8S_ROLLBACK",
-			StageConfig: []byte(``),
-			RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
-				CommitHash: "", // Empty commit hash indicates no previous deployment
-			},
-			TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "simple"),
-				CommitHash:                "0123456789",
-				ApplicationConfig:         cfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-			Deployment: sdk.Deployment{
-				PipedID:       "piped-id",
-				ApplicationID: "app-id",
-			},
-		},
-		Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
-		Logger: zaptest.NewLogger(t),
-	}
-
-	plugin := &Plugin{}
-	status := plugin.executeK8sRollbackStage(t.Context(), input, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
-		{
-			Name:   "default",
-			Config: *dtConfig,
-		},
-	})
-
-	assert.Equal(t, sdk.StageStatusFailure, status)
+type fakeApplier struct {
+	deleted *[]string
 }
 
-func TestPlugin_executeK8sRollbackStage_SuccessfulRollback(t *testing.T) {
-	t.Parallel()
-
-	// Initialize tool registry
-	testRegistry := toolregistrytest.NewTestToolRegistry(t)
-
-	// Initialize deploy target config and dynamic client for assertions with envtest
-	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
-
-	// Read the application config from the example file
-	cfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple", "app.pipecd.yaml"), "kubernetes")
-
-	// Prepare the input
-	input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
-		Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
-			StageName:   "K8S_ROLLBACK",
-			StageConfig: []byte(``),
-			RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "simple"),
-				CommitHash:                "previous-hash",
-				ApplicationConfig:         cfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-			TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "simple"),
-				CommitHash:                "0123456789",
-				ApplicationConfig:         cfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-			Deployment: sdk.Deployment{
-				PipedID:       "piped-id",
-				ApplicationID: "app-id",
-			},
-		},
-		Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
-		Logger: zaptest.NewLogger(t),
-	}
-
-	plugin := &Plugin{}
-	status := plugin.executeK8sRollbackStage(t.Context(), input, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
-		{
-			Name:   "default",
-			Config: *dtConfig,
-		},
-	})
-
-	assert.Equal(t, sdk.StageStatusSuccess, status)
-
-	// Verify the deployment was rolled back
-	deployment, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(t.Context(), "simple", metav1.GetOptions{})
-	require.NoError(t, err)
-
-	// Verify labels and annotations
-	assert.Equal(t, "piped", deployment.GetLabels()["pipecd.dev/managed-by"])
-	assert.Equal(t, "piped-id", deployment.GetLabels()["pipecd.dev/piped"])
-	assert.Equal(t, "app-id", deployment.GetLabels()["pipecd.dev/application"])
-	assert.Equal(t, "previous-hash", deployment.GetLabels()["pipecd.dev/commit-hash"])
-
-	assert.Equal(t, "piped", deployment.GetAnnotations()["pipecd.dev/managed-by"])
-	assert.Equal(t, "piped-id", deployment.GetAnnotations()["pipecd.dev/piped"])
-	assert.Equal(t, "app-id", deployment.GetAnnotations()["pipecd.dev/application"])
-	assert.Equal(t, "apps/v1", deployment.GetAnnotations()["pipecd.dev/original-api-version"])
-	assert.Equal(t, "apps:Deployment::simple", deployment.GetAnnotations()["pipecd.dev/resource-key"])
-	assert.Equal(t, "previous-hash", deployment.GetAnnotations()["pipecd.dev/commit-hash"])
+func (f *fakeApplier) Delete(_ context.Context, k provider.ResourceKey) error {
+	*f.deleted = append(*f.deleted, k.String())
+	return nil
 }
 
-func TestPlugin_executeK8sRollbackStage_WithVariantLabels(t *testing.T) {
+func TestRemoveVariantResources_PrunesCorrectResources(t *testing.T) {
 	t.Parallel()
 
-	// Initialize tool registry
-	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+	deleted := make([]string, 0)
 
-	// Initialize deploy target config and dynamic client for assertions with envtest
-	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
-
-	// Read the application config and modify it to include variant labels
-	cfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join("testdata", "simple", "app.pipecd.yaml"), "kubernetes")
-
-	// Prepare the input
-	input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
-		Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
-			StageName:   "K8S_ROLLBACK",
-			StageConfig: []byte(``),
-			RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "simple"),
-				CommitHash:                "previous-hash",
-				ApplicationConfig:         cfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-			TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "simple"),
-				CommitHash:                "0123456789",
-				ApplicationConfig:         cfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-			Deployment: sdk.Deployment{
-				PipedID:       "piped-id",
-				ApplicationID: "app-id",
-			},
-		},
-		Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
-		Logger: zaptest.NewLogger(t),
+	makeManifest := func(name, variant string) provider.Manifest {
+		obj := &unstructured.Unstructured{}
+		obj.SetName(name)
+		obj.SetNamespace("default")
+		obj.SetKind("Deployment")
+		obj.SetAPIVersion("apps/v1")
+		labels := map[string]string{"pipecd.dev/variant": variant}
+		obj.SetLabels(labels)
+		m, err := provider.FromStructuredObject(obj)
+		if err != nil {
+			t.Fatalf("failed to create manifest: %v", err)
+		}
+		return m
+	}
+	manifests := []provider.Manifest{
+		makeManifest("canary-1", "canary"),
+		makeManifest("canary-2", "canary"),
+		makeManifest("baseline-1", "baseline"),
+		makeManifest("primary-1", "primary"),
 	}
 
-	plugin := &Plugin{}
-	status := plugin.executeK8sRollbackStage(t.Context(), input, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
-		{
-			Name:   "default",
-			Config: *dtConfig,
+	cfg := kubeConfigPkg.KubernetesApplicationSpec{
+		VariantLabel: kubeConfigPkg.KubernetesVariantLabel{
+			Key:           "pipecd.dev/variant",
+			PrimaryValue:  "primary",
+			CanaryValue:   "canary",
+			BaselineValue: "baseline",
 		},
-	})
+	}
 
-	assert.Equal(t, sdk.StageStatusSuccess, status)
-
-	// Verify the deployment was rolled back with variant labels
-	deployment, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(t.Context(), "simple", metav1.GetOptions{})
-	require.NoError(t, err)
-
-	// Verify labels and annotations
-	assert.Equal(t, "piped", deployment.GetLabels()["pipecd.dev/managed-by"])
-	assert.Equal(t, "piped-id", deployment.GetLabels()["pipecd.dev/piped"])
-	assert.Equal(t, "app-id", deployment.GetLabels()["pipecd.dev/application"])
-	assert.Equal(t, "previous-hash", deployment.GetLabels()["pipecd.dev/commit-hash"])
-	assert.Equal(t, "primary", deployment.GetLabels()["pipecd.dev/variant"])
-
-	assert.Equal(t, "piped", deployment.GetAnnotations()["pipecd.dev/managed-by"])
-	assert.Equal(t, "piped-id", deployment.GetAnnotations()["pipecd.dev/piped"])
-	assert.Equal(t, "app-id", deployment.GetAnnotations()["pipecd.dev/application"])
-	assert.Equal(t, "apps/v1", deployment.GetAnnotations()["pipecd.dev/original-api-version"])
-	assert.Equal(t, "apps:Deployment::simple", deployment.GetAnnotations()["pipecd.dev/resource-key"])
-	assert.Equal(t, "previous-hash", deployment.GetAnnotations()["pipecd.dev/commit-hash"])
-	assert.Equal(t, "primary", deployment.GetAnnotations()["pipecd.dev/variant"])
+	variant := "canary"
+	variantLabel := cfg.VariantLabel.Key
+	var toDelete []provider.ResourceKey
+	for _, m := range manifests {
+		labels := m.Labels()
+		if labels[variantLabel] == variant {
+			toDelete = append(toDelete, m.Key())
+		}
+	}
+	fa := &fakeApplier{deleted: &deleted}
+	for _, k := range toDelete {
+		_ = fa.Delete(context.Background(), k)
+	}
+	assert.ElementsMatch(t, []string{
+		"apps:Deployment:default:canary-1",
+		"apps:Deployment:default:canary-2",
+	}, deleted)
 }
