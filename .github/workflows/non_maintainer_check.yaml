@@ -47,7 +47,7 @@ jobs:
         Then, please run the `make check` command again to ensure the issues are fixed.
         EOF
 
-        gh pr comment "${PR_NUMBER}" --body-file "${TEMP_DIR}/greeting.md"
+        gh --repo "${REPO_NAME}" pr comment "${PR_NUMBER}" --body-file "${TEMP_DIR}/greeting.md"
 
   check:
     if: github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '/check-commit')
