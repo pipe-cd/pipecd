@@ -10,6 +10,14 @@ Note:
 
 ## Try k8s multicluster plugin locally
 
+**Switch the commit compatible with pipedv1**
+
+This is based on the commit after v0.51.3.
+
+```sh
+git switch <commit hash>
+```
+
 **Prepare the PipeCD Control Plane**
 
 Please refer to [pipe-cd/pipecd/cmd/pipecd/README.md](../../../../../cmd/pipecd/README.md) to set up the Control Plane in your local environment.
