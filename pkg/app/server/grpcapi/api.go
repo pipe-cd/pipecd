@@ -179,6 +179,11 @@ func (a *API) AddApplication(ctx context.Context, req *apiservice.AddApplication
 	}
 	gitpathApps, _, err := a.applicationStore.List(ctx, datastore.ListOptions{
 		Filters: []datastore.ListFilter{
+			{	
+				Field:    "ProjectId",
+				Operator: datastore.OperatorEqual,
+				Value:    key.ProjectId,
+			},
 			{
 				Field:    "GitPath.Repo.Id",
 				Operator: datastore.OperatorEqual,
