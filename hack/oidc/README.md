@@ -4,13 +4,23 @@ This setup provides a ready-to-use local Keycloak instance for testing OIDC auth
 
 ---
 
+## 📦 Dependencies
+
+- Docker
+- docker-compose (v2+ recommended)
+- `envsubst` (usually part of GNU `gettext`)
+
 ## ✅ How to Run
+
+1. Run a local KeyCloak
 
 ```bash
 make setup-local-oidc
 ```
 
-You may override the following environment variables:
+Then, you will receive an example config of `sharedSSOConfigs`.
+
+(Optional) You may override the following environment variables:
 
 ```bash
 PIPECD_CONTROL_PLANE_ADDRESS=http://localhost:8080 \
@@ -18,11 +28,11 @@ LOCAL_KEYCLOAK_ADDRESS=http://192.168.1.100:8081 \
 make setup-local-oidc
 ```
 
-📦 Dependencies
+2. Run a Control Plane with the `sharedSSOConfigs` you received.
 
-- Docker
-- docker-compose (v2+ recommended)
-- `envsubst` (usually part of GNU `gettext`)
+3. Add a project via the Owner Page, and login with the static admin, and add a User Group, and then logout. See [Adding a Project](https://pipecd.dev/docs/user-guide/managing-controlplane/adding-a-project/).
+
+4. Login with OIDC
 
 ## ⚙️ Default Configuration
 
