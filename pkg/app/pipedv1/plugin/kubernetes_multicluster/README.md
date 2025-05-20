@@ -10,12 +10,13 @@ Note:
 
 ## Try k8s multicluster plugin locally
 
-**Switch the commit compatible with pipedv1**
+**Switch to the upstream commit of the master branch**
 
-This is based on the commit after v0.51.3.
+The whole fixes for plugins are stored in the master branch and some of the versions don't have them.
 
 ```sh
-git switch <commit hash>
+git switch master
+git pull
 ```
 
 **Prepare the PipeCD Control Plane**
