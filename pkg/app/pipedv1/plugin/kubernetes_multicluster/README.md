@@ -5,6 +5,9 @@
 The current specification is described in the [RFC](../../../../../docs/rfcs/0014-multi-cluster-deployment-for-k8s.md).  
 The configuration format is unstable and may change in the future.
 
+Note:
+- Currently, only QuickSync is supported.
+
 ## Try k8s multicluster plugin locally
 
 **Prepare the PipeCD Control Plane**
