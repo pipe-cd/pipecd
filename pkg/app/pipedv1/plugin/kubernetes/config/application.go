@@ -58,14 +58,24 @@ type KubernetesDeploymentInput struct {
 	// Version of kubectl will be used.
 	KubectlVersion string `json:"kubectlVersion,omitempty"`
 
+	// Version of kustomize will be used.
+	KustomizeVersion string `json:"kustomizeVersion,omitempty"`
+	// List of options that should be used by Kustomize commands.
+	KustomizeOptions map[string]string `json:"kustomizeOptions,omitempty"`
+
+	// Version of helm will be used.
+	HelmVersion string `json:"helmVersion,omitempty"`
+	// Where to fetch helm chart.
+	HelmChart *InputHelmChart `json:"helmChart,omitempty"`
+	// Configurable parameters for helm commands.
+	HelmOptions *InputHelmOptions `json:"helmOptions,omitempty"`
+
 	// The namespace where manifests will be applied.
 	Namespace string `json:"namespace,omitempty"`
 
 	// Automatically create a new namespace if it does not exist.
 	// Default is false.
 	AutoCreateNamespace bool `json:"autoCreateNamespace,omitempty"`
-
-	// TODO: Define fields for KubernetesDeploymentInput.
 }
 
 type KubernetesVariantLabel struct {
