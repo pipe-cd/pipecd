@@ -25,3 +25,15 @@ func ensureVariantSelectorInWorkload(m provider.Manifest, variantLabel, variant 
 	}
 	return m.AddStringMapValues(variantMap, "spec", "template", "metadata", "labels")
 }
+
+// addVariantLabelsAndAnnotations adds the variant label and annotation to the given manifests.
+func addVariantLabelsAndAnnotations(m []provider.Manifest, variantLabel, variant string) {
+	for _, m := range m {
+		m.AddLabels(map[string]string{
+			variantLabel: variant,
+		})
+		m.AddAnnotations(map[string]string{
+			variantLabel: variant,
+		})
+	}
+}
