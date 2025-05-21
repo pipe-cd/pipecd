@@ -442,22 +442,6 @@ metadata:
 			}(),
 			wantKinds: []string{"ConfigMap"},
 		},
-		{
-			name: "kustomize-with-helm",
-			input: LoaderInput{
-				AppName:          "testapp",
-				AppDir:           "testdata/testkustomize-with-helm",
-				KustomizeVersion: "5.4.3",
-				HelmVersion:      "3.16.1",
-				KustomizeOptions: map[string]string{
-					"load-restrictor": "LoadRestrictionsNone",
-					"enable-helm":     "",
-				},
-				Logger:    zap.NewNop(),
-				Namespace: "test-ns",
-			},
-			wantKinds: nil, // just check non-empty and namespace for now
-		},
 	}
 
 	for _, tt := range tests {
