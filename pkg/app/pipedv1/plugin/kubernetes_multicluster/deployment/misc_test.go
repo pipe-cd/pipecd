@@ -207,6 +207,8 @@ metadata:
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			manifests, err := provider.ParseManifests(tc.inputYAML)
 			require.NoError(t, err)
 			require.NotEmpty(t, manifests)
