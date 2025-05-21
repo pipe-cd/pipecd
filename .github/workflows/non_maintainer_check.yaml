@@ -23,11 +23,22 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         AUTHOR: ${{ github.event.pull_request.user.login }}
+        REPO_NAME: ${{ github.event.repository.full_name }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
         TEMP_DIR: ${{ runner.temp }}
       run: |
-        cat <<EOF > "${TEMP_DIR}/greeting.md"
-        @${AUTHOR}
+        # sometimes the author association of event payload is not correct to handle it
+        # so we fetch the latest author association from the API
+        AUTHOR_ASSOCIATION=$(gh api "/repos/${REPO_NAME}/pulls/${PR_NUMBER}" --jq '.author_association')
+        echo "AUTHOR_ASSOCIATION: ${AUTHOR_ASSOCIATION}"
+        [ "${AUTHOR_ASSOCIATION}" = "COLLABORATOR" ] && exit 0
+        [ "${AUTHOR_ASSOCIATION}" = "MANNEQUIN" ] && exit 0
+        [ "${AUTHOR_ASSOCIATION}" = "MEMBER" ] && exit 0
+        [ "${AUTHOR_ASSOCIATION}" = "OWNER" ] && exit 0
+
+        echo "@${AUTHOR}" > "${TEMP_DIR}/greeting.md"
+
+        cat <<'EOF' >> "${TEMP_DIR}/greeting.md"
         Thank you for your contribution! We look forward to seeing more from you.
         Please run the `make check` command to ensure your changes will pass the CI.
         After successfully running the command on your local machine, the instructions will be printed out.
@@ -36,7 +47,7 @@ jobs:
         Then, please run the `make check` command again to ensure the issues are fixed.
         EOF
 
-        gh pr comment "${PR_NUMBER}" --body-file "${TEMP_DIR}/greeting.md"
+        gh --repo "${REPO_NAME}" pr comment "${PR_NUMBER}" --body-file "${TEMP_DIR}/greeting.md"
 
   check:
     if: github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '/check-commit')
@@ -78,4 +89,4 @@ jobs:
           Thank you for your contribution!
           EOF
 
-          gh pr comment "${PR_NUMBER}" --body-file "${TEMP_DIR}/comment.md"
+          gh --repo "${REPO_NAME}" pr comment "${PR_NUMBER}" --body-file "${TEMP_DIR}/comment.md"
