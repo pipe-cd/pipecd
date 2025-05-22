@@ -103,17 +103,17 @@ describe("ApplicationFormV1", () => {
 
     it("form contain correct input by Step", async () => {
       // select piped
-      userEvent.click(screen.getByRole("button", { name: /piped/i }));
+      userEvent.click(screen.getByRole("combobox", { name: /piped/i }));
       const optionName = `${dummyPiped.name} (${dummyPiped.id})`;
       userEvent.click(screen.getByRole("option", { name: optionName }));
 
       // select deploy target
-      userEvent.click(screen.getByRole("textbox", { name: /deploy target/i }));
+      userEvent.click(screen.getByRole("combobox", { name: /deploy target/i }));
       const optionDeployTarget = `${dummyPiped.pluginsList[0].deployTargetsList[0]} - ${dummyPiped.pluginsList[0].name}`;
       userEvent.click(screen.getByRole("option", { name: optionDeployTarget }));
 
       // select Application
-      userEvent.click(screen.getByRole("textbox", { name: "Application" }));
+      userEvent.click(screen.getByRole("combobox", { name: "Application" }));
       const optionApplicationName = `name: ${dummyUnregisteredApplication.name}, repo: ${dummyUnregisteredApplication.repoId}`;
       userEvent.click(
         screen.getByRole("option", { name: optionApplicationName })

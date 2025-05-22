@@ -1,5 +1,4 @@
-import { Box, makeStyles } from "@material-ui/core";
-import clsx from "clsx";
+import { Box } from "@mui/material";
 import dagre from "dagre";
 import { FC, useState } from "react";
 import { KubernetesResourceState } from "~/modules/applications-live-state";
@@ -8,31 +7,7 @@ import { sortedSet } from "~/utils/sorted-set";
 import { KubernetesResource } from "./kubernetes-resource";
 import { KubernetesResourceDetail } from "./kubernetes-resource-detail";
 import { ResourceFilterPopover } from "./resource-filter-popover";
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    display: "flex",
-    flex: 1,
-    justifyContent: "center",
-    overflow: "hidden",
-  },
-  stateViewWrapper: {
-    flex: 1,
-    display: "flex",
-    justifyContent: "center",
-    overflow: "hidden",
-  },
-  stateView: {
-    position: "relative",
-    overflow: "auto",
-  },
-  closeDetailButton: {
-    position: "absolute",
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
-}));
+import { StateView, StateViewRoot, StateViewWrapper } from "./styles";
 
 export interface KubernetesStateViewProps {
   resources: KubernetesResourceState.AsObject[];
@@ -89,7 +64,6 @@ function useGraph(
 export const KubernetesStateView: FC<KubernetesStateViewProps> = ({
   resources,
 }) => {
-  const classes = useStyles();
   const [
     selectedResource,
     setSelectedResource,
@@ -114,17 +88,19 @@ export const KubernetesStateView: FC<KubernetesStateViewProps> = ({
   const graphInstance = graph.graph();
 
   return (
-    <div className={clsx(classes.root)}>
-      <div className={classes.stateViewWrapper}>
-        <div className={classes.stateView}>
+    <StateViewRoot>
+      <StateViewWrapper>
+        <StateView>
           {nodes.map((node) => (
             <Box
               key={`${node.resource.kind}-${node.resource.name}`}
-              position="absolute"
-              top={node.y}
-              left={node.x}
-              zIndex={1}
               data-testid="kubernetes-resource"
+              sx={{
+                position: "absolute",
+                top: node.y,
+                left: node.x,
+                zIndex: 1,
+              }}
             >
               <KubernetesResource
                 resource={node.resource}
@@ -188,22 +164,20 @@ export const KubernetesStateView: FC<KubernetesStateViewProps> = ({
               }}
             />
           )}
-        </div>
-      </div>
-
+        </StateView>
+      </StateViewWrapper>
       <Box>
         <ResourceFilterPopover
           enables={filterState}
           onChange={(state) => setFilterState(state)}
         />
       </Box>
-
       {selectedResource && (
         <KubernetesResourceDetail
           resource={selectedResource}
           onClose={() => setSelectedResource(null)}
         />
       )}
-    </div>
+    </StateViewRoot>
   );
 };

@@ -5,7 +5,7 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-} from "@material-ui/core";
+} from "@mui/material";
 import { FormikProps } from "formik";
 import { FC, memo } from "react";
 import * as yup from "yup";
@@ -35,7 +35,11 @@ export const PipedForm: FC<PipedFormProps> = memo(function PipedForm({
   isSubmitting,
 }) {
   return (
-    <Box width={600}>
+    <Box
+      sx={{
+        width: 600,
+      }}
+    >
       <form onSubmit={handleSubmit}>
         <DialogTitle>{title}</DialogTitle>
         <DialogContent>
