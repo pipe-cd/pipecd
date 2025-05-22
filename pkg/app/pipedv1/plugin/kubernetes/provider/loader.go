@@ -41,6 +41,10 @@ const (
 	TemplatingMethodNone      TemplatingMethod = "none"
 )
 
+const (
+	kustomizationFileName = "kustomization.yaml"
+)
+
 type LoaderInput struct {
 	// for annotations to manage the application live state.
 	PipedID    string
@@ -53,8 +57,7 @@ type LoaderInput struct {
 	ConfigFilename string
 	Manifests      []string
 
-	Namespace        string
-	TemplatingMethod TemplatingMethod
+	Namespace string
 
 	KustomizeVersion string
 	KustomizeOptions map[string]string
@@ -83,6 +86,16 @@ func NewLoader(registry ToolRegistry) *Loader {
 	}
 }
 
+func (l *Loader) determineTemplatingMethod(input LoaderInput) TemplatingMethod {
+	if input.HelmChart != nil {
+		return TemplatingMethodHelm
+	}
+	if _, err := os.Stat(filepath.Join(input.AppDir, kustomizationFileName)); err == nil {
+		return TemplatingMethodKustomize
+	}
+	return TemplatingMethodNone
+}
+
 func (l *Loader) LoadManifests(ctx context.Context, input LoaderInput) (manifests []Manifest, err error) {
 	defer func() {
 		for i := range manifests {
@@ -96,7 +109,9 @@ func (l *Loader) LoadManifests(ctx context.Context, input LoaderInput) (manifest
 		sortManifests(manifests)
 	}()
 
-	switch input.TemplatingMethod {
+	templatingMethod := l.determineTemplatingMethod(input)
+
+	switch templatingMethod {
 	case TemplatingMethodHelm:
 		data, err := l.templateHelmChart(ctx, input)
 		if err != nil {
@@ -114,7 +129,7 @@ func (l *Loader) LoadManifests(ctx context.Context, input LoaderInput) (manifest
 	case TemplatingMethodNone:
 		return LoadPlainYAMLManifests(input.AppDir, input.Manifests, input.ConfigFilename)
 	default:
-		return nil, fmt.Errorf("unsupported templating method %s", input.TemplatingMethod)
+		return nil, fmt.Errorf("unsupported templating method %s", templatingMethod)
 	}
 }
 
