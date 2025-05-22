@@ -159,15 +159,7 @@ func (p *Plugin) sync(
 		}
 	}
 
-	// Add variant annotations to all manifests.
-	for i := range manifests {
-		manifests[i].AddLabels(map[string]string{
-			variantLabel: primaryVariant,
-		})
-		manifests[i].AddAnnotations(map[string]string{
-			variantLabel: primaryVariant,
-		})
-	}
+	addVariantLabelsAndAnnotations(manifests, variantLabel, primaryVariant)
 
 	if err := annotateConfigHash(manifests); err != nil {
 		lp.Errorf("Unable to set %q annotation into the workload manifest (%v)", provider.AnnotationConfigHash, err)

@@ -276,3 +276,78 @@ spec:
 		})
 	}
 }
+
+func TestAddVariantLabelsAndAnnotations(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name         string
+		inputYAML    string
+		variantLabel string
+		variant      string
+		wantLabels   map[string]string
+		wantAnnots   map[string]string
+	}{
+		{
+			name: "single manifest",
+			inputYAML: `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-config
+`,
+			variantLabel: "pipecd.dev/variant",
+			variant:      "primary",
+			wantLabels:   map[string]string{"pipecd.dev/variant": "primary"},
+			wantAnnots:   map[string]string{"pipecd.dev/variant": "primary"},
+		},
+		{
+			name: "multiple manifests",
+			inputYAML: `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config1
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config2
+`,
+			variantLabel: "custom/label",
+			variant:      "canary",
+			wantLabels:   map[string]string{"custom/label": "canary"},
+			wantAnnots:   map[string]string{"custom/label": "canary"},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			manifests, err := provider.ParseManifests(tc.inputYAML)
+			require.NoError(t, err)
+			require.NotEmpty(t, manifests)
+
+			addVariantLabelsAndAnnotations(manifests, tc.variantLabel, tc.variant)
+
+			for _, m := range manifests {
+				labelsMap, _, err := m.NestedMap("metadata", "labels")
+				require.NoError(t, err)
+				labels := map[string]string{}
+				for k, v := range labelsMap {
+					if strVal, ok := v.(string); ok {
+						labels[k] = strVal
+					}
+				}
+				for k, v := range tc.wantLabels {
+					assert.Equal(t, v, labels[k], "label %q should be %q", k, v)
+				}
+				annots := m.GetAnnotations()
+				for k, v := range tc.wantAnnots {
+					assert.Equal(t, v, annots[k], "annotation %q should be %q", k, v)
+				}
+			}
+		})
+	}
+}

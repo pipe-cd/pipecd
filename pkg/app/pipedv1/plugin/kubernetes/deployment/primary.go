@@ -107,15 +107,7 @@ func (p *Plugin) executeK8sPrimaryRolloutStage(ctx context.Context, input *sdk.E
 	}
 	lp.Successf("Successfully generated %d manifests for PRIMARY variant", len(primaryManifests))
 
-	// Add variant annotations to all manifests.
-	for i := range primaryManifests {
-		primaryManifests[i].AddLabels(map[string]string{
-			variantLabel: primaryVariant,
-		})
-		primaryManifests[i].AddAnnotations(map[string]string{
-			variantLabel: primaryVariant,
-		})
-	}
+	addVariantLabelsAndAnnotations(primaryManifests, variantLabel, primaryVariant)
 
 	if err := annotateConfigHash(primaryManifests); err != nil {
 		lp.Errorf("Unable to set %q annotation into the workload manifest (%v)", provider.AnnotationConfigHash, err)
