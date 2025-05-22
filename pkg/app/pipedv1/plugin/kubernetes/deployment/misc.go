@@ -106,3 +106,15 @@ func makeSuffixedName(name, suffix string) string {
 	}
 	return name
 }
+
+// addVariantLabelsAndAnnotations adds the variant label and annotation to the given manifests.
+func addVariantLabelsAndAnnotations(m []provider.Manifest, variantLabel, variant string) {
+	for _, m := range m {
+		m.AddLabels(map[string]string{
+			variantLabel: variant,
+		})
+		m.AddAnnotations(map[string]string{
+			variantLabel: variant,
+		})
+	}
+}
