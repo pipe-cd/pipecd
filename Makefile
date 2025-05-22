@@ -270,9 +270,9 @@ kind-down:
 	kind delete cluster --name pipecd
 
 .PHONY: setup-envtest
-setup-envtest: export GOBIN ?= ${PWD}/.dev/bin # Where to install the setup-envtest binary
-setup-envtest: ## Download setup-envtest locally if necessary.
-	test -s $(GOBIN)/setup-envtest || go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+setup-envtest: export GOBIN ?= ${PWD}/.dev/bin
+setup-envtest: ## Download setup-envtest locally if necessary. The setup-envtest binary is installed under the ${PWD}/.dev/bin directory.
+	test -x $(GOBIN)/setup-envtest || go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 
 # Check commands
 .PHONY: check
