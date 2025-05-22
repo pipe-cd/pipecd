@@ -1,36 +1,11 @@
-import { Box, makeStyles } from "@material-ui/core";
-import clsx from "clsx";
+import { Box } from "@mui/material";
 import dagre from "dagre";
 import { FC, useState } from "react";
 import { CloudRunResourceState } from "~/modules/applications-live-state";
 import { theme } from "~/theme";
 import { CloudRunResource } from "./cloudrun-resource";
 import { CloudRunResourceDetail } from "./cloudrun-resource-detail";
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    display: "flex",
-    flex: 1,
-    justifyContent: "center",
-    overflow: "hidden",
-  },
-  stateViewWrapper: {
-    flex: 1,
-    display: "flex",
-    justifyContent: "center",
-    overflow: "hidden",
-  },
-  stateView: {
-    position: "relative",
-    overflow: "auto",
-  },
-  closeDetailButton: {
-    position: "absolute",
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
-}));
+import { StateView, StateViewRoot, StateViewWrapper } from "./styles";
 
 export interface CloudRunStateViewProps {
   resources: CloudRunResourceState.AsObject[];
@@ -73,7 +48,6 @@ function useGraph(
 export const CloudRunStateView: FC<CloudRunStateViewProps> = ({
   resources,
 }) => {
-  const classes = useStyles();
   const [
     selectedResource,
     setSelectedResource,
@@ -88,17 +62,19 @@ export const CloudRunStateView: FC<CloudRunStateViewProps> = ({
   const graphInstance = graph.graph();
 
   return (
-    <div className={clsx(classes.root)}>
-      <div className={classes.stateViewWrapper}>
-        <div className={classes.stateView}>
+    <StateViewRoot>
+      <StateViewWrapper>
+        <StateView>
           {nodes.map((node) => (
             <Box
               key={`${node.resource.kind}-${node.resource.name}`}
-              position="absolute"
-              top={node.y}
-              left={node.x}
-              zIndex={1}
               data-testid="cloudrun-resource"
+              sx={{
+                position: "absolute",
+                top: node.y,
+                left: node.x,
+                zIndex: 1,
+              }}
             >
               <CloudRunResource
                 resource={node.resource}
@@ -162,8 +138,8 @@ export const CloudRunStateView: FC<CloudRunStateViewProps> = ({
               }}
             />
           )}
-        </div>
-      </div>
+        </StateView>
+      </StateViewWrapper>
 
       {selectedResource && (
         <CloudRunResourceDetail
@@ -171,6 +147,6 @@ export const CloudRunStateView: FC<CloudRunStateViewProps> = ({
           onClose={() => setSelectedResource(null)}
         />
       )}
-    </div>
+    </StateViewRoot>
   );
 };

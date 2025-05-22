@@ -1,5 +1,5 @@
-import { ThemeProvider } from "@material-ui/core";
-import CssBaseline from "@material-ui/core/CssBaseline";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material";
+import CssBaseline from "@mui/material/CssBaseline";
 import { render } from "react-dom";
 import { theme } from "./theme";
 import { Provider } from "react-redux";
@@ -47,17 +47,19 @@ Happy PipeCD-ing 🙌
   render(
     <CookiesProvider>
       <Provider store={store}>
-        <ThemeProvider theme={theme}>
-          <BrowserRouter
-            future={{
-              v7_startTransition: false,
-              v7_relativeSplatPath: false,
-            }}
-          >
-            <CssBaseline />
-            <Routes />
-          </BrowserRouter>
-        </ThemeProvider>
+        <StyledEngineProvider injectFirst>
+          <ThemeProvider theme={theme}>
+            <BrowserRouter
+              future={{
+                v7_startTransition: false,
+                v7_relativeSplatPath: false,
+              }}
+            >
+              <CssBaseline />
+              <Routes />
+            </BrowserRouter>
+          </ThemeProvider>
+        </StyledEngineProvider>
       </Provider>
     </CookiesProvider>,
     document.getElementById("root")

@@ -1,7 +1,7 @@
-import chartColor from "@material-ui/core/colors/deepPurple";
 import { FC } from "react";
 import { InsightDataPoint, InsightResolution } from "~/modules/insight";
 import { ChartBase } from "../chart-base";
+import { deepPurple as chartColor } from "@mui/material/colors";
 
 export interface ChangeFailureRateChartProps {
   resolution: InsightResolution;

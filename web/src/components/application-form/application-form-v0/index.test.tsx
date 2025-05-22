@@ -103,18 +103,18 @@ describe("ApplicationFormV0", () => {
 
     it("form contain correct input by Step", async () => {
       // select piped
-      userEvent.click(screen.getByRole("button", { name: /piped/i }));
+      userEvent.click(screen.getByRole("combobox", { name: /piped/i }));
       const optionName = `${dummyPiped.name} (${dummyPiped.id})`;
       userEvent.click(screen.getByRole("option", { name: optionName }));
 
       // select Platform Provider
       const platFormName = "Platform Provider";
       const optionPlatformName = dummyPiped.cloudProvidersList[0].name;
-      userEvent.click(screen.getByRole("button", { name: platFormName }));
+      userEvent.click(screen.getByRole("combobox", { name: platFormName }));
       userEvent.click(screen.getByRole("option", { name: optionPlatformName }));
 
       // select Application
-      userEvent.click(screen.getByRole("textbox", { name: "Application" }));
+      userEvent.click(screen.getByRole("combobox", { name: "Application" }));
       const optionApplicationName = `name: ${dummyUnregisteredApplication.name}, repo: ${dummyUnregisteredApplication.repoId}`;
       userEvent.click(
         screen.getByRole("option", { name: optionApplicationName })
