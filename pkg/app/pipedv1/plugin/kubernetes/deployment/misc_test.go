@@ -276,3 +276,45 @@ spec:
 		})
 	}
 }
+
+func TestDuplicateManifests(t *testing.T) {
+	yaml := `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-config
+  labels:
+    foo: bar
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: another-config
+  labels:
+    bar: baz
+`
+	manifests := mustParseManifests(t, yaml)
+	require.Len(t, manifests, 2)
+
+	nameSuffix := "canary"
+	copied := duplicateManifests(manifests, nameSuffix)
+	require.Len(t, copied, 2)
+
+	// Check that names are suffixed and originals are unchanged
+	assert.Equal(t, "test-config", manifests[0].Name())
+	assert.Equal(t, "another-config", manifests[1].Name())
+	assert.Equal(t, "test-config-canary", copied[0].Name())
+	assert.Equal(t, "another-config-canary", copied[1].Name())
+
+	// Mutate copied and ensure original is not affected
+	copied[0].AddLabels(map[string]string{"foo": "changed"})
+
+	var origCfg, copiedCfg corev1.ConfigMap
+	err := manifests[0].ConvertToStructuredObject(&origCfg)
+	require.NoError(t, err)
+	err = copied[0].ConvertToStructuredObject(&copiedCfg)
+	require.NoError(t, err)
+
+	assert.Equal(t, "bar", origCfg.Labels["foo"], "original label should remain unchanged")
+	assert.Equal(t, "changed", copiedCfg.Labels["foo"], "copied label should be updated")
+}
