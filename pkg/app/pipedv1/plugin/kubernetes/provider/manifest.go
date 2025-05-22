@@ -80,6 +80,13 @@ func (m Manifest) DeepCopy() Manifest {
 	return Manifest{body: m.body.DeepCopy()}
 }
 
+// DeepCopyWithName returns a deep copy of the manifest with the given name.
+func (m Manifest) DeepCopyWithName(name string) Manifest {
+	copied := m.DeepCopy()
+	copied.body.SetName(name)
+	return copied
+}
+
 func (m Manifest) Key() ResourceKey {
 	return makeResourceKey(m.body)
 }

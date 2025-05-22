@@ -118,3 +118,12 @@ func addVariantLabelsAndAnnotations(m []provider.Manifest, variantLabel, variant
 		})
 	}
 }
+
+// duplicateManifests duplicates the given manifests and appends a name suffix to each manifest.
+func duplicateManifests(manifests []provider.Manifest, nameSuffix string) []provider.Manifest {
+	copied := make([]provider.Manifest, len(manifests))
+	for i, m := range manifests {
+		copied[i] = m.DeepCopyWithName(makeSuffixedName(m.Name(), nameSuffix))
+	}
+	return copied
+}
