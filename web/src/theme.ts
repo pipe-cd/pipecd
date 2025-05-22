@@ -1,7 +1,7 @@
-import { createTheme } from "@material-ui/core/styles";
-import cyan from "@material-ui/core/colors/cyan";
+import { createTheme } from "@mui/material/styles";
+import { cyan } from "@mui/material/colors";
 
-declare module "@material-ui/core/styles/createTypography" {
+declare module "@mui/material/styles/createTypography" {
   interface FontStyle {
     fontFamilyMono: string;
   }
@@ -12,20 +12,22 @@ declare module "@material-ui/core/styles/createTypography" {
 }
 
 export const theme = createTheme({
-  props: {
+  components: {
     MuiButtonBase: {
-      disableRipple: true,
-    },
-    MuiTypography: {
-      variantMapping: {
-        body1: "div",
-        body2: "div",
+      defaultProps: {
+        disableRipple: true,
       },
     },
-  },
-  overrides: {
+    MuiTypography: {
+      defaultProps: {
+        variantMapping: {
+          body1: "div",
+          body2: "div",
+        },
+      },
+    },
     MuiCssBaseline: {
-      "@global": {
+      styleOverrides: {
         html: {
           height: "100%",
         },
@@ -41,13 +43,17 @@ export const theme = createTheme({
       },
     },
     MuiDialog: {
-      paper: {
-        borderRadius: 16,
+      styleOverrides: {
+        paper: {
+          borderRadius: 16,
+        },
       },
     },
     MuiDialogActions: {
-      spacing: {
-        padding: 16,
+      styleOverrides: {
+        spacing: {
+          padding: 16,
+        },
       },
     },
   },
@@ -64,6 +70,9 @@ export const theme = createTheme({
       dark: "#9d0001",
     },
     secondary: cyan,
+    background: {
+      default: "#fafafa",
+    },
   },
   typography: {
     subtitle2: {

@@ -2,14 +2,12 @@ import { Application, selectById } from "~/modules/applications";
 import {
   Box,
   Button,
-  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Typography,
-  makeStyles,
-} from "@material-ui/core";
+} from "@mui/material";
 import { FC, Fragment, memo, useCallback } from "react";
 import { UI_TEXT_CANCEL, UI_TEXT_DELETE } from "~/constants/ui-text";
 import {
@@ -18,34 +16,13 @@ import {
 } from "~/modules/delete-application";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 
-import Alert from "@material-ui/lab/Alert";
+import Alert from "@mui/material/Alert";
 import { DELETE_APPLICATION_SUCCESS } from "~/constants/toast-text";
-import { Skeleton } from "@material-ui/lab";
+import { Skeleton } from "@mui/material";
 import { addToast } from "~/modules/toasts";
-import { red } from "@material-ui/core/colors";
+import { red } from "@mui/material/colors";
 import { shallowEqual } from "react-redux";
-import { useStyles as useButtonStyles } from "~/styles/button";
-
-const useStyles = makeStyles((theme) => ({
-  applicationName: {
-    color: theme.palette.text.primary,
-    fontWeight: theme.typography.fontWeightMedium,
-  },
-  applicationLabels: {
-    color: theme.palette.text.primary,
-    fontWeight: theme.typography.fontWeightMedium,
-  },
-  description: {
-    marginBottom: theme.spacing(2),
-  },
-  deleteButton: {
-    color: theme.palette.getContrastText(red[400]),
-    backgroundColor: red[800],
-    "&:hover": {
-      backgroundColor: red[800],
-    },
-  },
-}));
+import { SpinnerIcon } from "~/styles/button";
 
 const TITLE = "Delete Application";
 const ALERT_TEXT = "Are you sure you want to delete the application?";
@@ -56,8 +33,7 @@ export interface DeleteApplicationDialogProps {
 
 export const DeleteApplicationDialog: FC<DeleteApplicationDialogProps> = memo(
   function DeleteApplicationDialog({ onDeleted }) {
-    const classes = useStyles();
-    const buttonClasses = useButtonStyles();
+    // const buttonClasses = useButtonStyles();
     const dispatch = useAppDispatch();
 
     const [application, isDeleting] = useAppSelector<
@@ -112,20 +88,36 @@ export const DeleteApplicationDialog: FC<DeleteApplicationDialogProps> = memo(
       >
         <DialogTitle>{TITLE}</DialogTitle>
         <DialogContent>
-          <Alert severity="error" className={classes.description}>
+          <Alert severity="error" sx={{ mb: 2 }}>
             {ALERT_TEXT}
           </Alert>
           <Typography variant="caption">Name</Typography>
-          <Typography variant="body1" className={classes.applicationName}>
+          <Typography
+            variant="body1"
+            sx={(theme) => ({
+              color: theme.palette.text.primary,
+              fontWeight: theme.typography.fontWeightMedium,
+            })}
+          >
             {application ? (
               application.name
             ) : (
               <Skeleton height={24} width={200} />
             )}
           </Typography>
-          <Box height={24} />
+          <Box
+            sx={{
+              height: 24,
+            }}
+          />
           <Typography variant="caption">Labels</Typography>
-          <Typography variant="body1" className={classes.applicationLabels}>
+          <Typography
+            variant="body1"
+            sx={(theme) => ({
+              color: theme.palette.text.primary,
+              fontWeight: theme.typography.fontWeightMedium,
+            })}
+          >
             {renderLabels()}
           </Typography>
         </DialogContent>
@@ -137,13 +129,17 @@ export const DeleteApplicationDialog: FC<DeleteApplicationDialogProps> = memo(
             variant="contained"
             color="primary"
             onClick={handleDelete}
-            className={classes.deleteButton}
+            sx={(theme) => ({
+              color: theme.palette.getContrastText(red[400]),
+              backgroundColor: red[800],
+              "&:hover": {
+                backgroundColor: red[800],
+              },
+            })}
             disabled={isDeleting}
           >
             {UI_TEXT_DELETE}
-            {isDeleting && (
-              <CircularProgress size={24} className={buttonClasses.progress} />
-            )}
+            {isDeleting && <SpinnerIcon />}
           </Button>
         </DialogActions>
       </Dialog>

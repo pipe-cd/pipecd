@@ -1,32 +1,7 @@
-import { Button, makeStyles, Paper, Typography } from "@material-ui/core";
+import { Box, Button, Paper, Typography } from "@mui/material";
 import { FC, useState } from "react";
 import { CopyIconButton } from "~/components/copy-icon-button";
 import { DiffView } from "./diff-view";
-
-const useStyles = makeStyles((theme) => ({
-  summary: {
-    display: "flex",
-    alignItems: "center",
-  },
-  detail: {
-    padding: theme.spacing(2),
-    fontFamily: theme.typography.fontFamilyMono,
-    marginTop: theme.spacing(1),
-    wordBreak: "break-all",
-    overflow: "auto",
-    maxHeight: 400,
-  },
-  showButton: {
-    color: theme.palette.primary.light,
-    marginLeft: theme.spacing(1),
-    marginRight: theme.spacing(1),
-  },
-  showText: {
-    color: theme.palette.grey[500],
-    marginLeft: theme.spacing(0.5),
-    cursor: "pointer",
-  },
-}));
 
 export interface SyncStateReasonProps {
   summary: string;
@@ -37,11 +12,15 @@ export const OutOfSyncReason: FC<SyncStateReasonProps> = ({
   summary,
   detail,
 }) => {
-  const classes = useStyles();
   const [showReason, setShowReason] = useState(false);
   return (
     <>
-      <div className={classes.summary}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
         <Typography variant="body2" color="textSecondary">
           {summary}
         </Typography>
@@ -50,7 +29,11 @@ export const OutOfSyncReason: FC<SyncStateReasonProps> = ({
             <Button
               variant="text"
               size="small"
-              className={classes.showButton}
+              sx={{
+                color: "primary.light",
+                marginLeft: 1,
+                marginRight: 1,
+              }}
               onClick={() => setShowReason(!showReason)}
             >
               {showReason ? "HIDE DETAILS" : "SHOW DETAILS"}
@@ -60,10 +43,21 @@ export const OutOfSyncReason: FC<SyncStateReasonProps> = ({
             )}
           </>
         )}
-      </div>
-
+      </Box>
       {showReason && (
-        <Paper elevation={0} variant="outlined" className={classes.detail}>
+        <Paper
+          elevation={0}
+          variant="outlined"
+          sx={{
+            padding: 2,
+            fontFamily: "fontFamilyMono",
+            marginTop: 1,
+            wordBreak: "break-all",
+            overflow: "auto",
+            maxHeight: 400,
+            fontSize: 14,
+          }}
+        >
           <DiffView content={detail} />
         </Paper>
       )}
@@ -72,7 +66,6 @@ export const OutOfSyncReason: FC<SyncStateReasonProps> = ({
 };
 
 export const InvalidConfigReason: FC<SyncStateReasonProps> = ({ detail }) => {
-  const classes = useStyles();
   const [showReason, setShowReason] = useState(false);
 
   const msgHeader = "Failed to load application config: ";
@@ -80,39 +73,52 @@ export const InvalidConfigReason: FC<SyncStateReasonProps> = ({ detail }) => {
   if (detail.length < MAX_DISPLAY_LENGTH) {
     return (
       <>
-        <div className={classes.summary}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
           <Typography variant="body2" color="error">
             {msgHeader}
             <strong>{detail}</strong>
           </Typography>
-        </div>
+        </Box>
       </>
     );
   }
 
   return (
-    <>
-      <div className={classes.summary}>
-        {showReason ? (
-          <Typography variant="body2" color="error">
-            {msgHeader}
-            <strong>{detail}</strong>
-          </Typography>
-        ) : (
-          <Typography variant="body2" color="error">
-            {msgHeader}
-            <strong>{detail.slice(0, MAX_DISPLAY_LENGTH) + "..."}</strong>
-          </Typography>
-        )}
-        {detail && (
-          <span
-            className={classes.showText}
-            onClick={() => setShowReason(!showReason)}
-          >
-            {showReason ? "show less" : "show more"}
-          </span>
-        )}
-      </div>
-    </>
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+      }}
+    >
+      {showReason ? (
+        <Typography variant="body2" color="error">
+          {msgHeader}
+          <strong>{detail}</strong>
+        </Typography>
+      ) : (
+        <Typography variant="body2" color="error">
+          {msgHeader}
+          <strong>{detail.slice(0, MAX_DISPLAY_LENGTH) + "..."}</strong>
+        </Typography>
+      )}
+      {detail && (
+        <Typography
+          variant="body2"
+          onClick={() => setShowReason(!showReason)}
+          sx={{
+            color: "grey.500",
+            ml: 0.5,
+            cursor: "pointer",
+          }}
+        >
+          {showReason ? "show less" : "show more"}
+        </Typography>
+      )}
+    </Box>
   );
 };

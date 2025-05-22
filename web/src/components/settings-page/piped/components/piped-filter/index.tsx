@@ -1,22 +1,6 @@
-import {
-  FormControl,
-  InputLabel,
-  makeStyles,
-  MenuItem,
-  Select,
-} from "@material-ui/core";
+import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 import { FC } from "react";
 import { FilterView } from "~/components/filter-view";
-
-const useStyles = makeStyles((theme) => ({
-  formItem: {
-    width: "100%",
-    marginTop: theme.spacing(4),
-  },
-  select: {
-    width: "100%",
-  },
-}));
 
 const ALL_VALUE = "ALL";
 const getActiveStatusText = (v: boolean): string =>
@@ -37,11 +21,9 @@ export interface PipedFilterProps {
 }
 
 export const PipedFilter: FC<PipedFilterProps> = ({ values, onChange }) => {
-  const classes = useStyles();
-
   return (
     <FilterView onClear={() => onChange({ enabled: true })}>
-      <FormControl className={classes.formItem} variant="outlined">
+      <FormControl sx={{ marginTop: 4 }} fullWidth variant="outlined">
         <InputLabel id="filter-active-status">Active Status</InputLabel>
         <Select
           labelId="filter-active-status"
@@ -52,7 +34,7 @@ export const PipedFilter: FC<PipedFilterProps> = ({ values, onChange }) => {
               : getActiveStatusText(values.enabled)
           }
           label="Active Status"
-          className={classes.select}
+          fullWidth
           onChange={(e) => {
             onChange({
               enabled: textValueMap[e.target.value as string],

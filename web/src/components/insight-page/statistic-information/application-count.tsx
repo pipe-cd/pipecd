@@ -1,15 +1,6 @@
-import {
-  Box,
-  Card,
-  CardContent,
-  makeStyles,
-  Typography,
-} from "@material-ui/core";
-import clsx from "clsx";
+import { Box, CardContent, Typography } from "@mui/material";
 import { FC, useEffect, useMemo } from "react";
 import { useAppSelector } from "~/hooks/redux";
-import red from "@material-ui/core/colors/red";
-import green from "@material-ui/core/colors/green";
 import useEChartState from "~/hooks/useEChartState";
 import { PieChart } from "echarts/charts";
 import {
@@ -23,23 +14,13 @@ import ChartEmptyData from "~/components/chart-empty-data";
 import LegendRow from "./legend-row";
 import { getPercentage } from "~/utils/common";
 
+import { red, green } from "@mui/material/colors";
+import { CardWrapper } from "./styles";
+
 const enabledColor = green[500];
 const disabledColor = red[500];
 
-const useStyles = makeStyles(() => ({
-  root: {
-    minWidth: 300,
-    display: "inline-block",
-    overflow: "visible",
-    position: "relative",
-  },
-  pageTitle: {
-    fontWeight: "bold",
-  },
-}));
-
 const ApplicationCount: FC = () => {
-  const classes = useStyles();
   const appSummary = useAppSelector((state) => state.applicationCounts.summary);
 
   const { chart, chartElm } = useEChartState({
@@ -106,12 +87,21 @@ const ApplicationCount: FC = () => {
   }, [chart, data, appSummary.total]);
 
   return (
-    <Card raised className={clsx(classes.root)}>
+    <CardWrapper raised>
       <CardContent>
-        <Typography color="textSecondary" className={classes.pageTitle}>
+        <Typography
+          color="textSecondary"
+          sx={{
+            fontWeight: "bold",
+          }}
+        >
           Applications
         </Typography>
-        <Box position={"relative"}>
+        <Box
+          sx={{
+            position: "relative",
+          }}
+        >
           <div style={{ width: "100%", height: 150 }} ref={chartElm} />
           <ChartEmptyData visible={!appSummary.total} />
         </Box>
@@ -133,7 +123,7 @@ const ApplicationCount: FC = () => {
           ]}
         />
       </CardContent>
-    </Card>
+    </CardWrapper>
   );
 };
 

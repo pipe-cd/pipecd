@@ -1,4 +1,4 @@
-import { ThemeProvider } from "@material-ui/core";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material";
 import {
   AnyAction,
   configureStore,
@@ -59,11 +59,13 @@ const customRender = (
   }: {
     initialState?: DeepPartial<AppState>;
     store?: Store<AppState, AnyAction>;
-  } & Omit<RenderOptions, "queries">
+  } & Omit<RenderOptions, "queries"> = {}
 ): RenderResult => {
   const Wrapper: React.ComponentType = ({ children }) => (
     <Provider store={store}>
-      <ThemeProvider theme={theme}>{children}</ThemeProvider>
+      <StyledEngineProvider injectFirst>
+        <ThemeProvider theme={theme}>{children}</ThemeProvider>
+      </StyledEngineProvider>
     </Provider>
   );
   return render(ui, { wrapper: Wrapper, ...renderOptions });
