@@ -18,7 +18,9 @@ import (
 	"fmt"
 	"strings"
 
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 )
@@ -97,6 +99,111 @@ func generateVariantServiceManifests(services []provider.Manifest, variantLabel,
 		}
 		manifests = append(manifests, manifest)
 	}
+	return manifests, nil
+}
+
+// generateVariantWorkloadManifests generates Workload manifests for the specified variant.
+// It duplicates the given Workload manifests, adds a name suffix, sets the variant label to the selector,
+// and updates the ENV references in containers to use canary's ConfigMaps and Secrets.
+func generateVariantWorkloadManifests(workloads, configmaps, secrets []provider.Manifest, variantLabel, variant, nameSuffix string, replicasCalculator func(*int32) int32) ([]provider.Manifest, error) {
+	manifests := make([]provider.Manifest, 0, len(workloads))
+
+	cmNames := make(map[string]struct{}, len(configmaps))
+	for _, cm := range configmaps {
+		cmNames[cm.Name()] = struct{}{}
+	}
+
+	secretNames := make(map[string]struct{}, len(secrets))
+	for _, secret := range secrets {
+		secretNames[secret.Name()] = struct{}{}
+	}
+
+	updateContainers := func(containers []corev1.Container) {
+		for _, container := range containers {
+			for _, env := range container.Env {
+				if v := env.ValueFrom; v != nil {
+					if ref := v.ConfigMapKeyRef; ref != nil {
+						if _, ok := cmNames[ref.Name]; ok {
+							ref.Name = makeSuffixedName(ref.Name, nameSuffix)
+						}
+					}
+					if ref := v.SecretKeyRef; ref != nil {
+						if _, ok := secretNames[ref.Name]; ok {
+							ref.Name = makeSuffixedName(ref.Name, nameSuffix)
+						}
+					}
+				}
+			}
+			for _, envFrom := range container.EnvFrom {
+				if ref := envFrom.ConfigMapRef; ref != nil {
+					if _, ok := cmNames[ref.Name]; ok {
+						ref.Name = makeSuffixedName(ref.Name, nameSuffix)
+					}
+				}
+				if ref := envFrom.SecretRef; ref != nil {
+					if _, ok := secretNames[ref.Name]; ok {
+						ref.Name = makeSuffixedName(ref.Name, nameSuffix)
+					}
+				}
+			}
+		}
+	}
+
+	updatePod := func(pod *corev1.PodTemplateSpec) {
+		// Add variant labels.
+		if pod.Labels == nil {
+			pod.Labels = map[string]string{}
+		}
+		pod.Labels[variantLabel] = variant
+
+		// Update volumes to use canary's ConfigMaps and Secrets.
+		for i := range pod.Spec.Volumes {
+			if cm := pod.Spec.Volumes[i].ConfigMap; cm != nil {
+				if _, ok := cmNames[cm.Name]; ok {
+					cm.Name = makeSuffixedName(cm.Name, nameSuffix)
+				}
+			}
+			if s := pod.Spec.Volumes[i].Secret; s != nil {
+				if _, ok := secretNames[s.SecretName]; ok {
+					s.SecretName = makeSuffixedName(s.SecretName, nameSuffix)
+				}
+			}
+		}
+
+		// Update ENV references in containers.
+		updateContainers(pod.Spec.InitContainers)
+		updateContainers(pod.Spec.Containers)
+	}
+
+	updateDeployment := func(d *appsv1.Deployment) {
+		d.Name = makeSuffixedName(d.Name, nameSuffix)
+		if replicasCalculator != nil {
+			replicas := replicasCalculator(d.Spec.Replicas)
+			d.Spec.Replicas = &replicas
+		}
+		d.Spec.Selector = metav1.AddLabelToSelector(d.Spec.Selector, variantLabel, variant)
+		updatePod(&d.Spec.Template)
+	}
+
+	for _, m := range workloads {
+		switch m.Kind() {
+		case provider.KindDeployment:
+			d := &appsv1.Deployment{}
+			if err := m.ConvertToStructuredObject(d); err != nil {
+				return nil, err
+			}
+			updateDeployment(d)
+			manifest, err := provider.FromStructuredObject(d)
+			if err != nil {
+				return nil, err
+			}
+			manifests = append(manifests, manifest)
+
+		default:
+			return nil, fmt.Errorf("unsupported workload kind %s", m.Kind())
+		}
+	}
+
 	return manifests, nil
 }
 
