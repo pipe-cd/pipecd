@@ -303,6 +303,8 @@ func TestGenerateVariantWorkloadManifests(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			manifests, err := provider.LoadManifestsFromYAMLFile(tc.manifestsFile)
 			require.NoError(t, err)
 			require.Equal(t, 2, len(manifests))
