@@ -2,4 +2,4 @@
 * @pipe-cd/pipecd-approvers
 
 # Web dir
-web/ @pipe-cd/pipecd-approvers-web @pipe-cd/pipecd-approvers
+/web/ @pipe-cd/pipecd-approvers-web @pipe-cd/pipecd-approvers
