@@ -258,3 +258,42 @@ func deleteResources(ctx context.Context, lp sdk.StageLogPersister, applier *pro
 
 	return deletedCount
 }
+
+// deleteVariantResources deletes the resources of the specified variant.
+// It finds the resources of the specified variant and deletes them.
+// It deletes the resources in the order of Service -> Workload -> Others -> Cluster-scoped resources.
+// It returns the number of deleted resources.
+func deleteVariantResources(ctx context.Context, lp sdk.StageLogPersister, kubectl *provider.Kubectl, applier *provider.Applier, kubeConfigPath string, applicationID, variantLabel, variant string) (int, error) {
+	namespacedLiveResources, clusterScopedLiveResources, err := provider.GetLiveResources(ctx, kubectl, kubeConfigPath, applicationID, fmt.Sprintf("%s=%s", variantLabel, variant))
+	if err != nil {
+		return 0, err
+	}
+
+	services := make([]provider.ResourceKey, 0, len(namespacedLiveResources))
+	workloads := make([]provider.ResourceKey, 0, len(namespacedLiveResources))
+	others := make([]provider.ResourceKey, 0, len(namespacedLiveResources))
+	clusterScoped := make([]provider.ResourceKey, 0, len(clusterScopedLiveResources))
+
+	for _, r := range namespacedLiveResources {
+		switch {
+		case r.IsService():
+			services = append(services, r.Key())
+		case r.IsWorkload():
+			workloads = append(workloads, r.Key())
+		default:
+			others = append(others, r.Key())
+		}
+	}
+
+	for _, r := range clusterScopedLiveResources {
+		clusterScoped = append(clusterScoped, r.Key())
+	}
+
+	var deletedCount int
+	deletedCount += deleteResources(ctx, lp, applier, services)
+	deletedCount += deleteResources(ctx, lp, applier, workloads)
+	deletedCount += deleteResources(ctx, lp, applier, others)
+	deletedCount += deleteResources(ctx, lp, applier, clusterScoped)
+
+	return deletedCount, nil
+}
