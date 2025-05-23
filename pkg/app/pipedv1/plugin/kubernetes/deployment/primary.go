@@ -100,7 +100,7 @@ func (p *Plugin) executeK8sPrimaryRolloutStage(ctx context.Context, input *sdk.E
 
 	// Generate the manifests for applying.
 	lp.Infof("Start generating manifests for PRIMARY variant")
-	if primaryManifests, err = generatePrimaryManifests(primaryManifests, stageCfg, variantLabel, primaryVariant); err != nil {
+	if primaryManifests, err = generatePrimaryManifests(appCfg, primaryManifests, stageCfg, variantLabel, primaryVariant); err != nil {
 		lp.Errorf("Unable to generate manifests for PRIMARY variant (%v)", err)
 		return sdk.StageStatusFailure
 	}
@@ -179,7 +179,7 @@ func (p *Plugin) executeK8sPrimaryRolloutStage(ctx context.Context, input *sdk.E
 // generatePrimaryManifests generates manifests for the PRIMARY variant.
 // It duplicates the input manifests, adds the variant label to workloads if needed,
 // and generates Service manifests with a name suffix and variant selector if requested.
-func generatePrimaryManifests(manifests []provider.Manifest, stageCfg kubeconfig.K8sPrimaryRolloutStageOptions, variantLabel, variant string) ([]provider.Manifest, error) {
+func generatePrimaryManifests(appCfg *kubeconfig.KubernetesApplicationSpec, manifests []provider.Manifest, stageCfg kubeconfig.K8sPrimaryRolloutStageOptions, variantLabel, variant string) ([]provider.Manifest, error) {
 	suffix := variant
 	if stageCfg.Suffix != "" {
 		suffix = stageCfg.Suffix
@@ -199,10 +199,15 @@ func generatePrimaryManifests(manifests []provider.Manifest, stageCfg kubeconfig
 
 	// Generate Service manifests for the PRIMARY variant if requested.
 	if stageCfg.CreateService {
-		services := findManifests("Service", "", primaryManifests)
+		serviceName := appCfg.Service.Name
+		services := findManifests(provider.KindService, serviceName, primaryManifests)
 		if len(services) == 0 {
 			return nil, fmt.Errorf("unable to find any service for PRIMARY variant")
 		}
+		// Because the loaded manifests are read-only
+		// so we duplicate them to avoid updating the shared manifests data in cache.
+		services = provider.DeepCopyManifests(services)
+
 		generatedServices, err := generateVariantServiceManifests(services, variantLabel, variant, suffix)
 		if err != nil {
 			return nil, fmt.Errorf("failed to generate service manifests: %w", err)

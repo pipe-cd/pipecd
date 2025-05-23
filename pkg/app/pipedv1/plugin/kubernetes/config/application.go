@@ -29,6 +29,10 @@ type KubernetesApplicationSpec struct {
 	// Configuration for quick sync.
 	QuickSync K8sSyncStageOptions `json:"quickSync"`
 
+	// Which resource should be considered as the Service of application.
+	// Empty means the first Service resource will be used.
+	Service K8sResourceReference `json:"service"`
+
 	// Which resources should be considered as the Workload of application.
 	// Empty means all Deployments.
 	// e.g.
