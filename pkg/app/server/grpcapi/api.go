@@ -146,27 +146,6 @@ func (a *API) AddApplication(ctx context.Context, req *apiservice.AddApplication
 		return nil, status.Error(codes.InvalidArgument, "Requested piped does not belong to your project")
 	}
 
-	existingApps, _, err := a.applicationStore.List(ctx, datastore.ListOptions{
-		Filters: []datastore.ListFilter{
-			{
-				Field:    "ProjectId",
-				Operator: datastore.OperatorEqual,
-				Value:    key.ProjectId,
-			},
-			{
-				Field:    "Name",
-				Operator: datastore.OperatorEqual,
-				Value:    req.Name,
-			},
-		},
-	})
-	if err != nil {
-		return nil, gRPCStoreError(err, "list applications for duplicate check")
-	}
-	if len(existingApps) > 0 {
-		return nil, status.Error(codes.AlreadyExists, fmt.Sprintf("application with name %q already exists in project %q", req.Name, key.ProjectId))
-	}
-
 	gitpath, err := makeGitPath(
 		req.GitPath.Repo.Id,
 		req.GitPath.Path,
@@ -179,7 +158,7 @@ func (a *API) AddApplication(ctx context.Context, req *apiservice.AddApplication
 	}
 	gitpathApps, _, err := a.applicationStore.List(ctx, datastore.ListOptions{
 		Filters: []datastore.ListFilter{
-			{	
+			{
 				Field:    "ProjectId",
 				Operator: datastore.OperatorEqual,
 				Value:    key.ProjectId,
