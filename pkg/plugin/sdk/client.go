@@ -21,20 +21,51 @@ import (
 	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
-	"github.com/pipe-cd/pipecd/pkg/plugin/pipedapi"
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry"
+	"github.com/pipe-cd/pipecd/pkg/rpc/rpcclient"
+	"google.golang.org/grpc"
 )
 
 const (
 	listStageCommandsInterval = 5 * time.Second
 )
 
+type pluginServiceClient struct {
+	pipedservice.PluginServiceClient
+	conn *grpc.ClientConn
+}
+
+func newPluginServiceClient(ctx context.Context, address string, opts ...rpcclient.DialOption) (*pluginServiceClient, error) {
+	// Clone the opts to avoid modifying the original opts slice.
+	opts = slices.Clone(opts)
+
+	// Append the required options.
+	// The WithBlock option is required to make the client wait until the connection is up.
+	// The WithInsecure option is required to disable the transport security.
+	// The piped service does not require transport security because it is only used in localhost.
+	opts = append(opts, rpcclient.WithBlock(), rpcclient.WithInsecure())
+
+	conn, err := rpcclient.DialContext(ctx, address, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pluginServiceClient{
+		PluginServiceClient: pipedservice.NewPluginServiceClient(conn),
+		conn:                conn,
+	}, nil
+}
+
+func (c *pluginServiceClient) Close() error {
+	return c.conn.Close()
+}
+
 // Client is a toolkit for interacting with the piped service.
 // It provides methods to call the piped service APIs.
 // It's a wrapper around the raw piped service client.
 type Client struct {
-	base *pipedapi.PluginServiceClient
+	base *pluginServiceClient
 
 	// pluginName is used to identify which plugin sends requests to piped.
 	pluginName string
@@ -60,7 +91,7 @@ type Client struct {
 // NewClient creates a new client.
 // DO NOT USE this function except in tests.
 // FIXME: Remove this function and make a better way for tests.
-func NewClient(base *pipedapi.PluginServiceClient, pluginName, applicationID, stageID string, lp StageLogPersister, tr *toolregistry.ToolRegistry) *Client {
+func NewClient(base *pluginServiceClient, pluginName, applicationID, stageID string, lp StageLogPersister, tr *toolregistry.ToolRegistry) *Client {
 	return &Client{
 		base:          base,
 		pluginName:    pluginName,
