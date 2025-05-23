@@ -61,3 +61,7 @@ gomock_reflect_*/
 
 # Cache
 .cache
+
+# go work files
+/go.work
+/go.work.sum
