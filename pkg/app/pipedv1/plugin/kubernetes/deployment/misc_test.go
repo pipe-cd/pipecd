@@ -277,6 +277,68 @@ spec:
 	}
 }
 
+func TestGenerateVariantWorkloadManifests(t *testing.T) {
+	t.Parallel()
+
+	const (
+		variantLabel  = "pipecd.dev/variant"
+		canaryVariant = "canary-variant"
+	)
+	testcases := []struct {
+		name           string
+		manifestsFile  string
+		configmapsFile string
+		secretsFile    string
+	}{
+		{
+			name:          "No configmap and secret",
+			manifestsFile: "testdata/variant_workload_manifests/no-config-deployments.yaml",
+		},
+		{
+			name:           "Has configmap and secret",
+			manifestsFile:  "testdata/variant_workload_manifests/deployments.yaml",
+			configmapsFile: "testdata/variant_workload_manifests/configmaps.yaml",
+			secretsFile:    "testdata/variant_workload_manifests/secrets.yaml",
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			manifests, err := provider.LoadManifestsFromYAMLFile(tc.manifestsFile)
+			require.NoError(t, err)
+			require.Equal(t, 2, len(manifests))
+
+			var configmaps, secrets []provider.Manifest
+			if tc.configmapsFile != "" {
+				configmaps, err = provider.LoadManifestsFromYAMLFile(tc.configmapsFile)
+				require.NoError(t, err)
+			}
+			if tc.secretsFile != "" {
+				secrets, err = provider.LoadManifestsFromYAMLFile(tc.secretsFile)
+				require.NoError(t, err)
+			}
+
+			calculator := func(r *int32) int32 {
+				return *r - 1
+			}
+			generatedManifests, err := generateVariantWorkloadManifests(
+				manifests[:1],
+				configmaps,
+				secrets,
+				variantLabel,
+				canaryVariant,
+				"canary",
+				calculator,
+			)
+			require.NoError(t, err)
+			require.Equal(t, 1, len(generatedManifests))
+
+			assert.Equal(t, manifests[1], generatedManifests[0])
+		})
+	}
+}
+
 func TestAddVariantLabelsAndAnnotations(t *testing.T) {
 	t.Parallel()
 
