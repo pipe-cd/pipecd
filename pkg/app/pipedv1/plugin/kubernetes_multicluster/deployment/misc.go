@@ -14,7 +14,13 @@
 
 package deployment
 
-import "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
+import (
+	"context"
+	"errors"
+
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
+	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
+)
 
 func ensureVariantSelectorInWorkload(m provider.Manifest, variantLabel, variant string) error {
 	variantMap := map[string]string{
@@ -36,4 +42,25 @@ func addVariantLabelsAndAnnotations(m []provider.Manifest, variantLabel, variant
 			variantLabel: variant,
 		})
 	}
+}
+
+// deleteResources deletes the given resources.
+// It returns the number of deleted resources.
+func deleteResources(ctx context.Context, lp sdk.StageLogPersister, applier *provider.Applier, keys []provider.ResourceKey) int {
+	var deletedCount int
+
+	for _, k := range keys {
+		if err := applier.Delete(ctx, k); err != nil {
+			if errors.Is(err, provider.ErrNotFound) {
+				lp.Infof("Specified resource does not exist, so skip deleting the resource: %s (%v)", k.ReadableString(), err)
+				continue
+			}
+			lp.Errorf("Failed while deleting resource %s (%v)", k.ReadableString(), err)
+			continue // continue to delete other resources
+		}
+		deletedCount++
+		lp.Successf("- deleted resource: %s", k.ReadableString())
+	}
+
+	return deletedCount
 }
