@@ -595,12 +595,12 @@ func TestApplier_getNamespaceToRun(t *testing.T) {
 		expected       string
 	}{
 		{
-			name:           "input namespace is used",
+			name:           "input namespace is not used",
 			inputNamespace: "input-namespace",
 			resourceKey: ResourceKey{
 				namespace: "resource-namespace",
 			},
-			expected: "input-namespace",
+			expected: "resource-namespace",
 		},
 		{
 			name:           "resource key namespace is used",
