@@ -34,7 +34,6 @@ func TestDeploymentToPlannedUpdater(t *testing.T) {
 		expectedStatusDesc            = "update-status-desc"
 		expectedRunningCommitHash     = "update-running-commit-hash"
 		expectedRunningConfigFilename = "update-running-config-filename"
-		expectedVersion               = "update-version"
 		expectedVersions              = []*model.ArtifactVersion{
 			{
 				Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
@@ -70,7 +69,6 @@ func TestDeploymentToPlannedUpdater(t *testing.T) {
 			expectedStatusDesc,
 			expectedRunningCommitHash,
 			expectedRunningConfigFilename,
-			expectedVersion,
 			expectedVersions,
 			expectedStages,
 		)
