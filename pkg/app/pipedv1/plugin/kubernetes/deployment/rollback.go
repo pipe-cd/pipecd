@@ -25,6 +25,11 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
+// Define an interface for Applier to allow mocking in tests.
+type ApplierInterface interface {
+	Delete(ctx context.Context, k provider.ResourceKey) error
+}
+
 func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
 	lp := input.Client.LogPersister()
 
@@ -111,11 +116,11 @@ func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.Execute
 	}
 
 	// Prune CANARY and BASELINE resources after rollback.
-	if err := removeVariantResources(ctx, applier, *cfg.Spec, cfg.Spec.VariantLabel.CanaryValue, lp); err != nil {
+	if err := removeVariantResources(ctx, applier, manifests, variantLabel, cfg.Spec.VariantLabel.CanaryValue, lp); err != nil {
 		lp.Errorf("Failed to remove CANARY resources: %v", err)
 		return sdk.StageStatusFailure
 	}
-	if err := removeVariantResources(ctx, applier, *cfg.Spec, cfg.Spec.VariantLabel.BaselineValue, lp); err != nil {
+	if err := removeVariantResources(ctx, applier, manifests, variantLabel, cfg.Spec.VariantLabel.BaselineValue, lp); err != nil {
 		lp.Errorf("Failed to remove BASELINE resources: %v", err)
 		return sdk.StageStatusFailure
 	}
@@ -124,15 +129,8 @@ func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.Execute
 }
 
 // removeVariantResources deletes all resources of a given variant (CANARY or BASELINE) for the application.
-func removeVariantResources(ctx context.Context, applier *provider.Applier, cfg kubeconfig.KubernetesApplicationSpec, variant string, lp sdk.StageLogPersister) error {
+func removeVariantResources(ctx context.Context, applier ApplierInterface, manifests []provider.Manifest, variantLabel, variant string, lp sdk.StageLogPersister) error {
 	lp.Infof("Pruning resources for variant: %s", variant)
-	// List all resources in the namespace with the variant label.
-	// This is a simplified approach; in production, you may want to use a more robust label selector.
-	// For now, we assume all resources managed by PipeCD have the variant label.
-	// TODO: Use a real Kubernetes client or applier to list resources by label.
-	// Here, we assume manifests are available from the last deployment config.
-	manifests := []provider.Manifest{} // TODO: Load manifests from cluster or metadata if available.
-	variantLabel := cfg.VariantLabel.Key
 	var toDelete []provider.ResourceKey
 	for _, m := range manifests {
 		labels := m.Labels()
