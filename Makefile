@@ -1,6 +1,7 @@
 ####################
 # All make commands are following the format as "make action/target"
 # "action" can be either:
+#   check:   run checks which should be passed before committing
 #   build:   build artifacts such as binary, container image, chart
 #   test:    execute test
 #   run:     run a module locally
@@ -92,8 +93,11 @@ test/go: COVERAGE ?= false
 test/go: COVERAGE_OPTS ?= -covermode=atomic
 test/go: COVERAGE_OUTPUT ?= coverage.out
 test/go: setup-envtest
-test/go: ENVTEST_BIN ?= ${PWD}/.dev/bin # We need an absolute path for setup-envtest
-test/go: KUBEBUILDER_ASSETS ?= "$(shell setup-envtest use --bin-dir $(ENVTEST_BIN) -p path)"
+# Where to find the setup-envtest binary
+test/go: GOBIN ?= ${PWD}/.dev/bin
+# We need an absolute path for setup-envtest
+test/go: ENVTEST_BIN ?= ${PWD}/.dev/bin
+test/go: KUBEBUILDER_ASSETS ?= "$(shell $(GOBIN)/setup-envtest use --bin-dir $(ENVTEST_BIN) -p path)"
 test/go:
 ifeq ($(COVERAGE), true)
 	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) go test -failfast -race $(COVERAGE_OPTS) -coverprofile=$(COVERAGE_OUTPUT).tmp ./pkg/... ./cmd/...
@@ -172,6 +176,9 @@ run/site:
 
 # Lint commands
 
+.PHONY: lint
+lint: lint/go lint/web lint/helm
+
 .PHONY: lint/go
 lint/go: FIX ?= false
 lint/go: VERSION ?= sha256:c2f5e6aaa7f89e7ab49f6bd45d8ce4ee5a030b132a5fbcac68b7959914a5a890 # golangci/golangci-lint:v1.64.7
@@ -193,6 +200,12 @@ else
 	yarn --cwd web lint
 	yarn --cwd web typecheck
 endif
+
+.PHONY: lint/helm
+lint/helm:
+	@for dir in $$(find ./manifests -mindepth 1 -maxdepth 1 -type d); do \
+		helm lint $$dir || exit $$?; \
+	done
 
 # Update commands
 
@@ -259,5 +272,21 @@ kind-down:
 	kind delete cluster --name pipecd
 
 .PHONY: setup-envtest
+# Where to install the setup-envtest binary
+setup-envtest: export GOBIN ?= ${PWD}/.dev/bin
 setup-envtest: ## Download setup-envtest locally if necessary.
-	test -s $(GOBIN)/setup-envtest || go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+	test -x $(GOBIN)/setup-envtest || go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+
+# Check commands
+.PHONY: check
+check: build lint test check/gen/code check/dco
+	./hack/ensure-check.sh
+
+.PHONY: check/gen/code
+check/gen: gen/code
+	git add -N .
+	git diff --exit-code --quiet HEAD
+
+.PHONY: check/dco
+check/dco:
+	./hack/ensure-dco.sh

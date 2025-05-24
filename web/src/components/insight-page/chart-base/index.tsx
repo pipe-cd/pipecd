@@ -1,6 +1,5 @@
-import { Box, makeStyles, Paper, Typography } from "@material-ui/core";
-import grey from "@material-ui/core/colors/grey";
-import { WarningOutlined } from "@material-ui/icons";
+import { Box, Paper, Typography } from "@mui/material";
+import { WarningOutlined } from "@mui/icons-material";
 import dayjs from "dayjs";
 import { BarChart } from "echarts/charts";
 import {
@@ -14,6 +13,7 @@ import { CanvasRenderer } from "echarts/renderers";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { InsightDataPoint, InsightResolution } from "~/modules/insight";
 import { dummyDataPointsList } from "~/__fixtures__/dummy-insight";
+import { grey } from "@mui/material/colors";
 const placeholderData = [{ name: "All", points: dummyDataPointsList }];
 
 echarts.use([
@@ -24,23 +24,6 @@ echarts.use([
   CanvasRenderer,
   LegendComponent,
 ]);
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    minWidth: 600,
-    position: "relative",
-  },
-  noDataMessage: {
-    display: "flex",
-  },
-  noDataMessageIcon: {
-    marginRight: theme.spacing(1),
-  },
-  title: {
-    padding: theme.spacing(3),
-    paddingBottom: 0,
-  },
-}));
 
 const labelFormatter = (
   time: number | string,
@@ -79,7 +62,6 @@ export const ChartBase: FC<ChartBaseProps> = ({
   lineColor,
   areaColor,
 }) => {
-  const classes = useStyles();
   const [chart, setChart] = useState<echarts.ECharts | null>(null);
   const chartElm = useRef<HTMLDivElement | null>(null);
   const isNoData = data.length === 0;
@@ -157,30 +139,38 @@ export const ChartBase: FC<ChartBaseProps> = ({
   }, [handleResize]);
 
   return (
-    <Paper elevation={1} className={classes.root}>
-      <Typography variant="h6" component="div" className={classes.title}>
+    <Paper elevation={1} sx={{ minWidth: 600, position: "relative" }}>
+      <Typography
+        variant="h6"
+        component="div"
+        sx={{
+          padding: 3,
+          pb: 0,
+        }}
+      >
         {title}
       </Typography>
-
       <div style={{ width: "100%", height: 400 }} ref={chartElm} />
       {data.length === 0 ? (
         <Box
-          width="100%"
-          height="100%"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          position="absolute"
-          top={0}
-          left={0}
-          bgcolor="#fafafabb"
+          sx={{
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            position: "absolute",
+            top: 0,
+            left: 0,
+            bgcolor: "#fafafabb",
+          }}
         >
           <Typography
             variant="body1"
             color="textSecondary"
-            className={classes.noDataMessage}
+            sx={{ display: "flex" }}
           >
-            <WarningOutlined className={classes.noDataMessageIcon} />
+            <WarningOutlined sx={{ mr: 1 }} />
             {NO_DATA_TEXT}
           </Typography>
         </Box>

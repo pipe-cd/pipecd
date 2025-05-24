@@ -82,13 +82,13 @@ describe("ApplicationFormManualV1", () => {
     });
 
     it('form contain input label "Piped"', () => {
-      const input = screen.getByRole("button", { name: "Piped" });
+      const input = screen.getByRole("combobox", { name: "Piped" });
       expect(input).toBeInTheDocument();
       expect(input).not.toHaveAttribute("aria-disabled", "true");
     });
 
     it('form contain input label "Repository"', () => {
-      const input = screen.getByRole("button", { name: "Repository" });
+      const input = screen.getByRole("combobox", { name: "Repository" });
       expect(input).toBeInTheDocument();
       expect(input).toHaveAttribute("aria-disabled", "true");
     });
@@ -143,7 +143,7 @@ describe("ApplicationFormManualV1", () => {
     });
 
     it('form contain input label "Piped"', () => {
-      const input = screen.getByRole("button", { name: "Piped" });
+      const input = screen.getByRole("combobox", { name: "Piped" });
       expect(input).toBeInTheDocument();
       expect(input).not.toHaveAttribute("aria-disabled", "true");
     });

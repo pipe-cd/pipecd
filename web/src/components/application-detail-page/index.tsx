@@ -1,5 +1,5 @@
-import { IconButton, makeStyles, Menu, MenuItem } from "@material-ui/core";
-import DehazeIcon from "@material-ui/icons/Dehaze";
+import { IconButton, Menu, MenuItem } from "@mui/material";
+import DehazeIcon from "@mui/icons-material/Dehaze";
 import { FC, memo, useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { PAGE_PATH_APPLICATIONS } from "~/constants/path";
@@ -20,23 +20,7 @@ import { ApplicationStateView } from "./application-state-view";
 
 const FETCH_INTERVAL = 4000;
 
-const useStyles = makeStyles(() => ({
-  actionsMenuBtn: {
-    backgroundColor: "#283778",
-    position: "absolute",
-    bottom: "30px",
-    right: "30px",
-    "&:hover": {
-      backgroundColor: "grey",
-    },
-  },
-  warning: {
-    color: "red",
-  },
-}));
-
 export const ApplicationDetailPage: FC = memo(function ApplicationDetailPage() {
-  const classes = useStyles();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const params = useParams<{ applicationId: string }>();
@@ -93,25 +77,31 @@ export const ApplicationDetailPage: FC = memo(function ApplicationDetailPage() {
       <ApplicationDetail applicationId={applicationId} />
       <ApplicationStateView applicationId={applicationId} />
       <IconButton
-        className={classes.actionsMenuBtn}
         aria-label="Open menu"
         onClick={(e) => {
           setAnchorEl(e.currentTarget);
         }}
+        sx={{
+          backgroundColor: "#283778",
+          position: "absolute",
+          bottom: 30,
+          right: 30,
+          "&:hover": {
+            backgroundColor: "grey",
+          },
+        }}
+        size="large"
       >
         <DehazeIcon fontSize="large" htmlColor="#fff" />
       </IconButton>
-
       <Menu
         id="action-menu"
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={() => setAnchorEl(null)}
-        PaperProps={{
-          style: {
-            width: "20ch",
-            transform: "translateX(-50%) translateY(-20%)",
-          },
+        transformOrigin={{
+          vertical: "bottom",
+          horizontal: 150,
         }}
       >
         {app && app.disabled ? (
@@ -124,24 +114,21 @@ export const ApplicationDetailPage: FC = memo(function ApplicationDetailPage() {
             <MenuItem onClick={handleDisableClick}>Disable</MenuItem>
           </div>
         )}
-        <MenuItem className={classes.warning} onClick={handleDeleteClick}>
+        <MenuItem onClick={handleDeleteClick} sx={{ color: "red" }}>
           Delete
         </MenuItem>
       </Menu>
-
       <SealedSecretDialog
         open={openEncryptSecretDialog}
         applicationId={applicationId}
         onClose={() => setOpenEncryptSecretDialog(false)}
       />
-
       <DisableApplicationDialog
         open={openDisableDialog}
         applicationId={applicationId}
         onDisable={() => setOpenDisableDialog(false)}
         onCancel={() => setOpenDisableDialog(false)}
       />
-
       <DeleteApplicationDialog
         onDeleted={() => navigate(PAGE_PATH_APPLICATIONS)}
       />

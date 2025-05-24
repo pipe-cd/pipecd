@@ -136,6 +136,10 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&p.configAWSSecret, "config-aws-secret", p.configAWSSecret, "The ARN of secret that contains Piped config and be stored in AWS Secrets Manager.")
 	cmd.Flags().StringVar(&p.configAWSSsmParameter, "config-aws-ssm-parameter", p.configAWSSsmParameter, "The name of parameter of Piped config stored in AWS Systems Manager Parameter Store. SecureString is also supported.")
 
+	configFlags := []string{"config-file", "config-data", "config-gcp-secret", "config-aws-secret", "config-aws-ssm-parameter"}
+	cmd.MarkFlagsMutuallyExclusive(configFlags...)
+	cmd.MarkFlagsOneRequired(configFlags...)
+
 	cmd.Flags().BoolVar(&p.insecure, "insecure", p.insecure, "Whether disabling transport security while connecting to control-plane.")
 	cmd.Flags().StringVar(&p.certFile, "cert-file", p.certFile, "The path to the TLS certificate file.")
 	cmd.Flags().IntVar(&p.adminPort, "admin-port", p.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
@@ -682,11 +686,6 @@ func (p *piped) createTracerProvider(ctx context.Context, address, projectID, pi
 
 // loadConfig reads the Piped configuration data from the specified source.
 func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
-	// HACK: When the version of cobra is updated to >=v1.8.0, this should be replaced with https://pkg.go.dev/github.com/spf13/cobra#Command.MarkFlagsMutuallyExclusive.
-	if err := p.hasTooManyConfigFlags(); err != nil {
-		return nil, err
-	}
-
 	extract := func(cfg *config.Config) (*config.PipedSpec, error) {
 		if cfg.Kind != config.KindPiped {
 			return nil, fmt.Errorf("wrong configuration kind for piped: %v", cfg.Kind)
@@ -697,64 +696,47 @@ func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 		return cfg.PipedSpec, nil
 	}
 
-	if p.configFile != "" {
-		cfg, err := config.LoadFromYAML(p.configFile)
-		if err != nil {
-			return nil, err
-		}
-		return extract(cfg)
-	}
+	var (
+		cfg  *config.Config
+		err  error
+		data []byte
+	)
 
-	if p.configData != "" {
-		data, err := base64.StdEncoding.DecodeString(p.configData)
+	switch {
+	case p.configFile != "":
+		cfg, err = config.LoadFromYAML(p.configFile)
+	case p.configData != "":
+		data, err = base64.StdEncoding.DecodeString(p.configData)
 		if err != nil {
 			return nil, fmt.Errorf("the given config-data isn't base64 encoded: %w", err)
 		}
-
-		cfg, err := config.DecodeYAML(data)
-		if err != nil {
-			return nil, err
-		}
-		return extract(cfg)
-	}
-
-	if p.configGCPSecret != "" {
-		data, err := p.getConfigDataFromSecretManager(ctx)
+		cfg, err = config.DecodeYAML(data)
+	case p.configGCPSecret != "":
+		data, err = p.getConfigDataFromSecretManager(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load config from SecretManager (%w)", err)
 		}
-		cfg, err := config.DecodeYAML(data)
-		if err != nil {
-			return nil, err
-		}
-		return extract(cfg)
-	}
-
-	if p.configAWSSecret != "" {
-		data, err := p.getConfigDataFromAWSSecretsManager(ctx)
+		cfg, err = config.DecodeYAML(data)
+	case p.configAWSSecret != "":
+		data, err = p.getConfigDataFromAWSSecretsManager(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load config from AWS Secrets Manager (%w)", err)
 		}
-		cfg, err := config.DecodeYAML(data)
-		if err != nil {
-			return nil, err
-		}
-		return extract(cfg)
-	}
-
-	if p.configAWSSsmParameter != "" {
-		data, err := p.getConfigDataFromAWSSsmParameterStore(ctx)
+		cfg, err = config.DecodeYAML(data)
+	case p.configAWSSsmParameter != "":
+		data, err = p.getConfigDataFromAWSSsmParameterStore(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load config from AWS Systems Manager Parameter Store (%w)", err)
 		}
-		cfg, err := config.DecodeYAML(data)
-		if err != nil {
-			return nil, err
-		}
-		return extract(cfg)
+		cfg, err = config.DecodeYAML(data)
+	default:
+		return nil, fmt.Errorf("one of config-file, config-data, config-gcp-secret, config-aws-secret or config-aws-ssm-parameter must be set")
 	}
 
-	return nil, fmt.Errorf("one of config-file, config-gcp-secret or config-aws-secret must be set")
+	if err != nil {
+		return nil, err
+	}
+	return extract(cfg)
 }
 
 func (p *piped) initializeSecretDecrypter(cfg *config.PipedSpec) (crypto.Decrypter, error) {
@@ -1047,17 +1029,4 @@ func stopCommandHandler(ctx context.Context, cmdLister commandstore.Lister, logg
 	}
 
 	return true, nil
-}
-
-func (p *piped) hasTooManyConfigFlags() error {
-	cnt := 0
-	for _, v := range []string{p.configFile, p.configGCPSecret, p.configAWSSecret, p.configAWSSsmParameter} {
-		if v != "" {
-			cnt++
-		}
-	}
-	if cnt > 1 {
-		return fmt.Errorf("only one of config-file, config-gcp-secret, config-aws-secret, or config-aws-ssm-parameter could be set")
-	}
-	return nil
 }

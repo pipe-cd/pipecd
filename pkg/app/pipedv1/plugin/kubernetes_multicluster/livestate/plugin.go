@@ -126,15 +126,14 @@ func (p Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTarge
 	appLiveState := sdk.ApplicationLiveState{}
 	for _, ls := range liveStates {
 		appLiveState.Resources = append(appLiveState.Resources, ls.Resources...)
-		appLiveState.HealthStatus = sdk.ApplicationHealthStateUnknown // TODO: Implement health status calculation
 	}
 
 	appSyncState := sdk.ApplicationSyncState{}
 	for _, ss := range syncStates {
 		appSyncState.Reason = fmt.Sprintf("%s\n%s", appSyncState.Reason, ss.Reason)
 		appSyncState.ShortReason = fmt.Sprintf("%s\n%s", appSyncState.ShortReason, ss.ShortReason)
-		appSyncState.Status = sdk.ApplicationSyncStateOutOfSync // TODO: Implement health status calculation
 	}
+	appSyncState.Status = calculateSyncStatus(syncStates)
 
 	return &sdk.GetLivestateResponse{
 		LiveState: appLiveState,
@@ -152,8 +151,7 @@ func (p Plugin) makeAppLivestate(namespacedLiveResources, clusterScopedLiveResou
 	}
 
 	return sdk.ApplicationLiveState{
-		Resources:    resourceStates,
-		HealthStatus: sdk.ApplicationHealthStateUnknown, // TODO: Implement health status calculation
+		Resources: resourceStates,
 	}
 }
 
@@ -211,6 +209,40 @@ func calculateSyncState(diffResult *provider.DiffListResult, commit string, dt *
 	}
 }
 
+// calculateSyncStatus returns the highest-priority sync status among the given states.
+// Priority: InvalidConfig > Unknown > OutOfSync > Synced.
+func calculateSyncStatus(states []sdk.ApplicationSyncState) sdk.ApplicationSyncStatus {
+	var (
+		hasInvalidConfig bool
+		hasUnknown       bool
+		hasOutOfSync     bool
+	)
+	for _, state := range states {
+		switch state.Status {
+		case sdk.ApplicationSyncStateInvalidConfig:
+			hasInvalidConfig = true
+		case sdk.ApplicationSyncStateUnknown:
+			hasUnknown = true
+		case sdk.ApplicationSyncStateOutOfSync:
+			hasOutOfSync = true
+		}
+	}
+
+	if hasInvalidConfig {
+		return sdk.ApplicationSyncStateInvalidConfig
+	}
+
+	if hasUnknown {
+		return sdk.ApplicationSyncStateUnknown
+	}
+
+	if hasOutOfSync {
+		return sdk.ApplicationSyncStateOutOfSync
+	}
+
+	return sdk.ApplicationSyncStateSynced
+}
+
 type loader interface {
 	// LoadManifests renders and loads all manifests for application.
 	LoadManifests(ctx context.Context, input provider.LoaderInput) ([]provider.Manifest, error)
@@ -235,9 +267,11 @@ func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[
 		ConfigFilename:   input.Request.DeploymentSource.ApplicationConfigFilename,
 		Manifests:        manifestPathes,
 		Namespace:        spec.Input.Namespace,
-		TemplatingMethod: provider.TemplatingMethodNone, // TODO: Implement detection of templating method or add it to the config spec.
-
-		// TODO: Define other fields for LoaderInput
+		KustomizeVersion: spec.Input.KustomizeVersion,
+		KustomizeOptions: spec.Input.KustomizeOptions,
+		HelmVersion:      spec.Input.HelmVersion,
+		HelmChart:        spec.Input.HelmChart,
+		HelmOptions:      spec.Input.HelmOptions,
 	})
 
 	if err != nil {

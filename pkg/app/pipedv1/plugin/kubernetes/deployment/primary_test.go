@@ -21,11 +21,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 
 	kubeConfigPkg "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister/logpersistertest"
 	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry/toolregistrytest"
@@ -194,4 +197,201 @@ func TestPlugin_executeK8sPrimaryRolloutStage_withPrune(t *testing.T) {
 		assert.Error(t, err)
 		require.Truef(t, apierrors.IsNotFound(err), "expected error to be NotFound, but got %v", err)
 	})
+}
+
+func TestGeneratePrimaryManifests(t *testing.T) {
+	t.Parallel()
+
+	appCfg := &kubeConfigPkg.KubernetesApplicationSpec{
+		Service: kubeConfigPkg.K8sResourceReference{
+			Kind: "Service",
+			Name: "my-service",
+		},
+	}
+
+	const variantLabel = "pipecd.dev/variant"
+	const variant = "primary"
+
+	testcases := []struct {
+		name       string
+		inputYAML  string
+		stageCfg   kubeConfigPkg.K8sPrimaryRolloutStageOptions
+		expectYAML string
+		expectErr  bool
+	}{
+		{
+			name: "add variant label to selector",
+			inputYAML: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  selector:
+    matchLabels:
+      app: simple
+  template:
+    metadata:
+      labels:
+        app: simple
+`,
+			stageCfg: kubeConfigPkg.K8sPrimaryRolloutStageOptions{
+				AddVariantLabelToSelector: true,
+			},
+			expectYAML: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  selector:
+    matchLabels:
+      app: simple
+      pipecd.dev/variant: primary
+  template:
+    metadata:
+      labels:
+        app: simple
+        pipecd.dev/variant: primary
+`,
+		},
+		{
+			name: "create service with suffix",
+			inputYAML: `
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  selector:
+    app: my-app
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 8080
+`,
+			stageCfg: kubeConfigPkg.K8sPrimaryRolloutStageOptions{
+				CreateService: true,
+				Suffix:        "custom",
+			},
+			expectYAML: `
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  selector:
+    app: my-app
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service-custom
+spec:
+  selector:
+    app: my-app
+    pipecd.dev/variant: primary
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8080
+`,
+		},
+		{
+			name: "error when service is not matched with config",
+			inputYAML: `
+apiVersion: v1
+kind: Service
+metadata:
+  name: other-service
+spec:
+  selector:
+    app: my-app
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  selector:
+    matchLabels:
+      app: simple
+  template:
+    metadata:
+      labels:
+        app: simple
+`,
+			stageCfg: kubeConfigPkg.K8sPrimaryRolloutStageOptions{
+				CreateService: true,
+			},
+			expectErr: true,
+		},
+		{
+			name: "error when no service found for CreateService",
+			inputYAML: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  selector:
+    matchLabels:
+      app: simple
+  template:
+    metadata:
+      labels:
+        app: simple
+`,
+			stageCfg: kubeConfigPkg.K8sPrimaryRolloutStageOptions{
+				CreateService: true,
+			},
+			expectErr: true,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			manifests, err := provider.ParseManifests(tc.inputYAML)
+			require.NoError(t, err)
+
+			result, err := generatePrimaryManifests(appCfg, manifests, tc.stageCfg, variantLabel, variant)
+			if tc.expectErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+
+			expects, err := provider.ParseManifests(tc.expectYAML)
+			require.NoError(t, err)
+			require.Equal(t, len(expects), len(result))
+
+			for i := range expects {
+				// Compare manifests by converting to structured objects.
+				switch expects[i].Kind() {
+				case "Deployment":
+					var want, got appsv1.Deployment
+					err := expects[i].ConvertToStructuredObject(&want)
+					require.NoError(t, err)
+					err = result[i].ConvertToStructuredObject(&got)
+					require.NoError(t, err)
+					assert.Equal(t, want, got)
+				case "Service":
+					var want, got corev1.Service
+					err := expects[i].ConvertToStructuredObject(&want)
+					require.NoError(t, err)
+					err = result[i].ConvertToStructuredObject(&got)
+					require.NoError(t, err)
+					assert.Equal(t, want, got)
+				}
+			}
+		})
+	}
 }

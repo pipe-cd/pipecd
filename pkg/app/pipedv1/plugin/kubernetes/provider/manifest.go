@@ -80,6 +80,13 @@ func (m Manifest) DeepCopy() Manifest {
 	return Manifest{body: m.body.DeepCopy()}
 }
 
+// DeepCopyWithName returns a deep copy of the manifest with the given name.
+func (m Manifest) DeepCopyWithName(name string) Manifest {
+	copied := m.DeepCopy()
+	copied.body.SetName(name)
+	return copied
+}
+
 func (m Manifest) Key() ResourceKey {
 	return makeResourceKey(m.body)
 }
@@ -148,6 +155,10 @@ func (m Manifest) NestedMap(fields ...string) (map[string]any, bool, error) {
 	return unstructured.NestedMap(m.body.Object, fields...)
 }
 
+func (m Manifest) NestedString(fields ...string) (string, bool, error) {
+	return unstructured.NestedString(m.body.Object, fields...)
+}
+
 func (m Manifest) AddLabels(labels map[string]string) {
 	if len(labels) == 0 {
 		return
@@ -210,12 +221,14 @@ func (m Manifest) ToResourceState(deployTarget string) sdk.ResourceState {
 		}
 	}
 
+	status, desc := m.calculateHealthStatus()
+
 	return sdk.ResourceState{
 		ID:                string(m.body.GetUID()),
 		Name:              m.body.GetName(),
 		ParentIDs:         parents,
-		HealthStatus:      sdk.ResourceHealthStateUnknown, // TODO: Implement health status calculation
-		HealthDescription: "",                             // TODO: Implement health status calculation
+		HealthStatus:      status,
+		HealthDescription: desc,
 		ResourceType:      m.body.GetKind(),
 		ResourceMetadata: map[string]string{
 			"Namespace":   m.body.GetNamespace(),
