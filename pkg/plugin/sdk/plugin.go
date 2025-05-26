@@ -29,7 +29,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
-	"github.com/pipe-cd/pipecd/pkg/plugin/pipedapi"
 	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/rpc"
 )
@@ -60,7 +59,7 @@ type commonFields struct {
 	config       *config.PipedPlugin
 	logger       *zap.Logger
 	logPersister logPersister
-	client       *pipedapi.PluginServiceClient
+	client       *pluginServiceClient
 	toolRegistry *toolregistry.ToolRegistry
 }
 
@@ -215,7 +214,7 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 
 	group, ctx := errgroup.WithContext(ctx)
 
-	pipedapiClient, err := pipedapi.NewClient(ctx, p.pipedPluginService)
+	pipedPluginServiceClient, err := newPluginServiceClient(ctx, p.pipedPluginService)
 	if err != nil {
 		input.Logger.Error("failed to create piped plugin service client", zap.Error(err))
 		return err
@@ -251,7 +250,7 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 	}
 
 	// Start log persister
-	persister := logpersister.NewPersister(pipedapiClient, input.Logger)
+	persister := logpersister.NewPersister(pipedPluginServiceClient, input.Logger)
 	group.Go(func() error {
 		return persister.Run(ctx)
 	})
@@ -263,8 +262,8 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 			version:      p.version,
 			config:       cfg,
 			logPersister: persister,
-			client:       pipedapiClient,
-			toolRegistry: toolregistry.NewToolRegistry(pipedapiClient),
+			client:       pipedPluginServiceClient,
+			toolRegistry: toolregistry.NewToolRegistry(pipedPluginServiceClient),
 		}
 
 		var services []rpc.Service
