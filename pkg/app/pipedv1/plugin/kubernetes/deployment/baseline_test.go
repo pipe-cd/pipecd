@@ -117,15 +117,15 @@ func TestPlugin_executeK8sBaselineRolloutStage_withCreateService(t *testing.T) {
 	assert.Equal(t, ":Service::simple-baseline", service.GetAnnotations()["pipecd.dev/resource-key"])
 
 	// Check Service selector and ports
-	selector, found, err := unstructured.NestedStringMap(service.Object["spec"].(map[string]interface{}), "selector")
+	selector, found, err := unstructured.NestedStringMap(service.Object, "spec", "selector")
 	require.NoError(t, err)
 	require.True(t, found)
 	assert.Equal(t, map[string]string{"app": "simple", "pipecd.dev/variant": "baseline"}, selector)
-	ports, found, err := unstructured.NestedSlice(service.Object["spec"].(map[string]interface{}), "ports")
+	ports, found, err := unstructured.NestedSlice(service.Object, "spec", "ports")
 	require.NoError(t, err)
 	require.True(t, found)
 	require.Len(t, ports, 1)
-	port := ports[0].(map[string]interface{})
+	port := ports[0].(map[string]any)
 	assert.Equal(t, int64(9085), port["port"])
 	assert.Equal(t, int64(9085), port["targetPort"])
 	assert.Equal(t, "TCP", port["protocol"])
