@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Foo
+metadata:
+  name: simple
+  labels:
+    app: simple
+    pipecd.dev/managed-by: piped
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: simple
+  template:
+    metadata:
+      labels:
+        app: simple
+        component: foo
+    spec:
+      containers:
+      - name: helloworld
+        image: gcr.io/pipecd/helloworld:v1.0.0
+        args:
+          - hi
+          - hello
+        ports:
+        - containerPort: 9085
+      - name: bar
+        image: gcr.io/pipecd/helloworld:v2.0.0
+      - name: helloword2
+        image: ""
+---
+apiVersion: apps/v1
+kind: Foo
+metadata:
+  name: simple
+  labels:
+    pipecd.dev/managed-by: piped
+    app: simple
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: simple
+  template:
+    metadata:
+      labels:
+        app: simple2
+    spec:
+      strategy:
+        rollingUpdate:
+          maxSurge: 25%
+          maxUnavailable: 25%
+        type: RollingUpdate
+      containers:
+      - name: helloworld
+        image: gcr.io/pipecd/helloworld:v1.0.0
+        args:
+          - hi
+        ports:
+        - containerPort: 9085
+      - name: bar
+        image: gcr.io/pipecd/helloworld:v2.1.0
+      - name: helloword2
+      - name: foo
+        image: new-image
+        livenessProbe:
+          exec:
+            command:
+            - cat
+            - /tmp/healthy
+          initialDelaySeconds: 5
