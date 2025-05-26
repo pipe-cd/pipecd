@@ -39,7 +39,8 @@ func addVariantLabelsAndAnnotations(m []provider.Manifest, variantLabel, variant
 			variantLabel: variant,
 		})
 		m.AddAnnotations(map[string]string{
-			variantLabel: variant,
+			variantLabel:              variant,
+			provider.LabelResourceKey: m.Key().String(),
 		})
 	}
 }
