@@ -289,3 +289,7 @@ check/dco:
 .PHONY: setup-local-oidc
 setup-local-oidc:
 	./hack/oidc/run-local-keycloak.sh
+
+.PHONY: delete-local-oidc
+delete-local-oidc:
+	docker compose -f ./hack/oidc/docker-compose.yml down
