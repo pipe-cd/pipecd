@@ -218,13 +218,16 @@ func makeSuffixedName(name, suffix string) string {
 }
 
 // addVariantLabelsAndAnnotations adds the variant label and annotation to the given manifests.
+// This also adds the resource key to the manifest.
+// This is because the resource key differs between variants.
 func addVariantLabelsAndAnnotations(m []provider.Manifest, variantLabel, variant string) {
 	for _, m := range m {
 		m.AddLabels(map[string]string{
 			variantLabel: variant,
 		})
 		m.AddAnnotations(map[string]string{
-			variantLabel: variant,
+			variantLabel:              variant,
+			provider.LabelResourceKey: m.Key().String(),
 		})
 	}
 }
