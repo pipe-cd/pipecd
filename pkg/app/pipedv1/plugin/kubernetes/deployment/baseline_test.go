@@ -23,6 +23,7 @@ import (
 	"go.uber.org/zap/zaptest"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 
 	kubeConfigPkg "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
@@ -86,10 +87,48 @@ func TestPlugin_executeK8sBaselineRolloutStage_withCreateService(t *testing.T) {
 	assert.Equal(t, "baseline", deployment.GetLabels()["pipecd.dev/variant"])
 	assert.Equal(t, "baseline", deployment.GetAnnotations()["pipecd.dev/variant"])
 
+	// Additional assertions for builtin labels and annotations
+	assert.Equal(t, "piped", deployment.GetLabels()["pipecd.dev/managed-by"])
+	assert.Equal(t, "piped-id", deployment.GetLabels()["pipecd.dev/piped"])
+	assert.Equal(t, "app-id", deployment.GetLabels()["pipecd.dev/application"])
+	assert.Equal(t, "0123456789", deployment.GetLabels()["pipecd.dev/commit-hash"])
+	assert.Equal(t, "piped", deployment.GetAnnotations()["pipecd.dev/managed-by"])
+	assert.Equal(t, "piped-id", deployment.GetAnnotations()["pipecd.dev/piped"])
+	assert.Equal(t, "app-id", deployment.GetAnnotations()["pipecd.dev/application"])
+	assert.Equal(t, "0123456789", deployment.GetAnnotations()["pipecd.dev/commit-hash"])
+	assert.Equal(t, "apps/v1", deployment.GetAnnotations()["pipecd.dev/original-api-version"])
+	assert.Equal(t, "apps:Deployment::simple-baseline", deployment.GetAnnotations()["pipecd.dev/resource-key"])
+
 	serviceRes := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}
 	service, err := dynamicClient.Resource(serviceRes).Namespace("default").Get(ctx, "simple-baseline", metav1.GetOptions{})
 	require.NoError(t, err)
 	assert.Equal(t, "simple-baseline", service.GetName())
+
+	// Additional assertions for Service labels, annotations, selector, and ports
+	assert.Equal(t, "piped", service.GetLabels()["pipecd.dev/managed-by"])
+	assert.Equal(t, "piped-id", service.GetLabels()["pipecd.dev/piped"])
+	assert.Equal(t, "app-id", service.GetLabels()["pipecd.dev/application"])
+	assert.Equal(t, "0123456789", service.GetLabels()["pipecd.dev/commit-hash"])
+	assert.Equal(t, "piped", service.GetAnnotations()["pipecd.dev/managed-by"])
+	assert.Equal(t, "piped-id", service.GetAnnotations()["pipecd.dev/piped"])
+	assert.Equal(t, "app-id", service.GetAnnotations()["pipecd.dev/application"])
+	assert.Equal(t, "0123456789", service.GetAnnotations()["pipecd.dev/commit-hash"])
+	assert.Equal(t, "v1", service.GetAnnotations()["pipecd.dev/original-api-version"])
+	assert.Equal(t, ":Service::simple-baseline", service.GetAnnotations()["pipecd.dev/resource-key"])
+
+	// Check Service selector and ports
+	selector, found, err := unstructured.NestedStringMap(service.Object["spec"].(map[string]interface{}), "selector")
+	require.NoError(t, err)
+	require.True(t, found)
+	assert.Equal(t, map[string]string{"app": "simple", "pipecd.dev/variant": "baseline"}, selector)
+	ports, found, err := unstructured.NestedSlice(service.Object["spec"].(map[string]interface{}), "ports")
+	require.NoError(t, err)
+	require.True(t, found)
+	require.Len(t, ports, 1)
+	port := ports[0].(map[string]interface{})
+	assert.Equal(t, int64(9085), port["port"])
+	assert.Equal(t, int64(9085), port["targetPort"])
+	assert.Equal(t, "TCP", port["protocol"])
 }
 
 func TestPlugin_executeK8sBaselineRolloutStage_withoutCreateService(t *testing.T) {
