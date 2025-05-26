@@ -59,14 +59,14 @@ endif
 .PHONY: build/plugin
 build/plugin: PLUGINS_BIN_DIR ?= ~/.piped/plugins
 build/plugin: PLUGINS_SRC_DIR ?= ./pkg/app/pipedv1/plugin
-build/plugin: PLUGINS_OUT_DIR ?= ./.artifacts/plugins
+build/plugin: PLUGINS_OUT_DIR ?= ${PWD}/.artifacts/plugins
 build/plugin: PLUGINS ?= $(shell find $(PLUGINS_SRC_DIR) -mindepth 1 -maxdepth 1 -type d | while read -r dir; do basename "$$dir"; done | paste -sd, -) # comma separated list of plugins. eg: PLUGINS=kubernetes,ecs,lambda
 build/plugin:
 	mkdir -p $(PLUGINS_BIN_DIR)
 	@echo "Building plugins..."
 	@for plugin in $(shell echo $(PLUGINS) | tr ',' ' '); do \
 		echo "Building plugin: $$plugin"; \
-		go build -o $(PLUGINS_OUT_DIR)/$$plugin $(PLUGINS_SRC_DIR)/$$plugin \
+		go -C $(PLUGINS_SRC_DIR)/$$plugin build -o $(PLUGINS_OUT_DIR)/$$plugin . \
 			&& cp $(PLUGINS_OUT_DIR)/$$plugin $(PLUGINS_BIN_DIR)/$$plugin; \
 	done
 	@echo "Plugins are built and copied to $(PLUGINS_BIN_DIR)"
