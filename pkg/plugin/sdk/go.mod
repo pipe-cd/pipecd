@@ -1,10 +1,10 @@
-module github.com/pipe-cd/pipecd/pkg/plugin/sdk
+module github.com/pipe-cd/piped-plugin-sdk-go
 
 go 1.24.1
 
 require (
 	github.com/creasty/defaults v1.6.0
-	github.com/pipe-cd/pipecd v0.51.1-0.20250523081609-566d9ba58f76
+	github.com/pipe-cd/pipecd v0.51.3
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/atomic v1.11.0
