@@ -27,7 +27,7 @@ For example, when I ask Cursor how to configure PipeCD for ECS, Cursor will sear
 
 See [README](https://github.com/pipe-cd/docs-mcp-server/blob/main/README.md) for details.
 
-After preparing npm, you can simply run the server by `npx @pipe-cd/docs-mcp-server@latest`.
+After preparing npm config to fetch the package from GitHub Packages registry, you can simply run the server by `npx @pipe-cd/docs-mcp-server@latest`.
 
 For example, for Cursor editor, add the following to your `mcp.json`:
 
