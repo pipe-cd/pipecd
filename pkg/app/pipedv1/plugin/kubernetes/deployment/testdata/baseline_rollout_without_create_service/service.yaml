@@ -5,7 +5,6 @@ metadata:
 spec:
   selector:
     app: simple
-    pipecd.dev/variant: baseline
   ports:
     - protocol: TCP
       port: 9085

@@ -9,12 +9,10 @@ spec:
   selector:
     matchLabels:
       app: simple
-      pipecd.dev/variant: baseline
   template:
     metadata:
       labels:
         app: simple
-        pipecd.dev/variant: baseline
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
