@@ -213,6 +213,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: my-service-canary
+  annotations:
+    pipecd.dev/resource-key: :Service::my-service-canary
 spec:
   selector:
     app: my-app
@@ -243,6 +245,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: test-svc-primary
+  annotations:
+    pipecd.dev/resource-key: :Service::test-svc-primary
 spec:
   selector:
     pipecd.dev/variant: primary
@@ -361,10 +365,7 @@ metadata:
 			variantLabel: "pipecd.dev/variant",
 			variant:      "primary",
 			wantLabels:   map[string]string{"pipecd.dev/variant": "primary"},
-			wantAnnots: map[string]string{
-				"pipecd.dev/variant":      "primary",
-				"pipecd.dev/resource-key": ":ConfigMap::test-config",
-			},
+			wantAnnots:   map[string]string{"pipecd.dev/variant": "primary"},
 		},
 		{
 			name: "multiple manifests",
@@ -382,7 +383,7 @@ metadata:
 			variantLabel: "custom/label",
 			variant:      "canary",
 			wantLabels:   map[string]string{"custom/label": "canary"},
-			wantAnnots:   map[string]string{"custom/label": "canary"}, // we don't assert the resource key because it's different between two manifests
+			wantAnnots:   map[string]string{"custom/label": "canary"},
 		},
 	}
 
