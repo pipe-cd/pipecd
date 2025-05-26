@@ -28,8 +28,8 @@ import (
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister/logpersistertest"
-	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry/toolregistrytest"
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 func TestPlugin_executeK8sMultiRollbackStage_compatibility_k8sPlugin_NoPreviousDeployment(t *testing.T) {
