@@ -20,14 +20,13 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-
-	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
 func TestManifest_AddStringMapValues(t *testing.T) {

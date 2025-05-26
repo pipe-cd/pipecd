@@ -412,8 +412,12 @@ github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/9
 github.com/peterbourgon/diskv v2.0.1+incompatible/go.mod h1:uqqh8zWWbv1HBMNONnaR/tNboyR3/BZd58JJSHlUSCU=
 github.com/pipe-cd/pipecd v0.51.1-0.20250523081609-566d9ba58f76 h1:aV7sL/s8lnaL4q4JtpxcxJDJ98XCi5Y/vDfDbgDH2ZQ=
 github.com/pipe-cd/pipecd v0.51.1-0.20250523081609-566d9ba58f76/go.mod h1:Hi4d3mndTeY+hPB4YbN9aIgvP00EBV0CM+NQgyEwn98=
+github.com/pipe-cd/pipecd v0.51.3 h1:oBktGYcPA7NLeOSYtwFZYbt44rMHGXnVjEjgxOS7UVA=
+github.com/pipe-cd/pipecd v0.51.3/go.mod h1:jfAQDzbKkepCaPDMqo2daESHlMbEk9EraSCIftWjNAY=
 github.com/pipe-cd/pipecd/pkg/plugin/sdk v0.0.0-20250523081609-566d9ba58f76 h1:9SkF6W05s9Zszm3OI7t/y4GDeGkqOPJ2YM8TTNnzxVI=
 github.com/pipe-cd/pipecd/pkg/plugin/sdk v0.0.0-20250523081609-566d9ba58f76/go.mod h1:d3rvSyx7/U0PX2pzb+xUCGRQlcmlqzEfYR2BfAOi6C4=
+github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250526070646-19bbb4ef7b5d h1:N1UBvcv1jqfWW2XvL017v/hbeFTyDBsOnsw61d7uugw=
+github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250526070646-19bbb4ef7b5d/go.mod h1:SY/qxLYY0oDUBQrQUyvvZyaaUDr/fg8Vljy3yZj61d4=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
