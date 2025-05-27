@@ -22,7 +22,7 @@ import (
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/toolregistry"
-	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 func (p *Plugin) executeK8sMultiRollbackStage(ctx context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
@@ -141,7 +141,7 @@ func (p *Plugin) rollback(ctx context.Context, input *sdk.ExecuteStageInput[kube
 
 	// Because the loaded manifests are read-only
 	// we duplicate them to avoid updating the shared manifests data in cache.
-	// TODO: implement duplicateManifests function
+	manifests = provider.DeepCopyManifests(manifests)
 
 	// When addVariantLabelToSelector is true, ensure that all workloads
 	// have the variant label in their selector.
@@ -161,15 +161,7 @@ func (p *Plugin) rollback(ctx context.Context, input *sdk.ExecuteStageInput[kube
 		}
 	}
 
-	// Add variant labels and annotations to all manifests.
-	for i := range manifests {
-		manifests[i].AddLabels(map[string]string{
-			variantLabel: primaryVariant,
-		})
-		manifests[i].AddAnnotations(map[string]string{
-			variantLabel: primaryVariant,
-		})
-	}
+	addVariantLabelsAndAnnotations(manifests, variantLabel, primaryVariant)
 
 	if err := annotateConfigHash(manifests); err != nil {
 		lp.Errorf("Unable to set %q annotation into the workload manifest (%v)", provider.AnnotationConfigHash, err)

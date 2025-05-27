@@ -10,14 +10,31 @@ on:
     branches:
       - master
       - 'release-v*'
+      - 'feat/*'
 
 env:
   GO_VERSION: 1.24.1
   NODE_VERSION: 18.12.0
 
 jobs:
+  list-go-modules:
+    runs-on: ubuntu-24.04
+    outputs:
+      modules: ${{ steps.list-go-modules.outputs.modules }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: List go modules
+        id: list-go-modules
+        run: |
+          echo "modules=$(find . -name go.mod -exec dirname {} \; | sort | jq -R -s -c 'split("\n") | map(select(length > 0))')" >> $GITHUB_OUTPUT
+
   go:
     runs-on: ubuntu-latest-8-cores
+    needs: list-go-modules
+    strategy:
+      fail-fast: false
+      matrix:
+        module: ${{ fromJSON(needs.list-go-modules.outputs.modules) }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
@@ -25,9 +42,16 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
           cache: true
       - name: Run unit tests
-        run: make test/go COVERAGE=true
+        run: make test/go COVERAGE=true MODULES=${{ matrix.module }}
+      - name: make flag
+        id: make-flag
+        run: |
+          echo "flags=$(echo ${{ matrix.module }} | tr '/' '-')" >> $GITHUB_OUTPUT
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
+        with:
+          root_dir: ${{ matrix.module }}
+          flags: ${{ steps.make-flag.outputs.flags }}
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 

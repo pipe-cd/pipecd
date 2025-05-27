@@ -1,0 +1,21 @@
+apiVersion: pipecd.dev/v1beta1
+kind: Application
+spec:
+  name: multi-sources-template-none
+  labels:
+    env: example
+  plugins:
+    kubernetes_multicluster:
+      quickSync:
+        prune: true
+      input:
+        multiTargets:
+          - target:
+              name: cluster1
+            manifests:
+              - ./cluster1/deployment.yaml
+          - target:
+              name: cluster2
+            manifests:
+              - ./cluster2/deployment.yaml
+        kubectlVersion: 1.32.2

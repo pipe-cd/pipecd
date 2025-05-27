@@ -94,45 +94,6 @@ var (
 		"IngressClass":             {},
 		"Namespace":                {},
 	}
-	ignoreResourceKeys = map[string]struct{}{
-		"v1:Service:default:kubernetes":               {},
-		"v1:Service:kube-system:heapster":             {},
-		"v1:Service:kube-system:metrics-server":       {},
-		"v1:Service:kube-system:kube-dns":             {},
-		"v1:Service:kube-system:kubernetes-dashboard": {},
-		"v1:Service:kube-system:default-http-backend": {},
-
-		"apps/v1:Deployment:kube-system:kube-dns":                                 {},
-		"apps/v1:Deployment:kube-system:kube-dns-autoscaler":                      {},
-		"apps/v1:Deployment:kube-system:fluentd-gcp-scaler":                       {},
-		"apps/v1:Deployment:kube-system:kubernetes-dashboard":                     {},
-		"apps/v1:Deployment:kube-system:l7-default-backend":                       {},
-		"apps/v1:Deployment:kube-system:heapster-gke":                             {},
-		"apps/v1:Deployment:kube-system:stackdriver-metadata-agent-cluster-level": {},
-
-		"extensions/v1beta1:Deployment:kube-system:kube-dns":                                 {},
-		"extensions/v1beta1:Deployment:kube-system:kube-dns-autoscaler":                      {},
-		"extensions/v1beta1:Deployment:kube-system:fluentd-gcp-scaler":                       {},
-		"extensions/v1beta1:Deployment:kube-system:kubernetes-dashboard":                     {},
-		"extensions/v1beta1:Deployment:kube-system:l7-default-backend":                       {},
-		"extensions/v1beta1:Deployment:kube-system:heapster-gke":                             {},
-		"extensions/v1beta1:Deployment:kube-system:stackdriver-metadata-agent-cluster-level": {},
-
-		"v1:Endpoints:kube-system:kube-controller-manager":        {},
-		"v1:Endpoints:kube-system:kube-scheduler":                 {},
-		"v1:Endpoints:kube-system:vpa-recommender":                {},
-		"v1:Endpoints:kube-system:gcp-controller-manager":         {},
-		"v1:Endpoints:kube-system:managed-certificate-controller": {},
-		"v1:Endpoints:kube-system:cluster-autoscaler":             {},
-
-		"v1:ConfigMap:kube-system:cluster-kubestore":         {},
-		"v1:ConfigMap:kube-system:ingress-gce-lock":          {},
-		"v1:ConfigMap:kube-system:gke-common-webhook-lock":   {},
-		"v1:ConfigMap:kube-system:cluster-autoscaler-status": {},
-
-		"rbac.authorization.k8s.io/v1:ClusterRole::system:managed-certificate-controller":        {},
-		"rbac.authorization.k8s.io/v1:ClusterRoleBinding::system:managed-certificate-controller": {},
-	}
 )
 
 // reflector watches the live state of application with the cluster
@@ -251,15 +212,6 @@ func (r *reflector) onObjectAdd(obj interface{}) {
 	u := obj.(*unstructured.Unstructured)
 	key := provider.MakeResourceKey(u)
 
-	// Ignore all predefined ones.
-	if _, ok := ignoreResourceKeys[key.String()]; ok {
-		kubernetesmetrics.IncResourceEventsCounter(
-			kubernetesmetrics.LabelEventAdd,
-			kubernetesmetrics.LabelEventNotYetHandled,
-		)
-		return
-	}
-
 	// Ignore all objects that are not handled by this piped.
 	pipedID := u.GetAnnotations()[provider.LabelPiped]
 	if pipedID != "" && pipedID != r.pipedConfig.PipedID {
@@ -282,15 +234,7 @@ func (r *reflector) onObjectUpdate(oldObj, obj interface{}) {
 	u := obj.(*unstructured.Unstructured)
 	oldU := oldObj.(*unstructured.Unstructured)
 
-	// Ignore all predefined ones.
 	key := provider.MakeResourceKey(u)
-	if _, ok := ignoreResourceKeys[key.String()]; ok {
-		kubernetesmetrics.IncResourceEventsCounter(
-			kubernetesmetrics.LabelEventUpdate,
-			kubernetesmetrics.LabelEventNotYetHandled,
-		)
-		return
-	}
 
 	// Ignore all objects that are not handled by this piped.
 	pipedID := u.GetAnnotations()[provider.LabelPiped]
@@ -313,15 +257,6 @@ func (r *reflector) onObjectUpdate(oldObj, obj interface{}) {
 func (r *reflector) onObjectDelete(obj interface{}) {
 	u := obj.(*unstructured.Unstructured)
 	key := provider.MakeResourceKey(u)
-
-	// Ignore all predefined ones.
-	if _, ok := ignoreResourceKeys[key.String()]; ok {
-		kubernetesmetrics.IncResourceEventsCounter(
-			kubernetesmetrics.LabelEventDelete,
-			kubernetesmetrics.LabelEventNotYetHandled,
-		)
-		return
-	}
 
 	// Ignore all objects that are not handled by this piped.
 	pipedID := u.GetAnnotations()[provider.LabelPiped]

@@ -1,11 +1,5 @@
-import {
-  IconButton,
-  Menu,
-  MenuItem,
-  TableCell,
-  TableRow,
-} from "@material-ui/core";
-import { MoreVert as MoreVertIcon } from "@material-ui/icons";
+import { IconButton, Menu, MenuItem, TableCell, TableRow } from "@mui/material";
+import { MoreVert as MoreVertIcon } from "@mui/icons-material";
 import * as React from "react";
 import { FC, memo, useCallback, useState } from "react";
 import { formalizePoliciesList } from "~/modules/project";
@@ -19,12 +13,6 @@ interface Props {
 }
 
 const ITEM_HEIGHT = 48;
-const menuStyle = {
-  style: {
-    maxHeight: ITEM_HEIGHT * 4.5,
-    width: "15ch",
-  },
-};
 
 export const RoleTableRow: FC<Props> = memo(function RoleTableRow({
   role,
@@ -79,18 +67,25 @@ export const RoleTableRow: FC<Props> = memo(function RoleTableRow({
             aria-label="open menu"
             onClick={handleMenuOpen}
             disabled={r.isBuiltin}
+            size="large"
           >
             <MoreVertIcon />
           </IconButton>
         </TableCell>
       </TableRow>
-
       <Menu
         id="role-menu"
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
-        PaperProps={menuStyle}
+        slotProps={{
+          paper: {
+            style: {
+              maxHeight: ITEM_HEIGHT * 4.5,
+              width: "15ch",
+            },
+          },
+        }}
       >
         <MenuItem key="role-menu-edit" onClick={handleEdit}>
           {UI_TEXT_EDIT}

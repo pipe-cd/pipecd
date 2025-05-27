@@ -1,6 +1,4 @@
-import { CSSProperties } from "@material-ui/core/styles/withStyles";
-
-export const ellipsis: CSSProperties = {
+export const ellipsis = {
   overflow: "hidden",
   whiteSpace: "nowrap",
   textOverflow: "ellipsis",

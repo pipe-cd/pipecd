@@ -1,12 +1,4 @@
-import {
-  Box,
-  Button,
-  CircularProgress,
-  Divider,
-  makeStyles,
-  TextField,
-  Typography,
-} from "@material-ui/core";
+import { Box, Button, Divider, TextField, Typography } from "@mui/material";
 import { FC, useEffect } from "react";
 import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
@@ -21,6 +13,8 @@ import { unwrapResult, useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { addApplication } from "~/modules/applications";
 import FormSelectInput from "../../form-select-input";
 import { updateApplication } from "~/modules/update-application";
+import { GroupTwoCol, StyledForm } from "../styles";
+import { SpinnerIcon } from "~/styles/button";
 
 type FormValues = {
   name: string;
@@ -97,33 +91,6 @@ const createRepoListFromPiped = (
     remote: repo.remote,
   }));
 };
-
-const useStyles = makeStyles((theme) => ({
-  title: {
-    padding: theme.spacing(2),
-  },
-  form: {
-    padding: theme.spacing(2),
-    display: "grid",
-    gap: theme.spacing(2),
-  },
-  textInput: {
-    flex: 1,
-  },
-  inputGroup: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: theme.spacing(3),
-  },
-  buttonProgress: {
-    color: theme.palette.primary.main,
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    marginTop: -12,
-    marginLeft: -12,
-  },
-}));
 
 const validationSchema = yup.object().shape({
   name: yup.string().required(),
@@ -213,7 +180,6 @@ const ApplicationFormManualV0: FC<ApplicationFormProps> = ({
     setIsSubmitting?.(isSubmitting);
   }, [isSubmitting, setIsSubmitting]);
 
-  const classes = useStyles();
   const ps = useAppSelector((state) => selectAllPipeds(state));
   const pipedOptions = ps
     .filter((piped) => !piped.disabled || piped.id === detailApp?.pipedId)
@@ -231,12 +197,21 @@ const ApplicationFormManualV0: FC<ApplicationFormProps> = ({
   const disableApplicationInfo = !!detailApp;
 
   return (
-    <Box width="100%">
-      <Typography className={classes.title} variant="h6">
+    <Box
+      sx={{
+        width: "100%",
+      }}
+    >
+      <Typography
+        variant="h6"
+        sx={{
+          p: 2,
+        }}
+      >
         {title}
       </Typography>
       <Divider />
-      <form className={classes.form} onSubmit={handleSubmit}>
+      <StyledForm onSubmit={handleSubmit}>
         <TextField
           id="name"
           name="name"
@@ -247,7 +222,6 @@ const ApplicationFormManualV0: FC<ApplicationFormProps> = ({
           fullWidth
           required
           disabled={isSubmitting || disableApplicationInfo}
-          className={classes.textInput}
         />
 
         <FormSelectInput
@@ -265,7 +239,7 @@ const ApplicationFormManualV0: FC<ApplicationFormProps> = ({
           disabled={isSubmitting || disableApplicationInfo}
         />
 
-        <div className={classes.inputGroup}>
+        <GroupTwoCol>
           <FormSelectInput
             id="piped"
             label="Piped"
@@ -300,9 +274,9 @@ const ApplicationFormManualV0: FC<ApplicationFormProps> = ({
               isSubmitting
             }
           />
-        </div>
+        </GroupTwoCol>
 
-        <div className={classes.inputGroup}>
+        <GroupTwoCol>
           <FormSelectInput
             id="git-repo"
             label="Repository"
@@ -340,7 +314,7 @@ const ApplicationFormManualV0: FC<ApplicationFormProps> = ({
             fullWidth
             required
           />
-        </div>
+        </GroupTwoCol>
 
         <TextField
           id="configFilename"
@@ -351,25 +325,26 @@ const ApplicationFormManualV0: FC<ApplicationFormProps> = ({
           value={values.configFilename}
           fullWidth
           required
-          className={classes.textInput}
         />
 
-        <Box my={2}>
+        <Box
+          sx={{
+            my: 2,
+          }}
+        >
           <Button
             color="primary"
             type="submit"
             disabled={isValid === false || isSubmitting || dirty === false}
           >
             {UI_TEXT_SAVE}
-            {isSubmitting && (
-              <CircularProgress size={24} className={classes.buttonProgress} />
-            )}
+            {isSubmitting && <SpinnerIcon />}
           </Button>
           <Button onClick={onClose} disabled={isSubmitting}>
             {UI_TEXT_CANCEL}
           </Button>
         </Box>
-      </form>
+      </StyledForm>
     </Box>
   );
 };

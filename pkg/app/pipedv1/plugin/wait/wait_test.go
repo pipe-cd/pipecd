@@ -21,8 +21,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister/logpersistertest"
-	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister/logpersistertest"
 )
 
 func TestWait_Complete(t *testing.T) {
