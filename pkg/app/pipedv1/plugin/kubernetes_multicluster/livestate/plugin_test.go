@@ -24,7 +24,7 @@ import (
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
 	"github.com/pipe-cd/pipecd/pkg/plugin/diff"
-	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 func makeTestManifest(t *testing.T, yaml string) provider.Manifest {

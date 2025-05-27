@@ -22,7 +22,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 func TestDeploymentHealthStatus(t *testing.T) {
