@@ -43,11 +43,15 @@ jobs:
           cache: true
       - name: Run unit tests
         run: make test/go COVERAGE=true MODULES=${{ matrix.module }}
+      - name: make flag
+        id: make-flag
+        run: |
+          echo "flags=$(echo ${{ matrix.module }} | tr '/' '-')" >> $GITHUB_OUTPUT
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         with:
           root_dir: ${{ matrix.module }}
-          flags: ${{ matrix.module }}
+          flags: ${{ steps.make-flag.outputs.flags }}
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
