@@ -40,7 +40,7 @@ jobs:
       - name: golangci-lint
         uses: reviewdog/action-golangci-lint@f3dc5fadcaff5d8da3574b129a58db433171b1a8 #v2.1.3
         with:
-          working_directory: ${{ matrix.module }}
+          workdir: ${{ matrix.module }}
           go_version: ${{ env.GO_VERSION }}
           golangci_lint_version: ${{ env.GOLANGCI_LINT_VERSION }}
           golangci_lint_flags: --config ${{ github.workspace }}/.golangci.yml
