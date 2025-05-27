@@ -111,8 +111,8 @@ ifeq ($(COVERAGE), true)
 			echo "Testing module: $$module"; \
 			KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) go -C $$module test -failfast -race $(COVERAGE_OPTS) -coverprofile=$(COVERAGE_OUTPUT).tmp ./...; \
 		fi; \
-	done; \
-	cat $(COVERAGE_OUTPUT).tmp | grep -v ".pb.go\|.pb.validate.go" > $(COVERAGE_OUTPUT); \
+	done
+	cat $(COVERAGE_OUTPUT).tmp | grep -v ".pb.go\|.pb.validate.go" > $(COVERAGE_OUTPUT)
 	rm -rf $(COVERAGE_OUTPUT).tmp
 else
 	@echo "Testing go modules..."
