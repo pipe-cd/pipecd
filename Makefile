@@ -91,20 +91,40 @@ test: test/go test/web
 .PHONY: test/go
 test/go: COVERAGE ?= false
 test/go: COVERAGE_OPTS ?= -covermode=atomic
-test/go: COVERAGE_OUTPUT ?= coverage.out
+test/go: COVERAGE_OUTPUT ?= ${PWD}/coverage.out
 test/go: setup-envtest
 # Where to find the setup-envtest binary
 test/go: GOBIN ?= ${PWD}/.dev/bin
 # We need an absolute path for setup-envtest
 test/go: ENVTEST_BIN ?= ${PWD}/.dev/bin
 test/go: KUBEBUILDER_ASSETS ?= "$(shell $(GOBIN)/setup-envtest use --bin-dir $(ENVTEST_BIN) -p path)"
+test/go: MODULES ?= $(shell find . -name go.mod | while read -r dir; do dirname "$$dir"; done | paste -sd, -) # comma separated list of modules. eg: MODULES=.,pkg/plugin/sdk,tool/actions-gh-release
 test/go:
 ifeq ($(COVERAGE), true)
-	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) go test -failfast -race $(COVERAGE_OPTS) -coverprofile=$(COVERAGE_OUTPUT).tmp ./pkg/... ./cmd/...
+	@echo "Run tests with coverage out of CI is not working expectedly. Because the coverage profile is overwritten by other tests."
+	@echo "Testing go modules with coverage..."
+	@for module in $(shell echo $(MODULES) | tr ',' ' '); do \
+		if [ "$$module" = "." ]; then \
+			echo "Testing root module"; \
+			KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) go test -failfast -race $(COVERAGE_OPTS) -coverprofile=$(COVERAGE_OUTPUT).tmp ./pkg/... ./cmd/...; \
+		else \
+			echo "Testing module: $$module"; \
+			KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) go -C $$module test -failfast -race $(COVERAGE_OPTS) -coverprofile=$(COVERAGE_OUTPUT).tmp ./...; \
+		fi; \
+	done
 	cat $(COVERAGE_OUTPUT).tmp | grep -v ".pb.go\|.pb.validate.go" > $(COVERAGE_OUTPUT)
 	rm -rf $(COVERAGE_OUTPUT).tmp
 else
-	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) go test -failfast -race ./pkg/... ./cmd/...
+	@echo "Testing go modules..."
+	@for module in $(shell echo $(MODULES) | tr ',' ' '); do \
+		if [ "$$module" = "." ]; then \
+			echo "Testing root module"; \
+			KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) go test -failfast -race ./pkg/... ./cmd/...; \
+		else \
+			echo "Testing module: $$module"; \
+			KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) go -C $$module test -failfast -race ./...; \
+		fi; \
+	done
 endif
 
 .PHONY: test/web
