@@ -46,6 +46,7 @@ jobs:
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         with:
+          root_dir: ${{ matrix.module }}
           flags: ${{ matrix.module }}
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
