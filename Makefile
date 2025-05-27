@@ -98,7 +98,7 @@ test/go: GOBIN ?= ${PWD}/.dev/bin
 # We need an absolute path for setup-envtest
 test/go: ENVTEST_BIN ?= ${PWD}/.dev/bin
 test/go: KUBEBUILDER_ASSETS ?= "$(shell $(GOBIN)/setup-envtest use --bin-dir $(ENVTEST_BIN) -p path)"
-test/go: MODULES ?= $(shell find . -mindepth 2 -name go.mod | while read -r dir; do dirname "$$dir"; done | paste -sd, -) # comma separated list of modules. eg: MODULES=.,pkg/plugin/sdk
+test/go: MODULES ?= $(shell find . -mindepth 2 -name go.mod | while read -r dir; do dirname "$$dir"; done | paste -sd, -) # comma separated list of modules except for root. eg: MODULES=pkg/plugin/sdk,tool/actions-gh-release
 test/go:
 ifeq ($(COVERAGE), true)
 	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) go test -failfast -race $(COVERAGE_OPTS) -coverprofile=$(COVERAGE_OUTPUT).tmp ./pkg/... ./cmd/...
