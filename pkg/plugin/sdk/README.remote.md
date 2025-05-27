@@ -1,0 +1,1 @@
+# piped-plugin-sdk-go
