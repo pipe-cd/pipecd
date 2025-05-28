@@ -50,10 +50,18 @@ jobs:
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         with:
-          root_dir: ${{ matrix.module }}
           flags: ${{ steps.make-flag.outputs.flags }}
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  # This job is used to check if the go testing is completed successfully
+  # It is used to set as required check for the branch protection rules
+  go-completed:
+    runs-on: ubuntu-24.04
+    needs: go
+    steps:
+      - run: |
+          echo completed
 
   web:
     runs-on: ubuntu-24.04
