@@ -1,5 +1,7 @@
 # Usage of pipedv1 and plugins (alpha)
 
+_This page is still in preparation. The content will be changed and might not work well yet._
+
 This page shows how to run pipedv1 and plugins of alpha status.
 
 See [cmd/pipedv1/README.md](https://github.com/pipe-cd/pipecd/blob/master/cmd/pipedv1/README.md) if you want to develop or debug pipedv1.
