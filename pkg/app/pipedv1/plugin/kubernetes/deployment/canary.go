@@ -17,9 +17,9 @@ package deployment
 import (
 	"context"
 
-	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
-
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 func (p *Plugin) executeK8sCanaryRolloutStage(_ context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], _ []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
@@ -30,4 +30,26 @@ func (p *Plugin) executeK8sCanaryRolloutStage(_ context.Context, input *sdk.Exec
 func (p *Plugin) executeK8sCanaryCleanStage(_ context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], _ []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
 	input.Client.LogPersister().Error("Canary clean is not yet implemented")
 	return sdk.StageStatusFailure
+}
+
+func findConfigMapManifests(manifests []provider.Manifest) []provider.Manifest {
+	out := make([]provider.Manifest, 0, len(manifests))
+	for _, m := range manifests {
+		if !m.IsConfigMap() {
+			continue
+		}
+		out = append(out, m)
+	}
+	return out
+}
+
+func findSecretManifests(manifests []provider.Manifest) []provider.Manifest {
+	out := make([]provider.Manifest, 0, len(manifests))
+	for _, m := range manifests {
+		if !m.IsSecret() {
+			continue
+		}
+		out = append(out, m)
+	}
+	return out
 }
