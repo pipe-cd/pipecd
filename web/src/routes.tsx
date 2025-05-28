@@ -42,6 +42,7 @@ import {
 import { fetchPipeds } from "~/modules/pipeds";
 import { sortedSet } from "~/utils/sorted-set";
 import DeploymentTracePage from "./components/deployment-trace-page";
+import useAuth from "./contexts/auth-context/use-auth";
 
 const SettingsIndexPage = loadable(
   () => import(/* webpackChunkName: "settings" */ "~/components/settings-page"),
@@ -136,7 +137,7 @@ const useCommandsStatusChecking = (): void => {
 
 export const Routes: FC = () => {
   const dispatch = useAppDispatch();
-  const me = useAppSelector((state) => state.me);
+  const { me } = useAuth();
   useEffect(() => {
     if (me?.isLogin) {
       dispatch(fetchPipeds(true));

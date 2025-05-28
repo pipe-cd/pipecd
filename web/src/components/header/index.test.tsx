@@ -1,6 +1,21 @@
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter, render, screen } from "~~/test-utils";
+import { MemoryRouter, render, screen, waitFor } from "~~/test-utils";
 import { Header } from "./";
+import { Cookies, CookiesProvider } from "react-cookie";
+import { server } from "~/mocks/server";
+import { AuthProvider } from "~/contexts/auth-context";
+
+beforeAll(() => {
+  server.listen();
+});
+
+afterEach(() => {
+  server.resetHandlers();
+});
+
+afterAll(() => {
+  server.close();
+});
 
 it("shows login link if user state is not exists", () => {
   render(
@@ -13,23 +28,22 @@ it("shows login link if user state is not exists", () => {
   expect(screen.getByRole("link", { name: "Login" })).toBeInTheDocument();
 });
 
-it("shows logout link if opened user menu", () => {
+it("shows logout link if opened user menu", async () => {
+  const cookies = new Cookies();
+  cookies.set("token", "my-test-token");
+
   render(
     <MemoryRouter>
-      <Header />
-    </MemoryRouter>,
-    {
-      initialState: {
-        me: {
-          avatarUrl: "",
-          subject: "user",
-          isLogin: true,
-          projectId: "pipecd",
-        },
-      },
-    }
+      <CookiesProvider cookies={cookies}>
+        <AuthProvider>
+          <Header />
+        </AuthProvider>
+      </CookiesProvider>
+    </MemoryRouter>
   );
 
-  userEvent.click(screen.getByRole("button", { name: "User Menu" }));
+  await waitFor(() => {
+    userEvent.click(screen.getByRole("button", { name: "User Menu" }));
+  });
   expect(screen.getByRole("menuitem", { name: "Logout" })).toBeInTheDocument();
 });
