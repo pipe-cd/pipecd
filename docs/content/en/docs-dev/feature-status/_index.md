@@ -28,6 +28,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Automated rollback](../user-guide/managing-application/rolling-back-a-deployment/) | Beta |
 | [Automated configuration drift detection](../user-guide/managing-application/configuration-drift-detection/) | Beta |
 | [Application live state](../user-guide/managing-application/application-live-state/) | Beta |
+| Prune resources | Beta |
 | Support Helm | Beta |
 | Support Kustomize | Beta |
 | Support Istio service mesh | Beta |
@@ -44,6 +45,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Automated rollback](../user-guide/managing-application/rolling-back-a-deployment/) | Beta |
 | [Automated configuration drift detection](../user-guide/managing-application/configuration-drift-detection/) | Alpha |
 | [Application live state](../user-guide/managing-application/application-live-state/) | Incubating |
+| Prune resources | Incubating |
 | [Plan preview](../user-guide/plan-preview) | Beta |
 | [Manifest attachment](../user-guide/managing-application/manifest-attachment) | Alpha |
 
@@ -56,6 +58,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Automated rollback](../user-guide/managing-application/rolling-back-a-deployment/) | Beta |
 | [Automated configuration drift detection](../user-guide/managing-application/configuration-drift-detection/) | Beta |
 | [Application live state](../user-guide/managing-application/application-live-state/) | Beta |
+| Prune resources | Incubating |
 | [Plan preview](../user-guide/plan-preview) | Beta |
 | [Manifest attachment](../user-guide/managing-application/manifest-attachment) | Alpha |
 
@@ -70,6 +73,7 @@ Note: These are statuses for Cloud Run service. Cloud Run job has not been suppo
 | [Automated rollback](../user-guide/managing-application/rolling-back-a-deployment/) | Beta |
 | [Automated configuration drift detection](../user-guide/managing-application/configuration-drift-detection/) | Alpha |
 | [Application live state](../user-guide/managing-application/application-live-state/) | Alpha |
+| Prune resources | Incubating |
 | [Plan preview](../user-guide/plan-preview) | Alpha |
 | [Manifest attachment](../user-guide/managing-application/manifest-attachment) | Alpha |
 
@@ -84,6 +88,7 @@ Note: These are statuses for Cloud Run service. Cloud Run job has not been suppo
 | [Application live state](../user-guide/managing-application/application-live-state/) | Alpha *1 |
 | Quick sync deployment for [ECS Service Discovery](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-discovery.html) | Alpha |
 | Deployment with a defined pipeline for [ECS Service Discovery](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-discovery.html) | Alpha |
+| Prune resources | Incubating |
 | [Plan preview](../user-guide/plan-preview) | Alpha |
 | [Manifest attachment](../user-guide/managing-application/manifest-attachment) | Alpha |
 
