@@ -1,0 +1,2 @@
+fixes:
+  - "github.com/pipe-cd/piped-plugin-sdk-go/::pkg/plugin/sdk/" # SDK's go module path is different from the root directory
