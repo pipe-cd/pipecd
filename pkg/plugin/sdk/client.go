@@ -20,11 +20,11 @@ import (
 	"slices"
 	"time"
 
+	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry"
 	"google.golang.org/grpc"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
-	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcclient"
 )
 

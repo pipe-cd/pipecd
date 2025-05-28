@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/pipe-cd/piped-plugin-sdk-go/signalhandler"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -27,7 +28,6 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
-	"github.com/pipe-cd/pipecd/pkg/plugin/signalhandler"
 )
 
 // DeploymentPlugin is the interface that be implemented by a full-spec deployment plugin.
