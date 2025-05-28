@@ -21,6 +21,7 @@ import (
 	"net/http/pprof"
 	"time"
 
+	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -29,7 +30,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
-	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/rpc"
 )
 
