@@ -28,7 +28,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Automated rollback](../user-guide/managing-application/rolling-back-a-deployment/) | Beta |
 | [Automated configuration drift detection](../user-guide/managing-application/configuration-drift-detection/) | Beta |
 | [Application live state](../user-guide/managing-application/application-live-state/) | Beta |
-| Prune resources | Beta |
+| Prune resources | Alpha |
 | Support Helm | Beta |
 | Support Kustomize | Beta |
 | Support Istio service mesh | Beta |
