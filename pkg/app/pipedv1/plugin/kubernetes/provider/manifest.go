@@ -103,6 +103,29 @@ func (m Manifest) Name() string {
 	return m.body.GetName()
 }
 
+// IsWorkload returns true if the manifest is a Deployment, StatefulSet, or DaemonSet.
+// It checks the API group and the kind of the manifest.
+func (m Manifest) IsWorkload() bool {
+	// TODO: check the API group more strictly.
+	if !isBuiltinAPIGroup(m.body.GroupVersionKind().Group) {
+		return false
+	}
+
+	switch m.body.GetKind() {
+	case KindDeployment, KindStatefulSet, KindDaemonSet:
+		return true
+	default:
+		return false
+	}
+}
+
+// IsService returns true if the manifest is a Service.
+// It checks the API group and the kind of the manifest.
+func (m Manifest) IsService() bool {
+	// TODO: check the API group more strictly.
+	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindService
+}
+
 // IsDeployment returns true if the manifest is a Deployment.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsDeployment() bool {
