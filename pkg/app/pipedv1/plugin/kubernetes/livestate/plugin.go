@@ -22,11 +22,12 @@ import (
 
 	"go.uber.org/zap"
 
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+	"github.com/pipe-cd/piped-plugin-sdk-go/diff"
+
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
-	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
-	"github.com/pipe-cd/piped-plugin-sdk-go/diff"
 )
 
 type Plugin struct{}
