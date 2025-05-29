@@ -426,7 +426,7 @@ func renderReleaseNote(p ReleaseProposal, cfg ReleaseConfig) []byte {
 	}
 
 	for _, ctg := range cfg.CommitCategories {
-		commits := make([]ReleaseCommit, 0, 0)
+		commits := make([]ReleaseCommit, 0)
 		for _, c := range filteredCommits {
 			if c.CategoryName == ctg.ID {
 				commits = append(commits, c)

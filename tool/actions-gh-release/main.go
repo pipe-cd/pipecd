@@ -72,7 +72,7 @@ func main() {
 		log.Fatalf("Failed to list changed files: %v\n", err)
 	}
 
-	changedReleaseFiles := make([]string, 0, 0)
+	changedReleaseFiles := make([]string, 0)
 	matcher, err := NewPatternMatcher([]string{args.ReleaseFile})
 	if err != nil {
 		log.Fatalf("Failed to create pattern matcher for release file: %v\n", err)
