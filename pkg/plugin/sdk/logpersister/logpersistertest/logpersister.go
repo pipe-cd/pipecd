@@ -18,7 +18,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
+	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister"
 )
 
 // NewTestLogPersister creates a new testLogPersister for testing.
