@@ -8,7 +8,7 @@ replace github.com/pipe-cd/piped-plugin-sdk-go => ../../../../plugin/sdk
 
 require (
 	github.com/google/go-cmp v0.7.0
-	github.com/pipe-cd/pipecd v0.51.3
+	github.com/pipe-cd/pipecd v0.52.0
 	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-00010101000000-000000000000
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.19.1
