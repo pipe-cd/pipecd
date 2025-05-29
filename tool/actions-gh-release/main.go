@@ -117,7 +117,8 @@ func _main() int {
 		if p.Tag != "" {
 			exist, err := ghClient.existRelease(ctx, event.Owner, event.Repo, p.Tag)
 			if err != nil {
-				log.Fatalf("Failed to check the existence of release for %s: %v\n", p.Tag, err)
+				log.Printf("Failed to check the existence of release for %s: %v\n", p.Tag, err)
+				return 1
 			}
 			if exist {
 				existingProposals = append(existingProposals, p)
