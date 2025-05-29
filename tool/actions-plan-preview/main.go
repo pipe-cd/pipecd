@@ -45,28 +45,35 @@ const (
 )
 
 func main() {
+	os.Exit(_main())
+}
+
+func _main() int {
 	log.Println("Start running plan-preview")
 
 	eventName := os.Getenv("GITHUB_EVENT_NAME")
 	if !isSupportedGitHubEvent(eventName) {
-		log.Fatal(fmt.Errorf(
+		log.Printf(
 			"unexpected event %s, only %q, %q and %q event are supported",
 			eventName,
 			pullRequestEventName,
 			commentEventName,
 			pushEventName,
-		))
+		)
+		return 1
 	}
 
 	args, err := parseArgs(os.Args)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return 1
 	}
 	log.Println("Successfully parsed arguments")
 
 	payload, err := os.ReadFile(os.Getenv("GITHUB_EVENT_PATH"))
 	if err != nil {
-		log.Fatal(fmt.Errorf("failed to read event payload: %v", err))
+		log.Printf("failed to read event payload: %v\n", err)
+		return 1
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
@@ -81,11 +88,12 @@ func main() {
 
 	event, err := parseGitHubEvent(ctx, ghClient.PullRequests, eventName, payload, args.PRNum)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return 1
 	}
 	log.Printf("Successfully parsed GitHub event\n\tbase-branch %s\n\thead-branch %s\n\thead-commit %s\n", event.BaseBranch, event.HeadBranch, event.HeadCommit)
 
-	doComment := func(body string) {
+	doComment := func(body string) int {
 		comment, err := sendComment(
 			ctx,
 			ghClient.Issues,
@@ -95,22 +103,22 @@ func main() {
 			body,
 		)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
+			return 1
 		}
 
 		log.Printf("Successfully commented plan-preview result on pull request\n%s\n", *comment.HTMLURL)
+		return 0
 	}
 
 	if event.PRClosed {
-		doComment(failureBadgeURL + "\nUnable to run plan-preview for a closed pull request.")
-		return
+		return doComment(failureBadgeURL + "\nUnable to run plan-preview for a closed pull request.")
 	}
 
 	// TODO: When PR opened, `Mergeable` is nil for calculation.
 	// Here it is not considered for now, but needs to be handled.
-	if event.PRMergeable != nil && *event.PRMergeable == false {
-		doComment(failureBadgeURL + "\nUnable to run plan-preview for an un-mergeable pull request. Please resolve the conficts and try again.")
-		return
+	if event.PRMergeable != nil && !*event.PRMergeable {
+		return doComment(failureBadgeURL + "\nUnable to run plan-preview for an un-mergeable pull request. Please resolve the conficts and try again.")
 	}
 
 	result, err := retrievePlanPreview(
@@ -125,8 +133,9 @@ func main() {
 		args.PipedHandleTimeout,
 	)
 	if err != nil {
-		doComment(failureBadgeURL + "\nUnable to run plan-preview. \ncause: " + err.Error())
-		log.Fatal(err)
+		_ = doComment(failureBadgeURL + "\nUnable to run plan-preview. \ncause: " + err.Error())
+		log.Println(err)
+		return 1
 	}
 	log.Println("Successfully retrieved plan-preview result")
 
@@ -134,28 +143,30 @@ func main() {
 	if result.HasError() {
 		pr, err := getPullRequest(ctx, ghClient.PullRequests, event.Owner, event.Repo, event.PRNumber)
 		if err != nil {
-			doComment(failureBadgeURL + "\nUnable to run plan-preview. \ncause: " + err.Error())
-			log.Fatal(err)
+			_ = doComment(failureBadgeURL + "\nUnable to run plan-preview. \ncause: " + err.Error())
+			log.Println(err)
+			return 1
 		}
 		if !pr.GetClosedAt().IsZero() {
-			doComment(failureBadgeURL + "\nUnable to run plan-preview for a closed pull request.")
-			return
+			return doComment(failureBadgeURL + "\nUnable to run plan-preview for a closed pull request.")
 		}
 
 		minimizePreviousComment(ctx, ghGraphQLClient, event)
 
 		body := makeCommentBody(event, result)
-		doComment(body)
+		if code := doComment(body); code != 0 {
+			return code
+		}
 
 		log.Println("Successfully minimized last plan-preview result on pull request")
 		log.Println("plan-preview result has error")
-		os.Exit(1)
+		return 1
 	}
 
 	minimizePreviousComment(ctx, ghGraphQLClient, event)
 
 	body := makeCommentBody(event, result)
-	doComment(body)
+	return doComment(body)
 }
 
 type arguments struct {
