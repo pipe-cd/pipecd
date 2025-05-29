@@ -18,6 +18,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister/logpersistertest"
+	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry/toolregistrytest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
@@ -27,9 +30,6 @@ import (
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 
 	kubeConfigPkg "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
-	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister/logpersistertest"
-	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
-	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry/toolregistrytest"
 )
 
 func TestPlugin_executeK8sBaselineRolloutStage_withCreateService(t *testing.T) {
