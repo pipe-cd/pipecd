@@ -93,8 +93,46 @@ func (c *client) Update(ctx context.Context, sm ServiceManifest) (*Service, erro
 	var (
 		svc  = run.NewNamespacesServicesService(c.client)
 		name = makeCloudRunServiceName(c.projectID, sm.Name)
-		call = svc.ReplaceService(name, svcCfg)
 	)
+
+	currentService, err := svc.Get(name).Context(ctx).Do()
+	if err != nil {
+		if e, ok := err.(*googleapi.Error); ok && e.Code == http.StatusNotFound {
+			return nil, ErrServiceNotFound
+		}
+		return nil, fmt.Errorf("failed to get current service: %w", err)
+	}
+
+	if currentService.Spec != nil && currentService.Spec.Traffic != nil && svcCfg.Spec != nil && svcCfg.Spec.Traffic != nil {
+		revisionTags := make(map[string]string)
+		for _, traffic := range currentService.Spec.Traffic {
+			if traffic.RevisionName != "" && traffic.Tag != "" {
+				revisionTags[traffic.RevisionName] = traffic.Tag
+			}
+		}
+
+		newRevisions := make(map[string]bool)
+		for i, traffic := range svcCfg.Spec.Traffic {
+			if traffic.RevisionName != "" {
+				newRevisions[traffic.RevisionName] = true
+				if tag, exists := revisionTags[traffic.RevisionName]; exists && tag != "" {
+					svcCfg.Spec.Traffic[i].Tag = tag
+				}
+			}
+		}
+
+		for revName, tag := range revisionTags {
+			if !newRevisions[revName] {
+				svcCfg.Spec.Traffic = append(svcCfg.Spec.Traffic, &run.TrafficTarget{
+					RevisionName: revName,
+					Percent:      0,
+					Tag:          tag,
+				})
+			}
+		}
+	}
+
+	call := svc.ReplaceService(name, svcCfg)
 	call.Context(ctx)
 
 	service, err := call.Do()
