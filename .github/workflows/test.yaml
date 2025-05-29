@@ -56,7 +56,7 @@ jobs:
 
   # This job is used to check if the go testing is completed successfully
   # It is used to set as required check for the branch protection rules
-  go-completed:
+  go-test-completed:
     runs-on: ubuntu-24.04
     needs: go
     steps:
