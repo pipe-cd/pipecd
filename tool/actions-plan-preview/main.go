@@ -93,7 +93,7 @@ func _main() int {
 	}
 	log.Printf("Successfully parsed GitHub event\n\tbase-branch %s\n\thead-branch %s\n\thead-commit %s\n", event.BaseBranch, event.HeadBranch, event.HeadCommit)
 
-	doComment := func(body string) error {
+	doComment := func(body string) int {
 		comment, err := sendComment(
 			ctx,
 			ghClient.Issues,
@@ -104,27 +104,21 @@ func _main() int {
 		)
 		if err != nil {
 			log.Println(err)
-			return err
+			return 1
 		}
 
 		log.Printf("Successfully commented plan-preview result on pull request\n%s\n", *comment.HTMLURL)
-		return nil
+		return 0
 	}
 
 	if event.PRClosed {
-		if err := doComment(failureBadgeURL + "\nUnable to run plan-preview for a closed pull request."); err != nil {
-			return 1
-		}
-		return 0
+		return doComment(failureBadgeURL + "\nUnable to run plan-preview for a closed pull request.")
 	}
 
 	// TODO: When PR opened, `Mergeable` is nil for calculation.
 	// Here it is not considered for now, but needs to be handled.
 	if event.PRMergeable != nil && !*event.PRMergeable {
-		if err := doComment(failureBadgeURL + "\nUnable to run plan-preview for an un-mergeable pull request. Please resolve the conficts and try again."); err != nil {
-			return 1
-		}
-		return 0
+		return doComment(failureBadgeURL + "\nUnable to run plan-preview for an un-mergeable pull request. Please resolve the conficts and try again.")
 	}
 
 	result, err := retrievePlanPreview(
@@ -139,9 +133,7 @@ func _main() int {
 		args.PipedHandleTimeout,
 	)
 	if err != nil {
-		if err := doComment(failureBadgeURL + "\nUnable to run plan-preview. \ncause: " + err.Error()); err != nil {
-			return 1
-		}
+		_ = doComment(failureBadgeURL + "\nUnable to run plan-preview. \ncause: " + err.Error())
 		log.Println(err)
 		return 1
 	}
@@ -151,24 +143,19 @@ func _main() int {
 	if result.HasError() {
 		pr, err := getPullRequest(ctx, ghClient.PullRequests, event.Owner, event.Repo, event.PRNumber)
 		if err != nil {
-			if err := doComment(failureBadgeURL + "\nUnable to run plan-preview. \ncause: " + err.Error()); err != nil {
-				return 1
-			}
+			_ = doComment(failureBadgeURL + "\nUnable to run plan-preview. \ncause: " + err.Error())
 			log.Println(err)
 			return 1
 		}
 		if !pr.GetClosedAt().IsZero() {
-			if err := doComment(failureBadgeURL + "\nUnable to run plan-preview for a closed pull request."); err != nil {
-				return 1
-			}
-			return 0
+			return doComment(failureBadgeURL + "\nUnable to run plan-preview for a closed pull request.")
 		}
 
 		minimizePreviousComment(ctx, ghGraphQLClient, event)
 
 		body := makeCommentBody(event, result)
-		if err := doComment(body); err != nil {
-			return 1
+		if code := doComment(body); code != 0 {
+			return code
 		}
 
 		log.Println("Successfully minimized last plan-preview result on pull request")
@@ -179,10 +166,7 @@ func _main() int {
 	minimizePreviousComment(ctx, ghGraphQLClient, event)
 
 	body := makeCommentBody(event, result)
-	if err := doComment(body); err != nil {
-		return 1
-	}
-	return 0
+	return doComment(body)
 }
 
 type arguments struct {
