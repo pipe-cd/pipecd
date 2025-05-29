@@ -27,6 +27,8 @@ import (
 )
 
 func Test_findConfigMapManifests(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name      string
 		manifests []provider.Manifest
@@ -107,6 +109,8 @@ spec:
 }
 
 func Test_findSecretManifests(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name      string
 		manifests []provider.Manifest
@@ -287,6 +291,8 @@ func Test_patchManifest(t *testing.T) {
 }
 
 func Test_patchManifests(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		manifests     []provider.Manifest
