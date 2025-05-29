@@ -17,7 +17,7 @@ package deployment
 import (
 	"cmp"
 	"context"
-	"errors"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -26,7 +26,7 @@ import (
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/toolregistry"
-	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 func (p *Plugin) executeK8sMultiSyncStage(ctx context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
@@ -111,6 +111,19 @@ func (p *Plugin) sync(
 		return sdk.StageStatusFailure
 	}
 
+	var stageCfg kubeconfig.K8sSyncStageOptions
+	if len(input.Request.StageConfig) > 0 {
+		// TODO: this is a temporary solution to support the stage options specified under "with"
+		// When the stage options under "with" are empty, we cannot detect whether the stage is a quick sync stage or not.
+		// So we have to add a new field to the sdk.ExecuteStageRequest or sdk.Deployment to indicate that the deployment is a quick sync strategy or in a pipeline sync strategy.
+		if err := json.Unmarshal(input.Request.StageConfig, &stageCfg); err != nil {
+			lp.Errorf("Failed while unmarshalling stage config (%v)", err)
+			return sdk.StageStatusFailure
+		}
+	} else {
+		stageCfg = cfg.Spec.QuickSync
+	}
+
 	// TODO: find the way to hold the tool registry and loader in the plugin.
 	// Currently, we create them every time the stage is executed beucause we can't pass input.Client.toolRegistry to the plugin when starting the plugin.
 	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
@@ -126,7 +139,7 @@ func (p *Plugin) sync(
 
 	// Because the loaded manifests are read-only
 	// we duplicate them to avoid updating the shared manifests data in cache.
-	// TODO: implement duplicateManifests function
+	manifests = provider.DeepCopyManifests(manifests)
 
 	// When addVariantLabelToSelector is true, ensure that all workloads
 	// have the variant label in their selector.
@@ -134,8 +147,8 @@ func (p *Plugin) sync(
 		variantLabel   = cfg.Spec.VariantLabel.Key
 		primaryVariant = cfg.Spec.VariantLabel.PrimaryValue
 	)
-	// TODO: treat the stage options specified under "with"
-	if cfg.Spec.QuickSync.AddVariantLabelToSelector {
+
+	if stageCfg.AddVariantLabelToSelector {
 		workloads := findWorkloadManifests(manifests, cfg.Spec.Workloads)
 		for _, m := range workloads {
 			if err := ensureVariantSelectorInWorkload(m, variantLabel, primaryVariant); err != nil {
@@ -145,15 +158,7 @@ func (p *Plugin) sync(
 		}
 	}
 
-	// Add variant annotations to all manifests.
-	for i := range manifests {
-		manifests[i].AddLabels(map[string]string{
-			variantLabel: primaryVariant,
-		})
-		manifests[i].AddAnnotations(map[string]string{
-			variantLabel: primaryVariant,
-		})
-	}
+	addVariantLabelsAndAnnotations(manifests, variantLabel, primaryVariant)
 
 	if err := annotateConfigHash(manifests); err != nil {
 		lp.Errorf("Unable to set %q annotation into the workload manifest (%v)", provider.AnnotationConfigHash, err)
@@ -182,8 +187,7 @@ func (p *Plugin) sync(
 		return sdk.StageStatusSuccess
 	}
 
-	// TODO: treat the stage options specified under "with"
-	if !cfg.Spec.QuickSync.Prune {
+	if !stageCfg.Prune {
 		lp.Info("Resource GC was skipped because sync.prune was not configured")
 		return sdk.StageStatusSuccess
 	}
@@ -221,20 +225,7 @@ func (p *Plugin) sync(
 	}
 
 	lp.Infof("Start pruning %d resources", len(removeKeys))
-	var deletedCount int
-	for _, key := range removeKeys {
-		if err := kubectl.Delete(ctx, deployTargetConfig.KubeConfigPath, key.Namespace(), key); err != nil {
-			if errors.Is(err, provider.ErrNotFound) {
-				lp.Infof("Specified resource does not exist, so skip deleting the resource: %s (%v)", key.ReadableString(), err)
-				continue
-			}
-			lp.Errorf("Failed while deleting resource %s (%v)", key.ReadableString(), err)
-			continue // continue to delete other resources
-		}
-		deletedCount++
-		lp.Successf("- deleted resource: %s", key.ReadableString())
-	}
-
+	deletedCount := deleteResources(ctx, lp, applier, removeKeys)
 	lp.Successf("Successfully deleted %d resources", deletedCount)
 
 	return sdk.StageStatusSuccess

@@ -23,7 +23,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry/toolregistrytest"
+	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry/toolregistrytest"
 )
 
 func TestRegistry_Kubectl(t *testing.T) {

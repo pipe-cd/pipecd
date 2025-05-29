@@ -4,10 +4,9 @@ import {
   DialogActions,
   DialogContent,
   Typography,
-  makeStyles,
   DialogTitle,
   TextField,
-} from "@material-ui/core";
+} from "@mui/material";
 import { useFormik } from "formik";
 import { FC, memo } from "react";
 import { useAppSelector } from "~/hooks/redux";
@@ -18,16 +17,6 @@ import {
 } from "~/modules/project";
 import * as yup from "yup";
 
-const useStyles = makeStyles((theme) => ({
-  deleteTargetName: {
-    color: theme.palette.text.primary,
-    fontWeight: theme.typography.fontWeightMedium,
-  },
-  description: {
-    marginBottom: theme.spacing(2),
-  },
-}));
-
 export interface EditRoleDialogProps {
   role: string | null;
   onClose: () => void;
@@ -35,7 +24,7 @@ export interface EditRoleDialogProps {
 }
 
 // resources=(\*|application|deployment|event|piped|deploymentChain|project|apiKey|insight|,)+;\s*actions=(\*|get|list|create|update|delete|,)+
-const validationRgex = new RegExp(
+const validationRegex = new RegExp(
   "resources=(" +
     rbacResourceTypes()
       .map((v) => v.replace(/\*/, "\\*"))
@@ -50,7 +39,7 @@ const validationRgex = new RegExp(
 const validationSchema = yup.object({
   policies: yup
     .string()
-    .matches(validationRgex, "Invalid policy format")
+    .matches(validationRegex, "Invalid policy format")
     .required(),
 });
 
@@ -58,7 +47,6 @@ const DIALOG_TITLE = "Edit Role";
 
 export const EditRoleDialog: FC<EditRoleDialogProps> = memo(
   function EditRoleDialog({ role, onUpdate, onClose }) {
-    const classes = useStyles();
     const rs = useAppSelector((state) => state.project.rbacRoles);
     const r = rs.filter((r) => r.name == role)[0];
 
@@ -85,7 +73,13 @@ export const EditRoleDialog: FC<EditRoleDialogProps> = memo(
           <DialogTitle>{DIALOG_TITLE}</DialogTitle>
           <DialogContent>
             <Typography variant="caption">Role</Typography>
-            <Typography variant="body1" className={classes.deleteTargetName}>
+            <Typography
+              variant="body1"
+              sx={(theme) => ({
+                color: theme.palette.text.primary,
+                fontWeight: theme.typography.fontWeightMedium,
+              })}
+            >
               {role}
             </Typography>
             <TextField

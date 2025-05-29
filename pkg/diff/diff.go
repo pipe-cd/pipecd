@@ -25,11 +25,12 @@ import (
 )
 
 type differ struct {
-	ignoreAddingMapKeys           bool
-	equateEmpty                   bool
-	compareNumberAndNumericString bool
-	ignoredPaths                  map[string]struct{}
-	ignoreConfig                  map[string][]string
+	ignoreAddingMapKeys            bool
+	equateEmpty                    bool
+	compareNumberAndNumericString  bool
+	compareBooleanAndBooleanString bool
+	ignoredPaths                   map[string]struct{}
+	ignoreConfig                   map[string][]string
 
 	result *Result
 }
@@ -57,6 +58,15 @@ func WithEquateEmpty() Option {
 func WithCompareNumberAndNumericString() Option {
 	return func(d *differ) {
 		d.compareNumberAndNumericString = true
+	}
+}
+
+// WithCompareBooleanAndBooleanString configures differ to compare a boolean with a string.
+// Differ parses the string to boolean before comparing their values.
+// e.g. true == "true"
+func WithCompareBooleanAndBooleanString() Option {
+	return func(d *differ) {
+		d.compareBooleanAndBooleanString = true
 	}
 }
 
@@ -166,6 +176,24 @@ func (d *differ) diff(path []PathStep, vx, vy reflect.Value) error {
 		if isNumberValue(vy) {
 			if x, ok := convertToNumber(vx); ok {
 				return d.diffNumber(path, x, vy)
+			}
+		}
+	}
+
+	if isBooleanValue(vx) && isBooleanValue(vy) {
+		return d.diffBool(path, vx, vy)
+	}
+
+	if d.compareBooleanAndBooleanString {
+		if isBooleanValue(vx) {
+			if y, ok := convertToBoolean(vy); ok {
+				return d.diffBool(path, vx, y)
+			}
+		}
+
+		if isBooleanValue(vy) {
+			if x, ok := convertToBoolean(vx); ok {
+				return d.diffBool(path, x, vy)
 			}
 		}
 	}
@@ -358,6 +386,18 @@ func convertToNumber(v reflect.Value) (reflect.Value, bool) {
 	default:
 		return v, false
 	}
+}
+
+func isBooleanValue(v reflect.Value) bool {
+	return v.Kind() == reflect.Bool
+}
+
+func convertToBoolean(v reflect.Value) (reflect.Value, bool) {
+	if v.Kind() == reflect.String {
+		b, err := strconv.ParseBool(v.String())
+		return reflect.ValueOf(b), err == nil
+	}
+	return v, false
 }
 
 func newSlicePath(path []PathStep, index int) []PathStep {

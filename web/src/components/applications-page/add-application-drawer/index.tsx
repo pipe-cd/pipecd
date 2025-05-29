@@ -1,4 +1,4 @@
-import { Drawer } from "@material-ui/core";
+import { Drawer } from "@mui/material";
 import { FC, memo, useCallback, useState } from "react";
 import { UI_TEXT_CANCEL, UI_TEXT_DISCARD } from "~/constants/ui-text";
 import { useAppSelector } from "~/hooks/redux";
