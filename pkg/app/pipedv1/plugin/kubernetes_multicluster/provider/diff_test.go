@@ -23,7 +23,7 @@ import (
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	"github.com/pipe-cd/pipecd/pkg/plugin/diff"
+	"github.com/pipe-cd/piped-plugin-sdk-go/diff"
 )
 
 func TestDiff(t *testing.T) {
