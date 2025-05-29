@@ -1,11 +1,4 @@
-import {
-  Box,
-  Link,
-  Button,
-  CircularProgress,
-  makeStyles,
-  Typography,
-} from "@material-ui/core";
+import { Box, Link, Button, CircularProgress, Typography } from "@mui/material";
 import { FC, memo, useEffect, useMemo } from "react";
 import { UI_TEXT_REFRESH } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
@@ -54,18 +47,8 @@ const FEATURE_STATUS_INTRO = "PipeCD feature status";
 const DISABLED_APPLICATION_MESSAGE =
   "This application is currently disabled. You can enable it from the application list page.";
 
-const useStyles = makeStyles(() => ({
-  container: {
-    flex: 1,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-}));
-
 export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
   function ApplicationStateView({ applicationId }) {
-    const classes = useStyles();
     const dispatch = useAppDispatch();
     const [hasError, liveState, app] = useAppSelector<
       [
@@ -101,10 +84,12 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
     if (app?.disabled) {
       return (
         <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          flex={1}
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            flex: 1,
+          }}
         >
           <Typography variant="h6" component="span">
             {DISABLED_APPLICATION_MESSAGE}
@@ -115,7 +100,15 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
 
     if (hasError) {
       return (
-        <Box className={classes.container} flexDirection="column">
+        <Box
+          sx={{
+            flexDirection: "column",
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           <Typography variant="body1">{ERROR_MESSAGE}</Typography>
           <Button
             color="primary"
@@ -133,11 +126,26 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
       return (
         <>
           {isDisplayLiveState(app) ? (
-            <div className={classes.container}>
+            <Box
+              sx={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <CircularProgress />
-            </div>
+            </Box>
           ) : (
-            <Box className={classes.container} flexDirection="column">
+            <Box
+              sx={{
+                flexDirection: "column",
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <Typography variant="body1">{COMING_SOON_MESSAGE}</Typography>
               <Link
                 href="https://pipecd.dev/docs/feature-status/"

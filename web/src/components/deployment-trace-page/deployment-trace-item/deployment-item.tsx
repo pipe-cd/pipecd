@@ -1,4 +1,4 @@
-import { Box, Chip, makeStyles, Typography } from "@material-ui/core";
+import { Box, Chip, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import { FC } from "react";
 import { DeploymentStatusIcon } from "~/components/deployment-status-icon";
@@ -11,43 +11,6 @@ type Props = {
   deployment: Deployment.AsObject;
 };
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    flex: 1,
-    padding: theme.spacing(2),
-    display: "flex",
-    alignItems: "center",
-    overflow: "hidden",
-    columnGap: theme.spacing(2),
-    [theme.breakpoints.down("sm")]: {
-      flexDirection: "column",
-      alignItems: "flex-start",
-    },
-  },
-  titleWrap: {
-    display: "flex",
-    alignItems: "baseline",
-    flexWrap: "wrap",
-    columnGap: theme.spacing(1),
-    [theme.breakpoints.down("sm")]: {
-      flexDirection: "column",
-    },
-  },
-  statusText: {
-    marginLeft: theme.spacing(1),
-    lineHeight: "1.5rem",
-    width: "100px",
-  },
-  description: {
-    ...ellipsis,
-    color: theme.palette.text.hint,
-  },
-  labelChip: {
-    marginLeft: theme.spacing(1),
-    marginBottom: theme.spacing(0.25),
-  },
-}));
-
 enum PipedVersion {
   V0 = "v0",
   V1 = "v1",
@@ -56,8 +19,6 @@ enum PipedVersion {
 const NO_DESCRIPTION = "No description.";
 
 const DeploymentItem: FC<Props> = ({ deployment }) => {
-  const classes = useStyles();
-
   const pipedVersion =
     !deployment.platformProvider ||
     deployment?.deployTargetsByPluginMap?.length > 0
@@ -65,19 +26,57 @@ const DeploymentItem: FC<Props> = ({ deployment }) => {
       : PipedVersion.V0;
 
   return (
-    <Box className={classes.root}>
-      <Box display="flex" alignItems="center">
+    <Box
+      sx={(theme) => ({
+        flex: 1,
+        padding: theme.spacing(2),
+        display: "flex",
+        alignItems: "center",
+        overflow: "hidden",
+        columnGap: theme.spacing(2),
+        [theme.breakpoints.down("md")]: {
+          flexDirection: "column",
+          alignItems: "flex-start",
+        },
+      })}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
         <DeploymentStatusIcon status={deployment.status} />
         <Typography
           variant="subtitle2"
-          className={classes.statusText}
+          sx={{
+            marginLeft: 1,
+            lineHeight: "1.5rem",
+            width: "100px",
+          }}
           component="span"
         >
           {DEPLOYMENT_STATE_TEXT[deployment.status]}
         </Typography>
       </Box>
-      <Box flex={1} overflow="hidden" maxWidth={"100%"}>
-        <Box className={classes.titleWrap}>
+      <Box
+        sx={{
+          flex: 1,
+          overflow: "hidden",
+          maxWidth: "100%",
+        }}
+      >
+        <Box
+          sx={(theme) => ({
+            display: "flex",
+            alignItems: "baseline",
+            flexWrap: "wrap",
+            columnGap: theme.spacing(1),
+            [theme.breakpoints.down("md")]: {
+              flexDirection: "column",
+            },
+          })}
+        >
           <Typography variant="h6" component="span">
             {deployment.applicationName}
           </Typography>
@@ -88,13 +87,16 @@ const DeploymentItem: FC<Props> = ({ deployment }) => {
             {deployment?.labelsMap.map(([key, value], i) => (
               <Chip
                 label={key + ": " + value}
-                className={classes.labelChip}
+                sx={{ ml: 1, mb: 0.25 }}
                 key={i}
               />
             ))}
           </Typography>
         </Box>
-        <Typography variant="body1" className={classes.description}>
+        <Typography
+          variant="body1"
+          sx={{ ...ellipsis, color: "text.secondary" }}
+        >
           {deployment.summary || NO_DESCRIPTION}
         </Typography>
       </Box>

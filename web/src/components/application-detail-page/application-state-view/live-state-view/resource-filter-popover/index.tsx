@@ -4,8 +4,8 @@ import {
   Checkbox,
   FormControlLabel,
   Popover,
-} from "@material-ui/core";
-import FilterListIcon from "@material-ui/icons/FilterList";
+} from "@mui/material";
+import FilterListIcon from "@mui/icons-material/FilterList";
 import { FC, useEffect, useRef, useState } from "react";
 import { UI_TEXT_FILTER, UI_TEXT_FILTERED } from "~/constants/ui-text";
 
@@ -38,20 +38,35 @@ export const ResourceFilterPopover: FC<Props> = ({ filterState, onChange }) => {
 
   return (
     <>
-      <Box p={2}>
+      <Box
+        sx={{
+          p: 2,
+        }}
+      >
         <Button
           ref={buttonRef}
           startIcon={<FilterListIcon />}
-          color={isFiltered ? "primary" : "default"}
+          color={isFiltered ? "primary" : "inherit"}
           onClick={() => setOpen(!open)}
         >
           {isFiltered ? UI_TEXT_FILTERED : UI_TEXT_FILTER}
         </Button>
       </Box>
       <Popover open={open} anchorEl={buttonRef.current} onClose={handleClose}>
-        <Box p={2} minWidth={250}>
+        <Box
+          sx={{
+            p: 2,
+            minWidth: 250,
+          }}
+        >
           {Object.keys(filterState).map((resourceType) => (
-            <Box key={resourceType} display="flex" alignItems="center">
+            <Box
+              key={resourceType}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
               <FormControlLabel
                 control={
                   <Checkbox
@@ -69,7 +84,11 @@ export const ResourceFilterPopover: FC<Props> = ({ filterState, onChange }) => {
               />
             </Box>
           ))}
-          <Box textAlign="right">
+          <Box
+            sx={{
+              textAlign: "right",
+            }}
+          >
             <Button onClick={handleClose}>CANCEL</Button>
             <Button color="primary" onClick={handleApply}>
               APPLY

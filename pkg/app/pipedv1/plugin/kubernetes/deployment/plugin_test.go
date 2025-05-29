@@ -17,7 +17,6 @@ package deployment
 import (
 	"os"
 	"path"
-	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -29,17 +28,6 @@ import (
 
 	kubeConfigPkg "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 )
-
-// TODO: move to a common package
-func examplesDir() string {
-	d, _ := os.Getwd()
-	for {
-		if _, err := os.Stat(filepath.Join(d, "examples")); err == nil {
-			return filepath.Join(d, "examples")
-		}
-		d = filepath.Dir(d)
-	}
-}
 
 func kubeconfigFromRestConfig(restConfig *rest.Config) (string, error) {
 	clusters := make(map[string]*clientcmdapi.Cluster)

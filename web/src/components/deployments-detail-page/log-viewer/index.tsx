@@ -1,7 +1,6 @@
 import {
   Divider,
   IconButton,
-  makeStyles,
   Toolbar,
   Typography,
   Dialog,
@@ -10,9 +9,9 @@ import {
   DialogContentText,
   DialogTitle,
   Button,
-} from "@material-ui/core";
-import { Close, SkipNext } from "@material-ui/icons";
-import clsx from "clsx";
+  Box,
+} from "@mui/material";
+import { Close, SkipNext } from "@mui/icons-material";
 import { FC, memo, useCallback, useState } from "react";
 import Draggable from "react-draggable";
 import { APP_HEADER_HEIGHT } from "~/components/header";
@@ -65,63 +64,9 @@ function useActiveStageLog(): [Stage | null, StageLog | null] {
   });
 }
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    position: "absolute",
-    bottom: "0px",
-    width: "100%",
-  },
-  toolbar: {
-    background: theme.palette.background.default,
-  },
-  toolbarLeft: {
-    flex: 1,
-    display: "flex",
-    alignItems: "center",
-  },
-  toolbarRight: {
-    flex: 1,
-    justifyContent: "flex-end",
-    display: "flex",
-  },
-  stageName: {
-    fontFamily: theme.typography.fontFamilyMono,
-  },
-  stageDescription: {
-    marginLeft: theme.spacing(2),
-    color: theme.palette.text.secondary,
-  },
-  logContainer: {
-    overflowY: "scroll",
-  },
-  dividerWrapper: {
-    width: "100%",
-    paddingTop: theme.spacing(0.5),
-    paddingBottom: theme.spacing(0.5),
-    cursor: "ns-resize",
-  },
-  handle: {
-    position: "absolute",
-    // view height + header
-    zIndex: 10,
-  },
-  skipButton: {
-    color: theme.palette.common.white,
-    background: theme.palette.success.main,
-    marginRight: "10px",
-    "& .MuiButton-endIcon": {
-      marginLeft: 0,
-    },
-    "&:hover": {
-      backgroundColor: theme.palette.success.dark,
-    },
-  },
-}));
-
 export const LogViewer: FC = memo(function LogViewer() {
   const maxHandlePosY =
     document.body.clientHeight - APP_HEADER_HEIGHT - TOOLBAR_HEIGHT;
-  const classes = useStyles();
   const [activeStage, stageLog] = useActiveStageLog();
   const dispatch = useAppDispatch();
   const [handlePosY, setHandlePosY] = useState(maxHandlePosY - INITIAL_HEIGHT);
@@ -166,20 +111,57 @@ export const LogViewer: FC = memo(function LogViewer() {
         onStop={handleDrag}
         handle=".handle"
         position={{ x: 0, y: handlePosY }}
-        defaultClassName={classes.handle}
         axis="y"
       >
-        <div className={clsx("handle", classes.dividerWrapper)} />
+        <Box
+          className={"handle"}
+          sx={(theme) => ({
+            position: "absolute",
+            zIndex: 10,
+            width: "100%",
+            paddingTop: theme.spacing(0.5),
+            paddingBottom: theme.spacing(0.5),
+            cursor: "ns-resize",
+          })}
+        />
       </Draggable>
-
-      <div className={classes.root} data-testid="log-viewer">
+      <Box
+        data-testid="log-viewer"
+        sx={{
+          position: "absolute",
+          bottom: "0px",
+          width: "100%",
+        }}
+      >
         <Divider />
-        <Toolbar variant="dense" className={classes.toolbar}>
-          <div className={classes.toolbarLeft}>
+        <Toolbar
+          variant="dense"
+          // className={classes.toolbar}
+          sx={{ background: "background.default" }}
+        >
+          <Box
+            // className={classes.toolbarLeft}
+            sx={{
+              flex: 1,
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
             {activeStage.name === ANALYSIS_STAGE_NAME &&
               activeStage.status === StageStatus.STAGE_RUNNING && (
                 <Button
-                  className={classes.skipButton}
+                  // className={classes.skipButton}
+                  sx={(theme) => ({
+                    color: theme.palette.common.white,
+                    background: theme.palette.success.main,
+                    marginRight: "10px",
+                    "& .MuiButton-endIcon": {
+                      marginLeft: 0,
+                    },
+                    "&:hover": {
+                      backgroundColor: theme.palette.success.dark,
+                    },
+                  })}
                   onClick={() => setOpenSkipDialog(true)}
                   variant="contained"
                   endIcon={<SkipNext />}
@@ -188,26 +170,48 @@ export const LogViewer: FC = memo(function LogViewer() {
                   SKIP
                 </Button>
               )}
-            <Typography variant="subtitle2" className={classes.stageName}>
+            <Typography
+              variant="subtitle2"
+              sx={{
+                fontFamily: "fontFamilyMono",
+              }}
+            >
               {activeStage.name}
             </Typography>
-            <Typography variant="body2" className={classes.stageDescription}>
+            <Typography
+              variant="body2"
+              sx={{
+                color: "text.secondary",
+                ml: 2,
+              }}
+            >
               {activeStage.desc}
             </Typography>
-          </div>
-          <div className={classes.toolbarRight}>
-            <IconButton aria-label="close log" onClick={handleOnClickClose}>
+          </Box>
+          <Box sx={{ flex: 1, justifyContent: "flex-end", display: "flex" }}>
+            <IconButton
+              aria-label="close log"
+              onClick={handleOnClickClose}
+              size="large"
+            >
               <Close />
             </IconButton>
-          </div>
+          </Box>
         </Toolbar>
-        <div className={classes.logContainer} style={{ height: logViewHeight }}>
+        <Box
+          // className={classes.logContainer}
+          // style={{ height: logViewHeight }}
+          sx={{
+            overflowY: "scroll",
+            height: logViewHeight,
+          }}
+        >
           <Log
             loading={isStageRunning(activeStage.status)}
             logs={stageLog.logBlocks}
           />
-        </div>
-      </div>
+        </Box>
+      </Box>
       <Dialog open={isOpenSkipDialog} onClose={() => setOpenSkipDialog(false)}>
         <DialogTitle>Skip stage</DialogTitle>
         <DialogContent>

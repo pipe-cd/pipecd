@@ -61,3 +61,6 @@ gomock_reflect_*/
 
 # Cache
 .cache
+
+# hack
+hack/oidc/realm.local.json

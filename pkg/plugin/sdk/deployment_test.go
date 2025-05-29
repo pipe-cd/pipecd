@@ -20,6 +20,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister/logpersistertest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
@@ -27,7 +28,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
-	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister/logpersistertest"
 )
 
 type mockStagePlugin struct {
@@ -450,7 +450,7 @@ spec: {}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := newDetermineVersionsRequest[struct{}](tt.request)
+			result, err := newDetermineVersionsRequest[struct{}]("test-plugin", tt.request)
 			require.NoError(t, err)
 			assert.Equal(t, tt.expected.Deployment, result.Deployment)
 			assert.Equal(t, tt.expected.DeploymentSource.ApplicationDirectory, result.DeploymentSource.ApplicationDirectory)
@@ -744,7 +744,7 @@ spec: {}
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			result, _ := newDetermineStrategyRequest[struct{}](tt.request)
+			result, _ := newDetermineStrategyRequest[struct{}]("test-plugin", tt.request)
 			assert.Equal(t, tt.expected.Deployment, result.Deployment)
 		})
 	}

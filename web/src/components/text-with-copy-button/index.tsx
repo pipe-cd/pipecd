@@ -1,29 +1,6 @@
-import { makeStyles } from "@material-ui/core";
 import { FC, memo } from "react";
 import { CopyIconButton } from "../copy-icon-button";
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    display: "flex",
-    height: 64,
-    backgroundColor: theme.palette.background.paper,
-    marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(0.5),
-    borderRadius: theme.shape.borderRadius,
-    borderWidth: 1,
-    borderStyle: "solid",
-  },
-  input: {
-    border: "none",
-    fontSize: 16,
-    flex: 1,
-    textOverflow: "ellipsis",
-    paddingLeft: theme.spacing(1),
-  },
-  copyButton: {
-    marginLeft: theme.spacing(2),
-  },
-}));
+import { Box } from "@mui/material";
 
 export interface TextWithCopyButtonProps {
   name: string;
@@ -32,20 +9,42 @@ export interface TextWithCopyButtonProps {
 
 export const TextWithCopyButton: FC<TextWithCopyButtonProps> = memo(
   function TextWithCopyButton({ name, value }) {
-    const classes = useStyles();
     return (
-      <fieldset className={classes.root}>
-        <input readOnly value={value} className={classes.input} />
+      <Box
+        component={"fieldset"}
+        sx={(theme) => ({
+          display: "flex",
+          alignItems: "center",
+          height: 64,
+          backgroundColor: theme.palette.background.paper,
+          marginTop: theme.spacing(1),
+          marginBottom: theme.spacing(0.5),
+          borderRadius: theme.shape.borderRadius,
+          borderWidth: 1,
+          borderStyle: "solid",
+        })}
+      >
+        <Box
+          component="input"
+          readOnly
+          value={value}
+          sx={{
+            border: "none",
+            fontSize: 16,
+            flex: 1,
+            textOverflow: "ellipsis",
+            paddingLeft: 1,
+          }}
+        />
         <legend>{name}</legend>
-        <div>
-          <CopyIconButton
-            name={name}
-            value={value}
-            size="small"
-            className={classes.copyButton}
-          />
-        </div>
-      </fieldset>
+        <Box
+          sx={{
+            ml: 2,
+          }}
+        >
+          <CopyIconButton name={name} value={value} size="small" />
+        </Box>
+      </Box>
     );
   }
 );

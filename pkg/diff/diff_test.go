@@ -42,6 +42,7 @@ func TestDiff(t *testing.T) {
 				WithEquateEmpty(),
 				WithIgnoreAddingMapKeys(),
 				WithCompareNumberAndNumericString(),
+				WithCompareBooleanAndBooleanString(),
 			},
 			diffNum: 0,
 		},

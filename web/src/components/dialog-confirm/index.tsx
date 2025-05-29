@@ -1,15 +1,14 @@
 import {
   Button,
   Dialog,
-  CircularProgress,
   DialogActions,
   DialogContent,
   DialogTitle,
   DialogProps,
-  makeStyles,
-} from "@material-ui/core";
+} from "@mui/material";
 import { FC } from "react";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
+import { SpinnerIcon } from "~/styles/button";
 
 export type DialogConfirmProps = DialogProps & {
   onCancel: () => void;
@@ -20,17 +19,6 @@ export type DialogConfirmProps = DialogProps & {
   confirmText?: string;
   loading?: boolean;
 };
-
-const useStyles = makeStyles((theme) => ({
-  progress: {
-    color: theme.palette.primary.main,
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    marginTop: -12,
-    marginLeft: -12,
-  },
-}));
 
 const DialogConfirm: FC<DialogConfirmProps> = ({
   onCancel,
@@ -43,8 +31,6 @@ const DialogConfirm: FC<DialogConfirmProps> = ({
   loading = false,
   ...dialogProps
 }) => {
-  const classes = useStyles();
-
   return (
     <Dialog
       onClose={(event, reason) => {
@@ -61,9 +47,7 @@ const DialogConfirm: FC<DialogConfirmProps> = ({
         </Button>
         <Button color="primary" onClick={onConfirm} disabled={loading}>
           {confirmText}
-          {loading && (
-            <CircularProgress size={24} className={classes.progress} />
-          )}
+          {loading && <SpinnerIcon />}
         </Button>
       </DialogActions>
     </Dialog>

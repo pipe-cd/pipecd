@@ -24,7 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/pipe-cd/pipecd/pkg/plugin/diff"
+	"github.com/pipe-cd/piped-plugin-sdk-go/diff"
 )
 
 func Diff(old, new Manifest, logger *zap.Logger, opts ...diff.Option) (*diff.Result, error) {
@@ -143,10 +143,7 @@ func groupManifests(olds, news []Manifest) (adds, deletes, newChanges, oldChange
 	})
 
 	var n, o int
-	for {
-		if n >= len(news) || o >= len(olds) {
-			break
-		}
+	for n < len(news) && o < len(olds) {
 		if news[n].Key().normalize().String() == olds[o].Key().normalize().String() {
 			newChanges = append(newChanges, news[n])
 			oldChanges = append(oldChanges, olds[o])

@@ -59,7 +59,7 @@ When the deployment is success, it means the running state is being synced with 
 There are 3 strategies that PipeCD supports while syncing your application state with its configuration stored in Git. Which are:
 - Quick Sync: a fast way to make the running application state as same as its Git stored configuration. The generated pipeline contains only one predefined `SYNC` stage.
 - Pipeline Sync: sync the running application state with its Git stored configuration through a pipeline defined in its application configuration.
-- Auto Sync: depends on your defined application configuration, `piped` will decide the best way to sync your application state with its Git stored configuration.
+- Sync: depends on your defined application configuration, `piped` will decide the best way to sync your application state with its Git stored configuration.
 
 ### Platform Provider
 

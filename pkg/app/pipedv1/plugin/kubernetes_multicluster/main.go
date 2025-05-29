@@ -19,12 +19,12 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/deployment"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/livestate"
-	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 func main() {
 	plugin, err := sdk.NewPlugin(
-		"kubernetes", "0.0.1",
+		"kubernetes_multicluster", "0.0.1",
 		sdk.WithDeploymentPlugin(&deployment.Plugin{}),
 		sdk.WithLivestatePlugin(&livestate.Plugin{}),
 	)

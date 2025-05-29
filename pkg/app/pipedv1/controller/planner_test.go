@@ -157,7 +157,7 @@ func TestBuildQuickSyncStages(t *testing.T) {
 				Planner: config.DeploymentPlanner{
 					AutoRollback: pointerBool(true),
 				},
-				Plugins: []string{"plugin-1"},
+				Plugins: map[string]struct{}{"plugin-1": {}},
 			},
 			wantErr: false,
 			expectedStages: []*model.PipelineStage{
@@ -221,7 +221,7 @@ func TestBuildQuickSyncStages(t *testing.T) {
 				Planner: config.DeploymentPlanner{
 					AutoRollback: pointerBool(true),
 				},
-				Plugins: []string{"plugin-1", "plugin-2"},
+				Plugins: map[string]struct{}{"plugin-1": {}, "plugin-2": {}},
 			},
 			wantErr: false,
 			expectedStages: []*model.PipelineStage{
@@ -294,7 +294,7 @@ func TestBuildQuickSyncStages(t *testing.T) {
 				Planner: config.DeploymentPlanner{
 					AutoRollback: pointerBool(false),
 				},
-				Plugins: []string{"plugin-1", "plugin-2"},
+				Plugins: map[string]struct{}{"plugin-1": {}, "plugin-2": {}},
 			},
 			wantErr: false,
 			expectedStages: []*model.PipelineStage{
@@ -704,7 +704,7 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				Planner: config.DeploymentPlanner{
 					AutoRollback: pointerBool(true),
 				},
-				Plugins: []string{"plugin-1"},
+				Plugins: map[string]struct{}{"plugin-1": {}},
 			},
 			deployment: &model.Deployment{
 				Trigger: &model.DeploymentTrigger{
@@ -819,7 +819,7 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				Planner: config.DeploymentPlanner{
 					AutoRollback: pointerBool(true),
 				},
-				Plugins: []string{"plugin-1"},
+				Plugins: map[string]struct{}{"plugin-1": {}},
 			},
 			deployment: &model.Deployment{
 				Trigger: &model.DeploymentTrigger{},

@@ -273,10 +273,7 @@ func groupManifests(olds, news []Manifest) (adds, deletes, newChanges, oldChange
 	})
 
 	var n, o int
-	for {
-		if n >= len(news) || o >= len(olds) {
-			break
-		}
+	for n < len(news) && o < len(olds) {
 		if news[n].Key.IsEqualWithIgnoringNamespace(olds[o].Key) {
 			newChanges = append(newChanges, news[n])
 			oldChanges = append(oldChanges, olds[o])

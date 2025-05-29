@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -38,9 +39,22 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Failed to connect to docker: %s", err)
 	}
 
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("Failed to get working directory: %s", err)
+	}
+
 	opts := &dockertest.RunOptions{
 		Repository: repository,
 		Tag:        tag,
+		Env: []string{
+			"REGISTRY_AUTH=htpasswd",
+			"REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm",
+			"REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd",
+		},
+		Mounts: []string{
+			filepath.Join(wd, "testdata", "auth") + ":/auth",
+		},
 	}
 	hcOpts := func(config *docker.HostConfig) {
 		config.AutoRemove = true

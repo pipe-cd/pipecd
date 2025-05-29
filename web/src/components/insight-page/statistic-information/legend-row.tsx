@@ -1,4 +1,4 @@
-import { Box, makeStyles, Typography } from "@material-ui/core";
+import { Box, Typography } from "@mui/material";
 import { FC } from "react";
 
 type Props = {
@@ -10,49 +10,43 @@ type Props = {
   }[];
 };
 
-const useStyles = makeStyles(() => ({
-  root: {
-    minWidth: 300,
-    display: "inline-block",
-    overflow: "visible",
-    position: "relative",
-  },
-  pageTitle: {
-    fontWeight: "bold",
-  },
-  labelDot: {
-    width: 30,
-    height: 30,
-    borderRadius: "50%",
-  },
-}));
-
 const LegendRow: FC<Props> = ({ data }) => {
-  const classes = useStyles();
-
   return (
     <Box
-      display={"flex"}
-      justifyContent={"center"}
-      alignItems={"center"}
-      gridColumnGap={10}
-      mt={2}
-      width={"100%"}
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        columnGap: "10px",
+        mt: 2,
+        width: "100%",
+      }}
     >
       {data.map((item) => (
         <Box
-          display={"flex"}
-          alignItems={"center"}
-          gridColumnGap={10}
           key={item.key}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            columnGap: "10px",
+            width: "fit-content",
+          }}
         >
-          <Box className={classes.labelDot} bgcolor={item.color} />
-          <div>
+          <Box
+            component={"span"}
+            sx={{
+              bgcolor: item.color,
+              width: "30px",
+              height: "30px",
+              borderRadius: "50%",
+            }}
+          />
+          <Box>
             <Typography variant="body2">{item.title}</Typography>
             {item.description ? (
               <Typography variant="caption">{item.description}</Typography>
             ) : null}
-          </div>
+          </Box>
         </Box>
       ))}
     </Box>

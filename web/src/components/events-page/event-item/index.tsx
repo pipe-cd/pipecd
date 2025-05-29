@@ -1,35 +1,10 @@
-import { Box, ListItem, makeStyles, Typography, Chip } from "@material-ui/core";
+import { Box, ListItem, Typography, Chip } from "@mui/material";
 import dayjs from "dayjs";
 import { FC, memo } from "react";
 import { EVENT_STATE_TEXT } from "~/constants/event-status-text";
 import { useAppSelector } from "~/hooks/redux";
 import { Event, selectById as selectEventById } from "~/modules/events";
 import { EventStatusIcon } from "~/components/event-status-icon";
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    flex: 1,
-    padding: theme.spacing(2),
-    display: "flex",
-    alignItems: "center",
-    backgroundColor: theme.palette.background.paper,
-  },
-  info: {
-    marginLeft: theme.spacing(1),
-  },
-  statusText: {
-    marginLeft: theme.spacing(1),
-    lineHeight: "1.5rem",
-    // Fixed width to prevent misalignment of application name.
-    width: "100px",
-  },
-  description: {
-    color: theme.palette.text.hint,
-  },
-  labelChip: {
-    marginLeft: theme.spacing(1),
-  },
-}));
 
 export interface EventItemProps {
   id: string;
@@ -38,7 +13,6 @@ export interface EventItemProps {
 const NO_DESCRIPTION = "No description.";
 
 export const EventItem: FC<EventItemProps> = memo(function EventItem({ id }) {
-  const classes = useStyles();
   const event = useAppSelector<Event.AsObject | undefined>((state) =>
     selectEventById(state.events, id)
   );
@@ -48,38 +22,68 @@ export const EventItem: FC<EventItemProps> = memo(function EventItem({ id }) {
   }
 
   return (
-    <ListItem className={classes.root} dense divider>
-      <Box display="flex" alignItems="center">
+    <ListItem
+      sx={{
+        flex: 1,
+        padding: 2,
+        display: "flex",
+        alignItems: "center",
+        backgroundColor: "background.paper",
+      }}
+      dense
+      divider
+    >
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
         <EventStatusIcon status={event.status} />
         <Typography
           variant="subtitle2"
-          className={classes.statusText}
+          sx={{
+            marginLeft: 1,
+            lineHeight: "1.5rem",
+            // Fixed width to prevent misalignment of application name.
+            width: "100px",
+          }}
           component="span"
         >
           {EVENT_STATE_TEXT[event.status]}
         </Typography>
       </Box>
-      <Box display="flex" flexDirection="column" flex={1} pl={2}>
-        <Box display="flex" alignItems="baseline">
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          pl: 2,
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "baseline",
+          }}
+        >
           <Typography variant="h6" component="span">
             {event.name}
           </Typography>
           <Typography
             variant="body2"
             color="textSecondary"
-            className={classes.info}
+            sx={{
+              ml: 1,
+            }}
           >
             {event.id}
             {event.labelsMap.map(([key, value], i) => (
-              <Chip
-                label={key + ": " + value}
-                className={classes.labelChip}
-                key={i}
-              />
+              <Chip label={key + ": " + value} sx={{ ml: 1 }} key={i} />
             ))}
           </Typography>
         </Box>
-        <Typography variant="body1" className={classes.description}>
+        <Typography variant="body1" sx={{ color: "text.secondary" }}>
           {event.statusDescription || NO_DESCRIPTION}
         </Typography>
       </Box>

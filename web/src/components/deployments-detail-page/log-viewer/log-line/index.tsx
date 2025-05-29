@@ -1,5 +1,5 @@
-import { Box, makeStyles } from "@material-ui/core";
-import { Error } from "@material-ui/icons";
+import { Box } from "@mui/material";
+import { Error } from "@mui/icons-material";
 import { FC } from "react";
 import {
   DEFAULT_BACKGROUND_COLOR,
@@ -11,35 +11,6 @@ import {
 import { LogSeverity } from "~/modules/stage-logs";
 import { parseLog } from "~/utils/parse-log";
 import dayjs from "dayjs";
-
-const useStyles = makeStyles((theme) => ({
-  container: {
-    display: "flex",
-    alignItems: "flex-start",
-    backgroundColor: DEFAULT_BACKGROUND_COLOR,
-    "&:hover": {
-      backgroundColor: SELECTED_BACKGROUND_COLOR,
-    },
-    position: "relative",
-  },
-  lineNumber: {
-    color: TERMINAL_LINE_NUMBER_COLOR,
-    width: "5rem",
-    textAlign: "center",
-    flexShrink: 0,
-    userSelect: "none",
-    cursor: "pointer",
-  },
-  icon: {
-    position: "absolute",
-    marginLeft: theme.spacing(1),
-  },
-  timestamp: {
-    color: DEFAULT_TEXT_COLOR,
-    paddingRight: theme.spacing(1),
-    opacity: 0.8,
-  },
-}));
 
 export interface LogLineProps {
   lineNumber: number;
@@ -56,18 +27,55 @@ export const LogLine: FC<LogLineProps> = ({
   severity,
   createdAt,
 }) => {
-  const classes = useStyles();
-
   return (
-    <div className={classes.container}>
+    <Box
+      sx={(theme) => ({
+        display: "flex",
+        alignItems: "flex-start",
+        backgroundColor: DEFAULT_BACKGROUND_COLOR,
+        "&:hover": {
+          backgroundColor: SELECTED_BACKGROUND_COLOR,
+        },
+        position: "relative",
+        fontSize: theme.typography.body2.fontSize,
+      })}
+    >
       {severity === LogSeverity.ERROR && (
-        <Error color="error" fontSize="small" className={classes.icon} />
+        <Error
+          color="error"
+          fontSize="small"
+          sx={{
+            position: "absolute",
+            marginLeft: 1,
+          }}
+        />
       )}
-      <span className={classes.lineNumber}>{lineNumber}</span>
-      <span className={classes.timestamp}>{`[${dayjs(createdAt * 1000).format(
-        TIMESTAMP_FORMAT
-      )}]`}</span>
-      <Box pr={2} flex={1} style={{ wordBreak: "break-all" }}>
+      <Box
+        sx={{
+          color: TERMINAL_LINE_NUMBER_COLOR,
+          width: "5rem",
+          textAlign: "center",
+          flexShrink: 0,
+          userSelect: "none",
+          cursor: "pointer",
+        }}
+      >
+        {lineNumber}
+      </Box>
+      <Box
+        sx={(theme) => ({
+          color: DEFAULT_TEXT_COLOR,
+          paddingRight: theme.spacing(1),
+          opacity: 0.8,
+        })}
+      >{`[${dayjs(createdAt * 1000).format(TIMESTAMP_FORMAT)}]`}</Box>
+      <Box
+        sx={{
+          wordBreak: "break-all",
+          pr: 2,
+          flex: 1,
+        }}
+      >
         {parseLog(body).map((cell, i) => (
           <span
             key={`log-cell-${i}`}
@@ -83,6 +91,6 @@ export const LogLine: FC<LogLineProps> = ({
           </span>
         ))}
       </Box>
-    </div>
+    </Box>
   );
 };

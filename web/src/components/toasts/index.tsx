@@ -1,5 +1,5 @@
-import { Button, Snackbar, SnackbarCloseReason } from "@material-ui/core";
-import MuiAlert from "@material-ui/lab/Alert";
+import { Button, Snackbar, SnackbarCloseReason } from "@mui/material";
+import MuiAlert from "@mui/material/Alert";
 import { FC, memo, SyntheticEvent } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "~/hooks/redux";
@@ -15,7 +15,7 @@ export const Toasts: FC = memo(function Toasts() {
     <>
       {toasts.map((item) => {
         const handleClose = (
-          _: SyntheticEvent<unknown, Event>,
+          _: Event | SyntheticEvent<unknown, Event>,
           reason?: SnackbarCloseReason
         ): void => {
           if (reason === "clickaway") {

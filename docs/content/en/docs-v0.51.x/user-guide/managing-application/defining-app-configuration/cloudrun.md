@@ -6,6 +6,8 @@ description: >
   Specific guide to configuring deployment for Cloud Run application.
 ---
 
+*Note: Cloud Run job has not been supported yet.*
+
 Deploying a Cloud Run application requires a `service.yaml` file placing inside the application directory. That file contains the service specification used by Cloud Run as following: 
 
 ``` yaml

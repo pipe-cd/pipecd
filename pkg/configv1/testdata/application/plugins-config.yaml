@@ -1,0 +1,8 @@
+apiVersion: pipecd.dev/v1beta1
+kind: Application
+spec:
+  plugins:
+    plugin-1:
+    plugin-2:
+      input:
+        version: 1.0.0

@@ -211,6 +211,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),
 		diff.WithCompareNumberAndNumericString(),
+		diff.WithCompareBooleanAndBooleanString(),
 	)
 	if err != nil {
 		return err

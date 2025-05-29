@@ -112,7 +112,7 @@ func TestDecideRole(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		role, err := c.oc.decideRole(c.claims)
+		role, err := c.oc.decideRole(c.claims, "")
 		if c.err != nil {
 			assert.Error(t, err)
 			assert.Equal(t, c.err.Error(), err.Error())
@@ -190,7 +190,7 @@ func TestDecideUserInfos(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		username, avatarURL, err := client.decideUserInfos(c.claims)
+		username, avatarURL, err := client.decideUserInfos(c.claims, "", "")
 		if c.err != nil {
 			assert.Error(t, err)
 			assert.Equal(t, c.err.Error(), err.Error())

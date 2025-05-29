@@ -17,6 +17,10 @@ package sdk
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"testing"
+
+	"github.com/creasty/defaults"
 
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
@@ -36,11 +40,16 @@ type DeploymentSource[Spec any] struct {
 }
 
 // newDeploymentSource converts the common.DeploymentSource to the internal representation.
-func newDeploymentSource[Spec any](source *common.DeploymentSource) (DeploymentSource[Spec], error) {
+func newDeploymentSource[Spec any](pluginName string, source *common.DeploymentSource) (DeploymentSource[Spec], error) {
 	cfg, err := config.DecodeYAML[*ApplicationConfig[Spec]](source.GetApplicationConfig())
 	if err != nil {
 		return DeploymentSource[Spec]{}, fmt.Errorf("failed to decode application config: %w", err)
 	}
+
+	if err := cfg.Spec.parsePluginConfig(pluginName); err != nil {
+		return DeploymentSource[Spec]{}, fmt.Errorf("failed to parse plugin config: %w", err)
+	}
+
 	return DeploymentSource[Spec]{
 		ApplicationDirectory:      source.GetApplicationDirectory(),
 		CommitHash:                source.GetCommitHash(),
@@ -61,8 +70,78 @@ func (d *DeploymentSource[Spec]) AppConfig() (*ApplicationConfig[Spec], error) {
 type ApplicationConfig[Spec any] struct {
 	// commonSpec is the common spec of the application.
 	commonSpec *config.GenericApplicationSpec
+	// pluginConfigs is the map of the plugin configs.
+	// The key is the plugin name.
+	// The value is the plugin config.
+	pluginConfigs map[string]json.RawMessage
 	// Spec is the plugin spec of the application.
 	Spec *Spec
+}
+
+// LoadApplicationConfigForTest loads the application config from the given filename.
+// When the error occurs, it will call t.Fatal/t.Fatalf and stop the test.
+// This function is only used in the tests.
+//
+// NOTE: we want to put this function under package for testing like sdktest, but we can't do that
+// because we don't want to make public parsePluginConfig in the ApplicationConfig struct.
+func LoadApplicationConfigForTest[Spec any](t *testing.T, filename string, pluginName string) *ApplicationConfig[Spec] {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		t.Fatalf("failed to read application config: %s", err)
+	}
+	cfg, err := config.DecodeYAML[*ApplicationConfig[Spec]](data)
+	if err != nil {
+		t.Fatalf("failed to decode application config: %s", err)
+	}
+	if cfg.Spec == nil {
+		t.Fatal("application config is not set")
+	}
+	if err := cfg.Spec.parsePluginConfig(pluginName); err != nil {
+		t.Fatalf("failed to parse plugin config: %s", err)
+	}
+	return cfg.Spec
+}
+
+// parsePluginConfig parses the plugin config for the given plugin name.
+// It returns nil if no config is set for the plugin.
+// After calling this method, the pluginConfigs is cleared to avoid leaking the internal data.
+func (c *ApplicationConfig[Spec]) parsePluginConfig(pluginName string) error {
+	defer func() {
+		// Clear the plugin configs after using it to avoid leaking the internal data.
+		c.pluginConfigs = nil
+	}()
+
+	if c.pluginConfigs == nil || c.pluginConfigs[pluginName] == nil {
+		// No config is set for this plugin.
+		return nil
+	}
+
+	var spec Spec
+	if err := json.Unmarshal(c.pluginConfigs[pluginName], &spec); err != nil {
+		return fmt.Errorf("failed to unmarshal application config: plugin spec: %w", err)
+	}
+
+	if err := defaults.Set(&spec); err != nil {
+		return fmt.Errorf("failed to set default values for plugin spec: %w", err)
+	}
+
+	// Validate the spec if it implements the Validate method.
+	if v, ok := any(spec).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return fmt.Errorf("failed to validate plugin spec: %w", err)
+		}
+	}
+
+	// Sometimes the receiver of Validate method is pointer to the spec.
+	if v, ok := any(&spec).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return fmt.Errorf("failed to validate plugin spec: %w", err)
+		}
+	}
+
+	c.Spec = &spec
+
+	return nil
 }
 
 func (c *ApplicationConfig[Spec]) UnmarshalJSON(data []byte) error {
@@ -74,13 +153,16 @@ func (c *ApplicationConfig[Spec]) UnmarshalJSON(data []byte) error {
 		return fmt.Errorf("failed to unmarshal application config: generic spec: %w", err)
 	}
 
-	if c.Spec == nil {
-		c.Spec = new(Spec)
+	type pluginSpecs struct {
+		Plugins map[string]json.RawMessage `json:"plugins"`
 	}
 
-	if err := json.Unmarshal(data, c.Spec); err != nil {
-		return fmt.Errorf("failed to unmarshal application config: plugin spec: %w", err)
+	var p pluginSpecs
+	if err := json.Unmarshal(data, &p); err != nil {
+		return fmt.Errorf("failed to unmarshal application config: plugin specs: %w", err)
 	}
+
+	c.pluginConfigs = p.Plugins
 
 	return nil
 }
@@ -90,18 +172,8 @@ func (c *ApplicationConfig[Spec]) Validate() error {
 		return fmt.Errorf("application config is not initialized")
 	}
 
-	if c.Spec == nil {
-		return fmt.Errorf("plugin spec is not initialized")
-	}
-
 	if err := c.commonSpec.Validate(); err != nil {
 		return fmt.Errorf("validation failed on generic spec: %w", err)
-	}
-
-	if v, ok := any(c.Spec).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return fmt.Errorf("validation failed on plugin spec: %w", err)
-		}
 	}
 
 	return nil
@@ -109,6 +181,9 @@ func (c *ApplicationConfig[Spec]) Validate() error {
 
 // HasStage returns true if the application config has a stage with the given name.
 func (c *ApplicationConfig[Spec]) HasStage(name string) bool {
+	if c.commonSpec.Pipeline == nil {
+		return false
+	}
 	// linear search is enough because the number of stages is limited.
 	for _, stage := range c.commonSpec.Pipeline.Stages {
 		if string(stage.Name) == name {

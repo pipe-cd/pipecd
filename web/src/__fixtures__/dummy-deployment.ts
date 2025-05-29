@@ -66,9 +66,9 @@ export function createDeploymentFromObject(o: Deployment.AsObject): Deployment {
   deployment.setSummary(o.summary);
   deployment.setUpdatedAt(o.updatedAt);
   deployment.setVersion(o.version);
-  o.gitPath && deployment.setGitPath(createGitPathFromObject(o.gitPath));
-  o.trigger && deployment.setTrigger(createTriggerFromObject(o.trigger));
-  o.stagesList &&
+  if (o.gitPath) deployment.setGitPath(createGitPathFromObject(o.gitPath));
+  if (o.trigger) deployment.setTrigger(createTriggerFromObject(o.trigger));
+  if (o.stagesList)
     deployment.setStagesList(createPipelineFromObject(o.stagesList));
   return deployment;
 }

@@ -1,10 +1,4 @@
-import {
-  Card,
-  CardContent,
-  Typography,
-  Box,
-  makeStyles,
-} from "@material-ui/core";
+import { CardContent, Typography, Box } from "@mui/material";
 import {
   GridComponent,
   LegendComponent,
@@ -12,33 +6,20 @@ import {
   TooltipComponent,
 } from "echarts/components";
 import * as echarts from "echarts/core";
-import clsx from "clsx";
 import { FC, useEffect, useMemo } from "react";
 import { useAppSelector } from "~/hooks/redux";
 import { GaugeChart } from "echarts/charts";
 import { CanvasRenderer } from "echarts/renderers";
-import red from "@material-ui/core/colors/red";
 import useEChartState from "~/hooks/useEChartState";
 import dayjs from "dayjs";
 import ChartEmptyData from "~/components/chart-empty-data";
 import LegendRow from "./legend-row";
+import { red } from "@mui/material/colors";
+import { CardWrapper } from "./styles";
 
 const failColor = red[500];
 
-const useStyles = makeStyles(() => ({
-  root: {
-    minWidth: 300,
-    display: "inline-block",
-    overflow: "visible",
-    position: "relative",
-  },
-  pageTitle: {
-    fontWeight: "bold",
-  },
-}));
-
 const Deployment24h: FC = () => {
-  const classes = useStyles();
   const { chart, chartElm } = useEChartState({
     extensions: [
       TitleComponent,
@@ -127,12 +108,21 @@ const Deployment24h: FC = () => {
   }, [chart, deploymentSummary.totalDeployment, data]);
 
   return (
-    <Card raised className={clsx(classes.root)}>
+    <CardWrapper raised>
       <CardContent>
-        <Typography color="textSecondary" className={classes.pageTitle}>
+        <Typography
+          color="textSecondary"
+          sx={{
+            fontWeight: "bold",
+          }}
+        >
           Deployments in 24h
         </Typography>
-        <Box position={"relative"}>
+        <Box
+          sx={{
+            position: "relative",
+          }}
+        >
           <div style={{ width: "100%", height: 150 }} ref={chartElm} />
           <ChartEmptyData visible={!deploymentSummary.totalDeployment} />
         </Box>
@@ -148,7 +138,7 @@ const Deployment24h: FC = () => {
           ]}
         />
       </CardContent>
-    </Card>
+    </CardWrapper>
   );
 };
 

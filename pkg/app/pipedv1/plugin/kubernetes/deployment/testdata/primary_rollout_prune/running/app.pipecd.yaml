@@ -1,0 +1,21 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  name: primary-rollout
+  labels:
+    env: example
+    team: product
+  description: |
+    This app is test data for primary rollout.
+  pipeline:
+    stages:
+      - name: K8S_PRIMARY_ROLLOUT
+        with:
+          prune: true
+  plugins:
+    kubernetes:
+      input:
+        manifests:
+          - deployment.yaml
+          - service.yaml
+        kubectlVersion: 1.31.0

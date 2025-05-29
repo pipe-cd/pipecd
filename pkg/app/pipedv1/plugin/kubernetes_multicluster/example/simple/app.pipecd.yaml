@@ -1,0 +1,13 @@
+apiVersion: pipecd.dev/v1beta1
+kind: Application
+spec:
+  name: simple
+  labels:
+    env: example
+  plugins:
+    kubernetes_multicluster:
+      input:
+        manifests:
+          - deployment.yaml
+          - service.yaml
+        kubectlVersion: 1.32.2

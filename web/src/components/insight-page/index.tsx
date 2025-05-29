@@ -1,4 +1,4 @@
-import { Box } from "@material-ui/core";
+import { Box } from "@mui/material";
 import { FC, memo, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { fetchApplications, selectById } from "~/modules/applications";
@@ -86,16 +86,31 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
   }, [dispatch, applicationId, labels, range, resolution]);
 
   return (
-    <Box flex={1} p={2} overflow="auto">
-      <Box display="flex" flexDirection="column" flex={1} p={2}>
+    <Box
+      sx={{
+        flex: 1,
+        p: 2,
+        overflow: "auto",
+      }}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          p: 2,
+        }}
+      >
         <StatisticInformation />
       </Box>
       <InsightHeader />
       <Box
-        display="grid"
-        gridGap="24px"
-        gridTemplateColumns="repeat(2, 1fr)"
-        mt={2}
+        sx={{
+          display: "grid",
+          gap: "24px",
+          gridTemplateColumns: "repeat(2, 1fr)",
+          mt: 2,
+        }}
       >
         <DeploymentFrequencyChart
           resolution={resolution}

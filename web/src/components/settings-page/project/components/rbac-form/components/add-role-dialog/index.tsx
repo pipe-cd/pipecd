@@ -5,7 +5,7 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
-} from "@material-ui/core";
+} from "@mui/material";
 import { useFormik } from "formik";
 import { FC } from "react";
 import { rbacResourceTypes, rbacActionTypes } from "~/modules/project";

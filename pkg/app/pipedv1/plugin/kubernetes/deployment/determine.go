@@ -23,8 +23,8 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
-	"github.com/pipe-cd/pipecd/pkg/plugin/diff"
-	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+	"github.com/pipe-cd/piped-plugin-sdk-go/diff"
 )
 
 type containerImage struct {

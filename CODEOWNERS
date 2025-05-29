@@ -1,5 +1,5 @@
-.github @pipe-cd/admin
-hack @pipe-cd/admin
-Makefile @pipe-cd/admin
+# All
+* @pipe-cd/pipecd-approvers
 
-* @khanhtc1202 @ffjlabo @t-kikuc @Warashi
+# Web dir
+/web/ @pipe-cd/pipecd-approvers-web @pipe-cd/pipecd-approvers

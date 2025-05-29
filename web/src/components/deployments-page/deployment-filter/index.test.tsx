@@ -23,7 +23,7 @@ test("Change filter values", () => {
   );
 
   userEvent.type(
-    screen.getByRole("textbox", { name: /application id/i }),
+    screen.getByRole("combobox", { name: /application id/i }),
     dummyApplication.id
   );
   userEvent.click(
@@ -35,7 +35,7 @@ test("Change filter values", () => {
   expect(onChange).toHaveBeenCalledWith({ applicationId: dummyApplication.id });
   onChange.mockClear();
 
-  userEvent.click(screen.getByRole("button", { name: /application kind/i }));
+  userEvent.click(screen.getByRole("combobox", { name: /application kind/i }));
   userEvent.click(screen.getByRole("option", { name: /kubernetes/i }));
 
   expect(onChange).toHaveBeenCalledWith({
@@ -43,7 +43,7 @@ test("Change filter values", () => {
   });
   onChange.mockClear();
 
-  userEvent.click(screen.getByRole("button", { name: /deployment status/i }));
+  userEvent.click(screen.getByRole("combobox", { name: /deployment status/i }));
   userEvent.click(screen.getByRole("option", { name: /success/i }));
 
   expect(onChange).toHaveBeenCalledWith({

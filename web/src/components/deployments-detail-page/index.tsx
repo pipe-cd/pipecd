@@ -1,4 +1,4 @@
-import { Box, makeStyles } from "@material-ui/core";
+import { Box } from "@mui/material";
 import { FC, memo, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
@@ -16,18 +16,7 @@ import { Pipeline } from "./pipeline";
 
 const FETCH_INTERVAL = 4000;
 
-const useStyles = makeStyles({
-  root: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "stretch",
-    flex: 1,
-    overflow: "auto",
-  },
-});
-
 export const DeploymentDetailPage: FC = memo(function DeploymentDetailPage() {
-  const classes = useStyles();
   const dispatch = useAppDispatch();
   const { deploymentId } = useParams<{ deploymentId: string }>();
   const deployment = useAppSelector<Deployment.AsObject | undefined>((state) =>
@@ -57,12 +46,24 @@ export const DeploymentDetailPage: FC = memo(function DeploymentDetailPage() {
   );
 
   return (
-    <div className={classes.root}>
-      <Box flex={1}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "stretch",
+        flex: 1,
+        overflow: "auto",
+      }}
+    >
+      <Box
+        sx={{
+          flex: 1,
+        }}
+      >
         <DeploymentDetail deploymentId={deploymentId ?? ""} />
         <Pipeline deploymentId={deploymentId ?? ""} />
       </Box>
       <LogViewer />
-    </div>
+    </Box>
   );
 });

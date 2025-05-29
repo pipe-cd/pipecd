@@ -40,7 +40,7 @@ type Executor struct {
 func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	e.LogPersister.Infof("Start executing the script run stage")
 
-	opts := e.Input.StageConfig.ScriptRunStageOptions
+	opts := e.StageConfig.ScriptRunStageOptions
 	if opts == nil {
 		e.LogPersister.Error("option for script run stage not found")
 		return model.StageStatus_STAGE_FAILURE
