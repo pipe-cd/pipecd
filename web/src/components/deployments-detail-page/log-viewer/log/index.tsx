@@ -1,22 +1,8 @@
 import { FC, memo, useEffect, useRef } from "react";
-import { makeStyles, CircularProgress, Box } from "@material-ui/core";
+import { CircularProgress, Box } from "@mui/material";
 import { LogLine } from "../log-line";
 import { DEFAULT_BACKGROUND_COLOR } from "~/constants/term-colors";
 import { LogBlock } from "~/modules/stage-logs";
-
-const useStyles = makeStyles((theme) => ({
-  container: {
-    fontFamily: theme.typography.fontFamilyMono,
-    backgroundColor: DEFAULT_BACKGROUND_COLOR,
-    paddingTop: theme.spacing(1),
-    paddingBottom: theme.spacing(1),
-    height: "100%",
-  },
-  space: {
-    height: theme.spacing(1),
-    backgroundColor: DEFAULT_BACKGROUND_COLOR,
-  },
-}));
 
 export interface LogProps {
   logs: LogBlock.AsObject[];
@@ -24,7 +10,6 @@ export interface LogProps {
 }
 
 export const Log: FC<LogProps> = memo(function Log({ logs, loading }) {
-  const classes = useStyles();
   const bottomRef = useRef<null | HTMLDivElement>(null);
 
   useEffect(() => {
@@ -32,7 +17,15 @@ export const Log: FC<LogProps> = memo(function Log({ logs, loading }) {
   }, [logs]);
 
   return (
-    <div className={classes.container}>
+    <Box
+      sx={(theme) => ({
+        fontFamily: theme.typography.fontFamilyMono,
+        backgroundColor: DEFAULT_BACKGROUND_COLOR,
+        paddingTop: theme.spacing(1),
+        paddingBottom: theme.spacing(1),
+        height: "100%",
+      })}
+    >
       {logs.map((log, i) => (
         <LogLine
           key={`log-${log.index}`}
@@ -43,11 +36,23 @@ export const Log: FC<LogProps> = memo(function Log({ logs, loading }) {
         />
       ))}
       {loading && (
-        <Box display="flex" justifyContent="center" p={1}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            p: 1,
+          }}
+        >
           <CircularProgress color="secondary" />
         </Box>
       )}
-      <div className={classes.space} ref={bottomRef} />
-    </div>
+      <Box
+        sx={(theme) => ({
+          height: theme.spacing(1),
+          backgroundColor: DEFAULT_BACKGROUND_COLOR,
+        })}
+        ref={bottomRef}
+      />
+    </Box>
   );
 });

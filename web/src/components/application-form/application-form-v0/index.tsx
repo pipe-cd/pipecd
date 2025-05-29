@@ -4,7 +4,6 @@ import {
   Divider,
   FormControl,
   InputLabel,
-  makeStyles,
   MenuItem,
   Select,
   Step,
@@ -13,7 +12,7 @@ import {
   Stepper,
   TextField,
   Typography,
-} from "@material-ui/core";
+} from "@mui/material";
 import { FC, memo, useEffect, useMemo, useState } from "react";
 import {
   APPLICATION_KIND_BY_NAME,
@@ -36,39 +35,12 @@ import { ApplicationFormProps } from "..";
 
 import DialogConfirm from "~/components/dialog-confirm";
 import { selectAllPipeds } from "~/modules/pipeds";
-import { Autocomplete } from "@material-ui/lab";
+import { Autocomplete } from "@mui/material";
+import { GroupTwoCol } from "../styles";
 
 const ADD_FROM_GIT_CONFIRM_DIALOG_TITLE = "Add Application";
 const ADD_FROM_GIT_CONFIRM_DIALOG_DESCRIPTION =
   "Are you sure you want to add the application?";
-
-const useStyles = makeStyles((theme) => ({
-  title: {
-    padding: theme.spacing(2),
-  },
-  textInput: {
-    flex: 1,
-  },
-  inputGroup: {
-    display: "flex",
-  },
-  inputGroupSpace: {
-    width: theme.spacing(3),
-  },
-  formItem: {
-    width: "100%",
-    marginTop: theme.spacing(4),
-  },
-  select: {
-    width: "100%",
-  },
-  applicationDetail: {
-    width: "100%",
-  },
-  actionButtons: {
-    paddingLeft: theme.spacing(2),
-  },
-}));
 
 enum STEP {
   SELECT_PIPED_AND_PLATFORM,
@@ -101,7 +73,6 @@ const ApplicationFormSuggestionV0: FC<ApplicationFormProps> = ({
     labels: new Array<[string, string]>(),
   });
   const dispatch = useAppDispatch();
-  const classes = useStyles();
 
   useEffect(() => {
     dispatch(fetchUnregisteredApplications());
@@ -197,24 +168,33 @@ const ApplicationFormSuggestionV0: FC<ApplicationFormProps> = ({
 
   return (
     <>
-      <Box width="100%">
-        <Typography className={classes.title} variant="h6">
+      <Box
+        sx={{
+          width: "100%",
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{
+            p: 2,
+          }}
+        >
           {title}
         </Typography>
         <Divider />
-        <Stepper activeStep={activeStep} orientation="vertical">
+        <Stepper activeStep={activeStep} orientation="vertical" sx={{ p: 3 }}>
           <Step key="Select piped and platform provider" active>
             <StepLabel>Select piped and platform provider</StepLabel>
             <StepContent>
-              <div className={classes.inputGroup}>
-                <FormControl className={classes.formItem} variant="outlined">
+              <GroupTwoCol mt={2}>
+                <FormControl variant="outlined">
                   <InputLabel id="filter-piped">Piped</InputLabel>
                   <Select
                     labelId="filter-piped"
                     id="filter-piped"
                     label="Piped"
                     value={selectedPipedId}
-                    className={classes.select}
+                    fullWidth
                     onChange={(e) => onSelectPiped(e.target.value as string)}
                   >
                     {pipedOptions.map((e) => (
@@ -224,8 +204,8 @@ const ApplicationFormSuggestionV0: FC<ApplicationFormProps> = ({
                     ))}
                   </Select>
                 </FormControl>
-                <div className={classes.inputGroupSpace} />
-                <FormControl className={classes.formItem} variant="outlined">
+
+                <FormControl variant="outlined">
                   <InputLabel id="filter-platform-provider">
                     Platform Provider
                   </InputLabel>
@@ -233,7 +213,7 @@ const ApplicationFormSuggestionV0: FC<ApplicationFormProps> = ({
                     labelId="filter-platform-provider"
                     id="filter-platform-provider"
                     label="PlatformProvider"
-                    className={classes.select}
+                    fullWidth
                     disabled={selectedPipedId === ""}
                     value={selectedPlatformProvider}
                     onChange={(e) =>
@@ -247,13 +227,13 @@ const ApplicationFormSuggestionV0: FC<ApplicationFormProps> = ({
                     ))}
                   </Select>
                 </FormControl>
-              </div>
+              </GroupTwoCol>
             </StepContent>
           </Step>
           <Step key="Select application to add" expanded={activeStep !== 0}>
             <StepLabel>Select application to add</StepLabel>
             <StepContent>
-              <FormControl className={classes.formItem} variant="outlined">
+              <FormControl sx={{ mt: 2 }} variant="outlined" fullWidth>
                 <Autocomplete
                   id="filter-app"
                   options={appOptions}
@@ -280,60 +260,68 @@ const ApplicationFormSuggestionV0: FC<ApplicationFormProps> = ({
             <StepLabel>Confirm information before adding</StepLabel>
             <StepContent>
               {selectedApp && (
-                <Typography className={classes.applicationDetail}>
-                  <div className={classes.inputGroup}>
-                    <TextField
-                      id={"kind"}
-                      label="Kind"
-                      margin="dense"
-                      fullWidth
-                      variant="outlined"
-                      value={APPLICATION_KIND_TEXT[selectedApp.kind]}
-                      className={classes.textInput}
-                      inputProps={{ readOnly: true }}
-                    />
-                  </div>
-                  <div className={classes.inputGroup}>
+                <Box>
+                  <TextField
+                    id={"kind"}
+                    label="Kind"
+                    margin="dense"
+                    fullWidth
+                    variant="outlined"
+                    value={APPLICATION_KIND_TEXT[selectedApp.kind]}
+                    slotProps={{
+                      htmlInput: { readOnly: true },
+                    }}
+                  />
+                  <GroupTwoCol>
                     <TextField
                       id={"path"}
                       label="Path"
                       margin="dense"
                       variant="outlined"
                       value={selectedApp.path}
-                      className={classes.textInput}
-                      inputProps={{ readOnly: true }}
+                      fullWidth
+                      slotProps={{
+                        htmlInput: { readOnly: true },
+                      }}
                     />
-                    <div className={classes.inputGroupSpace} />
                     <TextField
                       id={"configFilename-"}
                       label="Config Filename"
                       margin="dense"
                       variant="outlined"
                       value={selectedApp.configFilename}
-                      className={classes.textInput}
-                      inputProps={{ readOnly: true }}
+                      fullWidth
+                      slotProps={{
+                        htmlInput: { readOnly: true },
+                      }}
                     />
-                  </div>
+                  </GroupTwoCol>
                   {selectedApp.labelsMap.map((label, index) => (
-                    <div className={classes.inputGroup} key={label[0]}>
+                    <Box key={label[0]}>
                       <TextField
                         id={"label-" + "-" + index}
                         label={"Label " + index}
                         margin="dense"
                         variant="outlined"
                         value={label[0] + ": " + label[1]}
-                        className={classes.textInput}
-                        inputProps={{ readOnly: true }}
+                        fullWidth
+                        slotProps={{
+                          htmlInput: { readOnly: true },
+                        }}
                       />
-                    </div>
+                    </Box>
                   ))}
-                </Typography>
+                </Box>
               )}
             </StepContent>
           </Step>
         </Stepper>
 
-        <Box className={classes.actionButtons}>
+        <Box
+          sx={{
+            pl: 2,
+          }}
+        >
           <Button
             color="primary"
             type="submit"
@@ -346,7 +334,6 @@ const ApplicationFormSuggestionV0: FC<ApplicationFormProps> = ({
           <Button onClick={onClose}>{UI_TEXT_CANCEL}</Button>
         </Box>
       </Box>
-
       <DialogConfirm
         open={showConfirm}
         onClose={() => setShowConfirm(false)}

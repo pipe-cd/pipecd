@@ -159,6 +159,18 @@ func applyServiceDefinition(ctx context.Context, cli provider.Client, serviceDef
 		if err != nil {
 			return nil, fmt.Errorf("failed to update ECS service %s: %w", *serviceDefinition.ServiceName, err)
 		}
+
+		currentTags, err := cli.ListTags(ctx, *service.ServiceArn)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list existing tags for ECS service %s: %w", *serviceDefinition.ServiceName, err)
+		}
+
+		tagsToRemove := findRemovedTags(currentTags, serviceDefinition.Tags)
+		if len(tagsToRemove) > 0 {
+			if err := cli.UntagResource(ctx, *service.ServiceArn, tagsToRemove); err != nil {
+				return nil, fmt.Errorf("failed to untag ECS service %s: %w", *serviceDefinition.ServiceName, err)
+			}
+		}
 		if err := cli.TagResource(ctx, *service.ServiceArn, serviceDefinition.Tags); err != nil {
 			return nil, fmt.Errorf("failed to update tags of ECS service %s: %w", *serviceDefinition.ServiceName, err)
 		}
@@ -173,6 +185,31 @@ func applyServiceDefinition(ctx context.Context, cli provider.Client, serviceDef
 	}
 
 	return service, nil
+}
+
+func findRemovedTags(currentTags, desiredTags []types.Tag) []string {
+	var tagsToRemove []string
+
+	for _, t := range currentTags {
+		// Avoid removing PipeCD-managed tags, even though they're usually set in loadServiceDefinition()
+		if provider.IsPipeCDManagedTag(*t.Key) {
+			continue
+		}
+
+		found := false
+		for _, desiredTag := range desiredTags {
+			if *desiredTag.Key == *t.Key {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			tagsToRemove = append(tagsToRemove, *t.Key)
+		}
+	}
+
+	return tagsToRemove
 }
 
 func runStandaloneTask(
@@ -468,10 +505,34 @@ func routing(ctx context.Context, in *executor.Input, platformProviderName strin
 		return false
 	}
 
-	if err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg); err != nil {
+	modifiedRules, err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg)
+	if err != nil {
 		in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
+
+		if len(modifiedRules) > 0 {
+			logModifiedRules(in.LogPersister, modifiedRules)
+		}
 		return false
 	}
 
+	logModifiedRules(in.LogPersister, modifiedRules)
+
 	return true
+}
+
+// Logs information about modified ELB listener rules.
+func logModifiedRules(logPersister executor.LogPersister, modifiedRules []string) {
+	if len(modifiedRules) == 0 {
+		logPersister.Info("No ELB listener rules were modified")
+		return
+	}
+
+	if len(modifiedRules) == 1 {
+		logPersister.Infof("Modified ELB listener rule: %s", modifiedRules[0])
+	} else {
+		logPersister.Infof("Modified %d ELB listener rules:", len(modifiedRules))
+		for _, rule := range modifiedRules {
+			logPersister.Infof("  - %s", rule)
+		}
+	}
 }

@@ -1,4 +1,4 @@
-import { makeStyles, TextField } from "@material-ui/core";
+import { Box, TextField } from "@mui/material";
 import { FC, useMemo, useState } from "react";
 import { FilterView } from "~/components/filter-view";
 import debounce from "~/utils/debounce";
@@ -9,13 +9,6 @@ type Props = {
   onChange: (options: { commitHash?: string }) => void;
 };
 
-const useStyles = makeStyles((theme) => ({
-  formItem: {
-    width: "100%",
-    marginTop: theme.spacing(4),
-  },
-}));
-
 const DEBOUNCE_INPUT_WAIT = 1000;
 
 const DeploymentTraceFilter: FC<Props> = ({
@@ -23,7 +16,6 @@ const DeploymentTraceFilter: FC<Props> = ({
   onClear,
   onChange,
 }) => {
-  const classes = useStyles();
   const [commitHash, setCommitHash] = useState<string | null>(
     filterValues.commitHash ?? ""
   );
@@ -44,7 +36,12 @@ const DeploymentTraceFilter: FC<Props> = ({
         setCommitHash("");
       }}
     >
-      <div className={classes.formItem}>
+      <Box
+        sx={{
+          width: "100%",
+          marginTop: 4,
+        }}
+      >
         <TextField
           id="commit-hash"
           label="Commit hash"
@@ -57,7 +54,7 @@ const DeploymentTraceFilter: FC<Props> = ({
             onChangeCommitHash(text);
           }}
         />
-      </div>
+      </Box>
     </FilterView>
   );
 };

@@ -5,7 +5,7 @@ import {
   DialogContent,
   DialogTitle,
   Typography,
-} from "@material-ui/core";
+} from "@mui/material";
 import { FC, memo, useCallback } from "react";
 import { TextWithCopyButton } from "~/components/text-with-copy-button";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";

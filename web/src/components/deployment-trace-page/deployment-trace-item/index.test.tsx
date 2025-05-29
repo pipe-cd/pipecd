@@ -1,7 +1,7 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent } from "@testing-library/react";
 import DeploymentTraceItem from "./index";
 import { dummyDeploymentTrace } from "~/__fixtures__/dummy-deployment-trace";
-import { MemoryRouter } from "~~/test-utils";
+import { MemoryRouter, render, screen } from "~~/test-utils";
 
 describe("DeploymentTraceItem", () => {
   it("should render trace information", () => {

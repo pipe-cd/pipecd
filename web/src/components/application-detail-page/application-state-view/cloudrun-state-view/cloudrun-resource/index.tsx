@@ -1,23 +1,7 @@
-import { makeStyles, Paper, Typography } from "@material-ui/core";
+import { Box, Paper, Typography } from "@mui/material";
 import { FC, memo } from "react";
 import { CloudRunResourceState } from "~/modules/applications-live-state";
 import { CloudRunResourceHealthStatusIcon } from "./health-status-icon";
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    display: "inline-flex",
-    flexDirection: "column",
-    padding: theme.spacing(2),
-    width: 300,
-    cursor: "pointer",
-  },
-  nameLine: {
-    display: "flex",
-  },
-  name: {
-    marginLeft: theme.spacing(0.5),
-  },
-}));
 
 export interface CloudRunResourceProps {
   resource: CloudRunResourceState.AsObject;
@@ -26,16 +10,30 @@ export interface CloudRunResourceProps {
 
 export const CloudRunResource: FC<CloudRunResourceProps> = memo(
   function CloudRunResource({ resource, onClick }) {
-    const classes = useStyles();
     return (
-      <Paper square className={classes.root} onClick={() => onClick(resource)}>
+      <Paper
+        square
+        sx={{
+          display: "inline-flex",
+          flexDirection: "column",
+          padding: 2,
+          width: 300,
+          cursor: "pointer",
+        }}
+        onClick={() => onClick(resource)}
+      >
         <Typography variant="caption">{resource.kind}</Typography>
-        <div className={classes.nameLine}>
+        <Box sx={{ display: "flex" }}>
           <CloudRunResourceHealthStatusIcon health={resource.healthStatus} />
-          <Typography variant="subtitle2" className={classes.name}>
+          <Typography
+            variant="subtitle2"
+            sx={{
+              ml: 0.5,
+            }}
+          >
             {resource.name}
           </Typography>
-        </div>
+        </Box>
       </Paper>
     );
   }

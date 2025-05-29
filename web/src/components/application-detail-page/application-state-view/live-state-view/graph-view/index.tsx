@@ -1,4 +1,4 @@
-import { Box, makeStyles } from "@material-ui/core";
+import { Box } from "@mui/material";
 import { FC, useMemo, useState } from "react";
 import { sortedSet } from "~/utils/sorted-set";
 import { ResourceState } from "~~/model/application_live_state_pb";
@@ -7,33 +7,6 @@ import { ResourceNode } from "./resource-node";
 import { ResourceDetail } from "../resource-detail";
 import dagre from "dagre";
 import ResourceEdge from "./resource-edge";
-
-const useStyles = makeStyles((theme) => ({
-  stateViewWrapper: {
-    flex: 1,
-    display: "flex",
-    justifyContent: "center",
-    overflow: "hidden",
-  },
-  stateView: {
-    position: "relative",
-    overflow: "auto",
-  },
-  detailPanel: {
-    position: "absolute",
-    right: theme.spacing(0),
-    top: theme.spacing(0),
-    bottom: theme.spacing(0),
-    color: theme.palette.grey[500],
-    zIndex: 100,
-  },
-  floatRight: {
-    position: "absolute",
-    right: 0,
-    top: 0,
-    zIndex: 10,
-  },
-}));
 
 type Props = {
   resources: ResourceState.AsObject[];
@@ -104,7 +77,6 @@ function useGraph(
 }
 
 const GraphView: FC<Props> = ({ resources }) => {
-  const classes = useStyles();
   const [filterState, setFilterState] = useState<Record<string, boolean>>(
     initFilterState(resources)
   );
@@ -159,16 +131,30 @@ const GraphView: FC<Props> = ({ resources }) => {
   const graphInstance = graph.graph();
 
   return (
-    <div className={classes.stateViewWrapper}>
-      <div className={classes.stateView}>
+    <Box
+      sx={{
+        flex: 1,
+        display: "flex",
+        justifyContent: "center",
+        overflow: "hidden",
+      }}
+    >
+      <Box
+        sx={{
+          position: "relative",
+          overflow: "auto",
+        }}
+      >
         {nodes.map((node) => (
           <Box
             key={`${node.resource.id}-${node.resource.name}`}
-            position="absolute"
-            top={node.y}
-            left={node.x}
-            zIndex={1}
             data-testid="application-resource"
+            sx={{
+              position: "absolute",
+              top: node.y,
+              left: node.x,
+              zIndex: 1,
+            }}
           >
             <ResourceNode
               resource={node.resource}
@@ -194,22 +180,38 @@ const GraphView: FC<Props> = ({ resources }) => {
             }}
           />
         )}
-      </div>
-      <Box className={classes.floatRight}>
+      </Box>
+      <Box
+        sx={{
+          position: "absolute",
+          right: 0,
+          top: 0,
+          zIndex: 10,
+        }}
+      >
         <ResourceFilterPopover
           filterState={filterState}
           onChange={(state) => setFilterState(state)}
         />
       </Box>
       {selectedResource && (
-        <Box className={classes.detailPanel}>
+        <Box
+          sx={(theme) => ({
+            position: "absolute",
+            right: theme.spacing(0),
+            top: theme.spacing(0),
+            bottom: theme.spacing(0),
+            color: theme.palette.grey[500],
+            zIndex: 100,
+          })}
+        >
           <ResourceDetail
             resource={selectedResource}
             onClose={() => setSelectedResource(null)}
           />
         </Box>
       )}
-    </div>
+    </Box>
   );
 };
 

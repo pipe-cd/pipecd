@@ -3,7 +3,6 @@ import {
   Menu,
   MenuItem,
   IconButton,
-  makeStyles,
   Paper,
   Table,
   TableBody,
@@ -11,43 +10,26 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography,
-} from "@material-ui/core";
+  Box,
+} from "@mui/material";
 import * as React from "react";
-import { Add as AddIcon, MoreVert as MenuIcon } from "@material-ui/icons";
+import { Add as AddIcon, MoreVert as MenuIcon } from "@mui/icons-material";
 import { FC, memo, useCallback, useEffect, useState } from "react";
 import { UI_TEXT_ADD } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { fetchProject, addUserGroup, deleteUserGroup } from "~/modules/project";
 import { AddUserGroupDialog } from "../add-user-group-dialog";
 import { DeleteUserGroupConfirmDialog } from "../delete-user-group-confirm-dialog";
-import { useProjectSettingStyles } from "~/styles/project-setting";
+import { ProjectTitle } from "~/styles/project-setting";
 import { addToast } from "~/modules/toasts";
 import {
   ADD_USER_GROUP_SUCCESS,
   DELETE_USER_GROUP_SUCCESS,
 } from "~/constants/toast-text";
 
-const useStyles = makeStyles((theme) => ({
-  title: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingTop: theme.spacing(2),
-  },
-}));
-
-const menuStyle = {
-  style: {
-    width: "15ch",
-  },
-};
-
 const SUB_SECTION_TITLE = "User Group";
 
 export const UserGroupTable: FC = memo(function UserGroupTable() {
-  const classes = useStyles();
-  const projectSettingClasses = useProjectSettingStyles();
   const dispatch = useAppDispatch();
   const userGroups = useAppSelector((state) => state.project.userGroups);
   const [isOpenAddForm, setIsOpenAddForm] = useState(false);
@@ -112,13 +94,15 @@ export const UserGroupTable: FC = memo(function UserGroupTable() {
 
   return (
     <>
-      <div className={classes.title}>
-        <Typography
-          variant="h6"
-          className={projectSettingClasses.titleWithIcon}
-        >
-          {SUB_SECTION_TITLE}
-        </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingTop: 2,
+        }}
+      >
+        <ProjectTitle variant="h6">{SUB_SECTION_TITLE}</ProjectTitle>
 
         <Button
           color="primary"
@@ -127,8 +111,7 @@ export const UserGroupTable: FC = memo(function UserGroupTable() {
         >
           {UI_TEXT_ADD}
         </Button>
-      </div>
-
+      </Box>
       <TableContainer component={Paper} square>
         <Table size="small" stickyHeader>
           <TableHead>
@@ -144,7 +127,11 @@ export const UserGroupTable: FC = memo(function UserGroupTable() {
                 <TableCell>{group.ssoGroup}</TableCell>
                 <TableCell>{group.role}</TableCell>
                 <TableCell align="right">
-                  <IconButton data-id={group.ssoGroup} onClick={handleOpenMenu}>
+                  <IconButton
+                    data-id={group.ssoGroup}
+                    onClick={handleOpenMenu}
+                    size="large"
+                  >
                     <MenuIcon />
                   </IconButton>
                 </TableCell>
@@ -153,13 +140,16 @@ export const UserGroupTable: FC = memo(function UserGroupTable() {
           </TableBody>
         </Table>
       </TableContainer>
-
       <Menu
         id="user-group-menu"
         open={Boolean(anchorEl)}
         anchorEl={anchorEl}
         onClose={handleCloseMenu}
-        PaperProps={menuStyle}
+        slotProps={{
+          paper: {
+            sx: { width: "15ch" },
+          },
+        }}
       >
         <MenuItem
           onClick={() => {
@@ -172,13 +162,11 @@ export const UserGroupTable: FC = memo(function UserGroupTable() {
           Delete
         </MenuItem>
       </Menu>
-
       <AddUserGroupDialog
         open={isOpenAddForm}
         onClose={() => setIsOpenAddForm(false)}
         onSubmit={handleSubmit}
       />
-
       <DeleteUserGroupConfirmDialog
         ssoGroup={deleteSSOGroup}
         onCancel={handleCancelDeleting}

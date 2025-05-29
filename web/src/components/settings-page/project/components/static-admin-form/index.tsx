@@ -5,14 +5,12 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  makeStyles,
+  Skeleton,
   Switch,
   TextField,
-  Typography,
-} from "@material-ui/core";
-import EditIcon from "@material-ui/icons/Edit";
-import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
-import clsx from "clsx";
+} from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+
 import { useFormik } from "formik";
 import { FC, memo, useState } from "react";
 import * as yup from "yup";
@@ -26,14 +24,14 @@ import {
   updateStaticAdmin,
 } from "~/modules/project";
 import { addToast } from "~/modules/toasts";
-import { useProjectSettingStyles } from "~/styles/project-setting";
+import {
+  ProjectDescription,
+  ProjectTitleWrap,
+  ProjectTitle,
+  ProjectValues,
+  ProjectValuesWrapper,
+} from "~/styles/project-setting";
 import { ProjectSettingLabeledText } from "../project-setting-labeled-text";
-
-const useStyles = makeStyles(() => ({
-  disabled: {
-    opacity: 0.5,
-  },
-}));
 
 const SECTION_TITLE = "Static Admin";
 const DIALOG_TITLE = `Edit ${SECTION_TITLE}`;
@@ -113,8 +111,6 @@ const StaticAdminDialog: FC<{
 };
 
 export const StaticAdminForm: FC = memo(function StaticAdminForm() {
-  const classes = useStyles();
-  const projectSettingClasses = useProjectSettingStyles();
   const dispatch = useAppDispatch();
   const [isEnabled, currentUsername] = useAppSelector<[boolean, string | null]>(
     (state) => [
@@ -154,13 +150,8 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
 
   return (
     <>
-      <div className={projectSettingClasses.title}>
-        <Typography
-          variant="h5"
-          className={projectSettingClasses.titleWithIcon}
-        >
-          {SECTION_TITLE}
-        </Typography>
+      <ProjectTitleWrap>
+        <ProjectTitle variant="h5">{SECTION_TITLE}</ProjectTitle>
 
         <Switch
           checked={isEnabled}
@@ -168,47 +159,38 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
           onClick={handleToggleAvailability}
           disabled={currentUsername === null}
         />
-      </div>
-
-      <Typography
-        variant="body1"
-        color="textSecondary"
-        className={projectSettingClasses.description}
-      >
+      </ProjectTitleWrap>
+      <ProjectDescription variant="body1" color="textSecondary">
         {STATIC_ADMIN_DESCRIPTION}
-      </Typography>
-
-      <div
-        className={clsx(projectSettingClasses.valuesWrapper, {
-          [classes.disabled]: isEnabled === false,
-        })}
-      >
+      </ProjectDescription>
+      <ProjectValuesWrapper sx={{ opacity: isEnabled === false ? 0.5 : 1 }}>
         {currentUsername ? (
           <>
-            <div className={projectSettingClasses.values}>
+            <ProjectValues>
               <ProjectSettingLabeledText
                 label="Username"
                 value={currentUsername}
               />
               <ProjectSettingLabeledText label="Password" value="********" />
-            </div>
+            </ProjectValues>
             <div>
               <IconButton
                 aria-label="edit static admin user"
                 onClick={() => setIsEdit(true)}
                 disabled={isEnabled === false}
+                size="large"
               >
                 <EditIcon />
               </IconButton>
             </div>
           </>
         ) : (
-          <div className={projectSettingClasses.values}>
+          <ProjectValues>
             <Skeleton width={200} height={28} />
             <Skeleton width={200} height={28} />
-          </div>
+          </ProjectValues>
         )}
-      </div>
+      </ProjectValuesWrapper>
       {currentUsername && (
         <StaticAdminDialog
           open={isEdit}

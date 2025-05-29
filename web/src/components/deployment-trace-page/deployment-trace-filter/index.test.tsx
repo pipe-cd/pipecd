@@ -1,4 +1,6 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { fireEvent } from "@testing-library/react";
+import { render, screen } from "~~/test-utils";
+
 import DeploymentTraceFilter from "./index";
 import { MemoryRouter } from "~~/test-utils";
 
@@ -17,7 +19,8 @@ describe("DeploymentTraceFilter", () => {
           onChange={mockOnChange}
           onClear={mockOnClear}
         />
-      </MemoryRouter>
+      </MemoryRouter>,
+      {}
     );
   });
 

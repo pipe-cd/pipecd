@@ -21,7 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/yaml"
 
-	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 var builtinAPIGroups = map[string]struct{}{
@@ -78,6 +78,13 @@ func DeepCopyManifests(manifests []Manifest) []Manifest {
 // DeepCopy returns a deep copy of the manifest.
 func (m Manifest) DeepCopy() Manifest {
 	return Manifest{body: m.body.DeepCopy()}
+}
+
+// DeepCopyWithName returns a deep copy of the manifest with the given name.
+func (m Manifest) DeepCopyWithName(name string) Manifest {
+	copied := m.DeepCopy()
+	copied.body.SetName(name)
+	return copied
 }
 
 func (m Manifest) Key() ResourceKey {

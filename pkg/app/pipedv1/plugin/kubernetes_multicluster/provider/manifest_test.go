@@ -27,7 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 func TestManifest_AddStringMapValues(t *testing.T) {

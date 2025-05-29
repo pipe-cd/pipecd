@@ -23,7 +23,7 @@ import (
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/toolregistry"
-	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 // Plugin implements the sdk.DeploymentPlugin interface.
@@ -89,9 +89,11 @@ func (p *Plugin) loadManifests(ctx context.Context, deploy *sdk.Deployment, spec
 		ConfigFilename:   deploymentSource.ApplicationConfigFilename,
 		Manifests:        manifestPathes,
 		Namespace:        spec.Input.Namespace,
-		TemplatingMethod: provider.TemplatingMethodNone, // TODO: Implement detection of templating method or add it to the config spec.
-
-		// TODO: Define other fields for LoaderInput
+		KustomizeVersion: spec.Input.KustomizeVersion,
+		KustomizeOptions: spec.Input.KustomizeOptions,
+		HelmVersion:      spec.Input.HelmVersion,
+		HelmChart:        spec.Input.HelmChart,
+		HelmOptions:      spec.Input.HelmOptions,
 	})
 
 	if err != nil {

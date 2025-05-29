@@ -1,45 +1,26 @@
-import {
-  Card,
-  CardContent,
-  Typography,
-  Box,
-  makeStyles,
-} from "@material-ui/core";
+import { CardContent, Typography, Box } from "@mui/material";
 import {
   GridComponent,
   LegendComponent,
   TitleComponent,
   TooltipComponent,
 } from "echarts/components";
-import clsx from "clsx";
 import { FC, useEffect, useMemo } from "react";
 import { useAppSelector } from "~/hooks/redux";
 import { Piped, selectAllPipeds } from "~/modules/pipeds";
 import { GaugeChart } from "echarts/charts";
 import { CanvasRenderer } from "echarts/renderers";
-import cyan from "@material-ui/core/colors/blue";
-import green from "@material-ui/core/colors/green";
 import useEChartState from "~/hooks/useEChartState";
 import ChartEmptyData from "~/components/chart-empty-data";
 import LegendRow from "./legend-row";
 
+import { blue as cyan, green } from "@mui/material/colors";
+import { CardWrapper } from "./styles";
+
 const enabledColor = cyan[500];
 const onlineColor = green[500];
 
-const useStyles = makeStyles(() => ({
-  root: {
-    minWidth: 300,
-    display: "inline-block",
-    overflow: "visible",
-    position: "relative",
-  },
-  pageTitle: {
-    fontWeight: "bold",
-  },
-}));
-
 const PipedCount: FC = () => {
-  const classes = useStyles();
   const pipeds = useAppSelector(selectAllPipeds);
 
   const { chart, chartElm } = useEChartState({
@@ -139,12 +120,21 @@ const PipedCount: FC = () => {
   }, [chart, gaugeData, pipedSummary.total]);
 
   return (
-    <Card raised className={clsx(classes.root)}>
+    <CardWrapper raised>
       <CardContent>
-        <Typography color="textSecondary" className={classes.pageTitle}>
+        <Typography
+          color="textSecondary"
+          sx={{
+            fontWeight: "bold",
+          }}
+        >
           Piped
         </Typography>
-        <Box position={"relative"}>
+        <Box
+          sx={{
+            position: "relative",
+          }}
+        >
           <div style={{ width: "100%", height: 150 }} ref={chartElm} />
           <ChartEmptyData visible={!pipedSummary.total} />
         </Box>
@@ -166,7 +156,7 @@ const PipedCount: FC = () => {
           ]}
         />
       </CardContent>
-    </Card>
+    </CardWrapper>
   );
 };
 

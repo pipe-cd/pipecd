@@ -1,12 +1,11 @@
 import {
   FormControl,
   InputLabel,
-  makeStyles,
   MenuItem,
   Select,
   TextField,
-} from "@material-ui/core";
-import Autocomplete from "@material-ui/lab/Autocomplete";
+} from "@mui/material";
+import Autocomplete from "@mui/material/Autocomplete";
 import { FC, memo, useCallback, useState, useEffect } from "react";
 import { FilterView } from "~/components/filter-view";
 import { EVENT_STATE_TEXT } from "~/constants/event-status-text";
@@ -18,16 +17,6 @@ import {
   EventStatusKey,
   selectAll as selectAllEvents,
 } from "~/modules/events";
-
-const useStyles = makeStyles((theme) => ({
-  formItem: {
-    width: "100%",
-    marginTop: theme.spacing(4),
-  },
-  select: {
-    width: "100%",
-  },
-}));
 
 const ALL_VALUE = "ALL";
 
@@ -42,7 +31,6 @@ export const EventFilter: FC<EventFilterProps> = memo(function EventFilter({
   onChange,
   onClear,
 }) {
-  const classes = useStyles();
   const handleUpdateFilterValue = useCallback(
     (opts: Partial<EventFilterOptions>): void => {
       onChange({ ...options, ...opts });
@@ -84,7 +72,7 @@ export const EventFilter: FC<EventFilterProps> = memo(function EventFilter({
         setSelectedLabels([]);
       }}
     >
-      <FormControl className={classes.formItem} variant="outlined">
+      <FormControl sx={{ width: "100%", mt: 4 }} variant="outlined">
         <Autocomplete
           autoHighlight
           id="filter-event-name"
@@ -112,14 +100,14 @@ export const EventFilter: FC<EventFilterProps> = memo(function EventFilter({
         />
       </FormControl>
 
-      <FormControl className={classes.formItem} variant="outlined">
+      <FormControl sx={{ width: "100%", mt: 4 }} variant="outlined">
         <InputLabel id="filter-event-status">Event Status</InputLabel>
         <Select
           labelId="filter-event-status"
           id="filter-event-status"
           value={options.status ?? ALL_VALUE}
           label="Event Status"
-          className={classes.select}
+          fullWidth
           onChange={(e) => {
             handleUpdateFilterValue({
               status:
@@ -142,7 +130,7 @@ export const EventFilter: FC<EventFilterProps> = memo(function EventFilter({
         </Select>
       </FormControl>
 
-      <FormControl className={classes.formItem} variant="outlined">
+      <FormControl sx={{ width: "100%", mt: 4 }} variant="outlined">
         <Autocomplete
           multiple
           autoHighlight

@@ -5,7 +5,6 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
-  makeStyles,
   Paper,
   Table,
   TableBody,
@@ -14,14 +13,14 @@ import {
   TableHead,
   TableRow,
   Toolbar,
-} from "@material-ui/core";
+} from "@mui/material";
 import {
   Add as AddIcon,
   Close as CloseIcon,
   FilterList as FilterIcon,
   Update as UpgradeIcon,
-} from "@material-ui/icons";
-import Alert from "@material-ui/lab/Alert";
+} from "@mui/icons-material";
+import Alert from "@mui/material/Alert";
 import { createSelector } from "@reduxjs/toolkit";
 import { FC, memo, useCallback, useEffect, useState } from "react";
 import { TextWithCopyButton } from "~/components/text-with-copy-button";
@@ -49,18 +48,12 @@ import {
 } from "~/modules/pipeds";
 import { addToast } from "~/modules/toasts";
 import { AppState } from "~/store";
-import { useSettingsStyles } from "../styles";
 import { AddPipedDialog } from "./components/add-piped-dialog";
 import { EditPipedDialog } from "./components/edit-piped-dialog";
 import { FilterValues, PipedFilter } from "./components/piped-filter";
 import { PipedTableRow } from "./components/piped-table-row";
 import { UpgradePipedDialog } from "./components/upgrade-dialog";
-
-const useStyles = makeStyles(() => ({
-  toolbarSpacer: {
-    flexGrow: 1,
-  },
-}));
+import { TableCellNoWrap } from "../styles";
 
 const filterValue = (
   _: AppState,
@@ -87,8 +80,6 @@ const OLD_KEY_ALERT_MESSAGE =
 const FETCH_INTERVAL = 30000;
 
 export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
-  const classes = useStyles();
-  const settingsClasses = useSettingsStyles();
   const [openFilter, setOpenFilter] = useState(false);
   const [isOpenForm, setIsOpenForm] = useState(false);
   const [editPipedId, setEditPipedId] = useState<string | null>(null);
@@ -189,7 +180,11 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
         >
           {UI_TEXT_ADD}
         </Button>
-        <div className={classes.toolbarSpacer} />
+        <Box
+          sx={{
+            flexGrow: 1,
+          }}
+        />
         <Button
           color="primary"
           startIcon={<UpgradeIcon />}
@@ -206,25 +201,22 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
         </Button>
       </Toolbar>
       <Divider />
-
-      <Box display="flex" flex={1} overflow="hidden">
+      <Box
+        sx={{
+          display: "flex",
+          flex: 1,
+          overflow: "hidden",
+        }}
+      >
         <TableContainer component={Paper} square>
           <Table aria-label="piped list" size="small" stickyHeader>
             <TableHead>
               <TableRow>
-                <TableCell className={settingsClasses.tableCell}>
-                  Name
-                </TableCell>
-                <TableCell className={settingsClasses.tableCell}>ID</TableCell>
-                <TableCell className={settingsClasses.tableCell}>
-                  Version
-                </TableCell>
-                <TableCell className={settingsClasses.tableCell}>
-                  Description
-                </TableCell>
-                <TableCell className={settingsClasses.tableCell}>
-                  Started At
-                </TableCell>
+                <TableCellNoWrap>Name</TableCellNoWrap>
+                <TableCellNoWrap>ID</TableCellNoWrap>
+                <TableCellNoWrap>Version</TableCellNoWrap>
+                <TableCellNoWrap>Description</TableCellNoWrap>
+                <TableCellNoWrap>Started At</TableCellNoWrap>
                 <TableCell align="right" />
               </TableRow>
             </TableHead>
@@ -247,17 +239,14 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
           <PipedFilter values={filterValues} onChange={setFilterValues} />
         )}
       </Box>
-
       <AddPipedDialog open={isOpenForm} onClose={handleClose} />
       <EditPipedDialog pipedId={editPipedId} onClose={handleEditClose} />
-
       <UpgradePipedDialog
         open={isUpgradeDialogOpen}
         pipeds={pipeds}
         releasedVersions={releasedVersions}
         onClose={handleUpgradeDialogClose}
       />
-
       <Dialog fullWidth open={Boolean(registeredPiped)}>
         <DialogTitle>
           {registeredPiped?.isNewKey
@@ -284,7 +273,14 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
                 : ""
             }
           />
-          <Box display="flex" justifyContent="flex-end" m={1} mt={2}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              m: 1,
+              mt: 2,
+            }}
+          >
             <Button color="primary" onClick={handleClosePipedInfo}>
               {UI_TEXT_CLOSE}
             </Button>

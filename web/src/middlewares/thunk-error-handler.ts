@@ -17,8 +17,15 @@ export const thunkErrorHandler: Middleware = ({
       console.error(err);
     }
 
-    if (err && err.code && err.message) {
-      dispatch(addToast({ message: err.message, severity: "error" }));
+    if (
+      err &&
+      typeof err === "object" &&
+      "code" in err &&
+      err.code &&
+      "message" in err &&
+      err.message
+    ) {
+      dispatch(addToast({ message: err.message as string, severity: "error" }));
     } else {
       throw err;
     }

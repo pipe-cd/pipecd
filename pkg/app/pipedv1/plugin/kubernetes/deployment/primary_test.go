@@ -29,9 +29,9 @@ import (
 
 	kubeConfigPkg "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
-	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister/logpersistertest"
-	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
-	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry/toolregistrytest"
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister/logpersistertest"
+	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry/toolregistrytest"
 )
 
 func TestPlugin_executeK8sPrimaryRolloutStage(t *testing.T) {
@@ -202,6 +202,13 @@ func TestPlugin_executeK8sPrimaryRolloutStage_withPrune(t *testing.T) {
 func TestGeneratePrimaryManifests(t *testing.T) {
 	t.Parallel()
 
+	appCfg := &kubeConfigPkg.KubernetesApplicationSpec{
+		Service: kubeConfigPkg.K8sResourceReference{
+			Kind: "Service",
+			Name: "my-service",
+		},
+	}
+
 	const variantLabel = "pipecd.dev/variant"
 	const variant = "primary"
 
@@ -295,6 +302,39 @@ spec:
 `,
 		},
 		{
+			name: "error when service is not matched with config",
+			inputYAML: `
+apiVersion: v1
+kind: Service
+metadata:
+  name: other-service
+spec:
+  selector:
+    app: my-app
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  selector:
+    matchLabels:
+      app: simple
+  template:
+    metadata:
+      labels:
+        app: simple
+`,
+			stageCfg: kubeConfigPkg.K8sPrimaryRolloutStageOptions{
+				CreateService: true,
+			},
+			expectErr: true,
+		},
+		{
 			name: "error when no service found for CreateService",
 			inputYAML: `
 apiVersion: apps/v1
@@ -322,7 +362,7 @@ spec:
 			manifests, err := provider.ParseManifests(tc.inputYAML)
 			require.NoError(t, err)
 
-			result, err := generatePrimaryManifests(manifests, tc.stageCfg, variantLabel, variant)
+			result, err := generatePrimaryManifests(appCfg, manifests, tc.stageCfg, variantLabel, variant)
 			if tc.expectErr {
 				require.Error(t, err)
 				return

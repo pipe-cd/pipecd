@@ -20,6 +20,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister/logpersistertest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
@@ -27,7 +28,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
-	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister/logpersistertest"
 )
 
 type mockStagePlugin struct {

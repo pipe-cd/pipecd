@@ -1,39 +1,11 @@
-import {
-  Box,
-  Card,
-  CardActionArea,
-  makeStyles,
-  Popover,
-  Typography,
-} from "@material-ui/core";
-import clsx from "clsx";
+import { Box, Card, CardActionArea, Popover, Typography } from "@mui/material";
 import { FC, memo, useState } from "react";
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    minWidth: 200,
-    display: "inline-block",
-  },
-  actionArea: {
-    padding: theme.spacing(2),
-  },
-  textSpace: {
-    marginLeft: theme.spacing(1),
-  },
-  popover: {
-    pointerEvents: "none",
-  },
-  popoverPaper: {
-    padding: theme.spacing(1),
-  },
-}));
 
 export interface ApplicationCountProps {
   enabledCount: number;
   disabledCount: number;
   kindName: string;
   onClick: () => void;
-  className?: string;
 }
 
 export const ApplicationCount: FC<ApplicationCountProps> = memo(
@@ -42,10 +14,7 @@ export const ApplicationCount: FC<ApplicationCountProps> = memo(
     disabledCount,
     kindName,
     onClick,
-    className,
   }) {
-    const classes = useStyles();
-
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
     const open = Boolean(anchorEl);
 
@@ -54,9 +23,15 @@ export const ApplicationCount: FC<ApplicationCountProps> = memo(
     };
 
     return (
-      <Card raised className={clsx(classes.root, className)}>
+      <Card
+        raised
+        sx={{
+          minWidth: 200,
+          display: "inline-block",
+        }}
+      >
         <CardActionArea
-          className={classes.actionArea}
+          sx={{ p: 2 }}
           onClick={onClick}
           onMouseEnter={(event) => {
             setAnchorEl(event.currentTarget);
@@ -66,7 +41,13 @@ export const ApplicationCount: FC<ApplicationCountProps> = memo(
           <Typography variant="h6" component="div" color="textSecondary">
             {kindName}
           </Typography>
-          <Box display="flex" justifyContent="center" alignItems="baseline">
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "baseline",
+            }}
+          >
             <Typography variant="h4" component="span">
               {enabledCount}
             </Typography>
@@ -75,7 +56,8 @@ export const ApplicationCount: FC<ApplicationCountProps> = memo(
                 variant="h6"
                 color="textSecondary"
                 component="span"
-                className={classes.textSpace}
+                // className={classes.textSpace}
+                sx={{ ml: 1 }}
               >
                 {`/${disabledCount}`}
               </Typography>
@@ -83,18 +65,20 @@ export const ApplicationCount: FC<ApplicationCountProps> = memo(
             <Typography
               variant="h6"
               component="span"
-              className={classes.textSpace}
+              sx={{ ml: 1 }}
+              // className={classes.textSpace}
             >
               apps
             </Typography>
           </Box>
         </CardActionArea>
-
         <Popover
           id="mouse-over-popover"
-          className={classes.popover}
-          classes={{
-            paper: classes.popoverPaper,
+          sx={{
+            pointerEvents: "none",
+          }}
+          slotProps={{
+            paper: { sx: { p: 1 } }, // Add padding to the popover
           }}
           open={open}
           anchorEl={anchorEl}

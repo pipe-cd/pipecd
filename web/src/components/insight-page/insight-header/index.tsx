@@ -6,9 +6,8 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  makeStyles,
-} from "@material-ui/core";
-import { Autocomplete } from "@material-ui/lab";
+} from "@mui/material";
+import { Autocomplete } from "@mui/material";
 import { FC, memo, useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { Application, selectAll, selectById } from "~/modules/applications";
@@ -26,17 +25,7 @@ import {
   InsightRange,
 } from "~/modules/insight";
 
-const useStyles = makeStyles((theme) => ({
-  headerItemMargin: {
-    marginLeft: theme.spacing(2),
-  },
-  rangeMargin: {
-    marginLeft: theme.spacing(1),
-  },
-}));
-
 export const InsightHeader: FC = memo(function InsightHeader() {
-  const classes = useStyles();
   const dispatch = useAppDispatch();
 
   const selectedApp = useAppSelector<Application.AsObject | null>(
@@ -70,8 +59,14 @@ export const InsightHeader: FC = memo(function InsightHeader() {
 
   return (
     <Grid container spacing={2} style={{ marginTop: 26, marginBottom: 26 }}>
-      <Grid item xs={8}>
-        <Box display="flex" alignItems="left" justifyContent="flex-start">
+      <Grid size={8}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "left",
+            justifyContent: "flex-start",
+          }}
+        >
           <Autocomplete
             id="application"
             style={{ minWidth: 300 }}
@@ -102,7 +97,7 @@ export const InsightHeader: FC = memo(function InsightHeader() {
             id="labels"
             noOptionsText="No selectable labels"
             style={{ minWidth: 300 }}
-            className={classes.headerItemMargin}
+            sx={{ ml: 2 }}
             options={allLabels}
             value={selectedLabels}
             onInputChange={(_, value) => {
@@ -129,9 +124,15 @@ export const InsightHeader: FC = memo(function InsightHeader() {
           />
         </Box>
       </Grid>
-      <Grid item xs={4}>
-        <Box display="flex" alignItems="right" justifyContent="flex-end">
-          <FormControl className={classes.headerItemMargin} variant="outlined">
+      <Grid size={4}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "right",
+            justifyContent: "flex-end",
+          }}
+        >
+          <FormControl sx={{ ml: 2 }} variant="outlined">
             <InputLabel id="range-input">Range</InputLabel>
             <Select
               id="range"
@@ -151,7 +152,7 @@ export const InsightHeader: FC = memo(function InsightHeader() {
             </Select>
           </FormControl>
 
-          <FormControl className={classes.headerItemMargin} variant="outlined">
+          <FormControl sx={{ ml: 2 }} variant="outlined">
             <InputLabel id="resolution-input">Resolution</InputLabel>
             <Select
               id="resolution"

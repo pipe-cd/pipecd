@@ -1,5 +1,5 @@
-import { IconButton } from "@material-ui/core";
-import { FileCopyOutlined as CopyIcon } from "@material-ui/icons";
+import { IconButton } from "@mui/material";
+import { FileCopyOutlined as CopyIcon } from "@mui/icons-material";
 import { FC, useCallback, memo } from "react";
 import { useAppDispatch } from "~/hooks/redux";
 import { addToast } from "~/modules/toasts";

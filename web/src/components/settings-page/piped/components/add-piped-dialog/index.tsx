@@ -1,4 +1,4 @@
-import { Dialog } from "@material-ui/core";
+import { Dialog } from "@mui/material";
 import { useFormik } from "formik";
 import { FC, memo, useCallback } from "react";
 import { ADD_PIPED_SUCCESS } from "~/constants/toast-text";
