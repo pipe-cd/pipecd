@@ -213,6 +213,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: my-service-canary
+  annotations:
+    pipecd.dev/resource-key: :Service::my-service-canary
 spec:
   selector:
     app: my-app
@@ -243,6 +245,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: test-svc-primary
+  annotations:
+    pipecd.dev/resource-key: :Service::test-svc-primary
 spec:
   selector:
     pipecd.dev/variant: primary

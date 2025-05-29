@@ -100,6 +100,12 @@ func generateVariantServiceManifests(services []provider.Manifest, variantLabel,
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse Service object to Manifest: %w", err)
 		}
+		// This is because the resource key differs between variants because of the name suffix.
+		// For example, The Service named "simple" has the resource key ":Service:some-namespace:simple"
+		// and its baseline variant has the resource key ":Service:some-namespace:simple-baseline".
+		manifest.AddAnnotations(map[string]string{
+			provider.LabelResourceKey: manifest.Key().String(),
+		})
 		manifests = append(manifests, manifest)
 	}
 	return manifests, nil
@@ -200,6 +206,12 @@ func generateVariantWorkloadManifests(workloads, configmaps, secrets []provider.
 			if err != nil {
 				return nil, err
 			}
+			// This is because the resource key differs between variants because of the name suffix.
+			// For example, The Deployment named "simple" has the resource key "apps:Deployment:some-namespace:simple"
+			// and its baseline variant has the resource key "apps:Deployment:some-namespace:simple-baseline".
+			manifest.AddAnnotations(map[string]string{
+				provider.LabelResourceKey: manifest.Key().String(),
+			})
 			manifests = append(manifests, manifest)
 
 		default:

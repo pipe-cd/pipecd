@@ -291,6 +291,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: my-service-custom
+  annotations:
+    pipecd.dev/resource-key: :Service::my-service-custom
 spec:
   selector:
     app: my-app
