@@ -81,7 +81,7 @@ func _main() int {
 		return 1
 	}
 
-	changedReleaseFiles := make([]string, 0)
+	changedReleaseFiles := make([]string, 0, len(changedFiles))
 	matcher, err := NewPatternMatcher([]string{args.ReleaseFile})
 	if err != nil {
 		log.Printf("Failed to create pattern matcher for release file: %v\n", err)
