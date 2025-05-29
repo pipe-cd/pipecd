@@ -23,6 +23,7 @@ import (
 )
 
 const (
+	KindService    = "Service"
 	KindDeployment = "Deployment"
 	KindSecret     = "Secret"
 	KindConfigMap  = "ConfigMap"

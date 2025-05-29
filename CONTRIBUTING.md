@@ -98,6 +98,7 @@ When submitting a pull request, please ensure the following:
 - **Keep your PR small.** Small pull requests (~300 lines of diff) are much easier to review and are more likely to get merged. Make sure the PR addresses only one thing. If not, please split it.
 - **Use descriptive titles.** It is recommended to follow the [commit message style](#commit-messages).
 - **DCO.** If you haven't signed off already, check the [Contributor License Agreement](#contributor-license-agreement).
+- **Run `make check`**. To ensure your change will pass the CI.
 
 All pull requests should be opened against the `master` branch.
 

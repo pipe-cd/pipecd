@@ -27,7 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 func TestManifest_AddStringMapValues(t *testing.T) {
@@ -1022,6 +1022,99 @@ metadata:
 
 			// After mutation, the original and copy should differ
 			assert.NotEqual(t, orig, copy, "mutation should not affect the other slice")
+		})
+	}
+}
+
+func TestManifest_DeepCopyWithName(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		yaml      string
+		newName   string
+		mutate    func(orig, copy *Manifest)
+		checkOrig func(orig Manifest)
+		checkCopy func(copy Manifest)
+	}{
+		{
+			name: "deep copy with new name does not affect original",
+			yaml: `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: original-name
+  labels:
+    foo: bar
+`,
+			newName: "copied-name",
+			mutate:  nil,
+			checkOrig: func(orig Manifest) {
+				assert.Equal(t, "original-name", orig.Name())
+			},
+			checkCopy: func(copy Manifest) {
+				assert.Equal(t, "copied-name", copy.Name())
+			},
+		},
+		{
+			name: "mutate copy does not affect original",
+			yaml: `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: original-name
+  labels:
+    foo: bar
+`,
+			newName: "copied-name",
+			mutate: func(orig, copy *Manifest) {
+				copy.AddLabels(map[string]string{"foo": "baz"})
+			},
+			checkOrig: func(orig Manifest) {
+				assert.Equal(t, "bar", orig.body.GetLabels()["foo"], "original label should remain unchanged")
+			},
+			checkCopy: func(copy Manifest) {
+				assert.Equal(t, "baz", copy.body.GetLabels()["foo"], "copy label should be updated")
+			},
+		},
+		{
+			name: "mutate original does not affect copy",
+			yaml: `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: original-name
+  labels:
+    foo: bar
+`,
+			newName: "copied-name",
+			mutate: func(orig, copy *Manifest) {
+				orig.AddLabels(map[string]string{"foo": "baz"})
+			},
+			checkOrig: func(orig Manifest) {
+				assert.Equal(t, "baz", orig.body.GetLabels()["foo"], "original label should be updated")
+			},
+			checkCopy: func(copy Manifest) {
+				assert.Equal(t, "bar", copy.body.GetLabels()["foo"], "copy label should remain unchanged")
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			manifests := mustParseManifests(t, tt.yaml)
+			require.Len(t, manifests, 1)
+			orig := manifests[0]
+			copy := orig.DeepCopyWithName(tt.newName)
+
+			if tt.mutate != nil {
+				tt.mutate(&orig, &copy)
+			}
+
+			tt.checkOrig(orig)
+			tt.checkCopy(copy)
 		})
 	}
 }

@@ -1,12 +1,12 @@
 import {
+  Box,
   FormControl,
   InputLabel,
-  makeStyles,
   MenuItem,
   Select,
   TextField,
-} from "@material-ui/core";
-import Autocomplete from "@material-ui/lab/Autocomplete";
+} from "@mui/material";
+import Autocomplete from "@mui/material/Autocomplete";
 import { FC, memo, useState, useEffect } from "react";
 import { FilterView } from "~/components/filter-view";
 import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
@@ -24,19 +24,6 @@ import {
 import { ApplicationAutocomplete } from "./application-autocomplete";
 import { PipedSelect } from "./piped-select";
 
-const useStyles = makeStyles((theme) => ({
-  toolbarSpacer: {
-    flexGrow: 1,
-  },
-  formItem: {
-    width: "100%",
-    marginTop: theme.spacing(4),
-  },
-  select: {
-    width: "100%",
-  },
-}));
-
 export interface ApplicationFilterProps {
   options: ApplicationsFilterOptions;
   onChange: (options: ApplicationsFilterOptions) => void;
@@ -47,7 +34,6 @@ const ALL_VALUE = "ALL";
 
 export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
   function ApplicationFilter({ options, onChange, onClear }) {
-    const classes = useStyles();
     const applications = useAppSelector<Application.AsObject[]>((state) =>
       selectAllApplications(state.applications)
     );
@@ -80,29 +66,31 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
           setSelectedLabels([]);
         }}
       >
-        <div className={classes.formItem}>
+        <Box
+          sx={{
+            mt: 4,
+          }}
+        >
           <ApplicationAutocomplete
             value={options.name ?? null}
             onChange={(value) => handleUpdateFilterValue({ name: value })}
           />
-        </div>
-
-        <FormControl className={classes.formItem} variant="outlined">
+        </Box>
+        <FormControl fullWidth sx={{ mt: 4 }} variant="outlined">
           <InputLabel id="filter-piped">Piped</InputLabel>
           <PipedSelect
             value={options.pipedId ?? ""}
             onChange={(value) => handleUpdateFilterValue({ pipedId: value })}
           />
         </FormControl>
-
-        <FormControl className={classes.formItem} variant="outlined">
+        <FormControl fullWidth sx={{ mt: 4 }} variant="outlined">
           <InputLabel id="filter-kind">Kind</InputLabel>
           <Select
             labelId="filter-kind"
             id="filter-kind"
             value={options.kind ?? ALL_VALUE}
             label="Kind"
-            className={classes.select}
+            fullWidth
             onChange={(e) => {
               handleUpdateFilterValue({
                 kind:
@@ -130,15 +118,14 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
             ))}
           </Select>
         </FormControl>
-
-        <FormControl className={classes.formItem} variant="outlined">
+        <FormControl fullWidth sx={{ mt: 4 }} variant="outlined">
           <InputLabel id="filter-sync-status">Sync Status</InputLabel>
           <Select
             labelId="filter-sync-status"
             id="filter-sync-status"
             value={options.syncStatus ?? ALL_VALUE}
             label="Sync Status"
-            className={classes.select}
+            fullWidth
             onChange={(e) => {
               handleUpdateFilterValue({
                 syncStatus:
@@ -166,8 +153,7 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
             ))}
           </Select>
         </FormControl>
-
-        <FormControl className={classes.formItem} variant="outlined">
+        <FormControl fullWidth sx={{ mt: 4 }} variant="outlined">
           <InputLabel id="filter-active-status">Active Status</InputLabel>
           <Select
             labelId="filter-active-status"
@@ -178,7 +164,7 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
                 : options.activeStatus
             }
             label="Active Status"
-            className={classes.select}
+            fullWidth
             onChange={(e) => {
               handleUpdateFilterValue({
                 activeStatus:
@@ -195,8 +181,7 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
             <MenuItem value="disabled">Disabled</MenuItem>
           </Select>
         </FormControl>
-
-        <FormControl className={classes.formItem} variant="outlined">
+        <FormControl fullWidth sx={{ mt: 4 }} variant="outlined">
           <Autocomplete
             multiple
             autoHighlight

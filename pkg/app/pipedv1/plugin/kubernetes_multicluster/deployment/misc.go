@@ -14,7 +14,13 @@
 
 package deployment
 
-import "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
+import (
+	"context"
+	"errors"
+
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+)
 
 func ensureVariantSelectorInWorkload(m provider.Manifest, variantLabel, variant string) error {
 	variantMap := map[string]string{
@@ -24,4 +30,37 @@ func ensureVariantSelectorInWorkload(m provider.Manifest, variantLabel, variant 
 		return err
 	}
 	return m.AddStringMapValues(variantMap, "spec", "template", "metadata", "labels")
+}
+
+// addVariantLabelsAndAnnotations adds the variant label and annotation to the given manifests.
+func addVariantLabelsAndAnnotations(m []provider.Manifest, variantLabel, variant string) {
+	for _, m := range m {
+		m.AddLabels(map[string]string{
+			variantLabel: variant,
+		})
+		m.AddAnnotations(map[string]string{
+			variantLabel: variant,
+		})
+	}
+}
+
+// deleteResources deletes the given resources.
+// It returns the number of deleted resources.
+func deleteResources(ctx context.Context, lp sdk.StageLogPersister, applier *provider.Applier, keys []provider.ResourceKey) int {
+	var deletedCount int
+
+	for _, k := range keys {
+		if err := applier.Delete(ctx, k); err != nil {
+			if errors.Is(err, provider.ErrNotFound) {
+				lp.Infof("Specified resource does not exist, so skip deleting the resource: %s (%v)", k.ReadableString(), err)
+				continue
+			}
+			lp.Errorf("Failed while deleting resource %s (%v)", k.ReadableString(), err)
+			continue // continue to delete other resources
+		}
+		deletedCount++
+		lp.Successf("- deleted resource: %s", k.ReadableString())
+	}
+
+	return deletedCount
 }
