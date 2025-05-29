@@ -17,9 +17,8 @@ package deployment
 import (
 	"testing"
 
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
 )
 
 func Test_buildQuickSyncPipeline(t *testing.T) {
