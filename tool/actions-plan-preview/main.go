@@ -143,7 +143,7 @@ func main() {
 			return
 		}
 
-		minimizePreviousComment(ctx, ghGraphQLClient, event)
+		minimizePreviousComment(ctx, ghGraphQLClient, event, args.Title)
 
 		body := makeCommentBody(event, result, args.Title)
 		doComment(body)
@@ -153,7 +153,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	minimizePreviousComment(ctx, ghGraphQLClient, event)
+	minimizePreviousComment(ctx, ghGraphQLClient, event, args.Title)
 
 	body := makeCommentBody(event, result, args.Title)
 	doComment(body)

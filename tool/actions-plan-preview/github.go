@@ -177,7 +177,7 @@ var errNotFound = errors.New("not found")
 
 // find the latest plan preview comment in the specified issue
 // if there is no plan preview comment, return errNotFound err
-func findLatestPlanPreviewComment(ctx context.Context, client GraphQLClient, owner, repo string, prNumber int) (*issueCommentQuery, error) {
+func findLatestPlanPreviewComment(ctx context.Context, client GraphQLClient, owner, repo string, prNumber int, key string) (*issueCommentQuery, error) {
 	variables := map[string]interface{}{
 		"repositoryOwner": githubv4.String(owner),
 		"repositoryName":  githubv4.String(repo),
@@ -189,7 +189,7 @@ func findLatestPlanPreviewComment(ctx context.Context, client GraphQLClient, own
 		return nil, err
 	}
 
-	comment := filterLatestPlanPreviewComment(q.Repository.PullRequest.Comments.Nodes)
+	comment := filterLatestPlanPreviewComment(q.Repository.PullRequest.Comments.Nodes, key)
 	if comment == nil {
 		return nil, errNotFound
 	}
@@ -197,8 +197,8 @@ func findLatestPlanPreviewComment(ctx context.Context, client GraphQLClient, own
 }
 
 // Expect comments to be sorted in ascending order by created_at
-func filterLatestPlanPreviewComment(comments []issueCommentQuery) *issueCommentQuery {
-	const planPreviewCommentStart = "<!-- pipecd-plan-preview-->"
+func filterLatestPlanPreviewComment(comments []issueCommentQuery, key string) *issueCommentQuery {
+	planPreviewCommentStart := makeFilterComment(key)
 
 	for i := range comments {
 		comment := comments[len(comments)-i-1]
@@ -208,6 +208,11 @@ func filterLatestPlanPreviewComment(comments []issueCommentQuery) *issueCommentQ
 	}
 
 	return nil
+}
+
+// key is used to distinguish requests when one repo has multiple Projects.
+func makeFilterComment(key string) string {
+	return fmt.Sprintf("<!-- pipecd-plan-preview %s -->", key)
 }
 
 type minimizeCommentMutation struct {
