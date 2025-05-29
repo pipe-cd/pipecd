@@ -42,8 +42,8 @@ export const updateStaticAdmin = ({
   password?: string;
 }): Promise<UpdateProjectStaticAdminResponse.AsObject> => {
   const req = new UpdateProjectStaticAdminRequest();
-  username && req.setUsername(username);
-  password && req.setPassword(password);
+  if (username) req.setUsername(username);
+  if (password) req.setPassword(password);
   return apiRequest(req, apiClient.updateProjectStaticAdmin);
 };
 
@@ -93,8 +93,8 @@ export const updateGitHubSSO = ({
   const github = new ProjectSSOConfig.GitHub();
   github.setClientId(clientId);
   github.setClientSecret(clientSecret);
-  baseUrl && github.setBaseUrl(baseUrl);
-  uploadUrl && github.setUploadUrl(uploadUrl);
+  if (baseUrl) github.setBaseUrl(baseUrl);
+  if (uploadUrl) github.setUploadUrl(uploadUrl);
 
   sso.setGithub(github);
   req.setSso(sso);

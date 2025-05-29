@@ -18,14 +18,13 @@ import (
 	"cmp"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"time"
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
-	"github.com/pipe-cd/pipecd/pkg/plugin/sdk"
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 func (p *Plugin) executeK8sPrimaryRolloutStage(ctx context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
@@ -101,21 +100,13 @@ func (p *Plugin) executeK8sPrimaryRolloutStage(ctx context.Context, input *sdk.E
 
 	// Generate the manifests for applying.
 	lp.Infof("Start generating manifests for PRIMARY variant")
-	if primaryManifests, err = generatePrimaryManifests(primaryManifests, stageCfg, variantLabel, primaryVariant); err != nil {
+	if primaryManifests, err = generatePrimaryManifests(appCfg, primaryManifests, stageCfg, variantLabel, primaryVariant); err != nil {
 		lp.Errorf("Unable to generate manifests for PRIMARY variant (%v)", err)
 		return sdk.StageStatusFailure
 	}
 	lp.Successf("Successfully generated %d manifests for PRIMARY variant", len(primaryManifests))
 
-	// Add variant annotations to all manifests.
-	for i := range primaryManifests {
-		primaryManifests[i].AddLabels(map[string]string{
-			variantLabel: primaryVariant,
-		})
-		primaryManifests[i].AddAnnotations(map[string]string{
-			variantLabel: primaryVariant,
-		})
-	}
+	addVariantLabelsAndAnnotations(primaryManifests, variantLabel, primaryVariant)
 
 	if err := annotateConfigHash(primaryManifests); err != nil {
 		lp.Errorf("Unable to set %q annotation into the workload manifest (%v)", provider.AnnotationConfigHash, err)
@@ -179,20 +170,7 @@ func (p *Plugin) executeK8sPrimaryRolloutStage(ctx context.Context, input *sdk.E
 	}
 
 	lp.Infof("Start pruning %d resources", len(removeKeys))
-	var deletedCount int
-	for _, key := range removeKeys {
-		if err := kubectl.Delete(ctx, deployTargetConfig.KubeConfigPath, key.Namespace(), key); err != nil {
-			if errors.Is(err, provider.ErrNotFound) {
-				lp.Infof("Specified resource does not exist, so skip deleting the resource: %s (%v)", key.ReadableString(), err)
-				continue
-			}
-			lp.Errorf("Failed while deleting resource %s (%v)", key.ReadableString(), err)
-			continue // continue to delete other resources
-		}
-		deletedCount++
-		lp.Successf("- deleted resource: %s", key.ReadableString())
-	}
-
+	deletedCount := deleteResources(ctx, lp, applier, removeKeys)
 	lp.Successf("Successfully deleted %d resources", deletedCount)
 
 	return sdk.StageStatusSuccess
@@ -201,7 +179,7 @@ func (p *Plugin) executeK8sPrimaryRolloutStage(ctx context.Context, input *sdk.E
 // generatePrimaryManifests generates manifests for the PRIMARY variant.
 // It duplicates the input manifests, adds the variant label to workloads if needed,
 // and generates Service manifests with a name suffix and variant selector if requested.
-func generatePrimaryManifests(manifests []provider.Manifest, stageCfg kubeconfig.K8sPrimaryRolloutStageOptions, variantLabel, variant string) ([]provider.Manifest, error) {
+func generatePrimaryManifests(appCfg *kubeconfig.KubernetesApplicationSpec, manifests []provider.Manifest, stageCfg kubeconfig.K8sPrimaryRolloutStageOptions, variantLabel, variant string) ([]provider.Manifest, error) {
 	suffix := variant
 	if stageCfg.Suffix != "" {
 		suffix = stageCfg.Suffix
@@ -221,10 +199,15 @@ func generatePrimaryManifests(manifests []provider.Manifest, stageCfg kubeconfig
 
 	// Generate Service manifests for the PRIMARY variant if requested.
 	if stageCfg.CreateService {
-		services := findManifests("Service", "", primaryManifests)
+		serviceName := appCfg.Service.Name
+		services := findManifests(provider.KindService, serviceName, primaryManifests)
 		if len(services) == 0 {
 			return nil, fmt.Errorf("unable to find any service for PRIMARY variant")
 		}
+		// Because the loaded manifests are read-only
+		// so we duplicate them to avoid updating the shared manifests data in cache.
+		services = provider.DeepCopyManifests(services)
+
 		generatedServices, err := generateVariantServiceManifests(services, variantLabel, variant, suffix)
 		if err != nil {
 			return nil, fmt.Errorf("failed to generate service manifests: %w", err)

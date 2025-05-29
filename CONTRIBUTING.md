@@ -39,7 +39,7 @@ All pull requests undergo checks by the continuous integration system, GitHub Ac
 
 PipeCD has one primary branch `master`.
 
-## Issues
+## Open a new issue
 
 When [opening a new issue](https://github.com/pipe-cd/pipecd/issues/new/choose), please make sure to fill out the issue template. This step is crucial! Neglecting to do so may result in your issue not being promptly addressed. If this happens, feel free to open a new issue once you have gathered all the necessary information.
 
@@ -65,11 +65,89 @@ If you would like to request an enhancement to existing features, you can file a
 
 If you would like to request an entirely new feature, you can file an issue with the [feature request](https://github.com/pipe-cd/pipecd/issues/new?assignees=&labels=kind%2Ffeature&projects=&template=new-feature.md).
 
-### Claiming issues
+## Working on issues
+
+### Good first issues
 
 We maintain a list of [good first issues](https://github.com/pipe-cd/pipecd/labels/good%20first%20issue) to help you get started with the PipeCD codebase and familiarize yourself with our contribution process. It's an excellent place to begin.
 
+Additionally, we recommend you not to work on multiple good first issues because it's for first contributers and currently we cannot make enough good first issues.
+
+### Before you work on issues
+
 If you want to work on any of these issues, simply leave a message saying "I'd like to work on this," and we will assign the issue to you and update its status as "claimed." We expect you to submit a pull request within seven days so that we can assign the issue to someone else if you are unavailable.
+
+We recommend you to focus only one issue at once if you are newcomer contributer.
+
+So you've decided to contribute back to the upstream by opening a pull request. You've put in a significant amount of time, and we appreciate your effort. We will do our best to work with you and review the pull request.
+
+### Investigate an issue
+
+Before you submitting a Pull Request, we recommend you to investigate the issue and comment what to do on it.
+Then you can discuss how to solve the issue and reduce the communication on the Pull Request.
+
+### Submitting a Pull Request
+
+Are you working on your first Pull Request? You can learn how to do it from this free video series:
+
+[**How to Contribute to an Open Source Project on GitHub**](https://egghead.io/courses/how-to-contribute-to-an-open-source-project-on-github)
+
+When submitting a pull request, please ensure the following:
+
+- **Issue assignment.** To avoid redundant work, make sure you are assigned to the issue.
+- **Keep your PR small.** Small pull requests (~300 lines of diff) are much easier to review and are more likely to get merged. Make sure the PR addresses only one thing. If not, please split it.
+- **Use descriptive titles.** It is recommended to follow the [commit message style](#commit-messages).
+- **DCO.** If you haven't signed off already, check the [Contributor License Agreement](#contributor-license-agreement).
+- **Run `make check`**. To ensure your change will pass the CI.
+
+All pull requests should be opened against the `master` branch.
+
+We have various integration systems that run automated tests to prevent mistakes. The maintainers will also review your code and fix obvious issues. These systems are in place to minimize your worries about the process. Your code contributions are more important than adhering to strict procedures, although completing the checklist will undoubtedly save everyone's time.
+
+### Commit Messages
+
+Commit messages should be simple and use easy words that indicate the focus of the commit and its impact on other developers. Summary in the present tense. Use capital case in the first character but do not use title case.
+
+Example
+
+```
+Add imports to Terraform plan result
+```
+
+Don't stress too much about PR titles. The maintainers will help you get the title right.
+
+### Licensing
+
+By contributing to PipeCD, you agree that your contributions will be licensed under the Apache License Version 2. Include the following header at the top of your new file(s):
+
+```go
+// Copyright 2025 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+```
+
+### Release Note and Breaking Changes
+
+If your change introcudes a user-facing change, please update the following section in your PR description.
+
+```md
+**Does this PR introduce a user-facing change?**:
+- **How are users affected by this change**:
+- **Is this breaking change**:
+- **How to migrate (if breaking change)**:
+```
+
+Note that if it's a new breaking change, make sure to complete the two latter questions.
 
 ## Development
 
@@ -163,68 +241,6 @@ Then, copy generated Piped ID and base64 key for `piped-config.yaml`
 ### Online one-click setup for contributing
 
 We are preparing Gitpod and Codespace to facilitate the setup process for contributing.
-
-## Pull Requests
-
-So you've decided to contribute code back to the upstream by opening a pull request. You've put in a significant amount of time, and we appreciate your effort. We will do our best to work with you and review the pull request.
-
-Are you working on your first Pull Request? You can learn how to do it from this free video series:
-
-[**How to Contribute to an Open Source Project on GitHub**](https://egghead.io/courses/how-to-contribute-to-an-open-source-project-on-github)
-
-When submitting a pull request, please ensure the following:
-
-- **Keep your PR small.** Small pull requests (~300 lines of diff) are much easier to review and are more likely to get merged. Make sure the PR addresses only one thing. If not, please split it.
-- **Use descriptive titles.** It is recommended to follow the [commit message style](#commit-messages).
-- **DCO.** If you haven't signed off already, check the [Contributor License Agreement](#contributor-license-agreement).
-
-All pull requests should be opened against the `master` branch.
-
-We have various integration systems that run automated tests to prevent mistakes. The maintainers will also review your code and fix obvious issues. These systems are in place to minimize your worries about the process. Your code contributions are more important than adhering to strict procedures, although completing the checklist will undoubtedly save everyone's time.
-
-### Commit Messages
-Commit messages should be simple and use easy words that indicate the focus of the commit and its impact on other developers. Summary in the present tense. Use capital case in the first character but do not use title case.
-
-Example
-
-```
-Add imports to Terraform plan result
-```
-
-Don't stress too much about PR titles. The maintainers will help you get the title right.
-
-### Licensing
-
-By contributing to PipeCD, you agree that your contributions will be licensed under the Apache License Version 2. Include the following header at the top of your new file(s):
-
-```go
-// Copyright 2024 The PipeCD Authors.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-```
-
-### Release Note and Breaking Changes
-
-If your change introcudes a user-facing change, please update the following section in your PR description.
-
-```md
-**Does this PR introduce a user-facing change?**:
-- **How are users affected by this change**:
-- **Is this breaking change**:
-- **How to migrate (if breaking change)**:
-```
-
-Note that if it's a new breaking change, make sure to complete the two latter questions.
 
 ## Contributor License Agreement
 

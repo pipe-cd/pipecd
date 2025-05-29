@@ -1,6 +1,7 @@
 ####################
 # All make commands are following the format as "make action/target"
 # "action" can be either:
+#   check:   run checks which should be passed before committing
 #   build:   build artifacts such as binary, container image, chart
 #   test:    execute test
 #   run:     run a module locally
@@ -58,14 +59,14 @@ endif
 .PHONY: build/plugin
 build/plugin: PLUGINS_BIN_DIR ?= ~/.piped/plugins
 build/plugin: PLUGINS_SRC_DIR ?= ./pkg/app/pipedv1/plugin
-build/plugin: PLUGINS_OUT_DIR ?= ./.artifacts/plugins
+build/plugin: PLUGINS_OUT_DIR ?= ${PWD}/.artifacts/plugins
 build/plugin: PLUGINS ?= $(shell find $(PLUGINS_SRC_DIR) -mindepth 1 -maxdepth 1 -type d | while read -r dir; do basename "$$dir"; done | paste -sd, -) # comma separated list of plugins. eg: PLUGINS=kubernetes,ecs,lambda
 build/plugin:
 	mkdir -p $(PLUGINS_BIN_DIR)
 	@echo "Building plugins..."
 	@for plugin in $(shell echo $(PLUGINS) | tr ',' ' '); do \
 		echo "Building plugin: $$plugin"; \
-		go build -o $(PLUGINS_OUT_DIR)/$$plugin $(PLUGINS_SRC_DIR)/$$plugin \
+		go -C $(PLUGINS_SRC_DIR)/$$plugin build -o $(PLUGINS_OUT_DIR)/$$plugin . \
 			&& cp $(PLUGINS_OUT_DIR)/$$plugin $(PLUGINS_BIN_DIR)/$$plugin; \
 	done
 	@echo "Plugins are built and copied to $(PLUGINS_BIN_DIR)"
@@ -90,17 +91,40 @@ test: test/go test/web
 .PHONY: test/go
 test/go: COVERAGE ?= false
 test/go: COVERAGE_OPTS ?= -covermode=atomic
-test/go: COVERAGE_OUTPUT ?= coverage.out
+test/go: COVERAGE_OUTPUT ?= ${PWD}/coverage.out
 test/go: setup-envtest
-test/go: ENVTEST_BIN ?= ${PWD}/.dev/bin # We need an absolute path for setup-envtest
-test/go: KUBEBUILDER_ASSETS ?= "$(shell setup-envtest use --bin-dir $(ENVTEST_BIN) -p path)"
+# Where to find the setup-envtest binary
+test/go: GOBIN ?= ${PWD}/.dev/bin
+# We need an absolute path for setup-envtest
+test/go: ENVTEST_BIN ?= ${PWD}/.dev/bin
+test/go: KUBEBUILDER_ASSETS ?= "$(shell $(GOBIN)/setup-envtest use --bin-dir $(ENVTEST_BIN) -p path)"
+test/go: MODULES ?= $(shell find . -name go.mod | while read -r dir; do dirname "$$dir"; done | paste -sd, -) # comma separated list of modules. eg: MODULES=.,pkg/plugin/sdk,tool/actions-gh-release
 test/go:
 ifeq ($(COVERAGE), true)
-	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) go test -failfast -race $(COVERAGE_OPTS) -coverprofile=$(COVERAGE_OUTPUT).tmp ./pkg/... ./cmd/...
+	@echo "Run tests with coverage out of CI is not working expectedly. Because the coverage profile is overwritten by other tests."
+	@echo "Testing go modules with coverage..."
+	@for module in $(shell echo $(MODULES) | tr ',' ' '); do \
+		if [ "$$module" = "." ]; then \
+			echo "Testing root module"; \
+			KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) go test -failfast -race $(COVERAGE_OPTS) -coverprofile=$(COVERAGE_OUTPUT).tmp ./pkg/... ./cmd/...; \
+		else \
+			echo "Testing module: $$module"; \
+			KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) go -C $$module test -failfast -race $(COVERAGE_OPTS) -coverprofile=$(COVERAGE_OUTPUT).tmp ./...; \
+		fi; \
+	done
 	cat $(COVERAGE_OUTPUT).tmp | grep -v ".pb.go\|.pb.validate.go" > $(COVERAGE_OUTPUT)
 	rm -rf $(COVERAGE_OUTPUT).tmp
 else
-	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) go test -failfast -race ./pkg/... ./cmd/...
+	@echo "Testing go modules..."
+	@for module in $(shell echo $(MODULES) | tr ',' ' '); do \
+		if [ "$$module" = "." ]; then \
+			echo "Testing root module"; \
+			KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) go test -failfast -race ./pkg/... ./cmd/...; \
+		else \
+			echo "Testing module: $$module"; \
+			KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) go -C $$module test -failfast -race ./...; \
+		fi; \
+	done
 endif
 
 .PHONY: test/web
@@ -172,16 +196,20 @@ run/site:
 
 # Lint commands
 
+.PHONY: lint
+lint: lint/go lint/web lint/helm
+
 .PHONY: lint/go
 lint/go: FIX ?= false
 lint/go: VERSION ?= sha256:c2f5e6aaa7f89e7ab49f6bd45d8ce4ee5a030b132a5fbcac68b7959914a5a890 # golangci/golangci-lint:v1.64.7
-lint/go: FLAGS ?= --rm -e GOCACHE=/repo/.cache/go-build -e GOLANGCI_LINT_CACHE=/repo/.cache/golangci-lint -v ${PWD}:/repo -w /repo -it
+lint/go: FLAGS ?= --rm -e GOCACHE=/repo/.cache/go-build -e GOLANGCI_LINT_CACHE=/repo/.cache/golangci-lint -v ${PWD}:/repo -it
+lint/go: MODULES ?= $(shell find . -name go.mod | while read -r dir; do dirname "$$dir"; done | paste -sd, -) # comma separated list of modules. eg: MODULES=.,pkg/plugin/sdk
 lint/go:
-ifeq ($(FIX),true)
-	docker run ${FLAGS} golangci/golangci-lint@${VERSION} golangci-lint run -v --fix
-else
-	docker run ${FLAGS} golangci/golangci-lint@${VERSION} golangci-lint run -v
-endif
+	@echo "Linting go modules..."
+	@for module in $(shell echo $(MODULES) | tr ',' ' '); do \
+		echo "Linting module: $$module"; \
+		docker run ${FLAGS} -w /repo/$$module golangci/golangci-lint@${VERSION} golangci-lint run -v --config /repo/.golangci.yml --fix=$(FIX); \
+	done
 
 .PHONY: lint/web
 lint/web: FIX ?= false
@@ -265,5 +293,29 @@ kind-down:
 	kind delete cluster --name pipecd
 
 .PHONY: setup-envtest
+# Where to install the setup-envtest binary
+setup-envtest: export GOBIN ?= ${PWD}/.dev/bin
 setup-envtest: ## Download setup-envtest locally if necessary.
-	test -s $(GOBIN)/setup-envtest || go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+	test -x $(GOBIN)/setup-envtest || go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+
+# Check commands
+.PHONY: check
+check: build lint test check/gen/code check/dco
+	./hack/ensure-check.sh
+
+.PHONY: check/gen/code
+check/gen: gen/code
+	git add -N .
+	git diff --exit-code --quiet HEAD
+
+.PHONY: check/dco
+check/dco:
+	./hack/ensure-dco.sh
+
+.PHONY: setup-local-oidc
+setup-local-oidc:
+	./hack/oidc/run-local-keycloak.sh
+
+.PHONY: delete-local-oidc
+delete-local-oidc:
+	docker compose -f ./hack/oidc/docker-compose.yml down

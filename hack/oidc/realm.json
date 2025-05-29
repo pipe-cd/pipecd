@@ -1,0 +1,390 @@
+{
+  "id": "2f3b0c4e-1a2d-4b5c-8f3b-9a2f3b0c4e1d",
+  "realm": "pipecd-test-realm",
+  "displayName": "PipeCD Test Realm",
+  "displayNameHtml": "<h1 style=\"font-size: 40pt; font-weight: 400;\">PipeCD Test Realm</h1>",
+  "notBefore": 0,
+  "revokeRefreshToken": false,
+  "refreshTokenMaxReuse": 0,
+  "accessTokenLifespan": 60,
+  "accessTokenLifespanForImplicitFlow": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "offlineSessionIdleTimeout": 2592000,
+  "offlineSessionMaxLifespanEnabled": false,
+  "offlineSessionMaxLifespan": 5184000,
+  "accessCodeLifespan": 60,
+  "accessCodeLifespanUserAction": 300,
+  "accessCodeLifespanLogin": 1800,
+  "actionTokenGeneratedByAdminLifespan": 43200,
+  "actionTokenGeneratedByUserLifespan": 300,
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": true,
+  "registrationEmailAsUsername": false,
+  "rememberMe": true,
+  "verifyEmail": false,
+  "loginWithEmailAllowed": false,
+  "duplicateEmailsAllowed": true,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": false,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 30,
+  "users": [
+    {
+      "username": "Admin",
+      "enabled": true,
+      "email": "admin@example.com",
+      "firstName": "Admin",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password"
+        }
+      ],
+      "clientRoles": {
+        "pipecd-keycloak": [
+          "Admin"
+        ]
+      },
+      "realmRoles": [
+        "Admin"
+      ],
+      "groups": [
+        "/Admin"
+      ]
+    },
+    {
+      "username": "Editor",
+      "enabled": true,
+      "email": "editor@example.com",
+      "firstName": "Editor",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password"
+        }
+      ],
+      "clientRoles": {
+        "pipecd-keycloak": [
+          "Editor"
+        ]
+      },
+      "realmRoles": [
+        "Editor"
+      ],
+      "groups": [
+        "/Editor"
+      ]
+    },
+    {
+      "username": "Viewer",
+      "enabled": true,
+      "email": "viewer@example.com",
+      "firstName": "Viewer",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password"
+        }
+      ],
+      "clientRoles": {
+        "pipecd-keycloak": [
+          "Viewer"
+        ]
+      },
+      "realmRoles": [
+        "Viewer"
+      ],
+      "groups": [
+        "/Viewer"
+      ]
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "id": "9e17c6ec-1df7-4eea-b896-c1fb564cffbe",
+        "name": "Viewer",
+        "description": "Viewer role.",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "1427c8c3-5062-4015-816c-a241182ccb64"
+      },
+      {
+        "id": "648755f7-14a9-40b7-b41c-84b1800541a3",
+        "name": "Editor",
+        "description": "Editor role.",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "1427c8c3-5062-4015-816c-a241182ccb64"
+      },
+      {
+        "id": "ff805070-808f-4ba4-8673-bcd4247249b2",
+        "name": "Admin",
+        "description": "Admin role.",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "1427c8c3-5062-4015-816c-a241182ccb64"
+      }
+    ],
+    "client": {
+      "pipecd-keycloak": [
+        {
+          "name": "Admin",
+          "description": "Admin role for pipecd",
+          "composite": false,
+          "clientRole": true
+        },
+        {
+          "name": "Editor",
+          "description": "Editor role for pipecd",
+          "composite": false,
+          "clientRole": true
+        },
+        {
+          "name": "Viewer",
+          "description": "Viewer role for pipecd",
+          "composite": false,
+          "clientRole": true
+        }
+      ]
+    }
+  },
+  "groups": [
+    {
+      "id": "568e4ddd-0b18-401f-a873-f84fb11e8c9e",
+      "name": "Admin",
+      "path": "/Admin",
+      "subGroups": [],
+      "attributes": {},
+      "realmRoles": [
+        "Admin"
+      ],
+      "clientRoles": {
+        "pipecd-keycloak": [
+          "Admin"
+        ]
+      }
+    },
+    {
+      "id": "1aa433d4-9daa-4455-820e-ecf93f3663e7",
+      "name": "Editor",
+      "path": "/Editor",
+      "subGroups": [],
+      "attributes": {},
+      "realmRoles": [
+        "Editor"
+      ],
+      "clientRoles": {
+        "pipecd-keycloak": [
+          "Editor"
+        ]
+      }
+    },
+    {
+      "id": "e9939fc3-641d-454c-8e0f-5cefeed66e2f",
+      "name": "Viewer",
+      "path": "/Viewer",
+      "subGroups": [],
+      "attributes": {},
+      "realmRoles": [
+        "Viewer"
+      ],
+      "clientRoles": {
+        "pipecd-keycloak": [
+          "Viewer"
+        ]
+      }
+    }
+  ],
+  "defaultRoles": [
+    "Viewer"
+  ],
+  "requiredCredentials": [
+    "password"
+  ],
+  "otpPolicyType": "totp",
+  "otpPolicyAlgorithm": "HmacSHA1",
+  "otpPolicyInitialCounter": 0,
+  "otpPolicyDigits": 6,
+  "otpPolicyLookAheadWindow": 1,
+  "otpPolicyPeriod": 30,
+  "otpSupportedApplications": [
+    "FreeOTP",
+    "Google Authenticator"
+  ],
+  "scopeMappings": [
+    {
+      "client": "pipecd-keycloak",
+      "roles": [
+        "Viewer",
+        "Editor",
+        "Admin"
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "pipecd-keycloak",
+      "secret": "L702XzhZfnYDzcA0dbtoaMRt3ZUTw9m9",
+      "name": "PipeCD Keycloak OIDC",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "clientAuthenticatorType": "client-secret",
+      "notBefore": 0,
+      "bearerOnly": false,
+      "consentRequired": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "attributes": {
+        "oidc.ciba.grant.enabled": "false",
+        "backchannel.logout.session.required": "true",
+        "post.logout.redirect.uris": "+",
+        "oauth2.device.authorization.grant.enabled": "false",
+        "display.on.consent.screen": "false",
+        "backchannel.logout.revoke.offline.tokens": "false"
+      },
+      "authenticationFlowBindingOverrides": {},
+      "nodeReRegistrationTimeout": -1,
+      "redirectUris": [
+        "${PIPECD_CONTROL_PLANE_ADDRESS}/auth/callback"
+      ],
+      "webOrigins": [
+        "+"
+      ],
+      "fullScopeAllowed": false,
+      "defaultClientScopes": [
+        "profile",
+        "email",
+        "roles"
+      ],
+      "optionalClientScopes": [
+        "offline_access"
+      ],
+      "protocolMappers": [
+        {
+          "name": "client roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-client-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "clientId": "pipecd-keycloak",
+            "introspection.token.claim": "true",
+            "user.client.role.mapping.clientId": "pipecd-keycloak",
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "lightweight.claim": "false",
+            "access.token.claim": "true",
+            "claim.name": "client_roles",
+            "jsonType.label": "String",
+            "usermodel.clientRoleMapping.clientId": "pipecd-keycloak"
+          }
+        },
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "user.attribute": "",
+            "claim.name": "realm_roles",
+            "jsonType.label": "String",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "groups",
+            "full.path": "false",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "identityProviders": [
+    {
+      "alias": "github",
+      "internalId": "f21e0722-deec-4170-85c8-24d4c9697aba",
+      "providerId": "github",
+      "enabled": true,
+      "updateProfileFirstLoginMode": "on",
+      "trustEmail": false,
+      "storeToken": false,
+      "addReadTokenRoleOnCreate": false,
+      "authenticateByDefault": false,
+      "linkOnly": false,
+      "firstBrokerLoginFlowAlias": "first broker login",
+      "config": {
+        "hideOnLoginPage": "",
+        "clientSecret": "9ba88d155e24145b6ab638629ac82d973b3afd11",
+        "clientId": "cb1df4ef524c5229c108",
+        "disableUserInfo": "",
+        "useJwksUrl": "true"
+      }
+    },
+    {
+      "alias": "saml",
+      "displayName": "Simple SAML",
+      "internalId": "f670a102-f411-4730-b18a-e4dd17442b8c",
+      "providerId": "saml",
+      "enabled": true,
+      "updateProfileFirstLoginMode": "on",
+      "trustEmail": false,
+      "storeToken": false,
+      "addReadTokenRoleOnCreate": false,
+      "authenticateByDefault": false,
+      "linkOnly": false,
+      "firstBrokerLoginFlowAlias": "first broker login",
+      "config": {
+        "hideOnLoginPage": "",
+        "validateSignature": "",
+        "samlXmlKeyNameTranformer": "KEY_ID",
+        "postBindingLogout": "",
+        "nameIDPolicyFormat": "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent",
+        "postBindingResponse": "",
+        "singleLogoutServiceUrl": "http://localhost:8080/simplesaml/saml2/idp/SingleLogoutService.php",
+        "backchannelSupported": "",
+        "signatureAlgorithm": "RSA_SHA256",
+        "wantAssertionsEncrypted": "",
+        "useJwksUrl": "true",
+        "wantAssertionsSigned": "",
+        "postBindingAuthnRequest": "",
+        "forceAuthn": "",
+        "singleSignOnServiceUrl": "http://localhost:8080/simplesaml/saml2/idp/SSOService.php",
+        "wantAuthnRequestsSigned": ""
+      }
+    }
+  ],
+  "browserFlow": "browser",
+  "registrationFlow": "registration",
+  "directGrantFlow": "direct grant",
+  "resetCredentialsFlow": "reset credentials",
+  "clientAuthenticationFlow": "clients",
+  "dockerAuthenticationFlow": "docker auth",
+  "keycloakVersion": "4.5.0.Final",
+  "userManagedAccessAllowed": false
+}
