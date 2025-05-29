@@ -18,10 +18,11 @@ import (
 	"context"
 	"fmt"
 
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 	"github.com/pipe-cd/pipecd/pkg/yamlprocessor"
-	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 func (p *Plugin) executeK8sCanaryRolloutStage(_ context.Context, input *sdk.ExecuteStageInput[config.KubernetesApplicationSpec], _ []*sdk.DeployTarget[config.KubernetesDeployTargetConfig]) sdk.StageStatus {
