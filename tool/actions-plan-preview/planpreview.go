@@ -19,7 +19,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/shurcooL/githubv4"
 	"log"
 	"os"
 	"os/exec"
@@ -27,6 +26,8 @@ import (
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	"github.com/shurcooL/githubv4"
 )
 
 type PlanPreviewResult struct {
@@ -156,7 +157,7 @@ const (
 	prefixTerraformChangesToOutput = "Changes to Outputs:"
 )
 
-func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
+func makeCommentBody(event *githubEvent, r *PlanPreviewResult, title string) string {
 	var b strings.Builder
 
 	if !r.HasError() {
@@ -170,6 +171,10 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 		fmt.Fprintf(&b, actionBadgeURLFormat, actionLogURL)
 	}
 	b.WriteString("\n\n")
+
+	if title != "" {
+		b.WriteString(fmt.Sprintf("# %s\n\n", title))
+	}
 
 	if event.IsComment {
 		b.WriteString(fmt.Sprintf("@%s ", event.SenderLogin))
