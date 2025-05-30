@@ -725,6 +725,73 @@ data:
 	}
 }
 
+func TestManifest_IsService(t *testing.T) {
+	tests := []struct {
+		name     string
+		manifest string
+		want     bool
+	}{
+		{
+			name: "is service",
+			manifest: `
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+`,
+			want: true,
+		},
+		{
+			name: "is not service",
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			want: false,
+		},
+		{
+			name: "is not service with custom apigroup",
+			manifest: `
+apiVersion: custom.io/v1
+kind: Service
+metadata:
+  name: custom-service
+spec:
+  selector:
+    app: custom
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+`,
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			manifest := mustParseManifests(t, strings.TrimSpace(tt.manifest))[0]
+			got := manifest.IsService()
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func TestIsManagedByPiped(t *testing.T) {
 	testcases := []struct {
 		name       string
