@@ -16,6 +16,7 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"strings"
@@ -211,8 +212,13 @@ func filterLatestPlanPreviewComment(comments []issueCommentQuery, key string) *i
 }
 
 // key is used to distinguish requests when one repo has multiple Projects.
+// key is hashed to avoid multi-byte issues.
 func makeFilterComment(key string) string {
-	return fmt.Sprintf("<!-- pipecd-plan-preview %s -->", key)
+	hash := ""
+	if key != "" {
+		hash = fmt.Sprintf("%x", sha256.Sum256([]byte(key)))
+	}
+	return fmt.Sprintf("<!-- pipecd-plan-preview %s-->", hash)
 }
 
 type minimizeCommentMutation struct {

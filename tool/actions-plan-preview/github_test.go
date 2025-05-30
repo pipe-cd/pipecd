@@ -160,13 +160,13 @@ func TestFilterLatestPlanPreviewComment(t *testing.T) {
 			name: "latest comment with no key is returned",
 			comments: []issueCommentQuery{
 				{Body: githubv4.String("no-planpreview-comment")},
-				{Body: githubv4.String("<!-- pipecd-plan-preview  -->"), ID: 1},
-				{Body: githubv4.String("<!-- pipecd-plan-preview  -->"), ID: 2},
+				{Body: githubv4.String("<!-- pipecd-plan-preview -->"), ID: 1},
+				{Body: githubv4.String("<!-- pipecd-plan-preview -->"), ID: 2},
 				{Body: githubv4.String("no-planpreview-comment")},
 			},
 			key: "",
 			expected: &issueCommentQuery{
-				Body: githubv4.String("<!-- pipecd-plan-preview  -->"),
+				Body: githubv4.String("<!-- pipecd-plan-preview -->"),
 				ID:   2,
 			},
 		},
@@ -174,11 +174,11 @@ func TestFilterLatestPlanPreviewComment(t *testing.T) {
 			name: "multiple keys",
 			comments: []issueCommentQuery{
 				{Body: githubv4.String("<!-- pipecd-plan-preview foo -->")},
-				{Body: githubv4.String("<!-- pipecd-plan-preview bar -->")},
+				{Body: githubv4.String("<!-- pipecd-plan-preview fcde2b2edba56bf408601fb721fe9b5c338d10ee429ea04fae5511b68fbf8fb9-->")}, // hashed 'bar'
 				{Body: githubv4.String("<!-- pipecd-plan-preview baz -->")},
 			},
 			key:      "bar",
-			expected: &issueCommentQuery{Body: githubv4.String("<!-- pipecd-plan-preview bar -->")},
+			expected: &issueCommentQuery{Body: githubv4.String("<!-- pipecd-plan-preview fcde2b2edba56bf408601fb721fe9b5c338d10ee429ea04fae5511b68fbf8fb9-->")},
 		},
 	}
 
