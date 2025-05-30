@@ -46,6 +46,15 @@ jobs:
           golangci_lint_flags: --config ${{ github.workspace }}/.golangci.yml
           fail_on_error: true # this option is deprecated on v2.7.0, but we use v2.1.3, so it's still available
 
+  # This job is used to check if the go linting is completed successfully
+  # It is used to set as required check for the branch protection rules
+  go-lint-completed:
+    runs-on: ubuntu-24.04
+    needs: go
+    steps:
+      - run: |
+          echo completed
+
   web:
     runs-on: ubuntu-24.04
     steps:

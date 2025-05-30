@@ -2,14 +2,10 @@ module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes
 
 go 1.24.1
 
-replace github.com/pipe-cd/pipecd => ../../../../../
-
-replace github.com/pipe-cd/piped-plugin-sdk-go => ../../../../plugin/sdk
-
 require (
 	github.com/google/go-cmp v0.7.0
-	github.com/pipe-cd/pipecd v0.51.3
-	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-00010101000000-000000000000
+	github.com/pipe-cd/pipecd v0.52.0
+	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250529023641-8bd42026e370
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.19.1
 	golang.org/x/mod v0.22.0
