@@ -281,12 +281,10 @@ func deleteVariantResources(ctx context.Context, lp logpersister.StageLogPersist
 		return err
 	}
 
-	var (
-		services      []provider.ResourceKey
-		workloads     []provider.ResourceKey
-		others        []provider.ResourceKey
-		clusterScoped []provider.ResourceKey
-	)
+	services := make([]provider.ResourceKey, 0, len(namespacedLiveResources))
+	workloads := make([]provider.ResourceKey, 0, len(namespacedLiveResources))
+	others := make([]provider.ResourceKey, 0, len(namespacedLiveResources))
+	clusterScoped := make([]provider.ResourceKey, 0, len(clusterScopedLiveResources))
 
 	for _, r := range namespacedLiveResources {
 		switch {
