@@ -22,6 +22,8 @@ import (
 )
 
 func TestNewProcessor(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name    string
 		yml     string
@@ -53,6 +55,8 @@ c:
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			p, err := NewProcessor([]byte(tc.yml))
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, !tc.wantErr, p != nil)
@@ -61,6 +65,8 @@ c:
 }
 
 func TestGetValue(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name    string
 		yml     string
@@ -144,6 +150,8 @@ foo:
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			p, err := NewProcessor([]byte(tc.yml))
 			require.NotNil(t, p)
 			require.NoError(t, err)
@@ -156,6 +164,8 @@ foo:
 }
 
 func TestReplaceString(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name    string
 		yml     string
@@ -259,6 +269,8 @@ foo:
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			p, err := NewProcessor([]byte(tc.yml))
 			require.NotNil(t, p)
 			require.NoError(t, err)
