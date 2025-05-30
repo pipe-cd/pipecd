@@ -42,6 +42,7 @@ const (
 	argTimeout            = "timeout"
 	argPipedHandleTimeout = "piped-handle-timeout"
 	argPRNum              = "pull-request-number"
+	argTitle              = "title"
 )
 
 func main() {
@@ -151,9 +152,9 @@ func _main() int {
 			return doComment(failureBadgeURL + "\nUnable to run plan-preview for a closed pull request.")
 		}
 
-		minimizePreviousComment(ctx, ghGraphQLClient, event)
+		minimizePreviousComment(ctx, ghGraphQLClient, event, args.Title)
 
-		body := makeCommentBody(event, result)
+		body := makeCommentBody(event, result, args.Title)
 		if code := doComment(body); code != 0 {
 			return code
 		}
@@ -163,9 +164,9 @@ func _main() int {
 		return 1
 	}
 
-	minimizePreviousComment(ctx, ghGraphQLClient, event)
+	minimizePreviousComment(ctx, ghGraphQLClient, event, args.Title)
 
-	body := makeCommentBody(event, result)
+	body := makeCommentBody(event, result, args.Title)
 	return doComment(body)
 }
 
@@ -176,6 +177,7 @@ type arguments struct {
 	Timeout            time.Duration
 	PipedHandleTimeout time.Duration
 	PRNum              int
+	Title              string
 }
 
 func parseArgs(args []string) (arguments, error) {
@@ -217,6 +219,8 @@ func parseArgs(args []string) (arguments, error) {
 				return out, fmt.Errorf("invalid %s: %d", argPRNum, i)
 			}
 			out.PRNum = i
+		case argTitle:
+			out.Title = ps[1]
 		}
 	}
 
