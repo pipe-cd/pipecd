@@ -40,9 +40,18 @@ func TestMakeCommentBody(t *testing.T) {
 			event: githubEvent{
 				HeadCommit: "abc",
 			},
-			title:    "test-title",
+			title:    "",
 			result:   PlanPreviewResult{},
 			expected: "testdata/comment-no-changes.txt",
+		},
+		{
+			name: "no changes with title",
+			event: githubEvent{
+				HeadCommit: "abc",
+			},
+			title:    "test title",
+			result:   PlanPreviewResult{},
+			expected: "testdata/comment-no-changes-with-title.txt",
 		},
 		{
 			name: "only changed app",

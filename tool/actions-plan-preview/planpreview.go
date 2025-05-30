@@ -158,7 +158,7 @@ const (
 func makeCommentBody(event *githubEvent, r *PlanPreviewResult, title string) string {
 	var b strings.Builder
 
-	b.WriteString(makeFilterComment(title) + "\n")
+	fmt.Fprintf(&b, "%s\n", makeFilterComment(title))
 
 	if !r.HasError() {
 		b.WriteString(successBadgeURL)
