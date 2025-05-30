@@ -112,7 +112,7 @@ func (m Manifest) IsWorkload() bool {
 	}
 
 	switch m.body.GetKind() {
-	case KindDeployment, KindStatefulSet, KindDaemonSet:
+	case KindDeployment, KindReplicaSet, KindDaemonSet, KindPod:
 		return true
 	default:
 		return false
