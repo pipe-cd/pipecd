@@ -20,10 +20,11 @@ import (
 
 	"go.uber.org/zap"
 
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/toolregistry"
-	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 // Plugin implements the sdk.DeploymentPlugin interface.

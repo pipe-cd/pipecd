@@ -19,7 +19,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/shurcooL/githubv4"
 	"log"
 	"os"
 	"os/exec"
@@ -27,6 +26,8 @@ import (
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	"github.com/shurcooL/githubv4"
 )
 
 type PlanPreviewResult struct {
