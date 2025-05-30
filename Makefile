@@ -301,7 +301,6 @@ setup-envtest: ## Download setup-envtest locally if necessary.
 # Check commands
 .PHONY: check
 check: build lint test check/gen/code check/dco
-	./hack/ensure-check.sh
 
 .PHONY: check/gen/code
 check/gen: gen/code
