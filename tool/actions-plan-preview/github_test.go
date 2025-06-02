@@ -180,6 +180,16 @@ func TestFilterLatestPlanPreviewComment(t *testing.T) {
 			key:      "bar",
 			expected: &issueCommentQuery{Body: githubv4.String("<!-- pipecd-plan-preview fcde2b2edba56bf408601fb721fe9b5c338d10ee429ea04fae5511b68fbf8fb9-->")},
 		},
+		{
+			name: "multibyte key",
+			comments: []issueCommentQuery{
+				{Body: githubv4.String("<!-- pipecd-plan-preview foo -->")},
+				{Body: githubv4.String("<!-- pipecd-plan-preview 1bef6bca1c45e2e0b482c46e0ba2c7b1bc711ab8aea17cbd4af275f02e651982-->")}, // hashed 'αβ'
+				{Body: githubv4.String("<!-- pipecd-plan-preview baz -->")},
+			},
+			key:      "αβ",
+			expected: &issueCommentQuery{Body: githubv4.String("<!-- pipecd-plan-preview 1bef6bca1c45e2e0b482c46e0ba2c7b1bc711ab8aea17cbd4af275f02e651982-->")},
+		},
 	}
 
 	for _, tc := range testcases {
