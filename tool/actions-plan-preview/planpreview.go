@@ -129,10 +129,8 @@ func retrievePlanPreview(
 }
 
 const (
-	successBadgeURL = `<!-- pipecd-plan-preview-->
-[![PLAN_PREVIEW](https://img.shields.io/static/v1?label=PipeCD&message=Plan_Preview&color=success&style=flat)](https://pipecd.dev/docs/user-guide/plan-preview/)`
-	failureBadgeURL = `<!-- pipecd-plan-preview-->
-[![PLAN_PREVIEW](https://img.shields.io/static/v1?label=PipeCD&message=Plan_Preview&color=orange&style=flat)](https://pipecd.dev/docs/user-guide/plan-preview/)`
+	successBadgeURL      = `[![PLAN_PREVIEW](https://img.shields.io/static/v1?label=PipeCD&message=Plan_Preview&color=success&style=flat)](https://pipecd.dev/docs/user-guide/plan-preview/)`
+	failureBadgeURL      = `[![PLAN_PREVIEW](https://img.shields.io/static/v1?label=PipeCD&message=Plan_Preview&color=orange&style=flat)](https://pipecd.dev/docs/user-guide/plan-preview/)`
 	actionBadgeURLFormat = "[![ACTIONS](https://img.shields.io/static/v1?label=PipeCD&message=Action_Log&style=flat)](%s)"
 
 	noChangeTitleFormat     = "Ran plan-preview against head commit %s of this pull request. PipeCD detected `0` updated application. It means no deployment will be triggered once this pull request got merged.\n"
@@ -157,8 +155,10 @@ const (
 	prefixTerraformChangesToOutput = "Changes to Outputs:"
 )
 
-func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
+func makeCommentBody(event *githubEvent, r *PlanPreviewResult, title string) string {
 	var b strings.Builder
+
+	fmt.Fprintf(&b, "%s\n", makeFilterComment(title))
 
 	if !r.HasError() {
 		b.WriteString(successBadgeURL)
@@ -171,6 +171,10 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 		fmt.Fprintf(&b, actionBadgeURLFormat, actionLogURL)
 	}
 	b.WriteString("\n\n")
+
+	if title != "" {
+		b.WriteString(fmt.Sprintf("# %s\n\n", title))
+	}
 
 	if event.IsComment {
 		b.WriteString(fmt.Sprintf("@%s ", event.SenderLogin))
@@ -336,9 +340,9 @@ func generateTerraformShortPlanDetails(details string) (string, error) {
 	return details[start:], nil
 }
 
-func minimizePreviousComment(ctx context.Context, ghGraphQLClient *githubv4.Client, event *githubEvent) {
+func minimizePreviousComment(ctx context.Context, ghGraphQLClient *githubv4.Client, event *githubEvent, key string) {
 	// Find comments we sent before
-	comment, err := findLatestPlanPreviewComment(ctx, ghGraphQLClient, event.Owner, event.Repo, event.PRNumber)
+	comment, err := findLatestPlanPreviewComment(ctx, ghGraphQLClient, event.Owner, event.Repo, event.PRNumber, key)
 	if err != nil {
 		log.Printf("Unable to find the previous comment to minimize (%v)\n", err)
 	}
