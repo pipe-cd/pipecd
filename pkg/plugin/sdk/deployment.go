@@ -190,7 +190,6 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 		}
 		lp.Complete(time.Minute)
 	}()
-
 	client := &Client{
 		base:          s.client,
 		pluginName:    s.name,
@@ -324,7 +323,13 @@ func executeStage[Config, DeployTargetConfig, ApplicationConfigSpec any](
 
 	in := &ExecuteStageInput[ApplicationConfigSpec]{
 		Request: ExecuteStageRequest[ApplicationConfigSpec]{
-			StageName:               request.GetInput().GetStage().GetName(),
+			Stage: PipelineStage{
+				Name:               request.GetInput().GetStage().GetName(),
+				Index:              int(request.GetInput().GetStage().GetIndex()),
+				Rollback:           request.GetInput().GetStage().GetRollback(),
+				Metadata:           request.GetInput().GetStage().GetMetadata(),
+				AvailableOperation: ManualOperation(request.GetInput().GetStage().GetAvailableOperation()),
+			},
 			StageConfig:             request.GetInput().GetStageConfig(),
 			RunningDeploymentSource: runningDeploymentSource,
 			TargetDeploymentSource:  targetDeploymentSource,
@@ -565,8 +570,8 @@ type ExecuteStageInput[ApplicationConfigSpec any] struct {
 
 // ExecuteStageRequest is the request to execute a stage.
 type ExecuteStageRequest[ApplicationConfigSpec any] struct {
-	// The name of the stage to execute.
-	StageName string
+	// The stage to execute.
+	Stage PipelineStage
 	// Json encoded configuration of the stage.
 	StageConfig []byte
 
