@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/google/go-github/v36/github"
+	"github.com/shurcooL/githubv4"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -44,6 +45,7 @@ func (d dummyPullRequestsService) Get(_ context.Context, _ string, _ string, _ i
 }
 
 func TestParseGithubEvent(t *testing.T) {
+	t.Parallel()
 	testcases := []struct {
 		name        string
 		eventName   string
@@ -124,9 +126,77 @@ func TestParseGithubEvent(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			got, err := parseGitHubEvent(context.Background(), tc.prService, tc.eventName, tc.payload, tc.argPRNum)
 			assert.Equal(t, tc.expected, got)
 			assert.Equal(t, tc.expectedErr, err)
+		})
+	}
+}
+
+func TestFilterLatestPlanPreviewComment(t *testing.T) {
+	t.Parallel()
+	testcases := []struct {
+		name     string
+		comments []issueCommentQuery
+		key      string
+		expected *issueCommentQuery
+	}{
+		{
+			name:     "no comments",
+			comments: []issueCommentQuery{},
+			key:      "",
+			expected: nil,
+		},
+		{
+			name: "no plan preview comment",
+			comments: []issueCommentQuery{
+				{Body: githubv4.String("no-planpreview-comment")},
+			},
+			key:      "",
+			expected: nil,
+		},
+		{
+			name: "latest comment with no key is returned",
+			comments: []issueCommentQuery{
+				{Body: githubv4.String("no-planpreview-comment")},
+				{Body: githubv4.String("<!-- pipecd-plan-preview -->"), ID: 1},
+				{Body: githubv4.String("<!-- pipecd-plan-preview -->"), ID: 2},
+				{Body: githubv4.String("no-planpreview-comment")},
+			},
+			key: "",
+			expected: &issueCommentQuery{
+				Body: githubv4.String("<!-- pipecd-plan-preview -->"),
+				ID:   2,
+			},
+		},
+		{
+			name: "multiple keys",
+			comments: []issueCommentQuery{
+				{Body: githubv4.String("<!-- pipecd-plan-preview foo -->")},
+				{Body: githubv4.String("<!-- pipecd-plan-preview fcde2b2edba56bf408601fb721fe9b5c338d10ee429ea04fae5511b68fbf8fb9-->")}, // hashed 'bar'
+				{Body: githubv4.String("<!-- pipecd-plan-preview baz -->")},
+			},
+			key:      "bar",
+			expected: &issueCommentQuery{Body: githubv4.String("<!-- pipecd-plan-preview fcde2b2edba56bf408601fb721fe9b5c338d10ee429ea04fae5511b68fbf8fb9-->")},
+		},
+		{
+			name: "multibyte key",
+			comments: []issueCommentQuery{
+				{Body: githubv4.String("<!-- pipecd-plan-preview foo -->")},
+				{Body: githubv4.String("<!-- pipecd-plan-preview 1bef6bca1c45e2e0b482c46e0ba2c7b1bc711ab8aea17cbd4af275f02e651982-->")}, // hashed 'αβ'
+				{Body: githubv4.String("<!-- pipecd-plan-preview baz -->")},
+			},
+			key:      "αβ",
+			expected: &issueCommentQuery{Body: githubv4.String("<!-- pipecd-plan-preview 1bef6bca1c45e2e0b482c46e0ba2c7b1bc711ab8aea17cbd4af275f02e651982-->")},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			got := filterLatestPlanPreviewComment(tc.comments, tc.key)
+			assert.Equal(t, tc.expected, got)
 		})
 	}
 }

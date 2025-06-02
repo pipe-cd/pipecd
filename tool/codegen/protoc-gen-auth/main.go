@@ -90,7 +90,7 @@ func main() {
 			if err := t.Execute(&buf, fp); err != nil {
 				return fmt.Errorf("template execute error: %v", err)
 			}
-			gf.P(string(buf.Bytes()))
+			gf.P(buf.String())
 
 		}
 		return nil
