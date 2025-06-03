@@ -140,7 +140,7 @@ func (p *Plugin) executeK8sBaselineCleanStage(ctx context.Context, input *sdk.Ex
 	// Create the applier for the target cluster.
 	applier := provider.NewApplier(kubectl, appCfg.Input, deployTargetConfig, input.Logger)
 
-	if err := deleteVariantResources(ctx, lp, kubectl, applier, input.Request.Deployment.ApplicationID, variantLabel, baselineVariant); err != nil {
+	if err := deleteVariantResources(ctx, lp, kubectl, deployTargetConfig.KubeConfigPath, applier, input.Request.Deployment.ApplicationID, variantLabel, baselineVariant); err != nil {
 		lp.Errorf("Failed while deleting variant resources (%v)", err)
 		return sdk.StageStatusFailure
 	}
