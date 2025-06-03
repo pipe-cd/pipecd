@@ -726,6 +726,8 @@ data:
 }
 
 func TestManifest_IsService(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		manifest string
@@ -785,6 +787,8 @@ spec:
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			manifest := mustParseManifests(t, strings.TrimSpace(tt.manifest))[0]
 			got := manifest.IsService()
 			assert.Equal(t, tt.want, got)
@@ -793,6 +797,8 @@ spec:
 }
 
 func TestManifest_IsWorkload(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		manifest string
@@ -897,6 +903,8 @@ spec:
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			manifest := mustParseManifests(t, strings.TrimSpace(tt.manifest))[0]
 			got := manifest.IsWorkload()
 			assert.Equal(t, tt.want, got)
