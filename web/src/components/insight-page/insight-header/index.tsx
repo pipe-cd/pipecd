@@ -8,44 +8,30 @@ import {
   InputLabel,
 } from "@mui/material";
 import { Autocomplete } from "@mui/material";
-import { FC, memo, useState, useEffect } from "react";
-import { useAppDispatch, useAppSelector } from "~/hooks/redux";
-import { Application, selectAll, selectById } from "~/modules/applications";
-
+import { FC, memo, useMemo } from "react";
+import { useGetApplications } from "~/queries/applications/use-get-applications";
+import { InsightFilterValues } from "..";
 import {
-  changeRange,
-  changeResolution,
-  changeApplication,
-  changeLabels,
-  InsightResolutions,
-  InsightRanges,
   INSIGHT_RESOLUTION_TEXT,
   INSIGHT_RANGE_TEXT,
   InsightResolution,
   InsightRange,
-} from "~/modules/insight";
+  InsightRanges,
+  InsightResolutions,
+} from "~/queries/insight/insight.config";
 
-export const InsightHeader: FC = memo(function InsightHeader() {
-  const dispatch = useAppDispatch();
+type Props = {
+  filterValues: InsightFilterValues;
+  onChangeFilter: (filterValues: Partial<InsightFilterValues>) => void;
+};
 
-  const selectedApp = useAppSelector<Application.AsObject | null>(
-    (state) =>
-      selectById(state.applications, state.insight.applicationId) || null
-  );
+export const InsightHeader: FC<Props> = memo(function InsightHeader({
+  onChangeFilter,
+  filterValues,
+}) {
+  const { data: applications = [] } = useGetApplications();
 
-  const [allLabels, setAllLabels] = useState(new Array<string>());
-  const [selectedLabels, setSelectedLabels] = useState(new Array<string>());
-
-  const [selectedRange, setSelectedRange] = useState(InsightRange.LAST_1_MONTH);
-  const [selectedResolution, setSelectedResolution] = useState(
-    InsightResolution.DAILY
-  );
-
-  const applications = useAppSelector<Application.AsObject[]>((state) =>
-    selectAll(state.applications)
-  );
-
-  useEffect(() => {
+  const allLabels = useMemo(() => {
     const labels = new Set<string>();
     applications
       .filter((app) => app.labelsMap.length > 0)
@@ -54,7 +40,7 @@ export const InsightHeader: FC = memo(function InsightHeader() {
           labels.add(`${label[0]}:${label[1]}`);
         });
       });
-    setAllLabels(Array.from(labels));
+    return Array.from(labels);
   }, [applications]);
 
   return (
@@ -70,15 +56,16 @@ export const InsightHeader: FC = memo(function InsightHeader() {
           <Autocomplete
             id="application"
             style={{ minWidth: 300 }}
-            value={selectedApp}
+            value={
+              applications.find(
+                (item) => item.id === filterValues?.applicationId
+              ) ?? null
+            }
             options={applications}
+            getOptionKey={(option) => option.id}
             getOptionLabel={(option) => option.name}
             onChange={(_, value) => {
-              if (value) {
-                dispatch(changeApplication(value.id));
-              } else {
-                dispatch(changeApplication(""));
-              }
+              onChangeFilter({ applicationId: value ? value.id : "" });
             }}
             renderInput={(params) => (
               <TextField
@@ -99,17 +86,9 @@ export const InsightHeader: FC = memo(function InsightHeader() {
             style={{ minWidth: 300 }}
             sx={{ ml: 2 }}
             options={allLabels}
-            value={selectedLabels}
-            onInputChange={(_, value) => {
-              const label = value.split(":");
-              if (label.length !== 2) return;
-              if (label[0].length === 0) return;
-              if (label[1].length === 0) return;
-              setAllLabels([value]);
-            }}
+            value={filterValues?.labels ?? []}
             onChange={(_, value) => {
-              setSelectedLabels(value);
-              dispatch(changeLabels(value));
+              onChangeFilter({ labels: value });
             }}
             renderInput={(params) => (
               <TextField
@@ -137,11 +116,10 @@ export const InsightHeader: FC = memo(function InsightHeader() {
             <Select
               id="range"
               label="Range"
-              value={selectedRange}
+              value={filterValues?.range}
               onChange={(e) => {
                 const value = e.target.value as InsightRange;
-                setSelectedRange(value);
-                dispatch(changeRange(value));
+                onChangeFilter({ range: value });
               }}
             >
               {InsightRanges.map((e) => (
@@ -157,11 +135,10 @@ export const InsightHeader: FC = memo(function InsightHeader() {
             <Select
               id="resolution"
               label="Resolution"
-              value={selectedResolution}
+              value={filterValues?.resolution}
               onChange={(e) => {
                 const value = e.target.value as InsightResolution;
-                setSelectedResolution(value);
-                dispatch(changeResolution(value));
+                onChangeFilter({ resolution: value });
               }}
             >
               {InsightResolutions.map((e) => (

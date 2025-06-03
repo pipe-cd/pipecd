@@ -1,6 +1,5 @@
 import { Box, CardContent, Typography } from "@mui/material";
 import { FC, useEffect, useMemo } from "react";
-import { useAppSelector } from "~/hooks/redux";
 import useEChartState from "~/hooks/useEChartState";
 import { PieChart } from "echarts/charts";
 import {
@@ -16,12 +15,25 @@ import { getPercentage } from "~/utils/common";
 
 import { red, green } from "@mui/material/colors";
 import { CardWrapper } from "./styles";
+import { useGetApplicationCounts } from "~/queries/application-counts/use-get-appliation-counts";
 
 const enabledColor = green[500];
 const disabledColor = red[500];
 
 const ApplicationCount: FC = () => {
-  const appSummary = useAppSelector((state) => state.applicationCounts.summary);
+  const { data: queryData } = useGetApplicationCounts();
+
+  const appSummary = useMemo(() => {
+    return {
+      total: queryData?.summary.total ?? 0,
+      enabled: queryData?.summary.enabled ?? 0,
+      disabled: queryData?.summary.disabled ?? 0,
+    };
+  }, [
+    queryData?.summary.disabled,
+    queryData?.summary.enabled,
+    queryData?.summary.total,
+  ]);
 
   const { chart, chartElm } = useEChartState({
     extensions: [
