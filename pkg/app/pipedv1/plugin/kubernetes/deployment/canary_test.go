@@ -28,11 +28,12 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 
-	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister/logpersistertest"
 	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry/toolregistrytest"
+
+	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 )
 
 func TestPlugin_executeK8sCanaryRolloutStage_withCreateService(t *testing.T) {
