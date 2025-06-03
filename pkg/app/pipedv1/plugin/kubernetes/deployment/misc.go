@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
-	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -275,7 +274,7 @@ func deleteResources(ctx context.Context, lp sdk.StageLogPersister, applier *pro
 // deleteVariantResources deletes the resources of the specified variant.
 // It finds the resources of the specified variant and deletes them.
 // It deletes the resources in the order of Service -> Workload -> Others -> Cluster-scoped resources.
-func deleteVariantResources(ctx context.Context, lp logpersister.StageLogPersister, kubectl *provider.Kubectl, applier *provider.Applier, applicationID, variantLabel, variant string) error {
+func deleteVariantResources(ctx context.Context, lp sdk.StageLogPersister, kubectl *provider.Kubectl, applier *provider.Applier, applicationID, variantLabel, variant string) error {
 	namespacedLiveResources, clusterScopedLiveResources, err := provider.GetLiveResources(ctx, kubectl, applicationID, fmt.Sprintf("%s=%s", variantLabel, variant))
 	if err != nil {
 		return err
