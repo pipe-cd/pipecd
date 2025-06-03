@@ -7,7 +7,6 @@ import {
 } from "echarts/components";
 import * as echarts from "echarts/core";
 import { FC, useEffect, useMemo } from "react";
-import { useAppSelector } from "~/hooks/redux";
 import { GaugeChart } from "echarts/charts";
 import { CanvasRenderer } from "echarts/renderers";
 import useEChartState from "~/hooks/useEChartState";
@@ -16,6 +15,8 @@ import ChartEmptyData from "~/components/chart-empty-data";
 import LegendRow from "./legend-row";
 import { red } from "@mui/material/colors";
 import { CardWrapper } from "./styles";
+import { useInsightDeploymentChangeFailureRate24h } from "~/queries/insight/use-insight-deployment-change-failure-rate-24h";
+import { useInsightDeploymentFrequency24h } from "~/queries/insight/use-insight-deployment-frequency-24h";
 
 const failColor = red[500];
 
@@ -31,23 +32,21 @@ const Deployment24h: FC = () => {
     ],
   });
 
-  const deploymentFailRate = useAppSelector(
-    (state) => state.deploymentChangeFailureRate.data24h
-  );
-  const deployment24h = useAppSelector(
-    (state) => state.deploymentFrequency.data24h
-  );
+  const {
+    data: deploymentFailRate24h = [],
+  } = useInsightDeploymentChangeFailureRate24h();
+  const { data: deployment24h = [] } = useInsightDeploymentFrequency24h();
 
   const deploymentSummary = useMemo(() => {
     const summary = {
       totalDeployment: deployment24h?.[0]?.value || 0,
-      failRate: (deploymentFailRate?.[0]?.value || 0) * 100,
-      date: deploymentFailRate?.[0]?.timestamp
-        ? dayjs.utc(deploymentFailRate[0].timestamp).format("DD/MM/YYYY")
+      failRate: (deploymentFailRate24h?.[0]?.value || 0) * 100,
+      date: deploymentFailRate24h?.[0]?.timestamp
+        ? dayjs.utc(deploymentFailRate24h[0].timestamp).format("DD/MM/YYYY")
         : "-",
     };
     return summary;
-  }, [deployment24h, deploymentFailRate]);
+  }, [deployment24h, deploymentFailRate24h]);
 
   const data = useMemo(() => {
     return [
