@@ -16,15 +16,184 @@ package deployment
 
 import (
 	"errors"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap/zaptest"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	schema "k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
+	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister/logpersistertest"
+	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry/toolregistrytest"
 )
+
+func TestPlugin_executeK8sCanaryRolloutStage_withCreateService(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+
+	// initialize tool registry
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
+	configDir := filepath.Join("testdata", "canary_rollout_with_create_service")
+
+	// read the application config from the example file
+	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(configDir, "app.pipecd.yaml"), "kubernetes")
+
+	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
+			StageName:   "K8S_CANARY_ROLLOUT",
+			StageConfig: []byte(`{"createService": true}`),
+			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+				ApplicationDirectory:      configDir,
+				CommitHash:                "0123456789",
+				ApplicationConfig:         appCfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+			Deployment: sdk.Deployment{
+				PipedID:       "piped-id",
+				ApplicationID: "app-id",
+			},
+		},
+		Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
+		Logger: zaptest.NewLogger(t),
+	}
+
+	// initialize deploy target config and dynamic client for assertions with envtest
+	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
+
+	plugin := &Plugin{}
+
+	status := plugin.executeK8sCanaryRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		{
+			Name:   "default",
+			Config: *dtConfig,
+		},
+	})
+
+	assert.Equal(t, sdk.StageStatusSuccess, status)
+
+	// Assert that Deployment and Service resources are created and have expected labels/annotations.
+	deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+	deployment, err := dynamicClient.Resource(deploymentRes).Namespace("default").Get(ctx, "simple-canary", metav1.GetOptions{})
+	require.NoError(t, err)
+	assert.Equal(t, "simple-canary", deployment.GetName())
+	assert.Equal(t, "simple", deployment.GetLabels()["app"])
+	assert.Equal(t, "canary", deployment.GetLabels()["pipecd.dev/variant"])
+	assert.Equal(t, "canary", deployment.GetAnnotations()["pipecd.dev/variant"])
+
+	// Additional assertions for builtin labels and annotations
+	assert.Equal(t, "piped", deployment.GetLabels()["pipecd.dev/managed-by"])
+	assert.Equal(t, "piped-id", deployment.GetLabels()["pipecd.dev/piped"])
+	assert.Equal(t, "app-id", deployment.GetLabels()["pipecd.dev/application"])
+	assert.Equal(t, "0123456789", deployment.GetLabels()["pipecd.dev/commit-hash"])
+	assert.Equal(t, "piped", deployment.GetAnnotations()["pipecd.dev/managed-by"])
+	assert.Equal(t, "piped-id", deployment.GetAnnotations()["pipecd.dev/piped"])
+	assert.Equal(t, "app-id", deployment.GetAnnotations()["pipecd.dev/application"])
+	assert.Equal(t, "0123456789", deployment.GetAnnotations()["pipecd.dev/commit-hash"])
+	assert.Equal(t, "apps/v1", deployment.GetAnnotations()["pipecd.dev/original-api-version"])
+	assert.Equal(t, "apps:Deployment::simple-canary", deployment.GetAnnotations()["pipecd.dev/resource-key"])
+
+	serviceRes := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}
+	service, err := dynamicClient.Resource(serviceRes).Namespace("default").Get(ctx, "simple-canary", metav1.GetOptions{})
+	require.NoError(t, err)
+	assert.Equal(t, "simple-canary", service.GetName())
+
+	// Additional assertions for Service labels, annotations, selector, and ports
+	assert.Equal(t, "piped", service.GetLabels()["pipecd.dev/managed-by"])
+	assert.Equal(t, "piped-id", service.GetLabels()["pipecd.dev/piped"])
+	assert.Equal(t, "app-id", service.GetLabels()["pipecd.dev/application"])
+	assert.Equal(t, "0123456789", service.GetLabels()["pipecd.dev/commit-hash"])
+	assert.Equal(t, "piped", service.GetAnnotations()["pipecd.dev/managed-by"])
+	assert.Equal(t, "piped-id", service.GetAnnotations()["pipecd.dev/piped"])
+	assert.Equal(t, "app-id", service.GetAnnotations()["pipecd.dev/application"])
+	assert.Equal(t, "0123456789", service.GetAnnotations()["pipecd.dev/commit-hash"])
+	assert.Equal(t, "v1", service.GetAnnotations()["pipecd.dev/original-api-version"])
+	assert.Equal(t, ":Service::simple-canary", service.GetAnnotations()["pipecd.dev/resource-key"])
+
+	// Check Service selector and ports
+	selector, found, err := unstructured.NestedStringMap(service.Object, "spec", "selector")
+	require.NoError(t, err)
+	require.True(t, found)
+	assert.Equal(t, map[string]string{"app": "simple", "pipecd.dev/variant": "canary"}, selector)
+	ports, found, err := unstructured.NestedSlice(service.Object, "spec", "ports")
+	require.NoError(t, err)
+	require.True(t, found)
+	require.Len(t, ports, 1)
+	port := ports[0].(map[string]any)
+	assert.Equal(t, int64(9085), port["port"])
+	assert.Equal(t, int64(9085), port["targetPort"])
+	assert.Equal(t, "TCP", port["protocol"])
+}
+
+func TestPlugin_executeK8sCanaryRolloutStage_withoutCreateService(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+
+	// initialize tool registry
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
+	configDir := filepath.Join("testdata", "canary_rollout_without_create_service")
+
+	// read the application config from the example file
+	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(configDir, "app.pipecd.yaml"), "kubernetes")
+
+	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
+			StageName:   "K8S_CANARY_ROLLOUT",
+			StageConfig: []byte(`{}`),
+			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+				ApplicationDirectory:      configDir,
+				CommitHash:                "0123456789",
+				ApplicationConfig:         appCfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+			Deployment: sdk.Deployment{
+				PipedID:       "piped-id",
+				ApplicationID: "app-id",
+			},
+		},
+		Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
+		Logger: zaptest.NewLogger(t),
+	}
+
+	// initialize deploy target config and dynamic client for assertions with envtest
+	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
+
+	plugin := &Plugin{}
+
+	status := plugin.executeK8sCanaryRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		{
+			Name:   "default",
+			Config: *dtConfig,
+		},
+	})
+
+	assert.Equal(t, sdk.StageStatusSuccess, status)
+
+	// Assert that Deployment and Service resources are created and have expected labels/annotations.
+	deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+	deployment, err := dynamicClient.Resource(deploymentRes).Namespace("default").Get(ctx, "simple-canary", metav1.GetOptions{})
+	require.NoError(t, err)
+	assert.Equal(t, "simple-canary", deployment.GetName())
+	assert.Equal(t, "simple", deployment.GetLabels()["app"])
+	assert.Equal(t, "canary", deployment.GetLabels()["pipecd.dev/variant"])
+	assert.Equal(t, "canary", deployment.GetAnnotations()["pipecd.dev/variant"])
+
+	serviceRes := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}
+	_, err = dynamicClient.Resource(serviceRes).Namespace("default").Get(ctx, "simple-canary", metav1.GetOptions{})
+	require.Error(t, err)
+	assert.True(t, k8serrors.IsNotFound(err))
+}
 
 func Test_findConfigMapManifests(t *testing.T) {
 	t.Parallel()
@@ -183,16 +352,16 @@ func Test_patchManifest(t *testing.T) {
 	testcases := []struct {
 		name          string
 		manifests     string
-		patch         config.K8sResourcePatch
+		patch         kubeconfig.K8sResourcePatch
 		expectedError error
 	}{
 		{
 			name:      "one op",
 			manifests: "testdata/patch_manifest/patch_configmap.yaml",
-			patch: config.K8sResourcePatch{
-				Ops: []config.K8sResourcePatchOp{
+			patch: kubeconfig.K8sResourcePatch{
+				Ops: []kubeconfig.K8sResourcePatchOp{
 					{
-						Op:    config.K8sResourcePatchOpYAMLReplace,
+						Op:    kubeconfig.K8sResourcePatchOpYAMLReplace,
 						Path:  "$.data.key1",
 						Value: "value-1",
 					},
@@ -202,15 +371,15 @@ func Test_patchManifest(t *testing.T) {
 		{
 			name:      "multi ops",
 			manifests: "testdata/patch_manifest/patch_configmap_multi_ops.yaml",
-			patch: config.K8sResourcePatch{
-				Ops: []config.K8sResourcePatchOp{
+			patch: kubeconfig.K8sResourcePatch{
+				Ops: []kubeconfig.K8sResourcePatchOp{
 					{
-						Op:    config.K8sResourcePatchOpYAMLReplace,
+						Op:    kubeconfig.K8sResourcePatchOpYAMLReplace,
 						Path:  "$.data.key1",
 						Value: "value-1",
 					},
 					{
-						Op:    config.K8sResourcePatchOpYAMLReplace,
+						Op:    kubeconfig.K8sResourcePatchOpYAMLReplace,
 						Path:  "$.data.key2",
 						Value: "value-2",
 					},
@@ -220,13 +389,13 @@ func Test_patchManifest(t *testing.T) {
 		{
 			name:      "one op with a given field",
 			manifests: "testdata/patch_manifest/patch_configmap_field.yaml",
-			patch: config.K8sResourcePatch{
-				Target: config.K8sResourcePatchTarget{
+			patch: kubeconfig.K8sResourcePatch{
+				Target: kubeconfig.K8sResourcePatchTarget{
 					DocumentRoot: "$.data.envoy-config",
 				},
-				Ops: []config.K8sResourcePatchOp{
+				Ops: []kubeconfig.K8sResourcePatchOp{
 					{
-						Op:    config.K8sResourcePatchOpYAMLReplace,
+						Op:    kubeconfig.K8sResourcePatchOpYAMLReplace,
 						Path:  "$.admin.address.socket_address.port_value",
 						Value: "9096",
 					},
@@ -236,23 +405,23 @@ func Test_patchManifest(t *testing.T) {
 		{
 			name:      "multi ops with a given field",
 			manifests: "testdata/patch_manifest/patch_configmap_field_multi_ops.yaml",
-			patch: config.K8sResourcePatch{
-				Target: config.K8sResourcePatchTarget{
+			patch: kubeconfig.K8sResourcePatch{
+				Target: kubeconfig.K8sResourcePatchTarget{
 					DocumentRoot: "$.data.envoy-config",
 				},
-				Ops: []config.K8sResourcePatchOp{
+				Ops: []kubeconfig.K8sResourcePatchOp{
 					{
-						Op:    config.K8sResourcePatchOpYAMLReplace,
+						Op:    kubeconfig.K8sResourcePatchOpYAMLReplace,
 						Path:  "$.admin.address.socket_address.port_value",
 						Value: "19095",
 					},
 					{
-						Op:    config.K8sResourcePatchOpYAMLReplace,
+						Op:    kubeconfig.K8sResourcePatchOpYAMLReplace,
 						Path:  "$.static_resources.clusters[1].load_assignment.endpoints[0].lb_endpoints[0].endpoint.address.socket_address.port_value",
 						Value: "19081",
 					},
 					{
-						Op:    config.K8sResourcePatchOpYAMLReplace,
+						Op:    kubeconfig.K8sResourcePatchOpYAMLReplace,
 						Path:  "$.static_resources.clusters[1].type",
 						Value: "DNS",
 					},
@@ -296,7 +465,7 @@ func Test_patchManifests(t *testing.T) {
 	testcases := []struct {
 		name          string
 		manifests     []provider.Manifest
-		patches       []config.K8sResourcePatch
+		patches       []kubeconfig.K8sResourcePatch
 		expected      []provider.Manifest
 		expectedError error
 	}{
@@ -317,7 +486,7 @@ spec:
         - name: VALUE
           value: none
 `)),
-			patches: []config.K8sResourcePatch{},
+			patches: []kubeconfig.K8sResourcePatch{},
 			expected: mustParseManifests(t, strings.TrimSpace(`
 apiVersion: apps/v1
 kind: Deployment
@@ -351,10 +520,10 @@ spec:
         - name: VALUE
           value: none
 `)),
-			patches: []config.K8sResourcePatch{
+			patches: []kubeconfig.K8sResourcePatch{
 				{
-					Target: config.K8sResourcePatchTarget{
-						K8sResourceReference: config.K8sResourceReference{
+					Target: kubeconfig.K8sResourcePatchTarget{
+						K8sResourceReference: kubeconfig.K8sResourceReference{
 							Kind: "Deployment",
 							Name: "deployment-2",
 						},
@@ -388,37 +557,37 @@ data:
   key1: value-1
   key2: value-2
 `)),
-			patches: []config.K8sResourcePatch{
+			patches: []kubeconfig.K8sResourcePatch{
 				{
-					Target: config.K8sResourcePatchTarget{
-						K8sResourceReference: config.K8sResourceReference{
+					Target: kubeconfig.K8sResourcePatchTarget{
+						K8sResourceReference: kubeconfig.K8sResourceReference{
 							Kind: "Deployment",
 							Name: "deployment-1",
 						},
 					},
-					Ops: []config.K8sResourcePatchOp{
+					Ops: []kubeconfig.K8sResourcePatchOp{
 						{
-							Op:    config.K8sResourcePatchOpYAMLReplace,
+							Op:    kubeconfig.K8sResourcePatchOpYAMLReplace,
 							Path:  "$.spec.template.spec.containers[0].env[0].value",
 							Value: "patched",
 						},
 					},
 				},
 				{
-					Target: config.K8sResourcePatchTarget{
-						K8sResourceReference: config.K8sResourceReference{
+					Target: kubeconfig.K8sResourcePatchTarget{
+						K8sResourceReference: kubeconfig.K8sResourceReference{
 							Kind: "ConfigMap",
 							Name: "config",
 						},
 					},
-					Ops: []config.K8sResourcePatchOp{
+					Ops: []kubeconfig.K8sResourcePatchOp{
 						{
-							Op:    config.K8sResourcePatchOpYAMLReplace,
+							Op:    kubeconfig.K8sResourcePatchOpYAMLReplace,
 							Path:  "$.data.key1",
 							Value: "patched",
 						},
 						{
-							Op:    config.K8sResourcePatchOpYAMLReplace,
+							Op:    kubeconfig.K8sResourcePatchOpYAMLReplace,
 							Path:  "$.data.key2",
 							Value: "patched",
 						},
