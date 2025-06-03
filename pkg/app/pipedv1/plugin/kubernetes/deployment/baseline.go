@@ -102,9 +102,51 @@ func (p *Plugin) executeK8sBaselineRolloutStage(ctx context.Context, input *sdk.
 	return sdk.StageStatusSuccess
 }
 
-func (p *Plugin) executeK8sBaselineCleanStage(_ context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], _ []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
-	input.Client.LogPersister().Error("Baseline clean is not yet implemented")
-	return sdk.StageStatusFailure
+func (p *Plugin) executeK8sBaselineCleanStage(ctx context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
+	lp := input.Client.LogPersister()
+	lp.Info("Start baseline clean")
+
+	// Get the deploy target config.
+	if len(dts) == 0 {
+		lp.Error("No deploy target was found")
+		return sdk.StageStatusFailure
+	}
+	deployTargetConfig := dts[0].Config
+
+	cfg, err := input.Request.RunningDeploymentSource.AppConfig()
+	if err != nil {
+		lp.Errorf("Failed while loading application config (%v)", err)
+		return sdk.StageStatusFailure
+	}
+
+	var (
+		appCfg          = cfg.Spec
+		variantLabel    = appCfg.VariantLabel.Key
+		baselineVariant = appCfg.VariantLabel.BaselineValue
+	)
+
+	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
+
+	// Get the kubectl tool path.
+	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(appCfg.Input.KubectlVersion, deployTargetConfig.KubectlVersion))
+	if err != nil {
+		lp.Errorf("Failed while getting kubectl tool (%v)", err)
+		return sdk.StageStatusFailure
+	}
+
+	// Create the kubectl wrapper for the target cluster.
+	kubectl := provider.NewKubectl(kubectlPath)
+
+	// Create the applier for the target cluster.
+	applier := provider.NewApplier(kubectl, appCfg.Input, deployTargetConfig, input.Logger)
+
+	if err := deleteVariantResources(ctx, lp, kubectl, deployTargetConfig.KubeConfigPath, applier, input.Request.Deployment.ApplicationID, variantLabel, baselineVariant); err != nil {
+		lp.Errorf("Failed while deleting variant resources (%v)", err)
+		return sdk.StageStatusFailure
+	}
+
+	lp.Success("Successfully cleaned BASELINE variant")
+	return sdk.StageStatusSuccess
 }
 
 func generateBaselineManifests(appCfg *kubeconfig.KubernetesApplicationSpec, manifests []provider.Manifest, stageCfg kubeconfig.K8sBaselineRolloutStageOptions, variantLabel, variant string) ([]provider.Manifest, error) {

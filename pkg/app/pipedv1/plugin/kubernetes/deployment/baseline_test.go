@@ -191,3 +191,345 @@ func TestPlugin_executeK8sBaselineRolloutStage_withoutCreateService(t *testing.T
 	require.Error(t, err)
 	assert.True(t, errors.IsNotFound(err))
 }
+
+func TestPlugin_executeK8sBaselineCleanStage_withCreateService(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+
+	plugin := &Plugin{}
+
+	// initialize tool registry
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
+	configDir := filepath.Join("testdata", "baseline_clean_with_create_service")
+
+	// read the application config from the example file
+	appCfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(configDir, "app.pipecd.yaml"), "kubernetes")
+
+	// initialize deploy target config and dynamic client for assertions with envtest
+	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
+	dts := []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
+		{
+			Name:   "default",
+			Config: *dtConfig,
+		},
+	}
+
+	ok := t.Run("prepare primary resources", func(t *testing.T) {
+		input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+				StageName:   "K8S_SYNC",
+				StageConfig: []byte(`{}`),
+				RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+					ApplicationDirectory:      configDir,
+					CommitHash:                "0123456789",
+					ApplicationConfig:         appCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+					ApplicationDirectory:      configDir, // it's weired that the same directory is used for both running and target, but it's ok for the test
+					CommitHash:                "0123456789",
+					ApplicationConfig:         appCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+				Deployment: sdk.Deployment{
+					PipedID:       "piped-id",
+					ApplicationID: "app-id",
+				},
+			},
+			Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
+			Logger: zaptest.NewLogger(t),
+		}
+
+		status := plugin.executeK8sSyncStage(ctx, input, dts)
+
+		assert.Equal(t, sdk.StageStatusSuccess, status)
+
+		// Assert that Deployment and Service resources are created and have expected labels/annotations.
+		deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+		deployment, err := dynamicClient.Resource(deploymentRes).Namespace("default").Get(ctx, "simple", metav1.GetOptions{})
+		require.NoError(t, err)
+		assert.Equal(t, "simple", deployment.GetName())
+		assert.Equal(t, "simple", deployment.GetLabels()["app"])
+		assert.Equal(t, "primary", deployment.GetLabels()["pipecd.dev/variant"])
+		assert.Equal(t, "primary", deployment.GetAnnotations()["pipecd.dev/variant"])
+
+		serviceRes := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}
+		service, err := dynamicClient.Resource(serviceRes).Namespace("default").Get(ctx, "simple", metav1.GetOptions{})
+		require.NoError(t, err)
+		assert.Equal(t, "simple", service.GetName())
+	})
+	require.True(t, ok, "prepare primary resources subtest failed, aborting")
+
+	ok = t.Run("prepare baseline resources", func(t *testing.T) {
+		input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+				StageName:   "K8S_BASELINE_ROLLOUT",
+				StageConfig: []byte(`{"createService": true}`),
+				RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+					ApplicationDirectory:      configDir,
+					CommitHash:                "0123456789",
+					ApplicationConfig:         appCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+					ApplicationDirectory:      configDir, // it's weired that the same directory is used for both running and target, but it's ok for the test
+					CommitHash:                "0123456789",
+					ApplicationConfig:         appCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+				Deployment: sdk.Deployment{
+					PipedID:       "piped-id",
+					ApplicationID: "app-id",
+				},
+			},
+			Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
+			Logger: zaptest.NewLogger(t),
+		}
+
+		status := plugin.executeK8sBaselineRolloutStage(ctx, input, dts)
+
+		assert.Equal(t, sdk.StageStatusSuccess, status)
+
+		// Assert that Deployment and Service resources are created and have expected labels/annotations.
+		deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+		deployment, err := dynamicClient.Resource(deploymentRes).Namespace("default").Get(ctx, "simple-baseline", metav1.GetOptions{})
+		require.NoError(t, err)
+		assert.Equal(t, "simple-baseline", deployment.GetName())
+		assert.Equal(t, "simple", deployment.GetLabels()["app"])
+		assert.Equal(t, "baseline", deployment.GetLabels()["pipecd.dev/variant"])
+		assert.Equal(t, "baseline", deployment.GetAnnotations()["pipecd.dev/variant"])
+
+		serviceRes := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}
+		service, err := dynamicClient.Resource(serviceRes).Namespace("default").Get(ctx, "simple-baseline", metav1.GetOptions{})
+		require.NoError(t, err)
+		assert.Equal(t, "simple-baseline", service.GetName())
+	})
+	require.True(t, ok, "prepare baseline resources subtest failed, aborting")
+
+	t.Run("execute K8S_BASELINE_CLEAN stage", func(t *testing.T) {
+		input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+				StageName:   "K8S_BASELINE_CLEAN",
+				StageConfig: []byte(`{}`),
+				RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+					ApplicationDirectory:      configDir,
+					CommitHash:                "0123456789",
+					ApplicationConfig:         appCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+					ApplicationDirectory:      configDir, // it's weired that the same directory is used for both running and target, but it's ok for the test
+					CommitHash:                "0123456789",
+					ApplicationConfig:         appCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+				Deployment: sdk.Deployment{
+					PipedID:       "piped-id",
+					ApplicationID: "app-id",
+				},
+			},
+			Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
+			Logger: zaptest.NewLogger(t),
+		}
+
+		status := plugin.executeK8sBaselineCleanStage(ctx, input, dts)
+
+		assert.Equal(t, sdk.StageStatusSuccess, status)
+
+		// Assert that primary variant of Deployment and Service resources are not removed and have expected labels/annotations.
+		deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+		deployment, err := dynamicClient.Resource(deploymentRes).Namespace("default").Get(ctx, "simple", metav1.GetOptions{})
+		require.NoError(t, err)
+		assert.Equal(t, "simple", deployment.GetName())
+		assert.Equal(t, "simple", deployment.GetLabels()["app"])
+		assert.Equal(t, "primary", deployment.GetLabels()["pipecd.dev/variant"])
+		assert.Equal(t, "primary", deployment.GetAnnotations()["pipecd.dev/variant"])
+
+		serviceRes := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}
+		service, err := dynamicClient.Resource(serviceRes).Namespace("default").Get(ctx, "simple", metav1.GetOptions{})
+		require.NoError(t, err)
+		assert.Equal(t, "simple", service.GetName())
+
+		// Assert that baseline variant of Deployment and Service resources are removed.
+		_, err = dynamicClient.Resource(deploymentRes).Namespace("default").Get(ctx, "simple-baseline", metav1.GetOptions{})
+		require.Error(t, err)
+		assert.True(t, errors.IsNotFound(err))
+
+		_, err = dynamicClient.Resource(serviceRes).Namespace("default").Get(ctx, "simple-baseline", metav1.GetOptions{})
+		require.Error(t, err)
+		assert.True(t, errors.IsNotFound(err))
+	})
+}
+
+func TestPlugin_executeK8sBaselineCleanStage_withoutCreateService(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+
+	plugin := &Plugin{}
+
+	// initialize tool registry
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
+	configDir := filepath.Join("testdata", "baseline_clean_without_create_service")
+
+	// read the application config from the example file
+	appCfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(configDir, "app.pipecd.yaml"), "kubernetes")
+
+	// initialize deploy target config and dynamic client for assertions with envtest
+	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
+	dts := []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
+		{
+			Name:   "default",
+			Config: *dtConfig,
+		},
+	}
+
+	ok := t.Run("prepare primary resources", func(t *testing.T) {
+		input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+				StageName:   "K8S_SYNC",
+				StageConfig: []byte(`{}`),
+				RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+					ApplicationDirectory:      configDir,
+					CommitHash:                "0123456789",
+					ApplicationConfig:         appCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+					ApplicationDirectory:      configDir, // it's weired that the same directory is used for both running and target, but it's ok for the test
+					CommitHash:                "0123456789",
+					ApplicationConfig:         appCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+				Deployment: sdk.Deployment{
+					PipedID:       "piped-id",
+					ApplicationID: "app-id",
+				},
+			},
+			Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
+			Logger: zaptest.NewLogger(t),
+		}
+
+		status := plugin.executeK8sSyncStage(ctx, input, dts)
+
+		assert.Equal(t, sdk.StageStatusSuccess, status)
+
+		// Assert that Deployment and Service resources are created and have expected labels/annotations.
+		deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+		deployment, err := dynamicClient.Resource(deploymentRes).Namespace("default").Get(ctx, "simple", metav1.GetOptions{})
+		require.NoError(t, err)
+		assert.Equal(t, "simple", deployment.GetName())
+		assert.Equal(t, "simple", deployment.GetLabels()["app"])
+		assert.Equal(t, "primary", deployment.GetLabels()["pipecd.dev/variant"])
+		assert.Equal(t, "primary", deployment.GetAnnotations()["pipecd.dev/variant"])
+
+		serviceRes := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}
+		service, err := dynamicClient.Resource(serviceRes).Namespace("default").Get(ctx, "simple", metav1.GetOptions{})
+		require.NoError(t, err)
+		assert.Equal(t, "simple", service.GetName())
+	})
+	require.True(t, ok, "prepare primary resources subtest failed, aborting")
+
+	ok = t.Run("prepare baseline resources", func(t *testing.T) {
+		input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+				StageName:   "K8S_BASELINE_ROLLOUT",
+				StageConfig: []byte(`{}`),
+				RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+					ApplicationDirectory:      configDir,
+					CommitHash:                "0123456789",
+					ApplicationConfig:         appCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+					ApplicationDirectory:      configDir, // it's weired that the same directory is used for both running and target, but it's ok for the test
+					CommitHash:                "0123456789",
+					ApplicationConfig:         appCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+				Deployment: sdk.Deployment{
+					PipedID:       "piped-id",
+					ApplicationID: "app-id",
+				},
+			},
+			Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
+			Logger: zaptest.NewLogger(t),
+		}
+
+		status := plugin.executeK8sBaselineRolloutStage(ctx, input, dts)
+
+		assert.Equal(t, sdk.StageStatusSuccess, status)
+
+		// Assert that Deployment and Service resources are created and have expected labels/annotations.
+		deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+		deployment, err := dynamicClient.Resource(deploymentRes).Namespace("default").Get(ctx, "simple-baseline", metav1.GetOptions{})
+		require.NoError(t, err)
+		assert.Equal(t, "simple-baseline", deployment.GetName())
+		assert.Equal(t, "simple", deployment.GetLabels()["app"])
+		assert.Equal(t, "baseline", deployment.GetLabels()["pipecd.dev/variant"])
+		assert.Equal(t, "baseline", deployment.GetAnnotations()["pipecd.dev/variant"])
+
+		serviceRes := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}
+		_, err = dynamicClient.Resource(serviceRes).Namespace("default").Get(ctx, "simple-baseline", metav1.GetOptions{})
+		require.Error(t, err)
+		assert.True(t, errors.IsNotFound(err))
+	})
+	require.True(t, ok, "prepare baseline resources subtest failed, aborting")
+
+	t.Run("execute K8S_BASELINE_CLEAN stage", func(t *testing.T) {
+		input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+				StageName:   "K8S_BASELINE_CLEAN",
+				StageConfig: []byte(`{}`),
+				RunningDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+					ApplicationDirectory:      configDir,
+					CommitHash:                "0123456789",
+					ApplicationConfig:         appCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+					ApplicationDirectory:      configDir, // it's weired that the same directory is used for both running and target, but it's ok for the test
+					CommitHash:                "0123456789",
+					ApplicationConfig:         appCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+				Deployment: sdk.Deployment{
+					PipedID:       "piped-id",
+					ApplicationID: "app-id",
+				},
+			},
+			Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
+			Logger: zaptest.NewLogger(t),
+		}
+
+		status := plugin.executeK8sBaselineCleanStage(ctx, input, dts)
+
+		assert.Equal(t, sdk.StageStatusSuccess, status)
+
+		// Assert that primary variant of Deployment and Service resources are not removed and have expected labels/annotations.
+		deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+		deployment, err := dynamicClient.Resource(deploymentRes).Namespace("default").Get(ctx, "simple", metav1.GetOptions{})
+		require.NoError(t, err)
+		assert.Equal(t, "simple", deployment.GetName())
+		assert.Equal(t, "simple", deployment.GetLabels()["app"])
+		assert.Equal(t, "primary", deployment.GetLabels()["pipecd.dev/variant"])
+		assert.Equal(t, "primary", deployment.GetAnnotations()["pipecd.dev/variant"])
+
+		serviceRes := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}
+		service, err := dynamicClient.Resource(serviceRes).Namespace("default").Get(ctx, "simple", metav1.GetOptions{})
+		require.NoError(t, err)
+		assert.Equal(t, "simple", service.GetName())
+
+		// Assert that baseline variant of Deployment and Service resources are removed.
+		_, err = dynamicClient.Resource(deploymentRes).Namespace("default").Get(ctx, "simple-baseline", metav1.GetOptions{})
+		require.Error(t, err)
+		assert.True(t, errors.IsNotFound(err))
+
+		_, err = dynamicClient.Resource(serviceRes).Namespace("default").Get(ctx, "simple-baseline", metav1.GetOptions{})
+		require.Error(t, err)
+		assert.True(t, errors.IsNotFound(err))
+	})
+}
