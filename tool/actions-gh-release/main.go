@@ -33,6 +33,10 @@ const (
 )
 
 func main() {
+	os.Exit(_main())
+}
+
+func _main() int {
 	log.Println("Start running actions-gh-release")
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
@@ -40,17 +44,20 @@ func main() {
 
 	args, err := parseArgs(os.Args)
 	if err != nil {
-		log.Fatalf("Failed to parse arguments: %v\n", err)
+		log.Printf("Failed to parse arguments: %v\n", err)
+		return 1
 	}
 	log.Println("Successfully parsed arguments")
 
 	workspace := os.Getenv("GITHUB_WORKSPACE")
 	if workspace == "" {
-		log.Fatal("GITHUB_WORKSPACE was not defined")
+		log.Printf("GITHUB_WORKSPACE was not defined")
+		return 1
 	}
 
 	if err := addSafeDirectory(ctx, gitExecPath, workspace); err != nil {
-		log.Fatalf("Failed to add %s as a safe directory: %v\n", workspace, err)
+		log.Printf("Failed to add %s as a safe directory: %v\n", workspace, err)
+		return 1
 	}
 
 	cfg := &githubClientConfig{Token: args.Token}
@@ -58,7 +65,8 @@ func main() {
 
 	event, err := ghClient.parseGitHubEvent(ctx)
 	if err != nil {
-		log.Fatalf("Failed to parse GitHub event: %v\n", err)
+		log.Printf("Failed to parse GitHub event: %v\n", err)
+		return 1
 	}
 	log.Printf("Successfully parsed GitHub event %s\n\tbase-commit %s\n\thead-commit %s\n",
 		event.Name,
@@ -69,13 +77,15 @@ func main() {
 	// Find all changed RELEASE files.
 	changedFiles, err := changedFiles(ctx, gitExecPath, workspace, event.BaseCommit, event.HeadCommit)
 	if err != nil {
-		log.Fatalf("Failed to list changed files: %v\n", err)
+		log.Printf("Failed to list changed files: %v\n", err)
+		return 1
 	}
 
-	changedReleaseFiles := make([]string, 0, 0)
+	changedReleaseFiles := make([]string, 0, len(changedFiles))
 	matcher, err := NewPatternMatcher([]string{args.ReleaseFile})
 	if err != nil {
-		log.Fatalf("Failed to create pattern matcher for release file: %v\n", err)
+		log.Printf("Failed to create pattern matcher for release file: %v\n", err)
+		return 1
 	}
 	for _, f := range changedFiles {
 		if matcher.Matches(f) {
@@ -85,14 +95,15 @@ func main() {
 
 	if len(changedReleaseFiles) == 0 {
 		log.Println("Nothing to do since there were no modified release files")
-		return
+		return 0
 	}
 
 	proposals := make([]ReleaseProposal, 0, len(changedReleaseFiles))
 	for _, f := range changedReleaseFiles {
 		p, err := buildReleaseProposal(ctx, ghClient, f, gitExecPath, workspace, event)
 		if err != nil {
-			log.Fatalf("Failed to build release for %s: %v\n", f, err)
+			log.Printf("Failed to build release for %s: %v\n", f, err)
+			return 1
 		}
 		proposals = append(proposals, *p)
 	}
@@ -106,7 +117,8 @@ func main() {
 		if p.Tag != "" {
 			exist, err := ghClient.existRelease(ctx, event.Owner, event.Repo, p.Tag)
 			if err != nil {
-				log.Fatalf("Failed to check the existence of release for %s: %v\n", p.Tag, err)
+				log.Printf("Failed to check the existence of release for %s: %v\n", p.Tag, err)
+				return 1
 			}
 			if exist {
 				existingProposals = append(existingProposals, p)
@@ -125,19 +137,21 @@ func main() {
 		if len(newProposals) == 0 {
 			log.Printf("All of %d detected releases were already created before so no new release will be created\n", len(proposals))
 			notify()
-			return
+			return 0
 		}
 		log.Printf("%d releases from %d detected ones were already created before so only %d releases will be created\n", len(existingProposals), len(proposals), len(newProposals))
 	}
 
 	releasesJSON, err := json.Marshal(newProposals)
 	if err != nil {
-		log.Fatalf("Failed to marshal releases: %v\n", err)
+		log.Printf("Failed to marshal releases: %v\n", err)
+		return 1
 	}
 	os.Setenv("GITHUB_OUTPUT", fmt.Sprintf("releases=%s", string(releasesJSON)))
 	if args.OutputReleasesFilePath != "" {
 		if err := os.WriteFile(args.OutputReleasesFilePath, releasesJSON, 0644); err != nil {
-			log.Fatalf("Failed to write releases JSON to %s: %v\n", args.OutputReleasesFilePath, err)
+			log.Printf("Failed to write releases JSON to %s: %v\n", args.OutputReleasesFilePath, err)
+			return 1
 		}
 		log.Printf("Successfully wrote releases JSON to %s\n", args.OutputReleasesFilePath)
 	}
@@ -148,22 +162,25 @@ func main() {
 		for _, p := range newProposals {
 			r, err := ghClient.createRelease(ctx, event.Owner, event.Repo, p)
 			if err != nil {
-				log.Fatalf("Failed to create release %s: %v\n", p.Tag, err)
+				log.Printf("Failed to create release %s: %v\n", p.Tag, err)
+				return 1
 			}
 			log.Printf("Successfully created a new GitHub release %s\n%s\n", r.GetTagName(), r.GetHTMLURL())
 		}
 
 		log.Printf("Successfully created all %d GitHub releases\n", len(newProposals))
-		return
+		return 0
 	}
 
 	// Otherwise, just leave a comment to show the changelogs.
 	comment, err := notify()
 	if err != nil {
-		log.Fatalf("Failed to send comment: %v\n", err)
+		log.Printf("Failed to send comment: %v\n", err)
+		return 1
 	}
 
 	log.Printf("Successfully commented actions-gh-release result on pull request\n%s\n", *comment.HTMLURL)
+	return 0
 }
 
 type arguments struct {

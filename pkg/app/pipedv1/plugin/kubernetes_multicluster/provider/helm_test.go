@@ -23,8 +23,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/toolregistry"
 	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry/toolregistrytest"
+
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/toolregistry"
 )
 
 func TestTemplateLocalChart(t *testing.T) {

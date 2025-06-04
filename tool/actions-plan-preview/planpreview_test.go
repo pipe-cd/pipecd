@@ -31,6 +31,7 @@ func TestMakeCommentBody(t *testing.T) {
 	testcases := []struct {
 		name     string
 		event    githubEvent
+		title    string
 		result   PlanPreviewResult
 		expected string
 	}{
@@ -39,14 +40,25 @@ func TestMakeCommentBody(t *testing.T) {
 			event: githubEvent{
 				HeadCommit: "abc",
 			},
+			title:    "",
 			result:   PlanPreviewResult{},
 			expected: "testdata/comment-no-changes.txt",
+		},
+		{
+			name: "no changes with title",
+			event: githubEvent{
+				HeadCommit: "abc",
+			},
+			title:    "test title",
+			result:   PlanPreviewResult{},
+			expected: "testdata/comment-no-changes-with-title.txt",
 		},
 		{
 			name: "only changed app",
 			event: githubEvent{
 				HeadCommit: "abc",
 			},
+			title: "",
 			result: PlanPreviewResult{
 				Applications: []ApplicationResult{
 					{
@@ -72,6 +84,7 @@ func TestMakeCommentBody(t *testing.T) {
 			event: githubEvent{
 				HeadCommit: "abc",
 			},
+			title: "",
 			result: PlanPreviewResult{
 				Applications: []ApplicationResult{
 					{
@@ -125,6 +138,7 @@ func TestMakeCommentBody(t *testing.T) {
 			event: githubEvent{
 				HeadCommit: "abc",
 			},
+			title: "",
 			result: PlanPreviewResult{
 				Applications: []ApplicationResult{
 					{
@@ -149,6 +163,7 @@ func TestMakeCommentBody(t *testing.T) {
 			event: githubEvent{
 				HeadCommit: "abc",
 			},
+			title: "",
 			result: PlanPreviewResult{
 				Applications: []ApplicationResult{
 					{
@@ -188,6 +203,7 @@ func TestMakeCommentBody(t *testing.T) {
 			event: githubEvent{
 				HeadCommit: "abc",
 			},
+			title: "",
 			result: PlanPreviewResult{
 				Applications: []ApplicationResult{
 					{
@@ -224,7 +240,7 @@ func TestMakeCommentBody(t *testing.T) {
 			expected, err := testdata.ReadFile(tc.expected)
 			require.NoError(t, err)
 
-			got := makeCommentBody(&tc.event, &tc.result)
+			got := makeCommentBody(&tc.event, &tc.result, tc.title)
 			assert.Equal(t, string(expected), got)
 		})
 	}

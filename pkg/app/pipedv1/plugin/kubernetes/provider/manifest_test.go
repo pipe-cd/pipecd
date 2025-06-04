@@ -31,6 +31,8 @@ import (
 )
 
 func TestManifest_AddStringMapValues(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		initial  map[string]interface{}
@@ -103,6 +105,8 @@ func TestManifest_AddStringMapValues(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			manifest := Manifest{
 				body: &unstructured.Unstructured{
 					Object: tt.initial,
@@ -121,6 +125,8 @@ func TestManifest_AddStringMapValues(t *testing.T) {
 }
 
 func TestFindConfigsAndSecrets(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name      string
 		manifests []string
@@ -320,6 +326,8 @@ data:
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			var manifests []Manifest
 			for _, data := range tt.manifests {
 				manifests = append(manifests, mustParseManifests(t, data)...)
@@ -331,6 +339,8 @@ data:
 }
 
 func TestFindSameManifests(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		olds []string
@@ -541,6 +551,8 @@ spec:
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			oldManifests := mustParseManifests(t, strings.Join(tt.olds, "\n---\n"))
 			newManifests := mustParseManifests(t, strings.Join(tt.news, "\n---\n"))
 			got := FindSameManifests(oldManifests, newManifests)
@@ -550,6 +562,8 @@ spec:
 }
 
 func TestManifest_IsDeployment(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		manifest string
@@ -608,6 +622,8 @@ spec:
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			manifest := mustParseManifests(t, strings.TrimSpace(tt.manifest))[0]
 			got := manifest.IsDeployment()
 			assert.Equal(t, tt.want, got)
@@ -616,6 +632,8 @@ spec:
 }
 
 func TestManifest_IsSecret(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		manifest string
@@ -663,6 +681,8 @@ data:
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			manifest := mustParseManifests(t, strings.TrimSpace(tt.manifest))[0]
 			got := manifest.IsSecret()
 			assert.Equal(t, tt.want, got)
@@ -671,6 +691,8 @@ data:
 }
 
 func TestManifest_IsConfigMap(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		manifest string
@@ -718,6 +740,8 @@ data:
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			manifest := mustParseManifests(t, strings.TrimSpace(tt.manifest))[0]
 			got := manifest.IsConfigMap()
 			assert.Equal(t, tt.want, got)
@@ -725,7 +749,196 @@ data:
 	}
 }
 
+func TestManifest_IsService(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		manifest string
+		want     bool
+	}{
+		{
+			name: "is service",
+			manifest: `
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+`,
+			want: true,
+		},
+		{
+			name: "is not service",
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			want: false,
+		},
+		{
+			name: "is not service with custom apigroup",
+			manifest: `
+apiVersion: custom.io/v1
+kind: Service
+metadata:
+  name: custom-service
+spec:
+  selector:
+    app: custom
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+`,
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			manifest := mustParseManifests(t, strings.TrimSpace(tt.manifest))[0]
+			got := manifest.IsService()
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestManifest_IsWorkload(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		manifest string
+		want     bool
+	}{
+		{
+			name: "is deployment",
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			want: true,
+		},
+		{
+			name: "is replicaset",
+			manifest: `
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: nginx-replicaset
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			want: true,
+		},
+		{
+			name: "is daemonset",
+			manifest: `
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nginx-daemonset
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			want: true,
+		},
+		{
+			name: "is pod",
+			manifest: `
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.19.3
+`,
+			want: true,
+		},
+		{
+			name: "is not workload (service)",
+			manifest: `
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+`,
+			want: false,
+		},
+		{
+			name: "is not workload (custom apigroup)",
+			manifest: `
+apiVersion: custom.io/v1
+kind: Deployment
+metadata:
+  name: custom-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: custom
+        image: custom:1.0.0
+`,
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			manifest := mustParseManifests(t, strings.TrimSpace(tt.manifest))[0]
+			got := manifest.IsWorkload()
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func TestIsManagedByPiped(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name       string
 		manifest   Manifest
@@ -787,6 +1000,8 @@ func TestIsManagedByPiped(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			gotResult := tc.manifest.IsManagedByPiped()
 			assert.Equal(t, tc.wantResult, gotResult)
 		})
@@ -794,6 +1009,8 @@ func TestIsManagedByPiped(t *testing.T) {
 }
 
 func TestManifest_ToResourceState(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name         string
 		manifest     Manifest
@@ -878,6 +1095,8 @@ func TestManifest_ToResourceState(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := tt.manifest.ToResourceState(tt.deployTarget)
 			assert.Equal(t, tt.want, got)
 		})
@@ -1012,6 +1231,8 @@ metadata:
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			orig := mustParseManifests(t, tt.yaml)
 			copy := DeepCopyManifests(orig)
 

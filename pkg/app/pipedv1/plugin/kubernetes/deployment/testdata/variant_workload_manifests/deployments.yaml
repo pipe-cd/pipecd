@@ -85,6 +85,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: simple-canary
+  annotations:
+    pipecd.dev/resource-key: apps:Deployment::simple-canary
   creationTimestamp: 
 spec:
   replicas: 9

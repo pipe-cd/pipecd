@@ -20,12 +20,12 @@ import (
 	"fmt"
 	"strings"
 
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
-	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 func ensureVariantSelectorInWorkload(m provider.Manifest, variantLabel, variant string) error {
@@ -100,6 +100,12 @@ func generateVariantServiceManifests(services []provider.Manifest, variantLabel,
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse Service object to Manifest: %w", err)
 		}
+		// This is because the resource key differs between variants because of the name suffix.
+		// For example, The Service named "simple" has the resource key ":Service:some-namespace:simple"
+		// and its baseline variant has the resource key ":Service:some-namespace:simple-baseline".
+		manifest.AddAnnotations(map[string]string{
+			provider.LabelResourceKey: manifest.Key().String(),
+		})
 		manifests = append(manifests, manifest)
 	}
 	return manifests, nil
@@ -200,6 +206,12 @@ func generateVariantWorkloadManifests(workloads, configmaps, secrets []provider.
 			if err != nil {
 				return nil, err
 			}
+			// This is because the resource key differs between variants because of the name suffix.
+			// For example, The Deployment named "simple" has the resource key "apps:Deployment:some-namespace:simple"
+			// and its baseline variant has the resource key "apps:Deployment:some-namespace:simple-baseline".
+			manifest.AddAnnotations(map[string]string{
+				provider.LabelResourceKey: manifest.Key().String(),
+			})
 			manifests = append(manifests, manifest)
 
 		default:
@@ -257,4 +269,43 @@ func deleteResources(ctx context.Context, lp sdk.StageLogPersister, applier *pro
 	}
 
 	return deletedCount
+}
+
+// deleteVariantResources deletes the resources of the specified variant.
+// It finds the resources of the specified variant and deletes them.
+// It deletes the resources in the order of Service -> Workload -> Others -> Cluster-scoped resources.
+func deleteVariantResources(ctx context.Context, lp sdk.StageLogPersister, kubectl *provider.Kubectl, kubeConfig string, applier *provider.Applier, applicationID, variantLabel, variant string) error {
+	namespacedLiveResources, clusterScopedLiveResources, err := provider.GetLiveResources(ctx, kubectl, kubeConfig, applicationID, fmt.Sprintf("%s=%s", variantLabel, variant))
+	if err != nil {
+		return err
+	}
+
+	services := make([]provider.ResourceKey, 0, len(namespacedLiveResources))
+	workloads := make([]provider.ResourceKey, 0, len(namespacedLiveResources))
+	others := make([]provider.ResourceKey, 0, len(namespacedLiveResources))
+	clusterScoped := make([]provider.ResourceKey, 0, len(clusterScopedLiveResources))
+
+	for _, r := range namespacedLiveResources {
+		switch {
+		case r.IsService():
+			services = append(services, r.Key())
+		case r.IsWorkload():
+			workloads = append(workloads, r.Key())
+		default:
+			others = append(others, r.Key())
+		}
+	}
+
+	for _, r := range clusterScopedLiveResources {
+		clusterScoped = append(clusterScoped, r.Key())
+	}
+
+	var deletedCount int
+	deletedCount += deleteResources(ctx, lp, applier, services)
+	deletedCount += deleteResources(ctx, lp, applier, workloads)
+	deletedCount += deleteResources(ctx, lp, applier, others)
+	deletedCount += deleteResources(ctx, lp, applier, clusterScoped)
+	lp.Successf("Successfully deleted %d resources", deletedCount)
+
+	return nil
 }
