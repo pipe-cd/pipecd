@@ -20,12 +20,15 @@ import (
 	"strings"
 	"testing"
 
+	goyaml "github.com/goccy/go-yaml"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
+	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
@@ -194,6 +197,105 @@ func TestPlugin_executeK8sCanaryRolloutStage_withoutCreateService(t *testing.T) 
 	_, err = dynamicClient.Resource(serviceRes).Namespace("default").Get(ctx, "simple-canary", metav1.GetOptions{})
 	require.Error(t, err)
 	assert.True(t, k8serrors.IsNotFound(err))
+}
+
+func TestPlugin_executeK8sCanaryRolloutStage_withPatch(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+
+	// initialize tool registry
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
+	configDir := filepath.Join("testdata", "canary_rollout_with_patch")
+
+	// read the application config from the example file
+	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(configDir, "app.pipecd.yaml"), "kubernetes")
+
+	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
+			StageName: "K8S_CANARY_ROLLOUT",
+			StageConfig: []byte(`
+{
+   "patches": [
+     {
+       "target": {"kind": "ConfigMap", "name": "canary-patch-weight-config", "documentRoot": "$.data.'weight.yaml'"},
+       "ops": [
+		{"op": "yaml-replace", "path": "$.primary.weight", "value": "90"},
+		{"op": "yaml-replace", "path": "$.canary.weight", "value": "10"}
+	   ]
+	 }
+   ]
+}`),
+			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+				ApplicationDirectory:      configDir,
+				CommitHash:                "0123456789",
+				ApplicationConfig:         appCfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+			Deployment: sdk.Deployment{
+				PipedID:       "piped-id",
+				ApplicationID: "app-id",
+			},
+		},
+		Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
+		Logger: zaptest.NewLogger(t),
+	}
+
+	// initialize deploy target config and dynamic client for assertions with envtest
+	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
+
+	plugin := &Plugin{}
+
+	status := plugin.executeK8sCanaryRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		{
+			Name:   "default",
+			Config: *dtConfig,
+		},
+	})
+
+	assert.Equal(t, sdk.StageStatusSuccess, status)
+
+	// Assert that Deployment and Service resources are created and have expected labels/annotations.
+	deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+	deployment, err := dynamicClient.Resource(deploymentRes).Namespace("default").Get(ctx, "simple-canary", metav1.GetOptions{})
+	require.NoError(t, err)
+	assert.Equal(t, "simple-canary", deployment.GetName())
+	assert.Equal(t, "simple", deployment.GetLabels()["app"])
+	assert.Equal(t, "canary", deployment.GetLabels()["pipecd.dev/variant"])
+	assert.Equal(t, "canary", deployment.GetAnnotations()["pipecd.dev/variant"])
+
+	serviceRes := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}
+	_, err = dynamicClient.Resource(serviceRes).Namespace("default").Get(ctx, "simple-canary", metav1.GetOptions{})
+	require.Error(t, err)
+	assert.True(t, k8serrors.IsNotFound(err))
+
+	// Assert that the data of 　ConfigMap is patched.
+	configMapRes := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "configmaps"}
+	configmap, err := dynamicClient.Resource(configMapRes).Namespace("default").Get(ctx, "canary-patch-weight-config-canary", metav1.GetOptions{})
+	require.NoError(t, err)
+
+	var cm corev1.ConfigMap
+	err = runtime.DefaultUnstructuredConverter.FromUnstructured(configmap.Object, &cm)
+	require.NoError(t, err)
+
+	raw, ok := cm.Data["weight.yaml"]
+	require.True(t, ok)
+
+	type Weight struct {
+		Weight int `yaml:"weight"`
+	}
+	type Weights struct {
+		Primary Weight `yaml:"primary"`
+		Canary  Weight `yaml:"canary"`
+	}
+
+	var weights Weights
+	err = goyaml.Unmarshal([]byte(raw), &weights)
+	require.NoError(t, err)
+
+	assert.Equal(t, 90, weights.Primary.Weight)
+	assert.Equal(t, 10, weights.Canary.Weight)
 }
 
 func Test_findConfigMapManifests(t *testing.T) {
