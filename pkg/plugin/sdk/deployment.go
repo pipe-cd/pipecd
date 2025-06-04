@@ -596,6 +596,12 @@ type Deployment struct {
 	TriggeredBy string
 	// CreatedAt is the time when the deployment was created.
 	CreatedAt int64
+	// RepositoryURL is the repo remote path
+	RepositoryURL string
+	// Summary is the simple description about what this deployment does
+	Summary string
+	// Labels are custom attributes to identify applications
+	Labels map[string]string
 }
 
 // newDeployment converts the model.Deployment to the internal representation.
@@ -608,6 +614,9 @@ func newDeployment(deployment *model.Deployment) Deployment {
 		ProjectID:       deployment.GetProjectId(),
 		TriggeredBy:     deployment.TriggeredBy(),
 		CreatedAt:       deployment.GetCreatedAt(),
+		RepositoryURL:   deployment.GetGitPath().GetRepo().GetRemote(),
+		Summary:         deployment.GetSummary(),
+		Labels:          deployment.GetLabels(),
 	}
 }
 

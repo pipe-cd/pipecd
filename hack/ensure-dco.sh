@@ -19,7 +19,7 @@ set -o nounset
 set -o pipefail
 
 MERGE_BASE=$(git merge-base HEAD origin/master)
-COMMIT_HASHES=$(git log --reverse --format=format:"%H" "$MERGE_BASE..HEAD")
+COMMIT_HASHES=$(git log --no-merges --reverse --format=format:"%H" "$MERGE_BASE..HEAD")
 
 # check if the commit message contains the DCO sign-off
 for commit_hash in $COMMIT_HASHES; do

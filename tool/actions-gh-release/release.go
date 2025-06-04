@@ -358,7 +358,7 @@ func renderReleaseNote(p ReleaseProposal, cfg ReleaseConfig) []byte {
 					ns[n] = struct{}{}
 				}
 				for k := range ns {
-					link := fmt.Sprintf("[%s](https://github.com/%s/%s/pull/%s)", k, p.Owner, p.Repo, string(k[1:]))
+					link := fmt.Sprintf("[%s](https://github.com/%s/%s/pull/%s)", k, p.Owner, p.Repo, k[1:])
 					c.ReleaseNote = strings.ReplaceAll(c.ReleaseNote, k, link)
 				}
 			}
@@ -426,7 +426,7 @@ func renderReleaseNote(p ReleaseProposal, cfg ReleaseConfig) []byte {
 	}
 
 	for _, ctg := range cfg.CommitCategories {
-		commits := make([]ReleaseCommit, 0, 0)
+		commits := make([]ReleaseCommit, 0, len(filteredCommits))
 		for _, c := range filteredCommits {
 			if c.CategoryName == ctg.ID {
 				commits = append(commits, c)

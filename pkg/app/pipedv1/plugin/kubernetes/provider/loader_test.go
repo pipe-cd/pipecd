@@ -26,9 +26,10 @@ import (
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
+	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry/toolregistrytest"
+
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
-	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry/toolregistrytest"
 )
 
 func mustParseManifests(t *testing.T, data string) []Manifest {

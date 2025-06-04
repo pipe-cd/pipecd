@@ -288,12 +288,9 @@ func TestCopyToModify(t *testing.T) {
 	err = faker.makeRepo(org, repoName)
 	require.NoError(t, err)
 	r := &repo{
-		dir:          faker.repoDir(org, repoName),
-		gitPath:      faker.gitPath,
-		remote:       faker.repoDir(org, repoName), // use the same directory as remote, it's not a real remote. it's strange but it's ok for testing.
-		username:     "test-user",
-		email:        "test-email",
-		clonedBranch: "master",
+		dir:     faker.repoDir(org, repoName),
+		gitPath: faker.gitPath,
+		remote:  faker.repoDir(org, repoName), // use the same directory as remote, it's not a real remote. it's strange but it's ok for testing.
 	}
 
 	commits, err := r.ListCommits(ctx, "")

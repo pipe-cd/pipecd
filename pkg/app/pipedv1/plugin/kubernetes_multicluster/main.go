@@ -17,9 +17,10 @@ package main
 import (
 	"log"
 
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/deployment"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/livestate"
-	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 func main() {

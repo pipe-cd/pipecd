@@ -27,11 +27,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 
-	kubeConfigPkg "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister/logpersistertest"
 	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry/toolregistrytest"
+
+	kubeConfigPkg "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 )
 
 func TestPlugin_executeK8sPrimaryRolloutStage(t *testing.T) {
@@ -291,6 +292,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: my-service-custom
+  annotations:
+    pipecd.dev/resource-key: :Service::my-service-custom
 spec:
   selector:
     app: my-app

@@ -24,9 +24,10 @@ import (
 	"go.uber.org/zap"
 	"sigs.k8s.io/yaml"
 
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
-	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 func mustUnmarshalYAML[T any](t *testing.T, data []byte) T {
