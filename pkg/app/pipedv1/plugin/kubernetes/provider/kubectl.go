@@ -295,12 +295,42 @@ func (c *Kubectl) GetAllClusterScoped(ctx context.Context, kubeconfig string, se
 	return ms, nil
 }
 
+// getNamespaceScopedAPIResources retrieves the list of available API resources from the Kubernetes cluster.
+// It runs the `kubectl api-resources` command with the specified kubeconfig and returns the
+// names of the resources that support the "list", "get", and "delete" verbs, and are namespace-scoped.
+func (c *Kubectl) getNamespaceScopedAPIResources(ctx context.Context, kubeconfig string) ([]string, error) {
+	args := []string{"api-resources", "--namespaced=true", "--verbs=list,get,delete", "--output=name"}
+	if kubeconfig != "" {
+		args = append(args, "--kubeconfig", kubeconfig)
+	}
+	cmd := exec.CommandContext(ctx, c.execPath, args...)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get API resources: %s, %v", string(out), err)
+	}
+	lines := strings.Split(string(out), "\n")
+	resources := make([]string, 0, len(lines))
+	for _, line := range lines {
+		if line != "" {
+			resources = append(resources, line)
+		}
+	}
+
+	return resources, nil
+}
+
 // GetAll retrieves all Kubernetes resources in the specified namespace and matching the given selector.
 // It returns a list of manifests or an error if the retrieval or unmarshalling fails.
 // If no resources are found, it returns nil without an error.
 func (c *Kubectl) GetAll(ctx context.Context, kubeconfig, namespace string, selector ...string) (ms []Manifest, err error) {
-	args := make([]string, 0, 7)
-	args = append(args, "get", "all", "-o", "yaml", "--selector", strings.Join(selector, ","))
+	resources, err := c.getNamespaceScopedAPIResources(ctx, kubeconfig)
+	if err != nil {
+		return nil, err
+	}
+
+	args := make([]string, 0, 8)
+	args = append(args, "get", strings.Join(resources, ","), "-o", "yaml", "--selector", strings.Join(selector, ","))
+
 	if kubeconfig != "" {
 		args = append(args, "--kubeconfig", kubeconfig)
 	}
@@ -309,8 +339,15 @@ func (c *Kubectl) GetAll(ctx context.Context, kubeconfig, namespace string, sele
 	} else {
 		args = append(args, "--namespace", namespace)
 	}
+
 	cmd := exec.CommandContext(ctx, c.execPath, args...)
-	out, err := cmd.CombinedOutput()
+
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	out, err := cmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get namespace-scoped resources: stdout: %s, stderr: %s, %v", string(out), stderr.String(), err)
+	}
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get: %s, %w", string(out), err)
