@@ -278,7 +278,7 @@ metadata:
   labels:
     env: test
 data:
-  key: value			
+  key: value
 `),
 			want: []ResourceKey{
 				{
@@ -298,6 +298,34 @@ data:
 					name:      "nginx-service",
 				},
 			},
+			wantErr: false,
+		},
+		{
+			name:      "no error when there are no selected resources",
+			namespace: "test",
+			selectors: []string{"env=wrong_value"},
+			manifests: mustParseManifests(t, `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: test
+  labels:
+    env: test
+spec:
+  selector:
+    matchLabels:
+      env: test
+  template:
+    metadata:
+      labels:
+        env: test
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3			
+`),
+			want:    []ResourceKey{},
 			wantErr: false,
 		},
 	}
@@ -339,5 +367,4 @@ data:
 			assert.ElementsMatch(t, tt.want, keys)
 		})
 	}
-
 }

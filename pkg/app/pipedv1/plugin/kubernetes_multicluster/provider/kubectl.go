@@ -350,10 +350,7 @@ func (c *Kubectl) GetAll(ctx context.Context, kubeconfig, namespace string, sele
 		return nil, fmt.Errorf("failed to get namespace-scoped resources: stdout: %s, stderr: %s, %v", string(out), stderr.String(), err)
 	}
 
-	if err != nil {
-		return nil, fmt.Errorf("failed to get: %s, %w", string(out), err)
-	}
-	if strings.Contains(string(out), "(NotFound)") {
+	if strings.Contains(stderr.String(), "(NotFound)") {
 		// No resources found. Return nil. This is not an error.
 		return nil, nil
 	}
