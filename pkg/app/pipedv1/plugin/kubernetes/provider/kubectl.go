@@ -342,6 +342,7 @@ func (c *Kubectl) GetAll(ctx context.Context, kubeconfig, namespace string, sele
 
 	cmd := exec.CommandContext(ctx, c.execPath, args...)
 
+	// use only stdout for output to prevent manifest parsing failures caused by messages on stderr, like warning messages.
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	out, err := cmd.Output()
