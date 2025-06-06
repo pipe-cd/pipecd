@@ -130,7 +130,7 @@ func (p *Plugin) executeK8sPrimaryRolloutStage(ctx context.Context, input *sdk.E
 	// Start applying all manifests to add or update running resources.
 	if err := applyManifests(ctx, applier, primaryManifests, cfg.Spec.Input.Namespace, lp); err != nil {
 		lp.Errorf("Failed while applying manifests (%v)", err)
-		return sdk.StageStatusSuccess
+		return sdk.StageStatusFailure
 	}
 
 	if !stageCfg.Prune {
