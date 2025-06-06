@@ -111,3 +111,8 @@ spec:
 - wait stage plugin: TBA
 - example-stage plugin: TBA
 
+## Note
+
+- Currently, on the Deployment detail UI, each stage is not visible until it starts.
+  - The cause is that the `Visible` field of each stage is set to `false` by default in pipedv1. Instead, the new field `Rollback` is used to determine if the stage is a rollback stage.
+  - This will be modified before releasing pipedv1 beta.
