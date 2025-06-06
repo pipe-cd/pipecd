@@ -150,13 +150,16 @@ func (c *Client) PutStageMetadataMulti(ctx context.Context, metadata map[string]
 }
 
 // GetDeploymentPluginMetadata gets the metadata of the current deployment and plugin.
-func (c *Client) GetDeploymentPluginMetadata(ctx context.Context, key string) (string, error) {
+func (c *Client) GetDeploymentPluginMetadata(ctx context.Context, key string) (string, bool, error) {
 	resp, err := c.base.GetDeploymentPluginMetadata(ctx, &pipedservice.GetDeploymentPluginMetadataRequest{
 		DeploymentId: c.deploymentID,
 		PluginName:   c.pluginName,
 		Key:          key,
 	})
-	return resp.Value, err
+	if err != nil {
+		return "", false, err
+	}
+	return resp.Value, resp.Found, err
 }
 
 // PutDeploymentPluginMetadata stores the metadata of the current deployment and plugin.
