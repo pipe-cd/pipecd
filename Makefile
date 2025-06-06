@@ -23,7 +23,7 @@ build/go: BUILD_VERSION ?= $(shell git describe --tags --always --dirty --abbrev
 build/go: BUILD_COMMIT ?= $(shell git rev-parse HEAD)
 build/go: BUILD_DATE ?= $(shell date -u '+%Y%m%d-%H%M%S')
 build/go: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
-build/go: BUILD_OPTS ?= -ldflags "$(BUILD_LDFLAGS_PREFIX).version=$(BUILD_VERSION) $(BUILD_LDFLAGS_PREFIX).gitCommit=$(BUILD_COMMIT) $(BUILD_LDFLAGS_PREFIX).buildDate=$(BUILD_DATE) -w"
+build/go: BUILD_OPTS ?= -ldflags "$(BUILD_LDFLAGS_PREFIX).version=$(BUILD_VERSION) $(BUILD_LDFLAGS_PREFIX).gitCommit=$(BUILD_COMMIT) $(BUILD_LDFLAGS_PREFIX).buildDate=$(BUILD_DATE) -w" -trimpath
 build/go: BUILD_OS ?= $(shell go version | cut -d ' ' -f4 | cut -d/ -f1)
 build/go: BUILD_ARCH ?= $(shell go version | cut -d ' ' -f4 | cut -d/ -f2)
 build/go: BUILD_ENV ?= GOOS=$(BUILD_OS) GOARCH=$(BUILD_ARCH) CGO_ENABLED=0
@@ -61,13 +61,18 @@ build/plugin: PLUGINS_BIN_DIR ?= ~/.piped/plugins
 build/plugin: PLUGINS_SRC_DIR ?= ./pkg/app/pipedv1/plugin
 build/plugin: PLUGINS_OUT_DIR ?= ${PWD}/.artifacts/plugins
 build/plugin: PLUGINS ?= $(shell find $(PLUGINS_SRC_DIR) -mindepth 1 -maxdepth 1 -type d | while read -r dir; do basename "$$dir"; done | paste -sd, -) # comma separated list of plugins. eg: PLUGINS=kubernetes,ecs,lambda
+build/plugin: BUILD_OPTS ?= -ldflags "-s -w" -trimpath
+build/plugin: BUILD_OS ?= $(shell go version | cut -d ' ' -f4 | cut -d/ -f1)
+build/plugin: BUILD_ARCH ?= $(shell go version | cut -d ' ' -f4 | cut -d/ -f2)
+build/plugin: BUILD_ENV ?= GOOS=$(BUILD_OS) GOARCH=$(BUILD_ARCH) CGO_ENABLED=0
+build/plugin: BIN_SUFFIX ?=
 build/plugin:
 	mkdir -p $(PLUGINS_BIN_DIR)
 	@echo "Building plugins..."
 	@for plugin in $(shell echo $(PLUGINS) | tr ',' ' '); do \
 		echo "Building plugin: $$plugin"; \
-		go -C $(PLUGINS_SRC_DIR)/$$plugin build -o $(PLUGINS_OUT_DIR)/$$plugin . \
-			&& cp $(PLUGINS_OUT_DIR)/$$plugin $(PLUGINS_BIN_DIR)/$$plugin; \
+		$(BUILD_ENV) go -C $(PLUGINS_SRC_DIR)/$$plugin build $(BUILD_OPTS) -o $(PLUGINS_OUT_DIR)/$${plugin}$(BIN_SUFFIX) . \
+			&& cp $(PLUGINS_OUT_DIR)/$${plugin}$(BIN_SUFFIX) $(PLUGINS_BIN_DIR)/$$plugin; \
 	done
 	@echo "Plugins are built and copied to $(PLUGINS_BIN_DIR)"
 
