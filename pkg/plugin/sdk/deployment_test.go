@@ -308,13 +308,9 @@ func TestStagePluginServiceServer_BuildQuickSyncStages(t *testing.T) {
 
 	request := &deployment.BuildQuickSyncStagesRequest{}
 	response, err := server.BuildQuickSyncStages(context.Background(), request)
-	if err == nil {
-		t.Fatalf("expected error, got nil")
-	}
-
-	if response != nil {
-		t.Errorf("expected nil response, got %v", response)
-	}
+	require.NoError(t, err)
+	assert.NotNil(t, response)
+	assert.Empty(t, response.GetStages())
 }
 
 func TestStageStatus_toModelEnum(t *testing.T) {
