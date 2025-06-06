@@ -30,3 +30,6 @@ area/pipedv1:
 - pkg/app/pipedv1/**/*
 - pkg/configv1/*
 - pkg/configv1/**/*
+
+area/sdk-plugins:
+- pkg/plugin/sdk/**/*
