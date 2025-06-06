@@ -1,12 +1,12 @@
 apiVersion: pipecd.dev/v1beta1
 kind: Application
 spec:
-  name: canary-clean-patch
+  name: rollback-prune
   labels:
     env: example
     team: product
   description: |
-    This app is test data for canary clean with patch.
+    This app is test data for rollback with prune.
   pipeline:
     stages:
       - name: K8S_BASELINE_ROLLOUT
