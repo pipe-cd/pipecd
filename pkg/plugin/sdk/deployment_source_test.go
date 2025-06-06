@@ -134,7 +134,7 @@ func TestApplicationConfig_ParsePluginConfig(t *testing.T) {
 			config: &ApplicationConfig[testPluginSpec]{
 				pluginConfigs: nil,
 			},
-			wantSpec: nil,
+			wantSpec: &testPluginSpec{},
 			wantErr:  false,
 		},
 		{
@@ -143,7 +143,7 @@ func TestApplicationConfig_ParsePluginConfig(t *testing.T) {
 			config: &ApplicationConfig[testPluginSpec]{
 				pluginConfigs: make(map[string]json.RawMessage),
 			},
-			wantSpec: nil,
+			wantSpec: &testPluginSpec{},
 			wantErr:  false,
 		},
 		{

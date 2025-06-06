@@ -113,6 +113,8 @@ func (c *ApplicationConfig[Spec]) parsePluginConfig(pluginName string) error {
 
 	if c.pluginConfigs == nil || c.pluginConfigs[pluginName] == nil {
 		// No config is set for this plugin.
+		// Set the Spec to the zero value of the spec type to avoid nil pointer dereference.
+		c.Spec = new(Spec)
 		return nil
 	}
 
