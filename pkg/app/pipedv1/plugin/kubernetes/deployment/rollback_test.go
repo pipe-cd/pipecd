@@ -210,3 +210,134 @@ func TestPlugin_executeK8sRollbackStage_WithVariantLabels(t *testing.T) {
 	assert.Equal(t, "previous-hash", deployment.GetAnnotations()["pipecd.dev/commit-hash"])
 	assert.Equal(t, "primary", deployment.GetAnnotations()["pipecd.dev/variant"])
 }
+
+func TestPlugin_executeK8sRollbackStage_PrunesCanaryAndBaselineVariants(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+
+	// Initialize tool registry
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
+	// Use dedicated testdata for this test
+	runningDir := filepath.Join("testdata", "prune_rollback", "running")
+	targetDir := filepath.Join("testdata", "prune_rollback", "target")
+	runningCfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(runningDir, "app.pipecd.yaml"), "kubernetes")
+	targetCfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join(targetDir, "app.pipecd.yaml"), "kubernetes")
+
+	// Initialize deploy target config and dynamic client for assertions with envtest
+	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
+	plugin := &Plugin{}
+
+	runningDeploymentSource := sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+		ApplicationDirectory:      runningDir,
+		CommitHash:                "running-hash",
+		ApplicationConfig:         runningCfg,
+		ApplicationConfigFilename: "app.pipecd.yaml",
+	}
+	targetDeploymentSource := sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+		ApplicationDirectory:      targetDir,
+		CommitHash:                "target-hash",
+		ApplicationConfig:         targetCfg,
+		ApplicationConfigFilename: "app.pipecd.yaml",
+	}
+	deployment := sdk.Deployment{
+		PipedID:       "piped-id",
+		ApplicationID: "app-id",
+	}
+	deployTargets := []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
+		{
+			Name:   "default",
+			Config: *dtConfig,
+		},
+	}
+	successResponse := &sdk.ExecuteStageResponse{
+		Status: sdk.StageStatusSuccess,
+	}
+
+	baselineOk := t.Run("baseline rollout", func(t *testing.T) {
+		baselineInput := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+				StageName:               "K8S_BASELINE_ROLLOUT",
+				StageConfig:             []byte(`{"createService": true}`),
+				RunningDeploymentSource: runningDeploymentSource,
+				TargetDeploymentSource:  targetDeploymentSource,
+				Deployment:              deployment,
+			},
+			Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
+			Logger: zaptest.NewLogger(t),
+		}
+		status, err := plugin.ExecuteStage(ctx, nil, deployTargets, baselineInput)
+		require.NoError(t, err)
+		assert.Equal(t, successResponse, status)
+	})
+	require.True(t, baselineOk, "baseline rollout subtest failed, aborting")
+
+	canaryOk := t.Run("canary rollout", func(t *testing.T) {
+		canaryInput := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+				StageName: "K8S_CANARY_ROLLOUT",
+				StageConfig: []byte(`
+				{
+				   "patches": [
+					 {
+					   "target": {"kind": "ConfigMap", "name": "canary-patch-weight-config", "documentRoot": "$.data.'weight.yaml'"},
+					   "ops": [
+						{"op": "yaml-replace", "path": "$.primary.weight", "value": "90"},
+						{"op": "yaml-replace", "path": "$.canary.weight", "value": "10"}
+					   ]
+					 }
+				   ]
+				}`),
+				RunningDeploymentSource: runningDeploymentSource,
+				TargetDeploymentSource:  targetDeploymentSource,
+				Deployment:              deployment,
+			},
+			Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
+			Logger: zaptest.NewLogger(t),
+		}
+		status, err := plugin.ExecuteStage(ctx, nil, deployTargets, canaryInput)
+		require.NoError(t, err)
+		assert.Equal(t, successResponse, status)
+	})
+	require.True(t, canaryOk, "canary rollout subtest failed, aborting")
+
+	primaryOk := t.Run("primary rollout", func(t *testing.T) {
+		primaryInput := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+				StageName:               "K8S_PRIMARY_ROLLOUT",
+				StageConfig:             []byte(`{}`),
+				RunningDeploymentSource: runningDeploymentSource,
+				TargetDeploymentSource:  targetDeploymentSource,
+				Deployment:              deployment,
+			},
+			Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
+			Logger: zaptest.NewLogger(t),
+		}
+		status, err := plugin.ExecuteStage(ctx, nil, deployTargets, primaryInput)
+		require.NoError(t, err)
+		assert.Equal(t, successResponse, status)
+	})
+	require.True(t, primaryOk, "primary rollout subtest failed, aborting")
+
+	rollbackOk := t.Run("rollback", func(t *testing.T) {
+		rollbackInput := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+				StageName:               "K8S_ROLLBACK",
+				StageConfig:             []byte(``),
+				RunningDeploymentSource: runningDeploymentSource,
+				TargetDeploymentSource:  targetDeploymentSource,
+				Deployment:              deployment,
+			},
+			Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
+			Logger: zaptest.NewLogger(t),
+		}
+		status, err := plugin.ExecuteStage(ctx, nil, deployTargets, rollbackInput)
+		require.NoError(t, err)
+		assert.Equal(t, successResponse, status)
+	})
+	require.True(t, rollbackOk, "rollback subtest failed, aborting")
+
+	_ = dynamicClient
+	// TODO: assert that the canary and baseline resources are deleted
+}
