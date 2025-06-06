@@ -9,6 +9,16 @@ https://pipecd.dev/docs-v0.52.x/user-guide/managing-application/customizing-depl
 
 ## Plugin Configuration
 
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: Piped
+spec:
+  plugins:
+  - name: wait
+    port: 7002 # any unused port
+    url: file:///path/to/.piped/plugins/wait # or remoteUrl(TBD)
+```
+
 `config` and `deployTargets` are not supported.
 
 ## Application Configuration
