@@ -1,7 +1,7 @@
 import { FC } from "react";
-import { InsightDataPoint, InsightResolution } from "~/modules/insight";
 import { ChartBase } from "../chart-base";
 import { blue as chartColor } from "@mui/material/colors";
+import { InsightDataPoint, InsightResolution } from "~~/model/insight_pb";
 
 export interface DeploymentFrequencyChartProps {
   resolution: InsightResolution;

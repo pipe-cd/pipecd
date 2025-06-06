@@ -1,89 +1,91 @@
 import { Box } from "@mui/material";
-import { FC, memo, useEffect } from "react";
-import { useAppDispatch, useAppSelector } from "~/hooks/redux";
-import { fetchApplications, selectById } from "~/modules/applications";
-import { fetchApplicationCount } from "~/modules/application-counts";
-import {
-  InsightDataPoint,
-  InsightResolution,
-  InsightRange,
-} from "~/modules/insight";
+import { FC, memo, useMemo, useState } from "react";
 import { ChangeFailureRateChart } from "./change-failure-rate-chart";
 import { DeploymentFrequencyChart } from "./deployment-frequency-chart";
 import { InsightHeader } from "./insight-header";
-import {
-  fetchDeploymentChangeFailureRate,
-  fetchDeploymentChangeFailureRate24h,
-} from "~/modules/deployment-change-failure-rate";
-import {
-  fetchDeployment24h,
-  fetchDeploymentFrequency,
-} from "~/modules/deployment-frequency";
 import { StatisticInformation } from "./statistic-information";
+import { useInsightDeploymentFrequency } from "~/queries/insight/use-insight-deployment-frequency";
+import { useInsightDeploymentChangeFailureRate } from "~/queries/insight/use-insight-deployment-change-failure-rate";
+import { useGetApplications } from "~/queries/applications/use-get-applications";
+import {
+  InsightRange,
+  InsightResolution,
+} from "~/queries/insight/insight.config";
+
+export type InsightFilterValues = {
+  applicationId: string;
+  labels: Array<string>;
+  range: InsightRange;
+  resolution: InsightResolution;
+};
 
 export const InsightIndexPage: FC = memo(function InsightIndexPage() {
-  const dispatch = useAppDispatch();
+  const { data: applications = [] } = useGetApplications();
+  const [filterValues, setFilterValues] = useState<InsightFilterValues>({
+    applicationId: "",
+    labels: [],
+    range: InsightRange.LAST_1_MONTH,
+    resolution: InsightResolution.DAILY,
+  });
 
-  const [applicationId, labels, range, resolution] = useAppSelector<
-    [string, Array<string>, InsightRange, InsightResolution]
-  >((state) => [
-    state.insight.applicationId,
-    state.insight.labels,
-    state.insight.range,
-    state.insight.resolution,
-  ]);
-
-  const selectedAppName = useAppSelector<string | undefined>((state) =>
-    state.insight.applicationId
-      ? selectById(state.applications, state.insight.applicationId)?.name
-      : undefined
+  const selectedAppName = useMemo<string | undefined>(
+    () =>
+      applications.find((item) => item.id === filterValues.applicationId)?.name,
+    [applications, filterValues.applicationId]
   );
 
-  const selectedLabels = useAppSelector<string>((state) =>
-    state.insight.labels.length !== 0
-      ? "{" + state.insight.labels.join(", ") + "}"
-      : ""
+  const selectedLabels = useMemo<string>(
+    () =>
+      filterValues.labels.length !== 0
+        ? "{" + filterValues.labels.join(", ") + "}"
+        : "",
+    [filterValues.labels]
   );
 
-  const deploymentFrequency = useAppSelector<InsightDataPoint.AsObject[]>(
-    (state) => state.deploymentFrequency.data
+  const { data: deploymentFrequency = [] } = useInsightDeploymentFrequency(
+    {
+      applicationId: filterValues.applicationId ?? "",
+      labels: filterValues.labels ?? [],
+      range: filterValues.range ?? InsightRange.LAST_1_MONTH,
+      resolution: filterValues.resolution ?? InsightResolution.DAILY,
+    },
+    { keepPreviousData: true, retry: false, refetchOnWindowFocus: false }
   );
-  const deploymentFrequencyDataPoints: {
-    name: string;
-    points: InsightDataPoint.AsObject[];
-  }[] = [];
-  if (deploymentFrequency.length > 0) {
-    deploymentFrequencyDataPoints.push({
-      name: (selectedAppName || "All") + " " + selectedLabels,
-      points: deploymentFrequency,
-    });
-  }
 
-  const deploymentChangeFailureRate = useAppSelector<
-    InsightDataPoint.AsObject[]
-  >((state) => state.deploymentChangeFailureRate.data);
-  const deploymentChangeFailureRateDataPoints: {
-    name: string;
-    points: InsightDataPoint.AsObject[];
-  }[] = [];
-  if (deploymentChangeFailureRate.length > 0) {
-    deploymentChangeFailureRateDataPoints.push({
-      name: (selectedAppName || "All") + " " + selectedLabels,
-      points: deploymentChangeFailureRate,
-    });
-  }
+  const {
+    data: deploymentChangeFailureRate = [],
+  } = useInsightDeploymentChangeFailureRate(
+    {
+      applicationId: filterValues.applicationId ?? "",
+      labels: filterValues.labels ?? [],
+      range: filterValues.range ?? InsightRange.LAST_1_MONTH,
+      resolution: filterValues.resolution ?? InsightResolution.DAILY,
+    },
+    { keepPreviousData: true, retry: false, refetchOnWindowFocus: false }
+  );
 
-  useEffect(() => {
-    dispatch(fetchApplications());
-    dispatch(fetchApplicationCount());
-  }, [dispatch]);
+  const deploymentFrequencyDataPoints = useMemo(() => {
+    const name = (selectedAppName || "All") + " " + selectedLabels;
+    return deploymentFrequency.length > 0
+      ? [{ name, points: deploymentFrequency }]
+      : [];
+  }, [deploymentFrequency, selectedAppName, selectedLabels]);
 
-  useEffect(() => {
-    dispatch(fetchDeploymentFrequency());
-    dispatch(fetchDeployment24h());
-    dispatch(fetchDeploymentChangeFailureRate());
-    dispatch(fetchDeploymentChangeFailureRate24h());
-  }, [dispatch, applicationId, labels, range, resolution]);
+  const deploymentChangeFailureRateDataPoints = useMemo(() => {
+    const name = (selectedAppName || "All") + " " + selectedLabels;
+    return deploymentChangeFailureRate.length > 0
+      ? [{ name, points: deploymentChangeFailureRate }]
+      : [];
+  }, [deploymentChangeFailureRate, selectedAppName, selectedLabels]);
+
+  const handleChangeFilter = (
+    filterValues: Partial<InsightFilterValues>
+  ): void => {
+    setFilterValues((prev) => ({
+      ...prev,
+      ...filterValues,
+    }));
+  };
 
   return (
     <Box
@@ -98,12 +100,14 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
           display: "flex",
           flexDirection: "column",
           flex: 1,
-          p: 2,
         }}
       >
         <StatisticInformation />
       </Box>
-      <InsightHeader />
+      <InsightHeader
+        filterValues={filterValues}
+        onChangeFilter={handleChangeFilter}
+      />
       <Box
         sx={{
           display: "grid",
@@ -113,11 +117,11 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
         }}
       >
         <DeploymentFrequencyChart
-          resolution={resolution}
+          resolution={filterValues.resolution}
           data={deploymentFrequencyDataPoints}
         />
         <ChangeFailureRateChart
-          resolution={resolution}
+          resolution={filterValues.resolution}
           data={deploymentChangeFailureRateDataPoints}
         />
       </Box>

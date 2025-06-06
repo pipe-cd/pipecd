@@ -29,14 +29,14 @@ import { LOGGING_IN_PROJECT, USER_PROJECTS } from "~/constants/localstorage";
 import { NavLink as RouterLink } from "react-router-dom";
 import ArrowDownIcon from "@mui/icons-material/ArrowDropDown";
 import logo from "~~/assets/logo.svg";
-import { useAppSelector } from "~/hooks/redux";
 import NavLink from "./NavLink";
 import { IconOpenNewTab, LogoImage } from "./styles";
+import useAuth from "~/contexts/auth-context/use-auth";
 
 export const APP_HEADER_HEIGHT = 56;
 
 export const Header: FC = memo(function Header() {
-  const me = useAppSelector((state) => state.me);
+  const { me } = useAuth();
   const [userAnchorEl, setUserAnchorEl] = useState<HTMLButtonElement | null>(
     null
   );
