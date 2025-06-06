@@ -48,7 +48,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/crypto"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
-	"github.com/pipe-cd/pipecd/pkg/datastore/filedb"
 	"github.com/pipe-cd/pipecd/pkg/datastore/firestore"
 	"github.com/pipe-cd/pipecd/pkg/datastore/mysql"
 	"github.com/pipe-cd/pipecd/pkg/filestore"
@@ -484,11 +483,6 @@ func createDatastore(ctx context.Context, cfg *config.ControlPlaneSpec, fs files
 			options = append(options, mysql.WithAuthenticationFile(mqConfig.UsernameFile, mqConfig.PasswordFile))
 		}
 		return mysql.NewMySQL(mqConfig.URL, mqConfig.Database, options...)
-	case model.DataStoreFileDB:
-		options := []filedb.Option{
-			filedb.WithLogger(logger),
-		}
-		return filedb.NewFileDB(fs, c, options...)
 	default:
 		return nil, fmt.Errorf("unknown datastore type %q", cfg.Datastore.Type)
 	}
