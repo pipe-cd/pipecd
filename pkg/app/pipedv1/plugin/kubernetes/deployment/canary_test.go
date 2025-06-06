@@ -298,6 +298,375 @@ func TestPlugin_executeK8sCanaryRolloutStage_withPatch(t *testing.T) {
 	assert.Equal(t, 10, weights.Canary.Weight)
 }
 
+func TestPlugin_executeK8sCanaryCleanStage_withCreateService(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+
+	// initialize tool registry
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
+	configDir := filepath.Join("testdata", "canary_clean_with_create_service")
+
+	// read the application config from the example file
+	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(configDir, "app.pipecd.yaml"), "kubernetes")
+
+	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
+			StageName:   "K8S_CANARY_ROLLOUT",
+			StageConfig: []byte(`{"createService": true}`),
+			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+				ApplicationDirectory:      configDir,
+				CommitHash:                "0123456789",
+				ApplicationConfig:         appCfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+			Deployment: sdk.Deployment{
+				PipedID:       "piped-id",
+				ApplicationID: "app-id",
+			},
+		},
+		Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
+		Logger: zaptest.NewLogger(t),
+	}
+
+	// initialize deploy target config and dynamic client for assertions with envtest
+	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
+
+	plugin := &Plugin{}
+
+	ok := t.Run("execute canary rollout stage", func(t *testing.T) {
+		status := plugin.executeK8sCanaryRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+			{
+				Name:   "default",
+				Config: *dtConfig,
+			},
+		})
+
+		assert.Equal(t, sdk.StageStatusSuccess, status)
+
+		// Assert that Deployment and Service resources are created and have expected labels/annotations.
+		deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+		deployment, err := dynamicClient.Resource(deploymentRes).Namespace("default").Get(ctx, "simple-canary", metav1.GetOptions{})
+		require.NoError(t, err)
+		assert.Equal(t, "simple-canary", deployment.GetName())
+		assert.Equal(t, "simple", deployment.GetLabels()["app"])
+		assert.Equal(t, "canary", deployment.GetLabels()["pipecd.dev/variant"])
+		assert.Equal(t, "canary", deployment.GetAnnotations()["pipecd.dev/variant"])
+
+		// Additional assertions for builtin labels and annotations
+		assert.Equal(t, "piped", deployment.GetLabels()["pipecd.dev/managed-by"])
+		assert.Equal(t, "piped-id", deployment.GetLabels()["pipecd.dev/piped"])
+		assert.Equal(t, "app-id", deployment.GetLabels()["pipecd.dev/application"])
+		assert.Equal(t, "0123456789", deployment.GetLabels()["pipecd.dev/commit-hash"])
+		assert.Equal(t, "piped", deployment.GetAnnotations()["pipecd.dev/managed-by"])
+		assert.Equal(t, "piped-id", deployment.GetAnnotations()["pipecd.dev/piped"])
+		assert.Equal(t, "app-id", deployment.GetAnnotations()["pipecd.dev/application"])
+		assert.Equal(t, "0123456789", deployment.GetAnnotations()["pipecd.dev/commit-hash"])
+		assert.Equal(t, "apps/v1", deployment.GetAnnotations()["pipecd.dev/original-api-version"])
+		assert.Equal(t, "apps:Deployment::simple-canary", deployment.GetAnnotations()["pipecd.dev/resource-key"])
+
+		serviceRes := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}
+		service, err := dynamicClient.Resource(serviceRes).Namespace("default").Get(ctx, "simple-canary", metav1.GetOptions{})
+		require.NoError(t, err)
+		assert.Equal(t, "simple-canary", service.GetName())
+
+		// Additional assertions for Service labels, annotations, selector, and ports
+		assert.Equal(t, "piped", service.GetLabels()["pipecd.dev/managed-by"])
+		assert.Equal(t, "piped-id", service.GetLabels()["pipecd.dev/piped"])
+		assert.Equal(t, "app-id", service.GetLabels()["pipecd.dev/application"])
+		assert.Equal(t, "0123456789", service.GetLabels()["pipecd.dev/commit-hash"])
+		assert.Equal(t, "piped", service.GetAnnotations()["pipecd.dev/managed-by"])
+		assert.Equal(t, "piped-id", service.GetAnnotations()["pipecd.dev/piped"])
+		assert.Equal(t, "app-id", service.GetAnnotations()["pipecd.dev/application"])
+		assert.Equal(t, "0123456789", service.GetAnnotations()["pipecd.dev/commit-hash"])
+		assert.Equal(t, "v1", service.GetAnnotations()["pipecd.dev/original-api-version"])
+		assert.Equal(t, ":Service::simple-canary", service.GetAnnotations()["pipecd.dev/resource-key"])
+
+		// Check Service selector and ports
+		selector, found, err := unstructured.NestedStringMap(service.Object, "spec", "selector")
+		require.NoError(t, err)
+		require.True(t, found)
+		assert.Equal(t, map[string]string{"app": "simple", "pipecd.dev/variant": "canary"}, selector)
+		ports, found, err := unstructured.NestedSlice(service.Object, "spec", "ports")
+		require.NoError(t, err)
+		require.True(t, found)
+		require.Len(t, ports, 1)
+		port := ports[0].(map[string]any)
+		assert.Equal(t, int64(9085), port["port"])
+		assert.Equal(t, int64(9085), port["targetPort"])
+		assert.Equal(t, "TCP", port["protocol"])
+	})
+	require.True(t, ok)
+
+	ok = t.Run("execute canary clean stage", func(t *testing.T) {
+		status := plugin.executeK8sCanaryCleanStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+			{
+				Name:   "default",
+				Config: *dtConfig,
+			},
+		})
+		assert.Equal(t, sdk.StageStatusSuccess, status)
+
+		// Assert that canary variant of resources are removed.
+		deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+		_, err := dynamicClient.Resource(deploymentRes).Namespace("default").Get(ctx, "simple-canary", metav1.GetOptions{})
+		require.Error(t, err)
+		assert.True(t, k8serrors.IsNotFound(err))
+
+		serviceRes := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}
+		_, err = dynamicClient.Resource(serviceRes).Namespace("default").Get(ctx, "simple-canary", metav1.GetOptions{})
+		require.Error(t, err)
+		assert.True(t, k8serrors.IsNotFound(err))
+	})
+	require.True(t, ok)
+}
+
+func TestPlugin_executeK8sCanaryCleanStage_withoutCreateService(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+
+	// initialize tool registry
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
+	configDir := filepath.Join("testdata", "canary_clean_without_create_service")
+
+	// read the application config from the example file
+	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(configDir, "app.pipecd.yaml"), "kubernetes")
+
+	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
+			StageName:   "K8S_CANARY_ROLLOUT",
+			StageConfig: []byte(`{}`),
+			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+				ApplicationDirectory:      configDir,
+				CommitHash:                "0123456789",
+				ApplicationConfig:         appCfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+			Deployment: sdk.Deployment{
+				PipedID:       "piped-id",
+				ApplicationID: "app-id",
+			},
+		},
+		Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
+		Logger: zaptest.NewLogger(t),
+	}
+
+	// initialize deploy target config and dynamic client for assertions with envtest
+	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
+
+	plugin := &Plugin{}
+
+	ok := t.Run("execute canary rollout stage", func(t *testing.T) {
+		status := plugin.executeK8sCanaryRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+			{
+				Name:   "default",
+				Config: *dtConfig,
+			},
+		})
+
+		assert.Equal(t, sdk.StageStatusSuccess, status)
+
+		// Assert that Deployment and Service resources are created and have expected labels/annotations.
+		deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+		deployment, err := dynamicClient.Resource(deploymentRes).Namespace("default").Get(ctx, "simple-canary", metav1.GetOptions{})
+		require.NoError(t, err)
+		assert.Equal(t, "simple-canary", deployment.GetName())
+		assert.Equal(t, "simple", deployment.GetLabels()["app"])
+		assert.Equal(t, "canary", deployment.GetLabels()["pipecd.dev/variant"])
+		assert.Equal(t, "canary", deployment.GetAnnotations()["pipecd.dev/variant"])
+
+		// Additional assertions for builtin labels and annotations
+		assert.Equal(t, "piped", deployment.GetLabels()["pipecd.dev/managed-by"])
+		assert.Equal(t, "piped-id", deployment.GetLabels()["pipecd.dev/piped"])
+		assert.Equal(t, "app-id", deployment.GetLabels()["pipecd.dev/application"])
+		assert.Equal(t, "0123456789", deployment.GetLabels()["pipecd.dev/commit-hash"])
+		assert.Equal(t, "piped", deployment.GetAnnotations()["pipecd.dev/managed-by"])
+		assert.Equal(t, "piped-id", deployment.GetAnnotations()["pipecd.dev/piped"])
+		assert.Equal(t, "app-id", deployment.GetAnnotations()["pipecd.dev/application"])
+		assert.Equal(t, "0123456789", deployment.GetAnnotations()["pipecd.dev/commit-hash"])
+		assert.Equal(t, "apps/v1", deployment.GetAnnotations()["pipecd.dev/original-api-version"])
+		assert.Equal(t, "apps:Deployment::simple-canary", deployment.GetAnnotations()["pipecd.dev/resource-key"])
+
+		serviceRes := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}
+		_, err = dynamicClient.Resource(serviceRes).Namespace("default").Get(ctx, "simple-canary", metav1.GetOptions{})
+		require.Error(t, err)
+		assert.True(t, k8serrors.IsNotFound(err))
+	})
+	require.True(t, ok)
+
+	ok = t.Run("execute canary clean stage", func(t *testing.T) {
+		status := plugin.executeK8sCanaryCleanStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+			{
+				Name:   "default",
+				Config: *dtConfig,
+			},
+		})
+		assert.Equal(t, sdk.StageStatusSuccess, status)
+
+		// Assert that canary variant of resources are removed.
+		deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+		_, err := dynamicClient.Resource(deploymentRes).Namespace("default").Get(ctx, "simple-canary", metav1.GetOptions{})
+		require.Error(t, err)
+		assert.True(t, k8serrors.IsNotFound(err))
+	})
+	require.True(t, ok)
+}
+
+func TestPlugin_executeK8sCanaryCleanStage_withPatch(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+
+	// initialize tool registry
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
+	configDir := filepath.Join("testdata", "canary_clean_with_patch")
+
+	// initialize deploy target config and dynamic client for assertions with envtest
+	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
+
+	plugin := &Plugin{}
+
+	ok := t.Run("execute canary rollout stage", func(t *testing.T) {
+		// read the application config from the example file
+		appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(configDir, "app.pipecd.yaml"), "kubernetes")
+
+		input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
+				StageName: "K8S_CANARY_ROLLOUT",
+				StageConfig: []byte(`
+{
+   "patches": [
+     {
+       "target": {"kind": "ConfigMap", "name": "canary-patch-weight-config", "documentRoot": "$.data.'weight.yaml'"},
+       "ops": [
+		{"op": "yaml-replace", "path": "$.primary.weight", "value": "90"},
+		{"op": "yaml-replace", "path": "$.canary.weight", "value": "10"}
+	   ]
+	 }
+   ]
+}`),
+				TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+					ApplicationDirectory:      configDir,
+					CommitHash:                "0123456789",
+					ApplicationConfig:         appCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+				Deployment: sdk.Deployment{
+					PipedID:       "piped-id",
+					ApplicationID: "app-id",
+				},
+			},
+			Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
+			Logger: zaptest.NewLogger(t),
+		}
+
+		status := plugin.executeK8sCanaryRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+			{
+				Name:   "default",
+				Config: *dtConfig,
+			},
+		})
+
+		assert.Equal(t, sdk.StageStatusSuccess, status)
+
+		// Assert that Deployment and Service resources are created and have expected labels/annotations.
+		deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+		deployment, err := dynamicClient.Resource(deploymentRes).Namespace("default").Get(ctx, "simple-canary", metav1.GetOptions{})
+		require.NoError(t, err)
+		assert.Equal(t, "simple-canary", deployment.GetName())
+		assert.Equal(t, "simple", deployment.GetLabels()["app"])
+		assert.Equal(t, "canary", deployment.GetLabels()["pipecd.dev/variant"])
+		assert.Equal(t, "canary", deployment.GetAnnotations()["pipecd.dev/variant"])
+
+		serviceRes := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}
+		_, err = dynamicClient.Resource(serviceRes).Namespace("default").Get(ctx, "simple-canary", metav1.GetOptions{})
+		require.Error(t, err)
+		assert.True(t, k8serrors.IsNotFound(err))
+
+		// Assert that the data of 　ConfigMap is patched.
+		configMapRes := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "configmaps"}
+		configmap, err := dynamicClient.Resource(configMapRes).Namespace("default").Get(ctx, "canary-patch-weight-config-canary", metav1.GetOptions{})
+		require.NoError(t, err)
+		assert.Equal(t, "canary", configmap.GetLabels()["pipecd.dev/variant"])
+		assert.Equal(t, "piped", configmap.GetLabels()["pipecd.dev/managed-by"])
+		assert.Equal(t, "piped-id", configmap.GetLabels()["pipecd.dev/piped"])
+		assert.Equal(t, "app-id", configmap.GetLabels()["pipecd.dev/application"])
+
+		assert.Equal(t, "canary", configmap.GetAnnotations()["pipecd.dev/variant"])
+
+		var cm corev1.ConfigMap
+		err = runtime.DefaultUnstructuredConverter.FromUnstructured(configmap.Object, &cm)
+		require.NoError(t, err)
+
+		raw, ok := cm.Data["weight.yaml"]
+		require.True(t, ok)
+
+		type Weight struct {
+			Weight int `yaml:"weight"`
+		}
+		type Weights struct {
+			Primary Weight `yaml:"primary"`
+			Canary  Weight `yaml:"canary"`
+		}
+
+		var weights Weights
+		err = goyaml.Unmarshal([]byte(raw), &weights)
+		require.NoError(t, err)
+
+		assert.Equal(t, 90, weights.Primary.Weight)
+		assert.Equal(t, 10, weights.Canary.Weight)
+	})
+	require.True(t, ok)
+
+	ok = t.Run("execute canary clean stage", func(t *testing.T) {
+		// read the application config from the example file
+		appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(configDir, "app.pipecd.yaml"), "kubernetes")
+
+		input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
+				StageName:   "K8S_CANARY_CLEAN",
+				StageConfig: []byte(`{}`),
+				TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+					ApplicationDirectory:      configDir,
+					CommitHash:                "0123456789",
+					ApplicationConfig:         appCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+				Deployment: sdk.Deployment{
+					PipedID:       "piped-id",
+					ApplicationID: "app-id",
+				},
+			},
+			Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
+			Logger: zaptest.NewLogger(t),
+		}
+
+		status := plugin.executeK8sCanaryCleanStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+			{
+				Name:   "default",
+				Config: *dtConfig,
+			},
+		})
+		assert.Equal(t, sdk.StageStatusSuccess, status)
+
+		// Assert that canary variant of resources are removed.
+		deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+		_, err := dynamicClient.Resource(deploymentRes).Namespace("default").Get(ctx, "simple-canary", metav1.GetOptions{})
+		require.Error(t, err)
+		assert.True(t, k8serrors.IsNotFound(err))
+
+		configMapRes := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "configmaps"}
+		_, err = dynamicClient.Resource(configMapRes).Namespace("default").Get(ctx, "canary-patch-weight-config-canary", metav1.GetOptions{})
+		require.Error(t, err)
+		assert.True(t, k8serrors.IsNotFound(err))
+	})
+	require.True(t, ok)
+}
+
 func Test_findConfigMapManifests(t *testing.T) {
 	t.Parallel()
 

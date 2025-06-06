@@ -1,0 +1,20 @@
+apiVersion: pipecd.dev/v1beta1
+kind: Application
+spec:
+  name: canary-clean
+  labels:
+    env: example
+    team: product
+  description: |
+    This app is test data for canary clean.
+  pipeline:
+    stages:
+      - name: K8S_CANARY_ROLLOUT
+      - name: K8S_CANARY_CLEAN
+  plugins:
+    kubernetes:
+      input:
+        manifests:
+          - deployment.yaml
+          - service.yaml
+        kubectlVersion: 1.32.2

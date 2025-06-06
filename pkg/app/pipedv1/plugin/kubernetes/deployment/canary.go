@@ -179,9 +179,51 @@ func (p *Plugin) generateCanaryManifests(appCfg *kubeconfig.KubernetesApplicatio
 	return canaryManifests, nil
 }
 
-func (p *Plugin) executeK8sCanaryCleanStage(_ context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], _ []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
-	input.Client.LogPersister().Error("Canary clean is not yet implemented")
-	return sdk.StageStatusFailure
+func (p *Plugin) executeK8sCanaryCleanStage(ctx context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
+	lp := input.Client.LogPersister()
+	lp.Info("Start canary clean")
+
+	// Get the deploy target config.
+	if len(dts) == 0 {
+		lp.Error("No deploy target was found")
+		return sdk.StageStatusFailure
+	}
+	deployTargetConfig := dts[0].Config
+
+	cfg, err := input.Request.TargetDeploymentSource.AppConfig()
+	if err != nil {
+		lp.Errorf("Failed while loading application config (%v)", err)
+		return sdk.StageStatusFailure
+	}
+
+	var (
+		appCfg        = cfg.Spec
+		variantLabel  = appCfg.VariantLabel.Key
+		canaryVariant = appCfg.VariantLabel.CanaryValue
+	)
+
+	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
+
+	// Get the kubectl tool path.
+	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(appCfg.Input.KubectlVersion, deployTargetConfig.KubectlVersion))
+	if err != nil {
+		lp.Errorf("Failed while getting kubectl tool (%v)", err)
+		return sdk.StageStatusFailure
+	}
+
+	// Create the kubectl wrapper for the target cluster.
+	kubectl := provider.NewKubectl(kubectlPath)
+
+	// Create the applier for the target cluster.
+	applier := provider.NewApplier(kubectl, appCfg.Input, deployTargetConfig, input.Logger)
+
+	if err := deleteVariantResources(ctx, lp, kubectl, deployTargetConfig.KubeConfigPath, applier, input.Request.Deployment.ApplicationID, variantLabel, canaryVariant); err != nil {
+		lp.Errorf("Unable to remove canary resources: (%v)", err)
+		return sdk.StageStatusFailure
+	}
+
+	lp.Success("Successfully cleaned CANARY variant")
+	return sdk.StageStatusSuccess
 }
 
 func findConfigMapManifests(manifests []provider.Manifest) []provider.Manifest {
