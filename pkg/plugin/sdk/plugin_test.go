@@ -121,7 +121,7 @@ func (e ExampleLivestatePlugin) Version() string {
 }
 
 func ExampleNewPlugin() {
-	plugin, err := NewPlugin("test", "1.0.0",
+	plugin, err := NewPlugin("1.0.0",
 		WithDeploymentPlugin(ExampleDeploymentPlugin{}),
 		WithLivestatePlugin(ExampleLivestatePlugin{}),
 	)
@@ -141,7 +141,7 @@ func ExampleNewPlugin() {
 }
 
 func ExampleWithStagePlugin() {
-	plugin, err := NewPlugin("test", "1.0.0",
+	plugin, err := NewPlugin("1.0.0",
 		WithStagePlugin(ExampleStagePlugin{}),
 	)
 	if err != nil {
@@ -153,7 +153,7 @@ func ExampleWithStagePlugin() {
 }
 
 func ExampleWithDeploymentPlugin() {
-	plugin, err := NewPlugin("test", "1.0.0",
+	plugin, err := NewPlugin("1.0.0",
 		WithDeploymentPlugin(ExampleDeploymentPlugin{}),
 	)
 	if err != nil {
@@ -165,7 +165,7 @@ func ExampleWithDeploymentPlugin() {
 }
 
 func ExampleWithLivestatePlugin() {
-	plugin, err := NewPlugin("test", "1.0.0",
+	plugin, err := NewPlugin("1.0.0",
 		WithLivestatePlugin(ExampleLivestatePlugin{}),
 	)
 	if err != nil {

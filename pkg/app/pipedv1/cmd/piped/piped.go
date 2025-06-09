@@ -663,6 +663,7 @@ func (p *piped) runPlugins(ctx context.Context, pluginsCfg []config.PipedPlugin,
 			return nil, fmt.Errorf("failed to prepare plugin %s config: %w", pCfg.Name, err)
 		}
 		args = append(args, "--config", string(b))
+		args = append(args, "--name", pCfg.Name)
 
 		// Run the plugin binary.
 		cmd, err := lifecycle.RunBinary(ctx, pPath, args)
