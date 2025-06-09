@@ -39,6 +39,8 @@ type DeploymentPlugin[Config, DeployTargetConfig, ApplicationConfigSpec any] int
 	// DetermineVersions determines the versions of the resources that will be deployed.
 	DetermineVersions(context.Context, *Config, *DetermineVersionsInput[ApplicationConfigSpec]) (*DetermineVersionsResponse, error)
 	// DetermineStrategy determines the strategy to deploy the resources.
+	// This is called when the strategy was not determined by common logic, including judging by the pipeline length, whether it is the first deployment, and so on.
+	// It should return (nil, nil) if the plugin does not have specific logic for DetermineStrategy.
 	DetermineStrategy(context.Context, *Config, *DetermineStrategyInput[ApplicationConfigSpec]) (*DetermineStrategyResponse, error)
 	// BuildQuickSyncStages builds the stages that will be executed during the quick sync process.
 	BuildQuickSyncStages(context.Context, *Config, *BuildQuickSyncStagesInput) (*BuildQuickSyncStagesResponse, error)
@@ -152,6 +154,13 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 	response, err := s.base.DetermineStrategy(ctx, &s.config, input)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to determine strategy: %v", err)
+	}
+	if response == nil {
+		// when a plugin does not have specific logic.
+		response = &DetermineStrategyResponse{
+			Strategy: SyncStrategyPipelineSync,
+			Summary:  "Use PipelineSync because no other logic was matched",
+		}
 	}
 	return newDetermineStrategyResponse(response)
 }
