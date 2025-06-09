@@ -102,9 +102,11 @@ func WithLivestatePlugin[Config, DeployTargetConfig, ApplicationConfigSpec any](
 // Plugin is a wrapper for the plugin.
 // It provides a way to run the plugin with the given config and deploy target config.
 type Plugin[Config, DeployTargetConfig, ApplicationConfigSpec any] struct {
+
 	// plugin info
-	name    string
 	version string
+	// name is the name of the plugin defined in the piped plugin config.
+	name string
 
 	// plugin implementations
 	stagePlugin      StagePlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
@@ -122,9 +124,8 @@ type Plugin[Config, DeployTargetConfig, ApplicationConfigSpec any] struct {
 }
 
 // NewPlugin creates a new plugin.
-func NewPlugin[Config, DeployTargetConfig, ApplicationConfigSpec any](name, version string, options ...PluginOption[Config, DeployTargetConfig, ApplicationConfigSpec]) (*Plugin[Config, DeployTargetConfig, ApplicationConfigSpec], error) {
+func NewPlugin[Config, DeployTargetConfig, ApplicationConfigSpec any](version string, options ...PluginOption[Config, DeployTargetConfig, ApplicationConfigSpec]) (*Plugin[Config, DeployTargetConfig, ApplicationConfigSpec], error) {
 	plugin := &Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]{
-		name:    name,
 		version: version,
 
 		// Default values of command line options
@@ -153,7 +154,7 @@ func NewPlugin[Config, DeployTargetConfig, ApplicationConfigSpec any](name, vers
 // Run runs the plugin.
 func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) Run() error {
 	app := cli.NewApp(
-		fmt.Sprintf("pipecd-plugin-%s", p.name),
+		"pipecd-plugin",
 		"Plugin component for Piped.",
 	)
 
@@ -172,9 +173,11 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) Run() error 
 func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) command() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "start",
-		Short: fmt.Sprintf("Start running a %s plugin.", p.name),
+		Short: "Start running a plugin.",
 		RunE:  cli.WithContext(p.run),
 	}
+
+	cmd.Flags().StringVar(&p.name, "name", p.name, "The name of the plugin defined in the piped plugin config.")
 
 	cmd.Flags().StringVar(&p.pipedPluginService, "piped-plugin-service", p.pipedPluginService, "The address used to connect to the piped plugin service.")
 	cmd.Flags().StringVar(&p.config, "config", p.config, "The configuration for the plugin.")
@@ -187,6 +190,7 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) command() *c
 	// For debugging early in development
 	cmd.Flags().BoolVar(&p.enableGRPCReflection, "enable-grpc-reflection", p.enableGRPCReflection, "Whether to enable the reflection service or not.")
 
+	cmd.MarkFlagRequired("name")
 	cmd.MarkFlagRequired("piped-plugin-service")
 	cmd.MarkFlagRequired("config")
 
