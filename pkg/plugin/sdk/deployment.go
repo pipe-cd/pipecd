@@ -156,7 +156,8 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 		return nil, status.Errorf(codes.Internal, "failed to determine strategy: %v", err)
 	}
 	if response == nil {
-		// when a plugin does not have specific logic.
+		// If the plugin does not have specific logic to determine strategy,
+		// use PipelineSync by default.
 		response = &DetermineStrategyResponse{
 			Strategy: SyncStrategyPipelineSync,
 			Summary:  "Use PipelineSync because no other logic was matched",
