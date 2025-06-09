@@ -379,6 +379,10 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *common.Dep
 			p.logger.Warn("Unable to determine strategy using current plugin", zap.Error(err))
 			continue
 		}
+		// If the plugin does not support DetermineStrategy(), then ignore.
+		if res.Unsupported {
+			continue
+		}
 		strategy = res.SyncStrategy
 		summary = res.Summary
 		// If one of plugins returns PIPELINE_SYNC, use that as strategy intermediately
