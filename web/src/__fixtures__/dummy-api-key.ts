@@ -1,4 +1,4 @@
-import { APIKey } from "~/modules/api-keys";
+import { APIKey } from "pipecd/web/model/apikey_pb";
 import { createRandTime, randomKeyHash, randomUUID } from "./utils";
 
 const createdAt = createRandTime();

@@ -8,11 +8,10 @@ import {
 } from "@mui/material";
 import Alert from "@mui/material/Alert";
 import { FC, memo } from "react";
-import { useAppSelector } from "~/hooks/redux";
-import { APIKey, selectById } from "~/modules/api-keys";
+import { APIKey } from "pipecd/web/model/apikey_pb";
 
 export interface DisableAPIKeyConfirmDialogProps {
-  apiKeyId: string | null;
+  apiKey: APIKey.AsObject | null;
   onCancel: () => void;
   onDisable: (id: string) => void;
 }
@@ -21,10 +20,7 @@ const DIALOG_TITLE = "Disable API Key";
 const DESCRIPTION = "Are you sure you want to disable the API key?";
 
 export const DisableAPIKeyConfirmDialog: FC<DisableAPIKeyConfirmDialogProps> = memo(
-  function DisableAPIKeyConfirmDialog({ apiKeyId, onDisable, onCancel }) {
-    const apiKey = useAppSelector<APIKey.AsObject | undefined>((state) =>
-      apiKeyId ? selectById(state.apiKeys, apiKeyId) : undefined
-    );
+  function DisableAPIKeyConfirmDialog({ apiKey, onDisable, onCancel }) {
     const open = Boolean(apiKey);
 
     return (
@@ -50,8 +46,8 @@ export const DisableAPIKeyConfirmDialog: FC<DisableAPIKeyConfirmDialogProps> = m
           <Button
             color="primary"
             onClick={() => {
-              if (apiKeyId) {
-                onDisable(apiKeyId);
+              if (apiKey) {
+                onDisable(apiKey.id);
               }
             }}
           >
