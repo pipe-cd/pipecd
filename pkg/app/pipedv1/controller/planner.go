@@ -379,6 +379,10 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *common.Dep
 			p.logger.Warn("Unable to determine strategy using current plugin", zap.Error(err))
 			continue
 		}
+		if res == nil {
+			p.logger.Warn("plugin returned nil for DetermineStrategy()")
+			continue
+		}
 		// If the plugin does not support DetermineStrategy(), then ignore.
 		if res.Unsupported {
 			continue
