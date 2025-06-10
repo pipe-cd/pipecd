@@ -62,7 +62,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@loadable/component": "^5.16.4",
+    "@loadable/component": "^5.16.7",
     "@mui/icons-material": "^7.1.0",
     "@mui/material": "^7.1.0",
     "@primer/octicons-react": "^14.2.2",
