@@ -12,7 +12,7 @@ Kubernetes plugin supports the Deployment for Kubernetes.
 Quick sync is a fast way to sync application to the state specified in the target Git commit without any progressive strategy. It just applies all the defined manifiests to sync the application.
 The quick sync will be planned in one of the following cases:
 - no pipeline was specified in the application configuration file
-- [pipeline](#pipeline) was specified but the PR did not make any changes on workload (e.g. Deployment's pod template) or config (e.g. ConfigMap, Secret)
+- `pipeline` was specified but the PR did not make any changes on workload (e.g. Deployment's pod template) or config (e.g. ConfigMap, Secret)
 
 For example, the application configuration as below is missing the pipeline field. This means any pull request touches the application will trigger a quick sync deployment.
 
