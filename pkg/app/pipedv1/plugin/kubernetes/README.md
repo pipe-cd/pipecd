@@ -21,11 +21,13 @@ For example, the application configuration as below is missing the pipeline fiel
 apiVersion: pipecd.dev/v1beta1
 kind: Application
 spec:
-  input:
-    helmChart:
-      name: helloworld
-      path: /path/to/chart
-      version: v0.3.0
+  plugins: 
+    kubernetes:
+      input:
+        helmChart:
+          name: helloworld
+          path: /path/to/chart
+          version: v0.3.0
 ```
 
 In another case, even when the pipeline was specified, a PR that just changes the Deployment's replicas number for scaling will also trigger a quick sync deployment.
