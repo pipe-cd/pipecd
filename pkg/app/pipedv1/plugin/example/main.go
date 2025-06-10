@@ -21,7 +21,7 @@ import (
 )
 
 func main() {
-	plugin, err := sdk.NewPlugin("example", "0.0.1", sdk.WithStagePlugin(&plugin{}))
+	plugin, err := sdk.NewPlugin("0.0.1", sdk.WithStagePlugin(&plugin{}))
 	if err != nil {
 		log.Fatalln(err)
 	}

@@ -4,7 +4,7 @@ go 1.24.1
 
 require (
 	github.com/pipe-cd/pipecd v0.52.0
-	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250529023641-8bd42026e370
+	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250610110220-8b7d2c785ded
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.19.1
 )

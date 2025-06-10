@@ -2,7 +2,7 @@ module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/example
 
 go 1.24.1
 
-require github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250529023641-8bd42026e370
+require github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250610110220-8b7d2c785ded
 
 require (
 	cloud.google.com/go v0.112.1 // indirect
