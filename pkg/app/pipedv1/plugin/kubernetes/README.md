@@ -9,8 +9,9 @@ Kubernetes plugin supports the Deployment for Kubernetes.
 
 ### Quick sync
 
-Quick sync is a fast way to sync application to the state specified in the target Git commit without any progressive strategy. It just applies all the defined manifiests to sync the application.
-The quick sync will be planned in one of the following cases:
+Quick sync just applies all the defined manifiests to sync the application.
+
+It will be planned in one of the following cases:
 - no pipeline was specified in the application configuration file
 - `pipeline` was specified but the PR did not make any changes on workload (e.g. Deployment's pod template) or config (e.g. ConfigMap, Secret)
 
@@ -18,12 +19,12 @@ For example, the application configuration as below is missing the pipeline fiel
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
-kind: KubernetesApp
+kind: Application
 spec:
   input:
     helmChart:
-      repository: pipecd
       name: helloworld
+      path: /path/to/chart
       version: v0.3.0
 ```
 
@@ -31,16 +32,16 @@ In another case, even when the pipeline was specified, a PR that just changes th
 
 ### Pipeline sync
 
-The `pipeline` field in the application configuration is used to customize the way to do deployment by specifying and configuring the execution stages. You may want to configure those stages to enable a progressive deployment with a strategy like canary, blue-green, a manual approval, an analysis stage.
+You can configure the pipeline to enable a progressive deployment with a strategy like canary, blue-green.
 
-To enable customization, PipeCD defines three variants for each Kubernetes application: primary (aka stable), baseline and canary.
+To enable customization, Kubernetes plugin defines three variants for each application: primary (aka stable), baseline and canary.
 - `primary` runs the current version of code and configuration.
 - `baseline` runs the same version of code and configuration as the primary variant. (Creating a brand-new baseline workload ensures that the metrics produced are free of any effects caused by long-running processes.)
 - `canary` runs the proposed change of code or configuration.
 
 Depending on the configured pipeline, any variants can exist and receive the traffic during the deployment process but once the deployment is completed, only the `primary` variant should be remained.
 
-These are the provided stages for Kubernetes application you can use to build your pipeline:
+These are the provided stages for Kubernetes plugin you can use to build your pipeline:
 
 - `K8S_SYNC`
   - sync application to the state specified in the target Git commit without any progressive strategy
@@ -131,7 +132,6 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| ref | string | The commit SHA or tag value. Only valid when gitRemote is not empty. | No |
 | path | string | Relative path from the repository root to the chart directory. | No |
 | name | string | The chart name. | No |
 | version | string | The chart version. | No |
