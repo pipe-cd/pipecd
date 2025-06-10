@@ -101,7 +101,6 @@ spec:
   plugins:
     kubernetes: # same name as the one defined in `spec.plugins[].name`
       input:
-      pipeline:
       service:
       workloads:
       variantLabel:
@@ -110,7 +109,6 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | input | [KubernetesDeploymentInput](#kubernetesdeploymentinput) | Input for Kubernetes deployment such as kubectl version, helm version, manifests filter... | No |
-| pipeline | [Pipeline](#pipeline) | Pipeline for deploying progressively. | No |
 | service | [K8sResourceReference](#K8sResourceReference) | Which Kubernetes resource should be considered as the Service of application. Empty means the first Service resource will be used. | No |
 | workloads | [][K8sResourceReference](#K8sResourceReference) | Which Kubernetes resources should be considered as the Workloads of application. Empty means all Deployment resources. | No |
 | variantLabel | [KubernetesVariantLabel](#kubernetesvariantlabel) | The label will be configured to variant manifests used to distinguish them. | No |
@@ -131,7 +129,6 @@ spec:
 
 ##### HelmChart
 
-
 | Field | Type | Description | Required |
 |-|-|-|-|
 | ref | string | The commit SHA or tag value. Only valid when gitRemote is not empty. | No |
@@ -150,22 +147,6 @@ spec:
 | apiVersions | []string | Kubernetes api versions used for Capabilities.APIVersions. | No |
 | kubeVersion | string | Kubernetes version used for Capabilities.KubeVersion. | No |
 
-#### Pipeline
-
-| Field | Type | Description | Required |
-|-|-|-|-|
-| stages | [][PipelineStage](#pipelinestage) | List of deployment pipeline stages. | No |
-
-##### PipelineStage
-
-| Field | Type | Description | Required |
-|-|-|-|-|
-| id | string | The unique ID of the stage. | No |
-| name | string | One of the provided stage names. | Yes |
-| desc | string | The description about the stage. | No |
-| timeout | duration | The maximum time the stage can be taken to run. | No |
-| with | [Stage Config](#Stage-Config) | Specific configuration for the stage. This must be one of these [Stage Config](#Stage-Config). | No |
-
 #### K8sResourceReference
 
 | Field | Type | Description | Required |
@@ -183,6 +164,33 @@ spec:
 | baselineValue | string | The label value for BASELINE variant. Default is `baseline`. | No |
 
 ### Stage Config
+
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: Application
+spec:
+...
+  pipeline:
+    stages:
+      - name: K8S_SYNC
+        with:
+          ...
+      - name: K8S_PRIMARY_ROLLOUT
+        with:
+          ...
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          ...
+      - name: K8S_CANARY_CLEAN
+        with:
+          ...
+      - name: K8S_BASELINE_ROLLOUT
+        with:
+          ...
+      - name: K8S_BASELINE_CLEAN
+        with:
+          ...        
+```
 
 #### `K8S_SYNC`
 
@@ -247,11 +255,6 @@ spec:
 | createService | bool | Whether the BASELINE service should be created. Default is `false`. | No |
 
 #### `K8S_BASELINE_CLEAN`
-
-| Field | Type | Description | Required |
-|-|-|-|-|
-
-#### `K8S_ROLLBACK`
 
 | Field | Type | Description | Required |
 |-|-|-|-|
