@@ -1051,7 +1051,7 @@ func TestPlanner_BuildPlan(t *testing.T) {
 			},
 		},
 		{
-			name:          "ignore plugins that do not support DetermineStrategy or return nil",
+			name:          "ignore plugins that do not support DetermineStrategy",
 			isFirstDeploy: false,
 			pluginRegistry: func() plugin.PluginRegistry {
 				pr, err := plugin.NewPluginRegistry(context.TODO(), []plugin.Plugin{
@@ -1073,7 +1073,10 @@ func TestPlanner_BuildPlan(t *testing.T) {
 					{
 						Name: "plugin-2",
 						Cli: &fakePlugin{
-							syncStrategy: nil,
+							syncStrategy: &deployment.DetermineStrategyResponse{
+								SyncStrategy: model.SyncStrategy_QUICK_SYNC,
+								Summary:      "determined by plugin-2",
+							},
 							pipelineStages: []*model.PipelineStage{
 								{
 									Id:      "plugin-2-stage-1",
@@ -1081,25 +1084,9 @@ func TestPlanner_BuildPlan(t *testing.T) {
 									Visible: true,
 								},
 							},
-						},
-					},
-					{
-						Name: "plugin-3",
-						Cli: &fakePlugin{
-							syncStrategy: &deployment.DetermineStrategyResponse{
-								SyncStrategy: model.SyncStrategy_QUICK_SYNC,
-								Summary:      "determined by plugin-3",
-							},
-							pipelineStages: []*model.PipelineStage{
-								{
-									Id:      "plugin-3-stage-1",
-									Name:    "plugin-3-stage-1",
-									Visible: true,
-								},
-							},
 							quickStages: []*model.PipelineStage{
 								{
-									Id:      "plugin-3-quick-stage-1",
+									Id:      "plugin-2-quick-stage-1",
 									Visible: true,
 								},
 							},
@@ -1111,7 +1098,7 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				return pr
 			}(),
 			cfg: &config.GenericApplicationSpec{
-				Plugins: map[string]struct{}{"plugin-1": {}, "plugin-2": {}, "plugin-3": {}},
+				Plugins: map[string]struct{}{"plugin-1": {}, "plugin-2": {}},
 				Pipeline: &config.DeploymentPipeline{
 					Stages: []config.PipelineStage{
 						{
@@ -1122,10 +1109,6 @@ func TestPlanner_BuildPlan(t *testing.T) {
 							ID:   "plugin-2-stage-1",
 							Name: "plugin-2-stage-1",
 						},
-						{
-							ID:   "plugin-3-stage-1",
-							Name: "plugin-3-stage-1",
-						},
 					},
 				},
 			},
@@ -1135,10 +1118,10 @@ func TestPlanner_BuildPlan(t *testing.T) {
 			wantErr: false,
 			expectedOutput: &plannerOutput{
 				SyncStrategy: model.SyncStrategy_QUICK_SYNC,
-				Summary:      "determined by plugin-3",
+				Summary:      "determined by plugin-2",
 				Stages: []*model.PipelineStage{
 					{
-						Id:      "plugin-3-quick-stage-1",
+						Id:      "plugin-2-quick-stage-1",
 						Visible: true,
 					},
 				},
