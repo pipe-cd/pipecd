@@ -4,7 +4,8 @@
 
 Kubernetes plugin supports the Deployment for Kubernetes.
 
-> [!CAUTION] Currently, this is alpha status.
+> [!CAUTION] 
+> Currently, this is alpha status.
 
 ### Quick sync
 
@@ -163,7 +164,7 @@ spec:
 | name | string | One of the provided stage names. | Yes |
 | desc | string | The description about the stage. | No |
 | timeout | duration | The maximum time the stage can be taken to run. | No |
-| with | [Stage Config](#Stage Config) | Specific configuration for the stage. This must be one of these [Stage Config](#Stage Config). | No |
+| with | [Stage Config](#Stage-Config) | Specific configuration for the stage. This must be one of these [Stage Config](#Stage-Config). | No |
 
 #### K8sResourceReference
 
