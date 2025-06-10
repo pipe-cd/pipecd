@@ -1050,6 +1050,89 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:          "ignore plugins that do not support DetermineStrategy",
+			isFirstDeploy: false,
+			pluginRegistry: func() plugin.PluginRegistry {
+				pr, err := plugin.NewPluginRegistry(context.TODO(), []plugin.Plugin{
+					{
+						Name: "plugin-1",
+						Cli: &fakePlugin{
+							syncStrategy: &deployment.DetermineStrategyResponse{
+								Unsupported: true,
+							},
+							pipelineStages: []*model.PipelineStage{
+								{
+									Id:      "plugin-1-stage-1",
+									Name:    "plugin-1-stage-1",
+									Visible: true,
+								},
+							},
+						},
+					},
+					{
+						Name: "plugin-2",
+						Cli: &fakePlugin{
+							syncStrategy: &deployment.DetermineStrategyResponse{
+								SyncStrategy: model.SyncStrategy_QUICK_SYNC,
+								Summary:      "determined by plugin-2",
+							},
+							pipelineStages: []*model.PipelineStage{
+								{
+									Id:      "plugin-2-stage-1",
+									Name:    "plugin-2-stage-1",
+									Visible: true,
+								},
+							},
+							quickStages: []*model.PipelineStage{
+								{
+									Id:      "plugin-2-quick-stage-1",
+									Visible: true,
+								},
+							},
+						},
+					},
+				})
+				require.NoError(t, err)
+
+				return pr
+			}(),
+			cfg: &config.GenericApplicationSpec{
+				Plugins: map[string]struct{}{"plugin-1": {}, "plugin-2": {}},
+				Pipeline: &config.DeploymentPipeline{
+					Stages: []config.PipelineStage{
+						{
+							ID:   "plugin-1-stage-1",
+							Name: "plugin-1-stage-1",
+						},
+						{
+							ID:   "plugin-2-stage-1",
+							Name: "plugin-2-stage-1",
+						},
+					},
+				},
+			},
+			deployment: &model.Deployment{
+				Trigger: &model.DeploymentTrigger{},
+			},
+			wantErr: false,
+			expectedOutput: &plannerOutput{
+				SyncStrategy: model.SyncStrategy_QUICK_SYNC,
+				Summary:      "determined by plugin-2",
+				Stages: []*model.PipelineStage{
+					{
+						Id:      "plugin-2-quick-stage-1",
+						Visible: true,
+					},
+				},
+				Versions: []*model.ArtifactVersion{
+					{
+						Kind:    model.ArtifactVersion_UNKNOWN,
+						Version: versionUnknown,
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range testcases {
