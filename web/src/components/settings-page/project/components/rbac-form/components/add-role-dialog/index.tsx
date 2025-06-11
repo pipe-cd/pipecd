@@ -8,8 +8,8 @@ import {
 } from "@mui/material";
 import { useFormik } from "formik";
 import { FC } from "react";
-import { rbacResourceTypes, rbacActionTypes } from "~/modules/project";
 import * as yup from "yup";
+import { POLICIES_STRING_REGEX } from "~/constants/project";
 
 export interface AddRoleDialogProps {
   open: boolean;
@@ -17,24 +17,11 @@ export interface AddRoleDialogProps {
   onSubmit: (values: { name: string; policies: string }) => void;
 }
 
-// resources=(\*|application|deployment|event|piped|deploymentChain|project|apiKey|insight|,)+;\s*actions=(\*|get|list|create|update|delete|,)+
-const validationRgex = new RegExp(
-  "resources=(" +
-    rbacResourceTypes()
-      .map((v) => v.replace(/\*/, "\\*"))
-      .join("|") +
-    "|,)+;\\s*actions=(" +
-    rbacActionTypes()
-      .map((v) => v.replace(/\*/, "\\*"))
-      .join("|") +
-    "|,)+"
-);
-
 const validationSchema = yup.object({
   name: yup.string().min(1).required(),
   policies: yup
     .string()
-    .matches(validationRgex, "Invalid policy format")
+    .matches(POLICIES_STRING_REGEX, "Invalid policy format")
     .required(),
 });
 
