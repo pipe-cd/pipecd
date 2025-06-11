@@ -177,8 +177,6 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) command() *c
 		RunE:  cli.WithContext(p.run),
 	}
 
-	cmd.Flags().StringVar(&p.name, "name", p.name, "The name of the plugin defined in the piped plugin config.")
-
 	cmd.Flags().StringVar(&p.pipedPluginService, "piped-plugin-service", p.pipedPluginService, "The address used to connect to the piped plugin service.")
 	cmd.Flags().StringVar(&p.config, "config", p.config, "The configuration for the plugin.")
 	cmd.Flags().DurationVar(&p.gracePeriod, "grace-period", p.gracePeriod, "How long to wait for graceful shutdown.")
@@ -190,7 +188,6 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) command() *c
 	// For debugging early in development
 	cmd.Flags().BoolVar(&p.enableGRPCReflection, "enable-grpc-reflection", p.enableGRPCReflection, "Whether to enable the reflection service or not.")
 
-	cmd.MarkFlagRequired("name")
 	cmd.MarkFlagRequired("piped-plugin-service")
 	cmd.MarkFlagRequired("config")
 
@@ -204,7 +201,6 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 		// When this happens, it means that there is a bug in the SDK, because these are private fields.
 		input.Logger.Error(
 			"something went wrong in the SDK, please report this issue to the developers",
-			zap.String("name", p.name),
 			zap.String("version", p.version),
 			zap.String("reason", "stage plugin and deployment plugin cannot be registered at the same time"),
 			zap.String("report-url", "https://github.com/pipe-cd/pipecd/issues"),
@@ -262,7 +258,7 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 	// Start a gRPC server for handling external API requests.
 	{
 		commonFields := commonFields{
-			name:         p.name,
+			name:         cfg.Name,
 			version:      p.version,
 			config:       cfg,
 			logPersister: persister,
