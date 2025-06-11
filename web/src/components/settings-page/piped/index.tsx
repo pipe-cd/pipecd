@@ -54,6 +54,7 @@ import { FilterValues, PipedFilter } from "./components/piped-filter";
 import { PipedTableRow } from "./components/piped-table-row";
 import { UpgradePipedDialog } from "./components/upgrade-dialog";
 import { TableCellNoWrap } from "../styles";
+import { useGetProject } from "~/queries/project/use-get-project";
 
 const filterValue = (
   _: AppState,
@@ -87,7 +88,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
     enabled: true,
   });
   const dispatch = useAppDispatch();
-  const projectId = useAppSelector((state) => state.project.id);
+  const { data: projectDetail } = useGetProject();
   const pipeds = useAppSelector<Piped.AsObject[]>((state) =>
     selectFilteredPipeds(state, filterValues)
   );
@@ -97,10 +98,10 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
   }, [dispatch]);
 
   useEffect(() => {
-    if (projectId) {
-      dispatch(fetchBreakingChanges({ projectId: projectId }));
+    if (projectDetail?.id) {
+      dispatch(fetchBreakingChanges({ projectId: projectDetail.id }));
     }
-  }, [dispatch, projectId]);
+  }, [dispatch, projectDetail?.id]);
 
   const releasedVersions = useAppSelector<string[]>(
     (state) => state.pipeds.releasedVersions
