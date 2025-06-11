@@ -758,8 +758,6 @@ func (r *DetermineVersionsResponse) toModel() []*model.ArtifactVersion {
 
 // ArtifactVersion represents the version of an artifact.
 type ArtifactVersion struct {
-	// Kind is the kind of the artifact.
-	Kind ArtifactKind
 	// Version is the version of the artifact.
 	Version string
 	// Name is the name of the artifact.
@@ -771,42 +769,9 @@ type ArtifactVersion struct {
 // toModel converts the ArtifactVersion to the model.ArtifactVersion.
 func (v *ArtifactVersion) toModel() *model.ArtifactVersion {
 	return &model.ArtifactVersion{
-		Kind:    v.Kind.toModelEnum(),
 		Version: v.Version,
 		Name:    v.Name,
 		Url:     v.URL,
-	}
-}
-
-// ArtifactKind represents the kind of the artifact.
-type ArtifactKind int
-
-const (
-	// ArtifactKindUnknown indicates that the kind of the artifact is unknown.
-	ArtifactKindUnknown ArtifactKind = iota
-	// ArtifactKindContainerImage indicates that the artifact is a container image.
-	ArtifactKindContainerImage
-	// ArtifactKindS3Object indicates that the artifact is an S3 object.
-	ArtifactKindS3Object
-	// ArtifactKindGitSource indicates that the artifact is a git source.
-	ArtifactKindGitSource
-	// ArtifactKindTerraformModule indicates that the artifact is a terraform module.
-	ArtifactKindTerraformModule
-)
-
-// toModelEnum converts the ArtifactKind to the model.ArtifactVersion_Kind.
-func (k ArtifactKind) toModelEnum() model.ArtifactVersion_Kind {
-	switch k {
-	case ArtifactKindContainerImage:
-		return model.ArtifactVersion_CONTAINER_IMAGE
-	case ArtifactKindS3Object:
-		return model.ArtifactVersion_S3_OBJECT
-	case ArtifactKindGitSource:
-		return model.ArtifactVersion_GIT_SOURCE
-	case ArtifactKindTerraformModule:
-		return model.ArtifactVersion_TERRAFORM_MODULE
-	default:
-		return model.ArtifactVersion_UNKNOWN
 	}
 }
 
