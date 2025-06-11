@@ -457,6 +457,9 @@ spec: {}
 }
 
 func TestArtifactVersion_toModel(t *testing.T) {
+	// Use the default value for expected "Kind" for now.
+	// They will be removed after deleting Kind from model.ArtifactVersion.
+
 	tests := []struct {
 		name     string
 		version  ArtifactVersion
@@ -465,13 +468,12 @@ func TestArtifactVersion_toModel(t *testing.T) {
 		{
 			name: "container image",
 			version: ArtifactVersion{
-				Kind:    ArtifactKindContainerImage,
 				Version: "v1.0.0",
 				Name:    "nginx",
 				URL:     "https://example.com/nginx:v1.0.0",
 			},
 			expected: &model.ArtifactVersion{
-				Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+				Kind:    model.ArtifactVersion_UNKNOWN,
 				Version: "v1.0.0",
 				Name:    "nginx",
 				Url:     "https://example.com/nginx:v1.0.0",
@@ -480,13 +482,12 @@ func TestArtifactVersion_toModel(t *testing.T) {
 		{
 			name: "s3 object",
 			version: ArtifactVersion{
-				Kind:    ArtifactKindS3Object,
 				Version: "v1.0.0",
 				Name:    "backup",
 				URL:     "s3://bucket/backup/v1.0.0",
 			},
 			expected: &model.ArtifactVersion{
-				Kind:    model.ArtifactVersion_S3_OBJECT,
+				Kind:    model.ArtifactVersion_UNKNOWN,
 				Version: "v1.0.0",
 				Name:    "backup",
 				Url:     "s3://bucket/backup/v1.0.0",
@@ -495,13 +496,12 @@ func TestArtifactVersion_toModel(t *testing.T) {
 		{
 			name: "git source",
 			version: ArtifactVersion{
-				Kind:    ArtifactKindGitSource,
 				Version: "commit-hash",
 				Name:    "repo",
 				URL:     "https://github.com/repo/commit/commit-hash",
 			},
 			expected: &model.ArtifactVersion{
-				Kind:    model.ArtifactVersion_GIT_SOURCE,
+				Kind:    model.ArtifactVersion_UNKNOWN,
 				Version: "commit-hash",
 				Name:    "repo",
 				Url:     "https://github.com/repo/commit/commit-hash",
@@ -510,13 +510,12 @@ func TestArtifactVersion_toModel(t *testing.T) {
 		{
 			name: "terraform module",
 			version: ArtifactVersion{
-				Kind:    ArtifactKindTerraformModule,
 				Version: "v1.0.0",
 				Name:    "module",
 				URL:     "https://registry.terraform.io/modules/module/v1.0.0",
 			},
 			expected: &model.ArtifactVersion{
-				Kind:    model.ArtifactVersion_TERRAFORM_MODULE,
+				Kind:    model.ArtifactVersion_UNKNOWN,
 				Version: "v1.0.0",
 				Name:    "module",
 				Url:     "https://registry.terraform.io/modules/module/v1.0.0",
@@ -525,7 +524,6 @@ func TestArtifactVersion_toModel(t *testing.T) {
 		{
 			name: "unknown kind",
 			version: ArtifactVersion{
-				Kind:    ArtifactKindUnknown,
 				Version: "v1.0.0",
 				Name:    "unknown",
 				URL:     "https://example.com/unknown:v1.0.0",
@@ -547,50 +545,10 @@ func TestArtifactVersion_toModel(t *testing.T) {
 	}
 }
 
-func TestArtifactKind_toModelEnum(t *testing.T) {
-	tests := []struct {
-		name     string
-		kind     ArtifactKind
-		expected model.ArtifactVersion_Kind
-	}{
-		{
-			name:     "container image",
-			kind:     ArtifactKindContainerImage,
-			expected: model.ArtifactVersion_CONTAINER_IMAGE,
-		},
-		{
-			name:     "s3 object",
-			kind:     ArtifactKindS3Object,
-			expected: model.ArtifactVersion_S3_OBJECT,
-		},
-		{
-			name:     "git source",
-			kind:     ArtifactKindGitSource,
-			expected: model.ArtifactVersion_GIT_SOURCE,
-		},
-		{
-			name:     "terraform module",
-			kind:     ArtifactKindTerraformModule,
-			expected: model.ArtifactVersion_TERRAFORM_MODULE,
-		},
-		{
-			name:     "unknown",
-			kind:     ArtifactKindUnknown,
-			expected: model.ArtifactVersion_UNKNOWN,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := tt.kind.toModelEnum()
-			if result != tt.expected {
-				t.Errorf("expected %v, got %v", tt.expected, result)
-			}
-		})
-	}
-}
-
 func TestDetermineVersionsResponse_toModel(t *testing.T) {
+	// Use the default value for expected "Kind" for now.
+	// They will be removed after deleting Kind from model.ArtifactVersion.
+
 	tests := []struct {
 		name     string
 		response DetermineVersionsResponse
@@ -601,7 +559,6 @@ func TestDetermineVersionsResponse_toModel(t *testing.T) {
 			response: DetermineVersionsResponse{
 				Versions: []ArtifactVersion{
 					{
-						Kind:    ArtifactKindContainerImage,
 						Version: "v1.0.0",
 						Name:    "nginx",
 						URL:     "https://example.com/nginx:v1.0.0",
@@ -610,7 +567,7 @@ func TestDetermineVersionsResponse_toModel(t *testing.T) {
 			},
 			expected: []*model.ArtifactVersion{
 				{
-					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Kind:    model.ArtifactVersion_UNKNOWN,
 					Version: "v1.0.0",
 					Name:    "nginx",
 					Url:     "https://example.com/nginx:v1.0.0",
@@ -622,13 +579,11 @@ func TestDetermineVersionsResponse_toModel(t *testing.T) {
 			response: DetermineVersionsResponse{
 				Versions: []ArtifactVersion{
 					{
-						Kind:    ArtifactKindContainerImage,
 						Version: "v1.0.0",
 						Name:    "nginx",
 						URL:     "https://example.com/nginx:v1.0.0",
 					},
 					{
-						Kind:    ArtifactKindS3Object,
 						Version: "v1.0.0",
 						Name:    "backup",
 						URL:     "s3://bucket/backup/v1.0.0",
@@ -637,13 +592,13 @@ func TestDetermineVersionsResponse_toModel(t *testing.T) {
 			},
 			expected: []*model.ArtifactVersion{
 				{
-					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Kind:    model.ArtifactVersion_UNKNOWN,
 					Version: "v1.0.0",
 					Name:    "nginx",
 					Url:     "https://example.com/nginx:v1.0.0",
 				},
 				{
-					Kind:    model.ArtifactVersion_S3_OBJECT,
+					Kind:    model.ArtifactVersion_UNKNOWN,
 					Version: "v1.0.0",
 					Name:    "backup",
 					Url:     "s3://bucket/backup/v1.0.0",
