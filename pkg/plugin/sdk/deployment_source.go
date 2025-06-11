@@ -111,15 +111,15 @@ func (c *ApplicationConfig[Spec]) parsePluginConfig(pluginName string) error {
 		c.pluginConfigs = nil
 	}()
 
-	if c.pluginConfigs == nil || c.pluginConfigs[pluginName] == nil {
-		// No config is set for this plugin.
-		// Set the Spec to the zero value of the spec type to avoid nil pointer dereference.
-		c.Spec = new(Spec)
-		return nil
+	// It is necessary to prepare config with default value when users doesn't set any config.
+	data := []byte("{}")
+
+	if c.pluginConfigs != nil && c.pluginConfigs[pluginName] != nil {
+		data = c.pluginConfigs[pluginName]
 	}
 
 	var spec Spec
-	if err := json.Unmarshal(c.pluginConfigs[pluginName], &spec); err != nil {
+	if err := json.Unmarshal(data, &spec); err != nil {
 		return fmt.Errorf("failed to unmarshal application config: plugin spec: %w", err)
 	}
 
@@ -128,7 +128,7 @@ func (c *ApplicationConfig[Spec]) parsePluginConfig(pluginName string) error {
 	}
 
 	// Validate the spec if it implements the Validate method.
-	if v, ok := any(spec).(interface{ Validate() error }); ok {
+	if v, ok := any(&spec).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return fmt.Errorf("failed to validate plugin spec: %w", err)
 		}
