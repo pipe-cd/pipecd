@@ -18,9 +18,12 @@ import (
 	"context"
 	"fmt"
 
+	reflectionpb "google.golang.org/grpc/reflection/grpc_reflection_v1"
+
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
+	livestate "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/livestate"
 )
 
 // Plugin represents a plugin with its name and client.
@@ -33,23 +36,25 @@ type Plugin struct {
 type PluginRegistry interface {
 	GetPluginClientByStageName(name string) (pluginapi.PluginClient, error)
 	GetPluginClientsByAppConfig(cfg *config.GenericApplicationSpec) ([]pluginapi.PluginClient, error)
+	GetLivestateSupportedClientsByAppConfig(cfg *config.GenericApplicationSpec) ([]pluginapi.PluginClient, error)
 }
 
 type pluginRegistry struct {
-	nameBasedPlugins  map[string]pluginapi.PluginClient // key: plugin name
-	stageBasedPlugins map[string]pluginapi.PluginClient // key: stage name
+	nameBasedPlugins  map[string]Plugin // key: plugin name
+	stageBasedPlugins map[string]Plugin // key: stage name
 
-	// TODO: add more fields if needed (e.g. deploymentBasedPlugins, livestateBasedPlugins)
+	livestateSupportedPlugins map[string]Plugin // key: plugin name
 }
 
 // NewPluginRegistry creates a new PluginRegistry based on the given plugins.
 func NewPluginRegistry(ctx context.Context, plugins []Plugin) (PluginRegistry, error) {
-	nameBasedPlugins := make(map[string]pluginapi.PluginClient)
-	stageBasedPlugins := make(map[string]pluginapi.PluginClient)
+	nameBasedPlugins := make(map[string]Plugin)
+	stageBasedPlugins := make(map[string]Plugin)
+	livestateSupportedPlugins := make(map[string]Plugin)
 
 	for _, plg := range plugins {
 		// add the plugin to the name-based plugins
-		nameBasedPlugins[plg.Name] = plg.Cli
+		nameBasedPlugins[plg.Name] = plg
 
 		// add the plugin to the stage-based plugins
 		res, err := plg.Cli.FetchDefinedStages(ctx, &deployment.FetchDefinedStagesRequest{})
@@ -58,13 +63,41 @@ func NewPluginRegistry(ctx context.Context, plugins []Plugin) (PluginRegistry, e
 		}
 
 		for _, stage := range res.Stages {
-			stageBasedPlugins[stage] = plg.Cli
+			stageBasedPlugins[stage] = plg
+		}
+
+		// add the plugin to the livestate supported plugins
+		stream, err := plg.Cli.ServerReflectionInfo(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		req := &reflectionpb.ServerReflectionRequest{
+			MessageRequest: &reflectionpb.ServerReflectionRequest_ListServices{
+				ListServices: "*",
+			},
+		}
+		if err := stream.Send(req); err != nil {
+			return nil, err
+		}
+
+		resp, err := stream.Recv()
+		if err != nil {
+			return nil, err
+		}
+
+		listResp := resp.GetListServicesResponse()
+		for _, svc := range listResp.Service {
+			if svc.Name == livestate.LivestateService_ServiceDesc.ServiceName {
+				livestateSupportedPlugins[plg.Name] = plg
+			}
 		}
 	}
 
 	return &pluginRegistry{
-		nameBasedPlugins:  nameBasedPlugins,
-		stageBasedPlugins: stageBasedPlugins,
+		nameBasedPlugins:          nameBasedPlugins,
+		stageBasedPlugins:         stageBasedPlugins,
+		livestateSupportedPlugins: livestateSupportedPlugins,
 	}, nil
 }
 
@@ -75,7 +108,7 @@ func (pr *pluginRegistry) GetPluginClientByStageName(name string) (pluginapi.Plu
 		return nil, fmt.Errorf("no plugin found for the specified stage")
 	}
 
-	return plugin, nil
+	return plugin.Cli, nil
 }
 
 // GetPluginClientsByAppConfig returns the plugin clients based on the given configuration.
@@ -84,6 +117,20 @@ func (pr *pluginRegistry) GetPluginClientByStageName(name string) (pluginapi.Plu
 //  2. If the plugins are specified, it will determine the plugins based on the plugin names.
 //  3. If neither the pipeline nor the plugins are specified, it will return an error.
 func (pr *pluginRegistry) GetPluginClientsByAppConfig(cfg *config.GenericApplicationSpec) ([]pluginapi.PluginClient, error) {
+	plugins, err := pr.getPluginClientsByAppConfig(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	clis := make([]pluginapi.PluginClient, 0, len(plugins))
+	for _, p := range plugins {
+		clis = append(clis, p.Cli)
+	}
+
+	return clis, nil
+}
+
+func (pr *pluginRegistry) getPluginClientsByAppConfig(cfg *config.GenericApplicationSpec) ([]Plugin, error) {
 	if cfg.Pipeline != nil && len(cfg.Pipeline.Stages) > 0 {
 		return pr.getPluginClientsByPipeline(cfg.Pipeline)
 	}
@@ -95,12 +142,12 @@ func (pr *pluginRegistry) GetPluginClientsByAppConfig(cfg *config.GenericApplica
 	return nil, fmt.Errorf("no plugin specified")
 }
 
-func (pr *pluginRegistry) getPluginClientsByPipeline(pipeline *config.DeploymentPipeline) ([]pluginapi.PluginClient, error) {
+func (pr *pluginRegistry) getPluginClientsByPipeline(pipeline *config.DeploymentPipeline) ([]Plugin, error) {
 	if len(pipeline.Stages) == 0 {
 		return nil, fmt.Errorf("no stages are set in the pipeline")
 	}
 
-	plugins := make([]pluginapi.PluginClient, 0, len(pipeline.Stages))
+	plugins := make([]Plugin, 0, len(pipeline.Stages))
 	for _, stage := range pipeline.Stages {
 		plugin, ok := pr.stageBasedPlugins[stage.Name.String()]
 		if !ok {
@@ -112,12 +159,12 @@ func (pr *pluginRegistry) getPluginClientsByPipeline(pipeline *config.Deployment
 	return plugins, nil
 }
 
-func (pr *pluginRegistry) getPluginClientsByNames(names map[string]struct{}) ([]pluginapi.PluginClient, error) {
+func (pr *pluginRegistry) getPluginClientsByNames(names map[string]struct{}) ([]Plugin, error) {
 	if len(names) == 0 {
 		return nil, fmt.Errorf("no plugin names are set")
 	}
 
-	plugins := make([]pluginapi.PluginClient, 0, len(names))
+	plugins := make([]Plugin, 0, len(names))
 	for name := range names {
 		plugin, ok := pr.nameBasedPlugins[name]
 		if !ok {
@@ -127,4 +174,21 @@ func (pr *pluginRegistry) getPluginClientsByNames(names map[string]struct{}) ([]
 	}
 
 	return plugins, nil
+}
+
+// GetLivestateSupportedClientsByAppConfig returns the livestate supported plugin clients
+func (pr *pluginRegistry) GetLivestateSupportedClientsByAppConfig(cfg *config.GenericApplicationSpec) ([]pluginapi.PluginClient, error) {
+	plugins, err := pr.getPluginClientsByAppConfig(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	livestateSupported := make([]pluginapi.PluginClient, 0, len(plugins))
+	for _, p := range plugins {
+		if _, ok := pr.livestateSupportedPlugins[p.Name]; ok {
+			livestateSupported = append(livestateSupported, p.Cli)
+		}
+	}
+
+	return livestateSupported, nil
 }

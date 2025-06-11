@@ -18,6 +18,7 @@ import (
 	"context"
 
 	"google.golang.org/grpc"
+	reflectionpb "google.golang.org/grpc/reflection/grpc_reflection_v1"
 
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/livestate"
@@ -27,12 +28,14 @@ import (
 type PluginClient interface {
 	deployment.DeploymentServiceClient
 	livestate.LivestateServiceClient
+	reflectionpb.ServerReflectionClient
 	Close() error
 }
 
 type client struct {
 	deployment.DeploymentServiceClient
 	livestate.LivestateServiceClient
+	reflectionpb.ServerReflectionClient
 	conn *grpc.ClientConn
 }
 
@@ -45,6 +48,7 @@ func NewClient(ctx context.Context, address string, opts ...rpcclient.DialOption
 	return &client{
 		DeploymentServiceClient: deployment.NewDeploymentServiceClient(conn),
 		LivestateServiceClient:  livestate.NewLivestateServiceClient(conn),
+		ServerReflectionClient:  reflectionpb.NewServerReflectionClient(conn),
 		conn:                    conn,
 	}, nil
 }

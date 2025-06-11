@@ -51,9 +51,9 @@ func TestPluginRegistry_GetPluginClientsByAppConfig(t *testing.T) {
 			},
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
-					stageBasedPlugins: map[string]pluginapi.PluginClient{
-						"stage1": fakePluginClient{name: "stage1"},
-						"stage2": fakePluginClient{name: "stage2"},
+					stageBasedPlugins: map[string]Plugin{
+						"stage1": Plugin{Name: "stage1", Cli: fakePluginClient{name: "stage1"}},
+						"stage2": Plugin{Name: "stage2", Cli: fakePluginClient{name: "stage2"}},
 					},
 				}
 			},
@@ -71,9 +71,9 @@ func TestPluginRegistry_GetPluginClientsByAppConfig(t *testing.T) {
 			},
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
-					nameBasedPlugins: map[string]pluginapi.PluginClient{
-						"plugin1": fakePluginClient{name: "plugin1"},
-						"plugin2": fakePluginClient{name: "plugin2"},
+					nameBasedPlugins: map[string]Plugin{
+						"plugin1": Plugin{Name: "plugin1", Cli: fakePluginClient{name: "plugin1"}},
+						"plugin2": Plugin{Name: "plugin2", Cli: fakePluginClient{name: "plugin2"}},
 					},
 				}
 			},
@@ -96,13 +96,13 @@ func TestPluginRegistry_GetPluginClientsByAppConfig(t *testing.T) {
 			},
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
-					stageBasedPlugins: map[string]pluginapi.PluginClient{
-						"stage1": fakePluginClient{name: "stage1"},
-						"stage2": fakePluginClient{name: "stage2"},
+					stageBasedPlugins: map[string]Plugin{
+						"stage1": Plugin{Name: "stage1", Cli: fakePluginClient{name: "stage1"}},
+						"stage2": Plugin{Name: "stage2", Cli: fakePluginClient{name: "stage2"}},
 					},
-					nameBasedPlugins: map[string]pluginapi.PluginClient{
-						"plugin1": fakePluginClient{name: "plugin1"},
-						"plugin2": fakePluginClient{name: "plugin2"},
+					nameBasedPlugins: map[string]Plugin{
+						"plugin1": Plugin{Name: "plugin1", Cli: fakePluginClient{name: "plugin1"}},
+						"plugin2": Plugin{Name: "plugin2", Cli: fakePluginClient{name: "plugin2"}},
 					},
 				}
 			},
@@ -117,7 +117,7 @@ func TestPluginRegistry_GetPluginClientsByAppConfig(t *testing.T) {
 			cfg:  &config.GenericApplicationSpec{},
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
-					nameBasedPlugins: map[string]pluginapi.PluginClient{},
+					nameBasedPlugins: map[string]Plugin{},
 				}
 			},
 			wantErr: true,
@@ -135,6 +135,7 @@ func TestPluginRegistry_GetPluginClientsByAppConfig(t *testing.T) {
 		})
 	}
 }
+
 func TestPluginRegistry_getPluginClientsByPipeline(t *testing.T) {
 	t.Parallel()
 
@@ -142,7 +143,7 @@ func TestPluginRegistry_getPluginClientsByPipeline(t *testing.T) {
 		name     string
 		pipeline *config.DeploymentPipeline
 		setup    func() *pluginRegistry
-		expected []pluginapi.PluginClient
+		expected []Plugin
 		wantErr  bool
 	}{
 		{
@@ -155,15 +156,15 @@ func TestPluginRegistry_getPluginClientsByPipeline(t *testing.T) {
 			},
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
-					stageBasedPlugins: map[string]pluginapi.PluginClient{
-						"stage1": fakePluginClient{name: "stage1"},
-						"stage2": fakePluginClient{name: "stage2"},
+					stageBasedPlugins: map[string]Plugin{
+						"stage1": Plugin{Name: "stage1"},
+						"stage2": Plugin{Name: "stage2"},
 					},
 				}
 			},
-			expected: []pluginapi.PluginClient{
-				fakePluginClient{name: "stage1"},
-				fakePluginClient{name: "stage2"},
+			expected: []Plugin{
+				Plugin{Name: "stage1"},
+				Plugin{Name: "stage2"},
 			},
 			wantErr: false,
 		},
@@ -174,7 +175,7 @@ func TestPluginRegistry_getPluginClientsByPipeline(t *testing.T) {
 			},
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
-					stageBasedPlugins: map[string]pluginapi.PluginClient{},
+					stageBasedPlugins: map[string]Plugin{},
 				}
 			},
 			expected: nil,
@@ -190,7 +191,7 @@ func TestPluginRegistry_getPluginClientsByPipeline(t *testing.T) {
 			},
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
-					stageBasedPlugins: map[string]pluginapi.PluginClient{},
+					stageBasedPlugins: map[string]Plugin{},
 				}
 			},
 			expected: nil,
@@ -209,6 +210,7 @@ func TestPluginRegistry_getPluginClientsByPipeline(t *testing.T) {
 		})
 	}
 }
+
 func TestPluginRegistry_getPluginClientsByNames(t *testing.T) {
 	t.Parallel()
 
@@ -216,7 +218,7 @@ func TestPluginRegistry_getPluginClientsByNames(t *testing.T) {
 		name        string
 		pluginNames map[string]struct{}
 		setup       func() *pluginRegistry
-		expected    []pluginapi.PluginClient
+		expected    []Plugin
 		wantErr     bool
 	}{
 		{
@@ -224,15 +226,15 @@ func TestPluginRegistry_getPluginClientsByNames(t *testing.T) {
 			pluginNames: map[string]struct{}{"plugin1": {}, "plugin2": {}},
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
-					nameBasedPlugins: map[string]pluginapi.PluginClient{
-						"plugin1": fakePluginClient{name: "plugin1"},
-						"plugin2": fakePluginClient{name: "plugin2"},
+					nameBasedPlugins: map[string]Plugin{
+						"plugin1": Plugin{Name: "plugin1"},
+						"plugin2": Plugin{Name: "plugin2"},
 					},
 				}
 			},
-			expected: []pluginapi.PluginClient{
-				fakePluginClient{name: "plugin1"},
-				fakePluginClient{name: "plugin2"},
+			expected: []Plugin{
+				Plugin{Name: "plugin1"},
+				Plugin{Name: "plugin2"},
 			},
 			wantErr: false,
 		},
@@ -241,9 +243,9 @@ func TestPluginRegistry_getPluginClientsByNames(t *testing.T) {
 			pluginNames: map[string]struct{}{},
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
-					nameBasedPlugins: map[string]pluginapi.PluginClient{
-						"plugin1": fakePluginClient{name: "plugin1"},
-						"plugin2": fakePluginClient{name: "plugin2"},
+					nameBasedPlugins: map[string]Plugin{
+						"plugin1": Plugin{Name: "plugin1"},
+						"plugin2": Plugin{Name: "plugin2"},
 					},
 				}
 			},
@@ -254,9 +256,9 @@ func TestPluginRegistry_getPluginClientsByNames(t *testing.T) {
 			pluginNames: map[string]struct{}{"plugin1": {}, "plugin2": {}},
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
-					nameBasedPlugins: map[string]pluginapi.PluginClient{
-						"plugin3": fakePluginClient{name: "plugin3"},
-						"plugin4": fakePluginClient{name: "plugin4"},
+					nameBasedPlugins: map[string]Plugin{
+						"plugin3": Plugin{Name: "plugin3"},
+						"plugin4": Plugin{Name: "plugin4"},
 					},
 				}
 			},
@@ -275,6 +277,7 @@ func TestPluginRegistry_getPluginClientsByNames(t *testing.T) {
 		})
 	}
 }
+
 func TestPluginRegistry_GetPluginClientByStageName(t *testing.T) {
 	t.Parallel()
 
@@ -290,8 +293,8 @@ func TestPluginRegistry_GetPluginClientByStageName(t *testing.T) {
 			stage: "stage1",
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
-					stageBasedPlugins: map[string]pluginapi.PluginClient{
-						"stage1": fakePluginClient{name: "stage1"},
+					stageBasedPlugins: map[string]Plugin{
+						"stage1": Plugin{Name: "stage1", Cli: fakePluginClient{name: "stage1"}},
 					},
 				}
 			},
@@ -303,8 +306,8 @@ func TestPluginRegistry_GetPluginClientByStageName(t *testing.T) {
 			stage: "stage2",
 			setup: func() *pluginRegistry {
 				return &pluginRegistry{
-					stageBasedPlugins: map[string]pluginapi.PluginClient{
-						"stage1": fakePluginClient{name: "stage1"},
+					stageBasedPlugins: map[string]Plugin{
+						"stage1": Plugin{Name: "stage1", Cli: fakePluginClient{name: "stage1"}},
 					},
 				}
 			},
@@ -320,6 +323,140 @@ func TestPluginRegistry_GetPluginClientByStageName(t *testing.T) {
 			pr := tt.setup()
 			plugin, err := pr.GetPluginClientByStageName(tt.stage)
 			assert.Equal(t, tt.expected, plugin)
+			assert.Equal(t, tt.wantErr, err != nil)
+		})
+	}
+}
+
+func TestPluginRegistry_GetLivestateSupportedClientsByAppConfig(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		cfg *config.GenericApplicationSpec
+	}
+	tests := []struct {
+		name     string
+		cfg      *config.GenericApplicationSpec
+		setup    func() *pluginRegistry
+		expected []pluginapi.PluginClient
+		wantErr  bool
+	}{
+		{
+			name: "returns only livestate supported plugin clients by pipeline",
+			cfg: &config.GenericApplicationSpec{
+				Pipeline: &config.DeploymentPipeline{
+					Stages: []config.PipelineStage{
+						{Name: "stage1"},
+						{Name: "stage2"},
+					},
+				},
+			},
+			setup: func() *pluginRegistry {
+				return &pluginRegistry{
+					stageBasedPlugins: map[string]Plugin{
+						"stage1": {Name: "stage1", Cli: fakePluginClient{name: "stage1"}},
+						"stage2": {Name: "stage2", Cli: fakePluginClient{name: "stage2"}},
+					},
+					livestateSupportedPlugins: map[string]Plugin{
+						"stage1": {Name: "stage1", Cli: fakePluginClient{name: "stage1"}},
+					},
+				}
+			},
+			expected: []pluginapi.PluginClient{
+				fakePluginClient{name: "stage1"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "returns only livestate supported plugin clients by plugin names",
+			cfg: &config.GenericApplicationSpec{
+				Plugins: map[string]struct{}{"plugin1": {}, "plugin2": {}},
+			},
+			setup: func() *pluginRegistry {
+				return &pluginRegistry{
+					nameBasedPlugins: map[string]Plugin{
+						"plugin1": {Name: "plugin1", Cli: fakePluginClient{name: "plugin1"}},
+						"plugin2": {Name: "plugin2", Cli: fakePluginClient{name: "plugin2"}},
+					},
+					livestateSupportedPlugins: map[string]Plugin{
+						"plugin2": {Name: "plugin2", Cli: fakePluginClient{name: "plugin2"}},
+					},
+				}
+			},
+			expected: []pluginapi.PluginClient{
+				fakePluginClient{name: "plugin2"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "returns empty slice if no plugin is livestate supported",
+			cfg: &config.GenericApplicationSpec{
+				Plugins: map[string]struct{}{"plugin1": {}, "plugin2": {}},
+			},
+			setup: func() *pluginRegistry {
+				return &pluginRegistry{
+					nameBasedPlugins: map[string]Plugin{
+						"plugin1": {Name: "plugin1", Cli: fakePluginClient{name: "plugin1"}},
+						"plugin2": {Name: "plugin2", Cli: fakePluginClient{name: "plugin2"}},
+					},
+					livestateSupportedPlugins: map[string]Plugin{},
+				}
+			},
+			expected: []pluginapi.PluginClient{},
+			wantErr:  false,
+		},
+		{
+			name: "returns error if no plugin specified",
+			cfg:  &config.GenericApplicationSpec{},
+			setup: func() *pluginRegistry {
+				return &pluginRegistry{
+					nameBasedPlugins:          map[string]Plugin{},
+					stageBasedPlugins:         map[string]Plugin{},
+					livestateSupportedPlugins: map[string]Plugin{},
+				}
+			},
+			expected: nil,
+			wantErr:  true,
+		},
+		{
+			name: "returns only livestate supported plugin clients when both pipeline and plugins are specified (pipeline takes precedence)",
+			cfg: &config.GenericApplicationSpec{
+				Pipeline: &config.DeploymentPipeline{
+					Stages: []config.PipelineStage{
+						{Name: "stage1"},
+						{Name: "stage2"},
+					},
+				},
+				Plugins: map[string]struct{}{"plugin1": {}, "plugin2": {}},
+			},
+			setup: func() *pluginRegistry {
+				return &pluginRegistry{
+					stageBasedPlugins: map[string]Plugin{
+						"stage1": {Name: "stage1", Cli: fakePluginClient{name: "stage1"}},
+						"stage2": {Name: "stage2", Cli: fakePluginClient{name: "stage2"}},
+					},
+					nameBasedPlugins: map[string]Plugin{
+						"plugin1": {Name: "plugin1", Cli: fakePluginClient{name: "plugin1"}},
+						"plugin2": {Name: "plugin2", Cli: fakePluginClient{name: "plugin2"}},
+					},
+					livestateSupportedPlugins: map[string]Plugin{
+						"stage2": {Name: "stage2", Cli: fakePluginClient{name: "stage2"}},
+					},
+				}
+			},
+			expected: []pluginapi.PluginClient{
+				fakePluginClient{name: "stage2"},
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			pr := tt.setup()
+			got, err := pr.GetLivestateSupportedClientsByAppConfig(tt.cfg)
+			assert.ElementsMatch(t, tt.expected, got)
 			assert.Equal(t, tt.wantErr, err != nil)
 		})
 	}

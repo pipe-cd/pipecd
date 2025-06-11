@@ -21,11 +21,12 @@ import (
 	"net/http/pprof"
 	"time"
 
-	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister"
-	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
+
+	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister"
+	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry"
 
 	"github.com/pipe-cd/pipecd/pkg/admin"
 	"github.com/pipe-cd/pipecd/pkg/cli"
@@ -320,6 +321,7 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 				rpc.WithLogUnaryInterceptor(input.Logger),
 				rpc.WithRequestValidationUnaryInterceptor(),
 				rpc.WithSignalHandlingUnaryInterceptor(),
+				rpc.WithGRPCReflection(),
 			}
 		)
 		if p.tls {
