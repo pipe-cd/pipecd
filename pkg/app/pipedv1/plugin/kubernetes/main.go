@@ -25,7 +25,7 @@ import (
 
 func main() {
 	plugin, err := sdk.NewPlugin(
-		"kubernetes", "0.0.1",
+		"0.0.1",
 		sdk.WithDeploymentPlugin(&deployment.Plugin{}),
 		sdk.WithLivestatePlugin(&livestate.Plugin{}),
 	)
