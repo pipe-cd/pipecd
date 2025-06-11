@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
@@ -16,9 +17,6 @@ import { FC, memo, useState } from "react";
 import { SSO_DESCRIPTION } from "~/constants/text";
 import { UPDATE_SSO_SUCCESS } from "~/constants/toast-text";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
-import { useAppDispatch, useAppSelector } from "~/hooks/redux";
-import { fetchProject, GitHubSSO, updateGitHubSSO } from "~/modules/project";
-import { addToast } from "~/modules/toasts";
 import {
   ProjectDescription,
   ProjectTitleWrap,
@@ -27,6 +25,9 @@ import {
   ProjectValuesWrapper,
 } from "~/styles/project-setting";
 import { ProjectSettingLabeledText } from "../project-setting-labeled-text";
+import { useUpdateGithubSso } from "~/queries/project/use-update-github-sso";
+import { useToast } from "~/contexts/toast-context";
+import { useGetProject } from "~/queries/project/use-get-project";
 export interface GitHubSSOFormParams {
   clientId: string;
   clientSecret: string;
@@ -42,34 +43,28 @@ const SECTION_TITLE = "Single Sign-On";
 const DIALOG_TITLE = `Edit ${SECTION_TITLE}`;
 
 export const GithubSSOForm: FC = memo(function GithubSSOForm() {
-  const dispatch = useAppDispatch();
   const [isEdit, setIsEdit] = useState(false);
   const [clientId, setClientID] = useState("");
   const [clientSecret, setClientSecret] = useState("");
   const [baseUrl, setBaseUrl] = useState("");
   const [uploadUrl, setUploadUrl] = useState("");
-  const [sso, sharedSSO] = useAppSelector<
-    [GitHubSSO | null | undefined, string | null | undefined]
-  >((state) => [state.project.github, state.project.sharedSSO]);
 
+  const { data: projectDetail } = useGetProject();
+  const { github: sso, sharedSSO: sharedSSO } = projectDetail || {};
+
+  const { mutateAsync: updateGithubSso } = useUpdateGithubSso();
+  const { addToast } = useToast();
   const handleClose = (): void => {
     setIsEdit(false);
   };
 
   const handleSave = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
-    dispatch(
-      updateGitHubSSO({ clientId, clientSecret, baseUrl, uploadUrl })
-    ).then((result) => {
-      if (updateGitHubSSO.fulfilled.match(result)) {
-        dispatch(fetchProject());
-        dispatch(
-          addToast({
-            message: UPDATE_SSO_SUCCESS,
-            severity: "success",
-          })
-        );
-      }
+    updateGithubSso({ clientId, clientSecret, baseUrl, uploadUrl }).then(() => {
+      addToast({
+        message: UPDATE_SSO_SUCCESS,
+        severity: "success",
+      });
     });
     setIsEdit(false);
   };
@@ -128,51 +123,65 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
       <Dialog
         open={isEdit}
         onClose={handleClose}
-        TransitionProps={{
-          onEnter: () => {
-            setBaseUrl(sso?.baseUrl ?? "");
-            setUploadUrl(sso?.uploadUrl ?? "");
+        slotProps={{
+          transition: {
+            onEnter: () => {
+              setBaseUrl(sso?.baseUrl ?? "");
+              setUploadUrl(sso?.uploadUrl ?? "");
+            },
           },
         }}
       >
         <form onSubmit={handleSave}>
           <DialogTitle>{DIALOG_TITLE}</DialogTitle>
           <DialogContent>
-            <TextField
-              value={clientId}
-              variant="outlined"
-              size="small"
-              label="Client ID"
-              fullWidth
-              required
-              autoFocus
-              onChange={(e) => setClientID(e.currentTarget.value)}
-            />
-            <TextField
-              value={clientSecret}
-              variant="outlined"
-              size="small"
-              label="Client Secret"
-              fullWidth
-              required
-              onChange={(e) => setClientSecret(e.currentTarget.value)}
-            />
-            <TextField
-              value={baseUrl}
-              variant="outlined"
-              size="small"
-              label="Base URL"
-              fullWidth
-              onChange={(e) => setBaseUrl(e.currentTarget.value)}
-            />
-            <TextField
-              value={uploadUrl}
-              variant="outlined"
-              size="small"
-              label="Upload URL"
-              fullWidth
-              onChange={(e) => setUploadUrl(e.currentTarget.value)}
-            />
+            <Box
+              sx={{
+                display: "grid",
+                gap: 2,
+                py: 2,
+                pt: 1,
+                minWidth: 300,
+                maxWidth: "100%",
+                width: "100%",
+              }}
+            >
+              <TextField
+                value={clientId}
+                variant="outlined"
+                size="small"
+                label="Client ID"
+                fullWidth
+                required
+                autoFocus
+                onChange={(e) => setClientID(e.currentTarget.value)}
+              />
+              <TextField
+                value={clientSecret}
+                variant="outlined"
+                size="small"
+                label="Client Secret"
+                fullWidth
+                required
+                onChange={(e) => setClientSecret(e.currentTarget.value)}
+              />
+              <TextField
+                value={baseUrl}
+                variant="outlined"
+                size="small"
+                label="Base URL"
+                fullWidth
+                onChange={(e) => setBaseUrl(e.currentTarget.value)}
+              />
+              <TextField
+                value={uploadUrl}
+                variant="outlined"
+                size="small"
+                label="Upload URL"
+                fullWidth
+                onChange={(e) => setUploadUrl(e.currentTarget.value)}
+              />
+            </Box>
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose}>{UI_TEXT_CANCEL}</Button>
