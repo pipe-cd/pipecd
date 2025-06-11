@@ -18,7 +18,8 @@ import (
 	"context"
 	"fmt"
 
-	reflectionpb "google.golang.org/grpc/reflection/grpc_reflection_v1"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
@@ -66,31 +67,14 @@ func NewPluginRegistry(ctx context.Context, plugins []Plugin) (PluginRegistry, e
 			stageBasedPlugins[stage] = plg
 		}
 
-		// add the plugin to the livestate supported plugins
-		stream, err := plg.Cli.ServerReflectionInfo(ctx)
-		if err != nil {
+		_, err = plg.Cli.GetLivestate(ctx, &livestate.GetLivestateRequest{})
+		st, ok := status.FromError(err)
+		if !ok {
 			return nil, err
 		}
 
-		req := &reflectionpb.ServerReflectionRequest{
-			MessageRequest: &reflectionpb.ServerReflectionRequest_ListServices{
-				ListServices: "*",
-			},
-		}
-		if err := stream.Send(req); err != nil {
-			return nil, err
-		}
-
-		resp, err := stream.Recv()
-		if err != nil {
-			return nil, err
-		}
-
-		listResp := resp.GetListServicesResponse()
-		for _, svc := range listResp.Service {
-			if svc.Name == livestate.LivestateService_ServiceDesc.ServiceName {
-				livestateSupportedPlugins[plg.Name] = plg
-			}
+		if st.Code() != codes.Unimplemented {
+			livestateSupportedPlugins[plg.Name] = plg
 		}
 	}
 
