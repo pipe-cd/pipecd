@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
-import { InsightDataPoint } from "~/modules/insight";
 import { randomNumber } from "./utils";
+import { InsightDataPoint } from "~~/model/insight_pb";
 
 const today = dayjs();
 export const dummyDataPointsList: InsightDataPoint.AsObject[] = Array.from(
