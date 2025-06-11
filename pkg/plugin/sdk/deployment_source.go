@@ -128,7 +128,7 @@ func (c *ApplicationConfig[Spec]) parsePluginConfig(pluginName string) error {
 	}
 
 	// Validate the spec if it implements the Validate method.
-	if v, ok := any(&spec).(interface{ Validate() error }); ok {
+	if v, ok := any(spec).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return fmt.Errorf("failed to validate plugin spec: %w", err)
 		}
