@@ -111,7 +111,7 @@ func (c *ApplicationConfig[Spec]) parsePluginConfig(pluginName string) error {
 		c.pluginConfigs = nil
 	}()
 
-	// It is necessary to prepare config with default value when users doesn't set any config, or when developers implements custom unmarshalling logic.
+	// It is necessary to prepare config with default value when users don't set any config, or when plugin developers implement custom unmarshalling logic.
 	data := []byte("{}")
 
 	if c.pluginConfigs != nil && c.pluginConfigs[pluginName] != nil {
