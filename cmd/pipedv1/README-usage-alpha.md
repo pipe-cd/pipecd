@@ -108,7 +108,7 @@ spec:
 
 <!-- TODO: Link to each config reference -->
 - kubernetes plugin: TBA
-- wait stage plugin: TBA
+- wait stage plugin: [README.md](/pkg/app/pipedv1/plugin/wait/README.md)
 - example-stage plugin: TBA
 
 ## Note
