@@ -26,6 +26,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 	"google.golang.org/grpc"
+	reflectionpb "google.golang.org/grpc/reflection/grpc_reflection_v1"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
@@ -120,6 +121,31 @@ func (p *fakePlugin) GetLivestate(ctx context.Context, in *livestate.GetLivestat
 	return &livestate.GetLivestateResponse{
 		ApplicationLiveState: &model.ApplicationLiveState{},
 		SyncState:            &model.ApplicationSyncState{},
+	}, nil
+}
+
+type fakeServerReflectionInfoClient struct {
+	reflectionpb.ServerReflection_ServerReflectionInfoClient
+}
+
+func (p *fakePlugin) ServerReflectionInfo(ctx context.Context, opts ...grpc.CallOption) (reflectionpb.ServerReflection_ServerReflectionInfoClient, error) {
+	return &fakeServerReflectionInfoClient{}, nil
+}
+
+func (c *fakeServerReflectionInfoClient) Send(req *reflectionpb.ServerReflectionRequest) error {
+	return nil
+}
+func (c *fakeServerReflectionInfoClient) Recv() (*reflectionpb.ServerReflectionResponse, error) {
+	return &reflectionpb.ServerReflectionResponse{
+		MessageResponse: &reflectionpb.ServerReflectionResponse_ListServicesResponse{
+			ListServicesResponse: &reflectionpb.ListServiceResponse{
+				Service: []*reflectionpb.ServiceResponse{
+					{
+						Name: "pipecd.plugin.api.v1alpha1.livestate.LivestateService",
+					},
+				},
+			},
+		},
 	}, nil
 }
 

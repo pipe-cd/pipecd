@@ -212,9 +212,9 @@ func (r *reporter) flush(ctx context.Context, app *model.Application, repo git.R
 		return err
 	}
 
-	pluginClis, err := r.pluginRegistry.GetPluginClientsByAppConfig(cfg.Spec)
+	pluginClis, err := r.pluginRegistry.GetLivestateSupportedClientsByAppConfig(cfg.Spec)
 	if err != nil {
-		r.logger.Error("failed to get plugin clients", zap.Error(err))
+		r.logger.Error("unable to determine plugin", zap.Error(err))
 		return err
 	}
 
