@@ -80,6 +80,14 @@ type PipedSpec struct {
 	EventWatcher PipedEventWatcher `json:"eventWatcher"`
 	// List of labels to filter all applications this piped will handle.
 	AppSelector map[string]string `json:"appSelector,omitempty"`
+	// worker num for handling commands.
+	HandlerWorkerNum int `json:"handlerWorkerNum,omitempty" default:"3"`
+	// The maximum number of commands that can be queued for handling.
+	HandlerCommandQueueBufferSize int `json:"handlerCommandQueueBufferSize,omitempty" default:"10"`
+	// How often to check whether there are commands to handle.
+	HandlerCommandCheckInterval Duration `json:"handlerCommandCheckInterval,omitempty" default:"5s"`
+	// How long to wait for a command to be handled.
+	HandlerCommandHandleTimeout Duration `json:"handlerCommandHandleTimeout,omitempty" default:"5m"`
 }
 
 func (s *PipedSpec) UnmarshalJSON(data []byte) error {
