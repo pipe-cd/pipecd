@@ -616,7 +616,7 @@ func TestGetStageConfigByte(t *testing.T) {
 				},
 			},
 			index:  0,
-			want:   nil,
+			want:   []byte(`{}`),
 			wantOk: true,
 		},
 		{
