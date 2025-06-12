@@ -11,7 +11,6 @@ _This page might be moved to another place in the future._
 
 ## Prerequisites
 
-- docker
 - kubectl and a k8s cluster (They are not required if you won't use the kubernetes plugin)
 
 ## 1. Setup Control Plane
@@ -53,6 +52,7 @@ spec:
           config: 
             masterURL: https://127.0.0.1:61337   # shown by kubectl cluster-info
             kubeConfigPath: /path/to/kubeconfig
+            kubectlVersion: 1.33.0
     - name: wait
       port: 7002 # Any unused port
       url: https://github.com/pipe-cd/pipecd/xxxxxxxxxxx # TODO: Ref to the Release 
@@ -67,7 +67,7 @@ spec:
 2. Run pipedv1
 
 ```sh
-docker run pipe-cd/pipecd/pipedv1:v0.52.0 piped --config-file=/path/to/piped-config.yaml --tools-dir=/tmp/piped-bin
+pipedv1 piped --config-file=/path/to/piped-config.yaml --tools-dir=/tmp/piped-bin
 ```
 
 - The pipedv1 version must be v0.52.0 or later.
@@ -81,24 +81,26 @@ docker run pipe-cd/pipecd/pipedv1:v0.52.0 piped --config-file=/path/to/piped-con
 ```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: Application
-spec: 
-    # `input` field is not used in pipedv1
-    ...
-    pipeline: 
-        stages:
-          - name: K8sXXXX # TODO: Set stages and options
-            with: ...
-          - name: WAIT # wait stage plugin
-            with:
-                duration: 10s
-          - name: EXAMPLE_HELLO # example-stage plugin
-            with:
-                name: "Bob"
-
-    plugins:
-        kubernetes:
-            ... # TODO: configure
-
+spec:
+  name: canary
+  labels:
+    env: example
+    team: product
+  pipeline:
+    stages:
+      # Deploy the workloads of CANARY variant. In this case, the number of
+      # workload replicas of CANARY variant is 10% of the replicas number of PRIMARY variant.
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 10%
+      # Wait 10 seconds before going to the next stage.
+      - name: WAIT
+        with:
+          duration: 10s
+      # Update the workload of PRIMARY variant to the new version.
+      - name: K8S_PRIMARY_ROLLOUT
+      # Destroy all workloads of CANARY variant.
+      - name: K8S_CANARY_CLEAN
 ```
 
 2. Push the app.pipecd.yaml to your remote repository.
@@ -107,7 +109,7 @@ spec:
 ## See also
 
 <!-- TODO: Link to each config reference -->
-- kubernetes plugin: TBA
+- kubernetes plugin: [README.md](/pkg/app/pipedv1/plugin/kubernetes/README.md)
 - wait stage plugin: [README.md](/pkg/app/pipedv1/plugin/wait/README.md)
 - example-stage plugin: TBA
 
