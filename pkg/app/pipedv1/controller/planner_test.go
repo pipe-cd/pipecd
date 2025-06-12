@@ -17,6 +17,7 @@ package controller
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
@@ -1179,6 +1180,76 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				require.NoError(t, err)
 			}
 			assert.Equal(t, tc.expectedOutput, out)
+		})
+	}
+}
+
+func TestValidateStageIndexes(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name    string
+		req     []*deployment.BuildPipelineSyncStagesRequest_StageConfig
+		res     []*model.PipelineStage
+		wantErr error
+	}{
+		{
+			name: "valid",
+			req: []*deployment.BuildPipelineSyncStagesRequest_StageConfig{
+				{Index: 0},
+				{Index: 1},
+				{Index: 2},
+			},
+			res: []*model.PipelineStage{
+				{Index: 0},
+				{Index: 1},
+				{Index: 2},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "valid with fewer response",
+			req: []*deployment.BuildPipelineSyncStagesRequest_StageConfig{
+				{Index: 0},
+				{Index: 1},
+				{Index: 2},
+			},
+			res: []*model.PipelineStage{
+				{Index: 1},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "duplicated",
+			req: []*deployment.BuildPipelineSyncStagesRequest_StageConfig{
+				{Index: 0},
+				{Index: 1},
+			},
+			res: []*model.PipelineStage{
+				{Index: 0},
+				{Index: 0}, // duplicated
+			},
+			wantErr: fmt.Errorf("stage index 0 from plugin is duplicated"),
+		},
+		{
+			name: "index not in request",
+			req: []*deployment.BuildPipelineSyncStagesRequest_StageConfig{
+				{Index: 0},
+				{Index: 2},
+			},
+			res: []*model.PipelineStage{
+				{Index: 0},
+				{Index: 1}, // 1 not in req
+			},
+			wantErr: fmt.Errorf("stage index 1 from plugin is not defined in the request"),
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			err := validateStageIndexes(tc.req, tc.res)
+			assert.Equal(t, tc.wantErr, err)
 		})
 	}
 }

@@ -497,7 +497,11 @@ func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.Gener
 			p.logger.Error("failed to build pipeline sync stages for deployment", zap.Error(err))
 			return nil, err
 		}
-		// TODO: Ensure responsed stages indexies is valid.
+		if err := validateStageIndexes(stageCfgs, res.Stages); err != nil {
+			p.logger.Error("invalid stage index was returned from a plugin", zap.Error(err))
+			return nil, err
+		}
+
 		for i := range res.Stages {
 			if res.Stages[i].Rollback {
 				rollbackStages = append(rollbackStages, res.Stages[i])
@@ -527,6 +531,32 @@ func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.Gener
 		return nil, fmt.Errorf("unable to build pipeline sync stages for deployment")
 	}
 	return stages, nil
+}
+
+// validateStageIndexes validates the response stage indexes for two criteria:
+//   - dupilcation: Indexes of the response stages must not be duplicated.
+//   - range: Each response stage must have a index defined in the request.
+func validateStageIndexes(req []*deployment.BuildPipelineSyncStagesRequest_StageConfig, res []*model.PipelineStage) error {
+	// check duplication
+	resIndexes := make(map[int32]struct{})
+	for _, resStage := range res {
+		if _, ok := resIndexes[resStage.Index]; ok {
+			return fmt.Errorf("stage index %d from plugin is duplicated", resStage.Index)
+		}
+		resIndexes[resStage.Index] = struct{}{}
+	}
+
+	// check range
+	reqIndexes := make(map[int32]struct{})
+	for _, reqStage := range req {
+		reqIndexes[reqStage.Index] = struct{}{}
+	}
+	for _, resStage := range res {
+		if _, ok := reqIndexes[resStage.Index]; !ok {
+			return fmt.Errorf("stage index %d from plugin is not defined in the request", resStage.Index)
+		}
+	}
+	return nil
 }
 
 func (p *planner) reportDeploymentPlanned(ctx context.Context, out *plannerOutput) error {
