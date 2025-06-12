@@ -27,6 +27,8 @@ import (
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
@@ -230,6 +232,13 @@ func (r *reporter) flush(ctx context.Context, app *model.Application, repo git.R
 			DeployTargets:   app.GetDeployTargets(),
 		})
 		if err != nil {
+			st, ok := status.FromError(err)
+			if ok && st.Code() == codes.Unimplemented {
+				// TODO: show plugin name
+				r.logger.Info("plugin does not support livestate feature")
+				continue
+			}
+
 			r.logger.Info(fmt.Sprintf("no app state of application %s to report", app.Id))
 			return err
 		}
