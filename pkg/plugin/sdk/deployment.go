@@ -53,7 +53,7 @@ type StagePlugin[Config, DeployTargetConfig, ApplicationConfigSpec any] interfac
 	// FetchDefinedStages returns the list of stages that the plugin can execute.
 	FetchDefinedStages() []string
 	// BuildPipelineSyncStages builds the stages that will be executed by the plugin.
-	// Note about the respones indexes:
+	// Note about the response indexes:
 	//   - Indexes of the response stages must not be duplicated within non-rollback stages and rollback stages.
 	//     A non-rollback stage and a rollback stage can have the same index.
 	//   - All indexes of the response stages must exist in the indexes of the request stages.

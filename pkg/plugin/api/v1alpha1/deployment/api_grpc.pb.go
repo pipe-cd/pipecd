@@ -29,7 +29,7 @@ type DeploymentServiceClient interface {
 	// DetermineStrategy determines which strategy should be used for the given deployment.
 	DetermineStrategy(ctx context.Context, in *DetermineStrategyRequest, opts ...grpc.CallOption) (*DetermineStrategyResponse, error)
 	// BuildPipelineSyncStages builds the deployment pipeline stages.
-	// Note about the respones indexes:
+	// Note about the response indexes:
 	//   - Indexes of the response stages must not be duplicated within non-rollback stages and rollback stages.
 	//     A non-rollback stage and a rollback stage can have the same index.
 	//   - All indexes of the response stages must exist in the indexes of the request stages.
@@ -113,7 +113,7 @@ type DeploymentServiceServer interface {
 	// DetermineStrategy determines which strategy should be used for the given deployment.
 	DetermineStrategy(context.Context, *DetermineStrategyRequest) (*DetermineStrategyResponse, error)
 	// BuildPipelineSyncStages builds the deployment pipeline stages.
-	// Note about the respones indexes:
+	// Note about the response indexes:
 	//   - Indexes of the response stages must not be duplicated within non-rollback stages and rollback stages.
 	//     A non-rollback stage and a rollback stage can have the same index.
 	//   - All indexes of the response stages must exist in the indexes of the request stages.
