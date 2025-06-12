@@ -53,6 +53,17 @@ type StagePlugin[Config, DeployTargetConfig, ApplicationConfigSpec any] interfac
 	// FetchDefinedStages returns the list of stages that the plugin can execute.
 	FetchDefinedStages() []string
 	// BuildPipelineSyncStages builds the stages that will be executed by the plugin.
+	// The built pipeline includes non-rollback (defined in the application config) and rollback stages.
+	// The request contains only non-rollback stages whose names are listed in FetchDefinedStages() of this plugin.
+	//
+	// Note about the response indexes:
+	//  - For a non-rollback stage, use the index given by the request remaining the execution order.
+	//  - For a rollback stage, use one of the indexes given by the request.
+	//  - The indexes of the response stages must not be duplicated across non-rollback stages and rollback stages.
+	//    A non-rollback stage and a rollback stage can have the same index.
+	// For example, given request indexes are {2,4,5}, then
+	//  - Non-rollback stages indexes must be {2,4,5}
+	//  - Rollback stages indexes must be selected from {2,4,5}.  For a deploymentPlugin, using only {2} is recommended.
 	BuildPipelineSyncStages(context.Context, *Config, *BuildPipelineSyncStagesInput) (*BuildPipelineSyncStagesResponse, error)
 	// ExecuteStage executes the given stage.
 	ExecuteStage(context.Context, *Config, []*DeployTarget[DeployTargetConfig], *ExecuteStageInput[ApplicationConfigSpec]) (*ExecuteStageResponse, error)

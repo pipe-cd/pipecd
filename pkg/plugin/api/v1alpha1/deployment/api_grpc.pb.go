@@ -29,6 +29,18 @@ type DeploymentServiceClient interface {
 	// DetermineStrategy determines which strategy should be used for the given deployment.
 	DetermineStrategy(ctx context.Context, in *DetermineStrategyRequest, opts ...grpc.CallOption) (*DetermineStrategyResponse, error)
 	// BuildPipelineSyncStages builds the deployment pipeline stages.
+	// The built pipeline includes non-rollback (defined in the application config) and rollback stages.
+	// The request contains only non-rollback stages whose names are listed in FetchDefinedStages() of this plugin.
+	//
+	// Note about the response indexes:
+	//   - For a non-rollback stage, use the index given by the request remaining the execution order.
+	//   - For a rollback stage, use one of the indexes given by the request.
+	//   - The indexes of the response stages must not be duplicated across non-rollback stages and rollback stages.
+	//     A non-rollback stage and a rollback stage can have the same index.
+	//
+	// For example, given request indexes are {2,4,5}, then
+	//   - Non-rollback stages indexes must be {2,4,5}
+	//   - Rollback stages indexes must be selected from {2,4,5}.  For a deploymentPlugin, using only {2} is recommended.
 	BuildPipelineSyncStages(ctx context.Context, in *BuildPipelineSyncStagesRequest, opts ...grpc.CallOption) (*BuildPipelineSyncStagesResponse, error)
 	// BuildQuickSyncStages builds the deployment quick sync stages.
 	BuildQuickSyncStages(ctx context.Context, in *BuildQuickSyncStagesRequest, opts ...grpc.CallOption) (*BuildQuickSyncStagesResponse, error)
@@ -109,6 +121,18 @@ type DeploymentServiceServer interface {
 	// DetermineStrategy determines which strategy should be used for the given deployment.
 	DetermineStrategy(context.Context, *DetermineStrategyRequest) (*DetermineStrategyResponse, error)
 	// BuildPipelineSyncStages builds the deployment pipeline stages.
+	// The built pipeline includes non-rollback (defined in the application config) and rollback stages.
+	// The request contains only non-rollback stages whose names are listed in FetchDefinedStages() of this plugin.
+	//
+	// Note about the response indexes:
+	//   - For a non-rollback stage, use the index given by the request remaining the execution order.
+	//   - For a rollback stage, use one of the indexes given by the request.
+	//   - The indexes of the response stages must not be duplicated across non-rollback stages and rollback stages.
+	//     A non-rollback stage and a rollback stage can have the same index.
+	//
+	// For example, given request indexes are {2,4,5}, then
+	//   - Non-rollback stages indexes must be {2,4,5}
+	//   - Rollback stages indexes must be selected from {2,4,5}.  For a deploymentPlugin, using only {2} is recommended.
 	BuildPipelineSyncStages(context.Context, *BuildPipelineSyncStagesRequest) (*BuildPipelineSyncStagesResponse, error)
 	// BuildQuickSyncStages builds the deployment quick sync stages.
 	BuildQuickSyncStages(context.Context, *BuildQuickSyncStagesRequest) (*BuildQuickSyncStagesResponse, error)
