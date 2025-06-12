@@ -533,17 +533,26 @@ func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.Gener
 	return stages, nil
 }
 
-// validateStageIndexes validates the response stage indexes for two criteria:
-//   - dupilcation: Indexes of the response stages must not be duplicated.
+// validateStageIndexes validates the response stage indexes, including rollback stages, for two criteria:
+//   - dupilcation: Indexes of the response stages must not be duplicated within non-rollback stages and rollback stages.
+//     A non-rollback stage and a rollback stage can have the same index.
 //   - range: Each response stage must have a index defined in the request.
 func validateStageIndexes(req []*deployment.BuildPipelineSyncStagesRequest_StageConfig, res []*model.PipelineStage) error {
 	// check duplication
 	resIndexes := make(map[int32]struct{})
+	resRollbackIndexes := make(map[int32]struct{})
 	for _, resStage := range res {
-		if _, ok := resIndexes[resStage.Index]; ok {
-			return fmt.Errorf("stage index %d from plugin is duplicated", resStage.Index)
+		if resStage.Rollback {
+			if _, ok := resRollbackIndexes[resStage.Index]; ok {
+				return fmt.Errorf("rollback stage index %d from plugin is duplicated", resStage.Index)
+			}
+			resRollbackIndexes[resStage.Index] = struct{}{}
+		} else {
+			if _, ok := resIndexes[resStage.Index]; ok {
+				return fmt.Errorf("stage index %d from plugin is duplicated", resStage.Index)
+			}
+			resIndexes[resStage.Index] = struct{}{}
 		}
-		resIndexes[resStage.Index] = struct{}{}
 	}
 
 	// check range

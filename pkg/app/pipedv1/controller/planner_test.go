@@ -1204,6 +1204,7 @@ func TestValidateStageIndexes(t *testing.T) {
 				{Index: 0},
 				{Index: 1},
 				{Index: 2},
+				{Index: 0, Rollback: true},
 			},
 			wantErr: nil,
 		},
@@ -1216,6 +1217,7 @@ func TestValidateStageIndexes(t *testing.T) {
 			},
 			res: []*model.PipelineStage{
 				{Index: 1},
+				{Index: 1, Rollback: true},
 			},
 			wantErr: nil,
 		},
@@ -1230,6 +1232,19 @@ func TestValidateStageIndexes(t *testing.T) {
 				{Index: 0}, // duplicated
 			},
 			wantErr: fmt.Errorf("stage index 0 from plugin is duplicated"),
+		},
+		{
+			name: "duplicated rollback",
+			req: []*deployment.BuildPipelineSyncStagesRequest_StageConfig{
+				{Index: 0},
+				{Index: 1},
+			},
+			res: []*model.PipelineStage{
+				{Index: 0},
+				{Index: 1, Rollback: true},
+				{Index: 1, Rollback: true}, // duplicated
+			},
+			wantErr: fmt.Errorf("rollback stage index 1 from plugin is duplicated"),
 		},
 		{
 			name: "index not in request",

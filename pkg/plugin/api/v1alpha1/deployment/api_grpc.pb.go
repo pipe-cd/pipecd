@@ -29,7 +29,10 @@ type DeploymentServiceClient interface {
 	// DetermineStrategy determines which strategy should be used for the given deployment.
 	DetermineStrategy(ctx context.Context, in *DetermineStrategyRequest, opts ...grpc.CallOption) (*DetermineStrategyResponse, error)
 	// BuildPipelineSyncStages builds the deployment pipeline stages.
-	// Indexes of the response stages must not be duplicated and must exist in the indexes of the request stages.
+	// Note about the respones indexes:
+	//   - Indexes of the response stages must not be duplicated within non-rollback stages and rollback stages.
+	//     A non-rollback stage and a rollback stage can have the same index.
+	//   - All indexes of the response stages must exist in the indexes of the request stages.
 	BuildPipelineSyncStages(ctx context.Context, in *BuildPipelineSyncStagesRequest, opts ...grpc.CallOption) (*BuildPipelineSyncStagesResponse, error)
 	// BuildQuickSyncStages builds the deployment quick sync stages.
 	BuildQuickSyncStages(ctx context.Context, in *BuildQuickSyncStagesRequest, opts ...grpc.CallOption) (*BuildQuickSyncStagesResponse, error)
@@ -110,7 +113,10 @@ type DeploymentServiceServer interface {
 	// DetermineStrategy determines which strategy should be used for the given deployment.
 	DetermineStrategy(context.Context, *DetermineStrategyRequest) (*DetermineStrategyResponse, error)
 	// BuildPipelineSyncStages builds the deployment pipeline stages.
-	// Indexes of the response stages must not be duplicated and must exist in the indexes of the request stages.
+	// Note about the respones indexes:
+	//   - Indexes of the response stages must not be duplicated within non-rollback stages and rollback stages.
+	//     A non-rollback stage and a rollback stage can have the same index.
+	//   - All indexes of the response stages must exist in the indexes of the request stages.
 	BuildPipelineSyncStages(context.Context, *BuildPipelineSyncStagesRequest) (*BuildPipelineSyncStagesResponse, error)
 	// BuildQuickSyncStages builds the deployment quick sync stages.
 	BuildQuickSyncStages(context.Context, *BuildQuickSyncStagesRequest) (*BuildQuickSyncStagesResponse, error)
