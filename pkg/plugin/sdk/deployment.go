@@ -53,6 +53,7 @@ type StagePlugin[Config, DeployTargetConfig, ApplicationConfigSpec any] interfac
 	// FetchDefinedStages returns the list of stages that the plugin can execute.
 	FetchDefinedStages() []string
 	// BuildPipelineSyncStages builds the stages that will be executed by the plugin.
+	// Indexes of the response stages must not be duplicated and must exist in the indexes of the request stages.
 	BuildPipelineSyncStages(context.Context, *Config, *BuildPipelineSyncStagesInput) (*BuildPipelineSyncStagesResponse, error)
 	// ExecuteStage executes the given stage.
 	ExecuteStage(context.Context, *Config, []*DeployTarget[DeployTargetConfig], *ExecuteStageInput[ApplicationConfigSpec]) (*ExecuteStageResponse, error)

@@ -31,6 +31,7 @@ service DeploymentService {
     // DetermineStrategy determines which strategy should be used for the given deployment.
     rpc DetermineStrategy(DetermineStrategyRequest) returns (DetermineStrategyResponse) {}
     // BuildPipelineSyncStages builds the deployment pipeline stages.
+    // Indexes of the response stages must not be duplicated and must exist in the indexes of the request stages.
     rpc BuildPipelineSyncStages(BuildPipelineSyncStagesRequest) returns (BuildPipelineSyncStagesResponse) {}
     // BuildQuickSyncStages builds the deployment quick sync stages.
     rpc BuildQuickSyncStages(BuildQuickSyncStagesRequest) returns (BuildQuickSyncStagesResponse) {}
