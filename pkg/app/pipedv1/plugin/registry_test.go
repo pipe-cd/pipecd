@@ -168,6 +168,30 @@ func TestPluginRegistry_getPluginClientsByPipeline(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "get unique plugins by valid pipeline stages",
+			pipeline: &config.DeploymentPipeline{
+				Stages: []config.PipelineStage{
+					{Name: "stage1"},
+					{Name: "stage2-0"},
+					{Name: "stage2-1"},
+				},
+			},
+			setup: func() *pluginRegistry {
+				return &pluginRegistry{
+					stageBasedPlugins: map[string]pluginapi.PluginClient{
+						"stage1":   fakePluginClient{name: "plugin1"},
+						"stage2-0": fakePluginClient{name: "plugin2"},
+						"stage2-1": fakePluginClient{name: "plugin2"},
+					},
+				}
+			},
+			expected: []pluginapi.PluginClient{
+				fakePluginClient{name: "plugin1"},
+				fakePluginClient{name: "plugin2"},
+			},
+			wantErr: false,
+		},
+		{
 			name: "no plugins found for empty pipeline stages",
 			pipeline: &config.DeploymentPipeline{
 				Stages: []config.PipelineStage{},
