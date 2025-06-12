@@ -60,7 +60,6 @@ func determineVersions(manifests []provider.Manifest) []sdk.ArtifactVersion {
 	for i := range imageMap {
 		image := parseContainerImage(i)
 		versions = append(versions, sdk.ArtifactVersion{
-			Kind:    sdk.ArtifactKindContainerImage,
 			Version: image.tag,
 			Name:    image.name,
 			URL:     i,
