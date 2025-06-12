@@ -26,13 +26,22 @@ _This page might be moved to another place in the future._
 
 ## 2. Run pipedv1
 
-1. Create a piped config file like the following.
+1. Download piped binary.
+
+```sh
+# OS="darwin" or "linux" CPU_ARCH="arm64" or "amd64"
+curl -Lo ./piped_kubecon_jp_2025 https://github.com/pipe-cd/pipecd/releases/download/kubecon-jp-2025/piped_kubecon_jp_2025_{OS}_{CPU_ARCH}
+
+chmod +x ./piped_kubecon_jp_2025
+```
+
+2. Create a piped config file like the following.
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: Piped
 spec:
-  apiAddress: {CONTROL_PLANE_API_ADDRESS} # like "localhost:443"
+  apiAddress: {CONTROL_PLANE_API_ADDRESS} # like "localhost:8080"
   projectID: {PROJECT_ID}
   pipedID: {PIPED_ID}
   pipedKeyData: {BASE64_ENCODED_PIPED_KEY} # or use pipedKeyFile
@@ -46,7 +55,7 @@ spec:
   plugins:
     - name: kubernetes
       port: 7001 # Any unused port
-      url: https://github.com/pipe-cd/pipecd/xxxxxxxxxxx # TODO: Ref to the Release 
+      url: https://github.com/pipe-cd/pipecd/releases/download/kubecon-jp-2025/plugin_kubernetes_kubecon_jp_2025_darwin_arm64 # choose binary on the release for your own OS and CPU arch
       deployTargets:
         - name: cluster1
           config: 
@@ -55,26 +64,27 @@ spec:
             kubectlVersion: 1.33.0
     - name: wait
       port: 7002 # Any unused port
-      url: https://github.com/pipe-cd/pipecd/xxxxxxxxxxx # TODO: Ref to the Release 
+      url: https://github.com/pipe-cd/pipecd/releases/download/kubecon-jp-2025/plugin_wait_kubecon_jp_2025_darwin_arm64 # choose binary on the release for your own OS and CPU arch
 
     - name: example-stage
       port: 7003 # Any unused port
-      url: https://github.com/pipe-cd/community-plugins/xxxxxxxxxxx # TODO: Ref to the Release 
+      url: https://github.com/pipe-cd/community-plugins/releases/download/kubecon-jp-2025/plugin_example-stage_kubecon_jp_2025_darwin_arm64 # choose binary on the release for your own OS and CPU arch
       config:
         - commonMessage: "[common message]"
 ```
 
-2. Run pipedv1
+3. Run piped
 
 ```sh
-pipedv1 piped --config-file=/path/to/piped-config.yaml --tools-dir=/tmp/piped-bin
+./piped_kubecon_jp_2025 piped --config-file=/path/to/piped-config.yaml --tools-dir=/tmp/piped-bin
 ```
 
-- The pipedv1 version must be v0.52.0 or later.
 - If your Control Plane runs on local, add `INSECURE=true` to the command to skip TLS certificate checks.
 
 
 ## 3. Deploy an application
+
+Let's create application with kubernetes plugin.
 
 1. Create an app.pipecd.yaml like the following.
 
@@ -103,15 +113,61 @@ spec:
       - name: K8S_CANARY_CLEAN
 ```
 
-2. Push the app.pipecd.yaml to your remote repository.
-3. On the Control Plane console, register the application via `PIPED V1 ADD FROM SUGGESTIONS` tab.
+2. Create Resources.
+
+deployment.yaml
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: canary
+  labels:
+    app: canary
+spec:
+  replicas: 2
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: canary
+      pipecd.dev/variant: primary
+  template:
+    metadata:
+      labels:
+        app: canary
+        pipecd.dev/variant: primary
+    spec:
+      containers:
+      - name: helloworld
+        image: ghcr.io/pipe-cd/helloworld:v0.32.0
+        args:
+          - server
+        ports:
+        - containerPort: 9085
+```
+
+service.yaml
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: canary
+spec:
+  selector:
+    app: canary
+  ports:
+    - protocol: TCP
+      port: 9085
+      targetPort: 9085
+```
+
+3. Push the app.pipecd.yaml to your remote repository.
+4. On the Control Plane console, register the application via `PIPED V1 ADD FROM SUGGESTIONS` tab.
 
 ## See also
 
-<!-- TODO: Link to each config reference -->
 - kubernetes plugin: [README.md](/pkg/app/pipedv1/plugin/kubernetes/README.md)
 - wait stage plugin: [README.md](/pkg/app/pipedv1/plugin/wait/README.md)
-- example-stage plugin: TBA
+- example-stage plugin: [README.md](https://github.com/pipe-cd/community-plugins/blob/main/plugins/example-stage/README.md)
 
 ## Note
 
