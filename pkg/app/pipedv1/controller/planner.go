@@ -534,7 +534,7 @@ func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.Gener
 }
 
 // validateStageIndexes validates the response stage indexes, including rollback stages, for two criteria:
-//   - dupilcation: Indexes of the response stages must not be duplicated within non-rollback stages and rollback stages.
+//   - duplication: Indexes of the response stages must not be duplicated within non-rollback stages and rollback stages.
 //     A non-rollback stage and a rollback stage can have the same index.
 //   - range: Each response stage must have a index defined in the request.
 func validateStageIndexes(req []*deployment.BuildPipelineSyncStagesRequest_StageConfig, res []*model.PipelineStage) error {
