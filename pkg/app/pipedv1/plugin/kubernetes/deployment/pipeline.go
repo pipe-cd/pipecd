@@ -14,12 +14,6 @@
 
 package deployment
 
-import (
-	"slices"
-
-	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
-)
-
 const (
 	// StageK8sSync represents the state where
 	// all resources should be synced with the Git state.
@@ -63,60 +57,3 @@ const (
 	// StageDescriptionK8sRollback represents the description of the K8sRollback stage.
 	StageDescriptionK8sRollback = "Rollback the deployment"
 )
-
-func buildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
-	out := make([]sdk.QuickSyncStage, 0, 2)
-
-	out = append(out, sdk.QuickSyncStage{
-		Name:               StageK8sSync,
-		Description:        StageDescriptionK8sSync,
-		Rollback:           false,
-		Metadata:           make(map[string]string, 0),
-		AvailableOperation: sdk.ManualOperationNone,
-	},
-	)
-
-	if autoRollback {
-		out = append(out, sdk.QuickSyncStage{
-			Name:               StageK8sRollback,
-			Description:        StageDescriptionK8sRollback,
-			Rollback:           true,
-			Metadata:           make(map[string]string, 0),
-			AvailableOperation: sdk.ManualOperationNone,
-		})
-	}
-
-	return out
-}
-
-// buildPipelineStages builds the pipeline stages with the given SDK stages.
-func buildPipelineStages(stages []sdk.StageConfig, autoRollback bool) []sdk.PipelineStage {
-	out := make([]sdk.PipelineStage, 0, len(stages)+1)
-
-	for _, s := range stages {
-		out = append(out, sdk.PipelineStage{
-			Name:               s.Name,
-			Index:              s.Index,
-			Rollback:           false,
-			Metadata:           make(map[string]string, 0),
-			AvailableOperation: sdk.ManualOperationNone,
-		})
-	}
-
-	if autoRollback {
-		// we set the index of the rollback stage to the minimum index of all stages.
-		minIndex := slices.MinFunc(stages, func(a, b sdk.StageConfig) int {
-			return a.Index - b.Index
-		}).Index
-
-		out = append(out, sdk.PipelineStage{
-			Name:               StageK8sRollback,
-			Index:              minIndex,
-			Rollback:           true,
-			Metadata:           make(map[string]string, 0),
-			AvailableOperation: sdk.ManualOperationNone,
-		})
-	}
-
-	return out
-}

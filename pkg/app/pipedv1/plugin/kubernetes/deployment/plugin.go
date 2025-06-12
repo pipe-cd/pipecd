@@ -52,7 +52,7 @@ func (p *Plugin) FetchDefinedStages() []string {
 // BuildPipelineSyncStages returns the stages for the pipeline sync strategy.
 func (p *Plugin) BuildPipelineSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
 	return &sdk.BuildPipelineSyncStagesResponse{
-		Stages: buildPipelineStages(input.Request.Stages, input.Request.Rollback),
+		Stages: sdk.DefaultBuildPipelineStages(input.Request.Stages, input.Request.Rollback, StageK8sRollback),
 	}, nil
 }
 
@@ -194,6 +194,6 @@ func (p *Plugin) DetermineStrategy(ctx context.Context, _ *sdk.ConfigNone, input
 // BuildQuickSyncStages returns the stages for the quick sync strategy.
 func (p *Plugin) BuildQuickSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildQuickSyncStagesInput) (*sdk.BuildQuickSyncStagesResponse, error) {
 	return &sdk.BuildQuickSyncStagesResponse{
-		Stages: buildQuickSyncPipeline(input.Request.Rollback),
+		Stages: sdk.DefaultBuildQuickSyncPipeline(input.Request.Rollback, StageK8sSync, StageDescriptionK8sSync, StageK8sRollback, StageDescriptionK8sRollback),
 	}, nil
 }

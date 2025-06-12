@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/pipe-cd/piped-plugin-sdk-go/signalhandler"
@@ -865,4 +866,60 @@ func (s SyncStrategy) toModelEnum() (model.SyncStrategy, error) {
 	default:
 		return 0, fmt.Errorf("invalid sync strategy: %d", s)
 	}
+}
+
+func DefaultBuildQuickSyncPipeline(autoRollback bool, syncStageName, syncStageDesc, rollbackStageName, rollbackStageDesc string) []QuickSyncStage {
+	out := make([]QuickSyncStage, 0, 2)
+
+	out = append(out, QuickSyncStage{
+		Name:               syncStageName,
+		Description:        syncStageDesc,
+		Rollback:           false,
+		Metadata:           make(map[string]string, 0),
+		AvailableOperation: ManualOperationNone,
+	},
+	)
+
+	if autoRollback {
+		out = append(out, QuickSyncStage{
+			Name:               rollbackStageName,
+			Description:        rollbackStageDesc,
+			Rollback:           true,
+			Metadata:           make(map[string]string, 0),
+			AvailableOperation: ManualOperationNone,
+		})
+	}
+
+	return out
+}
+
+func DefaultBuildPipelineStages(stages []StageConfig, autoRollback bool, rollbackStageName string) []PipelineStage {
+	out := make([]PipelineStage, 0, len(stages)+1)
+
+	for _, s := range stages {
+		out = append(out, PipelineStage{
+			Name:               s.Name,
+			Index:              s.Index,
+			Rollback:           false,
+			Metadata:           make(map[string]string, 0),
+			AvailableOperation: ManualOperationNone,
+		})
+	}
+
+	if autoRollback {
+		// we set the index of the rollback stage to the minimum index of all stages.
+		minIndex := slices.MinFunc(stages, func(a, b StageConfig) int {
+			return a.Index - b.Index
+		}).Index
+
+		out = append(out, PipelineStage{
+			Name:               rollbackStageName,
+			Index:              minIndex,
+			Rollback:           true,
+			Metadata:           make(map[string]string, 0),
+			AvailableOperation: ManualOperationNone,
+		})
+	}
+
+	return out
 }
