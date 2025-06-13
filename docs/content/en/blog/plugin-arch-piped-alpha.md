@@ -1,5 +1,5 @@
 ---
-date: 2025-06-12
+date: 2025-06-16
 title: "Plugin architecture Piped alpha version has been released"
 linkTitle: "Plugin architecture Piped alpha"
 weight: 980
