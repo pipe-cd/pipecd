@@ -83,7 +83,7 @@ spec:
 ./piped_kubecon_jp_2025 piped --config-file=/path/to/piped-config.yaml --tools-dir=/tmp/piped-bin
 ```
 
-- If your Control Plane runs on local, add `INSECURE=true` to the command to skip TLS certificate checks.
+- If your Control Plane runs on local, add `--insecure=true` to the command to skip TLS certificate checks.
 
 
 ## 3. Deploy an application
