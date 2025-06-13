@@ -61,8 +61,25 @@ const createStagesForRendering = (
     return [];
   }
 
+
+  console.log("[DEBUG]: deployment.stagesList");
+  deployment.stagesList.forEach((stage) => {
+    console.log(stage.name, stage.visible, stage.rollback, stage.requiresList);
+    // stage.rollback = !stage.visible;
+  });
+
   const stages: Stage[][] = [];
-  const visibleStages = deployment.stagesList.filter((stage) => stage.visible);
+  const notRollbackCount = deployment.stagesList.filter((stage) => !stage.rollback).length;
+  let visibleStages: Stage[] = [];
+  if (notRollbackCount === deployment.stagesList.length) {
+    visibleStages = deployment.stagesList.filter((stage) => stage.visible);
+  } else {
+    visibleStages = deployment.stagesList.filter((stage) => stage.visible || !stage.rollback);
+  }
+
+  console.log("[DEBUG]: visibleStages", visibleStages);
+
+  // const visibleStages = deployment.stagesList.filter((stage) => (stage.visible || !stage.rollback));
 
   stages[0] = visibleStages.filter((stage) => stage.requiresList.length === 0);
 
@@ -74,6 +91,8 @@ const createStagesForRendering = (
       stage.requiresList.some((id) => previousIds.includes(id))
     );
   }
+
+  console.log("[DEBUG]: stages", stages);
   return stages;
 };
 
