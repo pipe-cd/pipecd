@@ -44,7 +44,7 @@ build/web:
 	yarn --cwd web build
 
 .PHONY: build/chart
-build/chart: VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7)
+build/chart: VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7 --match 'v[0-9]*.*')
 build/chart:
 	mkdir -p .artifacts
 ifndef MOD
