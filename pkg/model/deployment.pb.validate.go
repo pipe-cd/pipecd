@@ -257,8 +257,6 @@ func (m *Deployment) validate(all bool) error {
 
 	// no validation rules for Summary
 
-	// no validation rules for Version
-
 	for idx, item := range m.GetVersions() {
 		_, _ = idx, item
 
