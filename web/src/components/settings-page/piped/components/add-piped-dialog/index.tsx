@@ -2,11 +2,11 @@ import { Dialog } from "@mui/material";
 import { useFormik } from "formik";
 import { FC, memo, useCallback } from "react";
 import { ADD_PIPED_SUCCESS } from "~/constants/toast-text";
-import { unwrapResult, useAppDispatch, useAppSelector } from "~/hooks/redux";
-import { selectProjectName } from "~/modules/me";
+import { unwrapResult, useAppDispatch } from "~/hooks/redux";
 import { addPiped } from "~/modules/pipeds";
 import { addToast } from "~/modules/toasts";
 import { PipedForm, PipedFormValues, validationSchema } from "../piped-form";
+import useProjectName from "~/contexts/auth-context/use-project-name";
 
 export interface AddPipedDrawerProps {
   open: boolean;
@@ -16,7 +16,7 @@ export interface AddPipedDrawerProps {
 export const AddPipedDialog: FC<AddPipedDrawerProps> = memo(
   function AddPipedDialog({ open, onClose }) {
     const dispatch = useAppDispatch();
-    const projectName = useAppSelector(selectProjectName);
+    const projectName = useProjectName();
 
     const formik = useFormik<PipedFormValues>({
       initialValues: { name: "", desc: "" },
