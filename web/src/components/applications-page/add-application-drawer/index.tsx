@@ -1,10 +1,9 @@
 import { Drawer } from "@mui/material";
 import { FC, memo, useCallback, useState } from "react";
 import { UI_TEXT_CANCEL, UI_TEXT_DISCARD } from "~/constants/ui-text";
-import { useAppSelector } from "~/hooks/redux";
-import { selectProjectName } from "~/modules/me";
 import { ApplicationFormTabs } from "~/components/application-form";
 import DialogConfirm from "~/components/dialog-confirm";
+import useProjectName from "~/contexts/auth-context/use-project-name";
 
 export interface AddApplicationDrawerProps {
   open: boolean;
@@ -26,7 +25,7 @@ const AddApplicationDrawer: FC<AddApplicationDrawerProps> = memo(
     const [isFormDirty, setIsFormDirty] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const projectName = useAppSelector(selectProjectName);
+    const projectName = useProjectName();
 
     const handleClose = useCallback(() => {
       if (isFormDirty) {
