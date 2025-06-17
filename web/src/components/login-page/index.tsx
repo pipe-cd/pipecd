@@ -6,14 +6,14 @@ import { useCookies } from "react-cookie";
 import { Navigate } from "react-router-dom";
 import { PAGE_PATH_APPLICATIONS, PAGE_PATH_LOGIN } from "~/constants/path";
 import { getQueryStringValue } from "~/hooks/use-query-string";
-import { useAppSelector } from "~/hooks/redux";
 import { LoginForm } from "./login-form";
 import { LOGGING_IN_PROJECT } from "~/constants/localstorage";
+import useAuth from "~/contexts/auth-context/use-auth";
 
 const CONTENT_WIDTH = 500;
 
 export const LoginPage: FC = memo(function LoginPage() {
-  const me = useAppSelector((state) => state.me);
+  const { me } = useAuth();
   const [name, setName] = useState<string>("");
   const [cookies, , removeCookie] = useCookies(["error"]);
   const queryProject = getQueryStringValue("project") as string;
