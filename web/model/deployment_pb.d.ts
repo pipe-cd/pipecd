@@ -48,9 +48,6 @@ export class Deployment extends jspb.Message {
   getSummary(): string;
   setSummary(value: string): Deployment;
 
-  getVersion(): string;
-  setVersion(value: string): Deployment;
-
   getVersionsList(): Array<pkg_model_common_pb.ArtifactVersion>;
   setVersionsList(value: Array<pkg_model_common_pb.ArtifactVersion>): Deployment;
   clearVersionsList(): Deployment;
@@ -122,7 +119,6 @@ export namespace Deployment {
     labelsMap: Array<[string, string]>,
     trigger?: DeploymentTrigger.AsObject,
     summary: string,
-    version: string,
     versionsList: Array<pkg_model_common_pb.ArtifactVersion.AsObject>,
     runningCommitHash: string,
     runningConfigFilename: string,
