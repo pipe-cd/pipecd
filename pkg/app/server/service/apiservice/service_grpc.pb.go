@@ -43,6 +43,7 @@ type APIServiceClient interface {
 	RegisterEvent(ctx context.Context, in *RegisterEventRequest, opts ...grpc.CallOption) (*RegisterEventResponse, error)
 	RequestPlanPreview(ctx context.Context, in *RequestPlanPreviewRequest, opts ...grpc.CallOption) (*RequestPlanPreviewResponse, error)
 	GetPlanPreviewResults(ctx context.Context, in *GetPlanPreviewResultsRequest, opts ...grpc.CallOption) (*GetPlanPreviewResultsResponse, error)
+	CancelPlanPreview(ctx context.Context, in *CancelPlanPreviewRequest, opts ...grpc.CallOption) (*CancelPlanPreviewResponse, error)
 	Encrypt(ctx context.Context, in *EncryptRequest, opts ...grpc.CallOption) (*EncryptResponse, error)
 	ListStageLogs(ctx context.Context, in *ListStageLogsRequest, opts ...grpc.CallOption) (*ListStageLogsResponse, error)
 }
@@ -244,6 +245,15 @@ func (c *aPIServiceClient) GetPlanPreviewResults(ctx context.Context, in *GetPla
 	return out, nil
 }
 
+func (c *aPIServiceClient) CancelPlanPreview(ctx context.Context, in *CancelPlanPreviewRequest, opts ...grpc.CallOption) (*CancelPlanPreviewResponse, error) {
+	out := new(CancelPlanPreviewResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.apiservice.APIService/CancelPlanPreview", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *aPIServiceClient) Encrypt(ctx context.Context, in *EncryptRequest, opts ...grpc.CallOption) (*EncryptResponse, error) {
 	out := new(EncryptResponse)
 	err := c.cc.Invoke(ctx, "/grpc.service.apiservice.APIService/Encrypt", in, out, opts...)
@@ -287,6 +297,7 @@ type APIServiceServer interface {
 	RegisterEvent(context.Context, *RegisterEventRequest) (*RegisterEventResponse, error)
 	RequestPlanPreview(context.Context, *RequestPlanPreviewRequest) (*RequestPlanPreviewResponse, error)
 	GetPlanPreviewResults(context.Context, *GetPlanPreviewResultsRequest) (*GetPlanPreviewResultsResponse, error)
+	CancelPlanPreview(context.Context, *CancelPlanPreviewRequest) (*CancelPlanPreviewResponse, error)
 	Encrypt(context.Context, *EncryptRequest) (*EncryptResponse, error)
 	ListStageLogs(context.Context, *ListStageLogsRequest) (*ListStageLogsResponse, error)
 	mustEmbedUnimplementedAPIServiceServer()
@@ -358,6 +369,9 @@ func (UnimplementedAPIServiceServer) RequestPlanPreview(context.Context, *Reques
 }
 func (UnimplementedAPIServiceServer) GetPlanPreviewResults(context.Context, *GetPlanPreviewResultsRequest) (*GetPlanPreviewResultsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPlanPreviewResults not implemented")
+}
+func (UnimplementedAPIServiceServer) CancelPlanPreview(context.Context, *CancelPlanPreviewRequest) (*CancelPlanPreviewResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CancelPlanPreview not implemented")
 }
 func (UnimplementedAPIServiceServer) Encrypt(context.Context, *EncryptRequest) (*EncryptResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Encrypt not implemented")
@@ -756,6 +770,24 @@ func _APIService_GetPlanPreviewResults_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _APIService_CancelPlanPreview_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelPlanPreviewRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(APIServiceServer).CancelPlanPreview(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.apiservice.APIService/CancelPlanPreview",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(APIServiceServer).CancelPlanPreview(ctx, req.(*CancelPlanPreviewRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _APIService_Encrypt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(EncryptRequest)
 	if err := dec(in); err != nil {
@@ -882,6 +914,10 @@ var APIService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetPlanPreviewResults",
 			Handler:    _APIService_GetPlanPreviewResults_Handler,
+		},
+		{
+			MethodName: "CancelPlanPreview",
+			Handler:    _APIService_CancelPlanPreview_Handler,
 		},
 		{
 			MethodName: "Encrypt",
