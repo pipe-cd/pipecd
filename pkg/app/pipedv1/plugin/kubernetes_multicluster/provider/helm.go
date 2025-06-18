@@ -57,6 +57,7 @@ func (h *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, namespac
 		"template",
 		"--no-hooks",
 		"--include-crds",
+		"--dependency-update",
 		releaseName,
 		chartPath,
 	}
