@@ -583,7 +583,7 @@ type ExecuteStageInput[ApplicationConfigSpec any] struct {
 type ExecuteStageRequest[ApplicationConfigSpec any] struct {
 	// The name of the stage to execute.
 	StageName string
-	//The index of the stage to execute
+	// The index of the stage to execute
 	StageIndex int
 	// Json encoded configuration of the stage.
 	StageConfig []byte
