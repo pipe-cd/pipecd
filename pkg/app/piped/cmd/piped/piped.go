@@ -536,6 +536,10 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			appManifestsCache,
 			cfg,
 			planpreview.WithLogger(input.Logger),
+			planpreview.WithWorkerNum(cfg.HandlerWorkerNum),
+			planpreview.WithCommandQueueBufferSize(cfg.HandlerCommandQueueBufferSize),
+			planpreview.WithCommandCheckInterval(time.Duration(cfg.HandlerCommandCheckInterval)),
+			planpreview.WithCommandHandleTimeout(time.Duration(cfg.HandlerCommandHandleTimeout)),
 		)
 		group.Go(func() error {
 			return h.Run(ctx)
