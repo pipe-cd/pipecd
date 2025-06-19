@@ -41,7 +41,7 @@ func TestReplicasMarshal(t *testing.T) {
 					IsPercentage: false,
 				},
 			},
-			expected: "{\"Replicas\":\"1\"}",
+			expected: `{"Replicas":"1"}`,
 		},
 		{
 			name: "percentage number",
@@ -51,7 +51,7 @@ func TestReplicasMarshal(t *testing.T) {
 					IsPercentage: true,
 				},
 			},
-			expected: "{\"Replicas\":\"1%\"}",
+			expected: `{"Replicas":"1%"}`,
 		},
 	}
 	for _, tc := range testcases {
@@ -76,7 +76,7 @@ func TestReplicasUnmarshal(t *testing.T) {
 	}{
 		{
 			name:  "normal number",
-			input: "{\"Replicas\": 1}",
+			input: `{"Replicas": 1}`,
 			expected: &wrapper{
 				Replicas{
 					Number:       1,
@@ -87,7 +87,7 @@ func TestReplicasUnmarshal(t *testing.T) {
 		},
 		{
 			name:  "normal number by string",
-			input: "{\"Replicas\":\"1\"}",
+			input: `{"Replicas":"1"}`,
 			expected: &wrapper{
 				Replicas{
 					Number:       1,
@@ -98,7 +98,7 @@ func TestReplicasUnmarshal(t *testing.T) {
 		},
 		{
 			name:  "percentage number",
-			input: "{\"Replicas\":\"1%\"}",
+			input: `{"Replicas":"1%"}`,
 			expected: &wrapper{
 				Replicas{
 					Number:       1,
@@ -109,7 +109,7 @@ func TestReplicasUnmarshal(t *testing.T) {
 		},
 		{
 			name:        "wrong string format",
-			input:       "{\"Replicas\":\"1a%\"}",
+			input:       `{"Replicas":"1a%"}`,
 			expected:    nil,
 			expectedErr: fmt.Errorf("invalid replicas: strconv.Atoi: parsing \"1a\": invalid syntax"),
 		},
