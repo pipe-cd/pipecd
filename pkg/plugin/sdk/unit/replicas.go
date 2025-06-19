@@ -22,11 +22,15 @@ import (
 	"strings"
 )
 
+// Replicas represents a replica count that can be either an absolute number or a percentage.
+// When IsPercentage is true, Number represents a percentage value.
 type Replicas struct {
 	Number       int
 	IsPercentage bool
 }
 
+// String returns the string representation of the replicas.
+// If IsPercentage is true, it includes the % suffix.
 func (r Replicas) String() string {
 	s := strconv.FormatInt(int64(r.Number), 10)
 	if r.IsPercentage {
@@ -35,6 +39,10 @@ func (r Replicas) String() string {
 	return s
 }
 
+// Calculate returns the actual replica count based on the total replicas.
+// If the replica is a percentage, it calculates the ceiling of (Number * total / 100).
+// If Number is 0, it returns the defaultValue.
+// If IsPercentage is false, it returns the Number directly.
 func (r Replicas) Calculate(total, defaultValue int) int {
 	if r.Number == 0 {
 		return defaultValue
@@ -46,10 +54,13 @@ func (r Replicas) Calculate(total, defaultValue int) int {
 	return int(math.Ceil(num))
 }
 
+// MarshalJSON marshals the Replicas to a JSON string representation.
 func (r Replicas) MarshalJSON() ([]byte, error) {
 	return json.Marshal(r.String())
 }
 
+// UnmarshalJSON unmarshals a JSON value to Replicas.
+// It accepts numeric values, string numbers (e.g., "5"), and percentage strings (e.g., "50%").
 func (r *Replicas) UnmarshalJSON(b []byte) error {
 	var v any
 	if err := json.Unmarshal(b, &v); err != nil {

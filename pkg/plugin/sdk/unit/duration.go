@@ -20,16 +20,22 @@ import (
 	"time"
 )
 
+// Duration represents a time duration that can be marshaled/unmarshaled as a string in JSON.
+// It supports both numeric values (interpreted as nanoseconds) and string values (e.g., "5m", "1h30m").
 type Duration time.Duration
 
+// Duration returns the time.Duration value.
 func (d Duration) Duration() time.Duration {
 	return time.Duration(d)
 }
 
+// MarshalJSON marshals the Duration to a JSON string representation (e.g., "5m30s").
 func (d Duration) MarshalJSON() ([]byte, error) {
 	return json.Marshal(time.Duration(d).String())
 }
 
+// UnmarshalJSON unmarshals a JSON value to Duration.
+// It accepts both numeric values (interpreted as nanoseconds) and string values (e.g., "5m", "1h30m").
 func (d *Duration) UnmarshalJSON(b []byte) error {
 	var v any
 	if err := json.Unmarshal(b, &v); err != nil {
