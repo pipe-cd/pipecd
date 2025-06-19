@@ -7,8 +7,10 @@ import { store } from "./store";
 import { Routes } from "./routes";
 import { BrowserRouter } from "react-router-dom";
 import { setupDayjs } from "./utils/setup-dayjs";
-import { fetchMe } from "./modules/me";
 import { CookiesProvider } from "react-cookie";
+import QueryClientWrap from "./contexts/query-client-provider";
+import { AuthProvider } from "./contexts/auth-context";
+import { ToastProvider } from "./contexts/toast-context/toast-provider";
 
 async function run(): Promise<void> {
   if (process.env.ENABLE_MOCK === "true") {
@@ -42,7 +44,7 @@ Happy PipeCD-ing 🙌
 
   setupDayjs();
 
-  store.dispatch(fetchMe());
+  // store.dispatch(fetchMe());
 
   render(
     <CookiesProvider>
@@ -55,8 +57,14 @@ Happy PipeCD-ing 🙌
                 v7_relativeSplatPath: false,
               }}
             >
-              <CssBaseline />
-              <Routes />
+              <ToastProvider>
+                <QueryClientWrap>
+                  <AuthProvider>
+                    <CssBaseline />
+                    <Routes />
+                  </AuthProvider>
+                </QueryClientWrap>
+              </ToastProvider>
             </BrowserRouter>
           </ThemeProvider>
         </StyledEngineProvider>

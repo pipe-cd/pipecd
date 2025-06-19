@@ -9,14 +9,13 @@ import {
 import * as echarts from "echarts/core";
 import { BarChart } from "echarts/charts";
 import { CanvasRenderer } from "echarts/renderers";
-import { useAppSelector } from "~/hooks/redux";
-import { selectAll as selectAllApplications } from "~/modules/applications";
-import { selectAllPipeds } from "~/modules/pipeds";
 import ChartEmptyData from "~/components/chart-empty-data";
 import useEChartState from "~/hooks/useEChartState";
 
 import { grey, purple as lineColor } from "@mui/material/colors";
 import { CardWrapper } from "./styles";
+import { useGetApplications } from "~/queries/applications/use-get-applications";
+import { useGetPipeds } from "~/queries/pipeds/use-get-pipeds";
 
 const ApplicationByPiped: FC = () => {
   const { chart, chartElm } = useEChartState({
@@ -29,11 +28,10 @@ const ApplicationByPiped: FC = () => {
       LegendComponent,
     ],
   });
-  const applications = useAppSelector((state) =>
-    selectAllApplications(state.applications)
-  );
 
-  const pipedList = useAppSelector(selectAllPipeds);
+  const { data: applications = [] } = useGetApplications();
+
+  const { data: pipedList = [] } = useGetPipeds({ withStatus: true });
 
   const data: { name: string; count: number; rank: number }[] = useMemo(() => {
     const pipedMap = pipedList.reduce((acc, piped) => {
