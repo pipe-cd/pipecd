@@ -53,8 +53,41 @@ kind: Piped
 spec:
   ...
   chartRegistries:
+    # Basic authentication
     - type: OCI
       address: registry.example.com
+      authType: BASIC
       username: sample-username
       password: sample-password
+      insecure: false  # Set to true to allow connections to TLS registry without certs
+
+    # Token authentication
+    - type: OCI
+      address: registry.example.com
+      authType: TOKEN
+      token: your-token
+      insecure: false
+
+    # Certificate authentication
+    - type: OCI
+      address: registry.example.com
+      authType: CERT
+      certFile: /path/to/cert.pem
+      keyFile: /path/to/key.pem
+      caFile: /path/to/ca.pem  # Optional
+      insecure: false
 ```
+
+The following authentication methods are supported:
+
+1. **Basic Authentication (BASIC)**: Uses username and password for authentication. This is the default authentication type. Passwords are securely passed via stdin to avoid exposure in process arguments.
+
+2. **Token Authentication (TOKEN)**: Uses a bearer token for authentication. Tokens are securely passed via stdin to avoid exposure in process arguments.
+
+3. **Certificate Authentication (CERT)**: Uses client certificates for mutual TLS authentication. This method requires:
+   - `certFile`: Path to the client certificate file
+   - `keyFile`: Path to the client key file
+   - `caFile`: (Optional) Path to the CA certificate file for verifying the server's certificate
+
+Additional options:
+- `insecure`: When set to true, allows connections to TLS registry without certificates. Use with caution as this reduces security.
