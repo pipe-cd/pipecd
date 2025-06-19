@@ -1,0 +1,21 @@
+apiVersion: pipecd.dev/v1beta1
+kind: Application
+spec:
+  name: canary-rollout
+  labels:
+    env: example
+    team: product
+  description: |
+    This app is test data for canary rollout.
+  pipeline:
+    stages:
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          createService: true
+  plugins:
+    kubernetes:
+      input:
+        manifests:
+          - deployment.yaml
+          - service.yaml
+        kubectlVersion: 1.32.2

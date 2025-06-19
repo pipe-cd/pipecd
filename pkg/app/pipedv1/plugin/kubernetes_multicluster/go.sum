@@ -412,8 +412,8 @@ github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/9
 github.com/peterbourgon/diskv v2.0.1+incompatible/go.mod h1:uqqh8zWWbv1HBMNONnaR/tNboyR3/BZd58JJSHlUSCU=
 github.com/pipe-cd/pipecd v0.52.0 h1:/WRzHs4hqeYRJBvu0ask6UAO7qBlvPgN1ulBdA1VjgE=
 github.com/pipe-cd/pipecd v0.52.0/go.mod h1:Hi4d3mndTeY+hPB4YbN9aIgvP00EBV0CM+NQgyEwn98=
-github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250529023641-8bd42026e370 h1:wgoxvc+vFMU2P2RISAE6I/6dj7+rp8/camJyVJpRmfM=
-github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250529023641-8bd42026e370/go.mod h1:WpVRto2ZLgFRJ4VOk8gtTChHNCrGa4UjRhGN81TCl2E=
+github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250612023157-bc4c32dc15cb h1:dDgNZzEJl/RrHqSK8TDGVdvAxCNKDKaT9pWUDOYv6NA=
+github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250612023157-bc4c32dc15cb/go.mod h1:WpVRto2ZLgFRJ4VOk8gtTChHNCrGa4UjRhGN81TCl2E=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=

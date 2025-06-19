@@ -4,10 +4,12 @@ go 1.24.1
 
 require (
 	github.com/pipe-cd/pipecd v0.52.0
-	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250529023641-8bd42026e370
+	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250612023157-bc4c32dc15cb
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.19.1
 )
+
+replace github.com/pipe-cd/piped-plugin-sdk-go => ../../../../plugin/sdk
 
 require (
 	cloud.google.com/go v0.112.1 // indirect

@@ -102,9 +102,11 @@ func WithLivestatePlugin[Config, DeployTargetConfig, ApplicationConfigSpec any](
 // Plugin is a wrapper for the plugin.
 // It provides a way to run the plugin with the given config and deploy target config.
 type Plugin[Config, DeployTargetConfig, ApplicationConfigSpec any] struct {
+
 	// plugin info
-	name    string
 	version string
+	// name is the name of the plugin defined in the piped plugin config.
+	name string
 
 	// plugin implementations
 	stagePlugin      StagePlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
@@ -122,9 +124,8 @@ type Plugin[Config, DeployTargetConfig, ApplicationConfigSpec any] struct {
 }
 
 // NewPlugin creates a new plugin.
-func NewPlugin[Config, DeployTargetConfig, ApplicationConfigSpec any](name, version string, options ...PluginOption[Config, DeployTargetConfig, ApplicationConfigSpec]) (*Plugin[Config, DeployTargetConfig, ApplicationConfigSpec], error) {
+func NewPlugin[Config, DeployTargetConfig, ApplicationConfigSpec any](version string, options ...PluginOption[Config, DeployTargetConfig, ApplicationConfigSpec]) (*Plugin[Config, DeployTargetConfig, ApplicationConfigSpec], error) {
 	plugin := &Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]{
-		name:    name,
 		version: version,
 
 		// Default values of command line options
@@ -153,7 +154,7 @@ func NewPlugin[Config, DeployTargetConfig, ApplicationConfigSpec any](name, vers
 // Run runs the plugin.
 func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) Run() error {
 	app := cli.NewApp(
-		fmt.Sprintf("pipecd-plugin-%s", p.name),
+		"pipecd-plugin",
 		"Plugin component for Piped.",
 	)
 
@@ -172,7 +173,7 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) Run() error 
 func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) command() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "start",
-		Short: fmt.Sprintf("Start running a %s plugin.", p.name),
+		Short: "Start running a plugin.",
 		RunE:  cli.WithContext(p.run),
 	}
 
@@ -200,7 +201,6 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 		// When this happens, it means that there is a bug in the SDK, because these are private fields.
 		input.Logger.Error(
 			"something went wrong in the SDK, please report this issue to the developers",
-			zap.String("name", p.name),
 			zap.String("version", p.version),
 			zap.String("reason", "stage plugin and deployment plugin cannot be registered at the same time"),
 			zap.String("report-url", "https://github.com/pipe-cd/pipecd/issues"),
@@ -258,7 +258,7 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 	// Start a gRPC server for handling external API requests.
 	{
 		commonFields := commonFields{
-			name:         p.name,
+			name:         cfg.Name,
 			version:      p.version,
 			config:       cfg,
 			logPersister: persister,

@@ -111,13 +111,15 @@ func (c *ApplicationConfig[Spec]) parsePluginConfig(pluginName string) error {
 		c.pluginConfigs = nil
 	}()
 
-	if c.pluginConfigs == nil || c.pluginConfigs[pluginName] == nil {
-		// No config is set for this plugin.
-		return nil
+	// It is necessary to prepare config with default value when users don't set any config, or when plugin developers implement custom unmarshalling logic.
+	data := []byte("{}")
+
+	if c.pluginConfigs != nil && c.pluginConfigs[pluginName] != nil {
+		data = c.pluginConfigs[pluginName]
 	}
 
 	var spec Spec
-	if err := json.Unmarshal(c.pluginConfigs[pluginName], &spec); err != nil {
+	if err := json.Unmarshal(data, &spec); err != nil {
 		return fmt.Errorf("failed to unmarshal application config: plugin spec: %w", err)
 	}
 

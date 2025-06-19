@@ -1,0 +1,34 @@
+apiVersion: pipecd.dev/v1beta1
+kind: Application
+spec:
+  name: canary-clean-patch
+  labels:
+    env: example
+    team: product
+  description: |
+    This app is test data for canary clean with patch.
+  pipeline:
+    stages:
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          patches:
+          - target:
+              kind: ConfigMap
+              name: canary-patch-weight-config
+              documentRoot: $.data.'weight.yaml'
+            ops:
+            - op: yaml-replace
+              path: $.primary.weight
+              value: "90"
+            - op: yaml-replace
+              path: $.canary.weight
+              value: "10"
+      - name: K8S_CANARY_CLEAN
+  plugins:
+    kubernetes:
+      input:
+        manifests:
+          - deployment.yaml
+          - service.yaml
+          - configmap.yaml
+        kubectlVersion: 1.32.2

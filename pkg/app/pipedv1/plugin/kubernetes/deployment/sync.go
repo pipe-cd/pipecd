@@ -114,7 +114,7 @@ func (p *Plugin) executeK8sSyncStage(ctx context.Context, input *sdk.ExecuteStag
 	// TODO: use applyManifests instead of applyManifestsSDK
 	if err := applyManifests(ctx, applier, manifests, cfg.Spec.Input.Namespace, lp); err != nil {
 		lp.Errorf("Failed while applying manifests (%v)", err)
-		return sdk.StageStatusSuccess
+		return sdk.StageStatusFailure
 	}
 
 	if !stageCfg.Prune {

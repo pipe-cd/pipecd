@@ -106,14 +106,13 @@ func TestApplicationConfig_HasStage(t *testing.T) {
 }
 
 type testPluginSpec struct {
-	Name    string `json:"name"`
-	Value   int    `json:"value" default:"42"`
-	Require string `json:"require"`
+	Name  string `json:"name"`
+	Value int    `json:"value" default:"42"`
 }
 
 func (s *testPluginSpec) Validate() error {
-	if s.Require == "" {
-		return fmt.Errorf("require must not be empty")
+	if s.Value < 0 {
+		return fmt.Errorf("value must not be a negative value")
 	}
 	return nil
 }
@@ -134,8 +133,11 @@ func TestApplicationConfig_ParsePluginConfig(t *testing.T) {
 			config: &ApplicationConfig[testPluginSpec]{
 				pluginConfigs: nil,
 			},
-			wantSpec: nil,
-			wantErr:  false,
+			wantSpec: &testPluginSpec{
+				Name:  "",
+				Value: 42,
+			},
+			wantErr: false,
 		},
 		{
 			name:       "empty plugin configs map",
@@ -143,21 +145,23 @@ func TestApplicationConfig_ParsePluginConfig(t *testing.T) {
 			config: &ApplicationConfig[testPluginSpec]{
 				pluginConfigs: make(map[string]json.RawMessage),
 			},
-			wantSpec: nil,
-			wantErr:  false,
+			wantSpec: &testPluginSpec{
+				Name:  "",
+				Value: 42,
+			},
+			wantErr: false,
 		},
 		{
 			name:       "valid plugin config with defaults",
 			pluginName: "test-plugin",
 			config: &ApplicationConfig[testPluginSpec]{
 				pluginConfigs: map[string]json.RawMessage{
-					"test-plugin": json.RawMessage(`{"name": "test", "require": "yes"}`),
+					"test-plugin": json.RawMessage(`{"name": "test"}`),
 				},
 			},
 			wantSpec: &testPluginSpec{
-				Name:    "test",
-				Value:   42,
-				Require: "yes",
+				Name:  "test",
+				Value: 42,
 			},
 			wantErr: false,
 		},
@@ -177,7 +181,7 @@ func TestApplicationConfig_ParsePluginConfig(t *testing.T) {
 			pluginName: "test-plugin",
 			config: &ApplicationConfig[testPluginSpec]{
 				pluginConfigs: map[string]json.RawMessage{
-					"test-plugin": json.RawMessage(`{"name": "test", "value": 10}`),
+					"test-plugin": json.RawMessage(`{"name": "test", "value": -1}`),
 				},
 			},
 			wantSpec: nil,
@@ -188,13 +192,12 @@ func TestApplicationConfig_ParsePluginConfig(t *testing.T) {
 			pluginName: "test-plugin",
 			config: &ApplicationConfig[testPluginSpec]{
 				pluginConfigs: map[string]json.RawMessage{
-					"test-plugin": json.RawMessage(`{"name": "test", "value": 100, "require": "yes"}`),
+					"test-plugin": json.RawMessage(`{"name": "test", "value": 100}`),
 				},
 			},
 			wantSpec: &testPluginSpec{
-				Name:    "test",
-				Value:   100,
-				Require: "yes",
+				Name:  "test",
+				Value: 100,
 			},
 			wantErr: false,
 		},

@@ -126,7 +126,6 @@ spec:
 			},
 			want: []sdk.ArtifactVersion{
 				{
-					Kind:    sdk.ArtifactKindContainerImage,
 					Version: "1.19.3",
 					Name:    "nginx",
 					URL:     "nginx:1.19.3",
@@ -163,13 +162,11 @@ spec:
 			},
 			want: []sdk.ArtifactVersion{
 				{
-					Kind:    sdk.ArtifactKindContainerImage,
 					Version: "1.19.3",
 					Name:    "nginx",
 					URL:     "nginx:1.19.3",
 				},
 				{
-					Kind:    sdk.ArtifactKindContainerImage,
 					Version: "6.0.9",
 					Name:    "redis",
 					URL:     "redis:6.0.9",
@@ -196,7 +193,6 @@ spec:
 			},
 			want: []sdk.ArtifactVersion{
 				{
-					Kind:    sdk.ArtifactKindContainerImage,
 					Version: "1.19.3",
 					Name:    "nginx",
 					URL:     "nginx:1.19.3",
