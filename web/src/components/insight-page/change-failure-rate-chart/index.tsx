@@ -1,7 +1,10 @@
-import { FC } from "react";
-import { InsightDataPoint, InsightResolution } from "~/modules/insight";
+import { FC, useMemo } from "react";
 import { ChartBase } from "../chart-base";
 import { deepPurple as chartColor } from "@mui/material/colors";
+import {
+  InsightDataPoint,
+  InsightResolution,
+} from "~/queries/insight/insight.config";
 
 export interface ChangeFailureRateChartProps {
   resolution: InsightResolution;
@@ -13,21 +16,24 @@ export const ChangeFailureRateChart: FC<ChangeFailureRateChartProps> = ({
   data,
 }) => {
   // Find the best yMax value to make the graph more readable.
-  let yMax = -1;
-  data.forEach((d) => {
-    d.points.forEach((p) => {
-      if (p.value > yMax) {
-        yMax = p.value;
-      }
+  const yMax = useMemo(() => {
+    let max = -1;
+    data.forEach((d) => {
+      d.points.forEach((p) => {
+        if (p.value > max) {
+          max = p.value;
+        }
+      });
     });
-  });
-  if (yMax > 0.1) {
-    yMax = 1.0;
-  } else if (yMax > 0.05) {
-    yMax = 0.5;
-  } else {
-    yMax = 0.1;
-  }
+    if (max > 0.1) {
+      max = 1.0;
+    } else if (max > 0.05) {
+      max = 0.5;
+    } else {
+      max = 0.1;
+    }
+    return max;
+  }, [data]);
 
   return (
     <ChartBase
