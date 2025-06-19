@@ -166,10 +166,6 @@ func (d *ControlPlaneDataStore) UnmarshalJSON(data []byte) error {
 		if len(gc.Config) > 0 {
 			err = json.Unmarshal(gc.Config, d.MySQLConfig)
 		}
-	case model.DataStoreFileDB:
-		// The FILEDB datastore using the same configuration with filestore
-		// so there will be no `datastore.config` required for now.
-		err = nil
 	default:
 		// Left comment out for mock response.
 		// err = fmt.Errorf("unsupported datastore type: %s", d.Type)
