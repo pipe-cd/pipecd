@@ -2,14 +2,14 @@ import { IconButton, Menu, MenuItem, TableCell, TableRow } from "@mui/material";
 import { MoreVert as MoreVertIcon } from "@mui/icons-material";
 import * as React from "react";
 import { FC, memo, useCallback, useState } from "react";
-import { formalizePoliciesList } from "~/modules/project";
 import { UI_TEXT_EDIT, UI_TEXT_DELETE } from "~/constants/ui-text";
-import { useAppSelector } from "~/hooks/redux";
+import { formalizePoliciesList } from "~/utils/formalize-policies-list";
+import { ProjectRBACRole } from "pipecd/web/model/project_pb";
 
 interface Props {
-  role: string;
-  onEdit: (role: string) => void;
-  onDelete: (role: string) => void;
+  role: ProjectRBACRole.AsObject;
+  onEdit: (role: ProjectRBACRole.AsObject) => void;
+  onDelete: (roleName: string) => void;
 }
 
 const ITEM_HEIGHT = 48;
@@ -19,8 +19,6 @@ export const RoleTableRow: FC<Props> = memo(function RoleTableRow({
   onDelete,
   onEdit,
 }) {
-  const rs = useAppSelector((state) => state.project.rbacRoles);
-  const r = rs.filter((r) => r.name == role)[0];
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
   const handleMenuOpen = useCallback(
@@ -41,20 +39,16 @@ export const RoleTableRow: FC<Props> = memo(function RoleTableRow({
 
   const handleDelete = useCallback(() => {
     setAnchorEl(null);
-    onDelete(role);
+    onDelete(role.name);
   }, [role, onDelete]);
-
-  if (!r) {
-    return null;
-  }
 
   return (
     <>
-      <TableRow key={role}>
-        <TableCell>{r.name}</TableCell>
+      <TableRow key={role.name}>
+        <TableCell>{role.name}</TableCell>
         <TableCell>
           {formalizePoliciesList({
-            policiesList: r.policiesList,
+            policiesList: role.policiesList,
           })
             .split("\n\n")
             .map((policy, i) => (
@@ -66,7 +60,7 @@ export const RoleTableRow: FC<Props> = memo(function RoleTableRow({
             edge="end"
             aria-label="open menu"
             onClick={handleMenuOpen}
-            disabled={r.isBuiltin}
+            disabled={role.isBuiltin}
             size="large"
           >
             <MoreVertIcon />
