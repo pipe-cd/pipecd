@@ -21,6 +21,7 @@ import { Highlight, themes } from "prism-react-renderer";
 import * as React from "react";
 import { FC, memo, useCallback, useState } from "react";
 import { CopyIconButton } from "~/components/copy-icon-button";
+import DialogConfirm from "~/components/dialog-confirm";
 import { PIPED_CONNECTION_STATUS_TEXT } from "~/constants/piped-connection-status-text";
 import { DELETE_OLD_PIPED_KEY_SUCCESS } from "~/constants/toast-text";
 import {
@@ -31,6 +32,7 @@ import {
   UI_TEXT_EDIT,
   UI_TEXT_ENABLE,
   UI_TEXT_RESTART,
+  UI_TEXT_CANCEL,
 } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import {
@@ -65,6 +67,7 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
   const hasOldKey = piped ? piped.keysList.length > 1 : false;
   const [openOldKeyAlert, setOpenOldKeyAlert] = useState(false);
   const [openConfigAlert, setOpenConfigAlert] = useState(false);
+  const [openConfirmAddKey, setOpenConfirmAddKey] = useState(false);
 
   const handleMenuOpen = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -92,9 +95,18 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
     if (hasOldKey) {
       setOpenOldKeyAlert(true);
     } else {
-      dispatch(addNewPipedKey({ pipedId }));
+      setOpenConfirmAddKey(true);
     }
-  }, [dispatch, pipedId, hasOldKey]);
+  }, [hasOldKey]);
+
+  const handleConfirmAddKey = useCallback(() => {
+    setOpenConfirmAddKey(false);
+    dispatch(addNewPipedKey({ pipedId }));
+  }, [dispatch, pipedId]);
+
+  const handleCancelAddKey = useCallback(() => {
+    setOpenConfirmAddKey(false);
+  }, []);
 
   const handleDeleteOldKey = useCallback(() => {
     setAnchorEl(null);
@@ -274,6 +286,15 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
           </Button>
         </DialogActions>
       </Dialog>
+      <DialogConfirm
+        open={openConfirmAddKey}
+        onCancel={handleCancelAddKey}
+        onConfirm={handleConfirmAddKey}
+        title="Add new piped key"
+        description={`This piped has one key. Are you sure you want to generate a new key?\nAfter adding a new key and selecting 'Delete old key', the existing key will no longer be valid.`}
+        confirmText={UI_TEXT_ADD_NEW_KEY}
+        cancelText={UI_TEXT_CANCEL}
+      />
       <Dialog
         fullWidth
         maxWidth="md"
