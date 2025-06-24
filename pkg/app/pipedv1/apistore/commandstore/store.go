@@ -48,9 +48,8 @@ type Lister interface {
 }
 
 type StageCommandHandledReporter interface {
-	// ReportStageCommandsHandled reports all stage commands of the given deployment and stage as handled successfully.
-	// This should be called on piped side, not plugin side, to ensure reporting is called correctly.
-	ReportStageCommandsHandled(ctx context.Context, deploymentID, stageID string) error
+	// Report reports all stage commands of the given deployment and stage as handled successfully.
+	Report(ctx context.Context, deploymentID, stageID string) error
 }
 
 // stageCommandMap is a map of stage commands. Keys are deploymentID and stageID.
@@ -270,7 +269,7 @@ func (s *store) reportCommandHandled(ctx context.Context, c *model.Command, stat
 	return err
 }
 
-func (s *store) ReportStageCommandsHandled(ctx context.Context, deploymentID, stageID string) error {
+func (s *store) Report(ctx context.Context, deploymentID, stageID string) error {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
