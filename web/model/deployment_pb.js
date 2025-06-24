@@ -235,7 +235,6 @@ proto.model.Deployment.toObject = function(includeInstance, msg) {
     labelsMap: (f = msg.getLabelsMap()) ? f.toObject(includeInstance, undefined) : [],
     trigger: (f = msg.getTrigger()) && proto.model.DeploymentTrigger.toObject(includeInstance, f),
     summary: jspb.Message.getFieldWithDefault(msg, 22, ""),
-    version: jspb.Message.getFieldWithDefault(msg, 23, ""),
     versionsList: jspb.Message.toObjectList(msg.getVersionsList(),
     pkg_model_common_pb.ArtifactVersion.toObject, includeInstance),
     runningCommitHash: jspb.Message.getFieldWithDefault(msg, 21, ""),
@@ -345,10 +344,6 @@ proto.model.Deployment.deserializeBinaryFromReader = function(msg, reader) {
     case 22:
       var value = /** @type {string} */ (reader.readString());
       msg.setSummary(value);
-      break;
-    case 23:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setVersion(value);
       break;
     case 24:
       var value = new pkg_model_common_pb.ArtifactVersion;
@@ -524,13 +519,6 @@ proto.model.Deployment.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       22,
-      f
-    );
-  }
-  f = message.getVersion();
-  if (f.length > 0) {
-    writer.writeString(
-      23,
       f
     );
   }
@@ -914,24 +902,6 @@ proto.model.Deployment.prototype.getSummary = function() {
  */
 proto.model.Deployment.prototype.setSummary = function(value) {
   return jspb.Message.setProto3StringField(this, 22, value);
-};
-
-
-/**
- * optional string version = 23;
- * @return {string}
- */
-proto.model.Deployment.prototype.getVersion = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 23, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.model.Deployment} returns this
- */
-proto.model.Deployment.prototype.setVersion = function(value) {
-  return jspb.Message.setProto3StringField(this, 23, value);
 };
 
 

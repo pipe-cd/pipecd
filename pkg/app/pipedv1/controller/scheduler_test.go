@@ -201,7 +201,7 @@ func TestExecuteStage(t *testing.T) {
 				genericApplicationConfig: &config.GenericApplicationSpec{
 					Pipeline: &config.DeploymentPipeline{
 						Stages: []config.PipelineStage{
-							{ID: "stage-id", Name: "stage-name"},
+							{Name: "stage-name"},
 						},
 					},
 				},
@@ -261,7 +261,7 @@ func TestExecuteStage_SignalTerminated(t *testing.T) {
 		genericApplicationConfig: &config.GenericApplicationSpec{
 			Pipeline: &config.DeploymentPipeline{
 				Stages: []config.PipelineStage{
-					{ID: "stage-id", Name: "stage-name"},
+					{Name: "stage-name"},
 				},
 			},
 		},
@@ -317,7 +317,7 @@ func TestExecuteStage_SignalCancelled(t *testing.T) {
 		genericApplicationConfig: &config.GenericApplicationSpec{
 			Pipeline: &config.DeploymentPipeline{
 				Stages: []config.PipelineStage{
-					{ID: "stage-id", Name: "stage-name"},
+					{Name: "stage-name"},
 				},
 			},
 		},

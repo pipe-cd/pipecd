@@ -59,6 +59,7 @@ func (h *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, namespac
 		"template",
 		"--no-hooks",
 		"--include-crds",
+		"--dependency-update",
 		releaseName,
 		chartPath,
 	}
@@ -152,6 +153,7 @@ func (h *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespa
 		"template",
 		"--no-hooks",
 		"--include-crds",
+		"--dependency-update",
 		releaseName,
 		fmt.Sprintf("%s/%s", chart.Repository, chart.Name),
 		fmt.Sprintf("--version=%s", chart.Version),
