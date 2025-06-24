@@ -47,6 +47,7 @@ type Lister interface {
 	ListPipedCommands() []model.ReportableCommand
 }
 
+// StageCommandHandledReporter helps report stage commands as handled.
 type StageCommandHandledReporter interface {
 	// Report reports all stage commands of the given deployment and stage as handled successfully.
 	Report(ctx context.Context, deploymentID, stageID string) error
@@ -62,9 +63,9 @@ type store struct {
 	// instead of some separate lists + mutex as the current.
 	applicationCommands []model.ReportableCommand
 	deploymentCommands  []model.ReportableCommand
-	stageCommands       stageCommandsMap
 	planPreviewCommands []model.ReportableCommand
 	pipedCommands       []model.ReportableCommand
+	stageCommands       stageCommandsMap
 	handledCommands     map[string]time.Time
 	mu                  sync.RWMutex
 	gracePeriod         time.Duration
