@@ -244,8 +244,9 @@ export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
                       }),
                     })}
                   >
-                    {stage.availableOperation === ManualOperation.MANUAL_OPERATION_APPROVE &&
-                      stage.status === StageStatus.STAGE_RUNNING ? (
+                    {stage.availableOperation ===
+                      ManualOperation.MANUAL_OPERATION_APPROVE &&
+                    stage.status === StageStatus.STAGE_RUNNING ? (
                       <ApprovalStage
                         id={stage.id}
                         name={stage.name}

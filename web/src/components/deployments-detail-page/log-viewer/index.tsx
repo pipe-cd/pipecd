@@ -147,7 +147,8 @@ export const LogViewer: FC = memo(function LogViewer() {
               alignItems: "center",
             }}
           >
-            {activeStage.availableOperation === ManualOperation.MANUAL_OPERATION_SKIP &&
+            {activeStage.availableOperation ===
+              ManualOperation.MANUAL_OPERATION_SKIP &&
               activeStage.status === StageStatus.STAGE_RUNNING && (
                 <Button
                   // className={classes.skipButton}
