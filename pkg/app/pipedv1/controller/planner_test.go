@@ -15,9 +15,11 @@
 package controller
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"testing"
 	"time"
 
@@ -301,6 +303,24 @@ func TestBuildQuickSyncStages(t *testing.T) {
 			stages, err := planner.buildQuickSyncStages(context.TODO(), tc.cfg)
 			require.Equal(t, tc.wantErr, err != nil)
 			assert.Len(t, stages, len(tc.expectedStages))
+			// Assert the stages are sorted by rollback first, then by name.
+			assert.True(t, slices.IsSortedFunc(stages, func(a, b *model.PipelineStage) int {
+				if a.Rollback {
+					return 1
+				}
+				if b.Rollback {
+					return -1
+				}
+				return 0
+			}))
+			// Since the order of the stages is not guaranteed,
+			// we need to sort them by name to make the test deterministic.
+			slices.SortFunc(stages, func(a, b *model.PipelineStage) int {
+				return cmp.Compare(a.Name, b.Name)
+			})
+			slices.SortFunc(tc.expectedStages, func(a, b *model.PipelineStage) int {
+				return cmp.Compare(a.Name, b.Name)
+			})
 			for i, s := range stages {
 				assert.NotEmpty(t, s.Id)
 				assert.Equal(t, tc.expectedStages[i].Name, s.Name)
