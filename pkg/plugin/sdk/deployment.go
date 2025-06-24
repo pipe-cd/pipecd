@@ -199,7 +199,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to build quick sync stages: %v", err)
 	}
-	return newQuickSyncStagesResponse(s.name, time.Now(), response), nil
+	return newQuickSyncStagesResponse(time.Now(), response), nil
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (response *deployment.ExecuteStageResponse, _ error) {
 	lp := s.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId())
@@ -428,12 +428,8 @@ func newPipelineSyncStagesResponse(pluginName string, now time.Time, request *de
 		if !ok {
 			return nil, status.Errorf(codes.Internal, "missing stage with index %d in the request, it's unexpected behavior of the plugin", s.Index)
 		}
-		id := requestStage.GetId()
-		if id == "" {
-			id = fmt.Sprintf("%s-stage-%d", pluginName, s.Index)
-		}
 
-		stages = append(stages, s.toModel(id, requestStage.GetDesc(), now))
+		stages = append(stages, s.toModel(requestStage.GetDesc(), now))
 	}
 	return &deployment.BuildPipelineSyncStagesResponse{
 		Stages: stages,
@@ -441,11 +437,10 @@ func newPipelineSyncStagesResponse(pluginName string, now time.Time, request *de
 }
 
 // newQuickSyncStagesResponse converts the response to the external representation.
-func newQuickSyncStagesResponse(pluginName string, now time.Time, response *BuildQuickSyncStagesResponse) *deployment.BuildQuickSyncStagesResponse {
+func newQuickSyncStagesResponse(now time.Time, response *BuildQuickSyncStagesResponse) *deployment.BuildQuickSyncStagesResponse {
 	stages := make([]*model.PipelineStage, 0, len(response.Stages))
-	for i, s := range response.Stages {
-		id := fmt.Sprintf("%s-stage-%d", pluginName, i)
-		stages = append(stages, s.toModel(id, now))
+	for _, s := range response.Stages {
+		stages = append(stages, s.toModel(now))
 	}
 	return &deployment.BuildQuickSyncStagesResponse{
 		Stages: stages,
@@ -528,9 +523,8 @@ type PipelineStage struct {
 	AvailableOperation ManualOperation
 }
 
-func (p *PipelineStage) toModel(id, description string, now time.Time) *model.PipelineStage {
+func (p *PipelineStage) toModel(description string, now time.Time) *model.PipelineStage {
 	return &model.PipelineStage{
-		Id:                 id,
 		Name:               p.Name,
 		Desc:               description,
 		Index:              int32(p.Index),
@@ -559,9 +553,8 @@ type QuickSyncStage struct {
 	AvailableOperation ManualOperation
 }
 
-func (p *QuickSyncStage) toModel(id string, now time.Time) *model.PipelineStage {
+func (p *QuickSyncStage) toModel(now time.Time) *model.PipelineStage {
 	return &model.PipelineStage{
-		Id:                 id,
 		Name:               p.Name,
 		Desc:               p.Description,
 		Index:              0,
