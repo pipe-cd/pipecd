@@ -415,8 +415,7 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *common.Dep
 // buildQuickSyncStages requests all plugins and returns quick sync stage
 // from each plugins to build the deployment pipeline.
 // NOTE:
-//   - For quick sync, we expect all stages given by plugins can be performed
-//     at once regradless its order (aka. no `Stage.Requires` specified)
+//   - For quick sync, we expect all stages given by plugins can be performed in random order.
 //   - Rollback stage will always be added as the trail.
 func (p *planner) buildQuickSyncStages(ctx context.Context, cfg *config.GenericApplicationSpec) ([]*model.PipelineStage, error) {
 	var (
