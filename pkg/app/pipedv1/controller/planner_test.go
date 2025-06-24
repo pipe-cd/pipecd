@@ -55,9 +55,9 @@ func (p *fakePlugin) BuildQuickSyncStages(ctx context.Context, req *deployment.B
 	}, nil
 }
 func (p *fakePlugin) BuildPipelineSyncStages(ctx context.Context, req *deployment.BuildPipelineSyncStagesRequest, opts ...grpc.CallOption) (*deployment.BuildPipelineSyncStagesResponse, error) {
-	getIndex := func(stageID string) int32 {
+	getIndex := func(stageName string) int32 {
 		for _, s := range req.Stages {
-			if s.Id == stageID {
+			if s.Name == stageName {
 				return s.Index
 			}
 		}
@@ -65,7 +65,7 @@ func (p *fakePlugin) BuildPipelineSyncStages(ctx context.Context, req *deploymen
 	}
 
 	for _, s := range p.pipelineStages {
-		s.Index = getIndex(s.Id)
+		s.Index = getIndex(s.Name)
 	}
 
 	if req.Rollback {
@@ -136,13 +136,11 @@ func TestBuildQuickSyncStages(t *testing.T) {
 						Cli: &fakePlugin{
 							quickStages: []*model.PipelineStage{
 								{
-									Id:   "plugin-1-stage-1",
 									Name: "plugin-1-stage-1",
 								},
 							},
 							rollbackStages: []*model.PipelineStage{
 								{
-									Id:       "plugin-1-rollback",
 									Name:     "plugin-1-rollback",
 									Rollback: true,
 								},
@@ -163,11 +161,9 @@ func TestBuildQuickSyncStages(t *testing.T) {
 			wantErr: false,
 			expectedStages: []*model.PipelineStage{
 				{
-					Id:   "plugin-1-stage-1",
 					Name: "plugin-1-stage-1",
 				},
 				{
-					Id:       "plugin-1-rollback",
 					Name:     "plugin-1-rollback",
 					Rollback: true,
 				},
@@ -182,13 +178,11 @@ func TestBuildQuickSyncStages(t *testing.T) {
 						Cli: &fakePlugin{
 							quickStages: []*model.PipelineStage{
 								{
-									Id:   "plugin-1-stage-1",
 									Name: "plugin-1-stage-1",
 								},
 							},
 							rollbackStages: []*model.PipelineStage{
 								{
-									Id:       "plugin-1-rollback",
 									Name:     "plugin-1-rollback",
 									Rollback: true,
 								},
@@ -200,13 +194,11 @@ func TestBuildQuickSyncStages(t *testing.T) {
 						Cli: &fakePlugin{
 							quickStages: []*model.PipelineStage{
 								{
-									Id:   "plugin-2-stage-1",
 									Name: "plugin-2-stage-1",
 								},
 							},
 							rollbackStages: []*model.PipelineStage{
 								{
-									Id:       "plugin-2-rollback",
 									Name:     "plugin-2-rollback",
 									Rollback: true,
 								},
@@ -227,20 +219,16 @@ func TestBuildQuickSyncStages(t *testing.T) {
 			wantErr: false,
 			expectedStages: []*model.PipelineStage{
 				{
-					Id:   "plugin-1-stage-1",
 					Name: "plugin-1-stage-1",
 				},
 				{
-					Id:   "plugin-2-stage-1",
 					Name: "plugin-2-stage-1",
 				},
 				{
-					Id:       "plugin-1-rollback",
 					Name:     "plugin-1-rollback",
 					Rollback: true,
 				},
 				{
-					Id:       "plugin-2-rollback",
 					Name:     "plugin-2-rollback",
 					Rollback: true,
 				},
@@ -255,13 +243,11 @@ func TestBuildQuickSyncStages(t *testing.T) {
 						Cli: &fakePlugin{
 							quickStages: []*model.PipelineStage{
 								{
-									Id:   "plugin-1-stage-1",
 									Name: "plugin-1-stage-1",
 								},
 							},
 							rollbackStages: []*model.PipelineStage{
 								{
-									Id:       "plugin-1-rollback",
 									Name:     "plugin-1-rollback",
 									Rollback: true,
 								},
@@ -273,13 +259,11 @@ func TestBuildQuickSyncStages(t *testing.T) {
 						Cli: &fakePlugin{
 							quickStages: []*model.PipelineStage{
 								{
-									Id:   "plugin-2-stage-1",
 									Name: "plugin-2-stage-1",
 								},
 							},
 							rollbackStages: []*model.PipelineStage{
 								{
-									Id:       "plugin-2-rollback",
 									Name:     "plugin-2-rollback",
 									Rollback: true,
 								},
@@ -300,11 +284,9 @@ func TestBuildQuickSyncStages(t *testing.T) {
 			wantErr: false,
 			expectedStages: []*model.PipelineStage{
 				{
-					Id:   "plugin-1-stage-1",
 					Name: "plugin-1-stage-1",
 				},
 				{
-					Id:   "plugin-2-stage-1",
 					Name: "plugin-2-stage-1",
 				},
 			},
@@ -318,7 +300,13 @@ func TestBuildQuickSyncStages(t *testing.T) {
 			}
 			stages, err := planner.buildQuickSyncStages(context.TODO(), tc.cfg)
 			require.Equal(t, tc.wantErr, err != nil)
-			assert.ElementsMatch(t, tc.expectedStages, stages)
+			assert.Len(t, stages, len(tc.expectedStages))
+			for i, s := range stages {
+				assert.NotEmpty(t, s.Id)
+				assert.Equal(t, tc.expectedStages[i].Name, s.Name)
+				assert.Equal(t, tc.expectedStages[i].Index, s.Index)
+				assert.Equal(t, tc.expectedStages[i].Rollback, s.Rollback)
+			}
 		})
 	}
 }
@@ -342,19 +330,16 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 						Cli: &fakePlugin{
 							pipelineStages: []*model.PipelineStage{
 								{
-									Id:    "plugin-1-stage-1",
 									Index: 0,
 									Name:  "plugin-1-stage-1",
 								},
 								{
-									Id:    "plugin-1-stage-2",
 									Index: 1,
 									Name:  "plugin-1-stage-2",
 								},
 							},
 							rollbackStages: []*model.PipelineStage{
 								{
-									Id:       "plugin-1-rollback",
 									Index:    0,
 									Name:     "plugin-1-rollback",
 									Rollback: true,
@@ -374,11 +359,9 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 				Pipeline: &config.DeploymentPipeline{
 					Stages: []config.PipelineStage{
 						{
-							ID:   "plugin-1-stage-1",
 							Name: "plugin-1-stage-1",
 						},
 						{
-							ID:   "plugin-1-stage-2",
 							Name: "plugin-1-stage-2",
 						},
 					},
@@ -387,18 +370,14 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 			wantErr: false,
 			expectedStages: []*model.PipelineStage{
 				{
-					Id:    "plugin-1-stage-1",
 					Name:  "plugin-1-stage-1",
 					Index: 0,
 				},
 				{
-					Id:       "plugin-1-stage-2",
-					Name:     "plugin-1-stage-2",
-					Index:    1,
-					Requires: []string{"plugin-1-stage-1"},
+					Name:  "plugin-1-stage-2",
+					Index: 1,
 				},
 				{
-					Id:       "plugin-1-rollback",
 					Name:     "plugin-1-rollback",
 					Index:    0,
 					Rollback: true,
@@ -414,24 +393,20 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 						Cli: &fakePlugin{
 							pipelineStages: []*model.PipelineStage{
 								{
-									Id:    "plugin-1-stage-1",
 									Index: 0,
 									Name:  "plugin-1-stage-1",
 								},
 								{
-									Id:    "plugin-1-stage-2",
 									Index: 1,
 									Name:  "plugin-1-stage-2",
 								},
 								{
-									Id:    "plugin-1-stage-3",
 									Index: 2,
 									Name:  "plugin-1-stage-3",
 								},
 							},
 							rollbackStages: []*model.PipelineStage{
 								{
-									Id:       "plugin-1-rollback",
 									Index:    0,
 									Name:     "plugin-1-rollback",
 									Rollback: true,
@@ -444,12 +419,10 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 						Cli: &fakePlugin{
 							pipelineStages: []*model.PipelineStage{
 								{
-									Id:    "plugin-2-stage-1",
 									Index: 0,
 									Name:  "plugin-2-stage-1",
 								},
 								{
-									Id:    "plugin-2-stage-2",
 									Index: 1,
 									Name:  "plugin-2-stage-2",
 								},
@@ -468,23 +441,18 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 				Pipeline: &config.DeploymentPipeline{
 					Stages: []config.PipelineStage{
 						{
-							ID:   "plugin-1-stage-1",
 							Name: "plugin-1-stage-1",
 						},
 						{
-							ID:   "plugin-1-stage-2",
 							Name: "plugin-1-stage-2",
 						},
 						{
-							ID:   "plugin-2-stage-1",
 							Name: "plugin-2-stage-1",
 						},
 						{
-							ID:   "plugin-1-stage-3",
 							Name: "plugin-1-stage-3",
 						},
 						{
-							ID:   "plugin-2-stage-2",
 							Name: "plugin-2-stage-2",
 						},
 					},
@@ -493,36 +461,26 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 			wantErr: false,
 			expectedStages: []*model.PipelineStage{
 				{
-					Id:    "plugin-1-stage-1",
 					Name:  "plugin-1-stage-1",
 					Index: 0,
 				},
 				{
-					Id:       "plugin-1-stage-2",
-					Name:     "plugin-1-stage-2",
-					Index:    1,
-					Requires: []string{"plugin-1-stage-1"},
+					Name:  "plugin-1-stage-2",
+					Index: 1,
 				},
 				{
-					Id:       "plugin-2-stage-1",
-					Name:     "plugin-2-stage-1",
-					Index:    2,
-					Requires: []string{"plugin-1-stage-2"},
+					Name:  "plugin-2-stage-1",
+					Index: 2,
 				},
 				{
-					Id:       "plugin-1-stage-3",
-					Name:     "plugin-1-stage-3",
-					Index:    3,
-					Requires: []string{"plugin-2-stage-1"},
+					Name:  "plugin-1-stage-3",
+					Index: 3,
 				},
 				{
-					Id:       "plugin-2-stage-2",
-					Name:     "plugin-2-stage-2",
-					Index:    4,
-					Requires: []string{"plugin-1-stage-3"},
+					Name:  "plugin-2-stage-2",
+					Index: 4,
 				},
 				{
-					Id:       "plugin-1-rollback",
 					Name:     "plugin-1-rollback",
 					Index:    0,
 					Rollback: true,
@@ -538,24 +496,20 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 						Cli: &fakePlugin{
 							pipelineStages: []*model.PipelineStage{
 								{
-									Id:    "plugin-1-stage-1",
 									Index: 0,
 									Name:  "plugin-1-stage-1",
 								},
 								{
-									Id:    "plugin-1-stage-2",
 									Index: 1,
 									Name:  "plugin-1-stage-2",
 								},
 								{
-									Id:    "plugin-1-stage-3",
 									Index: 2,
 									Name:  "plugin-1-stage-3",
 								},
 							},
 							rollbackStages: []*model.PipelineStage{
 								{
-									Id:       "plugin-1-rollback",
 									Index:    0,
 									Name:     "plugin-1-rollback",
 									Rollback: true,
@@ -568,14 +522,12 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 						Cli: &fakePlugin{
 							pipelineStages: []*model.PipelineStage{
 								{
-									Id:    "plugin-2-stage-1",
 									Index: 0,
 									Name:  "plugin-2-stage-1",
 								},
 							},
 							rollbackStages: []*model.PipelineStage{
 								{
-									Id:       "plugin-2-rollback",
 									Index:    2,
 									Name:     "plugin-2-rollback",
 									Rollback: true,
@@ -595,19 +547,15 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 				Pipeline: &config.DeploymentPipeline{
 					Stages: []config.PipelineStage{
 						{
-							ID:   "plugin-1-stage-1",
 							Name: "plugin-1-stage-1",
 						},
 						{
-							ID:   "plugin-1-stage-2",
 							Name: "plugin-1-stage-2",
 						},
 						{
-							ID:   "plugin-2-stage-1",
 							Name: "plugin-2-stage-1",
 						},
 						{
-							ID:   "plugin-1-stage-3",
 							Name: "plugin-1-stage-3",
 						},
 					},
@@ -616,36 +564,27 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 			wantErr: false,
 			expectedStages: []*model.PipelineStage{
 				{
-					Id:    "plugin-1-stage-1",
 					Name:  "plugin-1-stage-1",
 					Index: 0,
 				},
 				{
-					Id:       "plugin-1-stage-2",
-					Name:     "plugin-1-stage-2",
-					Index:    1,
-					Requires: []string{"plugin-1-stage-1"},
+					Name:  "plugin-1-stage-2",
+					Index: 1,
 				},
 				{
-					Id:       "plugin-2-stage-1",
-					Name:     "plugin-2-stage-1",
-					Index:    2,
-					Requires: []string{"plugin-1-stage-2"},
+					Name:  "plugin-2-stage-1",
+					Index: 2,
 				},
 				{
-					Id:       "plugin-1-stage-3",
-					Name:     "plugin-1-stage-3",
-					Index:    3,
-					Requires: []string{"plugin-2-stage-1"},
+					Name:  "plugin-1-stage-3",
+					Index: 3,
 				},
 				{
-					Id:       "plugin-1-rollback",
 					Index:    0,
 					Name:     "plugin-1-rollback",
 					Rollback: true,
 				},
 				{
-					Id:       "plugin-2-rollback",
 					Index:    2,
 					Name:     "plugin-2-rollback",
 					Rollback: true,
@@ -661,7 +600,13 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 			}
 			stages, err := planner.buildPipelineSyncStages(context.TODO(), tc.cfg)
 			require.Equal(t, tc.wantErr, err != nil)
-			assert.Equal(t, tc.expectedStages, stages)
+			assert.Len(t, stages, len(tc.expectedStages))
+			for i, s := range stages {
+				assert.NotEmpty(t, s.Id)
+				assert.Equal(t, tc.expectedStages[i].Name, s.Name)
+				assert.Equal(t, tc.expectedStages[i].Index, s.Index)
+				assert.Equal(t, tc.expectedStages[i].Rollback, s.Rollback)
+			}
 		})
 	}
 }
@@ -689,7 +634,6 @@ func TestPlanner_BuildPlan(t *testing.T) {
 						Cli: &fakePlugin{
 							quickStages: []*model.PipelineStage{
 								{
-									Id:      "plugin-1-stage-1",
 									Name:    "plugin-1-stage-1",
 									Visible: true,
 								},
@@ -719,7 +663,6 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				Summary:      "Triggered by web console",
 				Stages: []*model.PipelineStage{
 					{
-						Id:      "plugin-1-stage-1",
 						Name:    "plugin-1-stage-1",
 						Visible: true,
 					},
@@ -742,7 +685,6 @@ func TestPlanner_BuildPlan(t *testing.T) {
 						Cli: &fakePlugin{
 							pipelineStages: []*model.PipelineStage{
 								{
-									Id:      "plugin-1-stage-1",
 									Index:   0,
 									Name:    "plugin-1-stage-1",
 									Visible: true,
@@ -762,7 +704,6 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				Pipeline: &config.DeploymentPipeline{
 					Stages: []config.PipelineStage{
 						{
-							ID:   "plugin-1-stage-1",
 							Name: "plugin-1-stage-1",
 						},
 					},
@@ -780,7 +721,6 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				Summary:      "Triggered by web console",
 				Stages: []*model.PipelineStage{
 					{
-						Id:      "plugin-1-stage-1",
 						Name:    "plugin-1-stage-1",
 						Index:   0,
 						Visible: true,
@@ -804,7 +744,6 @@ func TestPlanner_BuildPlan(t *testing.T) {
 						Cli: &fakePlugin{
 							quickStages: []*model.PipelineStage{
 								{
-									Id:      "plugin-1-stage-1",
 									Name:    "plugin-1-stage-1",
 									Visible: true,
 								},
@@ -831,7 +770,6 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				Summary:      "Quick sync due to the pipeline was not configured",
 				Stages: []*model.PipelineStage{
 					{
-						Id:      "plugin-1-stage-1",
 						Name:    "plugin-1-stage-1",
 						Visible: true,
 					},
@@ -854,7 +792,6 @@ func TestPlanner_BuildPlan(t *testing.T) {
 						Cli: &fakePlugin{
 							pipelineStages: []*model.PipelineStage{
 								{
-									Id:      "plugin-1-stage-1",
 									Index:   0,
 									Name:    "plugin-1-stage-1",
 									Visible: true,
@@ -875,7 +812,6 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				Pipeline: &config.DeploymentPipeline{
 					Stages: []config.PipelineStage{
 						{
-							ID:   "plugin-1-stage-1",
 							Name: "plugin-1-stage-1",
 						},
 					},
@@ -890,7 +826,6 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				Summary:      "Sync with the specified pipeline (alwaysUsePipeline was set)",
 				Stages: []*model.PipelineStage{
 					{
-						Id:      "plugin-1-stage-1",
 						Name:    "plugin-1-stage-1",
 						Index:   0,
 						Visible: true,
@@ -914,7 +849,6 @@ func TestPlanner_BuildPlan(t *testing.T) {
 						Cli: &fakePlugin{
 							quickStages: []*model.PipelineStage{
 								{
-									Id:      "plugin-1-stage-1",
 									Name:    "plugin-1-stage-1",
 									Visible: true,
 								},
@@ -933,7 +867,6 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				Pipeline: &config.DeploymentPipeline{
 					Stages: []config.PipelineStage{
 						{
-							ID:   "plugin-1-stage-1",
 							Name: "plugin-1-stage-1",
 						},
 					},
@@ -948,7 +881,6 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				Summary:      "Quick sync, it seems this is the first deployment of the application",
 				Stages: []*model.PipelineStage{
 					{
-						Id:      "plugin-1-stage-1",
 						Name:    "plugin-1-stage-1",
 						Visible: true,
 					},
@@ -972,14 +904,12 @@ func TestPlanner_BuildPlan(t *testing.T) {
 					},
 					pipelineStages: []*model.PipelineStage{
 						{
-							Id:      "plugin-1-stage-1",
 							Name:    "plugin-1-stage-1",
 							Visible: true,
 						},
 					},
 					quickStages: []*model.PipelineStage{
 						{
-							Id:      "plugin-1-quick-stage-1",
 							Visible: true,
 						},
 					},
@@ -996,7 +926,6 @@ func TestPlanner_BuildPlan(t *testing.T) {
 							},
 							pipelineStages: []*model.PipelineStage{
 								{
-									Id:      "plugin-1-stage-1",
 									Index:   0,
 									Name:    "plugin-1-stage-1",
 									Visible: true,
@@ -1004,7 +933,6 @@ func TestPlanner_BuildPlan(t *testing.T) {
 							},
 							quickStages: []*model.PipelineStage{
 								{
-									Id:      "plugin-1-quick-stage-1",
 									Visible: true,
 								},
 							},
@@ -1022,7 +950,6 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				Pipeline: &config.DeploymentPipeline{
 					Stages: []config.PipelineStage{
 						{
-							ID:   "plugin-1-stage-1",
 							Name: "plugin-1-stage-1",
 						},
 					},
@@ -1037,7 +964,6 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				Summary:      "determined by plugin",
 				Stages: []*model.PipelineStage{
 					{
-						Id:      "plugin-1-stage-1",
 						Name:    "plugin-1-stage-1",
 						Index:   0,
 						Visible: true,
@@ -1064,7 +990,6 @@ func TestPlanner_BuildPlan(t *testing.T) {
 							},
 							pipelineStages: []*model.PipelineStage{
 								{
-									Id:      "plugin-1-stage-1",
 									Name:    "plugin-1-stage-1",
 									Visible: true,
 								},
@@ -1080,14 +1005,12 @@ func TestPlanner_BuildPlan(t *testing.T) {
 							},
 							pipelineStages: []*model.PipelineStage{
 								{
-									Id:      "plugin-2-stage-1",
 									Name:    "plugin-2-stage-1",
 									Visible: true,
 								},
 							},
 							quickStages: []*model.PipelineStage{
 								{
-									Id:      "plugin-2-quick-stage-1",
 									Visible: true,
 								},
 							},
@@ -1103,11 +1026,9 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				Pipeline: &config.DeploymentPipeline{
 					Stages: []config.PipelineStage{
 						{
-							ID:   "plugin-1-stage-1",
 							Name: "plugin-1-stage-1",
 						},
 						{
-							ID:   "plugin-2-stage-1",
 							Name: "plugin-2-stage-1",
 						},
 					},
@@ -1122,7 +1043,6 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				Summary:      "determined by plugin-2",
 				Stages: []*model.PipelineStage{
 					{
-						Id:      "plugin-2-quick-stage-1",
 						Visible: true,
 					},
 				},
@@ -1179,6 +1099,19 @@ func TestPlanner_BuildPlan(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 			}
+
+			// Assert the stages are the same.
+			assert.Len(t, out.Stages, len(tc.expectedOutput.Stages))
+			for i, s := range out.Stages {
+				assert.NotEmpty(t, s.Id)
+				assert.Equal(t, tc.expectedOutput.Stages[i].Name, s.Name)
+				assert.Equal(t, tc.expectedOutput.Stages[i].Index, s.Index)
+				assert.Equal(t, tc.expectedOutput.Stages[i].Rollback, s.Rollback)
+			}
+
+			// Assert the rest of the output is the same.
+			tc.expectedOutput.Stages = nil
+			out.Stages = nil
 			assert.Equal(t, tc.expectedOutput, out)
 		})
 	}

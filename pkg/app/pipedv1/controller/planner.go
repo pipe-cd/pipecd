@@ -23,6 +23,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/atomic"
@@ -436,6 +437,7 @@ func (p *planner) buildQuickSyncStages(ctx context.Context, cfg *config.GenericA
 			return nil, err
 		}
 		for i := range res.Stages {
+			res.Stages[i].Id = uuid.New().String()
 			if res.Stages[i].Rollback {
 				rollbackStages = append(rollbackStages, res.Stages[i])
 			} else {
@@ -478,7 +480,6 @@ func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.Gener
 		}
 
 		stagesCfgPerPlugin[plg] = append(stagesCfgPerPlugin[plg], &deployment.BuildPipelineSyncStagesRequest_StageConfig{
-			Id:      stageCfg.ID,
 			Name:    stageCfg.Name.String(),
 			Desc:    stageCfg.Desc,
 			Timeout: stageCfg.Timeout.Duration().String(),
@@ -503,6 +504,7 @@ func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.Gener
 		}
 
 		for i := range res.Stages {
+			res.Stages[i].Id = uuid.New().String()
 			if res.Stages[i].Rollback {
 				rollbackStages = append(rollbackStages, res.Stages[i])
 			} else {

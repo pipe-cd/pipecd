@@ -2001,8 +2001,6 @@ func (m *BuildPipelineSyncStagesRequest_StageConfig) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Id
-
 	if utf8.RuneCountInString(m.GetName()) < 1 {
 		err := BuildPipelineSyncStagesRequest_StageConfigValidationError{
 			field:  "Name",
