@@ -15,7 +15,6 @@
 package commandstore
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -28,7 +27,7 @@ func TestListStageCommands(t *testing.T) {
 	t.Parallel()
 
 	store := store{
-		stageApproveCommands: stageCommandMap{
+		stageCommands: stageCommandsMap{
 			"deployment-1": {
 				"stage-1": []*model.Command{
 					{
@@ -45,16 +44,10 @@ func TestListStageCommands(t *testing.T) {
 						Type:         model.Command_APPROVE_STAGE,
 						Commander:    "commander-2",
 					},
-				},
-			},
-		},
-		stageSkipCommands: stageCommandMap{
-			"deployment-11": {
-				"stage-11": []*model.Command{
 					{
-						Id:           "command-11",
-						DeploymentId: "deployment-11",
-						StageId:      "stage-11",
+						Id:           "command-3",
+						DeploymentId: "deployment-1",
+						StageId:      "stage-1",
 						Type:         model.Command_SKIP_STAGE,
 					},
 				},
@@ -67,15 +60,13 @@ func TestListStageCommands(t *testing.T) {
 		name         string
 		deploymentID string
 		stageID      string
-		commandType  model.Command_Type
 		want         []*model.Command
 		wantErr      error
 	}{
 		{
-			name:         "valid arguments of Approve",
+			name:         "valid arguments",
 			deploymentID: "deployment-1",
 			stageID:      "stage-1",
-			commandType:  model.Command_APPROVE_STAGE,
 			want: []*model.Command{
 				{
 					Id:           "command-1",
@@ -91,47 +82,35 @@ func TestListStageCommands(t *testing.T) {
 					Type:         model.Command_APPROVE_STAGE,
 					Commander:    "commander-2",
 				},
-			},
-			wantErr: nil,
-		},
-		{
-			name:         "valid arguments of Skip",
-			deploymentID: "deployment-11",
-			stageID:      "stage-11",
-			commandType:  model.Command_SKIP_STAGE,
-			want: []*model.Command{
 				{
-					Id:           "command-11",
-					DeploymentId: "deployment-11",
-					StageId:      "stage-11",
+					Id:           "command-3",
+					DeploymentId: "deployment-1",
+					StageId:      "stage-1",
 					Type:         model.Command_SKIP_STAGE,
 				},
 			},
 			wantErr: nil,
 		},
 		{
-			name:         "stageID not exists",
-			deploymentID: "deployment-1",
-			stageID:      "stage-999",
-			commandType:  model.Command_APPROVE_STAGE,
+			name:         "deploymentID not exist",
+			deploymentID: "xxx",
+			stageID:      "stage-1",
 			want:         nil,
 			wantErr:      nil,
 		},
 		{
-			name:         "invalid commandType",
+			name:         "stageID not exist",
 			deploymentID: "deployment-1",
-			stageID:      "stage-1",
-			commandType:  model.Command_CANCEL_DEPLOYMENT,
+			stageID:      "stage-999",
 			want:         nil,
-			wantErr:      fmt.Errorf("invalid command type: CANCEL_DEPLOYMENT"),
+			wantErr:      nil,
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			got, err := store.ListStageCommands(tc.deploymentID, tc.stageID, tc.commandType)
-			assert.Equal(t, tc.wantErr, err)
+			got := store.ListStageCommands(tc.deploymentID, tc.stageID)
 			assert.Equal(t, tc.want, got)
 		})
 	}
