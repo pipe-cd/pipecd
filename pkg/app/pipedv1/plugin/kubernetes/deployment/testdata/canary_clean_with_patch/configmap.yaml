@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: canary-patch-weight-config
+data:
+  weight.yaml: |-
+    primary:
+      weight: 100
+    canary:
+      weight: 0

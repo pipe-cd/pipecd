@@ -16,6 +16,7 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"strings"
@@ -55,10 +56,10 @@ type GraphQLClient interface {
 // parsePullRequestEvent uses the given environment variables
 // to parse and build githubEvent struct.
 // Currently, we support 2 kinds of event as below:
-// - PullRequestEvent
-//   https://pkg.go.dev/github.com/google/go-github/v36/github#PullRequestEvent
-// - IssueCommentEvent
-//   https://pkg.go.dev/github.com/google/go-github/v36/github#IssueCommentEvent
+//   - PullRequestEvent
+//     https://pkg.go.dev/github.com/google/go-github/v36/github#PullRequestEvent
+//   - IssueCommentEvent
+//     https://pkg.go.dev/github.com/google/go-github/v36/github#IssueCommentEvent
 func parseGitHubEvent(
 	ctx context.Context,
 	pullSvc PullRequestsService,
@@ -177,7 +178,7 @@ var errNotFound = errors.New("not found")
 
 // find the latest plan preview comment in the specified issue
 // if there is no plan preview comment, return errNotFound err
-func findLatestPlanPreviewComment(ctx context.Context, client GraphQLClient, owner, repo string, prNumber int) (*issueCommentQuery, error) {
+func findLatestPlanPreviewComment(ctx context.Context, client GraphQLClient, owner, repo string, prNumber int, key string) (*issueCommentQuery, error) {
 	variables := map[string]interface{}{
 		"repositoryOwner": githubv4.String(owner),
 		"repositoryName":  githubv4.String(repo),
@@ -189,7 +190,7 @@ func findLatestPlanPreviewComment(ctx context.Context, client GraphQLClient, own
 		return nil, err
 	}
 
-	comment := filterLatestPlanPreviewComment(q.Repository.PullRequest.Comments.Nodes)
+	comment := filterLatestPlanPreviewComment(q.Repository.PullRequest.Comments.Nodes, key)
 	if comment == nil {
 		return nil, errNotFound
 	}
@@ -197,8 +198,8 @@ func findLatestPlanPreviewComment(ctx context.Context, client GraphQLClient, own
 }
 
 // Expect comments to be sorted in ascending order by created_at
-func filterLatestPlanPreviewComment(comments []issueCommentQuery) *issueCommentQuery {
-	const planPreviewCommentStart = "<!-- pipecd-plan-preview-->"
+func filterLatestPlanPreviewComment(comments []issueCommentQuery, key string) *issueCommentQuery {
+	planPreviewCommentStart := makeFilterComment(key)
 
 	for i := range comments {
 		comment := comments[len(comments)-i-1]
@@ -208,6 +209,16 @@ func filterLatestPlanPreviewComment(comments []issueCommentQuery) *issueCommentQ
 	}
 
 	return nil
+}
+
+// key is used to distinguish requests when one repo has multiple Projects.
+// key is hashed to avoid multi-byte issues.
+func makeFilterComment(key string) string {
+	hash := ""
+	if key != "" {
+		hash = fmt.Sprintf("%x", sha256.Sum256([]byte(key)))
+	}
+	return fmt.Sprintf("<!-- pipecd-plan-preview %s-->", hash)
 }
 
 type minimizeCommentMutation struct {

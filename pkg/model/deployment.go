@@ -157,6 +157,11 @@ func (d *Deployment) FindRollbackStage() (*PipelineStage, bool) {
 func (d *Deployment) FindRollbackStages() ([]*PipelineStage, bool) {
 	rollbackStages := make([]*PipelineStage, 0, len(d.Stages))
 	for i, stage := range d.Stages {
+		if d.Stages[i].GetRollback() {
+			rollbackStages = append(rollbackStages, stage)
+			continue
+		}
+
 		if d.Stages[i].Name == StageRollback.String() || d.Stages[i].Name == StageScriptRunRollback.String() {
 			rollbackStages = append(rollbackStages, stage)
 		}
@@ -212,6 +217,15 @@ func (d *Deployment) IsInChainDeployment() bool {
 
 func (d *Deployment) SetUpdatedAt(t int64) {
 	d.UpdatedAt = t
+}
+
+func (d *Deployment) GetDeployTargets(pluginName string) []string {
+	dps, ok := d.GetDeployTargetsByPlugin()[pluginName]
+	if !ok || len(dps.GetDeployTargets()) == 0 {
+		return []string{}
+	}
+
+	return dps.GetDeployTargets()
 }
 
 // Implement sort.Interface for PipelineStages.

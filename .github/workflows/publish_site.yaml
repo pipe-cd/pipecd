@@ -22,7 +22,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Determine version
-        run: echo "PIPECD_VERSION=$(git describe --tags --always --abbrev=7)" >> $GITHUB_ENV
+        run: echo "PIPECD_VERSION=$(git describe --tags --always --abbrev=7 --match 'v[0-9]*.*')" >> $GITHUB_ENV
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@75d2e84710de30f6ff7268e08f310b60ef14033f #v3.0.0
         with:
@@ -43,7 +43,7 @@ jobs:
 
       # Building and pushing container images.
       - name: Log in to the container registry
-        uses: docker/login-action@49ed152c8eca782a232dede0303416e8f356c37b #v2.0.0
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
         with:
           registry: ${{ env.GHCR }}
           username: ${{ github.actor }}
@@ -55,6 +55,9 @@ jobs:
           context: docs
           file: docs/Dockerfile
           tags: ${{ env.GHCR }}/pipe-cd/site:${{ env.PIPECD_VERSION }}
+          # parameter to use inline cache. ref; https://docs.docker.com/build/ci/github-actions/cache/#inline-cache
+          cache-from: type=registry,ref=${{ env.GHCR }}/pipe-cd/site:latest
+          cache-to: type=inline
 
       # Building and pushing Helm charts.
       - name: Install helm

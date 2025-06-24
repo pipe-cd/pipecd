@@ -19,7 +19,6 @@ import (
 	"errors"
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 )
@@ -58,11 +57,6 @@ func (m *mockStageLogPersister) Errorf(format string, a ...interface{}) {
 	m.logs = append(m.logs, fmt.Sprintf(format, a...))
 }
 
-func (m *mockStageLogPersister) Complete(timeout time.Duration) error {
-	m.completed = true
-	return nil
-}
-
 type mockApplier struct {
 	applyErr        error
 	forceReplaceErr error
@@ -86,7 +80,7 @@ func (m *mockApplier) CreateManifest(ctx context.Context, manifest provider.Mani
 	return m.createErr
 }
 
-func TestApplyManifests(t *testing.T) {
+func Test_applyManifests(t *testing.T) {
 	tests := []struct {
 		name      string
 		manifests []provider.Manifest
@@ -280,8 +274,10 @@ data:
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			lp := new(mockStageLogPersister)
-			err := applyManifests(context.Background(), tt.applier, tt.manifests, tt.namespace, lp)
+			err := applyManifests(t.Context(), tt.applier, tt.manifests, tt.namespace, lp)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("applyManifests() error = %v, wantErr %v", err, tt.wantErr)
 			}

@@ -1,7 +1,6 @@
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
 import { dummyApplication } from "~/__fixtures__/dummy-application";
-import { createStore, render, screen } from "~~/test-utils";
+import { createStore, render, screen, MemoryRouter } from "~~/test-utils";
 import { ApplicationListItem } from ".";
 
 const state = {

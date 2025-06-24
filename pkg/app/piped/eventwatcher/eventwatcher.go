@@ -18,6 +18,7 @@
 package eventwatcher
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -183,7 +184,7 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 		case <-ticker.C:
 			err := repo.Pull(ctx, repo.GetClonedBranch())
 			if err != nil {
-				w.logger.Error("failed to perform git pull",
+				w.logger.Error("failed to perform git pull. will retry in the next loop",
 					zap.String("repo-id", repoCfg.RepoID),
 					zap.String("branch", repo.GetClonedBranch()),
 					zap.Error(err),
@@ -233,6 +234,7 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 				if err := w.updateValues(ctx, repo, repoCfg.RepoID, cfg.Events, commitMsg); err != nil {
 					w.logger.Error("failed to update the values",
 						zap.String("repo-id", repoCfg.RepoID),
+						zap.String("branch", repo.GetClonedBranch()),
 						zap.Error(err),
 					)
 				}
@@ -294,6 +296,7 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 			if err := w.execute(ctx, repo, repoCfg.RepoID, cfgs); err != nil {
 				w.logger.Error("failed to execute the event from application configuration",
 					zap.String("repo-id", repoCfg.RepoID),
+					zap.String("branch", repo.GetClonedBranch()),
 					zap.Error(err),
 				)
 			}
@@ -456,9 +459,19 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 	var responseError error
 	retry := backoff.NewRetry(retryPushNum, backoff.NewConstant(retryPushInterval))
 	for branch, events := range branchHandledEvents {
+		eventIDs := make([]string, 0, len(events))
+		for _, e := range events {
+			eventIDs = append(eventIDs, e.Id)
+		}
+		zlogger := w.logger.With(
+			zap.String("repo-id", repoID),
+			zap.String("branch", tmpRepo.GetClonedBranch()),
+			zap.Strings("event-ids", eventIDs),
+		)
+
 		_, err = retry.Do(ctx, func() (interface{}, error) {
 			if err := tmpRepo.Push(ctx, branch); err != nil {
-				w.logger.Error("failed to push commits", zap.String("repo-id", repoID), zap.String("branch", branch), zap.Error(err))
+				zlogger.Warn(fmt.Sprintf("failed to push commits. retry attempt %d/%d", retry.Calls(), retryPushNum), zap.Error(err))
 				return nil, err
 			}
 			return nil, nil
@@ -466,7 +479,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 
 		if err == nil {
 			if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: events}); err != nil {
-				w.logger.Error("failed to report event statuses", zap.Error(err))
+				zlogger.Error("failed to report event statuses", zap.Error(err))
 			}
 			w.executionMilestoneMap.Store(repoID, maxTimestamp)
 			continue
@@ -474,9 +487,11 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 
 		// If push fails because the local branch was not fresh, exit to retry again in the next interval.
 		if err == git.ErrBranchNotFresh {
-			w.logger.Warn("failed to push commits", zap.Error(err))
+			zlogger.Warn("failed to push commits. local branch was not up-to-date. will retry in the next loop", zap.Error(err))
 			continue
 		}
+
+		zlogger.Error("failed to push commits", zap.Error(err))
 
 		// If push fails because of the other reason, re-set all statuses to FAILURE.
 		for i := range events {
@@ -487,7 +502,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 			events[i].StatusDescription = fmt.Sprintf("Failed to push changed files: %v", err)
 		}
 		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: events}); err != nil {
-			w.logger.Error("failed to report event statuses", zap.Error(err))
+			zlogger.Error("failed to report event statuses", zap.Error(err))
 		}
 		w.executionMilestoneMap.Store(repoID, maxTimestamp)
 		responseError = errors.Join(responseError, err)
@@ -600,17 +615,27 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 		return nil
 	}
 
+	eventIDs := make([]string, 0, len(handledEvents))
+	for _, e := range handledEvents {
+		eventIDs = append(eventIDs, e.Id)
+	}
+	zlogger := w.logger.With(
+		zap.String("repo-id", repoID),
+		zap.String("branch", tmpRepo.GetClonedBranch()),
+		zap.Strings("event-ids", eventIDs),
+	)
+
 	retry := backoff.NewRetry(retryPushNum, backoff.NewConstant(retryPushInterval))
 	_, err = retry.Do(ctx, func() (interface{}, error) {
 		if err := tmpRepo.Push(ctx, tmpRepo.GetClonedBranch()); err != nil {
-			w.logger.Error("failed to push commits", zap.String("repo-id", repoID), zap.String("branch", tmpRepo.GetClonedBranch()), zap.Error(err))
+			zlogger.Warn(fmt.Sprintf("failed to push commits. retry attempt %d/%d", retry.Calls(), retryPushNum), zap.Error(err))
 			return nil, err
 		}
 		return nil, nil
 	})
 	if err == nil {
 		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: handledEvents}); err != nil {
-			w.logger.Error("failed to report event statuses", zap.Error(err))
+			zlogger.Error("failed to report event statuses", zap.Error(err))
 			return err
 		}
 		w.milestoneMap.Store(repoID, maxTimestamp)
@@ -619,9 +644,11 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 
 	// If push fails because the local branch was not fresh, exit to retry again in the next interval.
 	if err == git.ErrBranchNotFresh {
-		w.logger.Warn("failed to push commits", zap.Error(err))
+		zlogger.Warn("failed to push commits. local branch was not up-to-date. will retry in the next loop", zap.Error(err))
 		return nil
 	}
+
+	zlogger.Error("failed to push commits", zap.Error(err))
 
 	// If push fails because of the other reason, re-set all statuses to FAILURE.
 	for i := range handledEvents {
@@ -632,11 +659,10 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 		handledEvents[i].StatusDescription = fmt.Sprintf("Failed to push changed files: %v", err)
 	}
 	if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: handledEvents}); err != nil {
-		w.logger.Error("failed to report event statuses: %w", zap.Error(err))
+		zlogger.Error("failed to report event statuses: %w", zap.Error(err))
 		return err
 	}
 	w.milestoneMap.Store(repoID, maxTimestamp)
-	w.logger.Error("failed to push commits", zap.Error(err))
 	return err
 }
 
@@ -691,7 +717,12 @@ func (w *watcher) commitFiles(ctx context.Context, latestEvent *model.Event, eve
 	}
 	commitMsg = parseCommitMsg(commitMsg, args)
 	branch := makeBranchName(newBranch, eventName, repo.GetClonedBranch())
-	trailers := maps.Clone(latestEvent.Contexts)
+	trailers := make(map[string]string)
+	maps.Copy(trailers, latestEvent.Contexts)
+	// Store the commit hash of the commit that trigger this event as trailer of the manifest commit.
+	if latestEvent.TriggerCommitHash != "" {
+		trailers[model.TraceTriggerCommitHashKey] = latestEvent.TriggerCommitHash
+	}
 	if err := repo.CommitChanges(ctx, branch, commitMsg, newBranch, changes, trailers); err != nil {
 		w.logger.Error("failed to perform git commit",
 			zap.String("branch", branch),
@@ -759,9 +790,17 @@ func convertStr(value interface{}) (out string, err error) {
 	return
 }
 
-// modifyText returns a new text replacing all matches of the given regex with the newValue.
-// The only first capturing group enclosed by `()` will be replaced.
-// True as a second returned value means it's already up-to-date.
+// modifyText returns a modified text of the file contents by replacing the first capturing group
+// of all matches of the provided regular expression with the specified newValue.
+// The replacement is applied only to the part of each match that corresponds to the first capturing
+// group (the portion enclosed in the first pair of parentheses `()`).
+//
+// It returns the updated content, a boolean indicating whether the file was already up-to-date,
+// and an error if any issue occurs during reading, regular expression parsing, or matching.
+//
+// If no matches are found, an error is returned.
+// If all first capturing groups already equal newValue, the original content is returned,
+// the boolean is true, and no changes are applied.
 func modifyText(path, regexText, newValue string) ([]byte, bool, error) {
 	content, err := os.ReadFile(path)
 	if err != nil {
@@ -789,17 +828,32 @@ func modifyText(path, regexText, newValue string) ([]byte, bool, error) {
 	if firstGroup == "" {
 		return nil, false, fmt.Errorf("capturing group not found in the given regex")
 	}
-	subRegex, err := pool.Get(firstGroup)
-	if err != nil {
-		return nil, false, fmt.Errorf("failed to compile the first capturing group: %w", err)
-	}
 
 	var touched, outDated bool
 	newText := regex.ReplaceAllFunc(content, func(match []byte) []byte {
 		touched = true
-		outDated = string(subRegex.Find(match)) != newValue
-		// Return text replacing the only first capturing group with the newValue.
-		return subRegex.ReplaceAll(match, []byte(newValue))
+		submatches := regex.FindSubmatchIndex(match)
+
+		if len(submatches) < 4 {
+			return match
+		}
+
+		groupStart, groupEnd := submatches[2], submatches[3]
+
+		// no update on the value
+		if string(match[groupStart:groupEnd]) == newValue {
+			return match
+		}
+
+		outDated = true
+
+		var buf bytes.Buffer
+
+		buf.Write(match[:groupStart])
+		buf.WriteString(newValue)
+		buf.Write(match[groupEnd:])
+
+		return buf.Bytes()
 	})
 	if !touched {
 		return nil, false, fmt.Errorf("the content of %s doesn't match %s", path, regexText)

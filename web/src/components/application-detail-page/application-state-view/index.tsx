@@ -1,18 +1,12 @@
-import {
-  Box,
-  Link,
-  Button,
-  CircularProgress,
-  makeStyles,
-  Typography,
-} from "@material-ui/core";
-import { FC, memo, useEffect } from "react";
+import { Box, Link, Button, CircularProgress, Typography } from "@mui/material";
+import { FC, memo, useEffect, useMemo } from "react";
 import { UI_TEXT_REFRESH } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { useInterval } from "~/hooks/use-interval";
 import {
   Application,
   ApplicationKind,
+  PIPED_VERSION,
   selectById as selectAppById,
 } from "~/modules/applications";
 import {
@@ -25,8 +19,13 @@ import { KubernetesStateView } from "./kubernetes-state-view";
 import { CloudRunStateView } from "./cloudrun-state-view";
 import { ECSStateView } from "./ecs-state-view";
 import { LambdaStateView } from "./lambda-state-view";
+import { checkPipedAppVersion } from "~/utils/common";
+import { LiveStateView } from "./live-state-view";
 
 const isDisplayLiveState = (app: Application.AsObject | undefined): boolean => {
+  const result = checkPipedAppVersion(app);
+  if (result[PIPED_VERSION.V1]) return true;
+
   return (
     app?.kind === ApplicationKind.KUBERNETES ||
     app?.kind === ApplicationKind.CLOUDRUN ||
@@ -48,18 +47,8 @@ const FEATURE_STATUS_INTRO = "PipeCD feature status";
 const DISABLED_APPLICATION_MESSAGE =
   "This application is currently disabled. You can enable it from the application list page.";
 
-const useStyles = makeStyles(() => ({
-  container: {
-    flex: 1,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-}));
-
 export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
   function ApplicationStateView({ applicationId }) {
-    const classes = useStyles();
     const dispatch = useAppDispatch();
     const [hasError, liveState, app] = useAppSelector<
       [
@@ -72,6 +61,8 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
       selectLiveStateById(state.applicationLiveState, applicationId),
       selectAppById(state.applications, applicationId),
     ]);
+
+    const pipedVersion = useMemo(() => checkPipedAppVersion(app), [app]);
 
     useEffect(() => {
       if (app && isDisplayLiveState(app)) {
@@ -93,10 +84,12 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
     if (app?.disabled) {
       return (
         <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          flex={1}
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            flex: 1,
+          }}
         >
           <Typography variant="h6" component="span">
             {DISABLED_APPLICATION_MESSAGE}
@@ -107,7 +100,15 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
 
     if (hasError) {
       return (
-        <Box className={classes.container} flexDirection="column">
+        <Box
+          sx={{
+            flexDirection: "column",
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           <Typography variant="body1">{ERROR_MESSAGE}</Typography>
           <Button
             color="primary"
@@ -125,11 +126,26 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
       return (
         <>
           {isDisplayLiveState(app) ? (
-            <div className={classes.container}>
+            <Box
+              sx={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <CircularProgress />
-            </div>
+            </Box>
           ) : (
-            <Box className={classes.container} flexDirection="column">
+            <Box
+              sx={{
+                flexDirection: "column",
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <Typography variant="body1">{COMING_SOON_MESSAGE}</Typography>
               <Link
                 href="https://pipecd.dev/docs/feature-status/"
@@ -142,6 +158,11 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
           )}
         </>
       );
+    }
+
+    if (pipedVersion[PIPED_VERSION.V1]) {
+      const resources = liveState.applicationLiveState?.resourcesList || [];
+      return <LiveStateView resources={resources} />;
     }
 
     switch (liveState.kind) {

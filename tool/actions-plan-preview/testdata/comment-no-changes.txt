@@ -1,4 +1,4 @@
-<!-- pipecd-plan-preview-->
+<!-- pipecd-plan-preview -->
 [![PLAN_PREVIEW](https://img.shields.io/static/v1?label=PipeCD&message=Plan_Preview&color=success&style=flat)](https://pipecd.dev/docs/user-guide/plan-preview/)
 
 Ran plan-preview against head commit abc of this pull request. PipeCD detected `0` updated application. It means no deployment will be triggered once this pull request got merged.

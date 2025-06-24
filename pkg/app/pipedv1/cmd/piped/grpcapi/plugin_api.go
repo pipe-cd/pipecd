@@ -46,7 +46,7 @@ type apiClient interface {
 }
 
 type stageCommandLister interface {
-	ListStageCommands(deploymentID, stageID string, commandType model.Command_Type) ([]*model.Command, error)
+	ListStageCommands(deploymentID, stageID string) []*model.Command
 }
 
 // Register registers all handling of this service into the specified gRPC server.
@@ -54,14 +54,7 @@ func (a *PluginAPI) Register(server *grpc.Server) {
 	service.RegisterPluginServiceServer(server, a)
 }
 
-func NewPluginAPI(
-	cfg *config.PipedSpec,
-	apiClient apiClient,
-	toolsDir string,
-	logger *zap.Logger,
-	metadataStoreRegistry *metadatastore.MetadataStoreRegistry,
-	stageCommandLister stageCommandLister,
-) (*PluginAPI, error) {
+func NewPluginAPI(cfg *config.PipedSpec, apiClient apiClient, toolsDir string, logger *zap.Logger, metadataStoreRegistry *metadatastore.MetadataStoreRegistry, stageCommandLister stageCommandLister) (*PluginAPI, error) {
 	toolRegistry, err := newToolRegistry(toolsDir)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create tool registry: %w", err)
@@ -159,11 +152,6 @@ func (a *PluginAPI) GetDeploymentSharedMetadata(ctx context.Context, req *servic
 }
 
 func (a *PluginAPI) ListStageCommands(ctx context.Context, req *service.ListStageCommandsRequest) (*service.ListStageCommandsResponse, error) {
-	commands, err := a.stageCommandLister.ListStageCommands(req.DeploymentId, req.StageId, req.Type)
-	if err != nil {
-		return nil, err
-	}
-	return &service.ListStageCommandsResponse{
-		Commands: commands,
-	}, nil
+	commands := a.stageCommandLister.ListStageCommands(req.DeploymentId, req.StageId)
+	return &service.ListStageCommandsResponse{Commands: commands}, nil
 }

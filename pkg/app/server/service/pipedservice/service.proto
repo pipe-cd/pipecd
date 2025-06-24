@@ -153,9 +153,6 @@ service PipedService {
 
     // ListEvents returns a list of Events inside the given range.
     rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {}
-    // ReportEventHandled marks the given all events as handled.
-    // Deprecated. This is only for the old Piped agents.
-    rpc ReportEventsHandled(ReportEventsHandledRequest) returns (ReportEventsHandledResponse) {}
     // ReportEventStatuses reports a status list of events.
     rpc ReportEventStatuses(ReportEventStatusesRequest) returns (ReportEventStatusesResponse) {}
 
@@ -203,6 +200,7 @@ message ReportPipedMetaRequest {
     string version = 1;
     repeated model.Piped.CloudProvider cloud_providers = 2;
     repeated model.Piped.PlatformProvider platform_providers = 6;
+    repeated model.Piped.Plugin plugins = 7;
     repeated model.ApplicationGitRepository repositories = 3;
     model.Piped.SecretEncryption secret_encryption = 4;
     string config = 5;
@@ -473,13 +471,6 @@ message ListEventsRequest {
 
 message ListEventsResponse {
     repeated model.Event events = 1;
-}
-
-message ReportEventsHandledRequest {
-    repeated string event_ids = 1 [(validate.rules).repeated.min_items = 1];
-}
-
-message ReportEventsHandledResponse {
 }
 
 message ReportEventStatusesRequest {

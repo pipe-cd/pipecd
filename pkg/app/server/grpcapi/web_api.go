@@ -59,7 +59,7 @@ type webAPIApplicationStore interface {
 	Get(ctx context.Context, id string) (*model.Application, error)
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Application, string, error)
 	Delete(ctx context.Context, id string) error
-	UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string) error
+	UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string, deployTargetsByPlugin map[string]*model.DeployTargets) error
 	Enable(ctx context.Context, id string) error
 	Disable(ctx context.Context, id string) error
 }
@@ -104,6 +104,10 @@ type webAPIEventStore interface {
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Event, string, error)
 }
 
+type webAPIDeploymentTraceStore interface {
+	List(ctx context.Context, opts datastore.ListOptions) ([]*model.DeploymentTrace, string, error)
+}
+
 type webAPIAPIKeyStore interface {
 	Add(ctx context.Context, k *model.APIKey) error
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.APIKey, error)
@@ -121,6 +125,7 @@ type WebAPI struct {
 	applicationStore          webAPIApplicationStore
 	deploymentChainStore      webAPIDeploymentChainStore
 	deploymentStore           webAPIDeploymentStore
+	deploymentTraceStore      webAPIDeploymentTraceStore
 	pipedStore                webAPIPipedStore
 	projectStore              webAPIProjectStore
 	apiKeyStore               webAPIAPIKeyStore
@@ -163,6 +168,7 @@ func NewWebAPI(
 		applicationStore:          datastore.NewApplicationStore(ds, w),
 		deploymentChainStore:      datastore.NewDeploymentChainStore(ds, w),
 		deploymentStore:           datastore.NewDeploymentStore(ds, w),
+		deploymentTraceStore:      datastore.NewDeploymentTraceStore(ds, w),
 		pipedStore:                datastore.NewPipedStore(ds, w),
 		projectStore:              datastore.NewProjectStore(ds, w),
 		apiKeyStore:               datastore.NewAPIKeyStore(ds, w),
@@ -512,16 +518,17 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 	}
 
 	app := model.Application{
-		Id:               uuid.New().String(),
-		Name:             req.Name,
-		PipedId:          req.PipedId,
-		ProjectId:        claims.Role.ProjectId,
-		GitPath:          gitpath,
-		Kind:             req.Kind,
-		PlatformProvider: req.PlatformProvider,
-		CloudProvider:    req.PlatformProvider,
-		Description:      req.Description,
-		Labels:           req.Labels,
+		Id:                    uuid.New().String(),
+		Name:                  req.Name,
+		PipedId:               req.PipedId,
+		ProjectId:             claims.Role.ProjectId,
+		GitPath:               gitpath,
+		Kind:                  req.Kind,
+		PlatformProvider:      req.PlatformProvider,
+		CloudProvider:         req.PlatformProvider,
+		DeployTargetsByPlugin: req.DeployTargetsByPlugin,
+		Description:           req.Description,
+		Labels:                req.Labels,
 	}
 	if err = a.applicationStore.Add(ctx, &app); err != nil {
 		return nil, gRPCStoreError(err, fmt.Sprintf("add application %s", app.Id))
@@ -548,7 +555,7 @@ func (a *WebAPI) UpdateApplication(ctx context.Context, req *webservice.UpdateAp
 		return nil, status.Error(codes.PermissionDenied, "Requested piped does not belong to your project")
 	}
 
-	if err := a.applicationStore.UpdateConfiguration(ctx, req.ApplicationId, req.PipedId, req.PlatformProvider, req.ConfigFilename); err != nil {
+	if err := a.applicationStore.UpdateConfiguration(ctx, req.ApplicationId, req.PipedId, req.PlatformProvider, req.ConfigFilename, req.DeployTargetsByPlugin); err != nil {
 		return nil, gRPCStoreError(err, fmt.Sprintf("failed to update application %s", req.ApplicationId))
 	}
 
@@ -938,6 +945,93 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 	return &webservice.ListDeploymentsResponse{
 		Deployments: filtered,
 		Cursor:      cursor,
+	}, nil
+}
+
+func (a *WebAPI) ListDeploymentTraces(ctx context.Context, req *webservice.ListDeploymentTracesRequest) (*webservice.ListDeploymentTracesResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	orders := []datastore.Order{
+		{
+			Field:     "UpdatedAt",
+			Direction: datastore.Desc,
+		},
+		{
+			Field:     "Id",
+			Direction: datastore.Asc,
+		},
+	}
+	filters := []datastore.ListFilter{
+		{
+			Field:    "ProjectId",
+			Operator: datastore.OperatorEqual,
+			Value:    claims.Role.ProjectId,
+		},
+		{
+			Field:    "UpdatedAt",
+			Operator: datastore.OperatorGreaterThanOrEqual,
+			Value:    req.PageMinUpdatedAt,
+		},
+	}
+
+	if o := req.Options; o != nil {
+		if o.CommitHash != "" {
+			filters = append(filters, datastore.ListFilter{
+				Field:    "CommitHash",
+				Operator: datastore.OperatorEqual,
+				Value:    o.CommitHash,
+			})
+		}
+	}
+
+	pageSize := int(req.PageSize)
+	options := datastore.ListOptions{
+		Filters: filters,
+		Orders:  orders,
+		Limit:   pageSize,
+		Cursor:  req.Cursor,
+	}
+
+	traces, cursor, err := a.deploymentTraceStore.List(ctx, options)
+	if err != nil {
+		a.logger.Error("failed to get deployment traces", zap.Error(err))
+		return nil, gRPCStoreError(err, "get deployment traces")
+	}
+	if len(traces) == 0 {
+		return &webservice.ListDeploymentTracesResponse{
+			Traces: []*webservice.ListDeploymentTracesResponse_DeploymentTraceRes{},
+			Cursor: cursor,
+		}, nil
+	}
+
+	dts := make([]*webservice.ListDeploymentTracesResponse_DeploymentTraceRes, 0, len(traces))
+	for _, t := range traces {
+		opts := datastore.ListOptions{
+			Filters: []datastore.ListFilter{
+				{
+					Field:    "DeploymentTraceCommitHash",
+					Operator: datastore.OperatorEqual,
+					Value:    t.CommitHash,
+				},
+			},
+		}
+		deployments, _, err := a.deploymentStore.List(ctx, opts)
+		if err != nil {
+			a.logger.Error("failed to get deployments for trace", zap.String("commit-hash", t.CommitHash), zap.Error(err))
+		}
+		dts = append(dts, &webservice.ListDeploymentTracesResponse_DeploymentTraceRes{
+			Trace:       t,
+			Deployments: deployments,
+		})
+	}
+
+	return &webservice.ListDeploymentTracesResponse{
+		Traces: dts,
+		Cursor: cursor,
 	}, nil
 }
 

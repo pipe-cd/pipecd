@@ -41,6 +41,10 @@ const (
 	TemplatingMethodNone      TemplatingMethod = "none"
 )
 
+const (
+	kustomizationFileName = "kustomization.yaml"
+)
+
 type LoaderInput struct {
 	// for annotations to manage the application live state.
 	PipedID    string
@@ -53,8 +57,7 @@ type LoaderInput struct {
 	ConfigFilename string
 	Manifests      []string
 
-	Namespace        string
-	TemplatingMethod TemplatingMethod
+	Namespace string
 
 	KustomizeVersion string
 	KustomizeOptions map[string]string
@@ -83,6 +86,16 @@ func NewLoader(registry ToolRegistry) *Loader {
 	}
 }
 
+func (l *Loader) determineTemplatingMethod(input LoaderInput) TemplatingMethod {
+	if input.HelmChart != nil {
+		return TemplatingMethodHelm
+	}
+	if _, err := os.Stat(filepath.Join(input.AppDir, kustomizationFileName)); err == nil {
+		return TemplatingMethodKustomize
+	}
+	return TemplatingMethodNone
+}
+
 func (l *Loader) LoadManifests(ctx context.Context, input LoaderInput) (manifests []Manifest, err error) {
 	defer func() {
 		for i := range manifests {
@@ -91,29 +104,14 @@ func (l *Loader) LoadManifests(ctx context.Context, input LoaderInput) (manifest
 			if input.Namespace != "" {
 				manifests[i].body.SetNamespace(input.Namespace)
 			}
-
-			// Add builtin labels and annotations for tracking application live state.
-			manifests[i].AddLabels(map[string]string{
-				LabelManagedBy:   ManagedByPiped,
-				LabelPiped:       input.PipedID,
-				LabelApplication: input.AppID,
-				LabelCommitHash:  input.CommitHash,
-			})
-
-			manifests[i].AddAnnotations(map[string]string{
-				LabelManagedBy:          ManagedByPiped,
-				LabelPiped:              input.PipedID,
-				LabelApplication:        input.AppID,
-				LabelOriginalAPIVersion: manifests[i].body.GetAPIVersion(),
-				LabelResourceKey:        manifests[i].Key().String(),
-				LabelCommitHash:         input.CommitHash,
-			})
 		}
 
 		sortManifests(manifests)
 	}()
 
-	switch input.TemplatingMethod {
+	templatingMethod := l.determineTemplatingMethod(input)
+
+	switch templatingMethod {
 	case TemplatingMethodHelm:
 		data, err := l.templateHelmChart(ctx, input)
 		if err != nil {
@@ -122,13 +120,7 @@ func (l *Loader) LoadManifests(ctx context.Context, input LoaderInput) (manifest
 
 		return ParseManifests(data)
 	case TemplatingMethodKustomize:
-		kustomizePath, err := l.toolRegistry.Kustomize(ctx, input.KustomizeVersion)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get kustomize tool: %w", err)
-		}
-
-		k := NewKustomize(kustomizePath, input.Logger)
-		data, err := k.Template(ctx, input.AppName, input.AppDir, input.KustomizeOptions)
+		data, err := l.templateKustomizeManifests(ctx, input)
 		if err != nil {
 			return nil, fmt.Errorf("failed to template kustomize manifests: %w", err)
 		}
@@ -137,7 +129,7 @@ func (l *Loader) LoadManifests(ctx context.Context, input LoaderInput) (manifest
 	case TemplatingMethodNone:
 		return LoadPlainYAMLManifests(input.AppDir, input.Manifests, input.ConfigFilename)
 	default:
-		return nil, fmt.Errorf("unsupported templating method %s", input.TemplatingMethod)
+		return nil, fmt.Errorf("unsupported templating method %s", templatingMethod)
 	}
 }
 
@@ -165,7 +157,7 @@ func (l *Loader) templateHelmChart(ctx context.Context, input LoaderInput) (stri
 		return "", fmt.Errorf("failed to get helm tool: %w", err)
 	}
 
-	h := NewHelm(helmPath, input.Logger)
+	h := NewHelm(input.HelmVersion, helmPath, input.Logger)
 
 	switch {
 	case input.HelmChart.GitRemote != "":
@@ -177,6 +169,24 @@ func (l *Loader) templateHelmChart(ctx context.Context, input LoaderInput) (stri
 	default:
 		return h.TemplateLocalChart(ctx, input.AppName, input.AppDir, input.Namespace, input.HelmChart.Path, input.HelmOptions)
 	}
+}
+
+func (l *Loader) templateKustomizeManifests(ctx context.Context, input LoaderInput) (string, error) {
+	helmPath, err := l.toolRegistry.Helm(ctx, input.HelmVersion)
+	if err != nil {
+		return "", fmt.Errorf("failed to get helm tool to pass to kustomize: %w", err)
+	}
+
+	kustomizePath, err := l.toolRegistry.Kustomize(ctx, input.KustomizeVersion)
+	if err != nil {
+		return "", fmt.Errorf("failed to get kustomize tool: %w", err)
+	}
+
+	h := NewHelm(input.HelmVersion, helmPath, input.Logger)
+
+	k := NewKustomize(input.KustomizeVersion, kustomizePath, input.Logger)
+
+	return k.Template(ctx, input.AppName, input.AppDir, input.KustomizeOptions, h)
 }
 
 func LoadPlainYAMLManifests(dir string, names []string, configFilename string) ([]Manifest, error) {

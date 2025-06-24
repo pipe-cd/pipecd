@@ -9,7 +9,7 @@ spec:
     manifests:
       - deployment.yaml
       - service.yaml
-    kubectlVersion: 1.18.0
+    kubectlVersion: 1.32.2
   postSync:
     chain:
       applications:

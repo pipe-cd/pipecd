@@ -472,17 +472,19 @@ func (c *client) getLoadBalancerArn(ctx context.Context, targetGroupArn string) 
 	return output.TargetGroups[0].LoadBalancerArns[0], nil
 }
 
-func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, routingTrafficCfg RoutingTrafficConfig) error {
+func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, routingTrafficCfg RoutingTrafficConfig) ([]string, error) {
 	if len(routingTrafficCfg) != 2 {
-		return fmt.Errorf("invalid listener configuration: requires 2 target groups")
+		return nil, fmt.Errorf("invalid listener configuration: requires 2 target groups")
 	}
+
+	modifiedRuleArns := make([]string, 0)
 
 	for _, listenerArn := range listenerArns {
 		describeRulesOutput, err := c.elbClient.DescribeRules(ctx, &elasticloadbalancingv2.DescribeRulesInput{
 			ListenerArn: aws.String(listenerArn),
 		})
 		if err != nil {
-			return fmt.Errorf("failed to describe rules of listener %s: %w", listenerArn, err)
+			return modifiedRuleArns, fmt.Errorf("failed to describe rules of listener %s: %w", listenerArn, err)
 		}
 
 		for _, rule := range describeRulesOutput.Rules {
@@ -519,20 +521,22 @@ func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, rou
 					DefaultActions: modifiedActions,
 				})
 				if err != nil {
-					return fmt.Errorf("failed to modify default rule %s: %w", *rule.RuleArn, err)
+					return modifiedRuleArns, fmt.Errorf("failed to modify default rule %s: %w", *rule.RuleArn, err)
 				}
+				modifiedRuleArns = append(modifiedRuleArns, fmt.Sprintf("default rule of listener %s", listenerArn))
 			} else {
 				_, err := c.elbClient.ModifyRule(ctx, &elasticloadbalancingv2.ModifyRuleInput{
 					RuleArn: rule.RuleArn,
 					Actions: modifiedActions,
 				})
 				if err != nil {
-					return fmt.Errorf("failed to modify rule %s: %w", *rule.RuleArn, err)
+					return modifiedRuleArns, fmt.Errorf("failed to modify rule %s: %w", *rule.RuleArn, err)
 				}
+				modifiedRuleArns = append(modifiedRuleArns, *rule.RuleArn)
 			}
 		}
 	}
-	return nil
+	return modifiedRuleArns, nil
 }
 
 func (c *client) TagResource(ctx context.Context, resourceArn string, tags []types.Tag) error {
@@ -647,4 +651,34 @@ func (c *client) GetTaskSetTasks(ctx context.Context, taskSet types.TaskSet) ([]
 	}
 
 	return tasks, nil
+}
+
+func (c *client) ListTags(ctx context.Context, resourceArn string) ([]types.Tag, error) {
+	input := &ecs.ListTagsForResourceInput{
+		ResourceArn: aws.String(resourceArn),
+	}
+
+	output, err := c.ecsClient.ListTagsForResource(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	tags := make([]types.Tag, 0, len(output.Tags))
+	for _, t := range output.Tags {
+		tags = append(tags, types.Tag{
+			Key:   t.Key,
+			Value: t.Value,
+		})
+	}
+	return tags, nil
+}
+
+func (c *client) UntagResource(ctx context.Context, resourceArn string, tagKeys []string) error {
+	input := &ecs.UntagResourceInput{
+		ResourceArn: aws.String(resourceArn),
+		TagKeys:     tagKeys,
+	}
+
+	_, err := c.ecsClient.UntagResource(ctx, input)
+	return err
 }

@@ -26,9 +26,10 @@ import (
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
+	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry/toolregistrytest"
+
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
-	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry/toolregistrytest"
 )
 
 func mustParseManifests(t *testing.T, data string) []Manifest {
@@ -319,9 +320,7 @@ invalid yaml content
 }
 
 func TestLoader_templateHelmChart(t *testing.T) {
-	c, err := toolregistrytest.NewToolRegistry(t)
-	require.NoError(t, err)
-	t.Cleanup(func() { c.Close() })
+	c := toolregistrytest.NewTestToolRegistry(t)
 
 	loader := &Loader{
 		toolRegistry: toolregistry.NewRegistry(c),
@@ -380,6 +379,88 @@ func TestLoader_templateHelmChart(t *testing.T) {
 				require.Error(t, err)
 			} else {
 				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestLoader_LoadManifests(t *testing.T) {
+	t.Parallel()
+
+	c := toolregistrytest.NewTestToolRegistry(t)
+	loader := &Loader{
+		toolRegistry: toolregistry.NewRegistry(c),
+	}
+
+	tests := []struct {
+		name      string
+		input     LoaderInput
+		wantKinds []string
+	}{
+		{
+			name: "kustomize",
+			input: LoaderInput{
+				AppName:          "testapp",
+				AppDir:           "testdata/testkustomize",
+				KustomizeVersion: "5.4.3",
+				Logger:           zap.NewNop(),
+				Namespace:        "test-ns",
+			},
+			wantKinds: []string{"Deployment"},
+		},
+		{
+			name: "helm",
+			input: LoaderInput{
+				AppName:     "test-app",
+				AppDir:      "testdata/testhelm/appconfdir",
+				Namespace:   "test-ns",
+				HelmVersion: "3.16.1",
+				HelmChart:   &config.InputHelmChart{Path: "../../testchart"},
+				HelmOptions: &config.InputHelmOptions{},
+				Logger:      zap.NewNop(),
+			},
+			wantKinds: []string{"Deployment", "Service", "ServiceAccount"},
+		},
+		{
+			name: "plain yaml",
+			input: func() LoaderInput {
+				dir := t.TempDir()
+				manifestFile := filepath.Join(dir, "cm.yaml")
+				content := `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-cm
+`
+				require.NoError(t, os.WriteFile(manifestFile, []byte(content), 0644))
+				return LoaderInput{
+					AppDir:         dir,
+					Manifests:      []string{"cm.yaml"},
+					ConfigFilename: "app.pipecd.yaml",
+					Namespace:      "test-ns",
+					Logger:         zap.NewNop(),
+				}
+			}(),
+			wantKinds: []string{"ConfigMap"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			manifests, err := loader.LoadManifests(context.Background(), tt.input)
+			require.NoError(t, err)
+			require.NotEmpty(t, manifests)
+			for _, m := range manifests {
+				assert.Equal(t, "test-ns", m.body.GetNamespace())
+			}
+			if tt.wantKinds != nil {
+				var gotKinds []string
+				for _, m := range manifests {
+					gotKinds = append(gotKinds, m.Kind())
+				}
+				assert.ElementsMatch(t, gotKinds, tt.wantKinds)
 			}
 		})
 	}

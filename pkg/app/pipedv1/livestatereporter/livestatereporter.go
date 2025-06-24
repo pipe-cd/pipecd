@@ -27,6 +27,8 @@ import (
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
@@ -193,7 +195,13 @@ func (r *reporter) flush(ctx context.Context, app *model.Application, repo git.R
 		return err
 	}
 
-	dsp := deploysource.NewProvider(dir, deploysource.NewLocalSourceCloner(repo, "target", "HEAD"), app.GitPath, r.secretDecrypter)
+	headCommit, err := repo.GetLatestCommit(ctx)
+	if err != nil {
+		r.logger.Error("failed to get latest commit", zap.Error(err))
+		return err
+	}
+
+	dsp := deploysource.NewProvider(dir, deploysource.NewLocalSourceCloner(repo, "target", headCommit.Hash), app.GitPath, r.secretDecrypter)
 	ds, err := dsp.Get(ctx, io.Discard)
 	if err != nil {
 		r.logger.Error("failed to get deploy source", zap.String("application-id", app.Id), zap.Error(err))
@@ -217,10 +225,20 @@ func (r *reporter) flush(ctx context.Context, app *model.Application, repo git.R
 	syncStates := make([]*model.ApplicationSyncState, 0)
 	for _, pluginClient := range pluginClis {
 		res, err := pluginClient.GetLivestate(ctx, &livestate.GetLivestateRequest{
-			ApplicationId: app.Id,
-			DeploySource:  ds.ToPluginDeploySource(),
+			PipedId:         app.GetPipedId(),
+			ApplicationId:   app.GetId(),
+			ApplicationName: app.GetName(),
+			DeploySource:    ds.ToPluginDeploySource(),
+			DeployTargets:   app.GetDeployTargets(),
 		})
 		if err != nil {
+			st, ok := status.FromError(err)
+			if ok && st.Code() == codes.Unimplemented {
+				// TODO: show plugin name
+				r.logger.Info("plugin does not support livestate feature")
+				continue
+			}
+
 			r.logger.Info(fmt.Sprintf("no app state of application %s to report", app.Id))
 			return err
 		}
@@ -237,6 +255,9 @@ func (r *reporter) flush(ctx context.Context, app *model.Application, repo git.R
 		Kind:          app.Kind,
 		ApplicationLiveState: &model.ApplicationLiveState{
 			Resources: resourceStates,
+		},
+		Version: &model.ApplicationLiveStateVersion{
+			Timestamp: time.Now().Unix(),
 		},
 	}
 	snapshot.DetermineApplicationHealthStatus()

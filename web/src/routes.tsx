@@ -18,11 +18,11 @@ import {
   PAGE_PATH_APPLICATIONS,
   PAGE_PATH_DEPLOYMENTS,
   PAGE_PATH_DEPLOYMENT_CHAINS,
+  PAGE_PATH_DEPLOYMENT_TRACE,
   PAGE_PATH_INSIGHTS,
   PAGE_PATH_EVENTS,
   PAGE_PATH_LOGIN,
   PAGE_PATH_SETTINGS,
-  PAGE_PATH_TOP,
   PAGE_PATH_SETTINGS_PIPED,
   PAGE_PATH_SETTINGS_PROJECT,
   PAGE_PATH_SETTINGS_API_KEY,
@@ -41,6 +41,7 @@ import {
 } from "~/modules/commands";
 import { fetchPipeds } from "~/modules/pipeds";
 import { sortedSet } from "~/utils/sorted-set";
+import DeploymentTracePage from "./components/deployment-trace-page";
 
 const SettingsIndexPage = loadable(
   () => import(/* webpackChunkName: "settings" */ "~/components/settings-page"),
@@ -175,7 +176,7 @@ export const Routes: FC = () => {
         <ReactRoutes>
           <Route path={PAGE_PATH_LOGIN} element={<LoginPage />} />
           <Route
-            path={PAGE_PATH_TOP}
+            path="*"
             Component={() => {
               localStorage.setItem(
                 REDIRECT_PATH_KEY,
@@ -213,6 +214,10 @@ export const Routes: FC = () => {
         />
         <Route path={PAGE_PATH_DEPLOYMENTS} element={<DeploymentIndexPage />} />
         <Route
+          path={PAGE_PATH_DEPLOYMENT_TRACE}
+          element={<DeploymentTracePage />}
+        />
+        <Route
           path={`${PAGE_PATH_DEPLOYMENTS}/:deploymentId`}
           element={<DeploymentDetailPage />}
         />
@@ -238,7 +243,7 @@ export const Routes: FC = () => {
         <Route path={PAGE_PATH_INSIGHTS} element={<InsightIndexPage />} />
         <Route path={PAGE_PATH_EVENTS} element={<EventIndexPage />} />
         <Route
-          path={PAGE_PATH_TOP}
+          path="*"
           Component={() => {
             const path =
               localStorage.getItem(REDIRECT_PATH_KEY) || PAGE_PATH_APPLICATIONS;

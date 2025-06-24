@@ -24,6 +24,7 @@ import {
 import { ApplicationGitPath } from "pipecd/web/model/common_pb";
 import { ApplicationGitRepository } from "pipecd/web/model/common_pb";
 import * as google_protobuf_wrappers_pb from "google-protobuf/google/protobuf/wrappers_pb";
+import { DeployTargets } from "~~/model/deployment_pb";
 
 export const getApplicationLiveState = ({
   applicationId,
@@ -77,14 +78,28 @@ export const addApplication = async ({
   kind,
   gitPath,
   labelsMap,
-}: Required<AddApplicationRequest.AsObject>): Promise<
-  AddApplicationResponse.AsObject
-> => {
+  deployTargetsByPluginMap,
+}: Required<
+  Omit<
+    AddApplicationRequest.AsObject,
+    "platformProvider" | "kind" | "deployTargetsByPluginMap"
+  >
+> &
+  Partial<
+    Pick<
+      AddApplicationRequest.AsObject,
+      "platformProvider" | "kind" | "deployTargetsByPluginMap"
+    >
+  >): Promise<AddApplicationResponse.AsObject> => {
   const req = new AddApplicationRequest();
   req.setName(name);
   req.setPipedId(pipedId);
-  req.setPlatformProvider(platformProvider);
-  req.setKind(kind);
+  if (platformProvider !== undefined) {
+    req.setPlatformProvider(platformProvider);
+  }
+  if (kind !== undefined) {
+    req.setKind(kind);
+  }
   const appGitPath = new ApplicationGitPath();
   const repository = new ApplicationGitRepository();
   if (gitPath.repo) {
@@ -101,6 +116,13 @@ export const addApplication = async ({
   labelsMap.forEach((label) => {
     req.getLabelsMap().set(label[0], label[1]);
   });
+  if (deployTargetsByPluginMap) {
+    deployTargetsByPluginMap.forEach(([pluginName, deployTarget]) => {
+      const newDeployTarget = new DeployTargets();
+      newDeployTarget.setDeployTargetsList(deployTarget.deployTargetsList);
+      req.getDeployTargetsByPluginMap().set(pluginName, newDeployTarget);
+    });
+  }
   return apiRequest(req, apiClient.addApplication);
 };
 
@@ -143,15 +165,30 @@ export const updateApplication = async ({
   name,
   pipedId,
   configFilename,
-}: Required<UpdateApplicationRequest.AsObject>): Promise<
-  UpdateApplicationResponse.AsObject
-> => {
+  deployTargetsByPluginMap,
+}: Required<
+  Omit<UpdateApplicationRequest.AsObject, "platformProvider" | "kind">
+> &
+  Partial<
+    Pick<UpdateApplicationRequest.AsObject, "platformProvider" | "kind">
+  >): Promise<UpdateApplicationResponse.AsObject> => {
   const req = new UpdateApplicationRequest();
   req.setApplicationId(applicationId);
   req.setName(name);
   req.setPipedId(pipedId);
-  req.setPlatformProvider(platformProvider);
-  req.setKind(kind);
+  if (platformProvider !== undefined) {
+    req.setPlatformProvider(platformProvider);
+  }
+  if (kind !== undefined) {
+    req.setKind(kind);
+  }
+  if (deployTargetsByPluginMap) {
+    deployTargetsByPluginMap.forEach(([pluginName, deployTarget]) => {
+      const newDeployTarget = new DeployTargets();
+      newDeployTarget.setDeployTargetsList(deployTarget.deployTargetsList);
+      req.getDeployTargetsByPluginMap().set(pluginName, newDeployTarget);
+    });
+  }
   req.setConfigFilename(configFilename);
   return apiRequest(req, apiClient.updateApplication);
 };

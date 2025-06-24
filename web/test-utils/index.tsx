@@ -1,4 +1,4 @@
-import { ThemeProvider } from "@material-ui/core";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material";
 import {
   AnyAction,
   configureStore,
@@ -15,6 +15,7 @@ import { thunkErrorHandler } from "~/middlewares/thunk-error-handler";
 import { reducers } from "~/modules";
 import type { AppState } from "~/store";
 import { theme } from "~/theme";
+import MemoryRouterTest from "./MemoryRouterTest";
 
 const middlewares = getDefaultMiddleware({
   immutableCheck: false,
@@ -58,11 +59,13 @@ const customRender = (
   }: {
     initialState?: DeepPartial<AppState>;
     store?: Store<AppState, AnyAction>;
-  } & Omit<RenderOptions, "queries">
+  } & Omit<RenderOptions, "queries"> = {}
 ): RenderResult => {
   const Wrapper: React.ComponentType = ({ children }) => (
     <Provider store={store}>
-      <ThemeProvider theme={theme}>{children}</ThemeProvider>
+      <StyledEngineProvider injectFirst>
+        <ThemeProvider theme={theme}>{children}</ThemeProvider>
+      </StyledEngineProvider>
     </Provider>
   );
   return render(ui, { wrapper: Wrapper, ...renderOptions });
@@ -72,3 +75,5 @@ const customRender = (
 export * from "@testing-library/react";
 // override render method
 export { customRender as render };
+
+export { MemoryRouterTest as MemoryRouter };

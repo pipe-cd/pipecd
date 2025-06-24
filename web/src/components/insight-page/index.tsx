@@ -1,29 +1,28 @@
-import { Box } from "@material-ui/core";
-import { FC, memo, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { Box } from "@mui/material";
+import { FC, memo, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
-import { PAGE_PATH_APPLICATIONS } from "~/constants/path";
-import {
-  ApplicationKind,
-  fetchApplications,
-  selectById,
-} from "~/modules/applications";
+import { fetchApplications, selectById } from "~/modules/applications";
 import { fetchApplicationCount } from "~/modules/application-counts";
 import {
   InsightDataPoint,
   InsightResolution,
   InsightRange,
 } from "~/modules/insight";
-import { ApplicationCounts } from "./application-counts";
 import { ChangeFailureRateChart } from "./change-failure-rate-chart";
 import { DeploymentFrequencyChart } from "./deployment-frequency-chart";
 import { InsightHeader } from "./insight-header";
-import { fetchDeploymentChangeFailureRate } from "~/modules/deployment-change-failure-rate";
-import { fetchDeploymentFrequency } from "~/modules/deployment-frequency";
+import {
+  fetchDeploymentChangeFailureRate,
+  fetchDeploymentChangeFailureRate24h,
+} from "~/modules/deployment-change-failure-rate";
+import {
+  fetchDeployment24h,
+  fetchDeploymentFrequency,
+} from "~/modules/deployment-frequency";
+import { StatisticInformation } from "./statistic-information";
 
 export const InsightIndexPage: FC = memo(function InsightIndexPage() {
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
 
   const [applicationId, labels, range, resolution] = useAppSelector<
     [string, Array<string>, InsightRange, InsightResolution]
@@ -81,35 +80,37 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
 
   useEffect(() => {
     dispatch(fetchDeploymentFrequency());
+    dispatch(fetchDeployment24h());
     dispatch(fetchDeploymentChangeFailureRate());
-    console.log("deployment insights should be loaded");
+    dispatch(fetchDeploymentChangeFailureRate24h());
   }, [dispatch, applicationId, labels, range, resolution]);
 
-  const updateURL = useCallback(
-    (kind: ApplicationKind) => {
-      navigate(`${PAGE_PATH_APPLICATIONS}?kind=${kind}`, { replace: true });
-    },
-    [navigate]
-  );
-
-  const handleApplicationCountClick = useCallback(
-    (kind: ApplicationKind) => {
-      updateURL(kind);
-    },
-    [updateURL]
-  );
-
   return (
-    <Box flex={1} p={2} overflow="auto">
-      <Box display="flex" flexDirection="column" flex={1} p={2}>
-        <ApplicationCounts onClick={handleApplicationCountClick} />
+    <Box
+      sx={{
+        flex: 1,
+        p: 2,
+        overflow: "auto",
+      }}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          p: 2,
+        }}
+      >
+        <StatisticInformation />
       </Box>
       <InsightHeader />
       <Box
-        display="grid"
-        gridGap="24px"
-        gridTemplateColumns="repeat(2, 1fr)"
-        mt={2}
+        sx={{
+          display: "grid",
+          gap: "24px",
+          gridTemplateColumns: "repeat(2, 1fr)",
+          mt: 2,
+        }}
       >
         <DeploymentFrequencyChart
           resolution={resolution}

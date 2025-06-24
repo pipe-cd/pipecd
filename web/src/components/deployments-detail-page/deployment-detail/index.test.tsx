@@ -1,9 +1,8 @@
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
 import { cancelDeployment, DeploymentStatus } from "~/modules/deployments";
 import { dummyDeployment } from "~/__fixtures__/dummy-deployment";
 import { dummyPiped } from "~/__fixtures__/dummy-piped";
-import { createStore, render, screen } from "~~/test-utils";
+import { createStore, render, screen, MemoryRouter, act } from "~~/test-utils";
 import { DeploymentDetail } from ".";
 
 const baseState = {
@@ -71,8 +70,10 @@ describe("DeploymentDetail", () => {
       expect(screen.getByText("RUNNING")).toBeInTheDocument();
     });
 
-    it("dispatch cancelDeployment action if click cancel button", () => {
-      userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    it("dispatch cancelDeployment action if click cancel button", async () => {
+      await act(async () => {
+        userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+      });
 
       expect(store.getActions()).toMatchObject([
         {

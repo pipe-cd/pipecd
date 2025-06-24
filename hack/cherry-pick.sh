@@ -39,17 +39,20 @@ PULL_REQUESTS=($@)
 # Check gh authentication
 echo "+++ Checking gh authentication..."
 gh auth status
+echo
 
+echo "+++ Fetching pull requests..."
 COMMIT_HASHS=()
 for pull in "${PULL_REQUESTS[@]}"; do
+  echo "Fetching pull request #${pull}..."
   hash="$(gh pr view ${pull} --json mergeCommit --jq .mergeCommit.oid)"
   COMMIT_HASHS+=($hash)
 done
+echo
 
 function join { local IFS="$1"; shift; echo "$*"; }
-PULL_DASH=$(join - "${PULL_REQUESTS[@]/#/#}")
 PULL_SUBJ=$(join " " "${PULL_REQUESTS[@]/#/#}")
-NEWBRANCH="cherry-pick-${PULL_DASH}-to-${BRANCH}"
+NEWBRANCH="cherry-pick-to-${BRANCH}-$(date +%s)"
 
 # Update all remote branches
 echo "+++ Updating remote branches..."
@@ -95,10 +98,12 @@ echo
 
 # Create a pull request
 echo "+++ Creating a pull request..."
-pull_title="Cherry-pick ${PULL_SUBJ}"
+pull_title="Cherry-pick to ${BRANCH}"
 pull_body=$(cat <<EOF
 **What this PR does / why we need it**:
 Cherry pick of ${PULL_SUBJ}.
+
+**Note:** You need to **close and reopen this PR** manually to trigger status check workflows. (Or just click `Update branch` if possible.)
 EOF
 )
 gh pr create --title="${pull_title}" --body="${pull_body}" --head "${NEWBRANCH}" --base "${BRANCH}"

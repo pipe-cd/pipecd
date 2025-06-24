@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-cluster1
+  labels:
+    app: simple-cluster1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: simple-cluster1
+      pipecd.dev/variant: primary
+  template:
+    metadata:
+      labels:
+        app: simple-cluster1
+        pipecd.dev/variant: primary
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+      - name: helloworld
+        image: ghcr.io/pipe-cd/helloworld:v0.32.0
+        args:
+          - server
+        ports:
+        - containerPort: 9085

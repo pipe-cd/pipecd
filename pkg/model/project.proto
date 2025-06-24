@@ -116,6 +116,12 @@ message ProjectSSOConfig {
         string proxy_url = 8;
         // Scopes to request from the OpenID Connect service.
         repeated string scopes = 9;
+        // The key used to extract roles from the claims. If not specified, well-known keys such as "groups" or "roles" will be used.
+        string roles_claim_key = 10;
+        // The key used to extract the username from the claims. If not specified, well-known keys such as "username" or "name" will be used.
+        string username_claim_key = 11;
+        // The key used to extract the avatar URL from the claims. If not specified, well-known keys such as "picture" or "avatar_url" will be used.
+        string avatar_url_claim_key = 12;
     }
 
     Provider provider = 1 [(validate.rules).enum.defined_only = true];

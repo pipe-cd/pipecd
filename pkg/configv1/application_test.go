@@ -15,6 +15,7 @@
 package config
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -571,7 +572,8 @@ func TestGenericPostSyncConfiguration(t *testing.T) {
 		})
 	}
 }
-func TestGetStageByte(t *testing.T) {
+
+func TestGetStageConfigByte(t *testing.T) {
 	testcases := []struct {
 		name   string
 		s      GenericApplicationSpec
@@ -593,12 +595,28 @@ func TestGetStageByte(t *testing.T) {
 					Stages: []PipelineStage{
 						{
 							Name: model.StageK8sSync,
+							With: json.RawMessage(`{"duration":"1m"}`),
 						},
 					},
 				},
 			},
 			index:  0,
-			want:   []byte(`{"id":"","name":"K8S_SYNC","timeout":"0s","with":null}`),
+			want:   []byte(`{"duration":"1m"}`),
+			wantOk: true,
+		},
+		{
+			name: "with is nil",
+			s: GenericApplicationSpec{
+				Pipeline: &DeploymentPipeline{
+					Stages: []PipelineStage{
+						{
+							Name: model.StageK8sSync,
+						},
+					},
+				},
+			},
+			index:  0,
+			want:   []byte(`{}`),
 			wantOk: true,
 		},
 		{
@@ -620,9 +638,103 @@ func TestGetStageByte(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			defaults.Set(&tc.s)
-			got, ok := tc.s.GetStageByte(tc.index)
+			got, ok := tc.s.GetStageConfigByte(tc.index)
 			assert.Equal(t, tc.wantOk, ok)
 			assert.Equal(t, string(tc.want), string(got))
+		})
+	}
+}
+
+func TestLoadApplication(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name          string
+		repoPath      string
+		configRelPath string
+		want          *GenericApplicationSpec
+		wantErr       bool
+	}{
+		{
+			name:          "file not found",
+			repoPath:      "testdata",
+			configRelPath: "not-exist.yaml",
+			want:          nil,
+			wantErr:       true,
+		},
+		{
+			name:          "invalid kind",
+			repoPath:      "testdata",
+			configRelPath: "application/invalid-kind.yaml",
+			want:          nil,
+			wantErr:       true,
+		},
+		{
+			name:          "valid application config",
+			repoPath:      "testdata",
+			configRelPath: "application/generic-trigger.yaml",
+			want: &GenericApplicationSpec{
+				Timeout: Duration(6 * time.Hour),
+				Trigger: Trigger{
+					OnCommit: OnCommit{
+						Disabled: false,
+						Paths: []string{
+							"deployment.yaml",
+						},
+					},
+					OnOutOfSync: OnOutOfSync{
+						Disabled:  newBoolPointer(true),
+						MinWindow: Duration(5 * time.Minute),
+					},
+					OnChain: OnChain{
+						Disabled: newBoolPointer(true),
+					},
+				},
+				Planner: DeploymentPlanner{
+					AutoRollback: newBoolPointer(true),
+				},
+				Pipeline: &DeploymentPipeline{},
+			},
+			wantErr: false,
+		},
+		{
+			name:          "valid application config with plugins",
+			repoPath:      "testdata",
+			configRelPath: "application/plugins-config.yaml",
+			want: &GenericApplicationSpec{
+				Timeout: Duration(6 * time.Hour),
+				Trigger: Trigger{
+					OnOutOfSync: OnOutOfSync{
+						Disabled:  newBoolPointer(true),
+						MinWindow: Duration(5 * time.Minute),
+					},
+					OnChain: OnChain{
+						Disabled: newBoolPointer(true),
+					},
+				},
+				Planner: DeploymentPlanner{
+					AutoRollback: newBoolPointer(true),
+				},
+				Pipeline: &DeploymentPipeline{},
+				Plugins: map[string]struct{}{
+					"plugin-1": {},
+					"plugin-2": {},
+				},
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			got, err := LoadApplication(tc.repoPath, tc.configRelPath)
+			if tc.wantErr {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tc.want, got)
 		})
 	}
 }

@@ -95,7 +95,7 @@ func buildDeployment(
 		GitPath:                   app.GitPath,
 		CloudProvider:             app.CloudProvider,
 		PlatformProvider:          app.PlatformProvider,
-		DeployTargets:             app.DeployTargets,
+		DeployTargetsByPlugin:     app.DeployTargetsByPlugin,
 		Labels:                    app.Labels,
 		Status:                    model.DeploymentStatus_DEPLOYMENT_PENDING,
 		StatusReason:              "The deployment is waiting to be planned",
@@ -104,6 +104,8 @@ func buildDeployment(
 		UpdatedAt:                 now.Unix(),
 		DeploymentChainId:         deploymentChainID,
 		DeploymentChainBlockIndex: deploymentChainBlockIndex,
+		// TODO: Add link to deployment trace design docs here.
+		DeploymentTraceCommitHash: commit.GetTrailerValueByKey(model.TraceTriggerCommitHashKey),
 	}
 
 	return deployment, nil
@@ -117,7 +119,6 @@ func reportMostRecentlyTriggeredDeployment(ctx context.Context, client apiClient
 			DeploymentId: d.Id,
 			Trigger:      d.Trigger,
 			Summary:      d.Summary,
-			Version:      d.Version,
 			Versions:     d.Versions,
 			StartedAt:    d.CreatedAt,
 			CompletedAt:  d.CompletedAt,

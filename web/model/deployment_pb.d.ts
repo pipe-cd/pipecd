@@ -34,10 +34,8 @@ export class Deployment extends jspb.Message {
   getPlatformProvider(): string;
   setPlatformProvider(value: string): Deployment;
 
-  getDeployTargetsList(): Array<string>;
-  setDeployTargetsList(value: Array<string>): Deployment;
-  clearDeployTargetsList(): Deployment;
-  addDeployTargets(value: string, index?: number): Deployment;
+  getDeployTargetsByPluginMap(): jspb.Map<string, DeployTargets>;
+  clearDeployTargetsByPluginMap(): Deployment;
 
   getLabelsMap(): jspb.Map<string, string>;
   clearLabelsMap(): Deployment;
@@ -49,9 +47,6 @@ export class Deployment extends jspb.Message {
 
   getSummary(): string;
   setSummary(value: string): Deployment;
-
-  getVersion(): string;
-  setVersion(value: string): Deployment;
 
   getVersionsList(): Array<pkg_model_common_pb.ArtifactVersion>;
   setVersionsList(value: Array<pkg_model_common_pb.ArtifactVersion>): Deployment;
@@ -89,6 +84,9 @@ export class Deployment extends jspb.Message {
   getDeploymentChainBlockIndex(): number;
   setDeploymentChainBlockIndex(value: number): Deployment;
 
+  getDeploymentTraceCommitHash(): string;
+  setDeploymentTraceCommitHash(value: string): Deployment;
+
   getCompletedAt(): number;
   setCompletedAt(value: number): Deployment;
 
@@ -117,11 +115,10 @@ export namespace Deployment {
     gitPath?: pkg_model_common_pb.ApplicationGitPath.AsObject,
     cloudProvider: string,
     platformProvider: string,
-    deployTargetsList: Array<string>,
+    deployTargetsByPluginMap: Array<[string, DeployTargets.AsObject]>,
     labelsMap: Array<[string, string]>,
     trigger?: DeploymentTrigger.AsObject,
     summary: string,
-    version: string,
     versionsList: Array<pkg_model_common_pb.ArtifactVersion.AsObject>,
     runningCommitHash: string,
     runningConfigFilename: string,
@@ -132,9 +129,30 @@ export namespace Deployment {
     metadataV2?: DeploymentMetadata.AsObject,
     deploymentChainId: string,
     deploymentChainBlockIndex: number,
+    deploymentTraceCommitHash: string,
     completedAt: number,
     createdAt: number,
     updatedAt: number,
+  }
+}
+
+export class DeployTargets extends jspb.Message {
+  getDeployTargetsList(): Array<string>;
+  setDeployTargetsList(value: Array<string>): DeployTargets;
+  clearDeployTargetsList(): DeployTargets;
+  addDeployTargets(value: string, index?: number): DeployTargets;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): DeployTargets.AsObject;
+  static toObject(includeInstance: boolean, msg: DeployTargets): DeployTargets.AsObject;
+  static serializeBinaryToWriter(message: DeployTargets, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DeployTargets;
+  static deserializeBinaryFromReader(message: DeployTargets, reader: jspb.BinaryReader): DeployTargets;
+}
+
+export namespace DeployTargets {
+  export type AsObject = {
+    deployTargetsList: Array<string>,
   }
 }
 
@@ -367,4 +385,5 @@ export enum ManualOperation {
   MANUAL_OPERATION_UNKNOWN = 0,
   MANUAL_OPERATION_SKIP = 1,
   MANUAL_OPERATION_APPROVE = 2,
+  MANUAL_OPERATION_NONE = 3,
 }

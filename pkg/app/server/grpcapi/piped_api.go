@@ -55,7 +55,7 @@ type pipedAPIDeploymentStore interface {
 	Add(ctx context.Context, app *model.Deployment) error
 	Get(ctx context.Context, id string) (*model.Deployment, error)
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Deployment, string, error)
-	UpdateToPlanned(ctx context.Context, id, summary, reason, runningCommitHash, runningConfigFilename, version string, versions []*model.ArtifactVersion, stages []*model.PipelineStage) error
+	UpdateToPlanned(ctx context.Context, id, summary, reason, runningCommitHash, runningConfigFilename string, versions []*model.ArtifactVersion, stages []*model.PipelineStage) error
 	UpdateToCompleted(ctx context.Context, id string, status model.DeploymentStatus, stageStatuses map[string]model.StageStatus, reason string, completedAt int64) error
 	UpdateStatus(ctx context.Context, id string, status model.DeploymentStatus, reason string) error
 	UpdateStageStatus(ctx context.Context, id, stageID string, status model.StageStatus, reason string, requires []string, visible bool, retriedCount int32, completedAt int64) error
@@ -70,7 +70,7 @@ type pipedAPIDeploymentChainStore interface {
 
 type pipedAPIPipedStore interface {
 	Get(ctx context.Context, id string) (*model.Piped, error)
-	UpdateMetadata(ctx context.Context, id, version, config string, pps []*model.Piped_PlatformProvider, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, startedAt int64) error
+	UpdateMetadata(ctx context.Context, id, version, config string, pps []*model.Piped_PlatformProvider, pls []*model.Piped_Plugin, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, startedAt int64) error
 }
 
 type pipedAPIEventStore interface {
@@ -187,6 +187,7 @@ func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.Report
 		req.Version,
 		req.Config,
 		platformProviders,
+		req.Plugins,
 		req.Repositories,
 		req.SecretEncryption,
 		now,
@@ -418,7 +419,6 @@ func (a *PipedAPI) ReportDeploymentPlanned(ctx context.Context, req *pipedservic
 		req.StatusReason,
 		req.RunningCommitHash,
 		req.RunningConfigFilename,
-		req.Version,
 		req.Versions,
 		req.Stages,
 	); err != nil {
@@ -804,22 +804,6 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 	return &pipedservice.ListEventsResponse{
 		Events: events,
 	}, nil
-}
-
-// Deprecated. This is only for the old Piped agents.
-func (a *PipedAPI) ReportEventsHandled(ctx context.Context, req *pipedservice.ReportEventsHandledRequest) (*pipedservice.ReportEventsHandledResponse, error) {
-	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, id := range req.EventIds {
-		if err := a.eventStore.UpdateStatus(ctx, id, model.EventStatus_EVENT_SUCCESS, fmt.Sprintf("successfully handled by %q piped", pipedID)); err != nil {
-			return nil, gRPCStoreError(err, fmt.Sprintf("update event %s as handled", id))
-		}
-	}
-
-	return &pipedservice.ReportEventsHandledResponse{}, nil
 }
 
 func (a *PipedAPI) ReportEventStatuses(ctx context.Context, req *pipedservice.ReportEventStatusesRequest) (*pipedservice.ReportEventStatusesResponse, error) {

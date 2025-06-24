@@ -1,6 +1,5 @@
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
-import { render, screen } from "~~/test-utils";
+import { MemoryRouter, render, screen } from "~~/test-utils";
 import { Header } from "./";
 
 it("shows login link if user state is not exists", () => {

@@ -17,6 +17,7 @@ package controller
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
@@ -157,7 +158,7 @@ func TestBuildQuickSyncStages(t *testing.T) {
 				Planner: config.DeploymentPlanner{
 					AutoRollback: pointerBool(true),
 				},
-				Plugins: []string{"plugin-1"},
+				Plugins: map[string]struct{}{"plugin-1": {}},
 			},
 			wantErr: false,
 			expectedStages: []*model.PipelineStage{
@@ -221,7 +222,7 @@ func TestBuildQuickSyncStages(t *testing.T) {
 				Planner: config.DeploymentPlanner{
 					AutoRollback: pointerBool(true),
 				},
-				Plugins: []string{"plugin-1", "plugin-2"},
+				Plugins: map[string]struct{}{"plugin-1": {}, "plugin-2": {}},
 			},
 			wantErr: false,
 			expectedStages: []*model.PipelineStage{
@@ -294,7 +295,7 @@ func TestBuildQuickSyncStages(t *testing.T) {
 				Planner: config.DeploymentPlanner{
 					AutoRollback: pointerBool(false),
 				},
-				Plugins: []string{"plugin-1", "plugin-2"},
+				Plugins: map[string]struct{}{"plugin-1": {}, "plugin-2": {}},
 			},
 			wantErr: false,
 			expectedStages: []*model.PipelineStage{
@@ -704,7 +705,7 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				Planner: config.DeploymentPlanner{
 					AutoRollback: pointerBool(true),
 				},
-				Plugins: []string{"plugin-1"},
+				Plugins: map[string]struct{}{"plugin-1": {}},
 			},
 			deployment: &model.Deployment{
 				Trigger: &model.DeploymentTrigger{
@@ -819,7 +820,7 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				Planner: config.DeploymentPlanner{
 					AutoRollback: pointerBool(true),
 				},
-				Plugins: []string{"plugin-1"},
+				Plugins: map[string]struct{}{"plugin-1": {}},
 			},
 			deployment: &model.Deployment{
 				Trigger: &model.DeploymentTrigger{},
@@ -1050,6 +1051,89 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:          "ignore plugins that do not support DetermineStrategy",
+			isFirstDeploy: false,
+			pluginRegistry: func() plugin.PluginRegistry {
+				pr, err := plugin.NewPluginRegistry(context.TODO(), []plugin.Plugin{
+					{
+						Name: "plugin-1",
+						Cli: &fakePlugin{
+							syncStrategy: &deployment.DetermineStrategyResponse{
+								Unsupported: true,
+							},
+							pipelineStages: []*model.PipelineStage{
+								{
+									Id:      "plugin-1-stage-1",
+									Name:    "plugin-1-stage-1",
+									Visible: true,
+								},
+							},
+						},
+					},
+					{
+						Name: "plugin-2",
+						Cli: &fakePlugin{
+							syncStrategy: &deployment.DetermineStrategyResponse{
+								SyncStrategy: model.SyncStrategy_QUICK_SYNC,
+								Summary:      "determined by plugin-2",
+							},
+							pipelineStages: []*model.PipelineStage{
+								{
+									Id:      "plugin-2-stage-1",
+									Name:    "plugin-2-stage-1",
+									Visible: true,
+								},
+							},
+							quickStages: []*model.PipelineStage{
+								{
+									Id:      "plugin-2-quick-stage-1",
+									Visible: true,
+								},
+							},
+						},
+					},
+				})
+				require.NoError(t, err)
+
+				return pr
+			}(),
+			cfg: &config.GenericApplicationSpec{
+				Plugins: map[string]struct{}{"plugin-1": {}, "plugin-2": {}},
+				Pipeline: &config.DeploymentPipeline{
+					Stages: []config.PipelineStage{
+						{
+							ID:   "plugin-1-stage-1",
+							Name: "plugin-1-stage-1",
+						},
+						{
+							ID:   "plugin-2-stage-1",
+							Name: "plugin-2-stage-1",
+						},
+					},
+				},
+			},
+			deployment: &model.Deployment{
+				Trigger: &model.DeploymentTrigger{},
+			},
+			wantErr: false,
+			expectedOutput: &plannerOutput{
+				SyncStrategy: model.SyncStrategy_QUICK_SYNC,
+				Summary:      "determined by plugin-2",
+				Stages: []*model.PipelineStage{
+					{
+						Id:      "plugin-2-quick-stage-1",
+						Visible: true,
+					},
+				},
+				Versions: []*model.ArtifactVersion{
+					{
+						Kind:    model.ArtifactVersion_UNKNOWN,
+						Version: versionUnknown,
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range testcases {
@@ -1096,6 +1180,91 @@ func TestPlanner_BuildPlan(t *testing.T) {
 				require.NoError(t, err)
 			}
 			assert.Equal(t, tc.expectedOutput, out)
+		})
+	}
+}
+
+func TestValidateStageIndexes(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name    string
+		req     []*deployment.BuildPipelineSyncStagesRequest_StageConfig
+		res     []*model.PipelineStage
+		wantErr error
+	}{
+		{
+			name: "valid",
+			req: []*deployment.BuildPipelineSyncStagesRequest_StageConfig{
+				{Index: 0},
+				{Index: 1},
+				{Index: 2},
+			},
+			res: []*model.PipelineStage{
+				{Index: 0},
+				{Index: 1},
+				{Index: 2},
+				{Index: 0, Rollback: true},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "valid with fewer response",
+			req: []*deployment.BuildPipelineSyncStagesRequest_StageConfig{
+				{Index: 0},
+				{Index: 1},
+				{Index: 2},
+			},
+			res: []*model.PipelineStage{
+				{Index: 1},
+				{Index: 1, Rollback: true},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "duplicated",
+			req: []*deployment.BuildPipelineSyncStagesRequest_StageConfig{
+				{Index: 0},
+				{Index: 1},
+			},
+			res: []*model.PipelineStage{
+				{Index: 0},
+				{Index: 0}, // duplicated
+			},
+			wantErr: fmt.Errorf("stage index 0 from plugin is duplicated"),
+		},
+		{
+			name: "duplicated rollback",
+			req: []*deployment.BuildPipelineSyncStagesRequest_StageConfig{
+				{Index: 0},
+				{Index: 1},
+			},
+			res: []*model.PipelineStage{
+				{Index: 0},
+				{Index: 1, Rollback: true},
+				{Index: 1, Rollback: true}, // duplicated
+			},
+			wantErr: fmt.Errorf("rollback stage index 1 from plugin is duplicated"),
+		},
+		{
+			name: "index not in request",
+			req: []*deployment.BuildPipelineSyncStagesRequest_StageConfig{
+				{Index: 0},
+				{Index: 2},
+			},
+			res: []*model.PipelineStage{
+				{Index: 0},
+				{Index: 1}, // 1 not in req
+			},
+			wantErr: fmt.Errorf("stage index 1 from plugin is not defined in the request"),
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			err := validateStageIndexes(tc.req, tc.res)
+			assert.Equal(t, tc.wantErr, err)
 		})
 	}
 }

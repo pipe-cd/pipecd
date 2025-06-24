@@ -6,7 +6,7 @@ import {
 import { dummyApplication } from "~/__fixtures__/dummy-application";
 import { dummyPiped } from "~/__fixtures__/dummy-piped";
 import { createReduxStore, render, screen } from "~~/test-utils";
-import { EditApplicationDrawer } from ".";
+import EditApplicationDrawer from ".";
 
 const server = setupServer(updateApplicationHandler, listApplicationsHandler);
 

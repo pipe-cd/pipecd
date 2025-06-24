@@ -35,6 +35,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 )
 
@@ -486,35 +487,45 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 		originalStatus = ps.Status
 	)
 
-	rds, err := s.runningDSP.Get(ctx, io.Discard)
-	if err != nil {
-		s.logger.Error("failed to get running deployment source", zap.String("stage-name", ps.Name), zap.Error(err))
-		return model.StageStatus_STAGE_FAILURE
-	}
-
 	tds, err := s.targetDSP.Get(ctx, io.Discard)
 	if err != nil {
 		s.logger.Error("failed to get target deployment source", zap.String("stage-name", ps.Name), zap.Error(err))
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	// Check whether to execute the script rollback stage or not.
-	// If the base stage is executed, the script rollback stage will be executed.
-	if ps.Rollback {
-		baseStageID := ps.Metadata["baseStageID"]
-		if baseStageID == "" {
-			return
-		}
-
-		baseStageStatus, ok := s.stageStatuses[baseStageID]
-		if !ok {
-			return
-		}
-
-		if baseStageStatus == model.StageStatus_STAGE_NOT_STARTED_YET || baseStageStatus == model.StageStatus_STAGE_SKIPPED {
-			return
+	var rds *deploysource.DeploySource
+	if s.runningDSP != nil {
+		rds, err = s.runningDSP.Get(ctx, io.Discard)
+		if err != nil {
+			s.logger.Error("failed to get running deployment source", zap.String("stage-name", ps.Name), zap.Error(err))
+			return model.StageStatus_STAGE_FAILURE
 		}
 	}
+
+	// Skip the stage if needed based on the skip config.
+	if skipOrError, status := s.shouldSkipStage(ctx, ps); skipOrError {
+		return status
+	}
+
+	// Check whether to execute the script rollback stage or not.
+	// If the base stage is executed, the script rollback stage will be executed.
+
+	// TODO: move this logic into the script run plugin and remove this later.
+	// if ps.Rollback {
+	// 	baseStageID := ps.Metadata["baseStageID"]
+	// 	if baseStageID == "" {
+	// 		return
+	// 	}
+
+	// 	baseStageStatus, ok := s.stageStatuses[baseStageID]
+	// 	if !ok {
+	// 		return
+	// 	}
+
+	// 	if baseStageStatus == model.StageStatus_STAGE_NOT_STARTED_YET || baseStageStatus == model.StageStatus_STAGE_SKIPPED {
+	// 		return
+	// 	}
+	// }
 
 	// Update stage status to RUNNING if needed.
 	if model.CanUpdateStageStatus(ps.Status, model.StageStatus_STAGE_RUNNING) {
@@ -533,7 +544,7 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 	}
 
 	// Load the stage configuration.
-	stageConfig, stageConfigFound := s.genericApplicationConfig.GetStageByte(ps.Index)
+	stageConfig, stageConfigFound := s.genericApplicationConfig.GetStageConfigByte(ps.Index)
 	if !stageConfigFound {
 		s.logger.Error("Unable to find the stage configuration", zap.String("stage-name", ps.Name))
 		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
@@ -542,17 +553,27 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 		return model.StageStatus_STAGE_FAILURE
 	}
 
+	// ensure pass nil as running deployment source in case of the first deployment
+	// because the running deployment source is not available at this time.
+	var pRds *common.DeploymentSource
+	if rds != nil {
+		pRds = rds.ToPluginDeploySource()
+	}
+
 	// Start running executor.
 	res, err := plugin.ExecuteStage(ctx, &deployment.ExecuteStageRequest{
 		Input: &deployment.ExecutePluginInput{
 			Deployment:              s.deployment,
 			Stage:                   ps,
 			StageConfig:             stageConfig,
-			RunningDeploymentSource: rds.ToPluginDeploySource(),
+			RunningDeploymentSource: pRds,
 			TargetDeploymentSource:  tds.ToPluginDeploySource(),
 		},
 	})
-	if err != nil {
+	// do not return error if the context is already canceled.
+	// this occurs when the stage is canceled.
+	// otherwise, return the error.
+	if err != nil && ctx.Err() == nil {
 		s.logger.Error("failed to execute stage", zap.String("stage-name", ps.Name), zap.Error(err))
 		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
 		return model.StageStatus_STAGE_FAILURE
@@ -597,6 +618,34 @@ func determineStageStatus(sig StopSignalType, ori, got model.StageStatus) model.
 	default:
 		return model.StageStatus_STAGE_FAILURE
 	}
+}
+
+// shouldSkipStage checks whether the stage should be skipped based on the skip config of the stage, and reports the stage status.
+func (s *scheduler) shouldSkipStage(ctx context.Context, ps *model.PipelineStage) (skipOrError bool, status model.StageStatus) {
+	stage, found := s.genericApplicationConfig.GetStage(ps.Index)
+	if !found {
+		return false, model.StageStatus_STAGE_RUNNING
+	}
+
+	skip, err := s.determineSkipStage(ctx, stage.SkipOn)
+	if err != nil {
+		s.logger.Error("failed to check whether to skip the stage", zap.Error(err))
+		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
+			s.logger.Error("failed to report stage status", zap.Error(err))
+		}
+		return true, model.StageStatus_STAGE_FAILURE
+	}
+	if skip {
+		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_SKIPPED, ps.Requires); err != nil {
+			s.logger.Error("failed to report stage status", zap.Error(err))
+			return true, model.StageStatus_STAGE_FAILURE
+		}
+		// TODO: Send this log message to the control-plane. (e.g. Use the statusReason field and show it on UI)
+		s.logger.Info("The stage was successfully skipped due to the skip configuration of the stage.")
+		return true, model.StageStatus_STAGE_SKIPPED
+	}
+
+	return false, model.StageStatus_STAGE_RUNNING
 }
 
 func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, status model.StageStatus, requires []string) error {
@@ -751,7 +800,6 @@ func (s *scheduler) reportMostRecentlySuccessfulDeployment(ctx context.Context) 
 				DeploymentId:   s.deployment.Id,
 				Trigger:        s.deployment.Trigger,
 				Summary:        s.deployment.Summary,
-				Version:        s.deployment.Version,
 				Versions:       s.deployment.Versions,
 				ConfigFilename: s.deployment.GitPath.GetApplicationConfigFilename(),
 				StartedAt:      s.deployment.CreatedAt,

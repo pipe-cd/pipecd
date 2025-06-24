@@ -92,8 +92,8 @@ message ArtifactVersion {
         GIT_SOURCE = 3;
         TERRAFORM_MODULE = 4;
     }
-   
-    Kind kind = 1 [(validate.rules).enum.defined_only = true];
+    // TODO: This should be removed since the value is not used anywhere.
+    Kind kind = 1 [(validate.rules).enum.defined_only = true, deprecated = true];
     string version = 2;
     string name = 3;
     string url = 4;

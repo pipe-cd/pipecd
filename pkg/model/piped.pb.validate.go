@@ -210,6 +210,40 @@ func (m *Piped) validate(all bool) error {
 
 	}
 
+	for idx, item := range m.GetPlugins() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, PipedValidationError{
+						field:  fmt.Sprintf("Plugins[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, PipedValidationError{
+						field:  fmt.Sprintf("Plugins[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return PipedValidationError{
+					field:  fmt.Sprintf("Plugins[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
 	if all {
 		switch v := interface{}(m.GetSecretEncryption()).(type) {
 		case interface{ ValidateAll() error }:
@@ -755,6 +789,116 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = Piped_PlatformProviderValidationError{}
+
+// Validate checks the field values on Piped_Plugin with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Piped_Plugin) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Piped_Plugin with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in Piped_PluginMultiError, or
+// nil if none found.
+func (m *Piped_Plugin) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Piped_Plugin) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetName()) < 1 {
+		err := Piped_PluginValidationError{
+			field:  "Name",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return Piped_PluginMultiError(errors)
+	}
+
+	return nil
+}
+
+// Piped_PluginMultiError is an error wrapping multiple validation errors
+// returned by Piped_Plugin.ValidateAll() if the designated constraints aren't met.
+type Piped_PluginMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m Piped_PluginMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m Piped_PluginMultiError) AllErrors() []error { return m }
+
+// Piped_PluginValidationError is the validation error returned by
+// Piped_Plugin.Validate if the designated constraints aren't met.
+type Piped_PluginValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e Piped_PluginValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e Piped_PluginValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e Piped_PluginValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e Piped_PluginValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e Piped_PluginValidationError) ErrorName() string { return "Piped_PluginValidationError" }
+
+// Error satisfies the builtin error interface
+func (e Piped_PluginValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPiped_Plugin.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = Piped_PluginValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = Piped_PluginValidationError{}
 
 // Validate checks the field values on Piped_SecretEncryption with the rules
 // defined in the proto definition for this message. If any rules are

@@ -380,17 +380,17 @@ func (mr *MockPipedStoreMockRecorder) UpdateInfo(ctx, id, name, desc any) *gomoc
 }
 
 // UpdateMetadata mocks base method.
-func (m *MockPipedStore) UpdateMetadata(ctx context.Context, id, version, config string, pps []*model.Piped_PlatformProvider, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, startedAt int64) error {
+func (m *MockPipedStore) UpdateMetadata(ctx context.Context, id, version, config string, pps []*model.Piped_PlatformProvider, pls []*model.Piped_Plugin, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, startedAt int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateMetadata", ctx, id, version, config, pps, repos, se, startedAt)
+	ret := m.ctrl.Call(m, "UpdateMetadata", ctx, id, version, config, pps, pls, repos, se, startedAt)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateMetadata indicates an expected call of UpdateMetadata.
-func (mr *MockPipedStoreMockRecorder) UpdateMetadata(ctx, id, version, config, pps, repos, se, startedAt any) *gomock.Call {
+func (mr *MockPipedStoreMockRecorder) UpdateMetadata(ctx, id, version, config, pps, pls, repos, se, startedAt any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMetadata", reflect.TypeOf((*MockPipedStore)(nil).UpdateMetadata), ctx, id, version, config, pps, repos, se, startedAt)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMetadata", reflect.TypeOf((*MockPipedStore)(nil).UpdateMetadata), ctx, id, version, config, pps, pls, repos, se, startedAt)
 }
 
 // MockApplicationStore is a mock of ApplicationStore interface.
@@ -533,31 +533,31 @@ func (mr *MockApplicationStoreMockRecorder) UpdateConfigFilename(ctx, id, config
 }
 
 // UpdateConfiguration mocks base method.
-func (m *MockApplicationStore) UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string) error {
+func (m *MockApplicationStore) UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string, deployTargetsByPlugin map[string]*model.DeployTargets) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateConfiguration", ctx, id, pipedID, platformProvider, configFilename)
+	ret := m.ctrl.Call(m, "UpdateConfiguration", ctx, id, pipedID, platformProvider, configFilename, deployTargetsByPlugin)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateConfiguration indicates an expected call of UpdateConfiguration.
-func (mr *MockApplicationStoreMockRecorder) UpdateConfiguration(ctx, id, pipedID, platformProvider, configFilename any) *gomock.Call {
+func (mr *MockApplicationStoreMockRecorder) UpdateConfiguration(ctx, id, pipedID, platformProvider, configFilename, deployTargetsByPlugin any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateConfiguration", reflect.TypeOf((*MockApplicationStore)(nil).UpdateConfiguration), ctx, id, pipedID, platformProvider, configFilename)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateConfiguration", reflect.TypeOf((*MockApplicationStore)(nil).UpdateConfiguration), ctx, id, pipedID, platformProvider, configFilename, deployTargetsByPlugin)
 }
 
 // UpdateDeployTargets mocks base method.
-func (m *MockApplicationStore) UpdateDeployTargets(ctx context.Context, id string, targets []string) error {
+func (m *MockApplicationStore) UpdateDeployTargets(ctx context.Context, id string, dp map[string]*model.DeployTargets) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateDeployTargets", ctx, id, targets)
+	ret := m.ctrl.Call(m, "UpdateDeployTargets", ctx, id, dp)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateDeployTargets indicates an expected call of UpdateDeployTargets.
-func (mr *MockApplicationStoreMockRecorder) UpdateDeployTargets(ctx, id, targets any) *gomock.Call {
+func (mr *MockApplicationStoreMockRecorder) UpdateDeployTargets(ctx, id, dp any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDeployTargets", reflect.TypeOf((*MockApplicationStore)(nil).UpdateDeployTargets), ctx, id, targets)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDeployTargets", reflect.TypeOf((*MockApplicationStore)(nil).UpdateDeployTargets), ctx, id, dp)
 }
 
 // UpdateDeployingStatus mocks base method.
@@ -756,17 +756,17 @@ func (mr *MockDeploymentStoreMockRecorder) UpdateToCompleted(ctx, id, status, st
 }
 
 // UpdateToPlanned mocks base method.
-func (m *MockDeploymentStore) UpdateToPlanned(ctx context.Context, id, summary, reason, runningCommitHash, runningConfigFilename, version string, versions []*model.ArtifactVersion, stages []*model.PipelineStage) error {
+func (m *MockDeploymentStore) UpdateToPlanned(ctx context.Context, id, summary, reason, runningCommitHash, runningConfigFilename string, versions []*model.ArtifactVersion, stages []*model.PipelineStage) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateToPlanned", ctx, id, summary, reason, runningCommitHash, runningConfigFilename, version, versions, stages)
+	ret := m.ctrl.Call(m, "UpdateToPlanned", ctx, id, summary, reason, runningCommitHash, runningConfigFilename, versions, stages)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateToPlanned indicates an expected call of UpdateToPlanned.
-func (mr *MockDeploymentStoreMockRecorder) UpdateToPlanned(ctx, id, summary, reason, runningCommitHash, runningConfigFilename, version, versions, stages any) *gomock.Call {
+func (mr *MockDeploymentStoreMockRecorder) UpdateToPlanned(ctx, id, summary, reason, runningCommitHash, runningConfigFilename, versions, stages any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateToPlanned", reflect.TypeOf((*MockDeploymentStore)(nil).UpdateToPlanned), ctx, id, summary, reason, runningCommitHash, runningConfigFilename, version, versions, stages)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateToPlanned", reflect.TypeOf((*MockDeploymentStore)(nil).UpdateToPlanned), ctx, id, summary, reason, runningCommitHash, runningConfigFilename, versions, stages)
 }
 
 // MockCommandStore is a mock of CommandStore interface.

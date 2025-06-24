@@ -82,3 +82,14 @@ func parseCommit(log string) (Commit, error) {
 		Body:            strings.TrimSpace(fields[6]),
 	}, nil
 }
+
+func (c *Commit) GetTrailerValueByKey(key string) string {
+	lines := strings.Split(c.Body, "\n")
+	for _, line := range lines {
+		if !strings.HasPrefix(line, key+":") {
+			continue
+		}
+		return strings.TrimSpace(line[len(key)+1:])
+	}
+	return ""
+}

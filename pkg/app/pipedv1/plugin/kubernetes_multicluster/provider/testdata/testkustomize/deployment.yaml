@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: the-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      deployment: hello
+  template:
+    metadata:
+      labels:
+        deployment: hello
+    spec:
+      containers:
+      - name: helloworld
+        image: ghcr.io/pipe-cd/helloworld:v0.49.2
+        args:
+          - server
+        ports:
+        - containerPort: 9085

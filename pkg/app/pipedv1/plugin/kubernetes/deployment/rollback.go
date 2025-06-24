@@ -1,4 +1,4 @@
-// Copyright 2024 The PipeCD Authors.
+// Copyright 2025 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,86 +18,115 @@ import (
 	"cmp"
 	"context"
 
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
-	config "github.com/pipe-cd/pipecd/pkg/configv1"
-	"github.com/pipe-cd/pipecd/pkg/model"
-	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
-	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
 )
 
-func (a *DeploymentService) executeK8sRollbackStage(ctx context.Context, lp logpersister.StageLogPersister, input *deployment.ExecutePluginInput) model.StageStatus {
-	if input.GetDeployment().GetRunningCommitHash() == "" {
+func (p *Plugin) executeK8sRollbackStage(ctx context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
+	lp := input.Client.LogPersister()
+
+	if input.Request.RunningDeploymentSource.CommitHash == "" {
 		lp.Errorf("Unable to determine the last deployed commit to rollback. It seems this is the first deployment.")
-		return model.StageStatus_STAGE_FAILURE
+		return sdk.StageStatusFailure
 	}
 
 	lp.Info("Start rolling back the deployment")
 
-	cfg, err := config.DecodeYAML[*kubeconfig.KubernetesApplicationSpec](input.GetRunningDeploymentSource().GetApplicationConfig())
+	cfg, err := input.Request.RunningDeploymentSource.AppConfig()
 	if err != nil {
-		lp.Errorf("Failed while decoding application config (%v)", err)
-		return model.StageStatus_STAGE_FAILURE
+		lp.Errorf("Failed while loading application config (%v)", err)
+		return sdk.StageStatusFailure
 	}
 
-	lp.Infof("Loading manifests at commit %s for handling", input.GetDeployment().GetRunningCommitHash())
-	manifests, err := a.loadManifests(ctx, input.GetDeployment(), cfg.Spec, input.GetRunningDeploymentSource())
+	lp.Infof("Loading manifests at commit %s for handling", input.Request.RunningDeploymentSource.CommitHash)
+	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
+	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.RunningDeploymentSource, provider.NewLoader(toolRegistry))
 	if err != nil {
 		lp.Errorf("Failed while loading manifests (%v)", err)
-		return model.StageStatus_STAGE_FAILURE
+		return sdk.StageStatusFailure
 	}
 	lp.Successf("Successfully loaded %d manifests", len(manifests))
 
 	// Because the loaded manifests are read-only
 	// we duplicate them to avoid updating the shared manifests data in cache.
-	// TODO: implement duplicateManifests function
+	manifests = provider.DeepCopyManifests(manifests)
 
 	// When addVariantLabelToSelector is true, ensure that all workloads
 	// have the variant label in their selector.
 	var (
-		variantLabel   = cfg.Spec.VariantLabel.Key
-		primaryVariant = cfg.Spec.VariantLabel.PrimaryValue
+		variantLabel    = cfg.Spec.VariantLabel.Key
+		primaryVariant  = cfg.Spec.VariantLabel.PrimaryValue
+		baselineVariant = cfg.Spec.VariantLabel.BaselineValue
+		canaryVariant   = cfg.Spec.VariantLabel.CanaryValue
 	)
-	// TODO: handle cfg.Spec.QuickSync.AddVariantLabelToSelector
-
-	// Add variant annotations to all manifests.
-	for i := range manifests {
-		manifests[i].AddAnnotations(map[string]string{
-			variantLabel: primaryVariant,
-		})
+	// TODO: Consider other fields to configure whether to add a variant label to the selector
+	// because the rollback stage is executed in both quick sync and pipeline sync strategies.
+	if cfg.Spec.QuickSync.AddVariantLabelToSelector {
+		workloads := findWorkloadManifests(manifests, cfg.Spec.Workloads)
+		for _, m := range workloads {
+			if err := ensureVariantSelectorInWorkload(m, variantLabel, primaryVariant); err != nil {
+				lp.Errorf("Unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key().ReadableString(), err)
+				return sdk.StageStatusFailure
+			}
+		}
 	}
+
+	addVariantLabelsAndAnnotations(manifests, variantLabel, primaryVariant)
 
 	if err := annotateConfigHash(manifests); err != nil {
 		lp.Errorf("Unable to set %q annotation into the workload manifest (%v)", provider.AnnotationConfigHash, err)
-		return model.StageStatus_STAGE_FAILURE
+		return sdk.StageStatusFailure
 	}
 
 	// Get the deploy target config.
-	deployTargetConfig, err := kubeconfig.FindDeployTarget(a.pluginConfig, input.GetDeployment().GetDeployTargets()[0]) // TODO: check if there is a deploy target
-	if err != nil {
-		lp.Errorf("Failed while unmarshalling deploy target config (%v)", err)
-		return model.StageStatus_STAGE_FAILURE
+	if len(dts) == 0 {
+		lp.Error("No deploy target was found")
+		return sdk.StageStatusFailure
 	}
+	deployTargetConfig := dts[0].Config
 
 	// Get the kubectl tool path.
-	kubectlPath, err := a.toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion, defaultKubectlVersion))
+	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion))
 	if err != nil {
 		lp.Errorf("Failed while getting kubectl tool (%v)", err)
-		return model.StageStatus_STAGE_FAILURE
+		return sdk.StageStatusFailure
 	}
 
+	kubectl := provider.NewKubectl(kubectlPath)
+
 	// Create the applier for the target cluster.
-	applier := provider.NewApplier(provider.NewKubectl(kubectlPath), cfg.Spec.Input, deployTargetConfig, a.logger)
+	applier := provider.NewApplier(kubectl, cfg.Spec.Input, deployTargetConfig, input.Logger)
 
 	// Start applying all manifests to add or update running resources.
 	if err := applyManifests(ctx, applier, manifests, cfg.Spec.Input.Namespace, lp); err != nil {
 		lp.Errorf("Failed while applying manifests (%v)", err)
-		return model.StageStatus_STAGE_FAILURE
+		return sdk.StageStatusFailure
 	}
 
-	// TODO: implement prune resources
-	// TODO: delete all resources of CANARY variant
-	// TODO: delete all resources of BASELINE variant
+	var failed bool
 
-	return model.StageStatus_STAGE_SUCCESS
+	// TODO: prune resources which doesn't exist in the running manifests but exists in the target manifests.
+	// This occurs when the user adds a new resource and failed the deployment pipeline.
+	// This feature is not implemented in pipedv0, but it's nice to have it in this plugin.
+
+	lp.Info("Start removing CANARY variant resources if exists")
+	if err := deleteVariantResources(ctx, lp, kubectl, deployTargetConfig.KubeConfigPath, applier, input.Request.Deployment.ApplicationID, variantLabel, canaryVariant); err != nil {
+		lp.Errorf("Failed while deleting variant resources (%v)", err)
+		failed = true
+	}
+
+	lp.Info("Start removing BASELINE variant resources if exists")
+	if err := deleteVariantResources(ctx, lp, kubectl, deployTargetConfig.KubeConfigPath, applier, input.Request.Deployment.ApplicationID, variantLabel, baselineVariant); err != nil {
+		lp.Errorf("Failed while deleting variant resources (%v)", err)
+		failed = true
+	}
+
+	if failed {
+		return sdk.StageStatusFailure
+	}
+
+	return sdk.StageStatusSuccess
 }

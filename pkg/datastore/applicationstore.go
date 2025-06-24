@@ -196,9 +196,9 @@ type ApplicationStore interface {
 	UpdateConfigFilename(ctx context.Context, id, configFilename string) error
 	UpdateDeployingStatus(ctx context.Context, id string, deploying bool) error
 	UpdateBasicInfo(ctx context.Context, id, name, description string, labels map[string]string) error
-	UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string) error
+	UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string, deployTargetsByPlugin map[string]*model.DeployTargets) error
 	UpdatePlatformProvider(ctx context.Context, id string, provider string) error
-	UpdateDeployTargets(ctx context.Context, id string, targets []string) error
+	UpdateDeployTargets(ctx context.Context, id string, dp map[string]*model.DeployTargets) error
 }
 
 type applicationStore struct {
@@ -362,11 +362,12 @@ func (s *applicationStore) UpdateBasicInfo(ctx context.Context, id, name, descri
 	})
 }
 
-func (s *applicationStore) UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string) error {
+func (s *applicationStore) UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string, deployTargetsByPlugin map[string]*model.DeployTargets) error {
 	return s.update(ctx, id, func(app *model.Application) error {
 		app.PipedId = pipedID
 		app.PlatformProvider = platformProvider
 		app.CloudProvider = platformProvider
+		app.DeployTargetsByPlugin = deployTargetsByPlugin
 		app.GitPath.ConfigFilename = configFilename
 		return nil
 	})
@@ -379,9 +380,9 @@ func (s *applicationStore) UpdatePlatformProvider(ctx context.Context, id string
 	})
 }
 
-func (s *applicationStore) UpdateDeployTargets(ctx context.Context, id string, targets []string) error {
+func (s *applicationStore) UpdateDeployTargets(ctx context.Context, id string, dp map[string]*model.DeployTargets) error {
 	return s.update(ctx, id, func(app *model.Application) error {
-		app.DeployTargets = targets
+		app.DeployTargetsByPlugin = dp
 		return nil
 	})
 }

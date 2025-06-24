@@ -1,10 +1,10 @@
 import { waitFor } from "@testing-library/react";
 import { setupServer } from "msw/node";
 import { GetMeResponse } from "pipecd/web/api_client/service_pb";
-import { MemoryRouter } from "react-router-dom";
 import { createHandler } from "~/mocks/create-handler";
-import { render, screen } from "~~/test-utils";
+import { MemoryRouter, render, screen } from "~~/test-utils";
 import { Routes } from "./routes";
+import { CookiesProvider } from "react-cookie";
 
 const server = setupServer(
   createHandler<GetMeResponse>("/GetMe", () => {
@@ -28,9 +28,11 @@ afterAll(() => {
 describe("Pages", () => {
   test("redirect to login page", async () => {
     render(
-      <MemoryRouter initialEntries={["/"]} initialIndex={0}>
-        <Routes />
-      </MemoryRouter>,
+      <CookiesProvider>
+        <MemoryRouter initialEntries={["/"]} initialIndex={0}>
+          <Routes />
+        </MemoryRouter>
+      </CookiesProvider>,
       { initialState: { me: { isLogin: false } } }
     );
     await waitFor(() =>

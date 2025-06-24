@@ -44,6 +44,11 @@ export class Piped extends jspb.Message {
   clearPlatformProvidersList(): Piped;
   addPlatformProviders(value?: Piped.PlatformProvider, index?: number): Piped.PlatformProvider;
 
+  getPluginsList(): Array<Piped.Plugin>;
+  setPluginsList(value: Array<Piped.Plugin>): Piped;
+  clearPluginsList(): Piped;
+  addPlugins(value?: Piped.Plugin, index?: number): Piped.Plugin;
+
   getSecretEncryption(): Piped.SecretEncryption | undefined;
   setSecretEncryption(value?: Piped.SecretEncryption): Piped;
   hasSecretEncryption(): boolean;
@@ -87,6 +92,7 @@ export namespace Piped {
     status: Piped.ConnectionStatus,
     config: string,
     platformProvidersList: Array<Piped.PlatformProvider.AsObject>,
+    pluginsList: Array<Piped.Plugin.AsObject>,
     secretEncryption?: Piped.SecretEncryption.AsObject,
     keysList: Array<PipedKey.AsObject>,
     desiredVersion: string,
@@ -137,6 +143,31 @@ export namespace Piped {
     export type AsObject = {
       name: string,
       type: string,
+    }
+  }
+
+
+  export class Plugin extends jspb.Message {
+    getName(): string;
+    setName(value: string): Plugin;
+
+    getDeployTargetsList(): Array<string>;
+    setDeployTargetsList(value: Array<string>): Plugin;
+    clearDeployTargetsList(): Plugin;
+    addDeployTargets(value: string, index?: number): Plugin;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Plugin.AsObject;
+    static toObject(includeInstance: boolean, msg: Plugin): Plugin.AsObject;
+    static serializeBinaryToWriter(message: Plugin, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Plugin;
+    static deserializeBinaryFromReader(message: Plugin, reader: jspb.BinaryReader): Plugin;
+  }
+
+  export namespace Plugin {
+    export type AsObject = {
+      name: string,
+      deployTargetsList: Array<string>,
     }
   }
 

@@ -183,7 +183,7 @@ message RenameApplicationConfigFileResponse {
 
 message UpdateApplicationDeployTargetsRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
-    repeated string deploy_targets = 2 [(validate.rules).repeated = {min_items: 1}];
+    map<string, model.DeployTargets> deploy_targets_by_plugin = 2 [(validate.rules).map.min_pairs = 1];
 }
 
 message UpdateApplicationDeployTargetsResponse {}
@@ -238,6 +238,13 @@ message RegisterEventRequest {
     string data = 2 [(validate.rules).string.min_len = 1];
     map<string,string> labels = 3 [(validate.rules).map.keys.string.min_len = 1, (validate.rules).map.values.string.min_len = 1];
     map<string,string> contexts = 4 [(validate.rules).map.keys.string.min_len = 1, (validate.rules).map.keys.string.pattern = "^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$", (validate.rules).map.values.string.min_len = 1];
+    // Information of the commit that trigger this event.
+    string commit_hash = 5;
+    string commit_url = 6;
+    string commit_title = 7;
+    string commit_message = 8;
+    string commit_author = 9;
+    int64 commit_timestamp = 10;
 }
 
 message RegisterEventResponse {

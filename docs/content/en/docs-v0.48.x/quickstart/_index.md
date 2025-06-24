@@ -51,7 +51,7 @@ Next, in order to perform CD tasks, you need to install a Piped agent to the clu
 
 From your logged in tab, navigate to the PipeCD setting page at [http://localhost:8080/settings/piped?project=quickstart](http://localhost:8080/settings/piped?project=quickstart).
 
-You will find the `+ADD` button around the top left of this page, click there and insert information to register the `piped`.
+You will find the `+ADD` button around the top left of this page, click there and insert information to register the Piped agent (for example, `dev`).
 
 ![](/images/quickstart-adding-piped.png)
 
@@ -93,7 +93,7 @@ Above is all that is necessary to set up your own PipeCD (both control plane and
 Navigate to the `Applications` page, click on the `+ADD` button on the top left corner.
 
 Go to the `ADD FROM SUGGESTIONS` tab, then select:
-- Piped: `dev` (you just registered)
+- Piped that you have just registered (e.g. `dev`)
 - PlatformProvider: `kubernetes-default`
 
 You should see a lot of suggested applications. Select one of listed applications and click the `SAVE` button to register.

@@ -21,12 +21,12 @@ export const dummyDeployment: Deployment.AsObject = {
   status: DeploymentStatus.DEPLOYMENT_SUCCESS,
   statusReason: "good",
   trigger: dummyTrigger,
-  version: "0.0.0",
   versionsList: [],
   cloudProvider: "kube-1",
   platformProvider: "kube-1",
-  deployTargetsList: ["kube-1"],
+  deployTargetsByPluginMap: [],
   labelsMap: [],
+  deploymentTraceCommitHash: "",
   createdAt: createdAt.unix(),
   updatedAt: completedAt.unix(),
   completedAt: completedAt.unix(),
@@ -64,10 +64,11 @@ export function createDeploymentFromObject(o: Deployment.AsObject): Deployment {
   deployment.setStatusReason(o.statusReason);
   deployment.setSummary(o.summary);
   deployment.setUpdatedAt(o.updatedAt);
-  deployment.setVersion(o.version);
-  o.gitPath && deployment.setGitPath(createGitPathFromObject(o.gitPath));
-  o.trigger && deployment.setTrigger(createTriggerFromObject(o.trigger));
-  o.stagesList &&
+
+  if (o.gitPath) deployment.setGitPath(createGitPathFromObject(o.gitPath));
+  if (o.trigger) deployment.setTrigger(createTriggerFromObject(o.trigger));
+  if (o.stagesList)
     deployment.setStagesList(createPipelineFromObject(o.stagesList));
+
   return deployment;
 }

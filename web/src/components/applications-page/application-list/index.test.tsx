@@ -1,12 +1,17 @@
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
 import { server } from "~/mocks/server";
 import { disableApplication, enableApplication } from "~/modules/applications";
 import { setDeletingAppId } from "~/modules/delete-application";
 import { generateSealedSecret } from "~/modules/sealed-secret";
 import { setUpdateTargetId } from "~/modules/update-application";
 import { dummyApplication } from "~/__fixtures__/dummy-application";
-import { createStore, render, screen, waitFor } from "~~/test-utils";
+import {
+  createStore,
+  render,
+  screen,
+  waitFor,
+  MemoryRouter,
+} from "~~/test-utils";
 import { ApplicationList } from ".";
 
 beforeAll(() => {

@@ -3,7 +3,7 @@
 
 ## Prerequisites
 
-- [Go 1.22 or later](https://go.dev/)
+- [Go 1.24 or later](https://go.dev/)
 
 ## Repositories
 - [pipecd](https://github.com/pipe-cd/pipecd): contains all source code and documentation of PipeCD project.
@@ -60,3 +60,5 @@ For the full list of available commands, please see the Makefile at the root of 
     ``` console
     make run/piped CONFIG_FILE=piped-config.yaml
     ```
+
+Note: If you have a problem with accessing the example repository, please follow [this guide](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) to register the SSH key or try specifying `remote: https://github.com/pipe-cd/examples.git` instead in the above `piped-config.yaml`.

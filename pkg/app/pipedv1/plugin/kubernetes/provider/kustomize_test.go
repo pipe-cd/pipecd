@@ -20,10 +20,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
+
+	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry/toolregistrytest"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
-	"github.com/pipe-cd/pipecd/pkg/plugin/toolregistry/toolregistrytest"
 )
 
 func TestKustomizeTemplate(t *testing.T) {
@@ -35,21 +36,54 @@ func TestKustomizeTemplate(t *testing.T) {
 		appDir  = "testdata/testkustomize"
 	)
 
-	c, err := toolregistrytest.NewToolRegistry(t)
-	require.NoError(t, err)
-
+	c := toolregistrytest.NewTestToolRegistry(t)
 	r := toolregistry.NewRegistry(c)
-
-	t.Cleanup(func() { c.Close() })
 
 	kustomizePath, err := r.Kustomize(context.Background(), "5.4.3")
 	require.NoError(t, err)
 	require.NotEmpty(t, kustomizePath)
 
-	kustomize := NewKustomize(kustomizePath, zap.NewNop())
+	kustomize := NewKustomize("5.4.3", kustomizePath, zaptest.NewLogger(t))
 	out, err := kustomize.Template(ctx, appName, appDir, map[string]string{
 		"load-restrictor": "LoadRestrictionsNone",
-	})
+	}, nil)
 	require.NoError(t, err)
 	assert.True(t, len(out) > 0)
+}
+
+func TestKustomizeTemplate_WithHelm(t *testing.T) {
+	t.Parallel()
+
+	var (
+		ctx     = context.TODO()
+		appName = "testapp"
+		appDir  = "testdata/testkustomize-with-helm"
+	)
+
+	c := toolregistrytest.NewTestToolRegistry(t)
+	r := toolregistry.NewRegistry(c)
+
+	kustomizePath, err := r.Kustomize(context.Background(), "5.6.0")
+	require.NoError(t, err)
+	helmPath, err := r.Helm(context.Background(), "3.17.0")
+	require.NoError(t, err)
+
+	kustomize := NewKustomize("5.6.0", kustomizePath, zaptest.NewLogger(t))
+	helm := NewHelm("3.17.0", helmPath, zaptest.NewLogger(t))
+	out, err := kustomize.Template(ctx, appName, appDir, map[string]string{
+		"enable-helm": "",
+	}, helm)
+	require.NoError(t, err)
+	assert.True(t, len(out) > 0)
+}
+
+func TestKustomizeIsHelmCommandFlagAvailable(t *testing.T) {
+	t.Parallel()
+
+	kustomize := NewKustomize("4.0.1337", "", zaptest.NewLogger(t))
+	assert.False(t, kustomize.isHelmCommandFlagAvailable())
+	kustomize = NewKustomize("4.1.0", "", zaptest.NewLogger(t))
+	assert.True(t, kustomize.isHelmCommandFlagAvailable())
+	kustomize = NewKustomize("10.0.0", "", zaptest.NewLogger(t))
+	assert.True(t, kustomize.isHelmCommandFlagAvailable())
 }

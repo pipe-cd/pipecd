@@ -31,7 +31,8 @@ CONTENT_DIR=docs/content/en
 # Create new $CONTENT_DIR/docs-$VERSION
 rm -rf $CONTENT_DIR/docs-$VERSION
 cp -rf $CONTENT_DIR/docs-dev $CONTENT_DIR/docs-$VERSION
-cp -rf docs/themes/docsy/layouts/docs/ docs/layouts/docs-$VERSION
+rm -rf docs/layouts/docs-$VERSION
+cp -rf docs/themes/docsy/layouts/docs docs/layouts/docs-$VERSION
 cat <<EOT > $CONTENT_DIR/docs-$VERSION/_index.md
 ---
 title: "Welcome to PipeCD"
@@ -61,6 +62,7 @@ tail -n +$LINE_NUM docs/config.toml >> docs/config.toml.tmp
 mv docs/config.toml.tmp docs/config.toml
 
 # Update docs/main.go
-sed -i '' "s/const latestPath.*/const latestPath = \"\/docs-"$VERSION"\/\"/g" docs/main.go
+sed "s/const latestPath.*/const latestPath = \"\/docs-"$VERSION"\/\"/g" docs/main.go > docs/main.go.tmp
+mv docs/main.go.tmp docs/main.go
 
 echo "Version docs has been prepared successfully at $CONTENT_DIR/docs-$VERSION/"

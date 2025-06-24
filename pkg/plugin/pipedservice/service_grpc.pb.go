@@ -45,7 +45,6 @@ type PluginServiceClient interface {
 	// The shared metadata is read-only in plugins for safety since it is shared among piped and plugins.
 	GetDeploymentSharedMetadata(ctx context.Context, in *GetDeploymentSharedMetadataRequest, opts ...grpc.CallOption) (*GetDeploymentSharedMetadataResponse, error)
 	// ListStageCommands lists unhandled commands of the given stage and type.
-	// Currently, supported types are only APPROVE_STAGE and SKIP_STAGE.
 	ListStageCommands(ctx context.Context, in *ListStageCommandsRequest, opts ...grpc.CallOption) (*ListStageCommandsResponse, error)
 }
 
@@ -183,7 +182,6 @@ type PluginServiceServer interface {
 	// The shared metadata is read-only in plugins for safety since it is shared among piped and plugins.
 	GetDeploymentSharedMetadata(context.Context, *GetDeploymentSharedMetadataRequest) (*GetDeploymentSharedMetadataResponse, error)
 	// ListStageCommands lists unhandled commands of the given stage and type.
-	// Currently, supported types are only APPROVE_STAGE and SKIP_STAGE.
 	ListStageCommands(context.Context, *ListStageCommandsRequest) (*ListStageCommandsResponse, error)
 	mustEmbedUnimplementedPluginServiceServer()
 }

@@ -18,11 +18,23 @@ import (
 	"context"
 	"errors"
 
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
-	"github.com/pipe-cd/pipecd/pkg/plugin/logpersister"
 )
 
-func applyManifests(ctx context.Context, applier applier, manifests []provider.Manifest, namespace string, lp logpersister.StageLogPersister) error {
+type applier interface {
+	// ApplyManifest does applying the given manifest.
+	ApplyManifest(ctx context.Context, manifest provider.Manifest) error
+	// CreateManifest does creating resource from given manifest.
+	CreateManifest(ctx context.Context, manifest provider.Manifest) error
+	// ReplaceManifest does replacing resource from given manifest.
+	ReplaceManifest(ctx context.Context, manifest provider.Manifest) error
+	// ForceReplaceManifest does force replacing resource from given manifest.
+	ForceReplaceManifest(ctx context.Context, manifest provider.Manifest) error
+}
+
+func applyManifests(ctx context.Context, applier applier, manifests []provider.Manifest, namespace string, lp sdk.StageLogPersister) error {
 	if namespace == "" {
 		lp.Infof("Start applying %d manifests", len(manifests))
 	} else {
@@ -67,7 +79,7 @@ func applyManifests(ctx context.Context, applier applier, manifests []provider.M
 		}
 
 		if err := applier.ApplyManifest(ctx, m); err != nil {
-			lp.Errorf("Failed to apply manifest: %s (%w)", m.Key().ReadableString(), err)
+			lp.Errorf("Failed to apply manifest: %s (%v)", m.Key().ReadableString(), err)
 			return err
 		}
 		lp.Successf("- applied manifest: %s", m.Key().ReadableString())

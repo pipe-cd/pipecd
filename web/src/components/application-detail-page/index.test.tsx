@@ -1,7 +1,7 @@
-import { MemoryRouter, Route, Routes as ReactRoutes } from "react-router-dom";
+import { Route, Routes as ReactRoutes } from "react-router-dom";
 import { PAGE_PATH_APPLICATIONS } from "~/constants/path";
 import { fetchApplication } from "~/modules/applications";
-import { createStore, render } from "~~/test-utils";
+import { createStore, MemoryRouter, render } from "~~/test-utils";
 import { ApplicationDetailPage } from ".";
 
 describe("ApplicationDetailPage", () => {

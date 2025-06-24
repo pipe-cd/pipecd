@@ -3,7 +3,7 @@
 
 ## Prerequisites
 
-- [Go 1.22 or later](https://go.dev/)
+- [Go 1.24 or later](https://go.dev/)
 - [NodeJS v20 or later](https://nodejs.org/en/)
 - [Docker](https://www.docker.com/)
 - [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) (If you want to run Control Plane locally)
@@ -55,3 +55,7 @@ For the full list of available commands, please see the Makefile at the root of 
 
 ## How to run Piped locally and add an application to your cluster
 See [How to run Piped agent locally](https://github.com/pipe-cd/pipecd/tree/master/cmd/piped#how-to-run-piped-agent-locally).
+
+## How to set up OIDC provider(Keycloak) locally
+
+Run `make setup-local-oidc` to set up local OIDC provider(keycloak). This will create a new Keycloak realm and an OIDC client for PipeCD. See [Local Keycloak](../../hack/oidc/README.md) for more details.

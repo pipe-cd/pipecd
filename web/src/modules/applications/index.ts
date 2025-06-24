@@ -20,6 +20,11 @@ import type { AppState } from "~/store";
 
 const MODULE_NAME = "applications";
 
+export enum PIPED_VERSION {
+  V0 = "v0",
+  V1 = "v1",
+}
+
 export type ApplicationSyncStatusKey = keyof typeof ApplicationSyncStatus;
 export type ApplicationKindKey = keyof typeof ApplicationKind;
 
@@ -49,7 +54,7 @@ export const fetchApplications = createAsyncThunk<
   if (options.labels) {
     for (const label of options.labels) {
       const pair = label.split(":");
-      pair.length === 2 && labels.push([pair[0], pair[1]]);
+      if (pair.length === 2) labels.push([pair[0], pair[1]]);
     }
   }
   const req = {
@@ -100,11 +105,28 @@ export const addApplication = createAsyncThunk<
     repo: ApplicationGitRepository.AsObject;
     repoPath: string;
     configFilename?: string;
-    kind: ApplicationKind;
-    platformProvider: string;
+    kind?: ApplicationKind;
+    platformProvider?: string;
     labels: Array<[string, string]>;
+    deployTargets?: Array<{ pluginName: string; deployTarget: string }>;
   }
 >(`${MODULE_NAME}/add`, async (props) => {
+  const deployTargetsMap =
+    props.deployTargets?.reduce((all, { pluginName, deployTarget }) => {
+      if (!all[pluginName]) all[pluginName] = [];
+      all[pluginName].push(deployTarget);
+      return all;
+    }, {} as Record<string, string[]>) || {};
+
+  const deployTargetsByPluginMap = Object.entries(deployTargetsMap).map(
+    ([pluginName, deployTargetsList]) => {
+      return [pluginName, { deployTargetsList }] as [
+        string,
+        { deployTargetsList: string[] }
+      ];
+    }
+  );
+
   const { applicationId } = await applicationsAPI.addApplication({
     name: props.name,
     pipedId: props.pipedId,
@@ -116,6 +138,7 @@ export const addApplication = createAsyncThunk<
     },
     platformProvider: props.platformProvider,
     kind: props.kind,
+    deployTargetsByPluginMap,
     description: "",
     labelsMap: props.labels,
   });

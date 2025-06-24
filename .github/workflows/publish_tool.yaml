@@ -12,7 +12,7 @@ env:
 
 jobs:
   tool:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest-8-cores
     permissions:
       packages: write
     strategy:
@@ -29,7 +29,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Determine version
-        run: echo "PIPECD_VERSION=$(git describe --tags --always --abbrev=7)" >> $GITHUB_ENV
+        run: echo "PIPECD_VERSION=$(git describe --tags --always --abbrev=7 --match 'v[0-9]*.*')" >> $GITHUB_ENV
 
       - uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v3.2.0
 
@@ -37,7 +37,7 @@ jobs:
 
       # Login to push container images.
       - name: Log in to the container registry
-        uses: docker/login-action@49ed152c8eca782a232dede0303416e8f356c37b #v2.0.0
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
         with:
           registry: ${{ env.GHCR }}
           username: ${{ github.actor }}
@@ -51,3 +51,6 @@ jobs:
           tags: ${{ env.GHCR }}/pipe-cd/${{ matrix.image }}:${{ env.PIPECD_VERSION }}
           platforms: linux/amd64,linux/arm64
           push: true
+          # parameter to use inline cache. ref; https://docs.docker.com/build/ci/github-actions/cache/#inline-cache
+          cache-from: type=registry,ref=${{ env.GHCR }}/pipe-cd/${{ matrix.image }}:latest
+          cache-to: type=inline

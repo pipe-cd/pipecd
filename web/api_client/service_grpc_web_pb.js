@@ -30,6 +30,8 @@ var pkg_model_command_pb = require('pipecd/web/model/command_pb.js')
 
 var pkg_model_deployment_pb = require('pipecd/web/model/deployment_pb.js')
 
+var pkg_model_deployment_trace_pb = require('pipecd/web/model/deployment_trace_pb.js')
+
 var pkg_model_deployment_chain_pb = require('pipecd/web/model/deployment_chain_pb.js')
 
 var pkg_model_logblock_pb = require('pipecd/web/model/logblock_pb.js')
@@ -1809,6 +1811,67 @@ proto.grpc.service.webservice.WebServicePromiseClient.prototype.approveStage =
       request,
       metadata || {},
       methodDescriptor_WebService_ApproveStage);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.grpc.service.webservice.ListDeploymentTracesRequest,
+ *   !proto.grpc.service.webservice.ListDeploymentTracesResponse>}
+ */
+const methodDescriptor_WebService_ListDeploymentTraces = new grpc.web.MethodDescriptor(
+  '/grpc.service.webservice.WebService/ListDeploymentTraces',
+  grpc.web.MethodType.UNARY,
+  proto.grpc.service.webservice.ListDeploymentTracesRequest,
+  proto.grpc.service.webservice.ListDeploymentTracesResponse,
+  /**
+   * @param {!proto.grpc.service.webservice.ListDeploymentTracesRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.grpc.service.webservice.ListDeploymentTracesResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.grpc.service.webservice.ListDeploymentTracesRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.grpc.service.webservice.ListDeploymentTracesResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.grpc.service.webservice.ListDeploymentTracesResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.grpc.service.webservice.WebServiceClient.prototype.listDeploymentTraces =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/ListDeploymentTraces',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_ListDeploymentTraces,
+      callback);
+};
+
+
+/**
+ * @param {!proto.grpc.service.webservice.ListDeploymentTracesRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.grpc.service.webservice.ListDeploymentTracesResponse>}
+ *     Promise that resolves to the response
+ */
+proto.grpc.service.webservice.WebServicePromiseClient.prototype.listDeploymentTraces =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/ListDeploymentTraces',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_ListDeploymentTraces);
 };
 
 

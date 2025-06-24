@@ -1,8 +1,7 @@
+# syntax=docker/dockerfile:1
 # web builder
-# because of this issue, we choose node 18
-# https://github.com/pipe-cd/pipecd/issues/5422
-# https://github.com/nodejs/docker-node/issues/1335#issuecomment-2024344411
-FROM node:18.20.5-alpine3.21 AS web
+# because this stage builds only web assets, we can use any platform
+FROM --platform=$BUILDPLATFORM node:20.19.0-alpine3.21 AS web
 
 WORKDIR /app
 
@@ -10,15 +9,14 @@ COPY . .
 
 RUN apk add --no-cache make git
 
-# because of this issue, we set network-timeout to 300000
-# https://github.com/pipe-cd/pipecd/issues/5422
-RUN yarn config set network-timeout 300000
-
 RUN make update/web-deps
 RUN make build/web
 
 # pipecd builder
-FROM golang:1.23.3 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.24.1 AS builder
+
+ARG TARGETOS
+ARG TARGETARCH
 
 WORKDIR /app
 
@@ -27,9 +25,9 @@ RUN go mod download
 
 COPY . ./
 
-RUN make build/go MOD=pipecd
+RUN make build/go MOD=pipecd BUILD_OS=${TARGETOS} BUILD_ARCH=${TARGETARCH}
 
-FROM alpine:3.21.0
+FROM alpine:3.21.3
 
 ARG GOOGLE_CLOUD_SDK_VERSION=477.0.0
 

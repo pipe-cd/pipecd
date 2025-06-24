@@ -23,9 +23,18 @@ import (
 )
 
 const (
+	// Service
+	KindService = "Service"
+
+	// Workload
 	KindDeployment = "Deployment"
-	KindSecret     = "Secret"
-	KindConfigMap  = "ConfigMap"
+	KindReplicaSet = "ReplicaSet"
+	KindDaemonSet  = "DaemonSet"
+	KindPod        = "Pod"
+
+	// ConfigMap and Secret
+	KindSecret    = "Secret"
+	KindConfigMap = "ConfigMap"
 
 	DefaultNamespace = "default"
 )

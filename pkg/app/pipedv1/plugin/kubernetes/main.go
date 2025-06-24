@@ -17,18 +17,22 @@ package main
 import (
 	"log"
 
-	"github.com/pipe-cd/pipecd/pkg/cli"
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/deployment"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/livestate"
 )
 
 func main() {
-	app := cli.NewApp(
-		"pipecd-plugin-kubernetes",
-		"Plugin component to deploy Kubernetes Application.",
+	plugin, err := sdk.NewPlugin(
+		"0.0.1",
+		sdk.WithDeploymentPlugin(&deployment.Plugin{}),
+		sdk.WithLivestatePlugin(&livestate.Plugin{}),
 	)
-	app.AddCommands(
-		NewPluginCommand(),
-	)
-	if err := app.Run(); err != nil {
-		log.Fatal(err)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if err := plugin.Run(); err != nil {
+		log.Fatalln(err)
 	}
 }

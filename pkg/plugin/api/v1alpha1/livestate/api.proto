@@ -27,12 +27,24 @@ service LivestateService {
     rpc GetLivestate(GetLivestateRequest) returns (GetLivestateResponse) {}
 }
 
+// GetLivestateRequest is the request for the GetLivestate method.
 message GetLivestateRequest {
-    string application_id = 1;
-    grpc.plugin.common.v1alpha1.DeploymentSource deploy_source = 2;
+    // The id of the piped
+    string piped_id = 1;
+    // The id of the application
+    string application_id = 2;
+    // The name of the application
+    string application_name = 3;
+    // The source of the deployment
+    grpc.plugin.common.v1alpha1.DeploymentSource deploy_source = 4;
+    // The targets of the deployment
+    repeated string deploy_targets = 5;
 }
 
+// GetLivestateResponse is the response for the GetLivestate method.
 message GetLivestateResponse {
+    // The application live state
     model.ApplicationLiveState application_live_state = 1;
+    // The application sync state
     model.ApplicationSyncState sync_state = 2;
 }
