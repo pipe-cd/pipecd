@@ -75,10 +75,8 @@ message DetermineStrategyResponse {
 
 message BuildPipelineSyncStagesRequest {
     message StageConfig {
-        // The stage identifier.
-        // If it's not set, plugin should set it under pattern:
-        // `pluginname-stage-index`.
-        string id = 1;
+        reserved 1;
+
         // The stage name.
         string name = 2 [(validate.rules).string.min_len = 1];
         // The stage description.
