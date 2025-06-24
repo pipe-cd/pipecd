@@ -280,6 +280,7 @@ func (s *store) ReportStageCommandsHandled(ctx context.Context, deploymentID, st
 		}
 	}
 
+	s.stageCommands.clear(deploymentID, stageID)
 	return nil
 }
 
@@ -291,4 +292,8 @@ func (m stageCommandsMap) append(c *model.Command) {
 	}
 
 	m[deploymentID][stageID] = append(m[deploymentID][stageID], c)
+}
+
+func (m stageCommandsMap) clear(deploymentID, stageID string) {
+	delete(m[deploymentID], stageID)
 }
