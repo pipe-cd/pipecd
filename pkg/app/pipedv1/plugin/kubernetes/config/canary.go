@@ -14,7 +14,7 @@
 
 package config
 
-import config "github.com/pipe-cd/pipecd/pkg/configv1"
+import "github.com/pipe-cd/piped-plugin-sdk-go/unit"
 
 // K8sCanaryRolloutStageOptions contains all configurable values for a K8S_CANARY_ROLLOUT stage.
 type K8sCanaryRolloutStageOptions struct {
@@ -22,7 +22,7 @@ type K8sCanaryRolloutStageOptions struct {
 	// An integer value can be specified to indicate an absolute value of pod number.
 	// Or a string suffixed by "%" to indicate an percentage value compared to the pod number of PRIMARY.
 	// Default is 1 pod.
-	Replicas config.Replicas `json:"replicas"`
+	Replicas unit.Replicas `json:"replicas"`
 	// Suffix that should be used when naming the CANARY variant's resources.
 	// Default is "canary".
 	Suffix string `json:"suffix" default:"canary"`

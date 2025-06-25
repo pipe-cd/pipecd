@@ -19,7 +19,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	config "github.com/pipe-cd/pipecd/pkg/configv1"
+	"github.com/pipe-cd/piped-plugin-sdk-go/unit"
 )
 
 func TestDetermineKubernetesTrafficRoutingMethod(t *testing.T) {
@@ -110,9 +110,9 @@ func TestK8sTrafficRoutingStageOptions_Percentages(t *testing.T) {
 		{
 			name: "custom split with all percentages",
 			opts: K8sTrafficRoutingStageOptions{
-				Primary:  config.Percentage{Number: 50},
-				Canary:   config.Percentage{Number: 30},
-				Baseline: config.Percentage{Number: 20},
+				Primary:  unit.Percentage{Number: 50},
+				Canary:   unit.Percentage{Number: 30},
+				Baseline: unit.Percentage{Number: 20},
 			},
 			wantPrimary:  50,
 			wantCanary:   30,
@@ -121,8 +121,8 @@ func TestK8sTrafficRoutingStageOptions_Percentages(t *testing.T) {
 		{
 			name: "custom split with only primary and canary",
 			opts: K8sTrafficRoutingStageOptions{
-				Primary: config.Percentage{Number: 80},
-				Canary:  config.Percentage{Number: 20},
+				Primary: unit.Percentage{Number: 80},
+				Canary:  unit.Percentage{Number: 20},
 			},
 			wantPrimary:  80,
 			wantCanary:   20,
@@ -139,8 +139,8 @@ func TestK8sTrafficRoutingStageOptions_Percentages(t *testing.T) {
 			name: "invalid 'all' value should use percentages",
 			opts: K8sTrafficRoutingStageOptions{
 				All:     "invalid",
-				Primary: config.Percentage{Number: 60},
-				Canary:  config.Percentage{Number: 40},
+				Primary: unit.Percentage{Number: 60},
+				Canary:  unit.Percentage{Number: 40},
 			},
 			wantPrimary:  60,
 			wantCanary:   40,
