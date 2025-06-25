@@ -6,7 +6,7 @@ require (
 	github.com/goccy/go-yaml v1.9.8
 	github.com/google/go-cmp v0.7.0
 	github.com/pipe-cd/pipecd v0.52.0
-	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250612023157-bc4c32dc15cb
+	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250624100230-4dd9b8f9b0b8
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.19.1
 	golang.org/x/mod v0.22.0
