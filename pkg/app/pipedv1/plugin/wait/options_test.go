@@ -21,7 +21,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	config "github.com/pipe-cd/pipecd/pkg/configv1"
+	"github.com/pipe-cd/piped-plugin-sdk-go/unit"
 )
 
 func TestDecode(t *testing.T) {
@@ -36,7 +36,7 @@ func TestDecode(t *testing.T) {
 			name: "valid config",
 			data: json.RawMessage(`{"duration":"1m"}`),
 			expected: WaitStageOptions{
-				Duration: config.Duration(1 * time.Minute),
+				Duration: unit.Duration(1 * time.Minute),
 			},
 			wantErr: false,
 		},
