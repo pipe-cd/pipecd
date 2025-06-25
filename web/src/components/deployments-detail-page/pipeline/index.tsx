@@ -68,10 +68,8 @@ const createStagesForRendering = (
     // stage.rollback = !stage.visible;
   });
 
-  const stages: Stage[][] = [];
-  const notRollbackCount = deployment.stagesList.filter((stage) => !stage.rollback).length;
   let visibleStages: Stage[] = [];
-  if (notRollbackCount === deployment.stagesList.length) {
+  if (deployment.deployTargetsByPluginMap?.length === 0) {
     visibleStages = deployment.stagesList.filter((stage) => stage.visible);
   } else {
     visibleStages = deployment.stagesList.filter((stage) => stage.visible || !stage.rollback);
@@ -81,6 +79,7 @@ const createStagesForRendering = (
 
   // const visibleStages = deployment.stagesList.filter((stage) => (stage.visible || !stage.rollback));
 
+  const stages: Stage[][] = [];
   stages[0] = visibleStages.filter((stage) => stage.requiresList.length === 0);
 
   let index = 0;
