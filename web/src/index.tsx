@@ -11,6 +11,7 @@ import { CookiesProvider } from "react-cookie";
 import QueryClientWrap from "./contexts/query-client-provider";
 import { AuthProvider } from "./contexts/auth-context";
 import { ToastProvider } from "./contexts/toast-context/toast-provider";
+import { CommandProvider } from "./contexts/command-context";
 
 async function run(): Promise<void> {
   if (process.env.ENABLE_MOCK === "true") {
@@ -60,8 +61,10 @@ Happy PipeCD-ing 🙌
               <ToastProvider>
                 <QueryClientWrap>
                   <AuthProvider>
-                    <CssBaseline />
-                    <Routes />
+                    <CommandProvider>
+                      <CssBaseline />
+                      <Routes />
+                    </CommandProvider>
                   </AuthProvider>
                 </QueryClientWrap>
               </ToastProvider>

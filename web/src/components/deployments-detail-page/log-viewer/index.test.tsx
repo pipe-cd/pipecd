@@ -1,16 +1,10 @@
 import userEvent from "@testing-library/user-event";
-import { clearActiveStage } from "~/modules/active-stage";
-import { createActiveStageKey, LogSeverity } from "~/modules/stage-logs";
+import { LogSeverity } from "~~/model/logblock_pb";
 import { dummyDeployment } from "~/__fixtures__/dummy-deployment";
-import { createStore, render, screen } from "~~/test-utils";
+import { render, screen } from "~~/test-utils";
 import { LogViewer } from ".";
 
 Element.prototype.scrollIntoView = jest.fn();
-
-const activeStageId = createActiveStageKey({
-  deploymentId: dummyDeployment.id,
-  stageId: dummyDeployment.stagesList[0].id,
-});
 
 const dummyLog = {
   stageId: dummyDeployment.stagesList[0].id,
@@ -26,42 +20,30 @@ const dummyLog = {
   deploymentId: dummyDeployment.id,
 };
 
+const activeStage = dummyDeployment.stagesList[0];
+
 it("should not appear in the document if activeState is null", () => {
-  render(<LogViewer />, {
-    initialState: {
-      deployments: {
-        ids: [dummyDeployment.id],
-        entities: {
-          [dummyDeployment.id]: dummyDeployment,
-        },
-      },
-      activeStage: null,
-    },
-  });
+  const changeActiveStage = jest.fn();
+  render(
+    <LogViewer
+      activeStage={null}
+      stageLog={dummyLog}
+      changeActiveStage={changeActiveStage}
+    />
+  );
 
   expect(screen.queryByTestId("log-viewer")).not.toBeInTheDocument();
 });
 
 it("should appear stage log in the document if activeState is exists", () => {
-  render(<LogViewer />, {
-    initialState: {
-      deployments: {
-        ids: [dummyDeployment.id],
-        entities: {
-          [dummyDeployment.id]: dummyDeployment,
-        },
-        skippable: {},
-      },
-      activeStage: {
-        deploymentId: dummyDeployment.id,
-        name: dummyDeployment.stagesList[0].name,
-        stageId: dummyDeployment.stagesList[0].id,
-      },
-      stageLogs: {
-        [activeStageId]: dummyLog,
-      },
-    },
-  });
+  render(
+    <LogViewer
+      activeStage={activeStage}
+      stageLog={dummyLog}
+      changeActiveStage={() => {}}
+    />,
+    {}
+  );
 
   expect(screen.queryByTestId("log-viewer")).toBeInTheDocument();
   expect(
@@ -70,33 +52,17 @@ it("should appear stage log in the document if activeState is exists", () => {
   expect(screen.queryByText("hello world")).toBeInTheDocument();
 });
 
-it("should dispatch clearActiveStage action if click `close log` button", () => {
-  const store = createStore({
-    deployments: {
-      ids: [dummyDeployment.id],
-      entities: {
-        [dummyDeployment.id]: dummyDeployment,
-      },
-      skippable: {},
-    },
-    activeStage: {
-      deploymentId: dummyDeployment.id,
-      name: dummyDeployment.stagesList[0].name,
-      stageId: dummyDeployment.stagesList[0].id,
-    },
-    stageLogs: {
-      [activeStageId]: dummyLog,
-    },
-  });
-  render(<LogViewer />, {
-    store,
-  });
+it("should clearActiveStage action if click `close log` button", () => {
+  const changeActiveStage = jest.fn();
+  render(
+    <LogViewer
+      activeStage={activeStage}
+      stageLog={dummyLog}
+      changeActiveStage={changeActiveStage}
+    />
+  );
 
   userEvent.click(screen.getByRole("button", { name: "close log" }));
 
-  expect(store.getActions()).toMatchObject([
-    {
-      type: clearActiveStage.type,
-    },
-  ]);
+  expect(changeActiveStage).toHaveBeenCalled();
 });

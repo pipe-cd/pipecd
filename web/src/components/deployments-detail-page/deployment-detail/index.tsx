@@ -9,7 +9,7 @@ import {
 import CancelIcon from "@mui/icons-material/Cancel";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import dayjs from "dayjs";
-import { FC, memo, useMemo } from "react";
+import { FC, memo, useMemo, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import { CopyIconButton } from "~/components/copy-icon-button";
 import { DeploymentStatusIcon } from "~/components/deployment-status-icon";
@@ -17,17 +17,12 @@ import { DetailTableRow } from "~/components/detail-table-row";
 import { SplitButton } from "~/components/split-button";
 import { DEPLOYMENT_STATE_TEXT } from "~/constants/deployment-status-text";
 import { PAGE_PATH_APPLICATIONS } from "~/constants/path";
-import { useAppDispatch, useAppSelector } from "~/hooks/redux";
-import { useInterval } from "~/hooks/use-interval";
-import {
-  cancelDeployment,
-  Deployment,
-  isDeploymentRunning,
-  selectById as selectDeploymentById,
-  selectDeploymentIsCanceling,
-} from "~/modules/deployments";
-import { selectPipedById } from "~/modules/pipeds";
-import { fetchStageLog } from "~/modules/stage-logs";
+import { isDeploymentRunning } from "~/utils/is-deployment-running";
+import { Deployment } from "pipecd/web/model/deployment_pb";
+import { useGetPipedById } from "~/queries/pipeds/use-get-piped-by-id";
+import { useCancelDeployment } from "~/queries/deployment/use-cancel-deployment";
+import { useCommand } from "~/contexts/command-context";
+import { Command, CommandStatus } from "~~/model/command_pb";
 
 enum PIPED_VERSION {
   V0 = "v0",
@@ -36,6 +31,7 @@ enum PIPED_VERSION {
 
 export interface DeploymentDetailProps {
   deploymentId: string;
+  deployment?: Deployment.AsObject;
 }
 
 const CANCEL_OPTIONS = [
@@ -43,38 +39,62 @@ const CANCEL_OPTIONS = [
   "Cancel with Rollback",
   "Cancel without Rollback",
 ];
-const LOG_FETCH_INTERVAL = 2000;
 
 export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
-  function DeploymentDetail({ deploymentId }) {
-    const dispatch = useAppDispatch();
+  function DeploymentDetail({ deploymentId, deployment }) {
+    const [commandId, setCommandId] = useState<string>();
+    const { fetchedCommands, commandIds } = useCommand();
 
-    const deployment = useAppSelector<Deployment.AsObject | undefined>(
-      (state) => selectDeploymentById(state.deployments, deploymentId)
-    );
-    const activeStage = useAppSelector((state) => state.activeStage);
-    const piped = useAppSelector(selectPipedById(deployment?.pipedId));
-    const isCanceling = useAppSelector(
-      selectDeploymentIsCanceling(deploymentId)
+    const {
+      mutate: cancelDeployment,
+      isLoading: isCancelInitLoading,
+    } = useCancelDeployment();
+
+    const handleCancelDeployment = async (payload: {
+      deploymentId: string;
+      forceRollback: boolean;
+      forceNoRollback: boolean;
+    }): Promise<void> => {
+      cancelDeployment(payload, {
+        onSuccess: (commandId) => {
+          setCommandId(commandId);
+        },
+      });
+    };
+
+    const { data: piped } = useGetPipedById(
+      { withStatus: true, pipedId: deployment?.pipedId ?? "" },
+      { enabled: !!deployment?.pipedId }
     );
 
-    useInterval(
-      () => {
-        if (activeStage) {
-          dispatch(
-            fetchStageLog({
-              deploymentId: activeStage.deploymentId,
-              stageId: activeStage.stageId,
-              offsetIndex: 0,
-              retriedCount: 0,
-            })
-          );
+    const isCanceling = useMemo(() => {
+      const isCancelCommandRunning = (deploymentId: string): boolean => {
+        const deploymentCommand = Object.values(fetchedCommands).find(
+          (item) =>
+            item.deploymentId === deploymentId &&
+            item.type === Command.Type.CANCEL_DEPLOYMENT &&
+            item.status === CommandStatus.COMMAND_NOT_HANDLED_YET
+        );
+        if (deploymentCommand) {
+          return true;
         }
-      },
-      activeStage && isDeploymentRunning(deployment?.status)
-        ? LOG_FETCH_INTERVAL
-        : null
-    );
+        return false;
+      };
+
+      const isCancelCommandInit = commandIds?.has(commandId ?? "");
+
+      return (
+        isCancelInitLoading ||
+        isCancelCommandInit ||
+        isCancelCommandRunning(deploymentId)
+      );
+    }, [
+      commandId,
+      commandIds,
+      deploymentId,
+      fetchedCommands,
+      isCancelInitLoading,
+    ]);
 
     const pipedVersion = useMemo(() => {
       if (deployment?.deployTargetsByPluginMap?.length) return PIPED_VERSION.V1;
@@ -295,17 +315,14 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
                 })}
               >
                 <SplitButton
-                  // className={classes.actionButtons}
                   options={CANCEL_OPTIONS}
                   label="select merge strategy"
                   onClick={(index) => {
-                    dispatch(
-                      cancelDeployment({
-                        deploymentId,
-                        forceRollback: index === 1,
-                        forceNoRollback: index === 2,
-                      })
-                    );
+                    handleCancelDeployment({
+                      deploymentId,
+                      forceRollback: index === 1,
+                      forceNoRollback: index === 2,
+                    });
                   }}
                   startIcon={<CancelIcon />}
                   loading={isCanceling}
