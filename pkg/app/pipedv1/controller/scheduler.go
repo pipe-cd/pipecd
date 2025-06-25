@@ -649,7 +649,6 @@ func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, statu
 			StageId:      stageID,
 			Status:       status,
 			Requires:     requires,
-			Visible:      true,
 			CompletedAt:  now.Unix(),
 		}
 		retry = pipedservice.NewRetry(10)
