@@ -66,12 +66,12 @@ const createStagesForRendering = (
   }
 
   let visibleStages: Stage[] = [];
-  if (deployment.deployTargetsByPluginMap?.length === 0) {
-    visibleStages = deployment.stagesList.filter((stage) => stage.visible);
-  } else {
+  if (deployment.deployTargetsByPluginMap?.length) {
     visibleStages = deployment.stagesList.filter(
       (stage) => !stage.rollback || isStartedStage(stage)
     );
+  } else {
+    visibleStages = deployment.stagesList.filter((stage) => stage.visible);
   }
 
   const stages: Stage[][] = [];
