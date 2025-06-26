@@ -54,6 +54,10 @@ const findDefaultActiveStage = (
   return stages[stages.length - 1];
 };
 
+const isStartedStage = (stage: Stage): boolean => {
+  return stage.status !== StageStatus.STAGE_NOT_STARTED_YET;
+};
+
 const createStagesForRendering = (
   deployment: Deployment.AsObject | undefined
 ): Stage[][] => {
@@ -61,9 +65,16 @@ const createStagesForRendering = (
     return [];
   }
 
-  const stages: Stage[][] = [];
-  const visibleStages = deployment.stagesList.filter((stage) => stage.visible);
+  let visibleStages: Stage[] = [];
+  if (deployment.deployTargetsByPluginMap?.length) {
+    visibleStages = deployment.stagesList.filter(
+      (stage) => !stage.rollback || isStartedStage(stage)
+    );
+  } else {
+    visibleStages = deployment.stagesList.filter((stage) => stage.visible);
+  }
 
+  const stages: Stage[][] = [];
   stages[0] = visibleStages.filter((stage) => stage.requiresList.length === 0);
 
   let index = 0;
@@ -74,6 +85,7 @@ const createStagesForRendering = (
       stage.requiresList.some((id) => previousIds.includes(id))
     );
   }
+
   return stages;
 };
 
