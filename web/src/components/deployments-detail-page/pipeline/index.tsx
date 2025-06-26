@@ -54,6 +54,10 @@ const findDefaultActiveStage = (
   return stages[stages.length - 1];
 };
 
+const isStartedStage = (stage: Stage): boolean => {
+  return stage.status !== StageStatus.STAGE_NOT_STARTED_YET;
+};
+
 const createStagesForRendering = (
   deployment: Deployment.AsObject | undefined
 ): Stage[][] => {
@@ -61,23 +65,14 @@ const createStagesForRendering = (
     return [];
   }
 
-
-  console.log("[DEBUG]: deployment.stagesList");
-  deployment.stagesList.forEach((stage) => {
-    console.log(stage.name, stage.visible, stage.rollback, stage.requiresList);
-    // stage.rollback = !stage.visible;
-  });
-
   let visibleStages: Stage[] = [];
   if (deployment.deployTargetsByPluginMap?.length === 0) {
     visibleStages = deployment.stagesList.filter((stage) => stage.visible);
   } else {
-    visibleStages = deployment.stagesList.filter((stage) => stage.visible || !stage.rollback);
+    visibleStages = deployment.stagesList.filter(
+      (stage) => !stage.rollback || isStartedStage(stage)
+    );
   }
-
-  console.log("[DEBUG]: visibleStages", visibleStages);
-
-  // const visibleStages = deployment.stagesList.filter((stage) => (stage.visible || !stage.rollback));
 
   const stages: Stage[][] = [];
   stages[0] = visibleStages.filter((stage) => stage.requiresList.length === 0);
@@ -91,7 +86,6 @@ const createStagesForRendering = (
     );
   }
 
-  console.log("[DEBUG]: stages", stages);
   return stages;
 };
 
