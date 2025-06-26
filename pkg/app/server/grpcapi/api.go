@@ -156,6 +156,38 @@ func (a *API) AddApplication(ctx context.Context, req *apiservice.AddApplication
 	if err != nil {
 		return nil, err
 	}
+	gitpathApps, _, err := a.applicationStore.List(ctx, datastore.ListOptions{
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "ProjectId",
+				Operator: datastore.OperatorEqual,
+				Value:    key.ProjectId,
+			},
+			{
+				Field:    "GitPath.Repo.Id",
+				Operator: datastore.OperatorEqual,
+				Value:    req.GitPath.Repo.Id,
+			},
+			{
+				Field:    "GitPath.Path",
+				Operator: datastore.OperatorEqual,
+				Value:    req.GitPath.Path,
+			},
+			{
+				Field:    "GitPath.ConfigFilename",
+				Operator: datastore.OperatorEqual,
+				Value:    req.GitPath.ConfigFilename,
+			},
+		},
+	})
+
+	if err != nil {
+		return nil, gRPCStoreError(err, "list applications for git path duplicate check")
+	}
+
+	if len(gitpathApps) > 0 {
+		return nil, status.Error(codes.AlreadyExists, fmt.Sprintf("application with git path %s/%s already exists", req.GitPath.Repo.Id, req.GitPath.Path))
+	}
 
 	app := model.Application{
 		Id:               uuid.New().String(),
