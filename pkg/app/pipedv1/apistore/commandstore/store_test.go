@@ -61,7 +61,6 @@ func TestListStageCommands(t *testing.T) {
 		deploymentID string
 		stageID      string
 		want         []*model.Command
-		wantErr      error
 	}{
 		{
 			name:         "valid arguments",
@@ -89,21 +88,18 @@ func TestListStageCommands(t *testing.T) {
 					Type:         model.Command_SKIP_STAGE,
 				},
 			},
-			wantErr: nil,
 		},
 		{
 			name:         "deploymentID not exist",
 			deploymentID: "xxx",
 			stageID:      "stage-1",
 			want:         nil,
-			wantErr:      nil,
 		},
 		{
 			name:         "stageID not exist",
 			deploymentID: "deployment-1",
 			stageID:      "stage-999",
 			want:         nil,
-			wantErr:      nil,
 		},
 	}
 
