@@ -10,7 +10,6 @@ import { deploymentFrequencySlice } from "./deployment-frequency";
 import { deploymentChangeFailureRateSlice } from "./deployment-change-failure-rate";
 import { deploymentsSlice } from "./deployments";
 import { insightSlice } from "./insight";
-import { meSlice } from "./me";
 import { pipedsSlice } from "./pipeds";
 import { projectSlice } from "./project";
 import { sealedSecretSlice } from "./sealed-secret";
@@ -33,7 +32,6 @@ export const reducers = combineReducers({
   pipeds: pipedsSlice.reducer,
   commands: commandsSlice.reducer,
   toasts: toastsSlice.reducer,
-  me: meSlice.reducer,
   project: projectSlice.reducer,
   sealedSecret: sealedSecretSlice.reducer,
   apiKeys: apiKeysSlice.reducer,
