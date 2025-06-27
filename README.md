@@ -17,7 +17,7 @@
   A GitOps style continuous delivery platform that provides consistent deployment and operations experience for any applications
   <br/>
   <a href="https://pipecd.dev"><strong>Explore PipeCD docs »</strong></a>
-  <a href="https://play.pipecd.dev?project=play"><strong>Play with live demo »</strong></a>
+  <a href="https://play.pipecd.dev?project=play"><strong>Try on Playground »</strong></a>
 </p>
 
 #
