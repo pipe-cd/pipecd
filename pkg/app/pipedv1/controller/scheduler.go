@@ -302,6 +302,15 @@ func (s *scheduler) Run(ctx context.Context) error {
 			statusReason = fmt.Sprintf("Failed while executing stage %s", ps.Id)
 			break
 		}
+		if ps.Status == model.StageStatus_STAGE_SKIPPED {
+			statusReason = fmt.Sprintf("Stage %s was skipped", ps.Id)
+			continue // TODO
+		}
+		if ps.Status == model.StageStatus_STAGE_EXITED {
+			deploymentStatus = model.DeploymentStatus_DEPLOYMENT_SUCCESS
+			statusReason = fmt.Sprintf("Deployment was exited before stage %s", ps.Id)
+			break
+		}
 
 		var (
 			result       model.StageStatus
