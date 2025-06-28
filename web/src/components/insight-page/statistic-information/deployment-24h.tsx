@@ -40,7 +40,9 @@ const Deployment24h: FC = () => {
   const deploymentSummary = useMemo(() => {
     const summary = {
       totalDeployment: deployment24h?.[0]?.value || 0,
-      failRate: (deploymentFailRate24h?.[0]?.value || 0) * 100,
+      failRate: Number(
+        ((deploymentFailRate24h?.[0]?.value || 0) * 100).toFixed(2)
+      ),
       date: deploymentFailRate24h?.[0]?.timestamp
         ? dayjs.utc(deploymentFailRate24h[0].timestamp).format("DD/MM/YYYY")
         : "-",

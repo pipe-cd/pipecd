@@ -53,7 +53,9 @@ export const useGetApplications = (
         },
       };
       const { applicationsList } = await applicationsAPI.getApplications(req);
-      return applicationsList as Application.AsObject[];
+      return applicationsList.filter(
+        (app) => app.deleted === false
+      ) as Application.AsObject[];
     },
     ...queryOption,
   });
