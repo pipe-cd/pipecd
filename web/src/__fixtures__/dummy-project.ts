@@ -1,6 +1,9 @@
 import {
   Project,
   ProjectRBACConfig,
+  ProjectRBACPolicy,
+  ProjectRBACResource,
+  ProjectRBACRole,
   ProjectStaticUser,
 } from "pipecd/web/model/project_pb";
 import {
@@ -11,6 +14,22 @@ import {
 } from "./utils";
 
 const [createdAt, updatedAt] = createRandTimes(2);
+
+export const dummyRole: ProjectRBACRole.AsObject = {
+  name: "dummy-role",
+  policiesList: [
+    {
+      resourcesList: [
+        {
+          labelsMap: [["pipecd.dev/project", "dummy-project"]],
+          type: ProjectRBACResource.ResourceType.ALL,
+        },
+      ],
+      actionsList: [ProjectRBACPolicy.Action.ALL],
+    },
+  ],
+  isBuiltin: false,
+};
 
 export const dummyProject: Project.AsObject = {
   id: randomUUID(),

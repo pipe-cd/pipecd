@@ -17,13 +17,6 @@ import * as yup from "yup";
 import { STATIC_ADMIN_DESCRIPTION } from "~/constants/text";
 import { UPDATE_STATIC_ADMIN_INFO_SUCCESS } from "~/constants/toast-text";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
-import { useAppDispatch, useAppSelector } from "~/hooks/redux";
-import {
-  fetchProject,
-  toggleAvailability,
-  updateStaticAdmin,
-} from "~/modules/project";
-import { addToast } from "~/modules/toasts";
 import {
   ProjectDescription,
   ProjectTitleWrap,
@@ -32,6 +25,10 @@ import {
   ProjectValuesWrapper,
 } from "~/styles/project-setting";
 import { ProjectSettingLabeledText } from "../project-setting-labeled-text";
+import { useGetProject } from "~/queries/project/use-get-project";
+import { useUpdateStaticAdmin } from "~/queries/project/use-update-static-admin";
+import { useToast } from "~/contexts/toast-context";
+import { useToggleAvailabilityStaticAdmin } from "~/queries/project/use-toggle-availability-static-admin";
 
 const SECTION_TITLE = "Static Admin";
 const DIALOG_TITLE = `Edit ${SECTION_TITLE}`;
@@ -111,29 +108,27 @@ const StaticAdminDialog: FC<{
 };
 
 export const StaticAdminForm: FC = memo(function StaticAdminForm() {
-  const dispatch = useAppDispatch();
-  const [isEnabled, currentUsername] = useAppSelector<[boolean, string | null]>(
-    (state) => [
-      state.project.staticAdminDisabled === false,
-      state.project.username,
-    ]
-  );
   const [isEdit, setIsEdit] = useState(false);
+
+  const { data: project } = useGetProject();
+  const isEnabled = project?.staticAdminDisabled === false;
+  const currentUsername = project?.username || null;
+
+  const { mutateAsync: updateStaticAdmin } = useUpdateStaticAdmin();
+  const {
+    mutateAsync: toggleAvailability,
+  } = useToggleAvailabilityStaticAdmin();
+  const { addToast } = useToast();
 
   const handleSubmit = (values: {
     username: string;
     password: string;
   }): void => {
-    dispatch(updateStaticAdmin(values)).then((result) => {
-      if (updateStaticAdmin.fulfilled.match(result)) {
-        dispatch(fetchProject());
-        dispatch(
-          addToast({
-            message: UPDATE_STATIC_ADMIN_INFO_SUCCESS,
-            severity: "success",
-          })
-        );
-      }
+    updateStaticAdmin(values).then(() => {
+      addToast({
+        message: UPDATE_STATIC_ADMIN_INFO_SUCCESS,
+        severity: "success",
+      });
     });
     setIsEdit(false);
   };
@@ -143,9 +138,7 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
   };
 
   const handleToggleAvailability = (): void => {
-    dispatch(toggleAvailability()).then(() => {
-      dispatch(fetchProject());
-    });
+    toggleAvailability({ isEnabled: !isEnabled });
   };
 
   return (
