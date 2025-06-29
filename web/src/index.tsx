@@ -10,6 +10,7 @@ import { setupDayjs } from "./utils/setup-dayjs";
 import { CookiesProvider } from "react-cookie";
 import QueryClientWrap from "./contexts/query-client-provider";
 import { AuthProvider } from "./contexts/auth-context";
+import { ToastProvider } from "./contexts/toast-context/toast-provider";
 
 async function run(): Promise<void> {
   if (process.env.ENABLE_MOCK === "true") {
@@ -50,19 +51,21 @@ Happy PipeCD-ing 🙌
       <Provider store={store}>
         <StyledEngineProvider injectFirst>
           <ThemeProvider theme={theme}>
-            <QueryClientWrap>
-              <BrowserRouter
-                future={{
-                  v7_startTransition: false,
-                  v7_relativeSplatPath: false,
-                }}
-              >
-                <AuthProvider>
-                  <CssBaseline />
-                  <Routes />
-                </AuthProvider>
-              </BrowserRouter>
-            </QueryClientWrap>
+            <BrowserRouter
+              future={{
+                v7_startTransition: false,
+                v7_relativeSplatPath: false,
+              }}
+            >
+              <ToastProvider>
+                <QueryClientWrap>
+                  <AuthProvider>
+                    <CssBaseline />
+                    <Routes />
+                  </AuthProvider>
+                </QueryClientWrap>
+              </ToastProvider>
+            </BrowserRouter>
           </ThemeProvider>
         </StyledEngineProvider>
       </Provider>
