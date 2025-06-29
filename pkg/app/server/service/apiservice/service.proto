@@ -55,6 +55,7 @@ service APIService {
 
     rpc RequestPlanPreview(RequestPlanPreviewRequest) returns (RequestPlanPreviewResponse) {}
     rpc GetPlanPreviewResults(GetPlanPreviewResultsRequest) returns (GetPlanPreviewResultsResponse) {}
+    rpc CancelPlanPreview(CancelPlanPreviewRequest) returns (CancelPlanPreviewResponse) {}
 
     rpc Encrypt(EncryptRequest) returns (EncryptResponse) {}
 
@@ -272,6 +273,17 @@ message GetPlanPreviewResultsRequest {
 
 message GetPlanPreviewResultsResponse {
     repeated model.PlanPreviewCommandResult results = 1;
+}
+
+message CancelPlanPreviewRequest {
+    string repo_remote_url = 1 [(validate.rules).string.min_len = 1];
+    string head_branch = 2 [(validate.rules).string.min_len = 1];
+    string head_commit = 3 [(validate.rules).string.min_len = 1];
+    string base_branch = 4 [(validate.rules).string.min_len = 1];
+}
+
+message CancelPlanPreviewResponse {
+    string command_id = 1;
 }
 
 message EncryptRequest {
