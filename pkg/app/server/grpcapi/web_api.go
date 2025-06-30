@@ -21,7 +21,6 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/google/go-github/v29/github"
@@ -1250,8 +1249,8 @@ func validateApprover(stages []*model.PipelineStage, commander, stageID string) 
 		if s.Id != stageID {
 			continue
 		}
-		if as := s.Metadata["Approvers"]; as != "" {
-			approvers = strings.Split(as, ",")
+		if aos := s.AuthorizedOperators; len(aos) > 0 {
+			approvers = aos
 		}
 		break
 	}

@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -167,6 +168,21 @@ func (s *deploymentStore) Add(ctx context.Context, d *model.Deployment) error {
 	if d.UpdatedAt == 0 {
 		d.UpdatedAt = now
 	}
+
+	// To make compatibility with pipedv0 and pipedv1 on the UI.
+	// TODO: Add "If the piped is v0," condition
+	for _, s := range d.Stages {
+		switch s.Name {
+		case model.StageAnalysis.String():
+			s.AvailableOperation = model.ManualOperation_MANUAL_OPERATION_SKIP
+		case model.StageWaitApproval.String():
+			s.AvailableOperation = model.ManualOperation_MANUAL_OPERATION_APPROVE
+			if approvers := s.Metadata["Approvers"]; approvers != "" {
+				s.AuthorizedOperators = strings.Split(approvers, ",")
+			}
+		}
+	}
+
 	if err := d.Validate(); err != nil {
 		return err
 	}
