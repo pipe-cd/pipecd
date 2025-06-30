@@ -302,6 +302,15 @@ func (s *scheduler) Run(ctx context.Context) error {
 			statusReason = fmt.Sprintf("Failed while executing stage %s", ps.Id)
 			break
 		}
+		if ps.Status == model.StageStatus_STAGE_SKIPPED {
+			statusReason = fmt.Sprintf("Stage %s has been already skipped", ps.Id)
+			continue
+		}
+		if ps.Status == model.StageStatus_STAGE_EXITED {
+			deploymentStatus = model.DeploymentStatus_DEPLOYMENT_SUCCESS
+			statusReason = fmt.Sprintf("Deployment was exited before stage %s", ps.Id)
+			break
+		}
 
 		var (
 			result       model.StageStatus
@@ -480,6 +489,13 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 		originalStatus = ps.Status
 	)
 
+	defer func() {
+		// Ensure reporting the status even if the stage is cancelled.
+		if err := s.reportStageStatus(context.Background(), ps.Id, finalStatus, ps.Requires); err != nil {
+			s.logger.Error("failed to report stage status", zap.Error(err))
+		}
+	}()
+
 	tds, err := s.targetDSP.Get(ctx, io.Discard)
 	if err != nil {
 		s.logger.Error("failed to get target deployment source", zap.String("stage-name", ps.Name), zap.Error(err))
@@ -523,6 +539,9 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 	// Update stage status to RUNNING if needed.
 	if model.CanUpdateStageStatus(ps.Status, model.StageStatus_STAGE_RUNNING) {
 		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_RUNNING, ps.Requires); err != nil {
+			if sig.Signal() == StopSignalCancel {
+				return model.StageStatus_STAGE_CANCELLED
+			}
 			return model.StageStatus_STAGE_FAILURE
 		}
 		originalStatus = model.StageStatus_STAGE_RUNNING
@@ -532,7 +551,6 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 	plugin, err := s.pluginRegistry.GetPluginClientByStageName(ps.Name)
 	if err != nil {
 		s.logger.Error("failed to find the plugin for the stage", zap.String("stage-name", ps.Name), zap.Error(err))
-		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -540,9 +558,6 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 	stageConfig, stageConfigFound := s.genericApplicationConfig.GetStageConfigByte(ps.Index)
 	if !stageConfigFound {
 		s.logger.Error("Unable to find the stage configuration", zap.String("stage-name", ps.Name))
-		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
-			s.logger.Error("failed to report stage status", zap.Error(err))
-		}
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -568,7 +583,6 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 	// otherwise, return the error.
 	if err != nil && ctx.Err() == nil {
 		s.logger.Error("failed to execute stage", zap.String("stage-name", ps.Name), zap.Error(err))
-		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -587,7 +601,6 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 		status == model.StageStatus_STAGE_EXITED ||
 		(status == model.StageStatus_STAGE_FAILURE && !sig.Terminated()) {
 
-		s.reportStageStatus(ctx, ps.Id, status, ps.Requires)
 		return status
 	}
 

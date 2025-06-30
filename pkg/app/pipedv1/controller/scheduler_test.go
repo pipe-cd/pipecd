@@ -338,5 +338,5 @@ func TestExecuteStage_SignalCancelled(t *testing.T) {
 
 	handler.Cancel()
 	finalStatus := s.executeStage(sig, s.deployment.Stages[0])
-	assert.Equal(t, model.StageStatus_STAGE_FAILURE, finalStatus)
+	assert.Equal(t, model.StageStatus_STAGE_CANCELLED, finalStatus)
 }
