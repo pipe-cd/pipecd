@@ -11,6 +11,7 @@ import { FC, memo, useCallback, useEffect, useState } from "react";
 import {
   METADATA_APPROVED_BY,
   METADATA_SKIPPED_BY,
+  METADATA_STAGE_DISPLAY_KEY,
 } from "~/constants/metadata-keys";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { ActiveStage, updateActiveStage } from "~/modules/active-stage";
@@ -98,7 +99,8 @@ export interface PipelineProps {
 const findApprover = (
   metadata: Array<[string, string]>
 ): string | undefined => {
-  const res = metadata.find(([key]) => key === METADATA_APPROVED_BY);
+  // TODO: Remove METADATA_APPROVED_BY and make compatibility in server.
+  const res = metadata.find(([key]) => key === METADATA_STAGE_DISPLAY_KEY || key === METADATA_APPROVED_BY);
 
   if (res) {
     return res[1];
@@ -108,7 +110,8 @@ const findApprover = (
 };
 
 const findSkipper = (metadata: Array<[string, string]>): string | undefined => {
-  const res = metadata.find(([key]) => key === METADATA_SKIPPED_BY);
+  // TODO: Remove METADATA_SKIPPED_BY and make compatibility in server.
+  const res = metadata.find(([key]) => key === METADATA_STAGE_DISPLAY_KEY || key === METADATA_SKIPPED_BY);
 
   if (res) {
     return res[1];
@@ -209,7 +212,7 @@ export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
                 const skipper = findSkipper(stage.metadataMap);
                 const isActive = activeStage
                   ? activeStage.deploymentId === deploymentId &&
-                    activeStage.stageId === stage.id
+                  activeStage.stageId === stage.id
                   : false;
 
                 const showLine = columnIndex > 0;
@@ -247,17 +250,16 @@ export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
                           borderLeft: `2px solid ${theme.palette.divider}`,
                           borderBottom: `2px solid ${theme.palette.divider}`,
                           width: theme.spacing(2),
-                          height: `calc(${
-                            isCurvedLineExtend
-                              ? APPROVED_STAGE_HEIGHT
-                              : STAGE_HEIGHT
-                          }px + ${theme.spacing(4)})`,
+                          height: `calc(${isCurvedLineExtend
+                            ? APPROVED_STAGE_HEIGHT
+                            : STAGE_HEIGHT
+                            }px + ${theme.spacing(4)})`,
                         },
                       }),
                     })}
                   >
                     {stage.name === WAIT_APPROVAL_NAME &&
-                    stage.status === StageStatus.STAGE_RUNNING ? (
+                      stage.status === StageStatus.STAGE_RUNNING ? (
                       <ApprovalStage
                         id={stage.id}
                         name={stage.name}

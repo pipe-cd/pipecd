@@ -15,6 +15,7 @@ export interface PipelineStageProps {
   onClick: (stageId: string, stageName: string) => void;
 }
 
+// TODO: Use METADATA_STAGE_DISPLAY_KEY instead for all fields in pipedv1.
 const TRAFFIC_PERCENTAGE_META_KEY = {
   PRIMARY: "primary-percentage",
   CANARY: "canary-percentage",
