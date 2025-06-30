@@ -33,6 +33,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/apistore/commandstore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
@@ -88,13 +89,14 @@ var (
 )
 
 type controller struct {
-	apiClient             apiClient
-	gitClient             gitClient
-	deploymentLister      deploymentLister
-	commandLister         commandLister
-	notifier              notifier
-	secretDecrypter       secretDecrypter
-	metadataStoreRegistry metadatastore.MetadataStoreRegistry
+	apiClient                   apiClient
+	gitClient                   gitClient
+	deploymentLister            deploymentLister
+	commandLister               commandLister
+	stageCommandHandledReporter commandstore.StageCommandHandledReporter
+	notifier                    notifier
+	secretDecrypter             secretDecrypter
+	metadataStoreRegistry       metadatastore.MetadataStoreRegistry
 
 	// The registry of all plugins.
 	pluginRegistry plugin.PluginRegistry
@@ -133,6 +135,7 @@ func NewController(
 	pluginRegistry plugin.PluginRegistry,
 	deploymentLister deploymentLister,
 	commandLister commandLister,
+	stageCommandHandledReporter commandstore.StageCommandHandledReporter,
 	notifier notifier,
 	secretDecrypter secretDecrypter,
 	metadataStoreRegistry metadatastore.MetadataStoreRegistry,
@@ -142,14 +145,15 @@ func NewController(
 ) DeploymentController {
 
 	return &controller{
-		apiClient:             apiClient,
-		gitClient:             gitClient,
-		pluginRegistry:        pluginRegistry,
-		deploymentLister:      deploymentLister,
-		commandLister:         commandLister,
-		notifier:              notifier,
-		secretDecrypter:       secretDecrypter,
-		metadataStoreRegistry: metadataStoreRegistry,
+		apiClient:                   apiClient,
+		gitClient:                   gitClient,
+		pluginRegistry:              pluginRegistry,
+		deploymentLister:            deploymentLister,
+		commandLister:               commandLister,
+		stageCommandHandledReporter: stageCommandHandledReporter,
+		notifier:                    notifier,
+		secretDecrypter:             secretDecrypter,
+		metadataStoreRegistry:       metadataStoreRegistry,
 
 		planners:                              make(map[string]*planner),
 		donePlanners:                          make(map[string]time.Time),
@@ -576,6 +580,7 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		c.pluginRegistry,
 		c.notifier,
 		c.secretDecrypter,
+		c.stageCommandHandledReporter,
 		c.logger,
 		c.tracerProvider,
 	)
