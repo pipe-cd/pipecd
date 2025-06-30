@@ -175,7 +175,7 @@ func (s *deploymentStore) Add(ctx context.Context, d *model.Deployment) error {
 		case model.StageAnalysis.String():
 			s.AvailableOperation = model.ManualOperation_MANUAL_OPERATION_SKIP
 		case model.StageWaitApproval.String():
-			s.AvailableOperation = model.ManualOperation_MANUAL_OPERATION_NONE
+			s.AvailableOperation = model.ManualOperation_MANUAL_OPERATION_APPROVE
 		}
 	}
 
