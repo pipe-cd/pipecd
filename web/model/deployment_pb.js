@@ -1654,7 +1654,7 @@ proto.model.DeploymentTrigger.prototype.setStrategySummary = function(value) {
  * @private {!Array<number>}
  * @const
  */
-proto.model.PipelineStage.repeatedFields_ = [6];
+proto.model.PipelineStage.repeatedFields_ = [6,17];
 
 
 
@@ -1702,7 +1702,8 @@ proto.model.PipelineStage.toObject = function(includeInstance, msg) {
     completedAt: jspb.Message.getFieldWithDefault(msg, 13, 0),
     createdAt: jspb.Message.getFieldWithDefault(msg, 14, 0),
     updatedAt: jspb.Message.getFieldWithDefault(msg, 15, 0),
-    availableOperation: jspb.Message.getFieldWithDefault(msg, 16, 0)
+    availableOperation: jspb.Message.getFieldWithDefault(msg, 16, 0),
+    authorizedOperatorsList: (f = jspb.Message.getRepeatedField(msg, 17)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -1804,6 +1805,10 @@ proto.model.PipelineStage.deserializeBinaryFromReader = function(msg, reader) {
     case 16:
       var value = /** @type {!proto.model.ManualOperation} */ (reader.readEnum());
       msg.setAvailableOperation(value);
+      break;
+    case 17:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addAuthorizedOperators(value);
       break;
     default:
       reader.skipField();
@@ -1940,6 +1945,13 @@ proto.model.PipelineStage.serializeBinaryToWriter = function(message, writer) {
   if (f !== 0.0) {
     writer.writeEnum(
       16,
+      f
+    );
+  }
+  f = message.getAuthorizedOperatorsList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      17,
       f
     );
   }
@@ -2255,6 +2267,43 @@ proto.model.PipelineStage.prototype.getAvailableOperation = function() {
  */
 proto.model.PipelineStage.prototype.setAvailableOperation = function(value) {
   return jspb.Message.setProto3EnumField(this, 16, value);
+};
+
+
+/**
+ * repeated string authorized_operators = 17;
+ * @return {!Array<string>}
+ */
+proto.model.PipelineStage.prototype.getAuthorizedOperatorsList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 17));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.model.PipelineStage} returns this
+ */
+proto.model.PipelineStage.prototype.setAuthorizedOperatorsList = function(value) {
+  return jspb.Message.setField(this, 17, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.model.PipelineStage} returns this
+ */
+proto.model.PipelineStage.prototype.addAuthorizedOperators = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 17, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.model.PipelineStage} returns this
+ */
+proto.model.PipelineStage.prototype.clearAuthorizedOperatorsList = function() {
+  return this.setAuthorizedOperatorsList([]);
 };
 
 
