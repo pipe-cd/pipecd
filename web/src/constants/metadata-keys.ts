@@ -2,4 +2,4 @@
 export const METADATA_APPROVED_BY = "ApprovedBy";
 export const METADATA_SKIPPED_BY = "SkippedBy";
 
-export const METADATA_STAGE_DISPLAY_KEY = "pipecd/stage-display-metadata"
+export const METADATA_STAGE_DISPLAY_KEY = "pipecd/stage-display-metadata";

@@ -15,6 +15,6 @@
 package constants
 
 const (
-	// MetadataKey_StageDisplay is the key of the metadata to be displayed on the deployment detail UI.
-	MetadataKey_StageDisplay = "pipecd/stage-display-metadata"
+	// MetadataKeyStageDisplay is the key of the metadata to be displayed on the deployment detail UI.
+	MetadataKeyStageDisplay = "pipecd/stage-display-metadata"
 )
