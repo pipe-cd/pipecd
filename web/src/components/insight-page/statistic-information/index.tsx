@@ -14,7 +14,7 @@ export const StatisticInformation: FC = memo(function StatisticInformation() {
         display: "grid",
         gap: 2,
         gridTemplateColumns: "repeat(2, 1fr)",
-        [theme.breakpoints.up("xl")]: {
+        [theme.breakpoints.up("lg")]: {
           gridTemplateColumns: "repeat(4, 1fr)",
         },
       })}

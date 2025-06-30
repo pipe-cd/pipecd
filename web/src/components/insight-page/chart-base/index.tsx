@@ -11,9 +11,9 @@ import {
 import * as echarts from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
-import { InsightDataPoint, InsightResolution } from "~/modules/insight";
 import { dummyDataPointsList } from "~/__fixtures__/dummy-insight";
 import { grey } from "@mui/material/colors";
+import { InsightDataPoint, InsightResolution } from "~~/model/insight_pb";
 const placeholderData = [{ name: "All", points: dummyDataPointsList }];
 
 echarts.use([
