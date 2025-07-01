@@ -9,12 +9,12 @@ export interface PipelineStageProps {
   status: StageStatus;
   active: boolean;
   isDeploymentRunning: boolean;
-  approver?: string;
-  skipper?: string;
   metadata: [string, string][];
+  displayMetadataText?: string;
   onClick: (stageId: string, stageName: string) => void;
 }
 
+// TODO: Use METADATA_STAGE_DISPLAY_KEY instead for all fields in pipedv1.
 const TRAFFIC_PERCENTAGE_META_KEY = {
   PRIMARY: "primary-percentage",
   CANARY: "canary-percentage",
@@ -68,10 +68,9 @@ export const PipelineStage: FC<PipelineStageProps> = memo(
     status,
     onClick,
     active,
-    approver,
-    skipper,
     metadata,
     isDeploymentRunning,
+    displayMetadataText,
   }) {
     const disabled =
       isDeploymentRunning === false &&
@@ -139,7 +138,7 @@ export const PipelineStage: FC<PipelineStageProps> = memo(
             </Box>
           </Typography>
         </Box>
-        {approver !== undefined ? (
+        {displayMetadataText && (
           <Box
             sx={{
               color: "text.secondary",
@@ -150,22 +149,10 @@ export const PipelineStage: FC<PipelineStageProps> = memo(
             <Typography
               variant="body2"
               color="inherit"
-            >{`Approved by ${approver}`}</Typography>
+            >{`${displayMetadataText}`}</Typography>
           </Box>
-        ) : skipper !== undefined ? (
-          <Box
-            sx={{
-              color: "text.secondary",
-              marginLeft: 4,
-              textAlign: "left",
-            }}
-          >
-            <Typography
-              variant="body2"
-              color="inherit"
-            >{`Skipped by ${skipper}`}</Typography>
-          </Box>
-        ) : null}
+        )}
+        {/* TODO: remove trafficPercentage and use only displayMetadataText */}
         {trafficPercentage && (
           <Box
             sx={{
