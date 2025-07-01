@@ -49,7 +49,7 @@ type Lister interface {
 
 // StageCommandHandledReporter helps report stage commands as handled.
 type StageCommandHandledReporter interface {
-	// Report reports all stage commands of the given deployment and stage as handled successfully.
+	// Report reports all stage commands of the given stage as handled successfully.
 	Report(ctx context.Context, deploymentID, stageID string) error
 }
 
