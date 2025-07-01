@@ -22,6 +22,7 @@ export const dummyPipelineStage: PipelineStage.AsObject = {
   createdAt: createdAt.unix(),
   updatedAt: updatedAt.unix(),
   availableOperation: ManualOperation.MANUAL_OPERATION_UNKNOWN,
+  authorizedOperatorsList: [],
 };
 
 export function createPipelineStage(
