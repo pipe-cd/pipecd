@@ -318,8 +318,9 @@ func TestValidateApprover(t *testing.T) {
 			stages: []*model.PipelineStage{
 				{
 					Id: "stage-id",
-					Metadata: map[string]string{
-						"Approvers": "user1,user2",
+					AuthorizedOperators: []string{
+						"user1",
+						"user2",
 					},
 				},
 			},
@@ -332,8 +333,8 @@ func TestValidateApprover(t *testing.T) {
 			stages: []*model.PipelineStage{
 				{
 					Id: "stage-id",
-					Metadata: map[string]string{
-						"Approvers": "user1",
+					AuthorizedOperators: []string{
+						"user1",
 					},
 				},
 			},
@@ -346,8 +347,9 @@ func TestValidateApprover(t *testing.T) {
 			stages: []*model.PipelineStage{
 				{
 					Id: "stage-id",
-					Metadata: map[string]string{
-						"Approvers": "user2,user3",
+					AuthorizedOperators: []string{
+						"user2",
+						"user3",
 					},
 				},
 			},
@@ -356,7 +358,7 @@ func TestValidateApprover(t *testing.T) {
 			wantErr:   true,
 		},
 		{
-			name: "valid if the Approvers key isn't contained in metadata",
+			name: "valid if the AuthorizedOperators is empty",
 			stages: []*model.PipelineStage{
 				{
 					Id: "stage-id",
@@ -365,6 +367,20 @@ func TestValidateApprover(t *testing.T) {
 			commander: "user1",
 			stageID:   "stage-id",
 			wantErr:   false,
+		},
+		{
+			name: "invalid if a commander isn't included in approvers metadata for pipedv0 compatibility",
+			stages: []*model.PipelineStage{
+				{
+					Id: "stage-id",
+					Metadata: map[string]string{
+						"Approvers": "user2,user3",
+					},
+				},
+			},
+			commander: "user1",
+			stageID:   "stage-id",
+			wantErr:   true,
 		},
 	}
 	for _, tt := range tests {

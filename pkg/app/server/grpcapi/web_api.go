@@ -1250,7 +1250,10 @@ func validateApprover(stages []*model.PipelineStage, commander, stageID string) 
 		if s.Id != stageID {
 			continue
 		}
-		if as := s.Metadata["Approvers"]; as != "" {
+		if aos := s.AuthorizedOperators; len(aos) > 0 {
+			approvers = aos
+		} else if as := s.Metadata["Approvers"]; as != "" {
+			// TODO: Remove this if-clause after most deployments with 'Approvers' metadata are finished.
 			approvers = strings.Split(as, ",")
 		}
 		break
