@@ -285,14 +285,14 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	// Start running command store.
 	var commandLister commandstore.Lister
-	var stageCommandHandledReporter commandstore.StageCommandHandledReporter
+	var stageCommandHandledReporter commandstore.Reporter
 	{
 		store := commandstore.NewStore(apiClient, p.gracePeriod, input.Logger)
 		group.Go(func() error {
 			return store.Run(ctx)
 		})
 		commandLister = store.Lister()
-		stageCommandHandledReporter = store.StageCommandHandledReporter()
+		stageCommandHandledReporter = store.Reporter()
 	}
 
 	// Start running event store.

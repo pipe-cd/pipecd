@@ -34,7 +34,7 @@ type apiClient interface {
 type Store interface {
 	Run(ctx context.Context) error
 	Lister() Lister
-	StageCommandHandledReporter() StageCommandHandledReporter
+	Reporter() Reporter
 }
 
 // Lister helps list commands.
@@ -47,10 +47,10 @@ type Lister interface {
 	ListPipedCommands() []model.ReportableCommand
 }
 
-// StageCommandHandledReporter helps report stage commands as handled.
-type StageCommandHandledReporter interface {
-	// Report reports all stage commands of the given stage as handled successfully.
-	Report(ctx context.Context, deploymentID, stageID string) error
+// Reporter helps report commands.
+type Reporter interface {
+	// ReportStageCommandsHandled reports all stage commands of the given stage as handled successfully.
+	ReportStageCommandsHandled(ctx context.Context, deploymentID, stageID string) error
 }
 
 // stageCommandMap is a map of stage commands. Keys are deploymentID and stageID.
@@ -119,7 +119,7 @@ func (s *store) Lister() Lister {
 	return s
 }
 
-func (s *store) StageCommandHandledReporter() StageCommandHandledReporter {
+func (s *store) Reporter() Reporter {
 	return s
 }
 
@@ -270,7 +270,7 @@ func (s *store) reportCommandHandled(ctx context.Context, c *model.Command, stat
 	return err
 }
 
-func (s *store) Report(ctx context.Context, deploymentID, stageID string) error {
+func (s *store) ReportStageCommandsHandled(ctx context.Context, deploymentID, stageID string) error {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
