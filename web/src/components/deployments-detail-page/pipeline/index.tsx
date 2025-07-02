@@ -11,6 +11,7 @@ import { FC, memo, useCallback, useEffect, useState } from "react";
 import {
   METADATA_APPROVED_BY,
   METADATA_SKIPPED_BY,
+  METADATA_STAGE_DISPLAY_KEY,
 } from "~/constants/metadata-keys";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { ActiveStage, updateActiveStage } from "~/modules/active-stage";
@@ -95,25 +96,37 @@ export interface PipelineProps {
   deploymentId: string;
 }
 
+// deprecated. Use findDisplayMetadataText for pipedv1.
 const findApprover = (
   metadata: Array<[string, string]>
 ): string | undefined => {
   const res = metadata.find(([key]) => key === METADATA_APPROVED_BY);
 
   if (res) {
-    return res[1];
+    return `Approved by: ${res[1]}`;
   }
 
   return undefined;
 };
 
+// deprecated. Use findDisplayMetadataText for pipedv1.
 const findSkipper = (metadata: Array<[string, string]>): string | undefined => {
   const res = metadata.find(([key]) => key === METADATA_SKIPPED_BY);
 
   if (res) {
-    return res[1];
+    return `Skipped by: ${res[1]}`;
   }
 
+  return undefined;
+};
+
+const findDisplayMetadataText = (
+  metadata: Array<[string, string]>
+): string | undefined => {
+  const res = metadata.find(([key]) => key === METADATA_STAGE_DISPLAY_KEY);
+  if (res) {
+    return res[1];
+  }
   return undefined;
 };
 
@@ -205,6 +218,10 @@ export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
               key={`pipeline-${columnIndex}`}
             >
               {stageColumn.map((stage, stageIndex) => {
+                const displayMetadataText = findDisplayMetadataText(
+                  stage.metadataMap
+                );
+                // TODO: remove approver and skipper. they should be included in findDisplayMetadataText for compatibility.
                 const approver = findApprover(stage.metadataMap);
                 const skipper = findSkipper(stage.metadataMap);
                 const isActive = activeStage
@@ -215,6 +232,7 @@ export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
                 const showLine = columnIndex > 0;
                 const showStraightLine = showLine && stageIndex === 0;
                 const showCurvedLine = showLine && stageIndex > 0;
+                // TODO: remove approver. use displayMetadataText instead.
                 const isCurvedLineExtend =
                   showCurvedLine && (Boolean(approver) || isPrevStageLarge);
 
@@ -274,9 +292,11 @@ export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
                         metadata={stage.metadataMap}
                         onClick={handleOnClickStage}
                         active={isActive}
-                        approver={approver}
-                        skipper={skipper}
                         isDeploymentRunning={isRunning}
+                        // TODO: use only displayMetadataText
+                        displayMetadataText={
+                          displayMetadataText || approver || skipper
+                        }
                       />
                     )}
                   </Box>
