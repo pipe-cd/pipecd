@@ -22,7 +22,8 @@ import "pkg/plugin/api/v1alpha1/common/common.proto";
 
 // PlanPreviewService defines the public APIs for the Plan Preview feature of plugin.
 service PlanPreviewService {
-    // GetPlanPreview gets the plan preview result for the give application.
+    // GetPlanPreview gets the plan preview result for the given application.
+    // The plugin will compare the target deployment source with the actual states of the deploy targets.
     rpc GetPlanPreview(GetPlanPreviewRequest) returns (GetPlanPreviewResponse) {}
 }
 

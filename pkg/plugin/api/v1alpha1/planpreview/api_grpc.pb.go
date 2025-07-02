@@ -22,7 +22,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PlanPreviewServiceClient interface {
-	// GetPlanPreview gets the plan preview result for the give application.
+	// GetPlanPreview gets the plan preview result for the given application.
+	// The plugin will compare the target deployment source with the actual states of the deploy targets.
 	GetPlanPreview(ctx context.Context, in *GetPlanPreviewRequest, opts ...grpc.CallOption) (*GetPlanPreviewResponse, error)
 }
 
@@ -47,7 +48,8 @@ func (c *planPreviewServiceClient) GetPlanPreview(ctx context.Context, in *GetPl
 // All implementations must embed UnimplementedPlanPreviewServiceServer
 // for forward compatibility
 type PlanPreviewServiceServer interface {
-	// GetPlanPreview gets the plan preview result for the give application.
+	// GetPlanPreview gets the plan preview result for the given application.
+	// The plugin will compare the target deployment source with the actual states of the deploy targets.
 	GetPlanPreview(context.Context, *GetPlanPreviewRequest) (*GetPlanPreviewResponse, error)
 	mustEmbedUnimplementedPlanPreviewServiceServer()
 }
