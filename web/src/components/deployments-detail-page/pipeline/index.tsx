@@ -27,6 +27,7 @@ import { ApprovalStage } from "./approval-stage";
 import { PipelineStage } from "./pipeline-stage";
 import { ManualOperation } from "~~/model/deployment_pb";
 
+const WAIT_APPROVAL_NAME = "WAIT_APPROVAL";
 const STAGE_HEIGHT = 56;
 const APPROVED_STAGE_HEIGHT = 66;
 
@@ -244,8 +245,11 @@ export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
                       }),
                     })}
                   >
-                    {stage.availableOperation ===
-                      ManualOperation.MANUAL_OPERATION_APPROVE &&
+                    {/* TODO: Remove stageName condition after finishing deployments which are made 
+                         while the server does not inject availableOperation */}
+                    {(stage.name === WAIT_APPROVAL_NAME ||
+                      stage.availableOperation ===
+                        ManualOperation.MANUAL_OPERATION_APPROVE) &&
                     stage.status === StageStatus.STAGE_RUNNING ? (
                       <ApprovalStage
                         id={stage.id}

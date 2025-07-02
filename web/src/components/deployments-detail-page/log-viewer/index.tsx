@@ -36,6 +36,7 @@ import { ManualOperation } from "~~/model/deployment_pb";
 
 const INITIAL_HEIGHT = 400;
 const TOOLBAR_HEIGHT = 48;
+const ANALYSIS_STAGE_NAME = "ANALYSIS";
 
 function useActiveStageLog(): [Stage | null, StageLog | null] {
   return useShallowEqualSelector<[Stage | null, StageLog | null]>((state) => {
@@ -147,8 +148,11 @@ export const LogViewer: FC = memo(function LogViewer() {
               alignItems: "center",
             }}
           >
-            {activeStage.availableOperation ===
-              ManualOperation.MANUAL_OPERATION_SKIP &&
+            {/* TODO: Remove stageName condition after finishing deployments which are made 
+                      while the server does not inject availableOperation */}
+            {(activeStage.name === ANALYSIS_STAGE_NAME ||
+              activeStage.availableOperation ===
+                ManualOperation.MANUAL_OPERATION_SKIP) &&
               activeStage.status === StageStatus.STAGE_RUNNING && (
                 <Button
                   // className={classes.skipButton}
