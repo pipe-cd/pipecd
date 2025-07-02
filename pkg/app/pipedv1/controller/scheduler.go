@@ -28,6 +28,7 @@ import (
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/apistore/commandstore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
@@ -49,6 +50,7 @@ type scheduler struct {
 	gitClient       gitClient
 	notifier        notifier
 	secretDecrypter secretDecrypter
+	commandReporter commandstore.Reporter
 
 	targetDSP  deploysource.Provider
 	runningDSP deploysource.Provider
@@ -81,6 +83,7 @@ func newScheduler(
 	pluginRegistry plugin.PluginRegistry,
 	notifier notifier,
 	secretsDecrypter secretDecrypter,
+	commandReporter commandstore.Reporter,
 	logger *zap.Logger,
 	tracerProvider trace.TracerProvider,
 ) *scheduler {
@@ -100,6 +103,7 @@ func newScheduler(
 		pluginRegistry:       pluginRegistry,
 		notifier:             notifier,
 		secretDecrypter:      secretsDecrypter,
+		commandReporter:      commandReporter,
 		doneDeploymentStatus: d.Status,
 		cancelledCh:          make(chan *model.ReportableCommand, 1),
 		logger:               logger,
@@ -330,6 +334,9 @@ func (s *scheduler) Run(ctx context.Context) error {
 			case model.StageStatus_STAGE_FAILURE, model.StageStatus_STAGE_CANCELLED:
 				span.SetStatus(codes.Error, statusReason)
 			}
+
+			// Mark commands as handled regardless of the stage status because the commands will no longer be used.
+			s.commandReporter.ReportStageCommandsHandled(ctx, s.deployment.Id, ps.Id)
 
 			close(doneCh)
 		}()
