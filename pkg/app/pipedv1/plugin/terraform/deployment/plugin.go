@@ -22,6 +22,19 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/config"
 )
 
+// Stage names for Terraform plugin.
+const (
+	// TERRAFORM_PLAN stage executes `terraform plan`.
+	stagePlan = "TERRAFORM_PLAN"
+	// TERRAFORM_APPLY stage executes `terraform apply`.
+	stageApply = "TERRAFORM_APPLY"
+	// TERRAFORM_SYNC stage executes `terraform plan` at first.
+	// If any changes are detected, it executes `terraform apply` automatically.
+	stageSync = "TERRAFORM_SYNC"
+	// TERRAFORM_ROLLBACK stage rollbacks by executing `terraform apply` for the previous commit.`
+	stageRollback = "TERRAFORM_ROLLBACK"
+)
+
 // Plugin implements sdk.DeploymentPlugin for Terraform.
 type Plugin struct{}
 
@@ -54,5 +67,10 @@ func (p *Plugin) ExecuteStage(ctx context.Context, _ *config.Config, dts []*sdk.
 
 // FetchDefinedStages implements sdk.DeploymentPlugin.
 func (p *Plugin) FetchDefinedStages() []string {
-	panic("unimplemented")
+	return []string{
+		stagePlan,
+		stageApply,
+		stageSync,
+		stageRollback,
+	}
 }
