@@ -1,6 +1,6 @@
 module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform
 
-go 1.24.2
+go 1.24.1
 
 require (
 	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250702080240-3ef0619b560c
