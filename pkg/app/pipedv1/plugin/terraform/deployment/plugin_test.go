@@ -25,7 +25,7 @@ import (
 
 func Test_FetchDefinedStages(t *testing.T) {
 	p := &Plugin{}
-	want := []string{"TERRAFORM_PLAN", "TERRAFORM_APPLY", "TERRAFORM_SYNC", "TERRAFORM_ROLLBACK"}
+	want := []string{"TERRAFORM_PLAN", "TERRAFORM_APPLY", "TERRAFORM_ROLLBACK"}
 	got := p.FetchDefinedStages()
 
 	assert.Equal(t, want, got)
@@ -37,6 +37,134 @@ func Test_DetermineStrategy(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Nil(t, got)
+}
+
+func TestPlugin_BuildPipelineSyncStages(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *sdk.BuildPipelineSyncStagesInput
+		want  *sdk.BuildPipelineSyncStagesResponse
+	}{
+		{
+			name: "single stage without rollback",
+			input: &sdk.BuildPipelineSyncStagesInput{
+				Request: sdk.BuildPipelineSyncStagesRequest{
+					Stages: []sdk.StageConfig{
+						{
+							Name:  stageApply,
+							Index: 1,
+						},
+					},
+					Rollback: false,
+				},
+			},
+			want: &sdk.BuildPipelineSyncStagesResponse{
+				Stages: []sdk.PipelineStage{
+					{
+						Name:               "TERRAFORM_APPLY",
+						Index:              1,
+						Rollback:           false,
+						Metadata:           map[string]string{},
+						AvailableOperation: sdk.ManualOperationNone,
+					},
+				},
+			},
+		},
+		{
+			name: "multiple stages without rollback",
+			input: &sdk.BuildPipelineSyncStagesInput{
+				Request: sdk.BuildPipelineSyncStagesRequest{
+					Stages: []sdk.StageConfig{
+						{
+							Name:  stagePlan,
+							Index: 1,
+						},
+						{
+							Name:  stageApply,
+							Index: 3,
+						},
+					},
+					Rollback: false,
+				},
+			},
+			want: &sdk.BuildPipelineSyncStagesResponse{
+				Stages: []sdk.PipelineStage{
+					{
+						Name:               "TERRAFORM_PLAN",
+						Index:              1,
+						Rollback:           false,
+						Metadata:           map[string]string{},
+						AvailableOperation: sdk.ManualOperationNone,
+					},
+					{
+						Name:               "TERRAFORM_APPLY",
+						Index:              3,
+						Rollback:           false,
+						Metadata:           map[string]string{},
+						AvailableOperation: sdk.ManualOperationNone,
+					},
+				},
+			},
+		},
+		{
+			name: "multiple stages with rollback",
+			input: &sdk.BuildPipelineSyncStagesInput{
+				Request: sdk.BuildPipelineSyncStagesRequest{
+					Stages: []sdk.StageConfig{
+						{
+							Name:  stagePlan,
+							Index: 2,
+						},
+						{
+							Name:  stageApply,
+							Index: 3,
+						},
+					},
+					Rollback: true,
+				},
+			},
+			want: &sdk.BuildPipelineSyncStagesResponse{
+				Stages: []sdk.PipelineStage{
+					{
+						Name:               stagePlan,
+						Index:              2,
+						Rollback:           false,
+						Metadata:           map[string]string{},
+						AvailableOperation: sdk.ManualOperationNone,
+					},
+					{
+						Name:               stageApply,
+						Index:              3,
+						Rollback:           false,
+						Metadata:           map[string]string{},
+						AvailableOperation: sdk.ManualOperationNone,
+					},
+					{
+						Name:               stageRollback,
+						Index:              2,
+						Rollback:           true,
+						Metadata:           map[string]string{},
+						AvailableOperation: sdk.ManualOperationNone,
+					},
+				},
+			},
+		},
+	}
+
+	ctx := context.Background()
+	p := &Plugin{}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := p.BuildPipelineSyncStages(ctx, nil, tt.input)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
 }
 
 func TestPlugin_BuildQuickSyncStages(t *testing.T) {
@@ -57,7 +185,7 @@ func TestPlugin_BuildQuickSyncStages(t *testing.T) {
 			want: &sdk.BuildQuickSyncStagesResponse{
 				Stages: []sdk.QuickSyncStage{
 					{
-						Name:               stageSync,
+						Name:               stageApply,
 						Description:        "Sync by applying any detected changes",
 						Rollback:           false,
 						Metadata:           map[string]string{},
@@ -76,7 +204,7 @@ func TestPlugin_BuildQuickSyncStages(t *testing.T) {
 			want: &sdk.BuildQuickSyncStagesResponse{
 				Stages: []sdk.QuickSyncStage{
 					{
-						Name:               stageSync,
+						Name:               stageApply,
 						Description:        "Sync by applying any detected changes",
 						Rollback:           false,
 						Metadata:           map[string]string{},

@@ -16,6 +16,7 @@ package deployment
 
 import (
 	"context"
+	"slices"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 
@@ -28,9 +29,6 @@ const (
 	stagePlan = "TERRAFORM_PLAN"
 	// TERRAFORM_APPLY stage executes `terraform apply`.
 	stageApply = "TERRAFORM_APPLY"
-	// TERRAFORM_SYNC stage executes `terraform plan` at first.
-	// If any changes are detected, it executes `terraform apply` automatically.
-	stageSync = "TERRAFORM_SYNC"
 	// TERRAFORM_ROLLBACK stage rollbacks by executing `terraform apply` for the previous commit.`
 	stageRollback = "TERRAFORM_ROLLBACK"
 )
@@ -42,14 +40,38 @@ var _ sdk.DeploymentPlugin[config.Config, config.DeployTargetConfig, config.Appl
 
 // BuildPipelineSyncStages implements sdk.DeploymentPlugin.
 func (p *Plugin) BuildPipelineSyncStages(ctx context.Context, _ *config.Config, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
-	panic("unimplemented")
+	reqStages := input.Request.Stages
+	out := make([]sdk.PipelineStage, 0, len(reqStages)+1)
+
+	for _, s := range reqStages {
+		out = append(out, sdk.PipelineStage{
+			Name:               s.Name,
+			Index:              s.Index,
+			Rollback:           false,
+			Metadata:           make(map[string]string),
+			AvailableOperation: sdk.ManualOperationNone,
+		})
+	}
+	if input.Request.Rollback {
+		minIndex := slices.MinFunc(reqStages, func(a, b sdk.StageConfig) int { return a.Index - b.Index }).Index
+		out = append(out, sdk.PipelineStage{
+			Name:               stageRollback,
+			Index:              minIndex,
+			Rollback:           true,
+			Metadata:           make(map[string]string),
+			AvailableOperation: sdk.ManualOperationNone,
+		})
+	}
+	return &sdk.BuildPipelineSyncStagesResponse{
+		Stages: out,
+	}, nil
 }
 
 // BuildQuickSyncStages implements sdk.DeploymentPlugin.
 func (p *Plugin) BuildQuickSyncStages(ctx context.Context, _ *config.Config, input *sdk.BuildQuickSyncStagesInput) (*sdk.BuildQuickSyncStagesResponse, error) {
 	stages := make([]sdk.QuickSyncStage, 0, 2)
 	stages = append(stages, sdk.QuickSyncStage{
-		Name:               stageSync,
+		Name:               stageApply,
 		Description:        "Sync by applying any detected changes",
 		Rollback:           false,
 		Metadata:           map[string]string{},
@@ -91,7 +113,6 @@ func (p *Plugin) FetchDefinedStages() []string {
 	return []string{
 		stagePlan,
 		stageApply,
-		stageSync,
 		stageRollback,
 	}
 }
