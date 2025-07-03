@@ -128,21 +128,21 @@ func TestPlugin_BuildPipelineSyncStages(t *testing.T) {
 			want: &sdk.BuildPipelineSyncStagesResponse{
 				Stages: []sdk.PipelineStage{
 					{
-						Name:               stagePlan,
+						Name:               "TERRAFORM_PLAN",
 						Index:              2,
 						Rollback:           false,
 						Metadata:           map[string]string{},
 						AvailableOperation: sdk.ManualOperationNone,
 					},
 					{
-						Name:               stageApply,
+						Name:               "TERRAFORM_APPLY",
 						Index:              3,
 						Rollback:           false,
 						Metadata:           map[string]string{},
 						AvailableOperation: sdk.ManualOperationNone,
 					},
 					{
-						Name:               stageRollback,
+						Name:               "TERRAFORM_ROLLBACK",
 						Index:              2,
 						Rollback:           true,
 						Metadata:           map[string]string{},
@@ -153,14 +153,13 @@ func TestPlugin_BuildPipelineSyncStages(t *testing.T) {
 		},
 	}
 
-	ctx := context.Background()
 	p := &Plugin{}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := p.BuildPipelineSyncStages(ctx, nil, tt.input)
+			got, err := p.BuildPipelineSyncStages(t.Context(), nil, tt.input)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.want, got)
 		})
@@ -204,14 +203,14 @@ func TestPlugin_BuildQuickSyncStages(t *testing.T) {
 			want: &sdk.BuildQuickSyncStagesResponse{
 				Stages: []sdk.QuickSyncStage{
 					{
-						Name:               stageApply,
+						Name:               "TERRAFORM_APPLY",
 						Description:        "Sync by applying any detected changes",
 						Rollback:           false,
 						Metadata:           map[string]string{},
 						AvailableOperation: sdk.ManualOperationNone,
 					},
 					{
-						Name:               stageRollback,
+						Name:               "TERRAFORM_ROLLBACK",
 						Description:        "Rollback by applying the previous Terraform files",
 						Rollback:           true,
 						Metadata:           map[string]string{},
@@ -222,14 +221,13 @@ func TestPlugin_BuildQuickSyncStages(t *testing.T) {
 		},
 	}
 
-	ctx := context.Background()
 	p := &Plugin{}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := p.BuildQuickSyncStages(ctx, nil, tt.input)
+			got, err := p.BuildQuickSyncStages(t.Context(), nil, tt.input)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.want, got)
 		})
