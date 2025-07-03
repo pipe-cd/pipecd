@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -177,6 +178,9 @@ func (s *deploymentStore) Add(ctx context.Context, d *model.Deployment) error {
 				s.AvailableOperation = model.ManualOperation_MANUAL_OPERATION_SKIP
 			case model.StageWaitApproval.String():
 				s.AvailableOperation = model.ManualOperation_MANUAL_OPERATION_APPROVE
+				if approvers := s.Metadata["Approvers"]; approvers != "" {
+					s.AuthorizedOperators = strings.Split(approvers, ",")
+				}
 			}
 		}
 	}

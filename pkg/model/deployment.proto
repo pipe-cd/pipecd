@@ -168,6 +168,9 @@ message PipelineStage {
 
     // Available manual operation via Web UI for this stage.
     ManualOperation available_operation = 16 [(validate.rules).enum.defined_only = true];
+    // The list of usernames who can execute the available_operation.
+    // This will be used in the server-side validation.
+    repeated string authorized_operators = 17;
 }
 
 message Commit {
