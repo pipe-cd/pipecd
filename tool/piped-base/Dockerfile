@@ -17,7 +17,8 @@ RUN \
         git \
         openssh \
         jq \
-        curl && \
+        curl \
+        tini && \
     update-ca-certificates && \
     mkdir -p ${PIPED_TOOLS_DIR} && \
     rm -f /var/cache/apk/* && \
