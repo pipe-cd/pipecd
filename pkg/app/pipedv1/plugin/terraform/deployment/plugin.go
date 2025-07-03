@@ -51,8 +51,9 @@ func (p *Plugin) BuildQuickSyncStages(ctx context.Context, _ *config.Config, inp
 }
 
 // DetermineStrategy implements sdk.DeploymentPlugin.
+// It returns (nil, nil) because this plugin does not have specific logic for DetermineStrategy.
 func (p *Plugin) DetermineStrategy(ctx context.Context, _ *config.Config, input *sdk.DetermineStrategyInput[config.ApplicationConfigSpec]) (*sdk.DetermineStrategyResponse, error) {
-	panic("unimplemented")
+	return nil, nil
 }
 
 // DetermineVersions implements sdk.DeploymentPlugin.

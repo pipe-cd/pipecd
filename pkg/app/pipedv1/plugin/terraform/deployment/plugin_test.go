@@ -15,6 +15,7 @@
 package deployment
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -26,4 +27,12 @@ func Test_FetchDefinedStages(t *testing.T) {
 	got := p.FetchDefinedStages()
 
 	assert.Equal(t, want, got)
+}
+
+func Test_DetermineStrategy(t *testing.T) {
+	p := &Plugin{}
+	got, err := p.DetermineStrategy(context.Background(), nil, nil)
+
+	assert.NoError(t, err)
+	assert.Nil(t, got)
 }
