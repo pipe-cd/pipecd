@@ -19,6 +19,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 func Test_FetchDefinedStages(t *testing.T) {
@@ -35,4 +37,73 @@ func Test_DetermineStrategy(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Nil(t, got)
+}
+
+func TestPlugin_BuildQuickSyncStages(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *sdk.BuildQuickSyncStagesInput
+		want  *sdk.BuildQuickSyncStagesResponse
+	}{
+		{
+			name: "no rollback",
+			input: &sdk.BuildQuickSyncStagesInput{
+				Request: sdk.BuildQuickSyncStagesRequest{
+					Rollback: false,
+				},
+			},
+			want: &sdk.BuildQuickSyncStagesResponse{
+				Stages: []sdk.QuickSyncStage{
+					{
+						Name:               stageSync,
+						Description:        "Sync by applying any detected changes",
+						Rollback:           false,
+						Metadata:           map[string]string{},
+						AvailableOperation: sdk.ManualOperationNone,
+					},
+				},
+			},
+		},
+		{
+			name: "with rollback",
+			input: &sdk.BuildQuickSyncStagesInput{
+				Request: sdk.BuildQuickSyncStagesRequest{
+					Rollback: true,
+				},
+			},
+			want: &sdk.BuildQuickSyncStagesResponse{
+				Stages: []sdk.QuickSyncStage{
+					{
+						Name:               stageSync,
+						Description:        "Sync by applying any detected changes",
+						Rollback:           false,
+						Metadata:           map[string]string{},
+						AvailableOperation: sdk.ManualOperationNone,
+					},
+					{
+						Name:               stageRollback,
+						Description:        "Rollback by applying the previous Terraform files",
+						Rollback:           true,
+						Metadata:           map[string]string{},
+						AvailableOperation: sdk.ManualOperationNone,
+					},
+				},
+			},
+		},
+	}
+
+	ctx := context.Background()
+	p := &Plugin{}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := p.BuildQuickSyncStages(ctx, nil, tt.input)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
 }

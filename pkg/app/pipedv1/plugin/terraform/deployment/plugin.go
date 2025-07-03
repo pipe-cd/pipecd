@@ -47,7 +47,27 @@ func (p *Plugin) BuildPipelineSyncStages(ctx context.Context, _ *config.Config, 
 
 // BuildQuickSyncStages implements sdk.DeploymentPlugin.
 func (p *Plugin) BuildQuickSyncStages(ctx context.Context, _ *config.Config, input *sdk.BuildQuickSyncStagesInput) (*sdk.BuildQuickSyncStagesResponse, error) {
-	panic("unimplemented")
+	stages := make([]sdk.QuickSyncStage, 0, 2)
+	stages = append(stages, sdk.QuickSyncStage{
+		Name:               stageSync,
+		Description:        "Sync by applying any detected changes",
+		Rollback:           false,
+		Metadata:           map[string]string{},
+		AvailableOperation: sdk.ManualOperationNone,
+	})
+
+	if input.Request.Rollback {
+		stages = append(stages, sdk.QuickSyncStage{
+			Name:               stageRollback,
+			Description:        "Rollback by applying the previous Terraform files",
+			Rollback:           true,
+			Metadata:           map[string]string{},
+			AvailableOperation: sdk.ManualOperationNone,
+		})
+	}
+	return &sdk.BuildQuickSyncStagesResponse{
+		Stages: stages,
+	}, nil
 }
 
 // DetermineStrategy implements sdk.DeploymentPlugin.
