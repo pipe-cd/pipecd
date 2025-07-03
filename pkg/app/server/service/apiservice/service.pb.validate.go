@@ -5197,6 +5197,256 @@ var _ interface {
 	ErrorName() string
 } = GetPlanPreviewResultsResponseValidationError{}
 
+// Validate checks the field values on CancelPlanPreviewRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CancelPlanPreviewRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CancelPlanPreviewRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CancelPlanPreviewRequestMultiError, or nil if none found.
+func (m *CancelPlanPreviewRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CancelPlanPreviewRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetRepoRemoteUrl()) < 1 {
+		err := CancelPlanPreviewRequestValidationError{
+			field:  "RepoRemoteUrl",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetHeadBranch()) < 1 {
+		err := CancelPlanPreviewRequestValidationError{
+			field:  "HeadBranch",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetHeadCommit()) < 1 {
+		err := CancelPlanPreviewRequestValidationError{
+			field:  "HeadCommit",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetBaseBranch()) < 1 {
+		err := CancelPlanPreviewRequestValidationError{
+			field:  "BaseBranch",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return CancelPlanPreviewRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// CancelPlanPreviewRequestMultiError is an error wrapping multiple validation
+// errors returned by CancelPlanPreviewRequest.ValidateAll() if the designated
+// constraints aren't met.
+type CancelPlanPreviewRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CancelPlanPreviewRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CancelPlanPreviewRequestMultiError) AllErrors() []error { return m }
+
+// CancelPlanPreviewRequestValidationError is the validation error returned by
+// CancelPlanPreviewRequest.Validate if the designated constraints aren't met.
+type CancelPlanPreviewRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CancelPlanPreviewRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CancelPlanPreviewRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CancelPlanPreviewRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CancelPlanPreviewRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CancelPlanPreviewRequestValidationError) ErrorName() string {
+	return "CancelPlanPreviewRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CancelPlanPreviewRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCancelPlanPreviewRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CancelPlanPreviewRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CancelPlanPreviewRequestValidationError{}
+
+// Validate checks the field values on CancelPlanPreviewResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CancelPlanPreviewResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CancelPlanPreviewResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CancelPlanPreviewResponseMultiError, or nil if none found.
+func (m *CancelPlanPreviewResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CancelPlanPreviewResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for CommandId
+
+	if len(errors) > 0 {
+		return CancelPlanPreviewResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// CancelPlanPreviewResponseMultiError is an error wrapping multiple validation
+// errors returned by CancelPlanPreviewResponse.ValidateAll() if the
+// designated constraints aren't met.
+type CancelPlanPreviewResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CancelPlanPreviewResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CancelPlanPreviewResponseMultiError) AllErrors() []error { return m }
+
+// CancelPlanPreviewResponseValidationError is the validation error returned by
+// CancelPlanPreviewResponse.Validate if the designated constraints aren't met.
+type CancelPlanPreviewResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CancelPlanPreviewResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CancelPlanPreviewResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CancelPlanPreviewResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CancelPlanPreviewResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CancelPlanPreviewResponseValidationError) ErrorName() string {
+	return "CancelPlanPreviewResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CancelPlanPreviewResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCancelPlanPreviewResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CancelPlanPreviewResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CancelPlanPreviewResponseValidationError{}
+
 // Validate checks the field values on EncryptRequest with the rules defined in
 // the proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
