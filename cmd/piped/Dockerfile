@@ -13,9 +13,9 @@ COPY . ./
 
 RUN make build/go MOD=piped BUILD_OS=${TARGETOS} BUILD_ARCH=${TARGETARCH}
 
-# https://github.com/pipe-cd/pipecd/pkgs/container/piped-base/321463679?tag=v0.50.0-26-ga8527d2
-FROM ghcr.io/pipe-cd/piped-base@sha256:9960b45a5aa822ae45ca2966056d8d2e98795b51681df25afd1fecf96360981c
+# https://github.com/pipe-cd/pipecd/pkgs/container/piped-base/452707327?tag=v0.52.0-76-g8a7294e
+FROM ghcr.io/pipe-cd/piped-base@sha256:a8f3aba027d8c14aab1b093c9ccb26d40c3b551ba9160902445d186d555a92c7
 
 COPY --from=builder /app/.artifacts/piped /usr/local/bin/piped
 
-ENTRYPOINT ["piped"]
+ENTRYPOINT ["/sbin/tini", "--", "piped"]
