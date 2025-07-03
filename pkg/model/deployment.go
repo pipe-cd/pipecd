@@ -22,6 +22,8 @@ import (
 
 const (
 	MetadataKeyDeploymentNotification = "DeploymentNotification"
+	// MetadataKeyStageDisplay is the key of the metadata to be displayed on the deployment detail UI.
+	MetadataKeyStageDisplay = "pipecd/stage-display-metadata"
 )
 
 var notCompletedDeploymentStatuses = []DeploymentStatus{

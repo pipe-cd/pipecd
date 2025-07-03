@@ -33,6 +33,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/apistore/commandstore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
@@ -92,6 +93,7 @@ type controller struct {
 	gitClient             gitClient
 	deploymentLister      deploymentLister
 	commandLister         commandLister
+	commandReporter       commandstore.Reporter
 	notifier              notifier
 	secretDecrypter       secretDecrypter
 	metadataStoreRegistry metadatastore.MetadataStoreRegistry
@@ -133,6 +135,7 @@ func NewController(
 	pluginRegistry plugin.PluginRegistry,
 	deploymentLister deploymentLister,
 	commandLister commandLister,
+	commandReporter commandstore.Reporter,
 	notifier notifier,
 	secretDecrypter secretDecrypter,
 	metadataStoreRegistry metadatastore.MetadataStoreRegistry,
@@ -147,6 +150,7 @@ func NewController(
 		pluginRegistry:        pluginRegistry,
 		deploymentLister:      deploymentLister,
 		commandLister:         commandLister,
+		commandReporter:       commandReporter,
 		notifier:              notifier,
 		secretDecrypter:       secretDecrypter,
 		metadataStoreRegistry: metadataStoreRegistry,
@@ -576,6 +580,7 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		c.pluginRegistry,
 		c.notifier,
 		c.secretDecrypter,
+		c.commandReporter,
 		c.logger,
 		c.tracerProvider,
 	)
