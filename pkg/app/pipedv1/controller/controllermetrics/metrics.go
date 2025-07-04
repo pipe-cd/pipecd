@@ -39,6 +39,7 @@ var (
 	)
 )
 
+// TODO: Update this function (remove platformProvider label value) when we redesign the deployment status metrics for plugin-arch piped.
 func UpdateDeploymentStatus(d *model.Deployment, status model.DeploymentStatus) {
 	for name, value := range model.DeploymentStatus_value {
 		if model.DeploymentStatus(value) == status {
