@@ -1,4 +1,5 @@
 import {
+  CancelDeploymentResponse,
   GetDeploymentResponse,
   ListDeploymentsResponse,
 } from "pipecd/web/api_client/service_pb";
@@ -17,6 +18,11 @@ export const deploymentHandlers = [
   createHandler<ListDeploymentsResponse>("/ListDeployments", () => {
     const response = new ListDeploymentsResponse();
     response.setDeploymentsList([createDeploymentFromObject(dummyDeployment)]);
+    return response;
+  }),
+  createHandler<CancelDeploymentResponse>("/CancelDeployment", () => {
+    const response = new CancelDeploymentResponse();
+    response.setCommandId("123");
     return response;
   }),
 ];

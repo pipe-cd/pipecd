@@ -20,3 +20,12 @@ export const apiKeyHandlers = [
     return response;
   }),
 ];
+
+export const getListAPIKeysEmpty = createHandler<ListAPIKeysResponse>(
+  "/ListAPIKeys",
+  () => {
+    const response = new ListAPIKeysResponse();
+    response.setKeysList([]);
+    return response;
+  }
+);
