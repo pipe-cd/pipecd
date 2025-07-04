@@ -32,10 +32,6 @@ const initialState = {
     entities: {
       [dummyPiped.id]: dummyPiped,
     },
-    registeredPiped: null,
-    updating: false,
-    releasedVersions: [],
-    breakingChangesNote: "",
   },
   applications: {
     loading: false,

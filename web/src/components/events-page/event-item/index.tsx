@@ -2,21 +2,18 @@ import { Box, ListItem, Typography, Chip } from "@mui/material";
 import dayjs from "dayjs";
 import { FC, memo } from "react";
 import { EVENT_STATE_TEXT } from "~/constants/event-status-text";
-import { useAppSelector } from "~/hooks/redux";
-import { Event, selectById as selectEventById } from "~/modules/events";
 import { EventStatusIcon } from "~/components/event-status-icon";
+import { Event } from "pipecd/web/model/event_pb";
 
 export interface EventItemProps {
-  id: string;
+  event: Event.AsObject;
 }
 
 const NO_DESCRIPTION = "No description.";
 
-export const EventItem: FC<EventItemProps> = memo(function EventItem({ id }) {
-  const event = useAppSelector<Event.AsObject | undefined>((state) =>
-    selectEventById(state.events, id)
-  );
-
+export const EventItem: FC<EventItemProps> = memo(function EventItem({
+  event,
+}) {
   if (!event) {
     return null;
   }
