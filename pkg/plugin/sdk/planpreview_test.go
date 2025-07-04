@@ -34,7 +34,7 @@ type mockPlanPreviewPlugin struct {
 	err    error
 }
 
-func (m *mockPlanPreviewPlugin) GetPlanPreview(ctx context.Context, config *struct{}, targets []*DeployTarget[struct{}], input *GetPlanPreviewInput[struct{}]) (*GetPlanPreviewResponse, error) {
+func (m *mockPlanPreviewPlugin) GetPlanPreview(ctx context.Context, config ConfigNone, targets DeployTargetsNone, input *GetPlanPreviewInput[struct{}]) (*GetPlanPreviewResponse, error) {
 	return m.result, m.err
 }
 
