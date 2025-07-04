@@ -16,6 +16,7 @@ package deployment
 
 import (
 	"context"
+	"errors"
 	"slices"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
@@ -105,7 +106,21 @@ func (p *Plugin) DetermineVersions(ctx context.Context, _ *config.Config, input 
 
 // ExecuteStage implements sdk.DeploymentPlugin.
 func (p *Plugin) ExecuteStage(ctx context.Context, _ *config.Config, dts []*sdk.DeployTarget[config.DeployTargetConfig], input *sdk.ExecuteStageInput[config.ApplicationConfigSpec]) (*sdk.ExecuteStageResponse, error) {
-	panic("unimplemented")
+	switch input.Request.StageName {
+	case stagePlan:
+		return &sdk.ExecuteStageResponse{
+			Status: p.executePlanStage(ctx, input, dts),
+		}, nil
+		// case stageApply:
+		// 	return &sdk.ExecuteStageResponse{
+		// 		Status: p.executeApplyStage(ctx, input, dts),
+		// 	}, nil
+		// case stageRollback:
+		// 	return &sdk.ExecuteStageResponse{
+		// 		Status: p.executeRollbackStage(ctx, input, dts),
+		// 	}, nil
+	}
+	return nil, errors.New("unimplemented or unsupported stage")
 }
 
 // FetchDefinedStages implements sdk.DeploymentPlugin.
