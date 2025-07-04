@@ -20,15 +20,17 @@ import (
 )
 
 var (
-	_ StagePlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec]      = ExampleStagePlugin{}
-	_ DeploymentPlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec] = ExampleDeploymentPlugin{}
-	_ LivestatePlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec]  = ExampleLivestatePlugin{}
+	_ StagePlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec]       = ExampleStagePlugin{}
+	_ DeploymentPlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec]  = ExampleDeploymentPlugin{}
+	_ LivestatePlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec]   = ExampleLivestatePlugin{}
+	_ PlanPreviewPlugin[ExampleConfig, ExampleDeployTargetConfig, ExampleApplicationConfigSpec] = ExamplePlanPreviewPlugin{}
 )
 
 type (
 	ExampleStagePlugin           struct{}
 	ExampleDeploymentPlugin      struct{}
 	ExampleLivestatePlugin       struct{}
+	ExamplePlanPreviewPlugin     struct{}
 	ExampleConfig                struct{}
 	ExampleDeployTargetConfig    struct{}
 	ExampleApplicationConfigSpec struct{}
@@ -120,6 +122,23 @@ func (e ExampleLivestatePlugin) Version() string {
 	panic("unimplemented")
 }
 
+// GetPlanPreview implements PlanPreviewPlugin.
+func (e ExamplePlanPreviewPlugin) GetPlanPreview(context.Context, *ExampleConfig, []*DeployTarget[ExampleDeployTargetConfig], *GetPlanPreviewInput[ExampleApplicationConfigSpec]) (*GetPlanPreviewResponse, error) {
+	panic("unimplemented")
+}
+
+// Name implements PlanPreviewPlugin.
+// TODO: This function will be removed in the future.
+func (e ExamplePlanPreviewPlugin) Name() string {
+	panic("unimplemented")
+}
+
+// Version implements PlanPreviewPlugin.
+// TODO: This function will be removed in the future.
+func (e ExamplePlanPreviewPlugin) Version() string {
+	panic("unimplemented")
+}
+
 func ExampleNewPlugin() {
 	plugin, err := NewPlugin("1.0.0",
 		WithDeploymentPlugin(ExampleDeploymentPlugin{}),
@@ -167,6 +186,18 @@ func ExampleWithDeploymentPlugin() {
 func ExampleWithLivestatePlugin() {
 	plugin, err := NewPlugin("1.0.0",
 		WithLivestatePlugin(ExampleLivestatePlugin{}),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// plugin.Run()
+	_ = plugin
+}
+
+func ExampleWithPlanPreviewPlugin() {
+	plugin, err := NewPlugin("1.0.0",
+		WithPlanPreviewPlugin(ExamplePlanPreviewPlugin{}),
 	)
 	if err != nil {
 		log.Fatal(err)
