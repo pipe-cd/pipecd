@@ -212,7 +212,7 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 		fields = []slackField{
 			{"Project", truncateText(d.ProjectId, 8), true},
 			{"Application", makeSlackLink(d.ApplicationName, fmt.Sprintf("%s/applications/%s?project=%s", webURL, d.ApplicationId, d.ProjectId)), true},
-			{"Kind", strings.ToLower(d.Kind.String()), true},
+			{"Labels", d.GetLabelsString(), true},
 			{"Deployment", makeSlackLink(truncateText(d.Id, 8), link), true},
 			{"Triggered By", d.TriggeredBy(), true},
 			{"Mention To Users", accountsStr, true},
@@ -262,7 +262,7 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 		fields = []slackField{
 			{"Project", truncateText(d.ProjectId, 8), true},
 			{"Application", makeSlackLink(d.ApplicationName, fmt.Sprintf("%s/applications/%s?project=%s", webURL, d.ApplicationId, d.ProjectId)), true},
-			{"Kind", strings.ToLower(d.Kind.String()), true},
+			{"Labels", d.GetLabelsString(), true},
 			{"Deployment", makeSlackLink(truncateText(d.Id, 8), link), true},
 			{"Stage", s.Name, true},
 			{"Triggered By", d.TriggeredBy(), true},

@@ -77,7 +77,6 @@ func buildDeployment(
 		ApplicationName: app.Name,
 		PipedId:         app.PipedId,
 		ProjectId:       app.ProjectId,
-		Kind:            app.Kind,
 		Trigger: &model.DeploymentTrigger{
 			Commit: &model.Commit{
 				Hash:      commit.Hash,

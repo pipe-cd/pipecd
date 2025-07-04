@@ -16,6 +16,7 @@ package model
 
 import (
 	"sort"
+	"strings"
 	"testing"
 	"time"
 
@@ -722,6 +723,61 @@ func TestDeployment_GetDeployTargets(t *testing.T) {
 
 			got := tt.deployment.GetDeployTargets(tt.pluginName)
 			assert.Equal(t, tt.expected, got)
+		})
+	}
+}
+
+func TestDeployment_GetLabelsString(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		deployment *Deployment
+		expected   string
+	}{
+		{
+			name:       "nil labels",
+			deployment: &Deployment{Labels: nil},
+			expected:   "",
+		},
+		{
+			name:       "empty labels",
+			deployment: &Deployment{Labels: map[string]string{}},
+			expected:   "",
+		},
+		{
+			name: "single label",
+			deployment: &Deployment{
+				Labels: map[string]string{
+					"env": "prod",
+				},
+			},
+			expected: "env=prod",
+		},
+		{
+			name: "multiple labels",
+			deployment: &Deployment{
+				Labels: map[string]string{
+					"env":     "prod",
+					"version": "v1.0.0",
+					"region":  "us-west-1",
+				},
+			},
+			expected: "env=prod,version=v1.0.0,region=us-west-1",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			result := tt.deployment.GetLabelsString()
+			assert.Equal(t, len(tt.expected), len(result))
+			expectedParts := strings.Split(tt.expected, ",")
+			resultParts := strings.Split(result, ",")
+			sort.Strings(expectedParts)
+			sort.Strings(resultParts)
+			assert.Equal(t, expectedParts, resultParts)
 		})
 	}
 }

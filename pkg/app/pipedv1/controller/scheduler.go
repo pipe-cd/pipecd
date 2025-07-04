@@ -91,7 +91,7 @@ func newScheduler(
 		zap.String("deployment-id", d.Id),
 		zap.String("app-id", d.ApplicationId),
 		zap.String("project-id", d.ProjectId),
-		zap.String("app-kind", d.Kind.String()),
+		zap.String("labels", d.GetLabelsString()),
 		zap.String("working-dir", workingDir),
 	)
 
@@ -265,8 +265,8 @@ func (s *scheduler) Run(ctx context.Context) error {
 		"Deploy",
 		trace.WithAttributes(
 			attribute.String("application-id", s.deployment.ApplicationId),
-			attribute.String("kind", s.deployment.Kind.String()),
 			attribute.String("deployment-id", s.deployment.Id),
+			attribute.String("labels", s.deployment.GetLabelsString()),
 		))
 	defer span.End()
 
@@ -325,8 +325,8 @@ func (s *scheduler) Run(ctx context.Context) error {
 		go func() {
 			_, span := s.tracer.Start(ctx, ps.Name, trace.WithAttributes(
 				attribute.String("application-id", s.deployment.ApplicationId),
-				attribute.String("kind", s.deployment.Kind.String()),
 				attribute.String("deployment-id", s.deployment.Id),
+				attribute.String("labels", s.deployment.GetLabelsString()),
 				attribute.String("stage-id", ps.Id),
 			))
 			defer span.End()
@@ -435,8 +435,8 @@ func (s *scheduler) Run(ctx context.Context) error {
 
 					_, span := s.tracer.Start(ctx, rbs.Name, trace.WithAttributes(
 						attribute.String("application-id", s.deployment.ApplicationId),
-						attribute.String("kind", s.deployment.Kind.String()),
 						attribute.String("deployment-id", s.deployment.Id),
+						attribute.String("labels", s.deployment.GetLabelsString()),
 						attribute.String("stage-id", rbs.Id),
 					))
 					defer span.End()
