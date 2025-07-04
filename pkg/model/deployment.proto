@@ -65,7 +65,8 @@ message Deployment {
     string application_name = 3 [(validate.rules).string.min_len = 1];
     string piped_id = 5 [(validate.rules).string.min_len = 1];
     string project_id = 6 [(validate.rules).string.min_len = 1];
-    ApplicationKind kind = 7 [(validate.rules).enum.defined_only = true];
+    // NOTE: This field is used by pipedv0, but should not be used by plugin-arch piped.
+    ApplicationKind kind = 7 [(validate.rules).enum.defined_only = true, deprecated=true];
     ApplicationGitPath git_path = 8 [(validate.rules).message.required = true];
     // NOTE: Fields `cloud_provider` and `platform_provider` are deprecated.
     // Using `deploy_targets_by_plugin` to specify where to deploy instead.
