@@ -29,6 +29,9 @@ import (
 )
 
 const (
+	// MetadataKeyStageDisplay is the key of the stage metadata to be displayed on the deployment detail UI.
+	MetadataKeyStageDisplay = model.MetadataKeyStageDisplay
+
 	listStageCommandsInterval = 5 * time.Second
 )
 

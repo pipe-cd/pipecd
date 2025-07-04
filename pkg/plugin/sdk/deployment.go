@@ -521,20 +521,23 @@ type PipelineStage struct {
 	Metadata map[string]string
 	// AvailableOperation indicates the manual operation that the user can perform.
 	AvailableOperation ManualOperation
+	// AuthorizedOperators is the list of usernames who can execute the AvailableOperation.
+	AuthorizedOperators []string
 }
 
 func (p *PipelineStage) toModel(description string, now time.Time) *model.PipelineStage {
 	return &model.PipelineStage{
-		Name:               p.Name,
-		Desc:               description,
-		Index:              int32(p.Index),
-		Status:             model.StageStatus_STAGE_NOT_STARTED_YET,
-		StatusReason:       "", // TODO: set the reason
-		Metadata:           p.Metadata,
-		Rollback:           p.Rollback,
-		CreatedAt:          now.Unix(),
-		UpdatedAt:          now.Unix(),
-		AvailableOperation: p.AvailableOperation.toModelEnum(),
+		Name:                p.Name,
+		Desc:                description,
+		Index:               int32(p.Index),
+		Status:              model.StageStatus_STAGE_NOT_STARTED_YET,
+		StatusReason:        "", // TODO: set the reason
+		Metadata:            p.Metadata,
+		Rollback:            p.Rollback,
+		CreatedAt:           now.Unix(),
+		UpdatedAt:           now.Unix(),
+		AvailableOperation:  p.AvailableOperation.toModelEnum(),
+		AuthorizedOperators: p.AuthorizedOperators,
 	}
 }
 
