@@ -252,7 +252,8 @@ func (r *reporter) flush(ctx context.Context, app *model.Application, repo git.R
 		ApplicationId: app.Id,
 		PipedId:       app.PipedId,
 		ProjectId:     app.ProjectId,
-		Kind:          app.Kind,
+		// TODO: Remove this field when we find a way to implement StateView component for application state.
+		Kind: app.Kind,
 		ApplicationLiveState: &model.ApplicationLiveState{
 			Resources: resourceStates,
 		},
