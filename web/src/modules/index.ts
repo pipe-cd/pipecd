@@ -1,6 +1,5 @@
 import { combineReducers } from "redux";
 import { activeStageSlice } from "./active-stage";
-import { apiKeysSlice } from "./api-keys";
 import { applicationCountsSlice } from "./application-counts";
 import { applicationsSlice } from "./applications";
 import { applicationLiveStateSlice } from "./applications-live-state";
@@ -14,7 +13,6 @@ import { stageLogsSlice } from "./stage-logs";
 import { toastsSlice } from "./toasts";
 import { updateApplicationSlice } from "./update-application";
 import { unregisteredApplicationsSlice } from "./unregistered-applications";
-import { eventsSlice } from "./events";
 import { deploymentTraceSlice } from "./deploymentTrace";
 
 export const reducers = combineReducers({
@@ -31,8 +29,6 @@ export const reducers = combineReducers({
   toasts: toastsSlice.reducer,
   project: projectSlice.reducer,
   sealedSecret: sealedSecretSlice.reducer,
-  apiKeys: apiKeysSlice.reducer,
   applicationCounts: applicationCountsSlice.reducer,
   unregisteredApplications: unregisteredApplicationsSlice.reducer,
-  events: eventsSlice.reducer,
 });
