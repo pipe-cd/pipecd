@@ -35,14 +35,6 @@ type mockStagePlugin struct {
 	err    error
 }
 
-func (m *mockStagePlugin) Name() string {
-	return "mockStagePlugin"
-}
-
-func (m *mockStagePlugin) Version() string {
-	return "v1.0.0"
-}
-
 func (m *mockStagePlugin) FetchDefinedStages() []string {
 	return []string{"stage1", "stage2"}
 }

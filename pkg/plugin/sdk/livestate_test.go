@@ -37,14 +37,6 @@ type mockLivestatePlugin struct {
 	err    error
 }
 
-func (m *mockLivestatePlugin) Name() string {
-	return "mockLivestatePlugin"
-}
-
-func (m *mockLivestatePlugin) Version() string {
-	return "v1.0.0"
-}
-
 func (m *mockLivestatePlugin) GetLivestate(ctx context.Context, config *struct{}, targets []*DeployTarget[struct{}], input *GetLivestateInput[struct{}]) (*GetLivestateResponse, error) {
 	return m.result, m.err
 }
