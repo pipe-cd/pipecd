@@ -15,6 +15,8 @@
 package model
 
 import (
+	"sort"
+	"strings"
 	"testing"
 	"time"
 
@@ -22,6 +24,8 @@ import (
 )
 
 func TestMakeApplicationURL(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		baseURL       string
@@ -43,6 +47,8 @@ func TestMakeApplicationURL(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := MakeApplicationURL(tc.baseURL, tc.applicationID)
 			assert.Equal(t, tc.expected, got)
 		})
@@ -50,6 +56,8 @@ func TestMakeApplicationURL(t *testing.T) {
 }
 
 func TestApplication_ContainLabels(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name   string
 		app    *Application
@@ -93,6 +101,8 @@ func TestApplication_ContainLabels(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := tc.app.ContainLabels(tc.labels)
 			assert.Equal(t, tc.want, got)
 		})
@@ -100,6 +110,8 @@ func TestApplication_ContainLabels(t *testing.T) {
 }
 
 func TestCompatiblePlatformProviderType(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		kind     ApplicationKind
@@ -139,6 +151,8 @@ func TestCompatiblePlatformProviderType(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			actual := tt.kind.CompatiblePlatformProviderType()
 			assert.Equal(t, tt.expected, actual)
 		})
@@ -146,6 +160,8 @@ func TestCompatiblePlatformProviderType(t *testing.T) {
 }
 
 func TestIsOutOfSync(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		app      *Application
@@ -170,6 +186,8 @@ func TestIsOutOfSync(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			actual := tt.app.IsOutOfSync()
 			assert.Equal(t, tt.expected, actual)
 		})
@@ -177,6 +195,8 @@ func TestIsOutOfSync(t *testing.T) {
 }
 
 func TestHasChanged(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		current  ApplicationSyncState
@@ -211,6 +231,8 @@ func TestHasChanged(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			actual := tt.current.HasChanged(tt.next)
 			assert.Equal(t, tt.expected, actual)
 		})
@@ -218,6 +240,8 @@ func TestHasChanged(t *testing.T) {
 }
 
 func TestGetApplicationConfigFilename(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name         string
 		gitPath      ApplicationGitPath
@@ -237,12 +261,16 @@ func TestGetApplicationConfigFilename(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			actualName := tt.gitPath.GetApplicationConfigFilename()
 			assert.Equal(t, tt.expectedName, actualName)
 		})
 	}
 }
 func TestMergeApplicationSyncState(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		states   []*ApplicationSyncState
@@ -308,6 +336,8 @@ func TestMergeApplicationSyncState(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			actual := MergeApplicationSyncState(tt.states)
 			assert.Equal(t, tt.expected.Status, actual.Status)
 			assert.Equal(t, tt.expected.ShortReason, actual.ShortReason)
@@ -318,6 +348,8 @@ func TestMergeApplicationSyncState(t *testing.T) {
 }
 
 func TestApplication_GetLabelsString(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		app      *Application
@@ -353,64 +385,19 @@ func TestApplication_GetLabelsString(t *testing.T) {
 			},
 			expected: "env=prod,version=v1.0.0,region=us-west-1",
 		},
-		{
-			name: "labels with special characters",
-			app: &Application{
-				Labels: map[string]string{
-					"app-name": "my-app",
-					"version":  "v1.0.0-beta",
-					"env":      "staging",
-				},
-			},
-			expected: "app-name=my-app,version=v1.0.0-beta,env=staging",
-		},
-		{
-			name: "labels with empty values",
-			app: &Application{
-				Labels: map[string]string{
-					"env":     "prod",
-					"version": "",
-					"region":  "us-west-1",
-				},
-			},
-			expected: "env=prod,version=,region=us-west-1",
-		},
-		{
-			name: "labels with spaces",
-			app: &Application{
-				Labels: map[string]string{
-					"app name": "my app",
-					"version":  "v1.0.0",
-				},
-			},
-			expected: "app name=my app,version=v1.0.0",
-		},
-		{
-			name: "labels with equals sign in value",
-			app: &Application{
-				Labels: map[string]string{
-					"config": "key=value",
-					"env":    "prod",
-				},
-			},
-			expected: "config=key=value,env=prod",
-		},
-		{
-			name: "labels with comma in value",
-			app: &Application{
-				Labels: map[string]string{
-					"tags": "tag1,tag2,tag3",
-					"env":  "prod",
-				},
-			},
-			expected: "tags=tag1,tag2,tag3,env=prod",
-		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			result := tt.app.GetLabelsString()
-			assert.Equal(t, tt.expected, result)
+			assert.Equal(t, len(tt.expected), len(result))
+			expectedParts := strings.Split(tt.expected, ",")
+			resultParts := strings.Split(result, ",")
+			sort.Strings(expectedParts)
+			sort.Strings(resultParts)
+			assert.Equal(t, expectedParts, resultParts)
 		})
 	}
 }

@@ -394,6 +394,8 @@ spec:
 }
 
 func TestReporter_isSynced(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		appInfo  *model.ApplicationInfo
@@ -577,6 +579,8 @@ func TestReporter_isSynced(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			r := &Reporter{}
 			result := r.isSynced(tt.appInfo, tt.app)
 			if result != tt.expected {
