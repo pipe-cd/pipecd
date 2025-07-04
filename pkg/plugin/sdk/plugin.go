@@ -99,6 +99,13 @@ func WithLivestatePlugin[Config, DeployTargetConfig, ApplicationConfigSpec any](
 	}
 }
 
+// WithPlanPreviewPlugin is a function that sets the plan preview plugin.
+func WithPlanPreviewPlugin[Config, DeployTargetConfig, ApplicationConfigSpec any](planPreviewPlugin PlanPreviewPlugin[Config, DeployTargetConfig, ApplicationConfigSpec]) PluginOption[Config, DeployTargetConfig, ApplicationConfigSpec] {
+	return func(plugin *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) {
+		plugin.planPreviewPlugin = planPreviewPlugin
+	}
+}
+
 // Plugin is a wrapper for the plugin.
 // It provides a way to run the plugin with the given config and deploy target config.
 type Plugin[Config, DeployTargetConfig, ApplicationConfigSpec any] struct {
@@ -109,9 +116,10 @@ type Plugin[Config, DeployTargetConfig, ApplicationConfigSpec any] struct {
 	name string
 
 	// plugin implementations
-	stagePlugin      StagePlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
-	deploymentPlugin DeploymentPlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
-	livestatePlugin  LivestatePlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
+	stagePlugin       StagePlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
+	deploymentPlugin  DeploymentPlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
+	livestatePlugin   LivestatePlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
+	planPreviewPlugin PlanPreviewPlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
 
 	// command line options
 	pipedPluginService   string
@@ -299,6 +307,17 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 				return err
 			}
 			services = append(services, livestatePluginServiceServer)
+		}
+
+		if p.planPreviewPlugin != nil {
+			planPreviewPluginServiceServer := &PlanPreviewPluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]{base: p.planPreviewPlugin}
+			if err := planPreviewPluginServiceServer.setFields(
+				commonFields.withLogger(input.Logger.Named("plan-preview-service")),
+			); err != nil {
+				input.Logger.Error("failed to set fields", zap.Error(err))
+				return err
+			}
+			services = append(services, planPreviewPluginServiceServer)
 		}
 
 		if len(services) == 0 {
