@@ -392,3 +392,196 @@ spec:
 		})
 	}
 }
+
+func TestReporter_isSynced(t *testing.T) {
+	tests := []struct {
+		name     string
+		appInfo  *model.ApplicationInfo
+		app      *model.Application
+		expected bool
+	}{
+		{
+			name: "should return true when all fields match",
+			appInfo: &model.ApplicationInfo{
+				Name:        "test-app",
+				Description: "test description",
+				Labels: map[string]string{
+					"env":     "prod",
+					"version": "v1.0.0",
+				},
+			},
+			app: &model.Application{
+				Name:        "test-app",
+				Description: "test description",
+				Labels: map[string]string{
+					"env":     "prod",
+					"version": "v1.0.0",
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "should return false when name differs",
+			appInfo: &model.ApplicationInfo{
+				Name:        "test-app",
+				Description: "test description",
+				Labels: map[string]string{
+					"env": "prod",
+				},
+			},
+			app: &model.Application{
+				Name:        "different-app",
+				Description: "test description",
+				Labels: map[string]string{
+					"env": "prod",
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "should return false when description differs",
+			appInfo: &model.ApplicationInfo{
+				Name:        "test-app",
+				Description: "test description",
+				Labels: map[string]string{
+					"env": "prod",
+				},
+			},
+			app: &model.Application{
+				Name:        "test-app",
+				Description: "different description",
+				Labels: map[string]string{
+					"env": "prod",
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "should return false when labels have different length",
+			appInfo: &model.ApplicationInfo{
+				Name:        "test-app",
+				Description: "test description",
+				Labels: map[string]string{
+					"env":     "prod",
+					"version": "v1.0.0",
+				},
+			},
+			app: &model.Application{
+				Name:        "test-app",
+				Description: "test description",
+				Labels: map[string]string{
+					"env": "prod",
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "should return false when labels have different values",
+			appInfo: &model.ApplicationInfo{
+				Name:        "test-app",
+				Description: "test description",
+				Labels: map[string]string{
+					"env":     "prod",
+					"version": "v1.0.0",
+				},
+			},
+			app: &model.Application{
+				Name:        "test-app",
+				Description: "test description",
+				Labels: map[string]string{
+					"env":     "prod",
+					"version": "v2.0.0",
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "should return false when labels have different keys",
+			appInfo: &model.ApplicationInfo{
+				Name:        "test-app",
+				Description: "test description",
+				Labels: map[string]string{
+					"env":     "prod",
+					"version": "v1.0.0",
+				},
+			},
+			app: &model.Application{
+				Name:        "test-app",
+				Description: "test description",
+				Labels: map[string]string{
+					"env":   "prod",
+					"build": "v1.0.0",
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "should return false when appInfo has nil labels but app has empty labels",
+			appInfo: &model.ApplicationInfo{
+				Name:        "test-app",
+				Description: "test description",
+				Labels:      nil,
+			},
+			app: &model.Application{
+				Name:        "test-app",
+				Description: "test description",
+				Labels:      map[string]string{},
+			},
+			expected: false,
+		},
+		{
+			name: "should return false when labels have same keys but different values",
+			appInfo: &model.ApplicationInfo{
+				Name:        "test-app",
+				Description: "test description",
+				Labels: map[string]string{
+					"env":     "prod",
+					"version": "v1.0.0",
+					"region":  "us-west-1",
+				},
+			},
+			app: &model.Application{
+				Name:        "test-app",
+				Description: "test description",
+				Labels: map[string]string{
+					"env":     "prod",
+					"version": "v1.0.0",
+					"region":  "us-east-1",
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "should return true when labels have same keys and values in different order",
+			appInfo: &model.ApplicationInfo{
+				Name:        "test-app",
+				Description: "test description",
+				Labels: map[string]string{
+					"env":     "prod",
+					"version": "v1.0.0",
+					"region":  "us-west-1",
+				},
+			},
+			app: &model.Application{
+				Name:        "test-app",
+				Description: "test description",
+				Labels: map[string]string{
+					"region":  "us-west-1",
+					"version": "v1.0.0",
+					"env":     "prod",
+				},
+			},
+			expected: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := &Reporter{}
+			result := r.isSynced(tt.appInfo, tt.app)
+			if result != tt.expected {
+				t.Errorf("isSynced() = %v, want %v", result, tt.expected)
+			}
+		})
+	}
+}
