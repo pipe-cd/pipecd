@@ -232,7 +232,7 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 		fields = []slackField{
 			{"Project", truncateText(app.ProjectId, 8), true},
 			{"Application", makeSlackLink(app.Name, link), true},
-			{"Kind", strings.ToLower(app.Kind.String()), true},
+			{"Labels", app.GetLabelsString(), true},
 			{"Mention To Users", accountsStr, true},
 			{"Mention To Groups", groupsStr, true},
 		}

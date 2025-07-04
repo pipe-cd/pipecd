@@ -316,3 +316,101 @@ func TestMergeApplicationSyncState(t *testing.T) {
 		})
 	}
 }
+
+func TestApplication_GetLabelsString(t *testing.T) {
+	tests := []struct {
+		name     string
+		app      *Application
+		expected string
+	}{
+		{
+			name:     "nil labels",
+			app:      &Application{Labels: nil},
+			expected: "",
+		},
+		{
+			name:     "empty labels",
+			app:      &Application{Labels: map[string]string{}},
+			expected: "",
+		},
+		{
+			name: "single label",
+			app: &Application{
+				Labels: map[string]string{
+					"env": "prod",
+				},
+			},
+			expected: "env=prod",
+		},
+		{
+			name: "multiple labels",
+			app: &Application{
+				Labels: map[string]string{
+					"env":     "prod",
+					"version": "v1.0.0",
+					"region":  "us-west-1",
+				},
+			},
+			expected: "env=prod,version=v1.0.0,region=us-west-1",
+		},
+		{
+			name: "labels with special characters",
+			app: &Application{
+				Labels: map[string]string{
+					"app-name": "my-app",
+					"version":  "v1.0.0-beta",
+					"env":      "staging",
+				},
+			},
+			expected: "app-name=my-app,version=v1.0.0-beta,env=staging",
+		},
+		{
+			name: "labels with empty values",
+			app: &Application{
+				Labels: map[string]string{
+					"env":     "prod",
+					"version": "",
+					"region":  "us-west-1",
+				},
+			},
+			expected: "env=prod,version=,region=us-west-1",
+		},
+		{
+			name: "labels with spaces",
+			app: &Application{
+				Labels: map[string]string{
+					"app name": "my app",
+					"version":  "v1.0.0",
+				},
+			},
+			expected: "app name=my app,version=v1.0.0",
+		},
+		{
+			name: "labels with equals sign in value",
+			app: &Application{
+				Labels: map[string]string{
+					"config": "key=value",
+					"env":    "prod",
+				},
+			},
+			expected: "config=key=value,env=prod",
+		},
+		{
+			name: "labels with comma in value",
+			app: &Application{
+				Labels: map[string]string{
+					"tags": "tag1,tag2,tag3",
+					"env":  "prod",
+				},
+			},
+			expected: "tags=tag1,tag2,tag3,env=prod",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.app.GetLabelsString()
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
