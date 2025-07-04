@@ -51,18 +51,6 @@ func (e ExampleStagePlugin) FetchDefinedStages() []string {
 	panic("unimplemented")
 }
 
-// Name implements StagePlugin.
-// TODO: This function will be removed in the future.
-func (e ExampleStagePlugin) Name() string {
-	panic("unimplemented")
-}
-
-// Version implements StagePlugin.
-// TODO: This function will be removed in the future.
-func (e ExampleStagePlugin) Version() string {
-	panic("unimplemented")
-}
-
 // BuildPipelineSyncStages implements DeploymentPlugin.
 func (e ExampleDeploymentPlugin) BuildPipelineSyncStages(context.Context, *ExampleConfig, *BuildPipelineSyncStagesInput) (*BuildPipelineSyncStagesResponse, error) {
 	panic("unimplemented")
@@ -93,49 +81,13 @@ func (e ExampleDeploymentPlugin) FetchDefinedStages() []string {
 	panic("unimplemented")
 }
 
-// Name implements DeploymentPlugin.
-// TODO: This function will be removed in the future.
-func (e ExampleDeploymentPlugin) Name() string {
-	panic("unimplemented")
-}
-
-// Version implements DeploymentPlugin.
-// TODO: This function will be removed in the future.
-func (e ExampleDeploymentPlugin) Version() string {
-	panic("unimplemented")
-}
-
 // GetLivestate implements LivestatePlugin.
 func (e ExampleLivestatePlugin) GetLivestate(context.Context, *ExampleConfig, []*DeployTarget[ExampleDeployTargetConfig], *GetLivestateInput[ExampleApplicationConfigSpec]) (*GetLivestateResponse, error) {
 	panic("unimplemented")
 }
 
-// Name implements LivestatePlugin.
-// TODO: This function will be removed in the future.
-func (e ExampleLivestatePlugin) Name() string {
-	panic("unimplemented")
-}
-
-// Version implements LivestatePlugin.
-// TODO: This function will be removed in the future.
-func (e ExampleLivestatePlugin) Version() string {
-	panic("unimplemented")
-}
-
 // GetPlanPreview implements PlanPreviewPlugin.
 func (e ExamplePlanPreviewPlugin) GetPlanPreview(context.Context, *ExampleConfig, []*DeployTarget[ExampleDeployTargetConfig], *GetPlanPreviewInput[ExampleApplicationConfigSpec]) (*GetPlanPreviewResponse, error) {
-	panic("unimplemented")
-}
-
-// Name implements PlanPreviewPlugin.
-// TODO: This function will be removed in the future.
-func (e ExamplePlanPreviewPlugin) Name() string {
-	panic("unimplemented")
-}
-
-// Version implements PlanPreviewPlugin.
-// TODO: This function will be removed in the future.
-func (e ExamplePlanPreviewPlugin) Version() string {
 	panic("unimplemented")
 }
 
