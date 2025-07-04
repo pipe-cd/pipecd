@@ -30,7 +30,6 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
-	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type TemplatingMethod string
@@ -203,10 +202,6 @@ func LoadPlainYAMLManifests(dir string, names []string, configFilename string) (
 				return fs.SkipDir
 			}
 			if ext := filepath.Ext(d.Name()); ext != ".yaml" && ext != ".yml" && ext != ".json" {
-				return nil
-			}
-			if model.IsApplicationConfigFile(d.Name()) {
-				// MEMO: can we remove this check because we have configFilename?
 				return nil
 			}
 			if d.Name() == configFilename {
