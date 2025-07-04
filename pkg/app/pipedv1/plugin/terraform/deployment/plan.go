@@ -18,9 +18,9 @@ import (
 	"context"
 	"encoding/json"
 
-	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
-
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/config"
+
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 func (p *Plugin) executePlanStage(ctx context.Context, input *sdk.ExecuteStageInput[config.ApplicationConfigSpec], dts []*sdk.DeployTarget[config.DeployTargetConfig]) sdk.StageStatus {
