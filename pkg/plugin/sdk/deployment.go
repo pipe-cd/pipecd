@@ -181,7 +181,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 		base:       s.client,
 		pluginName: s.name,
 	}
-	return buildPipelineSyncStages(ctx, s.name, s.base, &s.config, client, request, s.logger)
+	return buildPipelineSyncStages(ctx, s.base, &s.config, client, request, s.logger)
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) BuildQuickSyncStages(ctx context.Context, request *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	input := &BuildQuickSyncStagesInput{
@@ -281,7 +281,7 @@ func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigS
 		pluginName: s.name,
 	}
 
-	return buildPipelineSyncStages(ctx, s.name, s.base, &s.config, client, request, s.logger)
+	return buildPipelineSyncStages(ctx, s.base, &s.config, client, request, s.logger)
 }
 func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	// Return an empty response in case the plugin does not support the QuickSync strategy.
@@ -312,12 +312,12 @@ func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigS
 }
 
 // buildPipelineSyncStages builds the stages that will be executed by the plugin.
-func buildPipelineSyncStages[Config, DeployTargetConfig, ApplicationConfigSpec any](ctx context.Context, pluginName string, plugin StagePlugin[Config, DeployTargetConfig, ApplicationConfigSpec], config *Config, client *Client, request *deployment.BuildPipelineSyncStagesRequest, logger *zap.Logger) (*deployment.BuildPipelineSyncStagesResponse, error) {
+func buildPipelineSyncStages[Config, DeployTargetConfig, ApplicationConfigSpec any](ctx context.Context, plugin StagePlugin[Config, DeployTargetConfig, ApplicationConfigSpec], config *Config, client *Client, request *deployment.BuildPipelineSyncStagesRequest, logger *zap.Logger) (*deployment.BuildPipelineSyncStagesResponse, error) {
 	resp, err := plugin.BuildPipelineSyncStages(ctx, config, newPipelineSyncStagesInput(request, client, logger))
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to build pipeline sync stages: %v", err)
 	}
-	return newPipelineSyncStagesResponse(pluginName, time.Now(), request, resp)
+	return newPipelineSyncStagesResponse(time.Now(), request, resp)
 }
 
 func executeStage[Config, DeployTargetConfig, ApplicationConfigSpec any](
@@ -414,7 +414,7 @@ func newPipelineSyncStagesInput(request *deployment.BuildPipelineSyncStagesReque
 }
 
 // newPipelineSyncStagesResponse converts the response to the external representation.
-func newPipelineSyncStagesResponse(pluginName string, now time.Time, request *deployment.BuildPipelineSyncStagesRequest, response *BuildPipelineSyncStagesResponse) (*deployment.BuildPipelineSyncStagesResponse, error) {
+func newPipelineSyncStagesResponse(now time.Time, request *deployment.BuildPipelineSyncStagesRequest, response *BuildPipelineSyncStagesResponse) (*deployment.BuildPipelineSyncStagesResponse, error) {
 	// Convert the request stages to a map for easier access.
 	requestStages := make(map[int]*deployment.BuildPipelineSyncStagesRequest_StageConfig, len(request.GetStages()))
 	for _, s := range request.GetStages() {
