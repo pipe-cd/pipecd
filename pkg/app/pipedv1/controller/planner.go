@@ -105,7 +105,7 @@ func newPlanner(
 		zap.String("deployment-id", d.Id),
 		zap.String("app-id", d.ApplicationId),
 		zap.String("project-id", d.ProjectId),
-		zap.String("app-kind", d.Kind.String()),
+		zap.String("labels", d.GetLabelsString()),
 		zap.String("working-dir", workingDir),
 	)
 
@@ -173,8 +173,8 @@ func (p *planner) Run(ctx context.Context) error {
 		"Plan",
 		trace.WithAttributes(
 			attribute.String("application-id", p.deployment.ApplicationId),
-			attribute.String("kind", p.deployment.Kind.String()),
 			attribute.String("deployment-id", p.deployment.Id),
+			attribute.String("labels", p.deployment.GetLabelsString()),
 		))
 	defer span.End()
 
