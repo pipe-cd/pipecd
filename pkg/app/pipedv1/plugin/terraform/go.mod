@@ -3,6 +3,7 @@ module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform
 go 1.24.2
 
 require (
+	github.com/hashicorp/hcl/v2 v2.0.0
 	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250702080240-3ef0619b560c
 	github.com/stretchr/testify v1.10.0
 )
@@ -11,6 +12,8 @@ require (
 	cloud.google.com/go v0.112.1 // indirect
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	cloud.google.com/go/profiler v0.3.1 // indirect
+	github.com/agext/levenshtein v1.2.2 // indirect
+	github.com/apparentlymart/go-textseg v1.0.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/coreos/go-oidc/v3 v3.11.0 // indirect
@@ -23,6 +26,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
+	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/pprof v0.0.0-20221103000818-d260c55eee4c // indirect
 	github.com/google/s2a-go v0.1.7 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
@@ -30,6 +34,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
+	github.com/mitchellh/go-wordwrap v1.0.0 // indirect
 	github.com/pipe-cd/pipecd v0.52.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.12.1 // indirect
@@ -38,6 +43,7 @@ require (
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/spf13/cobra v1.9.1 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
+	github.com/zclconf/go-cty v1.1.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.49.0 // indirect
 	go.opentelemetry.io/otel v1.28.0 // indirect
