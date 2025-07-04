@@ -111,14 +111,10 @@ func (p *Plugin) ExecuteStage(ctx context.Context, _ *config.Config, dts []*sdk.
 		return &sdk.ExecuteStageResponse{
 			Status: p.executePlanStage(ctx, input, dts),
 		}, nil
-		// case stageApply:
-		// 	return &sdk.ExecuteStageResponse{
-		// 		Status: p.executeApplyStage(ctx, input, dts),
-		// 	}, nil
-		// case stageRollback:
-		// 	return &sdk.ExecuteStageResponse{
-		// 		Status: p.executeRollbackStage(ctx, input, dts),
-		// 	}, nil
+	case stageApply:
+		panic("unimplemented")
+	case stageRollback:
+		panic("unimplemented")
 	}
 	return nil, errors.New("unimplemented or unsupported stage")
 }
