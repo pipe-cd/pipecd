@@ -16,8 +16,6 @@ require (
 	sigs.k8s.io/yaml v1.3.0
 )
 
-replace github.com/pipe-cd/piped-plugin-sdk-go => ../../../../plugin/sdk
-
 require (
 	cloud.google.com/go v0.112.1 // indirect
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
