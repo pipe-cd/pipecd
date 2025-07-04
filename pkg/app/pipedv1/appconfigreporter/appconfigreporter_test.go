@@ -516,7 +516,7 @@ func TestReporter_isSynced(t *testing.T) {
 			expected: false,
 		},
 		{
-			name: "should return false when appInfo has nil labels but app has empty labels",
+			name: "should return true when appInfo has nil labels but app has empty labels",
 			appInfo: &model.ApplicationInfo{
 				Name:        "test-app",
 				Description: "test description",
@@ -527,7 +527,7 @@ func TestReporter_isSynced(t *testing.T) {
 				Description: "test description",
 				Labels:      map[string]string{},
 			},
-			expected: false,
+			expected: true,
 		},
 		{
 			name: "should return false when labels have same keys but different values",
