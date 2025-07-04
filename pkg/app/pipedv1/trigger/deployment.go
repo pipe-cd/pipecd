@@ -93,6 +93,8 @@ func buildDeployment(
 			StrategySummary: strategySummary,
 		},
 		GitPath:                   app.GitPath,
+		CloudProvider:             app.CloudProvider,
+		PlatformProvider:          app.PlatformProvider,
 		DeployTargetsByPlugin:     app.DeployTargetsByPlugin,
 		Labels:                    app.Labels,
 		Status:                    model.DeploymentStatus_DEPLOYMENT_PENDING,
