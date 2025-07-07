@@ -1,6 +1,6 @@
 import { Box, Paper, Typography } from "@mui/material";
 import { FC, memo } from "react";
-import { StageStatus } from "~/modules/deployments";
+import { StageStatus } from "~/types/deployment";
 import { StageStatusIcon } from "./stage-status-icon";
 
 export interface PipelineStageProps {

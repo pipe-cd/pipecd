@@ -1,8 +1,7 @@
 import { TextField } from "@mui/material";
 import Autocomplete from "@mui/material/Autocomplete";
-import { FC } from "react";
-import { useAppSelector } from "~/hooks/redux";
-import { selectAll as selectAllApplications } from "~/modules/applications";
+import { FC, useMemo } from "react";
+import { useGetApplications } from "~/queries/applications/use-get-applications";
 import { sortedSet } from "~/utils/sorted-set";
 
 interface Props {
@@ -11,17 +10,15 @@ interface Props {
 }
 
 export const ApplicationAutocomplete: FC<Props> = ({ value, onChange }) => {
-  const applications = useAppSelector<string[]>(
-    (state) =>
-      sortedSet(
-        selectAllApplications(state.applications).map((app) => app.name)
-      ),
-    (left, right) => JSON.stringify(left) === JSON.stringify(right)
-  );
+  const { data: applications = [] } = useGetApplications();
+  const options = useMemo(() => {
+    return sortedSet(applications.map((app) => app.name));
+  }, [applications]);
+
   return (
     <Autocomplete
       id="name"
-      options={applications}
+      options={options}
       value={value}
       onChange={(_, value) => {
         onChange(value || "");
