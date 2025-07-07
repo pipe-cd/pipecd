@@ -13,8 +13,8 @@ import * as applicationsAPI from "~/api/applications";
 import {
   ApplicationGitRepository,
   ApplicationKind,
+  SyncStrategy,
 } from "pipecd/web/model/common_pb";
-import { SyncStrategy } from "../deployments";
 import { fetchCommand, CommandStatus, Command } from "../commands";
 import type { AppState } from "~/store";
 

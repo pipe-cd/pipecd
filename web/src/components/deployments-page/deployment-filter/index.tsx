@@ -7,24 +7,17 @@ import {
   TextField,
 } from "@mui/material";
 import Autocomplete from "@mui/material/Autocomplete";
-import { FC, memo, useCallback, useState, useEffect } from "react";
+import { FC, memo, useCallback, useMemo } from "react";
 import { FilterView } from "~/components/filter-view";
 import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 import { DEPLOYMENT_STATE_TEXT } from "~/constants/deployment-status-text";
-import { useAppSelector } from "~/hooks/redux";
-import {
-  Application,
-  ApplicationKind,
-  ApplicationKindKey,
-  selectAll as selectAllApplications,
-  selectById as selectApplicationById,
-} from "~/modules/applications";
-import {
-  DeploymentFilterOptions,
-  DeploymentStatus,
-  DeploymentStatusKey,
-} from "~/modules/deployments";
 import { ApplicationAutocomplete } from "../../applications-page/application-filter/application-autocomplete";
+import { ApplicationKindKey } from "~/types/application";
+import { ApplicationKind } from "~~/model/common_pb";
+import { DeploymentStatus, DeploymentStatusKey } from "~/types/deployment";
+import { DeploymentFilterOptions } from "~/queries/deployment/use-get-deployments-infinite";
+import { useGetApplications } from "~/queries/applications/use-get-applications";
+import LabelAutoComplete from "~/components/label-auto-complete";
 
 const ALL_VALUE = "ALL";
 
@@ -36,18 +29,12 @@ export interface DeploymentFilterProps {
 
 export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
   function DeploymentFilter({ options, onChange, onClear }) {
-    const [localApplications, setLocalApplications] = useState<
-      Application.AsObject[]
-    >([]);
-    const applications = useAppSelector<Application.AsObject[]>((state) =>
-      selectAllApplications(state.applications)
-    );
-    const selectedApp = useAppSelector<Application.AsObject | undefined>(
-      (state) =>
-        options.applicationId
-          ? selectApplicationById(state.applications, options.applicationId)
-          : undefined
-    );
+    const { data: applications = [] } = useGetApplications();
+
+    const selectedApp = useMemo(() => {
+      return applications.find((app) => app.id === options.applicationId);
+    }, [applications, options.applicationId]);
+
     const handleUpdateFilterValue = useCallback(
       (opts: Partial<DeploymentFilterOptions>): void => {
         onChange({ ...options, ...opts });
@@ -55,36 +42,27 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
       [options, onChange]
     );
 
-    useEffect(() => {
-      if (options.applicationName) {
-        setLocalApplications(
-          applications.filter((app) => app.name === options.applicationName)
-        );
-      } else {
-        setLocalApplications(applications);
-      }
-    }, [applications, options]);
+    const localApplications = useMemo(() => {
+      if (!options.applicationName) return applications;
 
-    const [allLabels, setAllLabels] = useState(new Array<string>());
-    const [selectedLabels, setSelectedLabels] = useState(new Array<string>());
+      return applications.filter((app) => app.name === options.applicationName);
+    }, [applications, options.applicationName]);
 
-    useEffect(() => {
+    const allApplicationLabels = useMemo(() => {
       const labels = new Set<string>();
-      applications
-        .filter((app) => app.labelsMap.length > 0)
-        .map((app) => {
-          app.labelsMap.map((label) => {
+      applications.forEach((app) => {
+        if (app.labelsMap.length > 0)
+          app.labelsMap.forEach((label) => {
             labels.add(`${label[0]}:${label[1]}`);
           });
-        });
-      setAllLabels(Array.from(labels));
+      });
+      return Array.from(labels);
     }, [applications]);
 
     return (
       <FilterView
         onClear={() => {
           onClear();
-          setSelectedLabels([]);
         }}
       >
         <Box
@@ -96,7 +74,13 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
           <ApplicationAutocomplete
             value={options.applicationName ?? null}
             onChange={(value) =>
-              handleUpdateFilterValue({ applicationName: value })
+              handleUpdateFilterValue({
+                applicationName: value,
+                applicationId:
+                  options.applicationName === value
+                    ? options.applicationId
+                    : undefined,
+              })
             }
           />
         </Box>
@@ -201,39 +185,27 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
           </Select>
         </FormControl>
         <FormControl sx={{ width: "100%", mt: 4 }} variant="outlined">
-          <Autocomplete
-            multiple
-            autoHighlight
-            id="labels"
-            noOptionsText="No selectable labels"
-            options={allLabels}
-            value={options.labels ?? selectedLabels}
-            onInputChange={(_, value) => {
-              const label = value.split(":");
-              if (label.length !== 2) return;
-              if (label[0].length === 0) return;
-              if (label[1].length === 0) return;
-              setAllLabels([value]);
-            }}
-            onChange={(_, newValue) => {
-              setSelectedLabels(newValue);
+          <LabelAutoComplete
+            value={options.labels ?? []}
+            options={allApplicationLabels}
+            onChange={(newLabels) => {
               handleUpdateFilterValue({
-                labels: newValue,
+                labels: newLabels,
               });
             }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="outlined"
-                label="Labels"
-                margin="dense"
-                placeholder="key:value"
-                fullWidth
-              />
-            )}
           />
         </FormControl>
       </FilterView>
+    );
+  },
+  (prevProps, nextProps) => {
+    return (
+      prevProps.options.applicationId === nextProps.options.applicationId &&
+      prevProps.options.applicationName === nextProps.options.applicationName &&
+      prevProps.options.kind === nextProps.options.kind &&
+      prevProps.options.status === nextProps.options.status &&
+      JSON.stringify(prevProps.options.labels) ===
+        JSON.stringify(nextProps.options.labels)
     );
   }
 );
