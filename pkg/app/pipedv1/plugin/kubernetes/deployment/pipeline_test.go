@@ -19,6 +19,7 @@ import (
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap/zaptest"
 )
 
 func Test_buildQuickSyncPipeline(t *testing.T) {
@@ -87,25 +88,25 @@ func Test_buildPipelineStages(t *testing.T) {
 			name: "without auto rollback",
 			stages: []sdk.StageConfig{
 				{
-					Name:  "Stage 1",
+					Name:  "K8S_CANARY_ROLLOUT",
 					Index: 0,
 				},
 				{
-					Name:  "Stage 2",
+					Name:  "K8S_PRIMARY_ROLLOUT",
 					Index: 1,
 				},
 			},
 			autoRollback: false,
 			expected: []sdk.PipelineStage{
 				{
-					Name:               "Stage 1",
+					Name:               "K8S_CANARY_ROLLOUT",
 					Index:              0,
 					Rollback:           false,
 					Metadata:           make(map[string]string, 0),
 					AvailableOperation: sdk.ManualOperationNone,
 				},
 				{
-					Name:               "Stage 2",
+					Name:               "K8S_PRIMARY_ROLLOUT",
 					Index:              1,
 					Rollback:           false,
 					Metadata:           make(map[string]string, 0),
@@ -117,35 +118,132 @@ func Test_buildPipelineStages(t *testing.T) {
 			name: "with auto rollback",
 			stages: []sdk.StageConfig{
 				{
-					Name:  "Stage 1",
+					Name:  "K8S_CANARY_ROLLOUT",
 					Index: 0,
 				},
 				{
-					Name:  "Stage 2",
+					Name:  "K8S_PRIMARY_ROLLOUT",
 					Index: 1,
 				},
 			},
 			autoRollback: true,
 			expected: []sdk.PipelineStage{
 				{
-					Name:               "Stage 1",
+					Name:               "K8S_CANARY_ROLLOUT",
 					Index:              0,
 					Rollback:           false,
 					Metadata:           make(map[string]string, 0),
 					AvailableOperation: sdk.ManualOperationNone,
 				},
 				{
-					Name:               "Stage 2",
+					Name:               "K8S_PRIMARY_ROLLOUT",
 					Index:              1,
 					Rollback:           false,
 					Metadata:           make(map[string]string, 0),
 					AvailableOperation: sdk.ManualOperationNone,
 				},
 				{
-					Name:               StageK8sRollback,
+					Name:               "K8S_ROLLBACK",
 					Index:              0,
 					Rollback:           true,
 					Metadata:           make(map[string]string, 0),
+					AvailableOperation: sdk.ManualOperationNone,
+				},
+			},
+		},
+		{
+			name: "with traffic routing stage with all primary",
+			stages: []sdk.StageConfig{
+				{
+					Name:  "K8S_TRAFFIC_ROUTING",
+					Index: 0,
+					Config: []byte(`{
+						"all": "primary"
+					}`),
+				},
+			},
+			autoRollback: false,
+			expected: []sdk.PipelineStage{
+				{
+					Name:     "K8S_TRAFFIC_ROUTING",
+					Index:    0,
+					Rollback: false,
+					Metadata: map[string]string{
+						sdk.MetadataKeyStageDisplay: "Primary: 100%, Canary: 0%, Baseline: 0%",
+					},
+					AvailableOperation: sdk.ManualOperationNone,
+				},
+			},
+		},
+		{
+			name: "with traffic routing stage with all canary",
+			stages: []sdk.StageConfig{
+				{
+					Name:  "K8S_TRAFFIC_ROUTING",
+					Index: 0,
+					Config: []byte(`{
+						"all": "canary"
+					}`),
+				},
+			},
+			autoRollback: false,
+			expected: []sdk.PipelineStage{
+				{
+					Name:     "K8S_TRAFFIC_ROUTING",
+					Index:    0,
+					Rollback: false,
+					Metadata: map[string]string{
+						sdk.MetadataKeyStageDisplay: "Primary: 0%, Canary: 100%, Baseline: 0%",
+					},
+					AvailableOperation: sdk.ManualOperationNone,
+				},
+			},
+		},
+		{
+			name: "with traffic routing stage with all baseline",
+			stages: []sdk.StageConfig{
+				{
+					Name:  "K8S_TRAFFIC_ROUTING",
+					Index: 0,
+					Config: []byte(`{
+						"all": "baseline"
+					}`),
+				},
+			},
+			autoRollback: false,
+			expected: []sdk.PipelineStage{
+				{
+					Name:     "K8S_TRAFFIC_ROUTING",
+					Index:    0,
+					Rollback: false,
+					Metadata: map[string]string{
+						sdk.MetadataKeyStageDisplay: "Primary: 0%, Canary: 0%, Baseline: 100%",
+					},
+					AvailableOperation: sdk.ManualOperationNone,
+				},
+			},
+		},
+		{
+			name: "with traffic routing stage with primary and canary",
+			stages: []sdk.StageConfig{
+				{
+					Name:  "K8S_TRAFFIC_ROUTING",
+					Index: 0,
+					Config: []byte(`{
+						"primary": 50,
+						"canary": 50
+					}`),
+				},
+			},
+			autoRollback: false,
+			expected: []sdk.PipelineStage{
+				{
+					Name:     "K8S_TRAFFIC_ROUTING",
+					Index:    0,
+					Rollback: false,
+					Metadata: map[string]string{
+						sdk.MetadataKeyStageDisplay: "Primary: 50%, Canary: 50%, Baseline: 0%",
+					},
 					AvailableOperation: sdk.ManualOperationNone,
 				},
 			},
@@ -156,7 +254,14 @@ func Test_buildPipelineStages(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			actual := buildPipelineStages(tt.stages, tt.autoRollback)
+			actual, err := buildPipelineStages(&sdk.BuildPipelineSyncStagesInput{
+				Request: sdk.BuildPipelineSyncStagesRequest{
+					Stages:   tt.stages,
+					Rollback: tt.autoRollback,
+				},
+				Logger: zaptest.NewLogger(t),
+			})
+			assert.NoError(t, err)
 			assert.Equal(t, tt.expected, actual)
 		})
 	}
