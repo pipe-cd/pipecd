@@ -83,6 +83,7 @@ func Test_buildPipelineStages(t *testing.T) {
 		stages       []sdk.StageConfig
 		autoRollback bool
 		expected     []sdk.PipelineStage
+		expectedErr  bool
 	}{
 		{
 			name: "without auto rollback",
@@ -248,6 +249,18 @@ func Test_buildPipelineStages(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "with traffic routing stage with invalid config",
+			stages: []sdk.StageConfig{
+				{
+					Name:   "K8S_TRAFFIC_ROUTING",
+					Index:  0,
+					Config: []byte(`{`),
+				},
+			},
+			autoRollback: false,
+			expectedErr:  true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -261,7 +274,12 @@ func Test_buildPipelineStages(t *testing.T) {
 				},
 				Logger: zaptest.NewLogger(t),
 			})
-			assert.NoError(t, err)
+			if tt.expectedErr {
+				assert.Error(t, err)
+				return
+			} else {
+				assert.NoError(t, err)
+			}
 			assert.Equal(t, tt.expected, actual)
 		})
 	}
