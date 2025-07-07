@@ -14,7 +14,11 @@
 
 package config
 
-import "github.com/pipe-cd/piped-plugin-sdk-go/unit"
+import (
+	"fmt"
+
+	"github.com/pipe-cd/piped-plugin-sdk-go/unit"
+)
 
 type KubernetesTrafficRoutingMethod string
 
@@ -80,4 +84,11 @@ func (opts K8sTrafficRoutingStageOptions) Percentages() (primary, canary, baseli
 		return 0, 0, 100
 	}
 	return opts.Primary.Int(), opts.Canary.Int(), opts.Baseline.Int()
+}
+
+// DisplayString returns the display string for the K8sTrafficRoutingStageOptions.
+// This is used to display the traffic routing configuration in the UI.
+func (opts K8sTrafficRoutingStageOptions) DisplayString() string {
+	primary, canary, baseline := opts.Percentages()
+	return fmt.Sprintf("Primary: %d%%, Canary: %d%%, Baseline: %d%%", primary, canary, baseline)
 }
