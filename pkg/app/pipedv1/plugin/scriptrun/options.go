@@ -17,8 +17,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/creasty/defaults"
-	unit "github.com/pipe-cd/piped-plugin-sdk-go/unit"
+	"github.com/pipe-cd/piped-plugin-sdk-go/unit"
 )
 
 type scriptRunStageOptions struct {
