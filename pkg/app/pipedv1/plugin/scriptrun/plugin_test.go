@@ -16,9 +16,10 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/pipe-cd/piped-plugin-sdk-go/unit"
 	"testing"
 	"time"
+
+	"github.com/pipe-cd/piped-plugin-sdk-go/unit"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"github.com/stretchr/testify/assert"

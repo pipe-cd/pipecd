@@ -34,8 +34,12 @@ func TestDecode(t *testing.T) {
 	}{
 		{
 			name: "valid config",
-			data: json.RawMessage(`{"timeout":"1m"}`),
+			data: json.RawMessage(`{
+				"run":"echo 1",
+				"timeout":"1m"
+			}`),
 			expected: scriptRunStageOptions{
+				Run:     "echo 1",
 				Timeout: unit.Duration(1 * time.Minute),
 			},
 			wantErr: false,
@@ -55,15 +59,8 @@ func TestDecode(t *testing.T) {
 		{
 			name: "negative timeout",
 			data: json.RawMessage(`{
+				"run":"echo 1",
 				"timeout":"-1m"
-			}`),
-			expected: scriptRunStageOptions{},
-			wantErr:  true,
-		},
-		{
-			name: "zero timeout",
-			data: json.RawMessage(`{
-				"timeout":"0s"
 			}`),
 			expected: scriptRunStageOptions{},
 			wantErr:  true,

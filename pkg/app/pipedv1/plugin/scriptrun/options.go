@@ -17,6 +17,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/creasty/defaults"
 	unit "github.com/pipe-cd/piped-plugin-sdk-go/unit"
 )
 
@@ -32,6 +33,9 @@ type scriptRunStageOptions struct {
 }
 
 func (o scriptRunStageOptions) validate() error {
+	if o.Run == "" {
+		return fmt.Errorf("SCRIPT_RUN stage requires run field")
+	}
 	if o.Timeout <= 0 {
 		return fmt.Errorf("timeout must be greater than 0")
 	}
@@ -42,10 +46,13 @@ func (o scriptRunStageOptions) validate() error {
 func decode(data json.RawMessage) (scriptRunStageOptions, error) {
 	opts := scriptRunStageOptions{}
 	if err := json.Unmarshal(data, &opts); err != nil {
-		return scriptRunStageOptions{}, fmt.Errorf("failed to unmarshal the config: %w", err)
+		return scriptRunStageOptions{}, fmt.Errorf("failed to unmarshal the stage config: %w", err)
+	}
+	if err := defaults.Set(&opts); err != nil {
+		return scriptRunStageOptions{}, fmt.Errorf("failed to set default values for stage config: %w", err)
 	}
 	if err := opts.validate(); err != nil {
-		return scriptRunStageOptions{}, fmt.Errorf("failed to validate the config: %w", err)
+		return scriptRunStageOptions{}, fmt.Errorf("failed to validate the stage config: %w", err)
 	}
 	return opts, nil
 }
