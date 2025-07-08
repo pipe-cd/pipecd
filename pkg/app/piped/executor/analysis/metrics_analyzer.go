@@ -133,8 +133,12 @@ func (a *metricsAnalyzer) analyzeWithThreshold(ctx context.Context) (bool, error
 		To:   now,
 	}
 
-	a.logPersister.Infof("[%s] Run query: %q, in range: %v", a.id, a.cfg.Query, queryRange)
-	points, err := a.provider.QueryPoints(ctx, a.cfg.Query, queryRange)
+	renderedQuery, err := a.renderQuery(a.cfg.Query, a.cfg.PrimaryArgs, primaryVariantName)
+	if err != nil {
+		return false, fmt.Errorf("failed to render query template for Threshold: %w", err)
+	}
+	a.logPersister.Infof("[%s] Run query: %q, in range: %v", a.id, renderedQuery, queryRange)
+	points, err := a.provider.QueryPoints(ctx, renderedQuery, queryRange)
 	if err != nil {
 		return false, fmt.Errorf("failed to run query: %w", err)
 	}
@@ -154,7 +158,7 @@ func (a *metricsAnalyzer) analyzeWithThreshold(ctx context.Context) (bool, error
 		break
 	}
 	if !expected {
-		a.logPersister.Errorf("[%s] Failed because it found a data point (%s) that is outside the expected range (%s). Performed query: %q", a.id, &outiler, &a.cfg.Expected, a.cfg.Query)
+		a.logPersister.Errorf("[%s] Failed because it found a data point (%s) that is outside the expected range (%s). Performed query: %q", a.id, &outiler, &a.cfg.Expected, renderedQuery)
 		return false, nil
 	}
 
@@ -171,13 +175,17 @@ func (a *metricsAnalyzer) analyzeWithPrevious(ctx context.Context) (expected, fi
 		To:   now,
 	}
 
-	a.logPersister.Infof("[%s] Run query: %q, in range: %v", a.id, a.cfg.Query, queryRange)
-	points, err := a.provider.QueryPoints(ctx, a.cfg.Query, queryRange)
+	renderedQuery, err := a.renderQuery(a.cfg.Query, a.cfg.PrimaryArgs, primaryVariantName)
 	if err != nil {
-		return false, false, fmt.Errorf("failed to run query: %w: performed query: %q", err, a.cfg.Query)
+		return false, false, fmt.Errorf("failed to render query template for Previous: %w", err)
+	}
+	a.logPersister.Infof("[%s] Run query: %q, in range: %v", a.id, renderedQuery, queryRange)
+	points, err := a.provider.QueryPoints(ctx, renderedQuery, queryRange)
+	if err != nil {
+		return false, false, fmt.Errorf("failed to run query: %w: performed query: %q", err, renderedQuery)
 	}
 	pointsCount := len(points)
-	a.logPersister.Infof("[%s] Got %d data points for current Primary from the query: %q", a.id, pointsCount, a.cfg.Query)
+	a.logPersister.Infof("[%s] Got %d data points for current Primary from the query: %q", a.id, pointsCount, renderedQuery)
 	values := make([]float64, 0, pointsCount)
 	for i := range points {
 		values = append(values, points[i].Value)
@@ -199,13 +207,13 @@ func (a *metricsAnalyzer) analyzeWithPrevious(ctx context.Context) (expected, fi
 		To:   prevTo,
 	}
 
-	a.logPersister.Infof("[%s] Run query: %q, in range: %v", a.id, a.cfg.Query, prevQueryRange)
-	prevPoints, err := a.provider.QueryPoints(ctx, a.cfg.Query, prevQueryRange)
+	a.logPersister.Infof("[%s] Run query: %q, in range: %v", a.id, renderedQuery, prevQueryRange)
+	prevPoints, err := a.provider.QueryPoints(ctx, renderedQuery, prevQueryRange)
 	if err != nil {
-		return false, false, fmt.Errorf("failed to run query to fetch metrics for the previous deployment: %w: performed query: %q", err, a.cfg.Query)
+		return false, false, fmt.Errorf("failed to run query to fetch metrics for the previous deployment: %w: performed query: %q", err, renderedQuery)
 	}
 	prevPointsCount := len(prevPoints)
-	a.logPersister.Infof("[%s] Got %d data points for previous Primary from the query: %q", a.id, prevPointsCount, a.cfg.Query)
+	a.logPersister.Infof("[%s] Got %d data points for previous Primary from the query: %q", a.id, prevPointsCount, renderedQuery)
 	prevValues := make([]float64, 0, prevPointsCount)
 	for i := range prevPoints {
 		prevValues = append(prevValues, prevPoints[i].Value)
@@ -213,14 +221,14 @@ func (a *metricsAnalyzer) analyzeWithPrevious(ctx context.Context) (expected, fi
 	expected, err = a.compare(values, prevValues, a.cfg.Deviation)
 	if err != nil {
 		a.logPersister.Errorf("[%s] Failed to compare data points: %v", a.id, err)
-		a.logPersister.Infof("[%s] Performed query: %q", a.id, a.cfg.Query)
+		a.logPersister.Infof("[%s] Performed query: %q", a.id, renderedQuery)
 		return false, false, err
 	}
 	if !expected {
 		a.logPersister.Errorf("[%s] The difference between Current Primary and Previous one is statistically significant", a.id)
 		a.logPersister.Infof("[%s] Performed query range for current Primary: %q", a.id, &queryRange)
 		a.logPersister.Infof("[%s] Performed query range for previous Primary: %q", a.id, &prevQueryRange)
-		a.logPersister.Infof("[%s] Performed query: %q", a.id, a.cfg.Query)
+		a.logPersister.Infof("[%s] Performed query: %q", a.id, renderedQuery)
 		a.logPersister.Infof("[%s] Current data points acquired:", a.id)
 		for i := range points {
 			a.logPersister.Infof("[%s] %s", a.id, &points[i])
