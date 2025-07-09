@@ -22,7 +22,35 @@ import (
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 )
 
-func (p *Plugin) executeK8sTrafficRoutingStage(_ context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], _ []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
-	input.Client.LogPersister().Error("Traffic routing is not yet implemented")
+func (p *Plugin) executeK8sTrafficRoutingStage(ctx context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
+	lp := input.Client.LogPersister()
+	lp.Info("Start routing the traffic")
+
+	cfg, err := input.Request.TargetDeploymentSource.AppConfig()
+	if err != nil {
+		lp.Errorf("Failed while loading application config (%v)", err)
+		return sdk.StageStatusFailure
+	}
+
+	switch kubeconfig.DetermineKubernetesTrafficRoutingMethod(cfg.Spec.TrafficRouting) {
+	case kubeconfig.KubernetesTrafficRoutingMethodPodSelector:
+		return p.executeK8sTrafficRoutingStagePodSelector(ctx, input, dts, cfg)
+	case kubeconfig.KubernetesTrafficRoutingMethodIstio:
+		return p.executeK8sTrafficRoutingStageIstio(ctx, input, dts, cfg)
+	default:
+		lp.Errorf("Unknown traffic routing method: %s", cfg.Spec.TrafficRouting.Method)
+		return sdk.StageStatusFailure
+	}
+}
+
+func (p *Plugin) executeK8sTrafficRoutingStagePodSelector(_ context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], _ []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], _ *sdk.ApplicationConfig[kubeconfig.KubernetesApplicationSpec]) sdk.StageStatus {
+	lp := input.Client.LogPersister()
+	lp.Error("Traffic routing by PodSelector is not yet implemented")
+	return sdk.StageStatusFailure
+}
+
+func (p *Plugin) executeK8sTrafficRoutingStageIstio(_ context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], _ []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], _ *sdk.ApplicationConfig[kubeconfig.KubernetesApplicationSpec]) sdk.StageStatus {
+	lp := input.Client.LogPersister()
+	lp.Error("Traffic routing by Istio is not yet implemented")
 	return sdk.StageStatusFailure
 }
