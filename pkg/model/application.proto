@@ -33,7 +33,8 @@ message Application {
     // The ID of the project this application belongs to.
     string project_id = 5 [(validate.rules).string.min_len = 1];
     // What kind of this application.
-    ApplicationKind kind = 6 [(validate.rules).enum.defined_only = true];
+    // NOTE: This field is used by pipedv0, but should not be used by plugin-arch piped.
+    ApplicationKind kind = 6 [(validate.rules).enum.defined_only = true, deprecated=true];
     // The path to the git directory of this application.
     ApplicationGitPath git_path = 7 [(validate.rules).message.required = true];
     // NOTE: Fields `cloud_provider` and `platform_provider` are deprecated.

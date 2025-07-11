@@ -98,6 +98,14 @@ func (a *Application) SetUpdatedAt(t int64) {
 	a.UpdatedAt = t
 }
 
+func (a *Application) GetLabelsString() string {
+	labels := make([]string, 0, len(a.Labels))
+	for k, v := range a.Labels {
+		labels = append(labels, fmt.Sprintf("%s=%s", k, v))
+	}
+	return strings.Join(labels, ",")
+}
+
 func (ak ApplicationKind) CompatiblePlatformProviderType() PlatformProviderType {
 	switch ak {
 	case ApplicationKind_KUBERNETES:
