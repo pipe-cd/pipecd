@@ -48,7 +48,7 @@ build/chart: VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7 
 build/chart:
 	mkdir -p .artifacts
 ifndef MOD
-	helm package manifests/pipecd --version $(VERSION) --app-version $(VERSION) --dependency-update --destination .artifacts
+	helm package manifests/control-plane --version $(VERSION) --app-version $(VERSION) --dependency-update --destination .artifacts
 	helm package manifests/piped --version $(VERSION) --app-version $(VERSION) --dependency-update --destination .artifacts
 	helm package manifests/site --version $(VERSION) --app-version $(VERSION) --dependency-update --destination .artifacts
 	helm package manifests/helloworld --version $(VERSION) --app-version $(VERSION) --dependency-update --destination .artifacts
@@ -81,7 +81,7 @@ push/chart: BUCKET ?= charts.pipecd.dev
 push/chart: VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7)
 push/chart: CREDENTIALS_FILE ?= ~/.config/gcloud/application_default_credentials.json
 push/chart:
-	@yq -i '.version = "${VERSION}" | .appVersion = "${VERSION}"' manifests/pipecd/Chart.yaml
+	@yq -i '.version = "${VERSION}" | .appVersion = "${VERSION}"' manifests/control-plane/Chart.yaml
 	@yq -i '.version = "${VERSION}" | .appVersion = "${VERSION}"' manifests/piped/Chart.yaml
 	@yq -i '.version = "${VERSION}" | .appVersion = "${VERSION}"' manifests/site/Chart.yaml
 	@yq -i '.version = "${VERSION}" | .appVersion = "${VERSION}"' manifests/helloworld/Chart.yaml
@@ -166,7 +166,7 @@ run/pipecd:
 
 	@echo "Installing Control Plane in kind..."
 	mkdir -p .artifacts
-	helm package manifests/pipecd --version $(BUILD_VERSION) --app-version $(BUILD_VERSION) --dependency-update --destination .artifacts
+	helm package manifests/control-plane --version $(BUILD_VERSION) --app-version $(BUILD_VERSION) --dependency-update --destination .artifacts
 	helm -n pipecd upgrade --install pipecd .artifacts/pipecd-$(BUILD_VERSION).tgz --create-namespace \
 		--set server.image.repository=localhost:5001/pipecd \
 		--set ops.image.repository=localhost:5001/pipecd \
