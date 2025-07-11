@@ -2,9 +2,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "pipecd.fullname" . }}
+  name: {{ include "controlPlane.fullname" . }}
   labels:
-    {{- include "pipecd.labels" . | nindent 4 }}
+    {{- include "controlPlane.labels" . | nindent 4 }}
 data:
   {{ .Values.config.fileName }}: |-
 {{ tpl .Values.config.data . | indent 4 }}
@@ -17,9 +17,9 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "pipecd.fullname" . }}-grafana-dashboards-cluster
+  name: {{ include "controlPlane.fullname" . }}-grafana-dashboards-cluster
   labels:
-    {{- include "pipecd.labels" . | nindent 4 }}
+    {{- include "controlPlane.labels" . | nindent 4 }}
     grafana_dashboard: "1"
   annotations:
     k8s-sidecar-target-directory: "/tmp/dashboards/Cluster"
@@ -34,9 +34,9 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "pipecd.fullname" . }}-grafana-dashboards-control-plane
+  name: {{ include "controlPlane.fullname" . }}-grafana-dashboards-control-plane
   labels:
-    {{- include "pipecd.labels" . | nindent 4 }}
+    {{- include "controlPlane.labels" . | nindent 4 }}
     grafana_dashboard: "1"
   annotations:
     k8s-sidecar-target-directory: "/tmp/dashboards/Control-Plane"
@@ -50,9 +50,9 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "pipecd.fullname" . }}-grafana-dashboards-piped
+  name: {{ include "controlPlane.fullname" . }}-grafana-dashboards-piped
   labels:
-    {{- include "pipecd.labels" . | nindent 4 }}
+    {{- include "controlPlane.labels" . | nindent 4 }}
     grafana_dashboard: "1"
   annotations:
     k8s-sidecar-target-directory: "/tmp/dashboards/Piped"
@@ -72,7 +72,7 @@ metadata:
 {{- end }}
 {{- end }}
   labels:
-    {{- include "pipecd.labels" . | nindent 4 }}
+    {{- include "controlPlane.labels" . | nindent 4 }}
     grafana_datasources: "1"
 data:
   datasources.yaml: |-
@@ -80,13 +80,13 @@ data:
     datasources:
       - name: Prometheus
         type: prometheus
-        url: http://{{ include "pipecd.fullname" . }}-prometheus-server
+        url: http://{{ include "controlPlane.fullname" . }}-prometheus-server
         access: proxy
         version: 1
         isDefault: true
       - name: Tempo
         type: tempo
-        url: http://{{ include "pipecd.fullname" . }}-tempo:3100
+        url: http://{{ include "controlPlane.fullname" . }}-tempo:3100
         access: proxy
         version: 1
 ---
@@ -94,9 +94,9 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "pipecd.fullname" . }}-{{ .Values.prometheus.server.configMapOverrideName }}
+  name: {{ include "controlPlane.fullname" . }}-{{ .Values.prometheus.server.configMapOverrideName }}
   labels:
-    {{- include "pipecd.labels" . | nindent 4 }}
+    {{- include "controlPlane.labels" . | nindent 4 }}
 data:
 {{ range $path, $_ :=  .Files.Glob  "prom-rules/**.yml" }}
   {{ trimPrefix "prom-rules/" $path | nindent 2 }}: |-

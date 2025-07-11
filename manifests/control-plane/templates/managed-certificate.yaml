@@ -2,7 +2,7 @@
 apiVersion: networking.gke.io/v1
 kind: ManagedCertificate
 metadata:
-  name: {{ include "pipecd.fullname" . }}
+  name: {{ include "controlPlane.fullname" . }}
 spec:
   domains:
   {{- range .Values.managedCertificate.domains }}
@@ -15,7 +15,7 @@ spec:
 apiVersion: networking.gke.io/v1
 kind: ManagedCertificate
 metadata:
-  name: {{ include "pipecd.fullname" . }}-grafana
+  name: {{ include "controlPlane.fullname" . }}-grafana
 spec:
   domains:
   {{- range .Values.monitoring.managedCertificate.domains }}

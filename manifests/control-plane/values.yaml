@@ -268,7 +268,7 @@ tempo:
   tempo:
     metricsGenerator:
       enabled: true
-      remoteWriteUrl: http://{{ .Release.Name }}-prometheus-server/api/v1/write # we cannot use pipecd.fullname because it returns tempo's fullname
+      remoteWriteUrl: http://{{ .Release.Name }}-prometheus-server/api/v1/write # we cannot use controlPlane.fullname because it returns tempo's fullname
 
   # -- Tempo configuration file contents
   # modified by @pipecd to add metrics_generator_processors and remote_write
@@ -334,7 +334,7 @@ opentelemetry-collector:
           http: null
     exporters:
       otlp:
-        endpoint: '{{ .Release.Name }}-tempo:4317' # we cannot use pipecd.fullname because it returns opentelemetry-collector's fullname
+        endpoint: '{{ .Release.Name }}-tempo:4317' # we cannot use controlPlane.fullname because it returns opentelemetry-collector's fullname
         tls:
           insecure: true
     service:

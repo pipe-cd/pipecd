@@ -5,9 +5,9 @@ kind: Secret
 metadata:
   name: pipecd
   labels:
-    helm.sh/chart: pipecd-v0.52.1
-    app.kubernetes.io/name: pipecd
-    app.kubernetes.io/instance: pipecd
+    helm.sh/chart: control-plane-v0.52.1
+    app.kubernetes.io/name: control-plane
+    app.kubernetes.io/instance: control-plane
     app.kubernetes.io/version: "v0.52.1"
     app.kubernetes.io/managed-by: Helm
 type: Opaque
@@ -22,9 +22,9 @@ kind: ConfigMap
 metadata:
   name: pipecd
   labels:
-    helm.sh/chart: pipecd-v0.52.1
-    app.kubernetes.io/name: pipecd
-    app.kubernetes.io/instance: pipecd
+    helm.sh/chart: control-plane-v0.52.1
+    app.kubernetes.io/name: control-plane
+    app.kubernetes.io/instance: control-plane
     app.kubernetes.io/version: "v0.52.1"
     app.kubernetes.io/managed-by: Helm
 data:
@@ -57,9 +57,9 @@ kind: ConfigMap
 metadata:
   name: pipecd-gateway-envoy-config
   labels:
-    helm.sh/chart: pipecd-v0.52.1
-    app.kubernetes.io/name: pipecd
-    app.kubernetes.io/instance: pipecd
+    helm.sh/chart: control-plane-v0.52.1
+    app.kubernetes.io/name: control-plane
+    app.kubernetes.io/instance: control-plane
     app.kubernetes.io/version: "v0.52.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: gateway
@@ -269,9 +269,9 @@ kind: Service
 metadata:
   name: pipecd
   labels:
-    helm.sh/chart: pipecd-v0.52.1
-    app.kubernetes.io/name: pipecd
-    app.kubernetes.io/instance: pipecd
+    helm.sh/chart: control-plane-v0.52.1
+    app.kubernetes.io/name: control-plane
+    app.kubernetes.io/instance: control-plane
     app.kubernetes.io/version: "v0.52.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: ingress
@@ -283,8 +283,8 @@ spec:
       port: 8080
       targetPort: ingress
   selector:
-    app.kubernetes.io/name: pipecd
-    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/name: control-plane
+    app.kubernetes.io/instance: control-plane
     app.kubernetes.io/component: gateway
 ---
 # Source: pipecd/templates/service.yaml
@@ -293,9 +293,9 @@ kind: Service
 metadata:
   name: pipecd-gateway
   labels:
-    helm.sh/chart: pipecd-v0.52.1
-    app.kubernetes.io/name: pipecd
-    app.kubernetes.io/instance: pipecd
+    helm.sh/chart: control-plane-v0.52.1
+    app.kubernetes.io/name: control-plane
+    app.kubernetes.io/instance: control-plane
     app.kubernetes.io/version: "v0.52.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: gateway
@@ -306,8 +306,8 @@ spec:
       port: 9095
       targetPort: envoy-admin
   selector:
-    app.kubernetes.io/name: pipecd
-    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/name: control-plane
+    app.kubernetes.io/instance: control-plane
     app.kubernetes.io/component: gateway
 ---
 # Source: pipecd/templates/service.yaml
@@ -316,9 +316,9 @@ kind: Service
 metadata:
   name: pipecd-server
   labels:
-    helm.sh/chart: pipecd-v0.52.1
-    app.kubernetes.io/name: pipecd
-    app.kubernetes.io/instance: pipecd
+    helm.sh/chart: control-plane-v0.52.1
+    app.kubernetes.io/name: control-plane
+    app.kubernetes.io/instance: control-plane
     app.kubernetes.io/version: "v0.52.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: server
@@ -342,8 +342,8 @@ spec:
       port: 9085
       targetPort: admin
   selector:
-    app.kubernetes.io/name: pipecd
-    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/name: control-plane
+    app.kubernetes.io/instance: control-plane
     app.kubernetes.io/component: server
 ---
 # Source: pipecd/templates/service.yaml
@@ -352,9 +352,9 @@ kind: Service
 metadata:
   name: pipecd-cache
   labels:
-    helm.sh/chart: pipecd-v0.52.1
-    app.kubernetes.io/name: pipecd
-    app.kubernetes.io/instance: pipecd
+    helm.sh/chart: control-plane-v0.52.1
+    app.kubernetes.io/name: control-plane
+    app.kubernetes.io/instance: control-plane
     app.kubernetes.io/version: "v0.52.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: cache
@@ -365,8 +365,8 @@ spec:
       port: 6379
       targetPort: redis
   selector:
-    app.kubernetes.io/name: pipecd
-    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/name: control-plane
+    app.kubernetes.io/instance: control-plane
     app.kubernetes.io/component: cache
 ---
 # Source: pipecd/templates/service.yaml
@@ -375,9 +375,9 @@ kind: Service
 metadata:
   name: pipecd-ops
   labels:
-    helm.sh/chart: pipecd-v0.52.1
-    app.kubernetes.io/name: pipecd
-    app.kubernetes.io/instance: pipecd
+    helm.sh/chart: control-plane-v0.52.1
+    app.kubernetes.io/name: control-plane
+    app.kubernetes.io/instance: control-plane
     app.kubernetes.io/version: "v0.52.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: ops
@@ -392,8 +392,8 @@ spec:
       port: 9085
       targetPort: admin
   selector:
-    app.kubernetes.io/name: pipecd
-    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/name: control-plane
+    app.kubernetes.io/instance: control-plane
     app.kubernetes.io/component: ops
 ---
 # Source: pipecd/templates/service.yaml
@@ -402,9 +402,9 @@ kind: Service
 metadata:
   name: pipecd-mysql
   labels:
-    helm.sh/chart: pipecd-v0.52.1
-    app.kubernetes.io/name: pipecd
-    app.kubernetes.io/instance: pipecd
+    helm.sh/chart: control-plane-v0.52.1
+    app.kubernetes.io/name: control-plane
+    app.kubernetes.io/instance: control-plane
     app.kubernetes.io/version: "v0.52.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: mysql
@@ -415,8 +415,8 @@ spec:
       port: 3306
       targetPort: mysql
   selector:
-    app.kubernetes.io/name: pipecd
-    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/name: control-plane
+    app.kubernetes.io/instance: control-plane
     app.kubernetes.io/component: mysql
 ---
 # Source: pipecd/templates/service.yaml
@@ -425,9 +425,9 @@ kind: Service
 metadata:
   name: pipecd-minio
   labels:
-    helm.sh/chart: pipecd-v0.52.1
-    app.kubernetes.io/name: pipecd
-    app.kubernetes.io/instance: pipecd
+    helm.sh/chart: control-plane-v0.52.1
+    app.kubernetes.io/name: control-plane
+    app.kubernetes.io/instance: control-plane
     app.kubernetes.io/version: "v0.52.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: minio
@@ -438,8 +438,8 @@ spec:
       port: 9000
       targetPort: minio
   selector:
-    app.kubernetes.io/name: pipecd
-    app.kubernetes.io/instance: pipecd
+    app.kubernetes.io/name: control-plane
+    app.kubernetes.io/instance: control-plane
     app.kubernetes.io/component: minio
 ---
 # Source: pipecd/templates/deployment.yaml
@@ -449,9 +449,9 @@ kind: Deployment
 metadata:
   name: pipecd-gateway
   labels:
-    helm.sh/chart: pipecd-v0.52.1
-    app.kubernetes.io/name: pipecd
-    app.kubernetes.io/instance: pipecd
+    helm.sh/chart: control-plane-v0.52.1
+    app.kubernetes.io/name: control-plane
+    app.kubernetes.io/instance: control-plane
     app.kubernetes.io/version: "v0.52.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: gateway
@@ -519,9 +519,9 @@ kind: Deployment
 metadata:
   name: pipecd-server
   labels:
-    helm.sh/chart: pipecd-v0.52.1
-    app.kubernetes.io/name: pipecd
-    app.kubernetes.io/instance: pipecd
+    helm.sh/chart: control-plane-v0.52.1
+    app.kubernetes.io/name: control-plane
+    app.kubernetes.io/instance: control-plane
     app.kubernetes.io/version: "v0.52.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: server
@@ -614,9 +614,9 @@ kind: Deployment
 metadata:
   name: pipecd-cache
   labels:
-    helm.sh/chart: pipecd-v0.52.1
-    app.kubernetes.io/name: pipecd
-    app.kubernetes.io/instance: pipecd
+    helm.sh/chart: control-plane-v0.52.1
+    app.kubernetes.io/name: control-plane
+    app.kubernetes.io/instance: control-plane
     app.kubernetes.io/version: "v0.52.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: cache
@@ -650,9 +650,9 @@ kind: Deployment
 metadata:
   name: pipecd-ops
   labels:
-    helm.sh/chart: pipecd-v0.52.1
-    app.kubernetes.io/name: pipecd
-    app.kubernetes.io/instance: pipecd
+    helm.sh/chart: control-plane-v0.52.1
+    app.kubernetes.io/name: control-plane
+    app.kubernetes.io/instance: control-plane
     app.kubernetes.io/version: "v0.52.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: ops
@@ -730,9 +730,9 @@ kind: Deployment
 metadata:
   name: pipecd-mysql
   labels:
-    helm.sh/chart: pipecd-v0.52.1
-    app.kubernetes.io/name: pipecd
-    app.kubernetes.io/instance: pipecd
+    helm.sh/chart: control-plane-v0.52.1
+    app.kubernetes.io/name: control-plane
+    app.kubernetes.io/instance: control-plane
     app.kubernetes.io/version: "v0.52.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: mysql
@@ -771,9 +771,9 @@ kind: Deployment
 metadata:
   name: pipecd-minio
   labels:
-    helm.sh/chart: pipecd-v0.52.1
-    app.kubernetes.io/name: pipecd
-    app.kubernetes.io/instance: pipecd
+    helm.sh/chart: control-plane-v0.52.1
+    app.kubernetes.io/name: control-plane
+    app.kubernetes.io/instance: control-plane
     app.kubernetes.io/version: "v0.52.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: minio

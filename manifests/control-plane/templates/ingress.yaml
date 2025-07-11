@@ -2,21 +2,21 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "pipecd.fullname" . }}
+  name: {{ include "controlPlane.fullname" . }}
   labels:
-    {{- include "pipecd.labels" . | nindent 4 }}
+    {{- include "controlPlane.labels" . | nindent 4 }}
   annotations:
   {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- if .Values.managedCertificate.enabled }}
-    networking.gke.io/managed-certificates: {{ include "pipecd.fullname" . }}
+    networking.gke.io/managed-certificates: {{ include "controlPlane.fullname" . }}
   {{- end }}
 spec:
   {{- if .Values.service.internalPort }}
   defaultBackend:
     service:
-      name: {{ include "pipecd.fullname" . }}
+      name: {{ include "controlPlane.fullname" . }}
       port:
         number: {{ .Values.service.internalPort }}
   rules:
@@ -26,41 +26,41 @@ spec:
         pathType: ImplementationSpecific
         backend:
           service:
-            name: {{ include "pipecd.fullname" . }}
+            name: {{ include "controlPlane.fullname" . }}
             port:
               number: {{ .Values.service.port }}
       - path: /pipe.api.service.pipedservice.PipedService/*
         pathType: ImplementationSpecific
         backend:
           service:
-            name: {{ include "pipecd.fullname" . }}
+            name: {{ include "controlPlane.fullname" . }}
             port:
               number: {{ .Values.service.port }}
       - path: /grpc.service.apiservice.APIService/*
         pathType: ImplementationSpecific
         backend:
           service:
-            name: {{ include "pipecd.fullname" . }}
+            name: {{ include "controlPlane.fullname" . }}
             port:
               number: {{ .Values.service.port }}
       - path: /pipe.api.service.apiservice.APIService/*
         pathType: ImplementationSpecific
         backend:
           service:
-            name: {{ include "pipecd.fullname" . }}
+            name: {{ include "controlPlane.fullname" . }}
             port:
               number: {{ .Values.service.port }}
       - path: /opentelemetry.proto.collector.trace.v1.TraceService/*
         pathType: ImplementationSpecific
         backend:
           service:
-            name: {{ include "pipecd.fullname" . }}
+            name: {{ include "controlPlane.fullname" . }}
             port:
               number: {{ .Values.service.port }}
   {{ else }}
   defaultBackend:
     service:
-      name: {{ include "pipecd.fullname" . }}
+      name: {{ include "controlPlane.fullname" . }}
       port:
         number: {{ .Values.service.port }}
   {{- end }}

@@ -2,26 +2,26 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "pipecd.fullname" . }}-gateway
+  name: {{ include "controlPlane.fullname" . }}-gateway
   labels:
-    {{- include "pipecd.labels" . | nindent 4 }}
+    {{- include "controlPlane.labels" . | nindent 4 }}
     app.kubernetes.io/component: gateway
 spec:
   replicas: {{ .Values.gateway.replicasCount }}
   selector:
     matchLabels:
-      {{- include "pipecd.selectorLabels" . | nindent 6 }}
+      {{- include "controlPlane.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: gateway
   template:
     metadata:
       labels:
-        {{- include "pipecd.selectorLabels" . | nindent 8 }}
+        {{- include "controlPlane.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: gateway
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/envoy-configmap.yaml") . | sha256sum }} # ref; https://helm.sh/docs/howto/charts_tips_and_tricks/#automatically-roll-deployments
     spec:
       {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
-      serviceAccountName: {{ include "pipecd.serviceAccountName" . }}
+      serviceAccountName: {{ include "controlPlane.serviceAccountName" . }}
       {{- end }}
       containers:
         - name: envoy
@@ -63,34 +63,34 @@ spec:
       volumes:
         - name: envoy-config
           configMap:
-            name: {{ include "pipecd.fullname" . }}-gateway-envoy-config
+            name: {{ include "controlPlane.fullname" . }}-gateway-envoy-config
         - name: pipecd-secret
           secret:
-            secretName: {{ include "pipecd.secretName" . }}
+            secretName: {{ include "controlPlane.secretName" . }}
 
 ---
 # API workload.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "pipecd.fullname" . }}-server
+  name: {{ include "controlPlane.fullname" . }}-server
   labels:
-    {{- include "pipecd.labels" . | nindent 4 }}
+    {{- include "controlPlane.labels" . | nindent 4 }}
     app.kubernetes.io/component: server
 spec:
   replicas: {{ .Values.server.replicasCount }}
   selector:
     matchLabels:
-      {{- include "pipecd.selectorLabels" . | nindent 6 }}
+      {{- include "controlPlane.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: server
   template:
     metadata:
       labels:
-        {{- include "pipecd.selectorLabels" . | nindent 8 }}
+        {{- include "controlPlane.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: server
     spec:
       {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
-      serviceAccountName: {{ include "pipecd.serviceAccountName" . }}
+      serviceAccountName: {{ include "controlPlane.serviceAccountName" . }}
       {{- end }}
       {{- if .Values.quickstart.enabled }}
       initContainers:
@@ -99,7 +99,7 @@ spec:
           command: ["sh", "-c"]
           args:
             - |
-              until nc -z {{ include "pipecd.fullname" . }}-minio {{ .Values.minio.port }} && nc -z {{ include "pipecd.fullname" . }}-mysql {{ .Values.mysql.port }}
+              until nc -z {{ include "controlPlane.fullname" . }}-minio {{ .Values.minio.port }} && nc -z {{ include "controlPlane.fullname" . }}-mysql {{ .Values.mysql.port }}
               do
                 sleep 2;
               done;
@@ -131,7 +131,7 @@ spec:
 {{- if not .Values.server.args.secureCookie }}
           - --insecure-cookie=true
 {{- end }}
-          - --cache-address={{ .Values.server.args.cacheAddress | default (printf "%s-cache:6379" (include "pipecd.fullname" .)) }}
+          - --cache-address={{ .Values.server.args.cacheAddress | default (printf "%s-cache:6379" (include "controlPlane.fullname" .)) }}
           - --config-file=/etc/pipecd-config/{{ .Values.config.fileName }}
           - --enable-grpc-reflection={{ .Values.server.args.enableGRPCReflection }}
           - --encryption-key-file={{ .Values.secret.mountPath }}/{{ .Values.secret.encryptionKey.fileName }}
@@ -185,34 +185,34 @@ spec:
       volumes:
         - name: pipecd-secret
           secret:
-            secretName: {{ include "pipecd.secretName" . }}
+            secretName: {{ include "controlPlane.secretName" . }}
         - name: pipecd-config
           configMap:
-            name: {{ include "pipecd.configMapName" . }}
+            name: {{ include "controlPlane.configMapName" . }}
 
 ---
 # Cache workload.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "pipecd.fullname" . }}-cache
+  name: {{ include "controlPlane.fullname" . }}-cache
   labels:
-    {{- include "pipecd.labels" . | nindent 4 }}
+    {{- include "controlPlane.labels" . | nindent 4 }}
     app.kubernetes.io/component: cache
 spec:
   replicas: 1
   selector:
     matchLabels:
-      {{- include "pipecd.selectorLabels" . | nindent 6 }}
+      {{- include "controlPlane.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: cache
   template:
     metadata:
       labels:
-        {{- include "pipecd.selectorLabels" . | nindent 8 }}
+        {{- include "controlPlane.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: cache
     spec:
       {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
-      serviceAccountName: {{ include "pipecd.serviceAccountName" . }}
+      serviceAccountName: {{ include "controlPlane.serviceAccountName" . }}
       {{- end }}
       containers:
         - name: cache
@@ -237,9 +237,9 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "pipecd.fullname" . }}-ops
+  name: {{ include "controlPlane.fullname" . }}-ops
   labels:
-    {{- include "pipecd.labels" . | nindent 4 }}
+    {{- include "controlPlane.labels" . | nindent 4 }}
     app.kubernetes.io/component: ops
 spec:
   replicas: 1
@@ -247,16 +247,16 @@ spec:
     type: Recreate
   selector:
     matchLabels:
-      {{- include "pipecd.selectorLabels" . | nindent 6 }}
+      {{- include "controlPlane.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: ops
   template:
     metadata:
       labels:
-        {{- include "pipecd.selectorLabels" . | nindent 8 }}
+        {{- include "controlPlane.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: ops
     spec:
       {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
-      serviceAccountName: {{ include "pipecd.serviceAccountName" . }}
+      serviceAccountName: {{ include "controlPlane.serviceAccountName" . }}
       {{- end }}
       {{- if .Values.quickstart.enabled }}
       initContainers:
@@ -265,7 +265,7 @@ spec:
           command: ["sh", "-c"]
           args:
             - |
-              until nc -z {{ include "pipecd.fullname" . }}-minio {{ .Values.minio.port }} && nc -z {{ include "pipecd.fullname" . }}-mysql {{ .Values.mysql.port }}
+              until nc -z {{ include "controlPlane.fullname" . }}-minio {{ .Values.minio.port }} && nc -z {{ include "controlPlane.fullname" . }}-mysql {{ .Values.mysql.port }}
               do
                 sleep 2;
               done;
@@ -290,7 +290,7 @@ spec:
           imagePullPolicy: IfNotPresent
           args:
           - ops
-          - --cache-address={{ .Values.ops.args.cacheAddress | default (printf "%s-cache:6379" (include "pipecd.fullname" .)) }}
+          - --cache-address={{ .Values.ops.args.cacheAddress | default (printf "%s-cache:6379" (include "controlPlane.fullname" .)) }}
           - --config-file=/etc/pipecd-config/{{ .Values.config.fileName }}
           - --log-encoding={{ .Values.ops.args.logEncoding }}
           - --log-level={{ .Values.ops.args.logLevel }}
@@ -324,10 +324,10 @@ spec:
       volumes:
         - name: pipecd-secret
           secret:
-            secretName: {{ include "pipecd.secretName" . }}
+            secretName: {{ include "controlPlane.secretName" . }}
         - name: pipecd-config
           configMap:
-            name: {{ include "pipecd.configMapName" . }}
+            name: {{ include "controlPlane.configMapName" . }}
 
 {{- if .Values.quickstart.enabled }}
 ---
@@ -335,24 +335,24 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "pipecd.fullname" . }}-mysql
+  name: {{ include "controlPlane.fullname" . }}-mysql
   labels:
-    {{- include "pipecd.labels" . | nindent 4 }}
+    {{- include "controlPlane.labels" . | nindent 4 }}
     app.kubernetes.io/component: mysql
 spec:
   replicas: 1
   selector:
     matchLabels:
-      {{- include "pipecd.selectorLabels" . | nindent 6 }}
+      {{- include "controlPlane.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: mysql
   template:
     metadata:
       labels:
-        {{- include "pipecd.selectorLabels" . | nindent 8 }}
+        {{- include "controlPlane.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: mysql
     spec:
       {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
-      serviceAccountName: {{ include "pipecd.serviceAccountName" . }}
+      serviceAccountName: {{ include "controlPlane.serviceAccountName" . }}
       {{- end }}
       containers:
         - name: mysql
@@ -377,24 +377,24 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "pipecd.fullname" . }}-minio
+  name: {{ include "controlPlane.fullname" . }}-minio
   labels:
-    {{- include "pipecd.labels" . | nindent 4 }}
+    {{- include "controlPlane.labels" . | nindent 4 }}
     app.kubernetes.io/component: minio
 spec:
   replicas: 1
   selector:
     matchLabels:
-      {{- include "pipecd.selectorLabels" . | nindent 6 }}
+      {{- include "controlPlane.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: minio
   template:
     metadata:
       labels:
-        {{- include "pipecd.selectorLabels" . | nindent 8 }}
+        {{- include "controlPlane.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: minio
     spec:
       {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
-      serviceAccountName: {{ include "pipecd.serviceAccountName" . }}
+      serviceAccountName: {{ include "controlPlane.serviceAccountName" . }}
       {{- end }}
       containers:
         - name: minio
@@ -406,12 +406,12 @@ spec:
           - name: MINIO_ACCESS_KEY
             valueFrom:
               secretKeyRef:
-                name: {{ include "pipecd.secretName" . }}
+                name: {{ include "controlPlane.secretName" . }}
                 key: {{ .Values.secret.minioAccessKey.fileName }}
           - name: MINIO_SECRET_KEY
             valueFrom:
               secretKeyRef:
-                name: {{ include "pipecd.secretName" . }}
+                name: {{ include "controlPlane.secretName" . }}
                 key: {{ .Values.secret.minioSecretKey.fileName }}
           ports:
             - name: minio

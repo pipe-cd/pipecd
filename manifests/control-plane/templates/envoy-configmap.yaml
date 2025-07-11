@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "pipecd.fullname" . }}-gateway-envoy-config
+  name: {{ include "controlPlane.fullname" . }}-gateway-envoy-config
   labels:
-    {{- include "pipecd.labels" . | nindent 4 }}
+    {{- include "controlPlane.labels" . | nindent 4 }}
     app.kubernetes.io/component: gateway
 data:
   envoy-config.yaml: |-
@@ -174,7 +174,7 @@ data:
             - endpoint:
                 address:
                   socket_address:
-                    address: {{ include "pipecd.fullname" . }}-server
+                    address: {{ include "controlPlane.fullname" . }}-server
                     port_value: 9080
         track_cluster_stats:
           request_response_sizes: true
@@ -190,7 +190,7 @@ data:
             - endpoint:
                 address:
                   socket_address:
-                    address: {{ include "pipecd.fullname" . }}-server
+                    address: {{ include "controlPlane.fullname" . }}-server
                     port_value: 9081
         track_cluster_stats:
           request_response_sizes: true
@@ -206,7 +206,7 @@ data:
             - endpoint:
                 address:
                   socket_address:
-                    address: {{ include "pipecd.fullname" . }}-server
+                    address: {{ include "controlPlane.fullname" . }}-server
                     port_value: 9083
         track_cluster_stats:
           request_response_sizes: true
@@ -221,7 +221,7 @@ data:
             - endpoint:
                 address:
                   socket_address:
-                    address: {{ include "pipecd.fullname" . }}-server
+                    address: {{ include "controlPlane.fullname" . }}-server
                     port_value: 9082
         track_cluster_stats:
           request_response_sizes: true
@@ -237,7 +237,7 @@ data:
             - endpoint:
                 address:
                   socket_address:
-                    address: {{ include "pipecd.fullname" . }}-server
+                    address: {{ include "controlPlane.fullname" . }}-server
                     port_value: 9086
         track_cluster_stats:
           request_response_sizes: true
@@ -254,7 +254,7 @@ data:
             - endpoint:
                 address:
                   socket_address:
-                    address: {{ include "pipecd.fullname" . }}-opentelemetry-collector
+                    address: {{ include "controlPlane.fullname" . }}-opentelemetry-collector
                     port_value: 4317
         track_cluster_stats:
           request_response_sizes: true
