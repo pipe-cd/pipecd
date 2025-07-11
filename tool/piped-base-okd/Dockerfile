@@ -21,14 +21,14 @@ RUN \
         cmake && \
     # Install glibc to be used for building nss_wrapper.
     wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub && \
-    wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.33-r0/glibc-2.33-r0.apk && \
-    apk add glibc-2.33-r0.apk && \
+    wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.35-r1/glibc-2.35-r1.apk && \
+    apk add glibc-2.35-r1.apk && \
     # Install nss_wrapper to add an random UID to "passwd" at runtime without having to directly modify /etc/passwd.
     /installer/install-nss-wrapper.sh && \
     # Remove what were used for installation.
     rm -rf /installer && \
     rm -f /var/cache/apk/* && \
-    rm /glibc-2.33-r0.apk && \
+    rm /glibc-2.35-r1.apk && \
     # Create the modifiable passwd file.
     grep -v -e ^default /etc/passwd > $PIPED_HOME/passwd && \
     # Grant access to the root group because all containers running on OKD belong to it.
