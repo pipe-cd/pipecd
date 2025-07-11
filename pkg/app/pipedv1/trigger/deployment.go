@@ -77,7 +77,6 @@ func buildDeployment(
 		ApplicationName: app.Name,
 		PipedId:         app.PipedId,
 		ProjectId:       app.ProjectId,
-		Kind:            app.Kind,
 		Trigger: &model.DeploymentTrigger{
 			Commit: &model.Commit{
 				Hash:      commit.Hash,
@@ -93,8 +92,6 @@ func buildDeployment(
 			StrategySummary: strategySummary,
 		},
 		GitPath:                   app.GitPath,
-		CloudProvider:             app.CloudProvider,
-		PlatformProvider:          app.PlatformProvider,
 		DeployTargetsByPlugin:     app.DeployTargetsByPlugin,
 		Labels:                    app.Labels,
 		Status:                    model.DeploymentStatus_DEPLOYMENT_PENDING,

@@ -276,14 +276,6 @@ func (r *Reporter) findOutOfSyncRegisteredApps(repoPath, repoID, headCommit stri
 }
 
 func (r *Reporter) isSynced(appInfo *model.ApplicationInfo, app *model.Application) bool {
-	if appInfo.Kind != app.Kind {
-		r.logger.Warn("kind in application config has been changed which isn't allowed",
-			zap.String("app-id", app.Id),
-			zap.String("repo-id", app.GitPath.Repo.Id),
-			zap.String("config-file-path", app.GitPath.GetApplicationConfigFilePath()),
-		)
-	}
-
 	// TODO: Make it possible to follow the ApplicationInfo field changes
 	if appInfo.Name != app.Name {
 		return false
