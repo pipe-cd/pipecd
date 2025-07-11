@@ -1,6 +1,6 @@
 # check=skip=SecretsUsedInArgOrEnv
-# https://github.com/pipe-cd/pipecd/pkgs/container/piped-base/103341355?tag=v0.44.0-alpha-52-ge881cac
-FROM ghcr.io/pipe-cd/piped-base@sha256:18a5a6af6507c8c70c5442d19651a2000672c78fc5dd91cfd3c0af26c899c1d3
+# https://github.com/pipe-cd/pipecd/pkgs/container/piped-base/459025001?tag=v0.52.0-97-g3e3df6d
+FROM ghcr.io/pipe-cd/piped-base@sha256:fc2bde38211a80ee0df6d90ed168c817f30a7d0dbe8a0aff872a93ffb7d40a66
 
 ARG PIPED_UID=1000
 ARG ROOT_GID=0
