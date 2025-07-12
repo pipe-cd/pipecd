@@ -2,7 +2,7 @@ import { FC, memo, useEffect, useRef } from "react";
 import { CircularProgress, Box } from "@mui/material";
 import { LogLine } from "../log-line";
 import { DEFAULT_BACKGROUND_COLOR } from "~/constants/term-colors";
-import { LogBlock } from "~/modules/stage-logs";
+import { LogBlock } from "~~/model/logblock_pb";
 
 export interface LogProps {
   logs: LogBlock.AsObject[];

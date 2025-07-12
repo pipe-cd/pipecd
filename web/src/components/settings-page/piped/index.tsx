@@ -21,8 +21,7 @@ import {
   Update as UpgradeIcon,
 } from "@mui/icons-material";
 import Alert from "@mui/material/Alert";
-import { createSelector } from "@reduxjs/toolkit";
-import { FC, memo, useCallback, useEffect, useState } from "react";
+import { FC, memo, useCallback, useMemo, useState } from "react";
 import { TextWithCopyButton } from "~/components/text-with-copy-button";
 import {
   UI_TEXT_ADD,
@@ -32,47 +31,22 @@ import {
   UI_TEXT_UPGRADE,
 } from "~/constants/ui-text";
 import { REQUEST_PIPED_RESTART_SUCCESS } from "~/constants/toast-text";
-import { useAppDispatch, useAppSelector } from "~/hooks/redux";
-import { useInterval } from "~/hooks/use-interval";
-import {
-  clearRegisteredPipedInfo,
-  disablePiped,
-  enablePiped,
-  restartPiped,
-  fetchPipeds,
-  fetchReleasedVersions,
-  fetchBreakingChanges,
-  Piped,
-  RegisteredPiped,
-  selectAllPipeds,
-} from "~/modules/pipeds";
-import { addToast } from "~/modules/toasts";
-import { AppState } from "~/store";
+import { Piped } from "pipecd/web/model/piped_pb";
 import { AddPipedDialog } from "./components/add-piped-dialog";
 import { EditPipedDialog } from "./components/edit-piped-dialog";
 import { FilterValues, PipedFilter } from "./components/piped-filter";
 import { PipedTableRow } from "./components/piped-table-row";
 import { UpgradePipedDialog } from "./components/upgrade-dialog";
 import { TableCellNoWrap } from "../styles";
-
-const filterValue = (
-  _: AppState,
-  filterValue: FilterValues
-): boolean | undefined => filterValue.enabled;
-
-const selectFilteredPipeds = createSelector(
-  [selectAllPipeds, filterValue],
-  (pipeds, enabled) => {
-    switch (enabled) {
-      case true:
-        return pipeds.filter((piped) => piped.disabled === false);
-      case false:
-        return pipeds.filter((piped) => piped.disabled);
-      default:
-        return pipeds;
-    }
-  }
-);
+import { useGetProject } from "~/queries/project/use-get-project";
+import { useToast } from "~/contexts/toast-context";
+import { useGetPipeds } from "~/queries/pipeds/use-get-pipeds";
+import { useGetReleasedVersions } from "~/queries/pipeds/use-get-released-versions";
+import { useGetBreakingChanges } from "~/queries/pipeds/use-get-breaking-changes";
+import { useAddNewPipedKey } from "~/queries/pipeds/use-add-new-piped-key";
+import { useDisablePiped } from "~/queries/pipeds/use-disable-piped";
+import { useEnablePiped } from "~/queries/pipeds/use-enable-piped";
+import { useRestartPiped } from "~/queries/pipeds/use-restart-piped";
 
 const OLD_KEY_ALERT_MESSAGE =
   "The old key is still there.\nDo not forget to delete it once you update your Piped to use this new key.";
@@ -82,75 +56,86 @@ const FETCH_INTERVAL = 30000;
 export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
   const [openFilter, setOpenFilter] = useState(false);
   const [isOpenForm, setIsOpenForm] = useState(false);
-  const [editPipedId, setEditPipedId] = useState<string | null>(null);
+  const [editPiped, setEditPiped] = useState<Piped.AsObject | null>(null);
+  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
+  const [registeredPiped, setRegisteredPiped] = useState<{
+    id: string;
+    key: string;
+    isNewKey: boolean;
+  } | null>(null);
   const [filterValues, setFilterValues] = useState<FilterValues>({
     enabled: true,
   });
-  const dispatch = useAppDispatch();
-  const projectId = useAppSelector((state) => state.project.id);
-  const pipeds = useAppSelector<Piped.AsObject[]>((state) =>
-    selectFilteredPipeds(state, filterValues)
+
+  const { addToast } = useToast();
+
+  const { data: projectDetail } = useGetProject();
+
+  const { mutateAsync: addNewPipedKey } = useAddNewPipedKey();
+
+  const { mutateAsync: restartPiped } = useRestartPiped();
+
+  const { mutateAsync: disablePiped } = useDisablePiped();
+
+  const { mutateAsync: enablePiped } = useEnablePiped();
+
+  const { data: allPipeds } = useGetPipeds(
+    { withStatus: true },
+    { refetchInterval: FETCH_INTERVAL }
   );
 
-  useEffect(() => {
-    dispatch(fetchReleasedVersions());
-  }, [dispatch]);
+  const { data: releasedVersions = [] } = useGetReleasedVersions();
 
-  useEffect(() => {
-    if (projectId) {
-      dispatch(fetchBreakingChanges({ projectId: projectId }));
-    }
-  }, [dispatch, projectId]);
-
-  const releasedVersions = useAppSelector<string[]>(
-    (state) => state.pipeds.releasedVersions
+  const { data: breakingChangesNote } = useGetBreakingChanges(
+    { projectId: projectDetail?.id ?? "" },
+    { enabled: !!projectDetail?.id }
   );
 
-  const breakingChangesNote = useAppSelector<string | null>(
-    (state) => state.pipeds.breakingChangesNote
-  );
+  const pipeds = useMemo(() => {
+    return (
+      allPipeds?.filter((piped) => {
+        if (filterValues.enabled === true) return !piped.disabled;
+        if (filterValues.enabled === false) return piped.disabled;
+        return true;
+      }) ?? []
+    );
+  }, [allPipeds, filterValues.enabled]);
+
   // TODO: Remove this console.log
   console.log("[DEBUG]", breakingChangesNote);
 
-  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
-  const handleUpgradeDialogClose = (): void => setIsUpgradeDialogOpen(false);
-
-  const registeredPiped = useAppSelector<RegisteredPiped | null>(
-    (state) => state.pipeds.registeredPiped
-  );
+  const handleUpgradeDialogClose = (): void => {
+    setIsUpgradeDialogOpen(false);
+  };
 
   const handleDisable = useCallback(
     (id: string) => {
-      dispatch(disablePiped({ pipedId: id })).then(() => {
-        dispatch(fetchPipeds(true));
-      });
+      disablePiped({ pipedId: id });
     },
-    [dispatch]
-  );
-  const handleEnable = useCallback(
-    (id: string) => {
-      dispatch(enablePiped({ pipedId: id })).then(() => {
-        dispatch(fetchPipeds(true));
-      });
-    },
-    [dispatch]
-  );
-  const handleRestart = useCallback(
-    (id: string) => {
-      dispatch(restartPiped({ pipedId: id })).then(() => {
-        dispatch(
-          addToast({
-            message: REQUEST_PIPED_RESTART_SUCCESS,
-            severity: "success",
-          })
-        );
-      });
-    },
-    [dispatch]
+    [disablePiped]
   );
 
-  const handleEdit = useCallback((id: string) => {
-    setEditPipedId(id);
+  const handleEnable = useCallback(
+    (id: string) => {
+      enablePiped({ pipedId: id });
+    },
+    [enablePiped]
+  );
+
+  const handleRestart = useCallback(
+    (id: string) => {
+      restartPiped({ pipedId: id }).then(() => {
+        addToast({
+          message: REQUEST_PIPED_RESTART_SUCCESS,
+          severity: "success",
+        });
+      });
+    },
+    [addToast, restartPiped]
+  );
+
+  const handleEdit = useCallback((piped: Piped.AsObject) => {
+    setEditPiped(piped);
   }, []);
 
   const handleClose = useCallback(() => {
@@ -158,17 +143,30 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
   }, []);
 
   const handleClosePipedInfo = useCallback(() => {
-    dispatch(clearRegisteredPipedInfo());
-    dispatch(fetchPipeds(true));
-  }, [dispatch]);
-
-  const handleEditClose = useCallback(() => {
-    setEditPipedId(null);
+    setRegisteredPiped(null);
   }, []);
 
-  useInterval(() => {
-    dispatch(fetchPipeds(true));
-  }, FETCH_INTERVAL);
+  const handleEditClose = useCallback(() => {
+    setEditPiped(null);
+  }, []);
+
+  const handleSuccessAddedPiped = (data: { id: string; key: string }): void => {
+    setIsOpenForm(false);
+    setRegisteredPiped({ ...data, isNewKey: false });
+  };
+
+  const handleAddNewKey = useCallback(
+    (piped: Piped.AsObject) => {
+      addNewPipedKey({ pipedId: piped.id }).then((key) => {
+        setRegisteredPiped({
+          id: piped.id,
+          key,
+          isNewKey: true,
+        });
+      });
+    },
+    [addNewPipedKey]
+  );
 
   return (
     <>
@@ -224,7 +222,8 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
               {pipeds.map((piped) => (
                 <PipedTableRow
                   key={piped.id}
-                  pipedId={piped.id}
+                  piped={piped}
+                  onAddNewKey={handleAddNewKey}
                   onEdit={handleEdit}
                   onDisable={handleDisable}
                   onEnable={handleEnable}
@@ -239,14 +238,21 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
           <PipedFilter values={filterValues} onChange={setFilterValues} />
         )}
       </Box>
-      <AddPipedDialog open={isOpenForm} onClose={handleClose} />
-      <EditPipedDialog pipedId={editPipedId} onClose={handleEditClose} />
+      <AddPipedDialog
+        open={isOpenForm}
+        onSuccess={handleSuccessAddedPiped}
+        onClose={handleClose}
+      />
+
+      <EditPipedDialog piped={editPiped} onClose={handleEditClose} />
+
       <UpgradePipedDialog
         open={isUpgradeDialogOpen}
         pipeds={pipeds}
         releasedVersions={releasedVersions}
         onClose={handleUpgradeDialogClose}
       />
+
       <Dialog fullWidth open={Boolean(registeredPiped)}>
         <DialogTitle>
           {registeredPiped?.isNewKey

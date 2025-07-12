@@ -1,11 +1,11 @@
 import { ApplicationKind } from "pipecd/web/model/common_pb";
-import { Deployment, DeploymentStatus } from "~/modules/deployments";
 import { createGitPathFromObject } from "./common";
 import { dummyApplication } from "./dummy-application";
 import { dummyPiped } from "./dummy-piped";
 import { createPipelineFromObject, dummyPipeline } from "./dummy-pipeline";
 import { createTriggerFromObject, dummyTrigger } from "./dummy-trigger";
 import { createRandTimes, randomUUID } from "./utils";
+import { Deployment, DeploymentStatus } from "~/types/deployment";
 
 const [createdAt, completedAt] = createRandTimes(3);
 

@@ -17,6 +17,7 @@ import type { AppState } from "~/store";
 import { theme } from "~/theme";
 import MemoryRouterTest from "./MemoryRouterTest";
 import QueryClientWrap from "~/contexts/query-client-provider";
+import { ToastProvider } from "~/contexts/toast-context";
 
 const middlewares = getDefaultMiddleware({
   immutableCheck: false,
@@ -65,9 +66,11 @@ const customRender = (
   const Wrapper: React.ComponentType = ({ children }) => (
     <Provider store={store}>
       <StyledEngineProvider injectFirst>
-        <QueryClientWrap>
-          <ThemeProvider theme={theme}>{children}</ThemeProvider>
-        </QueryClientWrap>
+        <ToastProvider>
+          <QueryClientWrap>
+            <ThemeProvider theme={theme}>{children}</ThemeProvider>
+          </QueryClientWrap>
+        </ToastProvider>
       </StyledEngineProvider>
     </Provider>
   );
