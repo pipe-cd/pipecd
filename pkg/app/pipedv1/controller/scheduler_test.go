@@ -30,8 +30,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
-	pluginapi "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1"
-	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 )
 
 func TestDetermineStageStatus(t *testing.T) {
@@ -81,16 +79,6 @@ func TestDetermineStageStatus(t *testing.T) {
 			assert.Equal(t, tc.expected, got)
 		})
 	}
-}
-
-type fakeExecutorPluginClient struct {
-	pluginapi.PluginClient
-}
-
-func (m *fakeExecutorPluginClient) ExecuteStage(ctx context.Context, req *deployment.ExecuteStageRequest, opts ...grpc.CallOption) (*deployment.ExecuteStageResponse, error) {
-	return &deployment.ExecuteStageResponse{
-		Status: model.StageStatus_STAGE_SUCCESS,
-	}, nil
 }
 
 type fakeAPIClient struct {
@@ -201,7 +189,7 @@ func TestExecuteStage(t *testing.T) {
 				genericApplicationConfig: &config.GenericApplicationSpec{
 					Pipeline: &config.DeploymentPipeline{
 						Stages: []config.PipelineStage{
-							{ID: "stage-id", Name: "stage-name"},
+							{Name: "stage-name"},
 						},
 					},
 				},
@@ -261,7 +249,7 @@ func TestExecuteStage_SignalTerminated(t *testing.T) {
 		genericApplicationConfig: &config.GenericApplicationSpec{
 			Pipeline: &config.DeploymentPipeline{
 				Stages: []config.PipelineStage{
-					{ID: "stage-id", Name: "stage-name"},
+					{Name: "stage-name"},
 				},
 			},
 		},
@@ -317,7 +305,7 @@ func TestExecuteStage_SignalCancelled(t *testing.T) {
 		genericApplicationConfig: &config.GenericApplicationSpec{
 			Pipeline: &config.DeploymentPipeline{
 				Stages: []config.PipelineStage{
-					{ID: "stage-id", Name: "stage-name"},
+					{Name: "stage-name"},
 				},
 			},
 		},
@@ -338,5 +326,5 @@ func TestExecuteStage_SignalCancelled(t *testing.T) {
 
 	handler.Cancel()
 	finalStatus := s.executeStage(sig, s.deployment.Stages[0])
-	assert.Equal(t, model.StageStatus_STAGE_FAILURE, finalStatus)
+	assert.Equal(t, model.StageStatus_STAGE_CANCELLED, finalStatus)
 }

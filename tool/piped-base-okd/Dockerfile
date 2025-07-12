@@ -1,6 +1,6 @@
 # check=skip=SecretsUsedInArgOrEnv
-# https://github.com/pipe-cd/pipecd/pkgs/container/piped-base/103341355?tag=v0.44.0-alpha-52-ge881cac
-FROM ghcr.io/pipe-cd/piped-base@sha256:18a5a6af6507c8c70c5442d19651a2000672c78fc5dd91cfd3c0af26c899c1d3
+# https://github.com/pipe-cd/pipecd/pkgs/container/piped-base/459025001?tag=v0.52.0-97-g3e3df6d
+FROM ghcr.io/pipe-cd/piped-base@sha256:fc2bde38211a80ee0df6d90ed168c817f30a7d0dbe8a0aff872a93ffb7d40a66
 
 ARG PIPED_UID=1000
 ARG ROOT_GID=0
@@ -21,14 +21,14 @@ RUN \
         cmake && \
     # Install glibc to be used for building nss_wrapper.
     wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub && \
-    wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.33-r0/glibc-2.33-r0.apk && \
-    apk add glibc-2.33-r0.apk && \
+    wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.35-r1/glibc-2.35-r1.apk && \
+    apk add glibc-2.35-r1.apk && \
     # Install nss_wrapper to add an random UID to "passwd" at runtime without having to directly modify /etc/passwd.
     /installer/install-nss-wrapper.sh && \
     # Remove what were used for installation.
     rm -rf /installer && \
     rm -f /var/cache/apk/* && \
-    rm /glibc-2.33-r0.apk && \
+    rm /glibc-2.35-r1.apk && \
     # Create the modifiable passwd file.
     grep -v -e ^default /etc/passwd > $PIPED_HOME/passwd && \
     # Grant access to the root group because all containers running on OKD belong to it.

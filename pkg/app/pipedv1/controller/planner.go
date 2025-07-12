@@ -23,6 +23,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/atomic"
@@ -104,7 +105,7 @@ func newPlanner(
 		zap.String("deployment-id", d.Id),
 		zap.String("app-id", d.ApplicationId),
 		zap.String("project-id", d.ProjectId),
-		zap.String("app-kind", d.Kind.String()),
+		zap.String("labels", d.GetLabelsString()),
 		zap.String("working-dir", workingDir),
 	)
 
@@ -172,8 +173,8 @@ func (p *planner) Run(ctx context.Context) error {
 		"Plan",
 		trace.WithAttributes(
 			attribute.String("application-id", p.deployment.ApplicationId),
-			attribute.String("kind", p.deployment.Kind.String()),
 			attribute.String("deployment-id", p.deployment.Id),
+			attribute.String("labels", p.deployment.GetLabelsString()),
 		))
 	defer span.End()
 
@@ -414,8 +415,7 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *common.Dep
 // buildQuickSyncStages requests all plugins and returns quick sync stage
 // from each plugins to build the deployment pipeline.
 // NOTE:
-//   - For quick sync, we expect all stages given by plugins can be performed
-//     at once regradless its order (aka. no `Stage.Requires` specified)
+//   - For quick sync, we expect all stages given by plugins can be performed in random order.
 //   - Rollback stage will always be added as the trail.
 func (p *planner) buildQuickSyncStages(ctx context.Context, cfg *config.GenericApplicationSpec) ([]*model.PipelineStage, error) {
 	var (
@@ -436,6 +436,7 @@ func (p *planner) buildQuickSyncStages(ctx context.Context, cfg *config.GenericA
 			return nil, err
 		}
 		for i := range res.Stages {
+			res.Stages[i].Id = uuid.New().String()
 			if res.Stages[i].Rollback {
 				rollbackStages = append(rollbackStages, res.Stages[i])
 			} else {
@@ -478,7 +479,6 @@ func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.Gener
 		}
 
 		stagesCfgPerPlugin[plg] = append(stagesCfgPerPlugin[plg], &deployment.BuildPipelineSyncStagesRequest_StageConfig{
-			Id:      stageCfg.ID,
 			Name:    stageCfg.Name.String(),
 			Desc:    stageCfg.Desc,
 			Timeout: stageCfg.Timeout.Duration().String(),
@@ -503,6 +503,7 @@ func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.Gener
 		}
 
 		for i := range res.Stages {
+			res.Stages[i].Id = uuid.New().String()
 			if res.Stages[i].Rollback {
 				rollbackStages = append(rollbackStages, res.Stages[i])
 			} else {

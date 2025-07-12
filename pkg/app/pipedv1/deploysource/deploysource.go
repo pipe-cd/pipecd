@@ -186,10 +186,11 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 	}
 
 	return &DeploySource{
-		RepoDir:           repoDir,
-		AppDir:            appDir,
-		Revision:          p.revision,
-		ApplicationConfig: cfgFileContent,
+		RepoDir:                   repoDir,
+		AppDir:                    appDir,
+		Revision:                  p.revision,
+		ApplicationConfig:         cfgFileContent,
+		ApplicationConfigFilename: p.appGitPath.GetApplicationConfigFilename(),
 	}, nil
 }
 
@@ -205,9 +206,10 @@ func (p *provider) copy(lw io.Writer) (*DeploySource, error) {
 	}
 
 	return &DeploySource{
-		RepoDir:           dest,
-		AppDir:            filepath.Join(dest, p.appGitPath.Path),
-		Revision:          p.revision,
-		ApplicationConfig: p.source.ApplicationConfig,
+		RepoDir:                   dest,
+		AppDir:                    filepath.Join(dest, p.appGitPath.Path),
+		Revision:                  p.revision,
+		ApplicationConfig:         p.source.ApplicationConfig,
+		ApplicationConfigFilename: p.source.ApplicationConfigFilename,
 	}, nil
 }

@@ -69,7 +69,7 @@ require (
 	k8s.io/client-go v0.24.3
 	oras.land/oras-go/v2 v2.5.0
 	sigs.k8s.io/controller-runtime v0.12.3
-	sigs.k8s.io/yaml v1.3.0
+	sigs.k8s.io/yaml v1.5.0
 )
 
 require (
@@ -187,6 +187,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.28.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.3.1 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
+	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/term v0.30.0 // indirect
 	golang.org/x/text v0.23.0 // indirect

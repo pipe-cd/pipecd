@@ -285,12 +285,14 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	// Start running command store.
 	var commandLister commandstore.Lister
+	var commandReporter commandstore.Reporter
 	{
 		store := commandstore.NewStore(apiClient, p.gracePeriod, input.Logger)
 		group.Go(func() error {
 			return store.Run(ctx)
 		})
 		commandLister = store.Lister()
+		commandReporter = store.Reporter()
 	}
 
 	// Start running event store.
@@ -404,6 +406,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			pluginRegistry,
 			deploymentLister,
 			commandLister,
+			commandReporter,
 			notifier,
 			decrypter,
 			*metadataStoreRegistry,
