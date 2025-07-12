@@ -93,8 +93,19 @@ func (c *client) Update(ctx context.Context, sm ServiceManifest) (*Service, erro
 	var (
 		svc  = run.NewNamespacesServicesService(c.client)
 		name = makeCloudRunServiceName(c.projectID, sm.Name)
-		call = svc.ReplaceService(name, svcCfg)
 	)
+
+	currentService, err := svc.Get(name).Context(ctx).Do()
+	if err != nil {
+		if e, ok := err.(*googleapi.Error); ok && e.Code == http.StatusNotFound {
+			return nil, ErrServiceNotFound
+		}
+		return nil, fmt.Errorf("failed to get current service: %w", err)
+	}
+
+	preserveRevisionTags(currentService, svcCfg)
+
+	call := svc.ReplaceService(name, svcCfg)
 	call.Context(ctx)
 
 	service, err := call.Do()
@@ -193,6 +204,48 @@ func (c *client) ListRevisions(ctx context.Context, options *ListRevisionsOption
 	}
 
 	return revs, cursor, nil
+}
+
+func preserveRevisionTags(currentService *run.Service, newSvcCfg *run.Service) {
+	if currentService.Spec == nil || currentService.Spec.Traffic == nil ||
+		newSvcCfg.Spec == nil || newSvcCfg.Spec.Traffic == nil {
+		return
+	}
+
+	revisionTags := extractRevisionTags(currentService)
+	if len(revisionTags) == 0 {
+		return
+	}
+
+	newRevisions := make(map[string]bool)
+	for i, traffic := range newSvcCfg.Spec.Traffic {
+		if traffic.RevisionName != "" {
+			newRevisions[traffic.RevisionName] = true
+			if tag, exists := revisionTags[traffic.RevisionName]; exists && tag != "" {
+				newSvcCfg.Spec.Traffic[i].Tag = tag
+			}
+		}
+	}
+
+	for revName, tag := range revisionTags {
+		if !newRevisions[revName] {
+			newSvcCfg.Spec.Traffic = append(newSvcCfg.Spec.Traffic, &run.TrafficTarget{
+				RevisionName: revName,
+				Percent:      0,
+				Tag:          tag,
+			})
+		}
+	}
+}
+
+func extractRevisionTags(service *run.Service) map[string]string {
+	revisionTags := make(map[string]string)
+	for _, traffic := range service.Spec.Traffic {
+		if traffic.RevisionName != "" && traffic.Tag != "" {
+			revisionTags[traffic.RevisionName] = traffic.Tag
+		}
+	}
+	return revisionTags
 }
 
 func makeCloudRunParent(projectID string) string {
