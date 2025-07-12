@@ -13,8 +13,8 @@ COPY . ./
 
 RUN make build/go MOD=launcher BUILD_OS=${TARGETOS} BUILD_ARCH=${TARGETARCH}
 
-# https://github.com/pipe-cd/pipecd/pkgs/container/piped-base/452707327?tag=v0.52.0-76-g8a7294e
-FROM ghcr.io/pipe-cd/piped-base@sha256:a8f3aba027d8c14aab1b093c9ccb26d40c3b551ba9160902445d186d555a92c7
+# https://github.com/pipe-cd/pipecd/pkgs/container/piped-base/459025001?tag=v0.52.0-97-g3e3df6d
+FROM ghcr.io/pipe-cd/piped-base@sha256:fc2bde38211a80ee0df6d90ed168c817f30a7d0dbe8a0aff872a93ffb7d40a66
 
 COPY --from=builder /app/.artifacts/launcher /usr/local/bin/launcher
 
