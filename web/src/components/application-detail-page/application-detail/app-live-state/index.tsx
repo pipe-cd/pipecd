@@ -3,28 +3,18 @@ import Skeleton from "@mui/material/Skeleton";
 import { FC, memo } from "react";
 import { APPLICATION_HEALTH_STATUS_TEXT } from "~/constants/health-status-text";
 import { UI_TEXT_NOT_AVAILABLE_TEXT } from "~/constants/ui-text";
-import { useAppSelector } from "~/hooks/redux";
-import {
-  ApplicationLiveState,
-  selectById,
-  selectLoadingById,
-} from "~/modules/applications-live-state";
+import { ApplicationLiveState } from "~/queries/application-live-state/use-get-application-state-by-id";
 import { ApplicationHealthStatusIcon } from "../health-status-icon";
 
 export interface AppLiveStateProps {
-  applicationId: string;
+  liveState?: ApplicationLiveState;
+  liveStateLoading: boolean;
 }
 
 export const AppLiveState: FC<AppLiveStateProps> = memo(function AppLiveState({
-  applicationId,
+  liveState,
+  liveStateLoading = false,
 }) {
-  const [liveState, liveStateLoading] = useAppSelector<
-    [ApplicationLiveState | undefined, boolean]
-  >((state) => [
-    selectById(state.applicationLiveState, applicationId),
-    selectLoadingById(state.applicationLiveState, applicationId),
-  ]);
-
   if (liveStateLoading && liveState === undefined) {
     return <Skeleton height={32} width={100} />;
   }

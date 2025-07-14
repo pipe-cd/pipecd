@@ -9,7 +9,6 @@ import {
 } from "@mui/material";
 import SyncIcon from "@mui/icons-material/Cached";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import { SerializedError } from "@reduxjs/toolkit";
 import dayjs from "dayjs";
 import { FC, Fragment, memo, useMemo, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
@@ -20,36 +19,26 @@ import { SplitButton } from "~/components/split-button";
 import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 import { PAGE_PATH_DEPLOYMENTS } from "~/constants/path";
 import { UI_TEXT_REFRESH } from "~/constants/ui-text";
-import { unwrapResult, useAppDispatch, useAppSelector } from "~/hooks/redux";
 import {
-  Application,
   ApplicationDeploymentReference,
   ApplicationSyncStatus,
-  fetchApplication,
-  selectById as selectApplicationById,
-  syncApplication,
-} from "~/modules/applications";
-import { selectPipedById } from "~/modules/pipeds";
+} from "~/types/applications";
 import { AppLiveState } from "./app-live-state";
 import { OutOfSyncReason, InvalidConfigReason } from "./sync-state-reason";
 import { ArtifactVersion, SyncStrategy } from "~~/model/common_pb";
 import { CopyIconButton } from "~/components/copy-icon-button";
+import { useSyncApplication } from "~/queries/applications/use-sync-application";
+import { Application } from "~/types/applications";
+import { useGetPipedById } from "~/queries/pipeds/use-get-piped-by-id";
+import { ApplicationLiveState } from "~/queries/application-live-state/use-get-application-state-by-id";
 
 export interface ApplicationDetailProps {
-  applicationId: string;
+  app?: Application.AsObject | null;
+  hasError: boolean;
+  refetchApp: () => void;
+  liveState?: ApplicationLiveState;
+  liveStateLoading: boolean;
 }
-
-const useIsSyncingApplication = (
-  applicationId: string | undefined
-): boolean => {
-  return useAppSelector<boolean>((state) => {
-    if (!applicationId) {
-      return false;
-    }
-
-    return state.applications.syncing[applicationId];
-  });
-};
 
 const ERROR_MESSAGE = "It was unable to fetch the application.";
 
@@ -209,30 +198,28 @@ enum PIPED_VERSION {
 }
 
 export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
-  function ApplicationDetail({ applicationId }) {
-    const dispatch = useAppDispatch();
+  function ApplicationDetail({
+    app,
+    hasError: fetchApplicationError,
+    refetchApp,
+    liveState,
+    liveStateLoading = false,
+  }) {
+    const { mutate: syncApplication, isSyncing } = useSyncApplication();
 
-    const [app, fetchApplicationError] = useAppSelector<
-      [Application.AsObject | undefined, SerializedError | null]
-    >((state) => [
-      selectApplicationById(state.applications, applicationId),
-      state.applications.fetchApplicationError,
-    ]);
+    const { data: piped } = useGetPipedById(
+      { pipedId: app?.pipedId || "", withStatus: true },
+      { enabled: !!app?.pipedId }
+    );
 
-    const piped = useAppSelector(selectPipedById(app?.pipedId));
-    const isSyncing = useIsSyncingApplication(app?.id);
     const description = app?.description.replace(/\\\n/g, "  \n") || "";
 
     const handleSync = (index: number): void => {
       if (app) {
-        dispatch(
-          syncApplication({
-            applicationId: app.id,
-            syncStrategy: syncStrategyByIndex[index],
-          })
-        )
-          .then(unwrapResult)
-          .catch(() => undefined);
+        syncApplication({
+          applicationId: app.id,
+          syncStrategy: syncStrategyByIndex[index],
+        });
       }
     };
 
@@ -269,7 +256,7 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
             <Button
               color="primary"
               onClick={() => {
-                dispatch(fetchApplication(applicationId));
+                refetchApp();
               }}
             >
               {UI_TEXT_REFRESH}
@@ -330,7 +317,10 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
                   deploying={app.deploying}
                   size="large"
                 />
-                <AppLiveState applicationId={applicationId} />
+                <AppLiveState
+                  liveState={liveState}
+                  liveStateLoading={liveStateLoading}
+                />
               </Box>
 
               {app.syncState &&
@@ -372,10 +362,10 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
                     label="Application ID"
                     value={
                       <>
-                        {applicationId}
+                        {app.id}
                         <CopyIconButton
                           name="Application ID"
-                          value={applicationId}
+                          value={app.id}
                           size="small"
                         />
                       </>

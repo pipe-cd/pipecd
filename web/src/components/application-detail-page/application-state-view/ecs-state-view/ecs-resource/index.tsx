@@ -1,6 +1,6 @@
 import { Box, Paper, Typography } from "@mui/material";
 import { FC, memo } from "react";
-import { ECSResourceState } from "~/modules/applications-live-state";
+import { ECSResourceState } from "~/types/applications-live-state";
 import { ECSResourceHealthStatusIcon } from "./health-status-icon";
 
 export interface ECSResourceProps {

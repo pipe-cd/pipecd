@@ -2,7 +2,7 @@ import UnknownIcon from "@mui/icons-material/ErrorOutline";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import OtherIcon from "@mui/icons-material/HelpOutline";
 import { FC, memo } from "react";
-import { ApplicationLiveStateSnapshot } from "~/modules/applications-live-state";
+import { ApplicationLiveStateSnapshot } from "~/types/applications-live-state";
 
 export interface ApplicationHealthStatusIconProps {
   health: ApplicationLiveStateSnapshot.Status;

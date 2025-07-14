@@ -1,4 +1,3 @@
-import { Application, selectById } from "~/modules/applications";
 import {
   Box,
   Button,
@@ -10,59 +9,50 @@ import {
 } from "@mui/material";
 import { FC, Fragment, memo, useCallback } from "react";
 import { UI_TEXT_CANCEL, UI_TEXT_DELETE } from "~/constants/ui-text";
-import {
-  clearDeletingApp,
-  deleteApplication,
-} from "~/modules/delete-application";
-import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 
 import Alert from "@mui/material/Alert";
 import { DELETE_APPLICATION_SUCCESS } from "~/constants/toast-text";
 import { Skeleton } from "@mui/material";
-import { addToast } from "~/modules/toasts";
 import { red } from "@mui/material/colors";
-import { shallowEqual } from "react-redux";
 import { SpinnerIcon } from "~/styles/button";
+import { useDeleteApplication } from "~/queries/applications/use-delete-application";
+import { useToast } from "~/contexts/toast-context";
+import { Application } from "~/types/applications";
 
 const TITLE = "Delete Application";
 const ALERT_TEXT = "Are you sure you want to delete the application?";
 
 export interface DeleteApplicationDialogProps {
+  open: boolean;
+  application?: Application.AsObject | null;
   onDeleted: () => void;
+  onCancel: () => void;
 }
 
 export const DeleteApplicationDialog: FC<DeleteApplicationDialogProps> = memo(
-  function DeleteApplicationDialog({ onDeleted }) {
-    // const buttonClasses = useButtonStyles();
-    const dispatch = useAppDispatch();
-
-    const [application, isDeleting] = useAppSelector<
-      [Application.AsObject | undefined, boolean]
-    >(
-      (state) => [
-        state.deleteApplication.applicationId
-          ? selectById(
-              state.applications,
-              state.deleteApplication.applicationId
-            )
-          : undefined,
-        state.deleteApplication.deleting,
-      ],
-      shallowEqual
-    );
+  function DeleteApplicationDialog({ onDeleted, application, open, onCancel }) {
+    const { addToast } = useToast();
+    const {
+      mutate: deleteApplication,
+      isLoading: isDeleting,
+    } = useDeleteApplication();
 
     const handleDelete = useCallback(() => {
-      dispatch(deleteApplication()).then(() => {
-        onDeleted();
-        dispatch(
-          addToast({ severity: "success", message: DELETE_APPLICATION_SUCCESS })
-        );
-      });
-    }, [dispatch, onDeleted]);
+      if (!application) return;
 
-    const handleCancel = useCallback(() => {
-      dispatch(clearDeletingApp());
-    }, [dispatch]);
+      deleteApplication(
+        { applicationId: application?.id },
+        {
+          onSuccess: () => {
+            onDeleted();
+            addToast({
+              severity: "success",
+              message: DELETE_APPLICATION_SUCCESS,
+            });
+          },
+        }
+      );
+    }, [addToast, application, deleteApplication, onDeleted]);
 
     const renderLabels = useCallback(() => {
       if (!application?.labelsMap) return <Skeleton height={24} width={200} />;
@@ -79,10 +69,10 @@ export const DeleteApplicationDialog: FC<DeleteApplicationDialogProps> = memo(
 
     return (
       <Dialog
-        open={Boolean(application)}
+        open={Boolean(application) && open}
         onClose={(_event, reason) => {
           if (reason !== "backdropClick" || !isDeleting) {
-            handleCancel();
+            onCancel();
           }
         }}
       >
@@ -122,7 +112,7 @@ export const DeleteApplicationDialog: FC<DeleteApplicationDialogProps> = memo(
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancel} disabled={isDeleting}>
+          <Button onClick={onCancel} disabled={isDeleting}>
             {UI_TEXT_CANCEL}
           </Button>
           <Button

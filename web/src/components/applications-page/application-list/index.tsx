@@ -16,7 +16,6 @@ import {
   enableApplication,
   selectAll,
 } from "~/modules/applications";
-import { setDeletingAppId } from "~/modules/delete-application";
 import { setUpdateTargetId } from "~/modules/update-application";
 import { ApplicationListItem } from "./application-list-item";
 import { DeleteApplicationDialog } from "./delete-application-dialog";
@@ -39,10 +38,14 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
     onRefresh = () => null,
   }) {
     const dispatch = useAppDispatch();
-    const [actionTarget, setActionTarget] = useState<string | null>(null);
+    const [
+      actionTarget,
+      setActionTarget,
+    ] = useState<Application.AsObject | null>(null);
     const [dialogState, setDialogState] = useState({
       disabling: false,
       generateSecret: false,
+      delete: false,
     });
     const [rowsPerPage, setRowsPerPage] = useState(20);
     const page = currentPage - 1;
@@ -66,7 +69,8 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
     const handleCloseDialog = (): void => {
       closeMenu();
       setDialogState({
-        ...dialogState,
+        delete: false,
+        generateSecret: false,
         disabling: false,
       });
       onRefresh();
@@ -83,42 +87,42 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
     );
 
     const handleDisableClick = useCallback(
-      (id: string) => {
-        setActionTarget(id);
-        setDialogState({
-          ...dialogState,
+      (app: Application.AsObject) => {
+        setActionTarget(app);
+        setDialogState((p) => ({
+          ...p,
           disabling: true,
-        });
+        }));
       },
-      [dialogState]
+      [setActionTarget, setDialogState]
     );
 
     const handleEnableClick = useCallback(
-      async (id: string) => {
-        await dispatch(enableApplication({ applicationId: id }));
+      async (app: Application.AsObject) => {
+        await dispatch(enableApplication({ applicationId: app.id }));
         onRefresh();
         closeMenu();
       },
       [dispatch, closeMenu, onRefresh]
     );
 
-    const handleDeleteClick = useCallback(
-      (id: string) => {
-        dispatch(setDeletingAppId(id));
-        closeMenu();
-      },
-      [dispatch, closeMenu]
-    );
+    const handleDeleteClick = useCallback((app: Application.AsObject) => {
+      setActionTarget(app);
+      setDialogState((p) => ({
+        ...p,
+        delete: true,
+      }));
+    }, []);
 
     const handleEncryptSecretClick = useCallback(
-      (id: string) => {
-        setActionTarget(id);
-        setDialogState({
-          ...dialogState,
+      (app: Application.AsObject) => {
+        setActionTarget(app);
+        setDialogState((p) => ({
+          ...p,
           generateSecret: true,
-        });
+        }));
       },
-      [dialogState]
+      []
     );
 
     const [isSmallScreen, setIsSmallScreen] = useState(
@@ -164,10 +168,10 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
                   applicationId={app.id}
                   displayAllProperties={!isSmallScreen}
                   onEdit={handleEditClick}
-                  onDisable={handleDisableClick}
-                  onEnable={handleEnableClick}
-                  onDelete={handleDeleteClick}
-                  onEncryptSecret={handleEncryptSecretClick}
+                  onDisable={() => handleDisableClick(app)}
+                  onEnable={() => handleEnableClick(app)}
+                  onDelete={() => handleDeleteClick(app)}
+                  onEncryptSecret={() => handleEncryptSecretClick(app)}
                 />
               ))}
             </TableBody>
@@ -193,19 +197,24 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
         </TableContainer>
 
         <DisableApplicationDialog
-          open={dialogState.disabling}
-          applicationId={actionTarget}
+          open={Boolean(actionTarget) && dialogState.disabling}
+          application={actionTarget}
           onDisable={handleCloseDialog}
           onCancel={handleCloseDialog}
         />
 
         <SealedSecretDialog
           open={Boolean(actionTarget) && dialogState.generateSecret}
-          applicationId={actionTarget}
+          application={actionTarget}
           onClose={handleOnCloseGenerateDialog}
         />
 
-        <DeleteApplicationDialog onDeleted={onRefresh} />
+        <DeleteApplicationDialog
+          open={Boolean(actionTarget) && dialogState.delete}
+          application={actionTarget}
+          onDeleted={handleCloseDialog}
+          onCancel={handleCloseDialog}
+        />
       </>
     );
   }
