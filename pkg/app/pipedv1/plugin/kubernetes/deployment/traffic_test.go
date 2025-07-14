@@ -40,7 +40,6 @@ type trafficRoutingTestCase struct {
 	testdataDir     string
 	stageCfg        kubeconfig.K8sTrafficRoutingStageOptions
 	shouldApplySync bool
-	noDeployTarget  bool
 	expectedStatus  sdk.StageStatus
 	verifyFunc      func(t *testing.T, dynamicClient dynamic.Interface)
 }
@@ -254,16 +253,6 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector(t *testing.T) {
 			},
 		},
 		{
-			name:        "no deploy target",
-			testdataDir: "traffic_routing_pod_selector",
-			stageCfg: kubeconfig.K8sTrafficRoutingStageOptions{
-				All: "primary",
-			},
-			shouldApplySync: false,
-			noDeployTarget:  true,
-			expectedStatus:  sdk.StageStatusFailure,
-		},
-		{
 			name:        "multiple services",
 			testdataDir: "traffic_routing_multiple_services",
 			stageCfg: kubeconfig.K8sTrafficRoutingStageOptions{
@@ -312,11 +301,6 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector(t *testing.T) {
 				},
 			}
 
-			// Special case for "no deploy target" test
-			if tc.noDeployTarget {
-				deployTargets = []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{}
-			}
-
 			status := plugin.executeK8sTrafficRoutingStagePodSelector(ctx, input, deployTargets, appCfg)
 			assert.Equal(t, tc.expectedStatus, status)
 
@@ -324,6 +308,54 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector(t *testing.T) {
 			if tc.verifyFunc != nil {
 				tc.verifyFunc(t, dynamicClient)
 			}
+		})
+	}
+}
+
+// This test assumes that the parsing of the stage config is done before the assertion of the deploy target.
+// If the order is changed, this test will not work.
+func TestPlugin_executeK8sTrafficRoutingStagePodSelector_InvalidInputs(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name     string
+		stageCfg []byte
+	}{
+		{
+			name:     "empty stage config",
+			stageCfg: []byte(``),
+		},
+		{
+			name:     "invalid stage config",
+			stageCfg: []byte(`invalid`),
+		},
+		{
+			name:     "valid stage config but no deploy target",
+			stageCfg: []byte(`{"all": "primary"}`),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_pod_selector", "app.pipecd.yaml"), "kubernetes")
+
+			plugin := &Plugin{}
+			status := plugin.executeK8sTrafficRoutingStagePodSelector(t.Context(), &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+				Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
+					StageConfig: tc.stageCfg,
+					TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+						ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_pod_selector"),
+						CommitHash:                "0123456789",
+						ApplicationConfig:         appCfg,
+						ApplicationConfigFilename: "app.pipecd.yaml",
+					},
+				},
+				Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), toolregistrytest.NewTestToolRegistry(t)),
+				Logger: zaptest.NewLogger(t),
+			}, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{}, appCfg)
+			assert.Equal(t, sdk.StageStatusFailure, status)
 		})
 	}
 }
