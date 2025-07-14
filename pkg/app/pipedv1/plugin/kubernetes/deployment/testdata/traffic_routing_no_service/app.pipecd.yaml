@@ -9,10 +9,6 @@ spec:
         manifests:
           - deployment.yaml
         kubectlVersion: 1.32.2
-      variantLabel:
-        key: pipecd.dev/variant
-        primaryValue: primary
-        canaryValue: canary
       trafficRouting:
         method: podselector
   pipeline:
