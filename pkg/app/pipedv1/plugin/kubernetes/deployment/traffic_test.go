@@ -43,7 +43,7 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector_toPrimary(t *testing.T)
 	testRegistry := toolregistrytest.NewTestToolRegistry(t)
 
 	// Read the application config from the testdata file
-	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_pod_selector_primary", "app.pipecd.yaml"), "kubernetes")
+	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_pod_selector", "app.pipecd.yaml"), "kubernetes")
 
 	// Prepare stage config to route 100% traffic to primary
 	stageCfg := kubeconfig.K8sTrafficRoutingStageOptions{
@@ -58,7 +58,7 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector_toPrimary(t *testing.T)
 			StageName:   "K8S_TRAFFIC_ROUTING",
 			StageConfig: stageCfgBytes,
 			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_pod_selector_primary"),
+				ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_pod_selector"),
 				CommitHash:                "0123456789",
 				ApplicationConfig:         appCfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
@@ -76,13 +76,13 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector_toPrimary(t *testing.T)
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	// First apply the service
-	applyCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_pod_selector_primary", "app.pipecd.yaml"), "kubernetes")
+	applyCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_pod_selector", "app.pipecd.yaml"), "kubernetes")
 	applyInput := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
 		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
 			StageName:   "K8S_SYNC",
 			StageConfig: []byte(``),
 			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_pod_selector_primary"),
+				ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_pod_selector"),
 				CommitHash:                "0123456789",
 				ApplicationConfig:         applyCfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
@@ -132,7 +132,7 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector_toCanary(t *testing.T) 
 	testRegistry := toolregistrytest.NewTestToolRegistry(t)
 
 	// Read the application config from the testdata file
-	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_pod_selector_canary", "app.pipecd.yaml"), "kubernetes")
+	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_pod_selector", "app.pipecd.yaml"), "kubernetes")
 
 	// Prepare stage config to route 100% traffic to canary
 	stageCfg := kubeconfig.K8sTrafficRoutingStageOptions{
@@ -147,7 +147,7 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector_toCanary(t *testing.T) 
 			StageName:   "K8S_TRAFFIC_ROUTING",
 			StageConfig: stageCfgBytes,
 			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_pod_selector_canary"),
+				ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_pod_selector"),
 				CommitHash:                "0123456789",
 				ApplicationConfig:         appCfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
@@ -165,13 +165,13 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector_toCanary(t *testing.T) 
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	// First apply the service
-	applyCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_pod_selector_canary", "app.pipecd.yaml"), "kubernetes")
+	applyCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_pod_selector", "app.pipecd.yaml"), "kubernetes")
 	applyInput := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
 		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
 			StageName:   "K8S_SYNC",
 			StageConfig: []byte(``),
 			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_pod_selector_canary"),
+				ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_pod_selector"),
 				CommitHash:                "0123456789",
 				ApplicationConfig:         applyCfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
@@ -221,7 +221,7 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector_invalidPercentages(t *t
 	testRegistry := toolregistrytest.NewTestToolRegistry(t)
 
 	// Read the application config from the testdata file
-	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_pod_selector_primary", "app.pipecd.yaml"), "kubernetes")
+	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_pod_selector", "app.pipecd.yaml"), "kubernetes")
 
 	testCases := []struct {
 		name     string
@@ -260,7 +260,7 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector_invalidPercentages(t *t
 					StageName:   "K8S_TRAFFIC_ROUTING",
 					StageConfig: stageCfgBytes,
 					TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-						ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_pod_selector_primary"),
+						ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_pod_selector"),
 						CommitHash:                "0123456789",
 						ApplicationConfig:         appCfg,
 						ApplicationConfigFilename: "app.pipecd.yaml",
@@ -612,7 +612,7 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector_noDeployTarget(t *testi
 	testRegistry := toolregistrytest.NewTestToolRegistry(t)
 
 	// Read the application config from the testdata file
-	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_no_deploy_target", "app.pipecd.yaml"), "kubernetes")
+	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_pod_selector", "app.pipecd.yaml"), "kubernetes")
 
 	// Prepare stage config to route 100% traffic to primary
 	stageCfg := kubeconfig.K8sTrafficRoutingStageOptions{
@@ -627,7 +627,7 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector_noDeployTarget(t *testi
 			StageName:   "K8S_TRAFFIC_ROUTING",
 			StageConfig: stageCfgBytes,
 			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_no_deploy_target"),
+				ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_pod_selector"),
 				CommitHash:                "0123456789",
 				ApplicationConfig:         appCfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
