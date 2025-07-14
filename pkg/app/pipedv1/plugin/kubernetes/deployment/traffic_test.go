@@ -75,7 +75,7 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector_toPrimary(t *testing.T)
 	// Initialize deploy target config and dynamic client for assertions with envtest
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
-	// First apply the service with initial canary selector
+	// First apply the service
 	applyCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_pod_selector_primary", "app.pipecd.yaml"), "kubernetes")
 	applyInput := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
 		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
@@ -164,7 +164,7 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector_toCanary(t *testing.T) 
 	// Initialize deploy target config and dynamic client for assertions with envtest
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
-	// First apply the service with initial primary selector
+	// First apply the service
 	applyCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_pod_selector_canary", "app.pipecd.yaml"), "kubernetes")
 	applyInput := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
 		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
