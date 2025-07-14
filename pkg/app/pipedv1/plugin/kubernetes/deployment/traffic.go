@@ -53,11 +53,13 @@ func (p *Plugin) executeK8sTrafficRoutingStagePodSelector(ctx context.Context, i
 
 	// 1. Parse stage configuration
 	var stageCfg kubeconfig.K8sTrafficRoutingStageOptions
-	if len(input.Request.StageConfig) > 0 {
-		if err := json.Unmarshal(input.Request.StageConfig, &stageCfg); err != nil {
-			lp.Errorf("Failed while unmarshalling stage config (%v)", err)
-			return sdk.StageStatusFailure
-		}
+	if len(input.Request.StageConfig) == 0 {
+		lp.Error("Stage config is empty, this should not happen")
+		return sdk.StageStatusFailure
+	}
+	if err := json.Unmarshal(input.Request.StageConfig, &stageCfg); err != nil {
+		lp.Errorf("Failed while unmarshalling stage config (%v)", err)
+		return sdk.StageStatusFailure
 	}
 
 	// 2. Get traffic percentages
