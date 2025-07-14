@@ -40,6 +40,7 @@ type trafficRoutingTestCase struct {
 	testdataDir     string
 	stageCfg        kubeconfig.K8sTrafficRoutingStageOptions
 	shouldApplySync bool
+	noDeployTarget  bool
 	expectedStatus  sdk.StageStatus
 	verifyFunc      func(t *testing.T, dynamicClient dynamic.Interface)
 }
@@ -259,6 +260,7 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector(t *testing.T) {
 				All: "primary",
 			},
 			shouldApplySync: false,
+			noDeployTarget:  true,
 			expectedStatus:  sdk.StageStatusFailure,
 		},
 		{
@@ -311,7 +313,7 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector(t *testing.T) {
 			}
 
 			// Special case for "no deploy target" test
-			if tc.name == "no deploy target" {
+			if tc.noDeployTarget {
 				deployTargets = []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{}
 			}
 
