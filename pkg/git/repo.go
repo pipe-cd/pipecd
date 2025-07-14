@@ -293,10 +293,26 @@ func (r *repo) CheckoutPullRequest(ctx context.Context, number int, branch strin
 // Pull fetches from and integrate with a local branch.
 func (r *repo) Pull(ctx context.Context, branch string) error {
 	out, err := r.runGitCommand(ctx, "pull", r.remote, branch)
-	if err != nil {
-		return formatCommandError(err, out)
+
+	if err == nil {
+		return nil
 	}
-	return nil
+
+	if strings.Contains(string(out), "divergent branches") {
+		// need to use --force to move the remote-ref to the new commit
+		// when the update is a non-fast-forward one like divergent branches
+		out, err := r.runGitCommand(ctx, "fetch", r.remote, branch, "--force")
+		if err != nil {
+			return formatCommandError(err, out)
+		}
+		// because we want our local to exactly replicate the remote
+		out, err = r.runGitCommand(ctx, "reset", "--hard", "FETCH_HEAD")
+		if err != nil {
+			return formatCommandError(err, out)
+		}
+		return nil
+	}
+	return formatCommandError(err, out)
 }
 
 // MergeRemoteBranch merges all commits until the given one
