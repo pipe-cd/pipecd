@@ -25,6 +25,7 @@ import (
 	"go.uber.org/zap/zaptest"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/dynamic"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister/logpersistertest"
@@ -34,31 +35,40 @@ import (
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 )
 
-func TestPlugin_executeK8sTrafficRoutingStagePodSelector_toPrimary(t *testing.T) {
-	t.Parallel()
+type trafficRoutingTestCase struct {
+	name            string
+	testdataDir     string
+	stageCfg        kubeconfig.K8sTrafficRoutingStageOptions
+	shouldApplySync bool
+	expectedStatus  sdk.StageStatus
+	verifyFunc      func(t *testing.T, dynamicClient dynamic.Interface)
+}
 
-	ctx := context.Background()
+// setupTrafficRoutingTest initializes common test components
+func setupTrafficRoutingTest(t *testing.T, tc trafficRoutingTestCase) (
+	input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec],
+	dtConfig *kubeconfig.KubernetesDeployTargetConfig,
+	dynamicClient dynamic.Interface,
+) {
+	t.Helper()
 
 	// Initialize tool registry
 	testRegistry := toolregistrytest.NewTestToolRegistry(t)
 
 	// Read the application config from the testdata file
-	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_pod_selector", "app.pipecd.yaml"), "kubernetes")
+	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", tc.testdataDir, "app.pipecd.yaml"), "kubernetes")
 
-	// Prepare stage config to route 100% traffic to primary
-	stageCfg := kubeconfig.K8sTrafficRoutingStageOptions{
-		All: "primary",
-	}
-	stageCfgBytes, err := json.Marshal(stageCfg)
+	// Prepare stage config
+	stageCfgBytes, err := json.Marshal(tc.stageCfg)
 	require.NoError(t, err)
 
 	// Prepare the input
-	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+	input = &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
 		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
 			StageName:   "K8S_TRAFFIC_ROUTING",
 			StageConfig: stageCfgBytes,
 			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_pod_selector"),
+				ApplicationDirectory:      filepath.Join("testdata", tc.testdataDir),
 				CommitHash:                "0123456789",
 				ApplicationConfig:         appCfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
@@ -72,17 +82,24 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector_toPrimary(t *testing.T)
 		Logger: zaptest.NewLogger(t),
 	}
 
-	// Initialize deploy target config and dynamic client for assertions with envtest
-	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
+	// Initialize deploy target config and dynamic client
+	dtConfig, dynamicClient = setupTestDeployTargetConfigAndDynamicClient(t)
 
-	// First apply the service
-	applyCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_pod_selector", "app.pipecd.yaml"), "kubernetes")
+	return input, dtConfig, dynamicClient
+}
+
+// applyServiceByK8sSync executes K8S_SYNC stage to apply the service
+func applyServiceByK8sSync(t *testing.T, ctx context.Context, testdataDir string, dtConfig *kubeconfig.KubernetesDeployTargetConfig) {
+	t.Helper()
+
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+	applyCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", testdataDir, "app.pipecd.yaml"), "kubernetes")
 	applyInput := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
 		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
 			StageName:   "K8S_SYNC",
 			StageConfig: []byte(``),
 			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_pod_selector"),
+				ApplicationDirectory:      filepath.Join("testdata", testdataDir),
 				CommitHash:                "0123456789",
 				ApplicationConfig:         applyCfg,
 				ApplicationConfigFilename: "app.pipecd.yaml",
@@ -104,642 +121,207 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector_toPrimary(t *testing.T)
 		},
 	})
 	require.Equal(t, sdk.StageStatusSuccess, status)
+}
 
-	// Now execute traffic routing
-	status = plugin.executeK8sTrafficRoutingStagePodSelector(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
-		{
-			Name:   "default",
-			Config: *dtConfig,
-		},
-	}, appCfg)
+// verifyServiceSelector checks if the service selector has the expected variant
+func verifyServiceSelector(t *testing.T, dynamicClient dynamic.Interface, serviceName, expectedVariant, variantLabel string) {
+	t.Helper()
 
-	assert.Equal(t, sdk.StageStatusSuccess, status)
-
-	// Verify the Service selector was updated to primary variant
-	service, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(context.Background(), "traffic-test", metav1.GetOptions{})
+	service, err := dynamicClient.Resource(schema.GroupVersionResource{
+		Group:    "",
+		Version:  "v1",
+		Resource: "services",
+	}).Namespace("default").Get(t.Context(), serviceName, metav1.GetOptions{})
 	require.NoError(t, err)
 
 	selector := service.Object["spec"].(map[string]interface{})["selector"].(map[string]interface{})
-	assert.Equal(t, "primary", selector["pipecd.dev/variant"])
+	assert.Equal(t, expectedVariant, selector[variantLabel])
 }
 
-func TestPlugin_executeK8sTrafficRoutingStagePodSelector_toCanary(t *testing.T) {
+func TestPlugin_executeK8sTrafficRoutingStagePodSelector(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
-
-	// Initialize tool registry
-	testRegistry := toolregistrytest.NewTestToolRegistry(t)
-
-	// Read the application config from the testdata file
-	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_pod_selector", "app.pipecd.yaml"), "kubernetes")
-
-	// Prepare stage config to route 100% traffic to canary
-	stageCfg := kubeconfig.K8sTrafficRoutingStageOptions{
-		All: "canary",
-	}
-	stageCfgBytes, err := json.Marshal(stageCfg)
-	require.NoError(t, err)
-
-	// Prepare the input
-	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
-		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
-			StageName:   "K8S_TRAFFIC_ROUTING",
-			StageConfig: stageCfgBytes,
-			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_pod_selector"),
-				CommitHash:                "0123456789",
-				ApplicationConfig:         appCfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-			Deployment: sdk.Deployment{
-				PipedID:       "piped-id",
-				ApplicationID: "app-id",
-			},
-		},
-		Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
-		Logger: zaptest.NewLogger(t),
-	}
-
-	// Initialize deploy target config and dynamic client for assertions with envtest
-	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
-
-	// First apply the service
-	applyCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_pod_selector", "app.pipecd.yaml"), "kubernetes")
-	applyInput := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
-		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
-			StageName:   "K8S_SYNC",
-			StageConfig: []byte(``),
-			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_pod_selector"),
-				CommitHash:                "0123456789",
-				ApplicationConfig:         applyCfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-			Deployment: sdk.Deployment{
-				PipedID:       "piped-id",
-				ApplicationID: "app-id",
-			},
-		},
-		Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
-		Logger: zaptest.NewLogger(t),
-	}
-
-	plugin := &Plugin{}
-	status := plugin.executeK8sSyncStage(ctx, applyInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+	testCases := []trafficRoutingTestCase{
 		{
-			Name:   "default",
-			Config: *dtConfig,
+			name:        "route to primary",
+			testdataDir: "traffic_routing_pod_selector",
+			stageCfg: kubeconfig.K8sTrafficRoutingStageOptions{
+				All: "primary",
+			},
+			shouldApplySync: true,
+			expectedStatus:  sdk.StageStatusSuccess,
+			verifyFunc: func(t *testing.T, dynamicClient dynamic.Interface) {
+				verifyServiceSelector(t, dynamicClient, "traffic-test", "primary", "pipecd.dev/variant")
+			},
 		},
-	})
-	require.Equal(t, sdk.StageStatusSuccess, status)
-
-	// Now execute traffic routing
-	status = plugin.executeK8sTrafficRoutingStagePodSelector(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{
-			Name:   "default",
-			Config: *dtConfig,
+			name:        "route to canary",
+			testdataDir: "traffic_routing_pod_selector",
+			stageCfg: kubeconfig.K8sTrafficRoutingStageOptions{
+				All: "canary",
+			},
+			shouldApplySync: true,
+			expectedStatus:  sdk.StageStatusSuccess,
+			verifyFunc: func(t *testing.T, dynamicClient dynamic.Interface) {
+				verifyServiceSelector(t, dynamicClient, "traffic-test", "canary", "pipecd.dev/variant")
+			},
 		},
-	}, appCfg)
-
-	assert.Equal(t, sdk.StageStatusSuccess, status)
-
-	// Verify the Service selector was updated to canary variant
-	service, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(context.Background(), "traffic-test", metav1.GetOptions{})
-	require.NoError(t, err)
-
-	selector := service.Object["spec"].(map[string]interface{})["selector"].(map[string]interface{})
-	assert.Equal(t, "canary", selector["pipecd.dev/variant"])
-}
-
-func TestPlugin_executeK8sTrafficRoutingStagePodSelector_invalidPercentages(t *testing.T) {
-	t.Parallel()
-
-	ctx := context.Background()
-
-	// Initialize tool registry
-	testRegistry := toolregistrytest.NewTestToolRegistry(t)
-
-	// Read the application config from the testdata file
-	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_pod_selector", "app.pipecd.yaml"), "kubernetes")
-
-	testCases := []struct {
-		name     string
-		stageCfg kubeconfig.K8sTrafficRoutingStageOptions
-	}{
 		{
-			name: "50-50 split not supported",
+			name:        "50-50 split not supported",
+			testdataDir: "traffic_routing_pod_selector",
 			stageCfg: kubeconfig.K8sTrafficRoutingStageOptions{
 				Primary: unit.Percentage{Number: 50},
 				Canary:  unit.Percentage{Number: 50},
 			},
+			shouldApplySync: false,
+			expectedStatus:  sdk.StageStatusFailure,
 		},
 		{
-			name: "0-0 split not supported",
+			name:        "0-0 split not supported",
+			testdataDir: "traffic_routing_pod_selector",
 			stageCfg: kubeconfig.K8sTrafficRoutingStageOptions{
 				Primary: unit.Percentage{Number: 0},
 				Canary:  unit.Percentage{Number: 0},
 			},
+			shouldApplySync: false,
+			expectedStatus:  sdk.StageStatusFailure,
 		},
 		{
-			name: "baseline not supported",
+			name:        "baseline not supported",
+			testdataDir: "traffic_routing_pod_selector",
 			stageCfg: kubeconfig.K8sTrafficRoutingStageOptions{
 				Baseline: unit.Percentage{Number: 100},
+			},
+			shouldApplySync: false,
+			expectedStatus:  sdk.StageStatusFailure,
+		},
+		{
+			name:        "no service",
+			testdataDir: "traffic_routing_no_service",
+			stageCfg: kubeconfig.K8sTrafficRoutingStageOptions{
+				All: "primary",
+			},
+			shouldApplySync: false,
+			expectedStatus:  sdk.StageStatusFailure,
+		},
+		{
+			name:        "missing variant label",
+			testdataDir: "traffic_routing_missing_variant",
+			stageCfg: kubeconfig.K8sTrafficRoutingStageOptions{
+				All: "primary",
+			},
+			shouldApplySync: true,
+			expectedStatus:  sdk.StageStatusFailure,
+			verifyFunc: func(t *testing.T, dynamicClient dynamic.Interface) {
+				// Verify service was created by K8S_SYNC stage
+				_, err := dynamicClient.Resource(schema.GroupVersionResource{
+					Group:    "",
+					Version:  "v1",
+					Resource: "services",
+				}).Namespace("default").Get(t.Context(), "traffic-test", metav1.GetOptions{})
+				require.NoError(t, err)
+			},
+		},
+		{
+			name:        "wrong variant value",
+			testdataDir: "traffic_routing_wrong_variant",
+			stageCfg: kubeconfig.K8sTrafficRoutingStageOptions{
+				All: "primary",
+			},
+			shouldApplySync: true,
+			expectedStatus:  sdk.StageStatusFailure,
+			verifyFunc: func(t *testing.T, dynamicClient dynamic.Interface) {
+				// Verify service was created by K8S_SYNC stage
+				_, err := dynamicClient.Resource(schema.GroupVersionResource{
+					Group:    "",
+					Version:  "v1",
+					Resource: "services",
+				}).Namespace("default").Get(t.Context(), "traffic-test", metav1.GetOptions{})
+				require.NoError(t, err)
+			},
+		},
+		{
+			name:        "custom variant label",
+			testdataDir: "traffic_routing_custom_variant",
+			stageCfg: kubeconfig.K8sTrafficRoutingStageOptions{
+				All: "primary",
+			},
+			shouldApplySync: true,
+			expectedStatus:  sdk.StageStatusSuccess,
+			verifyFunc: func(t *testing.T, dynamicClient dynamic.Interface) {
+				verifyServiceSelector(t, dynamicClient, "traffic-test", "main", "my-custom/variant")
+			},
+		},
+		{
+			name:        "no deploy target",
+			testdataDir: "traffic_routing_pod_selector",
+			stageCfg: kubeconfig.K8sTrafficRoutingStageOptions{
+				All: "primary",
+			},
+			shouldApplySync: false,
+			expectedStatus:  sdk.StageStatusFailure,
+		},
+		{
+			name:        "multiple services",
+			testdataDir: "traffic_routing_multiple_services",
+			stageCfg: kubeconfig.K8sTrafficRoutingStageOptions{
+				All: "primary",
+			},
+			shouldApplySync: true,
+			expectedStatus:  sdk.StageStatusSuccess,
+			verifyFunc: func(t *testing.T, dynamicClient dynamic.Interface) {
+				// Verify only the first Service selector was updated
+				verifyServiceSelector(t, dynamicClient, "traffic-test-1", "primary", "pipecd.dev/variant")
+
+				// Second service should remain unchanged
+				service2, err := dynamicClient.Resource(schema.GroupVersionResource{
+					Group:    "",
+					Version:  "v1",
+					Resource: "services",
+				}).Namespace("default").Get(t.Context(), "traffic-test-2", metav1.GetOptions{})
+				require.NoError(t, err)
+				selector2 := service2.Object["spec"].(map[string]interface{})["selector"].(map[string]interface{})
+				assert.Equal(t, "canary", selector2["pipecd.dev/variant"])
 			},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			stageCfgBytes, err := json.Marshal(tc.stageCfg)
-			require.NoError(t, err)
+			t.Parallel()
+			ctx := t.Context()
 
-			// Prepare the input
-			input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
-				Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
-					StageName:   "K8S_TRAFFIC_ROUTING",
-					StageConfig: stageCfgBytes,
-					TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-						ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_pod_selector"),
-						CommitHash:                "0123456789",
-						ApplicationConfig:         appCfg,
-						ApplicationConfigFilename: "app.pipecd.yaml",
-					},
-					Deployment: sdk.Deployment{
-						PipedID:       "piped-id",
-						ApplicationID: "app-id",
-					},
-				},
-				Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
-				Logger: zaptest.NewLogger(t),
+			// Setup test components
+			input, dtConfig, dynamicClient := setupTrafficRoutingTest(t, tc)
+
+			// Apply service if needed
+			if tc.shouldApplySync {
+				applyServiceByK8sSync(t, ctx, tc.testdataDir, dtConfig)
 			}
 
-			// Initialize deploy target config
-			dtConfig, _ := setupTestDeployTargetConfigAndDynamicClient(t)
-
+			// Execute traffic routing
 			plugin := &Plugin{}
-			status := plugin.executeK8sTrafficRoutingStagePodSelector(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+			appCfg := input.Request.TargetDeploymentSource.ApplicationConfig
+
+			deployTargets := []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 				{
 					Name:   "default",
 					Config: *dtConfig,
 				},
-			}, appCfg)
+			}
 
-			assert.Equal(t, sdk.StageStatusFailure, status)
+			// Special case for "no deploy target" test
+			if tc.name == "no deploy target" {
+				deployTargets = []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{}
+			}
+
+			status := plugin.executeK8sTrafficRoutingStagePodSelector(ctx, input, deployTargets, appCfg)
+			assert.Equal(t, tc.expectedStatus, status)
+
+			// Run verification if provided
+			if tc.verifyFunc != nil {
+				tc.verifyFunc(t, dynamicClient)
+			}
 		})
 	}
-}
-
-func TestPlugin_executeK8sTrafficRoutingStagePodSelector_noService(t *testing.T) {
-	t.Parallel()
-
-	ctx := context.Background()
-
-	// Initialize tool registry
-	testRegistry := toolregistrytest.NewTestToolRegistry(t)
-
-	// Read the application config from the testdata file
-	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_no_service", "app.pipecd.yaml"), "kubernetes")
-
-	// Prepare stage config to route 100% traffic to primary
-	stageCfg := kubeconfig.K8sTrafficRoutingStageOptions{
-		All: "primary",
-	}
-	stageCfgBytes, err := json.Marshal(stageCfg)
-	require.NoError(t, err)
-
-	// Prepare the input
-	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
-		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
-			StageName:   "K8S_TRAFFIC_ROUTING",
-			StageConfig: stageCfgBytes,
-			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_no_service"),
-				CommitHash:                "0123456789",
-				ApplicationConfig:         appCfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-			Deployment: sdk.Deployment{
-				PipedID:       "piped-id",
-				ApplicationID: "app-id",
-			},
-		},
-		Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
-		Logger: zaptest.NewLogger(t),
-	}
-
-	// Initialize deploy target config
-	dtConfig, _ := setupTestDeployTargetConfigAndDynamicClient(t)
-
-	plugin := &Plugin{}
-	status := plugin.executeK8sTrafficRoutingStagePodSelector(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
-		{
-			Name:   "default",
-			Config: *dtConfig,
-		},
-	}, appCfg)
-
-	assert.Equal(t, sdk.StageStatusFailure, status)
-}
-
-func TestPlugin_executeK8sTrafficRoutingStagePodSelector_missingVariantLabel(t *testing.T) {
-	t.Parallel()
-
-	ctx := context.Background()
-
-	// Initialize tool registry
-	testRegistry := toolregistrytest.NewTestToolRegistry(t)
-
-	// Read the application config from the testdata file
-	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_missing_variant", "app.pipecd.yaml"), "kubernetes")
-
-	// Prepare stage config to route 100% traffic to primary
-	stageCfg := kubeconfig.K8sTrafficRoutingStageOptions{
-		All: "primary",
-	}
-	stageCfgBytes, err := json.Marshal(stageCfg)
-	require.NoError(t, err)
-
-	// Prepare the input
-	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
-		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
-			StageName:   "K8S_TRAFFIC_ROUTING",
-			StageConfig: stageCfgBytes,
-			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_missing_variant"),
-				CommitHash:                "0123456789",
-				ApplicationConfig:         appCfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-			Deployment: sdk.Deployment{
-				PipedID:       "piped-id",
-				ApplicationID: "app-id",
-			},
-		},
-		Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
-		Logger: zaptest.NewLogger(t),
-	}
-
-	// Initialize deploy target config and dynamic client for assertions with envtest
-	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
-
-	// First apply the service
-	applyCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_missing_variant", "app.pipecd.yaml"), "kubernetes")
-	applyInput := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
-		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
-			StageName:   "K8S_SYNC",
-			StageConfig: []byte(``),
-			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_missing_variant"),
-				CommitHash:                "0123456789",
-				ApplicationConfig:         applyCfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-			Deployment: sdk.Deployment{
-				PipedID:       "piped-id",
-				ApplicationID: "app-id",
-			},
-		},
-		Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
-		Logger: zaptest.NewLogger(t),
-	}
-
-	plugin := &Plugin{}
-	status := plugin.executeK8sSyncStage(ctx, applyInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
-		{
-			Name:   "default",
-			Config: *dtConfig,
-		},
-	})
-	require.Equal(t, sdk.StageStatusSuccess, status)
-
-	// Verify service was created
-	_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(context.Background(), "traffic-test", metav1.GetOptions{})
-	require.NoError(t, err)
-
-	// Now execute traffic routing
-	status = plugin.executeK8sTrafficRoutingStagePodSelector(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
-		{
-			Name:   "default",
-			Config: *dtConfig,
-		},
-	}, appCfg)
-
-	assert.Equal(t, sdk.StageStatusFailure, status)
-}
-
-func TestPlugin_executeK8sTrafficRoutingStagePodSelector_wrongVariantValue(t *testing.T) {
-	t.Parallel()
-
-	ctx := context.Background()
-
-	// Initialize tool registry
-	testRegistry := toolregistrytest.NewTestToolRegistry(t)
-
-	// Read the application config from the testdata file
-	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_wrong_variant", "app.pipecd.yaml"), "kubernetes")
-
-	// Prepare stage config to route 100% traffic to primary
-	stageCfg := kubeconfig.K8sTrafficRoutingStageOptions{
-		All: "primary",
-	}
-	stageCfgBytes, err := json.Marshal(stageCfg)
-	require.NoError(t, err)
-
-	// Prepare the input
-	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
-		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
-			StageName:   "K8S_TRAFFIC_ROUTING",
-			StageConfig: stageCfgBytes,
-			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_wrong_variant"),
-				CommitHash:                "0123456789",
-				ApplicationConfig:         appCfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-			Deployment: sdk.Deployment{
-				PipedID:       "piped-id",
-				ApplicationID: "app-id",
-			},
-		},
-		Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
-		Logger: zaptest.NewLogger(t),
-	}
-
-	// Initialize deploy target config and dynamic client for assertions with envtest
-	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
-
-	// First apply the service
-	applyCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_wrong_variant", "app.pipecd.yaml"), "kubernetes")
-	applyInput := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
-		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
-			StageName:   "K8S_SYNC",
-			StageConfig: []byte(``),
-			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_wrong_variant"),
-				CommitHash:                "0123456789",
-				ApplicationConfig:         applyCfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-			Deployment: sdk.Deployment{
-				PipedID:       "piped-id",
-				ApplicationID: "app-id",
-			},
-		},
-		Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
-		Logger: zaptest.NewLogger(t),
-	}
-
-	plugin := &Plugin{}
-	status := plugin.executeK8sSyncStage(ctx, applyInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
-		{
-			Name:   "default",
-			Config: *dtConfig,
-		},
-	})
-	require.Equal(t, sdk.StageStatusSuccess, status)
-
-	// Verify service was created
-	_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(context.Background(), "traffic-test", metav1.GetOptions{})
-	require.NoError(t, err)
-
-	// Now execute traffic routing
-	status = plugin.executeK8sTrafficRoutingStagePodSelector(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
-		{
-			Name:   "default",
-			Config: *dtConfig,
-		},
-	}, appCfg)
-
-	assert.Equal(t, sdk.StageStatusFailure, status)
-}
-
-func TestPlugin_executeK8sTrafficRoutingStagePodSelector_customVariantLabel(t *testing.T) {
-	t.Parallel()
-
-	ctx := context.Background()
-
-	// Initialize tool registry
-	testRegistry := toolregistrytest.NewTestToolRegistry(t)
-
-	// Read the application config from the testdata file
-	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_custom_variant", "app.pipecd.yaml"), "kubernetes")
-
-	// Prepare stage config to route 100% traffic to custom primary
-	stageCfg := kubeconfig.K8sTrafficRoutingStageOptions{
-		All: "primary",
-	}
-	stageCfgBytes, err := json.Marshal(stageCfg)
-	require.NoError(t, err)
-
-	// Prepare the input
-	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
-		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
-			StageName:   "K8S_TRAFFIC_ROUTING",
-			StageConfig: stageCfgBytes,
-			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_custom_variant"),
-				CommitHash:                "0123456789",
-				ApplicationConfig:         appCfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-			Deployment: sdk.Deployment{
-				PipedID:       "piped-id",
-				ApplicationID: "app-id",
-			},
-		},
-		Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
-		Logger: zaptest.NewLogger(t),
-	}
-
-	// Initialize deploy target config and dynamic client for assertions with envtest
-	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
-
-	// First apply the service with initial variant
-	applyCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_custom_variant", "app.pipecd.yaml"), "kubernetes")
-	applyInput := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
-		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
-			StageName:   "K8S_SYNC",
-			StageConfig: []byte(``),
-			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_custom_variant"),
-				CommitHash:                "0123456789",
-				ApplicationConfig:         applyCfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-			Deployment: sdk.Deployment{
-				PipedID:       "piped-id",
-				ApplicationID: "app-id",
-			},
-		},
-		Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
-		Logger: zaptest.NewLogger(t),
-	}
-
-	plugin := &Plugin{}
-	status := plugin.executeK8sSyncStage(ctx, applyInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
-		{
-			Name:   "default",
-			Config: *dtConfig,
-		},
-	})
-	require.Equal(t, sdk.StageStatusSuccess, status)
-
-	// Now execute traffic routing
-	status = plugin.executeK8sTrafficRoutingStagePodSelector(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
-		{
-			Name:   "default",
-			Config: *dtConfig,
-		},
-	}, appCfg)
-
-	assert.Equal(t, sdk.StageStatusSuccess, status)
-
-	// Verify the Service selector was updated to custom primary variant
-	service, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(context.Background(), "traffic-test", metav1.GetOptions{})
-	require.NoError(t, err)
-
-	selector := service.Object["spec"].(map[string]interface{})["selector"].(map[string]interface{})
-	assert.Equal(t, "main", selector["my-custom/variant"])
-}
-
-func TestPlugin_executeK8sTrafficRoutingStagePodSelector_noDeployTarget(t *testing.T) {
-	t.Parallel()
-
-	ctx := context.Background()
-
-	// Initialize tool registry
-	testRegistry := toolregistrytest.NewTestToolRegistry(t)
-
-	// Read the application config from the testdata file
-	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_pod_selector", "app.pipecd.yaml"), "kubernetes")
-
-	// Prepare stage config to route 100% traffic to primary
-	stageCfg := kubeconfig.K8sTrafficRoutingStageOptions{
-		All: "primary",
-	}
-	stageCfgBytes, err := json.Marshal(stageCfg)
-	require.NoError(t, err)
-
-	// Prepare the input
-	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
-		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
-			StageName:   "K8S_TRAFFIC_ROUTING",
-			StageConfig: stageCfgBytes,
-			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_pod_selector"),
-				CommitHash:                "0123456789",
-				ApplicationConfig:         appCfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-			Deployment: sdk.Deployment{
-				PipedID:       "piped-id",
-				ApplicationID: "app-id",
-			},
-		},
-		Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
-		Logger: zaptest.NewLogger(t),
-	}
-
-	plugin := &Plugin{}
-	// Execute with empty deploy targets
-	status := plugin.executeK8sTrafficRoutingStagePodSelector(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{}, appCfg)
-
-	assert.Equal(t, sdk.StageStatusFailure, status)
-}
-
-func TestPlugin_executeK8sTrafficRoutingStagePodSelector_multipleServices(t *testing.T) {
-	t.Parallel()
-
-	ctx := context.Background()
-
-	// Initialize tool registry
-	testRegistry := toolregistrytest.NewTestToolRegistry(t)
-
-	// Read the application config from the testdata file
-	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_multiple_services", "app.pipecd.yaml"), "kubernetes")
-
-	// Prepare stage config to route 100% traffic to primary
-	stageCfg := kubeconfig.K8sTrafficRoutingStageOptions{
-		All: "primary",
-	}
-	stageCfgBytes, err := json.Marshal(stageCfg)
-	require.NoError(t, err)
-
-	// Prepare the input
-	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
-		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
-			StageName:   "K8S_TRAFFIC_ROUTING",
-			StageConfig: stageCfgBytes,
-			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_multiple_services"),
-				CommitHash:                "0123456789",
-				ApplicationConfig:         appCfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-			Deployment: sdk.Deployment{
-				PipedID:       "piped-id",
-				ApplicationID: "app-id",
-			},
-		},
-		Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
-		Logger: zaptest.NewLogger(t),
-	}
-
-	// Initialize deploy target config and dynamic client for assertions with envtest
-	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
-
-	// First apply the services
-	applyCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_multiple_services", "app.pipecd.yaml"), "kubernetes")
-	applyInput := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
-		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
-			StageName:   "K8S_SYNC",
-			StageConfig: []byte(``),
-			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_multiple_services"),
-				CommitHash:                "0123456789",
-				ApplicationConfig:         applyCfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-			Deployment: sdk.Deployment{
-				PipedID:       "piped-id",
-				ApplicationID: "app-id",
-			},
-		},
-		Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
-		Logger: zaptest.NewLogger(t),
-	}
-
-	plugin := &Plugin{}
-	status := plugin.executeK8sSyncStage(ctx, applyInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
-		{
-			Name:   "default",
-			Config: *dtConfig,
-		},
-	})
-	require.Equal(t, sdk.StageStatusSuccess, status)
-
-	// Now execute traffic routing
-	status = plugin.executeK8sTrafficRoutingStagePodSelector(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
-		{
-			Name:   "default",
-			Config: *dtConfig,
-		},
-	}, appCfg)
-
-	assert.Equal(t, sdk.StageStatusSuccess, status)
-
-	// Verify only the first Service selector was updated
-	service1, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(context.Background(), "traffic-test-1", metav1.GetOptions{})
-	require.NoError(t, err)
-	selector1 := service1.Object["spec"].(map[string]interface{})["selector"].(map[string]interface{})
-	assert.Equal(t, "primary", selector1["pipecd.dev/variant"])
-
-	// Second service should remain unchanged
-	service2, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(context.Background(), "traffic-test-2", metav1.GetOptions{})
-	require.NoError(t, err)
-	selector2 := service2.Object["spec"].(map[string]interface{})["selector"].(map[string]interface{})
-	assert.Equal(t, "canary", selector2["pipecd.dev/variant"])
-
-	// Multiple services test verified by checking that only the first service was updated
 }
