@@ -4,7 +4,7 @@ import {
   IndeterminateCheckBox,
   Block,
 } from "@mui/icons-material";
-import { EventStatus } from "~/modules/events";
+import { EventStatus } from "pipecd/web/model/event_pb";
 import { FC } from "react";
 
 export interface EventStatusIconProps {
