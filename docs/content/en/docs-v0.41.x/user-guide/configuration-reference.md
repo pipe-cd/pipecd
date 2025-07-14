@@ -377,7 +377,6 @@ One of `yamlField` or `regex` is required.
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| retries | int | How many times to retry applying terraform changes. Default is `0`. | No |
 
 ## TerraformCommandFlags
 
@@ -546,7 +545,6 @@ Therefore, note that all traffic will be routed to the primary if the the primar
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| retries | int | How many times to retry applying terraform changes. Default is `0`. | No |
 
 ### CloudRunPromoteStageOptions
 
