@@ -8,7 +8,7 @@ import { ApplicationKind } from "pipecd/web/model/common_pb";
 import {
   ApplicationLiveState,
   ApplicationLiveStateSnapshot,
-} from "~/modules/applications-live-state";
+} from "~/types/applications-live-state";
 import { dummyApplication, dummyApps } from "./dummy-application";
 import { dummyPiped } from "./dummy-piped";
 import { createRandTimes, randomUUID } from "./utils";

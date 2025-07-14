@@ -5,7 +5,7 @@ import { UI_TEXT_NOT_AVAILABLE_TEXT } from "~/constants/ui-text";
 import {
   ApplicationSyncState,
   ApplicationSyncStatus,
-} from "~/modules/applications";
+} from "~/types/applications";
 import { SyncStatusIcon } from "./sync-status-icon";
 
 export interface AppSyncStatusProps {

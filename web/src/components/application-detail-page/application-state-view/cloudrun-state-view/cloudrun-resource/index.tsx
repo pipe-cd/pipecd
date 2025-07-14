@@ -1,6 +1,6 @@
 import { Box, Paper, Typography } from "@mui/material";
 import { FC, memo } from "react";
-import { CloudRunResourceState } from "~/modules/applications-live-state";
+import { CloudRunResourceState } from "~/types/applications-live-state";
 import { CloudRunResourceHealthStatusIcon } from "./health-status-icon";
 
 export interface CloudRunResourceProps {

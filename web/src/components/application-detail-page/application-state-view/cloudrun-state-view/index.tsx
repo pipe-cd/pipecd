@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import dagre from "dagre";
 import { FC, useState } from "react";
-import { CloudRunResourceState } from "~/modules/applications-live-state";
+import { CloudRunResourceState } from "~/types/applications-live-state";
 import { theme } from "~/theme";
 import { CloudRunResource } from "./cloudrun-resource";
 import { CloudRunResourceDetail } from "./cloudrun-resource-detail";
