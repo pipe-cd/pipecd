@@ -15,8 +15,8 @@
 package deployment
 
 import (
-	"context"
 	"cmp"
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -91,6 +91,12 @@ func (p *Plugin) executeK8sTrafficRoutingStagePodSelector(ctx context.Context, i
 		&input.Request.TargetDeploymentSource, loader)
 	if err != nil {
 		lp.Errorf("Failed while loading manifests (%v)", err)
+		return sdk.StageStatusFailure
+	}
+	lp.Successf("Successfully loaded %d manifests", len(manifests))
+
+	if len(manifests) == 0 {
+		lp.Error("There are no kubernetes manifests to handle")
 		return sdk.StageStatusFailure
 	}
 
