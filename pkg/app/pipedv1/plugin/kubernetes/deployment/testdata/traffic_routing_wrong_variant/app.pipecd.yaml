@@ -1,5 +1,5 @@
 apiVersion: pipecd.dev/v1beta1
-kind: KubernetesApp
+kind: Application
 spec:
   name: traffic-routing-test
   description: Test data for traffic routing with wrong variant label value in service
