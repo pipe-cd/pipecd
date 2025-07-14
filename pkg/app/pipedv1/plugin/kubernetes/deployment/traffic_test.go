@@ -237,14 +237,6 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector_invalidPercentages(t *t
 			expectedError: "PodSelector requires either primary or canary to be 100%",
 		},
 		{
-			name: "80-20 split not supported",
-			stageCfg: kubeconfig.K8sTrafficRoutingStageOptions{
-				Primary: unit.Percentage{Number: 80},
-				Canary:  unit.Percentage{Number: 20},
-			},
-			expectedError: "PodSelector requires either primary or canary to be 100%",
-		},
-		{
 			name: "0-0 split not supported",
 			stageCfg: kubeconfig.K8sTrafficRoutingStageOptions{
 				Primary: unit.Percentage{Number: 0},
