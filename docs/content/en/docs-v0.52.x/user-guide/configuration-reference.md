@@ -284,7 +284,7 @@ One of `yamlField` or `regex` is required.
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| id | string | The unique ID of the stage. | No |
+| id | string | The unique ID of the stage. This field is `deprecated`. | No |
 | name | string | One of the provided stage names. | Yes |
 | desc | string | The description about the stage. | No |
 | timeout | duration | The maximum time the stage can be taken to run. | No |
