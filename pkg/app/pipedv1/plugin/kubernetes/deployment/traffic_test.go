@@ -224,9 +224,8 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector_invalidPercentages(t *t
 	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_pod_selector_primary", "app.pipecd.yaml"), "kubernetes")
 
 	testCases := []struct {
-		name          string
-		stageCfg      kubeconfig.K8sTrafficRoutingStageOptions
-		expectedError string
+		name     string
+		stageCfg kubeconfig.K8sTrafficRoutingStageOptions
 	}{
 		{
 			name: "50-50 split not supported",
@@ -234,7 +233,6 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector_invalidPercentages(t *t
 				Primary: unit.Percentage{Number: 50},
 				Canary:  unit.Percentage{Number: 50},
 			},
-			expectedError: "PodSelector requires either primary or canary to be 100%",
 		},
 		{
 			name: "0-0 split not supported",
@@ -242,7 +240,12 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector_invalidPercentages(t *t
 				Primary: unit.Percentage{Number: 0},
 				Canary:  unit.Percentage{Number: 0},
 			},
-			expectedError: "PodSelector requires either primary or canary to be 100%",
+		},
+		{
+			name: "baseline not supported",
+			stageCfg: kubeconfig.K8sTrafficRoutingStageOptions{
+				Baseline: unit.Percentage{Number: 100},
+			},
 		},
 	}
 
@@ -285,60 +288,6 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector_invalidPercentages(t *t
 			assert.Equal(t, sdk.StageStatusFailure, status)
 		})
 	}
-}
-
-func TestPlugin_executeK8sTrafficRoutingStagePodSelector_withBaseline(t *testing.T) {
-	t.Parallel()
-
-	ctx := context.Background()
-
-	// Initialize tool registry
-	testRegistry := toolregistrytest.NewTestToolRegistry(t)
-
-	// Read the application config from the testdata file
-	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_pod_selector_primary", "app.pipecd.yaml"), "kubernetes")
-
-	// Prepare stage config with baseline percentage
-	stageCfg := kubeconfig.K8sTrafficRoutingStageOptions{
-		Primary:  unit.Percentage{Number: 50},
-		Canary:   unit.Percentage{Number: 30},
-		Baseline: unit.Percentage{Number: 20},
-	}
-	stageCfgBytes, err := json.Marshal(stageCfg)
-	require.NoError(t, err)
-
-	// Prepare the input
-	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
-		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
-			StageName:   "K8S_TRAFFIC_ROUTING",
-			StageConfig: stageCfgBytes,
-			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "traffic_routing_pod_selector_primary"),
-				CommitHash:                "0123456789",
-				ApplicationConfig:         appCfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-			Deployment: sdk.Deployment{
-				PipedID:       "piped-id",
-				ApplicationID: "app-id",
-			},
-		},
-		Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
-		Logger: zaptest.NewLogger(t),
-	}
-
-	// Initialize deploy target config
-	dtConfig, _ := setupTestDeployTargetConfigAndDynamicClient(t)
-
-	plugin := &Plugin{}
-	status := plugin.executeK8sTrafficRoutingStagePodSelector(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
-		{
-			Name:   "default",
-			Config: *dtConfig,
-		},
-	}, appCfg)
-
-	assert.Equal(t, sdk.StageStatusFailure, status)
 }
 
 func TestPlugin_executeK8sTrafficRoutingStagePodSelector_noService(t *testing.T) {
