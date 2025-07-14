@@ -1,0 +1,18 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  name: traffic-routing-test
+  description: Test data for traffic routing with no deploy target
+  plugins:
+    kubernetes:
+      input:
+        manifests:
+          - deployment.yaml
+          - service.yaml
+        kubectlVersion: 1.32.2
+      variantLabel:
+        key: pipecd.dev/variant
+        primaryValue: primary
+        canaryValue: canary
+      trafficRouting:
+        method: podselector
