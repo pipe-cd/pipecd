@@ -224,9 +224,9 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector_invalidPercentages(t *t
 	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "traffic_routing_pod_selector_primary", "app.pipecd.yaml"), "kubernetes")
 
 	testCases := []struct {
-		name           string
-		stageCfg       kubeconfig.K8sTrafficRoutingStageOptions
-		expectedError  string
+		name          string
+		stageCfg      kubeconfig.K8sTrafficRoutingStageOptions
+		expectedError string
 	}{
 		{
 			name: "50-50 split not supported",
