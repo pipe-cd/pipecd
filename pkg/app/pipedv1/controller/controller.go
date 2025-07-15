@@ -431,6 +431,8 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		}
 	}
 
+	metadataStore := c.metadataStoreRegistry.Register(d)
+
 	planner := newPlanner(
 		d,
 		commitHash,
@@ -441,6 +443,7 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		c.gitClient,
 		c.notifier,
 		c.secretDecrypter,
+		metadataStore,
 		c.logger,
 		c.tracerProvider,
 	)
@@ -457,6 +460,7 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 	go func() {
 		defer c.wg.Done()
 		defer cleanup()
+		defer c.metadataStoreRegistry.Delete(d.Id)
 		if err := planner.Run(ctx); err != nil {
 			logger.Error("failed to run planner", zap.Error(err))
 		}
@@ -571,6 +575,8 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 	}
 	logger.Info("created working directory for scheduler", zap.String("working-dir", workingDir))
 
+	metadataStore := c.metadataStoreRegistry.Register(d)
+
 	// Create a new scheduler and append to the list for tracking.
 	scheduler := newScheduler(
 		d,
@@ -581,11 +587,10 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		c.notifier,
 		c.secretDecrypter,
 		c.commandReporter,
+		metadataStore,
 		c.logger,
 		c.tracerProvider,
 	)
-
-	c.metadataStoreRegistry.Register(d)
 
 	cleanup := func() {
 		logger.Info("cleaning up working directory for scheduler", zap.String("working-dir", workingDir))
