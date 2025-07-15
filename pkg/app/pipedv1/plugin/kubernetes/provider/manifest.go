@@ -57,6 +57,11 @@ type Manifest struct {
 	body *unstructured.Unstructured
 }
 
+// FromUnstructured creates a new Manifest from a Kubernetes unstructured object.
+func FromUnstructured(u *unstructured.Unstructured) Manifest {
+	return Manifest{body: u}
+}
+
 // FromStructuredObject creates a new Manifest from a structured Kubernetes object.
 func FromStructuredObject(o any) (Manifest, error) {
 	obj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(o)
