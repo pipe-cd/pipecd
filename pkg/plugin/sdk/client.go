@@ -252,3 +252,20 @@ func (c Client) ListStageCommands(ctx context.Context, commandTypes ...model.Com
 		}
 	}
 }
+
+// NotifyWaitApproval notifies the given deployment starts waiting for approval(s).
+func (c *Client) NotifyWaitApproval(ctx context.Context, d *Deployment) error {
+	_, err := c.base.NotifyWaitApproval(ctx, &pipedservice.NotifyWaitApprovalRequest{
+		Deployment: d.toModel(),
+	})
+	return err
+}
+
+// NotifyApproved notifies that the stage of the given deployment is approved by approver(s).
+func (c *Client) NotifyApproved(ctx context.Context, d *Deployment, approvers []string) error {
+	_, err := c.base.NotifyApproved(ctx, &pipedservice.NotifyApprovedRequest{
+		Deployment: d.toModel(),
+		Approvers:  approvers,
+	})
+	return err
+}

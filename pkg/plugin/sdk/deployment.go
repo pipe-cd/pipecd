@@ -620,6 +620,9 @@ type Deployment struct {
 	Summary string
 	// Labels are custom attributes to identify applications
 	Labels map[string]string
+
+	// Trigger is the trigger of the deployment.
+	trigger *model.DeploymentTrigger
 }
 
 // newDeployment converts the model.Deployment to the internal representation.
@@ -635,6 +638,22 @@ func newDeployment(deployment *model.Deployment) Deployment {
 		RepositoryURL:   deployment.GetGitPath().GetRepo().GetRemote(),
 		Summary:         deployment.GetSummary(),
 		Labels:          deployment.GetLabels(),
+
+		trigger: deployment.GetTrigger(),
+	}
+}
+
+func (d *Deployment) toModel() *model.Deployment {
+	return &model.Deployment{
+		Id:              d.ID,
+		ApplicationId:   d.ApplicationID,
+		ApplicationName: d.ApplicationName,
+		PipedId:         d.PipedID,
+		ProjectId:       d.ProjectID,
+		CreatedAt:       d.CreatedAt,
+		Summary:         d.Summary,
+		Labels:          d.Labels,
+		Trigger:         d.trigger,
 	}
 }
 
