@@ -10,22 +10,19 @@ import {
   TableRow,
 } from "@mui/material";
 import { FC, memo, useCallback, useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "~/hooks/redux";
-import {
-  Application,
-  enableApplication,
-  selectAll,
-} from "~/modules/applications";
-import { setUpdateTargetId } from "~/modules/update-application";
 import { ApplicationListItem } from "./application-list-item";
 import { DeleteApplicationDialog } from "./delete-application-dialog";
 import { DisableApplicationDialog } from "./disable-application-dialog";
 import { SealedSecretDialog } from "./sealed-secret-dialog";
+import { useEnableApplication } from "~/queries/applications/use-enable-application";
+import { Application } from "~/types/applications";
+import EditApplicationDrawer from "../edit-application-drawer";
 
 const PAGER_ROWS_PER_PAGE = [20, 50, { label: "All", value: -1 }];
 const SMALL_SCREEN_SIZE = 1440;
 
 export interface ApplicationListProps {
+  applications: Application.AsObject[];
   currentPage: number;
   onPageChange?: (page: number) => void;
   onRefresh?: () => void;
@@ -33,16 +30,16 @@ export interface ApplicationListProps {
 
 export const ApplicationList: FC<ApplicationListProps> = memo(
   function ApplicationList({
+    applications,
     currentPage,
     onPageChange = () => null,
-    onRefresh = () => null,
   }) {
-    const dispatch = useAppDispatch();
     const [
       actionTarget,
       setActionTarget,
     ] = useState<Application.AsObject | null>(null);
     const [dialogState, setDialogState] = useState({
+      edit: false,
       disabling: false,
       generateSecret: false,
       delete: false,
@@ -50,9 +47,7 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
     const [rowsPerPage, setRowsPerPage] = useState(20);
     const page = currentPage - 1;
 
-    const applications = useAppSelector<Application.AsObject[]>((state) =>
-      selectAll(state.applications)
-    );
+    const { mutate: enableApplication } = useEnableApplication();
 
     const closeMenu = useCallback(() => {
       setActionTarget(null);
@@ -69,22 +64,20 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
     const handleCloseDialog = (): void => {
       closeMenu();
       setDialogState({
+        edit: false,
         delete: false,
         generateSecret: false,
         disabling: false,
       });
-      onRefresh();
     };
 
-    // Menu item event handler
-
-    const handleEditClick = useCallback(
-      (id: string) => {
-        closeMenu();
-        dispatch(setUpdateTargetId(id));
-      },
-      [dispatch, closeMenu]
-    );
+    const handleEditClick = useCallback((app: Application.AsObject) => {
+      setActionTarget(app);
+      setDialogState((p) => ({
+        ...p,
+        edit: true,
+      }));
+    }, []);
 
     const handleDisableClick = useCallback(
       (app: Application.AsObject) => {
@@ -98,12 +91,13 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
     );
 
     const handleEnableClick = useCallback(
-      async (app: Application.AsObject) => {
-        await dispatch(enableApplication({ applicationId: app.id }));
-        onRefresh();
-        closeMenu();
+      (app: Application.AsObject) => {
+        enableApplication(
+          { applicationId: app.id },
+          { onSuccess: () => closeMenu() }
+        );
       },
-      [dispatch, closeMenu, onRefresh]
+      [enableApplication, closeMenu]
     );
 
     const handleDeleteClick = useCallback((app: Application.AsObject) => {
@@ -165,9 +159,9 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
               ).map((app) => (
                 <ApplicationListItem
                   key={`app-${app.id}`}
-                  applicationId={app.id}
+                  app={app}
                   displayAllProperties={!isSmallScreen}
-                  onEdit={handleEditClick}
+                  onEdit={() => handleEditClick(app)}
                   onDisable={() => handleDisableClick(app)}
                   onEnable={() => handleEnableClick(app)}
                   onDelete={() => handleDeleteClick(app)}
@@ -214,6 +208,13 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
           application={actionTarget}
           onDeleted={handleCloseDialog}
           onCancel={handleCloseDialog}
+        />
+
+        <EditApplicationDrawer
+          onUpdated={handleCloseDialog}
+          open={Boolean(actionTarget) && dialogState.edit}
+          application={actionTarget || undefined}
+          onClose={handleCloseDialog}
         />
       </>
     );

@@ -34,7 +34,7 @@ export const DeleteApplicationDialog: FC<DeleteApplicationDialogProps> = memo(
     const { addToast } = useToast();
     const {
       mutate: deleteApplication,
-      isLoading: isDeleting,
+      isPending: isDeleting,
     } = useDeleteApplication();
 
     const handleDelete = useCallback(() => {

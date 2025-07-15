@@ -19,24 +19,19 @@ import {
   APPLICATION_KIND_TEXT,
 } from "~/constants/application-kind";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
-import { useAppDispatch, useAppSelector } from "~/hooks/redux";
-import {
-  addApplication,
-  ApplicationGitRepository,
-  ApplicationKind,
-} from "~/modules/applications";
-import {
-  ApplicationInfo,
-  fetchUnregisteredApplications,
-  selectAllUnregisteredApplications,
-} from "~/modules/unregistered-applications";
 import { sortFunc } from "~/utils/common";
 import { ApplicationFormProps } from "..";
-
 import DialogConfirm from "~/components/dialog-confirm";
-import { selectAllPipeds } from "~/modules/pipeds";
 import { Autocomplete } from "@mui/material";
 import { GroupTwoCol } from "../styles";
+import { useGetUnregisteredApplications } from "~/queries/applications/use-get-unregistered-applications";
+import { useGetPipeds } from "~/queries/pipeds/use-get-pipeds";
+import {
+  ApplicationGitRepository,
+  ApplicationInfo,
+  ApplicationKind,
+} from "~/types/applications";
+import { useAddApplication } from "~/queries/applications/use-add-application";
 
 const ADD_FROM_GIT_CONFIRM_DIALOG_TITLE = "Add Application";
 const ADD_FROM_GIT_CONFIRM_DIALOG_DESCRIPTION =
@@ -72,14 +67,16 @@ const ApplicationFormSuggestionV0: FC<ApplicationFormProps> = ({
     platformProvider: "",
     labels: new Array<[string, string]>(),
   });
-  const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    dispatch(fetchUnregisteredApplications());
-  }, [dispatch]);
+  const {
+    data: apps = [],
+    isLoading: isLoadingApp,
+  } = useGetUnregisteredApplications();
+  const { data: ps = [], isLoading: isLoadingPiped } = useGetPipeds({
+    withStatus: true,
+  });
 
-  const apps = useAppSelector(selectAllUnregisteredApplications);
-  const ps = useAppSelector(selectAllPipeds);
+  const { mutate: addApplication } = useAddApplication();
 
   const appOptions = useMemo(
     () =>
@@ -142,9 +139,12 @@ const ApplicationFormSuggestionV0: FC<ApplicationFormProps> = ({
   };
 
   const onCreateApplication = async (): Promise<void> => {
-    await dispatch(addApplication(appToAdd));
-    setShowConfirm(false);
-    onAdded();
+    addApplication(appToAdd, {
+      onSuccess: () => {
+        setShowConfirm(false);
+        onAdded();
+      },
+    });
   };
 
   const onSelectPiped = (value: string): void => {
@@ -193,7 +193,7 @@ const ApplicationFormSuggestionV0: FC<ApplicationFormProps> = ({
                     labelId="filter-piped"
                     id="filter-piped"
                     label="Piped"
-                    value={selectedPipedId}
+                    value={isLoadingPiped ? "" : selectedPipedId}
                     fullWidth
                     onChange={(e) => onSelectPiped(e.target.value as string)}
                   >
@@ -240,7 +240,7 @@ const ApplicationFormSuggestionV0: FC<ApplicationFormProps> = ({
                   getOptionLabel={(app) =>
                     `name: ${app.name}, repo: ${app.repoId}`
                   }
-                  value={selectedApp}
+                  value={isLoadingApp ? null : selectedApp}
                   onChange={(_e, value) => {
                     setSelectedApp(value || null);
                   }}

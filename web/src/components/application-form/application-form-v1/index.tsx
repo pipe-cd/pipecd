@@ -16,21 +16,17 @@ import {
 import { FC, memo, useCallback, useState, useEffect, useMemo } from "react";
 import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
-import { useAppSelector, useAppDispatch, unwrapResult } from "~/hooks/redux";
-import {
-  selectAllUnregisteredApplications,
-  fetchUnregisteredApplications,
-  ApplicationInfo,
-} from "~/modules/unregistered-applications";
-import {
-  addApplication,
-  ApplicationGitRepository,
-} from "~/modules/applications";
 import { sortFunc } from "~/utils/common";
-import { selectAllPipeds } from "~/modules/pipeds";
 import { Autocomplete } from "@mui/material";
 import DialogConfirm from "~/components/dialog-confirm";
 import { GroupTwoCol } from "../styles";
+import { useGetUnregisteredApplications } from "~/queries/applications/use-get-unregistered-applications";
+import { useGetPipeds } from "~/queries/pipeds/use-get-pipeds";
+import { useAddApplication } from "~/queries/applications/use-add-application";
+import {
+  ApplicationGitRepository,
+  ApplicationInfo,
+} from "~/types/applications";
 
 const ADD_FROM_GIT_CONFIRM_DIALOG_TITLE = "Add Application";
 const ADD_FROM_GIT_CONFIRM_DIALOG_DESCRIPTION =
@@ -79,14 +75,10 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
     labels: new Array<[string, string]>(),
     deployTargets: new Array<DeployTargetOption>(),
   });
-  const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    dispatch(fetchUnregisteredApplications());
-  }, [dispatch]);
-
-  const apps = useAppSelector(selectAllUnregisteredApplications);
-  const ps = useAppSelector(selectAllPipeds);
+  const { data: apps = [] } = useGetUnregisteredApplications();
+  const { data: ps = [] } = useGetPipeds({ withStatus: true });
+  const { mutate: addApplication } = useAddApplication();
 
   const selectedPiped = useMemo(
     () => ps.find((piped) => piped.id === selectedPipedId),
@@ -185,15 +177,15 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
 
   const onCreateApplication = (): void => {
     setLoading(true);
-    dispatch(addApplication(appToAdd))
-      .then(unwrapResult)
-      .then(() => {
+    addApplication(appToAdd, {
+      onSuccess: () => {
         onAdded();
-      })
-      .finally(() => {
-        setLoading(true);
+      },
+      onSettled: () => {
+        setLoading(false);
         setShowConfirm(false);
-      });
+      },
+    });
   };
 
   return (

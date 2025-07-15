@@ -6,12 +6,14 @@ import {
   GetApplicationRequest,
   GetApplicationResponse,
   ListApplicationsResponse,
+  ListUnregisteredApplicationsResponse,
   SyncApplicationResponse,
   UpdateApplicationResponse,
 } from "pipecd/web/api_client/service_pb";
-import { ApplicationKind } from "~/modules/applications";
+import { ApplicationKind } from "~/types/applications";
 import {
   createApplicationFromObject,
+  createUnregisteredAppFromObject,
   dummyApplication,
   dummyApps,
 } from "~/__fixtures__/dummy-application";
@@ -38,6 +40,20 @@ export const listApplicationsHandler = createHandler<ListApplicationsResponse>(
   }
 );
 
+export const listUnregisteredApplicationsHandler = createHandler<
+  ListUnregisteredApplicationsResponse
+>("/ListUnregisteredApplications", () => {
+  const response = new ListUnregisteredApplicationsResponse();
+  response.setApplicationsList([
+    createUnregisteredAppFromObject(dummyApps[ApplicationKind.KUBERNETES]),
+    createUnregisteredAppFromObject(dummyApps[ApplicationKind.TERRAFORM]),
+    createUnregisteredAppFromObject(dummyApps[ApplicationKind.LAMBDA]),
+    createUnregisteredAppFromObject(dummyApps[ApplicationKind.CLOUDRUN]),
+    createUnregisteredAppFromObject(dummyApps[ApplicationKind.ECS]),
+  ]);
+  return response;
+});
+
 export const applicationHandlers = [
   createHandler<SyncApplicationResponse>("/SyncApplication", () => {
     const response = new SyncApplicationResponse();
@@ -63,6 +79,7 @@ export const applicationHandlers = [
     return new UpdateApplicationResponse();
   }),
   listApplicationsHandler,
+  listUnregisteredApplicationsHandler,
   createHandler<GetApplicationResponse>("/GetApplication", (requestBody) => {
     const response = new GetApplicationResponse();
     const params = GetApplicationRequest.deserializeBinary(requestBody);

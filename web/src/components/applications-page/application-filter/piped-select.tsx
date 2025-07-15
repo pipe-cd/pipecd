@@ -1,8 +1,7 @@
 import { Select, MenuItem, IconButton } from "@mui/material";
 import ClearIcon from "@mui/icons-material/Clear";
 import { FC } from "react";
-import { useAppSelector } from "~/hooks/redux";
-import { selectAllPipeds } from "~/modules/pipeds";
+import { useGetPipeds } from "~/queries/pipeds/use-get-pipeds";
 
 interface Props {
   value: string;
@@ -10,7 +9,8 @@ interface Props {
 }
 
 export const PipedSelect: FC<Props> = ({ value, onChange }) => {
-  const ps = useAppSelector((state) => selectAllPipeds(state));
+  const { data: ps = [] } = useGetPipeds({ withStatus: true });
+
   const pipeds = ps
     .filter((piped) => !piped.disabled)
     .sort((a, b) => sortComp(a.name, b.name));
