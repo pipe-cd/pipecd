@@ -4,15 +4,13 @@ import ApplicationFormManualV0 from "~/components/application-form/application-f
 import ApplicationFormManualV1 from "~/components/application-form/application-form-manual-v1";
 import DialogConfirm from "~/components/dialog-confirm";
 import { UI_TEXT_CANCEL, UI_TEXT_DISCARD } from "~/constants/ui-text";
-import { useAppDispatch, useAppSelector } from "~/hooks/redux";
-import {
-  Application,
-  selectById as selectAppById,
-} from "~/modules/applications";
-import { clearUpdateTarget } from "~/modules/update-application";
+import { Application } from "~/types/applications";
 
 type Props = {
+  open: boolean;
+  application?: Application.AsObject;
   onUpdated: () => void;
+  onClose: () => void;
 };
 
 enum PipedVersion {
@@ -24,25 +22,23 @@ const CONFIRM_DIALOG_TITLE = "Quit editing application?";
 const CONFIRM_DIALOG_DESCRIPTION =
   "Form values inputs so far will not be saved.";
 
-const EditApplicationDrawer: FC<Props> = ({ onUpdated }) => {
+const EditApplicationDrawer: FC<Props> = ({
+  onUpdated,
+  application: app,
+  open,
+  onClose,
+}) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [isFormDirty, setIsFormDirty] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const dispatch = useAppDispatch();
-
-  const app = useAppSelector<Application.AsObject | undefined>((state) =>
-    state.updateApplication.targetId
-      ? selectAppById(state.applications, state.updateApplication.targetId)
-      : undefined
-  );
 
   const handleClose = useCallback(() => {
     if (isFormDirty) {
       setShowConfirm(true);
     } else {
-      dispatch(clearUpdateTarget());
+      onClose();
     }
-  }, [dispatch, isFormDirty]);
+  }, [isFormDirty, onClose]);
 
   const pipedVersion = useMemo(() => {
     if (!app) return PipedVersion.V0;
@@ -67,7 +63,7 @@ const EditApplicationDrawer: FC<Props> = ({ onUpdated }) => {
   return (
     <Drawer
       anchor="right"
-      open={Boolean(app)}
+      open={Boolean(app) && open}
       onClose={() => {
         if (isSubmitting) return;
         handleClose();
@@ -88,7 +84,7 @@ const EditApplicationDrawer: FC<Props> = ({ onUpdated }) => {
         confirmText={UI_TEXT_DISCARD}
         onConfirm={() => {
           setShowConfirm(false);
-          dispatch(clearUpdateTarget());
+          onClose();
         }}
       />
     </Drawer>

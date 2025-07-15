@@ -1,6 +1,6 @@
 import userEvent from "@testing-library/user-event";
 import { UI_TEXT_CLEAR } from "~/constants/ui-text";
-import { ApplicationKind, ApplicationSyncStatus } from "~/modules/applications";
+import { ApplicationKind, ApplicationSyncStatus } from "~/types/applications";
 import { dummyApplication } from "~/__fixtures__/dummy-application";
 import { render, screen, waitFor } from "~~/test-utils";
 import { ApplicationFilter } from ".";
@@ -31,7 +31,12 @@ const initialState = {
 test("Change filter values", async () => {
   const onChange = jest.fn();
   render(
-    <ApplicationFilter onChange={onChange} onClear={() => null} options={{}} />,
+    <ApplicationFilter
+      onChange={onChange}
+      onClear={() => null}
+      options={{}}
+      applications={[]}
+    />,
     {
       initialState,
     }
@@ -74,7 +79,12 @@ test("Change filter values", async () => {
 test("Click clear filter", () => {
   const onClear = jest.fn();
   render(
-    <ApplicationFilter onChange={() => null} onClear={onClear} options={{}} />,
+    <ApplicationFilter
+      onChange={() => null}
+      onClear={onClear}
+      options={{}}
+      applications={[]}
+    />,
     {
       initialState,
     }

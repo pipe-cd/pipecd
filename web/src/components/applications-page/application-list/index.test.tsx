@@ -1,17 +1,9 @@
 import userEvent from "@testing-library/user-event";
 import { server } from "~/mocks/server";
-import { enableApplication } from "~/modules/applications";
-import { setUpdateTargetId } from "~/modules/update-application";
 import { dummyApplication } from "~/__fixtures__/dummy-application";
 import * as applicationApi from "~/api/applications";
 import * as pipedApi from "~/api/piped";
-import {
-  createStore,
-  render,
-  screen,
-  waitFor,
-  MemoryRouter,
-} from "~~/test-utils";
+import { render, screen, waitFor, MemoryRouter } from "~~/test-utils";
 import { ApplicationList } from ".";
 
 beforeAll(() => {
@@ -26,26 +18,13 @@ afterAll(() => {
   server.close();
 });
 
-const state = {
-  applications: {
-    entities: {
-      [dummyApplication.id]: dummyApplication,
-    },
-    ids: [dummyApplication.id],
-  },
-};
-
 test("delete", async () => {
   jest.spyOn(applicationApi, "deleteApplication");
 
-  const store = createStore(state);
   render(
     <MemoryRouter>
-      <ApplicationList currentPage={1} />
-    </MemoryRouter>,
-    {
-      store,
-    }
+      <ApplicationList currentPage={1} applications={[dummyApplication]} />
+    </MemoryRouter>
   );
 
   userEvent.click(screen.getByRole("button", { name: "Open menu" }));
@@ -74,61 +53,54 @@ test("show specific page", async () => {
     ...dummyApplication,
     id: `${dummyApplication.id}${i}`,
   }));
-  const store = createStore({
-    applications: {
-      entities: apps.reduce((prev, current) => {
-        return { ...prev, [current.id]: current };
-      }, {}),
-      ids: apps.map((app) => app.id),
-    },
-  });
   render(
     <MemoryRouter>
-      <ApplicationList currentPage={2} />
-    </MemoryRouter>,
-    {
-      store,
-    }
+      <ApplicationList currentPage={2} applications={apps} />
+    </MemoryRouter>
   );
 
   const items = await screen.findAllByText(dummyApplication.name);
   expect(items).toHaveLength(10);
 });
 
-test("edit", () => {
-  const store = createStore(state);
+test("edit", async () => {
   render(
     <MemoryRouter>
-      <ApplicationList currentPage={1} />
-    </MemoryRouter>,
-    {
-      store,
-    }
+      <ApplicationList
+        currentPage={1}
+        applications={[
+          {
+            ...dummyApplication,
+            pipedId: "",
+            platformProvider: "",
+            gitPath: {
+              configFilename: "",
+              path: "dir/dir1",
+              url: "",
+              repo: { id: "", branch: "", remote: "" },
+            },
+          },
+        ]}
+      />
+    </MemoryRouter>
   );
 
   userEvent.click(screen.getByRole("button", { name: "Open menu" }));
   userEvent.click(screen.getByRole("menuitem", { name: "Edit" }));
 
-  expect(store.getActions()).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        type: setUpdateTargetId.type,
-        payload: dummyApplication.id,
-      }),
-    ])
+  await waitFor(() =>
+    expect(screen.getByRole("textbox", { name: "Name" })).toHaveValue(
+      dummyApplication.name
+    )
   );
 });
 
 test("disable", async () => {
   jest.spyOn(applicationApi, "disableApplication");
-  const store = createStore(state);
   render(
     <MemoryRouter>
-      <ApplicationList currentPage={1} />
-    </MemoryRouter>,
-    {
-      store,
-    }
+      <ApplicationList currentPage={1} applications={[dummyApplication]} />
+    </MemoryRouter>
   );
 
   userEvent.click(screen.getByRole("button", { name: "Open menu" }));
@@ -150,52 +122,33 @@ test("disable", async () => {
 });
 
 test("enable", async () => {
-  const store = createStore({
-    applications: {
-      entities: {
-        [dummyApplication.id]: { ...dummyApplication, disabled: true },
-      },
-      ids: [dummyApplication.id],
-    },
-  });
+  jest.spyOn(applicationApi, "enableApplication");
+
   render(
     <MemoryRouter>
-      <ApplicationList currentPage={1} />
-    </MemoryRouter>,
-    {
-      store,
-    }
+      <ApplicationList
+        currentPage={1}
+        applications={[{ ...dummyApplication, disabled: true }]}
+      />
+    </MemoryRouter>
   );
 
   userEvent.click(screen.getByRole("button", { name: "Open menu" }));
   userEvent.click(screen.getByRole("menuitem", { name: "Enable" }));
 
-  await waitFor(() =>
-    expect(store.getActions()).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          type: enableApplication.pending.type,
-          meta: expect.objectContaining({
-            arg: {
-              applicationId: dummyApplication.id,
-            },
-          }),
-        }),
-      ])
-    )
-  );
+  await waitFor(() => {
+    expect(applicationApi.enableApplication).toHaveBeenCalledWith({
+      applicationId: dummyApplication.id,
+    });
+  });
 });
 
 test("Encrypt Secret", async () => {
   jest.spyOn(pipedApi, "generateApplicationSealedSecret");
-  const store = createStore(state);
   render(
     <MemoryRouter>
-      <ApplicationList currentPage={1} />
-    </MemoryRouter>,
-    {
-      store,
-    }
+      <ApplicationList currentPage={1} applications={[dummyApplication]} />
+    </MemoryRouter>
   );
 
   userEvent.click(screen.getByRole("button", { name: "Open menu" }));

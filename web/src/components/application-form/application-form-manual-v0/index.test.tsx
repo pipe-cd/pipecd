@@ -1,6 +1,6 @@
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
 import ApplicationFormManualV0 from ".";
-import { createStore, render, screen } from "~~/test-utils";
+import { createStore, render, screen, waitFor } from "~~/test-utils";
 import { server } from "~/mocks/server";
 import { dummyApplication } from "~/__fixtures__/dummy-application";
 import { dummyPiped } from "~/__fixtures__/dummy-piped";
@@ -35,24 +35,23 @@ describe("ApplicationFormManualV0", () => {
   it("renders without crashing", () => {
     render(
       <ApplicationFormManualV0
+        detailApp={dummyApplication}
         onClose={onClose}
         onFinished={onFinished}
         title="title"
-      />,
-      {}
+      />
     );
+    expect(screen.getByText("title")).toBeInTheDocument();
   });
 
   describe("Test ui create application", () => {
-    const store = createStore(baseState);
     beforeEach(() => {
       render(
         <ApplicationFormManualV0
           onClose={onClose}
           onFinished={onFinished}
           title={TITLE}
-        />,
-        { store }
+        />
       );
     });
 
@@ -83,10 +82,12 @@ describe("ApplicationFormManualV0", () => {
       expect(input).not.toBeDisabled();
     });
 
-    it('form contain input label "Piped" and not disabled initially', () => {
+    it('form contain input label "Piped" and not disabled initially', async () => {
       const input = screen.getByRole("combobox", { name: "Piped" });
       expect(input).toBeInTheDocument();
-      expect(input).not.toHaveAttribute("aria-disabled", "true");
+      await waitFor(() => {
+        expect(input).not.toHaveAttribute("aria-disabled", "true");
+      });
     });
 
     it('form contain input label "Platform Provider" and disabled', () => {
@@ -156,16 +157,20 @@ describe("ApplicationFormManualV0", () => {
       expect(input).toHaveAttribute("aria-disabled", "true");
     });
 
-    it('form contain input label "Piped"', () => {
+    it('form contain input label "Piped"', async () => {
       const input = screen.getByRole("combobox", { name: "Piped" });
       expect(input).toBeInTheDocument();
-      expect(input).not.toHaveAttribute("aria-disabled", "true");
+      await waitFor(() => {
+        expect(input).not.toHaveAttribute("aria-disabled", "true");
+      });
     });
 
-    it('form contain input label "Platform Provider"', () => {
+    it('form contain input label "Platform Provider"', async () => {
       const input = screen.getByRole("combobox", { name: "Platform Provider" });
       expect(input).toBeInTheDocument();
-      expect(input).not.toHaveAttribute("aria-disabled", "true");
+      await waitFor(() => {
+        expect(input).not.toHaveAttribute("aria-disabled", "true");
+      });
     });
 
     it('form contain input label "Repository" and disabled initially', () => {
