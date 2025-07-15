@@ -872,7 +872,7 @@ func (s *scheduler) notifyStageEndEvent(stage *model.PipelineStage, result model
 			if err != nil {
 				s.logger.Error("failed to get the list of users", zap.Error(err))
 			}
-			if approvers, found := s.metadataStore.StageGet(stage.Id, model.MetadataKeyStageApprovers); found {
+			if approvers, found := s.metadataStore.StageGet(stage.Id, model.MetadataKeyStageApprovedUsers); found {
 				s.notifier.Notify(model.NotificationEvent{
 					Type: model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED,
 					Metadata: &model.NotificationEventDeploymentApproved{
