@@ -16,7 +16,9 @@ package grpcapi
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
@@ -38,6 +40,7 @@ type PluginAPI struct {
 	Logger                *zap.Logger
 	metadataStoreRegistry *metadatastore.MetadataStoreRegistry
 	stageCommandLister    stageCommandLister
+	notifier              notifier
 }
 
 type apiClient interface {
@@ -49,12 +52,24 @@ type stageCommandLister interface {
 	ListStageCommands(deploymentID, stageID string) []*model.Command
 }
 
+type notifier interface {
+	Notify(event model.NotificationEvent)
+}
+
 // Register registers all handling of this service into the specified gRPC server.
 func (a *PluginAPI) Register(server *grpc.Server) {
 	service.RegisterPluginServiceServer(server, a)
 }
 
-func NewPluginAPI(cfg *config.PipedSpec, apiClient apiClient, toolsDir string, logger *zap.Logger, metadataStoreRegistry *metadatastore.MetadataStoreRegistry, stageCommandLister stageCommandLister) (*PluginAPI, error) {
+func NewPluginAPI(
+	cfg *config.PipedSpec,
+	apiClient apiClient,
+	toolsDir string,
+	logger *zap.Logger,
+	metadataStoreRegistry *metadatastore.MetadataStoreRegistry,
+	stageCommandLister stageCommandLister,
+	notifier notifier,
+) (*PluginAPI, error) {
 	toolRegistry, err := newToolRegistry(toolsDir)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create tool registry: %w", err)
@@ -67,6 +82,7 @@ func NewPluginAPI(cfg *config.PipedSpec, apiClient apiClient, toolsDir string, l
 		Logger:                logger.Named("plugin-api"),
 		metadataStoreRegistry: metadataStoreRegistry,
 		stageCommandLister:    stageCommandLister,
+		notifier:              notifier,
 	}, nil
 }
 
@@ -154,4 +170,45 @@ func (a *PluginAPI) GetDeploymentSharedMetadata(ctx context.Context, req *servic
 func (a *PluginAPI) ListStageCommands(ctx context.Context, req *service.ListStageCommandsRequest) (*service.ListStageCommandsResponse, error) {
 	commands := a.stageCommandLister.ListStageCommands(req.DeploymentId, req.StageId)
 	return &service.ListStageCommandsResponse{Commands: commands}, nil
+}
+
+func (a *PluginAPI) NotifyApproved(ctx context.Context, req *service.NotifyApprovedRequest) (*service.NotifyApprovedResponse, error) {
+	users, groups, err := getMentionTargets(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED, req.Deployment.Id, a.metadataStoreRegistry)
+	if err != nil {
+		return nil, err
+	}
+	a.notifier.Notify(model.NotificationEvent{
+		Type: model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED,
+		Metadata: &model.NotificationEventDeploymentApproved{
+			Deployment:        req.Deployment,
+			Approver:          strings.Join(req.Approvers, ","),
+			MentionedAccounts: users,
+			MentionedGroups:   groups,
+		},
+	})
+	return &service.NotifyApprovedResponse{}, nil
+}
+
+// getMentionTargets returns the list of users and groups who should be mentioned in the notification.
+//
+// TODO: Refactor this method and MetadataKeyDeploymentNotification metadata since the same code exist in several files and
+// it might be simpler to get the notification config directly from the app config.
+func getMentionTargets(ctx context.Context, e model.NotificationEventType, deploymentID string, msr *metadatastore.MetadataStoreRegistry) (users []string, groups []string, err error) {
+	n, err := msr.GetDeploymentSharedMetadata(ctx, &service.GetDeploymentSharedMetadataRequest{
+		DeploymentId: deploymentID,
+		Key:          model.MetadataKeyDeploymentNotification,
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	if !n.Found {
+		return nil, nil, nil
+	}
+
+	var notif config.DeploymentNotification
+	if err := json.Unmarshal([]byte(n.Value), &notif); err != nil {
+		return nil, nil, fmt.Errorf("could not extract users and groups from the mentions config: %w", err)
+	}
+
+	return notif.FindSlackUsers(e), notif.FindSlackGroups(e), nil
 }

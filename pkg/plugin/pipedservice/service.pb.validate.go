@@ -2949,3 +2949,247 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ListStageCommandsResponseValidationError{}
+
+// Validate checks the field values on NotifyApprovedRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *NotifyApprovedRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on NotifyApprovedRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// NotifyApprovedRequestMultiError, or nil if none found.
+func (m *NotifyApprovedRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *NotifyApprovedRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetDeployment() == nil {
+		err := NotifyApprovedRequestValidationError{
+			field:  "Deployment",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetDeployment()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, NotifyApprovedRequestValidationError{
+					field:  "Deployment",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, NotifyApprovedRequestValidationError{
+					field:  "Deployment",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetDeployment()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return NotifyApprovedRequestValidationError{
+				field:  "Deployment",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return NotifyApprovedRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// NotifyApprovedRequestMultiError is an error wrapping multiple validation
+// errors returned by NotifyApprovedRequest.ValidateAll() if the designated
+// constraints aren't met.
+type NotifyApprovedRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m NotifyApprovedRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m NotifyApprovedRequestMultiError) AllErrors() []error { return m }
+
+// NotifyApprovedRequestValidationError is the validation error returned by
+// NotifyApprovedRequest.Validate if the designated constraints aren't met.
+type NotifyApprovedRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e NotifyApprovedRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e NotifyApprovedRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e NotifyApprovedRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e NotifyApprovedRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e NotifyApprovedRequestValidationError) ErrorName() string {
+	return "NotifyApprovedRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e NotifyApprovedRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sNotifyApprovedRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = NotifyApprovedRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = NotifyApprovedRequestValidationError{}
+
+// Validate checks the field values on NotifyApprovedResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *NotifyApprovedResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on NotifyApprovedResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// NotifyApprovedResponseMultiError, or nil if none found.
+func (m *NotifyApprovedResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *NotifyApprovedResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return NotifyApprovedResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// NotifyApprovedResponseMultiError is an error wrapping multiple validation
+// errors returned by NotifyApprovedResponse.ValidateAll() if the designated
+// constraints aren't met.
+type NotifyApprovedResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m NotifyApprovedResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m NotifyApprovedResponseMultiError) AllErrors() []error { return m }
+
+// NotifyApprovedResponseValidationError is the validation error returned by
+// NotifyApprovedResponse.Validate if the designated constraints aren't met.
+type NotifyApprovedResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e NotifyApprovedResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e NotifyApprovedResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e NotifyApprovedResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e NotifyApprovedResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e NotifyApprovedResponseValidationError) ErrorName() string {
+	return "NotifyApprovedResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e NotifyApprovedResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sNotifyApprovedResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = NotifyApprovedResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = NotifyApprovedResponseValidationError{}
