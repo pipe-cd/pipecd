@@ -172,6 +172,22 @@ func (a *PluginAPI) ListStageCommands(ctx context.Context, req *service.ListStag
 	return &service.ListStageCommandsResponse{Commands: commands}, nil
 }
 
+func (a *PluginAPI) NotifyWaitApproval(ctx context.Context, req *service.NotifyWaitApprovalRequest) (*service.NotifyWaitApprovalResponse, error) {
+	users, groups, err := getMentionTargets(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL, req.Deployment.Id, a.metadataStoreRegistry)
+	if err != nil {
+		return nil, err
+	}
+	a.notifier.Notify(model.NotificationEvent{
+		Type: model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL,
+		Metadata: &model.NotificationEventDeploymentWaitApproval{
+			Deployment:        req.Deployment,
+			MentionedAccounts: users,
+			MentionedGroups:   groups,
+		},
+	})
+	return &service.NotifyWaitApprovalResponse{}, nil
+}
+
 func (a *PluginAPI) NotifyApproved(ctx context.Context, req *service.NotifyApprovedRequest) (*service.NotifyApprovedResponse, error) {
 	users, groups, err := getMentionTargets(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED, req.Deployment.Id, a.metadataStoreRegistry)
 	if err != nil {

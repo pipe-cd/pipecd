@@ -51,6 +51,8 @@ service PluginService {
     // ListStageCommands lists unhandled commands of the given stage and type.
     rpc ListStageCommands(ListStageCommandsRequest) returns (ListStageCommandsResponse) {}
 
+    // NotifyWaitApproval notifies that the stage of the given deployment starts waiting for approval(s).
+    rpc NotifyWaitApproval(NotifyWaitApprovalRequest) returns (NotifyWaitApprovalResponse) {}
     // NotifyApproved notifies that the stage of the given deployment is approved by approver(s).
     rpc NotifyApproved(NotifyApprovedRequest) returns (NotifyApprovedResponse) {}
 }
@@ -195,6 +197,13 @@ message ListStageCommandsRequest {
 
 message ListStageCommandsResponse {
     repeated model.Command commands = 1;
+}
+
+message NotifyWaitApprovalRequest {
+    model.Deployment deployment = 1 [(validate.rules).message.required = true];
+}
+
+message NotifyWaitApprovalResponse {
 }
 
 message NotifyApprovedRequest {
