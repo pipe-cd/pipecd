@@ -38,8 +38,8 @@ jobs:
             dockerfile: cmd/launcher/Dockerfile
           - image: launcher-okd
             dockerfile: cmd/launcher/Dockerfile-okd
-          - image: pipecd
-            dockerfile: cmd/pipecd/Dockerfile
+          - image: control-plane
+            dockerfile: cmd/control-plane/Dockerfile
           - image: piped
             dockerfile: cmd/piped/Dockerfile
           - image: piped-okd
@@ -49,7 +49,7 @@ jobs:
         exclude:
           - image: launcher-okd
             container_registry: gcr.io/pipecd
-          - image: pipecd
+          - image: control-plane
             container_registry: gcr.io/pipecd
           - image: piped-okd
             container_registry: gcr.io/pipecd
@@ -108,7 +108,7 @@ jobs:
       - name: Publish helm charts
         run: |
           make build/chart VERSION=${{ env.PIPECD_VERSION }}
-          helm push .artifacts/pipecd-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.GHCR }}/pipe-cd/chart
+          helm push .artifacts/control-plane-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.GHCR }}/pipe-cd/chart
           helm push .artifacts/piped-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.GHCR }}/pipe-cd/chart
           helm push .artifacts/helloworld-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.GHCR }}/pipe-cd/chart
 
