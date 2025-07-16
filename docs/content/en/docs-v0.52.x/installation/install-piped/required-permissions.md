@@ -32,6 +32,7 @@ You need IAM actions like the following example. You can restrict `Resource`.
                 "ecs:ListClusters",
                 "ecs:ListServices",
                 "ecs:ListTasks",
+                "ecs:ListTagsForResource",
                 "ecs:RegisterTaskDefinition",
                 "ecs:RunTask",
                 "ecs:TagResource",
