@@ -36,6 +36,7 @@ You need IAM actions like the following example. You can restrict `Resource`.
                 "ecs:RegisterTaskDefinition",
                 "ecs:RunTask",
                 "ecs:TagResource",
+                "ecs:UntagResource"
                 "ecs:UpdateService",
                 "ecs:UpdateServicePrimaryTaskSet",
                 "elasticloadbalancing:DescribeListeners",
