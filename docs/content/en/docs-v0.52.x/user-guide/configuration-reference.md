@@ -284,7 +284,7 @@ One of `yamlField` or `regex` is required.
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| id | string | The unique ID of the stage. | No |
+| id | string | The unique ID of the stage. This field is `deprecated`. | No |
 | name | string | One of the provided stage names. | Yes |
 | desc | string | The description about the stage. | No |
 | timeout | duration | The maximum time the stage can be taken to run. | No |
@@ -426,7 +426,6 @@ One of `yamlField` or `regex` is required.
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| retries | int | How many times to retry applying terraform changes. Default is `0`. | No |
 
 ## CloudRunDeploymentInput
 
@@ -675,7 +674,6 @@ Therefore, note that all traffic will be routed to the primary if the the primar
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| retries | int | How many times to retry applying terraform changes. Default is `0`. | No |
 
 ### CloudRunPromoteStageOptions
 
