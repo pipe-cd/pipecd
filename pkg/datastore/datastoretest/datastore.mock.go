@@ -699,6 +699,34 @@ func (mr *MockDeploymentStoreMockRecorder) UpdateMetadata(ctx, id, metadata any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMetadata", reflect.TypeOf((*MockDeploymentStore)(nil).UpdateMetadata), ctx, id, metadata)
 }
 
+// UpdatePluginMetadata mocks base method.
+func (m *MockDeploymentStore) UpdatePluginMetadata(ctx context.Context, id, pluginName string, metadata map[string]string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdatePluginMetadata", ctx, id, pluginName, metadata)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdatePluginMetadata indicates an expected call of UpdatePluginMetadata.
+func (mr *MockDeploymentStoreMockRecorder) UpdatePluginMetadata(ctx, id, pluginName, metadata any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePluginMetadata", reflect.TypeOf((*MockDeploymentStore)(nil).UpdatePluginMetadata), ctx, id, pluginName, metadata)
+}
+
+// UpdateSharedMetadata mocks base method.
+func (m *MockDeploymentStore) UpdateSharedMetadata(ctx context.Context, id string, metadata map[string]string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateSharedMetadata", ctx, id, metadata)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateSharedMetadata indicates an expected call of UpdateSharedMetadata.
+func (mr *MockDeploymentStoreMockRecorder) UpdateSharedMetadata(ctx, id, metadata any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSharedMetadata", reflect.TypeOf((*MockDeploymentStore)(nil).UpdateSharedMetadata), ctx, id, metadata)
+}
+
 // UpdateStageMetadata mocks base method.
 func (m *MockDeploymentStore) UpdateStageMetadata(ctx context.Context, deploymentID, stageID string, metadata map[string]string) error {
 	m.ctrl.T.Helper()
