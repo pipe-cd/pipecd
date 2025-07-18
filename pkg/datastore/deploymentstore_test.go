@@ -362,7 +362,7 @@ func TestAddDeployment(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewDeploymentStore(tc.dsFactory(tc.deployment), TestCommander)
+			s := NewDeploymentStore(tc.dsFactory(tc.deployment))
 			err := s.Add(context.Background(), tc.deployment)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
@@ -407,7 +407,7 @@ func TestGetDeployment(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewDeploymentStore(tc.ds, TestCommander)
+			s := NewDeploymentStore(tc.ds)
 			_, err := s.Get(context.Background(), tc.id)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
@@ -462,7 +462,7 @@ func TestListDeployments(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewDeploymentStore(tc.ds, TestCommander)
+			s := NewDeploymentStore(tc.ds)
 			_, _, err := s.List(context.Background(), tc.opts)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
