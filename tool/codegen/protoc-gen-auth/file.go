@@ -52,9 +52,8 @@ func NewRBACAuthorizer(
 	projects map[string]config.ControlPlaneProject,
 	logger *zap.Logger,
 ) rpcauth.RBACAuthorizer {
-	w := datastore.WebCommander
 	return &authorizer{
-		projectStore:     datastore.NewProjectStore(ds, w),
+		projectStore:     datastore.NewProjectStore(ds),
 		rbacCache:        memorycache.NewTTLCache(ctx, 10*time.Minute, 5*time.Minute),
 		projectsInConfig: projects,
 		logger:           logger.Named("authorizer"),
