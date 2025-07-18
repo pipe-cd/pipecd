@@ -1,0 +1,31 @@
+apiVersion: pipecd.dev/v1beta1
+kind: Application
+spec:
+  name: traffic-routing-test
+  description: Test data for traffic routing with custom variant label
+  plugins:
+    kubernetes:
+      input:
+        manifests:
+          - deployment.yaml
+          - service.yaml
+        kubectlVersion: 1.32.2
+      variantLabel:
+        key: my-custom/variant
+        primaryValue: main
+        canaryValue: test
+      trafficRouting:
+        method: podselector
+  pipeline:
+    stages:
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 100%
+      - name: K8S_TRAFFIC_ROUTING
+        with:
+          all: canary
+      - name: K8S_PRIMARY_ROLLOUT
+      - name: K8S_TRAFFIC_ROUTING
+        with:
+          all: primary
+      - name: K8S_CANARY_CLEAN
