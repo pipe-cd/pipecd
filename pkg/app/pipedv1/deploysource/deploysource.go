@@ -43,6 +43,7 @@ func (d *DeploySource) ToPluginDeploySource() *common.DeploymentSource {
 		CommitHash:                d.Revision,
 		ApplicationConfig:         d.ApplicationConfig,
 		ApplicationConfigFilename: d.ApplicationConfigFilename,
+		SharedConfigDirectory:     filepath.Join(d.RepoDir, config.SharedConfigurationDirName),
 	}
 }
 

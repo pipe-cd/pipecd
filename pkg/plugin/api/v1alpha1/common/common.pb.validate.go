@@ -65,6 +65,8 @@ func (m *DeploymentSource) validate(all bool) error {
 
 	// no validation rules for ApplicationConfigFilename
 
+	// no validation rules for SharedConfigDirectory
+
 	if len(errors) > 0 {
 		return DeploymentSourceMultiError(errors)
 	}
