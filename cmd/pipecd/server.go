@@ -210,9 +210,9 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 			verifier = pipedverifier.NewVerifier(
 				ctx,
 				cfg,
-				// These stores are used to handle PipedAPI request, thus the writer should be PipedWriter.
-				datastore.NewProjectStore(ds, datastore.PipedCommander),
-				datastore.NewPipedStore(ds, datastore.PipedCommander),
+				// These stores are used to handle PipedAPI request.
+				datastore.NewProjectStore(ds),
+				datastore.NewPipedStore(ds),
 				input.Logger,
 			)
 			service = grpcapi.NewPipedAPI(ctx, ds, cache, sls, alss, las, statCache, cmdOutputStore, unregisteredAppStore, cfg.Address, input.Logger)
@@ -246,7 +246,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 		var (
 			verifier = apikeyverifier.NewVerifier(
 				ctx,
-				datastore.NewAPIKeyStore(ds, datastore.PipectlCommander),
+				datastore.NewAPIKeyStore(ds),
 				apiKeyLastUsedCache,
 				input.Logger,
 			)
@@ -344,7 +344,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 			cfg.StateKey,
 			cfg.ProjectMap(),
 			cfg.SharedSSOConfigMap(),
-			datastore.NewProjectStore(ds, datastore.WebCommander),
+			datastore.NewProjectStore(ds),
 			!s.insecureCookie,
 			input.Logger,
 		)
@@ -384,9 +384,9 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 			verifier = pipedverifier.NewVerifier(
 				ctx,
 				cfg,
-				// These stores are used to handle request from piped over envoy ext_authz, thus the writer should be PipedWriter.
-				datastore.NewProjectStore(ds, datastore.PipedCommander),
-				datastore.NewPipedStore(ds, datastore.PipedCommander),
+				// These stores are used to handle request from piped over envoy ext_authz.
+				datastore.NewProjectStore(ds),
+				datastore.NewPipedStore(ds),
 				input.Logger,
 			)
 			service = grpcapi.NewEnvoyAuthorizationServer(verifier)

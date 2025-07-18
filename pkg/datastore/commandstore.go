@@ -24,7 +24,6 @@ import (
 )
 
 type commandCollection struct {
-	requestedBy Commander
 }
 
 func (c *commandCollection) Kind() string {
@@ -45,14 +44,7 @@ func (c *commandCollection) ListInUsedShards() []Shard {
 }
 
 func (c *commandCollection) GetUpdatableShard() (Shard, error) {
-	switch c.requestedBy {
-	case PipedCommander:
-		return AgentShard, nil
-	case OpsCommander:
-		return OpsShard, nil
-	default:
-		return "", ErrUnsupported
-	}
+	return AgentShard, nil
 }
 
 func (c *commandCollection) Decode(e interface{}, parts map[Shard][]byte) error {
@@ -130,18 +122,16 @@ type CommandStore interface {
 
 type commandStore struct {
 	backend
-	commander Commander
-	nowFunc   func() time.Time
+	nowFunc func() time.Time
 }
 
-func NewCommandStore(ds DataStore, c Commander) CommandStore {
+func NewCommandStore(ds DataStore) CommandStore {
 	return &commandStore{
 		backend: backend{
 			ds:  ds,
-			col: &commandCollection{requestedBy: c},
+			col: &commandCollection{},
 		},
-		commander: c,
-		nowFunc:   time.Now,
+		nowFunc: time.Now,
 	}
 }
 
