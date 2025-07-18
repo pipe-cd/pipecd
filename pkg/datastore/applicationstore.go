@@ -24,7 +24,6 @@ import (
 )
 
 type applicationCollection struct {
-	requestedBy Commander
 }
 
 func (a *applicationCollection) Kind() string {
@@ -45,14 +44,7 @@ func (a *applicationCollection) ListInUsedShards() []Shard {
 }
 
 func (a *applicationCollection) GetUpdatableShard() (Shard, error) {
-	switch a.requestedBy {
-	case WebCommander, PipectlCommander:
-		return ClientShard, nil
-	case PipedCommander:
-		return AgentShard, nil
-	default:
-		return "", ErrUnsupported
-	}
+	return ClientShard, nil
 }
 
 func (a *applicationCollection) Decode(e interface{}, parts map[Shard][]byte) error {
@@ -203,18 +195,16 @@ type ApplicationStore interface {
 
 type applicationStore struct {
 	backend
-	commander Commander
-	nowFunc   func() time.Time
+	nowFunc func() time.Time
 }
 
-func NewApplicationStore(ds DataStore, c Commander) ApplicationStore {
+func NewApplicationStore(ds DataStore) ApplicationStore {
 	return &applicationStore{
 		backend: backend{
 			ds:  ds,
-			col: &applicationCollection{requestedBy: c},
+			col: &applicationCollection{},
 		},
-		commander: c,
-		nowFunc:   time.Now,
+		nowFunc: time.Now,
 	}
 }
 

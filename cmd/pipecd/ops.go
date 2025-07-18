@@ -204,14 +204,14 @@ func (s *ops) run(ctx context.Context, input cli.Input) error {
 
 	insightMetricsCollector := insightmetrics.NewInsightMetricsCollector(
 		insight.NewProvider(insightStore),
-		datastore.NewProjectStore(ds, datastore.OpsCommander),
+		datastore.NewProjectStore(ds),
 	)
 
 	// Start running HTTP server.
 	{
 		handler := handler.NewHandler(
 			s.httpPort,
-			datastore.NewProjectStore(ds, datastore.OpsCommander),
+			datastore.NewProjectStore(ds),
 			cfg.SharedSSOConfigs,
 			s.gracePeriod,
 			input.Logger,

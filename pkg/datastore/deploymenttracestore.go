@@ -24,7 +24,6 @@ import (
 )
 
 type deploymentTraceCollection struct {
-	requestedBy Commander
 }
 
 func (d *deploymentTraceCollection) Kind() string {
@@ -44,12 +43,7 @@ func (d *deploymentTraceCollection) ListInUsedShards() []Shard {
 }
 
 func (d *deploymentTraceCollection) GetUpdatableShard() (Shard, error) {
-	switch d.requestedBy {
-	case PipedCommander:
-		return AgentShard, nil
-	default:
-		return "", ErrUnsupported
-	}
+	return AgentShard, nil
 }
 
 func (d *deploymentTraceCollection) Encode(entity interface{}) (map[Shard][]byte, error) {
@@ -76,18 +70,16 @@ type DeploymentTraceStore interface {
 
 type deploymentTraceStore struct {
 	backend
-	commander Commander
-	nowFunc   func() time.Time
+	nowFunc func() time.Time
 }
 
-func NewDeploymentTraceStore(ds DataStore, c Commander) DeploymentTraceStore {
+func NewDeploymentTraceStore(ds DataStore) DeploymentTraceStore {
 	return &deploymentTraceStore{
 		backend: backend{
 			ds:  ds,
-			col: &deploymentTraceCollection{requestedBy: c},
+			col: &deploymentTraceCollection{},
 		},
-		commander: c,
-		nowFunc:   time.Now,
+		nowFunc: time.Now,
 	}
 }
 

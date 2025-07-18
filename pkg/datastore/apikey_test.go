@@ -64,7 +64,7 @@ func TestAddAPIKey(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewAPIKeyStore(tc.dsFactory(tc.apiKey), TestCommander)
+			s := NewAPIKeyStore(tc.dsFactory(tc.apiKey))
 			err := s.Add(context.Background(), tc.apiKey)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
@@ -119,7 +119,7 @@ func TestListAPIKeys(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewAPIKeyStore(tc.ds, TestCommander)
+			s := NewAPIKeyStore(tc.ds)
 			_, err := s.List(context.Background(), tc.opts)
 			assert.Equal(t, tc.wantErr, err)
 		})

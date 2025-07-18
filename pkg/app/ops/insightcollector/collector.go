@@ -46,9 +46,8 @@ func NewCollector(ds datastore.DataStore, store insight.Store, cfg config.Contro
 	logger = logger.Named("insight-collector")
 
 	var (
-		w            = datastore.OpsCommander
-		appLister    = datastore.NewApplicationStore(ds, w)
-		deployLister = datastore.NewDeploymentStore(ds, w)
+		appLister    = datastore.NewApplicationStore(ds)
+		deployLister = datastore.NewDeploymentStore(ds)
 		appCol       = newApplicationDataCollector(appLister, store, logger)
 		comDepCol    = newCompletedDeploymentDataCollector(deployLister, store, logger)
 	)

@@ -62,7 +62,7 @@ func TestAddCommand(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewCommandStore(tc.dsFactory(tc.command), TestCommander)
+			s := NewCommandStore(tc.dsFactory(tc.command))
 			err := s.Add(context.Background(), tc.command)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
@@ -107,7 +107,7 @@ func TestGetCommand(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewCommandStore(tc.ds, TestCommander)
+			s := NewCommandStore(tc.ds)
 			_, err := s.Get(context.Background(), tc.id)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
@@ -162,7 +162,7 @@ func TestListCommands(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewCommandStore(tc.ds, TestCommander)
+			s := NewCommandStore(tc.ds)
 			_, err := s.List(context.Background(), tc.opts)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
@@ -170,7 +170,7 @@ func TestListCommands(t *testing.T) {
 }
 
 func TestCommandDecode(t *testing.T) {
-	col := &commandCollection{requestedBy: TestCommander}
+	col := &commandCollection{}
 
 	testcases := []struct {
 		name      string
