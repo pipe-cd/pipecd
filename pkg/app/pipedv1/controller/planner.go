@@ -31,6 +31,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
@@ -72,6 +73,9 @@ type planner struct {
 	// which encrypted using PipeCD built-in secret management.
 	secretDecrypter secretDecrypter
 
+	// The metadataStore is used to get the application notification config.
+	medatadaStore metadatastore.MetadataStore
+
 	// The pluginRegistry is used to determine which plugins to be used
 	pluginRegistry plugin.PluginRegistry
 
@@ -97,6 +101,7 @@ func newPlanner(
 	gitClient gitClient,
 	notifier notifier,
 	secretDecrypter secretDecrypter,
+	metadataStore metadatastore.MetadataStore,
 	logger *zap.Logger,
 	tracerProvider trace.TracerProvider,
 ) *planner {
@@ -119,6 +124,7 @@ func newPlanner(
 		gitClient:                    gitClient,
 		notifier:                     notifier,
 		secretDecrypter:              secretDecrypter,
+		medatadaStore:                metadataStore,
 		doneDeploymentStatus:         d.Status,
 		cancelledCh:                  make(chan *model.ReportableCommand, 1),
 		nowFunc:                      time.Now,
@@ -698,7 +704,7 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 
 // getApplicationNotificationMentions returns the list of users groups who should be mentioned in the notification.
 func (p *planner) getApplicationNotificationMentions(event model.NotificationEventType) ([]string, []string, error) {
-	n, ok := p.deployment.Metadata[model.MetadataKeyDeploymentNotification]
+	n, ok := p.medatadaStore.SharedGet(model.MetadataKeyDeploymentNotification)
 	if !ok {
 		return []string{}, []string{}, nil
 	}

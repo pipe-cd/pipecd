@@ -31,6 +31,11 @@ type apiClient interface {
 
 type metadata map[string]string
 
+type MetadataStore interface {
+	SharedGet(key string) (value string, found bool)
+	StageGet(stageID, key string) (value string, found bool)
+}
+
 type metadataStore struct {
 	apiClient  apiClient
 	deployment *model.Deployment
@@ -74,7 +79,7 @@ func newMetadataStore(apiClient apiClient, d *model.Deployment) *metadataStore {
 	return s
 }
 
-func (s *metadataStore) sharedGet(key string) (value string, found bool) {
+func (s *metadataStore) SharedGet(key string) (value string, found bool) {
 	s.sharedMu.RLock()
 	defer s.sharedMu.RUnlock()
 
@@ -116,7 +121,7 @@ func (s *metadataStore) pluginPutMulti(ctx context.Context, pluginName string, m
 	return err
 }
 
-func (s *metadataStore) stageGet(stageID, key string) (value string, found bool) {
+func (s *metadataStore) StageGet(stageID, key string) (value string, found bool) {
 	s.stagesMu.RLock()
 	defer s.stagesMu.RUnlock()
 
