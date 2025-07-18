@@ -46,6 +46,11 @@ type PluginServiceClient interface {
 	GetDeploymentSharedMetadata(ctx context.Context, in *GetDeploymentSharedMetadataRequest, opts ...grpc.CallOption) (*GetDeploymentSharedMetadataResponse, error)
 	// ListStageCommands lists unhandled commands of the given stage and type.
 	ListStageCommands(ctx context.Context, in *ListStageCommandsRequest, opts ...grpc.CallOption) (*ListStageCommandsResponse, error)
+	// GetApplicationSharedObject fetches an object of the application.
+	// The object path will be derived by the request.
+	GetApplicationSharedObject(ctx context.Context, in *GetApplicationSharedObjectRequest, opts ...grpc.CallOption) (*GetApplicationSharedObjectResponse, error)
+	// PutApplicationSharedObject persists the given object for the application.
+	PutApplicationSharedObject(ctx context.Context, in *PutApplicationSharedObjectRequest, opts ...grpc.CallOption) (*PutApplicationSharedObjectResponse, error)
 }
 
 type pluginServiceClient struct {
@@ -155,6 +160,24 @@ func (c *pluginServiceClient) ListStageCommands(ctx context.Context, in *ListSta
 	return out, nil
 }
 
+func (c *pluginServiceClient) GetApplicationSharedObject(ctx context.Context, in *GetApplicationSharedObjectRequest, opts ...grpc.CallOption) (*GetApplicationSharedObjectResponse, error) {
+	out := new(GetApplicationSharedObjectResponse)
+	err := c.cc.Invoke(ctx, "/grpc.piped.service.PluginService/GetApplicationSharedObject", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *pluginServiceClient) PutApplicationSharedObject(ctx context.Context, in *PutApplicationSharedObjectRequest, opts ...grpc.CallOption) (*PutApplicationSharedObjectResponse, error) {
+	out := new(PutApplicationSharedObjectResponse)
+	err := c.cc.Invoke(ctx, "/grpc.piped.service.PluginService/PutApplicationSharedObject", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PluginServiceServer is the server API for PluginService service.
 // All implementations must embed UnimplementedPluginServiceServer
 // for forward compatibility
@@ -183,6 +206,11 @@ type PluginServiceServer interface {
 	GetDeploymentSharedMetadata(context.Context, *GetDeploymentSharedMetadataRequest) (*GetDeploymentSharedMetadataResponse, error)
 	// ListStageCommands lists unhandled commands of the given stage and type.
 	ListStageCommands(context.Context, *ListStageCommandsRequest) (*ListStageCommandsResponse, error)
+	// GetApplicationSharedObject fetches an object of the application.
+	// The object path will be derived by the request.
+	GetApplicationSharedObject(context.Context, *GetApplicationSharedObjectRequest) (*GetApplicationSharedObjectResponse, error)
+	// PutApplicationSharedObject persists the given object for the application.
+	PutApplicationSharedObject(context.Context, *PutApplicationSharedObjectRequest) (*PutApplicationSharedObjectResponse, error)
 	mustEmbedUnimplementedPluginServiceServer()
 }
 
@@ -222,6 +250,12 @@ func (UnimplementedPluginServiceServer) GetDeploymentSharedMetadata(context.Cont
 }
 func (UnimplementedPluginServiceServer) ListStageCommands(context.Context, *ListStageCommandsRequest) (*ListStageCommandsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListStageCommands not implemented")
+}
+func (UnimplementedPluginServiceServer) GetApplicationSharedObject(context.Context, *GetApplicationSharedObjectRequest) (*GetApplicationSharedObjectResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationSharedObject not implemented")
+}
+func (UnimplementedPluginServiceServer) PutApplicationSharedObject(context.Context, *PutApplicationSharedObjectRequest) (*PutApplicationSharedObjectResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PutApplicationSharedObject not implemented")
 }
 func (UnimplementedPluginServiceServer) mustEmbedUnimplementedPluginServiceServer() {}
 
@@ -434,6 +468,42 @@ func _PluginService_ListStageCommands_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PluginService_GetApplicationSharedObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetApplicationSharedObjectRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServiceServer).GetApplicationSharedObject(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.piped.service.PluginService/GetApplicationSharedObject",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServiceServer).GetApplicationSharedObject(ctx, req.(*GetApplicationSharedObjectRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PluginService_PutApplicationSharedObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PutApplicationSharedObjectRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServiceServer).PutApplicationSharedObject(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.piped.service.PluginService/PutApplicationSharedObject",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServiceServer).PutApplicationSharedObject(ctx, req.(*PutApplicationSharedObjectRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PluginService_ServiceDesc is the grpc.ServiceDesc for PluginService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -484,6 +554,14 @@ var PluginService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListStageCommands",
 			Handler:    _PluginService_ListStageCommands_Handler,
+		},
+		{
+			MethodName: "GetApplicationSharedObject",
+			Handler:    _PluginService_GetApplicationSharedObject_Handler,
+		},
+		{
+			MethodName: "PutApplicationSharedObject",
+			Handler:    _PluginService_PutApplicationSharedObject_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

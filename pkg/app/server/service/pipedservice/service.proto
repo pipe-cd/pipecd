@@ -157,10 +157,16 @@ service PipedService {
     rpc ReportEventStatuses(ReportEventStatusesRequest) returns (ReportEventStatusesResponse) {}
 
     // GetLatestAnalysisResult returns the most successful analysis result.
-    rpc GetLatestAnalysisResult(GetLatestAnalysisResultRequest) returns (GetLatestAnalysisResultResponse) {}
+    // NOTE: Use GetApplicationSharedObject in pipedv1.
+    rpc GetLatestAnalysisResult(GetLatestAnalysisResultRequest) returns (GetLatestAnalysisResultResponse) {
+        option deprecated = true;
+    }
 
     // GetLatestAnalysisResult updates the most successful analysis result.
-    rpc PutLatestAnalysisResult(PutLatestAnalysisResultRequest) returns (PutLatestAnalysisResultResponse) {}
+    // NOTE: Use PutApplicationSharedObject in pipedv1.
+    rpc PutLatestAnalysisResult(PutLatestAnalysisResultRequest) returns (PutLatestAnalysisResultResponse) {
+        option deprecated = true;
+    }
 
     // GetDesiredVersion returns the desired version of the given Piped.
     rpc GetDesiredVersion(GetDesiredVersionRequest) returns (GetDesiredVersionResponse) {}
@@ -179,6 +185,12 @@ service PipedService {
     // In case the previous block of this deployment is finished with FAILURE | CANCELLED status,
     // `cancel` flag will be returned to aware piped to stop this deployment.
     rpc InChainDeploymentPlannable(InChainDeploymentPlannableRequest) returns (InChainDeploymentPlannableResponse) {}
+
+    // GetApplicationSharedObject fetches an object of the application. 
+    // The object path will be derived by the request.
+    rpc GetApplicationSharedObject(GetApplicationSharedObjectRequest) returns (GetApplicationSharedObjectResponse) {}
+    // PutApplicationSharedObject persists the given object for the application.
+    rpc PutApplicationSharedObject(PutApplicationSharedObjectRequest) returns (PutApplicationSharedObjectResponse) {}
 }
 
 enum ListOrder {
@@ -557,4 +569,24 @@ message InChainDeploymentPlannableResponse {
     // cancel used to determine whether piped should cancel the given development.
     bool cancel = 2;
     string cancel_reason = 3;
+}
+
+message GetApplicationSharedObjectRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+    string plugin_name = 2 [(validate.rules).string.min_len = 1];
+    string key = 3 [(validate.rules).string.min_len = 1];
+}
+
+message GetApplicationSharedObjectResponse {
+    bytes object = 1;
+}
+
+message PutApplicationSharedObjectRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+    string plugin_name = 2 [(validate.rules).string.min_len = 1];
+    string key = 3 [(validate.rules).string.min_len = 1];
+    bytes object = 4;
+}
+
+message PutApplicationSharedObjectResponse {
 }

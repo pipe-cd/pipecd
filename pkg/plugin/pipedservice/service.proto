@@ -49,6 +49,12 @@ service PluginService {
 
     // ListStageCommands lists unhandled commands of the given stage and type.
     rpc ListStageCommands(ListStageCommandsRequest) returns (ListStageCommandsResponse) {}
+
+    // GetApplicationSharedObject fetches an object of the application. 
+    // The object path will be derived by the request.
+    rpc GetApplicationSharedObject(GetApplicationSharedObjectRequest) returns (GetApplicationSharedObjectResponse) {}
+    // PutApplicationSharedObject persists the given object for the application.
+    rpc PutApplicationSharedObject(PutApplicationSharedObjectRequest) returns (PutApplicationSharedObjectResponse) {}
 }
 
 message DecryptSecretRequest {
@@ -191,4 +197,24 @@ message ListStageCommandsRequest {
 
 message ListStageCommandsResponse {
     repeated model.Command commands = 1;
+}
+
+message GetApplicationSharedObjectRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+    string plugin_name = 2 [(validate.rules).string.min_len = 1];
+    string key = 3 [(validate.rules).string.min_len = 1];
+}
+
+message GetApplicationSharedObjectResponse {
+    bytes object = 1;
+}
+
+message PutApplicationSharedObjectRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+    string plugin_name = 2 [(validate.rules).string.min_len = 1];
+    string key = 3 [(validate.rules).string.min_len = 1];
+    bytes object = 4;
+}
+
+message PutApplicationSharedObjectResponse {
 }

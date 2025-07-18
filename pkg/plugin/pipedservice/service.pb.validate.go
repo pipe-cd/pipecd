@@ -2949,3 +2949,493 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ListStageCommandsResponseValidationError{}
+
+// Validate checks the field values on GetApplicationSharedObjectRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *GetApplicationSharedObjectRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetApplicationSharedObjectRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// GetApplicationSharedObjectRequestMultiError, or nil if none found.
+func (m *GetApplicationSharedObjectRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetApplicationSharedObjectRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetApplicationId()) < 1 {
+		err := GetApplicationSharedObjectRequestValidationError{
+			field:  "ApplicationId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetPluginName()) < 1 {
+		err := GetApplicationSharedObjectRequestValidationError{
+			field:  "PluginName",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetKey()) < 1 {
+		err := GetApplicationSharedObjectRequestValidationError{
+			field:  "Key",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return GetApplicationSharedObjectRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetApplicationSharedObjectRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// GetApplicationSharedObjectRequest.ValidateAll() if the designated
+// constraints aren't met.
+type GetApplicationSharedObjectRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetApplicationSharedObjectRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetApplicationSharedObjectRequestMultiError) AllErrors() []error { return m }
+
+// GetApplicationSharedObjectRequestValidationError is the validation error
+// returned by GetApplicationSharedObjectRequest.Validate if the designated
+// constraints aren't met.
+type GetApplicationSharedObjectRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetApplicationSharedObjectRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetApplicationSharedObjectRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetApplicationSharedObjectRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetApplicationSharedObjectRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetApplicationSharedObjectRequestValidationError) ErrorName() string {
+	return "GetApplicationSharedObjectRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetApplicationSharedObjectRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetApplicationSharedObjectRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetApplicationSharedObjectRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetApplicationSharedObjectRequestValidationError{}
+
+// Validate checks the field values on GetApplicationSharedObjectResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *GetApplicationSharedObjectResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetApplicationSharedObjectResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// GetApplicationSharedObjectResponseMultiError, or nil if none found.
+func (m *GetApplicationSharedObjectResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetApplicationSharedObjectResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Object
+
+	if len(errors) > 0 {
+		return GetApplicationSharedObjectResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetApplicationSharedObjectResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// GetApplicationSharedObjectResponse.ValidateAll() if the designated
+// constraints aren't met.
+type GetApplicationSharedObjectResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetApplicationSharedObjectResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetApplicationSharedObjectResponseMultiError) AllErrors() []error { return m }
+
+// GetApplicationSharedObjectResponseValidationError is the validation error
+// returned by GetApplicationSharedObjectResponse.Validate if the designated
+// constraints aren't met.
+type GetApplicationSharedObjectResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetApplicationSharedObjectResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetApplicationSharedObjectResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetApplicationSharedObjectResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetApplicationSharedObjectResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetApplicationSharedObjectResponseValidationError) ErrorName() string {
+	return "GetApplicationSharedObjectResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetApplicationSharedObjectResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetApplicationSharedObjectResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetApplicationSharedObjectResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetApplicationSharedObjectResponseValidationError{}
+
+// Validate checks the field values on PutApplicationSharedObjectRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *PutApplicationSharedObjectRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PutApplicationSharedObjectRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// PutApplicationSharedObjectRequestMultiError, or nil if none found.
+func (m *PutApplicationSharedObjectRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PutApplicationSharedObjectRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetApplicationId()) < 1 {
+		err := PutApplicationSharedObjectRequestValidationError{
+			field:  "ApplicationId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetPluginName()) < 1 {
+		err := PutApplicationSharedObjectRequestValidationError{
+			field:  "PluginName",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetKey()) < 1 {
+		err := PutApplicationSharedObjectRequestValidationError{
+			field:  "Key",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Object
+
+	if len(errors) > 0 {
+		return PutApplicationSharedObjectRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// PutApplicationSharedObjectRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// PutApplicationSharedObjectRequest.ValidateAll() if the designated
+// constraints aren't met.
+type PutApplicationSharedObjectRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PutApplicationSharedObjectRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PutApplicationSharedObjectRequestMultiError) AllErrors() []error { return m }
+
+// PutApplicationSharedObjectRequestValidationError is the validation error
+// returned by PutApplicationSharedObjectRequest.Validate if the designated
+// constraints aren't met.
+type PutApplicationSharedObjectRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PutApplicationSharedObjectRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PutApplicationSharedObjectRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PutApplicationSharedObjectRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PutApplicationSharedObjectRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PutApplicationSharedObjectRequestValidationError) ErrorName() string {
+	return "PutApplicationSharedObjectRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e PutApplicationSharedObjectRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPutApplicationSharedObjectRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PutApplicationSharedObjectRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PutApplicationSharedObjectRequestValidationError{}
+
+// Validate checks the field values on PutApplicationSharedObjectResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *PutApplicationSharedObjectResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PutApplicationSharedObjectResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// PutApplicationSharedObjectResponseMultiError, or nil if none found.
+func (m *PutApplicationSharedObjectResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PutApplicationSharedObjectResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return PutApplicationSharedObjectResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// PutApplicationSharedObjectResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// PutApplicationSharedObjectResponse.ValidateAll() if the designated
+// constraints aren't met.
+type PutApplicationSharedObjectResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PutApplicationSharedObjectResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PutApplicationSharedObjectResponseMultiError) AllErrors() []error { return m }
+
+// PutApplicationSharedObjectResponseValidationError is the validation error
+// returned by PutApplicationSharedObjectResponse.Validate if the designated
+// constraints aren't met.
+type PutApplicationSharedObjectResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PutApplicationSharedObjectResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PutApplicationSharedObjectResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PutApplicationSharedObjectResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PutApplicationSharedObjectResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PutApplicationSharedObjectResponseValidationError) ErrorName() string {
+	return "PutApplicationSharedObjectResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e PutApplicationSharedObjectResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPutApplicationSharedObjectResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PutApplicationSharedObjectResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PutApplicationSharedObjectResponseValidationError{}

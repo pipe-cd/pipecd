@@ -120,9 +120,13 @@ type PipedServiceClient interface {
 	ListEvents(ctx context.Context, in *ListEventsRequest, opts ...grpc.CallOption) (*ListEventsResponse, error)
 	// ReportEventStatuses reports a status list of events.
 	ReportEventStatuses(ctx context.Context, in *ReportEventStatusesRequest, opts ...grpc.CallOption) (*ReportEventStatusesResponse, error)
+	// Deprecated: Do not use.
 	// GetLatestAnalysisResult returns the most successful analysis result.
+	// NOTE: Use GetApplicationSharedObject in pipedv1.
 	GetLatestAnalysisResult(ctx context.Context, in *GetLatestAnalysisResultRequest, opts ...grpc.CallOption) (*GetLatestAnalysisResultResponse, error)
+	// Deprecated: Do not use.
 	// GetLatestAnalysisResult updates the most successful analysis result.
+	// NOTE: Use PutApplicationSharedObject in pipedv1.
 	PutLatestAnalysisResult(ctx context.Context, in *PutLatestAnalysisResultRequest, opts ...grpc.CallOption) (*PutLatestAnalysisResultResponse, error)
 	// GetDesiredVersion returns the desired version of the given Piped.
 	GetDesiredVersion(ctx context.Context, in *GetDesiredVersionRequest, opts ...grpc.CallOption) (*GetDesiredVersionResponse, error)
@@ -139,6 +143,11 @@ type PipedServiceClient interface {
 	// In case the previous block of this deployment is finished with FAILURE | CANCELLED status,
 	// `cancel` flag will be returned to aware piped to stop this deployment.
 	InChainDeploymentPlannable(ctx context.Context, in *InChainDeploymentPlannableRequest, opts ...grpc.CallOption) (*InChainDeploymentPlannableResponse, error)
+	// GetApplicationSharedObject fetches an object of the application.
+	// The object path will be derived by the request.
+	GetApplicationSharedObject(ctx context.Context, in *GetApplicationSharedObjectRequest, opts ...grpc.CallOption) (*GetApplicationSharedObjectResponse, error)
+	// PutApplicationSharedObject persists the given object for the application.
+	PutApplicationSharedObject(ctx context.Context, in *PutApplicationSharedObjectRequest, opts ...grpc.CallOption) (*PutApplicationSharedObjectResponse, error)
 }
 
 type pipedServiceClient struct {
@@ -393,6 +402,7 @@ func (c *pipedServiceClient) ReportEventStatuses(ctx context.Context, in *Report
 	return out, nil
 }
 
+// Deprecated: Do not use.
 func (c *pipedServiceClient) GetLatestAnalysisResult(ctx context.Context, in *GetLatestAnalysisResultRequest, opts ...grpc.CallOption) (*GetLatestAnalysisResultResponse, error) {
 	out := new(GetLatestAnalysisResultResponse)
 	err := c.cc.Invoke(ctx, "/grpc.service.pipedservice.PipedService/GetLatestAnalysisResult", in, out, opts...)
@@ -402,6 +412,7 @@ func (c *pipedServiceClient) GetLatestAnalysisResult(ctx context.Context, in *Ge
 	return out, nil
 }
 
+// Deprecated: Do not use.
 func (c *pipedServiceClient) PutLatestAnalysisResult(ctx context.Context, in *PutLatestAnalysisResultRequest, opts ...grpc.CallOption) (*PutLatestAnalysisResultResponse, error) {
 	out := new(PutLatestAnalysisResultResponse)
 	err := c.cc.Invoke(ctx, "/grpc.service.pipedservice.PipedService/PutLatestAnalysisResult", in, out, opts...)
@@ -450,6 +461,24 @@ func (c *pipedServiceClient) CreateDeploymentChain(ctx context.Context, in *Crea
 func (c *pipedServiceClient) InChainDeploymentPlannable(ctx context.Context, in *InChainDeploymentPlannableRequest, opts ...grpc.CallOption) (*InChainDeploymentPlannableResponse, error) {
 	out := new(InChainDeploymentPlannableResponse)
 	err := c.cc.Invoke(ctx, "/grpc.service.pipedservice.PipedService/InChainDeploymentPlannable", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *pipedServiceClient) GetApplicationSharedObject(ctx context.Context, in *GetApplicationSharedObjectRequest, opts ...grpc.CallOption) (*GetApplicationSharedObjectResponse, error) {
+	out := new(GetApplicationSharedObjectResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.pipedservice.PipedService/GetApplicationSharedObject", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *pipedServiceClient) PutApplicationSharedObject(ctx context.Context, in *PutApplicationSharedObjectRequest, opts ...grpc.CallOption) (*PutApplicationSharedObjectResponse, error) {
+	out := new(PutApplicationSharedObjectResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.pipedservice.PipedService/PutApplicationSharedObject", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -558,9 +587,13 @@ type PipedServiceServer interface {
 	ListEvents(context.Context, *ListEventsRequest) (*ListEventsResponse, error)
 	// ReportEventStatuses reports a status list of events.
 	ReportEventStatuses(context.Context, *ReportEventStatusesRequest) (*ReportEventStatusesResponse, error)
+	// Deprecated: Do not use.
 	// GetLatestAnalysisResult returns the most successful analysis result.
+	// NOTE: Use GetApplicationSharedObject in pipedv1.
 	GetLatestAnalysisResult(context.Context, *GetLatestAnalysisResultRequest) (*GetLatestAnalysisResultResponse, error)
+	// Deprecated: Do not use.
 	// GetLatestAnalysisResult updates the most successful analysis result.
+	// NOTE: Use PutApplicationSharedObject in pipedv1.
 	PutLatestAnalysisResult(context.Context, *PutLatestAnalysisResultRequest) (*PutLatestAnalysisResultResponse, error)
 	// GetDesiredVersion returns the desired version of the given Piped.
 	GetDesiredVersion(context.Context, *GetDesiredVersionRequest) (*GetDesiredVersionResponse, error)
@@ -577,6 +610,11 @@ type PipedServiceServer interface {
 	// In case the previous block of this deployment is finished with FAILURE | CANCELLED status,
 	// `cancel` flag will be returned to aware piped to stop this deployment.
 	InChainDeploymentPlannable(context.Context, *InChainDeploymentPlannableRequest) (*InChainDeploymentPlannableResponse, error)
+	// GetApplicationSharedObject fetches an object of the application.
+	// The object path will be derived by the request.
+	GetApplicationSharedObject(context.Context, *GetApplicationSharedObjectRequest) (*GetApplicationSharedObjectResponse, error)
+	// PutApplicationSharedObject persists the given object for the application.
+	PutApplicationSharedObject(context.Context, *PutApplicationSharedObjectRequest) (*PutApplicationSharedObjectResponse, error)
 	mustEmbedUnimplementedPipedServiceServer()
 }
 
@@ -685,6 +723,12 @@ func (UnimplementedPipedServiceServer) CreateDeploymentChain(context.Context, *C
 }
 func (UnimplementedPipedServiceServer) InChainDeploymentPlannable(context.Context, *InChainDeploymentPlannableRequest) (*InChainDeploymentPlannableResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InChainDeploymentPlannable not implemented")
+}
+func (UnimplementedPipedServiceServer) GetApplicationSharedObject(context.Context, *GetApplicationSharedObjectRequest) (*GetApplicationSharedObjectResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationSharedObject not implemented")
+}
+func (UnimplementedPipedServiceServer) PutApplicationSharedObject(context.Context, *PutApplicationSharedObjectRequest) (*PutApplicationSharedObjectResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PutApplicationSharedObject not implemented")
 }
 func (UnimplementedPipedServiceServer) mustEmbedUnimplementedPipedServiceServer() {}
 
@@ -1311,6 +1355,42 @@ func _PipedService_InChainDeploymentPlannable_Handler(srv interface{}, ctx conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PipedService_GetApplicationSharedObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetApplicationSharedObjectRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PipedServiceServer).GetApplicationSharedObject(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.pipedservice.PipedService/GetApplicationSharedObject",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PipedServiceServer).GetApplicationSharedObject(ctx, req.(*GetApplicationSharedObjectRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PipedService_PutApplicationSharedObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PutApplicationSharedObjectRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PipedServiceServer).PutApplicationSharedObject(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.pipedservice.PipedService/PutApplicationSharedObject",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PipedServiceServer).PutApplicationSharedObject(ctx, req.(*PutApplicationSharedObjectRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PipedService_ServiceDesc is the grpc.ServiceDesc for PipedService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1453,6 +1533,14 @@ var PipedService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "InChainDeploymentPlannable",
 			Handler:    _PipedService_InChainDeploymentPlannable_Handler,
+		},
+		{
+			MethodName: "GetApplicationSharedObject",
+			Handler:    _PipedService_GetApplicationSharedObject_Handler,
+		},
+		{
+			MethodName: "PutApplicationSharedObject",
+			Handler:    _PipedService_PutApplicationSharedObject_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
