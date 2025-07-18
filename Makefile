@@ -76,6 +76,13 @@ build/plugin:
 	done
 	@echo "Plugins are built and copied to $(PLUGINS_BIN_DIR)"
 
+.PHONY: build/codegen
+build/codegen: CODEGEN_IMAGE_TAG ?= pipecd-local-codegen:latest
+build/codegen:
+	@echo "Building local codegen Docker image..."
+	docker build -t $(CODEGEN_IMAGE_TAG) ./tool/codegen
+	@echo "Successfully built $(CODEGEN_IMAGE_TAG)"
+
 .PHONY: push
 push/chart: BUCKET ?= charts.pipecd.dev
 push/chart: VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7)
@@ -259,6 +266,12 @@ update/copyright:
 gen/code:
 	# NOTE: Keep this container image as same as defined in .github/workflows/gen.yml
 	docker run --rm -v ${PWD}:/repo -it --entrypoint ./tool/codegen/codegen.sh ghcr.io/pipe-cd/codegen@sha256:831f2dda2f56b1d12e90f88c0cb4168f51aa4eb5907b468e74bc42670939fff2 /repo # v0.50.0-215-g3f6a738
+
+.PHONY: gen/code-local
+gen/code-local: CODEGEN_IMAGE_TAG ?= pipecd-local-codegen:latest
+gen/code-local:
+	@echo "Running local codegen with image: $(CODEGEN_IMAGE_TAG)"
+	docker run --rm -v ${PWD}:/repo -it --entrypoint ./tool/codegen/codegen.sh $(CODEGEN_IMAGE_TAG) /repo
 
 .PHONY: gen/test-tls
 gen/test-tls:
