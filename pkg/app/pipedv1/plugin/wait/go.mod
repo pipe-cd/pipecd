@@ -3,13 +3,10 @@ module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/wait
 go 1.24.1
 
 require (
-	github.com/pipe-cd/pipecd v0.52.0
-	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250612023157-bc4c32dc15cb
+	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250624100230-4dd9b8f9b0b8
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.19.1
 )
-
-replace github.com/pipe-cd/piped-plugin-sdk-go => ../../../../plugin/sdk
 
 require (
 	cloud.google.com/go v0.112.1 // indirect
@@ -35,6 +32,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
+	github.com/pipe-cd/pipecd v0.52.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.12.1 // indirect
 	github.com/prometheus/client_model v0.5.0 // indirect

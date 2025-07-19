@@ -18,12 +18,12 @@ import (
 	"encoding/json"
 	"fmt"
 
-	config "github.com/pipe-cd/pipecd/pkg/configv1"
+	"github.com/pipe-cd/piped-plugin-sdk-go/unit"
 )
 
 // WaitStageOptions contains configurable values for a WAIT stage.
 type WaitStageOptions struct {
-	Duration config.Duration `json:"duration,omitempty"`
+	Duration unit.Duration `json:"duration,omitempty"`
 }
 
 func (o WaitStageOptions) validate() error {

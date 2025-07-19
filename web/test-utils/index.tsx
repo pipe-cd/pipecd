@@ -16,6 +16,7 @@ import { reducers } from "~/modules";
 import type { AppState } from "~/store";
 import { theme } from "~/theme";
 import MemoryRouterTest from "./MemoryRouterTest";
+import QueryClientWrap from "~/contexts/query-client-provider";
 
 const middlewares = getDefaultMiddleware({
   immutableCheck: false,
@@ -64,7 +65,9 @@ const customRender = (
   const Wrapper: React.ComponentType = ({ children }) => (
     <Provider store={store}>
       <StyledEngineProvider injectFirst>
-        <ThemeProvider theme={theme}>{children}</ThemeProvider>
+        <QueryClientWrap>
+          <ThemeProvider theme={theme}>{children}</ThemeProvider>
+        </QueryClientWrap>
       </StyledEngineProvider>
     </Provider>
   );

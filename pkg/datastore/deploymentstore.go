@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -70,14 +71,13 @@ func (d *deploymentCollection) Encode(e interface{}) (map[Shard][]byte, error) {
 }
 
 var (
-	toPlannedUpdateFunc = func(summary, statusReason, runningCommitHash, runningConfigFilename, version string, versions []*model.ArtifactVersion, stages []*model.PipelineStage) func(*model.Deployment) error {
+	toPlannedUpdateFunc = func(summary, statusReason, runningCommitHash, runningConfigFilename string, versions []*model.ArtifactVersion, stages []*model.PipelineStage) func(*model.Deployment) error {
 		return func(d *model.Deployment) error {
 			d.Status = model.DeploymentStatus_DEPLOYMENT_PLANNED
 			d.Summary = summary
 			d.StatusReason = statusReason
 			d.RunningCommitHash = runningCommitHash
 			d.RunningConfigFilename = runningConfigFilename
-			d.Version = version
 			d.Versions = versions
 			d.Stages = stages
 			return nil
@@ -135,7 +135,7 @@ type DeploymentStore interface {
 	Add(ctx context.Context, d *model.Deployment) error
 	Get(ctx context.Context, id string) (*model.Deployment, error)
 	List(ctx context.Context, opts ListOptions) ([]*model.Deployment, string, error)
-	UpdateToPlanned(ctx context.Context, id, summary, reason, runningCommitHash, runningConfigFilename, version string, versions []*model.ArtifactVersion, stages []*model.PipelineStage) error
+	UpdateToPlanned(ctx context.Context, id, summary, reason, runningCommitHash, runningConfigFilename string, versions []*model.ArtifactVersion, stages []*model.PipelineStage) error
 	UpdateToCompleted(ctx context.Context, id string, status model.DeploymentStatus, stageStatuses map[string]model.StageStatus, reason string, completedAt int64) error
 	UpdateStatus(ctx context.Context, id string, status model.DeploymentStatus, reason string) error
 	UpdateStageStatus(ctx context.Context, id, stageID string, status model.StageStatus, reason string, requires []string, visible bool, retriedCount int32, completedAt int64) error
@@ -168,6 +168,23 @@ func (s *deploymentStore) Add(ctx context.Context, d *model.Deployment) error {
 	if d.UpdatedAt == 0 {
 		d.UpdatedAt = now
 	}
+
+	// To make compatibility with pipedv0 and pipedv1 on the UI.
+	// TODO: Remove this block after ending support of pipedv0.
+	if len(d.DeployTargetsByPlugin) == 0 {
+		for _, s := range d.Stages {
+			switch s.Name {
+			case model.StageAnalysis.String():
+				s.AvailableOperation = model.ManualOperation_MANUAL_OPERATION_SKIP
+			case model.StageWaitApproval.String():
+				s.AvailableOperation = model.ManualOperation_MANUAL_OPERATION_APPROVE
+				if approvers := s.Metadata["Approvers"]; approvers != "" {
+					s.AuthorizedOperators = strings.Split(approvers, ",")
+				}
+			}
+		}
+	}
+
 	if err := d.Validate(); err != nil {
 		return err
 	}
@@ -223,8 +240,8 @@ func (s *deploymentStore) update(ctx context.Context, id string, updater func(*m
 	})
 }
 
-func (s *deploymentStore) UpdateToPlanned(ctx context.Context, id, summary, reason, runningCommitHash, runningConfigFilename, version string, versions []*model.ArtifactVersion, stages []*model.PipelineStage) error {
-	updater := toPlannedUpdateFunc(summary, reason, runningCommitHash, runningConfigFilename, version, versions, stages)
+func (s *deploymentStore) UpdateToPlanned(ctx context.Context, id, summary, reason, runningCommitHash, runningConfigFilename string, versions []*model.ArtifactVersion, stages []*model.PipelineStage) error {
+	updater := toPlannedUpdateFunc(summary, reason, runningCommitHash, runningConfigFilename, versions, stages)
 	return s.update(ctx, id, updater)
 }
 

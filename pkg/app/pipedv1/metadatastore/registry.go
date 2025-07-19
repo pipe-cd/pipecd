@@ -39,9 +39,10 @@ func NewMetadataStoreRegistry(apiClient apiClient) *MetadataStoreRegistry {
 // Register creates a new metadata store for the given deployment.
 // This must be called before other Get/Put methods are called for the deployment.
 // If the metadata store already exists, the new one will replace the existing one.
-func (r *MetadataStoreRegistry) Register(d *model.Deployment) {
+func (r *MetadataStoreRegistry) Register(d *model.Deployment) MetadataStore {
 	store := newMetadataStore(r.apiClient, d)
 	r.stores[d.Id] = store
+	return store
 }
 
 // Delete deletes the metadata store for the given deployment in order to release the resources.
@@ -57,7 +58,7 @@ func (r *MetadataStoreRegistry) GetStageMetadata(ctx context.Context, req *servi
 		return &service.GetStageMetadataResponse{Found: false}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
 	}
 
-	value, found := mds.stageGet(req.StageId, req.Key)
+	value, found := mds.StageGet(req.StageId, req.Key)
 	return &service.GetStageMetadataResponse{
 		Value: value,
 		Found: found,
@@ -145,7 +146,7 @@ func (r *MetadataStoreRegistry) GetDeploymentSharedMetadata(ctx context.Context,
 		return &service.GetDeploymentSharedMetadataResponse{Found: false}, fmt.Errorf("metadata store not found for deployment %s", req.DeploymentId)
 	}
 
-	value, found := mds.sharedGet(req.Key)
+	value, found := mds.SharedGet(req.Key)
 	return &service.GetDeploymentSharedMetadataResponse{
 		Value: value,
 		Found: found,

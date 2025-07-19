@@ -15,9 +15,13 @@
 package deployment
 
 import (
+	"encoding/json"
 	"slices"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+	"go.uber.org/zap"
+
+	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 )
 
 const (
@@ -90,15 +94,23 @@ func buildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
 }
 
 // buildPipelineStages builds the pipeline stages with the given SDK stages.
-func buildPipelineStages(stages []sdk.StageConfig, autoRollback bool) []sdk.PipelineStage {
+func buildPipelineStages(input *sdk.BuildPipelineSyncStagesInput) ([]sdk.PipelineStage, error) {
+	stages := input.Request.Stages
+	autoRollback := input.Request.Rollback
+	logger := input.Logger
+
 	out := make([]sdk.PipelineStage, 0, len(stages)+1)
 
 	for _, s := range stages {
+		metadata, err := initialMetadata(s, logger)
+		if err != nil {
+			return nil, err
+		}
 		out = append(out, sdk.PipelineStage{
 			Name:               s.Name,
 			Index:              s.Index,
 			Rollback:           false,
-			Metadata:           make(map[string]string, 0),
+			Metadata:           metadata,
 			AvailableOperation: sdk.ManualOperationNone,
 		})
 	}
@@ -118,5 +130,21 @@ func buildPipelineStages(stages []sdk.StageConfig, autoRollback bool) []sdk.Pipe
 		})
 	}
 
-	return out
+	return out, nil
+}
+
+func initialMetadata(s sdk.StageConfig, logger *zap.Logger) (map[string]string, error) {
+	switch s.Name {
+	case StageK8sTrafficRouting:
+		stageCfg := kubeconfig.K8sTrafficRoutingStageOptions{}
+		if err := json.Unmarshal(s.Config, &stageCfg); err != nil {
+			logger.Error("failed to unmarshal stage config", zap.Error(err))
+			return nil, err
+		}
+		return map[string]string{
+			sdk.MetadataKeyStageDisplay: stageCfg.DisplayString(),
+		}, nil
+	default:
+		return make(map[string]string), nil
+	}
 }

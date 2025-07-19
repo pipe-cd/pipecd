@@ -11,6 +11,7 @@ import { FC, memo, useCallback, useEffect, useState } from "react";
 import {
   METADATA_APPROVED_BY,
   METADATA_SKIPPED_BY,
+  METADATA_STAGE_DISPLAY_KEY,
 } from "~/constants/metadata-keys";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { ActiveStage, updateActiveStage } from "~/modules/active-stage";
@@ -25,6 +26,7 @@ import {
 import { fetchStageLog } from "~/modules/stage-logs";
 import { ApprovalStage } from "./approval-stage";
 import { PipelineStage } from "./pipeline-stage";
+import { ManualOperation } from "~~/model/deployment_pb";
 
 const WAIT_APPROVAL_NAME = "WAIT_APPROVAL";
 const STAGE_HEIGHT = 56;
@@ -54,6 +56,10 @@ const findDefaultActiveStage = (
   return stages[stages.length - 1];
 };
 
+const isStartedStage = (stage: Stage): boolean => {
+  return stage.status !== StageStatus.STAGE_NOT_STARTED_YET;
+};
+
 const createStagesForRendering = (
   deployment: Deployment.AsObject | undefined
 ): Stage[][] => {
@@ -61,9 +67,16 @@ const createStagesForRendering = (
     return [];
   }
 
-  const stages: Stage[][] = [];
-  const visibleStages = deployment.stagesList.filter((stage) => stage.visible);
+  let visibleStages: Stage[] = [];
+  if (deployment.deployTargetsByPluginMap?.length) {
+    visibleStages = deployment.stagesList.filter(
+      (stage) => !stage.rollback || isStartedStage(stage)
+    );
+  } else {
+    visibleStages = deployment.stagesList.filter((stage) => stage.visible);
+  }
 
+  const stages: Stage[][] = [];
   stages[0] = visibleStages.filter((stage) => stage.requiresList.length === 0);
 
   let index = 0;
@@ -74,6 +87,7 @@ const createStagesForRendering = (
       stage.requiresList.some((id) => previousIds.includes(id))
     );
   }
+
   return stages;
 };
 
@@ -83,25 +97,37 @@ export interface PipelineProps {
   deploymentId: string;
 }
 
+// deprecated. Use findDisplayMetadataText for pipedv1.
 const findApprover = (
   metadata: Array<[string, string]>
 ): string | undefined => {
   const res = metadata.find(([key]) => key === METADATA_APPROVED_BY);
 
   if (res) {
-    return res[1];
+    return `Approved by: ${res[1]}`;
   }
 
   return undefined;
 };
 
+// deprecated. Use findDisplayMetadataText for pipedv1.
 const findSkipper = (metadata: Array<[string, string]>): string | undefined => {
   const res = metadata.find(([key]) => key === METADATA_SKIPPED_BY);
 
   if (res) {
-    return res[1];
+    return `Skipped by: ${res[1]}`;
   }
 
+  return undefined;
+};
+
+const findDisplayMetadataText = (
+  metadata: Array<[string, string]>
+): string | undefined => {
+  const res = metadata.find(([key]) => key === METADATA_STAGE_DISPLAY_KEY);
+  if (res) {
+    return res[1];
+  }
   return undefined;
 };
 
@@ -193,6 +219,10 @@ export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
               key={`pipeline-${columnIndex}`}
             >
               {stageColumn.map((stage, stageIndex) => {
+                const displayMetadataText = findDisplayMetadataText(
+                  stage.metadataMap
+                );
+                // TODO: remove approver and skipper. they should be included in findDisplayMetadataText for compatibility.
                 const approver = findApprover(stage.metadataMap);
                 const skipper = findSkipper(stage.metadataMap);
                 const isActive = activeStage
@@ -203,6 +233,7 @@ export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
                 const showLine = columnIndex > 0;
                 const showStraightLine = showLine && stageIndex === 0;
                 const showCurvedLine = showLine && stageIndex > 0;
+                // TODO: remove approver. use displayMetadataText instead.
                 const isCurvedLineExtend =
                   showCurvedLine && (Boolean(approver) || isPrevStageLarge);
 
@@ -244,7 +275,11 @@ export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
                       }),
                     })}
                   >
-                    {stage.name === WAIT_APPROVAL_NAME &&
+                    {/* TODO: Remove stageName condition after finishing deployments which are made 
+                         while the server does not inject availableOperation */}
+                    {(stage.name === WAIT_APPROVAL_NAME ||
+                      stage.availableOperation ===
+                        ManualOperation.MANUAL_OPERATION_APPROVE) &&
                     stage.status === StageStatus.STAGE_RUNNING ? (
                       <ApprovalStage
                         id={stage.id}
@@ -262,9 +297,11 @@ export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
                         metadata={stage.metadataMap}
                         onClick={handleOnClickStage}
                         active={isActive}
-                        approver={approver}
-                        skipper={skipper}
                         isDeploymentRunning={isRunning}
+                        // TODO: use only displayMetadataText
+                        displayMetadataText={
+                          displayMetadataText || approver || skipper
+                        }
                       />
                     )}
                   </Box>

@@ -14,7 +14,11 @@
 
 package config
 
-import config "github.com/pipe-cd/pipecd/pkg/configv1"
+import (
+	"fmt"
+
+	"github.com/pipe-cd/piped-plugin-sdk-go/unit"
+)
 
 type KubernetesTrafficRoutingMethod string
 
@@ -62,11 +66,11 @@ type K8sTrafficRoutingStageOptions struct {
 	// "primary" or "canary" or "baseline" can be populated.
 	All string `json:"all"`
 	// The percentage of traffic should be routed to PRIMARY variant.
-	Primary config.Percentage `json:"primary"`
+	Primary unit.Percentage `json:"primary"`
 	// The percentage of traffic should be routed to CANARY variant.
-	Canary config.Percentage `json:"canary"`
+	Canary unit.Percentage `json:"canary"`
 	// The percentage of traffic should be routed to BASELINE variant.
-	Baseline config.Percentage `json:"baseline"`
+	Baseline unit.Percentage `json:"baseline"`
 }
 
 // Percentages returns the primary, canary, and baseline percentages from the K8sTrafficRoutingStageOptions.
@@ -80,4 +84,11 @@ func (opts K8sTrafficRoutingStageOptions) Percentages() (primary, canary, baseli
 		return 0, 0, 100
 	}
 	return opts.Primary.Int(), opts.Canary.Int(), opts.Baseline.Int()
+}
+
+// DisplayString returns the display string for the K8sTrafficRoutingStageOptions.
+// This is used to display the traffic routing configuration in the UI.
+func (opts K8sTrafficRoutingStageOptions) DisplayString() string {
+	primary, canary, baseline := opts.Percentages()
+	return fmt.Sprintf("Primary: %d%%, Canary: %d%%, Baseline: %d%%", primary, canary, baseline)
 }

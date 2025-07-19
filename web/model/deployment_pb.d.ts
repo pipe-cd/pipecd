@@ -48,9 +48,6 @@ export class Deployment extends jspb.Message {
   getSummary(): string;
   setSummary(value: string): Deployment;
 
-  getVersion(): string;
-  setVersion(value: string): Deployment;
-
   getVersionsList(): Array<pkg_model_common_pb.ArtifactVersion>;
   setVersionsList(value: Array<pkg_model_common_pb.ArtifactVersion>): Deployment;
   clearVersionsList(): Deployment;
@@ -122,7 +119,6 @@ export namespace Deployment {
     labelsMap: Array<[string, string]>,
     trigger?: DeploymentTrigger.AsObject,
     summary: string,
-    version: string,
     versionsList: Array<pkg_model_common_pb.ArtifactVersion.AsObject>,
     runningCommitHash: string,
     runningConfigFilename: string,
@@ -247,6 +243,11 @@ export class PipelineStage extends jspb.Message {
   getAvailableOperation(): ManualOperation;
   setAvailableOperation(value: ManualOperation): PipelineStage;
 
+  getAuthorizedOperatorsList(): Array<string>;
+  setAuthorizedOperatorsList(value: Array<string>): PipelineStage;
+  clearAuthorizedOperatorsList(): PipelineStage;
+  addAuthorizedOperators(value: string, index?: number): PipelineStage;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): PipelineStage.AsObject;
   static toObject(includeInstance: boolean, msg: PipelineStage): PipelineStage.AsObject;
@@ -273,6 +274,7 @@ export namespace PipelineStage {
     createdAt: number,
     updatedAt: number,
     availableOperation: ManualOperation,
+    authorizedOperatorsList: Array<string>,
   }
 }
 

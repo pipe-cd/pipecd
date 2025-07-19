@@ -23,6 +23,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/atomic"
@@ -30,6 +31,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
@@ -71,6 +73,9 @@ type planner struct {
 	// which encrypted using PipeCD built-in secret management.
 	secretDecrypter secretDecrypter
 
+	// The metadataStore is used to get the application notification config.
+	medatadaStore metadatastore.MetadataStore
+
 	// The pluginRegistry is used to determine which plugins to be used
 	pluginRegistry plugin.PluginRegistry
 
@@ -96,6 +101,7 @@ func newPlanner(
 	gitClient gitClient,
 	notifier notifier,
 	secretDecrypter secretDecrypter,
+	metadataStore metadatastore.MetadataStore,
 	logger *zap.Logger,
 	tracerProvider trace.TracerProvider,
 ) *planner {
@@ -104,7 +110,7 @@ func newPlanner(
 		zap.String("deployment-id", d.Id),
 		zap.String("app-id", d.ApplicationId),
 		zap.String("project-id", d.ProjectId),
-		zap.String("app-kind", d.Kind.String()),
+		zap.String("labels", d.GetLabelsString()),
 		zap.String("working-dir", workingDir),
 	)
 
@@ -118,6 +124,7 @@ func newPlanner(
 		gitClient:                    gitClient,
 		notifier:                     notifier,
 		secretDecrypter:              secretDecrypter,
+		medatadaStore:                metadataStore,
 		doneDeploymentStatus:         d.Status,
 		cancelledCh:                  make(chan *model.ReportableCommand, 1),
 		nowFunc:                      time.Now,
@@ -172,8 +179,8 @@ func (p *planner) Run(ctx context.Context) error {
 		"Plan",
 		trace.WithAttributes(
 			attribute.String("application-id", p.deployment.ApplicationId),
-			attribute.String("kind", p.deployment.Kind.String()),
 			attribute.String("deployment-id", p.deployment.Id),
+			attribute.String("labels", p.deployment.GetLabelsString()),
 		))
 	defer span.End()
 
@@ -414,8 +421,7 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *common.Dep
 // buildQuickSyncStages requests all plugins and returns quick sync stage
 // from each plugins to build the deployment pipeline.
 // NOTE:
-//   - For quick sync, we expect all stages given by plugins can be performed
-//     at once regradless its order (aka. no `Stage.Requires` specified)
+//   - For quick sync, we expect all stages given by plugins can be performed in random order.
 //   - Rollback stage will always be added as the trail.
 func (p *planner) buildQuickSyncStages(ctx context.Context, cfg *config.GenericApplicationSpec) ([]*model.PipelineStage, error) {
 	var (
@@ -436,6 +442,7 @@ func (p *planner) buildQuickSyncStages(ctx context.Context, cfg *config.GenericA
 			return nil, err
 		}
 		for i := range res.Stages {
+			res.Stages[i].Id = uuid.New().String()
 			if res.Stages[i].Rollback {
 				rollbackStages = append(rollbackStages, res.Stages[i])
 			} else {
@@ -478,7 +485,6 @@ func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.Gener
 		}
 
 		stagesCfgPerPlugin[plg] = append(stagesCfgPerPlugin[plg], &deployment.BuildPipelineSyncStagesRequest_StageConfig{
-			Id:      stageCfg.ID,
 			Name:    stageCfg.Name.String(),
 			Desc:    stageCfg.Desc,
 			Timeout: stageCfg.Timeout.Duration().String(),
@@ -503,6 +509,7 @@ func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.Gener
 		}
 
 		for i := range res.Stages {
+			res.Stages[i].Id = uuid.New().String()
 			if res.Stages[i].Rollback {
 				rollbackStages = append(rollbackStages, res.Stages[i])
 			} else {
@@ -697,7 +704,7 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 
 // getApplicationNotificationMentions returns the list of users groups who should be mentioned in the notification.
 func (p *planner) getApplicationNotificationMentions(event model.NotificationEventType) ([]string, []string, error) {
-	n, ok := p.deployment.Metadata[model.MetadataKeyDeploymentNotification]
+	n, ok := p.medatadaStore.SharedGet(model.MetadataKeyDeploymentNotification)
 	if !ok {
 		return []string{}, []string{}, nil
 	}

@@ -181,7 +181,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 		base:       s.client,
 		pluginName: s.name,
 	}
-	return buildPipelineSyncStages(ctx, s.name, s.base, &s.config, client, request, s.logger)
+	return buildPipelineSyncStages(ctx, s.base, &s.config, client, request, s.logger)
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) BuildQuickSyncStages(ctx context.Context, request *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	input := &BuildQuickSyncStagesInput{
@@ -199,7 +199,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to build quick sync stages: %v", err)
 	}
-	return newQuickSyncStagesResponse(s.name, time.Now(), response), nil
+	return newQuickSyncStagesResponse(time.Now(), response), nil
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (response *deployment.ExecuteStageResponse, _ error) {
 	lp := s.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId())
@@ -281,7 +281,7 @@ func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigS
 		pluginName: s.name,
 	}
 
-	return buildPipelineSyncStages(ctx, s.name, s.base, &s.config, client, request, s.logger)
+	return buildPipelineSyncStages(ctx, s.base, &s.config, client, request, s.logger)
 }
 func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	// Return an empty response in case the plugin does not support the QuickSync strategy.
@@ -312,12 +312,12 @@ func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigS
 }
 
 // buildPipelineSyncStages builds the stages that will be executed by the plugin.
-func buildPipelineSyncStages[Config, DeployTargetConfig, ApplicationConfigSpec any](ctx context.Context, pluginName string, plugin StagePlugin[Config, DeployTargetConfig, ApplicationConfigSpec], config *Config, client *Client, request *deployment.BuildPipelineSyncStagesRequest, logger *zap.Logger) (*deployment.BuildPipelineSyncStagesResponse, error) {
+func buildPipelineSyncStages[Config, DeployTargetConfig, ApplicationConfigSpec any](ctx context.Context, plugin StagePlugin[Config, DeployTargetConfig, ApplicationConfigSpec], config *Config, client *Client, request *deployment.BuildPipelineSyncStagesRequest, logger *zap.Logger) (*deployment.BuildPipelineSyncStagesResponse, error) {
 	resp, err := plugin.BuildPipelineSyncStages(ctx, config, newPipelineSyncStagesInput(request, client, logger))
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to build pipeline sync stages: %v", err)
 	}
-	return newPipelineSyncStagesResponse(pluginName, time.Now(), request, resp)
+	return newPipelineSyncStagesResponse(time.Now(), request, resp)
 }
 
 func executeStage[Config, DeployTargetConfig, ApplicationConfigSpec any](
@@ -414,7 +414,7 @@ func newPipelineSyncStagesInput(request *deployment.BuildPipelineSyncStagesReque
 }
 
 // newPipelineSyncStagesResponse converts the response to the external representation.
-func newPipelineSyncStagesResponse(pluginName string, now time.Time, request *deployment.BuildPipelineSyncStagesRequest, response *BuildPipelineSyncStagesResponse) (*deployment.BuildPipelineSyncStagesResponse, error) {
+func newPipelineSyncStagesResponse(now time.Time, request *deployment.BuildPipelineSyncStagesRequest, response *BuildPipelineSyncStagesResponse) (*deployment.BuildPipelineSyncStagesResponse, error) {
 	// Convert the request stages to a map for easier access.
 	requestStages := make(map[int]*deployment.BuildPipelineSyncStagesRequest_StageConfig, len(request.GetStages()))
 	for _, s := range request.GetStages() {
@@ -428,12 +428,8 @@ func newPipelineSyncStagesResponse(pluginName string, now time.Time, request *de
 		if !ok {
 			return nil, status.Errorf(codes.Internal, "missing stage with index %d in the request, it's unexpected behavior of the plugin", s.Index)
 		}
-		id := requestStage.GetId()
-		if id == "" {
-			id = fmt.Sprintf("%s-stage-%d", pluginName, s.Index)
-		}
 
-		stages = append(stages, s.toModel(id, requestStage.GetDesc(), now))
+		stages = append(stages, s.toModel(requestStage.GetDesc(), now))
 	}
 	return &deployment.BuildPipelineSyncStagesResponse{
 		Stages: stages,
@@ -441,11 +437,10 @@ func newPipelineSyncStagesResponse(pluginName string, now time.Time, request *de
 }
 
 // newQuickSyncStagesResponse converts the response to the external representation.
-func newQuickSyncStagesResponse(pluginName string, now time.Time, response *BuildQuickSyncStagesResponse) *deployment.BuildQuickSyncStagesResponse {
+func newQuickSyncStagesResponse(now time.Time, response *BuildQuickSyncStagesResponse) *deployment.BuildQuickSyncStagesResponse {
 	stages := make([]*model.PipelineStage, 0, len(response.Stages))
-	for i, s := range response.Stages {
-		id := fmt.Sprintf("%s-stage-%d", pluginName, i)
-		stages = append(stages, s.toModel(id, now))
+	for _, s := range response.Stages {
+		stages = append(stages, s.toModel(now))
 	}
 	return &deployment.BuildQuickSyncStagesResponse{
 		Stages: stages,
@@ -526,21 +521,23 @@ type PipelineStage struct {
 	Metadata map[string]string
 	// AvailableOperation indicates the manual operation that the user can perform.
 	AvailableOperation ManualOperation
+	// AuthorizedOperators is the list of usernames who can execute the AvailableOperation.
+	AuthorizedOperators []string
 }
 
-func (p *PipelineStage) toModel(id, description string, now time.Time) *model.PipelineStage {
+func (p *PipelineStage) toModel(description string, now time.Time) *model.PipelineStage {
 	return &model.PipelineStage{
-		Id:                 id,
-		Name:               p.Name,
-		Desc:               description,
-		Index:              int32(p.Index),
-		Status:             model.StageStatus_STAGE_NOT_STARTED_YET,
-		StatusReason:       "", // TODO: set the reason
-		Metadata:           p.Metadata,
-		Rollback:           p.Rollback,
-		CreatedAt:          now.Unix(),
-		UpdatedAt:          now.Unix(),
-		AvailableOperation: p.AvailableOperation.toModelEnum(),
+		Name:                p.Name,
+		Desc:                description,
+		Index:               int32(p.Index),
+		Status:              model.StageStatus_STAGE_NOT_STARTED_YET,
+		StatusReason:        "", // TODO: set the reason
+		Metadata:            p.Metadata,
+		Rollback:            p.Rollback,
+		CreatedAt:           now.Unix(),
+		UpdatedAt:           now.Unix(),
+		AvailableOperation:  p.AvailableOperation.toModelEnum(),
+		AuthorizedOperators: p.AuthorizedOperators,
 	}
 }
 
@@ -559,9 +556,8 @@ type QuickSyncStage struct {
 	AvailableOperation ManualOperation
 }
 
-func (p *QuickSyncStage) toModel(id string, now time.Time) *model.PipelineStage {
+func (p *QuickSyncStage) toModel(now time.Time) *model.PipelineStage {
 	return &model.PipelineStage{
-		Id:                 id,
 		Name:               p.Name,
 		Desc:               p.Description,
 		Index:              0,

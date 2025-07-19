@@ -34,6 +34,7 @@ type apiClient interface {
 type Store interface {
 	Run(ctx context.Context) error
 	Lister() Lister
+	Reporter() Reporter
 }
 
 // Lister helps list commands.
@@ -46,9 +47,13 @@ type Lister interface {
 	ListPipedCommands() []model.ReportableCommand
 }
 
-// stageCommandsMap is a map of stage commands. Keys are deploymentID and stageID.
-//
-// TODO: Report and delete commands after a stage is finished.
+// Reporter helps report commands.
+type Reporter interface {
+	// ReportStageCommandsHandled reports all stage commands of the given stage as handled successfully.
+	ReportStageCommandsHandled(ctx context.Context, deploymentID, stageID string) error
+}
+
+// stageCommandMap is a map of stage commands. Keys are deploymentID and stageID.
 type stageCommandsMap map[string]map[string][]*model.Command
 
 type store struct {
@@ -114,6 +119,10 @@ func (s *store) Lister() Lister {
 	return s
 }
 
+func (s *store) Reporter() Reporter {
+	return s
+}
+
 func (s *store) sync(ctx context.Context) error {
 	resp, err := s.apiClient.ListUnhandledCommands(ctx, &pipedservice.ListUnhandledCommandsRequest{})
 	if err != nil {
@@ -134,21 +143,21 @@ func (s *store) sync(ctx context.Context) error {
 			applicationCommands = append(applicationCommands, s.makeReportableCommand(cmd))
 		case model.Command_CANCEL_DEPLOYMENT:
 			deploymentCommands = append(deploymentCommands, s.makeReportableCommand(cmd))
-		case model.Command_APPROVE_STAGE, model.Command_SKIP_STAGE:
-			stageCommands.append(cmd)
 		case model.Command_BUILD_PLAN_PREVIEW:
 			planPreviewCommands = append(planPreviewCommands, s.makeReportableCommand(cmd))
 		case model.Command_RESTART_PIPED:
 			pipedCommands = append(pipedCommands, s.makeReportableCommand(cmd))
+		case model.Command_APPROVE_STAGE, model.Command_SKIP_STAGE:
+			stageCommands.append(cmd)
 		}
 	}
 
 	s.mu.Lock()
 	s.applicationCommands = applicationCommands
 	s.deploymentCommands = deploymentCommands
-	s.stageCommands = stageCommands
 	s.planPreviewCommands = planPreviewCommands
 	s.pipedCommands = pipedCommands
+	s.stageCommands = stageCommands
 	s.mu.Unlock()
 
 	return nil
@@ -261,6 +270,20 @@ func (s *store) reportCommandHandled(ctx context.Context, c *model.Command, stat
 	return err
 }
 
+func (s *store) ReportStageCommandsHandled(ctx context.Context, deploymentID, stageID string) error {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	for _, c := range s.stageCommands[deploymentID][stageID] {
+		if err := s.reportCommandHandled(ctx, c, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil); err != nil {
+			return err
+		}
+	}
+
+	s.stageCommands.clear(deploymentID, stageID)
+	return nil
+}
+
 func (m stageCommandsMap) append(c *model.Command) {
 	deploymentID := c.DeploymentId
 	stageID := c.StageId
@@ -269,4 +292,8 @@ func (m stageCommandsMap) append(c *model.Command) {
 	}
 
 	m[deploymentID][stageID] = append(m[deploymentID][stageID], c)
+}
+
+func (m stageCommandsMap) clear(deploymentID, stageID string) {
+	delete(m[deploymentID], stageID)
 }

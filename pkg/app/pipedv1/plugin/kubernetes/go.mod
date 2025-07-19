@@ -5,8 +5,7 @@ go 1.24.1
 require (
 	github.com/goccy/go-yaml v1.9.8
 	github.com/google/go-cmp v0.7.0
-	github.com/pipe-cd/pipecd v0.52.0
-	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250612023157-bc4c32dc15cb
+	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250704080233-6693749bd076
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.19.1
 	golang.org/x/mod v0.22.0
@@ -14,10 +13,8 @@ require (
 	k8s.io/apimachinery v0.24.3
 	k8s.io/client-go v0.24.3
 	sigs.k8s.io/controller-runtime v0.12.3
-	sigs.k8s.io/yaml v1.3.0
+	sigs.k8s.io/yaml v1.5.0
 )
-
-replace github.com/pipe-cd/piped-plugin-sdk-go => ../../../../plugin/sdk
 
 require (
 	cloud.google.com/go v0.112.1 // indirect
@@ -62,6 +59,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
+	github.com/pipe-cd/pipecd v0.52.1-0.20250704040938-472e02fa6fa1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.12.1 // indirect
@@ -77,6 +75,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.28.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
+	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/oauth2 v0.21.0 // indirect

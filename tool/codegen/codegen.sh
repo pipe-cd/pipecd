@@ -22,6 +22,7 @@ goProtoDirs=(
   "pkg/plugin/api/v1alpha1/common"
   "pkg/plugin/api/v1alpha1/deployment"
   "pkg/plugin/api/v1alpha1/livestate"
+  "pkg/plugin/api/v1alpha1/planpreview"
   "pkg/plugin/pipedservice"
 )
 

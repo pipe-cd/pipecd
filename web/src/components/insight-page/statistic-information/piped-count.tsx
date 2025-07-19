@@ -6,8 +6,7 @@ import {
   TooltipComponent,
 } from "echarts/components";
 import { FC, useEffect, useMemo } from "react";
-import { useAppSelector } from "~/hooks/redux";
-import { Piped, selectAllPipeds } from "~/modules/pipeds";
+import { Piped } from "~/modules/pipeds";
 import { GaugeChart } from "echarts/charts";
 import { CanvasRenderer } from "echarts/renderers";
 import useEChartState from "~/hooks/useEChartState";
@@ -16,12 +15,13 @@ import LegendRow from "./legend-row";
 
 import { blue as cyan, green } from "@mui/material/colors";
 import { CardWrapper } from "./styles";
+import { useGetPipeds } from "~/queries/pipeds/use-get-pipeds";
 
 const enabledColor = cyan[500];
 const onlineColor = green[500];
 
 const PipedCount: FC = () => {
-  const pipeds = useAppSelector(selectAllPipeds);
+  const { data: pipeds = [] } = useGetPipeds({ withStatus: true });
 
   const { chart, chartElm } = useEChartState({
     extensions: [
