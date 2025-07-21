@@ -1,20 +1,10 @@
 import userEvent from "@testing-library/user-event";
 import { dummyApplication } from "~/__fixtures__/dummy-application";
-import { createStore, render, screen, MemoryRouter } from "~~/test-utils";
+import { render, screen, MemoryRouter } from "~~/test-utils";
 import { ApplicationListItem } from ".";
-
-const state = {
-  applications: {
-    entities: {
-      [dummyApplication.id]: dummyApplication,
-    },
-    ids: [dummyApplication.id],
-  },
-};
 
 test("delete", () => {
   const handleDelete = jest.fn();
-  const store = createStore(state);
   render(
     <MemoryRouter>
       <table>
@@ -29,10 +19,7 @@ test("delete", () => {
           />
         </tbody>
       </table>
-    </MemoryRouter>,
-    {
-      store,
-    }
+    </MemoryRouter>
   );
 
   userEvent.click(screen.getByRole("button", { name: "Open menu" }));
@@ -43,7 +30,6 @@ test("delete", () => {
 
 test("edit", () => {
   const handleEdit = jest.fn();
-  const store = createStore(state);
   render(
     <MemoryRouter>
       <table>
@@ -58,10 +44,7 @@ test("edit", () => {
           />
         </tbody>
       </table>
-    </MemoryRouter>,
-    {
-      store,
-    }
+    </MemoryRouter>
   );
 
   userEvent.click(screen.getByRole("button", { name: "Open menu" }));
@@ -72,7 +55,6 @@ test("edit", () => {
 
 test("disable", () => {
   const handleDisable = jest.fn();
-  const store = createStore(state);
   render(
     <MemoryRouter>
       <table>
@@ -87,10 +69,7 @@ test("disable", () => {
           />
         </tbody>
       </table>
-    </MemoryRouter>,
-    {
-      store,
-    }
+    </MemoryRouter>
   );
 
   userEvent.click(screen.getByRole("button", { name: "Open menu" }));
@@ -101,14 +80,7 @@ test("disable", () => {
 
 test("enable", () => {
   const handleEnable = jest.fn();
-  const store = createStore({
-    applications: {
-      entities: {
-        [dummyApplication.id]: { ...dummyApplication, disabled: true },
-      },
-      ids: [dummyApplication.id],
-    },
-  });
+
   render(
     <MemoryRouter>
       <table>
@@ -123,10 +95,7 @@ test("enable", () => {
           />
         </tbody>
       </table>
-    </MemoryRouter>,
-    {
-      store,
-    }
+    </MemoryRouter>
   );
 
   userEvent.click(screen.getByRole("button", { name: "Open menu" }));
@@ -137,7 +106,6 @@ test("enable", () => {
 
 test("Encrypt Secret", () => {
   const handleGenerateSecret = jest.fn();
-  const store = createStore(state);
   render(
     <MemoryRouter>
       <table>
@@ -152,10 +120,7 @@ test("Encrypt Secret", () => {
           />
         </tbody>
       </table>
-    </MemoryRouter>,
-    {
-      store,
-    }
+    </MemoryRouter>
   );
 
   userEvent.click(screen.getByRole("button", { name: "Open menu" }));

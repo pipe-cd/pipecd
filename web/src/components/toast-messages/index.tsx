@@ -2,7 +2,7 @@ import { Button, Snackbar, SnackbarCloseReason } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
 import { FC, memo } from "react";
 import { Link as RouterLink } from "react-router-dom";
-import { IToast } from "~/modules/toasts";
+import { IToast } from "~/contexts/toast-context";
 
 const AUTO_HIDE_DURATION = 5000;
 

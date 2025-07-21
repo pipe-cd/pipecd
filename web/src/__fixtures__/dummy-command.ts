@@ -1,5 +1,5 @@
 import { SyncStrategy } from "pipecd/web/model/common_pb";
-import { Command, CommandStatus } from "~/modules/commands";
+import { Command, CommandStatus } from "~/types/commands";
 import { dummyDeployment } from "./dummy-deployment";
 import { createRandTimes } from "./utils";
 

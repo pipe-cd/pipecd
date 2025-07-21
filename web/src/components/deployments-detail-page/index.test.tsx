@@ -1,8 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import { server } from "~/mocks/server";
 import { dummyDeployment } from "~/__fixtures__/dummy-deployment";
-import { dummyPiped } from "~/__fixtures__/dummy-piped";
-import { createReduxStore, render, waitFor, MemoryRouter } from "~~/test-utils";
+import { render, waitFor, MemoryRouter } from "~~/test-utils";
 import { DeploymentDetailPage } from ".";
 
 Element.prototype.scrollIntoView = jest.fn();
@@ -21,13 +20,6 @@ afterAll(() => {
 
 describe("DeploymentDetailPage", () => {
   test("fetch a deployment data and show that data", async () => {
-    const store = createReduxStore({
-      pipeds: {
-        entities: { [dummyPiped.id]: dummyPiped },
-        ids: [dummyPiped.id],
-      },
-    });
-
     const { getByText } = render(
       <MemoryRouter
         initialEntries={[`/deployments/${dummyDeployment.id}`]}
@@ -39,8 +31,7 @@ describe("DeploymentDetailPage", () => {
             element={<DeploymentDetailPage />}
           />
         </Routes>
-      </MemoryRouter>,
-      { store }
+      </MemoryRouter>
     );
 
     await waitFor(() => getByText("SUCCESS"));
