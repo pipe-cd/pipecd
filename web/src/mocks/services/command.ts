@@ -2,7 +2,7 @@ import {
   GetCommandRequest,
   GetCommandResponse,
 } from "pipecd/web/api_client/service_pb";
-import { Command } from "~/modules/commands";
+import { Command } from "~/types/commands";
 import {
   dummyCommand,
   dummySyncSucceededCommand,

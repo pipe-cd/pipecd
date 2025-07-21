@@ -1,5 +1,4 @@
 import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
 import { InsightRange } from "~/queries/insight/insight.config";
 import { InsightResolution } from "~~/model/insight_pb";
 
@@ -7,9 +6,6 @@ export function determineTimeRange(
   r: InsightRange,
   s: InsightResolution
 ): [number, number] {
-  // Load utc plugin.
-  dayjs.extend(utc);
-
   const rangeTo = dayjs.utc().endOf("day");
   let rangeFrom = rangeTo;
 

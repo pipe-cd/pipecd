@@ -4,10 +4,7 @@ import { ApplicationKind, ApplicationSyncStatus } from "~/types/applications";
 import { dummyApplication } from "~/__fixtures__/dummy-application";
 import { render, screen, waitFor } from "~~/test-utils";
 import { ApplicationFilter } from ".";
-import { listApplicationsHandler } from "~/mocks/services/application";
-import { setupServer } from "msw/node";
-
-const server = setupServer(listApplicationsHandler);
+import { server } from "~/mocks/server";
 
 beforeAll(() => {
   server.listen();
@@ -21,13 +18,6 @@ afterAll(() => {
   server.close();
 });
 
-const initialState = {
-  applications: {
-    ids: [dummyApplication.id],
-    entities: { [dummyApplication.id]: dummyApplication },
-  },
-};
-
 test("Change filter values", async () => {
   const onChange = jest.fn();
   render(
@@ -36,10 +26,7 @@ test("Change filter values", async () => {
       onClear={() => null}
       options={{}}
       applications={[]}
-    />,
-    {
-      initialState,
-    }
+    />
   );
 
   userEvent.type(
@@ -84,10 +71,7 @@ test("Click clear filter", () => {
       onClear={onClear}
       options={{}}
       applications={[]}
-    />,
-    {
-      initialState,
-    }
+    />
   );
 
   userEvent.click(screen.getByRole("button", { name: UI_TEXT_CLEAR }));
