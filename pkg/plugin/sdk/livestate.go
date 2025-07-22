@@ -16,7 +16,6 @@ package sdk
 
 import (
 	"context"
-	"encoding/json"
 	"time"
 
 	"go.uber.org/zap"
@@ -44,9 +43,7 @@ type LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec any
 	livestate.UnimplementedLivestateServiceServer
 	commonFields[Config, DeployTargetConfig]
 
-	base          LivestatePlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
-	config        Config
-	deployTargets map[string]*DeployTarget[DeployTargetConfig]
+	base LivestatePlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
 }
 
 // Register registers the plugin to the gRPC server.
@@ -57,28 +54,6 @@ func (s *LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec
 // setFields sets the common fields and configs to the server.
 func (s *LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]) setFields(fields commonFields[Config, DeployTargetConfig]) error {
 	s.commonFields = fields
-
-	cfg := fields.config
-	if cfg.Config != nil {
-		if err := json.Unmarshal(cfg.Config, &s.config); err != nil {
-			s.logger.Fatal("failed to unmarshal the plugin config", zap.Error(err))
-			return err
-		}
-	}
-
-	s.deployTargets = make(map[string]*DeployTarget[DeployTargetConfig], len(cfg.DeployTargets))
-	for _, dt := range cfg.DeployTargets {
-		var sdkDt DeployTargetConfig
-		if err := json.Unmarshal(dt.Config, &sdkDt); err != nil {
-			s.logger.Fatal("failed to unmarshal deploy target config", zap.Error(err))
-			return err
-		}
-		s.deployTargets[dt.Name] = &DeployTarget[DeployTargetConfig]{
-			Name:   dt.Name,
-			Labels: dt.Labels,
-			Config: sdkDt,
-		}
-	}
 
 	return nil
 }
@@ -108,7 +83,7 @@ func (s *LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec
 		return nil, status.Errorf(codes.Internal, "failed to parse deployment source: %v", err)
 	}
 
-	response, err := s.base.GetLivestate(ctx, &s.config, deployTargets, &GetLivestateInput[ApplicationConfigSpec]{
+	response, err := s.base.GetLivestate(ctx, s.commonFields.pluginConfig, deployTargets, &GetLivestateInput[ApplicationConfigSpec]{
 		Request: GetLivestateRequest[ApplicationConfigSpec]{
 			PipedID:          request.GetPipedId(),
 			ApplicationID:    request.GetApplicationId(),

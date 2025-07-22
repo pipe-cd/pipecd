@@ -49,12 +49,12 @@ func newTestLivestatePluginServer(t *testing.T, plugin *mockLivestatePlugin) *Li
 			config: &config.PipedPlugin{
 				Name: "mockLivestatePlugin",
 			},
-		},
-		deployTargets: map[string]*DeployTarget[struct{}]{
-			"target1": {
-				Name: "target1",
-				Labels: map[string]string{
-					"key1": "value1",
+			deployTargets: map[string]*DeployTarget[struct{}]{
+				"target1": {
+					Name: "target1",
+					Labels: map[string]string{
+						"key1": "value1",
+					},
 				},
 			},
 		},

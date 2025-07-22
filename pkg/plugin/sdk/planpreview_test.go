@@ -46,12 +46,12 @@ func newTestPlanPreviewPluginServer(t *testing.T, plugin *mockPlanPreviewPlugin)
 			config: &config.PipedPlugin{
 				Name: "mockPlanPreviewPlugin",
 			},
-		},
-		deployTargets: map[string]*DeployTarget[struct{}]{
-			"target1": {
-				Name: "target1",
-				Labels: map[string]string{
-					"key1": "value1",
+			deployTargets: map[string]*DeployTarget[struct{}]{
+				"target1": {
+					Name: "target1",
+					Labels: map[string]string{
+						"key1": "value1",
+					},
 				},
 			},
 		},

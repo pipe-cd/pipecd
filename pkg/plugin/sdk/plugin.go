@@ -16,6 +16,7 @@ package sdk
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/pprof"
@@ -54,13 +55,15 @@ type DeployTarget[Config any] struct {
 }
 
 type commonFields[Config, DeployTargetConfig any] struct {
-	name         string
-	version      string
-	config       *config.PipedPlugin
-	logger       *zap.Logger
-	logPersister logPersister
-	client       *pluginServiceClient
-	toolRegistry *toolregistry.ToolRegistry
+	name          string
+	version       string
+	config        *config.PipedPlugin
+	logger        *zap.Logger
+	logPersister  logPersister
+	client        *pluginServiceClient
+	toolRegistry  *toolregistry.ToolRegistry
+	pluginConfig  *Config
+	deployTargets map[string]*DeployTarget[DeployTargetConfig]
 }
 
 type logPersister interface {
@@ -272,6 +275,27 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 			logPersister: persister,
 			client:       pipedPluginServiceClient,
 			toolRegistry: toolregistry.NewToolRegistry(pipedPluginServiceClient),
+		}
+
+		if cfg.Config != nil {
+			if err := json.Unmarshal(cfg.Config, &commonFields.pluginConfig); err != nil {
+				input.Logger.Fatal("failed to unmarshal the plugin config", zap.Error(err))
+				return err
+			}
+		}
+
+		commonFields.deployTargets = make(map[string]*DeployTarget[DeployTargetConfig], len(cfg.DeployTargets))
+		for _, dt := range cfg.DeployTargets {
+			var sdkDt DeployTargetConfig
+			if err := json.Unmarshal(dt.Config, &sdkDt); err != nil {
+				input.Logger.Fatal("failed to unmarshal deploy target config", zap.Error(err))
+				return err
+			}
+			commonFields.deployTargets[dt.Name] = &DeployTarget[DeployTargetConfig]{
+				Name:   dt.Name,
+				Labels: dt.Labels,
+				Config: sdkDt,
+			}
 		}
 
 		var services []rpc.Service
