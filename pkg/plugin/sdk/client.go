@@ -31,6 +31,10 @@ import (
 const (
 	// MetadataKeyStageDisplay is the key of the stage metadata to be displayed on the deployment detail UI.
 	MetadataKeyStageDisplay = model.MetadataKeyStageDisplay
+	// MetadataKeyStageApprovedUsers is the key of the metadata of who approved the stage.
+	// It will be displayed in the DEPLOYMENT_APPROVED notification.
+	// e.g. user-1,user-2
+	MetadataKeyStageApprovedUsers = model.MetadataKeyStageApprovedUsers
 
 	listStageCommandsInterval = 5 * time.Second
 )
