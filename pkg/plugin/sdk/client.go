@@ -34,7 +34,7 @@ const (
 	// MetadataKeyStageApprovedUsers is the key of the metadata of who approved the stage.
 	// It will be displayed in the DEPLOYMENT_APPROVED notification.
 	// e.g. user-1,user-2
-	MetadataKeyStageApprovedUsers = "pipecd/stage-approved-users"
+	MetadataKeyStageApprovedUsers = model.MetadataKeyStageApprovedUsers
 
 	listStageCommandsInterval = 5 * time.Second
 )
