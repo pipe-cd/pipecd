@@ -51,13 +51,6 @@ func (s *LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec
 	livestate.RegisterLivestateServiceServer(server, s)
 }
 
-// setFields sets the common fields and configs to the server.
-func (s *LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]) setFields(fields commonFields[Config, DeployTargetConfig]) error {
-	s.commonFields = fields
-
-	return nil
-}
-
 // GetLivestate returns the live state of the resources in the given application.
 func (s *LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]) GetLivestate(ctx context.Context, request *livestate.GetLivestateRequest) (*livestate.GetLivestateResponse, error) {
 	// Get the deploy targets set on the deployment from the piped plugin config.

@@ -81,16 +81,10 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 	deployment.RegisterDeploymentServiceServer(server, s)
 }
 
-// setFields sets the common fields and configs to the server.
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) setFields(fields commonFields[Config, DeployTargetConfig]) error {
-	s.commonFields = fields
-
-	return nil
-}
-
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) FetchDefinedStages(context.Context, *deployment.FetchDefinedStagesRequest) (*deployment.FetchDefinedStagesResponse, error) {
 	return &deployment.FetchDefinedStagesResponse{Stages: s.base.FetchDefinedStages()}, nil
 }
+
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) DetermineVersions(ctx context.Context, request *deployment.DetermineVersionsRequest) (*deployment.DetermineVersionsResponse, error) {
 	client := &Client{
 		base:          s.client,
@@ -223,12 +217,6 @@ type StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec 
 // Register registers the server to the given gRPC server.
 func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) Register(server *grpc.Server) {
 	deployment.RegisterDeploymentServiceServer(server, s)
-}
-
-// setFields sets the common fields and configs to the server.
-func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) setFields(fields commonFields[Config, DeployTargetConfig]) error {
-	s.commonFields = fields
-	return nil
 }
 
 func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) FetchDefinedStages(context.Context, *deployment.FetchDefinedStagesRequest) (*deployment.FetchDefinedStagesResponse, error) {

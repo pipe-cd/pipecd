@@ -301,45 +301,33 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 		var services []rpc.Service
 
 		if p.stagePlugin != nil {
-			stagePluginServiceServer := &StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]{base: p.stagePlugin}
-			if err := stagePluginServiceServer.setFields(
-				commonFields.withLogger(input.Logger.Named("stage-service")),
-			); err != nil {
-				input.Logger.Error("failed to set fields", zap.Error(err))
-				return err
+			stagePluginServiceServer := &StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]{
+				base:         p.stagePlugin,
+				commonFields: commonFields.withLogger(input.Logger.Named("stage-service")),
 			}
 			services = append(services, stagePluginServiceServer)
 		}
 
 		if p.deploymentPlugin != nil {
-			deploymentPluginServiceServer := &DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]{base: p.deploymentPlugin}
-			if err := deploymentPluginServiceServer.setFields(
-				commonFields.withLogger(input.Logger.Named("deployment-service")),
-			); err != nil {
-				input.Logger.Error("failed to set fields", zap.Error(err))
-				return err
+			deploymentPluginServiceServer := &DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]{
+				base:         p.deploymentPlugin,
+				commonFields: commonFields.withLogger(input.Logger.Named("deployment-service")),
 			}
 			services = append(services, deploymentPluginServiceServer)
 		}
 
 		if p.livestatePlugin != nil {
-			livestatePluginServiceServer := &LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]{base: p.livestatePlugin}
-			if err := livestatePluginServiceServer.setFields(
-				commonFields.withLogger(input.Logger.Named("livestate-service")),
-			); err != nil {
-				input.Logger.Error("failed to set fields", zap.Error(err))
-				return err
+			livestatePluginServiceServer := &LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]{
+				base:         p.livestatePlugin,
+				commonFields: commonFields.withLogger(input.Logger.Named("livestate-service")),
 			}
 			services = append(services, livestatePluginServiceServer)
 		}
 
 		if p.planPreviewPlugin != nil {
-			planPreviewPluginServiceServer := &PlanPreviewPluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]{base: p.planPreviewPlugin}
-			if err := planPreviewPluginServiceServer.setFields(
-				commonFields.withLogger(input.Logger.Named("plan-preview-service")),
-			); err != nil {
-				input.Logger.Error("failed to set fields", zap.Error(err))
-				return err
+			planPreviewPluginServiceServer := &PlanPreviewPluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]{
+				base:         p.planPreviewPlugin,
+				commonFields: commonFields.withLogger(input.Logger.Named("plan-preview-service")),
 			}
 			services = append(services, planPreviewPluginServiceServer)
 		}

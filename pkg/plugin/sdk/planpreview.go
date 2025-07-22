@@ -47,13 +47,6 @@ func (s *PlanPreviewPluginServer[Config, DeployTargetConfig, ApplicationConfigSp
 	planpreview.RegisterPlanPreviewServiceServer(server, s)
 }
 
-// setFields sets the common fields and configs to the server.
-func (s *PlanPreviewPluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]) setFields(fields commonFields[Config, DeployTargetConfig]) error {
-	s.commonFields = fields
-
-	return nil
-}
-
 // GetPlanPreview returns the plan preview of the resources in the given application.
 func (s *PlanPreviewPluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]) GetPlanPreview(ctx context.Context, request *planpreview.GetPlanPreviewRequest) (*planpreview.GetPlanPreviewResponse, error) {
 	// Get the deploy targets set on the deployment from the piped plugin config.
