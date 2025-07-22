@@ -193,6 +193,30 @@ func (c *Client) GetDeploymentSharedMetadata(ctx context.Context, key string) (s
 	return resp.Value, err
 }
 
+// GetApplicationSharedObject gets the application object which is shared across deployments.
+func (c *Client) GetApplicationSharedObject(ctx context.Context, key string) ([]byte, error) {
+	resp, err := c.base.GetApplicationSharedObject(ctx, &pipedservice.GetApplicationSharedObjectRequest{
+		ApplicationId: c.applicationID,
+		PluginName:    c.pluginName,
+		Key:           key,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return resp.Object, nil
+}
+
+// PutApplicationSharedObject stores the application object which is shared across deployments.
+func (c *Client) PutApplicationSharedObject(ctx context.Context, key string, object []byte) error {
+	_, err := c.base.PutApplicationSharedObject(ctx, &pipedservice.PutApplicationSharedObjectRequest{
+		ApplicationId: c.applicationID,
+		PluginName:    c.pluginName,
+		Key:           key,
+		Object:        object,
+	})
+	return err
+}
+
 // LogPersister returns the stage log persister.
 // Use this to persist the stage logs and make it viewable on the UI.
 // This method should be called only when the client is working with a specific stage, for example, when this client is passed as the ExecuteStage method's argument.

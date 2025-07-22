@@ -4,7 +4,7 @@ go 1.24.1
 
 require (
 	github.com/creasty/defaults v1.6.0
-	github.com/pipe-cd/pipecd v0.52.1-0.20250704040938-472e02fa6fa1
+	github.com/pipe-cd/pipecd v0.52.1-0.20250722035702-5722fabb80ce
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/atomic v1.11.0
@@ -60,7 +60,7 @@ require (
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/net v0.38.0 // indirect
-	golang.org/x/oauth2 v0.21.0 // indirect
+	golang.org/x/oauth2 v0.27.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
