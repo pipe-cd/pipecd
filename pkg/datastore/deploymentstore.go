@@ -284,8 +284,11 @@ func (s *deploymentStore) UpdateStageMetadata(ctx context.Context, deploymentID,
 
 func (s *deploymentStore) UpdateSharedMetadata(ctx context.Context, id string, metadata map[string]string) error {
 	return s.update(ctx, id, func(d *model.Deployment) error {
+		if d.MetadataV2.Shared == nil {
+			d.MetadataV2.Shared = &model.DeploymentMetadata_KeyValues{}
+		}
 		d.MetadataV2.Shared = &model.DeploymentMetadata_KeyValues{
-			KeyValues: mergeMetadata(d.GetMetadataV2().GetShared().GetKeyValues(), metadata),
+			KeyValues: mergeMetadata(d.MetadataV2.Shared.KeyValues, metadata),
 		}
 		return nil
 	})
@@ -293,8 +296,11 @@ func (s *deploymentStore) UpdateSharedMetadata(ctx context.Context, id string, m
 
 func (s *deploymentStore) UpdatePluginMetadata(ctx context.Context, id string, pluginName string, metadata map[string]string) error {
 	return s.update(ctx, id, func(d *model.Deployment) error {
+		if d.MetadataV2.Plugins == nil {
+			d.MetadataV2.Plugins = make(map[string]*model.DeploymentMetadata_KeyValues)
+		}
 		d.MetadataV2.Plugins[pluginName] = &model.DeploymentMetadata_KeyValues{
-			KeyValues: mergeMetadata(d.GetMetadataV2().GetPlugins()[pluginName].GetKeyValues(), metadata),
+			KeyValues: mergeMetadata(d.MetadataV2.Plugins[pluginName].KeyValues, metadata),
 		}
 		return nil
 	})
