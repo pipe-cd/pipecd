@@ -22,7 +22,7 @@ require (
 	github.com/coreos/go-oidc/v3 v3.11.0
 	github.com/creasty/defaults v1.6.0
 	github.com/envoyproxy/go-control-plane v0.12.0
-	github.com/envoyproxy/protoc-gen-validate v1.2.1
+	github.com/envoyproxy/protoc-gen-validate v1.0.4
 	github.com/fsouza/fake-gcs-server v1.21.0
 	github.com/go-logr/logr v1.4.2
 	github.com/go-sql-driver/mysql v1.6.0
@@ -62,7 +62,7 @@ require (
 	golang.org/x/sync v0.12.0
 	google.golang.org/api v0.169.0
 	google.golang.org/grpc v1.64.1
-	google.golang.org/protobuf v1.36.3
+	google.golang.org/protobuf v1.34.2
 	istio.io/api v0.0.0-20200710191538-00b73d23c685
 	k8s.io/api v0.24.3
 	k8s.io/apimachinery v0.24.3
