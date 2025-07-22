@@ -72,7 +72,7 @@ type StagePlugin[Config, DeployTargetConfig, ApplicationConfigSpec any] interfac
 // DeploymentPluginServiceServer is the gRPC server that handles requests from the piped.
 type DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec any] struct {
 	deployment.UnimplementedDeploymentServiceServer
-	commonFields
+	commonFields[Config, DeployTargetConfig]
 
 	base          DeploymentPlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
 	config        Config
@@ -85,7 +85,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 }
 
 // setFields sets the common fields and configs to the server.
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) setFields(fields commonFields) error {
+func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) setFields(fields commonFields[Config, DeployTargetConfig]) error {
 	s.commonFields = fields
 
 	cfg := fields.config
@@ -240,7 +240,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 // StagePluginServiceServer is the gRPC server that handles requests from the piped.
 type StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec any] struct {
 	deployment.UnimplementedDeploymentServiceServer
-	commonFields
+	commonFields[Config, DeployTargetConfig]
 
 	base   StagePlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
 	config Config
@@ -252,7 +252,7 @@ func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigS
 }
 
 // setFields sets the common fields and configs to the server.
-func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) setFields(fields commonFields) error {
+func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) setFields(fields commonFields[Config, DeployTargetConfig]) error {
 	s.commonFields = fields
 
 	cfg := fields.config

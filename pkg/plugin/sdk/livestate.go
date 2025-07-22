@@ -42,7 +42,7 @@ type LivestatePlugin[Config, DeployTargetConfig, ApplicationConfigSpec any] inte
 // It is used to register the plugin to the gRPC server.
 type LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec any] struct {
 	livestate.UnimplementedLivestateServiceServer
-	commonFields
+	commonFields[Config, DeployTargetConfig]
 
 	base          LivestatePlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
 	config        Config
@@ -55,7 +55,7 @@ func (s *LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec
 }
 
 // setFields sets the common fields and configs to the server.
-func (s *LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]) setFields(fields commonFields) error {
+func (s *LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]) setFields(fields commonFields[Config, DeployTargetConfig]) error {
 	s.commonFields = fields
 
 	cfg := fields.config

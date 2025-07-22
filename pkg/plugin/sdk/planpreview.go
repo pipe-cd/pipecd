@@ -38,7 +38,7 @@ type PlanPreviewPlugin[Config, DeployTargetConfig, ApplicationConfigSpec any] in
 // It is used to register the plugin to the gRPC server.
 type PlanPreviewPluginServer[Config, DeployTargetConfig, ApplicationConfigSpec any] struct {
 	planpreview.UnimplementedPlanPreviewServiceServer
-	commonFields
+	commonFields[Config, DeployTargetConfig]
 
 	base          PlanPreviewPlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
 	config        Config
@@ -51,7 +51,7 @@ func (s *PlanPreviewPluginServer[Config, DeployTargetConfig, ApplicationConfigSp
 }
 
 // setFields sets the common fields and configs to the server.
-func (s *PlanPreviewPluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]) setFields(fields commonFields) error {
+func (s *PlanPreviewPluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]) setFields(fields commonFields[Config, DeployTargetConfig]) error {
 	s.commonFields = fields
 
 	cfg := fields.config

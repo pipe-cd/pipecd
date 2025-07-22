@@ -53,7 +53,7 @@ type DeployTarget[Config any] struct {
 	Config Config `json:"config"`
 }
 
-type commonFields struct {
+type commonFields[Config, DeployTargetConfig any] struct {
 	name         string
 	version      string
 	config       *config.PipedPlugin
@@ -68,7 +68,7 @@ type logPersister interface {
 }
 
 // withLogger copies the commonFields and sets the logger to the given one.
-func (c commonFields) withLogger(logger *zap.Logger) commonFields {
+func (c commonFields[Config, DeployTargetConfig]) withLogger(logger *zap.Logger) commonFields[Config, DeployTargetConfig] {
 	c.logger = logger
 	return c
 }
@@ -265,7 +265,7 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 
 	// Start a gRPC server for handling external API requests.
 	{
-		commonFields := commonFields{
+		commonFields := commonFields[Config, DeployTargetConfig]{
 			name:         cfg.Name,
 			version:      p.version,
 			config:       cfg,

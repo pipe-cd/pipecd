@@ -41,7 +41,7 @@ func (m *mockPlanPreviewPlugin) GetPlanPreview(ctx context.Context, config Confi
 func newTestPlanPreviewPluginServer(t *testing.T, plugin *mockPlanPreviewPlugin) *PlanPreviewPluginServer[struct{}, struct{}, struct{}] {
 	return &PlanPreviewPluginServer[struct{}, struct{}, struct{}]{
 		base: plugin,
-		commonFields: commonFields{
+		commonFields: commonFields[struct{}, struct{}]{
 			logger: zaptest.NewLogger(t),
 			config: &config.PipedPlugin{
 				Name: "mockPlanPreviewPlugin",
