@@ -17,6 +17,7 @@ package applicationsharedobjectstore
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"go.uber.org/zap"
 
@@ -31,16 +32,14 @@ type Store interface {
 }
 
 type store struct {
-	backend *appObjectFileStore
+	backend filestore.Store
 	logger  *zap.Logger
 }
 
 func NewStore(fs filestore.Store, logger *zap.Logger) Store {
 	return &store{
-		backend: &appObjectFileStore{
-			backend: fs,
-		},
-		logger: logger.Named("application-shared-object-store"),
+		backend: fs,
+		logger:  logger.Named("application-shared-object-store"),
 	}
 }
 
@@ -74,4 +73,9 @@ func (s *store) PutObject(ctx context.Context, appID, pluginName, key string, da
 		return err
 	}
 	return nil
+}
+
+func buildPath(appID, pluginName, key string) string {
+	// Although the file might not be json, here we use .json for simplicity.
+	return fmt.Sprintf("application-shared-objects/%s/%s/%s.json", appID, pluginName, key)
 }
