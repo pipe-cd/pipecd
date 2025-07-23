@@ -54,6 +54,24 @@ type DeployTarget[Config any] struct {
 	Config Config `json:"config"`
 }
 
+// InitializeInput is the input for the Initializer interface.
+type InitializeInput[Config, DeployTargetConfig any] struct {
+	// PluginConfig is the configuration of the plugin.
+	Config *Config
+	// DeployTargets is the deploy targets of the plugin.
+	DeployTargets map[string]*DeployTarget[DeployTargetConfig]
+	// Logger is the logger for the plugin.
+	Logger *zap.Logger `json:"-"`
+}
+
+// Initializer is an interface that defines the Initialize method.
+type Initializer[Config, DeployTargetConfig any] interface {
+	// Initialize initializes the plugin with the given context and input.
+	// It is called multiple times when the plugin is registered multiple times, such as deployment, livestate, and plan-preview plugins.
+	// It is recommended to use sync.Once to ensure that the plugin is initialized only once.
+	Initialize(context.Context, *InitializeInput[Config, DeployTargetConfig]) error
+}
+
 type commonFields[Config, DeployTargetConfig any] struct {
 	name          string
 	version       string
