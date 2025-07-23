@@ -61,7 +61,7 @@ type InitializeInput[Config, DeployTargetConfig any] struct {
 	// DeployTargets is the deploy targets of the plugin.
 	DeployTargets map[string]*DeployTarget[DeployTargetConfig]
 	// Logger is the logger for the plugin.
-	Logger *zap.Logger `json:"-"`
+	Logger *zap.Logger
 }
 
 // Initializer is an interface that defines the Initialize method.
