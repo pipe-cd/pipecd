@@ -56,7 +56,7 @@ type DeployTarget[Config any] struct {
 
 // InitializeInput is the input for the Initializer interface.
 type InitializeInput[Config, DeployTargetConfig any] struct {
-	// PluginConfig is the configuration of the plugin.
+	// Config is the configuration of the plugin.
 	Config *Config
 	// DeployTargets is the deploy targets of the plugin.
 	DeployTargets map[string]*DeployTarget[DeployTargetConfig]
