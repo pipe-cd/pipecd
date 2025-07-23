@@ -44,17 +44,17 @@ func (m *mockLivestatePlugin) GetLivestate(ctx context.Context, config ConfigNon
 func newTestLivestatePluginServer(t *testing.T, plugin *mockLivestatePlugin) *LivestatePluginServer[struct{}, struct{}, struct{}] {
 	return &LivestatePluginServer[struct{}, struct{}, struct{}]{
 		base: plugin,
-		commonFields: commonFields{
+		commonFields: commonFields[struct{}, struct{}]{
 			logger: zaptest.NewLogger(t),
 			config: &config.PipedPlugin{
 				Name: "mockLivestatePlugin",
 			},
-		},
-		deployTargets: map[string]*DeployTarget[struct{}]{
-			"target1": {
-				Name: "target1",
-				Labels: map[string]string{
-					"key1": "value1",
+			deployTargets: map[string]*DeployTarget[struct{}]{
+				"target1": {
+					Name: "target1",
+					Labels: map[string]string{
+						"key1": "value1",
+					},
 				},
 			},
 		},

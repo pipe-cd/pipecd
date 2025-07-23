@@ -16,6 +16,7 @@ package sdk
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/pprof"
@@ -53,14 +54,16 @@ type DeployTarget[Config any] struct {
 	Config Config `json:"config"`
 }
 
-type commonFields struct {
-	name         string
-	version      string
-	config       *config.PipedPlugin
-	logger       *zap.Logger
-	logPersister logPersister
-	client       *pluginServiceClient
-	toolRegistry *toolregistry.ToolRegistry
+type commonFields[Config, DeployTargetConfig any] struct {
+	name          string
+	version       string
+	config        *config.PipedPlugin
+	logger        *zap.Logger
+	logPersister  logPersister
+	client        *pluginServiceClient
+	toolRegistry  *toolregistry.ToolRegistry
+	pluginConfig  *Config
+	deployTargets map[string]*DeployTarget[DeployTargetConfig]
 }
 
 type logPersister interface {
@@ -68,7 +71,7 @@ type logPersister interface {
 }
 
 // withLogger copies the commonFields and sets the logger to the given one.
-func (c commonFields) withLogger(logger *zap.Logger) commonFields {
+func (c commonFields[Config, DeployTargetConfig]) withLogger(logger *zap.Logger) commonFields[Config, DeployTargetConfig] {
 	c.logger = logger
 	return c
 }
@@ -265,7 +268,7 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 
 	// Start a gRPC server for handling external API requests.
 	{
-		commonFields := commonFields{
+		commonFields := commonFields[Config, DeployTargetConfig]{
 			name:         cfg.Name,
 			version:      p.version,
 			config:       cfg,
@@ -274,48 +277,57 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 			toolRegistry: toolregistry.NewToolRegistry(pipedPluginServiceClient),
 		}
 
+		if cfg.Config != nil {
+			if err := json.Unmarshal(cfg.Config, &commonFields.pluginConfig); err != nil {
+				input.Logger.Fatal("failed to unmarshal the plugin config", zap.Error(err))
+				return err
+			}
+		}
+
+		commonFields.deployTargets = make(map[string]*DeployTarget[DeployTargetConfig], len(cfg.DeployTargets))
+		for _, dt := range cfg.DeployTargets {
+			var sdkDt DeployTargetConfig
+			if err := json.Unmarshal(dt.Config, &sdkDt); err != nil {
+				input.Logger.Fatal("failed to unmarshal deploy target config", zap.Error(err))
+				return err
+			}
+			commonFields.deployTargets[dt.Name] = &DeployTarget[DeployTargetConfig]{
+				Name:   dt.Name,
+				Labels: dt.Labels,
+				Config: sdkDt,
+			}
+		}
+
 		var services []rpc.Service
 
 		if p.stagePlugin != nil {
-			stagePluginServiceServer := &StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]{base: p.stagePlugin}
-			if err := stagePluginServiceServer.setFields(
-				commonFields.withLogger(input.Logger.Named("stage-service")),
-			); err != nil {
-				input.Logger.Error("failed to set fields", zap.Error(err))
-				return err
+			stagePluginServiceServer := &StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]{
+				base:         p.stagePlugin,
+				commonFields: commonFields.withLogger(input.Logger.Named("stage-service")),
 			}
 			services = append(services, stagePluginServiceServer)
 		}
 
 		if p.deploymentPlugin != nil {
-			deploymentPluginServiceServer := &DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]{base: p.deploymentPlugin}
-			if err := deploymentPluginServiceServer.setFields(
-				commonFields.withLogger(input.Logger.Named("deployment-service")),
-			); err != nil {
-				input.Logger.Error("failed to set fields", zap.Error(err))
-				return err
+			deploymentPluginServiceServer := &DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]{
+				base:         p.deploymentPlugin,
+				commonFields: commonFields.withLogger(input.Logger.Named("deployment-service")),
 			}
 			services = append(services, deploymentPluginServiceServer)
 		}
 
 		if p.livestatePlugin != nil {
-			livestatePluginServiceServer := &LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]{base: p.livestatePlugin}
-			if err := livestatePluginServiceServer.setFields(
-				commonFields.withLogger(input.Logger.Named("livestate-service")),
-			); err != nil {
-				input.Logger.Error("failed to set fields", zap.Error(err))
-				return err
+			livestatePluginServiceServer := &LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]{
+				base:         p.livestatePlugin,
+				commonFields: commonFields.withLogger(input.Logger.Named("livestate-service")),
 			}
 			services = append(services, livestatePluginServiceServer)
 		}
 
 		if p.planPreviewPlugin != nil {
-			planPreviewPluginServiceServer := &PlanPreviewPluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]{base: p.planPreviewPlugin}
-			if err := planPreviewPluginServiceServer.setFields(
-				commonFields.withLogger(input.Logger.Named("plan-preview-service")),
-			); err != nil {
-				input.Logger.Error("failed to set fields", zap.Error(err))
-				return err
+			planPreviewPluginServiceServer := &PlanPreviewPluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]{
+				base:         p.planPreviewPlugin,
+				commonFields: commonFields.withLogger(input.Logger.Named("plan-preview-service")),
 			}
 			services = append(services, planPreviewPluginServiceServer)
 		}
