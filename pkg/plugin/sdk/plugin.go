@@ -316,9 +316,21 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 			}
 		}
 
+		initializeInput := &InitializeInput[Config, DeployTargetConfig]{
+			Config:        commonFields.pluginConfig,
+			DeployTargets: commonFields.deployTargets,
+			Logger:        input.Logger.Named("plugin-initializer"),
+		}
+
 		var services []rpc.Service
 
 		if p.stagePlugin != nil {
+			if initializer, ok := p.stagePlugin.(Initializer[Config, DeployTargetConfig]); ok {
+				if err := initializer.Initialize(ctx, initializeInput); err != nil {
+					input.Logger.Error("failed to initialize stage plugin", zap.Error(err))
+					return err
+				}
+			}
 			stagePluginServiceServer := &StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]{
 				base:         p.stagePlugin,
 				commonFields: commonFields.withLogger(input.Logger.Named("stage-service")),
@@ -327,6 +339,12 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 		}
 
 		if p.deploymentPlugin != nil {
+			if initializer, ok := p.deploymentPlugin.(Initializer[Config, DeployTargetConfig]); ok {
+				if err := initializer.Initialize(ctx, initializeInput); err != nil {
+					input.Logger.Error("failed to initialize deployment plugin", zap.Error(err))
+					return err
+				}
+			}
 			deploymentPluginServiceServer := &DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]{
 				base:         p.deploymentPlugin,
 				commonFields: commonFields.withLogger(input.Logger.Named("deployment-service")),
@@ -335,6 +353,12 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 		}
 
 		if p.livestatePlugin != nil {
+			if initializer, ok := p.livestatePlugin.(Initializer[Config, DeployTargetConfig]); ok {
+				if err := initializer.Initialize(ctx, initializeInput); err != nil {
+					input.Logger.Error("failed to initialize livestate plugin", zap.Error(err))
+					return err
+				}
+			}
 			livestatePluginServiceServer := &LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]{
 				base:         p.livestatePlugin,
 				commonFields: commonFields.withLogger(input.Logger.Named("livestate-service")),
@@ -343,6 +367,12 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 		}
 
 		if p.planPreviewPlugin != nil {
+			if initializer, ok := p.planPreviewPlugin.(Initializer[Config, DeployTargetConfig]); ok {
+				if err := initializer.Initialize(ctx, initializeInput); err != nil {
+					input.Logger.Error("failed to initialize plan-preview plugin", zap.Error(err))
+					return err
+				}
+			}
 			planPreviewPluginServiceServer := &PlanPreviewPluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]{
 				base:         p.planPreviewPlugin,
 				commonFields: commonFields.withLogger(input.Logger.Named("plan-preview-service")),
