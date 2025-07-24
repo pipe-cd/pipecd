@@ -200,9 +200,6 @@ func newDeployTargetResources(deployTarget string) *deployTargetResources {
 // we cannot determine the application ID of the child resources.
 // So we have to initialize the store after the first sync.
 func (s *deployTargetResources) initialize() {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
 	for _, manifest := range s.resources {
 		if appID, ok := s.getApplicationIDByResource(manifest); ok {
 			s.getApplicationResources(appID).addResource(manifest)
@@ -210,10 +207,16 @@ func (s *deployTargetResources) initialize() {
 	}
 
 	// Remove all resources which do not have appID.
-	for uid, manifest := range s.resources {
+	removedResources := make([]provider.Manifest, 0)
+
+	for _, manifest := range s.resources {
 		if _, ok := s.getApplicationIDByResource(manifest); !ok {
-			delete(s.resources, uid)
+			removedResources = append(removedResources, manifest)
 		}
+	}
+
+	for _, resource := range removedResources {
+		s.removeResource(resource)
 	}
 }
 
@@ -241,13 +244,13 @@ func (s *deployTargetResources) getApplicationIDByResource(resource provider.Man
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	if manifest, ok := s.resources[resource.UID()]; ok {
+	if manifest, ok := s.resources[resource.UID()]; ok && manifest.ApplicationID() != "" {
 		return manifest.ApplicationID(), true
 	}
 
 	ownerRefs := resource.OwnerReferences()
 	for _, ref := range ownerRefs {
-		if manifest, ok := s.resources[ref]; ok {
+		if manifest, ok := s.resources[ref]; ok && manifest.ApplicationID() != "" {
 			return manifest.ApplicationID(), true
 		}
 	}
