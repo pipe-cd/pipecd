@@ -60,6 +60,7 @@ func Run(ctx context.Context, deployTargets map[string]*sdk.DeployTarget[kubecon
 		if err != nil {
 			return nil, fmt.Errorf("failed to start reflector: %w", err)
 		}
+		dtr.initialize()
 		dtr.watchingResourceKinds = watchingResourceKinds
 
 		deployTargetResources[deployTarget.Name] = dtr
@@ -175,8 +176,8 @@ type deployTargetResources struct {
 	deployTarget string
 	// The map with the key is "application ID" and the value is "application resources".
 	applications map[string]*applicationResources
-	// The map with the key is "resource UID" and the value is "application ID".
-	applicationIDReferences map[types.UID]string
+	// The map with the key is "resource UID" and the value is "resource manifest".
+	resources map[types.UID]provider.Manifest
 
 	// The list of resources that is watched by the reflector.
 	// This is immutable after the reflector is started.
@@ -188,9 +189,31 @@ type deployTargetResources struct {
 // newDeployTargetResources creates a new deployTargetResources for the given deploy target.
 func newDeployTargetResources(deployTarget string) *deployTargetResources {
 	return &deployTargetResources{
-		deployTarget:            deployTarget,
-		applications:            make(map[string]*applicationResources),
-		applicationIDReferences: make(map[types.UID]string),
+		deployTarget: deployTarget,
+		applications: make(map[string]*applicationResources),
+		resources:    make(map[types.UID]provider.Manifest),
+	}
+}
+
+// on first sync, the order of the onAdd is not guaranteed.
+// So when the child resources are added before the parent resources,
+// we cannot determine the application ID of the child resources.
+// So we have to initialize the store after the first sync.
+func (s *deployTargetResources) initialize() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	for _, manifest := range s.resources {
+		if appID, ok := s.getApplicationIDByResource(manifest); ok {
+			s.getApplicationResources(appID).addResource(manifest)
+		}
+	}
+
+	// Remove all resources which do not have appID.
+	for uid, manifest := range s.resources {
+		if _, ok := s.getApplicationIDByResource(manifest); !ok {
+			delete(s.resources, uid)
+		}
 	}
 }
 
@@ -218,14 +241,14 @@ func (s *deployTargetResources) getApplicationIDByResource(resource provider.Man
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	if appID, ok := s.applicationIDReferences[resource.UID()]; ok {
-		return appID, true
+	if manifest, ok := s.resources[resource.UID()]; ok {
+		return manifest.ApplicationID(), true
 	}
 
 	ownerRefs := resource.OwnerReferences()
 	for _, ref := range ownerRefs {
-		if appID, ok := s.applicationIDReferences[ref]; ok {
-			return appID, true
+		if manifest, ok := s.resources[ref]; ok {
+			return manifest.ApplicationID(), true
 		}
 	}
 
@@ -234,36 +257,26 @@ func (s *deployTargetResources) getApplicationIDByResource(resource provider.Man
 
 // addResource adds a resource to the store.
 func (s *deployTargetResources) addResource(resource provider.Manifest) {
-	appID, ok := s.getApplicationIDByResource(resource)
-	if !ok {
-		return
+	if appID, ok := s.getApplicationIDByResource(resource); ok {
+		s.getApplicationResources(appID).addResource(resource)
 	}
-
-	app := s.getApplicationResources(appID)
-
-	app.addResource(resource)
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.applicationIDReferences[resource.UID()] = appID
+	s.resources[resource.UID()] = resource
 }
 
 // removeResource removes a resource from the store.
 func (s *deployTargetResources) removeResource(resource provider.Manifest) {
-	appID, ok := s.getApplicationIDByResource(resource)
-	if !ok {
-		return
+	if appID, ok := s.getApplicationIDByResource(resource); ok {
+		s.getApplicationResources(appID).removeResource(resource)
 	}
-
-	app := s.getApplicationResources(appID)
-
-	app.removeResource(resource)
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	delete(s.applicationIDReferences, resource.UID())
+	delete(s.resources, resource.UID())
 }
 
 // Livestate returns the livestate of the application.
@@ -271,12 +284,6 @@ func (s *deployTargetResources) Livestate(_ context.Context, appID string) ([]pr
 	app := s.getApplicationResources(appID)
 
 	return app.livestate(), nil
-}
-
-// matchResource returns true if the resource is managed by the application.
-func (s *deployTargetResources) matchResource(resource provider.Manifest) bool {
-	_, ok := s.getApplicationIDByResource(resource)
-	return ok
 }
 
 // onAdd adds a resource to the store.
