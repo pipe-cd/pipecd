@@ -125,6 +125,7 @@ export const EncryptSecretDrawer: FC<EncryptSecretDrawerProps> = memo(
                   labelId="piped-select-label"
                   id="pipedId"
                   name="pipedId"
+                  label="Piped"
                   value={formik.values.pipedId}
                   onChange={(e) => {
                     formik.setFieldValue("pipedId", e.target.value);
