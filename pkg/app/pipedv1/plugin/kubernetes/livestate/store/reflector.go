@@ -1,3 +1,17 @@
+// Copyright 2025 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package store
 
 import (
@@ -15,7 +29,70 @@ import (
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 
+	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
+)
+
+var (
+	// This is the default whitelist of resources that should be watched.
+	// User can add/remove other resources to be watched in piped config at cloud provider part.
+	groupWhitelist = map[string]struct{}{
+		"":                          {},
+		"apps":                      {},
+		"extensions":                {},
+		"batch":                     {},
+		"storage.k8s.io":            {},
+		"autoscaling":               {},
+		"networking.k8s.io":         {},
+		"apiextensions.k8s.io":      {},
+		"rbac.authorization.k8s.io": {},
+		"policy":                    {},
+		"apiregistration.k8s.io":    {},
+		"authorization.k8s.io":      {},
+	}
+	versionWhitelist = map[string]struct{}{
+		"v1":      {},
+		"v1beta1": {},
+		"v1beta2": {},
+		"v2":      {},
+	}
+	kindWhitelist = map[string]struct{}{
+		"Service":                  {},
+		"Endpoints":                {},
+		"Deployment":               {},
+		"DaemonSet":                {},
+		"StatefulSet":              {},
+		"ReplicationController":    {},
+		"ReplicaSet":               {},
+		"Pod":                      {},
+		"Job":                      {},
+		"CronJob":                  {},
+		"ConfigMap":                {},
+		"Secret":                   {},
+		"Ingress":                  {},
+		"NetworkPolicy":            {},
+		"StorageClass":             {},
+		"PersistentVolume":         {},
+		"PersistentVolumeClaim":    {},
+		"HorizontalPodAutoscaler":  {},
+		"ServiceAccount":           {},
+		"Role":                     {},
+		"RoleBinding":              {},
+		"ClusterRole":              {},
+		"ClusterRoleBinding":       {},
+		"CustomResourceDefinition": {},
+		"PodDisruptionBudget":      {},
+		"PodSecurityPolicy":        {},
+		"APIService":               {},
+		"LocalSubjectAccessReview": {},
+		"SelfSubjectAccessReview":  {},
+		"SelfSubjectRulesReview":   {},
+		"SubjectAccessReview":      {},
+		"ResourceQuota":            {},
+		"PodTemplate":              {},
+		"IngressClass":             {},
+		"Namespace":                {},
+	}
 )
 
 type reflector struct {
@@ -199,4 +276,69 @@ func isSupportedList(r metav1.APIResource) bool {
 		}
 	}
 	return false
+}
+
+type resourceMatcher struct {
+	includes map[string]struct{}
+	excludes map[string]struct{}
+}
+
+func newResourceMatcher(cfg kubeconfig.KubernetesAppStateInformer) *resourceMatcher {
+	r := &resourceMatcher{
+		includes: make(map[string]struct{}, len(cfg.IncludeResources)),
+		excludes: make(map[string]struct{}, len(cfg.ExcludeResources)),
+	}
+
+	for _, m := range cfg.IncludeResources {
+		if m.Kind == "" {
+			r.includes[m.APIVersion] = struct{}{}
+		} else {
+			r.includes[m.APIVersion+":"+m.Kind] = struct{}{}
+		}
+	}
+	for _, m := range cfg.ExcludeResources {
+		if m.Kind == "" {
+			r.excludes[m.APIVersion] = struct{}{}
+		} else {
+			r.excludes[m.APIVersion+":"+m.Kind] = struct{}{}
+		}
+	}
+	return r
+}
+
+func (m *resourceMatcher) matchGVK(gvk schema.GroupVersionKind) bool {
+	var (
+		gv         = gvk.GroupVersion()
+		apiVersion = gv.String()
+		key        = apiVersion + ":" + gvk.Kind
+	)
+
+	// Any resource matches the specified ExcludeResources will be ignored.
+	if _, ok := m.excludes[apiVersion]; ok {
+		return false
+	}
+	if _, ok := m.excludes[key]; ok {
+		return false
+	}
+
+	// Any resources matches the specified IncludeResources will be included.
+	if _, ok := m.includes[apiVersion]; ok {
+		return true
+	}
+	if _, ok := m.includes[key]; ok {
+		return true
+	}
+
+	// Check the predefined list.
+	if _, ok := kindWhitelist[gvk.Kind]; !ok {
+		return false
+	}
+	if _, ok := groupWhitelist[gv.Group]; !ok {
+		return false
+	}
+	if _, ok := versionWhitelist[gv.Version]; !ok {
+		return false
+	}
+
+	return true
 }
