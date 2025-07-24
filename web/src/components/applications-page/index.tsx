@@ -3,11 +3,13 @@ import { Add } from "@mui/icons-material";
 import CloseIcon from "@mui/icons-material/Close";
 import FilterIcon from "@mui/icons-material/FilterList";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import LockOutlineIcon from '@mui/icons-material/LockOutline';
 import { FC, useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PAGE_PATH_APPLICATIONS } from "~/constants/path";
 import {
   UI_TEXT_ADD,
+  UI_ENCRYPT_SECRET,
   UI_TEXT_FILTER,
   UI_TEXT_HIDE_FILTER,
   UI_TEXT_REFRESH,
@@ -27,6 +29,7 @@ import EditApplicationDrawer from "./edit-application-drawer";
 import { ApplicationAddedView } from "./application-added-view";
 import { ApplicationFilter } from "./application-filter";
 import { ApplicationList } from "./application-list";
+import EncryptSecretDrawer from "./encrypt-secret-drawer";
 import { SpinnerIcon } from "~/styles/button";
 
 export const ApplicationIndexPage: FC = () => {
@@ -35,6 +38,7 @@ export const ApplicationIndexPage: FC = () => {
   const filterOptions = useSearchParams();
   const [openAddForm, setOpenAddForm] = useState(false);
   const [openFilter, setOpenFilter] = useState(true);
+  const [openEncryptSecretDrawer, setOpenEncryptSecretDrawer] = useState(false);
   const isAdding = useAppSelector<boolean>(
     (state) => state.applications.adding
   );
@@ -101,6 +105,14 @@ export const ApplicationIndexPage: FC = () => {
           onClick={() => setOpenAddForm(true)}
         >
           {UI_TEXT_ADD}
+        </Button>
+        <Button
+          color="primary"
+          startIcon={<LockOutlineIcon />}
+          onClick={() => setOpenEncryptSecretDrawer(true)}
+          sx={{ ml: 1 }}
+        >
+          {UI_ENCRYPT_SECRET}
         </Button>
         <Box
           sx={{
@@ -175,6 +187,10 @@ export const ApplicationIndexPage: FC = () => {
       >
         <ApplicationAddedView onClose={handleCloseApplicationAddedView} />
       </Drawer>
+      <EncryptSecretDrawer
+        open={openEncryptSecretDrawer}
+        onClose={() => setOpenEncryptSecretDrawer(false)}
+      />
     </>
   );
 };
