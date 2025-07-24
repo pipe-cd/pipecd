@@ -139,8 +139,11 @@ type DeploymentStore interface {
 	UpdateToCompleted(ctx context.Context, id string, status model.DeploymentStatus, stageStatuses map[string]model.StageStatus, reason string, completedAt int64) error
 	UpdateStatus(ctx context.Context, id string, status model.DeploymentStatus, reason string) error
 	UpdateStageStatus(ctx context.Context, id, stageID string, status model.StageStatus, reason string, requires []string, visible bool, retriedCount int32, completedAt int64) error
+	// Deprecated: Use UpdateSharedMetadata or UpdatePluginMetadata instead in pipedv1. UpdateMetadata is for pipedv0.
 	UpdateMetadata(ctx context.Context, id string, metadata map[string]string) error
 	UpdateStageMetadata(ctx context.Context, deploymentID, stageID string, metadata map[string]string) error
+	UpdateSharedMetadata(ctx context.Context, id string, metadata map[string]string) error
+	UpdatePluginMetadata(ctx context.Context, id string, pluginName string, metadata map[string]string) error
 }
 
 type deploymentStore struct {
@@ -276,6 +279,30 @@ func (s *deploymentStore) UpdateStageMetadata(ctx context.Context, deploymentID,
 			}
 		}
 		return fmt.Errorf("stage %s is not found: %w", stageID, ErrInvalidArgument)
+	})
+}
+
+func (s *deploymentStore) UpdateSharedMetadata(ctx context.Context, id string, metadata map[string]string) error {
+	return s.update(ctx, id, func(d *model.Deployment) error {
+		if d.MetadataV2.Shared == nil {
+			d.MetadataV2.Shared = &model.DeploymentMetadata_KeyValues{}
+		}
+		d.MetadataV2.Shared = &model.DeploymentMetadata_KeyValues{
+			KeyValues: mergeMetadata(d.MetadataV2.Shared.KeyValues, metadata),
+		}
+		return nil
+	})
+}
+
+func (s *deploymentStore) UpdatePluginMetadata(ctx context.Context, id string, pluginName string, metadata map[string]string) error {
+	return s.update(ctx, id, func(d *model.Deployment) error {
+		if d.MetadataV2.Plugins == nil {
+			d.MetadataV2.Plugins = make(map[string]*model.DeploymentMetadata_KeyValues)
+		}
+		d.MetadataV2.Plugins[pluginName] = &model.DeploymentMetadata_KeyValues{
+			KeyValues: mergeMetadata(d.MetadataV2.Plugins[pluginName].KeyValues, metadata),
+		}
+		return nil
 	})
 }
 

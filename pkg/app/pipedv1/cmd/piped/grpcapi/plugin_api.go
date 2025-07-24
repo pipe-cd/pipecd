@@ -43,6 +43,8 @@ type PluginAPI struct {
 type apiClient interface {
 	ReportStageLogs(ctx context.Context, req *pipedservice.ReportStageLogsRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogsResponse, error)
 	ReportStageLogsFromLastCheckpoint(ctx context.Context, in *pipedservice.ReportStageLogsFromLastCheckpointRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogsFromLastCheckpointResponse, error)
+	GetApplicationSharedObject(ctx context.Context, req *pipedservice.GetApplicationSharedObjectRequest, opts ...grpc.CallOption) (*pipedservice.GetApplicationSharedObjectResponse, error)
+	PutApplicationSharedObject(ctx context.Context, req *pipedservice.PutApplicationSharedObjectRequest, opts ...grpc.CallOption) (*pipedservice.PutApplicationSharedObjectResponse, error)
 }
 
 type stageCommandLister interface {
@@ -154,4 +156,42 @@ func (a *PluginAPI) GetDeploymentSharedMetadata(ctx context.Context, req *servic
 func (a *PluginAPI) ListStageCommands(ctx context.Context, req *service.ListStageCommandsRequest) (*service.ListStageCommandsResponse, error) {
 	commands := a.stageCommandLister.ListStageCommands(req.DeploymentId, req.StageId)
 	return &service.ListStageCommandsResponse{Commands: commands}, nil
+}
+
+func (a *PluginAPI) GetApplicationSharedObject(ctx context.Context, req *service.GetApplicationSharedObjectRequest) (*service.GetApplicationSharedObjectResponse, error) {
+	resp, err := a.apiClient.GetApplicationSharedObject(ctx, &pipedservice.GetApplicationSharedObjectRequest{
+		ApplicationId: req.ApplicationId,
+		PluginName:    req.PluginName,
+		Key:           req.Key,
+	})
+	if err != nil {
+		a.Logger.Error("failed to get application shared object",
+			zap.String("applicationID", req.ApplicationId),
+			zap.String("pluginName", req.PluginName),
+			zap.String("key", req.Key),
+			zap.Error(err))
+		return nil, err
+	}
+	return &service.GetApplicationSharedObjectResponse{
+		Object: resp.Object,
+	}, nil
+}
+
+func (a *PluginAPI) PutApplicationSharedObject(ctx context.Context, req *service.PutApplicationSharedObjectRequest) (*service.PutApplicationSharedObjectResponse, error) {
+	_, err := a.apiClient.PutApplicationSharedObject(ctx, &pipedservice.PutApplicationSharedObjectRequest{
+		ApplicationId: req.ApplicationId,
+		PluginName:    req.PluginName,
+		Key:           req.Key,
+		Object:        req.Object,
+	})
+	if err != nil {
+		a.Logger.Error("failed to put application shared object",
+			zap.String("applicationID", req.ApplicationId),
+			zap.String("pluginName", req.PluginName),
+			zap.String("key", req.Key),
+			zap.Int("data-size", len(req.Object)),
+			zap.Error(err))
+		return nil, err
+	}
+	return &service.PutApplicationSharedObjectResponse{}, nil
 }

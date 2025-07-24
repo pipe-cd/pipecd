@@ -37,6 +37,8 @@ type DeploymentSource[Spec any] struct {
 	// ApplicationConfigFilename is the name of the file that contains the application configuration.
 	// The plugins can use this to avoid mistakenly reading this file as a manifest to deploy.
 	ApplicationConfigFilename string
+	// SharedConfigDirectory is the directory where the shared configuration in the repository is located.
+	SharedConfigDirectory string
 }
 
 // newDeploymentSource converts the common.DeploymentSource to the internal representation.
@@ -55,6 +57,7 @@ func newDeploymentSource[Spec any](pluginName string, source *common.DeploymentS
 		CommitHash:                source.GetCommitHash(),
 		ApplicationConfig:         cfg.Spec,
 		ApplicationConfigFilename: source.GetApplicationConfigFilename(),
+		SharedConfigDirectory:     source.GetSharedConfigDirectory(),
 	}, nil
 }
 
