@@ -1,16 +1,80 @@
+// Copyright 2025 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package store
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/clientcmd"
 
+	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 )
 
 var _ resourceEventHandler = (*deployTargetResources)(nil)
+
+type Store struct {
+	// The map with the key is "name" of the deploy target and the value is "deploy target resources".
+	// This map is immutable after the store is created.
+	deployTargetResources map[string]*deployTargetResources
+}
+
+func Run(ctx context.Context, deployTargets map[string]sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], logger *zap.Logger) (*Store, error) {
+	deployTargetResources := make(map[string]*deployTargetResources)
+
+	for _, deployTarget := range deployTargets {
+		dtr := newDeployTargetResources(deployTarget.Name)
+		kubeConfig, err := clientcmd.BuildConfigFromFlags(deployTarget.Config.MasterURL, deployTarget.Config.KubeConfigPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to build kube config: %w", err)
+		}
+
+		rf := reflector{
+			namespace:            deployTarget.Config.AppStateInformer.Namespace,
+			targetMatcher:        newResourceMatcher(deployTarget.Config.AppStateInformer),
+			resourceEventHandler: dtr,
+			kubeConfig:           kubeConfig,
+			logger:               logger.Named(fmt.Sprintf("livestate-store-deploy-target-%s", deployTarget.Name)),
+		}
+		if err := rf.start(ctx); err != nil {
+			return nil, fmt.Errorf("failed to start reflector: %w", err)
+		}
+
+		deployTargetResources[deployTarget.Name] = dtr
+	}
+
+	s := &Store{
+		deployTargetResources: deployTargetResources,
+	}
+
+	return s, nil
+}
+
+func (s *Store) Livestate(ctx context.Context, deployTargetName string, appID string) ([]sdk.ResourceState, error) {
+	dtr, ok := s.deployTargetResources[deployTargetName]
+	if !ok {
+		return nil, fmt.Errorf("deploy target %s not found", deployTargetName)
+	}
+
+	return dtr.Livestate(ctx, appID)
+}
 
 // applicationResources is a collection of resources that belong to the same application.
 // It is used to store the resources and to calculate the livestate of the application.
