@@ -67,7 +67,7 @@ func Run(ctx context.Context, deployTargets map[string]*sdk.DeployTarget[kubecon
 	return s, nil
 }
 
-func (s *Store) Livestate(ctx context.Context, deployTargetName string, appID string) ([]sdk.ResourceState, error) {
+func (s *Store) Livestate(ctx context.Context, deployTargetName string, appID string) ([]provider.Manifest, error) {
 	dtr, ok := s.deployTargetResources[deployTargetName]
 	if !ok {
 		return nil, fmt.Errorf("deploy target %s not found", deployTargetName)
@@ -108,13 +108,13 @@ func (a *applicationResources) removeResource(resource provider.Manifest) {
 }
 
 // livestate returns the livestate of the application resources.
-func (a *applicationResources) livestate() []sdk.ResourceState {
+func (a *applicationResources) livestate() []provider.Manifest {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
 
-	resources := make([]sdk.ResourceState, 0, len(a.resources))
+	resources := make([]provider.Manifest, 0, len(a.resources))
 	for _, resource := range a.resources {
-		resources = append(resources, resource.ToResourceState(a.deployTarget))
+		resources = append(resources, resource)
 	}
 
 	return resources
@@ -214,7 +214,7 @@ func (s *deployTargetResources) removeResource(resource provider.Manifest) {
 }
 
 // Livestate returns the livestate of the application.
-func (s *deployTargetResources) Livestate(_ context.Context, appID string) ([]sdk.ResourceState, error) {
+func (s *deployTargetResources) Livestate(_ context.Context, appID string) ([]provider.Manifest, error) {
 	app := s.getApplicationResources(appID)
 
 	return app.livestate(), nil
