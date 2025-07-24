@@ -19,6 +19,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/yaml"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
@@ -94,6 +95,13 @@ func (m Manifest) DeepCopyWithName(name string) Manifest {
 
 func (m Manifest) Key() ResourceKey {
 	return makeResourceKey(m.body)
+}
+
+// UID returns the UID of the resource.
+// This will be empty when this manifest is loaded form the manifest file.
+// This will be non-empty when this manifest is loaded from the live state.
+func (m Manifest) UID() types.UID {
+	return m.body.GetUID()
 }
 
 func (m Manifest) Kind() string {
