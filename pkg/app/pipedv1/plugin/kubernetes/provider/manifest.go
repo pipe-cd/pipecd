@@ -97,6 +97,21 @@ func (m Manifest) Key() ResourceKey {
 	return makeResourceKey(m.body)
 }
 
+// ApplicationID returns the application ID of the resource.
+func (m Manifest) ApplicationID() string {
+	return m.body.GetAnnotations()[LabelApplication]
+}
+
+// OwnerReferences returns the owner references of the resource.
+func (m Manifest) OwnerReferences() []types.UID {
+	refs := m.body.GetOwnerReferences()
+	ownerRefs := make([]types.UID, 0, len(refs))
+	for _, ref := range refs {
+		ownerRefs = append(ownerRefs, ref.UID)
+	}
+	return ownerRefs
+}
+
 // UID returns the UID of the resource.
 // This will be empty when this manifest is loaded form the manifest file.
 // This will be non-empty when this manifest is loaded from the live state.
