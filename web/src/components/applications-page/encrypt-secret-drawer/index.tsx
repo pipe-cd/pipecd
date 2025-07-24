@@ -82,7 +82,7 @@ export const EncryptSecretDrawer: FC<EncryptSecretDrawerProps> = memo(
         formik.resetForm();
       }
       prevOpen.current = open;
-    }, [open]);
+    }, [open, formik]);
 
     return (
       <Drawer
@@ -90,7 +90,7 @@ export const EncryptSecretDrawer: FC<EncryptSecretDrawerProps> = memo(
         open={open}
         onClose={handleClose}
         sx={{
-          '& .MuiDrawer-paper': {
+          "& .MuiDrawer-paper": {
             width: 600,
           },
         }}
@@ -109,16 +109,14 @@ export const EncryptSecretDrawer: FC<EncryptSecretDrawerProps> = memo(
                 name="Encrypted secret"
                 value={sealedSecret}
               />
-              <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-                <Button onClick={handleClose}>
-                  Close
-                </Button>
+              <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
+                <Button onClick={handleClose}>Close</Button>
               </Box>
             </Box>
           ) : (
-            <form onSubmit={formik.handleSubmit}>  
-              <FormControl 
-                fullWidth 
+            <form onSubmit={formik.handleSubmit}>
+              <FormControl
+                fullWidth
                 margin="dense"
                 error={formik.touched.pipedId && Boolean(formik.errors.pipedId)}
               >
@@ -144,7 +142,7 @@ export const EncryptSecretDrawer: FC<EncryptSecretDrawerProps> = memo(
                   </Typography>
                 )}
               </FormControl>
-              
+
               <TextField
                 id="secretData"
                 name="secretData"
@@ -158,8 +156,12 @@ export const EncryptSecretDrawer: FC<EncryptSecretDrawerProps> = memo(
                 required
                 autoFocus
                 onChange={formik.handleChange}
-                error={formik.touched.secretData && Boolean(formik.errors.secretData)}
-                helperText={formik.touched.secretData && formik.errors.secretData}
+                error={
+                  formik.touched.secretData && Boolean(formik.errors.secretData)
+                }
+                helperText={
+                  formik.touched.secretData && formik.errors.secretData
+                }
               />
               <FormControlLabel
                 control={
@@ -174,9 +176,9 @@ export const EncryptSecretDrawer: FC<EncryptSecretDrawerProps> = memo(
                 label={BASE64_CHECKBOX_LABEL}
               />
 
-              <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-                <Button 
-                  onClick={onClose} 
+              <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
+                <Button
+                  onClick={onClose}
                   disabled={formik.isSubmitting}
                   sx={{ mr: 1 }}
                 >

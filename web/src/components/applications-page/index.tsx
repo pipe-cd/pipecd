@@ -3,7 +3,7 @@ import { Add } from "@mui/icons-material";
 import CloseIcon from "@mui/icons-material/Close";
 import FilterIcon from "@mui/icons-material/FilterList";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import LockOutlineIcon from '@mui/icons-material/LockOutline';
+import LockOutlineIcon from "@mui/icons-material/LockOutline";
 import { FC, useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PAGE_PATH_APPLICATIONS } from "~/constants/path";

@@ -10,9 +10,7 @@ import {
 import MenuIcon from "@mui/icons-material/MoreVert";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import dayjs from "dayjs";
-import {
-  UI_ENCRYPT_SECRET,
-} from "~/constants/ui-text";
+import { UI_ENCRYPT_SECRET } from "~/constants/ui-text";
 import { FC, memo, useState, Fragment } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
@@ -287,7 +285,9 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
           ) : (
             <div>
               <MenuItem onClick={handleEdit}>Edit</MenuItem>
-              <MenuItem onClick={handleGenerateSecret}>{UI_ENCRYPT_SECRET}</MenuItem>
+              <MenuItem onClick={handleGenerateSecret}>
+                {UI_ENCRYPT_SECRET}
+              </MenuItem>
               <MenuItem onClick={handleDisable}>Disable</MenuItem>
             </div>
           )}
