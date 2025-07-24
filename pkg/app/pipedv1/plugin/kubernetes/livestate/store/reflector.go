@@ -35,7 +35,7 @@ import (
 
 var (
 	// This is the default whitelist of resources that should be watched.
-	// User can add/remove other resources to be watched in piped config at cloud provider part.
+	// User can add/remove other resources to be watched at appStateInformer in the deploy target config.
 	groupWhitelist = map[string]struct{}{
 		"":                          {},
 		"apps":                      {},
