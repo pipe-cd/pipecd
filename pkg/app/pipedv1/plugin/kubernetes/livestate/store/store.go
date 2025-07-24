@@ -21,6 +21,7 @@ import (
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"go.uber.org/zap"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/clientcmd"
 
@@ -53,9 +54,13 @@ func Run(ctx context.Context, deployTargets map[string]*sdk.DeployTarget[kubecon
 			kubeConfig:           kubeConfig,
 			logger:               logger.Named(fmt.Sprintf("livestate-store-deploy-target-%s", deployTarget.Name)),
 		}
-		if err := rf.start(ctx); err != nil {
+
+		// Start the reflector and get the list of resources that is watched by the reflector.
+		watchingResourceKinds, err := rf.start(ctx)
+		if err != nil {
 			return nil, fmt.Errorf("failed to start reflector: %w", err)
 		}
+		dtr.watchingResourceKinds = watchingResourceKinds
 
 		deployTargetResources[deployTarget.Name] = dtr
 	}
@@ -76,18 +81,40 @@ func (s *Store) Livestate(ctx context.Context, deployTargetName string, appID st
 	return dtr.Livestate(ctx, appID)
 }
 
+func (s *Store) ManagedResources(ctx context.Context, deployTargetName string, appID string) ([]provider.Manifest, error) {
+	dtr, ok := s.deployTargetResources[deployTargetName]
+	if !ok {
+		return nil, fmt.Errorf("deploy target %s not found", deployTargetName)
+	}
+
+	app := dtr.getApplicationResources(appID)
+
+	return app.getManagedResources(), nil
+}
+
+func (s *Store) WatchingResourceKinds(deployTargetName string) ([]schema.GroupVersionKind, error) {
+	dtr, ok := s.deployTargetResources[deployTargetName]
+	if !ok {
+		return nil, fmt.Errorf("deploy target %s not found", deployTargetName)
+	}
+
+	return dtr.watchingResourceKinds, nil
+}
+
 // applicationResources is a collection of resources that belong to the same application.
 // It is used to store the resources and to calculate the livestate of the application.
 type applicationResources struct {
-	deployTarget string
-	resources    map[types.UID]provider.Manifest
-	mu           sync.RWMutex
+	deployTarget      string
+	managedResources  map[types.UID]provider.Manifest
+	dependedResources map[types.UID]provider.Manifest
+	mu                sync.RWMutex
 }
 
 func newApplicationResources(deployTarget string) *applicationResources {
 	return &applicationResources{
-		deployTarget: deployTarget,
-		resources:    make(map[types.UID]provider.Manifest),
+		deployTarget:      deployTarget,
+		managedResources:  make(map[types.UID]provider.Manifest),
+		dependedResources: make(map[types.UID]provider.Manifest),
 	}
 }
 
@@ -96,7 +123,11 @@ func (a *applicationResources) addResource(resource provider.Manifest) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
-	a.resources[resource.UID()] = resource
+	if resource.IsManagedByPiped() {
+		a.managedResources[resource.UID()] = resource
+	} else {
+		a.dependedResources[resource.UID()] = resource
+	}
 }
 
 // removeResource removes a resource from the application resources.
@@ -104,7 +135,8 @@ func (a *applicationResources) removeResource(resource provider.Manifest) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
-	delete(a.resources, resource.UID())
+	delete(a.managedResources, resource.UID())
+	delete(a.dependedResources, resource.UID())
 }
 
 // livestate returns the livestate of the application resources.
@@ -112,8 +144,25 @@ func (a *applicationResources) livestate() []provider.Manifest {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
 
-	resources := make([]provider.Manifest, 0, len(a.resources))
-	for _, resource := range a.resources {
+	managedResources := make([]provider.Manifest, 0, len(a.managedResources))
+	for _, resource := range a.managedResources {
+		managedResources = append(managedResources, resource)
+	}
+
+	dependedResources := make([]provider.Manifest, 0, len(a.dependedResources))
+	for _, resource := range a.dependedResources {
+		dependedResources = append(dependedResources, resource)
+	}
+
+	return append(managedResources, dependedResources...)
+}
+
+func (a *applicationResources) getManagedResources() []provider.Manifest {
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+
+	resources := make([]provider.Manifest, 0, len(a.managedResources))
+	for _, resource := range a.managedResources {
 		resources = append(resources, resource)
 	}
 
@@ -128,6 +177,10 @@ type deployTargetResources struct {
 	applications map[string]*applicationResources
 	// The map with the key is "resource UID" and the value is "application ID".
 	applicationIDReferences map[types.UID]string
+
+	// The list of resources that is watched by the reflector.
+	// This is immutable after the reflector is started.
+	watchingResourceKinds []schema.GroupVersionKind
 
 	mu sync.RWMutex
 }

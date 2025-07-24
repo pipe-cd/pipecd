@@ -19,6 +19,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/yaml"
 
@@ -117,6 +118,10 @@ func (m Manifest) OwnerReferences() []types.UID {
 // This will be non-empty when this manifest is loaded from the live state.
 func (m Manifest) UID() types.UID {
 	return m.body.GetUID()
+}
+
+func (m Manifest) GroupVersionKind() schema.GroupVersionKind {
+	return m.body.GroupVersionKind()
 }
 
 func (m Manifest) Kind() string {

@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	"go.uber.org/zap"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"github.com/pipe-cd/piped-plugin-sdk-go/diff"
@@ -59,9 +60,15 @@ func (p *Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTarg
 
 	deployTarget := deployTargets[0]
 
-	liveManifests, err := p.store.Livestate(ctx, deployTarget.Name, input.Request.ApplicationID)
+	managedResources, err := p.store.ManagedResources(ctx, deployTarget.Name, input.Request.ApplicationID)
 	if err != nil {
 		input.Logger.Error("Failed to get livestate", zap.Error(err))
+		return nil, err
+	}
+
+	watchingResourceKinds, err := p.store.WatchingResourceKinds(deployTarget.Name)
+	if err != nil {
+		input.Logger.Error("Failed to get watching resource kinds", zap.Error(err))
 		return nil, err
 	}
 
@@ -83,13 +90,22 @@ func (p *Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTarg
 
 	// Calculate SyncState by comparing live manifests with desired manifests
 	// TODO: Implement drift detection ignore configs
-	diffResult, err := provider.DiffList(liveManifests, manifests, input.Logger,
+	diffResult, err := provider.DiffList(
+		filterIgnoringManifests(managedResources), // live manifests are already filtered by watchingResourceKinds in the store
+		filterIgnoringManifests(onlyWatchingResourceKinds(manifests, watchingResourceKinds)),
+		input.Logger,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),
 		diff.WithCompareNumberAndNumericString(),
 	)
 	if err != nil {
 		input.Logger.Error("Failed to calculate diff", zap.Error(err))
+		return nil, err
+	}
+
+	liveManifests, err := p.store.Livestate(ctx, deployTarget.Name, input.Request.ApplicationID)
+	if err != nil {
+		input.Logger.Error("Failed to get livestate", zap.Error(err))
 		return nil, err
 	}
 
@@ -145,6 +161,34 @@ func calculateSyncState(diffResult *provider.DiffListResult, commit string) sdk.
 		ShortReason: shortReason,
 		Reason:      b.String(),
 	}
+}
+
+func filterIgnoringManifests(manifests []provider.Manifest) []provider.Manifest {
+	out := make([]provider.Manifest, 0, len(manifests))
+	for _, m := range manifests {
+		annotations := m.GetAnnotations()
+		if annotations[provider.LabelIgnoreDriftDirection] == provider.IgnoreDriftDetectionTrue {
+			continue
+		}
+		out = append(out, m)
+	}
+	return out
+}
+
+func onlyWatchingResourceKinds(manifests []provider.Manifest, watchingResourceKinds []schema.GroupVersionKind) []provider.Manifest {
+	watchingMap := make(map[schema.GroupVersionKind]struct{}, len(watchingResourceKinds))
+	for _, k := range watchingResourceKinds {
+		watchingMap[k] = struct{}{}
+	}
+
+	filtered := make([]provider.Manifest, 0, len(manifests))
+	for _, m := range manifests {
+		_, ok := watchingMap[m.GroupVersionKind()]
+		if ok {
+			filtered = append(filtered, m)
+		}
+	}
+	return filtered
 }
 
 type loader interface {

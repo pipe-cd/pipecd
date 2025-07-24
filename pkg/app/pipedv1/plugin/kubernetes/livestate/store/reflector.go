@@ -95,13 +95,21 @@ var (
 	}
 )
 
+// reflector watches the live state of application with the cluster
+// and triggers the specified callbacks.
 type reflector struct {
-	namespace            string
-	targetMatcher        gvkMatcher
+	// The namespace to watch the resources.
+	// If the namespace is empty, the reflector will watch the resources in all namespaces.
+	namespace string
+	// The matcher to filter the resources that should be watched.
+	targetMatcher gvkMatcher
+	// The event handler to handle the events of the resources.
 	resourceEventHandler resourceEventHandler
 
+	// The kubeconfig to connect to the Kubernetes cluster.
 	kubeConfig *restclient.Config
-	logger     *zap.Logger
+	// The logger to log the events.
+	logger *zap.Logger
 }
 
 // gvkMatcher is used to filter the resources that should be watched.
@@ -122,18 +130,22 @@ type resourceEventHandler interface {
 	onDelete(m provider.Manifest)
 }
 
-func (r *reflector) start(ctx context.Context) error {
+// start starts the reflector.
+// It returns the list of resources that is watched by the reflector.
+// This is immutable after the reflector is started.
+func (r *reflector) start(ctx context.Context) ([]schema.GroupVersionKind, error) {
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(r.kubeConfig)
 	if err != nil {
-		return fmt.Errorf("failed to create discovery client: %v", err)
+		return nil, fmt.Errorf("failed to create discovery client: %v", err)
 	}
 	_, lists, err := discoveryClient.ServerGroupsAndResources()
 	if err != nil {
-		return fmt.Errorf("failed to fetch groups and resources: %v", err)
+		return nil, fmt.Errorf("failed to fetch groups and resources: %v", err)
 	}
 
 	var (
 		targetResources, namespacedTargetResources []schema.GroupVersionResource
+		watchingResourceKinds                      []schema.GroupVersionKind
 	)
 
 	for _, list := range lists {
@@ -147,6 +159,8 @@ func (r *reflector) start(ctx context.Context) error {
 				r.logger.Info("skipping resource because it does not support watch or list", zap.String("group", gvk.Group), zap.String("version", gvk.Version), zap.String("kind", gvk.Kind))
 				continue
 			}
+			watchingResourceKinds = append(watchingResourceKinds, gvk)
+
 			gv := gvk.GroupVersion()
 			target := gv.WithResource(resource.Name)
 			if resource.Namespaced {
@@ -163,7 +177,7 @@ func (r *reflector) start(ctx context.Context) error {
 
 	dynamicClient, err := dynamic.NewForConfig(r.kubeConfig)
 	if err != nil {
-		return fmt.Errorf("failed to create dynamic client: %v", err)
+		return nil, fmt.Errorf("failed to create dynamic client: %v", err)
 	}
 
 	// we can use ctx.Done() to handle the stop signal
@@ -197,7 +211,7 @@ func (r *reflector) start(ctx context.Context) error {
 	}
 
 	r.logger.Info("all informer caches have been synced")
-	return nil
+	return watchingResourceKinds, nil
 }
 
 // OnAdd implements cache.ResourceEventHandler.
