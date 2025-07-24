@@ -36,7 +36,7 @@ type Store struct {
 	deployTargetResources map[string]*deployTargetResources
 }
 
-func Run(ctx context.Context, deployTargets map[string]sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], logger *zap.Logger) (*Store, error) {
+func Run(ctx context.Context, deployTargets map[string]*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], logger *zap.Logger) (*Store, error) {
 	deployTargetResources := make(map[string]*deployTargetResources)
 
 	for _, deployTarget := range deployTargets {
