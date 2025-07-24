@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -37,19 +38,22 @@ var (
 )
 
 type Plugin struct {
-	store *store.Store
+	store       *store.Store
+	initialized sync.Once
 }
 
 // Initialize implements sdk.Initializer.
 func (p *Plugin) Initialize(ctx context.Context, input *sdk.InitializeInput[sdk.ConfigNone, kubeconfig.KubernetesDeployTargetConfig]) error {
-	store, err := store.Run(ctx, input.DeployTargets, input.Logger)
-	if err != nil {
-		return fmt.Errorf("failed to run livestate store: %w", err)
-	}
+	var err error
 
-	p.store = store
+	p.initialized.Do(func() {
+		p.store, err = store.Run(ctx, input.DeployTargets, input.Logger)
+		if err != nil {
+			err = fmt.Errorf("failed to run livestate store: %w", err)
+		}
+	})
 
-	return nil
+	return err
 }
 
 // GetLivestate implements sdk.LivestatePlugin.
