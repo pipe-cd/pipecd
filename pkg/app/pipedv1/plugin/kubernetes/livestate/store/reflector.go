@@ -120,8 +120,6 @@ type gvkMatcher interface {
 
 // resourceEventHandler is used to handle the events of the resources.
 type resourceEventHandler interface {
-	// matchResource returns true if the resource's event should be handled by the event handler.
-	matchResource(m provider.Manifest) bool
 	// onAdd is called when a resource is added.
 	onAdd(m provider.Manifest)
 	// onUpdate is called when a resource is updated.
@@ -223,10 +221,6 @@ func (r *reflector) OnAdd(obj interface{}) {
 	}
 
 	m := provider.FromUnstructured(u)
-	if !r.resourceEventHandler.matchResource(m) {
-		r.logger.Info("skipping resource because it does not match the resource matcher", zap.String("manifest", m.Key().ReadableString()))
-		return
-	}
 
 	r.logger.Debug("received add event", zap.String("manifest", m.Key().ReadableString()))
 	r.resourceEventHandler.onAdd(m)
@@ -247,10 +241,6 @@ func (r *reflector) OnUpdate(oldObj, newObj interface{}) {
 
 	m := provider.FromUnstructured(u)
 	oldM := provider.FromUnstructured(oldU)
-	if !r.resourceEventHandler.matchResource(m) {
-		r.logger.Info("skipping resource because it does not match the resource matcher", zap.String("manifest", m.Key().ReadableString()))
-		return
-	}
 
 	r.logger.Debug("received update event", zap.String("manifest", m.Key().ReadableString()))
 	r.resourceEventHandler.onUpdate(oldM, m)
@@ -265,10 +255,6 @@ func (r *reflector) OnDelete(obj interface{}) {
 	}
 
 	m := provider.FromUnstructured(u)
-	if !r.resourceEventHandler.matchResource(m) {
-		r.logger.Info("skipping resource because it does not match the resource matcher", zap.String("manifest", m.Key().ReadableString()))
-		return
-	}
 
 	r.logger.Debug("received delete event", zap.String("manifest", m.Key().ReadableString()))
 	r.resourceEventHandler.onDelete(m)
