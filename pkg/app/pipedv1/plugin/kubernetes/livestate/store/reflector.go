@@ -174,7 +174,7 @@ func (r *reflector) start(ctx context.Context) error {
 		for _, tr := range resources {
 			di := factory.ForResource(tr).Informer()
 			di.AddEventHandler(r)
-			di.Run(stopCh)
+			go di.Run(stopCh)
 			if cache.WaitForCacheSync(stopCh, di.HasSynced) {
 				r.logger.Info(fmt.Sprintf("informer cache for %v has been synced", tr))
 			} else {
