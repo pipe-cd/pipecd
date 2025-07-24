@@ -10,7 +10,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 )
 
-var _ resourceEventHandler = (*store)(nil)
+var _ resourceEventHandler = (*deployTargetResources)(nil)
 
 // applicationResources is a collection of resources that belong to the same application.
 // It is used to store the resources and to calculate the livestate of the application.
@@ -56,8 +56,8 @@ func (a *applicationResources) livestate() []sdk.ResourceState {
 	return resources
 }
 
-// store is a store for the application resources for one deploy target.
-type store struct {
+// deployTargetResources is a deployTargetResources for the application resources for one deploy target.
+type deployTargetResources struct {
 	// The deploy target of this store.
 	deployTarget string
 	// The map with the key is "application ID" and the value is "application resources".
@@ -68,9 +68,9 @@ type store struct {
 	mu sync.RWMutex
 }
 
-// newStore creates a new store for the given deploy target.
-func newStore(deployTarget string) *store {
-	return &store{
+// newDeployTargetResources creates a new deployTargetResources for the given deploy target.
+func newDeployTargetResources(deployTarget string) *deployTargetResources {
+	return &deployTargetResources{
 		deployTarget:            deployTarget,
 		applications:            make(map[string]*applicationResources),
 		applicationIDReferences: make(map[types.UID]string),
@@ -78,7 +78,7 @@ func newStore(deployTarget string) *store {
 }
 
 // getApplicationResources returns the application resources by the application ID.
-func (s *store) getApplicationResources(appID string) *applicationResources {
+func (s *deployTargetResources) getApplicationResources(appID string) *applicationResources {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -92,7 +92,7 @@ func (s *store) getApplicationResources(appID string) *applicationResources {
 }
 
 // getApplicationIDByResource returns the application ID by the resource.
-func (s *store) getApplicationIDByResource(resource provider.Manifest) (string, bool) {
+func (s *deployTargetResources) getApplicationIDByResource(resource provider.Manifest) (string, bool) {
 	appID := resource.ApplicationID()
 	if appID != "" {
 		return appID, true
@@ -116,7 +116,7 @@ func (s *store) getApplicationIDByResource(resource provider.Manifest) (string, 
 }
 
 // addResource adds a resource to the store.
-func (s *store) addResource(resource provider.Manifest) {
+func (s *deployTargetResources) addResource(resource provider.Manifest) {
 	appID, ok := s.getApplicationIDByResource(resource)
 	if !ok {
 		return
@@ -133,7 +133,7 @@ func (s *store) addResource(resource provider.Manifest) {
 }
 
 // removeResource removes a resource from the store.
-func (s *store) removeResource(resource provider.Manifest) {
+func (s *deployTargetResources) removeResource(resource provider.Manifest) {
 	appID, ok := s.getApplicationIDByResource(resource)
 	if !ok {
 		return
@@ -150,30 +150,30 @@ func (s *store) removeResource(resource provider.Manifest) {
 }
 
 // Livestate returns the livestate of the application.
-func (s *store) Livestate(_ context.Context, appID string) ([]sdk.ResourceState, error) {
+func (s *deployTargetResources) Livestate(_ context.Context, appID string) ([]sdk.ResourceState, error) {
 	app := s.getApplicationResources(appID)
 
 	return app.livestate(), nil
 }
 
 // matchResource returns true if the resource is managed by the application.
-func (s *store) matchResource(resource provider.Manifest) bool {
+func (s *deployTargetResources) matchResource(resource provider.Manifest) bool {
 	_, ok := s.getApplicationIDByResource(resource)
 	return ok
 }
 
 // onAdd adds a resource to the store.
-func (s *store) onAdd(resource provider.Manifest) {
+func (s *deployTargetResources) onAdd(resource provider.Manifest) {
 	s.addResource(resource)
 }
 
 // onUpdate updates a resource in the store.
-func (s *store) onUpdate(old, new provider.Manifest) {
+func (s *deployTargetResources) onUpdate(old, new provider.Manifest) {
 	s.removeResource(old)
 	s.addResource(new)
 }
 
 // onDelete removes a resource from the store.
-func (s *store) onDelete(resource provider.Manifest) {
+func (s *deployTargetResources) onDelete(resource provider.Manifest) {
 	s.removeResource(resource)
 }
