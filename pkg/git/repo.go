@@ -292,13 +292,13 @@ func (r *repo) CheckoutPullRequest(ctx context.Context, number int, branch strin
 
 // Pull fetches from and integrate with a local branch.
 func (r *repo) Pull(ctx context.Context, branch string) error {
-	out, err := r.runGitCommand(ctx, "pull", r.remote, branch)
+	out, err := r.runGitCommand(ctx, "pull", "--ff-only", r.remote, branch)
 
 	if err == nil {
 		return nil
 	}
-
-	if strings.Contains(string(out), "divergent branches") {
+	// Handle "divergent branches" error, caused by amending the remote
+	if strings.Contains(string(out), "Diverging branches") {
 		// need to use --force to move the remote-ref to the new commit
 		// when the update is a non-fast-forward one like divergent branches
 		out, err := r.runGitCommand(ctx, "fetch", r.remote, branch, "--force")
