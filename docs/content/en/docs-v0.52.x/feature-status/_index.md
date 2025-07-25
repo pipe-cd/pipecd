@@ -124,26 +124,19 @@ Note: These are statuses for Cloud Run service. Cloud Run job has not been suppo
 | Rendering deployment pipeline in realtime | Beta |
 | Canceling a deployment from console | Beta |
 | Triggering a deployment manually from console | Beta |
-| RBAC on PipeCD resources such as Application, Piped... | Alpha |
+| RBAC on PipeCD resources such as Application, Piped... | Beta |
 | Authentication by username/password for static admin | Beta |
 | GitHub & GitHub Enterprise Server SSO | Beta |
 | Support GCP [Firestore](https://cloud.google.com/firestore) as data store | Beta |
 | Support [MySQL v8.0](https://www.mysql.com/) as data store | Beta |
-| Support file store as data store | Alpha |
+| Support file store as data store | Alpha - Deprecated (remove soon) |
 | Support GCP [GCS](https://cloud.google.com/storage) as file store | Beta |
 | Support AWS [S3](https://aws.amazon.com/s3/) as file store | Beta |
 | Support [Minio](https://github.com/minio/minio) as file store | Beta |
-| Support using file storage such as GCS, S3, Minio for both data store and file store (It means no database is required to run control plane) | Incubating |
-| [Insights](../user-guide/insights/) - Show the delivery performance of a team or an application | Incubating |
+| [Insights](../user-guide/insights/) - Show the delivery performance of a team or an application | Beta |
 | [Deployment Chain](../user-guide/managing-application/deployment-chain/) - Allow rolling out to multiple clusters gradually or promoting across environments | Alpha |
 | [Metrics](../user-guide/managing-controlplane/metrics/) - Dashboards for PipeCD and Piped metrics | Beta |
 
-## [pipectl](../user-guide/command-line-tool/)
+## Pipectl
 
-### [pipectl init](../user-guide/command-line-tool.md#generating-an-application-config-apppipecdyaml)
-
-| Feature | Phase |
-|-|-|
-| Kubernetes - QuickSync | Incubating |
-| ECS - QuickSync | Alpha |
-| ECS - Pipeline Sync | Incubating |
+Check [pipectl](../user-guide/command-line-tool/) docs for available commands.

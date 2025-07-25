@@ -32,6 +32,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/server/analysisresultstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/apikeyverifier"
 	"github.com/pipe-cd/pipecd/pkg/app/server/applicationlivestatestore"
+	"github.com/pipe-cd/pipecd/pkg/app/server/applicationsharedobjectstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/commandoutputstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/grpcapi"
 	"github.com/pipe-cd/pipecd/pkg/app/server/grpcapi/grpcapimetrics"
@@ -48,7 +49,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/crypto"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
-	"github.com/pipe-cd/pipecd/pkg/datastore/filedb"
 	"github.com/pipe-cd/pipecd/pkg/datastore/firestore"
 	"github.com/pipe-cd/pipecd/pkg/datastore/mysql"
 	"github.com/pipe-cd/pipecd/pkg/filestore"
@@ -196,6 +196,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 		sls                  = stagelogstore.NewStore(fs, cache, input.Logger)
 		alss                 = applicationlivestatestore.NewStore(fs, cache, input.Logger)
 		las                  = analysisresultstore.NewStore(fs, input.Logger)
+		aso                  = applicationsharedobjectstore.NewStore(fs, input.Logger)
 		insightStore         = insightstore.NewStore(fs, cfg.InsightCollector.Deployment.ChunkMaxCount, rd, input.Logger)
 		insightProvider      = insight.NewProvider(insightStore)
 		cmdOutputStore       = commandoutputstore.NewStore(fs, input.Logger)
@@ -215,7 +216,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 				datastore.NewPipedStore(ds),
 				input.Logger,
 			)
-			service = grpcapi.NewPipedAPI(ctx, ds, cache, sls, alss, las, statCache, cmdOutputStore, unregisteredAppStore, cfg.Address, input.Logger)
+			service = grpcapi.NewPipedAPI(ctx, ds, cache, sls, alss, las, statCache, cmdOutputStore, unregisteredAppStore, aso, cfg.Address, input.Logger)
 			opts    = []rpc.Option{
 				rpc.WithPort(s.pipedAPIPort),
 				rpc.WithGracePeriod(s.gracePeriod),
@@ -484,11 +485,6 @@ func createDatastore(ctx context.Context, cfg *config.ControlPlaneSpec, fs files
 			options = append(options, mysql.WithAuthenticationFile(mqConfig.UsernameFile, mqConfig.PasswordFile))
 		}
 		return mysql.NewMySQL(mqConfig.URL, mqConfig.Database, options...)
-	case model.DataStoreFileDB:
-		options := []filedb.Option{
-			filedb.WithLogger(logger),
-		}
-		return filedb.NewFileDB(fs, c, options...)
 	default:
 		return nil, fmt.Errorf("unknown datastore type %q", cfg.Datastore.Type)
 	}

@@ -28,4 +28,6 @@ message DeploymentSource {
   // The filename of the application configuration file.
   // The plugins can use this to avoid mistakenly reading this file as a manifest.
   string application_config_filename = 4;
+  // The directory where the shared configuration in the repository is located.
+  string shared_config_directory = 5;
 }

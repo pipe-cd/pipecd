@@ -135,13 +135,8 @@ export const LogViewer: FC = memo(function LogViewer() {
         }}
       >
         <Divider />
-        <Toolbar
-          variant="dense"
-          // className={classes.toolbar}
-          sx={{ background: "background.default" }}
-        >
+        <Toolbar variant="dense" sx={{ backgroundColor: "background.default" }}>
           <Box
-            // className={classes.toolbarLeft}
             sx={{
               flex: 1,
               display: "flex",
