@@ -248,6 +248,7 @@ func (s *deployTargetResources) getApplicationIDByResource(resource provider.Man
 		return manifest.ApplicationID(), true
 	}
 
+	// ownerRefs contains the UDIs of the owner references.
 	ownerRefs := resource.OwnerReferences()
 	for _, ref := range ownerRefs {
 		if manifest, ok := s.resources[ref]; ok && manifest.ApplicationID() != "" {
