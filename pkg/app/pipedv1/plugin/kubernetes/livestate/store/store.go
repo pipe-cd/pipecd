@@ -207,7 +207,7 @@ func (s *deployTargetResources) initialize() {
 	}
 
 	// Remove all resources which do not have appID.
-	removedResources := make([]provider.Manifest, 0)
+	removedResources := make([]provider.Manifest, 0, len(s.resources))
 
 	for _, manifest := range s.resources {
 		if _, ok := s.getApplicationIDByResource(manifest); !ok {
