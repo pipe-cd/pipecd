@@ -107,14 +107,13 @@ func NewAPI(
 	webBaseURL string,
 	logger *zap.Logger,
 ) *API {
-	w := datastore.PipectlCommander
 	a := &API{
-		applicationStore:     datastore.NewApplicationStore(ds, w),
-		deploymentStore:      datastore.NewDeploymentStore(ds, w),
-		pipedStore:           datastore.NewPipedStore(ds, w),
-		eventStore:           datastore.NewEventStore(ds, w),
-		deploymentTraceStore: datastore.NewDeploymentTraceStore(ds, w),
-		commandStore:         commandstore.NewStore(w, ds, sc, logger),
+		applicationStore:     datastore.NewApplicationStore(ds),
+		deploymentStore:      datastore.NewDeploymentStore(ds),
+		pipedStore:           datastore.NewPipedStore(ds),
+		eventStore:           datastore.NewEventStore(ds),
+		deploymentTraceStore: datastore.NewDeploymentTraceStore(ds),
+		commandStore:         commandstore.NewStore(ds, sc, logger),
 		stageLogStore:        stagelogstore.NewStore(fs, sc, logger),
 		commandOutputGetter:  cog,
 		// Public key is variable but likely to be accessed multiple times in a short period.

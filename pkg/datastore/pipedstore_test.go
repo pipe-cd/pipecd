@@ -61,7 +61,7 @@ func TestAddPiped(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewPipedStore(tc.dsFactory(tc.piped), TestCommander)
+			s := NewPipedStore(tc.dsFactory(tc.piped))
 			err := s.Add(context.Background(), tc.piped)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
@@ -106,7 +106,7 @@ func TestGetPiped(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewPipedStore(tc.ds, TestCommander)
+			s := NewPipedStore(tc.ds)
 			_, err := s.Get(context.Background(), tc.id)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
@@ -161,7 +161,7 @@ func TestListPipeds(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewPipedStore(tc.ds, TestCommander)
+			s := NewPipedStore(tc.ds)
 			_, err := s.List(context.Background(), tc.opts)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})

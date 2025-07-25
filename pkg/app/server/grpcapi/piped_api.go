@@ -113,17 +113,16 @@ type PipedAPI struct {
 
 // NewPipedAPI creates a new PipedAPI instance.
 func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sc cache.Cache, sls stagelogstore.Store, alss applicationlivestatestore.Store, las analysisresultstore.Store, hc cache.Cache, cop commandOutputPutter, uas unregisteredappstore.Store, aso applicationsharedobjectstore.Store, webBaseURL string, logger *zap.Logger) *PipedAPI {
-	w := datastore.PipedCommander
 	a := &PipedAPI{
-		applicationStore:          datastore.NewApplicationStore(ds, w),
-		deploymentStore:           datastore.NewDeploymentStore(ds, w),
-		deploymentChainStore:      datastore.NewDeploymentChainStore(ds, w),
-		pipedStore:                datastore.NewPipedStore(ds, w),
-		eventStore:                datastore.NewEventStore(ds, w),
+		applicationStore:          datastore.NewApplicationStore(ds),
+		deploymentStore:           datastore.NewDeploymentStore(ds),
+		deploymentChainStore:      datastore.NewDeploymentChainStore(ds),
+		pipedStore:                datastore.NewPipedStore(ds),
+		eventStore:                datastore.NewEventStore(ds),
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
 		analysisResultStore:       las,
-		commandStore:              commandstore.NewStore(w, ds, sc, logger),
+		commandStore:              commandstore.NewStore(ds, sc, logger),
 		commandOutputPutter:       cop,
 		unregisteredAppStore:      uas,
 		appSharedObjectStore:      aso,
