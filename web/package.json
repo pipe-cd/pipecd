@@ -5,8 +5,8 @@
   "private": true,
   "license": "Apache-2.0",
   "scripts": {
-    "build": "PIPECD_VERSION=`git describe --tags --always --dirty --abbrev=7` webpack build --mode production --env htmlTemplate=./base.html --config ./webpack.config.js",
-    "dev": "PIPECD_VERSION=`git describe --tags --always --dirty --abbrev=7` webpack serve --env htmlTemplate=./base.html --config ./webpack.config.dev.js",
+    "build": "PIPECD_VERSION=`git describe --tags --always --dirty --abbrev=7 --match 'v[0-9]*.*'` webpack build --mode production --env htmlTemplate=./base.html --config ./webpack.config.js",
+    "dev": "PIPECD_VERSION=`git describe --tags --always --dirty --abbrev=7 --match 'v[0-9]*.*'` webpack serve --env htmlTemplate=./base.html --config ./webpack.config.dev.js",
     "test": "TZ=Asia/Tokyo jest --config jest.config.local.js",
     "test:coverage": "yarn test --coverage",
     "lint": "eslint --ext .ts,.tsx ./src",
@@ -62,7 +62,7 @@
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
     "@loadable/component": "^5.16.7",
     "@mui/icons-material": "^7.1.2",
     "@mui/material": "^7.1.1",
@@ -87,7 +87,7 @@
     "react": "^17.0.2",
     "react-cookie": "^8.0.1",
     "react-dom": "^17.0.2",
-    "react-draggable": "^4.4.6",
+    "react-draggable": "^4.5.0",
     "react-intersection-observer": "^8.26.2",
     "react-markdown": "^6.0.3",
     "react-redux": "^7.2.9",
