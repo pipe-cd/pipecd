@@ -12,12 +12,13 @@ import {
   Typography,
 } from "@mui/material";
 import { useFormik } from "formik";
-import { FC, memo, useCallback, useEffect, useRef } from "react";
+import { FC, memo, useCallback, useEffect, useRef, useMemo } from "react";
 import * as yup from "yup";
 import { TextWithCopyButton } from "~/components/text-with-copy-button";
 import { UI_TEXT_CANCEL } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { Piped, fetchPipeds, selectAllPipeds } from "~/modules/pipeds";
+import { sortFunc } from "~/utils/common";
 import {
   clearSealedSecret,
   generateSealedSecret,
@@ -46,6 +47,12 @@ export const EncryptSecretDrawer: FC<EncryptSecretDrawerProps> = memo(
     const sealedSecret = useAppSelector<string | null>(
       (state) => state.sealedSecret.data
     );
+
+    const pipedOptions = useMemo(() => {
+      return pipeds
+        .filter((piped) => !piped.disabled)
+        .sort((a, b) => sortFunc(a.name, b.name));
+    }, [pipeds]);
 
     useEffect(() => {
       if (open) {
@@ -120,9 +127,9 @@ export const EncryptSecretDrawer: FC<EncryptSecretDrawerProps> = memo(
                 margin="dense"
                 error={formik.touched.pipedId && Boolean(formik.errors.pipedId)}
               >
-                <InputLabel id="piped-select-label">Piped</InputLabel>
+                <InputLabel id="piped-select">Piped</InputLabel>
                 <Select
-                  labelId="piped-select-label"
+                  labelId="piped-select"
                   id="pipedId"
                   name="pipedId"
                   label="Piped"
@@ -131,9 +138,9 @@ export const EncryptSecretDrawer: FC<EncryptSecretDrawerProps> = memo(
                     formik.setFieldValue("pipedId", e.target.value);
                   }}
                 >
-                  {pipeds.map((piped) => (
-                    <MenuItem key={piped.id} value={piped.id}>
-                      {piped.name} ({piped.id})
+                  {pipedOptions.map((e) => (
+                    <MenuItem key={e.id} value={e.id}>
+                      {e.name} ({e.id})
                     </MenuItem>
                   ))}
                 </Select>
