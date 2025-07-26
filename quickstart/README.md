@@ -40,7 +40,7 @@ The manifests directory contains raw Kubernetes manifests files. The 2 files are
 For `control-plane.yaml`
 
 ```shell
-$ helm template pipecd oci://ghcr.io/pipe-cd/chart/pipecd --version v0.48.6 -n pipecd -f quickstart/control-plane-values.yaml
+$ helm template pipecd oci://ghcr.io/pipe-cd/chart/control-plane --version v0.48.6 -n pipecd -f quickstart/control-plane-values.yaml
 ```
 
 For `piped.yaml`
