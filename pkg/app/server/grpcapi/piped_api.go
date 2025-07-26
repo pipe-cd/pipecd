@@ -29,6 +29,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/server/analysisresultstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/applicationlivestatestore"
+	"github.com/pipe-cd/pipecd/pkg/app/server/applicationsharedobjectstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/commandstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/grpcapi/grpcapimetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
@@ -100,6 +101,7 @@ type PipedAPI struct {
 	commandStore              commandstore.Store
 	commandOutputPutter       commandOutputPutter
 	unregisteredAppStore      unregisteredappstore.Store
+	appSharedObjectStore      applicationsharedobjectstore.Store
 
 	appPipedCache        cache.Cache
 	deploymentPipedCache cache.Cache
@@ -110,7 +112,7 @@ type PipedAPI struct {
 }
 
 // NewPipedAPI creates a new PipedAPI instance.
-func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sc cache.Cache, sls stagelogstore.Store, alss applicationlivestatestore.Store, las analysisresultstore.Store, hc cache.Cache, cop commandOutputPutter, uas unregisteredappstore.Store, webBaseURL string, logger *zap.Logger) *PipedAPI {
+func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sc cache.Cache, sls stagelogstore.Store, alss applicationlivestatestore.Store, las analysisresultstore.Store, hc cache.Cache, cop commandOutputPutter, uas unregisteredappstore.Store, aso applicationsharedobjectstore.Store, webBaseURL string, logger *zap.Logger) *PipedAPI {
 	w := datastore.PipedCommander
 	a := &PipedAPI{
 		applicationStore:          datastore.NewApplicationStore(ds, w),
@@ -124,6 +126,7 @@ func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sc cache.Cache, sl
 		commandStore:              commandstore.NewStore(w, ds, sc, logger),
 		commandOutputPutter:       cop,
 		unregisteredAppStore:      uas,
+		appSharedObjectStore:      aso,
 		appPipedCache:             memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		deploymentPipedCache:      memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedStatCache:            hc,
@@ -1219,4 +1222,43 @@ func (a *PipedAPI) validateDeploymentBelongsToPiped(ctx context.Context, deploym
 	}
 
 	return nil
+}
+
+func (a *PipedAPI) GetApplicationSharedObject(ctx context.Context, req *pipedservice.GetApplicationSharedObjectRequest) (*pipedservice.GetApplicationSharedObjectResponse, error) {
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateAppBelongsToPiped(ctx, req.ApplicationId, pipedID); err != nil {
+		return nil, err
+	}
+
+	data, err := a.appSharedObjectStore.GetObject(ctx, req.ApplicationId, req.PluginName, req.Key)
+	if errors.Is(err, filestore.ErrNotFound) {
+		return nil, status.Error(codes.NotFound, "the requested object was not found")
+	}
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to get application shared object")
+	}
+
+	return &pipedservice.GetApplicationSharedObjectResponse{
+		Object: data,
+	}, nil
+}
+
+func (a *PipedAPI) PutApplicationSharedObject(ctx context.Context, req *pipedservice.PutApplicationSharedObjectRequest) (*pipedservice.PutApplicationSharedObjectResponse, error) {
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateAppBelongsToPiped(ctx, req.ApplicationId, pipedID); err != nil {
+		return nil, err
+	}
+
+	err = a.appSharedObjectStore.PutObject(ctx, req.ApplicationId, req.PluginName, req.Key, req.Object)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to put application shared object")
+	}
+
+	return &pipedservice.PutApplicationSharedObjectResponse{}, nil
 }
