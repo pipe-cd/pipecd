@@ -10,7 +10,7 @@ import Alert from "@mui/material/Alert";
 import { FC, memo } from "react";
 
 export interface DeleteRoleConfirmDialogProps {
-  role: string | null;
+  roleName: string | null;
   onClose: () => void;
   onDelete: (role: string) => void;
 }
@@ -19,9 +19,9 @@ const DIALOG_TITLE = "Delete Role";
 const DESCRIPTION = "Are you sure you want to delete the Role?";
 
 export const DeleteRoleConfirmDialog: FC<DeleteRoleConfirmDialogProps> = memo(
-  function DeleteRoleConfirmDialog({ role, onDelete, onClose }) {
+  function DeleteRoleConfirmDialog({ roleName, onDelete, onClose }) {
     return (
-      <Dialog open={Boolean(role)} onClose={onClose}>
+      <Dialog open={Boolean(roleName)} onClose={onClose}>
         <DialogTitle>{DIALOG_TITLE}</DialogTitle>
         <DialogContent>
           <Alert severity="warning" sx={{ marginBottom: 2 }}>
@@ -35,7 +35,7 @@ export const DeleteRoleConfirmDialog: FC<DeleteRoleConfirmDialogProps> = memo(
               fontWeight: theme.typography.fontWeightMedium,
             })}
           >
-            {role}
+            {roleName}
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -43,8 +43,8 @@ export const DeleteRoleConfirmDialog: FC<DeleteRoleConfirmDialogProps> = memo(
           <Button
             color="primary"
             onClick={() => {
-              if (role) {
-                onDelete(role);
+              if (roleName) {
+                onDelete(roleName);
               }
             }}
           >
