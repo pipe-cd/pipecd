@@ -4,6 +4,7 @@ import { FC, memo, useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { PAGE_PATH_APPLICATIONS } from "~/constants/path";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
+import { UI_ENCRYPT_SECRET, UI_TEXT_DELETE } from "~/constants/ui-text";
 import { useInterval } from "~/hooks/use-interval";
 import {
   Application,
@@ -109,13 +110,13 @@ export const ApplicationDetailPage: FC = memo(function ApplicationDetailPage() {
         ) : (
           <div>
             <MenuItem onClick={handleEncryptSecretClick}>
-              Encrypt Secret
+              {UI_ENCRYPT_SECRET}
             </MenuItem>
             <MenuItem onClick={handleDisableClick}>Disable</MenuItem>
           </div>
         )}
         <MenuItem onClick={handleDeleteClick} sx={{ color: "red" }}>
-          Delete
+          {UI_TEXT_DELETE}
         </MenuItem>
       </Menu>
       <SealedSecretDialog
