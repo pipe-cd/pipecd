@@ -68,7 +68,7 @@ func (m *mockStagePlugin) ExecuteStage(ctx context.Context, config *struct{}, ta
 func newTestStagePluginServiceServer(t *testing.T, plugin *mockStagePlugin) *StagePluginServiceServer[struct{}, struct{}, struct{}] {
 	return &StagePluginServiceServer[struct{}, struct{}, struct{}]{
 		base: plugin,
-		commonFields: commonFields{
+		commonFields: commonFields[struct{}, struct{}]{
 			logger:       zaptest.NewLogger(t),
 			logPersister: logpersistertest.NewTestLogPersister(t),
 		},

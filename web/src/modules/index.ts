@@ -1,6 +1,5 @@
 import { combineReducers } from "redux";
 import { activeStageSlice } from "./active-stage";
-import { apiKeysSlice } from "./api-keys";
 import { applicationCountsSlice } from "./application-counts";
 import { applicationsSlice } from "./applications";
 import { applicationLiveStateSlice } from "./applications-live-state";
@@ -30,7 +29,6 @@ export const reducers = combineReducers({
   toasts: toastsSlice.reducer,
   project: projectSlice.reducer,
   sealedSecret: sealedSecretSlice.reducer,
-  apiKeys: apiKeysSlice.reducer,
   applicationCounts: applicationCountsSlice.reducer,
   unregisteredApplications: unregisteredApplicationsSlice.reducer,
 });

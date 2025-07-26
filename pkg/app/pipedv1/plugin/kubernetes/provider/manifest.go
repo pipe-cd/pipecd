@@ -19,6 +19,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/yaml"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
@@ -57,6 +59,11 @@ type Manifest struct {
 	body *unstructured.Unstructured
 }
 
+// FromUnstructured creates a new Manifest from a Kubernetes unstructured object.
+func FromUnstructured(u *unstructured.Unstructured) Manifest {
+	return Manifest{body: u}
+}
+
 // FromStructuredObject creates a new Manifest from a structured Kubernetes object.
 func FromStructuredObject(o any) (Manifest, error) {
 	obj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(o)
@@ -89,6 +96,32 @@ func (m Manifest) DeepCopyWithName(name string) Manifest {
 
 func (m Manifest) Key() ResourceKey {
 	return makeResourceKey(m.body)
+}
+
+// ApplicationID returns the application ID of the resource.
+func (m Manifest) ApplicationID() string {
+	return m.body.GetAnnotations()[LabelApplication]
+}
+
+// OwnerReferences returns the owner references of the resource.
+func (m Manifest) OwnerReferences() []types.UID {
+	refs := m.body.GetOwnerReferences()
+	ownerRefs := make([]types.UID, 0, len(refs))
+	for _, ref := range refs {
+		ownerRefs = append(ownerRefs, ref.UID)
+	}
+	return ownerRefs
+}
+
+// UID returns the UID of the resource.
+// This will be empty when this manifest is loaded form the manifest file.
+// This will be non-empty when this manifest is loaded from the live state.
+func (m Manifest) UID() types.UID {
+	return m.body.GetUID()
+}
+
+func (m Manifest) GroupVersionKind() schema.GroupVersionKind {
+	return m.body.GroupVersionKind()
 }
 
 func (m Manifest) Kind() string {

@@ -29,6 +29,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/server/analysisresultstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/applicationlivestatestore"
+	"github.com/pipe-cd/pipecd/pkg/app/server/applicationsharedobjectstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/commandstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/grpcapi/grpcapimetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
@@ -59,8 +60,11 @@ type pipedAPIDeploymentStore interface {
 	UpdateToCompleted(ctx context.Context, id string, status model.DeploymentStatus, stageStatuses map[string]model.StageStatus, reason string, completedAt int64) error
 	UpdateStatus(ctx context.Context, id string, status model.DeploymentStatus, reason string) error
 	UpdateStageStatus(ctx context.Context, id, stageID string, status model.StageStatus, reason string, requires []string, visible bool, retriedCount int32, completedAt int64) error
+	// Deprecated: Use UpdateSharedMetadata or UpdatePluginMetadata instead in pipedv1. UpdateMetadata is for pipedv0.
 	UpdateMetadata(ctx context.Context, id string, metadata map[string]string) error
 	UpdateStageMetadata(ctx context.Context, deploymentID, stageID string, metadata map[string]string) error
+	UpdateSharedMetadata(ctx context.Context, id string, metadata map[string]string) error
+	UpdatePluginMetadata(ctx context.Context, id string, pluginName string, metadata map[string]string) error
 }
 
 type pipedAPIDeploymentChainStore interface {
@@ -97,6 +101,7 @@ type PipedAPI struct {
 	commandStore              commandstore.Store
 	commandOutputPutter       commandOutputPutter
 	unregisteredAppStore      unregisteredappstore.Store
+	appSharedObjectStore      applicationsharedobjectstore.Store
 
 	appPipedCache        cache.Cache
 	deploymentPipedCache cache.Cache
@@ -107,7 +112,7 @@ type PipedAPI struct {
 }
 
 // NewPipedAPI creates a new PipedAPI instance.
-func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sc cache.Cache, sls stagelogstore.Store, alss applicationlivestatestore.Store, las analysisresultstore.Store, hc cache.Cache, cop commandOutputPutter, uas unregisteredappstore.Store, webBaseURL string, logger *zap.Logger) *PipedAPI {
+func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sc cache.Cache, sls stagelogstore.Store, alss applicationlivestatestore.Store, las analysisresultstore.Store, hc cache.Cache, cop commandOutputPutter, uas unregisteredappstore.Store, aso applicationsharedobjectstore.Store, webBaseURL string, logger *zap.Logger) *PipedAPI {
 	w := datastore.PipedCommander
 	a := &PipedAPI{
 		applicationStore:          datastore.NewApplicationStore(ds, w),
@@ -121,6 +126,7 @@ func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sc cache.Cache, sl
 		commandStore:              commandstore.NewStore(w, ds, sc, logger),
 		commandOutputPutter:       cop,
 		unregisteredAppStore:      uas,
+		appSharedObjectStore:      aso,
 		appPipedCache:             memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		deploymentPipedCache:      memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedStatCache:            hc,
@@ -462,6 +468,8 @@ func (a *PipedAPI) ReportDeploymentCompleted(ctx context.Context, req *pipedserv
 }
 
 // SaveDeploymentMetadata used by piped to persist the metadata of a specific deployment.
+//
+// Deprecated: Use SaveDeploymentSharedMetadata and SaveDeploymentPluginMetadata instead in pipedv1.
 func (a *PipedAPI) SaveDeploymentMetadata(ctx context.Context, req *pipedservice.SaveDeploymentMetadataRequest) (*pipedservice.SaveDeploymentMetadataResponse, error) {
 	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
 	if err != nil {
@@ -475,6 +483,40 @@ func (a *PipedAPI) SaveDeploymentMetadata(ctx context.Context, req *pipedservice
 		return nil, gRPCStoreError(err, fmt.Sprintf("update metadata of deployment %s", req.DeploymentId))
 	}
 	return &pipedservice.SaveDeploymentMetadataResponse{}, nil
+}
+
+// SaveDeploymentSharedMetadata persists the shared metadata of a specific deployment.
+// Different value for the same key will overwrite the previous value.
+func (a *PipedAPI) SaveDeploymentSharedMetadata(ctx context.Context, req *pipedservice.SaveDeploymentSharedMetadataRequest) (*pipedservice.SaveDeploymentSharedMetadataResponse, error) {
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateDeploymentBelongsToPiped(ctx, req.DeploymentId, pipedID); err != nil {
+		return nil, err
+	}
+
+	if err = a.deploymentStore.UpdateSharedMetadata(ctx, req.DeploymentId, req.Metadata); err != nil {
+		return nil, gRPCStoreError(err, fmt.Sprintf("update shared metadata of deployment %s", req.DeploymentId))
+	}
+	return &pipedservice.SaveDeploymentSharedMetadataResponse{}, nil
+}
+
+// SaveDeploymentPluginMetadata persists the metadata of a specific plugin of a deployment.
+// Different value for the same key will overwrite the previous value.
+func (a *PipedAPI) SaveDeploymentPluginMetadata(ctx context.Context, req *pipedservice.SaveDeploymentPluginMetadataRequest) (*pipedservice.SaveDeploymentPluginMetadataResponse, error) {
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateDeploymentBelongsToPiped(ctx, req.DeploymentId, pipedID); err != nil {
+		return nil, err
+	}
+
+	if err = a.deploymentStore.UpdatePluginMetadata(ctx, req.DeploymentId, req.PluginName, req.Metadata); err != nil {
+		return nil, gRPCStoreError(err, fmt.Sprintf("update plugin metadata of deployment %s for plugin %s", req.DeploymentId, req.PluginName))
+	}
+	return &pipedservice.SaveDeploymentPluginMetadataResponse{}, nil
 }
 
 // SaveStageMetadata used by piped to persist the metadata
@@ -1180,4 +1222,43 @@ func (a *PipedAPI) validateDeploymentBelongsToPiped(ctx context.Context, deploym
 	}
 
 	return nil
+}
+
+func (a *PipedAPI) GetApplicationSharedObject(ctx context.Context, req *pipedservice.GetApplicationSharedObjectRequest) (*pipedservice.GetApplicationSharedObjectResponse, error) {
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateAppBelongsToPiped(ctx, req.ApplicationId, pipedID); err != nil {
+		return nil, err
+	}
+
+	data, err := a.appSharedObjectStore.GetObject(ctx, req.ApplicationId, req.PluginName, req.Key)
+	if errors.Is(err, filestore.ErrNotFound) {
+		return nil, status.Error(codes.NotFound, "the requested object was not found")
+	}
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to get application shared object")
+	}
+
+	return &pipedservice.GetApplicationSharedObjectResponse{
+		Object: data,
+	}, nil
+}
+
+func (a *PipedAPI) PutApplicationSharedObject(ctx context.Context, req *pipedservice.PutApplicationSharedObjectRequest) (*pipedservice.PutApplicationSharedObjectResponse, error) {
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateAppBelongsToPiped(ctx, req.ApplicationId, pipedID); err != nil {
+		return nil, err
+	}
+
+	err = a.appSharedObjectStore.PutObject(ctx, req.ApplicationId, req.PluginName, req.Key, req.Object)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to put application shared object")
+	}
+
+	return &pipedservice.PutApplicationSharedObjectResponse{}, nil
 }

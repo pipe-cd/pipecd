@@ -31,6 +31,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/apistore/commandstore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
@@ -51,6 +52,7 @@ type scheduler struct {
 	notifier        notifier
 	secretDecrypter secretDecrypter
 	commandReporter commandstore.Reporter
+	metadataStore   metadatastore.MetadataStore
 
 	targetDSP  deploysource.Provider
 	runningDSP deploysource.Provider
@@ -84,6 +86,7 @@ func newScheduler(
 	notifier notifier,
 	secretsDecrypter secretDecrypter,
 	commandReporter commandstore.Reporter,
+	metadataStore metadatastore.MetadataStore,
 	logger *zap.Logger,
 	tracerProvider trace.TracerProvider,
 ) *scheduler {
@@ -104,6 +107,7 @@ func newScheduler(
 		notifier:             notifier,
 		secretDecrypter:      secretsDecrypter,
 		commandReporter:      commandReporter,
+		metadataStore:        metadataStore,
 		doneDeploymentStatus: d.Status,
 		cancelledCh:          make(chan *model.ReportableCommand, 1),
 		logger:               logger,
@@ -790,7 +794,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 
 // getApplicationNotificationMentions returns the list of users groups who should be mentioned in the notification.
 func (s *scheduler) getApplicationNotificationMentions(event model.NotificationEventType) ([]string, []string, error) {
-	n, ok := s.deployment.Metadata[model.MetadataKeyDeploymentNotification]
+	n, ok := s.metadataStore.SharedGet(model.MetadataKeyDeploymentNotification)
 	if !ok {
 		return []string{}, []string{}, nil
 	}
@@ -841,12 +845,46 @@ func (s *scheduler) notifyStageStartEvent(stage *model.PipelineStage) {
 			Stage:      stage,
 		},
 	})
+
+	if stage.AvailableOperation == model.ManualOperation_MANUAL_OPERATION_APPROVE {
+		users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL)
+		if err != nil {
+			s.logger.Error("failed to get the list of mentions", zap.Error(err))
+		}
+		s.notifier.Notify(model.NotificationEvent{
+			Type: model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL,
+			Metadata: &model.NotificationEventDeploymentWaitApproval{
+				Deployment:        s.deployment,
+				MentionedAccounts: users,
+				MentionedGroups:   groups,
+			},
+		})
+	}
 }
 
 // notifyStageEndEvent sends notification event based on the stage result.
 func (s *scheduler) notifyStageEndEvent(stage *model.PipelineStage, result model.StageStatus) {
 	switch result {
 	case model.StageStatus_STAGE_SUCCESS, model.StageStatus_STAGE_EXITED: // Exit stage is treated as success.
+
+		if stage.AvailableOperation == model.ManualOperation_MANUAL_OPERATION_APPROVE {
+			users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED)
+			if err != nil {
+				s.logger.Error("failed to get the list of users", zap.Error(err))
+			}
+			if approvers, found := s.metadataStore.StageGet(stage.Id, model.MetadataKeyStageApprovedUsers); found {
+				s.notifier.Notify(model.NotificationEvent{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED,
+					Metadata: &model.NotificationEventDeploymentApproved{
+						Deployment:        s.deployment,
+						Approver:          approvers,
+						MentionedAccounts: users,
+						MentionedGroups:   groups,
+					},
+				})
+			}
+		}
+
 		s.notifier.Notify(model.NotificationEvent{
 			Type: model.NotificationEventType_EVENT_STAGE_SUCCEEDED,
 			Metadata: &model.NotificationEventStageSucceeded{

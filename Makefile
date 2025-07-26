@@ -19,7 +19,7 @@
 build: build/go build/web
 
 .PHONY: build/go
-build/go: BUILD_VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7)
+build/go: BUILD_VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7 --match 'v[0-9]*.*')
 build/go: BUILD_COMMIT ?= $(shell git rev-parse HEAD)
 build/go: BUILD_DATE ?= $(shell date -u '+%Y%m%d-%H%M%S')
 build/go: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
@@ -78,7 +78,7 @@ build/plugin:
 
 .PHONY: push
 push/chart: BUCKET ?= charts.pipecd.dev
-push/chart: VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7)
+push/chart: VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7 --match 'v[0-9]*.*')
 push/chart: CREDENTIALS_FILE ?= ~/.config/gcloud/application_default_credentials.json
 push/chart:
 	@yq -i '.version = "${VERSION}" | .appVersion = "${VERSION}"' manifests/control-plane/Chart.yaml

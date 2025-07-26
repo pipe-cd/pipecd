@@ -16,7 +16,6 @@ package sdk
 
 import (
 	"context"
-	"encoding/json"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -38,45 +37,14 @@ type PlanPreviewPlugin[Config, DeployTargetConfig, ApplicationConfigSpec any] in
 // It is used to register the plugin to the gRPC server.
 type PlanPreviewPluginServer[Config, DeployTargetConfig, ApplicationConfigSpec any] struct {
 	planpreview.UnimplementedPlanPreviewServiceServer
-	commonFields
+	commonFields[Config, DeployTargetConfig]
 
-	base          PlanPreviewPlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
-	config        Config
-	deployTargets map[string]*DeployTarget[DeployTargetConfig]
+	base PlanPreviewPlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
 }
 
 // Register registers the plugin to the gRPC server.
 func (s *PlanPreviewPluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]) Register(server *grpc.Server) {
 	planpreview.RegisterPlanPreviewServiceServer(server, s)
-}
-
-// setFields sets the common fields and configs to the server.
-func (s *PlanPreviewPluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]) setFields(fields commonFields) error {
-	s.commonFields = fields
-
-	cfg := fields.config
-	if cfg.Config != nil {
-		if err := json.Unmarshal(cfg.Config, &s.config); err != nil {
-			s.logger.Fatal("failed to unmarshal the plugin config", zap.Error(err))
-			return err
-		}
-	}
-
-	s.deployTargets = make(map[string]*DeployTarget[DeployTargetConfig], len(cfg.DeployTargets))
-	for _, dt := range cfg.DeployTargets {
-		var sdkDt DeployTargetConfig
-		if err := json.Unmarshal(dt.Config, &sdkDt); err != nil {
-			s.logger.Fatal("failed to unmarshal deploy target config", zap.Error(err))
-			return err
-		}
-		s.deployTargets[dt.Name] = &DeployTarget[DeployTargetConfig]{
-			Name:   dt.Name,
-			Labels: dt.Labels,
-			Config: sdkDt,
-		}
-	}
-
-	return nil
 }
 
 // GetPlanPreview returns the plan preview of the resources in the given application.
@@ -104,7 +72,7 @@ func (s *PlanPreviewPluginServer[Config, DeployTargetConfig, ApplicationConfigSp
 		return nil, status.Errorf(codes.Internal, "failed to parse deployment source: %v", err)
 	}
 
-	response, err := s.base.GetPlanPreview(ctx, &s.config, deployTargets, &GetPlanPreviewInput[ApplicationConfigSpec]{
+	response, err := s.base.GetPlanPreview(ctx, s.commonFields.pluginConfig, deployTargets, &GetPlanPreviewInput[ApplicationConfigSpec]{
 		Request: GetPlanPreviewRequest[ApplicationConfigSpec]{
 			ApplicationID:          request.GetApplicationId(),
 			TargetDeploymentSource: deploymentSource,

@@ -16,7 +16,6 @@ package sdk
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -72,11 +71,9 @@ type StagePlugin[Config, DeployTargetConfig, ApplicationConfigSpec any] interfac
 // DeploymentPluginServiceServer is the gRPC server that handles requests from the piped.
 type DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec any] struct {
 	deployment.UnimplementedDeploymentServiceServer
-	commonFields
+	commonFields[Config, DeployTargetConfig]
 
-	base          DeploymentPlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
-	config        Config
-	deployTargets map[string]*DeployTarget[DeployTargetConfig]
+	base DeploymentPlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
 }
 
 // Register registers the server to the given gRPC server.
@@ -84,38 +81,10 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 	deployment.RegisterDeploymentServiceServer(server, s)
 }
 
-// setFields sets the common fields and configs to the server.
-func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) setFields(fields commonFields) error {
-	s.commonFields = fields
-
-	cfg := fields.config
-	if cfg.Config != nil {
-		if err := json.Unmarshal(cfg.Config, &s.config); err != nil {
-			s.logger.Fatal("failed to unmarshal the plugin config", zap.Error(err))
-			return err
-		}
-	}
-
-	s.deployTargets = make(map[string]*DeployTarget[DeployTargetConfig], len(cfg.DeployTargets))
-	for _, dt := range cfg.DeployTargets {
-		var sdkDt DeployTargetConfig
-		if err := json.Unmarshal(dt.Config, &sdkDt); err != nil {
-			s.logger.Fatal("failed to unmarshal deploy target config", zap.Error(err))
-			return err
-		}
-		s.deployTargets[dt.Name] = &DeployTarget[DeployTargetConfig]{
-			Name:   dt.Name,
-			Labels: dt.Labels,
-			Config: sdkDt,
-		}
-	}
-
-	return nil
-}
-
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) FetchDefinedStages(context.Context, *deployment.FetchDefinedStagesRequest) (*deployment.FetchDefinedStagesResponse, error) {
 	return &deployment.FetchDefinedStagesResponse{Stages: s.base.FetchDefinedStages()}, nil
 }
+
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) DetermineVersions(ctx context.Context, request *deployment.DetermineVersionsRequest) (*deployment.DetermineVersionsResponse, error) {
 	client := &Client{
 		base:          s.client,
@@ -135,7 +104,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 		Logger:  s.logger,
 	}
 
-	versions, err := s.base.DetermineVersions(ctx, &s.config, input)
+	versions, err := s.base.DetermineVersions(ctx, s.commonFields.pluginConfig, input)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to determine versions: %v", err)
 	}
@@ -162,7 +131,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 		Logger:  s.logger,
 	}
 
-	response, err := s.base.DetermineStrategy(ctx, &s.config, input)
+	response, err := s.base.DetermineStrategy(ctx, s.commonFields.pluginConfig, input)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to determine strategy: %v", err)
 	}
@@ -181,7 +150,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 		base:       s.client,
 		pluginName: s.name,
 	}
-	return buildPipelineSyncStages(ctx, s.base, &s.config, client, request, s.logger)
+	return buildPipelineSyncStages(ctx, s.base, s.commonFields.pluginConfig, client, request, s.logger)
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) BuildQuickSyncStages(ctx context.Context, request *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	input := &BuildQuickSyncStagesInput{
@@ -195,7 +164,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 		Logger: s.logger,
 	}
 
-	response, err := s.base.BuildQuickSyncStages(ctx, &s.config, input)
+	response, err := s.base.BuildQuickSyncStages(ctx, s.commonFields.pluginConfig, input)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to build quick sync stages: %v", err)
 	}
@@ -234,36 +203,20 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 		deployTargets = append(deployTargets, dt)
 	}
 
-	return executeStage(ctx, s.name, s.base, &s.config, deployTargets, client, request, s.logger)
+	return executeStage(ctx, s.name, s.base, s.commonFields.pluginConfig, deployTargets, client, request, s.logger)
 }
 
 // StagePluginServiceServer is the gRPC server that handles requests from the piped.
 type StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec any] struct {
 	deployment.UnimplementedDeploymentServiceServer
-	commonFields
+	commonFields[Config, DeployTargetConfig]
 
-	base   StagePlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
-	config Config
+	base StagePlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
 }
 
 // Register registers the server to the given gRPC server.
 func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) Register(server *grpc.Server) {
 	deployment.RegisterDeploymentServiceServer(server, s)
-}
-
-// setFields sets the common fields and configs to the server.
-func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) setFields(fields commonFields) error {
-	s.commonFields = fields
-
-	cfg := fields.config
-	if cfg.Config != nil {
-		if err := json.Unmarshal(cfg.Config, &s.config); err != nil {
-			s.logger.Fatal("failed to unmarshal the plugin config", zap.Error(err))
-			return err
-		}
-	}
-
-	return nil
 }
 
 func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) FetchDefinedStages(context.Context, *deployment.FetchDefinedStagesRequest) (*deployment.FetchDefinedStagesResponse, error) {
@@ -281,7 +234,7 @@ func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigS
 		pluginName: s.name,
 	}
 
-	return buildPipelineSyncStages(ctx, s.base, &s.config, client, request, s.logger)
+	return buildPipelineSyncStages(ctx, s.base, s.commonFields.pluginConfig, client, request, s.logger)
 }
 func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	// Return an empty response in case the plugin does not support the QuickSync strategy.
@@ -308,7 +261,7 @@ func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigS
 		toolRegistry:  s.toolRegistry,
 	}
 
-	return executeStage(ctx, s.name, s.base, &s.config, nil, client, request, s.logger) // TODO: pass the deployTargets
+	return executeStage(ctx, s.name, s.base, s.commonFields.pluginConfig, nil, client, request, s.logger) // TODO: pass the deployTargets
 }
 
 // buildPipelineSyncStages builds the stages that will be executed by the plugin.
