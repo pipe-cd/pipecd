@@ -46,7 +46,7 @@ For the full list of available commands, please see the Makefile at the root of 
 2. Install Control Plane into the local cluster
 
     ``` console
-    make run/control-plane
+    make run/pipecd
     ```
 
     Once all components are running up, use `kubectl port-forward` to expose the installed Control Plane on your localhost:

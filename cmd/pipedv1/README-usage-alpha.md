@@ -15,7 +15,7 @@ _This page might be moved to another place in the future._
 
 ## 1. Setup Control Plane
 
-1. Run a Control Plane that your piped will connect to. If you want to run a Control Plane locally, see [How to run Control Plane locally](https://github.com/pipe-cd/pipecd/blob/master/cmd/control-plane/README.md#how-to-run-control-plane-locally).
+1. Run a Control Plane that your piped will connect to. If you want to run a Control Plane locally, see [How to run Control Plane locally](https://github.com/pipe-cd/pipecd/blob/master/cmd/pipecd/README.md#how-to-run-control-plane-locally).
     - The Control Plane version must be v0.52.0 or later.
 
 2. Generate a new piped key/ID.

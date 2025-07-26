@@ -153,7 +153,7 @@ Note that if it's a new breaking change, make sure to complete the two latter qu
 
 PipeCD consists of several components and docs:
 
-- **cmd/control-plane**: A centralized component that manages deployment data and provides a gRPC API for connecting pipeds, as well as web functionalities such as authentication. [README.md](./cmd/control-plane/README.md)
+- **cmd/pipecd**: A centralized component that manages deployment data and provides a gRPC API for connecting pipeds, as well as web functionalities such as authentication. [README.md](./cmd/pipecd/README.md)
 - **cmd/piped**: piped is an agent component that runs in your cluster. [README.md](./cmd/piped/README.md)
 - **cmd/pipectl**: The command-line tool for PipeCD. [README.md](./cmd/pipectl/README.md)
 - **cmd/launcher**: The command executor that enables the remote upgrade feature of the piped agent. [README.md](./cmd/launcher/README.md)
@@ -182,9 +182,9 @@ When cleaning up, run `make kind-down` to stop and delete the registery and the 
 
 #### Run PipeCD Control Plane
 
-Run `make run/control-plane` to run PipeCD Control Plane using your local code changes. This will build and run PipeCD Control Plane.
+Run `make run/pipecd` to run PipeCD Control Plane using your local code changes. This will build and run PipeCD Control Plane.
 
-Run `make stop/control-plane` to stop PipeCD Control Plane.
+Run `make stop/pipecd` to stop PipeCD Control Plane.
 
 #### Port Forward
 
