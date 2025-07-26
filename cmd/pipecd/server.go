@@ -32,6 +32,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/server/analysisresultstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/apikeyverifier"
 	"github.com/pipe-cd/pipecd/pkg/app/server/applicationlivestatestore"
+	"github.com/pipe-cd/pipecd/pkg/app/server/applicationsharedobjectstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/commandoutputstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/grpcapi"
 	"github.com/pipe-cd/pipecd/pkg/app/server/grpcapi/grpcapimetrics"
@@ -195,6 +196,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 		sls                  = stagelogstore.NewStore(fs, cache, input.Logger)
 		alss                 = applicationlivestatestore.NewStore(fs, cache, input.Logger)
 		las                  = analysisresultstore.NewStore(fs, input.Logger)
+		aso                  = applicationsharedobjectstore.NewStore(fs, input.Logger)
 		insightStore         = insightstore.NewStore(fs, cfg.InsightCollector.Deployment.ChunkMaxCount, rd, input.Logger)
 		insightProvider      = insight.NewProvider(insightStore)
 		cmdOutputStore       = commandoutputstore.NewStore(fs, input.Logger)
@@ -214,7 +216,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 				datastore.NewPipedStore(ds, datastore.PipedCommander),
 				input.Logger,
 			)
-			service = grpcapi.NewPipedAPI(ctx, ds, cache, sls, alss, las, statCache, cmdOutputStore, unregisteredAppStore, cfg.Address, input.Logger)
+			service = grpcapi.NewPipedAPI(ctx, ds, cache, sls, alss, las, statCache, cmdOutputStore, unregisteredAppStore, aso, cfg.Address, input.Logger)
 			opts    = []rpc.Option{
 				rpc.WithPort(s.pipedAPIPort),
 				rpc.WithGracePeriod(s.gracePeriod),

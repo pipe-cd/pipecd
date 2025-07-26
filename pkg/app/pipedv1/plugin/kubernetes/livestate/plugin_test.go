@@ -20,6 +20,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"github.com/pipe-cd/piped-plugin-sdk-go/diff"
@@ -534,6 +535,624 @@ data:
 
 			got := calculateSyncState(tt.diffResult, tt.commitHash)
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestFilterIgnoringManifests(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		manifests []provider.Manifest
+		want      []provider.Manifest
+	}{
+		{
+			name:      "empty slice",
+			manifests: []provider.Manifest{},
+			want:      []provider.Manifest{},
+		},
+		{
+			name: "manifest without ignore annotation",
+			manifests: []provider.Manifest{
+				makeTestManifest(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-config
+  namespace: default
+data:
+  key: value
+`),
+			},
+			want: []provider.Manifest{
+				makeTestManifest(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-config
+  namespace: default
+data:
+  key: value
+`),
+			},
+		},
+		{
+			name: "manifest with ignore annotation set to true - should be filtered out",
+			manifests: []provider.Manifest{
+				makeTestManifest(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-config
+  namespace: default
+  annotations:
+    pipecd.dev/ignore-drift-detection: "true"
+data:
+  key: value
+`),
+			},
+			want: []provider.Manifest{},
+		},
+		{
+			name: "manifest with ignore annotation set to false - should be included",
+			manifests: []provider.Manifest{
+				makeTestManifest(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-config
+  namespace: default
+  annotations:
+    pipecd.dev/ignore-drift-detection: "false"
+data:
+  key: value
+`),
+			},
+			want: []provider.Manifest{
+				makeTestManifest(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-config
+  namespace: default
+  annotations:
+    pipecd.dev/ignore-drift-detection: "false"
+data:
+  key: value
+`),
+			},
+		},
+		{
+			name: "manifest with ignore annotation set to other value - should be included",
+			manifests: []provider.Manifest{
+				makeTestManifest(t, `
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-service
+  namespace: default
+  annotations:
+    pipecd.dev/ignore-drift-detection: "some-other-value"
+spec:
+  selector:
+    app: test
+  ports:
+  - port: 80
+`),
+			},
+			want: []provider.Manifest{
+				makeTestManifest(t, `
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-service
+  namespace: default
+  annotations:
+    pipecd.dev/ignore-drift-detection: "some-other-value"
+spec:
+  selector:
+    app: test
+  ports:
+  - port: 80
+`),
+			},
+		},
+		{
+			name: "mixed manifests - some filtered, some included",
+			manifests: []provider.Manifest{
+				makeTestManifest(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: include-config
+  namespace: default
+data:
+  key: value
+`),
+				makeTestManifest(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ignore-config
+  namespace: default
+  annotations:
+    pipecd.dev/ignore-drift-detection: "true"
+data:
+  key: value
+`),
+				makeTestManifest(t, `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment
+  namespace: default
+  annotations:
+    pipecd.dev/ignore-drift-detection: "false"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+      - name: app
+        image: nginx:1.19
+`),
+				makeTestManifest(t, `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ignore-secret
+  namespace: default
+  annotations:
+    pipecd.dev/ignore-drift-detection: "true"
+data:
+  username: dXNlcg==
+`),
+			},
+			want: []provider.Manifest{
+				makeTestManifest(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: include-config
+  namespace: default
+data:
+  key: value
+`),
+				makeTestManifest(t, `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment
+  namespace: default
+  annotations:
+    pipecd.dev/ignore-drift-detection: "false"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+      - name: app
+        image: nginx:1.19
+`),
+			},
+		},
+		{
+			name: "all manifests should be filtered out",
+			manifests: []provider.Manifest{
+				makeTestManifest(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ignore-config1
+  namespace: default
+  annotations:
+    pipecd.dev/ignore-drift-detection: "true"
+data:
+  key: value1
+`),
+				makeTestManifest(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ignore-config2
+  namespace: default
+  annotations:
+    pipecd.dev/ignore-drift-detection: "true"
+data:
+  key: value2
+`),
+			},
+			want: []provider.Manifest{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := filterIgnoringManifests(tt.manifests)
+			assert.Equal(t, len(tt.want), len(got), "expected number of manifests should match")
+
+			// Compare each manifest by their key and content
+			for i, wantManifest := range tt.want {
+				require.Less(t, i, len(got), "got slice should have enough elements")
+
+				assert.Equal(t, wantManifest.Key().String(), got[i].Key().String(),
+					"manifest keys should match at index %d", i)
+
+				wantJSON, err := wantManifest.MarshalJSON()
+				require.NoError(t, err)
+				gotJSON, err := got[i].MarshalJSON()
+				require.NoError(t, err)
+				assert.JSONEq(t, string(wantJSON), string(gotJSON),
+					"manifest content should match at index %d", i)
+			}
+		})
+	}
+}
+
+func TestOnlyWatchingResourceKinds(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name                  string
+		manifests             []provider.Manifest
+		watchingResourceKinds []schema.GroupVersionKind
+		want                  []provider.Manifest
+	}{
+		{
+			name:                  "empty manifests",
+			manifests:             []provider.Manifest{},
+			watchingResourceKinds: []schema.GroupVersionKind{{Group: "apps", Version: "v1", Kind: "Deployment"}},
+			want:                  []provider.Manifest{},
+		},
+		{
+			name: "empty watching resource kinds",
+			manifests: []provider.Manifest{
+				makeTestManifest(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-config
+  namespace: default
+data:
+  key: value
+`),
+			},
+			watchingResourceKinds: []schema.GroupVersionKind{},
+			want:                  []provider.Manifest{},
+		},
+		{
+			name: "no matching resource kinds",
+			manifests: []provider.Manifest{
+				makeTestManifest(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-config
+  namespace: default
+data:
+  key: value
+`),
+				makeTestManifest(t, `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: test-secret
+  namespace: default
+data:
+  username: dXNlcg==
+`),
+			},
+			watchingResourceKinds: []schema.GroupVersionKind{
+				{Group: "apps", Version: "v1", Kind: "Deployment"},
+				{Group: "networking.k8s.io", Version: "v1", Kind: "Ingress"},
+			},
+			want: []provider.Manifest{},
+		},
+		{
+			name: "some matching resource kinds",
+			manifests: []provider.Manifest{
+				makeTestManifest(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-config
+  namespace: default
+data:
+  key: value
+`),
+				makeTestManifest(t, `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+      - name: app
+        image: nginx:1.19
+`),
+				makeTestManifest(t, `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: test-secret
+  namespace: default
+data:
+  username: dXNlcg==
+`),
+			},
+			watchingResourceKinds: []schema.GroupVersionKind{
+				{Group: "", Version: "v1", Kind: "ConfigMap"},
+				{Group: "apps", Version: "v1", Kind: "Deployment"},
+			},
+			want: []provider.Manifest{
+				makeTestManifest(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-config
+  namespace: default
+data:
+  key: value
+`),
+				makeTestManifest(t, `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+      - name: app
+        image: nginx:1.19
+`),
+			},
+		},
+		{
+			name: "all manifests match watching resource kinds",
+			manifests: []provider.Manifest{
+				makeTestManifest(t, `
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-service
+  namespace: default
+spec:
+  selector:
+    app: test
+  ports:
+  - port: 80
+`),
+				makeTestManifest(t, `
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: test-ingress
+  namespace: default
+spec:
+  rules:
+  - host: example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: test-service
+            port:
+              number: 80
+`),
+			},
+			watchingResourceKinds: []schema.GroupVersionKind{
+				{Group: "", Version: "v1", Kind: "Service"},
+				{Group: "networking.k8s.io", Version: "v1", Kind: "Ingress"},
+			},
+			want: []provider.Manifest{
+				makeTestManifest(t, `
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-service
+  namespace: default
+spec:
+  selector:
+    app: test
+  ports:
+  - port: 80
+`),
+				makeTestManifest(t, `
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: test-ingress
+  namespace: default
+spec:
+  rules:
+  - host: example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: test-service
+            port:
+              number: 80
+`),
+			},
+		},
+		{
+			name: "duplicate resource kinds in watching list",
+			manifests: []provider.Manifest{
+				makeTestManifest(t, `
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pod
+  namespace: default
+spec:
+  containers:
+  - name: app
+    image: nginx:1.19
+`),
+			},
+			watchingResourceKinds: []schema.GroupVersionKind{
+				{Group: "", Version: "v1", Kind: "Pod"},
+				{Group: "", Version: "v1", Kind: "Pod"}, // duplicate
+				{Group: "apps", Version: "v1", Kind: "Deployment"},
+			},
+			want: []provider.Manifest{
+				makeTestManifest(t, `
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pod
+  namespace: default
+spec:
+  containers:
+  - name: app
+    image: nginx:1.19
+`),
+			},
+		},
+		{
+			name: "mixed resource kinds with some matches",
+			manifests: []provider.Manifest{
+				makeTestManifest(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config1
+  namespace: default
+data:
+  key: value1
+`),
+				makeTestManifest(t, `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy1
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+      - name: app
+        image: nginx:1.19
+`),
+				makeTestManifest(t, `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: secret1
+  namespace: default
+data:
+  username: dXNlcg==
+`),
+				makeTestManifest(t, `
+apiVersion: v1
+kind: Service
+metadata:
+  name: service1
+  namespace: default
+spec:
+  selector:
+    app: test
+  ports:
+  - port: 80
+`),
+			},
+			watchingResourceKinds: []schema.GroupVersionKind{
+				{Group: "", Version: "v1", Kind: "ConfigMap"},
+				{Group: "", Version: "v1", Kind: "Service"},
+			},
+			want: []provider.Manifest{
+				makeTestManifest(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config1
+  namespace: default
+data:
+  key: value1
+`),
+				makeTestManifest(t, `
+apiVersion: v1
+kind: Service
+metadata:
+  name: service1
+  namespace: default
+spec:
+  selector:
+    app: test
+  ports:
+  - port: 80
+`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := onlyWatchingResourceKinds(tt.manifests, tt.watchingResourceKinds)
+			assert.Equal(t, len(tt.want), len(got), "expected number of manifests should match")
+
+			// Compare each manifest by their key and content
+			for i, wantManifest := range tt.want {
+				require.Less(t, i, len(got), "got slice should have enough elements")
+
+				assert.Equal(t, wantManifest.Key().String(), got[i].Key().String(),
+					"manifest keys should match at index %d", i)
+
+				wantJSON, err := wantManifest.MarshalJSON()
+				require.NoError(t, err)
+				gotJSON, err := got[i].MarshalJSON()
+				require.NoError(t, err)
+				assert.JSONEq(t, string(wantJSON), string(gotJSON),
+					"manifest content should match at index %d", i)
+			}
 		})
 	}
 }
