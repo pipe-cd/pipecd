@@ -2,7 +2,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "pipecd.name" -}}
+{{- define "controlPlane.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -11,7 +11,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "pipecd.fullname" -}}
+{{- define "controlPlane.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -27,16 +27,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "pipecd.chart" -}}
+{{- define "controlPlane.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "pipecd.labels" -}}
-helm.sh/chart: {{ include "pipecd.chart" . }}
-{{ include "pipecd.selectorLabels" . }}
+{{- define "controlPlane.labels" -}}
+helm.sh/chart: {{ include "controlPlane.chart" . }}
+{{ include "controlPlane.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -46,17 +46,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "pipecd.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "pipecd.name" . }}
+{{- define "controlPlane.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "controlPlane.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Name of ConfigMap containing pipecd configuration
 */}}
-{{- define "pipecd.configMapName" -}}
+{{- define "controlPlane.configMapName" -}}
 {{- if .Values.config.create }}
-{{- include "pipecd.fullname" . }}
+{{- include "controlPlane.fullname" . }}
 {{- else }}
 {{- .Values.config.name }}
 {{- end }}
@@ -65,9 +65,9 @@ Name of ConfigMap containing pipecd configuration
 {{/*
 Name of Secret containing sensitive data
 */}}
-{{- define "pipecd.secretName" -}}
+{{- define "controlPlane.secretName" -}}
 {{- if .Values.secret.create }}
-{{- include "pipecd.fullname" . }}
+{{- include "controlPlane.fullname" . }}
 {{- else }}
 {{- .Values.secret.name }}
 {{- end }}
@@ -76,9 +76,9 @@ Name of Secret containing sensitive data
 {{/*
 Name of ServiceAccount
 */}}
-{{- define "pipecd.serviceAccountName" -}}
+{{- define "controlPlane.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create -}}
-{{ include "pipecd.fullname" . }}
+{{ include "controlPlane.fullname" . }}
 {{- else }}
 {{- .Values.serviceAccount.name }}
 {{- end }}
