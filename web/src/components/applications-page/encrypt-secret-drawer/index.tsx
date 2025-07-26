@@ -121,11 +121,10 @@ export const EncryptSecretDrawer: FC<EncryptSecretDrawerProps> = memo(
             </Box>
           ) : (
             <form onSubmit={formik.handleSubmit}>
-              <FormControl
-                fullWidth
-                margin="dense"
-              >
-                <InputLabel id="piped-select" required>Piped</InputLabel>
+              <FormControl fullWidth margin="dense">
+                <InputLabel id="piped-select" required>
+                  Piped
+                </InputLabel>
                 <Select
                   labelId="piped-select"
                   id="pipedId"
