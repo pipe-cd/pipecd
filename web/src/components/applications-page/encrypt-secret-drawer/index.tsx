@@ -12,10 +12,10 @@ import {
   Typography,
 } from "@mui/material";
 import { useFormik } from "formik";
-import { FC, memo, useCallback, useEffect, useRef, useMemo } from "react";
+import { FC, memo, useCallback, useEffect, useMemo } from "react";
 import * as yup from "yup";
 import { TextWithCopyButton } from "~/components/text-with-copy-button";
-import { UI_TEXT_CANCEL } from "~/constants/ui-text";
+import { UI_TEXT_CANCEL, UI_TEXT_CLOSE } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { Piped, fetchPipeds, selectAllPipeds } from "~/modules/pipeds";
 import { sortFunc } from "~/utils/common";
@@ -56,7 +56,7 @@ export const EncryptSecretDrawer: FC<EncryptSecretDrawerProps> = memo(
 
     useEffect(() => {
       if (open) {
-        dispatch(fetchPipeds(false));
+        dispatch(fetchPipeds(true));
       }
     }, [dispatch, open]);
 
@@ -83,13 +83,12 @@ export const EncryptSecretDrawer: FC<EncryptSecretDrawerProps> = memo(
       dispatch(clearSealedSecret());
     }, [dispatch, onClose]);
 
-    const prevOpen = useRef(false);
+    const { resetForm } = formik;
     useEffect(() => {
-      if (!prevOpen.current && open) {
-        formik.resetForm();
+      if (open) {
+        resetForm();
       }
-      prevOpen.current = open;
-    }, [open, formik]);
+    }, [open, resetForm]);
 
     return (
       <Drawer
@@ -117,7 +116,7 @@ export const EncryptSecretDrawer: FC<EncryptSecretDrawerProps> = memo(
                 value={sealedSecret}
               />
               <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
-                <Button onClick={handleClose}>Close</Button>
+                <Button onClick={handleClose}>{UI_TEXT_CLOSE}</Button>
               </Box>
             </Box>
           ) : (
@@ -125,9 +124,8 @@ export const EncryptSecretDrawer: FC<EncryptSecretDrawerProps> = memo(
               <FormControl
                 fullWidth
                 margin="dense"
-                error={formik.touched.pipedId && Boolean(formik.errors.pipedId)}
               >
-                <InputLabel id="piped-select">Piped</InputLabel>
+                <InputLabel id="piped-select" required>Piped</InputLabel>
                 <Select
                   labelId="piped-select"
                   id="pipedId"
@@ -144,11 +142,6 @@ export const EncryptSecretDrawer: FC<EncryptSecretDrawerProps> = memo(
                     </MenuItem>
                   ))}
                 </Select>
-                {formik.touched.pipedId && formik.errors.pipedId && (
-                  <Typography variant="caption" color="error">
-                    {formik.errors.pipedId}
-                  </Typography>
-                )}
               </FormControl>
 
               <TextField
@@ -162,14 +155,7 @@ export const EncryptSecretDrawer: FC<EncryptSecretDrawerProps> = memo(
                 fullWidth
                 minRows={4}
                 required
-                autoFocus
                 onChange={formik.handleChange}
-                error={
-                  formik.touched.secretData && Boolean(formik.errors.secretData)
-                }
-                helperText={
-                  formik.touched.secretData && formik.errors.secretData
-                }
               />
               <FormControlLabel
                 control={
