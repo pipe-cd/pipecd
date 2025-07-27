@@ -167,14 +167,14 @@ run/control-plane:
 	@echo "Installing Control Plane in kind..."
 	mkdir -p .artifacts
 	helm package manifests/control-plane --version $(BUILD_VERSION) --app-version $(BUILD_VERSION) --dependency-update --destination .artifacts
-	helm -n control-plane upgrade --install control-plane .artifacts/control-plane-$(BUILD_VERSION).tgz --create-namespace \
+	helm -n pipecd upgrade --install control-plane .artifacts/control-plane-$(BUILD_VERSION).tgz --create-namespace \
 		--set server.image.repository=localhost:5001/control-plane \
 		--set ops.image.repository=localhost:5001/control-plane \
 		--values $(CONTROL_PLANE_VALUES)
 
 .PHONY: stop/control-plane
 stop/control-plane:
-	helm -n control-plane uninstall control-plane
+	helm -n pipecd uninstall control-plane
 
 .PHONY: run/piped
 run/piped: CONFIG_FILE ?=
@@ -291,11 +291,11 @@ release/docs:
 
 .PHONY: kind-up
 kind-up:
-	./hack/create-kind-cluster.sh control-plane
+	./hack/create-kind-cluster.sh pipecd
 
 .PHONY: kind-down
 kind-down:
-	kind delete cluster --name control-plane
+	kind delete cluster --name pipecd
 
 .PHONY: setup-envtest
 # Where to install the setup-envtest binary
