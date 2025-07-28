@@ -189,3 +189,30 @@ func updateServiceSelector(m provider.Manifest, variantLabel, targetVariant stri
 		"spec", "selector",
 	)
 }
+
+func findIstioVirtualServiceManifests(manifests []provider.Manifest, ref kubeconfig.K8sResourceReference) ([]provider.Manifest, error) {
+	const (
+		istioNetworkingGroup    = "networking.istio.io"
+		istioVirtualServiceKind = "VirtualService"
+	)
+
+	if ref.Kind != "" && ref.Kind != istioVirtualServiceKind {
+		return nil, fmt.Errorf("support only %q kind for VirtualService reference", istioVirtualServiceKind)
+	}
+
+	out := make([]provider.Manifest, 0, len(manifests))
+	for _, m := range manifests {
+		if m.GroupVersionKind().Group != istioNetworkingGroup {
+			continue
+		}
+		if m.Kind() != istioVirtualServiceKind {
+			continue
+		}
+		if ref.Name != "" && m.Name() != ref.Name {
+			continue
+		}
+		out = append(out, m)
+	}
+
+	return out, nil
+}

@@ -33,6 +33,7 @@ import (
 	"github.com/pipe-cd/piped-plugin-sdk-go/unit"
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 )
 
 type trafficRoutingTestCase struct {
@@ -356,6 +357,290 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector_InvalidInputs(t *testin
 				Logger: zaptest.NewLogger(t),
 			}, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{}, appCfg)
 			assert.Equal(t, sdk.StageStatusFailure, status)
+		})
+	}
+}
+
+func Test_findIstioVirtualServiceManifests(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name          string
+		manifestsYAML string
+		ref           kubeconfig.K8sResourceReference
+		wantCount     int
+		wantNames     []string
+		wantErr       bool
+		errMsg        string
+	}{
+		{
+			name: "finds matching VirtualService by name",
+			manifestsYAML: `
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: test-vs
+spec:
+  hosts:
+  - test.example.com
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: other-vs
+spec:
+  hosts:
+  - other.example.com
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-service
+`,
+			ref: kubeconfig.K8sResourceReference{
+				Kind: "VirtualService",
+				Name: "test-vs",
+			},
+			wantCount: 1,
+			wantNames: []string{"test-vs"},
+			wantErr:   false,
+		},
+		{
+			name: "finds all VirtualServices when name is empty",
+			manifestsYAML: `
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: vs1
+spec:
+  hosts:
+  - vs1.example.com
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: vs2
+spec:
+  hosts:
+  - vs2.example.com
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-service
+`,
+			ref: kubeconfig.K8sResourceReference{
+				Kind: "VirtualService",
+				Name: "",
+			},
+			wantCount: 2,
+			wantNames: []string{"vs1", "vs2"},
+			wantErr:   false,
+		},
+		{
+			name: "finds all VirtualServices when kind is empty",
+			manifestsYAML: `
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: vs1
+spec:
+  hosts:
+  - vs1.example.com
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: vs2
+spec:
+  hosts:
+  - vs2.example.com
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-service
+`,
+			ref: kubeconfig.K8sResourceReference{
+				Kind: "",
+				Name: "",
+			},
+			wantCount: 2,
+			wantNames: []string{"vs1", "vs2"},
+			wantErr:   false,
+		},
+		{
+			name: "returns empty when no VirtualServices found",
+			manifestsYAML: `
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+      - name: test
+        image: nginx
+`,
+			ref: kubeconfig.K8sResourceReference{
+				Kind: "VirtualService",
+				Name: "test-vs",
+			},
+			wantCount: 0,
+			wantNames: []string{},
+			wantErr:   false,
+		},
+		{
+			name: "returns empty when no matching name found",
+			manifestsYAML: `
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: other-vs
+spec:
+  hosts:
+  - other.example.com
+`,
+			ref: kubeconfig.K8sResourceReference{
+				Kind: "VirtualService",
+				Name: "test-vs",
+			},
+			wantCount: 0,
+			wantNames: []string{},
+			wantErr:   false,
+		},
+		{
+			name: "filters out manifests with wrong group",
+			manifestsYAML: `
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: istio-vs
+spec:
+  hosts:
+  - istio.example.com
+---
+apiVersion: networking.k8s.io/v1
+kind: VirtualService
+metadata:
+  name: k8s-ingress
+spec:
+  rules:
+  - host: k8s.example.com
+`,
+			ref: kubeconfig.K8sResourceReference{
+				Kind: "VirtualService",
+				Name: "",
+			},
+			wantCount: 1,
+			wantNames: []string{"istio-vs"},
+			wantErr:   false,
+		},
+		{
+			name: "filters out manifests with wrong kind",
+			manifestsYAML: `
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: test-vs
+spec:
+  hosts:
+  - test.example.com
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: test-dr
+spec:
+  host: test.example.com
+`,
+			ref: kubeconfig.K8sResourceReference{
+				Kind: "VirtualService",
+				Name: "",
+			},
+			wantCount: 1,
+			wantNames: []string{"test-vs"},
+			wantErr:   false,
+		},
+		{
+			name: "returns error for invalid kind",
+			manifestsYAML: `
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: test-vs
+spec:
+  hosts:
+  - test.example.com
+`,
+			ref: kubeconfig.K8sResourceReference{
+				Kind: "DestinationRule",
+				Name: "test-dr",
+			},
+			wantCount: 0,
+			wantNames: []string{},
+			wantErr:   true,
+			errMsg:    `support only "VirtualService" kind for VirtualService reference`,
+		},
+		{
+			name:          "returns empty for empty manifest list",
+			manifestsYAML: "",
+			ref: kubeconfig.K8sResourceReference{
+				Kind: "VirtualService",
+				Name: "test-vs",
+			},
+			wantCount: 0,
+			wantNames: []string{},
+			wantErr:   false,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			var manifests []provider.Manifest
+			if tt.manifestsYAML != "" {
+				manifests = mustParseManifests(t, tt.manifestsYAML)
+			}
+
+			got, err := findIstioVirtualServiceManifests(manifests, tt.ref)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errMsg)
+				return
+			}
+
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantCount, len(got), "Expected %d manifests, got %d", tt.wantCount, len(got))
+
+			// Verify the names of the returned manifests
+			gotNames := make([]string, len(got))
+			for i, manifest := range got {
+				gotNames[i] = manifest.Name()
+			}
+			assert.ElementsMatch(t, tt.wantNames, gotNames, "Expected manifest names to match")
+
+			// Verify that all returned manifests are VirtualServices
+			for _, manifest := range got {
+				assert.Equal(t, "VirtualService", manifest.Kind())
+				assert.Equal(t, "networking.istio.io", manifest.GroupVersionKind().Group)
+			}
 		})
 	}
 }
