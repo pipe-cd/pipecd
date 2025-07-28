@@ -298,7 +298,7 @@ func (r *repo) Pull(ctx context.Context, branch string) error {
 		return nil
 	}
 	// Handle "divergent branches" error, caused by amending the remote
-	if strings.Contains(string(out), "Diverging branches") {
+	if strings.Contains(string(out), "Not possible to fast-forward") {
 		// need to use --force to move the remote-ref to the new commit
 		// when the update is a non-fast-forward one like divergent branches
 		out, err := r.runGitCommand(ctx, "fetch", r.remote, branch, "--force")
