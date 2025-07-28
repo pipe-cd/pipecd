@@ -1,5 +1,5 @@
 apiVersion: v2
-name: pipecd
+name: control-plane
 description: A Helm chart for Control Plane of PipeCD
 
 # A chart can be either an 'application' or a 'library' chart.

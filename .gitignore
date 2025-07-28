@@ -51,7 +51,7 @@ pkg/app/web/.env
 .rendered-manifests
 
 # manfiests
-manifests/pipecd/charts
+manifests/control-plane/charts
 manifests/piped/charts
 manifests/site/charts
 manifests/helloworld/charts

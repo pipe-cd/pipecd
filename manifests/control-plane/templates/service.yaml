@@ -1,16 +1,16 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "pipecd.fullname" . }}
+  name: {{ include "controlPlane.fullname" . }}
   labels:
-    {{- include "pipecd.labels" . | nindent 4 }}
+    {{- include "controlPlane.labels" . | nindent 4 }}
     app.kubernetes.io/component: ingress
   annotations:
   {{- with .Values.service.annotations }}
     {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- if .Values.backendConfig.enabled }}
-    beta.cloud.google.com/backend-config: '{"ports": {"internal-service": "{{ include "pipecd.fullname" . }}" }}'
+    beta.cloud.google.com/backend-config: '{"ports": {"internal-service": "{{ include "controlPlane.fullname" . }}" }}'
   {{- end }}
 spec:
   type: {{ .Values.service.type }}
@@ -24,16 +24,16 @@ spec:
       targetPort: ingress
     {{- end }}
   selector:
-    {{- include "pipecd.selectorLabels" . | nindent 4 }}
+    {{- include "controlPlane.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: gateway
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "pipecd.fullname" . }}-gateway
+  name: {{ include "controlPlane.fullname" . }}-gateway
   labels:
-    {{- include "pipecd.labels" . | nindent 4 }}
+    {{- include "controlPlane.labels" . | nindent 4 }}
     app.kubernetes.io/component: gateway
 spec:
   type: ClusterIP
@@ -42,16 +42,16 @@ spec:
       port: 9095
       targetPort: envoy-admin
   selector:
-    {{- include "pipecd.selectorLabels" . | nindent 4 }}
+    {{- include "controlPlane.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: gateway
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "pipecd.fullname" . }}-server
+  name: {{ include "controlPlane.fullname" . }}-server
   labels:
-    {{- include "pipecd.labels" . | nindent 4 }}
+    {{- include "controlPlane.labels" . | nindent 4 }}
     app.kubernetes.io/component: server
 spec:
   type: ClusterIP
@@ -73,16 +73,16 @@ spec:
       port: 9085
       targetPort: admin
   selector:
-    {{- include "pipecd.selectorLabels" . | nindent 4 }}
+    {{- include "controlPlane.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: server
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "pipecd.fullname" . }}-cache
+  name: {{ include "controlPlane.fullname" . }}-cache
   labels:
-    {{- include "pipecd.labels" . | nindent 4 }}
+    {{- include "controlPlane.labels" . | nindent 4 }}
     app.kubernetes.io/component: cache
 spec:
   type: ClusterIP
@@ -91,16 +91,16 @@ spec:
       port: 6379
       targetPort: redis
   selector:
-    {{- include "pipecd.selectorLabels" . | nindent 4 }}
+    {{- include "controlPlane.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: cache
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "pipecd.fullname" . }}-ops
+  name: {{ include "controlPlane.fullname" . }}-ops
   labels:
-    {{- include "pipecd.labels" . | nindent 4 }}
+    {{- include "controlPlane.labels" . | nindent 4 }}
     app.kubernetes.io/component: ops
 spec:
   type: ClusterIP
@@ -113,7 +113,7 @@ spec:
       port: 9085
       targetPort: admin
   selector:
-    {{- include "pipecd.selectorLabels" . | nindent 4 }}
+    {{- include "controlPlane.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: ops
 
 {{- if .Values.quickstart.enabled }}
@@ -121,9 +121,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "pipecd.fullname" . }}-mysql
+  name: {{ include "controlPlane.fullname" . }}-mysql
   labels:
-    {{- include "pipecd.labels" . | nindent 4 }}
+    {{- include "controlPlane.labels" . | nindent 4 }}
     app.kubernetes.io/component: mysql
 spec:
   type: ClusterIP
@@ -132,16 +132,16 @@ spec:
       port: {{ .Values.mysql.port }}
       targetPort: mysql
   selector:
-    {{- include "pipecd.selectorLabels" . | nindent 4 }}
+    {{- include "controlPlane.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: mysql
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "pipecd.fullname" . }}-minio
+  name: {{ include "controlPlane.fullname" . }}-minio
   labels:
-    {{- include "pipecd.labels" . | nindent 4 }}
+    {{- include "controlPlane.labels" . | nindent 4 }}
     app.kubernetes.io/component: minio
 spec:
   type: ClusterIP
@@ -150,6 +150,6 @@ spec:
       port: {{ .Values.minio.port }}
       targetPort: minio
   selector:
-    {{- include "pipecd.selectorLabels" . | nindent 4 }}
+    {{- include "controlPlane.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: minio
 {{- end }}
