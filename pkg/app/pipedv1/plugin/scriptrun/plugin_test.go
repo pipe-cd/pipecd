@@ -19,6 +19,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister/logpersistertest"
+	"go.uber.org/zap/zaptest"
+
 	"github.com/pipe-cd/piped-plugin-sdk-go/unit"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
@@ -157,6 +160,142 @@ func Test_FetchDefinedStages(t *testing.T) {
 	got := p.FetchDefinedStages()
 
 	assert.Equal(t, want, got)
+}
+func Test_ContextInfo_BuildEnv(t *testing.T) {
+	tests := []struct {
+		name   string
+		ci     *ContextInfo
+		optEnv map[string]string
+		want   []string
+	}{
+		{
+			name: "success",
+			ci: &ContextInfo{
+				DeploymentID:        "deployment-id",
+				ApplicationID:       "application-id",
+				ApplicationName:     "application-name",
+				TriggeredAt:         1234567890,
+				TriggeredCommitHash: "commit-hash",
+				TriggeredCommander:  "commander",
+				RepositoryURL:       "repo-url",
+				Labels: map[string]string{
+					"key1": "value1",
+					"key2": "value2",
+				},
+				IsRollback: false,
+				Summary:    "summary",
+			},
+			optEnv: map[string]string{
+				"env1": "x1",
+				"env2": "x2",
+			},
+			want: []string{
+				"SR_DEPLOYMENT_ID=deployment-id",
+				"SR_APPLICATION_ID=application-id",
+				"SR_APPLICATION_NAME=application-name",
+				"SR_TRIGGERED_AT=1234567890",
+				"SR_TRIGGERED_COMMIT_HASH=commit-hash",
+				"SR_TRIGGERED_COMMANDER=commander",
+				"SR_REPOSITORY_URL=repo-url",
+				"SR_SUMMARY=summary",
+				"SR_IS_ROLLBACK=false",
+				"SR_LABELS_KEY1=value1",
+				"SR_LABELS_KEY2=value2",
+				"env1=x1",
+				"env2=x2",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := buildEnvStr(tt.ci, tt.optEnv)
+			assert.Nil(t, err)
+
+			assert.Subset(t, got, tt.want)
+
+		})
+	}
+}
+func TestPlugin_ExecuteScriptRun(t *testing.T) {
+	t.Parallel()
+	testcases := []struct {
+		name        string
+		input       *sdk.ExecuteStageInput[struct{}]
+		want        *sdk.ExecuteStageResponse
+		expectedErr bool
+	}{
+		{
+			name: "success",
+			input: &sdk.ExecuteStageInput[struct{}]{
+				Request: sdk.ExecuteStageRequest[struct{}]{
+					StageName:   stageScriptRun,
+					StageConfig: []byte(`{"run": "echo 'success'"}`),
+					Deployment: sdk.Deployment{
+						ID:            "deployment-1",
+						ApplicationID: "app-1",
+					},
+				},
+				Client: sdk.NewClient(nil, "script-run", "", "", logpersistertest.NewTestLogPersister(t), nil),
+				Logger: zaptest.NewLogger(t),
+			},
+			want: &sdk.ExecuteStageResponse{
+				Status: sdk.StageStatusSuccess,
+			},
+			expectedErr: false,
+		},
+		{
+			name: "program failed",
+			input: &sdk.ExecuteStageInput[struct{}]{
+				Request: sdk.ExecuteStageRequest[struct{}]{
+					StageName:   stageScriptRun,
+					StageConfig: []byte(`{"run": "exit 1"}`),
+					Deployment: sdk.Deployment{
+						ID:            "deployment-2",
+						ApplicationID: "app-2",
+					},
+				},
+				Client: sdk.NewClient(nil, "script-run", "", "", logpersistertest.NewTestLogPersister(t), nil),
+				Logger: zaptest.NewLogger(t),
+			},
+			want: &sdk.ExecuteStageResponse{
+				Status: sdk.StageStatusFailure,
+			},
+			expectedErr: false,
+		},
+		{
+			name: "command failed",
+			input: &sdk.ExecuteStageInput[struct{}]{
+				Request: sdk.ExecuteStageRequest[struct{}]{
+					StageName:   stageScriptRun,
+					StageConfig: []byte(`{"run": "not_runnable"}`),
+					Deployment: sdk.Deployment{
+						ID:            "deployment-3",
+						ApplicationID: "app-3",
+					},
+				},
+				Client: sdk.NewClient(nil, "script-run", "", "", logpersistertest.NewTestLogPersister(t), nil),
+				Logger: zaptest.NewLogger(t),
+			},
+			want: &sdk.ExecuteStageResponse{
+				Status: sdk.StageStatusFailure,
+			},
+			expectedErr: false,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			p := plugin{}
+			resp, err := p.ExecuteStage(t.Context(), &struct{}{}, sdk.DeployTargetsNone{}, tc.input)
+			if tc.expectedErr {
+				assert.Error(t, err)
+			} else {
+				assert.Equal(t, tc.want, resp)
+				assert.NoError(t, err)
+			}
+		})
+	}
 }
 func mustMarshalJSON(t *testing.T, v interface{}) []byte {
 	data, err := json.Marshal(v)
