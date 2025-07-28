@@ -24,7 +24,6 @@ import (
 )
 
 type projectCollection struct {
-	requestedBy Commander
 }
 
 func (p *projectCollection) Kind() string {
@@ -44,12 +43,7 @@ func (p *projectCollection) ListInUsedShards() []Shard {
 }
 
 func (p *projectCollection) GetUpdatableShard() (Shard, error) {
-	switch p.requestedBy {
-	case WebCommander:
-		return ClientShard, nil
-	default:
-		return "", ErrUnsupported
-	}
+	return ClientShard, nil
 }
 
 func (p *projectCollection) Encode(e interface{}) (map[Shard][]byte, error) {
@@ -87,18 +81,16 @@ type ProjectStore interface {
 
 type projectStore struct {
 	backend
-	commander Commander
-	nowFunc   func() time.Time
+	nowFunc func() time.Time
 }
 
-func NewProjectStore(ds DataStore, c Commander) ProjectStore {
+func NewProjectStore(ds DataStore) ProjectStore {
 	return &projectStore{
 		backend: backend{
 			ds:  ds,
-			col: &projectCollection{requestedBy: c},
+			col: &projectCollection{},
 		},
-		commander: c,
-		nowFunc:   time.Now,
+		nowFunc: time.Now,
 	}
 }
 

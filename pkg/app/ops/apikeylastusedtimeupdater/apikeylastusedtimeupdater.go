@@ -54,7 +54,7 @@ func NewAPIKeyLastUsedTimeUpdater(
 	logger *zap.Logger,
 ) *APIKeyLastUsedTimeUpdater {
 	return &APIKeyLastUsedTimeUpdater{
-		apiKeyStore:             datastore.NewAPIKeyStore(ds, datastore.OpsCommander),
+		apiKeyStore:             datastore.NewAPIKeyStore(ds),
 		apiKeyLastUsedTimeCache: rediscache.NewHashCache(rd, apiKeyLastUsedCacheHashKey),
 		logger:                  logger.Named("api-key-last-used-time-updater"),
 	}

@@ -24,7 +24,6 @@ import (
 )
 
 type eventCollection struct {
-	requestedBy Commander
 }
 
 func (e *eventCollection) Kind() string {
@@ -44,12 +43,7 @@ func (e *eventCollection) ListInUsedShards() []Shard {
 }
 
 func (e *eventCollection) GetUpdatableShard() (Shard, error) {
-	switch e.requestedBy {
-	case PipedCommander:
-		return AgentShard, nil
-	default:
-		return "", ErrUnsupported
-	}
+	return AgentShard, nil
 }
 
 func (e *eventCollection) Encode(entity interface{}) (map[Shard][]byte, error) {
@@ -77,18 +71,16 @@ type EventStore interface {
 
 type eventStore struct {
 	backend
-	commander Commander
-	nowFunc   func() time.Time
+	nowFunc func() time.Time
 }
 
-func NewEventStore(ds DataStore, c Commander) EventStore {
+func NewEventStore(ds DataStore) EventStore {
 	return &eventStore{
 		backend: backend{
 			ds:  ds,
-			col: &eventCollection{requestedBy: c},
+			col: &eventCollection{},
 		},
-		commander: c,
-		nowFunc:   time.Now,
+		nowFunc: time.Now,
 	}
 }
 
