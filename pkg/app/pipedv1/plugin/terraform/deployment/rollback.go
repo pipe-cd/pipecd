@@ -24,13 +24,20 @@ import (
 
 // TODO: add test
 func (p *Plugin) executeRollbackStage(ctx context.Context, input *sdk.ExecuteStageInput[config.ApplicationConfigSpec], dts []*sdk.DeployTarget[config.DeployTargetConfig]) sdk.StageStatus {
-	cmd, err := initTerraformCommand(ctx, input.Client, input.Request.RunningDeploymentSource, dts[0])
+	lp := input.Client.LogPersister()
+	rds := input.Request.RunningDeploymentSource
+
+	if rds.CommitHash == "" {
+		lp.Errorf("Unable to determine the last deployed commit to rollback. It seems this is the first deployment.")
+		return sdk.StageStatusFailure
+	}
+
+	cmd, err := initTerraformCommand(ctx, input.Client, rds, dts[0])
 	if err != nil {
 		return sdk.StageStatusFailure
 	}
 
-	lp := input.Client.LogPersister()
-
+	lp.Infof("Start rolling back to the state defined at commit %s", rds.CommitHash)
 	if err = cmd.Apply(ctx, lp); err != nil {
 		lp.Errorf("Failed to apply changes (%v)", err)
 		return sdk.StageStatusFailure
