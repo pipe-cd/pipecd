@@ -234,3 +234,7 @@ func convertVirtualService(m provider.Manifest) (*virtualService, error) {
 	}
 	return &vs, nil
 }
+
+func (vs *virtualService) toManifest() (provider.Manifest, error) {
+	return provider.FromStructuredObject(vs)
+}

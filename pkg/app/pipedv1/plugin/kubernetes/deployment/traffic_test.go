@@ -855,3 +855,264 @@ spec:
 		})
 	}
 }
+
+func TestVirtualService_toManifest(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		yaml      string
+		checkFunc func(t *testing.T, original *virtualService, converted provider.Manifest)
+	}{
+		{
+			name: "basic VirtualService conversion",
+			yaml: `
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: test-virtual-service
+  namespace: default
+spec:
+  hosts:
+  - test-service
+  http:
+  - route:
+    - destination:
+        host: test-service
+        subset: primary
+      weight: 100
+`,
+			checkFunc: func(t *testing.T, original *virtualService, converted provider.Manifest) {
+				// Check basic metadata
+				assert.Equal(t, original.Name, converted.Name())
+				assert.Equal(t, original.Kind, converted.Kind())
+				assert.Equal(t, original.APIVersion, converted.APIVersion())
+
+				// Check namespace using NestedString (metadata.namespace)
+				namespace, found, err := converted.NestedString("metadata", "namespace")
+				require.NoError(t, err)
+				if original.Namespace != "" {
+					require.True(t, found)
+					assert.Equal(t, original.Namespace, namespace)
+				}
+
+				// Verify hosts are preserved using NestedMap approach
+				spec, found, err := converted.NestedMap("spec")
+				require.NoError(t, err)
+				require.True(t, found)
+
+				hosts, ok := spec["hosts"].([]interface{})
+				require.True(t, ok, "hosts should be a slice")
+				hostStrings := make([]string, len(hosts))
+				for i, h := range hosts {
+					hostStrings[i] = h.(string)
+				}
+				assert.Equal(t, original.Spec.Hosts, hostStrings)
+
+				// Verify the converted manifest can be serialized back to the same structure
+				var reconverted virtualService
+				err = converted.ConvertToStructuredObject(&reconverted)
+				require.NoError(t, err)
+				assert.Equal(t, original.Name, reconverted.Name)
+				assert.Equal(t, original.Namespace, reconverted.Namespace)
+				assert.Equal(t, original.Spec.Hosts, reconverted.Spec.Hosts)
+			},
+		},
+		{
+			name: "VirtualService with multiple routes",
+			yaml: `
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: multi-route-vs
+  namespace: istio-system
+  labels:
+    app: test
+spec:
+  hosts:
+  - example.com
+  - test-service.default.svc.cluster.local
+  gateways:
+  - test-gateway
+  http:
+  - name: primary-route
+    route:
+    - destination:
+        host: test-service
+        subset: primary
+      weight: 80
+    - destination:
+        host: test-service
+        subset: canary
+      weight: 20
+  - name: default-route
+    route:
+    - destination:
+        host: test-service
+        subset: primary
+      weight: 100
+`,
+			checkFunc: func(t *testing.T, original *virtualService, converted provider.Manifest) {
+				// Check metadata preservation
+				assert.Equal(t, original.Name, converted.Name())
+				assert.Equal(t, original.Kind, converted.Kind())
+
+				// Check namespace using NestedString (metadata.namespace)
+				namespace, found, err := converted.NestedString("metadata", "namespace")
+				require.NoError(t, err)
+				if original.Namespace != "" {
+					require.True(t, found)
+					assert.Equal(t, original.Namespace, namespace)
+				}
+
+				// Check labels are preserved using NestedMap
+				metadata, found, err := converted.NestedMap("metadata")
+				require.NoError(t, err)
+				require.True(t, found)
+				if labels, ok := metadata["labels"].(map[string]interface{}); ok {
+					assert.Equal(t, "test", labels["app"])
+				}
+
+				// Check hosts are preserved using NestedMap
+				spec, found, err := converted.NestedMap("spec")
+				require.NoError(t, err)
+				require.True(t, found)
+
+				hosts, ok := spec["hosts"].([]interface{})
+				require.True(t, ok, "hosts should be a slice")
+				hostStrings := make([]string, len(hosts))
+				for i, h := range hosts {
+					hostStrings[i] = h.(string)
+				}
+				assert.Equal(t, original.Spec.Hosts, hostStrings)
+
+				// Check gateways are preserved using NestedMap
+				if gateways, ok := spec["gateways"].([]interface{}); ok {
+					gatewayStrings := make([]string, len(gateways))
+					for i, g := range gateways {
+						gatewayStrings[i] = g.(string)
+					}
+					assert.Equal(t, original.Spec.Gateways, gatewayStrings)
+				}
+
+				// Verify round-trip conversion
+				var roundTrip virtualService
+				err = converted.ConvertToStructuredObject(&roundTrip)
+				require.NoError(t, err)
+				assert.Equal(t, original.Spec.Hosts, roundTrip.Spec.Hosts)
+				assert.Equal(t, original.Spec.Gateways, roundTrip.Spec.Gateways)
+				assert.Len(t, roundTrip.Spec.Http, 2)
+			},
+		},
+		{
+			name: "VirtualService with TCP routing",
+			yaml: `
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: tcp-vs
+spec:
+  hosts:
+  - tcp-service
+  tcp:
+  - match:
+    - port: 3306
+    route:
+    - destination:
+        host: mysql-service
+        port:
+          number: 3306
+      weight: 100
+`,
+			checkFunc: func(t *testing.T, original *virtualService, converted provider.Manifest) {
+				// Check basic conversion
+				assert.Equal(t, original.Name, converted.Name())
+				assert.Equal(t, original.Kind, converted.Kind())
+
+				// Check hosts preservation using NestedMap
+				spec, found, err := converted.NestedMap("spec")
+				require.NoError(t, err)
+				require.True(t, found)
+
+				hosts, ok := spec["hosts"].([]interface{})
+				require.True(t, ok, "hosts should be a slice")
+				hostStrings := make([]string, len(hosts))
+				for i, h := range hosts {
+					hostStrings[i] = h.(string)
+				}
+				assert.Equal(t, original.Spec.Hosts, hostStrings)
+
+				// Verify TCP routes are preserved through round-trip
+				var roundTrip virtualService
+				err = converted.ConvertToStructuredObject(&roundTrip)
+				require.NoError(t, err)
+				assert.Len(t, roundTrip.Spec.Tcp, 1)
+				assert.Len(t, roundTrip.Spec.Tcp[0].Route, 1)
+				assert.Equal(t, "mysql-service", roundTrip.Spec.Tcp[0].Route[0].Destination.Host)
+			},
+		},
+		{
+			name: "minimal VirtualService",
+			yaml: `
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: minimal-vs
+spec:
+  hosts:
+  - minimal-service
+`,
+			checkFunc: func(t *testing.T, original *virtualService, converted provider.Manifest) {
+				// Check basic conversion for minimal case
+				assert.Equal(t, original.Name, converted.Name())
+				assert.Equal(t, original.Kind, converted.Kind())
+
+				// Check hosts are preserved using NestedMap
+				spec, found, err := converted.NestedMap("spec")
+				require.NoError(t, err)
+				require.True(t, found)
+
+				hosts, ok := spec["hosts"].([]interface{})
+				require.True(t, ok, "hosts should be a slice")
+				hostStrings := make([]string, len(hosts))
+				for i, h := range hosts {
+					hostStrings[i] = h.(string)
+				}
+				assert.Equal(t, original.Spec.Hosts, hostStrings)
+
+				// Verify round-trip for minimal case
+				var roundTrip virtualService
+				err = converted.ConvertToStructuredObject(&roundTrip)
+				require.NoError(t, err)
+				assert.Equal(t, original.Spec.Hosts, roundTrip.Spec.Hosts)
+				assert.Empty(t, roundTrip.Spec.Http)
+				assert.Empty(t, roundTrip.Spec.Tcp)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			// Parse YAML to manifest
+			manifests := mustParseManifests(t, tt.yaml)
+			require.Len(t, manifests, 1, "test should provide exactly one manifest")
+
+			// Convert to virtualService
+			vs, err := convertVirtualService(manifests[0])
+			require.NoError(t, err)
+			require.NotNil(t, vs)
+
+			// Test toManifest conversion
+			convertedManifest, err := vs.toManifest()
+			require.NoError(t, err)
+			require.NotNil(t, convertedManifest)
+
+			// Run verification
+			if tt.checkFunc != nil {
+				tt.checkFunc(t, vs, convertedManifest)
+			}
+		})
+	}
+}
