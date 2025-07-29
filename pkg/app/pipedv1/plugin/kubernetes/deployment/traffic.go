@@ -192,7 +192,15 @@ func (p *Plugin) executeK8sTrafficRoutingStageIstio(ctx context.Context, input *
 		return sdk.StageStatusFailure
 	}
 
-	virtualServices, err := findIstioVirtualServiceManifests(manifests, cfg.Spec.Service)
+	// Use VirtualService reference from Istio config if specified, otherwise use Service reference
+	var vsRef kubeconfig.K8sResourceReference
+	if cfg.Spec.TrafficRouting != nil && cfg.Spec.TrafficRouting.Istio != nil && cfg.Spec.TrafficRouting.Istio.VirtualService.Name != "" {
+		vsRef = cfg.Spec.TrafficRouting.Istio.VirtualService
+	} else {
+		vsRef = cfg.Spec.Service
+	}
+
+	virtualServices, err := findIstioVirtualServiceManifests(manifests, vsRef)
 	if err != nil {
 		lp.Errorf("Failed while finding traffic routing manifest: (%v)", err)
 		return sdk.StageStatusFailure
