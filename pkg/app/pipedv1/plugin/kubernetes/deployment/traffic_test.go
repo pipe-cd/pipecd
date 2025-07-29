@@ -644,3 +644,214 @@ spec:
 		})
 	}
 }
+
+func TestConvertVirtualService(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		yaml      string
+		checkFunc func(t *testing.T, vs *virtualService)
+	}{
+		{
+			name: "valid VirtualService with basic HTTP routing",
+			yaml: `
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: test-virtual-service
+  namespace: default
+spec:
+  hosts:
+  - test-service
+  http:
+  - route:
+    - destination:
+        host: test-service
+        subset: primary
+      weight: 100
+`,
+			checkFunc: func(t *testing.T, vs *virtualService) {
+				assert.Equal(t, "networking.istio.io/v1", vs.APIVersion)
+				assert.Equal(t, "VirtualService", vs.Kind)
+				assert.Equal(t, "test-virtual-service", vs.Name)
+				assert.Equal(t, "default", vs.Namespace)
+				assert.Equal(t, []string{"test-service"}, vs.Spec.Hosts)
+				assert.Len(t, vs.Spec.Http, 1)
+				assert.Len(t, vs.Spec.Http[0].Route, 1)
+				assert.Equal(t, "test-service", vs.Spec.Http[0].Route[0].Destination.Host)
+				assert.Equal(t, "primary", vs.Spec.Http[0].Route[0].Destination.Subset)
+				assert.Equal(t, int32(100), vs.Spec.Http[0].Route[0].Weight)
+			},
+		},
+		{
+			name: "VirtualService with multiple routes and match conditions",
+			yaml: `
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: multi-route-vs
+  namespace: istio-system
+  labels:
+    app: test
+spec:
+  hosts:
+  - example.com
+  - test-service.default.svc.cluster.local
+  gateways:
+  - test-gateway
+  http:
+  - name: primary-route
+    match:
+    - headers:
+        version:
+          exact: v1
+    route:
+    - destination:
+        host: test-service
+        subset: primary
+      weight: 80
+    - destination:
+        host: test-service
+        subset: canary
+      weight: 20
+  - name: default-route
+    route:
+    - destination:
+        host: test-service
+        subset: primary
+      weight: 100
+`,
+			checkFunc: func(t *testing.T, vs *virtualService) {
+				assert.Equal(t, "networking.istio.io/v1", vs.APIVersion)
+				assert.Equal(t, "VirtualService", vs.Kind)
+				assert.Equal(t, "multi-route-vs", vs.Name)
+				assert.Equal(t, "istio-system", vs.Namespace)
+				assert.Equal(t, "test", vs.Labels["app"])
+				assert.Equal(t, []string{"example.com", "test-service.default.svc.cluster.local"}, vs.Spec.Hosts)
+				assert.Equal(t, []string{"test-gateway"}, vs.Spec.Gateways)
+				assert.Len(t, vs.Spec.Http, 2)
+
+				// Check first HTTP route
+				assert.Equal(t, "primary-route", vs.Spec.Http[0].Name)
+				assert.Len(t, vs.Spec.Http[0].Match, 1)
+				assert.Len(t, vs.Spec.Http[0].Route, 2)
+				assert.Equal(t, "test-service", vs.Spec.Http[0].Route[0].Destination.Host)
+				assert.Equal(t, "primary", vs.Spec.Http[0].Route[0].Destination.Subset)
+				assert.Equal(t, int32(80), vs.Spec.Http[0].Route[0].Weight)
+				assert.Equal(t, "canary", vs.Spec.Http[0].Route[1].Destination.Subset)
+				assert.Equal(t, int32(20), vs.Spec.Http[0].Route[1].Weight)
+
+				// Check second HTTP route
+				assert.Equal(t, "default-route", vs.Spec.Http[1].Name)
+				assert.Len(t, vs.Spec.Http[1].Route, 1)
+				assert.Equal(t, int32(100), vs.Spec.Http[1].Route[0].Weight)
+			},
+		},
+		{
+			name: "VirtualService with TCP routing",
+			yaml: `
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: tcp-vs
+spec:
+  hosts:
+  - tcp-service
+  tcp:
+  - match:
+    - port: 3306
+    route:
+    - destination:
+        host: mysql-service
+        port:
+          number: 3306
+      weight: 100
+`,
+			checkFunc: func(t *testing.T, vs *virtualService) {
+				assert.Equal(t, "tcp-vs", vs.Name)
+				assert.Equal(t, []string{"tcp-service"}, vs.Spec.Hosts)
+				assert.Len(t, vs.Spec.Tcp, 1)
+				assert.Len(t, vs.Spec.Tcp[0].Route, 1)
+				assert.Equal(t, "mysql-service", vs.Spec.Tcp[0].Route[0].Destination.Host)
+				assert.Equal(t, uint32(3306), vs.Spec.Tcp[0].Route[0].Destination.Port.Number)
+			},
+		},
+		{
+			name: "minimal VirtualService",
+			yaml: `
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: minimal-vs
+spec:
+  hosts:
+  - minimal-service
+`,
+			checkFunc: func(t *testing.T, vs *virtualService) {
+				assert.Equal(t, "minimal-vs", vs.Name)
+				assert.Equal(t, []string{"minimal-service"}, vs.Spec.Hosts)
+				assert.Empty(t, vs.Spec.Http)
+				assert.Empty(t, vs.Spec.Tcp)
+			},
+		},
+		{
+			name: "invalid YAML - not a VirtualService",
+			yaml: `
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-service
+spec:
+  selector:
+    app: test
+  ports:
+  - port: 80
+    targetPort: 8080
+`,
+			checkFunc: func(t *testing.T, vs *virtualService) {
+				assert.Equal(t, "v1", vs.APIVersion)
+				assert.Equal(t, "Service", vs.Kind)
+				assert.Equal(t, "test-service", vs.Name)
+				// Spec will be empty since Service spec doesn't match VirtualService spec structure
+			},
+		},
+		{
+			name: "YAML with invalid structure for VirtualService conversion",
+			yaml: `
+apiVersion: v1
+kind: VirtualService
+metadata:
+  name: invalid-structure
+spec:
+  # This will cause conversion errors because these fields don't match the expected VirtualService structure
+  invalidField: "invalid value"
+  anotherInvalidField:
+    nested: "structure that doesn't match Istio VirtualService schema"
+`,
+			checkFunc: func(t *testing.T, vs *virtualService) {
+				assert.Equal(t, "v1", vs.APIVersion)
+				assert.Equal(t, "VirtualService", vs.Kind)
+				assert.Equal(t, "invalid-structure", vs.Name)
+				// The Spec will be mostly empty since the fields don't match VirtualService structure
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			manifests := mustParseManifests(t, tt.yaml)
+			require.Len(t, manifests, 1, "test should provide exactly one manifest")
+
+			vs, err := convertVirtualService(manifests[0])
+
+			require.NoError(t, err)
+			require.NotNil(t, vs)
+			if tt.checkFunc != nil {
+				tt.checkFunc(t, vs)
+			}
+		})
+	}
+}

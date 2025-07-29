@@ -21,6 +21,8 @@ import (
 	"fmt"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+	istiov1 "istio.io/api/networking/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
@@ -215,4 +217,20 @@ func findIstioVirtualServiceManifests(manifests []provider.Manifest, ref kubecon
 	}
 
 	return out, nil
+}
+
+// virtualService is a wrapper around istiov1.VirtualService
+// to enable the conversion from unstructured.Unstructured to VirtualService
+type virtualService struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+	Spec              istiov1.VirtualService
+}
+
+func convertVirtualService(m provider.Manifest) (*virtualService, error) {
+	var vs virtualService
+	if err := m.ConvertToStructuredObject(&vs); err != nil {
+		return nil, err
+	}
+	return &vs, nil
 }
