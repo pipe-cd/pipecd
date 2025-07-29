@@ -112,11 +112,15 @@ func (p *Plugin) ExecuteStage(ctx context.Context, _ *config.Config, dts []*sdk.
 			Status: p.executePlanStage(ctx, input, dts),
 		}, nil
 	case stageApply:
-		panic("unimplemented")
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeApplyStage(ctx, input, dts),
+		}, nil
 	case stageRollback:
-		panic("unimplemented")
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeRollbackStage(ctx, input, dts),
+		}, nil
 	}
-	return nil, errors.New("unimplemented or unsupported stage")
+	return nil, errors.New("unsupported stage")
 }
 
 // FetchDefinedStages implements sdk.DeploymentPlugin.
