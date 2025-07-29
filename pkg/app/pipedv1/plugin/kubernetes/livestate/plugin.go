@@ -86,7 +86,7 @@ func (p *Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTarg
 	// Currently, we create them every time the stage is executed beucause we can't pass input.Client.toolRegistry to the plugin when starting the plugin.
 	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
 
-	manifests, err := p.loadManifests(ctx, input, cfg.Spec, provider.NewLoader(toolRegistry))
+	manifests, err := p.loadManifests(ctx, input, cfg.Spec, provider.NewLoader(toolRegistry), input.Logger)
 	if err != nil {
 		input.Logger.Error("Failed to load manifests", zap.Error(err))
 		return nil, err
@@ -201,7 +201,7 @@ type loader interface {
 }
 
 // TODO: share this implementation with the deployment plugin
-func (p *Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec], spec *kubeconfig.KubernetesApplicationSpec, loader loader) ([]provider.Manifest, error) {
+func (p *Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec], spec *kubeconfig.KubernetesApplicationSpec, loader loader, logger *zap.Logger) ([]provider.Manifest, error) {
 	manifests, err := loader.LoadManifests(ctx, provider.LoaderInput{
 		PipedID:          input.Request.PipedID,
 		AppID:            input.Request.ApplicationID,
@@ -216,6 +216,7 @@ func (p *Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput
 		HelmVersion:      spec.Input.HelmVersion,
 		HelmChart:        spec.Input.HelmChart,
 		HelmOptions:      spec.Input.HelmOptions,
+		Logger:           logger,
 	})
 
 	if err != nil {
