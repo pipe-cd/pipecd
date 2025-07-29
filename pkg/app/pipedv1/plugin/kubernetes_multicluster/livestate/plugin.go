@@ -110,7 +110,7 @@ func (p Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTarge
 		liveManifests = append(liveManifests, namespacedLiveResources...)
 		liveManifests = append(liveManifests, clusterScopedLiveResources...)
 
-		manifests, err := p.loadManifests(ctx, input, cfg.Spec, provider.NewLoader(toolRegistry), tc.multiTarget)
+		manifests, err := p.loadManifests(ctx, input, cfg.Spec, provider.NewLoader(toolRegistry), input.Logger, tc.multiTarget)
 		if err != nil {
 			input.Logger.Error("Failed to load manifests", zap.Error(err))
 			return nil, err
