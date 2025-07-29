@@ -250,7 +250,7 @@ type loader interface {
 }
 
 // TODO: share this implementation with the deployment plugin
-func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec], spec *kubeconfig.KubernetesApplicationSpec, loader loader, multiTarget *kubeconfig.KubernetesMultiTarget) ([]provider.Manifest, error) {
+func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec], spec *kubeconfig.KubernetesApplicationSpec, loader loader, logger *zap.Logger, multiTarget *kubeconfig.KubernetesMultiTarget) ([]provider.Manifest, error) {
 	// override values if multiTarget has value.
 	manifestPathes := spec.Input.Manifests
 	if multiTarget != nil {
@@ -273,6 +273,7 @@ func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[
 		HelmVersion:      spec.Input.HelmVersion,
 		HelmChart:        spec.Input.HelmChart,
 		HelmOptions:      spec.Input.HelmOptions,
+		Logger:           logger,
 	})
 
 	if err != nil {
