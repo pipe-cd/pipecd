@@ -12,71 +12,47 @@ import {
   Box,
 } from "@mui/material";
 import { Close, SkipNext } from "@mui/icons-material";
-import { FC, memo, useCallback, useState } from "react";
+import { FC, memo, useCallback, useMemo, useState } from "react";
 import Draggable from "react-draggable";
 import { APP_HEADER_HEIGHT } from "~/components/header";
-import {
-  useAppDispatch,
-  useShallowEqualSelector,
-  useAppSelector,
-} from "~/hooks/redux";
-import { clearActiveStage } from "~/modules/active-stage";
-import {
-  isStageRunning,
-  selectById,
-  Stage,
-  StageStatus,
-  skipStage,
-  selectDeploymentStageIsSkippable,
-  updateSkippableState,
-} from "~/modules/deployments";
-import { selectStageLogById, StageLog } from "~/modules/stage-logs";
+import { PipelineStage, StageStatus } from "pipecd/web/model/deployment_pb";
 import { Log } from "./log";
 import { ManualOperation } from "~~/model/deployment_pb";
+import { StageLog } from "~/types/stage-log";
+import { useSkipStage } from "~/queries/deployment/use-skip-stage";
+import { isStageRunning } from "~/utils/is-stage-running";
+import { useCommand } from "~/contexts/command-context";
+import { Command, CommandStatus } from "~~/model/command_pb";
+import { ActiveStageInfo } from "..";
 
 const INITIAL_HEIGHT = 400;
 const TOOLBAR_HEIGHT = 48;
 const ANALYSIS_STAGE_NAME = "ANALYSIS";
 
-function useActiveStageLog(): [Stage | null, StageLog | null] {
-  return useShallowEqualSelector<[Stage | null, StageLog | null]>((state) => {
-    if (!state.activeStage) {
-      return [null, null];
-    }
+type Props = {
+  activeStage: PipelineStage.AsObject | null;
+  changeActiveStage: (activeStage: ActiveStageInfo | null) => void;
+  stageLog?: StageLog | null;
+};
 
-    const deployment = selectById(
-      state.deployments,
-      state.activeStage.deploymentId
-    );
-
-    if (!deployment) {
-      return [null, null];
-    }
-
-    const stage = deployment.stagesList.find(
-      (s) => s.id === state.activeStage?.stageId
-    );
-
-    if (!stage) {
-      return [null, null];
-    }
-
-    return [stage, selectStageLogById(state.stageLogs, state.activeStage)];
-  });
-}
-
-export const LogViewer: FC = memo(function LogViewer() {
+export const LogViewer: FC<Props> = memo(function LogViewer({
+  activeStage,
+  stageLog,
+  changeActiveStage,
+}) {
   const maxHandlePosY =
     document.body.clientHeight - APP_HEADER_HEIGHT - TOOLBAR_HEIGHT;
-  const [activeStage, stageLog] = useActiveStageLog();
-  const dispatch = useAppDispatch();
   const [handlePosY, setHandlePosY] = useState(maxHandlePosY - INITIAL_HEIGHT);
   const logViewHeight = maxHandlePosY - handlePosY;
   const [isOpenSkipDialog, setOpenSkipDialog] = useState(false);
+  const [commandId, setCommandId] = useState<string>();
+
   const stageId = activeStage ? activeStage.id : "";
+  const { mutate: skipStage, isLoading: isSkipInitLoading } = useSkipStage();
+  const { fetchedCommands, commandIds } = useCommand();
 
   const handleOnClickClose = (): void => {
-    dispatch(clearActiveStage());
+    changeActiveStage(null);
   };
 
   const handleDrag = useCallback(
@@ -94,12 +70,53 @@ export const LogViewer: FC = memo(function LogViewer() {
 
   const handleSkip = (): void => {
     const deploymentId = stageLog ? stageLog.deploymentId : "";
-    dispatch(skipStage({ deploymentId: deploymentId, stageId: stageId }));
-    dispatch(updateSkippableState({ stageId: stageId, skippable: false }));
+    skipStage(
+      { deploymentId: deploymentId, stageId: stageId },
+      {
+        onSuccess: (commandId) => {
+          setCommandId(commandId);
+        },
+      }
+    );
     setOpenSkipDialog(false);
   };
 
-  const isSkippable = useAppSelector(selectDeploymentStageIsSkippable(stageId));
+  const isSkippable = useMemo(() => {
+    const deploymentId = stageLog ? stageLog.deploymentId : "";
+
+    const isSkipCommandRunning = (deploymentId: string): boolean => {
+      const stageCommand = Object.values(fetchedCommands).find(
+        (item) =>
+          item.deploymentId === deploymentId &&
+          item.stageId === stageId &&
+          item.type === Command.Type.SKIP_STAGE
+      );
+      if (
+        stageCommand &&
+        stageCommand?.status !== CommandStatus.COMMAND_FAILED &&
+        stageCommand?.status !== CommandStatus.COMMAND_TIMEOUT
+      ) {
+        return true;
+      }
+
+      return false;
+    };
+
+    const isSkipCommandInit = commandIds?.has(commandId ?? "");
+
+    return (
+      !isSkipInitLoading &&
+      !isSkipCommandInit &&
+      !isSkipCommandRunning(deploymentId)
+    );
+  }, [
+    commandId,
+    commandIds,
+    fetchedCommands,
+    isSkipInitLoading,
+    stageId,
+    stageLog,
+  ]);
 
   if (!stageLog || !activeStage) {
     return null;
@@ -150,7 +167,6 @@ export const LogViewer: FC = memo(function LogViewer() {
                 ManualOperation.MANUAL_OPERATION_SKIP) &&
               activeStage.status === StageStatus.STAGE_RUNNING && (
                 <Button
-                  // className={classes.skipButton}
                   sx={(theme) => ({
                     color: theme.palette.common.white,
                     background: theme.palette.success.main,
@@ -199,8 +215,6 @@ export const LogViewer: FC = memo(function LogViewer() {
           </Box>
         </Toolbar>
         <Box
-          // className={classes.logContainer}
-          // style={{ height: logViewHeight }}
           sx={{
             overflowY: "scroll",
             height: logViewHeight,

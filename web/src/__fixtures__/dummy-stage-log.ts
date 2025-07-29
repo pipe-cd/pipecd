@@ -1,4 +1,4 @@
-import { LogBlock, LogSeverity } from "~/modules/stage-logs";
+import { LogBlock, LogSeverity } from "~~/model/logblock_pb";
 import { createRandTimes, randomWords } from "./utils";
 
 const logTimes = createRandTimes(3);
