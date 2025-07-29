@@ -1128,7 +1128,7 @@ func Test_generateVirtualServiceManifest(t *testing.T) {
 		editableRoutes  []string
 		canaryPercent   int32
 		baselinePercent int32
-		cfg             *kubeconfig.KubernetesApplicationSpec
+		variantLabel    kubeconfig.KubernetesVariantLabel
 		wantErr         bool
 		errMsg          string
 		checkFunc       func(t *testing.T, result provider.Manifest)
@@ -1154,13 +1154,11 @@ spec:
 			editableRoutes:  []string{},
 			canaryPercent:   30,
 			baselinePercent: 0,
-			cfg: &kubeconfig.KubernetesApplicationSpec{
-				VariantLabel: kubeconfig.KubernetesVariantLabel{
-					Key:           "pipecd.dev/variant",
-					PrimaryValue:  "primary",
-					CanaryValue:   "canary",
-					BaselineValue: "baseline",
-				},
+			variantLabel: kubeconfig.KubernetesVariantLabel{
+				Key:           "pipecd.dev/variant",
+				PrimaryValue:  "primary",
+				CanaryValue:   "canary",
+				BaselineValue: "baseline",
 			},
 			wantErr: false,
 			checkFunc: func(t *testing.T, result provider.Manifest) {
@@ -1203,13 +1201,11 @@ spec:
 			editableRoutes:  []string{},
 			canaryPercent:   20,
 			baselinePercent: 30,
-			cfg: &kubeconfig.KubernetesApplicationSpec{
-				VariantLabel: kubeconfig.KubernetesVariantLabel{
-					Key:           "pipecd.dev/variant",
-					PrimaryValue:  "primary",
-					CanaryValue:   "canary",
-					BaselineValue: "baseline",
-				},
+			variantLabel: kubeconfig.KubernetesVariantLabel{
+				Key:           "pipecd.dev/variant",
+				PrimaryValue:  "primary",
+				CanaryValue:   "canary",
+				BaselineValue: "baseline",
 			},
 			wantErr: false,
 			checkFunc: func(t *testing.T, result provider.Manifest) {
@@ -1262,13 +1258,11 @@ spec:
 			editableRoutes:  []string{},
 			canaryPercent:   50,
 			baselinePercent: 0,
-			cfg: &kubeconfig.KubernetesApplicationSpec{
-				VariantLabel: kubeconfig.KubernetesVariantLabel{
-					Key:           "pipecd.dev/variant",
-					PrimaryValue:  "primary",
-					CanaryValue:   "canary",
-					BaselineValue: "baseline",
-				},
+			variantLabel: kubeconfig.KubernetesVariantLabel{
+				Key:           "pipecd.dev/variant",
+				PrimaryValue:  "primary",
+				CanaryValue:   "canary",
+				BaselineValue: "baseline",
 			},
 			wantErr: false,
 			checkFunc: func(t *testing.T, result provider.Manifest) {
@@ -1324,13 +1318,11 @@ spec:
 			editableRoutes:  []string{"editable-route"},
 			canaryPercent:   40,
 			baselinePercent: 0,
-			cfg: &kubeconfig.KubernetesApplicationSpec{
-				VariantLabel: kubeconfig.KubernetesVariantLabel{
-					Key:           "pipecd.dev/variant",
-					PrimaryValue:  "primary",
-					CanaryValue:   "canary",
-					BaselineValue: "baseline",
-				},
+			variantLabel: kubeconfig.KubernetesVariantLabel{
+				Key:           "pipecd.dev/variant",
+				PrimaryValue:  "primary",
+				CanaryValue:   "canary",
+				BaselineValue: "baseline",
 			},
 			wantErr: false,
 			checkFunc: func(t *testing.T, result provider.Manifest) {
@@ -1374,13 +1366,11 @@ spec:
 			editableRoutes:  []string{},
 			canaryPercent:   0,
 			baselinePercent: 0,
-			cfg: &kubeconfig.KubernetesApplicationSpec{
-				VariantLabel: kubeconfig.KubernetesVariantLabel{
-					Key:           "pipecd.dev/variant",
-					PrimaryValue:  "primary",
-					CanaryValue:   "canary",
-					BaselineValue: "baseline",
-				},
+			variantLabel: kubeconfig.KubernetesVariantLabel{
+				Key:           "pipecd.dev/variant",
+				PrimaryValue:  "primary",
+				CanaryValue:   "canary",
+				BaselineValue: "baseline",
 			},
 			wantErr: false,
 			checkFunc: func(t *testing.T, result provider.Manifest) {
@@ -1417,13 +1407,11 @@ spec:
 			editableRoutes:  []string{},
 			canaryPercent:   25,
 			baselinePercent: 25,
-			cfg: &kubeconfig.KubernetesApplicationSpec{
-				VariantLabel: kubeconfig.KubernetesVariantLabel{
-					Key:           "custom/variant",
-					PrimaryValue:  "stable",
-					CanaryValue:   "preview",
-					BaselineValue: "test",
-				},
+			variantLabel: kubeconfig.KubernetesVariantLabel{
+				Key:           "custom/variant",
+				PrimaryValue:  "stable",
+				CanaryValue:   "preview",
+				BaselineValue: "test",
 			},
 			wantErr: false,
 			checkFunc: func(t *testing.T, result provider.Manifest) {
@@ -1479,13 +1467,11 @@ spec:
 			editableRoutes:  []string{},
 			canaryPercent:   50,
 			baselinePercent: 0,
-			cfg: &kubeconfig.KubernetesApplicationSpec{
-				VariantLabel: kubeconfig.KubernetesVariantLabel{
-					Key:           "pipecd.dev/variant",
-					PrimaryValue:  "primary",
-					CanaryValue:   "canary",
-					BaselineValue: "baseline",
-				},
+			variantLabel: kubeconfig.KubernetesVariantLabel{
+				Key:           "pipecd.dev/variant",
+				PrimaryValue:  "primary",
+				CanaryValue:   "canary",
+				BaselineValue: "baseline",
 			},
 			wantErr: false,
 			checkFunc: func(t *testing.T, result provider.Manifest) {
@@ -1527,9 +1513,9 @@ spec:
 				manifests[0],
 				tt.host,
 				tt.editableRoutes,
+				tt.variantLabel,
 				tt.canaryPercent,
 				tt.baselinePercent,
-				tt.cfg,
 			)
 
 			// Check error expectations

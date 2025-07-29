@@ -162,10 +162,89 @@ func (p *Plugin) executeK8sTrafficRoutingStagePodSelector(ctx context.Context, i
 	return sdk.StageStatusSuccess
 }
 
-func (p *Plugin) executeK8sTrafficRoutingStageIstio(_ context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], _ []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], _ *sdk.ApplicationConfig[kubeconfig.KubernetesApplicationSpec]) sdk.StageStatus {
+func (p *Plugin) executeK8sTrafficRoutingStageIstio(ctx context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], cfg *sdk.ApplicationConfig[kubeconfig.KubernetesApplicationSpec]) sdk.StageStatus {
 	lp := input.Client.LogPersister()
-	lp.Error("Traffic routing by Istio is not yet implemented")
-	return sdk.StageStatusFailure
+
+	var stageCfg kubeconfig.K8sTrafficRoutingStageOptions
+	if len(input.Request.StageConfig) == 0 {
+		lp.Error("Stage config is empty, this should not happen")
+		return sdk.StageStatusFailure
+	}
+	if err := json.Unmarshal(input.Request.StageConfig, &stageCfg); err != nil {
+		lp.Errorf("Failed while unmarshalling stage config (%v)", err)
+		return sdk.StageStatusFailure
+	}
+
+	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
+	loader := provider.NewLoader(toolRegistry)
+
+	lp.Infof("Loading manifests at commit %s", input.Request.TargetDeploymentSource.CommitHash)
+	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec,
+		&input.Request.TargetDeploymentSource, loader)
+	if err != nil {
+		lp.Errorf("Failed while loading manifests (%v)", err)
+		return sdk.StageStatusFailure
+	}
+	lp.Successf("Successfully loaded %d manifests", len(manifests))
+
+	if len(manifests) == 0 {
+		lp.Error("There are no kubernetes manifests to handle")
+		return sdk.StageStatusFailure
+	}
+
+	virtualServices, err := findIstioVirtualServiceManifests(manifests, cfg.Spec.Service)
+	if err != nil {
+		lp.Errorf("Failed while finding traffic routing manifest: (%v)", err)
+		return sdk.StageStatusFailure
+	}
+	if len(virtualServices) == 0 {
+		lp.Error("Unable to find any VirtualService manifest")
+		return sdk.StageStatusFailure
+	}
+
+	if len(virtualServices) > 1 {
+		lp.Infof("Found %d VirtualService manifests, using the first one", len(virtualServices))
+	}
+	virtualService := virtualServices[0]
+
+	primaryPercent, canaryPercent, baselinePercent := stageCfg.Percentages()
+
+	vs, err := generateVirtualServiceManifest(virtualService, cfg.Spec.Service.Name, cfg.Spec.TrafficRouting.Istio.EditableRoutes, cfg.Spec.VariantLabel, int32(canaryPercent), int32(baselinePercent))
+	if err != nil {
+		lp.Errorf("Failed while generating VirtualService manifest: (%v)", err)
+		return sdk.StageStatusFailure
+	}
+
+	if len(dts) == 0 {
+		lp.Error("No deploy target was found")
+		return sdk.StageStatusFailure
+	}
+	deployTargetConfig := dts[0].Config
+
+	kubectlPath, err := toolRegistry.Kubectl(ctx,
+		cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion))
+	if err != nil {
+		lp.Errorf("Failed while getting kubectl tool (%v)", err)
+		return sdk.StageStatusFailure
+	}
+
+	kubectl := provider.NewKubectl(kubectlPath)
+	applier := provider.NewApplier(kubectl, cfg.Spec.Input, deployTargetConfig, input.Logger)
+
+	lp.Infof("Start updating traffic routing to be percentages: primary=%d, canary=%d, baseline=%d",
+		primaryPercent,
+		canaryPercent,
+		baselinePercent,
+	)
+
+	if err := applyManifests(ctx, applier, []provider.Manifest{vs},
+		cfg.Spec.Input.Namespace, lp); err != nil {
+		lp.Errorf("Failed while applying VirtualService manifest (%v)", err)
+		return sdk.StageStatusFailure
+	}
+
+	lp.Success("Successfully updated traffic routing")
+	return sdk.StageStatusSuccess
 }
 
 func checkVariantSelectorInService(m provider.Manifest, variantLabel, variant string) error {
@@ -245,7 +324,7 @@ func (vs *virtualService) toManifest() (provider.Manifest, error) {
 // that routes traffic to the specified host with the given percentages.
 // It also supports the editableRoutes parameter to specify the routes that
 // can be edited by the user.
-func generateVirtualServiceManifest(m provider.Manifest, host string, editableRoutes []string, canaryPercent, baselinePercent int32, cfg *kubeconfig.KubernetesApplicationSpec) (provider.Manifest, error) {
+func generateVirtualServiceManifest(m provider.Manifest, host string, editableRoutes []string, variantLabel kubeconfig.KubernetesVariantLabel, canaryPercent, baselinePercent int32) (provider.Manifest, error) {
 	vs, err := convertVirtualService(m)
 	if err != nil {
 		return provider.Manifest{}, err
@@ -288,7 +367,7 @@ func generateVirtualServiceManifest(m provider.Manifest, host string, editableRo
 		routes = append(routes, &istiov1.HTTPRouteDestination{
 			Destination: &istiov1.Destination{
 				Host:   host,
-				Subset: cfg.VariantLabel.PrimaryValue,
+				Subset: variantLabel.PrimaryValue,
 			},
 			Weight: primaryWeight,
 		})
@@ -298,7 +377,7 @@ func generateVirtualServiceManifest(m provider.Manifest, host string, editableRo
 			routes = append(routes, &istiov1.HTTPRouteDestination{
 				Destination: &istiov1.Destination{
 					Host:   host,
-					Subset: cfg.VariantLabel.CanaryValue,
+					Subset: variantLabel.CanaryValue,
 				},
 				Weight: canaryWeight,
 			})
@@ -309,7 +388,7 @@ func generateVirtualServiceManifest(m provider.Manifest, host string, editableRo
 			routes = append(routes, &istiov1.HTTPRouteDestination{
 				Destination: &istiov1.Destination{
 					Host:   host,
-					Subset: cfg.VariantLabel.BaselineValue,
+					Subset: variantLabel.BaselineValue,
 				},
 				Weight: baselineWeight,
 			})
