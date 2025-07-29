@@ -1391,18 +1391,18 @@ spec:
 				require.Len(t, vs.Spec.Http, 2)
 
 				// Check editable route was modified
-				editableHttp := vs.Spec.Http[0]
-				assert.Equal(t, "editable-route", editableHttp.Name)
-				require.Len(t, editableHttp.Route, 2)
-				assert.Equal(t, int32(60), editableHttp.Route[0].Weight) // primary
-				assert.Equal(t, int32(40), editableHttp.Route[1].Weight) // canary
+				editableHTTP := vs.Spec.Http[0]
+				assert.Equal(t, "editable-route", editableHTTP.Name)
+				require.Len(t, editableHTTP.Route, 2)
+				assert.Equal(t, int32(60), editableHTTP.Route[0].Weight) // primary
+				assert.Equal(t, int32(40), editableHTTP.Route[1].Weight) // canary
 
 				// Check non-editable route was not modified
-				nonEditableHttp := vs.Spec.Http[1]
-				assert.Equal(t, "non-editable-route", nonEditableHttp.Name)
-				require.Len(t, nonEditableHttp.Route, 1)
-				assert.Equal(t, int32(100), nonEditableHttp.Route[0].Weight)
-				assert.Equal(t, "primary", nonEditableHttp.Route[0].Destination.Subset)
+				nonEditableHTTP := vs.Spec.Http[1]
+				assert.Equal(t, "non-editable-route", nonEditableHTTP.Name)
+				require.Len(t, nonEditableHTTP.Route, 1)
+				assert.Equal(t, int32(100), nonEditableHTTP.Route[0].Weight)
+				assert.Equal(t, "primary", nonEditableHTTP.Route[0].Destination.Subset)
 			},
 		},
 		{
