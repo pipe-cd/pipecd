@@ -321,6 +321,40 @@ func (m *ApplicationPlanPreviewResult) validate(all bool) error {
 
 	// no validation rules for NoChange
 
+	for idx, item := range m.GetPluginPlanResults() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ApplicationPlanPreviewResultValidationError{
+						field:  fmt.Sprintf("PluginPlanResults[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ApplicationPlanPreviewResultValidationError{
+						field:  fmt.Sprintf("PluginPlanResults[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ApplicationPlanPreviewResultValidationError{
+					field:  fmt.Sprintf("PluginPlanResults[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
 	// no validation rules for Error
 
 	if m.GetCreatedAt() <= 0 {
@@ -414,3 +448,120 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ApplicationPlanPreviewResultValidationError{}
+
+// Validate checks the field values on PluginPlanPreviewResult with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *PluginPlanPreviewResult) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PluginPlanPreviewResult with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// PluginPlanPreviewResultMultiError, or nil if none found.
+func (m *PluginPlanPreviewResult) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PluginPlanPreviewResult) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetPluginName()) < 1 {
+		err := PluginPlanPreviewResultValidationError{
+			field:  "PluginName",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for PlanSummary
+
+	// no validation rules for PlanDetails
+
+	if len(errors) > 0 {
+		return PluginPlanPreviewResultMultiError(errors)
+	}
+
+	return nil
+}
+
+// PluginPlanPreviewResultMultiError is an error wrapping multiple validation
+// errors returned by PluginPlanPreviewResult.ValidateAll() if the designated
+// constraints aren't met.
+type PluginPlanPreviewResultMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PluginPlanPreviewResultMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PluginPlanPreviewResultMultiError) AllErrors() []error { return m }
+
+// PluginPlanPreviewResultValidationError is the validation error returned by
+// PluginPlanPreviewResult.Validate if the designated constraints aren't met.
+type PluginPlanPreviewResultValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PluginPlanPreviewResultValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PluginPlanPreviewResultValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PluginPlanPreviewResultValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PluginPlanPreviewResultValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PluginPlanPreviewResultValidationError) ErrorName() string {
+	return "PluginPlanPreviewResultValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e PluginPlanPreviewResultValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPluginPlanPreviewResult.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PluginPlanPreviewResultValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PluginPlanPreviewResultValidationError{}

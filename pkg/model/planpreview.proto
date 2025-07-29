@@ -45,7 +45,8 @@ message ApplicationPlanPreviewResult {
     // Web URL to the application page.
     // This is only filled before returning to the client.
     string application_url = 3;
-    ApplicationKind application_kind = 4 [(validate.rules).enum.defined_only = true];
+    // Deprecated: Do not use in pipedv1
+    ApplicationKind application_kind = 4 [(validate.rules).enum.defined_only = true, deprecated = true];
     string application_directory = 5 [(validate.rules).string.min_len = 1];
 
     string piped_id = 9 [(validate.rules).string.min_len = 1];
@@ -59,13 +60,25 @@ message ApplicationPlanPreviewResult {
 
     // Planpreview result.
     SyncStrategy sync_strategy = 30;
-    bytes plan_summary = 31;
-    bytes plan_details = 32;
+    // Deprecated: Use plugin_plan_results instead in pipedv1.
+    bytes plan_summary = 31 [deprecated = true];
+    // Deprecated: Use plugin_plan_results instead in pipedv1.
+    bytes plan_details = 32 [deprecated = true];
     // Mark if no change were detected.
     bool no_change = 33;
+
+    repeated PluginPlanPreviewResult plugin_plan_results = 34;
+    // Note: In pipedv1, this will not be empty. It will be "<unknown>" if plugins are not successfully loaded. 
+    repeated string deployment_plugin_names = 35;
 
     // Error while building planpreview result.
     string error = 40;
 
     int64 created_at = 90 [(validate.rules).int64.gt = 0];
+}
+
+message PluginPlanPreviewResult {
+    string plugin_name = 1 [(validate.rules).string.min_len = 1];
+    bytes plan_summary = 2;
+    bytes plan_details = 3;
 }
