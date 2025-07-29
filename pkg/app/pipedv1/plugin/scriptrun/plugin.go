@@ -17,7 +17,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"os"
 	"os/exec"
 	"strconv"
@@ -79,85 +78,91 @@ func (p *plugin) BuildPipelineSyncStages(_ context.Context, _ sdk.ConfigNone, in
 	}, nil
 }
 func (p *plugin) ExecuteStage(ctx context.Context, _ sdk.ConfigNone, _ sdk.DeployTargetsNone, input *sdk.ExecuteStageInput[struct{}]) (*sdk.ExecuteStageResponse, error) {
-	return executeScriptRun(ctx, input.Request, input.Client.LogPersister()), nil
+	return &sdk.ExecuteStageResponse{
+		Status: executeScriptRun(ctx, input.Request, input.Client.LogPersister()),
+	}, nil
 }
 
-func executeScriptRun(ctx context.Context, request sdk.ExecuteStageRequest[struct{}], lp sdk.StageLogPersister) *sdk.ExecuteStageResponse {
+func executeScriptRun(ctx context.Context, request sdk.ExecuteStageRequest[struct{}], lp sdk.StageLogPersister) sdk.StageStatus {
 	lp.Infof("Start executing the script run stage")
 	opts, err := decode(request.StageConfig)
 	if err != nil {
 		lp.Errorf("failed to decode the stage config: %v", err)
-		return &sdk.ExecuteStageResponse{
-			Status: sdk.StageStatusFailure,
-		}
+		return sdk.StageStatusFailure
 	}
 	if opts.Run == "" {
-		return &sdk.ExecuteStageResponse{
-			Status: sdk.StageStatusSuccess,
-		}
+		return sdk.StageStatusSuccess
 	}
 	c := make(chan sdk.StageStatus, 1)
 	go func() {
-		for _, v := range strings.Split(opts.Run, "\n") {
-			if v != "" {
-				lp.Infof("   %s", v)
-			}
-		}
-		envStr, err := buildEnvStr(&ContextInfo{
-			DeploymentID:        request.Deployment.ID,
-			ApplicationID:       request.Deployment.ApplicationID,
-			ApplicationName:     request.Deployment.ApplicationName,
-			TriggeredAt:         request.Deployment.CreatedAt,
-			TriggeredCommitHash: request.TargetDeploymentSource.CommitHash,
-			TriggeredCommander:  request.Deployment.TriggeredBy,
-			RepositoryURL:       request.Deployment.RepositoryURL,
-			Summary:             request.Deployment.Summary,
-			Labels:              request.Deployment.Labels,
-			IsRollback:          request.StageName == stageScriptRunRollback,
-		}, opts.Env)
-		if err != nil {
-			lp.Errorf("failed to encode the stage config: %v", err)
-			c <- sdk.StageStatusFailure
-			return
-		}
-		cmd := exec.Command("/bin/sh", "-l", "-c", opts.Run)
-		cmd.Env = append(os.Environ(), envStr...)
-		cmd.Dir = request.TargetDeploymentSource.ApplicationDirectory
-		cmd.Stdout = lp
-		cmd.Stderr = lp
-		if err := cmd.Run(); err != nil {
-			lp.Errorf("failed to exec command: %w", err)
-			c <- sdk.StageStatusFailure
-		} else {
-			c <- sdk.StageStatusSuccess
-		}
+		c <- executeCommand(opts, request, lp)
 	}()
 	timer := time.NewTimer(opts.Timeout.Duration())
 	defer timer.Stop()
 	select {
 	case result := <-c:
-		return &sdk.ExecuteStageResponse{
-			Status: result,
-		}
+		return result
 	case <-timer.C:
 		lp.Errorf("Canceled because of timeout")
-		return &sdk.ExecuteStageResponse{
-			Status: sdk.StageStatusFailure,
-		}
+		return sdk.StageStatusFailure
 	case <-ctx.Done():
 		lp.Info("ScriptRun cancelled")
 		// We can return any status here because the piped handles this case as cancelled by a user,
 		// ignoring the result from a plugin.
-		return &sdk.ExecuteStageResponse{
-			Status: sdk.StageStatusExited,
-		}
+		return sdk.StageStatusFailure
 	}
 }
 func (p *plugin) FetchDefinedStages() []string {
 	return []string{stageScriptRun, stageScriptRunRollback}
 }
 
-func buildEnvStr(ci *ContextInfo, stageOptsEnv map[string]string) ([]string, error) {
+func executeCommand(opts scriptRunStageOptions, request sdk.ExecuteStageRequest[struct{}], lp sdk.StageLogPersister) sdk.StageStatus {
+	lp.Infof("Running commands...")
+	for _, v := range strings.Split(opts.Run, "\n") {
+		if v != "" {
+			lp.Infof("   %s", v)
+		}
+	}
+	ci := ContextInfo{
+		DeploymentID:        request.Deployment.ID,
+		ApplicationID:       request.Deployment.ApplicationID,
+		ApplicationName:     request.Deployment.ApplicationName,
+		TriggeredAt:         request.Deployment.CreatedAt,
+		TriggeredCommitHash: request.TargetDeploymentSource.CommitHash,
+		TriggeredCommander:  request.Deployment.TriggeredBy,
+		RepositoryURL:       request.Deployment.RepositoryURL,
+		Summary:             request.Deployment.Summary,
+		Labels:              request.Deployment.Labels,
+		IsRollback:          request.StageName == stageScriptRunRollback,
+	}
+	ciEnv, err := ci.buildEnv()
+	if err != nil {
+		lp.Errorf("failed to encode the stage config: %v", err)
+		return sdk.StageStatusFailure
+	}
+	envs := make([]string, 0, len(ciEnv)+len(opts.Env))
+	for key, value := range ciEnv {
+		envs = append(envs, key+"="+value)
+	}
+
+	for key, value := range opts.Env {
+		envs = append(envs, key+"="+value)
+	}
+
+	cmd := exec.Command("/bin/sh", "-l", "-c", opts.Run)
+	cmd.Env = append(os.Environ(), envs...)
+	cmd.Dir = request.TargetDeploymentSource.ApplicationDirectory
+	cmd.Stdout = lp
+	cmd.Stderr = lp
+	if err := cmd.Run(); err != nil {
+		lp.Errorf("failed to exec command: %w", err)
+		return sdk.StageStatusFailure
+	} else {
+		return sdk.StageStatusSuccess
+	}
+}
+
+func (ci *ContextInfo) buildEnv() (map[string]string, error) {
 	b, err := json.Marshal(ci)
 	if err != nil {
 		return nil, err
@@ -178,12 +183,5 @@ func buildEnvStr(ci *ContextInfo, stageOptsEnv map[string]string) ([]string, err
 		eName := "SR_LABELS_" + strings.ToUpper(k)
 		envs[eName] = v
 	}
-	envStr := make([]string, 0, len(envs)+len(stageOptsEnv))
-	for k, v := range envs {
-		envStr = append(envStr, fmt.Sprintf("%s=%s", k, v))
-	}
-	for k, v := range stageOptsEnv {
-		envStr = append(envStr, fmt.Sprintf("%s=%s", k, v))
-	}
-	return envStr, nil
+	return envs, nil
 }
