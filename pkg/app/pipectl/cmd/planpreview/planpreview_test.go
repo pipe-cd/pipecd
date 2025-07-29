@@ -24,6 +24,7 @@ import (
 )
 
 func TestReadableResultString(t *testing.T) {
+	t.Parallel()
 	testcases := []struct {
 		name     string
 		results  []*model.PlanPreviewCommandResult
@@ -231,6 +232,157 @@ NOTE: An error occurred while building plan-preview for applications of the foll
 
 2. piped: piped-name-3 (piped-3)
   reason: failed to checkout branch
+`,
+		},
+		// Plugins
+		{
+			name: "plugin: one success app",
+			results: []*model.PlanPreviewCommandResult{
+				{
+					CommandId: "command-2",
+					PipedId:   "piped-2",
+					PipedUrl:  "https://pipecd.dev/piped-2",
+					Results: []*model.ApplicationPlanPreviewResult{
+						{
+							ApplicationId:         "app-1",
+							ApplicationName:       "app-1",
+							ApplicationUrl:        "https://pipecd.dev/app-1",
+							Labels:                map[string]string{"env": "env-1"},
+							SyncStrategy:          model.SyncStrategy_QUICK_SYNC,
+							DeploymentPluginNames: []string{"kubernetes"},
+							PluginPlanResults: []*model.PluginPlanPreviewResult{
+								{
+									PluginName:   "kubernetes",
+									DeployTarget: "dt-1",
+									PlanSummary:  []byte("2 resources will be added, 1 resource will be deleted and 5 resources will be changed"),
+									PlanDetails:  []byte("changes-1"),
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: `
+Here are plan-preview for 1 application:
+
+1. app: app-1, env: env-1, plugin(s): kubernetes
+  sync strategy: QUICK_SYNC
+  summary:
+  - kubernetes(dt-1): 2 resources will be added, 1 resource will be deleted and 5 resources will be changed
+  details:
+
+  - kubernetes(dt-1):
+  ---DETAILS_BEGIN---
+changes-1
+  ---DETAILS_END---
+
+`,
+		},
+		{
+			name: "plugin: one success app with multiple plugins",
+			results: []*model.PlanPreviewCommandResult{
+				{
+					CommandId: "command-2",
+					PipedId:   "piped-2",
+					PipedUrl:  "https://pipecd.dev/piped-2",
+					Results: []*model.ApplicationPlanPreviewResult{
+						{
+							ApplicationId:         "app-1",
+							ApplicationName:       "app-1",
+							ApplicationUrl:        "https://pipecd.dev/app-1",
+							Labels:                map[string]string{"env": "env-1"},
+							SyncStrategy:          model.SyncStrategy_QUICK_SYNC,
+							DeploymentPluginNames: []string{"kubernetes", "terraform"},
+							PluginPlanResults: []*model.PluginPlanPreviewResult{
+								{
+									PluginName:   "kubernetes",
+									DeployTarget: "dt-1",
+									PlanSummary:  []byte("2 resources will be added, 1 resource will be deleted and 5 resources will be changed"),
+									PlanDetails:  []byte("changes-1"),
+								},
+								{
+									PluginName:   "terraform",
+									DeployTarget: "dt-2",
+									PlanSummary:  []byte("1 resource will be added, 2 resources will be deleted and 3 resources will be changed"),
+									PlanDetails:  []byte("changes-2"),
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: `
+Here are plan-preview for 1 application:
+
+1. app: app-1, env: env-1, plugin(s): kubernetes, terraform
+  sync strategy: QUICK_SYNC
+  summary:
+  - kubernetes(dt-1): 2 resources will be added, 1 resource will be deleted and 5 resources will be changed
+  - terraform(dt-2): 1 resource will be added, 2 resources will be deleted and 3 resources will be changed
+  details:
+
+  - kubernetes(dt-1):
+  ---DETAILS_BEGIN---
+changes-1
+  ---DETAILS_END---
+
+  - terraform(dt-2):
+  ---DETAILS_BEGIN---
+changes-2
+  ---DETAILS_END---
+
+`,
+		},
+		{
+			name: "plugin: one failure app",
+			results: []*model.PlanPreviewCommandResult{
+				{
+					CommandId: "command-2",
+					PipedId:   "piped-2",
+					PipedUrl:  "https://pipecd.dev/piped-2",
+					Results: []*model.ApplicationPlanPreviewResult{
+						{
+							ApplicationId:         "app-2",
+							ApplicationName:       "app-2",
+							ApplicationUrl:        "https://pipecd.dev/app-2",
+							Labels:                map[string]string{"env": "env-2"},
+							DeploymentPluginNames: []string{"kubernetes"},
+							Error:                 "wrong application configuration",
+						},
+					},
+				},
+			},
+			expected: `
+NOTE: An error occurred while building plan-preview for the following application:
+
+1. app: app-2, env: env-2, plugin(s): kubernetes
+  reason: wrong application configuration
+`,
+		},
+		{
+			name: "plugin: one failure app with unknown plugin",
+			results: []*model.PlanPreviewCommandResult{
+				{
+					CommandId: "command-2",
+					PipedId:   "piped-2",
+					PipedUrl:  "https://pipecd.dev/piped-2",
+					Results: []*model.ApplicationPlanPreviewResult{
+						{
+							ApplicationId:         "app-2",
+							ApplicationName:       "app-2",
+							ApplicationUrl:        "https://pipecd.dev/app-2",
+							Labels:                map[string]string{"env": "env-2"},
+							DeploymentPluginNames: []string{"<unknown>"},
+							Error:                 "wrong application configuration",
+						},
+					},
+				},
+			},
+			expected: `
+NOTE: An error occurred while building plan-preview for the following application:
+
+1. app: app-2, env: env-2, plugin(s): <unknown>
+  reason: wrong application configuration
 `,
 		},
 	}
