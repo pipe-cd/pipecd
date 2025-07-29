@@ -238,3 +238,84 @@ func convertVirtualService(m provider.Manifest) (*virtualService, error) {
 func (vs *virtualService) toManifest() (provider.Manifest, error) {
 	return provider.FromStructuredObject(vs)
 }
+
+// generateVirtualServiceManifest generates a new VirtualService manifest
+// that routes traffic to the specified host with the given percentages.
+// It also supports the editableRoutes parameter to specify the routes that
+// can be edited by the user.
+func generateVirtualServiceManifest(m provider.Manifest, host string, editableRoutes []string, canaryPercent, baselinePercent int32, cfg *kubeconfig.KubernetesApplicationSpec) (provider.Manifest, error) {
+	vs, err := convertVirtualService(m)
+	if err != nil {
+		return provider.Manifest{}, err
+	}
+
+	editableMap := make(map[string]struct{}, len(editableRoutes))
+	for _, r := range editableRoutes {
+		editableMap[r] = struct{}{}
+	}
+
+	for _, http := range vs.Spec.Http {
+		if len(editableMap) > 0 {
+			if _, ok := editableMap[http.Name]; !ok {
+				continue
+			}
+		}
+
+		// Calculate the weight of the other host
+		var (
+			otherHostWeight int32
+			otherHostRoutes = make([]*istiov1.HTTPRouteDestination, 0)
+		)
+		for _, r := range http.Route {
+			if r.Destination != nil && r.Destination.Host != host {
+				otherHostWeight += r.Weight
+				otherHostRoutes = append(otherHostRoutes, r)
+			}
+		}
+
+		// Calculate the weight of the variants
+		var (
+			variantsWeight = 100 - otherHostWeight
+			canaryWeight   = canaryPercent * variantsWeight / 100
+			baselineWeight = baselinePercent * variantsWeight / 100
+			primaryWeight  = variantsWeight - canaryWeight - baselineWeight
+			routes         = make([]*istiov1.HTTPRouteDestination, 0, len(otherHostRoutes)+3)
+		)
+
+		// Add the primary route
+		routes = append(routes, &istiov1.HTTPRouteDestination{
+			Destination: &istiov1.Destination{
+				Host:   host,
+				Subset: cfg.VariantLabel.PrimaryValue,
+			},
+			Weight: primaryWeight,
+		})
+
+		// Add the canary route
+		if canaryWeight > 0 {
+			routes = append(routes, &istiov1.HTTPRouteDestination{
+				Destination: &istiov1.Destination{
+					Host:   host,
+					Subset: cfg.VariantLabel.CanaryValue,
+				},
+				Weight: canaryWeight,
+			})
+		}
+
+		// Add the baseline route
+		if baselineWeight > 0 {
+			routes = append(routes, &istiov1.HTTPRouteDestination{
+				Destination: &istiov1.Destination{
+					Host:   host,
+					Subset: cfg.VariantLabel.BaselineValue,
+				},
+				Weight: baselineWeight,
+			})
+		}
+
+		routes = append(routes, otherHostRoutes...)
+		http.Route = routes
+	}
+
+	return vs.toManifest()
+}

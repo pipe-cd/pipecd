@@ -17,6 +17,7 @@ package deployment
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"path/filepath"
 	"testing"
 
@@ -1112,6 +1113,439 @@ spec:
 			// Run verification
 			if tt.checkFunc != nil {
 				tt.checkFunc(t, vs, convertedManifest)
+			}
+		})
+	}
+}
+
+func Test_generateVirtualServiceManifest(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name            string
+		inputYAML       string
+		host            string
+		editableRoutes  []string
+		canaryPercent   int32
+		baselinePercent int32
+		cfg             *kubeconfig.KubernetesApplicationSpec
+		wantErr         bool
+		errMsg          string
+		checkFunc       func(t *testing.T, result provider.Manifest)
+	}{
+		{
+			name: "basic canary traffic routing",
+			inputYAML: `
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: test-vs
+spec:
+  hosts:
+  - test-service
+  http:
+  - route:
+    - destination:
+        host: test-service
+        subset: primary
+      weight: 100
+`,
+			host:            "test-service",
+			editableRoutes:  []string{},
+			canaryPercent:   30,
+			baselinePercent: 0,
+			cfg: &kubeconfig.KubernetesApplicationSpec{
+				VariantLabel: kubeconfig.KubernetesVariantLabel{
+					Key:           "pipecd.dev/variant",
+					PrimaryValue:  "primary",
+					CanaryValue:   "canary",
+					BaselineValue: "baseline",
+				},
+			},
+			wantErr: false,
+			checkFunc: func(t *testing.T, result provider.Manifest) {
+				vs, err := convertVirtualService(result)
+				require.NoError(t, err)
+				require.Len(t, vs.Spec.Http, 1)
+				require.Len(t, vs.Spec.Http[0].Route, 2)
+
+				// Check primary route (70%)
+				primaryRoute := vs.Spec.Http[0].Route[0]
+				assert.Equal(t, "test-service", primaryRoute.Destination.Host)
+				assert.Equal(t, "primary", primaryRoute.Destination.Subset)
+				assert.Equal(t, int32(70), primaryRoute.Weight)
+
+				// Check canary route (30%)
+				canaryRoute := vs.Spec.Http[0].Route[1]
+				assert.Equal(t, "test-service", canaryRoute.Destination.Host)
+				assert.Equal(t, "canary", canaryRoute.Destination.Subset)
+				assert.Equal(t, int32(30), canaryRoute.Weight)
+			},
+		},
+		{
+			name: "canary and baseline traffic routing",
+			inputYAML: `
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: test-vs
+spec:
+  hosts:
+  - test-service
+  http:
+  - route:
+    - destination:
+        host: test-service
+        subset: primary
+      weight: 100
+`,
+			host:            "test-service",
+			editableRoutes:  []string{},
+			canaryPercent:   20,
+			baselinePercent: 30,
+			cfg: &kubeconfig.KubernetesApplicationSpec{
+				VariantLabel: kubeconfig.KubernetesVariantLabel{
+					Key:           "pipecd.dev/variant",
+					PrimaryValue:  "primary",
+					CanaryValue:   "canary",
+					BaselineValue: "baseline",
+				},
+			},
+			wantErr: false,
+			checkFunc: func(t *testing.T, result provider.Manifest) {
+				vs, err := convertVirtualService(result)
+				require.NoError(t, err)
+				require.Len(t, vs.Spec.Http, 1)
+				require.Len(t, vs.Spec.Http[0].Route, 3)
+
+				// Check primary route (50%)
+				primaryRoute := vs.Spec.Http[0].Route[0]
+				assert.Equal(t, "test-service", primaryRoute.Destination.Host)
+				assert.Equal(t, "primary", primaryRoute.Destination.Subset)
+				assert.Equal(t, int32(50), primaryRoute.Weight)
+
+				// Check canary route (20%)
+				canaryRoute := vs.Spec.Http[0].Route[1]
+				assert.Equal(t, "test-service", canaryRoute.Destination.Host)
+				assert.Equal(t, "canary", canaryRoute.Destination.Subset)
+				assert.Equal(t, int32(20), canaryRoute.Weight)
+
+				// Check baseline route (30%)
+				baselineRoute := vs.Spec.Http[0].Route[2]
+				assert.Equal(t, "test-service", baselineRoute.Destination.Host)
+				assert.Equal(t, "baseline", baselineRoute.Destination.Subset)
+				assert.Equal(t, int32(30), baselineRoute.Weight)
+			},
+		},
+		{
+			name: "preserve other host routes",
+			inputYAML: `
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: test-vs
+spec:
+  hosts:
+  - test-service
+  http:
+  - route:
+    - destination:
+        host: test-service
+        subset: primary
+      weight: 60
+    - destination:
+        host: other-service
+        subset: v1
+      weight: 40
+`,
+			host:            "test-service",
+			editableRoutes:  []string{},
+			canaryPercent:   50,
+			baselinePercent: 0,
+			cfg: &kubeconfig.KubernetesApplicationSpec{
+				VariantLabel: kubeconfig.KubernetesVariantLabel{
+					Key:           "pipecd.dev/variant",
+					PrimaryValue:  "primary",
+					CanaryValue:   "canary",
+					BaselineValue: "baseline",
+				},
+			},
+			wantErr: false,
+			checkFunc: func(t *testing.T, result provider.Manifest) {
+				vs, err := convertVirtualService(result)
+				require.NoError(t, err)
+				require.Len(t, vs.Spec.Http, 1)
+				require.Len(t, vs.Spec.Http[0].Route, 3)
+
+				// Check primary route (30% = 50% of 60%)
+				primaryRoute := vs.Spec.Http[0].Route[0]
+				assert.Equal(t, "test-service", primaryRoute.Destination.Host)
+				assert.Equal(t, "primary", primaryRoute.Destination.Subset)
+				assert.Equal(t, int32(30), primaryRoute.Weight)
+
+				// Check canary route (30% = 50% of 60%)
+				canaryRoute := vs.Spec.Http[0].Route[1]
+				assert.Equal(t, "test-service", canaryRoute.Destination.Host)
+				assert.Equal(t, "canary", canaryRoute.Destination.Subset)
+				assert.Equal(t, int32(30), canaryRoute.Weight)
+
+				// Check other host route (40% preserved)
+				otherRoute := vs.Spec.Http[0].Route[2]
+				assert.Equal(t, "other-service", otherRoute.Destination.Host)
+				assert.Equal(t, "v1", otherRoute.Destination.Subset)
+				assert.Equal(t, int32(40), otherRoute.Weight)
+			},
+		},
+		{
+			name: "editable routes filter",
+			inputYAML: `
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: test-vs
+spec:
+  hosts:
+  - test-service
+  http:
+  - name: editable-route
+    route:
+    - destination:
+        host: test-service
+        subset: primary
+      weight: 100
+  - name: non-editable-route
+    route:
+    - destination:
+        host: test-service
+        subset: primary
+      weight: 100
+`,
+			host:            "test-service",
+			editableRoutes:  []string{"editable-route"},
+			canaryPercent:   40,
+			baselinePercent: 0,
+			cfg: &kubeconfig.KubernetesApplicationSpec{
+				VariantLabel: kubeconfig.KubernetesVariantLabel{
+					Key:           "pipecd.dev/variant",
+					PrimaryValue:  "primary",
+					CanaryValue:   "canary",
+					BaselineValue: "baseline",
+				},
+			},
+			wantErr: false,
+			checkFunc: func(t *testing.T, result provider.Manifest) {
+				vs, err := convertVirtualService(result)
+				require.NoError(t, err)
+				require.Len(t, vs.Spec.Http, 2)
+
+				// Check editable route was modified
+				editableHttp := vs.Spec.Http[0]
+				assert.Equal(t, "editable-route", editableHttp.Name)
+				require.Len(t, editableHttp.Route, 2)
+				assert.Equal(t, int32(60), editableHttp.Route[0].Weight) // primary
+				assert.Equal(t, int32(40), editableHttp.Route[1].Weight) // canary
+
+				// Check non-editable route was not modified
+				nonEditableHttp := vs.Spec.Http[1]
+				assert.Equal(t, "non-editable-route", nonEditableHttp.Name)
+				require.Len(t, nonEditableHttp.Route, 1)
+				assert.Equal(t, int32(100), nonEditableHttp.Route[0].Weight)
+				assert.Equal(t, "primary", nonEditableHttp.Route[0].Destination.Subset)
+			},
+		},
+		{
+			name: "zero canary percent",
+			inputYAML: `
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: test-vs
+spec:
+  hosts:
+  - test-service
+  http:
+  - route:
+    - destination:
+        host: test-service
+        subset: primary
+      weight: 100
+`,
+			host:            "test-service",
+			editableRoutes:  []string{},
+			canaryPercent:   0,
+			baselinePercent: 0,
+			cfg: &kubeconfig.KubernetesApplicationSpec{
+				VariantLabel: kubeconfig.KubernetesVariantLabel{
+					Key:           "pipecd.dev/variant",
+					PrimaryValue:  "primary",
+					CanaryValue:   "canary",
+					BaselineValue: "baseline",
+				},
+			},
+			wantErr: false,
+			checkFunc: func(t *testing.T, result provider.Manifest) {
+				vs, err := convertVirtualService(result)
+				require.NoError(t, err)
+				require.Len(t, vs.Spec.Http, 1)
+				require.Len(t, vs.Spec.Http[0].Route, 1)
+
+				// Only primary route should exist
+				primaryRoute := vs.Spec.Http[0].Route[0]
+				assert.Equal(t, "test-service", primaryRoute.Destination.Host)
+				assert.Equal(t, "primary", primaryRoute.Destination.Subset)
+				assert.Equal(t, int32(100), primaryRoute.Weight)
+			},
+		},
+		{
+			name: "custom variant labels",
+			inputYAML: `
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: test-vs
+spec:
+  hosts:
+  - test-service
+  http:
+  - route:
+    - destination:
+        host: test-service
+        subset: stable
+      weight: 100
+`,
+			host:            "test-service",
+			editableRoutes:  []string{},
+			canaryPercent:   25,
+			baselinePercent: 25,
+			cfg: &kubeconfig.KubernetesApplicationSpec{
+				VariantLabel: kubeconfig.KubernetesVariantLabel{
+					Key:           "custom/variant",
+					PrimaryValue:  "stable",
+					CanaryValue:   "preview",
+					BaselineValue: "test",
+				},
+			},
+			wantErr: false,
+			checkFunc: func(t *testing.T, result provider.Manifest) {
+				vs, err := convertVirtualService(result)
+				require.NoError(t, err)
+				require.Len(t, vs.Spec.Http, 1)
+				require.Len(t, vs.Spec.Http[0].Route, 3)
+
+				// Check primary route
+				primaryRoute := vs.Spec.Http[0].Route[0]
+				assert.Equal(t, "test-service", primaryRoute.Destination.Host)
+				assert.Equal(t, "stable", primaryRoute.Destination.Subset)
+				assert.Equal(t, int32(50), primaryRoute.Weight)
+
+				// Check canary route
+				canaryRoute := vs.Spec.Http[0].Route[1]
+				assert.Equal(t, "test-service", canaryRoute.Destination.Host)
+				assert.Equal(t, "preview", canaryRoute.Destination.Subset)
+				assert.Equal(t, int32(25), canaryRoute.Weight)
+
+				// Check baseline route
+				baselineRoute := vs.Spec.Http[0].Route[2]
+				assert.Equal(t, "test-service", baselineRoute.Destination.Host)
+				assert.Equal(t, "test", baselineRoute.Destination.Subset)
+				assert.Equal(t, int32(25), baselineRoute.Weight)
+			},
+		},
+		{
+			name: "multiple http routes",
+			inputYAML: `
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: test-vs
+spec:
+  hosts:
+  - test-service
+  http:
+  - name: route1
+    route:
+    - destination:
+        host: test-service
+        subset: primary
+      weight: 100
+  - name: route2
+    route:
+    - destination:
+        host: test-service
+        subset: primary
+      weight: 100
+`,
+			host:            "test-service",
+			editableRoutes:  []string{},
+			canaryPercent:   50,
+			baselinePercent: 0,
+			cfg: &kubeconfig.KubernetesApplicationSpec{
+				VariantLabel: kubeconfig.KubernetesVariantLabel{
+					Key:           "pipecd.dev/variant",
+					PrimaryValue:  "primary",
+					CanaryValue:   "canary",
+					BaselineValue: "baseline",
+				},
+			},
+			wantErr: false,
+			checkFunc: func(t *testing.T, result provider.Manifest) {
+				vs, err := convertVirtualService(result)
+				require.NoError(t, err)
+				require.Len(t, vs.Spec.Http, 2)
+
+				// Both HTTP routes should be modified
+				for i, httpRoute := range vs.Spec.Http {
+					assert.Equal(t, fmt.Sprintf("route%d", i+1), httpRoute.Name)
+					require.Len(t, httpRoute.Route, 2)
+
+					// Check primary route (50%)
+					primaryRoute := httpRoute.Route[0]
+					assert.Equal(t, "test-service", primaryRoute.Destination.Host)
+					assert.Equal(t, "primary", primaryRoute.Destination.Subset)
+					assert.Equal(t, int32(50), primaryRoute.Weight)
+
+					// Check canary route (50%)
+					canaryRoute := httpRoute.Route[1]
+					assert.Equal(t, "test-service", canaryRoute.Destination.Host)
+					assert.Equal(t, "canary", canaryRoute.Destination.Subset)
+					assert.Equal(t, int32(50), canaryRoute.Weight)
+				}
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			// Parse input manifest
+			manifests := mustParseManifests(t, tt.inputYAML)
+			require.Len(t, manifests, 1, "test should provide exactly one manifest")
+
+			// Execute the function
+			result, err := generateVirtualServiceManifest(
+				manifests[0],
+				tt.host,
+				tt.editableRoutes,
+				tt.canaryPercent,
+				tt.baselinePercent,
+				tt.cfg,
+			)
+
+			// Check error expectations
+			if tt.wantErr {
+				require.Error(t, err)
+				if tt.errMsg != "" {
+					assert.Contains(t, err.Error(), tt.errMsg)
+				}
+				return
+			}
+
+			require.NoError(t, err)
+
+			// Run verification if provided
+			if tt.checkFunc != nil {
+				tt.checkFunc(t, result)
 			}
 		})
 	}
