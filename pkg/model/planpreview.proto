@@ -79,6 +79,8 @@ message ApplicationPlanPreviewResult {
 
 message PluginPlanPreviewResult {
     string plugin_name = 1 [(validate.rules).string.min_len = 1];
-    bytes plan_summary = 2;
-    bytes plan_details = 3;
+    // Name of the deploy target.
+    string deploy_target = 2;
+    bytes plan_summary = 3;
+    bytes plan_details = 4;
 }

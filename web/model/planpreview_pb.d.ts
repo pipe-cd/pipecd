@@ -142,6 +142,9 @@ export class PluginPlanPreviewResult extends jspb.Message {
   getPluginName(): string;
   setPluginName(value: string): PluginPlanPreviewResult;
 
+  getDeployTarget(): string;
+  setDeployTarget(value: string): PluginPlanPreviewResult;
+
   getPlanSummary(): Uint8Array | string;
   getPlanSummary_asU8(): Uint8Array;
   getPlanSummary_asB64(): string;
@@ -163,6 +166,7 @@ export class PluginPlanPreviewResult extends jspb.Message {
 export namespace PluginPlanPreviewResult {
   export type AsObject = {
     pluginName: string,
+    deployTarget: string,
     planSummary: Uint8Array | string,
     planDetails: Uint8Array | string,
   }

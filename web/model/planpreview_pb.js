@@ -1175,6 +1175,7 @@ proto.model.PluginPlanPreviewResult.prototype.toObject = function(opt_includeIns
 proto.model.PluginPlanPreviewResult.toObject = function(includeInstance, msg) {
   var f, obj = {
     pluginName: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    deployTarget: jspb.Message.getFieldWithDefault(msg, 2, ""),
     planSummary: msg.getPlanSummary_asB64(),
     planDetails: msg.getPlanDetails_asB64()
   };
@@ -1218,10 +1219,14 @@ proto.model.PluginPlanPreviewResult.deserializeBinaryFromReader = function(msg, 
       msg.setPluginName(value);
       break;
     case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setDeployTarget(value);
+      break;
+    case 3:
       var value = /** @type {!Uint8Array} */ (reader.readBytes());
       msg.setPlanSummary(value);
       break;
-    case 3:
+    case 4:
       var value = /** @type {!Uint8Array} */ (reader.readBytes());
       msg.setPlanDetails(value);
       break;
@@ -1261,17 +1266,24 @@ proto.model.PluginPlanPreviewResult.serializeBinaryToWriter = function(message, 
       f
     );
   }
+  f = message.getDeployTarget();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
   f = message.getPlanSummary_asU8();
   if (f.length > 0) {
     writer.writeBytes(
-      2,
+      3,
       f
     );
   }
   f = message.getPlanDetails_asU8();
   if (f.length > 0) {
     writer.writeBytes(
-      3,
+      4,
       f
     );
   }
@@ -1297,16 +1309,34 @@ proto.model.PluginPlanPreviewResult.prototype.setPluginName = function(value) {
 
 
 /**
- * optional bytes plan_summary = 2;
+ * optional string deploy_target = 2;
  * @return {string}
  */
-proto.model.PluginPlanPreviewResult.prototype.getPlanSummary = function() {
+proto.model.PluginPlanPreviewResult.prototype.getDeployTarget = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
 
 /**
- * optional bytes plan_summary = 2;
+ * @param {string} value
+ * @return {!proto.model.PluginPlanPreviewResult} returns this
+ */
+proto.model.PluginPlanPreviewResult.prototype.setDeployTarget = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional bytes plan_summary = 3;
+ * @return {string}
+ */
+proto.model.PluginPlanPreviewResult.prototype.getPlanSummary = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/**
+ * optional bytes plan_summary = 3;
  * This is a type-conversion wrapper around `getPlanSummary()`
  * @return {string}
  */
@@ -1317,7 +1347,7 @@ proto.model.PluginPlanPreviewResult.prototype.getPlanSummary_asB64 = function() 
 
 
 /**
- * optional bytes plan_summary = 2;
+ * optional bytes plan_summary = 3;
  * Note that Uint8Array is not supported on all browsers.
  * @see http://caniuse.com/Uint8Array
  * This is a type-conversion wrapper around `getPlanSummary()`
@@ -1334,21 +1364,21 @@ proto.model.PluginPlanPreviewResult.prototype.getPlanSummary_asU8 = function() {
  * @return {!proto.model.PluginPlanPreviewResult} returns this
  */
 proto.model.PluginPlanPreviewResult.prototype.setPlanSummary = function(value) {
-  return jspb.Message.setProto3BytesField(this, 2, value);
+  return jspb.Message.setProto3BytesField(this, 3, value);
 };
 
 
 /**
- * optional bytes plan_details = 3;
+ * optional bytes plan_details = 4;
  * @return {string}
  */
 proto.model.PluginPlanPreviewResult.prototype.getPlanDetails = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
 };
 
 
 /**
- * optional bytes plan_details = 3;
+ * optional bytes plan_details = 4;
  * This is a type-conversion wrapper around `getPlanDetails()`
  * @return {string}
  */
@@ -1359,7 +1389,7 @@ proto.model.PluginPlanPreviewResult.prototype.getPlanDetails_asB64 = function() 
 
 
 /**
- * optional bytes plan_details = 3;
+ * optional bytes plan_details = 4;
  * Note that Uint8Array is not supported on all browsers.
  * @see http://caniuse.com/Uint8Array
  * This is a type-conversion wrapper around `getPlanDetails()`
@@ -1376,7 +1406,7 @@ proto.model.PluginPlanPreviewResult.prototype.getPlanDetails_asU8 = function() {
  * @return {!proto.model.PluginPlanPreviewResult} returns this
  */
 proto.model.PluginPlanPreviewResult.prototype.setPlanDetails = function(value) {
-  return jspb.Message.setProto3BytesField(this, 3, value);
+  return jspb.Message.setProto3BytesField(this, 4, value);
 };
 
 
