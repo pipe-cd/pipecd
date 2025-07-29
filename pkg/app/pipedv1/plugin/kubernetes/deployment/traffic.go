@@ -221,6 +221,8 @@ func findIstioVirtualServiceManifests(manifests []provider.Manifest, ref kubecon
 
 // virtualService is a wrapper around istiov1.VirtualService
 // to enable the conversion from unstructured.Unstructured to VirtualService
+// We can use this struct across APIVersion v1alpha3 and v1beta1 because v1.VirtualService
+// and v1beta1.VirtualService are type alias of v1alpha3.VirtualService.
 type virtualService struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
