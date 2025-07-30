@@ -19,7 +19,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/config"
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
@@ -230,6 +232,69 @@ func TestPlugin_BuildQuickSyncStages(t *testing.T) {
 			got, err := p.BuildQuickSyncStages(t.Context(), nil, tt.input)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestPlugin_DetermineVersions(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name        string
+		testdataDir string
+		want        []sdk.ArtifactVersion
+		wantErr     bool
+	}{
+		{
+			name:        "success",
+			testdataDir: "testdata/versions_success",
+			want: []sdk.ArtifactVersion{
+				{
+					Version: "v1.0.0",
+					Name:    "helloworld_01",
+					URL:     "helloworld",
+				},
+				{
+					Version: "v0.9.0",
+					Name:    "helloworld_02",
+					URL:     "helloworld",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:        "no module found",
+			testdataDir: "testdata/versions_no_modules",
+			want:        []sdk.ArtifactVersion{{Version: "unknown"}},
+			wantErr:     false,
+		},
+		{
+			name:        "directory not exist",
+			testdataDir: "testdata/NOT_EXIST",
+			wantErr:     true,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			p := &Plugin{}
+			got, err := p.DetermineVersions(t.Context(), nil, &sdk.DetermineVersionsInput[config.ApplicationConfigSpec]{
+				Request: sdk.DetermineVersionsRequest[config.ApplicationConfigSpec]{
+					DeploymentSource: sdk.DeploymentSource[config.ApplicationConfigSpec]{
+						ApplicationDirectory: tc.testdataDir,
+					},
+				},
+				Logger: zap.NewNop(),
+			})
+
+			if tc.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tc.want, got.Versions)
+			}
 		})
 	}
 }
