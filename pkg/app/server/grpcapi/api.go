@@ -857,6 +857,9 @@ func (a *API) RegisterEvent(ctx context.Context, req *apiservice.RegisterEventRe
 	return &apiservice.RegisterEventResponse{EventId: id}, nil
 }
 
+type BuildOrCancelPlanPreview interface {
+}
+
 func (a *API) RequestPlanPreview(ctx context.Context, req *apiservice.RequestPlanPreviewRequest) (*apiservice.RequestPlanPreviewResponse, error) {
 	key, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
 	if err != nil {
@@ -923,6 +926,9 @@ func (a *API) RequestPlanPreview(ctx context.Context, req *apiservice.RequestPla
 	return &apiservice.RequestPlanPreviewResponse{
 		Commands: commands,
 	}, nil
+}
+
+func (a *API) createAndSavePlanPreviewCommand(ctx context.Context, req *buildOrCancelPlanPreviewRequest) (*[]string, error) {
 }
 
 func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlanPreviewResultsRequest) (*apiservice.GetPlanPreviewResultsResponse, error) {
