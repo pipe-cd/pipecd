@@ -22,7 +22,7 @@ jobs:
     outputs:
       modules: ${{ steps.list-go-modules.outputs.modules }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: List go modules
         id: list-go-modules
         run: |
@@ -36,7 +36,7 @@ jobs:
       matrix:
         module: ${{ fromJSON(needs.list-go-modules.outputs.modules) }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: golangci-lint
         uses: reviewdog/action-golangci-lint@f3dc5fadcaff5d8da3574b129a58db433171b1a8 #v2.1.3
         with:
@@ -58,7 +58,7 @@ jobs:
   web:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -80,7 +80,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Set up Helm
         uses: azure/setup-helm@v4

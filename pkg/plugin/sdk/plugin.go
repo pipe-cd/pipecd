@@ -256,11 +256,16 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 		return err
 	}
 
+	logger := input.Logger.With(
+		zap.String("plugin-name", cfg.Name),
+		zap.String("plugin-version", p.version),
+	)
+
 	// Start running admin server.
 	{
 		var (
 			ver   = []byte(p.version)
-			admin = admin.NewAdmin(0, p.gracePeriod, input.Logger) // TODO: add config for admin port
+			admin = admin.NewAdmin(0, p.gracePeriod, logger) // TODO: add config for admin port
 		)
 
 		admin.HandleFunc("/version", func(w http.ResponseWriter, r *http.Request) {
@@ -279,7 +284,7 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 	}
 
 	// Start log persister
-	persister := logpersister.NewPersister(pipedPluginServiceClient, input.Logger)
+	persister := logpersister.NewPersister(pipedPluginServiceClient, logger)
 	group.Go(func() error {
 		return persister.Run(ctx)
 	})
@@ -297,7 +302,7 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 
 		if cfg.Config != nil {
 			if err := json.Unmarshal(cfg.Config, &commonFields.pluginConfig); err != nil {
-				input.Logger.Fatal("failed to unmarshal the plugin config", zap.Error(err))
+				logger.Fatal("failed to unmarshal the plugin config", zap.Error(err))
 				return err
 			}
 		}
@@ -306,7 +311,7 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 		for _, dt := range cfg.DeployTargets {
 			var sdkDt DeployTargetConfig
 			if err := json.Unmarshal(dt.Config, &sdkDt); err != nil {
-				input.Logger.Fatal("failed to unmarshal deploy target config", zap.Error(err))
+				logger.Fatal("failed to unmarshal deploy target config", zap.Error(err))
 				return err
 			}
 			commonFields.deployTargets[dt.Name] = &DeployTarget[DeployTargetConfig]{
@@ -319,7 +324,7 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 		initializeInput := &InitializeInput[Config, DeployTargetConfig]{
 			Config:        commonFields.pluginConfig,
 			DeployTargets: commonFields.deployTargets,
-			Logger:        input.Logger.Named("plugin-initializer"),
+			Logger:        logger.Named("plugin-initializer"),
 		}
 
 		var services []rpc.Service
@@ -327,13 +332,13 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 		if p.stagePlugin != nil {
 			if initializer, ok := p.stagePlugin.(Initializer[Config, DeployTargetConfig]); ok {
 				if err := initializer.Initialize(ctx, initializeInput); err != nil {
-					input.Logger.Error("failed to initialize stage plugin", zap.Error(err))
+					logger.Error("failed to initialize stage plugin", zap.Error(err))
 					return err
 				}
 			}
 			stagePluginServiceServer := &StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]{
 				base:         p.stagePlugin,
-				commonFields: commonFields.withLogger(input.Logger.Named("stage-service")),
+				commonFields: commonFields.withLogger(logger.Named("stage-service")),
 			}
 			services = append(services, stagePluginServiceServer)
 		}
@@ -341,13 +346,13 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 		if p.deploymentPlugin != nil {
 			if initializer, ok := p.deploymentPlugin.(Initializer[Config, DeployTargetConfig]); ok {
 				if err := initializer.Initialize(ctx, initializeInput); err != nil {
-					input.Logger.Error("failed to initialize deployment plugin", zap.Error(err))
+					logger.Error("failed to initialize deployment plugin", zap.Error(err))
 					return err
 				}
 			}
 			deploymentPluginServiceServer := &DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]{
 				base:         p.deploymentPlugin,
-				commonFields: commonFields.withLogger(input.Logger.Named("deployment-service")),
+				commonFields: commonFields.withLogger(logger.Named("deployment-service")),
 			}
 			services = append(services, deploymentPluginServiceServer)
 		}
@@ -355,13 +360,13 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 		if p.livestatePlugin != nil {
 			if initializer, ok := p.livestatePlugin.(Initializer[Config, DeployTargetConfig]); ok {
 				if err := initializer.Initialize(ctx, initializeInput); err != nil {
-					input.Logger.Error("failed to initialize livestate plugin", zap.Error(err))
+					logger.Error("failed to initialize livestate plugin", zap.Error(err))
 					return err
 				}
 			}
 			livestatePluginServiceServer := &LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]{
 				base:         p.livestatePlugin,
-				commonFields: commonFields.withLogger(input.Logger.Named("livestate-service")),
+				commonFields: commonFields.withLogger(logger.Named("livestate-service")),
 			}
 			services = append(services, livestatePluginServiceServer)
 		}
@@ -369,13 +374,13 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 		if p.planPreviewPlugin != nil {
 			if initializer, ok := p.planPreviewPlugin.(Initializer[Config, DeployTargetConfig]); ok {
 				if err := initializer.Initialize(ctx, initializeInput); err != nil {
-					input.Logger.Error("failed to initialize plan-preview plugin", zap.Error(err))
+					logger.Error("failed to initialize plan-preview plugin", zap.Error(err))
 					return err
 				}
 			}
 			planPreviewPluginServiceServer := &PlanPreviewPluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]{
 				base:         p.planPreviewPlugin,
-				commonFields: commonFields.withLogger(input.Logger.Named("plan-preview-service")),
+				commonFields: commonFields.withLogger(logger.Named("plan-preview-service")),
 			}
 			services = append(services, planPreviewPluginServiceServer)
 		}
@@ -383,7 +388,7 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 		if len(services) == 0 {
 			// This is promised in the NewPlugin function.
 			// When this happens, it means that *Plugin was initialized without using NewPlugin.
-			input.Logger.Error(
+			logger.Error(
 				"no plugin is registered, plugin implementation must use NewPlugin to initialize the plugin",
 				zap.String("name", p.name),
 				zap.String("version", p.version),
@@ -395,8 +400,8 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 			opts = []rpc.Option{
 				rpc.WithPort(cfg.Port),
 				rpc.WithGracePeriod(p.gracePeriod),
-				rpc.WithLogger(input.Logger),
-				rpc.WithLogUnaryInterceptor(input.Logger),
+				rpc.WithLogger(logger),
+				rpc.WithLogUnaryInterceptor(logger),
 				rpc.WithRequestValidationUnaryInterceptor(),
 				rpc.WithSignalHandlingUnaryInterceptor(),
 			}
@@ -424,7 +429,7 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 	}
 
 	if err := group.Wait(); err != nil {
-		input.Logger.Error("failed while running", zap.Error(err))
+		logger.Error("failed while running", zap.Error(err))
 		return err
 	}
 	return nil
