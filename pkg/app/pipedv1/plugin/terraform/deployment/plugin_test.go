@@ -18,11 +18,11 @@ import (
 	"context"
 	"testing"
 
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/config"
-	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 func Test_FetchDefinedStages(t *testing.T) {
