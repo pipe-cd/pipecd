@@ -43,7 +43,7 @@ PipeCD provides __a unified continuous delivery solution for multiple applicatio
 - Insights show metrics like lead time, deployment frequency, MTTR and change failure rate to measure delivery performance
 - Designed to manage thousands of cross-platform applications in multi-cloud for company scale but also work well for small projects
 
-And more. Explore the full set of features in the [PipeCD Documentation](https://pipecd.dev/docs).
+For more details, explore the [PipeCD Documentation](https://pipecd.dev/docs).
 
 ---
 
@@ -58,7 +58,7 @@ And more. Explore the full set of features in the [PipeCD Documentation](https:/
 ### Community and development
 
 - Check out the [PipeCD website](https://pipecd.dev) for the complete documentation and helpful links.
-- Join the [`#pipe-cd` channel](https://cloud-native.slack.com/archives/C01B27F9T0X) in the [CNCF Slack Workspace](https://communityinviter.com/apps/cloud-native/cncf) to get help and to discuss features.
+- Join the [`#pipecd` channel](https://cloud-native.slack.com/archives/C01B27F9T0X) in the [CNCF Slack Workspace](https://communityinviter.com/apps/cloud-native/cncf) to get help and to discuss features.
 - Tweet [@pipecd_dev](https://twitter.com/pipecd_dev) on Twitter/X.
 - Create Github [Issues](https://github.com/pipe-cd/pipecd/issues) or [Discussions](https://github.com/pipe-cd/pipecd/discussions/) to report bugs or request features.
 - Join the [PipeCD Development and Community Meetings](https://zoom-lfx.platform.linuxfoundation.org/meeting/96831504919?password=2f60b8ec-5896-40c8-aa1d-d551ab339d00) where we share the latest project news, demos, answer questions, and help triage issues. You can also view the [Meeting Notes and Agenda](https://bit.ly/pipecd-mtg-notes).
