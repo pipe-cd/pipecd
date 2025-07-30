@@ -190,11 +190,39 @@ func (m *GetPlanPreviewResponse) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Summary
+	for idx, item := range m.GetResults() {
+		_, _ = idx, item
 
-	// no validation rules for NoChange
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, GetPlanPreviewResponseValidationError{
+						field:  fmt.Sprintf("Results[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, GetPlanPreviewResponseValidationError{
+						field:  fmt.Sprintf("Results[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return GetPlanPreviewResponseValidationError{
+					field:  fmt.Sprintf("Results[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
 
-	// no validation rules for Details
+	}
 
 	if len(errors) > 0 {
 		return GetPlanPreviewResponseMultiError(errors)
@@ -275,3 +303,113 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = GetPlanPreviewResponseValidationError{}
+
+// Validate checks the field values on PlanPreviewResult with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *PlanPreviewResult) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PlanPreviewResult with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// PlanPreviewResultMultiError, or nil if none found.
+func (m *PlanPreviewResult) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PlanPreviewResult) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for DeployTarget
+
+	// no validation rules for Summary
+
+	// no validation rules for NoChange
+
+	// no validation rules for Details
+
+	if len(errors) > 0 {
+		return PlanPreviewResultMultiError(errors)
+	}
+
+	return nil
+}
+
+// PlanPreviewResultMultiError is an error wrapping multiple validation errors
+// returned by PlanPreviewResult.ValidateAll() if the designated constraints
+// aren't met.
+type PlanPreviewResultMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PlanPreviewResultMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PlanPreviewResultMultiError) AllErrors() []error { return m }
+
+// PlanPreviewResultValidationError is the validation error returned by
+// PlanPreviewResult.Validate if the designated constraints aren't met.
+type PlanPreviewResultValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PlanPreviewResultValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PlanPreviewResultValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PlanPreviewResultValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PlanPreviewResultValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PlanPreviewResultValidationError) ErrorName() string {
+	return "PlanPreviewResultValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e PlanPreviewResultValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPlanPreviewResult.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PlanPreviewResultValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PlanPreviewResultValidationError{}

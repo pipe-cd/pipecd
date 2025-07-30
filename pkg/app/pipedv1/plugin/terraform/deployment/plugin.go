@@ -20,8 +20,10 @@ import (
 	"slices"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/config"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/provider"
 )
 
 // Stage names for Terraform plugin.
@@ -101,7 +103,21 @@ func (p *Plugin) DetermineStrategy(ctx context.Context, _ *config.Config, input 
 
 // DetermineVersions implements sdk.DeploymentPlugin.
 func (p *Plugin) DetermineVersions(ctx context.Context, _ *config.Config, input *sdk.DetermineVersionsInput[config.ApplicationConfigSpec]) (*sdk.DetermineVersionsResponse, error) {
-	panic("unimplemented")
+	files, err := provider.LoadTerraformFiles(input.Request.DeploymentSource.ApplicationDirectory)
+	if err != nil {
+		input.Logger.Error("failed to load Terraform files", zap.Error(err))
+		return nil, err
+	}
+
+	versions, err := provider.FindArtifactVersions(files)
+	if err != nil || len(versions) == 0 {
+		input.Logger.Warn("unable to determine target versions", zap.Error(err))
+		versions = []sdk.ArtifactVersion{{Version: "unknown"}}
+	}
+
+	return &sdk.DetermineVersionsResponse{
+		Versions: versions,
+	}, nil
 }
 
 // ExecuteStage implements sdk.DeploymentPlugin.
@@ -112,11 +128,15 @@ func (p *Plugin) ExecuteStage(ctx context.Context, _ *config.Config, dts []*sdk.
 			Status: p.executePlanStage(ctx, input, dts),
 		}, nil
 	case stageApply:
-		panic("unimplemented")
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeApplyStage(ctx, input, dts),
+		}, nil
 	case stageRollback:
-		panic("unimplemented")
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeRollbackStage(ctx, input, dts),
+		}, nil
 	}
-	return nil, errors.New("unimplemented or unsupported stage")
+	return nil, errors.New("unsupported stage")
 }
 
 // FetchDefinedStages implements sdk.DeploymentPlugin.

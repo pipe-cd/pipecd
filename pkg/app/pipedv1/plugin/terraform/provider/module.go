@@ -111,11 +111,11 @@ func LoadTerraformFiles(dir string) ([]File, error) {
 
 // FindArtifactVersions parses artifact versions from Terraform files.
 // For Terraform, module version is an artifact version.
-func FindArtifactVersions(tfs []File) ([]*sdk.ArtifactVersion, error) {
-	versions := make([]*sdk.ArtifactVersion, 0)
+func FindArtifactVersions(tfs []File) ([]sdk.ArtifactVersion, error) {
+	versions := make([]sdk.ArtifactVersion, 0)
 	for _, tf := range tfs {
 		for _, m := range tf.Modules {
-			versions = append(versions, &sdk.ArtifactVersion{
+			versions = append(versions, sdk.ArtifactVersion{
 				Version: m.Version,
 				Name:    m.Name,
 				URL:     m.Source,
