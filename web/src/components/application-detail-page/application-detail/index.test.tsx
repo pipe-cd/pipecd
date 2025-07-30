@@ -71,10 +71,6 @@ const baseState: Partial<AppState> = {
       [dummyPiped.id]: dummyPiped,
     },
     ids: [dummyPiped.id],
-    registeredPiped: null,
-    updating: false,
-    releasedVersions: [],
-    breakingChangesNote: "",
   },
 };
 
