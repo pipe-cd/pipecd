@@ -18,13 +18,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
-	"time"
-
-	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 const (
@@ -104,14 +102,9 @@ func executeScriptRun(ctx context.Context, request sdk.ExecuteStageRequest[struc
 	go func() {
 		c <- executeCommand(opts, request, lp)
 	}()
-	timer := time.NewTimer(opts.Timeout.Duration())
-	defer timer.Stop()
 	select {
 	case result := <-c:
 		return result
-	case <-timer.C:
-		lp.Errorf("Canceled because of timeout")
-		return sdk.StageStatusFailure
 	case <-ctx.Done():
 		lp.Info("ScriptRun cancelled")
 		// We can return any status here because the piped handles this case as cancelled by a user,

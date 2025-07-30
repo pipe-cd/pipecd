@@ -16,14 +16,10 @@ package main
 
 import (
 	"encoding/json"
-	"testing"
-	"time"
-
-	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister/logpersistertest"
-	"github.com/pipe-cd/piped-plugin-sdk-go/unit"
-
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister/logpersistertest"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestBuildPipelineSyncStages(t *testing.T) {
@@ -45,8 +41,7 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 							Index: 0,
 							Name:  stageScriptRun,
 							Config: mustMarshalJSON(t, &scriptRunStageOptions{
-								Timeout: unit.Duration(1 * time.Minute),
-								Run:     "echo 'hello'",
+								Run: "echo 'hello'",
 							}),
 						},
 					},
@@ -67,8 +62,7 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 							Index: 0,
 							Name:  stageScriptRun,
 							Config: mustMarshalJSON(t, &scriptRunStageOptions{
-								Timeout: unit.Duration(1 * time.Minute),
-								Run:     "echo 'hello'",
+								Run: "echo 'hello'",
 							}),
 						},
 					},
@@ -90,7 +84,6 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 							Index: 0,
 							Name:  stageScriptRun,
 							Config: mustMarshalJSON(t, &scriptRunStageOptions{
-								Timeout:    unit.Duration(1 * time.Minute),
 								Run:        "echo 'hello'",
 								OnRollback: "echo 'rollback'",
 							}),
@@ -114,7 +107,6 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 							Index: 0,
 							Name:  stageScriptRun,
 							Config: mustMarshalJSON(t, &scriptRunStageOptions{
-								Timeout:    unit.Duration(1 * time.Minute),
 								Run:        "echo 'hello 0'",
 								OnRollback: "echo 'rollback 0'",
 							}),
@@ -123,7 +115,6 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 							Index: 2,
 							Name:  stageScriptRun,
 							Config: mustMarshalJSON(t, &scriptRunStageOptions{
-								Timeout:    unit.Duration(1 * time.Minute),
 								Run:        "echo 'hello 2'",
 								OnRollback: "echo 'rollback 2'",
 							}),

@@ -16,12 +16,8 @@ package main
 
 import (
 	"encoding/json"
-	"testing"
-	"time"
-
 	"github.com/stretchr/testify/assert"
-
-	"github.com/pipe-cd/piped-plugin-sdk-go/unit"
+	"testing"
 )
 
 func TestDecode(t *testing.T) {
@@ -35,12 +31,10 @@ func TestDecode(t *testing.T) {
 		{
 			name: "valid config",
 			data: json.RawMessage(`{
-				"run":"echo 1",
-				"timeout":"1m"
+				"run":"echo 1"
 			}`),
 			expected: scriptRunStageOptions{
-				Run:     "echo 1",
-				Timeout: unit.Duration(1 * time.Minute),
+				Run: "echo 1",
 			},
 			wantErr: false,
 		},
@@ -57,23 +51,12 @@ func TestDecode(t *testing.T) {
 			wantErr:  true,
 		},
 		{
-			name: "negative timeout",
-			data: json.RawMessage(`{
-				"run":"echo 1",
-				"timeout":"-1m"
-			}`),
-			expected: scriptRunStageOptions{},
-			wantErr:  true,
-		},
-		{
 			name: "multiline onRollback",
 			data: json.RawMessage(`{
-			"timeout":"1m",
 			"run": "echo main",
 			"onRollback": "echo rollback1\necho rollback2"
 		}`),
 			expected: scriptRunStageOptions{
-				Timeout:    unit.Duration(1 * time.Minute),
 				Run:        "echo main",
 				OnRollback: "echo rollback1\necho rollback2",
 			},
