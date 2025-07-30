@@ -17,6 +17,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"os/exec"
 	"strconv"
@@ -78,9 +79,15 @@ func (p *plugin) BuildPipelineSyncStages(_ context.Context, _ sdk.ConfigNone, in
 	}, nil
 }
 func (p *plugin) ExecuteStage(ctx context.Context, _ sdk.ConfigNone, _ sdk.DeployTargetsNone, input *sdk.ExecuteStageInput[struct{}]) (*sdk.ExecuteStageResponse, error) {
-	return &sdk.ExecuteStageResponse{
-		Status: executeScriptRun(ctx, input.Request, input.Client.LogPersister()),
-	}, nil
+	switch input.Request.StageName {
+	case stageScriptRun:
+		return &sdk.ExecuteStageResponse{
+			Status: executeScriptRun(ctx, input.Request, input.Client.LogPersister()),
+		}, nil
+	case stageScriptRunRollback:
+		panic("unimplemented")
+	}
+	return nil, fmt.Errorf("unsupported stage %s", input.Request.StageName)
 }
 
 func executeScriptRun(ctx context.Context, request sdk.ExecuteStageRequest[struct{}], lp sdk.StageLogPersister) sdk.StageStatus {
