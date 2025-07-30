@@ -110,7 +110,7 @@ func (p Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTarge
 		liveManifests = append(liveManifests, namespacedLiveResources...)
 		liveManifests = append(liveManifests, clusterScopedLiveResources...)
 
-		manifests, err := p.loadManifests(ctx, input, cfg.Spec, provider.NewLoader(toolRegistry), tc.multiTarget)
+		manifests, err := p.loadManifests(ctx, input, cfg.Spec, provider.NewLoader(toolRegistry), input.Logger, tc.multiTarget)
 		if err != nil {
 			input.Logger.Error("Failed to load manifests", zap.Error(err))
 			return nil, err
@@ -250,7 +250,7 @@ type loader interface {
 }
 
 // TODO: share this implementation with the deployment plugin
-func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec], spec *kubeconfig.KubernetesApplicationSpec, loader loader, multiTarget *kubeconfig.KubernetesMultiTarget) ([]provider.Manifest, error) {
+func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec], spec *kubeconfig.KubernetesApplicationSpec, loader loader, logger *zap.Logger, multiTarget *kubeconfig.KubernetesMultiTarget) ([]provider.Manifest, error) {
 	// override values if multiTarget has value.
 	manifestPathes := spec.Input.Manifests
 	if multiTarget != nil {
@@ -273,6 +273,7 @@ func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[
 		HelmVersion:      spec.Input.HelmVersion,
 		HelmChart:        spec.Input.HelmChart,
 		HelmOptions:      spec.Input.HelmOptions,
+		Logger:           logger,
 	})
 
 	if err != nil {

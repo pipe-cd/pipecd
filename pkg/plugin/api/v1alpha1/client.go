@@ -28,15 +28,18 @@ type PluginClient interface {
 	deployment.DeploymentServiceClient
 	livestate.LivestateServiceClient
 	Close() error
+	Name() string
 }
 
 type client struct {
 	deployment.DeploymentServiceClient
 	livestate.LivestateServiceClient
 	conn *grpc.ClientConn
+
+	name string
 }
 
-func NewClient(ctx context.Context, address string, opts ...rpcclient.DialOption) (PluginClient, error) {
+func NewClient(ctx context.Context, name string, address string, opts ...rpcclient.DialOption) (PluginClient, error) {
 	conn, err := rpcclient.DialContext(ctx, address, opts...)
 	if err != nil {
 		return nil, err
@@ -46,9 +49,14 @@ func NewClient(ctx context.Context, address string, opts ...rpcclient.DialOption
 		DeploymentServiceClient: deployment.NewDeploymentServiceClient(conn),
 		LivestateServiceClient:  livestate.NewLivestateServiceClient(conn),
 		conn:                    conn,
+		name:                    name,
 	}, nil
 }
 
 func (c *client) Close() error {
 	return c.conn.Close()
+}
+
+func (c *client) Name() string {
+	return c.name
 }

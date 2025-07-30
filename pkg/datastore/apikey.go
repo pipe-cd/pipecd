@@ -24,7 +24,6 @@ import (
 )
 
 type apiKeyCollection struct {
-	requestedBy Commander
 }
 
 func (a *apiKeyCollection) Kind() string {
@@ -44,12 +43,7 @@ func (a *apiKeyCollection) ListInUsedShards() []Shard {
 }
 
 func (a *apiKeyCollection) GetUpdatableShard() (Shard, error) {
-	switch a.requestedBy {
-	case WebCommander:
-		return ClientShard, nil
-	default:
-		return "", ErrUnsupported
-	}
+	return ClientShard, nil
 }
 
 func (a *apiKeyCollection) Encode(e interface{}) (map[Shard][]byte, error) {
@@ -79,18 +73,16 @@ type APIKeyStore interface {
 
 type apiKeyStore struct {
 	backend
-	commander Commander
-	nowFunc   func() time.Time
+	nowFunc func() time.Time
 }
 
-func NewAPIKeyStore(ds DataStore, c Commander) APIKeyStore {
+func NewAPIKeyStore(ds DataStore) APIKeyStore {
 	return &apiKeyStore{
 		backend: backend{
 			ds:  ds,
-			col: &apiKeyCollection{requestedBy: c},
+			col: &apiKeyCollection{},
 		},
-		commander: c,
-		nowFunc:   time.Now,
+		nowFunc: time.Now,
 	}
 }
 

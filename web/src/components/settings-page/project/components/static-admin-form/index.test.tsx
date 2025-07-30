@@ -1,15 +1,14 @@
 import userEvent from "@testing-library/user-event";
 import { server } from "~/mocks/server";
-import { updateStaticAdmin } from "~/modules/project";
 import {
   act,
-  createStore,
   render,
   screen,
   waitFor,
   waitForElementToBeRemoved,
 } from "~~/test-utils";
 import { StaticAdminForm } from ".";
+import { UPDATE_STATIC_ADMIN_INFO_SUCCESS } from "~/constants/toast-text";
 
 beforeAll(() => {
   server.listen();
@@ -23,30 +22,20 @@ afterAll(() => {
   server.close();
 });
 
-it("should shows current username", () => {
-  render(<StaticAdminForm />, {
-    initialState: {
-      project: {
-        username: "pipe-user",
-        staticAdminDisabled: false,
-      },
-    },
+it("should shows current username", async () => {
+  await act(async () => {
+    await render(<StaticAdminForm />);
   });
 
-  expect(screen.getByText("pipe-user")).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.getByText("static-admin-user")).toBeInTheDocument();
+  });
 });
 
-it("should dispatch action that update static admin when input fields and click submit button", async () => {
-  const store = createStore({
-    project: {
-      username: "pipe-user",
-      staticAdminDisabled: false,
-    },
-  });
+it("should show success message when update static admin", async () => {
+  render(<StaticAdminForm />);
 
-  render(<StaticAdminForm />, {
-    store,
-  });
+  await waitFor(() => screen.getByText("static-admin-user"));
 
   userEvent.click(
     screen.getByRole("button", { name: "edit static admin user" })
@@ -63,20 +52,9 @@ it("should dispatch action that update static admin when input fields and click 
 
   await waitForElementToBeRemoved(() => screen.getByText("Edit Static Admin"));
 
-  expect(store.getActions()).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        type: updateStaticAdmin.pending.type,
-        meta: expect.objectContaining({
-          arg: {
-            username: "pipe-user-new",
-            password: "new-password",
-          },
-        }),
-      }),
-      expect.objectContaining({
-        type: updateStaticAdmin.fulfilled.type,
-      }),
-    ])
+  await waitFor(() =>
+    expect(
+      screen.getByText(UPDATE_STATIC_ADMIN_INFO_SUCCESS)
+    ).toBeInTheDocument()
   );
 });

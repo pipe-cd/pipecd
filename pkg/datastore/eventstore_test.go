@@ -68,7 +68,7 @@ func TestAddEvent(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewEventStore(tc.ds, TestCommander)
+			s := NewEventStore(tc.ds)
 			err := s.Add(context.Background(), tc.event)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})

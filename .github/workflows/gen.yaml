@@ -8,17 +8,17 @@ jobs:
   code:
     runs-on: ubuntu-24.04
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - name: Generate code
-        # NOTE: Keep this container image as same as defined in Makefile
-        uses: docker://ghcr.io/pipe-cd/codegen@sha256:831f2dda2f56b1d12e90f88c0cb4168f51aa4eb5907b468e74bc42670939fff2 #v0.50.0-215-g3f6a738
-        with:
-          entrypoint: ./tool/codegen/codegen.sh
-          args: /github/workspace
-      - name: Show Git status
-        shell: bash
-        run: git status
-      - name: Validate
-        shell: bash
-        run: test -z "$(git status --porcelain)"
+    - name: Checkout repository
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+    - name: Generate code
+      # NOTE: Keep this container image as same as defined in Makefile
+      uses: docker://ghcr.io/pipe-cd/codegen@sha256:3aa25a5abafe40419861ce1f1667580d4274e144370d03ce9f1d00e9b391d7fd #v0.52.0-135-gcefd641
+      with:
+        entrypoint: ./tool/codegen/codegen.sh
+        args: /github/workspace
+    - name: Show Git status
+      shell: bash
+      run: git status
+    - name: Validate
+      shell: bash
+      run: test -z "$(git status --porcelain)"

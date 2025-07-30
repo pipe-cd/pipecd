@@ -24,7 +24,6 @@ import (
 )
 
 type pipedCollection struct {
-	requestedBy Commander
 }
 
 func (p *pipedCollection) Kind() string {
@@ -45,14 +44,7 @@ func (p *pipedCollection) ListInUsedShards() []Shard {
 }
 
 func (p *pipedCollection) GetUpdatableShard() (Shard, error) {
-	switch p.requestedBy {
-	case WebCommander:
-		return ClientShard, nil
-	case PipedCommander:
-		return AgentShard, nil
-	default:
-		return "", ErrUnsupported
-	}
+	return ClientShard, nil
 }
 
 func (p *pipedCollection) Encode(e interface{}) (map[Shard][]byte, error) {
@@ -121,18 +113,16 @@ type PipedStore interface {
 
 type pipedStore struct {
 	backend
-	commander Commander
-	nowFunc   func() time.Time
+	nowFunc func() time.Time
 }
 
-func NewPipedStore(ds DataStore, c Commander) PipedStore {
+func NewPipedStore(ds DataStore) PipedStore {
 	return &pipedStore{
 		backend: backend{
 			ds:  ds,
-			col: &pipedCollection{requestedBy: c},
+			col: &pipedCollection{},
 		},
-		commander: c,
-		nowFunc:   time.Now,
+		nowFunc: time.Now,
 	}
 }
 

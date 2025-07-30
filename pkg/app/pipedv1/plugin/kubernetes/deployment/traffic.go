@@ -90,7 +90,7 @@ func (p *Plugin) executeK8sTrafficRoutingStagePodSelector(ctx context.Context, i
 	// 5. Load manifests
 	lp.Infof("Loading manifests at commit %s", input.Request.TargetDeploymentSource.CommitHash)
 	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec,
-		&input.Request.TargetDeploymentSource, loader)
+		&input.Request.TargetDeploymentSource, loader, input.Logger)
 	if err != nil {
 		lp.Errorf("Failed while loading manifests (%v)", err)
 		return sdk.StageStatusFailure

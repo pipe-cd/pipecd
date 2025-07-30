@@ -300,6 +300,7 @@ func executeStage[Config, DeployTargetConfig, ApplicationConfigSpec any](
 	in := &ExecuteStageInput[ApplicationConfigSpec]{
 		Request: ExecuteStageRequest[ApplicationConfigSpec]{
 			StageName:               request.GetInput().GetStage().GetName(),
+			StageIndex:              int(request.GetInput().GetStage().GetIndex()),
 			StageConfig:             request.GetInput().GetStageConfig(),
 			RunningDeploymentSource: runningDeploymentSource,
 			TargetDeploymentSource:  targetDeploymentSource,
@@ -538,6 +539,8 @@ type ExecuteStageInput[ApplicationConfigSpec any] struct {
 type ExecuteStageRequest[ApplicationConfigSpec any] struct {
 	// The name of the stage to execute.
 	StageName string
+	// The index of the stage to execute.
+	StageIndex int
 	// Json encoded configuration of the stage.
 	StageConfig []byte
 

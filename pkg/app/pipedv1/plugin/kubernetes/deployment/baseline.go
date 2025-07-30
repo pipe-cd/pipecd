@@ -60,7 +60,7 @@ func (p *Plugin) executeK8sBaselineRolloutStage(ctx context.Context, input *sdk.
 	loader := provider.NewLoader(toolRegistry)
 
 	lp.Infof("Loading manifests at commit %s for handling", input.Request.RunningDeploymentSource.CommitHash)
-	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, appCfg, &input.Request.RunningDeploymentSource, loader)
+	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, appCfg, &input.Request.RunningDeploymentSource, loader, input.Logger)
 	if err != nil {
 		lp.Errorf("Failed while loading manifests (%v)", err)
 		return sdk.StageStatusFailure
