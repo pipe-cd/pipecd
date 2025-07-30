@@ -39,7 +39,7 @@ jobs:
           - image: launcher-okd
             dockerfile: cmd/launcher/Dockerfile-okd
           - image: pipecd
-            dockerfile: cmd/pipecd/Dockerfile
+            dockerfile: cmd/control-plane/Dockerfile
           - image: piped
             dockerfile: cmd/piped/Dockerfile
           - image: piped-okd

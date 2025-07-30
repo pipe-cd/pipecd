@@ -30,7 +30,7 @@ build/go: BUILD_ENV ?= GOOS=$(BUILD_OS) GOARCH=$(BUILD_ARCH) CGO_ENABLED=0
 build/go: BIN_SUFFIX ?=
 build/go:
 ifndef MOD
-	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipecd$(BIN_SUFFIX) ./cmd/pipecd
+	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipecd$(BIN_SUFFIX) ./cmd/control-plane
 	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/piped$(BIN_SUFFIX) ./cmd/piped
 	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/launcher$(BIN_SUFFIX) ./cmd/launcher
 	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipectl$(BIN_SUFFIX) ./cmd/pipectl
@@ -155,13 +155,13 @@ run/pipecd: BUILD_OPTS ?= -ldflags "$(BUILD_LDFLAGS_PREFIX).version=$(BUILD_VERS
 run/pipecd: CONTROL_PLANE_VALUES ?= ./quickstart/control-plane-values.yaml
 run/pipecd:
 	@echo "Building go binary of Control Plane..."
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 $(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipecd ./cmd/pipecd
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 $(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipecd ./cmd/control-plane
 
 	@echo "Building web static files..."
 	yarn --cwd web build
 
 	@echo "Building docker image and pushing it to local registry..."
-	docker build -f cmd/pipecd/Dockerfile -t localhost:5001/pipecd:$(BUILD_VERSION) .
+	docker build -f cmd/control-plane/Dockerfile -t localhost:5001/pipecd:$(BUILD_VERSION) .
 	docker push localhost:5001/pipecd:$(BUILD_VERSION)
 
 	@echo "Installing Control Plane in kind..."

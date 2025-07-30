@@ -22,7 +22,7 @@ import (
 
 func main() {
 	app := cli.NewApp(
-		"pipecd",
+		"control-plane",
 		"Control-plane component for PipeCD.",
 	)
 	app.AddCommands(
