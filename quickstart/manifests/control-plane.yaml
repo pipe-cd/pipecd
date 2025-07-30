@@ -551,7 +551,7 @@ spec:
               done;
       containers:
         - name: server
-          image: "ghcr.io/pipe-cd/pipecd:v0.52.2"
+          image: "ghcr.io/pipe-cd/control-plane:v0.52.2"
           imagePullPolicy: IfNotPresent
           args:
           - server
@@ -684,7 +684,7 @@ spec:
               done;
       containers:
         - name: ops
-          image: "ghcr.io/pipe-cd/pipecd:v0.52.2"
+          image: "ghcr.io/pipe-cd/control-plane:v0.52.2"
           imagePullPolicy: IfNotPresent
           args:
           - ops

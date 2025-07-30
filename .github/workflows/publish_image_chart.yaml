@@ -27,6 +27,7 @@ jobs:
           - helloworld
           - launcher
           - launcher-okd
+          - control-plane
           - pipecd
           - piped
           - piped-okd
@@ -38,6 +39,8 @@ jobs:
             dockerfile: cmd/launcher/Dockerfile
           - image: launcher-okd
             dockerfile: cmd/launcher/Dockerfile-okd
+          - image: control-plane
+            dockerfile: cmd/pipecd/Dockerfile
           - image: pipecd
             dockerfile: cmd/pipecd/Dockerfile
           - image: piped
@@ -48,6 +51,8 @@ jobs:
             dockerfile: cmd/pipectl/Dockerfile
         exclude:
           - image: launcher-okd
+            container_registry: gcr.io/pipecd
+          - image: control-plane
             container_registry: gcr.io/pipecd
           - image: pipecd
             container_registry: gcr.io/pipecd
