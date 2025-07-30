@@ -23,6 +23,7 @@ import (
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
+// TODO: add test
 func (p *Plugin) executePlanStage(ctx context.Context, input *sdk.ExecuteStageInput[config.ApplicationConfigSpec], dts []*sdk.DeployTarget[config.DeployTargetConfig]) sdk.StageStatus {
 	cmd, err := initTerraformCommand(ctx, input.Client, input.Request.TargetDeploymentSource, dts[0])
 	if err != nil {

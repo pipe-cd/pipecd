@@ -13,7 +13,7 @@ import {
 import { useFormik } from "formik";
 import { FC } from "react";
 import * as yup from "yup";
-import { useAppSelector } from "~/hooks/redux";
+import { useGetProject } from "~/queries/project/use-get-project";
 
 export interface AddUserGroupDialogProps {
   open: boolean;
@@ -49,7 +49,8 @@ export const AddUserGroupDialog: FC<AddUserGroupDialogProps> = ({
       onClose();
     },
   });
-  const roles = useAppSelector((state) => state.project.rbacRoles);
+  const { data: project } = useGetProject();
+  const roles = project?.rbacRoles || [];
 
   return (
     <Dialog open={open} onClose={onClose}>
