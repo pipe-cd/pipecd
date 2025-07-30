@@ -24,7 +24,7 @@ import (
 )
 
 // TODO: add test
-func (p *Plugin) executePlanStage(ctx context.Context, input *sdk.ExecuteStageInput[config.ApplicationConfigSpec], dts []*sdk.DeployTarget[config.DeployTargetConfig]) sdk.StageStatus {
+func (p *Plugin) executeApplyStage(ctx context.Context, input *sdk.ExecuteStageInput[config.ApplicationConfigSpec], dts []*sdk.DeployTarget[config.DeployTargetConfig]) sdk.StageStatus {
 	cmd, err := initTerraformCommand(ctx, input.Client, input.Request.TargetDeploymentSource, dts[0])
 	if err != nil {
 		return sdk.StageStatusFailure
@@ -32,26 +32,17 @@ func (p *Plugin) executePlanStage(ctx context.Context, input *sdk.ExecuteStageIn
 
 	lp := input.Client.LogPersister()
 
-	stageConfig := config.TerraformPlanStageOptions{}
+	stageConfig := config.TerraformApplyStageOptions{}
 	if err := json.Unmarshal(input.Request.StageConfig, &stageConfig); err != nil {
 		lp.Errorf("Failed to unmarshal stage config (%v)", err)
 		return sdk.StageStatusFailure
 	}
 
-	planResult, err := cmd.Plan(ctx, lp)
-	if err != nil {
-		lp.Errorf("Failed to plan (%v)", err)
+	if err = cmd.Apply(ctx, lp); err != nil {
+		lp.Errorf("Failed to apply changes (%v)", err)
 		return sdk.StageStatusFailure
 	}
 
-	if planResult.NoChanges() {
-		lp.Success("No changes to apply")
-		if stageConfig.ExitOnNoChanges {
-			return sdk.StageStatusExited
-		}
-		return sdk.StageStatusSuccess
-	}
-
-	lp.Successf("Detected %d import, %d add, %d change, %d destroy.", planResult.Imports, planResult.Adds, planResult.Changes, planResult.Destroys)
+	lp.Success("Successfully applied changes")
 	return sdk.StageStatusSuccess
 }
