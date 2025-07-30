@@ -155,6 +155,9 @@ export class PluginPlanPreviewResult extends jspb.Message {
   getPlanDetails_asB64(): string;
   setPlanDetails(value: Uint8Array | string): PluginPlanPreviewResult;
 
+  getDiffLanguage(): string;
+  setDiffLanguage(value: string): PluginPlanPreviewResult;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): PluginPlanPreviewResult.AsObject;
   static toObject(includeInstance: boolean, msg: PluginPlanPreviewResult): PluginPlanPreviewResult.AsObject;
@@ -169,6 +172,7 @@ export namespace PluginPlanPreviewResult {
     deployTarget: string,
     planSummary: Uint8Array | string,
     planDetails: Uint8Array | string,
+    diffLanguage: string,
   }
 }
 

@@ -83,4 +83,8 @@ message PluginPlanPreviewResult {
     string deploy_target = 2;
     bytes plan_summary = 3;
     bytes plan_details = 4;
+
+    // The language to render the details like "diff","hcl".
+    // If this is empty, "diff" will be used by default.
+    string diff_language = 5;
 }
