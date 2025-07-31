@@ -1,0 +1,31 @@
+apiVersion: pipecd.dev/v1beta1
+kind: Application
+spec:
+  name: traffic-routing-istio-no-vs-test
+  description: Test data for traffic routing using Istio method without VirtualService
+  plugins:
+    kubernetes:
+      input:
+        manifests:
+          - deployment.yaml
+          - service.yaml
+        kubectlVersion: 1.32.2
+      service:
+        name: traffic-test
+      trafficRouting:
+        method: istio
+        istio:
+          editableRoutes: []
+  pipeline:
+    stages:
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 100%
+      - name: K8S_TRAFFIC_ROUTING
+        with:
+          canary: 30%
+      - name: K8S_PRIMARY_ROLLOUT
+      - name: K8S_TRAFFIC_ROUTING
+        with:
+          primary: 100%
+      - name: K8S_CANARY_CLEAN 
