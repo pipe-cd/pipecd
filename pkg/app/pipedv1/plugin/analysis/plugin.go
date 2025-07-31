@@ -15,8 +15,10 @@
 package main
 
 import (
+	"context"
 	"time"
 
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 const (
@@ -41,5 +43,26 @@ type AnalysisState struct {
 	Completed     bool      `json:"completed"`
 	Success       bool      `json:"success"`
 	FailureReason string    `json:"failureReason,omitempty"`
+}
+
+// BuildPipelineSyncStages implements sdk.StagePlugin.
+func (p *analysisPlugin) BuildPipelineSyncStages(ctx context.Context, _ sdk.ConfigNone, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
+	stages := make([]sdk.PipelineStage, 0, len(input.Request.Stages))
+	for _, rs := range input.Request.Stages {
+		stage := sdk.PipelineStage{
+			Index:    rs.Index,
+			Name:     rs.Name,
+			Rollback: false,
+			Metadata: map[string]string{
+				sdk.MetadataKeyStageDisplay: "Analysis",
+			},
+			AvailableOperation: sdk.ManualOperationNone,
+		}
+		stages = append(stages, stage)
+	}
+
+	return &sdk.BuildPipelineSyncStagesResponse{
+		Stages: stages,
+	}, nil
 }
 
