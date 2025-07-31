@@ -334,6 +334,8 @@ func (m *PlanPreviewResult) validate(all bool) error {
 
 	// no validation rules for Details
 
+	// no validation rules for DiffLanguage
+
 	if len(errors) > 0 {
 		return PlanPreviewResultMultiError(errors)
 	}
