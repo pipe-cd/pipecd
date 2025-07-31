@@ -1,4 +1,4 @@
-// Copyright 2024 The PipeCD Authors.
+// Copyright 2025 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,10 +23,10 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
-	metrics "github.com/pipe-cd/pipecd/pkg/app/piped/planpreview/planpreviewmetrics"
+	metrics "github.com/pipe-cd/pipecd/pkg/app/pipedv1/planpreview/planpreviewmetrics"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
-	"github.com/pipe-cd/pipecd/pkg/cache"
-	"github.com/pipe-cd/pipecd/pkg/config"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/regexpool"
@@ -118,8 +118,8 @@ func NewHandler(
 	al applicationLister,
 	cg lastTriggeredCommitGetter,
 	sd secretDecrypter,
-	appManifestsCache cache.Cache,
 	cfg *config.PipedSpec,
+	pluginRegistry plugin.PluginRegistry,
 	opts ...Option,
 ) *Handler {
 
@@ -145,7 +145,7 @@ func NewHandler(
 
 	regexPool := regexpool.DefaultPool()
 	h.builderFactory = func() Builder {
-		return newBuilder(gc, ac, al, cg, sd, appManifestsCache, regexPool, cfg, h.logger)
+		return newBuilder(gc, ac, al, cg, sd, regexPool, cfg, pluginRegistry, h.logger)
 	}
 
 	return h

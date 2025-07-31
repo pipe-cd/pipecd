@@ -1,4 +1,4 @@
-// Copyright 2024 The PipeCD Authors.
+// Copyright 2025 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package planpreview
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -24,14 +23,12 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/planner"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/planner/registry"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/trigger"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/trigger"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/backoff"
-	"github.com/pipe-cd/pipecd/pkg/cache"
-	"github.com/pipe-cd/pipecd/pkg/config"
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/regexpool"
@@ -41,10 +38,6 @@ const (
 	workspacePattern    = "plan-preview-builder-*"
 	defaultWorkerAppNum = 3
 	maxWorkerNum        = 100
-)
-
-var (
-	defaultPlannerRegistry = registry.DefaultRegistry()
 )
 
 type lastTriggeredCommitGetter interface {
@@ -61,9 +54,9 @@ type builder struct {
 	applicationLister applicationLister
 	commitGetter      lastTriggeredCommitGetter
 	secretDecrypter   secretDecrypter
-	appManifestsCache cache.Cache
 	regexPool         *regexpool.Pool
 	pipedCfg          *config.PipedSpec
+	pluginRegistry    plugin.PluginRegistry
 	logger            *zap.Logger
 
 	workingDir string
@@ -76,9 +69,9 @@ func newBuilder(
 	al applicationLister,
 	cg lastTriggeredCommitGetter,
 	sd secretDecrypter,
-	amc cache.Cache,
 	rp *regexpool.Pool,
 	cfg *config.PipedSpec,
+	pr plugin.PluginRegistry,
 	logger *zap.Logger,
 ) *builder {
 
@@ -88,9 +81,9 @@ func newBuilder(
 		applicationLister: al,
 		commitGetter:      cg,
 		secretDecrypter:   sd,
-		appManifestsCache: amc,
 		regexPool:         rp,
 		pipedCfg:          cfg,
+		pluginRegistry:    pr,
 		logger:            logger.Named("plan-preview-builder"),
 	}
 }
@@ -201,13 +194,13 @@ func (b *builder) build(ctx context.Context, id string, cmd model.Command_BuildP
 	return results, nil
 }
 
-func (b *builder) buildApp(ctx context.Context, worker int, command string, app *model.Application, repo git.Repo, mergedCommit string) *model.ApplicationPlanPreviewResult {
+func (b *builder) buildApp(ctx context.Context, worker int, command string, app *model.Application, repo git.Repo, mergedCommit string) (result *model.ApplicationPlanPreviewResult) {
 	logger := b.logger.With(
 		zap.Int("worker", worker),
 		zap.String("command", command),
 		zap.String("app-id", app.Id),
 		zap.String("app-name", app.Name),
-		zap.String("app-kind", app.Kind.String()),
+		zap.String("labels", app.GetLabelsString()),
 	)
 
 	logger.Info("will decide sync strategy for an application")
@@ -226,11 +219,11 @@ func (b *builder) buildApp(ctx context.Context, worker int, command string, app 
 	targetDSP := deploysource.NewProvider(
 		b.workingDir,
 		deploysource.NewLocalSourceCloner(repo, "target", mergedCommit),
-		*app.GitPath,
+		app.GitPath,
 		b.secretDecrypter,
 	)
 
-	strategy, err := b.plan(ctx, app, targetDSP, preCommit)
+	strategy, err := b.determineStrategy(ctx, app, targetDSP, preCommit)
 	if err != nil {
 		r.Error = fmt.Sprintf("failed while planning, %v", err)
 		return r
@@ -239,43 +232,8 @@ func (b *builder) buildApp(ctx context.Context, worker int, command string, app 
 
 	logger.Info("successfully decided sync strategy for a application", zap.String("strategy", strategy.String()))
 
-	var buf bytes.Buffer
-	var dr *diffResult
-
-	switch app.Kind {
-	case model.ApplicationKind_KUBERNETES:
-		dr, err = b.kubernetesDiff(ctx, app, targetDSP, preCommit, &buf)
-	case model.ApplicationKind_TERRAFORM:
-		dr, err = b.terraformDiff(ctx, app, targetDSP, &buf)
-	case model.ApplicationKind_CLOUDRUN:
-		dr, err = b.cloudrundiff(ctx, app, targetDSP, preCommit, &buf)
-	case model.ApplicationKind_ECS:
-		dr, err = b.ecsdiff(ctx, app, targetDSP, preCommit, &buf)
-	case model.ApplicationKind_LAMBDA:
-		dr, err = b.lambdadiff(ctx, app, targetDSP, preCommit, &buf)
-	default:
-		dr = &diffResult{
-			summary: fmt.Sprintf("%s application is not implemented yet (coming soon)", app.Kind.String()),
-		}
-	}
-
-	if dr != nil {
-		r.PlanSummary = []byte(dr.summary)
-		r.NoChange = dr.noChange
-	}
-	r.PlanDetails = buf.Bytes()
-
-	if err != nil {
-		r.Error = fmt.Sprintf("failed while calculating diff, %v", err)
-		return r
-	}
-
-	return r
-}
-
-type diffResult struct {
-	summary  string
-	noChange bool
+	// TODO: Call plan-preview of each plugin.
+	panic("not implemented")
 }
 
 func (b *builder) cloneHeadCommit(ctx context.Context, headBranch, headCommit string) (git.Repo, error) {
@@ -304,7 +262,7 @@ func (b *builder) cloneHeadCommit(ctx context.Context, headBranch, headCommit st
 func (b *builder) findTriggerApps(ctx context.Context, repo git.Repo, apps []*model.Application, headCommit string) (triggerApps []*model.Application, failedResults []*model.ApplicationPlanPreviewResult) {
 	d := trigger.NewOnCommitDeterminer(repo, headCommit, b.commitGetter, b.logger)
 	determine := func(app *model.Application) (bool, error) {
-		appCfg, err := config.LoadApplication(repo.GetPath(), app.GitPath.GetApplicationConfigFilePath(), app.Kind)
+		appCfg, err := config.LoadApplication(repo.GetPath(), app.GitPath.GetApplicationConfigFilePath())
 		if err != nil {
 			return false, err
 		}
@@ -328,48 +286,9 @@ func (b *builder) findTriggerApps(ctx context.Context, repo git.Repo, apps []*mo
 	return
 }
 
-func (b *builder) plan(ctx context.Context, app *model.Application, targetDSP deploysource.Provider, lastSuccessfulCommit string) (strategy model.SyncStrategy, err error) {
-	p, ok := defaultPlannerRegistry.Planner(app.Kind)
-	if !ok {
-		err = fmt.Errorf("application kind %s is not supported yet", app.Kind.String())
-		return
-	}
-
-	in := planner.Input{
-		ApplicationID:   app.Id,
-		ApplicationName: app.Name,
-		GitPath:         *app.GitPath,
-		Trigger: model.DeploymentTrigger{
-			Commit: &model.Commit{
-				Branch: b.repoCfg.Branch,
-				Hash:   targetDSP.Revision(),
-			},
-			Commander: "pipectl",
-		},
-		TargetDSP:                      targetDSP,
-		MostRecentSuccessfulCommitHash: lastSuccessfulCommit,
-		PipedConfig:                    b.pipedCfg,
-		AppManifestsCache:              b.appManifestsCache,
-		RegexPool:                      b.regexPool,
-		Logger:                         b.logger,
-	}
-
-	if lastSuccessfulCommit != "" {
-		in.RunningDSP = deploysource.NewProvider(
-			b.workingDir,
-			deploysource.NewGitSourceCloner(b.gitClient, b.repoCfg, "running", lastSuccessfulCommit),
-			*app.GitPath,
-			b.secretDecrypter,
-		)
-	}
-
-	out, err := p.Plan(ctx, in)
-	if err != nil {
-		return
-	}
-
-	strategy = out.SyncStrategy
-	return
+func (b *builder) determineStrategy(ctx context.Context, app *model.Application, targetDSP deploysource.Provider, preCommit string) (model.SyncStrategy, error) {
+	// TODO: Implement. Use controller/planner.go
+	panic("not implemented")
 }
 
 func (b *builder) listApplications(repo config.PipedRepository) []*model.Application {
