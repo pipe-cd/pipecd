@@ -84,11 +84,7 @@ func (s *PlanPreviewPluginServer[Config, DeployTargetConfig, ApplicationConfigSp
 		return nil, status.Errorf(codes.Internal, "failed to get the plan preview: %v", err)
 	}
 
-	return &planpreview.GetPlanPreviewResponse{
-		Summary:  response.Summary,
-		NoChange: response.NoChange,
-		Details:  response.Details,
-	}, nil
+	return response.toProto(), nil
 }
 
 // GetPlanPreviewInput is the input for the GetPlanPreview method.
@@ -105,16 +101,47 @@ type GetPlanPreviewInput[ApplicationConfigSpec any] struct {
 type GetPlanPreviewRequest[ApplicationConfigSpec any] struct {
 	// ApplicationID is the ID of the application.
 	ApplicationID string
+	// DeployTargets is the names of the deploy targets.
+	DeployTargets []string
 	// TargetDeploymentSource is the target source of the deployment.
 	TargetDeploymentSource DeploymentSource[ApplicationConfigSpec]
 }
 
 // GetPlanPreviewResponse is the response for the GetPlanPreview method.
 type GetPlanPreviewResponse struct {
+	// Results is the results of the plan preview.
+	Results []PlanPreviewResult
+}
+
+// PlanPreviewResult is the result of the plan preview.
+type PlanPreviewResult struct {
+	// DeployTarget is the name of the deploy target.
+	DeployTarget string
 	// Summary is a human-readable summary of the plan preview.
 	Summary string
 	// NoChange indicates whether any changes were detected.
 	NoChange bool
 	// Details contains the detailed plan preview information.
 	Details []byte
+	// DiffLanguage is the language to render the details like "diff","hcl".
+	// If this is empty, "diff" will be used by default.
+	DiffLanguage string
+}
+
+// toProto converts the GetPlanPreviewResponse to the planpreview.GetPlanPreviewResponse.
+func (r *GetPlanPreviewResponse) toProto() *planpreview.GetPlanPreviewResponse {
+	results := make([]*planpreview.PlanPreviewResult, 0, len(r.Results))
+	for _, result := range r.Results {
+		results = append(results, &planpreview.PlanPreviewResult{
+			DeployTarget: result.DeployTarget,
+			Summary:      result.Summary,
+			NoChange:     result.NoChange,
+			Details:      result.Details,
+			DiffLanguage: result.DiffLanguage,
+		})
+	}
+
+	return &planpreview.GetPlanPreviewResponse{
+		Results: results,
+	}
 }
