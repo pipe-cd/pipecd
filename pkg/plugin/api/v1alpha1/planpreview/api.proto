@@ -18,6 +18,7 @@ package grpc.plugin.planpreviewapi.v1alpha1;
 option go_package = "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/planpreview";
 
 import "pkg/plugin/api/v1alpha1/common/common.proto";
+import "pkg/model/planpreview.proto";
 
 // PlanPreviewService defines the public APIs for the Plan Preview feature of plugin.
 service PlanPreviewService {
@@ -37,20 +38,5 @@ message GetPlanPreviewRequest {
 
 message GetPlanPreviewResponse {
     // Results for each deploy target.
-    repeated PlanPreviewResult results = 1;
-}
-
-message PlanPreviewResult{
-    // Name of the deploy target.
-    string deploy_target = 1;
-    // Summary of the result.
-    string summary = 2;
-    // Whether any change are detected or not.
-    bool no_change = 3;
-    // Content of the result.
-    bytes details = 4;
-
-    // The language to render the details like "diff","hcl".
-    // If this is empty, "diff" will be used by default.
-    string diff_language = 5;
+    repeated model.PluginPlanPreviewResult results = 1;
 }
