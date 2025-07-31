@@ -15,18 +15,14 @@
 package main
 
 import (
-	"log"
-
-	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+	
 )
 
-func main() {
-	plugin, err := sdk.NewPlugin("0.0.1", sdk.WithStagePlugin(&analysisPlugin{}))
-	if err != nil {
-		log.Fatalln(err)
-	}
+const (
+	stageAnalysis = "ANALYSIS"
+)
 
-	if err := plugin.Run(); err != nil {
-		log.Fatalln(err)
-	}
+type analysisPlugin struct{}
+func (p *analysisPlugin) StageName() string {
+	return stageAnalysis
 }
