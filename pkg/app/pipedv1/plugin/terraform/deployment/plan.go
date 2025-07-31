@@ -19,13 +19,14 @@ import (
 	"encoding/json"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/config"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/provider"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 // TODO: add test
 func (p *Plugin) executePlanStage(ctx context.Context, input *sdk.ExecuteStageInput[config.ApplicationConfigSpec], dts []*sdk.DeployTarget[config.DeployTargetConfig]) sdk.StageStatus {
-	cmd, err := initTerraformCommand(ctx, input.Client, input.Request.TargetDeploymentSource, dts[0])
+	cmd, err := provider.NewTerraformCommand(ctx, input.Client, input.Request.TargetDeploymentSource, dts[0])
 	if err != nil {
 		return sdk.StageStatusFailure
 	}
