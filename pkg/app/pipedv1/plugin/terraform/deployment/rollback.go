@@ -18,6 +18,7 @@ import (
 	"context"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/config"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/provider"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
@@ -32,7 +33,7 @@ func (p *Plugin) executeRollbackStage(ctx context.Context, input *sdk.ExecuteSta
 		return sdk.StageStatusFailure
 	}
 
-	cmd, err := initTerraformCommand(ctx, input.Client, rds, dts[0])
+	cmd, err := provider.NewTerraformCommand(ctx, input.Client, rds, dts[0])
 	if err != nil {
 		return sdk.StageStatusFailure
 	}

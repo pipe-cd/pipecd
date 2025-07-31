@@ -12,20 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package deployment
+package provider
 
 import (
 	"context"
 	"errors"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/config"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/provider"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/toolregistry"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
-func initTerraformCommand(ctx context.Context, client *sdk.Client, ds sdk.DeploymentSource[config.ApplicationConfigSpec], dt *sdk.DeployTarget[config.DeployTargetConfig]) (*provider.Terraform, error) {
+// NewTerraformCommand initializes a Terraform command, including `terraform init`.
+func NewTerraformCommand(ctx context.Context, client *sdk.Client, ds sdk.DeploymentSource[config.ApplicationConfigSpec], dt *sdk.DeployTarget[config.DeployTargetConfig]) (*Terraform, error) {
 	var (
 		appSpec = ds.ApplicationConfig.Spec
 		flags   = appSpec.CommandFlags
@@ -39,20 +39,20 @@ func initTerraformCommand(ctx context.Context, client *sdk.Client, ds sdk.Deploy
 		return nil, err
 	}
 
-	cmd := provider.NewTerraform(
+	cmd := newTerraform(
 		terraformPath,
 		ds.ApplicationDirectory,
-		provider.WithVars(mergeVars(dt.Config.Vars, appSpec.Vars)),
-		provider.WithVarFiles(appSpec.VarFiles),
-		provider.WithAdditionalFlags(flags.Shared, flags.Init, flags.Plan, flags.Apply),
-		provider.WithAdditionalEnvs(envs.Shared, envs.Init, envs.Plan, envs.Apply),
+		WithVars(mergeVars(dt.Config.Vars, appSpec.Vars)),
+		WithVarFiles(appSpec.VarFiles),
+		WithAdditionalFlags(flags.Shared, flags.Init, flags.Plan, flags.Apply),
+		WithAdditionalEnvs(envs.Shared, envs.Init, envs.Plan, envs.Apply),
 	)
 
 	if ok := showUsingVersion(ctx, cmd, lp); !ok {
 		return nil, errors.New("failed to show using version")
 	}
 
-	if err := cmd.Init(ctx, lp); err != nil {
+	if err := cmd.init(ctx, lp); err != nil {
 		lp.Errorf("Failed to execute 'terraform init' (%v)", err)
 		return nil, err
 	}
@@ -72,8 +72,8 @@ func mergeVars(deployTargetVars []string, appVars []string) []string {
 	return mergedVars
 }
 
-func showUsingVersion(ctx context.Context, cmd *provider.Terraform, lp sdk.StageLogPersister) bool {
-	version, err := cmd.Version(ctx)
+func showUsingVersion(ctx context.Context, cmd *Terraform, lp sdk.StageLogPersister) bool {
+	version, err := cmd.version(ctx)
 	if err != nil {
 		lp.Errorf("Failed to check terraform version (%v)", err)
 		return false
@@ -82,11 +82,11 @@ func showUsingVersion(ctx context.Context, cmd *provider.Terraform, lp sdk.Stage
 	return true
 }
 
-func selectWorkspace(ctx context.Context, cmd *provider.Terraform, workspace string, lp sdk.StageLogPersister) bool {
+func selectWorkspace(ctx context.Context, cmd *Terraform, workspace string, lp sdk.StageLogPersister) bool {
 	if workspace == "" {
 		return true
 	}
-	if err := cmd.SelectWorkspace(ctx, workspace); err != nil {
+	if err := cmd.selectWorkspace(ctx, workspace); err != nil {
 		lp.Errorf("Failed to select workspace %q (%v). You might need to create the workspace before using by command %q", workspace, err, "terraform workspace new "+workspace)
 		return false
 	}
