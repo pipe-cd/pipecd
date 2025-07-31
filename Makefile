@@ -268,10 +268,6 @@ gen/test-tls:
 		-subj "/CN=localhost" \
 		-config pkg/rpc/testdata/tls.config
 
-.PHONY: gen/contributions
-gen/contributions:
-	./hack/gen-contributions.sh
-
 .PHONY: release
 release: release/init release/docs
 

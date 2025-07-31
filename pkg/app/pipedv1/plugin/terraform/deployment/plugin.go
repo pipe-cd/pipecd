@@ -39,10 +39,10 @@ const (
 // Plugin implements sdk.DeploymentPlugin for Terraform.
 type Plugin struct{}
 
-var _ sdk.DeploymentPlugin[config.Config, config.DeployTargetConfig, config.ApplicationConfigSpec] = (*Plugin)(nil)
+var _ sdk.DeploymentPlugin[sdk.ConfigNone, config.DeployTargetConfig, config.ApplicationConfigSpec] = (*Plugin)(nil)
 
 // BuildPipelineSyncStages implements sdk.DeploymentPlugin.
-func (p *Plugin) BuildPipelineSyncStages(ctx context.Context, _ *config.Config, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
+func (p *Plugin) BuildPipelineSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
 	reqStages := input.Request.Stages
 	out := make([]sdk.PipelineStage, 0, len(reqStages)+1)
 
@@ -71,7 +71,7 @@ func (p *Plugin) BuildPipelineSyncStages(ctx context.Context, _ *config.Config, 
 }
 
 // BuildQuickSyncStages implements sdk.DeploymentPlugin.
-func (p *Plugin) BuildQuickSyncStages(ctx context.Context, _ *config.Config, input *sdk.BuildQuickSyncStagesInput) (*sdk.BuildQuickSyncStagesResponse, error) {
+func (p *Plugin) BuildQuickSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildQuickSyncStagesInput) (*sdk.BuildQuickSyncStagesResponse, error) {
 	stages := make([]sdk.QuickSyncStage, 0, 2)
 	stages = append(stages, sdk.QuickSyncStage{
 		Name:               stageApply,
@@ -97,12 +97,12 @@ func (p *Plugin) BuildQuickSyncStages(ctx context.Context, _ *config.Config, inp
 
 // DetermineStrategy implements sdk.DeploymentPlugin.
 // It returns (nil, nil) because this plugin does not have specific logic for DetermineStrategy.
-func (p *Plugin) DetermineStrategy(ctx context.Context, _ *config.Config, input *sdk.DetermineStrategyInput[config.ApplicationConfigSpec]) (*sdk.DetermineStrategyResponse, error) {
+func (p *Plugin) DetermineStrategy(ctx context.Context, _ *sdk.ConfigNone, input *sdk.DetermineStrategyInput[config.ApplicationConfigSpec]) (*sdk.DetermineStrategyResponse, error) {
 	return nil, nil
 }
 
 // DetermineVersions implements sdk.DeploymentPlugin.
-func (p *Plugin) DetermineVersions(ctx context.Context, _ *config.Config, input *sdk.DetermineVersionsInput[config.ApplicationConfigSpec]) (*sdk.DetermineVersionsResponse, error) {
+func (p *Plugin) DetermineVersions(ctx context.Context, _ *sdk.ConfigNone, input *sdk.DetermineVersionsInput[config.ApplicationConfigSpec]) (*sdk.DetermineVersionsResponse, error) {
 	files, err := provider.LoadTerraformFiles(input.Request.DeploymentSource.ApplicationDirectory)
 	if err != nil {
 		input.Logger.Error("failed to load Terraform files", zap.Error(err))
@@ -121,7 +121,7 @@ func (p *Plugin) DetermineVersions(ctx context.Context, _ *config.Config, input 
 }
 
 // ExecuteStage implements sdk.DeploymentPlugin.
-func (p *Plugin) ExecuteStage(ctx context.Context, _ *config.Config, dts []*sdk.DeployTarget[config.DeployTargetConfig], input *sdk.ExecuteStageInput[config.ApplicationConfigSpec]) (*sdk.ExecuteStageResponse, error) {
+func (p *Plugin) ExecuteStage(ctx context.Context, _ *sdk.ConfigNone, dts []*sdk.DeployTarget[config.DeployTargetConfig], input *sdk.ExecuteStageInput[config.ApplicationConfigSpec]) (*sdk.ExecuteStageResponse, error) {
 	switch input.Request.StageName {
 	case stagePlan:
 		return &sdk.ExecuteStageResponse{
