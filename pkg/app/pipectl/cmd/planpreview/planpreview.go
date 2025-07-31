@@ -218,21 +218,25 @@ func convert(results []*model.PlanPreviewCommandResult) ReadableResult {
 				ApplicationKind:      a.ApplicationKind.String(),
 				ApplicationDirectory: a.ApplicationDirectory,
 				Env:                  a.Labels[labelEnvKey],
+				PluginNames:          strings.Join(a.DeploymentPluginNames, ", "),
 			}
+
 			if a.Error != "" {
 				out.FailureApplications = append(out.FailureApplications, FailureApplication{
-					ApplicationInfo: appInfo,
-					Reason:          a.Error,
-					PlanDetails:     string(a.PlanDetails),
+					ApplicationInfo:   appInfo,
+					Reason:            a.Error,
+					PlanDetails:       string(a.PlanDetails),
+					PluginPlanResults: a.PluginPlanResults,
 				})
 				continue
 			}
 			out.Applications = append(out.Applications, ApplicationResult{
-				ApplicationInfo: appInfo,
-				SyncStrategy:    a.SyncStrategy.String(),
-				PlanSummary:     string(a.PlanSummary),
-				PlanDetails:     string(a.PlanDetails),
-				NoChange:        a.NoChange,
+				ApplicationInfo:   appInfo,
+				SyncStrategy:      a.SyncStrategy.String(),
+				PlanSummary:       string(a.PlanSummary),
+				PlanDetails:       string(a.PlanDetails),
+				NoChange:          a.NoChange,
+				PluginPlanResults: a.PluginPlanResults,
 			})
 		}
 	}
@@ -249,9 +253,13 @@ type ReadableResult struct {
 type ApplicationResult struct {
 	ApplicationInfo
 	SyncStrategy string // QUICK_SYNC, PIPELINE
-	PlanSummary  string
-	PlanDetails  string
-	NoChange     bool
+	// Deprecated: Use PluginPlanResults in pipedv1
+	PlanSummary string
+	// Deprecated: Use PluginPlanResults in pipedv1
+	PlanDetails string
+	NoChange    bool
+
+	PluginPlanResults []*model.PluginPlanPreviewResult
 }
 
 type FailurePiped struct {
@@ -261,10 +269,12 @@ type FailurePiped struct {
 
 type FailureApplication struct {
 	ApplicationInfo
-	Reason      string
+	Reason string
+	// Deprecated: Use PluginPlanResults in pipedv1
 	PlanDetails string
-}
 
+	PluginPlanResults []*model.PluginPlanPreviewResult
+}
 type PipedInfo struct {
 	PipedID   string
 	PipedName string
@@ -272,12 +282,15 @@ type PipedInfo struct {
 }
 
 type ApplicationInfo struct {
-	ApplicationID        string
-	ApplicationName      string
-	ApplicationURL       string
+	ApplicationID   string
+	ApplicationName string
+	ApplicationURL  string
+	// Deprecated: Use PluginNames in pipedv1
 	ApplicationKind      string // KUBERNETES, TERRAFORM, CLOUDRUN, LAMBDA, ECS
 	ApplicationDirectory string
 	Env                  string
+
+	PluginNames string
 }
 
 func (r ReadableResult) String() string {
@@ -294,15 +307,34 @@ func (r ReadableResult) String() string {
 			fmt.Fprintf(&b, "\nHere are plan-preview for 1 application:\n")
 		}
 		for i, app := range r.Applications {
-			title := fmt.Sprintf("\n%d. app: %s, env: %s, kind: %s\n", i+1, app.ApplicationName, app.Env, app.ApplicationKind)
-			if app.Env == "" {
-				title = fmt.Sprintf("\n%d. app: %s, kind: %s\n", i+1, app.ApplicationName, app.ApplicationKind)
-			}
+			if len(app.PluginNames) == 0 {
+				title := fmt.Sprintf("\n%d. app: %s, env: %s, kind: %s\n", i+1, app.ApplicationName, app.Env, app.ApplicationKind)
+				if app.Env == "" {
+					title = fmt.Sprintf("\n%d. app: %s, kind: %s\n", i+1, app.ApplicationName, app.ApplicationKind)
+				}
 
-			b.WriteString(title)
-			fmt.Fprintf(&b, "  sync strategy: %s\n", app.SyncStrategy)
-			fmt.Fprintf(&b, "  summary: %s\n", app.PlanSummary)
-			fmt.Fprintf(&b, "  details:\n\n  ---DETAILS_BEGIN---\n%s\n  ---DETAILS_END---\n", app.PlanDetails)
+				b.WriteString(title)
+				fmt.Fprintf(&b, "  sync strategy: %s\n", app.SyncStrategy)
+				fmt.Fprintf(&b, "  summary: %s\n", app.PlanSummary)
+				fmt.Fprintf(&b, "  details:\n\n  ---DETAILS_BEGIN---\n%s\n  ---DETAILS_END---\n", app.PlanDetails)
+			} else {
+				title := fmt.Sprintf("\n%d. app: %s, env: %s, plugin(s): %s\n", i+1, app.ApplicationName, app.Env, app.PluginNames)
+				if app.Env == "" {
+					title = fmt.Sprintf("\n%d. app: %s, plugin(s): %s\n", i+1, app.ApplicationName, app.PluginNames)
+				}
+
+				b.WriteString(title)
+				fmt.Fprintf(&b, "  sync strategy: %s\n", app.SyncStrategy)
+				fmt.Fprintf(&b, "  summary:\n")
+				for _, ppr := range app.PluginPlanResults {
+					fmt.Fprintf(&b, "  - %s(%s): %s\n", ppr.PluginName, ppr.DeployTarget, ppr.PlanSummary)
+				}
+				fmt.Fprint(&b, "  details:\n\n")
+				for _, ppr := range app.PluginPlanResults {
+					fmt.Fprintf(&b, "  - %s(%s):\n", ppr.PluginName, ppr.DeployTarget)
+					fmt.Fprintf(&b, "  ---DETAILS_BEGIN---\n%s\n  ---DETAILS_END---\n\n", ppr.PlanDetails)
+				}
+			}
 		}
 	}
 
@@ -313,15 +345,32 @@ func (r ReadableResult) String() string {
 			fmt.Fprintf(&b, "\nNOTE: An error occurred while building plan-preview for the following application:\n")
 		}
 		for i, app := range r.FailureApplications {
-			title := fmt.Sprintf("\n%d. app: %s, env: %s, kind: %s\n", i+1, app.ApplicationName, app.Env, app.ApplicationKind)
-			if app.Env == "" {
-				title = fmt.Sprintf("\n%d. app: %s, kind: %s\n", i+1, app.ApplicationName, app.ApplicationKind)
-			}
+			if len(app.PluginNames) == 0 {
+				title := fmt.Sprintf("\n%d. app: %s, env: %s, kind: %s\n", i+1, app.ApplicationName, app.Env, app.ApplicationKind)
+				if app.Env == "" {
+					title = fmt.Sprintf("\n%d. app: %s, kind: %s\n", i+1, app.ApplicationName, app.ApplicationKind)
+				}
 
-			b.WriteString(title)
-			fmt.Fprintf(&b, "  reason: %s\n", app.Reason)
-			if len(app.PlanDetails) > 0 {
-				fmt.Fprintf(&b, "  details:\n\n  ---DETAILS_BEGIN---\n%s\n  ---DETAILS_END---\n", app.PlanDetails)
+				b.WriteString(title)
+				fmt.Fprintf(&b, "  reason: %s\n", app.Reason)
+				if len(app.PlanDetails) > 0 {
+					fmt.Fprintf(&b, "  details:\n\n  ---DETAILS_BEGIN---\n%s\n  ---DETAILS_END---\n", app.PlanDetails)
+				}
+			} else {
+				title := fmt.Sprintf("\n%d. app: %s, env: %s, plugin(s): %s\n", i+1, app.ApplicationName, app.Env, app.PluginNames)
+				if app.Env == "" {
+					title = fmt.Sprintf("\n%d. app: %s, plugin(s): %s\n", i+1, app.ApplicationName, app.PluginNames)
+				}
+
+				b.WriteString(title)
+				fmt.Fprintf(&b, "  reason: %s\n", app.Reason)
+				if len(app.PluginPlanResults) > 0 {
+					fmt.Fprint(&b, "  details:\n\n")
+					for _, ppr := range app.PluginPlanResults {
+						fmt.Fprintf(&b, "  - %s(%s):\n", ppr.PluginName, ppr.DeployTarget)
+						fmt.Fprintf(&b, "  ---DETAILS_BEGIN---\n%s\n  ---DETAILS_END---\n\n", ppr.PlanDetails)
+					}
+				}
 			}
 		}
 	}
