@@ -63,6 +63,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/livestatereporter"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/notifier"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/planpreview"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/statsreporter"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/trigger"
@@ -421,6 +422,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	}
 
 	// Start running deployment trigger.
+	var lastTriggeredCommitGetter trigger.LastTriggeredCommitGetter
 	{
 		tr, err := trigger.NewTrigger(
 			apiClient,
@@ -436,6 +438,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			input.Logger.Error("failed to initialize trigger", zap.Error(err))
 			return err
 		}
+		lastTriggeredCommitGetter = tr.GetLastTriggeredCommitGetter()
 
 		group.Go(func() error {
 			return tr.Run(ctx)
@@ -458,7 +461,46 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	// Start running planpreview handler.
 	{
-		// TODO: Implement planpreview controller.
+		// Decode password for plan-preview feature.
+		password, err := cfg.Git.DecodedPassword()
+		if err != nil {
+			input.Logger.Error("failed to decode password", zap.Error(err))
+			return err
+		}
+		// Initialize a dedicated git client for plan-preview feature.
+		// Basically, this feature is an utility so it should not share any resource with the main components of piped.
+		gc, err := git.NewClient(
+			git.WithUserName(cfg.Git.Username),
+			git.WithEmail(cfg.Git.Email),
+			git.WithLogger(input.Logger),
+			git.WithPassword(password),
+		)
+		if err != nil {
+			input.Logger.Error("failed to initialize git client for plan-preview", zap.Error(err))
+			return err
+		}
+		defer func() {
+			if err := gc.Clean(); err != nil {
+				input.Logger.Error("had an error while cleaning gitClient for plan-preview", zap.Error(err))
+				return
+			}
+			input.Logger.Info("successfully cleaned gitClient for plan-preview")
+		}()
+
+		h := planpreview.NewHandler(
+			gc,
+			apiClient,
+			commandLister,
+			applicationLister,
+			lastTriggeredCommitGetter,
+			decrypter,
+			cfg,
+			pluginRegistry,
+			planpreview.WithLogger(input.Logger),
+		)
+		group.Go(func() error {
+			return h.Run(ctx)
+		})
 	}
 
 	// Start running app-config-reporter.
