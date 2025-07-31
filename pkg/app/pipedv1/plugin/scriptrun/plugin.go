@@ -18,11 +18,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
+
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 const (

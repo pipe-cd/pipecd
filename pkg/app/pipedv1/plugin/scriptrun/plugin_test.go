@@ -16,10 +16,11 @@ package main
 
 import (
 	"encoding/json"
+	"testing"
+
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister/logpersistertest"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestBuildPipelineSyncStages(t *testing.T) {
