@@ -15,7 +15,8 @@
 package main
 
 import (
-	
+	"time"
+
 )
 
 const (
@@ -23,6 +24,22 @@ const (
 )
 
 type analysisPlugin struct{}
-func (p *analysisPlugin) StageName() string {
-	return stageAnalysis
+
+// AnalysisStageOptions represents the configuration for ANALYSIS stage
+type AnalysisStageOptions struct {
+	Timeout  int                      `json:"timeout"`
+	Duration time.Duration            `json:"duration"`
+	Metrics  []map[string]interface{} `json:"metrics,omitempty"`
+	HTTP     []map[string]interface{} `json:"http,omitempty"`
+	Logs     []map[string]interface{} `json:"logs,omitempty"`
 }
+
+// AnalysisState represents the current state of the analysis
+type AnalysisState struct {
+	StartTime     time.Time `json:"startTime"`
+	LastRunTime   time.Time `json:"lastRunTime"`
+	Completed     bool      `json:"completed"`
+	Success       bool      `json:"success"`
+	FailureReason string    `json:"failureReason,omitempty"`
+}
+
