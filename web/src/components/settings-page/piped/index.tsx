@@ -55,6 +55,7 @@ import { PipedTableRow } from "./components/piped-table-row";
 import { UpgradePipedDialog } from "./components/upgrade-dialog";
 import { TableCellNoWrap } from "../styles";
 import { useGetProject } from "~/queries/project/use-get-project";
+import BreakingChangeNotes from "./components/breaking-change";
 
 const filterValue = (
   _: AppState,
@@ -110,8 +111,6 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
   const breakingChangesNote = useAppSelector<string | null>(
     (state) => state.pipeds.breakingChangesNote
   );
-  // TODO: Remove this console.log
-  console.log("[DEBUG]", breakingChangesNote);
 
   const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
   const handleUpgradeDialogClose = (): void => setIsUpgradeDialogOpen(false);
@@ -173,6 +172,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
 
   return (
     <>
+      <BreakingChangeNotes notes={breakingChangesNote} />
       <Toolbar variant="dense">
         <Button
           color="primary"
