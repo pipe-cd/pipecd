@@ -58,7 +58,7 @@ Applications page
 
 <br>
 
-![](/images/sealed-secret-encrypting-form.png)
+![](/images/sealed-secret-encrypting-drawer-form.png)
 <p style="text-align: center;">
 The form for encrypting secret data
 </p>
