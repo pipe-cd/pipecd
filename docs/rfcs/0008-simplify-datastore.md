@@ -1,7 +1,10 @@
 - Start Date: 2021-12-19
 - Target Version: 0.24.0
+- **Status: DEPRECATED** (Discontinued as of v0.XX.Y)
 
 # Summary
+
+> **⚠️ DEPRECATED NOTICE:** This RFC describes the FileDB feature which has been **discontinued** as of PipeCD v0.XX.Y. The implementation was removed due to maintenance complexity and reliability concerns. PipeCD now exclusively supports **Firestore** and **MySQL** as datastore backends.
 
 This RFC introduces a way to host your own PipeCD control-plane without datastore. Refer to the PipeCD [control-plane architecture overview](https://pipecd.dev/docs/operator-manual/control-plane/architecture-overview/) for more information about what is PipeCD datastore.
 
@@ -58,7 +61,7 @@ Cons:
 
 #### <3> Using version field as data object properties (optimistic locking)
 
-Use a version field in record to ensure that correct version was used before writing. 
+Use a version field in record to ensure that correct version was used before writing.
 
 Pros:
 
@@ -97,7 +100,7 @@ To unify with other datastore which be supported as PipeCD datastore (GCP firest
 
 Since we will use filestore as PipeCD database, we should implement filestore with hot & cold storage separated pattern - storage called hot or cold defined based on: How often do the objects be updated? or the update frequency.
 
-Objects such as: deployment, command, event, deployment-chain, etc are only be created once and once they finished their life time (state or status changed to SUCCESS|FAILURE|CANCELLED), they will no more be updated. Those kinds of objects should be stored in `chunk` and mostly will be used to shown as list from deployment list view, for example. 
+Objects such as: deployment, command, event, deployment-chain, etc are only be created once and once they finished their life time (state or status changed to SUCCESS|FAILURE|CANCELLED), they will no more be updated. Those kinds of objects should be stored in `chunk` and mostly will be used to shown as list from deployment list view, for example.
 
 On the opposite side, objects like piped, project, application, etc have fewer numbers and are updated frequently throughout their lifetime; they should therefore be stored in hot storage.
 

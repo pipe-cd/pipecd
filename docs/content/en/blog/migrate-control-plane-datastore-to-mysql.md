@@ -11,6 +11,8 @@ toc_hide: true
 Since PipeCD release [v0.9.8](/blog/2021/03/25/release-v0.9.8) which introduces MySQL as PipeCD control-plane datastore, we plan to drop the support for MongoDB datastore in the near future.
 Consider the supports of cloud providers (GCP, AWS, Azure, etc), MySQL has a higher status over MongoDB is one of the most reasons for this support-dropping conclusion.
 
+> **Note for FileDB users:** FileDB has been discontinued as of PipeCD v0.XX.Y. If you were using FileDB, please migrate to either **Firestore** or **MySQL** instead.
+
 If you are using MongoDB as your PipeCD control-plane datastore, the following guide is manipulation to migrate your datastore to MySQL.
 
 ### Before start
