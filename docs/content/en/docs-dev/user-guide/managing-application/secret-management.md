@@ -48,18 +48,17 @@ spec:
 
 ## Encrypting secret data
 
-In order to encrypt the secret data, go to the application list page and click on the options icon at the right side of the application row, choose "Encrypt Secret" option.
-After that, input your secret data and click on "ENCRYPT" button.
+In order to encrypt the secret data, navigate to the Applications page and click the “Encrypt Secret“ button located in the top-left corner. Then, select a piped from the dropdown list, after that enter your secret data, and click the “ENCRYPT“ button.
 The encrypted data should be shown for you. Copy it to store in Git.
 
-![](/images/sealed-secret-application-list.png)
+![](/images/sealed-secret-button.png)
 <p style="text-align: center;">
-Application list page
+Applications page
 </p>
 
 <br>
 
-![](/images/sealed-secret-encrypting-form.png)
+![](/images/sealed-secret-encrypting-drawer-form.png)
 <p style="text-align: center;">
 The form for encrypting secret data
 </p>
