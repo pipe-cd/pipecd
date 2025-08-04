@@ -5,7 +5,6 @@ go 1.24.1
 require (
 	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250731110214-a96d6e0ecf5e
 	github.com/stretchr/testify v1.10.0
-	go.uber.org/zap v1.19.1
 )
 
 require (
@@ -47,6 +46,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.28.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
+	go.uber.org/zap v1.19.1 // indirect
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/net v0.38.0 // indirect
