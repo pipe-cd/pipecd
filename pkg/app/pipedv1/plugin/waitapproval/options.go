@@ -29,6 +29,9 @@ func (o waitApprovalStageOptions) validate() error {
 	if len(o.Approvers) == 0 {
 		return fmt.Errorf("approvers must be set")
 	}
+	if o.MinApproverNum < 1 {
+		return fmt.Errorf("minApproverNum %d should be greater than 0", o.MinApproverNum)
+	}
 	if o.MinApproverNum > len(o.Approvers) {
 		return fmt.Errorf("minApproverNum must be less than or equal to the number of approvers")
 	}
@@ -40,9 +43,6 @@ func decode(data json.RawMessage) (waitApprovalStageOptions, error) {
 	var opts waitApprovalStageOptions
 	if err := json.Unmarshal(data, &opts); err != nil {
 		return waitApprovalStageOptions{}, fmt.Errorf("failed to unmarshal the config: %w", err)
-	}
-	if opts.MinApproverNum <= 0 {
-		opts.MinApproverNum = 1
 	}
 	if err := opts.validate(); err != nil {
 		return waitApprovalStageOptions{}, fmt.Errorf("failed to validate the config: %w", err)
