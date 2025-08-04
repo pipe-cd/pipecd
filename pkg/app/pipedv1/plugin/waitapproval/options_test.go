@@ -62,15 +62,6 @@ func TestDecode(t *testing.T) {
 			expected: waitApprovalStageOptions{},
 			wantErr:  true,
 		},
-		{
-			name: "minApproverNum defaults to 1",
-			data: json.RawMessage(`{"approvers":["user1@example.com","user2@example.com"]}`),
-			expected: waitApprovalStageOptions{
-				Approvers:      []string{"user1@example.com", "user2@example.com"},
-				MinApproverNum: 1,
-			},
-			wantErr: false,
-		},
 	}
 
 	for _, tc := range testcases {

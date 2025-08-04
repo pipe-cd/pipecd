@@ -43,7 +43,8 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 							Index: 0,
 							Name:  stageWaitApproval,
 							Config: mustMarshalJSON(t, waitApprovalStageOptions{
-								Approvers: []string{"alice", "bob"},
+								Approvers:      []string{"alice", "bob"},
+								MinApproverNum: 1,
 							}),
 						},
 					},
