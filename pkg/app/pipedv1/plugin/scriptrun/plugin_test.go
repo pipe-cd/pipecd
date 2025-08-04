@@ -15,7 +15,9 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
@@ -23,6 +25,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type mockDeploymentMetadataStore struct {
+	metadata map[string]string
+}
+
+func (m *mockDeploymentMetadataStore) GetDeploymentPluginMetadata(_ context.Context, key string) (string, error) {
+	metadata, ok := m.metadata[key]
+	if !ok {
+		return "", fmt.Errorf("metadata store not found")
+	}
+	return metadata, nil
+}
+
+func (m *mockDeploymentMetadataStore) PutDeploymentPluginMetadata(_ context.Context, key string, value string) error {
+	m.metadata[key] = value
+	return nil
+}
 func TestBuildPipelineSyncStages(t *testing.T) {
 	t.Parallel()
 	p := &plugin{}

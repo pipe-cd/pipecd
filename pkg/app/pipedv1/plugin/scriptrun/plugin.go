@@ -29,6 +29,8 @@ import (
 const (
 	stageScriptRun         = "SCRIPT_RUN"
 	stageScriptRunRollback = "SCRIPT_RUN_ROLLBACK"
+	metadataKeyPrefix      = "started-"
+	nonEmptyValue          = "_"
 )
 
 type ContextInfo struct {
@@ -98,8 +100,9 @@ func executeScriptRun(ctx context.Context, request sdk.ExecuteStageRequest[struc
 		lp.Errorf("failed to decode the stage config: %v", err)
 		return sdk.StageStatusFailure
 	}
-	if err = metadataStore.PutDeploymentPluginMetadata(ctx, strconv.Itoa(request.StageIndex), "_"); err != nil {
-		lp.Errorf("failed to mark stage as run: %v", err)
+	//need to store the index of which stage that's already run so only their respective rollback stages are triggered
+	if err = metadataStore.PutDeploymentPluginMetadata(ctx, metadataKeyPrefix+strconv.Itoa(request.StageIndex), nonEmptyValue); err != nil {
+		lp.Errorf("failed to put metadata to mark the stage as started: %v", err)
 		return sdk.StageStatusFailure
 	}
 	if opts.Run == "" {
@@ -126,14 +129,15 @@ func executeRollback(ctx context.Context, request sdk.ExecuteStageRequest[struct
 		lp.Errorf("failed to decode the stage config: %v", err)
 		return sdk.StageStatusFailure
 	}
-	_, err = metadataStore.GetDeploymentPluginMetadata(ctx, strconv.Itoa(request.StageIndex))
-	if strings.HasPrefix(err.Error(), "metadata store not found") {
-		lp.Infof("skip rollback for stage %s as it hasn't run", request.StageName)
-		return sdk.StageStatusSuccess
-	}
+	_, err = metadataStore.GetDeploymentPluginMetadata(ctx, metadataKeyPrefix+strconv.Itoa(request.StageIndex))
 	if err != nil {
-		lp.Errorf("failed to retrieve stage run status metadata: %v", err)
-		return sdk.StageStatusFailure
+		if strings.HasPrefix(err.Error(), "metadata store not found") {
+			lp.Infof("skip this rollback stage because the SCRIPT_RUN stage of index %d has not run", request.StageIndex)
+			return sdk.StageStatusSuccess
+		} else {
+			lp.Errorf("failed to retrieve stage run status metadata: %v", err)
+			return sdk.StageStatusFailure
+		}
 	}
 	if opts.OnRollback == "" {
 		return sdk.StageStatusSuccess
@@ -228,20 +232,4 @@ func (ci *ContextInfo) buildEnv() (map[string]string, error) {
 type deploymentMetadataStore interface {
 	GetDeploymentPluginMetadata(ctx context.Context, key string) (string, error)
 	PutDeploymentPluginMetadata(ctx context.Context, key string, value string) error
-}
-type mockDeploymentMetadataStore struct {
-	metadata map[string]string
-}
-
-func (m *mockDeploymentMetadataStore) GetDeploymentPluginMetadata(_ context.Context, key string) (string, error) {
-	metadata, ok := m.metadata[key]
-	if !ok {
-		return "", fmt.Errorf("metadata store not found")
-	}
-	return metadata, nil
-}
-
-func (m *mockDeploymentMetadataStore) PutDeploymentPluginMetadata(_ context.Context, key string, value string) error {
-	m.metadata[key] = value
-	return nil
 }
