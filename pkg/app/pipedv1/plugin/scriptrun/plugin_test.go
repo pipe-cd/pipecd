@@ -318,7 +318,7 @@ func TestPlugin_ExecuteRollback(t *testing.T) {
 			},
 			lp: logpersistertest.NewTestLogPersister(t),
 			metadataStore: mockDeploymentMetadataStore{
-				metadata: map[string]string{"1": "_"},
+				metadata: map[string]string{metadataKeyPrefix + "1": nonEmptyValue},
 			},
 			want: sdk.StageStatusSuccess,
 		},
