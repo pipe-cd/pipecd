@@ -100,7 +100,7 @@ func executeScriptRun(ctx context.Context, request sdk.ExecuteStageRequest[struc
 		lp.Errorf("failed to decode the stage config: %v", err)
 		return sdk.StageStatusFailure
 	}
-	//need to store the index of which stage that's already run so only their respective rollback stages are triggered
+	// need to store the index of which stage that's already run so only their respective rollback stages are triggered
 	if err = metadataStore.PutDeploymentPluginMetadata(ctx, metadataKeyPrefix+strconv.Itoa(request.StageIndex), nonEmptyValue); err != nil {
 		lp.Errorf("failed to put metadata to mark the stage as started: %v", err)
 		return sdk.StageStatusFailure
