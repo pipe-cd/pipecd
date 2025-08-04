@@ -44,14 +44,10 @@ func (p *plugin) BuildPipelineSyncStages(_ context.Context, _ sdk.ConfigNone, in
 }
 
 func (p *plugin) ExecuteStage(ctx context.Context, _ sdk.ConfigNone, _ sdk.DeployTargetsNone, input *sdk.ExecuteStageInput[struct{}]) (*sdk.ExecuteStageResponse, error) {
-	switch input.Request.StageName {
-	case stageAnalysis:
-		// TODO: Implement analysis execution logic
-		return &sdk.ExecuteStageResponse{
-			Status: sdk.StageStatusSuccess,
-		}, nil
-	}
-	return nil, nil
+	// TODO: Implement analysis execution logic
+	return &sdk.ExecuteStageResponse{
+		Status: sdk.StageStatusSuccess,
+	}, nil
 }
 
 func (p *plugin) FetchDefinedStages() []string {

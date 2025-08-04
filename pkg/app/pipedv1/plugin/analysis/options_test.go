@@ -15,7 +15,6 @@
 package main
 
 import (
-	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -26,19 +25,19 @@ func TestDecode(t *testing.T) {
 
 	testcases := []struct {
 		name     string
-		input    string
+		input    []byte
 		expected analysisStageOptions
 		wantErr  bool
 	}{
 		{
 			name:     "empty config",
-			input:    `{}`,
+			input:    []byte(`{}`),
 			expected: analysisStageOptions{},
 			wantErr:  false,
 		},
 		{
 			name:    "invalid json",
-			input:   `{invalid}`,
+			input:   []byte(`{invalid}`),
 			wantErr: true,
 		},
 	}
@@ -46,7 +45,7 @@ func TestDecode(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			got, err := decode(json.RawMessage(tc.input))
+			got, err := decode(tc.input)
 
 			if tc.wantErr {
 				assert.Error(t, err)

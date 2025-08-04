@@ -104,6 +104,31 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "should generate single analysis stage with rollback",
+			input: &sdk.BuildPipelineSyncStagesInput{
+				Request: sdk.BuildPipelineSyncStagesRequest{
+					Stages: []sdk.StageConfig{
+						{
+							Index:  0,
+							Name:   stageAnalysis,
+							Config: mustMarshalJSON(t, &analysisStageOptions{}),
+						},
+					},
+				},
+			},
+			expected: &sdk.BuildPipelineSyncStagesResponse{
+				Stages: []sdk.PipelineStage{
+					{
+						Index:              0,
+						Name:               stageAnalysis,
+						Rollback:           true,
+						Metadata:           map[string]string{},
+						AvailableOperation: sdk.ManualOperationNone,
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range testcases {
