@@ -8,15 +8,64 @@ import {
   Typography,
 } from "@mui/material";
 import { FC, useState } from "react";
+import { IGNORE_BREAKING_CHANGE_NOTES_PIPEDS } from "~/constants/localstorage";
 
 type Props = {
   notes?: string | null;
 };
 
+const getVersionsIgnoredWarning = (): string[] => {
+  try {
+    const rawIgnoredNotes =
+      localStorage.getItem(IGNORE_BREAKING_CHANGE_NOTES_PIPEDS) || "[]";
+    return JSON.parse(rawIgnoredNotes) as string[];
+  } catch {
+    return [];
+  }
+};
+
+const shouldIgnoredBreakingChangeNotes = (): boolean => {
+  const version = process.env.PIPECD_VERSION;
+  if (!version) return false;
+
+  try {
+    const ignoredNotes = getVersionsIgnoredWarning();
+    return ignoredNotes.includes(version);
+  } catch {
+    return false;
+  }
+};
+
 const BreakingChangeNotes: FC<Props> = ({ notes }) => {
   const [showDialog, setShowDialog] = useState(false);
+  const [showNotes, setShowNotes] = useState(
+    !shouldIgnoredBreakingChangeNotes()
+  );
 
-  if (!notes) {
+  const onIgnoreWarning = (): void => {
+    setShowDialog(false);
+    const pipedVersion = process.env.PIPECD_VERSION;
+    if (!pipedVersion) return;
+
+    try {
+      const ignoredVersions = JSON.parse(
+        localStorage.getItem(IGNORE_BREAKING_CHANGE_NOTES_PIPEDS) || "[]"
+      );
+
+      if (!ignoredVersions.includes(pipedVersion)) {
+        ignoredVersions.push(pipedVersion);
+      }
+
+      localStorage.setItem(
+        IGNORE_BREAKING_CHANGE_NOTES_PIPEDS,
+        JSON.stringify(ignoredVersions)
+      );
+    } finally {
+      setShowNotes(false);
+    }
+  };
+
+  if (!notes || !showNotes) {
     return null;
   }
   return (
@@ -53,6 +102,7 @@ const BreakingChangeNotes: FC<Props> = ({ notes }) => {
           {notes}
         </DialogContent>
         <DialogActions>
+          <Button onClick={() => onIgnoreWarning()}>Ignore</Button>
           <Button onClick={() => setShowDialog(false)}>Close</Button>
         </DialogActions>
       </Dialog>
