@@ -41,7 +41,7 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 					Stages: []sdk.StageConfig{
 						{
 							Index: 0,
-							Name:  "WAIT_APPROVAL",
+							Name:  stageWaitApproval,
 							Config: mustMarshalJSON(t, waitApprovalStageOptions{
 								Approvers: []string{"alice", "bob"},
 							}),
@@ -53,7 +53,7 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 				Stages: []sdk.PipelineStage{
 					{
 						Index:               0,
-						Name:                "WAIT_APPROVAL",
+						Name:                stageWaitApproval,
 						Rollback:            false,
 						Metadata:            map[string]string{},
 						AvailableOperation:  sdk.ManualOperationApprove,
@@ -70,7 +70,7 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 					Stages: []sdk.StageConfig{
 						{
 							Index:  1,
-							Name:   "WAIT_APPROVAL",
+							Name:   stageWaitApproval,
 							Config: []byte("not-json"),
 						},
 					},
@@ -98,7 +98,7 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 
 func Test_FetchDefinedStages(t *testing.T) {
 	p := &plugin{}
-	want := []string{"WAIT_APPROVAL"}
+	want := []string{stageWaitApproval}
 	got := p.FetchDefinedStages()
 
 	assert.Equal(t, want, got)
