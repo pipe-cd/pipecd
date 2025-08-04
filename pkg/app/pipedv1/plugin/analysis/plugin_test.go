@@ -118,7 +118,7 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 
 func TestFetchDefinedStages(t *testing.T) {
 	p := &plugin{}
-	want := []string{stageAnalysis}
+	want := []string{"ANALYSIS"}
 	got := p.FetchDefinedStages()
 
 	assert.Equal(t, want, got)
