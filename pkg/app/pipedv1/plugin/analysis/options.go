@@ -19,9 +19,8 @@ import (
 )
 
 // analysisStageOptions represents the configuration options for the ANALYSIS stage.
-// This struct is currently empty and will be extended in future PRs as needed.
 type analysisStageOptions struct {
-	// Future analysis configuration fields will be added here
+	// TODO: Add fields here
 }
 
 // decode decodes the raw JSON data and validates it.
