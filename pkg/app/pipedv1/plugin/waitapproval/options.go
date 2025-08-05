@@ -32,9 +32,6 @@ func (o waitApprovalStageOptions) validate() error {
 	if o.MinApproverNum < 1 {
 		return fmt.Errorf("minApproverNum %d should be greater than 0", o.MinApproverNum)
 	}
-	if o.MinApproverNum > len(o.Approvers) {
-		return fmt.Errorf("minApproverNum must be less than or equal to the number of approvers")
-	}
 	return nil
 }
 
