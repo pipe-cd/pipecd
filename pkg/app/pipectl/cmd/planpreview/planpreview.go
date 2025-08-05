@@ -218,7 +218,11 @@ func convert(results []*model.PlanPreviewCommandResult) ReadableResult {
 				ApplicationKind:      a.ApplicationKind.String(),
 				ApplicationDirectory: a.ApplicationDirectory,
 				Env:                  a.Labels[labelEnvKey],
-				PluginNames:          strings.Join(a.DeploymentPluginNames, ", "),
+				AllPluginNames:       strings.Join(a.PluginNames, ", "),
+			}
+
+			if len(a.PluginPlanResults) > 0 {
+				appInfo.PlannedPluginNames = toPlannedPluginNames(a.PluginPlanResults)
 			}
 
 			if a.Error != "" {
@@ -290,7 +294,21 @@ type ApplicationInfo struct {
 	ApplicationDirectory string
 	Env                  string
 
-	PluginNames string
+	PlannedPluginNames string
+	AllPluginNames     string
+}
+
+func toPlannedPluginNames(pluginPlanResults []*model.PluginPlanPreviewResult) string {
+	m := make(map[string]struct{})
+	keys := make([]string, 0, len(m))
+	for _, ppr := range pluginPlanResults {
+		if _, ok := m[ppr.PluginName]; !ok {
+			m[ppr.PluginName] = struct{}{}
+			keys = append(keys, ppr.PluginName)
+		}
+	}
+
+	return strings.Join(keys, ", ")
 }
 
 func (r ReadableResult) String() string {
@@ -307,7 +325,7 @@ func (r ReadableResult) String() string {
 			fmt.Fprintf(&b, "\nHere are plan-preview for 1 application:\n")
 		}
 		for i, app := range r.Applications {
-			if len(app.PluginNames) == 0 {
+			if len(app.AllPluginNames) == 0 {
 				title := fmt.Sprintf("\n%d. app: %s, env: %s, kind: %s\n", i+1, app.ApplicationName, app.Env, app.ApplicationKind)
 				if app.Env == "" {
 					title = fmt.Sprintf("\n%d. app: %s, kind: %s\n", i+1, app.ApplicationName, app.ApplicationKind)
@@ -318,13 +336,14 @@ func (r ReadableResult) String() string {
 				fmt.Fprintf(&b, "  summary: %s\n", app.PlanSummary)
 				fmt.Fprintf(&b, "  details:\n\n  ---DETAILS_BEGIN---\n%s\n  ---DETAILS_END---\n", app.PlanDetails)
 			} else {
-				title := fmt.Sprintf("\n%d. app: %s, env: %s, plugin(s): %s\n", i+1, app.ApplicationName, app.Env, app.PluginNames)
+				title := fmt.Sprintf("\n%d. app: %s, env: %s, plan plugin(s): %s\n", i+1, app.ApplicationName, app.Env, app.PlannedPluginNames)
 				if app.Env == "" {
-					title = fmt.Sprintf("\n%d. app: %s, plugin(s): %s\n", i+1, app.ApplicationName, app.PluginNames)
+					title = fmt.Sprintf("\n%d. app: %s, plan plugin(s): %s\n", i+1, app.ApplicationName, app.PlannedPluginNames)
 				}
 
 				b.WriteString(title)
 				fmt.Fprintf(&b, "  sync strategy: %s\n", app.SyncStrategy)
+				fmt.Fprintf(&b, "  plugin(s): %s\n", app.AllPluginNames)
 				fmt.Fprintf(&b, "  summary:\n")
 				for _, ppr := range app.PluginPlanResults {
 					fmt.Fprintf(&b, "  - %s(%s): %s\n", ppr.PluginName, ppr.DeployTarget, ppr.PlanSummary)
@@ -345,7 +364,7 @@ func (r ReadableResult) String() string {
 			fmt.Fprintf(&b, "\nNOTE: An error occurred while building plan-preview for the following application:\n")
 		}
 		for i, app := range r.FailureApplications {
-			if len(app.PluginNames) == 0 {
+			if len(app.AllPluginNames) == 0 {
 				title := fmt.Sprintf("\n%d. app: %s, env: %s, kind: %s\n", i+1, app.ApplicationName, app.Env, app.ApplicationKind)
 				if app.Env == "" {
 					title = fmt.Sprintf("\n%d. app: %s, kind: %s\n", i+1, app.ApplicationName, app.ApplicationKind)
@@ -357,9 +376,9 @@ func (r ReadableResult) String() string {
 					fmt.Fprintf(&b, "  details:\n\n  ---DETAILS_BEGIN---\n%s\n  ---DETAILS_END---\n", app.PlanDetails)
 				}
 			} else {
-				title := fmt.Sprintf("\n%d. app: %s, env: %s, plugin(s): %s\n", i+1, app.ApplicationName, app.Env, app.PluginNames)
+				title := fmt.Sprintf("\n%d. app: %s, env: %s, plugin(s): %s\n", i+1, app.ApplicationName, app.Env, app.AllPluginNames)
 				if app.Env == "" {
-					title = fmt.Sprintf("\n%d. app: %s, plugin(s): %s\n", i+1, app.ApplicationName, app.PluginNames)
+					title = fmt.Sprintf("\n%d. app: %s, plugin(s): %s\n", i+1, app.ApplicationName, app.AllPluginNames)
 				}
 
 				b.WriteString(title)

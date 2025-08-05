@@ -244,12 +244,12 @@ NOTE: An error occurred while building plan-preview for applications of the foll
 					PipedUrl:  "https://pipecd.dev/piped-2",
 					Results: []*model.ApplicationPlanPreviewResult{
 						{
-							ApplicationId:         "app-1",
-							ApplicationName:       "app-1",
-							ApplicationUrl:        "https://pipecd.dev/app-1",
-							Labels:                map[string]string{"env": "env-1"},
-							SyncStrategy:          model.SyncStrategy_QUICK_SYNC,
-							DeploymentPluginNames: []string{"kubernetes"},
+							ApplicationId:   "app-1",
+							ApplicationName: "app-1",
+							ApplicationUrl:  "https://pipecd.dev/app-1",
+							Labels:          map[string]string{"env": "env-1"},
+							SyncStrategy:    model.SyncStrategy_QUICK_SYNC,
+							PluginNames:     []string{"kubernetes"},
 							PluginPlanResults: []*model.PluginPlanPreviewResult{
 								{
 									PluginName:   "kubernetes",
@@ -265,8 +265,9 @@ NOTE: An error occurred while building plan-preview for applications of the foll
 			expected: `
 Here are plan-preview for 1 application:
 
-1. app: app-1, env: env-1, plugin(s): kubernetes
+1. app: app-1, env: env-1, plan plugin(s): kubernetes
   sync strategy: QUICK_SYNC
+  plugin(s): kubernetes
   summary:
   - kubernetes(dt-1): 2 resources will be added, 1 resource will be deleted and 5 resources will be changed
   details:
@@ -287,12 +288,12 @@ changes-1
 					PipedUrl:  "https://pipecd.dev/piped-2",
 					Results: []*model.ApplicationPlanPreviewResult{
 						{
-							ApplicationId:         "app-1",
-							ApplicationName:       "app-1",
-							ApplicationUrl:        "https://pipecd.dev/app-1",
-							Labels:                map[string]string{"env": "env-1"},
-							SyncStrategy:          model.SyncStrategy_QUICK_SYNC,
-							DeploymentPluginNames: []string{"kubernetes", "terraform"},
+							ApplicationId:   "app-1",
+							ApplicationName: "app-1",
+							ApplicationUrl:  "https://pipecd.dev/app-1",
+							Labels:          map[string]string{"env": "env-1"},
+							SyncStrategy:    model.SyncStrategy_QUICK_SYNC,
+							PluginNames:     []string{"kubernetes", "terraform", "analysis"},
 							PluginPlanResults: []*model.PluginPlanPreviewResult{
 								{
 									PluginName:   "kubernetes",
@@ -314,8 +315,9 @@ changes-1
 			expected: `
 Here are plan-preview for 1 application:
 
-1. app: app-1, env: env-1, plugin(s): kubernetes, terraform
+1. app: app-1, env: env-1, plan plugin(s): kubernetes, terraform
   sync strategy: QUICK_SYNC
+  plugin(s): kubernetes, terraform, analysis
   summary:
   - kubernetes(dt-1): 2 resources will be added, 1 resource will be deleted and 5 resources will be changed
   - terraform(dt-2): 1 resource will be added, 2 resources will be deleted and 3 resources will be changed
@@ -342,12 +344,12 @@ changes-2
 					PipedUrl:  "https://pipecd.dev/piped-2",
 					Results: []*model.ApplicationPlanPreviewResult{
 						{
-							ApplicationId:         "app-2",
-							ApplicationName:       "app-2",
-							ApplicationUrl:        "https://pipecd.dev/app-2",
-							Labels:                map[string]string{"env": "env-2"},
-							DeploymentPluginNames: []string{"kubernetes"},
-							Error:                 "wrong application configuration",
+							ApplicationId:   "app-2",
+							ApplicationName: "app-2",
+							ApplicationUrl:  "https://pipecd.dev/app-2",
+							Labels:          map[string]string{"env": "env-2"},
+							PluginNames:     []string{"kubernetes"},
+							Error:           "wrong application configuration",
 						},
 					},
 				},
@@ -368,12 +370,12 @@ NOTE: An error occurred while building plan-preview for the following applicatio
 					PipedUrl:  "https://pipecd.dev/piped-2",
 					Results: []*model.ApplicationPlanPreviewResult{
 						{
-							ApplicationId:         "app-2",
-							ApplicationName:       "app-2",
-							ApplicationUrl:        "https://pipecd.dev/app-2",
-							Labels:                map[string]string{"env": "env-2"},
-							DeploymentPluginNames: []string{"<unknown>"},
-							Error:                 "wrong application configuration",
+							ApplicationId:   "app-2",
+							ApplicationName: "app-2",
+							ApplicationUrl:  "https://pipecd.dev/app-2",
+							Labels:          map[string]string{"env": "env-2"},
+							PluginNames:     []string{"<unknown>"},
+							Error:           "wrong application configuration",
 						},
 					},
 				},
@@ -513,6 +515,68 @@ func TestSortResults(t *testing.T) {
 			t.Parallel()
 			sortResults(tc.results, tc.sortLabelKeys)
 			assert.Equal(t, tc.expected, tc.results)
+		})
+	}
+}
+
+func TestToPlannedPluginNames(t *testing.T) {
+	t.Parallel()
+	testcases := []struct {
+		name     string
+		results  []*model.PluginPlanPreviewResult
+		expected string
+	}{
+		{
+			name:     "empty results",
+			results:  []*model.PluginPlanPreviewResult{},
+			expected: "",
+		},
+		{
+			name: "single plugin",
+			results: []*model.PluginPlanPreviewResult{
+				{
+					PluginName: "kubernetes",
+				},
+			},
+			expected: "kubernetes",
+		},
+		{
+			name: "multiple different plugins",
+			results: []*model.PluginPlanPreviewResult{
+				{
+					PluginName: "kubernetes",
+				},
+				{
+					PluginName: "terraform",
+				},
+				{
+					PluginName: "cloudrun",
+				},
+			},
+			expected: "kubernetes, terraform, cloudrun",
+		},
+		{
+			name: "duplicate plugin names",
+			results: []*model.PluginPlanPreviewResult{
+				{
+					PluginName: "kubernetes",
+				},
+				{
+					PluginName: "terraform",
+				},
+				{
+					PluginName: "kubernetes",
+				},
+			},
+			expected: "kubernetes, terraform",
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			got := toPlannedPluginNames(tc.results)
+			assert.Equal(t, tc.expected, got)
 		})
 	}
 }
