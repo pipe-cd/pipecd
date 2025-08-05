@@ -28,6 +28,11 @@ import { ApprovalStage } from "./approval-stage";
 import { PipelineStage } from "./pipeline-stage";
 import { ManualOperation } from "~~/model/deployment_pb";
 
+enum PIPED_VERSION {
+  V0 = "v0",
+  V1 = "v1",
+}
+
 const WAIT_APPROVAL_NAME = "WAIT_APPROVAL";
 const STAGE_HEIGHT = 56;
 const APPROVED_STAGE_HEIGHT = 66;
@@ -40,10 +45,23 @@ const findDefaultActiveStage = (
     return null;
   }
 
-  const stages = deployment.stagesList.filter(
-    (stage) =>
-      stage.visible && stage.status !== StageStatus.STAGE_NOT_STARTED_YET
-  );
+  const pipedVersion = deployment.deployTargetsByPluginMap.length
+    ? PIPED_VERSION.V1
+    : PIPED_VERSION.V0;
+
+  const stages = deployment.stagesList.filter((stage) => {
+    if (pipedVersion === PIPED_VERSION.V0) {
+      return (
+        stage.visible && stage.status !== StageStatus.STAGE_NOT_STARTED_YET
+      );
+    }
+
+    // For piped v1, field visible is not used.
+    if (pipedVersion === PIPED_VERSION.V1) {
+      return stage.status !== StageStatus.STAGE_NOT_STARTED_YET;
+    }
+    return false;
+  });
 
   const runningStage = stages.find(
     (stage) => stage.status === StageStatus.STAGE_RUNNING
@@ -60,21 +78,16 @@ const isStartedStage = (stage: Stage): boolean => {
   return stage.status !== StageStatus.STAGE_NOT_STARTED_YET;
 };
 
-const createStagesForRendering = (
-  deployment: Deployment.AsObject | undefined
-): Stage[][] => {
-  if (!deployment) {
-    return [];
-  }
-
-  let visibleStages: Stage[] = [];
-  if (deployment.deployTargetsByPluginMap?.length) {
-    visibleStages = deployment.stagesList.filter(
-      (stage) => !stage.rollback || isStartedStage(stage)
-    );
-  } else {
-    visibleStages = deployment.stagesList.filter((stage) => stage.visible);
-  }
+/**
+ * ## For piped v0
+ * ### Visibility of stages
+ * - field `visible` = true
+ * ### Order of stages
+ * - stages with requiresList.length === 0 will be in the first column
+ * - stages with requiresList includes id of previous stages will be in the next columns
+ *  */
+const createStagesPipedV0 = (allStage: Stage[]): Stage[][] => {
+  const visibleStages = allStage.filter((stage) => stage.visible);
 
   const stages: Stage[][] = [];
   stages[0] = visibleStages.filter((stage) => stage.requiresList.length === 0);
@@ -84,11 +97,68 @@ const createStagesForRendering = (
     const previousIds = stages[index].map((stage) => stage.id);
     index++;
     stages[index] = visibleStages.filter((stage) =>
-      stage.requiresList.some((id) => previousIds.includes(id))
+      stage.requiresList.some(
+        (id) =>
+          previousIds.includes(id) &&
+          // prevent self-requirement
+          stage.id !== id
+      )
     );
   }
 
   return stages;
+};
+/**
+ * ## For piped v1
+ * ### Visibility of stages
+ * - field `rollback` = false or stage is started
+ * ### Order of stages (temporary solution)
+ * - stages with requiresList.length === 0 will be in the first column
+ * - stages with requiresList includes id of previous stages will be in the next columns
+ */
+export const createStagesPipedV1 = (allStages: Stage[]): Stage[][] => {
+  const visibleStages = allStages.filter(
+    (stage) => !stage.rollback || isStartedStage(stage)
+  );
+  const stages: Stage[][] = [];
+  stages[0] = visibleStages.filter((stage) => stage.requiresList.length === 0);
+
+  let index = 0;
+  while (stages[index].length > 0) {
+    const previousIds = stages[index].map((stage) => stage.id);
+    index++;
+    stages[index] = visibleStages.filter((stage) =>
+      stage.requiresList.some(
+        (id) =>
+          previousIds.includes(id) &&
+          // prevent self-requirement
+          stage.id !== id
+      )
+    );
+  }
+
+  return stages;
+};
+
+const createStagesForRendering = (
+  deployment: Deployment.AsObject | undefined
+): Stage[][] => {
+  if (!deployment) {
+    return [];
+  }
+
+  const pipedVersion = deployment.deployTargetsByPluginMap.length
+    ? PIPED_VERSION.V1
+    : PIPED_VERSION.V0;
+
+  if (pipedVersion === PIPED_VERSION.V0) {
+    return createStagesPipedV0(deployment.stagesList);
+  }
+  if (pipedVersion === PIPED_VERSION.V1) {
+    return createStagesPipedV1(deployment.stagesList);
+  }
+
+  return [];
 };
 
 const LARGE_STAGE_NAMES = ["WAIT_APPROVAL", "K8S_TRAFFIC_ROUTING"];

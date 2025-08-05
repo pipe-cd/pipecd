@@ -16,7 +16,6 @@ package deployment
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/provider"
@@ -25,34 +24,26 @@ import (
 )
 
 // TODO: add test
-func (p *Plugin) executePlanStage(ctx context.Context, input *sdk.ExecuteStageInput[config.ApplicationConfigSpec], dts []*sdk.DeployTarget[config.DeployTargetConfig]) sdk.StageStatus {
-	cmd, err := provider.NewTerraformCommand(ctx, input.Client, input.Request.TargetDeploymentSource, dts[0])
-	if err != nil {
-		return sdk.StageStatusFailure
-	}
-
+func (p *Plugin) executeRollbackStage(ctx context.Context, input *sdk.ExecuteStageInput[config.ApplicationConfigSpec], dts []*sdk.DeployTarget[config.DeployTargetConfig]) sdk.StageStatus {
 	lp := input.Client.LogPersister()
+	rds := input.Request.RunningDeploymentSource
 
-	stageConfig := config.TerraformPlanStageOptions{}
-	if err := json.Unmarshal(input.Request.StageConfig, &stageConfig); err != nil {
-		lp.Errorf("Failed to unmarshal stage config (%v)", err)
+	if rds.CommitHash == "" {
+		lp.Errorf("Unable to determine the last deployed commit to rollback. It seems this is the first deployment.")
 		return sdk.StageStatusFailure
 	}
 
-	planResult, err := cmd.Plan(ctx, lp)
+	cmd, err := provider.NewTerraformCommand(ctx, input.Client, rds, dts[0])
 	if err != nil {
-		lp.Errorf("Failed to plan (%v)", err)
 		return sdk.StageStatusFailure
 	}
 
-	if planResult.NoChanges() {
-		lp.Success("No changes to apply")
-		if stageConfig.ExitOnNoChanges {
-			return sdk.StageStatusExited
-		}
-		return sdk.StageStatusSuccess
+	lp.Infof("Start rolling back to the state defined at commit %s", rds.CommitHash)
+	if err = cmd.Apply(ctx, lp); err != nil {
+		lp.Errorf("Failed to apply changes (%v)", err)
+		return sdk.StageStatusFailure
 	}
 
-	lp.Successf("Detected %d import, %d add, %d change, %d destroy.", planResult.Imports, planResult.Adds, planResult.Changes, planResult.Destroys)
+	lp.Success("Successfully rolled back the changes")
 	return sdk.StageStatusSuccess
 }

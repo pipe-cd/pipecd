@@ -488,6 +488,8 @@ func (m *PluginPlanPreviewResult) validate(all bool) error {
 
 	// no validation rules for PlanDetails
 
+	// no validation rules for DiffLanguage
+
 	if len(errors) > 0 {
 		return PluginPlanPreviewResultMultiError(errors)
 	}

@@ -88,7 +88,7 @@ type Terraform struct {
 	options options
 }
 
-func NewTerraform(execPath, dir string, opts ...Option) *Terraform {
+func newTerraform(execPath, dir string, opts ...Option) *Terraform {
 	opt := options{}
 	for _, o := range opts {
 		o(&opt)
@@ -101,7 +101,7 @@ func NewTerraform(execPath, dir string, opts ...Option) *Terraform {
 	}
 }
 
-func (t *Terraform) Version(ctx context.Context) (string, error) {
+func (t *Terraform) version(ctx context.Context) (string, error) {
 	args := []string{"version"}
 	cmd := exec.CommandContext(ctx, t.execPath, args...)
 	cmd.Dir = t.dir
@@ -115,7 +115,7 @@ func (t *Terraform) Version(ctx context.Context) (string, error) {
 	return strings.TrimSpace(string(out)), nil
 }
 
-func (t *Terraform) Init(ctx context.Context, w io.Writer) error {
+func (t *Terraform) init(ctx context.Context, w io.Writer) error {
 	args := []string{
 		"init",
 	}
@@ -135,7 +135,7 @@ func (t *Terraform) Init(ctx context.Context, w io.Writer) error {
 	return cmd.Run()
 }
 
-func (t *Terraform) SelectWorkspace(ctx context.Context, workspace string) error {
+func (t *Terraform) selectWorkspace(ctx context.Context, workspace string) error {
 	args := []string{
 		"workspace",
 		"select",

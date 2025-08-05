@@ -1177,7 +1177,8 @@ proto.model.PluginPlanPreviewResult.toObject = function(includeInstance, msg) {
     pluginName: jspb.Message.getFieldWithDefault(msg, 1, ""),
     deployTarget: jspb.Message.getFieldWithDefault(msg, 2, ""),
     planSummary: msg.getPlanSummary_asB64(),
-    planDetails: msg.getPlanDetails_asB64()
+    planDetails: msg.getPlanDetails_asB64(),
+    diffLanguage: jspb.Message.getFieldWithDefault(msg, 5, "")
   };
 
   if (includeInstance) {
@@ -1229,6 +1230,10 @@ proto.model.PluginPlanPreviewResult.deserializeBinaryFromReader = function(msg, 
     case 4:
       var value = /** @type {!Uint8Array} */ (reader.readBytes());
       msg.setPlanDetails(value);
+      break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setDiffLanguage(value);
       break;
     default:
       reader.skipField();
@@ -1284,6 +1289,13 @@ proto.model.PluginPlanPreviewResult.serializeBinaryToWriter = function(message, 
   if (f.length > 0) {
     writer.writeBytes(
       4,
+      f
+    );
+  }
+  f = message.getDiffLanguage();
+  if (f.length > 0) {
+    writer.writeString(
+      5,
       f
     );
   }
@@ -1407,6 +1419,24 @@ proto.model.PluginPlanPreviewResult.prototype.getPlanDetails_asU8 = function() {
  */
 proto.model.PluginPlanPreviewResult.prototype.setPlanDetails = function(value) {
   return jspb.Message.setProto3BytesField(this, 4, value);
+};
+
+
+/**
+ * optional string diff_language = 5;
+ * @return {string}
+ */
+proto.model.PluginPlanPreviewResult.prototype.getDiffLanguage = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.model.PluginPlanPreviewResult} returns this
+ */
+proto.model.PluginPlanPreviewResult.prototype.setDiffLanguage = function(value) {
+  return jspb.Message.setProto3StringField(this, 5, value);
 };
 
 
