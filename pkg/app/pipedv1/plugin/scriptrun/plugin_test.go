@@ -323,11 +323,11 @@ func TestPlugin_ExecuteRollback(t *testing.T) {
 			want: sdk.StageStatusSuccess,
 		},
 		{
-			name: "rollback should not run if its scriptrun record does not exists",
+			name: "rollback should not run if its scriptrun record does not exist",
 			req: sdk.ExecuteStageRequest[struct{}]{
 				StageName:   stageScriptRunRollback,
 				StageIndex:  1,
-				StageConfig: []byte(`{"run": "echo 5","onRollback": "this would fail if run"}`),
+				StageConfig: []byte(`{"run": "echo 5","onRollback": "exit 1"}`),
 				Deployment: sdk.Deployment{
 					ID:            "deployment-5",
 					ApplicationID: "app-5",
