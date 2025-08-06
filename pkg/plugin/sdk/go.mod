@@ -4,7 +4,7 @@ go 1.24.1
 
 require (
 	github.com/creasty/defaults v1.6.0
-	github.com/pipe-cd/pipecd v0.52.1-0.20250722035702-5722fabb80ce
+	github.com/pipe-cd/pipecd v0.52.1-0.20250731104149-f611ce3501c5
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/atomic v1.11.0
