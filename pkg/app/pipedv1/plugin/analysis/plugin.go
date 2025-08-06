@@ -34,7 +34,7 @@ func (p *plugin) BuildPipelineSyncStages(_ context.Context, _ sdk.ConfigNone, in
 			Name:               rs.Name,
 			Rollback:           false,
 			Metadata:           map[string]string{},
-			AvailableOperation: sdk.ManualOperationNone,
+			AvailableOperation: sdk.ManualOperationSkip,
 		})
 	}
 
