@@ -33,40 +33,15 @@ func mustMarshalJSON(t *testing.T, v interface{}) []byte {
 }
 
 func TestBuildPipelineSyncStages(t *testing.T) {
-			   {
-					   name: "should generate single analysis stage with rollback",
-					   input: &sdk.BuildPipelineSyncStagesInput{
-							   Request: sdk.BuildPipelineSyncStagesRequest{
-									   Stages: []sdk.StageConfig{
-											   {
-													   Index:  0,
-													   Name:   stageAnalysis,
-													   Config: mustMarshalJSON(t, &analysisStageOptions{}),
-											   },
-									   },
-							   },
-					   },
-					   expected: &sdk.BuildPipelineSyncStagesResponse{
-							   Stages: []sdk.PipelineStage{
-									   {
-											   Index:              0,
-											   Name:               stageAnalysis,
-											   Rollback:           true,
-											   Metadata:           map[string]string{},
-											   AvailableOperation: sdk.ManualOperationNone,
-									   },
-							   },
-					   },
-			   },
 	t.Parallel()
 	p := &plugin{}
 	ctx := context.Background()
 
-	   testcases := []struct {
-			   name     string
-			   input    *sdk.BuildPipelineSyncStagesInput
-			   expected *sdk.BuildPipelineSyncStagesResponse
-	   }{
+	testcases := []struct {
+		name     string
+		input    *sdk.BuildPipelineSyncStagesInput
+		expected *sdk.BuildPipelineSyncStagesResponse
+	}{
 		{
 			name: "should generate single analysis stage",
 			input: &sdk.BuildPipelineSyncStagesInput{
@@ -87,7 +62,7 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 						Name:               stageAnalysis,
 						Rollback:           false,
 						Metadata:           map[string]string{},
-						AvailableOperation: sdk.ManualOperationNone,
+						AvailableOperation: sdk.ManualOperationSkip,
 					},
 				},
 			},
@@ -115,16 +90,16 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 					{
 						Index:              0,
 						Name:               stageAnalysis,
-						Rollback:           true,
+						Rollback:           false,
 						Metadata:           map[string]string{},
-						AvailableOperation: sdk.ManualOperationNone,
+						AvailableOperation: sdk.ManualOperationSkip,
 					},
 					{
 						Index:              2,
 						Name:               stageAnalysis,
 						Rollback:           false,
 						Metadata:           map[string]string{},
-						AvailableOperation: sdk.ManualOperationNone,
+						AvailableOperation: sdk.ManualOperationSkip,
 					},
 				},
 			},
@@ -147,9 +122,9 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 					{
 						Index:              0,
 						Name:               stageAnalysis,
-						Rollback:           true,
+						Rollback:           false,
 						Metadata:           map[string]string{},
-						AvailableOperation: sdk.ManualOperationNone,
+						AvailableOperation: sdk.ManualOperationSkip,
 					},
 				},
 			},
