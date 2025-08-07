@@ -14,6 +14,7 @@ module.exports = {
     "^pipecd/(.*)$": "<rootDir>/../$1",
     "^~/(.*)$": "<rootDir>/src/$1",
     "^~~/(.*)$": "<rootDir>/$1",
+    "\\.(css|less|scss|sass)$": "<rootDir>/test-utils/styleMock.ts",
   },
   moduleDirectories: ["<rootDir>/node_modules", "__fixtures__"],
   coveragePathIgnorePatterns: ["/node_modules/", ".test.ts", ".d.ts"],

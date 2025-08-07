@@ -9,6 +9,8 @@ import {
 } from "@mui/material";
 import { FC, useState } from "react";
 import { IGNORE_BREAKING_CHANGE_NOTES_PIPEDS } from "~/constants/localstorage";
+import ReactMarkdown from "react-markdown";
+import "github-markdown-css/github-markdown.css";
 
 type Props = {
   notes?: string | null;
@@ -84,22 +86,29 @@ const BreakingChangeNotes: FC<Props> = ({ notes }) => {
             display: "-webkit-box",
             WebkitLineClamp: "2",
             WebkitBoxOrient: "vertical",
+            whiteSpace: "pre-wrap",
           }}
         >
           {notes}
         </Typography>
       </Alert>
 
-      <Dialog open={showDialog} onClose={() => setShowDialog(false)}>
+      <Dialog
+        open={showDialog}
+        onClose={() => setShowDialog(false)}
+        maxWidth="lg"
+      >
         <DialogTitle>Breaking Changes</DialogTitle>
         <DialogContent
           sx={{
-            whiteSpace: "pre-wrap",
             maxHeight: "60vh",
+            overflowX: "hidden",
             overflowY: "auto",
           }}
         >
-          {notes}
+          <div className="markdown-body">
+            <ReactMarkdown linkTarget="_blank">{notes}</ReactMarkdown>
+          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => onIgnoreWarning()}>Ignore</Button>

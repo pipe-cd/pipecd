@@ -34,6 +34,10 @@ module.exports = (env) => {
             filename: "assets/[name].[hash:8][ext]",
           },
         },
+        {
+          test: /\.css$/i,
+          use: ["style-loader", "css-loader"],
+        },
       ],
     },
     resolve: {
