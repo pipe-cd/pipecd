@@ -96,10 +96,10 @@ export class ApplicationPlanPreviewResult extends jspb.Message {
   clearPluginPlanResultsList(): ApplicationPlanPreviewResult;
   addPluginPlanResults(value?: PluginPlanPreviewResult, index?: number): PluginPlanPreviewResult;
 
-  getDeploymentPluginNamesList(): Array<string>;
-  setDeploymentPluginNamesList(value: Array<string>): ApplicationPlanPreviewResult;
-  clearDeploymentPluginNamesList(): ApplicationPlanPreviewResult;
-  addDeploymentPluginNames(value: string, index?: number): ApplicationPlanPreviewResult;
+  getPluginNamesList(): Array<string>;
+  setPluginNamesList(value: Array<string>): ApplicationPlanPreviewResult;
+  clearPluginNamesList(): ApplicationPlanPreviewResult;
+  addPluginNames(value: string, index?: number): ApplicationPlanPreviewResult;
 
   getError(): string;
   setError(value: string): ApplicationPlanPreviewResult;
@@ -132,7 +132,7 @@ export namespace ApplicationPlanPreviewResult {
     planDetails: Uint8Array | string,
     noChange: boolean,
     pluginPlanResultsList: Array<PluginPlanPreviewResult.AsObject>,
-    deploymentPluginNamesList: Array<string>,
+    pluginNamesList: Array<string>,
     error: string,
     createdAt: number,
   }
