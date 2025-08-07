@@ -17,7 +17,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
@@ -29,12 +28,12 @@ type mockDeploymentMetadataStore struct {
 	metadata map[string]string
 }
 
-func (m *mockDeploymentMetadataStore) GetDeploymentPluginMetadata(_ context.Context, key string) (string, error) {
+func (m *mockDeploymentMetadataStore) GetDeploymentPluginMetadata(_ context.Context, key string) (string, bool, error) {
 	metadata, ok := m.metadata[key]
 	if !ok {
-		return "", fmt.Errorf("metadata store not found")
+		return "", false, nil
 	}
-	return metadata, nil
+	return metadata, true, nil
 }
 
 func (m *mockDeploymentMetadataStore) PutDeploymentPluginMetadata(_ context.Context, key string, value string) error {
