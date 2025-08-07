@@ -69,7 +69,7 @@ message ApplicationPlanPreviewResult {
 
     repeated PluginPlanPreviewResult plugin_plan_results = 34;
     // Note: In pipedv1, this will not be empty. It will be "<unknown>" if plugins are not successfully loaded. 
-    repeated string deployment_plugin_names = 35;
+    repeated string plugin_names = 35;
 
     // Error while building planpreview result.
     string error = 40;
