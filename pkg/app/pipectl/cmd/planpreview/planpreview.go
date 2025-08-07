@@ -220,7 +220,6 @@ func convert(results []*model.PlanPreviewCommandResult) ReadableResult {
 				Env:                  a.Labels[labelEnvKey],
 				AllPluginNames:       strings.Join(a.PluginNames, ", "),
 			}
-
 			if len(a.PluginPlanResults) > 0 {
 				appInfo.PlannedPluginNames = toPlannedPluginNames(a.PluginPlanResults)
 			}

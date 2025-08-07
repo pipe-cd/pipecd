@@ -123,16 +123,16 @@ type StageLogPersister interface {
 }
 
 // GetStageMetadata gets the metadata of the current stage.
-func (c *Client) GetStageMetadata(ctx context.Context, key string) (string, error) {
+func (c *Client) GetStageMetadata(ctx context.Context, key string) (string, bool, error) {
 	resp, err := c.base.GetStageMetadata(ctx, &pipedservice.GetStageMetadataRequest{
 		DeploymentId: c.deploymentID,
 		StageId:      c.stageID,
 		Key:          key,
 	})
 	if err != nil {
-		return "", err
+		return "", false, err
 	}
-	return resp.Value, nil
+	return resp.Value, resp.Found, nil
 }
 
 // PutStageMetadata stores the metadata of the current stage.
@@ -157,13 +157,16 @@ func (c *Client) PutStageMetadataMulti(ctx context.Context, metadata map[string]
 }
 
 // GetDeploymentPluginMetadata gets the metadata of the current deployment and plugin.
-func (c *Client) GetDeploymentPluginMetadata(ctx context.Context, key string) (string, error) {
+func (c *Client) GetDeploymentPluginMetadata(ctx context.Context, key string) (string, bool, error) {
 	resp, err := c.base.GetDeploymentPluginMetadata(ctx, &pipedservice.GetDeploymentPluginMetadataRequest{
 		DeploymentId: c.deploymentID,
 		PluginName:   c.pluginName,
 		Key:          key,
 	})
-	return resp.Value, err
+	if err != nil {
+		return "", false, err
+	}
+	return resp.Value, resp.Found, err
 }
 
 // PutDeploymentPluginMetadata stores the metadata of the current deployment and plugin.
@@ -189,12 +192,15 @@ func (c *Client) PutDeploymentPluginMetadataMulti(ctx context.Context, metadata 
 
 // GetDeploymentSharedMetadata gets the metadata of the current deployment
 // which is shared among piped and plugins.
-func (c *Client) GetDeploymentSharedMetadata(ctx context.Context, key string) (string, error) {
+func (c *Client) GetDeploymentSharedMetadata(ctx context.Context, key string) (string, bool, error) {
 	resp, err := c.base.GetDeploymentSharedMetadata(ctx, &pipedservice.GetDeploymentSharedMetadataRequest{
 		DeploymentId: c.deploymentID,
 		Key:          key,
 	})
-	return resp.Value, err
+	if err != nil {
+		return "", false, err
+	}
+	return resp.Value, resp.Found, err
 }
 
 // GetApplicationSharedObject gets the application object which is shared across deployments.
