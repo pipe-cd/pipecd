@@ -456,7 +456,7 @@ proto.model.ApplicationPlanPreviewResult.toObject = function(includeInstance, ms
     noChange: jspb.Message.getBooleanFieldWithDefault(msg, 33, false),
     pluginPlanResultsList: jspb.Message.toObjectList(msg.getPluginPlanResultsList(),
     proto.model.PluginPlanPreviewResult.toObject, includeInstance),
-    deploymentPluginNamesList: (f = jspb.Message.getRepeatedField(msg, 35)) == null ? undefined : f,
+    pluginNamesList: (f = jspb.Message.getRepeatedField(msg, 35)) == null ? undefined : f,
     error: jspb.Message.getFieldWithDefault(msg, 40, ""),
     createdAt: jspb.Message.getFieldWithDefault(msg, 90, 0)
   };
@@ -560,7 +560,7 @@ proto.model.ApplicationPlanPreviewResult.deserializeBinaryFromReader = function(
       break;
     case 35:
       var value = /** @type {string} */ (reader.readString());
-      msg.addDeploymentPluginNames(value);
+      msg.addPluginNames(value);
       break;
     case 40:
       var value = /** @type {string} */ (reader.readString());
@@ -702,7 +702,7 @@ proto.model.ApplicationPlanPreviewResult.serializeBinaryToWriter = function(mess
       proto.model.PluginPlanPreviewResult.serializeBinaryToWriter
     );
   }
-  f = message.getDeploymentPluginNamesList();
+  f = message.getPluginNamesList();
   if (f.length > 0) {
     writer.writeRepeatedString(
       35,
@@ -1070,10 +1070,10 @@ proto.model.ApplicationPlanPreviewResult.prototype.clearPluginPlanResultsList = 
 
 
 /**
- * repeated string deployment_plugin_names = 35;
+ * repeated string plugin_names = 35;
  * @return {!Array<string>}
  */
-proto.model.ApplicationPlanPreviewResult.prototype.getDeploymentPluginNamesList = function() {
+proto.model.ApplicationPlanPreviewResult.prototype.getPluginNamesList = function() {
   return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 35));
 };
 
@@ -1082,7 +1082,7 @@ proto.model.ApplicationPlanPreviewResult.prototype.getDeploymentPluginNamesList 
  * @param {!Array<string>} value
  * @return {!proto.model.ApplicationPlanPreviewResult} returns this
  */
-proto.model.ApplicationPlanPreviewResult.prototype.setDeploymentPluginNamesList = function(value) {
+proto.model.ApplicationPlanPreviewResult.prototype.setPluginNamesList = function(value) {
   return jspb.Message.setField(this, 35, value || []);
 };
 
@@ -1092,7 +1092,7 @@ proto.model.ApplicationPlanPreviewResult.prototype.setDeploymentPluginNamesList 
  * @param {number=} opt_index
  * @return {!proto.model.ApplicationPlanPreviewResult} returns this
  */
-proto.model.ApplicationPlanPreviewResult.prototype.addDeploymentPluginNames = function(value, opt_index) {
+proto.model.ApplicationPlanPreviewResult.prototype.addPluginNames = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 35, value, opt_index);
 };
 
@@ -1101,8 +1101,8 @@ proto.model.ApplicationPlanPreviewResult.prototype.addDeploymentPluginNames = fu
  * Clears the list making it empty but non-null.
  * @return {!proto.model.ApplicationPlanPreviewResult} returns this
  */
-proto.model.ApplicationPlanPreviewResult.prototype.clearDeploymentPluginNamesList = function() {
-  return this.setDeploymentPluginNamesList([]);
+proto.model.ApplicationPlanPreviewResult.prototype.clearPluginNamesList = function() {
+  return this.setPluginNamesList([]);
 };
 
 
