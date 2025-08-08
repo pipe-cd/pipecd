@@ -296,106 +296,10 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *common.Dep
 		}
 	}
 
-	// In case the strategy has been decided by trigger.
-	// For example: user triggered the deployment via web console.
-	switch p.deployment.Trigger.SyncStrategy {
-	case model.SyncStrategy_QUICK_SYNC:
-		if stages, err := p.buildQuickSyncStages(ctx, spec); err == nil {
-			out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
-			out.Summary = p.deployment.Trigger.StrategySummary
-			out.Stages = stages
-			return out, nil
-		}
-	case model.SyncStrategy_PIPELINE:
-		if stages, err := p.buildPipelineSyncStages(ctx, spec); err == nil {
-			out.SyncStrategy = model.SyncStrategy_PIPELINE
-			out.Summary = p.deployment.Trigger.StrategySummary
-			out.Stages = stages
-			return out, nil
-		}
-	}
-
-	// When no pipeline was configured, do the quick sync.
-	if spec.Pipeline == nil || len(spec.Pipeline.Stages) == 0 {
-		if stages, err := p.buildQuickSyncStages(ctx, spec); err == nil {
-			out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
-			out.Summary = "Quick sync due to the pipeline was not configured"
-			out.Stages = stages
-			return out, nil
-		}
-	}
-
-	// Force to use pipeline when the `spec.planner.alwaysUsePipeline` was configured.
-	if spec.Planner.AlwaysUsePipeline {
-		if stages, err := p.buildPipelineSyncStages(ctx, spec); err == nil {
-			out.SyncStrategy = model.SyncStrategy_PIPELINE
-			out.Summary = "Sync with the specified pipeline (alwaysUsePipeline was set)"
-			out.Stages = stages
-			return out, nil
-		}
-	}
-
-	regexPool := regexpool.DefaultPool()
-
-	// This deployment is triggered by a commit with the intent to perform pipeline.
-	// Commit Matcher will be ignored when triggered by a command.
-	if pattern := spec.CommitMatcher.Pipeline; pattern != "" && p.deployment.Trigger.Commander == "" {
-		if pipelineRegex, err := regexPool.Get(pattern); err == nil &&
-			pipelineRegex.MatchString(p.deployment.Trigger.Commit.Message) {
-			if stages, err := p.buildPipelineSyncStages(ctx, spec); err == nil {
-				out.SyncStrategy = model.SyncStrategy_PIPELINE
-				out.Summary = fmt.Sprintf("Sync progressively because the commit message was matching %q", pattern)
-				out.Stages = stages
-				return out, nil
-			}
-		}
-	}
-
-	// This deployment is triggered by a commit with the intent to synchronize.
-	// Commit Matcher will be ignored when triggered by a command.
-	if pattern := spec.CommitMatcher.QuickSync; pattern != "" && p.deployment.Trigger.Commander == "" {
-		if syncRegex, err := regexPool.Get(pattern); err == nil &&
-			syncRegex.MatchString(p.deployment.Trigger.Commit.Message) {
-			if stages, err := p.buildQuickSyncStages(ctx, spec); err == nil {
-				out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
-				out.Summary = fmt.Sprintf("Quick sync because the commit message was matching %q", pattern)
-				out.Stages = stages
-				return out, nil
-			}
-		}
-	}
-
-	// Quick sync if this is the first time to deploy this application or it was unable to retrieve running commit hash.
-	if p.lastSuccessfulCommitHash == "" {
-		if stages, err := p.buildQuickSyncStages(ctx, spec); err == nil {
-			out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
-			out.Summary = "Quick sync, it seems this is the first deployment of the application"
-			out.Stages = stages
-			return out, nil
-		}
-	}
-
-	var (
-		strategy model.SyncStrategy
-		summary  string
-	)
-	// Build plan based on plugins determined strategy
-	for _, plg := range plugins {
-		res, err := plg.DetermineStrategy(ctx, &deployment.DetermineStrategyRequest{Input: input})
-		if err != nil {
-			p.logger.Warn("Unable to determine strategy using current plugin", zap.Error(err))
-			continue
-		}
-		// If the plugin does not support DetermineStrategy(), then ignore.
-		if res.Unsupported {
-			continue
-		}
-		strategy = res.SyncStrategy
-		summary = res.Summary
-		// If one of plugins returns PIPELINE_SYNC, use that as strategy intermediately
-		if strategy == model.SyncStrategy_PIPELINE {
-			break
-		}
+	strategy, summary, err := DetermineStrategy(ctx, spec, plugins, input, p.deployment.GetTrigger(), p.lastSuccessfulCommitHash, p.logger)
+	if err != nil {
+		p.logger.Error("unable to determine strategy", zap.Error(err))
+		return nil, err
 	}
 
 	switch strategy {
@@ -416,6 +320,81 @@ func (p *planner) buildPlan(ctx context.Context, runningDS, targetDS *common.Dep
 	}
 
 	return nil, fmt.Errorf("unable to plan the deployment")
+}
+
+func DetermineStrategy(
+	ctx context.Context,
+	spec *config.GenericApplicationSpec,
+	plugins []pluginapi.PluginClient,
+	input *deployment.PlanPluginInput,
+	trigger *model.DeploymentTrigger,
+	lastSuccessfulCommitHash string,
+	logger *zap.Logger,
+) (strategy model.SyncStrategy, summary string, err error) {
+	// In case the strategy has been decided by trigger.
+	// For example: user triggered the deployment via web console.
+	switch trigger.SyncStrategy {
+	case model.SyncStrategy_QUICK_SYNC:
+		return model.SyncStrategy_QUICK_SYNC, trigger.StrategySummary, nil
+	case model.SyncStrategy_PIPELINE:
+		return model.SyncStrategy_PIPELINE, trigger.StrategySummary, nil
+	}
+
+	// When no pipeline was configured, do the quick sync.
+	if spec.Pipeline == nil || len(spec.Pipeline.Stages) == 0 {
+		return model.SyncStrategy_QUICK_SYNC, "Quick sync due to the pipeline was not configured", nil
+	}
+
+	// Force to use pipeline when the `spec.planner.alwaysUsePipeline` was configured.
+	if spec.Planner.AlwaysUsePipeline {
+		return model.SyncStrategy_PIPELINE, "Sync with the specified pipeline (alwaysUsePipeline was set)", nil
+	}
+
+	regexPool := regexpool.DefaultPool()
+
+	// This deployment is triggered by a commit with the intent to perform pipeline.
+	// Commit Matcher will be ignored when triggered by a command.
+	if pattern := spec.CommitMatcher.Pipeline; pattern != "" && trigger.Commander == "" {
+		if pipelineRegex, err := regexPool.Get(pattern); err == nil &&
+			pipelineRegex.MatchString(trigger.Commit.Message) {
+			return model.SyncStrategy_PIPELINE, fmt.Sprintf("Sync progressively because the commit message was matching %q", pattern), nil
+		}
+	}
+
+	// This deployment is triggered by a commit with the intent to synchronize.
+	// Commit Matcher will be ignored when triggered by a command.
+	if pattern := spec.CommitMatcher.QuickSync; pattern != "" && trigger.Commander == "" {
+		if syncRegex, err := regexPool.Get(pattern); err == nil &&
+			syncRegex.MatchString(trigger.Commit.Message) {
+			return model.SyncStrategy_QUICK_SYNC, fmt.Sprintf("Quick sync because the commit message was matching %q", pattern), nil
+		}
+	}
+
+	// Quick sync if this is the first time to deploy this application or it was unable to retrieve running commit hash.
+	if lastSuccessfulCommitHash == "" {
+		return model.SyncStrategy_QUICK_SYNC, "Quick sync, it seems this is the first deployment of the application", nil
+	}
+
+	// Build plan based on plugins determined strategy
+	for _, plg := range plugins {
+		res, err := plg.DetermineStrategy(ctx, &deployment.DetermineStrategyRequest{Input: input})
+		if err != nil {
+			logger.Warn("Unable to determine strategy using current plugin", zap.Error(err))
+			continue
+		}
+		// If the plugin does not support DetermineStrategy(), then ignore.
+		if res.Unsupported {
+			continue
+		}
+		strategy = res.SyncStrategy
+		summary = res.Summary
+		// If one of plugins returns PIPELINE_SYNC, use that as strategy intermediately
+		if strategy == model.SyncStrategy_PIPELINE {
+			break
+		}
+	}
+
+	return strategy, summary, nil
 }
 
 // buildQuickSyncStages requests all plugins and returns quick sync stage
