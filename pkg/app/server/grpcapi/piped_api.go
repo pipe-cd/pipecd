@@ -356,33 +356,63 @@ func (a *PipedAPI) ListNotCompletedDeployments(ctx context.Context, req *pipedse
 		return nil, err
 	}
 
-	opts := datastore.ListOptions{
-		Filters: []datastore.ListFilter{
-			{
-				Field:    "PipedId",
-				Operator: datastore.OperatorEqual,
-				Value:    pipedID,
-			},
-			// TODO: Change to simple conditional clause without using OR clause for portability
-			// Note: firestore does not support OR operator.
-			// See more: https://firebase.google.com/docs/firestore/query-data/queries?hl=en
-			{
-				Field:    "Status",
-				Operator: datastore.OperatorIn,
-				Value:    model.GetNotCompletedDeploymentStatuses(),
-			},
-		},
-	}
+    // Build filters for uncompleted deployments managed by this piped.
+    filters := []datastore.ListFilter{
+        {
+            Field:    "PipedId",
+            Operator: datastore.OperatorEqual,
+            Value:    pipedID,
+        },
+        // TODO: Change to simple conditional clause without using OR clause for portability
+        // Note: firestore does not support OR operator.
+        // See more: https://firebase.google.com/docs/firestore/query-data/queries?hl=en
+        {
+            Field:    "Status",
+            Operator: datastore.OperatorIn,
+            Value:    model.GetNotCompletedDeploymentStatuses(),
+        },
+    }
 
-	deployments, cursor, err := a.deploymentStore.List(ctx, opts)
-	if err != nil {
-		return nil, gRPCStoreError(err, fmt.Sprintf("list deployments of piped %s", pipedID))
-	}
+    // Use deterministic ordering for stable pagination.
+    orders := []datastore.Order{
+        {
+            Field:     "UpdatedAt",
+            Direction: datastore.Desc,
+        },
+        {
+            Field:     "Id",
+            Direction: datastore.Asc,
+        },
+    }
 
-	return &pipedservice.ListNotCompletedDeploymentsResponse{
-		Deployments: deployments,
-		Cursor:      cursor,
-	}, nil
+    // Page through all results in reasonable batches.
+    const pageLimit = 200
+    var (
+        cursor string
+        all    []*model.Deployment
+    )
+    for {
+        opts := datastore.ListOptions{
+            Filters: filters,
+            Orders:  orders,
+            Limit:   pageLimit,
+            Cursor:  cursor,
+        }
+        ds, c, err := a.deploymentStore.List(ctx, opts)
+        if err != nil {
+            return nil, gRPCStoreError(err, fmt.Sprintf("list deployments of piped %s", pipedID))
+        }
+        all = append(all, ds...)
+        if c == "" {
+            break
+        }
+        cursor = c
+    }
+
+    return &pipedservice.ListNotCompletedDeploymentsResponse{
+        Deployments: all,
+        Cursor:      "",
+    }, nil
 }
 
 // CreateDeployment creates/triggers a new deployment for an application
