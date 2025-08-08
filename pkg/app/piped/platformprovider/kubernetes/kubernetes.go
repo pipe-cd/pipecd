@@ -33,6 +33,7 @@ const (
 	LabelSyncReplace          = "pipecd.dev/sync-by-replace"        // Use replace instead of apply.
 	LabelForceSyncReplace     = "pipecd.dev/force-sync-by-replace"  // Use replace --force instead of apply.
 	LabelServerSideApply      = "pipecd.dev/server-side-apply"      // Use server side apply instead of client side apply.
+	LabelForceConflicts       = "pipecd.dev/force-conflicts"        // Force conflicts when using server-side apply.
 	AnnotationConfigHash      = "pipecd.dev/config-hash"            // The hash value of all mouting config resources.
 	AnnotationOrder           = "pipecd.dev/order"                  // The order number of resource used to sort them before using.
 
@@ -40,6 +41,7 @@ const (
 	IgnoreDriftDetectionTrue = "true"
 	UseReplaceEnabled        = "enabled"
 	UseServerSideApply       = "true"
+	UseForceConflicts        = "true"
 
 	kustomizationFileName = "kustomization.yaml"
 )
