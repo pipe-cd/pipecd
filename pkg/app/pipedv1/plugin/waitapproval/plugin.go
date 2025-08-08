@@ -52,9 +52,9 @@ func (p *plugin) BuildPipelineSyncStages(ctx context.Context, _ sdk.ConfigNone, 
 
 // ExecuteStage implements sdk.StagePlugin.
 func (p *plugin) ExecuteStage(ctx context.Context, _ sdk.ConfigNone, _ sdk.DeployTargetsNone, input *sdk.ExecuteStageInput[struct{}]) (*sdk.ExecuteStageResponse, error) {
-	//TODO: later
+	status := p.executeWaitApproval(ctx, input)
 	return &sdk.ExecuteStageResponse{
-		Status: sdk.StageStatusSuccess,
+		Status: status,
 	}, nil
 }
 
