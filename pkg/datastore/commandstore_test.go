@@ -21,7 +21,6 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -165,48 +164,6 @@ func TestListCommands(t *testing.T) {
 			s := NewCommandStore(tc.ds)
 			_, err := s.List(context.Background(), tc.opts)
 			assert.Equal(t, tc.wantErr, err != nil)
-		})
-	}
-}
-
-func TestCommandDecode(t *testing.T) {
-	col := &commandCollection{}
-
-	testcases := []struct {
-		name      string
-		parts     map[Shard][]byte
-		expectCmd *model.Command
-		expectErr bool
-	}{
-		{
-			name:      "parts count miss matched",
-			parts:     make(map[Shard][]byte),
-			expectErr: true,
-		},
-		{
-			name: "should merge correctly",
-			parts: map[Shard][]byte{
-				AgentShard: []byte(`{"id":"1","status":3,"updated_at":4}`),
-				OpsShard:   []byte(`{"id":"1","status":0,"updated_at":1}`),
-			},
-			expectCmd: &model.Command{
-				Id:        "1",
-				Status:    model.CommandStatus_COMMAND_TIMEOUT,
-				UpdatedAt: 4,
-			},
-			expectErr: false,
-		},
-	}
-
-	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			cmd := &model.Command{}
-			err := col.Decode(cmd, tc.parts)
-			require.Equal(t, tc.expectErr, err != nil)
-
-			if err == nil {
-				assert.Equal(t, tc.expectCmd, cmd)
-			}
 		})
 	}
 }

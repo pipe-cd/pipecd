@@ -16,7 +16,6 @@ package datastore
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -34,33 +33,6 @@ func (e *eventCollection) Factory() Factory {
 	return func() interface{} {
 		return &model.Event{}
 	}
-}
-
-func (e *eventCollection) ListInUsedShards() []Shard {
-	return []Shard{
-		AgentShard,
-	}
-}
-
-func (e *eventCollection) GetUpdatableShard() (Shard, error) {
-	return AgentShard, nil
-}
-
-func (e *eventCollection) Encode(entity interface{}) (map[Shard][]byte, error) {
-	const errFmt = "failed while encode Event object: %s"
-
-	me, ok := entity.(*model.Event)
-	if !ok {
-		return nil, fmt.Errorf(errFmt, "type not matched")
-	}
-
-	data, err := json.Marshal(me)
-	if err != nil {
-		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
-	}
-	return map[Shard][]byte{
-		AgentShard: data,
-	}, nil
 }
 
 type EventStore interface {
