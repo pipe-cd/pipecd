@@ -25,10 +25,6 @@ describe("DeploymentDetailPage", () => {
       pipeds: {
         entities: { [dummyPiped.id]: dummyPiped },
         ids: [dummyPiped.id],
-        registeredPiped: null,
-        updating: false,
-        releasedVersions: [],
-        breakingChangesNote: "",
       },
     });
 
