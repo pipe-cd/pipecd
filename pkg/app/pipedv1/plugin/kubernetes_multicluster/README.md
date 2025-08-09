@@ -21,7 +21,7 @@ git pull
 
 **Prepare the PipeCD Control Plane**
 
-Please refer to [pipe-cd/pipecd/cmd/pipecd/README.md](../../../../../cmd/pipecd/README.md) to set up the Control Plane in your local environment.
+Please refer to [pipe-cd/pipecd/cmd/control-plane/README.md](../../../../../cmd/control-plane/README.md) to set up the Control Plane in your local environment.
 
 **Prepare two k8s clusters**
 
