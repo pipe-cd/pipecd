@@ -21,12 +21,14 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/deployment"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/livestate"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/planpreview"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcclient"
 )
 
 type PluginClient interface {
 	deployment.DeploymentServiceClient
 	livestate.LivestateServiceClient
+	planpreview.PlanPreviewServiceClient
 	Close() error
 	Name() string
 }
@@ -34,6 +36,7 @@ type PluginClient interface {
 type client struct {
 	deployment.DeploymentServiceClient
 	livestate.LivestateServiceClient
+	planpreview.PlanPreviewServiceClient
 	conn *grpc.ClientConn
 
 	name string
