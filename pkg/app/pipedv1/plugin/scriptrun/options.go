@@ -19,7 +19,6 @@ import (
 	"fmt"
 
 	"github.com/creasty/defaults"
-	"github.com/pipe-cd/piped-plugin-sdk-go/unit"
 )
 
 type scriptRunStageOptions struct {
@@ -27,8 +26,6 @@ type scriptRunStageOptions struct {
 	Env map[string]string `json:"env,omitempty"`
 	// the command(s) to run
 	Run string `json:"run,omitempty"`
-	// timeout limit for this stage
-	Timeout unit.Duration `json:"timeout,omitempty" default:"6h"`
 	// the rollback command(s) to run if deployment fails
 	OnRollback string `json:"onRollback,omitempty"`
 }
@@ -36,9 +33,6 @@ type scriptRunStageOptions struct {
 func (o scriptRunStageOptions) validate() error {
 	if o.Run == "" {
 		return fmt.Errorf("SCRIPT_RUN stage requires run field")
-	}
-	if o.Timeout <= 0 {
-		return fmt.Errorf("timeout must be greater than 0")
 	}
 	return nil
 }
