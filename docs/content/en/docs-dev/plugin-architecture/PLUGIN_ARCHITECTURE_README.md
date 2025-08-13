@@ -28,13 +28,13 @@ PipeCD v1 introduces a revolutionary plugin architecture that transforms PipeCD 
 - **Modularity**: Plugins can implement specific interfaces (Deployment, LiveState, Drift) as needed
 - **Performance**: gRPC-based communication for efficient plugin interactions
 
-### Current Status
+### Current Status (as of August 2025)
 
-- **Target Release**: February 2025
-- **Development Status**: Active development in progress
+- **Initial Release**: February 2025 (released)
+- **Development Status**: General Availability (GA); ongoing improvements and plugin ecosystem growth
 - **Plugin SDK**: Available with Go implementation
 - **Built-in Plugins**: Kubernetes, Terraform, Cloud Run, ECS, Lambda
-- **Control Plane Support**: Under development (Issue [#5252](https://github.com/pipe-cd/pipecd/issues/5252))
+- **Control Plane Support**: Released; updates and enhancements ongoing ([#5252](https://github.com/pipe-cd/pipecd/issues/5252))
 - **Migration Support**: Tools and documentation available for v0 to v1 migration
 
 ### Control Plane Updates Required
@@ -441,23 +441,23 @@ plugins:
 gantt
     title PipeCD v0 to v1 Migration Timeline
     dateFormat  YYYY-MM-DD
-    section v0 Support Phase
-    v0 Maintenance        :active, v0support, 2024-01-01, 2025-12-31
-    Bug Fixes Only        :v0bugfix, 2025-06-01, 2025-12-31
-    
-    section v1 Development Phase
-    Plugin Architecture   :done, pluginarch, 2024-01-01, 2025-02-01
-    Built-in Plugins      :done, builtin, 2024-06-01, 2025-02-01
-    Control Plane Updates :active, controlplane, 2024-12-01, 2025-03-01
-    
-    section Migration Phase
-    Data Migration Tools  :active, migration, 2024-12-01, 2025-03-01
-    Migration Docs        :active, migdocs, 2024-12-01, 2025-02-01
-    Community Support     :active, support, 2025-02-01, 2025-06-01
-    
-    section Community Ecosystem
-    Plugin Development    :community, 2025-03-01, 2025-12-31
-    Plugin Registry       :registry, 2025-04-01, 2025-12-31
+  section v0 Support Phase
+  v0 Maintenance        :done, v0support, 2024-01-01, 2025-06-30
+  Bug Fixes Only        :done, v0bugfix, 2025-06-01, 2025-06-30
+
+  section v1 Development Phase
+  Plugin Architecture   :done, pluginarch, 2024-01-01, 2025-02-01
+  Built-in Plugins      :done, builtin, 2024-06-01, 2025-02-01
+  Control Plane Updates :done, controlplane, 2024-12-01, 2025-03-01
+
+  section Migration Phase
+  Data Migration Tools  :done, migration, 2024-12-01, 2025-03-01
+  Migration Docs        :done, migdocs, 2024-12-01, 2025-02-01
+  Community Support     :done, support, 2025-02-01, 2025-06-01
+
+  section Community Ecosystem
+  Plugin Development    :active, community, 2025-03-01, 2025-12-31
+  Plugin Registry       :active, registry, 2025-04-01, 2025-12-31
 ```
 
 ### Control Plane Migration Requirements
@@ -481,30 +481,30 @@ The migration from v0 to v1 requires updates to multiple Control Plane component
 #### Component Updates Required
 
 **LiveState Management:**
-- LiveState store updated to group by deploy target instead of platform provider
-- LiveState reporter modified to call plugin gRPC interfaces
+- LiveState store now groups by deploy target instead of platform provider
+- LiveState reporter calls plugin gRPC interfaces
 - Aggregation layer added for multi-target applications
 
-**Deployment Execution:**  
-- Executor updated to use deploy targets and plugin interfaces
+**Deployment Execution:**
+- Executor uses deploy targets and plugin interfaces
 - Pipeline stages mapped to plugin-specific stage implementations
 - Rollback procedures adapted for plugin architecture
 
 **Drift Detection:**
-- Detector modified to call plugin drift detection interfaces
+- Detector calls plugin drift detection interfaces
 - Configuration comparison updated for plugin-specific manifests
 - Detection intervals configurable per plugin type
 
 **Plan Preview:**
-- Plan preview updated to call plugin plan generation interfaces
+- Plan preview calls plugin plan generation interfaces
 - Diff calculation performed by plugins for platform-specific logic
 - Preview results aggregated across multiple deploy targets
 
 **Web UI and API:**
-- Application forms updated to support deploy target selection
-- Deployment views updated to display plugin-specific information
-- API responses updated to include plugin metadata and deploy targets
-- Metrics updated to use deploy targets instead of platform providers
+- Application forms support deploy target selection
+- Deployment views display plugin-specific information
+- API responses include plugin metadata and deploy targets
+- Metrics use deploy targets instead of platform providers
 
 ### Migration Steps
 
@@ -851,17 +851,17 @@ pipectl migrate platform-providers --piped-config=piped-config.yaml --verify
 
 #### Control Plane Compatibility
 
-**Issue**: Plugin-based deployments not displaying correctly in UI or API responses missing plugin data.
+**Issue**: Plugin-based deployments not displaying correctly in UI or API responses missing plugin data (historical issue).
 
-**Root Cause**: Control Plane components need updates to support plugin architecture (tracking issue [#5252](https://github.com/pipe-cd/pipecd/issues/5252)).
+**Root Cause**: Control Plane components required updates to support plugin architecture ([#5252](https://github.com/pipe-cd/pipecd/issues/5252)).
 
-**Current Status**:
-- ✅ Piped v1 with plugin support available  
-- 🚧 Control Plane updates in progress
-- 🚧 Web UI updates for plugin-based applications
-- 🚧 API changes for deploy targets and plugin metadata
+**Current Status (August 2025):**
+- ✅ Piped v1 with plugin support available
+- ✅ Control Plane updates released
+- ✅ Web UI supports plugin-based applications
+- ✅ API supports deploy targets and plugin metadata
 
-**Workaround**: Use Piped v1 in development/testing environments while Control Plane updates are completed.
+**Note**: If you encounter issues, ensure you are running the latest version of the control plane and web UI.
 
 ### Debug Mode
 
