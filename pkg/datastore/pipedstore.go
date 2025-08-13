@@ -16,8 +16,6 @@ package datastore
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -34,68 +32,6 @@ func (p *pipedCollection) Factory() Factory {
 	return func() interface{} {
 		return &model.Piped{}
 	}
-}
-
-func (p *pipedCollection) ListInUsedShards() []Shard {
-	return []Shard{
-		ClientShard,
-		AgentShard,
-	}
-}
-
-func (p *pipedCollection) GetUpdatableShard() (Shard, error) {
-	return ClientShard, nil
-}
-
-func (p *pipedCollection) Encode(e interface{}) (map[Shard][]byte, error) {
-	const errFmt = "failed while encode Piped object: %s"
-
-	me, ok := e.(*model.Piped)
-	if !ok {
-		return nil, fmt.Errorf(errFmt, "type not matched")
-	}
-
-	clientShardStruct := model.Piped{
-		// Fields which must exists due to the validation check on update.
-		Id:        me.Id,
-		ProjectId: me.ProjectId,
-		CreatedAt: me.CreatedAt,
-		UpdatedAt: me.UpdatedAt,
-		// Field which value only available in ClientShard.
-		Name:           me.Name,
-		Desc:           me.Desc,
-		Keys:           me.Keys,
-		DesiredVersion: me.DesiredVersion,
-		Disabled:       me.Disabled,
-	}
-	cdata, err := json.Marshal(&clientShardStruct)
-	if err != nil {
-		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
-	}
-
-	agentShardStruct := model.Piped{
-		// Fields which must exists due to the validation check on update.
-		Id:        me.Id,
-		ProjectId: me.ProjectId,
-		CreatedAt: me.CreatedAt,
-		UpdatedAt: me.UpdatedAt,
-		// Fields which value only available in AgentShard.
-		Config:            me.Config,
-		PlatformProviders: me.PlatformProviders,
-		Repositories:      me.Repositories,
-		StartedAt:         me.StartedAt,
-		Version:           me.Version,
-		SecretEncryption:  me.SecretEncryption,
-	}
-	adata, err := json.Marshal(&agentShardStruct)
-	if err != nil {
-		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
-	}
-
-	return map[Shard][]byte{
-		ClientShard: cdata,
-		AgentShard:  adata,
-	}, nil
 }
 
 type PipedStore interface {
