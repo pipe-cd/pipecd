@@ -2,21 +2,19 @@ import { Dialog } from "@mui/material";
 import { useFormik } from "formik";
 import { FC, memo, useCallback } from "react";
 import { UPDATE_PIPED_SUCCESS } from "~/constants/toast-text";
-import { useAppDispatch, useAppSelector } from "~/hooks/redux";
-import { editPiped, fetchPipeds, selectPipedById } from "~/modules/pipeds";
-import { addToast } from "~/modules/toasts";
 import { PipedForm, PipedFormValues, validationSchema } from "../piped-form";
-
+import { Piped } from "pipecd/web/model/piped_pb";
+import { useToast } from "~/contexts/toast-context";
+import { useEditPiped } from "~/queries/pipeds/use-edit-piped";
 export interface EditPipedDrawerProps {
-  pipedId: string | null;
+  piped: Piped.AsObject | null;
   onClose: () => void;
 }
 
 export const EditPipedDialog: FC<EditPipedDrawerProps> = memo(
-  function EditPipedDialog({ pipedId, onClose }) {
-    const dispatch = useAppDispatch();
-    const piped = useAppSelector(selectPipedById(pipedId));
-
+  function EditPipedDialog({ piped, onClose }) {
+    const { addToast } = useToast();
+    const { mutateAsync: editPiped } = useEditPiped();
     const formik = useFormik<PipedFormValues>({
       initialValues: {
         name: piped?.name || "",
@@ -24,16 +22,13 @@ export const EditPipedDialog: FC<EditPipedDrawerProps> = memo(
       },
       enableReinitialize: true,
       validationSchema,
-      async onSubmit({ desc, name }) {
-        if (!pipedId) {
+      onSubmit({ desc, name }) {
+        if (!piped) {
           return;
         }
 
-        await dispatch(editPiped({ pipedId, name, desc })).then(() => {
-          dispatch(fetchPipeds(true));
-          dispatch(
-            addToast({ message: UPDATE_PIPED_SUCCESS, severity: "success" })
-          );
+        editPiped({ pipedId: piped.id, name, desc }).then(() => {
+          addToast({ message: UPDATE_PIPED_SUCCESS, severity: "success" });
           onClose();
         });
       },
