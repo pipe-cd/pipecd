@@ -1,11 +1,26 @@
+// Copyright \d{4} The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package deployment
 
 import (
 	"context"
 	"slices"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/cloudrun/config"
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/cloudrun/config"
 )
 
 type Plugin struct{}
@@ -34,17 +49,17 @@ func (p *Plugin) BuildPipelineSyncStages(ctx context.Context, _ *sdk.ConfigNone,
 }
 
 func (p *Plugin) ExecuteStage(ctx context.Context, _ *sdk.ConfigNone, dts []*sdk.DeployTarget[config.CloudRunDeployTargetConfig], input *sdk.ExecuteStageInput[config.CloudRunApplicationSpec]) (*sdk.ExecuteStageResponse, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (p *Plugin) DetermineVersions(ctx context.Context, _ *sdk.ConfigNone, input *sdk.DetermineVersionsInput[config.CloudRunApplicationSpec]) (*sdk.DetermineVersionsResponse, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (p *Plugin) DetermineStrategy(ctx context.Context, _ *sdk.ConfigNone, input *sdk.DetermineStrategyInput[config.CloudRunApplicationSpec]) (*sdk.DetermineStrategyResponse, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
