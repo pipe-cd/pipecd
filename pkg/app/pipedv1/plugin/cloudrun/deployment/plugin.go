@@ -2,6 +2,8 @@ package deployment
 
 import (
 	"context"
+	"slices"
+
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/cloudrun/config"
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
@@ -16,33 +18,84 @@ const (
 	StageCloudRunPromote = "CLOUDRUN_PROMOTE"
 	// StageRollback the legacy generic rollback stage name
 	StageRollback = "ROLLBACK"
+
+	StageCloudRunSyncDescription = "Deploy the new version and configure all traffic to it"
+	StageRollbackDescription     = "Rollback the deployment"
 )
 
-func (p Plugin) FetchDefinedStages() []string {
+func (p *Plugin) FetchDefinedStages() []string {
 	return []string{StageCloudRunSync, StageCloudRunPromote, StageRollback}
 }
 
-func (p Plugin) BuildPipelineSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
+func (p *Plugin) BuildPipelineSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
+	return &sdk.BuildPipelineSyncStagesResponse{
+		Stages: buildPipelineStages(input.Request.Stages, input.Request.Rollback),
+	}, nil
+}
+
+func (p *Plugin) ExecuteStage(ctx context.Context, _ *sdk.ConfigNone, dts []*sdk.DeployTarget[config.CloudRunDeployTargetConfig], input *sdk.ExecuteStageInput[config.CloudRunApplicationSpec]) (*sdk.ExecuteStageResponse, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (p Plugin) ExecuteStage(ctx context.Context, _ *sdk.ConfigNone, dts []*sdk.DeployTarget[config.CloudRunDeployTargetConfig], input *sdk.ExecuteStageInput[config.CloudRunApplicationSpec]) (*sdk.ExecuteStageResponse, error) {
+func (p *Plugin) DetermineVersions(ctx context.Context, _ *sdk.ConfigNone, input *sdk.DetermineVersionsInput[config.CloudRunApplicationSpec]) (*sdk.DetermineVersionsResponse, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (p Plugin) DetermineVersions(ctx context.Context, _ *sdk.ConfigNone, input *sdk.DetermineVersionsInput[config.CloudRunApplicationSpec]) (*sdk.DetermineVersionsResponse, error) {
+func (p *Plugin) DetermineStrategy(ctx context.Context, _ *sdk.ConfigNone, input *sdk.DetermineStrategyInput[config.CloudRunApplicationSpec]) (*sdk.DetermineStrategyResponse, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (p Plugin) DetermineStrategy(ctx context.Context, _ *sdk.ConfigNone, input *sdk.DetermineStrategyInput[config.CloudRunApplicationSpec]) (*sdk.DetermineStrategyResponse, error) {
-	//TODO implement me
-	panic("implement me")
+func (p *Plugin) BuildQuickSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildQuickSyncStagesInput) (*sdk.BuildQuickSyncStagesResponse, error) {
+	return &sdk.BuildQuickSyncStagesResponse{
+		Stages: buildQuickSyncPipeline(input.Request.Rollback),
+	}, nil
 }
 
-func (p Plugin) BuildQuickSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildQuickSyncStagesInput) (*sdk.BuildQuickSyncStagesResponse, error) {
-	//TODO implement me
-	panic("implement me")
+func buildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
+	out := make([]sdk.QuickSyncStage, 0, 2)
+	out = append(out, sdk.QuickSyncStage{
+		Name:               StageCloudRunSync,
+		Description:        StageCloudRunSyncDescription,
+		Rollback:           false,
+		Metadata:           map[string]string{},
+		AvailableOperation: sdk.ManualOperationNone,
+	})
+	if autoRollback {
+		out = append(out, sdk.QuickSyncStage{
+			Name:               StageRollback,
+			Description:        StageRollbackDescription,
+			Rollback:           true,
+			Metadata:           map[string]string{},
+			AvailableOperation: sdk.ManualOperationNone,
+		})
+	}
+	return out
+}
+
+func buildPipelineStages(stages []sdk.StageConfig, autoRollback bool) []sdk.PipelineStage {
+	out := make([]sdk.PipelineStage, 0, len(stages)+1)
+	for _, stage := range stages {
+		out = append(out, sdk.PipelineStage{
+			Name:               stage.Name,
+			Index:              stage.Index,
+			Rollback:           false,
+			Metadata:           map[string]string{},
+			AvailableOperation: sdk.ManualOperationNone,
+		})
+	}
+	if autoRollback {
+		out = append(out, sdk.PipelineStage{
+			Name: StageRollback,
+			Index: slices.MinFunc(stages, func(a, b sdk.StageConfig) int {
+				return a.Index - b.Index
+			}).Index,
+			Rollback:           true,
+			Metadata:           map[string]string{},
+			AvailableOperation: sdk.ManualOperationNone,
+		})
+	}
+	return out
 }
