@@ -31,14 +31,14 @@ jobs:
 
       - uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # v3.7.1
 
-      # # Building and pushing container images.
-      # - name: Build and push ${{ env.IMAGE }} image
-      #   uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 #v5.0.0
-      #   with:
-      #     context: tool/${{ env.IMAGE }}
-      #     tags: ${{ env.GHCR }}/pipe-cd/${{ env.IMAGE }}:${{ env.PIPECD_VERSION }}
-      #     platforms: linux/amd64,linux/arm64
-      #     push: false
-      #     # parameter to use inline cache. ref; https://docs.docker.com/build/ci/github-actions/cache/#inline-cache
-      #     cache-from: type=registry,ref=${{ env.GHCR }}/pipe-cd/${{ env.IMAGE }}:latest
-      #     cache-to: type=inline
+      # Building and pushing container images.
+      - name: Build and push ${{ env.IMAGE }} image
+        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 #v5.0.0
+        with:
+          context: tool/${{ env.IMAGE }}
+          tags: ${{ env.GHCR }}/pipe-cd/${{ env.IMAGE }}:${{ env.PIPECD_VERSION }}
+          platforms: linux/amd64,linux/arm64
+          push: false
+          # parameter to use inline cache. ref; https://docs.docker.com/build/ci/github-actions/cache/#inline-cache
+          cache-from: type=registry,ref=${{ env.GHCR }}/pipe-cd/${{ env.IMAGE }}:latest
+          cache-to: type=inline
