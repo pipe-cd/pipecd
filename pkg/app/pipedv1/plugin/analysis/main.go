@@ -1,4 +1,4 @@
-// Copyright 2024 The PipeCD Authors.
+// Copyright 2025 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,19 +17,16 @@ package main
 import (
 	"log"
 
-	"github.com/pipe-cd/pipecd/pkg/cli"
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 func main() {
-	app := cli.NewApp(
-		"pipecd",
-		"Control-plane component for PipeCD.",
-	)
-	app.AddCommands(
-		NewServerCommand(),
-		NewOpsCommand(),
-	)
-	if err := app.Run(); err != nil {
-		log.Fatal(err)
+	plugin, err := sdk.NewPlugin("0.0.1", sdk.WithStagePlugin(&plugin{}))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	if err := plugin.Run(); err != nil {
+		log.Fatalln(err)
 	}
 }
