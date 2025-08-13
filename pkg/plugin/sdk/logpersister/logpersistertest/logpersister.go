@@ -38,7 +38,7 @@ func (lp TestLogPersister) StageLogPersister(deploymentID, stageID string) logpe
 func (lp TestLogPersister) Write(log []byte) (int, error) {
 	// Write the log to the test logger
 	lp.t.Log(string(log))
-	return 0, nil
+	return len(log), nil
 }
 func (lp TestLogPersister) Info(log string) {
 	lp.t.Log("INFO", log)

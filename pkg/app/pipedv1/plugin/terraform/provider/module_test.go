@@ -134,13 +134,13 @@ func TestFindArticatVersions(t *testing.T) {
 	testcases := []struct {
 		name        string
 		moduleDir   string
-		expected    []*sdk.ArtifactVersion
+		expected    []sdk.ArtifactVersion
 		expectedErr bool
 	}{
 		{
 			name:      "single module",
 			moduleDir: "./testdata/single_module",
-			expected: []*sdk.ArtifactVersion{
+			expected: []sdk.ArtifactVersion{
 				{
 					Name:    "helloworld",
 					URL:     "helloworld",
@@ -152,7 +152,7 @@ func TestFindArticatVersions(t *testing.T) {
 		{
 			name:      "single module with optional field",
 			moduleDir: "./testdata/single_module_optional",
-			expected: []*sdk.ArtifactVersion{
+			expected: []sdk.ArtifactVersion{
 				{
 					Name:    "helloworld",
 					URL:     "helloworld",
@@ -164,7 +164,7 @@ func TestFindArticatVersions(t *testing.T) {
 		{
 			name:      "multi modules",
 			moduleDir: "./testdata/multi_modules",
-			expected: []*sdk.ArtifactVersion{
+			expected: []sdk.ArtifactVersion{
 				{
 					Name:    "helloworld_01",
 					URL:     "helloworld",

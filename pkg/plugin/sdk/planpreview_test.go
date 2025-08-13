@@ -24,6 +24,9 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/planpreview"
@@ -70,7 +73,7 @@ spec: {}
 	tests := []struct {
 		name           string
 		request        *planpreview.GetPlanPreviewRequest
-		result         *GetPlanPreviewResponse
+		mockResp       *GetPlanPreviewResponse
 		err            error
 		expectedStatus codes.Code
 		expectErr      bool
@@ -87,10 +90,16 @@ spec: {}
 					ApplicationConfigFilename: "app-config-filename",
 				},
 			},
-			result: &GetPlanPreviewResponse{
-				Summary:  "summary",
-				NoChange: true,
-				Details:  []byte("details"),
+			mockResp: &GetPlanPreviewResponse{
+				Results: []PlanPreviewResult{
+					{
+						DeployTarget: "target1",
+						Summary:      "summary",
+						NoChange:     true,
+						Details:      []byte("details"),
+						DiffLanguage: "diff",
+					},
+				},
 			},
 			expectedStatus: codes.OK,
 		},
@@ -100,14 +109,14 @@ spec: {}
 				ApplicationId: "app1",
 				DeployTargets: []string{"target2"},
 			},
-			result:         &GetPlanPreviewResponse{},
+			mockResp:       &GetPlanPreviewResponse{},
 			expectErr:      true,
 			expectedStatus: codes.Internal,
 		},
 		{
 			name:           "error",
 			request:        &planpreview.GetPlanPreviewRequest{},
-			result:         &GetPlanPreviewResponse{},
+			mockResp:       &GetPlanPreviewResponse{},
 			err:            errors.New("some error"),
 			expectErr:      true,
 			expectedStatus: codes.Internal,
@@ -119,7 +128,7 @@ spec: {}
 			t.Parallel()
 
 			plugin := &mockPlanPreviewPlugin{
-				result: tt.result,
+				result: tt.mockResp,
 				err:    tt.err,
 			}
 			server := newTestPlanPreviewPluginServer(t, plugin)
@@ -133,9 +142,68 @@ spec: {}
 				t.Errorf("expected status %v, got %v", tt.expectedStatus, status.Code(err))
 			}
 
-			if response != nil && response.GetSummary() != tt.result.Summary {
-				t.Errorf("expected summary %v, got %v", tt.result.Summary, response.GetSummary())
+			if !tt.expectErr {
+				require.NotNil(t, response)
+				assert.Equal(t, tt.mockResp.toProto(), response)
 			}
+		})
+	}
+}
+
+func TestGetPlanPreviewResponse_toProto(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		response *GetPlanPreviewResponse
+		expected *planpreview.GetPlanPreviewResponse
+	}{
+		{
+			name: "success",
+			response: &GetPlanPreviewResponse{
+				Results: []PlanPreviewResult{
+					{
+						DeployTarget: "target-1",
+						Summary:      "summary-1",
+						NoChange:     true,
+						Details:      []byte("details-1"),
+						DiffLanguage: "diff",
+					},
+					{
+						DeployTarget: "target-2",
+						Summary:      "summary-2",
+						NoChange:     false,
+						Details:      []byte("details-2"),
+						// not specify DiffLanguage
+					},
+				},
+			},
+			expected: &planpreview.GetPlanPreviewResponse{
+				Results: []*planpreview.PlanPreviewResult{
+					{
+						DeployTarget: "target-1",
+						Summary:      "summary-1",
+						NoChange:     true,
+						Details:      []byte("details-1"),
+						DiffLanguage: "diff",
+					},
+					{
+						DeployTarget: "target-2",
+						Summary:      "summary-2",
+						NoChange:     false,
+						Details:      []byte("details-2"),
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			response := tt.response.toProto()
+			assert.Equal(t, tt.expected, response)
 		})
 	}
 }

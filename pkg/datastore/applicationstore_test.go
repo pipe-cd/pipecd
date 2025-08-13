@@ -21,7 +21,6 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -70,7 +69,7 @@ func TestAddApplication(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewApplicationStore(tc.dsFactory(tc.application), TestCommander)
+			s := NewApplicationStore(tc.dsFactory(tc.application))
 			err := s.Add(context.Background(), tc.application)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
@@ -115,7 +114,7 @@ func TestGetApplication(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewApplicationStore(tc.ds, TestCommander)
+			s := NewApplicationStore(tc.ds)
 			_, err := s.Get(context.Background(), tc.id)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
@@ -170,55 +169,9 @@ func TestListApplications(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewApplicationStore(tc.ds, TestCommander)
+			s := NewApplicationStore(tc.ds)
 			_, _, err := s.List(context.Background(), tc.opts)
 			assert.Equal(t, tc.wantErr, err != nil)
-		})
-	}
-}
-
-func TestApplicationDecode(t *testing.T) {
-	col := &applicationCollection{requestedBy: TestCommander}
-
-	testcases := []struct {
-		name      string
-		parts     map[Shard][]byte
-		expectApp *model.Application
-		expectErr bool
-	}{
-		{
-			name:      "shard count miss matched",
-			parts:     make(map[Shard][]byte),
-			expectErr: true,
-		},
-		{
-			name: "decode correctly",
-			parts: map[Shard][]byte{
-				ClientShard: []byte(`{"kind":1,"name":"name","piped_id":"new_piped","platform_provider":"new_provider","git_path":{"config_filename":"new_file"},"updated_at":123}`),
-				AgentShard:  []byte(`{"kind":0,"name":"new_name","piped_id":"piped","platform_provider":"provider","git_path":{"config_filename":"file"},"updated_at":1}`),
-			},
-			expectApp: &model.Application{
-				Kind:             model.ApplicationKind_KUBERNETES,
-				Name:             "new_name",
-				PipedId:          "new_piped",
-				PlatformProvider: "new_provider",
-				GitPath: &model.ApplicationGitPath{
-					ConfigFilename: "new_file",
-				},
-				UpdatedAt: 123,
-			},
-		},
-	}
-
-	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			app := &model.Application{}
-			err := col.Decode(app, tc.parts)
-			require.Equal(t, tc.expectErr, err != nil)
-
-			if err == nil {
-				assert.Equal(t, tc.expectApp, app)
-			}
 		})
 	}
 }

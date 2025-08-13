@@ -16,7 +16,6 @@ package datastore
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -24,7 +23,6 @@ import (
 )
 
 type apiKeyCollection struct {
-	requestedBy Commander
 }
 
 func (a *apiKeyCollection) Kind() string {
@@ -37,38 +35,6 @@ func (a *apiKeyCollection) Factory() Factory {
 	}
 }
 
-func (a *apiKeyCollection) ListInUsedShards() []Shard {
-	return []Shard{
-		ClientShard,
-	}
-}
-
-func (a *apiKeyCollection) GetUpdatableShard() (Shard, error) {
-	switch a.requestedBy {
-	case WebCommander:
-		return ClientShard, nil
-	default:
-		return "", ErrUnsupported
-	}
-}
-
-func (a *apiKeyCollection) Encode(e interface{}) (map[Shard][]byte, error) {
-	const errFmt = "failed while encode APIKey object: %s"
-
-	me, ok := e.(*model.APIKey)
-	if !ok {
-		return nil, fmt.Errorf("type not matched")
-	}
-
-	data, err := json.Marshal(me)
-	if err != nil {
-		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
-	}
-	return map[Shard][]byte{
-		ClientShard: data,
-	}, nil
-}
-
 type APIKeyStore interface {
 	Add(ctx context.Context, k *model.APIKey) error
 	Get(ctx context.Context, id string) (*model.APIKey, error)
@@ -79,18 +45,16 @@ type APIKeyStore interface {
 
 type apiKeyStore struct {
 	backend
-	commander Commander
-	nowFunc   func() time.Time
+	nowFunc func() time.Time
 }
 
-func NewAPIKeyStore(ds DataStore, c Commander) APIKeyStore {
+func NewAPIKeyStore(ds DataStore) APIKeyStore {
 	return &apiKeyStore{
 		backend: backend{
 			ds:  ds,
-			col: &apiKeyCollection{requestedBy: c},
+			col: &apiKeyCollection{},
 		},
-		commander: c,
-		nowFunc:   time.Now,
+		nowFunc: time.Now,
 	}
 }
 

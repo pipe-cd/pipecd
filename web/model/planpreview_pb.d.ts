@@ -91,6 +91,16 @@ export class ApplicationPlanPreviewResult extends jspb.Message {
   getNoChange(): boolean;
   setNoChange(value: boolean): ApplicationPlanPreviewResult;
 
+  getPluginPlanResultsList(): Array<PluginPlanPreviewResult>;
+  setPluginPlanResultsList(value: Array<PluginPlanPreviewResult>): ApplicationPlanPreviewResult;
+  clearPluginPlanResultsList(): ApplicationPlanPreviewResult;
+  addPluginPlanResults(value?: PluginPlanPreviewResult, index?: number): PluginPlanPreviewResult;
+
+  getPluginNamesList(): Array<string>;
+  setPluginNamesList(value: Array<string>): ApplicationPlanPreviewResult;
+  clearPluginNamesList(): ApplicationPlanPreviewResult;
+  addPluginNames(value: string, index?: number): ApplicationPlanPreviewResult;
+
   getError(): string;
   setError(value: string): ApplicationPlanPreviewResult;
 
@@ -121,8 +131,48 @@ export namespace ApplicationPlanPreviewResult {
     planSummary: Uint8Array | string,
     planDetails: Uint8Array | string,
     noChange: boolean,
+    pluginPlanResultsList: Array<PluginPlanPreviewResult.AsObject>,
+    pluginNamesList: Array<string>,
     error: string,
     createdAt: number,
+  }
+}
+
+export class PluginPlanPreviewResult extends jspb.Message {
+  getPluginName(): string;
+  setPluginName(value: string): PluginPlanPreviewResult;
+
+  getDeployTarget(): string;
+  setDeployTarget(value: string): PluginPlanPreviewResult;
+
+  getPlanSummary(): Uint8Array | string;
+  getPlanSummary_asU8(): Uint8Array;
+  getPlanSummary_asB64(): string;
+  setPlanSummary(value: Uint8Array | string): PluginPlanPreviewResult;
+
+  getPlanDetails(): Uint8Array | string;
+  getPlanDetails_asU8(): Uint8Array;
+  getPlanDetails_asB64(): string;
+  setPlanDetails(value: Uint8Array | string): PluginPlanPreviewResult;
+
+  getDiffLanguage(): string;
+  setDiffLanguage(value: string): PluginPlanPreviewResult;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): PluginPlanPreviewResult.AsObject;
+  static toObject(includeInstance: boolean, msg: PluginPlanPreviewResult): PluginPlanPreviewResult.AsObject;
+  static serializeBinaryToWriter(message: PluginPlanPreviewResult, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): PluginPlanPreviewResult;
+  static deserializeBinaryFromReader(message: PluginPlanPreviewResult, reader: jspb.BinaryReader): PluginPlanPreviewResult;
+}
+
+export namespace PluginPlanPreviewResult {
+  export type AsObject = {
+    pluginName: string,
+    deployTarget: string,
+    planSummary: Uint8Array | string,
+    planDetails: Uint8Array | string,
+    diffLanguage: string,
   }
 }
 

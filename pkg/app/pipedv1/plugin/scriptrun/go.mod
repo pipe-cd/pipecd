@@ -4,7 +4,7 @@ go 1.24.1
 
 require (
 	github.com/creasty/defaults v1.6.0
-	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250708013000-db1f57395a5d
+	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250807000858-21595f74c628
 	github.com/stretchr/testify v1.10.0
 )
 
@@ -31,7 +31,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
-	github.com/pipe-cd/pipecd v0.52.1-0.20250704040938-472e02fa6fa1 // indirect
+	github.com/pipe-cd/pipecd v0.52.1-0.20250731104149-f611ce3501c5 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.12.1 // indirect
 	github.com/prometheus/client_model v0.5.0 // indirect

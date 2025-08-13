@@ -234,8 +234,7 @@ func (r *reporter) flush(ctx context.Context, app *model.Application, repo git.R
 		if err != nil {
 			st, ok := status.FromError(err)
 			if ok && st.Code() == codes.Unimplemented {
-				// TODO: show plugin name
-				r.logger.Info("plugin does not support livestate feature")
+				r.logger.Info(fmt.Sprintf("plugin '%s' does not support livestate feature", pluginClient.Name()))
 				continue
 			}
 

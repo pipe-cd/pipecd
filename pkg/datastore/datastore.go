@@ -70,52 +70,6 @@ var (
 	ErrUserDefined     = errors.New("user defined error")
 )
 
-type Commander string
-
-const (
-	// TestCommander indicates that the writer is test.
-	// This writer is dedicated for testing.
-	TestCommander Commander = "test"
-	// WebCommander indicates that the writer is web.
-	WebCommander Commander = "web"
-	// PipectlCommander indicates that the writer is pipectl.
-	PipectlCommander Commander = "pipectl"
-	// PipedCommander indicates that the writer is piped.
-	PipedCommander Commander = "piped"
-	// OpsCommander indicates that the writer is ops component.
-	OpsCommander Commander = "ops"
-)
-
-type Shard string
-
-const (
-	// ClientShard indicates that object will be stored in client (web or pipectl) used shard.
-	ClientShard Shard = "client"
-	// AgentShard indicates that object will be stored in agent (piped) used shard.
-	AgentShard Shard = "agent"
-	// OpsShard indicates that object will be stored in ops used shard.
-	OpsShard Shard = "ops"
-)
-
-type ShardStorable interface {
-	// ListInUsedShards returns a list of shard which be used to store object of current collection.
-	ListInUsedShards() []Shard
-	// GetUpdatableShard returns shard which should be referred to on Updating object of current collection.
-	// datastore.ErrUnsupported will be returned if there is no such file name exist.
-	GetUpdatableShard() (Shard, error)
-}
-
-type ShardEncoder interface {
-	// Encode accepts an object as its input and returns a map which key is the shard and
-	// value is the raw data which should be stored under the key shard.
-	Encode(e interface{}) (map[Shard][]byte, error)
-}
-
-type ShardDecoder interface {
-	// Decode unmarshals all given raw data parts to a given entity e.
-	Decode(e interface{}, parts map[Shard][]byte) error
-}
-
 type Factory func() interface{}
 type Updater func(interface{}) error
 

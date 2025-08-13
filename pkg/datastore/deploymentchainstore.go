@@ -16,7 +16,6 @@ package datastore
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -24,7 +23,6 @@ import (
 )
 
 type deploymentChainCollection struct {
-	requestedBy Commander
 }
 
 func (d *deploymentChainCollection) Kind() string {
@@ -35,38 +33,6 @@ func (d *deploymentChainCollection) Factory() Factory {
 	return func() interface{} {
 		return &model.DeploymentChain{}
 	}
-}
-
-func (d *deploymentChainCollection) ListInUsedShards() []Shard {
-	return []Shard{
-		OpsShard,
-	}
-}
-
-func (d *deploymentChainCollection) GetUpdatableShard() (Shard, error) {
-	switch d.requestedBy {
-	case OpsCommander:
-		return OpsShard, nil
-	default:
-		return "", ErrUnsupported
-	}
-}
-
-func (d *deploymentChainCollection) Encode(e interface{}) (map[Shard][]byte, error) {
-	const errFmt = "failed while encode DeploymentChain object: %s"
-
-	me, ok := e.(*model.DeploymentChain)
-	if !ok {
-		return nil, fmt.Errorf(errFmt, "type not matched")
-	}
-
-	data, err := json.Marshal(me)
-	if err != nil {
-		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
-	}
-	return map[Shard][]byte{
-		OpsShard: data,
-	}, nil
 }
 
 var (
@@ -143,18 +109,16 @@ type DeploymentChainStore interface {
 
 type deploymentChainStore struct {
 	backend
-	commander Commander
-	nowFunc   func() time.Time
+	nowFunc func() time.Time
 }
 
-func NewDeploymentChainStore(ds DataStore, c Commander) DeploymentChainStore {
+func NewDeploymentChainStore(ds DataStore) DeploymentChainStore {
 	return &deploymentChainStore{
 		backend: backend{
 			ds:  ds,
-			col: &deploymentChainCollection{requestedBy: c},
+			col: &deploymentChainCollection{},
 		},
-		commander: c,
-		nowFunc:   time.Now,
+		nowFunc: time.Now,
 	}
 }
 

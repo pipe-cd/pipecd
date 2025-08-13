@@ -6,7 +6,7 @@ import {
   TooltipComponent,
 } from "echarts/components";
 import { FC, useEffect, useMemo } from "react";
-import { Piped } from "~/modules/pipeds";
+import { Piped } from "pipecd/web/model/piped_pb";
 import { GaugeChart } from "echarts/charts";
 import { CanvasRenderer } from "echarts/renderers";
 import useEChartState from "~/hooks/useEChartState";

@@ -16,7 +16,6 @@ package datastore
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -24,7 +23,6 @@ import (
 )
 
 type applicationCollection struct {
-	requestedBy Commander
 }
 
 func (a *applicationCollection) Kind() string {
@@ -35,153 +33,6 @@ func (a *applicationCollection) Factory() Factory {
 	return func() interface{} {
 		return &model.Application{}
 	}
-}
-
-func (a *applicationCollection) ListInUsedShards() []Shard {
-	return []Shard{
-		ClientShard,
-		AgentShard,
-	}
-}
-
-func (a *applicationCollection) GetUpdatableShard() (Shard, error) {
-	switch a.requestedBy {
-	case WebCommander, PipectlCommander:
-		return ClientShard, nil
-	case PipedCommander:
-		return AgentShard, nil
-	default:
-		return "", ErrUnsupported
-	}
-}
-
-func (a *applicationCollection) Decode(e interface{}, parts map[Shard][]byte) error {
-	errFmt := "failed while decode Application object: %s"
-
-	if len(parts) != len(a.ListInUsedShards()) {
-		return fmt.Errorf(errFmt, "shards count not matched")
-	}
-
-	app, ok := e.(*model.Application)
-	if !ok {
-		return fmt.Errorf(errFmt, "type not matched")
-	}
-
-	var (
-		kind             model.ApplicationKind
-		name             string
-		pipedID          string
-		configFilename   string
-		platformProvider string
-		updatedAt        int64
-	)
-	for shard, p := range parts {
-		if err := json.Unmarshal(p, &app); err != nil {
-			return err
-		}
-		if updatedAt < app.UpdatedAt {
-			updatedAt = app.UpdatedAt
-		}
-		// Values of below fields from ClientShard have a higher priority:
-		// - PipedId
-		// - GitPath.ConfigFilename
-		// - PlatformProvider
-		if shard == ClientShard {
-			pipedID = app.PipedId
-			configFilename = app.GitPath.ConfigFilename
-			platformProvider = app.PlatformProvider
-		}
-		// Values of below fields from AgentShard have a higher priority:
-		// - Kind
-		// - Name
-		if shard == AgentShard {
-			kind = app.Kind
-			name = app.Name
-		}
-	}
-
-	app.Kind = kind
-	app.Name = name
-	app.PipedId = pipedID
-	app.PlatformProvider = platformProvider
-	app.GitPath.ConfigFilename = configFilename
-	app.UpdatedAt = updatedAt
-	return nil
-}
-
-func (a *applicationCollection) Encode(e interface{}) (map[Shard][]byte, error) {
-	const errFmt = "failed while encode Application object: %s"
-
-	me, ok := e.(*model.Application)
-	if !ok {
-		return nil, fmt.Errorf(errFmt, "type not matched")
-	}
-
-	// TODO: Find a way to generate function to build this kind of object by specifying a field tag in the proto file.
-	// For example:
-	// ```proto
-	// message Application {
-	//   // The generated unique identifier.
-	//   string id = 1 [(validate.rules).string.min_len = 1, shard=client];
-	// ```
-	clientShardStruct := model.Application{
-		// Fields which required in all shard for validation on update.
-		Id:        me.Id,
-		ProjectId: me.ProjectId,
-		CreatedAt: me.CreatedAt,
-		UpdatedAt: me.UpdatedAt,
-		// Fields which exist in both AgentShard and ClientShard but AgentShard has
-		// a higher priority since those fields can only be updated by PipedCommander.
-		Kind: me.Kind,
-		Name: me.Name,
-		// Fields which exist in both AgentShard and ClientShard but ClientShard has
-		// a higher priority since those fields can only be updated by WebCommander/PipectlCommander.
-		PipedId:          me.PipedId,
-		PlatformProvider: me.PlatformProvider,
-		// Note: Only GitPath.ConfigFilename is changeable.
-		GitPath: me.GitPath,
-		// Fields which exist only in ClientShard.
-		Disabled:  me.Disabled,
-		Deleted:   me.Deleted,
-		DeletedAt: me.DeletedAt,
-	}
-	cdata, err := json.Marshal(&clientShardStruct)
-	if err != nil {
-		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
-	}
-
-	agentShardStruct := model.Application{
-		// Fields which required in all shard for validation on update.
-		Id:        me.Id,
-		ProjectId: me.ProjectId,
-		CreatedAt: me.CreatedAt,
-		UpdatedAt: me.UpdatedAt,
-		// Fields which exist in both AgentShard and ClientShard but AgentShard has
-		// a higher priority since those fields can only be updated by PipedCommander.
-		Kind: me.Kind,
-		Name: me.Name,
-		// Fields which exist in both AgentShard and ClientShard but ClientShard has
-		// a higher priority since those fields can only be updated by WebCommander/PipectlCommander.
-		PipedId:          me.PipedId,
-		GitPath:          me.GitPath,
-		PlatformProvider: me.PlatformProvider,
-		// Fields which exist only in AgentShard.
-		Description:                      me.Description,
-		Labels:                           me.Labels,
-		SyncState:                        me.SyncState,
-		Deploying:                        me.Deploying,
-		MostRecentlySuccessfulDeployment: me.MostRecentlySuccessfulDeployment,
-		MostRecentlyTriggeredDeployment:  me.MostRecentlyTriggeredDeployment,
-	}
-	adata, err := json.Marshal(&agentShardStruct)
-	if err != nil {
-		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
-	}
-
-	return map[Shard][]byte{
-		ClientShard: cdata,
-		AgentShard:  adata,
-	}, nil
 }
 
 type ApplicationStore interface {
@@ -203,18 +54,16 @@ type ApplicationStore interface {
 
 type applicationStore struct {
 	backend
-	commander Commander
-	nowFunc   func() time.Time
+	nowFunc func() time.Time
 }
 
-func NewApplicationStore(ds DataStore, c Commander) ApplicationStore {
+func NewApplicationStore(ds DataStore) ApplicationStore {
 	return &applicationStore{
 		backend: backend{
 			ds:  ds,
-			col: &applicationCollection{requestedBy: c},
+			col: &applicationCollection{},
 		},
-		commander: c,
-		nowFunc:   time.Now,
+		nowFunc: time.Now,
 	}
 }
 

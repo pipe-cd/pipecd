@@ -16,7 +16,6 @@ package datastore
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -24,7 +23,6 @@ import (
 )
 
 type eventCollection struct {
-	requestedBy Commander
 }
 
 func (e *eventCollection) Kind() string {
@@ -37,38 +35,6 @@ func (e *eventCollection) Factory() Factory {
 	}
 }
 
-func (e *eventCollection) ListInUsedShards() []Shard {
-	return []Shard{
-		AgentShard,
-	}
-}
-
-func (e *eventCollection) GetUpdatableShard() (Shard, error) {
-	switch e.requestedBy {
-	case PipedCommander:
-		return AgentShard, nil
-	default:
-		return "", ErrUnsupported
-	}
-}
-
-func (e *eventCollection) Encode(entity interface{}) (map[Shard][]byte, error) {
-	const errFmt = "failed while encode Event object: %s"
-
-	me, ok := entity.(*model.Event)
-	if !ok {
-		return nil, fmt.Errorf(errFmt, "type not matched")
-	}
-
-	data, err := json.Marshal(me)
-	if err != nil {
-		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
-	}
-	return map[Shard][]byte{
-		AgentShard: data,
-	}, nil
-}
-
 type EventStore interface {
 	Add(ctx context.Context, e model.Event) error
 	List(ctx context.Context, opts ListOptions) ([]*model.Event, string, error)
@@ -77,18 +43,16 @@ type EventStore interface {
 
 type eventStore struct {
 	backend
-	commander Commander
-	nowFunc   func() time.Time
+	nowFunc func() time.Time
 }
 
-func NewEventStore(ds DataStore, c Commander) EventStore {
+func NewEventStore(ds DataStore) EventStore {
 	return &eventStore{
 		backend: backend{
 			ds:  ds,
-			col: &eventCollection{requestedBy: c},
+			col: &eventCollection{},
 		},
-		commander: c,
-		nowFunc:   time.Now,
+		nowFunc: time.Now,
 	}
 }
 

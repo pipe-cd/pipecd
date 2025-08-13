@@ -16,15 +16,12 @@ package datastore
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type projectCollection struct {
-	requestedBy Commander
 }
 
 func (p *projectCollection) Kind() string {
@@ -35,38 +32,6 @@ func (p *projectCollection) Factory() Factory {
 	return func() interface{} {
 		return &model.Project{}
 	}
-}
-
-func (p *projectCollection) ListInUsedShards() []Shard {
-	return []Shard{
-		ClientShard,
-	}
-}
-
-func (p *projectCollection) GetUpdatableShard() (Shard, error) {
-	switch p.requestedBy {
-	case WebCommander:
-		return ClientShard, nil
-	default:
-		return "", ErrUnsupported
-	}
-}
-
-func (p *projectCollection) Encode(e interface{}) (map[Shard][]byte, error) {
-	const errFmt = "failed while encode Project object: %s"
-
-	me, ok := e.(*model.Project)
-	if !ok {
-		return nil, fmt.Errorf(errFmt, "type not matched")
-	}
-
-	data, err := json.Marshal(me)
-	if err != nil {
-		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
-	}
-	return map[Shard][]byte{
-		ClientShard: data,
-	}, nil
 }
 
 type ProjectStore interface {
@@ -87,18 +52,16 @@ type ProjectStore interface {
 
 type projectStore struct {
 	backend
-	commander Commander
-	nowFunc   func() time.Time
+	nowFunc func() time.Time
 }
 
-func NewProjectStore(ds DataStore, c Commander) ProjectStore {
+func NewProjectStore(ds DataStore) ProjectStore {
 	return &projectStore{
 		backend: backend{
 			ds:  ds,
-			col: &projectCollection{requestedBy: c},
+			col: &projectCollection{},
 		},
-		commander: c,
-		nowFunc:   time.Now,
+		nowFunc: time.Now,
 	}
 }
 

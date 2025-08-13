@@ -16,15 +16,12 @@ package datastore
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type commandCollection struct {
-	requestedBy Commander
 }
 
 func (c *commandCollection) Kind() string {
@@ -37,90 +34,6 @@ func (c *commandCollection) Factory() Factory {
 	}
 }
 
-func (c *commandCollection) ListInUsedShards() []Shard {
-	return []Shard{
-		AgentShard,
-		OpsShard,
-	}
-}
-
-func (c *commandCollection) GetUpdatableShard() (Shard, error) {
-	switch c.requestedBy {
-	case PipedCommander:
-		return AgentShard, nil
-	case OpsCommander:
-		return OpsShard, nil
-	default:
-		return "", ErrUnsupported
-	}
-}
-
-func (c *commandCollection) Decode(e interface{}, parts map[Shard][]byte) error {
-	if len(parts) != len(c.ListInUsedShards()) {
-		return fmt.Errorf("failed while decode Command object: shards count not matched")
-	}
-
-	cmd, ok := e.(*model.Command)
-	if !ok {
-		return fmt.Errorf("failed while decode Command object: type not matched")
-	}
-
-	var (
-		status    model.CommandStatus
-		updatedAt int64
-	)
-	for _, p := range parts {
-		if err := json.Unmarshal(p, &cmd); err != nil {
-			return err
-		}
-		if updatedAt < cmd.UpdatedAt {
-			updatedAt = cmd.UpdatedAt
-		}
-		if status < cmd.Status {
-			status = cmd.Status
-		}
-	}
-
-	cmd.Status = status
-	cmd.UpdatedAt = updatedAt
-	return nil
-}
-
-func (c *commandCollection) Encode(e interface{}) (map[Shard][]byte, error) {
-	const errFmt = "failed while encode Command object: %s"
-
-	me, ok := e.(*model.Command)
-	if !ok {
-		return nil, fmt.Errorf(errFmt, "type not matched")
-	}
-
-	agentShardStruct := me
-	adata, err := json.Marshal(&agentShardStruct)
-	if err != nil {
-		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
-	}
-
-	opsShardStruct := model.Command{
-		// Required fields to pass validation on update.
-		Id:        me.Id,
-		PipedId:   me.PipedId,
-		CreatedAt: me.CreatedAt,
-		UpdatedAt: me.UpdatedAt,
-		// Fields which in both shards, but the higher value has
-		// a higher priority on merge.
-		Status: me.Status,
-	}
-	odata, err := json.Marshal(&opsShardStruct)
-	if err != nil {
-		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
-	}
-
-	return map[Shard][]byte{
-		AgentShard: adata,
-		OpsShard:   odata,
-	}, nil
-}
-
 type CommandStore interface {
 	Add(ctx context.Context, cmd *model.Command) error
 	Get(ctx context.Context, id string) (*model.Command, error)
@@ -130,18 +43,16 @@ type CommandStore interface {
 
 type commandStore struct {
 	backend
-	commander Commander
-	nowFunc   func() time.Time
+	nowFunc func() time.Time
 }
 
-func NewCommandStore(ds DataStore, c Commander) CommandStore {
+func NewCommandStore(ds DataStore) CommandStore {
 	return &commandStore{
 		backend: backend{
 			ds:  ds,
-			col: &commandCollection{requestedBy: c},
+			col: &commandCollection{},
 		},
-		commander: c,
-		nowFunc:   time.Now,
+		nowFunc: time.Now,
 	}
 }
 

@@ -16,7 +16,6 @@ package datastore
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -24,7 +23,6 @@ import (
 )
 
 type deploymentTraceCollection struct {
-	requestedBy Commander
 }
 
 func (d *deploymentTraceCollection) Kind() string {
@@ -37,38 +35,6 @@ func (d *deploymentTraceCollection) Factory() Factory {
 	}
 }
 
-func (d *deploymentTraceCollection) ListInUsedShards() []Shard {
-	return []Shard{
-		AgentShard,
-	}
-}
-
-func (d *deploymentTraceCollection) GetUpdatableShard() (Shard, error) {
-	switch d.requestedBy {
-	case PipedCommander:
-		return AgentShard, nil
-	default:
-		return "", ErrUnsupported
-	}
-}
-
-func (d *deploymentTraceCollection) Encode(entity interface{}) (map[Shard][]byte, error) {
-	const errFmt = "failed while encode Deployment Trace object: %s"
-
-	me, ok := entity.(*model.DeploymentTrace)
-	if !ok {
-		return nil, fmt.Errorf(errFmt, "type not matched")
-	}
-
-	data, err := json.Marshal(me)
-	if err != nil {
-		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
-	}
-	return map[Shard][]byte{
-		AgentShard: data,
-	}, nil
-}
-
 type DeploymentTraceStore interface {
 	Add(ctx context.Context, d model.DeploymentTrace) error
 	List(ctx context.Context, opts ListOptions) ([]*model.DeploymentTrace, string, error)
@@ -76,18 +42,16 @@ type DeploymentTraceStore interface {
 
 type deploymentTraceStore struct {
 	backend
-	commander Commander
-	nowFunc   func() time.Time
+	nowFunc func() time.Time
 }
 
-func NewDeploymentTraceStore(ds DataStore, c Commander) DeploymentTraceStore {
+func NewDeploymentTraceStore(ds DataStore) DeploymentTraceStore {
 	return &deploymentTraceStore{
 		backend: backend{
 			ds:  ds,
-			col: &deploymentTraceCollection{requestedBy: c},
+			col: &deploymentTraceCollection{},
 		},
-		commander: c,
-		nowFunc:   time.Now,
+		nowFunc: time.Now,
 	}
 }
 
