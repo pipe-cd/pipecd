@@ -1,0 +1,44 @@
+name: investigate-slow-build-for-tool-codegen
+
+on:
+  push:
+    branches:
+    - investigate-slow-response-of-ci-job-for-tool-codegen
+
+env:
+  GHCR: ghcr.io
+  IMAGE: codegen
+
+jobs:
+  tool:
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    permissions:
+      packages: write
+    strategy:
+      matrix:
+        runner:
+          - oracle-vm-8cpu-32gb-x86-64
+          - ubuntu-latest-8-cores
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+      - name: Determine version
+        run: echo "PIPECD_VERSION=$(git describe --tags --always --abbrev=7 --match 'v[0-9]*.*')" >> $GITHUB_ENV
+
+      # - uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v3.2.0
+
+      # - uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # v3.7.1
+
+      # # Building and pushing container images.
+      # - name: Build and push ${{ env.IMAGE }} image
+      #   uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 #v5.0.0
+      #   with:
+      #     context: tool/${{ env.IMAGE }}
+      #     tags: ${{ env.GHCR }}/pipe-cd/${{ env.IMAGE }}:${{ env.PIPECD_VERSION }}
+      #     platforms: linux/amd64,linux/arm64
+      #     push: false
+      #     # parameter to use inline cache. ref; https://docs.docker.com/build/ci/github-actions/cache/#inline-cache
+      #     cache-from: type=registry,ref=${{ env.GHCR }}/pipe-cd/${{ env.IMAGE }}:latest
+      #     cache-to: type=inline
