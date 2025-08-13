@@ -46,7 +46,7 @@ For the full list of available commands, please see the Makefile at the root of 
     Once all components are running up, use `kubectl port-forward` to expose the installed Control Plane on your localhost:
 
     ``` console
-    kubectl -n pipecd port-forward svc/pipecd 8080
+    kubectl -n pipecd port-forward svc/control-plane 8080
     ```
 
 4. Access to the local Control Plane web console

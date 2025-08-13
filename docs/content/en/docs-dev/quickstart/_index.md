@@ -32,7 +32,7 @@ $ kubectl apply -n pipecd -f https://raw.githubusercontent.com/pipe-cd/pipecd/ma
 The PipeCD control plane will be installed with a default project named `quickstart`. To access the PipeCD Control Plane UI, run the following command
 
 ```console
-$ kubectl port-forward -n pipecd svc/pipecd 8080
+$ kubectl port-forward -n pipecd svc/control-plane 8080
 ```
 
 You can access the PipeCD console at [http://localhost:8080?project=quickstart](http://localhost:8080?project=quickstart)

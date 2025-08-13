@@ -21,7 +21,7 @@ _If you want to know more about the plugin-arch piped internal, please read the 
 
 ## 1. Setup Control Plane
 
-1. Run a Control Plane that your piped will connect to. If you want to run a Control Plane locally, see [How to run Control Plane locally](https://github.com/pipe-cd/pipecd/blob/master/cmd/pipecd/README.md#how-to-run-control-plane-locally).
+1. Run a Control Plane that your piped will connect to. If you want to run a Control Plane locally, see [How to run Control Plane locally](https://github.com/pipe-cd/control-plane/blob/master/cmd/pipecd/README.md#how-to-run-control-plane-locally).
     - The Control Plane version must be v0.52.0 or later.
 
 2. Generate a new piped key/ID.
