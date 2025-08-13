@@ -188,7 +188,7 @@ Run `make stop/control-plane` to stop PipeCD Control Plane.
 
 #### Port Forward
 
-Run `kubectl port-forward -n pipecd svc/pipecd 8080` forward your local port to the `pipecd` pod port. 
+Run `kubectl port-forward -n pipecd svc/control-plane 8080` forward your local port to the `control-plane` pod port. 
 
 #### Access the PipeCD UI
 
