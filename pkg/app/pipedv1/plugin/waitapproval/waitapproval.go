@@ -22,7 +22,6 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/model"
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
@@ -59,8 +58,7 @@ func (p *plugin) checkApproval(ctx context.Context, in *sdk.ExecuteStageInput[st
 	for _, user := range existingApprovedUsers {
 		approvedUsersMap[user] = true
 	}
-	cmds := in.Client.ListStageCommands(ctx, model.Command_APPROVE_STAGE)
-	for cmd, err := range cmds {
+	for cmd, err := range in.Client.ListStageCommands(ctx, sdk.CommandTypeApproveStage) {
 		if err != nil {
 			in.Client.LogPersister().Errorf("Failed to list stage commands: %v", err)
 			return false, ""
@@ -102,8 +100,8 @@ func (p *plugin) checkApproval(ctx context.Context, in *sdk.ExecuteStageInput[st
 
 // getApprovedUsers gets the list of approved users.
 func (p *plugin) getApprovedUsers(ctx context.Context, in *sdk.ExecuteStageInput[struct{}]) []string {
-	val, err := in.Client.GetStageMetadata(ctx, sdk.MetadataKeyStageApprovedUsers)
-	if err != nil || val == "" {
+	val, exists, err := in.Client.GetStageMetadata(ctx, sdk.MetadataKeyStageApprovedUsers)
+	if err != nil || val == "" || !exists {
 		return []string{}
 	}
 	return strings.Split(val, ", ")
