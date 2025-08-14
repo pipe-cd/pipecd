@@ -1,4 +1,4 @@
-module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/cloudrun
+module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/cloudrunservice
 
 go 1.24.1
 

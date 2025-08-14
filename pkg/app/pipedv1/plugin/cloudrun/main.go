@@ -19,8 +19,8 @@ import (
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/cloudrun/deployment"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/cloudrun/livestate"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/cloudrunservice/deployment"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/cloudrunservice/livestate"
 )
 
 func main() {
