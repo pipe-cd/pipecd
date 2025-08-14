@@ -65,6 +65,9 @@ func (c *Kubectl) Apply(ctx context.Context, kubeconfig, namespace string, manif
 	args = append(args, "apply")
 	if annotation := manifest.body.GetAnnotations()[LabelServerSideApply]; annotation == UseServerSideApply {
 		args = append(args, "--server-side")
+		if fc := manifest.body.GetAnnotations()[LabelForceConflicts]; fc == UseForceConflicts {
+			args = append(args, "--force-conflicts")
+		}
 	}
 	args = append(args, "-f", "-")
 
