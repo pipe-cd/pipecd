@@ -251,6 +251,9 @@ func (c Client) ListStageCommands(ctx context.Context, commandTypes ...CommandTy
 		for _, cmdType := range commandTypes {
 			modelType, err := cmdType.toModelEnum()
 			if err != nil {
+				if !yield(nil, err) {
+					return
+				}
 				continue
 			}
 			modelCommandTypes = append(modelCommandTypes, modelType)
