@@ -30,7 +30,7 @@ build/go: BUILD_ENV ?= GOOS=$(BUILD_OS) GOARCH=$(BUILD_ARCH) CGO_ENABLED=0
 build/go: BIN_SUFFIX ?=
 build/go:
 ifndef MOD
-	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/control-plane$(BIN_SUFFIX) ./cmd/control-plane
+	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipecd$(BIN_SUFFIX) ./cmd/pipecd
 	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/piped$(BIN_SUFFIX) ./cmd/piped
 	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/launcher$(BIN_SUFFIX) ./cmd/launcher
 	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipectl$(BIN_SUFFIX) ./cmd/pipectl
@@ -142,39 +142,39 @@ test/integration:
 
 # Run commands
 
-.PHONY: run/control-plane
-run/control-plane: $(eval TIMESTAMP = $(shell date +%s))
+.PHONY: run/pipecd
+run/pipecd: $(eval TIMESTAMP = $(shell date +%s))
 # NOTE: previously `git describe --tags` was used to determine the version for running locally
 # However, this does not work on a forked branch, so the decision was made to hardcode at version 0.0.0
 # see: https://github.com/pipe-cd/pipecd/issues/4845
-run/control-plane: BUILD_VERSION ?= "v0.0.0-$(shell git rev-parse --short HEAD)-$(TIMESTAMP)"
-run/control-plane: BUILD_COMMIT ?= $(shell git rev-parse HEAD)
-run/control-plane: BUILD_DATE ?= $(shell date -u '+%Y%m%d-%H%M%S')
-run/control-plane: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
-run/control-plane: BUILD_OPTS ?= -ldflags "$(BUILD_LDFLAGS_PREFIX).version=$(BUILD_VERSION) $(BUILD_LDFLAGS_PREFIX).gitCommit=$(BUILD_COMMIT) $(BUILD_LDFLAGS_PREFIX).buildDate=$(BUILD_DATE) -w"
-run/control-plane: CONTROL_PLANE_VALUES ?= ./quickstart/control-plane-values.yaml
-run/control-plane:
+run/pipecd: BUILD_VERSION ?= "v0.0.0-$(shell git rev-parse --short HEAD)-$(TIMESTAMP)"
+run/pipecd: BUILD_COMMIT ?= $(shell git rev-parse HEAD)
+run/pipecd: BUILD_DATE ?= $(shell date -u '+%Y%m%d-%H%M%S')
+run/pipecd: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
+run/pipecd: BUILD_OPTS ?= -ldflags "$(BUILD_LDFLAGS_PREFIX).version=$(BUILD_VERSION) $(BUILD_LDFLAGS_PREFIX).gitCommit=$(BUILD_COMMIT) $(BUILD_LDFLAGS_PREFIX).buildDate=$(BUILD_DATE) -w"
+run/pipecd: CONTROL_PLANE_VALUES ?= ./quickstart/control-plane-values.yaml
+run/pipecd:
 	@echo "Building go binary of Control Plane..."
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 $(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/control-plane ./cmd/control-plane
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 $(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipecd ./cmd/pipecd
 
 	@echo "Building web static files..."
 	yarn --cwd web build
 
 	@echo "Building docker image and pushing it to local registry..."
-	docker build -f cmd/control-plane/Dockerfile -t localhost:5001/control-plane:$(BUILD_VERSION) .
-	docker push localhost:5001/control-plane:$(BUILD_VERSION)
+	docker build -f cmd/pipecd/Dockerfile -t localhost:5001/pipecd:$(BUILD_VERSION) .
+	docker push localhost:5001/pipecd:$(BUILD_VERSION)
 
 	@echo "Installing Control Plane in kind..."
 	mkdir -p .artifacts
 	helm package manifests/control-plane --version $(BUILD_VERSION) --app-version $(BUILD_VERSION) --dependency-update --destination .artifacts
 	helm -n pipecd upgrade --install control-plane .artifacts/control-plane-$(BUILD_VERSION).tgz --create-namespace \
-		--set server.image.repository=localhost:5001/control-plane \
-		--set ops.image.repository=localhost:5001/control-plane \
+		--set server.image.repository=localhost:5001/pipecd \
+		--set ops.image.repository=localhost:5001/pipecd \
 		--values $(CONTROL_PLANE_VALUES)
 
-.PHONY: stop/control-plane
-stop/control-plane:
-	helm -n pipecd uninstall control-plane
+.PHONY: stop/pipecd
+stop/pipecd:
+	helm -n pipecd uninstall pipecd
 
 .PHONY: run/piped
 run/piped: CONFIG_FILE ?=
