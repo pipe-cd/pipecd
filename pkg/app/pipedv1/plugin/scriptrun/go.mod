@@ -1,6 +1,6 @@
 module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/scriptrun
 
-go 1.24.1
+go 1.25.0
 
 require (
 	github.com/creasty/defaults v1.6.0

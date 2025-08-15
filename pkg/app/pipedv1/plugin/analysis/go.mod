@@ -1,6 +1,6 @@
 module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis
 
-go 1.24.1
+go 1.25.0
 
 require (
 	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250728033142-7a6a214b39f7
