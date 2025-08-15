@@ -2,7 +2,7 @@
 apiVersion: cloud.google.com/v1beta1
 kind: BackendConfig
 metadata:
-  name: {{ include "pipecd.fullname" . }}
+  name: {{ include "controlPlane.fullname" . }}
 spec:
   iap:
     enabled: {{ .Values.backendConfig.iap.enabled }}
@@ -15,7 +15,7 @@ spec:
 apiVersion: cloud.google.com/v1beta1
 kind: BackendConfig
 metadata:
-  name: {{ include "pipecd.fullname" . }}-grafana
+  name: {{ include "controlPlane.fullname" . }}-grafana
 spec:
   iap:
     enabled: {{ .Values.monitoring.backendConfig.iap.enabled }}
