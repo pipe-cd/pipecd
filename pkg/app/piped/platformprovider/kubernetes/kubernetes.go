@@ -40,6 +40,4 @@ const (
 	IgnoreDriftDetectionTrue = "true"
 	UseReplaceEnabled        = "enabled"
 	UseServerSideApply       = "true"
-
-	kustomizationFileName = "kustomization.yaml"
 )
