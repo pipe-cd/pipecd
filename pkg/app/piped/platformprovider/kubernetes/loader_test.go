@@ -24,6 +24,8 @@ import (
 )
 
 func TestSortManifests(t *testing.T) {
+	t.Parallel()
+
 	maker := func(name string, annotations map[string]string) Manifest {
 		m := Manifest{
 			Key: ResourceKey{Name: name},
@@ -73,6 +75,8 @@ func TestSortManifests(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			sortManifests(tc.manifests)
 			assert.Equal(t, tc.want, tc.manifests)
 		})
@@ -80,6 +84,8 @@ func TestSortManifests(t *testing.T) {
 }
 
 func TestDetermineTemplatingMethod(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name       string
 		input      config.KubernetesDeploymentInput
@@ -109,6 +115,8 @@ func TestDetermineTemplatingMethod(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := determineTemplatingMethod(tc.input, tc.appDirPath)
 			if got != tc.want {
 				t.Errorf("determineTemplatingMethod() = %v, want %v", got, tc.want)
