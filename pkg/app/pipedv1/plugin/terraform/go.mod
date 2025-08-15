@@ -1,6 +1,6 @@
 module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform
 
-go 1.24.2
+go 1.25.0
 
 require (
 	github.com/hashicorp/hcl/v2 v2.0.0

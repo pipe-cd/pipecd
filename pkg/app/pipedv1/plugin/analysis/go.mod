@@ -1,6 +1,6 @@
 module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis
 
-go 1.24.1
+go 1.25.0
 
 require (
 	github.com/DataDog/datadog-api-client-go v1.0.0-beta.16
