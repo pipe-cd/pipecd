@@ -19,9 +19,13 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
+	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
 func TestSortManifests(t *testing.T) {
+	t.Parallel()
+
 	maker := func(name string, annotations map[string]string) Manifest {
 		m := Manifest{
 			Key: ResourceKey{Name: name},
@@ -71,8 +75,52 @@ func TestSortManifests(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			sortManifests(tc.manifests)
 			assert.Equal(t, tc.want, tc.manifests)
+		})
+	}
+}
+
+func TestDetermineTemplatingMethod(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name       string
+		input      config.KubernetesDeploymentInput
+		appDirPath string
+		want       TemplatingMethod
+	}{
+		{
+			name: "should return helm when helm chart is configured",
+			input: config.KubernetesDeploymentInput{
+				HelmChart: &config.InputHelmChart{},
+			},
+			want: TemplatingMethodHelm,
+		},
+		{
+			name:       "should return kustomize when kustomization file exists",
+			input:      config.KubernetesDeploymentInput{},
+			appDirPath: "testdata/testkustomize",
+			want:       TemplatingMethodKustomize,
+		},
+		{
+			name:       "should return none when no templating method is detected",
+			input:      config.KubernetesDeploymentInput{},
+			appDirPath: "testdata/none",
+			want:       TemplatingMethodNone,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := determineTemplatingMethod(tc.input, tc.appDirPath)
+			if got != tc.want {
+				t.Errorf("determineTemplatingMethod() = %v, want %v", got, tc.want)
+			}
 		})
 	}
 }
