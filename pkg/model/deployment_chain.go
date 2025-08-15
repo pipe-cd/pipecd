@@ -101,10 +101,6 @@ func (dc *DeploymentChain) ListAllInChainApplications() []*ChainApplicationRef {
 	return applications
 }
 
-func (dc *DeploymentChain) SetUpdatedAt(t int64) {
-	dc.UpdatedAt = t
-}
-
 func (b *ChainBlock) IsCompleted() bool {
 	switch b.Status {
 	case ChainBlockStatus_DEPLOYMENT_BLOCK_SUCCESS,

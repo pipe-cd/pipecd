@@ -46,10 +46,6 @@ func (e *Event) ContainLabels(labels map[string]string) bool {
 	return true
 }
 
-func (e *Event) SetUpdatedAt(t int64) {
-	e.UpdatedAt = t
-}
-
 // MakeEventKey builds a fixed-length identifier based on the given name
 // and labels. It returns the exact same string as long as both are the same.
 func MakeEventKey(name string, labels map[string]string) string {

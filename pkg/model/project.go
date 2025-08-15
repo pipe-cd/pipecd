@@ -177,10 +177,6 @@ func (p *Project) RedactSensitiveData() {
 	}
 }
 
-func (p *Project) SetUpdatedAt(t int64) {
-	p.UpdatedAt = t
-}
-
 // RedactSensitiveData redacts sensitive data.
 func (p *ProjectStaticUser) RedactSensitiveData() {
 	p.PasswordHash = redactedMessage
