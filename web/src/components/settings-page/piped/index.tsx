@@ -47,6 +47,7 @@ import { useAddNewPipedKey } from "~/queries/pipeds/use-add-new-piped-key";
 import { useDisablePiped } from "~/queries/pipeds/use-disable-piped";
 import { useEnablePiped } from "~/queries/pipeds/use-enable-piped";
 import { useRestartPiped } from "~/queries/pipeds/use-restart-piped";
+import BreakingChangeNotes from "./components/breaking-change";
 
 const OLD_KEY_ALERT_MESSAGE =
   "The old key is still there.\nDo not forget to delete it once you update your Piped to use this new key.";
@@ -170,6 +171,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
 
   return (
     <>
+      <BreakingChangeNotes notes={breakingChangesNote} />
       <Toolbar variant="dense">
         <Button
           color="primary"
