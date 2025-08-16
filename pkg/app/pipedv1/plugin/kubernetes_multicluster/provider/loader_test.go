@@ -465,3 +465,213 @@ metadata:
 		})
 	}
 }
+
+func TestLoader_DetermineTemplatingMethod(t *testing.T) {
+	t.Parallel()
+
+	loader := &Loader{}
+
+	tests := []struct {
+		name     string
+		input    LoaderInput
+		expected TemplatingMethod
+	}{
+		{
+			name: "helm chart takes precedence",
+			input: LoaderInput{
+				AppDir:    "testdata/testkustomize", // Has kustomization.yaml
+				HelmChart: &config.InputHelmChart{Path: "testchart"},
+			},
+			expected: TemplatingMethodHelm,
+		},
+		{
+			name: "kustomization.yaml exists",
+			input: LoaderInput{
+				AppDir: "testdata/testkustomize",
+			},
+			expected: TemplatingMethodKustomize,
+		},
+		{
+			name: "kustomization.yml exists",
+			input: func() LoaderInput {
+				dir := t.TempDir()
+				kustomizationFile := filepath.Join(dir, "kustomization.yml")
+				content := `
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- deployment.yaml
+`
+				require.NoError(t, os.WriteFile(kustomizationFile, []byte(content), 0644))
+				return LoaderInput{
+					AppDir: dir,
+				}
+			}(),
+			expected: TemplatingMethodKustomize,
+		},
+		{
+			name: "Kustomization file exists",
+			input: func() LoaderInput {
+				dir := t.TempDir()
+				kustomizationFile := filepath.Join(dir, "Kustomization")
+				content := `
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- deployment.yaml
+`
+				require.NoError(t, os.WriteFile(kustomizationFile, []byte(content), 0644))
+				return LoaderInput{
+					AppDir: dir,
+				}
+			}(),
+			expected: TemplatingMethodKustomize,
+		},
+		{
+			name: "no templating method - empty directory",
+			input: func() LoaderInput {
+				dir := t.TempDir()
+				return LoaderInput{
+					AppDir: dir,
+				}
+			}(),
+			expected: TemplatingMethodNone,
+		},
+		{
+			name: "no templating method - directory with other files",
+			input: func() LoaderInput {
+				dir := t.TempDir()
+				// Create a regular yaml file that's not a kustomization file
+				regularFile := filepath.Join(dir, "deployment.yaml")
+				content := `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment
+`
+				require.NoError(t, os.WriteFile(regularFile, []byte(content), 0644))
+				return LoaderInput{
+					AppDir: dir,
+				}
+			}(),
+			expected: TemplatingMethodNone,
+		},
+		{
+			name: "helm chart only",
+			input: LoaderInput{
+				AppDir:    t.TempDir(),
+				HelmChart: &config.InputHelmChart{Path: "testchart"},
+			},
+			expected: TemplatingMethodHelm,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			result := loader.determineTemplatingMethod(tt.input)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestIsKustomizationFileExists(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		setupDir func(t *testing.T) string
+		expected bool
+	}{
+		{
+			name: "kustomization.yaml exists",
+			setupDir: func(t *testing.T) string {
+				dir := t.TempDir()
+				kustomizationFile := filepath.Join(dir, "kustomization.yaml")
+				content := `
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- deployment.yaml
+`
+				require.NoError(t, os.WriteFile(kustomizationFile, []byte(content), 0644))
+				return dir
+			},
+			expected: true,
+		},
+		{
+			name: "kustomization.yml exists",
+			setupDir: func(t *testing.T) string {
+				dir := t.TempDir()
+				kustomizationFile := filepath.Join(dir, "kustomization.yml")
+				content := `
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- deployment.yaml
+`
+				require.NoError(t, os.WriteFile(kustomizationFile, []byte(content), 0644))
+				return dir
+			},
+			expected: true,
+		},
+		{
+			name: "Kustomization file exists",
+			setupDir: func(t *testing.T) string {
+				dir := t.TempDir()
+				kustomizationFile := filepath.Join(dir, "Kustomization")
+				content := `
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- deployment.yaml
+`
+				require.NoError(t, os.WriteFile(kustomizationFile, []byte(content), 0644))
+				return dir
+			},
+			expected: true,
+		},
+		{
+			name: "no kustomization file exists",
+			setupDir: func(t *testing.T) string {
+				dir := t.TempDir()
+				// Create a regular yaml file
+				regularFile := filepath.Join(dir, "deployment.yaml")
+				content := `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment
+`
+				require.NoError(t, os.WriteFile(regularFile, []byte(content), 0644))
+				return dir
+			},
+			expected: false,
+		},
+		{
+			name: "empty directory",
+			setupDir: func(t *testing.T) string {
+				return t.TempDir()
+			},
+			expected: false,
+		},
+		{
+			name: "directory does not exist",
+			setupDir: func(t *testing.T) string {
+				return "/non/existent/directory"
+			},
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			dir := tt.setupDir(t)
+			result := isKustomizationFileExists(dir)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
