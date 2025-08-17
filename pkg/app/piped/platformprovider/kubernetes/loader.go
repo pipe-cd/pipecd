@@ -221,8 +221,27 @@ func determineTemplatingMethod(input config.KubernetesDeploymentInput, appDirPat
 	if input.HelmChart != nil {
 		return TemplatingMethodHelm
 	}
-	if _, err := os.Stat(filepath.Join(appDirPath, kustomizationFileName)); err == nil {
+	if isKustomizationFileExists(appDirPath) {
 		return TemplatingMethodKustomize
 	}
 	return TemplatingMethodNone
+}
+
+// isKustomizationFileExists checks if a kustomization file exists in the given directory.
+// There are 3 files name considered as kustomization file:
+// - kustomization.yaml
+// - kustomization.yml
+// - Kustomization
+func isKustomizationFileExists(appDirPath string) bool {
+	recognizedKustomizationFileNames := []string{
+		"kustomization.yaml",
+		"kustomization.yml",
+		"Kustomization",
+	}
+	for _, fileName := range recognizedKustomizationFileNames {
+		if _, err := os.Stat(filepath.Join(appDirPath, fileName)); err == nil {
+			return true
+		}
+	}
+	return false
 }

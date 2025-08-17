@@ -29,6 +29,8 @@ import (
 const (
 	stageScriptRun         = "SCRIPT_RUN"
 	stageScriptRunRollback = "SCRIPT_RUN_ROLLBACK"
+	metadataKeyPrefix      = "started-"
+	nonEmptyValue          = "_"
 )
 
 type ContextInfo struct {
@@ -81,19 +83,26 @@ func (p *plugin) ExecuteStage(ctx context.Context, _ sdk.ConfigNone, _ sdk.Deplo
 	switch input.Request.StageName {
 	case stageScriptRun:
 		return &sdk.ExecuteStageResponse{
-			Status: executeScriptRun(ctx, input.Request, input.Client.LogPersister()),
+			Status: executeScriptRun(ctx, input.Request, input.Client.LogPersister(), input.Client),
 		}, nil
 	case stageScriptRunRollback:
-		panic("unimplemented")
+		return &sdk.ExecuteStageResponse{
+			Status: executeRollback(ctx, input.Request, input.Client.LogPersister(), input.Client),
+		}, nil
 	}
 	return nil, fmt.Errorf("unsupported stage %s", input.Request.StageName)
 }
 
-func executeScriptRun(ctx context.Context, request sdk.ExecuteStageRequest[struct{}], lp sdk.StageLogPersister) sdk.StageStatus {
+func executeScriptRun(ctx context.Context, request sdk.ExecuteStageRequest[struct{}], lp sdk.StageLogPersister, metadataStore deploymentMetadataStore) sdk.StageStatus {
 	lp.Infof("Start executing the script run stage")
 	opts, err := decode(request.StageConfig)
 	if err != nil {
 		lp.Errorf("failed to decode the stage config: %v", err)
+		return sdk.StageStatusFailure
+	}
+	// need to store the index of which stage that's already run so only their respective rollback stages are triggered
+	if err = metadataStore.PutDeploymentPluginMetadata(ctx, metadataKeyPrefix+strconv.Itoa(request.StageIndex), nonEmptyValue); err != nil {
+		lp.Errorf("failed to put metadata to mark the stage as started: %v", err)
 		return sdk.StageStatusFailure
 	}
 	if opts.Run == "" {
@@ -101,7 +110,40 @@ func executeScriptRun(ctx context.Context, request sdk.ExecuteStageRequest[struc
 	}
 	c := make(chan sdk.StageStatus, 1)
 	go func() {
-		c <- executeCommand(opts, request, lp)
+		c <- executeCommand(opts.Run, opts.Env, request, lp)
+	}()
+	select {
+	case result := <-c:
+		return result
+	case <-ctx.Done():
+		lp.Info("ScriptRun cancelled")
+		// We can return any status here because the piped handles this case as cancelled by a user,
+		// ignoring the result from a plugin.
+		return sdk.StageStatusFailure
+	}
+}
+func executeRollback(ctx context.Context, request sdk.ExecuteStageRequest[struct{}], lp sdk.StageLogPersister, metadataStore deploymentMetadataStore) sdk.StageStatus {
+	lp.Infof("Start executing the script run rollback stage")
+	opts, err := decode(request.StageConfig)
+	if err != nil {
+		lp.Errorf("failed to decode the stage config: %v", err)
+		return sdk.StageStatusFailure
+	}
+	_, found, err := metadataStore.GetDeploymentPluginMetadata(ctx, metadataKeyPrefix+strconv.Itoa(request.StageIndex))
+	if err != nil {
+		lp.Errorf("failed to retrieve stage run status metadata: %v", err)
+		return sdk.StageStatusFailure
+	}
+	if !found {
+		lp.Infof("skip this rollback stage because the SCRIPT_RUN stage of index %d has not run", request.StageIndex)
+		return sdk.StageStatusSuccess
+	}
+	if opts.OnRollback == "" {
+		return sdk.StageStatusSuccess
+	}
+	c := make(chan sdk.StageStatus, 1)
+	go func() {
+		c <- executeCommand(opts.OnRollback, opts.Env, request, lp)
 	}()
 	select {
 	case result := <-c:
@@ -116,10 +158,9 @@ func executeScriptRun(ctx context.Context, request sdk.ExecuteStageRequest[struc
 func (p *plugin) FetchDefinedStages() []string {
 	return []string{stageScriptRun, stageScriptRunRollback}
 }
-
-func executeCommand(opts scriptRunStageOptions, request sdk.ExecuteStageRequest[struct{}], lp sdk.StageLogPersister) sdk.StageStatus {
+func executeCommand(commands string, customEnv map[string]string, request sdk.ExecuteStageRequest[struct{}], lp sdk.StageLogPersister) sdk.StageStatus {
 	lp.Infof("Running commands...")
-	for _, v := range strings.Split(opts.Run, "\n") {
+	for _, v := range strings.Split(commands, "\n") {
 		if v != "" {
 			lp.Infof("   %s", v)
 		}
@@ -141,16 +182,16 @@ func executeCommand(opts scriptRunStageOptions, request sdk.ExecuteStageRequest[
 		lp.Errorf("failed to encode the stage config: %v", err)
 		return sdk.StageStatusFailure
 	}
-	envs := make([]string, 0, len(ciEnv)+len(opts.Env))
+	envs := make([]string, 0, len(ciEnv)+len(customEnv))
 	for key, value := range ciEnv {
 		envs = append(envs, key+"="+value)
 	}
 
-	for key, value := range opts.Env {
+	for key, value := range customEnv {
 		envs = append(envs, key+"="+value)
 	}
 
-	cmd := exec.Command("/bin/sh", "-l", "-c", opts.Run)
+	cmd := exec.Command("/bin/sh", "-l", "-c", commands)
 	cmd.Env = append(os.Environ(), envs...)
 	cmd.Dir = request.TargetDeploymentSource.ApplicationDirectory
 	cmd.Stdout = lp
@@ -185,4 +226,9 @@ func (ci *ContextInfo) buildEnv() (map[string]string, error) {
 		envs[eName] = v
 	}
 	return envs, nil
+}
+
+type deploymentMetadataStore interface {
+	GetDeploymentPluginMetadata(ctx context.Context, key string) (string, bool, error)
+	PutDeploymentPluginMetadata(ctx context.Context, key string, value string) error
 }

@@ -34,19 +34,14 @@ import {
   UI_TEXT_RESTART,
   UI_TEXT_CANCEL,
 } from "~/constants/ui-text";
-import { useAppDispatch, useAppSelector } from "~/hooks/redux";
-import {
-  addNewPipedKey,
-  deleteOldKey,
-  fetchPipeds,
-  Piped,
-  selectPipedById,
-} from "~/modules/pipeds";
-import { addToast } from "~/modules/toasts";
+import { Piped } from "pipecd/web/model/piped_pb";
+import { useToast } from "~/contexts/toast-context";
+import { useDeleteOldPipedKey } from "~/queries/pipeds/use-delete-old-piped-key";
 
 interface Props {
-  pipedId: string;
-  onEdit: (id: string) => void;
+  piped: Piped.AsObject;
+  onEdit: (piped: Piped.AsObject) => void;
+  onAddNewKey: (piped: Piped.AsObject) => void;
   onDisable: (id: string) => void;
   onEnable: (id: string) => void;
   onRestart: (id: string) => void;
@@ -55,19 +50,22 @@ interface Props {
 const ITEM_HEIGHT = 48;
 
 export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
-  pipedId,
+  piped,
   onEnable,
   onDisable,
   onEdit,
   onRestart,
+  onAddNewKey,
 }) {
-  const piped = useAppSelector(selectPipedById(pipedId));
-  const dispatch = useAppDispatch();
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const hasOldKey = piped ? piped.keysList.length > 1 : false;
   const [openOldKeyAlert, setOpenOldKeyAlert] = useState(false);
   const [openConfigAlert, setOpenConfigAlert] = useState(false);
   const [openConfirmAddKey, setOpenConfirmAddKey] = useState(false);
+
+  const { addToast } = useToast();
+
+  const { mutateAsync: deleteOldPipedKey } = useDeleteOldPipedKey();
 
   const handleMenuOpen = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -87,8 +85,8 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
 
   const handleEdit = useCallback(() => {
     setAnchorEl(null);
-    onEdit(pipedId);
-  }, [pipedId, onEdit]);
+    onEdit(piped);
+  }, [piped, onEdit]);
 
   const handleAddNewKey = useCallback(() => {
     setAnchorEl(null);
@@ -101,8 +99,8 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
 
   const handleConfirmAddKey = useCallback(() => {
     setOpenConfirmAddKey(false);
-    dispatch(addNewPipedKey({ pipedId }));
-  }, [dispatch, pipedId]);
+    onAddNewKey(piped);
+  }, [onAddNewKey, piped]);
 
   const handleCancelAddKey = useCallback(() => {
     setOpenConfirmAddKey(false);
@@ -110,16 +108,13 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
 
   const handleDeleteOldKey = useCallback(() => {
     setAnchorEl(null);
-    dispatch(deleteOldKey({ pipedId })).then(() => {
-      dispatch(fetchPipeds(true));
-      dispatch(
-        addToast({
-          message: DELETE_OLD_PIPED_KEY_SUCCESS,
-          severity: "success",
-        })
-      );
+    deleteOldPipedKey({ pipedId: piped.id }).then(() => {
+      addToast({
+        message: DELETE_OLD_PIPED_KEY_SUCCESS,
+        severity: "success",
+      });
     });
-  }, [pipedId, dispatch]);
+  }, [addToast, deleteOldPipedKey, piped.id]);
 
   const handleOpenPipedConfig = useCallback(() => {
     setAnchorEl(null);
@@ -128,18 +123,18 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
 
   const handleEnable = useCallback(() => {
     setAnchorEl(null);
-    onEnable(pipedId);
-  }, [pipedId, onEnable]);
+    onEnable(piped.id);
+  }, [piped.id, onEnable]);
 
   const handleDisable = useCallback(() => {
     setAnchorEl(null);
-    onDisable(pipedId);
-  }, [pipedId, onDisable]);
+    onDisable(piped.id);
+  }, [piped.id, onDisable]);
 
   const handleRestart = useCallback(() => {
     setAnchorEl(null);
-    onRestart(pipedId);
-  }, [pipedId, onRestart]);
+    onRestart(piped.id);
+  }, [piped.id, onRestart]);
 
   if (!piped) {
     return null;

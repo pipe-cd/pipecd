@@ -1,0 +1,18 @@
+apiVersion: pipecd.dev/v1beta1
+kind: Application
+spec:
+  name: istio-crds
+  description: Install Istio CRDs for testing
+  plugins:
+    kubernetes:
+      input:
+        autoCreateNamespace: true
+        namespace: istio-system
+        kubectlVersion: 1.32.2
+        kustomizeVersion: 5.6.0
+        helmVersion: 3.17.0
+        kustomizeOptions:
+          enable-helm: ""
+  pipeline:
+    stages:
+      - name: K8S_SYNC

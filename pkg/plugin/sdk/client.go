@@ -243,9 +243,21 @@ func (c *Client) ToolRegistry() *toolregistry.ToolRegistry {
 }
 
 // ListStageCommands returns the list of stage commands of the given command types.
-func (c Client) ListStageCommands(ctx context.Context, commandTypes ...model.Command_Type) iter.Seq2[*StageCommand, error] {
+func (c Client) ListStageCommands(ctx context.Context, commandTypes ...CommandType) iter.Seq2[*StageCommand, error] {
 	return func(yield func(*StageCommand, error) bool) {
 		returned := map[string]struct{}{}
+
+		modelCommandTypes := make([]model.Command_Type, 0, len(commandTypes))
+		for _, cmdType := range commandTypes {
+			modelType, err := cmdType.toModelEnum()
+			if err != nil {
+				if !yield(nil, err) {
+					return
+				}
+				continue
+			}
+			modelCommandTypes = append(modelCommandTypes, modelType)
+		}
 
 		for {
 			resp, err := c.base.ListStageCommands(ctx, &pipedservice.ListStageCommandsRequest{
@@ -260,7 +272,7 @@ func (c Client) ListStageCommands(ctx context.Context, commandTypes ...model.Com
 			}
 
 			for _, command := range resp.Commands {
-				if !slices.Contains(commandTypes, command.Type) {
+				if !slices.Contains(modelCommandTypes, command.Type) {
 					continue
 				}
 
