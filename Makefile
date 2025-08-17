@@ -292,6 +292,7 @@ kind-up:
 .PHONY: kind-down
 kind-down:
 	kind delete cluster --name pipecd
+	docker container rm -f kind-registry 2>/dev/null
 
 .PHONY: setup-envtest
 # Where to install the setup-envtest binary
