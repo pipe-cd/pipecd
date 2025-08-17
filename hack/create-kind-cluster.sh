@@ -58,8 +58,9 @@ containerdConfigPatches:
 EOF
 
 # Connect the registry to the cluster network
-# (the network may already be connected)
-docker network connect "kind" "${REG_NAME}" || true
+if [ "$(docker inspect -f='{{json .NetworkSettings.Networks.kind}}' "${REG_NAME}")" = 'null' ]; then
+  docker network connect "kind" "${REG_NAME}"
+fi
 
 # Create containerd config files in cluster
 NODE=$(kind get nodes --name ${CLUSTER})
