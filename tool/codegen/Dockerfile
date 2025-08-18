@@ -1,5 +1,5 @@
 # Builder image to build go program.
-FROM golang:1.24.3 AS builder
+FROM golang:1.25.0 AS builder
 
 COPY protoc-gen-auth /protoc-gen-auth
 RUN cd /protoc-gen-auth \
@@ -7,7 +7,7 @@ RUN cd /protoc-gen-auth \
   && chmod +x /usr/local/bin/protoc-gen-auth
 
 # Codegen image which is actually being used.
-FROM golang:1.24.3
+FROM golang:1.25.0
 
 # This is version of protobuf installed in the image.
 # See https://pkgs.alpinelinux.org/packages?name=protobuf&branch=v3.16
@@ -17,7 +17,7 @@ ENV PROTOC_GEN_GO_VER=1.27.1
 ENV PROTOC_GEN_GRPC_WEB_VER=1.3.1
 ENV PROTOC_GEN_GO_GRPC_VER=1.2.0
 ENV PROTOC_GEN_VALIDATE_VER=0.6.6
-ENV GOMOCK_VER=0.5.0
+ENV GOMOCK_VER=0.6.0
 
 # dependecies and protoc
 RUN apt update && apt install -y protobuf-compiler
