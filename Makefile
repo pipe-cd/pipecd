@@ -287,11 +287,11 @@ release/docs:
 
 .PHONY: kind-up
 kind-up:
-	./hack/create-kind-cluster.sh pipecd
+	./hack/create-kind-cluster.sh pipecd up
 
 .PHONY: kind-down
 kind-down:
-	kind delete cluster --name pipecd
+	./hack/create-kind-cluster.sh pipecd down
 
 .PHONY: setup-envtest
 # Where to install the setup-envtest binary

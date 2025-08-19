@@ -33,8 +33,22 @@ set -o nounset
 set -o pipefail
 
 CLUSTER=$1
+ACTION=$2
 REG_NAME='kind-registry'
 REG_PORT='5001'
+
+# Delete the cluster and the registry
+if [ "$ACTION" = "down" ]; then
+  kind delete cluster --name ${CLUSTER}
+  docker rm -f $REG_NAME 2>/dev/null
+  exit 0
+fi
+
+# Exit if the action is not valid
+if [ "$ACTION" != "up" ]; then
+  echo "Invalid mode: $ACTION"
+  exit 1
+fi
 
 # Create registry container unless it already exists
 echo "Creating local registry container..."
