@@ -40,7 +40,3 @@ func (c *Command) IsChainSyncApplicationCmd() bool {
 func (c *Command) IsRestartPipedCmd() bool {
 	return c.GetRestartPiped() != nil
 }
-
-func (c *Command) SetUpdatedAt(t int64) {
-	c.UpdatedAt = t
-}
