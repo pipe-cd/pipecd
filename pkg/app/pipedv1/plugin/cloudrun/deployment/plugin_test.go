@@ -161,3 +161,80 @@ func Test_buildPipelineStages(t *testing.T) {
 		})
 	}
 }
+
+func Test_findArtifactVersion(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name      string
+		manifests string
+		want      []sdk.ArtifactVersion
+		expectErr bool
+	}{
+		{
+			name: "single manifest",
+			manifests: `
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: simple
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: '2'
+    spec:
+      containerConcurrency: 80
+      containers:
+      - args:
+        - server
+        image: gcr.io/pipecd/helloworld:v0.27.4
+        ports:
+        - containerPort: 9085
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 128Mi
+`,
+			want: []sdk.ArtifactVersion{
+				{
+					Version: "v0.27.4",
+					Name:    "helloworld",
+					URL:     "gcr.io/pipecd/helloworld:v0.27.4",
+				},
+			},
+			expectErr: false,
+		},
+		{
+			name: "missing container field",
+			manifests: `
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: simple
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: '2'
+    spec:
+      containerConcurrency: 80
+`,
+			want:      nil,
+			expectErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			sm, err := parseServiceManifest([]byte(tt.manifests))
+			assert.Nil(t, err)
+			artifact, err := findArtifactVersions(sm)
+			if tt.expectErr {
+				assert.NotNil(t, err)
+			} else {
+				assert.Nil(t, err)
+			}
+			assert.Equal(t, tt.want, artifact)
+		})
+	}
+}
