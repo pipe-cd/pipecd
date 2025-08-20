@@ -35,7 +35,7 @@ We host the [PipeCD Development and Community Meetings](https://zoom-lfx.platfor
 
 ### Join our team on GitHub
 
-We welcome and appreciate your contributions to the PipeCD project. If you would like to continue contributing to the project as a member of the pipe-cd GitHub organization, please attend the [public community meeting](#join-our-public-community-meeting) and let us know. Here are some minimum requirements to have before you can ask for the membership:
+We welcome and appreciate your contributions to the PipeCD project. If you would like to continue contributing to the project as a member of the pipe-cd GitHub organization, please attend the [public community meeting](#join-our-public-community-meeting) and let us know or ping us on the #pipecd channel in the CNCF Slack. Here are some minimum requirements to have before you can ask for the membership:
 - Have at least 5 PRs successfully merged to repositories in the pipe-cd GitHub organization
 - Have attended PipeCD public community meeting
 
