@@ -20,16 +20,15 @@ import (
 
 	"go.uber.org/zap"
 
-    "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/analysisprovider/log"
-    "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/analysisprovider/log/stackdriver"
-	"github.com/pipe-cd/pipecd/pkg/config"
-	"github.com/pipe-cd/pipecd/pkg/model"
+	pluginconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/analysisprovider/config"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/analysisprovider/log"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/analysisprovider/log/stackdriver"
 )
 
 // NewProvider generates an appropriate provider according to analysis provider config.
-func NewProvider(providerCfg *config.PipedAnalysisProvider, logger *zap.Logger) (provider log.Provider, err error) {
+func NewProvider(providerCfg *pluginconfig.PipedAnalysisProvider, logger *zap.Logger) (provider log.Provider, err error) {
 	switch providerCfg.Type {
-	case model.AnalysisProviderStackdriver:
+	case pluginconfig.AnalysisProviderStackdriver:
 		cfg := providerCfg.StackdriverConfig
 		sa, err := os.ReadFile(cfg.ServiceAccountFile)
 		if err != nil {
