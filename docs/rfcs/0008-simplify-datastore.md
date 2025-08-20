@@ -1,10 +1,10 @@
 - Start Date: 2021-12-19
 - Target Version: 0.24.0
-- **Status: DEPRECATED** (Discontinued as of v0.XX.Y)
+- Status: DEPRECATED (Discontinued as of v0.53.0)
 
 # Summary
 
-> **⚠️ DEPRECATED NOTICE:** This RFC describes the FileDB feature which has been **discontinued** as of PipeCD v0.XX.Y. The implementation was removed due to maintenance complexity and reliability concerns. PipeCD now exclusively supports **Firestore** and **MySQL** as datastore backends.
+> **⚠️ DEPRECATED NOTICE:** This RFC describes the FileDB feature which has been **discontinued** as of PipeCD v0.53.0. The implementation was removed due to maintenance complexity and reliability concerns. PipeCD now exclusively supports **Firestore** and **MySQL** as datastore backends.
 
 This RFC introduces a way to host your own PipeCD control-plane without datastore. Refer to the PipeCD [control-plane architecture overview](https://pipecd.dev/docs/operator-manual/control-plane/architecture-overview/) for more information about what is PipeCD datastore.
 
