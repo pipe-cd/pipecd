@@ -463,7 +463,7 @@ func loadConfig(file string) (*config.ControlPlaneSpec, error) {
 	return cfg.ControlPlaneSpec, nil
 }
 
-func createDatastore(ctx context.Context, cfg *config.ControlPlaneSpec, fs filestore.Store, c cache.Cache, logger *zap.Logger) (datastore.DataStore, error) {
+func createDatastore(ctx context.Context, cfg *config.ControlPlaneSpec, _ filestore.Store, _ cache.Cache, logger *zap.Logger) (datastore.DataStore, error) {
 	switch cfg.Datastore.Type {
 	case model.DataStoreFirestore:
 		fsConfig := cfg.Datastore.FirestoreConfig

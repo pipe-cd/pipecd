@@ -335,17 +335,26 @@ type TemplatableAnalysisMetrics struct {
 	Template AnalysisTemplateRef `json:"template"`
 }
 
+// Validate delegates to the embedded AnalysisMetrics validation.
+func (t *TemplatableAnalysisMetrics) Validate() error { return t.AnalysisMetrics.Validate() }
+
 // TemplatableAnalysisLog wraps AnalysisLog to allow specify template to use.
 type TemplatableAnalysisLog struct {
 	AnalysisLog
 	Template AnalysisTemplateRef `json:"template"`
 }
 
+// Validate delegates to the embedded AnalysisLog validation.
+func (t *TemplatableAnalysisLog) Validate() error { return t.AnalysisLog.Validate() }
+
 // TemplatableAnalysisHTTP wraps AnalysisHTTP to allow specify template to use.
 type TemplatableAnalysisHTTP struct {
 	AnalysisHTTP
 	Template AnalysisTemplateRef `json:"template"`
 }
+
+// Validate delegates to the embedded AnalysisHTTP validation.
+func (t *TemplatableAnalysisHTTP) Validate() error { return t.AnalysisHTTP.Validate() }
 
 type SecretEncryption struct {
 	// List of encrypted secrets.

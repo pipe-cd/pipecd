@@ -20,6 +20,93 @@ import (
 	"path/filepath"
 )
 
+// Mirror of types moved under plugin analysis config to maintain configv1 API.
+// Keep these in sync with pkg/app/pipedv1/plugin/analysis/config.
+
+const (
+	AnalysisStrategyThreshold      = "THRESHOLD"
+	AnalysisStrategyPrevious       = "PREVIOUS"
+	AnalysisStrategyCanaryBaseline = "CANARY_BASELINE"
+	AnalysisStrategyCanaryPrimary  = "CANARY_PRIMARY"
+
+	AnalysisDeviationEither = "EITHER"
+	AnalysisDeviationHigh   = "HIGH"
+	AnalysisDeviationLow    = "LOW"
+)
+
+type AnalysisMetrics struct {
+	Strategy     string            `json:"strategy" default:"THRESHOLD"`
+	Provider     string            `json:"provider"`
+	Query        string            `json:"query"`
+	Expected     AnalysisExpected  `json:"expected"`
+	Interval     Duration          `json:"interval"`
+	FailureLimit int               `json:"failureLimit"`
+	SkipOnNoData bool              `json:"skipOnNoData"`
+	Timeout      Duration          `json:"timeout" default:"30s"`
+	Deviation    string            `json:"deviation" default:"EITHER"`
+	CanaryArgs   map[string]string `json:"canaryArgs"`
+	BaselineArgs map[string]string `json:"baselineArgs"`
+	PrimaryArgs  map[string]string `json:"primaryArgs"`
+}
+
+func (m *AnalysisMetrics) Validate() error {
+	if m.Provider == "" {
+		return fmt.Errorf("missing \"provider\" field")
+	}
+	if m.Query == "" {
+		return fmt.Errorf("missing \"query\" field")
+	}
+	if m.Interval == 0 {
+		return fmt.Errorf("missing \"interval\" field")
+	}
+	if m.Deviation != AnalysisDeviationEither && m.Deviation != AnalysisDeviationHigh && m.Deviation != AnalysisDeviationLow {
+		return fmt.Errorf("\"deviation\" have to be one of %s, %s or %s", AnalysisDeviationEither, AnalysisDeviationHigh, AnalysisDeviationLow)
+	}
+	return nil
+}
+
+type AnalysisExpected struct {
+	Min *float64 `json:"min"`
+	Max *float64 `json:"max"`
+}
+
+func (e *AnalysisExpected) Validate() error {
+	if e.Min == nil && e.Max == nil {
+		return fmt.Errorf("expected range is undefined")
+	}
+	return nil
+}
+
+type AnalysisLog struct {
+	Query        string   `json:"query"`
+	Interval     Duration `json:"interval"`
+	FailureLimit int      `json:"failureLimit"`
+	SkipOnNoData bool     `json:"skipOnNoData"`
+	Timeout      Duration `json:"timeout"`
+	Provider     string   `json:"provider"`
+}
+
+func (a *AnalysisLog) Validate() error { return nil }
+
+type AnalysisHTTP struct {
+	URL              string               `json:"url"`
+	Method           string               `json:"method"`
+	Headers          []AnalysisHTTPHeader `json:"headers"`
+	ExpectedCode     int                  `json:"expectedCode"`
+	ExpectedResponse string               `json:"expectedResponse"`
+	Interval         Duration             `json:"interval"`
+	FailureLimit     int                  `json:"failureLimit"`
+	SkipOnNoData     bool                 `json:"skipOnNoData"`
+	Timeout          Duration             `json:"timeout"`
+}
+
+func (a *AnalysisHTTP) Validate() error { return nil }
+
+type AnalysisHTTPHeader struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
 type AnalysisTemplateSpec struct {
 	Metrics map[string]AnalysisMetrics `json:"metrics"`
 	Logs    map[string]AnalysisLog     `json:"logs"`

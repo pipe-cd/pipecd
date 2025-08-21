@@ -22,16 +22,17 @@ import (
 
 	"go.uber.org/zap"
 
-	pluginconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/analysisprovider/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/analysisprovider/metrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/analysisprovider/metrics/datadog"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/analysisprovider/metrics/prometheus"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/config"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 // NewProvider generates an appropriate provider according to analysis provider config.
-func NewProvider(analysisTempCfg *pluginconfig.TemplatableAnalysisMetrics, providerCfg *pluginconfig.PipedAnalysisProvider, logger *zap.Logger) (metrics.Provider, error) {
+func NewProvider(analysisTempCfg *config.TemplatableAnalysisMetrics, providerCfg *config.PipedAnalysisProvider, logger *zap.Logger) (metrics.Provider, error) {
 	switch providerCfg.Type {
-	case pluginconfig.AnalysisProviderPrometheus:
+	case model.AnalysisProviderPrometheus:
 		options := []prometheus.Option{
 			prometheus.WithLogger(logger),
 			prometheus.WithTimeout(analysisTempCfg.Timeout.Duration()),
@@ -49,7 +50,7 @@ func NewProvider(analysisTempCfg *pluginconfig.TemplatableAnalysisMetrics, provi
 			options = append(options, prometheus.WithBasicAuth(strings.TrimSpace(string(username)), strings.TrimSpace(string(password))))
 		}
 		return prometheus.NewProvider(providerCfg.PrometheusConfig.Address, options...)
-	case pluginconfig.AnalysisProviderDatadog:
+	case model.AnalysisProviderDatadog:
 		var apiKey, applicationKey string
 		cfg := providerCfg.DatadogConfig
 		if cfg.APIKeyFile != "" {

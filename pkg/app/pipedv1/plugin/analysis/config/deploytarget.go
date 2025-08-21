@@ -458,7 +458,305 @@ func (r *HelmChartRegistry) Mask() {
 	}
 }
 
-// Notifications groups notification routes and receivers.
+type PlatformProviderKubernetesConfig struct {
+	// The master URL of the kubernetes cluster.
+	// Empty means in-cluster.
+	MasterURL string `json:"masterURL,omitempty"`
+	// The path to the kubeconfig file.
+	// Empty means in-cluster.
+	KubeConfigPath string `json:"kubeConfigPath,omitempty"`
+	// Configuration for application resource informer.
+	AppStateInformer KubernetesAppStateInformer `json:"appStateInformer"`
+	// Version of kubectl will be used.
+	KubectlVersion string `json:"kubectlVersion"`
+}
+
+type KubernetesAppStateInformer struct {
+	// Only watches the specified namespace.
+	// Empty means watching all namespaces.
+	Namespace string `json:"namespace,omitempty"`
+	// List of resources that should be added to the watching targets.
+	IncludeResources []KubernetesResourceMatcher `json:"includeResources,omitempty"`
+	// List of resources that should be ignored from the watching targets.
+	ExcludeResources []KubernetesResourceMatcher `json:"excludeResources,omitempty"`
+}
+
+type KubernetesResourceMatcher struct {
+	// The APIVersion of the kubernetes resource.
+	APIVersion string `json:"apiVersion,omitempty"`
+	// The kind name of the kubernetes resource.
+	// Empty means all kinds are matching.
+	Kind string `json:"kind,omitempty"`
+}
+
+type PlatformProviderTerraformConfig struct {
+	// List of variables that will be set directly on terraform commands with "-var" flag.
+	// The variable must be formatted by "key=value" as below:
+	// "image_id=ami-abc123"
+	// 'image_id_list=["ami-abc123","ami-def456"]'
+	// 'image_id_map={"us-east-1":"ami-abc123","us-east-2":"ami-def456"}'
+	Vars []string `json:"vars,omitempty"`
+	// Enable drift detection.
+	// TODO: This is a temporary option because Terraform drift detection is buggy and has performance issues. This will be possibly removed in the future release.
+	DriftDetectionEnabled *bool `json:"driftDetectionEnabled" default:"true"`
+}
+
+type PlatformProviderCloudRunConfig struct {
+	// The GCP project hosting the CloudRun service.
+	Project string `json:"project"`
+	// The region of running CloudRun service.
+	Region string `json:"region"`
+	// The path to the service account file for accessing CloudRun service.
+	CredentialsFile string `json:"credentialsFile,omitempty"`
+}
+
+func (c *PlatformProviderCloudRunConfig) Mask() {
+	if len(c.CredentialsFile) != 0 {
+		c.CredentialsFile = maskString
+	}
+}
+
+type PlatformProviderLambdaConfig struct {
+	// The region to send requests to. This parameter is required.
+	// e.g. "us-west-2"
+	// A full list of regions is: https://docs.aws.amazon.com/general/latest/gr/rande.html
+	Region string `json:"region"`
+	// Path to the shared credentials file.
+	CredentialsFile string `json:"credentialsFile,omitempty"`
+	// The IAM role arn to use when assuming an role.
+	RoleARN string `json:"roleARN,omitempty"`
+	// Path to the WebIdentity token the SDK should use to assume a role with.
+	TokenFile string `json:"tokenFile,omitempty"`
+	// AWS Profile to extract credentials from the shared credentials file.
+	// If empty, the environment variable "AWS_PROFILE" is used.
+	// "default" is populated if the environment variable is also not set.
+	Profile string `json:"profile,omitempty"`
+}
+
+func (c *PlatformProviderLambdaConfig) Mask() {
+	if len(c.CredentialsFile) != 0 {
+		c.CredentialsFile = maskString
+	}
+	if len(c.RoleARN) != 0 {
+		c.RoleARN = maskString
+	}
+	if len(c.TokenFile) != 0 {
+		c.TokenFile = maskString
+	}
+}
+
+type PlatformProviderECSConfig struct {
+	// The region to send requests to. This parameter is required.
+	// e.g. "us-west-2"
+	// A full list of regions is: https://docs.aws.amazon.com/general/latest/gr/rande.html
+	Region string `json:"region"`
+	// Path to the shared credentials file.
+	CredentialsFile string `json:"credentialsFile,omitempty"`
+	// The IAM role arn to use when assuming an role.
+	RoleARN string `json:"roleARN,omitempty"`
+	// Path to the WebIdentity token the SDK should use to assume a role with.
+	TokenFile string `json:"tokenFile,omitempty"`
+	// AWS Profile to extract credentials from the shared credentials file.
+	// If empty, the environment variable "AWS_PROFILE" is used.
+	// "default" is populated if the environment variable is also not set.
+	Profile string `json:"profile,omitempty"`
+}
+
+func (c *PlatformProviderECSConfig) Mask() {
+	if len(c.CredentialsFile) != 0 {
+		c.CredentialsFile = maskString
+	}
+	if len(c.RoleARN) != 0 {
+		c.RoleARN = maskString
+	}
+	if len(c.TokenFile) != 0 {
+		c.TokenFile = maskString
+	}
+}
+
+type PipedAnalysisProvider struct {
+	Name string                     `json:"name"`
+	Type model.AnalysisProviderType `json:"type"`
+
+	PrometheusConfig  *AnalysisProviderPrometheusConfig
+	DatadogConfig     *AnalysisProviderDatadogConfig
+	StackdriverConfig *AnalysisProviderStackdriverConfig
+}
+
+func (p *PipedAnalysisProvider) Mask() {
+	if p.PrometheusConfig != nil {
+		p.PrometheusConfig.Mask()
+	}
+	if p.DatadogConfig != nil {
+		p.DatadogConfig.Mask()
+	}
+	if p.StackdriverConfig != nil {
+		p.StackdriverConfig.Mask()
+	}
+}
+
+type genericPipedAnalysisProvider struct {
+	Name   string                     `json:"name"`
+	Type   model.AnalysisProviderType `json:"type"`
+	Config json.RawMessage            `json:"config"`
+}
+
+func (p *PipedAnalysisProvider) MarshalJSON() ([]byte, error) {
+	var (
+		err    error
+		config json.RawMessage
+	)
+
+	switch p.Type {
+	case model.AnalysisProviderDatadog:
+		config, err = json.Marshal(p.DatadogConfig)
+	case model.AnalysisProviderPrometheus:
+		config, err = json.Marshal(p.PrometheusConfig)
+	case model.AnalysisProviderStackdriver:
+		config, err = json.Marshal(p.StackdriverConfig)
+	default:
+		err = fmt.Errorf("unsupported analysis provider type: %s", p.Name)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return json.Marshal(&genericPipedAnalysisProvider{
+		Name:   p.Name,
+		Type:   p.Type,
+		Config: config,
+	})
+}
+
+func (p *PipedAnalysisProvider) UnmarshalJSON(data []byte) error {
+	var err error
+	gp := genericPipedAnalysisProvider{}
+	if err = json.Unmarshal(data, &gp); err != nil {
+		return err
+	}
+	p.Name = gp.Name
+	p.Type = gp.Type
+
+	switch p.Type {
+	case model.AnalysisProviderPrometheus:
+		p.PrometheusConfig = &AnalysisProviderPrometheusConfig{}
+		if len(gp.Config) > 0 {
+			err = json.Unmarshal(gp.Config, p.PrometheusConfig)
+		}
+	case model.AnalysisProviderDatadog:
+		p.DatadogConfig = &AnalysisProviderDatadogConfig{}
+		if len(gp.Config) > 0 {
+			err = json.Unmarshal(gp.Config, p.DatadogConfig)
+		}
+	case model.AnalysisProviderStackdriver:
+		p.StackdriverConfig = &AnalysisProviderStackdriverConfig{}
+		if len(gp.Config) > 0 {
+			err = json.Unmarshal(gp.Config, p.StackdriverConfig)
+		}
+	default:
+		err = fmt.Errorf("unsupported analysis provider type: %s", p.Name)
+	}
+	return err
+}
+
+func (p *PipedAnalysisProvider) Validate() error {
+	switch p.Type {
+	case model.AnalysisProviderPrometheus:
+		return p.PrometheusConfig.Validate()
+	case model.AnalysisProviderDatadog:
+		return p.DatadogConfig.Validate()
+	case model.AnalysisProviderStackdriver:
+		return p.StackdriverConfig.Validate()
+	default:
+		return fmt.Errorf("unknow provider type: %s", p.Type)
+	}
+}
+
+type AnalysisProviderPrometheusConfig struct {
+	Address string `json:"address"`
+	// The path to the username file.
+	UsernameFile string `json:"usernameFile,omitempty"`
+	// The path to the password file.
+	PasswordFile string `json:"passwordFile,omitempty"`
+}
+
+func (a *AnalysisProviderPrometheusConfig) Validate() error {
+	if a.Address == "" {
+		return fmt.Errorf("prometheus analysis provider requires the address")
+	}
+	return nil
+}
+
+func (a *AnalysisProviderPrometheusConfig) Mask() {
+	if len(a.PasswordFile) != 0 {
+		a.PasswordFile = maskString
+	}
+}
+
+type AnalysisProviderDatadogConfig struct {
+	// The address of Datadog API server.
+	// Only "datadoghq.com", "us3.datadoghq.com", "datadoghq.eu", "ddog-gov.com" are available.
+	// Defaults to "datadoghq.com"
+	Address string `json:"address,omitempty"`
+	// Required: The path to the api key file.
+	APIKeyFile string `json:"apiKeyFile"`
+	// Required: The path to the application key file.
+	ApplicationKeyFile string `json:"applicationKeyFile"`
+	// Base64 API Key for Datadog API server.
+	APIKeyData string `json:"apiKeyData,omitempty"`
+	// Base64 Application Key for Datadog API server.
+	ApplicationKeyData string `json:"applicationKeyData,omitempty"`
+}
+
+func (a *AnalysisProviderDatadogConfig) Validate() error {
+	if a.APIKeyFile == "" && a.APIKeyData == "" {
+		return fmt.Errorf("either datadog APIKeyFile or APIKeyData must be set")
+	}
+	if a.ApplicationKeyFile == "" && a.ApplicationKeyData == "" {
+		return fmt.Errorf("either datadog ApplicationKeyFile or ApplicationKeyData must be set")
+	}
+	if a.APIKeyData != "" && a.APIKeyFile != "" {
+		return fmt.Errorf("only datadog APIKeyFile or APIKeyData can be set")
+	}
+	if a.ApplicationKeyData != "" && a.ApplicationKeyFile != "" {
+		return fmt.Errorf("only datadog ApplicationKeyFile or ApplicationKeyData can be set")
+	}
+	return nil
+}
+
+func (a *AnalysisProviderDatadogConfig) Mask() {
+	if len(a.APIKeyFile) != 0 {
+		a.APIKeyFile = maskString
+	}
+	if len(a.ApplicationKeyFile) != 0 {
+		a.ApplicationKeyFile = maskString
+	}
+	if len(a.APIKeyData) != 0 {
+		a.APIKeyData = maskString
+	}
+	if len(a.ApplicationKeyData) != 0 {
+		a.ApplicationKeyData = maskString
+	}
+}
+
+// func(a *AnalysisProviderDatadogConfig)
+
+type AnalysisProviderStackdriverConfig struct {
+	// The path to the service account file.
+	ServiceAccountFile string `json:"serviceAccountFile"`
+}
+
+func (a *AnalysisProviderStackdriverConfig) Mask() {
+	if len(a.ServiceAccountFile) != 0 {
+		a.ServiceAccountFile = maskString
+	}
+}
+
+func (a *AnalysisProviderStackdriverConfig) Validate() error {
+	return nil
+}
+
 type Notifications struct {
 	// List of notification routes.
 	Routes []NotificationRoute `json:"routes,omitempty"`
@@ -597,7 +895,6 @@ func (n *NotificationReceiverWebhook) LoadSignatureValue() (string, error) {
 	return "", nil
 }
 
-// SecretManagement defines secret management configuration.
 type SecretManagement struct {
 	// Which management service should be used.
 	// Available values: KEY_PAIR, GCP_KMS, AWS_KMS
@@ -873,183 +1170,3 @@ func (p *PipedPlugin) FindDeployTarget(name string) *PipedDeployTarget {
 	}
 	return nil
 }
-
-// PipedAnalysisProvider and related configurations.
-type PipedAnalysisProvider struct {
-	Name string                     `json:"name"`
-	Type model.AnalysisProviderType `json:"type"`
-
-	PrometheusConfig  *AnalysisProviderPrometheusConfig
-	DatadogConfig     *AnalysisProviderDatadogConfig
-	StackdriverConfig *AnalysisProviderStackdriverConfig
-}
-
-func (p *PipedAnalysisProvider) Mask() {
-	if p.PrometheusConfig != nil {
-		p.PrometheusConfig.Mask()
-	}
-	if p.DatadogConfig != nil {
-		p.DatadogConfig.Mask()
-	}
-	if p.StackdriverConfig != nil {
-		p.StackdriverConfig.Mask()
-	}
-}
-
-type genericPipedAnalysisProvider struct {
-	Name   string                     `json:"name"`
-	Type   model.AnalysisProviderType `json:"type"`
-	Config json.RawMessage            `json:"config"`
-}
-
-func (p *PipedAnalysisProvider) MarshalJSON() ([]byte, error) {
-	var (
-		err    error
-		config json.RawMessage
-	)
-
-	switch p.Type {
-	case model.AnalysisProviderDatadog:
-		config, err = json.Marshal(p.DatadogConfig)
-	case model.AnalysisProviderPrometheus:
-		config, err = json.Marshal(p.PrometheusConfig)
-	case model.AnalysisProviderStackdriver:
-		config, err = json.Marshal(p.StackdriverConfig)
-	default:
-		err = fmt.Errorf("unsupported analysis provider type: %s", p.Name)
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	return json.Marshal(&genericPipedAnalysisProvider{
-		Name:   p.Name,
-		Type:   p.Type,
-		Config: config,
-	})
-}
-
-func (p *PipedAnalysisProvider) UnmarshalJSON(data []byte) error {
-	var err error
-	gp := genericPipedAnalysisProvider{}
-	if err = json.Unmarshal(data, &gp); err != nil {
-		return err
-	}
-	p.Name = gp.Name
-	p.Type = gp.Type
-
-	switch p.Type {
-	case model.AnalysisProviderPrometheus:
-		p.PrometheusConfig = &AnalysisProviderPrometheusConfig{}
-		if len(gp.Config) > 0 {
-			err = json.Unmarshal(gp.Config, p.PrometheusConfig)
-		}
-	case model.AnalysisProviderDatadog:
-		p.DatadogConfig = &AnalysisProviderDatadogConfig{}
-		if len(gp.Config) > 0 {
-			err = json.Unmarshal(gp.Config, p.DatadogConfig)
-		}
-	case model.AnalysisProviderStackdriver:
-		p.StackdriverConfig = &AnalysisProviderStackdriverConfig{}
-		if len(gp.Config) > 0 {
-			err = json.Unmarshal(gp.Config, p.StackdriverConfig)
-		}
-	default:
-		err = fmt.Errorf("unsupported analysis provider type: %s", p.Name)
-	}
-	return err
-}
-
-func (p *PipedAnalysisProvider) Validate() error {
-	switch p.Type {
-	case model.AnalysisProviderPrometheus:
-		return p.PrometheusConfig.Validate()
-	case model.AnalysisProviderDatadog:
-		return p.DatadogConfig.Validate()
-	case model.AnalysisProviderStackdriver:
-		return p.StackdriverConfig.Validate()
-	default:
-		return fmt.Errorf("unknow provider type: %s", p.Type)
-	}
-}
-
-type AnalysisProviderPrometheusConfig struct {
-	Address string `json:"address"`
-	// The path to the username file.
-	UsernameFile string `json:"usernameFile,omitempty"`
-	// The path to the password file.
-	PasswordFile string `json:"passwordFile,omitempty"`
-}
-
-func (a *AnalysisProviderPrometheusConfig) Validate() error {
-	if a.Address == "" {
-		return fmt.Errorf("prometheus analysis provider requires the address")
-	}
-	return nil
-}
-
-func (a *AnalysisProviderPrometheusConfig) Mask() {
-	if len(a.PasswordFile) != 0 {
-		a.PasswordFile = maskString
-	}
-}
-
-type AnalysisProviderDatadogConfig struct {
-	// The address of Datadog API server.
-	// Only "datadoghq.com", "us3.datadoghq.com", "datadoghq.eu", "ddog-gov.com" are available.
-	// Defaults to "datadoghq.com"
-	Address string `json:"address,omitempty"`
-	// Required: The path to the api key file.
-	APIKeyFile string `json:"apiKeyFile"`
-	// Required: The path to the application key file.
-	ApplicationKeyFile string `json:"applicationKeyFile"`
-	// Base64 API Key for Datadog API server.
-	APIKeyData string `json:"apiKeyData,omitempty"`
-	// Base64 Application Key for Datadog API server.
-	ApplicationKeyData string `json:"applicationKeyData,omitempty"`
-}
-
-func (a *AnalysisProviderDatadogConfig) Validate() error {
-	if a.APIKeyFile == "" && a.APIKeyData == "" {
-		return fmt.Errorf("either datadog APIKeyFile or APIKeyData must be set")
-	}
-	if a.ApplicationKeyFile == "" && a.ApplicationKeyData == "" {
-		return fmt.Errorf("either datadog ApplicationKeyFile or ApplicationKeyData must be set")
-	}
-	if a.APIKeyData != "" && a.APIKeyFile != "" {
-		return fmt.Errorf("only datadog APIKeyFile or APIKeyData can be set")
-	}
-	if a.ApplicationKeyData != "" && a.ApplicationKeyFile != "" {
-		return fmt.Errorf("only datadog ApplicationKeyFile or ApplicationKeyData can be set")
-	}
-	return nil
-}
-
-func (a *AnalysisProviderDatadogConfig) Mask() {
-	if len(a.APIKeyFile) != 0 {
-		a.APIKeyFile = maskString
-	}
-	if len(a.ApplicationKeyFile) != 0 {
-		a.ApplicationKeyFile = maskString
-	}
-	if len(a.APIKeyData) != 0 {
-		a.APIKeyData = maskString
-	}
-	if len(a.ApplicationKeyData) != 0 {
-		a.ApplicationKeyData = maskString
-	}
-}
-
-type AnalysisProviderStackdriverConfig struct {
-	// The path to the service account file.
-	ServiceAccountFile string `json:"serviceAccountFile"`
-}
-
-func (a *AnalysisProviderStackdriverConfig) Mask() {
-	if len(a.ServiceAccountFile) != 0 {
-		a.ServiceAccountFile = maskString
-	}
-}
-
-func (a *AnalysisProviderStackdriverConfig) Validate() error { return nil }

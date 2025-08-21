@@ -22,6 +22,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func floatPointer(v float64) *float64 { return &v }
+
 func TestLoadAnalysisTemplate(t *testing.T) {
 	testcases := []struct {
 		name          string

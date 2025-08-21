@@ -22,7 +22,7 @@ import (
 	"net/http"
 	"time"
 
-	pluginconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/analysisprovider/config"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/config"
 )
 
 const (
@@ -48,7 +48,7 @@ func NewProvider(timeout time.Duration) *Provider {
 }
 
 // Run sends an HTTP request and then evaluate whether the response is expected one.
-func (p *Provider) Run(ctx context.Context, cfg *pluginconfig.AnalysisHTTP) (bool, string, error) {
+func (p *Provider) Run(ctx context.Context, cfg *config.AnalysisHTTP) (bool, string, error) {
 	req, err := p.makeRequest(ctx, cfg)
 	if err != nil {
 		return false, "", err
@@ -67,7 +67,7 @@ func (p *Provider) Run(ctx context.Context, cfg *pluginconfig.AnalysisHTTP) (boo
 	return true, "", nil
 }
 
-func (p *Provider) makeRequest(ctx context.Context, cfg *pluginconfig.AnalysisHTTP) (*http.Request, error) {
+func (p *Provider) makeRequest(ctx context.Context, cfg *config.AnalysisHTTP) (*http.Request, error) {
 	req, err := http.NewRequestWithContext(ctx, cfg.Method, cfg.URL, nil)
 	if err != nil {
 		return nil, err
