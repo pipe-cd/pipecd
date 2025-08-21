@@ -724,3 +724,62 @@ guarantee to take exactly these actions if you run "terraform apply" now.`,
 		})
 	}
 }
+
+func TestMakeTitleText(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name string
+		app  *ApplicationInfo
+		want string
+	}{
+		{
+			name: "pipedv0: without env",
+			app: &ApplicationInfo{
+				ApplicationName: "test-app",
+				ApplicationURL:  "https://pipecd.dev/apps/test-app",
+				ApplicationKind: "KUBERNETES",
+			},
+			want: "app: [test-app](https://pipecd.dev/apps/test-app), kind: kubernetes",
+		},
+		{
+			name: "pipedv0: with env",
+			app: &ApplicationInfo{
+				ApplicationName: "test-app",
+				ApplicationURL:  "https://pipecd.dev/apps/test-app",
+				ApplicationKind: "KUBERNETES",
+				Env:             "dev",
+			},
+			want: "app: [test-app](https://pipecd.dev/apps/test-app), env: dev, kind: kubernetes",
+		},
+		{
+			name: "pipedv1: without env",
+			app: &ApplicationInfo{
+				ApplicationName:    "test-app",
+				ApplicationURL:     "https://pipecd.dev/apps/test-app",
+				PlannedPluginNames: "kubernetes",
+				AllPluginNames:     "kubernetes,analysis",
+			},
+			want: "app: [test-app](https://pipecd.dev/apps/test-app), planned plugin(s): kubernetes",
+		},
+		{
+			name: "pipedv1: with env",
+			app: &ApplicationInfo{
+				ApplicationName:    "test-app",
+				ApplicationURL:     "https://pipecd.dev/apps/test-app",
+				PlannedPluginNames: "kubernetes,terraform",
+				AllPluginNames:     "kubernetes,terraform,analysis",
+				Env:                "dev",
+			},
+			want: "app: [test-app](https://pipecd.dev/apps/test-app), env: dev, planned plugin(s): kubernetes,terraform",
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			got := makeTitleText(tc.app)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
