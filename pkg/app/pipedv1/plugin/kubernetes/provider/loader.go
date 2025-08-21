@@ -40,10 +40,6 @@ const (
 	TemplatingMethodNone      TemplatingMethod = "none"
 )
 
-const (
-	kustomizationFileName = "kustomization.yaml"
-)
-
 type LoaderInput struct {
 	// for annotations to manage the application live state.
 	PipedID    string
@@ -89,10 +85,29 @@ func (l *Loader) determineTemplatingMethod(input LoaderInput) TemplatingMethod {
 	if input.HelmChart != nil {
 		return TemplatingMethodHelm
 	}
-	if _, err := os.Stat(filepath.Join(input.AppDir, kustomizationFileName)); err == nil {
+	if isKustomizationFileExists(input.AppDir) {
 		return TemplatingMethodKustomize
 	}
 	return TemplatingMethodNone
+}
+
+// isKustomizationFileExists checks if a kustomization file exists in the given directory.
+// There are 3 files name considered as kustomization file:
+// - kustomization.yaml
+// - kustomization.yml
+// - Kustomization
+func isKustomizationFileExists(appDirPath string) bool {
+	recognizedKustomizationFileNames := []string{
+		"kustomization.yaml",
+		"kustomization.yml",
+		"Kustomization",
+	}
+	for _, fileName := range recognizedKustomizationFileNames {
+		if _, err := os.Stat(filepath.Join(appDirPath, fileName)); err == nil {
+			return true
+		}
+	}
+	return false
 }
 
 func (l *Loader) LoadManifests(ctx context.Context, input LoaderInput) (manifests []Manifest, err error) {

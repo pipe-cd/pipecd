@@ -29,6 +29,18 @@ Contributions are highly welcome. If you need help planning your contribution, p
 
 We have a `#pipecd` channel on [CNCF Slack](https://cloud-native.slack.com/) for discussions related to PipeCD development. You can also provide valuable help by assisting other users in the channel.
 
+### Join our public community meeting
+
+We host the [PipeCD Development and Community Meetings](https://zoom-lfx.platform.linuxfoundation.org/meeting/96831504919?password=2f60b8ec-5896-40c8-aa1d-d551ab339d00) every 2 weeks, where we share the latest project news, demos, answer questions, and help triage issues. You can also view the [Meeting Notes and Agenda](https://bit.ly/pipecd-mtg-notes).
+
+### Join our team on GitHub
+
+We welcome and appreciate your contributions to the PipeCD project. If you would like to continue contributing to the project as a member of the pipe-cd GitHub organization, please attend the [public community meeting](#join-our-public-community-meeting) and let us know or ping us on the #pipecd channel in the CNCF Slack. Here are some minimum requirements to have before you can ask for the membership:
+- Have at least 5 PRs successfully merged to repositories in the pipe-cd GitHub organization
+- Have attended PipeCD public community meeting
+
+Please note that you do not need to be a member to start contributing to the PipeCD project. Membership is helpful if you want to contribute over a long period or take responsibility for a feature, so it is appropriate after you are familiar with PipeCD development.
+
 ## Our Development Process
 
 PipeCD uses [GitHub](https://github.com/pipe-cd/pipecd) as its source of truth. The core team will be working directly there. All changes will be public from the beginning.

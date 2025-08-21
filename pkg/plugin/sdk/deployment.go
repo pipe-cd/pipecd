@@ -656,6 +656,17 @@ const (
 	CommandTypeSkipStage
 )
 
+// toModelEnum converts the CommandType to the model.Command_Type.
+func (c CommandType) toModelEnum() (model.Command_Type, error) {
+	switch c {
+	case CommandTypeApproveStage:
+		return model.Command_APPROVE_STAGE, nil
+	case CommandTypeSkipStage:
+		return model.Command_SKIP_STAGE, nil
+	}
+	return 0, fmt.Errorf("unsupported CommandType: %v", c)
+}
+
 // newStageCommand converts the model.Command to the internal representation.
 func newStageCommand(c *model.Command) (StageCommand, error) {
 	switch c.Type {
