@@ -186,11 +186,11 @@ Run `make update/go-deps` and `make update/web-deps` to update the dependencies.
 
 In order to start a local development environment, a registry needs to be running locally. 
 
-Run `make kind-up` to start a local registry. 
+Run `make up/local-cluster` to start a local registry. 
 
 This will create the kubernetes namespace `pipecd` if it does not exist and start a local registry in the namespace which can then be accessed by other components.
 
-When cleaning up, run `make kind-down` to stop and delete the registery and the cluster.
+When cleaning up, run `make down/local-cluster` to stop and delete the registery and the cluster.
 
 #### Run PipeCD Control Plane
 
