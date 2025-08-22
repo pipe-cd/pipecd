@@ -27,8 +27,9 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/shurcooL/githubv4"
+
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type PlanPreviewResult struct {
