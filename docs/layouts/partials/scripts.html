@@ -11,7 +11,7 @@
 {{ $jsNavbarVersionSelector := resources.Get "js/navbar-version-selector.js" }}
 <script defer src="{{ $jsImageZoom.RelPermalink }}" integrity="{{ $jsImageZoom.Data.Integrity }}" crossorigin="anonymous"></script>
 {{ $js := (slice $jsBase $jsAnchor $jsSearch $jsNavbarVersionSelector) | resources.Concat "js/main.js" }}
-{{ if .Site.IsServer }}
+{{ if hugo.IsServer }}
 <script src="{{ $js.RelPermalink }}"></script>
 {{ else }}
 {{ $js := $js | minify | fingerprint }}

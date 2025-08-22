@@ -1988,21 +1988,21 @@ func (a *WebAPI) ListDeprecatedNotes(ctx context.Context, req *webservice.ListDe
 		return nil, gRPCStoreError(err, "list pipeds")
 	}
 
-	// No Pipeds for given project.
-	if len(pipeds) == 0 {
-		return &webservice.ListDeprecatedNotesResponse{}, nil
-	}
-
-	versions := make([]string, 0, len(pipeds))
+	var oldestVersion string
 	for _, piped := range pipeds {
 		if !semver.IsValid(piped.Version) {
 			continue
 		}
-		versions = append(versions, piped.Version)
+
+		if oldestVersion == "" || semver.Compare(piped.Version, oldestVersion) < 0 {
+			oldestVersion = piped.Version
+		}
 	}
 
-	semver.Sort(versions)
-	oldestVersion := versions[0]
+	// No Piped with valid version for given project.
+	if oldestVersion == "" {
+		return &webservice.ListDeprecatedNotesResponse{}, nil
+	}
 
 	// Github fecth release notes.
 	releases, _, err := a.githubCli.Repositories.ListReleases(ctx, "pipe-cd", "pipecd", nil)
