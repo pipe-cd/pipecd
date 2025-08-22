@@ -104,9 +104,6 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
     );
   }, [allPipeds, filterValues.enabled]);
 
-  // TODO: Remove this console.log
-  console.log("[DEBUG]", breakingChangesNote);
-
   const handleUpgradeDialogClose = (): void => {
     setIsUpgradeDialogOpen(false);
   };
