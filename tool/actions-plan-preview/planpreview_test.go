@@ -18,6 +18,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -232,6 +233,151 @@ func TestMakeCommentBody(t *testing.T) {
 				},
 			},
 			expected: "testdata/comment-has-failed-piped.txt",
+		},
+		// pipedv1
+		{
+			name: "plugin: one success app",
+			event: githubEvent{
+				HeadCommit: "abc",
+			},
+			title: "",
+			result: PlanPreviewResult{
+				Applications: []ApplicationResult{
+					{
+						ApplicationInfo: ApplicationInfo{
+							ApplicationID:        "app-1",
+							ApplicationName:      "app-name-1",
+							ApplicationURL:       "app-url-1",
+							Env:                  "env-1",
+							PlannedPluginNames:   "kubernetes",
+							AllPluginNames:       "kubernetes",
+							ApplicationDirectory: "app-dir-1",
+						},
+						SyncStrategy: "QUICK_SYNC",
+						NoChange:     false,
+						PluginPlanResults: []*model.PluginPlanPreviewResult{
+							{
+								PluginName:   "kubernetes",
+								DeployTarget: "dt-1",
+								PlanSummary:  []byte("2 resources will be added, 1 resource will be deleted and 5 resources will be changed"),
+								PlanDetails:  []byte("details-1"),
+							},
+						},
+					},
+				},
+			},
+			expected: "testdata/comment-plugin-one-success-app.txt",
+		},
+		{
+			name: "plugin: one success app with multiple plugins",
+			event: githubEvent{
+				HeadCommit: "abc",
+			},
+			title: "",
+			result: PlanPreviewResult{
+				Applications: []ApplicationResult{
+					{
+						ApplicationInfo: ApplicationInfo{
+							ApplicationID:        "app-1",
+							ApplicationName:      "app-name-1",
+							ApplicationURL:       "app-url-1",
+							Env:                  "env-1",
+							PlannedPluginNames:   "kubernetes, terraform",
+							AllPluginNames:       "kubernetes, terraform, analysis",
+							ApplicationDirectory: "app-dir-1",
+						},
+						SyncStrategy: "PIPELINE",
+						NoChange:     false,
+						PluginPlanResults: []*model.PluginPlanPreviewResult{
+							{
+								PluginName:   "kubernetes",
+								DeployTarget: "dt-1",
+								PlanSummary:  []byte("2 resources will be added, 1 resource will be deleted and 5 resources will be changed"),
+								PlanDetails:  []byte("details-1"),
+							},
+							{
+								PluginName:   "terraform",
+								DeployTarget: "dt-2",
+								PlanSummary:  []byte("1 resource will be added, 2 resources will be deleted and 3 resources will be changed"),
+								PlanDetails:  []byte("details-2"),
+								DiffLanguage: "hcl",
+							},
+						},
+					},
+				},
+			},
+			expected: "testdata/comment-plugin-one-success-app-multiple-plugins.txt",
+		},
+		{
+			name: "plugin: has failed app",
+			event: githubEvent{
+				HeadCommit: "abc",
+			},
+			title: "",
+			result: PlanPreviewResult{
+				Applications: []ApplicationResult{
+					{
+						ApplicationInfo: ApplicationInfo{
+							ApplicationID:        "app-1",
+							ApplicationName:      "app-name-1",
+							ApplicationURL:       "app-url-1",
+							Env:                  "env-1",
+							PlannedPluginNames:   "kubernetes",
+							AllPluginNames:       "kubernetes",
+							ApplicationDirectory: "app-dir-1",
+						},
+						SyncStrategy: "PIPELINE",
+						NoChange:     false,
+						PluginPlanResults: []*model.PluginPlanPreviewResult{
+							{
+								PluginName:   "kubernetes",
+								DeployTarget: "dt-1",
+								PlanSummary:  []byte("2 resources will be added, 1 resource will be deleted and 5 resources will be changed"),
+								PlanDetails:  []byte("details-1"),
+							},
+						},
+					},
+				},
+				FailureApplications: []FailureApplication{
+					{
+						ApplicationInfo: ApplicationInfo{
+							ApplicationID:        "app-2",
+							ApplicationName:      "app-name-2",
+							ApplicationURL:       "app-url-2",
+							Env:                  "env-2",
+							PlannedPluginNames:   "kubernetes-failed",
+							AllPluginNames:       "kubernetes-failed",
+							ApplicationDirectory: "app-dir-2",
+						},
+						Reason: "wrong application configuration",
+					},
+				},
+			},
+			expected: "testdata/comment-plugin-has-failed-app.txt",
+		},
+		{
+			name: "plugin: one failure app with unknown plugin",
+			event: githubEvent{
+				HeadCommit: "abc",
+			},
+			title: "",
+			result: PlanPreviewResult{
+				FailureApplications: []FailureApplication{
+					{
+						ApplicationInfo: ApplicationInfo{
+							ApplicationID:        "app-2",
+							ApplicationName:      "app-name-2",
+							ApplicationURL:       "app-url-2",
+							Env:                  "env-2",
+							PlannedPluginNames:   "<unknown>",
+							AllPluginNames:       "<unknown>",
+							ApplicationDirectory: "app-dir-2",
+						},
+						Reason: "wrong application configuration",
+					},
+				},
+			},
+			expected: "testdata/comment-plugin-one-failure-app-unknown-plugin.txt",
 		},
 	}
 

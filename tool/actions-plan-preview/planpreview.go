@@ -238,17 +238,20 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult, title string) str
 			}
 		} else {
 			// pipedv1
-			fmt.Fprintf(&b, "  plugin(s): %s\n", app.AllPluginNames)
-			fmt.Fprintf(&b, "  summary:\n")
+			fmt.Fprintf(&b, "  Plugin(s): %s\n", app.AllPluginNames)
+			fmt.Fprintf(&b, "  Summary:\n")
 			for _, ppr := range app.PluginPlanResults {
 				fmt.Fprintf(&b, "  - %s(%s): %s\n", ppr.PluginName, ppr.DeployTarget, ppr.PlanSummary)
 			}
-			fmt.Fprint(&b, "  details:\n\n")
+			fmt.Fprint(&b, "  Details:\n")
 			for _, ppr := range app.PluginPlanResults {
 				fmt.Fprintf(&b, "  - %s(%s):\n", ppr.PluginName, ppr.DeployTarget)
 
 				details := string(ppr.PlanDetails)
-				if ppr.DiffLanguage == "hcl" {
+				switch ppr.DiffLanguage {
+				case "":
+					ppr.DiffLanguage = "diff" // Use diff by default
+				case "hcl":
 					if shortened, err := generateTerraformShortPlanDetails(details); err == nil {
 						details = shortened
 					}
