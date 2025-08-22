@@ -19,9 +19,10 @@ import (
 	"context"
 	"fmt"
 
+	"go.uber.org/zap"
+
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/provider"
-	"go.uber.org/zap"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )

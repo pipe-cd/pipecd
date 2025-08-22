@@ -18,9 +18,10 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/provider"
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/provider"
 )
 
 func TestToResponse(t *testing.T) {
