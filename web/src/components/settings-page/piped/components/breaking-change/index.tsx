@@ -10,7 +10,7 @@ import {
 import { FC, useState } from "react";
 import { IGNORE_BREAKING_CHANGE_NOTES_PIPEDS } from "~/constants/localstorage";
 import ReactMarkdown from "react-markdown";
-import "github-markdown-css/github-markdown.css";
+import "github-markdown-css/github-markdown-light.css";
 import {
   UI_TEXT_BREAKING_CHANGES,
   UI_TEXT_CLOSE,
