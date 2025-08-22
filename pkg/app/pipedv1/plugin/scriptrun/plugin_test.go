@@ -15,6 +15,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
@@ -23,6 +24,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type mockDeploymentMetadataStore struct {
+	metadata map[string]string
+}
+
+func (m *mockDeploymentMetadataStore) GetDeploymentPluginMetadata(_ context.Context, key string) (string, bool, error) {
+	metadata, ok := m.metadata[key]
+	if !ok {
+		return "", false, nil
+	}
+	return metadata, true, nil
+}
+
+func (m *mockDeploymentMetadataStore) PutDeploymentPluginMetadata(_ context.Context, key string, value string) error {
+	m.metadata[key] = value
+	return nil
+}
 func TestBuildPipelineSyncStages(t *testing.T) {
 	t.Parallel()
 	p := &plugin{}
@@ -215,10 +232,11 @@ func Test_ContextInfo_BuildEnv(t *testing.T) {
 func TestPlugin_ExecuteScriptRun(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		name string
-		req  sdk.ExecuteStageRequest[struct{}]
-		lp   sdk.StageLogPersister
-		want sdk.StageStatus
+		name          string
+		req           sdk.ExecuteStageRequest[struct{}]
+		lp            sdk.StageLogPersister
+		metadataStore mockDeploymentMetadataStore
+		want          sdk.StageStatus
 	}{
 		{
 			name: "success",
@@ -230,7 +248,10 @@ func TestPlugin_ExecuteScriptRun(t *testing.T) {
 					ApplicationID: "app-1",
 				},
 			},
-			lp:   logpersistertest.NewTestLogPersister(t),
+			lp: logpersistertest.NewTestLogPersister(t),
+			metadataStore: mockDeploymentMetadataStore{
+				metadata: map[string]string{},
+			},
 			want: sdk.StageStatusSuccess,
 		},
 		{
@@ -243,7 +264,10 @@ func TestPlugin_ExecuteScriptRun(t *testing.T) {
 					ApplicationID: "app-2",
 				},
 			},
-			lp:   logpersistertest.NewTestLogPersister(t),
+			lp: logpersistertest.NewTestLogPersister(t),
+			metadataStore: mockDeploymentMetadataStore{
+				metadata: map[string]string{},
+			},
 			want: sdk.StageStatusFailure,
 		},
 		{
@@ -256,14 +280,69 @@ func TestPlugin_ExecuteScriptRun(t *testing.T) {
 					ApplicationID: "app-3",
 				},
 			},
-			lp:   logpersistertest.NewTestLogPersister(t),
+			lp: logpersistertest.NewTestLogPersister(t),
+			metadataStore: mockDeploymentMetadataStore{
+				metadata: map[string]string{},
+			},
 			want: sdk.StageStatusFailure,
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			resp := executeScriptRun(t.Context(), tc.req, tc.lp)
+			resp := executeScriptRun(t.Context(), tc.req, tc.lp, &tc.metadataStore)
+			assert.Equal(t, tc.want, resp)
+		})
+	}
+}
+func TestPlugin_ExecuteRollback(t *testing.T) {
+	t.Parallel()
+	testcases := []struct {
+		name          string
+		req           sdk.ExecuteStageRequest[struct{}]
+		lp            sdk.StageLogPersister
+		metadataStore mockDeploymentMetadataStore
+		want          sdk.StageStatus
+	}{
+		{
+			name: "rollback run if its scriptrun record exists",
+			req: sdk.ExecuteStageRequest[struct{}]{
+				StageName:   stageScriptRunRollback,
+				StageIndex:  1,
+				StageConfig: []byte(`{"run": "echo 4", "onRollback": "echo 'rollback'"}`),
+				Deployment: sdk.Deployment{
+					ID:            "deployment-4",
+					ApplicationID: "app-4",
+				},
+			},
+			lp: logpersistertest.NewTestLogPersister(t),
+			metadataStore: mockDeploymentMetadataStore{
+				metadata: map[string]string{metadataKeyPrefix + "1": nonEmptyValue},
+			},
+			want: sdk.StageStatusSuccess,
+		},
+		{
+			name: "rollback should not run if its scriptrun record does not exist",
+			req: sdk.ExecuteStageRequest[struct{}]{
+				StageName:   stageScriptRunRollback,
+				StageIndex:  1,
+				StageConfig: []byte(`{"run": "echo 5","onRollback": "exit 1"}`),
+				Deployment: sdk.Deployment{
+					ID:            "deployment-5",
+					ApplicationID: "app-5",
+				},
+			},
+			lp: logpersistertest.NewTestLogPersister(t),
+			metadataStore: mockDeploymentMetadataStore{
+				metadata: map[string]string{},
+			},
+			want: sdk.StageStatusSuccess,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			resp := executeScriptRun(t.Context(), tc.req, tc.lp, &tc.metadataStore)
 			assert.Equal(t, tc.want, resp)
 		})
 	}

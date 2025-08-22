@@ -1,4 +1,4 @@
-import { Piped, PipedKey } from "~/modules/pipeds";
+import { Piped, PipedKey } from "pipecd/web/model/piped_pb";
 import { createApplicationGitRepository, dummyRepo } from "./dummy-repo";
 import { createRandTimes, randomText, randomUUID } from "./utils";
 

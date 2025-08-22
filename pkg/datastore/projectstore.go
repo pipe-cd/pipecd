@@ -16,8 +16,6 @@ package datastore
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -34,33 +32,6 @@ func (p *projectCollection) Factory() Factory {
 	return func() interface{} {
 		return &model.Project{}
 	}
-}
-
-func (p *projectCollection) ListInUsedShards() []Shard {
-	return []Shard{
-		ClientShard,
-	}
-}
-
-func (p *projectCollection) GetUpdatableShard() (Shard, error) {
-	return ClientShard, nil
-}
-
-func (p *projectCollection) Encode(e interface{}) (map[Shard][]byte, error) {
-	const errFmt = "failed while encode Project object: %s"
-
-	me, ok := e.(*model.Project)
-	if !ok {
-		return nil, fmt.Errorf(errFmt, "type not matched")
-	}
-
-	data, err := json.Marshal(me)
-	if err != nil {
-		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
-	}
-	return map[Shard][]byte{
-		ClientShard: data,
-	}, nil
 }
 
 type ProjectStore interface {
