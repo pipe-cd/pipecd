@@ -36,16 +36,6 @@ CLUSTER=$1
 REG_NAME='kind-registry'
 REG_PORT='5001'
 
-# Create registry container unless it already exists
-echo "Creating local registry container..."
-running="$(docker inspect -f '{{.State.Running}}' "${REG_NAME}" 2>/dev/null || true)"
-if [ "${running}" != 'true' ]; then
-  docker run \
-    -e REGISTRY_HTTP_ADDR=0.0.0.0:5001 \
-    -d --restart=always -p "127.0.0.1:${REG_PORT}:5001" --name "${REG_NAME}" \
-    registry:2
-fi
-
 # Create a cluster with the local registry enabled in containerd
 REG_CONFIG_DIR="/etc/containerd/certs.d"
 cat <<EOF | kind create cluster --name ${CLUSTER} --config=-
@@ -57,7 +47,7 @@ containerdConfigPatches:
     config_path = "${REG_CONFIG_DIR}"
 EOF
 
-# Connect the registry to the cluster network
+# Connect the local registry to the cluster network
 if [ "$(docker inspect -f='{{json .NetworkSettings.Networks.kind}}' "${REG_NAME}")" = 'null' ]; then
   docker network connect "kind" "${REG_NAME}"
 fi
