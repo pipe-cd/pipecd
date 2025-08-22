@@ -11,6 +11,12 @@ import { FC, useState } from "react";
 import { IGNORE_BREAKING_CHANGE_NOTES_PIPEDS } from "~/constants/localstorage";
 import ReactMarkdown from "react-markdown";
 import "github-markdown-css/github-markdown.css";
+import {
+  UI_TEXT_BREAKING_CHANGES,
+  UI_TEXT_CLOSE,
+  UI_TEXT_IGNORE,
+} from "~/constants/ui-text";
+import { WARNING_BREAKING_CHANGES } from "~/constants/text";
 
 type Props = {
   notes?: string | null;
@@ -87,9 +93,10 @@ const BreakingChangeNotes: FC<Props> = ({ notes }) => {
             WebkitLineClamp: "2",
             WebkitBoxOrient: "vertical",
             whiteSpace: "pre-wrap",
+            fontWeight: "bold",
           }}
         >
-          {notes}
+          {WARNING_BREAKING_CHANGES}
         </Typography>
       </Alert>
 
@@ -98,7 +105,7 @@ const BreakingChangeNotes: FC<Props> = ({ notes }) => {
         onClose={() => setShowDialog(false)}
         maxWidth="lg"
       >
-        <DialogTitle>Breaking Changes</DialogTitle>
+        <DialogTitle>{UI_TEXT_BREAKING_CHANGES}</DialogTitle>
         <DialogContent
           sx={{
             maxHeight: "60vh",
@@ -111,8 +118,8 @@ const BreakingChangeNotes: FC<Props> = ({ notes }) => {
           </div>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => onIgnoreWarning()}>Ignore</Button>
-          <Button onClick={() => setShowDialog(false)}>Close</Button>
+          <Button onClick={() => onIgnoreWarning()}>{UI_TEXT_IGNORE}</Button>
+          <Button onClick={() => setShowDialog(false)}>{UI_TEXT_CLOSE}</Button>
         </DialogActions>
       </Dialog>
     </>
