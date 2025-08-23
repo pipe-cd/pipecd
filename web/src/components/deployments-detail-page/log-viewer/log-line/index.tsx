@@ -8,7 +8,7 @@ import {
   DEFAULT_TEXT_COLOR,
   TERM_COLORS,
 } from "~/constants/term-colors";
-import { LogSeverity } from "~/modules/stage-logs";
+import { LogSeverity } from "~~/model/logblock_pb";
 import { parseLog } from "~/utils/parse-log";
 import dayjs from "dayjs";
 

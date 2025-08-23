@@ -1,10 +1,26 @@
 import userEvent from "@testing-library/user-event";
 import { UI_TEXT_CLEAR } from "~/constants/ui-text";
 import { ApplicationKind } from "~/modules/applications";
-import { DeploymentStatus } from "~/modules/deployments";
+import { DeploymentStatus } from "~/types/deployment";
 import { dummyApplication } from "~/__fixtures__/dummy-application";
-import { render, screen } from "~~/test-utils";
+import { render, screen, waitFor } from "~~/test-utils";
 import { DeploymentFilter } from ".";
+import { setupServer } from "msw/node";
+import { listApplicationsHandler } from "~/mocks/services/application";
+
+const server = setupServer(listApplicationsHandler);
+
+beforeAll(() => {
+  server.listen();
+});
+
+afterEach(() => {
+  server.resetHandlers();
+});
+
+afterAll(() => {
+  server.close();
+});
 
 const initialState = {
   applications: {
@@ -13,10 +29,10 @@ const initialState = {
   },
 };
 
-test("Change filter values", () => {
+test("Change filter values", async () => {
   const onChange = jest.fn();
   render(
-    <DeploymentFilter onChange={onChange} onClear={() => null} options={{}} />,
+    <DeploymentFilter options={{}} onChange={onChange} onClear={() => null} />,
     {
       initialState,
     }
@@ -26,11 +42,14 @@ test("Change filter values", () => {
     screen.getByRole("combobox", { name: /application id/i }),
     dummyApplication.id
   );
-  userEvent.click(
-    screen.getByRole("option", {
-      name: `${dummyApplication.name} (${dummyApplication.id})`,
-    })
-  );
+
+  await waitFor(() => {
+    userEvent.click(
+      screen.getByRole("option", {
+        name: `${dummyApplication.name} (${dummyApplication.id})`,
+      })
+    );
+  });
 
   expect(onChange).toHaveBeenCalledWith({ applicationId: dummyApplication.id });
   onChange.mockClear();
