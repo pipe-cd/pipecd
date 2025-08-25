@@ -33,8 +33,8 @@ import (
 )
 
 var (
-	_ sdk.LivestatePlugin[sdk.ConfigNone, kubeconfig.KubernetesDeployTargetConfig, kubeconfig.KubernetesApplicationSpec] = (*Plugin)(nil)
-	_ sdk.Initializer[sdk.ConfigNone, kubeconfig.KubernetesDeployTargetConfig]                                           = (*Plugin)(nil)
+	_ sdk.LivestatePlugin[kubeconfig.KubernetesPluginConfig, kubeconfig.KubernetesDeployTargetConfig, kubeconfig.KubernetesApplicationSpec] = (*Plugin)(nil)
+	_ sdk.Initializer[kubeconfig.KubernetesPluginConfig, kubeconfig.KubernetesDeployTargetConfig]                                           = (*Plugin)(nil)
 )
 
 type Plugin struct {
@@ -43,7 +43,7 @@ type Plugin struct {
 }
 
 // Initialize implements sdk.Initializer.
-func (p *Plugin) Initialize(ctx context.Context, input *sdk.InitializeInput[sdk.ConfigNone, kubeconfig.KubernetesDeployTargetConfig]) error {
+func (p *Plugin) Initialize(ctx context.Context, input *sdk.InitializeInput[kubeconfig.KubernetesPluginConfig, kubeconfig.KubernetesDeployTargetConfig]) error {
 	var err error
 
 	p.initialized.Do(func() {
@@ -57,7 +57,7 @@ func (p *Plugin) Initialize(ctx context.Context, input *sdk.InitializeInput[sdk.
 }
 
 // GetLivestate implements sdk.LivestatePlugin.
-func (p *Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTargets []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.GetLivestateResponse, error) {
+func (p *Plugin) GetLivestate(ctx context.Context, _ *kubeconfig.KubernetesPluginConfig, deployTargets []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.GetLivestateResponse, error) {
 	if len(deployTargets) != 1 {
 		return nil, fmt.Errorf("only 1 deploy target is allowed but got %d", len(deployTargets))
 	}

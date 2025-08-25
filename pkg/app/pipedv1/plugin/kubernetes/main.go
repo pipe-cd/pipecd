@@ -31,7 +31,7 @@ import (
 
 type initializer struct{}
 
-func (i *initializer) Initialize(ctx context.Context, input *sdk.InitializeInput[sdk.ConfigNone, config.KubernetesDeployTargetConfig]) error {
+func (i *initializer) Initialize(ctx context.Context, input *sdk.InitializeInput[config.KubernetesPluginConfig, config.KubernetesDeployTargetConfig]) error {
 	// Initialize the plugin with the given context and input.
 
 	toolregistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
