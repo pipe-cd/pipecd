@@ -15,17 +15,47 @@
 package main
 
 import (
+	"context"
 	"log"
+
+	"go.uber.org/zap"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/deployment"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/livestate"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
 )
+
+type initializer struct{}
+
+func (i *initializer) Initialize(ctx context.Context, input *sdk.InitializeInput[sdk.ConfigNone, config.KubernetesDeployTargetConfig]) error {
+	// Initialize the plugin with the given context and input.
+
+	toolregistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
+	// TODO: get helm version from piped config
+	helmPath, err := toolregistry.Helm(ctx, "")
+	if err != nil {
+		return err
+	}
+
+	helm := provider.NewHelm("", helmPath, input.Logger)
+
+	// TODO: set address, username, password from config
+	if err := helm.LoginToOCIRegistry(ctx, "", "", ""); err != nil {
+		input.Logger.Error("failed to login to helm oci registry", zap.Error(err))
+		return err
+	}
+
+	return nil
+}
 
 func main() {
 	plugin, err := sdk.NewPlugin(
 		"0.0.1",
+		sdk.WithInitializer[config.KubernetesApplicationSpec](&initializer{}),
 		sdk.WithDeploymentPlugin(&deployment.Plugin{}),
 		sdk.WithLivestatePlugin(&livestate.Plugin{}),
 	)
