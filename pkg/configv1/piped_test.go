@@ -85,31 +85,6 @@ func TestPipedConfig(t *testing.T) {
 						Password: "sample-password",
 					},
 				},
-				AnalysisProviders: []PipedAnalysisProvider{
-					{
-						Name: "prometheus-dev",
-						Type: model.AnalysisProviderPrometheus,
-						PrometheusConfig: &AnalysisProviderPrometheusConfig{
-							Address: "https://your-prometheus.dev",
-						},
-					},
-					{
-						Name: "datadog-dev",
-						Type: model.AnalysisProviderDatadog,
-						DatadogConfig: &AnalysisProviderDatadogConfig{
-							Address:            "https://your-datadog.dev",
-							APIKeyFile:         "/etc/piped-secret/datadog-api-key",
-							ApplicationKeyFile: "/etc/piped-secret/datadog-application-key",
-						},
-					},
-					{
-						Name: "stackdriver-dev",
-						Type: model.AnalysisProviderStackdriver,
-						StackdriverConfig: &AnalysisProviderStackdriverConfig{
-							ServiceAccountFile: "/etc/piped-secret/gcp-service-account.json",
-						},
-					},
-				},
 				Notifications: Notifications{
 					Routes: []NotificationRoute{
 						{
@@ -572,27 +547,6 @@ func TestPipedConfigMask(t *testing.T) {
 						Password: "foo",
 					},
 				},
-				AnalysisProviders: []PipedAnalysisProvider{
-					{
-						Name: "foo",
-						Type: "foo",
-						PrometheusConfig: &AnalysisProviderPrometheusConfig{
-							Address:      "foo",
-							UsernameFile: "foo",
-							PasswordFile: "foo",
-						},
-						DatadogConfig: &AnalysisProviderDatadogConfig{
-							Address:            "foo",
-							APIKeyFile:         "foo",
-							ApplicationKeyFile: "foo",
-							APIKeyData:         "foo",
-							ApplicationKeyData: "foo",
-						},
-						StackdriverConfig: &AnalysisProviderStackdriverConfig{
-							ServiceAccountFile: "foo",
-						},
-					},
-				},
 				Notifications: Notifications{
 					Routes: []NotificationRoute{
 						{
@@ -700,27 +654,6 @@ func TestPipedConfigMask(t *testing.T) {
 						Address:  "foo",
 						Username: "foo",
 						Password: maskString,
-					},
-				},
-				AnalysisProviders: []PipedAnalysisProvider{
-					{
-						Name: "foo",
-						Type: "foo",
-						PrometheusConfig: &AnalysisProviderPrometheusConfig{
-							Address:      "foo",
-							UsernameFile: "foo",
-							PasswordFile: maskString,
-						},
-						DatadogConfig: &AnalysisProviderDatadogConfig{
-							Address:            "foo",
-							APIKeyFile:         maskString,
-							ApplicationKeyFile: maskString,
-							APIKeyData:         maskString,
-							ApplicationKeyData: maskString,
-						},
-						StackdriverConfig: &AnalysisProviderStackdriverConfig{
-							ServiceAccountFile: maskString,
-						},
 					},
 				},
 				Notifications: Notifications{
@@ -855,33 +788,6 @@ func TestPipedSpecClone(t *testing.T) {
 						Password: "sample-password",
 					},
 				},
-				AnalysisProviders: []PipedAnalysisProvider{
-					{
-						Name: "prometheus-dev",
-						Type: model.AnalysisProviderPrometheus,
-						PrometheusConfig: &AnalysisProviderPrometheusConfig{
-							Address: "https://your-prometheus.dev",
-						},
-					},
-					{
-						Name: "datadog-dev",
-						Type: model.AnalysisProviderDatadog,
-						DatadogConfig: &AnalysisProviderDatadogConfig{
-							Address:            "https://your-datadog.dev",
-							APIKeyFile:         "/etc/piped-secret/datadog-api-key",
-							ApplicationKeyFile: "/etc/piped-secret/datadog-application-key",
-							APIKeyData:         "datadog-api-key",
-							ApplicationKeyData: "datadog-application-key",
-						},
-					},
-					{
-						Name: "stackdriver-dev",
-						Type: model.AnalysisProviderStackdriver,
-						StackdriverConfig: &AnalysisProviderStackdriverConfig{
-							ServiceAccountFile: "/etc/piped-secret/gcp-service-account.json",
-						},
-					},
-				},
 				Notifications: Notifications{
 					Routes: []NotificationRoute{
 						{
@@ -993,33 +899,6 @@ func TestPipedSpecClone(t *testing.T) {
 						Address:  "registry.example.com",
 						Username: "sample-username",
 						Password: "sample-password",
-					},
-				},
-				AnalysisProviders: []PipedAnalysisProvider{
-					{
-						Name: "prometheus-dev",
-						Type: model.AnalysisProviderPrometheus,
-						PrometheusConfig: &AnalysisProviderPrometheusConfig{
-							Address: "https://your-prometheus.dev",
-						},
-					},
-					{
-						Name: "datadog-dev",
-						Type: model.AnalysisProviderDatadog,
-						DatadogConfig: &AnalysisProviderDatadogConfig{
-							Address:            "https://your-datadog.dev",
-							APIKeyFile:         "/etc/piped-secret/datadog-api-key",
-							ApplicationKeyFile: "/etc/piped-secret/datadog-application-key",
-							APIKeyData:         "datadog-api-key",
-							ApplicationKeyData: "datadog-application-key",
-						},
-					},
-					{
-						Name: "stackdriver-dev",
-						Type: model.AnalysisProviderStackdriver,
-						StackdriverConfig: &AnalysisProviderStackdriverConfig{
-							ServiceAccountFile: "/etc/piped-secret/gcp-service-account.json",
-						},
 					},
 				},
 				Notifications: Notifications{
