@@ -50,7 +50,7 @@ type executor struct {
 	previousElapsedTime time.Duration
 }
 
-func ExecuteAnalysisStage(ctx context.Context, input *sdk.ExecuteStageInput[any], pluginCfg *config.PluginConfig) sdk.StageStatus {
+func ExecuteAnalysisStage(ctx context.Context, input *sdk.ExecuteStageInput[struct{}], pluginCfg *config.PluginConfig) sdk.StageStatus {
 	stageCfg := &config.AnalysisStageOptions{}
 	if err := json.Unmarshal(input.Request.StageConfig, stageCfg); err != nil {
 		return sdk.StageStatusFailure
