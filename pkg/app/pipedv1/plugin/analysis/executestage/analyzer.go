@@ -22,8 +22,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/analysisprovider/metrics"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/analysisprovider/metrics"
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 // analyzer contains a query for an analysis provider.
@@ -38,7 +38,7 @@ type analyzer struct {
 	skipOnNoData bool
 
 	logger       *zap.Logger
-	logPersister executor.LogPersister
+	logPersister sdk.StageLogPersister
 }
 
 type evaluator func(ctx context.Context, query string) (expected bool, reason string, err error)
@@ -52,7 +52,7 @@ func newAnalyzer(
 	failureLimit int,
 	skipOnNodata bool,
 	logger *zap.Logger,
-	logPersister executor.LogPersister,
+	logPersister sdk.StageLogPersister,
 ) *analyzer {
 	return &analyzer{
 		id:           id,
