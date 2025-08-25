@@ -183,3 +183,91 @@ func resolveSymlinkToAbsPath(path, absParentDir string) (string, error) {
 
 	return resolved, nil
 }
+
+type helmRemoteChart struct {
+	Repository string
+	Name       string
+	Version    string
+	Insecure   bool
+}
+
+func (h *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespace string, chart helmRemoteChart, opts *config.InputHelmOptions) (string, error) {
+	releaseName := appName
+	if opts != nil && opts.ReleaseName != "" {
+		releaseName = opts.ReleaseName
+	}
+
+	args := []string{
+		"template",
+		"--no-hooks",
+		"--include-crds",
+		"--dependency-update",
+		releaseName,
+		fmt.Sprintf("%s/%s", chart.Repository, chart.Name),
+		fmt.Sprintf("--version=%s", chart.Version),
+	}
+
+	if chart.Insecure {
+		args = append(args, "--insecure-skip-tls-verify")
+	}
+
+	if namespace != "" {
+		args = append(args, fmt.Sprintf("--namespace=%s", namespace))
+	}
+
+	if opts != nil {
+		for k, v := range opts.SetValues {
+			args = append(args, "--set", fmt.Sprintf("%s=%s", k, v))
+		}
+		for _, v := range opts.ValueFiles {
+			if err := verifyHelmValueFilePath(appDir, v); err != nil {
+				h.logger.Error("failed to verify values file path", zap.Error(err))
+				return "", err
+			}
+			args = append(args, "-f", v)
+		}
+		for k, v := range opts.SetFiles {
+			args = append(args, "--set-file", fmt.Sprintf("%s=%s", k, v))
+		}
+		for _, v := range opts.APIVersions {
+			args = append(args, "--api-versions", v)
+		}
+		if opts.KubeVersion != "" {
+			args = append(args, "--kube-version", opts.KubeVersion)
+		}
+	}
+
+	h.logger.Info(fmt.Sprintf("start templating a chart from Helm repository for application %s", appName),
+		zap.Any("args", args),
+	)
+
+	executor := func() (string, error) {
+		var stdout, stderr bytes.Buffer
+		cmd := exec.CommandContext(ctx, h.execPath, args...)
+		cmd.Dir = appDir
+		cmd.Stdout = &stdout
+		cmd.Stderr = &stderr
+
+		if err := cmd.Run(); err != nil {
+			return stdout.String(), fmt.Errorf("%w: %s", err, stderr.String())
+		}
+		return stdout.String(), nil
+	}
+
+	out, err := executor()
+	if err == nil {
+		return out, nil
+	}
+
+	if !strings.Contains(err.Error(), "helm repo update") {
+		return "", err
+	}
+
+	// TODO: Implement Helm chart repository update
+	// If the error is a "Not Found", we update the repositories and try again.
+	// if e := chartrepo.Update(ctx, toolregistry.DefaultRegistry(), h.logger); e != nil {
+	// 	h.logger.Error("failed to update Helm chart repositories", zap.Error(e))
+	// 	return "", err
+	// }
+	return executor()
+}
