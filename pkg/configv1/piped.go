@@ -62,8 +62,6 @@ type PipedSpec struct {
 	ChartRegistries []HelmChartRegistry `json:"chartRegistries,omitempty"`
 	// List of plugiin configs
 	Plugins []PipedPlugin `json:"plugins,omitempty"`
-	// List of analysis providers can be used by this piped.
-	AnalysisProviders []PipedAnalysisProvider `json:"analysisProviders,omitempty"`
 	// Sending notification to Slack, Webhook…
 	Notifications Notifications `json:"notifications"`
 	// What secret management method should be used.
@@ -136,11 +134,6 @@ func (s *PipedSpec) Validate() error {
 			}
 		}
 	}
-	for _, p := range s.AnalysisProviders {
-		if err := p.Validate(); err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
@@ -174,13 +167,12 @@ func (s *PipedSpec) Mask() {
 	for i := 0; i < len(s.ChartRegistries); i++ {
 		s.ChartRegistries[i].Mask()
 	}
-	for _, p := range s.AnalysisProviders {
-		p.Mask()
-	}
 	s.Notifications.Mask()
 	if s.SecretManagement != nil {
 		s.SecretManagement.Mask()
 	}
+
+	// TODO: Mask plugin configs
 }
 
 // GetRepositoryMap returns a map of repositories where key is repo id.
@@ -200,16 +192,6 @@ func (s *PipedSpec) GetRepository(id string) (PipedRepository, bool) {
 		}
 	}
 	return PipedRepository{}, false
-}
-
-// GetAnalysisProvider finds and returns an Analysis Provider config whose name is the given string.
-func (s *PipedSpec) GetAnalysisProvider(name string) (PipedAnalysisProvider, bool) {
-	for _, p := range s.AnalysisProviders {
-		if p.Name == name {
-			return p, true
-		}
-	}
-	return PipedAnalysisProvider{}, false
 }
 
 func (s *PipedSpec) IsInsecureChartRepository(name string) bool {
@@ -572,189 +554,6 @@ func (c *PlatformProviderECSConfig) Mask() {
 	if len(c.TokenFile) != 0 {
 		c.TokenFile = maskString
 	}
-}
-
-type PipedAnalysisProvider struct {
-	Name string                     `json:"name"`
-	Type model.AnalysisProviderType `json:"type"`
-
-	PrometheusConfig  *AnalysisProviderPrometheusConfig
-	DatadogConfig     *AnalysisProviderDatadogConfig
-	StackdriverConfig *AnalysisProviderStackdriverConfig
-}
-
-func (p *PipedAnalysisProvider) Mask() {
-	if p.PrometheusConfig != nil {
-		p.PrometheusConfig.Mask()
-	}
-	if p.DatadogConfig != nil {
-		p.DatadogConfig.Mask()
-	}
-	if p.StackdriverConfig != nil {
-		p.StackdriverConfig.Mask()
-	}
-}
-
-type genericPipedAnalysisProvider struct {
-	Name   string                     `json:"name"`
-	Type   model.AnalysisProviderType `json:"type"`
-	Config json.RawMessage            `json:"config"`
-}
-
-func (p *PipedAnalysisProvider) MarshalJSON() ([]byte, error) {
-	var (
-		err    error
-		config json.RawMessage
-	)
-
-	switch p.Type {
-	case model.AnalysisProviderDatadog:
-		config, err = json.Marshal(p.DatadogConfig)
-	case model.AnalysisProviderPrometheus:
-		config, err = json.Marshal(p.PrometheusConfig)
-	case model.AnalysisProviderStackdriver:
-		config, err = json.Marshal(p.StackdriverConfig)
-	default:
-		err = fmt.Errorf("unsupported analysis provider type: %s", p.Name)
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	return json.Marshal(&genericPipedAnalysisProvider{
-		Name:   p.Name,
-		Type:   p.Type,
-		Config: config,
-	})
-}
-
-func (p *PipedAnalysisProvider) UnmarshalJSON(data []byte) error {
-	var err error
-	gp := genericPipedAnalysisProvider{}
-	if err = json.Unmarshal(data, &gp); err != nil {
-		return err
-	}
-	p.Name = gp.Name
-	p.Type = gp.Type
-
-	switch p.Type {
-	case model.AnalysisProviderPrometheus:
-		p.PrometheusConfig = &AnalysisProviderPrometheusConfig{}
-		if len(gp.Config) > 0 {
-			err = json.Unmarshal(gp.Config, p.PrometheusConfig)
-		}
-	case model.AnalysisProviderDatadog:
-		p.DatadogConfig = &AnalysisProviderDatadogConfig{}
-		if len(gp.Config) > 0 {
-			err = json.Unmarshal(gp.Config, p.DatadogConfig)
-		}
-	case model.AnalysisProviderStackdriver:
-		p.StackdriverConfig = &AnalysisProviderStackdriverConfig{}
-		if len(gp.Config) > 0 {
-			err = json.Unmarshal(gp.Config, p.StackdriverConfig)
-		}
-	default:
-		err = fmt.Errorf("unsupported analysis provider type: %s", p.Name)
-	}
-	return err
-}
-
-func (p *PipedAnalysisProvider) Validate() error {
-	switch p.Type {
-	case model.AnalysisProviderPrometheus:
-		return p.PrometheusConfig.Validate()
-	case model.AnalysisProviderDatadog:
-		return p.DatadogConfig.Validate()
-	case model.AnalysisProviderStackdriver:
-		return p.StackdriverConfig.Validate()
-	default:
-		return fmt.Errorf("unknow provider type: %s", p.Type)
-	}
-}
-
-type AnalysisProviderPrometheusConfig struct {
-	Address string `json:"address"`
-	// The path to the username file.
-	UsernameFile string `json:"usernameFile,omitempty"`
-	// The path to the password file.
-	PasswordFile string `json:"passwordFile,omitempty"`
-}
-
-func (a *AnalysisProviderPrometheusConfig) Validate() error {
-	if a.Address == "" {
-		return fmt.Errorf("prometheus analysis provider requires the address")
-	}
-	return nil
-}
-
-func (a *AnalysisProviderPrometheusConfig) Mask() {
-	if len(a.PasswordFile) != 0 {
-		a.PasswordFile = maskString
-	}
-}
-
-type AnalysisProviderDatadogConfig struct {
-	// The address of Datadog API server.
-	// Only "datadoghq.com", "us3.datadoghq.com", "datadoghq.eu", "ddog-gov.com" are available.
-	// Defaults to "datadoghq.com"
-	Address string `json:"address,omitempty"`
-	// Required: The path to the api key file.
-	APIKeyFile string `json:"apiKeyFile"`
-	// Required: The path to the application key file.
-	ApplicationKeyFile string `json:"applicationKeyFile"`
-	// Base64 API Key for Datadog API server.
-	APIKeyData string `json:"apiKeyData,omitempty"`
-	// Base64 Application Key for Datadog API server.
-	ApplicationKeyData string `json:"applicationKeyData,omitempty"`
-}
-
-func (a *AnalysisProviderDatadogConfig) Validate() error {
-	if a.APIKeyFile == "" && a.APIKeyData == "" {
-		return fmt.Errorf("either datadog APIKeyFile or APIKeyData must be set")
-	}
-	if a.ApplicationKeyFile == "" && a.ApplicationKeyData == "" {
-		return fmt.Errorf("either datadog ApplicationKeyFile or ApplicationKeyData must be set")
-	}
-	if a.APIKeyData != "" && a.APIKeyFile != "" {
-		return fmt.Errorf("only datadog APIKeyFile or APIKeyData can be set")
-	}
-	if a.ApplicationKeyData != "" && a.ApplicationKeyFile != "" {
-		return fmt.Errorf("only datadog ApplicationKeyFile or ApplicationKeyData can be set")
-	}
-	return nil
-}
-
-func (a *AnalysisProviderDatadogConfig) Mask() {
-	if len(a.APIKeyFile) != 0 {
-		a.APIKeyFile = maskString
-	}
-	if len(a.ApplicationKeyFile) != 0 {
-		a.ApplicationKeyFile = maskString
-	}
-	if len(a.APIKeyData) != 0 {
-		a.APIKeyData = maskString
-	}
-	if len(a.ApplicationKeyData) != 0 {
-		a.ApplicationKeyData = maskString
-	}
-}
-
-// func(a *AnalysisProviderDatadogConfig)
-
-type AnalysisProviderStackdriverConfig struct {
-	// The path to the service account file.
-	ServiceAccountFile string `json:"serviceAccountFile"`
-}
-
-func (a *AnalysisProviderStackdriverConfig) Mask() {
-	if len(a.ServiceAccountFile) != 0 {
-		a.ServiceAccountFile = maskString
-	}
-}
-
-func (a *AnalysisProviderStackdriverConfig) Validate() error {
-	return nil
 }
 
 type Notifications struct {
