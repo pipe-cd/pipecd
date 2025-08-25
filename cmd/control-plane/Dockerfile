@@ -25,7 +25,7 @@ RUN go mod download
 
 COPY . ./
 
-RUN make build/go MOD=pipecd BUILD_OS=${TARGETOS} BUILD_ARCH=${TARGETARCH}
+RUN make build/go MOD=control-plane BUILD_OS=${TARGETOS} BUILD_ARCH=${TARGETARCH}
 
 FROM alpine:3.21.3
 
@@ -44,7 +44,7 @@ ENV PATH="/google-cloud-sdk/bin:${PATH}"
 
 RUN mkdir -p web/static
 
-COPY --from=builder /app/.artifacts/pipecd /usr/local/bin/pipecd
+COPY --from=builder /app/.artifacts/control-plane /usr/local/bin/control-plane
 COPY --from=web /app/.artifacts/web-static web/static
 
-ENTRYPOINT ["pipecd"]
+ENTRYPOINT ["control-plane"]
