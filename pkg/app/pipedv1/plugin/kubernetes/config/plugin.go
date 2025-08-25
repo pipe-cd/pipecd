@@ -65,6 +65,11 @@ type HelmChartRegistry struct {
 	Password string `json:"password,omitempty"`
 }
 
+// IsOCI checks if the registry is an OCI registry.
+func (r *HelmChartRegistry) IsOCI() bool {
+	return r.Type == OCIHelmChartRegistry
+}
+
 // KubernetesDeployTargetConfig represents the configuration for a Kubernetes deployment target.
 type KubernetesDeployTargetConfig struct {
 	// The master URL of the kubernetes cluster.

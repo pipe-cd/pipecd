@@ -43,10 +43,16 @@ func (i *initializer) Initialize(ctx context.Context, input *sdk.InitializeInput
 
 	helm := provider.NewHelm("", helmPath, input.Logger)
 
-	// TODO: set address, username, password from config
-	if err := helm.LoginToOCIRegistry(ctx, "", "", ""); err != nil {
-		input.Logger.Error("failed to login to helm oci registry", zap.Error(err))
-		return err
+	// Login to OCI registries
+	for _, registry := range input.Config.ChartRegistries {
+		if !registry.IsOCI() {
+			continue
+		}
+
+		if err := helm.LoginToOCIRegistry(ctx, registry.Address, registry.Username, registry.Password); err != nil {
+			input.Logger.Error("failed to login to helm oci registry", zap.String("address", registry.Address), zap.Error(err))
+			return err
+		}
 	}
 
 	return nil
