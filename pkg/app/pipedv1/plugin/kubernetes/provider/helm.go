@@ -34,17 +34,38 @@ var (
 )
 
 type Helm struct {
-	version  string
 	execPath string
 	logger   *zap.Logger
 }
 
-func NewHelm(version, path string, logger *zap.Logger) *Helm {
+func NewHelm(path string, logger *zap.Logger) *Helm {
 	return &Helm{
-		version:  version,
 		execPath: path,
 		logger:   logger,
 	}
+}
+
+func (h *Helm) LoginToOCIRegistry(ctx context.Context, address, username, password string) error {
+	args := []string{
+		"registry",
+		"login",
+		"-u",
+		username,
+		"-p",
+		password,
+		address,
+	}
+
+	var stderr bytes.Buffer
+	cmd := exec.CommandContext(ctx, h.execPath, args...)
+	cmd.Stderr = &stderr
+
+	h.logger.Info("login to oci registry", zap.String("address", address))
+	if err := cmd.Run(); err != nil {
+		h.logger.Error("failed to login to oci registry", zap.String("address", address), zap.Error(err))
+		return fmt.Errorf("%w: %s", err, stderr.String())
+	}
+	return nil
 }
 
 func (h *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, namespace, chartPath string, opts *config.InputHelmOptions) (string, error) {

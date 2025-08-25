@@ -171,7 +171,7 @@ func (l *Loader) templateHelmChart(ctx context.Context, input LoaderInput) (stri
 		return "", fmt.Errorf("failed to get helm tool: %w", err)
 	}
 
-	h := NewHelm(input.HelmVersion, helmPath, input.Logger)
+	h := NewHelm(helmPath, input.Logger)
 
 	switch {
 	case input.HelmChart.GitRemote != "":
@@ -196,7 +196,7 @@ func (l *Loader) templateKustomizeManifests(ctx context.Context, input LoaderInp
 		return "", fmt.Errorf("failed to get kustomize tool: %w", err)
 	}
 
-	h := NewHelm(input.HelmVersion, helmPath, input.Logger)
+	h := NewHelm(helmPath, input.Logger)
 
 	k := NewKustomize(input.KustomizeVersion, kustomizePath, input.Logger)
 
