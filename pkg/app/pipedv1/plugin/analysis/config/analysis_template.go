@@ -44,14 +44,14 @@ const (
 	KindAnalysisTemplate string = "AnalysisTemplate"
 )
 
-var errNotFound = errors.New("not found")
+var ErrNotFound = errors.New("not found")
 
 // LoadAnalysisTemplate finds the config file for the analysis template in the .pipe
 // directory first up. And returns parsed config, ErrNotFound is returned if not found.
 func LoadAnalysisTemplate(sharedConfigDir string) (*AnalysisTemplateSpec, error) {
 	files, err := os.ReadDir(sharedConfigDir)
 	if os.IsNotExist(err) {
-		return nil, errNotFound
+		return nil, ErrNotFound
 	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to read %s: %w", sharedConfigDir, err)
@@ -74,7 +74,7 @@ func LoadAnalysisTemplate(sharedConfigDir string) (*AnalysisTemplateSpec, error)
 			return &cfg.Spec, nil
 		}
 	}
-	return nil, errNotFound
+	return nil, ErrNotFound
 }
 
 func (s *AnalysisTemplateSpec) Validate() error {
