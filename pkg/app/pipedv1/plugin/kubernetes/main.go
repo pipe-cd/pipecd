@@ -43,6 +43,8 @@ func (i *initializer) Initialize(ctx context.Context, input *sdk.InitializeInput
 
 	helm := provider.NewHelm(helmPath, input.Logger)
 
+	// TODO: Add and update helm chart repository
+
 	// Login to OCI registries
 	for _, registry := range input.Config.ChartRegistries {
 		if !registry.IsOCI() {
