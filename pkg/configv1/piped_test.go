@@ -62,54 +62,6 @@ func TestPipedConfig(t *testing.T) {
 						Branch: "master",
 					},
 				},
-				ChartRepositories: []HelmChartRepository{
-					{
-						Type:    HTTPHelmChartRepository,
-						Name:    "fantastic-charts",
-						Address: "https://fantastic-charts.storage.googleapis.com",
-					},
-					{
-						Type:     HTTPHelmChartRepository,
-						Name:     "private-charts",
-						Address:  "https://private-charts.com",
-						Username: "basic-username",
-						Password: "basic-password",
-						Insecure: true,
-					},
-				},
-				ChartRegistries: []HelmChartRegistry{
-					{
-						Type:     OCIHelmChartRegistry,
-						Address:  "registry.example.com",
-						Username: "sample-username",
-						Password: "sample-password",
-					},
-				},
-				AnalysisProviders: []PipedAnalysisProvider{
-					{
-						Name: "prometheus-dev",
-						Type: model.AnalysisProviderPrometheus,
-						PrometheusConfig: &AnalysisProviderPrometheusConfig{
-							Address: "https://your-prometheus.dev",
-						},
-					},
-					{
-						Name: "datadog-dev",
-						Type: model.AnalysisProviderDatadog,
-						DatadogConfig: &AnalysisProviderDatadogConfig{
-							Address:            "https://your-datadog.dev",
-							APIKeyFile:         "/etc/piped-secret/datadog-api-key",
-							ApplicationKeyFile: "/etc/piped-secret/datadog-application-key",
-						},
-					},
-					{
-						Name: "stackdriver-dev",
-						Type: model.AnalysisProviderStackdriver,
-						StackdriverConfig: &AnalysisProviderStackdriverConfig{
-							ServiceAccountFile: "/etc/piped-secret/gcp-service-account.json",
-						},
-					},
-				},
 				Notifications: Notifications{
 					Routes: []NotificationRoute{
 						{
@@ -552,47 +504,6 @@ func TestPipedConfigMask(t *testing.T) {
 						Branch: "foo",
 					},
 				},
-				ChartRepositories: []HelmChartRepository{
-					{
-						Type:       "foo",
-						Name:       "foo",
-						Address:    "foo",
-						Username:   "foo",
-						Password:   "foo",
-						Insecure:   true,
-						GitRemote:  "foo",
-						SSHKeyFile: "foo",
-					},
-				},
-				ChartRegistries: []HelmChartRegistry{
-					{
-						Type:     "foo",
-						Address:  "foo",
-						Username: "foo",
-						Password: "foo",
-					},
-				},
-				AnalysisProviders: []PipedAnalysisProvider{
-					{
-						Name: "foo",
-						Type: "foo",
-						PrometheusConfig: &AnalysisProviderPrometheusConfig{
-							Address:      "foo",
-							UsernameFile: "foo",
-							PasswordFile: "foo",
-						},
-						DatadogConfig: &AnalysisProviderDatadogConfig{
-							Address:            "foo",
-							APIKeyFile:         "foo",
-							ApplicationKeyFile: "foo",
-							APIKeyData:         "foo",
-							ApplicationKeyData: "foo",
-						},
-						StackdriverConfig: &AnalysisProviderStackdriverConfig{
-							ServiceAccountFile: "foo",
-						},
-					},
-				},
 				Notifications: Notifications{
 					Routes: []NotificationRoute{
 						{
@@ -680,47 +591,6 @@ func TestPipedConfigMask(t *testing.T) {
 						RepoID: "foo",
 						Remote: "foo",
 						Branch: "foo",
-					},
-				},
-				ChartRepositories: []HelmChartRepository{
-					{
-						Type:       "foo",
-						Name:       "foo",
-						Address:    "foo",
-						Username:   "foo",
-						Password:   maskString,
-						Insecure:   true,
-						GitRemote:  "foo",
-						SSHKeyFile: maskString,
-					},
-				},
-				ChartRegistries: []HelmChartRegistry{
-					{
-						Type:     "foo",
-						Address:  "foo",
-						Username: "foo",
-						Password: maskString,
-					},
-				},
-				AnalysisProviders: []PipedAnalysisProvider{
-					{
-						Name: "foo",
-						Type: "foo",
-						PrometheusConfig: &AnalysisProviderPrometheusConfig{
-							Address:      "foo",
-							UsernameFile: "foo",
-							PasswordFile: maskString,
-						},
-						DatadogConfig: &AnalysisProviderDatadogConfig{
-							Address:            "foo",
-							APIKeyFile:         maskString,
-							ApplicationKeyFile: maskString,
-							APIKeyData:         maskString,
-							ApplicationKeyData: maskString,
-						},
-						StackdriverConfig: &AnalysisProviderStackdriverConfig{
-							ServiceAccountFile: maskString,
-						},
 					},
 				},
 				Notifications: Notifications{
@@ -832,56 +702,6 @@ func TestPipedSpecClone(t *testing.T) {
 						Branch: "master",
 					},
 				},
-				ChartRepositories: []HelmChartRepository{
-					{
-						Type:    HTTPHelmChartRepository,
-						Name:    "fantastic-charts",
-						Address: "https://fantastic-charts.storage.googleapis.com",
-					},
-					{
-						Type:     HTTPHelmChartRepository,
-						Name:     "private-charts",
-						Address:  "https://private-charts.com",
-						Username: "basic-username",
-						Password: "basic-password",
-						Insecure: true,
-					},
-				},
-				ChartRegistries: []HelmChartRegistry{
-					{
-						Type:     OCIHelmChartRegistry,
-						Address:  "registry.example.com",
-						Username: "sample-username",
-						Password: "sample-password",
-					},
-				},
-				AnalysisProviders: []PipedAnalysisProvider{
-					{
-						Name: "prometheus-dev",
-						Type: model.AnalysisProviderPrometheus,
-						PrometheusConfig: &AnalysisProviderPrometheusConfig{
-							Address: "https://your-prometheus.dev",
-						},
-					},
-					{
-						Name: "datadog-dev",
-						Type: model.AnalysisProviderDatadog,
-						DatadogConfig: &AnalysisProviderDatadogConfig{
-							Address:            "https://your-datadog.dev",
-							APIKeyFile:         "/etc/piped-secret/datadog-api-key",
-							ApplicationKeyFile: "/etc/piped-secret/datadog-application-key",
-							APIKeyData:         "datadog-api-key",
-							ApplicationKeyData: "datadog-application-key",
-						},
-					},
-					{
-						Name: "stackdriver-dev",
-						Type: model.AnalysisProviderStackdriver,
-						StackdriverConfig: &AnalysisProviderStackdriverConfig{
-							ServiceAccountFile: "/etc/piped-secret/gcp-service-account.json",
-						},
-					},
-				},
 				Notifications: Notifications{
 					Routes: []NotificationRoute{
 						{
@@ -970,56 +790,6 @@ func TestPipedSpecClone(t *testing.T) {
 						RepoID: "repo2",
 						Remote: "git@github.com:org/repo2.git",
 						Branch: "master",
-					},
-				},
-				ChartRepositories: []HelmChartRepository{
-					{
-						Type:    HTTPHelmChartRepository,
-						Name:    "fantastic-charts",
-						Address: "https://fantastic-charts.storage.googleapis.com",
-					},
-					{
-						Type:     HTTPHelmChartRepository,
-						Name:     "private-charts",
-						Address:  "https://private-charts.com",
-						Username: "basic-username",
-						Password: "basic-password",
-						Insecure: true,
-					},
-				},
-				ChartRegistries: []HelmChartRegistry{
-					{
-						Type:     OCIHelmChartRegistry,
-						Address:  "registry.example.com",
-						Username: "sample-username",
-						Password: "sample-password",
-					},
-				},
-				AnalysisProviders: []PipedAnalysisProvider{
-					{
-						Name: "prometheus-dev",
-						Type: model.AnalysisProviderPrometheus,
-						PrometheusConfig: &AnalysisProviderPrometheusConfig{
-							Address: "https://your-prometheus.dev",
-						},
-					},
-					{
-						Name: "datadog-dev",
-						Type: model.AnalysisProviderDatadog,
-						DatadogConfig: &AnalysisProviderDatadogConfig{
-							Address:            "https://your-datadog.dev",
-							APIKeyFile:         "/etc/piped-secret/datadog-api-key",
-							ApplicationKeyFile: "/etc/piped-secret/datadog-application-key",
-							APIKeyData:         "datadog-api-key",
-							ApplicationKeyData: "datadog-application-key",
-						},
-					},
-					{
-						Name: "stackdriver-dev",
-						Type: model.AnalysisProviderStackdriver,
-						StackdriverConfig: &AnalysisProviderStackdriverConfig{
-							ServiceAccountFile: "/etc/piped-secret/gcp-service-account.json",
-						},
 					},
 				},
 				Notifications: Notifications{
