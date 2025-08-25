@@ -38,7 +38,7 @@ type executor struct {
 	targetDS            *sdk.DeploymentSource[any] // TODO: do not use any
 	stageConfig         *config.AnalysisStageOptions
 	pluginConfig        *config.PluginConfig
-	analysisResultStore analysisResultStore
+	analysisResultStore analysisresultstore.Store
 	appName             string
 	sharedConfigDir     string
 

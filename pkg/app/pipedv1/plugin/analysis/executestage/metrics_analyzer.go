@@ -22,13 +22,13 @@ import (
 	"text/template"
 	"time"
 
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/analysisprovider/metrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/analysisresultstore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/executestage/mannwhitney"
-	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 const (
@@ -42,19 +42,14 @@ type metricsAnalyzer struct {
 	cfg                 config.AnalysisMetrics
 	stageStartTime      time.Time
 	provider            metrics.Provider
-	analysisResultStore analysisResultStore
+	analysisResultStore analysisresultstore.Store
 	// Application-specific arguments using when rendering the query.
 	argsTemplate argsTemplate
 	logger       *zap.Logger
 	logPersister sdk.StageLogPersister
 }
 
-type analysisResultStore interface {
-	GetLatestAnalysisResult(ctx context.Context) (*analysisresultstore.AnalysisResult, error)
-	PutLatestAnalysisResult(ctx context.Context, analysisResult *analysisresultstore.AnalysisResult) error
-}
-
-func newMetricsAnalyzer(id string, cfg config.AnalysisMetrics, stageStartTime time.Time, provider metrics.Provider, analysisResultStore analysisResultStore, argsTemplate argsTemplate, logger *zap.Logger, logPersister sdk.StageLogPersister) *metricsAnalyzer {
+func newMetricsAnalyzer(id string, cfg config.AnalysisMetrics, stageStartTime time.Time, provider metrics.Provider, analysisResultStore analysisresultstore.Store, argsTemplate argsTemplate, logger *zap.Logger, logPersister sdk.StageLogPersister) *metricsAnalyzer {
 	return &metricsAnalyzer{
 		id:                  id,
 		cfg:                 cfg,

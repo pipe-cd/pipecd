@@ -38,8 +38,8 @@ type apiClient interface {
 }
 
 type Store interface {
-	GetLatestAnalysisResult(ctx context.Context, applicationID string) (*AnalysisResult, error)
-	PutLatestAnalysisResult(ctx context.Context, applicationID string, analysisResult *AnalysisResult) error
+	GetLatestAnalysisResult(ctx context.Context) (*AnalysisResult, error)
+	PutLatestAnalysisResult(ctx context.Context, analysisResult *AnalysisResult) error
 }
 
 type store struct {
@@ -54,7 +54,7 @@ func NewStore(apiClient apiClient, logger *zap.Logger) Store {
 	}
 }
 
-func (s *store) GetLatestAnalysisResult(ctx context.Context, appID string) (*AnalysisResult, error) {
+func (s *store) GetLatestAnalysisResult(ctx context.Context) (*AnalysisResult, error) {
 	resp, err := s.apiClient.GetApplicationSharedObject(ctx, key)
 	if status.Code(err) == codes.NotFound {
 		s.logger.Info("analysis result is not found")
@@ -62,7 +62,6 @@ func (s *store) GetLatestAnalysisResult(ctx context.Context, appID string) (*Ana
 	}
 	if err != nil {
 		s.logger.Error("failed to get the most recent analysis result",
-			zap.String("application-id", appID),
 			zap.Error(err),
 		)
 		return nil, err
@@ -71,7 +70,6 @@ func (s *store) GetLatestAnalysisResult(ctx context.Context, appID string) (*Ana
 	result := &AnalysisResult{}
 	if err = json.Unmarshal(resp, result); err != nil {
 		s.logger.Error("failed to unmarshal the analysis result",
-			zap.String("application-id", appID),
 			zap.Error(err),
 		)
 		return nil, err
@@ -79,11 +77,10 @@ func (s *store) GetLatestAnalysisResult(ctx context.Context, appID string) (*Ana
 	return result, nil
 }
 
-func (s *store) PutLatestAnalysisResult(ctx context.Context, appID string, analysisResult *AnalysisResult) error {
+func (s *store) PutLatestAnalysisResult(ctx context.Context, analysisResult *AnalysisResult) error {
 	json, err := json.Marshal(analysisResult)
 	if err != nil {
 		s.logger.Error("failed to marshal the analysis result",
-			zap.String("application-id", appID),
 			zap.Error(err),
 		)
 		return err
@@ -91,7 +88,6 @@ func (s *store) PutLatestAnalysisResult(ctx context.Context, appID string, analy
 
 	if err = s.apiClient.PutApplicationSharedObject(ctx, key, json); err != nil {
 		s.logger.Error("failed to put the most recent analysis result",
-			zap.String("application-id", appID),
 			zap.Error(err),
 		)
 		return err
