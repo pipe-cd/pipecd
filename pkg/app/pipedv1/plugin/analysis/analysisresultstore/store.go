@@ -16,15 +16,16 @@ package analysisresultstore
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+)
 
-	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
-	"github.com/pipe-cd/pipecd/pkg/model"
+const (
+	key = "latest-analysis-result"
 )
 
 var (
@@ -32,13 +33,13 @@ var (
 )
 
 type apiClient interface {
-	GetLatestAnalysisResult(ctx context.Context, req *pipedservice.GetLatestAnalysisResultRequest, opts ...grpc.CallOption) (*pipedservice.GetLatestAnalysisResultResponse, error)
-	PutLatestAnalysisResult(ctx context.Context, req *pipedservice.PutLatestAnalysisResultRequest, opts ...grpc.CallOption) (*pipedservice.PutLatestAnalysisResultResponse, error)
+	GetApplicationSharedObject(ctx context.Context, key string) ([]byte, error)
+	PutApplicationSharedObject(ctx context.Context, key string, object []byte) error
 }
 
 type Store interface {
-	GetLatestAnalysisResult(ctx context.Context, applicationID string) (*model.AnalysisResult, error)
-	PutLatestAnalysisResult(ctx context.Context, applicationID string, analysisResult *model.AnalysisResult) error
+	GetLatestAnalysisResult(ctx context.Context, applicationID string) (*AnalysisResult, error)
+	PutLatestAnalysisResult(ctx context.Context, applicationID string, analysisResult *AnalysisResult) error
 }
 
 type store struct {
@@ -53,30 +54,44 @@ func NewStore(apiClient apiClient, logger *zap.Logger) Store {
 	}
 }
 
-func (s *store) GetLatestAnalysisResult(ctx context.Context, applicationID string) (*model.AnalysisResult, error) {
-	resp, err := s.apiClient.GetLatestAnalysisResult(ctx, &pipedservice.GetLatestAnalysisResultRequest{ApplicationId: applicationID})
+func (s *store) GetLatestAnalysisResult(ctx context.Context, appID string) (*AnalysisResult, error) {
+	resp, err := s.apiClient.GetApplicationSharedObject(ctx, key)
 	if status.Code(err) == codes.NotFound {
 		s.logger.Info("analysis result is not found")
 		return nil, ErrNotFound
 	}
 	if err != nil {
 		s.logger.Error("failed to get the most recent analysis result",
-			zap.String("application-id", applicationID),
+			zap.String("application-id", appID),
 			zap.Error(err),
 		)
 		return nil, err
 	}
-	return resp.AnalysisResult, nil
+
+	result := &AnalysisResult{}
+	if err = json.Unmarshal(resp, result); err != nil {
+		s.logger.Error("failed to unmarshal the analysis result",
+			zap.String("application-id", appID),
+			zap.Error(err),
+		)
+		return nil, err
+	}
+	return result, nil
 }
 
-func (s *store) PutLatestAnalysisResult(ctx context.Context, applicationID string, analysisResult *model.AnalysisResult) error {
-	_, err := s.apiClient.PutLatestAnalysisResult(ctx, &pipedservice.PutLatestAnalysisResultRequest{
-		ApplicationId:  applicationID,
-		AnalysisResult: analysisResult,
-	})
+func (s *store) PutLatestAnalysisResult(ctx context.Context, appID string, analysisResult *AnalysisResult) error {
+	json, err := json.Marshal(analysisResult)
 	if err != nil {
+		s.logger.Error("failed to marshal the analysis result",
+			zap.String("application-id", appID),
+			zap.Error(err),
+		)
+		return err
+	}
+
+	if err = s.apiClient.PutApplicationSharedObject(ctx, key, json); err != nil {
 		s.logger.Error("failed to put the most recent analysis result",
-			zap.String("application-id", applicationID),
+			zap.String("application-id", appID),
 			zap.Error(err),
 		)
 		return err

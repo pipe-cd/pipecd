@@ -16,56 +16,71 @@ package executestage
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
-
-	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
-	"github.com/pipe-cd/pipecd/pkg/model"
 
 	httpprovider "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/analysisprovider/http"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/analysisprovider/log"
 	logfactory "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/analysisprovider/log/factory"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/analysisprovider/metrics"
 	metricsfactory "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/analysisprovider/metrics/factory"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/analysisresultstore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/config"
-	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
-const (
-	skippedByKey = "SkippedBy"
-)
-
-type Executor struct {
+type executor struct {
+	targetDS            *sdk.DeploymentSource[any] // TODO: do not use any
+	stageConfig         *config.AnalysisStageOptions
 	pluginConfig        *config.PluginConfig
 	analysisResultStore analysisResultStore
+	appName             string
+	sharedConfigDir     string
 
 	logger       *zap.Logger
 	logPersister sdk.StageLogPersister
 	client       *sdk.Client
-	stageConfig  *config.AnalysisStageOptions
-	targetDS     *sdk.DeploymentSource[any] // TODO: do not use any
 
-	repoDir             string
 	startTime           time.Time
 	previousElapsedTime time.Duration
 }
 
+func ExecuteAnalysisStage(ctx context.Context, input *sdk.ExecuteStageInput[any], pluginCfg *config.PluginConfig) sdk.StageStatus {
+	stageCfg := &config.AnalysisStageOptions{}
+	if err := json.Unmarshal(input.Request.StageConfig, stageCfg); err != nil {
+		return sdk.StageStatusFailure
+	}
+	resultStore := analysisresultstore.NewStore(input.Client, input.Logger)
+
+	e := &executor{
+		stageConfig:         stageCfg,
+		pluginConfig:        pluginCfg,
+		analysisResultStore: resultStore,
+		appName:             input.Request.Deployment.ApplicationName,
+		sharedConfigDir:     input.Request.TargetDeploymentSource.SharedConfigDirectory,
+		logger:              zap.NewNop(),
+		logPersister:        input.Client.LogPersister(),
+		client:              input.Client,
+	}
+	return e.execute(ctx)
+}
+
 // Execute spawns and runs multiple analyzer that run a query at the regular time.
 // Any of those fail then the stage ends with failure.
-func (e *Executor) Execute(sig executor.StopSignal) sdk.StageStatus {
+func (e *executor) execute(ctx context.Context) sdk.StageStatus {
 	e.startTime = time.Now()
-	ctx := sig.Context()
 	options := e.stageConfig
 	if options == nil {
 		e.logger.Error("missing analysis configuration for ANALYSIS stage")
 		return sdk.StageStatusFailure
 	}
 
-	templateCfg, err := config.LoadAnalysisTemplate(e.repoDir)
+	templateCfg, err := config.LoadAnalysisTemplate(e.targetDS.SharedConfigDirectory)
 	if errors.Is(err, config.ErrNotFound) {
 		e.logger.Info("config file for AnalysisTemplate not found")
 		templateCfg = &config.AnalysisTemplateSpec{}
@@ -168,13 +183,13 @@ func (e *Executor) Execute(sig executor.StopSignal) sdk.StageStatus {
 		return sdk.StageStatusFailure
 	}
 
-	status = executor.DetermineStageStatus(sig.Signal(), e.Stage.Status, status)
+	// TODO: OK?
 	if status != sdk.StageStatusSuccess {
 		return status
 	}
 
 	e.logPersister.Success("All analyses were successful")
-	err = e.analysisResultStore.PutLatestAnalysisResult(ctx, &model.AnalysisResult{
+	err = e.analysisResultStore.PutLatestAnalysisResult(ctx, &analysisresultstore.AnalysisResult{
 		StartTime: e.startTime.Unix(),
 	})
 	if err != nil {
@@ -188,7 +203,7 @@ const elapsedTimeKey = "elapsedTime"
 // saveElapsedTime stores the elapsed time of analysis stage into metadata persister.
 // The analysis stage can be restarted from the middle even if it ends unexpectedly,
 // that's why count should be stored.
-func (e *Executor) saveElapsedTime(ctx context.Context) {
+func (e *executor) saveElapsedTime(ctx context.Context) {
 	elapsedTime := time.Since(e.startTime) + e.previousElapsedTime
 	metadata := map[string]string{
 		elapsedTimeKey: elapsedTime.String(),
@@ -199,7 +214,7 @@ func (e *Executor) saveElapsedTime(ctx context.Context) {
 }
 
 // retrievePreviousElapsedTime sets the elapsed time of analysis stage by decoding metadata.
-func (e *Executor) retrievePreviousElapsedTime(ctx context.Context) (time.Duration, error) {
+func (e *executor) retrievePreviousElapsedTime(ctx context.Context) (time.Duration, error) {
 	s, ok, err := e.client.GetStageMetadata(ctx, elapsedTimeKey)
 	if err != nil {
 		return 0, err
@@ -215,7 +230,7 @@ func (e *Executor) retrievePreviousElapsedTime(ctx context.Context) (time.Durati
 	return et, nil
 }
 
-func (e *Executor) newAnalyzerForLog(i int, templatable *config.TemplatableAnalysisLog, templateCfg *config.AnalysisTemplateSpec) (*analyzer, error) {
+func (e *executor) newAnalyzerForLog(i int, templatable *config.TemplatableAnalysisLog, templateCfg *config.AnalysisTemplateSpec) (*analyzer, error) {
 	cfg, err := e.getLogConfig(templatable, templateCfg)
 	if err != nil {
 		return nil, err
@@ -231,7 +246,7 @@ func (e *Executor) newAnalyzerForLog(i int, templatable *config.TemplatableAnaly
 	return newAnalyzer(id, provider.Type(), cfg.Query, runner, time.Duration(cfg.Interval), cfg.FailureLimit, cfg.SkipOnNoData, e.logger, e.logPersister), nil
 }
 
-func (e *Executor) newAnalyzerForHTTP(i int, templatable *config.TemplatableAnalysisHTTP, templateCfg *config.AnalysisTemplateSpec) (*analyzer, error) {
+func (e *executor) newAnalyzerForHTTP(i int, templatable *config.TemplatableAnalysisHTTP, templateCfg *config.AnalysisTemplateSpec) (*analyzer, error) {
 	cfg, err := e.getHTTPConfig(templatable, templateCfg)
 	if err != nil {
 		return nil, err
@@ -244,7 +259,7 @@ func (e *Executor) newAnalyzerForHTTP(i int, templatable *config.TemplatableAnal
 	return newAnalyzer(id, provider.Type(), "", runner, time.Duration(cfg.Interval), cfg.FailureLimit, cfg.SkipOnNoData, e.logger, e.logPersister), nil
 }
 
-func (e *Executor) newMetricsProvider(providerName string, templatable config.TemplatableAnalysisMetrics) (metrics.Provider, error) {
+func (e *executor) newMetricsProvider(providerName string, templatable config.TemplatableAnalysisMetrics) (metrics.Provider, error) {
 	cfg, ok := e.pluginConfig.GetAnalysisProvider(providerName)
 	if !ok {
 		return nil, fmt.Errorf("unknown provider name %s", providerName)
@@ -256,7 +271,7 @@ func (e *Executor) newMetricsProvider(providerName string, templatable config.Te
 	return provider, nil
 }
 
-func (e *Executor) newLogProvider(providerName string) (log.Provider, error) {
+func (e *executor) newLogProvider(providerName string) (log.Provider, error) {
 	cfg, ok := e.pluginConfig.GetAnalysisProvider(providerName)
 	if !ok {
 		return nil, fmt.Errorf("unknown provider name %s", providerName)
@@ -270,7 +285,7 @@ func (e *Executor) newLogProvider(providerName string) (log.Provider, error) {
 
 // getMetricsConfig renders the given template and returns the metrics config.
 // Just returns metrics config if no template specified.
-func (e *Executor) getMetricsConfig(templatableCfg config.TemplatableAnalysisMetrics, templateCfg *config.AnalysisTemplateSpec) (*config.AnalysisMetrics, error) {
+func (e *executor) getMetricsConfig(templatableCfg config.TemplatableAnalysisMetrics, templateCfg *config.AnalysisTemplateSpec) (*config.AnalysisMetrics, error) {
 	name := templatableCfg.Template.Name
 	if name == "" {
 		return &templatableCfg.AnalysisMetrics, nil
@@ -285,7 +300,7 @@ func (e *Executor) getMetricsConfig(templatableCfg config.TemplatableAnalysisMet
 
 // getLogConfig renders the given template and returns the log config.
 // Just returns log config if no template specified.
-func (e *Executor) getLogConfig(templatableCfg *config.TemplatableAnalysisLog, templateCfg *config.AnalysisTemplateSpec) (*config.AnalysisLog, error) {
+func (e *executor) getLogConfig(templatableCfg *config.TemplatableAnalysisLog, templateCfg *config.AnalysisTemplateSpec) (*config.AnalysisLog, error) {
 	name := templatableCfg.Template.Name
 	if name == "" {
 		return &templatableCfg.AnalysisLog, nil
@@ -300,7 +315,7 @@ func (e *Executor) getLogConfig(templatableCfg *config.TemplatableAnalysisLog, t
 
 // getHTTPConfig renders the given template and returns the http config.
 // Just returns http config if no template specified.
-func (e *Executor) getHTTPConfig(templatableCfg *config.TemplatableAnalysisHTTP, templateCfg *config.AnalysisTemplateSpec) (*config.AnalysisHTTP, error) {
+func (e *executor) getHTTPConfig(templatableCfg *config.TemplatableAnalysisHTTP, templateCfg *config.AnalysisTemplateSpec) (*config.AnalysisHTTP, error) {
 	name := templatableCfg.Template.Name
 	if name == "" {
 		return &templatableCfg.AnalysisHTTP, nil
@@ -313,49 +328,33 @@ func (e *Executor) getHTTPConfig(templatableCfg *config.TemplatableAnalysisHTTP,
 	return &cfg, nil
 }
 
-func (e *Executor) buildAppArgs(customArgs map[string]string) argsTemplate {
+func (e *executor) buildAppArgs(customArgs map[string]string) argsTemplate {
 	args := argsTemplate{
 		App: appArgs{
-			Name: e.Application.Name,
+			Name: e.appName,
 			// TODO: Populate Env
 			Env: "",
 		},
 		AppCustomArgs: customArgs,
 	}
-	if e.config.Kind != config.KindKubernetesApp {
-		return args
-	}
-	namespace := "default"
-	if n := e.config.KubernetesApplicationSpec.Input.Namespace; n != "" {
-		namespace = n
-	}
-	args.K8s.Namespace = namespace
 	return args
 }
 
-func (e *Executor) checkSkippedByCmd(ctx context.Context) bool {
-	var skipCmd *model.ReportableCommand
-	commands := e.CommandLister.ListCommands()
-
-	for i, cmd := range commands {
-		if cmd.GetSkipStage() != nil {
-			skipCmd = &commands[i]
-			break
+func (e *executor) checkSkippedByCmd(ctx context.Context) bool {
+	for cmd, err := range e.client.ListStageCommands(ctx, sdk.CommandTypeSkipStage) {
+		if err != nil {
+			e.logger.Error("failed to list stage skip commands in analysis stage", zap.Error(err))
+			return false
 		}
-	}
-	if skipCmd == nil {
-		return false
-	}
 
-	md := fmt.Sprintf("%s:%s", skippedByKey, skipCmd.Commander)
-	if err := e.client.PutStageMetadata(ctx, sdk.MetadataKeyStageDisplay, md); err != nil {
-		e.logPersister.Errorf("Unable to save the commander who skipped the stage information to deployment, %v", err)
-	}
-	e.logPersister.Infof("Got the skip command from %q", skipCmd.Commander)
-	e.logPersister.Infof("This stage has been skipped by user (%s)", skipCmd.Commander)
+		md := fmt.Sprintf("SkippedBy: %s", cmd.Commander)
+		if err := e.client.PutStageMetadata(ctx, sdk.MetadataKeyStageDisplay, md); err != nil {
+			e.logPersister.Errorf("Unable to save the commander who skipped the stage information to deployment, %v", err)
+		}
+		e.logPersister.Infof("Got the skip command from %q", cmd.Commander)
+		e.logPersister.Infof("This stage has been skipped by user (%s)", cmd.Commander)
 
-	if err := skipCmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil); err != nil {
-		e.logger.Error("failed to report handled command", zap.Error(err))
+		return true
 	}
-	return true
+	return false
 }

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package executestage
+package analysisresultstore
 
 type AnalysisResult struct {
 	StartTime int64 `json:"start_time"`

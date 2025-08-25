@@ -28,7 +28,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/analysisresultstore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/executestage/mannwhitney"
-	"github.com/pipe-cd/pipecd/pkg/model"
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
@@ -51,8 +50,8 @@ type metricsAnalyzer struct {
 }
 
 type analysisResultStore interface {
-	GetLatestAnalysisResult(ctx context.Context) (*AnalysisResult, error)
-	PutLatestAnalysisResult(ctx context.Context, analysisResult *model.AnalysisResult) error
+	GetLatestAnalysisResult(ctx context.Context) (*analysisresultstore.AnalysisResult, error)
+	PutLatestAnalysisResult(ctx context.Context, analysisResult *analysisresultstore.AnalysisResult) error
 }
 
 func newMetricsAnalyzer(id string, cfg config.AnalysisMetrics, stageStartTime time.Time, provider metrics.Provider, analysisResultStore analysisResultStore, argsTemplate argsTemplate, logger *zap.Logger, logPersister sdk.StageLogPersister) *metricsAnalyzer {
