@@ -1,4 +1,4 @@
-// Copyright 2024 The PipeCD Authors.
+// Copyright 2025 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	unit "github.com/pipe-cd/piped-plugin-sdk-go/unit"
 )
 
 const (
@@ -47,7 +49,7 @@ type AnalysisMetrics struct {
 	Expected AnalysisExpected `json:"expected"`
 	// Run a query at this intervals.
 	// Required field.
-	Interval Duration `json:"interval"`
+	Interval unit.Duration `json:"interval"`
 	// Acceptable number of failures. For instance, If 1 is set,
 	// the analysis will be considered a failure after 2 failures.
 	// Default is 0.
@@ -57,7 +59,7 @@ type AnalysisMetrics struct {
 	SkipOnNoData bool `json:"skipOnNoData"`
 	// How long after which the query times out.
 	// Default is 30s.
-	Timeout Duration `json:"timeout" default:"30s"`
+	Timeout unit.Duration `json:"timeout" default:"30s"`
 
 	// The stage fails on deviation in the specified direction. One of LOW or HIGH or EITHER is available.
 	// This can be used only for PREVIOUS, CANARY_BASELINE or CANARY_PRIMARY. Defaults to EITHER.
@@ -135,16 +137,16 @@ func (e *AnalysisExpected) String() string {
 
 // AnalysisLog contains common configurable values for deployment analysis with log.
 type AnalysisLog struct {
-	Query    string   `json:"query"`
-	Interval Duration `json:"interval"`
+	Query    string        `json:"query"`
+	Interval unit.Duration `json:"interval"`
 	// Maximum number of failed checks before the query result is considered as failure.
 	FailureLimit int `json:"failureLimit"`
 	// If true, it considers as success when no data returned from the analysis provider.
 	// Default is false.
 	SkipOnNoData bool `json:"skipOnNoData"`
 	// How long after which the query times out.
-	Timeout  Duration `json:"timeout"`
-	Provider string   `json:"provider"`
+	Timeout  unit.Duration `json:"timeout"`
+	Provider string        `json:"provider"`
 }
 
 func (a *AnalysisLog) Validate() error {
@@ -159,13 +161,13 @@ type AnalysisHTTP struct {
 	Headers          []AnalysisHTTPHeader `json:"headers"`
 	ExpectedCode     int                  `json:"expectedCode"`
 	ExpectedResponse string               `json:"expectedResponse"`
-	Interval         Duration             `json:"interval"`
+	Interval         unit.Duration        `json:"interval"`
 	// Maximum number of failed checks before the response is considered as failure.
 	FailureLimit int `json:"failureLimit"`
 	// If true, it considers as success when no data returned from the analysis provider.
 	// Default is false.
-	SkipOnNoData bool     `json:"skipOnNoData"`
-	Timeout      Duration `json:"timeout"`
+	SkipOnNoData bool          `json:"skipOnNoData"`
+	Timeout      unit.Duration `json:"timeout"`
 }
 
 func (a *AnalysisHTTP) Validate() error {

@@ -1,4 +1,4 @@
-// Copyright 2024 The PipeCD Authors.
+// Copyright 2025 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,26 +20,28 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	unit "github.com/pipe-cd/piped-plugin-sdk-go/unit"
 )
 
 func TestLoadAnalysisTemplate(t *testing.T) {
 	testcases := []struct {
-		name          string
-		repoDir       string
-		expectedSpec  interface{}
-		expectedError error
+		name            string
+		sharedConfigDir string
+		expectedSpec    interface{}
+		expectedError   error
 	}{
 		{
-			name:    "Load analysis template successfully",
-			repoDir: "testdata",
+			name:            "Load analysis template successfully",
+			sharedConfigDir: "testdata/.pipe",
 			expectedSpec: &AnalysisTemplateSpec{
 				Metrics: map[string]AnalysisMetrics{
 					"app_http_error_percentage": {
 						Strategy:  AnalysisStrategyThreshold,
 						Query:     "http_error_percentage{env={{ .App.Env }}, app={{ .App.Name }}}",
 						Expected:  AnalysisExpected{Max: floatPointer(0.1)},
-						Interval:  Duration(time.Minute),
-						Timeout:   Duration(30 * time.Second),
+						Interval:  unit.Duration(time.Minute),
+						Timeout:   unit.Duration(30 * time.Second),
 						Provider:  "datadog-dev",
 						Deviation: AnalysisDeviationEither,
 					},
@@ -59,8 +61,8 @@ func TestLoadAnalysisTemplate(t *testing.T) {
 `,
 						Expected:     AnalysisExpected{Max: floatPointer(0.0001)},
 						FailureLimit: 2,
-						Interval:     Duration(10 * time.Second),
-						Timeout:      Duration(30 * time.Second),
+						Interval:     unit.Duration(10 * time.Second),
+						Timeout:      unit.Duration(30 * time.Second),
 						Provider:     "prometheus-dev",
 						Deviation:    AnalysisDeviationEither,
 					},
@@ -87,8 +89,8 @@ sum(
 `,
 						Expected:     AnalysisExpected{Max: floatPointer(10)},
 						FailureLimit: 1,
-						Interval:     Duration(time.Minute),
-						Timeout:      Duration(30 * time.Second),
+						Interval:     unit.Duration(time.Minute),
+						Timeout:      unit.Duration(30 * time.Second),
 						Provider:     "prometheus-dev",
 						Deviation:    AnalysisDeviationEither,
 					},
@@ -100,7 +102,7 @@ sum(
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			spec, err := LoadAnalysisTemplate(tc.repoDir)
+			spec, err := LoadAnalysisTemplate(tc.sharedConfigDir)
 			require.Equal(t, tc.expectedError, err)
 			if err == nil {
 				assert.Equal(t, tc.expectedSpec, spec)

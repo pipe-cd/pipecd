@@ -66,10 +66,6 @@ const (
 	KindPiped Kind = "Piped"
 	// KindControlPlane represents configuration for control plane's services.
 	KindControlPlane Kind = "ControlPlane"
-	// KindAnalysisTemplate represents shared analysis template for a repository.
-	// This configuration file should be placed in .pipe directory
-	// at the root of the repository.
-	KindAnalysisTemplate Kind = "AnalysisTemplate"
 	// KindEventWatcher represents configuration for Event Watcher.
 	KindEventWatcher Kind = "EventWatcher"
 )
