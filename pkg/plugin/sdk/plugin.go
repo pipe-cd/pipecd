@@ -100,6 +100,14 @@ func (c commonFields[Config, DeployTargetConfig]) withLogger(logger *zap.Logger)
 // PluginOption is a function that configures the plugin.
 type PluginOption[Config, DeployTargetConfig, ApplicationConfigSpec any] func(*Plugin[Config, DeployTargetConfig, ApplicationConfigSpec])
 
+// WithInitializer is a function that appends the initializer.
+// The order of the execution for Initializers is the order in which they are added.
+func WithInitializer[ApplicationConfigSpec, Config, DeployTargetConfig any](initializer Initializer[Config, DeployTargetConfig]) PluginOption[Config, DeployTargetConfig, ApplicationConfigSpec] {
+	return func(plugin *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) {
+		plugin.initializers = append(plugin.initializers, initializer)
+	}
+}
+
 // WithStagePlugin is a function that sets the stage plugin.
 // This is mutually exclusive with WithDeploymentPlugin.
 func WithStagePlugin[Config, DeployTargetConfig, ApplicationConfigSpec any](stagePlugin StagePlugin[Config, DeployTargetConfig, ApplicationConfigSpec]) PluginOption[Config, DeployTargetConfig, ApplicationConfigSpec] {
@@ -138,6 +146,9 @@ type Plugin[Config, DeployTargetConfig, ApplicationConfigSpec any] struct {
 	version string
 	// name is the name of the plugin defined in the piped plugin config.
 	name string
+
+	// initializers
+	initializers []Initializer[Config, DeployTargetConfig]
 
 	// plugin implementations
 	stagePlugin       StagePlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
@@ -340,6 +351,13 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 			DeployTargets: commonFields.deployTargets,
 			Client:        client,
 			Logger:        logger.Named("plugin-initializer"),
+		}
+
+		for _, initializer := range p.initializers {
+			if err := initializer.Initialize(ctx, initializeInput); err != nil {
+				logger.Error("failed to initialize plugin", zap.Error(err))
+				return err
+			}
 		}
 
 		var services []rpc.Service
