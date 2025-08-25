@@ -22,8 +22,6 @@ import (
 	"net/http/pprof"
 	"time"
 
-	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister"
-	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -32,6 +30,9 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/rpc"
+
+	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister"
+	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry"
 )
 
 // DeployTargetsNone is a type alias for a slice of pointers to DeployTarget
@@ -60,6 +61,8 @@ type InitializeInput[Config, DeployTargetConfig any] struct {
 	Config *Config
 	// DeployTargets is the deploy targets of the plugin.
 	DeployTargets map[string]*DeployTarget[DeployTargetConfig]
+	// Client is the client to interact with the piped.
+	Client *Client
 	// Logger is the logger for the plugin.
 	Logger *zap.Logger
 }
@@ -321,9 +324,21 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 			}
 		}
 
+		client := &Client{
+			base:         commonFields.client,
+			pluginName:   commonFields.name,
+			toolRegistry: commonFields.toolRegistry,
+			// These fields are not available at initializing state.
+			applicationID: "",
+			deploymentID:  "",
+			stageID:       "",
+			logPersister:  nil,
+		}
+
 		initializeInput := &InitializeInput[Config, DeployTargetConfig]{
 			Config:        commonFields.pluginConfig,
 			DeployTargets: commonFields.deployTargets,
+			Client:        client,
 			Logger:        logger.Named("plugin-initializer"),
 		}
 
