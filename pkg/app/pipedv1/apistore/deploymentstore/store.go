@@ -103,7 +103,6 @@ func (s *store) Lister() Lister {
 }
 
 func (s *store) sync(ctx context.Context) error {
-	// TODO: Call ListNotCompletedDeployments itervally until all required deployments are fetched.
 	resp, err := s.apiClient.ListNotCompletedDeployments(ctx, &pipedservice.ListNotCompletedDeploymentsRequest{})
 	if err != nil {
 		s.logger.Error("failed to list unhandled deployment", zap.Error(err))
