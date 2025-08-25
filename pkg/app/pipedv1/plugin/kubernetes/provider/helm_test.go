@@ -44,7 +44,7 @@ func TestTemplateLocalChart(t *testing.T) {
 	helmPath, err := r.Helm(ctx, "3.16.1")
 	require.NoError(t, err)
 
-	helm := NewHelm("3.16.1", helmPath, zaptest.NewLogger(t))
+	helm := NewHelm(helmPath, zaptest.NewLogger(t))
 	out, err := helm.TemplateLocalChart(ctx, appName, appDir, "", chartPath, nil)
 	require.NoError(t, err)
 
@@ -70,7 +70,7 @@ func TestTemplateLocalChart_WithNamespace(t *testing.T) {
 	helmPath, err := r.Helm(ctx, "3.16.1")
 	require.NoError(t, err)
 
-	helm := NewHelm("3.16.1", helmPath, zaptest.NewLogger(t))
+	helm := NewHelm(helmPath, zaptest.NewLogger(t))
 	out, err := helm.TemplateLocalChart(ctx, appName, appDir, namespace, chartPath, nil)
 	require.NoError(t, err)
 

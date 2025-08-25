@@ -69,7 +69,7 @@ func TestKustomizeTemplate_WithHelm(t *testing.T) {
 	require.NoError(t, err)
 
 	kustomize := NewKustomize("5.6.0", kustomizePath, zaptest.NewLogger(t))
-	helm := NewHelm("3.17.0", helmPath, zaptest.NewLogger(t))
+	helm := NewHelm(helmPath, zaptest.NewLogger(t))
 	out, err := kustomize.Template(ctx, appName, appDir, map[string]string{
 		"enable-helm": "",
 	}, helm)

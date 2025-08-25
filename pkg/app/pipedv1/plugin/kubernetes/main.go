@@ -41,7 +41,7 @@ func (i *initializer) Initialize(ctx context.Context, input *sdk.InitializeInput
 		return err
 	}
 
-	helm := provider.NewHelm("", helmPath, input.Logger)
+	helm := provider.NewHelm(helmPath, input.Logger)
 
 	// Login to OCI registries
 	for _, registry := range input.Config.ChartRegistries {

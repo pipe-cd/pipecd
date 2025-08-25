@@ -34,14 +34,12 @@ var (
 )
 
 type Helm struct {
-	version  string // TODO: Remove unused field
 	execPath string
 	logger   *zap.Logger
 }
 
-func NewHelm(version, path string, logger *zap.Logger) *Helm {
+func NewHelm(path string, logger *zap.Logger) *Helm {
 	return &Helm{
-		version:  version,
 		execPath: path,
 		logger:   logger,
 	}
