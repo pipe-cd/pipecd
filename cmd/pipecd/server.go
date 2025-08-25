@@ -42,7 +42,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/webservice"
 	"github.com/pipe-cd/pipecd/pkg/app/server/stagelogstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/unregisteredappstore"
-	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/cache/cachemetrics"
 	"github.com/pipe-cd/pipecd/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipecd/pkg/cli"
@@ -177,8 +176,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 	}()
 	input.Logger.Info("successfully connected to file store")
 
-	dbCache := rediscache.NewTTLCache(rd, 3*time.Hour)
-	ds, err := createDatastore(ctx, cfg, fs, dbCache, input.Logger)
+	ds, err := createDatastore(ctx, cfg, input.Logger)
 	if err != nil {
 		input.Logger.Error("failed to create datastore", zap.Error(err))
 		return err
@@ -463,7 +461,7 @@ func loadConfig(file string) (*config.ControlPlaneSpec, error) {
 	return cfg.ControlPlaneSpec, nil
 }
 
-func createDatastore(ctx context.Context, cfg *config.ControlPlaneSpec, fs filestore.Store, c cache.Cache, logger *zap.Logger) (datastore.DataStore, error) {
+func createDatastore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *zap.Logger) (datastore.DataStore, error) {
 	switch cfg.Datastore.Type {
 	case model.DataStoreFirestore:
 		fsConfig := cfg.Datastore.FirestoreConfig
