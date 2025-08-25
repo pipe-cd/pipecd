@@ -254,8 +254,12 @@ github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLA
 github.com/opentracing/opentracing-go v1.1.0/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFStlNbqXla1AfSYxPUl2o=
 github.com/philhofer/fwd v1.1.1 h1:GdGcTjf5RNAxwS4QLsiMzJYj5KEvPJD3Abr261yRQXQ=
 github.com/philhofer/fwd v1.1.1/go.mod h1:gk3iGcWd9+svBvR0sR+KPcfE+RNWozjowpeBVG3ZVNU=
+github.com/pipe-cd/pipecd v0.52.1-0.20250731104149-f611ce3501c5 h1:1VM6ZkE2YfXqROq3lU8xrOV21MdJ257p19VX71E/nsU=
+github.com/pipe-cd/pipecd v0.52.1-0.20250731104149-f611ce3501c5/go.mod h1:5H0ydj0eUpGnJOesA2GPU3mTVlZEZDb8cNP7/lvNPTU=
 github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250728033142-7a6a214b39f7 h1:AGxK4Ffb4MKW8Fda150hm/H6P/ulFeOrslrzUox5iBs=
 github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250728033142-7a6a214b39f7/go.mod h1:v+kzPB2Tom8uEIObY5Le0aBpVLtedwNhMsq2U+dovpg=
+github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250825032242-edd551a6350d h1:Cs0kBcDE+5Do4Mf2QoTpNzyukwvWGLrlWmpK7M5CfNE=
+github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250825032242-edd551a6350d/go.mod h1:JjOYv2tMx72fvLpe88KG8cvrlHiI5XKYeZBvdDO3g80=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
