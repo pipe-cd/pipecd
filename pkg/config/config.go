@@ -183,8 +183,10 @@ func (c *Config) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
+	// Merge the plugins configuration into the spec.
+	// This is a workaround to support the plugin-arch used application.
+	// It's possible due to the v1 application plugin configuration is built based on the v0 generic application spec.
 	if gc.Kind == KindApplication {
-		// This is a workaround to support the plugin-arch used application.
 		type pluginsSpec struct {
 			Plugins map[string]json.RawMessage `json:"plugins"`
 		}
