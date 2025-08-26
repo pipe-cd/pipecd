@@ -31,11 +31,9 @@ import (
 
 type initializer struct{}
 
+// Initialize the plugin with the given context and input.
 func (i *initializer) Initialize(ctx context.Context, input *sdk.InitializeInput[config.KubernetesPluginConfig, config.KubernetesDeployTargetConfig]) error {
-	// Initialize the plugin with the given context and input.
-
 	toolregistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
-	// TODO: get helm version from piped config
 	helmPath, err := toolregistry.Helm(ctx, "")
 	if err != nil {
 		return err
@@ -43,7 +41,18 @@ func (i *initializer) Initialize(ctx context.Context, input *sdk.InitializeInput
 
 	helm := provider.NewHelm(helmPath, input.Logger)
 
-	// TODO: Add and update helm chart repository
+	if repos := input.Config.HTTPHelmChartRepositories(); len(repos) > 0 {
+		for _, repo := range repos {
+			if err := helm.AddRepository(ctx, repo); err != nil {
+				input.Logger.Error("failed to add helm chart repository", zap.String("address", repo.Address), zap.Error(err))
+				return err
+			}
+		}
+		if err := helm.UpdateRepositories(ctx); err != nil {
+			input.Logger.Error("failed to update helm chart repositories", zap.Error(err))
+			return err
+		}
+	}
 
 	// Login to OCI registries
 	for _, registry := range input.Config.ChartRegistries {
