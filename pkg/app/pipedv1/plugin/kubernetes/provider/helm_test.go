@@ -189,7 +189,7 @@ func TestTemplateRemoteChart(t *testing.T) {
 	helmPath, err := r.Helm(ctx, "3.16.1")
 	require.NoError(t, err)
 
-	helm := NewHelm("3.16.1", helmPath, zaptest.NewLogger(t))
+	helm := NewHelm(helmPath, zaptest.NewLogger(t))
 	out, err := helm.TemplateRemoteChart(ctx, appName, appDir, namespace, helmRemoteChart{
 		Repository: "oci://ghcr.io/pipe-cd",
 		Name:       "chart/helloworld",
