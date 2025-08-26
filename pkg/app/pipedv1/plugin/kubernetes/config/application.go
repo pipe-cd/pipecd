@@ -63,8 +63,8 @@ func (s *KubernetesApplicationSpec) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	*k = KubernetesApplicationSpec(a)
-	if err := defaults.Set(k); err != nil {
+	*s = KubernetesApplicationSpec(a)
+	if err := defaults.Set(s); err != nil {
 		return err
 	}
 

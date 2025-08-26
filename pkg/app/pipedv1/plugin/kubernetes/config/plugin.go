@@ -35,8 +35,8 @@ func (c *KubernetesPluginConfig) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	*k = KubernetesPluginConfig(a)
-	if err := defaults.Set(k); err != nil {
+	*c = KubernetesPluginConfig(a)
+	if err := defaults.Set(c); err != nil {
 		return err
 	}
 
