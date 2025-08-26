@@ -144,11 +144,11 @@ type migratedApplicationSpec config.GenericApplicationSpec
 func (c *migratedApplicationSpec) MarshalJSON() ([]byte, error) {
 
 	type migratedPipelineStage struct {
-		ID      string          `json:"id"`
+		ID      string          `json:"id,omitempty"`
 		Name    string          `json:"name"`
 		Desc    string          `json:"desc,omitempty"`
-		Timeout config.Duration `json:"timeout"`
-		With    json.RawMessage `json:"with"`
+		Timeout config.Duration `json:"timeout,omitempty"`
+		With    json.RawMessage `json:"with,omitempty"`
 	}
 
 	type migratedDeploymentPipeline struct {
@@ -158,35 +158,35 @@ func (c *migratedApplicationSpec) MarshalJSON() ([]byte, error) {
 	type spec struct {
 		// The application name.
 		// This is required if you set the application through the application configuration file.
-		Name string `json:"name"`
+		Name string `json:"name,omitempty"`
 		// Additional attributes to identify applications.
-		Labels map[string]string `json:"labels"`
+		Labels map[string]string `json:"labels,omitempty"`
 		// Notes on the Application.
-		Description string `json:"description"`
+		Description string `json:"description,omitempty"`
 
 		// Configuration used while planning deployment.
-		Planner config.DeploymentPlanner `json:"planner"`
+		Planner config.DeploymentPlanner `json:"planner,omitempty"`
 		// Forcibly use QuickSync or Pipeline when commit message matched the specified pattern.
-		CommitMatcher config.DeploymentCommitMatcher `json:"commitMatcher"`
+		CommitMatcher config.DeploymentCommitMatcher `json:"commitMatcher,omitempty"`
 		// Pipeline for deploying progressively.
 		Pipeline *migratedDeploymentPipeline `json:"pipeline"`
 		// The trigger configuration use to determine trigger logic.
-		Trigger config.Trigger `json:"trigger"`
+		Trigger config.Trigger `json:"trigger,omitempty"`
 		// Configuration to be used once the deployment is triggered successfully.
-		PostSync *config.PostSync `json:"postSync"`
+		PostSync *config.PostSync `json:"postSync,omitempty"`
 		// The maximum length of time to execute deployment before giving up.
 		// Default is 6h.
 		Timeout config.Duration `json:"timeout,omitempty" default:"6h"`
 		// List of encrypted secrets and targets that should be decoded before using.
-		Encryption *config.SecretEncryption `json:"encryption"`
+		Encryption *config.SecretEncryption `json:"encryption,omitempty"`
 		// List of files that should be attached to application manifests before using.
-		Attachment *config.Attachment `json:"attachment"`
+		Attachment *config.Attachment `json:"attachment,omitempty"`
 		// Additional configuration used while sending notification to external services.
-		DeploymentNotification *config.DeploymentNotification `json:"notification"`
+		DeploymentNotification *config.DeploymentNotification `json:"notification,omitempty"`
 		// List of the configuration for event watcher.
-		EventWatcher []config.EventWatcherConfig `json:"eventWatcher"`
+		EventWatcher []config.EventWatcherConfig `json:"eventWatcher,omitempty"`
 		// Configuration for drift detection
-		DriftDetection *config.DriftDetection `json:"driftDetection"`
+		DriftDetection *config.DriftDetection `json:"driftDetection,omitempty"`
 
 		// This is a workaround not to raise unknown-field error when the application config file contains the plugins field.
 		Plugins any `json:"plugins"`
