@@ -311,14 +311,19 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 			config:       cfg,
 			logPersister: persister,
 			client:       pipedPluginServiceClient,
+			pluginConfig: new(Config),
 			toolRegistry: toolregistry.NewToolRegistry(pipedPluginServiceClient),
 		}
 
-		if cfg.Config != nil {
-			if err := json.Unmarshal(cfg.Config, &commonFields.pluginConfig); err != nil {
-				logger.Fatal("failed to unmarshal the plugin config", zap.Error(err))
-				return err
-			}
+		if len(cfg.Config) == 0 {
+			// It is necessary to prepare config with default value when users don't set any config,
+			// or when plugin developers implement custom unmarshalling logic.
+			cfg.Config = []byte("{}")
+		}
+
+		if err := json.Unmarshal(cfg.Config, commonFields.pluginConfig); err != nil {
+			logger.Fatal("failed to unmarshal the plugin config", zap.Error(err))
+			return err
 		}
 
 		commonFields.deployTargets = make(map[string]*DeployTarget[DeployTargetConfig], len(cfg.DeployTargets))
