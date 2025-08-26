@@ -104,7 +104,7 @@ func (c *applicationConfig) migrateApplicationConfig(ctx context.Context, config
 
 	migrated["kind"] = config.KindApplication
 	migrated["apiVersion"] = config.VersionV1Beta1
-	migrated["spec"] = genericSpec
+	migrated["spec"] = (*migratedApplicationSpec)(&genericSpec)
 
 	b, err := json.Marshal(migrated)
 	if err != nil {
@@ -137,6 +137,89 @@ func (c *applicationConfig) migrateApplicationConfig(ctx context.Context, config
 
 	logger.Info("successfully migrated application config", zap.String("config-file", configFile))
 	return nil
+}
+
+type migratedApplicationSpec config.GenericApplicationSpec
+
+func (c *migratedApplicationSpec) MarshalJSON() ([]byte, error) {
+
+	type migratedPipelineStage struct {
+		ID      string          `json:"id"`
+		Name    string          `json:"name"`
+		Desc    string          `json:"desc,omitempty"`
+		Timeout config.Duration `json:"timeout"`
+		With    json.RawMessage `json:"with"`
+	}
+
+	type migratedDeploymentPipeline struct {
+		Stages []migratedPipelineStage `json:"stages"`
+	}
+
+	type spec struct {
+		// The application name.
+		// This is required if you set the application through the application configuration file.
+		Name string `json:"name"`
+		// Additional attributes to identify applications.
+		Labels map[string]string `json:"labels"`
+		// Notes on the Application.
+		Description string `json:"description"`
+
+		// Configuration used while planning deployment.
+		Planner config.DeploymentPlanner `json:"planner"`
+		// Forcibly use QuickSync or Pipeline when commit message matched the specified pattern.
+		CommitMatcher config.DeploymentCommitMatcher `json:"commitMatcher"`
+		// Pipeline for deploying progressively.
+		Pipeline *migratedDeploymentPipeline `json:"pipeline"`
+		// The trigger configuration use to determine trigger logic.
+		Trigger config.Trigger `json:"trigger"`
+		// Configuration to be used once the deployment is triggered successfully.
+		PostSync *config.PostSync `json:"postSync"`
+		// The maximum length of time to execute deployment before giving up.
+		// Default is 6h.
+		Timeout config.Duration `json:"timeout,omitempty" default:"6h"`
+		// List of encrypted secrets and targets that should be decoded before using.
+		Encryption *config.SecretEncryption `json:"encryption"`
+		// List of files that should be attached to application manifests before using.
+		Attachment *config.Attachment `json:"attachment"`
+		// Additional configuration used while sending notification to external services.
+		DeploymentNotification *config.DeploymentNotification `json:"notification"`
+		// List of the configuration for event watcher.
+		EventWatcher []config.EventWatcherConfig `json:"eventWatcher"`
+		// Configuration for drift detection
+		DriftDetection *config.DriftDetection `json:"driftDetection"`
+
+		// This is a workaround not to raise unknown-field error when the application config file contains the plugins field.
+		Plugins any `json:"plugins"`
+	}
+
+	pipeline := &migratedDeploymentPipeline{}
+	for _, stage := range c.Pipeline.Stages {
+		pipeline.Stages = append(pipeline.Stages, migratedPipelineStage{
+			ID:      stage.ID,
+			Name:    string(stage.Name),
+			Desc:    stage.Desc,
+			Timeout: stage.Timeout,
+			With:    stage.With,
+		})
+	}
+
+	return json.Marshal(spec{
+		Name:                   c.Name,
+		Labels:                 c.Labels,
+		Description:            c.Description,
+		Planner:                c.Planner,
+		CommitMatcher:          c.CommitMatcher,
+		Pipeline:               pipeline,
+		Trigger:                c.Trigger,
+		PostSync:               c.PostSync,
+		Timeout:                c.Timeout,
+		Encryption:             c.Encryption,
+		Attachment:             c.Attachment,
+		DeploymentNotification: c.DeploymentNotification,
+		EventWatcher:           c.EventWatcher,
+		DriftDetection:         c.DriftDetection,
+		Plugins:                c.Plugins,
+	})
 }
 
 type migratedCloudRunApplicationSpec config.CloudRunApplicationSpec
