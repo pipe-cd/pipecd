@@ -14,13 +14,17 @@ describe("BreakingChange component", () => {
   it("renders breaking changes note after fetching", async () => {
     render(<BreakingChangeNotes notes={"warning notes"} />);
 
-    expect(screen.getByText(/warning notes/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/New Releases Contains Breaking Changes/)
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /view detail/i })
     ).toBeInTheDocument();
 
     userEvent.click(screen.getByRole("button", { name: /view detail/i }));
-    expect(screen.getByText(/Breaking Changes/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /Breaking Changes/ })
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /close/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /ignore/i })).toBeInTheDocument();
   });
@@ -29,11 +33,14 @@ describe("BreakingChange component", () => {
     render(<BreakingChangeNotes notes={"warning notes"} />);
 
     await userEvent.click(screen.getByRole("button", { name: /view detail/i }));
+    const dialogHeading = screen.getByRole("heading", {
+      name: "Breaking Changes",
+    });
     await userEvent.click(screen.getByRole("button", { name: /close/i }));
 
     // Wait for the dialog to be removed from the DOM
     await waitFor(() => {
-      expect(screen.queryByText(/Breaking Changes/i)).not.toBeInTheDocument();
+      expect(dialogHeading).not.toBeInTheDocument();
     });
   });
 
@@ -41,11 +48,14 @@ describe("BreakingChange component", () => {
     render(<BreakingChangeNotes notes={"warning notes"} />);
 
     await userEvent.click(screen.getByRole("button", { name: /view detail/i }));
+    const dialogHeading = screen.getByRole("heading", {
+      name: "Breaking Changes",
+    });
     await userEvent.click(screen.getByRole("button", { name: /ignore/i }));
 
     // Wait for the dialog to be removed from the DOM
     await waitFor(() => {
-      expect(screen.queryByText(/Breaking Changes/i)).not.toBeInTheDocument();
+      expect(dialogHeading).not.toBeInTheDocument();
     });
   });
 });
