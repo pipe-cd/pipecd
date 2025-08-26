@@ -1,4 +1,4 @@
-FROM golang:1.24.1-alpine3.21
+FROM golang:1.25.0-alpine3.22
 
 RUN apk update && apk add git
 

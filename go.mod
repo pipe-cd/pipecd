@@ -1,6 +1,6 @@
 module github.com/pipe-cd/pipecd
 
-go 1.24.1
+go 1.25.0
 
 require (
 	cloud.google.com/go/firestore v1.14.0
@@ -53,13 +53,13 @@ require (
 	go.opentelemetry.io/otel/sdk v1.28.0
 	go.opentelemetry.io/otel/trace v1.28.0
 	go.uber.org/atomic v1.11.0
-	go.uber.org/mock v0.5.0
+	go.uber.org/mock v0.6.0
 	go.uber.org/zap v1.19.1
 	golang.org/x/crypto v0.36.0
-	golang.org/x/mod v0.22.0
+	golang.org/x/mod v0.27.0
 	golang.org/x/net v0.38.0
 	golang.org/x/oauth2 v0.27.0
-	golang.org/x/sync v0.12.0
+	golang.org/x/sync v0.16.0
 	google.golang.org/api v0.169.0
 	google.golang.org/grpc v1.64.1
 	google.golang.org/protobuf v1.34.2
