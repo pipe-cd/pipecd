@@ -178,8 +178,12 @@ func (l *Loader) templateHelmChart(ctx context.Context, input LoaderInput) (stri
 		return "", errors.New("not implemented yet")
 
 	case input.HelmChart.Repository != "":
-		return "", errors.New("not implemented yet")
-
+		return h.TemplateRemoteChart(ctx, input.AppName, input.AppDir, input.Namespace, helmRemoteChart{
+			Repository: input.HelmChart.Repository,
+			Name:       input.HelmChart.Name,
+			Version:    input.HelmChart.Version,
+			Insecure:   input.HelmChart.Insecure,
+		}, input.HelmOptions)
 	default:
 		return h.TemplateLocalChart(ctx, input.AppName, input.AppDir, input.Namespace, input.HelmChart.Path, input.HelmOptions)
 	}
