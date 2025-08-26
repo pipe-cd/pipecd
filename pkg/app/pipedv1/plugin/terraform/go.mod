@@ -7,6 +7,7 @@ require (
 	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250822060248-d10a3b690599
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.19.1
+	go.uber.org/zap v1.19.1
 )
 
 require (
@@ -55,7 +56,7 @@ require (
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/net v0.38.0 // indirect
-	golang.org/x/oauth2 v0.27.0 // indirect
+	golang.org/x/oauth2 v0.30.0 // indirect
 	golang.org/x/sync v0.12.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
