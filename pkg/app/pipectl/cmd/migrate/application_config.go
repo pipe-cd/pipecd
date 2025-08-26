@@ -63,14 +63,16 @@ func (c *applicationConfig) run(ctx context.Context, input cli.Input) error {
 	return nil
 }
 
-func (c *applicationConfig) migrateApplicationConfig(ctx context.Context, configFile string, logger *zap.Logger) error {
+func (c *applicationConfig) migrateApplicationConfig(_ context.Context, configFile string, logger *zap.Logger) error {
 	data, err := os.ReadFile(configFile)
 	if err != nil {
+		logger.Error("failed to read application config", zap.String("config-file", configFile), zap.Error(err))
 		return err
 	}
 
 	var cfg map[string]any
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
+		logger.Error("failed to unmarshal application config", zap.String("config-file", configFile), zap.Error(err))
 		return err
 	}
 
@@ -107,6 +109,7 @@ func (c *applicationConfig) migrateApplicationConfig(ctx context.Context, config
 
 	switch config.Kind(cfg["kind"].(string)) {
 	case config.KindKubernetesApp:
+		logger.Info("migrating kubernetes application config", zap.String("config-file", configFile))
 		keys := []string{
 			"input",
 			"quickSync",
@@ -125,6 +128,7 @@ func (c *applicationConfig) migrateApplicationConfig(ctx context.Context, config
 		}
 		spec["plugins"] = pluginCfg
 	case config.KindTerraformApp:
+		logger.Info("migrating terraform application config", zap.String("config-file", configFile))
 		keys := []string{
 			"input",
 			"quickSync",
@@ -138,6 +142,7 @@ func (c *applicationConfig) migrateApplicationConfig(ctx context.Context, config
 		}
 		spec["plugins"] = pluginCfg
 	case config.KindECSApp:
+		logger.Info("migrating ecs application config", zap.String("config-file", configFile))
 		keys := []string{
 			"input",
 			"quickSync",
@@ -151,6 +156,7 @@ func (c *applicationConfig) migrateApplicationConfig(ctx context.Context, config
 		}
 		spec["plugins"] = pluginCfg
 	case config.KindLambdaApp:
+		logger.Info("migrating lambda application config", zap.String("config-file", configFile))
 		keys := []string{
 			"input",
 			"quickSync",
@@ -164,6 +170,7 @@ func (c *applicationConfig) migrateApplicationConfig(ctx context.Context, config
 		}
 		spec["plugins"] = pluginCfg
 	case config.KindCloudRunApp:
+		logger.Info("migrating cloudrun application config", zap.String("config-file", configFile))
 		keys := []string{
 			"input",
 			"quickSync",
@@ -177,6 +184,7 @@ func (c *applicationConfig) migrateApplicationConfig(ctx context.Context, config
 		}
 		spec["plugins"] = pluginCfg
 	default:
+		logger.Error("unsupported application kind", zap.String("config-file", configFile), zap.String("kind", cfg["kind"].(string)))
 		return fmt.Errorf("unsupported application kind: %s", cfg["kind"])
 	}
 
@@ -184,15 +192,19 @@ func (c *applicationConfig) migrateApplicationConfig(ctx context.Context, config
 
 	yamlData, err := yaml.Marshal(migrated)
 	if err != nil {
+		logger.Error("failed to marshal migrated application config", zap.String("config-file", configFile), zap.Error(err))
 		return err
 	}
 
 	if err := os.Rename(configFile, configFile+".old"); err != nil {
+		logger.Error("failed to rename application config", zap.String("config-file", configFile), zap.Error(err))
 		return err
 	}
 
 	if err := os.WriteFile(configFile, yamlData, 0644); err != nil {
+		logger.Error("failed to write migrated application config", zap.String("config-file", configFile), zap.Error(err))
 		if e := os.Rename(configFile+".old", configFile); e != nil {
+			logger.Error("failed to restore application config", zap.String("config-file", configFile), zap.Error(e))
 			return errors.Join(err, e)
 		}
 		return err
