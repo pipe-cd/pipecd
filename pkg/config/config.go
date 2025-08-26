@@ -96,9 +96,6 @@ type genericConfig struct {
 	Kind       Kind            `json:"kind"`
 	APIVersion string          `json:"apiVersion,omitempty"`
 	Spec       json.RawMessage `json:"spec"`
-
-	// Plugins is a map of plugin name to its configuration.
-	Plugins map[string]json.RawMessage `json:"plugins"`
 }
 
 func (c *Config) init(kind Kind, apiVersion string) error {
@@ -187,8 +184,17 @@ func (c *Config) UnmarshalJSON(data []byte) error {
 	}
 
 	if gc.Kind == KindApplication {
+		// This is a workaround to support the plugin-arch used application.
+		type pluginsSpec struct {
+			Plugins map[string]json.RawMessage `json:"plugins"`
+		}
+		var ps pluginsSpec
+		if err := json.Unmarshal(gc.Spec, &ps); err != nil {
+			return err
+		}
+
 		converted := 0
-		for pluginName, pluginConfig := range gc.Plugins {
+		for pluginName, pluginConfig := range ps.Plugins {
 			switch pluginName {
 			case "kubernetes":
 				gc.Kind = KindKubernetesApp
