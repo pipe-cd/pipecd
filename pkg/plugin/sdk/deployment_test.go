@@ -327,6 +327,11 @@ func TestStageStatus_toModelEnum(t *testing.T) {
 			expected: model.StageStatus_STAGE_EXITED,
 		},
 		{
+			name:     "skipped",
+			status:   StageStatusSkipped,
+			expected: model.StageStatus_STAGE_SKIPPED,
+		},
+		{
 			name:     "unknown",
 			status:   StageStatus(999),
 			expected: model.StageStatus_STAGE_FAILURE,
