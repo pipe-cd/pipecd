@@ -5,7 +5,7 @@ go 1.24.1
 require (
 	github.com/goccy/go-yaml v1.9.8
 	github.com/google/go-cmp v0.7.0
-	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250825120314-8f0eff883d49
+	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250826110204-9d2e54e75faf
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.19.1
 	golang.org/x/mod v0.22.0
