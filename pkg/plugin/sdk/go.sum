@@ -258,8 +258,6 @@ github.com/onsi/ginkgo v1.14.0/go.mod h1:iSB4RoI2tjJc9BBv4NKIKWKya62Rps+oPG/Lv9k
 github.com/onsi/gomega v0.0.0-20170829124025-dcabb60a477c/go.mod h1:C1qb7wdrVGGVU+Z6iS04AVkA3Q65CEZX59MT0QO5uiA=
 github.com/onsi/gomega v1.7.1/go.mod h1:XdKZgCCFLUoM/7CFJVPcG8C1xQ1AJ0vpAezJrB7JYyY=
 github.com/onsi/gomega v1.10.1/go.mod h1:iN09h71vgCQne3DLsj+A5owkum+a2tYe+TOCB1ybHNo=
-github.com/pipe-cd/pipecd v0.52.1-0.20250722035702-5722fabb80ce h1:zyYJ+lIC3oLya2ZoNL90TdDI6IkQVL7aptkT1f9I69U=
-github.com/pipe-cd/pipecd v0.52.1-0.20250722035702-5722fabb80ce/go.mod h1:5H0ydj0eUpGnJOesA2GPU3mTVlZEZDb8cNP7/lvNPTU=
 github.com/pipe-cd/pipecd v0.52.1-0.20250731104149-f611ce3501c5 h1:1VM6ZkE2YfXqROq3lU8xrOV21MdJ257p19VX71E/nsU=
 github.com/pipe-cd/pipecd v0.52.1-0.20250731104149-f611ce3501c5/go.mod h1:5H0ydj0eUpGnJOesA2GPU3mTVlZEZDb8cNP7/lvNPTU=
 github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e/go.mod h1:pJLUxLENpZxwdsKMEsNbx1VGcRFpLqf3715MtcvvzbA=

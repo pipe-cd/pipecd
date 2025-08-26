@@ -107,7 +107,7 @@ func TestApplicationConfig_HasStage(t *testing.T) {
 
 type testPluginSpec struct {
 	Name  string `json:"name"`
-	Value int    `json:"value" default:"42"`
+	Value int    `json:"value"`
 }
 
 func (s *testPluginSpec) Validate() error {
@@ -152,20 +152,6 @@ func TestApplicationConfig_ParsePluginConfig(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:       "valid plugin config with defaults",
-			pluginName: "test-plugin",
-			config: &ApplicationConfig[testPluginSpec]{
-				pluginConfigs: map[string]json.RawMessage{
-					"test-plugin": json.RawMessage(`{"name": "test"}`),
-				},
-			},
-			wantSpec: &testPluginSpec{
-				Name:  "test",
-				Value: 42,
-			},
-			wantErr: false,
-		},
-		{
 			name:       "invalid json in plugin config",
 			pluginName: "test-plugin",
 			config: &ApplicationConfig[testPluginSpec]{
@@ -186,20 +172,6 @@ func TestApplicationConfig_ParsePluginConfig(t *testing.T) {
 			},
 			wantSpec: nil,
 			wantErr:  true,
-		},
-		{
-			name:       "custom values override defaults",
-			pluginName: "test-plugin",
-			config: &ApplicationConfig[testPluginSpec]{
-				pluginConfigs: map[string]json.RawMessage{
-					"test-plugin": json.RawMessage(`{"name": "test", "value": 100}`),
-				},
-			},
-			wantSpec: &testPluginSpec{
-				Name:  "test",
-				Value: 100,
-			},
-			wantErr: false,
 		},
 	}
 
