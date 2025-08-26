@@ -17,6 +17,7 @@ package provider
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -303,11 +304,10 @@ func (h *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespa
 		return "", err
 	}
 
-	// TODO: Implement Helm chart repository update
 	// If the error is a "Not Found", we update the repositories and try again.
-	// if e := chartrepo.Update(ctx, toolregistry.DefaultRegistry(), h.logger); e != nil {
-	// 	h.logger.Error("failed to update Helm chart repositories", zap.Error(e))
-	// 	return "", err
-	// }
+	if e := h.UpdateRepositories(ctx); e != nil {
+		h.logger.Error("failed to update Helm chart repositories", zap.Error(e))
+		return "", errors.Join(err, e)
+	}
 	return executor()
 }
