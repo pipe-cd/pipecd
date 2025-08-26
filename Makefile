@@ -59,6 +59,7 @@ endif
 .PHONY: build/plugin
 build/plugin: PLUGINS_BIN_DIR ?= ~/.piped/plugins
 build/plugin: PLUGINS_SRC_DIR ?= ./pkg/app/pipedv1/plugin
+build/plugin: PLUGIN_NAME ?= 
 build/plugin: PLUGINS_OUT_DIR ?= ${PWD}/.artifacts/plugins
 build/plugin: PLUGINS ?= $(shell find $(PLUGINS_SRC_DIR) -mindepth 1 -maxdepth 1 -type d | while read -r dir; do basename "$$dir"; done | paste -sd, -) # comma separated list of plugins. eg: PLUGINS=kubernetes,ecs,lambda
 build/plugin: BUILD_OPTS ?= -ldflags "-s -w" -trimpath
@@ -68,6 +69,7 @@ build/plugin: BUILD_ENV ?= GOOS=$(BUILD_OS) GOARCH=$(BUILD_ARCH) CGO_ENABLED=0
 build/plugin: BIN_SUFFIX ?=
 build/plugin:
 	mkdir -p $(PLUGINS_BIN_DIR)
+ifndef PLUGIN_NAME
 	@echo "Building plugins..."
 	@for plugin in $(shell echo $(PLUGINS) | tr ',' ' '); do \
 		echo "Building plugin: $$plugin"; \
@@ -75,6 +77,12 @@ build/plugin:
 			&& cp $(PLUGINS_OUT_DIR)/$${plugin}$(BIN_SUFFIX) $(PLUGINS_BIN_DIR)/$$plugin; \
 	done
 	@echo "Plugins are built and copied to $(PLUGINS_BIN_DIR)"
+else
+	@echo "Building plugin: $(PLUGIN_NAME)"
+	$(BUILD_ENV) go -C $(PLUGINS_SRC_DIR)/$(PLUGIN_NAME) build $(BUILD_OPTS) -o $(PLUGINS_OUT_DIR)/$(PLUGIN_NAME)$(BIN_SUFFIX) .
+	@cp $(PLUGINS_OUT_DIR)/$(PLUGIN_NAME)$(BIN_SUFFIX) $(PLUGINS_BIN_DIR)/$(PLUGIN_NAME)
+	@echo "Plugin is built and copied to $(PLUGINS_BIN_DIR)/$(PLUGIN_NAME)"
+endif
 
 .PHONY: push
 push/chart: BUCKET ?= charts.pipecd.dev
