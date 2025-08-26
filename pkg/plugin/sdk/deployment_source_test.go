@@ -135,7 +135,7 @@ func TestApplicationConfig_ParsePluginConfig(t *testing.T) {
 			},
 			wantSpec: &testPluginSpec{
 				Name:  "",
-				Value: 42,
+				Value: 0,
 			},
 			wantErr: false,
 		},
@@ -147,7 +147,7 @@ func TestApplicationConfig_ParsePluginConfig(t *testing.T) {
 			},
 			wantSpec: &testPluginSpec{
 				Name:  "",
-				Value: 42,
+				Value: 0,
 			},
 			wantErr: false,
 		},
