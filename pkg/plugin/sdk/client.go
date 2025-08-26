@@ -22,6 +22,8 @@ import (
 
 	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
@@ -204,16 +206,19 @@ func (c *Client) GetDeploymentSharedMetadata(ctx context.Context, key string) (s
 }
 
 // GetApplicationSharedObject gets the application object which is shared across deployments.
-func (c *Client) GetApplicationSharedObject(ctx context.Context, key string) ([]byte, error) {
+func (c *Client) GetApplicationSharedObject(ctx context.Context, key string) (obj []byte, found bool, err error) {
 	resp, err := c.base.GetApplicationSharedObject(ctx, &pipedservice.GetApplicationSharedObjectRequest{
 		ApplicationId: c.applicationID,
 		PluginName:    c.pluginName,
 		Key:           key,
 	})
-	if err != nil {
-		return nil, err
+	if status.Code(err) == codes.NotFound {
+		return nil, false, nil
 	}
-	return resp.Object, nil
+	if err != nil {
+		return nil, false, err
+	}
+	return resp.Object, true, nil
 }
 
 // PutApplicationSharedObject stores the application object which is shared across deployments.
