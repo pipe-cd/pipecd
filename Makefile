@@ -79,7 +79,7 @@ ifndef PLUGIN_NAME
 	@echo "Plugins are built and copied to $(PLUGINS_BIN_DIR)"
 else
 	@echo "Building plugin: $(PLUGIN_NAME)"
-	$(BUILD_ENV) go -C $(PLUGINS_SRC_DIR)/$(PLUGIN_NAME) build $(BUILD_OPTS) -o $(PLUGINS_OUT_DIR)/$(PLUGIN_NAME)$(BIN_SUFFIX) .
+	@$(BUILD_ENV) go -C $(PLUGINS_SRC_DIR)/$(PLUGIN_NAME) build $(BUILD_OPTS) -o $(PLUGINS_OUT_DIR)/$(PLUGIN_NAME)$(BIN_SUFFIX) .
 	@cp $(PLUGINS_OUT_DIR)/$(PLUGIN_NAME)$(BIN_SUFFIX) $(PLUGINS_BIN_DIR)/$(PLUGIN_NAME)
 	@echo "Plugin is built and copied to $(PLUGINS_BIN_DIR)/$(PLUGIN_NAME)"
 endif
