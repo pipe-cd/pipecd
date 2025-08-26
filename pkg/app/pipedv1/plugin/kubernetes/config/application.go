@@ -14,6 +14,12 @@
 
 package config
 
+import (
+	"encoding/json"
+
+	"github.com/creasty/defaults"
+)
+
 // K8sResourceReference represents a reference to a Kubernetes resource.
 // It is used to specify the resources which are treated as the workload of an application.
 type K8sResourceReference struct {
@@ -47,6 +53,22 @@ type KubernetesApplicationSpec struct {
 
 	// Which method should be used for traffic routing.
 	TrafficRouting *KubernetesTrafficRouting `json:"trafficRouting"`
+}
+
+func (s *KubernetesApplicationSpec) UnmarshalJSON(data []byte) error {
+	type alias KubernetesApplicationSpec
+
+	var a alias
+	if err := json.Unmarshal(data, &a); err != nil {
+		return err
+	}
+
+	*s = KubernetesApplicationSpec(a)
+	if err := defaults.Set(s); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *KubernetesApplicationSpec) Validate() error {

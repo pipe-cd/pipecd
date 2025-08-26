@@ -14,11 +14,33 @@
 
 package config
 
+import (
+	"encoding/json"
+
+	"github.com/creasty/defaults"
+)
+
 type KubernetesPluginConfig struct {
 	// List of helm chart repositories that should be added while starting up.
 	ChartRepositories []HelmChartRepository `json:"chartRepositories,omitempty"`
 	// List of helm chart registries that should be logged in while starting up.
 	ChartRegistries []HelmChartRegistry `json:"chartRegistries,omitempty"`
+}
+
+func (c *KubernetesPluginConfig) UnmarshalJSON(data []byte) error {
+	type alias KubernetesPluginConfig
+
+	var a alias
+	if err := json.Unmarshal(data, &a); err != nil {
+		return err
+	}
+
+	*c = KubernetesPluginConfig(a)
+	if err := defaults.Set(c); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (c *KubernetesPluginConfig) HTTPHelmChartRepositories() []HelmChartRepository {
@@ -82,38 +104,4 @@ type HelmChartRegistry struct {
 // IsOCI checks if the registry is an OCI registry.
 func (r *HelmChartRegistry) IsOCI() bool {
 	return r.Type == OCIHelmChartRegistry
-}
-
-// KubernetesDeployTargetConfig represents the configuration for a Kubernetes deployment target.
-type KubernetesDeployTargetConfig struct {
-	// The master URL of the kubernetes cluster.
-	// Empty means in-cluster.
-	MasterURL string `json:"masterURL,omitempty"`
-	// The path to the kubeconfig file.
-	// Empty means in-cluster.
-	KubeConfigPath string `json:"kubeConfigPath,omitempty"`
-	// Version of kubectl will be used.
-	KubectlVersion string `json:"kubectlVersion"`
-	// Configuration for application resource informer.
-	AppStateInformer KubernetesAppStateInformer `json:"appStateInformer"`
-}
-
-// KubernetesAppStateInformer represents the configuration for application resource informer.
-type KubernetesAppStateInformer struct {
-	// Only watches the specified namespace.
-	// Empty means watching all namespaces.
-	Namespace string `json:"namespace,omitempty"`
-	// List of resources that should be added to the watching targets.
-	IncludeResources []KubernetesResourceMatcher `json:"includeResources,omitempty"`
-	// List of resources that should be ignored from the watching targets.
-	ExcludeResources []KubernetesResourceMatcher `json:"excludeResources,omitempty"`
-}
-
-// KubernetesResourceMatcher represents the matcher for a Kubernetes resource.
-type KubernetesResourceMatcher struct {
-	// The APIVersion of the kubernetes resource.
-	APIVersion string `json:"apiVersion,omitempty"`
-	// The kind name of the kubernetes resource.
-	// Empty means all kinds are matching.
-	Kind string `json:"kind,omitempty"`
 }
