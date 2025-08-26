@@ -26,6 +26,8 @@ import (
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type PluginAPI struct {
@@ -164,6 +166,9 @@ func (a *PluginAPI) GetApplicationSharedObject(ctx context.Context, req *service
 		PluginName:    req.PluginName,
 		Key:           req.Key,
 	})
+	if status.Code(err) == codes.NotFound {
+		return nil, status.Error(codes.NotFound, "the requested application shared object was not found")
+	}
 	if err != nil {
 		a.Logger.Error("failed to get application shared object",
 			zap.String("applicationID", req.ApplicationId),
