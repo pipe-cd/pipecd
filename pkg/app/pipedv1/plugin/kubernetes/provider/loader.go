@@ -16,7 +16,6 @@ package provider
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -174,9 +173,6 @@ func (l *Loader) templateHelmChart(ctx context.Context, input LoaderInput) (stri
 	h := NewHelm(helmPath, input.Logger)
 
 	switch {
-	case input.HelmChart.GitRemote != "":
-		return "", errors.New("not implemented yet")
-
 	case input.HelmChart.Repository != "":
 		return h.TemplateRemoteChart(ctx, input.AppName, input.AppDir, input.Namespace, helmRemoteChart{
 			Repository: input.HelmChart.Repository,

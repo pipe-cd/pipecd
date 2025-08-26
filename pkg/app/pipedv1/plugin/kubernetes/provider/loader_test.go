@@ -345,19 +345,6 @@ func TestLoader_templateHelmChart(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "helm chart from git remote",
-			input: LoaderInput{
-				AppName:     "test-app",
-				AppDir:      "testdata/testhelm/appconfdir",
-				Namespace:   "default",
-				HelmVersion: "3.16.1",
-				HelmChart:   &config.InputHelmChart{GitRemote: "https://github.com/test/repo.git"},
-				HelmOptions: &config.InputHelmOptions{},
-				Logger:      zap.NewNop(),
-			},
-			wantErr: true, // it's not implemented yet
-		},
-		{
 			name: "helm chart from repository",
 			input: LoaderInput{
 				AppName:     "test-app",

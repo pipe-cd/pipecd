@@ -31,11 +31,6 @@ type InputHelmOptions struct {
 }
 
 type InputHelmChart struct {
-	// Git remote address where the chart is placing.
-	// Empty means the same repository.
-	GitRemote string `json:"gitRemote,omitempty"`
-	// The commit SHA or tag for remote git.
-	Ref string `json:"ref,omitempty"`
 	// Relative path from the repository root directory to the chart directory.
 	Path string `json:"path,omitempty"`
 
