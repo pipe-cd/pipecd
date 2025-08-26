@@ -27,7 +27,7 @@ type KubernetesPluginConfig struct {
 	ChartRegistries []HelmChartRegistry `json:"chartRegistries,omitempty"`
 }
 
-func (k *KubernetesPluginConfig) UnmarshalJSON(data []byte) error {
+func (c *KubernetesPluginConfig) UnmarshalJSON(data []byte) error {
 	type alias KubernetesPluginConfig
 
 	var a alias

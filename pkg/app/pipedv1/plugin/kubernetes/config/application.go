@@ -55,7 +55,7 @@ type KubernetesApplicationSpec struct {
 	TrafficRouting *KubernetesTrafficRouting `json:"trafficRouting"`
 }
 
-func (k *KubernetesApplicationSpec) UnmarshalJSON(data []byte) error {
+func (s *KubernetesApplicationSpec) UnmarshalJSON(data []byte) error {
 	type alias KubernetesApplicationSpec
 
 	var a alias
