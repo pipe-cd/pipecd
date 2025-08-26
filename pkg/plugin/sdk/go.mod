@@ -3,7 +3,6 @@ module github.com/pipe-cd/piped-plugin-sdk-go
 go 1.24.1
 
 require (
-	github.com/creasty/defaults v1.6.0
 	github.com/pipe-cd/pipecd v0.52.1-0.20250731104149-f611ce3501c5
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
@@ -22,6 +21,7 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/coreos/go-oidc/v3 v3.11.0 // indirect
+	github.com/creasty/defaults v1.6.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.0.4 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.5 // indirect
