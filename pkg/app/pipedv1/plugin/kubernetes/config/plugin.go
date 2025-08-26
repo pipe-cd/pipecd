@@ -21,6 +21,16 @@ type KubernetesPluginConfig struct {
 	ChartRegistries []HelmChartRegistry `json:"chartRegistries,omitempty"`
 }
 
+func (c *KubernetesPluginConfig) HTTPHelmChartRepositories() []HelmChartRepository {
+	repos := make([]HelmChartRepository, 0, len(c.ChartRepositories))
+	for _, r := range c.ChartRepositories {
+		if r.IsHTTPRepository() {
+			repos = append(repos, r)
+		}
+	}
+	return repos
+}
+
 type HelmChartRepositoryType string
 
 const (
@@ -42,6 +52,10 @@ type HelmChartRepository struct {
 	Password string `json:"password,omitempty"`
 	// Whether to skip TLS certificate checks for the repository or not.
 	Insecure bool `json:"insecure"`
+}
+
+func (r *HelmChartRepository) IsHTTPRepository() bool {
+	return r.Type == HTTPHelmChartRepository
 }
 
 // HelmChartRegistryType represents the type of Helm chart registry.

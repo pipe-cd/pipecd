@@ -25,12 +25,15 @@ import (
 	"strings"
 
 	"go.uber.org/zap"
+	"golang.org/x/sync/singleflight"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 )
 
 var (
 	allowedURLSchemes = []string{"http", "https"}
+
+	updateGroup = &singleflight.Group{}
 )
 
 type Helm struct {
@@ -123,6 +126,43 @@ func (h *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, namespac
 		return stdout.String(), fmt.Errorf("%w: %s", err, stderr.String())
 	}
 	return stdout.String(), nil
+}
+
+// Add installs all specified Helm Chart repositories.
+// https://helm.sh/docs/topics/chart_repository/
+// helm repo add fantastic-charts https://fantastic-charts.storage.googleapis.com
+// helm repo add fantastic-charts https://fantastic-charts.storage.googleapis.com --username my-username --password my-password
+func (h *Helm) AddRepository(ctx context.Context, repo config.HelmChartRepository) error {
+	args := []string{"repo", "add", repo.Name, repo.Address}
+	if repo.Insecure {
+		args = append(args, "--insecure-skip-tls-verify")
+	}
+	if repo.Username != "" || repo.Password != "" {
+		args = append(args, "--username", repo.Username, "--password", repo.Password)
+	}
+	cmd := exec.CommandContext(ctx, h.execPath, args...)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		h.logger.Error("failed to add chart repository", zap.String("name", repo.Name), zap.Error(err))
+		return fmt.Errorf("failed to add chart repository %s: %s (%w)", repo.Name, string(out), err)
+	}
+	h.logger.Info("successfully added chart repository", zap.String("name", repo.Name))
+	return nil
+}
+
+func (h *Helm) UpdateRepositories(ctx context.Context) error {
+	_, err, _ := updateGroup.Do("update", func() (interface{}, error) {
+		args := []string{"repo", "update"}
+		cmd := exec.CommandContext(ctx, h.execPath, args...)
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			h.logger.Error("failed to update chart repositories", zap.Error(err))
+			return nil, fmt.Errorf("failed to update chart repositories: %s (%w)", string(out), err)
+		}
+		h.logger.Info("successfully updated chart repositories")
+		return nil, nil
+	})
+	return err
 }
 
 // verifyHelmValueFilePath verifies if the path of the values file references
