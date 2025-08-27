@@ -10,7 +10,9 @@ RUN apk add --no-cache make git
 COPY web/package.json web/yarn.lock ./web/
 RUN yarn --cwd web install --prefer-offline
 
-COPY . .
+COPY .git ./.git
+COPY web ./web
+COPY Makefile .
 RUN make build/web
 
 # pipecd builder
@@ -24,7 +26,9 @@ WORKDIR /app
 COPY go.* ./
 RUN go mod download
 
-COPY . ./
+COPY pkg/ ./pkg/
+COPY cmd/ ./cmd/
+COPY Makefile .
 
 RUN make build/go MOD=pipecd BUILD_OS=${TARGETOS} BUILD_ARCH=${TARGETARCH}
 
