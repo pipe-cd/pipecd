@@ -18,7 +18,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -26,12 +28,14 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type applicationConfig struct {
 	root *command
 
 	configFiles []string
+	directories []string
 }
 
 func newApplicationConfigCommand(root *command) *cobra.Command {
@@ -46,11 +50,15 @@ func newApplicationConfigCommand(root *command) *cobra.Command {
 	}
 
 	cmd.Flags().StringSliceVar(&c.configFiles, "config-files", c.configFiles, "The list of application config files to migrate.")
-	cmd.MarkFlagRequired("config-files")
+	cmd.Flags().StringSliceVar(&c.directories, "dirs", c.directories, "The list of application config directories to migrate.")
+
+	cmd.MarkFlagsOneRequired("config-files", "dirs")
+	cmd.MarkFlagsMutuallyExclusive("config-files", "dirs")
 	return cmd
 }
 
 func (c *applicationConfig) run(ctx context.Context, input cli.Input) error {
+
 	for _, configFile := range c.configFiles {
 		input.Logger.Info("migrating application config", zap.String("config-file", configFile))
 		if err := c.migrateApplicationConfig(ctx, configFile, input.Logger); err != nil {
@@ -60,6 +68,37 @@ func (c *applicationConfig) run(ctx context.Context, input cli.Input) error {
 		input.Logger.Info("successfully migrated application config", zap.String("config-file", configFile))
 	}
 
+	for _, directory := range c.directories {
+		input.Logger.Info("migrating application configs in directory", zap.String("directory", directory))
+
+		fileSystem := os.DirFS(directory)
+		// Scan all files under the repository.
+		err := fs.WalkDir(fileSystem, ".", func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if d.IsDir() {
+				return nil
+			}
+			if !model.IsApplicationConfigFile(d.Name()) {
+				return nil
+			}
+
+			input.Logger.Info("migrating application config", zap.String("config-file", path))
+			if err := c.migrateApplicationConfig(ctx, filepath.Join(directory, path), input.Logger); err != nil {
+				input.Logger.Error("failed to migrate application config", zap.String("config-file", path), zap.Error(err))
+				// Continue to migrate other application configs.
+				return nil
+			}
+			input.Logger.Info("successfully migrated application config", zap.String("config-file", path))
+			return nil
+		})
+		if err != nil {
+			input.Logger.Error("failed to migrate application configs in directory", zap.String("directory", directory), zap.Error(err))
+			return err
+		}
+		input.Logger.Info("successfully migrated application configs in directory", zap.String("directory", directory))
+	}
 	return nil
 }
 
