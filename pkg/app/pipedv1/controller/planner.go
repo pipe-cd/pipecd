@@ -464,11 +464,10 @@ func (p *planner) buildPipelineSyncStages(ctx context.Context, cfg *config.Gener
 		}
 
 		stagesCfgPerPlugin[plg] = append(stagesCfgPerPlugin[plg], &deployment.BuildPipelineSyncStagesRequest_StageConfig{
-			Name:    stageCfg.Name.String(),
-			Desc:    stageCfg.Desc,
-			Timeout: stageCfg.Timeout.Duration().String(),
-			Index:   int32(i),
-			Config:  stageCfg.With,
+			Name:   stageCfg.Name.String(),
+			Desc:   stageCfg.Desc,
+			Index:  int32(i),
+			Config: stageCfg.With,
 		})
 	}
 
