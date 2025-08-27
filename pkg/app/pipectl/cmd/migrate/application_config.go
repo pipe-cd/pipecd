@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"maps"
 	"os"
 	"path/filepath"
 
@@ -128,7 +129,6 @@ func (c *applicationConfig) migrateApplicationConfig(_ context.Context, configFi
 		"description",
 		"planner",
 		"commitMatcher",
-		"pipeline",
 		"trigger",
 		"postSync",
 		"timeout",
@@ -144,6 +144,29 @@ func (c *applicationConfig) migrateApplicationConfig(_ context.Context, configFi
 		if _, ok := oldSpec[key]; ok {
 			spec[key] = oldSpec[key]
 		}
+	}
+
+	// Copy STAGE `timeout` and `skipOn` config under pipeline.stages[].with to pipeline.stages[]
+	// NOTE: We keep the original `timeout` and `skipOn` config under pipeline.stages[].with. for backward compatibility,
+	//  in case user want to downgrade pipedv1 to pipedv0.
+	// `pipeline.stages[].with.{timeout, skipOn}` will be marked as deprecated in v1.
+	if oldPipelineCfg, ok := oldSpec["pipeline"]; ok {
+		pipelineCfg := make(map[string][]any)
+		for _, oldStage := range oldPipelineCfg.(map[string]any)["stages"].([]any) {
+			if oldStageCfg, ok := oldStage.(map[string]any); ok {
+				stageCfg := maps.Clone(oldStageCfg)
+				if withCfg, ok := stageCfg["with"].(map[string]any); ok {
+					if _, ok := withCfg["timeout"]; ok {
+						stageCfg["timeout"] = withCfg["timeout"]
+					}
+					if _, ok := withCfg["skipOn"]; ok {
+						stageCfg["skipOn"] = withCfg["skipOn"]
+					}
+				}
+				pipelineCfg["stages"] = append(pipelineCfg["stages"], stageCfg)
+			}
+		}
+		spec["pipeline"] = pipelineCfg
 	}
 
 	switch config.Kind(cfg["kind"].(string)) {
