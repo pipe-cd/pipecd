@@ -5,11 +5,12 @@ FROM --platform=$BUILDPLATFORM node:20.19.0-alpine3.21 AS web
 
 WORKDIR /app
 
-COPY . .
-
 RUN apk add --no-cache make git
 
-RUN make update/web-deps
+COPY web/package.json web/yarn.lock ./web/
+RUN yarn --cwd web install --prefer-offline
+
+COPY . .
 RUN make build/web
 
 # pipecd builder
