@@ -51,7 +51,7 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 						{
 							Index:  0,
 							Name:   stageAnalysis,
-							Config: mustMarshalJSON(t, &analysisStageOptions{}),
+							Config: mustMarshalJSON(t, &config.AnalysisStageOptions{}),
 						},
 					},
 				},
@@ -76,12 +76,12 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 						{
 							Index:  0,
 							Name:   stageAnalysis,
-							Config: mustMarshalJSON(t, &analysisStageOptions{}),
+							Config: mustMarshalJSON(t, &config.AnalysisStageOptions{}),
 						},
 						{
 							Index:  2,
 							Name:   stageAnalysis,
-							Config: mustMarshalJSON(t, &analysisStageOptions{}),
+							Config: mustMarshalJSON(t, &config.AnalysisStageOptions{}),
 						},
 					},
 				},
@@ -113,7 +113,7 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 						{
 							Index:  0,
 							Name:   stageAnalysis,
-							Config: mustMarshalJSON(t, &analysisStageOptions{}),
+							Config: mustMarshalJSON(t, &config.AnalysisStageOptions{}),
 						},
 					},
 				},
