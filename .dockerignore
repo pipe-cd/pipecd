@@ -47,7 +47,7 @@ pkg/app/web/.env
 
 .rendered-manifests
 
-# manfiests
+# manifests
 manifests/*
 
 # gomock generated reflect files
