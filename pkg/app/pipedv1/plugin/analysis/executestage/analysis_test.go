@@ -23,6 +23,8 @@ import (
 )
 
 func TestExecutor_buildAppArgs(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name                 string
 		appName              string
@@ -148,6 +150,8 @@ func TestExecutor_buildAppArgs(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			e := &executor{
 				appName:         tt.appName,
 				analysisAppSpec: tt.analysisAppSpec,
@@ -163,6 +167,8 @@ func TestExecutor_buildAppArgs(t *testing.T) {
 }
 
 func TestExecutor_buildAppArgs_NilMaps(t *testing.T) {
+	t.Parallel()
+
 	// Test what actually happens when AppCustomArgs is nil
 	e := &executor{
 		appName: "test-app",
@@ -185,6 +191,8 @@ func TestExecutor_buildAppArgs_NilMaps(t *testing.T) {
 }
 
 func TestExecutor_buildAppArgs_MapsCloning(t *testing.T) {
+	t.Parallel()
+
 	// Test that the original maps are not modified
 	originalAppCustomArgs := map[string]string{
 		"env":          "development",

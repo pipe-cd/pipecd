@@ -407,6 +407,8 @@ func Test_metricsAnalyzer_renderQuery(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := tc.metricsAnalyzer.renderQuery(tc.args.queryTemplate, tc.args.variantCustomArgs, tc.args.variant)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.want, got)
