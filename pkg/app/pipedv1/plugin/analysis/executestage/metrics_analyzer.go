@@ -425,22 +425,19 @@ func (a *metricsAnalyzer) compare(experiment, control []float64, deviation strin
 type argsTemplate struct {
 	// The args that are automatically populated.
 	App     appArgs
-	K8s     k8sArgs
 	Variant variantArgs
 
 	// User-defined custom args.
 	VariantCustomArgs map[string]string
 	AppCustomArgs     map[string]string
+
+	// Deprecated: Use AppCustomArgs
+	K8s map[string]string
 }
 
 // appArgs allows application-specific data to be embedded in the query.
 type appArgs struct {
 	Name string
-	Env  string
-}
-
-type k8sArgs struct {
-	Namespace string
 }
 
 // variantArgs allows variant-specific data to be embedded in the query.
@@ -452,11 +449,14 @@ type variantArgs struct {
 // renderQuery applies the given variant args to the query template.
 func (a *metricsAnalyzer) renderQuery(queryTemplate string, variantCustomArgs map[string]string, variant string) (string, error) {
 	args := argsTemplate{
+		App:               a.argsTemplate.App,
 		Variant:           variantArgs{Name: variant},
 		VariantCustomArgs: variantCustomArgs,
-		App:               a.argsTemplate.App,
-		K8s:               a.argsTemplate.K8s,
 		AppCustomArgs:     a.argsTemplate.AppCustomArgs,
+
+		// This is for temporary support for the `{{ .K8s.Namespace }}` syntax in the query template.
+		// Please use `{{ .AppCustomArgs.k8sNamespace }}` instead.
+		K8s: a.argsTemplate.K8s,
 	}
 
 	t, err := template.New("AnalysisTemplate").Parse(queryTemplate)
