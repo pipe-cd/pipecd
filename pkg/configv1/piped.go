@@ -151,6 +151,8 @@ func (s *PipedSpec) Mask() {
 	if s.SecretManagement != nil {
 		s.SecretManagement.Mask()
 	}
+
+	// TODO: Mask plugin configs
 }
 
 // GetRepositoryMap returns a map of repositories where key is repo id.

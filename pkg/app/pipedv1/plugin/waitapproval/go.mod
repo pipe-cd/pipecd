@@ -3,7 +3,7 @@ module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/waitapproval
 go 1.24.1
 
 require (
-	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250731110214-a96d6e0ecf5e
+	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250814070326-c0a2e1095de5
 	github.com/stretchr/testify v1.10.0
 )
 
@@ -31,7 +31,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
-	github.com/pipe-cd/pipecd v0.52.1-0.20250722035702-5722fabb80ce // indirect
+	github.com/pipe-cd/pipecd v0.52.1-0.20250731104149-f611ce3501c5 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.12.1 // indirect
 	github.com/prometheus/client_model v0.5.0 // indirect
