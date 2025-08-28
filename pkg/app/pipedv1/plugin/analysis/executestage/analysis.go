@@ -335,6 +335,9 @@ func (e *executor) buildAppArgs(customArgs map[string]string) argsTemplate {
 	// merge custom args specified under stage config and application plugin spec
 	// the values under stage config has higher priority
 	appCustomArgs := maps.Clone(e.analysisAppSpec.AppCustomArgs)
+	if appCustomArgs == nil {
+		appCustomArgs = make(map[string]string)
+	}
 	maps.Copy(appCustomArgs, customArgs)
 	args := argsTemplate{
 		App:           appArgs{Name: e.appName},
