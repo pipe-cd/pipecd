@@ -20,8 +20,6 @@ import (
 	"errors"
 
 	"go.uber.org/zap"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 const (
@@ -33,7 +31,7 @@ var (
 )
 
 type apiClient interface {
-	GetApplicationSharedObject(ctx context.Context, key string) ([]byte, error)
+	GetApplicationSharedObject(ctx context.Context, key string) (object []byte, found bool, err error)
 	PutApplicationSharedObject(ctx context.Context, key string, object []byte) error
 }
 
@@ -55,16 +53,16 @@ func NewStore(apiClient apiClient, logger *zap.Logger) Store {
 }
 
 func (s *store) GetLatestAnalysisResult(ctx context.Context) (*AnalysisResult, error) {
-	resp, err := s.apiClient.GetApplicationSharedObject(ctx, key)
-	if status.Code(err) == codes.NotFound {
-		s.logger.Info("analysis result is not found")
-		return nil, ErrNotFound
-	}
+	resp, found, err := s.apiClient.GetApplicationSharedObject(ctx, key)
 	if err != nil {
 		s.logger.Error("failed to get the most recent analysis result",
 			zap.Error(err),
 		)
 		return nil, err
+	}
+	if !found {
+		s.logger.Info("analysis result is not found")
+		return nil, ErrNotFound
 	}
 
 	result := &AnalysisResult{}
