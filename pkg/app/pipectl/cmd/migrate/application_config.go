@@ -146,14 +146,22 @@ func (c *applicationConfig) migrateApplicationConfig(_ context.Context, configFi
 		}
 	}
 
-	// Copy STAGE `timeout` and `skipOn` config under pipeline.stages[].with to pipeline.stages[]
-	// NOTE: We keep the original `timeout` and `skipOn` config under pipeline.stages[].with. for backward compatibility,
-	//  in case user want to downgrade pipedv1 to pipedv0.
-	// `pipeline.stages[].with.{timeout, skipOn}` will be marked as deprecated in v1.
+	var hasAnalysisStage bool
+
 	if oldPipelineCfg, ok := oldSpec["pipeline"]; ok {
 		pipelineCfg := make(map[string][]any)
+
 		for _, oldStage := range oldPipelineCfg.(map[string]any)["stages"].([]any) {
 			if oldStageCfg, ok := oldStage.(map[string]any); ok {
+				// Check if the stage is the analysis stage to determine if we need to fill plugins.analysis config
+				if oldStageCfg["name"] == string(model.StageAnalysis) {
+					hasAnalysisStage = true
+				}
+
+				// Copy STAGE `timeout` and `skipOn` config under pipeline.stages[].with to pipeline.stages[]
+				// NOTE: We keep the original `timeout` and `skipOn` config under pipeline.stages[].with. for backward compatibility,
+				//  in case user want to downgrade pipedv1 to pipedv0.
+				// `pipeline.stages[].with.{timeout, skipOn}` will be marked as deprecated in v1.
 				stageCfg := maps.Clone(oldStageCfg)
 				if withCfg, ok := stageCfg["with"].(map[string]any); ok {
 					if _, ok := withCfg["timeout"]; ok {
@@ -188,6 +196,24 @@ func (c *applicationConfig) migrateApplicationConfig(_ context.Context, configFi
 				pluginCfg["kubernetes"][key] = oldSpec[key]
 			}
 		}
+
+		// Add analysis stage configuration if it exists
+		// namespace value will be set using spec.input.namespace
+		if hasAnalysisStage {
+			namespace := "default"
+			if input, ok := oldSpec["input"].(map[string]any); ok {
+				if ns, ok := input["namespace"].(string); ok && ns != "" {
+					namespace = ns
+				}
+			}
+
+			pluginCfg["analysis"] = map[string]any{
+				"appCustomArgs": map[string]string{
+					"k8sNamespace": namespace,
+				},
+			}
+		}
+
 		spec["plugins"] = pluginCfg
 	case config.KindTerraformApp:
 		logger.Info("migrating terraform application config", zap.String("config-file", configFile))
