@@ -221,7 +221,7 @@ type DeploymentPipeline struct {
 type PipelineStage struct {
 	Name    model.Stage     `json:"name"`
 	Desc    string          `json:"desc,omitempty"`
-	Timeout Duration        `json:"timeout"`
+	Timeout Duration        `json:"timeout" default:"6h"`
 	With    json.RawMessage `json:"with" default:"{}"`
 	SkipOn  SkipOptions     `json:"skipOn,omitempty"`
 }

@@ -610,8 +610,8 @@ const (
 	StageStatusFailure
 	// StageStatusExited can be used when the stage succeeded and exit the pipeline without executing the following stages.
 	StageStatusExited
-
-	// StageStatusSkipped // TODO: If SDK can handle whole skipping, this is unnecessary.
+	// StageStatusSkipped indicates that the stage was skipped manually.
+	StageStatusSkipped
 )
 
 // toModelEnum converts the StageStatus to the model.StageStatus.
@@ -624,6 +624,8 @@ func (o StageStatus) toModelEnum() model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	case StageStatusExited:
 		return model.StageStatus_STAGE_EXITED
+	case StageStatusSkipped:
+		return model.StageStatus_STAGE_SKIPPED
 	default:
 		return model.StageStatus_STAGE_FAILURE
 	}

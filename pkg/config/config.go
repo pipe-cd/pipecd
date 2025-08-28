@@ -49,6 +49,10 @@ const (
 	KindCloudRunApp Kind = "CloudRunApp"
 	// KindECSApp represents application configuration for an AWS ECS.
 	KindECSApp Kind = "ECSApp"
+
+	// KindApplication represents application configuration for a generic application.
+	// This is the refer to the plugin-arch used application.
+	KindApplication Kind = "Application"
 )
 
 const (
@@ -141,6 +145,30 @@ func (c *Config) init(kind Kind, apiVersion string) error {
 	return nil
 }
 
+func mergeRawMessages(a, b json.RawMessage) (json.RawMessage, error) {
+	var mapA, mapB map[string]interface{}
+
+	// Unmarshal both RawMessages into maps
+	if err := json.Unmarshal(a, &mapA); err != nil {
+		return nil, fmt.Errorf("unmarshal a: %w", err)
+	}
+	if err := json.Unmarshal(b, &mapB); err != nil {
+		return nil, fmt.Errorf("unmarshal b: %w", err)
+	}
+
+	// Merge mapB into mapA (mapB overwrites mapA)
+	for k, v := range mapB {
+		mapA[k] = v
+	}
+
+	// Marshal back to RawMessage
+	merged, err := json.Marshal(mapA)
+	if err != nil {
+		return nil, fmt.Errorf("marshal merged: %w", err)
+	}
+	return json.RawMessage(merged), nil
+}
+
 // UnmarshalJSON customizes the way to unmarshal json data into Config struct.
 // Firstly, this unmarshal to a generic config and then unmarshal the spec
 // which depend on the kind of configuration.
@@ -154,6 +182,49 @@ func (c *Config) UnmarshalJSON(data []byte) error {
 	if err := dec.Decode(&gc); err != nil {
 		return err
 	}
+
+	// Merge the plugins configuration into the spec.
+	// This is a workaround to support the plugin-arch used application.
+	// It's possible due to the v1 application plugin configuration is built based on the v0 generic application spec.
+	if gc.Kind == KindApplication {
+		type pluginsSpec struct {
+			Plugins map[string]json.RawMessage `json:"plugins"`
+		}
+		var ps pluginsSpec
+		if err := json.Unmarshal(gc.Spec, &ps); err != nil {
+			return err
+		}
+
+		converted := 0
+		for pluginName, pluginConfig := range ps.Plugins {
+			switch pluginName {
+			case "kubernetes":
+				gc.Kind = KindKubernetesApp
+				converted++
+			case "terraform":
+				gc.Kind = KindTerraformApp
+				converted++
+			case "lambda":
+				gc.Kind = KindLambdaApp
+				converted++
+			case "cloudrun":
+				gc.Kind = KindCloudRunApp
+				converted++
+			case "ecs":
+				gc.Kind = KindECSApp
+				converted++
+			}
+			if converted > 1 {
+				return fmt.Errorf("multiple plaform providers are not allowed: %s", pluginName)
+			}
+			merged, err := mergeRawMessages(gc.Spec, pluginConfig)
+			if err != nil {
+				return err
+			}
+			gc.Spec = merged
+		}
+	}
+
 	if err = c.init(gc.Kind, gc.APIVersion); err != nil {
 		return err
 	}

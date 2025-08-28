@@ -62,29 +62,6 @@ func TestPipedConfig(t *testing.T) {
 						Branch: "master",
 					},
 				},
-				ChartRepositories: []HelmChartRepository{
-					{
-						Type:    HTTPHelmChartRepository,
-						Name:    "fantastic-charts",
-						Address: "https://fantastic-charts.storage.googleapis.com",
-					},
-					{
-						Type:     HTTPHelmChartRepository,
-						Name:     "private-charts",
-						Address:  "https://private-charts.com",
-						Username: "basic-username",
-						Password: "basic-password",
-						Insecure: true,
-					},
-				},
-				ChartRegistries: []HelmChartRegistry{
-					{
-						Type:     OCIHelmChartRegistry,
-						Address:  "registry.example.com",
-						Username: "sample-username",
-						Password: "sample-password",
-					},
-				},
 				Notifications: Notifications{
 					Routes: []NotificationRoute{
 						{
@@ -527,26 +504,6 @@ func TestPipedConfigMask(t *testing.T) {
 						Branch: "foo",
 					},
 				},
-				ChartRepositories: []HelmChartRepository{
-					{
-						Type:       "foo",
-						Name:       "foo",
-						Address:    "foo",
-						Username:   "foo",
-						Password:   "foo",
-						Insecure:   true,
-						GitRemote:  "foo",
-						SSHKeyFile: "foo",
-					},
-				},
-				ChartRegistries: []HelmChartRegistry{
-					{
-						Type:     "foo",
-						Address:  "foo",
-						Username: "foo",
-						Password: "foo",
-					},
-				},
 				Notifications: Notifications{
 					Routes: []NotificationRoute{
 						{
@@ -634,26 +591,6 @@ func TestPipedConfigMask(t *testing.T) {
 						RepoID: "foo",
 						Remote: "foo",
 						Branch: "foo",
-					},
-				},
-				ChartRepositories: []HelmChartRepository{
-					{
-						Type:       "foo",
-						Name:       "foo",
-						Address:    "foo",
-						Username:   "foo",
-						Password:   maskString,
-						Insecure:   true,
-						GitRemote:  "foo",
-						SSHKeyFile: maskString,
-					},
-				},
-				ChartRegistries: []HelmChartRegistry{
-					{
-						Type:     "foo",
-						Address:  "foo",
-						Username: "foo",
-						Password: maskString,
 					},
 				},
 				Notifications: Notifications{
@@ -765,29 +702,6 @@ func TestPipedSpecClone(t *testing.T) {
 						Branch: "master",
 					},
 				},
-				ChartRepositories: []HelmChartRepository{
-					{
-						Type:    HTTPHelmChartRepository,
-						Name:    "fantastic-charts",
-						Address: "https://fantastic-charts.storage.googleapis.com",
-					},
-					{
-						Type:     HTTPHelmChartRepository,
-						Name:     "private-charts",
-						Address:  "https://private-charts.com",
-						Username: "basic-username",
-						Password: "basic-password",
-						Insecure: true,
-					},
-				},
-				ChartRegistries: []HelmChartRegistry{
-					{
-						Type:     OCIHelmChartRegistry,
-						Address:  "registry.example.com",
-						Username: "sample-username",
-						Password: "sample-password",
-					},
-				},
 				Notifications: Notifications{
 					Routes: []NotificationRoute{
 						{
@@ -876,29 +790,6 @@ func TestPipedSpecClone(t *testing.T) {
 						RepoID: "repo2",
 						Remote: "git@github.com:org/repo2.git",
 						Branch: "master",
-					},
-				},
-				ChartRepositories: []HelmChartRepository{
-					{
-						Type:    HTTPHelmChartRepository,
-						Name:    "fantastic-charts",
-						Address: "https://fantastic-charts.storage.googleapis.com",
-					},
-					{
-						Type:     HTTPHelmChartRepository,
-						Name:     "private-charts",
-						Address:  "https://private-charts.com",
-						Username: "basic-username",
-						Password: "basic-password",
-						Insecure: true,
-					},
-				},
-				ChartRegistries: []HelmChartRegistry{
-					{
-						Type:     OCIHelmChartRegistry,
-						Address:  "registry.example.com",
-						Username: "sample-username",
-						Password: "sample-password",
 					},
 				},
 				Notifications: Notifications{

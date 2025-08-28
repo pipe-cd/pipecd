@@ -14,6 +14,12 @@
 
 package config
 
+import (
+	"encoding/json"
+
+	"github.com/creasty/defaults"
+)
+
 // K8sResourceReference represents a reference to a Kubernetes resource.
 // It is used to specify the resources which are treated as the workload of an application.
 type K8sResourceReference struct {
@@ -47,6 +53,22 @@ type KubernetesApplicationSpec struct {
 
 	// Which method should be used for traffic routing.
 	TrafficRouting *KubernetesTrafficRouting `json:"trafficRouting"`
+}
+
+func (s *KubernetesApplicationSpec) UnmarshalJSON(data []byte) error {
+	type alias KubernetesApplicationSpec
+
+	var a alias
+	if err := json.Unmarshal(data, &a); err != nil {
+		return err
+	}
+
+	*s = KubernetesApplicationSpec(a)
+	if err := defaults.Set(s); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *KubernetesApplicationSpec) Validate() error {
@@ -95,39 +117,6 @@ type KubernetesVariantLabel struct {
 	// The label value for BASELINE variant.
 	// Default is baseline.
 	BaselineValue string `json:"baselineValue" default:"baseline"`
-}
-
-type KubernetesDeployTargetConfig struct {
-	// The master URL of the kubernetes cluster.
-	// Empty means in-cluster.
-	MasterURL string `json:"masterURL,omitempty"`
-	// The path to the kubeconfig file.
-	// Empty means in-cluster.
-	KubeConfigPath string `json:"kubeConfigPath,omitempty"`
-	// Version of kubectl will be used.
-	KubectlVersion string `json:"kubectlVersion"`
-	// Configuration for application resource informer.
-	AppStateInformer KubernetesAppStateInformer `json:"appStateInformer"`
-}
-
-// KubernetesAppStateInformer represents the configuration for application resource informer.
-type KubernetesAppStateInformer struct {
-	// Only watches the specified namespace.
-	// Empty means watching all namespaces.
-	Namespace string `json:"namespace,omitempty"`
-	// List of resources that should be added to the watching targets.
-	IncludeResources []KubernetesResourceMatcher `json:"includeResources,omitempty"`
-	// List of resources that should be ignored from the watching targets.
-	ExcludeResources []KubernetesResourceMatcher `json:"excludeResources,omitempty"`
-}
-
-// KubernetesResourceMatcher represents the matcher for a Kubernetes resource.
-type KubernetesResourceMatcher struct {
-	// The APIVersion of the kubernetes resource.
-	APIVersion string `json:"apiVersion,omitempty"`
-	// The kind name of the kubernetes resource.
-	// Empty means all kinds are matching.
-	Kind string `json:"kind,omitempty"`
 }
 
 // K8sResourcePatch represents a patch operation for a Kubernetes resource.

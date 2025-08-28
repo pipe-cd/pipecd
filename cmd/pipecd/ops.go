@@ -134,9 +134,8 @@ func (s *ops) run(ctx context.Context, input cli.Input) error {
 		})
 	}
 
-	dbCache := rediscache.NewTTLCache(rd, 3*time.Hour)
 	// Connect to the data store.
-	ds, err := createDatastore(ctx, cfg, fs, dbCache, input.Logger)
+	ds, err := createDatastore(ctx, cfg, input.Logger)
 	if err != nil {
 		input.Logger.Error("failed to create datastore", zap.Error(err))
 		return err

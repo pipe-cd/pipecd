@@ -16,7 +16,6 @@ package provider
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -171,15 +170,16 @@ func (l *Loader) templateHelmChart(ctx context.Context, input LoaderInput) (stri
 		return "", fmt.Errorf("failed to get helm tool: %w", err)
 	}
 
-	h := NewHelm(input.HelmVersion, helmPath, input.Logger)
+	h := NewHelm(helmPath, input.Logger)
 
 	switch {
-	case input.HelmChart.GitRemote != "":
-		return "", errors.New("not implemented yet")
-
 	case input.HelmChart.Repository != "":
-		return "", errors.New("not implemented yet")
-
+		return h.TemplateRemoteChart(ctx, input.AppName, input.AppDir, input.Namespace, helmRemoteChart{
+			Repository: input.HelmChart.Repository,
+			Name:       input.HelmChart.Name,
+			Version:    input.HelmChart.Version,
+			Insecure:   input.HelmChart.Insecure,
+		}, input.HelmOptions)
 	default:
 		return h.TemplateLocalChart(ctx, input.AppName, input.AppDir, input.Namespace, input.HelmChart.Path, input.HelmOptions)
 	}
@@ -196,7 +196,7 @@ func (l *Loader) templateKustomizeManifests(ctx context.Context, input LoaderInp
 		return "", fmt.Errorf("failed to get kustomize tool: %w", err)
 	}
 
-	h := NewHelm(input.HelmVersion, helmPath, input.Logger)
+	h := NewHelm(helmPath, input.Logger)
 
 	k := NewKustomize(input.KustomizeVersion, kustomizePath, input.Logger)
 

@@ -34,6 +34,7 @@ func NewCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(newDatabaseCommand(c))
+	cmd.AddCommand(newApplicationConfigCommand(c))
 
 	c.clientOptions.RegisterPersistentFlags(cmd)
 

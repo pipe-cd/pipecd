@@ -56,11 +56,7 @@ type PipedSpec struct {
 	Git PipedGit `json:"git,omitempty"`
 	// List of git repositories this piped will handle.
 	Repositories []PipedRepository `json:"repositories,omitempty"`
-	// List of helm chart repositories that should be added while starting up.
-	ChartRepositories []HelmChartRepository `json:"chartRepositories,omitempty"`
-	// List of helm chart registries that should be logged in while starting up.
-	ChartRegistries []HelmChartRegistry `json:"chartRegistries,omitempty"`
-	// List of plugiin configs
+	// List of plugin configs
 	Plugins []PipedPlugin `json:"plugins,omitempty"`
 	// Sending notification to Slack, Webhook…
 	Notifications Notifications `json:"notifications"`
@@ -109,16 +105,6 @@ func (s *PipedSpec) Validate() error {
 	if err := s.Git.Validate(); err != nil {
 		return err
 	}
-	for _, r := range s.ChartRepositories {
-		if err := r.Validate(); err != nil {
-			return err
-		}
-	}
-	for _, r := range s.ChartRegistries {
-		if err := r.Validate(); err != nil {
-			return err
-		}
-	}
 	if s.SecretManagement != nil {
 		if err := s.SecretManagement.Validate(); err != nil {
 			return err
@@ -161,12 +147,6 @@ func (s *PipedSpec) Mask() {
 		s.PipedKeyData = maskString
 	}
 	s.Git.Mask()
-	for i := 0; i < len(s.ChartRepositories); i++ {
-		s.ChartRepositories[i].Mask()
-	}
-	for i := 0; i < len(s.ChartRegistries); i++ {
-		s.ChartRegistries[i].Mask()
-	}
 	s.Notifications.Mask()
 	if s.SecretManagement != nil {
 		s.SecretManagement.Mask()
@@ -192,15 +172,6 @@ func (s *PipedSpec) GetRepository(id string) (PipedRepository, bool) {
 		}
 	}
 	return PipedRepository{}, false
-}
-
-func (s *PipedSpec) IsInsecureChartRepository(name string) bool {
-	for _, cr := range s.ChartRepositories {
-		if cr.Name == name {
-			return cr.Insecure
-		}
-	}
-	return false
 }
 
 func (s *PipedSpec) LoadPipedKey() ([]byte, error) {
@@ -308,252 +279,6 @@ type PipedRepository struct {
 	Remote string `json:"remote"`
 	// The branch will be handled.
 	Branch string `json:"branch"`
-}
-
-type HelmChartRepositoryType string
-
-const (
-	HTTPHelmChartRepository HelmChartRepositoryType = "HTTP"
-	GITHelmChartRepository  HelmChartRepositoryType = "GIT"
-)
-
-type HelmChartRepository struct {
-	// The repository type. Currently, HTTP and GIT are supported.
-	// Default is HTTP.
-	Type HelmChartRepositoryType `json:"type" default:"HTTP"`
-
-	// Configuration for HTTP type.
-	// The name of the Helm chart repository.
-	Name string `json:"name,omitempty"`
-	// The address to the Helm chart repository.
-	Address string `json:"address,omitempty"`
-	// Username used for the repository backed by HTTP basic authentication.
-	Username string `json:"username,omitempty"`
-	// Password used for the repository backed by HTTP basic authentication.
-	Password string `json:"password,omitempty"`
-	// Whether to skip TLS certificate checks for the repository or not.
-	Insecure bool `json:"insecure"`
-
-	// Configuration for GIT type.
-	// Remote address of the Git repository used to clone Helm charts.
-	// e.g. git@github.com:org/repo.git
-	GitRemote string `json:"gitRemote,omitempty"`
-	// The path to the private ssh key file used while cloning Helm charts from above Git repository.
-	SSHKeyFile string `json:"sshKeyFile,omitempty"`
-}
-
-func (r *HelmChartRepository) IsHTTPRepository() bool {
-	return r.Type == HTTPHelmChartRepository
-}
-
-func (r *HelmChartRepository) IsGitRepository() bool {
-	return r.Type == GITHelmChartRepository
-}
-
-func (r *HelmChartRepository) Validate() error {
-	if r.IsHTTPRepository() {
-		if r.Name == "" {
-			return errors.New("name must be set")
-		}
-		if r.Address == "" {
-			return errors.New("address must be set")
-		}
-		return nil
-	}
-
-	if r.IsGitRepository() {
-		if r.GitRemote == "" {
-			return errors.New("gitRemote must be set")
-		}
-		return nil
-	}
-
-	return fmt.Errorf("either %s repository or %s repository must be configured", HTTPHelmChartRepository, GITHelmChartRepository)
-}
-
-func (r *HelmChartRepository) Mask() {
-	if len(r.Password) != 0 {
-		r.Password = maskString
-	}
-	if len(r.SSHKeyFile) != 0 {
-		r.SSHKeyFile = maskString
-	}
-}
-
-func (s *PipedSpec) HTTPHelmChartRepositories() []HelmChartRepository {
-	repos := make([]HelmChartRepository, 0, len(s.ChartRepositories))
-	for _, r := range s.ChartRepositories {
-		if r.IsHTTPRepository() {
-			repos = append(repos, r)
-		}
-	}
-	return repos
-}
-
-func (s *PipedSpec) GitHelmChartRepositories() []HelmChartRepository {
-	repos := make([]HelmChartRepository, 0, len(s.ChartRepositories))
-	for _, r := range s.ChartRepositories {
-		if r.IsGitRepository() {
-			repos = append(repos, r)
-		}
-	}
-	return repos
-}
-
-type HelmChartRegistryType string
-
-// The registry types that hosts Helm charts.
-const (
-	OCIHelmChartRegistry HelmChartRegistryType = "OCI"
-)
-
-type HelmChartRegistry struct {
-	// The registry type. Currently, only OCI is supported.
-	Type HelmChartRegistryType `json:"type" default:"OCI"`
-
-	// The address to the Helm chart registry.
-	Address string `json:"address"`
-	// Username used for the registry authentication.
-	Username string `json:"username,omitempty"`
-	// Password used for the registry authentication.
-	Password string `json:"password,omitempty"`
-}
-
-func (r *HelmChartRegistry) IsOCI() bool {
-	return r.Type == OCIHelmChartRegistry
-}
-
-func (r *HelmChartRegistry) Validate() error {
-	if r.IsOCI() {
-		if r.Address == "" {
-			return errors.New("address must be set")
-		}
-		return nil
-	}
-
-	return fmt.Errorf("%s registry must be configured", OCIHelmChartRegistry)
-}
-
-func (r *HelmChartRegistry) Mask() {
-	if len(r.Password) != 0 {
-		r.Password = maskString
-	}
-}
-
-type PlatformProviderKubernetesConfig struct {
-	// The master URL of the kubernetes cluster.
-	// Empty means in-cluster.
-	MasterURL string `json:"masterURL,omitempty"`
-	// The path to the kubeconfig file.
-	// Empty means in-cluster.
-	KubeConfigPath string `json:"kubeConfigPath,omitempty"`
-	// Configuration for application resource informer.
-	AppStateInformer KubernetesAppStateInformer `json:"appStateInformer"`
-	// Version of kubectl will be used.
-	KubectlVersion string `json:"kubectlVersion"`
-}
-
-type KubernetesAppStateInformer struct {
-	// Only watches the specified namespace.
-	// Empty means watching all namespaces.
-	Namespace string `json:"namespace,omitempty"`
-	// List of resources that should be added to the watching targets.
-	IncludeResources []KubernetesResourceMatcher `json:"includeResources,omitempty"`
-	// List of resources that should be ignored from the watching targets.
-	ExcludeResources []KubernetesResourceMatcher `json:"excludeResources,omitempty"`
-}
-
-type KubernetesResourceMatcher struct {
-	// The APIVersion of the kubernetes resource.
-	APIVersion string `json:"apiVersion,omitempty"`
-	// The kind name of the kubernetes resource.
-	// Empty means all kinds are matching.
-	Kind string `json:"kind,omitempty"`
-}
-
-type PlatformProviderTerraformConfig struct {
-	// List of variables that will be set directly on terraform commands with "-var" flag.
-	// The variable must be formatted by "key=value" as below:
-	// "image_id=ami-abc123"
-	// 'image_id_list=["ami-abc123","ami-def456"]'
-	// 'image_id_map={"us-east-1":"ami-abc123","us-east-2":"ami-def456"}'
-	Vars []string `json:"vars,omitempty"`
-	// Enable drift detection.
-	// TODO: This is a temporary option because Terraform drift detection is buggy and has performance issues. This will be possibly removed in the future release.
-	DriftDetectionEnabled *bool `json:"driftDetectionEnabled" default:"true"`
-}
-
-type PlatformProviderCloudRunConfig struct {
-	// The GCP project hosting the CloudRun service.
-	Project string `json:"project"`
-	// The region of running CloudRun service.
-	Region string `json:"region"`
-	// The path to the service account file for accessing CloudRun service.
-	CredentialsFile string `json:"credentialsFile,omitempty"`
-}
-
-func (c *PlatformProviderCloudRunConfig) Mask() {
-	if len(c.CredentialsFile) != 0 {
-		c.CredentialsFile = maskString
-	}
-}
-
-type PlatformProviderLambdaConfig struct {
-	// The region to send requests to. This parameter is required.
-	// e.g. "us-west-2"
-	// A full list of regions is: https://docs.aws.amazon.com/general/latest/gr/rande.html
-	Region string `json:"region"`
-	// Path to the shared credentials file.
-	CredentialsFile string `json:"credentialsFile,omitempty"`
-	// The IAM role arn to use when assuming an role.
-	RoleARN string `json:"roleARN,omitempty"`
-	// Path to the WebIdentity token the SDK should use to assume a role with.
-	TokenFile string `json:"tokenFile,omitempty"`
-	// AWS Profile to extract credentials from the shared credentials file.
-	// If empty, the environment variable "AWS_PROFILE" is used.
-	// "default" is populated if the environment variable is also not set.
-	Profile string `json:"profile,omitempty"`
-}
-
-func (c *PlatformProviderLambdaConfig) Mask() {
-	if len(c.CredentialsFile) != 0 {
-		c.CredentialsFile = maskString
-	}
-	if len(c.RoleARN) != 0 {
-		c.RoleARN = maskString
-	}
-	if len(c.TokenFile) != 0 {
-		c.TokenFile = maskString
-	}
-}
-
-type PlatformProviderECSConfig struct {
-	// The region to send requests to. This parameter is required.
-	// e.g. "us-west-2"
-	// A full list of regions is: https://docs.aws.amazon.com/general/latest/gr/rande.html
-	Region string `json:"region"`
-	// Path to the shared credentials file.
-	CredentialsFile string `json:"credentialsFile,omitempty"`
-	// The IAM role arn to use when assuming an role.
-	RoleARN string `json:"roleARN,omitempty"`
-	// Path to the WebIdentity token the SDK should use to assume a role with.
-	TokenFile string `json:"tokenFile,omitempty"`
-	// AWS Profile to extract credentials from the shared credentials file.
-	// If empty, the environment variable "AWS_PROFILE" is used.
-	// "default" is populated if the environment variable is also not set.
-	Profile string `json:"profile,omitempty"`
-}
-
-func (c *PlatformProviderECSConfig) Mask() {
-	if len(c.CredentialsFile) != 0 {
-		c.CredentialsFile = maskString
-	}
-	if len(c.RoleARN) != 0 {
-		c.RoleARN = maskString
-	}
-	if len(c.TokenFile) != 0 {
-		c.TokenFile = maskString
-	}
 }
 
 type Notifications struct {
