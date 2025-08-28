@@ -17,6 +17,8 @@ export const UI_TEXT_HIDE_FILTER = "HIDE FILTER";
 export const UI_TEXT_CLEAR = "CLEAR";
 export const UI_TEXT_NOT_AVAILABLE_TEXT = "N/A";
 export const UI_TEXT_UPGRADE = "UPGRADE";
+export const UI_TEXT_IGNORE = "Ignore";
+export const UI_TEXT_BREAKING_CHANGES = "Breaking Changes";
 // piped
 export const UI_TEXT_ADD_NEW_KEY = "Add new Key";
 export const UI_TEXT_DELETE_OLD_KEY = "Delete old Key";
