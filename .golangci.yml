@@ -29,6 +29,7 @@ issues:
   exclude-dirs:
     - "vendor$"
     - "pkg/app/piped/executor/analysis/mannwhitney"
+    - "pkg/app/pipedv1/plugin/analysis/executestage/mannwhitney"
   exclude-rules:
     - linters:
         - staticcheck
