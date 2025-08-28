@@ -210,3 +210,13 @@ func (a *AnalysisProviderStackdriverConfig) Mask() {
 func (a *AnalysisProviderStackdriverConfig) Validate() error {
 	return nil
 }
+
+// GetAnalysisProvider finds and returns an Analysis Provider config whose name is the given string.
+func (p *PluginConfig) GetAnalysisProvider(name string) (PipedAnalysisProvider, bool) {
+	for _, prv := range p.AnalysisProviders {
+		if prv.Name == name {
+			return prv, true
+		}
+	}
+	return PipedAnalysisProvider{}, false
+}

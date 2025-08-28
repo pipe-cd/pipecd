@@ -18,6 +18,9 @@ import (
 	"context"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/config"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/executestage"
 )
 
 const (
@@ -26,7 +29,9 @@ const (
 
 type plugin struct{}
 
-func (p *plugin) BuildPipelineSyncStages(_ context.Context, _ sdk.ConfigNone, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
+var _ sdk.StagePlugin[config.PluginConfig, struct{}, struct{}] = (*plugin)(nil)
+
+func (p *plugin) BuildPipelineSyncStages(_ context.Context, _ *config.PluginConfig, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
 	stages := make([]sdk.PipelineStage, 0, len(input.Request.Stages))
 	for _, rs := range input.Request.Stages {
 		stages = append(stages, sdk.PipelineStage{
@@ -43,10 +48,9 @@ func (p *plugin) BuildPipelineSyncStages(_ context.Context, _ sdk.ConfigNone, in
 	}, nil
 }
 
-func (p *plugin) ExecuteStage(ctx context.Context, _ sdk.ConfigNone, _ sdk.DeployTargetsNone, input *sdk.ExecuteStageInput[struct{}]) (*sdk.ExecuteStageResponse, error) {
-	// TODO: Implement analysis execution logic
+func (p *plugin) ExecuteStage(ctx context.Context, pluginCfg *config.PluginConfig, _ sdk.DeployTargetsNone, input *sdk.ExecuteStageInput[struct{}]) (*sdk.ExecuteStageResponse, error) {
 	return &sdk.ExecuteStageResponse{
-		Status: sdk.StageStatusSuccess,
+		Status: executestage.ExecuteAnalysisStage(ctx, input, pluginCfg),
 	}, nil
 }
 

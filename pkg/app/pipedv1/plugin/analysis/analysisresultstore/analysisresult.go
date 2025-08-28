@@ -12,22 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package analysisresultstore
 
-import (
-	"encoding/json"
-)
-
-// analysisStageOptions represents the configuration options for the ANALYSIS stage.
-type analysisStageOptions struct {
-	// TODO: Add fields here
-}
-
-// decode decodes the raw JSON data and validates it.
-func decode(data json.RawMessage) (analysisStageOptions, error) {
-	opts := analysisStageOptions{}
-	if err := json.Unmarshal(data, &opts); err != nil {
-		return analysisStageOptions{}, err
-	}
-	return opts, nil
+type AnalysisResult struct {
+	StartTime int64 `json:"start_time"`
 }

@@ -5,11 +5,12 @@ go 1.24.1
 require (
 	github.com/DataDog/datadog-api-client-go v1.0.0-beta.16
 	github.com/creasty/defaults v1.6.0
-	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250825032242-edd551a6350d
+	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250828012926-566b885b5498
 	github.com/prometheus/client_golang v1.12.1
 	github.com/prometheus/common v0.32.1
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.19.1
+	golang.org/x/sync v0.12.0
 	sigs.k8s.io/yaml v1.5.0
 )
 
@@ -57,7 +58,6 @@ require (
 	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/oauth2 v0.27.0 // indirect
-	golang.org/x/sync v0.12.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
