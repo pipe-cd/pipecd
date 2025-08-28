@@ -146,6 +146,51 @@ func TestExecutor_buildAppArgs(t *testing.T) {
 				K8s: map[string]string{"Namespace": "test-ns"},
 			},
 		},
+		{
+			name:    "both app custom args and custom args are nil",
+			appName: "test-app",
+			analysisAppSpec: &config.AnalysisApplicationSpec{
+				AppCustomArgs: nil,
+			},
+			customArgs: nil,
+			expectedArgsTemplate: argsTemplate{
+				App:           appArgs{Name: "test-app"},
+				AppCustomArgs: map[string]string{},
+				K8s:           map[string]string{"Namespace": ""},
+			},
+		},
+		{
+			name:    "app custom args is nil and custom args is not nil",
+			appName: "test-app",
+			analysisAppSpec: &config.AnalysisApplicationSpec{
+				AppCustomArgs: map[string]string{
+					"k8sNamespace": "test-ns",
+				},
+			},
+			customArgs: nil,
+			expectedArgsTemplate: argsTemplate{
+				App: appArgs{Name: "test-app"},
+				AppCustomArgs: map[string]string{
+					"k8sNamespace": "test-ns",
+				},
+				K8s: map[string]string{"Namespace": "test-ns"},
+			},
+		},
+		{
+			name:    "app custom args is not nil and custom args is nil",
+			appName: "test-app",
+			analysisAppSpec: &config.AnalysisApplicationSpec{
+				AppCustomArgs: nil,
+			},
+			customArgs: map[string]string{
+				"k8sNamespace": "test-ns",
+			},
+			expectedArgsTemplate: argsTemplate{
+				App:           appArgs{Name: "test-app"},
+				AppCustomArgs: map[string]string{"k8sNamespace": "test-ns"},
+				K8s:           map[string]string{"Namespace": "test-ns"},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -164,30 +209,6 @@ func TestExecutor_buildAppArgs(t *testing.T) {
 			assert.Equal(t, tt.expectedArgsTemplate.K8s, result.K8s)
 		})
 	}
-}
-
-func TestExecutor_buildAppArgs_NilMaps(t *testing.T) {
-	t.Parallel()
-
-	// Test what actually happens when AppCustomArgs is nil
-	e := &executor{
-		appName: "test-app",
-		analysisAppSpec: &config.AnalysisApplicationSpec{
-			AppCustomArgs: nil, // nil map
-		},
-	}
-
-	// Test with nil customArgs - maps.Copy(nil, nil) doesn't panic
-	result := e.buildAppArgs(nil)
-	assert.Equal(t, appArgs{Name: "test-app"}, result.App)
-	assert.NotNil(t, result.AppCustomArgs) // maps.Clone(nil) returns nil
-	assert.Equal(t, map[string]string{"Namespace": ""}, result.K8s)
-
-	// Test with non-nil customArgs - this should not panic
-	result = e.buildAppArgs(map[string]string{"key": "value"})
-	assert.Equal(t, appArgs{Name: "test-app"}, result.App)
-	assert.Equal(t, map[string]string{"key": "value"}, result.AppCustomArgs)
-	assert.Equal(t, map[string]string{"Namespace": ""}, result.K8s)
 }
 
 func TestExecutor_buildAppArgs_MapsCloning(t *testing.T) {
