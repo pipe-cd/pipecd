@@ -313,3 +313,20 @@ setup-local-oidc:
 .PHONY: delete-local-oidc
 delete-local-oidc:
 	docker compose -f ./hack/oidc/docker-compose.yml down
+
+# Go workspace commands
+# These commands are used to manage go workspace.
+# It is useful when you want to develop SDK and test it in other modules.
+.PHONY: setup-go-workspace
+setup-go-workspace: MODULES ?= $(shell find . -name go.mod | while read -r dir; do dirname "$$dir"; done | paste -sd, -) # comma separated list of modules. eg: MODULES=.,pkg/plugin/sdk
+setup-go-workspace:
+	@echo "Setting up go workspace..."
+	go work init || true # ignore error if go workspace is already initialized
+	@for module in $(shell echo $(MODULES) | tr ',' ' '); do \
+		echo "Setting up module: $$module"; \
+		go work use $$module; \
+	done
+
+.PHONY: teardown-go-workspace
+teardown-go-workspace:
+	rm -f go.work go.work.sum
