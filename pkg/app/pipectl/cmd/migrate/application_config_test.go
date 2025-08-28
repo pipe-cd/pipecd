@@ -334,6 +334,74 @@ func TestApplicationConfig_migrateApplicationConfig(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "KubernetesApp with analysis stage",
+			inputConfig: map[string]interface{}{
+				"kind":       "KubernetesApp",
+				"apiVersion": "pipecd.dev/v1beta1",
+				"spec": map[string]interface{}{
+					"name":        "test-app",
+					"description": "Test application",
+					"labels": map[string]interface{}{
+						"env": "test",
+					},
+					"input": map[string]interface{}{
+						"namespace": "test",
+					},
+					"quickSync": map[string]interface{}{
+						"prune": true,
+					},
+					"service": map[string]interface{}{
+						"name": "test-service",
+					},
+					"pipeline": map[string]interface{}{
+						"stages": []interface{}{
+							map[string]interface{}{
+								"id":   "stage1",
+								"name": "ANALYSIS",
+							},
+						},
+					},
+				},
+			},
+			expected: map[string]interface{}{
+				"kind":       "Application",
+				"apiVersion": "pipecd.dev/v1beta1",
+				"spec": map[string]interface{}{
+					"name":        "test-app",
+					"description": "Test application",
+					"labels": map[string]interface{}{
+						"env": "test",
+					},
+					"plugins": map[string]interface{}{
+						"kubernetes": map[string]interface{}{
+							"input": map[string]interface{}{
+								"namespace": "test",
+							},
+							"quickSync": map[string]interface{}{
+								"prune": true,
+							},
+							"service": map[string]interface{}{
+								"name": "test-service",
+							},
+						},
+						"analysis": map[string]interface{}{
+							"appCustomArgs": map[string]interface{}{
+								"k8sNamespace": "test",
+							},
+						},
+					},
+					"pipeline": map[string]interface{}{
+						"stages": []interface{}{
+							map[string]interface{}{
+								"id":   "stage1",
+								"name": "ANALYSIS",
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
