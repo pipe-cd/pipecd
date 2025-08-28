@@ -1,6 +1,6 @@
 module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/waitapproval
 
-go 1.24.1
+go 1.25.0
 
 require (
 	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250814070326-c0a2e1095de5
