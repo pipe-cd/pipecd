@@ -17,9 +17,10 @@ package main
 import (
 	"context"
 
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/executestage"
-	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 const (

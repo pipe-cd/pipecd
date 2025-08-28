@@ -22,8 +22,9 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/analysisprovider/metrics"
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/analysisprovider/metrics"
 )
 
 // analyzer contains a query for an analysis provider.
