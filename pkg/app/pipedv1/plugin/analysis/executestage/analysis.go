@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"maps"
 	"time"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
@@ -38,6 +39,7 @@ type executor struct {
 	targetDS            *sdk.DeploymentSource[any] // TODO: do not use any
 	stageConfig         *config.AnalysisStageOptions
 	pluginConfig        *config.PluginConfig
+	analysisAppSpec     *config.AnalysisApplicationSpec
 	analysisResultStore analysisresultstore.Store
 	appName             string
 	sharedConfigDir     string
@@ -50,7 +52,7 @@ type executor struct {
 	previousElapsedTime time.Duration
 }
 
-func ExecuteAnalysisStage(ctx context.Context, input *sdk.ExecuteStageInput[struct{}], pluginCfg *config.PluginConfig) sdk.StageStatus {
+func ExecuteAnalysisStage(ctx context.Context, input *sdk.ExecuteStageInput[config.AnalysisApplicationSpec], pluginCfg *config.PluginConfig) sdk.StageStatus {
 	stageCfg := &config.AnalysisStageOptions{}
 	if err := json.Unmarshal(input.Request.StageConfig, stageCfg); err != nil {
 		return sdk.StageStatusFailure
@@ -60,6 +62,7 @@ func ExecuteAnalysisStage(ctx context.Context, input *sdk.ExecuteStageInput[stru
 	e := &executor{
 		stageConfig:         stageCfg,
 		pluginConfig:        pluginCfg,
+		analysisAppSpec:     input.Request.TargetDeploymentSource.ApplicationConfig.Spec,
 		analysisResultStore: resultStore,
 		appName:             input.Request.Deployment.ApplicationName,
 		sharedConfigDir:     input.Request.TargetDeploymentSource.SharedConfigDirectory,
@@ -329,13 +332,17 @@ func (e *executor) getHTTPConfig(templatableCfg *config.TemplatableAnalysisHTTP,
 }
 
 func (e *executor) buildAppArgs(customArgs map[string]string) argsTemplate {
+	// merge custom args specified under stage config and application plugin spec
+	// the values under stage config has higher priority
+	appCustomArgs := maps.Clone(e.analysisAppSpec.AppCustomArgs)
+	maps.Copy(appCustomArgs, customArgs)
 	args := argsTemplate{
-		App: appArgs{
-			Name: e.appName,
-			// TODO: Populate Env
-			Env: "",
-		},
-		AppCustomArgs: customArgs,
+		App:           appArgs{Name: e.appName},
+		AppCustomArgs: appCustomArgs,
+
+		// This is for temporary support for the `{{ .K8s.Namespace }}` syntax in the query template.
+		// Please use `{{ .AppCustomArgs.k8sNamespace }}` instead.
+		K8s: map[string]string{"Namespace": appCustomArgs["k8sNamespace"]},
 	}
 	return args
 }

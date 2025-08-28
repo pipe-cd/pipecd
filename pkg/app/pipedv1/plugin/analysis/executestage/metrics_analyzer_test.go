@@ -359,9 +359,29 @@ func Test_metricsAnalyzer_renderQuery(t *testing.T) {
 					App: appArgs{
 						Name: "app-1",
 					},
+					AppCustomArgs: map[string]string{},
 				},
 			},
 			want:    `variant="canary", app="app-1"`,
+			wantErr: false,
+		},
+		{
+			name: "using app name and k8s namespace built in args with custom args",
+			args: args{
+				queryTemplate: `app="{{ .App.Name }}", namespace="{{ .K8s.Namespace }}"`,
+				variant:       "canary",
+			},
+			metricsAnalyzer: &metricsAnalyzer{
+				argsTemplate: argsTemplate{
+					App: appArgs{
+						Name: "app-1",
+					},
+					K8s: map[string]string{
+						"Namespace": "ns-1",
+					},
+				},
+			},
+			want:    `app="app-1", namespace="ns-1"`,
 			wantErr: false,
 		},
 		{
@@ -376,7 +396,9 @@ func Test_metricsAnalyzer_renderQuery(t *testing.T) {
 					App: appArgs{
 						Name: "app-1",
 					},
-					AppCustomArgs: map[string]string{"id": "xxxx"},
+					AppCustomArgs: map[string]string{
+						"id": "xxxx",
+					},
 				},
 			},
 			want:    `variant="canary", app="app-1", pod="1234", id="xxxx"`,

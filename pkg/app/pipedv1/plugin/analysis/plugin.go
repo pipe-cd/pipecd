@@ -29,7 +29,7 @@ const (
 
 type plugin struct{}
 
-var _ sdk.StagePlugin[config.PluginConfig, struct{}, struct{}] = (*plugin)(nil)
+var _ sdk.StagePlugin[config.PluginConfig, struct{}, config.AnalysisApplicationSpec] = (*plugin)(nil)
 
 func (p *plugin) BuildPipelineSyncStages(_ context.Context, _ *config.PluginConfig, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
 	stages := make([]sdk.PipelineStage, 0, len(input.Request.Stages))
@@ -48,7 +48,7 @@ func (p *plugin) BuildPipelineSyncStages(_ context.Context, _ *config.PluginConf
 	}, nil
 }
 
-func (p *plugin) ExecuteStage(ctx context.Context, pluginCfg *config.PluginConfig, _ sdk.DeployTargetsNone, input *sdk.ExecuteStageInput[struct{}]) (*sdk.ExecuteStageResponse, error) {
+func (p *plugin) ExecuteStage(ctx context.Context, pluginCfg *config.PluginConfig, _ sdk.DeployTargetsNone, input *sdk.ExecuteStageInput[config.AnalysisApplicationSpec]) (*sdk.ExecuteStageResponse, error) {
 	return &sdk.ExecuteStageResponse{
 		Status: executestage.ExecuteAnalysisStage(ctx, input, pluginCfg),
 	}, nil
