@@ -56,5 +56,8 @@ gomock_reflect_*/
 # Cache
 .cache
 
+# Local development data volumes
+.pipecd-data/
+
 # hack
 hack/*

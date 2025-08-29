@@ -41,6 +41,11 @@ REG_CONFIG_DIR="/etc/containerd/certs.d"
 cat <<EOF | kind create cluster --name ${CLUSTER} --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  extraMounts:
+  - hostPath: $(pwd)/.pipecd-data
+    containerPath: /tmp/pipecd-data
 containerdConfigPatches:
 - |-
   [plugins."io.containerd.grpc.v1.cri".registry]

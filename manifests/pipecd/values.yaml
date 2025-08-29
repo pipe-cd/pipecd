@@ -149,6 +149,10 @@ cors:
 quickstart:
   enabled: false
 
+# Local development storage volumes
+localStorageVolumes:
+  enabled: false
+
 monitoring:
   # If true, prometheus and grafana sub-charts will be installed
   enabled: false
