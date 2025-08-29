@@ -1,0 +1,52 @@
+name: plugin_release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (e.g. v0.1.0)"
+        required: true
+      path:
+        description: "Plugin source path (e.g. pkg/app/pipedv1/plugin/kubernetes)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          repository: pipe-cd/pipecd
+          fetch-depth: 0
+      - env:
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_PATH: ${{ inputs.path }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          LATEST_VERSION=$(git tag -l '${{ inputs.path }}/v*' | sort -t/ -k2 -V | tail -n1)
+
+          if [[ -z "$LATEST_VERSION" ]]; then
+            LATEST_VERSION=$(git log --format="%H" --reverse -- ./${{ inputs.path }}/ | head -n 1)
+          fi
+
+          echo "Latest version: $LATEST_VERSION"
+          echo "Input version: $INPUT_VERSION"
+          if [[ "$LATEST_VERSION" == "$INPUT_VERSION" ]]; then
+            echo "Version $INPUT_VERSION already exists"
+            exit 0
+          fi
+
+          PLUGIN_NAME=$(basename $INPUT_PATH)
+
+          cat > output.tmp <<EOF
+          Plugin $PLUGIN_NAME Release $INPUT_VERSION with changes since $LATEST_VERSION
+          ---
+
+          EOF
+          git log --reverse --format="* %s" $LATEST_VERSION..HEAD -- $INPUT_PATH | sed -E 's/\(#([0-9]+)\)/([#\1](https:\/\/github.com\/pipe-cd\/pipecd\/pull\/\1))/g' >> output.tmp
+
+          gh release create --draft --target "$(git rev-parse HEAD)" --title "$PLUGIN_NAME $INPUT_VERSION" --notes-file output.tmp $INPUT_PATH/$INPUT_VERSION
