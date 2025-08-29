@@ -66,6 +66,7 @@ jobs:
           name: ${{ env.PLUGIN_NAME }} ${{ inputs.version }}
           target_commitish: ${{ github.sha }}
           draft: true
+          make_latest: "false"
           files: |
             ./.artifacts/plugins/${{ env.PLUGIN_NAME }}_${{ inputs.version }}_linux_amd64
             ./.artifacts/plugins/${{ env.PLUGIN_NAME }}_${{ inputs.version }}_linux_arm64
