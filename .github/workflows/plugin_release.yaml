@@ -22,6 +22,18 @@ jobs:
         with:
           repository: pipe-cd/pipecd
           fetch-depth: 0
+      - uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - name: Determine Plugin Info
+        run: echo "PLUGIN_NAME=$(basename $INPUT_PATH)" >> $GITHUB_ENV
+      - name: Build binary artifacts
+        run: |
+          make build/plugin PLUGINS=$PLUGIN_NAME BUILD_OS=linux BUILD_ARCH=amd64 BIN_SUFFIX=_${{ inputs.version }}_linux_amd64
+          make build/plugin PLUGINS=$PLUGIN_NAME BUILD_OS=linux BUILD_ARCH=arm64 BIN_SUFFIX=_${{ inputs.version }}_linux_arm64
+          make build/plugin PLUGINS=$PLUGIN_NAME BUILD_OS=darwin BUILD_ARCH=amd64 BIN_SUFFIX=_${{ inputs.version }}_darwin_amd64
+          make build/plugin PLUGINS=$PLUGIN_NAME BUILD_OS=darwin BUILD_ARCH=arm64 BIN_SUFFIX=_${{ inputs.version }}_darwin_arm64
       - env:
           INPUT_VERSION: ${{ inputs.version }}
           INPUT_PATH: ${{ inputs.path }}
@@ -40,8 +52,6 @@ jobs:
             exit 0
           fi
 
-          PLUGIN_NAME=$(basename $INPUT_PATH)
-
           cat > output.tmp <<EOF
           Plugin $PLUGIN_NAME Release $INPUT_VERSION with changes since $LATEST_VERSION
           ---
@@ -50,3 +60,12 @@ jobs:
           git log --reverse --format="* %s" $LATEST_VERSION..HEAD -- $INPUT_PATH | sed -E 's/\(#([0-9]+)\)/([#\1](https:\/\/github.com\/pipe-cd\/pipecd\/pull\/\1))/g' >> output.tmp
 
           gh release create --draft --target "$(git rev-parse HEAD)" --title "$PLUGIN_NAME $INPUT_VERSION" --notes-file output.tmp $INPUT_PATH/$INPUT_VERSION
+      - name: Publish binary artifacts
+        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda #v2.2.1
+        with:
+          tag_name: ${{ inputs.path }}/${{ inputs.version }}
+          files: |
+            ./.artifacts/plugins/${{ env.PLUGIN_NAME }}_${{ inputs.version }}_linux_amd64
+            ./.artifacts/plugins/${{ env.PLUGIN_NAME }}_${{ inputs.version }}_linux_arm64
+            ./.artifacts/plugins/${{ env.PLUGIN_NAME }}_${{ inputs.version }}_darwin_amd64
+            ./.artifacts/plugins/${{ env.PLUGIN_NAME }}_${{ inputs.version }}_darwin_arm64
