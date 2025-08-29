@@ -279,13 +279,21 @@ release/docs:
 
 # Other commands
 
-.PHONY: kind-up
-kind-up:
+.PHONY: up/local-registry
+up/local-registry:
+	./hack/create-local-registry.sh
+
+.PHONY: up/kind-cluster
+up/kind-cluster:
 	./hack/create-kind-cluster.sh pipecd
 
-.PHONY: kind-down
-kind-down:
+.PHONY: up/local-cluster
+up/local-cluster: up/local-registry up/kind-cluster
+
+.PHONY: down/local-cluster
+down/local-cluster:
 	kind delete cluster --name pipecd
+	docker container rm -f kind-registry 2>/dev/null
 
 .PHONY: setup-envtest
 # Where to install the setup-envtest binary
