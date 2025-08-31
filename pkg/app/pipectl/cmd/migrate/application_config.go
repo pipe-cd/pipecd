@@ -18,7 +18,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
+	"maps"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -26,12 +29,14 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type applicationConfig struct {
 	root *command
 
 	configFiles []string
+	directories []string
 }
 
 func newApplicationConfigCommand(root *command) *cobra.Command {
@@ -46,11 +51,15 @@ func newApplicationConfigCommand(root *command) *cobra.Command {
 	}
 
 	cmd.Flags().StringSliceVar(&c.configFiles, "config-files", c.configFiles, "The list of application config files to migrate.")
-	cmd.MarkFlagRequired("config-files")
+	cmd.Flags().StringSliceVar(&c.directories, "dirs", c.directories, "The list of application config directories to migrate.")
+
+	cmd.MarkFlagsOneRequired("config-files", "dirs")
+	cmd.MarkFlagsMutuallyExclusive("config-files", "dirs")
 	return cmd
 }
 
 func (c *applicationConfig) run(ctx context.Context, input cli.Input) error {
+
 	for _, configFile := range c.configFiles {
 		input.Logger.Info("migrating application config", zap.String("config-file", configFile))
 		if err := c.migrateApplicationConfig(ctx, configFile, input.Logger); err != nil {
@@ -60,6 +69,37 @@ func (c *applicationConfig) run(ctx context.Context, input cli.Input) error {
 		input.Logger.Info("successfully migrated application config", zap.String("config-file", configFile))
 	}
 
+	for _, directory := range c.directories {
+		input.Logger.Info("migrating application configs in directory", zap.String("directory", directory))
+
+		fileSystem := os.DirFS(directory)
+		// Scan all files under the repository.
+		err := fs.WalkDir(fileSystem, ".", func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if d.IsDir() {
+				return nil
+			}
+			if !model.IsApplicationConfigFile(d.Name()) {
+				return nil
+			}
+
+			input.Logger.Info("migrating application config", zap.String("config-file", path))
+			if err := c.migrateApplicationConfig(ctx, filepath.Join(directory, path), input.Logger); err != nil {
+				input.Logger.Error("failed to migrate application config", zap.String("config-file", path), zap.Error(err))
+				// Continue to migrate other application configs.
+				return nil
+			}
+			input.Logger.Info("successfully migrated application config", zap.String("config-file", path))
+			return nil
+		})
+		if err != nil {
+			input.Logger.Error("failed to migrate application configs in directory", zap.String("directory", directory), zap.Error(err))
+			return err
+		}
+		input.Logger.Info("successfully migrated application configs in directory", zap.String("directory", directory))
+	}
 	return nil
 }
 
@@ -89,7 +129,6 @@ func (c *applicationConfig) migrateApplicationConfig(_ context.Context, configFi
 		"description",
 		"planner",
 		"commitMatcher",
-		"pipeline",
 		"trigger",
 		"postSync",
 		"timeout",
@@ -105,6 +144,37 @@ func (c *applicationConfig) migrateApplicationConfig(_ context.Context, configFi
 		if _, ok := oldSpec[key]; ok {
 			spec[key] = oldSpec[key]
 		}
+	}
+
+	var hasAnalysisStage bool
+
+	if oldPipelineCfg, ok := oldSpec["pipeline"]; ok {
+		pipelineCfg := make(map[string][]any)
+
+		for _, oldStage := range oldPipelineCfg.(map[string]any)["stages"].([]any) {
+			if oldStageCfg, ok := oldStage.(map[string]any); ok {
+				// Check if the stage is the analysis stage to determine if we need to fill plugins.analysis config
+				if oldStageCfg["name"] == string(model.StageAnalysis) {
+					hasAnalysisStage = true
+				}
+
+				// Copy STAGE `timeout` and `skipOn` config under pipeline.stages[].with to pipeline.stages[]
+				// NOTE: We keep the original `timeout` and `skipOn` config under pipeline.stages[].with. for backward compatibility,
+				//  in case user want to downgrade pipedv1 to pipedv0.
+				// `pipeline.stages[].with.{timeout, skipOn}` will be marked as deprecated in v1.
+				stageCfg := maps.Clone(oldStageCfg)
+				if withCfg, ok := stageCfg["with"].(map[string]any); ok {
+					if _, ok := withCfg["timeout"]; ok {
+						stageCfg["timeout"] = withCfg["timeout"]
+					}
+					if _, ok := withCfg["skipOn"]; ok {
+						stageCfg["skipOn"] = withCfg["skipOn"]
+					}
+				}
+				pipelineCfg["stages"] = append(pipelineCfg["stages"], stageCfg)
+			}
+		}
+		spec["pipeline"] = pipelineCfg
 	}
 
 	switch config.Kind(cfg["kind"].(string)) {
@@ -126,6 +196,24 @@ func (c *applicationConfig) migrateApplicationConfig(_ context.Context, configFi
 				pluginCfg["kubernetes"][key] = oldSpec[key]
 			}
 		}
+
+		// Add analysis stage configuration if it exists
+		// namespace value will be set using spec.input.namespace
+		if hasAnalysisStage {
+			namespace := "default"
+			if input, ok := oldSpec["input"].(map[string]any); ok {
+				if ns, ok := input["namespace"].(string); ok && ns != "" {
+					namespace = ns
+				}
+			}
+
+			pluginCfg["analysis"] = map[string]any{
+				"appCustomArgs": map[string]string{
+					"k8sNamespace": namespace,
+				},
+			}
+		}
+
 		spec["plugins"] = pluginCfg
 	case config.KindTerraformApp:
 		logger.Info("migrating terraform application config", zap.String("config-file", configFile))

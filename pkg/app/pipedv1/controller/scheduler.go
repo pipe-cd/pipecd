@@ -324,7 +324,13 @@ func (s *scheduler) Run(ctx context.Context) error {
 			result       model.StageStatus
 			sig, handler = NewStopSignal()
 			doneCh       = make(chan struct{})
+			timeout      <-chan time.Time // nil means no timeout.
 		)
+
+		// Set timeout for stage execution. Default to 6h.
+		if stageCfg, ok := s.genericApplicationConfig.GetStage(ps.Index); ok {
+			timeout = time.After(stageCfg.Timeout.Duration())
+		}
 
 		go func() {
 			_, span := s.tracer.Start(ctx, ps.Name, trace.WithAttributes(
@@ -370,6 +376,10 @@ func (s *scheduler) Run(ctx context.Context) error {
 				handler.Cancel()
 				<-doneCh
 			}
+
+		case <-timeout:
+			handler.Timeout()
+			<-doneCh
 
 		case <-doneCh:
 			break

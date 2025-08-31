@@ -21,6 +21,8 @@ import (
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/config"
 )
 
 func mustMarshalJSON(t *testing.T, v interface{}) []byte {
@@ -50,7 +52,7 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 						{
 							Index:  0,
 							Name:   stageAnalysis,
-							Config: mustMarshalJSON(t, &analysisStageOptions{}),
+							Config: mustMarshalJSON(t, &config.AnalysisStageOptions{}),
 						},
 					},
 				},
@@ -75,12 +77,12 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 						{
 							Index:  0,
 							Name:   stageAnalysis,
-							Config: mustMarshalJSON(t, &analysisStageOptions{}),
+							Config: mustMarshalJSON(t, &config.AnalysisStageOptions{}),
 						},
 						{
 							Index:  2,
 							Name:   stageAnalysis,
-							Config: mustMarshalJSON(t, &analysisStageOptions{}),
+							Config: mustMarshalJSON(t, &config.AnalysisStageOptions{}),
 						},
 					},
 				},
@@ -112,7 +114,7 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 						{
 							Index:  0,
 							Name:   stageAnalysis,
-							Config: mustMarshalJSON(t, &analysisStageOptions{}),
+							Config: mustMarshalJSON(t, &config.AnalysisStageOptions{}),
 						},
 					},
 				},
@@ -134,7 +136,7 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			resp, err := p.BuildPipelineSyncStages(ctx, &struct{}{}, tc.input)
+			resp, err := p.BuildPipelineSyncStages(ctx, &config.PluginConfig{}, tc.input)
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expected, resp)
 		})

@@ -154,12 +154,6 @@ run/pipecd: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
 run/pipecd: BUILD_OPTS ?= -ldflags "$(BUILD_LDFLAGS_PREFIX).version=$(BUILD_VERSION) $(BUILD_LDFLAGS_PREFIX).gitCommit=$(BUILD_COMMIT) $(BUILD_LDFLAGS_PREFIX).buildDate=$(BUILD_DATE) -w"
 run/pipecd: CONTROL_PLANE_VALUES ?= ./quickstart/control-plane-values.yaml
 run/pipecd:
-	@echo "Building go binary of Control Plane..."
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 $(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipecd ./cmd/pipecd
-
-	@echo "Building web static files..."
-	yarn --cwd web build
-
 	@echo "Building docker image and pushing it to local registry..."
 	docker build -f cmd/pipecd/Dockerfile -t localhost:5001/pipecd:$(BUILD_VERSION) .
 	docker push localhost:5001/pipecd:$(BUILD_VERSION)
@@ -319,3 +313,20 @@ setup-local-oidc:
 .PHONY: delete-local-oidc
 delete-local-oidc:
 	docker compose -f ./hack/oidc/docker-compose.yml down
+
+# Go workspace commands
+# These commands are used to manage go workspace.
+# It is useful when you want to develop SDK and test it in other modules.
+.PHONY: setup-go-workspace
+setup-go-workspace: MODULES ?= $(shell find . -name go.mod | while read -r dir; do dirname "$$dir"; done | paste -sd, -) # comma separated list of modules. eg: MODULES=.,pkg/plugin/sdk
+setup-go-workspace:
+	@echo "Setting up go workspace..."
+	go work init || true # ignore error if go workspace is already initialized
+	@for module in $(shell echo $(MODULES) | tr ',' ' '); do \
+		echo "Setting up module: $$module"; \
+		go work use $$module; \
+	done
+
+.PHONY: teardown-go-workspace
+teardown-go-workspace:
+	rm -f go.work go.work.sum

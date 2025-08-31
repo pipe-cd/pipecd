@@ -1,4 +1,4 @@
-// Copyright 2024 The PipeCD Authors.
+// Copyright 2025 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,46 +20,30 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func floatPointer(v float64) *float64 {
-	return &v
-}
-
-func TestAnalysisExpectedString(t *testing.T) {
+func TestValidateAnalysisTemplateRef(t *testing.T) {
 	testcases := []struct {
-		name string
-		Min  *float64
-		Max  *float64
-		want string
+		name    string
+		tplName string
+		wantErr bool
 	}{
 		{
-			name: "only min given",
-			Min:  floatPointer(1.5),
-			want: "1.5 <=",
+			name:    "valid",
+			tplName: "name",
+			wantErr: false,
 		},
 		{
-			name: "only max given",
-			Max:  floatPointer(1.5),
-			want: "<= 1.5",
-		},
-		{
-			name: "both min and max given",
-			Min:  floatPointer(1.5),
-			Max:  floatPointer(2.5),
-			want: "1.5 <= 2.5",
-		},
-		{
-			name: "invalid range",
-			want: "",
+			name:    "invalid due to empty template name",
+			tplName: "",
+			wantErr: true,
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			e := &AnalysisExpected{
-				Min: tc.Min,
-				Max: tc.Max,
+			a := &AnalysisTemplateRef{
+				Name: tc.tplName,
 			}
-			got := e.String()
-			assert.Equal(t, tc.want, got)
+			err := a.Validate()
+			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}
 }

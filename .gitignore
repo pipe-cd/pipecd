@@ -27,6 +27,8 @@
 
 # Go
 /vendor
+go.work
+go.work.sum
 
 # nodejs
 node_modules

@@ -85,12 +85,12 @@ func wait(ctx context.Context, duration time.Duration, initialStart time.Time, s
 }
 
 func (p *plugin) retrieveStartTime(ctx context.Context, client *sdk.Client, logger *zap.Logger) time.Time {
-	sec, err := client.GetStageMetadata(ctx, startTimeKey)
+	sec, ok, err := client.GetStageMetadata(ctx, startTimeKey)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to get stage metadata %s", startTimeKey), zap.Error(err))
 		return time.Time{}
 	}
-	if sec == "" {
+	if !ok {
 		return time.Time{}
 	}
 

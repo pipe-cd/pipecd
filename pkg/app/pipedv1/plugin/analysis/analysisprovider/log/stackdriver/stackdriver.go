@@ -12,22 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package stackdriver
 
 import (
-	"encoding/json"
+	"context"
+	"time"
 )
 
-// analysisStageOptions represents the configuration options for the ANALYSIS stage.
-type analysisStageOptions struct {
-	// TODO: Add fields here
+const ProviderType = "StackdriverLogging"
+
+// Provider is a client for stackdriver.
+type Provider struct {
+	serviceAccount []byte
+
+	timeout time.Duration
 }
 
-// decode decodes the raw JSON data and validates it.
-func decode(data json.RawMessage) (analysisStageOptions, error) {
-	opts := analysisStageOptions{}
-	if err := json.Unmarshal(data, &opts); err != nil {
-		return analysisStageOptions{}, err
-	}
-	return opts, nil
+func NewProvider(serviceAccount []byte) (*Provider, error) {
+	return &Provider{
+		serviceAccount: serviceAccount,
+	}, nil
+}
+
+func (p *Provider) Type() string {
+	return ProviderType
+}
+
+func (p *Provider) Evaluate(ctx context.Context, query string) (bool, string, error) {
+	return false, "", nil
 }
