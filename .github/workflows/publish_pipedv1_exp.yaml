@@ -7,7 +7,7 @@ on:
         description: "Version to release (e.g. v0.1.0)"
         required: true
 
-permissions:
+permissions: {}
 
 env:
   GO_VERSION: 1.24.1
