@@ -17,6 +17,7 @@ package provider
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -25,26 +26,50 @@ import (
 	"strings"
 
 	"go.uber.org/zap"
+	"golang.org/x/sync/singleflight"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 )
 
 var (
 	allowedURLSchemes = []string{"http", "https"}
+
+	updateGroup = &singleflight.Group{}
 )
 
 type Helm struct {
-	version  string
 	execPath string
 	logger   *zap.Logger
 }
 
-func NewHelm(version, path string, logger *zap.Logger) *Helm {
+func NewHelm(path string, logger *zap.Logger) *Helm {
 	return &Helm{
-		version:  version,
 		execPath: path,
 		logger:   logger,
 	}
+}
+
+func (h *Helm) LoginToOCIRegistry(ctx context.Context, address, username, password string) error {
+	args := []string{
+		"registry",
+		"login",
+		"-u",
+		username,
+		"-p",
+		password,
+		address,
+	}
+
+	var stderr bytes.Buffer
+	cmd := exec.CommandContext(ctx, h.execPath, args...)
+	cmd.Stderr = &stderr
+
+	h.logger.Info("login to oci registry", zap.String("address", address))
+	if err := cmd.Run(); err != nil {
+		h.logger.Error("failed to login to oci registry", zap.String("address", address), zap.Error(err))
+		return fmt.Errorf("%w: %s", err, stderr.String())
+	}
+	return nil
 }
 
 func (h *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, namespace, chartPath string, opts *config.InputHelmOptions) (string, error) {
@@ -104,6 +129,43 @@ func (h *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, namespac
 	return stdout.String(), nil
 }
 
+// Add installs all specified Helm Chart repositories.
+// https://helm.sh/docs/topics/chart_repository/
+// helm repo add fantastic-charts https://fantastic-charts.storage.googleapis.com
+// helm repo add fantastic-charts https://fantastic-charts.storage.googleapis.com --username my-username --password my-password
+func (h *Helm) AddRepository(ctx context.Context, repo config.HelmChartRepository) error {
+	args := []string{"repo", "add", repo.Name, repo.Address}
+	if repo.Insecure {
+		args = append(args, "--insecure-skip-tls-verify")
+	}
+	if repo.Username != "" || repo.Password != "" {
+		args = append(args, "--username", repo.Username, "--password", repo.Password)
+	}
+	cmd := exec.CommandContext(ctx, h.execPath, args...)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		h.logger.Error("failed to add chart repository", zap.String("name", repo.Name), zap.Error(err))
+		return fmt.Errorf("failed to add chart repository %s: %s (%w)", repo.Name, string(out), err)
+	}
+	h.logger.Info("successfully added chart repository", zap.String("name", repo.Name))
+	return nil
+}
+
+func (h *Helm) UpdateRepositories(ctx context.Context) error {
+	_, err, _ := updateGroup.Do("update", func() (interface{}, error) {
+		args := []string{"repo", "update"}
+		cmd := exec.CommandContext(ctx, h.execPath, args...)
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			h.logger.Error("failed to update chart repositories", zap.Error(err))
+			return nil, fmt.Errorf("failed to update chart repositories: %s (%w)", string(out), err)
+		}
+		h.logger.Info("successfully updated chart repositories")
+		return nil, nil
+	})
+	return err
+}
+
 // verifyHelmValueFilePath verifies if the path of the values file references
 // a remote URL or inside the path where the application configuration file (i.e. *.pipecd.yaml) is located.
 func verifyHelmValueFilePath(appDir, valueFilePath string) error {
@@ -161,4 +223,91 @@ func resolveSymlinkToAbsPath(path, absParentDir string) (string, error) {
 	}
 
 	return resolved, nil
+}
+
+type helmRemoteChart struct {
+	Repository string
+	Name       string
+	Version    string
+	Insecure   bool
+}
+
+func (h *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespace string, chart helmRemoteChart, opts *config.InputHelmOptions) (string, error) {
+	releaseName := appName
+	if opts != nil && opts.ReleaseName != "" {
+		releaseName = opts.ReleaseName
+	}
+
+	args := []string{
+		"template",
+		"--no-hooks",
+		"--include-crds",
+		"--dependency-update",
+		releaseName,
+		fmt.Sprintf("%s/%s", chart.Repository, chart.Name),
+		fmt.Sprintf("--version=%s", chart.Version),
+	}
+
+	if chart.Insecure {
+		args = append(args, "--insecure-skip-tls-verify")
+	}
+
+	if namespace != "" {
+		args = append(args, fmt.Sprintf("--namespace=%s", namespace))
+	}
+
+	if opts != nil {
+		for k, v := range opts.SetValues {
+			args = append(args, "--set", fmt.Sprintf("%s=%s", k, v))
+		}
+		for _, v := range opts.ValueFiles {
+			if err := verifyHelmValueFilePath(appDir, v); err != nil {
+				h.logger.Error("failed to verify values file path", zap.Error(err))
+				return "", err
+			}
+			args = append(args, "-f", v)
+		}
+		for k, v := range opts.SetFiles {
+			args = append(args, "--set-file", fmt.Sprintf("%s=%s", k, v))
+		}
+		for _, v := range opts.APIVersions {
+			args = append(args, "--api-versions", v)
+		}
+		if opts.KubeVersion != "" {
+			args = append(args, "--kube-version", opts.KubeVersion)
+		}
+	}
+
+	h.logger.Info(fmt.Sprintf("start templating a chart from Helm repository for application %s", appName),
+		zap.Any("args", args),
+	)
+
+	executor := func() (string, error) {
+		var stdout, stderr bytes.Buffer
+		cmd := exec.CommandContext(ctx, h.execPath, args...)
+		cmd.Dir = appDir
+		cmd.Stdout = &stdout
+		cmd.Stderr = &stderr
+
+		if err := cmd.Run(); err != nil {
+			return stdout.String(), fmt.Errorf("%w: %s", err, stderr.String())
+		}
+		return stdout.String(), nil
+	}
+
+	out, err := executor()
+	if err == nil {
+		return out, nil
+	}
+
+	if !strings.Contains(err.Error(), "helm repo update") {
+		return "", err
+	}
+
+	// If the error is a "Not Found", we update the repositories and try again.
+	if e := h.UpdateRepositories(ctx); e != nil {
+		h.logger.Error("failed to update Helm chart repositories", zap.Error(e))
+		return "", errors.Join(err, e)
+	}
+	return executor()
 }

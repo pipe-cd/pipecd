@@ -46,7 +46,7 @@ func TestGracefulStopCommand(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			cmd, err := RunBinary(context.TODO(), "sh", []string{"sleep", "1m"})
+			cmd, err := RunBinary(context.TODO(), "sh", []string{"/bin/sleep", "1m"})
 			require.NoError(t, err)
 			require.NotNil(t, cmd)
 

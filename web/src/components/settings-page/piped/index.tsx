@@ -85,11 +85,13 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
     { refetchInterval: FETCH_INTERVAL }
   );
 
-  const { data: releasedVersions = [] } = useGetReleasedVersions();
+  const { data: releasedVersions = [] } = useGetReleasedVersions({
+    retry: false,
+  });
 
   const { data: breakingChangesNote } = useGetBreakingChanges(
     { projectId: projectDetail?.id ?? "" },
-    { enabled: !!projectDetail?.id }
+    { enabled: !!projectDetail?.id, retry: false }
   );
 
   const pipeds = useMemo(() => {
@@ -101,9 +103,6 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
       }) ?? []
     );
   }, [allPipeds, filterValues.enabled]);
-
-  // TODO: Remove this console.log
-  console.log("[DEBUG]", breakingChangesNote);
 
   const handleUpgradeDialogClose = (): void => {
     setIsUpgradeDialogOpen(false);

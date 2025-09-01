@@ -1,0 +1,55 @@
+apiVersion: pipecd.dev/v1beta1
+kind: AnalysisTemplate
+spec:
+  metrics:
+    app_http_error_percentage:
+      query: http_error_percentage{env={{ .App.Env }}, app={{ .App.Name }}}
+      expected:
+        max: 0.1
+      interval: 1m
+      provider: datadog-dev
+
+    container_cpu_usage_seconds_total:
+      interval: 10s
+      provider: prometheus-dev
+      failureLimit: 2
+      expected:
+        max: 0.0001
+      query: |
+        sum(
+          max(kube_pod_labels{label_app=~"{{ .App.Name }}", label_pipecd_dev_variant=~"canary"}) by (label_app, label_pipecd_dev_variant, pod)
+          *
+          on(pod)
+          group_right(label_app, label_pipecd_dev_variant)
+          label_replace(
+            sum by(pod_name) (
+              rate(container_cpu_usage_seconds_total{namespace="default"}[5m])
+            ), "pod", "$1", "pod_name", "(.+)"
+          )
+        ) by (label_app, label_pipecd_dev_variant)
+
+    grpc_error_rate-percentage:
+      interval: 1m
+      provider: prometheus-dev
+      failureLimit: 1
+      expected:
+        max: 10
+      query: |
+        100 - sum(
+            rate(
+                grpc_server_handled_total{
+                  grpc_code!="OK",
+                  kubernetes_namespace="{{ .Args.namespace }}",
+                  kubernetes_pod_name=~"{{ .App.Name }}-[0-9a-zA-Z]+(-[0-9a-zA-Z]+)"
+                }[{{ .Args.interval }}]
+            )
+        )
+        /
+        sum(
+            rate(
+                grpc_server_started_total{
+                  kubernetes_namespace="{{ .Args.namespace }}",
+                  kubernetes_pod_name=~"{{ .App.Name }}-[0-9a-zA-Z]+(-[0-9a-zA-Z]+)"
+                }[{{ .Args.interval }}]
+            )
+        ) * 100

@@ -22,8 +22,6 @@ import (
 	"net/http/pprof"
 	"time"
 
-	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister"
-	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -32,6 +30,9 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/rpc"
+
+	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister"
+	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry"
 )
 
 // DeployTargetsNone is a type alias for a slice of pointers to DeployTarget
@@ -60,6 +61,8 @@ type InitializeInput[Config, DeployTargetConfig any] struct {
 	Config *Config
 	// DeployTargets is the deploy targets of the plugin.
 	DeployTargets map[string]*DeployTarget[DeployTargetConfig]
+	// Client is the client to interact with the piped.
+	Client *Client
 	// Logger is the logger for the plugin.
 	Logger *zap.Logger
 }
@@ -96,6 +99,14 @@ func (c commonFields[Config, DeployTargetConfig]) withLogger(logger *zap.Logger)
 
 // PluginOption is a function that configures the plugin.
 type PluginOption[Config, DeployTargetConfig, ApplicationConfigSpec any] func(*Plugin[Config, DeployTargetConfig, ApplicationConfigSpec])
+
+// WithInitializer is a function that appends the initializer.
+// The order of the execution for Initializers is the order in which they are added.
+func WithInitializer[ApplicationConfigSpec, Config, DeployTargetConfig any](initializer Initializer[Config, DeployTargetConfig]) PluginOption[Config, DeployTargetConfig, ApplicationConfigSpec] {
+	return func(plugin *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) {
+		plugin.initializers = append(plugin.initializers, initializer)
+	}
+}
 
 // WithStagePlugin is a function that sets the stage plugin.
 // This is mutually exclusive with WithDeploymentPlugin.
@@ -135,6 +146,9 @@ type Plugin[Config, DeployTargetConfig, ApplicationConfigSpec any] struct {
 	version string
 	// name is the name of the plugin defined in the piped plugin config.
 	name string
+
+	// initializers
+	initializers []Initializer[Config, DeployTargetConfig]
 
 	// plugin implementations
 	stagePlugin       StagePlugin[Config, DeployTargetConfig, ApplicationConfigSpec]
@@ -297,14 +311,19 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 			config:       cfg,
 			logPersister: persister,
 			client:       pipedPluginServiceClient,
+			pluginConfig: new(Config),
 			toolRegistry: toolregistry.NewToolRegistry(pipedPluginServiceClient),
 		}
 
-		if cfg.Config != nil {
-			if err := json.Unmarshal(cfg.Config, &commonFields.pluginConfig); err != nil {
-				logger.Fatal("failed to unmarshal the plugin config", zap.Error(err))
-				return err
-			}
+		if len(cfg.Config) == 0 {
+			// It is necessary to prepare config with default value when users don't set any config,
+			// or when plugin developers implement custom unmarshalling logic.
+			cfg.Config = []byte("{}")
+		}
+
+		if err := json.Unmarshal(cfg.Config, commonFields.pluginConfig); err != nil {
+			logger.Fatal("failed to unmarshal the plugin config", zap.Error(err))
+			return err
 		}
 
 		commonFields.deployTargets = make(map[string]*DeployTarget[DeployTargetConfig], len(cfg.DeployTargets))
@@ -321,10 +340,29 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 			}
 		}
 
+		client := &Client{
+			base:         commonFields.client,
+			pluginName:   commonFields.name,
+			toolRegistry: commonFields.toolRegistry,
+			// These fields are not available at initializing state.
+			applicationID: "",
+			deploymentID:  "",
+			stageID:       "",
+			logPersister:  nil,
+		}
+
 		initializeInput := &InitializeInput[Config, DeployTargetConfig]{
 			Config:        commonFields.pluginConfig,
 			DeployTargets: commonFields.deployTargets,
+			Client:        client,
 			Logger:        logger.Named("plugin-initializer"),
+		}
+
+		for _, initializer := range p.initializers {
+			if err := initializer.Initialize(ctx, initializeInput); err != nil {
+				logger.Error("failed to initialize plugin", zap.Error(err))
+				return err
+			}
 		}
 
 		var services []rpc.Service

@@ -20,8 +20,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/creasty/defaults"
-
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
 )
@@ -124,10 +122,6 @@ func (c *ApplicationConfig[Spec]) parsePluginConfig(pluginName string) error {
 	var spec Spec
 	if err := json.Unmarshal(data, &spec); err != nil {
 		return fmt.Errorf("failed to unmarshal application config: plugin spec: %w", err)
-	}
-
-	if err := defaults.Set(&spec); err != nil {
-		return fmt.Errorf("failed to set default values for plugin spec: %w", err)
 	}
 
 	// Validate the spec if it implements the Validate method.

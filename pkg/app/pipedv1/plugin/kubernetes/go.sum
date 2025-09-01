@@ -427,10 +427,10 @@ github.com/opentracing/opentracing-go v1.1.0/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFSt
 github.com/pascaldekloe/goe v0.0.0-20180627143212-57f6aae5913c/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=
 github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/94hg7ilaic=
 github.com/peterbourgon/diskv v2.0.1+incompatible/go.mod h1:uqqh8zWWbv1HBMNONnaR/tNboyR3/BZd58JJSHlUSCU=
-github.com/pipe-cd/pipecd v0.52.1-0.20250722035702-5722fabb80ce h1:zyYJ+lIC3oLya2ZoNL90TdDI6IkQVL7aptkT1f9I69U=
-github.com/pipe-cd/pipecd v0.52.1-0.20250722035702-5722fabb80ce/go.mod h1:5H0ydj0eUpGnJOesA2GPU3mTVlZEZDb8cNP7/lvNPTU=
-github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250724013017-bc0f37a0cbad h1:4zaaKmFnDwSmVU30Ns5KgbNuS3V9j0PuuxYbob4yD/0=
-github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250724013017-bc0f37a0cbad/go.mod h1:v+kzPB2Tom8uEIObY5Le0aBpVLtedwNhMsq2U+dovpg=
+github.com/pipe-cd/pipecd v0.52.1-0.20250731104149-f611ce3501c5 h1:1VM6ZkE2YfXqROq3lU8xrOV21MdJ257p19VX71E/nsU=
+github.com/pipe-cd/pipecd v0.52.1-0.20250731104149-f611ce3501c5/go.mod h1:5H0ydj0eUpGnJOesA2GPU3mTVlZEZDb8cNP7/lvNPTU=
+github.com/pipe-cd/piped-plugin-sdk-go v0.1.0 h1:kvtWTGRBY9wE9skhWF3cZUHdqcY1W6f6pblQG+qq8X0=
+github.com/pipe-cd/piped-plugin-sdk-go v0.1.0/go.mod h1:awF6mNgk8B0uP1HQ4vQKkso6qUdlUJIYUFg2fYqlvuA=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=

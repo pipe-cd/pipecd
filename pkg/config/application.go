@@ -58,6 +58,9 @@ type GenericApplicationSpec struct {
 	EventWatcher []EventWatcherConfig `json:"eventWatcher"`
 	// Configuration for drift detection
 	DriftDetection *DriftDetection `json:"driftDetection"`
+
+	// This is a workaround not to raise unknown-field error when the application config file contains the plugins field.
+	Plugins any `json:"plugins"`
 }
 
 type DeploymentPlanner struct {

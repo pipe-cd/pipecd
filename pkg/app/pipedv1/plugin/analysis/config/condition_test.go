@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package config
 
 import (
 	"testing"
@@ -20,40 +20,46 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDecode(t *testing.T) {
-	t.Parallel()
+func floatPointer(v float64) *float64 {
+	return &v
+}
 
+func TestAnalysisExpectedString(t *testing.T) {
 	testcases := []struct {
-		name     string
-		input    []byte
-		expected analysisStageOptions
-		wantErr  bool
+		name string
+		Min  *float64
+		Max  *float64
+		want string
 	}{
 		{
-			name:     "empty config",
-			input:    []byte(`{}`),
-			expected: analysisStageOptions{},
-			wantErr:  false,
+			name: "only min given",
+			Min:  floatPointer(1.5),
+			want: "1.5 <=",
 		},
 		{
-			name:    "invalid json",
-			input:   []byte(`{invalid}`),
-			wantErr: true,
+			name: "only max given",
+			Max:  floatPointer(1.5),
+			want: "<= 1.5",
+		},
+		{
+			name: "both min and max given",
+			Min:  floatPointer(1.5),
+			Max:  floatPointer(2.5),
+			want: "1.5 <= 2.5",
+		},
+		{
+			name: "invalid range",
+			want: "",
 		},
 	}
-
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-			got, err := decode(tc.input)
-
-			if tc.wantErr {
-				assert.Error(t, err)
-				return
+			e := &AnalysisExpected{
+				Min: tc.Min,
+				Max: tc.Max,
 			}
-
-			assert.NoError(t, err)
-			assert.Equal(t, tc.expected, got)
+			got := e.String()
+			assert.Equal(t, tc.want, got)
 		})
 	}
 }

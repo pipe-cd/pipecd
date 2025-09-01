@@ -44,7 +44,7 @@ func TestTemplateLocalChart(t *testing.T) {
 	helmPath, err := r.Helm(ctx, "3.16.1")
 	require.NoError(t, err)
 
-	helm := NewHelm("3.16.1", helmPath, zaptest.NewLogger(t))
+	helm := NewHelm(helmPath, zaptest.NewLogger(t))
 	out, err := helm.TemplateLocalChart(ctx, appName, appDir, "", chartPath, nil)
 	require.NoError(t, err)
 
@@ -70,7 +70,7 @@ func TestTemplateLocalChart_WithNamespace(t *testing.T) {
 	helmPath, err := r.Helm(ctx, "3.16.1")
 	require.NoError(t, err)
 
-	helm := NewHelm("3.16.1", helmPath, zaptest.NewLogger(t))
+	helm := NewHelm(helmPath, zaptest.NewLogger(t))
 	out, err := helm.TemplateLocalChart(ctx, appName, appDir, namespace, chartPath, nil)
 	require.NoError(t, err)
 
@@ -170,5 +170,43 @@ func TestVerifyHelmValueFilePath(t *testing.T) {
 				require.NoError(t, err)
 			}
 		})
+	}
+}
+
+func TestTemplateRemoteChart(t *testing.T) {
+	t.Parallel()
+
+	var (
+		ctx       = t.Context()
+		appName   = "testapp"
+		appDir    = "testdata"
+		namespace = "testnamespace"
+	)
+
+	c := toolregistrytest.NewTestToolRegistry(t)
+
+	r := toolregistry.NewRegistry(c)
+	helmPath, err := r.Helm(ctx, "3.16.1")
+	require.NoError(t, err)
+
+	helm := NewHelm(helmPath, zaptest.NewLogger(t))
+	out, err := helm.TemplateRemoteChart(ctx, appName, appDir, namespace, helmRemoteChart{
+		Repository: "oci://ghcr.io/pipe-cd",
+		Name:       "chart/helloworld",
+		Version:    "v0.53.0",
+		Insecure:   false,
+	}, nil)
+	require.NoError(t, err)
+
+	out = strings.TrimPrefix(out, "---")
+
+	manifests, _ := ParseManifests(out)
+	for _, manifest := range manifests {
+		// Check if the manifest has the expected name
+		// Note: the namespace could not be included in templated manifests
+		name, ok, err := manifest.NestedString("metadata", "name")
+		require.True(t, ok)
+		require.NoError(t, err)
+		require.Equal(t, "testapp-helloworld", name)
 	}
 }
