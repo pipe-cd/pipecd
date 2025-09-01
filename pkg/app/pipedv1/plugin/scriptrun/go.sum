@@ -211,8 +211,8 @@ github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRW
 github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
 github.com/pipe-cd/pipecd v0.52.1-0.20250731104149-f611ce3501c5 h1:1VM6ZkE2YfXqROq3lU8xrOV21MdJ257p19VX71E/nsU=
 github.com/pipe-cd/pipecd v0.52.1-0.20250731104149-f611ce3501c5/go.mod h1:5H0ydj0eUpGnJOesA2GPU3mTVlZEZDb8cNP7/lvNPTU=
-github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250807000858-21595f74c628 h1:qBKzGbprq7dlpZJ0zLazEbamCeoaT8G0afkZsC0ipzM=
-github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250807000858-21595f74c628/go.mod h1:JjOYv2tMx72fvLpe88KG8cvrlHiI5XKYeZBvdDO3g80=
+github.com/pipe-cd/piped-plugin-sdk-go v0.1.0 h1:kvtWTGRBY9wE9skhWF3cZUHdqcY1W6f6pblQG+qq8X0=
+github.com/pipe-cd/piped-plugin-sdk-go v0.1.0/go.mod h1:awF6mNgk8B0uP1HQ4vQKkso6qUdlUJIYUFg2fYqlvuA=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
