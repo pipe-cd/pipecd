@@ -1,0 +1,36 @@
+<!-- pipecd-plan-preview -->
+[![PLAN_PREVIEW](https://img.shields.io/static/v1?label=PipeCD&message=Plan_Preview&color=success&style=flat)](https://pipecd.dev/docs/user-guide/plan-preview/)
+
+Ran plan-preview against head commit abc of this pull request. PipeCD detected `1` updated applications and here are their plan results. Once this pull request got merged their deployments will be triggered to run as these estimations.
+
+## Plans
+
+### app: [app-name-1](app-url-1), env: env-1, planned plugin(s): kubernetes, terraform
+Sync strategy: PIPELINE
+  Plugin(s): kubernetes, terraform, analysis
+  Summary:
+  - kubernetes(dt-1): 2 resources will be added, 1 resource will be deleted and 5 resources will be changed
+  - terraform(dt-2): 1 resource will be added, 2 resources will be deleted and 3 resources will be changed
+  Details:
+  - kubernetes(dt-1):
+<details>
+<summary>Details (Click me)</summary>
+<p>
+
+``` diff
+details-1
+```
+</p>
+</details>
+
+  - terraform(dt-2):
+<details>
+<summary>Details (Click me)</summary>
+<p>
+
+``` hcl
+details-2
+```
+</p>
+</details>
+
