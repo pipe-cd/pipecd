@@ -21,6 +21,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/deployment"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/livestate"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/planpreview"
 )
 
 func main() {
@@ -28,6 +29,7 @@ func main() {
 		"0.0.1",
 		sdk.WithDeploymentPlugin(&deployment.Plugin{}),
 		sdk.WithLivestatePlugin(&livestate.Plugin{}),
+		sdk.WithPlanPreviewPlugin(&planpreview.Plugin{}),
 	)
 	if err != nil {
 		log.Fatalln(err)

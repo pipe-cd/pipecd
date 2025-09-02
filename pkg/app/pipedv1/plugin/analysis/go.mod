@@ -5,7 +5,7 @@ go 1.24.1
 require (
 	github.com/DataDog/datadog-api-client-go v1.0.0-beta.16
 	github.com/creasty/defaults v1.6.0
-	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250828012926-566b885b5498
+	github.com/pipe-cd/piped-plugin-sdk-go v0.1.0
 	github.com/prometheus/client_golang v1.12.1
 	github.com/prometheus/common v0.32.1
 	github.com/stretchr/testify v1.10.0

@@ -20,6 +20,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 func TestMakeCommentBody(t *testing.T) {
@@ -232,6 +234,151 @@ func TestMakeCommentBody(t *testing.T) {
 				},
 			},
 			expected: "testdata/comment-has-failed-piped.txt",
+		},
+		// pipedv1
+		{
+			name: "plugin: one success app",
+			event: githubEvent{
+				HeadCommit: "abc",
+			},
+			title: "",
+			result: PlanPreviewResult{
+				Applications: []ApplicationResult{
+					{
+						ApplicationInfo: ApplicationInfo{
+							ApplicationID:        "app-1",
+							ApplicationName:      "app-name-1",
+							ApplicationURL:       "app-url-1",
+							Env:                  "env-1",
+							PlannedPluginNames:   "kubernetes",
+							AllPluginNames:       "kubernetes",
+							ApplicationDirectory: "app-dir-1",
+						},
+						SyncStrategy: "QUICK_SYNC",
+						NoChange:     false,
+						PluginPlanResults: []*model.PluginPlanPreviewResult{
+							{
+								PluginName:   "kubernetes",
+								DeployTarget: "dt-1",
+								PlanSummary:  []byte("2 resources will be added, 1 resource will be deleted and 5 resources will be changed"),
+								PlanDetails:  []byte("details-1"),
+							},
+						},
+					},
+				},
+			},
+			expected: "testdata/comment-plugin-one-success-app.txt",
+		},
+		{
+			name: "plugin: one success app with multiple plugins",
+			event: githubEvent{
+				HeadCommit: "abc",
+			},
+			title: "",
+			result: PlanPreviewResult{
+				Applications: []ApplicationResult{
+					{
+						ApplicationInfo: ApplicationInfo{
+							ApplicationID:        "app-1",
+							ApplicationName:      "app-name-1",
+							ApplicationURL:       "app-url-1",
+							Env:                  "env-1",
+							PlannedPluginNames:   "kubernetes, terraform",
+							AllPluginNames:       "kubernetes, terraform, analysis",
+							ApplicationDirectory: "app-dir-1",
+						},
+						SyncStrategy: "PIPELINE",
+						NoChange:     false,
+						PluginPlanResults: []*model.PluginPlanPreviewResult{
+							{
+								PluginName:   "kubernetes",
+								DeployTarget: "dt-1",
+								PlanSummary:  []byte("2 resources will be added, 1 resource will be deleted and 5 resources will be changed"),
+								PlanDetails:  []byte("details-1"),
+							},
+							{
+								PluginName:   "terraform",
+								DeployTarget: "dt-2",
+								PlanSummary:  []byte("1 resource will be added, 2 resources will be deleted and 3 resources will be changed"),
+								PlanDetails:  []byte("details-2"),
+								DiffLanguage: "hcl",
+							},
+						},
+					},
+				},
+			},
+			expected: "testdata/comment-plugin-one-success-app-multiple-plugins.txt",
+		},
+		{
+			name: "plugin: has failed app",
+			event: githubEvent{
+				HeadCommit: "abc",
+			},
+			title: "",
+			result: PlanPreviewResult{
+				Applications: []ApplicationResult{
+					{
+						ApplicationInfo: ApplicationInfo{
+							ApplicationID:        "app-1",
+							ApplicationName:      "app-name-1",
+							ApplicationURL:       "app-url-1",
+							Env:                  "env-1",
+							PlannedPluginNames:   "kubernetes",
+							AllPluginNames:       "kubernetes",
+							ApplicationDirectory: "app-dir-1",
+						},
+						SyncStrategy: "PIPELINE",
+						NoChange:     false,
+						PluginPlanResults: []*model.PluginPlanPreviewResult{
+							{
+								PluginName:   "kubernetes",
+								DeployTarget: "dt-1",
+								PlanSummary:  []byte("2 resources will be added, 1 resource will be deleted and 5 resources will be changed"),
+								PlanDetails:  []byte("details-1"),
+							},
+						},
+					},
+				},
+				FailureApplications: []FailureApplication{
+					{
+						ApplicationInfo: ApplicationInfo{
+							ApplicationID:        "app-2",
+							ApplicationName:      "app-name-2",
+							ApplicationURL:       "app-url-2",
+							Env:                  "env-2",
+							PlannedPluginNames:   "kubernetes-failed",
+							AllPluginNames:       "kubernetes-failed",
+							ApplicationDirectory: "app-dir-2",
+						},
+						Reason: "wrong application configuration",
+					},
+				},
+			},
+			expected: "testdata/comment-plugin-has-failed-app.txt",
+		},
+		{
+			name: "plugin: one failure app with unknown plugin",
+			event: githubEvent{
+				HeadCommit: "abc",
+			},
+			title: "",
+			result: PlanPreviewResult{
+				FailureApplications: []FailureApplication{
+					{
+						ApplicationInfo: ApplicationInfo{
+							ApplicationID:        "app-2",
+							ApplicationName:      "app-name-2",
+							ApplicationURL:       "app-url-2",
+							Env:                  "env-2",
+							PlannedPluginNames:   "<unknown>",
+							AllPluginNames:       "<unknown>",
+							ApplicationDirectory: "app-dir-2",
+						},
+						Reason: "wrong application configuration",
+					},
+				},
+			},
+			expected: "testdata/comment-plugin-one-failure-app-unknown-plugin.txt",
 		},
 	}
 
@@ -720,6 +867,65 @@ guarantee to take exactly these actions if you run "terraform apply" now.`,
 		t.Run(tc.name, func(t *testing.T) {
 			got, err := generateTerraformShortPlanDetails(tc.planDetails)
 			assert.Equal(t, tc.wantErr, err != nil)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestMakeTitleText(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name string
+		app  *ApplicationInfo
+		want string
+	}{
+		{
+			name: "pipedv0: without env",
+			app: &ApplicationInfo{
+				ApplicationName: "test-app",
+				ApplicationURL:  "https://pipecd.dev/apps/test-app",
+				ApplicationKind: "KUBERNETES",
+			},
+			want: "app: [test-app](https://pipecd.dev/apps/test-app), kind: kubernetes",
+		},
+		{
+			name: "pipedv0: with env",
+			app: &ApplicationInfo{
+				ApplicationName: "test-app",
+				ApplicationURL:  "https://pipecd.dev/apps/test-app",
+				ApplicationKind: "KUBERNETES",
+				Env:             "dev",
+			},
+			want: "app: [test-app](https://pipecd.dev/apps/test-app), env: dev, kind: kubernetes",
+		},
+		{
+			name: "pipedv1: without env",
+			app: &ApplicationInfo{
+				ApplicationName:    "test-app",
+				ApplicationURL:     "https://pipecd.dev/apps/test-app",
+				PlannedPluginNames: "kubernetes",
+				AllPluginNames:     "kubernetes,analysis",
+			},
+			want: "app: [test-app](https://pipecd.dev/apps/test-app), planned plugin(s): kubernetes",
+		},
+		{
+			name: "pipedv1: with env",
+			app: &ApplicationInfo{
+				ApplicationName:    "test-app",
+				ApplicationURL:     "https://pipecd.dev/apps/test-app",
+				PlannedPluginNames: "kubernetes,terraform",
+				AllPluginNames:     "kubernetes,terraform,analysis",
+				Env:                "dev",
+			},
+			want: "app: [test-app](https://pipecd.dev/apps/test-app), env: dev, planned plugin(s): kubernetes,terraform",
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			got := makeTitleText(tc.app)
 			assert.Equal(t, tc.want, got)
 		})
 	}
