@@ -1953,6 +1953,12 @@ func (a *WebAPI) ListReleasedVersions(ctx context.Context, req *webservice.ListR
 		if *release.Prerelease || *release.Draft {
 			continue
 		}
+		// Ignore module's release.
+		// Eg. pkg/app/pipedv1/plugin/kubernetes/v0.1.0
+		if !semver.IsValid(*release.TagName) {
+			continue
+		}
+
 		versions = append(versions, *release.TagName)
 	}
 
