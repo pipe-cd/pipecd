@@ -91,8 +91,8 @@ jobs:
           push: true
           context: .
           file: cmd/pipedv1/Dockerfile
-          tags: ${{ matrix.container_registry }}/pipe-cd/pipedv1-exp:${{ inputs.version }}
+          tags: ${{ matrix.container_registry }}/pipedv1-exp:${{ inputs.version }}
           platforms: linux/amd64,linux/arm64
           # parameter to use inline cache. ref; https://docs.docker.com/build/ci/github-actions/cache/#inline-cache
-          cache-from: type=registry,ref=${{ matrix.container_registry }}/pipe-cd/pipedv1-exp:latest
+          cache-from: type=registry,ref=${{ matrix.container_registry }}/pipedv1-exp:latest
           cache-to: type=inline
