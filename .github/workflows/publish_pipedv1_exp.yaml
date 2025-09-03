@@ -13,6 +13,7 @@ env:
   GO_VERSION: 1.24.1
   GHCR: ghcr.io
   GCR: gcr.io
+  HELM_VERSION: 3.8.2
 
 jobs:
   binary:
@@ -96,3 +97,16 @@ jobs:
           # parameter to use inline cache. ref; https://docs.docker.com/build/ci/github-actions/cache/#inline-cache
           cache-from: type=registry,ref=${{ matrix.container_registry }}/pipedv1-exp:latest
           cache-to: type=inline
+
+      # Building and pushing Helm charts.
+      - name: Install helm
+        uses: azure/setup-helm@v4
+        with:
+          version: ${{ env.HELM_VERSION }}
+      - name: Login to OCI using Helm
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${{ env.GHCR }} --username ${{ github.repository_owner }} --password-stdin
+      - name: Publish helm charts
+        run: |
+          make build/chart MOD=pipedv1-exp VERSION=${{ inputs.version }}
+          helm push .artifacts/pipedv1-exp-${{ inputs.version }}.tgz oci://${{ env.GHCR }}/pipe-cd/chart
