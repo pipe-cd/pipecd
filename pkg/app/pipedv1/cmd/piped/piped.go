@@ -167,7 +167,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	// Register all metrics.
 	registry := registerMetrics(cfg.PipedID, cfg.ProjectID, p.launcherVersion)
 
-	// // Configure SSH config if needed.
+	// Configure SSH config if needed.
 	if cfg.Git.ShouldConfigureSSHConfig() {
 		tempFile, err := git.AddSSHConfig(cfg.Git)
 		if err != nil {
