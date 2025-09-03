@@ -135,6 +135,9 @@ func TestExecuteStage(t *testing.T) {
 		{
 			name: "stage without config, should be success",
 			deployment: &model.Deployment{
+				Trigger: &model.DeploymentTrigger{
+					SyncStrategy: model.SyncStrategy_QUICK_SYNC,
+				},
 				Stages: []*model.PipelineStage{
 					{
 						Id:     "stage-id",
