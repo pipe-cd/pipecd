@@ -167,14 +167,16 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	// Register all metrics.
 	registry := registerMetrics(cfg.PipedID, cfg.ProjectID, p.launcherVersion)
 
-	// // Configure SSH config if needed.
-	// if cfg.Git.ShouldConfigureSSHConfig() {
-	// 	if err := git.AddSSHConfig(cfg.Git); err != nil {
-	// 		input.Logger.Error("failed to configure ssh-config", zap.Error(err))
-	// 		return err
-	// 	}
-	// 	input.Logger.Info("successfully configured ssh-config")
-	// }
+	// Configure SSH config if needed.
+	if cfg.Git.ShouldConfigureSSHConfig() {
+		tempFile, err := git.AddSSHConfig(cfg.Git)
+		if err != nil {
+			input.Logger.Error("failed to configure ssh-config", zap.Error(err))
+			return err
+		}
+		defer os.Remove(tempFile)
+		input.Logger.Info("successfully configured ssh-config")
+	}
 
 	pipedKey, err := cfg.LoadPipedKey()
 	if err != nil {

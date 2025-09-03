@@ -1,0 +1,19 @@
+{{- if .Values.service.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "piped.fullname" . }}
+  labels:
+    {{- include "piped.labels" . | nindent 4 }}
+    {{- if .Values.service.additionalLabels }}
+    {{ toYaml .Values.service.additionalLabels | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - name: admin
+      port: {{ .Values.service.port }}
+      targetPort: admin
+  selector:
+    {{- include "piped.selectorLabels" . | nindent 4 }}
+{{- end }}

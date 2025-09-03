@@ -36,7 +36,6 @@ import (
 )
 
 type executor struct {
-	targetDS            *sdk.DeploymentSource[any] // TODO: do not use any
 	stageConfig         *config.AnalysisStageOptions
 	pluginConfig        *config.PluginConfig
 	analysisAppSpec     *config.AnalysisApplicationSpec
@@ -83,7 +82,7 @@ func (e *executor) execute(ctx context.Context) sdk.StageStatus {
 		return sdk.StageStatusFailure
 	}
 
-	templateCfg, err := config.LoadAnalysisTemplate(e.targetDS.SharedConfigDirectory)
+	templateCfg, err := config.LoadAnalysisTemplate(e.sharedConfigDir)
 	if errors.Is(err, config.ErrNotFound) {
 		e.logger.Info("config file for AnalysisTemplate not found")
 		templateCfg = &config.AnalysisTemplateSpec{}

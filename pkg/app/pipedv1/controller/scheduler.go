@@ -576,10 +576,14 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 	}
 
 	// Load the stage configuration.
-	stageConfig, stageConfigFound := s.genericApplicationConfig.GetStageConfigByte(ps.Index)
-	if !stageConfigFound {
-		s.logger.Error("Unable to find the stage configuration", zap.String("stage-name", ps.Name))
-		return model.StageStatus_STAGE_FAILURE
+	var stageConfig []byte
+	if !s.deployment.IsQuickSync() {
+		var stageConfigFound bool
+		stageConfig, stageConfigFound = s.genericApplicationConfig.GetStageConfigByte(ps.Index)
+		if !stageConfigFound {
+			s.logger.Error("Unable to find the stage configuration", zap.String("stage-name", ps.Name))
+			return model.StageStatus_STAGE_FAILURE
+		}
 	}
 
 	// ensure pass nil as running deployment source in case of the first deployment
