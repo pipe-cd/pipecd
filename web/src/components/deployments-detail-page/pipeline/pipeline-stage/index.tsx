@@ -1,6 +1,6 @@
 import { Box, Paper, Typography } from "@mui/material";
 import { FC, memo } from "react";
-import { StageStatus } from "~/modules/deployments";
+import { StageStatus } from "~/types/deployment";
 import { StageStatusIcon } from "./stage-status-icon";
 
 export interface PipelineStageProps {
@@ -88,10 +88,6 @@ export const PipelineStage: FC<PipelineStageProps> = memo(
     return (
       <Paper
         square
-        // className={clsx(classes.root, {
-        //   [classes.active]: active,
-        //   [classes.notStartedYet]: disabled,
-        // })}
         onClick={handleOnClick}
         sx={(theme) => ({
           flex: 1,

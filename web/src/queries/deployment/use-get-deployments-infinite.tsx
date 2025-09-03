@@ -2,9 +2,10 @@ import {
   useInfiniteQuery,
   UseInfiniteQueryResult,
 } from "@tanstack/react-query";
-import { ListEventsRequest } from "~~/api_client/service_pb";
-import { Event, EventStatus } from "pipecd/web/model/event_pb";
-import * as eventsApi from "~/api/events";
+import { ListDeploymentsRequest } from "pipecd/web/api_client/service_pb";
+import { ApplicationKind } from "~~/model/common_pb";
+import { Deployment, DeploymentStatus } from "pipecd/web/model/deployment_pb";
+import * as deploymentsApi from "~/api/deployments";
 import { useCallback, useState } from "react";
 
 // 30 days
@@ -12,19 +13,19 @@ const TIME_RANGE_LIMIT_IN_SECONDS = 2592000;
 const FIRST_PAGE_SIZE = 50;
 const FETCH_MORE_PAGE_SIZE = 30;
 
-export type EventStatusKey = keyof typeof EventStatus;
-
-export type EventFilterOptions = {
-  name?: string;
+export interface DeploymentFilterOptions {
   status?: string;
+  kind?: string;
+  applicationId?: string;
+  applicationName?: string;
   // Suppose to be like ["key-1:value-1"]
   // sindresorhus/query-string doesn't support multidimensional arrays, that's why the format is a bit tricky.
   labels?: Array<string>;
-};
+}
 
 const convertFilterOptions = (
-  options: EventFilterOptions
-): ListEventsRequest.Options.AsObject => {
+  options: DeploymentFilterOptions
+): ListDeploymentsRequest.Options.AsObject => {
   const labels = new Array<[string, string]>();
   if (options.labels) {
     for (const label of options.labels) {
@@ -33,23 +34,27 @@ const convertFilterOptions = (
     }
   }
   return {
-    name: options.name ?? "",
+    applicationName: options.applicationName ?? "",
+    applicationIdsList: options.applicationId ? [options.applicationId] : [],
+    kindsList: options.kind
+      ? [parseInt(options.kind, 10) as ApplicationKind]
+      : [],
     statusesList: options.status
-      ? [parseInt(options.status, 10) as EventStatus]
+      ? [parseInt(options.status, 10) as DeploymentStatus]
       : [],
     labelsMap: labels,
   };
 };
 
 type QueryType = UseInfiniteQueryResult<{
-  eventsList: Event.AsObject[];
+  deploymentsList: Deployment.AsObject[];
   cursor: string;
   minUpdatedAt: number;
   hasMore: boolean;
 }>;
 
-export const useGetEventsInfinite = (
-  options: EventFilterOptions
+export const useGetDeploymentsInfinite = (
+  options: DeploymentFilterOptions
 ): {
   data: QueryType["data"];
   isFetching: QueryType["isFetching"];
@@ -62,7 +67,7 @@ export const useGetEventsInfinite = (
   );
 
   const { fetchNextPage, data, ...otherParams } = useInfiniteQuery({
-    queryKey: ["events", options],
+    queryKey: ["deployment", options],
     queryFn: async ({
       pageParam,
     }: {
@@ -76,7 +81,7 @@ export const useGetEventsInfinite = (
 
       const pageSize = isFirstPage ? FIRST_PAGE_SIZE : FETCH_MORE_PAGE_SIZE;
 
-      const { eventsList, cursor } = await eventsApi.getEvents({
+      const { deploymentsList, cursor } = await deploymentsApi.getDeployments({
         options: convertFilterOptions({ ...options }),
         pageSize: pageSize,
         cursor: pageParam?.cursor || "",
@@ -84,16 +89,16 @@ export const useGetEventsInfinite = (
       });
 
       return {
-        eventsList,
+        deploymentsList,
         cursor: cursor || pageParam?.cursor || "",
         minUpdatedAt,
-        hasMore: eventsList.length >= pageSize,
+        hasMore: deploymentsList.length >= pageSize,
       };
     },
     refetchOnWindowFocus: false,
   });
 
-  const fetchMoreEvents = useCallback(() => {
+  const fetchMoreDeployment = useCallback(() => {
     const lastPage = data?.pages[data.pages.length - 1];
     const isFirstPage = data?.pages.length === 0;
     const PAGE_SIZE = isFirstPage ? FIRST_PAGE_SIZE : FETCH_MORE_PAGE_SIZE;
@@ -103,7 +108,8 @@ export const useGetEventsInfinite = (
       return;
     }
 
-    const isHasMore = lastPage.eventsList.length >= PAGE_SIZE;
+    const isHasMore = lastPage.deploymentsList.length >= PAGE_SIZE;
+
     if (isHasMore) {
       fetchNextPage({
         pageParam: {
@@ -129,7 +135,7 @@ export const useGetEventsInfinite = (
     isFetching: otherParams.isFetching,
     refetch: otherParams.refetch,
     isSuccess: otherParams.isSuccess,
-    fetchNextPage: fetchMoreEvents,
+    fetchNextPage: fetchMoreDeployment,
     data: data,
   };
 };

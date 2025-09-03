@@ -5,7 +5,7 @@ import {
   IndeterminateCheckBox,
   Cancel,
 } from "@mui/icons-material";
-import { DeploymentStatus } from "~/modules/deployments";
+import { DeploymentStatus } from "~/types/deployment";
 import { FC } from "react";
 import clsx from "clsx";
 
