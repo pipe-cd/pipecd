@@ -1,7 +1,7 @@
 ---
 date: 2025-09-02
 title: "What is new in pipedv1 (plugin-arch piped)"
-linkTitle: "what is new in pipedv1"
+linkTitle: "What is new in pipedv1"
 weight: 979
 description: ""
 author: Khanh Tran ([@khanhtc1202](https://github.com/khanhtc1202))
@@ -26,6 +26,89 @@ Changes in pipedv1 are of 2 types:
 Fundamental changes like pipedv1 being able to support different platforms and making build pipeline deployment more powerful by turning stage executors into plugins have been described in [this blog](https://pipecd.dev/blog/2024/11/28/overview-of-the-plan-for-pluginnable-pipecd/). This post will focus on smaller changes related to the actual usage of pipecd.
 
 ## New in pipedv1
+
+### `plugins` configurations
+
+From pipedv1, plugin binaries will be the real executor that perform pipeline's stages execution.
+Plugin configuration is placed in 2 locations: __piped config__ and __application config__.
+
+The __piped config__ is where basic plugin configurations are stored, such as where to load the plugin binary or some configurations that can be shared between applications.
+
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: Piped
+spec:
+  projectID: dev
+  pipedID: xxx
+  ...
+  plugins:
+    - name: kubernetes
+      port: 7001
+      url: https://github.com/pipe-cd/pipecd/releases/download/link-to-plugin
+      deployTargets:
+        - name: local
+          config:
+            kubectlVersion: 1.32.4
+        - name: remote
+          config:
+            kubectlVersion: 1.33.0
+    - name: wait
+      port: 7002
+      url: https://github.com/pipe-cd/pipecd/releases/download/link-to-plugin
+```
+
+NOTE: `platformProviders` and `cloudProviders` in piped config will not be available in pipedv1 config. Instead, the `deployTargets` configuration in plugin config will determine where to deploy your application resources.
+
+Meanwhile, the __application config__ is where plugin configurations are stored specifically for the deployment of that application.
+
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: Application
+spec:
+  name: test-app
+  labels:
+    env: local
+  planner:
+    alwaysUsePipeline: true
+  pipeline:
+    - name: K8S-SYNC
+  plugins:
+    kubernetes:
+      input:
+        kubectlVersion: 1.33.0
+      quickSync:
+        prune: true
+```
+
+Pipedv1 automatically identifies plugins based on the stage defined in the pipeline configuration. Which means below application config is valid as well
+
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: Application
+spec:
+  name: test-app
+  labels:
+    env: local
+  pipeline:
+    - name: K8S-SYNC
+```
+
+For applications config without a pipeline definition, `plugins` config is required to help piped infer the plugin needed while performing deployment
+
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: Application
+spec:
+  name: test-k8s-app
+  labels:
+    env: local
+  plugins:
+    kubernetes:
+```
+
+NOTE: `kind: XXXApp` is deprecated in pipedv1, `kind: Application` will be used for all applications in app configuration file for pipedv1 managed application.
+
+__Migrating application configs to the new format will be covered in detail in another blog__. You can learn more about the migration flow for now please check out [the migration issue](https://github.com/pipe-cd/pipecd/issues/5542#issuecomment-3223865130).
 
 ### Pipeline planning and configuration
 
@@ -102,21 +185,31 @@ spec:
 
 ## Deprecated / Dis-supported features
 
-### "Weird" flag in piped execution
+### "Weird" flag `--enable-default-kubernetes-cloud-provider` in piped execution
 
-A long-time "weird" flag for piped binary execution if you don't use PipeCD for a Kubernetes application is `--enable-default-kubernetes-cloud-provider`, which is basically legacy due to the first implementation of PipeCD focusing on supporting only Kubernetes. The default value is `false`, but if you set that flag to `true`, piped execution requires connecting to the Kubernetes cluster even before any application deployment is actually triggered. In pipedv1, nothing like that flag exists in piped execution because pipedv1 supports whatever platform its plugins support equally.
+A long-time "weird" flag for piped binary execution if you don't use PipeCD for a Kubernetes application is `--enable-default-kubernetes-cloud-provider`, which is basically legacy due to the first implementation of PipeCD focusing on supporting only Kubernetes. The default value is `false`, but if you set that flag to `true`, piped execution requires connecting to the Kubernetes cluster even before any application deployment is actually triggered.
+
+In pipedv1, nothing like that flag exists in piped execution because pipedv1 supports whatever platform its plugins support equally.
 
 ### Kubernetes templating feature
 
-Related to Kubernetes support features of PipeCD. Currently, piped supports the Helm Git Remote Chart feature (ref [piped config helm chart repository](https://pipecd.dev/docs-v0.53.x/user-guide/managing-piped/configuration-reference/#chartrepository)), which pulls the chart file stored directly on Git to the local and builds/templates as for a Local Chart. With the emergence and standardization of OCI, storing and sharing Helm Charts has become easier via the [Helm registry](https://helm.sh/docs/helm/helm_registry/). Therefore, in pipedv1, we decided to stop supporting this feature.
+Related to Kubernetes support features of PipeCD. Currently, piped supports the Helm Git Remote Chart feature (ref [piped config helm chart repository](https://pipecd.dev/docs-v0.53.x/user-guide/managing-piped/configuration-reference/#chartrepository)), which pulls the chart file stored directly on Git to the local and builds/templates as for a Local Chart.
+
+With the emergence and standardization of OCI, storing and sharing Helm Charts has become easier via the [Helm registry](https://helm.sh/docs/helm/helm_registry/). Therefore, in pipedv1, we decided to stop supporting this feature.
 
 ### Analysis stage query templating feature
 
 Current piped support building queries used while evaluating metrics with deployment-specific data to be embedded in the analysis template (ref: [analysis templating docs](https://pipecd.dev/docs-v0.53.x/user-guide/managing-application/customizing-deployment/automated-deployment-analysis/#optional-analysis-template)).
 
-From pipedv1, along with built-in and custom args are supported with placeholders as `{{ .App }}` and `{{ .AppCustomArgs }}` respectively, Kubernetes-specific built-in args like `{{ .K8s.Namespace }}` will be marked as deprecated and unsupported after several releases. The corresponding usage for the Kubernetes Namespace use case is changed to `{{ .AppCustomArgs.k8sNamespace }}`.
+From pipedv1, along with built-in and custom args are supported with placeholders as `{{ .App }}` and `{{ .AppCustomArgs }}` respectively.
+
+Kubernetes-specific built-in args like `{{ .K8s.Namespace }}` will be marked as deprecated and unsupported after several releases. The corresponding usage for the Kubernetes Namespace use case is changed to `{{ .AppCustomArgs.k8sNamespace }}`.
+
+## Summary
 
 Here are some changes you might notice when switching to pipedv1. We ensure a certain level of backward compatibility between piped and pipedv1. The improvements are all aimed at making pipedv1 support more platforms and making it easier to build pipelines based on plugins.
 
-The official documentation for pipedv1 is still being prepared, and the experimental release of pipedv1 will be available on the [official pipecd repo release tab](https://github.com/pipe-cd/pipecd/releases), along with some built-in plugins in the next few days. Thanks for your attention, cheer 🍻
+The official documentation for pipedv1 is still being prepared, and the experimental release of pipedv1 will be available on the [official pipecd repo release tab](https://github.com/pipe-cd/pipecd/releases), along with some built-in plugins in the next few days.
+
+Thanks for your attention, cheer 🍻
 
