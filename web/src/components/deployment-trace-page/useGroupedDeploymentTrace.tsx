@@ -1,31 +1,23 @@
 import dayjs from "dayjs";
 import { useMemo } from "react";
-import { useShallowEqualSelector } from "~/hooks/redux";
-import { selectIds, selectById } from "~/modules/deploymentTrace";
 import { sortDateFunc } from "~/utils/common";
 import { ListDeploymentTracesResponse } from "~~/api_client/service_pb";
 
+type DeploymentTracesMapByDate = Record<
+  string,
+  ListDeploymentTracesResponse.DeploymentTraceRes.AsObject[]
+>;
+
 type GroupedDeploymentTrace = {
   dates: string[];
-  deploymentTracesMap: Record<
-    string,
-    ListDeploymentTracesResponse.DeploymentTraceRes.AsObject[]
-  >;
+  deploymentTracesMap: DeploymentTracesMapByDate;
 };
 
-const useGroupedDeploymentTrace = (): GroupedDeploymentTrace => {
-  const traceList = useShallowEqualSelector((state) => {
-    const list = selectIds(state.deploymentTrace)
-      .map((id) => selectById(state.deploymentTrace, id))
-      .filter((trace) => trace !== undefined);
-    return list;
-  }) as ListDeploymentTracesResponse.DeploymentTraceRes.AsObject[];
-
+const useGroupedDeploymentTrace = (
+  traceList: ListDeploymentTracesResponse.DeploymentTraceRes.AsObject[]
+): GroupedDeploymentTrace => {
   const deploymentTracesMap = useMemo(() => {
-    const listMap: Record<
-      string,
-      ListDeploymentTracesResponse.DeploymentTraceRes.AsObject[]
-    > = {};
+    const listMap: DeploymentTracesMapByDate = {};
 
     traceList.forEach((item) => {
       if (!item.trace?.commitTimestamp) return;
