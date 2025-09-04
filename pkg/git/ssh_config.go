@@ -22,7 +22,7 @@ import (
 	"path/filepath"
 	"text/template"
 
-	"github.com/pipe-cd/pipecd/pkg/config"
+	configv1 "github.com/pipe-cd/pipecd/pkg/configv1"
 )
 
 const (
@@ -48,7 +48,7 @@ type sshConfig struct {
 	IdentityFile string
 }
 
-func AddSSHConfig(cfg config.PipedGit) (string, error) {
+func AddSSHConfig(cfg configv1.PipedGit) (string, error) {
 	cfgPath := cfg.SSHConfigFilePath
 	if cfgPath == "" {
 		home, err := os.UserHomeDir()
@@ -105,7 +105,7 @@ func AddSSHConfig(cfg config.PipedGit) (string, error) {
 	return sshKeyFile.Name(), nil
 }
 
-func generateSSHConfig(cfg config.PipedGit, sshKeyFile string) (string, error) {
+func generateSSHConfig(cfg configv1.PipedGit, sshKeyFile string) (string, error) {
 	var (
 		buffer bytes.Buffer
 		data   = sshConfig{

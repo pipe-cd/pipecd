@@ -19,19 +19,19 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/pipe-cd/pipecd/pkg/config"
+	configv1 "github.com/pipe-cd/pipecd/pkg/configv1"
 )
 
 func TestGenerateSSHConfig(t *testing.T) {
 	testcases := []struct {
 		name        string
-		cfg         config.PipedGit
+		cfg         configv1.PipedGit
 		expected    string
 		expectedErr error
 	}{
 		{
 			name: "default",
-			cfg: config.PipedGit{
+			cfg: configv1.PipedGit{
 				SSHKeyFile: "/tmp/piped-secret/ssh-key",
 			},
 			expected: `
@@ -46,7 +46,7 @@ Host github.com
 		},
 		{
 			name: "host is configured",
-			cfg: config.PipedGit{
+			cfg: configv1.PipedGit{
 				Host:       "gitlab.com",
 				SSHKeyFile: "/tmp/piped-secret/ssh-key",
 			},
@@ -62,7 +62,7 @@ Host gitlab.com
 		},
 		{
 			name: "host and hostname are configured",
-			cfg: config.PipedGit{
+			cfg: configv1.PipedGit{
 				Host:       "gitlab.com",
 				HostName:   "gitlab.com",
 				SSHKeyFile: "/tmp/piped-secret/ssh-key",

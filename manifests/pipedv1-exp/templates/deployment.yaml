@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "piped.fullname" . }}
+  labels:
+    {{- include "piped.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "piped.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "piped.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        sidecar.istio.io/inject: "false"
+        {{- if .Values.args.forceRestart }}
+        rollme: {{ randAlphaNum 5 | quote }}
+        {{- end }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "piped.serviceAccountName" . }}
+      containers:
+        - name: piped
+          imagePullPolicy: IfNotPresent
+          {{- if .Values.launcher.enabled }}
+          image: "{{ .Values.launcher.image.repository }}:{{ .Values.launcher.image.tag | default .Chart.AppVersion }}"
+          args:
+            {{- include "piped.launcherArgs" . | nindent 12 }}
+          {{- else }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          args:
+            {{- include "piped.pipedArgs" . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: admin
+              containerPort: 9085
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: admin
+            # We increase this period value since Launcher stops and starts Piped gracefully.
+            periodSeconds: 30
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: admin
+          volumeMounts:
+            - name: piped-secret
+              mountPath: {{ .Values.secret.mountPath }}
+              readOnly: true
+            - name: piped-config
+              mountPath: /etc/piped-config
+              readOnly: true
+            {{- if include "piped.temporaryVolumeName" . }}
+            - name: {{ include "piped.temporaryVolumeName" . }}
+              mountPath: "/tmp"
+              readOnly: false
+            {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- with .Values.envs }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: piped-secret
+          secret:
+            secretName: {{ include "piped.secretName" . }}
+            defaultMode: 0400
+        - name: piped-config
+          configMap:
+            name: {{ include "piped.configMapName" . }}
+        {{- if include "piped.temporaryVolumeName" . }}
+        - name: {{ include "piped.temporaryVolumeName" . }}
+          persistentVolumeClaim:
+            claimName: {{ include "piped.temporaryVolumeName" . }}
+        {{- end }}
+      {{- with .Values.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.priorityClassName }}
+      priorityClassName:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

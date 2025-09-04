@@ -119,6 +119,11 @@ func DeploymentStatusStrings() []string {
 	return out
 }
 
+// IsQuickSync returns whether this deployment is triggered by quick sync.
+func (d *Deployment) IsQuickSync() bool {
+	return d.GetTrigger().GetSyncStrategy() == SyncStrategy_QUICK_SYNC
+}
+
 // StageMap returns the map of id and the stage.
 func (d *Deployment) StageMap() map[string]*PipelineStage {
 	stage := make(map[string]*PipelineStage, len(d.Stages))

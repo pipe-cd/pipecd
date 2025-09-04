@@ -4,7 +4,7 @@ go 1.24.1
 
 require (
 	github.com/creasty/defaults v1.6.0
-	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250807000858-21595f74c628
+	github.com/pipe-cd/piped-plugin-sdk-go v0.1.0
 	github.com/stretchr/testify v1.10.0
 )
 
