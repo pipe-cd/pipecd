@@ -1,0 +1,134 @@
+image:
+  repository: ghcr.io/pipe-cd/pipedv1-exp
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+args:
+  metrics: true
+  insecure: false
+  # One of "humanize", "json", or "console" is available.
+  logEncoding: humanize
+  # One of "debug", "info", "warn", "error", "dpanic", "panic" or "fatal" is available.
+  logLevel: info
+  # Specifies whether it adds logged-in user to /etc/passwd at runtime.
+  # This is typically for applications running as a random user ID, such as OpenShift less than 4.2.
+  addLoginUserToPasswd: false
+  # Ensure that the pod will be restarted by random an annotation value to key rollme.
+  forceRestart: true
+
+# TODO: Support launcher
+launcher:
+  enabled: false
+  image:
+    repository: ghcr.io/pipe-cd/launcher
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+  configFromGitRepo:
+    # Whether to load Piped config that is being stored in a git repository.
+    enabled: false
+    # The remote URL of the git repository to fetch Piped config.
+    repoUrl: ""
+    # Branch of the git repository for Piped config.
+    branch: ""
+    # Relative path within git repository to locate Piped config file.
+    configFile: ""
+    # The path to SSH private key to fetch private git repository.
+    sshKeyFile: ""
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 9085
+  # Optional additional labels to add to the Service
+  # additionalLabels: {}
+
+config:
+  # Specifies whether a ConfigMap for piped configuration should be created.
+  create: true
+  # The name of the ConfigMap to use when create is false.
+  name: ""
+  # The name of the configuration file.
+  fileName: piped-config.yaml
+  # Configuration data when create is true.
+  data: ""
+  # data: |
+  #   apiVersion: pipecd.dev/v1beta1
+  #   kind: Piped
+  #   spec:
+  #     projectID: your-project-id
+  #     pipedID: your-piped-id
+  #     pipedKeyFile: /etc/piped-secret/piped-key
+  #     git:
+  #       sshKeyFile: /etc/piped-secret/ssh-key
+  #     repositories:
+  #       - repoId: examples
+  #         remote: git@github.com:pipe-cd/examples.git
+  #         branch: master
+  #     syncInterval: 1m
+
+secret:
+  # Specifies whether a Secret for storing sensitive data should be created.
+  create: true
+  # The name of the Secret to use when create is false.
+  name: ""
+  # Where the secret files will be mounted to.
+  mountPath: /etc/piped-secret
+  # Additional list of secret data will be added to the Secret resource.
+  data: {}
+  # The list of kubeConfig should be embedded in the Secret to be used by Piped.
+  # Each item of this list has 2 fields "fileName" and "data".
+  kubeConfigs: []
+
+temporaryVolume:
+  # Specifies whether a PersistentVolumeClaim for storing temporary data should be created.
+  create: false
+  # The name of the PersistentVolumeClaim to use when create is false.
+  name: ""
+  # The storage class name of the persistent volume claim.
+  storageClassName: ""
+  # The size of the persistent volume claim.
+  size: 100Gi
+
+envs: []
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+priorityClassName: {}
+
+podLabels: {}
+
+podAnnotations: {}
+
+# Specifies how much of each resource the Piped container needs.
+resources: {}
+
+serviceAccount:
+  # Specifies whether a ServiceAccount to be used by Piped should be created.
+  create: true
+  # The name of existing ServiceAccount to use when create is false.
+  name: ""
+  annotations: {}
+
+rbac:
+  # Specifies whether it should create Role/ClusterRole and RoleBinding/ClusterRoleBinding to be attatched to Piped.
+  create: true
+  # Only cluster or namespace can be specified.
+  scope: cluster
+  # A set of permissions Role/ClusterRole will contain.
+  # If empty, all of them will be '*'.
+  rules: []
+
+quickstart:
+  enabled: false
+  pipedId: ""
+  pipedKeyData: ""

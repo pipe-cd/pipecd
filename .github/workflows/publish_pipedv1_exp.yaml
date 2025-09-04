@@ -1,0 +1,123 @@
+name: publish_pipedv1_exp
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (e.g. v0.1.0)"
+        required: true
+
+permissions: {}
+
+env:
+  GO_VERSION: 1.24.1
+  GHCR: ghcr.io
+  GCR: gcr.io
+  HELM_VERSION: 3.8.2
+
+jobs:
+  binary:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - name: Build binary artifacts
+        run: |
+          make build/go MOD=pipedv1 BUILD_OS=linux BUILD_ARCH=amd64 BIN_SUFFIX=_${{ inputs.version }}_linux_amd64
+          make build/go MOD=pipedv1 BUILD_OS=linux BUILD_ARCH=arm64 BIN_SUFFIX=_${{ inputs.version }}_linux_arm64
+          make build/go MOD=pipedv1 BUILD_OS=darwin BUILD_ARCH=amd64 BIN_SUFFIX=_${{ inputs.version }}_darwin_amd64
+          make build/go MOD=pipedv1 BUILD_OS=darwin BUILD_ARCH=arm64 BIN_SUFFIX=_${{ inputs.version }}_darwin_arm64
+
+      - name: Publish binary artifacts
+        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda #v2.2.1
+        with:
+          tag_name: pipedv1/exp/${{ inputs.version }}
+          name: pipedv1 experimental ${{ inputs.version }}
+          target_commitish: ${{ github.sha }}
+          draft: true
+          make_latest: "false"
+          files: |
+            ./.artifacts/pipedv1_${{ inputs.version }}_linux_amd64
+            ./.artifacts/pipedv1_${{ inputs.version }}_linux_arm64
+            ./.artifacts/pipedv1_${{ inputs.version }}_darwin_amd64
+            ./.artifacts/pipedv1_${{ inputs.version }}_darwin_arm64
+
+  container_image:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        container_registry:
+          - ghcr.io/pipe-cd
+          - gcr.io/pipecd
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      # Setup QEMU and Buildx.
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v3.2.0
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # v3.7.1
+
+      # Login to push container images.
+      - name: Log in to GHCR
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: ${{ env.GHCR }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to GCR
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: ${{ env.GCR }}
+          username: _json_key
+          password: ${{ secrets.GCR_SA }}
+
+      # Building and pushing container images.
+      - name: Build and push pipedv1 experimental image
+        uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355 # v6.10.0
+        with:
+          push: true
+          context: .
+          file: cmd/pipedv1/Dockerfile
+          tags: ${{ matrix.container_registry }}/pipedv1-exp:${{ inputs.version }}
+          platforms: linux/amd64,linux/arm64
+          # parameter to use inline cache. ref; https://docs.docker.com/build/ci/github-actions/cache/#inline-cache
+          cache-from: type=registry,ref=${{ matrix.container_registry }}/pipedv1-exp:latest
+          cache-to: type=inline
+
+  image_chart:
+    runs-on: ubuntu-24.04
+    needs: container_image
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      # Building and pushing Helm charts.
+      - name: Install helm
+        uses: azure/setup-helm@v4
+        with:
+          version: ${{ env.HELM_VERSION }}
+      - name: Login to OCI using Helm
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${{ env.GHCR }} --username ${{ github.repository_owner }} --password-stdin
+      - name: Publish helm charts
+        run: |
+          make build/chart MOD=pipedv1-exp VERSION=${{ inputs.version }}
+          helm push .artifacts/pipedv1-exp-${{ inputs.version }}.tgz oci://${{ env.GHCR }}/pipe-cd/chart

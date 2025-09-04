@@ -1,0 +1,74 @@
+name: plugin_release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (e.g. v0.1.0)"
+        required: true
+      path:
+        description: "Plugin source path (e.g. pkg/app/pipedv1/plugin/kubernetes)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          repository: pipe-cd/pipecd
+          fetch-depth: 0
+      - uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - name: Determine Plugin Info
+        run: echo "PLUGIN_NAME=$(basename ${{ inputs.path }})" >> $GITHUB_ENV
+      - name: Build binary artifacts
+        run: |
+          make build/plugin PLUGINS=$PLUGIN_NAME BUILD_OS=linux BUILD_ARCH=amd64 BIN_SUFFIX=_${{ inputs.version }}_linux_amd64
+          make build/plugin PLUGINS=$PLUGIN_NAME BUILD_OS=linux BUILD_ARCH=arm64 BIN_SUFFIX=_${{ inputs.version }}_linux_arm64
+          make build/plugin PLUGINS=$PLUGIN_NAME BUILD_OS=darwin BUILD_ARCH=amd64 BIN_SUFFIX=_${{ inputs.version }}_darwin_amd64
+          make build/plugin PLUGINS=$PLUGIN_NAME BUILD_OS=darwin BUILD_ARCH=arm64 BIN_SUFFIX=_${{ inputs.version }}_darwin_arm64
+      - env:
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_PATH: ${{ inputs.path }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          LATEST_VERSION=$(git tag -l '${{ inputs.path }}/v*' | awk -F/ '{print $NF, $0}' | sort -k1 -V | tail -n1 | cut -d' ' -f2-)
+
+          if [[ -z "$LATEST_VERSION" ]]; then
+            LATEST_VERSION=$(git log --format="%H" --reverse -- ./${{ inputs.path }}/ | head -n 1)
+          fi
+
+          echo "Latest version: $LATEST_VERSION"
+          echo "Input version: $INPUT_VERSION"
+          if [[ "$LATEST_VERSION" == "$INPUT_VERSION" ]]; then
+            echo "Version $INPUT_VERSION already exists"
+            exit 0
+          fi
+
+          cat > output.tmp <<EOF
+          Plugin $PLUGIN_NAME Release $INPUT_VERSION with changes since $LATEST_VERSION
+          ---
+
+          EOF
+          git log --reverse --format="* %s" $LATEST_VERSION..HEAD -- $INPUT_PATH | sed -E 's/\(#([0-9]+)\)/([#\1](https:\/\/github.com\/pipe-cd\/pipecd\/pull\/\1))/g' >> output.tmp
+      - name: Publish binary artifacts
+        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda #v2.2.1
+        with:
+          tag_name: ${{ inputs.path }}/${{ inputs.version }}
+          body_path: output.tmp
+          name: ${{ env.PLUGIN_NAME }} ${{ inputs.version }}
+          target_commitish: ${{ github.sha }}
+          draft: true
+          make_latest: "false"
+          files: |
+            ./.artifacts/plugins/${{ env.PLUGIN_NAME }}_${{ inputs.version }}_linux_amd64
+            ./.artifacts/plugins/${{ env.PLUGIN_NAME }}_${{ inputs.version }}_linux_arm64
+            ./.artifacts/plugins/${{ env.PLUGIN_NAME }}_${{ inputs.version }}_darwin_amd64
+            ./.artifacts/plugins/${{ env.PLUGIN_NAME }}_${{ inputs.version }}_darwin_arm64

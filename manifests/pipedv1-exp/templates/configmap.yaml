@@ -1,0 +1,27 @@
+{{- if .Values.config.create -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "piped.configMapName" . }}
+  labels:
+    {{- include "piped.labels" . | nindent 4 }}
+data:
+{{- if .Values.quickstart.enabled }}
+  {{ .Values.config.fileName }}: |-
+    apiVersion: pipecd.dev/v1beta1
+    kind: Piped
+    spec:
+      projectID: quickstart
+      pipedID: {{ .Values.quickstart.pipedId }}
+      pipedKeyData: {{ .Values.quickstart.pipedKeyData }}
+      apiAddress: pipecd:8080
+      syncInterval: 1m
+      repositories:
+        - repoId: examples
+          remote: https://github.com/pipe-cd/examples.git
+          branch: master
+{{- else }}
+  {{ .Values.config.fileName }}: |-
+{{ tpl .Values.config.data . | indent 4 }}
+{{- end }}
+{{- end }}

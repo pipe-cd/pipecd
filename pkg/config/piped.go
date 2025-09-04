@@ -22,6 +22,7 @@ import (
 	"os"
 	"strings"
 
+	configv1 "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
@@ -306,91 +307,7 @@ func (s *PipedSpec) LoadPipedKey() ([]byte, error) {
 	return nil, errors.New("either pipedKeyFile or pipedKeyData must be set")
 }
 
-type PipedGit struct {
-	// The username that will be configured for `git` user.
-	// Default is "piped".
-	Username string `json:"username,omitempty"`
-	// The email that will be configured for `git` user.
-	// Default is "pipecd.dev@gmail.com".
-	Email string `json:"email,omitempty"`
-	// Where to write ssh config file.
-	// Default is "$HOME/.ssh/config".
-	SSHConfigFilePath string `json:"sshConfigFilePath,omitempty"`
-	// The host name.
-	// e.g. github.com, gitlab.com
-	// Default is "github.com".
-	Host string `json:"host,omitempty"`
-	// The hostname or IP address of the remote git server.
-	// e.g. github.com, gitlab.com
-	// Default is the same value with Host.
-	HostName string `json:"hostName,omitempty"`
-	// The path to the private ssh key file.
-	// This will be used to clone the source code of the specified git repositories.
-	SSHKeyFile string `json:"sshKeyFile,omitempty"`
-	// Base64 encoded string of ssh-key.
-	SSHKeyData string `json:"sshKeyData,omitempty"`
-	// Base64 encoded string of password.
-	// This will be used to clone the source repo with https basic auth.
-	Password string `json:"password,omitempty"`
-}
-
-func (g PipedGit) ShouldConfigureSSHConfig() bool {
-	return g.SSHKeyData != "" || g.SSHKeyFile != ""
-}
-
-func (g PipedGit) LoadSSHKey() ([]byte, error) {
-	if g.SSHKeyData != "" && g.SSHKeyFile != "" {
-		return nil, errors.New("only either sshKeyFile or sshKeyData can be set")
-	}
-	if g.SSHKeyData != "" {
-		return base64.StdEncoding.DecodeString(g.SSHKeyData)
-	}
-	if g.SSHKeyFile != "" {
-		return os.ReadFile(g.SSHKeyFile)
-	}
-	return nil, errors.New("either sshKeyFile or sshKeyData must be set")
-}
-
-func (g *PipedGit) Validate() error {
-	isPassword := g.Password != ""
-	isSSH := g.ShouldConfigureSSHConfig()
-	if isSSH && isPassword {
-		return errors.New("cannot configure both sshKeyData or sshKeyFile and password authentication")
-	}
-	if isSSH && (g.SSHKeyData != "" && g.SSHKeyFile != "") {
-		return errors.New("only either sshKeyFile or sshKeyData can be set")
-	}
-	if isPassword && (g.Username == "" || g.Password == "") {
-		return errors.New("both username and password must be set")
-	}
-	return nil
-}
-
-func (g *PipedGit) Mask() {
-	if len(g.SSHConfigFilePath) != 0 {
-		g.SSHConfigFilePath = maskString
-	}
-	if len(g.SSHKeyFile) != 0 {
-		g.SSHKeyFile = maskString
-	}
-	if len(g.SSHKeyData) != 0 {
-		g.SSHKeyData = maskString
-	}
-	if len(g.Password) != 0 {
-		g.Password = maskString
-	}
-}
-
-func (g *PipedGit) DecodedPassword() (string, error) {
-	if len(g.Password) == 0 {
-		return "", nil
-	}
-	decoded, err := base64.StdEncoding.DecodeString(g.Password)
-	if err != nil {
-		return "", err
-	}
-	return string(decoded), nil
-}
+type PipedGit = configv1.PipedGit
 
 type PipedRepository struct {
 	// Unique identifier for this repository.

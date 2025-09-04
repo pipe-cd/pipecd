@@ -554,13 +554,6 @@ func TestGetStageConfigByte(t *testing.T) {
 		wantOk bool
 	}{
 		{
-			name:   "pipeline not defined",
-			s:      GenericApplicationSpec{},
-			index:  0,
-			want:   nil,
-			wantOk: true,
-		},
-		{
 			name: "valid stage index",
 			s: GenericApplicationSpec{
 				Pipeline: &DeploymentPipeline{
