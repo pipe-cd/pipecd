@@ -6,7 +6,7 @@ require (
 	github.com/creasty/defaults v1.5.2
 	github.com/google/go-github/v39 v39.2.0
 	github.com/stretchr/testify v1.4.0
-	golang.org/x/oauth2 v0.27.0
+	golang.org/x/oauth2 v0.30.0
 	sigs.k8s.io/yaml v1.3.0
 )
 
