@@ -1,6 +1,6 @@
 import { Cached, CheckCircle, Error, Info, Warning } from "@mui/icons-material";
 import { FC } from "react";
-import { ApplicationSyncStatus } from "~/modules/applications";
+import { ApplicationSyncStatus } from "~/types/applications";
 
 export interface SyncStatusIconProps {
   status: ApplicationSyncStatus;

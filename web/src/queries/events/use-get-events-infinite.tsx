@@ -105,7 +105,12 @@ export const useGetEventsInfinite = (
 
     const isHasMore = lastPage.eventsList.length >= PAGE_SIZE;
     if (isHasMore) {
-      fetchNextPage();
+      fetchNextPage({
+        pageParam: {
+          cursor: lastPage.cursor,
+          minUpdatedAt: lastPage.minUpdatedAt,
+        },
+      });
       return;
     }
 

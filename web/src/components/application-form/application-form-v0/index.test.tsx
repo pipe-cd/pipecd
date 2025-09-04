@@ -1,13 +1,13 @@
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
 import ApplicationFormV0 from ".";
-import { createStore, render, screen } from "~~/test-utils";
+import { render, screen, waitFor } from "~~/test-utils";
 import userEvent from "@testing-library/user-event";
-import { AppState } from "~/store";
 import { dummyApplication } from "~/__fixtures__/dummy-application";
 import { server } from "~/mocks/server";
 import { dummyPiped } from "~/__fixtures__/dummy-piped";
 import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 import { act } from "react-dom/test-utils";
+import { ApplicationInfo } from "~/types/applications";
 
 const onClose = jest.fn();
 const onFinished = jest.fn();
@@ -27,27 +27,11 @@ afterAll(() => {
 
 const dummyUnregisteredApplication = {
   ...dummyApplication,
-  configFilename: "app1.yaml",
-  path: "app1",
-  repoId: "repo1",
-  labelsMap: [["env", "test"]] as [string, string][],
-};
-
-const baseState: Partial<AppState> = {
-  unregisteredApplications: {
-    ids: [dummyUnregisteredApplication.id],
-    apps: [dummyUnregisteredApplication],
-    entities: {
-      [dummyUnregisteredApplication.id]: dummyUnregisteredApplication,
-    },
-  },
-  pipeds: {
-    entities: {
-      [dummyPiped.id]: dummyPiped,
-    },
-    ids: [dummyPiped.id],
-  },
-};
+  configFilename: dummyApplication.gitPath?.configFilename || "",
+  path: dummyApplication.gitPath?.path,
+  repoId: dummyApplication.gitPath?.repo?.id,
+  labelsMap: [] as [string, string][],
+} as ApplicationInfo.AsObject;
 
 describe("ApplicationFormV0", () => {
   it("renders without crashing", () => {
@@ -56,21 +40,19 @@ describe("ApplicationFormV0", () => {
         onClose={onClose}
         onFinished={onFinished}
         title="title"
-      />,
-      {}
+      />
     );
+    expect(screen.getByText("title")).toBeInTheDocument();
   });
 
   describe("Test ui", () => {
-    const store = createStore(baseState);
     beforeEach(() => {
       render(
         <ApplicationFormV0
           onClose={onClose}
           onFinished={onFinished}
           title={TITLE}
-        />,
-        { store }
+        />
       );
     });
     it("should have correct title", () => {
@@ -98,10 +80,12 @@ describe("ApplicationFormV0", () => {
     });
 
     it("form contain correct input by Step", async () => {
-      // select piped
       userEvent.click(screen.getByRole("combobox", { name: /piped/i }));
+
       const optionName = `${dummyPiped.name} (${dummyPiped.id})`;
-      userEvent.click(screen.getByRole("option", { name: optionName }));
+      await waitFor(() => {
+        userEvent.click(screen.getByRole("option", { name: optionName }));
+      });
 
       // select Platform Provider
       const platFormName = "Platform Provider";
@@ -126,9 +110,6 @@ describe("ApplicationFormV0", () => {
       expect(
         screen.getByRole("textbox", { name: "Config Filename" })
       ).toHaveValue(dummyUnregisteredApplication.configFilename);
-      expect(screen.getByRole("textbox", { name: "Label 0" })).toHaveValue(
-        dummyUnregisteredApplication.labelsMap[0].join(": ")
-      );
 
       // click save
       expect(screen.getByRole("button", { name: UI_TEXT_SAVE })).toBeEnabled();

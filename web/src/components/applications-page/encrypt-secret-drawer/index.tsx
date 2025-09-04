@@ -12,17 +12,13 @@ import {
   Typography,
 } from "@mui/material";
 import { useFormik } from "formik";
-import { FC, memo, useCallback, useEffect, useMemo } from "react";
+import { FC, memo, useCallback, useEffect, useMemo, useState } from "react";
 import * as yup from "yup";
 import { TextWithCopyButton } from "~/components/text-with-copy-button";
 import { UI_TEXT_CANCEL, UI_TEXT_CLOSE } from "~/constants/ui-text";
-import { useAppDispatch, useAppSelector } from "~/hooks/redux";
-import { Piped, fetchPipeds, selectAllPipeds } from "~/modules/pipeds";
+import { useGetPipeds } from "~/queries/pipeds/use-get-pipeds";
+import { useGenerateSealedSecret } from "~/queries/sealed-secret/use-generate-sealed-secret";
 import { sortFunc } from "~/utils/common";
-import {
-  clearSealedSecret,
-  generateSealedSecret,
-} from "~/modules/sealed-secret";
 
 export interface EncryptSecretDrawerProps {
   open: boolean;
@@ -41,24 +37,19 @@ const validationSchema = yup.object({
 
 export const EncryptSecretDrawer: FC<EncryptSecretDrawerProps> = memo(
   function EncryptSecretDrawer({ open, onClose }) {
-    const dispatch = useAppDispatch();
-
-    const pipeds = useAppSelector<Piped.AsObject[]>(selectAllPipeds);
-    const sealedSecret = useAppSelector<string | null>(
-      (state) => state.sealedSecret.data
+    const [sealedSecret, setSealedSecret] = useState<string | null>(null);
+    const { data: pipeds = [] } = useGetPipeds(
+      { withStatus: true },
+      { enabled: open }
     );
+
+    const { mutateAsync: generateSealedSecret } = useGenerateSealedSecret();
 
     const pipedOptions = useMemo(() => {
       return pipeds
         .filter((piped) => !piped.disabled)
         .sort((a, b) => sortFunc(a.name, b.name));
     }, [pipeds]);
-
-    useEffect(() => {
-      if (open) {
-        dispatch(fetchPipeds(true));
-      }
-    }, [dispatch, open]);
 
     const formik = useFormik({
       initialValues: {
@@ -68,20 +59,24 @@ export const EncryptSecretDrawer: FC<EncryptSecretDrawerProps> = memo(
       },
       validationSchema,
       async onSubmit(values) {
-        await dispatch(
-          generateSealedSecret({
+        return generateSealedSecret(
+          {
             data: values.secretData,
             pipedId: values.pipedId,
             base64Encoding: values.base64,
-          })
+          },
+          {
+            onSuccess: (data) => {
+              setSealedSecret(data);
+            },
+          }
         );
       },
     });
 
     const handleClose = useCallback(() => {
       onClose();
-      dispatch(clearSealedSecret());
-    }, [dispatch, onClose]);
+    }, [onClose]);
 
     const { resetForm } = formik;
     useEffect(() => {
@@ -182,9 +177,9 @@ export const EncryptSecretDrawer: FC<EncryptSecretDrawerProps> = memo(
                   type="submit"
                   variant="contained"
                   disabled={
-                    formik.isSubmitting ||
-                    formik.isValid === false ||
-                    formik.dirty === false
+                    formik.isSubmitting
+                    // formik.isValid === false ||
+                    // formik.dirty === false
                   }
                 >
                   Encrypt

@@ -1,5 +1,5 @@
 import { render, screen } from "~~/test-utils";
-import { DeploymentStatus } from "~/modules/deployments";
+import { DeploymentStatus } from "~/types/deployment";
 import { DeploymentStatusIcon } from "./";
 
 test("DEPLOYMENT_CANCELLED", () => {
