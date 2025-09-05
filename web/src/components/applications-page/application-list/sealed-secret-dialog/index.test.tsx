@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { setupServer } from "msw/node";
 import { generateApplicationSealedSecretHandler } from "~/mocks/services/piped";
 import { dummyApplication } from "~/__fixtures__/dummy-application";
-import { createReduxStore, render, screen } from "~~/test-utils/index";
+import { render, screen } from "~~/test-utils/index";
 import { SealedSecretDialog } from ".";
 
 const server = setupServer();
@@ -23,20 +23,10 @@ afterAll(() => {
 test("render", () => {
   render(
     <SealedSecretDialog
-      applicationId={dummyApplication.id}
+      application={dummyApplication}
       onClose={() => null}
       open
-    />,
-    {
-      initialState: {
-        applications: {
-          entities: {
-            [dummyApplication.id]: dummyApplication,
-          },
-          ids: [dummyApplication.id],
-        },
-      },
-    }
+    />
   );
 
   expect(screen.getByText(dummyApplication.name)).toBeInTheDocument();
@@ -45,21 +35,7 @@ test("render", () => {
 test("cancel", () => {
   const onClose = jest.fn();
   render(
-    <SealedSecretDialog
-      applicationId={dummyApplication.id}
-      onClose={onClose}
-      open
-    />,
-    {
-      initialState: {
-        applications: {
-          entities: {
-            [dummyApplication.id]: dummyApplication,
-          },
-          ids: [dummyApplication.id],
-        },
-      },
-    }
+    <SealedSecretDialog application={dummyApplication} onClose={onClose} open />
   );
 
   userEvent.click(screen.getByRole("button", { name: "Cancel" }));
@@ -67,31 +43,14 @@ test("cancel", () => {
 });
 
 test("Generate sealed secret", async () => {
-  const store = createReduxStore({
-    applications: {
-      entities: {
-        [dummyApplication.id]: dummyApplication,
-      },
-      ids: [dummyApplication.id],
-      adding: false,
-      disabling: {},
-      loading: false,
-      syncing: {},
-      addedApplicationId: null,
-      fetchApplicationError: null,
-    },
-  });
-
   server.use(generateApplicationSealedSecretHandler);
+  const handleClose = jest.fn();
   render(
     <SealedSecretDialog
-      applicationId={dummyApplication.id}
-      onClose={jest.fn()}
+      application={dummyApplication}
+      onClose={handleClose}
       open
-    />,
-    {
-      store,
-    }
+    />
   );
 
   userEvent.type(
@@ -106,7 +65,5 @@ test("Generate sealed secret", async () => {
 
   userEvent.click(screen.getByRole("button", { name: "Close" }));
 
-  await waitFor(() =>
-    expect(screen.queryByText("Encrypted secret data")).not.toBeInTheDocument()
-  );
+  await waitFor(() => expect(handleClose).toHaveBeenCalled());
 });

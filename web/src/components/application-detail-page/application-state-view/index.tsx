@@ -1,26 +1,16 @@
 import { Box, Link, Button, CircularProgress, Typography } from "@mui/material";
-import { FC, memo, useEffect, useMemo } from "react";
+import { FC, memo, useMemo } from "react";
 import { UI_TEXT_REFRESH } from "~/constants/ui-text";
-import { useAppDispatch, useAppSelector } from "~/hooks/redux";
-import { useInterval } from "~/hooks/use-interval";
-import {
-  Application,
-  ApplicationKind,
-  PIPED_VERSION,
-  selectById as selectAppById,
-} from "~/modules/applications";
-import {
-  ApplicationLiveState,
-  fetchApplicationStateById,
-  selectById as selectLiveStateById,
-  selectHasError,
-} from "~/modules/applications-live-state";
 import { KubernetesStateView } from "./kubernetes-state-view";
 import { CloudRunStateView } from "./cloudrun-state-view";
 import { ECSStateView } from "./ecs-state-view";
 import { LambdaStateView } from "./lambda-state-view";
 import { checkPipedAppVersion } from "~/utils/common";
 import { LiveStateView } from "./live-state-view";
+import { ApplicationLiveState } from "~/queries/application-live-state/use-get-application-state-by-id";
+import { ApplicationKind } from "~~/model/common_pb";
+import { PIPED_VERSION } from "~/types/piped";
+import { Application } from "~/types/applications";
 
 const isDisplayLiveState = (app: Application.AsObject | undefined): boolean => {
   const result = checkPipedAppVersion(app);
@@ -34,10 +24,11 @@ const isDisplayLiveState = (app: Application.AsObject | undefined): boolean => {
   );
 };
 
-const FETCH_INTERVAL = 4000;
-
 export interface ApplicationStateViewProps {
-  applicationId: string;
+  app?: Application.AsObject;
+  hasError: boolean;
+  liveState?: ApplicationLiveState;
+  refetchLiveState?: () => void;
 }
 
 const ERROR_MESSAGE = "It was unable to fetch the latest state of application.";
@@ -48,38 +39,13 @@ const DISABLED_APPLICATION_MESSAGE =
   "This application is currently disabled. You can enable it from the application list page.";
 
 export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
-  function ApplicationStateView({ applicationId }) {
-    const dispatch = useAppDispatch();
-    const [hasError, liveState, app] = useAppSelector<
-      [
-        boolean,
-        ApplicationLiveState | undefined,
-        Application.AsObject | undefined
-      ]
-    >((state) => [
-      selectHasError(state.applicationLiveState, applicationId),
-      selectLiveStateById(state.applicationLiveState, applicationId),
-      selectAppById(state.applications, applicationId),
-    ]);
-
+  function ApplicationStateView({
+    app,
+    hasError,
+    liveState,
+    refetchLiveState,
+  }) {
     const pipedVersion = useMemo(() => checkPipedAppVersion(app), [app]);
-
-    useEffect(() => {
-      if (app && isDisplayLiveState(app)) {
-        dispatch(fetchApplicationStateById(app.id));
-      }
-    }, [app, dispatch]);
-
-    useInterval(
-      () => {
-        // Fetch only supported kind applications.
-        if (app && isDisplayLiveState(app)) {
-          dispatch(fetchApplicationStateById(app.id));
-        }
-      },
-      // Fetch only supported kind applications.
-      isDisplayLiveState(app) && hasError === false ? FETCH_INTERVAL : null
-    );
 
     if (app?.disabled) {
       return (
@@ -113,7 +79,7 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
           <Button
             color="primary"
             onClick={() => {
-              dispatch(fetchApplicationStateById(applicationId));
+              refetchLiveState?.();
             }}
           >
             {UI_TEXT_REFRESH}

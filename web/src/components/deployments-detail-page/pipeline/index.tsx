@@ -7,26 +7,20 @@ import {
   DialogContentText,
   DialogTitle,
 } from "@mui/material";
-import { FC, memo, useCallback, useEffect, useState } from "react";
+import { FC, memo, useCallback, useState } from "react";
 import {
   METADATA_APPROVED_BY,
   METADATA_SKIPPED_BY,
   METADATA_STAGE_DISPLAY_KEY,
 } from "~/constants/metadata-keys";
-import { useAppDispatch, useAppSelector } from "~/hooks/redux";
-import { ActiveStage, updateActiveStage } from "~/modules/active-stage";
-import {
-  approveStage,
-  Deployment,
-  isDeploymentRunning,
-  selectById,
-  Stage,
-  StageStatus,
-} from "~/modules/deployments";
-import { fetchStageLog } from "~/modules/stage-logs";
 import { ApprovalStage } from "./approval-stage";
 import { PipelineStage } from "./pipeline-stage";
 import { ManualOperation } from "~~/model/deployment_pb";
+import { useApproveStage } from "~/queries/deployment/use-approve-stage";
+import { isDeploymentRunning } from "~/utils/is-deployment-running";
+import { Deployment, StageStatus } from "~~/model/deployment_pb";
+import { Stage } from "~/types/deployment";
+import { ActiveStageInfo } from "..";
 
 enum PIPED_VERSION {
   V0 = "v0",
@@ -36,43 +30,6 @@ enum PIPED_VERSION {
 const WAIT_APPROVAL_NAME = "WAIT_APPROVAL";
 const STAGE_HEIGHT = 56;
 const APPROVED_STAGE_HEIGHT = 66;
-
-// Find stage that is running or latest
-const findDefaultActiveStage = (
-  deployment: Deployment.AsObject | undefined
-): Stage | null => {
-  if (!deployment) {
-    return null;
-  }
-
-  const pipedVersion = deployment.deployTargetsByPluginMap.length
-    ? PIPED_VERSION.V1
-    : PIPED_VERSION.V0;
-
-  const stages = deployment.stagesList.filter((stage) => {
-    if (pipedVersion === PIPED_VERSION.V0) {
-      return (
-        stage.visible && stage.status !== StageStatus.STAGE_NOT_STARTED_YET
-      );
-    }
-
-    // For piped v1, field visible is not used.
-    if (pipedVersion === PIPED_VERSION.V1) {
-      return stage.status !== StageStatus.STAGE_NOT_STARTED_YET;
-    }
-    return false;
-  });
-
-  const runningStage = stages.find(
-    (stage) => stage.status === StageStatus.STAGE_RUNNING
-  );
-
-  if (runningStage) {
-    return runningStage;
-  }
-
-  return stages[stages.length - 1];
-};
 
 const isStartedStage = (stage: Stage): boolean => {
   return stage.status !== StageStatus.STAGE_NOT_STARTED_YET;
@@ -164,7 +121,9 @@ const createStagesForRendering = (
 const LARGE_STAGE_NAMES = ["WAIT_APPROVAL", "K8S_TRAFFIC_ROUTING"];
 
 export interface PipelineProps {
-  deploymentId: string;
+  deployment: Deployment.AsObject | undefined;
+  activeStageInfo?: ActiveStageInfo;
+  changeActiveStage: (info: ActiveStageInfo) => void;
 }
 
 // deprecated. Use findDisplayMetadataText for pipedv1.
@@ -202,57 +161,33 @@ const findDisplayMetadataText = (
 };
 
 export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
-  deploymentId,
+  deployment,
+  activeStageInfo,
+  changeActiveStage: changeActiveStage,
 }) {
-  const dispatch = useAppDispatch();
-  const deployment = useAppSelector<Deployment.AsObject | undefined>((state) =>
-    selectById(state.deployments, deploymentId)
-  );
   const [approveTargetId, setApproveTargetId] = useState<string | null>(null);
-  const isOpenApproveDialog = Boolean(approveTargetId);
+  const { mutate: approveStage } = useApproveStage();
 
-  const defaultActiveStage = findDefaultActiveStage(deployment);
+  const isOpenApproveDialog = Boolean(approveTargetId);
+  const deploymentId = deployment?.id ?? "";
+
   const stages = createStagesForRendering(deployment);
   const isRunning = isDeploymentRunning(deployment?.status);
 
-  const activeStage = useAppSelector<ActiveStage>((state) => state.activeStage);
-
-  useEffect(() => {
-    if (defaultActiveStage) {
-      dispatch(
-        updateActiveStage({
-          deploymentId,
-          stageId: defaultActiveStage.id,
-          name: defaultActiveStage.name,
-        })
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch, deploymentId, defaultActiveStage === null]);
-
-  useEffect(() => {
-    if (activeStage) {
-      dispatch(
-        fetchStageLog({
-          deploymentId,
-          stageId: activeStage.stageId,
-          offsetIndex: 0,
-          retriedCount: 0,
-        })
-      );
-    }
-  }, [dispatch, deploymentId, activeStage]);
-
   const handleOnClickStage = useCallback(
     (stageId: string, stageName: string) => {
-      dispatch(updateActiveStage({ deploymentId, stageId, name: stageName }));
+      changeActiveStage({
+        deploymentId,
+        stageId,
+        name: stageName,
+      });
     },
-    [dispatch, deploymentId]
+    [changeActiveStage, deploymentId]
   );
 
   const handleApprove = (): void => {
     if (approveTargetId) {
-      dispatch(approveStage({ deploymentId, stageId: approveTargetId }));
+      approveStage({ deploymentId, stageId: approveTargetId });
       setApproveTargetId(null);
     }
   };
@@ -295,11 +230,10 @@ export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
                 // TODO: remove approver and skipper. they should be included in findDisplayMetadataText for compatibility.
                 const approver = findApprover(stage.metadataMap);
                 const skipper = findSkipper(stage.metadataMap);
-                const isActive = activeStage
-                  ? activeStage.deploymentId === deploymentId &&
-                    activeStage.stageId === stage.id
+                const isActive = activeStageInfo
+                  ? activeStageInfo.deploymentId === deploymentId &&
+                    activeStageInfo.stageId === stage.id
                   : false;
-
                 const showLine = columnIndex > 0;
                 const showStraightLine = showLine && stageIndex === 0;
                 const showCurvedLine = showLine && stageIndex > 0;

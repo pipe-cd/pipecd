@@ -1,6 +1,6 @@
 import { Box, Paper, Typography } from "@mui/material";
 import { FC, memo } from "react";
-import { LambdaResourceState } from "~/modules/applications-live-state";
+import { LambdaResourceState } from "~/types/applications-live-state";
 import { LambdaResourceHealthStatusIcon } from "./health-status-icon";
 
 export interface LambdaResourceProps {
