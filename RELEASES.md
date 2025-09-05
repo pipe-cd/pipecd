@@ -1,6 +1,10 @@
 # Releases
 This document explains the process to release new versions.
 
+> NOTE: From v0.54.0, while plugin-arch piped (aka. pipedv1) reaches alpha status, the pipe-cd/pipecd release tab change from only PipeCD release to be multi modules releases. PipeCD and plugins releases are both available at the [release tab](https://github.com/pipe-cd/pipecd/releases).
+
+# PipeCD releases
+
 ## Versioning
 Versions are expressed as `vX.Y.Z`;
 
@@ -133,3 +137,65 @@ This may also contain some minor features, but ensure that it does NOT contain a
          3. Write them to the body area.
    5. **Select `Set as a pre-release`**, not `Set as the latest release`.
 4. Push `Publish Release`.
+
+## Pipedv1 releases (experimental)
+
+Currently, pipedv1 is in experimental (aplha) status, so the release is done by maintainers team.
+
+Pipedv1 releases is done by [publish_pipedv1_exp github actions](https://github.com/pipe-cd/pipecd/blob/master/.github/workflows/publish_pipedv1_exp.yaml).
+
+### Inputs
+
+| Name       | Description                                   | Required |  Example      |
+|------------|-----------------------------------------------|:--------:|:-------------:|
+| version    | The version of the pipedv1 to release.        |    yes   | v1.0.0-rc0    |
+
+
+# Plugins releases
+
+Piped's plugins are versioned independently from PipeCD. This means that the plugin version is not related to the PipeCD version.
+
+NOTE: Plugin releases mentioned in this document are only plugins maintained by the maintainers team. For community plugins, please refer to the [community plugin's repository](https://github.com/pipe-cd/community-plugins) for release information.
+
+## Versioning
+
+Piped's plugins version follow semantic versioning (same as PipeCD).
+
+## Release Cycle
+
+There is no release cycle for plugins. Maintainers team will release new versions of plugins when there are new features or bug fixes.
+
+## Cut a new release
+
+Plugins releases is done by [plugin_release github actions](https://github.com/pipe-cd/pipecd/blob/master/.github/workflows/plugin_release.yaml).
+
+### Inputs
+
+| Name       | Description                                   | Required |  Example      |
+|------------|-----------------------------------------------|:--------:|:-------------:|
+| version    | The version of the plugin to release.         |    yes   | v0.1.0        |
+| path       | The path of the plugin to release.            |    yes   | pkg/app/pipedv1/plugin/kubernetes |
+
+# Piped plugin SDK releases
+
+> NOTE: Release for piped plugin SDK is available at [piped-plugin-sdk-go repo](https://github.com/pipe-cd/piped-plugin-sdk-go/releases).
+
+## Versioning
+
+The piped plugin SDK are versioned independently from [PipeCD](https://github.com/pipe-cd/pipecd). This means that the plugin version is not related to the PipeCD version.
+
+The piped plugin SDK version follow semantic versioning (same as PipeCD).
+
+## Release Cycle
+
+There is no release cycle for piped plugin SDK. Maintainers team will release new versions when there are new features or bug fixes.
+
+## Cut a new release
+
+Piped plugin SDK releases is done by [release sdk github actions](https://github.com/pipe-cd/piped-plugin-sdk-go/blob/main/.github/workflows/release.yaml).
+
+### Inputs
+
+| Name       | Description                                   | Required |  Example      |
+|------------|-----------------------------------------------|:--------:|:-------------:|
+| version    | The version of the piped plugin SDK to release.        |    yes   | v0.1.0    |
