@@ -178,6 +178,8 @@ Plugins releases is done by [plugin_release github actions](https://github.com/p
 
 # Piped plugin SDK releases
 
+> NOTE: Release for piped plugin SDK is available at [piped-plugin-sdk-go repo](https://github.com/pipe-cd/piped-plugin-sdk-go/releases).
+
 ## Versioning
 
 The piped plugin SDK are versioned independently from [PipeCD](https://github.com/pipe-cd/pipecd). This means that the plugin version is not related to the PipeCD version.
