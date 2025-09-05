@@ -14,13 +14,12 @@ src
 │     └── index.stories.ts
 ├── constants # shared constants
 ├── hooks # shared hooks
-├── middlewares # redux middlewares
 ├── mocks # API mock files
 │  └── services
-├── modules # redux modules
+├── queries # react query modules
 │  └── module-name
-│     ├── index.ts
-│     └── index.test.ts
+│     ├── query-hook.ts # use query hook
+│     └── mutation-hook.ts # use mutation hook
 ├── styles # shared styles
 ├── types # application types
 └── utils # utils files

@@ -1,5 +1,4 @@
 import loadable from "@loadable/component";
-import { EntityId } from "@reduxjs/toolkit";
 import { FC, useEffect, useState } from "react";
 import {
   Route,
@@ -13,7 +12,6 @@ import { DeploymentIndexPage } from "~/components/deployments-page";
 import { DeploymentChainsIndexPage } from "~/components/deployment-chains-page";
 import { Header } from "~/components/header";
 import { LoginPage } from "~/components/login-page";
-import { Toasts } from "~/components/toasts";
 import {
   PAGE_PATH_APPLICATIONS,
   PAGE_PATH_DEPLOYMENTS,
@@ -32,14 +30,7 @@ import {
   BANNER_VERSION_KEY,
   USER_PROJECTS,
 } from "~/constants/localstorage";
-import { useAppDispatch, useAppSelector } from "~/hooks/redux";
-import { useInterval } from "~/hooks/use-interval";
 import useQueryString from "./hooks/use-query-string";
-import {
-  fetchCommand,
-  selectIds as selectCommandIds,
-} from "~/modules/commands";
-import { fetchPipeds } from "~/modules/pipeds";
 import { sortedSet } from "~/utils/sorted-set";
 import DeploymentTracePage from "./components/deployment-trace-page";
 import useAuth from "./contexts/auth-context/use-auth";
@@ -115,35 +106,8 @@ const APIKeyPage = loadable(
   }
 );
 
-// Fetch commands detail periodically
-const FETCH_COMMANDS_INTERVAL = 3000;
-const useCommandsStatusChecking = (): void => {
-  const dispatch = useAppDispatch();
-  const commandIds = useAppSelector<EntityId[]>((state) =>
-    selectCommandIds(state.commands)
-  );
-
-  const fetchCommands = (): void => {
-    commandIds.map((id) => {
-      dispatch(fetchCommand(`${id}`));
-    });
-  };
-
-  useInterval(
-    fetchCommands,
-    commandIds.length > 0 ? FETCH_COMMANDS_INTERVAL : null
-  );
-};
-
 export const Routes: FC = () => {
-  const dispatch = useAppDispatch();
   const { me } = useAuth();
-  useEffect(() => {
-    if (me?.isLogin) {
-      dispatch(fetchPipeds(true));
-    }
-  }, [dispatch, me]);
-  useCommandsStatusChecking();
 
   const location = useLocation();
   const [, onLoadProject] = useQueryString("project", "");
@@ -158,16 +122,12 @@ export const Routes: FC = () => {
     }
   }, [location, me, onLoadProject]);
 
-  const [showWarningBanner, setShowWarningBaner] = useState(
+  const [showWarningBanner, setShowWarningBanner] = useState(
     localStorage.getItem(BANNER_VERSION_KEY) !== `${process.env.PIPECD_VERSION}`
   );
 
   if (me === null) {
-    return (
-      <>
-        <Header />
-      </>
-    );
+    return <Header />;
   }
 
   if (me.isLogin === false) {
@@ -195,7 +155,7 @@ export const Routes: FC = () => {
 
   const handleCloseWarningBanner = (): void => {
     localStorage.setItem(BANNER_VERSION_KEY, `${process.env.PIPECD_VERSION}`);
-    setShowWarningBaner(false);
+    setShowWarningBanner(false);
   };
 
   return (
@@ -253,7 +213,6 @@ export const Routes: FC = () => {
           }}
         />
       </ReactRoutes>
-      <Toasts />
     </>
   );
 };

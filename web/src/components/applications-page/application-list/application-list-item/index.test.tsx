@@ -1,26 +1,16 @@
 import userEvent from "@testing-library/user-event";
 import { dummyApplication } from "~/__fixtures__/dummy-application";
-import { createStore, render, screen, MemoryRouter } from "~~/test-utils";
+import { render, screen, MemoryRouter } from "~~/test-utils";
 import { ApplicationListItem } from ".";
-
-const state = {
-  applications: {
-    entities: {
-      [dummyApplication.id]: dummyApplication,
-    },
-    ids: [dummyApplication.id],
-  },
-};
 
 test("delete", () => {
   const handleDelete = jest.fn();
-  const store = createStore(state);
   render(
     <MemoryRouter>
       <table>
         <tbody>
           <ApplicationListItem
-            applicationId={dummyApplication.id}
+            app={dummyApplication}
             onEdit={() => null}
             onEnable={() => null}
             onDisable={() => null}
@@ -29,27 +19,23 @@ test("delete", () => {
           />
         </tbody>
       </table>
-    </MemoryRouter>,
-    {
-      store,
-    }
+    </MemoryRouter>
   );
 
   userEvent.click(screen.getByRole("button", { name: "Open menu" }));
   userEvent.click(screen.getByRole("menuitem", { name: "Delete" }));
 
-  expect(handleDelete).toHaveBeenCalledWith(dummyApplication.id);
+  expect(handleDelete).toHaveBeenCalled();
 });
 
 test("edit", () => {
   const handleEdit = jest.fn();
-  const store = createStore(state);
   render(
     <MemoryRouter>
       <table>
         <tbody>
           <ApplicationListItem
-            applicationId={dummyApplication.id}
+            app={dummyApplication}
             onEdit={handleEdit}
             onEnable={() => null}
             onDisable={() => null}
@@ -58,27 +44,23 @@ test("edit", () => {
           />
         </tbody>
       </table>
-    </MemoryRouter>,
-    {
-      store,
-    }
+    </MemoryRouter>
   );
 
   userEvent.click(screen.getByRole("button", { name: "Open menu" }));
   userEvent.click(screen.getByRole("menuitem", { name: "Edit" }));
 
-  expect(handleEdit).toHaveBeenCalledWith(dummyApplication.id);
+  expect(handleEdit).toHaveBeenCalled();
 });
 
 test("disable", () => {
   const handleDisable = jest.fn();
-  const store = createStore(state);
   render(
     <MemoryRouter>
       <table>
         <tbody>
           <ApplicationListItem
-            applicationId={dummyApplication.id}
+            app={dummyApplication}
             onEdit={() => null}
             onEnable={() => null}
             onDisable={handleDisable}
@@ -87,34 +69,24 @@ test("disable", () => {
           />
         </tbody>
       </table>
-    </MemoryRouter>,
-    {
-      store,
-    }
+    </MemoryRouter>
   );
 
   userEvent.click(screen.getByRole("button", { name: "Open menu" }));
   userEvent.click(screen.getByRole("menuitem", { name: "Disable" }));
 
-  expect(handleDisable).toHaveBeenCalledWith(dummyApplication.id);
+  expect(handleDisable).toHaveBeenCalled();
 });
 
 test("enable", () => {
   const handleEnable = jest.fn();
-  const store = createStore({
-    applications: {
-      entities: {
-        [dummyApplication.id]: { ...dummyApplication, disabled: true },
-      },
-      ids: [dummyApplication.id],
-    },
-  });
+
   render(
     <MemoryRouter>
       <table>
         <tbody>
           <ApplicationListItem
-            applicationId={dummyApplication.id}
+            app={{ ...dummyApplication, disabled: true }}
             onEdit={() => null}
             onEnable={handleEnable}
             onDisable={() => null}
@@ -123,27 +95,23 @@ test("enable", () => {
           />
         </tbody>
       </table>
-    </MemoryRouter>,
-    {
-      store,
-    }
+    </MemoryRouter>
   );
 
   userEvent.click(screen.getByRole("button", { name: "Open menu" }));
   userEvent.click(screen.getByRole("menuitem", { name: "Enable" }));
 
-  expect(handleEnable).toHaveBeenCalledWith(dummyApplication.id);
+  expect(handleEnable).toHaveBeenCalled();
 });
 
 test("Encrypt Secret", () => {
   const handleGenerateSecret = jest.fn();
-  const store = createStore(state);
   render(
     <MemoryRouter>
       <table>
         <tbody>
           <ApplicationListItem
-            applicationId={dummyApplication.id}
+            app={dummyApplication}
             onEdit={() => null}
             onEnable={() => null}
             onDisable={() => null}
@@ -152,14 +120,11 @@ test("Encrypt Secret", () => {
           />
         </tbody>
       </table>
-    </MemoryRouter>,
-    {
-      store,
-    }
+    </MemoryRouter>
   );
 
   userEvent.click(screen.getByRole("button", { name: "Open menu" }));
   userEvent.click(screen.getByRole("menuitem", { name: "Encrypt Secret" }));
 
-  expect(handleGenerateSecret).toHaveBeenCalledWith(dummyApplication.id);
+  expect(handleGenerateSecret).toHaveBeenCalled();
 });

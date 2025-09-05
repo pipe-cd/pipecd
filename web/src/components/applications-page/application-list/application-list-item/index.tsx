@@ -16,9 +16,8 @@ import { Link as RouterLink } from "react-router-dom";
 import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 import { PAGE_PATH_APPLICATIONS } from "~/constants/path";
 import { UI_TEXT_NOT_AVAILABLE_TEXT } from "~/constants/ui-text";
-import { useAppSelector } from "~/hooks/redux";
-import { Application, selectById } from "~/modules/applications";
 import { AppSyncStatus } from "~/components/app-sync-status";
+import { Application } from "~/types/applications";
 
 enum PipedVersion {
   V0 = "v0",
@@ -43,18 +42,18 @@ const EmptyDeploymentData: FC<{ displayAllProperties: boolean }> = ({
   );
 
 export interface ApplicationListItemProps {
-  applicationId: string;
+  app: Application.AsObject;
   displayAllProperties?: boolean;
-  onEdit: (id: string) => void;
-  onEnable: (id: string) => void;
-  onDisable: (id: string) => void;
-  onDelete: (id: string) => void;
-  onEncryptSecret: (id: string) => void;
+  onEdit: () => void;
+  onEnable: () => void;
+  onDisable: () => void;
+  onDelete: () => void;
+  onEncryptSecret: () => void;
 }
 
 export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
   function ApplicationListItem({
-    applicationId,
+    app,
     displayAllProperties = true,
     onDisable,
     onEdit,
@@ -63,33 +62,30 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
     onEncryptSecret,
   }) {
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-    const app = useAppSelector<Application.AsObject | undefined>((state) =>
-      selectById(state.applications, applicationId)
-    );
 
     const handleEdit = (): void => {
       setAnchorEl(null);
-      onEdit(applicationId);
+      onEdit();
     };
 
     const handleDisable = (): void => {
       setAnchorEl(null);
-      onDisable(applicationId);
+      onDisable();
     };
 
     const handleEnable = (): void => {
       setAnchorEl(null);
-      onEnable(applicationId);
+      onEnable();
     };
 
     const handleDelete = (): void => {
       setAnchorEl(null);
-      onDelete(applicationId);
+      onDelete();
     };
 
     const handleGenerateSecret = (): void => {
       setAnchorEl(null);
-      onEncryptSecret(applicationId);
+      onEncryptSecret();
     };
 
     if (!app) {

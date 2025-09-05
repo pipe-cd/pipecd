@@ -1,10 +1,8 @@
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
 import ApplicationFormManualV1 from ".";
-import { createStore, render, screen } from "~~/test-utils";
+import { render, screen, waitFor } from "~~/test-utils";
 import { server } from "~/mocks/server";
 import { dummyApplicationPipedV1 } from "~/__fixtures__/dummy-application";
-import { dummyPiped } from "~/__fixtures__/dummy-piped";
-import { AppState } from "~/store";
 
 const onClose = jest.fn();
 const onFinished = jest.fn();
@@ -22,15 +20,6 @@ afterAll(() => {
   server.close();
 });
 
-const baseState: Partial<AppState> = {
-  pipeds: {
-    entities: {
-      [dummyPiped.id]: dummyPiped,
-    },
-    ids: [dummyPiped.id],
-  },
-};
-
 describe("ApplicationFormManualV1", () => {
   it("renders without crashing", () => {
     render(
@@ -44,15 +33,13 @@ describe("ApplicationFormManualV1", () => {
   });
 
   describe("Test ui create application", () => {
-    const store = createStore(baseState);
     beforeEach(() => {
       render(
         <ApplicationFormManualV1
           onClose={onClose}
           onFinished={onFinished}
           title={TITLE}
-        />,
-        { store }
+        />
       );
     });
 
@@ -77,10 +64,12 @@ describe("ApplicationFormManualV1", () => {
       expect(input).not.toBeDisabled();
     });
 
-    it('form contain input label "Piped"', () => {
+    it('form contain input label "Piped"', async () => {
       const input = screen.getByRole("combobox", { name: "Piped" });
       expect(input).toBeInTheDocument();
-      expect(input).not.toHaveAttribute("aria-disabled", "true");
+      await waitFor(() => {
+        expect(input).not.toHaveAttribute("aria-disabled", "true");
+      });
     });
 
     it('form contain input label "Repository"', () => {
@@ -105,15 +94,13 @@ describe("ApplicationFormManualV1", () => {
 
   describe("Test ui edit application", () => {
     beforeEach(() => {
-      const store = createStore(baseState);
       render(
         <ApplicationFormManualV1
           onClose={onClose}
           onFinished={onFinished}
           title={TITLE}
           detailApp={dummyApplicationPipedV1}
-        />,
-        { store }
+        />
       );
     });
 
@@ -138,10 +125,12 @@ describe("ApplicationFormManualV1", () => {
       expect(input).toBeDisabled();
     });
 
-    it('form contain input label "Piped"', () => {
+    it('form contain input label "Piped"', async () => {
       const input = screen.getByRole("combobox", { name: "Piped" });
       expect(input).toBeInTheDocument();
-      expect(input).not.toHaveAttribute("aria-disabled", "true");
+      await waitFor(() => {
+        expect(input).not.toHaveAttribute("aria-disabled", "true");
+      });
     });
 
     it('form contain input label "Repository" and disabled initially', () => {

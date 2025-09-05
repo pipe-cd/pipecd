@@ -1,20 +1,20 @@
 import { Box, Button, Divider, TextField, Typography } from "@mui/material";
-import { FC, useEffect } from "react";
+import { FC, useEffect, useMemo } from "react";
 import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
-import { ApplicationKind } from "~/modules/applications";
-import { Piped, selectAllPipeds, selectPipedById } from "~/modules/pipeds";
 import { sortFunc } from "~/utils/common";
 import { ApplicationFormProps } from "..";
 import { useFormik } from "formik";
 import * as yup from "yup";
 
-import { unwrapResult, useAppDispatch, useAppSelector } from "~/hooks/redux";
-import { addApplication } from "~/modules/applications";
 import FormSelectInput from "../../form-select-input";
-import { updateApplication } from "~/modules/update-application";
 import { GroupTwoCol, StyledForm } from "../styles";
 import { SpinnerIcon } from "~/styles/button";
+import { useAddApplication } from "~/queries/applications/use-add-application";
+import { useUpdateApplication } from "~/queries/applications/use-update-application";
+import { useGetPipeds } from "~/queries/pipeds/use-get-pipeds";
+import { Piped } from "~~/model/piped_pb";
+import { ApplicationKind } from "~/types/applications";
 
 type FormValues = {
   name: string;
@@ -114,9 +114,11 @@ const ApplicationFormManualV0: FC<ApplicationFormProps> = ({
   onFinished,
   setIsFormDirty,
   setIsSubmitting,
-  detailApp: detailApp,
+  detailApp,
 }) => {
-  const dispatch = useAppDispatch();
+  const { mutate: addApplication } = useAddApplication();
+  const { mutate: updateApplication } = useUpdateApplication();
+
   const formik = useFormik<FormValues>({
     initialValues: detailApp
       ? {
@@ -138,25 +140,26 @@ const ApplicationFormManualV0: FC<ApplicationFormProps> = ({
     enableReinitialize: true,
     async onSubmit(values) {
       if (detailApp) {
-        await dispatch(
-          updateApplication({
+        updateApplication(
+          {
             ...values,
             applicationId: detailApp.id,
-          })
-        )
-          .then(unwrapResult)
-          .then(() => {
-            formik.resetForm();
-            onFinished();
-          });
+          },
+          {
+            onSuccess: () => {
+              formik.resetForm();
+              onFinished();
+            },
+          }
+        );
       }
       if (!detailApp) {
-        await dispatch(addApplication(values))
-          .then(unwrapResult)
-          .then(() => {
+        addApplication(values, {
+          onSuccess: () => {
             formik.resetForm();
             onFinished();
-          });
+          },
+        });
       }
     },
   });
@@ -180,12 +183,16 @@ const ApplicationFormManualV0: FC<ApplicationFormProps> = ({
     setIsSubmitting?.(isSubmitting);
   }, [isSubmitting, setIsSubmitting]);
 
-  const ps = useAppSelector((state) => selectAllPipeds(state));
+  const { data: ps = [], isLoading: isLoadingPiped } = useGetPipeds({
+    withStatus: true,
+  });
   const pipedOptions = ps
     .filter((piped) => !piped.disabled || piped.id === detailApp?.pipedId)
     .sort((a, b) => sortFunc(a.name, b.name));
 
-  const selectedPiped = useAppSelector(selectPipedById(values.pipedId));
+  const selectedPiped = useMemo(() => {
+    return pipedOptions.find((piped) => piped.id === values.pipedId);
+  }, [pipedOptions, values.pipedId]);
 
   const platformProviders = createPlatformProviderListFromPiped({
     piped: selectedPiped,
@@ -243,7 +250,7 @@ const ApplicationFormManualV0: FC<ApplicationFormProps> = ({
           <FormSelectInput
             id="piped"
             label="Piped"
-            value={values.pipedId}
+            value={isLoadingPiped ? "" : values.pipedId}
             onChange={(value) => {
               setValues({
                 ...emptyFormValues,
@@ -263,7 +270,7 @@ const ApplicationFormManualV0: FC<ApplicationFormProps> = ({
           <FormSelectInput
             id="platformProvider"
             label="Platform Provider"
-            value={values.platformProvider}
+            value={isLoadingPiped ? "" : values.platformProvider}
             onChange={(value) => setFieldValue("platformProvider", value)}
             getOptionLabel={(option) => option.name}
             options={platformProviders}
@@ -280,7 +287,7 @@ const ApplicationFormManualV0: FC<ApplicationFormProps> = ({
           <FormSelectInput
             id="git-repo"
             label="Repository"
-            value={values.repo.id || ""}
+            value={isLoadingPiped ? "" : values.repo.id || ""}
             getOptionLabel={(option) => option.name}
             options={repositories}
             onChange={(_value, item) =>

@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import dagre from "dagre";
 import { FC, useState } from "react";
-import { LambdaResourceState } from "~/modules/applications-live-state";
+import { LambdaResourceState } from "~/types/applications-live-state";
 import { theme } from "~/theme";
 import { LambdaResource } from "./lambda-resource";
 import { LambdaResourceDetail } from "./lambda-resource-detail";
