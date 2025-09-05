@@ -16,7 +16,7 @@ env:
   HELM_VERSION: 3.8.2
 
 jobs:
-  binary:
+   binary:
     runs-on: ubuntu-24.04
     permissions:
       contents: write
