@@ -104,7 +104,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 		Logger:  s.logger,
 	}
 
-	versions, err := s.base.DetermineVersions(ctx, s.commonFields.pluginConfig, input)
+	versions, err := s.base.DetermineVersions(ctx, s.pluginConfig, input)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to determine versions: %v", err)
 	}
@@ -131,7 +131,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 		Logger:  s.logger,
 	}
 
-	response, err := s.base.DetermineStrategy(ctx, s.commonFields.pluginConfig, input)
+	response, err := s.base.DetermineStrategy(ctx, s.pluginConfig, input)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to determine strategy: %v", err)
 	}
@@ -150,7 +150,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 		base:       s.client,
 		pluginName: s.name,
 	}
-	return buildPipelineSyncStages(ctx, s.base, s.commonFields.pluginConfig, client, request, s.logger)
+	return buildPipelineSyncStages(ctx, s.base, s.pluginConfig, client, request, s.logger)
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) BuildQuickSyncStages(ctx context.Context, request *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	input := &BuildQuickSyncStagesInput{
@@ -234,7 +234,7 @@ func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigS
 		pluginName: s.name,
 	}
 
-	return buildPipelineSyncStages(ctx, s.base, s.commonFields.pluginConfig, client, request, s.logger)
+	return buildPipelineSyncStages(ctx, s.base, s.pluginConfig, client, request, s.logger)
 }
 func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) BuildQuickSyncStages(context.Context, *deployment.BuildQuickSyncStagesRequest) (*deployment.BuildQuickSyncStagesResponse, error) {
 	// Return an empty response in case the plugin does not support the QuickSync strategy.

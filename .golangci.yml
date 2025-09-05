@@ -1,21 +1,14 @@
-run:
-  timeout: 15m
-
+version: "2"
 linters:
-  disable-all: true
+  default: none
   enable:
-    - gofmt
     - depguard
     - gocritic
     - goheader
-    - goimports
-    - gosimple
     - ineffassign
     - misspell
     - prealloc
     - staticcheck
-    - stylecheck
-    - typecheck
     - unconvert
     - unparam
     # TODO: Enable these linters
@@ -23,64 +16,85 @@ linters:
     # - goerr113
     # - gosec
 
-issues:
-  exclude-files:
-    - ^.*\.(pb|y)\.go$
-  exclude-dirs:
-    - "vendor$"
-    - "pkg/app/piped/executor/analysis/mannwhitney"
-    # Relative path of "pkg/app/pipedv1/plugin/analysis/executestage/mannwhitney"
-    - "executestage/mannwhitney"
-  exclude-rules:
-    - linters:
-        - staticcheck
-      text: "SA1019"
+  settings:
+    depguard:
+      rules:
+        main:
+          deny:
+            - pkg: "sync/atomic"
+              desc: "Use go.uber.org/atomic instead of sync/atomic."
+            - pkg: "io/ioutil"
+              desc: "Use corresponding 'os' or 'io' functions instead."
+        pipedv1:
+          files:
+            - "**/pkg/app/pipedv1/**/*.go"
+          deny:
+            - pkg: "github.com/pipe-cd/pipecd/pkg/config$"
+              desc: "Use github.com/pipe-cd/pipecd/pkg/configv1 instead."
+        plugin:
+          files:
+            - "**/pkg/app/pipedv1/plugin/**/*.go"
+          deny:
+            - pkg: "^github.com/pipe-cd/pipecd/(?!pkg/app/pipedv1/plugin).*"
+              desc: "Use github.com/pipe-cd/piped-plugin-sdk-go instead."
+    gocritic:
+      disabled-checks:
+        - appendAssign
+    goheader:
+      values:
+        regexp:
+          any-year: \d{4} # the year of copyright means the first published year, so it can be any year.
+      # template does not contains the comment indicator '//' or '/*' '*/'
+      template: |-
+        Copyright {{any-year}} The PipeCD Authors.
 
-output:
-  sort-results: true
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
 
-linters-settings:
-  depguard:
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
     rules:
-      main:
-        deny:
-          - pkg: "sync/atomic"
-            desc: "Use go.uber.org/atomic instead of sync/atomic."
-          - pkg: "io/ioutil"
-            desc: "Use corresponding 'os' or 'io' functions instead."
-      pipedv1:
-        files:
-          - "**/pkg/app/pipedv1/**/*.go"
-        deny:
-          - pkg: "github.com/pipe-cd/pipecd/pkg/config$"
-            desc: "Use github.com/pipe-cd/pipecd/pkg/configv1 instead."
-      plugin:
-        files:
-          - "**/pkg/app/pipedv1/plugin/**/*.go"
-        deny:
-          - pkg: "^github.com/pipe-cd/pipecd/(?!pkg/app/pipedv1/plugin).*"
-            desc: "Use github.com/pipe-cd/piped-plugin-sdk-go instead."
-  gocritic:
-    disabled-checks:
-      - appendAssign
-  goimports:
-    local-prefixes: github.com/pipe-cd/pipecd
-  goheader:
-    values:
-      regexp:
-        any-year: \d{4} # the year of copyright means the first published year, so it can be any year.
-    # template does not contains the comment indicator '//' or '/*' '*/'
-    template: |-
-      Copyright {{any-year}} The PipeCD Authors.
-
-      Licensed under the Apache License, Version 2.0 (the "License");
-      you may not use this file except in compliance with the License.
-      You may obtain a copy of the License at
-
-          http://www.apache.org/licenses/LICENSE-2.0
-
-      Unless required by applicable law or agreed to in writing, software
-      distributed under the License is distributed on an "AS IS" BASIS,
-      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-      See the License for the specific language governing permissions and
-      limitations under the License.
+      - linters:
+          - staticcheck
+        text: SA1019
+    paths:
+      - ^.*\.(pb|y)\.go$
+      - vendor$
+      - pkg/app/piped/executor/analysis/mannwhitney
+      # Relative path of "pkg/app/pipedv1/plugin/analysis/executestage/mannwhitney"
+      - executestage/mannwhitney
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/pipe-cd/pipecd
+  exclusions:
+    generated: lax
+    paths:
+      - ^.*\.(pb|y)\.go$
+      - vendor$
+      - pkg/app/piped/executor/analysis/mannwhitney
+      # Relative path of "pkg/app/pipedv1/plugin/analysis/executestage/mannwhitney"
+      - executestage/mannwhitney
+      - third_party$
+      - builtin$
+      - examples$
