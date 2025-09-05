@@ -333,10 +333,10 @@ func extractReleaseNote(def, body string, useReleaseNoteBlock bool) string {
 
 func determineCommitCategory(commit Commit, mergeCommit *Commit, categories []ReleaseCommitCategoryConfig) string {
 	for _, c := range categories {
-		if c.ReleaseCommitMatcherConfig.Empty() {
+		if c.Empty() {
 			return c.ID
 		}
-		if c.ReleaseCommitMatcherConfig.Match(commit, mergeCommit) {
+		if c.Match(commit, mergeCommit) {
 			return c.ID
 		}
 	}

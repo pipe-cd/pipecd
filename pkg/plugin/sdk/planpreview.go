@@ -72,7 +72,7 @@ func (s *PlanPreviewPluginServer[Config, DeployTargetConfig, ApplicationConfigSp
 		return nil, status.Errorf(codes.Internal, "failed to parse deployment source: %v", err)
 	}
 
-	response, err := s.base.GetPlanPreview(ctx, s.commonFields.pluginConfig, deployTargets, &GetPlanPreviewInput[ApplicationConfigSpec]{
+	response, err := s.base.GetPlanPreview(ctx, s.pluginConfig, deployTargets, &GetPlanPreviewInput[ApplicationConfigSpec]{
 		Request: GetPlanPreviewRequest[ApplicationConfigSpec]{
 			ApplicationID:          request.GetApplicationId(),
 			TargetDeploymentSource: deploymentSource,
