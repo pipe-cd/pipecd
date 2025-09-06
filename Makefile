@@ -287,6 +287,10 @@ kind-up:
 kind-down:
 	kind delete cluster --name pipecd
 
+.PHONY: delete/local-volumes
+delete/local-volumes:
+	rm -rf .pipecd-data
+
 .PHONY: setup-envtest
 # Where to install the setup-envtest binary
 setup-envtest: export GOBIN ?= ${PWD}/.dev/bin
