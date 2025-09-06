@@ -16,9 +16,16 @@ package deployment
 
 import (
 	"context"
+	"fmt"
+	"os"
+	"path/filepath"
 	"slices"
+	"strings"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/yaml"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/cloudrunservice/config"
 )
@@ -36,6 +43,8 @@ const (
 
 	StageCloudRunSyncDescription = "Deploy the new version and configure all traffic to it"
 	StageRollbackDescription     = "Rollback the deployment"
+
+	DefaultServiceManifestFilename = "service.yaml"
 )
 
 func (p *Plugin) FetchDefinedStages() []string {
@@ -54,13 +63,36 @@ func (p *Plugin) ExecuteStage(ctx context.Context, _ *sdk.ConfigNone, dts []*sdk
 }
 
 func (p *Plugin) DetermineVersions(ctx context.Context, _ *sdk.ConfigNone, input *sdk.DetermineVersionsInput[config.CloudRunApplicationSpec]) (*sdk.DetermineVersionsResponse, error) {
-	// TODO implement me
-	panic("implement me")
+	sm, err := loadServiceManifest(input.Request.DeploymentSource.ApplicationDirectory, input.Request.DeploymentSource.ApplicationConfigFilename)
+	if err != nil {
+		return nil, err
+	}
+	versions, err := findArtifactVersions(sm)
+	if err != nil {
+		return nil, err
+	}
+	return &sdk.DetermineVersionsResponse{
+		Versions: versions,
+	}, nil
 }
 
 func (p *Plugin) DetermineStrategy(ctx context.Context, _ *sdk.ConfigNone, input *sdk.DetermineStrategyInput[config.CloudRunApplicationSpec]) (*sdk.DetermineStrategyResponse, error) {
-	// TODO implement me
-	panic("implement me")
+	runningServiceManifest, err1 := loadServiceManifest(input.Request.RunningDeploymentSource.ApplicationDirectory, input.Request.RunningDeploymentSource.ApplicationConfigFilename)
+	targetServiceManifest, err2 := loadServiceManifest(input.Request.TargetDeploymentSource.ApplicationDirectory, input.Request.TargetDeploymentSource.ApplicationConfigFilename)
+	if err1 == nil && err2 == nil {
+		oldVersion, err1 := findArtifactVersions(runningServiceManifest)
+		newVersion, err2 := findArtifactVersions(targetServiceManifest)
+		if err1 == nil && err2 == nil {
+			return &sdk.DetermineStrategyResponse{
+				Strategy: sdk.SyncStrategyPipelineSync,
+				Summary:  fmt.Sprintf("Sync with pipeline to update image from %s to %s", oldVersion, newVersion),
+			}, nil
+		}
+	}
+	return &sdk.DetermineStrategyResponse{
+		Strategy: sdk.SyncStrategyPipelineSync,
+		Summary:  "Sync with the specified pipeline",
+	}, nil
 }
 
 func (p *Plugin) BuildQuickSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildQuickSyncStagesInput) (*sdk.BuildQuickSyncStagesResponse, error) {
@@ -113,4 +145,75 @@ func buildPipelineStages(stages []sdk.StageConfig, autoRollback bool) []sdk.Pipe
 		})
 	}
 	return out
+}
+
+type ServiceManifest struct {
+	Name string
+	u    *unstructured.Unstructured
+}
+
+func loadServiceManifest(appDir, serviceManifestFile string) (ServiceManifest, error) {
+	if serviceManifestFile == "" {
+		serviceManifestFile = DefaultServiceManifestFilename
+	}
+	path := filepath.Join(appDir, serviceManifestFile)
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return ServiceManifest{}, err
+	}
+	return parseServiceManifest(data)
+}
+
+func parseServiceManifest(data []byte) (ServiceManifest, error) {
+	var obj unstructured.Unstructured
+	if err := yaml.Unmarshal(data, &obj); err != nil {
+		return ServiceManifest{}, err
+	}
+
+	return ServiceManifest{
+		Name: obj.GetName(),
+		u:    &obj,
+	}, nil
+}
+
+func findArtifactVersions(sm ServiceManifest) ([]sdk.ArtifactVersion, error) {
+	containers, ok, err := unstructured.NestedSlice(sm.u.Object, "spec", "template", "spec", "containers")
+	if err != nil {
+		return nil, err
+	}
+	if !ok || len(containers) == 0 {
+		return nil, fmt.Errorf("spec.template.spec.containers was missing")
+	}
+
+	container, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&containers[0])
+	if err != nil {
+		return nil, fmt.Errorf("invalid container format")
+	}
+
+	image, ok, err := unstructured.NestedString(container, "image")
+	if err != nil {
+		return nil, err
+	}
+	if !ok || image == "" {
+		return nil, fmt.Errorf("image was missing")
+	}
+	name, tag := parseContainerImage(image)
+
+	return []sdk.ArtifactVersion{
+		{
+			Version: tag,
+			Name:    name,
+			URL:     image,
+		},
+	}, nil
+}
+
+func parseContainerImage(image string) (name, tag string) {
+	parts := strings.Split(image, ":")
+	if len(parts) == 2 {
+		tag = parts[1]
+	}
+	paths := strings.Split(parts[0], "/")
+	name = paths[len(paths)-1]
+	return
 }
