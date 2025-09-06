@@ -164,7 +164,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 		Logger: s.logger,
 	}
 
-	response, err := s.base.BuildQuickSyncStages(ctx, s.commonFields.pluginConfig, input)
+	response, err := s.base.BuildQuickSyncStages(ctx, s.pluginConfig, input)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to build quick sync stages: %v", err)
 	}
@@ -192,7 +192,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 	}
 
 	// Get the deploy targets set on the deployment from the piped plugin config.
-	dtNames := request.GetInput().GetDeployment().GetDeployTargets(s.commonFields.config.Name)
+	dtNames := request.GetInput().GetDeployment().GetDeployTargets(s.config.Name)
 	deployTargets := make([]*DeployTarget[DeployTargetConfig], 0, len(dtNames))
 	for _, name := range dtNames {
 		dt, ok := s.deployTargets[name]
@@ -203,7 +203,7 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 		deployTargets = append(deployTargets, dt)
 	}
 
-	return executeStage(ctx, s.name, s.base, s.commonFields.pluginConfig, deployTargets, client, request, s.logger)
+	return executeStage(ctx, s.name, s.base, s.pluginConfig, deployTargets, client, request, s.logger)
 }
 
 // StagePluginServiceServer is the gRPC server that handles requests from the piped.
@@ -261,7 +261,7 @@ func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigS
 		toolRegistry:  s.toolRegistry,
 	}
 
-	return executeStage(ctx, s.name, s.base, s.commonFields.pluginConfig, nil, client, request, s.logger) // TODO: pass the deployTargets
+	return executeStage(ctx, s.name, s.base, s.pluginConfig, nil, client, request, s.logger) // TODO: pass the deployTargets
 }
 
 // buildPipelineSyncStages builds the stages that will be executed by the plugin.

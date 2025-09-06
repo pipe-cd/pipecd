@@ -458,7 +458,7 @@ type DeploymentChainTriggerCondition struct {
 func (c *DeploymentChainTriggerCondition) Validate() error {
 	hasCond := c.CommitPrefix != ""
 	if !hasCond {
-		return fmt.Errorf("missing commitPrefix configration as deployment chain trigger condition")
+		return fmt.Errorf("missing commitPrefix configuration as deployment chain trigger condition")
 	}
 	return nil
 }

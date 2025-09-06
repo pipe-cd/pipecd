@@ -76,7 +76,7 @@ func (s *LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec
 		return nil, status.Errorf(codes.Internal, "failed to parse deployment source: %v", err)
 	}
 
-	response, err := s.base.GetLivestate(ctx, s.commonFields.pluginConfig, deployTargets, &GetLivestateInput[ApplicationConfigSpec]{
+	response, err := s.base.GetLivestate(ctx, s.pluginConfig, deployTargets, &GetLivestateInput[ApplicationConfigSpec]{
 		Request: GetLivestateRequest[ApplicationConfigSpec]{
 			PipedID:          request.GetPipedId(),
 			ApplicationID:    request.GetApplicationId(),
@@ -90,7 +90,7 @@ func (s *LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec
 		return nil, status.Errorf(codes.Internal, "failed to get the live state: %v", err)
 	}
 
-	return response.toModel(s.commonFields.config.Name, time.Now()), nil
+	return response.toModel(s.config.Name, time.Now()), nil
 }
 
 // GetLivestateInput is the input for the GetLivestate method.
