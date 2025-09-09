@@ -6,16 +6,13 @@ import { Link as RouterLink } from "react-router-dom";
 import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 import { DEPLOYMENT_STATE_TEXT } from "~/constants/deployment-status-text";
 import { PAGE_PATH_DEPLOYMENTS } from "~/constants/path";
-import { useAppSelector } from "~/hooks/redux";
-import {
-  Deployment,
-  selectById as selectDeploymentById,
-} from "~/modules/deployments";
+
 import { ellipsis } from "~/styles/text";
 import { DeploymentStatusIcon } from "~/components/deployment-status-icon";
+import { Deployment } from "~/types/deployment";
 
 export interface DeploymentItemProps {
-  id: string;
+  deployment?: Deployment.AsObject;
 }
 
 enum PipedVersion {
@@ -26,11 +23,7 @@ enum PipedVersion {
 const NO_DESCRIPTION = "No description.";
 
 export const DeploymentItem: FC<DeploymentItemProps> = memo(
-  function DeploymentItem({ id }) {
-    const deployment = useAppSelector<Deployment.AsObject | undefined>(
-      (state) => selectDeploymentById(state.deployments, id)
-    );
-
+  function DeploymentItem({ deployment }) {
     if (!deployment) {
       return null;
     }

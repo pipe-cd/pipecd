@@ -5,7 +5,7 @@ import {
   ApplicationSyncStatus,
   syncApplication,
 } from "~/modules/applications";
-import { SyncStrategy } from "~/modules/deployments";
+import { SyncStrategy } from "~~/model/common_pb";
 import type { AppState } from "~/store";
 import { dummyApplication } from "~/__fixtures__/dummy-application";
 import { dummyApplicationLiveState } from "~/__fixtures__/dummy-application-live-state";

@@ -29,11 +29,10 @@ import {
   selectById as selectApplicationById,
   syncApplication,
 } from "~/modules/applications";
-import { SyncStrategy } from "~/modules/deployments";
 import { selectPipedById } from "~/modules/pipeds";
 import { AppLiveState } from "./app-live-state";
 import { OutOfSyncReason, InvalidConfigReason } from "./sync-state-reason";
-import { ArtifactVersion } from "~~/model/common_pb";
+import { ArtifactVersion, SyncStrategy } from "~~/model/common_pb";
 import { CopyIconButton } from "~/components/copy-icon-button";
 
 export interface ApplicationDetailProps {
