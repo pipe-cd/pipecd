@@ -7,7 +7,7 @@ import {
   Block,
 } from "@mui/icons-material";
 import { FC } from "react";
-import { StageStatus } from "~/modules/deployments";
+import { StageStatus } from "~~/model/deployment_pb";
 
 export interface StageStatusIconProps {
   status: StageStatus;

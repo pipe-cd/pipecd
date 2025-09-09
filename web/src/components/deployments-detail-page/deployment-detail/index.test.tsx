@@ -1,39 +1,37 @@
 import userEvent from "@testing-library/user-event";
-import { cancelDeployment, DeploymentStatus } from "~/modules/deployments";
 import { dummyDeployment } from "~/__fixtures__/dummy-deployment";
-import { dummyPiped } from "~/__fixtures__/dummy-piped";
-import { createStore, render, screen, MemoryRouter, act } from "~~/test-utils";
+import { render, screen, MemoryRouter, waitFor, act } from "~~/test-utils";
 import { DeploymentDetail } from ".";
+import { DeploymentStatus } from "~~/model/deployment_pb";
+import * as deploymentsApi from "~/api/deployments";
+import { server } from "~/mocks/server";
 
-const baseState = {
-  deployments: {
-    entities: {
-      [dummyDeployment.id]: dummyDeployment,
-    },
-    ids: [dummyDeployment.id],
-    canceling: {},
-  },
-  pipeds: {
-    entities: {
-      [dummyPiped.id]: dummyPiped,
-    },
-    ids: [dummyPiped.id],
-  },
-};
+beforeAll(() => {
+  server.listen();
+});
+
+afterEach(() => {
+  server.resetHandlers();
+});
+
+afterAll(() => {
+  server.close();
+});
 
 describe("DeploymentDetail", () => {
-  it("shows deployment detail", () => {
-    const store = createStore(baseState);
+  it("shows deployment detail", async () => {
     render(
       <MemoryRouter>
-        <DeploymentDetail deploymentId={dummyDeployment.id} />
-      </MemoryRouter>,
-      {
-        store,
-      }
+        <DeploymentDetail
+          deploymentId={dummyDeployment.id}
+          deployment={dummyDeployment}
+        />
+      </MemoryRouter>
     );
 
-    expect(screen.getByText("SUCCESS")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("SUCCESS")).toBeInTheDocument();
+    });
     expect(
       screen.getByText(dummyDeployment.applicationName)
     ).toBeInTheDocument();
@@ -41,52 +39,44 @@ describe("DeploymentDetail", () => {
   });
 
   describe("status: RUNNING", () => {
-    const store = createStore({
-      ...baseState,
-      deployments: {
-        entities: {
-          [dummyDeployment.id]: {
-            ...dummyDeployment,
-            status: DeploymentStatus.DEPLOYMENT_RUNNING,
-          },
-        },
-        ids: [dummyDeployment.id],
-        canceling: {},
-      },
-    });
-
     beforeEach(() => {
       render(
         <MemoryRouter>
-          <DeploymentDetail deploymentId={dummyDeployment.id} />
-        </MemoryRouter>,
-        {
-          store,
-        }
+          <DeploymentDetail
+            deploymentId={dummyDeployment.id}
+            deployment={{
+              ...dummyDeployment,
+              status: DeploymentStatus.DEPLOYMENT_RUNNING,
+            }}
+          />
+        </MemoryRouter>
+      );
+    });
+    it("shows cancel button if deployment is running", async () => {
+      await waitFor(() =>
+        expect(screen.getByText("RUNNING")).toBeInTheDocument()
       );
     });
 
-    it("shows cancel button if deployment is running", () => {
-      expect(screen.getByText("RUNNING")).toBeInTheDocument();
-    });
+    it("calls cancelDeployment when cancel button is clicked", async () => {
+      jest.spyOn(deploymentsApi, "cancelDeployment");
 
-    it("dispatch cancelDeployment action if click cancel button", async () => {
+      await waitFor(() =>
+        expect(screen.getByText("RUNNING")).toBeInTheDocument()
+      );
+
+      const cancelButton = screen.getByRole("button", { name: "Cancel" });
+      expect(cancelButton).toBeInTheDocument();
+
       await act(async () => {
-        userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+        userEvent.click(cancelButton);
       });
 
-      expect(store.getActions()).toMatchObject([
-        {
-          type: cancelDeployment.pending.type,
-          meta: {
-            arg: {
-              deploymentId: dummyDeployment.id,
-              forceRollback: false,
-              forceNoRollback: false,
-            },
-          },
-        },
-      ]);
+      expect(deploymentsApi.cancelDeployment).toHaveBeenCalledWith({
+        deploymentId: dummyDeployment.id,
+        forceRollback: false,
+        forceNoRollback: false,
+      });
     });
   });
 });

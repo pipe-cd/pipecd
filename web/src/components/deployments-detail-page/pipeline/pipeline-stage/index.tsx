@@ -88,10 +88,6 @@ export const PipelineStage: FC<PipelineStageProps> = memo(
     return (
       <Paper
         square
-        // className={clsx(classes.root, {
-        //   [classes.active]: active,
-        //   [classes.notStartedYet]: disabled,
-        // })}
         onClick={handleOnClick}
         sx={(theme) => ({
           flex: 1,
