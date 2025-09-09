@@ -297,7 +297,7 @@ down/local-cluster:
 
 .PHONY: delete/local-volumes
 delete/local-volumes:
-	rm -rf .pipecd-data
+	docker volume rm pipecd-data
 
 .PHONY: setup-envtest
 # Where to install the setup-envtest binary

@@ -36,6 +36,14 @@ CLUSTER=$1
 REG_NAME='kind-registry'
 REG_PORT='5001'
 
+# Create docker volume for pipecd data unless it already exists
+echo "Creating pipecd-data volume..."
+if ! docker volume ls | grep -q pipecd-data; then
+  docker volume create pipecd-data
+fi
+# Get the mount point of the pipecd-data volume
+VOLUME_MOUNT_POINT=$(docker volume inspect pipecd-data --format '{{ .Mountpoint }}')
+
 # Create a cluster with the local registry enabled in containerd
 REG_CONFIG_DIR="/etc/containerd/certs.d"
 cat <<EOF | kind create cluster --name ${CLUSTER} --config=-
@@ -44,7 +52,7 @@ apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
 - role: control-plane
   extraMounts:
-  - hostPath: $(pwd)/.pipecd-data
+  - hostPath: ${VOLUME_MOUNT_POINT}
     containerPath: /tmp/pipecd-data
 containerdConfigPatches:
 - |-
