@@ -82,6 +82,9 @@ func loadFunctionManifest(in *executor.Input, functionManifestFile string, ds *d
 		return provider.FunctionManifest{}, false
 	}
 
+	if fm.Spec.Tags == nil {
+		fm.Spec.Tags = make(map[string]string)
+	}
 	fm.Spec.Tags[provider.LabelManagedBy] = provider.ManagedByPiped
 	fm.Spec.Tags[provider.LabelPiped] = in.PipedConfig.PipedID
 	fm.Spec.Tags[provider.LabelApplication] = in.Deployment.ApplicationId
