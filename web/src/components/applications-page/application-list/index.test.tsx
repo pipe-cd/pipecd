@@ -1,10 +1,10 @@
 import userEvent from "@testing-library/user-event";
 import { server } from "~/mocks/server";
-import { disableApplication, enableApplication } from "~/modules/applications";
-import { setDeletingAppId } from "~/modules/delete-application";
-import { generateSealedSecret } from "~/modules/sealed-secret";
+import { enableApplication } from "~/modules/applications";
 import { setUpdateTargetId } from "~/modules/update-application";
 import { dummyApplication } from "~/__fixtures__/dummy-application";
+import * as applicationApi from "~/api/applications";
+import * as pipedApi from "~/api/piped";
 import {
   createStore,
   render,
@@ -35,7 +35,9 @@ const state = {
   },
 };
 
-test("delete", () => {
+test("delete", async () => {
+  jest.spyOn(applicationApi, "deleteApplication");
+
   const store = createStore(state);
   render(
     <MemoryRouter>
@@ -49,14 +51,22 @@ test("delete", () => {
   userEvent.click(screen.getByRole("button", { name: "Open menu" }));
   userEvent.click(screen.getByRole("menuitem", { name: "Delete" }));
 
-  expect(store.getActions()).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        type: setDeletingAppId.type,
-        payload: dummyApplication.id,
-      }),
-    ])
+  await waitFor(() =>
+    expect(
+      screen.getByRole("heading", { name: "Delete Application" })
+    ).toBeInTheDocument()
   );
+
+  userEvent.click(screen.getByRole("button", { name: "Delete" }));
+
+  await waitFor(() =>
+    expect(
+      screen.queryByRole("heading", { name: "Delete Application" })
+    ).not.toBeInTheDocument()
+  );
+  expect(applicationApi.deleteApplication).toHaveBeenCalledWith({
+    applicationId: dummyApplication.id,
+  });
 });
 
 test("show specific page", async () => {
@@ -110,6 +120,7 @@ test("edit", () => {
 });
 
 test("disable", async () => {
+  jest.spyOn(applicationApi, "disableApplication");
   const store = createStore(state);
   render(
     <MemoryRouter>
@@ -125,20 +136,11 @@ test("disable", async () => {
 
   userEvent.click(screen.getByRole("button", { name: "Disable" }));
 
-  await waitFor(() =>
-    expect(store.getActions()).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          type: disableApplication.pending.type,
-          meta: expect.objectContaining({
-            arg: {
-              applicationId: dummyApplication.id,
-            },
-          }),
-        }),
-      ])
-    )
-  );
+  await waitFor(() => {
+    expect(applicationApi.disableApplication).toHaveBeenCalledWith({
+      applicationId: dummyApplication.id,
+    });
+  });
 
   await waitFor(() => {
     expect(
@@ -185,6 +187,7 @@ test("enable", async () => {
 });
 
 test("Encrypt Secret", async () => {
+  jest.spyOn(pipedApi, "generateApplicationSealedSecret");
   const store = createStore(state);
   render(
     <MemoryRouter>
@@ -205,20 +208,15 @@ test("Encrypt Secret", async () => {
 
   userEvent.click(screen.getByRole("button", { name: "Encrypt" }));
 
-  await waitFor(() =>
-    expect(store.getActions()).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          type: generateSealedSecret.pending.type,
-          meta: expect.objectContaining({
-            arg: {
-              base64Encoding: false,
-              data: "secret data",
-              pipedId: dummyApplication.pipedId,
-            },
-          }),
-        }),
-      ])
-    )
-  );
+  await waitFor(() => {
+    expect(pipedApi.generateApplicationSealedSecret).toHaveBeenCalledWith({
+      base64Encoding: false,
+      data: "secret data",
+      pipedId: dummyApplication.pipedId,
+    });
+  });
+
+  await waitFor(() => {
+    expect(screen.getByText("Encrypted secret data")).toBeInTheDocument();
+  });
 });

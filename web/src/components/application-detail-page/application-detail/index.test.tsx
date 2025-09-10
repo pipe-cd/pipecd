@@ -1,23 +1,13 @@
 import userEvent from "@testing-library/user-event";
 import { server } from "~/mocks/server";
-import {
-  Application,
-  ApplicationSyncStatus,
-  syncApplication,
-} from "~/modules/applications";
-import { SyncStrategy } from "~~/model/common_pb";
-import type { AppState } from "~/store";
+import * as applicationsAPI from "~/api/applications";
 import { dummyApplication } from "~/__fixtures__/dummy-application";
-import { dummyApplicationLiveState } from "~/__fixtures__/dummy-application-live-state";
 import { dummyPiped } from "~/__fixtures__/dummy-piped";
-import {
-  createStore,
-  render,
-  screen,
-  waitFor,
-  MemoryRouter,
-} from "~~/test-utils";
+import { render, screen, waitFor, MemoryRouter, act } from "~~/test-utils";
 import { ApplicationDetail } from ".";
+import { dummyLiveStates } from "~/__fixtures__/dummy-application-live-state";
+import { Application, ApplicationSyncStatus } from "~/types/applications";
+import { SyncStrategy } from "~~/model/common_pb";
 
 beforeAll(() => {
   server.listen();
@@ -44,64 +34,40 @@ const deployingApp: Application.AsObject = {
   },
 };
 
-const baseState: Partial<AppState> = {
-  applications: {
-    ids: [dummyApplication.id, deployingApp.id],
-    entities: {
-      [dummyApplication.id]: dummyApplication,
-      [deployingApp.id]: deployingApp,
-    },
-    adding: false,
-    disabling: {},
-    loading: false,
-    syncing: {},
-    addedApplicationId: null,
-    fetchApplicationError: null,
-  },
-  applicationLiveState: {
-    ids: [dummyApplicationLiveState.applicationId],
-    entities: {
-      [dummyApplicationLiveState.applicationId]: dummyApplicationLiveState,
-    },
-    loading: {},
-    hasError: {},
-  },
-  pipeds: {
-    entities: {
-      [dummyPiped.id]: dummyPiped,
-    },
-    ids: [dummyPiped.id],
-  },
-};
-
 describe("ApplicationDetail", () => {
-  it("shows application detail and live state", () => {
-    const store = createStore(baseState);
+  it("shows application detail and live state", async () => {
     render(
       <MemoryRouter>
-        <ApplicationDetail applicationId={dummyApplication.id} />
-      </MemoryRouter>,
-      {
-        store,
-      }
+        <ApplicationDetail
+          app={dummyApplication}
+          hasError={false}
+          liveStateLoading={false}
+          liveState={dummyLiveStates[dummyApplication.kind]}
+          refetchApp={() => {}}
+        />
+      </MemoryRouter>
     );
 
     expect(screen.getByText(dummyApplication.name)).toBeInTheDocument();
-    expect(screen.getByText(dummyPiped.name)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(dummyPiped.name)).toBeInTheDocument();
+    });
     expect(screen.getByText("Healthy")).toBeInTheDocument();
     expect(screen.getByText("Synced")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /sync$/i })).toBeInTheDocument();
   });
 
   it("shows application sync state as deploying if application is deploying", () => {
-    const store = createStore(baseState);
     render(
       <MemoryRouter>
-        <ApplicationDetail applicationId={deployingApp.id} />
-      </MemoryRouter>,
-      {
-        store,
-      }
+        <ApplicationDetail
+          app={deployingApp}
+          hasError={false}
+          liveStateLoading={false}
+          liveState={dummyLiveStates[deployingApp.kind]}
+          refetchApp={() => {}}
+        />
+      </MemoryRouter>
     );
 
     expect(screen.getByText("Deploying")).toBeInTheDocument();
@@ -109,63 +75,64 @@ describe("ApplicationDetail", () => {
 
   describe("sync", () => {
     it("dispatch sync action if click sync button", async () => {
-      const store = createStore(baseState);
+      jest.spyOn(applicationsAPI, "syncApplication");
       render(
         <MemoryRouter>
-          <ApplicationDetail applicationId={dummyApplication.id} />
-        </MemoryRouter>,
-        {
-          store,
-        }
+          <ApplicationDetail
+            app={dummyApplication}
+            hasError={false}
+            liveStateLoading={false}
+            liveState={dummyLiveStates[dummyApplication.kind]}
+            refetchApp={() => {}}
+          />
+        </MemoryRouter>
       );
 
-      userEvent.click(screen.getByRole("button", { name: /sync$/i }));
-
-      await waitFor(() =>
-        expect(store.getActions()).toMatchObject([
-          {
-            type: syncApplication.pending.type,
-            meta: {
-              arg: {
-                applicationId: dummyApplication.id,
-                syncStrategy: SyncStrategy.AUTO,
-              },
-            },
-          },
-        ])
-      );
+      await act(async () => {
+        await userEvent.click(screen.getByRole("button", { name: /sync$/i }));
+      });
+      await waitFor(() => {
+        expect(applicationsAPI.syncApplication).toHaveBeenCalledWith({
+          applicationId: dummyApplication.id,
+          syncStrategy: SyncStrategy.AUTO,
+        });
+      });
     });
 
     it("dispatch sync action with selected sync strategy if changed strategy and click the sync button", async () => {
-      const store = createStore(baseState);
+      jest.spyOn(applicationsAPI, "syncApplication");
       render(
         <MemoryRouter>
-          <ApplicationDetail applicationId={dummyApplication.id} />
-        </MemoryRouter>,
-        {
-          store,
-        }
+          <ApplicationDetail
+            app={dummyApplication}
+            hasError={false}
+            liveStateLoading={false}
+            liveState={dummyLiveStates[dummyApplication.kind]}
+            refetchApp={() => {}}
+          />
+        </MemoryRouter>
       );
-
-      userEvent.click(
-        screen.getByRole("button", { name: /select sync strategy/i })
-      );
-      userEvent.click(screen.getByRole("menuitem", { name: /pipeline sync/i }));
-      userEvent.click(screen.getByRole("button", { name: /pipeline sync/i }));
-
-      await waitFor(() =>
-        expect(store.getActions()).toMatchObject([
-          {
-            type: syncApplication.pending.type,
-            meta: {
-              arg: {
-                applicationId: dummyApplication.id,
-                syncStrategy: SyncStrategy.PIPELINE,
-              },
-            },
-          },
-        ])
-      );
+      act(() => {
+        userEvent.click(
+          screen.getByRole("button", { name: /select sync strategy/i })
+        );
+      });
+      act(() => {
+        userEvent.click(
+          screen.getByRole("menuitem", { name: /pipeline sync/i })
+        );
+      });
+      await act(async () => {
+        await userEvent.click(
+          screen.getByRole("button", { name: /pipeline sync/i })
+        );
+      });
+      await waitFor(() => {
+        expect(applicationsAPI.syncApplication).toHaveBeenCalledWith({
+          applicationId: dummyApplication.id,
+          syncStrategy: SyncStrategy.PIPELINE,
+        });
+      });
     });
   });
 });

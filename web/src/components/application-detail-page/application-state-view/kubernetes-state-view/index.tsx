@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import dagre from "dagre";
 import { FC, useState } from "react";
-import { KubernetesResourceState } from "~/modules/applications-live-state";
+import { KubernetesResourceState } from "~/types/applications-live-state";
 import { theme } from "~/theme";
 import { sortedSet } from "~/utils/sorted-set";
 import { KubernetesResource } from "./kubernetes-resource";

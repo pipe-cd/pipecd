@@ -1,6 +1,6 @@
 import { Box, Paper, Typography } from "@mui/material";
 import { FC, memo } from "react";
-import { KubernetesResourceState } from "~/modules/applications-live-state";
+import { KubernetesResourceState } from "~/types/applications-live-state";
 import { KubernetesResourceHealthStatusIcon } from "./health-status-icon";
 
 export interface KubernetesResourceProps {

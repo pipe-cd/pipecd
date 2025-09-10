@@ -8,41 +8,31 @@ import {
 } from "@mui/material";
 import Alert from "@mui/material/Alert";
 import { FC, memo } from "react";
-import { useAppSelector, useAppDispatch } from "~/hooks/redux";
-import {
-  Application,
-  disableApplication,
-  selectById,
-} from "~/modules/applications";
+import { useDisableApplication } from "~/queries/applications/use-disable-application";
+import { Application } from "~/types/applications";
 
 export interface DisableApplicationDialogProps {
   open: boolean;
-  applicationId: string | null;
+  application?: Application.AsObject | null;
   onCancel: () => void;
   onDisable: () => void;
 }
 
 export const DisableApplicationDialog: FC<DisableApplicationDialogProps> = memo(
   function DisableApplicationDialog({
-    applicationId,
+    application,
     open,
     onDisable,
     onCancel,
   }) {
-    const dispatch = useAppDispatch();
-
-    const application = useAppSelector<Application.AsObject | undefined>(
-      (state) =>
-        applicationId
-          ? selectById(state.applications, applicationId)
-          : undefined
-    );
+    const { mutate: disableApplication } = useDisableApplication();
 
     const handleDisable = (): void => {
-      if (applicationId) {
-        dispatch(disableApplication({ applicationId })).then(() => {
-          onDisable();
-        });
+      if (application) {
+        disableApplication(
+          { applicationId: application.id },
+          { onSuccess: () => onDisable() }
+        );
       }
     };
 
@@ -81,5 +71,9 @@ export const DisableApplicationDialog: FC<DisableApplicationDialogProps> = memo(
         </DialogActions>
       </Dialog>
     );
-  }
+  },
+  (prev, next) =>
+    prev.open === next.open &&
+    prev.application?.id === next.application?.id &&
+    prev.application?.name === next.application?.name
 );

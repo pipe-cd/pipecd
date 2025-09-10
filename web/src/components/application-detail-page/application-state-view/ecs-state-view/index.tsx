@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import dagre from "dagre";
 import { FC, useState } from "react";
-import { ECSResourceState } from "~/modules/applications-live-state";
+import { ECSResourceState } from "~/types/applications-live-state";
 import { theme } from "~/theme";
 import { ECSResource } from "./ecs-resource";
 import { ECSResourceDetail } from "./ecs-resource-detail";

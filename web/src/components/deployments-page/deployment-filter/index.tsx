@@ -12,7 +12,7 @@ import { FilterView } from "~/components/filter-view";
 import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 import { DEPLOYMENT_STATE_TEXT } from "~/constants/deployment-status-text";
 import { ApplicationAutocomplete } from "../../applications-page/application-filter/application-autocomplete";
-import { ApplicationKindKey } from "~/types/application";
+import { ApplicationKindKey } from "~/types/applications";
 import { ApplicationKind } from "~~/model/common_pb";
 import { DeploymentStatus, DeploymentStatusKey } from "~/types/deployment";
 import { DeploymentFilterOptions } from "~/queries/deployment/use-get-deployments-infinite";
