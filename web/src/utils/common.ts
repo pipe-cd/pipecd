@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { PIPED_VERSION } from "~/modules/applications";
+import { PIPED_VERSION } from "~/types/piped";
 import { Application } from "~~/model/application_pb";
 
 export const sortFunc = (
@@ -48,3 +48,24 @@ export const checkPipedAppVersion = (
     [PIPED_VERSION.V1]: pipedVersion === PIPED_VERSION.V1,
   };
 };
+
+export const getTypedValue = <T>(
+  params: Record<string, unknown>,
+  key: string,
+  typeCheck: (value: unknown) => value is T
+): T | undefined => {
+  const value = params[key];
+  if (!typeCheck(value)) {
+    return undefined;
+  }
+  return value;
+};
+
+export const isString = (value: unknown): value is string =>
+  typeof value === "string";
+export const isNumber = (value: unknown): value is number =>
+  typeof value === "number";
+export const isBoolean = (value: unknown): value is boolean =>
+  typeof value === "boolean";
+export const isStringArray = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.every(isString);

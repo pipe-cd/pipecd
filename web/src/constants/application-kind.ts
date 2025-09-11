@@ -1,4 +1,4 @@
-import { ApplicationKind } from "~/modules/applications";
+import { ApplicationKind } from "~/types/applications";
 
 export const APPLICATION_KIND_TEXT: Record<ApplicationKind, string> = {
   [ApplicationKind.KUBERNETES]: "KUBERNETES",

@@ -1,7 +1,7 @@
 import { Box, Tabs, Tab, IconButton } from "@mui/material";
 import { Help } from "@mui/icons-material";
 import { useState } from "react";
-import { Application } from "~/modules/applications";
+import { Application } from "~/types/applications";
 import ApplicationFormV1 from "./application-form-v1";
 import ApplicationFormV0 from "./application-form-v0";
 import ApplicationFormManualV0 from "./application-form-manual-v0";

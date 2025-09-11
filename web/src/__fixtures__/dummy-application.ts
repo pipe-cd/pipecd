@@ -1,10 +1,10 @@
-import { ApplicationKind } from "pipecd/web/model/common_pb";
+import { ApplicationInfo, ApplicationKind } from "pipecd/web/model/common_pb";
 import {
   Application,
   ApplicationDeploymentReference,
   ApplicationSyncState,
   ApplicationSyncStatus,
-} from "~/modules/applications";
+} from "~/types/applications";
 import { createGitPathFromObject } from "./common";
 import { dummyPiped } from "./dummy-piped";
 import { dummyRepo } from "./dummy-repo";
@@ -206,3 +206,25 @@ export function createApplicationFromObject(
   }
   return app;
 }
+
+export const createUnregisteredAppFromObject = (
+  o: Application.AsObject
+): ApplicationInfo => {
+  const app = new ApplicationInfo();
+  app.setId(o.id);
+  app.setName(o.name);
+  app.setKind(o.kind);
+  if (o.gitPath?.repo?.id) {
+    app.setRepoId(o.gitPath?.repo?.id);
+  }
+  if (o.gitPath?.path) {
+    app.setPath(o.gitPath?.path);
+  }
+  if (o.gitPath?.configFilename) {
+    app.setConfigFilename(o.gitPath?.configFilename);
+  }
+
+  app.setPipedId(o.pipedId);
+  app.setDescription(o.description);
+  return app;
+};

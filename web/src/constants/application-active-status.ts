@@ -1,4 +1,4 @@
-import { ApplicationActiveStatus } from "~/modules/applications";
+import { ApplicationActiveStatus } from "~/types/applications";
 
 export const APPLICATION_ACTIVE_STATUS_NAME: Record<
   ApplicationActiveStatus,

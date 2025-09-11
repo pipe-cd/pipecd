@@ -11,20 +11,19 @@ import { FC, memo, useState, useEffect } from "react";
 import { FilterView } from "~/components/filter-view";
 import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 import { APPLICATION_SYNC_STATUS_TEXT } from "~/constants/application-sync-status-text";
-import { useAppSelector } from "~/hooks/redux";
+import { ApplicationAutocomplete } from "./application-autocomplete";
+import { PipedSelect } from "./piped-select";
 import {
   Application,
   ApplicationKind,
   ApplicationKindKey,
-  ApplicationsFilterOptions,
   ApplicationSyncStatus,
   ApplicationSyncStatusKey,
-  selectAll as selectAllApplications,
-} from "~/modules/applications";
-import { ApplicationAutocomplete } from "./application-autocomplete";
-import { PipedSelect } from "./piped-select";
+} from "~/types/applications";
+import { ApplicationsFilterOptions } from "~/queries/applications/use-get-applications";
 
 export interface ApplicationFilterProps {
+  applications: Application.AsObject[];
   options: ApplicationsFilterOptions;
   onChange: (options: ApplicationsFilterOptions) => void;
   onClear: () => void;
@@ -33,11 +32,7 @@ export interface ApplicationFilterProps {
 const ALL_VALUE = "ALL";
 
 export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
-  function ApplicationFilter({ options, onChange, onClear }) {
-    const applications = useAppSelector<Application.AsObject[]>((state) =>
-      selectAllApplications(state.applications)
-    );
-
+  function ApplicationFilter({ options, onChange, onClear, applications }) {
     const handleUpdateFilterValue = (
       optionPart: Partial<ApplicationsFilterOptions>
     ): void => {

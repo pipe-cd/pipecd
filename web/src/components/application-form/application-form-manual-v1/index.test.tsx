@@ -1,6 +1,6 @@
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
 import ApplicationFormManualV1 from ".";
-import { createStore, render, screen } from "~~/test-utils";
+import { createStore, render, screen, waitFor } from "~~/test-utils";
 import { server } from "~/mocks/server";
 import { dummyApplicationPipedV1 } from "~/__fixtures__/dummy-application";
 import { dummyPiped } from "~/__fixtures__/dummy-piped";
@@ -77,10 +77,12 @@ describe("ApplicationFormManualV1", () => {
       expect(input).not.toBeDisabled();
     });
 
-    it('form contain input label "Piped"', () => {
+    it('form contain input label "Piped"', async () => {
       const input = screen.getByRole("combobox", { name: "Piped" });
       expect(input).toBeInTheDocument();
-      expect(input).not.toHaveAttribute("aria-disabled", "true");
+      await waitFor(() => {
+        expect(input).not.toHaveAttribute("aria-disabled", "true");
+      });
     });
 
     it('form contain input label "Repository"', () => {
@@ -138,10 +140,12 @@ describe("ApplicationFormManualV1", () => {
       expect(input).toBeDisabled();
     });
 
-    it('form contain input label "Piped"', () => {
+    it('form contain input label "Piped"', async () => {
       const input = screen.getByRole("combobox", { name: "Piped" });
       expect(input).toBeInTheDocument();
-      expect(input).not.toHaveAttribute("aria-disabled", "true");
+      await waitFor(() => {
+        expect(input).not.toHaveAttribute("aria-disabled", "true");
+      });
     });
 
     it('form contain input label "Repository" and disabled initially', () => {

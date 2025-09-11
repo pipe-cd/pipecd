@@ -14,4 +14,5 @@ export {
   ApplicationKind,
   ApplicationActiveStatus,
   ApplicationGitRepository,
+  ApplicationInfo,
 } from "pipecd/web/model/common_pb";
