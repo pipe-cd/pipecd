@@ -237,8 +237,6 @@ func (r *DiffListResult) Render(opt DiffRenderOptions) string {
 				b.Write(d)
 			}
 		}
-
-		b.WriteString(renderer.Render(change.Diff.Nodes()))
 		b.WriteString("\n")
 	}
 
