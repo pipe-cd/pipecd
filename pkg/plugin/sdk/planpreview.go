@@ -67,12 +67,12 @@ func (s *PlanPreviewPluginServer[Config, DeployTargetConfig, ApplicationConfigSp
 		toolRegistry:  s.toolRegistry,
 	}
 
-	targetDSP, err := newDeploymentSource[ApplicationConfigSpec](s.name, request.GetTargetDeploymentSource())
+	targetDS, err := newDeploymentSource[ApplicationConfigSpec](s.name, request.GetTargetDeploymentSource())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to parse target deployment source: %v", err)
 	}
 
-	runningDSP, err := newDeploymentSource[ApplicationConfigSpec](s.name, request.GetRunningDeploymentSource())
+	runningDS, err := newDeploymentSource[ApplicationConfigSpec](s.name, request.GetRunningDeploymentSource())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to parse running deployment source: %v", err)
 	}
@@ -83,8 +83,8 @@ func (s *PlanPreviewPluginServer[Config, DeployTargetConfig, ApplicationConfigSp
 			ApplicationName:         request.GetApplicationName(),
 			PipedID:                 request.GetPipedId(),
 			DeployTargets:           request.GetDeployTargets(),
-			TargetDeploymentSource:  targetDSP,
-			RunningDeploymentSource: runningDSP,
+			TargetDeploymentSource:  targetDS,
+			RunningDeploymentSource: runningDS,
 		},
 		Client: client,
 		Logger: s.logger,
