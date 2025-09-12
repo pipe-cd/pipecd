@@ -7,7 +7,6 @@ require (
 	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250822060248-d10a3b690599
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.19.1
-	go.uber.org/zap v1.19.1
 )
 
 require (
