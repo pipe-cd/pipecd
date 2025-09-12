@@ -11,6 +11,8 @@
 #   gen:     execute code or docs generation
 #   release: commands used in release flow
 #   push:    push artifacts such as helm chart
+#   up:      prepare local environment (registry, kind cluster)
+#   down:    shutdown/cleanup local environment (registry, kind cluster)
 ####################
 
 # Build commands
@@ -277,8 +279,7 @@ release/pick:
 release/docs:
 	./hack/gen-release-docs.sh $(version)
 
-# Other commands
-
+# Local environment commands
 .PHONY: up/local-registry
 up/local-registry:
 	./hack/create-local-registry.sh
@@ -290,10 +291,18 @@ up/kind-cluster:
 .PHONY: up/local-cluster
 up/local-cluster: up/local-registry up/kind-cluster
 
-.PHONY: down/local-cluster
-down/local-cluster:
+.PHONY: down/kind-cluster
+down/kind-cluster:
 	kind delete cluster --name pipecd
+
+.PHONY: down/local-registry
+down/local-registry:
 	docker container rm -f kind-registry 2>/dev/null
+
+.PHONY: down/local-cluster
+down/local-cluster: down/kind-cluster down/local-registry
+
+# Other commands
 
 .PHONY: setup-envtest
 # Where to install the setup-envtest binary
