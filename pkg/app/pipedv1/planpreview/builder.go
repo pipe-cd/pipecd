@@ -219,15 +219,15 @@ func (b *builder) buildApp(ctx context.Context, worker int, command string, app 
 
 	logger.Info("will decide sync strategy for an application")
 
-	r := model.MakeApplicationPlanPreviewResult(*app)
+	result = model.MakeApplicationPlanPreviewResult(*app)
 
 	var preCommit string
 	// Find the commit of the last successful deployment.
 	if deploy, err := b.getMostRecentlySuccessfulDeployment(ctx, app.Id); err == nil {
 		preCommit = deploy.Trigger.Commit.Hash
 	} else if status.Code(err) != codes.NotFound {
-		r.Error = fmt.Sprintf("failed while finding the last successful deployment (%v)", err)
-		return r
+		result.Error = fmt.Sprintf("failed while finding the last successful deployment (%v)", err)
+		return
 	}
 
 	targetDSP := deploysource.NewProvider(
@@ -238,30 +238,31 @@ func (b *builder) buildApp(ctx context.Context, worker int, command string, app 
 	)
 	targetDS, err := targetDSP.Get(ctx, io.Discard)
 	if err != nil {
-		r.Error = fmt.Sprintf("failed to get the target deploy source, %v", err)
-		return r
+		result.Error = fmt.Sprintf("failed to get the target deploy source, %v", err)
+		return
 	}
 	pluginTargetDS := targetDS.ToPluginDeploySource()
 	targetAppCfg, err := config.DecodeYAML[*config.GenericApplicationSpec](pluginTargetDS.GetApplicationConfig())
 	if err != nil {
-		r.Error = fmt.Sprintf("failed to parse application config, %v", err)
-		return r
+		result.Error = fmt.Sprintf("failed to parse application config, %v", err)
+		return
 	}
 
 	plugins, err := b.pluginRegistry.GetPluginClientsByAppConfig(targetAppCfg.Spec)
 	if err != nil {
-		r.Error = fmt.Sprintf("failed to get plugin clients, %v", err)
-		return r
+		result.Error = fmt.Sprintf("failed to get plugin clients, %v", err)
+		return
 	}
 
 	strategy, errMsg := b.determineStrategy(ctx, app, pluginTargetDS, targetAppCfg.Spec, plugins, repo, preCommit, targetDSP.Revision())
 	if errMsg != "" {
-		r.Error = errMsg
-		return r
+		result.Error = errMsg
+		return
 	}
-	r.SyncStrategy = strategy
+	result.SyncStrategy = strategy
 
-	pluginRunningDS := &common.DeploymentSource{}
+	var pluginRunningDS *common.DeploymentSource
+
 	if preCommit != "" {
 		runningDSP := deploysource.NewProvider(
 			b.workingDir,
@@ -271,17 +272,17 @@ func (b *builder) buildApp(ctx context.Context, worker int, command string, app 
 		)
 		runningDS, err := runningDSP.Get(ctx, io.Discard)
 		if err != nil {
-			r.Error = fmt.Sprintf("failed to get the running deploy source, %v", err)
-			return r
+			result.Error = fmt.Sprintf("failed to get the running deploy source, %v", err)
+			return
 		}
 		pluginRunningDS = runningDS.ToPluginDeploySource()
 	}
 
-	logger.Info("successfully decided sync strategy for the application", zap.String("strategy", r.SyncStrategy.String()))
+	logger.Info("successfully decided sync strategy for the application", zap.String("strategy", result.SyncStrategy.String()))
 
 	errors := ""
 	for _, plugin := range plugins {
-		r.PluginNames = append(r.PluginNames, plugin.Name())
+		result.PluginNames = append(result.PluginNames, plugin.Name())
 		res, err := plugin.GetPlanPreview(ctx, &planpreviewapi.GetPlanPreviewRequest{
 			ApplicationId:           app.Id,
 			ApplicationName:         app.Name,
@@ -297,24 +298,24 @@ func (b *builder) buildApp(ctx context.Context, worker int, command string, app 
 			}
 			errors = fmt.Sprintf("%s\n[%s] %v", errors, plugin.Name(), err)
 		}
-		for _, result := range res.GetResults() {
-			r.PluginPlanResults = append(r.PluginPlanResults, &model.PluginPlanPreviewResult{
+		for _, r := range res.GetResults() {
+			result.PluginPlanResults = append(result.PluginPlanResults, &model.PluginPlanPreviewResult{
 				PluginName:   plugin.Name(),
-				DeployTarget: result.GetDeployTarget(),
-				PlanSummary:  []byte(result.GetSummary()),
-				PlanDetails:  result.GetDetails(),
-				DiffLanguage: result.GetDiffLanguage(),
+				DeployTarget: r.GetDeployTarget(),
+				PlanSummary:  []byte(r.GetSummary()),
+				PlanDetails:  r.GetDetails(),
+				DiffLanguage: r.GetDiffLanguage(),
 			})
 			r.NoChange = r.NoChange && result.GetNoChange()
 		}
 	}
 
 	if len(errors) > 0 {
-		r.Error = fmt.Sprintf("failed to get plan preview, %+v", errors)
-		return r
+		result.Error = fmt.Sprintf("failed to get plan preview, %+v", errors)
+		return
 	}
 
-	return r
+	return
 }
 
 func (b *builder) cloneHeadCommit(ctx context.Context, headBranch, headCommit string) (git.Repo, error) {
@@ -378,15 +379,29 @@ func (b *builder) determineStrategy(
 	revision string,
 ) (strategy model.SyncStrategy, errorMessage string) {
 
-	runningDSP := deploysource.NewProvider(
-		b.workingDir,
-		deploysource.NewLocalSourceCloner(repo, "running", preCommit),
-		app.GitPath,
-		b.secretDecrypter,
+	var (
+		runningDS *deploysource.DeploySource
+		err       error
 	)
-	runningDS, err := runningDSP.Get(ctx, io.Discard)
-	if err != nil {
-		return model.SyncStrategy_PIPELINE, fmt.Sprintf("failed to get the running deploy source, %v", err)
+
+	if preCommit != "" {
+		runningDSP := deploysource.NewProvider(
+			b.workingDir,
+			deploysource.NewLocalSourceCloner(repo, "running", preCommit),
+			app.GitPath,
+			b.secretDecrypter,
+		)
+		runningDS, err = runningDSP.Get(ctx, io.Discard)
+		if err != nil {
+			return model.SyncStrategy_PIPELINE, fmt.Sprintf("failed to get the running deploy source, %v", err)
+		}
+	}
+
+	// ensure pass nil as running deployment source in case of the first deployment
+	// because the running deployment source is not available at this time.
+	var pRds *common.DeploymentSource
+	if runningDS != nil {
+		pRds = runningDS.ToPluginDeploySource()
 	}
 
 	planPluginIn := &deployment.PlanPluginInput{
@@ -396,7 +411,7 @@ func (b *builder) determineStrategy(
 			ApplicationName: app.Name,
 			// Add other fields when needed.
 		},
-		RunningDeploymentSource: runningDS.ToPluginDeploySource(),
+		RunningDeploymentSource: pRds,
 		TargetDeploymentSource:  pluginTargetDS,
 	}
 	trigger := &model.DeploymentTrigger{
