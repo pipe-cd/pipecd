@@ -15,7 +15,7 @@ import { getPercentage } from "~/utils/common";
 
 import { red, green } from "@mui/material/colors";
 import { CardWrapper } from "./styles";
-import { useGetApplicationCounts } from "~/queries/application-counts/use-get-appliation-counts";
+import { useGetApplicationCounts } from "~/queries/application-counts/use-get-application-counts";
 
 const enabledColor = green[500];
 const disabledColor = red[500];

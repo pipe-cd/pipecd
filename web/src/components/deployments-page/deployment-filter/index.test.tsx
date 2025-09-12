@@ -1,6 +1,6 @@
 import userEvent from "@testing-library/user-event";
 import { UI_TEXT_CLEAR } from "~/constants/ui-text";
-import { ApplicationKind } from "~/modules/applications";
+import { ApplicationKind } from "~/types/applications";
 import { DeploymentStatus } from "~/types/deployment";
 import { dummyApplication } from "~/__fixtures__/dummy-application";
 import { render, screen, waitFor } from "~~/test-utils";
@@ -22,20 +22,10 @@ afterAll(() => {
   server.close();
 });
 
-const initialState = {
-  applications: {
-    ids: [dummyApplication.id],
-    entities: { [dummyApplication.id]: dummyApplication },
-  },
-};
-
 test("Change filter values", async () => {
   const onChange = jest.fn();
   render(
-    <DeploymentFilter options={{}} onChange={onChange} onClear={() => null} />,
-    {
-      initialState,
-    }
+    <DeploymentFilter options={{}} onChange={onChange} onClear={() => null} />
   );
 
   userEvent.type(
@@ -73,10 +63,7 @@ test("Change filter values", async () => {
 test("Click clear filter", () => {
   const onClear = jest.fn();
   render(
-    <DeploymentFilter onChange={() => null} onClear={onClear} options={{}} />,
-    {
-      initialState,
-    }
+    <DeploymentFilter onChange={() => null} onClear={onClear} options={{}} />
   );
 
   userEvent.click(screen.getByRole("button", { name: UI_TEXT_CLEAR }));

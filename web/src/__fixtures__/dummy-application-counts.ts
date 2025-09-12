@@ -4,12 +4,9 @@ import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 import {
   InsightApplicationCount,
   InsightApplicationCountLabelKey,
-  INSIGHT_APPLICATION_COUNT_LABEL_KEY_TEXT,
-} from "~/modules/application-counts";
-import {
-  ApplicationActiveStatus,
-  ApplicationKind,
-} from "~/modules/applications";
+} from "~~/model/insight_pb";
+import { ApplicationActiveStatus, ApplicationKind } from "~/types/applications";
+import { INSIGHT_APPLICATION_COUNT_LABEL_KEY_TEXT } from "~/queries/application-counts/use-get-application-counts";
 
 export const dummyApplicationCounts: InsightApplicationCount.AsObject[] = [
   {
