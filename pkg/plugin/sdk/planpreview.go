@@ -72,9 +72,12 @@ func (s *PlanPreviewPluginServer[Config, DeployTargetConfig, ApplicationConfigSp
 		return nil, status.Errorf(codes.Internal, "failed to parse target deployment source: %v", err)
 	}
 
-	runningDS, err := newDeploymentSource[ApplicationConfigSpec](s.name, request.GetRunningDeploymentSource())
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to parse running deployment source: %v", err)
+	runningDS := DeploymentSource[ApplicationConfigSpec]{}
+	if request.GetRunningDeploymentSource() != nil {
+		runningDS, err = newDeploymentSource[ApplicationConfigSpec](s.name, request.GetRunningDeploymentSource())
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "failed to parse running deployment source: %v", err)
+		}
 	}
 
 	response, err := s.base.GetPlanPreview(ctx, s.pluginConfig, deployTargets, &GetPlanPreviewInput[ApplicationConfigSpec]{
