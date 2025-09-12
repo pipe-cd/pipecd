@@ -33,6 +33,12 @@ message GetPlanPreviewRequest {
     repeated string deploy_targets = 2;
     // Target deployment source.
     grpc.plugin.common.v1alpha1.DeploymentSource target_deployment_source = 3;
+    // Running deployment source.
+    grpc.plugin.common.v1alpha1.DeploymentSource running_deployment_source = 4;
+    // Name of the application
+    string application_name = 5;
+    // ID of the piped
+    string piped_id = 6;
 }
 
 message GetPlanPreviewResponse {
