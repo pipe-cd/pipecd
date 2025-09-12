@@ -25,6 +25,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/deployment"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/livestate"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/planpreview"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/provider"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
 )
@@ -75,6 +76,7 @@ func main() {
 		sdk.WithInitializer[config.KubernetesApplicationSpec](&initializer{}),
 		sdk.WithDeploymentPlugin(&deployment.Plugin{}),
 		sdk.WithLivestatePlugin(&livestate.Plugin{}),
+		sdk.WithPlanPreviewPlugin(&planpreview.Plugin{}),
 	)
 	if err != nil {
 		log.Fatalln(err)

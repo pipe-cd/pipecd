@@ -15,7 +15,10 @@
 package provider
 
 import (
+	"bytes"
 	"fmt"
+	"os"
+	"os/exec"
 	"sort"
 	"strings"
 
@@ -25,6 +28,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/pipe-cd/piped-plugin-sdk-go/diff"
+)
+
+const (
+	diffCommand = "diff"
 )
 
 func Diff(old, new Manifest, logger *zap.Logger, opts ...diff.Option) (*diff.Result, error) {
@@ -177,6 +184,8 @@ type DiffRenderOptions struct {
 	// Maximum number of changed manifests should be shown.
 	// Zero means rendering all.
 	MaxChangedManifests int
+	// If true, use "diff" command to render.
+	UseDiffCommand bool
 }
 
 func (r *DiffListResult) Render(opt DiffRenderOptions) string {
@@ -197,20 +206,37 @@ func (r *DiffListResult) Render(opt DiffRenderOptions) string {
 	}
 
 	for _, change := range r.Changes[:maxPrintDiffs] {
-		key := change.Old.Key()
 		opts := []diff.RenderOption{
 			diff.WithLeftPadding(1),
 		}
 
+		needMaskValue := false
 		if opt.MaskSecret && change.Old.IsSecret() {
 			opts = append(opts, diff.WithMaskPath("data"))
+			needMaskValue = true
 		} else if opt.MaskConfigMap && change.Old.IsConfigMap() {
 			opts = append(opts, diff.WithMaskPath("data"))
+			needMaskValue = true
 		}
 		renderer := diff.NewRenderer(opts...)
 
 		index++
-		b.WriteString(fmt.Sprintf("# %d. %s\n\n", index, key.ReadableString()))
+		b.WriteString(fmt.Sprintf("# %d. %s\n\n", index, change.Old.Key().ReadableString()))
+
+		// Use our diff check in one of the following cases:
+		// - not explicit set useDiffCommand option.
+		// - requires masking secret or configmap value.
+		if !opt.UseDiffCommand || needMaskValue {
+			b.WriteString(renderer.Render(change.Diff.Nodes()))
+		} else {
+			// TODO: Find a way to mask values in case of using unix `diff` command.
+			d, err := diffByCommand(diffCommand, change.Old, change.New)
+			if err != nil {
+				b.WriteString(fmt.Sprintf("An error occurred while rendering diff (%v)", err))
+			} else {
+				b.Write(d)
+			}
+		}
 
 		b.WriteString(renderer.Render(change.Diff.Nodes()))
 		b.WriteString("\n")
@@ -221,4 +247,56 @@ func (r *DiffListResult) Render(opt DiffRenderOptions) string {
 	}
 
 	return b.String()
+}
+
+func diffByCommand(command string, old, new Manifest) ([]byte, error) {
+	oldBytes, err := old.YamlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	newBytes, err := new.YamlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	oldFile, err := os.CreateTemp("", "old")
+	if err != nil {
+		return nil, err
+	}
+	defer os.Remove(oldFile.Name())
+	if _, err := oldFile.Write(oldBytes); err != nil {
+		return nil, err
+	}
+
+	newFile, err := os.CreateTemp("", "new")
+	if err != nil {
+		return nil, err
+	}
+	defer os.Remove(newFile.Name())
+	if _, err := newFile.Write(newBytes); err != nil {
+		return nil, err
+	}
+
+	var stdout, stderr bytes.Buffer
+	cmd := exec.Command(command, "-u", "-N", oldFile.Name(), newFile.Name())
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err = cmd.Run()
+	if stdout.Len() > 0 {
+		// diff exits with a non-zero status when the files don't match.
+		// Ignore that failure as long as we get output.
+		err = nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to run diff, err = %w, %s", err, stderr.String())
+	}
+
+	// Remove two-line header from output.
+	data := bytes.TrimSpace(stdout.Bytes())
+	rows := bytes.SplitN(data, []byte("\n"), 3)
+	if len(rows) == 3 {
+		return rows[2], nil
+	}
+	return data, nil
 }
