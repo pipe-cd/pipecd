@@ -67,15 +67,27 @@ func (s *PlanPreviewPluginServer[Config, DeployTargetConfig, ApplicationConfigSp
 		toolRegistry:  s.toolRegistry,
 	}
 
-	deploymentSource, err := newDeploymentSource[ApplicationConfigSpec](s.name, request.GetTargetDeploymentSource())
+	targetDS, err := newDeploymentSource[ApplicationConfigSpec](s.name, request.GetTargetDeploymentSource())
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to parse deployment source: %v", err)
+		return nil, status.Errorf(codes.Internal, "failed to parse target deployment source: %v", err)
+	}
+
+	runningDS := DeploymentSource[ApplicationConfigSpec]{}
+	if request.GetRunningDeploymentSource() != nil {
+		runningDS, err = newDeploymentSource[ApplicationConfigSpec](s.name, request.GetRunningDeploymentSource())
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "failed to parse running deployment source: %v", err)
+		}
 	}
 
 	response, err := s.base.GetPlanPreview(ctx, s.pluginConfig, deployTargets, &GetPlanPreviewInput[ApplicationConfigSpec]{
 		Request: GetPlanPreviewRequest[ApplicationConfigSpec]{
-			ApplicationID:          request.GetApplicationId(),
-			TargetDeploymentSource: deploymentSource,
+			ApplicationID:           request.GetApplicationId(),
+			ApplicationName:         request.GetApplicationName(),
+			PipedID:                 request.GetPipedId(),
+			DeployTargets:           request.GetDeployTargets(),
+			TargetDeploymentSource:  targetDS,
+			RunningDeploymentSource: runningDS,
 		},
 		Client: client,
 		Logger: s.logger,
@@ -101,10 +113,16 @@ type GetPlanPreviewInput[ApplicationConfigSpec any] struct {
 type GetPlanPreviewRequest[ApplicationConfigSpec any] struct {
 	// ApplicationID is the ID of the application.
 	ApplicationID string
+	// ApplicationName is the name of the application.
+	ApplicationName string
+	// PipedID is the ID of the piped.
+	PipedID string
 	// DeployTargets is the names of the deploy targets.
 	DeployTargets []string
 	// TargetDeploymentSource is the target source of the deployment.
 	TargetDeploymentSource DeploymentSource[ApplicationConfigSpec]
+	// RunningDeploymentSource is the running source of the deployment.
+	RunningDeploymentSource DeploymentSource[ApplicationConfigSpec]
 }
 
 // GetPlanPreviewResponse is the response for the GetPlanPreview method.

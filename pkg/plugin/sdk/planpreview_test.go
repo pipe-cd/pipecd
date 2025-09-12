@@ -89,6 +89,37 @@ spec: {}
 					ApplicationConfig:         []byte(validConfig),
 					ApplicationConfigFilename: "app-config-filename",
 				},
+				RunningDeploymentSource: &common.DeploymentSource{
+					ApplicationDirectory:      "app-dir",
+					CommitHash:                "running-commit-hash",
+					ApplicationConfig:         []byte(validConfig),
+					ApplicationConfigFilename: "app-config-filename",
+				},
+			},
+			mockResp: &GetPlanPreviewResponse{
+				Results: []PlanPreviewResult{
+					{
+						DeployTarget: "target1",
+						Summary:      "summary",
+						NoChange:     true,
+						Details:      []byte("details"),
+						DiffLanguage: "diff",
+					},
+				},
+			},
+			expectedStatus: codes.OK,
+		},
+		{
+			name: "success without running deployment source (first deployment)",
+			request: &planpreview.GetPlanPreviewRequest{
+				ApplicationId: "app1",
+				DeployTargets: []string{"target1"},
+				TargetDeploymentSource: &common.DeploymentSource{
+					ApplicationDirectory:      "app-dir",
+					CommitHash:                "commit-hash",
+					ApplicationConfig:         []byte(validConfig),
+					ApplicationConfigFilename: "app-config-filename",
+				},
 			},
 			mockResp: &GetPlanPreviewResponse{
 				Results: []PlanPreviewResult{

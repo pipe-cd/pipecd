@@ -3,12 +3,12 @@ module github.com/pipe-cd/piped-plugin-sdk-go
 go 1.25.0
 
 require (
-	github.com/pipe-cd/pipecd v0.52.1-0.20250731104149-f611ce3501c5
+	github.com/pipe-cd/pipecd v0.54.0-rc1.0.20250912082650-0b949bb7aac9
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/atomic v1.11.0
 	go.uber.org/zap v1.19.1
-	golang.org/x/sync v0.12.0
+	golang.org/x/sync v0.16.0
 	google.golang.org/grpc v1.64.1
 	k8s.io/apimachinery v0.24.3
 	sigs.k8s.io/yaml v1.5.0
