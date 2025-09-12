@@ -261,15 +261,34 @@ func (b *builder) buildApp(ctx context.Context, worker int, command string, app 
 	}
 	r.SyncStrategy = strategy
 
+	pluginRunningDS := &common.DeploymentSource{}
+	if preCommit != "" {
+		runningDSP := deploysource.NewProvider(
+			b.workingDir,
+			deploysource.NewLocalSourceCloner(repo, "running", preCommit),
+			app.GitPath,
+			b.secretDecrypter,
+		)
+		runningDS, err := runningDSP.Get(ctx, io.Discard)
+		if err != nil {
+			r.Error = fmt.Sprintf("failed to get the running deploy source, %v", err)
+			return r
+		}
+		pluginRunningDS = runningDS.ToPluginDeploySource()
+	}
+
 	logger.Info("successfully decided sync strategy for the application", zap.String("strategy", r.SyncStrategy.String()))
 
 	errors := ""
 	for _, plugin := range plugins {
 		r.PluginNames = append(r.PluginNames, plugin.Name())
 		res, err := plugin.GetPlanPreview(ctx, &planpreviewapi.GetPlanPreviewRequest{
-			ApplicationId:          app.Id,
-			DeployTargets:          app.GetDeployTargets(),
-			TargetDeploymentSource: pluginTargetDS,
+			ApplicationId:           app.Id,
+			ApplicationName:         app.Name,
+			PipedId:                 b.pipedCfg.PipedID,
+			DeployTargets:           app.GetDeployTargets(),
+			TargetDeploymentSource:  pluginTargetDS,
+			RunningDeploymentSource: pluginRunningDS,
 		})
 		if err != nil {
 			if st, ok := status.FromError(err); ok && st.Code() == codes.Unimplemented {
