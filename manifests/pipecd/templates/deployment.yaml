@@ -227,9 +227,21 @@ spec:
             - name: redis
               containerPort: 6379
               protocol: TCP
+{{- if .Values.localStorageVolumes.enabled }}
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+{{- end }}
 {{- if .Values.cache.resources }}
           resources:
             {{- toYaml .Values.cache.resources | nindent 12 }}
+{{- end }}
+{{- if .Values.localStorageVolumes.enabled }}
+      volumes:
+        - name: redis-data
+          hostPath:
+            path: /tmp/pipecd-data/redis
+            type: DirectoryOrCreate
 {{- end }}
 
 ---
@@ -367,9 +379,21 @@ spec:
             - name: mysql
               containerPort: {{ .Values.mysql.port }}
               protocol: TCP
+{{- if .Values.localStorageVolumes.enabled }}
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+{{- end }}
 {{- if .Values.mysql.resources }}
           resources:
             {{- toYaml .Values.mysql.resources | nindent 12 }}
+{{- end }}
+{{- if .Values.localStorageVolumes.enabled }}
+      volumes:
+        - name: mysql-data
+          hostPath:
+            path: /tmp/pipecd-data/mysql
+            type: DirectoryOrCreate
 {{- end }}
 
 ---
@@ -417,8 +441,21 @@ spec:
             - name: minio
               containerPort: {{ .Values.minio.port }}
               protocol: TCP
+{{- if .Values.localStorageVolumes.enabled }}
+          volumeMounts:
+            - name: minio-data
+              mountPath: /data
+{{- end }}
 {{- if .Values.minio.resources }}
           resources:
             {{- toYaml .Values.minio.resources | nindent 12 }}
 {{- end }}
+{{- if .Values.localStorageVolumes.enabled }}
+      volumes:
+        - name: minio-data
+          hostPath:
+            path: /tmp/pipecd-data/minio
+            type: DirectoryOrCreate
+{{- end }}
+
 {{- end }}
