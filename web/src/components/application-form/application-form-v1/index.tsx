@@ -14,7 +14,6 @@ import {
   StepContent,
 } from "@mui/material";
 import { FC, memo, useCallback, useState, useEffect, useMemo } from "react";
-import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
 import { sortFunc } from "~/utils/common";
 import { Autocomplete } from "@mui/material";
@@ -288,17 +287,6 @@ const ApplicationFormSuggestionV1: FC<Props> = ({
             <StepContent>
               {selectedApp && (
                 <Box>
-                  <TextField
-                    id={"kind"}
-                    label="Kind"
-                    margin="dense"
-                    fullWidth
-                    variant="outlined"
-                    value={APPLICATION_KIND_TEXT[selectedApp.kind]}
-                    slotProps={{
-                      htmlInput: { readOnly: true },
-                    }}
-                  />
                   <GroupTwoCol>
                     <TextField
                       id={"path"}

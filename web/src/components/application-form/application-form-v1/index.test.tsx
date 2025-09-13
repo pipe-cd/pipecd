@@ -5,7 +5,6 @@ import userEvent from "@testing-library/user-event";
 import { dummyApplication } from "~/__fixtures__/dummy-application";
 import { server } from "~/mocks/server";
 import { dummyPiped } from "~/__fixtures__/dummy-piped";
-import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 import { act } from "react-dom/test-utils";
 import { ApplicationInfo } from "~/types/applications";
 
@@ -95,9 +94,6 @@ describe("ApplicationFormV1", () => {
       );
 
       // check
-      expect(screen.getByRole("textbox", { name: "Kind" })).toHaveValue(
-        APPLICATION_KIND_TEXT[dummyUnregisteredApplication.kind]
-      );
       expect(screen.getByRole("textbox", { name: "Path" })).toHaveValue(
         dummyUnregisteredApplication.path
       );

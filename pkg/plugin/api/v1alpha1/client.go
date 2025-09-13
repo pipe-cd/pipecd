@@ -49,10 +49,11 @@ func NewClient(ctx context.Context, name string, address string, opts ...rpcclie
 	}
 
 	return &client{
-		DeploymentServiceClient: deployment.NewDeploymentServiceClient(conn),
-		LivestateServiceClient:  livestate.NewLivestateServiceClient(conn),
-		conn:                    conn,
-		name:                    name,
+		DeploymentServiceClient:  deployment.NewDeploymentServiceClient(conn),
+		LivestateServiceClient:   livestate.NewLivestateServiceClient(conn),
+		PlanPreviewServiceClient: planpreview.NewPlanPreviewServiceClient(conn),
+		conn:                     conn,
+		name:                     name,
 	}, nil
 }
 
