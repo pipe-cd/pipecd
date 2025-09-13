@@ -58,7 +58,7 @@ require (
 	golang.org/x/crypto v0.36.0
 	golang.org/x/mod v0.27.0
 	golang.org/x/net v0.38.0
-	golang.org/x/oauth2 v0.27.0
+	golang.org/x/oauth2 v0.30.0
 	golang.org/x/sync v0.16.0
 	google.golang.org/api v0.169.0
 	google.golang.org/grpc v1.64.1
