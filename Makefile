@@ -302,6 +302,10 @@ down/local-registry:
 .PHONY: down/local-cluster
 down/local-cluster: down/kind-cluster down/local-registry
 
+.PHONY: delete/local-volumes
+delete/local-volumes:
+	docker volume rm pipecd-data
+
 # Other commands
 
 .PHONY: setup-envtest
