@@ -69,4 +69,6 @@ Set `ENABLE_MOCK` to false explicitly.
 ENABLE_MOCK=false
 ```
 
-TIP: If you don't want to step up (or don't have) a PipeCD controlplane API server, you can use [https://play.pipecd.dev](https://play.pipecd.dev) as API_ENDPOINT, and interact with play project with your authenticated account.
+For local development, you can set API_ENDPOINT=http://localhost:8080 after running local server following [here](../CONTRIBUTING.md)
+
+TIP: If you don't want to step up (or don't have) a PipeCD controlplane API server, you can use [https://play.pipecd.dev](https://play.pipecd.dev) as API_ENDPOINT, and interact with `play` project with your authenticated account.
