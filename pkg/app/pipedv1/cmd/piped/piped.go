@@ -117,7 +117,7 @@ func NewCommand() *cobra.Command {
 		maxRecvMsgSize:    1024 * 1024 * 10, // 10MB
 	}
 	cmd := &cobra.Command{
-		Use:   "piped",
+		Use:   "run",
 		Short: "Start running piped.",
 		RunE:  cli.WithContext(p.run),
 	}
