@@ -49,7 +49,10 @@ jobs:
       - name: Update web dependencies
         run: make update/web-deps
       - name: Build web static
-        run: make build/web
+        run: |
+          git describe --tags --always --dirty --abbrev=7 --match 'v[0-9]*.*'
+          make build/web
+          git describe --tags --always --dirty --abbrev=7 --match 'v[0-9]*.*'
 
   chart:
     runs-on: ubuntu-24.04
