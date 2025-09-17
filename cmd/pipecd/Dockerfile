@@ -15,6 +15,9 @@ COPY web ./web
 COPY Makefile .
 RUN make build/web
 
+RUN git describe --tags --always --dirty --abbrev=7 --match 'v[0-9]*.*'
+RUN git diff
+
 # pipecd builder
 FROM --platform=$BUILDPLATFORM golang:1.25.0 AS builder
 

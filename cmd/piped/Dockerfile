@@ -11,6 +11,9 @@ RUN go mod download
 
 COPY . ./
 
+RUN git describe --tags --always --dirty --abbrev=7 --match 'v[0-9]*.*'
+RUN git diff
+
 RUN make build/go MOD=piped BUILD_OS=${TARGETOS} BUILD_ARCH=${TARGETARCH}
 
 # https://github.com/pipe-cd/pipecd/pkgs/container/piped-base/459025001?tag=v0.52.0-97-g3e3df6d
