@@ -42,8 +42,9 @@ else
 endif
 
 .PHONY: build/web
+build/web: PIPECD_VERSION ?= $(shell git describe --tags --always --abbrev=7 --match 'v[0-9]*.*')
 build/web:
-	yarn --cwd web build
+	PIPECD_VERSION=$(PIPECD_VERSION) yarn --cwd web build
 
 .PHONY: build/chart
 build/chart: VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7 --match 'v[0-9]*.*')
@@ -155,9 +156,10 @@ run/pipecd: BUILD_DATE ?= $(shell date -u '+%Y%m%d-%H%M%S')
 run/pipecd: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
 run/pipecd: BUILD_OPTS ?= -ldflags "$(BUILD_LDFLAGS_PREFIX).version=$(BUILD_VERSION) $(BUILD_LDFLAGS_PREFIX).gitCommit=$(BUILD_COMMIT) $(BUILD_LDFLAGS_PREFIX).buildDate=$(BUILD_DATE) -w"
 run/pipecd: CONTROL_PLANE_VALUES ?= ./quickstart/control-plane-values.yaml
+run/pipecd: PIPECD_VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7 --match 'v[0-9]*.*')
 run/pipecd:
 	@echo "Building docker image and pushing it to local registry..."
-	docker build -f cmd/pipecd/Dockerfile -t localhost:5001/pipecd:$(BUILD_VERSION) .
+	PIPECD_VERSION=$(PIPECD_VERSION) docker build -f cmd/pipecd/Dockerfile -t localhost:5001/pipecd:$(BUILD_VERSION) .
 	docker push localhost:5001/pipecd:$(BUILD_VERSION)
 
 	@echo "Installing Control Plane in kind..."
@@ -188,8 +190,9 @@ else
 endif
 
 .PHONY: run/web
+run/web: PIPECD_VERSION ?= $(shell git describe --tags --always --abbrev=7 --match 'v[0-9]*.*')
 run/web:
-	yarn --cwd web dev
+	PIPECD_VERSION=$(PIPECD_VERSION) yarn --cwd web dev
 
 .PHONY: run/site
 run/site:
