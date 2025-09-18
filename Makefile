@@ -42,7 +42,7 @@ else
 endif
 
 .PHONY: build/web
-build/web: PIPECD_VERSION ?= $(shell git describe --tags --always --abbrev=7 --match 'v[0-9]*.*')
+build/web: PIPECD_VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7 --match 'v[0-9]*.*')
 build/web:
 	PIPECD_VERSION=$(PIPECD_VERSION) yarn --cwd web build
 
@@ -190,7 +190,7 @@ else
 endif
 
 .PHONY: run/web
-run/web: PIPECD_VERSION ?= $(shell git describe --tags --always --abbrev=7 --match 'v[0-9]*.*')
+run/web: PIPECD_VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7 --match 'v[0-9]*.*')
 run/web:
 	PIPECD_VERSION=$(PIPECD_VERSION) yarn --cwd web dev
 
