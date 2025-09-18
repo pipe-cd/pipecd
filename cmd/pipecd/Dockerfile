@@ -26,6 +26,7 @@ WORKDIR /app
 COPY go.* ./
 RUN go mod download
 
+COPY .git ./.git
 COPY pkg/ ./pkg/
 COPY cmd/ ./cmd/
 COPY Makefile .
