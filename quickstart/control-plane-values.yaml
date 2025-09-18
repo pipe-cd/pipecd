@@ -2,7 +2,7 @@ quickstart:
   enabled: true
 
 localStorageVolumes:
-  enabled: true
+  enabled: false
 
 config:
   data: |
