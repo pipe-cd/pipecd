@@ -35,6 +35,7 @@ func (p *Plugin) executeRollbackStage(ctx context.Context, input *sdk.ExecuteSta
 
 	cmd, err := provider.NewTerraformCommand(ctx, input.Client, rds, dts[0])
 	if err != nil {
+		lp.Errorf("Failed to initialize Terraform command (%v)", err)
 		return sdk.StageStatusFailure
 	}
 
