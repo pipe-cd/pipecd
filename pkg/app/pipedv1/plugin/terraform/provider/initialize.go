@@ -16,7 +16,8 @@ package provider
 
 import (
 	"context"
-	"errors"
+	"fmt"
+	"io"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/toolregistry"
@@ -30,13 +31,19 @@ func NewTerraformCommand(ctx context.Context, client *sdk.Client, ds sdk.Deploym
 		appSpec = ds.ApplicationConfig.Spec
 		flags   = appSpec.CommandFlags
 		envs    = appSpec.CommandEnvs
-		lp      = client.LogPersister()
 	)
+
+	var infoWriter io.Writer
+	infoWriter = client.LogPersister()
+	if infoWriter == nil {
+		// logPersister is nil when this functions is called outside deployment.
+		infoWriter = io.Discard
+	}
+
 	tr := toolregistry.NewRegistry(client.ToolRegistry())
 	terraformPath, err := tr.Terraform(ctx, appSpec.TerraformVersion)
 	if err != nil {
-		lp.Errorf("Failed to find terraform (%v)", err)
-		return nil, err
+		return nil, fmt.Errorf("failed to find terraform (%v)", err)
 	}
 
 	cmd := newTerraform(
@@ -48,17 +55,16 @@ func NewTerraformCommand(ctx context.Context, client *sdk.Client, ds sdk.Deploym
 		WithAdditionalEnvs(envs.Shared, envs.Init, envs.Plan, envs.Apply),
 	)
 
-	if ok := showUsingVersion(ctx, cmd, lp); !ok {
-		return nil, errors.New("failed to show using version")
-	}
-
-	if err := cmd.init(ctx, lp); err != nil {
-		lp.Errorf("Failed to execute 'terraform init' (%v)", err)
+	if err := showUsingVersion(ctx, cmd, infoWriter); err != nil {
 		return nil, err
 	}
 
-	if ok := selectWorkspace(ctx, cmd, appSpec.Workspace, lp); !ok {
-		return nil, errors.New("failed to select workspace")
+	if err := cmd.init(ctx, infoWriter); err != nil {
+		return nil, fmt.Errorf("failed to execute 'terraform init' (%v)", err)
+	}
+
+	if err := selectWorkspace(ctx, cmd, appSpec.Workspace, infoWriter); err != nil {
+		return nil, err
 	}
 
 	return cmd, nil
@@ -72,24 +78,22 @@ func mergeVars(deployTargetVars []string, appVars []string) []string {
 	return mergedVars
 }
 
-func showUsingVersion(ctx context.Context, cmd *Terraform, lp sdk.StageLogPersister) bool {
+func showUsingVersion(ctx context.Context, cmd *Terraform, w io.Writer) error {
 	version, err := cmd.version(ctx)
 	if err != nil {
-		lp.Errorf("Failed to check terraform version (%v)", err)
-		return false
+		return fmt.Errorf("failed to check terraform version (%v)", err)
 	}
-	lp.Infof("Using terraform version %q to execute the terraform commands", version)
-	return true
+	fmt.Fprintf(w, "Using terraform version %q to execute the terraform commands", version)
+	return nil
 }
 
-func selectWorkspace(ctx context.Context, cmd *Terraform, workspace string, lp sdk.StageLogPersister) bool {
+func selectWorkspace(ctx context.Context, cmd *Terraform, workspace string, w io.Writer) error {
 	if workspace == "" {
-		return true
+		return nil
 	}
 	if err := cmd.selectWorkspace(ctx, workspace); err != nil {
-		lp.Errorf("Failed to select workspace %q (%v). You might need to create the workspace before using by command %q", workspace, err, "terraform workspace new "+workspace)
-		return false
+		return fmt.Errorf("failed to select workspace %q (%v). You might need to create the workspace before using by command %q", workspace, err, "terraform workspace new "+workspace)
 	}
-	lp.Infof("Selected workspace %q", workspace)
-	return true
+	fmt.Fprintf(w, "Selected workspace %q", workspace)
+	return nil
 }

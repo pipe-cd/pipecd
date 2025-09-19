@@ -26,12 +26,12 @@ import (
 
 // TODO: add test
 func (p *Plugin) executePlanStage(ctx context.Context, input *sdk.ExecuteStageInput[config.ApplicationConfigSpec], dts []*sdk.DeployTarget[config.DeployTargetConfig]) sdk.StageStatus {
+	lp := input.Client.LogPersister()
 	cmd, err := provider.NewTerraformCommand(ctx, input.Client, input.Request.TargetDeploymentSource, dts[0])
 	if err != nil {
+		lp.Errorf("Failed to initialize Terraform command (%v)", err)
 		return sdk.StageStatusFailure
 	}
-
-	lp := input.Client.LogPersister()
 
 	stageConfig := config.TerraformPlanStageOptions{}
 	if err := json.Unmarshal(input.Request.StageConfig, &stageConfig); err != nil {
