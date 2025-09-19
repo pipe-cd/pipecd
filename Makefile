@@ -186,7 +186,7 @@ run/piped: LOG_ENCODING ?= humanize
 run/piped: EXPERIMENTAL ?= false
 run/piped:
 ifeq ($(EXPERIMENTAL), true)
-	go run cmd/pipedv1/main.go piped --tools-dir=/tmp/piped-bin --config-file=$(CONFIG_FILE) --insecure=$(INSECURE) --log-encoding=$(LOG_ENCODING)
+	go run cmd/pipedv1/main.go run --tools-dir=/tmp/piped-bin --config-file=$(CONFIG_FILE) --insecure=$(INSECURE) --log-encoding=$(LOG_ENCODING)
 else ifeq ($(LAUNCHER),true)
 	go run cmd/launcher/main.go launcher --config-file=$(CONFIG_FILE) --insecure=$(INSECURE) --log-encoding=$(LOG_ENCODING)
 else
