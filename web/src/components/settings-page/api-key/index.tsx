@@ -84,10 +84,9 @@ export const APIKeyPage: FC = memo(function APIKeyPage() {
   );
   const [generatedKey, setGeneratedKey] = useState<string | null>(null);
 
-  const { data: keys = [], isLoading: loading } = useGetApiKeys(
-    { enabled: true },
-    { retry: false }
-  );
+  const { data: keys = [], isLoading: loading } = useGetApiKeys({
+    enabled: true,
+  });
   const { addToast } = useToast();
 
   const { mutateAsync: generateApiKey } = useGenerateApiKey();
