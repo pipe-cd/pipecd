@@ -229,7 +229,7 @@ func (r *reporter) flush(ctx context.Context, app *model.Application, repo git.R
 			ApplicationId:   app.GetId(),
 			ApplicationName: app.GetName(),
 			DeploySource:    ds.ToPluginDeploySource(),
-			DeployTargets:   app.GetDeployTargets(),
+			DeployTargets:   app.GetDeployTargetsByPluginName(pluginClient.Name()),
 		})
 		if err != nil {
 			st, ok := status.FromError(err)
