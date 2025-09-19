@@ -244,7 +244,7 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult, title string) str
 			for _, ppr := range app.PluginPlanResults {
 				fmt.Fprintf(&b, "  - %s(%s): %s\n", ppr.PluginName, ppr.DeployTarget, ppr.PlanSummary)
 			}
-			fmt.Fprint(&b, "  Details:\n")
+			fmt.Fprint(&b, "\n  Details:\n")
 			for _, ppr := range app.PluginPlanResults {
 				fmt.Fprintf(&b, "  - %s(%s):\n", ppr.PluginName, ppr.DeployTarget)
 
