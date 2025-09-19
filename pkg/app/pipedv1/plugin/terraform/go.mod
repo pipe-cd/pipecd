@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/hashicorp/hcl/v2 v2.0.0
-	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250822060248-d10a3b690599
+	github.com/pipe-cd/piped-plugin-sdk-go v0.2.0
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.19.1
 )
@@ -36,7 +36,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.0 // indirect
-	github.com/pipe-cd/pipecd v0.52.1-0.20250731104149-f611ce3501c5 // indirect
+	github.com/pipe-cd/pipecd v0.54.0-rc1.0.20250912082650-0b949bb7aac9 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.12.1 // indirect
 	github.com/prometheus/client_model v0.5.0 // indirect
@@ -56,7 +56,7 @@ require (
 	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
-	golang.org/x/sync v0.12.0 // indirect
+	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
