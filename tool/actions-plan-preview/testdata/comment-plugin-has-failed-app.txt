@@ -10,6 +10,7 @@ Sync strategy: PIPELINE
   Plugin(s): kubernetes
   Summary:
   - kubernetes(dt-1): 2 resources will be added, 1 resource will be deleted and 5 resources will be changed
+
   Details:
   - kubernetes(dt-1):
 <details>
