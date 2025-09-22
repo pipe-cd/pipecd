@@ -16,7 +16,6 @@ package deployment
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/provider"
@@ -33,11 +32,12 @@ func (p *Plugin) executeApplyStage(ctx context.Context, input *sdk.ExecuteStageI
 		return sdk.StageStatusFailure
 	}
 
-	stageConfig := config.TerraformApplyStageOptions{}
-	if err := json.Unmarshal(input.Request.StageConfig, &stageConfig); err != nil {
-		lp.Errorf("Failed to unmarshal stage config (%v)", err)
-		return sdk.StageStatusFailure
-	}
+	// TODO: use stageConfig if this stage has any options in the future.
+	// stageConfig := config.TerraformApplyStageOptions{}
+	// if err := json.Unmarshal(input.Request.StageConfig, &stageConfig); err != nil {
+	// 	lp.Errorf("Failed to unmarshal stage config (%v)", err)
+	// 	return sdk.StageStatusFailure
+	// }
 
 	if err = cmd.Apply(ctx, lp); err != nil {
 		lp.Errorf("Failed to apply changes (%v)", err)
