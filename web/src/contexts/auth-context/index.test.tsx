@@ -1,5 +1,5 @@
 import { setupServer } from "msw/node";
-import { render, screen, waitFor } from "~~/test-utils";
+import { MemoryRouter, render, screen, waitFor } from "~~/test-utils";
 import useAuth from "./use-auth";
 import { FC } from "react";
 import { getMeHandler } from "~/mocks/services/me";
@@ -41,11 +41,13 @@ describe("auth context", () => {
     const cookies = new Cookies();
     cookies.set("token", "my-test-token");
     render(
-      <CookiesProvider cookies={cookies}>
-        <AuthProvider>
-          <TestComponent />
-        </AuthProvider>
-      </CookiesProvider>
+      <MemoryRouter>
+        <CookiesProvider cookies={cookies}>
+          <AuthProvider>
+            <TestComponent />
+          </AuthProvider>
+        </CookiesProvider>
+      </MemoryRouter>
     );
   });
 
