@@ -1,7 +1,7 @@
 apiVersion: networking.istio.io/v1
 kind: VirtualService
 metadata:
-  name: traffic-test-vs
+  name: traffic-test-vs-primary
 spec:
   hosts:
   - traffic-test

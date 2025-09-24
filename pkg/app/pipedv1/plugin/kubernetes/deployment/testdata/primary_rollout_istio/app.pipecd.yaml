@@ -18,7 +18,7 @@ spec:
         istio:
           editableRoutes: []
           virtualService:
-            name: traffic-test-vs
+            name: traffic-test-vs-primary
   pipeline:
     stages:
       - name: K8S_CANARY_ROLLOUT
