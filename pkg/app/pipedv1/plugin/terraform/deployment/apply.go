@@ -16,7 +16,6 @@ package deployment
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/provider"
@@ -30,12 +29,6 @@ func (p *Plugin) executeApplyStage(ctx context.Context, input *sdk.ExecuteStageI
 	cmd, err := provider.NewTerraformCommand(ctx, input.Client, input.Request.TargetDeploymentSource, dts[0])
 	if err != nil {
 		lp.Errorf("Failed to initialize Terraform command (%v)", err)
-		return sdk.StageStatusFailure
-	}
-
-	stageConfig := config.TerraformApplyStageOptions{}
-	if err := json.Unmarshal(input.Request.StageConfig, &stageConfig); err != nil {
-		lp.Errorf("Failed to unmarshal stage config (%v)", err)
 		return sdk.StageStatusFailure
 	}
 
