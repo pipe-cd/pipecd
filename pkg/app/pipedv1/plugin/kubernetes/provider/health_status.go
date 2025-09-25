@@ -30,6 +30,12 @@ func (m Manifest) calculateHealthStatus() (sdk.ResourceHealthStatus, string) {
 			return sdk.ResourceHealthStateUnknown, ""
 		}
 		return deploymentHealthStatus(obj)
+	case m.IsStatefulSet():
+		obj := &appsv1.StatefulSet{}
+		if err := m.ConvertToStructuredObject(obj); err != nil {
+			return sdk.ResourceHealthStateUnknown, ""
+		}
+		return statefulSetHealthStatus(obj)
 	default:
 		// TODO: Implement health status calculation for other resource types.
 		return sdk.ResourceHealthStateUnknown, fmt.Sprintf("Unimplemented or unknown resource: %s", m.body.GroupVersionKind())
@@ -64,5 +70,37 @@ func deploymentHealthStatus(obj *appsv1.Deployment) (sdk.ResourceHealthStatus, s
 	if obj.Status.AvailableReplicas < obj.Status.Replicas {
 		return sdk.ResourceHealthStateUnhealthy, fmt.Sprintf("Waiting for remaining %d/%d replicas to be available", obj.Status.Replicas-obj.Status.AvailableReplicas, obj.Status.Replicas)
 	}
+	return sdk.ResourceHealthStateHealthy, ""
+}
+
+func statefulSetHealthStatus(obj *appsv1.StatefulSet) (sdk.ResourceHealthStatus, string) {
+	// Referred to:
+	//   https://github.com/kubernetes/kubernetes/blob/7942dca975b7be9386540df3c17e309c3cb2de60/staging/src/k8s.io/kubectl/pkg/polymorphichelpers/rollout_status.go#L130-L149
+	if obj.Status.ObservedGeneration == 0 || obj.Generation > obj.Status.ObservedGeneration {
+		return sdk.ResourceHealthStateUnhealthy, "Waiting for statefulset spec update to be observed"
+	}
+
+	if obj.Spec.Replicas == nil {
+		return sdk.ResourceHealthStateUnhealthy, "The number of desired replicas is unspecified"
+	}
+	if *obj.Spec.Replicas != obj.Status.ReadyReplicas {
+		return sdk.ResourceHealthStateUnhealthy, fmt.Sprintf("The number of ready replicas (%d) is different from the desired number (%d)", obj.Status.ReadyReplicas, *obj.Spec.Replicas)
+	}
+
+	// Check if the partitioned roll out is in progress.
+	if obj.Spec.UpdateStrategy.Type == appsv1.RollingUpdateStatefulSetStrategyType && obj.Spec.UpdateStrategy.RollingUpdate != nil {
+		if obj.Spec.Replicas != nil && obj.Spec.UpdateStrategy.RollingUpdate.Partition != nil {
+			if obj.Status.UpdatedReplicas < (*obj.Spec.Replicas - *obj.Spec.UpdateStrategy.RollingUpdate.Partition) {
+				return sdk.ResourceHealthStateUnhealthy, fmt.Sprintf("Waiting for partitioned roll out to finish because %d out of %d new pods have been updated",
+					obj.Status.UpdatedReplicas, (*obj.Spec.Replicas - *obj.Spec.UpdateStrategy.RollingUpdate.Partition))
+			}
+		}
+		return sdk.ResourceHealthStateHealthy, ""
+	}
+
+	if obj.Status.UpdateRevision != obj.Status.CurrentRevision {
+		return sdk.ResourceHealthStateUnhealthy, fmt.Sprintf("Waiting for statefulset rolling update to complete %d pods at revision %s", obj.Status.UpdatedReplicas, obj.Status.UpdateRevision)
+	}
+
 	return sdk.ResourceHealthStateHealthy, ""
 }
