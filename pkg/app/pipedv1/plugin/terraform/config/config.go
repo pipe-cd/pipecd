@@ -58,10 +58,6 @@ type TerraformPlanStageOptions struct {
 	ExitOnNoChanges bool `json:"exitOnNoChanges"`
 }
 
-// TerraformApplyStageOptions contains all configurable values for a TERRAFORM_APPLY stage.
-type TerraformApplyStageOptions struct {
-}
-
 // TerraformCommandFlags contains all additional flags will be used while executing terraform commands.
 type TerraformCommandFlags struct {
 	Shared []string `json:"shared"`
