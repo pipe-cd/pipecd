@@ -603,11 +603,22 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 			TargetDeploymentSource:  tds.ToPluginDeploySource(),
 		},
 	})
-	// do not return error if the context is already canceled.
-	// this occurs when the stage is canceled.
-	// otherwise, return the error.
+
+	// Return stage failure status if the plugin execution failed and the context is not cancelled.
+	// The cause probably is the plugin binary is not available.
 	if err != nil && ctx.Err() == nil {
 		s.logger.Error("failed to execute stage", zap.String("stage-name", ps.Name), zap.Error(err))
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	// Handle case where res is nil.
+	if res == nil {
+		// If context was cancelled, return stage cancelled status
+		if ctx.Err() == context.Canceled {
+			return model.StageStatus_STAGE_CANCELLED
+		}
+		// Otherwise, this is an unexpected nil response
+		s.logger.Error("unexpected nil response from plugin", zap.String("stage-name", ps.Name))
 		return model.StageStatus_STAGE_FAILURE
 	}
 
