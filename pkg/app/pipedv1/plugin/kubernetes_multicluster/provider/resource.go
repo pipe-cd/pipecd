@@ -23,9 +23,13 @@ import (
 )
 
 const (
-	KindDeployment = "Deployment"
-	KindSecret     = "Secret"
-	KindConfigMap  = "ConfigMap"
+	// Workload
+	KindDeployment  = "Deployment"
+	KindStatefulSet = "StatefulSet"
+
+	// ConfigMap and Secret
+	KindSecret    = "Secret"
+	KindConfigMap = "ConfigMap"
 
 	DefaultNamespace = "default"
 )

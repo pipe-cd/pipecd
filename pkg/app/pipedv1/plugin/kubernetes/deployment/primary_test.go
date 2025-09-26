@@ -147,12 +147,12 @@ func TestPlugin_executeK8sPrimaryRolloutStage_withIstio(t *testing.T) {
 
 		assert.Equal(t, sdk.StageStatusSuccess, status)
 
-		// check the existance of deployment, service, virutal service
+		// check the existence of deployment, service, virtual service
 		_, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(ctx, "traffic-test", metav1.GetOptions{})
 		assert.NoError(t, err)
 		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(ctx, "traffic-test", metav1.GetOptions{})
 		assert.NoError(t, err)
-		verifyVirtualServiceRouting(t, dynamicClient, "traffic-test-vs", []expectedRoute{
+		verifyVirtualServiceRouting(t, dynamicClient, "traffic-test-vs-primary", []expectedRoute{
 			{
 				host:   "traffic-test",
 				subset: "primary",
@@ -193,14 +193,14 @@ func TestPlugin_executeK8sPrimaryRolloutStage_withIstio(t *testing.T) {
 
 		assert.Equal(t, sdk.StageStatusSuccess, status)
 
-		// check the existance of deployment, service, virutal service
+		// check the existence of deployment, service, virtual service
 		_, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(ctx, "traffic-test", metav1.GetOptions{})
 		assert.NoError(t, err)
 		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(ctx, "traffic-test", metav1.GetOptions{})
 		assert.NoError(t, err)
 		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(ctx, "traffic-test-canary", metav1.GetOptions{})
 		assert.NoError(t, err)
-		verifyVirtualServiceRouting(t, dynamicClient, "traffic-test-vs", []expectedRoute{
+		verifyVirtualServiceRouting(t, dynamicClient, "traffic-test-vs-primary", []expectedRoute{
 			{
 				host:   "traffic-test",
 				subset: "primary",
@@ -241,14 +241,14 @@ func TestPlugin_executeK8sPrimaryRolloutStage_withIstio(t *testing.T) {
 
 		assert.Equal(t, sdk.StageStatusSuccess, status)
 
-		// check the existance of deployment, service, virutal service
+		// check the existence of deployment, service, virtual service
 		_, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(ctx, "traffic-test", metav1.GetOptions{})
 		assert.NoError(t, err)
 		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(ctx, "traffic-test", metav1.GetOptions{})
 		assert.NoError(t, err)
 		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(ctx, "traffic-test-canary", metav1.GetOptions{})
 		assert.NoError(t, err)
-		verifyVirtualServiceRouting(t, dynamicClient, "traffic-test-vs", []expectedRoute{
+		verifyVirtualServiceRouting(t, dynamicClient, "traffic-test-vs-primary", []expectedRoute{
 			{
 				host:   "traffic-test",
 				subset: "primary",
@@ -293,14 +293,14 @@ func TestPlugin_executeK8sPrimaryRolloutStage_withIstio(t *testing.T) {
 
 	assert.Equal(t, sdk.StageStatusSuccess, status)
 
-	// check the existance of deployment, service, virutal service
+	// check the existence of deployment, service, virtual service
 	_, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(ctx, "traffic-test", metav1.GetOptions{})
 	assert.NoError(t, err)
 	_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(ctx, "traffic-test", metav1.GetOptions{})
 	assert.NoError(t, err)
 	_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(ctx, "traffic-test-canary", metav1.GetOptions{})
 	assert.NoError(t, err)
-	verifyVirtualServiceRouting(t, dynamicClient, "traffic-test-vs", []expectedRoute{
+	verifyVirtualServiceRouting(t, dynamicClient, "traffic-test-vs-primary", []expectedRoute{
 		{
 			host:   "traffic-test",
 			subset: "primary",
