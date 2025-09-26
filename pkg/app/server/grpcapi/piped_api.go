@@ -56,7 +56,7 @@ type pipedAPIDeploymentStore interface {
 	Add(ctx context.Context, app *model.Deployment) error
 	Get(ctx context.Context, id string) (*model.Deployment, error)
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Deployment, string, error)
-	UpdateToPlanned(ctx context.Context, id, summary, reason, runningCommitHash, runningConfigFilename string, versions []*model.ArtifactVersion, stages []*model.PipelineStage) error
+	UpdateToPlanned(ctx context.Context, id, summary, reason, runningCommitHash, runningConfigFilename string, syncStrategy model.SyncStrategy, versions []*model.ArtifactVersion, stages []*model.PipelineStage) error
 	UpdateToCompleted(ctx context.Context, id string, status model.DeploymentStatus, stageStatuses map[string]model.StageStatus, reason string, completedAt int64) error
 	UpdateStatus(ctx context.Context, id string, status model.DeploymentStatus, reason string) error
 	UpdateStageStatus(ctx context.Context, id, stageID string, status model.StageStatus, reason string, requires []string, visible bool, retriedCount int32, completedAt int64) error
@@ -424,6 +424,7 @@ func (a *PipedAPI) ReportDeploymentPlanned(ctx context.Context, req *pipedservic
 		req.StatusReason,
 		req.RunningCommitHash,
 		req.RunningConfigFilename,
+		req.SyncStrategy,
 		req.Versions,
 		req.Stages,
 	); err != nil {
