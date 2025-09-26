@@ -37,11 +37,12 @@ func (d *deploymentCollection) Factory() Factory {
 }
 
 var (
-	toPlannedUpdateFunc = func(summary, statusReason, runningCommitHash, runningConfigFilename string, versions []*model.ArtifactVersion, stages []*model.PipelineStage) func(*model.Deployment) error {
+	toPlannedUpdateFunc = func(summary, statusReason, runningCommitHash, runningConfigFilename string, syncStrategy model.SyncStrategy, versions []*model.ArtifactVersion, stages []*model.PipelineStage) func(*model.Deployment) error {
 		return func(d *model.Deployment) error {
 			d.Status = model.DeploymentStatus_DEPLOYMENT_PLANNED
 			d.Summary = summary
 			d.StatusReason = statusReason
+			d.Trigger.SyncStrategy = syncStrategy
 			d.RunningCommitHash = runningCommitHash
 			d.RunningConfigFilename = runningConfigFilename
 			d.Versions = versions
@@ -101,7 +102,7 @@ type DeploymentStore interface {
 	Add(ctx context.Context, d *model.Deployment) error
 	Get(ctx context.Context, id string) (*model.Deployment, error)
 	List(ctx context.Context, opts ListOptions) ([]*model.Deployment, string, error)
-	UpdateToPlanned(ctx context.Context, id, summary, reason, runningCommitHash, runningConfigFilename string, versions []*model.ArtifactVersion, stages []*model.PipelineStage) error
+	UpdateToPlanned(ctx context.Context, id, summary, reason, runningCommitHash, runningConfigFilename string, syncStrategy model.SyncStrategy, versions []*model.ArtifactVersion, stages []*model.PipelineStage) error
 	UpdateToCompleted(ctx context.Context, id string, status model.DeploymentStatus, stageStatuses map[string]model.StageStatus, reason string, completedAt int64) error
 	UpdateStatus(ctx context.Context, id string, status model.DeploymentStatus, reason string) error
 	UpdateStageStatus(ctx context.Context, id, stageID string, status model.StageStatus, reason string, requires []string, visible bool, retriedCount int32, completedAt int64) error
@@ -207,8 +208,8 @@ func (s *deploymentStore) update(ctx context.Context, id string, updater func(*m
 	})
 }
 
-func (s *deploymentStore) UpdateToPlanned(ctx context.Context, id, summary, reason, runningCommitHash, runningConfigFilename string, versions []*model.ArtifactVersion, stages []*model.PipelineStage) error {
-	updater := toPlannedUpdateFunc(summary, reason, runningCommitHash, runningConfigFilename, versions, stages)
+func (s *deploymentStore) UpdateToPlanned(ctx context.Context, id, summary, reason, runningCommitHash, runningConfigFilename string, syncStrategy model.SyncStrategy, versions []*model.ArtifactVersion, stages []*model.PipelineStage) error {
+	updater := toPlannedUpdateFunc(summary, reason, runningCommitHash, runningConfigFilename, syncStrategy, versions, stages)
 	return s.update(ctx, id, updater)
 }
 
