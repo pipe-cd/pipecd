@@ -345,10 +345,10 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 			pluginName:   commonFields.name,
 			toolRegistry: commonFields.toolRegistry,
 			// These fields are not available at initializing state.
-			applicationID: "",
-			deploymentID:  "",
-			stageID:       "",
-			logPersister:  nil,
+			applicationID:     "",
+			deploymentID:      "",
+			stageID:           "",
+			stageLogPersister: nil,
 		}
 
 		initializeInput := &InitializeInput[Config, DeployTargetConfig]{
