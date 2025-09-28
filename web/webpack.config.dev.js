@@ -35,13 +35,11 @@ module.exports = (env) =>
           changeOrigin: true,
           target: process.env.API_ENDPOINT,
           pathRewrite: { "^/api": "" },
+          withCredentials: true,
+          headers: {
+            Cookie: process.env.API_COOKIE,
+          },
         },
-        {
-          context: ["/"],
-          changeOrigin: true,
-          target: process.env.API_ENDPOINT,
-          pathRewrite: { "^/": "/" },
-        }
       ],
     },
     module: {

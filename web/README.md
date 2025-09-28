@@ -69,6 +69,19 @@ Set `ENABLE_MOCK` to false explicitly.
 ENABLE_MOCK=false
 ```
 
-For local development, you can set API_ENDPOINT=http://localhost:8080 after running local server following [here](../CONTRIBUTING.md)
+If the API server has authorization by cookie, set `API_COOKIE` to the cookie you have already obtained through other clients
+(typically you need to send some kind of request from an authenticated client and peek at the request header in some way).
 
-TIP: If you don't want to step up (or don't have) a PipeCD controlplane API server, you can use [https://play.pipecd.dev](https://play.pipecd.dev) as API_ENDPOINT, and interact with `play` project with your authenticated account.
+```
+API_COOKIE={COOKIE}
+```
+
+Take Chrome for example;
+1. Access to the existing UI.
+2. Open the developer tools and go to the network panel.
+3. Find the `GetMe` request and select it.
+4. Copy the whole value of the `Cookie` in "Request Headers" and paste it to `API_COOKIE={COOKIE}` in the `.env` file.
+
+![](https://github.com/pipe-cd/pipecd/blob/master/docs/static/images/play-environment-get-me.png)
+
+TIP: If you don't want to step up (or don't have) a PipeCD controlplane API server, you can login to [https://play.pipecd.dev](https://play.pipecd.dev/login?project=play) and use its API with your authenticated account.
