@@ -204,14 +204,14 @@ Run `kubectl port-forward -n pipecd svc/pipecd 8080` forward your local port to 
 
 #### Access the PipeCD UI
 
-After port-forwarding, to access the PipeCD Control Plane console, you can use one of the two following ways depend on your wish:
-1. For quick access to existing web `http://localhost:8080?project=quickstart`.
-2. OR, for web development purpose, you can follow [this guidance](/web/README.md) to run web separately and access it at `http://localhost:9090?project=quickstart`. The web UI will be hot reloaded whenever you make change on `web` folder.
+After port-forwarding, you can now access the PipeCD Control Plane console at `http://localhost:8080?project=quickstart`.
 
 To login, you can use the configured static admin account as below:
 
 - username: `hello-pipecd`
 - password: `hello-pipecd`
+
+[Note] for frontend hot reload on local web development, you can follow [this guidance](/web/README.md) to run web separately (by setting API_ENDPOINT="http://localhost:8080" and also it's API_COOKIE), and access it at `http://localhost:9090?project=quickstart`.
 
 #### Run Piped Agent
 
