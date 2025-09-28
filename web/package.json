@@ -5,8 +5,8 @@
   "private": true,
   "license": "Apache-2.0",
   "scripts": {
-    "build": "webpack build --mode production --env htmlTemplate=./base.html --config ./webpack.config.js",
-    "dev": "webpack serve --env htmlTemplate=./base.html --config ./webpack.config.dev.js",
+    "build": "PIPECD_VERSION=${PIPECD_VERSION:-`git describe --tags --always --dirty --abbrev=7 --match 'v[0-9]*.*'`} webpack build --mode production --env htmlTemplate=./base.html --config ./webpack.config.js",
+    "dev": "PIPECD_VERSION=${PIPECD_VERSION:-`git describe --tags --always --dirty --abbrev=7 --match 'v[0-9]*.*'`} webpack serve --env htmlTemplate=./base.html --config ./webpack.config.dev.js",
     "test": "TZ=Asia/Tokyo jest --config jest.config.local.js",
     "test:coverage": "yarn test --coverage",
     "lint": "eslint --ext .ts,.tsx ./src",
