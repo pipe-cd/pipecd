@@ -159,7 +159,7 @@ run/pipecd: CONTROL_PLANE_VALUES ?= ./quickstart/control-plane-values.yaml
 run/pipecd: PIPECD_VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7 --match 'v[0-9]*.*')
 run/pipecd:
 	@echo "Building docker image and pushing it to local registry..."
-	docker build -f cmd/pipecd/Dockerfile -t localhost:5001/pipecd:$(BUILD_VERSION) --build-arg PIPECD_VERSION=$(PIPECD_VERSION) .
+	docker build -f cmd/pipecd/Dockerfile -t localhost:5001/pipecd:$(BUILD_VERSION) --build-arg BUILD_VERSION=$(PIPECD_VERSION) .
 	docker push localhost:5001/pipecd:$(BUILD_VERSION)
 
 	@echo "Installing Control Plane in kind..."
@@ -190,9 +190,9 @@ else
 endif
 
 .PHONY: run/web
-run/web: PIPECD_VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7 --match 'v[0-9]*.*')
+run/web: BUILD_VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7 --match 'v[0-9]*.*')
 run/web:
-	PIPECD_VERSION=$(PIPECD_VERSION) yarn --cwd web dev
+	BUILD_VERSION=$(BUILD_VERSION) yarn --cwd web dev
 
 .PHONY: run/site
 run/site:
