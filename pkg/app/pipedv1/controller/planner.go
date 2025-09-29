@@ -573,6 +573,7 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, out *plannerOutpu
 
 	req := &pipedservice.ReportDeploymentPlannedRequest{
 		DeploymentId:              p.deployment.Id,
+		SyncStrategy:              out.SyncStrategy,
 		Summary:                   out.Summary,
 		StatusReason:              "The deployment has been planned",
 		RunningCommitHash:         p.lastSuccessfulCommitHash,
