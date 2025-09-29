@@ -16,6 +16,7 @@ package sdk
 
 import (
 	"context"
+	"fmt"
 	"iter"
 	"slices"
 	"time"
@@ -89,9 +90,9 @@ type Client struct {
 	// This field exists only when the client is working with a specific stage; for example, when this client is passed as the ExecuteStage method's argument.
 	stageID string
 
-	// logPersister is used to persist the stage logs.
+	// stageLogPersister is used to persist the stage logs.
 	// This field exists only when the client is working with a specific stage; for example, when this client is passed as the ExecuteStage method's argument.
-	logPersister StageLogPersister
+	stageLogPersister StageLogPersister
 
 	// toolRegistry is used to install and get the path of the tools used in the plugin.
 	// TODO: We should consider installing the tools in other way.
@@ -101,14 +102,14 @@ type Client struct {
 // NewClient creates a new client.
 // DO NOT USE this function except in tests.
 // FIXME: Remove this function and make a better way for tests.
-func NewClient(base *pluginServiceClient, pluginName, applicationID, stageID string, lp StageLogPersister, tr *toolregistry.ToolRegistry) *Client {
+func NewClient(base *pluginServiceClient, pluginName, applicationID, stageID string, slp StageLogPersister, tr *toolregistry.ToolRegistry) *Client {
 	return &Client{
-		base:          base,
-		pluginName:    pluginName,
-		applicationID: applicationID,
-		stageID:       stageID,
-		logPersister:  lp,
-		toolRegistry:  tr,
+		base:              base,
+		pluginName:        pluginName,
+		applicationID:     applicationID,
+		stageID:           stageID,
+		stageLogPersister: slp,
+		toolRegistry:      tr,
 	}
 }
 
@@ -232,13 +233,23 @@ func (c *Client) PutApplicationSharedObject(ctx context.Context, key string, obj
 	return err
 }
 
+// StageLogPersister returns the stage log persister.
+// Use this to persist the stage logs and make it viewable on the UI.
+// This method should be called only when the client is working with a specific stage, for example, when this client is passed as the ExecuteStage method's argument.
+func (c *Client) StageLogPersister() (StageLogPersister, error) {
+	if c.stageLogPersister == nil {
+		return nil, fmt.Errorf("stage log persister is not set")
+	}
+	return c.stageLogPersister, nil
+}
+
 // LogPersister returns the stage log persister.
 // Use this to persist the stage logs and make it viewable on the UI.
 // This method should be called only when the client is working with a specific stage, for example, when this client is passed as the ExecuteStage method's argument.
 // Otherwise, it will return nil.
-// TODO: we should consider returning an error instead of nil, or return logger which prints to stdout.
+// deprecated: use StageLogPersister instead.
 func (c *Client) LogPersister() StageLogPersister {
-	return c.logPersister
+	return c.stageLogPersister
 }
 
 // ToolRegistry returns the tool registry.
