@@ -16,6 +16,7 @@ package sdk
 
 import (
 	"context"
+	"fmt"
 	"iter"
 	"slices"
 	"time"
@@ -235,9 +236,19 @@ func (c *Client) PutApplicationSharedObject(ctx context.Context, key string, obj
 // StageLogPersister returns the stage log persister.
 // Use this to persist the stage logs and make it viewable on the UI.
 // This method should be called only when the client is working with a specific stage, for example, when this client is passed as the ExecuteStage method's argument.
+func (c *Client) StageLogPersister() (StageLogPersister, error) {
+	if c.stageLogPersister == nil {
+		return nil, fmt.Errorf("stage log persister is not set")
+	}
+	return c.stageLogPersister, nil
+}
+
+// LogPersister returns the stage log persister.
+// Use this to persist the stage logs and make it viewable on the UI.
+// This method should be called only when the client is working with a specific stage, for example, when this client is passed as the ExecuteStage method's argument.
 // Otherwise, it will return nil.
-// TODO: we should consider returning an error instead of nil, or return logger which prints to stdout.
-func (c *Client) StageLogPersister() StageLogPersister {
+// deprecated: use StageLogPersister instead.
+func (c *Client) LogPersister() StageLogPersister {
 	return c.stageLogPersister
 }
 
