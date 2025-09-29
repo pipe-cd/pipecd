@@ -604,21 +604,23 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 		},
 	})
 
-	// Return stage failure status if the plugin execution failed and the context is not cancelled.
-	// The cause probably is the plugin binary is not available.
-	if err != nil && ctx.Err() == nil {
-		s.logger.Error("failed to execute stage", zap.String("stage-name", ps.Name), zap.Error(err))
+	// Handle context error.
+	if ctx.Err() != nil {
+		if ctx.Err() == context.Canceled {
+			s.logger.Info("stage execution cancelled", zap.String("stage-name", ps.Name))
+			return model.StageStatus_STAGE_CANCELLED
+		}
+		if ctx.Err() == context.DeadlineExceeded {
+			s.logger.Info("stage execution timed out", zap.String("stage-name", ps.Name))
+			return model.StageStatus_STAGE_FAILURE
+		}
+		s.logger.Error("stage execution context failed", zap.String("stage-name", ps.Name), zap.Error(ctx.Err()))
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	// Handle case where res is nil.
-	if res == nil {
-		// If context was cancelled, return stage cancelled status
-		if ctx.Err() == context.Canceled {
-			return model.StageStatus_STAGE_CANCELLED
-		}
-		// Otherwise, this is an unexpected nil response
-		s.logger.Error("unexpected nil response from plugin", zap.String("stage-name", ps.Name))
+	// Handle plugin execution failure.
+	if err != nil {
+		s.logger.Error("failed to execute stage", zap.String("stage-name", ps.Name), zap.Error(err))
 		return model.StageStatus_STAGE_FAILURE
 	}
 
