@@ -298,6 +298,10 @@ message ReportDeploymentPlannedRequest {
     string running_commit_hash = 4;
     // The config file name used by the last successful deployment.
     string running_config_filename = 9;
+    // The sync strategy of the deployment.
+    // Value is one of: QUICK_SYNC, PIPELINE.
+    // AUTO strategy is converted to QUICK_SYNC or PIPELINE by piped on planning step.
+    model.SyncStrategy sync_strategy = 11;
     // The application version this deployment is trying to deploy.
     string version = 5;
     repeated model.ArtifactVersion versions = 10;

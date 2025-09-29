@@ -145,7 +145,7 @@ func (m Manifest) IsWorkload() bool {
 	}
 
 	switch m.body.GetKind() {
-	case KindDeployment, KindReplicaSet, KindDaemonSet, KindPod:
+	case KindDeployment, KindReplicaSet, KindDaemonSet, KindPod, KindStatefulSet:
 		return true
 	default:
 		return false
@@ -164,6 +164,13 @@ func (m Manifest) IsService() bool {
 func (m Manifest) IsDeployment() bool {
 	// TODO: check the API group more strictly.
 	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindDeployment
+}
+
+// IsStatefulSet returns true if the manifest is a StatefulSet.
+// It checks the API group and the kind of the manifest.
+func (m Manifest) IsStatefulSet() bool {
+	// TODO: check the API group more strictly.
+	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindStatefulSet
 }
 
 // IsSecret returns true if the manifest is a Secret.
