@@ -171,24 +171,24 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 	return newQuickSyncStagesResponse(time.Now(), response), nil
 }
 func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (response *deployment.ExecuteStageResponse, _ error) {
-	lp := s.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId())
+	slp := s.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId())
 	defer func() {
 		// When termination signal received and the stage is not completed yet, we should not mark the log persister as completed.
 		// This can occur when the piped is shutting down while the stage is still running.
 		if !response.GetStatus().IsCompleted() && signalhandler.Terminated() {
 			return
 		}
-		lp.Complete(time.Minute)
+		slp.Complete(time.Minute)
 	}()
 
 	client := &Client{
-		base:          s.client,
-		pluginName:    s.name,
-		applicationID: request.GetInput().GetDeployment().GetApplicationId(),
-		deploymentID:  request.GetInput().GetDeployment().GetId(),
-		stageID:       request.GetInput().GetStage().GetId(),
-		logPersister:  lp,
-		toolRegistry:  s.toolRegistry,
+		base:              s.client,
+		pluginName:        s.name,
+		applicationID:     request.GetInput().GetDeployment().GetApplicationId(),
+		deploymentID:      request.GetInput().GetDeployment().GetId(),
+		stageID:           request.GetInput().GetStage().GetId(),
+		stageLogPersister: slp,
+		toolRegistry:      s.toolRegistry,
 	}
 
 	// Get the deploy targets set on the deployment from the piped plugin config.
@@ -241,24 +241,24 @@ func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigS
 	return &deployment.BuildQuickSyncStagesResponse{}, nil
 }
 func (s *StagePluginServiceServer[Config, DeployTargetConfig, ApplicationConfigSpec]) ExecuteStage(ctx context.Context, request *deployment.ExecuteStageRequest) (response *deployment.ExecuteStageResponse, _ error) {
-	lp := s.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId())
+	slp := s.logPersister.StageLogPersister(request.GetInput().GetDeployment().GetId(), request.GetInput().GetStage().GetId())
 	defer func() {
 		// When termination signal received and the stage is not completed yet, we should not mark the log persister as completed.
 		// This can occur when the piped is shutting down while the stage is still running.
 		if !response.GetStatus().IsCompleted() && signalhandler.Terminated() {
 			return
 		}
-		lp.Complete(time.Minute)
+		slp.Complete(time.Minute)
 	}()
 
 	client := &Client{
-		base:          s.client,
-		pluginName:    s.name,
-		applicationID: request.GetInput().GetDeployment().GetApplicationId(),
-		deploymentID:  request.GetInput().GetDeployment().GetId(),
-		stageID:       request.GetInput().GetStage().GetId(),
-		logPersister:  lp,
-		toolRegistry:  s.toolRegistry,
+		base:              s.client,
+		pluginName:        s.name,
+		applicationID:     request.GetInput().GetDeployment().GetApplicationId(),
+		deploymentID:      request.GetInput().GetDeployment().GetId(),
+		stageID:           request.GetInput().GetStage().GetId(),
+		stageLogPersister: slp,
+		toolRegistry:      s.toolRegistry,
 	}
 
 	return executeStage(ctx, s.name, s.base, s.pluginConfig, nil, client, request, s.logger) // TODO: pass the deployTargets
