@@ -247,7 +247,7 @@ func (c *Client) StageLogPersister() (StageLogPersister, error) {
 // Use this to persist the stage logs and make it viewable on the UI.
 // This method should be called only when the client is working with a specific stage, for example, when this client is passed as the ExecuteStage method's argument.
 // Otherwise, it will return nil.
-// deprecated: use StageLogPersister instead.
+// Deprecated: use StageLogPersister instead.
 func (c *Client) LogPersister() StageLogPersister {
 	return c.stageLogPersister
 }
