@@ -17,12 +17,14 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/creasty/defaults"
 )
 
 // WaitApprovalStageOptions contains configurable values for a WAIT_APPROVAL stage.
 type waitApprovalStageOptions struct {
 	Approvers      []string `json:"approvers,omitempty"`
-	MinApproverNum int      `json:"minApproverNum,omitempty"`
+	MinApproverNum int      `json:"minApproverNum,omitempty" default:"1"`
 }
 
 func (o waitApprovalStageOptions) validate() error {
@@ -40,6 +42,9 @@ func decode(data json.RawMessage) (waitApprovalStageOptions, error) {
 	var opts waitApprovalStageOptions
 	if err := json.Unmarshal(data, &opts); err != nil {
 		return waitApprovalStageOptions{}, fmt.Errorf("failed to unmarshal the config: %w", err)
+	}
+	if err := defaults.Set(&opts); err != nil {
+		return waitApprovalStageOptions{}, fmt.Errorf("failed to set defaults: %w", err)
 	}
 	if err := opts.validate(); err != nil {
 		return waitApprovalStageOptions{}, fmt.Errorf("failed to validate the config: %w", err)
