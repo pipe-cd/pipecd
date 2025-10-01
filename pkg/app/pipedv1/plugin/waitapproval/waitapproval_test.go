@@ -31,7 +31,7 @@ import (
 
 // mockStageClient satisfies StageClient for tests.
 type mockStageClient struct {
-	slp           sdk.StageLogPersister
+	lp            sdk.StageLogPersister
 	stageMetadata map[string]string
 	commands      []*sdk.StageCommand
 }
@@ -39,7 +39,7 @@ type mockStageClient struct {
 func newMockStageClient(t *testing.T) *mockStageClient {
 	t.Helper()
 	return &mockStageClient{
-		slp:           logpersistertest.NewTestLogPersister(t),
+		lp:            logpersistertest.NewTestLogPersister(t),
 		stageMetadata: map[string]string{},
 	}
 }
@@ -115,7 +115,7 @@ func Test_checkApproval(t *testing.T) {
 			}
 			m.commands = tc.commands
 
-			approved := p.checkApproval(ctx, tc.minApprovers, m.slp, m)
+			approved := p.checkApproval(ctx, tc.minApprovers, m.lp, m)
 			assert.Equal(t, tc.wantApproved, approved)
 
 			gotUsers := strings.Split(m.stageMetadata[sdk.MetadataKeyStageApprovedUsers], ", ")
