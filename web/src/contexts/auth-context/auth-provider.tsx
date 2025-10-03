@@ -3,19 +3,7 @@ import { AuthContext, AuthContextType } from "./auth-context";
 import { GetMeResponse } from "~~/api_client/service_pb";
 import { useGetMe } from "~/queries/me/use-get-me";
 import { useLocation } from "react-router-dom";
-import {
-  LOGIN_ENDPOINT,
-  LOGOUT_ENDPOINT,
-  PAGE_PATH_LOGIN,
-  STATIC_LOGIN_ENDPOINT,
-} from "~/constants/path";
-
-const PATH_PUBLIC = [
-  PAGE_PATH_LOGIN,
-  STATIC_LOGIN_ENDPOINT,
-  LOGIN_ENDPOINT,
-  LOGOUT_ENDPOINT,
-];
+import { PAGE_PATH_LOGIN } from "~/constants/path";
 
 export const AuthProvider: FC<PropsWithChildren<unknown>> = ({ children }) => {
   const path = useLocation();
@@ -25,7 +13,7 @@ export const AuthProvider: FC<PropsWithChildren<unknown>> = ({ children }) => {
 
   const { data, isInitialLoading } = useGetMe({
     retry: false,
-    enabled: !PATH_PUBLIC.includes(path.pathname),
+    meta: { preventGlobalError: path.pathname === PAGE_PATH_LOGIN },
   });
 
   useEffect(() => {
