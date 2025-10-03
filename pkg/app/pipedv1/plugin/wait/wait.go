@@ -32,9 +32,14 @@ const (
 
 // executeWait starts waiting for the specified duration.
 func (p *plugin) executeWait(ctx context.Context, in *sdk.ExecuteStageInput[struct{}]) sdk.StageStatus {
+	slp, err := in.Client.StageLogPersister()
+	if err != nil {
+		in.Logger.Error("No stage log persister available", zap.Error(err))
+		return sdk.StageStatusFailure
+	}
 	opts, err := decode(in.Request.StageConfig)
 	if err != nil {
-		in.Client.LogPersister().Errorf("failed to decode the stage config: %v", err)
+		slp.Errorf("failed to decode the stage config: %v", err)
 		return sdk.StageStatusFailure
 	}
 
@@ -48,7 +53,7 @@ func (p *plugin) executeWait(ctx context.Context, in *sdk.ExecuteStageInput[stru
 	}
 	p.saveStartTime(ctx, in.Client, initialStart, in.Logger)
 
-	return wait(ctx, duration, initialStart, in.Client.LogPersister())
+	return wait(ctx, duration, initialStart, slp)
 }
 
 func wait(ctx context.Context, duration time.Duration, initialStart time.Time, slp sdk.StageLogPersister) sdk.StageStatus {
