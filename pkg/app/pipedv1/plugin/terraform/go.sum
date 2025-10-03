@@ -228,6 +228,8 @@ github.com/pipe-cd/pipecd v0.54.0-rc1.0.20250912082650-0b949bb7aac9 h1:kyFMfrjAS
 github.com/pipe-cd/pipecd v0.54.0-rc1.0.20250912082650-0b949bb7aac9/go.mod h1:etCJcXHbrFxuh9fG3MNBTZLKG8EQ1v+ZEGn9Rb/mK1o=
 github.com/pipe-cd/piped-plugin-sdk-go v0.2.0 h1:Le7IREhbLTm+PNiLcTcRUQ5Kep+OcvQbFa0tjgD/7gc=
 github.com/pipe-cd/piped-plugin-sdk-go v0.2.0/go.mod h1:qoRDN5uSt2kUs5hcNfvs8QIQYCnPVTKyKqUMf80RFFA=
+github.com/pipe-cd/piped-plugin-sdk-go v0.3.0 h1:pXBEHqKxsYZVXav9J1SkT36LNCNLHXGK99J6YfX1oQ4=
+github.com/pipe-cd/piped-plugin-sdk-go v0.3.0/go.mod h1:qoRDN5uSt2kUs5hcNfvs8QIQYCnPVTKyKqUMf80RFFA=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=

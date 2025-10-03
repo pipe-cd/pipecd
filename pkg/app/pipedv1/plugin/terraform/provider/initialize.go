@@ -34,10 +34,13 @@ func NewTerraformCommand(ctx context.Context, client *sdk.Client, ds sdk.Deploym
 	)
 
 	var infoWriter io.Writer
-	infoWriter = client.LogPersister()
-	if infoWriter == nil {
-		// logPersister is nil when this functions is called outside deployment.
+	slp, err := client.StageLogPersister()
+	if err != nil {
+		// stage log persister is not available when this functions is called outside deployment.
+		// so we use io.Discard to avoid logging errors.
 		infoWriter = io.Discard
+	} else {
+		infoWriter = slp
 	}
 
 	tr := toolregistry.NewRegistry(client.ToolRegistry())

@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/hashicorp/hcl/v2 v2.0.0
-	github.com/pipe-cd/piped-plugin-sdk-go v0.2.0
+	github.com/pipe-cd/piped-plugin-sdk-go v0.3.0
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.19.1
 )
