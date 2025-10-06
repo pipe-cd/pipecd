@@ -121,18 +121,6 @@ jobs:
           fetch-depth: 0
       - name: Determine version
         run: echo "PIPECD_VERSION=$(git describe --tags --always --abbrev=7 --match 'v[0-9]*.*')" >> $GITHUB_ENV
-      # Notify PipeCD to trigger update dev environment via EventWatcher.
-      - uses: pipe-cd/actions-event-register@v1.2.0
-        with:
-          api-address: ${{ secrets.PIPECD_API_ADDRESS }}
-          api-key: ${{ secrets.PIPECD_API_KEY }}
-          event-name: helm-release
-          labels: helmRepo=pipecd,env=dev
-          data: ${{ env.PIPECD_VERSION }}
-          commit-hash: ${{ github.sha }}
-          commit-url: https://github.com/pipe-cd/pipecd/commit/${{ github.sha }}
-          commit-author: ${{ github.actor }}
-          contexts: Source-Commit-URL=https://github.com/pipe-cd/pipecd/commit/${{ github.sha }}
       # Notify PipeCD to trigger update demo environment via EventWatcher.
       - uses: pipe-cd/actions-event-register@v1.2.0
         with:
