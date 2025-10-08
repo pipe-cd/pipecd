@@ -28,7 +28,7 @@ import (
 const dir = "/public"
 
 // Don't update here manually. /hack/gen-release-docs.sh does.
-const latestPath = "/docs-v0.54.x/"
+const latestPath = "/docs-v0.55.x/"
 
 func main() {
 	var (
