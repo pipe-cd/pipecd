@@ -3,18 +3,20 @@ title: "Mirgrating from v0 to v1"
 linkTitle: "Mirgrating from v0 to v1"
 weight: 90
 description: >
-  Documentation on migrating PipeCD v0 deployments to PipeCD v1
+  Documentation on migrating your Application from pipedv0 to pipedv1
 ---
 
-This page explains how to migrate your existing PipeCD system to **piped v1**, the new plugin-based architecture that brings modularity and extensibility to PipeCD.
+This page explains how to safely migrate your existing PipeCD System to the RC version of **PipeCD V1**, the new plugin-based architecture that brings modularity and extensibility to PipeCD.
 
 ## Overview
 
-PipeCD v1 (internally referred to as *pipedv1*) introduces a **pluggable architecture** that allows developers to add and maintain custom deployment and operational plugins without modifying the core system of PipeCD.
+PipeCD V1 introduces a **pluggable architecture** that allows developers to add and maintain custom deployment and operational plugins without modifying the core system of PipeCD.
 
-Migration from v0 is designed to be **safe** and **incremental**, allowing you to switch between piped and pipedv1 during the process with minimal disruption.
+Migration from v0 is designed to be **safe** and **incremental**, allowing you to switch to PipeCD V1 with minimal disruption.
 
 ## Components
+
+The PipeCD System has 2 main components:
 
 | Component | Description | Compatibility |
 |------------|--------------|----------------|
@@ -33,7 +35,7 @@ Before you start, ensure that:
 - You have access to your Control Plane with **API write permissions**.
 
 > **Note:** If you’re new to the plugin architecture, read:
-
+>
 > - [Overview of the plan for plugin-enabled PipeCD](https://pipecd.dev/blog/2024/11/28/overview-of-the-plan-for-pluginnable-pipecd/)
 > - [What’s new in pipedv1](https://pipecd.dev/blog/2025/09/02/what-is-new-in-pipedv1-plugin-arch-piped/)
 
@@ -43,16 +45,15 @@ Before you start, ensure that:
 
 The migration flow involves the following steps:
 
-1. Update `piped` and `pipectl` binaries.  
-2. Convert application configurations to the v1 format.  
-3. Update the application model in the Control Plane database.  
-4. Update piped configuration for v1 (plugins).  
-5. Deploy and verify pipedv1.  
-6. Optionally, switch back to the old piped.
+1. [Update `pipectl`](#1-update-pipectl)
+2. [Convert application configurations to the v1 format](#2-convert-application-configurations-to-v1-format)
+3. [Update the application model in the Control Plane database](#3-update-application-model-in-control-plane-database)
+4. [Update piped configuration for v1](#4-update-piped-configuration-for-v1-plugin-definition)
+5. [Deploy and verify pipedv1](#5-installing-pipedv1)
 
 ---
 
-## 1. Update piped and pipectl
+## 1. Update pipectl
 
 Install or upgrade your `pipectl` to **v0.54.0-rc1 or newer**:
 
@@ -69,7 +70,12 @@ Verify the version:
 pipectl version
 ```
 
-> **Note:** The OS and the ARCH are supposed to be replaced by your own thing. Additonally you may also want to get a differnt release of it. Check the releases here and get your URL. Example: # OS: "darwin" or "linux" | CPU_ARCH: "arm64" or "amd64"
+>**Note:**
+>Replace `<OS>` and `<ARCH>` in the URL with your system values:
+> - "OS: `linux` or `darwin`"
+> - "ARCH: `amd64` or `arm64`"
+>
+>You can check all releases on the [Pipecd Releases](https://github.com/pipe-cd/pipecd/releases) page.
 
 ## 2. Convert Application Configurations to v1 Format
 
