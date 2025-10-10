@@ -63,7 +63,11 @@ build/plugin: PLUGINS_BIN_DIR ?= ~/.piped/plugins
 build/plugin: PLUGINS_SRC_DIR ?= ./pkg/app/pipedv1/plugin
 build/plugin: PLUGINS_OUT_DIR ?= ${PWD}/.artifacts/plugins
 build/plugin: PLUGINS ?= $(shell find $(PLUGINS_SRC_DIR) -mindepth 1 -maxdepth 1 -type d | while read -r dir; do basename "$$dir"; done | paste -sd, -) # comma separated list of plugins. eg: PLUGINS=kubernetes,ecs,lambda
-build/plugin: BUILD_OPTS ?= -ldflags "-s -w" -trimpath
+build/plugin: BUILD_VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7 --match 'v[0-9]*.*')
+build/plugin: BUILD_COMMIT ?= $(shell git rev-parse HEAD)
+build/plugin: BUILD_DATE ?= $(shell date -u '+%Y%m%d-%H%M%S')
+build/plugin: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
+build/plugin: BUILD_OPTS ?= -ldflags "$(BUILD_LDFLAGS_PREFIX).version=$(BUILD_VERSION) $(BUILD_LDFLAGS_PREFIX).gitCommit=$(BUILD_COMMIT) $(BUILD_LDFLAGS_PREFIX).buildDate=$(BUILD_DATE) -s -w" -trimpath
 build/plugin: BUILD_OS ?= $(shell go version | cut -d ' ' -f4 | cut -d/ -f1)
 build/plugin: BUILD_ARCH ?= $(shell go version | cut -d ' ' -f4 | cut -d/ -f2)
 build/plugin: BUILD_ENV ?= GOOS=$(BUILD_OS) GOARCH=$(BUILD_ARCH) CGO_ENABLED=0
