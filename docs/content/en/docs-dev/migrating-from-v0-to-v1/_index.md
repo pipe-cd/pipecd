@@ -1,9 +1,9 @@
 ---
-title: "Mirgrating from v0 to v1"
-linkTitle: "Mirgrating from v0 to v1"
+title: "Migrating to PipeCD V1"
+linkTitle: "Migrating to PipeCD V1"
 weight: 90
 description: >
-  Documentation on migrating your Application from pipedv0 to pipedv1
+  Documentation on migrating your application from PipeCD V0 to V1
 ---
 
 This page explains how to safely migrate your existing PipeCD System to the RC version of **PipeCD V1**, the new plugin-based architecture that brings modularity and extensibility to PipeCD.
@@ -21,7 +21,7 @@ The PipeCD System has 2 main components:
 | Component | Description | Compatibility |
 |------------|--------------|----------------|
 | **Control Plane** | Manages projects, deployments, and applications. | Supports both piped and pipedv1 concurrently. |
-| **Piped** | Manages the actual deployment and syncing of applications. | Backward compatible - You can switch between versions safely. |
+| **Piped** | Manages the actual deployment and syncing of applications. | Backward compatible - You can switch back to old piped versions. |
 
 ---
 
@@ -29,9 +29,13 @@ The PipeCD System has 2 main components:
 
 Before you start, ensure that:
 
-- You are running PipeCD **v0.54.0-rc1 or later**.
+- You are running PipeCD **v0.55.0 or later**.
 - You have the **latest Control Plane** installed.
+<<<<<<< Updated upstream
 - You have **pipectl v0.54.0-rc1 or later**.
+=======
+- You have **pipectl v0.55.0 or later**.
+>>>>>>> Stashed changes
 
 > **Note:** If you’re new to the plugin architecture, read:
 >
