@@ -224,7 +224,7 @@ Example:
 >**Warning:**
 > Before switching to `pipedv1`, stop your existing Piped process to avoid conflicts, as both versions use the same `piped-id`.
 
-Once you successfully install the `pipedv1` binary, there are a few different ways to deploy it.
+Once you have prepared your pipedv1 configuration, there are a few different ways to deploy it.
 
 ### Option 1 - Deploy via Helm (Kubernetes)
 
