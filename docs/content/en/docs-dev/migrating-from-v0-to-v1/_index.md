@@ -29,9 +29,9 @@ The PipeCD System has 2 main components:
 
 Before you start, ensure that:
 
-- You are running PipeCD **v0.54.0 or later**.
+- You are running the latest version of PipeCD **(v0.55.0)**.
 - You have the **latest Control Plane** installed.
-- You have **pipectl v0.54.0-rc1 or later**.
+- You have the **latest version of `pipectl` and `piped`**.
 
 > **Note:** If you’re new to the plugin architecture, read:
 >
@@ -54,11 +54,11 @@ The migration flow involves the following steps:
 
 ## 1. Update pipectl
 
-Install or upgrade your `pipectl` to **v0.54.0-rc1 or newer**:
+Install or upgrade your `pipectl` to the latest version
 
 ```bash
 # Example for upgrading pipectl
-curl -Lo ./pipectl https://github.com/pipe-cd/pipecd/releases/download/v0.54.0-rc1/pipectl_<OS>_<ARCH>
+curl -Lo ./pipectl https://github.com/pipe-cd/pipecd/releases/download/v0.55.0/pipectl_<OS>_<ARCH>
 chmod +x ./pipectl
 mv ./pipectl /usr/local/bin/
 ```
@@ -78,6 +78,9 @@ pipectl version
 
 ## 2. Convert Application Configurations to v1 Format
 
+
+#add-example
+
 Convert your existing `app.pipecd.yaml` configurations to the new **v1 format**:
 
 ```bash
@@ -91,8 +94,27 @@ Or specify an entire directory:
 pipectl migrate application-config --dirs=path/to/apps/
 ```
 
+Here is an example for a simple app.pippcd.yaml file which demonstrates a kubernetes deployment and simulates a 30s wait:
+
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: Application
+spec:
+  name: v1-kubernetes-wait
+  labels:
+    owner: pipecd
+    env: local
+  planner:
+    alwaysUsePipeline: true
+  pipeline:
+    stages:
+      - name: WAIT
+        with:
+          duration: 30s
+```
+
 After conversion, your `app.pipecd.yaml` files will be compatible with both `piped` and `pipedv1`.
-> **Recommended:** Trigger a deployment using your current (v0.54.x) piped after converting configurations to verify backward compatibility.
+> **Recommended:** Trigger a deployment using the latest piped version after converting configurations to verify backward compatibility.
 
 ## 3. Update Application Model in Control Plane Database
 
@@ -195,6 +217,7 @@ All official builds are published under the [Pipecd Releases](https://github.com
 
 Example:
 
+- [v1.0.0-rc6](https://github.com/pipe-cd/pipecd/releases/tag/pipedv1%2Fexp%2Fv1.0.0-rc6)
 - [v1.0.0-rc5](https://github.com/pipe-cd/pipecd/releases/tag/pipedv1%2Fexp%2Fv1.0.0-rc5)
 - [v1.0.0-rc3](https://github.com/pipe-cd/pipecd/releases/tag/pipedv1%2Fexp%2Fv1.0.0-rc3)
 
@@ -209,7 +232,7 @@ If you are deploying Piped as a pod in a Kubernetes cluster, use the following H
 
 ```bash
 helm upgrade -i pipedv1-exp oci://ghcr.io/pipe-cd/chart/pipedv1-exp \
-  --version=v1.0.0-rc3 \
+  --version=v1.0.0-rc6 \
   --namespace=<NAMESPACE_TO_INSTALL_PIPEDV1> \
   --create-namespace \
   --set-file config.data=<PATH_TO_PIPEDV1_CONFIG_FILE> \
@@ -223,7 +246,7 @@ Once downloaded, you can also run the `pipedv1` binary directly in your local en
 ```bash
 # Download pipedv1 binary
 # OS: "darwin" or "linux" | CPU_ARCH: "arm64" or "amd64"
-curl -Lo ./piped https://github.com/pipe-cd/pipecd/releases/download/pipedv1%2Fexp%2Fv1.0.0-rc3/pipedv1_v1.0.0-rc3_<OS>_<CPU_ARCH>
+curl -Lo ./piped https://github.com/pipe-cd/pipecd/releases/download/pipedv1%2Fexp%2Fv1.0.0-rc6/pipedv1_v1.0.0-rc6_<OS>_<CPU_ARCH>
 chmod +x ./piped
 
 # Run piped binary
