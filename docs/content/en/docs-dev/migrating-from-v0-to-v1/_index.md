@@ -32,7 +32,6 @@ Before you start, ensure that:
 - You are running PipeCD **v0.54.0-rc1 or later**.
 - You have the **latest Control Plane** installed.
 - You have **pipectl v0.54.0-rc1 or later**.
-- You have access to your Control Plane with **API write permissions**.
 
 > **Note:** If you’re new to the plugin architecture, read:
 >
