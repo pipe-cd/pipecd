@@ -29,13 +29,9 @@ The PipeCD System has 2 main components:
 
 Before you start, ensure that:
 
-- You are running PipeCD **v0.55.0 or later**.
+- You are running PipeCD **v0.54.0 or later**.
 - You have the **latest Control Plane** installed.
-<<<<<<< Updated upstream
 - You have **pipectl v0.54.0-rc1 or later**.
-=======
-- You have **pipectl v0.55.0 or later**.
->>>>>>> Stashed changes
 
 > **Note:** If you’re new to the plugin architecture, read:
 >
