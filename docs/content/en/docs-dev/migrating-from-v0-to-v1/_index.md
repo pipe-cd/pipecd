@@ -241,7 +241,7 @@ helm upgrade -i pipedv1-exp oci://ghcr.io/pipe-cd/chart/pipedv1-exp \
 
 ### Option 2 - Run the `pipedv1` directly
 
-Once downloaded, you can also run the `pipedv1` binary directly in your local environment:
+You can also run the `pipedv1` binary directly in your local environment:
 
 ```bash
 # Download pipedv1 binary
