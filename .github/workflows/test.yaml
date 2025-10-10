@@ -58,10 +58,18 @@ jobs:
   # It is used to set as required check for the branch protection rules
   go-test-completed:
     runs-on: ubuntu-24.04
+    if: always()
     needs: go
     steps:
-      - run: |
-          echo completed
+      - name: Check if all go test jobs succeeded
+        # if jobs in the 'go' job matrix failed or were cancelled, this job will fail
+        # otherwise this job is marked as successful because all steps are skipped
+        run: exit 1
+        if: >-
+          ${{
+               contains(needs.*.result, 'failure')
+            || contains(needs.*.result, 'cancelled')
+          }}
 
   web:
     runs-on: ubuntu-24.04

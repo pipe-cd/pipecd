@@ -121,7 +121,7 @@ jobs:
           fetch-depth: 0
       - name: Determine version
         run: echo "PIPECD_VERSION=$(git describe --tags --always --abbrev=7 --match 'v[0-9]*.*')" >> $GITHUB_ENV
-      # Notify PipeCD to trigger update dev environment via EventWatcher.
+      # Notify PipeCD to trigger update pipecd.dev website via EventWatcher.
       - uses: pipe-cd/actions-event-register@v1.2.0
         with:
           api-address: ${{ secrets.PIPECD_API_ADDRESS }}

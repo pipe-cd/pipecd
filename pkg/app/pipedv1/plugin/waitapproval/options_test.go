@@ -39,6 +39,15 @@ func TestDecode(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "valid config with default minApproverNum",
+			data: json.RawMessage(`{"approvers":["user1@example.com","user2@example.com"]}`),
+			expected: waitApprovalStageOptions{
+				Approvers:      []string{"user1@example.com", "user2@example.com"},
+				MinApproverNum: 1,
+			},
+			wantErr: false,
+		},
+		{
 			name:     "invalid config",
 			data:     json.RawMessage(`invalid`),
 			expected: waitApprovalStageOptions{},

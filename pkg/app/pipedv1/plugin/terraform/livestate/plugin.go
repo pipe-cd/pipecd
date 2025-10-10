@@ -15,6 +15,7 @@
 package livestate
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"strings"
@@ -46,7 +47,8 @@ func (p *Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, dts []*sdk
 		return nil, err
 	}
 
-	planResult, err := cmd.Plan(ctx, input.Client.LogPersister())
+	buf := &bytes.Buffer{}
+	planResult, err := cmd.Plan(ctx, buf)
 	if err != nil {
 		input.Logger.Error("Failed to execute plan", zap.Error(err))
 		return nil, err

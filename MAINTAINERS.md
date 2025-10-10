@@ -1,12 +1,12 @@
 # PipeCD maintainers
 
-| Name              | GitHub ID (not Twitter ID)                       | Email                                        |
-|-------------------|--------------------------------------------------|----------------------------------------------|
-| Tran Cong Khanh   | [@khanhtc1202](https://github.com/khanhtc1202)   | khanhtc1202@gmail.com                        |
-| Le Van Nghia      | [@nghialv](https://github.com/nghialv)           | nghialv2607@gmail.com                        |
-| Yoshiki Fujikane  | [@ffjlabo](https://github.com/ffjlabo)           | ffjlabo@gmail.com                            |
-| Shinnosuke Sawada | [@Warashi](https://github.com/Warashi)           | shin@warashi.dev                             |
-| Tetsuya Kikuchi   | [@t-kikuc](https://github.com/t-kikuc)           | tkikuchi07f@gmail.com                        |
+| Name                    | GitHub ID (not Twitter ID)                       | Email                                        |
+|-------------------------|--------------------------------------------------|----------------------------------------------|
+| Tran Cong Khanh         | [@khanhtc1202](https://github.com/khanhtc1202)   | khanhtc1202@gmail.com                        |
+| Le Van Nghia            | [@nghialv](https://github.com/nghialv)           | nghialv2607@gmail.com                        |
+| Yoshiki Fujikane        | [@ffjlabo](https://github.com/ffjlabo)           | ffjlabo@gmail.com                            |
+| Shinnosuke Sawada-Dazai | [@Warashi](https://github.com/Warashi)           | shin@warashi.dev                             |
+| Tetsuya Kikuchi         | [@t-kikuc](https://github.com/t-kikuc)           | tkikuchi07f@gmail.com                        |
 
 
 E-mail addresses are expected to be used for reporting security issues. ref [SECURITY.md](./SECURITY.md) \
