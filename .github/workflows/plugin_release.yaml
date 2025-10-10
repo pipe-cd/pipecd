@@ -30,10 +30,10 @@ jobs:
         run: echo "PLUGIN_NAME=$(basename ${{ inputs.path }})" >> $GITHUB_ENV
       - name: Build binary artifacts
         run: |
-          make build/plugin PLUGINS=$PLUGIN_NAME BUILD_OS=linux BUILD_ARCH=amd64 BIN_SUFFIX=_${{ inputs.version }}_linux_amd64
-          make build/plugin PLUGINS=$PLUGIN_NAME BUILD_OS=linux BUILD_ARCH=arm64 BIN_SUFFIX=_${{ inputs.version }}_linux_arm64
-          make build/plugin PLUGINS=$PLUGIN_NAME BUILD_OS=darwin BUILD_ARCH=amd64 BIN_SUFFIX=_${{ inputs.version }}_darwin_amd64
-          make build/plugin PLUGINS=$PLUGIN_NAME BUILD_OS=darwin BUILD_ARCH=arm64 BIN_SUFFIX=_${{ inputs.version }}_darwin_arm64
+          make build/plugin PLUGINS=$PLUGIN_NAME BUILD_VERSION=${{ inputs.version }} BUILD_OS=linux BUILD_ARCH=amd64 BIN_SUFFIX=_${{ inputs.version }}_linux_amd64
+          make build/plugin PLUGINS=$PLUGIN_NAME BUILD_VERSION=${{ inputs.version }} BUILD_OS=linux BUILD_ARCH=arm64 BIN_SUFFIX=_${{ inputs.version }}_linux_arm64
+          make build/plugin PLUGINS=$PLUGIN_NAME BUILD_VERSION=${{ inputs.version }} BUILD_OS=darwin BUILD_ARCH=amd64 BIN_SUFFIX=_${{ inputs.version }}_darwin_amd64
+          make build/plugin PLUGINS=$PLUGIN_NAME BUILD_VERSION=${{ inputs.version }} BUILD_OS=darwin BUILD_ARCH=arm64 BIN_SUFFIX=_${{ inputs.version }}_darwin_arm64
       - env:
           INPUT_VERSION: ${{ inputs.version }}
           INPUT_PATH: ${{ inputs.path }}
