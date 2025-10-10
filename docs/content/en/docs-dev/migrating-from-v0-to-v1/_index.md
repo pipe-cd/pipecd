@@ -100,7 +100,7 @@ Use `pipectl` to update the application models stored in your Control Plane data
 
 You’ll need an API key with write permission. Check:
 
-- [Generating an API key](https://pipecd.dev/docs-v0.53.x/user-guide/command-line-tool/#authentication)
+- [Generating an API key](https://pipecd.dev/docs/user-guide/command-line-tool/#authentication)
 
 After obtaining your API key, Run:
 
