@@ -16,34 +16,32 @@ package deployment
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/provider"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+	"go.uber.org/zap"
 )
 
 // TODO: add test
 func (p *Plugin) executeApplyStage(ctx context.Context, input *sdk.ExecuteStageInput[config.ApplicationConfigSpec], dts []*sdk.DeployTarget[config.DeployTargetConfig]) sdk.StageStatus {
+	slp, err := input.Client.StageLogPersister()
+	if err != nil {
+		input.Logger.Error("No stage log persister available", zap.Error(err))
+		return sdk.StageStatusFailure
+	}
 	cmd, err := provider.NewTerraformCommand(ctx, input.Client, input.Request.TargetDeploymentSource, dts[0])
 	if err != nil {
+		slp.Errorf("Failed to initialize Terraform command (%v)", err)
 		return sdk.StageStatusFailure
 	}
 
-	lp := input.Client.LogPersister()
-
-	stageConfig := config.TerraformApplyStageOptions{}
-	if err := json.Unmarshal(input.Request.StageConfig, &stageConfig); err != nil {
-		lp.Errorf("Failed to unmarshal stage config (%v)", err)
+	if err = cmd.Apply(ctx, slp); err != nil {
+		slp.Errorf("Failed to apply changes (%v)", err)
 		return sdk.StageStatusFailure
 	}
 
-	if err = cmd.Apply(ctx, lp); err != nil {
-		lp.Errorf("Failed to apply changes (%v)", err)
-		return sdk.StageStatusFailure
-	}
-
-	lp.Success("Successfully applied changes")
+	slp.Success("Successfully applied changes")
 	return sdk.StageStatusSuccess
 }

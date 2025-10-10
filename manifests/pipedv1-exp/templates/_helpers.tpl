@@ -166,7 +166,7 @@ A set of args for Launcher.
 A set of args for Piped.
 */}}
 {{- define "piped.pipedArgs" -}}
-- piped
+- run
 - --config-file=/etc/piped-config/{{ .Values.config.fileName }}
 - --metrics={{ .Values.args.metrics }}
 - --log-encoding={{ .Values.args.logEncoding }}

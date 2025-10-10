@@ -156,6 +156,12 @@ run/pipecd: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
 run/pipecd: BUILD_OPTS ?= -ldflags "$(BUILD_LDFLAGS_PREFIX).version=$(BUILD_VERSION) $(BUILD_LDFLAGS_PREFIX).gitCommit=$(BUILD_COMMIT) $(BUILD_LDFLAGS_PREFIX).buildDate=$(BUILD_DATE) -w"
 run/pipecd: CONTROL_PLANE_VALUES ?= ./quickstart/control-plane-values.yaml
 run/pipecd:
+	@echo "Building go binary of Control Plane..."
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 $(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipecd ./cmd/pipecd
+
+	@echo "Building web static files..."
+	yarn --cwd web build
+
 	@echo "Building docker image and pushing it to local registry..."
 	docker build -f cmd/pipecd/Dockerfile -t localhost:5001/pipecd:$(BUILD_VERSION) .
 	docker push localhost:5001/pipecd:$(BUILD_VERSION)
@@ -180,7 +186,7 @@ run/piped: LOG_ENCODING ?= humanize
 run/piped: EXPERIMENTAL ?= false
 run/piped:
 ifeq ($(EXPERIMENTAL), true)
-	go run cmd/pipedv1/main.go piped --tools-dir=/tmp/piped-bin --config-file=$(CONFIG_FILE) --insecure=$(INSECURE) --log-encoding=$(LOG_ENCODING)
+	go run cmd/pipedv1/main.go run --tools-dir=/tmp/piped-bin --config-file=$(CONFIG_FILE) --insecure=$(INSECURE) --log-encoding=$(LOG_ENCODING)
 else ifeq ($(LAUNCHER),true)
 	go run cmd/launcher/main.go launcher --config-file=$(CONFIG_FILE) --insecure=$(INSECURE) --log-encoding=$(LOG_ENCODING)
 else
