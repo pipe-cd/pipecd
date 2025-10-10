@@ -905,6 +905,90 @@ spec:
 	}
 }
 
+func TestManifest_IsReplicaSet(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		manifest string
+		want     bool
+	}{
+		{
+			name: "is replicaset",
+			manifest: `
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: nginx-replicaset
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			want: true,
+		},
+		{
+			name: "is not replicaset",
+			manifest: `
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+`,
+			want: false,
+		},
+		{
+			name: "is not replicaset with custom apigroup",
+			manifest: `
+apiVersion: custom.io/v1
+kind: ReplicaSet
+metadata:
+  name: custom-replicaset
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: custom
+  template:
+    metadata:
+      labels:
+        app: custom
+    spec:
+      containers:
+      - name: custom
+        image: custom:1.0.0
+`,
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			manifest := mustParseManifests(t, strings.TrimSpace(tt.manifest))[0]
+			got := manifest.IsReplicaSet()
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func TestManifest_IsWorkload(t *testing.T) {
 	t.Parallel()
 
