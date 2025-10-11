@@ -3,29 +3,37 @@
 # because this stage builds only web assets, we can use any platform
 FROM --platform=$BUILDPLATFORM node:20.19.0-alpine3.21 AS web
 
-WORKDIR /app
+ARG BUILD_VERSION
 
-COPY . .
+WORKDIR /app
 
 RUN apk add --no-cache make git
 
-RUN make update/web-deps
-RUN make build/web
+COPY web/package.json web/yarn.lock ./web/
+RUN yarn --cwd web install --prefer-offline
+
+COPY .git ./.git
+COPY web ./web
+COPY Makefile .
+RUN make build/web PIPECD_VERSION=${BUILD_VERSION}
 
 # pipecd builder
 FROM --platform=$BUILDPLATFORM golang:1.25.0 AS builder
 
 ARG TARGETOS
 ARG TARGETARCH
+ARG BUILD_VERSION
 
 WORKDIR /app
 
 COPY go.* ./
 RUN go mod download
 
-COPY . ./
-
-RUN make build/go MOD=pipecd BUILD_OS=${TARGETOS} BUILD_ARCH=${TARGETARCH}
+COPY .git ./.git
+COPY pkg/ ./pkg/
+COPY cmd/ ./cmd/
+COPY Makefile .
+RUN make build/go MOD=pipecd BUILD_OS=${TARGETOS} BUILD_ARCH=${TARGETARCH} BUILD_VERSION=${BUILD_VERSION}
 
 FROM alpine:3.21.3
 
