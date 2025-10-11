@@ -74,9 +74,30 @@ func (p *Plugin) executeK8sPrimaryRolloutStage(ctx context.Context, input *sdk.E
 	case kubeconfig.KubernetesTrafficRoutingMethodPodSelector:
 		primaryManifests = manifests
 	case kubeconfig.KubernetesTrafficRoutingMethodIstio:
-		// TODO: support routing by Istio
-		lp.Errorf("Traffic routing method %v is not yet implemented", routingMethod)
-		return sdk.StageStatusFailure
+		// In case of routing by Istio,
+		// VirtualService manifest will be used to manipulate the traffic ratio.
+		// Other manifests can be used as primary manifests.
+		// Firstly, find the VirtualService manifests.
+		istioCfg := appCfg.TrafficRouting.Istio
+		if istioCfg == nil {
+			istioCfg = &kubeconfig.IstioTrafficRouting{}
+		}
+		trafficRoutingManifests, err := findIstioVirtualServiceManifests(manifests, istioCfg.VirtualService)
+		if err != nil {
+			lp.Errorf("Failed while finding traffic routing manifest: (%v)", err)
+			return sdk.StageStatusFailure
+		}
+		// Then remove them from the list of primary manifests.
+		// Prior the first one if there are some virtual services.
+		if len(trafficRoutingManifests) > 0 {
+			primaryManifests = make([]provider.Manifest, 0, len(manifests)-1)
+			for _, m := range manifests {
+				if m.Key() == trafficRoutingManifests[0].Key() {
+					continue
+				}
+				primaryManifests = append(primaryManifests, m)
+			}
+		}
 	default:
 		lp.Errorf("Traffic routing method %v is not supported", routingMethod)
 		return sdk.StageStatusFailure

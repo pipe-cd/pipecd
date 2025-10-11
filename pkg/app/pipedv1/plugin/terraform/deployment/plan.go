@@ -22,37 +22,42 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/provider"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+	"go.uber.org/zap"
 )
 
 // TODO: add test
 func (p *Plugin) executePlanStage(ctx context.Context, input *sdk.ExecuteStageInput[config.ApplicationConfigSpec], dts []*sdk.DeployTarget[config.DeployTargetConfig]) sdk.StageStatus {
-	cmd, err := provider.NewTerraformCommand(ctx, input.Client, input.Request.TargetDeploymentSource, dts[0])
+	slp, err := input.Client.StageLogPersister()
 	if err != nil {
+		input.Logger.Error("No stage log persister available", zap.Error(err))
 		return sdk.StageStatusFailure
 	}
-
-	lp := input.Client.LogPersister()
+	cmd, err := provider.NewTerraformCommand(ctx, input.Client, input.Request.TargetDeploymentSource, dts[0])
+	if err != nil {
+		slp.Errorf("Failed to initialize Terraform command (%v)", err)
+		return sdk.StageStatusFailure
+	}
 
 	stageConfig := config.TerraformPlanStageOptions{}
 	if err := json.Unmarshal(input.Request.StageConfig, &stageConfig); err != nil {
-		lp.Errorf("Failed to unmarshal stage config (%v)", err)
+		slp.Errorf("Failed to unmarshal stage config (%v)", err)
 		return sdk.StageStatusFailure
 	}
 
-	planResult, err := cmd.Plan(ctx, lp)
+	planResult, err := cmd.Plan(ctx, slp)
 	if err != nil {
-		lp.Errorf("Failed to plan (%v)", err)
+		slp.Errorf("Failed to plan (%v)", err)
 		return sdk.StageStatusFailure
 	}
 
 	if planResult.NoChanges() {
-		lp.Success("No changes to apply")
+		slp.Success("No changes to apply")
 		if stageConfig.ExitOnNoChanges {
 			return sdk.StageStatusExited
 		}
 		return sdk.StageStatusSuccess
 	}
 
-	lp.Successf("Detected %d import, %d add, %d change, %d destroy.", planResult.Imports, planResult.Adds, planResult.Changes, planResult.Destroys)
+	slp.Successf("Detected %d import, %d add, %d change, %d destroy.", planResult.Imports, planResult.Adds, planResult.Changes, planResult.Destroys)
 	return sdk.StageStatusSuccess
 }

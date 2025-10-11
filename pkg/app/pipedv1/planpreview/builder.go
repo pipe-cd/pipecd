@@ -287,7 +287,7 @@ func (b *builder) buildApp(ctx context.Context, worker int, command string, app 
 			ApplicationId:           app.Id,
 			ApplicationName:         app.Name,
 			PipedId:                 b.pipedCfg.PipedID,
-			DeployTargets:           app.GetDeployTargets(),
+			DeployTargets:           app.GetDeployTargetsByPluginName(plugin.Name()),
 			TargetDeploymentSource:  pluginTargetDS,
 			RunningDeploymentSource: pluginRunningDS,
 		})

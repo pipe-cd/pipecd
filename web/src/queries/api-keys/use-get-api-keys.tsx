@@ -16,6 +16,12 @@ export const useGetApiKeys = (
       const res = await APIKeysAPI.getAPIKeys({ options });
       return res.keysList;
     },
+    retry: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    staleTime: 120000, // 2 minutes
+    cacheTime: 300000, // 5 minutes
     ...queryOption,
   });
 };

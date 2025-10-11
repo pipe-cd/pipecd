@@ -27,10 +27,11 @@ const (
 	KindService = "Service"
 
 	// Workload
-	KindDeployment = "Deployment"
-	KindReplicaSet = "ReplicaSet"
-	KindDaemonSet  = "DaemonSet"
-	KindPod        = "Pod"
+	KindDeployment  = "Deployment"
+	KindReplicaSet  = "ReplicaSet"
+	KindDaemonSet   = "DaemonSet"
+	KindPod         = "Pod"
+	KindStatefulSet = "StatefulSet"
 
 	// ConfigMap and Secret
 	KindSecret    = "Secret"

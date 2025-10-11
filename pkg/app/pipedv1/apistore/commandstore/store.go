@@ -271,15 +271,26 @@ func (s *store) reportCommandHandled(ctx context.Context, c *model.Command, stat
 }
 
 func (s *store) ReportStageCommandsHandled(ctx context.Context, deploymentID, stageID string) error {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	var commands []*model.Command
 
-	for _, c := range s.stageCommands[deploymentID][stageID] {
+	s.mu.RLock()
+	commands = s.stageCommands[deploymentID][stageID]
+	s.mu.RUnlock()
+
+	// No commands to report.
+	if len(commands) == 0 {
+		return nil
+	}
+
+	for _, c := range commands {
+		// The stage can be succeeded or failed.
+		// But the command handling is considered as successful, since it has been handled.
 		if err := s.reportCommandHandled(ctx, c, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil); err != nil {
 			return err
 		}
 	}
 
+	// Clear the commands from the map.
 	s.stageCommands.clear(deploymentID, stageID)
 	return nil
 }

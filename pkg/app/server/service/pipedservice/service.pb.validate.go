@@ -2695,6 +2695,8 @@ func (m *ReportDeploymentPlannedRequest) validate(all bool) error {
 
 	// no validation rules for RunningConfigFilename
 
+	// no validation rules for SyncStrategy
+
 	// no validation rules for Version
 
 	for idx, item := range m.GetVersions() {

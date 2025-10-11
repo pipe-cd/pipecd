@@ -615,6 +615,91 @@ spec:
 	}
 }
 
+func TestManifest_IsStatefulSet(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		manifest string
+		want     bool
+	}{
+		{
+			name: "is statefulset",
+			manifest: `
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: my-statefulset
+  namespace: default
+spec:
+  serviceName: "nginx"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			want: true,
+		},
+		{
+			name: "is not statefulset",
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			want: false,
+		},
+		{
+			name: "is not statefulset with custom apigroup",
+			manifest: `
+apiVersion: custom.io/v1
+kind: StatefulSet
+metadata:
+  name: custom-statefulset
+spec:
+  serviceName: "custom"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: custom
+  template:
+    metadata:
+      labels:
+        app: custom
+    spec:
+      containers:
+      - name: custom
+        image: custom:1.0.0
+`,
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			manifest := mustParseManifests(t, strings.TrimSpace(tt.manifest))[0]
+			got := manifest.IsStatefulSet()
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func TestManifest_IsSecret(t *testing.T) {
 	tests := []struct {
 		name     string

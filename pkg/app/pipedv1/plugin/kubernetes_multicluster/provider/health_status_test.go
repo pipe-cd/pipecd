@@ -125,3 +125,113 @@ func TestDeploymentHealthStatus(t *testing.T) {
 		})
 	}
 }
+
+func int32Ptr(i int32) *int32 { return &i }
+
+func Test_statefulSetHealthStatus(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		obj     *appsv1.StatefulSet
+		want    sdk.ResourceHealthStatus
+		wantMsg string
+	}{
+		{
+			name: "ObservedGeneration is zero",
+			obj: &appsv1.StatefulSet{
+				ObjectMeta: metav1.ObjectMeta{Generation: 2},
+				Status:     appsv1.StatefulSetStatus{ObservedGeneration: 0},
+			},
+			want:    sdk.ResourceHealthStateUnhealthy,
+			wantMsg: "Waiting for statefulset spec update to be observed",
+		},
+		{
+			name: "Generation > ObservedGeneration",
+			obj: &appsv1.StatefulSet{
+				ObjectMeta: metav1.ObjectMeta{Generation: 2},
+				Status:     appsv1.StatefulSetStatus{ObservedGeneration: 1},
+			},
+			want:    sdk.ResourceHealthStateUnhealthy,
+			wantMsg: "Waiting for statefulset spec update to be observed",
+		},
+		{
+			name: "Replicas is nil",
+			obj: &appsv1.StatefulSet{
+				Status: appsv1.StatefulSetStatus{ObservedGeneration: 1},
+			},
+			want:    sdk.ResourceHealthStateUnhealthy,
+			wantMsg: "The number of desired replicas is unspecified",
+		},
+		{
+			name: "ReadyReplicas != Spec.Replicas",
+			obj: &appsv1.StatefulSet{
+				Spec:   appsv1.StatefulSetSpec{Replicas: int32Ptr(3)},
+				Status: appsv1.StatefulSetStatus{ObservedGeneration: 1, ReadyReplicas: 2},
+			},
+			want:    sdk.ResourceHealthStateUnhealthy,
+			wantMsg: "The number of ready replicas (2) is different from the desired number (3)",
+		},
+		{
+			name: "Partitioned rollout in progress",
+			obj: &appsv1.StatefulSet{
+				Spec: appsv1.StatefulSetSpec{
+					Replicas: int32Ptr(5),
+					UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
+						Type: appsv1.RollingUpdateStatefulSetStrategyType,
+						RollingUpdate: &appsv1.RollingUpdateStatefulSetStrategy{
+							Partition: int32Ptr(2),
+						},
+					},
+				},
+				Status: appsv1.StatefulSetStatus{
+					ObservedGeneration: 1,
+					ReadyReplicas:      5,
+					UpdatedReplicas:    2,
+				},
+			},
+			want:    sdk.ResourceHealthStateUnhealthy,
+			wantMsg: "Waiting for partitioned roll out to finish because 2 out of 3 new pods have been updated",
+		},
+		{
+			name: "UpdateRevision != CurrentRevision",
+			obj: &appsv1.StatefulSet{
+				Spec: appsv1.StatefulSetSpec{Replicas: int32Ptr(2)},
+				Status: appsv1.StatefulSetStatus{
+					ObservedGeneration: 1,
+					ReadyReplicas:      2,
+					UpdateRevision:     "rev2",
+					CurrentRevision:    "rev1",
+					UpdatedReplicas:    2,
+				},
+			},
+			want:    sdk.ResourceHealthStateUnhealthy,
+			wantMsg: "Waiting for statefulset rolling update to complete 2 pods at revision rev2",
+		},
+		{
+			name: "Healthy statefulset",
+			obj: &appsv1.StatefulSet{
+				Spec: appsv1.StatefulSetSpec{Replicas: int32Ptr(2)},
+				Status: appsv1.StatefulSetStatus{
+					ObservedGeneration: 1,
+					ReadyReplicas:      2,
+					UpdateRevision:     "rev1",
+					CurrentRevision:    "rev1",
+					UpdatedReplicas:    2,
+				},
+			},
+			want:    sdk.ResourceHealthStateHealthy,
+			wantMsg: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, gotMsg := statefulSetHealthStatus(tt.obj)
+			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.wantMsg, gotMsg)
+		})
+	}
+}

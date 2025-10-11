@@ -82,7 +82,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
 
   const { data: allPipeds } = useGetPipeds(
     { withStatus: true },
-    { refetchInterval: FETCH_INTERVAL }
+    { refetchInterval: FETCH_INTERVAL, retry: false, staleTime: FETCH_INTERVAL }
   );
 
   const { data: releasedVersions = [] } = useGetReleasedVersions({
@@ -91,7 +91,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
 
   const { data: breakingChangesNote } = useGetBreakingChanges(
     { projectId: projectDetail?.id ?? "" },
-    { enabled: !!projectDetail?.id, retry: false }
+    { enabled: !!projectDetail?.id }
   );
 
   const pipeds = useMemo(() => {

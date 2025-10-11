@@ -33,16 +33,36 @@ const QueryClientWrap: FC<PropsWithChildren<unknown>> = ({ children }) => {
     [addToast]
   );
 
+  const handleQueryError = useCallback(
+    (err: unknown, query): void => {
+      if (query.meta && query.meta.preventGlobalError) {
+        return;
+      }
+      handleError(err);
+    },
+    [handleError]
+  );
+
+  const handleMutationError = useCallback(
+    (err: unknown, _variables, _context, mutation) => {
+      if (mutation.meta && mutation.meta.preventGlobalError) {
+        return;
+      }
+      handleError(err);
+    },
+    [handleError]
+  );
+
   const queryClient = useMemo(() => {
     return new QueryClient({
       queryCache: new QueryCache({
-        onError: handleError,
+        onError: handleQueryError,
       }),
       mutationCache: new MutationCache({
-        onError: handleError,
+        onError: handleMutationError,
       }),
     });
-  }, [handleError]);
+  }, [handleMutationError, handleQueryError]);
   return (
     <QueryClientProvider client={queryClient}>
       {children}

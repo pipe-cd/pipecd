@@ -11,6 +11,7 @@ Sync strategy: PIPELINE
   Summary:
   - kubernetes(dt-1): 2 resources will be added, 1 resource will be deleted and 5 resources will be changed
   - terraform(dt-2): 1 resource will be added, 2 resources will be deleted and 3 resources will be changed
+
   Details:
   - kubernetes(dt-1):
 <details>

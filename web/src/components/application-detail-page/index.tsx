@@ -114,6 +114,7 @@ export const ApplicationDetailPage: FC = memo(function ApplicationDetailPage() {
           "&:hover": {
             backgroundColor: "grey",
           },
+          zIndex: 10,
         }}
         size="large"
       >

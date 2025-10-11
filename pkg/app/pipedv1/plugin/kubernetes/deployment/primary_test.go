@@ -98,6 +98,222 @@ func TestPlugin_executeK8sPrimaryRolloutStage(t *testing.T) {
 	assert.Equal(t, "simple", service.GetName())
 }
 
+func TestPlugin_executeK8sPrimaryRolloutStage_withIstio(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+
+	// initialize tool registry
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
+	// read the application config from the example file
+	appCfg := sdk.LoadApplicationConfigForTest[kubeConfigPkg.KubernetesApplicationSpec](t, filepath.Join("testdata", "primary_rollout_istio", "app.pipecd.yaml"), "kubernetes")
+
+	// initialize deploy target config and dynamic client for assertions with envtest
+	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
+
+	// install istio
+	installIstioCRDs(t, dtConfig)
+
+	// execute k8s sync stage
+	{
+		input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+				StageName:   "K8S_SYNC",
+				StageConfig: []byte(``),
+				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+					ApplicationDirectory:      filepath.Join("testdata", "primary_rollout_istio"),
+					CommitHash:                "0123456789",
+					ApplicationConfig:         appCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+				Deployment: sdk.Deployment{
+					PipedID:       "piped-id",
+					ApplicationID: "app-id",
+				},
+			},
+			Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
+			Logger: zaptest.NewLogger(t),
+		}
+
+		plugin := &Plugin{}
+
+		status := plugin.executeK8sSyncStage(ctx, input, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
+			{
+				Name:   "default",
+				Config: *dtConfig,
+			},
+		})
+
+		assert.Equal(t, sdk.StageStatusSuccess, status)
+
+		// check the existence of deployment, service, virtual service
+		_, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(ctx, "traffic-test", metav1.GetOptions{})
+		assert.NoError(t, err)
+		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(ctx, "traffic-test", metav1.GetOptions{})
+		assert.NoError(t, err)
+		verifyVirtualServiceRouting(t, dynamicClient, "traffic-test-vs-primary", []expectedRoute{
+			{
+				host:   "traffic-test",
+				subset: "primary",
+				weight: 100,
+			},
+		})
+	}
+
+	// execute canary stage
+	{
+		input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+				StageName:   "K8S_CANARY_ROLLOUT",
+				StageConfig: []byte(`{"replicas": "100%"}`),
+				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+					ApplicationDirectory:      filepath.Join("testdata", "primary_rollout_istio"),
+					CommitHash:                "0123456789",
+					ApplicationConfig:         appCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+				Deployment: sdk.Deployment{
+					PipedID:       "piped-id",
+					ApplicationID: "app-id",
+				},
+			},
+			Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
+			Logger: zaptest.NewLogger(t),
+		}
+
+		plugin := &Plugin{}
+
+		status := plugin.executeK8sCanaryRolloutStage(ctx, input, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
+			{
+				Name:   "default",
+				Config: *dtConfig,
+			},
+		})
+
+		assert.Equal(t, sdk.StageStatusSuccess, status)
+
+		// check the existence of deployment, service, virtual service
+		_, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(ctx, "traffic-test", metav1.GetOptions{})
+		assert.NoError(t, err)
+		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(ctx, "traffic-test", metav1.GetOptions{})
+		assert.NoError(t, err)
+		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(ctx, "traffic-test-canary", metav1.GetOptions{})
+		assert.NoError(t, err)
+		verifyVirtualServiceRouting(t, dynamicClient, "traffic-test-vs-primary", []expectedRoute{
+			{
+				host:   "traffic-test",
+				subset: "primary",
+				weight: 100,
+			},
+		})
+	}
+
+	// execute traffic routing stage
+	{
+		input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+			Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+				StageName:   "K8S_TRAFFIC_ROUTING",
+				StageConfig: []byte(`{"canary": "30%"}`),
+				TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+					ApplicationDirectory:      filepath.Join("testdata", "primary_rollout_istio"),
+					CommitHash:                "0123456789",
+					ApplicationConfig:         appCfg,
+					ApplicationConfigFilename: "app.pipecd.yaml",
+				},
+				Deployment: sdk.Deployment{
+					PipedID:       "piped-id",
+					ApplicationID: "app-id",
+				},
+			},
+			Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
+			Logger: zaptest.NewLogger(t),
+		}
+
+		plugin := &Plugin{}
+
+		status := plugin.executeK8sTrafficRoutingStage(ctx, input, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
+			{
+				Name:   "default",
+				Config: *dtConfig,
+			},
+		})
+
+		assert.Equal(t, sdk.StageStatusSuccess, status)
+
+		// check the existence of deployment, service, virtual service
+		_, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(ctx, "traffic-test", metav1.GetOptions{})
+		assert.NoError(t, err)
+		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(ctx, "traffic-test", metav1.GetOptions{})
+		assert.NoError(t, err)
+		_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(ctx, "traffic-test-canary", metav1.GetOptions{})
+		assert.NoError(t, err)
+		verifyVirtualServiceRouting(t, dynamicClient, "traffic-test-vs-primary", []expectedRoute{
+			{
+				host:   "traffic-test",
+				subset: "primary",
+				weight: 70,
+			},
+			{
+				host:   "traffic-test",
+				subset: "canary",
+				weight: 30,
+			},
+		})
+	}
+
+	// execute primary stage
+	input := &sdk.ExecuteStageInput[kubeConfigPkg.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeConfigPkg.KubernetesApplicationSpec]{
+			StageName:   "K8S_PRIMARY_ROLLOUT",
+			StageConfig: []byte(`{}`),
+			TargetDeploymentSource: sdk.DeploymentSource[kubeConfigPkg.KubernetesApplicationSpec]{
+				ApplicationDirectory:      filepath.Join("testdata", "primary_rollout_istio"),
+				CommitHash:                "0123456789",
+				ApplicationConfig:         appCfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+			Deployment: sdk.Deployment{
+				PipedID:       "piped-id",
+				ApplicationID: "app-id",
+			},
+		},
+		Client: sdk.NewClient(nil, "kubernetes", "", "", logpersistertest.NewTestLogPersister(t), testRegistry),
+		Logger: zaptest.NewLogger(t),
+	}
+
+	plugin := &Plugin{}
+
+	status := plugin.executeK8sPrimaryRolloutStage(ctx, input, []*sdk.DeployTarget[kubeConfigPkg.KubernetesDeployTargetConfig]{
+		{
+			Name:   "default",
+			Config: *dtConfig,
+		},
+	})
+
+	assert.Equal(t, sdk.StageStatusSuccess, status)
+
+	// check the existence of deployment, service, virtual service
+	_, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(ctx, "traffic-test", metav1.GetOptions{})
+	assert.NoError(t, err)
+	_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace("default").Get(ctx, "traffic-test", metav1.GetOptions{})
+	assert.NoError(t, err)
+	_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(ctx, "traffic-test-canary", metav1.GetOptions{})
+	assert.NoError(t, err)
+	verifyVirtualServiceRouting(t, dynamicClient, "traffic-test-vs-primary", []expectedRoute{
+		{
+			host:   "traffic-test",
+			subset: "primary",
+			weight: 70,
+		},
+		{
+			host:   "traffic-test",
+			subset: "canary",
+			weight: 30,
+		},
+	})
+}
+
 func TestPlugin_executeK8sPrimaryRolloutStage_withPrune(t *testing.T) {
 	t.Parallel()
 

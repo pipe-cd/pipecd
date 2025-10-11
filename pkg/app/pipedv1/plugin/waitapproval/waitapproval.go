@@ -22,12 +22,17 @@ import (
 	"time"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+	"go.uber.org/zap"
 )
 
 // executeWaitApproval waits for approvals.
 func (p *plugin) executeWaitApproval(ctx context.Context, in *sdk.ExecuteStageInput[struct{}]) sdk.StageStatus {
+	lp, err := in.Client.StageLogPersister()
+	if err != nil {
+		in.Logger.Error("No stage log persister available", zap.Error(err))
+		return sdk.StageStatusFailure
+	}
 	opts, err := decode(in.Request.StageConfig)
-	lp := in.Client.LogPersister()
 	if err != nil {
 		lp.Errorf("Failed to decode stage config: %v", err)
 		return sdk.StageStatusFailure
@@ -39,7 +44,7 @@ func (p *plugin) executeWaitApproval(ctx context.Context, in *sdk.ExecuteStageIn
 	for {
 		select {
 		case <-ticker.C: // on ticker interval
-			if approved := p.checkApproval(ctx, opts.MinApproverNum, in.Client.LogPersister(), in.Client); approved {
+			if approved := p.checkApproval(ctx, opts.MinApproverNum, lp, in.Client); approved {
 				return sdk.StageStatusSuccess
 			}
 

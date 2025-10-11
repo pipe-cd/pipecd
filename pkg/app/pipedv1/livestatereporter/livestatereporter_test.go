@@ -52,6 +52,7 @@ func (f *fakeAPIClient) ReportApplicationSyncState(ctx context.Context, req *pip
 // TODO: make lib for fakePlugin to use in other tests
 type fakePlugin struct {
 	pluginapi.PluginClient
+	name           string
 	syncStrategy   *deployment.DetermineStrategyResponse
 	quickStages    []*model.PipelineStage
 	pipelineStages []*model.PipelineStage
@@ -121,6 +122,9 @@ func (p *fakePlugin) GetLivestate(ctx context.Context, in *livestate.GetLivestat
 		ApplicationLiveState: &model.ApplicationLiveState{},
 		SyncState:            &model.ApplicationSyncState{},
 	}, nil
+}
+func (p *fakePlugin) Name() string {
+	return p.name
 }
 
 type fakeAPILister struct {

@@ -103,6 +103,13 @@ func (m Manifest) IsDeployment() bool {
 	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindDeployment
 }
 
+// IsStatefulSet returns true if the manifest is a StatefulSet.
+// It checks the API group and the kind of the manifest.
+func (m Manifest) IsStatefulSet() bool {
+	// TODO: check the API group more strictly.
+	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindStatefulSet
+}
+
 // IsSecret returns true if the manifest is a Secret.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsSecret() bool {

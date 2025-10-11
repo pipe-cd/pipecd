@@ -14,6 +14,11 @@ export const useGetReleasedVersions = (
       const { versionsList } = await pipedsApi.listReleasedVersions();
       return versionsList;
     },
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    staleTime: 120000, // 2 minutes
+    cacheTime: 300000, // 5 minutes
     ...queryOption,
   });
 };

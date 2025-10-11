@@ -1,0 +1,13 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: traffic-test-vs-primary
+spec:
+  hosts:
+  - traffic-test
+  http:
+  - route:
+    - destination:
+        host: traffic-test
+        subset: primary
+      weight: 100 

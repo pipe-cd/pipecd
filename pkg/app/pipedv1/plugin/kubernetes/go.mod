@@ -6,7 +6,7 @@ require (
 	github.com/creasty/defaults v1.6.0
 	github.com/goccy/go-yaml v1.9.8
 	github.com/google/go-cmp v0.7.0
-	github.com/pipe-cd/piped-plugin-sdk-go v0.1.1-0.20250912090227-fcc861e4dd12
+	github.com/pipe-cd/piped-plugin-sdk-go v0.2.0
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.19.1
 	golang.org/x/mod v0.27.0

@@ -32,6 +32,7 @@ func TestDeploymentToPlannedUpdater(t *testing.T) {
 	var (
 		expectedDesc                  = "updated-summary"
 		expectedStatusDesc            = "update-status-desc"
+		expectedSyncStrategy          = model.SyncStrategy_QUICK_SYNC
 		expectedRunningCommitHash     = "update-running-commit-hash"
 		expectedRunningConfigFilename = "update-running-config-filename"
 		expectedVersions              = []*model.ArtifactVersion{
@@ -61,7 +62,10 @@ func TestDeploymentToPlannedUpdater(t *testing.T) {
 			Summary:      "summary",
 			StatusReason: "status-reason",
 			Status:       model.DeploymentStatus_DEPLOYMENT_PENDING,
-			Stages:       []*model.PipelineStage{},
+			Trigger: &model.DeploymentTrigger{
+				SyncStrategy: model.SyncStrategy_AUTO,
+			},
+			Stages: []*model.PipelineStage{},
 		}
 
 		updater = toPlannedUpdateFunc(
@@ -69,6 +73,7 @@ func TestDeploymentToPlannedUpdater(t *testing.T) {
 			expectedStatusDesc,
 			expectedRunningCommitHash,
 			expectedRunningConfigFilename,
+			expectedSyncStrategy,
 			expectedVersions,
 			expectedStages,
 		)
@@ -81,6 +86,7 @@ func TestDeploymentToPlannedUpdater(t *testing.T) {
 	assert.Equal(t, expectedStatusDesc, d.StatusReason)
 	assert.Equal(t, expectedRunningCommitHash, d.RunningCommitHash)
 	assert.Equal(t, expectedRunningConfigFilename, d.RunningConfigFilename)
+	assert.Equal(t, expectedSyncStrategy, d.Trigger.SyncStrategy)
 	assert.Equal(t, expectedVersions, d.Versions)
 	assert.Equal(t, expectedStages, d.Stages)
 }

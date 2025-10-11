@@ -3,7 +3,8 @@ module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/waitapproval
 go 1.25.0
 
 require (
-	github.com/pipe-cd/piped-plugin-sdk-go v0.1.0
+	github.com/creasty/defaults v1.6.0
+	github.com/pipe-cd/piped-plugin-sdk-go v0.3.0
 	github.com/stretchr/testify v1.10.0
 )
 
@@ -14,7 +15,6 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/coreos/go-oidc/v3 v3.11.0 // indirect
-	github.com/creasty/defaults v1.6.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.0.4 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.5 // indirect
@@ -31,7 +31,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
-	github.com/pipe-cd/pipecd v0.52.1-0.20250731104149-f611ce3501c5 // indirect
+	github.com/pipe-cd/pipecd v0.54.0-rc1.0.20250912082650-0b949bb7aac9 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.12.1 // indirect
 	github.com/prometheus/client_model v0.5.0 // indirect
@@ -51,7 +51,7 @@ require (
 	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
-	golang.org/x/sync v0.12.0 // indirect
+	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/time v0.5.0 // indirect

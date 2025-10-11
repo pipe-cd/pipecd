@@ -94,6 +94,15 @@ func (a *Application) GetDeployTargets() []string {
 	return deployTargets
 }
 
+func (a *Application) GetDeployTargetsByPluginName(name string) []string {
+	dts, ok := a.DeployTargetsByPlugin[name]
+	if !ok {
+		return []string{}
+	}
+
+	return dts.GetDeployTargets()
+}
+
 func (a *Application) GetLabelsString() string {
 	labels := make([]string, 0, len(a.Labels))
 	for k, v := range a.Labels {
