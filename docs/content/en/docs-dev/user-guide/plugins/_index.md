@@ -21,14 +21,6 @@ PipeCD supports multiple deployment platforms through official plugins. Each plu
 | **[Wait](wait/)** | Add wait stages to pipelines | Stable |
 | **[Wait Approval](waitapproval/)** | Manual approval gates in pipelines | Stable |
 
-## Plugin Versions
-
-Official plugins are versioned independently and follow semantic versioning (vX.Y.Z). Use the script below to get current versions:
-
-```bash
-# Get latest plugin versions
-./scripts/get-plugin-versions.sh
-```
 
 ### Current Plugin Versions
 
@@ -49,14 +41,10 @@ Official plugins are versioned independently and follow semantic versioning (vX.
 
 To check for new plugin versions:
 
-1. **Using the version script:**
-   ```bash
-   ./scripts/get-plugin-versions.sh
-   ```
+1. **GitHub Releases:** Visit [releases page](https://github.com/pipe-cd/pipecd/releases) and filter by plugin tags(e.g., `pkg/app/pipedv1/plugin/kubernetes/v*`)
 
-2. **GitHub Releases:** Visit [releases page](https://github.com/pipe-cd/pipecd/releases) and filter by plugin tags
-
-3. **API:** Query the GitHub API for plugin-specific releases
+2. **API:** Query the GitHub API for plugin-specific releases:
+ curl -s https://api.github.com/repos/pipe-cd/pipecd/releases | jq -I | select(tag_name |  startswith("pkg/app/pipedv1/plugin/"))
 
 {{< alert title="Note" >}}
 Plugin architecture with independent versioning is currently in alpha. Full independent release cycles are planned for PipeCD v1.0.
