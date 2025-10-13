@@ -78,9 +78,6 @@ pipectl version
 
 ## 2. Convert Application Configurations to v1 Format
 
-
-#add-example
-
 Convert your existing `app.pipecd.yaml` configurations to the new **v1 format**:
 
 ```bash
@@ -201,8 +198,8 @@ spec:
 
 **Changes:**
 
-- The contents of `platformProviders[].config` are now defined under
-  `plugins[].deployTargets[].config`.
+- The contents of `platformProviders[].config` are now defined under `plugins[].deployTargets[].config`.
+The contents of `analysisProviders` are now defined under `plugins[analysis].config.analysisProviders`.
 - Each plugin requires a `url` field that specifies where to download the plugin binary.
 - Officially released plugins can be found on the [PipeCD releases page](https://github.com/pipe-cd/pipecd/releases).
 
