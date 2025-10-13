@@ -21,38 +21,42 @@ The Cloud Run plugin enables PipeCD to deploy serverless container applications 
 Configure the Cloud Run plugin in your Piped configuration:
 
 
+```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: Piped
 spec:
-platforms:
-- name: cloudrun-default
-type: CLOUDRUN
-config:
-project: your-gcp-project
-region: us-central1
-credentialsFile: /etc/piped-secret/gcp-sa.json
+  platforms:
+    - name: cloudrun-default
+      type: CLOUDRUN
+      config:
+        project: your-gcp-project
+        region: us-central1
+        credentialsFile: /etc/piped-secret/gcp-sa.json
+```
 
 ## Application Configuration
 
 Example `.pipe.yaml` for Cloud Run applications:
 
 
+```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: CloudRunApp
 spec:
-input:
-serviceManifestFile: service.yaml
-pipeline:
-stages:
-- name: CLOUDRUN_PROMOTE
-with:
-percent: 10
-- name: WAIT
-with:
-duration: 5m
-- name: CLOUDRUN_PROMOTE
-with:
-percent: 100
+  input:
+    serviceManifestFile: service.yaml
+  pipeline:
+    stages:
+      - name: CLOUDRUN_PROMOTE
+        with:
+          percent: 10
+      - name: WAIT
+        with:
+          duration: 5m
+      - name: CLOUDRUN_PROMOTE
+        with:
+          percent: 100
+```
 
 ## Available Stages
 
@@ -63,29 +67,33 @@ percent: 100
 
 ### Quick Sync
 
+```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: CloudRunApp
 spec:
-pipeline:
-stages:
-- name: CLOUDRUN_SYNC
+  pipeline:
+    stages:
+      - name: CLOUDRUN_SYNC
+```
 
 ### Canary Rollout
 
+```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: CloudRunApp
 spec:
-pipeline:
-stages:
-- name: CLOUDRUN_PROMOTE
-with:
-percent: 10
-- name: ANALYSIS
-with:
-duration: 10m
-- name: CLOUDRUN_PROMOTE
-with:
-percent: 100
+  pipeline:
+    stages:
+      - name: CLOUDRUN_PROMOTE
+        with:
+          percent: 10
+      - name: ANALYSIS
+        with:
+          duration: 10m
+      - name: CLOUDRUN_PROMOTE
+        with:
+          percent: 100
+```
 
 ## Source Code
 

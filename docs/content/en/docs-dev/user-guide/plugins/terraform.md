@@ -22,37 +22,41 @@ The Terraform plugin enables PipeCD to manage infrastructure as code using Terra
 Configure the Terraform plugin in your Piped configuration:
 
 
+```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: Piped
 spec:
-platforms:
-- name: terraform-default
-type: TERRAFORM
-config:
-vars:
-- "project=pipecd"
-- "region=us-central1"
+  platforms:
+    - name: terraform-default
+      type: TERRAFORM
+      config:
+        vars:
+          - "project=pipecd"
+          - "region=us-central1"
+```
 
 ## Application Configuration
 
 Example `.pipe.yaml` for Terraform applications:
 
 
+```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: TerraformApp
 spec:
-input:
-workspace: production
-terraformVersion: 1.5.0
-pipeline:
-stages:
-- name: TERRAFORM_PLAN
-- name: WAIT_APPROVAL
-with:
-approvers:
-- user1@example.com
-- name: TERRAFORM_APPLY
-d
+  input:
+    workspace: production
+    terraformVersion: 1.5.0
+  pipeline:
+    stages:
+      - name: TERRAFORM_PLAN
+      - name: WAIT_APPROVAL
+        with:
+          approvers:
+            - user1@example.com
+      - name: TERRAFORM_APPLY
+```
+
 
 ## Available Stages
 
@@ -64,23 +68,27 @@ d
 
 ### Simple Apply with Approval
 
+```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: TerraformApp
 spec:
-pipeline:
-stages:
-- name: TERRAFORM_PLAN
-- name: WAIT_APPROVAL
-- name: TERRAFORM_APPLY
+  pipeline:
+    stages:
+      - name: TERRAFORM_PLAN
+      - name: WAIT_APPROVAL
+      - name: TERRAFORM_APPLY
+```
 
 ### Auto-sync
 
+```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: TerraformApp
 spec:
-pipeline:
-stages:
-- name: TERRAFORM_SYNC
+  pipeline:
+    stages:
+      - name: TERRAFORM_SYNC
+```
 
 ## Source Code
 

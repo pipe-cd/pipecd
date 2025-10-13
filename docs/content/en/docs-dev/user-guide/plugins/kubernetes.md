@@ -21,45 +21,46 @@ The Kubernetes plugin enables PipeCD to deploy and manage applications on Kubern
 
 Configure the Kubernetes plugin in your Piped configuration:
 
-
+```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: Piped
 spec:
-platform
-: - name: kubernetes-d
-fault type
-KUBERN
-https://kubernetes.default.svc
-kubeConfigPath: /etc/kub
-/config a
-pStateInformer:
-includeResour
-es:
-apiVersion: app
+  platforms:
+    - name: kubernetes-default
+      type: KUBERNETES
+      config:
+        masterURL: https://kubernetes.default.svc
+        kubeConfigPath: /etc/kube/config
+        appStateInformer:
+          includeResources:
+            - apiVersion: apps/v1
+              kind: Deployment
+```
 
 ## Application Configuration
 
 Define your deployment pipeline in `.pipe.yaml`:
 
-
+```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
-input:
-helmChart:
-repository: https://charts.example.com
-name: myapp
-version: v1.0.0
-pipeline:
-stages:
-- name: K8S_CANARY_ROLLOUT
-with:
-replicas: 10%
-- name: K8S_CANARY_ROLLOUT
-with:
-replicas: 50%
-- name: K8S_PRIMARY_ROLLOUT
-- name: K8S_CANARY_CLEAN
+  input:
+    helmChart:
+      repository: https://charts.example.com
+      name: myapp
+      version: v1.0.0
+  pipeline:
+    stages:
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 10%
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 50%
+      - name: K8S_PRIMARY_ROLLOUT
+      - name: K8S_CANARY_CLEAN
+```
 
 ## Available Stages
 
@@ -74,28 +75,32 @@ replicas: 50%
 
 ### Quick Sync
 
+```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
-pipeline:
-stages:
-- name: K8S_SYNC
+  pipeline:
+    stages:
+      - name: K8S_SYNC
+```
 
 ### Canary with Analysis
 
+```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
-pipeline:
-stages:
-- name: K8S_CANARY_ROLLOUT
-with:
-replicas: 20%
-- name: ANALYSIS
-with:
-duration: 10m
-- name: K8S_PRIMARY_ROLLOUT
-- name: K8S_CANARY_CLEAN
+  pipeline:
+    stages:
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 20%
+      - name: ANALYSIS
+        with:
+          duration: 10m
+      - name: K8S_PRIMARY_ROLLOUT
+      - name: K8S_CANARY_CLEAN
+```
 
 ## Source Code
 

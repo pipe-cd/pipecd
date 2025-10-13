@@ -23,12 +23,43 @@ PipeCD supports multiple deployment platforms through official plugins. Each plu
 
 ## Plugin Versions
 
-Currently, all official plugins are released together with PipeCD core components. 
+Official plugins are versioned independently and follow semantic versioning (vX.Y.Z). Use the script below to get current versions:
 
-**Latest Release:** Check the [GitHub Releases page](https://github.com/pipe-cd/pipecd/releases) for the most recent version.
+```bash
+# Get latest plugin versions
+./scripts/get-plugin-versions.sh
+```
+
+### Current Plugin Versions
+
+| Plugin | Latest Version | Release Date | Status |
+|--------|----------------|--------------|--------|
+| **[Kubernetes](kubernetes/)** | v0.3.0 | 2025-09-26 | Stable |
+| **[Terraform](terraform/)** | v0.2.1 | 2025-10-09 | Stable |
+| **[Wait](wait/)** | v0.1.1 | 2025-10-09 | Stable |
+| **[Wait Approval](waitapproval/)** | v0.2.0 | 2025-10-09 | Stable |
+| **[Analysis](analysis/)** | v0.1.1 | 2025-09-03 | Stable |
+| **[Script Run](scriptrun/)** | v0.1.0 | 2025-09-04 | Stable |
+| **Cloud Run** | No releases | - | In Development |
+| **Kubernetes Multi-Cluster** | No releases | - | In Development |
+
+> **Note:** Version information above is as of October 2024. For the most up-to-date information, run the version script or check [GitHub Releases](https://github.com/pipe-cd/pipecd/releases).
+
+### Finding Plugin Versions
+
+To check for new plugin versions:
+
+1. **Using the version script:**
+   ```bash
+   ./scripts/get-plugin-versions.sh
+   ```
+
+2. **GitHub Releases:** Visit [releases page](https://github.com/pipe-cd/pipecd/releases) and filter by plugin tags
+
+3. **API:** Query the GitHub API for plugin-specific releases
 
 {{< alert title="Note" >}}
-Independent plugin versioning and release cycles are planned for PipeCD v1.0 as part of the pluggable architecture initiative.
+Plugin architecture with independent versioning is currently in alpha. Full independent release cycles are planned for PipeCD v1.0.
 {{< /alert >}}
 
 ## Plugin Architecture

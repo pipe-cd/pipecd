@@ -60,6 +60,15 @@ PipeCD supports multiple deployment platforms through official plugins:
 
 > **Note:** All plugins are currently released together with PipeCD core. See the [Plugins Overview](https://pipecd.dev/docs-dev/user-guide/plugins/) for complete information, version details, and configuration guides.
 
+#### Quick Version Check
+
+To check the latest versions of all official plugins:
+
+```bash
+# Run the plugin version script
+./scripts/get-plugin-versions.sh
+```
+
 For the latest release information, visit [GitHub Releases](https://github.com/pipe-cd/pipecd/releases).
 
 ---
