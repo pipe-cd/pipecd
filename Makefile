@@ -63,7 +63,11 @@ build/plugin: PLUGINS_BIN_DIR ?= ~/.piped/plugins
 build/plugin: PLUGINS_SRC_DIR ?= ./pkg/app/pipedv1/plugin
 build/plugin: PLUGINS_OUT_DIR ?= ${PWD}/.artifacts/plugins
 build/plugin: PLUGINS ?= $(shell find $(PLUGINS_SRC_DIR) -mindepth 1 -maxdepth 1 -type d | while read -r dir; do basename "$$dir"; done | paste -sd, -) # comma separated list of plugins. eg: PLUGINS=kubernetes,ecs,lambda
-build/plugin: BUILD_OPTS ?= -ldflags "-s -w" -trimpath
+build/plugin: BUILD_VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7 --match 'v[0-9]*.*')
+build/plugin: BUILD_COMMIT ?= $(shell git rev-parse HEAD)
+build/plugin: BUILD_DATE ?= $(shell date -u '+%Y%m%d-%H%M%S')
+build/plugin: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
+build/plugin: BUILD_OPTS ?= -ldflags "$(BUILD_LDFLAGS_PREFIX).version=$(BUILD_VERSION) $(BUILD_LDFLAGS_PREFIX).gitCommit=$(BUILD_COMMIT) $(BUILD_LDFLAGS_PREFIX).buildDate=$(BUILD_DATE) -s -w" -trimpath
 build/plugin: BUILD_OS ?= $(shell go version | cut -d ' ' -f4 | cut -d/ -f1)
 build/plugin: BUILD_ARCH ?= $(shell go version | cut -d ' ' -f4 | cut -d/ -f2)
 build/plugin: BUILD_ENV ?= GOOS=$(BUILD_OS) GOARCH=$(BUILD_ARCH) CGO_ENABLED=0
@@ -156,6 +160,12 @@ run/pipecd: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
 run/pipecd: BUILD_OPTS ?= -ldflags "$(BUILD_LDFLAGS_PREFIX).version=$(BUILD_VERSION) $(BUILD_LDFLAGS_PREFIX).gitCommit=$(BUILD_COMMIT) $(BUILD_LDFLAGS_PREFIX).buildDate=$(BUILD_DATE) -w"
 run/pipecd: CONTROL_PLANE_VALUES ?= ./quickstart/control-plane-values.yaml
 run/pipecd:
+	@echo "Building go binary of Control Plane..."
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 $(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipecd ./cmd/pipecd
+
+	@echo "Building web static files..."
+	yarn --cwd web build
+
 	@echo "Building docker image and pushing it to local registry..."
 	docker build -f cmd/pipecd/Dockerfile -t localhost:5001/pipecd:$(BUILD_VERSION) .
 	docker push localhost:5001/pipecd:$(BUILD_VERSION)
@@ -180,7 +190,7 @@ run/piped: LOG_ENCODING ?= humanize
 run/piped: EXPERIMENTAL ?= false
 run/piped:
 ifeq ($(EXPERIMENTAL), true)
-	go run cmd/pipedv1/main.go piped --tools-dir=/tmp/piped-bin --config-file=$(CONFIG_FILE) --insecure=$(INSECURE) --log-encoding=$(LOG_ENCODING)
+	go run cmd/pipedv1/main.go run --tools-dir=/tmp/piped-bin --config-file=$(CONFIG_FILE) --insecure=$(INSECURE) --log-encoding=$(LOG_ENCODING)
 else ifeq ($(LAUNCHER),true)
 	go run cmd/launcher/main.go launcher --config-file=$(CONFIG_FILE) --insecure=$(INSECURE) --log-encoding=$(LOG_ENCODING)
 else
