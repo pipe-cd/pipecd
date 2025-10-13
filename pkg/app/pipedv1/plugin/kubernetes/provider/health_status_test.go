@@ -20,6 +20,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
@@ -232,6 +233,155 @@ func Test_statefulSetHealthStatus(t *testing.T) {
 			got, gotMsg := statefulSetHealthStatus(tt.obj)
 			assert.Equal(t, tt.want, got)
 			assert.Equal(t, tt.wantMsg, gotMsg)
+		})
+	}
+}
+
+func TestReplicaSetHealthStatus(t *testing.T) {
+	int32Ptr := func(i int32) *int32 { return &i }
+
+	tests := []struct {
+		name   string
+		obj    *appsv1.ReplicaSet
+		health sdk.ResourceHealthStatus
+		msg    string
+	}{
+		{
+			name: "healthy replicaset",
+			obj: &appsv1.ReplicaSet{
+				ObjectMeta: metav1.ObjectMeta{Generation: 1},
+				Spec:       appsv1.ReplicaSetSpec{Replicas: int32Ptr(3)},
+				Status: appsv1.ReplicaSetStatus{
+					ObservedGeneration: 1,
+					Replicas:           3,
+					AvailableReplicas:  3,
+					ReadyReplicas:      3,
+				},
+			},
+			health: sdk.ResourceHealthStateHealthy,
+			msg:    "",
+		},
+		{
+			name: "observed generation is 0",
+			obj: &appsv1.ReplicaSet{
+				ObjectMeta: metav1.ObjectMeta{Generation: 1},
+				Spec:       appsv1.ReplicaSetSpec{Replicas: int32Ptr(3)},
+				Status: appsv1.ReplicaSetStatus{
+					ObservedGeneration: 0,
+					Replicas:           3,
+					AvailableReplicas:  3,
+					ReadyReplicas:      3,
+				},
+			},
+			health: sdk.ResourceHealthStateUnhealthy,
+			msg:    "Waiting for rollout to finish because observed replica set generation less than desired generation",
+		},
+		{
+			name: "generation mismatch",
+			obj: &appsv1.ReplicaSet{
+				ObjectMeta: metav1.ObjectMeta{Generation: 2},
+				Spec:       appsv1.ReplicaSetSpec{Replicas: int32Ptr(3)},
+				Status: appsv1.ReplicaSetStatus{
+					ObservedGeneration: 1,
+					Replicas:           3,
+					AvailableReplicas:  3,
+					ReadyReplicas:      3,
+				},
+			},
+			health: sdk.ResourceHealthStateUnhealthy,
+			msg:    "Waiting for rollout to finish because observed replica set generation less than desired generation",
+		},
+		{
+			name: "replica failure condition true",
+			obj: &appsv1.ReplicaSet{
+				ObjectMeta: metav1.ObjectMeta{Generation: 1},
+				Spec:       appsv1.ReplicaSetSpec{Replicas: int32Ptr(3)},
+				Status: appsv1.ReplicaSetStatus{
+					ObservedGeneration: 1,
+					Replicas:           3,
+					AvailableReplicas:  3,
+					ReadyReplicas:      3,
+					Conditions: []appsv1.ReplicaSetCondition{
+						{
+							Type:    appsv1.ReplicaSetReplicaFailure,
+							Status:  corev1.ConditionTrue,
+							Message: "Failed to create pod: insufficient resources",
+						},
+					},
+				},
+			},
+			health: sdk.ResourceHealthStateUnhealthy,
+			msg:    "Failed to create pod: insufficient resources",
+		},
+		{
+			name: "nil replicas spec",
+			obj: &appsv1.ReplicaSet{
+				ObjectMeta: metav1.ObjectMeta{Generation: 1},
+				Spec:       appsv1.ReplicaSetSpec{Replicas: nil},
+				Status: appsv1.ReplicaSetStatus{
+					ObservedGeneration: 1,
+					Replicas:           0,
+					AvailableReplicas:  0,
+					ReadyReplicas:      0,
+				},
+			},
+			health: sdk.ResourceHealthStateUnhealthy,
+			msg:    "The number of desired replicas is unspecified",
+		},
+		{
+			name: "insufficient available replicas",
+			obj: &appsv1.ReplicaSet{
+				ObjectMeta: metav1.ObjectMeta{Generation: 1},
+				Spec:       appsv1.ReplicaSetSpec{Replicas: int32Ptr(3)},
+				Status: appsv1.ReplicaSetStatus{
+					ObservedGeneration: 1,
+					Replicas:           3,
+					AvailableReplicas:  2, // Less than desired
+					ReadyReplicas:      2,
+				},
+			},
+			health: sdk.ResourceHealthStateUnhealthy,
+			msg:    "Waiting for remaining 1/3 replicas to be available",
+		},
+		{
+			name: "ready replicas mismatch",
+			obj: &appsv1.ReplicaSet{
+				ObjectMeta: metav1.ObjectMeta{Generation: 1},
+				Spec:       appsv1.ReplicaSetSpec{Replicas: int32Ptr(3)},
+				Status: appsv1.ReplicaSetStatus{
+					ObservedGeneration: 1,
+					Replicas:           3,
+					AvailableReplicas:  3,
+					ReadyReplicas:      2, // Less than desired
+				},
+			},
+			health: sdk.ResourceHealthStateUnhealthy,
+			msg:    "The number of ready replicas (2) is different from the desired number (3)",
+		},
+		{
+			name: "zero replicas - healthy",
+			obj: &appsv1.ReplicaSet{
+				ObjectMeta: metav1.ObjectMeta{Generation: 1},
+				Spec:       appsv1.ReplicaSetSpec{Replicas: int32Ptr(0)},
+				Status: appsv1.ReplicaSetStatus{
+					ObservedGeneration: 1,
+					Replicas:           0,
+					AvailableReplicas:  0,
+					ReadyReplicas:      0,
+				},
+			},
+			health: sdk.ResourceHealthStateHealthy,
+			msg:    "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, gotMsg := replicaSetHealthStatus(tt.obj)
+			assert.Equal(t, tt.health, got)
+			assert.Equal(t, tt.msg, gotMsg)
 		})
 	}
 }

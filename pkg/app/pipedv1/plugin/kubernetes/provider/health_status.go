@@ -18,6 +18,7 @@ import (
 	"fmt"
 
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
@@ -36,6 +37,12 @@ func (m Manifest) calculateHealthStatus() (sdk.ResourceHealthStatus, string) {
 			return sdk.ResourceHealthStateUnknown, ""
 		}
 		return statefulSetHealthStatus(obj)
+	case m.IsReplicaSet():
+		obj := &appsv1.ReplicaSet{}
+		if err := m.ConvertToStructuredObject(obj); err != nil {
+			return sdk.ResourceHealthStateUnknown, ""
+		}
+		return replicaSetHealthStatus(obj)
 	default:
 		// TODO: Implement health status calculation for other resource types.
 		return sdk.ResourceHealthStateUnknown, fmt.Sprintf("Unimplemented or unknown resource: %s", m.body.GroupVersionKind())
@@ -100,6 +107,38 @@ func statefulSetHealthStatus(obj *appsv1.StatefulSet) (sdk.ResourceHealthStatus,
 
 	if obj.Status.UpdateRevision != obj.Status.CurrentRevision {
 		return sdk.ResourceHealthStateUnhealthy, fmt.Sprintf("Waiting for statefulset rolling update to complete %d pods at revision %s", obj.Status.UpdatedReplicas, obj.Status.UpdateRevision)
+	}
+
+	return sdk.ResourceHealthStateHealthy, ""
+}
+
+func replicaSetHealthStatus(obj *appsv1.ReplicaSet) (sdk.ResourceHealthStatus, string) {
+	if obj.Status.ObservedGeneration == 0 || obj.Generation > obj.Status.ObservedGeneration {
+		return sdk.ResourceHealthStateUnhealthy, "Waiting for rollout to finish because observed replica set generation less than desired generation"
+	}
+
+	var cond *appsv1.ReplicaSetCondition
+	for i := range obj.Status.Conditions {
+		c := obj.Status.Conditions[i]
+		if c.Type == appsv1.ReplicaSetReplicaFailure {
+			cond = &c
+			break
+		}
+	}
+	if cond != nil && cond.Status == corev1.ConditionTrue {
+		return sdk.ResourceHealthStateUnhealthy, cond.Message
+	}
+
+	if obj.Spec.Replicas == nil {
+		return sdk.ResourceHealthStateUnhealthy, "The number of desired replicas is unspecified"
+	}
+
+	if obj.Status.AvailableReplicas < *obj.Spec.Replicas {
+		return sdk.ResourceHealthStateUnhealthy, fmt.Sprintf("Waiting for remaining %d/%d replicas to be available", obj.Status.Replicas-obj.Status.AvailableReplicas, obj.Status.Replicas)
+	}
+
+	if *obj.Spec.Replicas != obj.Status.ReadyReplicas {
+		return sdk.ResourceHealthStateUnhealthy, fmt.Sprintf("The number of ready replicas (%d) is different from the desired number (%d)", obj.Status.ReadyReplicas, *obj.Spec.Replicas)
 	}
 
 	return sdk.ResourceHealthStateHealthy, ""
