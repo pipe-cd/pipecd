@@ -199,7 +199,7 @@ spec:
 **Changes:**
 
 - The contents of `platformProviders[].config` are now defined under `plugins[].deployTargets[].config`.
-The contents of `analysisProviders` are now defined under `plugins[analysis].config.analysisProviders`.
+- The contents of `analysisProviders` are now defined under `plugins[analysis].config.analysisProviders`.
 - Each plugin requires a `url` field that specifies where to download the plugin binary.
 - Officially released plugins can be found on the [PipeCD releases page](https://github.com/pipe-cd/pipecd/releases).
 
