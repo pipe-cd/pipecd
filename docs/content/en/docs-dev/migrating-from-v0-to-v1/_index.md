@@ -54,7 +54,10 @@ The migration flow involves the following steps:
 
 ## 1. Update pipectl
 
-Install or upgrade your `pipectl` to the latest version
+You can install or upgrade `pipectl` using **curl**, **Homebrew**, **aqua**, or other available methods.
+For the full list of installation options, see the [`pipectl` installation guide](https://pipecd.dev/docs-v0.55.x/user-guide/command-line-tool/).
+
+Below is an example of upgrading pipectl using `curl`:
 
 ```bash
 # Example for upgrading pipectl
@@ -76,6 +79,8 @@ pipectl version
 > - "ARCH: `amd64` or `arm64`"
 >
 >You can check all releases on the [Pipecd Releases](https://github.com/pipe-cd/pipecd/releases) page.
+
+For more options of installing pipectl, checkout installing pipectl(link)
 
 ## 2. Convert Application Configurations to v1 Format
 
