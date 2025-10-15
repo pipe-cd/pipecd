@@ -20,6 +20,17 @@ data:
         - repoId: examples
           remote: https://github.com/pipe-cd/examples.git
           branch: master
+      plugins:
+        - name: kubernetes # kubernetes plugin version: v0.3.0
+          port: 7001
+          url: https://github.com/pipe-cd/pipecd/releases/download/pkg%2Fapp%2Fpipedv1%2Fplugin%2Fkubernetes%2Fv0.3.0/kubernetes_v0.3.0_linux_amd64
+          deployTargets:
+            - name: kubernetes-local
+              config:
+                kubectlVersion: 1.33.0
+        - name: wait # wait plugin version: v0.1.1
+          port: 7002
+          url: https://github.com/pipe-cd/pipecd/releases/download/pkg%2Fapp%2Fpipedv1%2Fplugin%2Fwait%2Fv0.1.1/wait_v0.1.1_linux_amd64
 {{- else }}
   {{ .Values.config.fileName }}: |-
 {{ tpl .Values.config.data . | indent 4 }}
