@@ -71,6 +71,7 @@ pipectl version
 
 >**Note:**
 >Replace `<OS>` and `<ARCH>` in the URL with your system values:
+>
 > - "OS: `linux` or `darwin`"
 > - "ARCH: `amd64` or `arm64`"
 >
@@ -236,7 +237,7 @@ helm upgrade -i pipedv1-exp oci://ghcr.io/pipe-cd/chart/pipedv1-exp \
   --set-file secret.data.ssh-key=<PATH_TO_GIT_SSH_KEY>
 ```
 
-### Option 2 - Run the `pipedv1` directly
+### Option 2 - Run the `pipedv1` as a Standalone Binary
 
 You can also run the `pipedv1` binary directly in your local environment:
 
@@ -256,11 +257,25 @@ If your Control Plane is running locally, append the `--insecure=true` flag to s
 ./piped piped --config-file=<PATH_TO_PIPEDV1_CONFIG_FILE> --tools-dir=/tmp/piped-bin --insecure=true
 ```
 
+### Option 3 - Run `pipedv1` as a Container
+
+In addtion to running piped using Helm or as a standalone binary, you can also run it as a container. This is useful for environments such as CloudRun, ECS Fargate or more.
+
+A prebuilt container image of `pipedv1` is available on GitHub Container Registry:
+
+```bash
+docker pull ghcr.io/pipe-cd/pipedv1-exp:<version>
+```
+
+> **Note:**
+> You can find the list of published versions here:
+> [ghcr.io/pipe-cd/pipedv1-exp](https://github.com/pipe-cd/pipecd/pkgs/container/pipedv1-exp)
+
 ---
 
 ## Want to switch back?
 
-If you need to roll back to the original `piped` process, you can do so safely at any time.
+If you need to roll back to using PipeCD V0, you can do so safely at any time.
 
 Simply **stop** the running `pipedv1` instance, then **start** the `pipedv0` service as you normally would.
 
