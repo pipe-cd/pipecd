@@ -121,3 +121,23 @@ jobs:
         run: |
           make build/chart MOD=pipedv1-exp VERSION=${{ inputs.version }}
           helm push .artifacts/pipedv1-exp-${{ inputs.version }}.tgz oci://${{ env.GHCR }}/pipe-cd/chart
+
+      # Publish pipedv1 experimental manifests
+      - name: Build pipedv1 experimental quickstart manifests
+        run: |
+          helm template pipedv1-exp .artifacts/pipedv1-exp-${{ inputs.version }}.tgz --version ${{ inputs.version }} -n pipecd --set quickstart.enabled=true --set quickstart.pipedId=\<YOUR_PIPED_ID\> --set quickstart.pipedKeyData=\<YOUR_PIPED_KEY_DATA\> > quickstart/manifests/pipedv1-exp.yaml
+      - name: Publish pipedv1 experimental quickstart manifests
+        uses: peter-evans/create-pull-request@v6
+        with:
+          title: '[bot] Publish pipedv1 experimental quickstart manifests'
+          commit-message: '[bot] Publish pipedv1 experimental quickstart manifests'
+          branch: 'create-pull-request/publish-pipedv1-experimental-quickstart-manifests'
+          body: |
+            Automated changes by [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action.
+            The workflow is defined [here](https://github.com/pipe-cd/pipecd/blob/master/.github/workflows/publish_pipedv1_exp.yaml).
+
+            **Note:** You need to **close and reopen this PR** manually to trigger status check workflows. (Or just click `Update branch` if possible.)
+            For details, see https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#triggering-further-workflow-runs.
+          delete-branch: true
+          signoff: true
+          token: ${{ secrets.GITHUB_TOKEN }}
