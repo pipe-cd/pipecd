@@ -103,17 +103,25 @@ Here is an example for a simple app.pippcd.yaml file which demonstrates a kubern
 apiVersion: pipecd.dev/v1beta1
 kind: Application
 spec:
-  name: v1-kubernetes-wait
   labels:
-    owner: pipecd
-    env: local
-  planner:
-    alwaysUsePipeline: true
+    env: example
+    team: example
+  name: sample-pipecdv1-application-configuration
   pipeline:
     stages:
-      - name: WAIT
-        with:
-          duration: 30s
+    - name: K8S_CANARY_ROLLOUT
+      with:
+        replicas: 50%
+    - name: WAIT
+      with:
+        duration: 1m
+    - name: K8S_PRIMARY_ROLLOUT
+  plugins:
+    kubernetes:
+      input:
+        kubectlVersion: 1.32.2
+        manifests:
+        - deployment.yaml
 ```
 
 After conversion, your `app.pipecd.yaml` files will be compatible with both `piped` and `pipedv1`.
