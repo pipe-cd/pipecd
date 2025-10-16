@@ -385,3 +385,203 @@ func TestReplicaSetHealthStatus(t *testing.T) {
 		})
 	}
 }
+
+func TestDaemonSetHealthStatus(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		obj    *appsv1.DaemonSet
+		health sdk.ResourceHealthStatus
+		msg    string
+	}{
+		{
+			name: "observed generation is 0",
+			obj: &appsv1.DaemonSet{
+				ObjectMeta: metav1.ObjectMeta{Generation: 1, Name: "test-daemonset"},
+				Status:     appsv1.DaemonSetStatus{ObservedGeneration: 0},
+			},
+			health: sdk.ResourceHealthStateUnhealthy,
+			msg:    "Waiting for rollout to finish because observed daemon set generation less than desired generation",
+		},
+		{
+			name: "generation mismatch",
+			obj: &appsv1.DaemonSet{
+				ObjectMeta: metav1.ObjectMeta{Generation: 2, Name: "test-daemonset"},
+				Status:     appsv1.DaemonSetStatus{ObservedGeneration: 1},
+			},
+			health: sdk.ResourceHealthStateUnhealthy,
+			msg:    "Waiting for rollout to finish because observed daemon set generation less than desired generation",
+		},
+		{
+			name: "updated number scheduled less than desired",
+			obj: &appsv1.DaemonSet{
+				ObjectMeta: metav1.ObjectMeta{Generation: 1, Name: "test-daemonset"},
+				Status: appsv1.DaemonSetStatus{
+					ObservedGeneration:     1,
+					DesiredNumberScheduled: 5,
+					UpdatedNumberScheduled: 3,
+					NumberAvailable:        5,
+					NumberMisscheduled:     0,
+					NumberUnavailable:      0,
+				},
+			},
+			health: sdk.ResourceHealthStateUnhealthy,
+			msg:    "Waiting for daemon set \"test-daemonset\" rollout to finish because 3 out of 5 new pods have been updated",
+		},
+		{
+			name: "number available less than desired",
+			obj: &appsv1.DaemonSet{
+				ObjectMeta: metav1.ObjectMeta{Generation: 1, Name: "test-daemonset"},
+				Status: appsv1.DaemonSetStatus{
+					ObservedGeneration:     1,
+					DesiredNumberScheduled: 5,
+					UpdatedNumberScheduled: 5,
+					NumberAvailable:        3,
+					NumberMisscheduled:     0,
+					NumberUnavailable:      0,
+				},
+			},
+			health: sdk.ResourceHealthStateUnhealthy,
+			msg:    "Waiting for daemon set \"test-daemonset\" rollout to finish because 3 of 5 updated pods are available",
+		},
+		{
+			name: "number misscheduled greater than 0",
+			obj: &appsv1.DaemonSet{
+				ObjectMeta: metav1.ObjectMeta{Generation: 1, Name: "test-daemonset"},
+				Status: appsv1.DaemonSetStatus{
+					ObservedGeneration:     1,
+					DesiredNumberScheduled: 5,
+					UpdatedNumberScheduled: 5,
+					NumberAvailable:        5,
+					NumberMisscheduled:     2,
+					NumberUnavailable:      0,
+				},
+			},
+			health: sdk.ResourceHealthStateUnhealthy,
+			msg:    "2 nodes that are running the daemon pod, but are not supposed to run the daemon pod",
+		},
+		{
+			name: "number unavailable greater than 0",
+			obj: &appsv1.DaemonSet{
+				ObjectMeta: metav1.ObjectMeta{Generation: 1, Name: "test-daemonset"},
+				Status: appsv1.DaemonSetStatus{
+					ObservedGeneration:     1,
+					DesiredNumberScheduled: 5,
+					UpdatedNumberScheduled: 5,
+					NumberAvailable:        5,
+					NumberMisscheduled:     0,
+					NumberUnavailable:      1,
+				},
+			},
+			health: sdk.ResourceHealthStateUnhealthy,
+			msg:    "1 nodes that should be running the daemon pod and have none of the daemon pod running and available",
+		},
+		{
+			name: "healthy daemonset",
+			obj: &appsv1.DaemonSet{
+				ObjectMeta: metav1.ObjectMeta{Generation: 1, Name: "test-daemonset"},
+				Status: appsv1.DaemonSetStatus{
+					ObservedGeneration:     1,
+					DesiredNumberScheduled: 5,
+					UpdatedNumberScheduled: 5,
+					NumberAvailable:        5,
+					NumberMisscheduled:     0,
+					NumberUnavailable:      0,
+				},
+			},
+			health: sdk.ResourceHealthStateHealthy,
+			msg:    "",
+		},
+		{
+			name: "healthy daemonset with zero desired pods",
+			obj: &appsv1.DaemonSet{
+				ObjectMeta: metav1.ObjectMeta{Generation: 1, Name: "test-daemonset"},
+				Status: appsv1.DaemonSetStatus{
+					ObservedGeneration:     1,
+					DesiredNumberScheduled: 0,
+					UpdatedNumberScheduled: 0,
+					NumberAvailable:        0,
+					NumberMisscheduled:     0,
+					NumberUnavailable:      0,
+				},
+			},
+			health: sdk.ResourceHealthStateHealthy,
+			msg:    "",
+		},
+		{
+			name: "multiple issues - should report first one (updated number scheduled)",
+			obj: &appsv1.DaemonSet{
+				ObjectMeta: metav1.ObjectMeta{Generation: 1, Name: "test-daemonset"},
+				Status: appsv1.DaemonSetStatus{
+					ObservedGeneration:     1,
+					DesiredNumberScheduled: 5,
+					UpdatedNumberScheduled: 3, // This should be reported first
+					NumberAvailable:        2, // This would be reported second
+					NumberMisscheduled:     1, // This would be reported third
+					NumberUnavailable:      1, // This would be reported fourth
+				},
+			},
+			health: sdk.ResourceHealthStateUnhealthy,
+			msg:    "Waiting for daemon set \"test-daemonset\" rollout to finish because 3 out of 5 new pods have been updated",
+		},
+		{
+			name: "multiple issues - should report second one (number available)",
+			obj: &appsv1.DaemonSet{
+				ObjectMeta: metav1.ObjectMeta{Generation: 1, Name: "test-daemonset"},
+				Status: appsv1.DaemonSetStatus{
+					ObservedGeneration:     1,
+					DesiredNumberScheduled: 5,
+					UpdatedNumberScheduled: 5, // This is OK
+					NumberAvailable:        2, // This should be reported
+					NumberMisscheduled:     1, // This would be reported second
+					NumberUnavailable:      1, // This would be reported third
+				},
+			},
+			health: sdk.ResourceHealthStateUnhealthy,
+			msg:    "Waiting for daemon set \"test-daemonset\" rollout to finish because 2 of 5 updated pods are available",
+		},
+		{
+			name: "multiple issues - should report third one (number misscheduled)",
+			obj: &appsv1.DaemonSet{
+				ObjectMeta: metav1.ObjectMeta{Generation: 1, Name: "test-daemonset"},
+				Status: appsv1.DaemonSetStatus{
+					ObservedGeneration:     1,
+					DesiredNumberScheduled: 5,
+					UpdatedNumberScheduled: 5, // This is OK
+					NumberAvailable:        5, // This is OK
+					NumberMisscheduled:     2, // This should be reported
+					NumberUnavailable:      1, // This would be reported second
+				},
+			},
+			health: sdk.ResourceHealthStateUnhealthy,
+			msg:    "2 nodes that are running the daemon pod, but are not supposed to run the daemon pod",
+		},
+		{
+			name: "multiple issues - should report fourth one (number unavailable)",
+			obj: &appsv1.DaemonSet{
+				ObjectMeta: metav1.ObjectMeta{Generation: 1, Name: "test-daemonset"},
+				Status: appsv1.DaemonSetStatus{
+					ObservedGeneration:     1,
+					DesiredNumberScheduled: 5,
+					UpdatedNumberScheduled: 5, // This is OK
+					NumberAvailable:        5, // This is OK
+					NumberMisscheduled:     0, // This is OK
+					NumberUnavailable:      2, // This should be reported
+				},
+			},
+			health: sdk.ResourceHealthStateUnhealthy,
+			msg:    "2 nodes that should be running the daemon pod and have none of the daemon pod running and available",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, gotMsg := daemonSetHealthStatus(tt.obj)
+			assert.Equal(t, tt.health, got)
+			assert.Equal(t, tt.msg, gotMsg)
+		})
+	}
+}
