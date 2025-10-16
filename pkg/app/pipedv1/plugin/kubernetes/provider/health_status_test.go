@@ -585,3 +585,332 @@ func TestDaemonSetHealthStatus(t *testing.T) {
 		})
 	}
 }
+
+func TestPodHealthStatus(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		obj    *corev1.Pod
+		health sdk.ResourceHealthStatus
+		msg    string
+	}{
+		{
+			name: "healthy pod with RestartPolicyAlways and Running phase",
+			obj: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					RestartPolicy: corev1.RestartPolicyAlways,
+				},
+				Status: corev1.PodStatus{
+					Phase:   corev1.PodRunning,
+					Message: "Pod is running",
+					ContainerStatuses: []corev1.ContainerStatus{
+						{
+							State: corev1.ContainerState{
+								Running: &corev1.ContainerStateRunning{},
+							},
+						},
+					},
+				},
+			},
+			health: sdk.ResourceHealthStateHealthy,
+			msg:    "Pod is running",
+		},
+		{
+			name: "healthy pod with RestartPolicyAlways and Succeeded phase",
+			obj: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					RestartPolicy: corev1.RestartPolicyAlways,
+				},
+				Status: corev1.PodStatus{
+					Phase:   corev1.PodSucceeded,
+					Message: "Pod completed successfully",
+					ContainerStatuses: []corev1.ContainerStatus{
+						{
+							State: corev1.ContainerState{
+								Terminated: &corev1.ContainerStateTerminated{
+									ExitCode: 0,
+								},
+							},
+						},
+					},
+				},
+			},
+			health: sdk.ResourceHealthStateHealthy,
+			msg:    "Pod completed successfully",
+		},
+		{
+			name: "unhealthy pod with RestartPolicyAlways and container error",
+			obj: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					RestartPolicy: corev1.RestartPolicyAlways,
+				},
+				Status: corev1.PodStatus{
+					Phase:   corev1.PodRunning,
+					Message: "Pod is running",
+					ContainerStatuses: []corev1.ContainerStatus{
+						{
+							State: corev1.ContainerState{
+								Waiting: &corev1.ContainerStateWaiting{
+									Reason:  "ErrImagePull",
+									Message: "Failed to pull image: image not found",
+								},
+							},
+						},
+					},
+				},
+			},
+			health: sdk.ResourceHealthStateUnhealthy,
+			msg:    "Failed to pull image: image not found",
+		},
+		{
+			name: "unhealthy pod with RestartPolicyAlways and container backoff",
+			obj: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					RestartPolicy: corev1.RestartPolicyAlways,
+				},
+				Status: corev1.PodStatus{
+					Phase:   corev1.PodRunning,
+					Message: "Pod is running",
+					ContainerStatuses: []corev1.ContainerStatus{
+						{
+							State: corev1.ContainerState{
+								Waiting: &corev1.ContainerStateWaiting{
+									Reason:  "CrashLoopBackOff",
+									Message: "Container is crashing repeatedly",
+								},
+							},
+						},
+					},
+				},
+			},
+			health: sdk.ResourceHealthStateUnhealthy,
+			msg:    "Container is crashing repeatedly",
+		},
+		{
+			name: "unhealthy pod with RestartPolicyAlways and multiple container errors",
+			obj: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					RestartPolicy: corev1.RestartPolicyAlways,
+				},
+				Status: corev1.PodStatus{
+					Phase:   corev1.PodRunning,
+					Message: "Pod is running",
+					ContainerStatuses: []corev1.ContainerStatus{
+						{
+							State: corev1.ContainerState{
+								Waiting: &corev1.ContainerStateWaiting{
+									Reason:  "ErrImagePull",
+									Message: "Failed to pull image: image not found",
+								},
+							},
+						},
+						{
+							State: corev1.ContainerState{
+								Waiting: &corev1.ContainerStateWaiting{
+									Reason:  "CrashLoopBackOff",
+									Message: "Container is crashing repeatedly",
+								},
+							},
+						},
+					},
+				},
+			},
+			health: sdk.ResourceHealthStateUnhealthy,
+			msg:    "Failed to pull image: image not found, Container is crashing repeatedly",
+		},
+		{
+			name: "pod with RestartPolicyAlways but no error conditions",
+			obj: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					RestartPolicy: corev1.RestartPolicyAlways,
+				},
+				Status: corev1.PodStatus{
+					Phase:   corev1.PodRunning,
+					Message: "Pod is running",
+					ContainerStatuses: []corev1.ContainerStatus{
+						{
+							State: corev1.ContainerState{
+								Waiting: &corev1.ContainerStateWaiting{
+									Reason:  "ContainerCreating",
+									Message: "Container is being created",
+								},
+							},
+						},
+					},
+				},
+			},
+			health: sdk.ResourceHealthStateHealthy,
+			msg:    "Pod is running",
+		},
+		{
+			name: "pod with RestartPolicyOnFailure and Running phase",
+			obj: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					RestartPolicy: corev1.RestartPolicyOnFailure,
+				},
+				Status: corev1.PodStatus{
+					Phase:   corev1.PodRunning,
+					Message: "Pod is running",
+					ContainerStatuses: []corev1.ContainerStatus{
+						{
+							State: corev1.ContainerState{
+								Waiting: &corev1.ContainerStateWaiting{
+									Reason:  "ErrImagePull",
+									Message: "Failed to pull image: image not found",
+								},
+							},
+						},
+					},
+				},
+			},
+			health: sdk.ResourceHealthStateHealthy,
+			msg:    "Pod is running",
+		},
+		{
+			name: "pod with RestartPolicyNever and Running phase",
+			obj: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					RestartPolicy: corev1.RestartPolicyNever,
+				},
+				Status: corev1.PodStatus{
+					Phase:   corev1.PodRunning,
+					Message: "Pod is running",
+					ContainerStatuses: []corev1.ContainerStatus{
+						{
+							State: corev1.ContainerState{
+								Waiting: &corev1.ContainerStateWaiting{
+									Reason:  "ErrImagePull",
+									Message: "Failed to pull image: image not found",
+								},
+							},
+						},
+					},
+				},
+			},
+			health: sdk.ResourceHealthStateHealthy,
+			msg:    "Pod is running",
+		},
+		{
+			name: "pod with RestartPolicyAlways and Pending phase",
+			obj: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					RestartPolicy: corev1.RestartPolicyAlways,
+				},
+				Status: corev1.PodStatus{
+					Phase:   corev1.PodPending,
+					Message: "Pod is pending",
+					ContainerStatuses: []corev1.ContainerStatus{
+						{
+							State: corev1.ContainerState{
+								Waiting: &corev1.ContainerStateWaiting{
+									Reason:  "ErrImagePull",
+									Message: "Failed to pull image: image not found",
+								},
+							},
+						},
+					},
+				},
+			},
+			health: sdk.ResourceHealthStateUnhealthy,
+			msg:    "Failed to pull image: image not found",
+		},
+		{
+			name: "pod with RestartPolicyAlways and Failed phase",
+			obj: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					RestartPolicy: corev1.RestartPolicyAlways,
+				},
+				Status: corev1.PodStatus{
+					Phase:   corev1.PodFailed,
+					Message: "Pod failed",
+					ContainerStatuses: []corev1.ContainerStatus{
+						{
+							State: corev1.ContainerState{
+								Waiting: &corev1.ContainerStateWaiting{
+									Reason:  "ErrImagePull",
+									Message: "Failed to pull image: image not found",
+								},
+							},
+						},
+					},
+				},
+			},
+			health: sdk.ResourceHealthStateUnhealthy,
+			msg:    "Failed to pull image: image not found",
+		},
+		{
+			name: "pod with RestartPolicyAlways and no container statuses",
+			obj: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					RestartPolicy: corev1.RestartPolicyAlways,
+				},
+				Status: corev1.PodStatus{
+					Phase:             corev1.PodRunning,
+					Message:           "Pod is running",
+					ContainerStatuses: []corev1.ContainerStatus{},
+				},
+			},
+			health: sdk.ResourceHealthStateHealthy,
+			msg:    "Pod is running",
+		},
+		{
+			name: "pod with RestartPolicyAlways and container with error suffix",
+			obj: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					RestartPolicy: corev1.RestartPolicyAlways,
+				},
+				Status: corev1.PodStatus{
+					Phase:   corev1.PodRunning,
+					Message: "Pod is running",
+					ContainerStatuses: []corev1.ContainerStatus{
+						{
+							State: corev1.ContainerState{
+								Waiting: &corev1.ContainerStateWaiting{
+									Reason:  "ImagePullError",
+									Message: "Failed to pull image",
+								},
+							},
+						},
+					},
+				},
+			},
+			health: sdk.ResourceHealthStateUnhealthy,
+			msg:    "Failed to pull image",
+		},
+		{
+			name: "pod with RestartPolicyAlways and container with backoff suffix",
+			obj: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					RestartPolicy: corev1.RestartPolicyAlways,
+				},
+				Status: corev1.PodStatus{
+					Phase:   corev1.PodRunning,
+					Message: "Pod is running",
+					ContainerStatuses: []corev1.ContainerStatus{
+						{
+							State: corev1.ContainerState{
+								Waiting: &corev1.ContainerStateWaiting{
+									Reason:  "ImagePullBackOff",
+									Message: "Backing off from pulling image",
+								},
+							},
+						},
+					},
+				},
+			},
+			health: sdk.ResourceHealthStateUnhealthy,
+			msg:    "Backing off from pulling image",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, gotMsg := podHealthStatus(tt.obj)
+			assert.Equal(t, tt.health, got)
+			assert.Equal(t, tt.msg, gotMsg)
+		})
+	}
+}

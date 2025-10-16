@@ -16,6 +16,7 @@ package provider
 
 import (
 	"fmt"
+	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -49,6 +50,12 @@ func (m Manifest) calculateHealthStatus() (sdk.ResourceHealthStatus, string) {
 			return sdk.ResourceHealthStateUnknown, ""
 		}
 		return daemonSetHealthStatus(obj)
+	case m.IsPod():
+		obj := &corev1.Pod{}
+		if err := m.ConvertToStructuredObject(obj); err != nil {
+			return sdk.ResourceHealthStateUnknown, ""
+		}
+		return podHealthStatus(obj)
 	default:
 		// TODO: Implement health status calculation for other resource types.
 		return sdk.ResourceHealthStateUnknown, fmt.Sprintf("Unimplemented or unknown resource: %s", m.body.GroupVersionKind())
@@ -170,4 +177,28 @@ func daemonSetHealthStatus(obj *appsv1.DaemonSet) (sdk.ResourceHealthStatus, str
 	}
 
 	return sdk.ResourceHealthStateHealthy, ""
+}
+
+func podHealthStatus(obj *corev1.Pod) (sdk.ResourceHealthStatus, string) {
+	if obj.Spec.RestartPolicy == corev1.RestartPolicyAlways {
+		var messages []string
+		for _, s := range obj.Status.ContainerStatuses {
+			waiting := s.State.Waiting
+			if waiting == nil {
+				continue
+			}
+			if strings.HasPrefix(waiting.Reason, "Err") || strings.HasSuffix(waiting.Reason, "Error") || strings.HasSuffix(waiting.Reason, "BackOff") {
+				messages = append(messages, waiting.Message)
+			}
+		}
+		if len(messages) > 0 {
+			return sdk.ResourceHealthStateUnhealthy, strings.Join(messages, ", ")
+		}
+	}
+
+	if obj.Status.Phase == corev1.PodRunning || obj.Status.Phase == corev1.PodSucceeded {
+		return sdk.ResourceHealthStateHealthy, obj.Status.Message
+	}
+
+	return sdk.ResourceHealthStateUnhealthy, obj.Status.Message
 }

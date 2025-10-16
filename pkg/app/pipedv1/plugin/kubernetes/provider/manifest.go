@@ -187,6 +187,13 @@ func (m Manifest) IsDaemonSet() bool {
 	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindDaemonSet
 }
 
+// IsPod returns true if the manifest is a Pod.
+// It checks the API group and the kind of the manifest.
+func (m Manifest) IsPod() bool {
+	// TODO: check the API group more strictly.
+	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindPod
+}
+
 // IsSecret returns true if the manifest is a Secret.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsSecret() bool {
