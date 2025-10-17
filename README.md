@@ -45,6 +45,23 @@ PipeCD provides __a unified continuous delivery solution for multiple applicatio
 
 For more details, explore the [PipeCD Documentation](https://pipecd.dev/docs).
 
+### Official Plugins
+
+PipeCD supports multiple deployment platforms through official plugins:
+
+| Plugin | Description | Documentation |
+|--------|-------------|---------------|
+| **Kubernetes** | Deploy to Kubernetes clusters | [Docs](https://pipecd.dev/docs-dev/user-guide/plugins/kubernetes/) |
+| **Kubernetes Multi-Cluster** | Deploy to multiple K8s clusters | [Docs](https://pipecd.dev/docs-dev/user-guide/plugins/kubernetes-multicluster/) |
+| **Terraform** | Manage infrastructure as code | [Docs](https://pipecd.dev/docs-dev/user-guide/plugins/terraform/) |
+| **Cloud Run** | Deploy to Google Cloud Run | [Docs](https://pipecd.dev/docs-dev/user-guide/plugins/cloudrun/) |
+| **Analysis** | Automated deployment analysis | [Docs](https://pipecd.dev/docs-dev/user-guide/plugins/analysis/) |
+| **Script Run** | Execute custom scripts | [Docs](https://pipecd.dev/docs-dev/user-guide/plugins/scriptrun/) |
+
+> **Note:** All plugins are currently released together with PipeCD core. See the [Plugins Overview](https://pipecd.dev/docs-dev/user-guide/plugins/) for complete information, version details, and configuration guides.
+
+For the latest release information, visit [GitHub Releases](https://github.com/pipe-cd/pipecd/releases).
+
 ---
 
 ### Getting Started
