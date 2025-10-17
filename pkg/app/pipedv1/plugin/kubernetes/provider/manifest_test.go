@@ -1509,6 +1509,87 @@ metadata:
 	}
 }
 
+func TestManifest_IsDaemonSet(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		manifest string
+		want     bool
+	}{
+		{
+			name: "is daemonset",
+			manifest: `
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nginx-daemonset
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			want: true,
+		},
+		{
+			name: "is not daemonset (deployment)",
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.3
+`,
+			want: false,
+		},
+		{
+			name: "is not daemonset with custom apigroup",
+			manifest: `
+apiVersion: custom.io/v1
+kind: DaemonSet
+metadata:
+  name: custom-daemonset
+spec:
+  selector:
+    matchLabels:
+      app: custom
+  template:
+    metadata:
+      labels:
+        app: custom
+    spec:
+      containers:
+      - name: custom
+        image: custom:1.0.0
+`,
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			manifest := mustParseManifests(t, strings.TrimSpace(tt.manifest))[0]
+			got := manifest.IsDaemonSet()
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func TestFromStructuredObject(t *testing.T) {
 	t.Parallel()
 
