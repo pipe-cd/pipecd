@@ -42,8 +42,9 @@ else
 endif
 
 .PHONY: build/web
+build/web: BUILD_VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7 --match 'v[0-9]*.*')
 build/web:
-	yarn --cwd web build
+	BUILD_VERSION=$(BUILD_VERSION) yarn --cwd web build
 
 .PHONY: build/chart
 build/chart: VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7 --match 'v[0-9]*.*')
@@ -160,14 +161,8 @@ run/pipecd: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
 run/pipecd: BUILD_OPTS ?= -ldflags "$(BUILD_LDFLAGS_PREFIX).version=$(BUILD_VERSION) $(BUILD_LDFLAGS_PREFIX).gitCommit=$(BUILD_COMMIT) $(BUILD_LDFLAGS_PREFIX).buildDate=$(BUILD_DATE) -w"
 run/pipecd: CONTROL_PLANE_VALUES ?= ./quickstart/control-plane-values.yaml
 run/pipecd:
-	@echo "Building go binary of Control Plane..."
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 $(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipecd ./cmd/pipecd
-
-	@echo "Building web static files..."
-	yarn --cwd web build
-
 	@echo "Building docker image and pushing it to local registry..."
-	docker build -f cmd/pipecd/Dockerfile -t localhost:5001/pipecd:$(BUILD_VERSION) .
+	docker build -f cmd/pipecd/Dockerfile -t localhost:5001/pipecd:$(BUILD_VERSION) --build-arg BUILD_VERSION=$(BUILD_VERSION) .
 	docker push localhost:5001/pipecd:$(BUILD_VERSION)
 
 	@echo "Installing Control Plane in kind..."
@@ -198,8 +193,9 @@ else
 endif
 
 .PHONY: run/web
+run/web: BUILD_VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7 --match 'v[0-9]*.*')
 run/web:
-	yarn --cwd web dev
+	BUILD_VERSION=$(BUILD_VERSION) yarn --cwd web dev
 
 .PHONY: run/site
 run/site:
