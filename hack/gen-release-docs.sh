@@ -51,7 +51,7 @@ then
 fi
 
 # Update docs/config.toml
-LINE_NUM=$(($(grep -Fn "# Append the release versions here." docs/config.toml | cut -f1 -d ':')+5))
+LINE_NUM=$(($(grep -Fn "# Append the release versions here." docs/config.toml | cut -f1 -d ':')+9))
 head -n $LINE_NUM docs/config.toml >> docs/config.toml.tmp
 cat <<EOT >> docs/config.toml.tmp
 [[params.versions]]
