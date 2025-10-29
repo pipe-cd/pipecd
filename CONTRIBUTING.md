@@ -211,6 +211,8 @@ To login, you can use the configured static admin account as below:
 - username: `hello-pipecd`
 - password: `hello-pipecd`
 
+[Note] for frontend hot reload on local web development, you can follow [this guidance](/web/README.md) to run web separately (by setting API_ENDPOINT="http://localhost:8080" and also it's API_COOKIE), and access it at `http://localhost:9090?project=quickstart`.
+
 #### Run Piped Agent
 
 1. Make sure that PipeCD Control Plane is running and you can access the UI and login.
