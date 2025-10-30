@@ -57,7 +57,8 @@ PipeCD supports multiple deployment platforms through official plugins:
 | **Cloud Run** | Deploy to Google Cloud Run | [Docs](https://pipecd.dev/docs-dev/user-guide/plugins/cloudrun/) |
 | **Analysis** | Automated deployment analysis | [Docs](https://pipecd.dev/docs-dev/user-guide/plugins/analysis/) |
 | **Script Run** | Execute custom scripts | [Docs](https://pipecd.dev/docs-dev/user-guide/plugins/scriptrun/) |
-
+| **[Wait](https://pipecd.dev/docs-dev/user-guide/plugins/wait/)** | Add wait stages to pipelines | [Docs](https://pipecd.dev/docs-dev/user-guide/plugins/wait/) |
+| **[Wait Approval](https://pipecd.dev/docs-dev/user-guide/plugins/waitapproval/)** | Manual approval gates | [Docs](https://pipecd.dev/docs-dev/user-guide/plugins/waitapproval/) |
 > **Note:** All plugins are currently released together with PipeCD core. See the [Plugins Overview](https://pipecd.dev/docs-dev/user-guide/plugins/) for complete information, version details, and configuration guides.
 
 For the latest release information, visit [GitHub Releases](https://github.com/pipe-cd/pipecd/releases).
