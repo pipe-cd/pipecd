@@ -205,7 +205,7 @@ spec:
 - [Configuration Reference](/docs-dev/user-guide/configuration-reference/)
 - [Managing Applications](/docs-dev/user-guide/managing-application/)
 - [Migrating to PipeCD V1](/docs-dev/migrating-from-v0-to-v1/)
-```
+
 
 ## Source Code
 
