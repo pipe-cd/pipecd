@@ -10,7 +10,7 @@ PipeCD consists of two core components: The Control Plane and Piped (see [PipeCD
 
 - **The Control Plane** can be thought of as a web service application that can be installed anywhere. It provides the web UI, API endpoints, and metadata storage.
 
-- **Piped** is a lightweight agent that connects your infrastructure to the Control Plane. In PipeCD v1, Piped drops built-in platform support and uses a plugin-based model. Each plugin (an external component) implements the deployment and synchronization logic for a specific application kind, such as Kubernetes or Terraform.
+- **Piped** is a lightweight agent that connects your infrastructure to the Control Plane. In PipeCD v1, each plugin (an external component) implements the deployment and synchronization logic for a specific application kind, such as Kubernetes or Terraform.
 
 In this quickstart, you’ll install both components on a Kubernetes cluster and deploy a sample “hello world” application.
 
@@ -105,20 +105,20 @@ Above is all that is necessary to set up your own PipeCD (both control plane and
 
 Navigate to the `Applications` page, click on the `+ADD` button on the top left corner.
 
-Go to the `ADD FROM SUGGESTIONS` tab, then select:
+Go to the `PIPED V1 ADD FROM SUGGESTIONS` tab, then select:
 
 - Piped that you have just registered (e.g. `dev`)
-- PlatformProvider: `kubernetes-default`
+- The deployment target (e.g. 'kubernetes')
 
 You should see a lot of suggested applications. Select one of listed applications and click the `SAVE` button to register.
 
-![Adding the application](/images/quickstart-adding-application-from-suggestions.png)
+![Adding the application](/images/quickstart-adding-application-from-suggestions-v1.png)
 
 After a bit, the first deployment is complete and will automatically sync the application to the state specified in the current Git commit.
 
 ![Preview your deployment](/images/quickstart-first-deployment.png)
 
-For more about manage applications' deployment with PipeCD, referrence to [Managing application](/docs/user-guide/managing-application/)
+For more information on manging application deployment with PipeCD, see [Managing application](/docs/user-guide/managing-application/)
 
 ---
 
