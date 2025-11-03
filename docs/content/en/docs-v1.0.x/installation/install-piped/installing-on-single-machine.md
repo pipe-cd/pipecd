@@ -19,8 +19,7 @@ description: >
 - If your Git repositories are private, `piped` requires a private SSH key to access those repositories.
 - Please checkout [this documentation](https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) for how to generate a new SSH key pair. Then add the public key to your repositories. (If you are using GitHub, you can add it to Deploy Keys at the repository's Settings page.)
 
-
- If your Git repositories are private, `piped` needs an SSH key to access them.
+If your Git repositories are private, `piped` needs an SSH key to access them.
 
 - Generate a new SSH key pair by following [GitHub’s guide to generating an SSH Key](https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent).  
 
@@ -35,29 +34,9 @@ Download the latest `piped` V1. See the [latest releases](https://github.com/pip
 
 ### Preparing the `Piped` configuaration file
 
-In PipeCD V0, the default platform provider was Kubernetes. In PipeCD V1, since platforms have been replaced by plugins, there are not defaults set. Plugins are external binaries that have to be referenced in the piped configuration file.
+In PipeCD V1, since platforms have been replaced by plugins, there are no defaults set. Plugins are external binaries that have to be referenced in the piped configuration file.
 
-An example of an old piped configuration file:
-
-```yaml
- apiVersion: pipecd.dev/v1beta1
-  kind: Piped
-  spec:
-    projectID: {PROJECT_ID}
-    pipedID: {PIPED_ID}
-    pipedKeyFile: /etc/piped-secret/piped-key
-    # Write in a format like "host:443" because the communication is done via gRPC.
-    apiAddress: {CONTROL_PLANE_API_ADDRESS}
-    git:
-      sshKeyFile: /etc/piped-secret/ssh-key
-    repositories:
-      - repoId: {REPO_ID_OR_NAME}
-        remote: git@github.com:{GIT_ORG}/{GIT_REPO}.git
-        branch: {GIT_BRANCH}
-    syncInterval: 1m
-```
-
-An example of the a piped V1 configuration file using the official Kubernetes plugin:
+An example of the a piped V1 configuration file using the Kubernetes plugin:
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -81,15 +60,6 @@ spec:
           config:
             kubectlVersion: 1.32.4
             kubeConfigPath: /Users/sawanteeshaan/.kube/config
-    - name: wait
-      port: 7002
-      url: https://github.com/pipe-cd/pipecd/releases/download/pkg%2Fapp%2Fpipedv1%2Fplugin%2Fwait%2Fv0.1.0/wait_v0.1.0_darwin_arm64
-      # url: file:///Users/s12228/.piped/plugins/wait
-    - name: example-stage
-      port: 7003
-      url: https://github.com/pipe-cd/community-plugins/releases/download/plugins%2Fexample-stage%2Fv0.1.0/example-stage_v0.1.0_darwin_arm64
-      config:
-        commonMessage: "Hello Middle Earth! This is the wave from UFO!"
 ```
 
 See [ConfigurationReference](../../../user-guide/managing-piped/configuration-reference/) for the full configuration.
@@ -97,7 +67,7 @@ See [ConfigurationReference](../../../user-guide/managing-piped/configuration-re
 >**Note:**
 >`Piped`'s plugins are versioned independently from PipeCD. Official plugins are maintained and monitored by the PipeCD Maintainers. See the [latest releases](https://github.com/pipe-cd/pipecd/releases) for more information.
 >
->With PipeCD V1, we have also added support for community plugins. See the [Community plugins repository on GitHub](https://github.com/pipe-cd/community-plugins)
+>We now also have a repository for community built plugins. See the [Community plugins repository on GitHub](https://github.com/pipe-cd/community-plugins) to know more.
 
 ## Run the `piped`
 
