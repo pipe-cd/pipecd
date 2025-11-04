@@ -25,6 +25,7 @@ spec:
                 image:
                   type: string
                 replicas:
+                  type: integer
     - name: v1beta1
       # Each version can be enabled/disabled by Served flag.
       served: true
