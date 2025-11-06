@@ -29,7 +29,7 @@ To preview your changes as you work, you must run the documentation website on y
 ## How to submit your changes (The PR Process)
 
 1.  **Create a Branch:** Create a new branch for your changes (e.g., `git checkout -b my-docs-fix`).
-2.  **Make Your Changes:** Edit the necessary documentation files. If you are fixing an issue in the current documentation, remember to edit the file in both the `/docs-dev/` and the latest `/docs-v1.0.x/` folders.
+2.  **Make Your Changes:** Edit the necessary documentation files. If you are fixing an issue in the current documentation, remember to edit the file in both the `/docs-dev/` and the latest `/docs-vx.y.z/` folders.
 3.  **Commit and Push:** Commit your changes with a clear message and push your branch to your fork.
 4.  **Open a Pull Request:** Go to the PipeCD repository and open a Pull Request. In the description, please link to the issue you are fixing (e.g., `Addresses #6124`).
 5.  **Review:** A maintainer will review your PR, provide feedback, and merge it.
