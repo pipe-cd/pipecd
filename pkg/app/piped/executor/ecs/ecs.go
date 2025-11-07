@@ -41,6 +41,8 @@ const (
 	canaryScaleMetadataKey         = "canary-scale"
 	currentListenersKey            = "current-listeners"
 	canaryTargetGroupArnKey        = "canary-target-group-arn"
+	// Force new deployment flag metadata key.
+	forceNewDeploymentKey = "force-new-deployment"
 )
 
 type registerer interface {

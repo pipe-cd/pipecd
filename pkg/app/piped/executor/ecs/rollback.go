@@ -113,7 +113,7 @@ func rollback(ctx context.Context, in *executor.Input, platformProviderName stri
 
 	// Retrieve force new deployment flag from metadata store.
 	forceNewDeployment := false
-	val, ok := in.MetadataStore.Shared().Get("force-new-deployment")
+	val, ok := in.MetadataStore.Shared().Get(forceNewDeploymentKey)
 	if ok && val == "true" {
 		forceNewDeployment = true
 	}

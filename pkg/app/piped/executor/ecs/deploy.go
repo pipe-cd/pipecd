@@ -113,7 +113,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	forceNewDeployment := e.appCfg.QuickSync.ForceNewDeployment
 
 	// Store force new deployment flag to metadata store.
-	e.Input.MetadataStore.Shared().Put(ctx, "force-new-deployment", strconv.FormatBool(forceNewDeployment))
+	e.Input.MetadataStore.Shared().Put(ctx, forceNewDeploymentKey, strconv.FormatBool(forceNewDeployment))
 
 	if !sync(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, recreate, forceNewDeployment, taskDefinition, servicedefinition, primary) {
 		return model.StageStatus_STAGE_FAILURE
