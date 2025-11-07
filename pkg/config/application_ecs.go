@@ -109,6 +109,11 @@ type ECSSyncStageOptions struct {
 	// If this is set, the application may be unavailable for a short of time during the deployment.
 	// Default is false.
 	Recreate bool `json:"recreate"`
+	// Whether to force a new deployment or not.
+	// If this is set, the new service deployment will be forced to start even if the service is already in a desired state.
+	// This is useful when you want to update the service configuration.
+	// Default is false.
+	ForceNewDeployment bool `json:"forceNewDeployment"`
 }
 
 // ECSCanaryRolloutStageOptions contains all configurable values for a ECS_CANARY_ROLLOUT stage.
