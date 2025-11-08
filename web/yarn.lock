@@ -1376,10 +1376,10 @@
     superjson "^1.10.0"
     use-sync-external-store "^1.2.0"
 
-"@tanstack/react-query@4.41.0":
-  version "4.41.0"
-  resolved "https://registry.yarnpkg.com/@tanstack/react-query/-/react-query-4.41.0.tgz#58beffba97093d1ca4c44cdf4912074559498933"
-  integrity sha512-4/euCZAv8zeaB5P/nQiySzB0JHM3tiraU9KjSvSlJAX7oIE9uPDZlHCkDg/bHYNXewzvsg0FtOMq0VUq8XMMOQ==
+"@tanstack/react-query@4.42.0":
+  version "4.42.0"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-query/-/react-query-4.42.0.tgz#a4d2527713e841c71a4a4b3f9412bb98ea5eec59"
+  integrity sha512-j0tiofkzE3CSrYKmVRaKuwGgvCE+P2OOEDlhmfjeZf5ufcuFHwYwwgw3j08n4WYPVZ+OpsHblcFYezhKA3jDwg==
   dependencies:
     "@tanstack/query-core" "4.41.0"
     use-sync-external-store "^1.2.0"
