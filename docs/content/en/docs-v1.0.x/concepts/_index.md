@@ -92,9 +92,3 @@ Quick Sync is generally used when you need to rapidly apply configuration change
 - Auto Sync: When you trigger a sync without specifying a strategy, piped automatically selects the most appropriate method based on your application configuration.
 
 Git stored configuration.
-
-### Analysis Provider
-
-An Analysis Provider is an external service that supplies metrics, logs, or other signals used to evaluate the health of a deployment. Examples include Prometheus, Datadog, CloudWatch, etc.
-
-During [Automated deployment analysis](../user-guide/managing-application/customizing-deployment/automated-deployment-analysis/), PipeCD connects to these providers to measure application performance.
