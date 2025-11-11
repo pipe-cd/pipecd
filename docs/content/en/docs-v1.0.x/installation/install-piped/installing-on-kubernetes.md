@@ -6,7 +6,7 @@ description: >
   This page describes how to run the official Kubernetes plugin on your `piped`.
 ---
 
-The Kubernetes plugin for PipeCD V1 adds support for deploying and synchronizing applications on Kubernetes containers.
+The Kubernetes plugin adds support for deploying and synchronizing applications on Kubernetes containers.
 
 ## Prerequisites
 
@@ -31,7 +31,7 @@ If your Git repositories are private, `piped` needs an SSH key to access them.
 
 ### Preparing the `Piped` configuaration file
 
-In PipeCD V1, there are not defaults plugins set. Plugins are external binaries that have to be referenced in the piped configuration file.
+ Plugins are external binaries that have to be referenced in the piped configuration file. There are no plugins set by default.
 
 An example of the a piped V1 configuration file using the Kubernetes plugin:
 

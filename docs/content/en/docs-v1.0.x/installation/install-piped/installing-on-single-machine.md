@@ -34,7 +34,7 @@ Download the latest `piped` V1. See the [latest releases](https://github.com/pip
 
 ### Preparing the `Piped` configuaration file
 
-In PipeCD V1, since platforms have been replaced by plugins, there are no defaults set. Plugins are external binaries that have to be referenced in the piped configuration file.
+Plugins are external binaries that have to be referenced in the piped configuration file. There are no plugins set by default.
 
 An example of the a piped V1 configuration file using the Kubernetes plugin:
 
