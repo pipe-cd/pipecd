@@ -10,7 +10,7 @@ PipeCD consists of two core components: The Control Plane and Piped (see [PipeCD
 
 - **The Control Plane** can be thought of as a web service application that can be installed anywhere. It provides the web UI, API endpoints, and metadata storage.
 
-- **Piped** is a lightweight agent that connects your infrastructure to the Control Plane. In PipeCD v1, each plugin (an external component) implements the deployment and synchronization logic for a specific application kind, such as Kubernetes or Terraform.
+- **Piped** is a lightweight binary agent that connects your infrastructure to the Control Plane. Piped runs plugins internally which implement the deployment and synchronization logic for a specific application kind, such as Kubernetes or Terraform.
 
 In this quickstart, you’ll install both components on a Kubernetes cluster and deploy a sample “hello world” application.
 
