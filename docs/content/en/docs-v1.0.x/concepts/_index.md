@@ -14,7 +14,7 @@ Component Architecture
 
 ### Piped
 
-'`piped`' is a binary, agent component responsible for executing deployments in PipeCD. In PipeCD v1, `piped` adopts a **plugin-based** **architecture**, transforming from a single-purpose executor into a lightweight runtime capable of runnning any deployment logic defined by plugins. The `piped` component is designed to be stateless.
+'`piped`' is a binary, agent component responsible for executing deployments in PipeCD. `Piped` now adopts **plugin-based** **architecture**, transforming from a single-purpose executor into a lightweight runtime capable of runnning any deployment logic defined by plugins. The `piped` component is designed to be stateless.
 
 ### Plugins
 
@@ -26,7 +26,7 @@ PipeCD v1 Plugin Architecture
 
 Plugins replace the concept of Platform Providers (also called Cloud Providers) from earlier versions of PipeCD.
 
-A Plugin in PipeCD v1 defines how and where deployments are executed. Each plugin encapsulates the logic required to interact with a specific platform or tool - for example, Kubernetes, Terraform, or ECS.
+A Plugin defines how and where deployments are executed. Each plugin encapsulates the logic required to interact with a specific platform or tool - for example, Kubernetes, Terraform, or ECS.
 
 In this architecture, plugins are the actors who execute deployments on behalf of `piped`. Rather than containing built-in logic for every platform, `piped` now loads plugin binaries at startup and communicates with them over gRPC. This design allows support for new or custom platforms.
 
@@ -37,8 +37,7 @@ In this architecture, plugins are the actors who execute deployments on behalf o
 
 The Control Plane is the centralized management service of PipeCD. It coordinates all activities between users, projects, and piped instances.
 
-In PipeCD v1, the Control Plane remains the backbone of the system but is now fully plugin-aware.
-Instead of directly handling deployment logic for specific platforms, it interacts with `piped` agents that run plugin binaries, allowing the Control Plane to manage deployments across any platform supported by plugins.
+The Control Plane remains the backbone of the system but is now fully plugin-aware. Instead of directly handling deployment logic for specific platforms, it interacts with `piped` agents that run plugin binaries, allowing the Control Plane to manage deployments across any platform supported by plugins.
 
 ### Project
 
@@ -55,7 +54,7 @@ Projects use role-based access control (RBAC) to manage permissions:
 
 An Application represents a collection of declarative resources and configurations that represent a deployable unit managed by PipeCD.
 
-In PipeCD v1, applications are no longer tied to a specific platform or technology such as Kubernetes, Terraform, or ECS.
+Applications are no longer tied to a specific platform or technology such as Kubernetes, Terraform, or ECS.
 Instead, they are platform-agnostic objects whose deployment behavior is determined dynamically through **[Plugins](#plugins).**
 
 ### Application Configuration
@@ -79,7 +78,7 @@ When a deployment completes successfully, the running environment matches the co
 PipeCD provides 3 different ways to keep your application’s live state consistent with its desired state stored in Git.
 Depending on your deployment workflow, you can choose from one of the following sync strategies:
 
-- Quick Sync: A fast, single-step method to sync your deployment with the desired state. PipeCD automatically generates a pipeline containing a single predefined stage:
+- Quick Sync: A fast, single-step method to sync your deployment with the desired state. PipeCD automatically generates a pipeline composed of predefined Quick Sync stages provided by plugins linked to the application. This is done either through deploy targets specified during application registration on the Control Plane or via the pipeline seclession defined in the application configuration.
 
 ```yaml
 - name: SYNC
