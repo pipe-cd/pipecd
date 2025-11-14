@@ -18,18 +18,21 @@ While it empowers you to build pretty versatile workflows, the canonical use cas
 This guide walks you through configuring Event watcher and how to push an Event.
 
 ## Prerequisites
+
 Before we get into configuring EventWatcher, be sure to configure Piped. See [here](../managing-piped/configuring-event-watcher/) for more details.
 
 ## Usage
+
 File updating can be done by registering the latest value corresponding to the Event in the Control Plane and comparing it with the current value.
 
 Therefore, you mainly need to:
+
 1. define which values in which files should be updated when a new Event found.
 1. integrate a step to push an Event to the Control Plane using `pipectl` into your CI workflow.
 
 ### 1. Defining Events
+
 #### Use the `.pipe/` directory
->NOTE: This way is deprecated and will be removed in the future, so please use the application configuration.
 
 Prepare EventWatcher configuration files under the `.pipe/` directory at the root of your Git repository.
 In that files, you define which values in which files should be updated when the Piped found out a new Event.

@@ -10,7 +10,7 @@ description: >
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
-kind: KubernetesApp
+kind: Application
 spec:
   input:
   pipeline:
@@ -55,7 +55,7 @@ Kubernetes resources can be managed by some annotations provided by PipeCD.
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
-kind: TerraformApp
+kind: Application
 spec:
   input:
   pipeline:
@@ -83,7 +83,7 @@ spec:
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
-kind: CloudRunApp
+kind: Application
 spec:
   input:
   pipeline:
@@ -111,7 +111,7 @@ spec:
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
-kind: LambdaApp
+kind: Application
 spec:
   pipeline:
   ...
@@ -139,7 +139,7 @@ spec:
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
-kind: ECSApp
+kind: Application
 spec:
   input:
   pipeline:
