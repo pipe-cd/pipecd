@@ -1,10 +1,13 @@
 ---
 title: "Contribute to PipeCD Documentation"
+    linkTitle: "Contribute to PipeCD Documentation"
+    description: "A guide for how to contribute to the PipeCD Documentation website (pipecd.dev)."
+    weight: 4
 ---
 
 Welcome! We are so happy you're interested in helping improve our documentation. Your contributions make the project better for everyone.
 
-This guide explains how you can submit documentation changes.
+This guide explains how you can contribute to the PipeCD Documentation, which resides on our official website, https://pipecd.dev.
 
 ## Where to find the docs
 
