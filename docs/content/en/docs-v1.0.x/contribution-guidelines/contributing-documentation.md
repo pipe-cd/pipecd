@@ -1,8 +1,8 @@
 ---
 title: "Contribute to PipeCD Documentation"
-    linkTitle: "Contribute to PipeCD Documentation"
-    description: "A guide for how to contribute to the PipeCD Documentation website (pipecd.dev)."
-    weight: 4
+linkTitle: "Contribute to PipeCD Documentation"
+description: >
+  A guide for how to contribute to the PipeCD Documentation website (https://pipecd.dev).
 ---
 
 Welcome! We are so happy you're interested in helping improve our documentation. Your contributions make the project better for everyone.
