@@ -16,9 +16,9 @@ PipeCD V1 introduces a plugin-based architecture where each application deployme
 
 Since PipeCD V1 introduces a plugin architecture, you can now deploy any application using plugins.
 
-Check out the latest releases on GitHub for the list of available plugins. Additionally, we also have a Community Plugins Repository for plugins made by the PipeCD community. As of now, we have the Kubernetes Plugin and the Terraform Plugin.
+Check out the latest releases on GitHub for the list of available plugins. Additionally, we also have a Community Plugins Repository for plugins made by the PipeCD community. As of now, the official plugins maintained by the PipeCD Maintainers are Kubernetes, Terraform, Analysis, ScriptRun, Wait, and WaitApproval.
 
-The broader plan in the future releases is to add plugins for ECS and CloudRun, which will be maintained by PipeCD, while plugins for other applications will go in the Community Plugins Repository.
+The broader plan in the future releases is to add plugins for Amazon ECS and GCP Cloud Run, which will be maintained by PipeCD, while plugins for other applications will go in the Community Plugins Repository.
 
 ### 3. What kind of templating methods for Kubernetes application will be supported?
 
@@ -30,7 +30,7 @@ Yes, you can use PipeCD for both mesh (Istio, SMI) applications and non-mesh app
 
 ### 5. What are the differences between PipeCD and FluxCD?
 
-- Apart from Kubernetes applications, PipeCD also provides a unified interface for other cloud services (CloudRun, AWS, ECS, Lambda and more). Starting PipeCD V1, users can use PipeCD with even more applications by creating custom plugins for their deployments.
+- Apart from Kubernetes applications, PipeCD also provides a unified interface for other cloud services (GCP Cloud Run, AWS ECS, AWS Lambda and more). Starting PipeCD V1, users can use PipeCD with even more applications by creating custom plugins for their deployments.
 Here are some standout features of PipeCD when compared to Flux:
 
 - One tool for both GitOps sync and progressive deployment
@@ -45,7 +45,7 @@ Here are some standout features of PipeCD when compared to Flux:
 
 ### 6. What are the differences between PipeCD and ArgoCD?
 
-- Apart from Kubernetes applications, PipeCD also provides a unified interface for other cloud services (CloudRun, AWS, ECS, Lambda and more). Starting PipeCD V1, users can use PipeCD with even more applications by creating custom plugins for their deployments.
+- Apart from Kubernetes applications, PipeCD also provides a unified interface for other cloud services (GCP Cloud Run, AWS ECS, AWS Lambda and more). Starting PipeCD V1, users can use PipeCD with even more applications by creating custom plugins for their deployments.
 Here are some standout features of PipeCD when compared to ArgoCD:
 
 - One tool for both GitOps sync and progressive deployment
