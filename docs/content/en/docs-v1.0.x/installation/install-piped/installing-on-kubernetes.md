@@ -1,12 +1,10 @@
 ---
-title: "Running the Kubernetes plugin"
-linkTitle: "Running the Kubernetes plugin"
+title: "Installing on a Kubernetes cluster"
+linkTitle: "Installing on a Kubernetes cluster"
 weight: 1
 description: >
-  This page describes how to run the official Kubernetes plugin on your `piped`.
+  This page describes how install Piped on a Kubernetes cluster.
 ---
-
-The Kubernetes plugin adds support for deploying and synchronizing applications on Kubernetes containers.
 
 ## Prerequisites
 

@@ -5,9 +5,7 @@ weight: 3
 description: >
   This page describes how you can run the `piped` binary connects your infrastructure to the PipeCD Control Plane.
 ---
- Starting from PipeCD V1, a plugin is responsible for the implementation and the logic of a deployment. For example, A kubernetes plugin handles deployment to Kubernetes clusters, An ECS plugin handles deployment to Amazon ECS Services and so on.
 
- In this installation guide, we will see how you can configure your `piped` agent to connect to different plugins.
+Since Piped is a stateless agent, no database or storage is required to run. In addition, a Piped can interact with one or multiple platform providers, so the number of `piped`'s and where they should run is entirely up to your preference. For example, you can run your Pipeds in a Kubernetes cluster to deploy not just Kubernetes applications but your Terraform and Cloud Run applications as well.
 
- >**NOTE:**
- >If you are using a PipeCD V0.x.x, and want to switch to PipeCD V1, see [Migrating from V0 to V1](../../migrating-from-v0-to-v1/_index.md).
+In this guide, we will see how you can configure your `piped` agent and install it on different platforms.
