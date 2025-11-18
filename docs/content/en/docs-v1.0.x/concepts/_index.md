@@ -12,6 +12,12 @@ description: >
 Component Architecture
 </p>
 
+### Control Plane
+
+The Control Plane is the centralized management service of PipeCD. It coordinates all activities between users, projects, and piped instances.
+
+The Control Plane remains the backbone of the system but is now fully plugin-aware. Instead of directly handling deployment logic for specific platforms, it interacts with `piped` agents that run plugin binaries, allowing the Control Plane to manage deployments across any platform supported by plugins.
+
 ### Piped
 
 '`piped`' is a binary, agent component responsible for executing deployments in PipeCD. `Piped` now adopts **plugin-based** **architecture**, transforming from a single-purpose executor into a lightweight runtime capable of runnning any deployment logic defined by plugins. The `piped` component is designed to be stateless.
@@ -32,12 +38,6 @@ In this architecture, plugins are the actors who execute deployments on behalf o
 
 >**Note:**  
 >Check out the [PipeCD Community Plugins repository](https://github.com/pipe-cd/community-plugins) to browse available plugins and learn how to create your own.
-
-### Control Plane
-
-The Control Plane is the centralized management service of PipeCD. It coordinates all activities between users, projects, and piped instances.
-
-The Control Plane remains the backbone of the system but is now fully plugin-aware. Instead of directly handling deployment logic for specific platforms, it interacts with `piped` agents that run plugin binaries, allowing the Control Plane to manage deployments across any platform supported by plugins.
 
 ### Project
 
