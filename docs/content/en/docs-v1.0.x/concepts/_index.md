@@ -78,13 +78,7 @@ When a deployment completes successfully, the running environment matches the co
 PipeCD provides 3 different ways to keep your application’s live state consistent with its desired state stored in Git.
 Depending on your deployment workflow, you can choose from one of the following sync strategies:
 
-- Quick Sync: A fast, single-step method to sync your deployment with the desired state. PipeCD automatically generates a pipeline composed of predefined Quick Sync stages provided by plugins linked to the application. This is done either through deploy targets specified during application registration on the Control Plane or via the pipeline seclession defined in the application configuration.
-
-```yaml
-- name: SYNC
-```
-
-Quick Sync is generally used when you need to rapidly apply configuration changes without a gradual rollout.
+- Quick Sync: A fast, single-step method to sync your deployment with the desired state. PipeCD automatically generates a pipeline composed of predefined Quick Sync stages provided by plugins linked to the application. Quick Sync is generally used when you need to rapidly apply configuration changes without a gradual rollout.
 
 - Pipeline Sync: A customizable, step-by-step sync process that follows the pipeline you define in your application configuration file. Use Pipeline Sync when you need more control over how updates are rolled out.
 
