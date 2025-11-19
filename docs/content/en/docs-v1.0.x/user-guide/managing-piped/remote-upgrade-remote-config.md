@@ -6,14 +6,23 @@ description: >
   This page describes how to use remote upgrade and remote config features.
 ---
 
-## Remote upgrade
+>**NOTE:**
+>
+>Remote Upgrade and Remote Config features are not available right now for PipeCD versions 1.0.0 and above.
+> We are working on them, and will update this page as soon as they are ready.
+
+
+
+
+
+<!-- ## Remote upgrade
 
 The remote upgrade is the ability to restart the currently running Piped with another version from the web console.
 This reduces the effort involved in updating Piped to newer versions.
 All Pipeds that are running by the provided Piped container image can be enabled to use this feature.
 It means Pipeds running on a Kubernetes cluster, a virtual machine, a serverless service can be upgraded remotely from the web console.
 
-Basically, in order to use this feature you must run Piped with `/launcher` command instead of `/piped` command as usual.
+In order to use this feature you must run Piped with `/launcher` command instead of `/piped` command as usual.
 Please check the [installation](../../../installation/install-piped/) guide on each environment to see the details.
 
 After starting Piped with the remote-upgrade feature, you can go to the Settings page then click on `UPGRADE` button on the top-right corner.
@@ -35,4 +44,4 @@ This feature requires the remote-upgrade feature to be enabled simultaneously. P
 ## Summary
 
 - By `remote-upgrade` you can upgrade your Piped to a newer version by clicking on the web console
-- By `remote-config` you can enforce your Piped to use the latest config data just by updating its config file stored in a Git repository
+- By `remote-config` you can enforce your Piped to use the latest config data just by updating its config file stored in a Git repository -->
