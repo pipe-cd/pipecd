@@ -12,7 +12,7 @@ You can configure some options when running Piped and launcher.
 
 ```bash
 Usage:
-  piped piped [flags]
+  piped run [flags]
 
 Flags:
       --add-login-user-to-passwd                   Whether to add login user to $HOME/passwd. This is typically for applications running as a random user ID.
