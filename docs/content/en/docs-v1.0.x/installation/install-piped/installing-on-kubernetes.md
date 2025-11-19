@@ -46,15 +46,7 @@ spec:
       remote: git@github.com:{GIT_ORG}/{GIT_REPO}.git
       branch: {GIT_BRANCH}
   syncInterval: 1m
-  plugins:
-    - name: kubernetes
-      port: 7001
-      url: https://github.com/pipe-cd/pipecd/releases/download/pkg%2Fapp%2Fpipedv1%2Fplugin%2Fkubernetes%2Fv0.1.0/kubernetes_v0.1.0_darwin_arm64
-      deployTargets:
-        - name: local
-          config:
-            kubectlVersion: 1.32.4
-            kubeConfigPath: {PATH_TO_KUBECONFIG}
+  plugins: {}
 ```
 
 >**Note:**
@@ -124,7 +116,6 @@ helm upgrade -i dev-piped oci://ghcr.io/pipe-cd/chart/piped --version={{< blocks
   --set-file config.data={PATH_TO_PIPED_CONFIG_FILE} \
   --set-file secret.data.piped-key={PATH_TO_PIPED_KEY_FILE} \
   --set-file secret.data.ssh-key={PATH_TO_PRIVATE_SSH_KEY_FILE} \
-  --set args.enableDefaultKubernetesCloudProvider=false \
   --set rbac.scope=namespace
   {{< /tab >}}
   {{< /tabpane >}}
@@ -152,7 +143,6 @@ helm upgrade -i dev-piped oci://ghcr.io/pipe-cd/chart/piped --version={{< blocks
   --set-file config.data={PATH_TO_PIPED_CONFIG_FILE} \
   --set-file secret.data.piped-key={PATH_TO_PIPED_KEY_FILE} \
   --set-file secret.data.ssh-key={PATH_TO_PRIVATE_SSH_KEY_FILE} \
-  --set args.enableDefaultKubernetesCloudProvider=false \
   --set rbac.scope=namespace
   --set args.addLoginUserToPasswd=true \
   --set securityContext.runAsNonRoot=true \

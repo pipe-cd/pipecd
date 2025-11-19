@@ -36,7 +36,7 @@ Download the latest `piped` V1. See the [latest releases](https://github.com/pip
 
 Plugins are external binaries that have to be referenced in the piped configuration file. There are no plugins set by default.
 
-An example of the a piped V1 configuration file using the Kubernetes plugin:
+An example of the a piped V1 configuration file using the [Example-stage plugin](https://github.com/pipe-cd/community-plugins/tree/main/plugins/example-stage):
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -51,15 +51,7 @@ spec:
       remote: git@github.com:{GIT_ORG}/{GIT_REPO}.git
       branch: {GIT_BRANCH}
   syncInterval: 1m
-  plugins:
-    - name: kubernetes
-      port: 7001
-      url: https://github.com/pipe-cd/pipecd/releases/download/pkg%2Fapp%2Fpipedv1%2Fplugin%2Fkubernetes%2Fv0.1.0/kubernetes_v0.1.0_darwin_arm64
-      deployTargets:
-        - name: local
-          config:
-            kubectlVersion: 1.32.4
-            kubeConfigPath: /Users/sawanteeshaan/.kube/config
+  plugins: {}
 ```
 
 See [ConfigurationReference](../../../user-guide/managing-piped/configuration-reference/) for the full configuration.
