@@ -3,7 +3,7 @@ title: "Adding an analysis provider"
 linkTitle: "Adding analysis provider"
 weight: 6
 description: >
-  This page describes how to add an analysis provider for doing deployment analysis.
+  This page describes how to add an Analysis Provider to analyize the metrics of your deployment.
 ---
 
 To enable [Automated deployment analysis](../../managing-application/customizing-deployment/automated-deployment-analysis/) feature, you have to set the needed information for Piped to connect to the [Analysis Provider](../../../concepts/#analysis-provider).
@@ -17,20 +17,25 @@ Currently, PipeCD supports the following providers:
 
 Piped queries the [range query endpoint](https://prometheus.io/docs/prometheus/latest/querying/api/#range-queries) to obtain metrics used to evaluate the deployment.
 
-You need to define the Prometheus server address accessible to Piped.
+You need to define the Prometheus server address so that it can be accessed by your `piped`.
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: Piped
 spec:
-  analysisProviders:
-    - name: prometheus-dev
-      type: PROMETHEUS
+  plugins:
+    - name: analysis
+      port:
+      url:
       config:
-        address: https://your-prometheus.dev
+        analysisProviders:
+          - name: prometheus-dev
+            type: PROMETHEUS
+            config:
+              address: https://your-prometheus.dev
 ```
 
-The full list of configurable fields are [here](configuration-reference/#analysisproviderprometheusconfig).
+To know more, see the full list of [configurable fields](configuration-reference/#analysisproviderdatadogconfig).
 
 ## Datadog
 
@@ -40,19 +45,24 @@ Piped queries the [MetricsApi.QueryMetrics](https://docs.datadoghq.com/api/lates
 apiVersion: pipecd.dev/v1beta1
 kind: Piped
 spec:
-  analysisProviders:
-    - name: datadog-dev
-      type: DATADOG
+  plugins:
+    - name: analysis
+      port:
+      url:
       config:
-        apiKeyFile: /etc/piped-secret/datadog-api-key
-        applicationKeyFile: /etc/piped-secret/datadog-application-key
+        analysisProviders:
+          - name: datadog-dev
+            type: DATADOG
+            config: 
+              apiKeyFile: /etc/piped-secret/datadog-api-key
+              applicationKeyFile: /etc/piped-secret/datadog-application-key
 ```
 
-The full list of configurable fields are [here](configuration-reference/#analysisproviderdatadogconfig).
+To know more, see the full list of [configurable fields](configuration-reference/#analysisproviderdatadogconfig).
 
 If you choose `Helm` as the installation method, we recommend using `--set-file` to mount the key files while performing the [upgrading process](../../../installation/install-piped/installing-on-kubernetes/#in-the-cluster-wide-mode).
 
-```console
+```bash
 --set-file secret.data.datadog-api-key={PATH_TO_API_KEY_FILE} \
 --set-file secret.data.datadog-application-key={PATH_TO_APPLICATION_KEY_FILE}
 ```
