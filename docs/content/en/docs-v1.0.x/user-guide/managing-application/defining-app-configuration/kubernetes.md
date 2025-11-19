@@ -68,11 +68,11 @@ and other common stages:
 - `WAIT_APPROVAL`
 - `ANALYSIS`
 
-See the description of each stage at [Customize application deployment](../../customizing-deployment/).
+Check out the description of each stage at [Customize application deployment](../../customizing-deployment/).
 
 ## Manifest Templating
 
-In addition to plain-YAML, PipeCD also supports Helm and Kustomize for templating application manifests.
+In addition to .yaml files, PipeCD also supports Helm and Kustomize for templating application manifests.
 
 A helm chart can be loaded from:
 
