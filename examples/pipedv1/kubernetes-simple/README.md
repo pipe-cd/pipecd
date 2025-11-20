@@ -47,14 +47,14 @@ In the PipeCD UI:
 1. Navigate to the **Applications** page
 2. Click the **"+ ADD"** button
 3. Select **"ADD FROM SUGGESTIONS"**
-4. Choose your Piped and the `kubernetes-default` platform provider
+4. Choose your Piped and the `kubernetes-default` deploy target
 5. Select this application from the list
 6. Click **"SAVE"**
 
 ### 2. Deploy
 
 Once registered, PipeCD will:
-1. Detect the `app.pipecd.yaml` file in this directory
+1. Detect the `app.pipecd.yaml` file in this repository
 2. Execute the K8S_SYNC pipeline stage
 3. Apply both Kubernetes manifests (`deployment.yaml` and `service.yaml`)
 4. Monitor the deployment status and report progress
@@ -80,11 +80,3 @@ After successful deployment:
 - **Continuous Sync**: PipeCD monitors and syncs the application state with Git
 
 Any changes to the manifests in Git will trigger automatic synchronization.
-
-## Next Steps
-
-Once you understand this basic example, explore:
-- **Progressive delivery**: Canary and blue-green deployments
-- **Helm integration**: Using Helm charts with PipeCD v1
-- **Multi-stage pipelines**: Adding approval gates, analysis, and wait stages
-- **Other plugins**: Terraform, CloudRun, Lambda, and ECS deployments
