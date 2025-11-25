@@ -45,7 +45,7 @@ type ECS interface {
 	ListClusters(ctx context.Context) ([]string, error)
 	ServiceExists(ctx context.Context, clusterName string, servicesName string) (bool, error)
 	CreateService(ctx context.Context, service types.Service) (*types.Service, error)
-	UpdateService(ctx context.Context, service types.Service) (*types.Service, error)
+	UpdateService(ctx context.Context, service types.Service, forceNewDeployment bool) (*types.Service, error)
 	PruneServiceTasks(ctx context.Context, service types.Service) error
 	WaitServiceStable(ctx context.Context, service types.Service) error
 	GetServices(ctx context.Context, clusterName string) ([]*types.Service, error)
