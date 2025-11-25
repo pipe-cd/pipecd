@@ -13,7 +13,7 @@ The [SSH key used by Piped](../configuration-reference/#git) must be a key with 
 
 ### Specify Git repositories to be observed
 Piped watches events only for the Git repositories specified in the `gitRepos` list.
-You need to add all repositories you want to enable Eventwatcher.
+You need to add all repositories you want to enable EventWatcher.
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -26,12 +26,12 @@ spec:
       - repoId: repo-3
 ```
 
-### [optional] Specify Eventwatcher files Piped will use
+### [optional] Specify EventWatcher files Piped will use
 >NOTE: This way is valid only for defining events using [.pipe/](../../event-watcher/#use-the-pipe-directory).
 
 If multiple Pipeds handle a single repository, you can prevent conflicts by splitting into the multiple EventWatcher files and setting `includes/excludes` to specify the files that should be monitored by this Piped.
 
-Say for instance, if you only want the Piped to use the Eventwatcher files under `.pipe/dev/`:
+Say for instance, if you only want the Piped to use the EventWatcher files under `.pipe/dev/`:
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
