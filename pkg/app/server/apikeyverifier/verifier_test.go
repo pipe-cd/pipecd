@@ -48,6 +48,21 @@ func (f *fakeRedisHashCache) Put(k string, v interface{}) error {
 	return nil
 }
 
+type fakeProjectGetter struct {
+	calls    int
+	projects map[string]*model.Project
+}
+
+func (g *fakeProjectGetter) Get(_ context.Context, id string) (*model.Project, error) {
+	g.calls++
+	p, ok := g.projects[id]
+	if ok {
+		msg := proto.Clone(p)
+		return msg.(*model.Project), nil
+	}
+	return nil, fmt.Errorf("not found")
+}
+
 func TestVerify(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -58,6 +73,10 @@ func TestVerify(t *testing.T) {
 
 	var id2 = "disabled-api-key"
 	key2, hash2, err := model.GenerateAPIKey(id2)
+	require.NoError(t, err)
+
+	var id3 = "project-disabled-api-key"
+	key3, hash3, err := model.GenerateAPIKey(id3)
 	require.NoError(t, err)
 
 	apiKeyGetter := &fakeAPIKeyGetter{
@@ -75,10 +94,27 @@ func TestVerify(t *testing.T) {
 				ProjectId: "test-project",
 				Disabled:  true,
 			},
+			id3: {
+				Id:        id3,
+				Name:      id3,
+				KeyHash:   hash3,
+				ProjectId: "disabled-project",
+			},
 		},
 	}
 	fakeRedisHashCache := &fakeRedisHashCache{}
-	v := NewVerifier(ctx, apiKeyGetter, fakeRedisHashCache, zap.NewNop())
+	projectGetter := &fakeProjectGetter{
+		projects: map[string]*model.Project{
+			"test-project": {
+				Id: "test-project",
+			},
+			"disabled-project": {
+				Id:       "disabled-project",
+				Disabled: true,
+			},
+		},
+	}
+	v := NewVerifier(ctx, apiKeyGetter, projectGetter, fakeRedisHashCache, zap.NewNop())
 
 	// Not found key.
 	notFoundKey, _, err := model.GenerateAPIKey("not-found-api-key")
@@ -96,17 +132,26 @@ func TestVerify(t *testing.T) {
 	require.NotNil(t, err)
 	assert.Equal(t, "the api key disabled-api-key was already disabled", err.Error())
 	require.Equal(t, 2, apiKeyGetter.calls)
+	require.Equal(t, 0, projectGetter.calls)
+
+	// Found key but project is disabled.
+	apiKey, err = v.Verify(ctx, key3)
+	require.Nil(t, apiKey)
+	require.NotNil(t, err)
+	assert.Equal(t, "project disabled-project is disabled", err.Error())
+	require.Equal(t, 3, apiKeyGetter.calls)
+	require.Equal(t, 1, projectGetter.calls)
 
 	// Found key but invalid secret.
 	apiKey, err = v.Verify(ctx, fmt.Sprintf("%s.invalidhash", id1))
 	require.Nil(t, apiKey)
 	require.NotNil(t, err)
 	assert.Equal(t, "invalid api key test-api-key: wrong api key test-api-key.invalidhash: crypto/bcrypt: hashedPassword is not the hash of the given password", err.Error())
-	require.Equal(t, 3, apiKeyGetter.calls)
+	require.Equal(t, 4, apiKeyGetter.calls)
 
 	// OK.
 	apiKey, err = v.Verify(ctx, key1)
 	assert.Equal(t, id1, apiKey.Name)
 	assert.Nil(t, err)
-	require.Equal(t, 3, apiKeyGetter.calls)
+	require.Equal(t, 4, apiKeyGetter.calls)
 }

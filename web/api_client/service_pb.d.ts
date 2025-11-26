@@ -1588,6 +1588,62 @@ export namespace DisableStaticAdminResponse {
   }
 }
 
+export class EnableProjectRequest extends jspb.Message {
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): EnableProjectRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: EnableProjectRequest): EnableProjectRequest.AsObject;
+  static serializeBinaryToWriter(message: EnableProjectRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): EnableProjectRequest;
+  static deserializeBinaryFromReader(message: EnableProjectRequest, reader: jspb.BinaryReader): EnableProjectRequest;
+}
+
+export namespace EnableProjectRequest {
+  export type AsObject = {
+  }
+}
+
+export class EnableProjectResponse extends jspb.Message {
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): EnableProjectResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: EnableProjectResponse): EnableProjectResponse.AsObject;
+  static serializeBinaryToWriter(message: EnableProjectResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): EnableProjectResponse;
+  static deserializeBinaryFromReader(message: EnableProjectResponse, reader: jspb.BinaryReader): EnableProjectResponse;
+}
+
+export namespace EnableProjectResponse {
+  export type AsObject = {
+  }
+}
+
+export class DisableProjectRequest extends jspb.Message {
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): DisableProjectRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: DisableProjectRequest): DisableProjectRequest.AsObject;
+  static serializeBinaryToWriter(message: DisableProjectRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DisableProjectRequest;
+  static deserializeBinaryFromReader(message: DisableProjectRequest, reader: jspb.BinaryReader): DisableProjectRequest;
+}
+
+export namespace DisableProjectRequest {
+  export type AsObject = {
+  }
+}
+
+export class DisableProjectResponse extends jspb.Message {
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): DisableProjectResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: DisableProjectResponse): DisableProjectResponse.AsObject;
+  static serializeBinaryToWriter(message: DisableProjectResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DisableProjectResponse;
+  static deserializeBinaryFromReader(message: DisableProjectResponse, reader: jspb.BinaryReader): DisableProjectResponse;
+}
+
+export namespace DisableProjectResponse {
+  export type AsObject = {
+  }
+}
+
 export class GetMeRequest extends jspb.Message {
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetMeRequest.AsObject;

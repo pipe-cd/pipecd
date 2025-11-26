@@ -28,3 +28,5 @@ export const DELETE_USER_GROUP_SUCCESS = "Successfully deleted User Group.";
 export const ADD_RBAC_ROLE_SUCCESS = "Successfully added RBAC Role.";
 export const DELETE_RBAC_ROLE_SUCCESS = "Successfully deleted RBAC Role.";
 export const UPDATE_RBAC_ROLE_SUCCESS = "Successfully updated RBAC Role.";
+export const ENABLE_PROJECT_SUCCESS = "Project enabled.";
+export const DISABLE_PROJECT_SUCCESS = "Project disabled.";

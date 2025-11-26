@@ -51,6 +51,10 @@ func (h *authHandler) handleSSOLogin(w http.ResponseWriter, r *http.Request) {
 		h.handleError(w, r, fmt.Sprintf("Unable to find project %s", projectID), err)
 		return
 	}
+	if proj.Disabled {
+		h.handleError(w, r, fmt.Sprintf("Project %s is disabled", projectID), nil)
+		return
+	}
 
 	sso, shared, err := h.findSSOConfig(proj)
 	if err != nil {
@@ -119,6 +123,10 @@ func (h *authHandler) handleStaticAdminLogin(w http.ResponseWriter, r *http.Requ
 			h.handleError(w, r, fmt.Sprintf("Unable to find project: %s", projectID), err)
 			return
 		}
+		if proj.Disabled {
+			h.handleError(w, r, fmt.Sprintf("Project %s is disabled", projectID), nil)
+			return
+		}
 		if proj.StaticAdminDisabled {
 			h.handleError(w, r, "Static admin is disabling", nil)
 			return
@@ -135,7 +143,7 @@ func (h *authHandler) handleStaticAdminLogin(w http.ResponseWriter, r *http.Requ
 		admin.Username,
 		"",
 		defaultTokenTTL,
-		model.Role{
+		&model.Role{
 			ProjectId:        projectID,
 			ProjectRbacRoles: []string{model.BuiltinRBACRoleAdmin.String()},
 		},

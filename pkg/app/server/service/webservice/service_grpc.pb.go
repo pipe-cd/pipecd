@@ -64,6 +64,8 @@ type WebServiceClient interface {
 	DisableStaticAdmin(ctx context.Context, in *DisableStaticAdminRequest, opts ...grpc.CallOption) (*DisableStaticAdminResponse, error)
 	UpdateProjectSSOConfig(ctx context.Context, in *UpdateProjectSSOConfigRequest, opts ...grpc.CallOption) (*UpdateProjectSSOConfigResponse, error)
 	UpdateProjectRBACConfig(ctx context.Context, in *UpdateProjectRBACConfigRequest, opts ...grpc.CallOption) (*UpdateProjectRBACConfigResponse, error)
+	EnableProject(ctx context.Context, in *EnableProjectRequest, opts ...grpc.CallOption) (*EnableProjectResponse, error)
+	DisableProject(ctx context.Context, in *DisableProjectRequest, opts ...grpc.CallOption) (*DisableProjectResponse, error)
 	GetMe(ctx context.Context, in *GetMeRequest, opts ...grpc.CallOption) (*GetMeResponse, error)
 	AddProjectRBACRole(ctx context.Context, in *AddProjectRBACRoleRequest, opts ...grpc.CallOption) (*AddProjectRBACRoleResponse, error)
 	UpdateProjectRBACRole(ctx context.Context, in *UpdateProjectRBACRoleRequest, opts ...grpc.CallOption) (*UpdateProjectRBACRoleResponse, error)
@@ -418,6 +420,24 @@ func (c *webServiceClient) UpdateProjectRBACConfig(ctx context.Context, in *Upda
 	return out, nil
 }
 
+func (c *webServiceClient) EnableProject(ctx context.Context, in *EnableProjectRequest, opts ...grpc.CallOption) (*EnableProjectResponse, error) {
+	out := new(EnableProjectResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.webservice.WebService/EnableProject", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *webServiceClient) DisableProject(ctx context.Context, in *DisableProjectRequest, opts ...grpc.CallOption) (*DisableProjectResponse, error) {
+	out := new(DisableProjectResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.webservice.WebService/DisableProject", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *webServiceClient) GetMe(ctx context.Context, in *GetMeRequest, opts ...grpc.CallOption) (*GetMeResponse, error) {
 	out := new(GetMeResponse)
 	err := c.cc.Invoke(ctx, "/grpc.service.webservice.WebService/GetMe", in, out, opts...)
@@ -599,6 +619,8 @@ type WebServiceServer interface {
 	DisableStaticAdmin(context.Context, *DisableStaticAdminRequest) (*DisableStaticAdminResponse, error)
 	UpdateProjectSSOConfig(context.Context, *UpdateProjectSSOConfigRequest) (*UpdateProjectSSOConfigResponse, error)
 	UpdateProjectRBACConfig(context.Context, *UpdateProjectRBACConfigRequest) (*UpdateProjectRBACConfigResponse, error)
+	EnableProject(context.Context, *EnableProjectRequest) (*EnableProjectResponse, error)
+	DisableProject(context.Context, *DisableProjectRequest) (*DisableProjectResponse, error)
 	GetMe(context.Context, *GetMeRequest) (*GetMeResponse, error)
 	AddProjectRBACRole(context.Context, *AddProjectRBACRoleRequest) (*AddProjectRBACRoleResponse, error)
 	UpdateProjectRBACRole(context.Context, *UpdateProjectRBACRoleRequest) (*UpdateProjectRBACRoleResponse, error)
@@ -733,6 +755,12 @@ func (UnimplementedWebServiceServer) UpdateProjectSSOConfig(context.Context, *Up
 }
 func (UnimplementedWebServiceServer) UpdateProjectRBACConfig(context.Context, *UpdateProjectRBACConfigRequest) (*UpdateProjectRBACConfigResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateProjectRBACConfig not implemented")
+}
+func (UnimplementedWebServiceServer) EnableProject(context.Context, *EnableProjectRequest) (*EnableProjectResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EnableProject not implemented")
+}
+func (UnimplementedWebServiceServer) DisableProject(context.Context, *DisableProjectRequest) (*DisableProjectResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DisableProject not implemented")
 }
 func (UnimplementedWebServiceServer) GetMe(context.Context, *GetMeRequest) (*GetMeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMe not implemented")
@@ -1440,6 +1468,42 @@ func _WebService_UpdateProjectRBACConfig_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _WebService_EnableProject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EnableProjectRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebServiceServer).EnableProject(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.webservice.WebService/EnableProject",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebServiceServer).EnableProject(ctx, req.(*EnableProjectRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WebService_DisableProject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DisableProjectRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebServiceServer).DisableProject(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.webservice.WebService/DisableProject",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebServiceServer).DisableProject(ctx, req.(*DisableProjectRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _WebService_GetMe_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetMeRequest)
 	if err := dec(in); err != nil {
@@ -1860,6 +1924,14 @@ var WebService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateProjectRBACConfig",
 			Handler:    _WebService_UpdateProjectRBACConfig_Handler,
+		},
+		{
+			MethodName: "EnableProject",
+			Handler:    _WebService_EnableProject_Handler,
+		},
+		{
+			MethodName: "DisableProject",
+			Handler:    _WebService_DisableProject_Handler,
 		},
 		{
 			MethodName: "GetMe",

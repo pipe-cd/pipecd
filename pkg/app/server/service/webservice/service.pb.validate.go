@@ -8564,6 +8564,414 @@ var _ interface {
 	ErrorName() string
 } = DisableStaticAdminResponseValidationError{}
 
+// Validate checks the field values on EnableProjectRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *EnableProjectRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on EnableProjectRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// EnableProjectRequestMultiError, or nil if none found.
+func (m *EnableProjectRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *EnableProjectRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return EnableProjectRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// EnableProjectRequestMultiError is an error wrapping multiple validation
+// errors returned by EnableProjectRequest.ValidateAll() if the designated
+// constraints aren't met.
+type EnableProjectRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m EnableProjectRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m EnableProjectRequestMultiError) AllErrors() []error { return m }
+
+// EnableProjectRequestValidationError is the validation error returned by
+// EnableProjectRequest.Validate if the designated constraints aren't met.
+type EnableProjectRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e EnableProjectRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e EnableProjectRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e EnableProjectRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e EnableProjectRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e EnableProjectRequestValidationError) ErrorName() string {
+	return "EnableProjectRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e EnableProjectRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sEnableProjectRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = EnableProjectRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = EnableProjectRequestValidationError{}
+
+// Validate checks the field values on EnableProjectResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *EnableProjectResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on EnableProjectResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// EnableProjectResponseMultiError, or nil if none found.
+func (m *EnableProjectResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *EnableProjectResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return EnableProjectResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// EnableProjectResponseMultiError is an error wrapping multiple validation
+// errors returned by EnableProjectResponse.ValidateAll() if the designated
+// constraints aren't met.
+type EnableProjectResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m EnableProjectResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m EnableProjectResponseMultiError) AllErrors() []error { return m }
+
+// EnableProjectResponseValidationError is the validation error returned by
+// EnableProjectResponse.Validate if the designated constraints aren't met.
+type EnableProjectResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e EnableProjectResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e EnableProjectResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e EnableProjectResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e EnableProjectResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e EnableProjectResponseValidationError) ErrorName() string {
+	return "EnableProjectResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e EnableProjectResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sEnableProjectResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = EnableProjectResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = EnableProjectResponseValidationError{}
+
+// Validate checks the field values on DisableProjectRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DisableProjectRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DisableProjectRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DisableProjectRequestMultiError, or nil if none found.
+func (m *DisableProjectRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DisableProjectRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return DisableProjectRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// DisableProjectRequestMultiError is an error wrapping multiple validation
+// errors returned by DisableProjectRequest.ValidateAll() if the designated
+// constraints aren't met.
+type DisableProjectRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DisableProjectRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DisableProjectRequestMultiError) AllErrors() []error { return m }
+
+// DisableProjectRequestValidationError is the validation error returned by
+// DisableProjectRequest.Validate if the designated constraints aren't met.
+type DisableProjectRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DisableProjectRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DisableProjectRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DisableProjectRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DisableProjectRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DisableProjectRequestValidationError) ErrorName() string {
+	return "DisableProjectRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DisableProjectRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDisableProjectRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DisableProjectRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DisableProjectRequestValidationError{}
+
+// Validate checks the field values on DisableProjectResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DisableProjectResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DisableProjectResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DisableProjectResponseMultiError, or nil if none found.
+func (m *DisableProjectResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DisableProjectResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return DisableProjectResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// DisableProjectResponseMultiError is an error wrapping multiple validation
+// errors returned by DisableProjectResponse.ValidateAll() if the designated
+// constraints aren't met.
+type DisableProjectResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DisableProjectResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DisableProjectResponseMultiError) AllErrors() []error { return m }
+
+// DisableProjectResponseValidationError is the validation error returned by
+// DisableProjectResponse.Validate if the designated constraints aren't met.
+type DisableProjectResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DisableProjectResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DisableProjectResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DisableProjectResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DisableProjectResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DisableProjectResponseValidationError) ErrorName() string {
+	return "DisableProjectResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DisableProjectResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDisableProjectResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DisableProjectResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DisableProjectResponseValidationError{}
+
 // Validate checks the field values on GetMeRequest with the rules defined in
 // the proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.

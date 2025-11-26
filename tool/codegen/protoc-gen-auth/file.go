@@ -21,6 +21,7 @@ package webservice
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"go.uber.org/zap"
@@ -96,6 +97,13 @@ func (a *authorizer) getAllProjectRBACRoles(ctx context.Context, projectID strin
 			zap.Error(err),
 		)
 		return nil, err
+	}
+
+	if p.Disabled {
+		a.logger.Warn("project is disabled",
+			zap.String("project", projectID),
+		)
+		return nil, fmt.Errorf("project %s is disabled", projectID)
 	}
 
 	if err = a.rbacCache.Put(projectID, p.RbacRoles); err != nil {

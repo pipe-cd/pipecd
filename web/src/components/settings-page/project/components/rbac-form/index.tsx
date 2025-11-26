@@ -7,10 +7,14 @@ import {
 } from "~/styles/project-setting";
 import { RoleTable } from "./components/role";
 import { UserGroupTable } from "./components/user-group";
+import { useGetProject } from "~/queries/project/use-get-project";
 
 const SECTION_TITLE = "Role-Based Access Control";
 
 export const RBACForm: FC = memo(function RBACForm() {
+  const { data: projectDetail } = useGetProject();
+  const isProjectDisabled = projectDetail?.disabled ?? false;
+
   return (
     <>
       <ProjectTitleWrap>
@@ -21,9 +25,9 @@ export const RBACForm: FC = memo(function RBACForm() {
         {RBAC_DESCRIPTION}
       </ProjectDescription>
 
-      <RoleTable />
+      <RoleTable isProjectDisabled={isProjectDisabled} />
 
-      <UserGroupTable />
+      <UserGroupTable isProjectDisabled={isProjectDisabled} />
     </>
   );
 });

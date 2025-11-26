@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import * as React from "react";
 import { Add as AddIcon, MoreVert as MenuIcon } from "@mui/icons-material";
-import { FC, memo, useCallback, useState } from "react";
+import { FC, memo, useCallback, useEffect, useState } from "react";
 import { UI_TEXT_ADD } from "~/constants/ui-text";
 import { AddUserGroupDialog } from "../add-user-group-dialog";
 import { DeleteUserGroupConfirmDialog } from "../delete-user-group-confirm-dialog";
@@ -28,9 +28,15 @@ import { useGetProject } from "~/queries/project/use-get-project";
 import { useAddUserGroup } from "~/queries/project/use-add-user-group";
 import { useDeleteUserGroup } from "~/queries/project/use-delete-user-group";
 
+interface UserGroupTableProps {
+  isProjectDisabled: boolean;
+}
+
 const SUB_SECTION_TITLE = "User Group";
 
-export const UserGroupTable: FC = memo(function UserGroupTable() {
+export const UserGroupTable: FC<UserGroupTableProps> = memo(function UserGroupTable({
+  isProjectDisabled,
+}) {
   const [isOpenAddForm, setIsOpenAddForm] = useState(false);
   const [deleteSSOGroup, setDeleteSSOGroup] = useState<null | string>(null);
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
@@ -41,6 +47,14 @@ export const UserGroupTable: FC = memo(function UserGroupTable() {
   const { mutateAsync: addUserGroup } = useAddUserGroup();
   const { mutateAsync: deleteUserGroup } = useDeleteUserGroup();
   const userGroups = projectDetail?.userGroups || [];
+
+  useEffect(() => {
+    if (isProjectDisabled) {
+      setIsOpenAddForm(false);
+      setAnchorEl(null);
+      setDeleteSSOGroup(null);
+    }
+  }, [isProjectDisabled]);
 
   const handleSubmit = useCallback(
     (values: { ssoGroup: string; role: string }) => {
@@ -98,11 +112,16 @@ export const UserGroupTable: FC = memo(function UserGroupTable() {
           color="primary"
           startIcon={<AddIcon />}
           onClick={() => setIsOpenAddForm(true)}
+          disabled={isProjectDisabled}
         >
           {UI_TEXT_ADD}
         </Button>
       </Box>
-      <TableContainer component={Paper} square>
+      <TableContainer
+        component={Paper}
+        square
+        sx={{ opacity: isProjectDisabled ? 0.6 : 1 }}
+      >
         <Table size="small" stickyHeader>
           <TableHead>
             <TableRow>
@@ -121,6 +140,7 @@ export const UserGroupTable: FC = memo(function UserGroupTable() {
                     data-id={group.ssoGroup}
                     onClick={handleOpenMenu}
                     size="large"
+                    disabled={isProjectDisabled}
                   >
                     <MenuIcon />
                   </IconButton>
@@ -132,7 +152,7 @@ export const UserGroupTable: FC = memo(function UserGroupTable() {
       </TableContainer>
       <Menu
         id="user-group-menu"
-        open={Boolean(anchorEl)}
+        open={Boolean(anchorEl) && !isProjectDisabled}
         anchorEl={anchorEl}
         onClose={handleCloseMenu}
         slotProps={{
@@ -153,7 +173,7 @@ export const UserGroupTable: FC = memo(function UserGroupTable() {
         </MenuItem>
       </Menu>
       <AddUserGroupDialog
-        open={isOpenAddForm}
+        open={isOpenAddForm && !isProjectDisabled}
         onClose={() => setIsOpenAddForm(false)}
         onSubmit={handleSubmit}
       />
