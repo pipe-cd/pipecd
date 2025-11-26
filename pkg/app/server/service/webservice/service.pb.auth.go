@@ -92,7 +92,7 @@ func (a *authorizer) getAllProjectRBACRoles(ctx context.Context, projectID strin
 }
 
 // Authorize checks whether a role is enough for given gRPC method or not.
-func (a *authorizer) Authorize(ctx context.Context, method string, r *model.Role) bool {
+func (a *authorizer) Authorize(ctx context.Context, method string, r model.Role) bool {
 	roles, err := a.getProjectRBACRoles(ctx, r.ProjectId, r.ProjectRbacRoles)
 	if err != nil {
 		a.logger.Error("failed to get rbac roles",

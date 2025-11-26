@@ -21,14 +21,13 @@
 package deployment
 
 import (
-	reflect "reflect"
-	sync "sync"
-
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	model "github.com/pipe-cd/pipecd/pkg/model"
 	common "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	reflect "reflect"
+	sync "sync"
 )
 
 const (

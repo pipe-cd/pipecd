@@ -113,6 +113,20 @@ func (mr *MockProjectStoreMockRecorder) DeleteProjectUserGroup(ctx, id, sso any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteProjectUserGroup", reflect.TypeOf((*MockProjectStore)(nil).DeleteProjectUserGroup), ctx, id, sso)
 }
 
+// DisableProject mocks base method.
+func (m *MockProjectStore) DisableProject(ctx context.Context, id string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DisableProject", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DisableProject indicates an expected call of DisableProject.
+func (mr *MockProjectStoreMockRecorder) DisableProject(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DisableProject", reflect.TypeOf((*MockProjectStore)(nil).DisableProject), ctx, id)
+}
+
 // DisableStaticAdmin mocks base method.
 func (m *MockProjectStore) DisableStaticAdmin(ctx context.Context, id string) error {
 	m.ctrl.T.Helper()
@@ -125,6 +139,20 @@ func (m *MockProjectStore) DisableStaticAdmin(ctx context.Context, id string) er
 func (mr *MockProjectStoreMockRecorder) DisableStaticAdmin(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DisableStaticAdmin", reflect.TypeOf((*MockProjectStore)(nil).DisableStaticAdmin), ctx, id)
+}
+
+// EnableProject mocks base method.
+func (m *MockProjectStore) EnableProject(ctx context.Context, id string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EnableProject", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EnableProject indicates an expected call of EnableProject.
+func (mr *MockProjectStoreMockRecorder) EnableProject(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnableProject", reflect.TypeOf((*MockProjectStore)(nil).EnableProject), ctx, id)
 }
 
 // EnableStaticAdmin mocks base method.
