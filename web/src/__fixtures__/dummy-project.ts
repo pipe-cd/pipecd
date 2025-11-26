@@ -50,6 +50,7 @@ export const dummyProject: Project.AsObject = {
     username: "static-admin-user",
     passwordHash: randomKeyHash(),
   },
+  disabled: false,
 };
 
 export function createProjectFromObject(o: Project.AsObject): Project {
@@ -61,6 +62,7 @@ export function createProjectFromObject(o: Project.AsObject): Project {
   project.setUpdatedAt(o.updatedAt);
   project.setStaticAdminDisabled(o.staticAdminDisabled);
   project.setAllowStrayAsViewer(o.allowStrayAsViewer);
+  project.setDisabled(o.disabled);
   if (o.rbac) {
     const rbac = new ProjectRBACConfig();
     rbac.setAdmin(o.rbac.admin);

@@ -24,8 +24,10 @@ export const ProjectStatusForm: FC = memo(function ProjectStatusForm() {
   const isProjectDisabled = projectDetail?.disabled ?? false;
   const hasProjectId = Boolean(projectDetail?.id);
 
-  const { mutateAsync: toggleAvailability, isLoading } =
-    useToggleProjectAvailability();
+  const {
+    mutateAsync: toggleAvailability,
+    isLoading,
+  } = useToggleProjectAvailability();
   const { addToast } = useToast();
 
   const handleToggle = useCallback(() => {
@@ -40,7 +42,13 @@ export const ProjectStatusForm: FC = memo(function ProjectStatusForm() {
         severity: "success",
       });
     });
-  }, [addToast, hasProjectId, isLoading, isProjectDisabled, toggleAvailability]);
+  }, [
+    addToast,
+    hasProjectId,
+    isLoading,
+    isProjectDisabled,
+    toggleAvailability,
+  ]);
 
   return (
     <>
