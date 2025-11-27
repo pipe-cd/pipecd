@@ -12,6 +12,12 @@ description: >
 Component Architecture
 </p>
 
+### Control Plane
+
+The Control Plane is the centralized management service of PipeCD. It coordinates all activities between users, projects, and piped instances.
+
+The Control Plane remains the backbone of the system but is now fully plugin-aware. Instead of directly handling deployment logic for specific platforms, it interacts with `piped` agents that run plugin binaries, allowing the Control Plane to manage deployments across any platform supported by plugins.
+
 ### Piped
 
 '`piped`' is a binary, agent component responsible for executing deployments in PipeCD. `Piped` now adopts **plugin-based** **architecture**, transforming from a single-purpose executor into a lightweight runtime capable of runnning any deployment logic defined by plugins. The `piped` component is designed to be stateless.
@@ -32,12 +38,6 @@ In this architecture, plugins are the actors who execute deployments on behalf o
 
 >**Note:**  
 >Check out the [PipeCD Community Plugins repository](https://github.com/pipe-cd/community-plugins) to browse available plugins and learn how to create your own.
-
-### Control Plane
-
-The Control Plane is the centralized management service of PipeCD. It coordinates all activities between users, projects, and piped instances.
-
-The Control Plane remains the backbone of the system but is now fully plugin-aware. Instead of directly handling deployment logic for specific platforms, it interacts with `piped` agents that run plugin binaries, allowing the Control Plane to manage deployments across any platform supported by plugins.
 
 ### Project
 
@@ -78,13 +78,7 @@ When a deployment completes successfully, the running environment matches the co
 PipeCD provides 3 different ways to keep your application’s live state consistent with its desired state stored in Git.
 Depending on your deployment workflow, you can choose from one of the following sync strategies:
 
-- Quick Sync: A fast, single-step method to sync your deployment with the desired state. PipeCD automatically generates a pipeline composed of predefined Quick Sync stages provided by plugins linked to the application. This is done either through deploy targets specified during application registration on the Control Plane or via the pipeline seclession defined in the application configuration.
-
-```yaml
-- name: SYNC
-```
-
-Quick Sync is generally used when you need to rapidly apply configuration changes without a gradual rollout.
+- Quick Sync: A fast, single-step method to sync your deployment with the desired state. PipeCD automatically generates a pipeline composed of predefined Quick Sync stages provided by plugins linked to the application. Quick Sync is generally used when you need to rapidly apply configuration changes without a gradual rollout.
 
 - Pipeline Sync: A customizable, step-by-step sync process that follows the pipeline you define in your application configuration file. Use Pipeline Sync when you need more control over how updates are rolled out.
 
