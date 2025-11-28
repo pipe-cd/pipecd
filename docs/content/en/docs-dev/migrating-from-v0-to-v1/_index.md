@@ -97,7 +97,7 @@ Or specify an entire directory:
 pipectl migrate application-config --dirs=path/to/apps/
 ```
 
-Here is an example for a simple app.pippcd.yaml file which demonstrates a kubernetes deployment and simulates a 30s wait:
+Here is an example for a simple app.pipecd.yaml file which demonstrates a Kubernetes deployment and simulates a 30s wait:
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1

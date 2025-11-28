@@ -15,7 +15,7 @@ You can generate an application config file easily and interactively by [`pipect
 
 ## Quick sync
 
-Quick sync is a fast way to sync application to the state specified in the target Git commit without any progressive strategy. It just applies all the defined manifiests to sync the application.
+Quick sync is a fast way to sync application to the state specified in the target Git commit without any progressive strategy. It just applies all the defined manifests to sync the application.
 The quick sync will be planned in one of the following cases:
 - no pipeline was specified in the application configuration file
 - [pipeline](../../../configuration-reference/#pipeline) was specified but the PR did not make any changes on workload (e.g. Deployment's pod template) or config (e.g. ConfigMap, Secret)
