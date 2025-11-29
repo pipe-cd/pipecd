@@ -260,6 +260,20 @@ export class WebServiceClient {
                response: pkg_app_server_service_webservice_service_pb.UpdateProjectRBACConfigResponse) => void
   ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.UpdateProjectRBACConfigResponse>;
 
+  enableProject(
+    request: pkg_app_server_service_webservice_service_pb.EnableProjectRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: pkg_app_server_service_webservice_service_pb.EnableProjectResponse) => void
+  ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.EnableProjectResponse>;
+
+  disableProject(
+    request: pkg_app_server_service_webservice_service_pb.DisableProjectRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: pkg_app_server_service_webservice_service_pb.DisableProjectResponse) => void
+  ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.DisableProjectResponse>;
+
   getMe(
     request: pkg_app_server_service_webservice_service_pb.GetMeRequest,
     metadata: grpcWeb.Metadata | undefined,
@@ -551,6 +565,16 @@ export class WebServicePromiseClient {
     request: pkg_app_server_service_webservice_service_pb.UpdateProjectRBACConfigRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<pkg_app_server_service_webservice_service_pb.UpdateProjectRBACConfigResponse>;
+
+  enableProject(
+    request: pkg_app_server_service_webservice_service_pb.EnableProjectRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<pkg_app_server_service_webservice_service_pb.EnableProjectResponse>;
+
+  disableProject(
+    request: pkg_app_server_service_webservice_service_pb.DisableProjectRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<pkg_app_server_service_webservice_service_pb.DisableProjectResponse>;
 
   getMe(
     request: pkg_app_server_service_webservice_service_pb.GetMeRequest,
