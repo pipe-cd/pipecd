@@ -13,11 +13,13 @@ Each application can be handled by one and only one `piped`. Currently, PipeCD i
 
 > Note: Be sure your application manifests repository is listed in [Piped managing repositories configuration](../managing-piped/configuration-reference/#gitrepository:~:text=No-,repositories,-%5B%5DRepository).
 
-Before deploying an application, it must be registered to help PipeCD knows
+Before deploying an application, it must be registered to help PipeCD know:
+
 - where the application configuration is placed
 - which `piped` should handle it and which platform the application should be deployed to
 
 Through the web console, you can register a new application in one of the following ways:
+
 - Picking from a list of unused apps suggested by Pipeds while scanning Git repositories (Recommended)
 - Manually configuring application information
 
@@ -60,39 +62,10 @@ Go to the PipeCD web console on application list page, click the `+ADD` button a
 
 Select the Piped and Platform Provider that you deploy to, once the Piped that's watching your Git repository catches the new unregistered application configuration file, it will be listed up in this panel. Click `ADD` to complete the registration.
 
-![](/images/registering-an-application-from-suggestions-new.png)
+![Registering an Application from Suggestions: PipeCD v1](/images/add-from-suggestions-v1.png)
 <p style="text-align: center;">
+Registering an Application from Suggestions
 </p>
-
-## Manually configuring application information
-
-This way, you can postpone the preparation for your application's configuration after submitting all the necessary information about your app on the web console.
-
-By clicking on `+ADD` button at the application list page, a popup will be revealed from the right side as below:
-
-![](/images/registering-an-application-manually-new.png)
-<p style="text-align: center;">
-</p>
-
-After filling all the required fields, click `Save` button to complete the application registering.
-
-Here are the list of fields in the register form:
-
-| Field | Description | Required |
-|-|-|-|-|
-| Name | The application name | Yes |
-| Kind | The application kind. Select one of these values: `Kubernetes`, `Terraform`, `CloudRun`, `Lambda` and `ECS`. | Yes |
-| Piped | The piped that handles this application. Select one of the registered `piped`s at `Settings/Piped` page. | Yes |
-| Repository | The Git repository contains application configuration and application configuration. Select one of the registered repositories in `piped` configuration. | Yes |
-| Path | The relative path from the root of the Git repository to the directory containing application configuration and application configuration. Use `./` means repository root. | Yes |
-| Config Filename | The name of application configuration file. Default is `app.pipecd.yaml`. | No |
-| Platform Provider | Where the application will be deployed to. Select one of the registered cloud/platform providers in `piped` configuration. This field name previously was `Cloud Provider`. | Yes |
-
-> Note: Labels couldn't be set via this form. If you want, try the way to register via the application configuration defined in the Git repository.
-
-After submitting the form, one more step left is adding the application configuration file for that application into the application directory in Git repository same as we prepared in [the above method](../adding-an-application/#picking-from-a-list-of-unused-apps-suggested-by-pipeds).
-
-Please refer [Define your app's configuration](../defining-app-configuration/) or [pipecd/examples](../../examples/) for the examples of being supported application kind.
 
 ## Updating an application
 
