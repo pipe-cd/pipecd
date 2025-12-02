@@ -28,8 +28,6 @@ spec:
   labels:
     env: example
     team: xyz
-  input:
-    ...
   attachment:
     sources:
       config: config.yaml
@@ -60,6 +58,6 @@ This feature can be used in combo with PipeCD [SecretManagement feature](../secr
 
 See examples for detail.
 
-## Examples
+<!-- ## Examples
 
-- [examples/ecs/attachment](https://github.com/pipe-cd/examples/tree/master/ecs/attachment)
+- [examples/ecs/attachment](https://github.com/pipe-cd/examples/tree/master/ecs/attachment) -->
