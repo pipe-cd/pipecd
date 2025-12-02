@@ -80,4 +80,4 @@ spec:
     team: new-team
 ```
 
-Refer to [configuration reference](../../configuration-reference/) to see the full list of configurable fields.
+Refer to [configuration reference](../configuration-reference/) to see the full list of configurable fields.

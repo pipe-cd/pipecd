@@ -114,10 +114,10 @@ spec:
 
 In all cases, `Piped` will decrypt the encrypted secrets and render the decryption target files before using to handle any deployment tasks.
 
-## Examples
+<!-- ## Examples
 
 - [examples/kubernetes/secret-management](https://github.com/pipe-cd/examples/tree/master/kubernetes/secret-management)
 - [examples/cloudrun/secret-management](https://github.com/pipe-cd/examples/tree/master/cloudrun/secret-management)
 - [examples/lambda/secret-management](https://github.com/pipe-cd/examples/tree/master/lambda/secret-management)
 - [examples/terraform/secret-management](https://github.com/pipe-cd/examples/tree/master/terraform/secret-management)
-- [examples/ecs/secret-management](https://github.com/pipe-cd/examples/tree/master/ecs/secret-management)
+- [examples/ecs/secret-management](https://github.com/pipe-cd/examples/tree/master/ecs/secret-management) -->

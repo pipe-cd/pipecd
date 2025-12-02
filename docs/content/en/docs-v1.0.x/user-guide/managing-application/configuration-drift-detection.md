@@ -101,4 +101,4 @@ spec:
 
 Note: The `ignoreFields` is in format `apiVersion:kind:namespace:name#yamlFieldPath`
 
-For more information, see the [configuration reference](../../configuration-reference/#driftdetection).
+For more information, see the [configuration reference](./configuration-reference/#driftdetection).

@@ -27,10 +27,8 @@ spec:
       applications:
         # Find all applications with name `application-2` and trigger them.
         - name: application-2
-        # Fill all applications with name `application-3` of kind `KUBERNETES`
-        # and trigger them.
+        # Fill all applications with name `application-3` and trigger them.
         - name: application-3
-          kind: KUBERNETES
 ```
 
 As a result, the above configuration will be used to create a deployment chain like the below figure
@@ -44,7 +42,7 @@ __Tip__:
 1. If you followed all the configuration references and built your deployment chain configuration, but some deployments in your defined chain are not triggered as you want, please re-check those deployments [`trigger configuration`](../triggering-a-deployment/#trigger-configuration). The `onChain` trigger is __disabled by default__; you need to enable that configuration to enable your deployment to be triggered as a node in the deployment chain.
 2. Values configured under `postSync.chain.applications` - we call it __Application matcher__'s values are merged using `AND` operator. Currently, only `name` and `kind` are supported, but `labels` will also be supported soon.
 
-See [Examples](../../examples/#deployment-chain) for more specific.
+<!-- See [Examples](../../examples/#deployment-chain) for more specific. -->
 
 ## Deployment chain characteristic
 
@@ -61,4 +59,4 @@ The UI for this deployment chain feature currently is under development, we can 
 
 ## Reference
 
-See [Configuration Reference](../../configuration-reference/#postsync) for the full configuration.
+See [Configuration Reference](../configuration-reference/#postsync) for the full configuration.
