@@ -13,7 +13,7 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 
 import * as React from "react";
-import { FC, memo, useState } from "react";
+import { FC, memo, useEffect, useState } from "react";
 import { SSO_DESCRIPTION } from "~/constants/text";
 import { UPDATE_SSO_SUCCESS } from "~/constants/toast-text";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
@@ -51,6 +51,7 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
 
   const { data: projectDetail } = useGetProject();
   const { github: sso, sharedSSO: sharedSSO } = projectDetail || {};
+  const isProjectDisabled = projectDetail?.disabled ?? false;
 
   const { mutateAsync: updateGithubSso } = useUpdateGithubSso();
   const { addToast } = useToast();
@@ -71,6 +72,12 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
 
   const isInvalid = clientId === "" || clientSecret === "";
 
+  useEffect(() => {
+    if (isProjectDisabled) {
+      setIsEdit(false);
+    }
+  }, [isProjectDisabled]);
+
   return (
     <>
       <ProjectTitleWrap>
@@ -79,7 +86,12 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
       <ProjectDescription variant="body1" color="textSecondary">
         {SSO_DESCRIPTION}
       </ProjectDescription>
-      <ProjectValuesWrapper>
+      <ProjectValuesWrapper
+        sx={{
+          opacity: isProjectDisabled ? 0.5 : 1,
+          pointerEvents: isProjectDisabled ? "none" : undefined,
+        }}
+      >
         {sso ? (
           <>
             <ProjectValues>
@@ -96,7 +108,11 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
             </ProjectValues>
 
             <div>
-              <IconButton onClick={() => setIsEdit(true)} size="large">
+              <IconButton
+                onClick={() => setIsEdit(true)}
+                disabled={isProjectDisabled}
+                size="large"
+              >
                 <EditIcon />
               </IconButton>
             </div>

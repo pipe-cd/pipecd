@@ -64,6 +64,10 @@ func (h *authHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 		h.handleError(w, r, fmt.Sprintf("Unable to find project %s", projectID), err)
 		return
 	}
+	if proj.Disabled {
+		h.handleError(w, r, fmt.Sprintf("Project %s is disabled", projectID), nil)
+		return
+	}
 
 	if proj.UserGroups == nil {
 		h.handleError(w, r, "Missing User Group configuration", nil)
@@ -99,7 +103,7 @@ func (h *authHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 		user.Username,
 		user.AvatarUrl,
 		tokenTTL,
-		*user.Role,
+		user.Role,
 	)
 	signedToken, err := h.signer.Sign(claims)
 	if err != nil {

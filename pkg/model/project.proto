@@ -53,6 +53,9 @@ message Project {
     // Mapping SSO group and RBAC role.
     repeated ProjectUserGroup user_groups = 10;
 
+    // Whether the project is disabled. Disabled projects cannot log in or issue new API calls.
+    bool disabled = 11;
+
     // Unix time when the project is created.
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
     // Unix time of the last time when the project is updated.
