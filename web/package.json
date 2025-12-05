@@ -90,7 +90,7 @@
     "react-draggable": "^4.5.0",
     "react-intersection-observer": "^8.26.2",
     "react-markdown": "^6.0.3",
-    "react-router-dom": "^6.30.1",
+    "react-router-dom": "^6.30.2",
     "yup": "^0.32.11"
   },
   "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610"
