@@ -30,6 +30,7 @@ To enable monitoring system for PipeCD, you first need to set the following valu
 ```
 
 ## Dashboards
+
 If you've already enabled monitoring system in the previous section, you can access Grafana using port forwarding:
 
 ```
