@@ -6,7 +6,7 @@ description: >
   This page describes about PipeCD Authentication and Authorization.
 ---
 
-![](/images/settings-project-v0.38.x.png)
+![Project Settings](/images/settings-project-v0.38.x.png)
 
 ### Static Admin
 
@@ -44,8 +44,8 @@ PipeCD supports any OIDC provider, with tested providers including Keycloak, Aut
 Requirements and Troubleshooting:
 
 - The OIDC provider must provide claims for user's roles and username.
-- Roles claim value must use the same values as pre-configured project RBAC Roles.
-- Claims can be retrieved from the IdToken or UserInfo endpoint. The UserInfo endpoint will be used if the issuer supports it.
+- Roles claim value must use same values as pre-configured project RBAC Roles.
+- - Claims can be retreived from the IdToken or UserInfo endpoint. The UserInfo endpoint will be used if issuer supports it.
 - You can use set a custom claim key name for roles and username in the OIDC provider. Using `usernameClaimKey` and `rolesClaimKey` in the configuration. If not set, the default value will be chosen in the following order:
 
   - Supported Claims Key for Username (in order of priority): `username`, `preferred_username`,`name`, `cognito:username`

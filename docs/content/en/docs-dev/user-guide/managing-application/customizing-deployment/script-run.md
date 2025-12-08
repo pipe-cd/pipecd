@@ -49,7 +49,7 @@ spec:
 ```
 
 You can define the command as `run`.
-Also, if you want to some values as variables, you can define them as `env`.
+Also, if you want to use some values as variables, you can define them as `env`.
 
 The commands run in the directory where this application configuration file exists.
 
