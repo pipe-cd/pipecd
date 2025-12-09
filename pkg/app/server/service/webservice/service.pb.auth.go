@@ -5,6 +5,7 @@ package webservice
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"go.uber.org/zap"
@@ -80,6 +81,13 @@ func (a *authorizer) getAllProjectRBACRoles(ctx context.Context, projectID strin
 			zap.Error(err),
 		)
 		return nil, err
+	}
+
+	if p.Disabled {
+		a.logger.Warn("project is disabled",
+			zap.String("project", projectID),
+		)
+		return nil, fmt.Errorf("project %s is disabled", projectID)
 	}
 
 	if err = a.rbacCache.Put(projectID, p.RbacRoles); err != nil {
@@ -205,6 +213,10 @@ func (a *authorizer) Authorize(ctx context.Context, method string, r model.Role)
 	case "/grpc.service.webservice.WebService/UpdateProjectSSOConfig":
 		return verify(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/UpdateProjectRBACConfig":
+		return verify(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
+	case "/grpc.service.webservice.WebService/EnableProject":
+		return verify(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
+	case "/grpc.service.webservice.WebService/DisableProject":
 		return verify(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/GetMe":
 		return verify(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_GET)

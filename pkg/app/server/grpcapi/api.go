@@ -80,6 +80,7 @@ type commandOutputGetter interface {
 type API struct {
 	apiservice.UnimplementedAPIServiceServer
 
+	projectStore         datastore.ProjectStore
 	applicationStore     apiApplicationStore
 	deploymentStore      apiDeploymentStore
 	pipedStore           apiPipedStore
@@ -108,6 +109,7 @@ func NewAPI(
 	logger *zap.Logger,
 ) *API {
 	a := &API{
+		projectStore:         datastore.NewProjectStore(ds),
 		applicationStore:     datastore.NewApplicationStore(ds),
 		deploymentStore:      datastore.NewDeploymentStore(ds),
 		pipedStore:           datastore.NewPipedStore(ds),
@@ -189,6 +191,15 @@ func (a *API) SyncApplication(ctx context.Context, req *apiservice.SyncApplicati
 
 	if key.ProjectId != app.ProjectId {
 		return nil, status.Error(codes.InvalidArgument, "Requested application does not belong to your project")
+	}
+
+	// Check if the project is disabled.
+	project, err := a.projectStore.Get(ctx, app.ProjectId)
+	if err != nil {
+		return nil, gRPCStoreError(err, "get project")
+	}
+	if project.Disabled {
+		return nil, status.Error(codes.FailedPrecondition, "Cannot execute command: project is currently disabled. Please contact your administrator to enable the project.")
 	}
 
 	cmd := model.Command{
