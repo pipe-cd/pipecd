@@ -329,7 +329,7 @@ One of `yamlField` or `regex` is required.
 | path | string | Relative path from the repository root to the chart directory. | No |
 | repository | string | The name of a registered Helm Chart Repository. | No |
 | name | string | The chart name. | No |
-| version | string | The chart version. | No |
+| version | string | The chart version. Only valid when using a chart repository (repository field). | No |
 
 ### HelmOptions
 

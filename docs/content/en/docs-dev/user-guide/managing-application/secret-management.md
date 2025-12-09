@@ -6,7 +6,7 @@ description: >
   Storing secrets safely in the Git repository.
 ---
 
-When doing GitOps, user wants to use Git as a single source of truth. But storing credentials like Kubernetes Secret or Terraform's credentials directly in Git is not safe.
+When doing GitOps, users want to use Git as a single source of truth. But storing credentials like Kubernetes Secret or Terraform's credentials directly in Git is not safe.
 This feature helps you keep that sensitive information safely in Git, right next to your application manifests.
 
 Basically, the flow will look like this:
@@ -88,7 +88,7 @@ Any file in the application directory can use `.encryptedSecrets` context to acc
 
 For example,
 
-- Accessing by a Kubernets Secret manfiest
+- Accessing by a Kubernetes Secret manifest
 
 ``` yaml
 apiVersion: v1
@@ -99,7 +99,7 @@ data:
   password: "{{ .encryptedSecrets.password }}"
 ```
 
-- Configuring ENV variable of a Lambda function to use a encrypted secret
+- Configuring ENV variable of a Lambda function to use an encrypted secret
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
@@ -110,7 +110,7 @@ spec:
     KEY: "{{ .encryptedSecrets.key }}"
 ```
 
-In all cases, `Piped` will decrypt the encrypted secrets and render the decryption target files before using to handle any deployment tasks.
+In all cases, `Piped` will decrypt the encrypted secrets and render the decryption target files before using them to handle any deployment tasks.
 
 ## Examples
 
