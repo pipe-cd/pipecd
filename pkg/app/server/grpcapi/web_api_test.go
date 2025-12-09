@@ -410,7 +410,7 @@ func (m *mockJWTVerifier) Verify(token string) (*jwt.Claims, error) {
 
 type mockAuthorizer struct{}
 
-func (m *mockAuthorizer) Authorize(ctx context.Context, method string, role *model.Role) bool {
+func (m *mockAuthorizer) Authorize(ctx context.Context, method string, role model.Role) bool {
 	return true
 }
 

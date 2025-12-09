@@ -34,7 +34,7 @@ var (
 
 // RBACAuthorizer defines a function to check required role for a specific RPC method.
 type RBACAuthorizer interface {
-	Authorize(context.Context, string, *model.Role) bool
+	Authorize(context.Context, string, model.Role) bool
 }
 
 // PipedTokenVerifier verifies the given piped token.
@@ -201,7 +201,7 @@ func JWTUnaryServerInterceptor(verifier jwt.Verifier, authorizer RBACAuthorizer,
 			logger.Warn("unable to verify token", zap.Error(err))
 			return nil, errUnauthenticated
 		}
-		if !authorizer.Authorize(ctx, info.FullMethod, &claims.Role) {
+		if !authorizer.Authorize(ctx, info.FullMethod, claims.Role) {
 			logger.Warn(fmt.Sprintf("unsufficient permission for method: %s", info.FullMethod),
 				zap.Any("claims", claims),
 			)
