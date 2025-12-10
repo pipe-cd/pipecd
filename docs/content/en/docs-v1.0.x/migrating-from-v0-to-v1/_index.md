@@ -6,7 +6,7 @@ description: >
   Documentation on migrating your application from PipeCD V0 to V1
 ---
 
-This page explains how to safely migrate your existing PipeCD System to the RC version of **PipeCD V1**, the new plugin-based architecture that brings modularity and extensibility to PipeCD. 
+This page explains how to safely migrate your existing PipeCD System to the RC version of **PipeCD V1**, the new plugin-based architecture that brings modularity and extensibility to PipeCD.
 
 Incase you are using PipeCD V0, follow the setps on this page to migrate to **PipeCD V1**.
 
@@ -99,7 +99,7 @@ Or specify an entire directory:
 pipectl migrate application-config --dirs=path/to/apps/
 ```
 
-Here is an example for a simple app.pippcd.yaml file which demonstrates a kubernetes deployment and simulates a 30s wait:
+Here is an example for a simple app.pipecd.yaml file which demonstrates a kubernetes deployment and simulates a 30s wait:
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1

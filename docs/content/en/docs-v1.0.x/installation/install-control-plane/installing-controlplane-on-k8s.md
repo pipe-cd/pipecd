@@ -111,7 +111,7 @@ kubectl port-forward svc/pipecd 8080 --namespace={NAMESPACE}
 
 Now go to [http://localhost:8080](http://localhost:8080) on your browser, you will see a page to login to your project.
 
-Up to here, you have an installed PipeCD's Control Plane. To log in, you need to initialize a new project.
+Up to here, you have a installed PipeCD's Control Plane. To logging in, you need to initialize a new project.
 
 ### 4. Initialize a new project
 

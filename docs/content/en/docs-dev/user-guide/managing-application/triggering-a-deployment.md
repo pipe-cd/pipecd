@@ -22,9 +22,9 @@ Configuration for the trigger used to determine whether we trigger a new deploym
 
 See [Configuration Reference](../../configuration-reference/#deploymenttrigger) for the full configuration.
 
-After a new deployment was triggered, it will be queued to handle by the appropriate `piped`. And at this time the deployment pipeline was not decided yet.
+After a new deployment is triggered, it will be queued to be handled by the appropriate `piped`. At this time, the deployment pipeline has not been decided yet.
 `piped` schedules all deployments of applications to ensure that for each application only one deployment will be executed at the same time.
-When no deployment of an application is running, `piped` picks queueing one to plan the deploying pipeline.
+When no deployment of an application is running, `piped` picks a queued one to plan the deploying pipeline.
 `piped` plans the deploying pipeline based on the application configuration and the diff between the running state and the specified state in the newest commit.
 For example:
 
@@ -33,7 +33,7 @@ For example:
 
 You can force `piped` planner to decide to use the [QuickSync](../../../concepts/#sync-strategy) or the specified pipeline based on the commit message by configuring [CommitMatcher](../../configuration-reference/#commitmatcher) in the application configuration.
 
-After being planned, the deployment will be executed as the decided pipeline. The deployment execution including the state of each stage as well as their logs can be viewed in realtime at the deployment details page.
+After being planned, the deployment will be executed as the decided pipeline. The deployment execution including the state of each stage as well as their logs can be viewed in real time on the deployment details page.
 
 ![](/images/deployment-details.png)
 <p style="text-align: center;">
