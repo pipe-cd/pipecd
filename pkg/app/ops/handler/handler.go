@@ -49,6 +49,8 @@ type projectStore interface {
 	List(ctx context.Context, opts datastore.ListOptions) ([]model.Project, error)
 	Get(ctx context.Context, id string) (*model.Project, error)
 	UpdateProjectStaticAdmin(ctx context.Context, id, username, password string) error
+	EnableProject(ctx context.Context, id string) error
+	DisableProject(ctx context.Context, id string) error
 }
 
 type Handler struct {
@@ -77,6 +79,7 @@ func NewHandler(port int, ps projectStore, sharedSSOConfigs []config.SharedSSOCo
 	mux.HandleFunc("/projects", h.handleListProjects)
 	mux.HandleFunc("/projects/add", h.handleAddProject)
 	mux.HandleFunc("/projects/reset-password", h.handleResetPassword)
+	mux.HandleFunc("/projects/toggle-status", h.handleToggleProjectStatus)
 
 	return h
 }
@@ -150,6 +153,7 @@ func (h *Handler) handleListProjects(w http.ResponseWriter, r *http.Request) {
 			"StaticAdminDisabled": strconv.FormatBool(projects[i].StaticAdminDisabled),
 			"SharedSSOName":       projects[i].SharedSsoName,
 			"CreatedAt":           time.Unix(projects[i].CreatedAt, 0).String(),
+			"Disabled":            strconv.FormatBool(projects[i].Disabled),
 		})
 	}
 	if err := listProjectsTmpl.Execute(w, data); err != nil {
@@ -336,4 +340,54 @@ func (h *Handler) handleAddProject(w http.ResponseWriter, r *http.Request) {
 	if err := addedProjectTmpl.Execute(w, data); err != nil {
 		h.logger.Error("failed to render AddedProject page template", zap.Error(err))
 	}
+}
+
+func (h *Handler) handleToggleProjectStatus(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+
+	id := html.EscapeString(r.URL.Query().Get("ID"))
+	if id == "" {
+		http.Error(w, "invalid id", http.StatusBadRequest)
+		return
+	}
+
+	action := html.EscapeString(r.URL.Query().Get("action"))
+	if action != "enable" && action != "disable" {
+		http.Error(w, "invalid action, must be 'enable' or 'disable'", http.StatusBadRequest)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	var err error
+	if action == "enable" {
+		err = h.projectStore.EnableProject(ctx, id)
+		if err != nil {
+			h.logger.Error("failed to enable project",
+				zap.String("id", id),
+				zap.Error(err),
+			)
+			http.Error(w, fmt.Sprintf("Unable to enable project (%v)", err), http.StatusInternalServerError)
+			return
+		}
+		h.logger.Info("successfully enabled project", zap.String("id", id))
+	} else {
+		err = h.projectStore.DisableProject(ctx, id)
+		if err != nil {
+			h.logger.Error("failed to disable project",
+				zap.String("id", id),
+				zap.Error(err),
+			)
+			http.Error(w, fmt.Sprintf("Unable to disable project (%v)", err), http.StatusInternalServerError)
+			return
+		}
+		h.logger.Info("successfully disabled project", zap.String("id", id))
+	}
+
+	// Redirect back to the projects list
+	http.Redirect(w, r, "/projects", http.StatusSeeOther)
 }
