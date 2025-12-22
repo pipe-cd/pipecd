@@ -15,41 +15,31 @@ Starting PipeCD V1, you can deploy virtually any application on your desired pla
 
 ## Preparing the application configuration file
 
-You have to **prepare a configuration file** which contains your application configuration and store that file in the Git repository which your Piped is watching first to enable adding a new application this way.
-
-The application configuration file name must be suffixed by `.pipecd.yaml` because Piped periodically checks for files with this suffix.
+You have to **prepare a configuration file** which contains your application configuration and store that file in the Git repository which your Piped is watching first to enable adding a new application this way. The application configuration file name must be suffixed by `.pipecd.yaml` because the `piped` agent periodically checks for files with this suffix.
 
 > Note: Make sure that your Application Repository is listed in your `piped` configuration file. See the [`piped` configuration reference](../managing-piped/configuration-reference/#gitrepository:~:text=No-,repositories,-%5B%5DRepository) for more details.
 
-{{< tabpane >}}
-{{< tab lang="yaml" header="Kubernetes Application" >}}
-# For application's configuration in detail for a Kubernetes Application, please visit
-# https://pipecd.dev/docs/user-guide/managing-application/defining-app-configuration/kubernetes/
+The application configuration depends on the [plugin](../../concepts/_index.md/#plugins) that you are using for your deployment. Below is an example of how an appliation configuration file (app.pipecd.yaml) will look like. Please see [Plguins]() and [defining application configuration]() for more details on how to configure your `app.pipecd.yaml` in accordance with the plugin that you plan to use.
+<!-- [Plguins](../../plugins) (Directory to be created alongside user-guide in the future) -->
 
+```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: Application
 spec:
-  name: foo
   labels:
-    team: bar
-{{< /tab >}}
-{{< tab lang="yaml" header="Terraform Application" >}}
-
-# For application's configuration in detail for Terraform Application, please visit
-# https://pipecd.dev/docs/user-guide/managing-application/defining-app-configuration/terraform/
-
-apiVersion: pipecd.dev/v1beta1
-kind: Application
-spec:
-  name: foo
-  labels:
-    team: bar
-{{< /tab >}}
-{{< /tabpane >}}
+    env: example
+    team: product
+  pipeline:
+    stages: {}
+    ...
+  plugins: {}
+```
 
 ## Registering your application
 
-Before deploying an application, it must be registered to help PipeCD know:
+Once you have configured your application configuration file, the next step is to register your application.
+
+Registering the application helps PipeCD know:
 
 - where the application configuration is placed
 - which `piped` should handle it and which platform the application should be deployed to.
@@ -65,14 +55,14 @@ You can also use the `pipectl` command-line tool to confiure your application in
 
 Go to the PipeCD web console on application list page, click the `+ADD` button at the top left corner of the application list page and then switch to the `PIPED V1 ADD FROM SUGGESTIONS` tab.
 
-Select the Piped that you want to use and the deploy target that you want to deploy to. If you have configured your `piped` configuration file and the Application Repository correctly, all the applications in the target repository will be listed in the 'Select application to add' tab. Select the unregistered Applicatiom you want to deploy and click on 'SAVE'. Your application should now be successfully registered.
+Select the Piped that you want to use and the deploy target that you want to deploy to. If you have configured your `piped` configuration file and the Application Repository correctly, all the applications in the target repository will be listed in the 'Select application to add' tab. Select the unregistered Applicatiom you want to deploy and click on 'SAVE'. Your application should now be successfully registered and deploying on PipeCD.
 
 ![Registering an Application from Suggestions: PipeCD v1](/images/add-from-suggestions-v1.png)
 <p style="text-align: center;">
 Registering an Application from Suggestions
 </p>
 
-## Updating an application
+## Updating your application
 
 The web console supports only enable, disable, and delete operations for your deployment. You cannot modify the application details from the web console (aka Control Plane).
 
