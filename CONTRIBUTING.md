@@ -17,7 +17,8 @@ PipeCD follows the [CNCF Code of Conduct](https://github.com/cncf/foundation/blo
 
 There are various ways to contribute to PipeCD, and many of them don't involve writing code. Here are a few ideas to help you get started:
 
-- Start by using PipeCD. Follow the [Quickstart](https://pipecd.dev/docs/quickstart/) guide. Does everything work as expected? If not, we're always looking for improvements. Let us know by [opening an issue](#issues).
+- Start by using PipeCD. Follow the [Quickstart](https://pipecd.dev/docs/quickstart/) guide. Does everything work as expected? If not, we're always looking for improvements. Let us know by [opening an issue](#open-a-new-issue).
+
 - Browse through the [open issues](https://github.com/pipe-cd/pipecd/issues). Provide workarounds, ask for clarification, or suggest labels.
 - If you find an issue you'd like to fix, [open a pull request](#pull-requests). Issues labeled as [_Good first issue_](https://github.com/pipe-cd/pipecd/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22) are a good starting point.
 - Read the [PipeCD docs](https://pipecd.dev/docs/). If you come across anything that is confusing or can be improved, click "Edit this page" on the right side of most docs to propose changes through the GitHub interface.
@@ -36,6 +37,7 @@ We host the [PipeCD Development and Community Meetings](https://zoom-lfx.platfor
 ### Join our team on GitHub
 
 We welcome and appreciate your contributions to the PipeCD project. If you would like to continue contributing to the project as a member of the pipe-cd GitHub organization, please attend the [public community meeting](#join-our-public-community-meeting) and let us know or ping us on the #pipecd channel in the CNCF Slack. Here are some minimum requirements to have before you can ask for the membership:
+
 - Have at least 5 PRs successfully merged to repositories in the pipe-cd GitHub organization
 - Have attended PipeCD public community meeting
 
@@ -71,6 +73,7 @@ If you discover security-related bugs that may compromise the security of curren
 You can find our DM contacts via [MAINTAINERS.md](./MAINTAINERS.md).
 
 ### Enhancement requests
+
 If you would like to request an enhancement to existing features, you can file an issue with the [enhancement request template](https://github.com/pipe-cd/pipecd/issues/new?assignees=&labels=kind%2Fenhancement&projects=&template=enhancement.md).
 
 ### Feature requests
@@ -184,7 +187,7 @@ Run `make update/go-deps` and `make update/web-deps` to update the dependencies.
 
 #### Starting a local registry
 
-In order to start a local development environment, a registry needs to be running locally. 
+In order to start a local development environment, a registry needs to be running locally.
 
 Run `make up/local-cluster` to start a local registry. 
 
@@ -200,7 +203,7 @@ Run `make stop/pipecd` to stop PipeCD Control Plane.
 
 #### Port Forward
 
-Run `kubectl port-forward -n pipecd svc/pipecd 8080` forward your local port to the `pipecd` pod port. 
+Run `kubectl port-forward -n pipecd svc/pipecd 8080` forward your local port to the `pipecd` pod port.
 
 #### Access the PipeCD UI
 
@@ -215,26 +218,28 @@ To login, you can use the configured static admin account as below:
 
 1. Make sure that PipeCD Control Plane is running and you can access the UI and login.
 
-2. Access to Control Plane console, go to Piped list page - click the three vertical dots on the top right corner and then click on settings. After clicking on settings you will land on the Piped settings page. Next, add a new piped. 
+2. Access to Control Plane console, go to Piped list page - click the three vertical dots on the top right corner and then click on settings. After clicking on settings you will land on the Piped settings page. Next, add a new piped.
 
 Alternatively, you can go to `http://localhost:8080/settings/piped?project=quickstart`, please adjust the port and the project in the url if they are different from default. 
 
 Then, copy generated Piped ID and base64 key for `piped-config.yaml`
 
-3. Create the piped configuration file `piped-config.yaml`. This is an example configuration. Use the PipeD ID and base64 key created in step 2.
-    ```yaml
+3. Create the piped configuration file `piped-config.yaml`, ideally in the root of the repository.
+
+>**NOTE**
+>If you want to work on multiple piped configuration files, it is recommended to create a .dev folder in the root of the repository and save them there. The .dev folder is configured in .gitignore, and thus, would not include your piped files in your commits.
+
+Below is an exampled piped v0 configuration using the Kubernetes platform provider. Use the PipeD ID and base64 key you created in step 2 here.
+
+  ```yaml
     apiVersion: pipecd.dev/v1beta1
     kind: Piped
     spec:
       projectID: quickstart
-      # FIXME: Replace here with your piped ID.
-      pipedID: 7accd470-1786-49ee-ac09-3c4d4e31dc12
-      # Base64 encoded string of the piped private key.
-      # FIXME: Replace here with your piped base64 key.
-      pipedKeyData: OTl4c2RqdjUxNTF2OW1sOGw5ampndXUyZjB2aGJ4dGw0bHVkamF4Mmc3a3l1enFqY20K
-      # Write in a format like "host:443" because the communication is done via gRPC.
-      # FIXME: Replace here with your piped address if you connect Piped to a control plane that does not run locally.
-      apiAddress: localhost:8080
+      pipedID: <YOUR PIPED ID> # Base64 encoded string of the piped private key.
+      pipedKeyData: <YOUR PIPED BASE64 KEY> # FIXME: Replace here with your piped base64 key.
+      apiAddress: localhost:8080 # Write in a format "localhost:port"
+      #Replace with your piped address if you connect Piped to a control plane that does not run locally, or runs on a different port.
       repositories:
       - repoId: example
         remote: git@github.com:pipe-cd/examples.git
@@ -248,7 +253,15 @@ Then, copy generated Piped ID and base64 key for `piped-config.yaml`
           kubeConfigPath: /path/to/.kube/config
     ```
 
-4. Run `make run/piped CONFIG_FILE=piped-config.yaml` to start Piped agent.
+4. Once you have configured your piped configuration file, start the Piped agent with the following command:
+
+```bash
+make run/piped \
+CONFIG_FILE=path/to/piped-config.yaml \
+INSECURE=true
+```
+
+Replace `path/to/piped-config.yaml` with the actual path to your configuration file.
 
 ### Online one-click setup for contributing
 
