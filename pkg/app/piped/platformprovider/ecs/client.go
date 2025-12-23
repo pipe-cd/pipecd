@@ -144,14 +144,13 @@ func (c *client) PruneServiceTasks(ctx context.Context, service types.Service) e
 	return nil
 }
 
-func (c *client) UpdateService(ctx context.Context, service types.Service, forceNewDeployment bool) (*types.Service, error) {
+func (c *client) UpdateService(ctx context.Context, service types.Service) (*types.Service, error) {
 	if service.LaunchType != "" && service.CapacityProviderStrategy != nil {
 		return nil, fmt.Errorf("failed to update ECS service %s: launch type and capacity provider strategy cannot be specified together", *service.ServiceName)
 	}
 	input := &ecs.UpdateServiceInput{
 		Cluster:              service.ClusterArn,
 		Service:              service.ServiceName,
-		ForceNewDeployment:   forceNewDeployment,
 		EnableExecuteCommand: aws.Bool(service.EnableExecuteCommand),
 		PlacementStrategy:    service.PlacementStrategy,
 		// TODO: Support update other properties of service.
