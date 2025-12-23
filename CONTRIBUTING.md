@@ -261,6 +261,8 @@ CONFIG_FILE=path/to/piped-config.yaml \
 INSECURE=true
 ```
 
+where the `CONFIG_FILE` is the path to your piped confiuration file and the `INSECURE` flag is set to `true` to allow `piped` to connect to the control plane without TLS verification.
+
 Replace `path/to/piped-config.yaml` with the actual path to your configuration file.
 
 ### Online one-click setup for contributing
