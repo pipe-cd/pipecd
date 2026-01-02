@@ -9,6 +9,9 @@ on:
       - master
       - "release-v*"
       - "feat/*"
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   GO_VERSION: 1.25.0
