@@ -61,6 +61,7 @@ type FunctionManifestSpec struct {
 	Name             string            `json:"name"`
 	Role             string            `json:"role"`
 	ImageURI         string            `json:"image"`
+	ImageConfig      *ImageConfig      `json:"imageConfig,omitempty"`
 	S3Bucket         string            `json:"s3Bucket"`
 	S3Key            string            `json:"s3Key"`
 	S3ObjectVersion  string            `json:"s3ObjectVersion"`
@@ -79,6 +80,12 @@ type FunctionManifestSpec struct {
 	// You can use layers only with Lambda functions deployed as a .zip file archive. Layers are ignored for a container image.
 	// See https://docs.aws.amazon.com/lambda/latest/dg/chapter-layers.html.
 	Layers []string `json:"layers,omitempty"`
+}
+
+type ImageConfig struct {
+	Command          []string `json:"command,omitempty"`
+	EntryPoint       []string `json:"entryPoint,omitempty"`
+	WorkingDirectory string   `json:"workingDirectory,omitempty"`
 }
 
 type VPCConfig struct {
