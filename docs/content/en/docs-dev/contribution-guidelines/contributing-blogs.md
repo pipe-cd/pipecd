@@ -2,39 +2,82 @@
 title: "Contribute to PipeCD Blogs"
 linkTitle: "Contribute to PipeCD Blogs"
 description: >
-  This page describes how to contribute to the PipeCD Documentation.
+  This page describes how to submit and contribute blog posts to the PipeCD website.
 ---
 
-Welcome! We are so happy you're interested in helping improve our documentation. Your contributions make the project better for everyone.
 
-This guide explains how you can contribute to the PipeCD Documentation, which resides on our official website, https://pipecd.dev.
+Welcome! We are happy you want to share your knowledge with the PipeCD community.
 
-## Where to find the docs
 
-Our documentation is located in the `/docs` folder within the [pipe-cd/pipecd repository](https://github.com/pipe-cd/pipecd).
+This guide explains how you can submit a blog post to the PipeCD website.
 
-The content files are written in Markdown and live inside `/docs/content/en/`. You'll notice two types of documentation folders:
 
-* `/docs-dev/`: This is for documentation related to unreleased, in-development features.
-* `/docs-v0.x.x/` (and `/docs-v1.0.x/`): These folders contain the documentation for specific released versions of PipeCD.
+## Where to find the blogs
 
-## How to build the docs locally
 
-To preview your changes as you work, you must run the documentation website on your local machine.
+Our blog posts are located in the `/docs/content/en/blog/` folder within the [pipe-cd/pipecd repository](https://github.com/pipe-cd/pipecd).
 
-1.  **Install Prerequisite:** You must have the **extended** version of [Hugo (v0.92.1 or higher)](https://gohugo.io/getting-started/installing/) installed.
-2.  **Run the Server:** From the root of the `pipecd` repository, run the following command:
-    ```bash
-    make run/site
-    ```
-3.  **Preview:** Open your browser and go to `http://localhost:1313` to see the live-reloading site.
 
-## How to submit your changes (The PR Process)
+## How to add a new blog post
 
-1.  **Create a Branch:** Create a new branch for your changes (e.g., `git checkout -b my-docs-fix`).
-2.  **Make Your Changes:** Edit the necessary documentation files. If you are fixing an issue in the current documentation, remember to edit the file in both the `/docs-dev/` and the latest `/docs-vx.y.z/` folders.
-3.  **Commit and Push:** Commit your changes with a clear message and push your branch to your fork.
-4.  **Open a Pull Request:** Go to the PipeCD repository and open a Pull Request. In the description, please link to the issue you are fixing (e.g., `Addresses #6124`).
-5.  **Review:** A maintainer will review your PR, provide feedback, and merge it.
 
-Thank you for contributing!
+1. **Create a file:** Create a new Markdown file in the `docs/content/en/blog/` directory. The filename should use kebab-case (e.g., `my-new-feature.md`).
+
+
+2. **Add Frontmatter:** Every blog post requires a header (frontmatter) at the top of the file. Copy and customize this template:
+```yaml
+---
+date: 2023-10-27
+title: "Your Blog Post Title"
+linkTitle: "Your Blog Post Title"
+author: Your Name ([@your-github-username](https://github.com/your-github-username))
+categories: ["Tutorial"]
+tags: ["Kubernetes", "PipeCD"]
+---
+```
+3. **Write your content:** Write your article in standard Markdown below the frontmatter.
+
+
+## How to preview your blog
+
+
+1. **Run the server:** From the root of the repository, run:
+```bash
+make run/site
+```
+2. **Preview:** Open `http://localhost:1313/blog/` in your browser.
+
+
+## How to submit (The PR Process)
+
+
+1. **Create a branch:** from the master branch, create a new branch for your post:
+```bash
+git checkout -b blog/my-new-post
+```
+2. **Commit and push:** Commit your changes and push your new file to your fork.
+
+
+3. **Open a Pull Request:** Submit your PR to the PipeCD repository.
+
+
+## What happens next?
+
+
+After you submit your pull request:
+
+
+- **Review:** Maintainers will review your post. They might suggest changes or ask clarifying questions.
+- **Update:** Address any feedback by pushing new commits to your branch.
+- **Merge:** Once approved, a maintainer will merge your PR. Your post will appear on the website shortly after.
+
+
+## Need help?
+
+
+If you have questions or need ideas for blog posts, join our community:
+
+
+- **Slack:** Join the `#blog` channel on our [PipeCD Slack workspace](https://pipecd.dev/slack).
+- **Community Meeting:** Join our community meeting (held bi-weekly on Wednesdays) to discuss your ideas directly with the maintainers.
+
