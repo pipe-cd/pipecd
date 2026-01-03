@@ -153,7 +153,7 @@ By contributing to PipeCD, you agree that your contributions will be licensed un
 
 ### Release Note and Breaking Changes
 
-If your change introcudes a user-facing change, please update the following section in your PR description.
+If your change introduces a user-facing change, please update the following section in your PR description.
 
 ```md
 **Does this PR introduce a user-facing change?**:
