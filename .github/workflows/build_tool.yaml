@@ -12,11 +12,16 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
-  tool:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
+  # Build images for each platform in parallel using native runners
+  build:
     strategy:
+      fail-fast: false
       matrix:
+        platform:
+          - runner: ubuntu-24.04
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            arch: arm64
         image:
           - actions-gh-release
           - actions-plan-preview
@@ -24,6 +29,8 @@ jobs:
           - piped-base
           - piped-base-okd
           - firestore-emulator
+    runs-on: ${{ matrix.platform.runner }}
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -31,16 +38,14 @@ jobs:
       - name: Determine version
         run: echo "PIPECD_VERSION=$(git describe --tags --always --abbrev=7 --match 'v[0-9]*.*')" >> $GITHUB_ENV
 
-      - uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v3.2.0
-
       - uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # v3.7.1
 
-      - name: Build ${{ matrix.image }} image
+      - name: Build ${{ matrix.image }} image (${{ matrix.platform.arch }})
         uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355 # v6.10.0
         with:
           context: tool/${{ matrix.image }}
           tags: ${{ env.REGISTRY }}/pipe-cd/${{ matrix.image }}:${{ env.PIPECD_VERSION }}
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/${{ matrix.platform.arch }}
           # parameter to use inline cache. ref; https://docs.docker.com/build/ci/github-actions/cache/#inline-cache
           cache-from: type=registry,ref=${{ env.REGISTRY }}/pipe-cd/${{ matrix.image }}:latest
           cache-to: type=inline
