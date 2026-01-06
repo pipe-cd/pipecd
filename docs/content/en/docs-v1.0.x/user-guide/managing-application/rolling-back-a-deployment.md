@@ -6,18 +6,17 @@ description: >
   This page describes when a deployment is rolled back automatically and how to manually roll back a deployment.
 ---
 
-Rolling back a deployment can be automated by enabling the `autoRollback` field in the application configuration of the application. When `autoRollback` is enabled, the deployment will be rolled back if any of the following conditions are met:
+You can automate rollbacks by enabling the `autoRollback` field in your application configuration. When `autoRollback` is enabled, the deployment will be rolled back if any of the following conditions are met:
 
-- a stage of the deployment pipeline has failed
-- an analysis stage determined that the deployment had a negative impact
-- any error occurs while deploying
+- A deployment pipeline stage fails
+- An analysis stage determines that the deployment has a negative impact
+- An error occurs while deploying
 
-When the rolling back process is triggered, a new `ROLLBACK` stage will be added to the deployment pipeline and it reverts all the applied changes.
+When a rollback is triggered, PipeCD adds a new `ROLLBACK` stage to the deployment pipeline and reverts all applied changes.
 
 ![Screenshot of rolling back a deployment](/images/rolled-back-deployment.png)
 <p style="text-align: center;">
 A deployment was rolled back
 </p>
 
-Alternatively, you can manually roll back a deployment from the web UI by clicking on `Cancel with Rollback` button.
-
+Alternatively, you can manually roll back a deployment from the Web UI by clicking the `Cancel with Rollback` button.
