@@ -13,8 +13,6 @@ This document is intended for contributors who:
 - submit pull requests to PipeCD
 - want to understand which CI workflows run and why
 - need basic context to debug CI failures
-
-
 ---
 
 ## CI Philosophy
@@ -24,8 +22,6 @@ PipeCD’s CI is designed to:
 - prevent regressions on the default and release branches
 - keep workflows explicit and deterministic
 - automate release and publishing tasks safely
-
-
 
 ---
 
@@ -153,7 +149,6 @@ Below is a brief description of each GitHub Actions workflow under
 **When it runs:** On a scheduled basis or when triggered by maintainers.
 
 ---
-
 ## Debugging CI Failures
 
 When a CI check fails:
@@ -164,7 +159,7 @@ When a CI check fails:
 Most CI failures are scoped to a single concern (tests, lint, build, or web),
 which usually makes the root cause clear.
 
----
+
 
 
 ## References
