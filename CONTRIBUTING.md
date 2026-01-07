@@ -49,6 +49,12 @@ PipeCD uses [GitHub](https://github.com/pipe-cd/pipecd) as its source of truth. 
 
 All pull requests undergo checks by the continuous integration system, GitHub Actions. These checks include unit tests, lint tests, and more.
 
+Before submitting a pull request, contributors are encouraged to understand
+which CI workflows will run and what they are responsible for.
+
+For an overview of all CI workflows and when they run, see:
+- [CI Overview](docs/content/en/docs-v1.0.x/development/ci.md)
+
 ### Branch Organization
 
 PipeCD has one primary branch `master`.
