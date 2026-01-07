@@ -24,31 +24,26 @@ PipeCD supports multiple deployment platforms through official plugins. Each plu
 
 ### Current Plugin Versions
 
-| Plugin | Latest Version | Release Date | Status |
-|--------|----------------|--------------|--------|
-| **[Kubernetes](kubernetes/)** | v0.3.0 | 2025-09-26 | Stable |
-| **[Terraform](terraform/)** | v0.2.1 | 2025-10-09 | Stable |
-| **[Wait](wait/)** | v0.1.1 | 2025-10-09 | Stable |
-| **[Wait Approval](waitapproval/)** | v0.2.0 | 2025-10-09 | Stable |
-| **[Analysis](analysis/)** | v0.1.1 | 2025-09-03 | Stable |
-| **[Script Run](scriptrun/)** | v0.1.0 | 2025-09-04 | Stable |
-| **Cloud Run** | No releases | - | In Development |
-| **Kubernetes Multi-Cluster** | No releases | - | In Development |
+Currently, all official plugins are **bundled with PipeCD** and share the same version as the Piped agent.
 
-> **Note:** Version information above is as of October 2024. For the most up-to-date information, run the version script or check [GitHub Releases](https://github.com/pipe-cd/pipecd/releases).
+| Plugin | Version | Status |
+|--------|---------|--------|
+| **Kubernetes** | Bundled (v0.50.x) | Stable |
+| **Terraform** | Bundled (v0.50.x) | Stable |
+| **Cloud Run** | Bundled (v0.50.x) | Stable |
+| **Analysis** | Bundled (v0.50.x) | Stable |
+| **Script Run** | Bundled (v0.50.x) | Stable |
+| **Wait** | Bundled (v0.50.x) | Stable |
+| **Wait Approval** | Bundled (v0.50.x) | Stable |
+| **Kubernetes Multi-Cluster** | Bundled (v0.50.x) | Stable |
+
+> **Note:** Independent versioning for plugins is planned for future releases. For now, please refer to the [PipeCD Release Notes](https://github.com/pipe-cd/pipecd/releases) for updates on all components.
 
 ### Finding Plugin Versions
 
-To check for new plugin versions:
-
-1. **GitHub Releases:** Visit [releases page](https://github.com/pipe-cd/pipecd/releases) and filter by plugin tags(e.g., `pkg/app/pipedv1/plugin/kubernetes/v*`)
-
-2. **API:** Query the GitHub API for plugin-specific releases:
- curl -s https://api.github.com/repos/pipe-cd/pipecd/releases | jq -I | select(tag_name |  startswith("pkg/app/pipedv1/plugin/"))
-
-{{< alert title="Note" >}}
-Plugin architecture with independent versioning is currently in alpha. Full independent release cycles are planned for PipeCD v1.0.
-{{< /alert >}}
+Since plugins are currently bundled:
+1. Check the [PipeCD Release Notes](https://github.com/pipe-cd/pipecd/releases).
+2. The plugin version corresponds to the PipeCD version (e.g., specific Piped version).
 
 ## Plugin Architecture
 
