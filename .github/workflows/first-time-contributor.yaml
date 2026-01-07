@@ -1,0 +1,57 @@
+name: First-time contributor welcome
+
+on:
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  welcome:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Welcome first-time contributor
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prAuthor = context.payload.pull_request.user.login;
+            const prNumber = context.payload.pull_request.number;
+
+            // List PRs created by this user in this repo
+            const { data: pulls } = await github.rest.pulls.list({
+              owner,
+              repo,
+              state: "all",
+              creator: prAuthor,
+              per_page: 2,
+            });
+
+            // If more than one PR exists, this is not the first one
+            if (pulls.length > 1) {
+              console.log(`User ${prAuthor} is not a first-time contributor.`);
+              return;
+            }
+
+            const body = `
+👋 Hi @${prAuthor}, thanks for opening your first pull request to **PipeCD**!
+
+Here are a few helpful resources to get started:
+-  Contributing guide: \`CONTRIBUTING.md\`
+-  Common commands:
+  - \`make test\`
+  - \`make lint\`
+
+If you have any questions, feel free to ask in this PR.
+Thanks for contributing!
+`;
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: prNumber,
+              body,
+            });

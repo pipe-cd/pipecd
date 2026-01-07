@@ -16,7 +16,6 @@ package ecs
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 
@@ -110,12 +109,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	}
 
 	recreate := e.appCfg.QuickSync.Recreate
-	forceNewDeployment := e.appCfg.QuickSync.ForceNewDeployment
-
-	// Store force new deployment flag to metadata store.
-	e.Input.MetadataStore.Shared().Put(ctx, forceNewDeploymentKey, strconv.FormatBool(forceNewDeployment))
-
-	if !sync(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, recreate, forceNewDeployment, taskDefinition, servicedefinition, primary) {
+	if !sync(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, recreate, taskDefinition, servicedefinition, primary) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 

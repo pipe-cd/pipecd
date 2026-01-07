@@ -65,7 +65,7 @@
     "@emotion/styled": "^11.14.1",
     "@loadable/component": "^5.16.7",
     "@mui/icons-material": "^7.3.4",
-    "@mui/material": "^7.3.5",
+    "@mui/material": "^7.3.6",
     "@primer/octicons-react": "^14.2.2",
     "@tanstack/react-query": "4.42.0",
     "@tanstack/react-query-devtools": "4.42.0",
@@ -90,7 +90,7 @@
     "react-draggable": "^4.5.0",
     "react-intersection-observer": "^8.26.2",
     "react-markdown": "^6.0.3",
-    "react-router-dom": "^6.30.1",
+    "react-router-dom": "^6.30.2",
     "yup": "^0.32.11"
   },
   "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610"

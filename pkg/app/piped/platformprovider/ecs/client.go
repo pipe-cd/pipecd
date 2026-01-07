@@ -87,9 +87,6 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 	if service.DeploymentController == nil || service.DeploymentController.Type != types.DeploymentControllerTypeExternal {
 		return nil, fmt.Errorf("failed to create ECS service %s: deployment controller of type EXTERNAL is required", *service.ServiceName)
 	}
-	if service.LaunchType != "" && service.CapacityProviderStrategy != nil {
-		return nil, fmt.Errorf("failed to create ECS service %s: launch type and capacity provider strategy cannot be specified together", *service.ServiceName)
-	}
 	input := &ecs.CreateServiceInput{
 		Cluster:                       service.ClusterArn,
 		ServiceName:                   service.ServiceName,
@@ -106,12 +103,6 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 		Role:                          service.RoleArn,
 		SchedulingStrategy:            service.SchedulingStrategy,
 		Tags:                          service.Tags,
-	}
-	if service.LaunchType != "" {
-		input.LaunchType = service.LaunchType
-	}
-	if service.CapacityProviderStrategy != nil {
-		input.CapacityProviderStrategy = service.CapacityProviderStrategy
 	}
 	output, err := c.ecsClient.CreateService(ctx, input)
 	if err != nil {
@@ -144,14 +135,10 @@ func (c *client) PruneServiceTasks(ctx context.Context, service types.Service) e
 	return nil
 }
 
-func (c *client) UpdateService(ctx context.Context, service types.Service, forceNewDeployment bool) (*types.Service, error) {
-	if service.LaunchType != "" && service.CapacityProviderStrategy != nil {
-		return nil, fmt.Errorf("failed to update ECS service %s: launch type and capacity provider strategy cannot be specified together", *service.ServiceName)
-	}
+func (c *client) UpdateService(ctx context.Context, service types.Service) (*types.Service, error) {
 	input := &ecs.UpdateServiceInput{
 		Cluster:              service.ClusterArn,
 		Service:              service.ServiceName,
-		ForceNewDeployment:   forceNewDeployment,
 		EnableExecuteCommand: aws.Bool(service.EnableExecuteCommand),
 		PlacementStrategy:    service.PlacementStrategy,
 		// TODO: Support update other properties of service.
@@ -163,10 +150,6 @@ func (c *client) UpdateService(ctx context.Context, service types.Service, force
 	// If desiredCount is 0 or not set, keep current desiredCount because a user might use AutoScaling.
 	if service.DesiredCount != 0 {
 		input.DesiredCount = aws.Int32(service.DesiredCount)
-	}
-
-	if service.CapacityProviderStrategy != nil {
-		input.CapacityProviderStrategy = service.CapacityProviderStrategy
 	}
 
 	output, err := c.ecsClient.UpdateService(ctx, input)
@@ -258,9 +241,6 @@ func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskD
 	if taskDefinition.TaskDefinitionArn == nil {
 		return nil, fmt.Errorf("failed to create task set of task family %s: no task definition provided", *taskDefinition.Family)
 	}
-	if service.LaunchType != "" && service.CapacityProviderStrategy != nil {
-		return nil, fmt.Errorf("failed to create task set of task family %s: launch type and capacity provider strategy cannot be specified together", *taskDefinition.Family)
-	}
 
 	input := &ecs.CreateTaskSetInput{
 		Cluster:        service.ClusterArn,
@@ -271,18 +251,12 @@ func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskD
 		// If you specify the awsvpc network mode, the task is allocated an elastic network interface,
 		// and you must specify a NetworkConfiguration when run a task with the task definition.
 		NetworkConfiguration: service.NetworkConfiguration,
+		LaunchType:           service.LaunchType,
 		ServiceRegistries:    service.ServiceRegistries,
-	}
-	if service.LaunchType != "" {
-		input.LaunchType = service.LaunchType
-	}
-	if service.CapacityProviderStrategy != nil {
-		input.CapacityProviderStrategy = service.CapacityProviderStrategy
 	}
 	if targetGroup != nil {
 		input.LoadBalancers = []types.LoadBalancer{*targetGroup}
 	}
-
 	output, err := c.ecsClient.CreateTaskSet(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create ECS task set %s: %w", *taskDefinition.TaskDefinitionArn, err)
