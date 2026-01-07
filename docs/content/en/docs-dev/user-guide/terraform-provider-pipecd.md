@@ -12,7 +12,7 @@ This provider enables us to add, update, and delete PipeCD resources as  Infrast
 ## Usage
 
 ### Setup Terraform provider
-Add terraform block to declare that you use PipeCD Terraform provider. You need to input a control plane's host name and API key via provider settings or environment variables. API key is available on the web UI.
+Add terraform block to declare that you use PipeCD Terraform provider. You need to input a controle plane's host name and API key via provider settings or environment variables. API key is available on the web UI.
 
 ```hcl
 terraform {
