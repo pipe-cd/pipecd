@@ -90,7 +90,7 @@ spec:
             # Plugin-specific config
 ```
 
-## Contributing official plugins
+## Contributing to official plugins
 
 1. **Open an issue** first to discuss your plugin idea with maintainers
 2. **Fork and clone** the [pipecd repository](https://github.com/pipe-cd/pipecd)
@@ -112,7 +112,7 @@ make test/go
 make run/piped CONFIG_FILE=piped-config.yaml EXPERIMENTAL=true INSECURE=true
 ```
 
-## Contributing community plugins
+## Contributing to community plugins
 
 The [community-plugins repository](https://github.com/pipe-cd/community-plugins) welcomes plugins that may not fit in the official repo.
 

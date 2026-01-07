@@ -14,11 +14,11 @@ In PipeCD v1, plugins are the actors that execute deployments on behalf of piped
 
 **Key concepts:**
 
-- **Plugins** run as gRPC servers, launched and managed by piped
+- [**Plugins**](../../concepts/#plugins) run as gRPC servers, launched and managed by piped. They replace the older Platform Provider concept and encapsulate all platform-specific deployment logic.
 - **Deploy targets** define where a plugin deploys (e.g., a Kubernetes cluster)
-- Plugins can be **official** (maintained by PipeCD team) or **community-contributed**
+- Plugins can be **official** (maintained by the PipeCD team in the main repository) or **community-contributed** (hosted in the [community-plugins repository](https://github.com/pipe-cd/community-plugins))
 
-For a detailed overview, see the [Plugin Architecture blog post](https://pipecd.dev/blog/2024/11/28/overview-of-the-plan-for-pluginnable-pipecd/).
+For more background, see the [Concepts](../../concepts/) page or the [Plugin Architecture blog post](https://pipecd.dev/blog/2024/11/28/overview-of-the-plan-for-pluginnable-pipecd/).
 
 ## Plugin types
 
