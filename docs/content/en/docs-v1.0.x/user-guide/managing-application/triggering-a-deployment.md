@@ -27,7 +27,7 @@ For the full list of options, see [Configuration Reference](../../configuration-
 
 After a deployment is triggered, it is added to a queue and handled by the appropriate `piped`. At this stage, the deployment pipeline is not yet decided.
 `piped` ensures that only one deployment runs per application at a time. If no deployment is currently running, `piped` selects a queued deployment and plans its pipeline.
-The deployment pipeline is created based on the application configuration and the differences between the current running state and the desired state defined in the latest commit.
+The deployment pipeline is created based on the application configuration and the differences between the current running state and the desired state defined in the latest commit. 
 
 For example:
 
