@@ -12,6 +12,7 @@ PipeCD applies these changes by triggering deployments for affected applications
 
 By default, PipeCD triggers a new deployment when you merge a pull request.
 You can customize this behavior in your application configuration file (app.pipecd.yaml) to control whether and when deployments run.
+
 For example, you can use [`onOutOfSync`](#trigger-configuration) to automatically trigger a deployment whenever PipeCD detects a configuration drift and the application enters an OUT_OF_SYNC state.
 
 ### Trigger configuration
