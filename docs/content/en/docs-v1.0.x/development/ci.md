@@ -162,8 +162,11 @@ which usually makes the root cause clear.
 
 
 
-## References
+- **PipeCD GitHub Actions workflows**  
+  https://github.com/pipe-cd/pipecd/tree/master/.github/workflows
 
-- `.github/workflows/`
-- Contributing Guide
-- GitHub Actions documentation
+- **Contributing Guide**  
+  https://github.com/pipe-cd/pipecd/blob/master/CONTRIBUTING.md
+
+- **GitHub Actions documentation**  
+  https://docs.github.com/en/actions
