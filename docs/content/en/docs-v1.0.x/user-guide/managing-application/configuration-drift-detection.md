@@ -7,7 +7,7 @@ description: >
 ---
 
 Configuration Drift is a phenomenon where running resources of a service become more and more different from the definitions in Git as time goes on, due to manual ad-hoc changes and updates.
-As PipeCD is using Git as a single source of truth, all application resources and infrastructure changes should be done by making a pull request to Git. Whenever a configuration drift occurs, it should be notified to the developers and be fixed.
+As PipeCD is using Git as a single source of truth, all application resources and infrastructure changes should be done by opening a pull request to Git. Whenever a configuration drift occurs, it should be notified to the developers and be fixed.
 
 PipeCD includes `Configuration Drift Detection` feature, which periodically compares running resources/configurations with the definitions in Git to detect the configuration drift and shows the comparing result in the application details web page and sends notifications to the developers as well.
 
