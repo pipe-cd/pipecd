@@ -132,7 +132,15 @@ func convertToManifest(f *lambda.GetFunctionOutput) provider.FunctionManifest {
 			SubnetIDs:        fc.VpcConfig.SubnetIds,
 		}
 	}
-
+	if fc.ImageConfigResponse != nil && fc.ImageConfigResponse.ImageConfig != nil {
+		m.Spec.ImageConfig = &provider.ImageConfig{
+			EntryPoint: fc.ImageConfigResponse.ImageConfig.EntryPoint,
+			Command:    fc.ImageConfigResponse.ImageConfig.Command,
+		}
+		if fc.ImageConfigResponse.ImageConfig.WorkingDirectory != nil {
+			m.Spec.ImageConfig.WorkingDirectory = *fc.ImageConfigResponse.ImageConfig.WorkingDirectory
+		}
+	}
 	return m
 }
 
