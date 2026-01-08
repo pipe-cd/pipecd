@@ -6,78 +6,70 @@ description: >
   This page describes several core concepts in PipeCD.
 ---
 
-![Architecture Overview](/images/architecture-overview.png)
+![](/images/architecture-overview.png)
 <p style="text-align: center;">
 Component Architecture
 </p>
 
-### Control Plane
-
-The Control Plane is the centralized management service of PipeCD. It coordinates all activities between users, projects, and piped instances.
-
-The Control Plane remains the backbone of the system but is now fully plugin-aware. Instead of directly handling deployment logic for specific platforms, it interacts with `piped` agents that run plugin binaries, allowing the Control Plane to manage deployments across any platform supported by plugins.
-
 ### Piped
 
-`piped` is a binary, agent component responsible for executing deployments in PipeCD. `Piped` now adopts **plugin-based architecture**, transforming from a single-purpose executor into a lightweight runtime capable of running any deployment logic defined by plugins. The `piped` component is designed to be stateless.
+`piped` is a single binary component you run as an agent in your cluster, your local network to handle the deployment tasks.
+It can be run inside a Kubernetes cluster by simply starting a Pod or a Deployment.
+This component is designed to be stateless, so it can also be run in a single VM or even your local machine.
 
-### Plugins
+### Control Plane
 
-![PipeCD v1 Plugin Architecture](/images/pipecdv1-architecture.png)
-<p style="text-align: center;">
-PipeCD v1 Plugin Architecture
-</p>
-
-Plugins replace the concept of Platform Providers (also called Cloud Providers) from earlier versions of PipeCD.
-
-A Plugin defines how and where deployments are executed. Each plugin encapsulates the logic required to interact with a specific platform or tool - for example, Kubernetes, Terraform, or ECS.
-
-In this architecture, plugins are the actors who execute deployments on behalf of `piped`. Rather than containing built-in logic for every platform, `piped` now loads plugin binaries at startup and communicates with them over gRPC. This design allows support for new or custom platforms.
-
->**Note:**  
->Check out the [PipeCD Community Plugins repository](https://github.com/pipe-cd/community-plugins) to browse available plugins and learn how to create your own.
+A centralized component managing deployment data and provides gRPC API for connecting `piped`s as well as all web-functionalities of PipeCD such as
+authentication, showing deployment list/details, application list/details, delivery insights...
 
 ### Project
 
-A Project is a logical group of applications managed together by a team of users.
-Each project can connect to multiple `piped` instances running across different environments or clouds.
+A project is a logical group of applications to be managed by a group of users.
+Each project can have multiple `piped` instances from different clouds or environments.
 
-Projects use role-based access control (RBAC) to manage permissions:
+There are three types of project roles:
 
-- Viewer – can view applications and deployments within the project.
-- Editor – includes Viewer permissions and can perform actions that modify state, such as triggering or cancelling deployments.
-- Admin – includes Editor permissions and can manage project settings, members, and associated piped instances.
+- **Viewer** has only permissions of viewing to deployment and application in the project.
+- **Editor** has all viewer permissions, plus permissions for actions that modify state such as manually trigger/cancel the deployment.
+- **Admin** has all editor permissions, plus permissions for managing project data, managing project `piped`.
 
 ### Application
 
-An Application represents a collection of declarative resources and configurations that represent a deployable unit managed by PipeCD.
-
-Applications are no longer tied to a specific platform or technology such as Kubernetes, Terraform, or ECS.
-Instead, they are platform-agnostic objects whose deployment behavior is determined dynamically through **[Plugins](#plugins)**.
+A collection of resources (containers, services, infrastructure components...) and configurations that are managed together.
+PipeCD supports multiple kinds of applications such as `KUBERNETES`, `TERRAFORM`, `ECS`, `CLOUDRUN`, `LAMBDA`...
 
 ### Application Configuration
 
-A declarative YAML file that defines how an application is managed by PipeCD.
-It specifies metadata, labels, and the deployment logic that `piped` executes through plugins.
-Each application has one configuration file stored in its Git directory, typically named app.pipecd.yaml.
+A YAML file that contains information to define and configure application.
+Each application requires one file at application directory stored in the Git repository.
+The default file name is `app.pipecd.yaml`.
 
 ### Application Directory
 
-A directory in the Git repository that contains the application's configuration file and related manifests.
-This directory represents the source of truth for the application's desired state.
+A directory in Git repository containing application configuration file and application manifests.
+Each application must have one application directory.
 
 ### Deployment
 
-A Deployment is the process of bringing an application's live state in line with its desired state defined in Git.
-When a deployment completes successfully, the running environment matches the configuration from the target Git commit.
+A deployment is a process that does transition from the current state (running state) to the desired state (specified state in Git) of a specific application.
+When the deployment is success, it means the running state is being synced with the desired state specified in the target commit.
 
 ### Sync Strategy
 
-PipeCD provides 3 different ways to keep your application's live state consistent with its desired state stored in Git.
-Depending on your deployment workflow, you can choose from one of the following sync strategies:
+There are 3 strategies that PipeCD supports while syncing your application state with its configuration stored in Git. Which are:
+- Quick Sync: a fast way to make the running application state as same as its Git stored configuration. The generated pipeline contains only one predefined `SYNC` stage.
+- Pipeline Sync: sync the running application state with its Git stored configuration through a pipeline defined in its application configuration.
+- Sync: depends on your defined application configuration, `piped` will decide the best way to sync your application state with its Git stored configuration.
 
-- Quick Sync: A fast, single-step method to sync your deployment with the desired state. PipeCD automatically generates a pipeline composed of predefined Quick Sync stages provided by plugins linked to the application. Quick Sync is generally used when you need to rapidly apply configuration changes without a gradual rollout.
+### Platform Provider
 
-- Pipeline Sync: A customizable, step-by-step sync process that follows the pipeline you define in your application configuration file. Use Pipeline Sync when you need more control over how updates are rolled out.
+Note: The previous name of this concept was Cloud Provider.
 
-- Auto Sync: When you trigger a sync without specifying a strategy, piped automatically selects the most appropriate method based on your application configuration.
+PipeCD supports multiple platforms and multiple kinds of applications.
+Platform Provider defines which platform, cloud and where application should be deployed to.
+
+Currently, PipeCD is supporting these five platform providers: `KUBERNETES`, `ECS`, `TERRAFORM`, `CLOUDRUN`, `LAMBDA`.
+
+### Analysis Provider
+An external product that provides metrics/logs to evaluate deployments, such as `Prometheus`, `Datadog`, `Stackdriver`, `CloudWatch` and so on.
+It is mainly used in the [Automated deployment analysis](../user-guide/managing-application/customizing-deployment/automated-deployment-analysis/) context.
