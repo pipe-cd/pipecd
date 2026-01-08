@@ -32,10 +32,10 @@ The deployment pipeline is created based on the application configuration and th
 
 For example:
 
-- If a merged pull request updates a Deployment's container image or updates a mounted ConfigMap or Secret, `piped` planner decides to use the specified pipeline for a progressive deployment.
-- If a merged pull request only updates the `replicas` number, `piped` planner decides to use a quick sync to scale the resources.
+- If a merged pull request updates a Deployment's container image or updates a mounted ConfigMap or Secret, `piped` decides to use the specified pipeline for a progressive deployment.
+- If a merged pull request only updates the `replicas` number, `piped` decides to use a quick sync to scale the resources.
 
-You can configure `piped` planner to use the [QuickSync](../../../concepts/#sync-strategy) or the specified pipeline based on the commit message by configuring [CommitMatcher](../../configuration-reference/#commitmatcher) in the application configuration.
+You can configure `piped` to use the [QuickSync](../../../concepts/#sync-strategy) or the specified pipeline based on the commit message by configuring [CommitMatcher](../../configuration-reference/#commitmatcher) in the application configuration.
 
 After the planning, the deployment will be executed as per the decided pipeline. The deployment execution including the state of each stage as well as their logs can be viewed in real time on the deployment details page on the Web UI.
 
