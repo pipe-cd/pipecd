@@ -34,5 +34,5 @@ If you need to roll back a deployment that has already completed, or want to int
 
 ![Screenshot of rolling back a deployment](/images/rolled-back-deployment.png)
 <p style="text-align: center;">
-A deployment bring rolled back
+A deployment being rolled back
 </p>
