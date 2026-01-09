@@ -56,6 +56,13 @@ Before creating a new plugin, study the existing ones:
 | [wait](https://github.com/pipe-cd/pipecd/tree/master/pkg/app/pipedv1/plugin/wait) | Simple | Basic plugin structure |
 | [waitapproval](https://github.com/pipe-cd/pipecd/tree/master/pkg/app/pipedv1/plugin/waitapproval) | Simple | Stage-only plugin |
 | [kubernetes](https://github.com/pipe-cd/pipecd/tree/master/pkg/app/pipedv1/plugin/kubernetes) | Complex | Full-featured plugin |
+| [terraform](https://github.com/pipe-cd/pipecd/tree/master/pkg/app/pipedv1/plugin/terraform) | Complex | Infrastructure as Code plugin |
+
+Community plugins:
+
+| Plugin | Description |
+|--------|-------------|
+| [opentofu](https://github.com/pipe-cd/community-plugins/tree/main/plugins/opentofu) | OpenTofu deployment plugin |
 
 ### Plugin structure
 
@@ -83,7 +90,7 @@ spec:
   plugins:
     - name: your-plugin
       port: 7001              # Any unused port
-      url: https://github.com/org/repo/releases/download/v1.0.0/plugin_binary
+      url: <PLUGIN_URL>
       deployTargets:          # Optional, depends on plugin
         - name: target1
           config:
