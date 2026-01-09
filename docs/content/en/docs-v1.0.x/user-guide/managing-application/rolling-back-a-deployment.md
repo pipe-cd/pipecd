@@ -11,7 +11,7 @@ Rollbacks allow you to revert your application to a previous stable state when s
 ## Automatic rollback
 You can automate rollbacks by enabling the `autoRollback` field in your application configuration:
 
-```bash
+```yaml
 spec:
   pipeline:
     stages:
