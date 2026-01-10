@@ -3,68 +3,28 @@ title: "Configuration drift detection"
 linkTitle: "Configuration drift detection"
 weight: 8
 description: >
-  Automatically detecting the configuration drift.
+  Detect and resolve differences between running resources and Git definitions.
 ---
 
-Configuration Drift is a phenomenon where running resources of a service become more and more different from the definitions in Git as time goes on, due to manual ad-hoc changes and updates.
-As PipeCD is using Git as a single source of truth, all application resources and infrastructure changes should be done by opening a pull request to Git. Whenever a configuration drift occurs, it should be notified to the developers and be fixed.
+Configuration drift occurs when running resources diverge from their definitions in Git, typically due to manual ad-hoc changes or direct updates to the cluster.
 
-PipeCD includes `Configuration Drift Detection` feature, which periodically compares running resources/configurations with the definitions in Git to detect the configuration drift and shows the comparing result in the application details web page and sends notifications to the developers as well.
+Since PipeCD uses Git as the single source of truth, all application and infrastructure changes should go through pull requests. When drift occurs, developers need to be notified so they can reconcile the differences.
+PipeCD's **configuration drift detection** feature helps you identify these discrepancies. It periodically compares your running resources against the definitions in Git and:
 
-### Detection Result
+- Displays the comparison results on the application details page
+- Sends notifications to developers when drift is detected
 
-There are three statuses for the drift detection result: `SYNCED`, `OUT_OF_SYNC`, `DEPLOYING`.
+## Enabling Configuration drift detection
 
-#### SYNCED
+Configuration drift detection is enabled by default for all applications. You can adjust the interval for how frequently PipeCD compares running resources against Git definitions in your `Piped` configuration. To customize notifications for drift events, see [Configuring notifications](../../managing-piped/configuring-notifications/).
 
-This status means no configuration drift was detected. All resources/configurations are synced from the definitions in Git. From the application details page, this status is shown by a green "Synced" mark.
-
-![A screenshot of displaying a 'SYNCED' state](/images/application-synced.png)
-<p style="text-align: center;">
-Application is in SYNCED state
-</p>
-
-#### OUT_OF_SYNC
-
-This status means a configuration drift was detected. An application is in this status when at least one of the following conditions is satisfied:
-
-- at least one resource is defined in Git but NOT running in the cluster
-- at least one resource is NOT defined in Git but running in the cluster
-- at least one resource that is both defined in Git and running in the cluster but NOT in the same configuration
-
-This status is shown by a red "Out of Sync" mark on the application details page.
-
-![Screenshot showing "OUT OF SYNC" resources configuration state](/images/application-out-of-sync.png)
-<p style="text-align: center;">
-Application is in OUT_OF_SYNC state
-</p>
-
-Click on the "SHOW DETAILS" button to see more details about why the application is in the `OUT_OF_SYNC` status. In the example below, the replicas number of a Deployment was not matching; it was `300` in Git but `3` in the cluster.
-
-![](/images/application-out-of-sync-details.png)
-<p style="text-align: center;">
-The details show why the application is in OUT_OF_SYNC state
-</p>
-
-#### DEPLOYING
-
-This status means the application is deploying and the configuration drift detection is not running for a while. Whenever a new deployment of the application was started, the detection process will temporarily be stopped until that deployment finishes and will be continued after that.
-
-### How to enable Configuration Drift Detection?
-
-This feature is automatically enabled for all applications by default.
-
-You can change the checking interval as well as [configure the notification](../../managing-piped/configuring-notifications/) for these events in `piped` configuration.
-
-Note: If you want to trigger deployment automatically when `OUT_OF_SYNC` occurs, see [Trigger configuration](./triggering-a-deployment/#trigger-configuration).
-
-### Ignore drift detection for specific fields
+## Ignoring drift detection for specific fields
 
 > **Note:** This feature is currently supported only for Kubernetes Applications.
 
 You can also ignore drift detection for specified fields in your application manifests. In other words, even if the selected fields have different values between live state and Git, the application status will not be set to `Out of Sync`.
 
-For example, suppose you have the application's manifest as below:
+Suppose you have the application manifest:
 
 ```yaml
 apiVersion: apps/v1
@@ -83,12 +43,11 @@ spec:
           name: helloworld
 ```
 
-If you want to ignore the drift detection for the two scenarios
-
+And you want to ignore the drift detection for these two fields:
 - pod's replicas
 - `helloworld` container's args
 
-Add the following statements to `app.pipecd.yaml` to ignore diff on those fields.
+You can add the following statements to `app.pipecd.yaml`:
 
 ```yaml
 spec:
@@ -99,7 +58,45 @@ spec:
       - apps/v1:Deployment:default:simple#spec.template.spec.containers.0.args
 ```
 
-Note: The `ignoreFields` is in format `apiVersion:kind:namespace:name#yamlFieldPath`
+>Note: `ignoreFields` is in the format `apiVersion:kind:namespace:name#yamlFieldPath`
+
+## Detection results
+
+Drift detection reports one of three statuses: `SYNCED`, `OUT_OF_SYNC`, or `DEPLOYING`.
+
+### SYNCED
+
+No drift detected. All running resources match their Git definitions. The application details page displays a green "Synced" mark.
+
+![A screenshot of displaying a 'SYNCED' state](/images/application-synced.png)
+<p style="text-align: center;">
+Application in SYNCED state
+</p>
+
+### OUT_OF_SYNC
+
+Drift detected. An application enters this status when any of the following is true:
+
+- A resource is defined in Git but not running in the cluster
+- A resource is running in the cluster but not defined in Git
+- A resource exists in both but with differing configurations
+
+The application details page displays a red "Out of Sync" mark.
+
+![Screenshot showing "OUT OF SYNC" resources configuration state](/images/application-out-of-sync.png)
+<p style="text-align: center;">
+Application in OUT_OF_SYNC state
+</p>
+
+Click **Show Details** to see what caused the drift. In the example below, a Deployment's replica count is `300` in Git but `3` in the cluster.
+
+![Application out of sync](/images/application-out-of-sync-details.png)
+<p style="text-align: center;">
+Details showing why the application is OUT_OF_SYNC
+</p>
+
+### DEPLOYING
+
+Deployment in progress. PipeCD pauses drift detection while a deployment is running and resumes it once the deployment completes.
 
 For more information, see the [configuration reference](./configuration-reference/#driftdetection).
-
