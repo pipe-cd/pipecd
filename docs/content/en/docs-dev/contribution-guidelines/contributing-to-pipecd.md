@@ -22,25 +22,6 @@ There are many ways to contribute, and many don't involve writing code:
 - **Improve docs** — See [Contribute to PipeCD Documentation](../contributing-documentation/)
 - **Participate in discussions** — Share ideas in [GitHub Discussions](https://github.com/pipe-cd/pipecd/discussions)
 
-## Join the Community
-
-### Slack
-
-We have a `#pipecd` channel on [CNCF Slack](https://cloud-native.slack.com/) for discussions and help. You can also assist other users in the channel.
-
-### Community Meetings
-
-We host [PipeCD Development and Community Meetings](https://zoom-lfx.platform.linuxfoundation.org/meeting/96831504919?password=2f60b8ec-5896-40c8-aa1d-d551ab339d00) every 2 weeks where we share project news, demos, answer questions, and triage issues. View the [Meeting Notes and Agenda](https://bit.ly/pipecd-mtg-notes).
-
-### Become a Member
-
-If you'd like to join the pipe-cd GitHub organization:
-
-- Have at least 5 PRs merged to repositories in the pipe-cd organization
-- Attend a PipeCD public community meeting
-
-Membership isn't required to contribute—it's for those who want to contribute long-term or take ownership of features.
-
 ## Development Setup
 
 ### Project Structure
@@ -142,17 +123,12 @@ Login credentials:
          remote: git@github.com:pipe-cd/examples.git
          branch: master
      syncInterval: 1m
-     plugins:
-       - name: kubernetes
-         port: 7001
-         url: <PLUGIN_DOWNLOAD_URL>  # Get from https://github.com/pipe-cd/pipecd/releases
-         deployTargets:
-           - name: local
-             config:
-               kubeConfigPath: /path/to/.kube/config
+     platformProviders:
+       - name: example-kubernetes
+         type: KUBERNETES
+         config:
+           kubeConfigPath: /path/to/.kube/config
    ```
-
-   > **Note:** Plugins are versioned independently from PipeCD. Download URLs for official plugins can be found on the [PipeCD releases page](https://github.com/pipe-cd/pipecd/releases). Look for releases tagged with `pkg/app/pipedv1/plugin/kubernetes/`.
 
 4. Start the Piped agent:
 
@@ -256,3 +232,22 @@ Report security vulnerabilities privately via Slack or Twitter DM to maintainers
 ## What Happens Next?
 
 The maintainers will review your PR. We'll help with obvious issues and work with you to get it merged. Thank you for contributing!
+
+## Join the Community
+
+### Slack
+
+We have a `#pipecd` channel on [CNCF Slack](https://cloud-native.slack.com/) for discussions and help. You can also assist other users in the channel.
+
+### Community Meetings
+
+We host [PipeCD Development and Community Meetings](https://zoom-lfx.platform.linuxfoundation.org/meeting/96831504919?password=2f60b8ec-5896-40c8-aa1d-d551ab339d00) every 2 weeks where we share project news, demos, answer questions, and triage issues. View the [Meeting Notes and Agenda](https://bit.ly/pipecd-mtg-notes).
+
+### Become a Member
+
+If you'd like to join the pipe-cd GitHub organization:
+
+- Have at least 5 PRs merged to repositories in the pipe-cd organization
+- Attend a PipeCD public community meeting
+
+Membership isn't required to contribute—it's for those who want to contribute long-term or take ownership of features.
