@@ -81,7 +81,7 @@ your-plugin/
 
 ### Plugin configuration
 
-Plugins are configured in the piped config:
+Plugins are configured in the piped config. See the [piped installation guide](/docs-v1.0.x/installation/install-piped/) for configuration examples:
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -129,8 +129,9 @@ The [community-plugins repository](https://github.com/pipe-cd/community-plugins)
 
 ## Resources
 
-- [RFC: Plugin Architecture](https://github.com/pipe-cd/pipecd/blob/master/docs/rfcs/0015-pipecd-plugin-arch-meta.md)
-- [pipedv1 README](https://github.com/pipe-cd/pipecd/blob/master/cmd/pipedv1/README.md)
+- [Plugin Architecture RFC](https://github.com/pipe-cd/pipecd/blob/master/docs/rfcs/0015-pipecd-plugin-arch-meta.md)
+- [Plugin Concepts](/docs-v1.0.x/concepts/#plugins)
+- [Installing piped](/docs-v1.0.x/installation/install-piped/)
 - [Plugin Alpha Release blog](https://pipecd.dev/blog/2025/06/16/plugin-architecture-piped-alpha-version-has-been-released/)
 - [#pipecd Slack channel](https://cloud-native.slack.com/) for questions
 
