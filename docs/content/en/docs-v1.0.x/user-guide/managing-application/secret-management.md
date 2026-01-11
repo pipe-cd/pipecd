@@ -6,14 +6,9 @@ description: >
   Storing secrets safely in the Git repository.
 ---
 
-When doing GitOps, you want to use Git as a single source of truth. However, storing credentials like Kubernetes Secrets or Terraform credentials directly in Git is not safe.
+GitOps workflows use Git as the single source of truth for application configurations. Storing sensitive data such as credentials, API keys, and secrets directly in Git repositories poses security risks.
 
-This feature allows you to keep sensitive information safely in Git, right next to your application manifests.
-
-The basic flow works as follows:
-
-- You encrypt your secret data via PipeCD's Web UI and store the encrypted data in Git
-- `piped` decrypts them before performing deployment tasks
+PipeCD's secret management feature allows you to store encrypted secrets in your Git repository alongside application manifests. The encrypted secrets are decrypted by `piped` during deployment operations.
 
 ## Prerequisites
 
@@ -48,10 +43,17 @@ spec:
       publicKeyFile: /etc/piped-secret/secret-public-key
 ```
 
+## How it works
+
+The secret management workflow is as follows:
+
+- Encrypt secret data using PipeCD's Web UI and store the encrypted data in Git
+- `piped` automatically decrypts the encrypted secrets before performing deployment tasks
+
 ## Encrypting secret data
 
 To encrypt secret data, navigate to the Applications page and click the "Encrypt Secret" button located in the top-left corner. Then, select a piped from the dropdown list, enter your secret data, and click the "ENCRYPT" button.
-The encrypted data is displayed for you. Copy it to store in Git.
+Copy the encrypted data to store in Git.
 
 ![Sealed Secret Button](/images/sealed-secret-button.png)
 <p style="text-align: center;">
@@ -67,7 +69,7 @@ The form for encrypting secret data
 
 ## Storing encrypted secrets in Git
 
-To make encrypted secrets available to an application, specify them in the application configuration file of that application.
+To make encrypted secrets available to an application, specify them in the application configuration file.
 
 - `encryptedSecrets` contains a list of the encrypted secrets.
 - `decryptionTargets` contains a list of files that use one of the encrypted secrets and should be decrypted by `piped`.
