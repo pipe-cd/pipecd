@@ -241,7 +241,11 @@ func (r *Reporter) findOutOfSyncRegisteredApps(repoPath, repoID, headCommit stri
 
 		// Skip if there is no new commit pushed from last scanned time for this application.
 		if lc, ok := r.lastScannedCommits[app.Id]; ok && headCommit == lc {
-			continue
+			// But if the description is missing, we should check the config file
+			// to see if we can populate it.
+			if app.Description != "" {
+				continue
+			}
 		}
 
 		appCfg, err := r.readApplicationInfo(repoPath, repoID, app.GitPath.GetApplicationConfigFilePath())
