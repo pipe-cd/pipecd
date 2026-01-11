@@ -58,7 +58,7 @@ spec:
       - apps/v1:Deployment:default:simple#spec.template.spec.containers.0.args
 ```
 
->Note: `ignoreFields` is in the format `apiVersion:kind:namespace:name#yamlFieldPath`
+>**Note:** `ignoreFields` is in the format `apiVersion:kind:namespace:name#yamlFieldPath`
 
 ## Detection results
 
