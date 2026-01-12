@@ -103,24 +103,12 @@ data:
   password: "{{ .encryptedSecrets.password }}"
 ```
 
-- Configuring an ENV variable of a Lambda function to use an encrypted secret
-
-``` yaml
-apiVersion: pipecd.dev/v1beta1
-kind: LambdaFunction
-spec:
-  name: HelloFunction
-  environments:
-    KEY: "{{ .encryptedSecrets.key }}"
-```
-
 In all cases, `piped` decrypts the encrypted secrets and renders the decryption target files before using them to handle any deployment tasks.
 
 <!-- ## Examples
 
 - [examples/kubernetes/secret-management](https://github.com/pipe-cd/examples/tree/master/kubernetes/secret-management)
 - [examples/cloudrun/secret-management](https://github.com/pipe-cd/examples/tree/master/cloudrun/secret-management)
-- [examples/lambda/secret-management](https://github.com/pipe-cd/examples/tree/master/lambda/secret-management)
 - [examples/terraform/secret-management](https://github.com/pipe-cd/examples/tree/master/terraform/secret-management)
 - [examples/ecs/secret-management](https://github.com/pipe-cd/examples/tree/master/ecs/secret-management) -->
 
