@@ -22,25 +22,6 @@ There are many ways to contribute, and many don't involve writing code:
 - **Improve docs** — See [Contribute to PipeCD Documentation](../contributing-documentation/)
 - **Participate in discussions** — Share ideas in [GitHub Discussions](https://github.com/pipe-cd/pipecd/discussions)
 
-## Join the Community
-
-### Slack
-
-We have a `#pipecd` channel on [CNCF Slack](https://cloud-native.slack.com/) for discussions and help. You can also assist other users in the channel.
-
-### Community Meetings
-
-We host [PipeCD Development and Community Meetings](https://zoom-lfx.platform.linuxfoundation.org/meeting/96831504919?password=2f60b8ec-5896-40c8-aa1d-d551ab339d00) every 2 weeks where we share project news, demos, answer questions, and triage issues. View the [Meeting Notes and Agenda](https://bit.ly/pipecd-mtg-notes).
-
-### Become a Member
-
-If you'd like to join the pipe-cd GitHub organization:
-
-- Have at least 5 PRs merged to repositories in the pipe-cd organization
-- Attend a PipeCD public community meeting
-
-Membership isn't required to contribute—it's for those who want to contribute long-term or take ownership of features.
-
 ## Development Setup
 
 ### Project Structure
@@ -252,6 +233,25 @@ Report security vulnerabilities privately via Slack or Twitter DM to maintainers
 
 - [Enhancement request](https://github.com/pipe-cd/pipecd/issues/new?assignees=&labels=kind%2Fenhancement&projects=&template=enhancement.md) — Improvements to existing features
 - [Feature request](https://github.com/pipe-cd/pipecd/issues/new?assignees=&labels=kind%2Ffeature&projects=&template=new-feature.md) — Entirely new features
+
+## Join the Community
+
+### Slack
+
+We have a `#pipecd` channel on [CNCF Slack](https://cloud-native.slack.com/) for discussions and help. You can also assist other users in the channel.
+
+### Community Meetings
+
+We host [PipeCD Development and Community Meetings](https://zoom-lfx.platform.linuxfoundation.org/meeting/96831504919?password=2f60b8ec-5896-40c8-aa1d-d551ab339d00) every 2 weeks where we share project news, demos, answer questions, and triage issues. View the [Meeting Notes and Agenda](https://bit.ly/pipecd-mtg-notes).
+
+### Become a Member
+
+If you'd like to join the pipe-cd GitHub organization:
+
+- Have at least 5 PRs merged to repositories in the pipe-cd organization
+- Attend a PipeCD public community meeting
+
+Membership isn't required to contribute—it's for those who want to contribute long-term or take ownership of features.
 
 ## What Happens Next?
 
