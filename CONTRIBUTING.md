@@ -51,7 +51,7 @@ All pull requests undergo checks by the continuous integration system, GitHub Ac
 
 When you submit a pull request to PipeCD, multiple CI workflows are triggered to validate your changes. These checks help ensure code quality, correctness, and consistency across the project.
 
-To better understand which CI workflows run and what they are responsible for, please refer to the CI overview documentation:
+To better understand which CI workflows run and what they are responsible for, please refer to the [CI overview documentation](docs/content/en/docs-v1.0.x/development/ci.md).
 - [CI Overview](docs/content/en/docs-v1.0.x/development/ci.md)
 
 ### Branch Organization
