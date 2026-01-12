@@ -159,7 +159,6 @@ When a CI check fails:
 Most CI failures are scoped to a single concern (tests, lint, build, or web),
 which usually makes the root cause clear.
 
-
 ## References
 
 - **PipeCD GitHub Actions workflows**  
