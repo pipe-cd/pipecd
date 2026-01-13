@@ -129,6 +129,30 @@ func TestBuildFindQuery(t *testing.T) {
 			expectedQuery: "SELECT Data FROM Project WHERE SyncState_Status = ?",
 		},
 		{
+			name: "query with GitPath filter field name in where clause",
+			kind: "Application",
+			listOptions: datastore.ListOptions{
+				Filters: []datastore.ListFilter{
+					{
+						Field:    "GitPath.Repo.Id",
+						Operator: datastore.OperatorEqual,
+						Value:    "repo-1",
+					},
+					{
+						Field:    "GitPath.Path",
+						Operator: datastore.OperatorEqual,
+						Value:    "path-1",
+					},
+					{
+						Field:    "GitPath.ConfigFilename",
+						Operator: datastore.OperatorEqual,
+						Value:    "app.yaml",
+					},
+				},
+			},
+			expectedQuery: "SELECT Data FROM Application WHERE GitPath_Repo_Id = ? AND GitPath_Path = ? AND GitPath_ConfigFilename = ?",
+		},
+		{
 			name: "query with multi filters",
 			kind: "Project",
 			listOptions: datastore.ListOptions{

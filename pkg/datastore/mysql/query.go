@@ -193,8 +193,14 @@ func refineOrdersField(orders []datastore.Order) []datastore.Order {
 		switch order.Field {
 		case "SyncState.Status":
 			order.Field = "SyncState_Status"
+		case "GitPath.Repo.Id":
+			order.Field = "GitPath_Repo_Id"
+		case "GitPath.Path":
+			order.Field = "GitPath_Path"
+		case "GitPath.ConfigFilename":
+			order.Field = "GitPath_ConfigFilename"
 		default:
-			break
+
 		}
 		out[i] = order
 	}
@@ -207,8 +213,14 @@ func refineFiltersField(filters []datastore.ListFilter) []datastore.ListFilter {
 		switch filter.Field {
 		case "SyncState.Status":
 			filter.Field = "SyncState_Status"
+		case "GitPath.Repo.Id":
+			filter.Field = "GitPath_Repo_Id"
+		case "GitPath.Path":
+			filter.Field = "GitPath_Path"
+		case "GitPath.ConfigFilename":
+			filter.Field = "GitPath_ConfigFilename"
 		default:
-			break
+
 		}
 		out[i] = filter
 	}

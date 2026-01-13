@@ -24,6 +24,10 @@ CREATE INDEX application_project_id_updated_at_desc ON Application (ProjectId, U
 ALTER TABLE Application ADD COLUMN PipedId VARCHAR(36) GENERATED ALWAYS AS (data->>"$.piped_id") VIRTUAL NOT NULL;
 CREATE INDEX application_piped_id_updated_at_desc ON Application (PipedId, UpdatedAt DESC);
 
+-- index on `GitPath.Repo.Id` ASC, `GitPath.Path` ASC, `GitPath.ConfigFilename` ASC and `UpdatedAt` DESC
+ALTER TABLE Application ADD COLUMN GitPath_Repo_Id VARCHAR(50) GENERATED ALWAYS AS (IFNULL(data->>"$.git_path.repo.id", "")) VIRTUAL NOT NULL, ADD COLUMN GitPath_Path VARCHAR(255) GENERATED ALWAYS AS (IFNULL(data->>"$.git_path.path", "")) VIRTUAL NOT NULL, ADD COLUMN GitPath_ConfigFilename VARCHAR(50) GENERATED ALWAYS AS (IFNULL(data->>"$.git_path.config_filename", "")) VIRTUAL NOT NULL;
+CREATE INDEX application_gitpath_unique_check ON Application (ProjectId, GitPath_Repo_Id, GitPath_Path, GitPath_ConfigFilename, UpdatedAt DESC);
+
 -- TODO: Should remove this statement after few releases.
 DROP INDEX application_piped_id ON Application;
 
