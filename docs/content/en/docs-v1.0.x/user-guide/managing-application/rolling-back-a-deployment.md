@@ -30,7 +30,7 @@ If a rollback is triggered, PipeCD adds a new `ROLLBACK` stage to the deployment
 
 ## Manual rollback
 
-If you need to roll back a deployment that has already completed, or want to intervene during a deployment which is in-progress, you can trigger a rollback manually from the Web UI by clicking the `Cancel with Rollback` button.
+If you need to roll back a deployment that has already completed, or want to intervene during a deployment which is in-progress, you can trigger a rollback manually from the Web UI. See [cancelling a deployment](./cancelling-a-deployment/) for details on how to cancel a deployment with rollback.
 
 ![Screenshot of rolling back a deployment](/images/rolled-back-deployment.png)
 <p style="text-align: center;">
