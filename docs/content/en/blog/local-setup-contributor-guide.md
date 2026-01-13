@@ -134,4 +134,4 @@ make down/local-cluster
 ```
 ## Next Steps
 
-Once Piped starts and shows as connected in the UI, your local development environment is ready. You can now build, test, and iterate on your PipeCD changes.
+Once Piped starts and shows as connected in the UI, your local development environment is ready. You can now build and test your local changes.
