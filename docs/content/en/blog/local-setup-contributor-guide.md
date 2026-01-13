@@ -9,7 +9,7 @@ tags: ["Local Development", "Go", "Kubernetes", "Dev Setup"]
 ---
 
 
-## Why a Local Development Environment is Essential
+## Why do you need a Local Development Environment?
 
 If you plan to contribute code, fix bugs, or add new plugins to PipeCD, you should run the control plane and Piped agent directly from the source code. This local development setup lets you test your Go changes live before submitting a pull request.
 
