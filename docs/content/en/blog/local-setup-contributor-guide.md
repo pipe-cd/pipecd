@@ -1,5 +1,5 @@
 ---
-date: 2026-01-05
+date: 2026-01-15
 title: "How to set up a local development environment"
 linkTitle: "How to set up a local development environment"
 weight: 990 
