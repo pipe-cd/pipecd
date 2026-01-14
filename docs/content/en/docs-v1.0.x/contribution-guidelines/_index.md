@@ -1,7 +1,7 @@
 ---
-title: "Contributor Guide"
-linkTitle: "Contributor Guide"
+title: "Contribute"
+linkTitle: "Contribute"
 weight: 6
 description: >
-  This guide is for anyone who want to contribute to PipeCD project. We are so excited to have you!
+  This guide is for anyone who wants to contribute to the PipeCD project. We are so excited to have you!
 ---

@@ -49,24 +49,28 @@ jobs:
             ./.artifacts/pipedv1_${{ inputs.version }}_darwin_amd64
             ./.artifacts/pipedv1_${{ inputs.version }}_darwin_arm64
 
-  container_image:
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-      packages: write
+  # Build images for each platform in parallel using native runners
+  container_image_build:
     strategy:
+      fail-fast: false
       matrix:
+        platform:
+          - runner: ubuntu-24.04
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            arch: arm64
         container_registry:
           - ghcr.io/pipe-cd
           - gcr.io/pipecd
+    runs-on: ${{ matrix.platform.runner }}
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
 
-      # Setup QEMU and Buildx.
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v3.2.0
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # v3.7.1
 
@@ -85,22 +89,90 @@ jobs:
           username: _json_key
           password: ${{ secrets.GCR_SA }}
 
-      # Building and pushing container images.
-      - name: Build and push pipedv1 experimental image
+      # Build and push image by digest (without tag)
+      - name: Build and push pipedv1 experimental image (${{ matrix.platform.arch }})
+        id: build
         uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355 # v6.10.0
         with:
-          push: true
           context: .
           file: cmd/pipedv1/Dockerfile
-          tags: ${{ matrix.container_registry }}/pipedv1-exp:${{ inputs.version }}
-          platforms: linux/amd64,linux/arm64
-          # parameter to use inline cache. ref; https://docs.docker.com/build/ci/github-actions/cache/#inline-cache
+          platforms: linux/${{ matrix.platform.arch }}
+          outputs: type=image,name=${{ matrix.container_registry }}/pipedv1-exp,push-by-digest=true,name-canonical=true,push=true
           cache-from: type=registry,ref=${{ matrix.container_registry }}/pipedv1-exp:latest
           cache-to: type=inline
 
+      # Export digest as artifact for merge job
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: digests-pipedv1-exp-${{ matrix.platform.arch }}-${{ matrix.container_registry == 'ghcr.io/pipe-cd' && 'ghcr' || 'gcr' }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  # Merge platform-specific images into multi-arch manifest
+  container_image_merge:
+    runs-on: ubuntu-24.04
+    needs: container_image_build
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        container_registry:
+          - ghcr.io/pipe-cd
+          - gcr.io/pipecd
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Download digests
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          path: /tmp/digests
+          pattern: digests-pipedv1-exp-*-${{ matrix.container_registry == 'ghcr.io/pipe-cd' && 'ghcr' || 'gcr' }}
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # v3.7.1
+
+      # Login to push manifest.
+      - name: Log in to GHCR
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: ${{ env.GHCR }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to GCR
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: ${{ env.GCR }}
+          username: _json_key
+          password: ${{ secrets.GCR_SA }}
+
+      # Create and push multi-arch manifest
+      - name: Create manifest list and push
+        working-directory: /tmp/digests
+        run: |
+          docker buildx imagetools create \
+            -t ${{ matrix.container_registry }}/pipedv1-exp:${{ inputs.version }} \
+            $(printf '${{ matrix.container_registry }}/pipedv1-exp@sha256:%s ' *)
+
+      - name: Inspect image
+        run: |
+          docker buildx imagetools inspect ${{ matrix.container_registry }}/pipedv1-exp:${{ inputs.version }}
+
   image_chart:
     runs-on: ubuntu-24.04
-    needs: container_image
+    needs: container_image_merge
     permissions:
       packages: write
       contents: write
