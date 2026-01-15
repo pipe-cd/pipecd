@@ -1,5 +1,5 @@
 ---
-title: "Contribute to piped Plugins"
+title: "Contributing to plugins"
 linkTitle: "Contribute to piped Plugins"
 weight: 4
 description: >
