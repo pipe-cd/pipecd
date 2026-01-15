@@ -93,5 +93,3 @@ Depending on your deployment workflow, you can choose from one of the following 
 - Pipeline Sync: A customizable, step-by-step sync process that follows the pipeline you define in your application configuration file. Use Pipeline Sync when you need more control over how updates are rolled out.
 
 - Auto Sync: When you trigger a sync without specifying a strategy, piped automatically selects the most appropriate method based on your application configuration.
-
-Git stored configuration.
