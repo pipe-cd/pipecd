@@ -45,3 +45,39 @@ updates:
     directory: "/pkg/app/pipedv1/plugin/cloudrun"
     schedule:
       interval: "weekly"
+
+  - package-ecosystem: "gomod"
+    directory: "/pkg/app/pipedv1/plugin/scriptrun"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "gomod"
+    directory: "/pkg/app/pipedv1/plugin/analysis"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "gomod"
+    directory: "/pkg/app/pipedv1/plugin/wait"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "gomod"
+    directory: "/pkg/app/pipedv1/plugin/waitapproval"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "npm"
+    directory: "/web"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: "npm"
+    directory: "/docs"
+    schedule:
+      interval: "monthly"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
