@@ -1,6 +1,6 @@
 ---
 title: "Contributing to plugins"
-linkTitle: "Contribute to piped Plugins"
+linkTitle: "Contributing to plugins"
 weight: 4
 description: >
   This page describes how to contribute plugins for piped.
