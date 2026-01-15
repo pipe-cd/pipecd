@@ -18,9 +18,19 @@ The Control Plane is the centralized management service of PipeCD. It coordinate
 
 The Control Plane remains the backbone of the system but is now fully plugin-aware. Instead of directly handling deployment logic for specific platforms, it interacts with `piped` agents that run plugin binaries, allowing the Control Plane to manage deployments across any platform supported by plugins.
 
+The Control Plane contains the following components:
+
+- **server**: A service that provides APIs for `piped`, web clients, and serves static assets for the web UI. It handles all incoming gRPC and HTTP requests, including authentication callbacks from third-party services.
+- **ops**: A service that provides administrative features for Control Plane owners, such as adding and managing projects, periodic cleanup of old data, and collecting deployment insights.
+- **cache**: A Redis cache service for caching internal data used by the `server` service. You can configure the Control Plane to use a fully-managed Redis cache service instead of launching a cache pod in your cluster.
+- **datastore**: Data storage for storing deployment and application data. This can be a fully-managed service such as `Firestore`, `Cloud SQL`, or `RDS`, or a self-managed service such as `MySQL`.
+- **filestore**: File storage for storing logs and application states. This can be a fully-managed service such as `GCS` or `S3`, or a self-managed service such as `Minio`.
+
+For more detailed information about Control Plane architecture and components, see [Architecture overview of Control Plane](../user-guide/managing-controlplane/architecture-overview/).
+
 ### Piped
 
-'`piped`' is a binary, agent component responsible for executing deployments in PipeCD. `Piped` now adopts **plugin-based** **architecture**, transforming from a single-purpose executor into a lightweight runtime capable of runnning any deployment logic defined by plugins. The `piped` component is designed to be stateless.
+'`piped`' is a binary, agent component responsible for executing deployments in PipeCD. `Piped` now adopts **plugin-based** **architecture**, transforming from a single-purpose executor into a lightweight runtime capable of running any deployment logic defined by plugins. The `piped` component is designed to be stateless.
 
 ### Plugins
 
