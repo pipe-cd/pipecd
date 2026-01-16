@@ -26,7 +26,7 @@ The Control Plane contains the following components:
 - **datastore**: Stores application and deployment data
 - **filestore**: Stores logs and application states
 
-For more information about components, installation and configuration details, see [Architecture overview of Control Plane](../user-guide/managing-controlplane/architecture-overview/).
+For more detailed information about Control Plane architecture and components, see [Architecture overview of Control Plane](../user-guide/managing-controlplane/architecture-overview/).
 
 ### Piped
 
