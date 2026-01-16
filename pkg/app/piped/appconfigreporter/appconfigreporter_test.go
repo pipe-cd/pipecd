@@ -37,8 +37,9 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
-		repoPath string
-		repoID   string
+		repoPath   string
+		repoID     string
+		headCommit string
 	}
 	testcases := []struct {
 		name     string
@@ -120,6 +121,42 @@ spec:
 			wantErr: false,
 		},
 		{
+			name: "app not changed (cached commit match)",
+			reporter: &Reporter{
+				config: &config.PipedSpec{PipedID: "piped-1"},
+				applicationLister: &fakeApplicationLister{apps: []*model.Application{
+					{
+						Id:          "id-1",
+						Name:        "app-1",
+						Description: "existing description", // Description exists
+						Labels:      map[string]string{"key-1": "value-1"},
+						GitPath:     &model.ApplicationGitPath{Repo: &model.ApplicationGitRepository{Id: "repo-1"}, Path: "app-1", ConfigFilename: "app.pipecd.yaml"},
+					},
+				}},
+				fileSystem: fstest.MapFS{
+					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte(`
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  name: app-1
+  description: "existing description"
+  labels:
+    key-1: value-1`)},
+				},
+				lastScannedCommits: map[string]string{
+					"id-1": "commit-1",
+				},
+				logger: zap.NewNop(),
+			},
+			args: args{
+				repoPath:   "path/to/repo-1",
+				repoID:     "repo-1",
+				headCommit: "commit-1",
+			},
+			want:    []*model.ApplicationInfo{},
+			wantErr: false,
+		},
+		{
 			name: "app changed",
 			reporter: &Reporter{
 				config: &config.PipedSpec{PipedID: "piped-1"},
@@ -154,10 +191,61 @@ spec:
 			},
 			wantErr: false,
 		},
+		{
+			name: "app with empty description should force sync despite cached commit",
+			reporter: &Reporter{
+				config: &config.PipedSpec{PipedID: "piped-1"},
+				applicationLister: &fakeApplicationLister{apps: []*model.Application{
+					{
+						Id:          "id-1",
+						Name:        "app-1",
+						Description: "", // Empty description triggers force sync
+						Labels:      map[string]string{"key-1": "value-1"},
+						GitPath:     &model.ApplicationGitPath{Repo: &model.ApplicationGitRepository{Id: "repo-1"}, Path: "app-1", ConfigFilename: "app.pipecd.yaml"},
+					},
+				}},
+				fileSystem: fstest.MapFS{
+					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte(`
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  name: app-1
+  description: "Synced Description"
+  labels:
+    key-1: value-1`)},
+				},
+				lastScannedCommits: map[string]string{
+					"id-1": "commit-1",
+				},
+				logger: zap.NewNop(),
+			},
+			args: args{
+				repoPath:   "path/to/repo-1",
+				repoID:     "repo-1",
+				headCommit: "commit-1",
+			},
+			want: []*model.ApplicationInfo{
+				{
+					Id:             "id-1",
+					Name:           "app-1",
+					Description:    "Synced Description",
+					Labels:         map[string]string{"key-1": "value-1"},
+					RepoId:         "repo-1",
+					Path:           "app-1",
+					ConfigFilename: "app.pipecd.yaml",
+					PipedId:        "piped-1",
+				},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := tc.reporter.findOutOfSyncRegisteredApps(tc.args.repoPath, tc.args.repoID, "not-existed-head-commit")
+			headCommit := tc.args.headCommit
+			if headCommit == "" {
+				headCommit = "not-existed-head-commit"
+			}
+			got := tc.reporter.findOutOfSyncRegisteredApps(tc.args.repoPath, tc.args.repoID, headCommit)
 			assert.Equal(t, tc.want, got)
 		})
 	}
