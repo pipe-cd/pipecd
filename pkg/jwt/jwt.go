@@ -39,8 +39,12 @@ type Claims struct {
 }
 
 // NewClaims creates a new claims for a given github user.
-func NewClaims(githubUserID, avatarURL string, ttl time.Duration, role model.Role) *Claims {
+func NewClaims(githubUserID, avatarURL string, ttl time.Duration, role *model.Role) *Claims {
 	now := time.Now().UTC()
+	var roleValue model.Role
+	if role != nil {
+		roleValue = *role //nolint:govet // Copying proto role into the token snapshot is intentional.
+	}
 	return &Claims{
 		RegisteredClaims: jwtgo.RegisteredClaims{
 			Subject:   githubUserID,
@@ -50,7 +54,7 @@ func NewClaims(githubUserID, avatarURL string, ttl time.Duration, role model.Rol
 			ExpiresAt: jwtgo.NewNumericDate(now.Add(ttl)),
 		},
 		AvatarURL: avatarURL,
-		Role:      role,
+		Role:      roleValue,
 	}
 }
 
