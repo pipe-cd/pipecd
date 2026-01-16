@@ -20,13 +20,13 @@ The Control Plane remains the backbone of the system but is now fully plugin-awa
 
 The Control Plane contains the following components:
 
-- **server**: A service that provides APIs for `piped`, web clients, and serves static assets for the web UI. It handles all incoming gRPC and HTTP requests, including authentication callbacks from third-party services.
-- **ops**: A service that provides administrative features for Control Plane owners, such as adding and managing projects, periodic cleanup of old data, and collecting deployment insights.
-- **cache**: A Redis cache service for caching internal data used by the `server` service. You can configure the Control Plane to use a fully-managed Redis cache service instead of launching a cache pod in your cluster.
-- **datastore**: Data storage for storing deployment and application data. This can be a fully-managed service such as `Firestore`, `Cloud SQL`, or `RDS`, or a self-managed service such as `MySQL`.
-- **filestore**: File storage for storing logs and application states. This can be a fully-managed service such as `GCS` or `S3`, or a self-managed service such as `Minio`.
+- **server**: Handles API requests and serves the Web UI
+- **ops**: Provides administrative features for Control Plane management
+- **cache**: Caches internal data for improved performance
+- **datastore**: Stores application and deployment data
+- **filestore**: Stores logs and application states
 
-For more detailed information about Control Plane architecture and components, see [Architecture overview of Control Plane](../user-guide/managing-controlplane/architecture-overview/).
+For more information about components, installation and configuration details, see [Architecture overview of Control Plane](../user-guide/managing-controlplane/architecture-overview/).
 
 ### Piped
 
