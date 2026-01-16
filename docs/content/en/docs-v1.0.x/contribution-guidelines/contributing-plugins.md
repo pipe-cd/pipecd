@@ -1,9 +1,9 @@
 ---
-title: "Contributing to plugins"
-linkTitle: "Contributing to plugins"
+title: "Contribute to PipeCD plugins"
+linkTitle: "Contribute to PipeCD plugins"
 weight: 4
 description: >
-  This page describes how to contribute plugins for piped.
+  Learn how to create PipeCD plugins.
 ---
 
 PipeCD's plugin architecture allows anyone to extend piped's capabilities by creating custom plugins. This guide explains how to develop and contribute plugins.
