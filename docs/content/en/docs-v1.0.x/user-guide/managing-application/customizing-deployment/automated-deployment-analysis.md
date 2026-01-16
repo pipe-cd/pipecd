@@ -6,14 +6,14 @@ description: >
   This page describes how to configure Automated Deployment Analysis feature.
 ---
 
-Automated Deployment Analysis (ADA) evaluates the impact of the deployment you are in the middle of by analyzing the metrics data, log entries, and the responses of the configured HTTP requests.
+Automated Deployment Analysis (ADA) evaluates the impact of the deployment during execution by analyzing the metrics data, log entries, and the responses of the configured HTTP requests.
 
 The analysis of the newly deployed application is often carried out in a manual, ad-hoc or statistically incorrect manner.
 ADA automates that and helps to build a robust deployment process.
 
 ADA is available as a stage in the pipeline specified in the application configuration file.
 
-ADA does the analysis by periodically performing queries against the [Analysis Provider](../../../../concepts/#analysis-provider) and evaluating the results to know the impact of the deployment. Then based on these evaluating results, the deployment can be rolled back immediately to minimize any negative impacts.
+ADA does the analysis by periodically performing queries against the [Analysis Provider](../../../../concepts/#analysis-provider) and evaluating the results to know the impact of the deployment. Then based on these evaluation results, the deployment can be rolled back immediately to minimize any negative impacts.
 
 The canonical use case for this stage is to determine if your canary deployment should proceed.
 
@@ -35,9 +35,11 @@ You can choose one of the four strategies to fit your use case.
 - `THRESHOLD`: A simple method to compare against a statically defined threshold (same as the typical analysis method up to `v0.18.0`).
 - `PREVIOUS`: A method to compare metrics with the last successful deployment.
 - `CANARY_BASELINE`: A method to compare the metrics between the Canary and Baseline variants.
-- `CANARY_PRIMARY`(not recommended): A method to compare the metrics between the Canary and Primary variants.
+- `CANARY_PRIMARY`: A method to compare the metrics between the Canary and Primary variants.
 
-`THRESHOLD` is the simplest strategy, so it's for you if you attempt to evaluate this feature.
+> **Note**: `CANARY_PRIMARY` is not recommended. Use `CANARY_BASELINE` instead.
+
+`THRESHOLD` is the simplest strategy, so it's recommended if you're just starting to evaluate this feature.
 
 `THRESHOLD` only checks if the query result falls within the statically specified range, whereas others evaluate by checking the deviation of two time-series data.
 
@@ -72,7 +74,7 @@ spec:
         k8sNamespace: default
 ```
 
-In the `provider` field, put the name of the provider in Piped configuration prepared in the [Prerequisites](#prerequisites) section.
+In the `provider` field, specify the name of the provider in Piped configuration prepared in the [Prerequisites](#prerequisites) section.
 
 The `ANALYSIS` stage will continue to run for the period specified in the `duration` field.
 
@@ -86,7 +88,7 @@ The other strategies are basically the same, but there are slight differences. L
 
 #### PREVIOUS Strategy
 
-In the `PREVIOUS` strategy, Piped queries the analysis provider with the time range when the deployment was previously successful, and compares that metrics with the current metrics.
+In the `PREVIOUS` strategy, Piped queries the analysis provider with the time range from when the deployment was previously successful, and compares that metrics with the current metrics.
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -114,7 +116,7 @@ spec:
 
 In the `THRESHOLD` strategy, we used `expected` to evaluate the deployment, but here we use `deviation` instead.
 
-The stage fails on deviation in the specified direction. In the above example, it fails if the current metrics is higher than the previous.
+The stage fails on deviation in the specified direction. In the above example, it fails if the current metrics are higher than the previous.
 
 #### CANARY strategy
 
@@ -158,7 +160,7 @@ The available built-in args currently are:
 |-|-|-|
 | Variant.Name | string | "canary", "baseline", or "primary" will be populated |
 
-Also, you can define the custom args using `baselineArgs` and `canaryArgs`, and refer them like `{{ .VariantCustom.Args.job }}`.
+Also, you can define the custom args using `baselineArgs` and `canaryArgs`, and reference them as `{{ .VariantCustom.Args.job }}`.
 
 ```yaml
           metrics:
@@ -181,7 +183,7 @@ However, we recommend that you compare it with Baseline that is a variant launch
 
 #### Comparison algorithm
 
-The metric comparison algorithm in PipeCD uses a nonparametric statistical test called [Mann-Whitney U test](https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test) to check for a significant difference between two metrics collection (like Canary and Baseline, or the previous deployment and the current metrics).
+The metric comparison algorithm in PipeCD uses a nonparametric statistical test called [Mann-Whitney U test](https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test) to check for a significant difference between two metric collections (like Canary and Baseline, or the previous deployment and the current metrics).
 
 ### Example pipelines
 
@@ -273,7 +275,7 @@ spec:
 
 The full list of configurable `ANALYSIS` stage fields are [here](../../../configuration-reference/#analysisstageoptions).
 
-See more the [example](https://github.com/pipe-cd/examples/blob/master/kubernetes/analysis-by-metrics/app.pipecd.yaml).
+See the [example](https://github.com/pipe-cd/examples/blob/master/kubernetes/analysis-by-metrics/app.pipecd.yaml) for more details.
 
 ## Analysis by logs
 
@@ -285,7 +287,7 @@ See more the [example](https://github.com/pipe-cd/examples/blob/master/kubernete
 
 ### [Optional] Analysis Template
 
-Analysis Templating is a feature that allows you to define some shared analysis configurations to be used by multiple applications. These templates must be placed at the `.pipe` directory at the root of the Git repository. Any application in that Git repository can use to the defined template by specifying the name of the template in the application configuration file.
+Analysis Templating is a feature that allows you to define some shared analysis configurations to be used by multiple applications. These templates must be placed at the `.pipe` directory at the root of the Git repository. Any application in that Git repository can use the defined template by specifying the name of the template in the application configuration file.
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -303,7 +305,7 @@ spec:
         sum without(status) (rate(http_requests_total{job="{{ .App.Name }}"}[1m]))
 ```
 
-Once the AnalysisTemplate is defined, you can reference from the application configuration using the `template` field.
+Once the AnalysisTemplate is defined, you can reference it from the application configuration using the `template` field.
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -333,7 +335,7 @@ The available built-in args are:
 | App.Name | string | Application Name. |
 | K8s.Namespace | string | The Kubernetes namespace where manifests will be applied. |
 
-Also, custom args is supported. Custom args placeholders can be defined as `{{ .AppCustomArgs.<name> }}`.
+Also, custom args are supported. Custom args placeholders can be defined as `{{ .AppCustomArgs.<name> }}`.
 
 Of course, it can be used in conjunction with [Variant args](#canary-strategy).
 

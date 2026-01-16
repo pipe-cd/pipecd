@@ -6,10 +6,10 @@ description: >
   This page describes how to add a WAIT stage.
 ---
 
-In addition to waiting for approvals from someones, the deployment pipeline can be configured to wait an amount of time before continuing.
-This can be done by adding the `WAIT` stage into the pipeline. This stage has one configurable field which is `duration` to configure how long should be waited.
+In addition to waiting for approvals from someone, the deployment pipeline can be configured to wait for a specified amount of time before continuing.
+This can be done by adding the `WAIT` stage into the pipeline. This stage has one configurable field `duration` to configure how long to wait.
 
-``` yaml
+```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: Application
 spec:

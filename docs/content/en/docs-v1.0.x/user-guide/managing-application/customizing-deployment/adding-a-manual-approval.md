@@ -8,9 +8,9 @@ description: >
 
 While deploying an application to production environments, some teams require manual approvals before continuing.
 The manual approval stage enables you to control when the deployment is allowed to continue by requiring a specific person or team to approve.
-This stage is named by `WAIT_APPROVAL` and you can add it to your pipeline before some stages should be approved before they can be executed.
+This stage is called `WAIT_APPROVAL` and you can add it to your pipeline before stages that require approval before they can be executed.
 
-``` yaml
+```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: Application
 spec:
@@ -18,7 +18,6 @@ spec:
     stages:
     - name: K8S_CANARY_ROLLOUT
     - name: WAIT_APPROVAL
-      timeout: 6h
       with:
         approvers:
         - user-abc
@@ -27,13 +26,13 @@ spec:
   plugins: {}
 ```
 
-As above example, the deployment requires an approval from `user-abc` before `K8S_PRIMARY_ROLLOUT` stage can be executed.
+In the above example, the deployment requires an approval from `user-abc` before `K8S_PRIMARY_ROLLOUT` stage can be executed.
 
-The value of user ID in the `approvers` list depends on your [SSO configuration](../../../managing-controlplane/auth/), it must be GitHub's user ID if your SSO was configured to use GitHub provider, it must be Gmail account if your SSO was configured to use Google provider.
+The value of user ID in the `approvers` list depends on your [SSO configuration](../../../managing-controlplane/auth/). It must be GitHub's user ID if your SSO was configured to use GitHub provider. It must be Gmail account if your SSO was configured to use Google provider.
 
 In case the `approvers` field was not configured, anyone in the project who has `Editor` or `Admin` role can approve the deployment pipeline.
 
-Also, it will end with failure when the time specified in `timeout` has elapsed. Default is `6h`.
+Also, it will end in failure when the time specified in `timeout` has elapsed. Default is `6h`.
 
 ![Screenshot of Wait Approval Stage](/images/deployment-wait-approval-stage.png)
 <p style="text-align: center;">

@@ -52,7 +52,7 @@ spec:
 
 You can define the command as `run`.
 
-Also, if you want to some values as variables, you can define them as `env`.
+Also, if you want to use some values as variables, you can define them as `env`.
 
 The commands run in the directory where this application configuration file exists.
 
@@ -60,7 +60,7 @@ The commands run in the directory where this application configuration file exis
 
 ### Execute the script file
 
-If your script is so long, you can separate the script as a file.
+If your script is too long, you can separate the script as a file.
 
 You can put the file with the app.pipecd.yaml in the same dir and then you can execute the script like this.
 
@@ -85,11 +85,11 @@ spec:
 └── script.sh
 ```
 
-## Builtin commands
+## Built-in commands
 
 Currently, you can use the commands which are installed in the environment for the piped.
 
-For example, If you are using the container platform and the offcial piped container image, you can use the command below:
+For example, if you use the container platform and the official piped container image, you can use the command below:
 
 - git
 - ssh
@@ -100,14 +100,14 @@ For example, If you are using the container platform and the offcial piped conta
 
 The public piped image available in PipeCD main repo (ref: [Dockerfile](https://github.com/pipe-cd/pipecd/blob/master/cmd/piped/Dockerfile)) is based on [alpine](https://hub.docker.com/_/alpine/) and only has a few UNIX commands available (ref: [piped-base Dockerfile](https://github.com/pipe-cd/pipecd/blob/master/tool/piped-base/Dockerfile)).
 
-If you want to use your commands, you can realize it with either step below.
+If you want to use your commands, you can achieve this with either step below.
 
 - Prepare your own environment container image then add [piped binary](https://github.com/pipe-cd/pipecd/releases) to it.
 - Build your own container image based on `ghcr.io/pipe-cd/piped` image.
 
 ## Default environment values
 
-You can use the envrionment values related to the deployment.
+You can use the environment values related to the deployment.
 
 | Name | Description | Example |
 |-|-|-|
@@ -121,7 +121,7 @@ You can use the envrionment values related to the deployment.
 |SR_SUMMARY| The summary of the deployment | Sync with the specified pipeline because piped received a command from user via web console or pipectl|
 |SR_CONTEXT_RAW| The json encoded string of above values | {"deploymentID":"877625fc-196a-40f9-b6a9-99decd5494a0","applicationID":"8d7609e0-9ff6-4dc7-a5ac-39660768606a","applicationName":"example","triggeredAt":1719571113,"triggeredCommitHash":"2bf969a3dad043aaf8ae6419943255e49377da0d","repositoryURL":"git@github.com:org/repo.git","labels":{"env":"example","team":"product"}} |
 |SR_LABELS_XXX| The label attached to the deployment. The env name depends on the label name. For example, if a deployment has the labels `env:prd` and `team:server`, `SR_LABELS_ENV` and `SR_LABELS_TEAM` are registered.  | prd, server |
-|SR_IS_ROLLBACK| This is `true` if the deployment is rollbacking. Otherwise, this is `false`. | false |
+|SR_IS_ROLLBACK| This is `true` if the deployment is rolling back. Otherwise, this is `false`. | false |
 
 ### Use `SR_CONTEXT_RAW` with jq
 
@@ -140,7 +140,7 @@ You can use jq command to refer to the values from `SR_CONTEXT_RAW`.
 
 ## Rollback
 
-> Note: Currently, this feature is only for the application kind of KubernetesApp.
+>**Note**: Currently, this feature is only for the application kind of KubernetesApp.
 
 You can define the command as `onRollback` to execute when to rollback similar to `run`.
 
@@ -185,7 +185,7 @@ The command defined as `onRollback` is executed as `SCRIPT_RUN_ROLLBACK` stage a
 
 When there are multiple SCRIPT_RUN stages, they are executed in the same order as SCRIPT_RUN on the pipeline.
 
-Also, only for the executed SCRIPT_RUNs are rollbacked.
+Also, only the executed SCRIPT_RUNs are rolled back.
 
 For example, consider when deployment proceeds in the following order from 1 to 7.
 
@@ -201,7 +201,7 @@ For example, consider when deployment proceeds in the following order from 1 to 
 
 Then:
 
-- If 3 is canceled or fails while running, only SCRIPT_RUN of 3 will be rollbacked.
-- If 4 is canceled or fails while running, only SCRIPT_RUN of 3 will be rollbacked.
-- If 6 is canceled or fails while running, only SCRIPT_RUNs 3 and 5 will be rollbacked. The order of executing is 3 -> 5.
+- If 3 is canceled or fails while running, only SCRIPT_RUN of 3 will be rolled back.
+- If 4 is canceled or fails while running, only SCRIPT_RUN of 3 will be rolled back.
+- If 6 is canceled or fails while running, only SCRIPT_RUNs 3 and 5 will be rolled back. The order of executing is 3 -> 5.
 

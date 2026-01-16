@@ -6,9 +6,9 @@ description: >
    Specific guide for configuring Custom Sync
 ---
 
-`CUSTOM_SYNC` is one stage in the pipeline and you can define scripts to deploy run in this stage.
+`CUSTOM_SYNC` is one stage in the pipeline and you can define scripts to run in this stage.
 
-> Note: This feature is marked as a deprecated feature and will be removed later.
+> **Note**: This feature is marked as a deprecated feature and will be removed later.
 
 ## How to configure Custom Sync
 
@@ -40,13 +40,13 @@ spec:
 
 ![Custom Sync](/images/custom-sync.png)
 
-Note:
+> **Note**:
+>
+> 1. You can use `CUSTOM_SYNC` with any current supporting application kind, but keep `alwaysUsePipeline` true to not run the application kind's default `QUICK_SYNC`.
+> 2. Only one `CUSTOM_SYNC` stage should be used in an application pipeline.
+> 3. The commands run with the environment variable `PATH` that refers `~/.piped/tools` at first.
 
-1. You can use `CUSTOM_SYNC` with any current supporting application kind, but keep `alwaysUsePipeline` true to not run the application kind's default `QUICK_SYNC`.
-2. Only one `CUSTOM_SYNC` stage should be used in an application pipeline.
-3. The commands run with the enviroment variable `PATH` that refers `~/.piped/tools` at first.
-
-The public piped image available in PipeCD main repo (ref: [Dockerfile](https://github.com/pipe-cd/pipecd/blob/master/cmd/piped/Dockerfile)) is based on [alpine](https://hub.docker.com/_/alpine/) and only has a few UNIX command available (ref: [piped-base Dockerfile](https://github.com/pipe-cd/pipecd/blob/master/tool/piped-base/Dockerfile)). If you want to use your commands (`sam` in the above example), you can:
+The public piped image available in PipeCD main repo (ref: [Dockerfile](https://github.com/pipe-cd/pipecd/blob/master/cmd/piped/Dockerfile)) is based on [alpine](https://hub.docker.com/_/alpine/) and only has a few UNIX commands available (ref: [piped-base Dockerfile](https://github.com/pipe-cd/pipecd/blob/master/tool/piped-base/Dockerfile)). If you want to use your commands (`sam` in the above example), you can:
 
 - Prepare your own environment container image then add [piped binary](https://github.com/pipe-cd/pipecd/releases) to it.
 - Build your own container image based on `ghcr.io/pipe-cd/piped` image.
@@ -58,7 +58,7 @@ When `autoRollback` is enabled, the deployment will be rolled back in the same w
 
 When the rolling back process is triggered in the pipeline including `CUSTOM_SYNC`, `CUSTOM_SYNC_ROLLBACK` stage will be added to the deployment pipeline.
 
-`CUSTOM_SYNC_ROLLBACK` is different from `ROLLBACK` that applications set defaultly, it runs the same commands as `CUSTOM_SYNC` in the runnning commit to reverts all the applied changes.
+`CUSTOM_SYNC_ROLLBACK` is different from `ROLLBACK` that applications set by default, it runs the same commands as `CUSTOM_SYNC` in the running commit to revert all the applied changes.
 
 ![Custom sync rollback](/images/custom-sync-rollback.png)
 
