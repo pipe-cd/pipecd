@@ -36,17 +36,41 @@ jobs:
               return;
             }
 
-            const body = `
-👋 Hi @${prAuthor}, thanks for opening your first pull request to **PipeCD**!
+            const body = `👋 Hi @${prAuthor}, welcome to **PipeCD** and thanks for opening your first pull request!
 
-Here are a few helpful resources to get started:
--  Contributing guide: \`CONTRIBUTING.md\`
--  Common commands:
-  - \`make test\`
-  - \`make lint\`
+We’re really happy to have you here Before your PR gets merged, please check a few important things:
 
-If you have any questions, feel free to ask in this PR.
-Thanks for contributing!
+---
+
+###  DCO Sign-off (Required)
+All commits must include a \`Signed-off-by\` line.
+
+If you forgot, you can fix it like this:
+
+For the last commit:
+\`\`\`bash
+git commit --amend --signoff
+git push --force-with-lease
+\`\`\`
+
+For multiple commits:
+\`\`\`bash
+git rebase --signoff origin/master
+git push --force-with-lease
+\`\`\`
+
+This is required by the Developer Certificate of Origin (DCO).
+---
+### Run checks locally
+Before pushing updates, please run:
+\`\`\`bash
+make check
+\`\`\`
+This runs the same checks as CI and saves time for everyone.
+---
+If anything is unclear, feel free to ask in this PR or on Slack. We’re happy to help 
+
+Thanks for contributing to PipeCD! 
 `;
 
             await github.rest.issues.createComment({
