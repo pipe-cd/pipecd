@@ -35,6 +35,7 @@ const (
 	pullRequestEventName = "pull_request"
 	commentEventName     = "issue_comment"
 	pushEventName        = "push"
+	mergeGroupEventName  = "merge_group"
 
 	argAddress            = "address"
 	argAPIKey             = "api-key"
@@ -55,11 +56,12 @@ func _main() int {
 	eventName := os.Getenv("GITHUB_EVENT_NAME")
 	if !isSupportedGitHubEvent(eventName) {
 		log.Printf(
-			"unexpected event %s, only %q, %q and %q event are supported",
+			"unexpected event %s, only %q, %q, %q and %q event are supported",
 			eventName,
 			pullRequestEventName,
 			commentEventName,
 			pushEventName,
+			mergeGroupEventName,
 		)
 		return 1
 	}
@@ -244,5 +246,5 @@ func parseArgs(args []string) (arguments, error) {
 }
 
 func isSupportedGitHubEvent(event string) bool {
-	return event == pullRequestEventName || event == commentEventName || event == pushEventName
+	return event == pullRequestEventName || event == commentEventName || event == pushEventName || event == mergeGroupEventName
 }
