@@ -18,9 +18,11 @@ The Control Plane is the centralized management service of PipeCD. It coordinate
 
 The Control Plane remains the backbone of the system but is now fully plugin-aware. Instead of directly handling deployment logic for specific platforms, it interacts with `piped` agents that run plugin binaries, allowing the Control Plane to manage deployments across any platform supported by plugins.
 
+For more detailed information about Control Plane architecture and components, see [Architecture overview of Control Plane](../user-guide/managing-controlplane/architecture-overview/).
+
 ### Piped
 
-'`piped`' is a binary, agent component responsible for executing deployments in PipeCD. `Piped` now adopts **plugin-based** **architecture**, transforming from a single-purpose executor into a lightweight runtime capable of runnning any deployment logic defined by plugins. The `piped` component is designed to be stateless.
+'`piped`' is a binary, agent component responsible for executing deployments in PipeCD. `Piped` now adopts **plugin-based** **architecture**, transforming from a single-purpose executor into a lightweight runtime capable of running any deployment logic defined by plugins. The `piped` component is designed to be stateless.
 
 ### Plugins
 
@@ -83,5 +85,3 @@ Depending on your deployment workflow, you can choose from one of the following 
 - Pipeline Sync: A customizable, step-by-step sync process that follows the pipeline you define in your application configuration file. Use Pipeline Sync when you need more control over how updates are rolled out.
 
 - Auto Sync: When you trigger a sync without specifying a strategy, piped automatically selects the most appropriate method based on your application configuration.
-
-Git stored configuration.
