@@ -18,14 +18,6 @@ The Control Plane is the centralized management service of PipeCD. It coordinate
 
 The Control Plane remains the backbone of the system but is now fully plugin-aware. Instead of directly handling deployment logic for specific platforms, it interacts with `piped` agents that run plugin binaries, allowing the Control Plane to manage deployments across any platform supported by plugins.
 
-The Control Plane contains the following components:
-
-- **server**: Handles API requests and serves the Web UI
-- **ops**: Provides administrative features for Control Plane management
-- **cache**: Caches internal data for improved performance
-- **datastore**: Stores application and deployment data
-- **filestore**: Stores logs and application states
-
 For more detailed information about Control Plane architecture and components, see [Architecture overview of Control Plane](../user-guide/managing-controlplane/architecture-overview/).
 
 ### Piped
