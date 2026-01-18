@@ -38,12 +38,19 @@ jobs:
 
             const body = `👋 Hi @${prAuthor}, welcome to **PipeCD** and thanks for opening your first pull request!
 
-We’re really happy to have you here Before your PR gets merged, please check a few important things:
+We’re really happy to have you here 🚀  
+Before your PR gets merged, please check a few important things below.
 
 ---
 
-###  DCO Sign-off (Required)
-All commits must include a \`Signed-off-by\` line.
+### Helpful resources
+- Contributing guide: https://github.com/pipe-cd/pipecd/blob/master/CONTRIBUTING.md
+- Development setup: https://github.com/pipe-cd/pipecd/blob/master/CONTRIBUTING.md#development
+
+---
+
+### DCO Sign-off
+All commits must include a \`Signed-off-by\` line to comply with the Developer Certificate of Origin (DCO).
 
 If you forgot, you can fix it like this:
 
@@ -59,18 +66,23 @@ git rebase --signoff origin/master
 git push --force-with-lease
 \`\`\`
 
-This is required by the Developer Certificate of Origin (DCO).
 ---
+
 ### Run checks locally
 Before pushing updates, please run:
 \`\`\`bash
 make check
 \`\`\`
-This runs the same checks as CI and saves time for everyone.
----
-If anything is unclear, feel free to ask in this PR or on Slack. We’re happy to help 
+This runs the same checks as CI and helps catch issues early.
 
-Thanks for contributing to PipeCD! 
+---
+
+### 💬 Need help?
+If anything is unclear, feel free to ask in this PR or join us on Slack:  
+https://cloud-native.slack.com (channel: \`#pipecd\`)
+We’re always happy to help 
+
+Thanks for contributing to PipeCD! ❤️
 `;
 
             await github.rest.issues.createComment({
