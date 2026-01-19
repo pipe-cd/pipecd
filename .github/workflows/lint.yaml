@@ -122,6 +122,6 @@ jobs:
     steps:
       - name: Check if all govulncheck jobs succeeded
         # if jobs in the 'govulncheck' job matrix failed or were cancelled, this job will fail
-        # otherwise this job is marked as successful because all steps are skipped
+        # otherwise this job is marked as successful because all steps are skipped.
         run: exit 1
         if: needs.govulncheck.result != 'success'
