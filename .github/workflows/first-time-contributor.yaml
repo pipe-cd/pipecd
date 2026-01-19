@@ -78,9 +78,9 @@ This runs the same checks as CI and helps catch issues early.
 ---
 
 ### 💬 Need help?
-If anything is unclear, feel free to ask in this PR or join us on Slack:  
-https://communityinviter.com/apps/cloud-native/cncf (channel: \`#pipecd\`)
-We’re always happy to help 
+If anything is unclear, feel free to ask in this PR or join us on the CNCF Slack in the **#pipecd** channel.
+You can get your Slack invite from: https://communityinviter.com/apps/cloud-native/cncf
+
 
 Thanks for contributing to PipeCD! ❤️
 `;
