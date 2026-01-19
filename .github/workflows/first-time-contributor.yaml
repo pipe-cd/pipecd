@@ -36,18 +36,18 @@ jobs:
               return;
             }
 
-            const body = `
-👋 Hi @${prAuthor}, thanks for opening your first pull request to **PipeCD**!
-
-Here are a few helpful resources to get started:
--  Contributing guide: \`CONTRIBUTING.md\`
--  Common commands:
-  - \`make test\`
-  - \`make lint\`
-
-If you have any questions, feel free to ask in this PR.
-Thanks for contributing!
-`;
+            const body = [
+              `👋 Hi @${prAuthor}, thanks for opening your first pull request to **PipeCD**!`,
+              '',
+              'Here are a few helpful resources to get started:',
+              '-  Contributing guide: `CONTRIBUTING.md`',
+              '-  Common commands:',
+              '  - `make test`',
+              '  - `make lint`',
+              '',
+              'If you have any questions, feel free to ask in this PR.',
+              'Thanks for contributing!'
+            ].join('\n');
 
             await github.rest.issues.createComment({
               owner,
