@@ -52,7 +52,7 @@ Before your PR gets merged, please check a few important things below.
 ### DCO Sign-off
 All commits must include a \`Signed-off-by\` line to comply with the Developer Certificate of Origin (DCO).
 
-If you forgot, you can fix it like this:
+In case you forget to sign-off your commit(s), follow these steps:
 
 For the last commit:
 \`\`\`bash
