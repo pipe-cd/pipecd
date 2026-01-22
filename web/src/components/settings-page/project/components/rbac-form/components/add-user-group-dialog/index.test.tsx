@@ -7,6 +7,7 @@ jest.mock("~/queries/project/use-get-project", () => ({
   useGetProject: () => ({
     data: {
       rbacRoles: [{ name: "Admin" }, { name: "Viewer" }],
+      disabled: false,
     },
   }),
 }));
