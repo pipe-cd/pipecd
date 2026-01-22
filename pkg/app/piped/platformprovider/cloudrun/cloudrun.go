@@ -95,6 +95,7 @@ const (
 type Client interface {
 	Create(ctx context.Context, sm ServiceManifest) (*Service, error)
 	Update(ctx context.Context, sm ServiceManifest) (*Service, error)
+	Get(ctx context.Context, serviceName string) (*Service, error)
 	List(ctx context.Context, options *ListOptions) ([]*Service, string, error)
 	GetRevision(ctx context.Context, name string) (*Revision, error)
 	ListRevisions(ctx context.Context, options *ListRevisionsOptions) ([]*Revision, string, error)
