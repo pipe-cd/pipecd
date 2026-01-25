@@ -274,6 +274,14 @@ gen/test-tls:
 		-subj "/CN=localhost" \
 		-config pkg/rpc/testdata/tls.config
 
+.PHONY: gen/plugins-registry
+gen/plugins-registry:
+	python3 scripts/update-plugins-registry.py
+
+.PHONY: check/plugins-registry
+check/plugins-registry:
+	python3 scripts/validate-plugins-registry.py
+
 .PHONY: release
 release: release/init release/docs
 

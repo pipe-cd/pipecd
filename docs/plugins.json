@@ -1,0 +1,121 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-01-24T00:00:00Z",
+  "description": "PipeCD Official Plugins Registry - automatically updated on releases",
+  "plugins": [
+    {
+      "id": "kubernetes",
+      "name": "Kubernetes Plugin",
+      "description": "Deploy applications to Kubernetes clusters",
+      "sourcePath": "pkg/app/pipedv1/plugin/kubernetes",
+      "repository": "https://github.com/pipe-cd/pipecd",
+      "repositoryType": "inline",
+      "latestVersion": "v0.1.0",
+      "releaseUrl": "https://github.com/pipe-cd/pipecd/releases/tag/pkg/app/pipedv1/plugin/kubernetes/v0.1.0",
+      "tagPattern": "pkg/app/pipedv1/plugin/kubernetes/*",
+      "status": "stable"
+    },
+    {
+      "id": "terraform",
+      "name": "Terraform Plugin",
+      "description": "Deploy infrastructure using Terraform",
+      "sourcePath": "pkg/app/pipedv1/plugin/terraform",
+      "repository": "https://github.com/pipe-cd/pipecd",
+      "repositoryType": "inline",
+      "latestVersion": "v0.1.0",
+      "releaseUrl": "https://github.com/pipe-cd/pipecd/releases/tag/pkg/app/pipedv1/plugin/terraform/v0.1.0",
+      "tagPattern": "pkg/app/pipedv1/plugin/terraform/*",
+      "status": "stable"
+    },
+    {
+      "id": "cloudrunservice",
+      "name": "Cloud Run Plugin",
+      "description": "Deploy services to Google Cloud Run",
+      "sourcePath": "pkg/app/pipedv1/plugin/cloudrun",
+      "repository": "https://github.com/pipe-cd/pipecd",
+      "repositoryType": "inline",
+      "latestVersion": "v0.1.0",
+      "releaseUrl": "https://github.com/pipe-cd/pipecd/releases/tag/pkg/app/pipedv1/plugin/cloudrun/v0.1.0",
+      "tagPattern": "pkg/app/pipedv1/plugin/cloudrunservice/*",
+      "status": "stable"
+    },
+    {
+      "id": "wait",
+      "name": "Wait Stage Plugin",
+      "description": "Add delay/wait stages in deployment pipelines",
+      "sourcePath": "pkg/app/pipedv1/plugin/wait",
+      "repository": "https://github.com/pipe-cd/pipecd",
+      "repositoryType": "inline",
+      "latestVersion": "v0.1.0",
+      "releaseUrl": "https://github.com/pipe-cd/pipecd/releases/tag/pkg/app/pipedv1/plugin/wait/v0.1.0",
+      "tagPattern": "pkg/app/pipedv1/plugin/wait/*",
+      "status": "stable"
+    },
+    {
+      "id": "waitapproval",
+      "name": "Wait Approval Stage Plugin",
+      "description": "Add manual approval gates in deployment pipelines",
+      "sourcePath": "pkg/app/pipedv1/plugin/waitapproval",
+      "repository": "https://github.com/pipe-cd/pipecd",
+      "repositoryType": "inline",
+      "latestVersion": "v0.1.0",
+      "releaseUrl": "https://github.com/pipe-cd/pipecd/releases/tag/pkg/app/pipedv1/plugin/waitapproval/v0.1.0",
+      "tagPattern": "pkg/app/pipedv1/plugin/waitapproval/*",
+      "status": "stable"
+    },
+    {
+      "id": "scriptrun",
+      "name": "Script Run Plugin",
+      "description": "Execute custom scripts as deployment stages",
+      "sourcePath": "pkg/app/pipedv1/plugin/scriptrun",
+      "repository": "https://github.com/pipe-cd/pipecd",
+      "repositoryType": "inline",
+      "latestVersion": "v0.1.0",
+      "releaseUrl": "https://github.com/pipe-cd/pipecd/releases/tag/pkg/app/pipedv1/plugin/scriptrun/v0.1.0",
+      "tagPattern": "pkg/app/pipedv1/plugin/scriptrun/*",
+      "status": "stable"
+    },
+    {
+      "id": "analysis",
+      "name": "Analysis Plugin",
+      "description": "Analyze deployment metrics and logs",
+      "sourcePath": "pkg/app/pipedv1/plugin/analysis",
+      "repository": "https://github.com/pipe-cd/pipecd",
+      "repositoryType": "inline",
+      "latestVersion": "v0.1.0",
+      "releaseUrl": "https://github.com/pipe-cd/pipecd/releases/tag/pkg/app/pipedv1/plugin/analysis/v0.1.0",
+      "tagPattern": "pkg/app/pipedv1/plugin/analysis/*",
+      "status": "stable"
+    },
+    {
+      "id": "kubernetes-multicluster",
+      "name": "Kubernetes Multi-cluster Plugin",
+      "description": "Deploy applications across multiple Kubernetes clusters",
+      "sourcePath": "pkg/app/pipedv1/plugin/kubernetes_multicluster",
+      "repository": "https://github.com/pipe-cd/pipecd",
+      "repositoryType": "inline",
+      "latestVersion": "v0.1.0",
+      "releaseUrl": "https://github.com/pipe-cd/pipecd/releases/tag/pkg/app/pipedv1/plugin/kubernetes_multicluster/v0.1.0",
+      "tagPattern": "pkg/app/pipedv1/plugin/kubernetes_multicluster/*",
+      "status": "stable"
+    },
+    {
+      "id": "piped-plugin-sdk-go",
+      "name": "PipeCD Plugin SDK for Go",
+      "description": "Official SDK for developing PipeCD plugins in Go",
+      "sourcePath": "pkg/plugin/sdk",
+      "repository": "https://github.com/pipe-cd/piped-plugin-sdk-go",
+      "repositoryType": "external",
+      "latestVersion": "v0.3.0",
+      "releaseUrl": "https://github.com/pipe-cd/piped-plugin-sdk-go/releases/tag/v0.3.0",
+      "tagPattern": "v*",
+      "status": "stable"
+    }
+  ],
+  "metadata": {
+    "updateFrequency": "On every release, every 6 hours via scheduled workflow",
+    "dataFormat": "JSON Schema v7",
+    "apiVersion": "1.0.0",
+    "notes": "This file is auto-generated. See .github/workflows/update-plugins-registry.yaml for automation details."
+  }
+}
