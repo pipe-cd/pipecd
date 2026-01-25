@@ -1,4 +1,5 @@
 # Stage 1: Builder - Build Go-based plugins
+
 FROM golang:1.25.2 AS builder
 
 # Version configuration
@@ -33,6 +34,7 @@ RUN wget -q https://github.com/envoyproxy/protoc-gen-validate/archive/refs/tags/
   && rm /tmp/validate.tar.gz
 
 # Stage 2: Downloader - Download pre-built binaries
+
 FROM debian:bookworm-slim AS downloader
 
 RUN apt-get update && apt-get install -y --no-install-recommends wget ca-certificates \
@@ -46,6 +48,7 @@ RUN wget -q https://github.com/grpc/grpc-web/releases/download/${PROTOC_GEN_GRPC
 
 # Download protoc-gen-js for both architectures
 # This is a workaround: https://github.com/protocolbuffers/protobuf-javascript/issues/127#issuecomment-1361047597
+
 ARG PROTOC_GEN_JS_VER=3.21.2
 RUN for target in x86_64 aarch_64; do \
     mkdir -p /protoc-gen-js-${target} \
@@ -56,3 +59,44 @@ RUN for target in x86_64 aarch_64; do \
   done \
   && mv /protoc-gen-js-aarch_64 /protoc-gen-js-aarch64
 
+
+# Stage 3: Final - Minimal runtime image
+FROM debian:bookworm-slim AS final
+
+# Install protoc, proto files, and ca-certificates
+# libprotobuf-dev includes standard proto files in /usr/include/google/protobuf/
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    protobuf-compiler \
+    libprotobuf-dev \
+    ca-certificates \
+    git \
+  && rm -rf /var/lib/apt/lists/*
+
+# Copy Go runtime from golang image 
+# mockgen uses 'go list' and 'go build' internally
+COPY --from=golang:1.25.2 /usr/local/go /usr/local/go
+ENV GOROOT=/usr/local/go
+ENV GOPATH=/go
+ENV PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+
+# Create necessary directories
+RUN mkdir -p /go/bin /go/src/github.com/envoyproxy
+
+# Copy built Go plugins from builder
+COPY --from=builder /out/protoc-gen-go /go/bin/
+COPY --from=builder /out/protoc-gen-go-grpc /go/bin/
+COPY --from=builder /out/protoc-gen-validate /go/bin/
+COPY --from=builder /out/mockgen /go/bin/
+COPY --from=builder /out/protoc-gen-auth /usr/local/bin/
+
+# Copy validate proto files (needed for -I include path in codegen.sh)
+COPY --from=builder /out/validate-protos /go/src/github.com/envoyproxy/protoc-gen-validate
+
+# Copy downloaded binaries from downloader
+COPY --from=downloader /protoc-gen-grpc-web /usr/local/bin/
+COPY --from=downloader /protoc-gen-js-x86_64 /protoc-gen-js-x86_64
+COPY --from=downloader /protoc-gen-js-aarch64 /protoc-gen-js-aarch64
+
+VOLUME /repo
+WORKDIR /repo
