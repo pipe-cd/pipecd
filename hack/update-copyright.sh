@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright 2024 The PipeCD Authors.
+# Copyright 2026 The PipeCD Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,4 +16,16 @@
 
 ROOT_DIR='./'
 
-for i in `grep -rlZ "Copyright [0-9]\{4\} The PipeCD Authors" $ROOT_DIR`; do sed -i '' "s/Copyright [0-9]\{4\} The PipeCD Authors/Copyright $(date +%Y) The PipeCD Authors/g" $i; done
+# Detect OS for sed -i compatibility
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  SED_IN_PLACE="sed -i ''"
+else
+  SED_IN_PLACE="sed -i"
+fi
+
+grep -rl "Copyright [0-9]\{4\} The PipeCD Authors" $ROOT_DIR | while IFS= read -r i; do
+  echo "Updating copyright year in: $i"
+  $SED_IN_PLACE "s/Copyright [0-9]\{4\} The PipeCD Authors/Copyright $(date +%Y) The PipeCD Authors/g" "$i"
+done
+
+echo "Copyright year update completed."
