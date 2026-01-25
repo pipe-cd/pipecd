@@ -63,7 +63,7 @@ metadata:
     app.kubernetes.io/version: "v0.55.0"
     app.kubernetes.io/managed-by: Helm
 rules:
-  
+
   - apiGroups:
     - '*'
     resources:

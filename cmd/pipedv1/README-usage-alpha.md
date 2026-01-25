@@ -62,7 +62,7 @@ spec:
       url: https://github.com/pipe-cd/pipecd/releases/download/kubecon-jp-2025/plugin_kubernetes_kubecon_jp_2025_darwin_arm64 # choose binary on the release for your own OS and CPU arch
       deployTargets:
         - name: cluster1
-          config: 
+          config:
             masterURL: https://127.0.0.1:61337   # shown by kubectl cluster-info
             kubeConfigPath: /path/to/kubeconfig
             kubectlVersion: 1.33.0

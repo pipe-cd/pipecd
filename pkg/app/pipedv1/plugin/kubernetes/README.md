@@ -4,7 +4,7 @@
 
 Kubernetes plugin supports the Deployment for Kubernetes.
 
-> [!CAUTION] 
+> [!CAUTION]
 > Currently, this is alpha status.
 
 ### Quick sync
@@ -21,7 +21,7 @@ For example, the application configuration as below is missing the pipeline fiel
 apiVersion: pipecd.dev/v1beta1
 kind: Application
 spec:
-  plugins: 
+  plugins:
     kubernetes:
       input:
         helmChart:
@@ -191,7 +191,7 @@ spec:
           ...
       - name: K8S_BASELINE_CLEAN
         with:
-          ...        
+          ...  
 ```
 
 #### `K8S_SYNC`

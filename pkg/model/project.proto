@@ -160,7 +160,7 @@ message ProjectRBACRole {
 message ProjectRBACResource {
     enum ResourceType {
       ALL = 0;
-      APPLICATION = 1; 
+      APPLICATION = 1;
       DEPLOYMENT = 2;
       EVENT = 3;
       PIPED = 4;

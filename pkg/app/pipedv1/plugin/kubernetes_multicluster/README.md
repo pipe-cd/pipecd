@@ -47,7 +47,7 @@ spec:
   - name: kubernetes_multicluster
     port: 7002 # any unused port
     url: file:///path/to/.piped/plugins/kubernetes_multicluster # It's OK using any value for now because it's a dummy. We will implement it later.
-    deployTargets: 
+    deployTargets:
     - name: cluster1
       config:
         masterURL: https://127.0.0.1:61337   # shown by kubectl cluster-info
@@ -96,7 +96,7 @@ spec:
     url: file:///path/to/.piped/plugins/kubernetes_multicluster
     # List of the information for each target platform.
     # This is alternative for the platform providers.
-    deployTargets: 
+    deployTargets:
       # Then name of deploy target.
     - name: cluster1
       # The plugin-specific config.
@@ -127,7 +127,7 @@ spec:
       input:
         # List of manifest files in the application directory used to deploy.
         # Empty means all manifest files in the directory will be used.
-        manifests: 
+        manifests:
           - deployment.yaml
           - service.yaml
         # Version of kubectl will be used.

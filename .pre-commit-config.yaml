@@ -1,0 +1,48 @@
+## Optional local git hooks via https://pre-commit.com/
+##
+## - This repository does NOT enforce pre-commit usage.
+## - CI does NOT run these hooks.
+## - Everything here is intentionally fast and low-risk.
+##
+## To use locally:
+##   pre-commit install
+##   pre-commit run --all-files
+##
+exclude: ^docs/themes/docsy/assets/vendor/
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+        # Keep this hook low-noise and fast by skipping large vendored / generated
+        # and fixture directories which contain intentional formatting.
+        exclude: '^(docs/|examples/|(^|.*/)testdata/|web/model/|web/api_client/)'
+      - id: end-of-file-fixer
+        exclude: '^(docs/|examples/|(^|.*/)testdata/|web/model/|web/api_client/)'
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+        # Helm chart templates are not valid YAML until rendered.
+        # Some YAML under testdata is intentionally "invalid" (e.g. duplicate keys,
+        # or templating placeholders) and should not be validated.
+        #
+        # NOTE: `.github/workflows/first-time-contributor.yaml` embeds a multi-line
+        # JS template string which breaks strict YAML parsing, so we skip it here.
+        exclude: '(^|/)templates/|\.tpl$|(^|.*/)testdata/|^\.github/workflows/first-time-contributor\.yaml$'
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-added-large-files
+        args: [--maxkb=1024]
+
+  # Go formatting is useful but should remain fully opt-in.
+  # Run it explicitly with:
+  #   pre-commit run gofmt --all-files --hook-stage manual
+  - repo: local
+    hooks:
+      - id: gofmt
+        name: gofmt (manual)
+        entry: gofmt -w
+        language: system
+        types: [go]
+        stages: [manual]

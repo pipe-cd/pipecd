@@ -121,6 +121,41 @@ When submitting a pull request, please ensure the following:
 
 All pull requests should be opened against the `master` branch.
 
+### Optional: pre-commit (local git hooks)
+
+This repository provides an optional `.pre-commit-config.yaml` for convenience, but **pre-commit is not required** and **is not run in CI**. If you like having quick, automatic checks before commits (e.g. whitespace / YAML sanity / merge-conflict markers), you can enable it locally.
+
+#### Install (optional)
+
+- Install **Python 3.9+**
+- Install `pre-commit` (one of the following):
+  - `pipx install pre-commit` (recommended)
+  - `python -m pip install --user pre-commit`
+- Enable git hooks for this repo:
+  - `pre-commit install`
+
+#### Run hooks manually
+
+- Run the default hooks on all files:
+  - `pre-commit run --all-files`
+- Run a single hook:
+  - `pre-commit run trailing-whitespace --all-files`
+
+#### (Opt-in) Go formatting
+
+`gofmt` is included as a **manual-only** hook so it never runs unless you explicitly ask for it:
+
+- `pre-commit run gofmt --all-files --hook-stage manual`
+
+#### Disable / skip
+
+- Disable hooks for this repo:
+  - `pre-commit uninstall`
+- Temporarily skip specific pre-commit hooks:
+  - `SKIP=trailing-whitespace,end-of-file-fixer git commit ...`
+- Skip all git hooks for a single commit:
+  - `git commit --no-verify ...`
+
 We have various integration systems that run automated tests to prevent mistakes. The maintainers will also review your code and fix obvious issues. These systems are in place to minimize your worries about the process. Your code contributions are more important than adhering to strict procedures, although completing the checklist will undoubtedly save everyone's time.
 
 ### Commit Messages
@@ -193,7 +228,7 @@ Run `make update/go-deps` and `make update/web-deps` to update the dependencies.
 
 In order to start a local development environment, a registry needs to be running locally.
 
-Run `make up/local-cluster` to start a local registry. 
+Run `make up/local-cluster` to start a local registry.
 
 This will create the kubernetes namespace `pipecd` if it does not exist and start a local registry in the namespace which can then be accessed by other components.
 
@@ -224,7 +259,7 @@ To login, you can use the configured static admin account as below:
 
 2. Access to Control Plane console, go to Piped list page - click the three vertical dots on the top right corner and then click on settings. After clicking on settings you will land on the Piped settings page. Next, add a new piped.
 
-Alternatively, you can go to `http://localhost:8080/settings/piped?project=quickstart`, please adjust the port and the project in the url if they are different from default. 
+Alternatively, you can go to `http://localhost:8080/settings/piped?project=quickstart`, please adjust the port and the project in the url if they are different from default.
 
 Then, copy generated Piped ID and base64 key for `piped-config.yaml`
 

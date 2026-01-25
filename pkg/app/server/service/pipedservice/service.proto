@@ -85,16 +85,16 @@ service PipedService {
 
     // SaveDeploymentMetadata is used to persist the metadata of a specific deployment.
     // Different value for the same key will overwrite the previous value for that key.
-    // 
+    //
     // Deprecated: Use SaveDeploymentSharedMetadata and SaveDeploymentPluginMetadata instead in pipedv1.
-    rpc SaveDeploymentMetadata(SaveDeploymentMetadataRequest) returns (SaveDeploymentMetadataResponse) { 
-        option deprecated = true; 
+    rpc SaveDeploymentMetadata(SaveDeploymentMetadataRequest) returns (SaveDeploymentMetadataResponse) {
+        option deprecated = true;
     }
 
     // SaveDeploymentSharedMetadata persists the shared metadata of a specific deployment.
     // Different value for the same key will overwrite the previous value.
     rpc SaveDeploymentSharedMetadata(SaveDeploymentSharedMetadataRequest) returns (SaveDeploymentSharedMetadataResponse) {}
-    
+
     // SaveDeploymentPluginMetadata persists the metadata of a specific plugin of a deployment.
     // Different value for the same key will overwrite the previous value.
     rpc SaveDeploymentPluginMetadata(SaveDeploymentPluginMetadataRequest) returns (SaveDeploymentPluginMetadataResponse) {}
@@ -186,7 +186,7 @@ service PipedService {
     // `cancel` flag will be returned to aware piped to stop this deployment.
     rpc InChainDeploymentPlannable(InChainDeploymentPlannableRequest) returns (InChainDeploymentPlannableResponse) {}
 
-    // GetApplicationSharedObject fetches an object of the application. 
+    // GetApplicationSharedObject fetches an object of the application.
     // The object path will be derived by the request.
     rpc GetApplicationSharedObject(GetApplicationSharedObjectRequest) returns (GetApplicationSharedObjectResponse) {}
     // PutApplicationSharedObject persists the given object for the application.

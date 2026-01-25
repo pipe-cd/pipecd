@@ -21,7 +21,7 @@ import "google/protobuf/descriptor.proto";
 import "pkg/model/project.proto";
 
 // Authorization represents whether a specific RPC is ignored or not.
-message RBAC { 
+message RBAC {
     model.ProjectRBACResource.ResourceType resource = 1;
     model.ProjectRBACPolicy.Action action = 2;
     bool ignored = 3;

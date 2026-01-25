@@ -38,7 +38,7 @@ jobs:
 
             const body = `👋 Hi @${prAuthor}, welcome to **PipeCD** and thanks for opening your first pull request!
 
-We’re really happy to have you here 🚀  
+We’re really happy to have you here 🚀
 Before your PR gets merged, please check a few important things below.
 
 ---

@@ -42,7 +42,7 @@ service PluginService {
     // PutDeploymentMetadata puts one metadata of the given deployment.
     rpc PutDeploymentPluginMetadata(PutDeploymentPluginMetadataRequest) returns (PutDeploymentPluginMetadataResponse) {}
     // PutDeploymentMetadataMulti puts the metadata pairs of the given deployment.
-    rpc PutDeploymentPluginMetadataMulti(PutDeploymentPluginMetadataMultiRequest) returns (PutDeploymentPluginMetadataMultiResponse) {}    
+    rpc PutDeploymentPluginMetadataMulti(PutDeploymentPluginMetadataMultiRequest) returns (PutDeploymentPluginMetadataMultiResponse) {}
     // GetDeploymentSharedMetadata gets one shared metadata value of the given deployment.
     // The shared metadata is read-only in plugins for safety since it is shared among piped and plugins.
     rpc GetDeploymentSharedMetadata(GetDeploymentSharedMetadataRequest) returns (GetDeploymentSharedMetadataResponse) {}
@@ -50,7 +50,7 @@ service PluginService {
     // ListStageCommands lists unhandled commands of the given stage and type.
     rpc ListStageCommands(ListStageCommandsRequest) returns (ListStageCommandsResponse) {}
 
-    // GetApplicationSharedObject fetches an object of the application. 
+    // GetApplicationSharedObject fetches an object of the application.
     // The object path will be derived by the request.
     rpc GetApplicationSharedObject(GetApplicationSharedObjectRequest) returns (GetApplicationSharedObjectResponse) {}
     // PutApplicationSharedObject persists the given object for the application.

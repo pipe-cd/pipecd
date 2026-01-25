@@ -107,8 +107,8 @@ func TestFindArtifactVersions(t *testing.T) {
 		{
 			"image": "gcr.io/pipecd/helloworld:v1.0.0",
 			"name": "helloworld",
-			"portMappings": [ 
-				{ 
+			"portMappings": [
+				{
 				"containerPort": 80,
 				"hostPort": 9085,
 				"protocol": "tcp"
@@ -159,8 +159,8 @@ func TestFindArtifactVersions(t *testing.T) {
 		{
 			"image": "gcr.io/pipecd/:v1.0.0",
 			"name": "helloworld",
-			"portMappings": [ 
-				{ 
+			"portMappings": [
+				{
 				"containerPort": 80,
 				"hostPort": 9085,
 				"protocol": "tcp"
@@ -188,8 +188,8 @@ func TestFindArtifactVersions(t *testing.T) {
 		{
 			"image": "gcr.io/pipecd/helloworld:v1.0.0",
 			"name": "helloworld",
-			"portMappings": [ 
-				{ 
+			"portMappings": [
+				{
 				"containerPort": 80,
 				"hostPort": 9085,
 				"protocol": "tcp"
@@ -199,8 +199,8 @@ func TestFindArtifactVersions(t *testing.T) {
 		{
 			"image": "gcr.io/pipecd/my-service:v1.0.0",
 			"name": "my-service",
-			"portMappings": [ 
-				{ 
+			"portMappings": [
+				{
 				"containerPort": 80,
 				"hostPort": 9090,
 				"protocol": "tcp"
@@ -241,8 +241,8 @@ func TestFindArtifactVersions(t *testing.T) {
 		{
 			"image": "gcr.io/pipecd/helloworld:v1.0.0",
 			"name": "helloworld",
-			"portMappings": [ 
-				{ 
+			"portMappings": [
+				{
 				"containerPort": 80,
 				"hostPort": 9085,
 				"protocol": "tcp"
@@ -252,8 +252,8 @@ func TestFindArtifactVersions(t *testing.T) {
 		{
 			"image": "gcr.io/pipecd/helloworld:v1.0.0",
 			"name": "helloworld-02",
-			"portMappings": [ 
-				{ 
+			"portMappings": [
+				{
 				"containerPort": 80,
 				"hostPort": 9091,
 				"protocol": "tcp"

@@ -52,7 +52,7 @@ message Application {
     // NOTE: plugin as key of this map is not all plugins which should be
     // used to perform deployment for this application, plugins without deploy target (eg. WAIT)
     // are not listed in this map.
-    map<string, model.DeployTargets> deploy_targets_by_plugin = 16;    
+    map<string, model.DeployTargets> deploy_targets_by_plugin = 16;
     // Additional description about application.
     string description = 9;
     // Custom attributes to identify applications.

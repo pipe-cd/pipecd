@@ -279,7 +279,7 @@ export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
                       }),
                     })}
                   >
-                    {/* TODO: Remove stageName condition after finishing deployments which are made 
+                    {/* TODO: Remove stageName condition after finishing deployments which are made
                          while the server does not inject availableOperation */}
                     {(stage.name === WAIT_APPROVAL_NAME ||
                       stage.availableOperation ===

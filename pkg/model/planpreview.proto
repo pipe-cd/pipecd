@@ -68,7 +68,7 @@ message ApplicationPlanPreviewResult {
     bool no_change = 33;
 
     repeated PluginPlanPreviewResult plugin_plan_results = 34;
-    // Note: In pipedv1, this will not be empty. It will be "<unknown>" if plugins are not successfully loaded. 
+    // Note: In pipedv1, this will not be empty. It will be "<unknown>" if plugins are not successfully loaded.
     repeated string plugin_names = 35;
 
     // Error while building planpreview result.

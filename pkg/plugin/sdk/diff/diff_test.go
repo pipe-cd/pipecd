@@ -91,7 +91,7 @@ func TestDiff(t *testing.T) {
 
           -
             #spec.template.spec.containers.2.image
--           image: 
+-           image:
 
           #spec.template.spec.containers.3
 +         - image: new-image
@@ -155,7 +155,7 @@ func TestDiff(t *testing.T) {
 
           -
             #spec.template.spec.containers.2.image
--           image: 
+-           image:
 
           #spec.template.spec.containers.3
 +         - image: new-image
@@ -208,7 +208,7 @@ func TestDiff(t *testing.T) {
 
           -
             #spec.template.spec.containers.2.image
--           image: 
+-           image:
 
           #spec.template.spec.containers.3
 +         - image: new-image

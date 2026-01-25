@@ -157,7 +157,7 @@ message KubernetesResourceStateEvent {
         DELETED = 2;
     }
 
-    // The uniquely generated identifier for this event. 
+    // The uniquely generated identifier for this event.
     string id = 1 [(validate.rules).string.min_len = 1];
     string application_id = 2 [(validate.rules).string.min_len = 1];
 

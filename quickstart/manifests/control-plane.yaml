@@ -812,4 +812,3 @@ spec:
             - name: minio
               containerPort: 9000
               protocol: TCP
-              

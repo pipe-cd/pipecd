@@ -160,7 +160,7 @@ export const LogViewer: FC<Props> = memo(function LogViewer({
               alignItems: "center",
             }}
           >
-            {/* TODO: Remove stageName condition after finishing deployments which are made 
+            {/* TODO: Remove stageName condition after finishing deployments which are made
                       while the server does not inject availableOperation */}
             {(activeStage.name === ANALYSIS_STAGE_NAME ||
               activeStage.availableOperation ===
