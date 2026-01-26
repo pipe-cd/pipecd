@@ -106,10 +106,50 @@ func configureServiceManifest(sm provider.ServiceManifest, revision string, traf
 
 	lp.Info("Successfully prepared service manifest with traffic percentages as below:")
 	for _, t := range traffics {
-		lp.Infof("  %s: %d", t.RevisionName, t.Percent)
+		if t.Tag != "" {
+			lp.Infof("  %s: %d%% (tag: %s)", t.RevisionName, t.Percent, t.Tag)
+		} else {
+			lp.Infof("  %s: %d", t.RevisionName, t.Percent)
+		}
 	}
 
 	return true
+}
+
+func getExistingRevisionTags(ctx context.Context, client provider.Client, serviceName string, lp executor.LogPersister) map[string]string {
+	tags := make(map[string]string)
+
+	service, err := client.Get(ctx, serviceName)
+	if err != nil {
+		if err == provider.ErrServiceNotFound {
+			lp.Info("Service does not exist yet, no tags to preserve")
+			return tags
+		}
+		lp.Errorf("Failed to fetch existing service for tag preservation: %v", err)
+		return tags
+	}
+
+	if service.Status != nil && service.Status.Traffic != nil {
+		for _, target := range service.Status.Traffic {
+			if target.Tag != "" && target.RevisionName != "" {
+				tags[target.RevisionName] = target.Tag
+				lp.Infof("Found existing tag '%s' for revision %s", target.Tag, target.RevisionName)
+			}
+		}
+	}
+
+	return tags
+}
+
+func mergeTrafficWithExistingTags(traffics []provider.RevisionTraffic, existingTags map[string]string) []provider.RevisionTraffic {
+	result := make([]provider.RevisionTraffic, len(traffics))
+	for i, t := range traffics {
+		result[i] = t
+		if tag, exists := existingTags[t.RevisionName]; exists && t.Tag == "" {
+			result[i].Tag = tag
+		}
+	}
+	return result
 }
 
 func apply(ctx context.Context, client provider.Client, sm provider.ServiceManifest, lp executor.LogPersister) bool {
