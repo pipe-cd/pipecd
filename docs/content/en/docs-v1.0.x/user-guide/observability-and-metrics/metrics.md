@@ -3,7 +3,7 @@ title: "Metrics"
 linkTitle: "Metrics"
 weight: 995
 description: >
-  This page describes how to enable monitoring system for collecting PipeCD' metrics.
+  This page describes how to enable monitoring system for collecting PipeCD's metrics.
 ---
 
 PipeCD comes with a monitoring system including Prometheus, Alertmanager, and Grafana.
@@ -23,7 +23,7 @@ The piped agent collects its metrics and periodically sends them to the Control 
 Developers managing the piped agent can also get metrics directly from the piped agent and monitor them with their custom monitoring service.
 
 ## Enable monitoring system
-To enable monitoring system for PipeCD, you first need to set the following value to `helm install` when [installing](../../../installation/install-controlplane/#2-preparing-control-plane-configuration-file-and-installing).
+To enable monitoring system for PipeCD, you first need to set the following value to `helm install` when [installing](../../../installation/install-control-plane/#2-preparing-control-plane-configuration-file-and-installing).
 
 ```
 --set monitoring.enabled=true
@@ -43,8 +43,8 @@ There are three dashboards related to Control Plane:
 - Incoming Requests - gRPC and HTTP requests stats to check for any negative impact on users
 - Go - processes stats of PipeCD components
 
-#### Piped dashboards
-Visualize the metrics of Piped registered in the Control plane.
+#### `piped` dashboards
+Visualize the metrics of `piped` registered in the Control plane.
 - Overview - usage stats of piped agents
 - Process - resource usage of piped agent
 - Go - processes stats of piped agents.
@@ -80,7 +80,7 @@ prometheus:
             - channel: '#your-channel'
 ```
 
-And give it to the `helm install` command when [installing](../../../installation/install-controlplane/#2-preparing-control-plane-configuration-file-and-installing).
+And give it to the `helm install` command when [installing](../../../installation/install-control-plane/#2-preparing-control-plane-configuration-file-and-installing).
 
 ```
 --values=values.yaml
@@ -88,7 +88,7 @@ And give it to the `helm install` command when [installing](../../../installatio
 
 See [here](https://prometheus.io/docs/alerting/latest/configuration/) for more details on AlertManager's configuration.
 
-## Piped agent metrics
+## `piped` agent metrics
 
 | Metric | Type | Description |
 | --- | --- | --- |
@@ -102,7 +102,7 @@ See [here](https://prometheus.io/docs/alerting/latest/configuration/) for more d
 
 ## Control plane metrics
 
-All Piped's metrics are sent to the control plane so that they are also available on the control plane's metrics server.
+All `piped`'s metrics are sent to the control plane so that they are also available on the control plane's metrics server.
 
 | Metric | Type | Description |
 | --- | --- | --- |

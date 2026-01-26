@@ -8,7 +8,7 @@ description: >
 
 You are a developer who works with application code change, and don't know what deployment is triggered by your commit on PipeCD UI? This feature is for you.
 
-If you're using PipeCD [Event Watcher](./event-watcher) to trigger the deployment for your code change, you can attach information of the triggered commit as the event data, PipeCD will use that information and helps you to make a link between your application code commit and the triggered deployments that reflect your code change.
+If you're using PipeCD [Event Watcher](./event-watcher) to trigger the deployment for your code change, you can attach information of the triggered commit as the event data, PipeCD will use that information and helps you make a link between your application code commit and the triggered deployments that reflect your code change.
 
 ![Deployment Trace feature](/images/deployment-trace-ui.png)
 
@@ -29,7 +29,7 @@ Flags:
       --commit-url string         The URL of commit that triggers the event.
 ```
 
-Note: You have to attach at least `commit-hash` and `commit-url` as the event data in order to use the Deployment Trace feature.
+> **Note:** You have to attach at least `commit-hash` and `commit-url` as the event data in order to use the Deployment Trace feature.
 
 ## Github Actions
 
