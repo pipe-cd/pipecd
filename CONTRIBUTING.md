@@ -49,6 +49,10 @@ PipeCD uses [GitHub](https://github.com/pipe-cd/pipecd) as its source of truth. 
 
 All pull requests undergo checks by the continuous integration system, GitHub Actions. These checks include unit tests, lint tests, and more.
 
+When you submit a pull request to PipeCD, multiple CI workflows are triggered to validate your changes. These checks help ensure code quality, correctness, and consistency across the project.
+
+To better understand which CI workflows run and what they are responsible for, please refer to the [CI overview documentation](docs/content/en/docs-v1.0.x/development/ci.md).
+
 ### Branch Organization
 
 PipeCD has one primary branch `master`.
@@ -153,7 +157,7 @@ By contributing to PipeCD, you agree that your contributions will be licensed un
 
 ### Release Note and Breaking Changes
 
-If your change introcudes a user-facing change, please update the following section in your PR description.
+If your change introduces a user-facing change, please update the following section in your PR description.
 
 ```md
 **Does this PR introduce a user-facing change?**:
@@ -260,6 +264,8 @@ make run/piped \
 CONFIG_FILE=path/to/piped-config.yaml \
 INSECURE=true
 ```
+
+where the `CONFIG_FILE` is the path to your piped confiuration file and the `INSECURE` flag is set to `true` to allow `piped` to connect to the control plane without TLS verification.
 
 Replace `path/to/piped-config.yaml` with the actual path to your configuration file.
 
