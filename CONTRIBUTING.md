@@ -90,13 +90,13 @@ If you would like to request an entirely new feature, you can file an issue with
 
 We maintain a list of [good first issues](https://github.com/pipe-cd/pipecd/labels/good%20first%20issue) to help you get started with the PipeCD codebase and familiarize yourself with our contribution process. It's an excellent place to begin.
 
-Additionally, we recommend you not to work on multiple good first issues because it's for first contributers and currently we cannot make enough good first issues.
+Additionally, we recommend you not to work on multiple good first issues because it's for first contributors and currently we cannot make enough good first issues.
 
 ### Before you work on issues
 
 If you want to work on any of these issues, simply leave a message saying "I'd like to work on this," and we will assign the issue to you and update its status as "claimed." We expect you to submit a pull request within seven days so that we can assign the issue to someone else if you are unavailable.
 
-We recommend you to focus only one issue at once if you are newcomer contributer.
+We recommend you to focus only one issue at once if you are newcomer contributor.
 
 So you've decided to contribute back to the upstream by opening a pull request. You've put in a significant amount of time, and we appreciate your effort. We will do our best to work with you and review the pull request.
 
@@ -193,11 +193,11 @@ Run `make update/go-deps` and `make update/web-deps` to update the dependencies.
 
 In order to start a local development environment, a registry needs to be running locally.
 
-Run `make up/local-cluster` to start a local registry. 
+Run `make up/local-cluster` to start a local registry.
 
 This will create the kubernetes namespace `pipecd` if it does not exist and start a local registry in the namespace which can then be accessed by other components.
 
-When cleaning up, run `make down/local-cluster` to stop and delete the registery and the cluster.
+When cleaning up, run `make down/local-cluster` to stop and delete the registry and the cluster.
 
 #### Run PipeCD Control Plane
 
@@ -224,7 +224,7 @@ To login, you can use the configured static admin account as below:
 
 2. Access to Control Plane console, go to Piped list page - click the three vertical dots on the top right corner and then click on settings. After clicking on settings you will land on the Piped settings page. Next, add a new piped.
 
-Alternatively, you can go to `http://localhost:8080/settings/piped?project=quickstart`, please adjust the port and the project in the url if they are different from default. 
+Alternatively, you can go to `http://localhost:8080/settings/piped?project=quickstart`, please adjust the port and the project in the url if they are different from default.
 
 Then, copy generated Piped ID and base64 key for `piped-config.yaml`
 
@@ -272,6 +272,34 @@ Replace `path/to/piped-config.yaml` with the actual path to your configuration f
 ### Online one-click setup for contributing
 
 We are preparing Gitpod and Codespace to facilitate the setup process for contributing.
+
+### Optional: Pre-commit hooks for Markdown
+
+We provide a minimal, **optional** pre-commit setup that runs **only on Markdown (`.md`) files** and **runs locally on your machine**. It is meant to improve documentation quality without adding friction. CI does not run these hooks; they are entirely opt-in.
+
+**Hooks:**
+
+| Hook | What it does |
+|------|----------------|
+| `trailing-whitespace` | Trims trailing spaces and tabs at line ends. |
+| `end-of-file-fixer` | Ensures the file ends with a single newline. |
+| `check-merge-conflict` | Fails if merge conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`) are present. |
+| `codespell` | Lightweight spelling checks for docs; runs on commit for `.md` files and fails the commit on spelling errors. |
+
+**Setup (optional):**
+
+```bash
+pip install pre-commit   # or: brew install pre-commit
+pre-commit install
+```
+
+After that, all four hooks run automatically on `git commit` for changed `.md` files only. To run them on all files without committing: `pre-commit run --all-files`.
+
+**Skip hooks when needed:**
+
+- Skip all hooks for one commit: `git commit --no-verify`
+- Skip a specific hook: `SKIP=trailing-whitespace git commit -m "message"`
+- Stop using hooks locally: `pre-commit uninstall`
 
 ## Contributor License Agreement
 
