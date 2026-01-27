@@ -14,13 +14,15 @@ Component Architecture
 
 ### Control Plane
 
-The Control Plane is the centralized management service of PipeCD. It coordinates all activities between users, projects, and piped instances.
+The Control Plane is the centralized management service of PipeCD. It coordinates all activities between users, projects, and `piped` instances.
 
 The Control Plane remains the backbone of the system but is now fully plugin-aware. Instead of directly handling deployment logic for specific platforms, it interacts with `piped` agents that run plugin binaries, allowing the Control Plane to manage deployments across any platform supported by plugins.
 
-### Piped
+For more detailed information about Control Plane architecture and components, see [Architecture overview of Control Plane](../user-guide/managing-controlplane/architecture-overview/).
 
-'`piped`' is a binary, agent component responsible for executing deployments in PipeCD. `Piped` now adopts **plugin-based** **architecture**, transforming from a single-purpose executor into a lightweight runtime capable of runnning any deployment logic defined by plugins. The `piped` component is designed to be stateless.
+### piped
+
+`piped` is a binary, agent component responsible for executing deployments in PipeCD. `piped` now adopts **plugin-based** **architecture**, transforming from a single-purpose executor into a lightweight runtime capable of running any deployment logic defined by plugins. The `piped` component is designed to be stateless.
 
 ### Plugins
 
@@ -48,7 +50,7 @@ Projects use role-based access control (RBAC) to manage permissions:
 
 - Viewer – can view applications and deployments within the project.
 - Editor – includes Viewer permissions and can perform actions that modify state, such as triggering or cancelling deployments.
-- Admin – includes Editor permissions and can manage project settings, members, and associated piped instances.
+- Admin – includes Editor permissions and can manage project settings, members, and associated `piped` instances.
 
 ### Application
 
@@ -82,6 +84,4 @@ Depending on your deployment workflow, you can choose from one of the following 
 
 - Pipeline Sync: A customizable, step-by-step sync process that follows the pipeline you define in your application configuration file. Use Pipeline Sync when you need more control over how updates are rolled out.
 
-- Auto Sync: When you trigger a sync without specifying a strategy, piped automatically selects the most appropriate method based on your application configuration.
-
-Git stored configuration.
+- Auto Sync: When you trigger a sync without specifying a strategy, `piped` automatically selects the most appropriate method based on your application configuration.
