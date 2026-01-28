@@ -13,7 +13,7 @@ COPY . ./
 
 RUN make build/go MOD=helloworld BUILD_OS=${TARGETOS} BUILD_ARCH=${TARGETARCH}
 
-FROM alpine:3.22.2
+FROM alpine:3.23.2
 
 COPY --from=builder /app/.artifacts/helloworld /usr/local/bin/helloworld
 
