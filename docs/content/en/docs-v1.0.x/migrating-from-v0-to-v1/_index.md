@@ -22,8 +22,8 @@ The PipeCD System has 2 main components:
 
 | Component | Description | Compatibility |
 |------------|--------------|----------------|
-| **Control Plane** | Manages projects, deployments, and applications. | Supports both piped and pipedv1 concurrently. |
-| **Piped** | Manages the actual deployment and syncing of applications. | Backward compatible - You can switch back to old piped versions. |
+| **Control Plane** | Manages projects, deployments, and applications. | Supports both `piped` and pipedv1 concurrently. |
+| **`piped`** | Manages the actual deployment and syncing of applications. | Backward compatible - You can switch back to old `piped` versions. |
 
 ---
 
@@ -235,13 +235,13 @@ Example:
 - [v1.0.0-rc3](https://github.com/pipe-cd/pipecd/releases/tag/pipedv1%2Fexp%2Fv1.0.0-rc3)
 
 >**Warning:**
-> Before switching to `pipedv1`, stop your existing Piped process to avoid conflicts, as both versions use the same `piped-id`.
+> Before switching to `pipedv1`, stop your existing `piped` process to avoid conflicts, as both versions use the same `piped-id`.
 
 Once you have prepared your pipedv1 configuration, there are a few different ways to deploy it.
 
 ### Option 1 - Deploy via Helm (Kubernetes)
 
-If you are deploying Piped as a pod in a Kubernetes cluster, use the following Helm command:
+If you are deploying `piped` as a pod in a Kubernetes cluster, use the following Helm command:
 
 ```bash
 helm upgrade -i pipedv1-exp oci://ghcr.io/pipe-cd/chart/pipedv1-exp \
