@@ -1,0 +1,39 @@
+# This workflow cleans up docs preview deployments when branches are deleted.
+# It removes the preview directory from gh-pages when a 'docs-*' branch is deleted.
+
+name: Docs Preview Cleanup
+
+on:
+  delete:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup-preview:
+    runs-on: ubuntu-24.04
+    # Only run for branch deletions
+    if: github.event.ref_type == 'branch' && startsWith(github.event.ref, 'docs-')
+    steps:
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: gh-pages
+          fetch-depth: 0
+
+      - name: Remove preview directory
+        run: |
+          BRANCH_NAME="${{ github.event.ref }}"
+          echo "Cleaning up preview for deleted branch: $BRANCH_NAME"
+          
+          if [ -d "$BRANCH_NAME" ]; then
+            rm -rf "$BRANCH_NAME"
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "chore: remove docs preview for deleted branch '$BRANCH_NAME'" || echo "No changes to commit"
+            git push
+            echo "✅ Successfully removed preview directory: $BRANCH_NAME"
+          else
+            echo "ℹ️ Preview directory '$BRANCH_NAME' does not exist. Nothing to clean up."
+          fi
