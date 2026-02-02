@@ -6,7 +6,7 @@ description: >
   Overview about PipeCD.
 ---
 
-![PipeCD explaination](/images/pipecd-explanation.png)
+![PipeCD explanation](/images/pipecd-explanation.png)
 <p style="text-align: center;">
 PipeCD - a GitOps style continuous delivery solution
 </p>

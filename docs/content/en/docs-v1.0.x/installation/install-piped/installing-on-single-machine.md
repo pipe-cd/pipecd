@@ -17,7 +17,7 @@ description: >
 ### SSH Key for Git Repositories
 
 - If your Git repositories are private, `piped` requires a private SSH key to access those repositories.
-- Please checkout [this documentation](https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) for how to generate a new SSH key pair. Then add the public key to your repositories. (If you are using GitHub, you can add it to Deploy Keys at the repository's Settings page.)
+- Please check out [this documentation](https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) for how to generate a new SSH key pair. Then add the public key to your repositories. (If you are using GitHub, you can add it to Deploy Keys at the repository's Settings page.)
 
 If your Git repositories are private, `piped` needs an SSH key to access them.
 
@@ -32,11 +32,11 @@ Download the latest `piped` V1. See the [latest releases](https://github.com/pip
 
 ## Installation
 
-### Preparing the `Piped` configuaration file
+### Preparing the `Piped` configuration file
 
 Plugins are external binaries that have to be referenced in the piped configuration file. There are no plugins set by default.
 
-An example of the a piped V1 configuration file using the [Example-stage plugin](https://github.com/pipe-cd/community-plugins/tree/main/plugins/example-stage):
+An example of a piped V1 configuration file using the [Example-stage plugin](https://github.com/pipe-cd/community-plugins/tree/main/plugins/example-stage):
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -59,7 +59,7 @@ See [ConfigurationReference](../../../user-guide/managing-piped/configuration-re
 >**Note:**
 >`Piped`'s plugins are versioned independently from PipeCD. Official plugins are maintained and monitored by the PipeCD Maintainers. See the [latest releases](https://github.com/pipe-cd/pipecd/releases) for more information.
 >
->We now also have a repository for community built plugins. See the [Community plugins repository on GitHub](https://github.com/pipe-cd/community-plugins) to know more.
+>We now also have a repository for community-built plugins. See the [Community plugins repository on GitHub](https://github.com/pipe-cd/community-plugins) to know more.
 
 ## Run the `piped`
 
