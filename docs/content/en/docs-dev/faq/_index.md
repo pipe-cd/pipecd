@@ -60,6 +60,8 @@ You can create a new Piped key. Go to the `Piped` tab at `Settings` page, and cl
 
 Yes, PipeCD is fully open source project with APACHE LICENSE, VERSION 2.0!!
 
+From May 2023, PipeCD joined CNCF as a [Sandbox project](https://www.cncf.io/projects/pipecd/).
+
 ### 9. How should I investigate high CPU usage or memory usage in piped, or when OOM occurs?
 
 If you're noticing high CPU usage, memory usage, or facing OOM issues in Piped, you can use the built-in support for `pprof`, a tool for visualization and analysis of profiling data.  
