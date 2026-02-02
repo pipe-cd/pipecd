@@ -78,13 +78,14 @@
 
 .td-sidebar-toc {
     a {
-        transition: all 0.2s ease-in-out;
+        transition: all 0.3s ease-in-out;
+        border-left: 3px solid transparent;
+        padding-left: 8px;
         
         &.active {
             font-weight: 700 !important;
             color: $primary !important;
             border-left: 3px solid $primary;
-            padding-left: 8px;
         }
         
         &:hover {

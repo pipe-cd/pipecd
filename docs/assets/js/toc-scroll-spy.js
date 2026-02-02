@@ -60,15 +60,11 @@
       // Remove active class from all links
       sections.forEach(function (section) {
         section.link.classList.remove('active');
-        section.link.style.fontWeight = '';
-        section.link.style.color = '';
       });
 
       // Add active class to current link
       if (activeSection) {
         activeSection.link.classList.add('active');
-        activeSection.link.style.fontWeight = 'bold';
-        activeSection.link.style.color = '#007bff'; // Bootstrap primary color
       }
     }
 
