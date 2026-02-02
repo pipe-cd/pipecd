@@ -9,8 +9,10 @@
 {{ end }}
 {{ $jsImageZoom := resources.Get "js/medium-zoom.js" }}
 {{ $jsNavbarVersionSelector := resources.Get "js/navbar-version-selector.js" }}
+{{ $jsTocScrollSpy := resources.Get "js/toc-scroll-spy.js" }}
 <script defer src="{{ $jsImageZoom.RelPermalink }}" integrity="{{ $jsImageZoom.Data.Integrity }}" crossorigin="anonymous"></script>
-{{ $js := (slice $jsBase $jsAnchor $jsSearch $jsNavbarVersionSelector) | resources.Concat "js/main.js" }}
+{{ $js := (slice $jsBase $jsAnchor $jsSearch $jsNavbarVersionSelector $jsTocScrollSpy) | resources.Concat "js/main.js" }}
+
 {{ if hugo.IsServer }}
 <script src="{{ $js.RelPermalink }}"></script>
 {{ else }}
