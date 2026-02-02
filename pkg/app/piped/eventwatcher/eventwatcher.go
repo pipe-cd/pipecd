@@ -350,6 +350,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 		gitUpdateEvent      = false
 		branchHandledEvents = make(map[string][]*pipedservice.ReportEventStatusesRequest_Event, len(eventCfgs))
 		gitNoChangeEvents   = make([]*pipedservice.ReportEventStatusesRequest_Event, 0)
+		failureEvents       = make([]*pipedservice.ReportEventStatusesRequest_Event, 0)
 	)
 	for _, e := range eventCfgs {
 		for _, cfg := range e.Configs {
@@ -435,6 +436,12 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 					zap.String("event-name", latestEvent.Name),
 					zap.String("event-id", latestEvent.Id),
 				)
+				handledEvent := &pipedservice.ReportEventStatusesRequest_Event{
+					Id:                latestEvent.Id,
+					Status:            model.EventStatus_EVENT_FAILURE,
+					StatusDescription: fmt.Sprintf("Event watcher handler type %s is not supported", handler.Type),
+				}
+				failureEvents = append(failureEvents, handledEvent)
 				continue
 			}
 		}
@@ -445,6 +452,14 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 			return err
 		}
 		w.logger.Info(fmt.Sprintf("successfully made %d events OUTDATED", len(outDatedEvents)))
+	}
+
+	if len(failureEvents) > 0 {
+		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: failureEvents}); err != nil {
+			w.logger.Error("failed to report event failure statuses", zap.Error(err))
+			return err
+		}
+		w.logger.Info(fmt.Sprintf("successfully reported %d event failures", len(failureEvents)))
 	}
 
 	if !gitUpdateEvent {
