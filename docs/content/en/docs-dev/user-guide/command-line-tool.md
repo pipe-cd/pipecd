@@ -355,7 +355,6 @@ You can encrypt it the same way you do [from the web](../managing-application/se
       --input-file={PATH_TO_SECRET_FILE}
   ```
 
-
 Note: The docs for pipectl available command is maybe outdated, we suggest users use the `help` command for the updated usage while using pipectl.
 
 ### Generating an application config (app.pipecd.yaml)
