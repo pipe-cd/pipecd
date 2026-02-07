@@ -193,7 +193,7 @@ Usage:
 
 Flags:
       --app-dir string            The relative path from the root of repository to the application directory.
-      --app-kind string           The kind of application. (KUBERNETES|TERRAFORM|LAMBDA|CLOUDRUN)
+      --app-kind string           The kind of application. (KUBERNETES|TERRAFORM|LAMBDA|CLOUDRUN|ECS)
       --app-name string           The application name.
       --platform-provider string  The platform provider name. One of the registered providers in the piped configuration. The previous name of this field is cloud-provider.
       --config-file-name string   The configuration file name. (default "app.pipecd.yaml")
@@ -354,6 +354,9 @@ You can encrypt it the same way you do [from the web](../managing-application/se
       --piped-id={PIPED_ID} \
       --input-file={PATH_TO_SECRET_FILE}
   ```
+
+Optional encoding:
+- `--use-base64-encoding` to base64-encode the plaintext before encrypting.
 
 Note: The docs for pipectl available command is maybe outdated, we suggest users use the `help` command for the updated usage while using pipectl.
 
