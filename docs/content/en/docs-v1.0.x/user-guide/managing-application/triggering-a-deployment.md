@@ -24,7 +24,7 @@ You can configure when PipeCD triggers a new deployment. The following trigger t
 - `onOutOfSync`: Triggers a deployment when the application enters an OUT_OF_SYNC state.
 - `onChain`: Triggers a deployment when the application is part of a deployment chain.
 
-For the full list of options, see [Configuration Reference](../../configuration-reference/#deploymenttrigger).
+For the full list of options, see [Configuration reference](../../configuration-reference/#deploymenttrigger).
 
 After a deployment is triggered, it is added to a queue and handled by the appropriate `piped`. At this stage, the deployment pipeline is not yet decided.
 `piped` ensures that only one deployment runs per application at a time. If no deployment is currently running, `piped` selects a queued deployment and plans its pipeline.
