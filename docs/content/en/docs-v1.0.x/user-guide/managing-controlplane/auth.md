@@ -3,7 +3,7 @@ title: "Authentication and authorization"
 linkTitle: "Authentication and authorization"
 weight: 3
 description: >
-  This page describes about PipeCD Authentication and Authorization.
+  This page describes PipeCD Authentication and Authorization.
 ---
 
 ![Project Settings](/images/settings-project-v0.38.x.png)
@@ -25,7 +25,7 @@ The project can be configured to use a shared SSO configuration (shared OAuth ap
 - GitHub
 - Generic OIDC
 
-> Note: In the future, we want to support such as Google Gmail, Bitbucket...
+> **Note:** In the future, we want to support such as Google Gmail, Bitbucket...
 
 #### Github
 
@@ -45,7 +45,7 @@ Requirements and Troubleshooting:
 
 - The OIDC provider must provide claims for user's roles and username.
 - Roles claim value must use same values as pre-configured project RBAC Roles.
-- - Claims can be retreived from the IdToken or UserInfo endpoint. The UserInfo endpoint will be used if issuer supports it.
+- Claims can be retrieved from the IdToken or UserInfo endpoint. The UserInfo endpoint will be used if issuer supports it.
 - You can use set a custom claim key name for roles and username in the OIDC provider. Using `usernameClaimKey` and `rolesClaimKey` in the configuration. If not set, the default value will be chosen in the following order:
 
   - Supported Claims Key for Username (in order of priority): `username`, `preferred_username`,`name`, `cognito:username`
@@ -254,8 +254,8 @@ resources=*;actions=*
 
 User Group represents a relation with a specific team (GitHub)/group (Google) and an arbitrary role. All users belong to a team/group will have all permissions of that team/group.
 
-In case of using the GitHub team as a PipeCD user group, the PipeCD user group must be set in lowercase. For example, if your GitHub team is named `ORG/ABC-TEAM`, the PipeCD user group would be set as `ORG/abc-team`. (It's follow the GitHub team URL as github.com/orgs/{organization-name}/teams/{TEAM-NAME})
+In case of using the GitHub team as a PipeCD user group, the PipeCD user group must be set in lowercase. For example, if your GitHub team is named `ORG/ABC-TEAM`, the PipeCD user group would be set as `ORG/abc-team`. (It follows the GitHub team URL as github.com/orgs/{organization-name}/teams/{TEAM-NAME})
 
-Note: You CANNOT assign multiple roles to a team/group, should create a new role with suitable permissions instead.
+> **Note:** You CANNOT assign multiple roles to a team/group. You should create a new role with suitable permissions instead.
 
 ![](/images/settings-add-user-group.png)
