@@ -4,8 +4,6 @@ linkTitle: "Using Pprof in Piped"
 weight: 10
 description: >
   This guide is for developers who want to use pprof for performance profiling in Piped.
-aliases:
-  - /docs-dev/managing-piped/using-pprof-in-piped/
 ---
 
 Piped provides built-in support for pprof, a tool for visualization and analysis of profiling data. It's a part of the standard Go library.
