@@ -32,10 +32,12 @@ Download the latest `piped` v1. See the [latest releases](https://github.com/pip
 
 ## Installation
 
+### Preparing the `Piped` configuration file
 ### Preparing the `piped` configuration file
 
 Plugins are external binaries that have to be referenced in the `piped` configuration file. There are no plugins set by default.
 
+An example of a piped V1 configuration file using the [Example-stage plugin](https://github.com/pipe-cd/community-plugins/tree/main/plugins/example-stage):
 An example of a `piped` v1 configuration file using the [Example-stage plugin](https://github.com/pipe-cd/community-plugins/tree/main/plugins/example-stage):
 
 ``` yaml
@@ -59,7 +61,7 @@ See [Configuration reference](../../../user-guide/managing-piped/configuration-r
 >**Note:**
 > `piped`'s plugins are versioned independently from PipeCD. Official plugins are maintained and monitored by the PipeCD Maintainers. See the [latest releases](https://github.com/pipe-cd/pipecd/releases) for more information.
 >
->We now also have a repository for community built plugins. See the [Community plugins repository on GitHub](https://github.com/pipe-cd/community-plugins) to know more.
+>We now also have a repository for community-built plugins. See the [Community plugins repository on GitHub](https://github.com/pipe-cd/community-plugins) to know more.
 
 ## Run the `piped`
 

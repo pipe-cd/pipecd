@@ -3,6 +3,7 @@ title: "Installing on a Kubernetes cluster"
 linkTitle: "Installing on a Kubernetes cluster"
 weight: 1
 description: >
+  This page describes how to install Piped on a Kubernetes cluster.
   This page describes how to install `piped` on a Kubernetes cluster.
 ---
 
@@ -27,10 +28,12 @@ If your Git repositories are private, `piped` needs an SSH key to access them.
 
 ## Installation
 
+### Preparing the `Piped` configuration file
 ### Preparing the `piped` configuration file
 
 Plugins are external binaries that have to be referenced in the `piped` configuration file. There are no plugins set by default.
 
+An example of a piped V1 configuration file using the Kubernetes plugin:
 An example of a `piped` v1 configuration file using the Kubernetes plugin:
 
 ``` yaml
@@ -52,7 +55,7 @@ spec:
 >**Note:**
 > `piped`'s plugins are versioned independently from PipeCD. See the [latest releases](https://github.com/pipe-cd/pipecd/releases) for more information.
 >
->We now also have a repository for community built plugins. See the [Community plugins repository on GitHub](https://github.com/pipe-cd/community-plugins)  to know more.
+>We now also have a repository for community-built plugins. See the [Community plugins repository on GitHub](https://github.com/pipe-cd/community-plugins) to know more.
 
 ## In the cluster-wide mode
 
