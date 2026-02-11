@@ -1,0 +1,17 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        types: [markdown]
+      - id: end-of-file-fixer
+        types: [markdown]
+      - id: check-merge-conflict
+        types: [markdown]
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.6
+    hooks:
+      - id: codespell
+        types: [markdown]
+        args: ["--ignore-words-list=teh,placeholder"]
