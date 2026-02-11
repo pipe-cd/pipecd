@@ -52,8 +52,6 @@ Before your PR gets merged, please check a few important things below.
 ### DCO Sign-off
 All commits must include a \`Signed-off-by\` line to comply with the Developer Certificate of Origin (DCO).
 
-In case you forget to sign-off your commit(s), follow these steps:
-
 For the last commit:
 \`\`\`bash
 git commit --amend --signoff
@@ -69,18 +67,15 @@ git push --force-with-lease
 ---
 
 ### Run checks locally
-Before pushing updates, please run:
 \`\`\`bash
 make check
 \`\`\`
-This runs the same checks as CI and helps catch issues early.
 
 ---
 
 ### 💬 Need help?
-If anything is unclear, feel free to ask in this PR or join us on the CNCF Slack in the **#pipecd** channel.
-You can get your Slack invite from: https://communityinviter.com/apps/cloud-native/cncf
-
+Feel free to ask in this PR or join **#pipecd** on CNCF Slack:  
+https://communityinviter.com/apps/cloud-native/cncf
 
 Thanks for contributing to PipeCD! ❤️
 `;
