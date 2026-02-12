@@ -161,6 +161,7 @@ If your change introduces a user-facing change, please update the following sect
 
 ```md
 **Does this PR introduce a user-facing change?**:
+
 - **How are users affected by this change**:
 - **Is this breaking change**:
 - **How to migrate (if breaking change)**:
@@ -169,6 +170,15 @@ If your change introduces a user-facing change, please update the following sect
 Note that if it's a new breaking change, make sure to complete the two latter questions.
 
 ## Development
+
+### Prerequisites
+
+Before you start, ensure you have the following installed:
+
+- **Go** (Check `go.mod` for the required version)
+- **Docker** (For running local clusters)
+- **Make** (For build commands)
+- **Python & Pip** (Optional, for pre-commit hooks)
 
 PipeCD consists of several components and docs:
 
@@ -193,7 +203,7 @@ Run `make update/go-deps` and `make update/web-deps` to update the dependencies.
 
 In order to start a local development environment, a registry needs to be running locally.
 
-Run `make up/local-cluster` to start a local registry. 
+Run `make up/local-cluster` to start a local registry.
 
 This will create the kubernetes namespace `pipecd` if it does not exist and start a local registry in the namespace which can then be accessed by other components.
 
@@ -224,38 +234,38 @@ To login, you can use the configured static admin account as below:
 
 2. Access to Control Plane console, go to Piped list page - click the three vertical dots on the top right corner and then click on settings. After clicking on settings you will land on the Piped settings page. Next, add a new piped.
 
-Alternatively, you can go to `http://localhost:8080/settings/piped?project=quickstart`, please adjust the port and the project in the url if they are different from default. 
+Alternatively, you can go to `http://localhost:8080/settings/piped?project=quickstart`, please adjust the port and the project in the url if they are different from default.
 
 Then, copy generated Piped ID and base64 key for `piped-config.yaml`
 
 3. Create the piped configuration file `piped-config.yaml`, ideally in the root of the repository.
 
->**NOTE**
->If you want to work on multiple piped configuration files, it is recommended to create a .dev folder in the root of the repository and save them there. The .dev folder is configured in .gitignore, and thus, would not include your piped files in your commits.
+> **NOTE**
+> If you want to work on multiple piped configuration files, it is recommended to create a .dev folder in the root of the repository and save them there. The .dev folder is configured in .gitignore, and thus, would not include your piped files in your commits.
 
 Below is an exampled piped v0 configuration using the Kubernetes platform provider. Use the PipeD ID and base64 key you created in step 2 here.
 
-  ```yaml
-    apiVersion: pipecd.dev/v1beta1
-    kind: Piped
-    spec:
-      projectID: quickstart
-      pipedID: <YOUR PIPED ID> # Base64 encoded string of the piped private key.
-      pipedKeyData: <YOUR PIPED BASE64 KEY> # FIXME: Replace here with your piped base64 key.
-      apiAddress: localhost:8080 # Write in a format "localhost:port"
-      #Replace with your piped address if you connect Piped to a control plane that does not run locally, or runs on a different port.
-      repositories:
-      - repoId: example
-        remote: git@github.com:pipe-cd/examples.git
-        branch: master
-      syncInterval: 1m
-      platformProviders:
-      - name: example-kubernetes
-        type: KUBERNETES
-        config:
-          # FIXME: Replace here with your kubeconfig absolute file path.
-          kubeConfigPath: /path/to/.kube/config
-    ```
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: Piped
+spec:
+  projectID: quickstart
+  pipedID: <YOUR PIPED ID> # Base64 encoded string of the piped private key.
+  pipedKeyData: <YOUR PIPED BASE64 KEY> # FIXME: Replace here with your piped base64 key.
+  apiAddress: localhost:8080 # Write in a format "localhost:port"
+  #Replace with your piped address if you connect Piped to a control plane that does not run locally, or runs on a different port.
+  repositories:
+    - repoId: example
+      remote: git@github.com:pipe-cd/examples.git
+      branch: master
+  syncInterval: 1m
+  platformProviders:
+    - name: example-kubernetes
+      type: KUBERNETES
+      config:
+        # FIXME: Replace here with your kubeconfig absolute file path.
+        kubeConfigPath: /path/to/.kube/config
+```
 
 4. Once you have configured your piped configuration file, start the Piped agent with the following command:
 
@@ -265,7 +275,7 @@ CONFIG_FILE=path/to/piped-config.yaml \
 INSECURE=true
 ```
 
-where the `CONFIG_FILE` is the path to your piped confiuration file and the `INSECURE` flag is set to `true` to allow `piped` to connect to the control plane without TLS verification.
+where the `CONFIG_FILE` is the path to your piped configuration file and the `INSECURE` flag is set to `true` to allow `piped` to connect to the control plane without TLS verification.
 
 Replace `path/to/piped-config.yaml` with the actual path to your configuration file.
 
