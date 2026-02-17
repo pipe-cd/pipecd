@@ -67,7 +67,8 @@ func TestIgnoreAndSortParameters(t *testing.T) {
 					"key2": "value2",
 				},
 				VPCConfig: &provider.VPCConfig{
-					SubnetIDs: []string{"subnet-1", "subnet-2"},
+					SecurityGroupIDs: []string{"sg-1", "sg-2"},
+					SubnetIDs:        []string{"subnet-1", "subnet-2"},
 				},
 			},
 			headSpec: provider.FunctionManifestSpec{
@@ -84,7 +85,62 @@ func TestIgnoreAndSortParameters(t *testing.T) {
 					"key1": "value1",
 				},
 				VPCConfig: &provider.VPCConfig{
-					SubnetIDs: []string{"subnet-2", "subnet-1"},
+					SecurityGroupIDs: []string{"sg-2", "sg-1"},
+					SubnetIDs:        []string{"subnet-2", "subnet-1"},
+				},
+			},
+			expectDiff: false,
+		},
+		{
+			name: "Ignore not sorted SecurityGroupIDs only",
+			liveSpec: provider.FunctionManifestSpec{
+				VPCConfig: &provider.VPCConfig{
+					SecurityGroupIDs: []string{"sg-1", "sg-2", "sg-3"},
+					SubnetIDs:        []string{"subnet-1"},
+				},
+			},
+			headSpec: provider.FunctionManifestSpec{
+				VPCConfig: &provider.VPCConfig{
+					SecurityGroupIDs: []string{"sg-3", "sg-1", "sg-2"},
+					SubnetIDs:        []string{"subnet-1"},
+				},
+			},
+			expectDiff: false,
+		},
+		{
+			name: "Single item arrays should not cause issues",
+			liveSpec: provider.FunctionManifestSpec{
+				Architectures: []provider.Architecture{
+					{Name: string(types.ArchitectureX8664)},
+				},
+				VPCConfig: &provider.VPCConfig{
+					SecurityGroupIDs: []string{"sg-1"},
+					SubnetIDs:        []string{"subnet-1"},
+				},
+			},
+			headSpec: provider.FunctionManifestSpec{
+				Architectures: []provider.Architecture{
+					{Name: string(types.ArchitectureX8664)},
+				},
+				VPCConfig: &provider.VPCConfig{
+					SecurityGroupIDs: []string{"sg-1"},
+					SubnetIDs:        []string{"subnet-1"},
+				},
+			},
+			expectDiff: false,
+		},
+		{
+			name: "Empty VPCConfig arrays should not cause issues",
+			liveSpec: provider.FunctionManifestSpec{
+				VPCConfig: &provider.VPCConfig{
+					SecurityGroupIDs: []string{},
+					SubnetIDs:        []string{},
+				},
+			},
+			headSpec: provider.FunctionManifestSpec{
+				VPCConfig: &provider.VPCConfig{
+					SecurityGroupIDs: []string{},
+					SubnetIDs:        []string{},
 				},
 			},
 			expectDiff: false,
@@ -177,7 +233,8 @@ func TestIgnoreAndSortParametersNotChangeOriginal(t *testing.T) {
 			{Name: string(types.ArchitectureArm64)},
 		},
 		VPCConfig: &provider.VPCConfig{
-			SubnetIDs: []string{"subnet-2", "subnet-1"},
+			SecurityGroupIDs: []string{"sg-2", "sg-1"},
+			SubnetIDs:        []string{"subnet-2", "subnet-1"},
 		},
 	}
 
@@ -193,5 +250,47 @@ func TestIgnoreAndSortParametersNotChangeOriginal(t *testing.T) {
 		{Name: string(types.ArchitectureX8664)},
 		{Name: string(types.ArchitectureArm64)}},
 		headSpec.Architectures)
+	assert.Equal(t, []string{"sg-2", "sg-1"}, headSpec.VPCConfig.SecurityGroupIDs)
 	assert.Equal(t, []string{"subnet-2", "subnet-1"}, headSpec.VPCConfig.SubnetIDs)
+}
+
+func TestSortLiveManifestParameters(t *testing.T) {
+	t.Parallel()
+
+	liveManifest := provider.FunctionManifest{
+		Kind:       "LambdaFunction",
+		APIVersion: "pipecd.dev/v1beta1",
+		Spec: provider.FunctionManifestSpec{
+			Name: "test-function",
+			VPCConfig: &provider.VPCConfig{
+				SecurityGroupIDs: []string{"sg-3", "sg-1", "sg-2"},
+				SubnetIDs:        []string{"subnet-3", "subnet-1", "subnet-2"},
+			},
+		},
+	}
+
+	sorted := sortLiveManifestParameters(liveManifest)
+
+	// Verify sorted result.
+	assert.Equal(t, []string{"sg-1", "sg-2", "sg-3"}, sorted.Spec.VPCConfig.SecurityGroupIDs)
+	assert.Equal(t, []string{"subnet-1", "subnet-2", "subnet-3"}, sorted.Spec.VPCConfig.SubnetIDs)
+
+	// Verify original is not mutated.
+	assert.Equal(t, []string{"sg-3", "sg-1", "sg-2"}, liveManifest.Spec.VPCConfig.SecurityGroupIDs)
+	assert.Equal(t, []string{"subnet-3", "subnet-1", "subnet-2"}, liveManifest.Spec.VPCConfig.SubnetIDs)
+}
+
+func TestSortLiveManifestParametersNilVPCConfig(t *testing.T) {
+	t.Parallel()
+
+	liveManifest := provider.FunctionManifest{
+		Kind:       "LambdaFunction",
+		APIVersion: "pipecd.dev/v1beta1",
+		Spec: provider.FunctionManifestSpec{
+			Name: "test-function",
+		},
+	}
+
+	sorted := sortLiveManifestParameters(liveManifest)
+	assert.Nil(t, sorted.Spec.VPCConfig)
 }

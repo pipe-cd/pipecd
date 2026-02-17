@@ -207,6 +207,9 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	}
 	d.logger.Info(fmt.Sprintf("application %s has a live function manifest", app.Id))
 
+	// Sort the VPCConfig fields of the live manifest.
+	live := sortLiveManifestParameters(liveManifest)
+
 	clonedSpec := ignoreAndSortParameters(headManifest.Spec)
 	head := provider.FunctionManifest{
 		Kind:       headManifest.Kind,
@@ -220,7 +223,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	//  - environments added in live states
 	//  - tags added in live states, including pipecd managed tags
 	result, err := provider.Diff(
-		liveManifest,
+		live,
 		head,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),
@@ -240,8 +243,9 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 //   - SourceCode in headSpec
 //   - S3Bucket, S3Key, and S3ObjectVersion in headSpec
 //
-// sorts: (Lambda sorts them in liveSpec)
+// sorts:
 //   - Architectures in headSpec
+//   - SecurityGroupIDs in headSpec
 //   - SubnetIDs in headSpec
 func ignoreAndSortParameters(headSpec provider.FunctionManifestSpec) provider.FunctionManifestSpec {
 	cloneSpec := headSpec
@@ -251,23 +255,47 @@ func ignoreAndSortParameters(headSpec provider.FunctionManifestSpec) provider.Fu
 	cloneSpec.S3Key = ""
 	cloneSpec.S3ObjectVersion = ""
 
-	// Architectures, Environments, SubnetIDs, and Tags are sorted in live states.
+	// Architectures, Environments, SecurityGroupIDs, SubnetIDs, and Tags may not be
+	// in a consistent order between head (Git) and live (AWS) states.
 	if len(headSpec.Architectures) > 1 {
 		cloneSpec.Architectures = slices.Clone(headSpec.Architectures)
 		sort.Slice(cloneSpec.Architectures, func(i, j int) bool {
 			return strings.Compare(cloneSpec.Architectures[i].Name, cloneSpec.Architectures[j].Name) < 0
 		})
 	}
-	if headSpec.VPCConfig != nil && len(headSpec.VPCConfig.SubnetIDs) > 1 {
+	if headSpec.VPCConfig != nil {
 		cloneSubnets := slices.Clone(headSpec.VPCConfig.SubnetIDs)
 		slices.Sort(cloneSubnets)
+		cloneSecurityGroups := slices.Clone(headSpec.VPCConfig.SecurityGroupIDs)
+		slices.Sort(cloneSecurityGroups)
 		cloneSpec.VPCConfig = &provider.VPCConfig{
-			SecurityGroupIDs: headSpec.VPCConfig.SecurityGroupIDs,
+			SecurityGroupIDs: cloneSecurityGroups,
 			SubnetIDs:        cloneSubnets,
 		}
 	}
 
 	return cloneSpec
+}
+
+// sortLiveManifestParameters sorts specific parameters of the live manifest
+// that the AWS Lambda API does not guarantee to return in a consistent order.
+func sortLiveManifestParameters(manifest provider.FunctionManifest) provider.FunctionManifest {
+	cloneSpec := manifest.Spec
+	if cloneSpec.VPCConfig != nil {
+		cloneSubnets := slices.Clone(cloneSpec.VPCConfig.SubnetIDs)
+		slices.Sort(cloneSubnets)
+		cloneSecurityGroups := slices.Clone(cloneSpec.VPCConfig.SecurityGroupIDs)
+		slices.Sort(cloneSecurityGroups)
+		cloneSpec.VPCConfig = &provider.VPCConfig{
+			SecurityGroupIDs: cloneSecurityGroups,
+			SubnetIDs:        cloneSubnets,
+		}
+	}
+	return provider.FunctionManifest{
+		Kind:       manifest.Kind,
+		APIVersion: manifest.APIVersion,
+		Spec:       cloneSpec,
+	}
 }
 
 func (d *detector) loadHeadFunctionManifest(app *model.Application, repo git.Worktree, headCommit git.Commit) (provider.FunctionManifest, error) {
