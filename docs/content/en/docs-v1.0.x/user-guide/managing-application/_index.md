@@ -6,4 +6,4 @@ description: >
   This guide is for developers who have PipeCD installed for them and are using PipeCD to deploy their applications.
 ---
 
-> Note: You must have at least one activated/running Piped to enable using any of the following features of PipeCD. Please refer to [Piped installation docs](../../installation/install-piped/) if you do not have any Piped in your pocket.
+> **Note:** You must have at least one activated/running `piped` to enable using any of the following features of PipeCD. Please refer to [piped installation docs](../../installation/install-piped/) if you do not have any `piped` in your pocket.
