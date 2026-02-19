@@ -40,7 +40,7 @@ func TestVerify(t *testing.T) {
 	}{
 		{
 			name: "ok",
-			claims: NewClaims("user-1", "avatar-url", time.Hour, &model.Role{
+			claims: NewClaims("user-1", "avatar-url", time.Hour, model.Role{
 				ProjectId: "project-1",
 			}),
 			fail: false,
@@ -129,7 +129,7 @@ func TestVerify(t *testing.T) {
 
 	testFunc(hsS, hsV)
 
-	c := NewClaims("user", "avatar-url", time.Hour, &model.Role{
+	c := NewClaims("user", "avatar-url", time.Hour, model.Role{
 		ProjectId: "project",
 	})
 

@@ -143,7 +143,7 @@ func (h *authHandler) handleStaticAdminLogin(w http.ResponseWriter, r *http.Requ
 		admin.Username,
 		"",
 		defaultTokenTTL,
-		&model.Role{
+		model.Role{
 			ProjectId:        projectID,
 			ProjectRbacRoles: []string{model.BuiltinRBACRoleAdmin.String()},
 		},

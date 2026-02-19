@@ -103,7 +103,7 @@ func (h *authHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 		user.Username,
 		user.AvatarUrl,
 		tokenTTL,
-		user.Role,
+		*user.Role, //nolint:govet
 	)
 	signedToken, err := h.signer.Sign(claims)
 	if err != nil {

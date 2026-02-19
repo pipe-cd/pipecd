@@ -449,7 +449,7 @@ func TestSyncApplication_DisabledProject(t *testing.T) {
 		"sub",
 		"avatar-url",
 		10*time.Minute,
-		&model.Role{
+		model.Role{
 			ProjectId:        projectID,
 			ProjectRbacRoles: []string{"ADMIN"},
 		},
@@ -509,7 +509,7 @@ func TestCancelDeployment_DisabledProject(t *testing.T) {
 		"sub",
 		"avatar-url",
 		10*time.Minute,
-		&model.Role{
+		model.Role{
 			ProjectId:        projectID,
 			ProjectRbacRoles: []string{"ADMIN"},
 		},
@@ -574,7 +574,7 @@ func TestSkipStage_DisabledProject(t *testing.T) {
 		"sub",
 		"avatar-url",
 		10*time.Minute,
-		&model.Role{
+		model.Role{
 			ProjectId:        projectID,
 			ProjectRbacRoles: []string{"ADMIN"},
 		},
@@ -645,7 +645,7 @@ func TestApproveStage_DisabledProject(t *testing.T) {
 		userID,
 		"avatar-url",
 		10*time.Minute,
-		&model.Role{
+		model.Role{
 			ProjectId:        projectID,
 			ProjectRbacRoles: []string{"ADMIN"},
 		},
@@ -705,7 +705,7 @@ func TestRestartPiped_DisabledProject(t *testing.T) {
 		"sub",
 		"avatar-url",
 		10*time.Minute,
-		&model.Role{
+		model.Role{
 			ProjectId:        projectID,
 			ProjectRbacRoles: []string{"ADMIN"},
 		},
