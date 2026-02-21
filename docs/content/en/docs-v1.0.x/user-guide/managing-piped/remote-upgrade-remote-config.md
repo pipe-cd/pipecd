@@ -11,10 +11,6 @@ description: >
 >Remote Upgrade and Remote Config features are not available right now for PipeCD versions 1.0.0 and above.
 > We are working on them, and will update this page as soon as they are ready.
 
-
-
-
-
 <!-- ## Remote upgrade
 
 The remote upgrade is the ability to restart the currently running Piped with another version from the web console.

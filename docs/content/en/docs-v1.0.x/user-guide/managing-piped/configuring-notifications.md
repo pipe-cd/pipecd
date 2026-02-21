@@ -36,7 +36,7 @@ Below is the list of supporting event names and their groups.
 | PIPED_STARTED | PIPED | <p style="text-align: center;"><input type="checkbox" checked  disabled></p> |  |
 | PIPED_STOPPED | PIPED | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |  |
 
-### Sending notifications to Slack
+## Sending notifications to Slack
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
@@ -113,7 +113,6 @@ Deployment was triggered, planned and completed successfully
 <p style="text-align: center;">
 A piped has been started
 </p>
-
 
 For detailed configuration, please check the [configuration reference for Notifications](configuration-reference/#notifications).
 

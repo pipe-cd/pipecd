@@ -8,7 +8,7 @@ description: >
 
 To enable [EventWatcher](../../event-watcher/), you have to configure your piped at first.
 
-### Grant write permission
+## Grant write permission
 
 The [SSH key used by Piped](../configuration-reference/#git) must be a key with write-access because piped needs to commit and push to your git repository when any incoming event matches.
 
@@ -50,11 +50,13 @@ spec:
 
 `excludes` is prioritized if both `includes` and `excludes` are given.
 
-The full list of configurable fields are [here](../configuration-reference/#eventwatcher).
+See the full list of [configurable fields for event watcher](../configuration-reference/#eventwatcher) for more information.
 
-### [optional] Settings for git user
+### **OPTIONAL** Settings for git user
 
-By default, every git commit uses `piped` as a username and `pipecd.dev@gmail.com` as an email. You can change it with the [git](../configuration-reference/#git) field.
+By default, every git commit uses **piped** as the username and **pipecd.dev@gmail.com** as the email. You can change it with the [git](../configuration-reference/#git) field.
+
+For example:
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1

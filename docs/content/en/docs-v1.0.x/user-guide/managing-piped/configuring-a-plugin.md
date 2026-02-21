@@ -1,7 +1,7 @@
 ---
 title: "Configuring a Plugin"
 linkTitle: "Configuring a Plugin"
-weight: 4
+weight: 2
 description: >
   This page describes how to configure a plugin in PipeCD.
 ---
@@ -46,7 +46,7 @@ Check out the latest plugin releases on [GitHub](https://github.com/pipe-cd/pipe
 
 Now, we will see how you can configure plugins for different application types.
 
-### Configuring Kubernetes plugin
+## Configuring Kubernetes plugin
 
 The Kubernetes plugin enables PipeCD to manage Kubernetes application deployments.
 
