@@ -8,16 +8,16 @@
 <div class="{{ $bg_color }} row d-print-none">
   <div class="container-fluid py-3 mx-sm-5">
     <div class="row">
-      <div class="col-8 py-3 order-sm-2 {{ $text_color }}">
+      <div class="col-12 col-sm-8 py-3 order-sm-2 {{ $text_color }} text-center text-sm-left">
         <a href="https://www.cncf.io/projects/pipecd/" target="_blank">
           <img src="{{ $cncf_logo }}" alt="cncf logo" width="250">
           <div class="py-2 {{ $text_color }}">PipeCD is a Cloud Native Computing Foundation sandbox project.</div>
         </a>
       </div>
-      <div class="col-4 order-sm-3 d-flex align-items-center justify-content-center">
+      <div class="col-12 col-sm-4 order-sm-3 d-flex align-items-center justify-content-center justify-content-sm-end flex-wrap mb-3 mb-sm-0">
         {{ with $links }}
         {{ with index . "developer"}}
-        <ul class="list-inline mb-0">
+        <ul class="list-inline mb-2 mb-sm-0">
           {{ range . }}
           <li class="list-inline-item mx-2 h3" data-toggle="tooltip" data-placement="top" title="{{ .name }}" aria-label="{{ .name }}">
             <a class="text-white" target="_blank" rel="noopener noreferrer" href="{{ .url }}">
