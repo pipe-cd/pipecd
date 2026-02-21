@@ -24,7 +24,7 @@ PlanPreview with GitHub actions <a href="https://github.com/pipe-cd/actions-plan
 
 ## Prerequisites
 
-- Ensure the version of your Piped is at least `v0.11.0`.
+- Ensure the version of your `piped` is at least `v0.11.0`.
 - Having an API key that has `READ_WRITE` role to authenticate with PipeCD's Control Plane. A new key can be generated from `settings/api-key` page of your PipeCD web.
 
 ## Usage
