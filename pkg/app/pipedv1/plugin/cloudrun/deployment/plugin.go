@@ -17,7 +17,7 @@ package deployment
 import (
 	"context"
 	"slices"
-
+	"strings"
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/cloudrunservice/config"
@@ -54,8 +54,43 @@ func (p *Plugin) ExecuteStage(ctx context.Context, _ *sdk.ConfigNone, dts []*sdk
 }
 
 func (p *Plugin) DetermineVersions(ctx context.Context, _ *sdk.ConfigNone, input *sdk.DetermineVersionsInput[config.CloudRunApplicationSpec]) (*sdk.DetermineVersionsResponse, error) {
-	// TODO implement me
-	panic("implement me")
+	//Getting the image from the spec
+	image := input.Request.DeploymentSource.ApplicationConfig.Spec.Input.Image
+
+	// custom ImageVersionExtraction logic to parse the image string 
+	version := ImageVersionExtraction(image)
+
+	// Return using the verified SDK fields
+	return &sdk.DetermineVersionsResponse{
+		Versions: []sdk.ArtifactVersion{
+			{
+				Version: version,
+				Name:    image,
+			},
+		},
+	}, nil
+}
+
+func ImageVersionExtraction(image string) string {
+	if image == "" {
+		return "unknown"
+	}
+
+	// Handle digest format: gcr.io/app@sha256:xxx
+	if idx := strings.LastIndex(image, "@"); idx != -1 {
+		return image[idx+1:]
+	}
+
+	// Handle tag format: gcr.io/app:tag
+	if idx := strings.LastIndex(image, ":"); idx != -1 {
+		// Avoid catching port numbers in registry URL
+		slashIdx := strings.LastIndex(image, "/")
+		if idx > slashIdx {
+			return image[idx+1:]
+		}
+	}
+
+	return "latest"
 }
 
 func (p *Plugin) DetermineStrategy(ctx context.Context, _ *sdk.ConfigNone, input *sdk.DetermineStrategyInput[config.CloudRunApplicationSpec]) (*sdk.DetermineStrategyResponse, error) {
