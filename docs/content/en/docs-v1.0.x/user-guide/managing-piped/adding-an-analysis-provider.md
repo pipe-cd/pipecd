@@ -3,10 +3,10 @@ title: "Adding an analysis provider"
 linkTitle: "Adding analysis provider"
 weight: 6
 description: >
-  This page describes how to add an Analysis Provider to analyize the metrics of your deployment.
+  This page describes how to add an Analysis Provider to analyze the metrics of your deployment.
 ---
 
-To enable [Automated deployment analysis](../../managing-application/customizing-deployment/automated-deployment-analysis/) feature, you have to set the needed information for Piped to connect to the [Analysis Provider](../../../concepts/#analysis-provider).
+To enable automated deployment analysis, you have to set the needed information for `piped` to connect to the [Analysis Provider](../../../concepts/#analysis-provider). See [managing applications](../managing-application/) for deployment and analysis features.
 
 Currently, PipeCD supports the following providers:
 
@@ -15,9 +15,11 @@ Currently, PipeCD supports the following providers:
 
 ## Prometheus
 
-Piped queries the [range query endpoint](https://prometheus.io/docs/prometheus/latest/querying/api/#range-queries) to obtain metrics used to evaluate the deployment.
+`piped` queries the [range query endpoint](https://prometheus.io/docs/prometheus/latest/querying/api/#range-queries) to obtain metrics used to evaluate the deployment.
 
 You need to define the Prometheus server address so that it can be accessed by your `piped`.
+
+>**Note:** The analysis plugin can run in-process; when using the built-in provider, `port` and `url` can be omitted or left empty.
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -35,11 +37,11 @@ spec:
               address: https://your-prometheus.dev
 ```
 
-To know more, see the full list of [configurable fields](configuration-reference/#analysisproviderdatadogconfig).
+To know more, see the full list of [configurable fields](configuration-reference/#analysisproviderprometheusconfig).
 
 ## Datadog
 
-Piped queries the [MetricsApi.QueryMetrics](https://docs.datadoghq.com/api/latest/metrics/#query-timeseries-points) endpoint to obtain metrics used to evaluate the deployment.
+`piped` queries the [MetricsApi.QueryMetrics](https://docs.datadoghq.com/api/latest/metrics/#query-timeseries-points) endpoint to obtain metrics used to evaluate the deployment.
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
