@@ -1,15 +1,12 @@
 ---
-date: 2026-02-23
+date: 2026-02-24
+weight: 977
 title: "Install PipeCD locally using Kind"
 linkTitle: "Install PipeCD locally using Kind"
-weight: 992
 author: Cornelius Emase ([@lochipi](https://github.com/lochipi))
 categories: ["Tutorial"]
 tags: ["PipeCD", "Kind", "Kubernetes", "Calico", "Local Development"]
 ---
-
-This guide walks you through installing and running PipeCD locally using Kind, covering the essential steps to get a working Kubernetes cluster and PipeCD setup for local experimentation.
-
 ## Video walkthrough
 
 Prefer a video? Watch the step-by-step walkthrough here:
@@ -29,7 +26,7 @@ By the end of this guide, you will have:
 
 This setup typically takes 20–30 minutes, depending on your system and network speed.
 
-## Value
+## When to use this guide
 
 Use this guide if you want to:
 
@@ -37,7 +34,7 @@ Use this guide if you want to:
 - Understand how PipeCD components fit together.
 - Experiment safely before moving to production.
 
-This is not a production setup. For production environments, refer to the official [PipeCD deployment guides](https://pipecd.dev/docs-v1.0.x/user-guide/managing-application/).
+This is not a production setup. For production environments, refer to the official [PipeCD installation guide](https://pipecd.dev/docs-v1.0.x/installation/).
 
 ## Before you begin
 
@@ -246,16 +243,6 @@ sed -e "s/<YOUR_PIPED_ID>/${PIPED_ID}/g" \
     -e "s/<YOUR_PIPED_KEY_DATA>/${PIPED_KEY}/g" | \
 kubectl apply -n pipecd -f -
 ```
-
-You can also inject values directly in the command:
-
-```bash
-curl -s https://raw.githubusercontent.com/pipe-cd/pipecd/master/quickstart/manifests/piped.yaml | \
-sed -e "s/<YOUR_PIPED_ID>/piped-sample-123/g" \
-    -e "s/<YOUR_PIPED_KEY_DATA>/LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0t/g" | \
-kubectl apply -n pipecd -f -
-```
-
 This command:
 
 - Downloads the manifest.
@@ -270,7 +257,8 @@ kubectl get pods -n pipecd
 
 You should see a `piped` pod in the `Running` state.
 
-In the PipeCD UI, the Piped should now appear as Connected.(Denoted by the blue dot after the title name).
+In the PipeCD UI, the Piped should now appear as Connected.
+Connected Piped instances are marked with a blue dot next to the Piped name.
 
 ![Piped connected status in PipeCD UI](/images/install-kind-pipecd-piped-connected.png)
 
