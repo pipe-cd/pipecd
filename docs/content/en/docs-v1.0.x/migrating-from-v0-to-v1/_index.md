@@ -1,20 +1,20 @@
 ---
-title: "Migrate to PipeCD V1"
-linkTitle: "Migrate to PipeCD V1"
+title: "Migrate to PipeCD v1"
+linkTitle: "Migrate to PipeCD v1"
 weight: 90
 description: >
-  Documentation on migrating your application from PipeCD V0 to V1
+  Documentation on migrating your application from PipeCD v0 to v1
 ---
 
-This page explains how to safely migrate your existing PipeCD System to the RC version of **PipeCD V1**, the new plugin-based architecture that brings modularity and extensibility to PipeCD.
+This page explains how to safely migrate your existing PipeCD System to the RC version of **PipeCD v1**, the new plugin-based architecture that brings modularity and extensibility to PipeCD.
 
-Incase you are using PipeCD V0, follow the setps on this page to migrate to **PipeCD V1**.
+In case you are using PipeCD v0, follow the steps on this page to migrate to **PipeCD v1**.
 
 ## Overview
 
-PipeCD V1 introduces a **pluggable architecture** that allows developers to add and maintain custom deployment and operational plugins without modifying the core system of PipeCD.
+PipeCD v1 introduces a **pluggable architecture** that allows developers to add and maintain custom deployment and operational plugins without modifying the core system of PipeCD.
 
-Migration from v0 is designed to be **safe** and **incremental**, allowing you to switch to PipeCD V1 with minimal disruption.
+Migration from v0 is designed to be **safe** and **incremental**, allowing you to switch to PipeCD v1 with minimal disruption.
 
 ## Components
 
@@ -22,8 +22,8 @@ The PipeCD System has 2 main components:
 
 | Component | Description | Compatibility |
 |------------|--------------|----------------|
-| **Control Plane** | Manages projects, deployments, and applications. | Supports both piped and pipedv1 concurrently. |
-| **Piped** | Manages the actual deployment and syncing of applications. | Backward compatible - You can switch back to old piped versions. |
+| **Control Plane** | Manages projects, deployments, and applications. | Supports both `piped` and pipedv1 concurrently. |
+| **`piped`** | Manages the actual deployment and syncing of applications. | Backward compatible - You can switch back to old `piped` versions. |
 
 ---
 
@@ -82,7 +82,7 @@ pipectl version
 >
 >You can check all releases on the [Pipecd Releases](https://github.com/pipe-cd/pipecd/releases) page.
 
-For more options of installing pipectl, checkout installing pipectl(link)
+For more options of installing pipectl, check out the [installing pipectl](https://pipecd.dev/docs-v1.0.x/user-guide/command-line-tool/) guide.
 
 ## 2. Convert Application Configurations to v1 Format
 
@@ -99,7 +99,7 @@ Or specify an entire directory:
 pipectl migrate application-config --dirs=path/to/apps/
 ```
 
-Here is an example for a simple app.pipecd.yaml file which demonstrates a kubernetes deployment and simulates a 30s wait:
+Here is an example for a simple app.pipecd.yaml file which demonstrates a Kubernetes deployment and simulates a 1m wait:
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -137,7 +137,7 @@ You’ll need an API key with write permission. Check:
 
 - [Generating an API key](https://pipecd.dev/docs/user-guide/command-line-tool/#authentication)
 
-After obtaining your API key, Run:
+After obtaining your API key, run:
 
 ```bash
 pipectl migrate database \
@@ -156,7 +156,7 @@ In pipedv1, **platform providers** have been replaced by **plugins**. Each plugi
 
 ### Example (Old piped config)
 
-Your exisiting `piped` config may look similar to the following:
+Your existing `piped` config may look similar to the following:
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -235,13 +235,13 @@ Example:
 - [v1.0.0-rc3](https://github.com/pipe-cd/pipecd/releases/tag/pipedv1%2Fexp%2Fv1.0.0-rc3)
 
 >**Warning:**
-> Before switching to `pipedv1`, stop your existing Piped process to avoid conflicts, as both versions use the same `piped-id`.
+> Before switching to `pipedv1`, stop your existing `piped` process to avoid conflicts, as both versions use the same `piped-id`.
 
 Once you have prepared your pipedv1 configuration, there are a few different ways to deploy it.
 
 ### Option 1 - Deploy via Helm (Kubernetes)
 
-If you are deploying Piped as a pod in a Kubernetes cluster, use the following Helm command:
+If you are deploying `piped` as a pod in a Kubernetes cluster, use the following Helm command:
 
 ```bash
 helm upgrade -i pipedv1-exp oci://ghcr.io/pipe-cd/chart/pipedv1-exp \
@@ -263,18 +263,18 @@ curl -Lo ./piped https://github.com/pipe-cd/pipecd/releases/download/pipedv1%2Fe
 chmod +x ./piped
 
 # Run piped binary
-./piped piped --config-file=<PATH_TO_PIPEDV1_CONFIG_FILE> --tools-dir=/tmp/piped-bin
+./piped run --config-file=<PATH_TO_PIPEDV1_CONFIG_FILE> --tools-dir=/tmp/piped-bin
 ```
 
 If your Control Plane is running locally, append the `--insecure=true` flag to skip TLS certificate verification:
 
 ```bash
-./piped piped --config-file=<PATH_TO_PIPEDV1_CONFIG_FILE> --tools-dir=/tmp/piped-bin --insecure=true
+./piped run --config-file=<PATH_TO_PIPEDV1_CONFIG_FILE> --tools-dir=/tmp/piped-bin --insecure=true
 ```
 
 ### Option 3 - Run `pipedv1` as a Container
 
-In addtion to running piped using Helm or as a standalone binary, you can also run it as a container. This is useful for environments such as CloudRun, ECS Fargate or more.
+In addition to running piped using Helm or as a standalone binary, you can also run it as a container. This is useful for environments such as CloudRun, ECS Fargate or more.
 
 A prebuilt container image of `pipedv1` is available on GitHub Container Registry:
 
@@ -290,7 +290,7 @@ docker pull ghcr.io/pipe-cd/pipedv1-exp:<version>
 
 ## Want to switch back?
 
-If you need to roll back to using PipeCD V0, you can do so safely at any time.
+If you need to roll back to using PipeCD v0, you can do so safely at any time.
 
 Simply **stop** the running `pipedv1` instance, then **start** the `pipedv0` service as you normally would.
 

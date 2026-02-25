@@ -6,15 +6,15 @@ description: >
   Learn how to create PipeCD plugins.
 ---
 
-PipeCD's plugin architecture allows anyone to extend piped's capabilities by creating custom plugins. This guide explains how to develop and contribute plugins.
+PipeCD's plugin architecture allows anyone to extend `piped`'s capabilities by creating custom plugins. This guide explains how to develop and contribute plugins.
 
 ## Understanding the plugin architecture
 
-In PipeCD v1, plugins are the actors that execute deployments on behalf of piped. Instead of piped directly deploying to platforms, plugins handle platform-specific logic while piped's core controls deployment flows.
+In PipeCD v1, plugins are the actors that execute deployments on behalf of `piped`. Instead of `piped` directly deploying to platforms, plugins handle platform-specific logic while `piped`'s core controls deployment flows.
 
 **Key concepts:**
 
-- **Plugins** run as gRPC servers, launched and managed by piped
+- **Plugins** run as gRPC servers, launched and managed by `piped`
 - **Deploy targets** define where a plugin deploys (e.g., a Kubernetes cluster)
 - Plugins can be **official** (maintained by PipeCD team) or **community-contributed**
 
@@ -81,7 +81,7 @@ your-plugin/
 
 ### Plugin configuration
 
-Plugins are configured in the piped config. See the [piped installation guide](/docs-v1.0.x/installation/install-piped/) for configuration examples:
+Plugins are configured in the `piped` config. See the [`piped` installation guide](/docs-v1.0.x/installation/install-piped/) for configuration examples:
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
