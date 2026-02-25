@@ -3,7 +3,7 @@ title: "Configuring notifications"
 linkTitle: "Configuring notifications"
 weight: 8
 description: >
-  This page describes how to configure piped to send notifications to external services.
+  This page describes how to configure `piped` to send notifications to external services.
 ---
 
 PipeCD events (deployment triggered, planned, completed, analysis result, piped started...) can be sent to external services like Slack or a Webhook service. While forwarding those events to a chat service helps developers have a quick and convenient way to know the deployment's current status, forwarding to a Webhook service may be useful for triggering other related tasks like CI jobs.
@@ -33,7 +33,7 @@ Below is the list of supporting event names and their groups.
 | APPLICATION_OUT_OF_SYNC | APPLICATION_SYNC | <p style="text-align: center;"><input type="checkbox" disabled></p> |  |
 | APPLICATION_HEALTHY | APPLICATION_HEALTH | <p style="text-align: center;"><input type="checkbox" disabled></p> |  |
 | APPLICATION_UNHEALTHY | APPLICATION_HEALTH | <p style="text-align: center;"><input type="checkbox" disabled></p> |  |
-| PIPED_STARTED | PIPED | <p style="text-align: center;"><input type="checkbox" checked  disabled></p> |  |
+| PIPED_STARTED | PIPED | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |  |
 | PIPED_STOPPED | PIPED | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |  |
 
 ## Sending notifications to Slack
@@ -109,9 +109,9 @@ spec:
 Deployment was triggered, planned and completed successfully
 </p>
 
-![A Slack notification of a Piped starting](/images/slack-notification-piped-started.png)
+![A Slack notification of a piped starting](/images/slack-notification-piped-started.png)
 <p style="text-align: center;">
-A piped has been started
+A `piped` has been started
 </p>
 
 For detailed configuration, please check the [configuration reference for Notifications](configuration-reference/#notifications).
