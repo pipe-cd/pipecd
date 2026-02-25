@@ -14,7 +14,12 @@
 
 package config
 
-import "github.com/pipe-cd/piped-plugin-sdk-go/unit"
+import (
+	"encoding/json"
+
+	"github.com/creasty/defaults"
+	"github.com/pipe-cd/piped-plugin-sdk-go/unit"
+)
 
 // K8sBaselineRolloutStageOptions contains all configurable values for a K8S_BASELINE_ROLLOUT stage.
 type K8sBaselineRolloutStageOptions struct {
@@ -28,6 +33,19 @@ type K8sBaselineRolloutStageOptions struct {
 	Suffix string `json:"suffix" default:"baseline"`
 	// Whether the BASELINE service should be created.
 	CreateService bool `json:"createService"`
+}
+
+func (o *K8sBaselineRolloutStageOptions) UnmarshalJSON(data []byte) error {
+	type alias K8sBaselineRolloutStageOptions
+	var a alias
+	if err := json.Unmarshal(data, &a); err != nil {
+		return err
+	}
+	*o = K8sBaselineRolloutStageOptions(a)
+	if err := defaults.Set(o); err != nil {
+		return err
+	}
+	return nil
 }
 
 // K8sBaselineCleanStageOptions contains all configurable values for a K8S_BASELINE_CLEAN stage.
