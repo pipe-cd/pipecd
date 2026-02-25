@@ -14,6 +14,12 @@
 
 package config
 
+import (
+	"encoding/json"
+
+	"github.com/creasty/defaults"
+)
+
 // Config represents the plugin-scoped configuration.
 type Config struct{}
 
@@ -28,6 +34,22 @@ type DeployTargetConfig struct {
 	// Enable drift detection.
 	// TODO: This is a temporary option because Terraform drift detection is buggy and has performance issues. This will be possibly removed in the future release.
 	DriftDetectionEnabled *bool `json:"driftDetectionEnabled" default:"true"`
+}
+
+func (c *DeployTargetConfig) UnmarshalJSON(data []byte) error {
+	type alias DeployTargetConfig
+
+	var a alias
+	if err := json.Unmarshal(data, &a); err != nil {
+		return err
+	}
+
+	*c = DeployTargetConfig(a)
+	if err := defaults.Set(c); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // ApplicationConfigSpec represents the application-scoped plugin config.
