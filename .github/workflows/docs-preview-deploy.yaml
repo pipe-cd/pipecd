@@ -1,0 +1,82 @@
+# This workflow builds and deploys docs preview to GitHub Pages for branches prefixed with 'docs-'.
+# Each branch gets its own subdirectory at https://<owner>.github.io/pipecd/<branch-name>/
+
+name: Docs Preview Deploy
+
+on:
+  push:
+    branches:
+      - 'docs-*'
+    paths:
+      - 'docs/**'
+      - '*.md'
+      - '.github/workflows/docs-preview-deploy.yaml'
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+# Prevent multiple deployments to the same branch from running simultaneously
+concurrency:
+  group: docs-preview-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@75d2e84710de30f6ff7268e08f310b60ef14033f # v3.0.0
+        with:
+          hugo-version: '0.148.2'
+          extended: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+
+      - name: Get branch name
+        id: branch
+        run: echo "name=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Get repository owner
+        id: repo
+        run: |
+          echo "owner=${GITHUB_REPOSITORY_OWNER}" >> $GITHUB_OUTPUT
+          echo "name=$(echo '${{ github.repository }}' | cut -d'/' -f2)" >> $GITHUB_OUTPUT
+
+      - name: Build docs for preview
+        run: |
+          cd docs
+          npm install autoprefixer
+          npm install postcss-cli
+          # Build with custom baseURL for the preview deployment
+          env HUGO_ENV="production" \
+              RELEASE="$(grep '^tag:' ../RELEASE | awk '{print $2}')" \
+              hugo --baseURL "https://${{ steps.repo.outputs.owner }}.github.io/${{ steps.repo.outputs.name }}/${{ steps.branch.outputs.name }}/"
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/public
+          destination_dir: ${{ steps.branch.outputs.name }}
+          keep_files: true  # Keep other preview directories
+
+      - name: Output preview URL
+        run: |
+          echo "## 📚 Docs Preview Deployed!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Preview URL: https://${{ steps.repo.outputs.owner }}.github.io/${{ steps.repo.outputs.name }}/${{ steps.branch.outputs.name }}/" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Add this to your PR description:" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "Preview: https://${{ steps.repo.outputs.owner }}.github.io/${{ steps.repo.outputs.name }}/${{ steps.branch.outputs.name }}/" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
