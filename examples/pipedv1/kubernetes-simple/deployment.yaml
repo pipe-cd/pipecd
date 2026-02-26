@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-pipedv1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simple-pipedv1
+  template:
+    metadata:
+      labels:
+        app: simple-pipedv1
+    spec:
+      containers:
+      - name: app
+        image: gcr.io/google-samples/hello-app:2.0
+        ports:
+        - containerPort: 8080
