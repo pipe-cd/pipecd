@@ -13,7 +13,7 @@ COPY . ./
 
 RUN make build/go MOD=pipectl BUILD_OS=${TARGETOS} BUILD_ARCH=${TARGETARCH}
 
-FROM alpine:3.22.2
+FROM alpine:3.23.2
 
 RUN apk add --no-cache git
 
