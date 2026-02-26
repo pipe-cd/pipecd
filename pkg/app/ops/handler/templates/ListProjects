@@ -35,8 +35,10 @@
       <th>Description</th>
       <th>Static Admin Disabled</th>
       <th>Shared SSO Name</th>
+      <th>Project Status</th>
       <th>Created At</th>
       <th>Reset Static Admin Password</th>
+      <th>Toggle Status</th>
     </tr>
     {{ range $index, $project := . }}
     <tr>
@@ -45,8 +47,16 @@
       <td>{{ $project.Description }}</td>
       <td>{{ $project.StaticAdminDisabled }}</td>
       <td>{{ $project.SharedSSOName }}</td>
+      <td>{{ if eq $project.Disabled "true" }}<strong style="color: red;">Disabled</strong>{{ else }}<strong style="color: green;">Enabled</strong>{{ end }}</td>
       <td>{{ $project.CreatedAt }}</td>
       <td><a href="/projects/reset-password?ID={{ $project.ID }}">Reset Password</a></td>
+      <td>
+        {{ if eq $project.Disabled "true" }}
+          <a href="/projects/toggle-status?ID={{ $project.ID }}&action=enable">Enable</a>
+        {{ else }}
+          <a href="/projects/toggle-status?ID={{ $project.ID }}&action=disable">Disable</a>
+        {{ end }}
+      </td>
     </tr>
     {{ end }}
 

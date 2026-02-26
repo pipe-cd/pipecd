@@ -12,7 +12,7 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 
 import { useFormik } from "formik";
-import { FC, memo, useState } from "react";
+import { FC, memo, useEffect, useState } from "react";
 import * as yup from "yup";
 import { STATIC_ADMIN_DESCRIPTION } from "~/constants/text";
 import { UPDATE_STATIC_ADMIN_INFO_SUCCESS } from "~/constants/toast-text";
@@ -112,6 +112,7 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
 
   const { data: project } = useGetProject();
   const isEnabled = project?.staticAdminDisabled === false;
+  const isProjectDisabled = project?.disabled ?? false;
   const currentUsername = project?.username || null;
 
   const { mutateAsync: updateStaticAdmin } = useUpdateStaticAdmin();
@@ -119,6 +120,12 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
     mutateAsync: toggleAvailability,
   } = useToggleAvailabilityStaticAdmin();
   const { addToast } = useToast();
+
+  useEffect(() => {
+    if (isProjectDisabled) {
+      setIsEdit(false);
+    }
+  }, [isProjectDisabled]);
 
   const handleSubmit = (values: {
     username: string;
@@ -138,6 +145,9 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
   };
 
   const handleToggleAvailability = (): void => {
+    if (isProjectDisabled) {
+      return;
+    }
     toggleAvailability({ isEnabled: !isEnabled });
   };
 
@@ -150,13 +160,18 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
           checked={isEnabled}
           color="primary"
           onClick={handleToggleAvailability}
-          disabled={currentUsername === null}
+          disabled={currentUsername === null || isProjectDisabled}
         />
       </ProjectTitleWrap>
       <ProjectDescription variant="body1" color="textSecondary">
         {STATIC_ADMIN_DESCRIPTION}
       </ProjectDescription>
-      <ProjectValuesWrapper sx={{ opacity: isEnabled === false ? 0.5 : 1 }}>
+      <ProjectValuesWrapper
+        sx={{
+          opacity: isEnabled === false || isProjectDisabled ? 0.5 : 1,
+          pointerEvents: isProjectDisabled ? "none" : undefined,
+        }}
+      >
         {currentUsername ? (
           <>
             <ProjectValues>
@@ -170,7 +185,7 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
               <IconButton
                 aria-label="edit static admin user"
                 onClick={() => setIsEdit(true)}
-                disabled={isEnabled === false}
+                disabled={isEnabled === false || isProjectDisabled}
                 size="large"
               >
                 <EditIcon />

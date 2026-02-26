@@ -73,6 +73,10 @@ func TestVerify(t *testing.T) {
 			"project-1": {
 				Id: "project-1",
 			},
+			"project-disabled": {
+				Id:       "project-disabled",
+				Disabled: true,
+			},
 		},
 	}
 	pipedGetter := &fakePipedGetter{
@@ -114,6 +118,15 @@ func TestVerify(t *testing.T) {
 				},
 				Disabled: true,
 			},
+			"piped-2-1": {
+				Id:        "piped-2-1",
+				ProjectId: "project-disabled",
+				Keys: []*model.PipedKey{
+					{
+						Hash: hashGenerator("piped-key-2-1"),
+					},
+				},
+			},
 		},
 	}
 	v := NewVerifier(
@@ -142,41 +155,47 @@ func TestVerify(t *testing.T) {
 	require.Equal(t, 1, projectGetter.calls)
 	require.Equal(t, 1, pipedGetter.calls)
 
+	// Disabled project.
+	err = v.Verify(ctx, "project-disabled", "piped-2-1", "piped-key-2-1")
+	assert.Equal(t, fmt.Errorf("project project-disabled for piped piped-2-1 was disabled"), err)
+	require.Equal(t, 2, projectGetter.calls)
+	require.Equal(t, 1, pipedGetter.calls)
+
 	// Found piped but project id was not correct.
 	err = v.Verify(ctx, "project-1", "piped-1-2", "piped-key-1-2")
 	assert.Equal(t, fmt.Errorf("the project of piped piped-1-2 is not matched, expected=project-1, got=project-non-existence"), err)
-	require.Equal(t, 2, projectGetter.calls)
+	require.Equal(t, 3, projectGetter.calls)
 	require.Equal(t, 2, pipedGetter.calls)
 
 	// Found piped but it was disabled.
 	err = v.Verify(ctx, "project-1", "piped-1-3", "piped-key-1-3")
 	assert.Equal(t, fmt.Errorf("piped piped-1-3 was already disabled"), err)
-	require.Equal(t, 2, projectGetter.calls)
+	require.Equal(t, 3, projectGetter.calls)
 	require.Equal(t, 3, pipedGetter.calls)
 
 	piped13 := pipedGetter.pipeds["piped-1-3"]
 	piped13.Disabled = false
 	err = v.Verify(ctx, "project-1", "piped-1-3", "piped-key-1-3")
 	assert.Equal(t, nil, err)
-	require.Equal(t, 2, projectGetter.calls)
+	require.Equal(t, 3, projectGetter.calls)
 	require.Equal(t, 4, pipedGetter.calls)
 
 	// OK.
 	err = v.Verify(ctx, "project-1", "piped-1-1", "piped-key-1-1")
 	assert.Equal(t, nil, err)
-	require.Equal(t, 2, projectGetter.calls)
+	require.Equal(t, 3, projectGetter.calls)
 	require.Equal(t, 5, pipedGetter.calls)
 
 	// Wrong piped key.
 	err = v.Verify(ctx, "project-1", "piped-1-1", "piped-key-1-1-wrong")
 	assert.Equal(t, fmt.Errorf("the key of piped piped-1-1 is not matched, crypto/bcrypt: hashedPassword is not the hash of the given password"), err)
-	require.Equal(t, 2, projectGetter.calls)
+	require.Equal(t, 3, projectGetter.calls)
 	require.Equal(t, 6, pipedGetter.calls)
 
 	// The invalid key should be cached.
 	err = v.Verify(ctx, "project-1", "piped-1-1", "piped-key-1-1-wrong")
 	assert.Equal(t, fmt.Errorf("the key of piped piped-1-1 is not matched, crypto/bcrypt: hashedPassword is not the hash of the given password"), err)
-	require.Equal(t, 2, projectGetter.calls)
+	require.Equal(t, 3, projectGetter.calls)
 	require.Equal(t, 6, pipedGetter.calls)
 
 	// OK for newly added key.
@@ -186,6 +205,6 @@ func TestVerify(t *testing.T) {
 	})
 	err = v.Verify(ctx, "project-1", "piped-1-1", "piped-key-1-1-new")
 	assert.Equal(t, nil, err)
-	require.Equal(t, 2, projectGetter.calls)
+	require.Equal(t, 3, projectGetter.calls)
 	require.Equal(t, 7, pipedGetter.calls)
 }

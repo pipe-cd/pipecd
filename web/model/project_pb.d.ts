@@ -45,6 +45,9 @@ export class Project extends jspb.Message {
   clearUserGroupsList(): Project;
   addUserGroups(value?: ProjectUserGroup, index?: number): ProjectUserGroup;
 
+  getDisabled(): boolean;
+  setDisabled(value: boolean): Project;
+
   getCreatedAt(): number;
   setCreatedAt(value: number): Project;
 
@@ -71,6 +74,7 @@ export namespace Project {
     allowStrayAsViewer: boolean,
     rbacRolesList: Array<ProjectRBACRole.AsObject>,
     userGroupsList: Array<ProjectUserGroup.AsObject>,
+    disabled: boolean,
     createdAt: number,
     updatedAt: number,
   }

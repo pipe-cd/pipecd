@@ -90,6 +90,7 @@ type commandOutputPutter interface {
 type PipedAPI struct {
 	pipedservice.UnimplementedPipedServiceServer
 
+	projectStore              datastore.ProjectStore
 	applicationStore          pipedAPIApplicationStore
 	deploymentStore           pipedAPIDeploymentStore
 	deploymentChainStore      pipedAPIDeploymentChainStore
@@ -114,6 +115,7 @@ type PipedAPI struct {
 // NewPipedAPI creates a new PipedAPI instance.
 func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sc cache.Cache, sls stagelogstore.Store, alss applicationlivestatestore.Store, las analysisresultstore.Store, hc cache.Cache, cop commandOutputPutter, uas unregisteredappstore.Store, aso applicationsharedobjectstore.Store, webBaseURL string, logger *zap.Logger) *PipedAPI {
 	a := &PipedAPI{
+		projectStore:              datastore.NewProjectStore(ds),
 		applicationStore:          datastore.NewApplicationStore(ds),
 		deploymentStore:           datastore.NewDeploymentStore(ds),
 		deploymentChainStore:      datastore.NewDeploymentChainStore(ds),
@@ -219,6 +221,15 @@ func (a *PipedAPI) ListApplications(ctx context.Context, req *pipedservice.ListA
 	if err != nil {
 		return nil, err
 	}
+	// Check if the project is disabled.
+	project, err := a.projectStore.Get(ctx, projectID)
+	if err != nil {
+		return nil, gRPCStoreError(err, "get project")
+	}
+	if project.Disabled {
+		return &pipedservice.ListApplicationsResponse{}, nil
+	}
+
 	opts := datastore.ListOptions{
 		Filters: []datastore.ListFilter{
 			{
@@ -393,6 +404,15 @@ func (a *PipedAPI) CreateDeployment(ctx context.Context, req *pipedservice.Creat
 	if err != nil {
 		return nil, err
 	}
+	// Check if the project is disabled.
+	project, err := a.projectStore.Get(ctx, projectID)
+	if err != nil {
+		return nil, gRPCStoreError(err, "get project")
+	}
+	if project.Disabled {
+		return nil, status.Error(codes.FailedPrecondition, "Cannot create deployment: project is currently disabled. Please contact your administrator to enable the project.")
+	}
+
 	if err := a.validateAppBelongsToPiped(ctx, req.Deployment.ApplicationId, pipedID); err != nil {
 		return nil, err
 	}
@@ -618,6 +638,19 @@ func (a *PipedAPI) ListUnhandledCommands(ctx context.Context, req *pipedservice.
 	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	// Check if the project is disabled.
+	projectID, _, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	project, err := a.projectStore.Get(ctx, projectID)
+	if err != nil {
+		return nil, gRPCStoreError(err, "get project")
+	}
+	if project.Disabled {
+		return &pipedservice.ListUnhandledCommandsResponse{}, nil
 	}
 
 	cmds, err := a.commandStore.ListUnhandledCommands(ctx, pipedID)

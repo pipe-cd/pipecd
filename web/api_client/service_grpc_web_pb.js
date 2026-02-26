@@ -2305,6 +2305,128 @@ proto.grpc.service.webservice.WebServicePromiseClient.prototype.updateProjectRBA
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
+ *   !proto.grpc.service.webservice.EnableProjectRequest,
+ *   !proto.grpc.service.webservice.EnableProjectResponse>}
+ */
+const methodDescriptor_WebService_EnableProject = new grpc.web.MethodDescriptor(
+  '/grpc.service.webservice.WebService/EnableProject',
+  grpc.web.MethodType.UNARY,
+  proto.grpc.service.webservice.EnableProjectRequest,
+  proto.grpc.service.webservice.EnableProjectResponse,
+  /**
+   * @param {!proto.grpc.service.webservice.EnableProjectRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.grpc.service.webservice.EnableProjectResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.grpc.service.webservice.EnableProjectRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.grpc.service.webservice.EnableProjectResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.grpc.service.webservice.EnableProjectResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.grpc.service.webservice.WebServiceClient.prototype.enableProject =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/EnableProject',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_EnableProject,
+      callback);
+};
+
+
+/**
+ * @param {!proto.grpc.service.webservice.EnableProjectRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.grpc.service.webservice.EnableProjectResponse>}
+ *     Promise that resolves to the response
+ */
+proto.grpc.service.webservice.WebServicePromiseClient.prototype.enableProject =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/EnableProject',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_EnableProject);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.grpc.service.webservice.DisableProjectRequest,
+ *   !proto.grpc.service.webservice.DisableProjectResponse>}
+ */
+const methodDescriptor_WebService_DisableProject = new grpc.web.MethodDescriptor(
+  '/grpc.service.webservice.WebService/DisableProject',
+  grpc.web.MethodType.UNARY,
+  proto.grpc.service.webservice.DisableProjectRequest,
+  proto.grpc.service.webservice.DisableProjectResponse,
+  /**
+   * @param {!proto.grpc.service.webservice.DisableProjectRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.grpc.service.webservice.DisableProjectResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.grpc.service.webservice.DisableProjectRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.grpc.service.webservice.DisableProjectResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.grpc.service.webservice.DisableProjectResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.grpc.service.webservice.WebServiceClient.prototype.disableProject =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/DisableProject',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_DisableProject,
+      callback);
+};
+
+
+/**
+ * @param {!proto.grpc.service.webservice.DisableProjectRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.grpc.service.webservice.DisableProjectResponse>}
+ *     Promise that resolves to the response
+ */
+proto.grpc.service.webservice.WebServicePromiseClient.prototype.disableProject =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/DisableProject',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_DisableProject);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
  *   !proto.grpc.service.webservice.GetMeRequest,
  *   !proto.grpc.service.webservice.GetMeResponse>}
  */
