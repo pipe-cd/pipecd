@@ -17,6 +17,7 @@ package main
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -53,6 +54,18 @@ type GraphQLClient interface {
 	Mutate(ctx context.Context, m interface{}, input githubv4.Input, variables map[string]interface{}) error
 }
 
+// mergeGroupEvent is a local struct for parsing merge_group events
+// since go-github v36 doesn't include MergeGroupEvent.
+type mergeGroupEvent struct {
+	MergeGroup struct {
+		HeadSHA string `json:"head_sha"`
+		HeadRef string `json:"head_ref"`
+		BaseRef string `json:"base_ref"`
+	} `json:"merge_group"`
+	Repo   *github.Repository `json:"repository"`
+	Sender *github.User       `json:"sender"`
+}
+
 // parsePullRequestEvent uses the given environment variables
 // to parse and build githubEvent struct.
 // Currently, we support 2 kinds of event as below:
@@ -67,6 +80,11 @@ func parseGitHubEvent(
 	payload []byte,
 	argPRNum int,
 ) (*githubEvent, error) {
+	// Handle merge_group event separately since go-github v36 doesn't support it.
+	if eventName == "merge_group" {
+		return parseMergeGroupEvent(ctx, pullSvc, payload, argPRNum)
+	}
+
 	event, err := github.ParseWebHook(eventName, payload)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse event payload: %v", err)
@@ -139,6 +157,42 @@ func parseGitHubEvent(
 	default:
 		return nil, fmt.Errorf("got an unexpected event type, got: %t", e)
 	}
+}
+
+// parseMergeGroupEvent parses a merge_group event payload.
+// This is needed because go-github v36 doesn't include MergeGroupEvent.
+func parseMergeGroupEvent(
+	ctx context.Context,
+	pullSvc PullRequestsService,
+	payload []byte,
+	argPRNum int,
+) (*githubEvent, error) {
+	var e mergeGroupEvent
+	if err := json.Unmarshal(payload, &e); err != nil {
+		return nil, fmt.Errorf("failed to parse merge_group event payload: %v", err)
+	}
+
+	var (
+		owner = e.Repo.Owner.GetLogin()
+		repo  = e.Repo.GetName()
+	)
+	pr, err := getPullRequest(ctx, pullSvc, owner, repo, argPRNum)
+	if err != nil {
+		return nil, err
+	}
+
+	return &githubEvent{
+		Owner:       owner,
+		Repo:        repo,
+		RepoRemote:  e.Repo.GetSSHURL(),
+		PRNumber:    argPRNum,
+		PRMergeable: pr.Mergeable,
+		PRClosed:    !pr.GetClosedAt().IsZero(),
+		HeadBranch:  pr.Head.GetRef(),
+		HeadCommit:  pr.Head.GetSHA(),
+		BaseBranch:  pr.Base.GetRef(),
+		SenderLogin: e.Sender.GetLogin(),
+	}, nil
 }
 
 func sendComment(ctx context.Context, svc IssuesService, owner, repo string, prNum int, body string) (*github.IssueComment, error) {
