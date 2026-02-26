@@ -26,6 +26,13 @@ area/tool:
 - tool/*
 - tool/**/*
 
+area/docs:
+- docs/*
+- docs/**/*
+- README.md
+- CONTRIBUTING.md
+- RELEASES.md
+
 area/pipedv1:
 - pkg/app/pipedv1/**/*
 - pkg/configv1/*
