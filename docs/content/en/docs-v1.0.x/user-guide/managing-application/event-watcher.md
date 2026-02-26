@@ -35,6 +35,7 @@ Therefore, you mainly need to:
 #### Use the `.pipe/` directory
 
 Prepare EventWatcher configuration files under the `.pipe/` directory at the root of your Git repository.
+In those files, you define which values in which files should be updated when the Piped found out a new Event.
 In those files, you define which values in which files should be updated when `piped` finds a new Event.
 
 For instance, suppose you want to update the Kubernetes manifest defined in `helloworld/deployment.yaml` when an Event with the name `helloworld-image-update` occurs:
