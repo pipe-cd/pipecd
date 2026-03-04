@@ -46,6 +46,10 @@ type PluginServiceClient interface {
 	GetDeploymentSharedMetadata(ctx context.Context, in *GetDeploymentSharedMetadataRequest, opts ...grpc.CallOption) (*GetDeploymentSharedMetadataResponse, error)
 	// ListStageCommands lists unhandled commands of the given stage and type.
 	ListStageCommands(ctx context.Context, in *ListStageCommandsRequest, opts ...grpc.CallOption) (*ListStageCommandsResponse, error)
+	// FetchStageCommands fetches all unhandled commands for the given deployment.
+	FetchStageCommands(ctx context.Context, in *FetchStageCommandsRequest, opts ...grpc.CallOption) (*FetchStageCommandsResponse, error)
+	// SendStageNotification sends the notification of the stage using piped notifier.
+	SendStageNotification(ctx context.Context, in *SendStageNotificationRequest, opts ...grpc.CallOption) (*SendStageNotificationResponse, error)
 	// GetApplicationSharedObject fetches an object of the application.
 	// The object path will be derived by the request.
 	GetApplicationSharedObject(ctx context.Context, in *GetApplicationSharedObjectRequest, opts ...grpc.CallOption) (*GetApplicationSharedObjectResponse, error)
@@ -160,6 +164,24 @@ func (c *pluginServiceClient) ListStageCommands(ctx context.Context, in *ListSta
 	return out, nil
 }
 
+func (c *pluginServiceClient) FetchStageCommands(ctx context.Context, in *FetchStageCommandsRequest, opts ...grpc.CallOption) (*FetchStageCommandsResponse, error) {
+	out := new(FetchStageCommandsResponse)
+	err := c.cc.Invoke(ctx, "/grpc.piped.service.PluginService/FetchStageCommands", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *pluginServiceClient) SendStageNotification(ctx context.Context, in *SendStageNotificationRequest, opts ...grpc.CallOption) (*SendStageNotificationResponse, error) {
+	out := new(SendStageNotificationResponse)
+	err := c.cc.Invoke(ctx, "/grpc.piped.service.PluginService/SendStageNotification", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *pluginServiceClient) GetApplicationSharedObject(ctx context.Context, in *GetApplicationSharedObjectRequest, opts ...grpc.CallOption) (*GetApplicationSharedObjectResponse, error) {
 	out := new(GetApplicationSharedObjectResponse)
 	err := c.cc.Invoke(ctx, "/grpc.piped.service.PluginService/GetApplicationSharedObject", in, out, opts...)
@@ -206,6 +228,10 @@ type PluginServiceServer interface {
 	GetDeploymentSharedMetadata(context.Context, *GetDeploymentSharedMetadataRequest) (*GetDeploymentSharedMetadataResponse, error)
 	// ListStageCommands lists unhandled commands of the given stage and type.
 	ListStageCommands(context.Context, *ListStageCommandsRequest) (*ListStageCommandsResponse, error)
+	// FetchStageCommands fetches all unhandled commands for the given deployment.
+	FetchStageCommands(context.Context, *FetchStageCommandsRequest) (*FetchStageCommandsResponse, error)
+	// SendStageNotification sends the notification of the stage using piped notifier.
+	SendStageNotification(context.Context, *SendStageNotificationRequest) (*SendStageNotificationResponse, error)
 	// GetApplicationSharedObject fetches an object of the application.
 	// The object path will be derived by the request.
 	GetApplicationSharedObject(context.Context, *GetApplicationSharedObjectRequest) (*GetApplicationSharedObjectResponse, error)
@@ -250,6 +276,12 @@ func (UnimplementedPluginServiceServer) GetDeploymentSharedMetadata(context.Cont
 }
 func (UnimplementedPluginServiceServer) ListStageCommands(context.Context, *ListStageCommandsRequest) (*ListStageCommandsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListStageCommands not implemented")
+}
+func (UnimplementedPluginServiceServer) FetchStageCommands(context.Context, *FetchStageCommandsRequest) (*FetchStageCommandsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FetchStageCommands not implemented")
+}
+func (UnimplementedPluginServiceServer) SendStageNotification(context.Context, *SendStageNotificationRequest) (*SendStageNotificationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendStageNotification not implemented")
 }
 func (UnimplementedPluginServiceServer) GetApplicationSharedObject(context.Context, *GetApplicationSharedObjectRequest) (*GetApplicationSharedObjectResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationSharedObject not implemented")
@@ -468,6 +500,42 @@ func _PluginService_ListStageCommands_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PluginService_FetchStageCommands_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FetchStageCommandsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServiceServer).FetchStageCommands(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.piped.service.PluginService/FetchStageCommands",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServiceServer).FetchStageCommands(ctx, req.(*FetchStageCommandsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PluginService_SendStageNotification_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendStageNotificationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServiceServer).SendStageNotification(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.piped.service.PluginService/SendStageNotification",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServiceServer).SendStageNotification(ctx, req.(*SendStageNotificationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _PluginService_GetApplicationSharedObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetApplicationSharedObjectRequest)
 	if err := dec(in); err != nil {
@@ -554,6 +622,14 @@ var PluginService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListStageCommands",
 			Handler:    _PluginService_ListStageCommands_Handler,
+		},
+		{
+			MethodName: "FetchStageCommands",
+			Handler:    _PluginService_FetchStageCommands_Handler,
+		},
+		{
+			MethodName: "SendStageNotification",
+			Handler:    _PluginService_SendStageNotification_Handler,
 		},
 		{
 			MethodName: "GetApplicationSharedObject",

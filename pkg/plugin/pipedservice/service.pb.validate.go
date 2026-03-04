@@ -35,6 +35,487 @@ var (
 	_ = sort.Sort
 )
 
+// Validate checks the field values on FetchStageCommandsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *FetchStageCommandsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on FetchStageCommandsRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// FetchStageCommandsRequestMultiError, or nil if none found.
+func (m *FetchStageCommandsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *FetchStageCommandsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetDeploymentId()) < 1 {
+		err := FetchStageCommandsRequestValidationError{
+			field:  "DeploymentId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return FetchStageCommandsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// FetchStageCommandsRequestMultiError is an error wrapping multiple validation
+// errors returned by FetchStageCommandsRequest.ValidateAll() if the
+// designated constraints aren't met.
+type FetchStageCommandsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m FetchStageCommandsRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m FetchStageCommandsRequestMultiError) AllErrors() []error { return m }
+
+// FetchStageCommandsRequestValidationError is the validation error returned by
+// FetchStageCommandsRequest.Validate if the designated constraints aren't met.
+type FetchStageCommandsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e FetchStageCommandsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e FetchStageCommandsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e FetchStageCommandsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e FetchStageCommandsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e FetchStageCommandsRequestValidationError) ErrorName() string {
+	return "FetchStageCommandsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e FetchStageCommandsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sFetchStageCommandsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = FetchStageCommandsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = FetchStageCommandsRequestValidationError{}
+
+// Validate checks the field values on FetchStageCommandsResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *FetchStageCommandsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on FetchStageCommandsResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// FetchStageCommandsResponseMultiError, or nil if none found.
+func (m *FetchStageCommandsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *FetchStageCommandsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetCommands() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, FetchStageCommandsResponseValidationError{
+						field:  fmt.Sprintf("Commands[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, FetchStageCommandsResponseValidationError{
+						field:  fmt.Sprintf("Commands[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return FetchStageCommandsResponseValidationError{
+					field:  fmt.Sprintf("Commands[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return FetchStageCommandsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// FetchStageCommandsResponseMultiError is an error wrapping multiple
+// validation errors returned by FetchStageCommandsResponse.ValidateAll() if
+// the designated constraints aren't met.
+type FetchStageCommandsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m FetchStageCommandsResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m FetchStageCommandsResponseMultiError) AllErrors() []error { return m }
+
+// FetchStageCommandsResponseValidationError is the validation error returned
+// by FetchStageCommandsResponse.Validate if the designated constraints aren't met.
+type FetchStageCommandsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e FetchStageCommandsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e FetchStageCommandsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e FetchStageCommandsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e FetchStageCommandsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e FetchStageCommandsResponseValidationError) ErrorName() string {
+	return "FetchStageCommandsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e FetchStageCommandsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sFetchStageCommandsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = FetchStageCommandsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = FetchStageCommandsResponseValidationError{}
+
+// Validate checks the field values on SendStageNotificationRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *SendStageNotificationRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SendStageNotificationRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// SendStageNotificationRequestMultiError, or nil if none found.
+func (m *SendStageNotificationRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SendStageNotificationRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetDeploymentId()) < 1 {
+		err := SendStageNotificationRequestValidationError{
+			field:  "DeploymentId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetStageId()) < 1 {
+		err := SendStageNotificationRequestValidationError{
+			field:  "StageId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Event
+
+	// no validation rules for Approver
+
+	if len(errors) > 0 {
+		return SendStageNotificationRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// SendStageNotificationRequestMultiError is an error wrapping multiple
+// validation errors returned by SendStageNotificationRequest.ValidateAll() if
+// the designated constraints aren't met.
+type SendStageNotificationRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SendStageNotificationRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SendStageNotificationRequestMultiError) AllErrors() []error { return m }
+
+// SendStageNotificationRequestValidationError is the validation error returned
+// by SendStageNotificationRequest.Validate if the designated constraints
+// aren't met.
+type SendStageNotificationRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SendStageNotificationRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SendStageNotificationRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SendStageNotificationRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SendStageNotificationRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SendStageNotificationRequestValidationError) ErrorName() string {
+	return "SendStageNotificationRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SendStageNotificationRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSendStageNotificationRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SendStageNotificationRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SendStageNotificationRequestValidationError{}
+
+// Validate checks the field values on SendStageNotificationResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *SendStageNotificationResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SendStageNotificationResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// SendStageNotificationResponseMultiError, or nil if none found.
+func (m *SendStageNotificationResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SendStageNotificationResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return SendStageNotificationResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// SendStageNotificationResponseMultiError is an error wrapping multiple
+// validation errors returned by SendStageNotificationResponse.ValidateAll()
+// if the designated constraints aren't met.
+type SendStageNotificationResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SendStageNotificationResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SendStageNotificationResponseMultiError) AllErrors() []error { return m }
+
+// SendStageNotificationResponseValidationError is the validation error
+// returned by SendStageNotificationResponse.Validate if the designated
+// constraints aren't met.
+type SendStageNotificationResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SendStageNotificationResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SendStageNotificationResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SendStageNotificationResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SendStageNotificationResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SendStageNotificationResponseValidationError) ErrorName() string {
+	return "SendStageNotificationResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SendStageNotificationResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSendStageNotificationResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SendStageNotificationResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SendStageNotificationResponseValidationError{}
+
 // Validate checks the field values on DecryptSecretRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.

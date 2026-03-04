@@ -16,6 +16,7 @@ package grpcapi
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
@@ -40,6 +41,11 @@ type PluginAPI struct {
 	Logger                *zap.Logger
 	metadataStoreRegistry *metadatastore.MetadataStoreRegistry
 	stageCommandLister    stageCommandLister
+	notifier              notifier
+}
+
+type notifier interface {
+	Notify(event model.NotificationEvent)
 }
 
 type apiClient interface {
@@ -47,10 +53,12 @@ type apiClient interface {
 	ReportStageLogsFromLastCheckpoint(ctx context.Context, in *pipedservice.ReportStageLogsFromLastCheckpointRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogsFromLastCheckpointResponse, error)
 	GetApplicationSharedObject(ctx context.Context, req *pipedservice.GetApplicationSharedObjectRequest, opts ...grpc.CallOption) (*pipedservice.GetApplicationSharedObjectResponse, error)
 	PutApplicationSharedObject(ctx context.Context, req *pipedservice.PutApplicationSharedObjectRequest, opts ...grpc.CallOption) (*pipedservice.PutApplicationSharedObjectResponse, error)
+	GetDeployment(ctx context.Context, req *pipedservice.GetDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.GetDeploymentResponse, error)
 }
 
 type stageCommandLister interface {
 	ListStageCommands(deploymentID, stageID string) []*model.Command
+	ListStageCommandsByDeployment(deploymentID string) []*model.Command
 }
 
 // Register registers all handling of this service into the specified gRPC server.
@@ -58,7 +66,7 @@ func (a *PluginAPI) Register(server *grpc.Server) {
 	service.RegisterPluginServiceServer(server, a)
 }
 
-func NewPluginAPI(cfg *config.PipedSpec, apiClient apiClient, toolsDir string, logger *zap.Logger, metadataStoreRegistry *metadatastore.MetadataStoreRegistry, stageCommandLister stageCommandLister) (*PluginAPI, error) {
+func NewPluginAPI(cfg *config.PipedSpec, apiClient apiClient, toolsDir string, logger *zap.Logger, metadataStoreRegistry *metadatastore.MetadataStoreRegistry, stageCommandLister stageCommandLister, notifier notifier) (*PluginAPI, error) {
 	toolRegistry, err := newToolRegistry(toolsDir)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create tool registry: %w", err)
@@ -71,6 +79,7 @@ func NewPluginAPI(cfg *config.PipedSpec, apiClient apiClient, toolsDir string, l
 		Logger:                logger.Named("plugin-api"),
 		metadataStoreRegistry: metadataStoreRegistry,
 		stageCommandLister:    stageCommandLister,
+		notifier:              notifier,
 	}, nil
 }
 
@@ -158,6 +167,69 @@ func (a *PluginAPI) GetDeploymentSharedMetadata(ctx context.Context, req *servic
 func (a *PluginAPI) ListStageCommands(ctx context.Context, req *service.ListStageCommandsRequest) (*service.ListStageCommandsResponse, error) {
 	commands := a.stageCommandLister.ListStageCommands(req.DeploymentId, req.StageId)
 	return &service.ListStageCommandsResponse{Commands: commands}, nil
+}
+
+func (a *PluginAPI) FetchStageCommands(ctx context.Context, req *service.FetchStageCommandsRequest) (*service.FetchStageCommandsResponse, error) {
+	commands := a.stageCommandLister.ListStageCommandsByDeployment(req.DeploymentId)
+	return &service.FetchStageCommandsResponse{Commands: commands}, nil
+}
+
+func (a *PluginAPI) SendStageNotification(ctx context.Context, req *service.SendStageNotificationRequest) (*service.SendStageNotificationResponse, error) {
+	resp, err := a.apiClient.GetDeployment(ctx, &pipedservice.GetDeploymentRequest{Id: req.DeploymentId})
+	if err != nil {
+		a.Logger.Error("failed to get deployment", zap.String("deploymentID", req.DeploymentId), zap.Error(err))
+		return nil, err
+	}
+	deployment := resp.Deployment
+	if deployment == nil {
+		return nil, fmt.Errorf("deployment is nil")
+	}
+
+	mResp, err := a.metadataStoreRegistry.GetDeploymentSharedMetadata(ctx, &service.GetDeploymentSharedMetadataRequest{
+		DeploymentId: req.DeploymentId,
+		Key:          model.MetadataKeyDeploymentNotification,
+	})
+	if err != nil {
+		a.Logger.Error("failed to get deployment shared metadata", zap.String("deploymentID", req.DeploymentId), zap.Error(err))
+		// continue even if failed to get metadata because it might not be set
+	}
+
+	var users, groups []string
+	if mResp != nil && mResp.Found && mResp.Value != "" {
+		var notification config.DeploymentNotification
+		if err := json.Unmarshal([]byte(mResp.Value), &notification); err != nil {
+			a.Logger.Error("failed to unmarshal deployment notification metadata", zap.Error(err))
+		} else {
+			users = notification.FindSlackUsers(model.NotificationEventType(req.Event))
+			groups = notification.FindSlackGroups(model.NotificationEventType(req.Event))
+		}
+	}
+
+	switch model.NotificationEventType(req.Event) {
+	case model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL:
+		a.notifier.Notify(model.NotificationEvent{
+			Type: model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL,
+			Metadata: &model.NotificationEventDeploymentWaitApproval{
+				Deployment:        deployment,
+				MentionedAccounts: users,
+				MentionedGroups:   groups,
+			},
+		})
+	case model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED:
+		a.notifier.Notify(model.NotificationEvent{
+			Type: model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED,
+			Metadata: &model.NotificationEventDeploymentApproved{
+				Deployment:        deployment,
+				Approver:          req.Approver,
+				MentionedAccounts: users,
+				MentionedGroups:   groups,
+			},
+		})
+	default:
+		a.Logger.Error("received unsupported notification event from plugin", zap.Int("event", int(req.Event)))
+	}
+
+	return &service.SendStageNotificationResponse{}, nil
 }
 
 func (a *PluginAPI) GetApplicationSharedObject(ctx context.Context, req *service.GetApplicationSharedObjectRequest) (*service.GetApplicationSharedObjectResponse, error) {
