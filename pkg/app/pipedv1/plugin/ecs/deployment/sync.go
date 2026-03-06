@@ -68,6 +68,16 @@ func (p *ECSPlugin) executeECSSyncStage(
 		return sdk.StageStatusFailure
 	}
 
+	// Add PipeCD-managed tags
+	serviceDef.Tags = append(serviceDef.Tags,
+		provider.MakeTags(map[string]string{
+			provider.LabelManagedBy:   provider.ManagedByECSPlugin,
+			provider.LabelPiped:       input.Request.Deployment.PipedID,
+			provider.LabelApplication: input.Request.Deployment.ApplicationID,
+			provider.LabelCommitHash:  input.Request.TargetDeploymentSource.CommitHash,
+		})...,
+	)
+
 	var primary *types.LoadBalancer
 	// When the services is not accessed via ELB, the target group is not used
 	if cfg.Spec.Input.AccessType == "ELB" {

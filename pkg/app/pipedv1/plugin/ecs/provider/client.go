@@ -174,9 +174,27 @@ func (c *client) GetServiceTaskSets(ctx context.Context, service types.Service) 
 
 	// AWS does not return full TaskSet information in DescribeServices API
 	// Need to call DescribeTaskSets API to get full information of TaskSet.
-	// Need tags information to find out which TaskSet is managed by PipeCD
 
-	// TODO: Check managed by PipeCD or not
+	// Need tags information to find out which TaskSet is managed by PipeCD ECS plugin.
+	tsInput := &ecs.DescribeTaskSetsInput{
+		Cluster:  service.ClusterArn,
+		Service:  service.ServiceArn,
+		TaskSets: nonDrainTaskSetArns,
+		Include: []types.TaskSetField{
+			types.TaskSetFieldTags,
+		},
+	}
+	tsOutput, err := c.ecsClient.DescribeTaskSets(ctx, tsInput)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get task sets of service %s: %w", *service.ServiceName, err)
+	}
+	taskSets := make([]*types.TaskSet, 0, len(tsOutput.TaskSets))
+	for i := range tsOutput.TaskSets {
+		if !IsPipeCDManagedTaskSet(&tsOutput.TaskSets[i]) {
+			continue
+		}
+		taskSets = append(taskSets, &tsOutput.TaskSets[i])
+	}
 
 	return svc.TaskSets, nil
 }
