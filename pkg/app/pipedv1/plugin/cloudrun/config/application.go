@@ -27,6 +27,10 @@ type CloudRunDeploymentInput struct {
 	// The name of service manifest file placing in application directory.
 	// Default is service.yaml
 	ServiceManifestFile string `json:"serviceManifestFile"`
+
+	//The full container image path to be deployed to Cloud Run.
+	Image string `json:"image"`
+
 }
 
 // CloudRunSyncStageOptions contains all configurable values for a CLOUDRUN_SYNC stage.

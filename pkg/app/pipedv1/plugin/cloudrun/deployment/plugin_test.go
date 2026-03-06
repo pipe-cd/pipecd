@@ -161,3 +161,46 @@ func Test_buildPipelineStages(t *testing.T) {
 		})
 	}
 }
+
+func TestImageVersionExtraction(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name     string
+		image    string
+		expected string
+	}{
+		{
+			name:     "GCR Standard Tag",
+			image:    "gcr.io/pipecd/webapp:v1.2.3",
+			expected: "v1.2.3",
+		},
+		{
+			name:     "Image Digest (SHA)",
+			image:    "gcr.io/pipecd/webapp@sha256:45b23dee08af",
+			expected: "sha256:45b23dee08af",
+		},
+		{
+			name:     "Registry with Port",
+			image:    "localhost:5000/pipecd/webapp:v1.0.0",
+			expected: "v1.0.0",
+		},
+		{
+			name:     "Untagged Image",
+			image:    "gcr.io/pipecd/webapp",
+			expected: "latest",
+		},
+		{
+			name:     "Empty String",
+			image:    "",
+			expected: "unknown",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := ImageVersionExtraction(tc.image)
+			assert.Equal(t, tc.expected, actual)
+		})
+	}
+}
