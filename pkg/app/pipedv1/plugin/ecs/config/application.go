@@ -16,7 +16,8 @@ package config
 
 // ECSApplicationSpec defines the application specification for ECS plugin.
 type ECSApplicationSpec struct {
-	Input ECSDeploymentInput `json:"input"`
+	Input            ECSDeploymentInput  `json:"input"`
+	QuickSyncOptions ECSSyncStageOptions `json:"quickSync"`
 }
 
 // ECSDeploymentInput defines the input for ECS deployment.

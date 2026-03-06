@@ -387,3 +387,17 @@ func (c *client) RunTask(ctx context.Context, taskDefinition types.TaskDefinitio
 	}
 	return nil
 }
+
+// PruneServiceTasks sets desired count of the service to 0 to stop all running tasks of the service.
+func (c *client) PruneServiceTasks(ctx context.Context, service types.Service) error {
+	input := &ecs.UpdateServiceInput{
+		Cluster:      service.ClusterArn,
+		Service:      service.ServiceName,
+		DesiredCount: aws.Int32(0),
+	}
+	_, err := c.ecsClient.UpdateService(ctx, input)
+	if err != nil {
+		return fmt.Errorf("failed to update ECS service %s: %w", *service.ServiceName, err)
+	}
+	return nil
+}

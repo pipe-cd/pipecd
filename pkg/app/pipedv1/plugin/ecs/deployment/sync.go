@@ -38,8 +38,6 @@ func (p *ECSPlugin) executeECSSyncStage(
 		return sdk.StageStatusFailure
 	}
 
-	// TODO: Deal with SyncStageOptions later, focus on the main logic first
-
 	client, err := provider.DefaultRegistry().Client(deployTarget.Name, deployTarget.Config)
 	if err != nil {
 		lp.Errorf("Failed to get ECS client for deploy target %s: %v", deployTarget.Name, err)
@@ -80,7 +78,7 @@ func (p *ECSPlugin) executeECSSyncStage(
 		}
 	}
 
-	if err := sync(ctx, lp, client, taskDef, serviceDef, primary); err != nil {
+	if err := sync(ctx, lp, client, taskDef, serviceDef, primary, cfg.Spec.QuickSyncOptions.Recreate); err != nil {
 		lp.Errorf("Failed to sync ECS service: %v", err)
 		return sdk.StageStatusFailure
 	}
@@ -95,6 +93,7 @@ func sync(
 	taskDef types.TaskDefinition,
 	serviceDef types.Service,
 	primary *types.LoadBalancer,
+	recreate bool,
 ) error {
 	lp.Info("Start applying the ECS task definition")
 	td, err := applyTaskDefinition(ctx, client, taskDef)
@@ -110,11 +109,33 @@ func sync(
 		return fmt.Errorf("failed to apply service definition: %w", err)
 	}
 
-	// TODO: Handle recreate later
-	lp.Info("Start rolling out ECS TaskSet for the new task definition")
-	if err = createPrimaryTaskSet(ctx, lp, client, *service, *td, primary); err != nil {
-		lp.Errorf("Failed to create primary task set: %v", err)
-		return fmt.Errorf("failed to create primary task set: %w", err)
+	if recreate {
+		cnt := service.DesiredCount
+		lp.Info("Recreate option is enabled, stop all running tasks before creating new task set")
+		if err := client.PruneServiceTasks(ctx, *service); err != nil {
+			lp.Errorf("Failed to prune service tasks: %v", err)
+			return fmt.Errorf("failed to prune service tasks: %w", err)
+		}
+
+		lp.Info("Start rolling out ECS TaskSet for the new task definition")
+		if err = createPrimaryTaskSet(ctx, lp, client, *service, *td, primary); err != nil {
+			lp.Errorf("Failed to rollout ECS TaskSet for service %s: %v", *service.ServiceName, err)
+			return fmt.Errorf("failed to create primary task set: %w", err)
+		}
+
+		// Scale up the service tasks count back to its desired.p
+		lp.Infof("Scale up ECS desired tasks count back to %d", cnt)
+		service.DesiredCount = cnt
+		if _, err = client.UpdateService(ctx, *service); err != nil {
+			lp.Errorf("Failed to revive service tasks: %v", err)
+			return fmt.Errorf("failed to revive service tasks: %w", err)
+		}
+	} else {
+		lp.Info("Start rolling out ECS TaskSet for the new task definition")
+		if err = createPrimaryTaskSet(ctx, lp, client, *service, *td, primary); err != nil {
+			lp.Errorf("Failed to rollout ECS TaskSet for service %s: %v", *service.ServiceName, err)
+			return fmt.Errorf("failed to create primary task set: %w", err)
+		}
 	}
 
 	lp.Infof("Wait service %s to reach stable state", *service.ServiceName)

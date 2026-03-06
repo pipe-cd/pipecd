@@ -50,6 +50,7 @@ type ECS interface {
 	WaitServiceStable(ctx context.Context, cluster, serviceName string) error
 	RegisterTaskDefinition(ctx context.Context, taskDef types.TaskDefinition) (*types.TaskDefinition, error)
 	RunTask(ctx context.Context, taskDefinition types.TaskDefinition, clusterArn string, launchType string, awsVpcConfiguration *config.ECSVpcConfiguration, tags []types.Tag) error
+	PruneServiceTasks(ctx context.Context, service types.Service) error
 }
 
 // LoadTaskDefinition returns TaskDefinition object from a given task definition file.
