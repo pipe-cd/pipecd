@@ -51,6 +51,9 @@ type ECS interface {
 	RegisterTaskDefinition(ctx context.Context, taskDef types.TaskDefinition) (*types.TaskDefinition, error)
 	RunTask(ctx context.Context, taskDefinition types.TaskDefinition, clusterArn string, launchType string, awsVpcConfiguration *config.ECSVpcConfiguration, tags []types.Tag) error
 	PruneServiceTasks(ctx context.Context, service types.Service) error
+	ListTags(ctx context.Context, resourceArn string) ([]types.Tag, error)
+	TagResource(ctx context.Context, resourceArn string, tags []types.Tag) error
+	UntagResource(ctx context.Context, resourceArn string, tagKeys []string) error
 }
 
 // LoadTaskDefinition returns TaskDefinition object from a given task definition file.

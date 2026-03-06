@@ -222,7 +222,24 @@ func applyServiceDefinition(
 		} else {
 			return nil, fmt.Errorf("service %s is in %s status, cannot be updated", *serviceDef.ServiceName, svcStatus)
 		}
-		// TODO: Deal with service tags
+
+		currentTags, err := client.ListTags(ctx, *service.ServiceArn)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list tags for ECS service %s: %w", *serviceDef.ServiceName, err)
+		}
+
+		tagsToRemove := findTagsToRemove(currentTags, serviceDef.Tags)
+		if len(tagsToRemove) > 0 {
+			lp.Infof("Found tags to remove from service %s: %v", *serviceDef.ServiceName, tagsToRemove)
+			if err := client.UntagResource(ctx, *service.ServiceArn, tagsToRemove); err != nil {
+				return nil, fmt.Errorf("failed to remove tags from ECS service %s: %w", *serviceDef.ServiceName, err)
+			}
+		}
+		if err := client.TagResource(ctx, *service.ServiceArn, serviceDef.Tags); err != nil {
+			return nil, fmt.Errorf("failed to update tags of ECS service %s: %w", *serviceDef.ServiceName, err)
+		}
+		// Re-assign tags to service object because UpdateService API doesn't return tags.
+		service.Tags = serviceDef.Tags
 	} else {
 		lp.Infof("Service %s does not exist, creating a new service", *serviceDef.ServiceName)
 		service, err = client.CreateService(ctx, serviceDef)
@@ -232,6 +249,24 @@ func applyServiceDefinition(
 	}
 
 	return service, nil
+}
+
+func findTagsToRemove(currentTags, desiredTags []types.Tag) []string {
+	var tagsToRemove []string
+
+	// Mark all desired tags in a map for easier lookup
+	desired := make(map[string]struct{})
+	for _, t := range desiredTags {
+		desired[*t.Key] = struct{}{}
+	}
+
+	for _, t := range currentTags {
+		if _, exists := desired[*t.Key]; !exists {
+			tagsToRemove = append(tagsToRemove, *t.Key)
+		}
+	}
+
+	return tagsToRemove
 }
 
 func createPrimaryTaskSet(

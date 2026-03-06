@@ -401,3 +401,44 @@ func (c *client) PruneServiceTasks(ctx context.Context, service types.Service) e
 	}
 	return nil
 }
+
+// ListTags returns the list of tags for the given resource ARN.
+func (c *client) ListTags(ctx context.Context, resourceArn string) ([]types.Tag, error) {
+	input := &ecs.ListTagsForResourceInput{
+		ResourceArn: aws.String(resourceArn),
+	}
+	output, err := c.ecsClient.ListTagsForResource(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+	// If there is no tag, AWS returns nil
+	// Return an empty slice instead
+	if output.Tags == nil {
+		return []types.Tag{}, nil
+	}
+	return output.Tags, nil
+}
+
+func (c *client) TagResource(ctx context.Context, resourceArn string, tags []types.Tag) error {
+	input := &ecs.TagResourceInput{
+		ResourceArn: aws.String(resourceArn),
+		Tags:        tags,
+	}
+	_, err := c.ecsClient.TagResource(ctx, input)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *client) UntagResource(ctx context.Context, resourceArn string, tagKeys []string) error {
+	input := &ecs.UntagResourceInput{
+		ResourceArn: aws.String(resourceArn),
+		TagKeys:     tagKeys,
+	}
+	_, err := c.ecsClient.UntagResource(ctx, input)
+	if err != nil {
+		return err
+	}
+	return nil
+}
