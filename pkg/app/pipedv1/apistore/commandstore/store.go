@@ -43,6 +43,7 @@ type Lister interface {
 	ListApplicationCommands() []model.ReportableCommand
 	ListDeploymentCommands() []model.ReportableCommand
 	ListStageCommands(deploymentID, stageID string) []*model.Command
+	ListStageCommandsByDeployment(deploymentID string) []*model.Command
 	ListBuildPlanPreviewCommands() []model.ReportableCommand
 	ListPipedCommands() []model.ReportableCommand
 }
@@ -214,6 +215,22 @@ func (s *store) ListStageCommands(deploymentID, stageID string) []*model.Command
 	}
 
 	return s.stageCommands[deploymentID][stageID]
+}
+
+func (s *store) ListStageCommandsByDeployment(deploymentID string) []*model.Command {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	if _, ok := s.stageCommands[deploymentID]; !ok {
+		return nil
+	}
+
+	commands := make([]*model.Command, 0)
+	for _, cmds := range s.stageCommands[deploymentID] {
+		commands = append(commands, cmds...)
+	}
+
+	return commands
 }
 
 func (s *store) ListBuildPlanPreviewCommands() []model.ReportableCommand {
