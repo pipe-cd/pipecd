@@ -1,5 +1,5 @@
 # Builder image to build go program.
-FROM golang:1.25.2 AS builder
+FROM golang:1.26.0 AS builder
 
 COPY protoc-gen-auth /protoc-gen-auth
 RUN cd /protoc-gen-auth \
@@ -7,7 +7,7 @@ RUN cd /protoc-gen-auth \
   && chmod +x /usr/local/bin/protoc-gen-auth
 
 # Codegen image which is actually being used.
-FROM golang:1.25.2
+FROM golang:1.26.0
 
 # This is version of protobuf installed in the image.
 # See https://pkgs.alpinelinux.org/packages?name=protobuf&branch=v3.16
