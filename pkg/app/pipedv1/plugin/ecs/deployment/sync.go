@@ -167,19 +167,18 @@ func runStandaloneTask(
 	lp.Info("Running standalone task")
 
 	lp.Info("Start applying the ECS task definition")
-	tags := provider.MakeTags(map[string]string{
-		provider.LabelManagedBy:   provider.ManagedByECSPlugin,
-		provider.LabelPiped:       input.Request.Deployment.PipedID,
-		provider.LabelApplication: input.Request.Deployment.ApplicationID,
-		provider.LabelCommitHash:  input.Request.TargetDeploymentSource.CommitHash,
-	})
 	td, err := applyTaskDefinition(ctx, client, taskDef)
 	if err != nil {
 		return fmt.Errorf("failed to apply task definition: %w", err)
 	}
 
 	deployInput := input.Request.TargetDeploymentSource.ApplicationConfig.Spec.Input
-
+	tags := provider.MakeTags(map[string]string{
+		provider.LabelManagedBy:   provider.ManagedByECSPlugin,
+		provider.LabelPiped:       input.Request.Deployment.PipedID,
+		provider.LabelApplication: input.Request.Deployment.ApplicationID,
+		provider.LabelCommitHash:  input.Request.TargetDeploymentSource.CommitHash,
+	})
 	err = client.RunTask(ctx, *td, deployInput.ClusterARN, deployInput.LaunchType, &deployInput.AwsVpcConfiguration, tags)
 	if err != nil {
 		return fmt.Errorf("failed to run task: %w", err)
