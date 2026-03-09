@@ -10,8 +10,8 @@ permissions:
 
 jobs:
   thank-you:
-    # Only run if the PR was actually merged (not just closed without merging)
-    if: github.event.pull_request.merged == true
+    # Only run if the PR was actually merged
+    if: github.event.pull_request.merged
     runs-on: ubuntu-latest
     steps:
       - name: Leave a Thank You Comment
@@ -19,6 +19,7 @@ jobs:
         with:
           script: |
             const creator = context.payload.pull_request.user.login;
+            const association = context.payload.pull_request.author_association;
             
             // Skip bots to avoid comment loops
             if (creator.endsWith('[bot]')) {
@@ -26,20 +27,14 @@ jobs:
               return;
             }
 
-            // Search for previous merged PRs by this user in this repo
-            const query = `repo:${context.repo.owner}/${context.repo.repo} type:pr is:merged author:${creator}`;
-            const result = await github.rest.search.issuesAndPullRequests({ q: query });
-            const mergedCount = result.data.total_count;
-
-            let message = '';
-
-            // If count is 1, this current PR is their very first merged PR!
-            if (mergedCount === 1) {
-              message = `### 🎉 Congratulations on your first merged Pull Request, @${creator}! \n\nWelcome to the **PipeCD** community! We are absolutely thrilled to have you here. Thank you for taking the time to contribute to the project.\n\nWe hope this is the first of many! 🚀\n\n*(If you haven't already, feel free to join our [Community Slack/Discord](#) to say hi!)*`;
-            } else {
-              // Returning contributor
-              message = `### Awesome work, @${creator}! 🎉\n\nThank you for another great contribution to PipeCD! Your continued support and dedication help make this project better for everyone. 🙌`;
+            // Skip core maintainers to avoid spamming the team
+            const ignoreAssociations = ['MEMBER', 'OWNER', 'COLLABORATOR'];
+            if (ignoreAssociations.includes(association)) {
+              console.log(`Skipping maintainer account (Association: ${association}).`);
+              return;
             }
+
+            const message = 'Thank you for contributing to PipeCD! The changes in this pull request will be part of the upcoming release!';
 
             // Post the comment to the PR
             await github.rest.issues.createComment({
@@ -48,3 +43,4 @@ jobs:
               issue_number: context.payload.pull_request.number,
               body: message
             });
+            
