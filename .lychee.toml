@@ -1,0 +1,72 @@
+# Resolve root-relative links (e.g. /images/...) against docs/static
+root_dir = "docs/static"
+
+max_retries = 3
+timeout = 30
+max_concurrency = 10
+
+# Only accept successful responses and standard redirects.
+# Known-flaky domains are excluded below instead of blanket-accepting error codes.
+accept = ["200..=204", "300..=307"]
+
+# Do not check internal files
+offline = false
+
+exclude_path = [
+    "node_modules/",
+    "vendor/"
+]
+
+exclude = [
+    # Local/loopback/private addresses
+    'http://localhost(:\d+)?',
+    'http://127\.0\.0\.1(:\d+)?',
+
+    # Example/placeholder domains
+    'http(s)?://example\.com',
+    'http(s)?://.*\.example\.com',
+    'https://github.com/org/.*',
+    'https://github.com/your-org/.*',
+    'https://github.com/yourname/.*',
+
+    # GitHub edit and issue-creation links (dynamic, not real pages)
+    'https://github.com/pipe-cd/pipecd/edit/.*',
+    'https://github.com/pipe-cd/pipecd/issues/new.*',
+
+    # Social media (rate-limit / block automated checkers)
+    'https://twitter\.com/.*',
+    'https://x\.com/.*',
+    'https://linkedin\.com/.*',
+    'https://medium\.com/.*',
+
+    # CI / badge services
+    'https://codecov\.io/.*',
+    'https://goreportcard\.com/.*',
+
+    # Known flaky domains that block or rate-limit automated checkers
+    'https://www\.mysql\.com/.*',
+    'https://dev\.mysql\.com/.*',
+    'https://www\.npmjs\.com/.*',
+    'https://npmjs\.org/.*',
+    'https://www\.weave\.works/.*',
+    'https://exploringjs\.com/.*',
+    'https://travis-ci\.com/.*',
+    'https://pipecd\.dev/.*',
+
+    # Hugo local relative links and paths (resolved dynamically, not physical files)
+    '^/',
+    '^#',
+    '^Adding-.*',
+    '^getting-started.*',
+    '^architecture/.*',
+    '^community/.*',
+    '^concepts/.*',
+    '^configuration/.*',
+    '^contribution-guidelines/.*',
+    '^faq/.*',
+    '^installation/.*',
+    '^operator-manual/.*',
+    '^reference/.*',
+    '^tutorials/.*',
+    '^user-guide/.*',
+]
