@@ -36,7 +36,7 @@ We host the [PipeCD Development and Community Meetings](https://zoom-lfx.platfor
 
 ### Join our team on GitHub
 
-We welcome and appreciate your contributions to the PipeCD project. If you would like to continue contributing to the project as a member of the pipe-cd GitHub organization, please attend the [public community meeting](#join-our-public-community-meeting) and let us know or ping us on the #pipecd channel in the CNCF Slack. Here are some minimum requirements to have before you can ask for the membership:
+We welcome and appreciate your contributions to the PipeCD project. If you would like to continue contributing to the project as a member of the pipe-cd GitHub organization, please attend the [public community meeting](https://zoom-lfx.platform.linuxfoundation.org/meeting/96831504919?password=2f60b8ec-5896-40c8-aa1d-d551ab339d00) and let us know or ping us on the #pipecd channel in the CNCF Slack. Here are some minimum requirements to have before you can ask for the membership:
 
 - Have at least 5 PRs successfully merged to repositories in the pipe-cd GitHub organization
 - Have attended PipeCD public community meeting
@@ -48,6 +48,10 @@ Please note that you do not need to be a member to start contributing to the Pip
 PipeCD uses [GitHub](https://github.com/pipe-cd/pipecd) as its source of truth. The core team will be working directly there. All changes will be public from the beginning.
 
 All pull requests undergo checks by the continuous integration system, GitHub Actions. These checks include unit tests, lint tests, and more.
+
+When you submit a pull request to PipeCD, multiple CI workflows are triggered to validate your changes. These checks help ensure code quality, correctness, and consistency across the project.
+
+To better understand which CI workflows run and what they are responsible for, please refer to the [CI overview documentation](docs/content/en/docs-v1.0.x/development/ci.md).
 
 ### Branch Organization
 
