@@ -65,4 +65,4 @@ From May 2023, PipeCD joined CNCF as a [Sandbox project](https://www.cncf.io/pro
 ### 9. How should I investigate high CPU usage or memory usage in piped, or when OOM occurs?
 
 If you're noticing high CPU usage, memory usage, or facing OOM issues in Piped, you can use the built-in support for `pprof`, a tool for visualization and analysis of profiling data.  
-`pprof` can help you identify the parts of your application that are consuming the most resources. For more detailed information and examples of how to use `pprof` in Piped, please refer to our [Using Pprof in Piped guide](../managing-piped/using-pprof-in-piped).
+`pprof` can help you identify the parts of your application that are consuming the most resources. For more detailed information and examples of how to use `pprof` in Piped, please refer to our [Using Pprof in Piped guide](../user-guide/managing-piped/using-pprof-in-piped).
