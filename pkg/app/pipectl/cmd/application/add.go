@@ -51,7 +51,7 @@ func newAddCommand(root *command) *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&c.appName, "app-name", c.appName, "The application name.")
-	cmd.Flags().StringVar(&c.appKind, "app-kind", c.appKind, "The kind of application. (KUBERNETES|TERRAFORM|LAMBDA|CLOUDRUN)")
+	cmd.Flags().StringVar(&c.appKind, "app-kind", c.appKind, "The kind of application. (KUBERNETES|TERRAFORM|LAMBDA|CLOUDRUN|ECS)")
 	cmd.Flags().StringVar(&c.pipedID, "piped-id", c.pipedID, "The ID of piped that should handle this application.")
 	cmd.Flags().StringVar(&c.platformProvider, "platform-provider", c.platformProvider, "The platform provider name. One of the registered providers in the piped configuration. Previous name of this field is cloud-provider.")
 

@@ -8,14 +8,14 @@ description: >
 
 ## Prerequisites
 
-- Having a running Kubernetes cluster
+- A running Kubernetes cluster
 - Installed [Helm](https://helm.sh/docs/intro/install/) (3.8.0 or later)
 
 ## Installation
 
 ### 1. Preparing an encryption key
 
-PipeCD requires a key for encrypting sensitive data or signing JWT token while authenticating. You can use one of the following commands to generate an encryption key.
+PipeCD requires a key for encrypting sensitive data or signing JWT tokens while authenticating. You can use one of the following commands to generate an encryption key.
 
 ``` console
 openssl rand 64 | base64 > encryption-key
@@ -31,11 +31,11 @@ cat /dev/urandom | head -c64 | base64 > encryption-key
 Control Plane Architecture
 </p>
 
-The Control Plane of PipeCD is constructed by several components, as shown in the above graph (for more in detail please read [Control Plane architecture overview docs](../../../user-guide/managing-controlplane/architecture-overview/)). As mentioned in the graph, the PipeCD's data can be stored in one of the provided fully-managed or self-managed services. So you have to decide which kind of [data store](../../../user-guide/managing-controlplane/architecture-overview/#data-store) and [file store](../../../user-guide/managing-controlplane/architecture-overview/#file-store) you want to use and prepare a Control Plane configuration file suitable for that choice.
+The Control Plane of PipeCD is constructed by several components, as shown in the above graph (for more details please read [Control Plane architecture overview docs](../../../user-guide/managing-controlplane/architecture-overview/)). As mentioned in the graph, PipeCD's data can be stored in one of the provided fully-managed or self-managed services. So you have to decide which kind of [data store](../../../user-guide/managing-controlplane/architecture-overview/#data-store) and [file store](../../../user-guide/managing-controlplane/architecture-overview/#file-store) you want to use and prepare a Control Plane configuration file suitable for that choice.
 
 #### Using Firestore and GCS
 
-PipeCD requires a GCS bucket and service account files to access Firestore and GCS service. Here is an example of configuration file:
+PipeCD requires a GCS bucket and service account files to access Firestore and GCS service. Here is an example configuration file:
 
 ``` yaml
 apiVersion: "pipecd.dev/v1beta1"
@@ -49,20 +49,20 @@ spec:
       environment: dev
       project: {YOUR_GCP_PROJECT_NAME}
       # Must be a service account with "Cloud Datastore User" and "Cloud Datastore Index Admin" roles
-      # since PipeCD needs them to creates the needed Firestore composite indexes in the background.
+      # since PipeCD needs them to create the needed Firestore composite indexes in the background.
       credentialsFile: /etc/pipecd-secret/firestore-service-account
   filestore:
     type: GCS
     config:
       bucket: {YOUR_BUCKET_NAME}
       # Must be a service account with "Storage Object Admin (roles/storage.objectAdmin)" role on the given bucket
-      # since PipeCD need to write file object such as deployment log file to that bucket.
+      # since PipeCD needs to write file objects such as deployment log files to that bucket.
       credentialsFile: /etc/pipecd-secret/gcs-service-account
 ```
 
-See [ConfigurationReference](../../../user-guide/managing-controlplane/configuration-reference/) for the full configuration.
+See [Configuration reference](../../../user-guide/managing-controlplane/configuration-reference/) for the full configuration.
 
-After all, install the Control Plane as bellow:
+After all, install the Control Plane as below:
 
 ``` console
 helm upgrade -i pipecd oci://ghcr.io/pipe-cd/chart/pipecd --version {{< blocks/latest_version >}} --namespace={NAMESPACE} \
@@ -72,11 +72,11 @@ helm upgrade -i pipecd oci://ghcr.io/pipe-cd/chart/pipecd --version {{< blocks/l
   --set-file secret.gcsServiceAccount.data=path-to-service-account-file
 ```
 
-Currently, besides `Firestore` PipeCD supports other databases as its datastore such as `MySQL`. Also as for filestore, PipeCD supports `AWS S3` and `MINIO` either.
+Currently, besides `Firestore` PipeCD supports other databases as its datastore such as `MySQL`. As for filestore, PipeCD supports `AWS S3` and `MINIO` as well.
 
-For example, in case of using `MySQL` as datastore and `MINIO` as filestore, the ControlPlane configuration will be as follow:
+For example, in case of using `MySQL` as datastore and `MINIO` as filestore, the Control Plane configuration will be as follows:
 
-```yaml
+``` yaml
 apiVersion: "pipecd.dev/v1beta1"
 kind: ControlPlane
 spec:
@@ -96,42 +96,42 @@ spec:
       autoCreateBucket: true
 ```
 
-You can find required configurations to use other datastores and filestores from [ConfigurationReference](../../../user-guide/managing-controlplane/configuration-reference/).
+You can find required configurations to use other datastores and filestores from [Configuration reference](../../../user-guide/managing-controlplane/configuration-reference/).
 
-__Caution__: In case of using `MySQL` as Control Plane's datastore, please note that the implementation of PipeCD requires some features that only available on [MySQL v8](https://dev.mysql.com/doc/refman/8.0/en/), make sure your MySQL service is satisfied the requirement.
+__Caution__: In case of using `MySQL` as Control Plane's datastore, please note that the implementation of PipeCD requires some features that are only available in [MySQL v8](https://dev.mysql.com/doc/refman/8.0/en/), make sure your MySQL service satisfies the requirement.
 
 ### 3. Accessing the PipeCD web
 
-If your installation was including an [ingress](https://github.com/pipe-cd/pipecd/blob/master/manifests/pipecd/values.yaml#L7), the PipeCD web can be accessed by the ingress's IP address or domain.
+If your installation includes an [ingress](https://github.com/pipe-cd/pipecd/blob/master/manifests/pipecd/values.yaml#L7), the PipeCD web can be accessed by the ingress's IP address or domain.
 Otherwise, private PipeCD web can be accessed by using `kubectl port-forward` to expose the installed Control Plane on your localhost:
 
 ``` console
 kubectl port-forward svc/pipecd 8080 --namespace={NAMESPACE}
 ```
 
-Now go to [http://localhost:8080](http://localhost:8080) on your browser, you will see a page to login to your project.
+Now go to [http://localhost:8080](http://localhost:8080) on your browser, you will see a page to log in to your project.
 
-Up to here, you have a installed PipeCD's Control Plane. To logging in, you need to initialize a new project.
+Up to here, you have an installed PipeCD's Control Plane. To log in, you need to initialize a new project.
 
 ### 4. Initialize a new project
 
-To create a new project, you need to access to the `ops` pod in your installed PipeCD control plane, using `kubectl port-forward` command:
+To create a new project, you need to access the `ops` pod in your installed PipeCD control plane, using `kubectl port-forward` command:
 
-```console
+``` console
 kubectl port-forward service/pipecd-ops 9082 --namespace={NAMESPACE}
 ```
 
-Then, access to [http://localhost:9082](http://localhost:9082).
+Then, access [http://localhost:9082](http://localhost:9082).
 
 On that page, you will see the list of registered projects and a link to register new projects. Registering a new project requires only a unique ID string and an optional description text.
 
-Once a new project has been registered, a static admin (username, password) will be automatically generated for the project admin, you can use that to login via the login form in the above section.
+Once a new project has been registered, a static admin (username, password) will be automatically generated for the project admin, you can use that to log in via the login form in the above section.
 
 For more about adding a new project in detail, please read the following [docs](../../../user-guide/managing-controlplane/adding-a-project/).
 
 ### 4'. Upgrade Control Plane version
 
-To upgrade the PipeCD Control Plane, preparations and commands remain as you do when installing PipeCD Control Plane. Only need to change the version flag in command to the specified version you want to upgrade your PipeCD Control Plane to.
+To upgrade the PipeCD Control Plane, preparations and commands remain as you do when installing PipeCD Control Plane. You only need to change the version flag in command to the specified version you want to upgrade your PipeCD Control Plane to.
 
 ``` console
 helm upgrade -i pipecd oci://ghcr.io/pipe-cd/chart/pipecd --version {NEW_VERSION} --namespace={NAMESPACE} \
@@ -151,7 +151,7 @@ This part provides guidance for a production hardened deployment of the control 
 
 - End-to-End TLS
 
-    After switching to HTTPs, do not forget to set the `api.args.secureCookie` parameter to be `true` to disallow using cookie on unsecured HTTP connection.
+    After switching to HTTPS, do not forget to set the `api.args.secureCookie` parameter to be `true` to disallow using cookies on unsecured HTTP connection.
 
     Alternatively in the case of GKE Ingress, PipeCD also requires a TLS certificate for internal use. This can be a self-signed one and generated by this command:
 
@@ -160,9 +160,9 @@ This part provides guidance for a production hardened deployment of the control 
     ```
     Those key and cert can be configured via [`secret.internalTLSKey.data`](https://github.com/pipe-cd/pipecd/blob/master/manifests/pipecd/values.yaml#L118) and [`secret.internalTLSCert.data`](https://github.com/pipe-cd/pipecd/blob/master/manifests/pipecd/values.yaml#L121).
 
-    To enable internal tls connection, please set the `gateway.internalTLS.enabled` parameter to be `true`.
+    To enable internal TLS connection, please set the `gateway.internalTLS.enabled` parameter to be `true`.
 
-    Otherwise, the `cloud.google.com/app-protocols` annotation is also should be configured as the following:
+    Otherwise, the `cloud.google.com/app-protocols` annotation should also be configured as the following:
 
     ``` yaml
     service:

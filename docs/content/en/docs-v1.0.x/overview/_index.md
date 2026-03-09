@@ -6,7 +6,7 @@ description: >
   Overview about PipeCD.
 ---
 
-![PipeCD explaination](/images/pipecd-explanation.png)
+![PipeCD explanation](/images/pipecd-explanation.png)
 <p style="text-align: center;">
 PipeCD - a GitOps style continuous delivery solution
 </p>
@@ -14,12 +14,12 @@ PipeCD - a GitOps style continuous delivery solution
 ## What Is PipeCD?
 
 {{% pageinfo %}}
-PipeCD provides a unified continuous delivery solution for multiple application kinds on multi-cloud that empowers engineers to deploy faster with more confidence, a GitOps tool that enables doing deployment operations by pull request on Git.
+PipeCD provides a unified continuous delivery solution for multiple application kinds on multi-cloud that empowers engineers to deploy faster with more confidence, a GitOps tool that enables deployment operations by pull request on Git.
 {{% /pageinfo %}}
 
 ## Why PipeCD?
 
-- Simple, unified and easy to use but powerful pipeline definition to construct your deployment
+- Simple, unified and easy to use, but powerful pipeline definition to construct your deployment
 - Same deployment interface to deploy applications of any platform, including Kubernetes, Terraform, GCP Cloud Run, AWS Lambda, AWS ECS and more.
 - Offers extensibility with a plugin-architecture, allowing users to create plugins and deploy custom applications
 - No CRD or applications' manifest changes are required; Only need a pipeline definition along with your application manifests
@@ -27,16 +27,16 @@ PipeCD provides a unified continuous delivery solution for multiple application 
 - Built-in deployment analysis as part of the deployment pipeline to measure impact based on metrics, logs, emitted requests
 - Easy to interact with any CI; The CI tests and builds artifacts, PipeCD takes the rest
 - Insights show metrics like lead time, deployment frequency, MTTR and change failure rate to measure delivery performance
-- Designed to manage thousands of cross-platform applications in multi-cloud for company scale but also work well for small projects
+- Designed to manage thousands of cross-platform applications in multi-cloud at company scale but also works well for small projects
 
 ## PipeCD's Characteristics in detail
 
 **Visibility**
 
-- Deployment pipeline UI shows clarify what is happening
+- Deployment pipeline UI shows clearly what is happening
 - Separate logs viewer for each individual deployment
-- Realtime visualization of application state
-- Deployment notifications to slack, webhook endpoints
+- Real-time visualization of application state
+- Deployment notifications to Slack, webhook endpoints
 - Insights show metrics like lead time, deployment frequency, MTTR and change failure rate to measure delivery performance
 
 **Automation**
@@ -48,16 +48,16 @@ PipeCD provides a unified continuous delivery solution for multiple application 
 
 **Safety and Security**
 
-- Support single sign-on and role-based access control
+- Supports single sign-on and role-based access control
 - Credentials are not exposed outside the cluster and not saved in the Control Plane
-- Piped makes only outbound requests and can run inside a restricted network
+- `piped` makes only outbound requests and can run inside a restricted network
 - Built-in secrets management
 
 **Multi-provider & Multi-Tenancy**
 
-- Support multiple application kinds on multi-cloud including Kubernetes, Terraform, Cloud Run, AWS Lambda, Amazon ECS and more with plugins.
-- Support multiple analysis providers including Prometheus, Datadog, Stackdriver, and more
-- Easy to operate multi-cluster, multi-tenancy by separating Control Plane and Piped
+- Supports multiple application kinds on multi-cloud including Kubernetes, Terraform, Cloud Run, AWS Lambda, Amazon ECS and more with plugins.
+- Supports multiple analysis providers including Prometheus, Datadog, Stackdriver, and more
+- Easy to operate multi-cluster, multi-tenancy by separating Control Plane and `piped`
 
 **Open Source**
 
@@ -68,14 +68,14 @@ PipeCD provides a unified continuous delivery solution for multiple application 
 
 For a good understanding of the PipeCD's components.
 
-- [Concepts](../concepts): describes each components.
+- [Concepts](../concepts): describes each component.
 - [FAQ](../faq): describes the difference between PipeCD and other tools.
 
 If you are an **operator** wanting to install and configure PipeCD for other developers.
 
 - [Quickstart](../quickstart/)
 - [Managing Control Plane](../user-guide/managing-controlplane/)
-- [Managing Piped](../user-guide/managing-piped/)
+- [Managing `piped`](../user-guide/managing-piped/)
 
 If you are a **user** using PipeCD to deploy your application/infrastructure:
 
