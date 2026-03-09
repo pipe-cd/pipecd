@@ -17,5 +17,6 @@ package config
 // ECSSyncStageOptions contains options for the ECS sync stage.
 type ECSSyncStageOptions struct {
 	// Recreate indicates whether to recreate the service.
+	// Enable this will ensure stop all running tasks before creating new task set.
 	Recreate bool `json:"recreate,omitempty"`
 }
