@@ -62,21 +62,15 @@ func (p *ECSPlugin) executeECSSyncStage(
 		return sdk.StageStatusSuccess
 	}
 
-	serviceDef, err := provider.LoadServiceDefinition(input.Request.TargetDeploymentSource.ApplicationDirectory, cfg.Spec.Input.ServiceDefinitionFile)
+	serviceDef, err := provider.LoadServiceDefinition(
+		input.Request.TargetDeploymentSource.ApplicationDirectory,
+		cfg.Spec.Input.ServiceDefinitionFile,
+		input,
+	)
 	if err != nil {
 		lp.Errorf("Failed to load service definition: %v", err)
 		return sdk.StageStatusFailure
 	}
-
-	// Add PipeCD-managed tags
-	serviceDef.Tags = append(serviceDef.Tags,
-		provider.MakeTags(map[string]string{
-			provider.LabelManagedBy:   provider.ManagedByECSPlugin,
-			provider.LabelPiped:       input.Request.Deployment.PipedID,
-			provider.LabelApplication: input.Request.Deployment.ApplicationID,
-			provider.LabelCommitHash:  input.Request.TargetDeploymentSource.CommitHash,
-		})...,
-	)
 
 	var primary *types.LoadBalancer
 	// When the services is not accessed via ELB, the target group is not used

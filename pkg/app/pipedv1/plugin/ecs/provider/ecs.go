@@ -22,6 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/ecs/config"
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"golang.org/x/sync/singleflight"
 )
 
@@ -63,9 +64,22 @@ func LoadTaskDefinition(appDir, taskDefinition string) (types.TaskDefinition, er
 }
 
 // LoadServiceDefinition returns Service object from a given service definition file.
-func LoadServiceDefinition(appDir, serviceDefinition string) (types.Service, error) {
+func LoadServiceDefinition(appDir, serviceDefinition string, input *sdk.ExecuteStageInput[config.ECSApplicationSpec]) (types.Service, error) {
 	path := filepath.Join(appDir, serviceDefinition)
-	return loadServiceDefinition(path)
+	service, err := loadServiceDefinition(path)
+	if err != nil {
+		return types.Service{}, err
+	}
+	// Add PipeCD-managed tags
+	service.Tags = append(service.Tags,
+		MakeTags(map[string]string{
+			LabelManagedBy:   ManagedByECSPlugin,
+			LabelPiped:       input.Request.Deployment.PipedID,
+			LabelApplication: input.Request.Deployment.ApplicationID,
+			LabelCommitHash:  input.Request.TargetDeploymentSource.CommitHash,
+		})...,
+	)
+	return service, nil
 }
 
 // LoadTargetGroups returns primary & canary target groups according to the defined in pipe definition file.
