@@ -64,6 +64,10 @@ func (p *ECSPlugin) ExecuteStage(
 	input *sdk.ExecuteStageInput[ecsconfig.ECSApplicationSpec],
 ) (*sdk.ExecuteStageResponse, error) {
 	switch input.Request.StageName {
+	case StageECSSync:
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeECSSyncStage(ctx, input, deployTargets[0]),
+		}, nil
 	default:
 		return nil, ErrUnsupportedStage
 	}
