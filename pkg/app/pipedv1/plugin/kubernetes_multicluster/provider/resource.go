@@ -27,6 +27,9 @@ const (
 	KindDeployment  = "Deployment"
 	KindStatefulSet = "StatefulSet"
 
+	// Service
+	KindService = "Service"
+
 	// ConfigMap and Secret
 	KindSecret    = "Secret"
 	KindConfigMap = "ConfigMap"
