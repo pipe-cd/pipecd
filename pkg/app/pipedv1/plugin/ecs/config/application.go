@@ -35,8 +35,7 @@ type ECSDeploymentInput struct {
 
 	// ServiceDefinitionFile is the name of service definition file placing in application directory
 	// e.g., "servicedef.json" or "ecs/servicedef.yaml"
-	// Default: servicedef.json
-	ServiceDefinitionFile string `json:"serviceDefinitionFile,omitempty" default:"servicedef.json"`
+	ServiceDefinitionFile string `json:"serviceDefinitionFile,omitempty"`
 
 	// RunStandaloneTask indicates whether to run the task as a standalone task without creating/updating an ECS service.
 	// If true, the plugin will run the task directly without managing it through an ECS service.
