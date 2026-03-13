@@ -14,6 +14,12 @@
 
 package config
 
+import (
+	"encoding/json"
+
+	"github.com/creasty/defaults"
+)
+
 // ECSApplicationSpec defines the application specification for ECS plugin.
 type ECSApplicationSpec struct {
 	Input            ECSDeploymentInput  `json:"input"`
@@ -56,6 +62,16 @@ type ECSDeploymentInput struct {
 
 	// TargetGroups contains the load balancer target groups for the ECS service.
 	TargetGroups ECSTargetGroups `json:"targetGroups"`
+}
+
+func (di *ECSDeploymentInput) UnmarshalJSON(data []byte) error {
+	type alias ECSDeploymentInput
+	var a alias
+	if err := json.Unmarshal(data, &a); err != nil {
+		return err
+	}
+	*di = ECSDeploymentInput(a)
+	return defaults.Set(di)
 }
 
 // ECSVpcConfiguration contains the VPC configuration for running ECS tasks.
