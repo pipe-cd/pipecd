@@ -75,3 +75,12 @@
 .medium-zoom-image--opened {
     z-index: 101;
 }
+
+// Fix version selector padding on mobile sidebar to align with rest of nav
+@include media-breakpoint-down(lg) {
+    .td-sidebar-nav {
+        .nav-item.dropdown {
+            padding-left: 1.5rem; // Match the padding of .td-sidebar-nav__section (pl-4 equivalent)
+        }
+    }
+}
