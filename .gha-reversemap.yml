@@ -1,0 +1,153 @@
+# Approved commit hashes for GitHub Actions used in .github/workflows.
+# Every workflow must reference these actions by this SHA (not by tag).
+# See hack/gha-reversemap.sh for verify/apply/update commands.
+
+actions/cache:
+  sha: 0057852bfaa89a56745cba8c7296529d2fc39830
+  sha-url: https://github.com/actions/cache/commit/0057852bfaa89a56745cba8c7296529d2fc39830
+  tag: v4
+  tag-url: https://github.com/actions/cache/tree/v4
+
+actions/checkout:
+  sha: 11bd71901bbe5b1630ceea73d27597364c9af683
+  sha-url: https://github.com/actions/checkout/commit/11bd71901bbe5b1630ceea73d27597364c9af683
+  tag: v4.2.2
+  tag-url: https://github.com/actions/checkout/tree/v4.2.2
+
+actions/download-artifact:
+  sha: 37930b1c2abaa49bbe596cd826c3c89aef350131
+  sha-url: https://github.com/actions/download-artifact/commit/37930b1c2abaa49bbe596cd826c3c89aef350131
+  tag: v7.0.0
+  tag-url: https://github.com/actions/download-artifact/tree/v7.0.0
+
+actions/github-script:
+  sha: f28e40c7f34bde8b3046d885e986cb6290c5673b
+  sha-url: https://github.com/actions/github-script/commit/f28e40c7f34bde8b3046d885e986cb6290c5673b
+  tag: v7
+  tag-url: https://github.com/actions/github-script/tree/v7
+
+actions/labeler:
+  sha: ac9175f8a1f3625fd0d4fb234536d26811351594
+  sha-url: https://github.com/actions/labeler/commit/ac9175f8a1f3625fd0d4fb234536d26811351594
+  tag: v4
+  tag-url: https://github.com/actions/labeler/tree/v4
+
+actions/setup-go:
+  sha: be3c94b385c4f180051c996d336f57a34c397495
+  sha-url: https://github.com/actions/setup-go/commit/be3c94b385c4f180051c996d336f57a34c397495
+  tag: v3
+  tag-url: https://github.com/actions/setup-go/tree/v3
+
+actions/setup-node:
+  sha: 3235b876344d2a9aa001b8d1453c930bba69e610
+  sha-url: https://github.com/actions/setup-node/commit/3235b876344d2a9aa001b8d1453c930bba69e610
+  tag: v3
+  tag-url: https://github.com/actions/setup-node/tree/v3
+
+actions/stale:
+  sha: 1160a2240286f5da8ec72b1c0816ce2481aabf84
+  sha-url: https://github.com/actions/stale/commit/1160a2240286f5da8ec72b1c0816ce2481aabf84
+  tag: v8
+  tag-url: https://github.com/actions/stale/tree/v8
+
+actions/upload-artifact:
+  sha: b7c566a772e6b6bfb58ed0dc250532a479d7789f
+  sha-url: https://github.com/actions/upload-artifact/commit/b7c566a772e6b6bfb58ed0dc250532a479d7789f
+  tag: v6.0.0
+  tag-url: https://github.com/actions/upload-artifact/tree/v6.0.0
+
+azure/setup-helm:
+  sha: bf6a7d304bc2fdb57e0331155b7ebf2c504acf0a
+  sha-url: https://github.com/azure/setup-helm/commit/bf6a7d304bc2fdb57e0331155b7ebf2c504acf0a
+  tag: v4
+  tag-url: https://github.com/azure/setup-helm/tree/v4
+
+ca-dp/code-butler:
+  sha: 95c1e1519154f897313c8d6c87658e695f16f28b
+  sha-url: https://github.com/ca-dp/code-butler/commit/95c1e1519154f897313c8d6c87658e695f16f28b
+  tag: v1
+  tag-url: https://github.com/ca-dp/code-butler/tree/v1
+
+codecov/codecov-action:
+  sha: ab904c41d6ece82784817410c45d8b8c02684457
+  sha-url: https://github.com/codecov/codecov-action/commit/ab904c41d6ece82784817410c45d8b8c02684457
+  tag: v3
+  tag-url: https://github.com/codecov/codecov-action/tree/v3
+
+docker/build-push-action:
+  sha: 48aba3b46d1b1fec4febb7c5d0c644b249a11355
+  sha-url: https://github.com/docker/build-push-action/commit/48aba3b46d1b1fec4febb7c5d0c644b249a11355
+  tag: v6.10.0
+  tag-url: https://github.com/docker/build-push-action/tree/v6.10.0
+
+docker/login-action:
+  sha: 9780b0c442fbb1117ed29e0efdff1e18412f7567
+  sha-url: https://github.com/docker/login-action/commit/9780b0c442fbb1117ed29e0efdff1e18412f7567
+  tag: v3.3.0
+  tag-url: https://github.com/docker/login-action/tree/v3.3.0
+
+docker/setup-buildx-action:
+  sha: c47758b77c9736f4b2ef4073d4d51994fabfe349
+  sha-url: https://github.com/docker/setup-buildx-action/commit/c47758b77c9736f4b2ef4073d4d51994fabfe349
+  tag: v3.7.1
+  tag-url: https://github.com/docker/setup-buildx-action/tree/v3.7.1
+
+docker/setup-qemu-action:
+  sha: 49b3bc8e6bdd4a60e6116a5414239cba5943d3cf
+  sha-url: https://github.com/docker/setup-qemu-action/commit/49b3bc8e6bdd4a60e6116a5414239cba5943d3cf
+  tag: v3.2.0
+  tag-url: https://github.com/docker/setup-qemu-action/tree/v3.2.0
+
+github/codeql-action/analyze:
+  sha: 2b983b380ce715a6c836c917154509c332c19b3a
+  sha-url: https://github.com/github/codeql-action/commit/2b983b380ce715a6c836c917154509c332c19b3a
+  tag: v3
+  tag-url: https://github.com/github/codeql-action/tree/v3
+
+github/codeql-action/autobuild:
+  sha: 2b983b380ce715a6c836c917154509c332c19b3a
+  sha-url: https://github.com/github/codeql-action/commit/2b983b380ce715a6c836c917154509c332c19b3a
+  tag: v3
+  tag-url: https://github.com/github/codeql-action/tree/v3
+
+github/codeql-action/init:
+  sha: 2b983b380ce715a6c836c917154509c332c19b3a
+  sha-url: https://github.com/github/codeql-action/commit/2b983b380ce715a6c836c917154509c332c19b3a
+  tag: v3
+  tag-url: https://github.com/github/codeql-action/tree/v3
+
+peaceiris/actions-hugo:
+  sha: 75d2e84710de30f6ff7268e08f310b60ef14033f
+  sha-url: https://github.com/peaceiris/actions-hugo/commit/75d2e84710de30f6ff7268e08f310b60ef14033f
+  tag: v3.0.0
+  tag-url: https://github.com/peaceiris/actions-hugo/tree/v3.0.0
+
+peter-evans/create-pull-request:
+  sha: c5a7806660adbe173f04e3e038b0ccdcd758773c
+  sha-url: https://github.com/peter-evans/create-pull-request/commit/c5a7806660adbe173f04e3e038b0ccdcd758773c
+  tag: v6
+  tag-url: https://github.com/peter-evans/create-pull-request/tree/v6
+
+pipe-cd/actions-event-register:
+  sha: 20c98a503062021720b2fcf2058276b32453dee6
+  sha-url: https://github.com/pipe-cd/actions-event-register/commit/20c98a503062021720b2fcf2058276b32453dee6
+  tag: v1.2.0
+  tag-url: https://github.com/pipe-cd/actions-event-register/tree/v1.2.0
+
+pipe-cd/actions-gh-release:
+  sha: b95a9be7405d47907b0da252d0323e17304ba6c2
+  sha-url: https://github.com/pipe-cd/actions-gh-release/commit/b95a9be7405d47907b0da252d0323e17304ba6c2
+  tag: v2.6.0
+  tag-url: https://github.com/pipe-cd/actions-gh-release/tree/v2.6.0
+
+reviewdog/action-golangci-lint:
+  sha: f9bba13753278f6a73b27a56a3ffb1bfda90ed71
+  sha-url: https://github.com/reviewdog/action-golangci-lint/commit/f9bba13753278f6a73b27a56a3ffb1bfda90ed71
+  tag: v2.8.0
+  tag-url: https://github.com/reviewdog/action-golangci-lint/tree/v2.8.0
+
+softprops/action-gh-release:
+  sha: c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda
+  sha-url: https://github.com/softprops/action-gh-release/commit/c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda
+  tag: v2.2.1
+  tag-url: https://github.com/softprops/action-gh-release/tree/v2.2.1
