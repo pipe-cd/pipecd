@@ -24,6 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
 	"github.com/aws/aws-sdk-go-v2/service/ecs"
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
+
 	"github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider"
 	"github.com/pipe-cd/pipecd/pkg/backoff"
 
