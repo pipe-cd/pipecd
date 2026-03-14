@@ -19,9 +19,10 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+
 	ecsconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/ecs/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/ecs/provider"
-	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
 
 func (p *ECSPlugin) executeECSSyncStage(

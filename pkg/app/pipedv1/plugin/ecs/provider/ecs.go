@@ -21,9 +21,10 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/ecs/config"
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"golang.org/x/sync/singleflight"
+
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/ecs/config"
 )
 
 const (
