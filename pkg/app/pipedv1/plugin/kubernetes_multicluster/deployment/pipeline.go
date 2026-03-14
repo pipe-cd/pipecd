@@ -26,6 +26,8 @@ const (
 	StageK8sMultiSync = "K8S_MULTI_SYNC"
 	// StageK8sMultiRollback represents the state where all deployed resources should be rollbacked.
 	StageK8sMultiRollback = "K8S_MULTI_ROLLBACK"
+	// StageK8sMultiCanaryRollout represents the state where the new version is deployed as CANARY to all targets.
+	StageK8sMultiCanaryRollout = "K8S_CANARY_ROLLOUT"
 	// StageK8sMultiCanaryClean represents the state where all canary resources should be removed.
 	StageK8sMultiCanaryClean = "K8S_CANARY_CLEAN"
 )
@@ -33,6 +35,7 @@ const (
 var allStages = []string{
 	StageK8sMultiSync,
 	StageK8sMultiRollback,
+	StageK8sMultiCanaryRollout,
 	StageK8sMultiCanaryClean,
 }
 
@@ -41,6 +44,8 @@ const (
 	StageDescriptionK8sMultiSync = "Sync by applying all manifests"
 	// StageDescriptionK8sMultiRollback represents the description of the K8sRollback stage.
 	StageDescriptionK8sMultiRollback = "Rollback the deployment"
+	// StageDescriptionK8sMultiCanaryRollout represents the description of the K8sCanaryRollout stage.
+	StageDescriptionK8sMultiCanaryRollout = "Rollout the new version as CANARY to all targets"
 	// StageDescriptionK8sMultiCanaryClean represents the description of the K8sCanaryClean stage.
 	StageDescriptionK8sMultiCanaryClean = "Remove all canary resources"
 )
