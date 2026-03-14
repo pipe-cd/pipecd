@@ -28,7 +28,7 @@ Then specify them while [installing](../../../installation/install-piped/install
 --set-file secret.data.secret-private-key=PATH_TO_PRIVATE_KEY_FILE
 ```
 
-Finally, enable this feature in the Piped configuration file with the `secretManagement` field as below:
+Finally, enable this feature in the `piped` configuration file with the `secretManagement` field as below:
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
@@ -52,7 +52,7 @@ The secret management workflow is as follows:
 
 ## Encrypting secret data
 
-To encrypt secret data, navigate to the Applications page and click the "Encrypt Secret" button located in the top-left corner. Then, select a piped from the dropdown list, enter your secret data, and click the "ENCRYPT" button.
+To encrypt secret data, navigate to the Applications page and click the "Encrypt Secret" button located in the top-left corner. Then, select a `piped` from the dropdown list, enter your secret data, and click the "ENCRYPT" button.
 Copy the encrypted data to store in Git.
 
 ![Sealed Secret Button](/images/sealed-secret-button.png)
@@ -76,7 +76,7 @@ To make encrypted secrets available to an application, specify them in the appli
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
-# One of Piped defined app, for example: using the Kubernetes plugin
+# One of piped defined app, for example: using the Kubernetes plugin
 kind: Application
 spec:
   encryption:

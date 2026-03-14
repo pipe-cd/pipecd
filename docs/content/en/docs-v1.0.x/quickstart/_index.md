@@ -6,18 +6,18 @@ description: >
   This page describes how to quickly get started with PipeCD on Kubernetes.
 ---
 
-PipeCD consists of two core components: The Control Plane and Piped (see [PipeCD Concepts](../concepts/)).
+PipeCD consists of two core components: The Control Plane and `piped` (see [PipeCD Concepts](../concepts/)).
 
 - **The Control Plane** can be thought of as a web service application that can be installed anywhere. It provides the web UI, API endpoints, and metadata storage.
 
-- **Piped** is a lightweight binary agent that connects your infrastructure to the Control Plane. Piped runs plugins internally which implement the deployment and synchronization logic for a specific application kind, such as Kubernetes or Terraform.
+- **`piped`** is a lightweight binary agent that connects your infrastructure to the Control Plane. `piped` runs plugins internally which implement the deployment and synchronization logic for a specific application kind, such as Kubernetes or Terraform.
 
 In this quickstart, you’ll install both components on a Kubernetes cluster and deploy a sample “hello world” application.
 
->Note:
+> **Note:**
 >
->- It's not required to install the PipeCD control plane to the cluster where your applications are running (See [PipeCD best practices](/blog/2021/12/29/pipecd-best-practice-01-operate-your-own-pipecd-cluster/) to understand more about PipeCD in real life use cases).
->- If you want to experiment with PipeCD freely or don't have a Kubernetes cluster, we recommend using [this Tutorial](https://github.com/pipe-cd/tutorial).
+>- It's not required to install the PipeCD control plane to the cluster where your applications are running (See [PipeCD best practices](/blog/2021/12/29/pipecd-best-practice-01-operate-your-own-pipecd-cluster/) to understand more about PipeCD in real-life use cases).
+>- If you want to experiment with PipeCD freely or don't have a Kubernetes cluster, we recommend using [this tutorial](https://github.com/pipe-cd/tutorial).
 
 ---
 
@@ -37,7 +37,7 @@ kubectl create namespace pipecd
 kubectl apply -n pipecd -f https://raw.githubusercontent.com/pipe-cd/pipecd/master/quickstart/manifests/control-plane.yaml
 ```
 
-The PipeCD control plane will be installed with a default project named `quickstart`. To access the PipeCD Control Plane UI, run the following command
+The PipeCD control plane will be installed with a default project named `quickstart`. To access the PipeCD Control Plane UI, run the following command:
 
 ```bash
 kubectl port-forward -n pipecd svc/pipecd 8080
@@ -45,32 +45,32 @@ kubectl port-forward -n pipecd svc/pipecd 8080
 
 You can access the PipeCD console at [http://localhost:8080?project=quickstart](http://localhost:8080?project=quickstart)
 
-To login, you can use the configured static admin account as below:
+To log in, you can use the configured static admin account as below:
 
 - username: `hello-pipecd`
 - password: `hello-pipecd`
 
-And you will access the main page of PipeCD Control Plane console, which looks like this
+And you will access the main page of PipeCD Control Plane console, which looks like this:
 
 ![An image of the Control Plane](/images/pipecd-control-plane-mainpage.png)
 
-For more about PipeCD control plane management, please check [Managing ControlPlane](/docs/user-guide/managing-controlplane/).
+For more about PipeCD control plane management, please check [Managing Control Plane](../user-guide/managing-controlplane/).
 
-#### 1.2. Installing Piped
+#### 1.2. Installing piped
 
-Next, in order to perform CD tasks, you need to install a Piped agent to the cluster.
+Next, in order to perform CD tasks, you need to install a `piped` agent to the cluster.
 
 From your logged in tab, navigate to the PipeCD setting page at [http://localhost:8080/settings/piped?project=quickstart](http://localhost:8080/settings/piped?project=quickstart).
 
-You will find the `+ADD` button around the top left of this page, click there and insert information to register the Piped agent (for example, `dev`).
+You will find the `+ADD` button around the top left of this page, click there and insert information to register the `piped` agent (for example, `dev`).
 
-![Interface to add piped](/images/quickstart-adding-piped.png)
+![Interface to add `piped`](/images/quickstart-adding-piped.png)
 
 Click on the `Save` button, and then you can see the piped-id and secret-key.
 
-![A successfully registered piped](/images/quickstart-piped-registered.png)
+![A successfully registered `piped`](/images/quickstart-piped-registered.png)
 
-You need to copy two values, `Piped Id` and `Base64 Encoded Piped Key`, and fill in `<COPIED_PIPED_ID>` and `<COPIED_ENCODED_PIPED_KEY>` respectively this command:
+You need to copy two values, ``piped Id`` and ``Base64 Encoded piped Key``, and fill in `<COPIED_PIPED_ID>` and `<COPIED_ENCODED_PIPED_KEY>` respectively in this command:
 
 ```bash
 $ curl -s https://raw.githubusercontent.com/pipe-cd/pipecd/refs/heads/master/quickstart/manifests/pipedv1-exp.yaml | \
@@ -79,11 +79,11 @@ $ curl -s https://raw.githubusercontent.com/pipe-cd/pipecd/refs/heads/master/qui
   kubectl apply -n pipecd -f -
 ```
 
-For more information about Piped management, please check [Managing Piped](/docs/user-guide/managing-piped/).
+For more information about `piped` management, please check [Managing piped](/docs/user-guide/managing-piped/).
 
 That's all! You are ready to use PipeCD to manage your application's deployment.
 
-You can check the readiness of all PipeCD components via command
+You can check the readiness of all PipeCD components via the command:
 
 ```bash
 $ kubectl get pod -n pipecd
@@ -101,16 +101,16 @@ piped-8477b5d55d-74s5v            1/1     Running   0             97s
 
 ### 2. Deploy a Kubernetes application with PipeCD
 
-Above is all that is necessary to set up your own PipeCD (both control plane and agent), let's use the installed one to deploy your first Kubernetes application with PipeCD.
+The above is all that is necessary to set up your own PipeCD (both control plane and agent), let's use the installed one to deploy your first Kubernetes application with PipeCD.
 
 Navigate to the `Applications` page, click on the `+ADD` button on the top left corner.
 
-Go to the `PIPED V1 ADD FROM SUGGESTIONS` tab, then select:
+Go to the `PIPED v1 ADD FROM SUGGESTIONS` tab, then select:
 
-- Piped that you have just registered (e.g. `dev`)
+- `piped` that you have just registered (e.g. `dev`)
 - The deployment target (e.g. 'kubernetes')
 
-You should see a lot of suggested applications. Select one of listed applications and click the `SAVE` button to register.
+You should see a lot of suggested applications. Select one of the listed applications and click the `SAVE` button to register.
 
 ![Adding the application](/images/quickstart-adding-application-from-suggestions-v1.png)
 
@@ -118,15 +118,15 @@ After a bit, the first deployment is complete and will automatically sync the ap
 
 ![Preview your deployment](/images/quickstart-first-deployment.png)
 
-For more information on manging application deployment with PipeCD, see [Managing application](/docs/user-guide/managing-application/)
+For more information on managing application deployment with PipeCD, see [Managing application](../user-guide/managing-application/)
 
 ---
 
 ### 3. Cleanup
 
-When you’re finished experimenting with PipeCD quickstart mode, you can uninstall it using:
+When you're finished experimenting with PipeCD quickstart mode, you can uninstall it using:
 
-``` bash
+```bash
 kubectl delete ns pipecd
 ```
 
@@ -134,6 +134,6 @@ kubectl delete ns pipecd
 
 ### What next?
 
-To prepare your PipeCD for a production environment, please visit the [Installation](../installation/) guideline. For guidelines to use PipeCD to deploy your application in daily usage, please visit the [User guide](../user-guide/) docs.
+To prepare your PipeCD for a production environment, please visit the [Installation](../installation/) guidelines. For guidelines to use PipeCD to deploy your application in daily usage, please visit the [User guide](../user-guide/) docs.
 
 To set up the development environment and start contributing to PipeCD, please visit the [Contributor guide](../contribution-guidelines/) docs.
