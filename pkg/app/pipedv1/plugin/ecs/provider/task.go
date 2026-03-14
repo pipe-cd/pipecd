@@ -12,25 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package provider
 
 import (
-	"log"
+	"os"
 
-	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
-
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/ecs/deployment"
+	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
+	"sigs.k8s.io/yaml"
 )
 
-func main() {
-	plugin, err := sdk.NewPlugin(
-		"0.0.1",
-		sdk.WithDeploymentPlugin(&deployment.ECSPlugin{}),
-	)
+func loadTaskDefinition(path string) (types.TaskDefinition, error) {
+	data, err := os.ReadFile(path)
 	if err != nil {
-		log.Fatalf("failed to create plugin: %v", err)
+		return types.TaskDefinition{}, err
 	}
-	if err := plugin.Run(); err != nil {
-		log.Fatalf("plugin execution failed: %v", err)
+	return parseTaskDefinition(data)
+}
+
+func parseTaskDefinition(data []byte) (types.TaskDefinition, error) {
+	var obj types.TaskDefinition
+	if err := yaml.Unmarshal(data, &obj); err != nil {
+		return types.TaskDefinition{}, err
 	}
+	return obj, nil
 }

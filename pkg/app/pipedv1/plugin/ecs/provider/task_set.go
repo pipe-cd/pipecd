@@ -12,25 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package provider
 
-import (
-	"log"
+import "github.com/aws/aws-sdk-go-v2/service/ecs/types"
 
-	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
-
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/ecs/deployment"
-)
-
-func main() {
-	plugin, err := sdk.NewPlugin(
-		"0.0.1",
-		sdk.WithDeploymentPlugin(&deployment.ECSPlugin{}),
-	)
-	if err != nil {
-		log.Fatalf("failed to create plugin: %v", err)
+// IsPipeCDManagedTaskSet checks if the given TaskSet is managed by PipeCD ECS Plugin by looking for specific tags.
+func IsPipeCDManagedTaskSet(ts *types.TaskSet) bool {
+	for _, tag := range ts.Tags {
+		if *tag.Key == LabelManagedBy && *tag.Value == ManagedByECSPlugin {
+			return true
+		}
 	}
-	if err := plugin.Run(); err != nil {
-		log.Fatalf("plugin execution failed: %v", err)
-	}
+	return false
 }
