@@ -11,13 +11,13 @@ It represents the service which you are going to deploy. With PipeCD, all the ap
 
 Each application is managed by exactly one `piped` instance. However, a single `piped` can manage multiple applications.
 
-Starting PipeCD V1, you can deploy virtually any application on your desired platform using plugins. See more about [plugins](../../concepts/#plugins). Currently, the PipeCD maintainers team maintains plugins for Kubernetes and Terraform.
+Starting PipeCD v1, you can deploy virtually any application on your desired platform using plugins. See more about [plugins](../../concepts/#plugins). Currently, the PipeCD maintainers team maintains plugins for Kubernetes and Terraform.
 
 ## Preparing the application configuration file
 
-You have to **prepare a configuration file** which contains your application configuration and store that file in the Git repository which your Piped is watching first to enable adding a new application this way. The application configuration file name must be suffixed by `.pipecd.yaml` because the `piped` agent periodically checks for files with this suffix.
+You have to **prepare a configuration file** which contains your application configuration and store that file in the Git repository which your `piped` is watching first to enable adding a new application this way. The application configuration file name must be suffixed by `.pipecd.yaml` because the `piped` agent periodically checks for files with this suffix.
 
->**Note**: Make sure that your Application Repository is listed in your `piped` configuration file. See the [`piped` configuration reference](../managing-piped/configuration-reference/#gitrepository:~:text=No-,repositories,-%5B%5DRepository) for more details.
+> **Note:** Make sure that your Application Repository is listed in your `piped` configuration file. See the [`piped` Configuration reference](../managing-piped/configuration-reference/#gitrepository:~:text=No-,repositories,-%5B%5DRepository) for more details.
 
 The application configuration depends on the plugin that you are using for your deployment. Below is an example of what an application configuration file (app.pipecd.yaml) will look like. Please see [Plugins](../../concepts/#plugins) and [Application Configuration](../../concepts/#application-configuration) for more details on how to configure your `app.pipecd.yaml` in accordance with the plugin that you plan to use.
 <!-- [Plugins](../../plugins) (Directory to be created alongside user-guide in the future) -->
@@ -44,18 +44,18 @@ Registering the application helps PipeCD know:
 - where the application configuration is placed
 - which `piped` should handle it and which platform the application should be deployed to.
 
-You can register a new application from the web console (aka the Control Plane) by picking from a list of unused apps suggested by `pipeds` while scanning the git repositories connected to it.
+You can register a new application from the web console (aka the Control Plane) by picking from a list of unused apps suggested by `piped` instances while scanning the git repositories connected to it.
 
 You can also use the `pipectl` command-line tool to configure your application in the Control Plane. See adding a new application using [`pipectl`](../../command-line-tool/#adding-a-new-application).
 
->**Note:**
->Manually configuring the application on the Control Plane is not supported for PipeCD v1 deployments (deployment using plugins) as of now. We are working on this feature.
+> **Note:**
+> Manually configuring the application on the Control Plane is not supported for PipeCD v1 deployments (deployment using plugins) as of now. We are working on this feature.
 
-<!-- To define your application deployment pipeline which contains the guideline to show Piped how to deploy your application, please visit [Defining app configuration](../defining-app-configuration/). -->
+<!-- To define your application deployment pipeline which contains the guideline to show `piped` how to deploy your application, please visit [Defining app configuration](../defining-app-configuration/). -->
 
-Go to the PipeCD web console on application list page, click the `+ADD` button at the top left corner of the application list page and then switch to the `PIPED V1 ADD FROM SUGGESTIONS` tab.
+Go to the PipeCD web console on application list page, click the `+ADD` button at the top left corner of the application list page and then switch to the `PIPED v1 ADD FROM SUGGESTIONS` tab.
 
-Select the Piped that you want to use and the deploy target that you want to deploy to. If you have configured your `piped` configuration file and the Application Repository correctly, all the applications in the target repository will be listed in the 'Select application to add' tab. Select the unregistered Application you want to deploy and click on 'SAVE'. Your application should now be successfully registered and deploying on PipeCD.
+Select the `piped` that you want to use and the deploy target that you want to deploy to. If you have configured your `piped` configuration file and the Application Repository correctly, all the applications in the target repository will be listed in the 'Select application to add' tab. Select the unregistered Application you want to deploy and click on 'SAVE'. Your application should now be successfully registered and deploying on PipeCD.
 
 ![Registering an Application from Suggestions: PipeCD v1](/images/quickstart-adding-application-from-suggestions-v1.png)
 <p style="text-align: center;">
@@ -79,6 +79,6 @@ spec:
     team: new-team
 ```
 
-Commit and push the changes. `Piped` will detect the updates and apply them automatically, according to the configured deployment pipeline.
+Commit and push the changes. `piped` will detect the updates and apply them automatically, according to the configured deployment pipeline.
 
 For all available configuration options, see the [configuration reference](../configuration-reference/).

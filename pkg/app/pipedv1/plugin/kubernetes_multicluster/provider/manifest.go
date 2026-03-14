@@ -80,6 +80,18 @@ func (m Manifest) DeepCopy() Manifest {
 	return Manifest{body: m.body.DeepCopy()}
 }
 
+// DeepCopyWithName returns a deep copy of the manifest with the given name.
+func (m Manifest) DeepCopyWithName(name string) Manifest {
+	copied := m.DeepCopy()
+	copied.body.SetName(name)
+	return copied
+}
+
+// NestedString returns the string value of the nested field specified by the given fields.
+func (m Manifest) NestedString(fields ...string) (string, bool, error) {
+	return unstructured.NestedString(m.body.Object, fields...)
+}
+
 func (m Manifest) Key() ResourceKey {
 	return makeResourceKey(m.body)
 }
@@ -115,6 +127,12 @@ func (m Manifest) IsStatefulSet() bool {
 func (m Manifest) IsSecret() bool {
 	// TODO: check the API group more strictly.
 	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindSecret
+}
+
+// IsService returns true if the manifest is a Service.
+// It checks the API group and the kind of the manifest.
+func (m Manifest) IsService() bool {
+	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindService
 }
 
 // IsConfigMap returns true if the manifest is a ConfigMap.

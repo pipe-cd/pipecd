@@ -6,7 +6,7 @@ description: >
   This page describes how to register a new piped to a project.
 ---
 
-The list of pipeds are shown in the Settings page. Anyone who has the project admin role can register a new piped by clicking on the `+ADD` button.
+The list of `piped` instances are shown in the Settings page. Anyone who has the project admin role can register a new `piped` by clicking on the `+ADD` button.
 
 <br>
 
