@@ -54,6 +54,19 @@ type KubernetesApplicationSpec struct {
 	// TODO: Define fields for KubernetesApplicationSpec.
 }
 
+func (s *KubernetesApplicationSpec) UnmarshalJSON(data []byte) error {
+	type alias KubernetesApplicationSpec
+	var a alias
+	if err := json.Unmarshal(data, &a); err != nil {
+		return err
+	}
+	*s = KubernetesApplicationSpec(a)
+	if err := defaults.Set(s); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *KubernetesApplicationSpec) Validate() error {
 	// TODO: Validate KubernetesApplicationSpec fields.
 	return nil
