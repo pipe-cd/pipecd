@@ -24,6 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
 	"github.com/aws/aws-sdk-go-v2/service/ecs"
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
+
 	"github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider"
 	"github.com/pipe-cd/pipecd/pkg/backoff"
 
@@ -188,15 +189,15 @@ func (c *client) GetServiceTaskSets(ctx context.Context, service types.Service) 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get task sets of service %s: %w", *service.ServiceName, err)
 	}
-	taskSets := make([]*types.TaskSet, 0, len(tsOutput.TaskSets))
+	taskSets := make([]types.TaskSet, 0, len(tsOutput.TaskSets))
 	for i := range tsOutput.TaskSets {
 		if !IsPipeCDManagedTaskSet(&tsOutput.TaskSets[i]) {
 			continue
 		}
-		taskSets = append(taskSets, &tsOutput.TaskSets[i])
+		taskSets = append(taskSets, tsOutput.TaskSets[i])
 	}
 
-	return svc.TaskSets, nil
+	return taskSets, nil
 }
 
 func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup *types.LoadBalancer, scale float64) (*types.TaskSet, error) {
