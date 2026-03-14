@@ -17,6 +17,7 @@ package deployment
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 
@@ -43,6 +44,44 @@ func addVariantLabelsAndAnnotations(m []provider.Manifest, variantLabel, variant
 			variantLabel: variant,
 		})
 	}
+}
+
+// deleteVariantResources finds and deletes all live resources labeled with the given variant.
+// It deletes in order: Services → Workloads → Others → Cluster-scoped resources.
+func deleteVariantResources(ctx context.Context, lp sdk.StageLogPersister, kubectl *provider.Kubectl, kubeConfig string, applier *provider.Applier, applicationID, variantLabel, variant string) error {
+	namespacedLiveResources, clusterScopedLiveResources, err := provider.GetLiveResources(ctx, kubectl, kubeConfig, applicationID, fmt.Sprintf("%s=%s", variantLabel, variant))
+	if err != nil {
+		return err
+	}
+
+	services := make([]provider.ResourceKey, 0, len(namespacedLiveResources))
+	workloads := make([]provider.ResourceKey, 0, len(namespacedLiveResources))
+	others := make([]provider.ResourceKey, 0, len(namespacedLiveResources))
+	clusterScoped := make([]provider.ResourceKey, 0, len(clusterScopedLiveResources))
+
+	for _, r := range namespacedLiveResources {
+		switch {
+		case r.IsService():
+			services = append(services, r.Key())
+		case r.IsWorkload():
+			workloads = append(workloads, r.Key())
+		default:
+			others = append(others, r.Key())
+		}
+	}
+
+	for _, r := range clusterScopedLiveResources {
+		clusterScoped = append(clusterScoped, r.Key())
+	}
+
+	var deletedCount int
+	deletedCount += deleteResources(ctx, lp, applier, services)
+	deletedCount += deleteResources(ctx, lp, applier, workloads)
+	deletedCount += deleteResources(ctx, lp, applier, others)
+	deletedCount += deleteResources(ctx, lp, applier, clusterScoped)
+	lp.Successf("Successfully deleted %d resources", deletedCount)
+
+	return nil
 }
 
 // deleteResources deletes the given resources.
