@@ -321,6 +321,7 @@ func TestPlugin_executeK8sMultiCanaryRolloutStage_WithoutCreateService(t *testin
 	assert.True(t, k8serrors.IsNotFound(err))
 }
 
+
 func TestPlugin_executeK8sMultiCanaryCleanStage(t *testing.T) {
 	t.Parallel()
 
@@ -534,3 +535,4 @@ func TestPlugin_executeK8sMultiCanaryCleanStage_multipleTargets(t *testing.T) {
 		assert.True(t, k8serrors.IsNotFound(err), "canary deployment should be deleted on cluster %s", c.name)
 	}
 }
+
