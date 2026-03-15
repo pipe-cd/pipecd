@@ -138,8 +138,8 @@ func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, rou
 			modifiedActions := make([]elbtypes.Action, 0, len(rule.Actions))
 			for _, action := range rule.Actions {
 				if action.Type == elbtypes.ActionTypeEnumForward &&
-				action.ForwardConfig != nil &&
-				routingTrafficCfg.hasSameTargets(action.ForwardConfig.TargetGroups) {
+					action.ForwardConfig != nil &&
+					routingTrafficCfg.hasSameTargets(action.ForwardConfig.TargetGroups) {
 					modifiedActions = append(modifiedActions, elbtypes.Action{
 						Type:  elbtypes.ActionTypeEnumForward,
 						Order: action.Order,
