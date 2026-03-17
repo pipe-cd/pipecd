@@ -18,6 +18,10 @@ area/build:
 area/manifests:
 - manifests/**/*
 
+area/docs:
+- docs/*
+- docs/**/*
+
 area/examples:
 - examples/*
 - examples/**/*

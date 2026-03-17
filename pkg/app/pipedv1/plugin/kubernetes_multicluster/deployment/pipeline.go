@@ -26,11 +26,14 @@ const (
 	StageK8sMultiSync = "K8S_MULTI_SYNC"
 	// StageK8sMultiRollback represents the state where all deployed resources should be rollbacked.
 	StageK8sMultiRollback = "K8S_MULTI_ROLLBACK"
+	// StageK8sMultiCanaryRollout represents the state where the new version is deployed as CANARY to all targets.
+	StageK8sMultiCanaryRollout = "K8S_CANARY_ROLLOUT"
 )
 
 var allStages = []string{
 	StageK8sMultiSync,
 	StageK8sMultiRollback,
+	StageK8sMultiCanaryRollout,
 }
 
 const (
@@ -38,6 +41,8 @@ const (
 	StageDescriptionK8sMultiSync = "Sync by applying all manifests"
 	// StageDescriptionK8sMultiRollback represents the description of the K8sRollback stage.
 	StageDescriptionK8sMultiRollback = "Rollback the deployment"
+	// StageDescriptionK8sMultiCanaryRollout represents the description of the K8sCanaryRollout stage.
+	StageDescriptionK8sMultiCanaryRollout = "Rollout the new version as CANARY to all targets"
 )
 
 func buildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {

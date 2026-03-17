@@ -263,13 +263,13 @@ curl -Lo ./piped https://github.com/pipe-cd/pipecd/releases/download/pipedv1%2Fe
 chmod +x ./piped
 
 # Run piped binary
-./piped piped --config-file=<PATH_TO_PIPEDV1_CONFIG_FILE> --tools-dir=/tmp/piped-bin
+./piped run --config-file=<PATH_TO_PIPEDV1_CONFIG_FILE> --tools-dir=/tmp/piped-bin
 ```
 
 If your Control Plane is running locally, append the `--insecure=true` flag to skip TLS certificate verification:
 
 ```bash
-./piped piped --config-file=<PATH_TO_PIPEDV1_CONFIG_FILE> --tools-dir=/tmp/piped-bin --insecure=true
+./piped run --config-file=<PATH_TO_PIPEDV1_CONFIG_FILE> --tools-dir=/tmp/piped-bin --insecure=true
 ```
 
 ### Option 3 - Run `pipedv1` as a Container
