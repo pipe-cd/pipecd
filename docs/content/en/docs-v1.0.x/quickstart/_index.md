@@ -10,7 +10,7 @@ PipeCD consists of two core components: The Control Plane and `piped` (see [Pipe
 
 - **The Control Plane** can be thought of as a web service application that can be installed anywhere. It provides the web UI, API endpoints, and metadata storage.
 
-- **`piped`** is a lightweight binary agent that connects your infrastructure to the Control Plane. `piped` runs plugins internally which implement the deployment and synchronization logic for a specific application kind, such as Kubernetes or Terraform.
+- **`piped`** is a lightweight binary agent that connects your infrastructure to the Control Plane. It can run as a pod in a Kubernetes cluster, a container on ECS, a serverless function like Lambda or Cloud Run, or a process running directly on your local machine. `piped` runs plugins internally which implement the deployment and synchronization logic for a specific application kind, such as Kubernetes or Terraform.
 
 In this quickstart, you’ll install both components on a Kubernetes cluster and deploy a sample “hello world” application.
 
@@ -73,7 +73,7 @@ Click on the `Save` button, and then you can see the piped-id and secret-key.
 You need to copy two values, ``piped Id`` and ``Base64 Encoded piped Key``, and fill in `<COPIED_PIPED_ID>` and `<COPIED_ENCODED_PIPED_KEY>` respectively in this command:
 
 ```bash
-$ curl -s https://raw.githubusercontent.com/pipe-cd/pipecd/refs/heads/master/quickstart/manifests/pipedv1-exp.yaml | \
+$ curl -s https://raw.githubusercontent.com/pipe-cd/pipecd/master/quickstart/manifests/piped.yaml | \
   sed -e 's/<YOUR_PIPED_ID>/<COPIED_PIPED_ID>/g' \
       -e 's/<YOUR_PIPED_KEY_DATA>/<COPIED_ENCODED_PIPED_KEY>/g' | \
   kubectl apply -n pipecd -f -
@@ -105,10 +105,10 @@ The above is all that is necessary to set up your own PipeCD (both control plane
 
 Navigate to the `Applications` page, click on the `+ADD` button on the top left corner.
 
-Go to the `PIPED v1 ADD FROM SUGGESTIONS` tab, then select:
+Go to the `ADD FROM SUGGESTIONS` tab, then select:
 
-- `piped` that you have just registered (e.g. `dev`)
-- The deployment target (e.g. 'kubernetes')
+- Piped that you have just registered (e.g. `dev`)
+- PlatformProvider: `kubernetes-default`
 
 You should see a lot of suggested applications. Select one of the listed applications and click the `SAVE` button to register.
 
