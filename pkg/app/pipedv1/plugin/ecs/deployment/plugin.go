@@ -69,6 +69,10 @@ func (p *ECSPlugin) ExecuteStage(
 		return &sdk.ExecuteStageResponse{
 			Status: p.executeECSSyncStage(ctx, input, deployTargets[0]),
 		}, nil
+	case StageECSRollback:
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeECSRollbackStage(ctx, input, deployTargets[0]),
+		}, nil
 	default:
 		return nil, ErrUnsupportedStage
 	}
