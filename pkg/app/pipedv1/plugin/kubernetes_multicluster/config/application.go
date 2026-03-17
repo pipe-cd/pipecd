@@ -201,6 +201,9 @@ type K8sCanaryRolloutStageOptions struct {
 // K8sCanaryCleanStageOptions contains all configurable values for a K8S_CANARY_CLEAN stage.
 type K8sCanaryCleanStageOptions struct{}
 
+// K8sPrimaryCleanStageOptions contains all configurable values for a K8S_PRIMARY_CLEAN stage.
+type K8sPrimaryCleanStageOptions struct{}
+
 // K8sResourcePatch represents a patch operation for a Kubernetes resource.
 type K8sResourcePatch struct {
 	// The target of the patch operation.
