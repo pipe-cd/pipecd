@@ -28,12 +28,15 @@ const (
 	StageK8sMultiRollback = "K8S_MULTI_ROLLBACK"
 	// StageK8sMultiCanaryRollout represents the state where the new version is deployed as CANARY to all targets.
 	StageK8sMultiCanaryRollout = "K8S_CANARY_ROLLOUT"
+	// StageK8sMultiPrimaryClean represents the state where all primary resources should be removed.
+	StageK8sMultiPrimaryClean = "K8S_PRIMARY_CLEAN"
 )
 
 var allStages = []string{
 	StageK8sMultiSync,
 	StageK8sMultiRollback,
 	StageK8sMultiCanaryRollout,
+	StageK8sMultiPrimaryClean,
 }
 
 const (
@@ -43,6 +46,8 @@ const (
 	StageDescriptionK8sMultiRollback = "Rollback the deployment"
 	// StageDescriptionK8sMultiCanaryRollout represents the description of the K8sCanaryRollout stage.
 	StageDescriptionK8sMultiCanaryRollout = "Rollout the new version as CANARY to all targets"
+	// StageDescriptionK8sMultiPrimaryClean represents the description of the K8sPrimaryClean stage.
+	StageDescriptionK8sMultiPrimaryClean = "Remove all primary resources"
 )
 
 func buildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
