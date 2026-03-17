@@ -59,7 +59,7 @@ func (m *Project) validate(all bool) error {
 	if utf8.RuneCountInString(m.GetId()) < 1 {
 		err := ProjectValidationError{
 			field:  "Id",
-			reason: "value length must be at least 1 runes",
+			reason: "project ID must not be empty",
 		}
 		if !all {
 			return err
@@ -72,7 +72,7 @@ func (m *Project) validate(all bool) error {
 	if m.GetStaticAdmin() == nil {
 		err := ProjectValidationError{
 			field:  "StaticAdmin",
-			reason: "value is required",
+			reason: "static admin user is required",
 		}
 		if !all {
 			return err
@@ -244,7 +244,7 @@ func (m *Project) validate(all bool) error {
 	if m.GetCreatedAt() <= 0 {
 		err := ProjectValidationError{
 			field:  "CreatedAt",
-			reason: "value must be greater than 0",
+			reason: "created_at timestamp must be greater than 0",
 		}
 		if !all {
 			return err
@@ -255,7 +255,7 @@ func (m *Project) validate(all bool) error {
 	if m.GetUpdatedAt() <= 0 {
 		err := ProjectValidationError{
 			field:  "UpdatedAt",
-			reason: "value must be greater than 0",
+			reason: "updated_at timestamp must be greater than 0",
 		}
 		if !all {
 			return err
@@ -365,7 +365,7 @@ func (m *ProjectStaticUser) validate(all bool) error {
 	if utf8.RuneCountInString(m.GetUsername()) < 1 {
 		err := ProjectStaticUserValidationError{
 			field:  "Username",
-			reason: "value length must be at least 1 runes",
+			reason: "username for a static user must not be empty",
 		}
 		if !all {
 			return err
@@ -376,7 +376,7 @@ func (m *ProjectStaticUser) validate(all bool) error {
 	if utf8.RuneCountInString(m.GetPasswordHash()) < 6 {
 		err := ProjectStaticUserValidationError{
 			field:  "PasswordHash",
-			reason: "value length must be at least 6 runes",
+			reason: "password for a static user must be at least 6 characters",
 		}
 		if !all {
 			return err
@@ -489,7 +489,7 @@ func (m *ProjectSSOConfig) validate(all bool) error {
 	if _, ok := ProjectSSOConfig_Provider_name[int32(m.GetProvider())]; !ok {
 		err := ProjectSSOConfigValidationError{
 			field:  "Provider",
-			reason: "value must be one of the defined enum values",
+			reason: "an SSO provider must be specified",
 		}
 		if !all {
 			return err
@@ -500,7 +500,7 @@ func (m *ProjectSSOConfig) validate(all bool) error {
 	if m.GetSessionTtl() <= 0 {
 		err := ProjectSSOConfigValidationError{
 			field:  "SessionTtl",
-			reason: "value must be greater than 0",
+			reason: "session TTL for SSO must be greater than 0",
 		}
 		if !all {
 			return err
@@ -806,7 +806,7 @@ func (m *ProjectUserGroup) validate(all bool) error {
 	if utf8.RuneCountInString(m.GetSsoGroup()) < 1 {
 		err := ProjectUserGroupValidationError{
 			field:  "SsoGroup",
-			reason: "value length must be at least 1 runes",
+			reason: "sso_group must not be empty",
 		}
 		if !all {
 			return err
@@ -817,7 +817,7 @@ func (m *ProjectUserGroup) validate(all bool) error {
 	if utf8.RuneCountInString(m.GetRole()) < 1 {
 		err := ProjectUserGroupValidationError{
 			field:  "Role",
-			reason: "value length must be at least 1 runes",
+			reason: "role for an sso_group must not be empty",
 		}
 		if !all {
 			return err
@@ -928,7 +928,7 @@ func (m *ProjectRBACRole) validate(all bool) error {
 	if utf8.RuneCountInString(m.GetName()) < 1 {
 		err := ProjectRBACRoleValidationError{
 			field:  "Name",
-			reason: "value length must be at least 1 runes",
+			reason: "name of an RBAC role must not be empty",
 		}
 		if !all {
 			return err
@@ -939,7 +939,7 @@ func (m *ProjectRBACRole) validate(all bool) error {
 	if len(m.GetPolicies()) < 1 {
 		err := ProjectRBACRoleValidationError{
 			field:  "Policies",
-			reason: "value must contain at least 1 item(s)",
+			reason: "an RBAC role must have at least one policy",
 		}
 		if !all {
 			return err
@@ -1109,7 +1109,7 @@ func (m *ProjectRBACResource) validate(all bool) error {
 			if utf8.RuneCountInString(key) < 1 {
 				err := ProjectRBACResourceValidationError{
 					field:  fmt.Sprintf("Labels[%v]", key),
-					reason: "value length must be at least 1 runes",
+					reason: "key of a label for an RBAC resource must not be empty",
 				}
 				if !all {
 					return err
@@ -1120,7 +1120,7 @@ func (m *ProjectRBACResource) validate(all bool) error {
 			if utf8.RuneCountInString(val) < 1 {
 				err := ProjectRBACResourceValidationError{
 					field:  fmt.Sprintf("Labels[%v]", key),
-					reason: "value length must be at least 1 runes",
+					reason: "value of a label for an RBAC resource must not be empty",
 				}
 				if !all {
 					return err
@@ -1236,7 +1236,7 @@ func (m *ProjectRBACPolicy) validate(all bool) error {
 	if len(m.GetResources()) < 1 {
 		err := ProjectRBACPolicyValidationError{
 			field:  "Resources",
-			reason: "value must contain at least 1 item(s)",
+			reason: "an RBAC policy must have at least one resource",
 		}
 		if !all {
 			return err
@@ -1281,7 +1281,7 @@ func (m *ProjectRBACPolicy) validate(all bool) error {
 	if len(m.GetActions()) < 1 {
 		err := ProjectRBACPolicyValidationError{
 			field:  "Actions",
-			reason: "value must contain at least 1 item(s)",
+			reason: "an RBAC policy must have at least one action",
 		}
 		if !all {
 			return err
@@ -1410,7 +1410,7 @@ func (m *ProjectSSOConfig_GitHub) validate(all bool) error {
 	if utf8.RuneCountInString(m.GetClientId()) < 1 {
 		err := ProjectSSOConfig_GitHubValidationError{
 			field:  "ClientId",
-			reason: "value length must be at least 1 runes",
+			reason: "client ID for GitHub SSO must not be empty",
 		}
 		if !all {
 			return err
@@ -1421,7 +1421,7 @@ func (m *ProjectSSOConfig_GitHub) validate(all bool) error {
 	if utf8.RuneCountInString(m.GetClientSecret()) < 1 {
 		err := ProjectSSOConfig_GitHubValidationError{
 			field:  "ClientSecret",
-			reason: "value length must be at least 1 runes",
+			reason: "client secret for GitHub SSO must not be empty",
 		}
 		if !all {
 			return err
@@ -1540,7 +1540,7 @@ func (m *ProjectSSOConfig_Google) validate(all bool) error {
 	if utf8.RuneCountInString(m.GetClientId()) < 1 {
 		err := ProjectSSOConfig_GoogleValidationError{
 			field:  "ClientId",
-			reason: "value length must be at least 1 runes",
+			reason: "client ID for Google SSO must not be empty",
 		}
 		if !all {
 			return err
@@ -1551,7 +1551,7 @@ func (m *ProjectSSOConfig_Google) validate(all bool) error {
 	if utf8.RuneCountInString(m.GetClientSecret()) < 1 {
 		err := ProjectSSOConfig_GoogleValidationError{
 			field:  "ClientSecret",
-			reason: "value length must be at least 1 runes",
+			reason: "client secret for Google SSO must not be empty",
 		}
 		if !all {
 			return err
@@ -1664,7 +1664,7 @@ func (m *ProjectSSOConfig_Oidc) validate(all bool) error {
 	if utf8.RuneCountInString(m.GetClientId()) < 1 {
 		err := ProjectSSOConfig_OidcValidationError{
 			field:  "ClientId",
-			reason: "value length must be at least 1 runes",
+			reason: "client ID for OIDC SSO must not be empty",
 		}
 		if !all {
 			return err
@@ -1675,7 +1675,7 @@ func (m *ProjectSSOConfig_Oidc) validate(all bool) error {
 	if utf8.RuneCountInString(m.GetClientSecret()) < 1 {
 		err := ProjectSSOConfig_OidcValidationError{
 			field:  "ClientSecret",
-			reason: "value length must be at least 1 runes",
+			reason: "client secret for OIDC SSO must not be empty",
 		}
 		if !all {
 			return err
