@@ -17,8 +17,12 @@ package deployment
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
 )
@@ -43,6 +47,217 @@ func addVariantLabelsAndAnnotations(m []provider.Manifest, variantLabel, variant
 			variantLabel: variant,
 		})
 	}
+}
+
+func findConfigMapManifests(manifests []provider.Manifest) []provider.Manifest {
+	out := make([]provider.Manifest, 0, len(manifests))
+	for _, m := range manifests {
+		if !m.IsConfigMap() {
+			continue
+		}
+		out = append(out, m)
+	}
+	return out
+}
+
+func findSecretManifests(manifests []provider.Manifest) []provider.Manifest {
+	out := make([]provider.Manifest, 0, len(manifests))
+	for _, m := range manifests {
+		if !m.IsSecret() {
+			continue
+		}
+		out = append(out, m)
+	}
+	return out
+}
+
+// duplicateManifests duplicates the given manifests and appends a name suffix to each manifest.
+func duplicateManifests(manifests []provider.Manifest, nameSuffix string) []provider.Manifest {
+	copied := make([]provider.Manifest, len(manifests))
+	for i, m := range manifests {
+		copied[i] = m.DeepCopyWithName(makeSuffixedName(m.Name(), nameSuffix))
+	}
+	return copied
+}
+
+func makeSuffixedName(name, suffix string) string {
+	if suffix != "" {
+		return name + "-" + suffix
+	}
+	return name
+}
+
+// generateVariantServiceManifests generates Service manifests for the specified variant.
+func generateVariantServiceManifests(services []provider.Manifest, variantLabel, variant, nameSuffix string) ([]provider.Manifest, error) {
+	manifests := make([]provider.Manifest, 0, len(services))
+	updateService := func(s *corev1.Service) {
+		s.Name = makeSuffixedName(s.Name, nameSuffix)
+		s.Spec.Type = corev1.ServiceTypeClusterIP
+		if s.Spec.Selector == nil {
+			s.Spec.Selector = map[string]string{}
+		}
+		s.Spec.Selector[variantLabel] = variant
+		s.Spec.ExternalIPs = nil
+		s.Spec.LoadBalancerIP = ""
+		s.Spec.LoadBalancerSourceRanges = nil
+	}
+
+	for _, m := range services {
+		s := &corev1.Service{}
+		if err := m.ConvertToStructuredObject(s); err != nil {
+			return nil, err
+		}
+		updateService(s)
+		manifest, err := provider.FromStructuredObject(s)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse Service object to Manifest: %w", err)
+		}
+		manifest.AddAnnotations(map[string]string{
+			provider.LabelResourceKey: manifest.Key().String(),
+		})
+		manifests = append(manifests, manifest)
+	}
+	return manifests, nil
+}
+
+// generateVariantWorkloadManifests generates Workload manifests for the specified variant.
+func generateVariantWorkloadManifests(workloads, configmaps, secrets []provider.Manifest, variantLabel, variant, nameSuffix string, replicasCalculator func(*int32) int32) ([]provider.Manifest, error) {
+	manifests := make([]provider.Manifest, 0, len(workloads))
+
+	cmNames := make(map[string]struct{}, len(configmaps))
+	for _, cm := range configmaps {
+		cmNames[cm.Name()] = struct{}{}
+	}
+
+	secretNames := make(map[string]struct{}, len(secrets))
+	for _, secret := range secrets {
+		secretNames[secret.Name()] = struct{}{}
+	}
+
+	updateContainers := func(containers []corev1.Container) {
+		for _, container := range containers {
+			for _, env := range container.Env {
+				if v := env.ValueFrom; v != nil {
+					if ref := v.ConfigMapKeyRef; ref != nil {
+						if _, ok := cmNames[ref.Name]; ok {
+							ref.Name = makeSuffixedName(ref.Name, nameSuffix)
+						}
+					}
+					if ref := v.SecretKeyRef; ref != nil {
+						if _, ok := secretNames[ref.Name]; ok {
+							ref.Name = makeSuffixedName(ref.Name, nameSuffix)
+						}
+					}
+				}
+			}
+			for _, envFrom := range container.EnvFrom {
+				if ref := envFrom.ConfigMapRef; ref != nil {
+					if _, ok := cmNames[ref.Name]; ok {
+						ref.Name = makeSuffixedName(ref.Name, nameSuffix)
+					}
+				}
+				if ref := envFrom.SecretRef; ref != nil {
+					if _, ok := secretNames[ref.Name]; ok {
+						ref.Name = makeSuffixedName(ref.Name, nameSuffix)
+					}
+				}
+			}
+		}
+	}
+
+	updatePod := func(pod *corev1.PodTemplateSpec) {
+		if pod.Labels == nil {
+			pod.Labels = map[string]string{}
+		}
+		pod.Labels[variantLabel] = variant
+
+		for i := range pod.Spec.Volumes {
+			if cm := pod.Spec.Volumes[i].ConfigMap; cm != nil {
+				if _, ok := cmNames[cm.Name]; ok {
+					cm.Name = makeSuffixedName(cm.Name, nameSuffix)
+				}
+			}
+			if s := pod.Spec.Volumes[i].Secret; s != nil {
+				if _, ok := secretNames[s.SecretName]; ok {
+					s.SecretName = makeSuffixedName(s.SecretName, nameSuffix)
+				}
+			}
+		}
+
+		updateContainers(pod.Spec.InitContainers)
+		updateContainers(pod.Spec.Containers)
+	}
+
+	updateDeployment := func(d *appsv1.Deployment) {
+		d.Name = makeSuffixedName(d.Name, nameSuffix)
+		if replicasCalculator != nil {
+			replicas := replicasCalculator(d.Spec.Replicas)
+			d.Spec.Replicas = &replicas
+		}
+		d.Spec.Selector = metav1.AddLabelToSelector(d.Spec.Selector, variantLabel, variant)
+		updatePod(&d.Spec.Template)
+	}
+
+	for _, m := range workloads {
+		switch m.Kind() {
+		case provider.KindDeployment:
+			d := &appsv1.Deployment{}
+			if err := m.ConvertToStructuredObject(d); err != nil {
+				return nil, err
+			}
+			updateDeployment(d)
+			manifest, err := provider.FromStructuredObject(d)
+			if err != nil {
+				return nil, err
+			}
+			manifest.AddAnnotations(map[string]string{
+				provider.LabelResourceKey: manifest.Key().String(),
+			})
+			manifests = append(manifests, manifest)
+
+		default:
+			return nil, fmt.Errorf("unsupported workload kind %s", m.Kind())
+		}
+	}
+
+	return manifests, nil
+}
+
+// deleteVariantResources deletes the resources of the specified variant.
+func deleteVariantResources(ctx context.Context, lp sdk.StageLogPersister, kubectl *provider.Kubectl, kubeConfig string, applier *provider.Applier, applicationID, variantLabel, variant string) error {
+	namespacedLiveResources, clusterScopedLiveResources, err := provider.GetLiveResources(ctx, kubectl, kubeConfig, applicationID, fmt.Sprintf("%s=%s", variantLabel, variant))
+	if err != nil {
+		return err
+	}
+
+	services := make([]provider.ResourceKey, 0, len(namespacedLiveResources))
+	workloads := make([]provider.ResourceKey, 0, len(namespacedLiveResources))
+	others := make([]provider.ResourceKey, 0, len(namespacedLiveResources))
+	clusterScoped := make([]provider.ResourceKey, 0, len(clusterScopedLiveResources))
+
+	for _, r := range namespacedLiveResources {
+		switch {
+		case r.IsService():
+			services = append(services, r.Key())
+		case r.IsDeployment() || r.IsStatefulSet():
+			workloads = append(workloads, r.Key())
+		default:
+			others = append(others, r.Key())
+		}
+	}
+
+	for _, r := range clusterScopedLiveResources {
+		clusterScoped = append(clusterScoped, r.Key())
+	}
+
+	var deletedCount int
+	deletedCount += deleteResources(ctx, lp, applier, services)
+	deletedCount += deleteResources(ctx, lp, applier, workloads)
+	deletedCount += deleteResources(ctx, lp, applier, others)
+	deletedCount += deleteResources(ctx, lp, applier, clusterScoped)
+	lp.Successf("Successfully deleted %d resources", deletedCount)
+
+	return nil
 }
 
 // deleteResources deletes the given resources.

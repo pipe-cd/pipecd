@@ -19,8 +19,9 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/ecs/config"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/ecs/config"
 )
 
 func TestLoadTargetGroups(t *testing.T) {
