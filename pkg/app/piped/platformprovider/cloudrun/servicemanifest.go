@@ -147,6 +147,10 @@ func ParseServiceManifest(data []byte) (ServiceManifest, error) {
 		return ServiceManifest{}, err
 	}
 
+	if obj.Object == nil {
+		return ServiceManifest{}, fmt.Errorf("empty or invalid service manifest: object is nil")
+	}
+
 	return ServiceManifest{
 		Name: obj.GetName(),
 		u:    &obj,

@@ -108,6 +108,10 @@ func (c *client) Update(ctx context.Context, sm ServiceManifest) (*Service, erro
 }
 
 func (c *client) List(ctx context.Context, options *ListOptions) ([]*Service, string, error) {
+	if options == nil {
+		options = &ListOptions{}
+	}
+
 	var (
 		svc    = run.NewNamespacesServicesService(c.client)
 		parent = makeCloudRunParent(c.projectID)
@@ -161,6 +165,10 @@ func (c *client) GetRevision(ctx context.Context, name string) (*Revision, error
 }
 
 func (c *client) ListRevisions(ctx context.Context, options *ListRevisionsOptions) ([]*Revision, string, error) {
+	if options == nil {
+		options = &ListRevisionsOptions{}
+	}
+
 	var (
 		rev    = run.NewNamespacesRevisionsService(c.client)
 		parent = makeCloudRunParent(c.projectID)
