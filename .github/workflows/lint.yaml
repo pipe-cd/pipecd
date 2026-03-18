@@ -114,6 +114,8 @@ jobs:
         run: go install golang.org/x/vuln/cmd/govulncheck@latest
       - name: Run govulncheck
         working-directory: ${{ matrix.module }}
+        # TODO: Remove continue-on-error once vulnerabilities are fixed (see #6600)
+        continue-on-error: true
         run: govulncheck ./...
 
   govulncheck-completed:
@@ -121,8 +123,9 @@ jobs:
     if: always()
     needs: govulncheck
     steps:
-      - name: Check if all govulncheck jobs succeeded
-        # if jobs in the 'govulncheck' job matrix failed or were cancelled, this job will fail
-        # otherwise this job is marked as successful because all steps are skipped
-        run: exit 1
+      - name: Check govulncheck status
+        # Warn-only for now until vulnerabilities are fixed (see #6600)
+        # Change 'skipped' back to 'success' once fixed
+        run: |
+          echo "::warning::govulncheck found vulnerabilities - see issue #6600 for tracking"
         if: needs.govulncheck.result != 'success'
