@@ -17,8 +17,9 @@ package main
 import (
 	"log"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/ecs/deployment"
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/ecs/deployment"
 )
 
 func main() {
