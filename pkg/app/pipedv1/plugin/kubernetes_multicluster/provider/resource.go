@@ -33,9 +33,6 @@ const (
 	// Service
 	KindService = "Service"
 
-	// Service
-	KindService = "Service"
-
 	// ConfigMap and Secret
 	KindSecret    = "Secret"
 	KindConfigMap = "ConfigMap"

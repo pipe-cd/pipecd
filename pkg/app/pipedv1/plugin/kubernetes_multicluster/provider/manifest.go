@@ -151,12 +151,6 @@ func (m Manifest) IsSecret() bool {
 	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindSecret
 }
 
-// IsService returns true if the manifest is a Service.
-// It checks the API group and the kind of the manifest.
-func (m Manifest) IsService() bool {
-	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindService
-}
-
 // IsConfigMap returns true if the manifest is a ConfigMap.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsConfigMap() bool {
