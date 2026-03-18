@@ -14,6 +14,12 @@
 
 package config
 
+import (
+	"encoding/json"
+
+	"github.com/creasty/defaults"
+)
+
 // ECSApplicationSpec defines the application specification for ECS plugin.
 type ECSApplicationSpec struct {
 	Input            ECSDeploymentInput  `json:"input"`
@@ -29,8 +35,7 @@ type ECSDeploymentInput struct {
 
 	// ServiceDefinitionFile is the name of service definition file placing in application directory
 	// e.g., "servicedef.json" or "ecs/servicedef.yaml"
-	// Default: servicedef.json
-	ServiceDefinitionFile string `json:"serviceDefinitionFile,omitempty" default:"servicedef.json"`
+	ServiceDefinitionFile string `json:"serviceDefinitionFile,omitempty"`
 
 	// RunStandaloneTask indicates whether to run the task as a standalone task without creating/updating an ECS service.
 	// If true, the plugin will run the task directly without managing it through an ECS service.
@@ -56,6 +61,16 @@ type ECSDeploymentInput struct {
 
 	// TargetGroups contains the load balancer target groups for the ECS service.
 	TargetGroups ECSTargetGroups `json:"targetGroups"`
+}
+
+func (di *ECSDeploymentInput) UnmarshalJSON(data []byte) error {
+	type alias ECSDeploymentInput
+	var a alias
+	if err := json.Unmarshal(data, &a); err != nil {
+		return err
+	}
+	*di = ECSDeploymentInput(a)
+	return defaults.Set(di)
 }
 
 // ECSVpcConfiguration contains the VPC configuration for running ECS tasks.
