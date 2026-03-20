@@ -42,6 +42,7 @@ type mockECSClient struct {
 	CreateServiceFunc               func(ctx context.Context, service types.Service) (*types.Service, error)
 	UpdateServiceFunc               func(ctx context.Context, service types.Service) (*types.Service, error)
 	GetServiceTaskSetsFunc          func(ctx context.Context, service types.Service) ([]types.TaskSet, error)
+	GetPrimaryTaskSetFunc           func(ctx context.Context, service types.Service) (*types.TaskSet, error)
 	CreateTaskSetFunc               func(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup *types.LoadBalancer, scale float64) (*types.TaskSet, error)
 	UpdateServicePrimaryTaskSetFunc func(ctx context.Context, service types.Service, taskSet types.TaskSet) (*types.TaskSet, error)
 	DeleteTaskSetFunc               func(ctx context.Context, taskSet types.TaskSet) error
@@ -66,6 +67,9 @@ func (m *mockECSClient) UpdateService(ctx context.Context, service types.Service
 }
 func (m *mockECSClient) GetServiceTaskSets(ctx context.Context, service types.Service) ([]types.TaskSet, error) {
 	return m.GetServiceTaskSetsFunc(ctx, service)
+}
+func (m *mockECSClient) GetPrimaryTaskSet(ctx context.Context, service types.Service) (*types.TaskSet, error) {
+	return m.GetPrimaryTaskSetFunc(ctx, service)
 }
 func (m *mockECSClient) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup *types.LoadBalancer, scale float64) (*types.TaskSet, error) {
 	return m.CreateTaskSetFunc(ctx, service, taskDefinition, targetGroup, scale)
@@ -128,6 +132,13 @@ func happyPathClient(registeredTD *types.TaskDefinition, updatedSvc *types.Servi
 		},
 		GetServiceTaskSetsFunc: func(_ context.Context, _ types.Service) ([]types.TaskSet, error) {
 			return prevTaskSets, nil
+		},
+		GetPrimaryTaskSetFunc: func(_ context.Context, _ types.Service) (*types.TaskSet, error) {
+			if len(prevTaskSets) > 0 {
+				ts := prevTaskSets[0]
+				return &ts, nil
+			}
+			return nil, nil
 		},
 		CreateTaskSetFunc: func(_ context.Context, _ types.Service, _ types.TaskDefinition, _ *types.LoadBalancer, _ float64) (*types.TaskSet, error) {
 			ts := *newTS
