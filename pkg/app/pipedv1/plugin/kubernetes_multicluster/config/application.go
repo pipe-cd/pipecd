@@ -56,7 +56,6 @@ type KubernetesApplicationSpec struct {
 	// The label will be configured to variant manifests used to distinguish them.
 	VariantLabel KubernetesVariantLabel `json:"variantLabel"`
 
-	// TODO: Define fields for KubernetesApplicationSpec.
 }
 
 func (s *KubernetesApplicationSpec) UnmarshalJSON(data []byte) error {
@@ -200,6 +199,32 @@ type K8sCanaryRolloutStageOptions struct {
 
 // K8sCanaryCleanStageOptions contains all configurable values for a K8S_CANARY_CLEAN stage.
 type K8sCanaryCleanStageOptions struct{}
+
+// K8sPrimaryRolloutStageOptions contains all configurable values for a K8S_PRIMARY_ROLLOUT stage.
+type K8sPrimaryRolloutStageOptions struct {
+	// Suffix that should be used when naming the PRIMARY variant's resources.
+	// Default is "primary".
+	Suffix string `json:"suffix" default:"primary"`
+	// Whether the PRIMARY service should be created.
+	CreateService bool `json:"createService"`
+	// Whether the PRIMARY variant label should be added to manifests if they were missing.
+	AddVariantLabelToSelector bool `json:"addVariantLabelToSelector"`
+	// Whether the resources that are no longer defined in Git should be removed or not.
+	Prune bool `json:"prune"`
+}
+
+func (o *K8sPrimaryRolloutStageOptions) UnmarshalJSON(data []byte) error {
+	type alias K8sPrimaryRolloutStageOptions
+	var a alias
+	if err := json.Unmarshal(data, &a); err != nil {
+		return err
+	}
+	*o = K8sPrimaryRolloutStageOptions(a)
+	if err := defaults.Set(o); err != nil {
+		return err
+	}
+	return nil
+}
 
 // K8sResourcePatch represents a patch operation for a Kubernetes resource.
 type K8sResourcePatch struct {
