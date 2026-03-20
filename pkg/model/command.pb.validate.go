@@ -60,6 +60,7 @@ func (m *Command) validate(all bool) error {
 		err := CommandValidationError{
 			field:  "Id",
 			reason: "value length must be at least 1 runes",
+			reason: "command ID must not be empty",
 		}
 		if !all {
 			return err
@@ -71,6 +72,7 @@ func (m *Command) validate(all bool) error {
 		err := CommandValidationError{
 			field:  "PipedId",
 			reason: "value length must be at least 1 runes",
+			reason: "piped ID must not be empty",
 		}
 		if !all {
 			return err
@@ -471,6 +473,7 @@ func (m *Command_SyncApplication) validate(all bool) error {
 		err := Command_SyncApplicationValidationError{
 			field:  "ApplicationId",
 			reason: "value length must be at least 1 runes",
+			reason: "application ID must not be empty",
 		}
 		if !all {
 			return err
@@ -586,6 +589,7 @@ func (m *Command_UpdateApplicationConfig) validate(all bool) error {
 		err := Command_UpdateApplicationConfigValidationError{
 			field:  "ApplicationId",
 			reason: "value length must be at least 1 runes",
+			reason: "application ID must not be empty",
 		}
 		if !all {
 			return err
@@ -597,6 +601,7 @@ func (m *Command_UpdateApplicationConfig) validate(all bool) error {
 		err := Command_UpdateApplicationConfigValidationError{
 			field:  "ConfigPath",
 			reason: "value length must be at least 1 runes",
+			reason: "config path must not be empty",
 		}
 		if !all {
 			return err
@@ -608,6 +613,7 @@ func (m *Command_UpdateApplicationConfig) validate(all bool) error {
 		err := Command_UpdateApplicationConfigValidationError{
 			field:  "Config",
 			reason: "value length must be at least 1 runes",
+			reason: "config content must not be empty",
 		}
 		if !all {
 			return err
@@ -722,6 +728,7 @@ func (m *Command_CancelDeployment) validate(all bool) error {
 		err := Command_CancelDeploymentValidationError{
 			field:  "DeploymentId",
 			reason: "value length must be at least 1 runes",
+			reason: "deployment ID must not be empty",
 		}
 		if !all {
 			return err
@@ -839,6 +846,7 @@ func (m *Command_ApproveStage) validate(all bool) error {
 		err := Command_ApproveStageValidationError{
 			field:  "DeploymentId",
 			reason: "value length must be at least 1 runes",
+			reason: "deployment ID must not be empty",
 		}
 		if !all {
 			return err
@@ -850,6 +858,7 @@ func (m *Command_ApproveStage) validate(all bool) error {
 		err := Command_ApproveStageValidationError{
 			field:  "StageId",
 			reason: "value length must be at least 1 runes",
+			reason: "stage ID must not be empty",
 		}
 		if !all {
 			return err
@@ -963,6 +972,7 @@ func (m *Command_BuildPlanPreview) validate(all bool) error {
 		err := Command_BuildPlanPreviewValidationError{
 			field:  "RepositoryId",
 			reason: "value length must be at least 1 runes",
+			reason: "repository ID must not be empty",
 		}
 		if !all {
 			return err
@@ -974,6 +984,7 @@ func (m *Command_BuildPlanPreview) validate(all bool) error {
 		err := Command_BuildPlanPreviewValidationError{
 			field:  "HeadBranch",
 			reason: "value length must be at least 1 runes",
+			reason: "head branch must not be empty",
 		}
 		if !all {
 			return err
@@ -985,6 +996,7 @@ func (m *Command_BuildPlanPreview) validate(all bool) error {
 		err := Command_BuildPlanPreviewValidationError{
 			field:  "HeadCommit",
 			reason: "value length must be at least 1 runes",
+			reason: "head commit hash must not be empty",
 		}
 		if !all {
 			return err
@@ -996,6 +1008,7 @@ func (m *Command_BuildPlanPreview) validate(all bool) error {
 		err := Command_BuildPlanPreviewValidationError{
 			field:  "BaseBranch",
 			reason: "value length must be at least 1 runes",
+			reason: "base branch must not be empty",
 		}
 		if !all {
 			return err
@@ -1124,6 +1137,7 @@ func (m *Command_ChainSyncApplication) validate(all bool) error {
 		err := Command_ChainSyncApplicationValidationError{
 			field:  "ApplicationId",
 			reason: "value length must be at least 1 runes",
+			reason: "application ID must not be empty",
 		}
 		if !all {
 			return err
@@ -1240,6 +1254,7 @@ func (m *Command_SkipStage) validate(all bool) error {
 		err := Command_SkipStageValidationError{
 			field:  "DeploymentId",
 			reason: "value length must be at least 1 runes",
+			reason: "deployment ID must not be empty",
 		}
 		if !all {
 			return err
@@ -1251,6 +1266,7 @@ func (m *Command_SkipStage) validate(all bool) error {
 		err := Command_SkipStageValidationError{
 			field:  "StageId",
 			reason: "value length must be at least 1 runes",
+			reason: "stage ID must not be empty",
 		}
 		if !all {
 			return err
@@ -1364,6 +1380,7 @@ func (m *Command_RestartPiped) validate(all bool) error {
 		err := Command_RestartPipedValidationError{
 			field:  "PipedId",
 			reason: "value length must be at least 1 runes",
+			reason: "piped ID must not be empty",
 		}
 		if !all {
 			return err
