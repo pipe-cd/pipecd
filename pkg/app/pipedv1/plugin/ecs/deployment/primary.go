@@ -86,7 +86,9 @@ func (p *ECSPlugin) executeECSPrimaryRolloutStage(
 //
 // 3. Creates a new PRIMARY task set at 100% scale
 //
-// 4. Waits for the service to reach stable state
+// 4. Delete old PRIMARY task set
+//
+// 5. Waits for the service to reach stable state
 func primaryRollout(
 	ctx context.Context,
 	lp sdk.StageLogPersister,
@@ -107,9 +109,22 @@ func primaryRollout(
 		return fmt.Errorf("failed to apply service definition: %w", err)
 	}
 
-	lp.Infof("Rolling out new PRIMARY task set for service %s", *service.ServiceName)
-	if err := createPrimaryTaskSet(ctx, lp, client, *service, *td, primary); err != nil {
-		return fmt.Errorf("failed to create primary task set for service %s: %w", *service.ServiceName, err)
+	lp.Infof("Get current PRIMARY taskset")
+	currPrimaryTs, err := client.GetPrimaryTaskSet(ctx, *service)
+	if err != nil {
+		return fmt.Errorf("failed to get current primary taskset: %w", err)
+	}
+
+	lp.Infof("Rolling out new PRIMARY taskset for service %s", *service.ServiceName)
+	if err = createPrimaryTaskSet(ctx, lp, client, *service, *td, primary); err != nil {
+		return fmt.Errorf("failed to create primary taskset for service %s: %w", *service.ServiceName, err)
+	}
+
+	lp.Infof("Deleting old PRIMARY taskset")
+	if currPrimaryTs != nil {
+		if err = client.DeleteTaskSet(ctx, *currPrimaryTs); err != nil {
+			return fmt.Errorf("failed to delete old primary taskset: %w", err)
+		}
 	}
 
 	lp.Infof("Waiting for service %s to reach stable state", *service.ServiceName)

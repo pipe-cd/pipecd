@@ -173,18 +173,18 @@ func TestPrimaryRollout(t *testing.T) {
 			wantErrMsg: "failed to apply service definition",
 		},
 		{
-			name:       "fail: GetServiceTaskSets error",
+			name:       "fail: GetPrimaryTaskSet error",
 			taskDef:    baseTaskDef,
 			serviceDef: baseServiceDef,
 			client: func() *mockECSClient {
 				m := happyPathClient(registeredTD, updatedService, newTaskSet, []types.TaskSet{})
-				m.GetServiceTaskSetsFunc = func(_ context.Context, _ types.Service) ([]types.TaskSet, error) {
-					return nil, errors.New("get task sets error")
+				m.GetPrimaryTaskSetFunc = func(_ context.Context, _ types.Service) (*types.TaskSet, error) {
+					return nil, errors.New("get primary task set error")
 				}
 				return m
 			}(),
 			wantErr:    true,
-			wantErrMsg: "failed to create primary task set for service",
+			wantErrMsg: "failed to get current primary taskset",
 		},
 		{
 			name:       "fail: CreateTaskSet error",
@@ -198,7 +198,7 @@ func TestPrimaryRollout(t *testing.T) {
 				return m
 			}(),
 			wantErr:    true,
-			wantErrMsg: "failed to create primary task set for service",
+			wantErrMsg: "failed to create primary taskset for service",
 		},
 		{
 			name:       "fail: UpdateServicePrimaryTaskSet error",
@@ -212,7 +212,7 @@ func TestPrimaryRollout(t *testing.T) {
 				return m
 			}(),
 			wantErr:    true,
-			wantErrMsg: "failed to create primary task set for service",
+			wantErrMsg: "failed to create primary taskset for service",
 		},
 		{
 			name:       "fail: DeleteTaskSet error",
@@ -226,7 +226,7 @@ func TestPrimaryRollout(t *testing.T) {
 				return m
 			}(),
 			wantErr:    true,
-			wantErrMsg: "failed to create primary task set for service",
+			wantErrMsg: "failed to delete old primary taskset",
 		},
 		{
 			name:       "fail: WaitServiceStable error",
