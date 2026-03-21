@@ -73,6 +73,8 @@ func (p *Plugin) ExecuteStage(ctx context.Context, _ *sdk.ConfigNone, dts []*sdk
 		return &sdk.ExecuteStageResponse{
 			Status: p.executeK8sMultiCanaryCleanStage(ctx, input, dts),
 		}, nil
+	case StageK8sMultiBaselineRollout:
+		return &sdk.ExecuteStageResponse{Status: p.executeK8sMultiBaselineRolloutStage(ctx, input, dts)}, nil
 	default:
 		return nil, errors.New("unimplemented or unsupported stage")
 	}
