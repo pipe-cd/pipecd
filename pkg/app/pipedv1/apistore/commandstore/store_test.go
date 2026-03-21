@@ -140,6 +140,72 @@ func TestListStageCommands(t *testing.T) {
 	}
 }
 
+func TestListStageCommandsByDeployment(t *testing.T) {
+	t.Parallel()
+
+	store := store{
+		stageCommands: stageCommandsMap{
+			"deployment-1": {
+				"stage-1": []*model.Command{
+					{
+						Id:           "command-1",
+						DeploymentId: "deployment-1",
+						StageId:      "stage-1",
+						Type:         model.Command_APPROVE_STAGE,
+					},
+				},
+				"stage-2": []*model.Command{
+					{
+						Id:           "command-2",
+						DeploymentId: "deployment-1",
+						StageId:      "stage-2",
+						Type:         model.Command_APPROVE_STAGE,
+					},
+				},
+			},
+		},
+		logger: zap.NewNop(),
+	}
+
+	testcases := []struct {
+		name         string
+		deploymentID string
+		want         []*model.Command
+	}{
+		{
+			name:         "valid deployment",
+			deploymentID: "deployment-1",
+			want: []*model.Command{
+				{
+					Id:           "command-1",
+					DeploymentId: "deployment-1",
+					StageId:      "stage-1",
+					Type:         model.Command_APPROVE_STAGE,
+				},
+				{
+					Id:           "command-2",
+					DeploymentId: "deployment-1",
+					StageId:      "stage-2",
+					Type:         model.Command_APPROVE_STAGE,
+				},
+			},
+		},
+		{
+			name:         "deployment not exist",
+			deploymentID: "deployment-xyz",
+			want:         nil,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			got := store.ListStageCommandsByDeployment(tc.deploymentID)
+			assert.ElementsMatch(t, tc.want, got)
+		})
+	}
+}
+
 func TestReportStageCommandsHandled(t *testing.T) {
 	t.Parallel()
 
