@@ -73,6 +73,18 @@ func (p *ECSPlugin) ExecuteStage(
 		return &sdk.ExecuteStageResponse{
 			Status: p.executeECSRollbackStage(ctx, input, deployTargets[0]),
 		}, nil
+	case StageECSPrimaryRollout:
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeECSPrimaryRolloutStage(ctx, input, deployTargets[0]),
+		}, nil
+	case StageECSCanaryRollout:
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeECSCanaryRolloutStage(ctx, input, deployTargets[0]),
+		}, nil
+	case StageECSCanaryClean:
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeECSCanaryCleanStage(ctx, input, deployTargets[0]),
+		}, nil
 	default:
 		return nil, ErrUnsupportedStage
 	}
