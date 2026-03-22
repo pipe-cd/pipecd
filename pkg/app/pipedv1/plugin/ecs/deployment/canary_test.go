@@ -25,6 +25,71 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestCanaryClean(t *testing.T) {
+	t.Parallel()
+
+	var (
+		tsArn   = "arn:aws:ecs:us-east-1:123456789012:task-set/my-cluster/my-service/ecs-svc:1"
+		taskSet = types.TaskSet{
+			TaskSetArn: aws.String(tsArn),
+		}
+	)
+
+	testcases := []struct {
+		name       string
+		taskSet    types.TaskSet
+		client     *mockECSClient
+		wantErr    bool
+		wantErrMsg string
+	}{
+		{
+			name:    "success: canary task set is deleted",
+			taskSet: taskSet,
+			client: &mockECSClient{
+				DeleteTaskSetFunc: func(_ context.Context, ts types.TaskSet) error {
+					assert.Equal(t, tsArn, aws.ToString(ts.TaskSetArn))
+					return nil
+				},
+			},
+		},
+		{
+			name:    "success: task set already deleted (idempotent retry)",
+			taskSet: taskSet,
+			client: &mockECSClient{
+				DeleteTaskSetFunc: func(_ context.Context, _ types.TaskSet) error {
+					return &types.TaskSetNotFoundException{}
+				},
+			},
+		},
+		{
+			name:    "fail: DeleteTaskSet error",
+			taskSet: taskSet,
+			client: &mockECSClient{
+				DeleteTaskSetFunc: func(_ context.Context, _ types.TaskSet) error {
+					return errors.New("delete error")
+				},
+			},
+			wantErr:    true,
+			wantErrMsg: "failed to delete canary task set",
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			err := canaryClean(context.Background(), &fakeLogPersister{}, tc.client, tc.taskSet)
+
+			if tc.wantErr {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tc.wantErrMsg)
+				return
+			}
+			require.NoError(t, err)
+		})
+	}
+}
+
 func TestCanaryRollout(t *testing.T) {
 	t.Parallel()
 
