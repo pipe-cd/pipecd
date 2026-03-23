@@ -25,7 +25,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSync(t *testing.T) {
+func TestPrimaryRollout(t *testing.T) {
 	t.Parallel()
 
 	var (
@@ -60,7 +60,6 @@ func TestSync(t *testing.T) {
 			TaskSetArn: aws.String(tsArn1),
 			ClusterArn: aws.String(clusterArn),
 			ServiceArn: aws.String(serviceArn),
-			Status:     aws.String("ACTIVE"),
 		}
 		primaryLB = &types.LoadBalancer{
 			TargetGroupArn: aws.String("arn:aws:elasticloadbalancing:us-east-1:123:targetgroup/primary/abc"),
@@ -72,25 +71,24 @@ func TestSync(t *testing.T) {
 		taskDef    types.TaskDefinition
 		serviceDef types.Service
 		primary    *types.LoadBalancer
-		recreate   bool
 		client     *mockECSClient
 		wantErr    bool
 		wantErrMsg string
 	}{
 		{
-			name:       "success: recreate=false, existing service, no previous task sets",
+			name:       "success: existing service, no previous task sets",
 			taskDef:    baseTaskDef,
 			serviceDef: baseServiceDef,
 			client:     happyPathClient(registeredTD, updatedService, newTaskSet, []types.TaskSet{}),
 		},
 		{
-			name:       "success: recreate=false, existing service, previous task set is deleted",
+			name:       "success: existing service, previous task set is deleted",
 			taskDef:    baseTaskDef,
 			serviceDef: baseServiceDef,
 			client:     happyPathClient(registeredTD, updatedService, newTaskSet, []types.TaskSet{prevTaskSet}),
 		},
 		{
-			name:       "success: recreate=false, service does not exist, new service is created",
+			name:       "success: service does not exist, new service is created",
 			taskDef:    baseTaskDef,
 			serviceDef: baseServiceDef,
 			client: func() *mockECSClient {
@@ -104,7 +102,7 @@ func TestSync(t *testing.T) {
 			}(),
 		},
 		{
-			name:       "success: recreate=false, with primary ELB target group at scale 100",
+			name:       "success: with primary ELB target group at scale 100",
 			taskDef:    baseTaskDef,
 			serviceDef: baseServiceDef,
 			primary:    primaryLB,
@@ -117,33 +115,6 @@ func TestSync(t *testing.T) {
 				}
 				return m
 			}(),
-		},
-		{
-			name:       "success: recreate=true, prunes tasks then scales back to original DesiredCount",
-			taskDef:    baseTaskDef,
-			serviceDef: baseServiceDef,
-			recreate:   true,
-			client: func() *mockECSClient {
-				applyCallCount := 0
-				m := happyPathClient(registeredTD, updatedService, newTaskSet, []types.TaskSet{})
-				m.UpdateServiceFunc = func(_ context.Context, svc types.Service) (*types.Service, error) {
-					applyCallCount++
-					if applyCallCount == 2 {
-						// Second call is the scale-back: DesiredCount must be restored.
-						assert.Equal(t, int32(2), svc.DesiredCount)
-					}
-					cp := *updatedService
-					return &cp, nil
-				}
-				return m
-			}(),
-		},
-		{
-			name:       "success: recreate=true, previous task set is deleted before scale-up",
-			taskDef:    baseTaskDef,
-			serviceDef: baseServiceDef,
-			recreate:   true,
-			client:     happyPathClient(registeredTD, updatedService, newTaskSet, []types.TaskSet{prevTaskSet}),
 		},
 		{
 			name:       "fail: RegisterTaskDefinition error",
@@ -202,18 +173,18 @@ func TestSync(t *testing.T) {
 			wantErrMsg: "failed to apply service definition",
 		},
 		{
-			name:       "fail: GetServiceTaskSets error",
+			name:       "fail: GetPrimaryTaskSet error",
 			taskDef:    baseTaskDef,
 			serviceDef: baseServiceDef,
 			client: func() *mockECSClient {
 				m := happyPathClient(registeredTD, updatedService, newTaskSet, []types.TaskSet{})
-				m.GetServiceTaskSetsFunc = func(_ context.Context, _ types.Service) ([]types.TaskSet, error) {
-					return nil, errors.New("get task sets error")
+				m.GetPrimaryTaskSetFunc = func(_ context.Context, _ types.Service) (*types.TaskSet, error) {
+					return nil, errors.New("get primary task set error")
 				}
 				return m
 			}(),
 			wantErr:    true,
-			wantErrMsg: "failed to delete old tasksets",
+			wantErrMsg: "failed to get current primary taskset",
 		},
 		{
 			name:       "fail: CreateTaskSet error",
@@ -227,7 +198,7 @@ func TestSync(t *testing.T) {
 				return m
 			}(),
 			wantErr:    true,
-			wantErrMsg: "failed to create primary task set",
+			wantErrMsg: "failed to create primary taskset for service",
 		},
 		{
 			name:       "fail: UpdateServicePrimaryTaskSet error",
@@ -241,7 +212,7 @@ func TestSync(t *testing.T) {
 				return m
 			}(),
 			wantErr:    true,
-			wantErrMsg: "failed to create primary task set",
+			wantErrMsg: "failed to create primary taskset for service",
 		},
 		{
 			name:       "fail: DeleteTaskSet error",
@@ -255,43 +226,7 @@ func TestSync(t *testing.T) {
 				return m
 			}(),
 			wantErr:    true,
-			wantErrMsg: "failed to delete old tasksets",
-		},
-		{
-			name:       "fail: recreate=true, PruneServiceTasks error",
-			taskDef:    baseTaskDef,
-			serviceDef: baseServiceDef,
-			recreate:   true,
-			client: func() *mockECSClient {
-				m := happyPathClient(registeredTD, updatedService, newTaskSet, []types.TaskSet{})
-				m.PruneServiceTasksFunc = func(_ context.Context, _ types.Service) error {
-					return errors.New("prune error")
-				}
-				return m
-			}(),
-			wantErr:    true,
-			wantErrMsg: "failed to prune service tasks",
-		},
-		{
-			name:       "fail: recreate=true, UpdateService error on scale-back",
-			taskDef:    baseTaskDef,
-			serviceDef: baseServiceDef,
-			recreate:   true,
-			client: func() *mockECSClient {
-				applyCallCount := 0
-				m := happyPathClient(registeredTD, updatedService, newTaskSet, []types.TaskSet{})
-				m.UpdateServiceFunc = func(_ context.Context, _ types.Service) (*types.Service, error) {
-					applyCallCount++
-					if applyCallCount == 2 {
-						return nil, errors.New("scale-back error")
-					}
-					cp := *updatedService
-					return &cp, nil
-				}
-				return m
-			}(),
-			wantErr:    true,
-			wantErrMsg: "failed to revive service tasks",
+			wantErrMsg: "failed to delete old primary taskset",
 		},
 		{
 			name:       "fail: WaitServiceStable error",
@@ -305,7 +240,7 @@ func TestSync(t *testing.T) {
 				return m
 			}(),
 			wantErr:    true,
-			wantErrMsg: "wait stable error",
+			wantErrMsg: "did not reach stable state",
 		},
 	}
 
@@ -313,7 +248,7 @@ func TestSync(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			err := sync(context.Background(), &fakeLogPersister{}, tc.client, tc.taskDef, tc.serviceDef, tc.primary, tc.recreate)
+			err := primaryRollout(context.Background(), &fakeLogPersister{}, tc.client, tc.taskDef, tc.serviceDef, tc.primary)
 
 			if tc.wantErr {
 				require.Error(t, err)
