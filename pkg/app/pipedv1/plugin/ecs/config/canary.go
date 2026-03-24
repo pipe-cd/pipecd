@@ -12,25 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package config
 
-import (
-	"log"
-
-	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
-
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/ecs/deployment"
-)
-
-func main() {
-	plugin, err := sdk.NewPlugin(
-		"0.0.1",
-		sdk.WithDeploymentPlugin(&deployment.ECSPlugin{}),
-	)
-	if err != nil {
-		log.Fatalf("failed to create plugin: %v", err)
-	}
-	if err := plugin.Run(); err != nil {
-		log.Fatalf("plugin execution failed: %v", err)
-	}
+// ECSCanaryRolloutStageOptions contains options for the ECS_CANARY_ROLLOUT stage.
+type ECSCanaryRolloutStageOptions struct {
+	// Scale is the percentage of tasks to run as canary (0-100).
+	Scale float64 `json:"scale,omitempty"`
 }

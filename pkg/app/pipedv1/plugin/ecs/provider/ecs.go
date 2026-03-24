@@ -21,9 +21,10 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/ecs/config"
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"golang.org/x/sync/singleflight"
+
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/ecs/config"
 )
 
 const (
@@ -43,6 +44,7 @@ type ECS interface {
 	CreateService(ctx context.Context, service types.Service) (*types.Service, error)
 	UpdateService(ctx context.Context, service types.Service) (*types.Service, error)
 	GetServiceTaskSets(ctx context.Context, service types.Service) ([]types.TaskSet, error)
+	GetPrimaryTaskSet(ctx context.Context, service types.Service) (*types.TaskSet, error)
 	CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup *types.LoadBalancer, scale float64) (*types.TaskSet, error)
 	UpdateServicePrimaryTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) (*types.TaskSet, error)
 	DeleteTaskSet(ctx context.Context, taskSet types.TaskSet) error

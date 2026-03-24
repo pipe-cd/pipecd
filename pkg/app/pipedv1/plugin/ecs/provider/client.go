@@ -24,6 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
 	"github.com/aws/aws-sdk-go-v2/service/ecs"
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
+
 	"github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider"
 	"github.com/pipe-cd/pipecd/pkg/backoff"
 
@@ -188,15 +189,39 @@ func (c *client) GetServiceTaskSets(ctx context.Context, service types.Service) 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get task sets of service %s: %w", *service.ServiceName, err)
 	}
-	taskSets := make([]*types.TaskSet, 0, len(tsOutput.TaskSets))
+	taskSets := make([]types.TaskSet, 0, len(tsOutput.TaskSets))
 	for i := range tsOutput.TaskSets {
 		if !IsPipeCDManagedTaskSet(&tsOutput.TaskSets[i]) {
 			continue
 		}
-		taskSets = append(taskSets, &tsOutput.TaskSets[i])
+		taskSets = append(taskSets, tsOutput.TaskSets[i])
 	}
 
-	return svc.TaskSets, nil
+	return taskSets, nil
+}
+
+func (c *client) GetPrimaryTaskSet(ctx context.Context, service types.Service) (*types.TaskSet, error) {
+	input := &ecs.DescribeServicesInput{
+		Cluster:  service.ClusterArn,
+		Services: []string{*service.ServiceArn},
+	}
+
+	output, err := c.ecsClient.DescribeServices(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get primary taskset of service %s: %w", *service.ServiceName, err)
+	}
+	if len(output.Services) == 0 {
+		return nil, fmt.Errorf("failed to get primary task set of service %s: service not found", *service.ServiceName)
+	}
+
+	for _, ts := range output.Services[0].TaskSets {
+		if aws.ToString(ts.Status) == "PRIMARY" {
+			return &ts, nil
+		}
+	}
+
+	// A newly created service may have no PRIMARY task set yet,
+	return nil, nil
 }
 
 func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup *types.LoadBalancer, scale float64) (*types.TaskSet, error) {
