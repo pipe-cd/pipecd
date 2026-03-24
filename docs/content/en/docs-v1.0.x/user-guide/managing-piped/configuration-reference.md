@@ -3,10 +3,15 @@ title: "Configuration reference"
 linkTitle: "Configuration reference"
 weight: 9
 description: >
-  This page describes all configurable fields in the piped configuration.
+  Learn about all the configurable fields in the `piped` configuration file.
 ---
 
-``` yaml
+>**Note:**
+>PipeCD v1 documentation is still a work in progress. We are updating this configuration reference.
+> Until then, [see configurable fields for the piped configuration file for v0.55](../../../docs-v0.55.x/user-guide/managing-piped/configuration-reference.md), and if you have any questions, [reach out to us](../../../../../../README.md#community-and-development) using one of our communication channels.
+>Happy PipeCDing!
+
+<!-- ``` yaml
 apiVersion: pipecd.dev/v1beta1
 kind: Piped
 spec:
@@ -270,4 +275,4 @@ Must be one of the following structs:
 | url | string | The URL where notification event will be sent to. | Yes |
 | signatureKey | string | The HTTP header key used to store the configured signature in each event. Default is "PipeCD-Signature". | No |
 | signatureValue | string | The value of signature included in header of each event request. It can be used to verify the received events. | No |
-| signatureValueFile | string | The path to the signature value file. | No |
+| signatureValueFile | string | The path to the signature value file. | No | -->
