@@ -15,9 +15,11 @@
 package deployment
 
 import (
+	"context"
 	"testing"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/cloudrunservice/config"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -160,4 +162,16 @@ func Test_buildPipelineStages(t *testing.T) {
 			assert.Equal(t, tt.expected, actual)
 		})
 	}
+}
+
+func TestPlugin_ExecuteStage_Unsupported(t *testing.T) {
+	t.Parallel()
+	p := &Plugin{}
+	input := &sdk.ExecuteStageInput[config.CloudRunApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[config.CloudRunApplicationSpec]{
+			StageName: "UNKNOWN_STAGE",
+		},
+	}
+	_, err := p.ExecuteStage(context.Background(), nil, nil, input)
+	assert.ErrorContains(t, err, "unsupported stage")
 }
