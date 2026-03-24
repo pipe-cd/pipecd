@@ -193,12 +193,18 @@ func FindImageTag(sm ServiceManifest) (string, error) {
 }
 
 func parseContainerImage(image string) (name, tag string) {
-	parts := strings.Split(image, ":")
-	if len(parts) == 2 {
-		tag = parts[1]
+	paths := strings.Split(image, "/")
+	lastSegment := paths[len(paths)-1]
+
+	idx := strings.LastIndex(lastSegment, ":")
+	if idx == -1 {
+		name = lastSegment
+		tag = ""
+		return
 	}
-	paths := strings.Split(parts[0], "/")
-	name = paths[len(paths)-1]
+
+	name = lastSegment[:idx]
+	tag = lastSegment[idx+1:]
 	return
 }
 
