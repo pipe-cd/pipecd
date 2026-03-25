@@ -1,14 +1,14 @@
 ---
-title: "Using Pprof in Piped"
-linkTitle: "Using Pprof in Piped"
+title: "Using Pprof in piped"
+linkTitle: "Using Pprof in piped"
 weight: 10
 description: >
-  This guide is for developers who want to use pprof for performance profiling in Piped.
+  This guide is for developers who want to use pprof for performance profiling in `piped`.
 ---
 
-Piped provides built-in support for pprof, a tool for visualization and analysis of profiling data. It's a part of the standard Go library.
+`piped` provides built-in support for pprof, a tool for visualization and analysis of profiling data. It's a part of the standard Go library.
 
-In Piped, several routes are registered to serve the profiling data in a format understood by the pprof tool. Here are the routes:
+In `piped`, several routes are registered to serve the profiling data in a format understood by the pprof tool. Here are the routes:
 
 - `/debug/pprof/`: This route serves an index page that lists the available profiling data.
 - `/debug/pprof/profile`: This route serves CPU profiling data.
@@ -18,7 +18,7 @@ You can access these routes to get the profiling data. For example, to get the C
 
 Note that using these features in a production environment may impact performance.  
 
-This document explains the basic usage of [pprof](https://pkg.go.dev/net/http/pprof) in Piped. For more detailed information or specific use cases, please refer to the official Go documentation.
+This document explains the basic usage of [pprof](https://pkg.go.dev/net/http/pprof) in `piped`. For more detailed information or specific use cases, please refer to the official Go documentation.
 
 ## How to use pprof
 
@@ -54,4 +54,4 @@ This document explains the basic usage of [pprof](https://pkg.go.dev/net/http/pp
     go tool trace trace.out
     ```
 
-    Please replace localhost:9085 with the actual address and port of your Piped's admin server.
+    Please replace localhost:9085 with the actual address and port of your `piped`'s admin server.
