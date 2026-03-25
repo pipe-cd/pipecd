@@ -53,3 +53,30 @@ spec:
 | Field | Type | Description | Required |
 | --- | --- | --- | --- |
 | `ignoreFields` | []string | List of `apiVersion:kind:namespace:name#fieldPath` to ignore in diffs. | No |
+
+## Planner
+
+| Field | Type | Description | Required |
+| --- | --- | --- | --- |
+| `alwaysUsePipeline` | bool | Whether to always use the pipeline for deployment instead of a QuickSync. | No |
+| `autoRollback` | bool | Whether to automatically rollback to the previous state when the deployment fails. | No |
+
+## Pipeline
+
+| Field | Type | Description | Required |
+| --- | --- | --- | --- |
+| `stages` | []PipelineStage | List of stages to be executed sequentially during the deployment pipeline. | Yes |
+
+## Trigger
+
+| Field | Type | Description | Required |
+| --- | --- | --- | --- |
+| `onCommit` | OnCommit | Configuration for triggering deployments upon new commits. | No |
+| `onCommand` | OnCommand | Configuration for triggering deployments via manual command. | No |
+| `onOutOfSync` | OnOutOfSync | Configuration for triggering deployments when drift is detected. | No |
+
+## PostSync
+
+| Field | Type | Description | Required |
+| --- | --- | --- | --- |
+| `chain` | []PostSyncPlugin | List of plugins or tasks to execute after a successful synchronization. | Yes |
