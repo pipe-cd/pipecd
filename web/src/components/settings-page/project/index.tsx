@@ -1,8 +1,9 @@
 import { FC, memo } from "react";
+import { Box } from "@mui/material";
 import { GithubSSOForm } from "./components/github-sso-form";
+import { ProjectStatusForm } from "./components/project-status-form";
 import { RBACForm } from "./components/rbac-form";
 import { StaticAdminForm } from "./components/static-admin-form";
-import { Box } from "@mui/material";
 
 export const SettingsProjectPage: FC = memo(function SettingsProjectPage() {
   return (
@@ -14,7 +15,10 @@ export const SettingsProjectPage: FC = memo(function SettingsProjectPage() {
         flex: 1,
       })}
     >
-      <StaticAdminForm />
+      <ProjectStatusForm />
+      <Box sx={{ marginTop: 1 }}>
+        <StaticAdminForm />
+      </Box>
       <GithubSSOForm />
       <RBACForm />
     </Box>

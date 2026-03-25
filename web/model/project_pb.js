@@ -321,6 +321,7 @@ proto.model.Project.toObject = function(includeInstance, msg) {
     proto.model.ProjectRBACRole.toObject, includeInstance),
     userGroupsList: jspb.Message.toObjectList(msg.getUserGroupsList(),
     proto.model.ProjectUserGroup.toObject, includeInstance),
+    disabled: jspb.Message.getBooleanFieldWithDefault(msg, 11, false),
     createdAt: jspb.Message.getFieldWithDefault(msg, 14, 0),
     updatedAt: jspb.Message.getFieldWithDefault(msg, 15, 0)
   };
@@ -403,6 +404,10 @@ proto.model.Project.deserializeBinaryFromReader = function(msg, reader) {
       var value = new proto.model.ProjectUserGroup;
       reader.readMessage(value,proto.model.ProjectUserGroup.deserializeBinaryFromReader);
       msg.addUserGroups(value);
+      break;
+    case 11:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setDisabled(value);
       break;
     case 14:
       var value = /** @type {number} */ (reader.readInt64());
@@ -514,6 +519,13 @@ proto.model.Project.serializeBinaryToWriter = function(message, writer) {
       10,
       f,
       proto.model.ProjectUserGroup.serializeBinaryToWriter
+    );
+  }
+  f = message.getDisabled();
+  if (f) {
+    writer.writeBool(
+      11,
+      f
     );
   }
   f = message.getCreatedAt();
@@ -807,6 +819,24 @@ proto.model.Project.prototype.addUserGroups = function(opt_value, opt_index) {
  */
 proto.model.Project.prototype.clearUserGroupsList = function() {
   return this.setUserGroupsList([]);
+};
+
+
+/**
+ * optional bool disabled = 11;
+ * @return {boolean}
+ */
+proto.model.Project.prototype.getDisabled = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 11, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.model.Project} returns this
+ */
+proto.model.Project.prototype.setDisabled = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 11, value);
 };
 
 
