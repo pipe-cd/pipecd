@@ -18,8 +18,9 @@ import (
 	"context"
 	"errors"
 
-	ecsconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/ecs/config"
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+
+	ecsconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/ecs/config"
 )
 
 var _ sdk.DeploymentPlugin[ecsconfig.ECSPluginConfig, ecsconfig.ECSDeployTargetConfig, ecsconfig.ECSApplicationSpec] = (*ECSPlugin)(nil)
@@ -64,6 +65,22 @@ func (p *ECSPlugin) ExecuteStage(
 	input *sdk.ExecuteStageInput[ecsconfig.ECSApplicationSpec],
 ) (*sdk.ExecuteStageResponse, error) {
 	switch input.Request.StageName {
+	case StageECSSync:
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeECSSyncStage(ctx, input, deployTargets[0]),
+		}, nil
+	case StageECSRollback:
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeECSRollbackStage(ctx, input, deployTargets[0]),
+		}, nil
+	case StageECSPrimaryRollout:
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeECSPrimaryRolloutStage(ctx, input, deployTargets[0]),
+		}, nil
+	case StageECSCanaryRollout:
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeECSCanaryRolloutStage(ctx, input, deployTargets[0]),
+		}, nil
 	default:
 		return nil, ErrUnsupportedStage
 	}
