@@ -129,5 +129,24 @@ Defines the target environments where applications can be deployed.
 | `routes` | []NotificationRoute | List of notification routes. | No |
 | `receivers` | []NotificationReceiver | List of notification receivers. | No |
 
-*(See the source or previous docs for full Notifications routing references).*
+### NotificationRoute
+
+| Field | Type | Description | Required |
+| --- | --- | --- | --- |
+| `name` | string | The name of the route. | Yes |
+| `receiver` | string | The name of receiver who will receive all matched events. | Yes |
+| `events` | []string | List of events that should be routed to the receiver. | No |
+| `ignoreEvents` | []string | List of events that should be ignored. | No |
+| `apps` | []string | List of applications where their events should be routed. | No |
+| `ignoreApps` | []string | List of applications where their events should be ignored. | No |
+| `labels` | map[string]string | List of labels where their events should be routed. | No |
+| `ignoreLabels` | map[string]string | List of labels where their events should be ignored. | No |
+
+### NotificationReceiver
+
+| Field | Type | Description | Required |
+| --- | --- | --- | --- |
+| `name` | string | The name of the receiver. | Yes |
+| `slack` | NotificationReceiverSlack | Configuration for slack receiver. | No |
+| `webhook` | NotificationReceiverWebhook | Configuration for webhook receiver. | No |
 
