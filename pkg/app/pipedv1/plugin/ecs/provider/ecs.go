@@ -67,6 +67,14 @@ func LoadTaskDefinition(appDir, taskDefinition string) (types.TaskDefinition, er
 	return loadTaskDefinition(path)
 }
 
+// ParseServiceDefinition returns Service object from a given service definition file without adding deployment tags
+//
+// Use this for read-only operations like livestate that do not need PipeCD metadata injected
+func ParseServiceDefinition(appDir, serviceDefinition string) (types.Service, error) {
+	path := filepath.Join(appDir, serviceDefinition)
+	return loadServiceDefinition(path)
+}
+
 // LoadServiceDefinition returns Service object from a given service definition file.
 func LoadServiceDefinition(appDir, serviceDefinition string, input *sdk.ExecuteStageInput[config.ECSApplicationSpec]) (types.Service, error) {
 	path := filepath.Join(appDir, serviceDefinition)
