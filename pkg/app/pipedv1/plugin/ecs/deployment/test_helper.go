@@ -41,11 +41,13 @@ func (f *fakeLogPersister) Complete(time.Duration) error      { return nil }
 type mockECSClient struct {
 	CreateServiceFunc               func(ctx context.Context, service types.Service) (*types.Service, error)
 	UpdateServiceFunc               func(ctx context.Context, service types.Service) (*types.Service, error)
+	DescribeServiceFunc             func(ctx context.Context, service types.Service) (*types.Service, error)
 	GetServiceTaskSetsFunc          func(ctx context.Context, service types.Service) ([]types.TaskSet, error)
 	GetPrimaryTaskSetFunc           func(ctx context.Context, service types.Service) (*types.TaskSet, error)
 	CreateTaskSetFunc               func(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup *types.LoadBalancer, scale float64) (*types.TaskSet, error)
 	UpdateServicePrimaryTaskSetFunc func(ctx context.Context, service types.Service, taskSet types.TaskSet) (*types.TaskSet, error)
 	DeleteTaskSetFunc               func(ctx context.Context, taskSet types.TaskSet) error
+	GetTasksFunc                    func(ctx context.Context, service types.Service) ([]types.Task, error)
 	ServiceExistsFunc               func(ctx context.Context, cluster, serviceName string) (bool, error)
 	GetServiceStatusFunc            func(ctx context.Context, cluster, serviceName string) (string, error)
 	WaitServiceStableFunc           func(ctx context.Context, cluster, serviceName string) error
@@ -65,6 +67,9 @@ func (m *mockECSClient) CreateService(ctx context.Context, service types.Service
 func (m *mockECSClient) UpdateService(ctx context.Context, service types.Service) (*types.Service, error) {
 	return m.UpdateServiceFunc(ctx, service)
 }
+func (m *mockECSClient) DescribeService(ctx context.Context, service types.Service) (*types.Service, error) {
+	return m.DescribeServiceFunc(ctx, service)
+}
 func (m *mockECSClient) GetServiceTaskSets(ctx context.Context, service types.Service) ([]types.TaskSet, error) {
 	return m.GetServiceTaskSetsFunc(ctx, service)
 }
@@ -79,6 +84,9 @@ func (m *mockECSClient) UpdateServicePrimaryTaskSet(ctx context.Context, service
 }
 func (m *mockECSClient) DeleteTaskSet(ctx context.Context, taskSet types.TaskSet) error {
 	return m.DeleteTaskSetFunc(ctx, taskSet)
+}
+func (m *mockECSClient) GetTasks(ctx context.Context, service types.Service) ([]types.Task, error) {
+	return m.GetTasksFunc(ctx, service)
 }
 func (m *mockECSClient) ServiceExists(ctx context.Context, cluster, serviceName string) (bool, error) {
 	return m.ServiceExistsFunc(ctx, cluster, serviceName)
