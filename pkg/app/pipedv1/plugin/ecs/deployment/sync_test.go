@@ -60,6 +60,7 @@ func TestSync(t *testing.T) {
 			TaskSetArn: aws.String(tsArn1),
 			ClusterArn: aws.String(clusterArn),
 			ServiceArn: aws.String(serviceArn),
+			Status:     aws.String("ACTIVE"),
 		}
 		primaryLB = &types.LoadBalancer{
 			TargetGroupArn: aws.String("arn:aws:elasticloadbalancing:us-east-1:123:targetgroup/primary/abc"),
@@ -212,7 +213,7 @@ func TestSync(t *testing.T) {
 				return m
 			}(),
 			wantErr:    true,
-			wantErrMsg: "failed to create primary task set",
+			wantErrMsg: "failed to delete old tasksets",
 		},
 		{
 			name:       "fail: CreateTaskSet error",
@@ -254,7 +255,7 @@ func TestSync(t *testing.T) {
 				return m
 			}(),
 			wantErr:    true,
-			wantErrMsg: "failed to create primary task set",
+			wantErrMsg: "failed to delete old tasksets",
 		},
 		{
 			name:       "fail: recreate=true, PruneServiceTasks error",
