@@ -252,6 +252,7 @@ func (p *Plugin) executeK8sMultiBaselineCleanStage(ctx context.Context, input *s
 
 	type targetConfig struct {
 		deployTarget *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]
+		multiTarget  *kubeconfig.KubernetesMultiTarget
 	}
 
 	targetConfigs := make([]targetConfig, 0, len(dts))
@@ -266,7 +267,7 @@ func (p *Plugin) executeK8sMultiBaselineCleanStage(ctx context.Context, input *s
 				lp.Infof("Ignore multi target '%s': not matched any deployTarget", mt.Target.Name)
 				continue
 			}
-			targetConfigs = append(targetConfigs, targetConfig{deployTarget: dt})
+			targetConfigs = append(targetConfigs, targetConfig{deployTarget: dt, multiTarget: &mt})
 		}
 	}
 
@@ -274,7 +275,7 @@ func (p *Plugin) executeK8sMultiBaselineCleanStage(ctx context.Context, input *s
 	for _, tc := range targetConfigs {
 		eg.Go(func() error {
 			lp.Infof("Start cleaning BASELINE variant on target %s", tc.deployTarget.Name)
-			if err := p.baselineClean(ctx, input, tc.deployTarget, cfg); err != nil {
+			if err := p.baselineClean(ctx, input, tc.deployTarget, tc.multiTarget, cfg); err != nil {
 				return fmt.Errorf("failed to clean BASELINE variant on target %s: %w", tc.deployTarget.Name, err)
 			}
 			return nil
@@ -293,6 +294,7 @@ func (p *Plugin) baselineClean(
 	ctx context.Context,
 	input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec],
 	dt *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig],
+	multiTarget *kubeconfig.KubernetesMultiTarget,
 	cfg *sdk.ApplicationConfig[kubeconfig.KubernetesApplicationSpec],
 ) error {
 	lp := input.Client.LogPersister()
@@ -305,7 +307,13 @@ func (p *Plugin) baselineClean(
 
 	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
 
-	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(appCfg.Input.KubectlVersion, dt.Config.KubectlVersion))
+	// Resolve kubectl version: multiTarget > spec > deployTarget
+	kubectlVersion := cmp.Or(appCfg.Input.KubectlVersion, dt.Config.KubectlVersion)
+	if multiTarget != nil {
+		kubectlVersion = cmp.Or(multiTarget.KubectlVersion, kubectlVersion)
+	}
+
+	kubectlPath, err := toolRegistry.Kubectl(ctx, kubectlVersion)
 	if err != nil {
 		return fmt.Errorf("failed while getting kubectl tool: %w", err)
 	}
