@@ -219,6 +219,9 @@ func (p *ProjectSSOConfig) RedactSensitiveData() {
 	if p.Github == nil {
 		return
 	}
+	if p.Google == nil {
+		return
+	}
 	p.Github.RedactSensitiveData()
 }
 
@@ -226,6 +229,9 @@ func (p *ProjectSSOConfig) RedactSensitiveData() {
 func (p *ProjectSSOConfig) Update(sso *ProjectSSOConfig) error {
 	p.Provider = sso.Provider
 	if sso.Github == nil {
+		return nil
+	}
+	if sso.Google == nil {
 		return nil
 	}
 
@@ -238,6 +244,9 @@ func (p *ProjectSSOConfig) Update(sso *ProjectSSOConfig) error {
 // Encrypt encrypts sensitive data in ProjectSSOConfig.
 func (p *ProjectSSOConfig) Encrypt(encrypter encrypter) error {
 	if p.Github == nil {
+		return nil
+	}
+	if p.Google == nil {
 		return nil
 	}
 	return p.Github.Encrypt(encrypter)
@@ -329,6 +338,249 @@ func (p *ProjectSSOConfig_GitHub) Decrypt(decrypter decrypter) error {
 		p.ClientSecret = decryptedClientSecret
 	}
 	return nil
+}
+
+// GenerateAuthCodeURL generates an auth URL for the specified configuration.
+func (p *ProjectSSOConfig_GitHub) GenerateAuthCodeURL(project, callbackURL, state string) (string, error) {
+	cfg := oauth2.Config{
+		ClientID: p.ClientId,
+		Endpoint: github.Endpoint,
+	}
+	if p.BaseUrl != "" {
+		u, err := url.Parse(p.BaseUrl)
+		if err != nil {
+			return "", err
+		}
+		cfg.Endpoint.AuthURL = fmt.Sprintf("%s://%s%s", u.Scheme, u.Host, "/login/oauth/authorize")
+	}
+	cfg.Scopes = githubScopes
+	cfg.RedirectURL = fmt.Sprintf("%s?project=%s", callbackURL, project)
+	authURL := cfg.AuthCodeURL(state, oauth2.ApprovalForce, oauth2.AccessTypeOnline)
+
+	return authURL, nil
+}
+
+// GenerateAuthCodeURL generates an auth URL for the specified configuration.
+func (p *ProjectSSOConfig_Oidc) GenerateAuthCodeURL(project, state string) (string, error) {
+	ctx := context.Background()
+	provider, err := oidc.NewProvider(ctx, p.Issuer)
+	if err != nil {
+		return "", err
+	}
+
+	scopes := []string{}
+	if len(p.Scopes) == 0 {
+		scopes = append(scopes, oidc.ScopeOpenID)
+	} else {
+		scopes = p.Scopes
+	}
+
+	cfg := oauth2.Config{
+		ClientID:    p.ClientId,
+		Endpoint:    provider.Endpoint(),
+		Scopes:      scopes,
+		RedirectURL: p.RedirectUri,
+	}
+
+	state = fmt.Sprintf("%s:%s", state, project)
+	authURL := cfg.AuthCodeURL(state, oauth2.ApprovalForce, oauth2.AccessTypeOnline)
+
+	return authURL, nil
+}
+
+// HasRBACRole checks whether the RBAC role is exists.
+func (p *Project) HasRBACRole(name string) bool {
+	for _, v := range p.RbacRoles {
+		if v.Name == name {
+			return true
+		}
+	}
+	return false
+}
+
+// HasUserGroup checks whether the user group is exists.
+func (p *Project) HasUserGroup(sso string) bool {
+	for _, v := range p.UserGroups {
+		if v.SsoGroup == sso {
+			return true
+		}
+	}
+	if r := p.Rbac; r != nil {
+		return r.Admin == sso || r.Editor == sso || r.Viewer == sso
+	}
+	return false
+}
+
+// SetLegacyUserGroups sets the legacy RBAC config as user groups if exists.
+// If the same team exists in the legacy RBAC config, this method just only sets the user group that has the highest authority level.
+func (p *Project) SetLegacyUserGroups() {
+	rbac := p.Rbac
+	if rbac == nil {
+		return
+	}
+
+	// The full list also contains 3 legacy user groups.
+	all := make([]*ProjectUserGroup, 0, len(p.UserGroups)+3)
+	if rbac.Admin != "" {
+		all = append(all, &ProjectUserGroup{
+			SsoGroup: rbac.Admin,
+			Role:     BuiltinRBACRoleAdmin.String(),
+		})
+	}
+	if rbac.Editor != "" && rbac.Editor != rbac.Admin {
+		all = append(all, &ProjectUserGroup{
+			SsoGroup: rbac.Editor,
+			Role:     BuiltinRBACRoleEditor.String(),
+		})
+	}
+	if rbac.Viewer != "" && rbac.Viewer != rbac.Admin && rbac.Viewer != rbac.Editor {
+		all = append(all, &ProjectUserGroup{
+			SsoGroup: rbac.Viewer,
+			Role:     BuiltinRBACRoleViewer.String(),
+		})
+	}
+	all = append(all, p.UserGroups...)
+	p.UserGroups = all
+}
+
+// AddUserGroup adds a user group.
+func (p *Project) AddUserGroup(sso, role string) error {
+	if p.HasUserGroup(sso) {
+		return fmt.Errorf("%s is already being used. The SSO group must be unique", sso)
+	}
+	if !p.HasRBACRole(role) && !isBuiltinRBACRole(role) {
+		return fmt.Errorf("%s role does not exist", role)
+	}
+	p.UserGroups = append(p.UserGroups, &ProjectUserGroup{
+		SsoGroup: sso,
+		Role:     role,
+	})
+	return nil
+}
+
+// DeleteUserGroup deletes a user group.
+func (p *Project) DeleteUserGroup(sso string) error {
+	for i, v := range p.UserGroups {
+		if v.SsoGroup == sso {
+			c := copy(p.UserGroups[i:], p.UserGroups[i+1:])
+			p.UserGroups = p.UserGroups[:i+c]
+			return nil
+		}
+	}
+	deleted := false
+	if p.Rbac != nil {
+		if p.Rbac.Admin == sso {
+			p.Rbac.Admin, deleted = "", true
+		}
+		if p.Rbac.Editor == sso {
+			p.Rbac.Editor, deleted = "", true
+		}
+		if p.Rbac.Viewer == sso {
+			p.Rbac.Viewer, deleted = "", true
+		}
+	}
+	if deleted {
+		return nil
+	}
+	return fmt.Errorf("%s user group does not exist", sso)
+}
+
+// SetBuiltinRBACRoles sets built-in roles.
+func (p *Project) SetBuiltinRBACRoles() {
+	builtin := []*ProjectRBACRole{
+		builtinAdminRBACRole,
+		builtinEditorRBACRole,
+		builtinViewerRBACRole,
+	}
+	all := make([]*ProjectRBACRole, 0, len(p.RbacRoles)+len(builtin))
+	// Set built-in rbac role.
+	all = append(all, builtin...)
+	// Set custom rbac role.
+	all = append(all, p.RbacRoles...)
+	p.RbacRoles = all
+}
+
+// isBuiltinRBACRole checks whether the name is the name of built-in role.
+func isBuiltinRBACRole(name string) bool {
+	return name == BuiltinRBACRoleAdmin.String() ||
+		name == BuiltinRBACRoleEditor.String() ||
+		name == BuiltinRBACRoleViewer.String()
+}
+
+// AddRBACRole adds a custom RBAC role.
+func (p *Project) AddRBACRole(name string, policies []*ProjectRBACPolicy) error {
+	if p.HasRBACRole(name) {
+		return fmt.Errorf("the name of %s is already used", name)
+	}
+	if isBuiltinRBACRole(name) {
+		return fmt.Errorf("the name of built-in role cannot be used")
+	}
+	p.RbacRoles = append(p.RbacRoles, &ProjectRBACRole{
+		Name:     name,
+		Policies: policies,
+	})
+	return nil
+}
+
+// UpdateRBACRole updates a custom RBAC role.
+// Built-in role cannot be updated.
+func (p *Project) UpdateRBACRole(name string, policies []*ProjectRBACPolicy) error {
+	if isBuiltinRBACRole(name) {
+		return fmt.Errorf("built-in role cannot be updated")
+	}
+	for _, v := range p.RbacRoles {
+		if v.Name == name {
+			v.Policies = policies
+			return nil
+		}
+	}
+	return fmt.Errorf("%s role does not exist", name)
+}
+
+// DeleteRBACRole deletes a custom RBAC role.
+// Built-in role cannot be deleted.
+func (p *Project) DeleteRBACRole(name string) error {
+	if isBuiltinRBACRole(name) {
+		return fmt.Errorf("built-in role cannot be deleted")
+	}
+	for i, v := range p.RbacRoles {
+		if v.Name == name {
+			c := copy(p.RbacRoles[i:], p.RbacRoles[i+1:])
+			p.RbacRoles = p.RbacRoles[:i+c]
+			return nil
+		}
+	}
+	return fmt.Errorf("%s role does nott exist", name)
+}
+
+func (p *ProjectRBACRole) HasPermission(typ ProjectRBACResource_ResourceType, action ProjectRBACPolicy_Action) bool {
+	for _, v := range p.Policies {
+		if v.HasPermission(typ, action) {
+			return true
+		}
+	}
+	return false
+}
+
+func (p *ProjectRBACPolicy) HasPermission(typ ProjectRBACResource_ResourceType, action ProjectRBACPolicy_Action) bool {
+	var hasResource bool
+	for _, r := range p.Resources {
+		if r.Type == typ || r.Type == ProjectRBACResource_ALL {
+			hasResource = true
+			break
+		}
+	}
+
+	if !hasResource {
+		return false
+	}
+
+	for _, a := range p.Actions {
+		if a == action || a == ProjectRBACPolicy_ALL {
+			return true
+		}
+	}
+	return false
 }
 
 // GenerateAuthCodeURL generates an auth URL for the specified configuration.
