@@ -35,14 +35,14 @@ import (
 )
 
 // baselineDeployment builds a pre-created baseline Deployment for test setup.
-func baselineDeployment(namespace string) *unstructured.Unstructured {
+func baselineDeployment() *unstructured.Unstructured {
 	return &unstructured.Unstructured{
 		Object: map[string]any{
 			"apiVersion": "apps/v1",
 			"kind":       "Deployment",
 			"metadata": map[string]any{
 				"name":      "simple-baseline",
-				"namespace": namespace,
+				"namespace": "default",
 				"labels": map[string]any{
 					"app":                    "simple",
 					"pipecd.dev/managed-by":  "piped",
@@ -465,7 +465,7 @@ func TestPlugin_executeK8sMultiBaselineCleanStage(t *testing.T) {
 	deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
 
 	// Pre-create the baseline deployment (simulating what K8S_BASELINE_ROLLOUT would have done).
-	_, err := dynamicClient.Resource(deploymentRes).Namespace("default").Create(ctx, baselineDeployment("default"), metav1.CreateOptions{})
+	_, err := dynamicClient.Resource(deploymentRes).Namespace("default").Create(ctx, baselineDeployment(), metav1.CreateOptions{})
 	require.NoError(t, err)
 
 	_, err = dynamicClient.Resource(deploymentRes).Namespace("default").Get(ctx, "simple-baseline", metav1.GetOptions{})
@@ -517,7 +517,7 @@ func TestPlugin_executeK8sMultiBaselineCleanStage_multipleTargets(t *testing.T) 
 	deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
 
 	for _, c := range []*cluster{clusterUS, clusterEU} {
-		_, err := c.cli.Resource(deploymentRes).Namespace("default").Create(ctx, baselineDeployment("default"), metav1.CreateOptions{})
+		_, err := c.cli.Resource(deploymentRes).Namespace("default").Create(ctx, baselineDeployment(), metav1.CreateOptions{})
 		require.NoError(t, err)
 	}
 
@@ -571,7 +571,7 @@ func TestPlugin_executeK8sMultiBaselineCleanStage_withCreateService(t *testing.T
 	serviceRes := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}
 
 	// Pre-create both baseline deployment and service.
-	_, err := dynamicClient.Resource(deploymentRes).Namespace("default").Create(ctx, baselineDeployment("default"), metav1.CreateOptions{})
+	_, err := dynamicClient.Resource(deploymentRes).Namespace("default").Create(ctx, baselineDeployment(), metav1.CreateOptions{})
 	require.NoError(t, err)
 	_, err = dynamicClient.Resource(serviceRes).Namespace("default").Create(ctx, baselineService("default"), metav1.CreateOptions{})
 	require.NoError(t, err)
@@ -626,7 +626,7 @@ func TestPlugin_executeK8sMultiBaselineCleanStage_withoutCreateService(t *testin
 	deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
 
 	// Pre-create only a baseline deployment (no service).
-	_, err := dynamicClient.Resource(deploymentRes).Namespace("default").Create(ctx, baselineDeployment("default"), metav1.CreateOptions{})
+	_, err := dynamicClient.Resource(deploymentRes).Namespace("default").Create(ctx, baselineDeployment(), metav1.CreateOptions{})
 	require.NoError(t, err)
 
 	plugin := &Plugin{}
