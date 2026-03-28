@@ -30,6 +30,8 @@ const (
 	StageK8sMultiCanaryRollout = "K8S_CANARY_ROLLOUT"
 	// StageK8sMultiCanaryClean represents the state where all canary resources should be removed.
 	StageK8sMultiCanaryClean = "K8S_CANARY_CLEAN"
+	// StageK8sMultiPrimaryRollout represents the state where the new version is promoted as PRIMARY to all targets.
+	StageK8sMultiPrimaryRollout = "K8S_PRIMARY_ROLLOUT"
 	// StageK8sMultiBaselineClean represents the state where all baseline resources should be removed.
 	StageK8sMultiBaselineClean = "K8S_BASELINE_CLEAN"
 )
@@ -39,6 +41,7 @@ var allStages = []string{
 	StageK8sMultiRollback,
 	StageK8sMultiCanaryRollout,
 	StageK8sMultiCanaryClean,
+	StageK8sMultiPrimaryRollout,
 	StageK8sMultiBaselineClean,
 }
 
@@ -51,6 +54,8 @@ const (
 	StageDescriptionK8sMultiCanaryRollout = "Rollout the new version as CANARY to all targets"
 	// StageDescriptionK8sMultiCanaryClean represents the description of the K8sCanaryClean stage.
 	StageDescriptionK8sMultiCanaryClean = "Remove all canary resources"
+	// StageDescriptionK8sMultiPrimaryRollout represents the description of the K8sPrimaryRollout stage.
+	StageDescriptionK8sMultiPrimaryRollout = "Rollout the new version as PRIMARY to all targets"
 	// StageDescriptionK8sMultiBaselineClean represents the description of the K8sBaselineClean stage.
 	StageDescriptionK8sMultiBaselineClean = "Remove all baseline resources"
 )
