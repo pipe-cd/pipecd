@@ -1,10 +1,9 @@
 module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/cloudrunservice
 
-go 1.24.1
-
-toolchain go1.24.2
+go 1.25.8
 
 require (
+	github.com/creasty/defaults v1.6.0
 	github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250813060314-58a44ff1d325
 	github.com/stretchr/testify v1.10.0
 )
@@ -16,7 +15,6 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/coreos/go-oidc/v3 v3.11.0 // indirect
-	github.com/creasty/defaults v1.6.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.0.4 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.5 // indirect
