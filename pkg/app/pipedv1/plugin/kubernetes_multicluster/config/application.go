@@ -55,7 +55,6 @@ type KubernetesApplicationSpec struct {
 
 	// The label will be configured to variant manifests used to distinguish them.
 	VariantLabel KubernetesVariantLabel `json:"variantLabel"`
-
 }
 
 func (s *KubernetesApplicationSpec) UnmarshalJSON(data []byte) error {
