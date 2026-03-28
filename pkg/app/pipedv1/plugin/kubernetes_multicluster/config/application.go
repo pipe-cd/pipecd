@@ -226,6 +226,33 @@ func (o *K8sPrimaryRolloutStageOptions) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// K8sBaselineRolloutStageOptions contains all configurable values for a K8S_BASELINE_ROLLOUT stage.
+type K8sBaselineRolloutStageOptions struct {
+	// How many pods for BASELINE workloads.
+	// An integer value can be specified to indicate an absolute value of pod number.
+	// Or a string suffixed by "%" to indicate a percentage value compared to the pod number of PRIMARY.
+	// Default is 1 pod.
+	Replicas unit.Replicas `json:"replicas"`
+	// Suffix that should be used when naming the BASELINE variant's resources.
+	// Default is "baseline".
+	Suffix string `json:"suffix" default:"baseline"`
+	// Whether the BASELINE service should be created.
+	CreateService bool `json:"createService"`
+}
+
+func (o *K8sBaselineRolloutStageOptions) UnmarshalJSON(data []byte) error {
+	type alias K8sBaselineRolloutStageOptions
+	var a alias
+	if err := json.Unmarshal(data, &a); err != nil {
+		return err
+	}
+	*o = K8sBaselineRolloutStageOptions(a)
+	if err := defaults.Set(o); err != nil {
+		return err
+	}
+	return nil
+}
+
 // K8sBaselineCleanStageOptions contains all configurable values for a K8S_BASELINE_CLEAN stage.
 type K8sBaselineCleanStageOptions struct{}
 
