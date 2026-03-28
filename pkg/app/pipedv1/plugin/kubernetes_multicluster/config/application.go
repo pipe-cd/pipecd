@@ -253,6 +253,9 @@ func (o *K8sBaselineRolloutStageOptions) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// K8sBaselineCleanStageOptions contains all configurable values for a K8S_BASELINE_CLEAN stage.
+type K8sBaselineCleanStageOptions struct{}
+
 // K8sResourcePatch represents a patch operation for a Kubernetes resource.
 type K8sResourcePatch struct {
 	// The target of the patch operation.

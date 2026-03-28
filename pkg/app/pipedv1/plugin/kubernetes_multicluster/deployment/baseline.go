@@ -235,3 +235,95 @@ func generateBaselineManifests(appCfg *kubeconfig.KubernetesApplicationSpec, man
 
 	return baselineManifests, nil
 }
+
+func (p *Plugin) executeK8sMultiBaselineCleanStage(ctx context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
+	lp := input.Client.LogPersister()
+
+	cfg, err := input.Request.TargetDeploymentSource.AppConfig()
+	if err != nil {
+		lp.Errorf("Failed while decoding application config (%v)", err)
+		return sdk.StageStatusFailure
+	}
+
+	deployTargetMap := make(map[string]*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], len(dts))
+	for _, dt := range dts {
+		deployTargetMap[dt.Name] = dt
+	}
+
+	type targetConfig struct {
+		deployTarget *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]
+		multiTarget  *kubeconfig.KubernetesMultiTarget
+	}
+
+	targetConfigs := make([]targetConfig, 0, len(dts))
+	if len(cfg.Spec.Input.MultiTargets) == 0 {
+		for _, dt := range dts {
+			targetConfigs = append(targetConfigs, targetConfig{deployTarget: dt})
+		}
+	} else {
+		for _, mt := range cfg.Spec.Input.MultiTargets {
+			dt, ok := deployTargetMap[mt.Target.Name]
+			if !ok {
+				lp.Infof("Ignore multi target '%s': not matched any deployTarget", mt.Target.Name)
+				continue
+			}
+			targetConfigs = append(targetConfigs, targetConfig{deployTarget: dt, multiTarget: &mt})
+		}
+	}
+
+	eg, ctx := errgroup.WithContext(ctx)
+	for _, tc := range targetConfigs {
+		eg.Go(func() error {
+			lp.Infof("Start cleaning BASELINE variant on target %s", tc.deployTarget.Name)
+			if err := p.baselineClean(ctx, input, tc.deployTarget, tc.multiTarget, cfg); err != nil {
+				return fmt.Errorf("failed to clean BASELINE variant on target %s: %w", tc.deployTarget.Name, err)
+			}
+			return nil
+		})
+	}
+
+	if err := eg.Wait(); err != nil {
+		lp.Errorf("Failed while cleaning BASELINE variant (%v)", err)
+		return sdk.StageStatusFailure
+	}
+
+	return sdk.StageStatusSuccess
+}
+
+func (p *Plugin) baselineClean(
+	ctx context.Context,
+	input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec],
+	dt *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig],
+	multiTarget *kubeconfig.KubernetesMultiTarget,
+	cfg *sdk.ApplicationConfig[kubeconfig.KubernetesApplicationSpec],
+) error {
+	lp := input.Client.LogPersister()
+
+	var (
+		appCfg          = cfg.Spec
+		variantLabel    = appCfg.VariantLabel.Key
+		baselineVariant = appCfg.VariantLabel.BaselineValue
+	)
+
+	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
+
+	// Resolve kubectl version: multiTarget > spec > deployTarget
+	kubectlVersion := cmp.Or(appCfg.Input.KubectlVersion, dt.Config.KubectlVersion)
+	if multiTarget != nil {
+		kubectlVersion = cmp.Or(multiTarget.KubectlVersion, kubectlVersion)
+	}
+
+	kubectlPath, err := toolRegistry.Kubectl(ctx, kubectlVersion)
+	if err != nil {
+		return fmt.Errorf("failed while getting kubectl tool: %w", err)
+	}
+
+	kubectl := provider.NewKubectl(kubectlPath)
+	applier := provider.NewApplier(kubectl, appCfg.Input, dt.Config, input.Logger)
+
+	if err := deleteVariantResources(ctx, lp, kubectl, dt.Config.KubeConfigPath, applier, input.Request.Deployment.ApplicationID, variantLabel, baselineVariant); err != nil {
+		return fmt.Errorf("unable to remove baseline resources: %w", err)
+	}
+
+	return nil
+}
