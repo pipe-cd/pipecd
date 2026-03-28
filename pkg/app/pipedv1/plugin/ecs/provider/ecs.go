@@ -37,6 +37,7 @@ const (
 
 type Client interface {
 	ECS
+	ELB
 }
 
 // ECS defines methods for interacting with ECS resources.
@@ -57,6 +58,12 @@ type ECS interface {
 	ListTags(ctx context.Context, resourceArn string) ([]types.Tag, error)
 	TagResource(ctx context.Context, resourceArn string, tags []types.Tag) error
 	UntagResource(ctx context.Context, resourceArn string, tagKeys []string) error
+}
+
+// ELB defines methods for interacting with ELB resources.
+type ELB interface {
+	GetListenerArns(ctx context.Context, targetGroup types.LoadBalancer) ([]string, error)
+	ModifyListeners(ctx context.Context, listenerArns []string, routingTrafficCfg RoutingTrafficConfig) ([]string, error)
 }
 
 // LoadTaskDefinition returns TaskDefinition object from a given task definition file.
