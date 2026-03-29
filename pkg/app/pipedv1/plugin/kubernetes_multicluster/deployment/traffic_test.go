@@ -75,8 +75,7 @@ func TestPlugin_executeK8sMultiTrafficRoutingStage_PodSelector_RouteToCanary(t *
 	svc, err := dynamicClient.Resource(serviceRes).Namespace("default").Get(ctx, "simple", metav1.GetOptions{})
 	require.NoError(t, err)
 
-	selector, err := unstructuredNestedStringMap(svc.Object, "spec", "selector")
-	require.NoError(t, err)
+	selector := unstructuredNestedStringMap(svc.Object, "spec", "selector")
 	assert.Equal(t, "canary", selector["pipecd.dev/variant"])
 }
 
@@ -124,8 +123,7 @@ func TestPlugin_executeK8sMultiTrafficRoutingStage_PodSelector_RouteToCanary_Mul
 	for _, c := range []*cluster{clusterUS, clusterEU} {
 		svc, err := c.cli.Resource(serviceRes).Namespace("default").Get(ctx, "simple", metav1.GetOptions{})
 		require.NoError(t, err)
-		selector, err := unstructuredNestedStringMap(svc.Object, "spec", "selector")
-		require.NoError(t, err)
+		selector := unstructuredNestedStringMap(svc.Object, "spec", "selector")
 		assert.Equal(t, "canary", selector["pipecd.dev/variant"], "cluster %s should have canary selector", c.name)
 	}
 }
@@ -172,8 +170,7 @@ func TestPlugin_executeK8sMultiTrafficRoutingStage_PodSelector_RestoreToPrimary(
 	svc, err := dynamicClient.Resource(serviceRes).Namespace("default").Get(ctx, "simple", metav1.GetOptions{})
 	require.NoError(t, err)
 
-	selector, err := unstructuredNestedStringMap(svc.Object, "spec", "selector")
-	require.NoError(t, err)
+	selector := unstructuredNestedStringMap(svc.Object, "spec", "selector")
 	assert.Equal(t, "primary", selector["pipecd.dev/variant"])
 }
 
@@ -254,10 +251,10 @@ func TestPlugin_executeK8sMultiTrafficRoutingStage_PodSelector_RejectSplit(t *te
 }
 
 // unstructuredNestedStringMap extracts a map[string]string from an unstructured object.
-func unstructuredNestedStringMap(obj map[string]any, fields ...string) (map[string]string, error) {
+func unstructuredNestedStringMap(obj map[string]any, fields ...string) map[string]string {
 	m := nestedMap(obj, fields...)
 	if m == nil {
-		return nil, nil
+		return nil
 	}
 	result := make(map[string]string, len(m))
 	for k, v := range m {
@@ -267,7 +264,7 @@ func unstructuredNestedStringMap(obj map[string]any, fields ...string) (map[stri
 		}
 		result[k] = s
 	}
-	return result, nil
+	return result
 }
 
 func nestedMap(obj map[string]any, fields ...string) map[string]any {
