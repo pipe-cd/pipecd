@@ -19,14 +19,14 @@ import (
 	"path/filepath"
 	"testing"
 
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister/logpersistertest"
+	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry/toolregistrytest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
-	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister/logpersistertest"
-	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry/toolregistrytest"
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
@@ -983,4 +983,3 @@ spec:
 		})
 	}
 }
-
