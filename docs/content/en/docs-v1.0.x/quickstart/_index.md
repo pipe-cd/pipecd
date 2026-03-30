@@ -45,6 +45,8 @@ kubectl port-forward -n pipecd svc/pipecd 8080
 
 You can access the PipeCD console at [http://localhost:8080?project=quickstart](http://localhost:8080?project=quickstart)
 
+For this quickstart setup, the project name is fixed to `quickstart`. If you open `http://localhost:8080` directly, enter `quickstart` on the login screen.
+
 To log in, you can use the configured static admin account as below:
 
 - username: `hello-pipecd`
