@@ -236,7 +236,7 @@ Then, copy generated Piped ID and base64 key for `piped-config.yaml`
 
 Below is an exampled piped v0 configuration using the Kubernetes platform provider. Use the PipeD ID and base64 key you created in step 2 here.
 
-````yaml
+```yaml
   apiVersion: pipecd.dev/v1beta1
   kind: Piped
   spec:
@@ -264,7 +264,7 @@ Below is an exampled piped v0 configuration using the Kubernetes platform provid
 make run/piped \
 CONFIG_FILE=path/to/piped-config.yaml \
 INSECURE=true
-````
+```
 
 where the `CONFIG_FILE` is the path to your piped confiuration file and the `INSECURE` flag is set to `true` to allow `piped` to connect to the control plane without TLS verification.
 
