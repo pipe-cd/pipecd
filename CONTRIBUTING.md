@@ -32,7 +32,7 @@ We have a `#pipecd` channel on [CNCF Slack](https://cloud-native.slack.com/) for
 
 ### Join our public community meeting
 
-We host the [PipeCD Development and Community Meetings](https://zoom-lfx.platform.linuxfoundation.org/meeting/96831504919?password=2f60b8ec-5896-40c8-aa1d-d551ab339d00) every 2 weeks, where we share the latest project news, demos, answer questions, and help triage issues. You can also view the [Meeting Notes and Agenda](https://bit.ly/pipecd-mtg-notes).
+We host the PipeCD Community Meeting every 2 weeks. Please check the [#pipecd channel on CNCF Slack](https://cloud-native.slack.com/archives/C01B27F9T0X) for the latest schedule and meeting links. We share the latest project news, demos, answer questions, and help triage issues. You can also view the [Meeting Notes and Agenda](https://bit.ly/pipecd-mtg-notes).
 
 ### Join our team on GitHub
 
@@ -246,20 +246,20 @@ Then, copy generated Piped ID and base64 key for `piped-config.yaml`
 Below is an exampled piped v0 configuration using the Kubernetes platform provider. Use the PipeD ID and base64 key you created in step 2 here.
 
 ```yaml
-apiVersion: pipecd.dev/v1beta1
-kind: Piped
-spec:
-  projectID: quickstart
-  pipedID: <YOUR PIPED ID> # Base64 encoded string of the piped private key.
-  pipedKeyData: <YOUR PIPED BASE64 KEY> # FIXME: Replace here with your piped base64 key.
-  apiAddress: localhost:8080 # Write in a format "localhost:port"
-  #Replace with your piped address if you connect Piped to a control plane that does not run locally, or runs on a different port.
-  repositories:
+  apiVersion: pipecd.dev/v1beta1
+  kind: Piped
+  spec:
+    projectID: quickstart
+    pipedID: <YOUR PIPED ID> # Base64 encoded string of the piped private key.
+    pipedKeyData: <YOUR PIPED BASE64 KEY> # FIXME: Replace here with your piped base64 key.
+    apiAddress: localhost:8080 # Write in a format "localhost:port"
+    #Replace with your piped address if you connect Piped to a control plane that does not run locally, or runs on a different port.
+    repositories:
     - repoId: example
       remote: git@github.com:pipe-cd/examples.git
       branch: master
-  syncInterval: 1m
-  platformProviders:
+    syncInterval: 1m
+    platformProviders:
     - name: example-kubernetes
       type: KUBERNETES
       config:
