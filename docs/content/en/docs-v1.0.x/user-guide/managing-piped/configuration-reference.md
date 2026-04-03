@@ -150,3 +150,24 @@ Defines the target environments where applications can be deployed.
 | `slack` | NotificationReceiverSlack | Configuration for slack receiver. | No |
 | `webhook` | NotificationReceiverWebhook | Configuration for webhook receiver. | No |
 
+#### NotificationReceiverSlack
+
+| Field | Type | Description | Required |
+| --- | --- | --- | --- |
+| `hookURL` | string | The hookURL of a slack channel. | Yes |
+| `oauthToken` | string | [The token for Slack API use.](https://api.slack.com/authentication/basics) (deprecated)| No |
+| `oauthTokenData` | string | Base64 encoded string of [The token for Slack API use.](https://api.slack.com/authentication/basics) | No |
+| `oauthTokenFile` | string | The path to the oauthToken file | No |
+| `channelID` | string | The channel id which slack api sends to. | No |
+| `mentionedAccounts` | []string | The accounts to which slack api refers. This field supports both `@username` and `username` writing styles.| No |
+| `mentionedGroups` | []string | The groups to which slack api refers. This field supports both `<!subteam^groupname>` and `groupname` writing styles.| No |
+
+#### NotificationReceiverWebhook
+
+| Field | Type | Description | Required |
+| --- | --- | --- | --- |
+| `url` | string | The URL where notification event will be sent to. | Yes |
+| `signatureKey` | string | The HTTP header key used to store the configured signature in each event. Default is "PipeCD-Signature". | No |
+| `signatureValue` | string | The value of signature included in header of each event request. It can be used to verify the received events. | No |
+| `signatureValueFile` | string | The path to the signature value file. | No |
+
