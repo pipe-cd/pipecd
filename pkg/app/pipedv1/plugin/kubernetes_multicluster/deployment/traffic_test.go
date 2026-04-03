@@ -250,6 +250,173 @@ func TestPlugin_executeK8sMultiTrafficRoutingStage_PodSelector_RejectSplit(t *te
 	assert.Equal(t, sdk.StageStatusFailure, status)
 }
 
+func TestPlugin_executeK8sMultiTrafficRoutingStage_PodSelector_NoService(t *testing.T) {
+	t.Parallel()
+
+	configDir := filepath.Join("testdata", "traffic_routing_no_service")
+	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(configDir, "app.pipecd.yaml"), "kubernetes_multicluster")
+
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
+	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
+			StageName:   StageK8sMultiTrafficRouting,
+			StageConfig: []byte(`{"canary": 100}`),
+			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+				ApplicationDirectory:      configDir,
+				CommitHash:                "0123456789",
+				ApplicationConfig:         appCfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+			Deployment: sdk.Deployment{
+				PipedID:       "piped-id",
+				ApplicationID: "app-id",
+			},
+		},
+		Client: sdk.NewClient(nil, "kubernetes_multicluster", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
+		Logger: zaptest.NewLogger(t),
+	}
+
+	dtConfig, _ := setupTestDeployTargetConfigAndDynamicClient(t)
+
+	plugin := &Plugin{}
+	status := plugin.executeK8sMultiTrafficRoutingStage(t.Context(), input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		{Name: "default", Config: *dtConfig},
+	})
+
+	// No Service manifest in the app — traffic routing must fail.
+	assert.Equal(t, sdk.StageStatusFailure, status)
+}
+
+func TestPlugin_executeK8sMultiTrafficRoutingStage_PodSelector_MissingVariant(t *testing.T) {
+	t.Parallel()
+
+	configDir := filepath.Join("testdata", "traffic_routing_missing_variant")
+	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(configDir, "app.pipecd.yaml"), "kubernetes_multicluster")
+
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
+	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
+			StageName:   StageK8sMultiTrafficRouting,
+			StageConfig: []byte(`{"canary": 100}`),
+			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+				ApplicationDirectory:      configDir,
+				CommitHash:                "0123456789",
+				ApplicationConfig:         appCfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+			Deployment: sdk.Deployment{
+				PipedID:       "piped-id",
+				ApplicationID: "app-id",
+			},
+		},
+		Client: sdk.NewClient(nil, "kubernetes_multicluster", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
+		Logger: zaptest.NewLogger(t),
+	}
+
+	dtConfig, _ := setupTestDeployTargetConfigAndDynamicClient(t)
+
+	plugin := &Plugin{}
+	status := plugin.executeK8sMultiTrafficRoutingStage(t.Context(), input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		{Name: "default", Config: *dtConfig},
+	})
+
+	// Service selector is missing the variant label key — validation must fail.
+	assert.Equal(t, sdk.StageStatusFailure, status)
+}
+
+func TestPlugin_executeK8sMultiTrafficRoutingStage_PodSelector_WrongVariant(t *testing.T) {
+	t.Parallel()
+
+	configDir := filepath.Join("testdata", "traffic_routing_wrong_variant")
+	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(configDir, "app.pipecd.yaml"), "kubernetes_multicluster")
+
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
+	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
+			StageName:   StageK8sMultiTrafficRouting,
+			StageConfig: []byte(`{"canary": 100}`),
+			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+				ApplicationDirectory:      configDir,
+				CommitHash:                "0123456789",
+				ApplicationConfig:         appCfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+			Deployment: sdk.Deployment{
+				PipedID:       "piped-id",
+				ApplicationID: "app-id",
+			},
+		},
+		Client: sdk.NewClient(nil, "kubernetes_multicluster", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
+		Logger: zaptest.NewLogger(t),
+	}
+
+	dtConfig, _ := setupTestDeployTargetConfigAndDynamicClient(t)
+
+	plugin := &Plugin{}
+	status := plugin.executeK8sMultiTrafficRoutingStage(t.Context(), input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		{Name: "default", Config: *dtConfig},
+	})
+
+	// Service selector has an unexpected variant value — validation must fail.
+	assert.Equal(t, sdk.StageStatusFailure, status)
+}
+
+func TestPlugin_executeK8sMultiTrafficRoutingStage_PodSelector_MultipleServices(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	configDir := filepath.Join("testdata", "traffic_routing_multiple_services")
+	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(configDir, "app.pipecd.yaml"), "kubernetes_multicluster")
+
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
+	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
+			StageName:   StageK8sMultiTrafficRouting,
+			StageConfig: []byte(`{"canary": 100}`),
+			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+				ApplicationDirectory:      configDir,
+				CommitHash:                "0123456789",
+				ApplicationConfig:         appCfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+			Deployment: sdk.Deployment{
+				PipedID:       "piped-id",
+				ApplicationID: "app-id",
+			},
+		},
+		Client: sdk.NewClient(nil, "kubernetes_multicluster", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
+		Logger: zaptest.NewLogger(t),
+	}
+
+	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
+
+	plugin := &Plugin{}
+	status := plugin.executeK8sMultiTrafficRoutingStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		{Name: "default", Config: *dtConfig},
+	})
+
+	assert.Equal(t, sdk.StageStatusSuccess, status)
+
+	serviceRes := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}
+
+	// First service must have its selector updated to canary.
+	svc1, err := dynamicClient.Resource(serviceRes).Namespace("default").Get(ctx, "simple", metav1.GetOptions{})
+	require.NoError(t, err)
+	selector1 := unstructuredNestedStringMap(svc1.Object, "spec", "selector")
+	assert.Equal(t, "canary", selector1["pipecd.dev/variant"])
+
+	// Second service must remain unchanged — only the first is updated.
+	svc2, err := dynamicClient.Resource(serviceRes).Namespace("default").Get(ctx, "simple-secondary", metav1.GetOptions{})
+	require.NoError(t, err)
+	selector2 := unstructuredNestedStringMap(svc2.Object, "spec", "selector")
+	assert.Equal(t, "primary", selector2["pipecd.dev/variant"])
+}
+
 // unstructuredNestedStringMap extracts a map[string]string from an unstructured object.
 func unstructuredNestedStringMap(obj map[string]any, fields ...string) map[string]string {
 	m := nestedMap(obj, fields...)
