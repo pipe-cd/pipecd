@@ -55,6 +55,10 @@ type KubernetesApplicationSpec struct {
 
 	// The label will be configured to variant manifests used to distinguish them.
 	VariantLabel KubernetesVariantLabel `json:"variantLabel"`
+
+	// Traffic routing configuration for this application.
+	// If not set, the default PodSelector method is used.
+	TrafficRouting *KubernetesTrafficRouting `json:"trafficRouting"`
 }
 
 func (s *KubernetesApplicationSpec) UnmarshalJSON(data []byte) error {
