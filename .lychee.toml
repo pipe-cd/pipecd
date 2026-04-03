@@ -1,0 +1,43 @@
+max_retries = 3
+timeout = 30
+accept = [200, 403, 404, 429, 500, 502, 503, 504]
+
+# Do not check internal files
+offline = false
+
+exclude_path = [
+    "node_modules/", 
+    "vendor/"
+]
+
+exclude = [
+    'http://localhost(:\d+)?',
+    'http://127\.0\.0\.1(:\d+)?',
+    'http(s)?://example\.com',
+    'http(s)?://.*\.example\.com',
+    'https://github.com/pipe-cd/pipecd/edit/.*',
+    'https://github.com/pipe-cd/pipecd/issues/new.*',
+    'https://twitter\.com/.*',
+    'https://x\.com/.*',
+    'https://linkedin\.com/.*',
+    'https://medium\.com/.*',
+    'https://codecov\.io/.*',
+    'https://goreportcard\.com/.*',
+    
+    # Ignore Hugo local relative links and paths completely
+    '^/',
+    '^#',
+    '^Adding-.*',
+    '^getting-started.*',
+    '^architecture/.*',
+    '^community/.*',
+    '^concepts/.*',
+    '^configuration/.*',
+    '^contribution-guidelines/.*',
+    '^faq/.*',
+    '^installation/.*',
+    '^operator-manual/.*',
+    '^reference/.*',
+    '^tutorials/.*',
+    '^user-guide/.*',
+]

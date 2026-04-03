@@ -1,0 +1,36 @@
+name: link_checker
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "docs/**"
+      - "**/*.md"
+  pull_request:
+    branches:
+      - master
+      - "release-v*"
+      - "feat/*"
+    paths:
+      - "docs/**"
+      - "**/*.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  link-checker:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      
+      - name: Link Checker
+        uses: lycheeverse/lychee-action@8646ba30535128ac92d33dfc9133794bfdd9b411 # v2.8.0
+        with:
+          # Check all markdown files in root and docs folder
+          args: --config .lychee.toml "docs/**/*.md" "*.md"
+          
+          # Fail the action on broken links
+          fail: true
