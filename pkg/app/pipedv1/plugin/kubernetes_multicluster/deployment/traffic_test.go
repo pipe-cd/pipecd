@@ -542,16 +542,16 @@ type expectedRoute struct {
 	weight int32
 }
 
-// verifyVirtualServiceRouting reads the named VirtualService from the cluster and asserts
-// that the first HTTP route has exactly the given destinations in order.
-func verifyVirtualServiceRouting(t *testing.T, dynamicClient dynamic.Interface, vsName string, expected []expectedRoute) {
+// verifyVirtualServiceRouting reads the "traffic-test-vs" VirtualService from the cluster
+// and asserts that the first HTTP route has exactly the given destinations in order.
+func verifyVirtualServiceRouting(t *testing.T, dynamicClient dynamic.Interface, expected []expectedRoute) {
 	t.Helper()
 
 	vs, err := dynamicClient.Resource(schema.GroupVersionResource{
-		Group:   "networking.istio.io",
-		Version: "v1",
+		Group:    "networking.istio.io",
+		Version:  "v1",
 		Resource: "virtualservices",
-	}).Namespace("default").Get(t.Context(), vsName, metav1.GetOptions{})
+	}).Namespace("default").Get(t.Context(), "traffic-test-vs", metav1.GetOptions{})
 	require.NoError(t, err)
 
 	spec := vs.Object["spec"].(map[string]any)
@@ -580,14 +580,14 @@ func verifyVirtualServiceRouting(t *testing.T, dynamicClient dynamic.Interface, 
 
 // verifyVirtualServiceEditableRoutes checks that only the named editable route was
 // modified and the non-editable route still has a single primary-only destination.
-func verifyVirtualServiceEditableRoutes(t *testing.T, dynamicClient dynamic.Interface, vsName string) {
+func verifyVirtualServiceEditableRoutes(t *testing.T, dynamicClient dynamic.Interface) {
 	t.Helper()
 
 	vs, err := dynamicClient.Resource(schema.GroupVersionResource{
-		Group:   "networking.istio.io",
-		Version: "v1",
+		Group:    "networking.istio.io",
+		Version:  "v1",
 		Resource: "virtualservices",
-	}).Namespace("default").Get(t.Context(), vsName, metav1.GetOptions{})
+	}).Namespace("default").Get(t.Context(), "traffic-test-vs", metav1.GetOptions{})
 	require.NoError(t, err)
 
 	spec := vs.Object["spec"].(map[string]any)
@@ -626,7 +626,7 @@ func TestPlugin_executeK8sMultiTrafficRoutingStageIstio(t *testing.T) {
 			stageCfg:    kubeconfig.K8sTrafficRoutingStageOptions{Canary: unit.Percentage{Number: 30}},
 			wantStatus:  sdk.StageStatusSuccess,
 			verify: func(t *testing.T, dynamicClient dynamic.Interface) {
-				verifyVirtualServiceRouting(t, dynamicClient, "traffic-test-vs", []expectedRoute{
+				verifyVirtualServiceRouting(t, dynamicClient, []expectedRoute{
 					{host: "traffic-test", subset: "primary", weight: 70},
 					{host: "traffic-test", subset: "canary", weight: 30},
 				})
@@ -642,7 +642,7 @@ func TestPlugin_executeK8sMultiTrafficRoutingStageIstio(t *testing.T) {
 			},
 			wantStatus: sdk.StageStatusSuccess,
 			verify: func(t *testing.T, dynamicClient dynamic.Interface) {
-				verifyVirtualServiceRouting(t, dynamicClient, "traffic-test-vs", []expectedRoute{
+				verifyVirtualServiceRouting(t, dynamicClient, []expectedRoute{
 					{host: "traffic-test", subset: "primary", weight: 50},
 					{host: "traffic-test", subset: "canary", weight: 30},
 					{host: "traffic-test", subset: "baseline", weight: 20},
@@ -655,7 +655,7 @@ func TestPlugin_executeK8sMultiTrafficRoutingStageIstio(t *testing.T) {
 			stageCfg:    kubeconfig.K8sTrafficRoutingStageOptions{Primary: unit.Percentage{Number: 100}},
 			wantStatus:  sdk.StageStatusSuccess,
 			verify: func(t *testing.T, dynamicClient dynamic.Interface) {
-				verifyVirtualServiceRouting(t, dynamicClient, "traffic-test-vs", []expectedRoute{
+				verifyVirtualServiceRouting(t, dynamicClient, []expectedRoute{
 					{host: "traffic-test", subset: "primary", weight: 100},
 				})
 			},
@@ -666,7 +666,7 @@ func TestPlugin_executeK8sMultiTrafficRoutingStageIstio(t *testing.T) {
 			stageCfg:    kubeconfig.K8sTrafficRoutingStageOptions{Canary: unit.Percentage{Number: 40}},
 			wantStatus:  sdk.StageStatusSuccess,
 			verify: func(t *testing.T, dynamicClient dynamic.Interface) {
-				verifyVirtualServiceEditableRoutes(t, dynamicClient, "traffic-test-vs")
+				verifyVirtualServiceEditableRoutes(t, dynamicClient)
 			},
 		},
 		{
@@ -783,7 +783,7 @@ func TestPlugin_executeK8sMultiTrafficRoutingStageIstio_MultiCluster(t *testing.
 	assert.Equal(t, sdk.StageStatusSuccess, status)
 
 	for _, c := range []*cluster{clusterUS, clusterEU} {
-		verifyVirtualServiceRouting(t, c.cli, "traffic-test-vs", []expectedRoute{
+		verifyVirtualServiceRouting(t, c.cli, []expectedRoute{
 			{host: "traffic-test", subset: "primary", weight: 70},
 			{host: "traffic-test", subset: "canary", weight: 30},
 		})
