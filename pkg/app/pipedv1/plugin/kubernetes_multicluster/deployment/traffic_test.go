@@ -16,17 +16,21 @@ package deployment
 
 import (
 	"context"
+	"encoding/json"
+	"os"
 	"path/filepath"
 	"testing"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister/logpersistertest"
 	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry/toolregistrytest"
+	"github.com/pipe-cd/piped-plugin-sdk-go/unit"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/dynamic"
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
@@ -450,7 +454,6 @@ func nestedMap(obj map[string]any, fields ...string) map[string]any {
 	return cur
 }
 
-/*
 // installIstioCRDs applies the Istio CRD bundle (via Helm/kustomize) to the envtest cluster
 // pointed at by dtConfig. It reuses the K8S_MULTI_SYNC stage so the same code path that
 // handles Helm kustomize overlays is exercised.
@@ -786,8 +789,6 @@ func TestPlugin_executeK8sMultiTrafficRoutingStageIstio_MultiCluster(t *testing.
 		})
 	}
 }
-
-*/
 
 func Test_generateVirtualServiceManifest(t *testing.T) {
 	t.Parallel()
