@@ -399,6 +399,9 @@ func TestPlugin_executeK8sMultiTrafficRoutingStage_PodSelector_MultipleServices(
 
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
+	// Pre-seed the cluster with both services so simple-secondary exists before verification.
+	applyManifestsByMultiSync(t, ctx, "traffic_routing_multiple_services", dtConfig)
+
 	plugin := &Plugin{}
 	status := plugin.executeK8sMultiTrafficRoutingStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{Name: "default", Config: *dtConfig},
