@@ -22,7 +22,9 @@ description: >
 
 ### Preparing the `piped` configuration file
 
-Prepare a `piped` configuration file as the following:
+Plugins are external binaries that have to be referenced in the `piped` configuration file. There are no plugins set by default. In PipeCD v1, deployment targets are configured under `plugins`, not legacy `platformProviders`. See [Configuring a plugin](../../../user-guide/managing-piped/configuring-a-plugin/) for how to add Kubernetes, Terraform, or other plugins.
+
+An example of a minimal `piped` v1 configuration file:
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -41,20 +43,8 @@ spec:
     - repoId: {REPO_ID_OR_NAME}
       remote: git@github.com:{GIT_ORG}/{GIT_REPO}.git
       branch: {GIT_BRANCH}
-
-  # Optional
-  # Uncomment this if you want to enable this piped to handle Cloud Run applications.
-  # platformProviders:
-  #  - name: cloudrun-in-project
-  #    type: CLOUDRUN
-  #    config:
-  #      project: {GCP_PROJECT_ID}
-  #      region: {GCP_PROJECT_REGION}
-
-  # Optional
-  # Uncomment this if you want to enable this piped to handle Terraform applications.
-  #  - name: terraform-gcp
-  #    type: TERRAFORM
+  syncInterval: 1m
+  plugins: {}
 
   # Optional
   # Uncomment this if you want to enable Secret Management.
@@ -65,6 +55,11 @@ spec:
   #     privateKeyData: {BASE64_ENCODED_PRIVATE_KEY}
   #     publicKeyData: {BASE64_ENCODED_PUBLIC_KEY}
 ```
+
+>**Note:**
+> `piped`'s plugins are versioned independently from PipeCD. See the [latest releases](https://github.com/pipe-cd/pipecd/releases) for more information.
+>
+> There is also a [Community plugins repository on GitHub](https://github.com/pipe-cd/community-plugins) for plugins built by the community.
 
 See the [configuration reference](../../../user-guide/managing-piped/configuration-reference/) for the full configuration.
 
