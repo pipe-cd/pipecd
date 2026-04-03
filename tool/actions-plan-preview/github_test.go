@@ -122,6 +122,31 @@ func TestParseGithubEvent(t *testing.T) {
 				SenderLogin: "Codertocat",
 			},
 		},
+		{
+			name:      "successfully parsed merge_group event",
+			eventName: "merge_group",
+			payload:   readTestdataFile(t, "testdata/merge-group-event-payload.json"),
+			argPRNum:  1,
+			prService: dummyPullRequestsService{
+				mergeable:  true,
+				createdAt:  time.Unix(0, 0),
+				headBranch: "head-branch",
+				headCommit: "head-commit",
+				baseBranch: "base-branch",
+			},
+			expected: &githubEvent{
+				Owner:       "Codertocat",
+				Repo:        "Hello-World",
+				RepoRemote:  "git@github.com:Codertocat/Hello-World.git",
+				PRNumber:    1,
+				PRMergeable: boolPointer(true),
+				PRClosed:    false,
+				HeadBranch:  "head-branch",
+				HeadCommit:  "head-commit",
+				BaseBranch:  "base-branch",
+				SenderLogin: "Codertocat",
+			},
+		},
 	}
 
 	for _, tc := range testcases {
