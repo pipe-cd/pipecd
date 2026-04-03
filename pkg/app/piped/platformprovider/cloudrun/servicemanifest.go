@@ -39,6 +39,7 @@ func (m ServiceManifest) SetRevision(name string) error {
 type RevisionTraffic struct {
 	RevisionName string `json:"revisionName"`
 	Percent      int    `json:"percent"`
+	Tag          string `json:"tag,omitempty"`
 }
 
 func (m ServiceManifest) UpdateTraffic(revisions []RevisionTraffic) error {

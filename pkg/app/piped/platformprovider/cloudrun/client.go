@@ -107,6 +107,24 @@ func (c *client) Update(ctx context.Context, sm ServiceManifest) (*Service, erro
 	return (*Service)(service), nil
 }
 
+func (c *client) Get(ctx context.Context, serviceName string) (*Service, error) {
+	var (
+		svc  = run.NewNamespacesServicesService(c.client)
+		name = makeCloudRunServiceName(c.projectID, serviceName)
+		call = svc.Get(name)
+	)
+	call.Context(ctx)
+
+	service, err := call.Do()
+	if err != nil {
+		if e, ok := err.(*googleapi.Error); ok && e.Code == http.StatusNotFound {
+			return nil, ErrServiceNotFound
+		}
+		return nil, err
+	}
+	return (*Service)(service), nil
+}
+
 func (c *client) List(ctx context.Context, options *ListOptions) ([]*Service, string, error) {
 	var (
 		svc    = run.NewNamespacesServicesService(c.client)

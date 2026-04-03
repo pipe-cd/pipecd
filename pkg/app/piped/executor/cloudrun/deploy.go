@@ -99,12 +99,17 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
+	existingTags := getExistingRevisionTags(ctx, e.client, sm.Name, e.LogPersister)
+
 	traffics := []provider.RevisionTraffic{
 		{
 			RevisionName: revision,
 			Percent:      100,
 		},
 	}
+
+	traffics = mergeTrafficWithExistingTags(traffics, existingTags)
+
 	if !configureServiceManifest(sm, revision, traffics, e.LogPersister) {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -185,6 +190,8 @@ func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
+	existingTags := getExistingRevisionTags(ctx, e.client, sm.Name, e.LogPersister)
+
 	traffics := []provider.RevisionTraffic{
 		{
 			RevisionName: revision,
@@ -195,6 +202,8 @@ func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
 			Percent:      100 - options.Percent.Int(),
 		},
 	}
+
+	traffics = mergeTrafficWithExistingTags(traffics, existingTags)
 
 	exist, err := revisionExists(ctx, e.client, revision, e.LogPersister)
 	if err != nil {

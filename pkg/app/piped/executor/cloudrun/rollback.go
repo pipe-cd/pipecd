@@ -87,12 +87,17 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
+	existingTags := getExistingRevisionTags(ctx, e.client, sm.Name, e.LogPersister)
+
 	traffics := []provider.RevisionTraffic{
 		{
 			RevisionName: revision,
 			Percent:      100,
 		},
 	}
+
+	traffics = mergeTrafficWithExistingTags(traffics, existingTags)
+
 	if !configureServiceManifest(sm, revision, traffics, e.LogPersister) {
 		return model.StageStatus_STAGE_FAILURE
 	}
