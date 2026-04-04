@@ -19,8 +19,6 @@ Currently, PipeCD supports the following providers:
 
 You need to define the Prometheus server address so that it can be accessed by your `piped`.
 
->**Note:** The analysis plugin can run in-process; when using the built-in provider, `port` and `url` can be omitted or left empty.
-
 ```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: Piped
