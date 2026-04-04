@@ -18,3 +18,7 @@ Basically, there are two types of users/roles that exist in the PipeCD system, w
 - Operators/Platform team: Users who operate the PipeCD for other developers can use it. You will interact with the Control Plane and Piped, you will be the one who installs the Control Plane and keeps it up for other Pipeds to connect while managing their applications’ deployments.
 
 This section contains the guideline for installing PipeCD's Control Plane and Piped step by step. You can choose what to read based on your roles.
+
+### Community Tools
+
+- **[KubeStellar Console — Guided PipeCD Installation](https://console.kubestellar.io/missions/install-pipecd)**: A step-by-step guided installation experience for PipeCD with pre-flight checks, validation, troubleshooting, and rollback support.
