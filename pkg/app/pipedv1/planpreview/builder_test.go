@@ -169,13 +169,14 @@ spec:
 	}
 
 	testcases := []struct {
-		name             string
-		apiClient        *fakeAPIClient
-		pluginRegistry   *fakePluginRegistry
-		setupRepo        bool
-		wantError        string
-		wantPluginNames  []string
-		wantSyncStrategy model.SyncStrategy
+		name              string
+		apiClient         *fakeAPIClient
+		pluginRegistry    *fakePluginRegistry
+		setupRepo         bool
+		wantError         string
+		wantPluginNames   []string
+		wantSyncStrategy  model.SyncStrategy
+		wantPluginResults []*model.PluginPlanPreviewResult
 	}{
 		{
 			name: "api error on recent deployment",
@@ -242,6 +243,15 @@ spec:
 			setupRepo:        true,
 			wantSyncStrategy: model.SyncStrategy_QUICK_SYNC,
 			wantPluginNames:  []string{"kubernetes"},
+			wantPluginResults: []*model.PluginPlanPreviewResult{
+				{
+					PluginName:   "kubernetes",
+					DeployTarget: "default",
+					PlanSummary:  []byte("Updated deployment image"),
+					PlanDetails:  []byte("--- a\n+++ b\n"),
+					DiffLanguage: "diff",
+				},
+			},
 		},
 		{
 			name: "plugin returns unimplemented",
@@ -309,6 +319,18 @@ spec:
 			}
 
 			assert.Equal(t, tc.wantPluginNames, result.PluginNames)
+
+			if len(tc.wantPluginResults) > 0 {
+				require.Len(t, result.PluginPlanResults, len(tc.wantPluginResults))
+				for i, want := range tc.wantPluginResults {
+					got := result.PluginPlanResults[i]
+					assert.Equal(t, want.PluginName, got.PluginName)
+					assert.Equal(t, want.DeployTarget, got.DeployTarget)
+					assert.Equal(t, want.PlanSummary, got.PlanSummary)
+					assert.Equal(t, want.PlanDetails, got.PlanDetails)
+					assert.Equal(t, want.DiffLanguage, got.DiffLanguage)
+				}
+			}
 		})
 	}
 }
