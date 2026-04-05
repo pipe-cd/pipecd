@@ -1117,6 +1117,7 @@ spec:
 			result, err := generateVirtualServiceManifest(
 				manifests[0], tt.host, tt.editableRoutes, tt.variantLabel,
 				tt.canaryPercent, tt.baselinePercent,
+				logpersistertest.NewTestLogPersister(t),
 			)
 			require.NoError(t, err)
 

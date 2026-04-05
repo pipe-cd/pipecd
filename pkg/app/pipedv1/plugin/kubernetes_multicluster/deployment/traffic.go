@@ -319,6 +319,7 @@ func (p *Plugin) istioTrafficRouting(
 		appCfg.VariantLabel,
 		canaryPercent,
 		baselinePercent,
+		lp,
 	)
 	if err != nil {
 		return fmt.Errorf("failed while generating VirtualService manifest: %w", err)
@@ -421,7 +422,7 @@ func (vs *virtualService) toManifest() (provider.Manifest, error) {
 // generateVirtualServiceManifest updates a VirtualService manifest with the given
 // traffic percentages for canary and baseline variants. The primary variant receives
 // the remainder. Routes are filtered by editableRoutes if non-empty.
-func generateVirtualServiceManifest(m provider.Manifest, host string, editableRoutes []string, variantLabel kubeconfig.KubernetesVariantLabel, canaryPercent, baselinePercent int32) (provider.Manifest, error) {
+func generateVirtualServiceManifest(m provider.Manifest, host string, editableRoutes []string, variantLabel kubeconfig.KubernetesVariantLabel, canaryPercent, baselinePercent int32, lp sdk.StageLogPersister) (provider.Manifest, error) {
 	vs, err := convertVirtualService(m)
 	if err != nil {
 		return provider.Manifest{}, err
@@ -435,6 +436,7 @@ func generateVirtualServiceManifest(m provider.Manifest, host string, editableRo
 	for _, http := range vs.Spec.Http {
 		if len(editableMap) > 0 {
 			if _, ok := editableMap[http.Name]; !ok {
+				lp.Infof("Skipping route %q (not in editableRoutes)", http.Name)
 				continue
 			}
 		}
@@ -490,6 +492,7 @@ func generateVirtualServiceManifest(m provider.Manifest, host string, editableRo
 
 		routes = append(routes, otherHostRoutes...)
 		http.Route = routes
+		lp.Infof("Updated route %q: primary=%d%%, canary=%d%%, baseline=%d%%", http.Name, primaryWeight, canaryWeight, baselineWeight)
 	}
 
 	return vs.toManifest()
