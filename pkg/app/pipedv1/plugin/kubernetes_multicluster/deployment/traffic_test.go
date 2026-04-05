@@ -29,6 +29,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 
@@ -79,7 +80,7 @@ func TestPlugin_executeK8sMultiTrafficRoutingStage_PodSelector_RouteToCanary(t *
 	svc, err := dynamicClient.Resource(serviceRes).Namespace("default").Get(ctx, "simple", metav1.GetOptions{})
 	require.NoError(t, err)
 
-	selector := unstructuredNestedStringMap(svc.Object, "spec", "selector")
+	selector := mustNestedStringMap(t, svc.Object, "spec", "selector")
 	assert.Equal(t, "canary", selector["pipecd.dev/variant"])
 }
 
@@ -127,7 +128,7 @@ func TestPlugin_executeK8sMultiTrafficRoutingStage_PodSelector_RouteToCanary_Mul
 	for _, c := range []*cluster{clusterUS, clusterEU} {
 		svc, err := c.cli.Resource(serviceRes).Namespace("default").Get(ctx, "simple", metav1.GetOptions{})
 		require.NoError(t, err)
-		selector := unstructuredNestedStringMap(svc.Object, "spec", "selector")
+		selector := mustNestedStringMap(t, svc.Object, "spec", "selector")
 		assert.Equal(t, "canary", selector["pipecd.dev/variant"], "cluster %s should have canary selector", c.name)
 	}
 }
@@ -174,7 +175,7 @@ func TestPlugin_executeK8sMultiTrafficRoutingStage_PodSelector_RestoreToPrimary(
 	svc, err := dynamicClient.Resource(serviceRes).Namespace("default").Get(ctx, "simple", metav1.GetOptions{})
 	require.NoError(t, err)
 
-	selector := unstructuredNestedStringMap(svc.Object, "spec", "selector")
+	selector := mustNestedStringMap(t, svc.Object, "spec", "selector")
 	assert.Equal(t, "primary", selector["pipecd.dev/variant"])
 }
 
@@ -414,47 +415,21 @@ func TestPlugin_executeK8sMultiTrafficRoutingStage_PodSelector_MultipleServices(
 	// First service must have its selector updated to canary.
 	svc1, err := dynamicClient.Resource(serviceRes).Namespace("default").Get(ctx, "simple", metav1.GetOptions{})
 	require.NoError(t, err)
-	selector1 := unstructuredNestedStringMap(svc1.Object, "spec", "selector")
+	selector1 := mustNestedStringMap(t, svc1.Object, "spec", "selector")
 	assert.Equal(t, "canary", selector1["pipecd.dev/variant"])
 
 	// Second service must remain unchanged — only the first is updated.
 	svc2, err := dynamicClient.Resource(serviceRes).Namespace("default").Get(ctx, "simple-secondary", metav1.GetOptions{})
 	require.NoError(t, err)
-	selector2 := unstructuredNestedStringMap(svc2.Object, "spec", "selector")
+	selector2 := mustNestedStringMap(t, svc2.Object, "spec", "selector")
 	assert.Equal(t, "primary", selector2["pipecd.dev/variant"])
 }
 
-// unstructuredNestedStringMap extracts a map[string]string from an unstructured object.
-func unstructuredNestedStringMap(obj map[string]any, fields ...string) map[string]string {
-	m := nestedMap(obj, fields...)
-	if m == nil {
-		return nil
-	}
-	result := make(map[string]string, len(m))
-	for k, v := range m {
-		s, ok := v.(string)
-		if !ok {
-			continue
-		}
-		result[k] = s
-	}
-	return result
-}
-
-func nestedMap(obj map[string]any, fields ...string) map[string]any {
-	cur := obj
-	for _, f := range fields {
-		v, ok := cur[f]
-		if !ok {
-			return nil
-		}
-		m, ok := v.(map[string]any)
-		if !ok {
-			return nil
-		}
-		cur = m
-	}
-	return cur
+func mustNestedStringMap(t *testing.T, obj map[string]any, fields ...string) map[string]string {
+	t.Helper()
+	m, _, err := unstructured.NestedStringMap(obj, fields...)
+	require.NoError(t, err)
+	return m
 }
 
 // installIstioCRDs applies the Istio CRD bundle (via Helm/kustomize) to the envtest cluster

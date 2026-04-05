@@ -346,11 +346,15 @@ func (p *Plugin) istioTrafficRouting(
 }
 
 func checkVariantSelectorInService(m provider.Manifest, variantLabel, variant string) error {
-	value, ok, err := m.NestedString("spec", "selector", variantLabel)
+	selector, ok, err := m.NestedStringMap("spec", "selector")
 	if err != nil {
-		return fmt.Errorf("failed to get spec.selector.%s: %w", variantLabel, err)
+		return fmt.Errorf("failed to get spec.selector: %w", err)
 	}
 	if !ok {
+		return fmt.Errorf("missing spec.selector")
+	}
+	value, exists := selector[variantLabel]
+	if !exists {
 		return fmt.Errorf("missing %s key in spec.selector", variantLabel)
 	}
 	if value != variant {
