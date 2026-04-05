@@ -19,7 +19,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"golang.org/x/sync/errgroup"
 	istiov1 "istio.io/api/networking/v1"
@@ -379,7 +378,7 @@ func findIstioVirtualServiceManifests(manifests []provider.Manifest, ref kubecon
 
 	out := make([]provider.Manifest, 0, len(manifests))
 	for _, m := range manifests {
-		if !strings.Contains(m.APIVersion(), istioNetworkingGroup) {
+		if m.GroupVersionKind().Group != istioNetworkingGroup {
 			continue
 		}
 		if m.Kind() != istioVirtualServiceKind {
