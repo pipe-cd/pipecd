@@ -9,7 +9,7 @@ description: >
 > **Note:**
 > This section is still a work in progress. A full tutorial and an in-docs translation of the Zenn book are planned over time.
 >
-> For a hands-on walkthrough, read [**Build and learn PipeCD plugins**](https://zenn.dev/warashi/books/try-and-learn-pipecd-plugin) (Zenn; Japanese title *作って学ぶ PipeCD プラグイン*). The same book is linked again in [Links](#links), together with other references. Use your browser's translate feature if you need English. Verify commands and field names against this documentation and the [`pipecd`](https://github.com/pipe-cd/pipecd) repository.
+> For a hands-on walkthrough, read [**Build and learn PipeCD plugins**](https://zenn.dev/warashi/books/try-and-learn-pipecd-plugin) (Zenn; Japanese title *作って学ぶ PipeCD プラグイン*). The same book is linked again in [Links](#links), together with other references. Use your browser's translate feature to read this in English. Verify commands and field names against this documentation and the [`pipecd`](https://github.com/pipe-cd/pipecd) repository.
 
 Use this page together with [Contribute to PipeCD plugins](../), which covers layout, `make` targets, and how to open a pull request.
 
