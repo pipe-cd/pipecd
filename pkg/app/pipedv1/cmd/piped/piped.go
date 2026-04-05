@@ -500,6 +500,10 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			decrypter,
 			cfg,
 			pluginRegistry,
+			planpreview.WithWorkerNum(cfg.PlanPreview.WorkerNum),
+			planpreview.WithCommandQueueBufferSize(cfg.PlanPreview.CommandQueueBufferSize),
+			planpreview.WithCommandCheckInterval(cfg.PlanPreview.CommandCheckInterval.Duration()),
+			planpreview.WithCommandHandleTimeout(cfg.PlanPreview.CommandHandleTimeout.Duration()),
 			planpreview.WithLogger(input.Logger),
 		)
 		group.Go(func() error {

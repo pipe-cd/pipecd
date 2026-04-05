@@ -64,6 +64,8 @@ type PipedSpec struct {
 	SecretManagement *SecretManagement `json:"secretManagement,omitempty"`
 	// Optional settings for event watcher.
 	EventWatcher PipedEventWatcher `json:"eventWatcher"`
+	// Optional settings for plan-preview command handling.
+	PlanPreview PipedPlanPreview `json:"planPreview"`
 	// List of labels to filter all applications this piped will handle.
 	AppSelector map[string]string `json:"appSelector,omitempty"`
 }
@@ -111,6 +113,9 @@ func (s *PipedSpec) Validate() error {
 		}
 	}
 	if err := s.EventWatcher.Validate(); err != nil {
+		return err
+	}
+	if err := s.PlanPreview.Validate(); err != nil {
 		return err
 	}
 	for _, n := range s.Notifications.Receivers {
@@ -630,6 +635,33 @@ type PipedEventWatcherGitRepo struct {
 	// Patterns can be used like "foo/*.yaml".
 	// This is prioritized if both includes and this one are given.
 	Excludes []string `json:"excludes,omitempty"`
+}
+
+type PipedPlanPreview struct {
+	// Number of workers to handle plan-preview commands.
+	WorkerNum int `json:"workerNum,omitempty"`
+	// Channel buffer size used for plan-preview commands.
+	CommandQueueBufferSize int `json:"commandQueueBufferSize,omitempty"`
+	// Interval to fetch plan-preview commands.
+	CommandCheckInterval Duration `json:"commandCheckInterval,omitempty"`
+	// Timeout to handle each plan-preview command.
+	CommandHandleTimeout Duration `json:"commandHandleTimeout,omitempty"`
+}
+
+func (p *PipedPlanPreview) Validate() error {
+	if p.WorkerNum < 0 {
+		return errors.New("planPreview.workerNum must be greater than or equal to 0")
+	}
+	if p.CommandQueueBufferSize < 0 {
+		return errors.New("planPreview.commandQueueBufferSize must be greater than or equal to 0")
+	}
+	if p.CommandCheckInterval < 0 {
+		return errors.New("planPreview.commandCheckInterval must be greater than or equal to 0")
+	}
+	if p.CommandHandleTimeout < 0 {
+		return errors.New("planPreview.commandHandleTimeout must be greater than or equal to 0")
+	}
+	return nil
 }
 
 // PipedPlugin defines the plugin configuration for the piped.
