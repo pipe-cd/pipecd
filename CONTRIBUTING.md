@@ -171,6 +171,15 @@ Note that if it's a new breaking change, make sure to complete the two latter qu
 
 ## Development
 
+### Prerequisites
+
+Before you start, ensure you have the following installed:
+
+- **Go** (Check `go.mod` for the required version)
+- **Docker** (For running local clusters)
+- **Make** (For build commands)
+- **Python & Pip** (Optional, for pre-commit hooks)
+
 PipeCD consists of several components and docs:
 
 - **cmd/pipecd**: A centralized component that manages deployment data and provides a gRPC API for connecting pipeds, as well as web functionalities such as authentication. [README.md](./cmd/pipecd/README.md)
@@ -256,7 +265,7 @@ Below is an exampled piped v0 configuration using the Kubernetes platform provid
       config:
         # FIXME: Replace here with your kubeconfig absolute file path.
         kubeConfigPath: /path/to/.kube/config
-  ```
+```
 
 4. Once you have configured your piped configuration file, start the Piped agent with the following command:
 
@@ -266,7 +275,7 @@ CONFIG_FILE=path/to/piped-config.yaml \
 INSECURE=true
 ```
 
-where the `CONFIG_FILE` is the path to your piped confiuration file and the `INSECURE` flag is set to `true` to allow `piped` to connect to the control plane without TLS verification.
+where the `CONFIG_FILE` is the path to your piped configuration file and the `INSECURE` flag is set to `true` to allow `piped` to connect to the control plane without TLS verification.
 
 Replace `path/to/piped-config.yaml` with the actual path to your configuration file.
 
