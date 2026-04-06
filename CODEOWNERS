@@ -3,3 +3,8 @@
 
 # Web dir
 /web/ @pipe-cd/pipecd-approvers-web @pipe-cd/pipecd-approvers
+
+# Docs dir
+/docs/ @pipe-cd/pipecd-approvers-docs @pipe-cd/pipecd-approvers
+CONTRIBUTING.md @pipe-cd/pipecd-approvers-docs @pipe-cd/pipecd-approvers
+README.md @pipe-cd/pipecd-approvers-docs @pipe-cd/pipecd-approvers

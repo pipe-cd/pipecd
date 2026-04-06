@@ -35,7 +35,7 @@ spec:
       - taskdef.yaml
 ```
 
-The `config.yaml` file is used as an attachment that can be referenced by other files. The content in `config.yaml` will be reffered to as `config`, and the target files that are configured to use the `config` can be defined under targets. In this case, it is the `taskdef.yaml` file.
+The `config.yaml` file is used as an attachment that can be referenced by other files. The content in `config.yaml` will be referred to as `config`, and the target files that are configured to use the `config` can be defined under targets. In this case, it is the `taskdef.yaml` file.
 
 And the "target" file, which uses `config.yaml` file content, can be configured as:
 
@@ -50,11 +50,11 @@ containerDefinitions:
 ...
 ```
 
-In all cases, `Piped` will perform attaching the attachment file content at last, right before using it to handle any deployment tasks.
+In all cases, `piped` will perform attaching the attachment file content at last, right before using it to handle any deployment tasks.
 
->**Tip:**
+> **Tip:**
 >
->This feature can be used in combo with PipeCD [SecretManagement feature](../secret-management). You can encrypt your secret data using PipeCD secret encryption function, it will be decrypted and placed in your configuration files; then the PipeCD attachment feature will attach that decrypted configuration to the manifest of resource, which requires that configuration.
+> This feature can be used in combo with PipeCD [Secret Management feature](../secret-management). You can encrypt your secret data using PipeCD secret encryption function, it will be decrypted and placed in your configuration files; then the PipeCD attachment feature will attach that decrypted configuration to the manifest of resource, which requires that configuration.
 
 <!-- See examples for detail. -->
 

@@ -38,8 +38,6 @@ jobs:
             // Construct the welcome message
             const body = `👋 Hi @${prAuthor}, welcome to **PipeCD** and thanks for opening your first pull request!
             
-            We’re really happy to have you here 🚀
-            
             Before your PR gets merged, please check a few important things below.
             
             ---
@@ -52,8 +50,6 @@ jobs:
             
             ### DCO Sign-off
             All commits must include a \`Signed-off-by\` line to comply with the Developer Certificate of Origin (DCO).
-            
-            If you forgot, you can fix it like this:
             
             **For the last commit:**
             \`\`\`bash
