@@ -1,6 +1,6 @@
 # Stage 1: Builder - Build Go-based plugins
 
-FROM golang:1.25.2 AS builder
+FROM golang:1.25.8 AS builder
 
 # Version configuration
 ARG PROTOC_GEN_GO_VER=1.27.1
@@ -75,7 +75,7 @@ RUN apt-get update \
 
 # Copy Go runtime from golang image 
 # mockgen uses 'go list' and 'go build' internally
-COPY --from=golang:1.25.2 /usr/local/go /usr/local/go
+COPY --from=golang:1.25.8 /usr/local/go /usr/local/go
 ENV GOROOT=/usr/local/go
 ENV GOPATH=/go
 ENV PATH=$GOPATH/bin:$GOROOT/bin:$PATH
