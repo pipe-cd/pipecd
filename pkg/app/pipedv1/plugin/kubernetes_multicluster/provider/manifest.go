@@ -19,6 +19,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/yaml"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
@@ -92,6 +93,11 @@ func (m Manifest) NestedString(fields ...string) (string, bool, error) {
 	return unstructured.NestedString(m.body.Object, fields...)
 }
 
+// NestedStringMap returns the string map value of the nested field specified by the given fields.
+func (m Manifest) NestedStringMap(fields ...string) (map[string]string, bool, error) {
+	return unstructured.NestedStringMap(m.body.Object, fields...)
+}
+
 func (m Manifest) Key() ResourceKey {
 	return makeResourceKey(m.body)
 }
@@ -102,6 +108,10 @@ func (m Manifest) Kind() string {
 
 func (m Manifest) APIVersion() string {
 	return m.body.GetAPIVersion()
+}
+
+func (m Manifest) GroupVersionKind() schema.GroupVersionKind {
+	return m.body.GroupVersionKind()
 }
 
 func (m Manifest) Name() string {
