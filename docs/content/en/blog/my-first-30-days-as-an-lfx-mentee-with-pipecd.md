@@ -1,7 +1,7 @@
 ---
 date: 2026-04-08
 title: "My First 30 days as an LFX Mentee with PipeCD"
-linkTitle: "My First 30 days an LFX Mentee with PipeCD"
+linkTitle: "My First 30 days as an LFX Mentee with PipeCD"
 weight: 980
 description: "This blog is a desciption of my first 30 days as an LFX Mentee with PipeCD"
 author: Gloria Johnson ([@riahtgl](https://www.linkedin.com/in/gloriahjohnson/))
@@ -35,15 +35,11 @@ The [documentation] (https://pipecd.dev/docs-v1.0.x/) is a great place to start 
 ## What I’ve been up to:
 My focus in the past month has been getting fundamental knowledge on:
 
-Linux and Kubernetes
-
-computer networking (The OSI model)
-
-encryption and decryption
-
-cloud compute
-
-IaaS, SaaS, Paas, Faas, and more
+- Linux and Kubernetes
+- Computer networking (The OSI model)
+- Encryption and decryption
+- Cloud compute
+- IaaS, SaaS, PaaS, FaaS, and more
 
 I’m intentionally building this foundation because understanding these concepts is key to fully grasping how PipeCD works.
 
@@ -55,11 +51,11 @@ I also create content, post regularly on social media platforms, and host commun
 
 PipeCD community is diverse and inclusive. The Maintainers and contributors are kind, helpful, and supportive. Early on, even before I got selected as a mentee, I got comfortable:
 
-following conversations on Slack
+- following conversations on Slack
 
-Understanding community needs and
+- Understanding community needs and
 
-familiarizing myself with the project structure
+- familiarizing myself with the project structure
 
 It was less about immediate contribution and more about learning how things work.
 
