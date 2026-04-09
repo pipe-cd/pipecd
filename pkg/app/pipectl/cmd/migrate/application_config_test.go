@@ -475,6 +475,9 @@ func TestApplicationConfig_migrateApplicationConfig(t *testing.T) {
 func TestApplicationConfig_migrateApplicationConfig_WriteErrors(t *testing.T) {
 	t.Parallel()
 	t.Run("write permission denied", func(t *testing.T) {
+		if os.Getuid() == 0 {
+			t.Skip("skipping permission test: running as root bypasses file permission checks")
+		}
 		tempDir := t.TempDir()
 		configFile := filepath.Join(tempDir, "app.yaml")
 

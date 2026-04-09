@@ -13,6 +13,8 @@ jobs:
     - name: Generate code
       # NOTE: Keep this container image as same as defined in Makefile
       uses: docker://ghcr.io/pipe-cd/codegen@sha256:0a2f9805e50f5c6efb7771171ddf291251bf349c2e8627fbf59c3535eacbbee0 # v0.53.0-10-g64742f7
+      env:
+        GOTOOLCHAIN: auto
       with:
         entrypoint: ./tool/codegen/codegen.sh
         args: /github/workspace
