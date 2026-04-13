@@ -55,6 +55,8 @@ type mockECSClient struct {
 	ListTagsFunc                    func(ctx context.Context, resourceArn string) ([]types.Tag, error)
 	TagResourceFunc                 func(ctx context.Context, resourceArn string, tags []types.Tag) error
 	UntagResourceFunc               func(ctx context.Context, resourceArn string, tagKeys []string) error
+	GetListenerArnsFunc             func(ctx context.Context, targetGroup types.LoadBalancer) ([]string, error)
+	ModifyListenersFunc             func(ctx context.Context, listenerArns []string, routingTrafficCfg provider.RoutingTrafficConfig) ([]string, error)
 }
 
 var _ provider.Client = (*mockECSClient)(nil)
@@ -106,6 +108,12 @@ func (m *mockECSClient) TagResource(ctx context.Context, resourceArn string, tag
 }
 func (m *mockECSClient) UntagResource(ctx context.Context, resourceArn string, tagKeys []string) error {
 	return m.UntagResourceFunc(ctx, resourceArn, tagKeys)
+}
+func (m *mockECSClient) GetListenerArns(ctx context.Context, targetGroup types.LoadBalancer) ([]string, error) {
+	return m.GetListenerArnsFunc(ctx, targetGroup)
+}
+func (m *mockECSClient) ModifyListeners(ctx context.Context, listenerArns []string, routingTrafficCfg provider.RoutingTrafficConfig) ([]string, error) {
+	return m.ModifyListenersFunc(ctx, listenerArns, routingTrafficCfg)
 }
 
 func happyPathClient(registeredTD *types.TaskDefinition, updatedSvc *types.Service, newTS *types.TaskSet, prevTaskSets []types.TaskSet) *mockECSClient {

@@ -7,6 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.27.38
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.36
 	github.com/aws/aws-sdk-go-v2/service/ecs v1.46.2
+	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.38.2
 	github.com/creasty/defaults v1.6.0
 	github.com/go-playground/assert/v2 v2.2.0
 	github.com/pipe-cd/pipecd v0.54.0-rc1.0.20250912082650-0b949bb7aac9
