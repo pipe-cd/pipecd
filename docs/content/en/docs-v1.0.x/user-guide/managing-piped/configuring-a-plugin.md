@@ -24,7 +24,7 @@ We are working towards releasing more plugins in the future.
 >**Note:**  
 > We also have the [PipeCD Community Plugins repository](https://github.com/pipe-cd/community-plugins) for plugins made by the PipeCD Community.
 
-A plugin is added to the piped configuration inside the `spec.plugins` array and providing the plugin’s executable URL, the port it should run on, and any deploy targets that belong to it. For more details, see the [configuration reference for plugins](../configuration-reference/#plugins).
+A plugin is added to the `piped` configuration inside the `spec.plugins` array and providing the plugin’s executable URL, the port it should run on, and any deploy targets that belong to it. For more details, see the [configuration reference for plugins](../configuration-reference/#plugins).
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -50,7 +50,7 @@ Now, we will see how you can configure plugins for different application types.
 
 The Kubernetes plugin enables PipeCD to manage Kubernetes application deployments.
 
-By default, piped deploys Kubernetes application to the cluster where the piped is running in. An external cluster can be connected by specifying the `masterURL` and `kubeConfigPath` in [`deployTargets`](../configuration-reference/#kubernetesplugin).
+By default, `piped` deploys Kubernetes application to the cluster where the `piped` is running in. An external cluster can be connected by specifying the `masterURL` and `kubeConfigPath` in [`deployTargets`](../configuration-reference/#kubernetesplugin).
 
 <!-- And, the default resources (defined [here](https://github.com/pipe-cd/pipecd/blob/master/pkg/app/piped/platformprovider/kubernetes/resourcekey.go)) from all namespaces of the Kubernetes cluster will be watched for rendering the application state in realtime and detecting the configuration drift. In case you want to restrict piped to watch only a single namespace, let specify the namespace in the [KubernetesAppStateInformer](../configuration-reference/#kubernetesappstateinformer) field. You can also add other resources or exclude resources to/from the watching targets by that field. -->
 
@@ -76,7 +76,7 @@ See [Configuration Reference for Kubernetes plugin](../configuration-reference/#
 
 ### Configuring Terraform plugin
 
-The Terraform plugin enables Piped to run Terraform-based deployments.
+The Terraform plugin enables `piped` to run Terraform-based deployments.
 A deploy target represents a Terraform execution environment (e.g., dev/prod workspace, shared variables, drift detection settings).
 
 ``` yaml
