@@ -81,6 +81,10 @@ func (p *ECSPlugin) ExecuteStage(
 		return &sdk.ExecuteStageResponse{
 			Status: p.executeECSCanaryRolloutStage(ctx, input, deployTargets[0]),
 		}, nil
+	case StageECSCanaryClean:
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeECSCanaryCleanStage(ctx, input, deployTargets[0]),
+		}, nil
 	case StageECSTrafficRouting:
 		return &sdk.ExecuteStageResponse{
 			Status: p.executeECSTrafficRouting(ctx, input, deployTargets[0]),
