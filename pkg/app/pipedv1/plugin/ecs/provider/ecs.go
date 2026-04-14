@@ -51,7 +51,7 @@ type ECS interface {
 	ServiceExists(ctx context.Context, cluster, serviceName string) (bool, error)
 	GetServiceStatus(ctx context.Context, cluster, serviceName string) (string, error)
 	WaitServiceStable(ctx context.Context, cluster, serviceName string) error
-	RegisterTaskDefinition(ctx context.Context, taskDef types.TaskDefinition) (*types.TaskDefinition, error)
+	RegisterTaskDefinition(ctx context.Context, taskDef types.TaskDefinition, tags []types.Tag) (*types.TaskDefinition, error)
 	RunTask(ctx context.Context, taskDefinition types.TaskDefinition, clusterArn string, launchType string, awsVpcConfiguration *config.ECSVpcConfiguration, tags []types.Tag) error
 	PruneServiceTasks(ctx context.Context, service types.Service) error
 	ListTags(ctx context.Context, resourceArn string) ([]types.Tag, error)

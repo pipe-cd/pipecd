@@ -179,7 +179,7 @@ func (c *client) GetTaskDefinition(ctx context.Context, taskDefinitionArn string
 	return output.TaskDefinition, nil
 }
 
-func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error) {
+func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition, tags []types.Tag) (*types.TaskDefinition, error) {
 	input := &ecs.RegisterTaskDefinitionInput{
 		Family:                  taskDefinition.Family,
 		ContainerDefinitions:    taskDefinition.ContainerDefinitions,
@@ -199,7 +199,7 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 		PidMode:               taskDefinition.PidMode,
 		PlacementConstraints:  taskDefinition.PlacementConstraints,
 		ProxyConfiguration:    taskDefinition.ProxyConfiguration,
-		// TODO: Support tags for registering task definition.
+		Tags:                  tags,
 	}
 	output, err := c.ecsClient.RegisterTaskDefinition(ctx, input)
 	if err != nil {

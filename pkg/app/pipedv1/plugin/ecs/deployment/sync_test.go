@@ -151,7 +151,7 @@ func TestSync(t *testing.T) {
 			serviceDef: baseServiceDef,
 			client: func() *mockECSClient {
 				m := happyPathClient(registeredTD, updatedService, newTaskSet, []types.TaskSet{})
-				m.RegisterTaskDefinitionFunc = func(_ context.Context, _ types.TaskDefinition) (*types.TaskDefinition, error) {
+				m.RegisterTaskDefinitionFunc = func(_ context.Context, _ types.TaskDefinition, _ []types.Tag) (*types.TaskDefinition, error) {
 					return nil, errors.New("register error")
 				}
 				return m

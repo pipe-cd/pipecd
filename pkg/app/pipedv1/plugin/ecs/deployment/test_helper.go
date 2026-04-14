@@ -49,7 +49,7 @@ type mockECSClient struct {
 	ServiceExistsFunc               func(ctx context.Context, cluster, serviceName string) (bool, error)
 	GetServiceStatusFunc            func(ctx context.Context, cluster, serviceName string) (string, error)
 	WaitServiceStableFunc           func(ctx context.Context, cluster, serviceName string) error
-	RegisterTaskDefinitionFunc      func(ctx context.Context, taskDef types.TaskDefinition) (*types.TaskDefinition, error)
+	RegisterTaskDefinitionFunc      func(ctx context.Context, taskDef types.TaskDefinition, tags []types.Tag) (*types.TaskDefinition, error)
 	RunTaskFunc                     func(ctx context.Context, taskDefinition types.TaskDefinition, clusterArn string, launchType string, awsVpcConfiguration *appconfig.ECSVpcConfiguration, tags []types.Tag) error
 	PruneServiceTasksFunc           func(ctx context.Context, service types.Service) error
 	ListTagsFunc                    func(ctx context.Context, resourceArn string) ([]types.Tag, error)
@@ -89,8 +89,8 @@ func (m *mockECSClient) GetServiceStatus(ctx context.Context, cluster, serviceNa
 func (m *mockECSClient) WaitServiceStable(ctx context.Context, cluster, serviceName string) error {
 	return m.WaitServiceStableFunc(ctx, cluster, serviceName)
 }
-func (m *mockECSClient) RegisterTaskDefinition(ctx context.Context, taskDef types.TaskDefinition) (*types.TaskDefinition, error) {
-	return m.RegisterTaskDefinitionFunc(ctx, taskDef)
+func (m *mockECSClient) RegisterTaskDefinition(ctx context.Context, taskDef types.TaskDefinition, tags []types.Tag) (*types.TaskDefinition, error) {
+	return m.RegisterTaskDefinitionFunc(ctx, taskDef, tags)
 }
 func (m *mockECSClient) RunTask(ctx context.Context, taskDefinition types.TaskDefinition, clusterArn string, launchType string, awsVpcConfiguration *appconfig.ECSVpcConfiguration, tags []types.Tag) error {
 	return m.RunTaskFunc(ctx, taskDefinition, clusterArn, launchType, awsVpcConfiguration, tags)
@@ -110,7 +110,7 @@ func (m *mockECSClient) UntagResource(ctx context.Context, resourceArn string, t
 
 func happyPathClient(registeredTD *types.TaskDefinition, updatedSvc *types.Service, newTS *types.TaskSet, prevTaskSets []types.TaskSet) *mockECSClient {
 	return &mockECSClient{
-		RegisterTaskDefinitionFunc: func(_ context.Context, _ types.TaskDefinition) (*types.TaskDefinition, error) {
+		RegisterTaskDefinitionFunc: func(_ context.Context, _ types.TaskDefinition, _ []types.Tag) (*types.TaskDefinition, error) {
 			td := *registeredTD
 			return &td, nil
 		},

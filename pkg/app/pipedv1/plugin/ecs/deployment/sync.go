@@ -199,7 +199,7 @@ func applyTaskDefinition(
 	client provider.Client,
 	taskDef types.TaskDefinition,
 ) (*types.TaskDefinition, error) {
-	td, err := client.RegisterTaskDefinition(ctx, taskDef)
+	td, err := client.RegisterTaskDefinition(ctx, taskDef, serviceDef.Tags)
 	if err != nil {
 		return nil, fmt.Errorf("failed to register task definition: %w", err)
 	}

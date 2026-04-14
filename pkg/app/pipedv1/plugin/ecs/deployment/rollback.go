@@ -101,7 +101,7 @@ func rollback(
 	primary *types.LoadBalancer,
 ) error {
 	lp.Infof("Registering task definition family %s", *taskDef.Family)
-	td, err := client.RegisterTaskDefinition(ctx, taskDef)
+	td, err := client.RegisterTaskDefinition(ctx, taskDef, serviceDef.Tags)
 	if err != nil {
 		return fmt.Errorf("failed to register task definition %s: %w", *taskDef.Family, err)
 	}

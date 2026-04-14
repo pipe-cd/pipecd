@@ -376,7 +376,7 @@ func (c *client) GetServiceStatus(ctx context.Context, cluster, serviceName stri
 	return *output.Services[0].Status, nil
 }
 
-func (c *client) RegisterTaskDefinition(ctx context.Context, taskDef types.TaskDefinition) (*types.TaskDefinition, error) {
+func (c *client) RegisterTaskDefinition(ctx context.Context, taskDef types.TaskDefinition, tags []types.Tag) (*types.TaskDefinition, error) {
 	input := &ecs.RegisterTaskDefinitionInput{
 		Family:                  taskDef.Family,
 		ContainerDefinitions:    taskDef.ContainerDefinitions,
@@ -394,6 +394,7 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDef types.TaskD
 		PidMode:                 taskDef.PidMode,
 		PlacementConstraints:    taskDef.PlacementConstraints,
 		ProxyConfiguration:      taskDef.ProxyConfiguration,
+		Tags:                    tags,
 	}
 	output, err := c.ecsClient.RegisterTaskDefinition(ctx, input)
 	if err != nil {
