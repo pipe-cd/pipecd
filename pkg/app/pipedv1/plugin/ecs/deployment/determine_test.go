@@ -90,6 +90,183 @@ func TestParseContainerImage(t *testing.T) {
 	}
 }
 
+func TestDetermineStrategy(t *testing.T) {
+	tests := []struct {
+		name    string
+		running types.TaskDefinition
+		target  types.TaskDefinition
+		want    *sdk.DetermineStrategyResponse
+	}{
+		{
+			name: "no change -> QuickSync",
+			running: types.TaskDefinition{
+				ContainerDefinitions: []types.ContainerDefinition{
+					{Name: aws.String("app"), Image: aws.String("nginx:1.21")},
+				},
+			},
+			target: types.TaskDefinition{
+				ContainerDefinitions: []types.ContainerDefinition{
+					{Name: aws.String("app"), Image: aws.String("nginx:1.21")},
+				},
+			},
+			want: &sdk.DetermineStrategyResponse{
+				Strategy: sdk.SyncStrategyQuickSync,
+				Summary:  "Quick sync because no container image change was detected",
+			},
+		},
+		{
+			name: "image tag updated -> PipelineSync",
+			running: types.TaskDefinition{
+				ContainerDefinitions: []types.ContainerDefinition{
+					{Name: aws.String("app"), Image: aws.String("nginx:1.21")},
+				},
+			},
+			target: types.TaskDefinition{
+				ContainerDefinitions: []types.ContainerDefinition{
+					{Name: aws.String("app"), Image: aws.String("nginx:1.25")},
+				},
+			},
+			want: &sdk.DetermineStrategyResponse{
+				Strategy: sdk.SyncStrategyPipelineSync,
+				Summary:  "Sync progressively because of updating image nginx from 1.21 to 1.25",
+			},
+		},
+		{
+			name: "image replaced with different name -> PipelineSync",
+			running: types.TaskDefinition{
+				ContainerDefinitions: []types.ContainerDefinition{
+					{Name: aws.String("app"), Image: aws.String("nginx:1.21")},
+				},
+			},
+			target: types.TaskDefinition{
+				ContainerDefinitions: []types.ContainerDefinition{
+					{Name: aws.String("app"), Image: aws.String("apache:2.4")},
+				},
+			},
+			want: &sdk.DetermineStrategyResponse{
+				Strategy: sdk.SyncStrategyPipelineSync,
+				Summary:  "Sync progressively because of updating image nginx:1.21 to apache:2.4",
+			},
+		},
+		{
+			name: "container added -> PipelineSync",
+			running: types.TaskDefinition{
+				ContainerDefinitions: []types.ContainerDefinition{
+					{Name: aws.String("app"), Image: aws.String("nginx:1.21")},
+				},
+			},
+			target: types.TaskDefinition{
+				ContainerDefinitions: []types.ContainerDefinition{
+					{Name: aws.String("app"), Image: aws.String("nginx:1.21")},
+					{Name: aws.String("sidecar"), Image: aws.String("redis:7.0")},
+				},
+			},
+			want: &sdk.DetermineStrategyResponse{
+				Strategy: sdk.SyncStrategyPipelineSync,
+				Summary:  "Sync progressively because of updating added container sidecar with image redis:7.0",
+			},
+		},
+		{
+			name: "container removed -> PipelineSync",
+			running: types.TaskDefinition{
+				ContainerDefinitions: []types.ContainerDefinition{
+					{Name: aws.String("app"), Image: aws.String("nginx:1.21")},
+					{Name: aws.String("sidecar"), Image: aws.String("redis:7.0")},
+				},
+			},
+			target: types.TaskDefinition{
+				ContainerDefinitions: []types.ContainerDefinition{
+					{Name: aws.String("app"), Image: aws.String("nginx:1.21")},
+				},
+			},
+			want: &sdk.DetermineStrategyResponse{
+				Strategy: sdk.SyncStrategyPipelineSync,
+				Summary:  "Sync progressively because of updating removed container sidecar",
+			},
+		},
+		{
+			name: "multiple containers, only one image changed -> PipelineSync",
+			running: types.TaskDefinition{
+				ContainerDefinitions: []types.ContainerDefinition{
+					{Name: aws.String("app"), Image: aws.String("nginx:1.21")},
+					{Name: aws.String("sidecar"), Image: aws.String("redis:7.0")},
+				},
+			},
+			target: types.TaskDefinition{
+				ContainerDefinitions: []types.ContainerDefinition{
+					{Name: aws.String("app"), Image: aws.String("nginx:1.25")},
+					{Name: aws.String("sidecar"), Image: aws.String("redis:7.0")},
+				},
+			},
+			want: &sdk.DetermineStrategyResponse{
+				Strategy: sdk.SyncStrategyPipelineSync,
+				Summary:  "Sync progressively because of updating image nginx from 1.21 to 1.25",
+			},
+		},
+		{
+			name:    "empty running task definition -> all containers treated as added",
+			running: types.TaskDefinition{},
+			target: types.TaskDefinition{
+				ContainerDefinitions: []types.ContainerDefinition{
+					{Name: aws.String("app"), Image: aws.String("nginx:1.21")},
+				},
+			},
+			want: &sdk.DetermineStrategyResponse{
+				Strategy: sdk.SyncStrategyPipelineSync,
+				Summary:  "Sync progressively because of updating added container app with image nginx:1.21",
+			},
+		},
+		{
+			name:    "both empty -> QuickSync",
+			running: types.TaskDefinition{},
+			target:  types.TaskDefinition{},
+			want: &sdk.DetermineStrategyResponse{
+				Strategy: sdk.SyncStrategyQuickSync,
+				Summary:  "Quick sync because no container image change was detected",
+			},
+		},
+		// Digest image cases
+		{
+			name: "added container with digest image -> PipelineSync",
+			running: types.TaskDefinition{
+				ContainerDefinitions: []types.ContainerDefinition{},
+			},
+			target: types.TaskDefinition{
+				ContainerDefinitions: []types.ContainerDefinition{
+					{Name: aws.String("app"), Image: aws.String("nginx@sha256:abcdef1234567890")},
+				},
+			},
+			want: &sdk.DetermineStrategyResponse{
+				Strategy: sdk.SyncStrategyPipelineSync,
+				Summary:  "Sync progressively because of updating added container app with image nginx@sha256:abcdef1234567890",
+			},
+		},
+		{
+			name: "digest updated -> PipelineSync",
+			running: types.TaskDefinition{
+				ContainerDefinitions: []types.ContainerDefinition{
+					{Name: aws.String("app"), Image: aws.String("nginx@sha256:aaaa")},
+				},
+			},
+			target: types.TaskDefinition{
+				ContainerDefinitions: []types.ContainerDefinition{
+					{Name: aws.String("app"), Image: aws.String("nginx@sha256:bbbb")},
+				},
+			},
+			want: &sdk.DetermineStrategyResponse{
+				Strategy: sdk.SyncStrategyPipelineSync,
+				Summary:  "Sync progressively because of updating image nginx from sha256:aaaa to sha256:bbbb",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := determineStrategy(tt.running, tt.target)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func TestDetermineVersions(t *testing.T) {
 	tests := []struct {
 		name    string
