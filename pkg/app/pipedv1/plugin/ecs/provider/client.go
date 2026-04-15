@@ -217,6 +217,7 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 		input.LaunchType = service.LaunchType
 		input.NetworkConfiguration = service.NetworkConfiguration
 		input.ServiceRegistries = service.ServiceRegistries
+		input.LoadBalancers = service.LoadBalancers
 	}
 
 	output, err := c.ecsClient.CreateService(ctx, input)
@@ -259,6 +260,7 @@ func (c *client) UpdateService(ctx context.Context, service types.Service) (*typ
 		input.NetworkConfiguration = service.NetworkConfiguration
 		input.ServiceRegistries = service.ServiceRegistries
 		input.DeploymentConfiguration = service.DeploymentConfiguration
+		input.LoadBalancers = service.LoadBalancers
 	}
 
 	// If desiredCount is 0 or not set, keep current desiredCount because a user might use AutoScaling.
