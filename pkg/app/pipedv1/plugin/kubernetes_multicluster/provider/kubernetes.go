@@ -39,7 +39,7 @@ const (
 	LabelIgnoreDriftDirection = "pipecd.dev/ignore-drift-detection" // Whether the drift detection should ignore this resource.
 
 	// label/annotation values
-	ManagedByPiped          = "piped"
+	ManagedByPiped           = "piped"
 	UseReplaceEnabled        = "enabled"
 	UseServerSideApply       = "true"
 	IgnoreDriftDetectionTrue = "true"
