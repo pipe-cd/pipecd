@@ -187,9 +187,9 @@ func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, rou
 }
 
 func (c *client) CreateService(ctx context.Context, service types.Service) (*types.Service, error) {
-	if service.DeploymentController == nil || service.DeploymentController.Type != types.DeploymentControllerTypeExternal {
-		return nil, fmt.Errorf("failed to create ECS service %s: deployment controller of type EXTERNAL is required", *service.ServiceName)
-	}
+	isExternal := service.DeploymentController == nil ||
+		service.DeploymentController.Type == types.DeploymentControllerTypeExternal
+
 	input := &ecs.CreateServiceInput{
 		Cluster:                       service.ClusterArn,
 		ServiceName:                   service.ServiceName,
@@ -207,23 +207,40 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 		SchedulingStrategy:            service.SchedulingStrategy,
 		Tags:                          service.Tags,
 	}
+
+	if !isExternal {
+		// ECS controller allows passing all fields directly in CreateService.
+
+		// TaskDefinition is also required for ECS controller
+		// (unlike EXTERNAL where it is set per-task-set via CreateTaskSet).
+		input.TaskDefinition = service.TaskDefinition
+		input.LaunchType = service.LaunchType
+		input.NetworkConfiguration = service.NetworkConfiguration
+		input.ServiceRegistries = service.ServiceRegistries
+	}
+
 	output, err := c.ecsClient.CreateService(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create ECS service %s: %w", *service.ServiceName, err)
 	}
 
-	// Hack: Since we use EXTERNAL deployment controller, the below configurations are not allowed to be passed
-	// in CreateService step, but it required in further step (CreateTaskSet step). We reassign those values
-	// as part of service definition for that purpose.
-	// ref: https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CreateService.html
-	output.Service.LaunchType = service.LaunchType
-	output.Service.NetworkConfiguration = service.NetworkConfiguration
-	output.Service.ServiceRegistries = service.ServiceRegistries
+	if isExternal {
+		// Hack: Since we use EXTERNAL deployment controller, the below configurations are not allowed to be passed
+		// in CreateService step, but it required in further step (CreateTaskSet step).
+		// We reassign those values as part of service definition for that purpose.
+		// ref: https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CreateService.html
+		output.Service.LaunchType = service.LaunchType
+		output.Service.NetworkConfiguration = service.NetworkConfiguration
+		output.Service.ServiceRegistries = service.ServiceRegistries
+	}
 
 	return output.Service, nil
 }
 
 func (c *client) UpdateService(ctx context.Context, service types.Service) (*types.Service, error) {
+	isExternal := service.DeploymentController == nil ||
+		service.DeploymentController.Type == types.DeploymentControllerTypeExternal
+
 	// TODO: Support other properties (current only support the properties that v0 supports)
 	// This should be delegated to user to decide which properties to update by defining in service definition file.
 	input := &ecs.UpdateServiceInput{
@@ -233,6 +250,15 @@ func (c *client) UpdateService(ctx context.Context, service types.Service) (*typ
 		PlacementStrategy:    service.PlacementStrategy,
 		PropagateTags:        service.PropagateTags,
 		EnableECSManagedTags: aws.Bool(service.EnableECSManagedTags),
+	}
+
+	if !isExternal {
+		// ECS controller allows updating network configuration, service registries, and
+		// deployment configuration (including DeploymentStrategy for ROLLING, BLUE_GREEN,
+		// CANARY, LINEAR strategies with their associated CanaryConfiguration, LinearConfiguration, and BakeTimeInMinutes).
+		input.NetworkConfiguration = service.NetworkConfiguration
+		input.ServiceRegistries = service.ServiceRegistries
+		input.DeploymentConfiguration = service.DeploymentConfiguration
 	}
 
 	// If desiredCount is 0 or not set, keep current desiredCount because a user might use AutoScaling.
@@ -245,14 +271,34 @@ func (c *client) UpdateService(ctx context.Context, service types.Service) (*typ
 		return nil, fmt.Errorf("failed to update ECS service %s: %w", *service.ServiceName, err)
 	}
 
-	// Hack: Since we use EXTERNAL deployment controller, the below configurations are not allowed to be passed
-	// in UpdateService step, but it required in further step (CreateTaskSet step). We reassign those values
-	// as part of service definition for that purpose.
-	// ref: https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CreateService.html
-	output.Service.LaunchType = service.LaunchType
-	output.Service.NetworkConfiguration = service.NetworkConfiguration
-	output.Service.ServiceRegistries = service.ServiceRegistries
+	if isExternal {
+		// Hack: Since we use EXTERNAL deployment controller, the below configurations are not allowed to be passed
+		// in UpdateService step, but it required in further step (CreateTaskSet step).
+		// We reassign those values as part of service definition for that purpose.
+		// ref: https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CreateService.html
+		output.Service.LaunchType = service.LaunchType
+		output.Service.NetworkConfiguration = service.NetworkConfiguration
+		output.Service.ServiceRegistries = service.ServiceRegistries
+	}
 
+	return output.Service, nil
+}
+
+func (c *client) ForceNewDeployment(ctx context.Context, service types.Service, taskDef types.TaskDefinition) (*types.Service, error) {
+	input := &ecs.UpdateServiceInput{
+		Cluster:            service.ClusterArn,
+		Service:            service.ServiceName,
+		TaskDefinition:     taskDef.TaskDefinitionArn,
+		ForceNewDeployment: true,
+		// Include DeploymentConfiguration so the deployment strategy (ROLLING, BLUE_GREEN,
+		// CANARY, LINEAR) and its associated configuration (CanaryConfiguration,
+		// LinearConfiguration, BakeTimeInMinutes) are applied for this deployment.
+		DeploymentConfiguration: service.DeploymentConfiguration,
+	}
+	output, err := c.ecsClient.UpdateService(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to force new deployment for service %s: %w", *service.ServiceName, err)
+	}
 	return output.Service, nil
 }
 
