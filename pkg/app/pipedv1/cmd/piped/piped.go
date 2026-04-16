@@ -491,6 +491,13 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			input.Logger.Info("successfully cleaned gitClient for plan-preview")
 		}()
 
+		ppOpts := []planpreview.Option{
+			planpreview.WithLogger(input.Logger),
+			planpreview.WithWorkerNum(cfg.PlanPreview.WorkerNum),
+			planpreview.WithCommandQueueBufferSize(cfg.PlanPreview.CommandQueueBufferSize),
+			planpreview.WithCommandCheckInterval(cfg.PlanPreview.CommandCheckInterval.Duration()),
+			planpreview.WithCommandHandleTimeout(cfg.PlanPreview.CommandHandleTimeout.Duration()),
+		}
 		h := planpreview.NewHandler(
 			gc,
 			apiClient,
@@ -500,11 +507,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			decrypter,
 			cfg,
 			pluginRegistry,
-			planpreview.WithWorkerNum(cfg.PlanPreview.WorkerNum),
-			planpreview.WithCommandQueueBufferSize(cfg.PlanPreview.CommandQueueBufferSize),
-			planpreview.WithCommandCheckInterval(cfg.PlanPreview.CommandCheckInterval.Duration()),
-			planpreview.WithCommandHandleTimeout(cfg.PlanPreview.CommandHandleTimeout.Duration()),
-			planpreview.WithLogger(input.Logger),
+			ppOpts...,
 		)
 		group.Go(func() error {
 			return h.Run(ctx)

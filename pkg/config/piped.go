@@ -1218,13 +1218,13 @@ type PipedEventWatcherGitRepo struct {
 }
 
 type PipedPlanPreview struct {
-	// Number of workers to handle plan-preview commands.
+	// WorkerNum is the number of worker goroutines processing plan-preview commands.
 	WorkerNum int `json:"workerNum,omitempty"`
-	// Channel buffer size used for plan-preview commands.
+	// CommandQueueBufferSize is the buffer size of the internal command channel.
 	CommandQueueBufferSize int `json:"commandQueueBufferSize,omitempty"`
-	// Interval to fetch plan-preview commands.
+	// CommandCheckInterval is how often to poll for new plan-preview commands.
 	CommandCheckInterval Duration `json:"commandCheckInterval,omitempty"`
-	// Timeout to handle each plan-preview command.
+	// CommandHandleTimeout is the default timeout for building each plan-preview result when the command does not specify one.
 	CommandHandleTimeout Duration `json:"commandHandleTimeout,omitempty"`
 }
 
