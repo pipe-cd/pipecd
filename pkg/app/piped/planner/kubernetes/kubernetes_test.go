@@ -408,7 +408,67 @@ func TestDecideStrategy(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			gotProgressive, gotDesc := decideStrategy(tc.olds, tc.news, tc.workloadRefs, zap.NewNop())
+			gotProgressive, gotDesc := decideStrategy(tc.olds, tc.news, tc.workloadRefs, false, zap.NewNop())
+			assert.Equal(t, tc.wantProgressive, gotProgressive)
+			assert.Equal(t, tc.wantDesc, gotDesc)
+		})
+	}
+}
+
+func TestDecideStrategyWithPipelineDefined(t *testing.T) {
+	t.Parallel()
+
+	configMapManifest := func(name, data string) provider.Manifest {
+		return provider.MakeManifest(provider.ResourceKey{
+			APIVersion: "v1",
+			Kind:       provider.KindConfigMap,
+			Name:       name,
+		}, &unstructured.Unstructured{
+			Object: map[string]interface{}{"data": data}},
+		)
+	}
+
+	tests := []struct {
+		name            string
+		olds            []provider.Manifest
+		news            []provider.Manifest
+		pipelineDefined bool
+		wantProgressive bool
+		wantDesc        string
+	}{
+		{
+			// Regression test for: https://github.com/pipe-cd/pipecd/issues/4799
+			// ConfigMap-only app (no Deployment) with pipeline defined in app.pipecd.yaml
+			// must use progressive sync, not QUICK_SYNC.
+			name: "configmap-only app with pipeline defined should be progressive",
+			olds: []provider.Manifest{
+				configMapManifest("my-config", "old-value"),
+			},
+			news: []provider.Manifest{
+				configMapManifest("my-config", "new-value"),
+			},
+			pipelineDefined: true,
+			wantProgressive: true,
+			wantDesc:        "Sync progressively because pipeline is defined in the application config",
+		},
+		{
+			// Without a pipeline defined, ConfigMap-only app must still use QUICK_SYNC
+			// (no regression in the default/non-pipeline path).
+			name: "configmap-only app without pipeline defined should be quick sync",
+			olds: []provider.Manifest{
+				configMapManifest("my-config", "old-value"),
+			},
+			news: []provider.Manifest{
+				configMapManifest("my-config", "new-value"),
+			},
+			pipelineDefined: false,
+			wantProgressive: false,
+			wantDesc:        "Quick sync by applying all manifests because it was unable to find the currently running workloads",
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			gotProgressive, gotDesc := decideStrategy(tc.olds, tc.news, nil, tc.pipelineDefined, zap.NewNop())
 			assert.Equal(t, tc.wantProgressive, gotProgressive)
 			assert.Equal(t, tc.wantDesc, gotDesc)
 		})
