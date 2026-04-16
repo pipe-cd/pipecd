@@ -18,9 +18,12 @@ import (
 	"context"
 	"errors"
 
+	"go.uber.org/zap"
+
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 
 	ecsconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/ecs/config"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/ecs/provider"
 )
 
 var _ sdk.DeploymentPlugin[ecsconfig.ECSPluginConfig, ecsconfig.ECSDeployTargetConfig, ecsconfig.ECSApplicationSpec] = (*ECSPlugin)(nil)
@@ -100,16 +103,23 @@ func (p *ECSPlugin) DetermineVersions(
 	cfg *ecsconfig.ECSPluginConfig,
 	input *sdk.DetermineVersionsInput[ecsconfig.ECSApplicationSpec],
 ) (*sdk.DetermineVersionsResponse, error) {
+	appCfg, err := input.Request.DeploymentSource.AppConfig()
+	if err != nil {
+		input.Logger.Error("failed to load application config", zap.Error(err))
+		return nil, err
+	}
+
+	taskDef, err := provider.LoadTaskDefinition(
+		input.Request.DeploymentSource.ApplicationDirectory,
+		appCfg.Spec.Input.TaskDefinitionFile,
+	)
+	if err != nil {
+		input.Logger.Error("failed to load task definition", zap.Error(err))
+		return nil, err
+	}
+
 	return &sdk.DetermineVersionsResponse{
-		// TODO: Implement the logic to determine the versions of the resources that will be deployed.
-		// This is just a placeholder
-		Versions: []sdk.ArtifactVersion{
-			{
-				Version: "latest",
-				Name:    "ecs-task",
-				URL:     "",
-			},
-		},
+		Versions: determineVersions(taskDef),
 	}, nil
 }
 
