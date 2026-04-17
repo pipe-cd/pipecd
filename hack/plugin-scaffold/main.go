@@ -84,7 +84,7 @@ func main() {
 		rollback    = flag.String("rollback", "", "Rollback stage name (optional, e.g. MY_ROLLBACK)")
 		livestate   = flag.Bool("livestate", false, "Generate livestate/plugin.go stub")
 		planpreview = flag.Bool("planpreview", false, "Generate planpreview/plugin.go stub")
-		goVersion   = flag.String("go-version", "1.24.0", "Go version for go.mod")
+		goVersion   = flag.String("go-version", "1.26.2", "Go version for go.mod")
 		sdkVersion  = flag.String("sdk-version", "v0.3.0", "piped-plugin-sdk-go version for go.mod")
 		output      = flag.String("output", ".", "Output directory")
 		force       = flag.Bool("force", false, "Overwrite existing output directory")
