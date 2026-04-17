@@ -70,6 +70,10 @@ type PluginData struct {
 	HasLivestate bool
 	// HasPlanPreview is true if --planpreview flag was set
 	HasPlanPreview bool
+	// GoVersion is the Go version used in go.mod, e.g. "1.24.0"
+	GoVersion string
+	// SDKVersion is the piped-plugin-sdk-go version, e.g. "v0.3.0"
+	SDKVersion string
 }
 
 func main() {
@@ -80,18 +84,20 @@ func main() {
 		rollback    = flag.String("rollback", "", "Rollback stage name (optional, e.g. MY_ROLLBACK)")
 		livestate   = flag.Bool("livestate", false, "Generate livestate/plugin.go stub")
 		planpreview = flag.Bool("planpreview", false, "Generate planpreview/plugin.go stub")
+		goVersion   = flag.String("go-version", "1.24.0", "Go version for go.mod")
+		sdkVersion  = flag.String("sdk-version", "v0.3.0", "piped-plugin-sdk-go version for go.mod")
 		output      = flag.String("output", ".", "Output directory")
 		force       = flag.Bool("force", false, "Overwrite existing output directory")
 	)
 	flag.Parse()
 
-	if err := run(*name, *module, *stagesRaw, *rollback, *output, *livestate, *planpreview, *force); err != nil {
+	if err := run(*name, *module, *stagesRaw, *rollback, *output, *goVersion, *sdkVersion, *livestate, *planpreview, *force); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
 	}
 }
 
-func run(name, module, stagesRaw, rollbackName, output string, hasLivestate, hasPlanPreview, force bool) error {
+func run(name, module, stagesRaw, rollbackName, output, goVersion, sdkVersion string, hasLivestate, hasPlanPreview, force bool) error {
 	if name == "" {
 		return errors.New("--name is required")
 	}
@@ -115,6 +121,8 @@ func run(name, module, stagesRaw, rollbackName, output string, hasLivestate, has
 		Stages:         deployStages,
 		HasLivestate:   hasLivestate,
 		HasPlanPreview: hasPlanPreview,
+		GoVersion:      goVersion,
+		SDKVersion:     sdkVersion,
 	}
 
 	if rollbackName != "" {
