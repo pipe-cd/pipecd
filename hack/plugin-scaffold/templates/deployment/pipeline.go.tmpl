@@ -1,0 +1,73 @@
+// Copyright 2026 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package deployment
+
+import (
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+)
+
+const (
+{{range .Stages}}	Stage{{titleStage .Name}} = "{{.Name}}"
+{{end}})
+
+const (
+{{range .Stages}}	Stage{{titleStage .Name}}Description = "{{.Description}}"
+{{end}})
+
+var allStages = []string{
+{{range .Stages}}	Stage{{titleStage .Name}},
+{{end}}}
+
+func buildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
+	out := []sdk.QuickSyncStage{
+		{
+			Name:        Stage{{titleStage (index .DeployStages 0).Name}},
+			Description: Stage{{titleStage (index .DeployStages 0).Name}}Description,
+			Rollback:    false,
+		},
+	}
+{{if .HasRollback}}
+	if autoRollback {
+		out = append(out, sdk.QuickSyncStage{
+			Name:        Stage{{titleStage .RollbackStage.Name}},
+			Description: Stage{{titleStage .RollbackStage.Name}}Description,
+			Rollback:    true,
+		})
+	}
+{{end}}
+	return out
+}
+
+func buildPipelineStages(input *sdk.BuildPipelineSyncStagesInput) []sdk.PipelineStage {
+	stages := input.Request.Stages
+	out := make([]sdk.PipelineStage, 0, len(stages)+1)
+	for _, s := range stages {
+		out = append(out, sdk.PipelineStage{
+			Name:     s.Name,
+			Index:    s.Index,
+			Rollback: false,
+		})
+	}
+{{if .HasRollback}}
+	if input.Request.Rollback {
+		out = append(out, sdk.PipelineStage{
+			Name:     Stage{{titleStage .RollbackStage.Name}},
+			Index:    len(stages) + 1,
+			Rollback: true,
+		})
+	}
+{{end}}
+	return out
+}
