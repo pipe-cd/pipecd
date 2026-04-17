@@ -256,6 +256,25 @@ func (c *client) UpdateService(ctx context.Context, service types.Service) (*typ
 	return output.Service, nil
 }
 
+func (c *client) DescribeService(ctx context.Context, service types.Service) (*types.Service, error) {
+	input := &ecs.DescribeServicesInput{
+		Cluster: service.ClusterArn,
+		Services: []string{
+			*service.ServiceName,
+		},
+	}
+	output, err := c.ecsClient.DescribeServices(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get service %s description: %w", *service.ServiceName, err)
+	}
+
+	if len(output.Services) == 0 {
+		return nil, fmt.Errorf("services %s does not exist", *service.ServiceName)
+	}
+
+	return &output.Services[0], nil
+}
+
 func (c *client) GetServiceTaskSets(ctx context.Context, service types.Service) ([]types.TaskSet, error) {
 	input := &ecs.DescribeServicesInput{
 		Cluster: service.ClusterArn,
@@ -420,6 +439,48 @@ func (c *client) DeleteTaskSet(ctx context.Context, taskSet types.TaskSet) error
 		return fmt.Errorf("failed to inactive ECS task definition %s: %w", *taskSet.TaskDefinition, err)
 	}
 	return nil
+}
+
+func (c *client) GetTasks(ctx context.Context, service types.Service) ([]types.Task, error) {
+	// Get list of task ARN of the given service, using pagination here because max number of tasks return from ListTasks API is 100
+	var taskArns []string
+	paginator := ecs.NewListTasksPaginator(c.ecsClient, &ecs.ListTasksInput{
+		Cluster:     service.ClusterArn,
+		ServiceName: service.ServiceName,
+	})
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list tasks of service %s: %w", *service.ServiceName, err)
+		}
+		taskArns = append(taskArns, page.TaskArns...)
+	}
+
+	if len(taskArns) == 0 {
+		return nil, nil
+	}
+
+	var tasks []types.Task
+	// Max number of tasks in each run of DescribeTasks is 100
+	const batchSize = 100
+	for i := 0; i < len(taskArns); i += batchSize {
+		end := i + batchSize
+		if end > len(taskArns) {
+			end = len(taskArns)
+		}
+
+		batch := taskArns[i:end]
+		out, err := c.ecsClient.DescribeTasks(ctx, &ecs.DescribeTasksInput{
+			Cluster: service.ClusterArn,
+			Tasks:   batch,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("failed to describe tasks: %w", err)
+		}
+
+		tasks = append(tasks, out.Tasks...)
+	}
+	return tasks, nil
 }
 
 func (c *client) ServiceExists(ctx context.Context, cluster, serviceName string) (bool, error) {

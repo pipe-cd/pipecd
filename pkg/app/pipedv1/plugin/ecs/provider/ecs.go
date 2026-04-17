@@ -44,11 +44,13 @@ type Client interface {
 type ECS interface {
 	CreateService(ctx context.Context, service types.Service) (*types.Service, error)
 	UpdateService(ctx context.Context, service types.Service) (*types.Service, error)
+	DescribeService(ctx context.Context, service types.Service) (*types.Service, error)
 	GetServiceTaskSets(ctx context.Context, service types.Service) ([]types.TaskSet, error)
 	GetPrimaryTaskSet(ctx context.Context, service types.Service) (*types.TaskSet, error)
 	CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup *types.LoadBalancer, scale float64) (*types.TaskSet, error)
 	UpdateServicePrimaryTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) (*types.TaskSet, error)
 	DeleteTaskSet(ctx context.Context, taskSet types.TaskSet) error
+	GetTasks(ctx context.Context, service types.Service) ([]types.Task, error)
 	ServiceExists(ctx context.Context, cluster, serviceName string) (bool, error)
 	GetServiceStatus(ctx context.Context, cluster, serviceName string) (string, error)
 	WaitServiceStable(ctx context.Context, cluster, serviceName string) error
@@ -70,6 +72,14 @@ type ELB interface {
 func LoadTaskDefinition(appDir, taskDefinition string) (types.TaskDefinition, error) {
 	path := filepath.Join(appDir, taskDefinition)
 	return loadTaskDefinition(path)
+}
+
+// ParseServiceDefinition returns Service object from a given service definition file without adding deployment tags
+//
+// Use this for read-only operations like livestate that do not need PipeCD metadata injected
+func ParseServiceDefinition(appDir, serviceDefinition string) (types.Service, error) {
+	path := filepath.Join(appDir, serviceDefinition)
+	return loadServiceDefinition(path)
 }
 
 // LoadServiceDefinition returns Service object from a given service definition file.

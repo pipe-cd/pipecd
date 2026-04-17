@@ -8,6 +8,8 @@ description: >
 
 PipeCD's plugin architecture allows anyone to extend `piped`'s capabilities by creating custom plugins. This guide explains how to develop and contribute plugins.
 
+For more links and local development notes, see [Plugin development resources](./plugin-development-resources/).
+
 ## Understanding the plugin architecture
 
 In PipeCD v1, plugins are the actors that execute deployments on behalf of `piped`. Instead of `piped` directly deploying to platforms, plugins handle platform-specific logic while `piped`'s core controls deployment flows.
@@ -102,7 +104,7 @@ spec:
 1. **Open an issue** first to discuss your plugin idea with maintainers
 2. **Fork and clone** the [pipecd repository](https://github.com/pipe-cd/pipecd)
 3. **Create your plugin** under `/pkg/app/pipedv1/plugin/your-plugin/`
-4. **Write tests** — see existing plugins for patterns
+4. **Write tests**: see existing plugins for patterns
 5. **Add a README** documenting configuration and usage
 6. **Submit a PR** linking to the discussion issue
 
@@ -129,6 +131,7 @@ The [community-plugins repository](https://github.com/pipe-cd/community-plugins)
 
 ## Resources
 
+- [Plugin development resources](./plugin-development-resources/)
 - [Plugin Architecture RFC](https://github.com/pipe-cd/pipecd/blob/master/docs/rfcs/0015-pipecd-plugin-arch-meta.md)
 - [Plugin Concepts](/docs-v1.0.x/concepts/#plugins)
 - [Installing piped](/docs-v1.0.x/installation/install-piped/)
