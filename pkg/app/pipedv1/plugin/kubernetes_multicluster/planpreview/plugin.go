@@ -89,7 +89,7 @@ func (p *Plugin) GetPlanPreview(ctx context.Context, _ *sdk.ConfigNone, dts []*s
 	}
 
 	// Multi-target: produce one PlanPreviewResult per deploy target.
-	var results []sdk.PlanPreviewResult
+	results := make([]sdk.PlanPreviewResult, 0, len(dts))
 	for _, dt := range dts {
 		// Find the matching KubernetesMultiTarget config for this deploy target.
 		var mt *kubeconfig.KubernetesMultiTarget
