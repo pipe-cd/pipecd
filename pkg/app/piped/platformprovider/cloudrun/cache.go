@@ -33,7 +33,15 @@ func (c ServiceManifestCache) Get(commit string) (ServiceManifest, bool) {
 	key := serviceManifestCacheKey(c.AppID, commit)
 	item, err := c.Cache.Get(key)
 	if err == nil {
-		return item.(ServiceManifest), true
+		sm, ok := item.(ServiceManifest)
+		if !ok {
+			c.Logger.Error("cached item is not a ServiceManifest, discarding",
+				zap.String("app-id", c.AppID),
+				zap.String("commit-hash", commit),
+			)
+			return ServiceManifest{}, false
+		}
+		return sm, true
 	}
 
 	if errors.Is(err, cache.ErrNotFound) {

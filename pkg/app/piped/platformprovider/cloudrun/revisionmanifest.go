@@ -15,6 +15,8 @@
 package cloudrun
 
 import (
+	"fmt"
+
 	"google.golang.org/api/run/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/yaml"
@@ -29,6 +31,10 @@ func ParseRevisionManifest(data []byte) (RevisionManifest, error) {
 	var obj unstructured.Unstructured
 	if err := yaml.Unmarshal(data, &obj); err != nil {
 		return RevisionManifest{}, err
+	}
+
+	if obj.Object == nil {
+		return RevisionManifest{}, fmt.Errorf("empty or invalid revision manifest: object is nil")
 	}
 
 	return RevisionManifest{
