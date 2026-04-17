@@ -142,7 +142,7 @@ func listApplicationsByDisabledStatus(ctx context.Context, cli apiservice.Client
 // fetchPipeds collects the unique piped IDs from the applications and fetches each piped's details.
 func fetchPipeds(ctx context.Context, cli apiservice.Client, applications []*model.Application, logger *zap.Logger) ([]*model.Piped, error) {
 	seen := make(map[string]struct{})
-	var pipeds []*model.Piped
+	pipeds := make([]*model.Piped, 0, 10)
 
 	for _, app := range applications {
 		if _, ok := seen[app.PipedId]; ok {
@@ -156,6 +156,9 @@ func fetchPipeds(ctx context.Context, cli apiservice.Client, applications []*mod
 			continue
 		}
 		pipeds = append(pipeds, resp.Piped)
+	}
+	if len(pipeds) == 0 {
+		return nil, fmt.Errorf("no piped for backup")
 	}
 	return pipeds, nil
 }

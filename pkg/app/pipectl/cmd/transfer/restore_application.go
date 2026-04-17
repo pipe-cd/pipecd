@@ -31,8 +31,8 @@ import (
 type restoreApplication struct {
 	root *command
 
-	inputFile          string
-	pipedMappingFile   string
+	inputFile        string
+	pipedMappingFile string
 }
 
 func newRestoreApplicationCommand(root *command) *cobra.Command {

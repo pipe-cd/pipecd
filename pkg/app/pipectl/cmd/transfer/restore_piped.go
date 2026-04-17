@@ -109,7 +109,7 @@ func readBackupFile(path string) (*BackupData, error) {
 
 // registerPipeds calls RegisterPiped for each piped in the backup and returns the ID mapping.
 func registerPipeds(ctx context.Context, cli apiservice.Client, pipeds []*model.Piped, logger *zap.Logger) ([]PipedMapping, map[string]string, error) {
-	var mappings []PipedMapping
+	mappings := make([]PipedMapping, 0, len(pipeds))
 	pipedIDMap := make(map[string]string, len(pipeds))
 
 	for _, p := range pipeds {
