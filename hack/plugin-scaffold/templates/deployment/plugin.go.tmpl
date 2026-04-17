@@ -1,0 +1,92 @@
+// Copyright 2026 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package deployment
+
+import (
+	"context"
+	"errors"
+
+	cfg "{{.Module}}/config"
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+)
+
+var _ sdk.DeploymentPlugin[cfg.{{.PluginTitle}}PluginConfig, cfg.{{.PluginTitle}}DeployTargetConfig, cfg.{{.PluginTitle}}ApplicationSpec] = (*{{.PluginTitle}}Plugin)(nil)
+
+var ErrUnsupportedStage = errors.New("unsupported stage")
+
+type {{.PluginTitle}}Plugin struct{}
+
+func (p *{{.PluginTitle}}Plugin) FetchDefinedStages() []string {
+	return allStages
+}
+
+func (p *{{.PluginTitle}}Plugin) BuildQuickSyncStages(
+	_ context.Context,
+	_ *cfg.{{.PluginTitle}}PluginConfig,
+	input *sdk.BuildQuickSyncStagesInput,
+) (*sdk.BuildQuickSyncStagesResponse, error) {
+	return &sdk.BuildQuickSyncStagesResponse{
+		Stages: buildQuickSyncPipeline(input.Request.Rollback),
+	}, nil
+}
+
+func (p *{{.PluginTitle}}Plugin) BuildPipelineSyncStages(
+	_ context.Context,
+	_ *cfg.{{.PluginTitle}}PluginConfig,
+	input *sdk.BuildPipelineSyncStagesInput,
+) (*sdk.BuildPipelineSyncStagesResponse, error) {
+	return &sdk.BuildPipelineSyncStagesResponse{
+		Stages: buildPipelineStages(input),
+	}, nil
+}
+
+func (p *{{.PluginTitle}}Plugin) ExecuteStage(
+	ctx context.Context,
+	_ *cfg.{{.PluginTitle}}PluginConfig,
+	deployTargets []*sdk.DeployTarget[cfg.{{.PluginTitle}}DeployTargetConfig],
+	input *sdk.ExecuteStageInput[cfg.{{.PluginTitle}}ApplicationSpec],
+) (*sdk.ExecuteStageResponse, error) {
+	switch input.Request.StageName {
+{{range .DeployStages}}	case Stage{{titleStage .Name}}:
+		return &sdk.ExecuteStageResponse{
+			Status: p.execute{{titleStage .Name}}Stage(ctx, input, deployTargets[0]),
+		}, nil
+{{end}}	default:
+		return nil, ErrUnsupportedStage
+	}
+}
+
+func (p *{{.PluginTitle}}Plugin) DetermineVersions(
+	_ context.Context,
+	_ *cfg.{{.PluginTitle}}PluginConfig,
+	_ *sdk.DetermineVersionsInput[cfg.{{.PluginTitle}}ApplicationSpec],
+) (*sdk.DetermineVersionsResponse, error) {
+	return &sdk.DetermineVersionsResponse{
+		Versions: []sdk.ArtifactVersion{
+			{Version: "unknown", Name: "{{.PluginName}}"},
+		},
+	}, nil
+}
+
+func (p *{{.PluginTitle}}Plugin) DetermineStrategy(
+	_ context.Context,
+	_ *cfg.{{.PluginTitle}}PluginConfig,
+	_ *sdk.DetermineStrategyInput[cfg.{{.PluginTitle}}ApplicationSpec],
+) (*sdk.DetermineStrategyResponse, error) {
+	return &sdk.DetermineStrategyResponse{
+		Strategy: sdk.SyncStrategyQuickSync,
+		Summary:  "Use quick sync strategy",
+	}, nil
+}
