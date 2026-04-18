@@ -21,6 +21,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/deployment"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/livestate"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/planpreview"
 )
 
 func main() {
@@ -28,6 +29,7 @@ func main() {
 		"0.0.1",
 		sdk.WithDeploymentPlugin(&deployment.Plugin{}),
 		sdk.WithLivestatePlugin(&livestate.Plugin{}),
+		sdk.WithPlanPreviewPlugin(&planpreview.Plugin{}),
 	)
 	if err != nil {
 		log.Fatalln(err)
