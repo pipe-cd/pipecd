@@ -30,7 +30,7 @@ At a high level, PipeCD connects to your application and deployment configuratio
 
 If you’re a DevOps or platform engineer seeking more control and flexibility in production, consider PipeCD. It’s designed for safer, more controlled continuous delivery, allowing you to ship fast with confidence.
 
-The [documentation] (https://pipecd.dev/docs-v1.0.x/) is a great place to start and get a picture of how it all fits together.
+The [documentation](https://pipecd.dev/docs-v1.0.x/) is a great place to start and get a picture of how it all fits together.
 
 ## What I’ve been up to:
 My focus in the past month has been getting fundamental knowledge on:
@@ -72,9 +72,9 @@ As I grow into my role as a PipeCD community manager, concepts are gradually bec
 
 PipeCD welcomes contributors from all around the world, irrespective of your background. Technical or non-technical, there’s room to learn, work, and make an impact.
 
-To get involved, check out the [PipeCD project](https://github.com/pipe-cd/pipecd) and come join us on [Slack] (https://app.slack.com/client/T08PSQ7BQ/C01B27F9T0X)
+To get involved, check out the [PipeCD project](https://github.com/pipe-cd/pipecd) and come join us on [Slack](https://app.slack.com/client/T08PSQ7BQ/C01B27F9T0X)
 
-Kindly stay connected by following PipeCD on [LinkedIn] (https://www.linkedin.com/company/pipecd/) and subscribing to our [YouTube](https://youtube.com/@pipe-cd?si=gN28s9W0Ce9hjgVB) Channel.
+Kindly stay connected by following PipeCD on [LinkedIn](https://www.linkedin.com/company/pipecd/) and subscribing to our [YouTube](https://youtube.com/@pipe-cd?si=gN28s9W0Ce9hjgVB) Channel.
 
 See you in my next drop.
 
