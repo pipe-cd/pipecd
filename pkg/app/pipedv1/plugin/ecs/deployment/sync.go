@@ -83,85 +83,13 @@ func (p *ECSPlugin) executeECSSyncStage(
 		}
 	}
 
-	if err := sync(ctx, lp, client, taskDef, serviceDef, primary, cfg.Spec.QuickSyncOptions.Recreate); err != nil {
+	ctrl := newDeploymentController(serviceDef)
+	if err := ctrl.Sync(ctx, lp, client, taskDef, serviceDef, primary, cfg.Spec.QuickSyncOptions.Recreate); err != nil {
 		lp.Errorf("Failed to sync ECS service: %v", err)
 		return sdk.StageStatusFailure
 	}
 
 	return sdk.StageStatusSuccess
-}
-
-func sync(
-	ctx context.Context,
-	lp sdk.StageLogPersister,
-	client provider.Client,
-	taskDef types.TaskDefinition,
-	serviceDef types.Service,
-	primary *types.LoadBalancer,
-	recreate bool,
-) error {
-	lp.Info("Start applying the ECS task definition")
-	td, err := applyTaskDefinition(ctx, client, taskDef)
-	if err != nil {
-		lp.Errorf("Failed to apply task definition: %v", err)
-		return fmt.Errorf("failed to apply task definition: %w", err)
-	}
-
-	lp.Info("Start applying the ECS service definition")
-	service, err := applyServiceDefinition(ctx, lp, client, serviceDef)
-	if err != nil {
-		lp.Errorf("Failed to apply service definition: %v", err)
-		return fmt.Errorf("failed to apply service definition: %w", err)
-	}
-
-	if recreate {
-		cnt := service.DesiredCount
-		lp.Info("Recreate option is enabled, stop all running tasks before creating new task set")
-		if err := client.PruneServiceTasks(ctx, *service); err != nil {
-			lp.Errorf("Failed to prune service tasks: %v", err)
-			return fmt.Errorf("failed to prune service tasks: %w", err)
-		}
-
-		lp.Info("Start rolling out ECS TaskSet for the new task definition")
-		if err = createPrimaryTaskSet(ctx, lp, client, *service, *td, primary); err != nil {
-			lp.Errorf("Failed to rollout ECS TaskSet for service %s: %v", *service.ServiceName, err)
-			return fmt.Errorf("failed to create primary task set: %w", err)
-		}
-
-		lp.Info("Deleting old ECS TaskSets")
-		if err = deleteOldTaskSets(ctx, client, *service); err != nil {
-			lp.Errorf("Failed to delete old Tasksets of service %s: %v", *service.ServiceName, err)
-			return fmt.Errorf("failed to delete old tasksets: %w", err)
-		}
-
-		// Scale up the service tasks count back to its desired.p
-		lp.Infof("Scale up ECS desired tasks count back to %d", cnt)
-		service.DesiredCount = cnt
-		if _, err = client.UpdateService(ctx, *service); err != nil {
-			lp.Errorf("Failed to revive service tasks: %v", err)
-			return fmt.Errorf("failed to revive service tasks: %w", err)
-		}
-	} else {
-		lp.Info("Start rolling out ECS TaskSet for the new task definition")
-		if err = createPrimaryTaskSet(ctx, lp, client, *service, *td, primary); err != nil {
-			lp.Errorf("Failed to rollout ECS TaskSet for service %s: %v", *service.ServiceName, err)
-			return fmt.Errorf("failed to create primary task set: %w", err)
-		}
-
-		lp.Info("Deleting old ECS TaskSets")
-		if err = deleteOldTaskSets(ctx, client, *service); err != nil {
-			lp.Errorf("Failed to delete old Tasksets of service %s: %v", *service.ServiceName, err)
-			return fmt.Errorf("failed to delete old tasksets: %w", err)
-		}
-	}
-
-	lp.Infof("Wait service %s to reach stable state", *service.ServiceName)
-	if err := client.WaitServiceStable(ctx, *service.ClusterArn, *service.ServiceName); err != nil {
-		lp.Errorf("Failed to wait for service to be stable: %v", err)
-		return err
-	}
-
-	return nil
 }
 
 func runStandaloneTask(
@@ -206,65 +134,67 @@ func applyTaskDefinition(
 	return td, nil
 }
 
+// applyServiceDefinition creates or updates the ECS service based on its existence.
+//
+// newlyCreated is true when the service did not exist and was newly created.
 func applyServiceDefinition(
 	ctx context.Context,
 	lp sdk.StageLogPersister,
 	client provider.Client,
 	serviceDef types.Service,
-) (*types.Service, error) {
+) (service *types.Service, newlyCreated bool, err error) {
 	// Check whether the service already exists or not.
 	// If it exists, update the service, otherwise create a new one.
 	found, err := client.ServiceExists(ctx, *serviceDef.ClusterArn, *serviceDef.ServiceName)
 	if err != nil {
-		return nil, fmt.Errorf("failed to check service %s existence: %w", *serviceDef.ServiceName, err)
+		return nil, false, fmt.Errorf("failed to check service %s existence: %w", *serviceDef.ServiceName, err)
 	}
 
-	var service *types.Service
 	if found {
 		svcStatus, err := client.GetServiceStatus(ctx, *serviceDef.ClusterArn, *serviceDef.ServiceName)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get service %s status: %w", *serviceDef.ServiceName, err)
+			return nil, false, fmt.Errorf("failed to get service %s status: %w", *serviceDef.ServiceName, err)
 		}
 		lp.Infof("Service %s already exists with status %s", *serviceDef.ServiceName, svcStatus)
 
 		// Only update the service when it is in ACTIVE status
 		// Nothing can be performed if the service is in DRAINING or INACTIVE status
-		if svcStatus == "ACTIVE" {
-			lp.Infof("Updating service %s", *serviceDef.ServiceName)
-			service, err = client.UpdateService(ctx, serviceDef)
-			if err != nil {
-				return nil, fmt.Errorf("failed to update service %s: %w", *serviceDef.ServiceName, err)
-			}
-		} else {
-			return nil, fmt.Errorf("service %s is in %s status, cannot be updated", *serviceDef.ServiceName, svcStatus)
+		if svcStatus != "ACTIVE" {
+			return nil, false, fmt.Errorf("service %s is in %s status, cannot be updated", *serviceDef.ServiceName, svcStatus)
+		}
+
+		lp.Infof("Updating service %s", *serviceDef.ServiceName)
+		service, err = client.UpdateService(ctx, serviceDef)
+		if err != nil {
+			return nil, false, fmt.Errorf("failed to update service %s: %w", *serviceDef.ServiceName, err)
 		}
 
 		currentTags, err := client.ListTags(ctx, *service.ServiceArn)
 		if err != nil {
-			return nil, fmt.Errorf("failed to list tags for ECS service %s: %w", *serviceDef.ServiceName, err)
+			return nil, false, fmt.Errorf("failed to list tags for ECS service %s: %w", *serviceDef.ServiceName, err)
 		}
 
 		tagsToRemove := findTagsToRemove(currentTags, serviceDef.Tags)
 		if len(tagsToRemove) > 0 {
 			lp.Infof("Found tags to remove from service %s: %v", *serviceDef.ServiceName, tagsToRemove)
 			if err := client.UntagResource(ctx, *service.ServiceArn, tagsToRemove); err != nil {
-				return nil, fmt.Errorf("failed to remove tags from ECS service %s: %w", *serviceDef.ServiceName, err)
+				return nil, false, fmt.Errorf("failed to remove tags from ECS service %s: %w", *serviceDef.ServiceName, err)
 			}
 		}
 		if err := client.TagResource(ctx, *service.ServiceArn, serviceDef.Tags); err != nil {
-			return nil, fmt.Errorf("failed to update tags of ECS service %s: %w", *serviceDef.ServiceName, err)
+			return nil, false, fmt.Errorf("failed to update tags of ECS service %s: %w", *serviceDef.ServiceName, err)
 		}
 		// Re-assign tags to service object because UpdateService API doesn't return tags.
 		service.Tags = serviceDef.Tags
-	} else {
-		lp.Infof("Service %s does not exist, creating a new service", *serviceDef.ServiceName)
-		service, err = client.CreateService(ctx, serviceDef)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create service %s: %w", *serviceDef.ServiceName, err)
-		}
+		return service, false, nil
 	}
 
-	return service, nil
+	lp.Infof("Service %s does not exist, creating a new service", *serviceDef.ServiceName)
+	service, err = client.CreateService(ctx, serviceDef)
+	if err != nil {
+		return nil, false, fmt.Errorf("failed to create service %s: %w", *serviceDef.ServiceName, err)
+	}
+	return service, true, nil
 }
 
 func findTagsToRemove(currentTags, desiredTags []types.Tag) []string {

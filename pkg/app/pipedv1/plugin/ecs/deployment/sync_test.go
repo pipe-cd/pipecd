@@ -313,7 +313,8 @@ func TestSync(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			err := sync(context.Background(), &fakeLogPersister{}, tc.client, tc.taskDef, tc.serviceDef, tc.primary, tc.recreate)
+			ctrl := &externalController{}
+			err := ctrl.Sync(context.Background(), &fakeLogPersister{}, tc.client, tc.taskDef, tc.serviceDef, tc.primary, tc.recreate)
 
 			if tc.wantErr {
 				require.Error(t, err)
