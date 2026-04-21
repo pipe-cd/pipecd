@@ -73,6 +73,16 @@ func (p *Plugin) ExecuteStage(ctx context.Context, _ *sdk.ConfigNone, dts []*sdk
 		return &sdk.ExecuteStageResponse{
 			Status: p.executeK8sMultiCanaryCleanStage(ctx, input, dts),
 		}, nil
+	case StageK8sMultiPrimaryRollout:
+		return &sdk.ExecuteStageResponse{Status: p.executeK8sMultiPrimaryRolloutStage(ctx, input, dts)}, nil
+	case StageK8sMultiBaselineRollout:
+		return &sdk.ExecuteStageResponse{Status: p.executeK8sMultiBaselineRolloutStage(ctx, input, dts)}, nil
+	case StageK8sMultiBaselineClean:
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeK8sMultiBaselineCleanStage(ctx, input, dts),
+		}, nil
+	case StageK8sMultiTrafficRouting:
+		return &sdk.ExecuteStageResponse{Status: p.executeK8sMultiTrafficRoutingStage(ctx, input, dts)}, nil
 	default:
 		return nil, errors.New("unimplemented or unsupported stage")
 	}
@@ -140,15 +150,41 @@ func (p *Plugin) DetermineVersions(ctx context.Context, _ *sdk.ConfigNone, input
 		return nil, err
 	}
 
-	// TODO: consider multiTarget later
-	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.DeploymentSource, provider.NewLoader(toolregistry.NewRegistry(input.Client.ToolRegistry())), logger, &kubeconfig.KubernetesMultiTarget{})
-	if err != nil {
-		logger.Error("Failed while loading manifests", zap.Error(err))
-		return nil, err
+	loader := provider.NewLoader(toolregistry.NewRegistry(input.Client.ToolRegistry()))
+	multiTargets := cfg.Spec.Input.MultiTargets
+
+	if len(multiTargets) == 0 {
+		manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.DeploymentSource, loader, logger, &kubeconfig.KubernetesMultiTarget{})
+		if err != nil {
+			logger.Error("Failed while loading manifests", zap.Error(err))
+			return nil, err
+		}
+		return &sdk.DetermineVersionsResponse{Versions: determineVersions(manifests)}, nil
+	}
+
+	// Collect manifests from all targets, deduplicating by resource key so the
+	// same image is not counted twice when multiple targets share the same manifests.
+	seen := make(map[provider.ResourceKey]struct{})
+	var allManifests []provider.Manifest
+	for i := range multiTargets {
+		mt := &multiTargets[i]
+		manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.DeploymentSource, loader, logger, mt)
+		if err != nil {
+			logger.Error("Failed while loading manifests", zap.String("target", mt.Target.Name), zap.Error(err))
+			return nil, err
+		}
+		for _, m := range manifests {
+			key := m.Key()
+			if _, ok := seen[key]; ok {
+				continue
+			}
+			seen[key] = struct{}{}
+			allManifests = append(allManifests, m)
+		}
 	}
 
 	return &sdk.DetermineVersionsResponse{
-		Versions: determineVersions(manifests),
+		Versions: determineVersions(allManifests),
 	}, nil
 }
 
@@ -163,27 +199,46 @@ func (p *Plugin) DetermineStrategy(ctx context.Context, _ *sdk.ConfigNone, input
 		return nil, err
 	}
 
-	// TODO: consider multiTarget later
-	runnings, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.RunningDeploymentSource, loader, logger, &kubeconfig.KubernetesMultiTarget{})
+	multiTargets := cfg.Spec.Input.MultiTargets
 
-	if err != nil {
-		logger.Error("Failed while loading running manifests", zap.Error(err))
-		return nil, err
+	if len(multiTargets) == 0 {
+		runnings, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.RunningDeploymentSource, loader, logger, &kubeconfig.KubernetesMultiTarget{})
+		if err != nil {
+			logger.Error("Failed while loading running manifests", zap.Error(err))
+			return nil, err
+		}
+		targets, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.TargetDeploymentSource, loader, logger, &kubeconfig.KubernetesMultiTarget{})
+		if err != nil {
+			logger.Error("Failed while loading target manifests", zap.Error(err))
+			return nil, err
+		}
+		strategy, summary := determineStrategy(runnings, targets, cfg.Spec.Workloads, logger)
+		return &sdk.DetermineStrategyResponse{Strategy: strategy, Summary: summary}, nil
 	}
 
-	// TODO: consider multiTarget later
-	targets, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.TargetDeploymentSource, loader, logger, &kubeconfig.KubernetesMultiTarget{})
-
-	if err != nil {
-		logger.Error("Failed while loading target manifests", zap.Error(err))
-		return nil, err
+	// Evaluate strategy for each configured target independently.
+	// If any target requires PipelineSync, the overall deployment must use PipelineSync.
+	for i := range multiTargets {
+		mt := &multiTargets[i]
+		runnings, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.RunningDeploymentSource, loader, logger, mt)
+		if err != nil {
+			logger.Error("Failed while loading running manifests", zap.String("target", mt.Target.Name), zap.Error(err))
+			return nil, err
+		}
+		targets, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.TargetDeploymentSource, loader, logger, mt)
+		if err != nil {
+			logger.Error("Failed while loading target manifests", zap.String("target", mt.Target.Name), zap.Error(err))
+			return nil, err
+		}
+		strategy, summary := determineStrategy(runnings, targets, cfg.Spec.Workloads, logger)
+		if strategy == sdk.SyncStrategyPipelineSync {
+			return &sdk.DetermineStrategyResponse{Strategy: strategy, Summary: summary}, nil
+		}
 	}
-
-	strategy, summary := determineStrategy(runnings, targets, cfg.Spec.Workloads, logger)
 
 	return &sdk.DetermineStrategyResponse{
-		Strategy: strategy,
-		Summary:  summary,
+		Strategy: sdk.SyncStrategyQuickSync,
+		Summary:  "Quick sync by applying all manifests",
 	}, nil
 }
 
