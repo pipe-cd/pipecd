@@ -147,8 +147,10 @@ func (p *Plugin) rollback(ctx context.Context, input *sdk.ExecuteStageInput[kube
 	// When addVariantLabelToSelector is true, ensure that all workloads
 	// have the variant label in their selector.
 	var (
-		variantLabel   = cfg.Spec.VariantLabel.Key
-		primaryVariant = cfg.Spec.VariantLabel.PrimaryValue
+		variantLabel    = cfg.Spec.VariantLabel.Key
+		primaryVariant  = cfg.Spec.VariantLabel.PrimaryValue
+		canaryVariant   = cfg.Spec.VariantLabel.CanaryValue
+		baselineVariant = cfg.Spec.VariantLabel.BaselineValue
 	)
 	// TODO: Consider other fields to configure whether to add a variant label to the selector
 	// because the rollback stage is executed in both quick sync and pipeline sync strategies.
@@ -186,7 +188,8 @@ func (p *Plugin) rollback(ctx context.Context, input *sdk.ExecuteStageInput[kube
 	}
 
 	// Create the applier for the target cluster.
-	applier := provider.NewApplier(provider.NewKubectl(kubectlPath), cfg.Spec.Input, deployTargetConfig, input.Logger)
+	kubectl := provider.NewKubectl(kubectlPath)
+	applier := provider.NewApplier(kubectl, cfg.Spec.Input, deployTargetConfig, input.Logger)
 
 	// Start applying all manifests to add or update running resources.
 	if err := applyManifests(ctx, applier, manifests, cfg.Spec.Input.Namespace, lp); err != nil {
@@ -194,9 +197,25 @@ func (p *Plugin) rollback(ctx context.Context, input *sdk.ExecuteStageInput[kube
 		return sdk.StageStatusFailure
 	}
 
-	// TODO: implement prune resources
-	// TODO: delete all resources of CANARY variant
-	// TODO: delete all resources of BASELINE variant
+	var failed bool
 
+	lp.Info("Start removing CANARY variant resources if exists")
+	if err := deleteVariantResources(ctx, lp, kubectl, deployTargetConfig.KubeConfigPath, applier, input.Request.Deployment.ApplicationID, variantLabel, canaryVariant); err != nil {
+		lp.Errorf("Failed while deleting CANARY variant resources (%v)", err)
+		failed = true
+	}
+
+	lp.Info("Start removing BASELINE variant resources if exists")
+	if err := deleteVariantResources(ctx, lp, kubectl, deployTargetConfig.KubeConfigPath, applier, input.Request.Deployment.ApplicationID, variantLabel, baselineVariant); err != nil {
+		lp.Errorf("Failed while deleting BASELINE variant resources (%v)", err)
+		failed = true
+	}
+
+	// TODO: prune resources which don't exist in the running manifests but exist in the target manifests.
+	// This occurs when the user adds a new resource and the deployment pipeline fails.
+
+	if failed {
+		return sdk.StageStatusFailure
+	}
 	return sdk.StageStatusSuccess
 }
