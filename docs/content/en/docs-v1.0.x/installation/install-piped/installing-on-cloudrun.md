@@ -77,12 +77,7 @@ Then make sure that Cloud Run has permission to access that secret as described 
 
 Prepare a Cloud Run service manifest as below.
 
-{{< tabpane >}}
-{{< tab lang="yaml" header="Piped with Remote-upgrade" >}}
-# Enable remote-upgrade feature of piped.
-# https://pipecd.dev/docs/user-guide/managing-piped/remote-upgrade-remote-config/#remote-upgrade
-# This allows upgrading piped to a new version from the web console.
-
+```yaml
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
@@ -100,70 +95,19 @@ spec:
     spec:
       containerConcurrency: 1                          # This must be 1 to ensure piped works correctly.
       containers:
-        - image: gcr.io/pipecd/launcher:{{< blocks/latest_version >}}
+        - image: ghcr.io/pipe-cd/pipedv1-exp:{{< blocks/latest_version >}}
           args:
-            - launcher
-            - --launcher-admin-port=9086
-            - --config-file=/etc/piped-config/config.yaml
+            - run
+            - --config-gcp-secret=projects/{GCP_PROJECT_ID}/secrets/cloudrun-piped-config/versions/latest
           ports:
-            - containerPort: 9086
-          volumeMounts:
-            - mountPath: /etc/piped-config
-              name: piped-config
+            - containerPort: 9085
           resources:
             limits:
               cpu: 1000m
               memory: 2Gi
-      volumes:
-        - name: piped-config
-          secret:
-            secretName: cloudrun-piped-config
-            items:
-              - key: latest
-                path: config.yaml
-{{< /tab >}}
+```
 
-{{< tab lang="yaml" header="Piped without Remote-upgrade" >}}
-apiVersion: serving.knative.dev/v1
-kind: Service
-metadata:
-  name: piped
-  annotations:
-    run.googleapis.com/ingress: internal
-    run.googleapis.com/ingress-status: internal
-spec:
-  template:
-    metadata:
-      annotations:
-        autoscaling.knative.dev/maxScale: "1"
-        autoscaling.knative.dev/minScale: "1"
-        run.googleapis.com/cpu-throttling: "false"
-    spec:
-      containerConcurrency: 1
-      containers:
-        - image: gcr.io/pipecd/launcher:{{< blocks/latest_version >}}
-          args:
-            - launcher
-            - --launcher-admin-port=9086
-            - --config-file=/etc/piped-config/config.yaml
-          ports:
-            - containerPort: 9086
-          volumeMounts:
-            - mountPath: /etc/piped-config
-              name: piped-config
-          resources:
-            limits:
-              cpu: 1000m
-              memory: 2Gi
-      volumes:
-        - name: piped-config
-          secret:
-            secretName: cloudrun-piped-config
-            items:
-              - key: latest
-                path: config.yaml
-{{< /tab >}}
-{{< /tabpane >}}
+Note: Be sure to add `- --insecure=true` to the args if your Control Plane does not have TLS enabled yet.
 
 Apply the Cloud Run service:
 
