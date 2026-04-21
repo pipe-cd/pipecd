@@ -16,6 +16,7 @@ package mysql
 
 import (
 	"encoding/base64"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -25,10 +26,11 @@ import (
 
 type dummyDoc struct {
 	val map[string]interface{}
+	err error
 }
 
-func (d *dummyDoc) Data() map[string]interface{} {
-	return d.val
+func (d *dummyDoc) Data() (map[string]interface{}, error) {
+	return d.val, d.err
 }
 
 func TestCursor(t *testing.T) {
@@ -41,6 +43,15 @@ func TestCursor(t *testing.T) {
 		{
 			name:      "invalid cursor error returns on last is nil",
 			iter:      Iterator{},
+			expectErr: true,
+		},
+		{
+			name: "error on last data conversion",
+			iter: Iterator{
+				last: &dummyDoc{
+					err: errors.New("data conversion error"),
+				},
+			},
 			expectErr: true,
 		},
 		{
@@ -108,6 +119,7 @@ func TestData(t *testing.T) {
 		name         string
 		rowData      string
 		expectedData map[string]interface{}
+		expectErr    bool
 	}{
 		{
 			name:    "valid data",
@@ -118,6 +130,7 @@ func TestData(t *testing.T) {
 				"UpdatedAt": float64(100),
 				"CreatedAt": float64(100),
 			},
+			expectErr: false,
 		},
 		{
 			name:    "valid nested data",
@@ -130,14 +143,25 @@ func TestData(t *testing.T) {
 				"UpdatedAt": float64(100),
 				"CreatedAt": float64(100),
 			},
+			expectErr: false,
+		},
+		{
+			name:         "invalid json data",
+			rowData:      `{"id": "object-id", "name": "app-1", "updated_at": 100, "created_at": 100`, // missing closing brace
+			expectedData: nil,
+			expectErr:    true,
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			converter := &rowDataConverter{val: tc.rowData}
-			data := converter.Data()
+			data, err := converter.Data()
 			assert.Equal(t, tc.expectedData, data)
+			assert.Equal(t, tc.expectErr, err != nil)
+			if err != nil {
+				t.Logf("Expected error caught: %v", err)
+			}
 		})
 	}
 }
