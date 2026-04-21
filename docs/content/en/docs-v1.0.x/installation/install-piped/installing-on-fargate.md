@@ -65,54 +65,33 @@ See the [configuration reference](../../../user-guide/managing-piped/configurati
 
 ### Storing the configuration in AWS
 
-Store the above configuration data in AWS so it can be referenced from your Fargate task. You can use either [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) or [AWS Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html).
+Store the above configuration data in [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) so it can be referenced from your Fargate task:
 
-{{< tabpane >}}
-{{< tab lang="bash" header="Store in AWS Secrets Manager" >}}
+```bash
 aws secretsmanager create-secret --name PipedConfig \
   --description "Configuration of piped running as ECS Fargate task" \
-  --secret-string `base64 piped-config.yaml`
-{{< /tab >}}
-{{< tab lang="bash" header="Store in AWS Systems Manager Parameter Store" >}}
-aws ssm put-parameter \
-  --name PipedConfig \
-  --value `base64 piped-config.yaml` \
-  --type SecureString
-{{< /tab >}}
-{{< /tabpane >}}
+  --secret-string "$(base64 piped-config.yaml)"
+```
 
-If you use AWS Secrets Manager, make sure your task role or execution role has permission to read the secret. See [Required IAM permissions for Amazon ECS secrets](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/specifying-sensitive-data-secrets.html) for more details.
+Make sure your task role has `secretsmanager:GetSecretValue` permission for the created secret. See [IAM permissions for Secrets Manager](https://docs.aws.amazon.com/secretsmanager/latest/userguide/auth-and-access.html) for details.
 
 ### Defining the task definition
 
-Prepare a task definition for your `piped` task. The following examples show how to configure `piped` to read its configuration from AWS Secrets Manager.
+Prepare a task definition for your `piped` task. The following example shows how to configure `piped` to read its configuration from AWS Secrets Manager.
 
-{{< tabpane >}}
-{{< tab lang="json" header="Piped with Remote-upgrade" >}}
-# Enable remote-upgrade feature of piped.
-# https://pipecd.dev/docs/user-guide/managing-piped/remote-upgrade-remote-config/#remote-upgrade
-# This allows upgrading piped to a new version from the web console.
-
+```json
 {
   "family": "piped",
+  "taskRoleArn": "{PIPED_TASK_ROLE_ARN}",
   "executionRoleArn": "{PIPED_TASK_EXECUTION_ROLE_ARN}",
   "containerDefinitions": [
     {
       "name": "piped",
       "essential": true,
-      "image": "ghcr.io/pipe-cd/launcher:{{< blocks/latest_version >}}",
-      "entryPoint": [
-        "sh",
-        "-c"
-      ],
+      "image": "ghcr.io/pipe-cd/pipedv1-exp:{{< blocks/latest_version >}}",
       "command": [
-        "/bin/sh -c \"launcher launcher --config-data=$(echo $CONFIG_DATA)\""
-      ],
-      "secrets": [
-        {
-          "valueFrom": "{PIPED_SECRET_MANAGER_ARN}",
-          "name": "CONFIG_DATA"
-        }
+        "run",
+        "--config-aws-secret={PIPED_SECRET_MANAGER_ARN}"
       ]
     }
   ],
@@ -123,43 +102,9 @@ Prepare a task definition for your `piped` task. The following examples show how
   "memory": "512",
   "cpu": "256"
 }
-{{< /tab >}}
-{{< tab lang="json" header="Piped" >}}
-# This just installs a piped with the specified version.
-# Whenever you want to upgrade that piped to a new version or update its config data you have to restart it.
+```
 
-{
-  "family": "piped",
-  "executionRoleArn": "{PIPED_TASK_EXECUTION_ROLE_ARN}",
-  "containerDefinitions": [
-    {
-      "name": "piped",
-      "essential": true,
-      "image": "ghcr.io/pipe-cd/piped:{{< blocks/latest_version >}}",
-      "entryPoint": [
-        "sh",
-        "-c"
-      ],
-      "command": [
-        "/bin/sh -c \"piped piped --config-data=$(echo $CONFIG_DATA)\""
-      ],
-      "secrets": [
-        {
-          "valueFrom": "{PIPED_SECRET_MANAGER_ARN}",
-          "name": "CONFIG_DATA"
-        }
-      ]
-    }
-  ],
-  "requiresCompatibilities": [
-    "FARGATE"
-  ],
-  "networkMode": "awsvpc",
-  "memory": "512",
-  "cpu": "256"
-}
-{{< /tab >}}
-{{< /tabpane >}}
+Note: The task role (`taskRoleArn`) must have `secretsmanager:GetSecretValue` permission for the secret ARN specified above. Be sure to add `"--insecure=true"` to the `command` array if your Control Plane does not have TLS enabled yet.
 
 Register the task definition and run a `piped` task:
 

@@ -106,38 +106,20 @@ gcloud projects add-iam-policy-binding {GCP_PROJECT_ID} \
 
 ### Running `piped` on a Google Cloud VM
 
-Use `gcloud compute instances create-with-container` to run `piped` as a container on a VM. The following examples show how to configure the instance to read the configuration from Secret Manager.
+Use `gcloud compute instances create-with-container` to run `piped` as a container on a VM. The following example shows how to configure the instance to read the configuration from Secret Manager.
 
-{{< tabpane >}}
-{{< tab lang="console" header="Piped with Remote-upgrade" >}}
-# Enable remote-upgrade feature of piped.
-# https://pipecd.dev/docs/user-guide/managing-piped/remote-upgrade-remote-config/#remote-upgrade
-# This allows upgrading piped to a new version from the web console.
-
+```console
 gcloud compute instances create-with-container vm-piped \
-  --container-image="ghcr.io/pipe-cd/launcher:{{< blocks/latest_version >}}" \
-  --container-arg="launcher" \
-  --container-arg="--config-from-gcp-secret=true" \
-  --container-arg="--gcp-secret-id=projects/{GCP_PROJECT_ID}/secrets/vm-piped-config/versions/{SECRET_VERSION}" \
-  --network="{VPC_NETWORK}" \
-  --subnet="{VPC_SUBNET}" \
-  --scopes="cloud-platform" \
-  --service-account="vm-piped@{GCP_PROJECT_ID}.iam.gserviceaccount.com"
-{{< /tab >}}
-{{< tab lang="console" header="Piped" >}}
-# This just installs a piped with the specified version.
-# Whenever you want to upgrade that piped to a new version or update its config data you have to restart it.
-
-gcloud compute instances create-with-container vm-piped \
-  --container-image="ghcr.io/pipe-cd/piped:{{< blocks/latest_version >}}" \
-  --container-arg="piped" \
+  --container-image="ghcr.io/pipe-cd/pipedv1-exp:{{< blocks/latest_version >}}" \
+  --container-arg="run" \
   --container-arg="--config-gcp-secret=projects/{GCP_PROJECT_ID}/secrets/vm-piped-config/versions/{SECRET_VERSION}" \
   --network="{VPC_NETWORK}" \
   --subnet="{VPC_SUBNET}" \
   --scopes="cloud-platform" \
   --service-account="vm-piped@{GCP_PROJECT_ID}.iam.gserviceaccount.com"
-{{< /tab >}}
-{{< /tabpane >}}
+```
+
+Note: Be sure to add `--container-arg="--insecure=true"` to the command above if your Control Plane does not have TLS enabled yet.
 
 After that, you should see on the PipeCD web `Settings` page that `piped` is connected to the Control Plane. You can also view `piped` logs as described in the [Compute Engine container logs documentation](https://cloud.google.com/compute/docs/containers/deploying-containers#viewing_logs).
 
