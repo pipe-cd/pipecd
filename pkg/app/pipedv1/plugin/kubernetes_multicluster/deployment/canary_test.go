@@ -677,4 +677,3 @@ func TestPlugin_executeK8sMultiCanaryCleanStage_withoutCreateService(t *testing.
 	})
 	require.True(t, ok)
 }
-

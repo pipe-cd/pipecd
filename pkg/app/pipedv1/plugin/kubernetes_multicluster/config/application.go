@@ -56,7 +56,9 @@ type KubernetesApplicationSpec struct {
 	// The label will be configured to variant manifests used to distinguish them.
 	VariantLabel KubernetesVariantLabel `json:"variantLabel"`
 
-	// TODO: Define fields for KubernetesApplicationSpec.
+	// Traffic routing configuration for this application.
+	// If not set, the default PodSelector method is used.
+	TrafficRouting *KubernetesTrafficRouting `json:"trafficRouting"`
 }
 
 func (s *KubernetesApplicationSpec) UnmarshalJSON(data []byte) error {
@@ -200,6 +202,62 @@ type K8sCanaryRolloutStageOptions struct {
 
 // K8sCanaryCleanStageOptions contains all configurable values for a K8S_CANARY_CLEAN stage.
 type K8sCanaryCleanStageOptions struct{}
+
+// K8sPrimaryRolloutStageOptions contains all configurable values for a K8S_PRIMARY_ROLLOUT stage.
+type K8sPrimaryRolloutStageOptions struct {
+	// Suffix that should be used when naming the PRIMARY variant's resources.
+	// Default is "primary".
+	Suffix string `json:"suffix" default:"primary"`
+	// Whether the PRIMARY service should be created.
+	CreateService bool `json:"createService"`
+	// Whether the PRIMARY variant label should be added to manifests if they were missing.
+	AddVariantLabelToSelector bool `json:"addVariantLabelToSelector"`
+	// Whether the resources that are no longer defined in Git should be removed or not.
+	Prune bool `json:"prune"`
+}
+
+func (o *K8sPrimaryRolloutStageOptions) UnmarshalJSON(data []byte) error {
+	type alias K8sPrimaryRolloutStageOptions
+	var a alias
+	if err := json.Unmarshal(data, &a); err != nil {
+		return err
+	}
+	*o = K8sPrimaryRolloutStageOptions(a)
+	if err := defaults.Set(o); err != nil {
+		return err
+	}
+	return nil
+}
+
+// K8sBaselineRolloutStageOptions contains all configurable values for a K8S_BASELINE_ROLLOUT stage.
+type K8sBaselineRolloutStageOptions struct {
+	// How many pods for BASELINE workloads.
+	// An integer value can be specified to indicate an absolute value of pod number.
+	// Or a string suffixed by "%" to indicate a percentage value compared to the pod number of PRIMARY.
+	// Default is 1 pod.
+	Replicas unit.Replicas `json:"replicas"`
+	// Suffix that should be used when naming the BASELINE variant's resources.
+	// Default is "baseline".
+	Suffix string `json:"suffix" default:"baseline"`
+	// Whether the BASELINE service should be created.
+	CreateService bool `json:"createService"`
+}
+
+func (o *K8sBaselineRolloutStageOptions) UnmarshalJSON(data []byte) error {
+	type alias K8sBaselineRolloutStageOptions
+	var a alias
+	if err := json.Unmarshal(data, &a); err != nil {
+		return err
+	}
+	*o = K8sBaselineRolloutStageOptions(a)
+	if err := defaults.Set(o); err != nil {
+		return err
+	}
+	return nil
+}
+
+// K8sBaselineCleanStageOptions contains all configurable values for a K8S_BASELINE_CLEAN stage.
+type K8sBaselineCleanStageOptions struct{}
 
 // K8sResourcePatch represents a patch operation for a Kubernetes resource.
 type K8sResourcePatch struct {

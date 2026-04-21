@@ -1576,6 +1576,7 @@ spec:
 				tt.variantLabel,
 				tt.canaryPercent,
 				tt.baselinePercent,
+				logpersistertest.NewTestLogPersister(t),
 			)
 
 			// Check error expectations
