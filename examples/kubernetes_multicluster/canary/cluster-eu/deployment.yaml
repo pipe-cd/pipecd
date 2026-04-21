@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: canary-multicluster
+  labels:
+    app: canary-multicluster
+spec:
+  replicas: 2
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: canary-multicluster
+      pipecd.dev/variant: primary
+  template:
+    metadata:
+      labels:
+        app: canary-multicluster
+        pipecd.dev/variant: primary
+    spec:
+      containers:
+      - name: helloworld
+        image: ghcr.io/pipe-cd/helloworld:v0.32.0
+        args:
+          - server
+        ports:
+        - containerPort: 9085

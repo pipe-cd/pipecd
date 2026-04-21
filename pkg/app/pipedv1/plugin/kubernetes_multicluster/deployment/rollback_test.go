@@ -617,3 +617,167 @@ func TestPlugin_executeK8sMultiRollbackStage_FailureRollback_when_at_least_one_o
 
 	assert.Equal(t, sdk.StageStatusSuccess, status)
 }
+
+func TestPlugin_executeK8sMultiRollbackStage_CleansUpCanaryVariant(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
+
+	canaryDir := filepath.Join("testdata", "canary_rollout_without_create_service")
+	simpleDir := filepath.Join("testdata", "simple")
+
+	canaryCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(canaryDir, "app.pipecd.yaml"), "kubernetes_multicluster")
+	simpleCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(simpleDir, "app.pipecd.yaml"), "kubernetes_multicluster")
+
+	// Step 1: deploy canary variant so it exists in the cluster.
+	canaryInput := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
+			StageName:   StageK8sMultiCanaryRollout,
+			StageConfig: []byte(`{"replicas": 1}`),
+			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+				ApplicationDirectory:      canaryDir,
+				CommitHash:                "target-hash",
+				ApplicationConfig:         canaryCfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+			Deployment: sdk.Deployment{
+				PipedID:       "piped-id",
+				ApplicationID: "app-id",
+			},
+		},
+		Client: sdk.NewClient(nil, "kubernetes_multicluster", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
+		Logger: zaptest.NewLogger(t),
+	}
+
+	plugin := &Plugin{}
+	status := plugin.executeK8sMultiCanaryRolloutStage(ctx, canaryInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		{Name: "default", Config: *dtConfig},
+	})
+	require.Equal(t, sdk.StageStatusSuccess, status)
+
+	// Verify canary deployment exists.
+	_, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(ctx, "simple-canary", metav1.GetOptions{})
+	require.NoError(t, err, "canary deployment should exist before rollback")
+
+	// Step 2: run rollback — should clean up the canary variant.
+	rollbackInput := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
+			StageName:   "K8S_MULTI_ROLLBACK",
+			StageConfig: []byte(``),
+			RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+				ApplicationDirectory:      simpleDir,
+				CommitHash:                "previous-hash",
+				ApplicationConfig:         simpleCfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+				ApplicationDirectory:      simpleDir,
+				CommitHash:                "target-hash",
+				ApplicationConfig:         simpleCfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+			Deployment: sdk.Deployment{
+				PipedID:       "piped-id",
+				ApplicationID: "app-id",
+			},
+		},
+		Client: sdk.NewClient(nil, "kubernetes_multicluster", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
+		Logger: zaptest.NewLogger(t),
+	}
+
+	status = plugin.executeK8sMultiRollbackStage(ctx, rollbackInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		{Name: "default", Config: *dtConfig},
+	})
+	assert.Equal(t, sdk.StageStatusSuccess, status)
+
+	// Verify canary deployment was deleted.
+	_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(ctx, "simple-canary", metav1.GetOptions{})
+	assert.True(t, apierrors.IsNotFound(err), "canary deployment should be deleted after rollback")
+}
+
+func TestPlugin_executeK8sMultiRollbackStage_CleansUpBaselineVariant(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
+
+	baselineDir := filepath.Join("testdata", "baseline_rollout_without_create_service")
+	simpleDir := filepath.Join("testdata", "simple")
+
+	baselineCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(baselineDir, "app.pipecd.yaml"), "kubernetes_multicluster")
+	simpleCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(simpleDir, "app.pipecd.yaml"), "kubernetes_multicluster")
+
+	// Step 1: deploy baseline variant so it exists in the cluster.
+	baselineInput := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
+			StageName:   StageK8sMultiBaselineRollout,
+			StageConfig: []byte(`{"replicas": 1}`),
+			RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+				ApplicationDirectory:      baselineDir,
+				CommitHash:                "previous-hash",
+				ApplicationConfig:         baselineCfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+				ApplicationDirectory:      baselineDir,
+				CommitHash:                "target-hash",
+				ApplicationConfig:         baselineCfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+			Deployment: sdk.Deployment{
+				PipedID:       "piped-id",
+				ApplicationID: "app-id",
+			},
+		},
+		Client: sdk.NewClient(nil, "kubernetes_multicluster", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
+		Logger: zaptest.NewLogger(t),
+	}
+
+	plugin := &Plugin{}
+	status := plugin.executeK8sMultiBaselineRolloutStage(ctx, baselineInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		{Name: "default", Config: *dtConfig},
+	})
+	require.Equal(t, sdk.StageStatusSuccess, status)
+
+	// Verify baseline deployment exists.
+	_, err := dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(ctx, "simple-baseline", metav1.GetOptions{})
+	require.NoError(t, err, "baseline deployment should exist before rollback")
+
+	// Step 2: run rollback — should clean up the baseline variant.
+	rollbackInput := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
+			StageName:   "K8S_MULTI_ROLLBACK",
+			StageConfig: []byte(``),
+			RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+				ApplicationDirectory:      simpleDir,
+				CommitHash:                "previous-hash",
+				ApplicationConfig:         simpleCfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+				ApplicationDirectory:      simpleDir,
+				CommitHash:                "target-hash",
+				ApplicationConfig:         simpleCfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+			Deployment: sdk.Deployment{
+				PipedID:       "piped-id",
+				ApplicationID: "app-id",
+			},
+		},
+		Client: sdk.NewClient(nil, "kubernetes_multicluster", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
+		Logger: zaptest.NewLogger(t),
+	}
+
+	status = plugin.executeK8sMultiRollbackStage(ctx, rollbackInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		{Name: "default", Config: *dtConfig},
+	})
+	assert.Equal(t, sdk.StageStatusSuccess, status)
+
+	// Verify baseline deployment was deleted.
+	_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("default").Get(ctx, "simple-baseline", metav1.GetOptions{})
+	assert.True(t, apierrors.IsNotFound(err), "baseline deployment should be deleted after rollback")
+}
