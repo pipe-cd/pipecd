@@ -31,14 +31,13 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: '24'
 
       # Build site.
       - name: Build site
         run: |
           cd docs
-          npm install autoprefixer
-          npm install postcss-cli
+          npm ci
           env HUGO_ENV="production" RELEASE="$(grep '^tag:' ../RELEASE | awk '{print $2}')" hugo
 
       # Building and pushing container images.

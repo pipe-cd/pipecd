@@ -128,6 +128,12 @@ func sync(
 			return fmt.Errorf("failed to create primary task set: %w", err)
 		}
 
+		lp.Info("Deleting old ECS TaskSets")
+		if err = deleteOldTaskSets(ctx, client, *service); err != nil {
+			lp.Errorf("Failed to delete old Tasksets of service %s: %v", *service.ServiceName, err)
+			return fmt.Errorf("failed to delete old tasksets: %w", err)
+		}
+
 		// Scale up the service tasks count back to its desired.p
 		lp.Infof("Scale up ECS desired tasks count back to %d", cnt)
 		service.DesiredCount = cnt
@@ -140,6 +146,12 @@ func sync(
 		if err = createPrimaryTaskSet(ctx, lp, client, *service, *td, primary); err != nil {
 			lp.Errorf("Failed to rollout ECS TaskSet for service %s: %v", *service.ServiceName, err)
 			return fmt.Errorf("failed to create primary task set: %w", err)
+		}
+
+		lp.Info("Deleting old ECS TaskSets")
+		if err = deleteOldTaskSets(ctx, client, *service); err != nil {
+			lp.Errorf("Failed to delete old Tasksets of service %s: %v", *service.ServiceName, err)
+			return fmt.Errorf("failed to delete old tasksets: %w", err)
 		}
 	}
 
@@ -281,13 +293,6 @@ func createPrimaryTaskSet(
 	taskDef types.TaskDefinition,
 	primary *types.LoadBalancer,
 ) error {
-	// Get current PRIMARY, Active
-	lp.Infof("Getting current active task sets for the service %s", *service.ServiceName)
-	prevTaskSets, err := client.GetServiceTaskSets(ctx, service)
-	if err != nil {
-		return fmt.Errorf("failed to get service task sets: %w", err)
-	}
-
 	// Create a task set in the specified cluster and service.
 	// In case of creating Primary taskset, the number of desired tasks scale is always set to 100
 	// which means we create as many tasks as the current primary taskset has.
@@ -303,13 +308,26 @@ func createPrimaryTaskSet(
 		return err
 	}
 
-	// Remove old taskSets if existed
-	// HACK: All old task sets including canary are deleted here.
-	//       However, we need to discuss whether we should delete the canary here or in later stage(CanaryClean).
-	lp.Infof("Deleting old task sets for service %s", *service.ServiceName)
-	for _, prevTaskSet := range prevTaskSets {
-		if err = client.DeleteTaskSet(ctx, prevTaskSet); err != nil {
-			return fmt.Errorf("failed to delete old task set %s: %w", *prevTaskSet.TaskSetArn, err)
+	return nil
+}
+
+func deleteOldTaskSets(
+	ctx context.Context,
+	client provider.Client,
+	service types.Service,
+) error {
+	// Get all TaskSets (with status PRIMARY, ACTIVE)
+	taskSets, err := client.GetServiceTaskSets(ctx, service)
+	if err != nil {
+		return fmt.Errorf("failed to get task sets: %w", err)
+	}
+
+	// Delete old TaskSets (tasksets with status ACTIVE)
+	for _, ts := range taskSets {
+		if ts.Status != nil && *ts.Status != "PRIMARY" {
+			if err = client.DeleteTaskSet(ctx, ts); err != nil {
+				return fmt.Errorf("failed to delete old task set %s: %w", *ts.TaskSetArn, err)
+			}
 		}
 	}
 

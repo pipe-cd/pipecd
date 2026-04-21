@@ -264,6 +264,9 @@ func (s *deploymentStore) UpdatePluginMetadata(ctx context.Context, id string, p
 		if d.MetadataV2.Plugins == nil {
 			d.MetadataV2.Plugins = make(map[string]*model.DeploymentMetadata_KeyValues)
 		}
+		if d.MetadataV2.Plugins[pluginName] == nil {
+			d.MetadataV2.Plugins[pluginName] = &model.DeploymentMetadata_KeyValues{}
+		}
 		d.MetadataV2.Plugins[pluginName] = &model.DeploymentMetadata_KeyValues{
 			KeyValues: mergeMetadata(d.MetadataV2.Plugins[pluginName].KeyValues, metadata),
 		}

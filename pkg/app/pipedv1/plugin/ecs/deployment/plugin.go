@@ -18,9 +18,12 @@ import (
 	"context"
 	"errors"
 
+	"go.uber.org/zap"
+
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 
 	ecsconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/ecs/config"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/ecs/provider"
 )
 
 var _ sdk.DeploymentPlugin[ecsconfig.ECSPluginConfig, ecsconfig.ECSDeployTargetConfig, ecsconfig.ECSApplicationSpec] = (*ECSPlugin)(nil)
@@ -73,6 +76,22 @@ func (p *ECSPlugin) ExecuteStage(
 		return &sdk.ExecuteStageResponse{
 			Status: p.executeECSRollbackStage(ctx, input, deployTargets[0]),
 		}, nil
+	case StageECSPrimaryRollout:
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeECSPrimaryRolloutStage(ctx, input, deployTargets[0]),
+		}, nil
+	case StageECSCanaryRollout:
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeECSCanaryRolloutStage(ctx, input, deployTargets[0]),
+		}, nil
+	case StageECSCanaryClean:
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeECSCanaryCleanStage(ctx, input, deployTargets[0]),
+		}, nil
+	case StageECSTrafficRouting:
+		return &sdk.ExecuteStageResponse{
+			Status: p.executeECSTrafficRouting(ctx, input, deployTargets[0]),
+		}, nil
 	default:
 		return nil, ErrUnsupportedStage
 	}
@@ -84,28 +103,71 @@ func (p *ECSPlugin) DetermineVersions(
 	cfg *ecsconfig.ECSPluginConfig,
 	input *sdk.DetermineVersionsInput[ecsconfig.ECSApplicationSpec],
 ) (*sdk.DetermineVersionsResponse, error) {
+	appCfg, err := input.Request.DeploymentSource.AppConfig()
+	if err != nil {
+		input.Logger.Error("failed to load application config", zap.Error(err))
+		return nil, err
+	}
+
+	taskDef, err := provider.LoadTaskDefinition(
+		input.Request.DeploymentSource.ApplicationDirectory,
+		appCfg.Spec.Input.TaskDefinitionFile,
+	)
+	if err != nil {
+		input.Logger.Error("failed to load task definition", zap.Error(err))
+		return nil, err
+	}
+
 	return &sdk.DetermineVersionsResponse{
-		// TODO: Implement the logic to determine the versions of the resources that will be deployed.
-		// This is just a placeholder
-		Versions: []sdk.ArtifactVersion{
-			{
-				Version: "latest",
-				Name:    "ecs-task",
-				URL:     "",
-			},
-		},
+		Versions: determineVersions(taskDef),
 	}, nil
 }
 
 // DetermineStrategy determines the strategy to deploy the resources.
+//
+// Use PipelineSync if any container image added, removed, or changed.
+//
+// Use QuickSync if no image difference.
 func (p *ECSPlugin) DetermineStrategy(
 	ctx context.Context,
 	cfg *ecsconfig.ECSPluginConfig,
 	input *sdk.DetermineStrategyInput[ecsconfig.ECSApplicationSpec],
 ) (*sdk.DetermineStrategyResponse, error) {
-	// Use quick sync as the default strategy for ECS deployment.
-	return &sdk.DetermineStrategyResponse{
-		Strategy: sdk.SyncStrategyQuickSync,
-		Summary:  "Use quick sync strategy for ECS deployment (work as ECS_SYNC stage)",
-	}, nil
+	targetAppCfg, err := input.Request.TargetDeploymentSource.AppConfig()
+	if err != nil {
+		input.Logger.Error("failed to load target application config", zap.Error(err))
+		return nil, err
+	}
+
+	taskDefFile := targetAppCfg.Spec.Input.TaskDefinitionFile
+
+	targetTaskDef, err := provider.LoadTaskDefinition(
+		input.Request.TargetDeploymentSource.ApplicationDirectory,
+		taskDefFile,
+	)
+	if err != nil {
+		input.Logger.Error("failed to load target task definition", zap.Error(err))
+		return nil, err
+	}
+
+	if input.Request.RunningDeploymentSource.ApplicationDirectory == "" {
+		return &sdk.DetermineStrategyResponse{
+			Strategy: sdk.SyncStrategyPipelineSync,
+			Summary:  "Sync with the specified pipeline (no running deployment source)",
+		}, nil
+	}
+
+	runningTaskDef, err := provider.LoadTaskDefinition(
+		input.Request.RunningDeploymentSource.ApplicationDirectory,
+		taskDefFile,
+	)
+	if err != nil {
+		input.Logger.Warn("failed to load running task definition, falling back to pipeline sync", zap.Error(err))
+		return &sdk.DetermineStrategyResponse{
+			Strategy: sdk.SyncStrategyPipelineSync,
+			Summary:  "Sync with the specified pipeline (unable to load running task definition)",
+		}, nil
+	}
+
+	return determineStrategy(runningTaskDef, targetTaskDef), nil
 }
