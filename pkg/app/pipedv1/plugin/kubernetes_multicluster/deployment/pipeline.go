@@ -36,6 +36,8 @@ const (
 	StageK8sMultiBaselineRollout = "K8S_BASELINE_ROLLOUT"
 	// StageK8sMultiBaselineClean represents the state where all baseline resources should be removed.
 	StageK8sMultiBaselineClean = "K8S_BASELINE_CLEAN"
+	// StageK8sMultiTrafficRouting represents the state where traffic is routed between variants.
+	StageK8sMultiTrafficRouting = "K8S_TRAFFIC_ROUTING"
 )
 
 var allStages = []string{
@@ -46,6 +48,7 @@ var allStages = []string{
 	StageK8sMultiPrimaryRollout,
 	StageK8sMultiBaselineRollout,
 	StageK8sMultiBaselineClean,
+	StageK8sMultiTrafficRouting,
 }
 
 const (
@@ -63,6 +66,8 @@ const (
 	StageDescriptionK8sMultiBaselineRollout = "Rollout the current version as BASELINE to all targets"
 	// StageDescriptionK8sMultiBaselineClean represents the description of the K8sBaselineClean stage.
 	StageDescriptionK8sMultiBaselineClean = "Remove all baseline resources"
+	// StageDescriptionK8sMultiTrafficRouting represents the description of the K8sTrafficRouting stage.
+	StageDescriptionK8sMultiTrafficRouting = "Update traffic routing percentages for all targets"
 )
 
 func buildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
