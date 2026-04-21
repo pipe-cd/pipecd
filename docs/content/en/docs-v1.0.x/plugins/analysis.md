@@ -1,12 +1,12 @@
 ---
-title: "Adding an analysis provider"
-linkTitle: "Adding analysis provider"
-weight: 6
+title: "Analysis Plugin"
+linkTitle: "Analysis"
+weight: 30
 description: >
-  This page describes how to add an Analysis Provider to analyize the metrics of your deployment.
+  This page describes how to add an Analysis Provider to analyze the metrics of your deployment.
 ---
 
-To enable [Automated deployment analysis](../../managing-application/customizing-deployment/automated-deployment-analysis/) feature, you have to set the needed information for Piped to connect to the [Analysis Provider](../../../concepts/#analysis-provider).
+To enable [Automated deployment analysis](../user-guide/managing-application/customizing-deployment/automated-deployment-analysis/) feature, you have to set the needed information for Piped to connect to the [Analysis Provider](../concepts/#analysis-provider).
 
 Currently, PipeCD supports the following providers:
 
@@ -35,7 +35,7 @@ spec:
               address: https://your-prometheus.dev
 ```
 
-To know more, see the full list of [configurable fields](configuration-reference/#analysisproviderdatadogconfig).
+To know more, see the full list of [configurable fields](../user-guide/managing-piped/configuration-reference/#analysisproviderprometheusconfig).
 
 ## Datadog
 
@@ -58,9 +58,9 @@ spec:
               applicationKeyFile: /etc/piped-secret/datadog-application-key
 ```
 
-To know more, see the full list of [configurable fields](configuration-reference/#analysisproviderdatadogconfig).
+To know more, see the full list of [configurable fields](../user-guide/managing-piped/configuration-reference/#analysisproviderdatadogconfig).
 
-If you choose `Helm` as the installation method, we recommend using `--set-file` to mount the key files while performing the [upgrading process](../../../installation/install-piped/installing-on-kubernetes/#in-the-cluster-wide-mode).
+If you choose `Helm` as the installation method, we recommend using `--set-file` to mount the key files while performing the [upgrading process](../installation/install-piped/installing-on-kubernetes/#in-the-cluster-wide-mode).
 
 ```bash
 --set-file secret.data.datadog-api-key={PATH_TO_API_KEY_FILE} \
