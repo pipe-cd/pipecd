@@ -78,24 +78,125 @@ type PluginData struct {
 }
 
 func main() {
-	var (
-		name        = flag.String("name", "", "Plugin name (lowercase, e.g. myplatform)")
-		module      = flag.String("module", "", "Go module path (e.g. github.com/my-org/my-plugin)")
-		stagesRaw   = flag.String("stages", "", "Comma-separated stages: NAME or NAME:Description")
-		rollback    = flag.String("rollback", "", "Rollback stage name (optional, e.g. MY_ROLLBACK)")
-		livestate   = flag.Bool("livestate", false, "Generate livestate/plugin.go stub")
-		planpreview = flag.Bool("planpreview", false, "Generate planpreview/plugin.go stub")
-		goVersion   = flag.String("go-version", strings.TrimPrefix(runtime.Version(), "go"), "Go version for go.mod (default: current toolchain)")
-		sdkVersion  = flag.String("sdk-version", "v0.3.0", "piped-plugin-sdk-go version for go.mod")
-		output      = flag.String("output", ".", "Output directory")
-		force       = flag.Bool("force", false, "Overwrite existing output directory")
-	)
-	flag.Parse()
+	if len(os.Args) < 2 || os.Args[1] == "help" {
+		printUsage()
+		os.Exit(0)
+	}
 
-	if err := run(*name, *module, *stagesRaw, *rollback, *output, *goVersion, *sdkVersion, *livestate, *planpreview, *force); err != nil {
+	var err error
+	switch os.Args[1] {
+	case "new":
+		err = runNew(os.Args[2:])
+	case "add-stage":
+		err = runAddStage(os.Args[2:])
+	default:
+		fmt.Fprintf(os.Stderr, "unknown command %q\n\n", os.Args[1])
+		printUsage()
+		os.Exit(1)
+	}
+
+	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
 	}
+}
+
+func printUsage() {
+	fmt.Println(`plugin-scaffold - generate scaffolding for a PipeCD plugin
+
+Commands:
+  new        Create a new plugin
+  add-stage  Add a stage to an existing plugin
+  help       Show this message
+
+Run "go run ./hack/plugin-scaffold <command> -help" for command flags.`)
+}
+
+func runNew(args []string) error {
+	fs := flag.NewFlagSet("new", flag.ExitOnError)
+	name := fs.String("name", "", "Plugin name (lowercase, e.g. myplatform)")
+	module := fs.String("module", "", "Go module path (e.g. github.com/my-org/my-plugin)")
+	stagesRaw := fs.String("stages", "", "Comma-separated stages: NAME or NAME:Description")
+	rollback := fs.String("rollback", "", "Rollback stage name (optional, e.g. MY_ROLLBACK)")
+	livestate := fs.Bool("livestate", false, "Generate livestate/plugin.go stub")
+	planpreview := fs.Bool("planpreview", false, "Generate planpreview/plugin.go stub")
+	goVersion := fs.String("go-version", strings.TrimPrefix(runtime.Version(), "go"), "Go version for go.mod (default: current toolchain)")
+	sdkVersion := fs.String("sdk-version", "v0.3.0", "piped-plugin-sdk-go version for go.mod")
+	output := fs.String("output", ".", "Output directory")
+	force := fs.Bool("force", false, "Overwrite existing output directory")
+	fs.Parse(args)
+
+	return run(*name, *module, *stagesRaw, *rollback, *output, *goVersion, *sdkVersion, *livestate, *planpreview, *force)
+}
+
+func runAddStage(args []string) error {
+	fs := flag.NewFlagSet("add-stage", flag.ExitOnError)
+	pluginDir := fs.String("plugin-dir", "", "Path to the existing plugin directory")
+	module := fs.String("module", "", "Go module path of the plugin (e.g. github.com/my-org/my-plugin)")
+	stageRaw := fs.String("stage", "", "Stage to add: NAME or NAME:Description")
+	fs.Parse(args)
+
+	if *pluginDir == "" {
+		return errors.New("-plugin-dir is required")
+	}
+	if *module == "" {
+		return errors.New("-module is required")
+	}
+	if *stageRaw == "" {
+		return errors.New("-stage is required")
+	}
+
+	stages, err := parseStages(*stageRaw)
+	if err != nil {
+		return err
+	}
+	stage := stages[0]
+	pluginTitle := titleCase(filepath.Base(*pluginDir))
+
+	stageFile := filepath.Join(*pluginDir, "deployment", stageNameToSnake(stage.Name)+".go")
+	if _, err := os.Stat(stageFile); err == nil {
+		return fmt.Errorf("stage file %q already exists", stageFile)
+	}
+
+	data := struct {
+		PluginData
+		Stage Stage
+	}{
+		PluginData: PluginData{
+			PluginTitle: pluginTitle,
+			Module:      *module,
+		},
+		Stage: stage,
+	}
+	if err := renderFile(stageFile, "templates/deployment/stage.go.tmpl", data); err != nil {
+		return fmt.Errorf("generate stage file: %w", err)
+	}
+
+	fmt.Printf("Created: %s\n", stageFile)
+	fmt.Printf(`
+Next, add the following to deployment/pipeline.go:
+
+  In the const block:
+    Stage%s = "%s"
+    Stage%sDescription = "%s"
+
+  In allStages:
+    Stage%s,
+
+Then add to the ExecuteStage switch in deployment/plugin.go:
+
+    case Stage%s:
+        return &sdk.ExecuteStageResponse{
+            Status: p.execute%sStage(ctx, input, deployTargets[0]),
+        }, nil
+`,
+		stageNameToTitle(stage.Name), stage.Name,
+		stageNameToTitle(stage.Name), stage.Description,
+		stageNameToTitle(stage.Name),
+		stageNameToTitle(stage.Name),
+		stageNameToTitle(stage.Name),
+	)
+	return nil
 }
 
 func run(name, module, stagesRaw, rollbackName, output, goVersion, sdkVersion string, hasLivestate, hasPlanPreview, force bool) error {
