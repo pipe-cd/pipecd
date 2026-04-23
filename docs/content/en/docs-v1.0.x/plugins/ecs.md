@@ -37,6 +37,54 @@ spec:
 
 See [ECSDeployTargetConfig](#ecsdeploytargetconfig) for all available options including cross-account role assumption and OIDC-based authentication.
 
+### IAM permissions
+
+ECS deployments involve three distinct IAM roles. Confusing them is a common source of permission errors.
+
+**Deployment role**: the role assumed by Piped when calling AWS APIs to deploy your application. Configured via `roleARN` in the deploy target config, or resolved from the default credential chain. This role needs:
+
+```json
+{
+  "Effect": "Allow",
+  "Action": [
+    "ecs:CreateService",
+    "ecs:UpdateService",
+    "ecs:DescribeServices",
+    "ecs:RegisterTaskDefinition",
+    "ecs:DescribeTaskDefinition",
+    "ecs:CreateTaskSet",
+    "ecs:UpdateServicePrimaryTaskSet",
+    "ecs:DeleteTaskSet",
+    "ecs:DescribeTaskSets",
+    "ecs:ListTasks",
+    "ecs:DescribeTasks",
+    "ecs:RunTasks",
+    "ecs:ListTagsForResource",
+    "ecs:TagResource",
+    "ecs:UntagResource",
+    "elasticloadbalancing:DescribeListeners",
+    "elasticloadbalancing:DescribeRules",
+    "elasticloadbalancing:ModifyRule",
+    "iam:PassRole"
+  ],
+  "Resource": "*"
+}
+```
+
+`iam:PassRole` is required because AWS enforces it whenever a caller passes a role ARN to ECS APIs. Specifically, it is triggered by `RegisterTaskDefinition` (which receives `executionRoleArn` and `taskRoleArn` from the task definition file) and `CreateService` (which receives the service role ARN). In practice, scope this permission to the specific role ARNs used in your task and service definitions rather than `"Resource": "*"`.
+
+**[Task execution role](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_execution_IAM_role.html)**: assumed by the ECS agent on your behalf to prepare the task environment before the container starts. It is not used by Piped or your application. Typical uses:
+
+- Pull container images from Amazon ECR
+- Publish container logs to CloudWatch Logs
+- Retrieve secrets from Secrets Manager or SSM Parameter Store
+
+This role is specified as `executionRoleArn` in your task definition file.
+
+**[Task role](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-iam-roles.html)**: assumed by the application running inside the container. It is not used by Piped or the ECS agent. Grant only the permissions your application needs at runtime, for example reading from S3 or writing to DynamoDB.
+
+This role is specified as `taskRoleArn` in your task definition file.
+
 ### Service definition requirements
 
 The ECS plugin manages deployments via task sets. Your service definition file **must** specify the `EXTERNAL` deployment controller:
