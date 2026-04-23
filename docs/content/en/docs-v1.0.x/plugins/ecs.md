@@ -96,6 +96,74 @@ deploymentController:
 
 Without this, the plugin cannot create or manage task sets for your service.
 
+## Definition files
+
+The ECS plugin reads two YAML or JSON files from your application directory to determine what to deploy.
+
+### Task definition file
+
+Specifies the container(s) to run: image, CPU, memory, ports, environment variables, and IAM roles. The file is parsed into the AWS SDK `types.TaskDefinition` struct (the response type), then the plugin forwards a subset of those fields to `RegisterTaskDefinition`. Field names must match the Go struct field names (case-insensitive), which correspond to the AWS API JSON field names in camelCase. Fields present in `RegisterTaskDefinitionInput` but absent from `types.TaskDefinition` cannot be set through this file.
+
+```yaml
+# taskdef.yaml
+family: my-service
+executionRoleArn: arn:aws:iam::XXXX:role/ECSTaskExecutionRole
+taskRoleArn: arn:aws:iam::XXXX:role/ECSTaskRole # optional: grants your app AWS permissions
+requiresCompatibilities:
+  - FARGATE
+networkMode: awsvpc
+cpu: "256"
+memory: "512"
+containerDefinitions:
+  - name: web
+    image: public.ecr.aws/nginx/nginx:1.27
+    portMappings:
+      - containerPort: 80
+    cpu: 100
+    memory: 100
+```
+
+The default filename is `taskdef.json`. Override it with `taskDefinitionFile` in the application config.
+
+> **Note:** The `tags` field in the task definition file is not currently forwarded to `RegisterTaskDefinition`. Support is planned for a future version.
+
+### Service definition file
+
+Specifies how the ECS service runs: cluster, desired task count, network configuration, and load balancer settings. The file is parsed into the AWS SDK `types.Service` struct (the response type), then the plugin forwards a subset of those fields to `CreateService` or `UpdateService`. Field names must match the Go struct field names (case-insensitive), which correspond to the AWS API JSON field names in camelCase. Fields present in `CreateServiceInput`/`UpdateServiceInput` but absent from `types.Service` cannot be set through this file.
+
+```yaml
+# servicedef.yaml
+serviceName: my-service
+clusterArn: arn:aws:ecs:ap-northeast-1:XXXX:cluster/my-cluster
+desiredCount: 2
+deploymentController:
+  type: EXTERNAL # required by the ECS plugin
+launchType: FARGATE
+networkConfiguration:
+  awsvpcConfiguration:
+    assignPublicIp: ENABLED
+    subnets:
+      - subnet-YYYY
+    securityGroups:
+      - sg-YYYY
+schedulingStrategy: REPLICA
+```
+
+> **Note:** Due to current parsing limitations, not all fields are forwarded to `CreateService` and `UpdateService`. The fields listed below are not yet supported:
+>
+> - `CreateService`: `capacityProviderStrategy`, `serviceConnectConfiguration`
+> - `UpdateService`: `deploymentConfiguration`, `healthCheckGracePeriodSeconds`, `placementConstraints`, `platformVersion`, `capacityProviderStrategy`, `serviceConnectConfiguration`, `serviceRegistries`, `volumeConfigurations`
+>
+> Full field support is planned alongside support for the ECS deployment controller in a future version.
+
+**Fields you should not include:**
+
+- `loadBalancers`: PipeCD injects the target group configuration from `targetGroups` in the app config at deploy time.
+- `desiredCount`: omit this when using Auto Scaling, otherwise PipeCD will reconcile it back to the value in the file on every deployment.
+- Tags managed by PipeCD (`pipecd/managed-by`, `pipecd/commit-hash`, etc.): these are stamped automatically and will be overwritten.
+
+The service definition file is not needed for standalone tasks.
+
 ## Quick sync
 
 By default, when no `pipeline` is specified in the application configuration, PipeCD triggers a **quick sync** for any merged pull request. Quick sync registers the new task definition, creates/updates the ECS service, promotes a new primary task set, waits for stability, and removes old task sets. All traffic is switched to the new version immediately.
