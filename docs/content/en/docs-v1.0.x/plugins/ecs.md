@@ -274,6 +274,118 @@ spec:
       - name: ECS_CANARY_CLEAN
 ```
 
+## Application live state
+
+The ECS plugin continuously monitors your application's live state and displays it on the PipeCD UI. Piped periodically polls AWS and compares the running state against the commit hash declared in Git.
+
+### Sync status
+
+| Status | Meaning |
+|---|---|
+| **SYNCED** | The PRIMARY task set on AWS is tagged with the current Git commit hash. |
+| **OUT\_OF\_SYNC** | The commit hash tag on the PRIMARY task set does not match the current Git commit, the service was not found, or no PRIMARY task set exists. |
+| **UNKNOWN** | The application is a standalone task (no persistent service to observe), or live state could not be fetched due to a transient error. |
+| **INVALID\_CONFIG** | `serviceDefinitionFile` is missing from the application configuration. |
+
+### Resource tree
+
+The UI displays the ECS resources as a hierarchy. The structure depends on the deployment controller type configured in the service definition.
+
+**EXTERNAL controller** (required by this plugin for canary/blue-green):
+
+```
+ECS:Service
+└── ECS:TaskSet  (one per variant: PRIMARY, CANARY, etc.)
+    └── ECS:Task
+```
+
+**ECS controller** (for quick sync without task set management):
+
+```
+ECS:Service
+└── ECS:Deployment
+    └── ECS:Task
+```
+
+### Resource metadata
+
+Each resource type exposes the following metadata fields in the UI:
+
+**ECS:Service**
+
+| Field | Description |
+|---|---|
+| status | Service status (`ACTIVE`, `DRAINING`, `INACTIVE`) |
+| runningCount | Number of tasks currently running |
+| desiredCount | Number of tasks the service intends to maintain |
+| pendingCount | Number of tasks in the process of starting |
+
+**ECS:TaskSet** (EXTERNAL controller only)
+
+| Field | Description |
+|---|---|
+| status | Task set status (`PRIMARY`, `ACTIVE`, `DRAINING`) |
+| taskDefinition | ARN of the task definition revision running in this task set |
+| scale | Traffic weight assigned to this task set (e.g. `30%`) |
+| commit | Git commit hash that created this task set |
+
+**ECS:Task**
+
+| Field | Description |
+|---|---|
+| lastStatus | Last known task status (`RUNNING`, `PENDING`, `STOPPED`) |
+| startedAt | Timestamp when the task transitioned to RUNNING |
+
+**ECS:Deployment** (ECS controller only)
+
+| Field | Description |
+|---|---|
+| status | Deployment status (`PRIMARY`, `ACTIVE`) |
+| taskDefinition | ARN of the task definition revision being deployed |
+| rolloutState | Rollout state (`IN_PROGRESS`, `COMPLETED`, `FAILED`) |
+| runningCount / desiredCount / pendingCount | Task counts for this deployment |
+| rolloutStateReason | Human-readable reason when rollout state is `FAILED` |
+
+### Health status
+
+| Resource | HEALTHY condition | UNHEALTHY condition |
+|---|---|---|
+| Service | Status is `ACTIVE`, `pendingCount` is 0, and `runningCount ≥ desiredCount` | Status is `DRAINING`/`INACTIVE`, or tasks are pending |
+| TaskSet | Stability status is `STEADY_STATE` | Stability status is `STABILIZING` |
+| Deployment | Rollout state is `COMPLETED` | Rollout state is `FAILED` or `IN_PROGRESS` |
+| Task | Last status is `RUNNING` and container health checks pass | Last status is `PENDING`/`STOPPED`, or container health checks are failing |
+
+## Plan preview
+
+Before a deployment is triggered, PipeCD can show a preview of what will change. The ECS plugin compares the **running** definition files (from the last deployed commit) against the **target** definition files (from the incoming commit) and displays a unified diff.
+
+### What is shown
+
+| Item | Description |
+|---|---|
+| Task definition diff | Unified diff between the running `taskdef` file and the target `taskdef` file |
+| Service definition diff | Unified diff between the running `servicedef` file and the target `servicedef` file (only shown when `serviceDefinitionFile` is set) |
+| Summary | A one-line summary: `task definition changed`, `service definition changed`, or `No changes were detected` |
+
+### Example output
+
+When only the container image in the task definition is updated, the plan preview looks like:
+
+```diff
+--- taskdef (running)
++++ taskdef (target)
+@@ -3,7 +3,7 @@
+ containerDefinitions:
+   - name: web
+-    image: public.ecr.aws/nginx/nginx:1.25
++    image: public.ecr.aws/nginx/nginx:1.27
+     cpu: 100
+     memory: 100
+     portMappings:
+```
+
+If no files changed between the two commits, the summary shows `No changes were detected` and no diff is displayed.
+
 ## Notes
 
 - When using an ALB, all listener rules that reference the configured target groups are controlled by PipeCD. Attach the target groups to your listener rules before deploying.
