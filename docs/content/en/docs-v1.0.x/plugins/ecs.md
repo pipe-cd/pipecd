@@ -167,6 +167,32 @@ Without this, the plugin cannot create or manage task sets for your service.
 > **Note:** Support for the ECS deployment controller (`type: ECS`) is planned for a future version.
 
 
+## Choosing a deployment strategy
+
+When a `pipeline` is configured, the ECS plugin compares the container images in the target task definition against those in the currently running deployment to decide whether to execute the pipeline or skip it with a quick sync:
+
+| Condition | Strategy |
+|---|---|
+| No running deployment source available | Pipeline sync |
+| Running task definition cannot be loaded | Pipeline sync (fallback) |
+| One or more container images added, removed, or changed | Pipeline sync |
+| No container image changes | Quick sync |
+
+The comparison checks each container by name. If the image name differs, the full change is reported; if only the tag or digest differs, the version change is reported. All detected changes appear in the deployment summary in the UI.
+
+> Non-image changes (environment variables, CPU/memory, etc.) do not affect strategy selection. If you update only those fields, the plugin will choose quick sync even when a pipeline is configured.
+
+**Use quick sync when:**
+- You want a simple, immediate rollout with no traffic splitting.
+- The environment is non-critical (e.g. dev, staging) where gradual rollout adds no value.
+
+> Standalone tasks always use quick sync. Pipeline sync is not supported for standalone tasks.
+
+**Use pipeline sync when:**
+- You want to gradually shift traffic using canary or blue-green strategies.
+- You need manual approval gates before full rollout.
+- You want automated analysis (metrics, logs) to validate the new version before promoting it.
+
 ## Quick sync
 
 By default, when no `pipeline` is specified in the application configuration, PipeCD triggers a **quick sync** for any merged pull request. Quick sync registers the new task definition, creates/updates the ECS service, promotes a new primary task set, waits for stability, and removes old task sets. All traffic is switched to the new version immediately.
