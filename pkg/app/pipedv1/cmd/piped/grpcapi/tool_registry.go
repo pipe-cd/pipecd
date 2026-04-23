@@ -154,6 +154,10 @@ func (r *toolRegistry) installTool(ctx context.Context, name, version, script st
 		return "", fmt.Errorf("failed to move the installed binary: %w, output: %s", err, string(out))
 	}
 
+	if err := os.RemoveAll(filepath.Dir(outPath)); err != nil {
+		return "", err
+	}
+
 	if err := os.RemoveAll(tmpDir); err != nil {
 		return "", err
 	}
