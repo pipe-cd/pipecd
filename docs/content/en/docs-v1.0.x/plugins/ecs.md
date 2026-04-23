@@ -559,7 +559,7 @@ This change eliminates the 503 window that existed in v0 during canary deploymen
 
 **v0 behavior:** Drift detection compared the fields of the live ECS resources against what was declared in the Git definition files. This produced false OUT_OF_SYNC signals whenever AWS mutated a field outside of PipeCD's control, for example when Auto Scaling adjusted `desiredCount`, or when AWS updated internal service metadata.
 
-**v1 behavior:** The plugin stamps a `pipecd/commit-hash` tag onto each PRIMARY task set (EXTERNAL controller) or the service itself (ECS controller) at the end of every deployment. Drift detection compares this tag value against the current Git commit hash:
+**v1 behavior:** The plugin stamps a `pipecd/commit-hash` tag onto each PRIMARY task set at the end of every deployment. Drift detection compares this tag value against the current Git commit hash:
 
 - If they match: **SYNCED**
 - If they differ: **OUT_OF_SYNC**, with the deployed and expected hashes shown as the reason
@@ -588,14 +588,6 @@ The UI displays the ECS resources as a hierarchy. The structure depends on the d
 ```
 ECS:Service
 └── ECS:TaskSet  (one per variant: PRIMARY, CANARY, etc.)
-    └── ECS:Task
-```
-
-**ECS controller** (for quick sync without task set management):
-
-```
-ECS:Service
-└── ECS:Deployment
     └── ECS:Task
 ```
 
@@ -628,15 +620,6 @@ Each resource type exposes the following metadata fields in the UI:
 | lastStatus | Last known task status (`RUNNING`, `PENDING`, `STOPPED`) |
 | startedAt | Timestamp when the task transitioned to RUNNING |
 
-**ECS:Deployment** (ECS controller only)
-
-| Field | Description |
-|---|---|
-| status | Deployment status (`PRIMARY`, `ACTIVE`) |
-| taskDefinition | ARN of the task definition revision being deployed |
-| rolloutState | Rollout state (`IN_PROGRESS`, `COMPLETED`, `FAILED`) |
-| runningCount / desiredCount / pendingCount | Task counts for this deployment |
-| rolloutStateReason | Human-readable reason when rollout state is `FAILED` |
 
 ### Health status
 
