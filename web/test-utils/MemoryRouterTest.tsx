@@ -5,13 +5,7 @@ type Props = MemoryRouterProps;
 
 const MemoryRouterTest = (props: Props): React.ReactElement => {
   return (
-    <MemoryRouter
-      {...props}
-      future={{
-        v7_startTransition: false,
-        v7_relativeSplatPath: false,
-      }}
-    >
+    <MemoryRouter {...props}>
       {props.children}
     </MemoryRouter>
   );

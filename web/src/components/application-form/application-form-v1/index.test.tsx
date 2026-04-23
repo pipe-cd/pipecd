@@ -1,11 +1,10 @@
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
 import ApplicationFormV1 from ".";
-import { render, screen, waitFor } from "~~/test-utils";
+import { render, screen, waitFor, act } from "~~/test-utils";
 import userEvent from "@testing-library/user-event";
 import { dummyApplication } from "~/__fixtures__/dummy-application";
 import { server } from "~/mocks/server";
 import { dummyPiped } from "~/__fixtures__/dummy-piped";
-import { act } from "react-dom/test-utils";
 import { ApplicationInfo } from "~/types/applications";
 
 const onClose = jest.fn();

@@ -35,8 +35,8 @@ describe("EditRoleDialog", () => {
 
     const policiesInput = screen.getByRole("textbox", { name: "Policies" });
 
-    userEvent.clear(policiesInput);
-    userEvent.type(policiesInput, "resources=application,deployment;actions=*");
+    await userEvent.clear(policiesInput);
+    await userEvent.type(policiesInput, "resources=application,deployment;actions=*");
 
     await waitFor(() =>
       expect(policiesInput).toHaveValue(
@@ -44,7 +44,7 @@ describe("EditRoleDialog", () => {
       )
     );
 
-    screen.getByRole("button", { name: /edit/i }).click();
+    await userEvent.click(screen.getByRole("button", { name: /edit/i }));
 
     await waitFor(() => {
       expect(mockOnUpdate).toHaveBeenCalledWith({

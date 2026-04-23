@@ -1,4 +1,3 @@
-import { act } from "react-dom/test-utils";
 import { render, screen, waitFor } from "~~/test-utils";
 import { APIKeyPage } from ".";
 import { setupServer } from "msw/node";
@@ -24,9 +23,7 @@ describe("APIKeyPage render correct row and header", () => {
     server.use(...apiKeyHandlers);
   });
   it("Render table with 1 api keys", async () => {
-    await act(async () => {
-      await render(<APIKeyPage />);
-    });
+    render(<APIKeyPage />);
 
     await waitFor(() => {
       expect(screen.getByText("API_KEY_1")).toBeInTheDocument();
@@ -53,9 +50,7 @@ describe("APIKeyPage without API mock", () => {
   });
 
   it("Render empty table when no API keys", async () => {
-    await act(async () => {
-      await render(<APIKeyPage />);
-    });
+    render(<APIKeyPage />);
 
     await waitFor(() => {
       expect(screen.getByText("No API Keys")).toBeInTheDocument();

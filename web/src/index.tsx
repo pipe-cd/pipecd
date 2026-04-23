@@ -1,6 +1,6 @@
 import { ThemeProvider, StyledEngineProvider } from "@mui/material";
 import CssBaseline from "@mui/material/CssBaseline";
-import { render } from "react-dom";
+import { createRoot } from "react-dom/client";
 import { theme } from "./theme";
 import { Routes } from "./routes";
 import { BrowserRouter } from "react-router-dom";
@@ -45,16 +45,16 @@ Happy PipeCD-ing 🙌
 
   // store.dispatch(fetchMe());
 
-  render(
+  const container = document.getElementById("root");
+  if (!container) {
+    throw new Error("Root element not found");
+  }
+  const root = createRoot(container);
+  root.render(
     <CookiesProvider>
       <StyledEngineProvider injectFirst>
         <ThemeProvider theme={theme}>
-          <BrowserRouter
-            future={{
-              v7_startTransition: false,
-              v7_relativeSplatPath: false,
-            }}
-          >
+          <BrowserRouter>
             <ToastProvider>
               <QueryClientWrap>
                 <AuthProvider>
@@ -68,8 +68,7 @@ Happy PipeCD-ing 🙌
           </BrowserRouter>
         </ThemeProvider>
       </StyledEngineProvider>
-    </CookiesProvider>,
-    document.getElementById("root")
+    </CookiesProvider>
   );
 }
 

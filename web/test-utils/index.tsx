@@ -9,7 +9,7 @@ const customRender = (
   ui: React.ReactElement,
   renderOptions: Omit<RenderOptions, "queries"> = {}
 ): RenderResult => {
-  const Wrapper: React.ComponentType = ({ children }) => (
+  const Wrapper: React.ComponentType<{ children: React.ReactNode }> = ({ children }) => (
     <StyledEngineProvider injectFirst>
       <ToastProvider>
         <QueryClientWrap>
