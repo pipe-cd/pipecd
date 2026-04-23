@@ -274,6 +274,35 @@ spec:
       - name: ECS_CANARY_CLEAN
 ```
 
+## Changes from v0
+
+This section describes behavioral differences between the legacy ECS provider in PipeCD v0 and the ECS plugin in PipeCD v1. If you are migrating from v0, review these changes before deploying.
+
+### ECS_PRIMARY_ROLLOUT: only the old PRIMARY task set is removed
+
+**v0 behavior:** `ECS_PRIMARY_ROLLOUT` deleted all ACTIVE task sets (including the CANARY task set) before promoting the new PRIMARY. This created a window where no task set was serving traffic, causing HTTP 503 errors on the load balancer: [issue #4710](https://github.com/pipe-cd/pipecd/issues/4710).
+
+**v1 behavior:** `ECS_PRIMARY_ROLLOUT` records the current PRIMARY task set ARN *before* creating the new one, promotes the new task set to PRIMARY, then deletes only the old PRIMARY. Any CANARY task set created by an earlier `ECS_CANARY_ROLLOUT` stage remains intact and continues to serve its share of traffic throughout the rollout window. The CANARY is cleaned up separately by `ECS_CANARY_CLEAN`.
+
+This change eliminates the 503 window that existed in v0 during canary deployments.
+
+### Rollback: ELB weights are restored before task sets are modified
+
+**v0 behavior:** During rollback, task sets were recreated first. This left a window where the ALB listener was still sending a fraction of traffic to the canary target group even though its tasks were being deleted, resulting in 503 errors for requests hitting that target group.
+
+**v1 behavior:** The `ECS_ROLLBACK` stage restores ALB listener weights to `100% primary / 0% canary` *before* touching any task set. Listener ARNs and the canary target group ARN are persisted in deployment metadata by `ECS_TRAFFIC_ROUTING`, so rollback can look them up without an additional AWS API call. Only after the listener is safe does rollback create the new task set, promote it to PRIMARY, and delete the remaining task sets.
+
+### Drift detection: commit hash tag instead of config field comparison
+
+**v0 behavior:** Drift detection compared the fields of the live ECS resources against what was declared in the Git definition files. This produced false OUT_OF_SYNC signals whenever AWS mutated a field outside of PipeCD's control, for example when Auto Scaling adjusted `desiredCount`, or when AWS updated internal service metadata.
+
+**v1 behavior:** The plugin stamps a `pipecd/commit-hash` tag onto each PRIMARY task set (EXTERNAL controller) or the service itself (ECS controller) at the end of every deployment. Drift detection compares this tag value against the current Git commit hash:
+
+- If they match: **SYNCED**
+- If they differ: **OUT_OF_SYNC**, with the deployed and expected hashes shown as the reason
+
+AWS-side mutations that do not change the deployed commit (such as Auto Scaling adjustments) no longer trigger drift alerts.
+
 ## Application live state
 
 The ECS plugin continuously monitors your application's live state and displays it on the PipeCD UI. Piped periodically polls AWS and compares the running state against the commit hash declared in Git.
