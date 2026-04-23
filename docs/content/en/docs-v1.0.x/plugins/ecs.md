@@ -85,17 +85,6 @@ This role is specified as `executionRoleArn` in your task definition file.
 
 This role is specified as `taskRoleArn` in your task definition file.
 
-### Service definition requirements
-
-The ECS plugin manages deployments via task sets. Your service definition file **must** specify the `EXTERNAL` deployment controller:
-
-```yaml
-deploymentController:
-  type: EXTERNAL
-```
-
-Without this, the plugin cannot create or manage task sets for your service.
-
 ## Definition files
 
 The ECS plugin reads two YAML or JSON files from your application directory to determine what to deploy.
@@ -163,6 +152,18 @@ schedulingStrategy: REPLICA
 - Tags managed by PipeCD (`pipecd/managed-by`, `pipecd/commit-hash`, etc.): these are stamped automatically and will be overwritten.
 
 The service definition file is not needed for standalone tasks.
+
+### Service definition requirements
+
+The ECS plugin manages deployments via task sets. Your service definition file **must** specify the `EXTERNAL` deployment controller:
+
+```yaml
+deploymentController:
+  type: EXTERNAL
+```
+
+Without this, the plugin cannot create or manage task sets for your service.
+
 
 ## Quick sync
 
