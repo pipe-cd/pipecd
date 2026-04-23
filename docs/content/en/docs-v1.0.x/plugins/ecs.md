@@ -274,6 +274,153 @@ spec:
       - name: ECS_CANARY_CLEAN
 ```
 
+## Migrating from v0
+
+This section covers the steps specific to ECS applications. For the general migration process (updating `pipectl`, migrating the Control Plane database, installing pipedv1), follow the [Migrate to PipeCD v1](../../migrating-from-v0-to-v1/) guide first.
+
+### 1. Update the piped configuration
+
+In v0, ECS was configured as a platform provider with `type: ECS`. In v1, it is a plugin.
+
+**v0 piped config:**
+
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: Piped
+spec:
+  platformProviders:
+    - name: ecs-dev
+      type: ECS
+      config:
+        region: us-east-1
+        credentialsFile: ~/.aws/credentials
+        profile: default
+        roleARN: arn:aws:iam::XXXX:role/deployment-role
+        tokenFile: /var/run/secrets/token
+```
+
+**v1 piped config:**
+
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: Piped
+spec:
+  plugins:
+    - name: ecs
+      port: 7003
+      url: https://github.com/pipe-cd/pipecd/releases/download/<version>/ecs-plugin
+      deployTargets:
+        - name: ecs-dev
+          config:
+            region: us-east-1
+            credentialsFile: ~/.aws/credentials
+            profile: default
+            roleARN: arn:aws:iam::XXXX:role/deployment-role
+            tokenFile: /var/run/secrets/token
+```
+
+The credential fields (`region`, `credentialsFile`, `profile`, `roleARN`, `tokenFile`) are identical. They move from `platformProviders[].config` to `plugins[].deployTargets[].config`.
+
+### 2. Update the application configuration
+
+The application config format changes in two ways: the `kind` field and the location of ECS-specific fields.
+
+**v0 app config:**
+
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: ECSApp
+spec:
+  name: my-service
+  labels:
+    env: production
+  input:
+    serviceDefinitionFile: servicedef.yaml
+    taskDefinitionFile: taskdef.yaml
+    targetGroups:
+      primary:
+        targetGroupArn: arn:aws:elasticloadbalancing:ap-northeast-1:XXXX:targetgroup/ecs-primary/YYYY
+        containerName: web
+        containerPort: 80
+      canary:
+        targetGroupArn: arn:aws:elasticloadbalancing:ap-northeast-1:XXXX:targetgroup/ecs-canary/ZZZZ
+        containerName: web
+        containerPort: 80
+  quickSync:
+    recreate: false
+  pipeline:
+    stages:
+      - name: ECS_CANARY_ROLLOUT
+        with:
+          scale: 30
+      - name: ECS_TRAFFIC_ROUTING
+        with:
+          canary: 20
+      - name: ECS_PRIMARY_ROLLOUT
+      - name: ECS_TRAFFIC_ROUTING
+        with:
+          primary: 100
+      - name: ECS_CANARY_CLEAN
+```
+
+**v1 app config:**
+
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: Application
+spec:
+  name: my-service
+  labels:
+    env: production
+  plugin: ecs
+  deployTarget: ecs-dev
+  plugins:
+    ecs:
+      input:
+        serviceDefinitionFile: servicedef.yaml
+        taskDefinitionFile: taskdef.yaml
+        targetGroups:
+          primary:
+            targetGroupArn: arn:aws:elasticloadbalancing:ap-northeast-1:XXXX:targetgroup/ecs-primary/YYYY
+            containerName: web
+            containerPort: 80
+          canary:
+            targetGroupArn: arn:aws:elasticloadbalancing:ap-northeast-1:XXXX:targetgroup/ecs-canary/ZZZZ
+            containerName: web
+            containerPort: 80
+      quickSync:
+        recreate: false
+  pipeline:
+    stages:
+      - name: ECS_CANARY_ROLLOUT
+        with:
+          scale: 30
+      - name: ECS_TRAFFIC_ROUTING
+        with:
+          canary: 20
+      - name: ECS_PRIMARY_ROLLOUT
+      - name: ECS_TRAFFIC_ROUTING
+        with:
+          primary: 100
+      - name: ECS_CANARY_CLEAN
+```
+
+Summary of field changes:
+
+| v0 | v1 |
+|---|---|
+| `kind: ECSApp` | `kind: Application` |
+| (no field) | `spec.plugin: ecs` |
+| (no field) | `spec.deployTarget: <deploy-target-name>` |
+| `spec.input.*` | `spec.plugins.ecs.input.*` |
+| `spec.quickSync.*` | `spec.plugins.ecs.quickSync.*` |
+| `spec.pipeline.*` | `spec.pipeline.*` (unchanged) |
+| `spec.name`, `spec.labels` | unchanged |
+
+### 3. Review behavioral changes
+
+The v1 plugin includes several fixes to behaviors that could cause service disruptions in v0. Read the [Changes from v0](#changes-from-v0) section to understand what changed before running your first v1 deployment.
+
 ## Changes from v0
 
 This section describes behavioral differences between the legacy ECS provider in PipeCD v0 and the ECS plugin in PipeCD v1. If you are migrating from v0, review these changes before deploying.
