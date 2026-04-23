@@ -164,6 +164,8 @@ deploymentController:
 
 Without this, the plugin cannot create or manage task sets for your service.
 
+> **Note:** Support for the ECS deployment controller (`type: ECS`) is planned for a future version.
+
 
 ## Quick sync
 
