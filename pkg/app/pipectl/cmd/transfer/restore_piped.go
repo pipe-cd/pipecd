@@ -16,6 +16,7 @@ package transfer
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -122,10 +123,11 @@ func registerPipeds(ctx context.Context, cli apiservice.Client, pipeds []*model.
 		}
 
 		mappings = append(mappings, PipedMapping{
-			OldPipedID: p.Id,
-			NewPipedID: resp.Id,
-			NewKey:     resp.Key,
-			PipedName:  p.Name,
+			OldPipedID:   p.Id,
+			NewPipedID:   resp.Id,
+			NewKey:       resp.Key,
+			NewBase64Key: base64.StdEncoding.EncodeToString([]byte(resp.Key)),
+			PipedName:    p.Name,
 		})
 		pipedIDMap[p.Id] = resp.Id
 

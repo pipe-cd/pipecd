@@ -38,6 +38,8 @@ type PipedMapping struct {
 	NewPipedID string `json:"new_piped_id"`
 	// NewKey is the newly issued piped API key. Update the piped config with this value.
 	NewKey string `json:"new_key"`
+	// NewBase64Key is the newly issued piped API key in base64 encoding. Update the piped config with this value.
+	NewBase64Key string `json:"new_base64_key"`
 	// PipedName is the human-readable name of the piped for reference.
 	PipedName string `json:"piped_name"`
 }
