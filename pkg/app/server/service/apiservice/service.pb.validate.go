@@ -138,6 +138,8 @@ func (m *AddApplicationRequest) validate(all bool) error {
 
 	// no validation rules for Description
 
+	// no validation rules for Labels
+
 	if len(errors) > 0 {
 		return AddApplicationRequestMultiError(errors)
 	}
