@@ -247,7 +247,8 @@ Performs Drift Detection based on the livestate of all platform providers deploy
 Currently, we need to prepare the kubeconfig file manually.
 But it would be nice to prepare it automatically.
 
-It might be possible by using cloud vendor features, for example Workload Identity on GKE or IRSA on EKS. This would allow piped to obtain the kubeconfig at startup.
+It might be possible by using cloud vendor features, for example using Workload Identity on GKE, or IRSA on EKS.
+This would allow piped to obtain the kubeconfig at startup.
 
 # Alternatives
 
