@@ -15,17 +15,61 @@
 package main
 
 import (
+	"context"
 	"log"
+
+	"go.uber.org/zap"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/deployment"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/livestate"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/toolregistry"
 )
+
+type initializer struct{}
+
+func (i *initializer) Initialize(ctx context.Context, input *sdk.InitializeInput[config.KubernetesPluginConfig, config.KubernetesDeployTargetConfig]) error {
+	registry := toolregistry.NewRegistry(input.Client.ToolRegistry())
+	helmPath, err := registry.Helm(ctx, "")
+	if err != nil {
+		return err
+	}
+
+	helm := provider.NewHelm("", helmPath, input.Logger)
+
+	if repos := input.Config.HTTPHelmChartRepositories(); len(repos) > 0 {
+		for _, repo := range repos {
+			if err := helm.AddRepository(ctx, repo); err != nil {
+				input.Logger.Error("failed to add helm chart repository", zap.String("address", repo.Address), zap.Error(err))
+				return err
+			}
+		}
+		if err := helm.UpdateRepositories(ctx); err != nil {
+			input.Logger.Error("failed to update helm chart repositories", zap.Error(err))
+			return err
+		}
+	}
+
+	for _, registry := range input.Config.ChartRegistries {
+		if !registry.IsOCI() {
+			continue
+		}
+		if err := helm.LoginToOCIRegistry(ctx, registry.Address, registry.Username, registry.Password); err != nil {
+			input.Logger.Error("failed to login to helm oci registry", zap.String("address", registry.Address), zap.Error(err))
+			return err
+		}
+	}
+
+	return nil
+}
 
 func main() {
 	plugin, err := sdk.NewPlugin(
 		"0.0.1",
+		sdk.WithInitializer[config.KubernetesApplicationSpec](&initializer{}),
 		sdk.WithDeploymentPlugin(&deployment.Plugin{}),
 		sdk.WithLivestatePlugin(&livestate.Plugin{}),
 	)
