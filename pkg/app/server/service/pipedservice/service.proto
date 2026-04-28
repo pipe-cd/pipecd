@@ -273,6 +273,8 @@ message GetDeploymentResponse {
 }
 
 message ListNotCompletedDeploymentsRequest {
+    int32 page_size = 1;
+    string cursor = 2;
 }
 
 message ListNotCompletedDeploymentsResponse {
