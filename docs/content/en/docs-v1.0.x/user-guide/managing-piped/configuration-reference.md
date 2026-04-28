@@ -206,7 +206,7 @@ Must be one of the following structs:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | type | string | Which management method should be used. Default is `KEY_PAIR`. | Yes |
-| config | [SecretManagementConfig](#secretmanagementconfig) | Configration for using secret management method. | Yes |
+| config | [SecretManagementConfig](#secretmanagementconfig) | Configuration for using secret management method. | Yes |
 
 ## SecretManagementConfig
 
@@ -253,7 +253,7 @@ Must be one of the following structs:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | name | string | The name of the receiver. | Yes |
-| slack | [NotificationReciverSlack](#notificationreceiverslack) | Configuration for slack receiver. | No |
+| slack | [NotificationReceiverSlack](#notificationreceiverslack) | Configuration for slack receiver. | No |
 | webhook | [NotificationReceiverWebhook](#notificationreceiverwebhook) | Configuration for webhook receiver. | No |
 
 #### NotificationReceiverSlack
@@ -263,10 +263,10 @@ Must be one of the following structs:
 | hookURL | string | The hookURL of a slack channel. | Yes |
 | oauthToken | string | [The token for Slack API use.](https://api.slack.com/authentication/basics) (deprecated)| No |
 | oauthTokenData | string | Base64 encoded string of [The token for Slack API use.](https://api.slack.com/authentication/basics) | No |
-| oauthTokenFile | string | The path to the oautoken file | No |
+| oauthTokenFile | string | The path to the oauthToken file | No |
 | channelID | string | The channel id which slack api send to. | No |
-| mentionedAccounts | []string | The accounts to which slack api referes. This field supports both `@username` and `username` writing styles.| No |
-| mentionedGroups | []string | The groups to which slack api referes. This field supports both `<!subteam^groupname>` and `groupname` writing styles.| No |
+| mentionedAccounts | []string | The accounts to which slack api refers. This field supports both `@username` and `username` writing styles.| No |
+| mentionedGroups | []string | The groups to which slack api refers. This field supports both `<!subteam^groupname>` and `groupname` writing styles.| No |
 
 #### NotificationReceiverWebhook
 
