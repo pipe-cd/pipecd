@@ -37,6 +37,8 @@ $ kubectl port-forward -n pipecd svc/pipecd 8080
 
 You can access the PipeCD console at [http://localhost:8080?project=quickstart](http://localhost:8080?project=quickstart)
 
+For this quickstart setup, the project name is fixed to `quickstart`. If you open `http://localhost:8080` directly, enter `quickstart` on the login screen.
+
 To login, you can use the configured static admin account as below:
 - username: `hello-pipecd`
 - password: `hello-pipecd`
@@ -106,7 +108,7 @@ After a bit, the first deployment is complete and will automatically sync the ap
 
 ![](/images/quickstart-first-deployment.png)
 
-For more about manage applications' deployment with PipeCD, referrence to [Managing application](/docs/user-guide/managing-application/)
+For more about managing applications' deployment with PipeCD, refer to [Managing application](/docs/user-guide/managing-application/)
 
 ### 3. Cleanup
 When you’re finished experimenting with PipeCD quickstart mode, you can uninstall it using:

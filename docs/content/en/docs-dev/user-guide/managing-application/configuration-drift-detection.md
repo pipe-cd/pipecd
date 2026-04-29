@@ -46,7 +46,7 @@ The details shows why the application is in OUT_OF_SYNC state
 
 ###### DEPLOYING
 
-This status means the application is deploying and the configuration drift detection is not running a white. Whenever a new deployment of the application was started, the detection process will temporarily be stopped until that deployment finishes and will be continued after that.
+This status means the application is deploying and the configuration drift detection is not running for a while. Whenever a new deployment of the application is started, the detection process will temporarily be stopped until that deployment finishes and will be continued after that.
 
 ### How to enable
 

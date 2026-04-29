@@ -6,7 +6,7 @@ description: >
   Specific guide to configuring deployment for Lambda application.
 ---
 
-Deploying a Lambda application requires a `function.yaml` file placing inside the application directory. That file contains values to be used to deploy Lambda function on your AWS cluster.
+Deploying a Lambda application requires a `function.yaml` file placed inside the application directory. That file contains values to be used to deploy Lambda function on your AWS cluster.
 Currently, Piped supports deploying all types of Lambda deployment packages:
 - container images (called [container image as Lambda function](https://aws.amazon.com/blogs/aws/new-for-aws-lambda-container-image-support/))
 - `.zip` file archives (which stored in AWS S3)
@@ -119,7 +119,7 @@ Quick sync for a Lambda deployment will roll out the new version and switch all 
 ## Sync with the specified pipeline
 
 The [pipeline](../../../configuration-reference/#lambda-application) field in the application configuration is used to customize the way to do the deployment.
-You can add a manual approval before routing traffic to the new version or add an analysis stage the do some smoke tests against the new version before allowing them to receive the real traffic.
+You can add a manual approval before routing traffic to the new version or add an analysis stage to do some smoke tests against the new version before allowing them to receive the real traffic.
 
 These are the provided stages for Lambda application you can use to build your pipeline:
 

@@ -111,7 +111,7 @@ kubectl port-forward svc/pipecd 8080 --namespace={NAMESPACE}
 
 Now go to [http://localhost:8080](http://localhost:8080) on your browser, you will see a page to login to your project.
 
-Up to here, you have a installed PipeCD's Control Plane. To logging in, you need to initialize a new project.
+Up to here, you have an installed PipeCD's Control Plane. To log in, you need to initialize a new project.
 
 ### 4. Initialize a new project
 
@@ -129,7 +129,7 @@ Once a new project has been registered, a static admin (username, password) will
 
 For more about adding a new project in detail, please read the following [docs](../../../user-guide/managing-controlplane/adding-a-project/).
 
-### 4'. Upgrade Control Plane version
+### 5. Upgrade Control Plane version
 
 To upgrade the PipeCD Control Plane, preparations and commands remain as you do when installing PipeCD Control Plane. Only need to change the version flag in command to the specified version you want to upgrade your PipeCD Control Plane to.
 

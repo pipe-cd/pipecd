@@ -35,7 +35,7 @@ There are three types of project roles:
 
 ### Application
 
-A collect of resources (containers, services, infrastructure components...) and configurations that are managed together.
+A collection of resources (containers, services, infrastructure components...) and configurations that are managed together.
 PipeCD supports multiple kinds of applications such as `KUBERNETES`, `TERRAFORM`, `ECS`, `CLOUDRUN`, `LAMBDA`...
 
 ### Application Configuration

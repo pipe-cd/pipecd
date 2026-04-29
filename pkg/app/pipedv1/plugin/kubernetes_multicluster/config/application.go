@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"github.com/creasty/defaults"
+	"github.com/pipe-cd/piped-plugin-sdk-go/unit"
 
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
 )
@@ -48,10 +49,32 @@ type KubernetesApplicationSpec struct {
 	//   name: replication-controller-name
 	Workloads []K8sResourceReference `json:"workloads"`
 
+	// Which resource should be considered as the Service of application.
+	// Empty means the first Service resource will be used.
+	Service K8sResourceReference `json:"service"`
+
 	// The label will be configured to variant manifests used to distinguish them.
 	VariantLabel KubernetesVariantLabel `json:"variantLabel"`
 
-	// TODO: Define fields for KubernetesApplicationSpec.
+	// Traffic routing configuration for this application.
+	// If not set, the default PodSelector method is used.
+	TrafficRouting *KubernetesTrafficRouting `json:"trafficRouting"`
+}
+
+func (s *KubernetesApplicationSpec) UnmarshalJSON(data []byte) error {
+	type alias KubernetesApplicationSpec
+
+	var a alias
+	if err := json.Unmarshal(data, &a); err != nil {
+		return err
+	}
+
+	*s = KubernetesApplicationSpec(a)
+	if err := defaults.Set(s); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *KubernetesApplicationSpec) Validate() error {
@@ -115,6 +138,28 @@ type KubernetesDeployTargetConfig struct {
 	KubeConfigPath string `json:"kubeConfigPath,omitempty"`
 	// Version of kubectl will be used.
 	KubectlVersion string `json:"kubectlVersion"`
+	// Configuration for application resource informer.
+	AppStateInformer KubernetesAppStateInformer `json:"appStateInformer"`
+}
+
+// KubernetesAppStateInformer represents the configuration for application resource informer.
+type KubernetesAppStateInformer struct {
+	// Only watches the specified namespace.
+	// Empty means watching all namespaces.
+	Namespace string `json:"namespace,omitempty"`
+	// List of resources that should be added to the watching targets.
+	IncludeResources []KubernetesResourceMatcher `json:"includeResources,omitempty"`
+	// List of resources that should be ignored from the watching targets.
+	ExcludeResources []KubernetesResourceMatcher `json:"excludeResources,omitempty"`
+}
+
+// KubernetesResourceMatcher represents the matcher for a Kubernetes resource.
+type KubernetesResourceMatcher struct {
+	// The APIVersion of the kubernetes resource.
+	APIVersion string `json:"apiVersion,omitempty"`
+	// The kind name of the kubernetes resource.
+	// Empty means all kinds are matching.
+	Kind string `json:"kind,omitempty"`
 }
 
 // K8sSyncStageOptions contains all configurable values for a K8S_SYNC stage.
@@ -159,4 +204,119 @@ type KubernetesMultiTarget struct {
 type KubernetesMultiTargetDeployTarget struct {
 	Name   string            `json:"name"`
 	Labels map[string]string `json:"labels"`
+}
+
+// K8sCanaryRolloutStageOptions contains all configurable values for a K8S_CANARY_ROLLOUT stage.
+type K8sCanaryRolloutStageOptions struct {
+	// How many pods for CANARY workloads.
+	// An integer value can be specified to indicate an absolute value of pod number.
+	// Or a string suffixed by "%" to indicate a percentage value compared to the pod number of PRIMARY.
+	// Default is 1 pod.
+	Replicas unit.Replicas `json:"replicas"`
+	// Suffix that should be used when naming the CANARY variant's resources.
+	// Default is "canary".
+	Suffix string `json:"suffix" default:"canary"`
+	// Whether the CANARY service should be created.
+	CreateService bool `json:"createService"`
+	// List of patches used to customize manifests for CANARY variant.
+	Patches []K8sResourcePatch `json:"patches"`
+}
+
+// K8sCanaryCleanStageOptions contains all configurable values for a K8S_CANARY_CLEAN stage.
+type K8sCanaryCleanStageOptions struct{}
+
+// K8sPrimaryRolloutStageOptions contains all configurable values for a K8S_PRIMARY_ROLLOUT stage.
+type K8sPrimaryRolloutStageOptions struct {
+	// Suffix that should be used when naming the PRIMARY variant's resources.
+	// Default is "primary".
+	Suffix string `json:"suffix" default:"primary"`
+	// Whether the PRIMARY service should be created.
+	CreateService bool `json:"createService"`
+	// Whether the PRIMARY variant label should be added to manifests if they were missing.
+	AddVariantLabelToSelector bool `json:"addVariantLabelToSelector"`
+	// Whether the resources that are no longer defined in Git should be removed or not.
+	Prune bool `json:"prune"`
+}
+
+func (o *K8sPrimaryRolloutStageOptions) UnmarshalJSON(data []byte) error {
+	type alias K8sPrimaryRolloutStageOptions
+	var a alias
+	if err := json.Unmarshal(data, &a); err != nil {
+		return err
+	}
+	*o = K8sPrimaryRolloutStageOptions(a)
+	if err := defaults.Set(o); err != nil {
+		return err
+	}
+	return nil
+}
+
+// K8sBaselineRolloutStageOptions contains all configurable values for a K8S_BASELINE_ROLLOUT stage.
+type K8sBaselineRolloutStageOptions struct {
+	// How many pods for BASELINE workloads.
+	// An integer value can be specified to indicate an absolute value of pod number.
+	// Or a string suffixed by "%" to indicate a percentage value compared to the pod number of PRIMARY.
+	// Default is 1 pod.
+	Replicas unit.Replicas `json:"replicas"`
+	// Suffix that should be used when naming the BASELINE variant's resources.
+	// Default is "baseline".
+	Suffix string `json:"suffix" default:"baseline"`
+	// Whether the BASELINE service should be created.
+	CreateService bool `json:"createService"`
+}
+
+func (o *K8sBaselineRolloutStageOptions) UnmarshalJSON(data []byte) error {
+	type alias K8sBaselineRolloutStageOptions
+	var a alias
+	if err := json.Unmarshal(data, &a); err != nil {
+		return err
+	}
+	*o = K8sBaselineRolloutStageOptions(a)
+	if err := defaults.Set(o); err != nil {
+		return err
+	}
+	return nil
+}
+
+// K8sBaselineCleanStageOptions contains all configurable values for a K8S_BASELINE_CLEAN stage.
+type K8sBaselineCleanStageOptions struct{}
+
+// K8sResourcePatch represents a patch operation for a Kubernetes resource.
+type K8sResourcePatch struct {
+	// The target of the patch operation.
+	Target K8sResourcePatchTarget `json:"target"`
+	// The operations to be performed on the target.
+	Ops []K8sResourcePatchOp `json:"ops"`
+}
+
+// K8sResourcePatchTarget represents the target of a patch operation for a Kubernetes resource.
+type K8sResourcePatchTarget struct {
+	// The reference to the Kubernetes resource.
+	K8sResourceReference
+	// In case you want to manipulate the YAML or JSON data specified in a field
+	// of the manifest, specify that field's path. The string value of that field
+	// will be used as input for the patch operations.
+	// Otherwise, the whole manifest will be the target of patch operations.
+	DocumentRoot string `json:"documentRoot"`
+}
+
+// K8sResourcePatchOpName represents the name of a patch operation for a Kubernetes resource.
+type K8sResourcePatchOpName string
+
+const (
+	// K8sResourcePatchOpYAMLReplace is the name of the patch operation that replaces the target with a new YAML document.
+	K8sResourcePatchOpYAMLReplace K8sResourcePatchOpName = "yaml-replace"
+)
+
+// K8sResourcePatchOp represents a patch operation for a Kubernetes resource.
+type K8sResourcePatchOp struct {
+	// The operation type.
+	// Currently, only "yaml-replace" is supported.
+	// Default is "yaml-replace".
+	Op K8sResourcePatchOpName `json:"op" default:"yaml-replace"`
+	// The path string pointing to the manipulated field.
+	// E.g. "$.spec.foos[0].bar"
+	Path string `json:"path"`
+	// The value string whose content will be used as new value for the field.
+	Value string `json:"value"`
 }

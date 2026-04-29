@@ -79,7 +79,7 @@ spec:
 ## Sync with the specified pipeline
 
 The [pipeline](../../../configuration-reference/#ecs-application) field in the application configuration is used to customize the way to do the deployment.
-You can add a manual approval before routing traffic to the new version or add an analysis stage the do some smoke tests against the new version before allowing them to receive the real traffic.
+You can add a manual approval before routing traffic to the new version or add an analysis stage to do some smoke tests against the new version before allowing them to receive the real traffic.
 
 These are the provided stages for ECS application you can use to build your pipeline:
 

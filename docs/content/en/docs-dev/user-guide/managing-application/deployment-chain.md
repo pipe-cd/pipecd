@@ -48,10 +48,10 @@ See [Examples](../../examples/#deployment-chain) for more specific.
 
 ## Deployment chain characteristic
 
-Something you need to care about while creating your deployment chain with PipeCD
+Something you need to be aware of while creating your deployment chain with PipeCD:
 
-1. The deployment chain blocks are run in sequence, one by one. But all nodes in the same block are run in parallel, you should ensure that all nodes(deployments) in the same block do not depend on each other.
-2. Once a node in a block has finished with `FAILURE` or `CANCELLED` status, the containing block will be set to fail, and all other nodes which have not yet finished will be set to `CANCELLED` status (those nodes will be rolled back if they're in the middle of its deploying process). Consequently, all blocks after that failed block will be set to `CANCELLED` status and be stopped.
+1. The deployment chain blocks are run in sequence, one by one. But all nodes in the same block are run in parallel, you should ensure that all nodes (deployments) in the same block do not depend on each other.
+2. Once a node in a block has finished with `FAILURE` or `CANCELLED` status, the containing block will be set to fail, and all other nodes which have not yet finished will be set to `CANCELLED` status (those nodes will be rolled back if they're in the middle of their deploying process). Consequently, all blocks after that failed block will be set to `CANCELLED` status and be stopped.
 
 ## Console view
 

@@ -8,7 +8,7 @@ description: >
 
 While deploying an application to production environments, some teams require manual approvals before continuing.
 The manual approval stage enables you to control when the deployment is allowed to continue by requiring a specific person or team to approve.
-This stage is named by `WAIT_APPROVAL` and you can add it to your pipeline before some stages should be approved before they can be executed.
+This stage is named `WAIT_APPROVAL` and you can add it to your pipeline before some stages that should be approved before they can be executed.
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1

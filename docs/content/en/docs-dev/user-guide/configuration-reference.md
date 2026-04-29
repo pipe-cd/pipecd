@@ -329,7 +329,7 @@ One of `yamlField` or `regex` is required.
 | path | string | Relative path from the repository root to the chart directory. | No |
 | repository | string | The name of a registered Helm Chart Repository. | No |
 | name | string | The chart name. | No |
-| version | string | The chart version. | No |
+| version | string | The chart version. Only valid when using a chart repository (repository field). | No |
 
 ### HelmOptions
 
@@ -574,9 +574,9 @@ Note: The available values are identical to those found in the aws-sdk-go-v2 Typ
 | failureLimit | int | Acceptable number of failures. e.g. If 1 is set, the `ANALYSIS` stage will end with failure after two queries results failed. Defaults to 1. | No |
 | skipOnNoData | bool | If true, it considers as a success when no data returned from the analysis provider. Defaults to false. | No |
 | deviation | string | The stage fails on deviation in the specified direction. One of `LOW` or `HIGH` or `EITHER` is available. This can be used only for `PREVIOUS`, `CANARY_BASELINE` or `CANARY_PRIMARY`. Defaults to `EITHER`. | No |
-| baselineArgs | map[string][string] | The custom arguments to be populated for the Baseline query. They can be reffered as `{{ .VariantCustomArgs.xxx }}`. | No |
-| canaryArgs | map[string][string] | The custom arguments to be populated for the Canary query. They can be reffered as `{{ .VariantCustomArgs.xxx }}`. | No |
-| primaryArgs | map[string][string] | The custom arguments to be populated for the Primary query. They can be reffered as `{{ .VariantCustomArgs.xxx }}`. | No |
+| baselineArgs | map[string][string] | The custom arguments to be populated for the Baseline query. They can be referred as `{{ .VariantCustomArgs.xxx }}`. | No |
+| canaryArgs | map[string][string] | The custom arguments to be populated for the Canary query. They can be referred as `{{ .VariantCustomArgs.xxx }}`. | No |
+| primaryArgs | map[string][string] | The custom arguments to be populated for the Primary query. They can be referred as `{{ .VariantCustomArgs.xxx }}`. | No |
 | timeout | duration | How long after which the query times out. | No |
 | template | [AnalysisTemplateRef](#analysistemplateref) | Reference to the template to be used. | No |
 

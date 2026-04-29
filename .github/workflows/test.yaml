@@ -11,10 +11,12 @@ on:
       - master
       - 'release-v*'
       - 'feat/*'
-
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 env:
   GO_VERSION: 1.25.0
-  NODE_VERSION: 18.12.0
+  NODE_VERSION: 20.19.0
 
 jobs:
   list-go-modules:

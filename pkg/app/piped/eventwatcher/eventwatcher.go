@@ -198,12 +198,14 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 				w.logger.Info("Try to re-clone because it's more likely to be unable to pull the next time too",
 					zap.String("repo-id", repoCfg.RepoID),
 				)
-				repo, err = w.cloneRepo(ctx, repoCfg)
+				newRepo, err := w.cloneRepo(ctx, repoCfg)
 				if err != nil {
 					w.logger.Error("failed to re-clone repository",
 						zap.String("repo-id", repoCfg.RepoID),
 						zap.Error(err),
 					)
+				} else {
+					repo = newRepo
 				}
 				continue
 			}

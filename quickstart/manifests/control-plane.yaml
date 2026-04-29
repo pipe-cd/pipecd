@@ -793,7 +793,7 @@ spec:
     spec:
       containers:
         - name: minio
-          image: minio/minio:RELEASE.2020-08-26T00-00-49Z
+          image: minio/minio:RELEASE.2024-11-07T00-52-20Z
           args:
           - server
           - /data
@@ -812,3 +812,4 @@ spec:
             - name: minio
               containerPort: 9000
               protocol: TCP
+              

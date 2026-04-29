@@ -6,10 +6,10 @@ description: >
   This page describes how to add a new Git repository.
 ---
 
-In the `piped` configuration file, we specify the list of Git repositories should be handled by the `piped`.
-A Git repository contains one or more deployable applications where each application is put inside a directory called as [application directory](../../../concepts/#application-directory).
+In the `piped` configuration file, we specify the list of Git repositories that should be handled by the `piped`.
+A Git repository contains one or more deployable applications where each application is put inside a directory called the [application directory](../../../concepts/#application-directory).
 That directory contains an application configuration file as well as application manifests.
-The `piped` periodically checks the new commits and fetches the needed manifests from those repositories for executing the deployment.
+The `piped` periodically checks for new commits and fetches the needed manifests from those repositories for executing the deployment.
 
 A single `piped` can be configured to handle one or more Git repositories.
 In order to enable a new Git repository, let's add a new [GitRepository](../configuration-reference/#gitrepository) block to the `repositories` field in the `piped` configuration file.

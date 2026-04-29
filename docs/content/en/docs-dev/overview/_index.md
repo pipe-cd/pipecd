@@ -61,8 +61,8 @@ PipeCD provides a unified continuous delivery solution for multiple application 
 
 ## Where should I go next?
 
-For a good understanding of the PipeCD's components.
-- [Concepts](../concepts): describes each components.
+For a good understanding of PipeCD's components:
+- [Concepts](../concepts): describes each component.
 - [FAQ](../faq): describes the difference between PipeCD and other tools.
 
 If you are an **operator** wanting to install and configure PipeCD for other developers.

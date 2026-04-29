@@ -4,7 +4,7 @@
 ## Prerequisites
 
 - [Go 1.24 or later](https://go.dev/)
-- [NodeJS v20 or later](https://nodejs.org/en/)
+- [NodeJS v20.19.0 or later](https://nodejs.org/en/)
 - [Docker](https://www.docker.com/)
 - [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) (If you want to run Control Plane locally)
 - [helm 3.8](https://helm.sh/docs/intro/install/) (If you want to run Control Plane locally)
