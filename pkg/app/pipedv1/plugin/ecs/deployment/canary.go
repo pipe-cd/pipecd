@@ -17,6 +17,7 @@ package deployment
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
@@ -146,4 +147,57 @@ func canaryRollout(
 
 	lp.Successf("Successfully rolled out CANARY task set %s for service %s", *taskSet.TaskSetArn, *service.ServiceName)
 	return taskSet, nil
+}
+
+func (p *ECSPlugin) executeECSCanaryCleanStage(
+	ctx context.Context,
+	input *sdk.ExecuteStageInput[ecsconfig.ECSApplicationSpec],
+	deployTarget *sdk.DeployTarget[ecsconfig.ECSDeployTargetConfig],
+) sdk.StageStatus {
+	lp := input.Client.LogPersister()
+
+	taskSetData, found, err := input.Client.GetDeploymentPluginMetadata(ctx, canaryTaskSetMetadataKey)
+	if err != nil {
+		lp.Errorf("Failed to retrieve canary task set from metadata store: %v", err)
+		return sdk.StageStatusFailure
+	}
+	if !found {
+		lp.Info("No canary task set found in metadata store, nothing to clean up")
+		return sdk.StageStatusSuccess
+	}
+
+	var taskSet types.TaskSet
+	if err := json.Unmarshal([]byte(taskSetData), &taskSet); err != nil {
+		lp.Errorf("Failed to unmarshal canary task set from metadata store: %v", err)
+		return sdk.StageStatusFailure
+	}
+
+	client, err := provider.DefaultRegistry().Client(deployTarget.Name, deployTarget.Config)
+	if err != nil {
+		lp.Errorf("Failed to get ECS client for deploy target %s: %v", deployTarget.Name, err)
+		return sdk.StageStatusFailure
+	}
+
+	if err := canaryClean(ctx, lp, client, taskSet); err != nil {
+		lp.Errorf("Failed to clean up ECS canary task set: %v", err)
+		return sdk.StageStatusFailure
+	}
+
+	return sdk.StageStatusSuccess
+}
+
+// canaryClean deletes the canary task set
+func canaryClean(ctx context.Context, lp sdk.StageLogPersister, client provider.Client, taskSet types.TaskSet) error {
+	lp.Infof("Deleting canary task set %s", *taskSet.TaskSetArn)
+	if err := client.DeleteTaskSet(ctx, taskSet); err != nil {
+		// If the task set is already gone, treat as success
+		var notFound *types.TaskSetNotFoundException
+		if errors.As(err, &notFound) {
+			lp.Infof("Canary task set %s already deleted, skipping", *taskSet.TaskSetArn)
+			return nil
+		}
+		return fmt.Errorf("failed to delete canary task set %s: %w", *taskSet.TaskSetArn, err)
+	}
+	lp.Successf("Successfully deleted canary task set %s", *taskSet.TaskSetArn)
+	return nil
 }
