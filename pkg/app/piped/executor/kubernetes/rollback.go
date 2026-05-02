@@ -230,7 +230,8 @@ func (e *rollbackExecutor) ensureScriptRunRollback(ctx context.Context) model.St
 		envs = append(envs, key+"="+value)
 	}
 
-	cmd := exec.Command("/bin/sh", "-l", "-c", onRollback)
+	cmd := exec.CommandContext(ctx, "/bin/sh", "-l", "-c", onRollback)
+	cmd.WaitDelay = time.Second
 	cmd.Dir = e.appDir
 	cmd.Env = append(os.Environ(), envs...)
 	cmd.Stdout = e.LogPersister
