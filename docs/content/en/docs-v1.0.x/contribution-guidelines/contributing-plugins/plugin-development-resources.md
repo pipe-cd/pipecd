@@ -6,10 +6,8 @@ description: >
   Links and short notes for developing PipeCD plugins.
 ---
 
-> **Note:**
-> This section is still a work in progress. A full tutorial and an in-docs translation of the Zenn book are planned over time.
->
-> For a hands-on walkthrough, read [**Build and learn PipeCD plugins**](https://zenn.dev/warashi/books/try-and-learn-pipecd-plugin) (Zenn; Japanese title *作って学ぶ PipeCD プラグイン*). The same book is linked again in [Links](#links), together with other references. Use your browser's translate feature to read this in English. Verify commands and field names against this documentation and the [`pipecd`](https://github.com/pipe-cd/pipecd) repository.
+> [!TIP]
+> New to plugin development? Start with our [**Plugin Development Book**](./book/), a hands-on guide to building and testing your first plugin.
 
 Use this page together with [Contribute to PipeCD plugins](../), which covers layout, `make` targets, and how to open a pull request.
 
@@ -80,6 +78,7 @@ After rebuilding a plugin, `piped` may still use files under **`~/.piped`** (inc
 
 | Resource | Notes |
 |----------|-------|
+| [**Plugin Development Book**](./book/) | Hands-on English tutorial (In-docs) |
 | [**Build and learn PipeCD plugins** (Zenn)](https://zenn.dev/warashi/books/try-and-learn-pipecd-plugin) | Japanese tutorial book (*作って学ぶ PipeCD プラグイン*) |
 | [DeepWiki (pipecd)](https://deepwiki.com/pipe-cd/pipecd) | Unofficial wiki-style overview of the repository. |
 | [Plugin Architecture RFC](https://github.com/pipe-cd/pipecd/blob/master/docs/rfcs/0015-pipecd-plugin-arch-meta.md) | Design (RFC) |

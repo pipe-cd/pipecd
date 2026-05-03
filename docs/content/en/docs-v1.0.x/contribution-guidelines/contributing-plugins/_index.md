@@ -43,6 +43,9 @@ For example:
 
 ## Getting started
 
+> [!TIP]
+> The [**Plugin Development Book**](./book/) provides a step-by-step walkthrough for building your first plugin.
+
 ### Prerequisites
 
 - [Go 1.24 or later](https://go.dev/)
