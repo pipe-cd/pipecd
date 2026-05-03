@@ -6,7 +6,7 @@ description: >
   This page describes how to add an Analysis Provider to analyze the metrics of your deployment.
 ---
 
-To enable [Automated deployment analysis](../user-guide/managing-application/customizing-deployment/automated-deployment-analysis/) feature, you have to set the needed information for Piped to connect to the [Analysis Provider](../concepts/#analysis-provider).
+To enable Automated deployment analysis feature, you have to set the needed information for Piped to connect to the Analysis Provider.
 
 Currently, PipeCD supports the following providers:
 

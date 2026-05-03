@@ -124,14 +124,50 @@ func (p *ECSPlugin) DetermineVersions(
 }
 
 // DetermineStrategy determines the strategy to deploy the resources.
+//
+// Use PipelineSync if any container image added, removed, or changed.
+//
+// Use QuickSync if no image difference.
 func (p *ECSPlugin) DetermineStrategy(
 	ctx context.Context,
 	cfg *ecsconfig.ECSPluginConfig,
 	input *sdk.DetermineStrategyInput[ecsconfig.ECSApplicationSpec],
 ) (*sdk.DetermineStrategyResponse, error) {
-	// Use quick sync as the default strategy for ECS deployment.
-	return &sdk.DetermineStrategyResponse{
-		Strategy: sdk.SyncStrategyQuickSync,
-		Summary:  "Use quick sync strategy for ECS deployment (work as ECS_SYNC stage)",
-	}, nil
+	targetAppCfg, err := input.Request.TargetDeploymentSource.AppConfig()
+	if err != nil {
+		input.Logger.Error("failed to load target application config", zap.Error(err))
+		return nil, err
+	}
+
+	taskDefFile := targetAppCfg.Spec.Input.TaskDefinitionFile
+
+	targetTaskDef, err := provider.LoadTaskDefinition(
+		input.Request.TargetDeploymentSource.ApplicationDirectory,
+		taskDefFile,
+	)
+	if err != nil {
+		input.Logger.Error("failed to load target task definition", zap.Error(err))
+		return nil, err
+	}
+
+	if input.Request.RunningDeploymentSource.ApplicationDirectory == "" {
+		return &sdk.DetermineStrategyResponse{
+			Strategy: sdk.SyncStrategyPipelineSync,
+			Summary:  "Sync with the specified pipeline (no running deployment source)",
+		}, nil
+	}
+
+	runningTaskDef, err := provider.LoadTaskDefinition(
+		input.Request.RunningDeploymentSource.ApplicationDirectory,
+		taskDefFile,
+	)
+	if err != nil {
+		input.Logger.Warn("failed to load running task definition, falling back to pipeline sync", zap.Error(err))
+		return &sdk.DetermineStrategyResponse{
+			Strategy: sdk.SyncStrategyPipelineSync,
+			Summary:  "Sync with the specified pipeline (unable to load running task definition)",
+		}, nil
+	}
+
+	return determineStrategy(runningTaskDef, targetTaskDef), nil
 }

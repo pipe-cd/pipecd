@@ -15,6 +15,8 @@
 package deployment
 
 import (
+	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
@@ -52,6 +54,74 @@ func parseContainerImage(image string) (img containerImage) {
 
 	img.name = last
 	return
+}
+
+// containerImages returns a map of container names to their images in the task definition that have both a name and an image set.
+func containerImages(taskDef types.TaskDefinition) map[string]string {
+	m := make(map[string]string, len(taskDef.ContainerDefinitions))
+	for _, c := range taskDef.ContainerDefinitions {
+		if c.Name == nil || c.Image == nil || *c.Image == "" {
+			continue
+		}
+		m[*c.Name] = *c.Image
+	}
+	return m
+}
+
+// determineStrategy compares the running and target task definitions and returns the appropriate sync strategy:
+//
+// Use PipelineSync if any container image added, removed, or changed.
+//
+// Use QuickSync if no image difference.
+func determineStrategy(running, target types.TaskDefinition) *sdk.DetermineStrategyResponse {
+	runningImages := containerImages(running)
+	targetImages := containerImages(target)
+
+	var changes []string
+
+	for name, targetImage := range targetImages {
+		runningImage, exists := runningImages[name]
+		if !exists {
+			changes = append(changes, fmt.Sprintf("added container %s with image %s", name, targetImage))
+			continue
+		}
+		if runningImage != targetImage {
+			ri := parseContainerImage(runningImage)
+			ti := parseContainerImage(targetImage)
+			if ri.name == ti.name {
+				riVer := ri.tag
+				if riVer == "" {
+					riVer = ri.digest
+				}
+				tiVer := ti.tag
+				if tiVer == "" {
+					tiVer = ti.digest
+				}
+				changes = append(changes, fmt.Sprintf("image %s from %s to %s", ri.name, riVer, tiVer))
+			} else {
+				changes = append(changes, fmt.Sprintf("image %s to %s", runningImage, targetImage))
+			}
+		}
+	}
+
+	for name := range runningImages {
+		if _, exists := targetImages[name]; !exists {
+			changes = append(changes, fmt.Sprintf("removed container %s", name))
+		}
+	}
+
+	if len(changes) > 0 {
+		sort.Strings(changes)
+		return &sdk.DetermineStrategyResponse{
+			Strategy: sdk.SyncStrategyPipelineSync,
+			Summary:  fmt.Sprintf("Sync progressively because of updating %s", strings.Join(changes, ", ")),
+		}
+	}
+
+	return &sdk.DetermineStrategyResponse{
+		Strategy: sdk.SyncStrategyQuickSync,
+		Summary:  "Quick sync because no container image change was detected",
+	}
 }
 
 // determineVersions extracts artifact versions from an ECS task definition.
