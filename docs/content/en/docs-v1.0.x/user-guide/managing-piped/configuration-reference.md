@@ -8,7 +8,7 @@ description: >
 
 This page describes all configurable fields for the Piped (`piped.config`) configuration file in PipeCD v1.
 
-In v1, the architecture has shifted to a plugin-based model. The old `platformProviders` have been replaced by `plugins` (which specify the tool binaries to load) and `deployTargets` (where to deploy, nested under plugins). `chartRepositories` and `analysisProviders` have also been moved or removed from the top level.
+In v1, the architecture has shifted to a plugin-based model. The old `platformProviders` have been replaced by `plugins` (which specify the tool binaries to load) and `deployTargets` (where to deploy, nested under plugins). `analysisProviders` have been moved or removed from the top level. Additionally, `chartRepositories` and `chartRegistries` have been moved from the top level and are now configured individually under `spec.plugins[].config` for the relevant platform plugins (e.g., the Kubernetes plugin).
 
 ### Example `piped.config`
 
@@ -85,7 +85,7 @@ Defines the external plugin binaries that this Piped agent should load to handle
 | --- | --- | --- | --- |
 | `name` | string | The name of the plugin (e.g., `k8s_plugin`). | Yes |
 | `url` | string | Source to download the plugin binary (schemes: `file`, `https`, `oci`). | Yes |
-| `port` | int | The port which the plugin listens to. | Yes |
+| `port` | int | The port which the plugin listens to. | No |
 | `config` | object | Configuration for the plugin. | No |
 | `deployTargets` | [][PipedDeployTarget](#pipeddeploytarget) | The destination environments/clusters where the Piped is allowed to deploy applications. | No |
 
@@ -122,6 +122,23 @@ Defines the target environments where applications can be deployed.
 | `type` | string | Which management service should be used (`KEY_PAIR`, `GCP_KMS`). | Yes |
 | `config` | object | Configuration for the specified secret management type. | Yes |
 
+## SecretManagementConfig
+
+Must be one of the following structs based on the `type` field:
+
+### SecretManagementKeyPair
+
+| Field | Type | Description | Required |
+| --- | --- | --- | --- |
+| `privateKeyFile` | string | Path to the private RSA key file. | Yes |
+| `privateKeyData` | string | Base64 encoded string of private RSA key. Either `privateKeyFile` or `privateKeyData` must be set. | No |
+| `publicKeyFile` | string | Path to the public RSA key file. | Yes |
+| `publicKeyData` | string | Base64 encoded string of public RSA key. Either `publicKeyFile` or `publicKeyData` must be set. | No |
+
+### SecretManagementGCPKMS
+
+> WIP
+
 ## Notifications
 
 | Field | Type | Description | Required |
@@ -137,6 +154,8 @@ Defines the target environments where applications can be deployed.
 | `receiver` | string | The name of receiver who will receive all matched events. | Yes |
 | `events` | []string | List of events that should be routed to the receiver. | No |
 | `ignoreEvents` | []string | List of events that should be ignored. | No |
+| `groups` | []string | List of event groups that should be routed to the receiver. | No |
+| `ignoreGroups` | []string | List of event groups that should be ignored. | No |
 | `apps` | []string | List of applications where their events should be routed. | No |
 | `ignoreApps` | []string | List of applications where their events should be ignored. | No |
 | `labels` | map[string]string | List of labels where their events should be routed. | No |
