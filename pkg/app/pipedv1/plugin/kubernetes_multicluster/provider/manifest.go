@@ -19,6 +19,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/yaml"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
@@ -92,6 +93,11 @@ func (m Manifest) NestedString(fields ...string) (string, bool, error) {
 	return unstructured.NestedString(m.body.Object, fields...)
 }
 
+// NestedStringMap returns the string map value of the nested field specified by the given fields.
+func (m Manifest) NestedStringMap(fields ...string) (map[string]string, bool, error) {
+	return unstructured.NestedStringMap(m.body.Object, fields...)
+}
+
 func (m Manifest) Key() ResourceKey {
 	return makeResourceKey(m.body)
 }
@@ -102,6 +108,10 @@ func (m Manifest) Kind() string {
 
 func (m Manifest) APIVersion() string {
 	return m.body.GetAPIVersion()
+}
+
+func (m Manifest) GroupVersionKind() schema.GroupVersionKind {
+	return m.body.GroupVersionKind()
 }
 
 func (m Manifest) Name() string {
@@ -142,6 +152,13 @@ func (m Manifest) IsDeployment() bool {
 func (m Manifest) IsStatefulSet() bool {
 	// TODO: check the API group more strictly.
 	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindStatefulSet
+}
+
+// IsDaemonSet returns true if the manifest is a DaemonSet.
+// It checks the API group and the kind of the manifest.
+func (m Manifest) IsDaemonSet() bool {
+	// TODO: check the API group more strictly.
+	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindDaemonSet
 }
 
 // IsSecret returns true if the manifest is a Secret.
