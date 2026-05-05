@@ -17,6 +17,7 @@ package deployment
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
@@ -81,6 +82,16 @@ func (p *ECSPlugin) executeECSRollbackStage(
 		}
 	}
 
+	// Restore ELB weights before touching task sets to avoid sending traffic to a
+	// canary target group with no healthy targets during the rollback window.
+	if cfg.Spec.Input.AccessType == "ELB" && primary != nil {
+		lp.Info("Restoring ELB listener weights to 100% primary / 0% canary")
+		if err := restoreELBWeights(ctx, lp, input.Client, client, primary); err != nil {
+			lp.Errorf("Failed to restore ELB listener weights: %v", err)
+			return sdk.StageStatusFailure
+		}
+	}
+
 	lp.Infof("Rolling back ECS service %s and task definition family %s", *serviceDef.ServiceName, *taskDef.Family)
 	if err := rollback(ctx, lp, client, taskDef, serviceDef, primary); err != nil {
 		lp.Errorf("Failed to rollback ECS service: %v", err)
@@ -89,6 +100,47 @@ func (p *ECSPlugin) executeECSRollbackStage(
 
 	lp.Successf("Successfully rolled back ECS service %s to commit %s", *serviceDef.ServiceName, runningSource.CommitHash)
 	return sdk.StageStatusSuccess
+}
+
+// restoreELBWeights resets the ALB listener weights to 100% primary / 0% canary.
+// It is a no-op if no listener ARNs are found in metadata (i.e., traffic routing was never performed).
+func restoreELBWeights(
+	ctx context.Context,
+	lp sdk.StageLogPersister,
+	mdStore metadataStore,
+	client provider.Client,
+	primary *types.LoadBalancer,
+) error {
+	listenersValue, ok, err := mdStore.GetDeploymentPluginMetadata(ctx, currentListenersKey)
+	if err != nil {
+		return fmt.Errorf("failed to get listener ARNs from metadata: %w", err)
+	}
+	if !ok || listenersValue == "" {
+		lp.Info("No ELB listener ARNs found in metadata, skipping ELB weights restore")
+		return nil
+	}
+
+	canaryARN, ok, err := mdStore.GetDeploymentPluginMetadata(ctx, canaryTargetGroupArnKey)
+	if err != nil {
+		return fmt.Errorf("failed to get canary target group ARN from metadata: %w", err)
+	}
+	if !ok || canaryARN == "" {
+		lp.Info("No canary target group ARN found in metadata, skipping ELB weights restore")
+		return nil
+	}
+
+	listenerArns := strings.Split(listenersValue, ",")
+	routingCfg := provider.RoutingTrafficConfig{
+		{TargetGroupArn: *primary.TargetGroupArn, Weight: 100},
+		{TargetGroupArn: canaryARN, Weight: 0},
+	}
+
+	modifiedRules, err := client.ModifyListeners(ctx, listenerArns, routingCfg)
+	if err != nil {
+		return fmt.Errorf("failed to restore ELB listener weights: %w", err)
+	}
+	lp.Infof("Restored ELB listener weights to 100%% primary / 0%% canary, modified %d rules", len(modifiedRules))
+	return nil
 }
 
 // rollback restores the ECS service and task set to the state defined in the running deployment source.
@@ -131,9 +183,6 @@ func rollback(
 	if _, err = client.UpdateServicePrimaryTaskSet(ctx, *service, *taskSet); err != nil {
 		return fmt.Errorf("failed to update primary task set for service %s: %w", *service.ServiceName, err)
 	}
-
-	// TODO: Rollback ELB listener weights (100% primary, 0% canary)
-	// once the GetListenerArns and ModifyListeners being implemented
 
 	// Delete all previous task sets including any remaining canary tasksets
 	lp.Info("Deleting previous task sets")

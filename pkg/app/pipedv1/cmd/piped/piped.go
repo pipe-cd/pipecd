@@ -91,16 +91,17 @@ type piped struct {
 	configGCPSecret string
 	configAWSSecret string
 
-	insecure             bool
-	certFile             string
-	adminPort            int
-	pluginServicePort    int
-	toolsDir             string
-	pluginsDir           string
-	gracePeriod          time.Duration
-	addLoginUserToPasswd bool
-	launcherVersion      string
-	maxRecvMsgSize       int
+	insecure              bool
+	certFile              string
+	adminPort             int
+	pluginServicePort     int
+	toolsDir              string
+	pluginsDir            string
+	gracePeriod           time.Duration
+	addLoginUserToPasswd  bool
+	launcherVersion       string
+	maxRecvMsgSize        int
+	forcePluginRedownload bool
 }
 
 func NewCommand() *cobra.Command {
@@ -141,6 +142,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().DurationVar(&p.gracePeriod, "grace-period", p.gracePeriod, "How long to wait for graceful shutdown.")
 
 	cmd.Flags().StringVar(&p.launcherVersion, "launcher-version", p.launcherVersion, "The version of launcher which initialized this Piped.")
+	cmd.Flags().BoolVar(&p.forcePluginRedownload, "force-plugin-redownload", p.forcePluginRedownload, "If true, always re-download plugin binaries instead of using cached ones. Useful during plugin development.")
 
 	return cmd
 }
@@ -697,7 +699,7 @@ func (p *piped) runPlugins(ctx context.Context, pluginsCfg []config.PipedPlugin,
 	plugins := make([]*lifecycle.Command, 0, len(pluginsCfg))
 	for _, pCfg := range pluginsCfg {
 		// Download plugin binary to piped's pluginsDir.
-		pPath, err := lifecycle.DownloadBinary(pCfg.URL, p.pluginsDir, pCfg.Name, logger)
+		pPath, err := lifecycle.DownloadBinary(pCfg.URL, p.pluginsDir, pCfg.Name, p.forcePluginRedownload, logger)
 		if err != nil {
 			return nil, fmt.Errorf("failed to download plugin %s: %w", pCfg.Name, err)
 		}

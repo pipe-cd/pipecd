@@ -15,7 +15,7 @@ concurrency:
 
 env:
   GO_VERSION: 1.25.0
-  NODE_VERSION: 18.12.0
+  NODE_VERSION: 20.19.0
   GOLANGCI_LINT_VERSION: v2.4.0
   HELM_VERSION: 3.17.3
 
@@ -48,6 +48,7 @@ jobs:
           golangci_lint_version: ${{ env.GOLANGCI_LINT_VERSION }}
           golangci_lint_flags: --config ${{ github.workspace }}/.golangci.yml
           fail_level: error
+          filter_mode: nofilter
 
   # This job is used to check if the go linting is completed successfully
   # It is used to set as required check for the branch protection rules

@@ -224,6 +224,8 @@ func generateVariantWorkloadManifests(workloads, configmaps, secrets []provider.
 }
 
 // deleteVariantResources deletes the resources of the specified variant.
+// It finds the resources of the specified variant and deletes them.
+// It deletes the resources in the order of Service -> Workload -> Others -> Cluster-scoped resources.
 func deleteVariantResources(ctx context.Context, lp sdk.StageLogPersister, kubectl *provider.Kubectl, kubeConfig string, applier *provider.Applier, applicationID, variantLabel, variant string) error {
 	namespacedLiveResources, clusterScopedLiveResources, err := provider.GetLiveResources(ctx, kubectl, kubeConfig, applicationID, fmt.Sprintf("%s=%s", variantLabel, variant))
 	if err != nil {
