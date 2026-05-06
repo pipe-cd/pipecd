@@ -1,0 +1,1086 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/pipe-cd/pipecd/pkg/config/ecs-application-spec",
+  "$ref": "#/$defs/ECSApplicationSpec",
+  "$defs": {
+    "AnalysisExpected": {
+      "properties": {
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "AnalysisHTTPHeader": {
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "AnalysisStageOptions": {
+      "properties": {
+        "duration": {
+          "type": "integer"
+        },
+        "restartThreshold": {
+          "type": "integer"
+        },
+        "metrics": {
+          "items": {
+            "$ref": "#/$defs/TemplatableAnalysisMetrics"
+          },
+          "type": "array"
+        },
+        "logs": {
+          "items": {
+            "$ref": "#/$defs/TemplatableAnalysisLog"
+          },
+          "type": "array"
+        },
+        "https": {
+          "items": {
+            "$ref": "#/$defs/TemplatableAnalysisHTTP"
+          },
+          "type": "array"
+        },
+        "skipOn": {
+          "$ref": "#/$defs/SkipOptions"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "AnalysisTemplateRef": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "appArgs": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Attachment": {
+      "properties": {
+        "sources": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "targets": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ChainApplicationMatcher": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "CloudRunPromoteStageOptions": {
+      "properties": {
+        "percent": {
+          "$ref": "#/$defs/Percentage"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "CloudRunSyncStageOptions": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "CustomSyncOptions": {
+      "properties": {
+        "timeout": {
+          "type": "integer"
+        },
+        "envs": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "run": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "DeploymentChain": {
+      "properties": {
+        "applications": {
+          "items": {
+            "$ref": "#/$defs/ChainApplicationMatcher"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "DeploymentCommitMatcher": {
+      "properties": {
+        "quickSync": {
+          "type": "string"
+        },
+        "pipeline": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "DeploymentNotification": {
+      "properties": {
+        "mentions": {
+          "items": {
+            "$ref": "#/$defs/NotificationMention"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "DeploymentPipeline": {
+      "properties": {
+        "stages": {
+          "items": {
+            "$ref": "#/$defs/PipelineStage"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "DeploymentPlanner": {
+      "properties": {
+        "alwaysUsePipeline": {
+          "type": "boolean"
+        },
+        "autoRollback": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "DriftDetection": {
+      "properties": {
+        "ignoreFields": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ECSApplicationSpec": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "description": {
+          "type": "string"
+        },
+        "planner": {
+          "$ref": "#/$defs/DeploymentPlanner"
+        },
+        "commitMatcher": {
+          "$ref": "#/$defs/DeploymentCommitMatcher"
+        },
+        "pipeline": {
+          "$ref": "#/$defs/DeploymentPipeline"
+        },
+        "trigger": {
+          "$ref": "#/$defs/Trigger"
+        },
+        "postSync": {
+          "$ref": "#/$defs/PostSync"
+        },
+        "timeout": {
+          "type": "integer"
+        },
+        "encryption": {
+          "$ref": "#/$defs/SecretEncryption"
+        },
+        "attachment": {
+          "$ref": "#/$defs/Attachment"
+        },
+        "notification": {
+          "$ref": "#/$defs/DeploymentNotification"
+        },
+        "eventWatcher": {
+          "items": {
+            "$ref": "#/$defs/EventWatcherConfig"
+          },
+          "type": "array"
+        },
+        "driftDetection": {
+          "$ref": "#/$defs/DriftDetection"
+        },
+        "plugins": true,
+        "input": {
+          "$ref": "#/$defs/ECSDeploymentInput"
+        },
+        "quickSync": {
+          "$ref": "#/$defs/ECSSyncStageOptions"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ECSCanaryCleanStageOptions": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ECSCanaryRolloutStageOptions": {
+      "properties": {
+        "scale": {
+          "$ref": "#/$defs/Percentage"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ECSDeploymentInput": {
+      "properties": {
+        "clusterArn": {
+          "type": "string"
+        },
+        "launchType": {
+          "type": "string"
+        },
+        "awsvpcConfiguration": {
+          "$ref": "#/$defs/ECSVpcConfiguration"
+        },
+        "serviceDefinitionFile": {
+          "type": "string"
+        },
+        "taskDefinitionFile": {
+          "type": "string"
+        },
+        "targetGroups": {
+          "$ref": "#/$defs/ECSTargetGroups"
+        },
+        "autoRollback": {
+          "type": "boolean"
+        },
+        "runStandaloneTask": {
+          "type": "boolean"
+        },
+        "accessType": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ECSPrimaryRolloutStageOptions": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ECSSyncStageOptions": {
+      "properties": {
+        "recreate": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ECSTargetGroup": {
+      "properties": {
+        "targetGroupArn": {
+          "type": "string"
+        },
+        "containerName": {
+          "type": "string"
+        },
+        "containerPort": {
+          "type": "integer"
+        },
+        "loadBalancerName": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ECSTargetGroups": {
+      "properties": {
+        "primary": {
+          "$ref": "#/$defs/ECSTargetGroup"
+        },
+        "canary": {
+          "$ref": "#/$defs/ECSTargetGroup"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ECSTrafficRoutingStageOptions": {
+      "properties": {
+        "canary": {
+          "$ref": "#/$defs/Percentage"
+        },
+        "primary": {
+          "$ref": "#/$defs/Percentage"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ECSVpcConfiguration": {
+      "properties": {
+        "subnets": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "assignPublicIp": {
+          "type": "string"
+        },
+        "securityGroups": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "EventWatcherConfig": {
+      "properties": {
+        "matcher": {
+          "$ref": "#/$defs/EventWatcherMatcher"
+        },
+        "handler": {
+          "$ref": "#/$defs/EventWatcherHandler"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "EventWatcherHandler": {
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "config": {
+          "$ref": "#/$defs/EventWatcherHandlerConfig"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "EventWatcherHandlerConfig": {
+      "properties": {
+        "commitMessage": {
+          "type": "string"
+        },
+        "makePullRequest": {
+          "type": "boolean"
+        },
+        "replacements": {
+          "items": {
+            "$ref": "#/$defs/EventWatcherReplacement"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "EventWatcherMatcher": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "EventWatcherReplacement": {
+      "properties": {
+        "file": {
+          "type": "string"
+        },
+        "yamlField": {
+          "type": "string"
+        },
+        "jsonField": {
+          "type": "string"
+        },
+        "hCLField": {
+          "type": "string"
+        },
+        "regex": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "K8sBaselineCleanStageOptions": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "K8sBaselineRolloutStageOptions": {
+      "properties": {
+        "replicas": {
+          "$ref": "#/$defs/Replicas"
+        },
+        "suffix": {
+          "type": "string"
+        },
+        "createService": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "K8sCanaryCleanStageOptions": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "K8sCanaryRolloutStageOptions": {
+      "properties": {
+        "replicas": {
+          "$ref": "#/$defs/Replicas"
+        },
+        "suffix": {
+          "type": "string"
+        },
+        "createService": {
+          "type": "boolean"
+        },
+        "patches": {
+          "items": {
+            "$ref": "#/$defs/K8sResourcePatch"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "K8sPrimaryRolloutStageOptions": {
+      "properties": {
+        "suffix": {
+          "type": "string"
+        },
+        "createService": {
+          "type": "boolean"
+        },
+        "addVariantLabelToSelector": {
+          "type": "boolean"
+        },
+        "prune": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "K8sResourcePatch": {
+      "properties": {
+        "target": {
+          "$ref": "#/$defs/K8sResourcePatchTarget"
+        },
+        "ops": {
+          "items": {
+            "$ref": "#/$defs/K8sResourcePatchOp"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "K8sResourcePatchOp": {
+      "properties": {
+        "op": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "K8sResourcePatchTarget": {
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "documentRoot": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "K8sTrafficRoutingStageOptions": {
+      "properties": {
+        "all": {
+          "type": "string"
+        },
+        "primary": {
+          "$ref": "#/$defs/Percentage"
+        },
+        "canary": {
+          "$ref": "#/$defs/Percentage"
+        },
+        "baseline": {
+          "$ref": "#/$defs/Percentage"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "LambdaCanaryRolloutStageOptions": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "LambdaPromoteStageOptions": {
+      "properties": {
+        "percent": {
+          "$ref": "#/$defs/Percentage"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "LambdaSyncStageOptions": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "NotificationMention": {
+      "properties": {
+        "event": {
+          "type": "string"
+        },
+        "slack": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "slackusers": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "slackgroups": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "email": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "OnChain": {
+      "properties": {
+        "disabled": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "OnCommand": {
+      "properties": {
+        "disabled": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "OnCommit": {
+      "properties": {
+        "disabled": {
+          "type": "boolean"
+        },
+        "paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "ignores": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "OnOutOfSync": {
+      "properties": {
+        "disabled": {
+          "type": "boolean"
+        },
+        "minWindow": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Percentage": {
+      "properties": {
+        "number": {
+          "type": "integer"
+        },
+        "hasSuffix": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "PipelineStage": {
+      "properties": {
+        "iD": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "timeout": {
+          "type": "integer"
+        },
+        "with": true,
+        "customSyncOptions": {
+          "$ref": "#/$defs/CustomSyncOptions"
+        },
+        "waitStageOptions": {
+          "$ref": "#/$defs/WaitStageOptions"
+        },
+        "waitApprovalStageOptions": {
+          "$ref": "#/$defs/WaitApprovalStageOptions"
+        },
+        "analysisStageOptions": {
+          "$ref": "#/$defs/AnalysisStageOptions"
+        },
+        "scriptRunStageOptions": {
+          "$ref": "#/$defs/ScriptRunStageOptions"
+        },
+        "k8sPrimaryRolloutStageOptions": {
+          "$ref": "#/$defs/K8sPrimaryRolloutStageOptions"
+        },
+        "k8sCanaryRolloutStageOptions": {
+          "$ref": "#/$defs/K8sCanaryRolloutStageOptions"
+        },
+        "k8sCanaryCleanStageOptions": {
+          "$ref": "#/$defs/K8sCanaryCleanStageOptions"
+        },
+        "k8sBaselineRolloutStageOptions": {
+          "$ref": "#/$defs/K8sBaselineRolloutStageOptions"
+        },
+        "k8sBaselineCleanStageOptions": {
+          "$ref": "#/$defs/K8sBaselineCleanStageOptions"
+        },
+        "k8sTrafficRoutingStageOptions": {
+          "$ref": "#/$defs/K8sTrafficRoutingStageOptions"
+        },
+        "terraformSyncStageOptions": {
+          "$ref": "#/$defs/TerraformSyncStageOptions"
+        },
+        "terraformPlanStageOptions": {
+          "$ref": "#/$defs/TerraformPlanStageOptions"
+        },
+        "terraformApplyStageOptions": {
+          "$ref": "#/$defs/TerraformApplyStageOptions"
+        },
+        "cloudRunSyncStageOptions": {
+          "$ref": "#/$defs/CloudRunSyncStageOptions"
+        },
+        "cloudRunPromoteStageOptions": {
+          "$ref": "#/$defs/CloudRunPromoteStageOptions"
+        },
+        "lambdaSyncStageOptions": {
+          "$ref": "#/$defs/LambdaSyncStageOptions"
+        },
+        "lambdaCanaryRolloutStageOptions": {
+          "$ref": "#/$defs/LambdaCanaryRolloutStageOptions"
+        },
+        "lambdaPromoteStageOptions": {
+          "$ref": "#/$defs/LambdaPromoteStageOptions"
+        },
+        "eCSSyncStageOptions": {
+          "$ref": "#/$defs/ECSSyncStageOptions"
+        },
+        "eCSCanaryRolloutStageOptions": {
+          "$ref": "#/$defs/ECSCanaryRolloutStageOptions"
+        },
+        "eCSPrimaryRolloutStageOptions": {
+          "$ref": "#/$defs/ECSPrimaryRolloutStageOptions"
+        },
+        "eCSCanaryCleanStageOptions": {
+          "$ref": "#/$defs/ECSCanaryCleanStageOptions"
+        },
+        "eCSTrafficRoutingStageOptions": {
+          "$ref": "#/$defs/ECSTrafficRoutingStageOptions"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "PostSync": {
+      "properties": {
+        "chain": {
+          "$ref": "#/$defs/DeploymentChain"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Replicas": {
+      "properties": {
+        "number": {
+          "type": "integer"
+        },
+        "isPercentage": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ScriptRunStageOptions": {
+      "properties": {
+        "env": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "run": {
+          "type": "string"
+        },
+        "timeout": {
+          "type": "integer"
+        },
+        "onRollback": {
+          "type": "string"
+        },
+        "skipOn": {
+          "$ref": "#/$defs/SkipOptions"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "SecretEncryption": {
+      "properties": {
+        "encryptedSecrets": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "decryptionTargets": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "SkipOptions": {
+      "properties": {
+        "commitMessagePrefixes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "TemplatableAnalysisHTTP": {
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        },
+        "headers": {
+          "items": {
+            "$ref": "#/$defs/AnalysisHTTPHeader"
+          },
+          "type": "array"
+        },
+        "expectedCode": {
+          "type": "integer"
+        },
+        "expectedResponse": {
+          "type": "string"
+        },
+        "interval": {
+          "type": "integer"
+        },
+        "failureLimit": {
+          "type": "integer"
+        },
+        "skipOnNoData": {
+          "type": "boolean"
+        },
+        "timeout": {
+          "type": "integer"
+        },
+        "template": {
+          "$ref": "#/$defs/AnalysisTemplateRef"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "TemplatableAnalysisLog": {
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "interval": {
+          "type": "integer"
+        },
+        "failureLimit": {
+          "type": "integer"
+        },
+        "skipOnNoData": {
+          "type": "boolean"
+        },
+        "timeout": {
+          "type": "integer"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "template": {
+          "$ref": "#/$defs/AnalysisTemplateRef"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "TemplatableAnalysisMetrics": {
+      "properties": {
+        "strategy": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "query": {
+          "type": "string"
+        },
+        "expected": {
+          "$ref": "#/$defs/AnalysisExpected"
+        },
+        "interval": {
+          "type": "integer"
+        },
+        "failureLimit": {
+          "type": "integer"
+        },
+        "skipOnNoData": {
+          "type": "boolean"
+        },
+        "timeout": {
+          "type": "integer"
+        },
+        "deviation": {
+          "type": "string"
+        },
+        "canaryArgs": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "baselineArgs": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "primaryArgs": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "template": {
+          "$ref": "#/$defs/AnalysisTemplateRef"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "TerraformApplyStageOptions": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "TerraformPlanStageOptions": {
+      "properties": {
+        "exitOnNoChanges": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "TerraformSyncStageOptions": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Trigger": {
+      "properties": {
+        "onCommit": {
+          "$ref": "#/$defs/OnCommit"
+        },
+        "onCommand": {
+          "$ref": "#/$defs/OnCommand"
+        },
+        "onOutOfSync": {
+          "$ref": "#/$defs/OnOutOfSync"
+        },
+        "onChain": {
+          "$ref": "#/$defs/OnChain"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "WaitApprovalStageOptions": {
+      "properties": {
+        "timeout": {
+          "type": "integer"
+        },
+        "approvers": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "minApproverNum": {
+          "type": "integer"
+        },
+        "skipOn": {
+          "$ref": "#/$defs/SkipOptions"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "WaitStageOptions": {
+      "properties": {
+        "duration": {
+          "type": "integer"
+        },
+        "skipOn": {
+          "$ref": "#/$defs/SkipOptions"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    }
+  }
+}
