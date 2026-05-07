@@ -211,8 +211,18 @@ func (p *Plugin) rollback(ctx context.Context, input *sdk.ExecuteStageInput[kube
 		failed = true
 	}
 
-	// TODO: prune resources which don't exist in the running manifests but exist in the target manifests.
-	// This occurs when the user adds a new resource and the deployment pipeline fails.
+	lp.Info("Start pruning resources that do not exist in the running manifests")
+	targetCfg, err := input.Request.TargetDeploymentSource.AppConfig()
+	if err != nil {
+		lp.Infof("Failed to load target app config for pruning, skipping: %v", err)
+	} else {
+		targetManifests, err := p.loadManifests(ctx, &input.Request.Deployment, targetCfg.Spec, &input.Request.TargetDeploymentSource, provider.NewLoader(toolRegistry), input.Logger, multiTarget)
+		if err != nil {
+			lp.Infof("Failed to load target manifests for pruning, skipping: %v", err)
+		} else {
+			pruneOrphanedResources(ctx, lp, applier, manifests, targetManifests)
+		}
+	}
 
 	if failed {
 		return sdk.StageStatusFailure

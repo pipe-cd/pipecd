@@ -282,3 +282,36 @@ func deleteResources(ctx context.Context, lp sdk.StageLogPersister, applier *pro
 
 	return deletedCount
 }
+
+// findOrphanedKeys returns the keys of resources present in targetManifests
+// but absent from runningManifests.
+func findOrphanedKeys(runningManifests, targetManifests []provider.Manifest) []provider.ResourceKey {
+	runningKeys := make(map[provider.ResourceKey]struct{}, len(runningManifests))
+	for _, m := range runningManifests {
+		runningKeys[m.Key()] = struct{}{}
+	}
+
+	orphans := make([]provider.ResourceKey, 0)
+	for _, m := range targetManifests {
+		if _, exists := runningKeys[m.Key()]; !exists {
+			orphans = append(orphans, m.Key())
+		}
+	}
+	return orphans
+}
+
+// pruneOrphanedResources deletes resources that exist in targetManifests but not in runningManifests.
+// This handles the case where a new resource was applied during the failed deployment and must be
+// removed during rollback to restore the cluster to the last known good state.
+func pruneOrphanedResources(ctx context.Context, lp sdk.StageLogPersister, applier *provider.Applier, runningManifests, targetManifests []provider.Manifest) {
+	orphans := findOrphanedKeys(runningManifests, targetManifests)
+
+	if len(orphans) == 0 {
+		lp.Info("No orphaned resources to prune")
+		return
+	}
+
+	lp.Infof("Found %d orphaned resource(s) to prune", len(orphans))
+	deleted := deleteResources(ctx, lp, applier, orphans)
+	lp.Successf("Successfully pruned %d orphaned resource(s)", deleted)
+}

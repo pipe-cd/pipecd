@@ -23,6 +23,159 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
 )
 
+func TestFindOrphanedKeys(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name             string
+		runningManifests string
+		targetManifests  string
+		wantCount        int
+		wantNames        []string
+	}{
+		{
+			name: "no orphans when target equals running",
+			runningManifests: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: default
+`,
+			targetManifests: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: default
+`,
+			wantCount: 0,
+			wantNames: []string{},
+		},
+		{
+			name:             "all target resources are orphaned when running is empty",
+			runningManifests: "",
+			targetManifests: `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: new-config
+  namespace: default
+`,
+			wantCount: 1,
+			wantNames: []string{"new-config"},
+		},
+		{
+			name: "new resource in target not present in running is orphaned",
+			runningManifests: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: default
+`,
+			targetManifests: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: default
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: new-config
+  namespace: default
+`,
+			wantCount: 1,
+			wantNames: []string{"new-config"},
+		},
+		{
+			name: "resource only in running is not pruned",
+			runningManifests: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: default
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: old-config
+  namespace: default
+`,
+			targetManifests: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: default
+`,
+			wantCount: 0,
+			wantNames: []string{},
+		},
+		{
+			name: "multiple orphaned resources",
+			runningManifests: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: default
+`,
+			targetManifests: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: default
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: new-config
+  namespace: default
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: new-svc
+  namespace: default
+`,
+			wantCount: 2,
+			wantNames: []string{"new-config", "new-svc"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			var running []provider.Manifest
+			if tt.runningManifests != "" {
+				running = mustParseManifests(t, tt.runningManifests)
+			}
+			var target []provider.Manifest
+			if tt.targetManifests != "" {
+				target = mustParseManifests(t, tt.targetManifests)
+			}
+
+			orphans := findOrphanedKeys(running, target)
+
+			assert.Len(t, orphans, tt.wantCount)
+
+			gotNames := make([]string, 0, len(orphans))
+			for _, k := range orphans {
+				gotNames = append(gotNames, k.Name())
+			}
+			for _, name := range tt.wantNames {
+				assert.Contains(t, gotNames, name)
+			}
+		})
+	}
+}
+
 func TestCheckVariantSelectorInWorkload(t *testing.T) {
 	t.Parallel()
 
