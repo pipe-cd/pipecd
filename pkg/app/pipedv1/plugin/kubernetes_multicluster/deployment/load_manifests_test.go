@@ -42,11 +42,11 @@ func TestLoadManifests_KustomizeOverrides(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name             string
-		specInput        kubeconfig.KubernetesDeploymentInput
-		multiTarget      *kubeconfig.KubernetesMultiTarget
-		wantVersion      string
-		wantOptions      map[string]string
+		name        string
+		specInput   kubeconfig.KubernetesDeploymentInput
+		multiTarget *kubeconfig.KubernetesMultiTarget
+		wantVersion string
+		wantOptions map[string]string
 	}{
 		{
 			name: "top-level version and options used when multiTarget has none",
