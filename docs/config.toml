@@ -77,7 +77,7 @@ style = "tango"
 [[menu.main]]
 # This section add 'Tutorial' to the header navigation bar.
 name = "Tutorial"
-url = "https://github.com/pipe-cd/tutorial"
+url = "/docs-v0.50.x/tutorial/"
 weight = 25
 
 [params]
