@@ -361,6 +361,12 @@ func TestPipedConfig(t *testing.T) {
 						},
 					},
 				},
+				PlanPreview: PipedPlanPreview{
+					WorkerNum:              5,
+					CommandQueueBufferSize: 20,
+					CommandCheckInterval:   Duration(5 * time.Second),
+					CommandHandleTimeout:   Duration(10 * time.Minute),
+				},
 			},
 			expectedError: nil,
 		},
@@ -374,6 +380,95 @@ func TestPipedConfig(t *testing.T) {
 				assert.Equal(t, tc.expectedAPIVersion, cfg.APIVersion)
 				assert.Equal(t, tc.expectedSpec, cfg.spec)
 			}
+		})
+	}
+}
+
+func TestPipedPlanPreviewValidate(t *testing.T) {
+	testcases := []struct {
+		name                 string
+		planPreview          PipedPlanPreview
+		wantErr              bool
+		wantPipedPlanPreview PipedPlanPreview
+	}{
+		{
+			name:    "negative workerNum",
+			wantErr: true,
+			planPreview: PipedPlanPreview{
+				WorkerNum: -1,
+			},
+			wantPipedPlanPreview: PipedPlanPreview{
+				WorkerNum: -1,
+			},
+		},
+		{
+			name:    "negative commandQueueBufferSize",
+			wantErr: true,
+			planPreview: PipedPlanPreview{
+				CommandQueueBufferSize: -1,
+			},
+			wantPipedPlanPreview: PipedPlanPreview{
+				CommandQueueBufferSize: -1,
+			},
+		},
+		{
+			name:    "negative commandCheckInterval",
+			wantErr: true,
+			planPreview: PipedPlanPreview{
+				CommandCheckInterval: Duration(-time.Second),
+			},
+			wantPipedPlanPreview: PipedPlanPreview{
+				CommandCheckInterval: Duration(-time.Second),
+			},
+		},
+		{
+			name:    "negative commandHandleTimeout",
+			wantErr: true,
+			planPreview: PipedPlanPreview{
+				CommandHandleTimeout: Duration(-time.Minute),
+			},
+			wantPipedPlanPreview: PipedPlanPreview{
+				CommandHandleTimeout: Duration(-time.Minute),
+			},
+		},
+		{
+			name:    "all zero",
+			wantErr: false,
+			planPreview: PipedPlanPreview{
+				WorkerNum:              0,
+				CommandQueueBufferSize: 0,
+				CommandCheckInterval:   Duration(0),
+				CommandHandleTimeout:   Duration(0),
+			},
+			wantPipedPlanPreview: PipedPlanPreview{
+				WorkerNum:              0,
+				CommandQueueBufferSize: 0,
+				CommandCheckInterval:   Duration(0),
+				CommandHandleTimeout:   Duration(0),
+			},
+		},
+		{
+			name:    "valid values",
+			wantErr: false,
+			planPreview: PipedPlanPreview{
+				WorkerNum:              5,
+				CommandQueueBufferSize: 20,
+				CommandCheckInterval:   Duration(5 * time.Second),
+				CommandHandleTimeout:   Duration(10 * time.Minute),
+			},
+			wantPipedPlanPreview: PipedPlanPreview{
+				WorkerNum:              5,
+				CommandQueueBufferSize: 20,
+				CommandCheckInterval:   Duration(5 * time.Second),
+				CommandHandleTimeout:   Duration(10 * time.Minute),
+			},
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.planPreview.Validate()
+			assert.Equal(t, tc.wantErr, err != nil)
+			assert.Equal(t, tc.wantPipedPlanPreview, tc.planPreview)
 		})
 	}
 }
@@ -1137,6 +1232,12 @@ func TestPipedSpecClone(t *testing.T) {
 						},
 					},
 				},
+				PlanPreview: PipedPlanPreview{
+					WorkerNum:              5,
+					CommandQueueBufferSize: 20,
+					CommandCheckInterval:   Duration(5 * time.Second),
+					CommandHandleTimeout:   Duration(10 * time.Minute),
+				},
 			},
 			expectedSpec: &PipedSpec{
 				ProjectID:             "test-project",
@@ -1334,6 +1435,12 @@ func TestPipedSpecClone(t *testing.T) {
 							Includes:      []string{"event-watcher-dev.yaml", "event-watcher-stg.yaml"},
 						},
 					},
+				},
+				PlanPreview: PipedPlanPreview{
+					WorkerNum:              5,
+					CommandQueueBufferSize: 20,
+					CommandCheckInterval:   Duration(5 * time.Second),
+					CommandHandleTimeout:   Duration(10 * time.Minute),
 				},
 			},
 			expectedError: nil,
