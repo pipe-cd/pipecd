@@ -144,13 +144,15 @@ Usage:
 
 Available Commands:
   application  Manage application resources.
+  completion   Generate the autocompletion script for the specified shell
   deployment   Manage deployment resources.
   encrypt      Encrypt the plaintext entered in either stdin or the --input-file flag.
   event        Manage event resources.
   help         Help about any command
-  init         Generate an application config (app.pipecd.yaml) easily and interactively.
+  migrate      Do migration tasks.
   piped        Manage piped resources.
   plan-preview Show plan preview against the specified commit.
+  plugin       Do plugin tasks.
   version      Print the information of current binary.
 
 Flags:
