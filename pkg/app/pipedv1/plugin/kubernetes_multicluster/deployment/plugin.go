@@ -89,12 +89,14 @@ func (p *Plugin) ExecuteStage(ctx context.Context, _ *kubeconfig.KubernetesPlugi
 }
 
 func (p *Plugin) loadManifests(ctx context.Context, deploy *sdk.Deployment, spec *kubeconfig.KubernetesApplicationSpec, deploymentSource *sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec], loader loader, logger *zap.Logger, multiTarget *kubeconfig.KubernetesMultiTarget) ([]provider.Manifest, error) {
-	// override values if multiTarget has value.
+	// Override manifest paths and kustomize directory from the per-target config if set.
 	manifestPathes := spec.Input.Manifests
+	kustomizeDir := ""
 	if multiTarget != nil {
 		if len(multiTarget.Manifests) > 0 {
 			manifestPathes = multiTarget.Manifests
 		}
+		kustomizeDir = multiTarget.KustomizeDir
 	}
 
 	manifests, err := loader.LoadManifests(ctx, provider.LoaderInput{
@@ -107,6 +109,7 @@ func (p *Plugin) loadManifests(ctx context.Context, deploy *sdk.Deployment, spec
 		Manifests:        manifestPathes,
 		Namespace:        spec.Input.Namespace,
 		KustomizeVersion: spec.Input.KustomizeVersion,
+		KustomizeDir:     kustomizeDir,
 		KustomizeOptions: spec.Input.KustomizeOptions,
 		HelmVersion:      spec.Input.HelmVersion,
 		HelmChart:        spec.Input.HelmChart,
