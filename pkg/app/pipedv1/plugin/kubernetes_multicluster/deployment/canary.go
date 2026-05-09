@@ -47,13 +47,8 @@ func (p *Plugin) executeK8sMultiCanaryRolloutStage(ctx context.Context, input *s
 		}
 	}
 
-	type targetConfig struct {
-		deployTarget *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]
-		multiTarget  *kubeconfig.KubernetesMultiTarget
-	}
-
 	deployTargetMap := make(map[string]*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], 0)
-	targetConfigs := make([]targetConfig, 0, len(dts))
+	targetConfigs := make([]stageTargetConfig, 0, len(dts))
 
 	for _, target := range dts {
 		deployTargetMap[target.Name] = target
@@ -62,7 +57,7 @@ func (p *Plugin) executeK8sMultiCanaryRolloutStage(ctx context.Context, input *s
 	// If no multi-targets are specified, roll out canary to all deploy targets.
 	if len(cfg.Spec.Input.MultiTargets) == 0 {
 		for _, dt := range dts {
-			targetConfigs = append(targetConfigs, targetConfig{
+			targetConfigs = append(targetConfigs, stageTargetConfig{
 				deployTarget: dt,
 				multiTarget:  nil,
 			})
@@ -75,12 +70,14 @@ func (p *Plugin) executeK8sMultiCanaryRolloutStage(ctx context.Context, input *s
 				continue
 			}
 
-			targetConfigs = append(targetConfigs, targetConfig{
+			targetConfigs = append(targetConfigs, stageTargetConfig{
 				deployTarget: dt,
 				multiTarget:  &multiTarget,
 			})
 		}
 	}
+
+	targetConfigs = filterStageTargets(targetConfigs, stageCfg.MultiTargets)
 
 	eg, ctx := errgroup.WithContext(ctx)
 	for _, tc := range targetConfigs {
@@ -366,19 +363,23 @@ func (p *Plugin) executeK8sMultiCanaryCleanStage(ctx context.Context, input *sdk
 		return sdk.StageStatusFailure
 	}
 
+	var stageCfg kubeconfig.K8sCanaryCleanStageOptions
+	if len(input.Request.StageConfig) > 0 {
+		if err := json.Unmarshal(input.Request.StageConfig, &stageCfg); err != nil {
+			lp.Errorf("Failed while unmarshalling stage config (%v)", err)
+			return sdk.StageStatusFailure
+		}
+	}
+
 	deployTargetMap := make(map[string]*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], len(dts))
 	for _, dt := range dts {
 		deployTargetMap[dt.Name] = dt
 	}
 
-	type targetConfig struct {
-		deployTarget *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]
-	}
-
-	targetConfigs := make([]targetConfig, 0, len(dts))
+	targetConfigs := make([]stageTargetConfig, 0, len(dts))
 	if len(cfg.Spec.Input.MultiTargets) == 0 {
 		for _, dt := range dts {
-			targetConfigs = append(targetConfigs, targetConfig{deployTarget: dt})
+			targetConfigs = append(targetConfigs, stageTargetConfig{deployTarget: dt})
 		}
 	} else {
 		for _, mt := range cfg.Spec.Input.MultiTargets {
@@ -387,9 +388,11 @@ func (p *Plugin) executeK8sMultiCanaryCleanStage(ctx context.Context, input *sdk
 				lp.Infof("Ignore multi target '%s': not matched any deployTarget", mt.Target.Name)
 				continue
 			}
-			targetConfigs = append(targetConfigs, targetConfig{deployTarget: dt})
+			targetConfigs = append(targetConfigs, stageTargetConfig{deployTarget: dt})
 		}
 	}
+
+	targetConfigs = filterStageTargets(targetConfigs, stageCfg.MultiTargets)
 
 	eg, ctx := errgroup.WithContext(ctx)
 	for _, tc := range targetConfigs {

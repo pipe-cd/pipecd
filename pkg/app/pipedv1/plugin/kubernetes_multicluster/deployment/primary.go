@@ -47,13 +47,8 @@ func (p *Plugin) executeK8sMultiPrimaryRolloutStage(ctx context.Context, input *
 		}
 	}
 
-	type targetConfig struct {
-		deployTarget *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]
-		multiTarget  *kubeconfig.KubernetesMultiTarget
-	}
-
 	deployTargetMap := make(map[string]*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig])
-	targetConfigs := make([]targetConfig, 0, len(dts))
+	targetConfigs := make([]stageTargetConfig, 0, len(dts))
 
 	for _, target := range dts {
 		deployTargetMap[target.Name] = target
@@ -62,7 +57,7 @@ func (p *Plugin) executeK8sMultiPrimaryRolloutStage(ctx context.Context, input *
 	// If no multi-targets are specified, roll out primary to all deploy targets.
 	if len(cfg.Spec.Input.MultiTargets) == 0 {
 		for _, dt := range dts {
-			targetConfigs = append(targetConfigs, targetConfig{
+			targetConfigs = append(targetConfigs, stageTargetConfig{
 				deployTarget: dt,
 				multiTarget:  nil,
 			})
@@ -74,12 +69,14 @@ func (p *Plugin) executeK8sMultiPrimaryRolloutStage(ctx context.Context, input *
 				lp.Infof("Ignore multi target '%s': not matched any deployTarget", multiTarget.Target.Name)
 				continue
 			}
-			targetConfigs = append(targetConfigs, targetConfig{
+			targetConfigs = append(targetConfigs, stageTargetConfig{
 				deployTarget: dt,
 				multiTarget:  &multiTarget,
 			})
 		}
 	}
+
+	targetConfigs = filterStageTargets(targetConfigs, stageCfg.MultiTargets)
 
 	eg, ctx := errgroup.WithContext(ctx)
 	for _, tc := range targetConfigs {
