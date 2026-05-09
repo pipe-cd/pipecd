@@ -56,13 +56,13 @@ func (h *Helm) LoginToOCIRegistry(ctx context.Context, address, username, passwo
 		"login",
 		"-u",
 		username,
-		"-p",
-		password,
+		"--password-stdin",
 		address,
 	}
 
 	var stderr bytes.Buffer
 	cmd := exec.CommandContext(ctx, h.execPath, args...)
+	cmd.Stdin = strings.NewReader(password)
 	cmd.Stderr = &stderr
 
 	h.logger.Info("login to oci registry", zap.String("address", address))
@@ -78,10 +78,16 @@ func (h *Helm) AddRepository(ctx context.Context, repo config.HelmChartRepositor
 	if repo.Insecure {
 		args = append(args, "--insecure-skip-tls-verify")
 	}
-	if repo.Username != "" || repo.Password != "" {
-		args = append(args, "--username", repo.Username, "--password", repo.Password)
+	if repo.Username != "" {
+		args = append(args, "--username", repo.Username)
+	}
+	if repo.Password != "" {
+		args = append(args, "--password-stdin")
 	}
 	cmd := exec.CommandContext(ctx, h.execPath, args...)
+	if repo.Password != "" {
+		cmd.Stdin = strings.NewReader(repo.Password)
+	}
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		h.logger.Error("failed to add chart repository", zap.String("name", repo.Name), zap.Error(err))
