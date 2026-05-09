@@ -132,7 +132,6 @@ func (p *Plugin) rollback(ctx context.Context, input *sdk.ExecuteStageInput[kube
 
 	lp.Infof("Loading manifests at commit %s for handling", input.Request.RunningDeploymentSource.CommitHash)
 	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
-	// TODO: consider multiTarget later
 	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.RunningDeploymentSource, provider.NewLoader(toolRegistry), input.Logger, multiTarget)
 	if err != nil {
 		lp.Errorf("Failed while loading manifests (%v)", err)
