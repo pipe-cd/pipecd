@@ -8,13 +8,13 @@
 <div class="{{ $bg_color }} row d-print-none">
   <div class="container-fluid py-3 mx-sm-5">
     <div class="row">
-      <div class="col-8 py-3 order-sm-2 {{ $text_color }}">
+      <div class="col-12 col-sm-8 py-3 order-sm-2 {{ $text_color }}"></div>
         <a href="https://www.cncf.io/projects/pipecd/" target="_blank">
           <img src="{{ $cncf_logo }}" alt="cncf logo" width="250">
           <div class="py-2 {{ $text_color }}">PipeCD is a Cloud Native Computing Foundation sandbox project.</div>
         </a>
       </div>
-      <div class="col-4 order-sm-3 d-flex align-items-center justify-content-center">
+      <div class="col-12 col-sm-4 order-sm-3 d-flex flex-wrap align-items-center justify-content-center"></div>
         {{ with $links }}
         {{ with index . "developer"}}
         <ul class="list-inline mb-0">
