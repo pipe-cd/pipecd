@@ -153,11 +153,6 @@ no = 'Sorry to hear that. Please <a href="https://github.com/pipe-cd/pipecd/issu
 	url = "https://slack.cncf.io"
 	icon = "fab fa-slack"
         desc = "Chat with other project developers"
-[[params.links.developer]]
-	name = "Developer mailing list"
-	url = "mailto:pipecd.dev@gmail.com"
-	icon = "fa fa-envelope"
-        desc = "Discuss development issues around the project"
 
 # Append the release versions here.
 [[params.versions]]
