@@ -1,7 +1,5 @@
-import { ThemeProvider, StyledEngineProvider } from "@mui/material";
-import CssBaseline from "@mui/material/CssBaseline";
+import { StyledEngineProvider } from "@mui/material";
 import { render } from "react-dom";
-import { theme } from "./theme";
 import { Routes } from "./routes";
 import { BrowserRouter } from "react-router-dom";
 import { setupDayjs } from "./utils/setup-dayjs";
@@ -10,6 +8,7 @@ import QueryClientWrap from "./contexts/query-client-provider";
 import { AuthProvider } from "./contexts/auth-context";
 import { ToastProvider } from "./contexts/toast-context/toast-provider";
 import { CommandProvider } from "./contexts/command-context";
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 async function run(): Promise<void> {
   if (process.env.ENABLE_MOCK === "true") {
@@ -48,7 +47,7 @@ Happy PipeCD-ing 🙌
   render(
     <CookiesProvider>
       <StyledEngineProvider injectFirst>
-        <ThemeProvider theme={theme}>
+        <ThemeProvider>
           <BrowserRouter
             future={{
               v7_startTransition: false,
@@ -59,7 +58,6 @@ Happy PipeCD-ing 🙌
               <QueryClientWrap>
                 <AuthProvider>
                   <CommandProvider>
-                    <CssBaseline />
                     <Routes />
                   </CommandProvider>
                 </AuthProvider>

@@ -32,6 +32,7 @@ import logo from "~~/assets/logo.svg";
 import NavLink from "./NavLink";
 import { IconOpenNewTab, LogoImage } from "./styles";
 import useAuth from "~/contexts/auth-context/use-auth";
+import ThemeToggle from "~/components/theme/ThemeToggle";
 
 export const APP_HEADER_HEIGHT = 56;
 
@@ -110,6 +111,7 @@ export const Header: FC = memo(function Header() {
             alignItems: "center",
           }}
         >
+          <ThemeToggle />
           {me?.isLogin ? (
             <>
               <NavLink href={PAGE_PATH_APPLICATIONS}>Applications</NavLink>
