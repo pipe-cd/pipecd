@@ -171,6 +171,19 @@ Note that if it's a new breaking change, make sure to complete the two latter qu
 
 ## Development
 
+### Prerequisites
+
+Before setting up a local development environment, ensure you have the following installed:
+
+- **Go** 1.19 or later ([installation guide](https://golang.org/doc/install))
+- **Docker** ([installation guide](https://docs.docker.com/get-docker/))
+- **kubectl** ([installation guide](https://kubernetes.io/docs/tasks/tools/))
+- **Git** with configured credentials for GitHub access
+- **Make** (usually comes with macOS and Linux; Windows users can install via [chocolatey](https://chocolatey.org/packages/make))
+- **Node.js** 16 or later (for web development) ([installation guide](https://nodejs.org/))
+
+### Project Structure
+
 PipeCD consists of several components and docs:
 
 - **cmd/pipecd**: A centralized component that manages deployment data and provides a gRPC API for connecting pipeds, as well as web functionalities such as authentication. [README.md](./cmd/pipecd/README.md)
@@ -270,7 +283,78 @@ where the `CONFIG_FILE` is the path to your piped confiuration file and the `INS
 
 Replace `path/to/piped-config.yaml` with the actual path to your configuration file.
 
-### Online one-click setup for contributing
+### Testing Your Changes
+
+Before submitting a pull request, ensure your changes pass all tests and linting:
+
+```bash
+# Run all checks (tests, linting, and formatting)
+make check
+
+# Run specific test suites
+make test                    # Run all unit tests
+make test/integration        # Run integration tests
+make test/web                # Run web application tests
+
+# Format and lint your code
+make fmt                     # Format Go code
+make lint                    # Run linters
+```
+
+**Important**: Always run `make check` before submitting your PR. This catches common issues early and prevents CI failures.
+
+### Troubleshooting Common Setup Issues
+
+#### Issue: `make up/local-cluster` fails
+
+**Solution**: Ensure Docker is running and you have sufficient disk space (at least 10GB recommended). If using Docker Desktop, check resource allocation in Docker settings.
+
+#### Issue: Port 8080 is already in use
+
+**Solution**: Either stop the service using port 8080, or use a different port:
+```bash
+kubectl port-forward -n pipecd svc/pipecd 8081:8080
+```
+Then access the UI at `http://localhost:8081?project=quickstart`.
+
+#### Issue: `make run/piped` fails with "connection refused"
+
+**Solution**: Verify that:
+1. PipeCD Control Plane is running (`make run/pipecd`)
+2. Port forwarding is active (`kubectl port-forward -n pipecd svc/pipecd 8080`)
+3. The API address in `piped-config.yaml` is correct (should be `localhost:8080` for local development)
+
+#### Issue: "go: version mismatch" or dependency errors
+
+**Solution**: Update your dependencies:
+```bash
+make update/go-deps
+make update/web-deps
+```
+
+Then run the specific command again.
+
+#### Issue: Web application doesn't load or shows errors
+
+**Solution**: Ensure Node.js is installed and dependencies are up-to-date:
+```bash
+cd web
+npm install
+cd ..
+make update/web-deps
+```
+
+Then restart the development environment.
+
+#### Issue: Changes to Go code aren't reflected
+
+**Solution**: PipeCD components need to be rebuilt when code changes. Stop the running process and restart:
+```bash
+make stop/pipecd
+make run/pipecd
+```
+
+
 
 We are preparing Gitpod and Codespace to facilitate the setup process for contributing.
 

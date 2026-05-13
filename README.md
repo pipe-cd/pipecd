@@ -31,6 +31,19 @@ PipeCD provides __a unified continuous delivery solution for multiple applicatio
 
 ![](https://github.com/pipe-cd/pipecd/blob/master/docs/static/images/pipecd-explanation.png)
 
+### Quick Navigation
+
+| Resource | Purpose |
+|----------|---------|
+| [PipeCD Website](https://pipecd.dev) | Official project website and product information |
+| [Documentation](https://pipecd.dev/docs/) | Comprehensive guides and API documentation |
+| [Quickstart Guide](https://pipecd.dev/docs/quickstart/) | Get started with PipeCD in minutes |
+| [Installation Guide](https://pipecd.dev/docs/installation/) | Set up PipeCD for production use |
+| [Playground](https://play.pipecd.dev?project=play) | Try PipeCD online without installation |
+| [Contributing Guide](CONTRIBUTING.md) | Guidelines for contributing to PipeCD |
+| [GitHub Issues](https://github.com/pipe-cd/pipecd/issues) | Report bugs and request features |
+| [Community Chat](https://cloud-native.slack.com/archives/C01B27F9T0X) | Join #pipecd on CNCF Slack |
+
 ---
 
 ### Why PipeCD?
@@ -53,6 +66,17 @@ For more details, explore the [PipeCD Documentation](https://pipecd.dev/docs).
 - The [quickstart guide](https://pipecd.dev/docs/quickstart/) shows how to set up PipeCD components and deploy a hello-world application with PipeCD for testing purposes.
 - The [tutorial](https://github.com/pipe-cd/tutorial) shows how to run PipeCD locally for introduction.
 - The [installation guide](https://pipecd.dev/docs/installation/) explains and helps set up PipeCD for your real-life use environment.
+
+### Local Development
+
+Interested in contributing to PipeCD? Start here:
+
+1. **Check Prerequisites**: Ensure you have Go 1.19+, Docker, kubectl, and Node.js installed
+2. **Read the Contributing Guide**: See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed development instructions
+3. **Set Up Local Environment**: Follow the "Starting a Local Development Environment" section in CONTRIBUTING.md
+4. **Run Tests**: Execute `make check` to verify your setup and changes
+
+For in-depth development documentation, visit the [Development Guide](./cmd) and explore component-specific README files.
 
 ---
 
