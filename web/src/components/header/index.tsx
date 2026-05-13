@@ -12,6 +12,8 @@ import {
   Box,
 } from "@mui/material";
 import { ExitToApp, MoreVert } from "@mui/icons-material";
+import Brightness4Icon from "@mui/icons-material/Brightness4"; // moon — switch to dark
+import Brightness7Icon from "@mui/icons-material/Brightness7"; // sun  — switch to light
 import {
   PAGE_PATH_APPLICATIONS,
   PAGE_PATH_DEPLOYMENTS,
@@ -32,11 +34,14 @@ import logo from "~~/assets/logo.svg";
 import NavLink from "./NavLink";
 import { IconOpenNewTab, LogoImage } from "./styles";
 import useAuth from "~/contexts/auth-context/use-auth";
+import { useThemeMode } from "~/theme";
 
 export const APP_HEADER_HEIGHT = 56;
 
 export const Header: FC = memo(function Header() {
   const { me } = useAuth();
+  const { mode, toggleTheme } = useThemeMode();
+
   const [userAnchorEl, setUserAnchorEl] = useState<HTMLButtonElement | null>(
     null
   );
@@ -127,16 +132,28 @@ export const Header: FC = memo(function Header() {
               >
                 <MoreVert />
               </IconButton>
+
+              {/* Dark / light mode toggle — shows moon in light mode, sun in dark mode */}
+              <IconButton
+                color="inherit"
+                aria-label="Toggle dark mode"
+                onClick={toggleTheme}
+                size="small"
+                sx={{ ml: 1 }}
+              >
+                {mode === "dark" ? <Brightness7Icon /> : <Brightness4Icon />}
+              </IconButton>
+
               <Button
                 aria-label="User Menu"
                 aria-controls="user-menu"
                 aria-haspopup="true"
                 onClick={(e) => setUserAnchorEl(e.currentTarget)}
-                style={{
+                color="inherit"
+                sx={{
                   display: "flex",
                   alignItems: "center",
                   textTransform: "none",
-                  color: "white",
                 }}
               >
                 <Avatar
@@ -147,9 +164,21 @@ export const Header: FC = memo(function Header() {
               </Button>
             </>
           ) : (
-            <NavLink href={PAGE_PATH_LOGIN} active={false}>
-              <Typography variant="body2">Login</Typography>
-            </NavLink>
+            <>
+              {/* Show the toggle even on the login page so unauthenticated users can still switch */}
+              <IconButton
+                color="inherit"
+                aria-label="Toggle dark mode"
+                onClick={toggleTheme}
+                size="small"
+                sx={{ mr: 1 }}
+              >
+                {mode === "dark" ? <Brightness7Icon /> : <Brightness4Icon />}
+              </IconButton>
+              <NavLink href={PAGE_PATH_LOGIN} active={false}>
+                <Typography variant="body2">Login</Typography>
+              </NavLink>
+            </>
           )}
         </Box>
       </Toolbar>
