@@ -6,5 +6,8 @@ description: >
   Learn more about Plugins in PipeCD v1.
 ---
 
-> **Note:**
-> The Plugins section is a work in progress. Check back soon. Happy PipeCDing!
+This section contains configuration guides for the official PipeCD plugins.
+
+- [Kubernetes](./kubernetes/)
+- [Terraform](./terraform/)
+- [Analysis](./analysis/)
