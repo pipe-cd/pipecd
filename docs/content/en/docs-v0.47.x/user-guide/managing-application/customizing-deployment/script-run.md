@@ -92,7 +92,7 @@ For example, If you are using the container platform and the offcial piped conta
 
 The public piped image available in PipeCD main repo (ref: [Dockerfile](https://github.com/pipe-cd/pipecd/blob/master/cmd/piped/Dockerfile)) is based on [alpine](https://hub.docker.com/_/alpine/) and only has a few UNIX commands available (ref: [piped-base Dockerfile](https://github.com/pipe-cd/pipecd/blob/master/tool/piped-base/Dockerfile)). 
 
-If you want to use your commands, you can realize it with either step below.
+If you want to use your commands, you can do that with either of the following steps.
 - Prepare your own environment container image then add [piped binary](https://github.com/pipe-cd/pipecd/releases) to it.
 - Build your own container image based on `ghcr.io/pipe-cd/piped` image.
 
