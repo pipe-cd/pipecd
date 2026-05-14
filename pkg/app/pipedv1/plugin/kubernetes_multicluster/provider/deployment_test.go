@@ -527,6 +527,46 @@ spec:
 `,
 			expected: []string{"gcr.io/pipecd/helloworld:v0.5.0", "gcr.io/pipecd/sidecar:v0.5.0"},
 		},
+		{
+			name: "initContainers and container images",
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: init
+          image: gcr.io/pipecd/init:v0.1.0
+      containers:
+        - name: helloworld
+          image: gcr.io/pipecd/helloworld:v0.5.0
+`,
+			expected: []string{"gcr.io/pipecd/helloworld:v0.5.0", "gcr.io/pipecd/init:v0.1.0"},
+		},
+		{
+			name: "cronjob with initContainers and container images",
+			manifest: `
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: simple
+spec:
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          initContainers:
+            - name: init
+              image: gcr.io/pipecd/job-init:v0.1.0
+          containers:
+            - name: job
+              image: gcr.io/pipecd/job:v0.5.0
+`,
+			expected: []string{"gcr.io/pipecd/job-init:v0.1.0", "gcr.io/pipecd/job:v0.5.0"},
+		},
 	}
 
 	for _, tc := range testcases {
