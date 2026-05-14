@@ -71,6 +71,11 @@ func (p *ECSPlugin) executeECSCanaryRolloutStage(
 		return sdk.StageStatusFailure
 	}
 
+	if isECSControllerType(serviceDef) {
+		lp.Error("ECS_CANARY_ROLLOUT is not supported with ECS deployment controller type; canary deployments require EXTERNAL deployment controller type")
+		return sdk.StageStatusFailure
+	}
+
 	var canary *types.LoadBalancer
 	if cfg.Spec.Input.AccessType == "ELB" {
 		_, canary, err = provider.LoadTargetGroups(cfg.Spec.Input.TargetGroups)
@@ -129,7 +134,7 @@ func canaryRollout(
 	}
 
 	lp.Info("Start applying the ECS service definition")
-	service, err := applyServiceDefinition(ctx, lp, client, serviceDef)
+	service, _, err := applyServiceDefinition(ctx, lp, client, serviceDef)
 	if err != nil {
 		return nil, fmt.Errorf("failed to apply service definition: %w", err)
 	}
