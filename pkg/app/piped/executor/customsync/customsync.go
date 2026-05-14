@@ -15,6 +15,7 @@
 package customsync
 
 import (
+	"context"
 	"os"
 	"os/exec"
 	"strings"
@@ -64,10 +65,12 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	e.appDir = ds.AppDir
 
 	timeout := e.StageConfig.CustomSyncOptions.Timeout.Duration()
+	ctx, cancel := context.WithCancel(sig.Context())
+	defer cancel()
 
 	c := make(chan model.StageStatus, 1)
 	go func() {
-		c <- e.executeCommand()
+		c <- e.executeCommand(ctx)
 	}()
 
 	timer := time.NewTimer(timeout)
@@ -94,7 +97,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 }
 
-func (e *deployExecutor) executeCommand() model.StageStatus {
+func (e *deployExecutor) executeCommand(ctx context.Context) model.StageStatus {
 	opts := e.StageConfig.CustomSyncOptions
 
 	e.LogPersister.Infof("Runnnig commands...")
@@ -109,7 +112,8 @@ func (e *deployExecutor) executeCommand() model.StageStatus {
 		envs = append(envs, key+"="+value)
 	}
 
-	cmd := exec.Command("/bin/sh", "-l", "-c", opts.Run)
+	cmd := exec.CommandContext(ctx, "/bin/sh", "-l", "-c", opts.Run)
+	cmd.WaitDelay = time.Second
 	cmd.Dir = e.appDir
 	cmd.Env = append(os.Environ(), envs...)
 	cmd.Stdout = e.LogPersister
