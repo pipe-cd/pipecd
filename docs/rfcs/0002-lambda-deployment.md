@@ -3,7 +3,7 @@
 
 # Summary
 
-This RFC proposes adding a new service deployment from PipeCD: AWS Lambda deployment. Similar to the current [Google clould run deployment](https://pipecd.dev/docs/feature-status/#cloudrun-deployment).
+This RFC proposes adding a new service deployment from PipeCD: AWS Lambda deployment. Similar to the current [Google cloud run deployment](https://pipecd.dev/docs/feature-status/#cloudrun-deployment).
 
 # Motivation
 
@@ -58,7 +58,7 @@ Lambda function could also be deployed via source code by 2 steps method:
 1. Configure piped to be able to clone the source of Lambda function ( on the same repo which deployment be handled by piped or via remote git repo ).
 2. Compress the source code and deploy with [SAM](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-command-reference.html) or using [aws-sdk](https://github.com/aws/aws-lambda-go) ( piped handle the deployment ).
 
-The deployment configuration sample as bellow:
+The deployment configuration sample as below:
 
 In case of source code for Lambda function is on the same repo handled by Piped
 ```yaml

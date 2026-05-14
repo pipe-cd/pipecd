@@ -3,11 +3,11 @@
 
 # Summary
 
-This can be consider as the biggest step forward to make PipeCD fit its vision: The one CD for all.
+This can be considered as the biggest step forward to make PipeCD fit its vision: The one CD for all.
 
 # Motivation
 
-Up to this time, PipeCD archived several goals as its defined design in the initial stage, which included "being a consistent interface which can be used to make progressive delivery process easy for many application platforms". As its goal, the PipeCD currently supports 5 kind of application platforms, which are Kubernetes, ECS, Terraform, Lambda, and Cloud Run. But we want it not just like that, we want to make PipeCD support progressive delivery for whatever application platforms the market use today.
+Up to this time, PipeCD achieved several goals as its defined design in the initial stage, which included "being a consistent interface which can be used to make progressive delivery process easy for many application platforms". As its goal, the PipeCD currently supports 5 kind of application platforms, which are Kubernetes, ECS, Terraform, Lambda, and Cloud Run. But we want it not just like that, we want to make PipeCD support progressive delivery for whatever application platforms the market use today.
 
 To achieve that goal, there is only one way, which enables PipeCD to accept new platforms as plugin of the piped agent, which can free the limit of what platform PipeCD could support as a CD system.
 
@@ -15,15 +15,15 @@ Also, with the power of plugin architecture, PipeCD can allow multi-versions of 
 
 # Detailed design
 
-At the time this RFC is writen, there was serveral issues created on PipeCD main repo for tracking the plugin architecture tasks. This RFC summarizes the decisions the maintainer team has agreed to regarding the design of the PipeCD plugin architecture.
+At the time this RFC is written, there were several issues created on PipeCD main repo for tracking the plugin architecture tasks. This RFC summarizes the decisions the maintainer team has agreed to regarding the design of the PipeCD plugin architecture.
 
 After this line in the documentation, pipedv1 is a mention to plugin-arch piped, while pipedv0 is a mention to up-to-now piped.
 
 ## The approach
 
-We agreed that pipedv0 will be supported as least until the end of 2025, which mean we have to find a way to ensure our single PipeCD control plane can work with both pipedv0 and pipedv1 at the same time. That leads to this issue at [pipecd/issues/5252](https://github.com/pipe-cd/pipecd/issues/5252).
+We agreed that pipedv0 will be supported at least until the end of 2025, which means we have to find a way to ensure our single PipeCD control plane can work with both pipedv0 and pipedv1 at the same time. That leads to this issue at [pipecd/issues/5252](https://github.com/pipe-cd/pipecd/issues/5252).
 
-The key point of the control plane supports both pipedv0 and v1 approach is: platform related concepts like platform provider and kind are remained on the data model (for pipedv0), but we don't adding logic based on those concepts anymore. Pipedv1 logic will be built only around the plugins.
+The key point of the control plane supports both pipedv0 and v1 approach is: platform related concepts like platform provider and kind are remained on the data model (for pipedv0), but we don't add logic based on those concepts anymore. Pipedv1 logic will be built only around the plugins.
 
 As at this point, we have migration plan for platform related concepts in configuration as below
 
@@ -189,11 +189,11 @@ The configuration which up-to-now placed in piped and application (kind specific
 
 ![](assets/0015-config-context.png)
 
-We need futher discussion on this but currently, we agreed to separate configuration as piped context and plugin context as above.
+We need further discussion on this but currently, we agreed to separate configuration as piped context and plugin context as above.
 
 ### The interfaces
 
-The Piped agent has serveral main features, which are
+The Piped agent has several main features, which are
 
 - Plan and execute deployment
 - Calculate the plan preview result
@@ -201,7 +201,7 @@ The Piped agent has serveral main features, which are
 - Fetch and build the state of the live manifest
 - Insight feature
 
-Across these features, we have to support 5 kinds of platforms (up to now), and each deployment we have serveral kind of stages, which are
+Across these features, we have to support 5 kinds of platforms (up to now), and each deployment we have several kinds of stages, which are
 
 - K8s stages
 - Cloud run stages
