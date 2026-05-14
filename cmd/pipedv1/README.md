@@ -5,7 +5,7 @@ See [Overview of the Plan for Pluginnable PipeCD](https://pipecd.dev/blog/2024/1
 
 ## Prerequisites
 
-- [Go 1.24 or later](https://go.dev/)
+- [Go 1.26 or later](https://go.dev/)
 
 ## Repositories
 - [pipecd](https://github.com/pipe-cd/pipecd): contains all source code and documentation of PipeCD project.
