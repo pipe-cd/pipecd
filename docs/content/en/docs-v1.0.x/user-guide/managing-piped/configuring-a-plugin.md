@@ -19,10 +19,9 @@ Currently, the official plugins maintained by the PipeCD Maintainers are:
 - Wait
 - Wait Approval
 
-We are working towards releasing more plugins in the future.
+We are working towards releasing more plugins in the future. You can track progress and find community-maintained plugins like ECS and Lambda in the [community-plugins repository](https://github.com/pipe-cd/community-plugins).
 
->**Note:**  
-> We also have the [PipeCD Community Plugins repository](https://github.com/pipe-cd/community-plugins) for plugins made by the PipeCD Community.
+
 
 A plugin is added to the piped configuration inside the `spec.plugins` array and providing the plugin’s executable URL, the port it should run on, and any deploy targets that belong to it. For more details, see the [configuration reference for plugins](../configuration-reference/#plugins).
 
