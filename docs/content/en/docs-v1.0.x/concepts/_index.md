@@ -70,6 +70,10 @@ Each application has one configuration file stored in its Git directory, typical
 A directory in the Git repository that contains the application’s configuration file and related manifests.
 This directory represents the source of truth for the application’s desired state.
 
+### Analysis Provider
+
+An Analysis Provider is an external service that supplies metrics used to evaluate deployments (e.g., Prometheus or Datadog). `piped` connects to one or more analysis providers to support automated deployment analysis.
+
 ### Deployment
 
 A Deployment is the process of bringing an application’s live state in line with its desired state defined in Git.
