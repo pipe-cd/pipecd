@@ -512,7 +512,7 @@ spec:
 				{
 					Kind:    model.ArtifactVersion_GIT_SOURCE,
 					Version: "dede7cdea5bbd3fdbcc4674bfcd2b2f9e0579603",
-					Name:    "",
+					Name:    "username/lambda-function-code",
 					Url:     "",
 				},
 			},
