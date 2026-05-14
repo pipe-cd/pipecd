@@ -354,6 +354,29 @@ spec:
 			wantErr: false,
 		},
 		{
+			name: "ok: with registry port",
+			manifest: `
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: helloworld
+spec:
+  template:
+    spec:
+      containers:
+      - image: localhost:5000/pipecd/helloworld:v0.1.0
+`,
+			want: []*model.ArtifactVersion{
+				{
+					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Version: "v0.1.0",
+					Name:    "helloworld",
+					Url:     "localhost:5000/pipecd/helloworld:v0.1.0",
+				},
+			},
+			wantErr: false,
+		},
+		{
 			name: "err: containers missing",
 			manifest: `
 apiVersion: serving.knative.dev/v1
