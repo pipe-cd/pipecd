@@ -31,7 +31,7 @@ module.exports = (env) =>
       allowedHosts: "all",
       proxy: [
         {
-          context: ["/api"],
+          context: ["/api", "/auth"],
           changeOrigin: true,
           target: process.env.API_ENDPOINT,
           pathRewrite: { "^/api": "" },

@@ -1,7 +1,6 @@
-import { ThemeProvider, StyledEngineProvider } from "@mui/material";
+import { StyledEngineProvider, ThemeProvider as MuiThemeProvider } from "@mui/material";
 import CssBaseline from "@mui/material/CssBaseline";
 import { render } from "react-dom";
-import { theme } from "./theme";
 import { Routes } from "./routes";
 import { BrowserRouter } from "react-router-dom";
 import { setupDayjs } from "./utils/setup-dayjs";
@@ -10,6 +9,46 @@ import QueryClientWrap from "./contexts/query-client-provider";
 import { AuthProvider } from "./contexts/auth-context";
 import { ToastProvider } from "./contexts/toast-context/toast-provider";
 import { CommandProvider } from "./contexts/command-context";
+import { lightTheme, darkTheme } from "./theme";
+import { FC, useState, useEffect, ReactNode, createContext, useContext } from "react";
+
+type ThemeMode = "light" | "dark";
+const ThemeContext = createContext<{ mode: ThemeMode; toggleTheme: () => void } | null>(null);
+
+export const useTheme = () => {
+  const ctx = useContext(ThemeContext);
+  if (!ctx) throw new Error("useTheme must be used within ThemeProvider");
+  return ctx;
+};
+
+const AppWrapper: FC<{ children: ReactNode }> = ({ children }) => {
+  const [mode, setMode] = useState<ThemeMode>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("pipecd-theme") as ThemeMode | null;
+      if (stored) return stored;
+      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    return "light";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("pipecd-theme", mode);
+    if (typeof window !== "undefined") {
+      document.documentElement.setAttribute("data-theme", mode);
+    }
+  }, [mode]);
+
+  const theme = mode === "dark" ? darkTheme : lightTheme;
+
+  return (
+    <ThemeContext.Provider value={{ mode, toggleTheme: () => setMode(m => m === "light" ? "dark" : "light") }}>
+      <MuiThemeProvider theme={theme}>
+        <CssBaseline />
+        {children}
+      </MuiThemeProvider>
+    </ThemeContext.Provider>
+  );
+};
 
 async function run(): Promise<void> {
   if (process.env.ENABLE_MOCK === "true") {
@@ -48,7 +87,7 @@ Happy PipeCD-ing 🙌
   render(
     <CookiesProvider>
       <StyledEngineProvider injectFirst>
-        <ThemeProvider theme={theme}>
+        <AppWrapper>
           <BrowserRouter
             future={{
               v7_startTransition: false,
@@ -59,14 +98,13 @@ Happy PipeCD-ing 🙌
               <QueryClientWrap>
                 <AuthProvider>
                   <CommandProvider>
-                    <CssBaseline />
                     <Routes />
                   </CommandProvider>
                 </AuthProvider>
               </QueryClientWrap>
             </ToastProvider>
           </BrowserRouter>
-        </ThemeProvider>
+        </AppWrapper>
       </StyledEngineProvider>
     </CookiesProvider>,
     document.getElementById("root")
