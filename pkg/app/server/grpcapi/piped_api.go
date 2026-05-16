@@ -372,6 +372,7 @@ func (a *PipedAPI) ListNotCompletedDeployments(ctx context.Context, req *pipedse
 				Value:    model.GetNotCompletedDeploymentStatuses(),
 			},
 		},
+		Cursor: req.Cursor,
 	}
 
 	deployments, cursor, err := a.deploymentStore.List(ctx, opts)
