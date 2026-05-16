@@ -27,7 +27,10 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-// fakeAPIClient returns a sequence of pages, one per call.
+// fakeAPIClient returns a pre-canned sequence of pages, one per call.
+// If the test code calls beyond len(pages), an empty terminal response is
+// returned so misconfigured tests fail with a clear assertion mismatch
+// instead of an index-out-of-range panic.
 type fakeAPIClient struct {
 	pages []*pipedservice.ListNotCompletedDeploymentsResponse
 	call  int
@@ -37,6 +40,9 @@ type fakeAPIClient struct {
 func (f *fakeAPIClient) ListNotCompletedDeployments(_ context.Context, _ *pipedservice.ListNotCompletedDeploymentsRequest, _ ...grpc.CallOption) (*pipedservice.ListNotCompletedDeploymentsResponse, error) {
 	if f.err != nil {
 		return nil, f.err
+	}
+	if f.call >= len(f.pages) {
+		return &pipedservice.ListNotCompletedDeploymentsResponse{}, nil
 	}
 	resp := f.pages[f.call]
 	f.call++
@@ -54,53 +60,64 @@ func TestSync(t *testing.T) {
 	rollingBack := makeDeployment("d-rolling-back", "app-4", model.DeploymentStatus_DEPLOYMENT_ROLLING_BACK)
 
 	tests := []struct {
-		name           string
-		pages          []*pipedservice.ListNotCompletedDeploymentsResponse
-		wantPendings   []*model.Deployment
-		wantPlanneds   []*model.Deployment
-		wantRunnings   []*model.Deployment
-		wantHeadAppIDs []string
+		name         string
+		pages        []*pipedservice.ListNotCompletedDeploymentsResponse
+		wantPendings []*model.Deployment
+		wantPlanneds []*model.Deployment
+		wantRunnings []*model.Deployment
+		wantHeads    map[string]*model.Deployment
 	}{
 		{
-			name: "empty response",
+			name: "empty_response",
 			pages: []*pipedservice.ListNotCompletedDeploymentsResponse{
 				{Deployments: nil, Cursor: ""},
 			},
-			wantPendings:   nil,
-			wantPlanneds:   nil,
-			wantRunnings:   nil,
-			wantHeadAppIDs: nil,
+			wantPendings: nil,
+			wantPlanneds: nil,
+			wantRunnings: nil,
+			wantHeads:    map[string]*model.Deployment{},
 		},
 		{
-			name: "single page with all statuses",
+			name: "single_page_classifies_each_status",
 			pages: []*pipedservice.ListNotCompletedDeploymentsResponse{
 				{Deployments: []*model.Deployment{pending, planned, running, rollingBack}, Cursor: ""},
 			},
-			wantPendings:   []*model.Deployment{pending},
-			wantPlanneds:   []*model.Deployment{planned},
-			wantRunnings:   []*model.Deployment{running, rollingBack},
-			wantHeadAppIDs: []string{"app-1", "app-2", "app-3", "app-4"},
+			wantPendings: []*model.Deployment{pending},
+			wantPlanneds: []*model.Deployment{planned},
+			wantRunnings: []*model.Deployment{running, rollingBack},
+			wantHeads: map[string]*model.Deployment{
+				"app-1": pending,
+				"app-2": planned,
+				"app-3": running,
+				"app-4": rollingBack,
+			},
 		},
 		{
-			name: "multiple pages are all fetched",
+			name: "paginates_across_multiple_pages",
 			pages: []*pipedservice.ListNotCompletedDeploymentsResponse{
 				{Deployments: []*model.Deployment{pending}, Cursor: "page2"},
 				{Deployments: []*model.Deployment{planned, running}, Cursor: ""},
 			},
-			wantPendings:   []*model.Deployment{pending},
-			wantPlanneds:   []*model.Deployment{planned},
-			wantRunnings:   []*model.Deployment{running},
-			wantHeadAppIDs: []string{"app-1", "app-2", "app-3"},
+			wantPendings: []*model.Deployment{pending},
+			wantPlanneds: []*model.Deployment{planned},
+			wantRunnings: []*model.Deployment{running},
+			wantHeads: map[string]*model.Deployment{
+				"app-1": pending,
+				"app-2": planned,
+				"app-3": running,
+			},
 		},
 		{
-			name: "rolling back is classified as running",
+			name: "rolling_back_is_classified_as_running",
 			pages: []*pipedservice.ListNotCompletedDeploymentsResponse{
 				{Deployments: []*model.Deployment{rollingBack}, Cursor: ""},
 			},
-			wantPendings:   nil,
-			wantPlanneds:   nil,
-			wantRunnings:   []*model.Deployment{rollingBack},
-			wantHeadAppIDs: []string{"app-4"},
+			wantPendings: nil,
+			wantPlanneds: nil,
+			wantRunnings: []*model.Deployment{rollingBack},
+			wantHeads: map[string]*model.Deployment{
+				"app-4": rollingBack,
+			},
 		},
 	}
 
@@ -117,16 +134,7 @@ func TestSync(t *testing.T) {
 			assert.Equal(t, tc.wantPendings, s.ListPendings())
 			assert.Equal(t, tc.wantPlanneds, s.ListPlanneds())
 			assert.Equal(t, tc.wantRunnings, s.ListRunnings())
-
-			heads := s.ListAppHeadDeployments()
-			if len(tc.wantHeadAppIDs) == 0 {
-				assert.Empty(t, heads)
-			} else {
-				assert.Len(t, heads, len(tc.wantHeadAppIDs))
-				for _, appID := range tc.wantHeadAppIDs {
-					assert.Contains(t, heads, appID)
-				}
-			}
+			assert.Equal(t, tc.wantHeads, s.ListAppHeadDeployments())
 		})
 	}
 }
