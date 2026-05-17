@@ -47,12 +47,10 @@ func annotateConfigHash(manifests []provider.Manifest) error {
 	}
 
 	for _, m := range manifests {
-		if m.IsDeployment() {
+		if m.IsDeployment() || m.IsStatefulSet() || m.IsDaemonSet() {
 			if err := annotateConfigHashToWorkload(m, configMaps, secrets); err != nil {
 				return err
 			}
-
-			// TODO: Add support for other workload types, such as StatefulSet, DaemonSet, etc.
 		}
 	}
 

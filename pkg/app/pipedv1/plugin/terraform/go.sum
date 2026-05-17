@@ -89,8 +89,8 @@ github.com/felixge/httpsnoop v1.0.4/go.mod h1:m8KPJKqk1gH5J9DgRY2ASl2lWCfGKXixSw
 github.com/go-gl/glfw v0.0.0-20190409004039-e6da0acd62b1/go.mod h1:vR7hzQXu2zJy9AVAgeJqvqgH9Q5CA+iKCZ2gyEVpxRU=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20191125211704-12ad95a8df72/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200222043503-6f7a984d4dc4/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
-github.com/go-jose/go-jose/v4 v4.0.5 h1:M6T8+mKZl/+fNNuFHvGIzDz7BTLQPIounk/b9dw3AaE=
-github.com/go-jose/go-jose/v4 v4.0.5/go.mod h1:s3P1lRrkT8igV8D9OjyL4WRyHvjB6a4JSllnOrmmBOA=
+github.com/go-jose/go-jose/v4 v4.1.4 h1:moDMcTHmvE6Groj34emNPLs/qtYXRVcd6S7NHbHz3kA=
+github.com/go-jose/go-jose/v4 v4.1.4/go.mod h1:x4oUasVrzR7071A4TnHLGSPpNOm2a21K9Kf04k1rs08=
 github.com/go-kit/kit v0.8.0/go.mod h1:xBxKIO96dXMWWy0MnWVtmwkA9/13aqxPnvrjFYMA2as=
 github.com/go-kit/kit v0.9.0/go.mod h1:xBxKIO96dXMWWy0MnWVtmwkA9/13aqxPnvrjFYMA2as=
 github.com/go-kit/log v0.1.0/go.mod h1:zbhenjAZHb184qTLMA9ZjW7ThYL0H2mk7Q6pNt4vbaY=
@@ -226,8 +226,6 @@ github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRW
 github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
 github.com/pipe-cd/pipecd v0.54.0-rc1.0.20250912082650-0b949bb7aac9 h1:kyFMfrjASFFSptyakHaF4OSCy2TamOr6VAkf2nlplxA=
 github.com/pipe-cd/pipecd v0.54.0-rc1.0.20250912082650-0b949bb7aac9/go.mod h1:etCJcXHbrFxuh9fG3MNBTZLKG8EQ1v+ZEGn9Rb/mK1o=
-github.com/pipe-cd/piped-plugin-sdk-go v0.2.0 h1:Le7IREhbLTm+PNiLcTcRUQ5Kep+OcvQbFa0tjgD/7gc=
-github.com/pipe-cd/piped-plugin-sdk-go v0.2.0/go.mod h1:qoRDN5uSt2kUs5hcNfvs8QIQYCnPVTKyKqUMf80RFFA=
 github.com/pipe-cd/piped-plugin-sdk-go v0.3.0 h1:pXBEHqKxsYZVXav9J1SkT36LNCNLHXGK99J6YfX1oQ4=
 github.com/pipe-cd/piped-plugin-sdk-go v0.3.0/go.mod h1:qoRDN5uSt2kUs5hcNfvs8QIQYCnPVTKyKqUMf80RFFA=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=

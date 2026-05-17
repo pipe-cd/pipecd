@@ -93,6 +93,42 @@ func TestFindArtifactVersions(t *testing.T) {
 		expectedErr bool
 	}{
 		{
+			name: "image with registry port",
+			input: []byte(`
+{
+	"family": "nginx-canary-fam-1",
+	"compatibilities": [
+		"FARGATE"
+	],
+	"networkMode": "awsvpc",
+	"memory": 512,
+	"cpu": 256,
+	"containerDefinitions" : [
+		{
+			"image": "localhost:5000/pipecd/helloworld:v1.0.0",
+			"name": "helloworld",
+			"portMappings": [ 
+				{ 
+				"containerPort": 80,
+				"hostPort": 9085,
+				"protocol": "tcp"
+				}
+			]
+		}
+	]
+}
+`),
+			expected: []*model.ArtifactVersion{
+				{
+					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Version: "v1.0.0",
+					Name:    "helloworld",
+					Url:     "localhost:5000/pipecd/helloworld:v1.0.0",
+				},
+			},
+			expectedErr: false,
+		},
+		{
 			name: "ok",
 			input: []byte(`
 {

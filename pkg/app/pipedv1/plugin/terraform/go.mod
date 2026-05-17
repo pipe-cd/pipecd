@@ -3,6 +3,7 @@ module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform
 go 1.25.0
 
 require (
+	github.com/creasty/defaults v1.6.0
 	github.com/hashicorp/hcl/v2 v2.0.0
 	github.com/pipe-cd/piped-plugin-sdk-go v0.3.0
 	github.com/stretchr/testify v1.10.0
@@ -18,10 +19,9 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/coreos/go-oidc/v3 v3.11.0 // indirect
-	github.com/creasty/defaults v1.6.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.0.4 // indirect
-	github.com/go-jose/go-jose/v4 v4.0.5 // indirect
+	github.com/go-jose/go-jose/v4 v4.1.4 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
