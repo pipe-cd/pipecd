@@ -97,3 +97,75 @@ func TestFindDeployTarget(t *testing.T) {
 		})
 	}
 }
+
+func TestKubernetesApplicationSpecValidate(t *testing.T) {
+	tests := []struct {
+		name        string
+		spec        KubernetesApplicationSpec
+		expectedErr string
+	}{
+		{
+			name: "valid empty spec",
+			spec: KubernetesApplicationSpec{},
+		},
+		{
+			name: "valid single multiTarget",
+			spec: KubernetesApplicationSpec{
+				Input: KubernetesDeploymentInput{
+					MultiTargets: []KubernetesMultiTarget{
+						{Target: KubernetesMultiTargetDeployTarget{Name: "cluster-us"}},
+					},
+				},
+			},
+		},
+		{
+			name: "multiTarget with empty name",
+			spec: KubernetesApplicationSpec{
+				Input: KubernetesDeploymentInput{
+					MultiTargets: []KubernetesMultiTarget{
+						{Target: KubernetesMultiTargetDeployTarget{Name: "cluster-us"}},
+						{Target: KubernetesMultiTargetDeployTarget{Name: ""}},
+					},
+				},
+			},
+			expectedErr: "multiTargets[1].target.name must not be empty",
+		},
+		{
+			name: "helmChart and kustomizeOptions are mutually exclusive",
+			spec: KubernetesApplicationSpec{
+				Input: KubernetesDeploymentInput{
+					HelmChart:        &InputHelmChart{Path: "./charts/myapp"},
+					KustomizeOptions: map[string]string{"enable-alpha-plugins": "true"},
+				},
+			},
+			expectedErr: "helmChart and kustomizeOptions are mutually exclusive",
+		},
+		{
+			name: "helmChart without kustomizeOptions is valid",
+			spec: KubernetesApplicationSpec{
+				Input: KubernetesDeploymentInput{
+					HelmChart: &InputHelmChart{Path: "./charts/myapp"},
+				},
+			},
+		},
+		{
+			name: "kustomizeOptions without helmChart is valid",
+			spec: KubernetesApplicationSpec{
+				Input: KubernetesDeploymentInput{
+					KustomizeOptions: map[string]string{"enable-alpha-plugins": "true"},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.spec.Validate()
+			if tt.expectedErr != "" {
+				assert.EqualError(t, err, tt.expectedErr)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}

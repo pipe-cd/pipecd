@@ -78,7 +78,14 @@ func (s *KubernetesApplicationSpec) UnmarshalJSON(data []byte) error {
 }
 
 func (s *KubernetesApplicationSpec) Validate() error {
-	// TODO: Validate KubernetesApplicationSpec fields.
+	if s.Input.HelmChart != nil && len(s.Input.KustomizeOptions) > 0 {
+		return errors.New("helmChart and kustomizeOptions are mutually exclusive")
+	}
+	for i, mt := range s.Input.MultiTargets {
+		if mt.Target.Name == "" {
+			return fmt.Errorf("multiTargets[%d].target.name must not be empty", i)
+		}
+	}
 	return nil
 }
 
