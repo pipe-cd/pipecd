@@ -195,10 +195,12 @@ func FindDeployTarget(cfg *config.PipedPlugin, name string) (KubernetesDeployTar
 }
 
 type KubernetesMultiTarget struct {
-	Target         KubernetesMultiTargetDeployTarget `json:"target"`
-	Manifests      []string                          `json:"manifests,omitempty"`
-	KubectlVersion string                            `json:"kubectlVersion,omitempty"`
-	KustomizeDir   string                            `json:"kustomizeDir,omitempty"`
+	Target           KubernetesMultiTargetDeployTarget `json:"target"`
+	Manifests        []string                          `json:"manifests,omitempty"`
+	KubectlVersion   string                            `json:"kubectlVersion,omitempty"`
+	KustomizeDir     string                            `json:"kustomizeDir,omitempty"`
+	KustomizeVersion string                            `json:"kustomizeVersion,omitempty"`
+	KustomizeOptions map[string]string                 `json:"kustomizeOptions,omitempty"`
 }
 
 type KubernetesMultiTargetDeployTarget struct {
