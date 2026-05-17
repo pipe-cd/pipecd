@@ -252,20 +252,48 @@ func deleteVariantResources(ctx context.Context, lp sdk.StageLogPersister, kubec
 		clusterScoped = append(clusterScoped, r.Key())
 	}
 
-	var deletedCount int
-	deletedCount += deleteResources(ctx, lp, applier, services)
-	deletedCount += deleteResources(ctx, lp, applier, workloads)
-	deletedCount += deleteResources(ctx, lp, applier, others)
-	deletedCount += deleteResources(ctx, lp, applier, clusterScoped)
+	var (
+		deletedCount int
+		errs         []error
+	)
+
+	count, err := deleteResources(ctx, lp, applier, services)
+	deletedCount += count
+	if err != nil {
+		errs = append(errs, err)
+	}
+
+	count, err = deleteResources(ctx, lp, applier, workloads)
+	deletedCount += count
+	if err != nil {
+		errs = append(errs, err)
+	}
+
+	count, err = deleteResources(ctx, lp, applier, others)
+	deletedCount += count
+	if err != nil {
+		errs = append(errs, err)
+	}
+
+	count, err = deleteResources(ctx, lp, applier, clusterScoped)
+	deletedCount += count
+	if err != nil {
+		errs = append(errs, err)
+	}
+
 	lp.Successf("Successfully deleted %d resources", deletedCount)
 
-	return nil
+	return errors.Join(errs...)
 }
 
 // deleteResources deletes the given resources.
-// It returns the number of deleted resources.
-func deleteResources(ctx context.Context, lp sdk.StageLogPersister, applier *provider.Applier, keys []provider.ResourceKey) int {
-	var deletedCount int
+// It returns the number of successfully deleted resources and any errors encountered.
+// It continues deleting remaining resources even if one fails (best-effort cleanup).
+func deleteResources(ctx context.Context, lp sdk.StageLogPersister, applier *provider.Applier, keys []provider.ResourceKey) (int, error) {
+	var (
+		deletedCount int
+		errs         []error
+	)
 
 	for _, k := range keys {
 		if err := applier.Delete(ctx, k); err != nil {
@@ -274,11 +302,12 @@ func deleteResources(ctx context.Context, lp sdk.StageLogPersister, applier *pro
 				continue
 			}
 			lp.Errorf("Failed while deleting resource %s (%v)", k.ReadableString(), err)
-			continue // continue to delete other resources
+			errs = append(errs, fmt.Errorf("failed to delete resource %s: %w", k.ReadableString(), err))
+			continue
 		}
 		deletedCount++
 		lp.Successf("- deleted resource: %s", k.ReadableString())
 	}
 
-	return deletedCount
+	return deletedCount, errors.Join(errs...)
 }
