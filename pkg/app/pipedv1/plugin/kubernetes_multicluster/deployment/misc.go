@@ -24,8 +24,35 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
 )
+
+// stageTargetConfig pairs a resolved deploy target with its per-spec multiTarget config.
+// It is the unit of work passed to per-target goroutines inside a stage handler.
+type stageTargetConfig struct {
+	deployTarget *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]
+	multiTarget  *kubeconfig.KubernetesMultiTarget
+}
+
+// filterStageTargets returns only the elements of tcs whose deploy target name
+// appears in stageTargets. If stageTargets is empty all elements are returned unchanged.
+func filterStageTargets(tcs []stageTargetConfig, stageTargets []string) []stageTargetConfig {
+	if len(stageTargets) == 0 {
+		return tcs
+	}
+	allowed := make(map[string]struct{}, len(stageTargets))
+	for _, name := range stageTargets {
+		allowed[name] = struct{}{}
+	}
+	out := make([]stageTargetConfig, 0, len(stageTargets))
+	for _, tc := range tcs {
+		if _, ok := allowed[tc.deployTarget.Name]; ok {
+			out = append(out, tc)
+		}
+	}
+	return out
+}
 
 func ensureVariantSelectorInWorkload(m provider.Manifest, variantLabel, variant string) error {
 	variantMap := map[string]string{

@@ -39,13 +39,16 @@ func (p *Plugin) executeK8sMultiSyncStage(ctx context.Context, input *sdk.Execut
 		return sdk.StageStatusFailure
 	}
 
-	type targetConfig struct {
-		deployTarget *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]
-		multiTarget  *kubeconfig.KubernetesMultiTarget
+	var stageCfg kubeconfig.K8sSyncStageOptions
+	if len(input.Request.StageConfig) > 0 {
+		if err := json.Unmarshal(input.Request.StageConfig, &stageCfg); err != nil {
+			lp.Errorf("Failed while unmarshalling stage config (%v)", err)
+			return sdk.StageStatusFailure
+		}
 	}
 
 	deployTargetMap := make(map[string]*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], 0)
-	targetConfigs := make([]targetConfig, 0, len(dts))
+	targetConfigs := make([]stageTargetConfig, 0, len(dts))
 
 	// prevent the deployment when its deployTarget is not found in the piped config
 	for _, target := range dts {
@@ -55,7 +58,7 @@ func (p *Plugin) executeK8sMultiSyncStage(ctx context.Context, input *sdk.Execut
 	// If no multi-targets are specified, sync to all deploy targets.
 	if len(cfg.Spec.Input.MultiTargets) == 0 {
 		for _, dt := range dts {
-			targetConfigs = append(targetConfigs, targetConfig{
+			targetConfigs = append(targetConfigs, stageTargetConfig{
 				deployTarget: dt,
 				multiTarget:  nil,
 			})
@@ -69,12 +72,14 @@ func (p *Plugin) executeK8sMultiSyncStage(ctx context.Context, input *sdk.Execut
 				continue
 			}
 
-			targetConfigs = append(targetConfigs, targetConfig{
+			targetConfigs = append(targetConfigs, stageTargetConfig{
 				deployTarget: dt,
 				multiTarget:  &multiTarget,
 			})
 		}
 	}
+
+	targetConfigs = filterStageTargets(targetConfigs, stageCfg.MultiTargets)
 
 	eg, ctx := errgroup.WithContext(ctx)
 	for _, tc := range targetConfigs {

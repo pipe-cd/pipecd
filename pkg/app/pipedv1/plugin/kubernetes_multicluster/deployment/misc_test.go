@@ -20,6 +20,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+
+	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
 )
 
@@ -232,6 +235,62 @@ metadata:
 					assert.Equal(t, v, annots[k], "annotation %q should be %q", k, v)
 				}
 			}
+		})
+	}
+}
+
+func TestFilterStageTargets(t *testing.T) {
+	t.Parallel()
+
+	makeTC := func(name string) stageTargetConfig {
+		return stageTargetConfig{
+			deployTarget: &sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{Name: name},
+		}
+	}
+
+	all := []stageTargetConfig{makeTC("us"), makeTC("eu"), makeTC("ap")}
+
+	tests := []struct {
+		name         string
+		stageTargets []string
+		wantNames    []string
+	}{
+		{
+			name:         "empty filter returns all targets",
+			stageTargets: nil,
+			wantNames:    []string{"us", "eu", "ap"},
+		},
+		{
+			name:         "single target selected",
+			stageTargets: []string{"us"},
+			wantNames:    []string{"us"},
+		},
+		{
+			name:         "multiple targets selected",
+			stageTargets: []string{"us", "ap"},
+			wantNames:    []string{"us", "ap"},
+		},
+		{
+			name:         "unknown target name is silently ignored",
+			stageTargets: []string{"unknown"},
+			wantNames:    []string{},
+		},
+		{
+			name:         "mix of known and unknown names",
+			stageTargets: []string{"eu", "unknown"},
+			wantNames:    []string{"eu"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := filterStageTargets(all, tt.stageTargets)
+			names := make([]string, len(got))
+			for i, tc := range got {
+				names[i] = tc.deployTarget.Name
+			}
+			assert.Equal(t, tt.wantNames, names)
 		})
 	}
 }
