@@ -226,7 +226,11 @@ func (p *Plugin) sync(
 	}
 
 	lp.Infof("Start pruning %d resources", len(removeKeys))
-	deletedCount := deleteResources(ctx, lp, applier, removeKeys)
+	deletedCount, err := deleteResources(ctx, lp, applier, removeKeys)
+	if err != nil {
+		lp.Errorf("Failed to delete some resources, %d/%d resources were deleted (%v)", deletedCount, len(removeKeys), err)
+		return sdk.StageStatusFailure
+	}
 	lp.Successf("Successfully deleted %d resources", deletedCount)
 
 	return sdk.StageStatusSuccess
