@@ -109,8 +109,6 @@ type KubernetesDeploymentInput struct {
 	// Default is false.
 	AutoCreateNamespace bool `json:"autoCreateNamespace,omitempty"`
 
-	// TODO: Define fields for KubernetesDeploymentInput.
-
 	MultiTargets []KubernetesMultiTarget `json:"multiTargets,omitempty"`
 }
 
