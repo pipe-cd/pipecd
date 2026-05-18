@@ -27,8 +27,9 @@ We will also be around the project booth. Let's come and discuss!
 Booth information:
 
  <!-- TODO: Input the booth info -->
-```
-Project: PipeCDi
+
+```text
+Project: PipeCD
 Kiosk #: TBA
 Kiosk Shift: TBA
 Location: TBA

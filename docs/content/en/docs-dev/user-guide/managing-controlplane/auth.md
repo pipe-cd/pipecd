@@ -47,7 +47,6 @@ Requirements and Troubleshooting:
 - Roles claim value must use the same values as pre-configured project RBAC Roles.
 - Claims can be retrieved from the IdToken or UserInfo endpoint. The UserInfo endpoint will be used if the issuer supports it.
 - You can use set a custom claim key name for roles and username in the OIDC provider. Using `usernameClaimKey` and `rolesClaimKey` in the configuration. If not set, the default value will be chosen in the following order:
-
   - Supported Claims Key for Username (in order of priority): `username`, `preferred_username`,`name`, `cognito:username`
   - Supported Claims Key for Role (in order of priority): `groups`, `roles`, `cognito:groups`, `custom:roles`, `custom:groups`
 
@@ -238,13 +237,13 @@ The below table represents PipeCD's resources with actions on those resources.
 
 Each role is defined as a combination of multiple policies under this format.
 
-```
+```text
 resources=RESOURCE_NAMES;actions=ACTION_NAMES
 ```
 
 The `*` represents all resources and all actions for a resource.
 
-```
+```text
 resources=*;actions=ACTION_NAMES
 resources=RESOURCE_NAMES;actions=*
 resources=*;actions=*

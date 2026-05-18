@@ -13,6 +13,7 @@ This blog is a part of PipeCD best practice series, a guideline for you to opera
 Currently, you can deploy and operate the PipeCD control plane on a Kubernetes cluster easily, but some developers that would like to introduce PipeCD can not prepare Kubernetes environments. If you have the same problem, this blog is for you. We will show you how to deploy the PipeCD control plane on Amazon ECS.
 
 ### Architecture
+
 > Note: Please refer to [architecture-overview](/docs/user-guide/managing-controlplane/architecture-overview/) docs for definitions of PipeCD components such as server, ops, cache, datastore and filestore.
 
 ![](/images/control-plane-on-ecs.png)
@@ -20,9 +21,11 @@ Currently, you can deploy and operate the PipeCD control plane on a Kubernetes c
 Following the above graph for PipeCD control plane runs on Amazon ECS, we have to prepare these next components
 
 ### Secrets Manager
+
 You should put config files (control-plane-config.yaml, envoy-config.yaml) on Secrets Manager because config files contain some credentials such as database passwords.
 The examples of config files for ECS are [here](https://github.com/pipe-cd/control-plane-aws-ecs-terraform-demo/tree/main/config). Please edit these files according to your environment.
-```
+
+```bash
 aws secretsmanager create-secret --name control-plane-config \
 --description "Configuration of control plane" \
 --secret-string `base64 control-plane-config.yaml`
@@ -30,31 +33,37 @@ aws secretsmanager create-secret --name envoy-config \
 --description "Configuration of control plane" \
 --secret-string `base64 envoy-config.yaml`
 ```
+
 You should also put encryption key
-```
+
+```bash
 aws secretsmanager create-secret --name encryption-key \
 --description "Encryption key for control plane" \
 --secret-string `openssl rand 64 | base64`
 ```
 
 ### RDS(datastore)
+
 It is possible to use RDS as a datastore. Edit your configuration file for the control plane according to your RDS setting.
+
 ```yaml
-  datastore:
-    type: MYSQL
-    config: 
-        url: root:password@tcp(endpoint_of_rds:3306) 
-        database: quickstart
+datastore:
+  type: MYSQL
+  config:
+    url: root:password@tcp(endpoint_of_rds:3306)
+    database: quickstart
 ```
 
 ### Redis(cache)
+
 It is possible to use Redis as a cache. Note the endpoint of Redis for the task definition.
 
-
 ### S3(filestore)
+
 It is possible to use S3 as a filestore. The filestore contains state files that describe your secure infrastructure, so make sure to make the bucket private. Only allow pipecd-server(ECS) to access this bucket.
 
 ### ECS
+
 You need to create two different services for pipecd-server and a pipecd-ops because they have the same ports and different permissions. The pipecd-server can be accessed by external clients such as piped or web clients, so this service includes the pipe-cd gateway and this service must be connected to the application loadbalancer. The pipecd-ops can only be accessed by admin users, so this service must only be accessed via SSM session manager.
 ECS agent sets config files as environment variables in container from secrets manager. Create configuration files from environment variables in the container as below.
 
@@ -65,14 +74,15 @@ echo $ENVOY_CONFIG; echo $ENVOY_CONFIG | base64 -d >> envoy-config.yaml
 > Note: Attach IAM policy to get secrets from Secrets Manager to task execution role.
 
 > Note: If you manage both of RDS and ECS by terraform, you can rewite datastore endpoint in the configuration file.
-`sed -i -e s/pipecd-mysql/${var.db_instance_address}/ control-plane-config.yaml;`
+> `sed -i -e s/pipecd-mysql/${var.db_instance_address}/ control-plane-config.yaml;`
 
 > Note: Attach IAM policy to access filestore to task role.
 
-
 #### task definitions examples (using terraform variables)
+
 1. gateway and server
-```
+
+```hcl
 {
 name  = "pipecd-gateway"
 image = var.gateway_image_url
@@ -124,7 +134,8 @@ secrets = [
 ```
 
 2. ops
-```
+
+```hcl
 {
 name  = "pipecd-ops"
 image = var.ops_image_url
@@ -163,20 +174,24 @@ secrets = [
 ```
 
 ### ALB
+
 You must prepare two target groups for both HTTP and gRPC. Make two hosts and listner rules as below. Listner protocol should be HTTPS becuase it uses gRPC.
 
 ![](/images/control-plane-alb.png)
 
 ### Terraform example
+
 PipeCD gives [control-plane-aws-ecs-terraform-demo](https://github.com/pipe-cd/control-plane-aws-ecs-terraform-demo), which we use Terraform to prepare PipeCD controlplane components and install it on air.
 
 #### Prepare
+
 1. Prepare SSL certificate
-Prepare your domain and SSL certificate from AWS certificate manager.
+   Prepare your domain and SSL certificate from AWS certificate manager.
 
 2. Create a s3 bucket for terraform backend
-Write bucket name to `00-main.tf`
-```
+   Write bucket name to `00-main.tf`
+
+```terraform
 terraform {
   backend "s3" {
     bucket  = "example-pipecd-control-plane-tfstate" #your bucket name for terraform backend
@@ -193,13 +208,14 @@ terraform {
 ```
 
 3. Edit `variables.tf` for your project
-```
+
+```terraform
 //export
 locals {
   alb = {
     certificate_arn = ""
   }
-  
+
   redis = {
     node_type = "cache.t2.micro"
   }
@@ -216,7 +232,8 @@ locals {
 ```
 
 4. Create a S3 bucket for filestore and write the bucket name for it to `control-plane-config.yaml` and `variables.tf`
-```
+
+```yaml
 apiVersion: "pipecd.dev/v1beta1"
 kind: ControlPlane
 spec:
@@ -228,7 +245,7 @@ spec:
   filestore:
     type: S3
     config: # edit here
-        bucket: example-pipecd-control-plane-filestore 
+        bucket: example-pipecd-control-plane-filestore
         region: ap-northeast-1
   projects:
     - id: quickstart
@@ -236,7 +253,8 @@ spec:
           username: hello-pipecd
           passwordHash: "$2a$10$ye96mUqUqTnjUqgwQJbJzel/LJibRhUnmzyypACkvrTSnQpVFZ7qK" # bcrypt value of "hello-pipecd"
 ```
-```
+
+```terraform
 //export
 locals {
   s3 = { # These must be unique in the world.
@@ -244,9 +262,11 @@ locals {
   }
 }
 ```
+
 5. Write config of RDS for datastore to `control-plane-config.yaml`
-Note: Do not edit hostname (pipecd-mysql) because it will be edited autimaticaly by terraform.
-```
+   Note: Do not edit hostname (pipecd-mysql) because it will be edited autimaticaly by terraform.
+
+```yaml
 apiVersion: "pipecd.dev/v1beta1"
 kind: ControlPlane
 spec:
@@ -257,8 +277,8 @@ spec:
       database: quickstart
   filestore:
     type: S3
-    config: 
-      bucket: example-pipecd-control-plane-filestore 
+    config:
+      bucket: example-pipecd-control-plane-filestore
       region: ap-northeast-1
   projects:
     - id: quickstart
@@ -268,7 +288,8 @@ spec:
 ```
 
 6. Put an encryption key and config file in Secrets Manager and write the path to `variables.tf`
-```
+
+```terraform
 locals {
   sm = {
     control_plane_config_secret = ""
@@ -279,13 +300,16 @@ locals {
 ```
 
 #### Deploy
-```
+
+```bash
 terraform apply
 ```
 
 #### login admin console
+
 You can login pipecd-ops via ECS exec.
-```
+
+```bash
 aws ssm start-session --target ecs:${CLUSTER}_${TASK_ID}_${CONTAINER_ID} --document-name AWS-StartPortForwardingSession --parameters '{"portNumber":["9082"],"localPortNumber":["19082"]}'
 ```
 

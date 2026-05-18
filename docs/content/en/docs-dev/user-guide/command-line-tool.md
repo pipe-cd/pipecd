@@ -17,102 +17,109 @@ The Pipectl command-line tool can be installed using one of the following method
 
 1. Download the appropriate version for your platform from [PipeCD Releases](https://github.com/pipe-cd/pipecd/releases).
 
-    We recommend using the latest version of pipectl to avoid unforeseen issues.
-    Run the following script:
+   We recommend using the latest version of pipectl to avoid unforeseen issues.
+   Run the following script:
 
-    ``` console
-    # OS="darwin" or "linux"
-    curl -Lo ./pipectl https://github.com/pipe-cd/pipecd/releases/download/{{< blocks/latest_version >}}/pipectl_{{< blocks/latest_version >}}_{OS}_amd64
-    ```
+   ```console
+   # OS="darwin" or "linux"
+   curl -Lo ./pipectl https://github.com/pipe-cd/pipecd/releases/download/{{< blocks/latest_version >}}/pipectl_{{< blocks/latest_version >}}_{OS}_amd64
+   ```
 
 2. Make the pipectl binary executable.
 
-    ``` console
-    chmod +x ./pipectl
-    ```
+   ```console
+   chmod +x ./pipectl
+   ```
 
 3. Move the binary to your PATH.
 
-    ``` console
-    sudo mv ./pipectl /usr/local/bin/pipectl
-    ```
+   ```console
+   sudo mv ./pipectl /usr/local/bin/pipectl
+   ```
 
 4. Test to ensure the version you installed is up-to-date.
 
-    ``` console
-    pipectl version
-    ```
+   ```console
+   pipectl version
+   ```
 
 ### Using Asdf
 
 About [Asdf](https://asdf-vm.com/)
 
 1. Add pipectl plugin to asdf. (If you have not yet `asdf add plugin add pipectl`.)
-    ```console
-    asdf plugin add pipectl
-    ```
+
+   ```console
+   asdf plugin add pipectl
+   ```
 
 2. Install pipectl. Available versions are [here](https://github.com/pipe-cd/pipecd/releases).
-    ```console
-    asdf install pipectl {VERSION}
-    ```
+
+   ```console
+   asdf install pipectl {VERSION}
+   ```
 
 3. Set a version.
-    ```console
-    asdf global pipectl {VERSION}
-    ```
+
+   ```console
+   asdf global pipectl {VERSION}
+   ```
 
 4. Test to ensure the version you installed is up-to-date.
 
-    ``` console
-    pipectl version
-    ```
+   ```console
+   pipectl version
+   ```
 
 ### Using Aqua
 
 About [Aqua](https://aquaproj.github.io/)
 
 1. Add pipectl to `aqua.yaml`. (If you want to select a version, use `aqua g -i -s pipe-cd/pipecd/pipectl`)
-    ```console
-    aqua g -i pipe-cd/pipecd/pipectl
-    ```
+
+   ```console
+   aqua g -i pipe-cd/pipecd/pipectl
+   ```
 
 2. Install pipectl.
-    ```console
-    aqua i
-    ```
+
+   ```console
+   aqua i
+   ```
 
 3. Test to ensure the version you installed is up-to-date.
-    ```console
-    pipectl version
-    ```
+   ```console
+   pipectl version
+   ```
 
 ### Using Homebrew
 
 About [Homebrew](https://brew.sh/)
 
 1. Add the `pipe-cd/tap` and fetch new formulae from GitHub.
-    ```console
-    brew tap pipe-cd/tap
-    brew update
-    ```
+
+   ```console
+   brew tap pipe-cd/tap
+   brew update
+   ```
 
 2. Install pipectl.
-    ```console
-    brew install pipectl
-    ```
+
+   ```console
+   brew install pipectl
+   ```
 
 3. Test to ensure the version you installed is up-to-date.
-    ```console
-    pipectl version
-    ```
+   ```console
+   pipectl version
+   ```
 
 ### Run in Docker container
 
 We are storing every version of docker image for pipectl on GitHub Container Registry.
 Available versions are [here](https://github.com/pipe-cd/pipecd/releases).
 
-```
+```console
 docker run --rm ghcr.io/pipe-cd/pipectl:{VERSION} -h
 ```
 
@@ -122,6 +129,7 @@ In order for pipectl to authenticate with PipeCD's Control Plane, it needs an AP
 There are two kinds of key role: `READ_ONLY` and `READ_WRITE`. Depending on the command, it might require an appropriate role to execute.
 
 ![](/images/settings-api-key.png)
+
 <p style="text-align: center;">
 Adding a new API key from Settings tab
 </p>
@@ -134,7 +142,7 @@ When executing a command of pipectl you have to specify either a string of API k
 
 Run `help` to know the available commands:
 
-``` console
+```console
 $ pipectl --help
 
 The command line tool for PipeCD.
@@ -169,7 +177,7 @@ Use "pipectl [command] --help" for more information about a command.
 
 Add a new application into the project:
 
-``` console
+```console
 pipectl application add \
     --address=CONTROL_PLANE_API_ADDRESS \
     --api-key=API_KEY \
@@ -183,7 +191,7 @@ pipectl application add \
 
 Run `help` to know what command flags should be specified:
 
-``` console
+```console
 $ pipectl application add --help
 
 Add a new application.
@@ -220,7 +228,7 @@ Global Flags:
 
 - Send a request to sync an application and exit immediately when the deployment is triggered:
 
-  ``` console
+  ```console
   pipectl application sync \
       --address={CONTROL_PLANE_API_ADDRESS} \
       --api-key={API_KEY} \
@@ -229,7 +237,7 @@ Global Flags:
 
 - Send a request to sync an application and wait until the triggered deployment reaches one of the specified statuses:
 
-  ``` console
+  ```console
   pipectl application sync \
       --address={CONTROL_PLANE_API_ADDRESS} \
       --api-key={API_KEY} \
@@ -241,7 +249,7 @@ Global Flags:
 
 Display the information of a given application in JSON format:
 
-``` console
+```console
 pipectl application get \
     --address={CONTROL_PLANE_API_ADDRESS} \
     --api-key={API_KEY} \
@@ -252,7 +260,7 @@ pipectl application get \
 
 Find and display the information of matching applications in JSON format:
 
-``` console
+```console
 pipectl application list \
     --address={CONTROL_PLANE_API_ADDRESS} \
     --api-key={API_KEY} \
@@ -264,7 +272,7 @@ pipectl application list \
 
 Disable an application with given id:
 
-``` console
+```console
 pipectl application disable \
     --address={CONTROL_PLANE_API_ADDRESS} \
     --api-key={API_KEY} \
@@ -275,7 +283,7 @@ pipectl application disable \
 
 Delete an application with given id:
 
-``` console
+```console
 pipectl application delete \
     --address={CONTROL_PLANE_API_ADDRESS} \
     --api-key={API_KEY} \
@@ -297,7 +305,7 @@ pipectl deployment list \
 
 Wait until a given deployment reaches one of the specified statuses:
 
-``` console
+```console
 pipectl deployment wait-status \
     --address={CONTROL_PLANE_API_ADDRESS} \
     --api-key={API_KEY} \
@@ -320,7 +328,7 @@ pipectl deployment logs \
 
 Register an event that can be used by EventWatcher:
 
-``` console
+```console
 pipectl event register \
     --address={CONTROL_PLANE_API_ADDRESS} \
     --api-key={API_KEY} \
@@ -338,7 +346,7 @@ You can encrypt it the same way you do [from the web](../managing-application/se
 
 - From stdin:
 
-  ``` console
+  ```console
   pipectl encrypt \
       --address={CONTROL_PLANE_API_ADDRESS} \
       --api-key={API_KEY} \
@@ -347,7 +355,7 @@ You can encrypt it the same way you do [from the web](../managing-application/se
 
 - From the `--input-file` flag:
 
-  ``` console
+  ```console
   pipectl encrypt \
       --address={CONTROL_PLANE_API_ADDRESS} \
       --api-key={API_KEY} \
@@ -359,10 +367,9 @@ Note: The docs for pipectl available command is maybe outdated, we suggest users
 
 ### Generating an application config (app.pipecd.yaml)
 
-
 Generate an app.pipecd.yaml interactively:
 
-``` console
+```console
 $ pipectl init
 Which platform? Enter the number [0]Kubernetes [1]ECS: 1
 Name of the application: myApp

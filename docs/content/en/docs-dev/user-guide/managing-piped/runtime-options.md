@@ -10,14 +10,14 @@ You can configure some options when running Piped and launcher.
 
 ## Options for Piped
 
-```
+```console
 Usage:
   piped piped [flags]
 
 Flags:
       --add-login-user-to-passwd                   Whether to add login user to $HOME/passwd. This is typically for applications running as a random user ID.
       --admin-port int                             The port number used to run a HTTP server for admin tasks such as metrics, healthz. (default 9085)
-      --app-manifest-cache-count int               The number of app manifests to cache. The cache-key contains the commit hash. The default is 150. (default 150)     
+      --app-manifest-cache-count int               The number of app manifests to cache. The cache-key contains the commit hash. The default is 150. (default 150)
       --cert-file string                           The path to the TLS certificate file.
       --config-aws-secret string                   The ARN of secret that contains Piped config and be stored in AWS Secrets Manager.
       --config-aws-ssm-parameter string            The name of parameter of Piped config stored in AWS Systems Manager Parameter Store. SecureString is also supported.
@@ -42,7 +42,7 @@ Global Flags:
 
 ## Options for launcher
 
-```
+```console
 Usage:
   launcher launcher [flags]
 
