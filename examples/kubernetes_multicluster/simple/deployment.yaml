@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: multicluster-simple
+  namespace: default
+  labels:
+    app: multicluster-simple
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: multicluster-simple
+      pipecd.dev/variant: primary
+  template:
+    metadata:
+      labels:
+        app: multicluster-simple
+        pipecd.dev/variant: primary
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:stable
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
