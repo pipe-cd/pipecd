@@ -1,31 +1,37 @@
 # Documentation
 
-The source files for the documentation is placing in [content](https://github.com/pipe-cd/pipecd/tree/master/docs/content) directory.
+The source files for the documentation are located in the [content](https://github.com/pipe-cd/pipecd/tree/master/docs/content) directory.
 
 # Website
 
-The PipeCD documentation website is built with [hugo](https://gohugo.io/) and published at https://pipecd.dev
+The PipeCD documentation website is built with [Hugo](https://gohugo.io/) and published at https://pipecd.dev
 
-# Docs and workaround with docs
+# Docs and working with docs
 
-PipeCD official site contains multiple versions of documentation, all placed under the `/docs/content/en` directory, which are:
-- `/docs-dev`: experimental version docs, contains docs for not yet released features or changes.
-- `/docs-v0.x.x`: contains docs for specified version family (a version family is all versions which in the same major release).
+PipeCD’s official site contains multiple versions of documentation, all placed under the `/docs/content/en` directory:
 
-Here are the flow of docs contribution regard some known scenarios:
-1. Update docs that are related to a specified version (which is not the latest released version):
-In such case, update the docs under `/docs-v0.x.x` is enough.
-2. Update docs for not yet released features or changes:
-In such case, update the docs under `/docs-dev` is enough.
-3. Update docs that are related to the latest released docs version:
-Change the docs' content that fixes the issue under `/docs-dev` and `/docs-v0.x.x`, they share the same file structure so you should find the right files in both directories.
+- `/docs-dev`: experimental docs for not-yet-released features or changes.
+- `/docs-vX.Y.x`: docs for a specific released version family (e.g., `docs-v0.56.x`, `docs-v1.0.x`).
+
+Here are the recommended flows for common documentation updates:
+
+1. **Update docs related to an older released version (not the latest released version):**  
+   Update the docs under the corresponding `/docs-vX.Y.x` directory.
+
+2. **Update docs for not-yet-released features or changes:**  
+   Update the docs under `/docs-dev`.
+
+3. **Update docs related to the latest released docs version:**  
+   Apply the change in both `/docs-dev` and the latest `/docs-vX.Y.x` directory (they share the same structure, so you can find the same page in both).
 
 If you find any issues related to the docs, we're happy to accept your help.
 
-# How to run website locally
+# How to run the website locally
 
 ## Prerequisite
+
 - [Hugo 0.92.1+extended](https://gohugo.io/)
 
 ## Commands
+
 Run `make run/site` at the root directory of the repository and then access http://localhost:1313
