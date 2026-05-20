@@ -6,7 +6,7 @@ The source files for the documentation are located in the [content](https://gith
 
 The PipeCD documentation website is built with [Hugo](https://gohugo.io/) and published at https://pipecd.dev
 
-# Docs and working with docs
+# Docs workflow and versioning
 
 PipeCD’s official site contains multiple versions of documentation, all placed under the `/docs/content/en` directory:
 
