@@ -1,0 +1,36 @@
+# markdownlint-cli2 configuration for PipeCD developer documentation.
+# Note: Initial configuration selectively disables rules to prevent global formatting
+# churn across existing documents, maintaining 100% compatibility with Hugo shortcodes.
+config:
+  # General Formatting & Length (would cause massive diff churn on legacy docs)
+  MD013: false # line-length
+  MD009: false # no-trailing-spaces
+  MD012: false # no-multiple-blanks
+  MD030: false # list-marker-space
+  MD031: false # blanks-around-fences
+  MD032: false # blanks-around-lists
+  MD007: false # ul-indent
+  MD022: false # blanks-around-headings
+
+  # Heading Structures (arbitrary sizing & structures in legacy documents)
+  MD001: false # heading-increment
+  MD024: false # no-duplicate-heading
+  MD025: false # single-title/single-h1
+  MD026: false # no-trailing-punctuation
+  MD036: false # no-emphasis-as-heading
+
+  # Hugo / HTML Compatibility Rules
+  MD033: false # no-inline-html (Hugo raw HTML tags and custom shortcodes are common)
+  MD045: false # no-alt-text
+  MD040: false # fenced-code-language
+  MD034: false # no-bare-urls
+  MD059: false # descriptive-link-text
+
+  # Markdown Elements & Tables
+  MD060: false # table-column-style
+  MD056: false # table-column-count
+  MD058: false # blanks-around-tables
+  MD052: false # reference-links-images
+  MD014: false # commands-show-output
+  MD047: false # single-trailing-newline
+  MD027: false # no-multiple-space-blockquote
