@@ -25,28 +25,14 @@ In this quickstart, you’ll install both components on a Kubernetes cluster and
 
 - A running Kubernetes cluster.  
 - [`kubectl`](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and configured to connect to your cluster.
+
 #### Setting Up a Kubernetes Cluster with Minikube
 
 If you don't already have a Kubernetes cluster, you can create a local one using Minikube (recommended for local development and testing).
 
 **Installation:**
 
-- **macOS:**
-  ```bash
-  brew install minikube
-  ```
-
-- **Linux:**
-  Follow the official installation guide:
-  https://minikube.sigs.k8s.io/docs/start/
-
-- **Windows:**
-  ```powershell
-  choco install minikube
-  ```
-
-  or download it from:
-  https://github.com/kubernetes/minikube/releases
+Follow the [official installation guide](https://minikube.sigs.k8s.io/docs/start/).
 
 **Starting a Cluster:**
 
@@ -67,10 +53,9 @@ Your local Kubernetes cluster is now ready. You can proceed with the PipeCD inst
 
 **Troubleshooting:**
 
-If you encounter driver-related issues, ensure that a supported virtualization/container runtime is installed and running (Docker, HyperKit, VirtualBox, etc.).
+If you encounter driver-related issues, ensure that a supported driver is installed and running. See [supported drivers](https://minikube.sigs.k8s.io/docs/drivers/).
 
-For more details, refer to:
-https://minikube.sigs.k8s.io/docs/
+For more details, refer to the [Minikube documentation](https://minikube.sigs.k8s.io/docs/).
 
 ---
 

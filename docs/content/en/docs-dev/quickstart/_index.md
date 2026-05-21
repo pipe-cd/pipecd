@@ -24,22 +24,7 @@ If you don't already have a Kubernetes cluster, you can create a local one using
 
 **Installation:**
 
-- **macOS:**
-  ```bash
-  brew install minikube
-  ```
-
-- **Linux:**
-  Follow the official installation guide:
-  https://minikube.sigs.k8s.io/docs/start/
-
-- **Windows:**
-  ```powershell
-  choco install minikube
-  ```
-
-  or download it from:
-  https://github.com/kubernetes/minikube/releases
+Follow the [official installation guide](https://minikube.sigs.k8s.io/docs/start/).
 
 **Starting a Cluster:**
 
@@ -60,10 +45,9 @@ Your local Kubernetes cluster is now ready. You can proceed with the PipeCD inst
 
 **Troubleshooting:**
 
-If you encounter driver-related issues, ensure that a supported virtualization/container runtime is installed and running (Docker, HyperKit, VirtualBox, etc.).
+If you encounter driver-related issues, ensure that a supported driver is installed and running. See [supported drivers](https://minikube.sigs.k8s.io/docs/drivers/).
 
-For more details, refer to:
-https://minikube.sigs.k8s.io/docs/
+For more details, refer to the [Minikube documentation](https://minikube.sigs.k8s.io/docs/).
 
 ### 1. Installing PipeCD in quickstart mode
 
