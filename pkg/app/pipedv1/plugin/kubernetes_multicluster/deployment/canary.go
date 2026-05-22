@@ -30,20 +30,20 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/yamlprocessor"
 )
 
-func (p *Plugin) executeK8sMultiCanaryRolloutStage(ctx context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
+func (p *Plugin) executeK8sMultiCanaryRolloutStage(ctx context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) (sdk.StageStatus, []sdk.DeployTargetStatus) {
 	lp := input.Client.LogPersister()
 
 	cfg, err := input.Request.TargetDeploymentSource.AppConfig()
 	if err != nil {
 		lp.Errorf("Failed while decoding application config (%v)", err.Error())
-		return sdk.StageStatusFailure
+		return sdk.StageStatusFailure, nil
 	}
 
 	var stageCfg kubeconfig.K8sCanaryRolloutStageOptions
 	if len(input.Request.StageConfig) > 0 {
 		if err := json.Unmarshal(input.Request.StageConfig, &stageCfg); err != nil {
 			lp.Errorf("Failed while unmarshalling stage config (%v)", err)
-			return sdk.StageStatusFailure
+			return sdk.StageStatusFailure, nil
 		}
 	}
 
@@ -82,11 +82,20 @@ func (p *Plugin) executeK8sMultiCanaryRolloutStage(ctx context.Context, input *s
 		}
 	}
 
+	type targetResult struct {
+		name   string
+		status sdk.StageStatus
+		msg    string
+	}
+	results := make([]targetResult, len(targetConfigs))
+
 	eg, ctx := errgroup.WithContext(ctx)
-	for _, tc := range targetConfigs {
+	for i, tc := range targetConfigs {
+		i, tc := i, tc
 		eg.Go(func() error {
 			lp.Infof("Start canary rollout for target %s", tc.deployTarget.Name)
 			status := p.canaryRollout(ctx, input, tc.deployTarget, tc.multiTarget, stageCfg)
+			results[i] = targetResult{name: tc.deployTarget.Name, status: status}
 			if status == sdk.StageStatusFailure {
 				return fmt.Errorf("failed to canary rollout for target %s", tc.deployTarget.Name)
 			}
@@ -94,12 +103,19 @@ func (p *Plugin) executeK8sMultiCanaryRolloutStage(ctx context.Context, input *s
 		})
 	}
 
-	if err := eg.Wait(); err != nil {
-		lp.Errorf("Failed while rolling out canary (%v)", err)
-		return sdk.StageStatusFailure
+	waitErr := eg.Wait()
+
+	dtStatuses := make([]sdk.DeployTargetStatus, len(results))
+	for i, r := range results {
+		dtStatuses[i] = sdk.DeployTargetStatus{Name: r.name, Status: r.status, Message: r.msg}
 	}
 
-	return sdk.StageStatusSuccess
+	if waitErr != nil {
+		lp.Errorf("Failed while rolling out canary (%v)", waitErr)
+		return sdk.StageStatusFailure, dtStatuses
+	}
+
+	return sdk.StageStatusSuccess, dtStatuses
 }
 
 func (p *Plugin) canaryRollout(

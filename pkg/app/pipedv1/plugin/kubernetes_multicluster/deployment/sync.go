@@ -30,13 +30,13 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/toolregistry"
 )
 
-func (p *Plugin) executeK8sMultiSyncStage(ctx context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
+func (p *Plugin) executeK8sMultiSyncStage(ctx context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) (sdk.StageStatus, []sdk.DeployTargetStatus) {
 	lp := input.Client.LogPersister()
 
 	cfg, err := input.Request.TargetDeploymentSource.AppConfig()
 	if err != nil {
 		lp.Errorf("Failed while decoding application config (%v)", err.Error())
-		return sdk.StageStatusFailure
+		return sdk.StageStatusFailure, nil
 	}
 
 	type targetConfig struct {
@@ -76,12 +76,20 @@ func (p *Plugin) executeK8sMultiSyncStage(ctx context.Context, input *sdk.Execut
 		}
 	}
 
+	type targetResult struct {
+		name   string
+		status sdk.StageStatus
+		msg    string
+	}
+	results := make([]targetResult, len(targetConfigs))
+
 	eg, ctx := errgroup.WithContext(ctx)
-	for _, tc := range targetConfigs {
-		// Start syncing the deployment to the target.
+	for i, tc := range targetConfigs {
+		i, tc := i, tc
 		eg.Go(func() error {
 			lp.Infof("Start syncing the deployment to the target %s", tc.deployTarget.Name)
 			status := p.sync(ctx, input, tc.deployTarget, tc.multiTarget)
+			results[i] = targetResult{name: tc.deployTarget.Name, status: status}
 			if status == sdk.StageStatusFailure {
 				return fmt.Errorf("failed to sync the deployment to the target %s", tc.deployTarget.Name)
 			}
@@ -89,12 +97,19 @@ func (p *Plugin) executeK8sMultiSyncStage(ctx context.Context, input *sdk.Execut
 		})
 	}
 
-	if err := eg.Wait(); err != nil {
-		lp.Errorf("Failed while syncing the deployment (%v)", err)
-		return sdk.StageStatusFailure
+	waitErr := eg.Wait()
+
+	dtStatuses := make([]sdk.DeployTargetStatus, len(results))
+	for i, r := range results {
+		dtStatuses[i] = sdk.DeployTargetStatus{Name: r.name, Status: r.status, Message: r.msg}
 	}
 
-	return sdk.StageStatusSuccess
+	if waitErr != nil {
+		lp.Errorf("Failed while syncing the deployment (%v)", waitErr)
+		return sdk.StageStatusFailure, dtStatuses
+	}
+
+	return sdk.StageStatusSuccess, dtStatuses
 }
 
 func (p *Plugin) sync(

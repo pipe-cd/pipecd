@@ -1,0 +1,57 @@
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (e.g. v0.1.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          path: piped-plugin-sdk-go
+          fetch-depth: 0
+      - uses: actions/checkout@v5
+        with:
+          repository: pipe-cd/pipecd
+          path: pipecd
+          fetch-depth: 0
+      - env:
+          INPUT_VERSION: ${{ inputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd piped-plugin-sdk-go
+          LATEST_VERSION=$(git tag --sort=version:refname | tail -n 1)
+          if [[ -z "$LATEST_VERSION" ]]; then
+            LATEST_VERSION=$(git log --format="%H" --reverse -- HEAD.txt | head -n 1)
+          fi
+
+          echo "Latest version: $LATEST_VERSION"
+          echo "Input version: $INPUT_VERSION"
+          if [[ "$LATEST_VERSION" == "$INPUT_VERSION" ]]; then
+            echo "Version $INPUT_VERSION already exists"
+            exit 0
+          fi
+
+          LATEST_VERSION_PIPECD_COMMIT="$(git show $LATEST_VERSION:./HEAD.txt)"
+          CURRENT_SYNCED_PIPECD_COMMIT="$(cat ./HEAD.txt)"
+          echo "Previous version PipeCD commit: $LATEST_VERSION_PIPECD_COMMIT"
+          echo "Next version PipeCD commit: $CURRENT_SYNCED_PIPECD_COMMIT"
+
+          cd ../pipecd
+          cat > output.tmp <<EOF
+          Release $INPUT_VERSION with changes since $LATEST_VERSION
+          ---
+
+          EOF
+          git log --reverse --format="* %s" $LATEST_VERSION_PIPECD_COMMIT..$CURRENT_SYNCED_PIPECD_COMMIT -- ./pkg/plugin/sdk/ | sed -E 's/\(#([0-9]+)\)/([#\1](https:\/\/github.com\/pipe-cd\/pipecd\/pull\/\1))/g' >> output.tmp
+
+          cd ../piped-plugin-sdk-go
+          gh release create --draft --target "$(git rev-parse HEAD)" --title $INPUT_VERSION --notes-file ../pipecd/output.tmp $INPUT_VERSION
