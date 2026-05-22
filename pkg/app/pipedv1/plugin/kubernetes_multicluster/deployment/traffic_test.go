@@ -69,7 +69,7 @@ func TestPlugin_executeK8sMultiTrafficRoutingStage_PodSelector_RouteToCanary(t *
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiTrafficRoutingStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+	status, _ := plugin.executeK8sMultiTrafficRoutingStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{Name: "default", Config: *dtConfig},
 	})
 
@@ -117,7 +117,7 @@ func TestPlugin_executeK8sMultiTrafficRoutingStage_PodSelector_RouteToCanary_Mul
 	clusterEU := setupCluster(t, "cluster-eu")
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiTrafficRoutingStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+	status, _ := plugin.executeK8sMultiTrafficRoutingStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{Name: clusterUS.name, Config: *clusterUS.dtc},
 		{Name: clusterEU.name, Config: *clusterEU.dtc},
 	})
@@ -165,7 +165,7 @@ func TestPlugin_executeK8sMultiTrafficRoutingStage_PodSelector_RestoreToPrimary(
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiTrafficRoutingStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+	status, _ := plugin.executeK8sMultiTrafficRoutingStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{Name: "default", Config: *dtConfig},
 	})
 
@@ -209,7 +209,7 @@ func TestPlugin_executeK8sMultiTrafficRoutingStage_PodSelector_RejectBaseline(t 
 	dtConfig, _ := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiTrafficRoutingStage(t.Context(), input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+	status, _ := plugin.executeK8sMultiTrafficRoutingStage(t.Context(), input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{Name: "default", Config: *dtConfig},
 	})
 
@@ -247,7 +247,7 @@ func TestPlugin_executeK8sMultiTrafficRoutingStage_PodSelector_RejectSplit(t *te
 	dtConfig, _ := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiTrafficRoutingStage(t.Context(), input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+	status, _ := plugin.executeK8sMultiTrafficRoutingStage(t.Context(), input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{Name: "default", Config: *dtConfig},
 	})
 
@@ -285,7 +285,7 @@ func TestPlugin_executeK8sMultiTrafficRoutingStage_PodSelector_NoService(t *test
 	dtConfig, _ := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiTrafficRoutingStage(t.Context(), input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+	status, _ := plugin.executeK8sMultiTrafficRoutingStage(t.Context(), input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{Name: "default", Config: *dtConfig},
 	})
 
@@ -323,7 +323,7 @@ func TestPlugin_executeK8sMultiTrafficRoutingStage_PodSelector_MissingVariant(t 
 	dtConfig, _ := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiTrafficRoutingStage(t.Context(), input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+	status, _ := plugin.executeK8sMultiTrafficRoutingStage(t.Context(), input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{Name: "default", Config: *dtConfig},
 	})
 
@@ -361,7 +361,7 @@ func TestPlugin_executeK8sMultiTrafficRoutingStage_PodSelector_WrongVariant(t *t
 	dtConfig, _ := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiTrafficRoutingStage(t.Context(), input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+	status, _ := plugin.executeK8sMultiTrafficRoutingStage(t.Context(), input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{Name: "default", Config: *dtConfig},
 	})
 
@@ -404,7 +404,7 @@ func TestPlugin_executeK8sMultiTrafficRoutingStage_PodSelector_MultipleServices(
 	applyManifestsByMultiSync(t, ctx, "traffic_routing_multiple_services", dtConfig)
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiTrafficRoutingStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+	status, _ := plugin.executeK8sMultiTrafficRoutingStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{Name: "default", Config: *dtConfig},
 	})
 
@@ -469,7 +469,7 @@ func installIstioCRDs(t *testing.T, dtConfig *kubeconfig.KubernetesDeployTargetC
 	}
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiSyncStage(t.Context(), input,
+	status, _ := plugin.executeK8sMultiSyncStage(t.Context(), input,
 		[]*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 			{Name: "default", Config: *dtConfig},
 		})
@@ -506,7 +506,7 @@ func applyManifestsByMultiSync(t *testing.T, ctx context.Context, testdataDir st
 	}
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiSyncStage(ctx, input,
+	status, _ := plugin.executeK8sMultiSyncStage(ctx, input,
 		[]*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 			{Name: "default", Config: *dtConfig},
 		})
@@ -696,7 +696,7 @@ func TestPlugin_executeK8sMultiTrafficRoutingStageIstio(t *testing.T) {
 			}
 
 			plugin := &Plugin{}
-			status := plugin.executeK8sMultiTrafficRoutingStage(ctx, input,
+			status, _ := plugin.executeK8sMultiTrafficRoutingStage(ctx, input,
 				[]*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 					{Name: "default", Config: *dtConfig},
 				})
@@ -752,7 +752,7 @@ func TestPlugin_executeK8sMultiTrafficRoutingStageIstio_MultiCluster(t *testing.
 	}
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiTrafficRoutingStage(ctx, input,
+	status, _ := plugin.executeK8sMultiTrafficRoutingStage(ctx, input,
 		[]*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 			{Name: clusterUS.name, Config: *clusterUS.dtc},
 			{Name: clusterEU.name, Config: *clusterEU.dtc},

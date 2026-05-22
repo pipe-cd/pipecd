@@ -1,0 +1,31 @@
+name: sync
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron:  '0 * * * *'
+
+jobs:
+  piped-plugin-sdk-go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: piped-plugin-sdk-go
+      - uses: actions/checkout@v3
+        with:
+          repository: pipe-cd/pipecd
+          path: pipecd
+      - run: |
+          cd piped-plugin-sdk-go
+          rm -rf * && cp -rf ../pipecd/pkg/plugin/sdk/* .
+          git -C ../pipecd rev-parse HEAD > HEAD.txt
+          cp -rf ../pipecd/pkg/plugin/sdk/README.remote.md README.md
+          if [[ -z `git status --porcelain` ]]; then
+            exit
+          fi
+          git config user.name pipecd-bot
+          git config user.email 62555040+pipecd-bot@users.noreply.github.com
+          git add .
+          git commit -m "Sync with pipe-cd/pipecd repository at $(<HEAD.txt)"
+          git push
