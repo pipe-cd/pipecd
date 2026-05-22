@@ -1,7 +1,6 @@
 import { Box } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { FC } from "react";
-import { findMetadataByKey } from "~/utils/find-metadata-by-key";
 import { ResourceState } from "~~/model/application_live_state_pb";
 import {
   CloseButton,
@@ -33,43 +32,32 @@ export const ResourceDetail: FC<ResourceDetailProps> = ({
           alignItems: "center",
         }}
       >
-        <InfoRowTitle>Kind</InfoRowTitle>
-        <InfoRowValue>
-          {findMetadataByKey(resource.resourceMetadataMap, "Kind")}
-        </InfoRowValue>
+        <InfoRowTitle>Resource Type</InfoRowTitle>
+        <InfoRowValue>{resource.resourceType}</InfoRowValue>
       </Box>
-      <Box
-        sx={{
-          pt: 1,
-          display: "flex",
-          alignItems: "center",
-        }}
-      >
-        <InfoRowTitle>Namespace</InfoRowTitle>
-        <InfoRowValue>
-          {findMetadataByKey(resource.resourceMetadataMap, "Namespace")}
-        </InfoRowValue>
-      </Box>
-      <Box
-        sx={{
-          pt: 1,
-          display: "flex",
-          alignItems: "center",
-        }}
-      >
-        <InfoRowTitle>Api Version</InfoRowTitle>
-        <InfoRowValue>
-          {findMetadataByKey(resource.resourceMetadataMap, "API Version")}
-        </InfoRowValue>
-      </Box>
-      <Box
-        sx={{
-          pt: 1,
-        }}
-      >
-        <InfoRowTitle>Health Description</InfoRowTitle>
-        <InfoRowValue>{resource.healthDescription || "Empty"}</InfoRowValue>
-      </Box>
+      {resource.resourceMetadataMap.map(([key, value]) => (
+        <Box
+          key={key}
+          sx={{
+            pt: 1,
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <InfoRowTitle>{key}</InfoRowTitle>
+          <InfoRowValue>{value || "Empty"}</InfoRowValue>
+        </Box>
+      ))}
+      {resource.healthDescription && (
+        <Box
+          sx={{
+            pt: 1,
+          }}
+        >
+          <InfoRowTitle>Health Description</InfoRowTitle>
+          <InfoRowValue>{resource.healthDescription}</InfoRowValue>
+        </Box>
+      )}
     </PanelWrap>
   );
 };
