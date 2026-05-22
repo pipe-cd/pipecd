@@ -239,6 +239,87 @@ spec:
 				"init-configmap-1",
 			},
 		},
+		{
+			name: "cronjob with configmap in volume",
+			manifest: `
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cronjob-with-configmap
+spec:
+  schedule: "0 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: worker
+              image: gcr.io/pipecd/helloworld:v0.5.0
+              volumeMounts:
+                - name: config
+                  mountPath: /etc/config
+          volumes:
+            - name: config
+              configMap:
+                name: cronjob-configmap
+`,
+			expected: []string{
+				"cronjob-configmap",
+			},
+		},
+		{
+			name: "cronjob with multiple configmaps across containers and initContainers",
+			manifest: `
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cronjob-multi-configmap
+spec:
+  schedule: "0 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          initContainers:
+            - name: init
+              image: gcr.io/pipecd/helloworld:v0.5.0
+              env:
+                - name: INIT_KEY
+                  valueFrom:
+                    configMapKeyRef:
+                      name: cronjob-init-configmap
+                      key: key1
+              envFrom:
+                - configMapRef:
+                    name: cronjob-init-envfrom-configmap
+          containers:
+            - name: worker
+              image: gcr.io/pipecd/helloworld:v0.5.0
+              env:
+                - name: APP_KEY
+                  valueFrom:
+                    configMapKeyRef:
+                      name: cronjob-configmap-1
+                      key: key1
+              envFrom:
+                - configMapRef:
+                    name: cronjob-envfrom-configmap
+              volumeMounts:
+                - name: config
+                  mountPath: /etc/config
+          volumes:
+            - name: config
+              configMap:
+                name: cronjob-volume-configmap
+`,
+			expected: []string{
+				"cronjob-configmap-1",
+				"cronjob-envfrom-configmap",
+				"cronjob-init-configmap",
+				"cronjob-init-envfrom-configmap",
+				"cronjob-volume-configmap",
+			},
+		},
 	}
 
 	for _, tc := range testcases {
@@ -402,6 +483,87 @@ spec:
 				"init-secret-1",
 				"secret-1",
 				"secret-2",
+			},
+		},
+		{
+			name: "cronjob with secret in volume",
+			manifest: `
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cronjob-with-secret
+spec:
+  schedule: "0 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: worker
+              image: gcr.io/pipecd/helloworld:v0.5.0
+              volumeMounts:
+                - name: secret-vol
+                  mountPath: /etc/secret
+          volumes:
+            - name: secret-vol
+              secret:
+                secretName: cronjob-secret
+`,
+			expected: []string{
+				"cronjob-secret",
+			},
+		},
+		{
+			name: "cronjob with multiple secrets across containers and initContainers",
+			manifest: `
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cronjob-multi-secret
+spec:
+  schedule: "0 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          initContainers:
+            - name: init
+              image: gcr.io/pipecd/helloworld:v0.5.0
+              env:
+                - name: INIT_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: cronjob-init-secret
+                      key: key1
+              envFrom:
+                - secretRef:
+                    name: cronjob-init-envfrom-secret
+          containers:
+            - name: worker
+              image: gcr.io/pipecd/helloworld:v0.5.0
+              env:
+                - name: APP_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: cronjob-secret-1
+                      key: key1
+              envFrom:
+                - secretRef:
+                    name: cronjob-envfrom-secret
+              volumeMounts:
+                - name: secret-vol
+                  mountPath: /etc/secret
+          volumes:
+            - name: secret-vol
+              secret:
+                secretName: cronjob-volume-secret
+`,
+			expected: []string{
+				"cronjob-envfrom-secret",
+				"cronjob-init-envfrom-secret",
+				"cronjob-init-secret",
+				"cronjob-secret-1",
+				"cronjob-volume-secret",
 			},
 		},
 	}
