@@ -1,0 +1,34 @@
+# This file is an example only.
+# Replace the placeholder values before using it in a real Piped configuration.
+projectID: example-project # PipeCD project ID.
+pipedID: example-piped-id # Piped ID generated in the control plane.
+pipedKeyData: REPLACE_WITH_BASE64_ENCODED_PIPED_KEY # Base64-encoded piped key placeholder.
+apiAddress: localhost:8080 # Control-plane API address.
+plugins:
+  - name: kubernetes-multicluster # Plugin name registered in piped config.
+    url: file:///opt/pipecd/plugins/kubernetes-multicluster # Plugin binary location.
+    port: 7003 # gRPC port exposed by the plugin process.
+    config: {} # Plugin-wide config. Kept empty for this example.
+    deployTargets:
+      - name: cluster-a # Deploy target name referenced from app.pipecd.yaml.
+        labels:
+          region: us-east1 # Cluster selector label for this target.
+        config:
+          masterURL: https://cluster-a.example.com # Kubernetes API server URL placeholder.
+          kubeConfigPath: /path/to/cluster-a.kubeconfig # kubeconfig path placeholder.
+          kubectlVersion: 1.32.2 # kubectl version used for this target.
+          appStateInformer:
+            namespace: default # Namespace watched for application state.
+            includeResources: [] # Optional resources to include in the informer.
+            excludeResources: [] # Optional resources to exclude from the informer.
+      - name: cluster-b # Deploy target name referenced from app.pipecd.yaml.
+        labels:
+          region: us-west1 # Cluster selector label for this target.
+        config:
+          masterURL: https://cluster-b.example.com # Kubernetes API server URL placeholder.
+          kubeConfigPath: /path/to/cluster-b.kubeconfig # kubeconfig path placeholder.
+          kubectlVersion: 1.32.2 # kubectl version used for this target.
+          appStateInformer:
+            namespace: default # Namespace watched for application state.
+            includeResources: [] # Optional resources to include in the informer.
+            excludeResources: [] # Optional resources to exclude from the informer.

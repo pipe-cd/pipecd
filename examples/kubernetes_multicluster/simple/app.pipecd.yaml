@@ -1,0 +1,32 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  name: multicluster-simple
+  labels:
+    env: example
+    team: product
+  description: |
+    This example is the first pipedv1 Kubernetes multicluster example in PipeCD.
+    It shows the K8S_MULTI_SYNC stage, which applies the same manifests to all
+    selected clusters in one quick sync and deploys to cluster-a and cluster-b
+    simultaneously.
+  plugins:
+    kubernetes_multicluster:
+      quickSync:
+        prune: true
+      variantLabel:
+        key: pipecd.dev/variant
+      input:
+        manifests:
+          - deployment.yaml
+          - service.yaml
+        kubectlVersion: 1.32.2
+        multiTargets:
+          - target:
+              name: cluster-a
+              labels:
+                region: us-east1
+          - target:
+              name: cluster-b
+              labels:
+                region: us-west1
