@@ -271,25 +271,28 @@ Then, copy generated Piped ID and base64 key for `piped-config.yaml`
 Below is an exampled piped v0 configuration using the Kubernetes platform provider. Use the PipeD ID and base64 key you created in step 2 here.
 
 ```yaml
-apiVersion: pipecd.dev/v1beta1
-kind: Piped
-spec:
-  projectID: quickstart
-  pipedID: <YOUR PIPED ID> # Base64 encoded string of the piped private key.
-  pipedKeyData: <YOUR PIPED BASE64 KEY> # FIXME: Replace here with your piped base64 key.
-  apiAddress: localhost:8080 # Write in a format "localhost:port"
-  #Replace with your piped address if you connect Piped to a control plane that does not run locally, or runs on a different port.
-  repositories:
-    - repoId: example
-      remote: git@github.com:pipe-cd/examples.git
-      branch: master
-  syncInterval: 1m
-  platformProviders:
-    - name: example-kubernetes
-      type: KUBERNETES
-      config:
-        # FIXME: Replace here with your kubeconfig absolute file path.
-        kubeConfigPath: /path/to/.kube/config
+  apiVersion: pipecd.dev/v1beta1
+  kind: Piped
+  spec:
+    projectID: quickstart
+    pipedID: <YOUR PIPED ID> # Base64 encoded string of the piped private key.
+    pipedKeyData: <YOUR PIPED BASE64 KEY> # FIXME: Replace here with your piped base64 key.
+    apiAddress: localhost:8080 # Write in a format "localhost:port"
+
+    # Replace with your piped address if you connect Piped to a control plane that does not run locally, or runs on a different port.
+    repositories:
+      - repoId: example
+        remote: git@github.com:pipe-cd/examples.git
+        branch: master
+
+    syncInterval: 1m
+
+    platformProviders:
+      - name: example-kubernetes
+        type: KUBERNETES
+        config:
+          # FIXME: Replace here with your kubeconfig absolute file path.
+          kubeConfigPath: /path/to/.kube/config
 ```
 
 4. Once you have configured your piped configuration file, start the Piped agent with the following command:
