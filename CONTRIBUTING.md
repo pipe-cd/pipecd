@@ -90,19 +90,19 @@ If you would like to request an entirely new feature, you can file an issue with
 
 We maintain a list of [good first issues](https://github.com/pipe-cd/pipecd/labels/good%20first%20issue) to help you get started with the PipeCD codebase and familiarize yourself with our contribution process. It's an excellent place to begin.
 
-Additionally, we recommend you not to work on multiple good first issues because it's for first contributers and currently we cannot make enough good first issues.
+Additionally, we recommend you not to work on multiple good first issues because it's for first contributors and currently we cannot make enough good first issues.
 
 ### Before you work on issues
 
 If you want to work on any of these issues, simply leave a message saying "I'd like to work on this," and we will assign the issue to you and update its status as "claimed." We expect you to submit a pull request within seven days so that we can assign the issue to someone else if you are unavailable.
 
-We recommend you to focus only one issue at once if you are newcomer contributer.
+We recommend you to focus on only one issue at a time if you are a newcomer contributor.
 
 So you've decided to contribute back to the upstream by opening a pull request. You've put in a significant amount of time, and we appreciate your effort. We will do our best to work with you and review the pull request.
 
 ### Investigate an issue
 
-Before you submitting a Pull Request, we recommend you to investigate the issue and comment what to do on it.
+Before submitting a Pull Request, we recommend you to investigate the issue and comment what to do on it.
 Then you can discuss how to solve the issue and reduce the communication on the Pull Request.
 
 ### Submitting a Pull Request
@@ -198,7 +198,7 @@ Run `make up/local-cluster` to start a local registry.
 
 This will create the kubernetes namespace `pipecd` if it does not exist and start a local registry in the namespace which can then be accessed by other components.
 
-When cleaning up, run `make down/local-cluster` to stop and delete the registery and the cluster.
+When cleaning up, run `make down/local-cluster` to stop and delete the registry and the cluster.
 
 #### Run PipeCD Control Plane
 
@@ -208,7 +208,7 @@ Run `make stop/pipecd` to stop PipeCD Control Plane.
 
 #### Port Forward
 
-Run `kubectl port-forward -n pipecd svc/pipecd 8080` forward your local port to the `pipecd` pod port.
+Run `kubectl port-forward -n pipecd svc/pipecd 8080` to forward your local port to the `pipecd` pod port.
 
 #### Access the PipeCD UI
 
