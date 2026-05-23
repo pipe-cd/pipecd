@@ -90,7 +90,7 @@ If you would like to request an entirely new feature, you can file an issue with
 
 We maintain a list of [good first issues](https://github.com/pipe-cd/pipecd/labels/good%20first%20issue) to help you get started with the PipeCD codebase and familiarize yourself with our contribution process. It's an excellent place to begin.
 
-Additionally, we recommend you not to work on multiple good first issues because it's for first contributors and currently we cannot make enough good first issues.
+Additionally, we recommend not working on multiple good first issues at the same time, since these issues are primarily meant for new contributors.
 
 ### Before you work on issues
 
