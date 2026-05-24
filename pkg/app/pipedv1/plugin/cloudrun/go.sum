@@ -88,8 +88,8 @@ github.com/felixge/httpsnoop v1.0.4/go.mod h1:m8KPJKqk1gH5J9DgRY2ASl2lWCfGKXixSw
 github.com/go-gl/glfw v0.0.0-20190409004039-e6da0acd62b1/go.mod h1:vR7hzQXu2zJy9AVAgeJqvqgH9Q5CA+iKCZ2gyEVpxRU=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20191125211704-12ad95a8df72/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200222043503-6f7a984d4dc4/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
-github.com/go-jose/go-jose/v4 v4.1.3 h1:CVLmWDhDVRa6Mi/IgCgaopNosCaHz7zrMeF9MlZRkrs=
-github.com/go-jose/go-jose/v4 v4.1.3/go.mod h1:x4oUasVrzR7071A4TnHLGSPpNOm2a21K9Kf04k1rs08=
+github.com/go-jose/go-jose/v4 v4.1.4 h1:moDMcTHmvE6Groj34emNPLs/qtYXRVcd6S7NHbHz3kA=
+github.com/go-jose/go-jose/v4 v4.1.4/go.mod h1:x4oUasVrzR7071A4TnHLGSPpNOm2a21K9Kf04k1rs08=
 github.com/go-kit/kit v0.8.0/go.mod h1:xBxKIO96dXMWWy0MnWVtmwkA9/13aqxPnvrjFYMA2as=
 github.com/go-kit/kit v0.9.0/go.mod h1:xBxKIO96dXMWWy0MnWVtmwkA9/13aqxPnvrjFYMA2as=
 github.com/go-kit/log v0.1.0/go.mod h1:zbhenjAZHb184qTLMA9ZjW7ThYL0H2mk7Q6pNt4vbaY=
@@ -213,10 +213,10 @@ github.com/modern-go/reflect2 v1.0.1/go.mod h1:bx2lNnkwVCuqBIxFjflWJWanXIb3Rllmb
 github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
 github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
 github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
-github.com/pipe-cd/pipecd v0.52.1-0.20250731104149-f611ce3501c5 h1:1VM6ZkE2YfXqROq3lU8xrOV21MdJ257p19VX71E/nsU=
-github.com/pipe-cd/pipecd v0.52.1-0.20250731104149-f611ce3501c5/go.mod h1:5H0ydj0eUpGnJOesA2GPU3mTVlZEZDb8cNP7/lvNPTU=
-github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250813060314-58a44ff1d325 h1:Blb67g3wkk55GqjCkCQbdEl5I6/PqxMOJne4I0eIMA0=
-github.com/pipe-cd/piped-plugin-sdk-go v0.0.0-20250813060314-58a44ff1d325/go.mod h1:JjOYv2tMx72fvLpe88KG8cvrlHiI5XKYeZBvdDO3g80=
+github.com/pipe-cd/pipecd v0.54.0-rc1.0.20250912082650-0b949bb7aac9 h1:kyFMfrjASFFSptyakHaF4OSCy2TamOr6VAkf2nlplxA=
+github.com/pipe-cd/pipecd v0.54.0-rc1.0.20250912082650-0b949bb7aac9/go.mod h1:etCJcXHbrFxuh9fG3MNBTZLKG8EQ1v+ZEGn9Rb/mK1o=
+github.com/pipe-cd/piped-plugin-sdk-go v0.3.2 h1:id5qkm6yzpwoOyKUpVo7Wz9pf3ukNWCwWE71kMBWW7k=
+github.com/pipe-cd/piped-plugin-sdk-go v0.3.2/go.mod h1:sXhd4cfvLBkjcnNLXsF3Lt0fR1vGQE0UP12ZrkXXGtw=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
