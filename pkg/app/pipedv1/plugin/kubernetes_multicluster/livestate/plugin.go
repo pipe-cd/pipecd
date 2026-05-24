@@ -32,7 +32,7 @@ import (
 
 type Plugin struct{}
 
-func (p Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTargets []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.GetLivestateResponse, error) {
+func (p Plugin) GetLivestate(ctx context.Context, _ *kubeconfig.KubernetesPluginConfig, deployTargets []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.GetLivestateResponse, error) {
 	cfg, err := input.Request.DeploymentSource.AppConfig()
 	if err != nil {
 		input.Logger.Error("Failed to load application config", zap.Error(err))
