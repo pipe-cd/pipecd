@@ -182,7 +182,6 @@ func (p *Plugin) sync(
 	applier := provider.NewApplier(kubectl, cfg.Spec.Input, deployTargetConfig, input.Logger)
 
 	// Start applying all manifests to add or update running resources.
-	// TODO: use applyManifests instead of applyManifestsSDK
 	if err := applyManifests(ctx, applier, manifests, cfg.Spec.Input.Namespace, lp); err != nil {
 		lp.Errorf("Failed while applying manifests (%v)", err)
 		return sdk.StageStatusFailure
