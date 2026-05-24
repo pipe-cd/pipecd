@@ -25,7 +25,7 @@ PipeCD team also be around the project booth, let's come and discuss.
 
 Booth information
 
-```
+```text
 Project: PipeCD
 Kiosk #: PP16-A
 Kiosk Shift: Part-time - AM (Fri)

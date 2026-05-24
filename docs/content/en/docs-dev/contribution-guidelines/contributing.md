@@ -28,14 +28,14 @@ There are many ways to contribute, and many don't involve writing code:
 
 PipeCD consists of several components:
 
-| Component | Description |
-|-----------|-------------|
-| [cmd/pipecd](https://github.com/pipe-cd/pipecd/tree/master/cmd/pipecd) | Control Plane — manages deployment data and provides gRPC API |
-| [cmd/piped](https://github.com/pipe-cd/pipecd/tree/master/cmd/piped) | Piped agent — runs in your cluster |
-| [cmd/pipectl](https://github.com/pipe-cd/pipecd/tree/master/cmd/pipectl) | Command-line tool |
-| [cmd/launcher](https://github.com/pipe-cd/pipecd/tree/master/cmd/launcher) | Command executor for remote upgrade |
-| [web](https://github.com/pipe-cd/pipecd/tree/master/web) | Web UI |
-| [docs](https://github.com/pipe-cd/pipecd/tree/master/docs) | Documentation |
+| Component                                                                  | Description                                                   |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| [cmd/pipecd](https://github.com/pipe-cd/pipecd/tree/master/cmd/pipecd)     | Control Plane — manages deployment data and provides gRPC API |
+| [cmd/piped](https://github.com/pipe-cd/pipecd/tree/master/cmd/piped)       | Piped agent — runs in your cluster                            |
+| [cmd/pipectl](https://github.com/pipe-cd/pipecd/tree/master/cmd/pipectl)   | Command-line tool                                             |
+| [cmd/launcher](https://github.com/pipe-cd/pipecd/tree/master/cmd/launcher) | Command executor for remote upgrade                           |
+| [web](https://github.com/pipe-cd/pipecd/tree/master/web)                   | Web UI                                                        |
+| [docs](https://github.com/pipe-cd/pipecd/tree/master/docs)                 | Documentation                                                 |
 
 ### Prerequisites
 
@@ -95,6 +95,7 @@ kubectl port-forward -n pipecd svc/pipecd 8080
 Open [http://localhost:8080?project=quickstart](http://localhost:8080?project=quickstart)
 
 Login credentials:
+
 - **Username:** `hello-pipecd`
 - **Password:** `hello-pipecd`
 
@@ -162,7 +163,7 @@ make build/go       # Build Go binaries
 
 2. **Use descriptive titles** — Follow commit message style: present tense, capitalize first letter
 
-   ```
+   ```text
    Add imports to Terraform plan result
    ```
 
@@ -186,6 +187,7 @@ If your change affects users, update the PR description:
 
 ```md
 **Does this PR introduce a user-facing change?**:
+
 - **How are users affected by this change**:
 - **Is this breaking change**:
 - **How to migrate (if breaking change)**:
