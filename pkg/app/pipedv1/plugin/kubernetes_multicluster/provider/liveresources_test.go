@@ -12,33 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package provider contains live resource fetching logic.
-//
-// Full unit testing of GetLiveResources requires a running Kubernetes cluster
-// because *Kubectl is a concrete type that shells out to the kubectl binary.
-// The selector-building logic (LabelManagedBy, LabelApplication) is tested
-// indirectly via the integration-style test below: we verify the function
-// returns an error when kubectl cannot reach a cluster, which confirms the
-// function does attempt the expected kubectl.GetAll call.
 package provider
 
 import (
 	"context"
 	"testing"
 
+	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry/toolregistrytest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/toolregistry"
 )
 
 // TestGetLiveResources_InvalidKubeconfig verifies that GetLiveResources
 // returns an error when the kubeconfig path does not exist / is unreachable.
-// This exercises the error path of kubectl.GetAll and confirms that
-// GetLiveResources propagates the failure rather than silently swallowing it.
 func TestGetLiveResources_InvalidKubeconfig(t *testing.T) {
 	t.Parallel()
 
-	kubectl := NewKubectl("kubectl")
-	_, _, err := GetLiveResources(context.Background(), kubectl, "/nonexistent/kubeconfig", "app-id-123")
+	registry := toolregistry.NewRegistry(toolregistrytest.NewTestToolRegistry(t))
+	kubectlPath, err := registry.Kubectl(context.Background(), "")
+	require.NoError(t, err)
+
+	kubectl := NewKubectl(kubectlPath)
+	_, _, err = GetLiveResources(context.Background(), kubectl, "/nonexistent/kubeconfig", "app-id-123")
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "failed while listing all namespace-scoped resources")
 }
