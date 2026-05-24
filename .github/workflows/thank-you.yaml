@@ -1,0 +1,54 @@
+name: Contributor Thank You
+
+on:
+  pull_request_target:
+    types:
+      - closed
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  thank-you:
+    # Only run if the PR was actually merged
+    if: github.event.pull_request.merged
+    runs-on: ubuntu-latest
+    steps:
+      # We must check out the code to read the MAINTAINERS.json file
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Leave a Thank You Comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const creator = context.payload.pull_request.user.login;
+            
+            // Skip bots to avoid comment loops
+            if (creator.endsWith('[bot]')) {
+              console.log('Skipping bot account.');
+              return;
+            }
+
+            // Read maintainers list from JSON file
+            const maintainersData = JSON.parse(fs.readFileSync('MAINTAINERS.json', 'utf8'));
+            const maintainers = maintainersData.maintainers.map(m => m.toLowerCase());
+            
+            // Skip core maintainers to avoid spamming the team
+            if (maintainers.includes(creator.toLowerCase())) {
+              console.log(`Skipping maintainer account: ${creator}`);
+              return;
+            }
+
+            const message = 'Thank you for contributing to PipeCD! The changes in this pull request will be part of the upcoming release!';
+
+            // Post the comment to the PR
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: message
+            });
+            
