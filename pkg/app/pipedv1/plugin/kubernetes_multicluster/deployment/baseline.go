@@ -46,59 +46,11 @@ func (p *Plugin) executeK8sMultiBaselineRolloutStage(ctx context.Context, input 
 		}
 	}
 
-	type targetConfig struct {
-		deployTarget *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]
-		multiTarget  *kubeconfig.KubernetesMultiTarget
-	}
-
-	deployTargetMap := make(map[string]*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], 0)
-	targetConfigs := make([]targetConfig, 0, len(dts))
-
-	for _, target := range dts {
-		deployTargetMap[target.Name] = target
-	}
-
-	// If no multi-targets are specified, roll out baseline to all deploy targets.
-	if len(cfg.Spec.Input.MultiTargets) == 0 {
-		for _, dt := range dts {
-			targetConfigs = append(targetConfigs, targetConfig{
-				deployTarget: dt,
-				multiTarget:  nil,
-			})
-		}
-	} else {
-		for _, multiTarget := range cfg.Spec.Input.MultiTargets {
-			dt, ok := deployTargetMap[multiTarget.Target.Name]
-			if !ok {
-				lp.Infof("Ignore multi target '%s': not matched any deployTarget", multiTarget.Target.Name)
-				continue
-			}
-
-			targetConfigs = append(targetConfigs, targetConfig{
-				deployTarget: dt,
-				multiTarget:  &multiTarget,
-			})
-		}
-	}
-
-	eg, ctx := errgroup.WithContext(ctx)
-	for _, tc := range targetConfigs {
-		eg.Go(func() error {
-			lp.Infof("Start baseline rollout for target %s", tc.deployTarget.Name)
-			status := p.baselineRollout(ctx, input, tc.deployTarget, tc.multiTarget, stageCfg)
-			if status == sdk.StageStatusFailure {
-				return fmt.Errorf("failed to baseline rollout for target %s", tc.deployTarget.Name)
-			}
-			return nil
-		})
-	}
-
-	if err := eg.Wait(); err != nil {
-		lp.Errorf("Failed while rolling out baseline (%v)", err)
-		return sdk.StageStatusFailure
-	}
-
-	return sdk.StageStatusSuccess
+	targets := buildStageTargets(lp, dts, cfg.Spec.Input.MultiTargets)
+	return runOnTargets(ctx, lp, targets, func(ctx context.Context, dt *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], mt *kubeconfig.KubernetesMultiTarget) sdk.StageStatus {
+		lp.Infof("Start baseline rollout for target %s", dt.Name)
+		return p.baselineRollout(ctx, input, dt, mt, stageCfg)
+	})
 }
 
 func (p *Plugin) baselineRollout(
