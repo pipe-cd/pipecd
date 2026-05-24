@@ -45,7 +45,7 @@ func (p *Plugin) executeK8sMultiPrimaryRolloutStage(ctx context.Context, input *
 		}
 	}
 
-	targets := buildStageTargets(lp, dts, cfg.Spec.Input.MultiTargets)
+	targets := filterStageTargets(buildStageTargets(lp, dts, cfg.Spec.Input.MultiTargets), stageCfg.MultiTargets)
 	return runOnTargets(ctx, lp, targets, func(ctx context.Context, dt *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], mt *kubeconfig.KubernetesMultiTarget) sdk.StageStatus {
 		lp.Infof("Start primary rollout for target %s", dt.Name)
 		return p.primaryRollout(ctx, input, dt, mt, stageCfg)
