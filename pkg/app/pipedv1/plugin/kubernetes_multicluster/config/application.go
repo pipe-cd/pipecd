@@ -78,7 +78,14 @@ func (s *KubernetesApplicationSpec) UnmarshalJSON(data []byte) error {
 }
 
 func (s *KubernetesApplicationSpec) Validate() error {
-	// TODO: Validate KubernetesApplicationSpec fields.
+	if s.Input.HelmChart != nil && len(s.Input.KustomizeOptions) > 0 {
+		return errors.New("helmChart and kustomizeOptions are mutually exclusive")
+	}
+	for i, mt := range s.Input.MultiTargets {
+		if mt.Target.Name == "" {
+			return fmt.Errorf("multiTargets[%d].target.name must not be empty", i)
+		}
+	}
 	return nil
 }
 
@@ -108,8 +115,6 @@ type KubernetesDeploymentInput struct {
 	// Automatically create a new namespace if it does not exist.
 	// Default is false.
 	AutoCreateNamespace bool `json:"autoCreateNamespace,omitempty"`
-
-	// TODO: Define fields for KubernetesDeploymentInput.
 
 	MultiTargets []KubernetesMultiTarget `json:"multiTargets,omitempty"`
 }
@@ -198,10 +203,12 @@ func FindDeployTarget(cfg *config.PipedPlugin, name string) (KubernetesDeployTar
 }
 
 type KubernetesMultiTarget struct {
-	Target         KubernetesMultiTargetDeployTarget `json:"target"`
-	Manifests      []string                          `json:"manifests,omitempty"`
-	KubectlVersion string                            `json:"kubectlVersion,omitempty"`
-	KustomizeDir   string                            `json:"kustomizeDir,omitempty"`
+	Target           KubernetesMultiTargetDeployTarget `json:"target"`
+	Manifests        []string                          `json:"manifests,omitempty"`
+	KubectlVersion   string                            `json:"kubectlVersion,omitempty"`
+	KustomizeDir     string                            `json:"kustomizeDir,omitempty"`
+	KustomizeVersion string                            `json:"kustomizeVersion,omitempty"`
+	KustomizeOptions map[string]string                 `json:"kustomizeOptions,omitempty"`
 }
 
 type KubernetesMultiTargetDeployTarget struct {

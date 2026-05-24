@@ -242,13 +242,13 @@ metadata:
 func TestFilterStageTargets(t *testing.T) {
 	t.Parallel()
 
-	makeTC := func(name string) stageTargetConfig {
-		return stageTargetConfig{
+	makeTC := func(name string) stageTarget {
+		return stageTarget{
 			deployTarget: &sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{Name: name},
 		}
 	}
 
-	all := []stageTargetConfig{makeTC("us"), makeTC("eu"), makeTC("ap")}
+	all := []stageTarget{makeTC("us"), makeTC("eu"), makeTC("ap")}
 
 	tests := []struct {
 		name         string

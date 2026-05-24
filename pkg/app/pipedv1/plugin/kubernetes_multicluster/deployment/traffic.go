@@ -97,10 +97,10 @@ func (p *Plugin) executeK8sMultiTrafficRoutingStagePodSelector(
 		deployTargetMap[dt.Name] = dt
 	}
 
-	targetConfigs := make([]stageTargetConfig, 0, len(dts))
+	targetConfigs := make([]stageTarget, 0, len(dts))
 	if len(cfg.Spec.Input.MultiTargets) == 0 {
 		for _, dt := range dts {
-			targetConfigs = append(targetConfigs, stageTargetConfig{deployTarget: dt})
+			targetConfigs = append(targetConfigs, stageTarget{deployTarget: dt})
 		}
 	} else {
 		for _, mt := range cfg.Spec.Input.MultiTargets {
@@ -109,7 +109,7 @@ func (p *Plugin) executeK8sMultiTrafficRoutingStagePodSelector(
 				lp.Infof("Ignore multi target '%s': not matched any deployTarget", mt.Target.Name)
 				continue
 			}
-			targetConfigs = append(targetConfigs, stageTargetConfig{deployTarget: dt, multiTarget: &mt})
+			targetConfigs = append(targetConfigs, stageTarget{deployTarget: dt, multiTarget: &mt})
 		}
 	}
 
@@ -225,10 +225,10 @@ func (p *Plugin) executeK8sMultiTrafficRoutingStageIstio(
 		deployTargetMap[dt.Name] = dt
 	}
 
-	targetConfigs := make([]stageTargetConfig, 0, len(dts))
+	targetConfigs := make([]stageTarget, 0, len(dts))
 	if len(cfg.Spec.Input.MultiTargets) == 0 {
 		for _, dt := range dts {
-			targetConfigs = append(targetConfigs, stageTargetConfig{deployTarget: dt})
+			targetConfigs = append(targetConfigs, stageTarget{deployTarget: dt})
 		}
 	} else {
 		for _, mt := range cfg.Spec.Input.MultiTargets {
@@ -237,7 +237,7 @@ func (p *Plugin) executeK8sMultiTrafficRoutingStageIstio(
 				lp.Infof("Ignore multi target '%s': not matched any deployTarget", mt.Target.Name)
 				continue
 			}
-			targetConfigs = append(targetConfigs, stageTargetConfig{deployTarget: dt, multiTarget: &mt})
+			targetConfigs = append(targetConfigs, stageTarget{deployTarget: dt, multiTarget: &mt})
 		}
 	}
 

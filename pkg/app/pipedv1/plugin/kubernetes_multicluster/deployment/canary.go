@@ -47,56 +47,11 @@ func (p *Plugin) executeK8sMultiCanaryRolloutStage(ctx context.Context, input *s
 		}
 	}
 
-	deployTargetMap := make(map[string]*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], 0)
-	targetConfigs := make([]stageTargetConfig, 0, len(dts))
-
-	for _, target := range dts {
-		deployTargetMap[target.Name] = target
-	}
-
-	// If no multi-targets are specified, roll out canary to all deploy targets.
-	if len(cfg.Spec.Input.MultiTargets) == 0 {
-		for _, dt := range dts {
-			targetConfigs = append(targetConfigs, stageTargetConfig{
-				deployTarget: dt,
-				multiTarget:  nil,
-			})
-		}
-	} else {
-		for _, multiTarget := range cfg.Spec.Input.MultiTargets {
-			dt, ok := deployTargetMap[multiTarget.Target.Name]
-			if !ok {
-				lp.Infof("Ignore multi target '%s': not matched any deployTarget", multiTarget.Target.Name)
-				continue
-			}
-
-			targetConfigs = append(targetConfigs, stageTargetConfig{
-				deployTarget: dt,
-				multiTarget:  &multiTarget,
-			})
-		}
-	}
-
-	targetConfigs = filterStageTargets(targetConfigs, stageCfg.MultiTargets)
-
-	eg, ctx := errgroup.WithContext(ctx)
-	for _, tc := range targetConfigs {
-		eg.Go(func() error {
-			lp.Infof("Start canary rollout for target %s", tc.deployTarget.Name)
-			status := p.canaryRollout(ctx, input, tc.deployTarget, tc.multiTarget, stageCfg)
-			if status == sdk.StageStatusFailure {
-				return fmt.Errorf("failed to canary rollout for target %s", tc.deployTarget.Name)
-			}
-			return nil
-		})
-	}
-
-	if err := eg.Wait(); err != nil {
-		lp.Errorf("Failed while rolling out canary (%v)", err)
-		return sdk.StageStatusFailure
-	}
-
-	return sdk.StageStatusSuccess
+	targets := filterStageTargets(buildStageTargets(lp, dts, cfg.Spec.Input.MultiTargets), stageCfg.MultiTargets)
+	return runOnTargets(ctx, lp, targets, func(ctx context.Context, dt *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], mt *kubeconfig.KubernetesMultiTarget) sdk.StageStatus {
+		lp.Infof("Start canary rollout for target %s", dt.Name)
+		return p.canaryRollout(ctx, input, dt, mt, stageCfg)
+	})
 }
 
 func (p *Plugin) canaryRollout(
@@ -376,10 +331,10 @@ func (p *Plugin) executeK8sMultiCanaryCleanStage(ctx context.Context, input *sdk
 		deployTargetMap[dt.Name] = dt
 	}
 
-	targetConfigs := make([]stageTargetConfig, 0, len(dts))
+	targetConfigs := make([]stageTarget, 0, len(dts))
 	if len(cfg.Spec.Input.MultiTargets) == 0 {
 		for _, dt := range dts {
-			targetConfigs = append(targetConfigs, stageTargetConfig{deployTarget: dt})
+			targetConfigs = append(targetConfigs, stageTarget{deployTarget: dt})
 		}
 	} else {
 		for _, mt := range cfg.Spec.Input.MultiTargets {
@@ -388,7 +343,7 @@ func (p *Plugin) executeK8sMultiCanaryCleanStage(ctx context.Context, input *sdk
 				lp.Infof("Ignore multi target '%s': not matched any deployTarget", mt.Target.Name)
 				continue
 			}
-			targetConfigs = append(targetConfigs, stageTargetConfig{deployTarget: dt})
+			targetConfigs = append(targetConfigs, stageTarget{deployTarget: dt})
 		}
 	}
 
