@@ -210,16 +210,24 @@ func (p *Plugin) rollback(ctx context.Context, input *sdk.ExecuteStageInput[kube
 		failed = true
 	}
 
-	lp.Info("Start pruning resources that do not exist in the running manifests")
-	targetCfg, err := input.Request.TargetDeploymentSource.AppConfig()
+	lp.Info("Start finding and pruning resources that no longer exist in the running manifests")
+	namespacedLiveResources, clusterScopedLiveResources, err := provider.GetLiveResources(ctx, kubectl, deployTargetConfig.KubeConfigPath, input.Request.Deployment.ApplicationID)
 	if err != nil {
-		lp.Infof("Failed to load target app config for pruning, skipping: %v", err)
-	} else {
-		targetManifests, err := p.loadManifests(ctx, &input.Request.Deployment, targetCfg.Spec, &input.Request.TargetDeploymentSource, provider.NewLoader(toolRegistry), input.Logger, multiTarget)
-		if err != nil {
-			lp.Infof("Failed to load target manifests for pruning, skipping: %v", err)
+		lp.Errorf("Failed while getting live resources (%v)", err)
+		failed = true
+	} else if len(namespacedLiveResources)+len(clusterScopedLiveResources) > 0 {
+		removeKeys := provider.FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveResources)
+		if len(removeKeys) == 0 {
+			lp.Info("There are no live resources to prune")
 		} else {
-			pruneOrphanedResources(ctx, lp, applier, manifests, targetManifests)
+			lp.Infof("Start pruning %d resources", len(removeKeys))
+			deletedCount, err := deleteResources(ctx, lp, applier, removeKeys)
+			if err != nil {
+				lp.Errorf("Failed to delete some resources, %d/%d resources were deleted (%v)", deletedCount, len(removeKeys), err)
+				failed = true
+			} else {
+				lp.Successf("Successfully deleted %d resources", deletedCount)
+			}
 		}
 	}
 
