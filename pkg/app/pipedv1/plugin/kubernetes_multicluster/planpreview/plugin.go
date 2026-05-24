@@ -27,14 +27,14 @@ import (
 )
 
 var (
-	_ sdk.PlanPreviewPlugin[sdk.ConfigNone, kubeconfig.KubernetesDeployTargetConfig, kubeconfig.KubernetesApplicationSpec] = (*Plugin)(nil)
+	_ sdk.PlanPreviewPlugin[kubeconfig.KubernetesPluginConfig, kubeconfig.KubernetesDeployTargetConfig, kubeconfig.KubernetesApplicationSpec] = (*Plugin)(nil)
 )
 
 // Plugin implements the sdk.PlanPreviewPlugin interface for the kubernetes_multicluster plugin.
 type Plugin struct{}
 
 // GetPlanPreview returns the plan preview result showing what will change across all deploy targets.
-func (p *Plugin) GetPlanPreview(ctx context.Context, _ *sdk.ConfigNone, dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.GetPlanPreviewInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.GetPlanPreviewResponse, error) {
+func (p *Plugin) GetPlanPreview(ctx context.Context, _ *kubeconfig.KubernetesPluginConfig, dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.GetPlanPreviewInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.GetPlanPreviewResponse, error) {
 	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
 	loader := provider.NewLoader(toolRegistry)
 
