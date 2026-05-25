@@ -70,6 +70,9 @@ type K8sTrafficRoutingStageOptions struct {
 	Canary unit.Percentage `json:"canary"`
 	// The percentage of traffic should be routed to BASELINE variant.
 	Baseline unit.Percentage `json:"baseline"`
+	// Limit this stage to a subset of deploy targets by name.
+	// Empty means the stage applies to all targets.
+	MultiTargets []string `json:"multiTargets,omitempty"`
 }
 
 // Percentages returns the primary, canary, and baseline percentages from the K8sTrafficRoutingStageOptions.

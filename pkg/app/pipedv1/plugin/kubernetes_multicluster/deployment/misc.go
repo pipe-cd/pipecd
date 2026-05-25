@@ -27,6 +27,25 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
 )
 
+// filterStageTargets returns only the elements of tcs whose deploy target name
+// appears in stageTargets. If stageTargets is empty all elements are returned unchanged.
+func filterStageTargets(tcs []stageTarget, stageTargets []string) []stageTarget {
+	if len(stageTargets) == 0 {
+		return tcs
+	}
+	allowed := make(map[string]struct{}, len(stageTargets))
+	for _, name := range stageTargets {
+		allowed[name] = struct{}{}
+	}
+	out := make([]stageTarget, 0, len(stageTargets))
+	for _, tc := range tcs {
+		if _, ok := allowed[tc.deployTarget.Name]; ok {
+			out = append(out, tc)
+		}
+	}
+	return out
+}
+
 func ensureVariantSelectorInWorkload(m provider.Manifest, variantLabel, variant string) error {
 	variantMap := map[string]string{
 		variantLabel: variant,
