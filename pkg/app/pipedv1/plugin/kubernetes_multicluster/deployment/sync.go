@@ -36,7 +36,15 @@ func (p *Plugin) executeK8sMultiSyncStage(ctx context.Context, input *sdk.Execut
 		return sdk.StageStatusFailure
 	}
 
-	targets := buildStageTargets(lp, dts, cfg.Spec.Input.MultiTargets)
+	var stageCfg kubeconfig.K8sSyncStageOptions
+	if len(input.Request.StageConfig) > 0 {
+		if err := json.Unmarshal(input.Request.StageConfig, &stageCfg); err != nil {
+			lp.Errorf("Failed while unmarshalling stage config (%v)", err)
+			return sdk.StageStatusFailure
+		}
+	}
+
+	targets := filterStageTargets(buildStageTargets(lp, dts, cfg.Spec.Input.MultiTargets), stageCfg.MultiTargets)
 	return runOnTargets(ctx, lp, targets, func(ctx context.Context, dt *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], mt *kubeconfig.KubernetesMultiTarget) sdk.StageStatus {
 		lp.Infof("Start syncing the deployment to the target %s", dt.Name)
 		return p.sync(ctx, input, dt, mt)

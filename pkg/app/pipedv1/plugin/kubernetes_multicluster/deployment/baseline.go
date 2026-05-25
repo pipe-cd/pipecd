@@ -46,7 +46,7 @@ func (p *Plugin) executeK8sMultiBaselineRolloutStage(ctx context.Context, input 
 		}
 	}
 
-	targets := buildStageTargets(lp, dts, cfg.Spec.Input.MultiTargets)
+	targets := filterStageTargets(buildStageTargets(lp, dts, cfg.Spec.Input.MultiTargets), stageCfg.MultiTargets)
 	return runOnTargets(ctx, lp, targets, func(ctx context.Context, dt *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], mt *kubeconfig.KubernetesMultiTarget) sdk.StageStatus {
 		lp.Infof("Start baseline rollout for target %s", dt.Name)
 		return p.baselineRollout(ctx, input, dt, mt, stageCfg)
@@ -197,20 +197,23 @@ func (p *Plugin) executeK8sMultiBaselineCleanStage(ctx context.Context, input *s
 		return sdk.StageStatusFailure
 	}
 
+	var stageCfg kubeconfig.K8sBaselineCleanStageOptions
+	if len(input.Request.StageConfig) > 0 {
+		if err := json.Unmarshal(input.Request.StageConfig, &stageCfg); err != nil {
+			lp.Errorf("Failed while unmarshalling stage config (%v)", err)
+			return sdk.StageStatusFailure
+		}
+	}
+
 	deployTargetMap := make(map[string]*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], len(dts))
 	for _, dt := range dts {
 		deployTargetMap[dt.Name] = dt
 	}
 
-	type targetConfig struct {
-		deployTarget *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]
-		multiTarget  *kubeconfig.KubernetesMultiTarget
-	}
-
-	targetConfigs := make([]targetConfig, 0, len(dts))
+	targetConfigs := make([]stageTarget, 0, len(dts))
 	if len(cfg.Spec.Input.MultiTargets) == 0 {
 		for _, dt := range dts {
-			targetConfigs = append(targetConfigs, targetConfig{deployTarget: dt})
+			targetConfigs = append(targetConfigs, stageTarget{deployTarget: dt})
 		}
 	} else {
 		for _, mt := range cfg.Spec.Input.MultiTargets {
@@ -219,9 +222,11 @@ func (p *Plugin) executeK8sMultiBaselineCleanStage(ctx context.Context, input *s
 				lp.Infof("Ignore multi target '%s': not matched any deployTarget", mt.Target.Name)
 				continue
 			}
-			targetConfigs = append(targetConfigs, targetConfig{deployTarget: dt, multiTarget: &mt})
+			targetConfigs = append(targetConfigs, stageTarget{deployTarget: dt, multiTarget: &mt})
 		}
 	}
+
+	targetConfigs = filterStageTargets(targetConfigs, stageCfg.MultiTargets)
 
 	eg, ctx := errgroup.WithContext(ctx)
 	for _, tc := range targetConfigs {
