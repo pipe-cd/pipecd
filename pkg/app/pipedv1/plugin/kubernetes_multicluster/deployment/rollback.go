@@ -229,6 +229,8 @@ func (p *Plugin) rollback(ctx context.Context, input *sdk.ExecuteStageInput[kube
 				lp.Successf("Successfully deleted %d resources", deletedCount)
 			}
 		}
+	} else {
+		lp.Info("There are no live resources to prune")
 	}
 
 	if failed {
