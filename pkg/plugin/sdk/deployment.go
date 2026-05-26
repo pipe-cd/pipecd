@@ -594,9 +594,26 @@ func newDeployment(deployment *model.Deployment) Deployment {
 	}
 }
 
+// DeployTargetStatus holds the result of a single deploy target within a stage execution.
+type DeployTargetStatus struct {
+	// Name is the deploy target name, matching sdk.DeployTarget[T].Name.
+	Name string
+	// Status is the outcome for this specific target.
+	Status StageStatus
+	// Message is an optional human-readable detail (e.g. error summary).
+	Message string
+}
+
 // ExecuteStageResponse is the response of the request to execute a stage.
 type ExecuteStageResponse struct {
+	// Status is the overall stage outcome. Callers that do not populate
+	// DeployTargetStatuses must still set this field — it is the authoritative
+	// result piped acts on.
 	Status StageStatus
+	// DeployTargetStatuses reports the per-target outcome when the stage ran
+	// across multiple deploy targets. Nil means the plugin did not report
+	// per-target detail (piped treats it as absent, not as failure).
+	DeployTargetStatuses []DeployTargetStatus
 }
 
 // StageStatus represents the current status of a stage of a deployment.
