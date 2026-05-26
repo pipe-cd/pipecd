@@ -212,10 +212,11 @@ func (p *Plugin) rollback(ctx context.Context, input *sdk.ExecuteStageInput[kube
 
 	lp.Info("Start finding and pruning resources that no longer exist in the running manifests")
 	namespacedLiveResources, clusterScopedLiveResources, err := provider.GetLiveResources(ctx, kubectl, deployTargetConfig.KubeConfigPath, input.Request.Deployment.ApplicationID)
-	if err != nil {
+	switch {
+	case err != nil:
 		lp.Errorf("Failed while getting live resources (%v)", err)
 		failed = true
-	} else if len(namespacedLiveResources)+len(clusterScopedLiveResources) > 0 {
+	case len(namespacedLiveResources)+len(clusterScopedLiveResources) > 0:
 		removeKeys := provider.FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveResources)
 		if len(removeKeys) == 0 {
 			lp.Info("There are no live resources to prune")
@@ -229,7 +230,7 @@ func (p *Plugin) rollback(ctx context.Context, input *sdk.ExecuteStageInput[kube
 				lp.Successf("Successfully deleted %d resources", deletedCount)
 			}
 		}
-	} else {
+	default:
 		lp.Info("There are no live resources to prune")
 	}
 
