@@ -26,7 +26,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
 )
 
-
 func TestCheckVariantSelectorInWorkload(t *testing.T) {
 	t.Parallel()
 
