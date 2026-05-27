@@ -25,6 +25,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/deployment"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/livestate"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/planpreview"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/toolregistry"
 )
@@ -72,6 +73,7 @@ func main() {
 		sdk.WithInitializer[config.KubernetesApplicationSpec](&initializer{}),
 		sdk.WithDeploymentPlugin(&deployment.Plugin{}),
 		sdk.WithLivestatePlugin(&livestate.Plugin{}),
+		sdk.WithPlanPreviewPlugin(&planpreview.Plugin{}),
 	)
 	if err != nil {
 		log.Fatalln(err)
