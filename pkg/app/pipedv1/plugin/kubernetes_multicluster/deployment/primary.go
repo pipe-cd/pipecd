@@ -21,8 +21,6 @@ import (
 	"fmt"
 	"time"
 
-	"golang.org/x/sync/errgroup"
-
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
@@ -47,74 +45,11 @@ func (p *Plugin) executeK8sMultiPrimaryRolloutStage(ctx context.Context, input *
 		}
 	}
 
-	type targetConfig struct {
-		deployTarget *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]
-		multiTarget  *kubeconfig.KubernetesMultiTarget
-	}
-
-	deployTargetMap := make(map[string]*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig])
-	targetConfigs := make([]targetConfig, 0, len(dts))
-
-	for _, target := range dts {
-		deployTargetMap[target.Name] = target
-	}
-
-	// If no multi-targets are specified, roll out primary to all deploy targets.
-	if len(cfg.Spec.Input.MultiTargets) == 0 {
-		for _, dt := range dts {
-			targetConfigs = append(targetConfigs, targetConfig{
-				deployTarget: dt,
-				multiTarget:  nil,
-			})
-		}
-	} else {
-		for _, multiTarget := range cfg.Spec.Input.MultiTargets {
-			dt, ok := deployTargetMap[multiTarget.Target.Name]
-			if !ok {
-				lp.Infof("Ignore multi target '%s': not matched any deployTarget", multiTarget.Target.Name)
-				continue
-			}
-			targetConfigs = append(targetConfigs, targetConfig{
-				deployTarget: dt,
-				multiTarget:  &multiTarget,
-			})
-		}
-	}
-
-	type targetResult struct {
-		name   string
-		status sdk.StageStatus
-		msg    string
-	}
-	results := make([]targetResult, len(targetConfigs))
-
-	eg, ctx := errgroup.WithContext(ctx)
-	for i, tc := range targetConfigs {
-		i, tc := i, tc
-		eg.Go(func() error {
-			lp.Infof("Start primary rollout for target %s", tc.deployTarget.Name)
-			status := p.primaryRollout(ctx, input, tc.deployTarget, tc.multiTarget, stageCfg)
-			results[i] = targetResult{name: tc.deployTarget.Name, status: status}
-			if status == sdk.StageStatusFailure {
-				return fmt.Errorf("failed to primary rollout for target %s", tc.deployTarget.Name)
-			}
-			return nil
-		})
-	}
-
-	waitErr := eg.Wait()
-
-	dtStatuses := make([]sdk.DeployTargetStatus, len(results))
-	for i, r := range results {
-		dtStatuses[i] = sdk.DeployTargetStatus{Name: r.name, Status: r.status, Message: r.msg}
-	}
-
-	if waitErr != nil {
-		lp.Errorf("Failed while rolling out primary (%v)", waitErr)
-		return sdk.StageStatusFailure, dtStatuses
-	}
-
-	return sdk.StageStatusSuccess, dtStatuses
+	targets := filterStageTargets(buildStageTargets(lp, dts, cfg.Spec.Input.MultiTargets), stageCfg.MultiTargets)
+	return runOnTargets(ctx, lp, targets, func(ctx context.Context, dt *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], mt *kubeconfig.KubernetesMultiTarget) sdk.StageStatus {
+		lp.Infof("Start primary rollout for target %s", dt.Name)
+		return p.primaryRollout(ctx, input, dt, mt, stageCfg)
+	})
 }
 
 func (p *Plugin) primaryRollout(
@@ -231,7 +166,11 @@ func (p *Plugin) primaryRollout(
 	}
 
 	lp.Infof("Start pruning %d resources", len(removeKeys))
-	deletedCount := deleteResources(ctx, lp, applier, removeKeys)
+	deletedCount, err := deleteResources(ctx, lp, applier, removeKeys)
+	if err != nil {
+		lp.Errorf("Failed to delete some resources, %d/%d resources were deleted (%v)", deletedCount, len(removeKeys), err)
+		return sdk.StageStatusFailure
+	}
 	lp.Successf("Successfully deleted %d resources", deletedCount)
 
 	return sdk.StageStatusSuccess

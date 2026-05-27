@@ -97,15 +97,10 @@ func (p *Plugin) executeK8sMultiTrafficRoutingStagePodSelector(
 		deployTargetMap[dt.Name] = dt
 	}
 
-	type targetConfig struct {
-		deployTarget *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]
-		multiTarget  *kubeconfig.KubernetesMultiTarget
-	}
-
-	targetConfigs := make([]targetConfig, 0, len(dts))
+	targetConfigs := make([]stageTarget, 0, len(dts))
 	if len(cfg.Spec.Input.MultiTargets) == 0 {
 		for _, dt := range dts {
-			targetConfigs = append(targetConfigs, targetConfig{deployTarget: dt})
+			targetConfigs = append(targetConfigs, stageTarget{deployTarget: dt})
 		}
 	} else {
 		for _, mt := range cfg.Spec.Input.MultiTargets {
@@ -114,9 +109,11 @@ func (p *Plugin) executeK8sMultiTrafficRoutingStagePodSelector(
 				lp.Infof("Ignore multi target '%s': not matched any deployTarget", mt.Target.Name)
 				continue
 			}
-			targetConfigs = append(targetConfigs, targetConfig{deployTarget: dt, multiTarget: &mt})
+			targetConfigs = append(targetConfigs, stageTarget{deployTarget: dt, multiTarget: &mt})
 		}
 	}
+
+	targetConfigs = filterStageTargets(targetConfigs, stageCfg.MultiTargets)
 
 	type targetResult struct {
 		name   string
@@ -127,7 +124,6 @@ func (p *Plugin) executeK8sMultiTrafficRoutingStagePodSelector(
 
 	eg, ctx := errgroup.WithContext(ctx)
 	for i, tc := range targetConfigs {
-		i, tc := i, tc
 		eg.Go(func() error {
 			lp.Infof("Start updating traffic routing on target %s", tc.deployTarget.Name)
 			if err := p.podSelectorTrafficRouting(ctx, input, tc.deployTarget, tc.multiTarget, cfg, targetVariant); err != nil {
@@ -245,15 +241,10 @@ func (p *Plugin) executeK8sMultiTrafficRoutingStageIstio(
 		deployTargetMap[dt.Name] = dt
 	}
 
-	type targetConfig struct {
-		deployTarget *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]
-		multiTarget  *kubeconfig.KubernetesMultiTarget
-	}
-
-	targetConfigs := make([]targetConfig, 0, len(dts))
+	targetConfigs := make([]stageTarget, 0, len(dts))
 	if len(cfg.Spec.Input.MultiTargets) == 0 {
 		for _, dt := range dts {
-			targetConfigs = append(targetConfigs, targetConfig{deployTarget: dt})
+			targetConfigs = append(targetConfigs, stageTarget{deployTarget: dt})
 		}
 	} else {
 		for _, mt := range cfg.Spec.Input.MultiTargets {
@@ -262,9 +253,11 @@ func (p *Plugin) executeK8sMultiTrafficRoutingStageIstio(
 				lp.Infof("Ignore multi target '%s': not matched any deployTarget", mt.Target.Name)
 				continue
 			}
-			targetConfigs = append(targetConfigs, targetConfig{deployTarget: dt, multiTarget: &mt})
+			targetConfigs = append(targetConfigs, stageTarget{deployTarget: dt, multiTarget: &mt})
 		}
 	}
+
+	targetConfigs = filterStageTargets(targetConfigs, stageCfg.MultiTargets)
 
 	type targetResult struct {
 		name   string
@@ -275,7 +268,6 @@ func (p *Plugin) executeK8sMultiTrafficRoutingStageIstio(
 
 	eg, ctx := errgroup.WithContext(ctx)
 	for i, tc := range targetConfigs {
-		i, tc := i, tc
 		eg.Go(func() error {
 			lp.Infof("Start updating Istio traffic routing on target %s", tc.deployTarget.Name)
 			if err := p.istioTrafficRouting(ctx, input, tc.deployTarget, tc.multiTarget, cfg, int32(canaryPercent), int32(baselinePercent)); err != nil {

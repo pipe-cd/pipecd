@@ -78,7 +78,14 @@ func (s *KubernetesApplicationSpec) UnmarshalJSON(data []byte) error {
 }
 
 func (s *KubernetesApplicationSpec) Validate() error {
-	// TODO: Validate KubernetesApplicationSpec fields.
+	if s.Input.HelmChart != nil && len(s.Input.KustomizeOptions) > 0 {
+		return errors.New("helmChart and kustomizeOptions are mutually exclusive")
+	}
+	for i, mt := range s.Input.MultiTargets {
+		if mt.Target.Name == "" {
+			return fmt.Errorf("multiTargets[%d].target.name must not be empty", i)
+		}
+	}
 	return nil
 }
 
@@ -108,8 +115,6 @@ type KubernetesDeploymentInput struct {
 	// Automatically create a new namespace if it does not exist.
 	// Default is false.
 	AutoCreateNamespace bool `json:"autoCreateNamespace,omitempty"`
-
-	// TODO: Define fields for KubernetesDeploymentInput.
 
 	MultiTargets []KubernetesMultiTarget `json:"multiTargets,omitempty"`
 }
@@ -168,6 +173,9 @@ type K8sSyncStageOptions struct {
 	AddVariantLabelToSelector bool `json:"addVariantLabelToSelector"`
 	// Whether the resources that are no longer defined in Git should be removed or not.
 	Prune bool `json:"prune"`
+	// Limit this stage to a subset of deploy targets by name.
+	// Empty means the stage applies to all targets.
+	MultiTargets []string `json:"multiTargets,omitempty"`
 }
 
 // FindDeployTarget finds the deploy target configuration by the given name.
@@ -195,10 +203,12 @@ func FindDeployTarget(cfg *config.PipedPlugin, name string) (KubernetesDeployTar
 }
 
 type KubernetesMultiTarget struct {
-	Target         KubernetesMultiTargetDeployTarget `json:"target"`
-	Manifests      []string                          `json:"manifests,omitempty"`
-	KubectlVersion string                            `json:"kubectlVersion,omitempty"`
-	KustomizeDir   string                            `json:"kustomizeDir,omitempty"`
+	Target           KubernetesMultiTargetDeployTarget `json:"target"`
+	Manifests        []string                          `json:"manifests,omitempty"`
+	KubectlVersion   string                            `json:"kubectlVersion,omitempty"`
+	KustomizeDir     string                            `json:"kustomizeDir,omitempty"`
+	KustomizeVersion string                            `json:"kustomizeVersion,omitempty"`
+	KustomizeOptions map[string]string                 `json:"kustomizeOptions,omitempty"`
 }
 
 type KubernetesMultiTargetDeployTarget struct {
@@ -220,10 +230,17 @@ type K8sCanaryRolloutStageOptions struct {
 	CreateService bool `json:"createService"`
 	// List of patches used to customize manifests for CANARY variant.
 	Patches []K8sResourcePatch `json:"patches"`
+	// Limit this stage to a subset of deploy targets by name.
+	// Empty means the stage applies to all targets.
+	MultiTargets []string `json:"multiTargets,omitempty"`
 }
 
 // K8sCanaryCleanStageOptions contains all configurable values for a K8S_CANARY_CLEAN stage.
-type K8sCanaryCleanStageOptions struct{}
+type K8sCanaryCleanStageOptions struct {
+	// Limit this stage to a subset of deploy targets by name.
+	// Empty means the stage applies to all targets.
+	MultiTargets []string `json:"multiTargets,omitempty"`
+}
 
 // K8sPrimaryRolloutStageOptions contains all configurable values for a K8S_PRIMARY_ROLLOUT stage.
 type K8sPrimaryRolloutStageOptions struct {
@@ -236,6 +253,9 @@ type K8sPrimaryRolloutStageOptions struct {
 	AddVariantLabelToSelector bool `json:"addVariantLabelToSelector"`
 	// Whether the resources that are no longer defined in Git should be removed or not.
 	Prune bool `json:"prune"`
+	// Limit this stage to a subset of deploy targets by name.
+	// Empty means the stage applies to all targets.
+	MultiTargets []string `json:"multiTargets,omitempty"`
 }
 
 func (o *K8sPrimaryRolloutStageOptions) UnmarshalJSON(data []byte) error {
@@ -263,6 +283,9 @@ type K8sBaselineRolloutStageOptions struct {
 	Suffix string `json:"suffix" default:"baseline"`
 	// Whether the BASELINE service should be created.
 	CreateService bool `json:"createService"`
+	// Limit this stage to a subset of deploy targets by name.
+	// Empty means the stage applies to all targets.
+	MultiTargets []string `json:"multiTargets,omitempty"`
 }
 
 func (o *K8sBaselineRolloutStageOptions) UnmarshalJSON(data []byte) error {
@@ -279,7 +302,11 @@ func (o *K8sBaselineRolloutStageOptions) UnmarshalJSON(data []byte) error {
 }
 
 // K8sBaselineCleanStageOptions contains all configurable values for a K8S_BASELINE_CLEAN stage.
-type K8sBaselineCleanStageOptions struct{}
+type K8sBaselineCleanStageOptions struct {
+	// Limit this stage to a subset of deploy targets by name.
+	// Empty means the stage applies to all targets.
+	MultiTargets []string `json:"multiTargets,omitempty"`
+}
 
 // K8sResourcePatch represents a patch operation for a Kubernetes resource.
 type K8sResourcePatch struct {
