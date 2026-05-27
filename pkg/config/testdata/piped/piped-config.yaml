@@ -243,3 +243,9 @@ spec:
         includes:
           - event-watcher-dev.yaml
           - event-watcher-stg.yaml
+
+  planPreview:
+    workerNum: 5
+    commandQueueBufferSize: 20
+    commandCheckInterval: 5s
+    commandHandleTimeout: 10m

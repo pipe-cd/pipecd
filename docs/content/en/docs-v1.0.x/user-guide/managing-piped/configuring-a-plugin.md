@@ -74,7 +74,7 @@ spec:
 
 See [Configuration Reference for Kubernetes plugin](../configuration-reference/#kubernetesplugin) for complete configuration details.
 
-### Configuring Terraform plugin
+## Configuring Terraform plugin
 
 The Terraform plugin enables Piped to run Terraform-based deployments.
 A deploy target represents a Terraform execution environment (e.g., dev/prod workspace, shared variables, drift detection settings).
