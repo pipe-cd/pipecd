@@ -71,11 +71,11 @@ func (r *Renderer) Render(ns Nodes) string {
 
 		switch {
 		case lastStep.Type == SliceIndexPathStep:
-			b.WriteString(fmt.Sprintf("%s%*s- ", mark, depth*2-1, ""))
+			fmt.Fprintf(&b, "%s%*s- ", mark, depth*2-1, "")
 		case nl:
-			b.WriteString(fmt.Sprintf("%s%*s%s:\n", mark, depth*2-1, "", lastStep.String()))
+			fmt.Fprintf(&b, "%s%*s%s:\n", mark, depth*2-1, "", lastStep.String())
 		default:
-			b.WriteString(fmt.Sprintf("%s%*s%s: ", mark, depth*2-1, "", lastStep.String()))
+			fmt.Fprintf(&b, "%s%*s%s: ", mark, depth*2-1, "", lastStep.String())
 		}
 
 		parts := strings.Split(nodeString, "\n")

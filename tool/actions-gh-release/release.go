@@ -345,7 +345,7 @@ func determineCommitCategory(commit Commit, mergeCommit *Commit, categories []Re
 
 func renderReleaseNote(p ReleaseProposal, cfg ReleaseConfig) []byte {
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("## Release %s with changes since %s\n\n", p.Tag, p.PreTag))
+	fmt.Fprintf(&b, "## Release %s with changes since %s\n\n", p.Tag, p.PreTag)
 
 	gen := cfg.ReleaseNoteGenerator
 	renderCommit := func(c ReleaseCommit) {
@@ -363,7 +363,7 @@ func renderReleaseNote(p ReleaseProposal, cfg ReleaseConfig) []byte {
 				}
 			}
 		}
-		b.WriteString(fmt.Sprintf("* %s", c.ReleaseNote))
+		fmt.Fprintf(&b, "* %s", c.ReleaseNote)
 
 		// If using a merge commit, prepares another options to add extra info.
 		if gen.UsePullRequestMetadata && c.PullRequestNumber != 0 {
