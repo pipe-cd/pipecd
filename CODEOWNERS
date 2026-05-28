@@ -8,3 +8,7 @@
 /docs/ @pipe-cd/pipecd-approvers-docs @pipe-cd/pipecd-approvers
 CONTRIBUTING.md @pipe-cd/pipecd-approvers-docs @pipe-cd/pipecd-approvers
 README.md @pipe-cd/pipecd-approvers-docs @pipe-cd/pipecd-approvers
+
+# Piped plugins
+/pkg/plugin @pipe-cd/pipecd-approvers-plugins
+/pkg/app/pipedv1 @pipe-cd/pipecd-approvers-plugins
