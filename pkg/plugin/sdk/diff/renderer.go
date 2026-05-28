@@ -104,16 +104,16 @@ func (r *Renderer) Render(ns Nodes) string {
 		var array bool
 		for i := duplicateDepth; i < pathLen-1; i++ {
 			if n.Path[i].Type == SliceIndexPathStep {
-				b.WriteString(fmt.Sprintf("%*s-", (r.leftPadding+i)*2, ""))
+				fmt.Fprintf(&b, "%*s-", (r.leftPadding+i)*2, "")
 				array = true
 				continue
 			}
 			if array {
-				b.WriteString(fmt.Sprintf(" %s:\n", n.Path[i].String()))
+				fmt.Fprintf(&b, " %s:\n", n.Path[i].String())
 				array = false
 				continue
 			}
-			b.WriteString(fmt.Sprintf("%*s%s:\n", (r.leftPadding+i)*2, "", n.Path[i].String()))
+			fmt.Fprintf(&b, "%*s%s:\n", (r.leftPadding+i)*2, "", n.Path[i].String())
 		}
 		if array {
 			b.WriteString("\n")

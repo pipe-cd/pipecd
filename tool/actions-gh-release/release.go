@@ -435,7 +435,7 @@ func renderReleaseNote(p ReleaseProposal, cfg ReleaseConfig) []byte {
 		if len(commits) == 0 {
 			continue
 		}
-		b.WriteString(fmt.Sprintf("### %s\n\n", ctg.Title))
+		fmt.Fprintf(&b, "### %s\n\n", ctg.Title)
 		for _, c := range commits {
 			renderCommit(c)
 		}
