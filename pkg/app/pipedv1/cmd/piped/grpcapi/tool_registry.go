@@ -50,6 +50,11 @@ func newToolRegistry(toolsDir string) (*toolRegistry, error) {
 		return nil, fmt.Errorf("failed to create the tools directory: %w", err)
 	}
 
+	installedTools, err := loadPreinstalledTools(toolsDir)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load installed tools: %w", err)
+	}
+
 	tmpDir, err := os.MkdirTemp("", "tool-registry")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create a temporary directory: %w", err)
@@ -57,8 +62,22 @@ func newToolRegistry(toolsDir string) (*toolRegistry, error) {
 	return &toolRegistry{
 		toolsDir:       toolsDir,
 		tmpDir:         tmpDir,
-		installedTools: make(map[string]struct{}),
+		installedTools: installedTools,
 	}, nil
+}
+
+func loadPreinstalledTools(toolsDir string) (map[string]struct{}, error) {
+	tools := make(map[string]struct{})
+	entries, err := os.ReadDir(toolsDir)
+	if err != nil {
+		return nil, err
+	}
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			tools[entry.Name()] = struct{}{}
+		}
+	}
+	return tools, nil
 }
 
 func (r *toolRegistry) newTmpDir() (string, error) {
@@ -133,6 +152,10 @@ func (r *toolRegistry) installTool(ctx context.Context, name, version, script st
 
 	if out, err := exec.CommandContext(ctx, "/bin/sh", "-c", "mv "+outPath+" "+toolPath).CombinedOutput(); err != nil {
 		return "", fmt.Errorf("failed to move the installed binary: %w, output: %s", err, string(out))
+	}
+
+	if err := os.RemoveAll(filepath.Dir(outPath)); err != nil {
+		return "", err
 	}
 
 	if err := os.RemoveAll(tmpDir); err != nil {
