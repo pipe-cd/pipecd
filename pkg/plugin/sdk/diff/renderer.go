@@ -82,17 +82,17 @@ func (r *Renderer) Render(ns Nodes) string {
 		for i, p := range parts {
 			if lastStep.Type != SliceIndexPathStep {
 				if nl {
-					b.WriteString(fmt.Sprintf("%s%*s%s\n", mark, depth*2+1, "", p))
+					fmt.Fprintf(&b, "%s%*s%s\n", mark, depth*2+1, "", p)
 				} else {
-					b.WriteString(fmt.Sprintf("%s\n", p))
+					fmt.Fprintf(&b, "%s\n", p)
 				}
 				continue
 			}
 			if i == 0 {
-				b.WriteString(fmt.Sprintf("%s\n", p))
+				fmt.Fprintf(&b, "%s\n", p)
 				continue
 			}
-			b.WriteString(fmt.Sprintf("%s%*s%s\n", mark, depth*2+1, "", p))
+			fmt.Fprintf(&b, "%s%*s%s\n", mark, depth*2+1, "", p)
 		}
 	}
 

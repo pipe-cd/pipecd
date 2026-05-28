@@ -210,14 +210,14 @@ func (r *DiffListResult) Render(opt DiffRenderOptions) string {
 		renderer := diff.NewRenderer(opts...)
 
 		index++
-		b.WriteString(fmt.Sprintf("# %d. %s\n\n", index, key.ReadableString()))
+		fmt.Fprintf(&b, "# %d. %s\n\n", index, key.ReadableString())
 
 		b.WriteString(renderer.Render(change.Diff.Nodes()))
 		b.WriteString("\n")
 	}
 
 	if maxPrintDiffs < len(r.Changes) {
-		b.WriteString(fmt.Sprintf("... (omitted %d other changed manifests)\n", len(r.Changes)-maxPrintDiffs))
+		fmt.Fprintf(&b, "... (omitted %d other changed manifests)\n", len(r.Changes)-maxPrintDiffs)
 	}
 
 	return b.String()

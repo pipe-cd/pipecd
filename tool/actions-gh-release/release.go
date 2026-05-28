@@ -367,19 +367,19 @@ func renderReleaseNote(p ReleaseProposal, cfg ReleaseConfig) []byte {
 
 		// If using a merge commit, prepares another options to add extra info.
 		if gen.UsePullRequestMetadata && c.PullRequestNumber != 0 {
-			b.WriteString(fmt.Sprintf(" ([#%d](https://github.com/%s/%s/pull/%d))", c.PullRequestNumber, p.Owner, p.Repo, c.PullRequestNumber))
+			fmt.Fprintf(&b, " ([#%d](https://github.com/%s/%s/pull/%d))", c.PullRequestNumber, p.Owner, p.Repo, c.PullRequestNumber)
 			if !gen.UseReleaseNoteBlock && c.PullRequestOwner != "" {
-				b.WriteString(fmt.Sprintf(" - by @%s", c.PullRequestOwner))
+				fmt.Fprintf(&b, " - by @%s", c.PullRequestOwner)
 			}
 			b.WriteString("\n")
 			return
 		}
 
 		if gen.ShowAbbrevHash {
-			b.WriteString(fmt.Sprintf(" [%s](https://github.com/%s/%s/commit/%s)", c.AbbreviatedHash, p.Owner, p.Repo, c.Hash))
+			fmt.Fprintf(&b, " [%s](https://github.com/%s/%s/commit/%s)", c.AbbreviatedHash, p.Owner, p.Repo, c.Hash)
 		}
 		if gen.ShowCommitter != nil && *gen.ShowCommitter {
-			b.WriteString(fmt.Sprintf(" - by %s", c.Committer))
+			fmt.Fprintf(&b, " - by %s", c.Committer)
 		}
 		b.WriteString("\n")
 	}
