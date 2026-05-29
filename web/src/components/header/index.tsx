@@ -10,8 +10,9 @@ import {
   MenuItem,
   Menu,
   Box,
+  Tooltip,
 } from "@mui/material";
-import { ExitToApp, MoreVert } from "@mui/icons-material";
+import { ExitToApp, MoreVert, DarkMode, LightMode } from "@mui/icons-material";
 import {
   PAGE_PATH_APPLICATIONS,
   PAGE_PATH_DEPLOYMENTS,
@@ -32,11 +33,13 @@ import logo from "~~/assets/logo.svg";
 import NavLink from "./NavLink";
 import { IconOpenNewTab, LogoImage } from "./styles";
 import useAuth from "~/contexts/auth-context/use-auth";
+import { useTheme } from "~/index";
 
 export const APP_HEADER_HEIGHT = 56;
 
 export const Header: FC = memo(function Header() {
   const { me } = useAuth();
+  const { mode, toggleTheme } = useTheme();
   const [userAnchorEl, setUserAnchorEl] = useState<HTMLButtonElement | null>(
     null
   );
@@ -110,6 +113,11 @@ export const Header: FC = memo(function Header() {
             alignItems: "center",
           }}
         >
+          <Tooltip title={`Switch to ${mode === "light" ? "dark" : "light"} mode`}>
+            <IconButton onClick={toggleTheme} size="small" color="inherit" sx={{ p: 0.5 }}>
+              {mode === "light" ? <DarkMode /> : <LightMode />}
+            </IconButton>
+          </Tooltip>
           {me?.isLogin ? (
             <>
               <NavLink href={PAGE_PATH_APPLICATIONS}>Applications</NavLink>
