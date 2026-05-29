@@ -68,7 +68,7 @@ func TestPlugin_executeK8sMultiCanaryRolloutStage_SingleCluster(t *testing.T) {
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiCanaryRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+	status, _ := plugin.executeK8sMultiCanaryRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{
 			Name:   "default",
 			Config: *dtConfig,
@@ -138,7 +138,7 @@ func TestPlugin_executeK8sMultiCanaryRolloutStage_MultiCluster(t *testing.T) {
 	}
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiCanaryRolloutStage(t.Context(), input, dts)
+	status, _ := plugin.executeK8sMultiCanaryRolloutStage(t.Context(), input, dts)
 
 	require.Equal(t, sdk.StageStatusSuccess, status)
 
@@ -194,7 +194,7 @@ func TestPlugin_executeK8sMultiCanaryRolloutStage_Failure(t *testing.T) {
 	}
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiCanaryRolloutStage(t.Context(), input, dts)
+	status, _ := plugin.executeK8sMultiCanaryRolloutStage(t.Context(), input, dts)
 
 	assert.Equal(t, sdk.StageStatusFailure, status)
 }
@@ -231,7 +231,7 @@ func TestPlugin_executeK8sMultiCanaryRolloutStage_WithCreateService(t *testing.T
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiCanaryRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+	status, _ := plugin.executeK8sMultiCanaryRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{Name: "default", Config: *dtConfig},
 	})
 
@@ -300,7 +300,7 @@ func TestPlugin_executeK8sMultiCanaryRolloutStage_WithoutCreateService(t *testin
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiCanaryRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+	status, _ := plugin.executeK8sMultiCanaryRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{Name: "default", Config: *dtConfig},
 	})
 
@@ -577,7 +577,7 @@ func TestPlugin_executeK8sMultiCanaryCleanStage_withCreateService(t *testing.T) 
 	serviceRes := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}
 
 	ok := t.Run("execute canary rollout stage", func(t *testing.T) {
-		status := plugin.executeK8sMultiCanaryRolloutStage(ctx, input, deployTarget)
+		status, _ := plugin.executeK8sMultiCanaryRolloutStage(ctx, input, deployTarget)
 		assert.Equal(t, sdk.StageStatusSuccess, status)
 
 		// Assert canary deployment and service exist.
@@ -650,7 +650,7 @@ func TestPlugin_executeK8sMultiCanaryCleanStage_withoutCreateService(t *testing.
 	serviceRes := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}
 
 	ok := t.Run("execute canary rollout stage", func(t *testing.T) {
-		status := plugin.executeK8sMultiCanaryRolloutStage(ctx, input, deployTarget)
+		status, _ := plugin.executeK8sMultiCanaryRolloutStage(ctx, input, deployTarget)
 		assert.Equal(t, sdk.StageStatusSuccess, status)
 
 		// Assert canary deployment exists but no canary service was created.
