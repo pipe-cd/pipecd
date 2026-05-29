@@ -32,7 +32,7 @@ The `kubernetes_multicluster` plugin deploys one application to **multiple Kuber
                kubeConfigPath: /etc/piped/kube/cluster-us
    ```
 
-2. **`kubectl` must be reachable from the piped host.** The plugin invokes `kubectl` (and `kustomize`/`helm` when used) via the tool registry; pin a version with `kubectlVersion` if you need a specific one.
+2. **The plugin downloads `kubectl` automatically.** Piped fetches `kubectl` (and `kustomize`/`helm` when used) via the tool registry — the binary does not need to be pre-installed on the piped host. Pin a version with `kubectlVersion` if you need a specific one.
 
 3. When registering the application in the control plane, **select every cluster** the app should deploy to as its deploy targets.
 
