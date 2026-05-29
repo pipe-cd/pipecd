@@ -65,11 +65,11 @@ spec:
   name: my-app
   pipeline:
     stages:
-      - name: K8S_CANARY_ROLLOUT
+      - name: K8S_MULTI_CANARY_ROLLOUT
         with:
           replicas: 1
-      - name: K8S_PRIMARY_ROLLOUT
-      - name: K8S_CANARY_CLEAN
+      - name: K8S_MULTI_PRIMARY_ROLLOUT
+      - name: K8S_MULTI_CANARY_CLEAN
   plugins:
     kubernetes_multicluster:
       input:
@@ -94,7 +94,7 @@ Applies all manifests to every selected deploy target. This is the stage that ru
 | prune | bool | Remove resources that are no longer defined in Git. | false |
 | multiTargets | []string | Restrict the stage to these deploy targets. | all |
 
-### K8S_PRIMARY_ROLLOUT
+### K8S_MULTI_PRIMARY_ROLLOUT
 
 Rolls out the PRIMARY (stable) variant to all selected targets using the manifests defined in Git. You can optionally create a dedicated Service for the PRIMARY variant and enable pruning so that any resources removed from Git are also deleted from the cluster.
 
@@ -106,7 +106,7 @@ Rolls out the PRIMARY (stable) variant to all selected targets using the manifes
 | prune | bool | Remove resources no longer defined in Git. | false |
 | multiTargets | []string | Restrict the stage to these deploy targets. | all |
 
-### K8S_CANARY_ROLLOUT
+### K8S_MULTI_CANARY_ROLLOUT
 
 Creates CANARY variant workloads alongside the currently running version. This lets you send a portion of traffic to the new version and compare its behaviour against the stable version before deciding to promote or roll back. You can optionally create a dedicated Service for the canary and apply manifest patches to customise the variant before it is deployed.
 
@@ -118,15 +118,15 @@ Creates CANARY variant workloads alongside the currently running version. This l
 | patches | [][K8sResourcePatch](#k8sresourcepatch) | Patches applied to manifests before generating the CANARY variant. | - |
 | multiTargets | []string | Restrict the stage to these deploy targets. | all |
 
-### K8S_CANARY_CLEAN
+### K8S_MULTI_CANARY_CLEAN
 
-Removes the CANARY variant resources that were created by `K8S_CANARY_ROLLOUT`. This stage is typically placed at the end of a canary pipeline to clean up after promotion or after a rollback decision.
+Removes the CANARY variant resources that were created by `K8S_MULTI_CANARY_ROLLOUT`. This stage is typically placed at the end of a canary pipeline to clean up after promotion or after a rollback decision.
 
 | Option | Type | Description | Default |
 |--------|------|-------------|---------|
 | multiTargets | []string | Restrict the stage to these deploy targets. | all |
 
-### K8S_BASELINE_ROLLOUT
+### K8S_MULTI_BASELINE_ROLLOUT
 
 Creates BASELINE variant workloads from the **running** (currently live) manifests, not the target manifests. This means the baseline is an exact copy of what is already in production, giving you a stable reference point to compare against the canary during analysis.
 
@@ -137,15 +137,15 @@ Creates BASELINE variant workloads from the **running** (currently live) manifes
 | createService | bool | Create a Service for the BASELINE variant. | false |
 | multiTargets | []string | Restrict the stage to these deploy targets. | all |
 
-### K8S_BASELINE_CLEAN
+### K8S_MULTI_BASELINE_CLEAN
 
-Removes the BASELINE variant resources that were created by `K8S_BASELINE_ROLLOUT`. Place this stage at the end of a canary/baseline pipeline to clean up after the analysis is complete, whether you promoted or rolled back.
+Removes the BASELINE variant resources that were created by `K8S_MULTI_BASELINE_ROLLOUT`. Place this stage at the end of a canary/baseline pipeline to clean up after the analysis is complete, whether you promoted or rolled back.
 
 | Option | Type | Description | Default |
 |--------|------|-------------|---------|
 | multiTargets | []string | Restrict the stage to these deploy targets. | all |
 
-### K8S_TRAFFIC_ROUTING
+### K8S_MULTI_TRAFFIC_ROUTING
 
 Shifts traffic between the PRIMARY, CANARY, and BASELINE variants. The routing method is set by the application-level [`trafficRouting`](#kubernetestrafficrouting) config and determines how the split is applied.
 
@@ -164,7 +164,7 @@ Shifts traffic between the PRIMARY, CANARY, and BASELINE variants. The routing m
 PodSelector: switch all traffic to the canary variant:
 
 ```yaml
-- name: K8S_TRAFFIC_ROUTING
+- name: K8S_MULTI_TRAFFIC_ROUTING
   with:
     all: canary
 ```
@@ -172,7 +172,7 @@ PodSelector: switch all traffic to the canary variant:
 Istio: split traffic 80/20 between primary and canary (requires `trafficRouting.method: istio` on the app)
 
 ```yaml
-- name: K8S_TRAFFIC_ROUTING
+- name: K8S_MULTI_TRAFFIC_ROUTING
   with:
     primary: 80
     canary: 20
@@ -237,12 +237,12 @@ This lets you roll out cautiously. For example, canary on `cluster-eu` only, the
 ```yaml
 pipeline:
   stages:
-    - name: K8S_CANARY_ROLLOUT
+    - name: K8S_MULTI_CANARY_ROLLOUT
       with:
         replicas: 1
         multiTargets: [cluster-eu]
-    - name: K8S_PRIMARY_ROLLOUT          # all targets
-    - name: K8S_CANARY_CLEAN
+    - name: K8S_MULTI_PRIMARY_ROLLOUT          # all targets
+    - name: K8S_MULTI_CANARY_CLEAN
       with:
         multiTargets: [cluster-eu]
 ```
@@ -425,7 +425,7 @@ Configured under `plugins[].deployTargets[].config` in the **piped** configurati
 
 ### K8sResourcePatch
 
-Used by `K8S_CANARY_ROLLOUT.patches` to customize manifests before generating the CANARY variant.
+Used by `K8S_MULTI_CANARY_ROLLOUT.patches` to customize manifests before generating the CANARY variant.
 
 | Field | Type | Description | Required |
 |-------|------|-------------|----------|
