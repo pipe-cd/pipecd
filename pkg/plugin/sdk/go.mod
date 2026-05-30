@@ -8,7 +8,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/atomic v1.11.0
 	go.uber.org/zap v1.19.1
-	golang.org/x/sync v0.19.0
+	golang.org/x/sync v0.20.0
 	google.golang.org/grpc v1.79.3
 	k8s.io/apimachinery v0.24.3
 	sigs.k8s.io/yaml v1.5.0
