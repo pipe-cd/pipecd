@@ -3,7 +3,7 @@ module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster
 go 1.26.2
 
 require (
-	github.com/creasty/defaults v1.6.0
+	github.com/creasty/defaults v1.8.0
 	github.com/google/go-cmp v0.7.0
 	github.com/pipe-cd/pipecd v0.54.0-rc1.0.20250912082650-0b949bb7aac9
 	github.com/pipe-cd/piped-plugin-sdk-go v0.4.0
