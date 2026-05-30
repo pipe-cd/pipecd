@@ -1,4 +1,4 @@
-// Copyright 2025 The PipeCD Authors.
+// Copyright 2026 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,25 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package plugin
+package main
 
 import (
-	"github.com/spf13/cobra"
+	"log"
+
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+
+	"github.com/example/piped-plugin-demo/deployment"
 )
 
-type command struct{}
-
-func NewCommand() *cobra.Command {
-	c := &command{}
-	cmd := &cobra.Command{
-		Use:   "plugin",
-		Short: "Do plugin tasks.",
+func main() {
+	plugin, err := sdk.NewPlugin(
+		"0.0.1",
+		sdk.WithDeploymentPlugin(&deployment.DemoPlugin{}),
+	)
+	if err != nil {
+		log.Fatalln(err)
 	}
 
-	cmd.AddCommand(
-		newInitCommand(c),
-		newPushCommand(c),
-	)
-
-	return cmd
+	if err := plugin.Run(); err != nil {
+		log.Fatalln(err)
+	}
 }

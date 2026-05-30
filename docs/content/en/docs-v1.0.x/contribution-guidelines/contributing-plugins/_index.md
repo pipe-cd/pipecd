@@ -108,6 +108,34 @@ spec:
 5. **Add a README** documenting configuration and usage
 6. **Submit a PR** linking to the discussion issue
 
+### Scaffold a new plugin
+
+Use `pipectl` to generate a compile-ready plugin skeleton:
+
+```bash
+# Stage-only plugin (similar to the wait plugin)
+pipectl plugin init ./my-plugin --kind stage --stages MY_STAGE
+
+# Deployment-minimal plugin (similar to the ecs layout)
+pipectl plugin init ./my-plugin --kind deployment --stages MY_SYNC,MY_ROLLBACK
+
+# Community plugin module path (default uses piped-plugin-sdk-go only)
+pipectl plugin init ./my-plugin --kind stage --stages MY_STAGE \
+  --module github.com/my-org/piped-plugin-my-plugin
+```
+
+Then build the generated plugin:
+
+```bash
+cd ./my-plugin
+go mod tidy
+go build .
+```
+
+Generated `go.mod` files pin `github.com/pipe-cd/piped-plugin-sdk-go` to the version used by the scaffold (aligned with official plugins such as `wait`). When the SDK is upgraded in the main repository, update `DefaultSDKVersion` in `pkg/app/pipectl/pluginscaffold/scaffold.go` and regenerate golden testdata if needed.
+
+`--force` removes the entire output directory before writing. Verify the path before running it.
+
 ### Build and test
 
 ```bash

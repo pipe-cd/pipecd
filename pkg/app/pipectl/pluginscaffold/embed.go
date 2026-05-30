@@ -1,4 +1,4 @@
-// Copyright 2025 The PipeCD Authors.
+// Copyright 2026 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,25 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package plugin
+package pluginscaffold
 
-import (
-	"github.com/spf13/cobra"
-)
+import "embed"
 
-type command struct{}
-
-func NewCommand() *cobra.Command {
-	c := &command{}
-	cmd := &cobra.Command{
-		Use:   "plugin",
-		Short: "Do plugin tasks.",
-	}
-
-	cmd.AddCommand(
-		newInitCommand(c),
-		newPushCommand(c),
-	)
-
-	return cmd
-}
+//go:embed templates/**
+var templateFS embed.FS
