@@ -5,7 +5,7 @@ go 1.26.2
 require (
 	github.com/creasty/defaults v1.5.2
 	github.com/google/go-github/v39 v39.2.0
-	github.com/stretchr/testify v1.4.0
+	github.com/stretchr/testify v1.11.1
 	golang.org/x/oauth2 v0.30.0
 	sigs.k8s.io/yaml v1.3.0
 )
@@ -16,4 +16,5 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
