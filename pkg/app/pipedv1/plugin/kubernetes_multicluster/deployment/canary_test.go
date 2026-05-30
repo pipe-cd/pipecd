@@ -334,7 +334,7 @@ func TestPlugin_executeK8sMultiCanaryCleanStage(t *testing.T) {
 
 	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
 		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
-			StageName:   "K8S_CANARY_CLEAN",
+			StageName:   "K8S_MULTI_CANARY_CLEAN",
 			StageConfig: []byte(`{}`),
 			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
 				ApplicationDirectory:      filepath.Join("testdata", "simple"),
@@ -446,7 +446,7 @@ func TestPlugin_executeK8sMultiCanaryCleanStage_multipleTargets(t *testing.T) {
 
 	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
 		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
-			StageName:   "K8S_CANARY_CLEAN",
+			StageName:   "K8S_MULTI_CANARY_CLEAN",
 			StageConfig: []byte(`{}`),
 			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
 				ApplicationDirectory:      filepath.Join("testdata", "simple"),
@@ -548,7 +548,7 @@ func TestPlugin_executeK8sMultiCanaryCleanStage_withCreateService(t *testing.T) 
 
 	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
 		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
-			StageName:   "K8S_CANARY_ROLLOUT",
+			StageName:   "K8S_MULTI_CANARY_ROLLOUT",
 			StageConfig: []byte(`{"createService": true}`),
 			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
 				ApplicationDirectory:      configDir,
@@ -590,7 +590,7 @@ func TestPlugin_executeK8sMultiCanaryCleanStage_withCreateService(t *testing.T) 
 	require.True(t, ok)
 
 	ok = t.Run("execute canary clean stage", func(t *testing.T) {
-		input.Request.StageName = "K8S_CANARY_CLEAN"
+		input.Request.StageName = "K8S_MULTI_CANARY_CLEAN"
 		input.Request.StageConfig = []byte(`{}`)
 
 		status := plugin.executeK8sMultiCanaryCleanStage(ctx, input, deployTarget)
@@ -621,7 +621,7 @@ func TestPlugin_executeK8sMultiCanaryCleanStage_withoutCreateService(t *testing.
 
 	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
 		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
-			StageName:   "K8S_CANARY_ROLLOUT",
+			StageName:   "K8S_MULTI_CANARY_ROLLOUT",
 			StageConfig: []byte(`{}`),
 			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
 				ApplicationDirectory:      configDir,
@@ -664,7 +664,7 @@ func TestPlugin_executeK8sMultiCanaryCleanStage_withoutCreateService(t *testing.
 	require.True(t, ok)
 
 	ok = t.Run("execute canary clean stage", func(t *testing.T) {
-		input.Request.StageName = "K8S_CANARY_CLEAN"
+		input.Request.StageName = "K8S_MULTI_CANARY_CLEAN"
 		input.Request.StageConfig = []byte(`{}`)
 
 		status := plugin.executeK8sMultiCanaryCleanStage(ctx, input, deployTarget)
