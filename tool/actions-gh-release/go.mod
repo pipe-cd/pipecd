@@ -3,7 +3,7 @@ module github.com/pipe-cd/actions-gh-release
 go 1.26.2
 
 require (
-	github.com/creasty/defaults v1.5.2
+	github.com/creasty/defaults v1.8.0
 	github.com/google/go-github/v39 v39.2.0
 	github.com/stretchr/testify v1.4.0
 	golang.org/x/oauth2 v0.30.0
