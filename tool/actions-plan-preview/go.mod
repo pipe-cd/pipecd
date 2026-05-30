@@ -6,7 +6,7 @@ require (
 	github.com/google/go-github/v36 v36.0.0
 	github.com/pipe-cd/pipecd v0.53.0
 	github.com/shurcooL/githubv4 v0.0.0-20220115235240-a14260e6f8a2
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 	golang.org/x/oauth2 v0.30.0
 )
 
