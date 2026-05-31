@@ -17,6 +17,7 @@ package application
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -30,6 +31,7 @@ type add struct {
 
 	appName          string
 	appKind          string
+	labels           string
 	pipedID          string
 	platformProvider string
 	description      string
@@ -52,6 +54,7 @@ func newAddCommand(root *command) *cobra.Command {
 
 	cmd.Flags().StringVar(&c.appName, "app-name", c.appName, "The application name.")
 	cmd.Flags().StringVar(&c.appKind, "app-kind", c.appKind, "The kind of application. (KUBERNETES|TERRAFORM|LAMBDA|CLOUDRUN|ECS)")
+	cmd.Flags().StringVar(&c.labels, "labels", c.labels, "The labels of the application. Multiple labels can be separated by commas (eg. key1=value1,key2=value2)")
 	cmd.Flags().StringVar(&c.pipedID, "piped-id", c.pipedID, "The ID of piped that should handle this application.")
 	cmd.Flags().StringVar(&c.platformProvider, "platform-provider", c.platformProvider, "The platform provider name. One of the registered providers in the piped configuration. Previous name of this field is cloud-provider.")
 
@@ -82,6 +85,17 @@ func (c *add) run(ctx context.Context, input cli.Input) error {
 		return fmt.Errorf("unsupported application kind %s", c.appKind)
 	}
 
+	labels := make(map[string]string)
+	if c.labels != "" {
+		labelsList := strings.Split(c.labels, ",")
+		for _, label := range labelsList {
+			parts := strings.Split(label, "=")
+			if len(parts) == 2 {
+				labels[parts[0]] = parts[1]
+			}
+		}
+	}
+
 	req := &apiservice.AddApplicationRequest{
 		Name:    c.appName,
 		PipedId: c.pipedID,
@@ -95,6 +109,7 @@ func (c *add) run(ctx context.Context, input cli.Input) error {
 		Kind:             model.ApplicationKind(appKind),
 		PlatformProvider: c.platformProvider,
 		Description:      c.description,
+		Labels:           labels,
 	}
 
 	resp, err := cli.AddApplication(ctx, req)
