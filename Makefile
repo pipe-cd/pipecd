@@ -262,9 +262,9 @@ update/copyright:
 # Generate commands
 
 .PHONY: gen/code
+# NOTE: Keep this container image as same as defined in .github/workflows/gen.yml
 gen/code: CODEGEN_IMAGE ?= ghcr.io/pipe-cd/codegen@sha256:8b17498a7cfb58fbaf403ec7cab01a740238aaee43d030e65a40abb710f9e68a # v0.56.0-30-g0d71fd0
 gen/code:
-	# NOTE: Keep this container image as same as defined in .github/workflows/gen.yml
 	docker run --rm -v ${PWD}:/repo -it --entrypoint ./tool/codegen/codegen.sh $(CODEGEN_IMAGE) /repo
 
 .PHONY: gen/test-tls
