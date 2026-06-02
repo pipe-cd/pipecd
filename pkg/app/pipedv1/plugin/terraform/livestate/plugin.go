@@ -82,7 +82,7 @@ func makeSyncState(r provider.PlanResult, commit string) (sdk.ApplicationSyncSta
 	}
 
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("Diff between the defined state in Git at commit %s and actual live state:\n\n", commit))
+	fmt.Fprintf(&b, "Diff between the defined state in Git at commit %s and actual live state:\n\n", commit)
 	b.WriteString("--- Actual   (LiveState)\n+++ Expected (Git)\n\n")
 
 	details, err := r.Render()

@@ -401,7 +401,7 @@ func convertToBoolean(v reflect.Value) (reflect.Value, bool) {
 }
 
 func newSlicePath(path []PathStep, index int) []PathStep {
-	next := make([]PathStep, len(path))
+	next := make([]PathStep, len(path), len(path)+1)
 	copy(next, path)
 	next = append(next, PathStep{
 		Type:       SliceIndexPathStep,
@@ -411,7 +411,7 @@ func newSlicePath(path []PathStep, index int) []PathStep {
 }
 
 func newMapPath(path []PathStep, index string) []PathStep {
-	next := make([]PathStep, len(path))
+	next := make([]PathStep, len(path), len(path)+1)
 	copy(next, path)
 	next = append(next, PathStep{
 		Type:     MapIndexPathStep,
