@@ -210,8 +210,29 @@ func (p *Plugin) rollback(ctx context.Context, input *sdk.ExecuteStageInput[kube
 		failed = true
 	}
 
-	// TODO: prune resources which don't exist in the running manifests but exist in the target manifests.
-	// This occurs when the user adds a new resource and the deployment pipeline fails.
+	lp.Info("Start finding and pruning resources that no longer exist in the running manifests")
+	namespacedLiveResources, clusterScopedLiveResources, err := provider.GetLiveResources(ctx, kubectl, deployTargetConfig.KubeConfigPath, input.Request.Deployment.ApplicationID)
+	switch {
+	case err != nil:
+		lp.Errorf("Failed while getting live resources (%v)", err)
+		failed = true
+	case len(namespacedLiveResources)+len(clusterScopedLiveResources) > 0:
+		removeKeys := provider.FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveResources)
+		if len(removeKeys) == 0 {
+			lp.Info("There are no live resources to prune")
+		} else {
+			lp.Infof("Start pruning %d resources", len(removeKeys))
+			deletedCount, err := deleteResources(ctx, lp, applier, removeKeys)
+			if err != nil {
+				lp.Errorf("Failed to delete some resources, %d/%d resources were deleted (%v)", deletedCount, len(removeKeys), err)
+				failed = true
+			} else {
+				lp.Successf("Successfully deleted %d resources", deletedCount)
+			}
+		}
+	default:
+		lp.Info("There are no live resources to prune")
+	}
 
 	if failed {
 		return sdk.StageStatusFailure

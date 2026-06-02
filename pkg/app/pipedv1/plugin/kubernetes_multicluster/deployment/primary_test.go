@@ -65,7 +65,7 @@ func TestPlugin_executeK8sMultiPrimaryRolloutStage_SingleCluster(t *testing.T) {
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiPrimaryRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+	status, _ := plugin.executeK8sMultiPrimaryRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{Name: "default", Config: *dtConfig},
 	})
 
@@ -119,7 +119,7 @@ func TestPlugin_executeK8sMultiPrimaryRolloutStage_MultiCluster(t *testing.T) {
 	}
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiPrimaryRolloutStage(ctx, input, dts)
+	status, _ := plugin.executeK8sMultiPrimaryRolloutStage(ctx, input, dts)
 
 	require.Equal(t, sdk.StageStatusSuccess, status)
 
@@ -169,7 +169,7 @@ func TestPlugin_executeK8sMultiPrimaryRolloutStage_WithCreateService(t *testing.
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiPrimaryRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+	status, _ := plugin.executeK8sMultiPrimaryRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{Name: "default", Config: *dtConfig},
 	})
 
@@ -225,7 +225,7 @@ func TestPlugin_executeK8sMultiPrimaryRolloutStage_WithAddVariantLabelToSelector
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiPrimaryRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+	status, _ := plugin.executeK8sMultiPrimaryRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{Name: "default", Config: *dtConfig},
 	})
 
@@ -277,7 +277,7 @@ func TestPlugin_executeK8sMultiPrimaryRolloutStage_WithPrune(t *testing.T) {
 		}
 
 		plugin := &Plugin{}
-		status := plugin.executeK8sMultiPrimaryRolloutStage(ctx, runningInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		status, _ := plugin.executeK8sMultiPrimaryRolloutStage(ctx, runningInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 			{Name: "default", Config: *dtConfig},
 		})
 		assert.Equal(t, sdk.StageStatusSuccess, status)
@@ -323,7 +323,7 @@ func TestPlugin_executeK8sMultiPrimaryRolloutStage_WithPrune(t *testing.T) {
 		}
 
 		plugin := &Plugin{}
-		status := plugin.executeK8sMultiPrimaryRolloutStage(ctx, targetInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		status, _ := plugin.executeK8sMultiPrimaryRolloutStage(ctx, targetInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 			{Name: "default", Config: *dtConfig},
 		})
 		assert.Equal(t, sdk.StageStatusSuccess, status)
@@ -423,7 +423,7 @@ func TestPlugin_executeK8sMultiPrimaryRolloutStage_WithPrune_ManualPreCreate(t *
 	}
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiPrimaryRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+	status, _ := plugin.executeK8sMultiPrimaryRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{Name: "default", Config: *dtConfig},
 	})
 
