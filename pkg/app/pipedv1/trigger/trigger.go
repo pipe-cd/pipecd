@@ -412,7 +412,7 @@ func (t *Trigger) listCommandCandidates() []candidate {
 func (t *Trigger) listOutOfSyncCandidates() []candidate {
 	var (
 		list = t.applicationLister.List()
-		apps = make([]candidate, 0)
+		apps = make([]candidate, 0, len(list))
 	)
 	for _, app := range list {
 		if !app.IsOutOfSync() {
@@ -432,7 +432,7 @@ func (t *Trigger) listOutOfSyncCandidates() []candidate {
 func (t *Trigger) listCommitCandidates() []candidate {
 	var (
 		list = t.applicationLister.List()
-		apps = make([]candidate, 0)
+		apps = make([]candidate, 0, len(list))
 	)
 	for _, app := range list {
 		apps = append(apps, candidate{

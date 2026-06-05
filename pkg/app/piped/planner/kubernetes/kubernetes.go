@@ -515,10 +515,10 @@ func determineVersion(manifests []provider.Manifest) (string, error) {
 	// In case multiple containers are used
 	// return version in format: "tag-1 (name-1), tag-2 (name-2)"
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("%s (%s)", images[0].tag, images[0].name))
+	fmt.Fprintf(&b, "%s (%s)", images[0].tag, images[0].name)
 
 	for _, img := range images[1:] {
-		b.WriteString(fmt.Sprintf(", %s (%s)", img.tag, img.name))
+		fmt.Fprintf(&b, ", %s (%s)", img.tag, img.name)
 	}
 
 	return b.String(), nil
