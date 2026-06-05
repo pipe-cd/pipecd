@@ -7,7 +7,7 @@ This RFC introduces a new way to enable users to use “custom stages” that us
 
 # Motivation
 
-Currently, users can use only stages that PipeCD have already defined. But some users want to define new stages by their use-cases as bellow. 
+Currently, users can use only stages that PipeCD have already defined. But some users want to define new stages by their use-cases as below. 
 
 - Deploying infrastructure by tools other than that PipeCD supports (terraform and kubernetes) such as SAM, cloud formation….
 - Running End to End tests
@@ -64,7 +64,7 @@ spec:
 
 ## Variable/Secret Management
 
-Users can use [encrypted-secret]([https://pipecd.dev/docs/user-guide/managing-application/secret-management/](https://pipecd.dev/docs/user-guide/managing-application/secret-management/)) and environment variables in scripts as bellow.
+Users can use [encrypted-secret]([https://pipecd.dev/docs/user-guide/managing-application/secret-management/](https://pipecd.dev/docs/user-guide/managing-application/secret-management/)) and environment variables in scripts as below.
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
