@@ -321,7 +321,7 @@ func TestPlugin_executeK8sMultiRollbackStage_SuccessfulRollback_when_adding_mult
 		}
 
 		plugin := &Plugin{}
-		status := plugin.executeK8sMultiSyncStage(t.Context(), runningInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		status, _ := plugin.executeK8sMultiSyncStage(t.Context(), runningInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 			{
 				Name:   "cluster1",
 				Config: *cluster1.dtc,
@@ -447,7 +447,7 @@ func TestPlugin_executeK8sMultiRollbackStage_SuccessfulRollback_when_removing_mu
 		}
 
 		plugin := &Plugin{}
-		status := plugin.executeK8sMultiSyncStage(t.Context(), runningInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		status, _ := plugin.executeK8sMultiSyncStage(t.Context(), runningInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 			{
 				Name:   "cluster1",
 				Config: *cluster1.dtc,
@@ -652,7 +652,7 @@ func TestPlugin_executeK8sMultiRollbackStage_CleansUpCanaryVariant(t *testing.T)
 	}
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiCanaryRolloutStage(ctx, canaryInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+	status, _ := plugin.executeK8sMultiCanaryRolloutStage(ctx, canaryInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{Name: "default", Config: *dtConfig},
 	})
 	require.Equal(t, sdk.StageStatusSuccess, status)
@@ -737,7 +737,7 @@ func TestPlugin_executeK8sMultiRollbackStage_CleansUpBaselineVariant(t *testing.
 	}
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiBaselineRolloutStage(ctx, baselineInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+	status, _ := plugin.executeK8sMultiBaselineRolloutStage(ctx, baselineInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{Name: "default", Config: *dtConfig},
 	})
 	require.Equal(t, sdk.StageStatusSuccess, status)
