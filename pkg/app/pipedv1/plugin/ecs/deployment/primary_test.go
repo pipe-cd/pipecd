@@ -248,7 +248,8 @@ func TestPrimaryRollout(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			err := primaryRollout(context.Background(), &fakeLogPersister{}, tc.client, tc.taskDef, tc.serviceDef, tc.primary)
+			ctrl := &externalController{}
+			err := ctrl.PrimaryRollout(context.Background(), &fakeLogPersister{}, tc.client, tc.taskDef, tc.serviceDef, tc.primary)
 
 			if tc.wantErr {
 				require.Error(t, err)

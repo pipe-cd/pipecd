@@ -48,6 +48,21 @@ func (p *ECSPlugin) executeECSTrafficRouting(
 		return sdk.StageStatusFailure
 	}
 
+	serviceDef, err := provider.LoadServiceDefinition(
+		input.Request.TargetDeploymentSource.ApplicationDirectory,
+		cfg.Spec.Input.ServiceDefinitionFile,
+		input,
+	)
+	if err != nil {
+		lp.Errorf("Failed to load service definition: %v", err)
+		return sdk.StageStatusFailure
+	}
+
+	if isECSControllerType(serviceDef) {
+		lp.Error("ECS_TRAFFIC_ROUTING is not supported with ECS deployment controller type; traffic routing requires EXTERNAL deployment controller type")
+		return sdk.StageStatusFailure
+	}
+
 	accessType := cfg.Spec.Input.AccessType
 	if accessType != "ELB" {
 		lp.Errorf("Unsupported access type %s in stage Traffic Routing for ECS application", accessType)

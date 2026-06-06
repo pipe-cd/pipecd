@@ -84,7 +84,8 @@ func (p *ECSPlugin) executeECSRollbackStage(
 
 	// Restore ELB weights before touching task sets to avoid sending traffic to a
 	// canary target group with no healthy targets during the rollback window.
-	if cfg.Spec.Input.AccessType == "ELB" && primary != nil {
+	// This is only applicable for EXTERNAL deployment controller which uses task sets and PipeCD-managed ELB traffic routing.
+	if cfg.Spec.Input.AccessType == "ELB" && primary != nil && !isECSControllerType(serviceDef) {
 		lp.Info("Restoring ELB listener weights to 100% primary / 0% canary")
 		if err := restoreELBWeights(ctx, lp, input.Client, client, primary); err != nil {
 			lp.Errorf("Failed to restore ELB listener weights: %v", err)
@@ -93,7 +94,8 @@ func (p *ECSPlugin) executeECSRollbackStage(
 	}
 
 	lp.Infof("Rolling back ECS service %s and task definition family %s", *serviceDef.ServiceName, *taskDef.Family)
-	if err := rollback(ctx, lp, client, taskDef, serviceDef, primary); err != nil {
+	ctrl := newDeploymentController(serviceDef)
+	if err := ctrl.Rollback(ctx, lp, client, taskDef, serviceDef, primary); err != nil {
 		lp.Errorf("Failed to rollback ECS service: %v", err)
 		return sdk.StageStatusFailure
 	}
@@ -140,58 +142,5 @@ func restoreELBWeights(
 		return fmt.Errorf("failed to restore ELB listener weights: %w", err)
 	}
 	lp.Infof("Restored ELB listener weights to 100%% primary / 0%% canary, modified %d rules", len(modifiedRules))
-	return nil
-}
-
-// rollback restores the ECS service and task set to the state defined in the running deployment source.
-func rollback(
-	ctx context.Context,
-	lp sdk.StageLogPersister,
-	client provider.Client,
-	taskDef types.TaskDefinition,
-	serviceDef types.Service,
-	primary *types.LoadBalancer,
-) error {
-	lp.Infof("Registering task definition family %s", *taskDef.Family)
-	td, err := client.RegisterTaskDefinition(ctx, taskDef)
-	if err != nil {
-		return fmt.Errorf("failed to register task definition %s: %w", *taskDef.Family, err)
-	}
-
-	lp.Infof("Applying service definition for service %s", *serviceDef.ServiceName)
-	service, err := applyServiceDefinition(ctx, lp, client, serviceDef)
-	if err != nil {
-		return fmt.Errorf("failed to apply service definition for service %s: %w", *serviceDef.ServiceName, err)
-	}
-
-	// Capture existing task sets before creating the rollback task set
-	lp.Infof("Getting current task sets for service %s", *service.ServiceName)
-	prevTaskSets, err := client.GetServiceTaskSets(ctx, *service)
-	if err != nil {
-		return fmt.Errorf("failed to get task sets for service %s: %w", *service.ServiceName, err)
-	}
-
-	// Create a new task set at 100% scale to restore the original state
-	lp.Infof("Creating rollback task set for service %s", *service.ServiceName)
-	taskSet, err := client.CreateTaskSet(ctx, *service, *td, primary, 100)
-	if err != nil {
-		return fmt.Errorf("failed to create task set for service %s: %w", *service.ServiceName, err)
-	}
-
-	// Promote the new task set to PRIMARY
-	lp.Infof("Promoting rollback task set to PRIMARY for service %s", *service.ServiceName)
-	if _, err = client.UpdateServicePrimaryTaskSet(ctx, *service, *taskSet); err != nil {
-		return fmt.Errorf("failed to update primary task set for service %s: %w", *service.ServiceName, err)
-	}
-
-	// Delete all previous task sets including any remaining canary tasksets
-	lp.Info("Deleting previous task sets")
-	for _, ts := range prevTaskSets {
-		lp.Infof("Deleting task set %s", *ts.TaskSetArn)
-		if err := client.DeleteTaskSet(ctx, ts); err != nil {
-			return fmt.Errorf("failed to delete task set %s: %w", *ts.TaskSetArn, err)
-		}
-	}
-
 	return nil
 }

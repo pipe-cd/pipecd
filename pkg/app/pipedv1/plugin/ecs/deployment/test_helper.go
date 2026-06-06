@@ -51,6 +51,7 @@ type mockECSClient struct {
 	ServiceExistsFunc               func(ctx context.Context, cluster, serviceName string) (bool, error)
 	GetServiceStatusFunc            func(ctx context.Context, cluster, serviceName string) (string, error)
 	WaitServiceStableFunc           func(ctx context.Context, cluster, serviceName string) error
+	ForceNewDeploymentFunc          func(ctx context.Context, service types.Service, taskDef types.TaskDefinition) (*types.Service, error)
 	RegisterTaskDefinitionFunc      func(ctx context.Context, taskDef types.TaskDefinition) (*types.TaskDefinition, error)
 	RunTaskFunc                     func(ctx context.Context, taskDefinition types.TaskDefinition, clusterArn string, launchType string, awsVpcConfiguration *appconfig.ECSVpcConfiguration, tags []types.Tag) error
 	PruneServiceTasksFunc           func(ctx context.Context, service types.Service) error
@@ -99,6 +100,9 @@ func (m *mockECSClient) GetServiceStatus(ctx context.Context, cluster, serviceNa
 func (m *mockECSClient) WaitServiceStable(ctx context.Context, cluster, serviceName string) error {
 	return m.WaitServiceStableFunc(ctx, cluster, serviceName)
 }
+func (m *mockECSClient) ForceNewDeployment(ctx context.Context, service types.Service, taskDef types.TaskDefinition) (*types.Service, error) {
+	return m.ForceNewDeploymentFunc(ctx, service, taskDef)
+}
 func (m *mockECSClient) RegisterTaskDefinition(ctx context.Context, taskDef types.TaskDefinition) (*types.TaskDefinition, error) {
 	return m.RegisterTaskDefinitionFunc(ctx, taskDef)
 }
@@ -129,6 +133,10 @@ func happyPathClient(registeredTD *types.TaskDefinition, updatedSvc *types.Servi
 		RegisterTaskDefinitionFunc: func(_ context.Context, _ types.TaskDefinition) (*types.TaskDefinition, error) {
 			td := *registeredTD
 			return &td, nil
+		},
+		ForceNewDeploymentFunc: func(_ context.Context, _ types.Service, _ types.TaskDefinition) (*types.Service, error) {
+			svc := *updatedSvc
+			return &svc, nil
 		},
 		ServiceExistsFunc: func(_ context.Context, _, _ string) (bool, error) {
 			return true, nil

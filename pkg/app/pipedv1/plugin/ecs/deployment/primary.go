@@ -16,7 +16,6 @@ package deployment
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
@@ -70,68 +69,11 @@ func (p *ECSPlugin) executeECSPrimaryRolloutStage(
 		}
 	}
 
-	if err := primaryRollout(ctx, lp, client, taskDef, serviceDef, primary); err != nil {
+	ctrl := newDeploymentController(serviceDef)
+	if err := ctrl.PrimaryRollout(ctx, lp, client, taskDef, serviceDef, primary); err != nil {
 		lp.Errorf("Failed to roll out ECS primary task set: %v", err)
 		return sdk.StageStatusFailure
 	}
 
 	return sdk.StageStatusSuccess
-}
-
-// primaryRollout performs the primary rollout workflow:
-//
-// 1. Registers the task definition
-//
-// 2. Applies the service definition (creates or updates the service)
-//
-// 3. Creates a new PRIMARY task set at 100% scale
-//
-// 4. Delete old PRIMARY task set
-//
-// 5. Waits for the service to reach stable state
-func primaryRollout(
-	ctx context.Context,
-	lp sdk.StageLogPersister,
-	client provider.Client,
-	taskDef types.TaskDefinition,
-	serviceDef types.Service,
-	primary *types.LoadBalancer,
-) error {
-	lp.Info("Start applying the ECS task definition")
-	td, err := applyTaskDefinition(ctx, client, taskDef)
-	if err != nil {
-		return fmt.Errorf("failed to apply task definition: %w", err)
-	}
-
-	lp.Info("Start applying the ECS service definition")
-	service, err := applyServiceDefinition(ctx, lp, client, serviceDef)
-	if err != nil {
-		return fmt.Errorf("failed to apply service definition: %w", err)
-	}
-
-	lp.Infof("Get current PRIMARY taskset")
-	currPrimaryTs, err := client.GetPrimaryTaskSet(ctx, *service)
-	if err != nil {
-		return fmt.Errorf("failed to get current primary taskset: %w", err)
-	}
-
-	lp.Infof("Rolling out new PRIMARY taskset for service %s", *service.ServiceName)
-	if err = createPrimaryTaskSet(ctx, lp, client, *service, *td, primary); err != nil {
-		return fmt.Errorf("failed to create primary taskset for service %s: %w", *service.ServiceName, err)
-	}
-
-	lp.Infof("Deleting old PRIMARY taskset")
-	if currPrimaryTs != nil {
-		if err = client.DeleteTaskSet(ctx, *currPrimaryTs); err != nil {
-			return fmt.Errorf("failed to delete old primary taskset: %w", err)
-		}
-	}
-
-	lp.Infof("Waiting for service %s to reach stable state", *service.ServiceName)
-	if err := client.WaitServiceStable(ctx, *service.ClusterArn, *service.ServiceName); err != nil {
-		return fmt.Errorf("service %s did not reach stable state: %w", *service.ServiceName, err)
-	}
-
-	lp.Successf("Successfully rolled out PRIMARY task set for service %s", *service.ServiceName)
-	return nil
 }
