@@ -63,31 +63,63 @@ func AddSSHConfig(cfg configv1.PipedGit) (string, error) {
 		return "", fmt.Errorf("failed to create a directory %s: %v", sshDir, err)
 	}
 
-	sshKey, err := cfg.LoadSSHKey()
-	if err != nil {
-		return "", err
-	}
-
-	sshKeyFile, err := os.CreateTemp(sshDir, "piped-ssh-key-*")
+	tempDir, err := os.MkdirTemp(sshDir, "piped-ssh-keys-*")
 	if err != nil {
 		return "", err
 	}
 	needCleanUp := false
 	defer func() {
 		if needCleanUp {
-			os.Remove(sshKeyFile.Name())
+			os.RemoveAll(tempDir)
 		}
 	}()
 
-	if _, err := sshKeyFile.Write(sshKey); err != nil {
-		needCleanUp = true
-		return "", err
+	var configsData []byte
+
+	if cfg.SSHKeyData != "" || cfg.SSHKeyFile != "" {
+		sshKey, err := cfg.LoadSSHKey()
+		if err != nil {
+			needCleanUp = true
+			return "", err
+		}
+		keyPath, err := writeSSHKeyFile(tempDir, sshKey)
+		if err != nil {
+			needCleanUp = true
+			return "", err
+		}
+		configData, err := generateSSHConfig(sshConfig{
+			Host:         cfg.Host,
+			HostName:     cfg.HostName,
+			IdentityFile: keyPath,
+		})
+		if err != nil {
+			needCleanUp = true
+			return "", err
+		}
+		configsData = append(configsData, []byte(configData)...)
 	}
 
-	configData, err := generateSSHConfig(cfg, sshKeyFile.Name())
-	if err != nil {
-		needCleanUp = true
-		return "", err
+	for _, key := range cfg.SSHKeys {
+		sshKey, err := key.LoadSSHKey()
+		if err != nil {
+			needCleanUp = true
+			return "", err
+		}
+		keyPath, err := writeSSHKeyFile(tempDir, sshKey)
+		if err != nil {
+			needCleanUp = true
+			return "", err
+		}
+		configData, err := generateSSHConfig(sshConfig{
+			Host:         key.Host,
+			HostName:     key.HostName,
+			IdentityFile: keyPath,
+		})
+		if err != nil {
+			needCleanUp = true
+			return "", err
+		}
+		configsData = append(configsData, []byte(configData)...)
 	}
 
 	f, err := os.OpenFile(cfgPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -97,29 +129,21 @@ func AddSSHConfig(cfg configv1.PipedGit) (string, error) {
 	}
 	defer f.Close()
 
-	if _, err := f.Write([]byte(configData)); err != nil {
+	if _, err := f.Write(configsData); err != nil {
 		needCleanUp = true
 		return "", fmt.Errorf("failed to write sshConfig to %s: %v", cfgPath, err)
 	}
 
-	return sshKeyFile.Name(), nil
+	return tempDir, nil
 }
 
-func generateSSHConfig(cfg configv1.PipedGit, sshKeyFile string) (string, error) {
-	var (
-		buffer bytes.Buffer
-		data   = sshConfig{
-			Host:         defaultHost,
-			IdentityFile: sshKeyFile,
-		}
-	)
+func generateSSHConfig(data sshConfig) (string, error) {
+	var buffer bytes.Buffer
 
-	if cfg.Host != "" {
-		data.Host = cfg.Host
+	if data.Host == "" {
+		data.Host = defaultHost
 	}
-	if cfg.HostName != "" {
-		data.HostName = cfg.HostName
-	} else {
+	if data.HostName == "" {
 		data.HostName = data.Host
 	}
 
@@ -127,4 +151,21 @@ func generateSSHConfig(cfg configv1.PipedGit, sshKeyFile string) (string, error)
 		return "", err
 	}
 	return buffer.String(), nil
+}
+
+func writeSSHKeyFile(dir string, key []byte) (string, error) {
+	f, err := os.CreateTemp(dir, "piped-ssh-key-*")
+	if err != nil {
+		return "", err
+	}
+	if err := os.Chmod(f.Name(), 0600); err != nil {
+		f.Close()
+		return "", err
+	}
+	_, err = f.Write(key)
+	f.Close()
+	if err != nil {
+		return "", err
+	}
+	return f.Name(), nil
 }

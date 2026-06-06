@@ -15,6 +15,8 @@
 package git
 
 import (
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -82,9 +84,51 @@ Host gitlab.com
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			sshKeyFile := "/etc/piped-secret/ssh-key"
-			got, err := generateSSHConfig(tc.cfg, sshKeyFile)
+			got, err := generateSSHConfig(sshConfig{
+				Host:         tc.cfg.Host,
+				HostName:     tc.cfg.HostName,
+				IdentityFile: sshKeyFile,
+			})
 			assert.Equal(t, tc.expected, got)
 			assert.Equal(t, tc.expectedErr, err)
 		})
 	}
+}
+
+func TestAddSSHConfig(t *testing.T) {
+	tempHome := t.TempDir()
+	cfg := configv1.PipedGit{
+		SSHConfigFilePath: tempHome + "/.ssh/config",
+		Host:              "gitlab.com",
+		SSHKeyData:        "bGVnYWN5",
+		SSHKeys: []configv1.PipedSSHKeyEntry{
+			{
+				Host:       "github.com",
+				SSHKeyData: "ZXh0cmE=",
+			},
+		},
+	}
+
+	tempDir, err := AddSSHConfig(cfg)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, tempDir)
+
+	files, err := os.ReadDir(tempDir)
+	assert.NoError(t, err)
+	assert.Len(t, files, 2)
+
+	for _, file := range files {
+		info, err := file.Info()
+		assert.NoError(t, err)
+		assert.Equal(t, os.FileMode(0600), info.Mode().Perm(), "SSH identity file must have 0600 permissions")
+	}
+
+	cfgContent, err := os.ReadFile(tempHome + "/.ssh/config")
+	assert.NoError(t, err)
+	cfgStr := string(cfgContent)
+	gitlabIdx := strings.Index(cfgStr, "Host gitlab.com")
+	githubIdx := strings.Index(cfgStr, "Host github.com")
+	assert.True(t, gitlabIdx >= 0, "expected Host gitlab.com block in ssh config")
+	assert.True(t, githubIdx >= 0, "expected Host github.com block in ssh config")
+	assert.True(t, gitlabIdx < githubIdx, "legacy host (gitlab.com) must appear before extra host (github.com)")
 }

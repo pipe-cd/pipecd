@@ -16,6 +16,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 	"time"
 
@@ -1044,10 +1045,40 @@ func TestPipeGitValidate(t *testing.T) {
 			git:  PipedGit{},
 			err:  nil,
 		},
+		{
+			name: "Duplicate Host in SSHKeys",
+			git: PipedGit{
+				SSHKeys: []PipedSSHKeyEntry{
+					{Host: "github.com", SSHKeyFile: "/tmp/key1"},
+					{Host: "github.com", SSHKeyData: "data2"},
+				},
+			},
+			err: fmt.Errorf("duplicate host %q found in ssh keys configuration", "github.com"),
+		},
+		{
+			name: "Legacy Host colliding with a SSHKeys entry",
+			git: PipedGit{
+				Host:       "gitlab.com",
+				SSHKeyFile: "/tmp/legacy",
+				SSHKeys: []PipedSSHKeyEntry{
+					{Host: "gitlab.com", SSHKeyFile: "/tmp/key1"},
+				},
+			},
+			err: fmt.Errorf("duplicate host %q found in ssh keys configuration", "gitlab.com"),
+		},
+		{
+			name: "Both SSHKeyFile and SSHKeyData set on one entry",
+			git: PipedGit{
+				SSHKeys: []PipedSSHKeyEntry{
+					{Host: "github.com", SSHKeyFile: "/tmp/key1", SSHKeyData: "data1"},
+				},
+			},
+			err: fmt.Errorf("only either sshKeys[0].sshKeyFile or sshKeys[0].sshKeyData can be set"),
+		},
 	}
 	for _, tc := range testcases {
 		tc := tc
-		t.Run(tc.git.SSHKeyData, func(t *testing.T) {
+		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			err := tc.git.Validate()
 			assert.Equal(t, tc.err, err)

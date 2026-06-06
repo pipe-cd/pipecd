@@ -179,12 +179,12 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	// Configure SSH config if needed.
 	if cfg.Git.ShouldConfigureSSHConfig() {
-		tempFile, err := git.AddSSHConfig(cfg.Git)
+		tempDir, err := git.AddSSHConfig(cfg.Git)
 		if err != nil {
 			input.Logger.Error("failed to configure ssh-config", zap.Error(err))
 			return err
 		}
-		defer os.Remove(tempFile)
+		defer os.RemoveAll(tempDir)
 		input.Logger.Info("successfully configured ssh-config")
 	}
 

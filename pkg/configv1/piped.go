@@ -215,10 +215,35 @@ type PipedGit struct {
 	// Base64 encoded string of password.
 	// This will be used to clone the source repo with https basic auth.
 	Password string `json:"password,omitempty"`
+	// Additional SSH keys to be evaluated for specific hosts.
+	SSHKeys []PipedSSHKeyEntry `json:"sshKeys,omitempty"`
+}
+
+type PipedSSHKeyEntry struct {
+	// The host name. e.g. github.com, gitlab.com
+	Host string `json:"host"`
+	// The hostname or IP address of the remote git server.
+	// e.g. github.com, gitlab.com
+	// Default is the same value with Host.
+	HostName string `json:"hostName,omitempty"`
+	// The path to the private ssh key file.
+	SSHKeyFile string `json:"sshKeyFile,omitempty"`
+	// Base64 encoded string of ssh-key.
+	SSHKeyData string `json:"sshKeyData,omitempty"`
+}
+
+func (e PipedSSHKeyEntry) LoadSSHKey() ([]byte, error) {
+	if e.SSHKeyData != "" {
+		return base64.StdEncoding.DecodeString(e.SSHKeyData)
+	}
+	if e.SSHKeyFile != "" {
+		return os.ReadFile(e.SSHKeyFile)
+	}
+	return nil, errors.New("either sshKeyFile or sshKeyData must be set")
 }
 
 func (g PipedGit) ShouldConfigureSSHConfig() bool {
-	return g.SSHKeyData != "" || g.SSHKeyFile != ""
+	return g.SSHKeyData != "" || g.SSHKeyFile != "" || len(g.SSHKeys) > 0
 }
 
 func (g PipedGit) LoadSSHKey() ([]byte, error) {
@@ -243,6 +268,33 @@ func (g *PipedGit) Validate() error {
 	if isSSH && (g.SSHKeyData != "" && g.SSHKeyFile != "") {
 		return errors.New("only either sshKeyFile or sshKeyData can be set")
 	}
+
+	seenHosts := make(map[string]struct{})
+	legacyHost := "github.com"
+	if g.Host != "" {
+		legacyHost = g.Host
+	}
+
+	if g.SSHKeyData != "" || g.SSHKeyFile != "" {
+		seenHosts[legacyHost] = struct{}{}
+	}
+
+	for i, key := range g.SSHKeys {
+		if key.Host == "" {
+			return fmt.Errorf("sshKeys[%d].host must be set", i)
+		}
+		if key.SSHKeyData == "" && key.SSHKeyFile == "" {
+			return fmt.Errorf("either sshKeys[%d].sshKeyFile or sshKeys[%d].sshKeyData must be set", i, i)
+		}
+		if key.SSHKeyData != "" && key.SSHKeyFile != "" {
+			return fmt.Errorf("only either sshKeys[%d].sshKeyFile or sshKeys[%d].sshKeyData can be set", i, i)
+		}
+		if _, ok := seenHosts[key.Host]; ok {
+			return fmt.Errorf("duplicate host %q found in ssh keys configuration", key.Host)
+		}
+		seenHosts[key.Host] = struct{}{}
+	}
+
 	if isPassword && (g.Username == "" || g.Password == "") {
 		return errors.New("both username and password must be set")
 	}
@@ -258,6 +310,14 @@ func (g *PipedGit) Mask() {
 	}
 	if len(g.SSHKeyData) != 0 {
 		g.SSHKeyData = maskString
+	}
+	for i := range g.SSHKeys {
+		if len(g.SSHKeys[i].SSHKeyFile) != 0 {
+			g.SSHKeys[i].SSHKeyFile = maskString
+		}
+		if len(g.SSHKeys[i].SSHKeyData) != 0 {
+			g.SSHKeys[i].SSHKeyData = maskString
+		}
 	}
 	if len(g.Password) != 0 {
 		g.Password = maskString
