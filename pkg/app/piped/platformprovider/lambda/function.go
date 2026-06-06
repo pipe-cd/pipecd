@@ -270,7 +270,6 @@ func FindArtifactVersions(fm FunctionManifest) ([]*model.ArtifactVersion, error)
 		default:
 			// TODO: Show repo name with commit link for other git provider
 			gitURL = ""
-			repoPath = ""
 		}
 
 		return []*model.ArtifactVersion{
