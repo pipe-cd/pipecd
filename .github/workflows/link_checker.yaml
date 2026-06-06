@@ -1,0 +1,57 @@
+name: link_checker
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "docs/**"
+      - "**/*.md"
+  pull_request:
+    branches:
+      - master
+      - "release-v*"
+      - "feat/*"
+    paths:
+      - "docs/**"
+      - "**/*.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  link-check:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Determine files to check
+        id: files
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin master --depth=1
+            # Only check markdown files changed in this PR (avoids legacy broken links blocking PRs)
+            changed=$(git diff --name-only origin/master...HEAD | grep -E '^docs/.*\.md$' | xargs)
+            if [ -n "$changed" ]; then
+              echo "targets=$changed" >> $GITHUB_OUTPUT
+              echo "skip=false" >> $GITHUB_OUTPUT
+            else
+              echo "No docs markdown files changed."
+              echo "skip=true" >> $GITHUB_OUTPUT
+            fi
+          else
+            # On master push, do a full health check across all docs
+            echo "targets=docs/content/**/*.md docs/README.md *.md" >> $GITHUB_OUTPUT
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Link Checker
+        if: steps.files.outputs.skip != 'true'
+        uses: lycheeverse/lychee-action@8646ba30535128ac92d33dfc9133794bfdd9b411 # v2.8.0
+        with:
+          args: --verbose --no-progress --config .lychee.toml ${{ steps.files.outputs.targets }}
+          fail: true
