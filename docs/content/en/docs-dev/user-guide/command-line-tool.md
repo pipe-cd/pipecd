@@ -354,6 +354,18 @@ You can encrypt it the same way you do [from the web](../managing-application/se
       --piped-id={PIPED_ID} \
       --input-file={PATH_TO_SECRET_FILE}
   ```
+  - With Base64 encoding (for Kubernetes Secrets):
+
+    pipectl encrypt \
+        --address={CONTROL_PLANE_API_ADDRESS} \
+        --api-key={API_KEY} \
+        --piped-id={PIPED_ID} \
+        --use-base64-encoding \
+        --input-file={PATH_TO_SECRET_FILE}
+
+  Note: Use `--use-base64-encoding` when encrypting secrets for Kubernetes.
+  Kubernetes Secret `data` field requires values to be base64-encoded.
+  This flag base64-encodes the value before encrypting it.
 
 Note: The docs for pipectl available command is maybe outdated, we suggest users use the `help` command for the updated usage while using pipectl.
 
