@@ -175,10 +175,41 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		}
 	}
 
+	// Finally, delete resources that were added in the failed deployment
+	// but are not defined in the running commit.
+	if err := e.pruneResourcesNotInRunningCommit(ctx, ag, manifests); err != nil {
+		errs = append(errs, err)
+	}
+
 	if len(errs) > 0 {
 		return model.StageStatus_STAGE_FAILURE
 	}
 	return model.StageStatus_STAGE_SUCCESS
+}
+
+func (e *rollbackExecutor) pruneResourcesNotInRunningCommit(ctx context.Context, ag applierGetter, manifests []provider.Manifest) error {
+	e.LogPersister.Info("Start finding all live resources that are no longer defined in running commit")
+	liveResources, ok := e.AppLiveResourceLister.ListKubernetesResources()
+	if !ok {
+		e.LogPersister.Info("There is no data about live resource so no resource will be removed")
+		return nil
+	}
+	e.LogPersister.Successf("Successfully loaded %d live resources", len(liveResources))
+	for _, m := range liveResources {
+		e.LogPersister.Successf("- loaded live resource: %s", m.Key.ReadableString())
+	}
+
+	removeKeys := findRemoveResources(manifests, liveResources)
+	if len(removeKeys) == 0 {
+		e.LogPersister.Info("There are no live resources should be removed")
+		return nil
+	}
+	e.LogPersister.Infof("Found %d live resources that are no longer defined in running commit", len(removeKeys))
+
+	if err := deleteResources(ctx, ag, removeKeys, e.LogPersister); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (e *rollbackExecutor) ensureScriptRunRollback(ctx context.Context) model.StageStatus {
