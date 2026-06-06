@@ -214,7 +214,8 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		manifestCache.Put(in.MostRecentSuccessfulCommitHash, oldManifests)
 	}
 
-	progressive, desc := decideStrategy(oldManifests, newManifests, cfg.Workloads, in.Logger)
+	pipelineDefined := cfg.Pipeline != nil && len(cfg.Pipeline.Stages) > 0
+	progressive, desc := decideStrategy(oldManifests, newManifests, cfg.Workloads, pipelineDefined, in.Logger)
 	out.Summary = desc
 
 	if progressive {
@@ -230,14 +231,26 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 
 // First up, checks to see if the workload's `spec.template` has been changed,
 // and then checks if the configmap/secret's data.
-func decideStrategy(olds, news []provider.Manifest, workloadRefs []config.K8sResourceReference, logger *zap.Logger) (progressive bool, desc string) {
+// pipelineDefined should be true when the user has explicitly configured a pipeline
+// in the application config, which forces progressive sync even when no workloads exist.
+func decideStrategy(olds, news []provider.Manifest, workloadRefs []config.K8sResourceReference, pipelineDefined bool, logger *zap.Logger) (progressive bool, desc string) {
 	oldWorkloads := findWorkloadManifests(olds, workloadRefs)
 	if len(oldWorkloads) == 0 {
+		if pipelineDefined {
+			progressive = true
+			desc = "Sync progressively because pipeline is defined in the application config"
+			return
+		}
 		desc = "Quick sync by applying all manifests because it was unable to find the currently running workloads"
 		return
 	}
 	newWorkloads := findWorkloadManifests(news, workloadRefs)
 	if len(newWorkloads) == 0 {
+		if pipelineDefined {
+			progressive = true
+			desc = "Sync progressively because pipeline is defined in the application config"
+			return
+		}
 		desc = "Quick sync by applying all manifests because it was unable to find workloads in the new manifests"
 		return
 	}
