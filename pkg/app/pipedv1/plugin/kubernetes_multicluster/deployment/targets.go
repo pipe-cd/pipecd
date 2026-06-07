@@ -64,25 +64,38 @@ func buildStageTargets(
 
 // runOnTargets fans out fn across targets in parallel using errgroup.
 // fn receives each target's deploy target and multiTarget (may be nil).
-// Returns StageStatusSuccess if all succeed, StageStatusFailure if any fail.
+// Returns the overall status and per-target statuses.
 func runOnTargets(
 	ctx context.Context,
 	lp sdk.StageLogPersister,
 	targets []stageTarget,
 	fn func(ctx context.Context, dt *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], mt *kubeconfig.KubernetesMultiTarget) sdk.StageStatus,
-) sdk.StageStatus {
+) (sdk.StageStatus, []sdk.DeployTargetStatus) {
+	type result struct {
+		name   string
+		status sdk.StageStatus
+	}
+	results := make([]result, len(targets))
 	eg, ctx := errgroup.WithContext(ctx)
-	for _, tc := range targets {
+	for i, tc := range targets {
+		i, tc := i, tc
 		eg.Go(func() error {
-			if status := fn(ctx, tc.deployTarget, tc.multiTarget); status == sdk.StageStatusFailure {
+			status := fn(ctx, tc.deployTarget, tc.multiTarget)
+			results[i] = result{name: tc.deployTarget.Name, status: status}
+			if status == sdk.StageStatusFailure {
 				return fmt.Errorf("stage failed for target %s", tc.deployTarget.Name)
 			}
 			return nil
 		})
 	}
-	if err := eg.Wait(); err != nil {
-		lp.Errorf("Stage failed on one or more targets: %v", err)
-		return sdk.StageStatusFailure
+	waitErr := eg.Wait()
+	dtStatuses := make([]sdk.DeployTargetStatus, len(results))
+	for i, r := range results {
+		dtStatuses[i] = sdk.DeployTargetStatus{Name: r.name, Status: r.status}
 	}
-	return sdk.StageStatusSuccess
+	if waitErr != nil {
+		lp.Errorf("Stage failed on one or more targets: %v", waitErr)
+		return sdk.StageStatusFailure, dtStatuses
+	}
+	return sdk.StageStatusSuccess, dtStatuses
 }

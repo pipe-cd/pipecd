@@ -60,29 +60,32 @@ func (p *Plugin) BuildPipelineSyncStages(ctx context.Context, _ *kubeconfig.Kube
 func (p *Plugin) ExecuteStage(ctx context.Context, _ *kubeconfig.KubernetesPluginConfig, dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.ExecuteStageResponse, error) {
 	switch input.Request.StageName {
 	case StageK8sMultiSync:
-		return &sdk.ExecuteStageResponse{
-			Status: p.executeK8sMultiSyncStage(ctx, input, dts),
-		}, nil
+		status, dtStatuses := p.executeK8sMultiSyncStage(ctx, input, dts)
+		return &sdk.ExecuteStageResponse{Status: status, DeployTargetStatuses: dtStatuses}, nil
 	case StageK8sMultiRollback:
 		return &sdk.ExecuteStageResponse{
 			Status: p.executeK8sMultiRollbackStage(ctx, input, dts),
 		}, nil
 	case StageK8sMultiCanaryRollout:
-		return &sdk.ExecuteStageResponse{Status: p.executeK8sMultiCanaryRolloutStage(ctx, input, dts)}, nil
+		status, dtStatuses := p.executeK8sMultiCanaryRolloutStage(ctx, input, dts)
+		return &sdk.ExecuteStageResponse{Status: status, DeployTargetStatuses: dtStatuses}, nil
 	case StageK8sMultiCanaryClean:
 		return &sdk.ExecuteStageResponse{
 			Status: p.executeK8sMultiCanaryCleanStage(ctx, input, dts),
 		}, nil
 	case StageK8sMultiPrimaryRollout:
-		return &sdk.ExecuteStageResponse{Status: p.executeK8sMultiPrimaryRolloutStage(ctx, input, dts)}, nil
+		status, dtStatuses := p.executeK8sMultiPrimaryRolloutStage(ctx, input, dts)
+		return &sdk.ExecuteStageResponse{Status: status, DeployTargetStatuses: dtStatuses}, nil
 	case StageK8sMultiBaselineRollout:
-		return &sdk.ExecuteStageResponse{Status: p.executeK8sMultiBaselineRolloutStage(ctx, input, dts)}, nil
+		status, dtStatuses := p.executeK8sMultiBaselineRolloutStage(ctx, input, dts)
+		return &sdk.ExecuteStageResponse{Status: status, DeployTargetStatuses: dtStatuses}, nil
 	case StageK8sMultiBaselineClean:
 		return &sdk.ExecuteStageResponse{
 			Status: p.executeK8sMultiBaselineCleanStage(ctx, input, dts),
 		}, nil
 	case StageK8sMultiTrafficRouting:
-		return &sdk.ExecuteStageResponse{Status: p.executeK8sMultiTrafficRoutingStage(ctx, input, dts)}, nil
+		status, dtStatuses := p.executeK8sMultiTrafficRoutingStage(ctx, input, dts)
+		return &sdk.ExecuteStageResponse{Status: status, DeployTargetStatuses: dtStatuses}, nil
 	default:
 		return nil, errors.New("unimplemented or unsupported stage")
 	}

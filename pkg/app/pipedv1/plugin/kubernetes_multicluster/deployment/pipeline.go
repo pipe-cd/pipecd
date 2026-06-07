@@ -27,17 +27,17 @@ const (
 	// StageK8sMultiRollback represents the state where all deployed resources should be rollbacked.
 	StageK8sMultiRollback = "K8S_MULTI_ROLLBACK"
 	// StageK8sMultiCanaryRollout represents the state where the new version is deployed as CANARY to all targets.
-	StageK8sMultiCanaryRollout = "K8S_CANARY_ROLLOUT"
+	StageK8sMultiCanaryRollout = "K8S_MULTI_CANARY_ROLLOUT"
 	// StageK8sMultiCanaryClean represents the state where all canary resources should be removed.
-	StageK8sMultiCanaryClean = "K8S_CANARY_CLEAN"
+	StageK8sMultiCanaryClean = "K8S_MULTI_CANARY_CLEAN"
 	// StageK8sMultiPrimaryRollout represents the state where the new version is promoted as PRIMARY to all targets.
-	StageK8sMultiPrimaryRollout = "K8S_PRIMARY_ROLLOUT"
+	StageK8sMultiPrimaryRollout = "K8S_MULTI_PRIMARY_ROLLOUT"
 	// StageK8sMultiBaselineRollout represents the state where the current version is deployed as BASELINE to all targets.
-	StageK8sMultiBaselineRollout = "K8S_BASELINE_ROLLOUT"
+	StageK8sMultiBaselineRollout = "K8S_MULTI_BASELINE_ROLLOUT"
 	// StageK8sMultiBaselineClean represents the state where all baseline resources should be removed.
-	StageK8sMultiBaselineClean = "K8S_BASELINE_CLEAN"
+	StageK8sMultiBaselineClean = "K8S_MULTI_BASELINE_CLEAN"
 	// StageK8sMultiTrafficRouting represents the state where traffic is routed between variants.
-	StageK8sMultiTrafficRouting = "K8S_TRAFFIC_ROUTING"
+	StageK8sMultiTrafficRouting = "K8S_MULTI_TRAFFIC_ROUTING"
 )
 
 var allStages = []string{

@@ -188,11 +188,11 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult, title string) str
 	b.WriteString("\n\n")
 
 	if title != "" {
-		b.WriteString(fmt.Sprintf("# %s\n\n", title))
+		fmt.Fprintf(&b, "# %s\n\n", title)
 	}
 
 	if event.IsComment {
-		b.WriteString(fmt.Sprintf("@%s ", event.SenderLogin))
+		fmt.Fprintf(&b, "@%s ", event.SenderLogin)
 	}
 
 	if r.NoChange() {
@@ -200,7 +200,7 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult, title string) str
 		return b.String()
 	}
 
-	b.WriteString(fmt.Sprintf(hasChangeTitleFormat, event.HeadCommit, len(r.Applications)))
+	fmt.Fprintf(&b, hasChangeTitleFormat, event.HeadCommit, len(r.Applications))
 
 	changedApps, pipelineApps, quickSyncApps := groupApplicationResults(r.Applications)
 	if len(changedApps)+len(pipelineApps)+len(quickSyncApps) > 0 {
