@@ -6,7 +6,7 @@ description: >
   Learn more about Plugins in PipeCD v1.
 ---
 
-PipeCD V1 uses a plugin-based architecture where each deployment target (Kubernetes, ECS, etc.) is handled by a dedicated plugin. Plugins are configured in the piped configuration and loaded automatically at startup.
+PipeCD v1 uses a plugin-based architecture where each deployment target (Kubernetes, ECS, etc.) is handled by a dedicated plugin. Plugins are configured in the piped configuration and loaded automatically at startup.
 
 ## Available plugins
 
