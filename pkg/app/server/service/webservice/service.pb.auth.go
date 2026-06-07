@@ -206,6 +206,10 @@ func (a *authorizer) Authorize(ctx context.Context, method string, r model.Role)
 		return verify(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/UpdateProjectRBACConfig":
 		return verify(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
+	case "/grpc.service.webservice.WebService/EnableProject":
+		return verify(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
+	case "/grpc.service.webservice.WebService/DisableProject":
+		return verify(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/GetMe":
 		return verify(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_GET)
 	case "/grpc.service.webservice.WebService/AddProjectRBACRole":

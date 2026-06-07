@@ -30,6 +30,10 @@ type apiKeyGetter interface {
 	Get(ctx context.Context, id string) (*model.APIKey, error)
 }
 
+type projectGetter interface {
+	Get(ctx context.Context, id string) (*model.Project, error)
+}
+
 type apiKeyLastUsedPutter interface {
 	Put(k string, v interface{}) error
 }
@@ -37,15 +41,19 @@ type apiKeyLastUsedPutter interface {
 type Verifier struct {
 	apiKeyCache         cache.Cache
 	apiKeyStore         apiKeyGetter
+	projectStore        projectGetter
+	projectCache        cache.Cache
 	apiKeyLastUsedCache apiKeyLastUsedPutter
 	logger              *zap.Logger
 	nowFunc             func() time.Time
 }
 
-func NewVerifier(ctx context.Context, getter apiKeyGetter, akluc apiKeyLastUsedPutter, logger *zap.Logger) *Verifier {
+func NewVerifier(ctx context.Context, getter apiKeyGetter, projectGetter projectGetter, akluc apiKeyLastUsedPutter, logger *zap.Logger) *Verifier {
 	return &Verifier{
 		apiKeyCache:         memorycache.NewTTLCache(ctx, 5*time.Minute, time.Minute),
 		apiKeyStore:         getter,
+		projectStore:        projectGetter,
+		projectCache:        memorycache.NewTTLCache(ctx, 12*time.Hour, time.Hour),
 		apiKeyLastUsedCache: akluc,
 		logger:              logger,
 		nowFunc:             time.Now,
@@ -86,9 +94,12 @@ func (v *Verifier) Verify(ctx context.Context, key string) (*model.APIKey, error
 	return apiKey, nil
 }
 
-func (v *Verifier) checkAPIKey(_ context.Context, apiKey *model.APIKey, id, key string) error {
+func (v *Verifier) checkAPIKey(ctx context.Context, apiKey *model.APIKey, id, key string) error {
 	if apiKey.Disabled {
 		return fmt.Errorf("the api key %s was already disabled", id)
+	}
+	if err := v.ensureProjectEnabled(ctx, apiKey.ProjectId); err != nil {
+		return err
 	}
 
 	if err := apiKey.CompareKey(key); err != nil {
@@ -99,5 +110,31 @@ func (v *Verifier) checkAPIKey(_ context.Context, apiKey *model.APIKey, id, key 
 		return fmt.Errorf("unable to update the time API key %s was last used, %w", id, err)
 	}
 
+	return nil
+}
+
+func (v *Verifier) ensureProjectEnabled(ctx context.Context, projectID string) error {
+	if projectID == "" {
+		return fmt.Errorf("missing project id for api key")
+	}
+	if val, err := v.projectCache.Get(projectID); err == nil {
+		if enabled, ok := val.(bool); ok {
+			if enabled {
+				return nil
+			}
+			return fmt.Errorf("project %s is disabled", projectID)
+		}
+	}
+	proj, err := v.projectStore.Get(ctx, projectID)
+	if err != nil {
+		return fmt.Errorf("unable to find project %s: %w", projectID, err)
+	}
+	if proj.Disabled {
+		_ = v.projectCache.Put(projectID, false)
+		return fmt.Errorf("project %s is disabled", projectID)
+	}
+	if err := v.projectCache.Put(projectID, true); err != nil {
+		v.logger.Warn("unable to store project status in memory cache", zap.Error(err))
+	}
 	return nil
 }

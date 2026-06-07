@@ -10,6 +10,7 @@ interface Props {
   role: ProjectRBACRole.AsObject;
   onEdit: (role: ProjectRBACRole.AsObject) => void;
   onDelete: (roleName: string) => void;
+  disabled?: boolean;
 }
 
 const ITEM_HEIGHT = 48;
@@ -18,6 +19,7 @@ export const RoleTableRow: FC<Props> = memo(function RoleTableRow({
   role,
   onDelete,
   onEdit,
+  disabled = false,
 }) {
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
@@ -60,7 +62,7 @@ export const RoleTableRow: FC<Props> = memo(function RoleTableRow({
             edge="end"
             aria-label="open menu"
             onClick={handleMenuOpen}
-            disabled={role.isBuiltin}
+            disabled={role.isBuiltin || disabled}
             size="large"
           >
             <MoreVertIcon />
@@ -70,7 +72,7 @@ export const RoleTableRow: FC<Props> = memo(function RoleTableRow({
       <Menu
         id="role-menu"
         anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
+        open={Boolean(anchorEl) && !disabled}
         onClose={handleMenuClose}
         slotProps={{
           paper: {
