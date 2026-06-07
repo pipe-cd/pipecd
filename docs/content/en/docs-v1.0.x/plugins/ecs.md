@@ -363,7 +363,7 @@ spec:
 
 ### Blue/Green deployment
 
-Deploys the new version (green) at full scale alongside the old version (blue), then cuts over all traffic atomically after approval. Requires **two ALB target groups** (primary and canary) both attached to the same listener.
+Deploys the new version (green) at full scale alongside the old version (blue), then cuts over all traffic automatically after approval. Requires **two ALB target groups** (primary and canary) both attached to the same listener.
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
