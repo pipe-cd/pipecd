@@ -12,6 +12,9 @@ on:
       - 'release-v*'
       - 'feat/*'
 
+permissions:
+  contents: read
+
 env:
   GO_VERSION: 1.26.2
   NODE_VERSION: 20.19.0
