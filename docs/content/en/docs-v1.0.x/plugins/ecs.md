@@ -568,7 +568,7 @@ The v1 plugin includes several fixes to behaviors that could cause service disru
 
 This section describes behavioral differences between the legacy ECS provider in PipeCD v0 and the ECS plugin in PipeCD v1. If you are migrating from v0, review these changes before deploying.
 
-### ECS_PRIMARY_ROLLOUT: only the old PRIMARY task set is removed
+### ECS_PRIMARY_ROLLOUT: eliminates 503 errors during canary promotion
 
 **v0 behavior:** `ECS_PRIMARY_ROLLOUT` deleted all ACTIVE task sets (including the CANARY task set) before promoting the new PRIMARY. This created a window where no task set was serving traffic, causing HTTP 503 errors on the load balancer: [issue #4710](https://github.com/pipe-cd/pipecd/issues/4710).
 
@@ -576,13 +576,13 @@ This section describes behavioral differences between the legacy ECS provider in
 
 This change eliminates the 503 window that existed in v0 during canary deployments.
 
-### Rollback: ELB weights are restored before task sets are modified
+### Rollback: eliminates 503 errors when reverting
 
 **v0 behavior:** During rollback, task sets were recreated first. This left a window where the ALB listener was still sending a fraction of traffic to the canary target group even though its tasks were being deleted, resulting in 503 errors for requests hitting that target group.
 
 **v1 behavior:** The `ECS_ROLLBACK` stage restores ALB listener weights to `100% primary / 0% canary` *before* touching any task set. Listener ARNs and the canary target group ARN are persisted in deployment metadata by `ECS_TRAFFIC_ROUTING`, so rollback can look them up without an additional AWS API call. Only after the listener is safe does rollback create the new task set, promote it to PRIMARY, and delete the remaining task sets.
 
-### Drift detection: commit hash tag instead of config field comparison
+### Drift detection: no false alerts from AWS-managed changes
 
 **v0 behavior:** Drift detection compared the fields of the live ECS resources against what was declared in the Git definition files. This produced false OUT_OF_SYNC signals whenever AWS mutated a field outside of PipeCD's control, for example when Auto Scaling adjusted `desiredCount`, or when AWS updated internal service metadata.
 
