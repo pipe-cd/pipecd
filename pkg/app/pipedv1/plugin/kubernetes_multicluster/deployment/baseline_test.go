@@ -162,7 +162,7 @@ func TestPlugin_executeK8sMultiBaselineRolloutStage_SingleCluster(t *testing.T) 
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiBaselineRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+	status, _ := plugin.executeK8sMultiBaselineRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{Name: "default", Config: *dtConfig},
 	})
 
@@ -231,7 +231,7 @@ func TestPlugin_executeK8sMultiBaselineRolloutStage_MultiCluster(t *testing.T) {
 	}
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiBaselineRolloutStage(ctx, input, dts)
+	status, _ := plugin.executeK8sMultiBaselineRolloutStage(ctx, input, dts)
 
 	require.Equal(t, sdk.StageStatusSuccess, status)
 
@@ -287,7 +287,7 @@ func TestPlugin_executeK8sMultiBaselineRolloutStage_WithCreateService(t *testing
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiBaselineRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+	status, _ := plugin.executeK8sMultiBaselineRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{Name: "default", Config: *dtConfig},
 	})
 
@@ -362,7 +362,7 @@ func TestPlugin_executeK8sMultiBaselineRolloutStage_WithoutCreateService(t *test
 	dtConfig, dynamicClient := setupTestDeployTargetConfigAndDynamicClient(t)
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiBaselineRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+	status, _ := plugin.executeK8sMultiBaselineRolloutStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{Name: "default", Config: *dtConfig},
 	})
 
@@ -427,7 +427,7 @@ func TestPlugin_executeK8sMultiBaselineRolloutStage_Failure(t *testing.T) {
 	}
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiBaselineRolloutStage(t.Context(), input, dts)
+	status, _ := plugin.executeK8sMultiBaselineRolloutStage(t.Context(), input, dts)
 
 	assert.Equal(t, sdk.StageStatusFailure, status)
 }
