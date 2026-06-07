@@ -31,14 +31,14 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/toolregistry"
 )
 
-func (p *Plugin) executeK8sMultiTrafficRoutingStage(ctx context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
+func (p *Plugin) executeK8sMultiTrafficRoutingStage(ctx context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) (sdk.StageStatus, []sdk.DeployTargetStatus) {
 	lp := input.Client.LogPersister()
 	lp.Info("Start routing the traffic")
 
 	cfg, err := input.Request.TargetDeploymentSource.AppConfig()
 	if err != nil {
 		lp.Errorf("Failed while loading application config (%v)", err)
-		return sdk.StageStatusFailure
+		return sdk.StageStatusFailure, nil
 	}
 
 	switch kubeconfig.DetermineKubernetesTrafficRoutingMethod(cfg.Spec.TrafficRouting) {
@@ -48,7 +48,7 @@ func (p *Plugin) executeK8sMultiTrafficRoutingStage(ctx context.Context, input *
 		return p.executeK8sMultiTrafficRoutingStageIstio(ctx, input, dts, cfg)
 	default:
 		lp.Errorf("Unknown traffic routing method: %s", cfg.Spec.TrafficRouting.Method)
-		return sdk.StageStatusFailure
+		return sdk.StageStatusFailure, nil
 	}
 }
 
@@ -57,17 +57,17 @@ func (p *Plugin) executeK8sMultiTrafficRoutingStagePodSelector(
 	input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec],
 	dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig],
 	cfg *sdk.ApplicationConfig[kubeconfig.KubernetesApplicationSpec],
-) sdk.StageStatus {
+) (sdk.StageStatus, []sdk.DeployTargetStatus) {
 	lp := input.Client.LogPersister()
 
 	var stageCfg kubeconfig.K8sTrafficRoutingStageOptions
 	if len(input.Request.StageConfig) == 0 {
 		lp.Error("Stage config is empty, this should not happen")
-		return sdk.StageStatusFailure
+		return sdk.StageStatusFailure, nil
 	}
 	if err := json.Unmarshal(input.Request.StageConfig, &stageCfg); err != nil {
 		lp.Errorf("Failed while unmarshalling stage config (%v)", err)
-		return sdk.StageStatusFailure
+		return sdk.StageStatusFailure, nil
 	}
 
 	primaryPercent, canaryPercent, baselinePercent := stageCfg.Percentages()
@@ -75,7 +75,7 @@ func (p *Plugin) executeK8sMultiTrafficRoutingStagePodSelector(
 	// PodSelector does not support baseline and requires one variant to be 100%.
 	if baselinePercent > 0 {
 		lp.Error("PodSelector method does not support baseline variant")
-		return sdk.StageStatusFailure
+		return sdk.StageStatusFailure, nil
 	}
 
 	var targetVariant string
@@ -87,7 +87,7 @@ func (p *Plugin) executeK8sMultiTrafficRoutingStagePodSelector(
 	default:
 		lp.Errorf("PodSelector requires either primary or canary to be 100%% (primary=%d, canary=%d)",
 			primaryPercent, canaryPercent)
-		return sdk.StageStatusFailure
+		return sdk.StageStatusFailure, nil
 	}
 
 	lp.Infof("Routing traffic to %s variant (%s)", targetVariant, stageCfg.DisplayString())
@@ -97,15 +97,10 @@ func (p *Plugin) executeK8sMultiTrafficRoutingStagePodSelector(
 		deployTargetMap[dt.Name] = dt
 	}
 
-	type targetConfig struct {
-		deployTarget *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]
-		multiTarget  *kubeconfig.KubernetesMultiTarget
-	}
-
-	targetConfigs := make([]targetConfig, 0, len(dts))
+	targetConfigs := make([]stageTarget, 0, len(dts))
 	if len(cfg.Spec.Input.MultiTargets) == 0 {
 		for _, dt := range dts {
-			targetConfigs = append(targetConfigs, targetConfig{deployTarget: dt})
+			targetConfigs = append(targetConfigs, stageTarget{deployTarget: dt})
 		}
 	} else {
 		for _, mt := range cfg.Spec.Input.MultiTargets {
@@ -114,28 +109,47 @@ func (p *Plugin) executeK8sMultiTrafficRoutingStagePodSelector(
 				lp.Infof("Ignore multi target '%s': not matched any deployTarget", mt.Target.Name)
 				continue
 			}
-			targetConfigs = append(targetConfigs, targetConfig{deployTarget: dt, multiTarget: &mt})
+			targetConfigs = append(targetConfigs, stageTarget{deployTarget: dt, multiTarget: &mt})
 		}
 	}
 
+	targetConfigs = filterStageTargets(targetConfigs, stageCfg.MultiTargets)
+
+	type targetResult struct {
+		name   string
+		status sdk.StageStatus
+		msg    string
+	}
+	results := make([]targetResult, len(targetConfigs))
+
 	eg, ctx := errgroup.WithContext(ctx)
-	for _, tc := range targetConfigs {
+	for i, tc := range targetConfigs {
+		i, tc := i, tc
 		eg.Go(func() error {
 			lp.Infof("Start updating traffic routing on target %s", tc.deployTarget.Name)
 			if err := p.podSelectorTrafficRouting(ctx, input, tc.deployTarget, tc.multiTarget, cfg, targetVariant); err != nil {
+				results[i] = targetResult{name: tc.deployTarget.Name, status: sdk.StageStatusFailure, msg: err.Error()}
 				return fmt.Errorf("failed to update traffic routing on target %s: %w", tc.deployTarget.Name, err)
 			}
+			results[i] = targetResult{name: tc.deployTarget.Name, status: sdk.StageStatusSuccess}
 			return nil
 		})
 	}
 
-	if err := eg.Wait(); err != nil {
-		lp.Errorf("Failed while updating traffic routing (%v)", err)
-		return sdk.StageStatusFailure
+	waitErr := eg.Wait()
+
+	dtStatuses := make([]sdk.DeployTargetStatus, len(results))
+	for i, r := range results {
+		dtStatuses[i] = sdk.DeployTargetStatus{Name: r.name, Status: r.status, Message: r.msg}
+	}
+
+	if waitErr != nil {
+		lp.Errorf("Failed while updating traffic routing (%v)", waitErr)
+		return sdk.StageStatusFailure, dtStatuses
 	}
 
 	lp.Success("Successfully updated traffic routing")
-	return sdk.StageStatusSuccess
+	return sdk.StageStatusSuccess, dtStatuses
 }
 
 func (p *Plugin) podSelectorTrafficRouting(
@@ -207,17 +221,17 @@ func (p *Plugin) executeK8sMultiTrafficRoutingStageIstio(
 	input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec],
 	dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig],
 	cfg *sdk.ApplicationConfig[kubeconfig.KubernetesApplicationSpec],
-) sdk.StageStatus {
+) (sdk.StageStatus, []sdk.DeployTargetStatus) {
 	lp := input.Client.LogPersister()
 
 	var stageCfg kubeconfig.K8sTrafficRoutingStageOptions
 	if len(input.Request.StageConfig) == 0 {
 		lp.Error("Stage config is empty, this should not happen")
-		return sdk.StageStatusFailure
+		return sdk.StageStatusFailure, nil
 	}
 	if err := json.Unmarshal(input.Request.StageConfig, &stageCfg); err != nil {
 		lp.Errorf("Failed while unmarshalling stage config (%v)", err)
-		return sdk.StageStatusFailure
+		return sdk.StageStatusFailure, nil
 	}
 
 	primaryPercent, canaryPercent, baselinePercent := stageCfg.Percentages()
@@ -228,15 +242,10 @@ func (p *Plugin) executeK8sMultiTrafficRoutingStageIstio(
 		deployTargetMap[dt.Name] = dt
 	}
 
-	type targetConfig struct {
-		deployTarget *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]
-		multiTarget  *kubeconfig.KubernetesMultiTarget
-	}
-
-	targetConfigs := make([]targetConfig, 0, len(dts))
+	targetConfigs := make([]stageTarget, 0, len(dts))
 	if len(cfg.Spec.Input.MultiTargets) == 0 {
 		for _, dt := range dts {
-			targetConfigs = append(targetConfigs, targetConfig{deployTarget: dt})
+			targetConfigs = append(targetConfigs, stageTarget{deployTarget: dt})
 		}
 	} else {
 		for _, mt := range cfg.Spec.Input.MultiTargets {
@@ -245,29 +254,48 @@ func (p *Plugin) executeK8sMultiTrafficRoutingStageIstio(
 				lp.Infof("Ignore multi target '%s': not matched any deployTarget", mt.Target.Name)
 				continue
 			}
-			targetConfigs = append(targetConfigs, targetConfig{deployTarget: dt, multiTarget: &mt})
+			targetConfigs = append(targetConfigs, stageTarget{deployTarget: dt, multiTarget: &mt})
 		}
 	}
 
+	targetConfigs = filterStageTargets(targetConfigs, stageCfg.MultiTargets)
+
+	type targetResult struct {
+		name   string
+		status sdk.StageStatus
+		msg    string
+	}
+	results := make([]targetResult, len(targetConfigs))
+
 	eg, ctx := errgroup.WithContext(ctx)
-	for _, tc := range targetConfigs {
+	for i, tc := range targetConfigs {
+		i, tc := i, tc
 		eg.Go(func() error {
 			lp.Infof("Start updating Istio traffic routing on target %s", tc.deployTarget.Name)
 			if err := p.istioTrafficRouting(ctx, input, tc.deployTarget, tc.multiTarget, cfg, int32(canaryPercent), int32(baselinePercent)); err != nil {
+				results[i] = targetResult{name: tc.deployTarget.Name, status: sdk.StageStatusFailure, msg: err.Error()}
 				return fmt.Errorf("failed to update Istio traffic routing on target %s: %w", tc.deployTarget.Name, err)
 			}
+			results[i] = targetResult{name: tc.deployTarget.Name, status: sdk.StageStatusSuccess}
 			return nil
 		})
 	}
 
-	if err := eg.Wait(); err != nil {
-		lp.Errorf("Failed while updating Istio traffic routing (%v)", err)
-		return sdk.StageStatusFailure
+	waitErr := eg.Wait()
+
+	dtStatuses := make([]sdk.DeployTargetStatus, len(results))
+	for i, r := range results {
+		dtStatuses[i] = sdk.DeployTargetStatus{Name: r.name, Status: r.status, Message: r.msg}
+	}
+
+	if waitErr != nil {
+		lp.Errorf("Failed while updating Istio traffic routing (%v)", waitErr)
+		return sdk.StageStatusFailure, dtStatuses
 	}
 
 	lp.Successf("Successfully updated Istio traffic routing: primary=%d%%, canary=%d%%, baseline=%d%%",
 		primaryPercent, canaryPercent, baselinePercent)
-	return sdk.StageStatusSuccess
+	return sdk.StageStatusSuccess, dtStatuses
 }
 
 func (p *Plugin) istioTrafficRouting(

@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -200,7 +201,7 @@ func buildResourceStates(result *queryResourcesResult, deployTarget string) []sd
 		resources = append(resources, sdk.ResourceState{
 			ID:                aws.ToString(ts.TaskSetArn),
 			ParentIDs:         []string{aws.ToString(svc.ServiceArn)},
-			Name:              aws.ToString(ts.Id),
+			Name:              shortID(aws.ToString(ts.Id)),
 			ResourceType:      resourceTypeTaskSet,
 			ResourceMetadata:  meta,
 			HealthStatus:      tsHealth,
@@ -229,7 +230,7 @@ func buildResourceStates(result *queryResourcesResult, deployTarget string) []sd
 		resources = append(resources, sdk.ResourceState{
 			ID:                aws.ToString(task.TaskArn),
 			ParentIDs:         parentIDs,
-			Name:              aws.ToString(task.TaskArn),
+			Name:              shortID(aws.ToString(task.TaskArn)),
 			ResourceType:      resourceTypeTask,
 			ResourceMetadata:  meta,
 			HealthStatus:      taskHealth,
@@ -240,6 +241,14 @@ func buildResourceStates(result *queryResourcesResult, deployTarget string) []sd
 	}
 
 	return resources
+}
+
+// shortID returns the last path segment of an ARN or a slash-separated ID.
+func shortID(s string) string {
+	if i := strings.LastIndex(s, "/"); i >= 0 {
+		return s[i+1:]
+	}
+	return s
 }
 
 // derefTime safely dereferences a *time.Time returned by the AWS SDK.
