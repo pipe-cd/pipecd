@@ -46,7 +46,7 @@ jobs:
 
       # Building and pushing container images.
       - name: Build and push ${{ matrix.image }} image
-        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 #v5.0.0
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf #v7.2.0
         with:
           context: tool/${{ matrix.image }}
           tags: ${{ env.GHCR }}/pipe-cd/${{ matrix.image }}:${{ env.PIPECD_VERSION }}
