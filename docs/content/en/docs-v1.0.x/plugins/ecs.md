@@ -466,9 +466,9 @@ The credential fields (`region`, `credentialsFile`, `profile`, `roleARN`, `token
 
 ### 2. Update the application configuration
 
-The application config format changes in two ways: the `kind` field and the location of ECS-specific fields.
+The application configuration file format changes in two ways: the `kind` field and the location of ECS-specific fields.
 
-**v0 app config:**
+**v0 application configuration file:**
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -506,7 +506,7 @@ spec:
       - name: ECS_CANARY_CLEAN
 ```
 
-**v1 app config:**
+**v1 application configuration file:**
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
