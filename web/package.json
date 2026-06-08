@@ -55,7 +55,7 @@
     "process": "^0.11.10",
     "react-test-renderer": "^17.0.2",
     "style-loader": "^4.0.0",
-    "ts-jest": "^29.1.0",
+    "ts-jest": "^29.4.11",
     "ts-loader": "^9.1.0",
     "typescript": "^5.8.3",
     "webpack": "^5.94.0",
