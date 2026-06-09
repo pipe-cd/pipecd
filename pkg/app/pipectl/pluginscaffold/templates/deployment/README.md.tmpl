@@ -1,0 +1,19 @@
+# {{ .PluginName }} PipeCD plugin (deployment)
+
+Scaffolded with `pipectl plugin init --kind deployment`.
+
+## Stages
+
+{{- range .Stages }}
+- `{{ . }}`
+{{- end }}
+
+## Build
+
+```bash
+go build .
+```
+
+## Next steps
+
+Implement stage logic under `deployment/` and configure deploy targets in `config/`.

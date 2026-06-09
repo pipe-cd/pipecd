@@ -1,0 +1,95 @@
+// Copyright 2026 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package deployment
+
+import (
+	"context"
+	"errors"
+
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+
+	"{{ .ModulePath }}/config"
+)
+
+var ErrUnsupportedStage = errors.New("unsupported stage")
+
+var _ sdk.DeploymentPlugin[config.{{ .TypePrefix }}PluginConfig, config.{{ .TypePrefix }}DeployTargetConfig, config.{{ .TypePrefix }}ApplicationSpec] = (*{{ .TypePrefix }}Plugin)(nil)
+
+type {{ .TypePrefix }}Plugin struct{}
+
+func (p *{{ .TypePrefix }}Plugin) FetchDefinedStages() []string {
+	return allStages
+}
+
+func (p *{{ .TypePrefix }}Plugin) BuildQuickSyncStages(
+	_ context.Context,
+	_ *config.{{ .TypePrefix }}PluginConfig,
+	input *sdk.BuildQuickSyncStagesInput,
+) (*sdk.BuildQuickSyncStagesResponse, error) {
+	return &sdk.BuildQuickSyncStagesResponse{
+		Stages: buildQuickSyncPipeline(input.Request.Rollback),
+	}, nil
+}
+
+func (p *{{ .TypePrefix }}Plugin) BuildPipelineSyncStages(
+	_ context.Context,
+	_ *config.{{ .TypePrefix }}PluginConfig,
+	input *sdk.BuildPipelineSyncStagesInput,
+) (*sdk.BuildPipelineSyncStagesResponse, error) {
+	return &sdk.BuildPipelineSyncStagesResponse{
+		Stages: buildPipelineStages(input),
+	}, nil
+}
+
+func (p *{{ .TypePrefix }}Plugin) ExecuteStage(
+	ctx context.Context,
+	cfg *config.{{ .TypePrefix }}PluginConfig,
+	deployTargets []*sdk.DeployTarget[config.{{ .TypePrefix }}DeployTargetConfig],
+	input *sdk.ExecuteStageInput[config.{{ .TypePrefix }}ApplicationSpec],
+) (*sdk.ExecuteStageResponse, error) {
+	if len(deployTargets) == 0 {
+		input.Logger.Error("no deploy targets")
+		return &sdk.ExecuteStageResponse{Status: sdk.StageStatusFailure}, nil
+	}
+	switch input.Request.StageName {
+{{- range .StageEntries }}
+	case Stage{{ .ConstSuffix }}:
+		return &sdk.ExecuteStageResponse{
+			Status: p.{{ .FuncName }}(ctx, cfg, deployTargets[0], input),
+		}, nil
+{{- end }}
+	default:
+		return nil, ErrUnsupportedStage
+	}
+}
+
+func (p *{{ .TypePrefix }}Plugin) DetermineVersions(
+	_ context.Context,
+	_ *config.{{ .TypePrefix }}PluginConfig,
+	_ *sdk.DetermineVersionsInput[config.{{ .TypePrefix }}ApplicationSpec],
+) (*sdk.DetermineVersionsResponse, error) {
+	return &sdk.DetermineVersionsResponse{Versions: []sdk.ArtifactVersion{}}, nil
+}
+
+func (p *{{ .TypePrefix }}Plugin) DetermineStrategy(
+	_ context.Context,
+	_ *config.{{ .TypePrefix }}PluginConfig,
+	_ *sdk.DetermineStrategyInput[config.{{ .TypePrefix }}ApplicationSpec],
+) (*sdk.DetermineStrategyResponse, error) {
+	return &sdk.DetermineStrategyResponse{
+		Strategy: sdk.SyncStrategyPipelineSync,
+		Summary:  "pipeline sync",
+	}, nil
+}

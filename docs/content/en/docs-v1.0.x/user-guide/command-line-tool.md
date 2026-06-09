@@ -357,6 +357,17 @@ You can encrypt it the same way you do [from the web](../managing-application/se
 
 > **Note:** The docs for pipectl available command may be outdated. We suggest users use the `help` command for the updated usage while using pipectl.
 
+### Scaffolding a Piped plugin
+
+Generate a compile-ready plugin skeleton (stage-only or deployment-minimal layout):
+
+```console
+pipectl plugin init ./my-plugin --kind stage --stages MY_STAGE
+pipectl plugin init ./my-plugin --kind deployment --stages MY_SYNC,MY_ROLLBACK
+```
+
+Use `--dry-run` to list files without writing, and `--force` to replace an existing output directory (this deletes the target path). See [Contributing plugins](../contribution-guidelines/contributing-plugins/#scaffold-a-new-plugin) for details.
+
 ### You want more?
 
 We always want to add more needed commands into pipectl. Please let us know what command you want to add by creating issues in the [pipe-cd/pipecd](https://github.com/pipe-cd/pipecd/issues) repository. We also welcome your pull request to add the command.

@@ -1,4 +1,4 @@
-// Copyright 2025 The PipeCD Authors.
+// Copyright 2026 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,25 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package plugin
+package deployment
 
 import (
-	"github.com/spf13/cobra"
+	"context"
+
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+
+	"github.com/example/piped-plugin-demo/config"
 )
 
-type command struct{}
-
-func NewCommand() *cobra.Command {
-	c := &command{}
-	cmd := &cobra.Command{
-		Use:   "plugin",
-		Short: "Do plugin tasks.",
-	}
-
-	cmd.AddCommand(
-		newInitCommand(c),
-		newPushCommand(c),
-	)
-
-	return cmd
+func (p *DemoPlugin) executeDemoSync(
+	_ context.Context,
+	_ *config.DemoPluginConfig,
+	_ *sdk.DeployTarget[config.DemoDeployTargetConfig],
+	input *sdk.ExecuteStageInput[config.DemoApplicationSpec],
+) sdk.StageStatus {
+	lp := input.Client.LogPersister()
+	lp.Info("TODO: implement DEMO_SYNC stage logic")
+	return sdk.StageStatusFailure
 }
