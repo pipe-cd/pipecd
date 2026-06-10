@@ -20,6 +20,7 @@ There are many ways to contribute, and many don't involve writing code:
 - **Triage issues** — Browse [open issues](https://github.com/pipe-cd/pipecd/issues), provide workarounds, ask for clarification, or suggest labels
 - **Fix bugs** — Issues labeled [good first issue](https://github.com/pipe-cd/pipecd/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22) are great starting points
 - **Improve docs** — See [Contribute to PipeCD Documentation](../contributing-documentation/)
+- **Contribute plugins** — See [Contribute to PipeCD Plugins](../contributing-plugins/) to build or improve plugins for PipeCD v1
 - **Participate in discussions** — Share ideas in [GitHub Discussions](https://github.com/pipe-cd/pipecd/discussions)
 
 ## Development Setup
@@ -123,12 +124,17 @@ Login credentials:
          remote: git@github.com:pipe-cd/examples.git
          branch: master
      syncInterval: 1m
-     platformProviders:
-       - name: example-kubernetes
-         type: KUBERNETES
-         config:
-           kubeConfigPath: /path/to/.kube/config
+     plugins:
+       - name: kubernetes
+         port: 7001
+         url: <PLUGIN_DOWNLOAD_URL>  # Get from https://github.com/pipe-cd/pipecd/releases
+         deployTargets:
+           - name: local
+             config:
+               kubeConfigPath: /path/to/.kube/config
    ```
+
+   > **Note:** Plugins are versioned independently from PipeCD. Download URLs for official plugins can be found on the [PipeCD releases page](https://github.com/pipe-cd/pipecd/releases). Look for releases tagged with `pkg/app/pipedv1/plugin/kubernetes/`.
 
 4. Start the Piped agent:
 
