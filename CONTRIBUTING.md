@@ -194,9 +194,9 @@ Run `make update/go-deps` and `make update/web-deps` to update the dependencies.
 
 In order to start a local development environment, a registry needs to be running locally.
 
-Run `make up/local-cluster` to start a local registry.
+Run `make up/local-cluster` to start a local registry and a kind cluster.
 
-This will create the kubernetes namespace `pipecd` if it does not exist and start a local registry in the namespace which can then be accessed by other components.
+The `pipecd` Kubernetes namespace is created when you run `make run/pipecd`, not by `make up/local-cluster`.
 
 When cleaning up, run `make down/local-cluster` to stop and delete the registery and the cluster.
 
@@ -272,7 +272,19 @@ Replace `path/to/piped-config.yaml` with the actual path to your configuration f
 
 ### Online one-click setup for contributing
 
-We are preparing Gitpod and Codespace to facilitate the setup process for contributing.
+You can use a [Dev Container](https://containers.dev/) to open PipeCD in GitHub Codespaces or VS Code with Go, Node, Docker, kubectl, kind, and Helm pre-installed.
+
+1. Open this repository in **GitHub Codespaces** or VS Code with the **Dev Containers** extension.
+2. Wait for the container to build. Setup runs `make update/go-deps` and `make update/web-deps` automatically.
+3. Verify the environment:
+
+```bash
+make build/go
+```
+
+4. For a local Kubernetes cluster and control plane, follow [.devcontainer/README.md](./.devcontainer/README.md).
+
+We are still preparing Gitpod support.
 
 ## Contributor License Agreement
 
