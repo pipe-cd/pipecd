@@ -51,25 +51,33 @@ type Option func(*options)
 
 func WithWorkerNum(n int) Option {
 	return func(opts *options) {
-		opts.workerNum = n
+		if n > 0 {
+			opts.workerNum = n
+		}
 	}
 }
 
 func WithCommandQueueBufferSize(s int) Option {
 	return func(opts *options) {
-		opts.commandQueueBufferSize = s
+		if s > 0 {
+			opts.commandQueueBufferSize = s
+		}
 	}
 }
 
 func WithCommandCheckInterval(i time.Duration) Option {
 	return func(opts *options) {
-		opts.commandCheckInterval = i
+		if i > 0 {
+			opts.commandCheckInterval = i
+		}
 	}
 }
 
 func WithCommandHandleTimeout(t time.Duration) Option {
 	return func(opts *options) {
-		opts.commandHandleTimeout = t
+		if t > 0 {
+			opts.commandHandleTimeout = t
+		}
 	}
 }
 
