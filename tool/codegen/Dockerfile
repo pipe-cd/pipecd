@@ -35,7 +35,7 @@ RUN wget -q https://github.com/envoyproxy/protoc-gen-validate/archive/refs/tags/
 
 # Stage 2: Downloader - Download pre-built binaries
 
-FROM debian:bookworm-slim AS downloader
+FROM debian:12.14-slim AS downloader
 
 RUN apt-get update && apt-get install -y --no-install-recommends wget ca-certificates \
   && rm -rf /var/lib/apt/lists/*
@@ -61,7 +61,7 @@ RUN for target in x86_64 aarch_64; do \
 
 
 # Stage 3: Final - Minimal runtime image
-FROM debian:bookworm-slim AS final
+FROM debian:12.14-slim AS final
 
 # Install protoc, proto files, and ca-certificates
 # libprotobuf-dev includes standard proto files in /usr/include/google/protobuf/
