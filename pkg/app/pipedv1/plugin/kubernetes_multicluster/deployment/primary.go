@@ -28,20 +28,20 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/toolregistry"
 )
 
-func (p *Plugin) executeK8sMultiPrimaryRolloutStage(ctx context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
+func (p *Plugin) executeK8sMultiPrimaryRolloutStage(ctx context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) (sdk.StageStatus, []sdk.DeployTargetStatus) {
 	lp := input.Client.LogPersister()
 
 	cfg, err := input.Request.TargetDeploymentSource.AppConfig()
 	if err != nil {
 		lp.Errorf("Failed while decoding application config (%v)", err.Error())
-		return sdk.StageStatusFailure
+		return sdk.StageStatusFailure, nil
 	}
 
 	var stageCfg kubeconfig.K8sPrimaryRolloutStageOptions
 	if len(input.Request.StageConfig) > 0 {
 		if err := json.Unmarshal(input.Request.StageConfig, &stageCfg); err != nil {
 			lp.Errorf("Failed while unmarshalling stage config (%v)", err)
-			return sdk.StageStatusFailure
+			return sdk.StageStatusFailure, nil
 		}
 	}
 

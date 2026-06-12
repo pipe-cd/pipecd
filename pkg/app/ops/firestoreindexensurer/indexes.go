@@ -58,16 +58,16 @@ func (idx *index) validate() error {
 // id builds a unique string based on its fields.
 func (idx *index) id() string {
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("%s/%s", idx.CollectionGroup, idx.QueryScope))
+	fmt.Fprintf(&b, "%s/%s", idx.CollectionGroup, idx.QueryScope)
 
 	fields := idx.Fields
 	for _, f := range fields {
-		b.WriteString(fmt.Sprintf("/field-path:%s", f.FieldPath))
+		fmt.Fprintf(&b, "/field-path:%s", f.FieldPath)
 		if f.Order != "" {
-			b.WriteString(fmt.Sprintf("/order:%s", f.Order))
+			fmt.Fprintf(&b, "/order:%s", f.Order)
 		}
 		if f.ArrayConfig != "" {
-			b.WriteString(fmt.Sprintf("/array-config:%s", f.ArrayConfig))
+			fmt.Fprintf(&b, "/array-config:%s", f.ArrayConfig)
 		}
 	}
 	return b.String()
