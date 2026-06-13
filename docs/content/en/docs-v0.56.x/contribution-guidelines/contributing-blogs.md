@@ -82,6 +82,13 @@ Your content here...
    ```bash
    make run/site
    ```
+
+   > **Note for Windows users:**
+   > The `make run/site` command uses `make` and `grep`, which are not natively available in Windows PowerShell. You can either use an environment like WSL or run the Hugo command manually in PowerShell:
+   > ```powershell
+   > $env:RELEASE = "v0.0.0"
+   > hugo server --source=docs
+   > ```
    Then visit `http://localhost:1313/blog/` to see your post.
 
 6. **Commit and push** your changes:
