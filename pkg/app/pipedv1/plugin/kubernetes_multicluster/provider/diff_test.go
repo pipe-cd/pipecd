@@ -38,12 +38,12 @@ func TestDiff(t *testing.T) {
 	}{
 		{
 			name: "Secret no diff 1",
-			manifests: `apiVersion: apps/v1
+			manifests: `apiVersion: v1
 kind: Secret
 metadata:
   name: secret-management
 ---
-apiVersion: apps/v1
+apiVersion: v1
 kind: Secret
 metadata:
   name: secret-management
@@ -53,7 +53,7 @@ metadata:
 		},
 		{
 			name: "Secret no diff 2",
-			manifests: `apiVersion: apps/v1
+			manifests: `apiVersion: v1
 kind: Secret
 metadata:
   name: secret-management
@@ -62,7 +62,7 @@ data:
 stringData:
   foo: bar
 ---
-apiVersion: apps/v1
+apiVersion: v1
 kind: Secret
 metadata:
   name: secret-management
@@ -76,7 +76,7 @@ stringData:
 		},
 		{
 			name: "Secret no diff with merge",
-			manifests: `apiVersion: apps/v1
+			manifests: `apiVersion: v1
 kind: Secret
 metadata:
   name: secret-management
@@ -84,7 +84,7 @@ data:
   password: hoge
   foo: YmFy
 ---
-apiVersion: apps/v1
+apiVersion: v1
 kind: Secret
 metadata:
   name: secret-management
@@ -98,7 +98,7 @@ stringData:
 		},
 		{
 			name: "Secret no diff override false-positive",
-			manifests: `apiVersion: apps/v1
+			manifests: `apiVersion: v1
 kind: Secret
 metadata:
   name: secret-management
@@ -106,7 +106,7 @@ data:
   password: hoge
   foo: YmFy
 ---
-apiVersion: apps/v1
+apiVersion: v1
 kind: Secret
 metadata:
   name: secret-management
@@ -122,14 +122,14 @@ stringData:
 		},
 		{
 			name: "Secret has diff",
-			manifests: `apiVersion: apps/v1
+			manifests: `apiVersion: v1
 kind: Secret
 metadata:
   name: secret-management
 data:
   foo: YmFy
 ---
-apiVersion: apps/v1
+apiVersion: v1
 kind: Secret
 metadata:
   name: secret-management
