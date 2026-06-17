@@ -1,0 +1,40 @@
+# Version control
+.git
+
+# Local dev environment
+.dev
+.cache
+.artifacts
+
+# Go
+vendor
+
+# Node / web
+node_modules
+web/node_modules
+web/dist
+web/.cache
+web/coverage
+docs/node_modules
+
+# Helm chart deps
+.rendered-manifests
+manifests/pipecd/charts
+manifests/piped/charts
+manifests/site/charts
+manifests/helloworld/charts
+
+# Bazel
+bazel-bin
+bazel-genfiles
+bazel-pipecd
+bazel-out
+bazel-testlogs
+
+# IDE / OS
+.idea
+.ijwb
+.DS_Store
+
+# Terraform
+.terraform
