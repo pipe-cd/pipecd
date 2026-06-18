@@ -7,7 +7,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.0.0
 	github.com/pipe-cd/piped-plugin-sdk-go v0.3.0
 	github.com/stretchr/testify v1.11.1
-	go.uber.org/zap v1.19.1
+	go.uber.org/zap v1.28.0
 )
 
 require (
@@ -52,7 +52,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.39.0 // indirect
 	go.opentelemetry.io/otel/trace v1.39.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
-	go.uber.org/multierr v1.6.0 // indirect
+	go.uber.org/multierr v1.10.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	golang.org/x/crypto v0.46.0 // indirect
 	golang.org/x/net v0.48.0 // indirect
