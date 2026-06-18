@@ -7,7 +7,7 @@ require (
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/atomic v1.11.0
-	go.uber.org/zap v1.19.1
+	go.uber.org/zap v1.28.0
 	golang.org/x/sync v0.19.0
 	google.golang.org/grpc v1.79.3
 	k8s.io/apimachinery v0.24.3
@@ -54,8 +54,7 @@ require (
 	go.opentelemetry.io/otel v1.41.0 // indirect
 	go.opentelemetry.io/otel/metric v1.41.0 // indirect
 	go.opentelemetry.io/otel/trace v1.41.0 // indirect
-	go.uber.org/goleak v1.3.0 // indirect
-	go.uber.org/multierr v1.6.0 // indirect
+	go.uber.org/multierr v1.10.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	golang.org/x/crypto v0.46.0 // indirect
 	golang.org/x/net v0.48.0 // indirect
