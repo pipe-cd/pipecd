@@ -1,6 +1,6 @@
 module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/wait
 
-go 1.25.0
+go 1.26.2
 
 require (
 	github.com/creasty/defaults v1.6.0

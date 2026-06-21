@@ -43,7 +43,7 @@ func makeCommentBody(proposals []ReleaseProposal, exists []ReleaseProposal) stri
 		return b.String()
 	}
 
-	b.WriteString(fmt.Sprintf("The following %d GitHub releases will be created once this pull request got merged.\n", len(proposals)))
+	fmt.Fprintf(&b, "The following %d GitHub releases will be created once this pull request got merged.\n", len(proposals))
 	for _, p := range proposals {
 		fmt.Fprintf(&b, "\n")
 		fmt.Fprint(&b, p.ReleaseNote)
