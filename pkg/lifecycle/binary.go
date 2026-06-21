@@ -109,7 +109,7 @@ func RunBinary(ctx context.Context, execPath string, args []string) (*Command, e
 // this also marks it executable and returns its full path.
 //
 // If forceRedownload is true, any existing cached binary is removed before downloading.
-func DownloadBinary(sourceURL, destDir, destFile string, forceRedownload bool, logger *zap.Logger) (string, error) {
+func DownloadBinary(ctx context.Context, sourceURL, destDir, destFile string, forceRedownload bool, logger *zap.Logger) (string, error) {
 	if err := os.MkdirAll(destDir, 0755); err != nil {
 		return "", fmt.Errorf("could not create directory %s (%w)", destDir, err)
 	}
@@ -148,11 +148,6 @@ func DownloadBinary(sourceURL, destDir, destFile string, forceRedownload bool, l
 
 	switch u.Scheme {
 	case "oci":
-		// TODO: add context.Context as a argument for DownloadBinary.
-		ctx := context.Background()
-		ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
-		defer cancel()
-
 		if err := oci.PullFileFromRegistry(
 			ctx,
 			destDir,
@@ -165,7 +160,7 @@ func DownloadBinary(sourceURL, destDir, destFile string, forceRedownload bool, l
 			return "", fmt.Errorf("could not pull file from OCI (%w)", err)
 		}
 	case "http", "https":
-		req, err := http.NewRequest("GET", sourceURL, nil)
+		req, err := http.NewRequestWithContext(ctx, "GET", sourceURL, nil)
 		if err != nil {
 			return "", fmt.Errorf("could not create request (%w)", err)
 		}
