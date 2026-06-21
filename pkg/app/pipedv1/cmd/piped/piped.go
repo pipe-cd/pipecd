@@ -706,7 +706,7 @@ func (p *piped) runPlugins(ctx context.Context, pluginsCfg []config.PipedPlugin,
 	plugins := make([]*lifecycle.Command, 0, len(pluginsCfg))
 	for _, pCfg := range pluginsCfg {
 		// Download plugin binary to piped's pluginsDir.
-		pPath, err := lifecycle.DownloadBinary(pCfg.URL, p.pluginsDir, pCfg.Name, p.forcePluginRedownload, logger)
+		pPath, err := lifecycle.DownloadBinary(ctx, pCfg.URL, p.pluginsDir, pCfg.Name, p.forcePluginRedownload, logger)
 		if err != nil {
 			return nil, fmt.Errorf("failed to download plugin %s: %w", pCfg.Name, err)
 		}
