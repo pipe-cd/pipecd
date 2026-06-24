@@ -35,7 +35,7 @@
     "@types/react-syntax-highlighter": "^15.5.1",
     "@typescript-eslint/eslint-plugin": "^6",
     "@typescript-eslint/parser": "^6",
-    "babel-loader": "^9.1.0",
+    "babel-loader": "^10.1.1",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^7.1.2",
     "eslint": "^8",
