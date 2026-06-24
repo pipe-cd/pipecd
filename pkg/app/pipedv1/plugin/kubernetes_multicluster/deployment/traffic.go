@@ -432,7 +432,7 @@ func findIstioVirtualServiceManifests(manifests []provider.Manifest, ref kubecon
 type virtualService struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-	Spec              istiov1.VirtualService
+	Spec istiov1.VirtualService `json:"spec"`
 }
 
 func convertVirtualService(m provider.Manifest) (*virtualService, error) {
