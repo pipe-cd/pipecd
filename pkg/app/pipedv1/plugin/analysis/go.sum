@@ -259,10 +259,10 @@ github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLA
 github.com/opentracing/opentracing-go v1.1.0/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFStlNbqXla1AfSYxPUl2o=
 github.com/philhofer/fwd v1.1.1 h1:GdGcTjf5RNAxwS4QLsiMzJYj5KEvPJD3Abr261yRQXQ=
 github.com/philhofer/fwd v1.1.1/go.mod h1:gk3iGcWd9+svBvR0sR+KPcfE+RNWozjowpeBVG3ZVNU=
-github.com/pipe-cd/pipecd v0.52.1-0.20250731104149-f611ce3501c5 h1:1VM6ZkE2YfXqROq3lU8xrOV21MdJ257p19VX71E/nsU=
-github.com/pipe-cd/pipecd v0.52.1-0.20250731104149-f611ce3501c5/go.mod h1:5H0ydj0eUpGnJOesA2GPU3mTVlZEZDb8cNP7/lvNPTU=
-github.com/pipe-cd/piped-plugin-sdk-go v0.1.0 h1:kvtWTGRBY9wE9skhWF3cZUHdqcY1W6f6pblQG+qq8X0=
-github.com/pipe-cd/piped-plugin-sdk-go v0.1.0/go.mod h1:awF6mNgk8B0uP1HQ4vQKkso6qUdlUJIYUFg2fYqlvuA=
+github.com/pipe-cd/pipecd v0.54.0-rc1.0.20250912082650-0b949bb7aac9 h1:kyFMfrjASFFSptyakHaF4OSCy2TamOr6VAkf2nlplxA=
+github.com/pipe-cd/pipecd v0.54.0-rc1.0.20250912082650-0b949bb7aac9/go.mod h1:etCJcXHbrFxuh9fG3MNBTZLKG8EQ1v+ZEGn9Rb/mK1o=
+github.com/pipe-cd/piped-plugin-sdk-go v0.4.0 h1:gDxwvwWZtFmtXGU2eq8iWNReXqMnpKjWvNdrOQGdYPo=
+github.com/pipe-cd/piped-plugin-sdk-go v0.4.0/go.mod h1:1sgm8TsrL+fxaIPDnqzl5/ccAHe6ZMpS/qarhPC4S2g=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
@@ -562,7 +562,6 @@ golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1/go.mod h1:I/5z698sn9Ka8T
 golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 h1:+cNy6SZtPcJQH3LJVLOSmiC7MMxXNOb3PU/VUEz+EhU=
 golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028/go.mod h1:NDW/Ps6MPRej6fsCIbMTohpP40sJ/P/vI1MoTEGwX90=
 gonum.org/v1/gonum v0.16.0 h1:5+ul4Swaf3ESvrOnidPp4GZbzf0mxVQpDCYUQE7OJfk=
-gonum.org/v1/gonum v0.16.0/go.mod h1:fef3am4MQ93R2HHpKnLk4/Tbh/s0+wqD5nfa6Pnwy4E=
 google.golang.org/api v0.4.0/go.mod h1:8k5glujaEP+g9n7WNsDg8QP6cUVNI86fCNMcbazEtwE=
 google.golang.org/api v0.7.0/go.mod h1:WtwebWUNSVBH/HAw79HIFXZNqEvBhG+Ra+ax0hx3E3M=
 google.golang.org/api v0.8.0/go.mod h1:o4eAsZoiT+ibD93RtjEohWalFOjRDx6CVaqeizhEnKg=
