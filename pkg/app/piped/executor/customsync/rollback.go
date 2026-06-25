@@ -75,10 +75,10 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 	}
 	e.LogPersister.Infof("Start rollback for custom sync")
 
-	return e.executeCommand(runningDS.GenericApplicationConfig.Pipeline.Stages[0])
+	return e.executeCommand(ctx, runningDS.GenericApplicationConfig.Pipeline.Stages[0])
 }
 
-func (e *rollbackExecutor) executeCommand(config config.PipelineStage) model.StageStatus {
+func (e *rollbackExecutor) executeCommand(ctx context.Context, config config.PipelineStage) model.StageStatus {
 	opts := config.CustomSyncOptions
 
 	e.LogPersister.Infof("Runnnig commands...")
@@ -93,7 +93,8 @@ func (e *rollbackExecutor) executeCommand(config config.PipelineStage) model.Sta
 		envs = append(envs, key+"="+value)
 	}
 
-	cmd := exec.Command("/bin/sh", "-l", "-c", opts.Run)
+	cmd := exec.CommandContext(ctx, "/bin/sh", "-l", "-c", opts.Run)
+	cmd.WaitDelay = time.Second
 	cmd.Dir = e.appDir
 	cmd.Env = append(os.Environ(), envs...)
 	cmd.Stdout = e.LogPersister
