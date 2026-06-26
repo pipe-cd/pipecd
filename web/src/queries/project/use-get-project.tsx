@@ -24,6 +24,7 @@ type ProjectDetail = {
   github: GitHubSSO | null;
   userGroups: ProjectUserGroup.AsObject[] | [];
   rbacRoles: ProjectRBACRole.AsObject[] | [];
+  disabled: boolean;
 };
 
 export const useGetProject = (
@@ -45,6 +46,7 @@ export const useGetProject = (
           sharedSSO: null,
           userGroups: [],
           rbacRoles: [],
+          disabled: false,
         };
       }
 
@@ -58,6 +60,7 @@ export const useGetProject = (
         sharedSSO: project.sharedSsoName,
         userGroups: project.userGroupsList,
         rbacRoles: project.rbacRolesList,
+        disabled: project.disabled,
       };
     },
     placeholderData: {
@@ -70,6 +73,7 @@ export const useGetProject = (
       sharedSSO: null,
       userGroups: [],
       rbacRoles: [],
+      disabled: false,
     },
     retry: false,
     refetchOnMount: false,
