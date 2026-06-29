@@ -4,7 +4,7 @@ The source files for the documentation is placing in [content](https://github.co
 
 # Website
 
-The PipeCD documentation website is built with [hugo](https://gohugo.io/) and published at https://pipecd.dev
+The PipeCD documentation website is built with [hugo](https://gohugo.io/) and hosted on [Netlify](https://www.netlify.com/), published at https://pipecd.dev
 
 # Docs and workaround with docs
 
@@ -22,10 +22,37 @@ Change the docs' content that fixes the issue under `/docs-dev` and `/docs-v0.x.
 
 If you find any issues related to the docs, we're happy to accept your help.
 
+# Hosting
+
+The site is hosted on Netlify with the following setup:
+- **Build tool**: Hugo (extended) via `netlify.toml` configuration
+- **Deploy trigger**: Automatic on push to `master` branch and version tags
+- **Deploy previews**: Automatically generated for pull requests that modify `docs/`
+- **Redirects**: `/docs/` redirects to the latest released version (configured in `netlify.toml`)
+
 # How to run website locally
 
 ## Prerequisite
-- [Hugo 0.92.1+extended](https://gohugo.io/)
+- [Hugo 0.148.2+extended](https://gohugo.io/)
+- [Node.js 24+](https://nodejs.org/)
 
 ## Commands
-Run `make run/site` at the root directory of the repository and then access http://localhost:1313
+1. Install Hugo theme dependencies:
+```
+cd docs && npm install
+```
+2. Run the development server:
+```
+hugo server
+```
+3. Access http://localhost:1313
+
+# Netlify Configuration
+
+The Netlify build configuration is defined in [`netlify.toml`](./netlify.toml). Key settings:
+- **Build command**: `npm ci && hugo --gc --minify`
+- **Publish directory**: `public/`
+- **Redirects**: `/docs/` → latest version docs
+- **Security headers**: X-Frame-Options, X-XSS-Protection, etc.
+
+When a new release version is created, the `hack/gen-release-docs.sh` script automatically updates the redirect target in `netlify.toml`.
