@@ -54,7 +54,7 @@ jobs:
         run: |
           echo "flags=$(echo ${{ matrix.module }} | tr '/' '-')" >> $GITHUB_OUTPUT
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v7
         with:
           flags: ${{ steps.make-flag.outputs.flags }}
         env:
