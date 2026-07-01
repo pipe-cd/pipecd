@@ -44,7 +44,7 @@ message DeploymentTrace {
 }
 ```
 
-The idea is to use `commit_hash` to the reference keys to link between a deployment trace with all deployments triggred by the same change in application repo (commit_hash referrenced commit). Once we could built the deploymen trace object that contains commit_hash and add `commit_hash` value to deployment model objects, we can query for deployment trace and show it to the UI.
+The idea is to use `commit_hash` to the reference keys to link between a deployment trace with all deployments triggered by the same change in application repo (commit_hash referenced commit). Once we build the deployment trace object that contains commit_hash and add `commit_hash` value to deployment model objects, we can query for deployment trace and show it to the UI.
 
 The deployment model will add one field like this
 
