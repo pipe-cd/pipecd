@@ -192,7 +192,7 @@ By default all targets share the same `input.manifests`. To give each cluster it
 
 ### Per-cluster manifests with multiTargets
 
-Each `multiTargets` entry binds a deploy target name to its own manifest paths (and optional tool overrides). Use this when clusters need different manifests — for example region-specific config:
+Each `multiTargets` entry binds a deploy target name to its own manifest paths (and optional tool overrides). Use this when clusters need different manifests - for example region-specific config:
 
 ```yaml
 spec:
