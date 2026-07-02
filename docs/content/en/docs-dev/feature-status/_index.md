@@ -135,7 +135,7 @@ Note: These are statuses for Cloud Run service. Cloud Run job has not been suppo
 | Support [Minio](https://github.com/minio/minio) as file store | Beta |
 | [Insights](../user-guide/insights/) - Show the delivery performance of a team or an application | Beta |
 | [Deployment Chain](../user-guide/managing-application/deployment-chain/) - Allow rolling out to multiple clusters gradually or promoting across environments | Alpha |
-| [Metrics](../user-guide/managing-controlplane/metrics/) - Dashboards for PipeCD and Piped metrics | Beta |
+| [Metrics](../user-guide/metrics/) - Dashboards for PipeCD and Piped metrics | Beta |
 
 ## Pipectl
 
