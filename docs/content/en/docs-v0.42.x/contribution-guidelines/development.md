@@ -27,7 +27,13 @@ description: >
 - `make test/integration`: runs integration tests.
 
 - `make run/piped`: runs Piped locally (for more information, see [here](#how-to-run-piped-agent-locally)).
-- `make run/site`: runs PipeCD site locally (requires [hugo](https://github.com/gohugoio/hugo) with `_extended` version `0.92.1` or later to be installed).
+- `make run/site`: runs PipeCD site locally (requires [hugo](https://github.com/gohugoio/hugo) with `_extended` version `0.120.0` or later to be installed).
+  > **Note for Windows users:**
+  > The `make run/site` command uses `make` and `grep`, which are not natively available in Windows PowerShell. You can either use an environment like WSL or run the Hugo command manually in PowerShell:
+  > ```powershell
+  > $env:RELEASE = "v0.0.0"
+  > hugo server --source=docs
+  > ```
 
 - `make gen/code`: generate Go and Typescript code from protos and mock configs. You need to run it if you modified any proto or mock definition files.
 
