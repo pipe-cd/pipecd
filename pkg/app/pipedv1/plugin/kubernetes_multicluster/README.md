@@ -5,7 +5,7 @@
 The Kubernetes Multicluster plugin supports deploying applications across multiple Kubernetes clusters from a single pipeline definition. It handles sync state, traffic routing, and rollback across all target clusters.
 
 > [!CAUTION]
-> The configuration format is unstable and may change in the future.
+> Currently, this is alpha status.
 
 ### Quick sync
 
