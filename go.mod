@@ -19,7 +19,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.63.2
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.33.2
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.54.3
-	github.com/coreos/go-oidc/v3 v3.11.0
+	github.com/coreos/go-oidc/v3 v3.18.0
 	github.com/creasty/defaults v1.6.0
 	github.com/envoyproxy/go-control-plane/envoy v1.36.0
 	github.com/envoyproxy/protoc-gen-validate v1.3.0
@@ -44,7 +44,7 @@ require (
 	github.com/prometheus/client_golang v1.12.1
 	github.com/prometheus/common v0.32.1
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/slack-go/slack v0.12.2
+	github.com/slack-go/slack v0.24.0
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.6
 	github.com/stretchr/testify v1.11.1
@@ -58,7 +58,7 @@ require (
 	golang.org/x/crypto v0.46.0
 	golang.org/x/mod v0.30.0
 	golang.org/x/net v0.48.0
-	golang.org/x/oauth2 v0.34.0
+	golang.org/x/oauth2 v0.36.0
 	golang.org/x/sync v0.19.0
 	google.golang.org/api v0.169.0
 	google.golang.org/grpc v1.79.3
@@ -122,7 +122,7 @@ require (
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/form3tech-oss/jwt-go v3.2.3+incompatible // indirect
-	github.com/go-jose/go-jose/v4 v4.1.3 // indirect
+	github.com/go-jose/go-jose/v4 v4.1.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.19.5 // indirect
@@ -139,7 +139,7 @@ require (
 	github.com/googleapis/gax-go/v2 v2.12.2 // indirect
 	github.com/gorilla/handlers v1.5.0 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
-	github.com/gorilla/websocket v1.5.0 // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.1 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
@@ -169,7 +169,7 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
-	github.com/opencontainers/runc v1.2.8 // indirect
+	github.com/opencontainers/runc v1.3.6 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
