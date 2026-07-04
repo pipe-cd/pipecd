@@ -48,6 +48,7 @@ kubernetes_multicluster/
 ├── livestate/      # Live state fetcher (reports current resource state across clusters)
 ├── planpreview/    # Plan preview (shows diff before deployment)
 ├── toolregistry/   # Tool registry for kubectl, kustomize, and helm binaries
+├── docs/           # Static assets for the README (screenshots, diagrams)
 └── example/        # Example application configurations
 ```
 
@@ -82,13 +83,13 @@ spec:
     deployTargets:
       - name: cluster1
         config:
-          masterURL: https://127.0.0.1:61337
           kubeConfigPath: /path/to/kubeconfig/for/cluster1
       - name: cluster2
         config:
-          masterURL: https://127.0.0.1:62082
           kubeConfigPath: /path/to/kubeconfig/for/cluster2
 ```
+
+See [Plugin Configuration](#plugin-configuration) for all available fields.
 
 Then start piped as usual. The plugin process will be launched automatically on the specified port.
 
@@ -119,18 +120,14 @@ Refer to [cmd/pipecd/README.md](../../../../../cmd/pipecd/README.md) to set up t
 Run unit tests from the repository root:
 
 ```bash
-go test ./pkg/app/pipedv1/plugin/kubernetes_multicluster/...
+make test/go MODULES=pkg/app/pipedv1/plugin/kubernetes_multicluster
 ```
 
-Unit tests use [envtest](https://book.kubebuilder.io/reference/envtest) to spin up a real Kubernetes API server in memory. No external cluster is needed.
+The plugin has its own `go.mod`, so `go test ./...` from the repo root will not work. The Makefile target handles the module boundary correctly. Tests use [envtest](https://book.kubebuilder.io/reference/envtest) to spin up a real Kubernetes API server in memory — no external cluster is needed.
 
 ### Integration tests
 
-To test against real clusters, build and run piped with the plugin pointing to real clusters. The plugin resolves kubeconfig in this order:
-
-1. `kubeConfigPath` in deploy target config: explicit kubeconfig file path
-2. `masterURL` in deploy target config: explicit API server URL
-3. In-cluster config: when running inside a pod
+To test against real clusters, build and run piped with the plugin pointing to real clusters. Set `kubeConfigPath` in each deploy target config to point to your kubeconfig file — the plugin passes it directly to kubectl. If `kubeConfigPath` is empty, kubectl falls back to its own defaults (e.g. `~/.kube/config` or in-cluster config).
 
 The simplest approach for local development is to use kind clusters as shown above.
 
@@ -169,7 +166,35 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| deployTargets | [][DeployTargetConfig](#deploytargetconfig) | List of Kubernetes clusters to deploy to | Yes |
+| deployTargets | [][DeployTargetConfig](#deploytargetconfig) | List of Kubernetes clusters to deploy to. | Yes |
+| config | [KubernetesPluginConfig](#kubernetespluginconfig) | Plugin-level config for Helm chart repositories and registries. | No |
+
+#### KubernetesPluginConfig
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| chartRepositories | [][HelmChartRepository](#helmchartrepository) | Helm chart repositories to add on startup. | No |
+| chartRegistries | [][HelmChartRegistry](#helmchartregistry) | Helm chart registries to log in to on startup. | No |
+
+#### HelmChartRepository
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| type | string | Repository type. Only `HTTP` is supported. Default is `HTTP`. | No |
+| name | string | Name of the Helm chart repository. | No |
+| address | string | URL of the Helm chart repository. | No |
+| username | string | Username for HTTP basic authentication. | No |
+| password | string | Password for HTTP basic authentication. | No |
+| insecure | bool | Skip TLS certificate checks. Default is `false`. | No |
+
+#### HelmChartRegistry
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| type | string | Registry type. Only `OCI` is supported. Default is `OCI`. | No |
+| address | string | Address of the OCI registry. | Yes |
+| username | string | Username for registry authentication. | No |
+| password | string | Password for registry authentication. | No |
 
 #### DeployTargetConfig
 
@@ -223,7 +248,7 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | input | [KubernetesDeploymentInput](#kubernetesdeploymentinput) | Input for deployment such as manifests, kubectl version, helm/kustomize options. | No |
-| quickSync | [K8sSyncStageOptions](#k8ssyncstageoptions) | Options for the quick sync stage. | No |
+| quickSync | [K8sSyncStageOptions](#k8s_multi_sync) | Options for the quick sync stage. | No |
 | workloads | [][K8sResourceReference](#k8sresourcereference) | Which resources are treated as the application workload. Empty means all Deployments. | No |
 | service | [K8sResourceReference](#k8sresourcereference) | Which resource is treated as the Service. Empty means the first Service found. | No |
 | variantLabel | [KubernetesVariantLabel](#kubernetesvariantlabel) | The label used to distinguish variant resources. | No |
