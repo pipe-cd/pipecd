@@ -387,6 +387,19 @@ func (s *scheduler) Run(ctx context.Context) error {
 			break
 		}
 
+		// The select may have picked doneCh while a cancel command was already
+		// waiting, so check it before deciding to move on.
+		if cancelCommand == nil {
+			select {
+			case cmd := <-s.cancelledCh:
+				if cmd != nil {
+					cancelCommand = cmd
+					cancelCommander = cmd.Commander
+				}
+			default:
+			}
+		}
+
 		// A received cancel command wins even if the stage finished successfully,
 		// otherwise the loop would continue to the next stage after the user cancelled.
 		if cancelCommand != nil {
