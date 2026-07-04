@@ -1,5 +1,5 @@
 ---
-date: 2026-05-28
+date: 2026-07-04
 title: "Argo CD vs Flux CD vs PipeCD - Choosing the Right GitOps Tool"
 linkTitle: "Argo CD vs Flux CD vs PipeCD"
 weight: 990
@@ -31,9 +31,7 @@ Unlike Argo CD, Flux does not provide a native UI by default and is generally co
 
 ## What is PipeCD?
 
-PipeCD is a continuous delivery platform designed to support GitOps workflows across multiple infrastructure types from a single control plane. In addition to Kubernetes, PipeCD supports platforms such as AWS Lambda, ECS, Terraform, and Cloud Run, making it suitable for teams managing heterogeneous environments.
-
-PipeCD includes progressive delivery capabilities as a built-in feature rather than relying on separate tooling, and its agent-based architecture allows deployments to be executed through lightweight “Piped” agents running inside target environments. While PipeCD is currently a CNCF Sandbox project and less widely adopted than Argo CD or Flux CD, it focuses on simplifying multi-platform delivery operations under a unified deployment model.
+PipeCD is a continuous delivery platform designed to support GitOps workflows across multiple infrastructure types from a single control plane. In addition to Kubernetes, PipeCD supports platforms such as AWS Lambda, ECS, Terraform, and Cloud Run. Progressive delivery comes built in rather than relying on separate tooling, and its agent-based architecture executes deployments through lightweight Piped agents running inside target environments. While PipeCD is currently a CNCF Sandbox project and less widely adopted than Argo CD or Flux CD, it focuses on simplifying multi-platform delivery operations under a unified deployment model.
 
 ## Feature comparison
 
@@ -67,17 +65,55 @@ Argo CD uses a centralized architecture made up of several core components, incl
 
 Over time, the project has matured significantly, and its architecture is well documented with a large ecosystem of integrations, plugins, and community resources available for troubleshooting and extension.
 
+```mermaid
+flowchart TD
+    Dev[Developer] -->|push| Git[Git Repository]
+    Dev -->|UI and CLI| ArgoCD[Argo CD Control Plane]
+    Git -->|pull| ArgoCD
+    ArgoCD -->|sync| ClusterA[Cluster A]
+    ArgoCD -->|sync| ClusterB[Cluster B]
+```
+
 ### Flux CD
 
 Flux CD takes a modular approach by separating responsibilities across multiple Kubernetes controllers. Different controllers handle concerns such as Git source synchronization, Helm releases, image automation, and Kustomize reconciliation independently.
 
 This design aligns closely with Kubernetes controller patterns and gives teams flexibility to adopt only the components they need. The tradeoff is that Flux can feel more fragmented for teams expecting a centralized UI or tightly integrated management experience, especially during initial setup and troubleshooting.
 
+```mermaid
+flowchart TD
+    Dev[Developer] -->|push| Git[Git Repository]
+
+    subgraph Cluster[Kubernetes Cluster]
+        SC[Source Controller] -->|artifact| KC[Kustomize Controller]
+        SC -->|artifact| HC[Helm Controller]
+        KC -->|apply| Apps[Workloads]
+        HC -->|apply| Apps
+    end
+
+    Git -->|poll| SC
+```
+
 ### PipeCD
 
-PipeCD uses an agent-based architecture built around lightweight “Piped” agents that run inside target environments or clusters. The control plane itself can be self-hosted or managed separately, while deployment execution happens through the agents.
+PipeCD uses an agent-based architecture built around lightweight Piped agents that run inside target environments or clusters. The control plane itself can be self-hosted or managed separately, while deployment execution happens through the agents.
 
 This approach allows PipeCD to support deployments across multiple infrastructure platforms from a single control plane. It also offers security advantages for organizations with strict network boundaries or internal cluster policies, since clusters do not require broad inbound access from an external deployment system.
+
+```mermaid
+flowchart TD
+    Dev[Developer] -->|push| Git[Git Repository]
+    Dev -->|UI and pipectl| CP[PipeCD Control Plane]
+
+    Git -->|poll| Piped1[Piped Agent - Kubernetes]
+    Git -->|poll| Piped2[Piped Agent - Cloud]
+
+    Piped1 -->|outbound| CP
+    Piped2 -->|outbound| CP
+
+    Piped1 -->|deploy| K8S[Kubernetes Cluster]
+    Piped2 -->|deploy| Cloud[ECS / Lambda / Cloud Run]
+```
 
 ## Operational experience
 
@@ -91,7 +127,7 @@ PipeCD focuses on providing a unified operational experience across multiple pla
 
 ## When should you use each tool?
 
-Rather than thinking about which tool is “better,” it is more useful to think about which one aligns best with your environment and deployment strategy.
+The most useful question is which tool aligns best with your environment and deployment strategy.
 
 ### Choose Argo CD if:
 
@@ -175,4 +211,4 @@ PipeCD stands out in environments where deployments extend beyond Kubernetes alo
 
 Ultimately, the right choice depends less on popularity and more on how well the tool matches the way your team builds, deploys, and operates software.
 
-If you’d like to explore PipeCD further, check out the [PipeCD documentation](https://pipecd.dev/docs-v0.56.x/), [PipeCD GitHub repository](https://github.com/pipe-cd/pipecd?utm_source=chatgpt.com), and the [PipeCD Slack community](https://slack.cncf.io/).
+If you’d like to explore PipeCD further, check out the [PipeCD documentation](https://pipecd.dev/docs/), [PipeCD GitHub repository](https://github.com/pipe-cd/pipecd), and the [PipeCD Slack community](https://slack.cncf.io/).
