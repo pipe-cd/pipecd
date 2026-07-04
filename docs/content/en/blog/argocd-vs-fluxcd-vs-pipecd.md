@@ -31,7 +31,7 @@ Unlike Argo CD, Flux does not provide a native UI by default and is generally co
 
 ## What is PipeCD?
 
-PipeCD is a continuous delivery platform designed to support GitOps workflows across multiple infrastructure types from a single control plane. In addition to Kubernetes, PipeCD supports platforms such as AWS Lambda, ECS, Terraform, and Cloud Run. Progressive delivery comes built in rather than relying on separate tooling, and its agent-based architecture executes deployments through lightweight Piped agents running inside target environments. While PipeCD is currently a CNCF Sandbox project and less widely adopted than Argo CD or Flux CD, it focuses on simplifying multi-platform delivery operations under a unified deployment model.
+PipeCD is a continuous delivery platform designed to support GitOps workflows across multiple infrastructure types from a single control plane. In addition to Kubernetes, PipeCD supports platforms such as AWS Lambda, ECS, Terraform, and Cloud Run. Progressive delivery comes built in rather than relying on separate tooling, and its agent-based architecture executes deployments through lightweight [Piped agents](https://pipecd.dev/docs/concepts/#piped) running inside target environments. While PipeCD is currently a CNCF Sandbox project and less widely adopted than Argo CD or Flux CD, it focuses on simplifying multi-platform delivery operations under a unified deployment model.
 
 ## Feature comparison
 
@@ -43,7 +43,7 @@ Native UI / dashboard | Rich web UI included | No native UI by default | Rich we
 Deployment model | Pull-based GitOps | Pull-based GitOps | Pull-based GitOps
 GitOps architecture style | Centralized control plane managing clusters | Distributed controllers inside cluster | Separate control plane with in-cluster Piped agents
 Supported platforms | Kubernetes | Kubernetes | Kubernetes, ECS, Lambda, Terraform, Cloud Run
-Progressive delivery | Via Argo Rollouts | Via Flagger | Built-in
+Progressive delivery | Via [Argo Rollouts](https://argoproj.github.io/argo-rollouts/) | Via [Flagger](https://flagger.app/) | Built-in
 Helm support | Yes | Strong native support | Yes
 Kustomize support | Yes | Strong native support | Yes
 Drift detection | Yes | Yes | Yes
@@ -96,7 +96,7 @@ flowchart TD
 
 ### PipeCD
 
-PipeCD uses an agent-based architecture built around lightweight Piped agents that run inside target environments or clusters. The control plane itself can be self-hosted or managed separately, while deployment execution happens through the agents.
+PipeCD uses an agent-based architecture built around lightweight Piped agents that run inside target environments or clusters. The [control plane](https://pipecd.dev/docs/concepts/#control-plane) itself can be self-hosted or managed separately, while deployment execution happens through the agents.
 
 This approach allows PipeCD to support deployments across multiple infrastructure platforms from a single control plane. It also offers security advantages for organizations with strict network boundaries or internal cluster policies, since clusters do not require broad inbound access from an external deployment system.
 
