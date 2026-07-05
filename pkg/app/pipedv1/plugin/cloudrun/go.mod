@@ -1,8 +1,6 @@
 module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/cloudrunservice
 
-go 1.24.1
-
-toolchain go1.24.2
+go 1.26.2
 
 require (
 	github.com/creasty/defaults v1.6.0

@@ -10,7 +10,7 @@ on:
 permissions: {}
 
 env:
-  GO_VERSION: 1.25.0
+  GO_VERSION: 1.26.2
   GHCR: ghcr.io
   GCR: gcr.io
   HELM_VERSION: 3.8.2
@@ -92,7 +92,7 @@ jobs:
       # Build and push image by digest (without tag)
       - name: Build and push pipedv1 experimental image (${{ matrix.platform.arch }})
         id: build
-        uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355 # v6.10.0
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
         with:
           context: .
           file: cmd/pipedv1/Dockerfile
@@ -109,7 +109,7 @@ jobs:
           touch "/tmp/digests/${digest#sha256:}"
 
       - name: Upload digest
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: digests-pipedv1-exp-${{ matrix.platform.arch }}-${{ matrix.container_registry == 'ghcr.io/pipe-cd' && 'ghcr' || 'gcr' }}
           path: /tmp/digests/*
