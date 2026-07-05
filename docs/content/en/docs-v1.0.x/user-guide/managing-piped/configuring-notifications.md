@@ -111,7 +111,7 @@ Deployment was triggered, planned and completed successfully
 
 ![A Slack notification of a piped starting](/images/slack-notification-piped-started.png)
 <p style="text-align: center;">
-A `piped` has been started
+A piped has been started
 </p>
 
 For detailed configuration, please check the [configuration reference for Notifications](configuration-reference/#notifications).
