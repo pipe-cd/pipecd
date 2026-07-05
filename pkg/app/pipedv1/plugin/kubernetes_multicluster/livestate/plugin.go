@@ -32,7 +32,7 @@ import (
 
 type Plugin struct{}
 
-func (p Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTargets []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.GetLivestateResponse, error) {
+func (p Plugin) GetLivestate(ctx context.Context, _ *kubeconfig.KubernetesPluginConfig, deployTargets []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.GetLivestateResponse, error) {
 	cfg, err := input.Request.DeploymentSource.AppConfig()
 	if err != nil {
 		input.Logger.Error("Failed to load application config", zap.Error(err))
@@ -264,7 +264,7 @@ func calculateSyncState(diffResult *provider.DiffListResult, commit string, dt *
 	}
 
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("Diff between the defined state in Git at commit %s and actual state in cluster: %s\n\n", commit, dt.Name))
+	fmt.Fprintf(&b, "Diff between the defined state in Git at commit %s and actual state in cluster: %s\n\n", commit, dt.Name)
 	b.WriteString("--- Actual   (LiveState)\n+++ Expected (Git)\n\n")
 
 	details := diffResult.Render(provider.DiffRenderOptions{
@@ -320,14 +320,15 @@ type loader interface {
 	LoadManifests(ctx context.Context, input provider.LoaderInput) ([]provider.Manifest, error)
 }
 
-// TODO: share this implementation with the deployment plugin
 func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec], spec *kubeconfig.KubernetesApplicationSpec, loader loader, logger *zap.Logger, multiTarget *kubeconfig.KubernetesMultiTarget) ([]provider.Manifest, error) {
 	// override values if multiTarget has value.
 	manifestPathes := spec.Input.Manifests
+	kustomizeDir := ""
 	if multiTarget != nil {
 		if len(multiTarget.Manifests) > 0 {
 			manifestPathes = multiTarget.Manifests
 		}
+		kustomizeDir = multiTarget.KustomizeDir
 	}
 
 	manifests, err := loader.LoadManifests(ctx, provider.LoaderInput{
@@ -340,6 +341,7 @@ func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[
 		Manifests:        manifestPathes,
 		Namespace:        spec.Input.Namespace,
 		KustomizeVersion: spec.Input.KustomizeVersion,
+		KustomizeDir:     kustomizeDir,
 		KustomizeOptions: spec.Input.KustomizeOptions,
 		HelmVersion:      spec.Input.HelmVersion,
 		HelmChart:        spec.Input.HelmChart,
@@ -349,6 +351,24 @@ func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[
 
 	if err != nil {
 		return nil, err
+	}
+
+	// Add builtin labels and annotations for tracking application live state.
+	for i := range manifests {
+		manifests[i].AddLabels(map[string]string{
+			provider.LabelManagedBy:   provider.ManagedByPiped,
+			provider.LabelPiped:       input.Request.PipedID,
+			provider.LabelApplication: input.Request.ApplicationID,
+			provider.LabelCommitHash:  input.Request.DeploymentSource.CommitHash,
+		})
+		manifests[i].AddAnnotations(map[string]string{
+			provider.LabelManagedBy:          provider.ManagedByPiped,
+			provider.LabelPiped:              input.Request.PipedID,
+			provider.LabelApplication:        input.Request.ApplicationID,
+			provider.LabelOriginalAPIVersion: manifests[i].APIVersion(),
+			provider.LabelResourceKey:        manifests[i].Key().String(),
+			provider.LabelCommitHash:         input.Request.DeploymentSource.CommitHash,
+		})
 	}
 
 	return manifests, nil

@@ -150,7 +150,7 @@ func calculateSyncState(diffResult *provider.DiffListResult, commit string) sdk.
 	}
 
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("Diff between the defined state in Git at commit %s and actual state in cluster:\n\n", commit))
+	fmt.Fprintf(&b, "Diff between the defined state in Git at commit %s and actual state in cluster:\n\n", commit)
 	b.WriteString("--- Actual   (LiveState)\n+++ Expected (Git)\n\n")
 
 	details := diffResult.Render(provider.DiffRenderOptions{
