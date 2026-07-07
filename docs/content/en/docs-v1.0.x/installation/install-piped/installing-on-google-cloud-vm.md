@@ -44,11 +44,11 @@ spec:
       remote: git@github.com:{GIT_ORG}/{GIT_REPO}.git
       branch: {GIT_BRANCH}
   syncInterval: 1m
-  plugins: {}
+  plugins: []
 
   # Optional
   # Uncomment this if you want to enable Secret Management.
-  # See: https://pipecd.dev/docs/user-guide/managing-application/secret-management/
+  # See: https://pipecd.dev/docs-v1.0.x/user-guide/managing-application/secret-management/
   # secretManagement:
   #   type: KEY_PAIR
   #   config:
@@ -110,7 +110,7 @@ Use `gcloud compute instances create-with-container` to run `piped` as a contain
 
 ```console
 gcloud compute instances create-with-container vm-piped \
-  --container-image="ghcr.io/pipe-cd/pipedv1-exp:{{< blocks/latest_version >}}" \
+  --container-image="ghcr.io/pipe-cd/pipedv1-exp:<version>" \
   --container-arg="run" \
   --container-arg="--config-gcp-secret=projects/{GCP_PROJECT_ID}/secrets/vm-piped-config/versions/{SECRET_VERSION}" \
   --network="{VPC_NETWORK}" \
@@ -119,7 +119,10 @@ gcloud compute instances create-with-container vm-piped \
   --service-account="vm-piped@{GCP_PROJECT_ID}.iam.gserviceaccount.com"
 ```
 
+>**Note:**
+> Replace `<version>` with the piped version you want to use. You can find the list of published versions here:
+> [ghcr.io/pipe-cd/pipedv1-exp](https://github.com/pipe-cd/pipecd/pkgs/container/pipedv1-exp)
+
 Note: Be sure to add `--container-arg="--insecure=true"` to the command above if your Control Plane does not have TLS enabled yet.
 
 After that, you should see on the PipeCD web `Settings` page that `piped` is connected to the Control Plane. You can also view `piped` logs as described in the [Compute Engine container logs documentation](https://cloud.google.com/compute/docs/containers/deploying-containers#viewing_logs).
-

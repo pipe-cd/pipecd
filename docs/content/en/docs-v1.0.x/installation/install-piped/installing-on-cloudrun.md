@@ -44,11 +44,11 @@ spec:
       remote: git@github.com:{GIT_ORG}/{GIT_REPO}.git
       branch: {GIT_BRANCH}
   syncInterval: 1m
-  plugins: {}
+  plugins: []
 
   # Optional
   # Uncomment this if you want to enable Secret Management.
-  # See: https://pipecd.dev/docs/user-guide/managing-application/secret-management/
+  # See: https://pipecd.dev/docs-v1.0.x/user-guide/managing-application/secret-management/
   # secretManagement:
   #   type: KEY_PAIR
   #   config:
@@ -95,7 +95,7 @@ spec:
     spec:
       containerConcurrency: 1                          # This must be 1 to ensure piped works correctly.
       containers:
-        - image: ghcr.io/pipe-cd/pipedv1-exp:{{< blocks/latest_version >}}
+        - image: ghcr.io/pipe-cd/pipedv1-exp:<version>
           args:
             - run
             - --config-gcp-secret=projects/{GCP_PROJECT_ID}/secrets/cloudrun-piped-config/versions/latest
@@ -107,6 +107,10 @@ spec:
               memory: 2Gi
 ```
 
+>**Note:**
+> Replace `<version>` with the piped version you want to use. You can find the list of published versions here:
+> [ghcr.io/pipe-cd/pipedv1-exp](https://github.com/pipe-cd/pipecd/pkgs/container/pipedv1-exp)
+
 Note: Be sure to add `- --insecure=true` to the args if your Control Plane does not have TLS enabled yet.
 
 Apply the Cloud Run service:
@@ -116,5 +120,3 @@ gcloud run services replace {PATH_TO_CLOUD_RUN_SERVICE_MANIFEST}
 ```
 
 Once the service is created, Cloud Run will run the `piped` agent as a stateless service that connects to your PipeCD Control Plane and deploys applications according to your configuration. Make sure that the created secret is accessible from this `piped` service as described in the [Cloud Run secret access guide](https://cloud.google.com/run/docs/configuring/secrets#access-secret).
-
-

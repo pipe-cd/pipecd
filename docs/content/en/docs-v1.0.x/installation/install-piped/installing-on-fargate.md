@@ -44,11 +44,11 @@ spec:
       remote: git@github.com:{GIT_ORG}/{GIT_REPO}.git
       branch: {GIT_BRANCH}
   syncInterval: 1m
-  plugins: {}
+  plugins: []
 
   # Optional
   # Uncomment this if you want to enable Secret Management.
-  # See: https://pipecd.dev/docs/user-guide/managing-application/secret-management/
+  # See: https://pipecd.dev/docs-v1.0.x/user-guide/managing-application/secret-management/
   # secretManagement:
   #   type: KEY_PAIR
   #   config:
@@ -88,7 +88,7 @@ Prepare a task definition for your `piped` task. The following example shows how
     {
       "name": "piped",
       "essential": true,
-      "image": "ghcr.io/pipe-cd/pipedv1-exp:{{< blocks/latest_version >}}",
+      "image": "ghcr.io/pipe-cd/pipedv1-exp:<version>",
       "command": [
         "run",
         "--config-aws-secret={PIPED_SECRET_MANAGER_ARN}"
@@ -103,6 +103,10 @@ Prepare a task definition for your `piped` task. The following example shows how
   "cpu": "256"
 }
 ```
+
+>**Note:**
+> Replace `<version>` with the piped version you want to use. You can find the list of published versions here:
+> [ghcr.io/pipe-cd/pipedv1-exp](https://github.com/pipe-cd/pipecd/pkgs/container/pipedv1-exp)
 
 Note: The task role (`taskRoleArn`) must have `secretsmanager:GetSecretValue` permission for the secret ARN specified above. Be sure to add `"--insecure=true"` to the `command` array if your Control Plane does not have TLS enabled yet.
 
@@ -123,7 +127,7 @@ The following is a sample ECS service definition to control the `piped` task dep
 {
   "cluster": "{ECS_CLUSTER}",
   "serviceName": "piped",
-  "desiredCount": 1, 
+  "desiredCount": 1,
   "taskDefinition": "{PIPED_TASK_DEFINITION_ARN}",
   "deploymentConfiguration": {
     "minimumHealthyPercent": 0,
@@ -150,4 +154,3 @@ aws ecs create-service \
 ```
 
 When the service is running, ECS will ensure that exactly one `piped` task is running (because `desiredCount` is 1), keeping your `piped` agent available on Fargate.
-
