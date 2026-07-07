@@ -16,15 +16,17 @@ package livestate
 
 import (
 	"context"
-	"fmt"
+	"testing"
 
-	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
-
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/cloudrunservice/config"
+	"github.com/stretchr/testify/assert"
 )
 
-type Plugin struct{}
+func TestPlugin_GetLivestateReturnsError(t *testing.T) {
+	t.Parallel()
 
-func (p Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, dts []*sdk.DeployTarget[config.CloudRunDeployTargetConfig], input *sdk.GetLivestateInput[config.CloudRunApplicationSpec]) (*sdk.GetLivestateResponse, error) {
-	return nil, fmt.Errorf("cloudrun livestate GetLivestate is not implemented")
+	plugin := Plugin{}
+
+	got, err := plugin.GetLivestate(context.Background(), nil, nil, nil)
+	assert.Nil(t, got)
+	assert.EqualError(t, err, "cloudrun livestate GetLivestate is not implemented")
 }

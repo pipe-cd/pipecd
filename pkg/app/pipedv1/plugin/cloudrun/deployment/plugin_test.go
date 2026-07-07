@@ -15,6 +15,7 @@
 package deployment
 
 import (
+	"context"
 	"testing"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
@@ -160,4 +161,34 @@ func Test_buildPipelineStages(t *testing.T) {
 			assert.Equal(t, tt.expected, actual)
 		})
 	}
+}
+
+func TestPlugin_UnimplementedHandlersReturnError(t *testing.T) {
+	t.Parallel()
+
+	plugin := &Plugin{}
+
+	t.Run("ExecuteStage", func(t *testing.T) {
+		t.Parallel()
+
+		got, err := plugin.ExecuteStage(context.Background(), nil, nil, nil)
+		assert.Nil(t, got)
+		assert.EqualError(t, err, "cloudrun deployment ExecuteStage is not implemented")
+	})
+
+	t.Run("DetermineVersions", func(t *testing.T) {
+		t.Parallel()
+
+		got, err := plugin.DetermineVersions(context.Background(), nil, nil)
+		assert.Nil(t, got)
+		assert.EqualError(t, err, "cloudrun deployment DetermineVersions is not implemented")
+	})
+
+	t.Run("DetermineStrategy", func(t *testing.T) {
+		t.Parallel()
+
+		got, err := plugin.DetermineStrategy(context.Background(), nil, nil)
+		assert.Nil(t, got)
+		assert.EqualError(t, err, "cloudrun deployment DetermineStrategy is not implemented")
+	})
 }
