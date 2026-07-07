@@ -21,6 +21,9 @@ area/manifests:
 area/docs:
 - docs/*
 - docs/**/*
+- README.md
+- CONTRIBUTING.md
+- RELEASES.md
 
 area/examples:
 - examples/*

@@ -18,10 +18,7 @@ import (
 	"cmp"
 	"context"
 	"encoding/json"
-	"fmt"
 	"time"
-
-	"golang.org/x/sync/errgroup"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 
@@ -30,71 +27,28 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/toolregistry"
 )
 
-func (p *Plugin) executeK8sMultiSyncStage(ctx context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.StageStatus {
+func (p *Plugin) executeK8sMultiSyncStage(ctx context.Context, input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec], dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) (sdk.StageStatus, []sdk.DeployTargetStatus) {
 	lp := input.Client.LogPersister()
 
 	cfg, err := input.Request.TargetDeploymentSource.AppConfig()
 	if err != nil {
 		lp.Errorf("Failed while decoding application config (%v)", err.Error())
-		return sdk.StageStatusFailure
+		return sdk.StageStatusFailure, nil
 	}
 
-	type targetConfig struct {
-		deployTarget *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]
-		multiTarget  *kubeconfig.KubernetesMultiTarget
-	}
-
-	deployTargetMap := make(map[string]*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], 0)
-	targetConfigs := make([]targetConfig, 0, len(dts))
-
-	// prevent the deployment when its deployTarget is not found in the piped config
-	for _, target := range dts {
-		deployTargetMap[target.Name] = target
-	}
-
-	// If no multi-targets are specified, sync to all deploy targets.
-	if len(cfg.Spec.Input.MultiTargets) == 0 {
-		for _, dt := range dts {
-			targetConfigs = append(targetConfigs, targetConfig{
-				deployTarget: dt,
-				multiTarget:  nil,
-			})
-		}
-	} else {
-		// Sync to the specified multi-targets.
-		for _, multiTarget := range cfg.Spec.Input.MultiTargets {
-			dt, ok := deployTargetMap[multiTarget.Target.Name]
-			if !ok {
-				lp.Infof("Ignore multi target '%s': not matched any deployTarget", multiTarget.Target.Name)
-				continue
-			}
-
-			targetConfigs = append(targetConfigs, targetConfig{
-				deployTarget: dt,
-				multiTarget:  &multiTarget,
-			})
+	var stageCfg kubeconfig.K8sSyncStageOptions
+	if len(input.Request.StageConfig) > 0 {
+		if err := json.Unmarshal(input.Request.StageConfig, &stageCfg); err != nil {
+			lp.Errorf("Failed while unmarshalling stage config (%v)", err)
+			return sdk.StageStatusFailure, nil
 		}
 	}
 
-	eg, ctx := errgroup.WithContext(ctx)
-	for _, tc := range targetConfigs {
-		// Start syncing the deployment to the target.
-		eg.Go(func() error {
-			lp.Infof("Start syncing the deployment to the target %s", tc.deployTarget.Name)
-			status := p.sync(ctx, input, tc.deployTarget, tc.multiTarget)
-			if status == sdk.StageStatusFailure {
-				return fmt.Errorf("failed to sync the deployment to the target %s", tc.deployTarget.Name)
-			}
-			return nil
-		})
-	}
-
-	if err := eg.Wait(); err != nil {
-		lp.Errorf("Failed while syncing the deployment (%v)", err)
-		return sdk.StageStatusFailure
-	}
-
-	return sdk.StageStatusSuccess
+	targets := filterStageTargets(buildStageTargets(lp, dts, cfg.Spec.Input.MultiTargets), stageCfg.MultiTargets)
+	return runOnTargets(ctx, lp, targets, func(ctx context.Context, dt *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], mt *kubeconfig.KubernetesMultiTarget) sdk.StageStatus {
+		lp.Infof("Start syncing the deployment to the target %s", dt.Name)
+		return p.sync(ctx, input, dt, mt)
+	})
 }
 
 func (p *Plugin) sync(
@@ -126,7 +80,7 @@ func (p *Plugin) sync(
 	}
 
 	// TODO: find the way to hold the tool registry and loader in the plugin.
-	// Currently, we create them every time the stage is executed beucause we can't pass input.Client.toolRegistry to the plugin when starting the plugin.
+	// Currently, we create them every time the stage is executed because we can't pass input.Client.toolRegistry to the plugin when starting the plugin.
 	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
 	loader := provider.NewLoader(toolRegistry)
 
@@ -182,7 +136,6 @@ func (p *Plugin) sync(
 	applier := provider.NewApplier(kubectl, cfg.Spec.Input, deployTargetConfig, input.Logger)
 
 	// Start applying all manifests to add or update running resources.
-	// TODO: use applyManifests instead of applyManifestsSDK
 	if err := applyManifests(ctx, applier, manifests, cfg.Spec.Input.Namespace, lp); err != nil {
 		lp.Errorf("Failed while applying manifests (%v)", err)
 		return sdk.StageStatusFailure
@@ -226,7 +179,11 @@ func (p *Plugin) sync(
 	}
 
 	lp.Infof("Start pruning %d resources", len(removeKeys))
-	deletedCount := deleteResources(ctx, lp, applier, removeKeys)
+	deletedCount, err := deleteResources(ctx, lp, applier, removeKeys)
+	if err != nil {
+		lp.Errorf("Failed to delete some resources, %d/%d resources were deleted (%v)", deletedCount, len(removeKeys), err)
+		return sdk.StageStatusFailure
+	}
 	lp.Successf("Successfully deleted %d resources", deletedCount)
 
 	return sdk.StageStatusSuccess

@@ -70,7 +70,7 @@ func (d *DiffResult) Render(opt DiffRenderOptions) string {
 	} else {
 		d, err := renderByCommand(diffCommand, d.Old, d.New)
 		if err != nil {
-			b.WriteString(fmt.Sprintf("An error occurred while rendering diff (%v)", err))
+			fmt.Fprintf(&b, "An error occurred while rendering diff (%v)", err)
 		} else {
 			b.Write(d)
 		}
