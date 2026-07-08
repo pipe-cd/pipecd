@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+helmCharts:
+  - name: base
+    releaseName: istio-base
+    repo: https://istio-release.storage.googleapis.com/charts
+    version: 1.26.2
+    includeCRDs: true

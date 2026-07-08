@@ -217,7 +217,7 @@ func (p *Plugin) executeK8sTrafficRoutingStageIstio(ctx context.Context, input *
 
 	primaryPercent, canaryPercent, baselinePercent := stageCfg.Percentages()
 
-	vs, err := generateVirtualServiceManifest(virtualService, cfg.Spec.Service.Name, cfg.Spec.TrafficRouting.Istio.EditableRoutes, cfg.Spec.VariantLabel, int32(canaryPercent), int32(baselinePercent))
+	vs, err := generateVirtualServiceManifest(virtualService, cfg.Spec.Service.Name, cfg.Spec.TrafficRouting.Istio.EditableRoutes, cfg.Spec.VariantLabel, int32(canaryPercent), int32(baselinePercent), lp)
 	if err != nil {
 		lp.Errorf("Failed while generating VirtualService manifest: (%v)", err)
 		return sdk.StageStatusFailure
@@ -332,7 +332,7 @@ func (vs *virtualService) toManifest() (provider.Manifest, error) {
 // that routes traffic to the specified host with the given percentages.
 // It also supports the editableRoutes parameter to specify the routes that
 // can be edited by the user.
-func generateVirtualServiceManifest(m provider.Manifest, host string, editableRoutes []string, variantLabel kubeconfig.KubernetesVariantLabel, canaryPercent, baselinePercent int32) (provider.Manifest, error) {
+func generateVirtualServiceManifest(m provider.Manifest, host string, editableRoutes []string, variantLabel kubeconfig.KubernetesVariantLabel, canaryPercent, baselinePercent int32, lp sdk.StageLogPersister) (provider.Manifest, error) {
 	vs, err := convertVirtualService(m)
 	if err != nil {
 		return provider.Manifest{}, err
@@ -346,6 +346,7 @@ func generateVirtualServiceManifest(m provider.Manifest, host string, editableRo
 	for _, http := range vs.Spec.Http {
 		if len(editableMap) > 0 {
 			if _, ok := editableMap[http.Name]; !ok {
+				lp.Infof("Skipping route %q (not in editableRoutes)", http.Name)
 				continue
 			}
 		}
@@ -404,6 +405,7 @@ func generateVirtualServiceManifest(m provider.Manifest, host string, editableRo
 
 		routes = append(routes, otherHostRoutes...)
 		http.Route = routes
+		lp.Infof("Updated route %q: primary=%d%%, canary=%d%%, baseline=%d%%", http.Name, primaryWeight, canaryWeight, baselineWeight)
 	}
 
 	return vs.toManifest()

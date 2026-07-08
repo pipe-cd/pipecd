@@ -19,38 +19,11 @@ import (
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/yaml"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
-
-var builtinAPIGroups = map[string]struct{}{
-	"admissionregistration.k8s.io": {},
-	"apiextensions.k8s.io":         {},
-	"apiregistration.k8s.io":       {},
-	"apps":                         {},
-	"authentication.k8s.io":        {},
-	"authorization.k8s.io":         {},
-	"autoscaling":                  {},
-	"batch":                        {},
-	"certificates.k8s.io":          {},
-	"coordination.k8s.io":          {},
-	"extensions":                   {},
-	"internal.autoscaling.k8s.io":  {},
-	"metrics.k8s.io":               {},
-	"networking.k8s.io":            {},
-	"node.k8s.io":                  {},
-	"policy":                       {},
-	"rbac.authorization.k8s.io":    {},
-	"scheduling.k8s.io":            {},
-	"storage.k8s.io":               {},
-	"":                             {},
-}
-
-func isBuiltinAPIGroup(apiGroup string) bool {
-	_, ok := builtinAPIGroups[apiGroup]
-	return ok
-}
 
 // Manifest represents a Kubernetes resource manifest.
 type Manifest struct {
@@ -80,6 +53,23 @@ func (m Manifest) DeepCopy() Manifest {
 	return Manifest{body: m.body.DeepCopy()}
 }
 
+// DeepCopyWithName returns a deep copy of the manifest with the given name.
+func (m Manifest) DeepCopyWithName(name string) Manifest {
+	copied := m.DeepCopy()
+	copied.body.SetName(name)
+	return copied
+}
+
+// NestedString returns the string value of the nested field specified by the given fields.
+func (m Manifest) NestedString(fields ...string) (string, bool, error) {
+	return unstructured.NestedString(m.body.Object, fields...)
+}
+
+// NestedStringMap returns the string map value of the nested field specified by the given fields.
+func (m Manifest) NestedStringMap(fields ...string) (map[string]string, bool, error) {
+	return unstructured.NestedStringMap(m.body.Object, fields...)
+}
+
 func (m Manifest) Key() ResourceKey {
 	return makeResourceKey(m.body)
 }
@@ -92,36 +82,74 @@ func (m Manifest) APIVersion() string {
 	return m.body.GetAPIVersion()
 }
 
+func (m Manifest) GroupVersionKind() schema.GroupVersionKind {
+	return m.body.GroupVersionKind()
+}
+
 func (m Manifest) Name() string {
 	return m.body.GetName()
+}
+
+// IsWorkload returns true if the manifest is a Deployment, StatefulSet, DaemonSet, ReplicaSet, or Pod.
+// It checks the API group and the kind of the manifest.
+func (m Manifest) IsWorkload() bool {
+	group := m.body.GroupVersionKind().Group
+	switch m.body.GetKind() {
+	case KindDeployment, KindStatefulSet, KindDaemonSet, KindReplicaSet:
+		return group == "apps"
+	case KindPod:
+		return group == ""
+	default:
+		return false
+	}
+}
+
+// IsService returns true if the manifest is a Service.
+// It checks the API group and the kind of the manifest.
+func (m Manifest) IsService() bool {
+	return m.body.GroupVersionKind().Group == "" && m.body.GetKind() == KindService
 }
 
 // IsDeployment returns true if the manifest is a Deployment.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsDeployment() bool {
-	// TODO: check the API group more strictly.
-	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindDeployment
+	return m.body.GroupVersionKind().Group == "apps" && m.body.GetKind() == KindDeployment
 }
 
 // IsStatefulSet returns true if the manifest is a StatefulSet.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsStatefulSet() bool {
-	// TODO: check the API group more strictly.
-	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindStatefulSet
+	return m.body.GroupVersionKind().Group == "apps" && m.body.GetKind() == KindStatefulSet
+}
+
+// IsDaemonSet returns true if the manifest is a DaemonSet.
+// It checks the API group and the kind of the manifest.
+func (m Manifest) IsDaemonSet() bool {
+	return m.body.GroupVersionKind().Group == "apps" && m.body.GetKind() == KindDaemonSet
+}
+
+// IsReplicaSet returns true if the manifest is a ReplicaSet.
+// It checks the API group and the kind of the manifest.
+func (m Manifest) IsReplicaSet() bool {
+	return m.body.GroupVersionKind().Group == "apps" && m.body.GetKind() == KindReplicaSet
+}
+
+// IsPod returns true if the manifest is a Pod.
+// It checks the API group and the kind of the manifest.
+func (m Manifest) IsPod() bool {
+	return m.body.GroupVersionKind().Group == "" && m.body.GetKind() == KindPod
 }
 
 // IsSecret returns true if the manifest is a Secret.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsSecret() bool {
-	// TODO: check the API group more strictly.
-	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindSecret
+	return m.body.GroupVersionKind().Group == "" && m.body.GetKind() == KindSecret
 }
 
 // IsConfigMap returns true if the manifest is a ConfigMap.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsConfigMap() bool {
-	// TODO: check the API group more strictly.
-	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindConfigMap
+	return m.body.GroupVersionKind().Group == "" && m.body.GetKind() == KindConfigMap
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface.

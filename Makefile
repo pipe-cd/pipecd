@@ -213,7 +213,7 @@ lint: lint/go lint/web lint/helm
 .PHONY: lint/go
 lint/go: FIX ?= false
 lint/go: VERSION ?= sha256:91460846c43b3de53eb77e968b17363e8747e6f3fc190575b52be60c49446e23 # golangci/golangci-lint:v2.4.0
-lint/go: FLAGS ?= --rm -e GOCACHE=/repo/.cache/go-build -e GOLANGCI_LINT_CACHE=/repo/.cache/golangci-lint -v ${PWD}:/repo -it
+lint/go: FLAGS ?= --rm -e GOCACHE=/repo/.cache/go-build -e GOLANGCI_LINT_CACHE=/repo/.cache/golangci-lint -v ${PWD}:/repo
 lint/go: MODULES ?= $(shell find . -name go.mod | while read -r dir; do dirname "$$dir"; done | paste -sd, -) # comma separated list of modules. eg: MODULES=.,pkg/plugin/sdk
 lint/go:
 	@echo "Linting go modules..."
@@ -262,9 +262,10 @@ update/copyright:
 # Generate commands
 
 .PHONY: gen/code
+# NOTE: Keep this container image as same as defined in .github/workflows/gen.yml
+gen/code: CODEGEN_IMAGE ?= ghcr.io/pipe-cd/codegen@sha256:8b17498a7cfb58fbaf403ec7cab01a740238aaee43d030e65a40abb710f9e68a # v0.56.0-30-g0d71fd0
 gen/code:
-	# NOTE: Keep this container image as same as defined in .github/workflows/gen.yml
-	docker run --rm -v ${PWD}:/repo -it --entrypoint ./tool/codegen/codegen.sh ghcr.io/pipe-cd/codegen@sha256:0a2f9805e50f5c6efb7771171ddf291251bf349c2e8627fbf59c3535eacbbee0 /repo # v0.53.0-10-g64742f7
+	docker run --rm -v ${PWD}:/repo -it --entrypoint ./tool/codegen/codegen.sh $(CODEGEN_IMAGE) /repo
 
 .PHONY: gen/test-tls
 gen/test-tls:

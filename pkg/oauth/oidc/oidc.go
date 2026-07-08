@@ -240,7 +240,7 @@ func (c *OAuthClient) decideUserInfos(claims jwt.MapClaims, usernameClaimKey, av
 
 	avatarURL = ""
 	avatarURLClaimKeys := []string{}
-	if usernameClaimKey != "" {
+	if avatarURLClaimKey != "" {
 		avatarURLClaimKeys = append(avatarURLClaimKeys, avatarURLClaimKey)
 	} else {
 		avatarURLClaimKeys = defaultAvatarURLClaimKeys

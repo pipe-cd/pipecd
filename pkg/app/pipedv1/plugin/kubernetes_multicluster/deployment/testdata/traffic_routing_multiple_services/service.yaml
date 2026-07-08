@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: simple
+spec:
+  selector:
+    app: simple
+    pipecd.dev/variant: primary
+  ports:
+  - protocol: TCP
+    port: 9085
+    targetPort: 9085
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: simple-secondary
+spec:
+  selector:
+    app: simple
+    pipecd.dev/variant: primary
+  ports:
+  - protocol: TCP
+    port: 9086
+    targetPort: 9086

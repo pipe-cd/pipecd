@@ -14,7 +14,12 @@
 
 package config
 
-import "github.com/pipe-cd/piped-plugin-sdk-go/unit"
+import (
+	"encoding/json"
+
+	"github.com/creasty/defaults"
+	"github.com/pipe-cd/piped-plugin-sdk-go/unit"
+)
 
 type CloudRunApplicationSpec struct {
 	// Input for CloudRun deployment such as docker image...
@@ -23,10 +28,26 @@ type CloudRunApplicationSpec struct {
 	QuickSync CloudRunSyncStageOptions `json:"quickSync"`
 }
 
+func (s *CloudRunApplicationSpec) UnmarshalJSON(data []byte) error {
+	type alias CloudRunApplicationSpec
+
+	var a alias
+	if err := json.Unmarshal(data, &a); err != nil {
+		return err
+	}
+
+	*s = CloudRunApplicationSpec(a)
+	if err := defaults.Set(s); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type CloudRunDeploymentInput struct {
 	// The name of service manifest file placing in application directory.
 	// Default is service.yaml
-	ServiceManifestFile string `json:"serviceManifestFile"`
+	ServiceManifestFile string `json:"serviceManifestFile" default:"service.yaml"`
 }
 
 // CloudRunSyncStageOptions contains all configurable values for a CLOUDRUN_SYNC stage.

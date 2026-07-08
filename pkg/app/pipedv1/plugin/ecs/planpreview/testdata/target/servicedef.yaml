@@ -1,0 +1,11 @@
+cluster: arn:aws:ecs:us-east-1:123456789012:cluster/pipecd-test
+serviceName: pipecd-ecs-test
+desiredCount: 2
+deploymentController:
+  type: EXTERNAL
+launchType: FARGATE
+networkConfiguration:
+  awsvpcConfiguration:
+    assignPublicIp: ENABLED
+    subnets:
+      - subnet-aaa111

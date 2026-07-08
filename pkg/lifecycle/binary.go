@@ -107,15 +107,19 @@ func RunBinary(ctx context.Context, execPath string, args []string) (*Command, e
 
 // DownloadBinary downloads a file from the given URL into the specified path
 // this also marks it executable and returns its full path.
-func DownloadBinary(sourceURL, destDir, destFile string, logger *zap.Logger) (string, error) {
+//
+// If forceRedownload is true, any existing cached binary is removed before downloading.
+func DownloadBinary(sourceURL, destDir, destFile string, forceRedownload bool, logger *zap.Logger) (string, error) {
 	if err := os.MkdirAll(destDir, 0755); err != nil {
 		return "", fmt.Errorf("could not create directory %s (%w)", destDir, err)
 	}
 	destPath := filepath.Join(destDir, destFile)
 
 	// If the destination is already existing, just return its path.
-	if _, err := os.Stat(destPath); err == nil {
-		return destPath, nil
+	if !forceRedownload {
+		if _, err := os.Stat(destPath); err == nil {
+			return destPath, nil
+		}
 	}
 
 	// Make a temporary file to save downloaded data.

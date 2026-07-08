@@ -66,8 +66,8 @@ See [Configuration reference](../../../user-guide/managing-piped/configuration-r
 After you have configured your `piped` configuration file, execute the `piped` binary and specify the path to the `piped` configuration file.
 
   ```console
-  #Replace `<PATH_TO_PIPED_CONFIG_FILE>` with the path to your `piped` configuration file.
-  ./piped pipedv1 --config-file={PATH_TO_PIPED_CONFIG_FILE}
+  # Replace `<PATH_TO_PIPED_CONFIG_FILE>` with the path to your `piped` configuration file.
+  ./piped run --config-file={PATH_TO_PIPED_CONFIG_FILE}
   ```
 
 If you followed all steps correctly, you should have a running `piped` process on your system.

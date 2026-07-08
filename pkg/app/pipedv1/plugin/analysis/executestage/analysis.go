@@ -22,6 +22,7 @@ import (
 	"maps"
 	"time"
 
+	"github.com/creasty/defaults"
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -51,9 +52,25 @@ type executor struct {
 	previousElapsedTime time.Duration
 }
 
+// decodeStageConfig decodes the raw JSON data and validates it.
+func decodeStageConfig(data json.RawMessage) (*config.AnalysisStageOptions, error) {
+	var opts config.AnalysisStageOptions
+	if err := json.Unmarshal(data, &opts); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal the stage config: %w", err)
+	}
+	if err := defaults.Set(&opts); err != nil {
+		return nil, fmt.Errorf("failed to set default values for stage config: %w", err)
+	}
+	if err := opts.Validate(); err != nil {
+		return nil, fmt.Errorf("failed to validate the stage config: %w", err)
+	}
+	return &opts, nil
+}
+
 func ExecuteAnalysisStage(ctx context.Context, input *sdk.ExecuteStageInput[config.AnalysisApplicationSpec], pluginCfg *config.PluginConfig) sdk.StageStatus {
-	stageCfg := &config.AnalysisStageOptions{}
-	if err := json.Unmarshal(input.Request.StageConfig, stageCfg); err != nil {
+	stageCfg, err := decodeStageConfig(input.Request.StageConfig)
+	if err != nil {
+		input.Client.LogPersister().Errorf("failed to decode the stage config: %v", err)
 		return sdk.StageStatusFailure
 	}
 	resultStore := analysisresultstore.NewStore(input.Client, input.Logger)

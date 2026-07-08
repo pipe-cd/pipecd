@@ -18,6 +18,13 @@ area/build:
 area/manifests:
 - manifests/**/*
 
+area/docs:
+- docs/*
+- docs/**/*
+- README.md
+- CONTRIBUTING.md
+- RELEASES.md
+
 area/examples:
 - examples/*
 - examples/**/*
