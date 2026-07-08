@@ -47,7 +47,7 @@ After logging in, you will see the main page of the PipeCD console, which looks 
 
 ![](/images/pipecd-control-plane-mainpage.png)
 
-For more about PipeCD Control Plane management, see [Managing ControlPlane](../user-guide/managing-controlplane/).
+For more about PipeCD Control Plane management, see [Managing Control Plane](../user-guide/managing-controlplane/).
 
 #### 1.2. Installing Piped
 
