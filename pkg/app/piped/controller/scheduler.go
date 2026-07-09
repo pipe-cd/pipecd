@@ -678,14 +678,13 @@ func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, statu
 	// Update stage status at local.
 	s.stageStatuses[stageID] = status
 
-	// Update stage status on the remote.
-	for retry.WaitNext(ctx) {
-		_, err = s.apiClient.ReportStageStatusChanged(ctx, req)
-		if err == nil {
-			break
+	_, err = retry.Do(ctx, func() (interface{}, error) {
+		_, err := s.apiClient.ReportStageStatusChanged(ctx, req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to report stage status to control-plane: %v", err)
 		}
-		err = fmt.Errorf("failed to report stage status to control-plane: %v", err)
-	}
+		return nil, nil
+	})
 
 	return err
 }
@@ -704,12 +703,13 @@ func (s *scheduler) reportDeploymentStatusChanged(ctx context.Context, status mo
 	)
 
 	// Update deployment status on remote.
-	for retry.WaitNext(ctx) {
-		if _, err = s.apiClient.ReportDeploymentStatusChanged(ctx, req); err == nil {
-			return nil
+	_, err = retry.Do(ctx, func() (interface{}, error) {
+		_, err := s.apiClient.ReportDeploymentStatusChanged(ctx, req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to report deployment status to control-plane: %v", err)
 		}
-		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
-	}
+		return nil, nil
+	})
 
 	return err
 }
@@ -782,12 +782,13 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	}()
 
 	// Update deployment status on remote.
-	for retry.WaitNext(ctx) {
-		if _, err = s.apiClient.ReportDeploymentCompleted(ctx, req); err == nil {
-			return nil
+	_, err = retry.Do(ctx, func() (interface{}, error) {
+		_, err := s.apiClient.ReportDeploymentCompleted(ctx, req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to report deployment status to control-plane: %w", err)
 		}
-		err = fmt.Errorf("failed to report deployment status to control-plane: %w", err)
-	}
+		return nil, nil
+	})
 
 	return err
 }
@@ -825,12 +826,13 @@ func (s *scheduler) reportMostRecentlySuccessfulDeployment(ctx context.Context) 
 		retry = pipedservice.NewRetry(10)
 	)
 
-	for retry.WaitNext(ctx) {
-		if _, err = s.apiClient.ReportApplicationMostRecentDeployment(ctx, req); err == nil {
-			return nil
+	_, err = retry.Do(ctx, func() (interface{}, error) {
+		_, err := s.apiClient.ReportApplicationMostRecentDeployment(ctx, req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to report most recent successful deployment: %w", err)
 		}
-		err = fmt.Errorf("failed to report most recent successful deployment: %w", err)
-	}
+		return nil, nil
+	})
 
 	return err
 }

@@ -113,7 +113,6 @@ func buildDeployment(
 
 func reportMostRecentlyTriggeredDeployment(ctx context.Context, client apiClient, d *model.Deployment) error {
 	var (
-		err error
 		req = &pipedservice.ReportApplicationMostRecentDeploymentRequest{
 			ApplicationId: d.ApplicationId,
 			Status:        model.DeploymentStatus_DEPLOYMENT_PENDING,
@@ -129,11 +128,12 @@ func reportMostRecentlyTriggeredDeployment(ctx context.Context, client apiClient
 		retry = pipedservice.NewRetry(10)
 	)
 
-	for retry.WaitNext(ctx) {
-		if _, err = client.ReportApplicationMostRecentDeployment(ctx, req); err == nil {
-			return nil
+	_, err := retry.Do(ctx, func() (interface{}, error) {
+		_, err := client.ReportApplicationMostRecentDeployment(ctx, req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to report most recent successful deployment: %w", err)
 		}
-		err = fmt.Errorf("failed to report most recent successful deployment: %w", err)
-	}
+		return nil, nil
+	})
 	return err
 }

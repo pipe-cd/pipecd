@@ -273,12 +273,13 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, out pln.Output) e
 		})
 	}()
 
-	for retry.WaitNext(ctx) {
-		if _, err = p.apiClient.ReportDeploymentPlanned(ctx, req); err == nil {
-			return nil
+	_, err = retry.Do(ctx, func() (interface{}, error) {
+		_, err := p.apiClient.ReportDeploymentPlanned(ctx, req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to report deployment status to control-plane: %v", err)
 		}
-		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
-	}
+		return nil, nil
+	})
 
 	if err != nil {
 		p.logger.Error("failed to mark deployment to be planned", zap.Error(err))
@@ -319,12 +320,13 @@ func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) err
 		})
 	}()
 
-	for retry.WaitNext(ctx) {
-		if _, err = p.apiClient.ReportDeploymentCompleted(ctx, req); err == nil {
-			return nil
+	_, err = retry.Do(ctx, func() (interface{}, error) {
+		_, err := p.apiClient.ReportDeploymentCompleted(ctx, req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to report deployment status to control-plane: %v", err)
 		}
-		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
-	}
+		return nil, nil
+	})
 
 	if err != nil {
 		p.logger.Error("failed to mark deployment to be failed", zap.Error(err))
@@ -365,12 +367,13 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 		})
 	}()
 
-	for retry.WaitNext(ctx) {
-		if _, err = p.apiClient.ReportDeploymentCompleted(ctx, req); err == nil {
-			return nil
+	_, err = retry.Do(ctx, func() (interface{}, error) {
+		_, err := p.apiClient.ReportDeploymentCompleted(ctx, req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to report deployment status to control-plane: %v", err)
 		}
-		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
-	}
+		return nil, nil
+	})
 
 	if err != nil {
 		p.logger.Error("failed to mark deployment to be cancelled", zap.Error(err))
