@@ -90,13 +90,13 @@ If you would like to request an entirely new feature, you can file an issue with
 
 We maintain a list of [good first issues](https://github.com/pipe-cd/pipecd/labels/good%20first%20issue) to help you get started with the PipeCD codebase and familiarize yourself with our contribution process. It's an excellent place to begin.
 
-Additionally, we recommend you not to work on multiple good first issues because it's for first contributers and currently we cannot make enough good first issues.
+Additionally, we recommend you not to work on multiple good first issues because it's for first contributors and currently we cannot make enough good first issues.
 
 ### Before you work on issues
 
 If you want to work on any of these issues, simply leave a message saying "I'd like to work on this," and we will assign the issue to you and update its status as "claimed." We expect you to submit a pull request within seven days so that we can assign the issue to someone else if you are unavailable.
 
-We recommend you to focus only one issue at once if you are newcomer contributer.
+We recommend you to focus only one issue at once if you are newcomer contributor.
 
 So you've decided to contribute back to the upstream by opening a pull request. You've put in a significant amount of time, and we appreciate your effort. We will do our best to work with you and review the pull request.
 
@@ -198,7 +198,7 @@ Run `make up/local-cluster` to start a local registry.
 
 This will create the kubernetes namespace `pipecd` if it does not exist and start a local registry in the namespace which can then be accessed by other components.
 
-When cleaning up, run `make down/local-cluster` to stop and delete the registery and the cluster.
+When cleaning up, run `make down/local-cluster` to stop and delete the registry and the cluster.
 
 #### Run PipeCD Control Plane
 
@@ -234,7 +234,7 @@ Then, copy generated Piped ID and base64 key for `piped-config.yaml`
 > **NOTE**
 > If you want to work on multiple piped configuration files, it is recommended to create a .dev folder in the root of the repository and save them there. The .dev folder is configured in .gitignore, and thus, would not include your piped files in your commits.
 
-Below is an exampled piped v0 configuration using the Kubernetes platform provider. Use the PipeD ID and base64 key you created in step 2 here.
+Below is an example piped v0 configuration using the Kubernetes platform provider. Use the PipeD ID and base64 key you created in step 2 here.
 
 ```yaml
   apiVersion: pipecd.dev/v1beta1
@@ -266,7 +266,7 @@ CONFIG_FILE=path/to/piped-config.yaml \
 INSECURE=true
 ```
 
-where the `CONFIG_FILE` is the path to your piped confiuration file and the `INSECURE` flag is set to `true` to allow `piped` to connect to the control plane without TLS verification.
+where the `CONFIG_FILE` is the path to your piped configuration file and the `INSECURE` flag is set to `true` to allow `piped` to connect to the control plane without TLS verification.
 
 Replace `path/to/piped-config.yaml` with the actual path to your configuration file.
 
