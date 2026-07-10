@@ -216,12 +216,12 @@ func TestExtractCookie(t *testing.T) {
 			failed:         true,
 		},
 		{
-			name: "malformed cookie: wrong format",
+			name: "allow cookie with equal sign",
 			ctx: metadata.NewIncomingContext(context.Background(), metadata.MD{
 				"cookie": []string{"token=xxx; another=yyy=zzz"},
 			}),
-			expectedCookie: nil,
-			failed:         true,
+			expectedCookie: map[string]string{"token": "xxx", "another": "yyy=zzz"},
+			failed:         false,
 		},
 		{
 			name: "ok",

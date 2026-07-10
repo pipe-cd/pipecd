@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -33,6 +34,7 @@ type backup struct {
 	root *command
 
 	outputFile string
+	labels     []string
 }
 
 func newBackupCommand(root *command) *cobra.Command {
@@ -51,6 +53,8 @@ Note: deployment history is not included because the API does not expose a write
 	}
 
 	cmd.Flags().StringVar(&c.outputFile, "output-file", c.outputFile, "The path of the output JSON file to save the backup data.")
+	cmd.Flags().StringSliceVar(&c.labels, "labels", c.labels, "Filter applications by labels. Expect input as comma-separated KEY:VALUE pairs (e.g., --labels=env:prod,team:backend).")
+
 	cmd.MarkFlagRequired("output-file")
 
 	return cmd
@@ -59,6 +63,14 @@ Note: deployment history is not included because the API does not expose a write
 func (c *backup) run(ctx context.Context, input cli.Input) error {
 	input.Logger.Info("Starting control plane backup...")
 
+	labels := map[string]string{}
+	for _, label := range c.labels {
+		sp := strings.SplitN(label, ":", 2)
+		if len(sp) == 2 {
+			labels[sp[0]] = sp[1]
+		}
+	}
+
 	cli, err := c.root.clientOptions.NewClient(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to initialize client: %w", err)
@@ -66,7 +78,7 @@ func (c *backup) run(ctx context.Context, input cli.Input) error {
 	defer cli.Close()
 
 	// Collect all applications via paginated ListApplications calls.
-	applications, err := listAllApplications(ctx, cli, input.Logger)
+	applications, err := listAllApplications(ctx, cli, labels, input.Logger)
 	if err != nil {
 		return fmt.Errorf("failed to list applications: %w", err)
 	}
@@ -97,12 +109,12 @@ func (c *backup) run(ctx context.Context, input cli.Input) error {
 // listAllApplications fetches all applications (both enabled and disabled) from the control plane
 // using cursor-based pagination. The ListApplications API filters by the disabled field as a strict
 // equality match, so two separate paginated sweeps are required.
-func listAllApplications(ctx context.Context, cli apiservice.Client, logger *zap.Logger) ([]*model.Application, error) {
-	enabled, err := listApplicationsByDisabledStatus(ctx, cli, false, logger)
+func listAllApplications(ctx context.Context, cli apiservice.Client, labels map[string]string, logger *zap.Logger) ([]*model.Application, error) {
+	enabled, err := listApplicationsByDisabledStatus(ctx, cli, false, labels, logger)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list enabled applications: %w", err)
 	}
-	disabled, err := listApplicationsByDisabledStatus(ctx, cli, true, logger)
+	disabled, err := listApplicationsByDisabledStatus(ctx, cli, true, labels, logger)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list disabled applications: %w", err)
 	}
@@ -111,17 +123,21 @@ func listAllApplications(ctx context.Context, cli apiservice.Client, logger *zap
 }
 
 // listApplicationsByDisabledStatus paginates through ListApplications for a given disabled status.
-func listApplicationsByDisabledStatus(ctx context.Context, cli apiservice.Client, disabled bool, logger *zap.Logger) ([]*model.Application, error) {
+func listApplicationsByDisabledStatus(ctx context.Context, cli apiservice.Client, disabled bool, labels map[string]string, logger *zap.Logger) ([]*model.Application, error) {
 	var (
 		all    []*model.Application
 		cursor string
 	)
 	for {
-		resp, err := cli.ListApplications(ctx, &apiservice.ListApplicationsRequest{
+		req := &apiservice.ListApplicationsRequest{
 			Disabled: disabled,
 			Cursor:   cursor,
 			Limit:    500,
-		})
+		}
+		if len(labels) > 0 {
+			req.Labels = labels
+		}
+		resp, err := cli.ListApplications(ctx, req)
 		if err != nil {
 			return nil, err
 		}

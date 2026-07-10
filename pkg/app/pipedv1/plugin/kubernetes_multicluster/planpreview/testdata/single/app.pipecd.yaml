@@ -1,0 +1,9 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  name: simple
+  plugins:
+    kubernetes_multicluster:
+      input:
+        manifests:
+          - deployment.yaml
