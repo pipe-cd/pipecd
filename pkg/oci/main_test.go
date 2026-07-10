@@ -15,10 +15,12 @@
 package oci
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -33,10 +35,18 @@ const (
 	tag        = "3.0.0"
 )
 
+var (
+	registryHost     string
+	registryResource *dockertest.Resource
+	registrySetupErr error
+)
+
 func TestMain(m *testing.M) {
 	pool, err := dockertest.NewPool("")
 	if err != nil {
-		log.Fatalf("Failed to connect to docker: %s", err)
+		registrySetupErr = err
+		code := m.Run()
+		os.Exit(code)
 	}
 
 	wd, err := os.Getwd()
@@ -62,23 +72,68 @@ func TestMain(m *testing.M) {
 			Name: "no",
 		}
 	}
-	res, err := pool.RunWithOptions(opts, hcOpts)
+	if err := pool.Client.Ping(); err != nil {
+		registrySetupErr = err
+		code := m.Run()
+		os.Exit(code)
+	}
+
+	registryResource, err = pool.RunWithOptions(opts, hcOpts)
 	if err != nil {
-		log.Fatalf("Failed to start resource: %s", err)
+		registrySetupErr = err
+		code := m.Run()
+		os.Exit(code)
 	}
 
 	portID := fmt.Sprintf("%s/tcp", port)
-	host := fmt.Sprintf("localhost:%s", res.GetPort(portID))
-	os.Setenv(env, host)
+	registryHost = fmt.Sprintf("localhost:%s", registryResource.GetPort(portID))
+	os.Setenv(env, registryHost)
 
-	log.Printf("Waiting for registry to be ready: %s", host)
+	log.Printf("Waiting for registry to be ready: %s", registryHost)
 	time.Sleep(1 * time.Second)
 
 	code := m.Run()
 
-	if err := res.Close(); err != nil {
+	if err := registryResource.Close(); err != nil {
 		log.Fatalf("Failed to purge resource: %s", err)
 	}
 
 	os.Exit(code)
+}
+
+func isDockerUnavailable(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	if errors.Is(err, os.ErrNotExist) {
+		return true
+	}
+
+	msg := strings.ToLower(err.Error())
+	for _, marker := range []string{
+		"cannot connect to the docker daemon",
+		"dial unix",
+		"is the docker daemon running",
+		"no such file or directory",
+	} {
+		if strings.Contains(msg, marker) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func requireOCIRegistry(t *testing.T, repo string) string {
+	t.Helper()
+
+	if registrySetupErr != nil {
+		if isDockerUnavailable(registrySetupErr) {
+			t.Skipf("Skipping Docker-dependent OCI test because Docker is unavailable: %v", registrySetupErr)
+		}
+		t.Fatalf("could not set up OCI registry: %v", registrySetupErr)
+	}
+
+	return fmt.Sprintf("oci://%s/%s", registryHost, repo)
 }
