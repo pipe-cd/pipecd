@@ -23,7 +23,7 @@ The piped agent collects its metrics and periodically sends them to the Control 
 Developers managing the piped agent can also get metrics directly from the piped agent and monitor them with their custom monitoring service.
 
 ## Enable monitoring system
-To enable monitoring system for PipeCD, you first need to set the following value to `helm install` when [installing](../../../installation/install-controlplane/#2-preparing-control-plane-configuration-file-and-installing).
+To enable monitoring system for PipeCD, you first need to set the following value to `helm install` when [installing](../../installation/install-control-plane/installing-controlplane-on-k8s/#2-preparing-control-plane-configuration-file-and-installing).
 
 ```
 --set monitoring.enabled=true
@@ -79,7 +79,7 @@ prometheus:
             - channel: '#your-channel'
 ```
 
-And give it to the `helm install` command when [installing](../../../installation/install-controlplane/#2-preparing-control-plane-configuration-file-and-installing).
+And give it to the `helm install` command when [installing](../../installation/install-control-plane/installing-controlplane-on-k8s/#2-preparing-control-plane-configuration-file-and-installing).
 
 ```
 --values=values.yaml
