@@ -278,7 +278,7 @@ Below is an exampled piped v0 configuration using the Kubernetes platform provid
     pipedID: <YOUR PIPED ID> # Base64 encoded string of the piped private key.
     pipedKeyData: <YOUR PIPED BASE64 KEY> # FIXME: Replace here with your piped base64 key.
     apiAddress: localhost:8080 # Write in a format "localhost:port"
-    # Replace with your piped address if you connect Piped to a control plane that does not run locally, or runs on a different port.
+    #Replace with your piped address if you connect Piped to a control plane that does not run locally, or runs on a different port.
     repositories:
     - repoId: example
       remote: git@github.com:pipe-cd/examples.git
