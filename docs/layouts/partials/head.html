@@ -11,6 +11,12 @@
 {{ end -}}
 {{ partialCached "favicons.html" . }}
 <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ with .Title }}{{ . }} | {{ end }}{{ .Site.Title }}{{ end }}</title>
+<!-- for search engine optimization -->
+{{ $description := .Page.Description }}
+{{ if not $description }}{{ $description = .Page.Summary | plainify | truncate 150 }}{{ end }}
+{{ if $description }}
+<meta name="description" content="{{ $description }}">
+{{ end }}
 {{- template "_internal/opengraph.html" . -}}
 {{- template "_internal/schema.html" . -}}
 {{- template "_internal/twitter_cards.html" . -}}
