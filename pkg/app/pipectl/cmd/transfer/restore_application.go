@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -33,6 +34,7 @@ type restoreApplication struct {
 
 	inputFile        string
 	pipedMappingFile string
+	labels           []string
 }
 
 func newRestoreApplicationCommand(root *command) *cobra.Command {
@@ -56,6 +58,8 @@ to preserve their original status.`,
 
 	cmd.Flags().StringVar(&c.inputFile, "input-file", c.inputFile, "The path of the backup JSON file produced by 'pipectl transfer backup'.")
 	cmd.Flags().StringVar(&c.pipedMappingFile, "piped-id-mapping-file", c.pipedMappingFile, "Path to the piped ID mapping JSON produced by 'pipectl transfer restore piped'.")
+	cmd.Flags().StringSliceVar(&c.labels, "labels", c.labels, "Filter applications to restore by labels. Expect input as comma-separated KEY:VALUE pairs (e.g., --labels=env:prod,team:backend).")
+
 	cmd.MarkFlagRequired("input-file")
 	cmd.MarkFlagRequired("piped-id-mapping-file")
 
@@ -68,11 +72,25 @@ func (c *restoreApplication) run(ctx context.Context, input cli.Input) error {
 		zap.String("piped-id-mapping-file", c.pipedMappingFile),
 	)
 
+	labels := map[string]string{}
+	for _, label := range c.labels {
+		sp := strings.SplitN(label, ":", 2)
+		if len(sp) == 2 {
+			labels[sp[0]] = sp[1]
+		}
+	}
+
 	data, err := readBackupFile(c.inputFile)
 	if err != nil {
 		return fmt.Errorf("failed to read backup file: %w", err)
 	}
 	input.Logger.Info(fmt.Sprintf("Found %d application(s) in backup (created at %s)", len(data.Applications), data.CreatedAt))
+
+	// Filter applications by labels if specified.
+	applications := filterApplicationsByLabels(data.Applications, labels)
+	if len(labels) > 0 {
+		input.Logger.Info(fmt.Sprintf("Filtered to %d application(s) matching labels", len(applications)))
+	}
 
 	_, pipedIDMap, err := loadPipedMapping(c.pipedMappingFile)
 	if err != nil {
@@ -86,7 +104,7 @@ func (c *restoreApplication) run(ctx context.Context, input cli.Input) error {
 	}
 	defer cli.Close()
 
-	restored, failed := restoreApplications(ctx, cli, data.Applications, pipedIDMap, input.Logger)
+	restored, failed := restoreApplications(ctx, cli, applications, pipedIDMap, input.Logger)
 
 	input.Logger.Info("Application restore completed",
 		zap.Int("restored", restored),
@@ -178,4 +196,29 @@ func restoreApplications(ctx context.Context, cli apiservice.Client, application
 		restored++
 	}
 	return restored, failed
+}
+
+// filterApplicationsByLabels returns applications that match all specified labels.
+// If labels is empty, all applications are returned.
+func filterApplicationsByLabels(applications []*model.Application, labels map[string]string) []*model.Application {
+	if len(labels) == 0 {
+		return applications
+	}
+	filtered := make([]*model.Application, 0, len(applications))
+	for _, app := range applications {
+		if matchLabels(app.Labels, labels) {
+			filtered = append(filtered, app)
+		}
+	}
+	return filtered
+}
+
+// matchLabels returns true if appLabels contains all key-value pairs in filterLabels.
+func matchLabels(appLabels, filterLabels map[string]string) bool {
+	for k, v := range filterLabels {
+		if appLabels[k] != v {
+			return false
+		}
+	}
+	return true
 }
