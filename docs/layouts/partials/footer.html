@@ -5,13 +5,13 @@
 {{ if .IsHome }} {{ $text_color = "text-dark" }} {{ end }}
 {{ $cncf_logo := "https://www.cncf.io/wp-content/uploads/2022/05/CNCF_logo_white.svg" }}
 {{ if .IsHome }} {{ $cncf_logo = "https://www.cncf.io/wp-content/uploads/2022/07/cncf-color-bg.svg" }} {{ end }}
-<div class="{{ $bg_color }} row d-print-none">
+<footer class="{{ $bg_color }} row d-print-none">
   <div class="container-fluid py-3 mx-sm-5">
     <div class="row">
       <div class="col-8 py-3 order-sm-2 {{ $text_color }}">
         <a href="https://www.cncf.io/projects/pipecd/" target="_blank">
           <img src="{{ $cncf_logo }}" alt="cncf logo" width="250">
-          <div class="py-2 {{ $text_color }}">PipeCD is a Cloud Native Computing Foundation sandbox project.</div>
+          <p class="py-2 {{ $text_color }}">PipeCD is a Cloud Native Computing Foundation sandbox project.</p>
         </a>
       </div>
       <div class="col-4 order-sm-3 d-flex align-items-center justify-content-center">
@@ -19,8 +19,8 @@
         {{ with index . "developer"}}
         <ul class="list-inline mb-0">
           {{ range . }}
-          <li class="list-inline-item mx-2 h3" data-toggle="tooltip" data-placement="top" title="{{ .name }}" aria-label="{{ .name }}">
-            <a class="text-white" target="_blank" rel="noopener noreferrer" href="{{ .url }}">
+          <li class="list-inline-item mx-2 h3" data-toggle="tooltip" data-placement="top" title="{{ .name }}">
+            <a class="text-white" target="_blank" rel="noopener noreferrer" href="{{ .url }}" aria-label="{{ .name }}">
               <i class="{{ .icon }} {{ $text_color }}"></i>
             </a>
           </li>
@@ -30,8 +30,8 @@
         {{ with index . "user"}}
         <ul class="list-inline mb-0">
           {{ range . }}
-          <li class="list-inline-item mx-2 h3" data-toggle="tooltip" data-placement="top" title="{{ .name }}" aria-label="{{ .name }}">
-            <a class="text-white" target="_blank" rel="noopener noreferrer" href="{{ .url }}">
+          <li class="list-inline-item mx-2 h3" data-toggle="tooltip" data-placement="top" title="{{ .name }}">
+            <a class="text-white" target="_blank" rel="noopener noreferrer" href="{{ .url }}" aria-label="{{ .name }}">
               <i class="{{ .icon }} {{ $text_color }}"></i>
             </a>
           </li>
@@ -48,4 +48,4 @@
         see <a href="https://www.linuxfoundation.org/trademark-usage/">Trademark Usage</a>.</small>
     </div>
   </div>
-</div>
+</footer>
