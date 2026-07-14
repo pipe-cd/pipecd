@@ -53,6 +53,11 @@ func FindContainerImages(m Manifest) []string {
 // - spec.template.spec.initContainers.envFrom.configMapRef.name
 // - spec.template.spec.containers.env.valueFrom.configMapKeyRef.name
 // - spec.template.spec.containers.envFrom.configMapRef.name
+// - spec.jobTemplate.spec.template.spec.volumes.configMap.name
+// - spec.jobTemplate.spec.template.spec.initContainers.env.valueFrom.configMapKeyRef.name
+// - spec.jobTemplate.spec.template.spec.initContainers.envFrom.configMapRef.name
+// - spec.jobTemplate.spec.template.spec.containers.env.valueFrom.configMapKeyRef.name
+// - spec.jobTemplate.spec.template.spec.containers.envFrom.configMapRef.name
 func FindReferencingConfigMaps(m Manifest) []string {
 	var configMaps []string
 
@@ -76,6 +81,26 @@ func FindReferencingConfigMaps(m Manifest) []string {
 		configMaps = append(configMaps, n...)
 	}
 
+	if n := nestedStringSlice(m.body.Object, "spec", "jobTemplate", "spec", "template", "spec", "volumes", "configMap", "name"); len(n) > 0 {
+		configMaps = append(configMaps, n...)
+	}
+
+	if n := nestedStringSlice(m.body.Object, "spec", "jobTemplate", "spec", "template", "spec", "initContainers", "env", "valueFrom", "configMapKeyRef", "name"); len(n) > 0 {
+		configMaps = append(configMaps, n...)
+	}
+
+	if n := nestedStringSlice(m.body.Object, "spec", "jobTemplate", "spec", "template", "spec", "initContainers", "envFrom", "configMapRef", "name"); len(n) > 0 {
+		configMaps = append(configMaps, n...)
+	}
+
+	if n := nestedStringSlice(m.body.Object, "spec", "jobTemplate", "spec", "template", "spec", "containers", "env", "valueFrom", "configMapKeyRef", "name"); len(n) > 0 {
+		configMaps = append(configMaps, n...)
+	}
+
+	if n := nestedStringSlice(m.body.Object, "spec", "jobTemplate", "spec", "template", "spec", "containers", "envFrom", "configMapRef", "name"); len(n) > 0 {
+		configMaps = append(configMaps, n...)
+	}
+
 	slices.Sort(configMaps)
 	return slices.Compact(configMaps)
 }
@@ -88,6 +113,11 @@ func FindReferencingConfigMaps(m Manifest) []string {
 // - spec.template.spec.initContainers.envFrom.secretRef.name
 // - spec.template.spec.containers.env.valueFrom.secretKeyRef.name
 // - spec.template.spec.containers.envFrom.secretRef.name
+// - spec.jobTemplate.spec.template.spec.volumes.secret.secretName
+// - spec.jobTemplate.spec.template.spec.initContainers.env.valueFrom.secretKeyRef.name
+// - spec.jobTemplate.spec.template.spec.initContainers.envFrom.secretRef.name
+// - spec.jobTemplate.spec.template.spec.containers.env.valueFrom.secretKeyRef.name
+// - spec.jobTemplate.spec.template.spec.containers.envFrom.secretRef.name
 func FindReferencingSecrets(m Manifest) []string {
 	var secrets []string
 
@@ -108,6 +138,26 @@ func FindReferencingSecrets(m Manifest) []string {
 	}
 
 	if n := nestedStringSlice(m.body.Object, "spec", "template", "spec", "containers", "envFrom", "secretRef", "name"); len(n) > 0 {
+		secrets = append(secrets, n...)
+	}
+
+	if n := nestedStringSlice(m.body.Object, "spec", "jobTemplate", "spec", "template", "spec", "volumes", "secret", "secretName"); len(n) > 0 {
+		secrets = append(secrets, n...)
+	}
+
+	if n := nestedStringSlice(m.body.Object, "spec", "jobTemplate", "spec", "template", "spec", "initContainers", "env", "valueFrom", "secretKeyRef", "name"); len(n) > 0 {
+		secrets = append(secrets, n...)
+	}
+
+	if n := nestedStringSlice(m.body.Object, "spec", "jobTemplate", "spec", "template", "spec", "initContainers", "envFrom", "secretRef", "name"); len(n) > 0 {
+		secrets = append(secrets, n...)
+	}
+
+	if n := nestedStringSlice(m.body.Object, "spec", "jobTemplate", "spec", "template", "spec", "containers", "env", "valueFrom", "secretKeyRef", "name"); len(n) > 0 {
+		secrets = append(secrets, n...)
+	}
+
+	if n := nestedStringSlice(m.body.Object, "spec", "jobTemplate", "spec", "template", "spec", "containers", "envFrom", "secretRef", "name"); len(n) > 0 {
 		secrets = append(secrets, n...)
 	}
 
