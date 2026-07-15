@@ -5,7 +5,7 @@ go 1.26.2
 require (
 	github.com/DataDog/datadog-api-client-go v1.0.0-beta.16
 	github.com/creasty/defaults v1.6.0
-	github.com/pipe-cd/piped-plugin-sdk-go v0.1.0
+	github.com/pipe-cd/piped-plugin-sdk-go v0.4.0
 	github.com/prometheus/client_golang v1.12.1
 	github.com/prometheus/common v0.32.1
 	github.com/stretchr/testify v1.11.1
@@ -41,7 +41,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f // indirect
-	github.com/pipe-cd/pipecd v0.52.1-0.20250731104149-f611ce3501c5 // indirect
+	github.com/pipe-cd/pipecd v0.54.0-rc1.0.20250912082650-0b949bb7aac9 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_model v0.5.0 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
