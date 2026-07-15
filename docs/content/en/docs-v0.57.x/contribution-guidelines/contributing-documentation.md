@@ -22,12 +22,19 @@ The content files are written in Markdown and live inside `/docs/content/en/`. Y
 
 To preview your changes as you work, you must run the documentation website on your local machine.
 
-1.  **Install Prerequisite:** You must have the **extended** version of [Hugo (v0.92.1 or higher)](https://gohugo.io/getting-started/installing/) installed.
+1.  **Install Prerequisite:** You must have the **extended** version of [Hugo (v0.148.2 or higher)](https://gohugo.io/getting-started/installing/) installed.
 2.  **Run the Server:** From the root of the `pipecd` repository, run the following command:
     ```bash
     make run/site
     ```
 3.  **Preview:** Open your browser and go to `http://localhost:1313` to see the live-reloading site.
+
+> **Note for Windows users:**
+> The `make run/site` command uses `make` and `grep`, which are not natively available in Windows PowerShell. You can either use an environment like WSL or run the Hugo command manually in PowerShell:
+> ```powershell
+> $env:RELEASE = (Select-String -Path RELEASE -Pattern "^tag:").Line.Split(":")[1].Trim()
+> hugo server --source=docs
+> ```
 
 ## How to submit your changes (The PR Process)
 
