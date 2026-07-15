@@ -27,7 +27,7 @@ Argo CD is often recognized for its UI-first experience, which gives teams visib
 
 Flux CD takes a more modular approach to continuous delivery. Also a CNCF graduated project, Flux is built around a collection of Kubernetes controllers that handle different responsibilities such as source synchronization, Helm releases, and Kustomize deployments.
 
-Unlike Argo CD, Flux does not provide a native UI by default and is generally considered more CLI- and API-oriented. Many teams prefer Flux for its composability, lightweight architecture, and strong support for Helm and Kustomize workflows. It is often adopted by engineering teams that want a more Kubernetes-native and automation-driven GitOps experience with minimal abstraction layers.
+Unlike Argo CD, the core Flux project does not ship a first-party UI and is generally considered more CLI- and API-oriented. Maintainer-led tooling such as the Flux Operator web UI now adds dashboards, but it sits outside the core project. Many teams prefer Flux for its composability, lightweight architecture, and strong support for Helm and Kustomize workflows. It is often adopted by engineering teams that want a more Kubernetes-native and automation-driven GitOps experience with minimal abstraction layers.
 
 ## What is PipeCD?
 
@@ -39,7 +39,7 @@ Feature | Argo CD | Flux CD | PipeCD
 --- | --- | --- | ---
 Primary focus | Kubernetes GitOps CD | Kubernetes GitOps toolkit | Multi-platform continuous delivery
 CNCF maturity | Graduated | Graduated | Sandbox
-Native UI / dashboard | Rich web UI included | No native UI by default | Rich web UI included
+Native UI / dashboard | Rich web UI included | Not in core (add-ons available) | Rich web UI included
 Deployment model | Pull-based GitOps | Pull-based GitOps | Pull-based GitOps
 GitOps architecture style | Centralized control plane managing clusters | Distributed controllers inside cluster | Separate control plane with in-cluster Piped agents
 Supported platforms | Kubernetes | Kubernetes | Kubernetes, ECS, Lambda, Terraform, Cloud Run
@@ -121,7 +121,7 @@ Argo CD is often considered easier to onboard because of its UI-first experience
 
 Flux CD is often preferred by Kubernetes-native teams that value automation and a lightweight operational model. Its modular architecture gives teams flexibility and strong control over workflows, particularly when working heavily with Helm and Kustomize.
 
-Because Flux does not provide a centralized UI out of the box, debugging and troubleshooting may feel more challenging for some teams, especially those newer to GitOps workflows.
+Because the core Flux project does not bundle a centralized UI, debugging and troubleshooting can feel more challenging for some teams, especially those newer to GitOps - though ecosystem tools like the Flux Operator web UI help close that gap.
 
 PipeCD focuses on providing a unified operational experience across multiple platforms and deployment targets. Its built-in progressive delivery capabilities reduce the need for additional tooling, helping teams simplify their deployment stack.
 
