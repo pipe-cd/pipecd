@@ -6,6 +6,12 @@ description: >
   This section describes the plugins available for PipeCD v1 and how to use them.
 ---
 
+> **Note:**
+> The Plugins section is a work in progress. More plugin docs are on the way. Happy PipeCDing!
+
+| Plugin | Description | Status |
+|--------|-------------|--------|
+| [Kubernetes multi-cluster](kubernetes-multicluster/) | Deploy a single application to multiple Kubernetes clusters with one pipeline. | Alpha |
 In PipeCD v1, plugins handle deployments. `piped` runs each configured plugin as a separate process and communicates with it over gRPC, so which platforms your `piped` can deploy to depends on which plugins you configure. See more about [plugins](../concepts/#plugins).
 
 There are two types of plugins:
