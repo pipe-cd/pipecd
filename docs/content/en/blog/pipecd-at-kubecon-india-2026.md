@@ -38,22 +38,28 @@ The session covered:
 
 This was probably the most interesting part — standing at the booth and just talking to people, understanding what they need, what problems they face, and what they think about PipeCD.
 
-- How is PipeCD different from ArgoCD or FluxCD?
-- Can we migrate from ArgoCD or FluxCD to PipeCD?
+- How is PipeCD different from Argo CD or Flux CD?
+- Can we migrate from Argo CD or Flux CD to PipeCD?
 - Which organizations are using PipeCD in production?
 - How are secrets handled in PipeCD?
+
+These discussions gave us valuable feedback on where the community is today and what they're looking for from modern GitOps platforms.
 
 ## The Conversations That Stuck With Us
 
 - A platform engineer told us they manage deployments across 3 cloud providers and were struggling to keep things consistent. PipeCD's unified approach clicked with them right away.
 - A few students stopped by to ask what GitOps even means. We spent time explaining the basics and it reminded us why these events matter.
-- Some folks from the ArgoCD community also came by to understand the differences, those were some of the most productive conversations we had.
+- Some folks from the Argo CD community also came by to understand the differences — those were some of the most productive conversations we had.
 
 ![PipeCD booth — attendees exploring PipeCD at KubeCon India 2026](/images/kubecon-india-2026-attendees.png)
 
 ## Thank You, KubeCon India
 
 To everyone who stopped by the PipeCD booth, asked questions, shared feedback, or just said hello — thank you.
+
+Meeting the community in person, hearing about real-world deployment challenges, and seeing the excitement around GitOps made this an unforgettable experience for our team.
+
+We can't wait to see you at the next KubeCon!
 
 If you missed us at KubeCon or want to learn more about PipeCD, here are some links to get started:
 
