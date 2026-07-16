@@ -271,6 +271,17 @@ pipectl application disable \
     --app-id={APPLICATION_ID}
 ```
 
+### Enable an application
+
+Enable an application with given id:
+
+``` console
+pipectl application enable \
+    --address={CONTROL_PLANE_API_ADDRESS} \
+    --api-key={API_KEY} \
+    --app-id={APPLICATION_ID}
+```
+
 ### Deleting an application
 
 Delete an application with given id:
