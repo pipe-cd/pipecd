@@ -3,12 +3,12 @@ title: "Runtime Options"
 linkTitle: "Runtime Options"
 weight: 11
 description: >
-  This page describes configurable options for executing Piped and launcher.
+  This page describes configurable options for executing `piped` and launcher.
 ---
 
-You can configure some options when running Piped and launcher.
+You can configure some options when running `piped` and launcher.
 
-## Options for Piped
+## Options for `piped`
 
 ```bash
 Usage:
