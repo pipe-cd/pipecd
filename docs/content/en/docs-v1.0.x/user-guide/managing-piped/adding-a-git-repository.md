@@ -3,7 +3,7 @@ title: "Adding a git repository"
 linkTitle: "Adding git repository"
 weight: 2
 description: >
-  Learn how to add a git repository in the the `piped` configuration file.
+  Learn how to add a git repository in the `piped` configuration file.
 
 ---
 In the `piped` configuration file, all the git repositories that you want to be tracked by the `piped` agent are specified.
@@ -40,4 +40,4 @@ helm install dev-piped pipecd/piped --version={VERSION} \
 
 You can see the [git configuration reference](../configuration-reference/#git) to learn more about the configurable fields.
 
-Currently, `piped` allows configuring only one private SSH key for all specified git repositories. For working with multiple repositories, you either have configure the same SSH key for all of those private repositories, or use separate `piped`s for each repository. We are working on adding support for multiple SSH keys for a single `piped`.
+Currently, `piped` allows configuring only one private SSH key for all specified git repositories. For working with multiple repositories, you either have to configure the same SSH key for all of those private repositories, or use separate `piped`s for each repository. We are working on adding support for multiple SSH keys for a single `piped`.
