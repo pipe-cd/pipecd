@@ -16,6 +16,7 @@ package deployment
 
 import (
 	"context"
+	"errors"
 	"slices"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
@@ -24,6 +25,8 @@ import (
 )
 
 type Plugin struct{}
+
+var errRollbackRequiresStages = errors.New("rollback requires at least one stage")
 
 const (
 	// StageCloudRunSync does quick sync by rolling out the new version
@@ -43,8 +46,12 @@ func (p *Plugin) FetchDefinedStages() []string {
 }
 
 func (p *Plugin) BuildPipelineSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
+	stages, err := buildPipelineStages(input.Request.Stages, input.Request.Rollback)
+	if err != nil {
+		return nil, err
+	}
 	return &sdk.BuildPipelineSyncStagesResponse{
-		Stages: buildPipelineStages(input.Request.Stages, input.Request.Rollback),
+		Stages: stages,
 	}, nil
 }
 
@@ -90,7 +97,7 @@ func buildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
 	return out
 }
 
-func buildPipelineStages(stages []sdk.StageConfig, autoRollback bool) []sdk.PipelineStage {
+func buildPipelineStages(stages []sdk.StageConfig, autoRollback bool) ([]sdk.PipelineStage, error) {
 	out := make([]sdk.PipelineStage, 0, len(stages)+1)
 	for _, stage := range stages {
 		out = append(out, sdk.PipelineStage{
@@ -102,6 +109,9 @@ func buildPipelineStages(stages []sdk.StageConfig, autoRollback bool) []sdk.Pipe
 		})
 	}
 	if autoRollback {
+		if len(stages) == 0 {
+			return nil, errRollbackRequiresStages
+		}
 		out = append(out, sdk.PipelineStage{
 			Name: StageRollback,
 			Index: slices.MinFunc(stages, func(a, b sdk.StageConfig) int {
@@ -112,5 +122,5 @@ func buildPipelineStages(stages []sdk.StageConfig, autoRollback bool) []sdk.Pipe
 			AvailableOperation: sdk.ManualOperationNone,
 		})
 	}
-	return out
+	return out, nil
 }
