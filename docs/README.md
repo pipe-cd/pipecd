@@ -29,9 +29,15 @@ If you find any issues related to the docs, we're happy to accept your help.
 # How to run the website locally
 
 ## Prerequisite
-
-- [Hugo 0.92.1+extended](https://gohugo.io/)
+- [Hugo 0.148.2+extended](https://gohugo.io/)
 
 ## Commands
 
 Run `make run/site` at the root directory of the repository and then access http://localhost:1313
+
+> **Note for Windows users:**
+> The `make run/site` command uses `make` and `grep`, which are not natively available in Windows PowerShell. You can either use an environment like WSL or run the Hugo command manually in PowerShell:
+> ```powershell
+> $env:RELEASE = (Select-String -Path RELEASE -Pattern "^tag:").Line.Split(":")[1].Trim()
+> hugo server --source=docs
+> ```
