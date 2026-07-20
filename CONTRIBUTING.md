@@ -123,6 +123,40 @@ All pull requests should be opened against the `master` branch.
 
 We have various integration systems that run automated tests to prevent mistakes. The maintainers will also review your code and fix obvious issues. These systems are in place to minimize your worries about the process. Your code contributions are more important than adhering to strict procedures, although completing the checklist will undoubtedly save everyone's time.
 
+### AI Usage Policy and Guidelines
+
+AI tools can be helpful for learning, understanding the codebase, summarizing documentation, or debugging issues. We welcome contributors using AI as a learning and productivity tool.
+
+At the same time, contributors should keep maintainers time in mind. Every pull request should represent work that the contributor has personally reviewed, understood, and tested.
+
+AI should assist contributors, not replace contributor understanding, communication, or responsibility.
+
+#### Communication and collaboration
+
+Open source development is collaborative and communication is an important part of the contribution process.
+
+Before working on larger changes or unclear issues, contributors are encouraged to discuss ideas and approaches with maintainers and the community instead of relying entirely on AI-generated solutions.
+
+When responding to review comments or writing pull request descriptions, communicate in your own words and focus on the reasoning behind the change. Clear and concise communication is much more helpful than long AI-generated explanations.
+
+#### What we expect from contributors
+
+- Understand the changes before submitting them
+- Test changes before opening a pull request
+- Review AI-generated output carefully before using it
+- Be ready to explain implementation decisions and tradeoffs
+- Keep pull requests focused and reasonably small
+- Respect maintainers time by avoiding low-quality or unreviewed submissions
+
+#### What to avoid
+
+- Submitting AI-generated code you do not understand
+- Opening large AI-generated pull requests without proper review and testing
+- Using AI-generated responses that add unnecessary or unclear communication during discussions or code reviews
+- Relying on AI instead of discussing important design or architecture decisions with maintainers and the community
+
+If AI tools are used in a significant way, contributors are still responsible for the final contribution and all communication around it.
+
 ### Commit Messages
 
 Commit messages should be simple and use easy words that indicate the focus of the commit and its impact on other developers. Summary in the present tense. Use capital case in the first character but do not use title case.
