@@ -493,7 +493,7 @@ func (t *Trigger) notifyDeploymentTriggerFailed(app *model.Application, appCfg *
 	var groups []string
 	if n := appCfg.DeploymentNotification; n != nil {
 		users = n.FindSlackUsers(model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED)
-		groups = n.FindSlackUsers(model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED)
+		groups = n.FindSlackGroups(model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED)
 	}
 
 	t.notifier.Notify(model.NotificationEvent{
