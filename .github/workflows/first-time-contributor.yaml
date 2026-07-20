@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Welcome first-time contributor
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             const owner = context.repo.owner;
@@ -20,17 +20,15 @@ jobs:
             const prAuthor = context.payload.pull_request.user.login;
             const prNumber = context.payload.pull_request.number;
 
-            // List PRs created by this user in this repo
-            const { data: pulls } = await github.rest.pulls.list({
-              owner,
-              repo,
-              state: "all",
-              creator: prAuthor,
+            // Search PRs created by this user in this repo
+            const query = `repo:${owner}/${repo} type:pr author:${prAuthor}`;
+            const { data: result } = await github.request("GET /search/issues", {
+              q: query,
               per_page: 2,
             });
 
             // If more than one PR exists, this is not the first one
-            if (pulls.length > 1) {
+            if (result.total_count > 1) {
               console.log(`User ${prAuthor} is not a first-time contributor.`);
               return;
             }
