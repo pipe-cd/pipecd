@@ -11,7 +11,7 @@ require (
 	golang.org/x/sync v0.20.0
 	google.golang.org/grpc v1.79.3
 	k8s.io/apimachinery v0.24.3
-	sigs.k8s.io/yaml v1.5.0
+	sigs.k8s.io/yaml v1.6.0
 )
 
 require (
