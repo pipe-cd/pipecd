@@ -3,7 +3,7 @@ module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis
 go 1.26.2
 
 require (
-	github.com/DataDog/datadog-api-client-go v1.0.0-beta.16
+	github.com/DataDog/datadog-api-client-go v1.16.0
 	github.com/creasty/defaults v1.6.0
 	github.com/pipe-cd/piped-plugin-sdk-go v0.4.0
 	github.com/prometheus/client_golang v1.12.1
@@ -18,6 +18,7 @@ require (
 	cloud.google.com/go v0.112.1 // indirect
 	cloud.google.com/go/compute/metadata v0.9.0 // indirect
 	cloud.google.com/go/profiler v0.3.1 // indirect
+	github.com/DataDog/zstd v1.5.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/coreos/go-oidc/v3 v3.11.0 // indirect
