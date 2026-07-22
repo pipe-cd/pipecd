@@ -70,14 +70,11 @@ func (f *stageLogFileStore) Get(ctx context.Context, deploymentID, stageID strin
 func (f *stageLogFileStore) Put(ctx context.Context, deploymentID, stageID string, retriedCount int32, lf *logFragment) error {
 	path := stageLogPath(deploymentID, stageID, retriedCount)
 	var buf bytes.Buffer
+	encoder := json.NewEncoder(&buf)
 	for _, lb := range lf.Blocks {
-		// TODO: Reduce the number of marshaling log blocks for improving performance
-		raw, err := json.Marshal(lb)
-		if err != nil {
+		if err := encoder.Encode(lb); err != nil {
 			return err
 		}
-		buf.Write(raw)
-		buf.WriteString("\n")
 	}
 
 	if lf.Completed {
