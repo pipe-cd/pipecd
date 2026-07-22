@@ -20,3 +20,6 @@ node_modules/
 
 # Hugo
 .hugo_build.lock
+
+# Netlify CLI (auto-generated, contains local paths)
+.netlify/
