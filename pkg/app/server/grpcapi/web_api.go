@@ -16,6 +16,8 @@ package grpcapi
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"regexp"
@@ -49,6 +51,13 @@ import (
 var (
 	breakingChangesRegex = regexp.MustCompile(`(?s)### Breaking Changes(.*?)(### |$)`)
 )
+
+const listDeploymentsCursorPrefix = "filtered:"
+
+type listDeploymentsCursor struct {
+	DatastoreCursor string `json:"datastoreCursor,omitempty"`
+	Skip            int    `json:"skip,omitempty"`
+}
 
 type encrypter interface {
 	Encrypt(text string) (string, error)
@@ -882,69 +891,117 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 	}
 
 	pageSize := int(req.PageSize)
+	cursor := req.Cursor
+	skip := 0
+	if len(labels) > 0 {
+		parsedCursor, ok, err := decodeListDeploymentsCursor(req.Cursor)
+		if err != nil {
+			return nil, status.Error(codes.InvalidArgument, "invalid cursor")
+		}
+		if ok {
+			cursor = parsedCursor.DatastoreCursor
+			skip = parsedCursor.Skip
+		}
+	}
 	options := datastore.ListOptions{
 		Filters: filters,
 		Orders:  orders,
 		Limit:   pageSize,
-		Cursor:  req.Cursor,
+		Cursor:  cursor,
 	}
-	deployments, cursor, err := a.deploymentStore.List(ctx, options)
-	if err != nil {
-		a.logger.Error("failed to get deployments", zap.Error(err))
-		return nil, gRPCStoreError(err, "get deployments")
-	}
-	if len(labels) == 0 || len(deployments) == 0 {
+
+	if len(labels) == 0 {
+		deployments, nextCursor, err := a.deploymentStore.List(ctx, options)
+		if err != nil {
+			a.logger.Error("failed to get deployments", zap.Error(err))
+			return nil, gRPCStoreError(err, "get deployments")
+		}
 		return &webservice.ListDeploymentsResponse{
 			Deployments: deployments,
-			Cursor:      cursor,
+			Cursor:      nextCursor,
 		}, nil
 	}
 
-	// Start filtering them by labels.
-	//
-	// NOTE: Filtering by labels is done by the application-side because we need to create composite indexes for every combination in the filter.
-	// We don't want to depend on any other search engine, that's why it filters here.
-	filtered := make([]*model.Deployment, 0, len(deployments))
-	for _, d := range deployments {
-		if d.ContainLabels(labels) {
-			filtered = append(filtered, d)
-		}
-	}
-	// Stop running additional queries for more data, and return filtered deployments immediately with
-	// current cursor if the size before filtering is already less than the page size.
-	if len(deployments) < pageSize {
-		return &webservice.ListDeploymentsResponse{
-			Deployments: filtered,
-			Cursor:      cursor,
-		}, nil
-	}
-	// Repeat the query until the number of filtered deployments reaches the page size,
-	// or until it finishes scanning to page_min_updated_at.
-	for len(filtered) < pageSize {
-		options.Cursor = cursor
-		deployments, cursor, err = a.deploymentStore.List(ctx, options)
+	// NOTE: Filtering by labels is done by the application side because adding datastore indexes
+	// for every label combination is not practical.
+	filtered := make([]*model.Deployment, 0, pageSize)
+	for {
+		pageCursor := options.Cursor
+		deployments, nextCursor, err := a.deploymentStore.List(ctx, options)
 		if err != nil {
 			a.logger.Error("failed to get deployments", zap.Error(err))
 			return nil, gRPCStoreError(err, "get deployments")
 		}
 		if len(deployments) == 0 {
-			break
+			return &webservice.ListDeploymentsResponse{
+				Deployments: filtered,
+				Cursor:      nextCursor,
+			}, nil
 		}
-		for _, d := range deployments {
-			if d.ContainLabels(labels) {
-				filtered = append(filtered, d)
+		if skip > len(deployments) {
+			return nil, status.Error(codes.InvalidArgument, "invalid cursor")
+		}
+		for i := skip; i < len(deployments); i++ {
+			d := deployments[i]
+			if !d.ContainLabels(labels) {
+				continue
+			}
+			filtered = append(filtered, d)
+			if len(filtered) == pageSize {
+				if i+1 < len(deployments) {
+					cursor, err := encodeListDeploymentsCursor(listDeploymentsCursor{
+						DatastoreCursor: pageCursor,
+						Skip:            i + 1,
+					})
+					if err != nil {
+						return nil, status.Error(codes.Internal, "failed to encode cursor")
+					}
+					return &webservice.ListDeploymentsResponse{
+						Deployments: filtered,
+						Cursor:      cursor,
+					}, nil
+				}
+				return &webservice.ListDeploymentsResponse{
+					Deployments: filtered,
+					Cursor:      nextCursor,
+				}, nil
 			}
 		}
-		// We've already specified UpdatedAt >= req.PageMinUpdatedAt, so we need to check just equality.
-		if deployments[len(deployments)-1].UpdatedAt == req.PageMinUpdatedAt {
-			break
+		if len(deployments) < pageSize || deployments[len(deployments)-1].UpdatedAt == req.PageMinUpdatedAt {
+			return &webservice.ListDeploymentsResponse{
+				Deployments: filtered,
+				Cursor:      nextCursor,
+			}, nil
 		}
+		skip = 0
+		options.Cursor = nextCursor
 	}
-	// TODO: Think about possibility that the response of ListDeployments exceeds the page size
-	return &webservice.ListDeploymentsResponse{
-		Deployments: filtered,
-		Cursor:      cursor,
-	}, nil
+}
+
+func encodeListDeploymentsCursor(cursor listDeploymentsCursor) (string, error) {
+	data, err := json.Marshal(cursor)
+	if err != nil {
+		return "", err
+	}
+	return listDeploymentsCursorPrefix + base64.RawURLEncoding.EncodeToString(data), nil
+}
+
+func decodeListDeploymentsCursor(raw string) (listDeploymentsCursor, bool, error) {
+	if !strings.HasPrefix(raw, listDeploymentsCursorPrefix) {
+		return listDeploymentsCursor{}, false, nil
+	}
+	data, err := base64.RawURLEncoding.DecodeString(strings.TrimPrefix(raw, listDeploymentsCursorPrefix))
+	if err != nil {
+		return listDeploymentsCursor{}, false, err
+	}
+	var cursor listDeploymentsCursor
+	if err := json.Unmarshal(data, &cursor); err != nil {
+		return listDeploymentsCursor{}, false, err
+	}
+	if cursor.Skip < 0 {
+		return listDeploymentsCursor{}, false, fmt.Errorf("negative skip")
+	}
+	return cursor, true, nil
 }
 
 func (a *WebAPI) ListDeploymentTraces(ctx context.Context, req *webservice.ListDeploymentTracesRequest) (*webservice.ListDeploymentTracesResponse, error) {
