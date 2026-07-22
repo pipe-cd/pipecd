@@ -28,8 +28,14 @@
 
 .long-description {
     font-weight: 600;
-    color: $gray-500;
+    color: #c9d1e0;
     margin-bottom: 2.5rem;
+}
+
+.btn-secondary {
+    color: #1a2744;
+    background: #28beeb;
+    border-color: #28beeb;
 }
 
 .core-values {
@@ -63,6 +69,19 @@
     background-color: #ffffff;
     color: #290b53;
     margin-left: -1rem;
+}
+
+footer a {
+    text-decoration: underline;
+    color: inherit;
+}
+
+.td-cover-block a {
+    text-decoration: underline;
+}
+
+.td-box a {
+    text-decoration: underline;
 }
 
 
