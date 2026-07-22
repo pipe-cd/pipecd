@@ -51,8 +51,12 @@ func (p *Plugin) FetchDefinedStages() []string {
 
 // BuildPipelineSyncStages returns the stages for the pipeline sync strategy.
 func (p *Plugin) BuildPipelineSyncStages(ctx context.Context, _ *kubeconfig.KubernetesPluginConfig, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
+	stages, err := buildPipelineStages(input.Request.Stages, input.Request.Rollback)
+	if err != nil {
+		return nil, err
+	}
 	return &sdk.BuildPipelineSyncStagesResponse{
-		Stages: buildPipelineStages(input.Request.Stages, input.Request.Rollback),
+		Stages: stages,
 	}, nil
 }
 
