@@ -70,8 +70,7 @@ func pushTestFiles(t *testing.T, workDir, ociURL string) map[Platform]string {
 func TestPushFilesToRegistry(t *testing.T) {
 	t.Parallel()
 
-	// OCI_REGISTRY_HOST is set by TestMain in main_test.go
-	ociURL := fmt.Sprintf("oci://%s/test-push", os.Getenv("OCI_REGISTRY_HOST"))
+	ociURL := requireOCIRegistry(t, "test-push")
 
 	workDir := t.TempDir()
 
