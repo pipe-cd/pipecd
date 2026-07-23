@@ -16,7 +16,7 @@ package toolregistry
 
 var kubectlInstallScript = `
 cd {{ .WorkingDir }}
-curl -LO https://dl.k8s.io/release/v{{ .Version }}/bin/darwin/amd64/kubectl
+curl -LO https://dl.k8s.io/release/v{{ .Version }}/bin/darwin/{{ .Arch }}/kubectl
 mv kubectl {{ .BinDir }}/kubectl-{{ .Version }}
 chmod +x {{ .BinDir }}/kubectl-{{ .Version }}
 {{ if .AsDefault }}
@@ -26,7 +26,7 @@ cp -f {{ .BinDir }}/kubectl-{{ .Version }} {{ .BinDir }}/kubectl
 
 var kustomizeInstallScript = `
 cd {{ .WorkingDir }}
-curl -L https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v{{ .Version }}/kustomize_v{{ .Version }}_darwin_amd64.tar.gz | tar xvz
+curl -L https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v{{ .Version }}/kustomize_v{{ .Version }}_darwin_{{ .Arch }}.tar.gz | tar xvz
 mv kustomize {{ .BinDir }}/kustomize-{{ .Version }}
 chmod +x {{ .BinDir }}/kustomize-{{ .Version }}
 {{ if .AsDefault }}
@@ -36,8 +36,8 @@ cp -f {{ .BinDir }}/kustomize-{{ .Version }} {{ .BinDir }}/kustomize
 
 var helmInstallScript = `
 cd {{ .WorkingDir }}
-curl -L https://get.helm.sh/helm-v{{ .Version }}-darwin-amd64.tar.gz | tar xvz
-mv darwin-amd64/helm {{ .BinDir }}/helm-{{ .Version }}
+curl -L https://get.helm.sh/helm-v{{ .Version }}-darwin-{{ .Arch }}.tar.gz | tar xvz
+mv darwin-{{ .Arch }}/helm {{ .BinDir }}/helm-{{ .Version }}
 chmod +x {{ .BinDir }}/helm-{{ .Version }}
 {{ if .AsDefault }}
 cp -f {{ .BinDir }}/helm-{{ .Version }} {{ .BinDir }}/helm
@@ -46,8 +46,8 @@ cp -f {{ .BinDir }}/helm-{{ .Version }} {{ .BinDir }}/helm
 
 var terraformInstallScript = `
 cd {{ .WorkingDir }}
-curl https://releases.hashicorp.com/terraform/{{ .Version }}/terraform_{{ .Version }}_darwin_amd64.zip -o terraform_{{ .Version }}_linux_amd64.zip
-unzip terraform_{{ .Version }}_linux_amd64.zip
+curl https://releases.hashicorp.com/terraform/{{ .Version }}/terraform_{{ .Version }}_darwin_{{ .Arch }}.zip -o terraform_{{ .Version }}_darwin_{{ .Arch }}.zip
+unzip terraform_{{ .Version }}_darwin_{{ .Arch }}.zip
 mv terraform {{ .BinDir }}/terraform-{{ .Version }}
 {{ if .AsDefault }}
 cp -f {{ .BinDir }}/terraform-{{ .Version }} {{ .BinDir }}/terraform

@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"runtime"
 	"text/template"
 
 	"go.uber.org/zap"
@@ -58,6 +59,7 @@ func (r *registry) installKubectl(ctx context.Context, version string) error {
 			"Version":    version,
 			"BinDir":     r.binDir,
 			"AsDefault":  asDefault,
+			"Arch":       runtime.GOARCH,
 		}
 	)
 	if err := kubectlInstallScriptTmpl.Execute(&buf, data); err != nil {
@@ -105,6 +107,7 @@ func (r *registry) installKustomize(ctx context.Context, version string) error {
 			"Version":    version,
 			"BinDir":     r.binDir,
 			"AsDefault":  asDefault,
+			"Arch":       runtime.GOARCH,
 		}
 	)
 	if err := kustomizeInstallScriptTmpl.Execute(&buf, data); err != nil {
@@ -152,6 +155,7 @@ func (r *registry) installHelm(ctx context.Context, version string) error {
 			"Version":    version,
 			"BinDir":     r.binDir,
 			"AsDefault":  asDefault,
+			"Arch":       runtime.GOARCH,
 		}
 	)
 	if err := helmInstallScriptTmpl.Execute(&buf, data); err != nil {
@@ -199,6 +203,7 @@ func (r *registry) installTerraform(ctx context.Context, version string) error {
 			"Version":    version,
 			"BinDir":     r.binDir,
 			"AsDefault":  asDefault,
+			"Arch":       runtime.GOARCH,
 		}
 	)
 	if err := terraformInstallScriptTmpl.Execute(&buf, data); err != nil {
