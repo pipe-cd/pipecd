@@ -370,18 +370,41 @@ func (s *scheduler) Run(ctx context.Context) error {
 			<-doneCh
 
 		case cmd := <-s.cancelledCh:
+			// A nil command means the channel was closed after delivering
+			// a cancel command, so treat it as a cancellation as well.
 			if cmd != nil {
 				cancelCommand = cmd
 				cancelCommander = cmd.Commander
-				handler.Cancel()
-				<-doneCh
 			}
+			handler.Cancel()
+			<-doneCh
 
 		case <-timeout:
 			handler.Timeout()
 			<-doneCh
 
 		case <-doneCh:
+			break
+		}
+
+		// The select may have picked doneCh while a cancel command was already
+		// waiting, so check it before deciding to move on.
+		if cancelCommand == nil {
+			select {
+			case cmd := <-s.cancelledCh:
+				if cmd != nil {
+					cancelCommand = cmd
+					cancelCommander = cmd.Commander
+				}
+			default:
+			}
+		}
+
+		// A received cancel command wins even if the stage finished successfully,
+		// otherwise the loop would continue to the next stage after the user cancelled.
+		if cancelCommand != nil {
+			deploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
+			statusReason = fmt.Sprintf("Cancelled by %s while executing stage %s", cancelCommander, ps.Id)
 			break
 		}
 
