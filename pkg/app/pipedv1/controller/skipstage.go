@@ -16,6 +16,7 @@ package controller
 
 import (
 	"context"
+	"io"
 	"strings"
 
 	config "github.com/pipe-cd/pipecd/pkg/configv1"
@@ -30,12 +31,13 @@ func (s *scheduler) determineSkipStage(ctx context.Context, skipOpts config.Skip
 		return false, nil
 	}
 
-	// TODO: Do not use clone here in order to avoid unnecessary cloning.
-	repoCfg := s.deployment.GetGitPath().Repo
-	repo, err := s.gitClient.Clone(ctx, repoCfg.Id, repoCfg.Remote, repoCfg.Branch, "")
+	tds, err := s.targetDSP.Get(ctx, io.Discard)
 	if err != nil {
 		return false, err
 	}
+
+	repoCfg := s.deployment.GetGitPath().Repo
+	repo := git.NewRepo(tds.RepoDir, "git", repoCfg.Remote, repoCfg.Branch, nil)
 
 	// Check by path pattern
 	skip, err = skipByPathPattern(ctx, skipOpts, repo, s.runningDSP.Revision(), s.targetDSP.Revision())
