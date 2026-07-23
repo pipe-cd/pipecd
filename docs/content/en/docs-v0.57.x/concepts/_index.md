@@ -19,6 +19,11 @@ This component is designed to be stateless, so it can also be run in a single VM
 
 ### Control Plane
 
+![Control Plane Architecture Overview](/images/control-plane-components.png)
+<p style="text-align: center;">
+Control Plane Architecture
+</p>
+
 A centralized component managing deployment data and provides gRPC API for connecting `piped`s as well as all web-functionalities of PipeCD such as
 authentication, showing deployment list/details, application list/details, delivery insights...
 
