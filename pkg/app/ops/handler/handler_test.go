@@ -34,13 +34,25 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
+type mockProjectStoreWrapper struct {
+	*datastoretest.MockProjectStore
+}
+
+func (m *mockProjectStoreWrapper) EnableProject(ctx context.Context, id string) error {
+	return nil
+}
+
+func (m *mockProjectStoreWrapper) DisableProject(ctx context.Context, id string) error {
+	return nil
+}
+
 func createMockHandler(ctrl *gomock.Controller) (*datastoretest.MockProjectStore, *Handler) {
 	m := datastoretest.NewMockProjectStore(ctrl)
 	logger, _ := zap.NewProduction()
 
 	h := NewHandler(
 		10101,
-		m,
+		&mockProjectStoreWrapper{MockProjectStore: m},
 		[]config.SharedSSOConfig{},
 		0,
 		logger,

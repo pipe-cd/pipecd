@@ -241,6 +241,8 @@ func (m *Project) validate(all bool) error {
 
 	}
 
+	// no validation rules for Disabled
+
 	if m.GetCreatedAt() <= 0 {
 		err := ProjectValidationError{
 			field:  "CreatedAt",
