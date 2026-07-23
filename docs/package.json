@@ -1,24 +1,24 @@
 {
-  "name": "tech-doc-hugo",
+  "name": "pipecd-docs",
   "version": "0.0.1",
-  "description": "Hugo theme for technical documentation.",
+  "description": "Documentation website for PipeCD (Hugo + Docsy).",
   "main": "none.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/google/docsy-example.git"
+    "url": "git+https://github.com/pipe-cd/pipecd.git"
   },
   "author": "",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/google/docsy-example/issues"
+    "url": "https://github.com/pipe-cd/pipecd/issues"
   },
-  "homepage": "https://github.com/google/docsy-example#readme",
+  "homepage": "https://github.com/pipe-cd/pipecd#readme",
   "devDependencies": {
     "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.31",
-    "postcss-cli": "^8.3.1"
+    "postcss": "^8.5.15",
+    "postcss-cli": "^11.0.1"
   }
 }
