@@ -3,7 +3,7 @@ module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform
 go 1.26.2
 
 require (
-	github.com/creasty/defaults v1.6.0
+	github.com/creasty/defaults v1.8.0
 	github.com/hashicorp/hcl/v2 v2.0.0
 	github.com/pipe-cd/piped-plugin-sdk-go v0.4.0
 	github.com/stretchr/testify v1.11.1
