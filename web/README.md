@@ -13,6 +13,7 @@ src
 │     ├── index.test.ts
 │     └── index.stories.ts
 ├── constants # shared constants
+├── contexts # shared react contexts
 ├── hooks # shared hooks
 ├── mocks # API mock files
 │  └── services
