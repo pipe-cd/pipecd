@@ -56,28 +56,27 @@ make update/web-deps
 
 > Starting a local environment may fail if dependencies are not up to date.
 
-#### 2. Start Local Cluster and Registry
+#### 2. Start Local Cluster and Registry (Kind Only)
 
+If you are using **Kind**, run:
 ```bash
 make up/local-cluster
 ```
 
-This creates the `pipecd` Kubernetes namespace and starts a local registry.
+This creates the `pipecd` Kubernetes namespace and starts a local registry. (To clean up later, run `make down/local-cluster`).
 
-To clean up later:
-
-```bash
-make down/local-cluster
-```
+If you are using **K3s, K3d, or Minikube**, you can skip this step! The build script will automatically detect your cluster type and load the image directly into your local cluster. (To clean up/uninstall later, run `make stop/pipecd`).
 
 #### 3. Run Control Plane
 
+To build and run the PipeCD Control Plane using your local changes:
 ```bash
 make run/pipecd
 ```
 
-To stop:
+> **Note:** If this is your first time building the web frontend, this command will automatically install the web dependencies for you.
 
+To stop:
 ```bash
 make stop/pipecd
 ```

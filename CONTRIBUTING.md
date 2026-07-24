@@ -224,19 +224,21 @@ Note: While working with the PipeCD codebase, you may refer to [Makefile](./Make
 
 Run `make update/go-deps` and `make update/web-deps` to update the dependencies. Starting a local development environment might fail with errors if the dependencies are not up to date.
 
-#### Starting a local registry
+#### Starting a local registry (Only needed for Kind)
 
-In order to start a local development environment, a registry needs to be running locally.
+If you are using **Kind**, a registry needs to be running locally. Run `make up/local-cluster` to start the cluster and registry.
 
-Run `make up/local-cluster` to start a local registry.
+If you are using **K3s, K3d, or Minikube**, you can skip this step! The build script will automatically detect your cluster type and load the image directly into your local cluster. (To clean up/uninstall later, run `make stop/pipecd`).
 
-This will create the kubernetes namespace `pipecd` if it does not exist and start a local registry in the namespace which can then be accessed by other components.
-
-When cleaning up, run `make down/local-cluster` to stop and delete the registry and the cluster.
+When cleaning up:
+- For **Kind**, run `make down/local-cluster` to stop and delete the registry and the cluster.
+- For **K3s, K3d, or Minikube**, simply run `make stop/pipecd` to uninstall the PipeCD release from your cluster.
 
 #### Run PipeCD Control Plane
 
-Run `make run/pipecd` to run PipeCD Control Plane using your local code changes. This will build and run PipeCD Control Plane.
+Simply run `make run/pipecd` to build and run the PipeCD Control Plane using your local code changes. This will build and deploy the Control Plane on your cluster.
+
+> **Note:** If this is your first time building, `make run/pipecd` will automatically run `make update/web-deps` to install dependencies.
 
 Run `make stop/pipecd` to stop PipeCD Control Plane.
 
