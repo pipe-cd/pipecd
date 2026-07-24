@@ -80,14 +80,15 @@ type commandOutputGetter interface {
 type API struct {
 	apiservice.UnimplementedAPIServiceServer
 
-	applicationStore     apiApplicationStore
-	deploymentStore      apiDeploymentStore
-	pipedStore           apiPipedStore
-	eventStore           apiEventStore
-	deploymentTraceStore apiDeploymentTraceStore
-	commandStore         commandstore.Store
-	stageLogStore        stagelogstore.Store
-	commandOutputGetter  commandOutputGetter
+	applicationStore           apiApplicationStore
+	deploymentStore            apiDeploymentStore
+	pipedStore                 apiPipedStore
+	eventStore                 apiEventStore
+	deploymentTraceStore       apiDeploymentTraceStore
+	commandStore               commandstore.Store
+	stageLogStore              stagelogstore.Store
+	commandOutputGetter        commandOutputGetter
+	planPreviewRepositoryCache *planPreviewRepositoryCache
 
 	encryptionKeyCache cache.Cache
 	pipedStatCache     cache.Cache
@@ -116,6 +117,10 @@ func NewAPI(
 		commandStore:         commandstore.NewStore(ds, sc, logger),
 		stageLogStore:        stagelogstore.NewStore(fs, sc, logger),
 		commandOutputGetter:  cog,
+		planPreviewRepositoryCache: newPlanPreviewRepositoryCache(
+			1024,
+			time.Minute,
+		),
 		// Public key is variable but likely to be accessed multiple times in a short period.
 		encryptionKeyCache: memorycache.NewTTLCache(ctx, 5*time.Minute, 5*time.Minute),
 		pipedStatCache:     psc,
@@ -864,34 +869,37 @@ func (a *API) RequestPlanPreview(ctx context.Context, req *apiservice.RequestPla
 		return nil, err
 	}
 
-	// TODO: We may need to cache the list of pipeds to reduce load on database.
-	// Adding the cache after understanding the real situation from our metrics data.
-	pipeds, err := a.pipedStore.List(ctx, datastore.ListOptions{
-		Filters: []datastore.ListFilter{
-			{
-				Field:    "ProjectId",
-				Operator: datastore.OperatorEqual,
-				Value:    key.ProjectId,
+	cacheKey := planPreviewRepositoryCacheKey(key.ProjectId, req.RepoRemoteUrl, req.BaseBranch)
+	repositories, ok := a.planPreviewRepositoryCache.Get(cacheKey)
+	if !ok {
+		pipeds, err := a.pipedStore.List(ctx, datastore.ListOptions{
+			Filters: []datastore.ListFilter{
+				{
+					Field:    "ProjectId",
+					Operator: datastore.OperatorEqual,
+					Value:    key.ProjectId,
+				},
+				{
+					Field:    "Disabled",
+					Operator: datastore.OperatorEqual,
+					Value:    false,
+				},
 			},
-			{
-				Field:    "Disabled",
-				Operator: datastore.OperatorEqual,
-				Value:    false,
-			},
-		},
-	})
-	if err != nil {
-		return nil, gRPCStoreError(err, "list pipeds")
-	}
+		})
+		if err != nil {
+			return nil, gRPCStoreError(err, "list pipeds")
+		}
 
-	repositories := make(map[string]string, len(pipeds))
-	for _, p := range pipeds {
-		for _, r := range p.Repositories {
-			if r.Remote == req.RepoRemoteUrl && r.Branch == req.BaseBranch {
-				repositories[p.Id] = r.Id
-				break
+		repositories = make(map[string]string, len(pipeds))
+		for _, p := range pipeds {
+			for _, r := range p.Repositories {
+				if r.Remote == req.RepoRemoteUrl && r.Branch == req.BaseBranch {
+					repositories[p.Id] = r.Id
+					break
+				}
 			}
 		}
+		a.planPreviewRepositoryCache.Put(cacheKey, repositories)
 	}
 	if len(repositories) == 0 {
 		return &apiservice.RequestPlanPreviewResponse{}, nil
