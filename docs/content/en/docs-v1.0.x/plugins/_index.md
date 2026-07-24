@@ -44,10 +44,10 @@ The PipeCD maintainers develop and maintain the following plugins. Each plugin i
 
 | Plugin | Stage | Description |
 |--------|-------|-------------|
-| Wait | `WAIT` | Waits for a specified duration before continuing the pipeline. |
-| Wait approval | `WAIT_APPROVAL` | Pauses the pipeline until a user approves the deployment. |
-| Analysis | `ANALYSIS` | Evaluates the deployment by querying metrics, logs, or HTTP endpoints. |
-| Script run | `SCRIPT_RUN` | Runs arbitrary commands as a pipeline stage. |
+| [Wait](wait/) | `WAIT` | Waits for a specified duration before continuing the pipeline. |
+| [Wait approval](wait-approval/) | `WAIT_APPROVAL` | Pauses the pipeline until a user approves the deployment. |
+| [Analysis](analysis/) | `ANALYSIS` | Evaluates the deployment by querying metrics, logs, or HTTP endpoints. |
+| [Script run](script-run/) | `SCRIPT_RUN` | Runs arbitrary commands as a pipeline stage. |
 
 ## Community plugins
 
