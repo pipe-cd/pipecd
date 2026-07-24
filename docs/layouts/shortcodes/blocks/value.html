@@ -1,5 +1,6 @@
 {{ $_hugo_config := `{ "version": 1 }` }}
 {{ $value_image := resources.GetMatch (printf "**%s*" .Params.image) }}
+{{ $value_title := .Params.title }}
 
 <div class="row justify-content-center core-value {{ if eq .Params.image_position "right" }} flex-row-reverse {{ end }} border-bottom">
 
@@ -19,6 +20,7 @@
               {{ $image_resized_750.RelPermalink }} 1.5x,
               {{ $image_resized_1000.RelPermalink }} 2x,
               {{ $image_resized_1500.RelPermalink }} 3x"
+      alt="{{ $value_title }}"
       data-zoom-src="{{ $image_resized_zoom.RelPermalink }}"
       data-zoomable
     />
