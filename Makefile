@@ -160,6 +160,11 @@ run/pipecd: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
 run/pipecd: BUILD_OPTS ?= -ldflags "$(BUILD_LDFLAGS_PREFIX).version=$(BUILD_VERSION) $(BUILD_LDFLAGS_PREFIX).gitCommit=$(BUILD_COMMIT) $(BUILD_LDFLAGS_PREFIX).buildDate=$(BUILD_DATE) -w"
 run/pipecd: CONTROL_PLANE_VALUES ?= ./quickstart/control-plane-values.yaml
 run/pipecd:
+	@if [ ! -d "web/node_modules" ]; then \
+		echo "web/node_modules not found. Installing web dependencies first..."; \
+		$(MAKE) update/web-deps; \
+	fi
+
 	@echo "Building go binary of Control Plane..."
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 $(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipecd ./cmd/pipecd
 
@@ -168,7 +173,16 @@ run/pipecd:
 
 	@echo "Building docker image and pushing it to local registry..."
 	docker build -f cmd/pipecd/Dockerfile -t localhost:5001/pipecd:$(BUILD_VERSION) .
-	docker push localhost:5001/pipecd:$(BUILD_VERSION)
+	@if kubectl get nodes -o jsonpath='{.items[*].status.nodeInfo.kubeletVersion}' | grep -qi 'k3s\|k3d'; then \
+		echo "Detected K3s/K3d environment. Importing image directly to containerd namespace..."; \
+		docker save localhost:5001/pipecd:$(BUILD_VERSION) | sudo k3s ctr --namespace k8s.io images import -; \
+	elif kubectl config current-context | grep -qi 'minikube' || kubectl get nodes -o wide | grep -qi 'minikube'; then \
+		echo "Detected Minikube environment. Loading image directly..."; \
+		minikube image load localhost:5001/pipecd:$(BUILD_VERSION); \
+	else \
+		echo "Detected Kind/other. Pushing to local registry..."; \
+		docker push localhost:5001/pipecd:$(BUILD_VERSION); \
+	fi
 
 	@echo "Installing Control Plane in kind..."
 	mkdir -p .artifacts
@@ -248,7 +262,7 @@ update/go-deps:
 
 .PHONY: update/web-deps
 update/web-deps:
-	yarn --cwd web install --prefer-offline
+	yarn --cwd web install --prefer-offline --ignore-engines
 
 .PHONY: update/docsy
 update/docsy:

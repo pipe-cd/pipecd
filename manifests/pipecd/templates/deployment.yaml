@@ -214,6 +214,17 @@ spec:
       {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
       serviceAccountName: {{ include "pipecd.serviceAccountName" . }}
       {{- end }}
+      {{- if .Values.localStorageVolumes.enabled }}
+      initContainers:
+        - name: volume-permissions
+          image: alpine:3.20
+          command: ["sh", "-c", "chown -R 999:999 /data"]
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+      {{- end }}
       containers:
         - name: cache
           image: redis:{{ .Values.cache.imageTag }}
@@ -366,6 +377,17 @@ spec:
       {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
       serviceAccountName: {{ include "pipecd.serviceAccountName" . }}
       {{- end }}
+      {{- if .Values.localStorageVolumes.enabled }}
+      initContainers:
+        - name: volume-permissions
+          image: alpine:3.20
+          command: ["sh", "-c", "chown -R 999:999 /var/lib/mysql"]
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+      {{- end }}
       containers:
         - name: mysql
           image: {{ .Values.mysql.image }}:{{ .Values.mysql.imageTag }}
@@ -419,6 +441,17 @@ spec:
     spec:
       {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
       serviceAccountName: {{ include "pipecd.serviceAccountName" . }}
+      {{- end }}
+      {{- if .Values.localStorageVolumes.enabled }}
+      initContainers:
+        - name: volume-permissions
+          image: alpine:3.20
+          command: ["sh", "-c", "chown -R 1000:1000 /data"]
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - name: minio-data
+              mountPath: /data
       {{- end }}
       containers:
         - name: minio

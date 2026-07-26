@@ -1,0 +1,12 @@
+.git
+.github
+.artifacts
+.idea
+.vscode
+web/node_modules
+web/dist
+docs/node_modules
+docs/public
+node_modules
+tmp
+*.tgz
