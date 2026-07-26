@@ -39,7 +39,7 @@ With no `pipeline` defined, the plugin performs a **quick sync** (`TERRAFORM_APP
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
-kind: TerraformApp
+kind: Application
 spec:
   name: my-infra
   plugins:
@@ -55,7 +55,7 @@ Define a `pipeline` to run `terraform plan` before applying. A common pattern is
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
-kind: TerraformApp
+kind: Application
 spec:
   name: my-infra
   pipeline:
@@ -105,7 +105,7 @@ Before a pipeline runs, plan preview runs `terraform plan` and shows the changes
 
 ### TerraformApplicationSpec
 
-The `spec` of a `TerraformApp` shares the [common application fields](../user-guide/managing-application/configuration-reference/) (`name`, `labels`, `pipeline`, ...) and adds the following under `plugins.terraform`:
+The `spec` of a Terraform `Application` shares the [common application fields](../user-guide/managing-application/configuration-reference/) (`name`, `labels`, `pipeline`, ...) and adds the following under `plugins.terraform`:
 
 | Field | Type | Description | Required |
 |-------|------|-------------|----------|
