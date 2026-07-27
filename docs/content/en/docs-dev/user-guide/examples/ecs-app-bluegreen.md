@@ -90,10 +90,10 @@ In this example, you configured the application to switch all traffic from the o
 
 - Stage 3: `WAIT` holds the deployment for the configured duration, giving you time to verify the new version under full production traffic. You can replace this with a `WAIT_APPROVAL` stage for a manual gate, or add an `ANALYSIS` stage to automate the check.
 
-- Stage 4: `ECS_PRIMARY_ROLLOUT` creates a new TaskSet running the new version, registered to the same primary target group as the original current TaskSet.
+- Stage 4: `ECS_PRIMARY_ROLLOUT` creates a new TaskSet running the new version, and registers it to the same primary target group as the original current TaskSet. This stage has no `scale` option so the new TaskSet always matches the original's full desired count. From here until `ECS_CANARY_CLEAN`, both TaskSets share the primary target group, so traffic sent there is served by an unpredictable mix of both versions.
 
-- Stage 5: `ECS_TRAFFIC_ROUTING` routes 100% of traffic back to the primary target group.
+- Stage 5: `ECS_TRAFFIC_ROUTING` routes 100% of traffic back to the primary target group. The ALB can't tell which task is running which version, so this traffic is split unpredictably between old and new.
 
-- Stage 6: `ECS_CANARY_CLEAN` promotes the new TaskSet to `PRIMARY` status and deletes both the old current TaskSet and the canary TaskSet, returning the service to the same shape it started in — just running the new version.
+- Stage 6: `ECS_CANARY_CLEAN` promotes the new TaskSet to `PRIMARY` status and deletes the old current and canary TaskSets. This is when the version mixing actually ends and only the new TaskSet remains.
 
 If any stage in this pipeline fails, PipeCD automatically rolls back the deployment: traffic is routed back to the original current TaskSet, and any TaskSets created during the deployment are removed.
