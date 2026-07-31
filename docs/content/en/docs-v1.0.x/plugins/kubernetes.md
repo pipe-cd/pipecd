@@ -201,14 +201,14 @@ spec:
       # port / url / deployTargets ...
       config:
         chartRepositories:
-          - type: HTTP                       # ChartMuseum, Nexus, Artifactory, ...
+          - type: HTTP
             name: my-private-repo
             address: https://charts.example.com
             username: my-user
             password: my-password
             insecure: false
         chartRegistries:
-          - type: OCI                        # GHCR, ECR, Google Artifact Registry, ...
+          - type: OCI
             address: ghcr.io
             username: my-github-user
             password: my-pat-token
