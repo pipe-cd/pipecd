@@ -73,3 +73,60 @@ Currently, PipeCD is supporting these five platform providers: `KUBERNETES`, `EC
 ### Analysis Provider
 An external product that provides metrics/logs to evaluate deployments, such as `Prometheus`, `Datadog`, `Stackdriver`, `CloudWatch` and so on.
 It is mainly used in the [Automated deployment analysis](../user-guide/managing-application/customizing-deployment/automated-deployment-analysis/) context.
+
+
+### Stage
+A single step within a deployment pipeline. Stages are defined in the application configuration file (`app.pipecd.yaml`) and are executed sequentially by `piped`.
+Common built-in stages include `K8S_CANARY_ROLLOUT`, `K8S_PRIMARY_ROLLOUT`, `K8S_CANARY_CLEAN`, `TERRAFORM_PLAN`, `TERRAFORM_APPLY`, `WAIT`, `WAIT_APPROVAL`, `ANALYSIS`, and `SCRIPT_RUN`.
+See [Customizing deployment](../user-guide/managing-application/customizing-deployment/) for details on each stage.
+
+### pipectl
+The official command-line tool for interacting with the PipeCD Control Plane API.
+`pipectl` allows users to add and sync applications, get deployment status, encrypt secrets, and more from the terminal.
+See [Command-line tool: pipectl](../user-guide/command-line-tool/) for usage information.
+
+### Plan Preview
+A feature that previews the expected changes of a deployment before it is actually applied.
+When integrated with a CI system such as GitHub Actions, Plan Preview posts a comment on pull requests showing which resources would be added, modified, or deleted.
+See [Plan preview](../user-guide/plan-preview/) for details.
+
+### Event Watcher
+A `piped` feature that watches for external events, such as a new container image pushed to a registry or a new Helm chart version published, and automatically updates files in the Git repository to trigger a new deployment.
+See [Event watcher](../user-guide/event-watcher/) for configuration details.
+
+### Deployment Trace
+A feature that links a deployment in PipeCD to the CI build that produced its artifacts (e.g., a GitHub Actions run or a Jenkins build).
+Deployment Trace provides end-to-end traceability from a commit to the resulting deployment.
+See [Deployment Trace](../user-guide/deployment-trace/) for details.
+
+### Deployment Chain
+A feature that allows triggering a sequence of deployments across multiple applications automatically.
+When a deployment in the chain completes successfully, it triggers the next deployment in the chain.
+See [Deployment chain](../user-guide/managing-application/deployment-chain/) for details.
+
+### Insights
+The analytics dashboard of PipeCD that displays delivery performance metrics such as deployment frequency, lead time, mean time to restore (MTTR), and change failure rate.
+See [Insights](../user-guide/insights/) for details.
+
+### Configuration Drift Detection
+A `piped` feature that periodically compares the live state of an application's resources with the desired state declared in the Git repository.
+When a drift is detected, for example when someone manually edits a resource in a cluster, PipeCD visualizes the difference and can optionally trigger a sync to reconcile the drift.
+See [Configuration drift detection](../user-guide/managing-application/configuration-drift-detection/) for details.
+
+### Application Live State
+The real-time state of an application's resources as they exist on the target platform.
+PipeCD continuously monitors live state and displays it on the web console, including resource status, health, and the relationship between resources (e.g., Deployment → ReplicaSet → Pod).
+See [Application live state](../user-guide/managing-application/application-live-state/) for details.
+
+### Secret Management
+PipeCD provides a mechanism for safely managing secrets used in application manifests.
+Secrets are encrypted using `pipectl` and stored in the Git repository in encrypted form. `piped` decrypts them at deployment time, so plain-text secrets never leave the deployment environment.
+See [Secret management](../user-guide/managing-application/secret-management/) for details.
+
+### Plugin
+In PipeCD v1's next-generation agent architecture (`pipedv1`), each deployment platform (Kubernetes, Terraform, ECS, etc.) is implemented as a separate plugin.
+Plugins are independently versioned and loaded by the Piped agent at runtime, allowing the agent to be extended with new platform support without modifying the core binary.
+
+### Launcher
+A component (`cmd/launcher`) that manages the lifecycle of the `piped` agent process.
+The Launcher enables [remote upgrade](../user-guide/managing-piped/remote-upgrade-remote-config/) of the Piped agent, allowing maintainers to update Piped versions from the Control Plane UI without manual intervention.
