@@ -41,6 +41,8 @@ type Plugin struct{}
 
 var _ sdk.DeploymentPlugin[sdk.ConfigNone, config.DeployTargetConfig, config.ApplicationConfigSpec] = (*Plugin)(nil)
 
+var errRollbackRequiresStages = errors.New("rollback requires at least one stage")
+
 // BuildPipelineSyncStages implements sdk.DeploymentPlugin.
 func (p *Plugin) BuildPipelineSyncStages(ctx context.Context, _ *sdk.ConfigNone, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
 	reqStages := input.Request.Stages
@@ -56,6 +58,9 @@ func (p *Plugin) BuildPipelineSyncStages(ctx context.Context, _ *sdk.ConfigNone,
 		})
 	}
 	if input.Request.Rollback {
+		if len(reqStages) == 0 {
+			return nil, errRollbackRequiresStages
+		}
 		minIndex := slices.MinFunc(reqStages, func(a, b sdk.StageConfig) int { return a.Index - b.Index }).Index
 		out = append(out, sdk.PipelineStage{
 			Name:               stageRollback,

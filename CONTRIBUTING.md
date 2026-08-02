@@ -51,7 +51,7 @@ All pull requests undergo checks by the continuous integration system, GitHub Ac
 
 When you submit a pull request to PipeCD, multiple CI workflows are triggered to validate your changes. These checks help ensure code quality, correctness, and consistency across the project.
 
-To better understand which CI workflows run and what they are responsible for, please refer to the [CI overview documentation](docs/content/en/docs-v1.0.x/development/ci.md).
+To better understand which CI workflows run and what they are responsible for, please refer to the [CI overview documentation](.github/ci.md).
 
 ### Branch Organization
 
@@ -90,13 +90,13 @@ If you would like to request an entirely new feature, you can file an issue with
 
 We maintain a list of [good first issues](https://github.com/pipe-cd/pipecd/labels/good%20first%20issue) to help you get started with the PipeCD codebase and familiarize yourself with our contribution process. It's an excellent place to begin.
 
-Additionally, we recommend you not to work on multiple good first issues because it's for first contributers and currently we cannot make enough good first issues.
+Additionally, we recommend you not to work on multiple good first issues because it's for first contributors and currently we cannot make enough good first issues.
 
 ### Before you work on issues
 
 If you want to work on any of these issues, simply leave a message saying "I'd like to work on this," and we will assign the issue to you and update its status as "claimed." We expect you to submit a pull request within seven days so that we can assign the issue to someone else if you are unavailable.
 
-We recommend you to focus only one issue at once if you are newcomer contributer.
+We recommend you to focus only one issue at once if you are newcomer contributor.
 
 So you've decided to contribute back to the upstream by opening a pull request. You've put in a significant amount of time, and we appreciate your effort. We will do our best to work with you and review the pull request.
 
@@ -122,6 +122,40 @@ When submitting a pull request, please ensure the following:
 All pull requests should be opened against the `master` branch.
 
 We have various integration systems that run automated tests to prevent mistakes. The maintainers will also review your code and fix obvious issues. These systems are in place to minimize your worries about the process. Your code contributions are more important than adhering to strict procedures, although completing the checklist will undoubtedly save everyone's time.
+
+### AI Usage Policy and Guidelines
+
+AI tools can be helpful for learning, understanding the codebase, summarizing documentation, or debugging issues. We welcome contributors using AI as a learning and productivity tool.
+
+At the same time, contributors should keep maintainers time in mind. Every pull request should represent work that the contributor has personally reviewed, understood, and tested.
+
+AI should assist contributors, not replace contributor understanding, communication, or responsibility.
+
+#### Communication and collaboration
+
+Open source development is collaborative and communication is an important part of the contribution process.
+
+Before working on larger changes or unclear issues, contributors are encouraged to discuss ideas and approaches with maintainers and the community instead of relying entirely on AI-generated solutions.
+
+When responding to review comments or writing pull request descriptions, communicate in your own words and focus on the reasoning behind the change. Clear and concise communication is much more helpful than long AI-generated explanations.
+
+#### What we expect from contributors
+
+- Understand the changes before submitting them
+- Test changes before opening a pull request
+- Review AI-generated output carefully before using it
+- Be ready to explain implementation decisions and tradeoffs
+- Keep pull requests focused and reasonably small
+- Respect maintainers time by avoiding low-quality or unreviewed submissions
+
+#### What to avoid
+
+- Submitting AI-generated code you do not understand
+- Opening large AI-generated pull requests without proper review and testing
+- Using AI-generated responses that add unnecessary or unclear communication during discussions or code reviews
+- Relying on AI instead of discussing important design or architecture decisions with maintainers and the community
+
+If AI tools are used in a significant way, contributors are still responsible for the final contribution and all communication around it.
 
 ### Commit Messages
 
@@ -198,7 +232,7 @@ Run `make up/local-cluster` to start a local registry.
 
 This will create the kubernetes namespace `pipecd` if it does not exist and start a local registry in the namespace which can then be accessed by other components.
 
-When cleaning up, run `make down/local-cluster` to stop and delete the registery and the cluster.
+When cleaning up, run `make down/local-cluster` to stop and delete the registry and the cluster.
 
 #### Run PipeCD Control Plane
 
@@ -234,7 +268,7 @@ Then, copy generated Piped ID and base64 key for `piped-config.yaml`
 > **NOTE**
 > If you want to work on multiple piped configuration files, it is recommended to create a .dev folder in the root of the repository and save them there. The .dev folder is configured in .gitignore, and thus, would not include your piped files in your commits.
 
-Below is an exampled piped v0 configuration using the Kubernetes platform provider. Use the PipeD ID and base64 key you created in step 2 here.
+Below is an example piped v0 configuration using the Kubernetes platform provider. Use the PipeD ID and base64 key you created in step 2 here.
 
 ```yaml
   apiVersion: pipecd.dev/v1beta1
@@ -266,7 +300,7 @@ CONFIG_FILE=path/to/piped-config.yaml \
 INSECURE=true
 ```
 
-where the `CONFIG_FILE` is the path to your piped confiuration file and the `INSECURE` flag is set to `true` to allow `piped` to connect to the control plane without TLS verification.
+where the `CONFIG_FILE` is the path to your piped configuration file and the `INSECURE` flag is set to `true` to allow `piped` to connect to the control plane without TLS verification.
 
 Replace `path/to/piped-config.yaml` with the actual path to your configuration file.
 
