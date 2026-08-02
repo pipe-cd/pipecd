@@ -12,6 +12,13 @@ on:
       - 'release-v*'
       - 'feat/*'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
 env:
   GO_VERSION: 1.26.2
   NODE_VERSION: 20.19.0

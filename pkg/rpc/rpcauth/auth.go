@@ -136,10 +136,7 @@ func extractCookie(ctx context.Context) (map[string]string, error) {
 	cs := strings.Split(rawCookie[0], ";")
 	cookie := make(map[string]string, len(cs))
 	for _, c := range cs {
-		subs := strings.Split(strings.TrimSpace(c), "=")
-		if len(subs) != 2 {
-			return nil, status.Error(codes.Unauthenticated, "cookie is malformed")
-		}
+		subs := strings.SplitN(strings.TrimSpace(c), "=", 2)
 		cookie[subs[0]] = subs[1]
 	}
 	return cookie, nil

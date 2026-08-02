@@ -7,7 +7,7 @@ jobs:
   stale:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/stale@v8
+      - uses: actions/stale@v10
         with:
           operations-per-run: 1000
           # Issues
@@ -21,5 +21,4 @@ jobs:
           close-pr-message: 'This PR was closed because it has been stalled for 7 days with no activity. Feel free to reopen if still applicable.'
           days-before-pr-stale: 30
           days-before-pr-close: 7
-          delete-branch: true
           exempt-pr-labels: 'not-auto-close'
