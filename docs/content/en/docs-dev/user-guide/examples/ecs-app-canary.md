@@ -91,10 +91,10 @@ Throughout this pipeline, PipeCD works with up to three ECS TaskSets at once: th
 
 - Stage 3: `WAIT` holds the deployment for the configured duration, giving you time to check metrics, logs, or dashboards for the canary version. You can replace this with a `WAIT_APPROVAL` stage for a manual gate, or add an `ANALYSIS` stage to automate the check.
 
-- Stage 4: `ECS_PRIMARY_ROLLOUT` creates the new TaskSet, running the new version, and registers it to the same primary target group as the current TaskSet. This stage has no `scale` option so the new TaskSet always matches the current one's full desired count, since it's meant to fully replace it. From here until `ECS_CANARY_CLEAN`, both TaskSets share the primary target group, so traffic sent there is served by an unpredictable mix of both versions.
+- Stage 4: `ECS_PRIMARY_ROLLOUT` creates the new TaskSet, running the new version, and registers it to the same primary target group as the current TaskSet. This stage has no `scale` option, the new TaskSet always matches the current one's full desired count, since it's meant to fully replace it. Within this same stage, once the new TaskSet is ready, PipeCD promotes it to `PRIMARY` and deletes the old current and canary TaskSets so the version overlap only lasts for the duration of this one stage, not beyond it.
 
-- Stage 5: `ECS_TRAFFIC_ROUTING` updates the listener rule again, routing 100% of traffic back to the primary target group and away from the canary target group. The ALB can't tell which task is running which version, so this traffic is split unpredictably between old and new.
+- Stage 5: `ECS_TRAFFIC_ROUTING` resets the listener rule weights to 100% on the primary target group and 0% on canary. By this point the old and canary TaskSets are already gone, so this mainly restores the ALB rule configuration to its normal state.
 
-- Stage 6: `ECS_CANARY_CLEAN` promotes the new TaskSet to `PRIMARY` status and deletes the old current and canary TaskSets. This is when the version mixing actually ends and only the new TaskSet remains.
+- Stage 6: `ECS_CANARY_CLEAN` performs any remaining cleanup of canary resources, completing the deployment.
 
 If any stage in this pipeline fails, PipeCD automatically rolls back the deployment: traffic is routed back to the original current TaskSet, and any TaskSets created during the deployment are removed.
