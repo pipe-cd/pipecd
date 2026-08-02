@@ -79,11 +79,12 @@ func Test_buildPipelineStages(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name         string
-		stages       []sdk.StageConfig
-		autoRollback bool
-		expected     []sdk.PipelineStage
-		expectedErr  bool
+		name          string
+		stages        []sdk.StageConfig
+		autoRollback  bool
+		expected      []sdk.PipelineStage
+		expectedErr   bool
+		expectedErrIs error
 	}{
 		{
 			name: "without auto rollback",
@@ -151,6 +152,12 @@ func Test_buildPipelineStages(t *testing.T) {
 					AvailableOperation: sdk.ManualOperationNone,
 				},
 			},
+		},
+		{
+			name:          "with auto rollback and no stages",
+			autoRollback:  true,
+			expectedErr:   true,
+			expectedErrIs: errRollbackRequiresStages,
 		},
 		{
 			name: "with traffic routing stage with all primary",
@@ -275,7 +282,11 @@ func Test_buildPipelineStages(t *testing.T) {
 				Logger: zaptest.NewLogger(t),
 			})
 			if tt.expectedErr {
-				assert.Error(t, err)
+				if tt.expectedErrIs != nil {
+					assert.ErrorIs(t, err, tt.expectedErrIs)
+				} else {
+					assert.Error(t, err)
+				}
 				return
 			} else {
 				assert.NoError(t, err)
