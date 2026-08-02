@@ -15,7 +15,7 @@ import { AddRoleDialog } from "../add-role-dialog";
 import { DeleteRoleConfirmDialog } from "../delete-role-confirm-dialog";
 import { RoleTableRow } from "../role-table-row";
 import { EditRoleDialog } from "../edit-role-dialog";
-import { FC, memo, useCallback, useState } from "react";
+import { FC, memo, useCallback, useEffect, useState } from "react";
 import { UI_TEXT_ADD } from "~/constants/ui-text";
 
 import {
@@ -31,9 +31,15 @@ import { useUpdateProjectRBACRole } from "~/queries/project/use-update-project-r
 import { parseRBACPolicies } from "~/utils/parse-rbac-policies";
 import { ProjectRBACRole } from "pipecd/web/model/project_pb";
 
+interface RoleTableProps {
+  isProjectDisabled: boolean;
+}
+
 const SUB_SECTION_TITLE = "Role";
 
-export const RoleTable: FC = memo(function RoleTable() {
+export const RoleTable: FC<RoleTableProps> = memo(function RoleTable({
+  isProjectDisabled,
+}) {
   const { data: projectDetail } = useGetProject();
   const rbacRoles = projectDetail?.rbacRoles || [];
 
@@ -47,6 +53,14 @@ export const RoleTable: FC = memo(function RoleTable() {
   const [editRole, setEditRole] = useState<null | ProjectRBACRole.AsObject>(
     null
   );
+
+  useEffect(() => {
+    if (isProjectDisabled) {
+      setIsOpenAddForm(false);
+      setDeleteRoleName(null);
+      setEditRole(null);
+    }
+  }, [isProjectDisabled]);
 
   const handleSubmit = useCallback(
     (values: { name: string; policies: string }) => {
@@ -117,12 +131,17 @@ export const RoleTable: FC = memo(function RoleTable() {
           color="primary"
           startIcon={<AddIcon />}
           onClick={() => setIsOpenAddForm(true)}
+          disabled={isProjectDisabled}
         >
           {UI_TEXT_ADD}
         </Button>
       </Box>
 
-      <TableContainer component={Paper} square>
+      <TableContainer
+        component={Paper}
+        square
+        sx={{ opacity: isProjectDisabled ? 0.6 : 1 }}
+      >
         <Table size="small" stickyHeader>
           <TableHead>
             <TableRow>
@@ -138,6 +157,7 @@ export const RoleTable: FC = memo(function RoleTable() {
                 role={role}
                 onEdit={(role) => setEditRole(role)}
                 onDelete={(role) => setDeleteRoleName(role)}
+                disabled={isProjectDisabled}
               />
             ))}
           </TableBody>
@@ -145,7 +165,7 @@ export const RoleTable: FC = memo(function RoleTable() {
       </TableContainer>
 
       <AddRoleDialog
-        open={isOpenAddForm}
+        open={isOpenAddForm && !isProjectDisabled}
         onClose={() => setIsOpenAddForm(false)}
         onSubmit={handleSubmit}
       />
@@ -157,7 +177,7 @@ export const RoleTable: FC = memo(function RoleTable() {
       />
 
       <EditRoleDialog
-        role={editRole}
+        role={isProjectDisabled ? null : editRole}
         onClose={handleEditClose}
         onUpdate={handleUpdate}
       />

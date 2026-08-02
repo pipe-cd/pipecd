@@ -38,6 +38,8 @@ type ProjectStore interface {
 	Add(ctx context.Context, proj *model.Project) error
 	Get(ctx context.Context, id string) (*model.Project, error)
 	List(ctx context.Context, opts ListOptions) ([]model.Project, error)
+	EnableProject(ctx context.Context, id string) error
+	DisableProject(ctx context.Context, id string) error
 	UpdateProjectStaticAdmin(ctx context.Context, id, username, password string) error
 	EnableStaticAdmin(ctx context.Context, id string) error
 	DisableStaticAdmin(ctx context.Context, id string) error
@@ -118,6 +120,22 @@ func (s *projectStore) update(ctx context.Context, id string, updater func(proje
 		}
 		p.UpdatedAt = now
 		return p.Validate()
+	})
+}
+
+// EnableProject marks a project as active so clients can authenticate again.
+func (s *projectStore) EnableProject(ctx context.Context, id string) error {
+	return s.update(ctx, id, func(p *model.Project) error {
+		p.Disabled = false
+		return nil
+	})
+}
+
+// DisableProject marks a project as disabled to block logins and API calls.
+func (s *projectStore) DisableProject(ctx context.Context, id string) error {
+	return s.update(ctx, id, func(p *model.Project) error {
+		p.Disabled = true
+		return nil
 	})
 }
 

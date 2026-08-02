@@ -246,6 +246,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 			verifier = apikeyverifier.NewVerifier(
 				ctx,
 				datastore.NewAPIKeyStore(ds),
+				datastore.NewProjectStore(ds),
 				apiKeyLastUsedCache,
 				input.Logger,
 			)

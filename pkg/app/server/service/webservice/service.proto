@@ -193,6 +193,14 @@ service WebService {
         option (model.rbac).resource = PROJECT;
         option (model.rbac).action = UPDATE;
     }
+    rpc EnableProject(EnableProjectRequest) returns (EnableProjectResponse) {
+        option (model.rbac).resource = PROJECT;
+        option (model.rbac).action = UPDATE;
+    }
+    rpc DisableProject(DisableProjectRequest) returns (DisableProjectResponse) {
+        option (model.rbac).resource = PROJECT;
+        option (model.rbac).action = UPDATE;
+    }
     rpc GetMe(GetMeRequest) returns (GetMeResponse) {
         option (model.rbac).resource = PROJECT;
         option (model.rbac).action = GET;
@@ -609,6 +617,18 @@ message DisableStaticAdminRequest {
 }
 
 message DisableStaticAdminResponse {
+}
+
+message EnableProjectRequest {
+}
+
+message EnableProjectResponse {
+}
+
+message DisableProjectRequest {
+}
+
+message DisableProjectResponse {
 }
 
 message GetMeRequest {

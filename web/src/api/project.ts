@@ -21,6 +21,10 @@ import {
   DeleteProjectRBACRoleResponse,
   UpdateProjectRBACRoleRequest,
   UpdateProjectRBACRoleResponse,
+  EnableProjectRequest,
+  EnableProjectResponse,
+  DisableProjectRequest,
+  DisableProjectResponse,
 } from "pipecd/web/api_client/service_pb";
 import {
   ProjectRBACConfig,
@@ -157,4 +161,14 @@ export const updateRBACRole = ({
   req.setName(name);
   req.setPoliciesList(policies);
   return apiRequest(req, apiClient.updateProjectRBACRole);
+};
+
+export const enableProject = (): Promise<EnableProjectResponse.AsObject> => {
+  const req = new EnableProjectRequest();
+  return apiRequest(req, apiClient.enableProject);
+};
+
+export const disableProject = (): Promise<DisableProjectResponse.AsObject> => {
+  const req = new DisableProjectRequest();
+  return apiRequest(req, apiClient.disableProject);
 };

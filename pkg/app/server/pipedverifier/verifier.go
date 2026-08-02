@@ -121,12 +121,22 @@ func (v *Verifier) verifyProject(ctx context.Context, projectID, pipedID string)
 	}
 
 	// If not found, we check from the list inside datastore.
-	if _, err := v.projectCache.Get(projectID); err == nil {
-		return nil
+	if val, err := v.projectCache.Get(projectID); err == nil {
+		if enabled, ok := val.(bool); ok {
+			if !enabled {
+				return fmt.Errorf("project %s for piped %s was disabled", projectID, pipedID)
+			}
+			return nil
+		}
 	}
 
-	if _, err := v.projectStore.Get(ctx, projectID); err != nil {
+	proj, err := v.projectStore.Get(ctx, projectID)
+	if err != nil {
 		return fmt.Errorf("project %s for piped %s was not found", projectID, pipedID)
+	}
+	if proj.Disabled {
+		_ = v.projectCache.Put(projectID, false)
+		return fmt.Errorf("project %s for piped %s was disabled", projectID, pipedID)
 	}
 
 	if err := v.projectCache.Put(projectID, true); err != nil {

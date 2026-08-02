@@ -88,6 +88,8 @@ type webAPIPipedStore interface {
 
 type webAPIProjectStore interface {
 	Get(ctx context.Context, id string) (*model.Project, error)
+	EnableProject(ctx context.Context, id string) error
+	DisableProject(ctx context.Context, id string) error
 	UpdateProjectStaticAdmin(ctx context.Context, id, username, password string) error
 	EnableStaticAdmin(ctx context.Context, id string) error
 	DisableStaticAdmin(ctx context.Context, id string) error
@@ -418,6 +420,15 @@ func (a *WebAPI) RestartPiped(ctx context.Context, req *webservice.RestartPipedR
 		return nil, status.Error(codes.PermissionDenied, "Requested Piped does not belong to your project")
 	}
 
+	// Check if the project is disabled.
+	project, err := a.projectStore.Get(ctx, piped.ProjectId)
+	if err != nil {
+		return nil, gRPCStoreError(err, "get project")
+	}
+	if project.Disabled {
+		return nil, status.Error(codes.FailedPrecondition, "Cannot execute command: project is currently disabled. Please contact your administrator to enable the project.")
+	}
+
 	cmd := model.Command{
 		Id:        uuid.New().String(),
 		PipedId:   piped.Id,
@@ -717,6 +728,15 @@ func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplic
 
 	if claims.Role.ProjectId != app.ProjectId {
 		return nil, status.Error(codes.PermissionDenied, "Requested application does not belong to your project")
+	}
+
+	// Check if the project is disabled.
+	project, err := a.projectStore.Get(ctx, app.ProjectId)
+	if err != nil {
+		return nil, gRPCStoreError(err, "get project")
+	}
+	if project.Disabled {
+		return nil, status.Error(codes.FailedPrecondition, "Cannot execute command: project is currently disabled. Please contact your administrator to enable the project.")
 	}
 
 	cmd := model.Command{
@@ -1121,6 +1141,15 @@ func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDep
 		return nil, status.Error(codes.FailedPrecondition, "could not cancel the deployment because it was already completed")
 	}
 
+	// Check if the project is disabled.
+	project, err := a.projectStore.Get(ctx, deployment.ProjectId)
+	if err != nil {
+		return nil, gRPCStoreError(err, "get project")
+	}
+	if project.Disabled {
+		return nil, status.Error(codes.FailedPrecondition, "Cannot execute command: project is currently disabled. Please contact your administrator to enable the project.")
+	}
+
 	cmd := model.Command{
 		Id:            uuid.New().String(),
 		PipedId:       deployment.PipedId,
@@ -1158,6 +1187,15 @@ func (a *WebAPI) SkipStage(ctx context.Context, req *webservice.SkipStageRequest
 	if claims.Role.ProjectId != deployment.ProjectId {
 		return nil, status.Error(codes.PermissionDenied, "Requested deployment does not belong to your project")
 	}
+	// Check if the project is disabled.
+	project, err := a.projectStore.Get(ctx, deployment.ProjectId)
+	if err != nil {
+		return nil, gRPCStoreError(err, "get project")
+	}
+	if project.Disabled {
+		return nil, status.Error(codes.FailedPrecondition, "Cannot execute command: project is currently disabled. Please contact your administrator to enable the project.")
+	}
+
 	stage, ok := deployment.Stage(req.StageId)
 	if !ok {
 		return nil, status.Error(codes.FailedPrecondition, "The stage was not found in the deployment")
@@ -1210,6 +1248,15 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 	if err := a.validateDeploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
+	// Check if the project is disabled.
+	project, err := a.projectStore.Get(ctx, deployment.ProjectId)
+	if err != nil {
+		return nil, gRPCStoreError(err, "get project")
+	}
+	if project.Disabled {
+		return nil, status.Error(codes.FailedPrecondition, "Cannot execute command: project is currently disabled. Please contact your administrator to enable the project.")
+	}
+
 	stage, ok := deployment.StageMap()[req.StageId]
 	if !ok {
 		return nil, status.Error(codes.FailedPrecondition, "The stage was not found in the deployment")
@@ -1389,6 +1436,44 @@ func (a *WebAPI) DisableStaticAdmin(ctx context.Context, req *webservice.Disable
 		return nil, gRPCStoreError(err, "disable static admin login")
 	}
 	return &webservice.DisableStaticAdminResponse{}, nil
+}
+
+// EnableProject re-enables a disabled project so that users can log in again.
+func (a *WebAPI) EnableProject(ctx context.Context, req *webservice.EnableProjectRequest) (*webservice.EnableProjectResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
+		return nil, status.Error(codes.FailedPrecondition, "Failed to update a debug project specified in the control-plane configuration")
+	}
+
+	if err := a.projectStore.EnableProject(ctx, claims.Role.ProjectId); err != nil {
+		a.logger.Error("failed to enable project", zap.Error(err))
+		return nil, gRPCStoreError(err, "enable project")
+	}
+	return &webservice.EnableProjectResponse{}, nil
+}
+
+// DisableProject marks the project as disabled which blocks all new logins and API calls.
+func (a *WebAPI) DisableProject(ctx context.Context, req *webservice.DisableProjectRequest) (*webservice.DisableProjectResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
+		return nil, status.Error(codes.FailedPrecondition, "Failed to update a debug project specified in the control-plane configuration")
+	}
+
+	if err := a.projectStore.DisableProject(ctx, claims.Role.ProjectId); err != nil {
+		a.logger.Error("failed to disable project", zap.Error(err))
+		return nil, gRPCStoreError(err, "disable project")
+	}
+	return &webservice.DisableProjectResponse{}, nil
 }
 
 // UpdateProjectSSOConfig updates the sso settings.
