@@ -153,6 +153,7 @@ Available Commands:
   piped        Manage piped resources.
   plan-preview Show plan preview against the specified commit.
   plugin       Do plugin tasks.
+  transfer     Transfer data between control planes.
   version      Print the information of current binary.
 
 Flags:

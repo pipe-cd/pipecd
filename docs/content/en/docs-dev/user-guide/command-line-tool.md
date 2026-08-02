@@ -153,6 +153,7 @@ Available Commands:
   piped        Manage piped resources.
   plan-preview Show plan preview against the specified commit.
   plugin       Do plugin tasks.
+  transfer     Transfer data between control planes.
   version      Print the information of current binary.
 
 Flags:
@@ -357,11 +358,11 @@ You can encrypt it the same way you do [from the web](../managing-application/se
       --input-file={PATH_TO_SECRET_FILE}
   ```
 
-Note: The docs for pipectl available command is maybe outdated, we suggest users use the `help` command for the updated usage while using pipectl.
+> **Note:** The docs for pipectl available command may be outdated. We suggest users use the `help` command for the updated usage while using pipectl.
 
 ### Migrating application configs and database
 
-Migrate v0 application configs and database records to be compatible with the plugin-based pipedv1.
+Migrate v0 application configs and database records to be compatible with the plugin-based piped v1.
 
 #### Migrating application config
 
@@ -383,7 +384,7 @@ The `--config-files` and `--dirs` flags are mutually exclusive; one of them is r
 
 #### Migrating database
 
-Migrate database records to be compatible with plugin-architectured piped:
+Migrate database records to be compatible with plugin-architected piped:
 
 ``` console
 pipectl migrate database \
@@ -407,6 +408,49 @@ pipectl plugin push \
 ```
 
 The `--files` flag maps platforms to binary files in `os/arch=filepath` format. All of `--files`, `--tag`, `--registry`, and `--repository` are required. Add `--insecure` to skip TLS verification when using an HTTP-only registry.
+
+### Transferring data between control planes
+
+Transfer pipeds and applications from one control plane to another.
+
+#### Backing up data
+
+Back up all pipeds and applications from the source control plane to a local file:
+
+``` console
+pipectl transfer backup \
+    --address={SOURCE_CONTROL_PLANE_API_ADDRESS} \
+    --api-key={SOURCE_API_KEY} \
+    --output-file=backup.json
+```
+
+Add `--labels` to filter applications by labels (comma-separated `KEY:VALUE` pairs, e.g. `--labels=env:prod,team:backend`). Deployment history is not included, because the API does not expose a write endpoint for deployments.
+
+#### Restoring data
+
+Restoring is a two-step process, because the control plane validates that each application's Git repository is registered on the target piped before the application can be created, and repository registration only happens after the piped agent connects.
+
+1. Register the pipeds on the target control plane, then update each piped's configuration with the new ID and key before restarting the piped agents:
+
+    ``` console
+    pipectl transfer restore piped \
+        --address={TARGET_CONTROL_PLANE_API_ADDRESS} \
+        --api-key={TARGET_API_KEY} \
+        --input-file=backup.json \
+        --output-file=mapping.json
+    ```
+
+2. Once the piped agents have reconnected to the target control plane and registered their repositories, restore the applications:
+
+    ``` console
+    pipectl transfer restore application \
+        --address={TARGET_CONTROL_PLANE_API_ADDRESS} \
+        --api-key={TARGET_API_KEY} \
+        --input-file=backup.json \
+        --piped-id-mapping-file=mapping.json
+    ```
+
+Disabled applications from the source are restored and immediately re-disabled on the target to preserve their original status.
 
 ### You want more?
 
