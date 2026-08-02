@@ -6,6 +6,20 @@ description: >
   This section describes the plugins available for PipeCD v1 and how to use them.
 ---
 
+> **Note:**
+> The Plugins section is a work in progress. More plugin docs are on the way. Happy PipeCDing!
+
+| Plugin | Description | Status |
+|--------|-------------|--------|
+| [Kubernetes multi-cluster](kubernetes-multicluster/) | Deploy a single application to multiple Kubernetes clusters with one pipeline. | Alpha |
+| [ECS](ecs/) | Deploy applications to Amazon ECS using the `EXTERNAL` deployment controller | Alpha |
+
+This section contains configuration guides for the official PipeCD plugins.
+
+- [Kubernetes](./kubernetes/)
+- [Terraform](./terraform/)
+- [Analysis](./analysis/)
+
 In PipeCD v1, plugins handle deployments. `piped` runs each configured plugin as a separate process and communicates with it over gRPC, so which platforms your `piped` can deploy to depends on which plugins you configure. See more about [plugins](../concepts/#plugins).
 
 There are two types of plugins:
@@ -30,10 +44,10 @@ The PipeCD maintainers develop and maintain the following plugins. Each plugin i
 
 | Plugin | Stage | Description |
 |--------|-------|-------------|
-| Wait | `WAIT` | Waits for a specified duration before continuing the pipeline. |
-| Wait approval | `WAIT_APPROVAL` | Pauses the pipeline until a user approves the deployment. |
-| Analysis | `ANALYSIS` | Evaluates the deployment by querying metrics, logs, or HTTP endpoints. |
-| Script run | `SCRIPT_RUN` | Runs arbitrary commands as a pipeline stage. |
+| [Wait](wait/) | `WAIT` | Waits for a specified duration before continuing the pipeline. |
+| [Wait approval](wait-approval/) | `WAIT_APPROVAL` | Pauses the pipeline until a user approves the deployment. |
+| [Analysis](analysis/) | `ANALYSIS` | Evaluates the deployment by querying metrics, logs, or HTTP endpoints. |
+| [Script run](script-run/) | `SCRIPT_RUN` | Runs arbitrary commands as a pipeline stage. |
 
 ## Community plugins
 
@@ -46,3 +60,4 @@ To add a plugin to your `piped` and register deploy targets, see [Configuring a 
 ## Writing your own plugin
 
 Anyone can develop a plugin for PipeCD. See the [plugin development guide](../contribution-guidelines/contributing-plugins/) to get started.
+
