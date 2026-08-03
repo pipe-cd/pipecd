@@ -27,7 +27,6 @@ jobs:
           - helloworld
           - launcher
           - launcher-okd
-          - pipecd        # NOTE: kept for backwards compatibility, use 'controlplane' for new deployments
           - controlplane
           - piped
           - piped-okd
@@ -39,9 +38,6 @@ jobs:
             dockerfile: cmd/launcher/Dockerfile
           - image: launcher-okd
             dockerfile: cmd/launcher/Dockerfile-okd
-          # NOTE: 'pipecd' image is kept for backwards compatibility, built from same Dockerfile as 'controlplane'
-          - image: pipecd
-            dockerfile: cmd/controlplane/Dockerfile
           - image: controlplane
             dockerfile: cmd/controlplane/Dockerfile
           - image: piped
@@ -52,8 +48,6 @@ jobs:
             dockerfile: cmd/pipectl/Dockerfile
         exclude:
           - image: launcher-okd
-            container_registry: gcr.io/pipecd
-          - image: pipecd
             container_registry: gcr.io/pipecd
           - image: controlplane
             container_registry: gcr.io/pipecd
@@ -111,7 +105,7 @@ jobs:
       - name: Login to OCI using Helm
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${{ env.GHCR }} --username ${{ github.repository_owner }} --password-stdin
-      # NOTE: 'pipecd' chart is kept for backwards compatibility, use 'controlplane' for new deployments
+      # NOTE: 'pipecd' chart is kept for backwards compatibility, both charts use 'controlplane' image internally
       - name: Publish helm charts
         run: |
           make build/chart VERSION=${{ env.PIPECD_VERSION }}
