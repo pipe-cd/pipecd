@@ -1,0 +1,64 @@
+# lychee.toml
+
+# Root directory to resolve root-relative links (links starting with /)
+root_dir = "docs/static"
+
+# Exclude local addresses and other specific patterns
+exclude = [
+  # Exclude local/loopback/private addresses
+  "http://localhost.*",
+  "https://localhost.*",
+  "http://127.0.0.1.*",
+  "https://127.0.0.1.*",
+  
+  # Exclude mail links
+  "mailto:.*",
+  
+  # Exclude examples and placeholder repositories/domains
+  "https://github.com/org/.*",
+  "https://github.com/your-org/.*",
+  "https://github.com/yourname/.*",
+  "https://example.com/.*",
+  
+  # Exclude absolute/relative website page paths that Hugo resolves dynamically
+  # but do not exist physically under docs/static
+  ".*/docs/.*",
+  ".*/docs-.*",
+  ".*/blog/.*",
+  ".*/concepts.*",
+  ".*/quickstart.*",
+  ".*/overview.*",
+  ".*/installation.*",
+  ".*/user-guide.*",
+  ".*/operator-manual.*",
+  ".*/contribution-guidelines.*",
+  ".*/examples.*",
+  ".*/feature-status.*",
+  ".*/community.*",
+  
+  # Known flaky domains or sites that block/rate-limit automated checkers
+  "https://www.mysql.com/.*",
+  "https://dev.mysql.com/.*",
+  "https://www.npmjs.com/.*",
+  "https://npmjs.org/.*",
+  "https://heyyayush.hashnode.dev/.*",
+  "https://www.weave.works/.*",
+  "https://n66d.com/.*",
+  "https://exploringjs.com/.*",
+  "https://travis-ci.com/.*",
+  "https://www.vultr.com/.*",
+  "https://ark.intel.com/.*",
+  "https://gitter.im/.*",
+  "https://wiki.bash-hackers.org/.*",
+  "https://pipecd.dev/.*",
+]
+
+# Accept status codes (only successful and standard redirects)
+accept = [
+  "200..=204", 
+  "300..=307",
+]
+
+# Configure timeout and other behaviors
+timeout = 20
+max_concurrency = 10
