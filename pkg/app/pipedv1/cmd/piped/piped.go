@@ -30,7 +30,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
@@ -217,6 +216,10 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		return notifier.Run(ctx)
 	})
 
+	// Tracks plugins whose process has exited on its own, so that /healthz
+	// below can reflect it instead of always reporting "ok".
+	pluginHealth := newPluginHealth()
+
 	// Start running admin server.
 	{
 		var (
@@ -228,6 +231,11 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			w.Write(ver)
 		})
 		admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+			if names := pluginHealth.UnhealthyNames(); len(names) > 0 {
+				w.WriteHeader(http.StatusServiceUnavailable)
+				fmt.Fprintf(w, "unhealthy plugins: %s", strings.Join(names, ", "))
+				return
+			}
 			w.Write([]byte("ok"))
 		})
 		admin.Handle("/metrics", input.PrometheusMetricsHandlerFor(registry))
@@ -336,28 +344,38 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	// Start plugins that registered in the configuration.
 	{
-		// Start all plugins and keep their commands to stop them later.
+		// Start all plugins and keep their commands to stop or watch them later.
 		plugins, err := p.runPlugins(ctx, cfg.Plugins, input.Logger)
 		if err != nil {
 			input.Logger.Error("failed to run plugins", zap.Error(err))
 			return err
 		}
 
-		group.Go(func() error {
-			<-ctx.Done()
-			wg := &sync.WaitGroup{}
-			for _, plg := range plugins {
-				wg.Add(1)
-				go func() {
-					defer wg.Done()
+		// Each plugin gets its own goroutine that either stops it when piped
+		// is shutting down, or notices when the plugin's process has exited
+		// by itself (crash, OOM kill, etc.) and reports it through
+		// pluginHealth instead of leaving it unnoticed.
+		for i, plg := range plugins {
+			name := cfg.Plugins[i].Name
+			plg := plg
+			group.Go(func() error {
+				select {
+				case <-ctx.Done():
 					if err := plg.GracefulStop(p.gracePeriod); err != nil {
-						input.Logger.Error("failed to stop plugin", zap.Error(err))
+						input.Logger.Error("failed to stop plugin", zap.String("plugin", name), zap.Error(err))
 					}
-				}()
-			}
-			wg.Wait()
-			return nil
-		})
+					return nil
+				case <-plg.Done():
+					if ctx.Err() != nil {
+						// piped is already shutting down, this is expected.
+						return nil
+					}
+					input.Logger.Error("plugin exited unexpectedly", zap.String("plugin", name), zap.Error(plg.Err()))
+					pluginHealth.MarkUnhealthy(name, plg.Err())
+					return nil
+				}
+			})
+		}
 	}
 
 	// Make grpc clients to connect to plugins.
