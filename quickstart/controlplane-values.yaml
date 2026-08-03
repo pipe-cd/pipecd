@@ -39,6 +39,3 @@ secret:
 mysql:
   rootPassword: "test"
   database: "quickstart"
-
-monitoring:
-  enabled: true
