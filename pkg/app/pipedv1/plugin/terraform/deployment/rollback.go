@@ -31,6 +31,11 @@ func (p *Plugin) executeRollbackStage(ctx context.Context, input *sdk.ExecuteSta
 		input.Logger.Error("No stage log persister available", zap.Error(err))
 		return sdk.StageStatusFailure
 	}
+
+	if len(dts) == 0 {
+		slp.Errorf("No deploy targets provided")
+		return sdk.StageStatusFailure
+	}
 	rds := input.Request.RunningDeploymentSource
 
 	if rds.CommitHash == "" {

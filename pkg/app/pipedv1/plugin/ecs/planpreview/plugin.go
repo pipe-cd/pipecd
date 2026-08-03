@@ -40,6 +40,10 @@ func (p *Plugin) GetPlanPreview(
 	dts []*sdk.DeployTarget[config.ECSDeployTargetConfig],
 	input *sdk.GetPlanPreviewInput[config.ECSApplicationSpec],
 ) (*sdk.GetPlanPreviewResponse, error) {
+	if len(dts) == 0 {
+		return nil, fmt.Errorf("no deploy targets provided")
+	}
+
 	targetDS := input.Request.TargetDeploymentSource
 	targetAppCfg, err := targetDS.AppConfig()
 	if err != nil {
