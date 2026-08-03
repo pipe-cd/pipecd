@@ -113,7 +113,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum (go_info{job=\"pipecd-ops\", pipecd_component=\"piped\"})",
+          "expr": "sum (go_info{job=\"controlplane-ops\", pipecd_component=\"piped\"})",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -175,7 +175,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (piped_version)(go_info{job=\"pipecd-ops\", pipecd_component=\"piped\"})",
+          "expr": "sum by (piped_version)(go_info{job=\"controlplane-ops\", pipecd_component=\"piped\"})",
           "interval": "",
           "legendFormat": "{{piped_version}}",
           "refId": "A"
@@ -294,7 +294,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum without (instance, job, pipecd_component) (go_info{job=\"pipecd-ops\", pipecd_component=\"piped\"})",
+          "expr": "sum without (instance, job, pipecd_component) (go_info{job=\"controlplane-ops\", pipecd_component=\"piped\"})",
           "format": "table",
           "instant": true,
           "interval": "",
