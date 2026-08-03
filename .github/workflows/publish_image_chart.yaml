@@ -165,7 +165,7 @@ jobs:
       # we use `github.ref_name` to get the tag name without the `refs/tags/` prefix.
       - name: Build quickstart manifests
         run: |
-          helm template pipecd oci://ghcr.io/pipe-cd/chart/pipecd --version ${{ github.ref_name }} -n pipecd -f quickstart/control-plane-values.yaml > quickstart/manifests/control-plane.yaml
+          helm template controlplane oci://ghcr.io/pipe-cd/chart/controlplane --version ${{ github.ref_name }} -n pipecd -f quickstart/controlplane-values.yaml > quickstart/manifests/control-plane.yaml
           helm template piped oci://ghcr.io/pipe-cd/chart/piped --version ${{ github.ref_name }} -n pipecd --set quickstart.enabled=true --set quickstart.pipedId=\<YOUR_PIPED_ID\> --set quickstart.pipedKeyData=\<YOUR_PIPED_KEY_DATA\> > quickstart/manifests/piped.yaml
       - name: Publish quickstart manifests
         uses: peter-evans/create-pull-request@v6
