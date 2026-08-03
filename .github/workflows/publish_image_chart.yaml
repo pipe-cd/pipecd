@@ -27,7 +27,8 @@ jobs:
           - helloworld
           - launcher
           - launcher-okd
-          - pipecd
+          - pipecd        # NOTE: kept for backwards compatibility, use 'controlplane' for new deployments
+          - controlplane
           - piped
           - piped-okd
           - pipectl
@@ -38,8 +39,11 @@ jobs:
             dockerfile: cmd/launcher/Dockerfile
           - image: launcher-okd
             dockerfile: cmd/launcher/Dockerfile-okd
+          # NOTE: 'pipecd' image is kept for backwards compatibility, built from same Dockerfile as 'controlplane'
           - image: pipecd
-            dockerfile: cmd/pipecd/Dockerfile
+            dockerfile: cmd/controlplane/Dockerfile
+          - image: controlplane
+            dockerfile: cmd/controlplane/Dockerfile
           - image: piped
             dockerfile: cmd/piped/Dockerfile
           - image: piped-okd
@@ -50,6 +54,8 @@ jobs:
           - image: launcher-okd
             container_registry: gcr.io/pipecd
           - image: pipecd
+            container_registry: gcr.io/pipecd
+          - image: controlplane
             container_registry: gcr.io/pipecd
           - image: piped-okd
             container_registry: gcr.io/pipecd
@@ -105,10 +111,12 @@ jobs:
       - name: Login to OCI using Helm
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${{ env.GHCR }} --username ${{ github.repository_owner }} --password-stdin
+      # NOTE: 'pipecd' chart is kept for backwards compatibility, use 'controlplane' for new deployments
       - name: Publish helm charts
         run: |
           make build/chart VERSION=${{ env.PIPECD_VERSION }}
           helm push .artifacts/pipecd-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.GHCR }}/pipe-cd/chart
+          helm push .artifacts/controlplane-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.GHCR }}/pipe-cd/chart
           helm push .artifacts/piped-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.GHCR }}/pipe-cd/chart
           helm push .artifacts/helloworld-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.GHCR }}/pipe-cd/chart
 
