@@ -160,7 +160,7 @@ run/controlplane: BUILD_COMMIT ?= $(shell git rev-parse HEAD)
 run/controlplane: BUILD_DATE ?= $(shell date -u '+%Y%m%d-%H%M%S')
 run/controlplane: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
 run/controlplane: BUILD_OPTS ?= -ldflags "$(BUILD_LDFLAGS_PREFIX).version=$(BUILD_VERSION) $(BUILD_LDFLAGS_PREFIX).gitCommit=$(BUILD_COMMIT) $(BUILD_LDFLAGS_PREFIX).buildDate=$(BUILD_DATE) -w"
-run/controlplane: CONTROL_PLANE_VALUES ?= ./quickstart/control-plane-values.yaml
+run/controlplane: CONTROL_PLANE_VALUES ?= ./quickstart/controlplane-values.yaml
 run/controlplane:
 	@echo "Building go binary of Control Plane..."
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 $(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/controlplane ./cmd/controlplane
