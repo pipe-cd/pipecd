@@ -30,7 +30,7 @@ src
 
 ### Prerequisites
 
-- [NodeJS v20.19.0 or later](https://nodejs.org/en/)
+- [NodeJS v24.10.0 or later](https://nodejs.org/en/)
 - [Yarn](https://yarnpkg.com/)
 
 ### Running with Mocks(msw)
