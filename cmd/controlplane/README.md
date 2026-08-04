@@ -1,4 +1,4 @@
-# PipeCD Controle Plane
+# PipeCD Control Plane
 ## Development
 
 ## Prerequisites
@@ -14,7 +14,7 @@
 
 ## Commands
 
-- `make build/go`: builds all go modules including pipecd, piped, pipectl.
+- `make build/go`: builds all go modules including controlplane, piped, pipectl.
 - `make test/go`: runs all unit tests of go modules.
 - `make test/integration`: runs integration tests.
 - `make gen/code`: generate Go and Typescript code from protos and mock configs. You need to run it if you modified any proto or mock definition files.
@@ -40,13 +40,13 @@ For the full list of available commands, please see the Makefile at the root of 
 3. Install Control Plane into the local cluster
 
     ``` console
-    make run/pipecd
+    make run/controlplane
     ```
 
     Once all components are running up, use `kubectl port-forward` to expose the installed Control Plane on your localhost:
 
     ``` console
-    kubectl -n pipecd port-forward svc/pipecd 8080
+    kubectl -n pipecd port-forward svc/controlplane 8080
     ```
 
 4. Access to the local Control Plane web console

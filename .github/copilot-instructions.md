@@ -16,7 +16,7 @@ make check   # Runs build + lint + test + generated code check + DCO check
 ### Go
 ```bash
 make build/go                          # Build all Go binaries to .artifacts/
-make build/go MOD=pipecd               # Build single binary (pipecd, piped, pipectl, launcher)
+make build/go MOD=controlplane         # Build single binary (controlplane, piped, pipectl, launcher)
 make test/go                           # Run all Go tests
 make test/go MODULES=pkg/plugin/sdk    # Test specific module
 go test -run TestFooBar ./pkg/foo/...  # Run single test
@@ -50,7 +50,7 @@ make gen/code           # Regenerate .pb.go and .pb.validate.go from .proto file
 ### Local Development Environment
 ```bash
 make up/local-cluster   # Start local kind cluster + registry
-make run/pipecd         # Build and deploy control plane to local cluster
+make run/controlplane   # Build and deploy control plane to local cluster
 # In another terminal:
 kubectl port-forward -n pipecd svc/pipecd 8080
 # Access UI at http://localhost:8080?project=quickstart
@@ -64,11 +64,11 @@ make down/local-cluster # Teardown everything
 
 ### Components
 
-**Control Plane (cmd/pipecd)**
+**Control Plane (cmd/controlplane)**
 - Central gRPC server managing deployments, applications, pipeds, and users
 - Stores all state in datastore (Firestore or MySQL)
 - Serves web dashboard and APIs
-- Located: `cmd/pipecd/`, `pkg/app/server/`
+- Located: `cmd/controlplane/`, `pkg/app/server/`
 
 **Piped Agent (cmd/piped, cmd/pipedv1)**
 - Lightweight agent running in target environments
@@ -216,8 +216,8 @@ Every new Go file must start with this header (the year should be the year first
 ## Development Workflow
 
 ### Working on Control Plane
-1. Make code changes in `cmd/pipecd/` or `pkg/app/server/`
-2. Run `make run/pipecd` (builds, pushes to local registry, deploys to kind cluster)
+1. Make code changes in `cmd/controlplane/` or `pkg/app/server/`
+2. Run `make run/controlplane` (builds, pushes to local registry, deploys to kind cluster)
 3. Port-forward: `kubectl port-forward -n pipecd svc/pipecd 8080`
 4. Access UI at `http://localhost:8080?project=quickstart`
 
