@@ -21,6 +21,9 @@ import "validate/validate.proto";
 import "pkg/model/application.proto";
 import "pkg/model/deployment.proto";
 
+// NotificationEventType enumerates every kind of internal event that can
+// trigger a notification (e.g. to Slack) once matched against the project's
+// configured notification routes.
 enum NotificationEventType {
     EVENT_DEPLOYMENT_TRIGGERED = 0;
     EVENT_DEPLOYMENT_PLANNED = 1;
@@ -50,6 +53,9 @@ enum NotificationEventType {
     EVENT_STAGE_CANCELLED = 404;
 }
 
+// NotificationEventGroup categorizes NotificationEventType values into
+// broader groups, used to route notifications by group instead of listing
+// every individual event type.
 enum NotificationEventGroup {
     EVENT_NONE = 0;
     EVENT_DEPLOYMENT = 1;
@@ -59,12 +65,16 @@ enum NotificationEventGroup {
     EVENT_STAGE = 5;
 }
 
+// NotificationEventDeploymentTriggered is the payload for a
+// EVENT_DEPLOYMENT_TRIGGERED notification.
 message NotificationEventDeploymentTriggered {
     Deployment deployment = 1 [(validate.rules).message.required = true];
     repeated string mentioned_accounts = 3;
     repeated string mentioned_groups = 4;
 }
 
+// NotificationEventDeploymentPlanned is the payload for a
+// EVENT_DEPLOYMENT_PLANNED notification.
 message NotificationEventDeploymentPlanned {
     Deployment deployment = 1 [(validate.rules).message.required = true];
     string summary = 3;
@@ -72,68 +82,94 @@ message NotificationEventDeploymentPlanned {
     repeated string mentioned_groups = 5;
 }
 
+// NotificationEventDeploymentStarted is the payload for a
+// EVENT_DEPLOYMENT_STARTED notification.
 message NotificationEventDeploymentStarted {
     Deployment deployment = 1 [(validate.rules).message.required = true];
     repeated string mentioned_accounts = 3;
     repeated string mentioned_groups = 4;
 }
 
+// NotificationEventDeploymentApproved is the payload for a
+// EVENT_DEPLOYMENT_APPROVED notification.
 message NotificationEventDeploymentApproved {
     Deployment deployment = 1 [(validate.rules).message.required = true];
+    // The user who approved the stage.
     string approver = 3;
     repeated string mentioned_accounts = 4;
     repeated string mentioned_groups = 5;
 }
 
+// NotificationEventDeploymentRollingBack is the payload for a
+// EVENT_DEPLOYMENT_ROLLING_BACK notification.
 message NotificationEventDeploymentRollingBack {
     Deployment deployment = 1 [(validate.rules).message.required = true];
 }
 
+// NotificationEventDeploymentSucceeded is the payload for a
+// EVENT_DEPLOYMENT_SUCCEEDED notification.
 message NotificationEventDeploymentSucceeded {
     Deployment deployment = 1 [(validate.rules).message.required = true];
     repeated string mentioned_accounts = 3;
     repeated string mentioned_groups = 4;
 }
 
+// NotificationEventDeploymentFailed is the payload for a
+// EVENT_DEPLOYMENT_FAILED notification.
 message NotificationEventDeploymentFailed {
     Deployment deployment = 1 [(validate.rules).message.required = true];
+    // The human-readable reason why the deployment failed.
     string reason = 3;
     repeated string mentioned_accounts = 4;
     repeated string mentioned_groups = 5;
 }
 
+// NotificationEventDeploymentCancelled is the payload for a
+// EVENT_DEPLOYMENT_CANCELLED notification.
 message NotificationEventDeploymentCancelled {
     Deployment deployment = 1 [(validate.rules).message.required = true];
+    // The user who cancelled the deployment.
     string commander = 3;
     repeated string mentioned_accounts = 4;
     repeated string mentioned_groups = 5;
 }
 
+// NotificationEventDeploymentWaitApproval is the payload for a
+// EVENT_DEPLOYMENT_WAIT_APPROVAL notification.
 message NotificationEventDeploymentWaitApproval {
     Deployment deployment = 1 [(validate.rules).message.required = true];
     repeated string mentioned_accounts = 3;
     repeated string mentioned_groups = 4;
 }
 
+// NotificationEventDeploymentTriggerFailed is the payload for a
+// EVENT_DEPLOYMENT_TRIGGER_FAILED notification, sent when piped fails to
+// trigger a deployment for a commit, e.g. due to an invalid configuration.
 message NotificationEventDeploymentTriggerFailed {
     Application application = 1 [(validate.rules).message.required = true];
     string commit_hash = 2 [(validate.rules).string.min_len = 1];
     string commit_message = 3 [(validate.rules).string.min_len = 1];
+    // The human-readable reason why triggering failed.
     string reason = 4 [(validate.rules).string.min_len = 1];
     repeated string mentioned_accounts = 5;
     repeated string mentioned_groups = 6;
 }
 
+// NotificationEventApplicationSynced is the payload for a
+// EVENT_APPLICATION_SYNCED notification.
 message NotificationEventApplicationSynced {
     Application application = 1 [(validate.rules).message.required = true];
     ApplicationSyncState state = 3 [(validate.rules).message.required = true];
 }
 
+// NotificationEventApplicationOutOfSync is the payload for a
+// EVENT_APPLICATION_OUT_OF_SYNC notification.
 message NotificationEventApplicationOutOfSync {
     Application application = 1 [(validate.rules).message.required = true];
     ApplicationSyncState state = 3 [(validate.rules).message.required = true];
 }
 
+// NotificationEventPipedStarted is the payload for a EVENT_PIPED_STARTED notification.
 message NotificationEventPipedStarted {
     string id = 1 [(validate.rules).string.min_len = 1];
     string name = 2 [(validate.rules).string.min_len = 1];
@@ -141,6 +177,7 @@ message NotificationEventPipedStarted {
     string project_id = 4 [(validate.rules).string.min_len = 1];
 }
 
+// NotificationEventPipedStopped is the payload for a EVENT_PIPED_STOPPED notification.
 message NotificationEventPipedStopped {
     string id = 1 [(validate.rules).string.min_len = 1];
     string name = 2 [(validate.rules).string.min_len = 1];
@@ -148,26 +185,31 @@ message NotificationEventPipedStopped {
     string project_id = 4 [(validate.rules).string.min_len = 1];
 }
 
+// NotificationEventStageStarted is the payload for a EVENT_STAGE_STARTED notification.
 message NotificationEventStageStarted {
     Deployment deployment = 1 [(validate.rules).message.required = true];
     PipelineStage stage = 2 [(validate.rules).message.required = true];
 }
 
+// NotificationEventStageSkipped is the payload for a EVENT_STAGE_SKIPPED notification.
 message NotificationEventStageSkipped {
     Deployment deployment = 1 [(validate.rules).message.required = true];
     PipelineStage stage = 2 [(validate.rules).message.required = true];
 }
 
+// NotificationEventStageSucceeded is the payload for a EVENT_STAGE_SUCCEEDED notification.
 message NotificationEventStageSucceeded {
     Deployment deployment = 1 [(validate.rules).message.required = true];
     PipelineStage stage = 2 [(validate.rules).message.required = true];
 }
 
+// NotificationEventStageFailed is the payload for a EVENT_STAGE_FAILED notification.
 message NotificationEventStageFailed {
     Deployment deployment = 1 [(validate.rules).message.required = true];
     PipelineStage stage = 2 [(validate.rules).message.required = true];
 }
 
+// NotificationEventStageCancelled is the payload for a EVENT_STAGE_CANCELLED notification.
 message NotificationEventStageCancelled {
     Deployment deployment = 1 [(validate.rules).message.required = true];
     PipelineStage stage = 2 [(validate.rules).message.required = true];

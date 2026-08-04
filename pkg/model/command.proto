@@ -20,6 +20,7 @@ option go_package = "github.com/pipe-cd/pipecd/pkg/model";
 import "validate/validate.proto";
 import "pkg/model/common.proto";
 
+// CommandStatus represents the handling status of a command.
 enum CommandStatus {
     COMMAND_NOT_HANDLED_YET = 0;
     COMMAND_SUCCEEDED = 1;
@@ -27,6 +28,10 @@ enum CommandStatus {
     COMMAND_TIMEOUT = 3;
 }
 
+// Command represents an asynchronous instruction for a piped to execute,
+// such as syncing an application or approving a stage. Web/API clients
+// create commands, which piped then polls for, handles, and reports the
+// result of via ReportCommandHandled.
 message Command {
     enum Type {
         SYNC_APPLICATION = 0;
@@ -39,48 +44,63 @@ message Command {
         RESTART_PIPED = 7;
     }
 
+    // SyncApplication is the payload for a SYNC_APPLICATION command.
     message SyncApplication {
         string application_id = 1 [(validate.rules).string.min_len = 1];
         SyncStrategy sync_strategy = 2;
     }
 
+    // UpdateApplicationConfig is the payload for an UPDATE_APPLICATION_CONFIG command.
     message UpdateApplicationConfig {
         string application_id = 1 [(validate.rules).string.min_len = 1];
         string config_path = 2 [(validate.rules).string.min_len = 1];
         string config = 3 [(validate.rules).string.min_len = 1];
     }
 
+    // CancelDeployment is the payload for a CANCEL_DEPLOYMENT command.
     message CancelDeployment {
         string deployment_id = 1 [(validate.rules).string.min_len = 1];
+        // Force rollback regardless of the pipeline's configured on-cancel
+        // behavior. Mutually exclusive with force_no_rollback.
         bool force_rollback = 2;
+        // Force skipping rollback regardless of the pipeline's configured
+        // on-cancel behavior. Mutually exclusive with force_rollback.
         bool force_no_rollback = 3;
     }
 
+    // ApproveStage is the payload for an APPROVE_STAGE command.
     message ApproveStage {
         string deployment_id = 1 [(validate.rules).string.min_len = 1];
         string stage_id = 2 [(validate.rules).string.min_len = 1];
     }
 
+    // BuildPlanPreview is the payload for a BUILD_PLAN_PREVIEW command.
     message BuildPlanPreview {
         string repository_id = 1 [(validate.rules).string.min_len = 1];
         string head_branch = 2 [(validate.rules).string.min_len = 1];
         string head_commit = 3 [(validate.rules).string.min_len = 1];
         string base_branch = 4 [(validate.rules).string.min_len = 1];
+        // Maximum number of seconds a Piped can take to handle this command.
         int64 timeout = 5 [(validate.rules).int64.gte = 0];
     }
 
+    // ChainSyncApplication is the payload for a CHAIN_SYNC_APPLICATION command.
     message ChainSyncApplication {
+        // The deployment chain this sync request belongs to.
         string deployment_chain_id = 1;
+        // The index of the block within the chain this application belongs to.
         uint32 block_index = 2;
         string application_id = 3 [(validate.rules).string.min_len = 1];
         SyncStrategy sync_strategy = 4;
     }
 
+    // SkipStage is the payload for a SKIP_STAGE command.
     message SkipStage {
         string deployment_id = 1 [(validate.rules).string.min_len = 1];
         string stage_id = 2 [(validate.rules).string.min_len = 1];
     }
 
+    // RestartPiped is the payload for a RESTART_PIPED command.
     message RestartPiped {
         string piped_id = 1 [(validate.rules).string.min_len = 1];
     }
@@ -95,10 +115,12 @@ message Command {
     string project_id = 7;
 
     CommandStatus status = 20;
+    // Additional handling result data reported alongside the status.
     map<string,string> metadata = 21;
     int64 handled_at = 22 [(validate.rules).int64.gte = 0];
     // TODO: Add a new field to show why command was failed.
 
+    // The kind of command; determines which of the payload fields below is set.
     Type type = 30 [(validate.rules).enum.defined_only = true];
     SyncApplication sync_application = 31;
     UpdateApplicationConfig update_application_config = 32;

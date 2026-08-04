@@ -29,38 +29,88 @@ import "pkg/model/piped.proto";
 // APIService contains all RPC definitions for external service, pipectl.
 // All of these RPCs are authenticated by using API key.
 service APIService {
+    // AddApplication registers a new application to be managed by the given piped.
     rpc AddApplication(AddApplicationRequest) returns (AddApplicationResponse) {}
+    // SyncApplication triggers a new deployment to sync the given application
+    // to its latest configured state. It returns the ID of the command that
+    // piped must pick up and execute asynchronously.
     rpc SyncApplication(SyncApplicationRequest) returns (SyncApplicationResponse) {}
+    // GetApplication returns the application for the given ID.
     rpc GetApplication(GetApplicationRequest) returns (GetApplicationResponse) {}
+    // ListApplications returns the applications that belong to the caller's
+    // project, optionally filtered by the given fields.
     rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {}
+    // UpdateApplication updates the configuration of an already registered application.
     rpc UpdateApplication(UpdateApplicationRequest) returns (UpdateApplicationResponse) {}
+    // DeleteApplication permanently removes the given application and its
+    // registration from the project. This does not affect resources already
+    // deployed to the target platform.
     rpc DeleteApplication(DeleteApplicationRequest) returns (DeleteApplicationResponse) {}
+    // EnableApplication re-enables a previously disabled application so that
+    // it becomes visible and manageable again.
     rpc EnableApplication(EnableApplicationRequest) returns (EnableApplicationResponse) {}
+    // DisableApplication disables the given application. A disabled
+    // application is excluded from the list piped fetches to manage and from
+    // sync operations.
     rpc DisableApplication(DisableApplicationRequest) returns (DisableApplicationResponse) {}
+    // RenameApplicationConfigFile updates the application configuration file
+    // name recorded for the given applications, e.g. after the file was
+    // renamed in the Git repository.
     rpc RenameApplicationConfigFile(RenameApplicationConfigFileRequest) returns (RenameApplicationConfigFileResponse) {}
+    // UpdateApplicationDeployTargets replaces the deploy targets configured
+    // per plugin for the given application.
     rpc UpdateApplicationDeployTargets(UpdateApplicationDeployTargetsRequest) returns (UpdateApplicationDeployTargetsResponse) {}
 
+    // GetDeployment returns the deployment for the given ID.
     rpc GetDeployment(GetDeploymentRequest) returns (GetDeploymentResponse) {}
+    // ListDeployments returns the deployments that belong to the caller's
+    // project, optionally filtered by the given fields.
     rpc ListDeployments(ListDeploymentsRequest) returns (ListDeploymentsResponse) {}
 
+    // GetCommand returns the current status and result of a previously issued
+    // command, identified by the command ID returned from the RPC that
+    // created it (e.g. SyncApplication).
     rpc GetCommand(GetCommandRequest) returns (GetCommandResponse) {}
 
+    // GetPiped returns the piped for the given ID.
     rpc GetPiped(GetPipedRequest) returns (GetPipedResponse) {}
+    // RegisterPiped registers a new piped to the caller's project and returns
+    // its generated ID together with a newly issued piped key. The returned
+    // key is shown only once and must be stored by the caller.
     rpc RegisterPiped(RegisterPipedRequest) returns (RegisterPipedResponse) {}
+    // UpdatePiped updates the name and description of an already registered piped.
     rpc UpdatePiped(UpdatePipedRequest) returns (UpdatePipedResponse) {}
+    // EnablePiped re-enables a previously disabled piped so that it can
+    // connect to the control plane and be assigned applications again.
     rpc EnablePiped(EnablePipedRequest) returns (EnablePipedResponse) {}
+    // DisablePiped disables the given piped, preventing it from being usable
+    // until it is enabled again via EnablePiped.
     rpc DisablePiped(DisablePipedRequest) returns (DisablePipedResponse) {}
 
+    // RegisterEvent registers a new event that piped's event watcher can
+    // later match against to trigger actions such as updating configuration.
     rpc RegisterEvent(RegisterEventRequest) returns (RegisterEventResponse) {}
 
+    // RequestPlanPreview asks the pipeds responsible for the affected
+    // applications to build a plan preview for the given commit range. It
+    // returns the IDs of the generated commands; use GetPlanPreviewResults to
+    // fetch the results once the commands are handled.
     rpc RequestPlanPreview(RequestPlanPreviewRequest) returns (RequestPlanPreviewResponse) {}
+    // GetPlanPreviewResults returns the plan preview results collected so far
+    // for the given command IDs returned by RequestPlanPreview.
     rpc GetPlanPreviewResults(GetPlanPreviewResultsRequest) returns (GetPlanPreviewResultsResponse) {}
 
+    // Encrypt encrypts the given plaintext data using the public
+    // key/service account of the specified piped so that it can be safely
+    // committed to Git as a sealed secret and later decrypted only by that piped.
     rpc Encrypt(EncryptRequest) returns (EncryptResponse) {}
 
+    // ListStageLogs returns the logs of every stage of the given deployment,
+    // keyed by stage ID.
     rpc ListStageLogs(ListStageLogsRequest) returns (ListStageLogsResponse) {}
 }
 
+// AddApplicationRequest is the request for the AddApplication RPC.
 message AddApplicationRequest {
     reserved 2,6;
 
@@ -73,86 +123,121 @@ message AddApplicationRequest {
     map<string, string> labels = 9;
 }
 
+// AddApplicationResponse is the response for the AddApplication RPC.
 message AddApplicationResponse {
+    // The generated unique identifier of the application.
     string application_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// SyncApplicationRequest is the request for the SyncApplication RPC.
 message SyncApplicationRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// SyncApplicationResponse is the response for the SyncApplication RPC.
 message SyncApplicationResponse {
+    // The ID of the generated SYNC_APPLICATION command. Use GetCommand to
+    // poll for its handling result.
     string command_id = 1;
 }
 
+// GetApplicationRequest is the request for the GetApplication RPC.
 message GetApplicationRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// GetApplicationResponse is the response for the GetApplication RPC.
 message GetApplicationResponse {
     model.Application application = 1;
 }
 
+// ListApplicationsRequest is the request for the ListApplications RPC.
 message ListApplicationsRequest {
     reserved 3, 5;
 
+    // Filter by exact application name. Empty means no filtering.
     string name = 1;
+    // Filter by application kind, e.g. "KUBERNETES". Empty means no filtering.
     string kind = 2;
+    // Filter by whether the application is disabled.
     bool disabled = 4;
+    // Filter by labels; an application must have all the given key/value pairs.
     map<string, string> labels = 6;
+    // Maximum number of applications to return. If unset or zero, a
+    // server-defined default page size is used.
     int32 limit = 7;
+    // Filter by the piped that manages the application.
     string piped_id = 8;
+    // Opaque cursor returned by a previous call used to fetch the next page.
+    // Empty to start from the first page.
     string cursor = 10;
 }
 
+// ListApplicationsResponse is the response for the ListApplications RPC.
 message ListApplicationsResponse {
     repeated model.Application applications = 1;
+    // Opaque cursor to pass to a subsequent call to fetch the next page.
+    // Empty when there are no more results.
     string cursor = 2;
 }
 
+// GetPipedRequest is the request for the GetPiped RPC.
 message GetPipedRequest {
     string piped_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// GetPipedResponse is the response for the GetPiped RPC.
 message GetPipedResponse {
     model.Piped piped = 1;
 }
 
+// RegisterPipedRequest is the request for the RegisterPiped RPC.
 message RegisterPipedRequest {
     string name = 1 [(validate.rules).string.min_len = 1];
     string desc = 2;
 }
 
+// RegisterPipedResponse is the response for the RegisterPiped RPC.
 message RegisterPipedResponse {
+    // The generated unique identifier of the piped.
     string id  = 1;
+    // The base64 encoded piped key. Shown only once; the caller is
+    // responsible for storing it securely.
     string key = 2;
 }
 
+// UpdatePipedRequest is the request for the UpdatePiped RPC.
 message UpdatePipedRequest {
     string piped_id = 1 [(validate.rules).string.min_len = 1];
     string name = 2 [(validate.rules).string.min_len = 1];
     string desc = 3;
 }
 
+// UpdatePipedResponse is the response for the UpdatePiped RPC.
 message UpdatePipedResponse {
 }
 
+// EnableApplicationRequest is the request for the EnableApplication RPC.
 message EnableApplicationRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// EnableApplicationResponse is the response for the EnableApplication RPC.
 message EnableApplicationResponse {
     string application_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// DisableApplicationRequest is the request for the DisableApplication RPC.
 message DisableApplicationRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// DisableApplicationResponse is the response for the DisableApplication RPC.
 message DisableApplicationResponse {
     string application_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// UpdateApplicationRequest is the request for the UpdateApplication RPC.
 message UpdateApplicationRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
     string piped_id = 2 [(validate.rules).string.min_len = 1];
@@ -160,18 +245,22 @@ message UpdateApplicationRequest {
     model.ApplicationGitPath git_path = 4 [(validate.rules).message.required = true];
 }
 
+// UpdateApplicationResponse is the response for the UpdateApplication RPC.
 message UpdateApplicationResponse {
     string application_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// DeleteApplicationRequest is the request for the DeleteApplication RPC.
 message DeleteApplicationRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// DeleteApplicationResponse is the response for the DeleteApplication RPC.
 message DeleteApplicationResponse {
     string application_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// RenameApplicationConfigFileRequest is the request for the RenameApplicationConfigFile RPC.
 message RenameApplicationConfigFileRequest {
     // Maximum number of applications that can be updated in one request is 50.
     // To update more than that, break them and send in multiple requests.
@@ -179,65 +268,96 @@ message RenameApplicationConfigFileRequest {
     string new_filename = 2 [(validate.rules).string.min_len = 1];
 }
 
+// RenameApplicationConfigFileResponse is the response for the RenameApplicationConfigFile RPC.
 message RenameApplicationConfigFileResponse {
 }
 
+// UpdateApplicationDeployTargetsRequest is the request for the UpdateApplicationDeployTargets RPC.
 message UpdateApplicationDeployTargetsRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
     map<string, model.DeployTargets> deploy_targets_by_plugin = 2 [(validate.rules).map.min_pairs = 1];
 }
 
+// UpdateApplicationDeployTargetsResponse is the response for the UpdateApplicationDeployTargets RPC.
 message UpdateApplicationDeployTargetsResponse {}
 
+// GetDeploymentRequest is the request for the GetDeployment RPC.
 message GetDeploymentRequest {
     string deployment_id = 1;
 }
 
+// GetDeploymentResponse is the response for the GetDeployment RPC.
 message GetDeploymentResponse {
     model.Deployment deployment = 1;
 }
 
+// ListDeploymentsRequest is the request for the ListDeployments RPC.
 message ListDeploymentsRequest {
+    // Filter by deployment status, e.g. "SUCCESS". Empty means no filtering.
     repeated string statuses = 1;
+    // Filter by application kind, e.g. "KUBERNETES". Empty means no filtering.
     repeated string kinds = 2;
     repeated string application_ids = 3;
+    // Filter by exact application name.
     string application_name = 4;
+    // Filter by labels; a deployment must have all the given key/value pairs.
     map<string, string> labels = 5;
+    // Maximum number of deployments to return. If unset or zero, a
+    // server-defined default page size is used.
     int32 limit = 6;
+    // Opaque cursor returned by a previous call used to fetch the next page.
+    // Empty to start from the first page.
     string cursor = 7;
 }
 
+// ListDeploymentsResponse is the response for the ListDeployments RPC.
 message ListDeploymentsResponse {
     repeated model.Deployment deployments = 1;
+    // Opaque cursor to pass to a subsequent call to fetch the next page.
+    // Empty when there are no more results.
     string cursor = 2;
 }
 
+// GetCommandRequest is the request for the GetCommand RPC.
 message GetCommandRequest {
     string command_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// GetCommandResponse is the response for the GetCommand RPC.
 message GetCommandResponse {
     model.Command command = 1;
 }
 
+// EnablePipedRequest is the request for the EnablePiped RPC.
 message EnablePipedRequest {
     string piped_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// EnablePipedResponse is the response for the EnablePiped RPC.
 message EnablePipedResponse {
 }
 
+// DisablePipedRequest is the request for the DisablePiped RPC.
 message DisablePipedRequest {
     string piped_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// DisablePipedResponse is the response for the DisablePiped RPC.
 message DisablePipedResponse {
 }
 
+// RegisterEventRequest is the request for the RegisterEvent RPC.
 message RegisterEventRequest {
+    // The name of event, used together with labels to build the event key
+    // that piped's event watcher matches against.
     string name = 1 [(validate.rules).string.min_len = 1];
+    // The data of the event, made available to the event watcher's replacer.
     string data = 2 [(validate.rules).string.min_len = 1];
+    // The key/value pairs that are attached to the event; combined with name
+    // to build the event key.
     map<string,string> labels = 3 [(validate.rules).map.keys.string.min_len = 1, (validate.rules).map.values.string.min_len = 1];
+    // Additional key/value pairs made available to the event watcher's
+    // replacer without being part of the event key.
     map<string,string> contexts = 4 [(validate.rules).map.keys.string.min_len = 1, (validate.rules).map.keys.string.pattern = "^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$", (validate.rules).map.values.string.min_len = 1];
     // Information of the commit that trigger this event.
     string commit_hash = 5;
@@ -248,10 +368,13 @@ message RegisterEventRequest {
     int64 commit_timestamp = 10;
 }
 
+// RegisterEventResponse is the response for the RegisterEvent RPC.
 message RegisterEventResponse {
+    // The generated unique identifier of the event.
     string event_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// RequestPlanPreviewRequest is the request for the RequestPlanPreview RPC.
 message RequestPlanPreviewRequest {
     string repo_remote_url = 1 [(validate.rules).string.min_len = 1];
     string head_branch = 2 [(validate.rules).string.min_len = 1];
@@ -261,20 +384,27 @@ message RequestPlanPreviewRequest {
     int64 timeout = 5 [(validate.rules).int64.gte = 0];
 }
 
+// RequestPlanPreviewResponse is the response for the RequestPlanPreview RPC.
 message RequestPlanPreviewResponse {
+    // The IDs of the generated BUILD_PLAN_PREVIEW commands, one per affected
+    // piped. Pass these to GetPlanPreviewResults to fetch the results.
     repeated string commands = 1;
 }
 
+// GetPlanPreviewResultsRequest is the request for the GetPlanPreviewResults RPC.
 message GetPlanPreviewResultsRequest {
+    // The command IDs returned by RequestPlanPreview to fetch results for.
     repeated string commands = 1;
     // Maximum number of seconds a Piped can take to handle a command.
     int64 command_handle_timeout = 2;
 }
 
+// GetPlanPreviewResultsResponse is the response for the GetPlanPreviewResults RPC.
 message GetPlanPreviewResultsResponse {
     repeated model.PlanPreviewCommandResult results = 1;
 }
 
+// EncryptRequest is the request for the Encrypt RPC.
 message EncryptRequest {
     string plaintext = 1 [(validate.rules).string.min_len = 1];
     string piped_id = 2 [(validate.rules).string.min_len = 1];
@@ -282,19 +412,25 @@ message EncryptRequest {
     bool base64_encoding = 3;
 }
 
+// EncryptResponse is the response for the Encrypt RPC.
 message EncryptResponse {
     string ciphertext = 1 [(validate.rules).string.min_len = 1];
 }
 
+// StageLog holds the logs of a single stage execution.
 message StageLog {
     repeated model.LogBlock blocks = 1;
+    // Whether the stage has finished producing logs.
     bool completed = 2;
 }
 
+// ListStageLogsRequest is the request for the ListStageLogs RPC.
 message ListStageLogsRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// ListStageLogsResponse is the response for the ListStageLogs RPC.
 message ListStageLogsResponse {
+    // The logs of each stage of the deployment, keyed by stage ID.
     map<string, StageLog> stage_logs = 1;
 }

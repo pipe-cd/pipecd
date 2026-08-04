@@ -35,6 +35,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// GetPlanPreviewRequest is the request for the GetPlanPreview RPC.
 type GetPlanPreviewRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -128,6 +129,7 @@ func (x *GetPlanPreviewRequest) GetPipedId() string {
 	return ""
 }
 
+// GetPlanPreviewResponse is the response for the GetPlanPreview RPC.
 type GetPlanPreviewResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -176,6 +178,7 @@ func (x *GetPlanPreviewResponse) GetResults() []*PlanPreviewResult {
 	return nil
 }
 
+// PlanPreviewResult is the plan preview result for a single deploy target.
 type PlanPreviewResult struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

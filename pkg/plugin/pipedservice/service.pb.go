@@ -36,6 +36,8 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// DecryptSecretRequest is the request for decrypting a sealed secret.
+// NOTE: This message is not currently wired to a PluginService RPC.
 type DecryptSecretRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -83,6 +85,8 @@ func (x *DecryptSecretRequest) GetSecret() string {
 	return ""
 }
 
+// DecryptSecretResponse is the response for decrypting a sealed secret.
+// NOTE: This message is not currently wired to a PluginService RPC.
 type DecryptSecretResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -130,6 +134,7 @@ func (x *DecryptSecretResponse) GetDecryptedSecret() string {
 	return ""
 }
 
+// InstallToolRequest is the request for the InstallTool RPC.
 type InstallToolRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -210,6 +215,7 @@ func (x *InstallToolRequest) GetInstallScript() string {
 	return ""
 }
 
+// InstallToolResponse is the response for the InstallTool RPC.
 type InstallToolResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -258,13 +264,15 @@ func (x *InstallToolResponse) GetInstalledPath() string {
 	return ""
 }
 
+// ReportStageLogsRequest is the request for the ReportStageLogs RPC.
 type ReportStageLogsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	DeploymentId string            `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
-	StageId      string            `protobuf:"bytes,2,opt,name=stage_id,json=stageId,proto3" json:"stage_id,omitempty"`
+	DeploymentId string `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
+	StageId      string `protobuf:"bytes,2,opt,name=stage_id,json=stageId,proto3" json:"stage_id,omitempty"`
+	// The retry attempt number of the stage these logs belong to.
 	RetriedCount int32             `protobuf:"varint,3,opt,name=retried_count,json=retriedCount,proto3" json:"retried_count,omitempty"`
 	Blocks       []*model.LogBlock `protobuf:"bytes,4,rep,name=blocks,proto3" json:"blocks,omitempty"`
 }
@@ -329,6 +337,7 @@ func (x *ReportStageLogsRequest) GetBlocks() []*model.LogBlock {
 	return nil
 }
 
+// ReportStageLogsResponse is the response for the ReportStageLogs RPC.
 type ReportStageLogsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -367,16 +376,21 @@ func (*ReportStageLogsResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_plugin_pipedservice_service_proto_rawDescGZIP(), []int{5}
 }
 
+// ReportStageLogsFromLastCheckpointRequest is the request for the
+// ReportStageLogsFromLastCheckpoint RPC.
 type ReportStageLogsFromLastCheckpointRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	DeploymentId string            `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
-	StageId      string            `protobuf:"bytes,2,opt,name=stage_id,json=stageId,proto3" json:"stage_id,omitempty"`
-	RetriedCount int32             `protobuf:"varint,3,opt,name=retried_count,json=retriedCount,proto3" json:"retried_count,omitempty"`
-	Blocks       []*model.LogBlock `protobuf:"bytes,4,rep,name=blocks,proto3" json:"blocks,omitempty"`
-	Completed    bool              `protobuf:"varint,5,opt,name=completed,proto3" json:"completed,omitempty"`
+	DeploymentId string `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
+	StageId      string `protobuf:"bytes,2,opt,name=stage_id,json=stageId,proto3" json:"stage_id,omitempty"`
+	// The retry attempt number of the stage these logs belong to.
+	RetriedCount int32 `protobuf:"varint,3,opt,name=retried_count,json=retriedCount,proto3" json:"retried_count,omitempty"`
+	// The full log blocks recorded since the most recently saved checkpoint.
+	Blocks []*model.LogBlock `protobuf:"bytes,4,rep,name=blocks,proto3" json:"blocks,omitempty"`
+	// Whether the stage has finished producing logs.
+	Completed bool `protobuf:"varint,5,opt,name=completed,proto3" json:"completed,omitempty"`
 }
 
 func (x *ReportStageLogsFromLastCheckpointRequest) Reset() {
@@ -446,6 +460,7 @@ func (x *ReportStageLogsFromLastCheckpointRequest) GetCompleted() bool {
 	return false
 }
 
+// ReportStageLogsFromLastCheckpointResponse is the response for the ReportStageLogsFromLastCheckpoint RPC.
 type ReportStageLogsFromLastCheckpointResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -484,6 +499,7 @@ func (*ReportStageLogsFromLastCheckpointResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_plugin_pipedservice_service_proto_rawDescGZIP(), []int{7}
 }
 
+// GetStageMetadataRequest is the request for the GetStageMetadata RPC.
 type GetStageMetadataRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -491,7 +507,8 @@ type GetStageMetadataRequest struct {
 
 	DeploymentId string `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
 	StageId      string `protobuf:"bytes,2,opt,name=stage_id,json=stageId,proto3" json:"stage_id,omitempty"`
-	Key          string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+	// The metadata key to look up.
+	Key string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
 }
 
 func (x *GetStageMetadataRequest) Reset() {
@@ -547,13 +564,16 @@ func (x *GetStageMetadataRequest) GetKey() string {
 	return ""
 }
 
+// GetStageMetadataResponse is the response for the GetStageMetadata RPC.
 type GetStageMetadataResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// The stored value. Meaningful only when found is true.
 	Value string `protobuf:"bytes,1,opt,name=value,proto3" json:"value,omitempty"`
-	Found bool   `protobuf:"varint,2,opt,name=found,proto3" json:"found,omitempty"`
+	// Whether a value was found for the given key.
+	Found bool `protobuf:"varint,2,opt,name=found,proto3" json:"found,omitempty"`
 }
 
 func (x *GetStageMetadataResponse) Reset() {
@@ -602,6 +622,7 @@ func (x *GetStageMetadataResponse) GetFound() bool {
 	return false
 }
 
+// PutStageMetadataRequest is the request for the PutStageMetadata RPC.
 type PutStageMetadataRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -609,8 +630,9 @@ type PutStageMetadataRequest struct {
 
 	DeploymentId string `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
 	StageId      string `protobuf:"bytes,2,opt,name=stage_id,json=stageId,proto3" json:"stage_id,omitempty"`
-	Key          string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
-	Value        string `protobuf:"bytes,4,opt,name=value,proto3" json:"value,omitempty"`
+	// The metadata key to set. An existing value for the same key is overwritten.
+	Key   string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+	Value string `protobuf:"bytes,4,opt,name=value,proto3" json:"value,omitempty"`
 }
 
 func (x *PutStageMetadataRequest) Reset() {
@@ -673,6 +695,7 @@ func (x *PutStageMetadataRequest) GetValue() string {
 	return ""
 }
 
+// PutStageMetadataResponse is the response for the PutStageMetadata RPC.
 type PutStageMetadataResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -711,14 +734,17 @@ func (*PutStageMetadataResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_plugin_pipedservice_service_proto_rawDescGZIP(), []int{11}
 }
 
+// PutStageMetadataMultiRequest is the request for the PutStageMetadataMulti RPC.
 type PutStageMetadataMultiRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	DeploymentId string            `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
-	StageId      string            `protobuf:"bytes,2,opt,name=stage_id,json=stageId,proto3" json:"stage_id,omitempty"`
-	Metadata     map[string]string `protobuf:"bytes,3,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	DeploymentId string `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
+	StageId      string `protobuf:"bytes,2,opt,name=stage_id,json=stageId,proto3" json:"stage_id,omitempty"`
+	// The metadata key/value pairs to set. Existing values for the same keys
+	// are overwritten.
+	Metadata map[string]string `protobuf:"bytes,3,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
 func (x *PutStageMetadataMultiRequest) Reset() {
@@ -774,6 +800,7 @@ func (x *PutStageMetadataMultiRequest) GetMetadata() map[string]string {
 	return nil
 }
 
+// PutStageMetadataMultiResponse is the response for the PutStageMetadataMulti RPC.
 type PutStageMetadataMultiResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -812,6 +839,7 @@ func (*PutStageMetadataMultiResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_plugin_pipedservice_service_proto_rawDescGZIP(), []int{13}
 }
 
+// GetDeploymentPluginMetadataRequest is the request for the GetDeploymentPluginMetadata RPC.
 type GetDeploymentPluginMetadataRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -821,7 +849,8 @@ type GetDeploymentPluginMetadataRequest struct {
 	// Plugin name to distinguish which plugin manages the metadata.
 	// e.g. "plugin-kubernetes", "plugin-wait-stage"
 	PluginName string `protobuf:"bytes,2,opt,name=plugin_name,json=pluginName,proto3" json:"plugin_name,omitempty"`
-	Key        string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+	// The metadata key to look up.
+	Key string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
 }
 
 func (x *GetDeploymentPluginMetadataRequest) Reset() {
@@ -877,13 +906,16 @@ func (x *GetDeploymentPluginMetadataRequest) GetKey() string {
 	return ""
 }
 
+// GetDeploymentPluginMetadataResponse is the response for the GetDeploymentPluginMetadata RPC.
 type GetDeploymentPluginMetadataResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// The stored value. Meaningful only when found is true.
 	Value string `protobuf:"bytes,1,opt,name=value,proto3" json:"value,omitempty"`
-	Found bool   `protobuf:"varint,2,opt,name=found,proto3" json:"found,omitempty"`
+	// Whether a value was found for the given key.
+	Found bool `protobuf:"varint,2,opt,name=found,proto3" json:"found,omitempty"`
 }
 
 func (x *GetDeploymentPluginMetadataResponse) Reset() {
@@ -932,6 +964,7 @@ func (x *GetDeploymentPluginMetadataResponse) GetFound() bool {
 	return false
 }
 
+// PutDeploymentPluginMetadataRequest is the request for the PutDeploymentPluginMetadata RPC.
 type PutDeploymentPluginMetadataRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -941,8 +974,9 @@ type PutDeploymentPluginMetadataRequest struct {
 	// Plugin name to distinguish which plugin manages the metadata.
 	// e.g. "plugin-kubernetes", "plugin-wait-stage"
 	PluginName string `protobuf:"bytes,2,opt,name=plugin_name,json=pluginName,proto3" json:"plugin_name,omitempty"`
-	Key        string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
-	Value      string `protobuf:"bytes,4,opt,name=value,proto3" json:"value,omitempty"`
+	// The metadata key to set. An existing value for the same key is overwritten.
+	Key   string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+	Value string `protobuf:"bytes,4,opt,name=value,proto3" json:"value,omitempty"`
 }
 
 func (x *PutDeploymentPluginMetadataRequest) Reset() {
@@ -1005,6 +1039,7 @@ func (x *PutDeploymentPluginMetadataRequest) GetValue() string {
 	return ""
 }
 
+// PutDeploymentPluginMetadataResponse is the response for the PutDeploymentPluginMetadata RPC.
 type PutDeploymentPluginMetadataResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1043,6 +1078,8 @@ func (*PutDeploymentPluginMetadataResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_plugin_pipedservice_service_proto_rawDescGZIP(), []int{17}
 }
 
+// PutDeploymentPluginMetadataMultiRequest is the request for the
+// PutDeploymentPluginMetadataMulti RPC.
 type PutDeploymentPluginMetadataMultiRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1051,8 +1088,10 @@ type PutDeploymentPluginMetadataMultiRequest struct {
 	DeploymentId string `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
 	// Plugin name to distinguish which plugin manages the metadata.
 	// e.g. "plugin-kubernetes", "plugin-wait-stage"
-	PluginName string            `protobuf:"bytes,2,opt,name=plugin_name,json=pluginName,proto3" json:"plugin_name,omitempty"`
-	Metadata   map[string]string `protobuf:"bytes,3,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	PluginName string `protobuf:"bytes,2,opt,name=plugin_name,json=pluginName,proto3" json:"plugin_name,omitempty"`
+	// The metadata key/value pairs to set. Existing values for the same keys
+	// are overwritten.
+	Metadata map[string]string `protobuf:"bytes,3,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
 func (x *PutDeploymentPluginMetadataMultiRequest) Reset() {
@@ -1108,6 +1147,7 @@ func (x *PutDeploymentPluginMetadataMultiRequest) GetMetadata() map[string]strin
 	return nil
 }
 
+// PutDeploymentPluginMetadataMultiResponse is the response for the PutDeploymentPluginMetadataMulti RPC.
 type PutDeploymentPluginMetadataMultiResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1146,13 +1186,15 @@ func (*PutDeploymentPluginMetadataMultiResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_plugin_pipedservice_service_proto_rawDescGZIP(), []int{19}
 }
 
+// GetDeploymentSharedMetadataRequest is the request for the GetDeploymentSharedMetadata RPC.
 type GetDeploymentSharedMetadataRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
 	DeploymentId string `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
-	Key          string `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+	// The metadata key to look up.
+	Key string `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
 }
 
 func (x *GetDeploymentSharedMetadataRequest) Reset() {
@@ -1201,13 +1243,16 @@ func (x *GetDeploymentSharedMetadataRequest) GetKey() string {
 	return ""
 }
 
+// GetDeploymentSharedMetadataResponse is the response for the GetDeploymentSharedMetadata RPC.
 type GetDeploymentSharedMetadataResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// The stored value. Meaningful only when found is true.
 	Value string `protobuf:"bytes,1,opt,name=value,proto3" json:"value,omitempty"`
-	Found bool   `protobuf:"varint,2,opt,name=found,proto3" json:"found,omitempty"`
+	// Whether a value was found for the given key.
+	Found bool `protobuf:"varint,2,opt,name=found,proto3" json:"found,omitempty"`
 }
 
 func (x *GetDeploymentSharedMetadataResponse) Reset() {
@@ -1256,6 +1301,7 @@ func (x *GetDeploymentSharedMetadataResponse) GetFound() bool {
 	return false
 }
 
+// ListStageCommandsRequest is the request for the ListStageCommands RPC.
 type ListStageCommandsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1311,6 +1357,7 @@ func (x *ListStageCommandsRequest) GetStageId() string {
 	return ""
 }
 
+// ListStageCommandsResponse is the response for the ListStageCommands RPC.
 type ListStageCommandsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1358,14 +1405,17 @@ func (x *ListStageCommandsResponse) GetCommands() []*model.Command {
 	return nil
 }
 
+// GetApplicationSharedObjectRequest is the request for the GetApplicationSharedObject RPC.
 type GetApplicationSharedObjectRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
 	ApplicationId string `protobuf:"bytes,1,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
-	PluginName    string `protobuf:"bytes,2,opt,name=plugin_name,json=pluginName,proto3" json:"plugin_name,omitempty"`
-	Key           string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+	// The plugin that originally stored the object.
+	PluginName string `protobuf:"bytes,2,opt,name=plugin_name,json=pluginName,proto3" json:"plugin_name,omitempty"`
+	// The key the object was stored under.
+	Key string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
 }
 
 func (x *GetApplicationSharedObjectRequest) Reset() {
@@ -1421,11 +1471,13 @@ func (x *GetApplicationSharedObjectRequest) GetKey() string {
 	return ""
 }
 
+// GetApplicationSharedObjectResponse is the response for the GetApplicationSharedObject RPC.
 type GetApplicationSharedObjectResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// The raw bytes of the stored object.
 	Object []byte `protobuf:"bytes,1,opt,name=object,proto3" json:"object,omitempty"`
 }
 
@@ -1468,15 +1520,19 @@ func (x *GetApplicationSharedObjectResponse) GetObject() []byte {
 	return nil
 }
 
+// PutApplicationSharedObjectRequest is the request for the PutApplicationSharedObject RPC.
 type PutApplicationSharedObjectRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
 	ApplicationId string `protobuf:"bytes,1,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
-	PluginName    string `protobuf:"bytes,2,opt,name=plugin_name,json=pluginName,proto3" json:"plugin_name,omitempty"`
-	Key           string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
-	Object        []byte `protobuf:"bytes,4,opt,name=object,proto3" json:"object,omitempty"`
+	// The plugin storing the object.
+	PluginName string `protobuf:"bytes,2,opt,name=plugin_name,json=pluginName,proto3" json:"plugin_name,omitempty"`
+	// The key to store the object under.
+	Key string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+	// The raw bytes of the object to store.
+	Object []byte `protobuf:"bytes,4,opt,name=object,proto3" json:"object,omitempty"`
 }
 
 func (x *PutApplicationSharedObjectRequest) Reset() {
@@ -1539,6 +1595,7 @@ func (x *PutApplicationSharedObjectRequest) GetObject() []byte {
 	return nil
 }
 
+// PutApplicationSharedObjectResponse is the response for the PutApplicationSharedObject RPC.
 type PutApplicationSharedObjectResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

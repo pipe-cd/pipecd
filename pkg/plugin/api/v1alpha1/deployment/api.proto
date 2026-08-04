@@ -50,19 +50,23 @@ service DeploymentService {
     rpc ExecuteStage(ExecuteStageRequest) returns (ExecuteStageResponse) {}
 }
 
+// DetermineVersionsRequest is the request for the DetermineVersions RPC.
 message DetermineVersionsRequest {
     PlanPluginInput input = 1 [(validate.rules).message.required = true];
 }
 
+// DetermineVersionsResponse is the response for the DetermineVersions RPC.
 message DetermineVersionsResponse {
     // The determined versions of the artifacts.
     repeated model.ArtifactVersion versions = 1;
 }
 
+// DetermineStrategyRequest is the request for the DetermineStrategy RPC.
 message DetermineStrategyRequest {
     PlanPluginInput input = 1 [(validate.rules).message.required = true];
 }
 
+// DetermineStrategyResponse is the response for the DetermineStrategy RPC.
 message DetermineStrategyResponse {
     // The determined sync strategy.
     model.SyncStrategy sync_strategy = 1;
@@ -73,7 +77,10 @@ message DetermineStrategyResponse {
     bool unsupported = 3;
 }
 
+// BuildPipelineSyncStagesRequest is the request for the BuildPipelineSyncStages RPC.
 message BuildPipelineSyncStagesRequest {
+    // StageConfig describes one non-rollback stage as listed in the
+    // application's pipeline configuration.
     message StageConfig {
         reserved 1;
 
@@ -89,35 +96,46 @@ message BuildPipelineSyncStagesRequest {
         // The configuration of the stage.
         bytes config = 6;
     }
+    // Whether to build the rollback stages instead of the forward stages.
     bool rollback = 1;
+    // The non-rollback stages, listed in execution order, whose names are
+    // among those returned by FetchDefinedStages for this plugin.
     repeated StageConfig stages = 2;
 }
 
+// BuildPipelineSyncStagesResponse is the response for the BuildPipelineSyncStages RPC.
 message BuildPipelineSyncStagesResponse {
     // The built stages of the deployment pipeline.
     repeated model.PipelineStage stages = 1;
 }
 
+// BuildQuickSyncStagesRequest is the request for the BuildQuickSyncStages RPC.
 message BuildQuickSyncStagesRequest {
+    // Whether to build the rollback stages instead of the forward stages.
     bool rollback = 1;
 }
 
+// BuildQuickSyncStagesResponse is the response for the BuildQuickSyncStages RPC.
 message BuildQuickSyncStagesResponse {
     // The built stages of the deployment pipeline.
     repeated model.PipelineStage stages = 1;
 }
 
+// FetchDefinedStagesRequest is the request for the FetchDefinedStages RPC.
 message FetchDefinedStagesRequest {}
 
+// FetchDefinedStagesResponse is the response for the FetchDefinedStages RPC.
 message FetchDefinedStagesResponse {
     // The defined stages supported by the plugin.
     repeated string stages = 1;
 }
 
+// ExecuteStageRequest is the request for the ExecuteStage RPC.
 message ExecuteStageRequest {
     ExecutePluginInput input = 1 [(validate.rules).message.required = true];
 }
 
+// ExecuteStageResponse is the response for the ExecuteStage RPC.
 message ExecuteStageResponse {
     // The result of the stage execution.
     model.StageStatus status = 1;
@@ -125,6 +143,8 @@ message ExecuteStageResponse {
     string message = 2;
 }
 
+// PlanPluginInput carries the data a plugin needs to determine artifact
+// versions, sync strategy, or pipeline stages for a deployment being planned.
 message PlanPluginInput {
     // The deployment to build a plan for.
     model.Deployment deployment = 1 [(validate.rules).message.required = true];
@@ -134,6 +154,8 @@ message PlanPluginInput {
     grpc.plugin.common.v1alpha1.DeploymentSource target_deployment_source = 3;
 }
 
+// ExecutePluginInput carries the data a plugin needs to execute a single
+// stage of a deployment.
 message ExecutePluginInput {
     // The deployment to execute the stage for.
     model.Deployment deployment = 1 [(validate.rules).message.required = true];

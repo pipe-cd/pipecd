@@ -35,6 +35,8 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// ConnectionStatus represents whether the piped is currently connected to
+// the control plane.
 type Piped_ConnectionStatus int32
 
 const (
@@ -84,6 +86,9 @@ func (Piped_ConnectionStatus) EnumDescriptor() ([]byte, []int) {
 	return file_pkg_model_piped_proto_rawDescGZIP(), []int{0, 0}
 }
 
+// Piped represents an agent process registered to a project that performs
+// deployments on behalf of the control plane. It periodically reports its
+// metadata and status, and polls for commands to execute.
 type Piped struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -297,6 +302,9 @@ func (x *Piped) GetUpdatedAt() int64 {
 	return 0
 }
 
+// PipedKey represents one credential a piped can use to authenticate to the
+// control plane. A piped may hold multiple keys at once to allow rotation
+// without downtime.
 type PipedKey struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -363,6 +371,8 @@ func (x *PipedKey) GetCreatedAt() int64 {
 	return 0
 }
 
+// CloudProvider is a deprecated, pre-plugin-arch representation of a
+// configured cloud provider. Use Plugin instead.
 type Piped_CloudProvider struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -418,6 +428,8 @@ func (x *Piped_CloudProvider) GetType() string {
 	return ""
 }
 
+// PlatformProvider is a deprecated, pre-plugin-arch representation of a
+// configured platform provider. Use Plugin instead.
 type Piped_PlatformProvider struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -473,6 +485,8 @@ func (x *Piped_PlatformProvider) GetType() string {
 	return ""
 }
 
+// Plugin describes one plugin loaded by the piped and the deploy targets
+// it is configured to manage.
 type Piped_Plugin struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -528,13 +542,18 @@ func (x *Piped_Plugin) GetDeployTargets() []string {
 	return nil
 }
 
+// SecretEncryption holds the configuration used to encrypt application
+// secrets so that only this piped can decrypt them.
 type Piped_SecretEncryption struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Type                  string `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
-	PublicKey             string `protobuf:"bytes,2,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
+	// The encryption method: one of "KEY_PAIR", "GCP_KMS", "AWS_KMS", "NONE".
+	Type string `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
+	// The public key used to encrypt secrets when type is "KEY_PAIR".
+	PublicKey string `protobuf:"bytes,2,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
+	// The service account used to encrypt secrets when type is "GCP_KMS".
 	EncryptServiceAccount string `protobuf:"bytes,3,opt,name=encrypt_service_account,json=encryptServiceAccount,proto3" json:"encrypt_service_account,omitempty"`
 }
 

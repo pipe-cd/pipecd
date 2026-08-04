@@ -37,239 +37,363 @@ import "google/protobuf/descriptor.proto";
 
 // WebService contains all RPC definitions for web client.
 // All of these RPCs are only called by web client and authenticated by using ID_TOKEN.
+// Unless an RPC explicitly sets `(model.rbac).ignored = true`, the caller's role must be
+// granted the listed resource/action pair by the project's RBAC configuration.
 service WebService {
     // Piped
+
+    // RegisterPiped registers a new piped to the caller's project and returns
+    // its generated ID together with a newly issued piped key.
+    // The returned key is shown to the user only once and must be stored by the piped.
     rpc RegisterPiped(RegisterPipedRequest) returns (RegisterPipedResponse) {
         option (model.rbac).resource = PIPED;
         option (model.rbac).action = CREATE;
     }
+    // UpdatePiped updates the name and description of an already registered piped.
     rpc UpdatePiped(UpdatePipedRequest) returns (UpdatePipedResponse) {
         option (model.rbac).resource = PIPED;
         option (model.rbac).action = UPDATE;
     }
+    // RecreatePipedKey issues a new key for the given piped without removing the
+    // existing ones, allowing key rotation without downtime. Old keys must be
+    // removed afterward via DeleteOldPipedKeys once the piped has adopted the new key.
     rpc RecreatePipedKey(RecreatePipedKeyRequest) returns (RecreatePipedKeyResponse) {
         option (model.rbac).resource = PIPED;
         option (model.rbac).action = UPDATE;
     }
+    // DeleteOldPipedKeys removes all but the most recently created key of the given piped.
+    // This is intended to be called after a key rotation initiated by RecreatePipedKey
+    // has been confirmed to be in use.
     rpc DeleteOldPipedKeys(DeleteOldPipedKeysRequest) returns (DeleteOldPipedKeysResponse) {
         option (model.rbac).resource = PIPED;
         option (model.rbac).action = UPDATE;
     }
+    // EnablePiped re-enables a previously disabled piped so that it can connect
+    // to the control plane and be assigned applications again.
     rpc EnablePiped(EnablePipedRequest) returns (EnablePipedResponse) {
         option (model.rbac).resource = PIPED;
         option (model.rbac).action = UPDATE;
     }
+    // DisablePiped disables the given piped, preventing it from being usable
+    // until it is enabled again via EnablePiped. Existing keys are left intact.
     rpc DisablePiped(DisablePipedRequest) returns (DisablePipedResponse) {
         option (model.rbac).resource = PIPED;
         option (model.rbac).action = UPDATE;
     }
+    // ListPipeds returns the pipeds that belong to the caller's project.
     rpc ListPipeds(ListPipedsRequest) returns (ListPipedsResponse) {
         option (model.rbac).resource = PIPED;
         option (model.rbac).action = LIST;
     }
+    // GetPiped returns the piped for the given ID.
     rpc GetPiped(GetPipedRequest) returns (GetPipedResponse) {
         option (model.rbac).resource = PIPED;
         option (model.rbac).action = GET;
     }
+    // UpdatePipedDesiredVersion sets the version that the given pipeds should be
+    // running. Piped launcher periodically checks this value and restarts the
+    // piped process with the desired version when it differs from the current one.
     rpc UpdatePipedDesiredVersion(UpdatePipedDesiredVersionRequest) returns (UpdatePipedDesiredVersionResponse) {
         option (model.rbac).resource = PIPED;
         option (model.rbac).action = UPDATE;
     }
+    // RestartPiped requests the given piped to restart itself by enqueueing a
+    // RESTART_PIPED command that the piped will pick up and execute.
     rpc RestartPiped(RestartPipedRequest) returns (RestartPipedResponse) {
         option (model.rbac).resource = PIPED;
         option (model.rbac).action = UPDATE;
     }
+    // ListReleasedVersions returns the list of piped versions that have been released.
     rpc ListReleasedVersions(ListReleasedVersionsRequest) returns (ListReleasedVersionsResponse) {
         option (model.rbac).resource = PIPED;
         option (model.rbac).action = LIST;
     }
+    // ListDeprecatedNotes returns the deprecation notices that should be shown
+    // to the given project, e.g. about configuration or features going away.
     rpc ListDeprecatedNotes(ListDeprecatedNotesRequest) returns (ListDeprecatedNotesResponse) {
         option (model.rbac).resource = PIPED;
         option (model.rbac).action = LIST;
     }
 
     // Application
+
+    // AddApplication registers a new application to be managed by the given piped.
     rpc AddApplication(AddApplicationRequest) returns (AddApplicationResponse) {
         option (model.rbac).resource = APPLICATION;
         option (model.rbac).action = CREATE;
     }
+    // UpdateApplication updates the configuration of an already registered application.
     rpc UpdateApplication(UpdateApplicationRequest) returns (UpdateApplicationResponse) {
         option (model.rbac).resource = APPLICATION;
         option (model.rbac).action = UPDATE;
     }
+    // EnableApplication re-enables a previously disabled application so that it
+    // becomes visible and manageable again.
     rpc EnableApplication(EnableApplicationRequest) returns (EnableApplicationResponse) {
         option (model.rbac).resource = APPLICATION;
         option (model.rbac).action = UPDATE;
     }
+    // DisableApplication disables the given application. A disabled application
+    // is excluded from the list piped fetches to manage and from sync operations.
     rpc DisableApplication(DisableApplicationRequest) returns (DisableApplicationResponse) {
         option (model.rbac).resource = APPLICATION;
         option (model.rbac).action = UPDATE;
     }
+    // DeleteApplication permanently removes the given application and its
+    // registration from the project. This does not affect resources already
+    // deployed to the target platform.
     rpc DeleteApplication(DeleteApplicationRequest) returns (DeleteApplicationResponse) {
         option (model.rbac).resource = APPLICATION;
         option (model.rbac).action = DELETE;
     }
+    // ListApplications returns the applications that belong to the caller's project,
+    // optionally filtered by the given options.
     rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {
         option (model.rbac).resource = APPLICATION;
         option (model.rbac).action = LIST;
     }
+    // SyncApplication triggers a new deployment to sync the given application to
+    // its latest configured state. It returns the ID of the command that piped
+    // must pick up and execute asynchronously.
     rpc SyncApplication(SyncApplicationRequest) returns (SyncApplicationResponse) {
         option (model.rbac).resource = APPLICATION;
         option (model.rbac).action = UPDATE;
     }
+    // GetApplication returns the application for the given ID.
     rpc GetApplication(GetApplicationRequest) returns (GetApplicationResponse) {
         option (model.rbac).resource = APPLICATION;
         option (model.rbac).action = GET;
     }
+    // GenerateApplicationSealedSecret encrypts the given plaintext data using the
+    // public key/service account of the specified piped so that it can be safely
+    // committed to Git as a sealed secret and later decrypted only by that piped.
     rpc GenerateApplicationSealedSecret(GenerateApplicationSealedSecretRequest) returns (GenerateApplicationSealedSecretResponse) {
         option (model.rbac).resource = APPLICATION;
         option (model.rbac).action = UPDATE;
     }
+    // ListUnregisteredApplications returns the applications that piped has found
+    // configured in Git repositories but that have not been registered to the
+    // control plane yet.
     rpc ListUnregisteredApplications(ListUnregisteredApplicationsRequest) returns (ListUnregisteredApplicationsResponse) {
         option (model.rbac).resource = APPLICATION;
         option (model.rbac).action = LIST;
     }
 
     // Deployment
+
+    // ListDeployments returns the deployments that belong to the caller's project,
+    // optionally filtered by the given options, ordered from newest to oldest.
     rpc ListDeployments(ListDeploymentsRequest) returns (ListDeploymentsResponse) {
         option (model.rbac).resource = DEPLOYMENT;
         option (model.rbac).action = LIST;
     }
+    // GetDeployment returns the deployment for the given ID.
     rpc GetDeployment(GetDeploymentRequest) returns (GetDeploymentResponse) {
         option (model.rbac).resource = DEPLOYMENT;
         option (model.rbac).action = GET;
     }
+    // GetStageLog returns the log blocks recorded so far for the given stage
+    // execution, starting from the given offset index. Callers should poll this
+    // RPC and use the returned `completed` flag to know when no more logs will arrive.
     rpc GetStageLog(GetStageLogRequest) returns (GetStageLogResponse) {
         option (model.rbac).resource = DEPLOYMENT;
         option (model.rbac).action = GET;
     }
+    // CancelDeployment requests the cancellation of the given running deployment.
+    // At most one of `force_rollback` and `force_no_rollback` may be set to
+    // override the default rollback behavior configured for the pipeline.
     rpc CancelDeployment(CancelDeploymentRequest) returns (CancelDeploymentResponse) {
         option (model.rbac).resource = DEPLOYMENT;
         option (model.rbac).action = UPDATE;
     }
+    // SkipStage requests skipping the given manually-operable stage of a
+    // running deployment, allowing the deployment to proceed to the next stage.
     rpc SkipStage(SkipStageRequest) returns (SkipStageResponse) {
         option (model.rbac).resource = DEPLOYMENT;
         option (model.rbac).action = UPDATE;
     }
+    // ApproveStage approves the given manually-operable stage of a running
+    // deployment, allowing the deployment to proceed to the next stage.
     rpc ApproveStage(ApproveStageRequest) returns (ApproveStageResponse) {
         option (model.rbac).resource = DEPLOYMENT;
         option (model.rbac).action = UPDATE;
     }
 
     // Deployment tracing
+
+    // ListDeploymentTraces returns the deployment traces that belong to the
+    // caller's project together with the deployments each trace produced,
+    // optionally filtered by the given options.
     rpc ListDeploymentTraces(ListDeploymentTracesRequest) returns (ListDeploymentTracesResponse) {
         option (model.rbac).resource = DEPLOYMENT;
         option (model.rbac).action = LIST;
     }
 
     // ApplicationLiveState
+
+    // GetApplicationLiveState returns the most recent live state snapshot of
+    // the given application as observed by its piped.
     rpc GetApplicationLiveState(GetApplicationLiveStateRequest) returns (GetApplicationLiveStateResponse) {
         option (model.rbac).resource = APPLICATION;
         option (model.rbac).action = GET;
     }
 
     // Account
+
+    // GetProject returns the project the caller belongs to.
     rpc GetProject(GetProjectRequest) returns (GetProjectResponse) {
         option (model.rbac).resource = PROJECT;
         option (model.rbac).action = GET;
     }
+    // UpdateProjectStaticAdmin updates the username and password of the
+    // project's static admin user.
     rpc UpdateProjectStaticAdmin(UpdateProjectStaticAdminRequest) returns (UpdateProjectStaticAdminResponse) {
         option (model.rbac).resource = PROJECT;
         option (model.rbac).action = UPDATE;
     }
+    // EnableStaticAdmin re-enables login via the static admin username/password
+    // for the caller's project.
     rpc EnableStaticAdmin(EnableStaticAdminRequest) returns (EnableStaticAdminResponse) {
         option (model.rbac).resource = PROJECT;
         option (model.rbac).action = UPDATE;
     }
+    // DisableStaticAdmin disables login via the static admin username/password
+    // for the caller's project. This is expected to be used once SSO has been
+    // configured and verified.
     rpc DisableStaticAdmin(DisableStaticAdminRequest) returns (DisableStaticAdminResponse) {
         option (model.rbac).resource = PROJECT;
         option (model.rbac).action = UPDATE;
     }
+    // UpdateProjectSSOConfig updates the single sign-on configuration of the
+    // caller's project.
     rpc UpdateProjectSSOConfig(UpdateProjectSSOConfigRequest) returns (UpdateProjectSSOConfigResponse) {
         option (model.rbac).resource = PROJECT;
         option (model.rbac).action = UPDATE;
     }
+    // UpdateProjectRBACConfig updates the mapping from RBAC role name to the
+    // built-in admin/editor/viewer level for the caller's project.
     rpc UpdateProjectRBACConfig(UpdateProjectRBACConfigRequest) returns (UpdateProjectRBACConfigResponse) {
         option (model.rbac).resource = PROJECT;
         option (model.rbac).action = UPDATE;
     }
+    // GetMe returns the identity of the currently authenticated caller.
     rpc GetMe(GetMeRequest) returns (GetMeResponse) {
         option (model.rbac).resource = PROJECT;
         option (model.rbac).action = GET;
     }
+    // AddProjectRBACRole creates a new custom RBAC role with the given policies
+    // for the caller's project.
     rpc AddProjectRBACRole(AddProjectRBACRoleRequest) returns (AddProjectRBACRoleResponse) {
         option (model.rbac).resource = PROJECT;
         option (model.rbac).action = UPDATE;
     }
+    // UpdateProjectRBACRole replaces the policies of an existing custom RBAC role.
     rpc UpdateProjectRBACRole(UpdateProjectRBACRoleRequest) returns (UpdateProjectRBACRoleResponse) {
         option (model.rbac).resource = PROJECT;
         option (model.rbac).action = UPDATE;
     }
+    // DeleteProjectRBACRole removes an existing custom RBAC role from the
+    // caller's project. Built-in roles cannot be removed this way.
     rpc DeleteProjectRBACRole(DeleteProjectRBACRoleRequest) returns (DeleteProjectRBACRoleResponse) {
         option (model.rbac).resource = PROJECT;
         option (model.rbac).action = UPDATE;
     }
+    // AddProjectUserGroup maps an SSO group to an RBAC role so that members of
+    // that SSO group are granted the role upon login.
     rpc AddProjectUserGroup(AddProjectUserGroupRequest) returns (AddProjectUserGroupResponse) {
         option (model.rbac).resource = PROJECT;
         option (model.rbac).action = UPDATE;
     }
+    // DeleteProjectUserGroup removes an existing SSO group to RBAC role mapping.
     rpc DeleteProjectUserGroup(DeleteProjectUserGroupRequest) returns (DeleteProjectUserGroupResponse) {
         option (model.rbac).resource = PROJECT;
         option (model.rbac).action = UPDATE;
     }
 
     // Command
+
+    // GetCommand returns the current status and result of a previously issued
+    // command, identified by the command ID returned from the RPC that created it.
+    // This RPC is intentionally excluded from RBAC checks so any authenticated
+    // caller can poll for the outcome of a command they triggered.
     rpc GetCommand(GetCommandRequest) returns (GetCommandResponse) {
         option (model.rbac).ignored = true;
     }
 
     // API Key
+
+    // GenerateAPIKey issues a new API key with the given role for the caller's
+    // project. The returned key value is shown only once and must be stored by the caller.
     rpc GenerateAPIKey(GenerateAPIKeyRequest) returns (GenerateAPIKeyResponse) {
         option (model.rbac).resource = API_KEY;
         option (model.rbac).action = CREATE;
     }
+    // DisableAPIKey disables the given API key, preventing it from
+    // authenticating future requests. Disabling is permanent and cannot be undone.
     rpc DisableAPIKey(DisableAPIKeyRequest) returns (DisableAPIKeyResponse) {
         option (model.rbac).resource = API_KEY;
         option (model.rbac).action = UPDATE;
     }
+    // ListAPIKeys returns the API keys that belong to the caller's project.
     rpc ListAPIKeys(ListAPIKeysRequest) returns (ListAPIKeysResponse) {
         option (model.rbac).resource = API_KEY;
         option (model.rbac).action = LIST;
     }
 
     // Insights
+
+    // GetInsightData returns time-series insight metrics, such as deployment
+    // frequency or change failure rate, for the caller's project within the
+    // given time range and resolution.
     rpc GetInsightData(GetInsightDataRequest) returns (GetInsightDataResponse) {
         option (model.rbac).resource = INSIGHT;
         option (model.rbac).action = GET;
     }
+    // GetInsightApplicationCount returns the current number of applications in
+    // the caller's project, grouped by attributes such as kind and active status.
     rpc GetInsightApplicationCount(GetInsightApplicationCountRequest) returns (GetInsightApplicationCountResponse) {
         option (model.rbac).resource = INSIGHT;
         option (model.rbac).action = GET;
     }
 
     // DeploymentChain
+
+    // ListDeploymentChains returns the deployment chains that belong to the
+    // caller's project, ordered from newest to oldest.
     rpc ListDeploymentChains(ListDeploymentChainsRequest) returns (ListDeploymentChainsResponse) {}
+    // GetDeploymentChain returns the deployment chain for the given ID.
     rpc GetDeploymentChain(GetDeploymentChainRequest) returns (GetDeploymentChainResponse) {}
 
     // Events
+
+    // ListEvents returns the events that belong to the caller's project,
+    // optionally filtered by the given options.
     rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {
         option (model.rbac).resource = EVENT;
         option (model.rbac).action = LIST;
     }
 }
 
+// RegisterPipedRequest is the request for the RegisterPiped RPC.
 message RegisterPipedRequest {
     reserved 3;
 
+    // The name of the piped, shown in the web UI.
     string name = 1;
+    // The additional description about the piped.
     string desc = 2;
 }
 
+// RegisterPipedResponse is the response for the RegisterPiped RPC.
 message RegisterPipedResponse {
+    // The generated unique identifier of the piped.
     string id = 1;
+    // The base64 encoded piped key. Shown only once; the caller is
+    // responsible for storing it securely.
     string key = 2;
 }
 
+// UpdatePipedRequest is the request for the UpdatePiped RPC.
 message UpdatePipedRequest {
     reserved 4;
 
@@ -278,40 +402,54 @@ message UpdatePipedRequest {
     string desc = 3;
 }
 
+// UpdatePipedResponse is the response for the UpdatePiped RPC.
 message UpdatePipedResponse {
 }
 
+// RecreatePipedKeyRequest is the request for the RecreatePipedKey RPC.
 message RecreatePipedKeyRequest {
+    // The ID of the piped to issue a new key for.
     string id = 1;
 }
 
+// RecreatePipedKeyResponse is the response for the RecreatePipedKey RPC.
 message RecreatePipedKeyResponse {
+    // The newly generated base64 encoded piped key. Shown only once.
     string key = 1;
 }
 
+// DeleteOldPipedKeysRequest is the request for the DeleteOldPipedKeys RPC.
 message DeleteOldPipedKeysRequest {
     string piped_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// DeleteOldPipedKeysResponse is the response for the DeleteOldPipedKeys RPC.
 message DeleteOldPipedKeysResponse {
 }
 
+// EnablePipedRequest is the request for the EnablePiped RPC.
 message EnablePipedRequest {
     string piped_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// EnablePipedResponse is the response for the EnablePiped RPC.
 message EnablePipedResponse {
 }
 
+// DisablePipedRequest is the request for the DisablePiped RPC.
 message DisablePipedRequest {
     string piped_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// DisablePipedResponse is the response for the DisablePiped RPC.
 message DisablePipedResponse {
 }
 
+// ListPipedsRequest is the request for the ListPipeds RPC.
 message ListPipedsRequest {
+    // Options used to filter the returned pipeds.
     message Options {
+        // Filter by whether the piped is enabled. Unset means no filtering.
         google.protobuf.BoolValue enabled = 1;
     }
     // Whether to include the status value in the response message.
@@ -319,49 +457,67 @@ message ListPipedsRequest {
     Options options = 2;
 }
 
+// ListPipedsResponse is the response for the ListPipeds RPC.
 message ListPipedsResponse {
     repeated model.Piped pipeds = 1;
 }
 
+// GetPipedRequest is the request for the GetPiped RPC.
 message GetPipedRequest {
     string piped_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// GetPipedResponse is the response for the GetPiped RPC.
 message GetPipedResponse {
     model.Piped piped = 1;
 }
 
+// UpdatePipedDesiredVersionRequest is the request for the UpdatePipedDesiredVersion RPC.
 message UpdatePipedDesiredVersionRequest {
+    // The desired piped version, must start with "v" (e.g. "v0.50.0").
     string version = 1 [(validate.rules).string.prefix = "v"];
+    // The IDs of the pipeds that should be updated to the desired version.
     repeated string piped_ids = 2 [(validate.rules).repeated.min_items = 1];
 }
 
+// UpdatePipedDesiredVersionResponse is the response for the UpdatePipedDesiredVersion RPC.
 message UpdatePipedDesiredVersionResponse {
 }
 
+// RestartPipedRequest is the request for the RestartPiped RPC.
 message RestartPipedRequest {
     string piped_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// RestartPipedResponse is the response for the RestartPiped RPC.
 message RestartPipedResponse {
+    // The ID of the generated RESTART_PIPED command. Use GetCommand to poll
+    // for its handling result.
     string command_id = 1;
 }
 
+// ListReleasedVersionsRequest is the request for the ListReleasedVersions RPC.
 message ListReleasedVersionsRequest {
 }
 
+// ListReleasedVersionsResponse is the response for the ListReleasedVersions RPC.
 message ListReleasedVersionsResponse {
+    // The released piped versions, e.g. "v0.50.0".
     repeated string versions = 1;
 }
 
+// ListDeprecatedNotesRequest is the request for the ListDeprecatedNotes RPC.
 message ListDeprecatedNotesRequest {
     string project_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// ListDeprecatedNotesResponse is the response for the ListDeprecatedNotes RPC.
 message ListDeprecatedNotesResponse {
+    // The deprecation notice text to show to the project, in Markdown format. Empty if none.
     string notes = 1;
 }
 
+// AddApplicationRequest is the request for the AddApplication RPC.
 message AddApplicationRequest {
     reserved 2,6;
 
@@ -370,15 +526,20 @@ message AddApplicationRequest {
     model.ApplicationGitPath git_path = 4 [(validate.rules).message.required = true];
     model.ApplicationKind kind = 5 [(validate.rules).enum.defined_only = true];
     string platform_provider = 9;
+    // The map of plugin name to the deploy targets that plugin should use for
+    // this application.
     map<string, model.DeployTargets> deploy_targets_by_plugin = 10;
     string description = 7;
     map<string, string> labels = 8;
 }
 
+// AddApplicationResponse is the response for the AddApplication RPC.
 message AddApplicationResponse {
+    // The generated unique identifier of the application.
     string application_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// UpdateApplicationRequest is the request for the UpdateApplication RPC.
 message UpdateApplicationRequest {
     reserved 3,7;
 
@@ -387,69 +548,93 @@ message UpdateApplicationRequest {
     string piped_id = 4 [(validate.rules).string.min_len = 1];
     model.ApplicationKind kind = 6 [(validate.rules).enum.defined_only = true];
     string platform_provider = 9;
+    // The map of plugin name to the deploy targets that plugin should use for
+    // this application.
     map<string, model.DeployTargets> deploy_targets_by_plugin = 10;
     string config_filename = 8;
 }
 
+// UpdateApplicationResponse is the response for the UpdateApplication RPC.
 message UpdateApplicationResponse {
 }
 
+// EnableApplicationRequest is the request for the EnableApplication RPC.
 message EnableApplicationRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// EnableApplicationResponse is the response for the EnableApplication RPC.
 message EnableApplicationResponse {
 }
 
+// DisableApplicationRequest is the request for the DisableApplication RPC.
 message DisableApplicationRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// DisableApplicationResponse is the response for the DisableApplication RPC.
 message DisableApplicationResponse {
 }
 
+// DeleteApplicationRequest is the request for the DeleteApplication RPC.
 message DeleteApplicationRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// DeleteApplicationResponse is the response for the DeleteApplication RPC.
 message DeleteApplicationResponse {
 }
 
+// ListApplicationsRequest is the request for the ListApplications RPC.
 message ListApplicationsRequest {
+    // Options used to filter the returned applications. All set fields are
+    // combined with AND semantics.
     message Options {
         reserved 4;
 
+        // Filter by whether the application is enabled. Unset means no filtering.
         google.protobuf.BoolValue enabled = 1;
         repeated model.ApplicationKind kinds = 2;
         repeated model.ApplicationSyncStatus sync_statuses = 3;
+        // Filter by exact application name.
         string name = 5;
+        // Filter by labels; an application must have all the given key/value pairs.
         map<string, string> labels = 6;
+        // Filter by the piped that manages the application.
         string piped_id = 7;
     }
     Options options = 1;
 }
 
+// ListApplicationsResponse is the response for the ListApplications RPC.
 message ListApplicationsResponse {
     repeated model.Application applications = 1;
 }
 
+// SyncApplicationRequest is the request for the SyncApplication RPC.
 message SyncApplicationRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
     model.SyncStrategy sync_strategy = 2;
 }
 
+// SyncApplicationResponse is the response for the SyncApplication RPC.
 message SyncApplicationResponse {
+    // The ID of the generated SYNC_APPLICATION command. Use GetCommand to poll
+    // for its handling result.
     string command_id = 1;
 }
 
+// GetApplicationRequest is the request for the GetApplication RPC.
 message GetApplicationRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// GetApplicationResponse is the response for the GetApplication RPC.
 message GetApplicationResponse {
     model.Application application = 1;
 }
 
+// GenerateApplicationSealedSecretRequest is the request for the GenerateApplicationSealedSecret RPC.
 message GenerateApplicationSealedSecretRequest {
     string piped_id = 1 [(validate.rules).string.min_len = 1];
     string data = 2 [(validate.rules).string.min_len = 1];
@@ -457,308 +642,442 @@ message GenerateApplicationSealedSecretRequest {
     bool base64_encoding = 3;
 }
 
+// GenerateApplicationSealedSecretResponse is the response for the GenerateApplicationSealedSecret RPC.
 message GenerateApplicationSealedSecretResponse {
     string data = 1 [(validate.rules).string.min_len = 1];
 }
 
+// ListUnregisteredApplicationsRequest is the request for the ListUnregisteredApplications RPC.
 message ListUnregisteredApplicationsRequest {
 }
 
+// ListUnregisteredApplicationsResponse is the response for the ListUnregisteredApplications RPC.
 message ListUnregisteredApplicationsResponse {
     repeated model.ApplicationInfo applications = 1;
 }
 
+// ListDeploymentsRequest is the request for the ListDeployments RPC.
 message ListDeploymentsRequest {
+    // Options used to filter the returned deployments. All set fields are
+    // combined with AND semantics.
     message Options {
         reserved 4;
 
         repeated model.DeploymentStatus statuses = 1;
         repeated model.ApplicationKind kinds = 2;
         repeated string application_ids = 3;
+        // Filter by exact application name.
         string application_name = 5;
+        // Filter by labels; a deployment must have all the given key/value pairs.
         map<string, string> labels = 6;
     }
     Options options = 1;
+    // Maximum number of deployments to return. If unset or zero, a
+    // server-defined default page size is used.
     int32 page_size = 2;
+    // Opaque cursor returned by a previous call used to fetch the next page.
+    // Empty to start from the first page.
     string cursor = 3;
     // It will not return any data older than this timestamp, even if it does not meet the page size.
     // This aims to prevent the server from scanning the entire database to look for deployments that have the specified fields in spite of nothing.
     int64 page_min_updated_at = 4;
 }
 
+// ListDeploymentsResponse is the response for the ListDeployments RPC.
 message ListDeploymentsResponse {
     repeated model.Deployment deployments = 1;
+    // Opaque cursor to pass to a subsequent call to fetch the next page.
+    // Empty when there are no more results.
     string cursor = 2;
 }
 
+// GetDeploymentRequest is the request for the GetDeployment RPC.
 message GetDeploymentRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// GetDeploymentResponse is the response for the GetDeployment RPC.
 message GetDeploymentResponse {
     model.Deployment deployment = 1;
 }
 
+// GetStageLogRequest is the request for the GetStageLog RPC.
 message GetStageLogRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
+    // The retry attempt number of the stage to fetch logs for.
     int32 retried_count = 3;
+    // The index of the first log block to return, used to fetch only the
+    // blocks appended since the previous call.
     int64 offset_index = 4;
 }
 
+// GetStageLogResponse is the response for the GetStageLog RPC.
 message GetStageLogResponse {
     repeated model.LogBlock blocks = 1;
+    // Whether the stage has finished producing logs. If false, callers should
+    // poll again with an updated offset_index.
     bool completed = 2;
 }
 
+// CancelDeploymentRequest is the request for the CancelDeployment RPC.
 message CancelDeploymentRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    // Force rollback regardless of the pipeline's configured on-cancel behavior.
+    // Mutually exclusive with force_no_rollback.
     bool force_rollback = 2;
+    // Force skipping rollback regardless of the pipeline's configured
+    // on-cancel behavior. Mutually exclusive with force_rollback.
     bool force_no_rollback = 3;
 }
 
+// CancelDeploymentResponse is the response for the CancelDeployment RPC.
 message CancelDeploymentResponse {
+    // The ID of the generated CANCEL_DEPLOYMENT command. Use GetCommand to
+    // poll for its handling result.
     string command_id = 1;
 }
 
+// SkipStageRequest is the request for the SkipStage RPC.
 message SkipStageRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
 }
 
+// SkipStageResponse is the response for the SkipStage RPC.
 message SkipStageResponse {
+    // The ID of the generated SKIP_STAGE command. Use GetCommand to poll for
+    // its handling result.
     string command_id = 1;
 }
 
+// ApproveStageRequest is the request for the ApproveStage RPC.
 message ApproveStageRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
 }
 
+// ApproveStageResponse is the response for the ApproveStage RPC.
 message ApproveStageResponse {
+    // The ID of the generated APPROVE_STAGE command. Use GetCommand to poll
+    // for its handling result.
     string command_id = 1;
 }
 
+// ListDeploymentTracesRequest is the request for the ListDeploymentTraces RPC.
 message ListDeploymentTracesRequest {
+    // Options used to filter the returned deployment traces.
     message Options {
+        // Filter by exact commit hash that triggered the trace.
         string commit_hash = 1;
     }
 
     Options options = 1;
+    // Maximum number of traces to return. If unset or zero, a server-defined
+    // default page size is used.
     int32 page_size = 2;
+    // Opaque cursor returned by a previous call used to fetch the next page.
+    // Empty to start from the first page.
     string cursor = 3;
     // It will not return any data older than this timestamp, even if it does not meet the page size.
     // This aims to prevent the server from scanning the entire database to look for deployments that have the specified fields in spite of nothing.
     int64 page_min_updated_at = 4;
 }
 
+// ListDeploymentTracesResponse is the response for the ListDeploymentTraces RPC.
 message ListDeploymentTracesResponse {
+    // DeploymentTraceRes pairs a deployment trace with every deployment it triggered.
     message DeploymentTraceRes {
         model.DeploymentTrace trace = 1 [(validate.rules).message.required = true];
         repeated model.Deployment deployments = 2 [(validate.rules).repeated.min_items = 1];
     }
     repeated DeploymentTraceRes traces = 1;
+    // Opaque cursor to pass to a subsequent call to fetch the next page.
+    // Empty when there are no more results.
     string cursor = 2;
 }
 
+// GetApplicationLiveStateRequest is the request for the GetApplicationLiveState RPC.
 message GetApplicationLiveStateRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// GetApplicationLiveStateResponse is the response for the GetApplicationLiveState RPC.
 message GetApplicationLiveStateResponse {
+    // The most recent live state snapshot. Unset if piped has not reported
+    // any live state for the application yet.
     model.ApplicationLiveStateSnapshot snapshot= 1;
 }
 
+// GetProjectRequest is the request for the GetProject RPC.
 message GetProjectRequest {
 }
 
+// GetProjectResponse is the response for the GetProject RPC.
 message GetProjectResponse {
     model.Project project = 1;
 }
 
+// UpdateProjectStaticAdminRequest is the request for the UpdateProjectStaticAdmin RPC.
 message UpdateProjectStaticAdminRequest {
+    // The new username of the static admin user.
     string username = 1 [(validate.rules).string.min_len = 1];
+    // The new plaintext password of the static admin user. The server hashes
+    // it before persisting; the plaintext value is never stored or returned.
     string password = 2 [(validate.rules).string.min_len = 1];
 }
 
+// UpdateProjectStaticAdminResponse is the response for the UpdateProjectStaticAdmin RPC.
 message UpdateProjectStaticAdminResponse {
 }
 
+// UpdateProjectSSOConfigRequest is the request for the UpdateProjectSSOConfig RPC.
 message UpdateProjectSSOConfigRequest {
     model.ProjectSSOConfig sso = 1 [(validate.rules).message.required = true];
 }
 
+// UpdateProjectSSOConfigResponse is the response for the UpdateProjectSSOConfig RPC.
 message UpdateProjectSSOConfigResponse {
 }
 
+// UpdateProjectRBACConfigRequest is the request for the UpdateProjectRBACConfig RPC.
 message UpdateProjectRBACConfigRequest {
     model.ProjectRBACConfig rbac = 1 [(validate.rules).message.required = true];
 }
 
+// UpdateProjectRBACConfigResponse is the response for the UpdateProjectRBACConfig RPC.
 message UpdateProjectRBACConfigResponse {
 }
 
 
+// EnableStaticAdminRequest is the request for the EnableStaticAdmin RPC.
 message EnableStaticAdminRequest {
 }
 
+// EnableStaticAdminResponse is the response for the EnableStaticAdmin RPC.
 message EnableStaticAdminResponse {
 }
 
+// DisableStaticAdminRequest is the request for the DisableStaticAdmin RPC.
 message DisableStaticAdminRequest {
 }
 
+// DisableStaticAdminResponse is the response for the DisableStaticAdmin RPC.
 message DisableStaticAdminResponse {
 }
 
+// GetMeRequest is the request for the GetMe RPC.
 message GetMeRequest {
 }
 
+// GetMeResponse is the response for the GetMe RPC.
 message GetMeResponse {
     reserved 4;
 
+    // The identifier of the authenticated user, e.g. username or email.
     string subject = 1;
     string avatar_url = 2;
     string project_id = 3;
 }
 
+// AddProjectRBACRoleRequest is the request for the AddProjectRBACRole RPC.
 message AddProjectRBACRoleRequest {
     string name = 1 [(validate.rules).string.min_len = 1];
     repeated model.ProjectRBACPolicy policies = 2 [(validate.rules).repeated.min_items = 1];
 }
 
+// AddProjectRBACRoleResponse is the response for the AddProjectRBACRole RPC.
 message AddProjectRBACRoleResponse {
 }
 
+// UpdateProjectRBACRoleRequest is the request for the UpdateProjectRBACRole RPC.
 message UpdateProjectRBACRoleRequest {
     string name = 1 [(validate.rules).string.min_len = 1];
     repeated model.ProjectRBACPolicy policies = 2 [(validate.rules).repeated.min_items = 1];
 }
 
+// UpdateProjectRBACRoleResponse is the response for the UpdateProjectRBACRole RPC.
 message UpdateProjectRBACRoleResponse {
 }
 
+// DeleteProjectRBACRoleRequest is the request for the DeleteProjectRBACRole RPC.
 message DeleteProjectRBACRoleRequest {
     string name = 1 [(validate.rules).string.min_len = 1];
 }
 
+// DeleteProjectRBACRoleResponse is the response for the DeleteProjectRBACRole RPC.
 message DeleteProjectRBACRoleResponse {
 }
 
+// AddProjectUserGroupRequest is the request for the AddProjectUserGroup RPC.
 message AddProjectUserGroupRequest {
     string sso_group = 1 [(validate.rules).string.min_len = 1];
     string role = 2 [(validate.rules).string.min_len = 1];
 }
 
+// AddProjectUserGroupResponse is the response for the AddProjectUserGroup RPC.
 message AddProjectUserGroupResponse {
 }
 
+// DeleteProjectUserGroupRequest is the request for the DeleteProjectUserGroup RPC.
 message DeleteProjectUserGroupRequest {
     string sso_group = 1 [(validate.rules).string.min_len = 1];
 }
 
+// DeleteProjectUserGroupResponse is the response for the DeleteProjectUserGroup RPC.
 message DeleteProjectUserGroupResponse {
 }
 
+// GetCommandRequest is the request for the GetCommand RPC.
 message GetCommandRequest {
     string command_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// GetCommandResponse is the response for the GetCommand RPC.
 message GetCommandResponse {
     model.Command command = 1;
 }
 
+// GenerateAPIKeyRequest is the request for the GenerateAPIKey RPC.
 message GenerateAPIKeyRequest {
     string name = 1 [(validate.rules).string.min_len = 1];
     model.APIKey.Role role = 2 [(validate.rules).enum.defined_only = true];
 }
 
+// GenerateAPIKeyResponse is the response for the GenerateAPIKey RPC.
 message GenerateAPIKeyResponse {
+    // The generated API key value. Shown only once; the caller is responsible
+    // for storing it securely.
     string key = 1;
 }
 
+// DisableAPIKeyRequest is the request for the DisableAPIKey RPC.
 message DisableAPIKeyRequest {
     string id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// DisableAPIKeyResponse is the response for the DisableAPIKey RPC.
 message DisableAPIKeyResponse {
 }
 
+// ListAPIKeysRequest is the request for the ListAPIKeys RPC.
 message ListAPIKeysRequest {
+    // Options used to filter the returned API keys.
     message Options {
+        // Filter by whether the key is enabled. Unset means no filtering.
         google.protobuf.BoolValue enabled = 1;
     }
     Options options = 2;
 }
 
+// ListAPIKeysResponse is the response for the ListAPIKeys RPC.
 message ListAPIKeysResponse {
     repeated model.APIKey keys = 1;
 }
 
+// GetInsightDataRequest is the request for the GetInsightData RPC.
 message GetInsightDataRequest {
+    // The metrics kind to fetch, e.g. DEPLOYMENT_FREQUENCY, LEAD_TIME.
     model.InsightMetricsKind metrics_kind = 1 [(validate.rules).enum.defined_only = true];
+    // Unix time (seconds), inclusive start of the time range.
     int64 range_from = 2 [(validate.rules).int64.gt = 0];
+    // Unix time (seconds), inclusive end of the time range.
     int64 range_to = 3 [(validate.rules).int64.gt = 0];
+    // The granularity of the returned data points, e.g. DAILY, MONTHLY.
     model.InsightResolution resolution = 4 [(validate.rules).enum.defined_only = true];
 
+    // Restrict the result to a single application. Empty means all
+    // applications in the project.
     string application_id = 10;
+    // Restrict the result to applications matching all the given label
+    // key/value pairs.
     map<string,string> labels = 11;
 }
 
+// GetInsightDataResponse is the response for the GetInsightData RPC.
 message GetInsightDataResponse {
+    // Unix time (seconds) when the underlying data was last aggregated.
     int64 updated_at = 1;
+    // Whether the result is a single vector or a matrix of sample streams;
+    // only the correspondingly named field below is populated.
     model.InsightResultType type = 2;
     repeated model.InsightSample vector = 3;
     repeated model.InsightSampleStream matrix = 4;
 }
 
+// GetInsightApplicationCountRequest is the request for the GetInsightApplicationCount RPC.
 message GetInsightApplicationCountRequest {
 }
 
+// GetInsightApplicationCountResponse is the response for the GetInsightApplicationCount RPC.
 message GetInsightApplicationCountResponse {
+    // Unix time (seconds) when the underlying data was last aggregated.
     int64 updated_at = 1;
     repeated model.InsightApplicationCount counts = 2;
 }
 
+// ListDeploymentChainsRequest is the request for the ListDeploymentChains RPC.
 message ListDeploymentChainsRequest {
+    // Reserved for future filtering options.
     message Options {
     }
     Options options = 1;
+    // Maximum number of deployment chains to return. If unset or zero, a
+    // server-defined default page size is used.
     int32 page_size = 2;
+    // Opaque cursor returned by a previous call used to fetch the next page.
+    // Empty to start from the first page.
     string cursor = 3;
     // It will not return any data older than this timestamp, even if it does not meet the page size.
     // This aims to prevent the server from scanning the entire database to look for deployments that have the specified fields in spite of nothing.
     int64 page_min_updated_at = 4;
 }
 
+// ListDeploymentChainsResponse is the response for the ListDeploymentChains RPC.
 message ListDeploymentChainsResponse {
     repeated model.DeploymentChain deployment_chains = 1;
+    // Opaque cursor to pass to a subsequent call to fetch the next page.
+    // Empty when there are no more results.
     string cursor = 2;
 }
 
+// GetDeploymentChainRequest is the request for the GetDeploymentChain RPC.
 message GetDeploymentChainRequest {
     string deployment_chain_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+// GetDeploymentChainResponse is the response for the GetDeploymentChain RPC.
 message GetDeploymentChainResponse {
     model.DeploymentChain deployment_chain = 1;
 }
 
+// ListEventsRequest is the request for the ListEvents RPC.
 message ListEventsRequest {
+    // Options used to filter the returned events. All set fields are
+    // combined with AND semantics.
     message Options {
+        // Filter by exact event name.
         string name = 1;
         repeated model.EventStatus statuses = 2;
+        // Filter by labels; an event must have all the given key/value pairs.
         map<string, string> labels = 3;
     }
     Options options = 1;
+    // Maximum number of events to return. If unset or zero, a server-defined
+    // default page size is used.
     int32 page_size = 2;
+    // Opaque cursor returned by a previous call used to fetch the next page.
+    // Empty to start from the first page.
     string cursor = 3;
     // It will not return any data older than this timestamp, even if it does not meet the page size.
     // This aims to prevent the server from scanning the entire database to look for deployments that have the specified fields in spite of nothing.
     int64 page_min_updated_at = 4;
 }
 
+// ListEventsResponse is the response for the ListEvents RPC.
 message ListEventsResponse {
    repeated model.Event events = 1;
+   // Opaque cursor to pass to a subsequent call to fetch the next page.
+   // Empty when there are no more results.
    string cursor = 2;
 }

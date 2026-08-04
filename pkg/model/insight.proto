@@ -19,6 +19,8 @@ option go_package = "github.com/pipe-cd/pipecd/pkg/model";
 
 import "validate/validate.proto";
 
+// InsightMetricsKind represents a DORA/productivity metric that can be
+// requested via GetInsightData.
 enum InsightMetricsKind {
   DEPLOYMENT_FREQUENCY = 0;
   CHANGE_FAILURE_RATE = 1;
@@ -27,36 +29,50 @@ enum InsightMetricsKind {
   APPLICATIONS_COUNT = 4;
 }
 
+// InsightResultType indicates whether an insight query result is a single
+// vector or a matrix of multiple labeled sample streams.
 enum InsightResultType {
   MATRIX = 0;
   VECTOR = 1;
 }
 
+// InsightResolution is the time granularity of the returned insight data points.
 enum InsightResolution {
   DAILY = 0;
   MONTHLY = 1;
 }
 
+// InsightDataPoint is a single metric value at a specific point in time.
 message InsightDataPoint {
+  // Unix time (seconds) this data point represents.
   int64 timestamp = 1 [(validate.rules).int64.gt = 0];
+  // The metric value at this timestamp.
   float value = 2 [(validate.rules).float.gt = 0];
 }
 
+// InsightSample is a single labeled data point, used when the query result
+// type is VECTOR.
 message InsightSample {
   map<string,string> labels = 1;
   InsightDataPoint data_point = 2;
 }
 
+// InsightSampleStream is a labeled series of data points over time, used
+// when the query result type is MATRIX.
 message InsightSampleStream {
   map<string,string> labels = 1;
   repeated InsightDataPoint data_points = 2;
 }
 
+// InsightApplicationCount is the number of applications matching a given set
+// of labels, e.g. grouped by kind or active status.
 message InsightApplicationCount {
   map<string,string> labels = 1;
   int32 count = 2;
 }
 
+// InsightApplicationCountLabelKey enumerates the well-known label keys used
+// in InsightApplicationCount.labels.
 enum InsightApplicationCountLabelKey {
   KIND = 0;
   ACTIVE_STATUS = 1;

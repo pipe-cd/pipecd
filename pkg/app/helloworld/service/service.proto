@@ -19,19 +19,26 @@ option go_package = "github.com/pipe-cd/pipecd/pkg/app/helloworld/service";
 
 import "validate/validate.proto";
 
+// HelloWorld is a minimal example service used to verify gRPC wiring and as a
+// reference implementation for new services.
 service HelloWorld {
+    // Hello returns a greeting message built from the given name and gender.
     rpc Hello(HelloRequest) returns (HelloResponse) {}
 }
 
+// HelloRequest is the request for the Hello RPC.
 message HelloRequest {
     enum Gender {
         GENDER_MALE = 0;
         GENDER_FEMALE = 1;
     }
+    // The name to greet.
     string name = 1 [(validate.rules).string.min_len = 1];
     Gender gender = 2;
 }
 
+// HelloResponse is the response for the Hello RPC.
 message HelloResponse {
+    // The generated greeting message.
     string message = 1 [(validate.rules).string.min_len = 1];
 }
