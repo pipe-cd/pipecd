@@ -29,7 +29,6 @@ gateway:
 
 server:
   image:
-    # NOTE: Using controlplane image for both pipecd and controlplane charts
     repository: ghcr.io/pipe-cd/controlplane
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
@@ -53,7 +52,6 @@ cache:
 
 ops:
   image:
-    # NOTE: Using controlplane image for both pipecd and controlplane charts
     repository: ghcr.io/pipe-cd/controlplane
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
