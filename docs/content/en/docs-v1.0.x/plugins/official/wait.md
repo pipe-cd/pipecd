@@ -1,7 +1,7 @@
 ---
 title: "Wait plugin"
 linkTitle: "Wait"
-weight: 40
+weight: 50
 description: >
   Pause the pipeline for a fixed duration.
 ---
