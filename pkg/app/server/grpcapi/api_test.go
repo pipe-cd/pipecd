@@ -19,8 +19,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipecd/pkg/app/server/service/apiservice"
+	"github.com/pipe-cd/pipecd/pkg/datastore"
+	"github.com/pipe-cd/pipecd/pkg/datastore/datastoretest"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 )
@@ -99,6 +103,89 @@ func TestRequireAPIKey(t *testing.T) {
 			} else {
 				assert.Equal(t, tc.expectedErr, "")
 			}
+		})
+	}
+}
+
+func TestListDeploymentsFilters(t *testing.T) {
+	testcases := []struct {
+		name            string
+		req             *apiservice.ListDeploymentsRequest
+		expectedFilters []string
+		expectedErr     string
+	}{
+		{
+			name:            "ok: no optional filter is given",
+			req:             &apiservice.ListDeploymentsRequest{Limit: 10},
+			expectedFilters: []string{"ProjectId"},
+		},
+		{
+			name: "ok: a valid status is used as a filter",
+			req: &apiservice.ListDeploymentsRequest{
+				Statuses: []string{model.DeploymentStatus_DEPLOYMENT_SUCCESS.String()},
+				Limit:    10,
+			},
+			expectedFilters: []string{"ProjectId", "Status"},
+		},
+		{
+			name: "ok: statuses holding only empty values adds no status filter",
+			req: &apiservice.ListDeploymentsRequest{
+				Statuses: []string{""},
+				Limit:    10,
+			},
+			expectedFilters: []string{"ProjectId"},
+		},
+		{
+			name: "ok: kinds holding only empty values adds no kind filter",
+			req: &apiservice.ListDeploymentsRequest{
+				Kinds: []string{"", ""},
+				Limit: 10,
+			},
+			expectedFilters: []string{"ProjectId"},
+		},
+		{
+			name: "invalid: unknown deployment status",
+			req: &apiservice.ListDeploymentsRequest{
+				Statuses: []string{"NOT_A_STATUS"},
+				Limit:    10,
+			},
+			expectedErr: "rpc error: code = InvalidArgument desc = NOT_A_STATUS is invalid deployment status",
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			var gotFilters []string
+			store := datastoretest.NewMockDeploymentStore(ctrl)
+			store.EXPECT().
+				List(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, opts datastore.ListOptions) ([]*model.Deployment, string, error) {
+					for _, f := range opts.Filters {
+						gotFilters = append(gotFilters, f.Field)
+					}
+					return nil, "", nil
+				}).
+				AnyTimes()
+
+			api := &API{
+				deploymentStore: store,
+				logger:          zap.NewNop(),
+			}
+			ctx := rpcauth.ContextWithAPIKey(context.TODO(), &model.APIKey{
+				ProjectId: "project-id",
+				Role:      model.APIKey_READ_ONLY,
+			})
+
+			_, err := api.ListDeployments(ctx, tc.req)
+			if tc.expectedErr != "" {
+				assert.EqualError(t, err, tc.expectedErr)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expectedFilters, gotFilters)
 		})
 	}
 }
