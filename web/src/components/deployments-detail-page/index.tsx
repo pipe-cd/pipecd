@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { FC, memo, useEffect, useMemo, useState } from "react";
+import { FC, memo, useEffect, useMemo, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { DeploymentDetail } from "./deployment-detail";
 import { LogViewer } from "./log-viewer";
@@ -21,6 +21,7 @@ export type ActiveStageInfo = {
 
 export const DeploymentDetailPage: FC = memo(function DeploymentDetailPage() {
   const [activeStageInfo, setActiveStageInfo] = useState<ActiveStageInfo>(null);
+  const prevDefaultStageIdRef = useRef<string | null>(null);
   const { deploymentId } = useParams<{ deploymentId: string }>();
 
   const { data: deployment } = useGetDeploymentById(
@@ -58,15 +59,31 @@ export const DeploymentDetailPage: FC = memo(function DeploymentDetailPage() {
   );
 
   useEffect(() => {
+    if (!deployment) return;
+
     const defaultActiveStage = findDefaultActiveStageInDeployment(deployment);
-    if (defaultActiveStage && deployment) {
+    const defaultStageId = defaultActiveStage?.id ?? null;
+
+    const isFirstLoad =
+      !activeStageInfo || activeStageInfo.deploymentId !== deployment.id;
+    const isTrackingDefault =
+      activeStageInfo &&
+      activeStageInfo.stageId === prevDefaultStageIdRef.current;
+
+    if (
+      defaultActiveStage &&
+      (isFirstLoad ||
+        (isTrackingDefault && defaultStageId !== prevDefaultStageIdRef.current))
+    ) {
       setActiveStageInfo({
         deploymentId: deployment.id ?? "",
         stageId: defaultActiveStage.id,
         name: defaultActiveStage.name,
       });
     }
-  }, [deployment]);
+
+    prevDefaultStageIdRef.current = defaultStageId;
+  }, [deployment, activeStageInfo]);
 
   // NOTE: Clear active stage when leave detail page
   useEffect(
