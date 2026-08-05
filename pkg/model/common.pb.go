@@ -394,10 +394,8 @@ type ApplicationGitRepository struct {
 	unknownFields protoimpl.UnknownFields
 
 	// The unique identifier of the repository, as configured in the piped config.
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// The remote URL of the repository.
+	Id     string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Remote string `protobuf:"bytes,2,opt,name=remote,proto3" json:"remote,omitempty"`
-	// The branch to fetch application manifests from.
 	Branch string `protobuf:"bytes,3,opt,name=branch,proto3" json:"branch,omitempty"`
 }
 
@@ -586,8 +584,7 @@ type ArtifactVersion struct {
 	Kind ArtifactVersion_Kind `protobuf:"varint,1,opt,name=kind,proto3,enum=model.ArtifactVersion_Kind" json:"kind,omitempty"`
 	// The version string of the artifact, e.g. a container image tag.
 	Version string `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
-	// The name of the artifact.
-	Name string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Name    string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	// The URL to view the artifact, if applicable.
 	Url string `protobuf:"bytes,4,opt,name=url,proto3" json:"url,omitempty"`
 }

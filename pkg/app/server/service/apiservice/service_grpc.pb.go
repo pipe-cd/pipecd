@@ -22,77 +22,50 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type APIServiceClient interface {
-	// AddApplication registers a new application to be managed by the given piped.
 	AddApplication(ctx context.Context, in *AddApplicationRequest, opts ...grpc.CallOption) (*AddApplicationResponse, error)
 	// SyncApplication triggers a new deployment to sync the given application
 	// to its latest configured state. It returns the ID of the command that
 	// piped must pick up and execute asynchronously.
 	SyncApplication(ctx context.Context, in *SyncApplicationRequest, opts ...grpc.CallOption) (*SyncApplicationResponse, error)
-	// GetApplication returns the application for the given ID.
 	GetApplication(ctx context.Context, in *GetApplicationRequest, opts ...grpc.CallOption) (*GetApplicationResponse, error)
-	// ListApplications returns the applications that belong to the caller's
-	// project, optionally filtered by the given fields.
 	ListApplications(ctx context.Context, in *ListApplicationsRequest, opts ...grpc.CallOption) (*ListApplicationsResponse, error)
-	// UpdateApplication updates the configuration of an already registered application.
 	UpdateApplication(ctx context.Context, in *UpdateApplicationRequest, opts ...grpc.CallOption) (*UpdateApplicationResponse, error)
 	// DeleteApplication permanently removes the given application and its
 	// registration from the project. This does not affect resources already
 	// deployed to the target platform.
 	DeleteApplication(ctx context.Context, in *DeleteApplicationRequest, opts ...grpc.CallOption) (*DeleteApplicationResponse, error)
-	// EnableApplication re-enables a previously disabled application so that
-	// it becomes visible and manageable again.
 	EnableApplication(ctx context.Context, in *EnableApplicationRequest, opts ...grpc.CallOption) (*EnableApplicationResponse, error)
 	// DisableApplication disables the given application. A disabled
 	// application is excluded from the list piped fetches to manage and from
 	// sync operations.
 	DisableApplication(ctx context.Context, in *DisableApplicationRequest, opts ...grpc.CallOption) (*DisableApplicationResponse, error)
-	// RenameApplicationConfigFile updates the application configuration file
-	// name recorded for the given applications, e.g. after the file was
-	// renamed in the Git repository.
 	RenameApplicationConfigFile(ctx context.Context, in *RenameApplicationConfigFileRequest, opts ...grpc.CallOption) (*RenameApplicationConfigFileResponse, error)
-	// UpdateApplicationDeployTargets replaces the deploy targets configured
-	// per plugin for the given application.
 	UpdateApplicationDeployTargets(ctx context.Context, in *UpdateApplicationDeployTargetsRequest, opts ...grpc.CallOption) (*UpdateApplicationDeployTargetsResponse, error)
-	// GetDeployment returns the deployment for the given ID.
 	GetDeployment(ctx context.Context, in *GetDeploymentRequest, opts ...grpc.CallOption) (*GetDeploymentResponse, error)
-	// ListDeployments returns the deployments that belong to the caller's
-	// project, optionally filtered by the given fields.
 	ListDeployments(ctx context.Context, in *ListDeploymentsRequest, opts ...grpc.CallOption) (*ListDeploymentsResponse, error)
 	// GetCommand returns the current status and result of a previously issued
 	// command, identified by the command ID returned from the RPC that
 	// created it (e.g. SyncApplication).
 	GetCommand(ctx context.Context, in *GetCommandRequest, opts ...grpc.CallOption) (*GetCommandResponse, error)
-	// GetPiped returns the piped for the given ID.
 	GetPiped(ctx context.Context, in *GetPipedRequest, opts ...grpc.CallOption) (*GetPipedResponse, error)
 	// RegisterPiped registers a new piped to the caller's project and returns
 	// its generated ID together with a newly issued piped key. The returned
 	// key is shown only once and must be stored by the caller.
 	RegisterPiped(ctx context.Context, in *RegisterPipedRequest, opts ...grpc.CallOption) (*RegisterPipedResponse, error)
-	// UpdatePiped updates the name and description of an already registered piped.
 	UpdatePiped(ctx context.Context, in *UpdatePipedRequest, opts ...grpc.CallOption) (*UpdatePipedResponse, error)
-	// EnablePiped re-enables a previously disabled piped so that it can
-	// connect to the control plane and be assigned applications again.
 	EnablePiped(ctx context.Context, in *EnablePipedRequest, opts ...grpc.CallOption) (*EnablePipedResponse, error)
-	// DisablePiped disables the given piped, preventing it from being usable
-	// until it is enabled again via EnablePiped.
 	DisablePiped(ctx context.Context, in *DisablePipedRequest, opts ...grpc.CallOption) (*DisablePipedResponse, error)
-	// RegisterEvent registers a new event that piped's event watcher can
-	// later match against to trigger actions such as updating configuration.
 	RegisterEvent(ctx context.Context, in *RegisterEventRequest, opts ...grpc.CallOption) (*RegisterEventResponse, error)
 	// RequestPlanPreview asks the pipeds responsible for the affected
 	// applications to build a plan preview for the given commit range. It
 	// returns the IDs of the generated commands; use GetPlanPreviewResults to
 	// fetch the results once the commands are handled.
 	RequestPlanPreview(ctx context.Context, in *RequestPlanPreviewRequest, opts ...grpc.CallOption) (*RequestPlanPreviewResponse, error)
-	// GetPlanPreviewResults returns the plan preview results collected so far
-	// for the given command IDs returned by RequestPlanPreview.
 	GetPlanPreviewResults(ctx context.Context, in *GetPlanPreviewResultsRequest, opts ...grpc.CallOption) (*GetPlanPreviewResultsResponse, error)
 	// Encrypt encrypts the given plaintext data using the public
 	// key/service account of the specified piped so that it can be safely
 	// committed to Git as a sealed secret and later decrypted only by that piped.
 	Encrypt(ctx context.Context, in *EncryptRequest, opts ...grpc.CallOption) (*EncryptResponse, error)
-	// ListStageLogs returns the logs of every stage of the given deployment,
-	// keyed by stage ID.
 	ListStageLogs(ctx context.Context, in *ListStageLogsRequest, opts ...grpc.CallOption) (*ListStageLogsResponse, error)
 }
 
@@ -315,77 +288,50 @@ func (c *aPIServiceClient) ListStageLogs(ctx context.Context, in *ListStageLogsR
 // All implementations must embed UnimplementedAPIServiceServer
 // for forward compatibility
 type APIServiceServer interface {
-	// AddApplication registers a new application to be managed by the given piped.
 	AddApplication(context.Context, *AddApplicationRequest) (*AddApplicationResponse, error)
 	// SyncApplication triggers a new deployment to sync the given application
 	// to its latest configured state. It returns the ID of the command that
 	// piped must pick up and execute asynchronously.
 	SyncApplication(context.Context, *SyncApplicationRequest) (*SyncApplicationResponse, error)
-	// GetApplication returns the application for the given ID.
 	GetApplication(context.Context, *GetApplicationRequest) (*GetApplicationResponse, error)
-	// ListApplications returns the applications that belong to the caller's
-	// project, optionally filtered by the given fields.
 	ListApplications(context.Context, *ListApplicationsRequest) (*ListApplicationsResponse, error)
-	// UpdateApplication updates the configuration of an already registered application.
 	UpdateApplication(context.Context, *UpdateApplicationRequest) (*UpdateApplicationResponse, error)
 	// DeleteApplication permanently removes the given application and its
 	// registration from the project. This does not affect resources already
 	// deployed to the target platform.
 	DeleteApplication(context.Context, *DeleteApplicationRequest) (*DeleteApplicationResponse, error)
-	// EnableApplication re-enables a previously disabled application so that
-	// it becomes visible and manageable again.
 	EnableApplication(context.Context, *EnableApplicationRequest) (*EnableApplicationResponse, error)
 	// DisableApplication disables the given application. A disabled
 	// application is excluded from the list piped fetches to manage and from
 	// sync operations.
 	DisableApplication(context.Context, *DisableApplicationRequest) (*DisableApplicationResponse, error)
-	// RenameApplicationConfigFile updates the application configuration file
-	// name recorded for the given applications, e.g. after the file was
-	// renamed in the Git repository.
 	RenameApplicationConfigFile(context.Context, *RenameApplicationConfigFileRequest) (*RenameApplicationConfigFileResponse, error)
-	// UpdateApplicationDeployTargets replaces the deploy targets configured
-	// per plugin for the given application.
 	UpdateApplicationDeployTargets(context.Context, *UpdateApplicationDeployTargetsRequest) (*UpdateApplicationDeployTargetsResponse, error)
-	// GetDeployment returns the deployment for the given ID.
 	GetDeployment(context.Context, *GetDeploymentRequest) (*GetDeploymentResponse, error)
-	// ListDeployments returns the deployments that belong to the caller's
-	// project, optionally filtered by the given fields.
 	ListDeployments(context.Context, *ListDeploymentsRequest) (*ListDeploymentsResponse, error)
 	// GetCommand returns the current status and result of a previously issued
 	// command, identified by the command ID returned from the RPC that
 	// created it (e.g. SyncApplication).
 	GetCommand(context.Context, *GetCommandRequest) (*GetCommandResponse, error)
-	// GetPiped returns the piped for the given ID.
 	GetPiped(context.Context, *GetPipedRequest) (*GetPipedResponse, error)
 	// RegisterPiped registers a new piped to the caller's project and returns
 	// its generated ID together with a newly issued piped key. The returned
 	// key is shown only once and must be stored by the caller.
 	RegisterPiped(context.Context, *RegisterPipedRequest) (*RegisterPipedResponse, error)
-	// UpdatePiped updates the name and description of an already registered piped.
 	UpdatePiped(context.Context, *UpdatePipedRequest) (*UpdatePipedResponse, error)
-	// EnablePiped re-enables a previously disabled piped so that it can
-	// connect to the control plane and be assigned applications again.
 	EnablePiped(context.Context, *EnablePipedRequest) (*EnablePipedResponse, error)
-	// DisablePiped disables the given piped, preventing it from being usable
-	// until it is enabled again via EnablePiped.
 	DisablePiped(context.Context, *DisablePipedRequest) (*DisablePipedResponse, error)
-	// RegisterEvent registers a new event that piped's event watcher can
-	// later match against to trigger actions such as updating configuration.
 	RegisterEvent(context.Context, *RegisterEventRequest) (*RegisterEventResponse, error)
 	// RequestPlanPreview asks the pipeds responsible for the affected
 	// applications to build a plan preview for the given commit range. It
 	// returns the IDs of the generated commands; use GetPlanPreviewResults to
 	// fetch the results once the commands are handled.
 	RequestPlanPreview(context.Context, *RequestPlanPreviewRequest) (*RequestPlanPreviewResponse, error)
-	// GetPlanPreviewResults returns the plan preview results collected so far
-	// for the given command IDs returned by RequestPlanPreview.
 	GetPlanPreviewResults(context.Context, *GetPlanPreviewResultsRequest) (*GetPlanPreviewResultsResponse, error)
 	// Encrypt encrypts the given plaintext data using the public
 	// key/service account of the specified piped so that it can be safely
 	// committed to Git as a sealed secret and later decrypted only by that piped.
 	Encrypt(context.Context, *EncryptRequest) (*EncryptResponse, error)
-	// ListStageLogs returns the logs of every stage of the given deployment,
-	// keyed by stage ID.
 	ListStageLogs(context.Context, *ListStageLogsRequest) (*ListStageLogsResponse, error)
 	mustEmbedUnimplementedAPIServiceServer()
 }

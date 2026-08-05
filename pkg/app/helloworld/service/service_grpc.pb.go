@@ -22,7 +22,6 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type HelloWorldClient interface {
-	// Hello returns a greeting message built from the given name and gender.
 	Hello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloResponse, error)
 }
 
@@ -47,7 +46,6 @@ func (c *helloWorldClient) Hello(ctx context.Context, in *HelloRequest, opts ...
 // All implementations must embed UnimplementedHelloWorldServer
 // for forward compatibility
 type HelloWorldServer interface {
-	// Hello returns a greeting message built from the given name and gender.
 	Hello(context.Context, *HelloRequest) (*HelloResponse, error)
 	mustEmbedUnimplementedHelloWorldServer()
 }

@@ -36,8 +36,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// DecryptSecretRequest is the request for decrypting a sealed secret.
-// NOTE: This message is not currently wired to a PluginService RPC.
+// NOTE: DecryptSecretRequest/Response are not currently wired to a PluginService RPC.
 type DecryptSecretRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -85,8 +84,6 @@ func (x *DecryptSecretRequest) GetSecret() string {
 	return ""
 }
 
-// DecryptSecretResponse is the response for decrypting a sealed secret.
-// NOTE: This message is not currently wired to a PluginService RPC.
 type DecryptSecretResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -134,7 +131,6 @@ func (x *DecryptSecretResponse) GetDecryptedSecret() string {
 	return ""
 }
 
-// InstallToolRequest is the request for the InstallTool RPC.
 type InstallToolRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -215,7 +211,6 @@ func (x *InstallToolRequest) GetInstallScript() string {
 	return ""
 }
 
-// InstallToolResponse is the response for the InstallTool RPC.
 type InstallToolResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -264,7 +259,6 @@ func (x *InstallToolResponse) GetInstalledPath() string {
 	return ""
 }
 
-// ReportStageLogsRequest is the request for the ReportStageLogs RPC.
 type ReportStageLogsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -337,7 +331,6 @@ func (x *ReportStageLogsRequest) GetBlocks() []*model.LogBlock {
 	return nil
 }
 
-// ReportStageLogsResponse is the response for the ReportStageLogs RPC.
 type ReportStageLogsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -376,8 +369,6 @@ func (*ReportStageLogsResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_plugin_pipedservice_service_proto_rawDescGZIP(), []int{5}
 }
 
-// ReportStageLogsFromLastCheckpointRequest is the request for the
-// ReportStageLogsFromLastCheckpoint RPC.
 type ReportStageLogsFromLastCheckpointRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -460,7 +451,6 @@ func (x *ReportStageLogsFromLastCheckpointRequest) GetCompleted() bool {
 	return false
 }
 
-// ReportStageLogsFromLastCheckpointResponse is the response for the ReportStageLogsFromLastCheckpoint RPC.
 type ReportStageLogsFromLastCheckpointResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -499,7 +489,6 @@ func (*ReportStageLogsFromLastCheckpointResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_plugin_pipedservice_service_proto_rawDescGZIP(), []int{7}
 }
 
-// GetStageMetadataRequest is the request for the GetStageMetadata RPC.
 type GetStageMetadataRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -564,7 +553,6 @@ func (x *GetStageMetadataRequest) GetKey() string {
 	return ""
 }
 
-// GetStageMetadataResponse is the response for the GetStageMetadata RPC.
 type GetStageMetadataResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -622,7 +610,6 @@ func (x *GetStageMetadataResponse) GetFound() bool {
 	return false
 }
 
-// PutStageMetadataRequest is the request for the PutStageMetadata RPC.
 type PutStageMetadataRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -695,7 +682,6 @@ func (x *PutStageMetadataRequest) GetValue() string {
 	return ""
 }
 
-// PutStageMetadataResponse is the response for the PutStageMetadata RPC.
 type PutStageMetadataResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -734,7 +720,6 @@ func (*PutStageMetadataResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_plugin_pipedservice_service_proto_rawDescGZIP(), []int{11}
 }
 
-// PutStageMetadataMultiRequest is the request for the PutStageMetadataMulti RPC.
 type PutStageMetadataMultiRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -800,7 +785,6 @@ func (x *PutStageMetadataMultiRequest) GetMetadata() map[string]string {
 	return nil
 }
 
-// PutStageMetadataMultiResponse is the response for the PutStageMetadataMulti RPC.
 type PutStageMetadataMultiResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -839,7 +823,6 @@ func (*PutStageMetadataMultiResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_plugin_pipedservice_service_proto_rawDescGZIP(), []int{13}
 }
 
-// GetDeploymentPluginMetadataRequest is the request for the GetDeploymentPluginMetadata RPC.
 type GetDeploymentPluginMetadataRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -906,7 +889,6 @@ func (x *GetDeploymentPluginMetadataRequest) GetKey() string {
 	return ""
 }
 
-// GetDeploymentPluginMetadataResponse is the response for the GetDeploymentPluginMetadata RPC.
 type GetDeploymentPluginMetadataResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -964,7 +946,6 @@ func (x *GetDeploymentPluginMetadataResponse) GetFound() bool {
 	return false
 }
 
-// PutDeploymentPluginMetadataRequest is the request for the PutDeploymentPluginMetadata RPC.
 type PutDeploymentPluginMetadataRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1039,7 +1020,6 @@ func (x *PutDeploymentPluginMetadataRequest) GetValue() string {
 	return ""
 }
 
-// PutDeploymentPluginMetadataResponse is the response for the PutDeploymentPluginMetadata RPC.
 type PutDeploymentPluginMetadataResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1078,8 +1058,6 @@ func (*PutDeploymentPluginMetadataResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_plugin_pipedservice_service_proto_rawDescGZIP(), []int{17}
 }
 
-// PutDeploymentPluginMetadataMultiRequest is the request for the
-// PutDeploymentPluginMetadataMulti RPC.
 type PutDeploymentPluginMetadataMultiRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1147,7 +1125,6 @@ func (x *PutDeploymentPluginMetadataMultiRequest) GetMetadata() map[string]strin
 	return nil
 }
 
-// PutDeploymentPluginMetadataMultiResponse is the response for the PutDeploymentPluginMetadataMulti RPC.
 type PutDeploymentPluginMetadataMultiResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1186,7 +1163,6 @@ func (*PutDeploymentPluginMetadataMultiResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_plugin_pipedservice_service_proto_rawDescGZIP(), []int{19}
 }
 
-// GetDeploymentSharedMetadataRequest is the request for the GetDeploymentSharedMetadata RPC.
 type GetDeploymentSharedMetadataRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1243,7 +1219,6 @@ func (x *GetDeploymentSharedMetadataRequest) GetKey() string {
 	return ""
 }
 
-// GetDeploymentSharedMetadataResponse is the response for the GetDeploymentSharedMetadata RPC.
 type GetDeploymentSharedMetadataResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1301,7 +1276,6 @@ func (x *GetDeploymentSharedMetadataResponse) GetFound() bool {
 	return false
 }
 
-// ListStageCommandsRequest is the request for the ListStageCommands RPC.
 type ListStageCommandsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1357,7 +1331,6 @@ func (x *ListStageCommandsRequest) GetStageId() string {
 	return ""
 }
 
-// ListStageCommandsResponse is the response for the ListStageCommands RPC.
 type ListStageCommandsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1405,7 +1378,6 @@ func (x *ListStageCommandsResponse) GetCommands() []*model.Command {
 	return nil
 }
 
-// GetApplicationSharedObjectRequest is the request for the GetApplicationSharedObject RPC.
 type GetApplicationSharedObjectRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1471,13 +1443,11 @@ func (x *GetApplicationSharedObjectRequest) GetKey() string {
 	return ""
 }
 
-// GetApplicationSharedObjectResponse is the response for the GetApplicationSharedObject RPC.
 type GetApplicationSharedObjectResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The raw bytes of the stored object.
 	Object []byte `protobuf:"bytes,1,opt,name=object,proto3" json:"object,omitempty"`
 }
 
@@ -1520,7 +1490,6 @@ func (x *GetApplicationSharedObjectResponse) GetObject() []byte {
 	return nil
 }
 
-// PutApplicationSharedObjectRequest is the request for the PutApplicationSharedObject RPC.
 type PutApplicationSharedObjectRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1530,8 +1499,7 @@ type PutApplicationSharedObjectRequest struct {
 	// The plugin storing the object.
 	PluginName string `protobuf:"bytes,2,opt,name=plugin_name,json=pluginName,proto3" json:"plugin_name,omitempty"`
 	// The key to store the object under.
-	Key string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
-	// The raw bytes of the object to store.
+	Key    string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
 	Object []byte `protobuf:"bytes,4,opt,name=object,proto3" json:"object,omitempty"`
 }
 
@@ -1595,7 +1563,6 @@ func (x *PutApplicationSharedObjectRequest) GetObject() []byte {
 	return nil
 }
 
-// PutApplicationSharedObjectResponse is the response for the PutApplicationSharedObject RPC.
 type PutApplicationSharedObjectResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

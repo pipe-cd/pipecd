@@ -81,13 +81,11 @@ func (HelloRequest_Gender) EnumDescriptor() ([]byte, []int) {
 	return file_pkg_app_helloworld_service_service_proto_rawDescGZIP(), []int{0, 0}
 }
 
-// HelloRequest is the request for the Hello RPC.
 type HelloRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The name to greet.
 	Name   string              `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Gender HelloRequest_Gender `protobuf:"varint,2,opt,name=gender,proto3,enum=grpc.service.helloworldservice.HelloRequest_Gender" json:"gender,omitempty"`
 }
@@ -138,13 +136,11 @@ func (x *HelloRequest) GetGender() HelloRequest_Gender {
 	return HelloRequest_GENDER_MALE
 }
 
-// HelloResponse is the response for the Hello RPC.
 type HelloResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The generated greeting message.
 	Message string `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
 }
 

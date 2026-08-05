@@ -513,11 +513,8 @@ type ProjectRBACConfig struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The name of the RBAC role treated as admin.
-	Admin string `protobuf:"bytes,1,opt,name=admin,proto3" json:"admin,omitempty"`
-	// The name of the RBAC role treated as editor.
+	Admin  string `protobuf:"bytes,1,opt,name=admin,proto3" json:"admin,omitempty"`
 	Editor string `protobuf:"bytes,2,opt,name=editor,proto3" json:"editor,omitempty"`
-	// The name of the RBAC role treated as viewer.
 	Viewer string `protobuf:"bytes,3,opt,name=viewer,proto3" json:"viewer,omitempty"`
 }
 

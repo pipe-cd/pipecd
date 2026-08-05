@@ -141,7 +141,6 @@ func (ListEventsRequest_Status) EnumDescriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{50, 0}
 }
 
-// ReportStatRequest is the request for the ReportStat RPC.
 type ReportStatRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -190,7 +189,6 @@ func (x *ReportStatRequest) GetPipedStats() []byte {
 	return nil
 }
 
-// ReportStatResponse is the response for the ReportStat RPC.
 type ReportStatResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -240,7 +238,6 @@ func (x *ReportStatResponse) GetReportInterval() int64 {
 	return 0
 }
 
-// ReportPipedMetaRequest is the request for the ReportPipedMeta RPC.
 type ReportPipedMetaRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -336,7 +333,6 @@ func (x *ReportPipedMetaRequest) GetConfig() string {
 	return ""
 }
 
-// ReportPipedMetaResponse is the response for the ReportPipedMeta RPC.
 type ReportPipedMetaResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -395,7 +391,6 @@ func (x *ReportPipedMetaResponse) GetWebBaseUrl() string {
 	return ""
 }
 
-// ListApplicationsRequest is the request for the ListApplications RPC.
 type ListApplicationsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -434,7 +429,6 @@ func (*ListApplicationsRequest) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{4}
 }
 
-// ListApplicationsResponse is the response for the ListApplications RPC.
 type ListApplicationsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -482,7 +476,6 @@ func (x *ListApplicationsResponse) GetApplications() []*model.Application {
 	return nil
 }
 
-// ReportApplicationSyncStateRequest is the request for the ReportApplicationSyncState RPC.
 type ReportApplicationSyncStateRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -538,7 +531,6 @@ func (x *ReportApplicationSyncStateRequest) GetState() *model.ApplicationSyncSta
 	return nil
 }
 
-// ReportApplicationSyncStateResponse is the response for the ReportApplicationSyncState RPC.
 type ReportApplicationSyncStateResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -577,7 +569,6 @@ func (*ReportApplicationSyncStateResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{7}
 }
 
-// ReportApplicationDeployingStatusRequest is the request for the ReportApplicationDeployingStatus RPC.
 type ReportApplicationDeployingStatusRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -633,7 +624,6 @@ func (x *ReportApplicationDeployingStatusRequest) GetDeploying() bool {
 	return false
 }
 
-// ReportApplicationDeployingStatusResponse is the response for the ReportApplicationDeployingStatus RPC.
 type ReportApplicationDeployingStatusResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -672,7 +662,6 @@ func (*ReportApplicationDeployingStatusResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{9}
 }
 
-// ReportApplicationMostRecentDeploymentRequest is the request for the ReportApplicationMostRecentDeployment RPC.
 type ReportApplicationMostRecentDeploymentRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -736,7 +725,6 @@ func (x *ReportApplicationMostRecentDeploymentRequest) GetDeployment() *model.Ap
 	return nil
 }
 
-// ReportApplicationMostRecentDeploymentResponse is the response for the ReportApplicationMostRecentDeployment RPC.
 type ReportApplicationMostRecentDeploymentResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -775,7 +763,6 @@ func (*ReportApplicationMostRecentDeploymentResponse) Descriptor() ([]byte, []in
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{11}
 }
 
-// GetApplicationMostRecentDeploymentRequest is the request for the GetApplicationMostRecentDeployment RPC.
 type GetApplicationMostRecentDeploymentRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -831,7 +818,6 @@ func (x *GetApplicationMostRecentDeploymentRequest) GetStatus() model.Deployment
 	return model.DeploymentStatus(0)
 }
 
-// GetApplicationMostRecentDeploymentResponse is the response for the GetApplicationMostRecentDeployment RPC.
 type GetApplicationMostRecentDeploymentResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -879,7 +865,6 @@ func (x *GetApplicationMostRecentDeploymentResponse) GetDeployment() *model.Appl
 	return nil
 }
 
-// GetDeploymentRequest is the request for the GetDeployment RPC.
 type GetDeploymentRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -927,7 +912,6 @@ func (x *GetDeploymentRequest) GetId() string {
 	return ""
 }
 
-// GetDeploymentResponse is the response for the GetDeployment RPC.
 type GetDeploymentResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -975,7 +959,6 @@ func (x *GetDeploymentResponse) GetDeployment() *model.Deployment {
 	return nil
 }
 
-// ListNotCompletedDeploymentsRequest is the request for the ListNotCompletedDeployments RPC.
 type ListNotCompletedDeploymentsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1014,7 +997,6 @@ func (*ListNotCompletedDeploymentsRequest) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{16}
 }
 
-// ListNotCompletedDeploymentsResponse is the response for the ListNotCompletedDeployments RPC.
 type ListNotCompletedDeploymentsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1070,7 +1052,6 @@ func (x *ListNotCompletedDeploymentsResponse) GetCursor() string {
 	return ""
 }
 
-// CreateDeploymentRequest is the request for the CreateDeployment RPC.
 type CreateDeploymentRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1118,7 +1099,6 @@ func (x *CreateDeploymentRequest) GetDeployment() *model.Deployment {
 	return nil
 }
 
-// CreateDeploymentResponse is the response for the CreateDeployment RPC.
 type CreateDeploymentResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1157,7 +1137,6 @@ func (*CreateDeploymentResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{19}
 }
 
-// ReportDeploymentPlannedRequest is the request for the ReportDeploymentPlanned RPC.
 type ReportDeploymentPlannedRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1300,7 +1279,6 @@ func (x *ReportDeploymentPlannedRequest) GetDeploymentChainBlockIndex() uint32 {
 	return 0
 }
 
-// ReportDeploymentPlannedResponse is the response for the ReportDeploymentPlanned RPC.
 type ReportDeploymentPlannedResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1339,7 +1317,6 @@ func (*ReportDeploymentPlannedResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{21}
 }
 
-// ReportDeploymentStatusChangedRequest is the request for the ReportDeploymentStatusChanged RPC.
 type ReportDeploymentStatusChangedRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1425,7 +1402,6 @@ func (x *ReportDeploymentStatusChangedRequest) GetDeploymentChainBlockIndex() ui
 	return 0
 }
 
-// ReportDeploymentStatusChangedResponse is the response for the ReportDeploymentStatusChanged RPC.
 type ReportDeploymentStatusChangedResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1464,7 +1440,6 @@ func (*ReportDeploymentStatusChangedResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{23}
 }
 
-// ReportDeploymentCompletedRequest is the request for the ReportDeploymentCompleted RPC.
 type ReportDeploymentCompletedRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1568,7 +1543,6 @@ func (x *ReportDeploymentCompletedRequest) GetCompletedAt() int64 {
 	return 0
 }
 
-// ReportDeploymentCompletedResponse is the response for the ReportDeploymentCompleted RPC.
 type ReportDeploymentCompletedResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1607,7 +1581,6 @@ func (*ReportDeploymentCompletedResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{25}
 }
 
-// SaveDeploymentMetadataRequest is the request for the SaveDeploymentMetadata RPC.
 type SaveDeploymentMetadataRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1663,7 +1636,6 @@ func (x *SaveDeploymentMetadataRequest) GetMetadata() map[string]string {
 	return nil
 }
 
-// SaveDeploymentMetadataResponse is the response for the SaveDeploymentMetadata RPC.
 type SaveDeploymentMetadataResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1702,7 +1674,6 @@ func (*SaveDeploymentMetadataResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{27}
 }
 
-// SaveDeploymentSharedMetadataRequest is the request for the SaveDeploymentSharedMetadata RPC.
 type SaveDeploymentSharedMetadataRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1758,7 +1729,6 @@ func (x *SaveDeploymentSharedMetadataRequest) GetMetadata() map[string]string {
 	return nil
 }
 
-// SaveDeploymentSharedMetadataResponse is the response for the SaveDeploymentSharedMetadata RPC.
 type SaveDeploymentSharedMetadataResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1797,7 +1767,6 @@ func (*SaveDeploymentSharedMetadataResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{29}
 }
 
-// SaveDeploymentPluginMetadataRequest is the request for the SaveDeploymentPluginMetadata RPC.
 type SaveDeploymentPluginMetadataRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1861,7 +1830,6 @@ func (x *SaveDeploymentPluginMetadataRequest) GetMetadata() map[string]string {
 	return nil
 }
 
-// SaveDeploymentPluginMetadataResponse is the response for the SaveDeploymentPluginMetadata RPC.
 type SaveDeploymentPluginMetadataResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1900,7 +1868,6 @@ func (*SaveDeploymentPluginMetadataResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{31}
 }
 
-// SaveStageMetadataRequest is the request for the SaveStageMetadata RPC.
 type SaveStageMetadataRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1964,7 +1931,6 @@ func (x *SaveStageMetadataRequest) GetMetadata() map[string]string {
 	return nil
 }
 
-// SaveStageMetadataResponse is the response for the SaveStageMetadata RPC.
 type SaveStageMetadataResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2003,7 +1969,6 @@ func (*SaveStageMetadataResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{33}
 }
 
-// ReportStageLogsRequest is the request for the ReportStageLogs RPC.
 type ReportStageLogsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2075,7 +2040,6 @@ func (x *ReportStageLogsRequest) GetBlocks() []*model.LogBlock {
 	return nil
 }
 
-// ReportStageLogsResponse is the response for the ReportStageLogs RPC.
 type ReportStageLogsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2114,7 +2078,6 @@ func (*ReportStageLogsResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{35}
 }
 
-// ReportStageLogsFromLastCheckpointRequest is the request for the ReportStageLogsFromLastCheckpoint RPC.
 type ReportStageLogsFromLastCheckpointRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2194,7 +2157,6 @@ func (x *ReportStageLogsFromLastCheckpointRequest) GetCompleted() bool {
 	return false
 }
 
-// ReportStageLogsFromLastCheckpointResponse is the response for the ReportStageLogsFromLastCheckpoint RPC.
 type ReportStageLogsFromLastCheckpointResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2233,7 +2195,6 @@ func (*ReportStageLogsFromLastCheckpointResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{37}
 }
 
-// ReportStageStatusChangedRequest is the request for the ReportStageStatusChanged RPC.
 type ReportStageStatusChangedRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2338,7 +2299,6 @@ func (x *ReportStageStatusChangedRequest) GetCompletedAt() int64 {
 	return 0
 }
 
-// ReportStageStatusChangedResponse is the response for the ReportStageStatusChanged RPC.
 type ReportStageStatusChangedResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2377,7 +2337,6 @@ func (*ReportStageStatusChangedResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{39}
 }
 
-// ListUnhandledCommandsRequest is the request for the ListUnhandledCommands RPC.
 type ListUnhandledCommandsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2416,7 +2375,6 @@ func (*ListUnhandledCommandsRequest) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{40}
 }
 
-// ListUnhandledCommandsResponse is the response for the ListUnhandledCommands RPC.
 type ListUnhandledCommandsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2464,7 +2422,6 @@ func (x *ListUnhandledCommandsResponse) GetCommands() []*model.Command {
 	return nil
 }
 
-// ReportCommandHandledRequest is the request for the ReportCommandHandled RPC.
 type ReportCommandHandledRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2545,7 +2502,6 @@ func (x *ReportCommandHandledRequest) GetOutput() []byte {
 	return nil
 }
 
-// ReportCommandHandledResponse is the response for the ReportCommandHandled RPC.
 type ReportCommandHandledResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2584,7 +2540,6 @@ func (*ReportCommandHandledResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{43}
 }
 
-// ReportApplicationLiveStateRequest is the request for the ReportApplicationLiveState RPC.
 type ReportApplicationLiveStateRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2632,7 +2587,6 @@ func (x *ReportApplicationLiveStateRequest) GetSnapshot() *model.ApplicationLive
 	return nil
 }
 
-// ReportApplicationLiveStateResponse is the response for the ReportApplicationLiveState RPC.
 type ReportApplicationLiveStateResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2671,7 +2625,6 @@ func (*ReportApplicationLiveStateResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{45}
 }
 
-// ReportApplicationLiveStateEventsRequest is the request for the ReportApplicationLiveStateEvents RPC.
 type ReportApplicationLiveStateEventsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2719,7 +2672,6 @@ func (x *ReportApplicationLiveStateEventsRequest) GetKubernetesEvents() []*model
 	return nil
 }
 
-// ReportApplicationLiveStateEventsResponse is the response for the ReportApplicationLiveStateEvents RPC.
 type ReportApplicationLiveStateEventsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2767,7 +2719,6 @@ func (x *ReportApplicationLiveStateEventsResponse) GetFailedIds() []string {
 	return nil
 }
 
-// GetLatestEventRequest is the request for the GetLatestEvent RPC.
 type GetLatestEventRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2825,7 +2776,6 @@ func (x *GetLatestEventRequest) GetLabels() map[string]string {
 	return nil
 }
 
-// GetLatestEventResponse is the response for the GetLatestEvent RPC.
 type GetLatestEventResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2873,7 +2823,6 @@ func (x *GetLatestEventResponse) GetEvent() *model.Event {
 	return nil
 }
 
-// ListEventsRequest is the request for the ListEvents RPC.
 type ListEventsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2951,7 +2900,6 @@ func (x *ListEventsRequest) GetStatus() ListEventsRequest_Status {
 	return ListEventsRequest_ALL
 }
 
-// ListEventsResponse is the response for the ListEvents RPC.
 type ListEventsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2999,7 +2947,6 @@ func (x *ListEventsResponse) GetEvents() []*model.Event {
 	return nil
 }
 
-// ReportEventStatusesRequest is the request for the ReportEventStatuses RPC.
 type ReportEventStatusesRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3047,7 +2994,6 @@ func (x *ReportEventStatusesRequest) GetEvents() []*ReportEventStatusesRequest_E
 	return nil
 }
 
-// ReportEventStatusesResponse is the response for the ReportEventStatuses RPC.
 type ReportEventStatusesResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3086,7 +3032,6 @@ func (*ReportEventStatusesResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{53}
 }
 
-// GetLatestAnalysisResultRequest is the request for the GetLatestAnalysisResult RPC.
 type GetLatestAnalysisResultRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3134,7 +3079,6 @@ func (x *GetLatestAnalysisResultRequest) GetApplicationId() string {
 	return ""
 }
 
-// GetLatestAnalysisResultResponse is the response for the GetLatestAnalysisResult RPC.
 type GetLatestAnalysisResultResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3182,7 +3126,6 @@ func (x *GetLatestAnalysisResultResponse) GetAnalysisResult() *model.AnalysisRes
 	return nil
 }
 
-// PutLatestAnalysisResultRequest is the request for the PutLatestAnalysisResult RPC.
 type PutLatestAnalysisResultRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3238,7 +3181,6 @@ func (x *PutLatestAnalysisResultRequest) GetAnalysisResult() *model.AnalysisResu
 	return nil
 }
 
-// PutLatestAnalysisResultResponse is the response for the PutLatestAnalysisResult RPC.
 type PutLatestAnalysisResultResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3277,7 +3219,6 @@ func (*PutLatestAnalysisResultResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{57}
 }
 
-// GetDesiredVersionRequest is the request for the GetDesiredVersion RPC.
 type GetDesiredVersionRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3316,7 +3257,6 @@ func (*GetDesiredVersionRequest) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{58}
 }
 
-// GetDesiredVersionResponse is the response for the GetDesiredVersion RPC.
 type GetDesiredVersionResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3366,7 +3306,6 @@ func (x *GetDesiredVersionResponse) GetVersion() string {
 	return ""
 }
 
-// UpdateApplicationConfigurationsRequest is the request for the UpdateApplicationConfigurations RPC.
 type UpdateApplicationConfigurationsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3415,7 +3354,6 @@ func (x *UpdateApplicationConfigurationsRequest) GetApplications() []*model.Appl
 	return nil
 }
 
-// UpdateApplicationConfigurationsResponse is the response for the UpdateApplicationConfigurations RPC.
 type UpdateApplicationConfigurationsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3454,7 +3392,6 @@ func (*UpdateApplicationConfigurationsResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{61}
 }
 
-// ReportUnregisteredApplicationConfigurationsRequest is the request for the ReportUnregisteredApplicationConfigurations RPC.
 type ReportUnregisteredApplicationConfigurationsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3504,7 +3441,6 @@ func (x *ReportUnregisteredApplicationConfigurationsRequest) GetApplications() [
 	return nil
 }
 
-// ReportUnregisteredApplicationConfigurationsResponse is the response for the ReportUnregisteredApplicationConfigurations RPC.
 type ReportUnregisteredApplicationConfigurationsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3543,7 +3479,6 @@ func (*ReportUnregisteredApplicationConfigurationsResponse) Descriptor() ([]byte
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{63}
 }
 
-// CreateDeploymentChainRequest is the request for the CreateDeploymentChain RPC.
 type CreateDeploymentChainRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3599,7 +3534,6 @@ func (x *CreateDeploymentChainRequest) GetMatchers() []*CreateDeploymentChainReq
 	return nil
 }
 
-// CreateDeploymentChainResponse is the response for the CreateDeploymentChain RPC.
 type CreateDeploymentChainResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3638,7 +3572,6 @@ func (*CreateDeploymentChainResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_pipedservice_service_proto_rawDescGZIP(), []int{65}
 }
 
-// InChainDeploymentPlannableRequest is the request for the InChainDeploymentPlannable RPC.
 type InChainDeploymentPlannableRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3703,7 +3636,6 @@ func (x *InChainDeploymentPlannableRequest) GetDeploymentChainBlockIndex() uint3
 	return 0
 }
 
-// InChainDeploymentPlannableResponse is the response for the InChainDeploymentPlannable RPC.
 type InChainDeploymentPlannableResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3769,7 +3701,6 @@ func (x *InChainDeploymentPlannableResponse) GetCancelReason() string {
 	return ""
 }
 
-// GetApplicationSharedObjectRequest is the request for the GetApplicationSharedObject RPC.
 type GetApplicationSharedObjectRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3835,13 +3766,11 @@ func (x *GetApplicationSharedObjectRequest) GetKey() string {
 	return ""
 }
 
-// GetApplicationSharedObjectResponse is the response for the GetApplicationSharedObject RPC.
 type GetApplicationSharedObjectResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The raw bytes of the stored object.
 	Object []byte `protobuf:"bytes,1,opt,name=object,proto3" json:"object,omitempty"`
 }
 
@@ -3884,7 +3813,6 @@ func (x *GetApplicationSharedObjectResponse) GetObject() []byte {
 	return nil
 }
 
-// PutApplicationSharedObjectRequest is the request for the PutApplicationSharedObject RPC.
 type PutApplicationSharedObjectRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3894,8 +3822,7 @@ type PutApplicationSharedObjectRequest struct {
 	// The plugin storing the object.
 	PluginName string `protobuf:"bytes,2,opt,name=plugin_name,json=pluginName,proto3" json:"plugin_name,omitempty"`
 	// The key to store the object under.
-	Key string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
-	// The raw bytes of the object to store.
+	Key    string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
 	Object []byte `protobuf:"bytes,4,opt,name=object,proto3" json:"object,omitempty"`
 }
 
@@ -3959,7 +3886,6 @@ func (x *PutApplicationSharedObjectRequest) GetObject() []byte {
 	return nil
 }
 
-// PutApplicationSharedObjectResponse is the response for the PutApplicationSharedObject RPC.
 type PutApplicationSharedObjectResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

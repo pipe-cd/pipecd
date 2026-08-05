@@ -37,7 +37,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// DetermineVersionsRequest is the request for the DetermineVersions RPC.
 type DetermineVersionsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -85,7 +84,6 @@ func (x *DetermineVersionsRequest) GetInput() *PlanPluginInput {
 	return nil
 }
 
-// DetermineVersionsResponse is the response for the DetermineVersions RPC.
 type DetermineVersionsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -134,7 +132,6 @@ func (x *DetermineVersionsResponse) GetVersions() []*model.ArtifactVersion {
 	return nil
 }
 
-// DetermineStrategyRequest is the request for the DetermineStrategy RPC.
 type DetermineStrategyRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -182,7 +179,6 @@ func (x *DetermineStrategyRequest) GetInput() *PlanPluginInput {
 	return nil
 }
 
-// DetermineStrategyResponse is the response for the DetermineStrategy RPC.
 type DetermineStrategyResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -250,7 +246,6 @@ func (x *DetermineStrategyResponse) GetUnsupported() bool {
 	return false
 }
 
-// BuildPipelineSyncStagesRequest is the request for the BuildPipelineSyncStages RPC.
 type BuildPipelineSyncStagesRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -309,7 +304,6 @@ func (x *BuildPipelineSyncStagesRequest) GetStages() []*BuildPipelineSyncStagesR
 	return nil
 }
 
-// BuildPipelineSyncStagesResponse is the response for the BuildPipelineSyncStages RPC.
 type BuildPipelineSyncStagesResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -358,7 +352,6 @@ func (x *BuildPipelineSyncStagesResponse) GetStages() []*model.PipelineStage {
 	return nil
 }
 
-// BuildQuickSyncStagesRequest is the request for the BuildQuickSyncStages RPC.
 type BuildQuickSyncStagesRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -407,7 +400,6 @@ func (x *BuildQuickSyncStagesRequest) GetRollback() bool {
 	return false
 }
 
-// BuildQuickSyncStagesResponse is the response for the BuildQuickSyncStages RPC.
 type BuildQuickSyncStagesResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -456,7 +448,6 @@ func (x *BuildQuickSyncStagesResponse) GetStages() []*model.PipelineStage {
 	return nil
 }
 
-// FetchDefinedStagesRequest is the request for the FetchDefinedStages RPC.
 type FetchDefinedStagesRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -495,7 +486,6 @@ func (*FetchDefinedStagesRequest) Descriptor() ([]byte, []int) {
 	return file_pkg_plugin_api_v1alpha1_deployment_api_proto_rawDescGZIP(), []int{8}
 }
 
-// FetchDefinedStagesResponse is the response for the FetchDefinedStages RPC.
 type FetchDefinedStagesResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -544,7 +534,6 @@ func (x *FetchDefinedStagesResponse) GetStages() []string {
 	return nil
 }
 
-// ExecuteStageRequest is the request for the ExecuteStage RPC.
 type ExecuteStageRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -592,7 +581,6 @@ func (x *ExecuteStageRequest) GetInput() *ExecutePluginInput {
 	return nil
 }
 
-// ExecuteStageResponse is the response for the ExecuteStage RPC.
 type ExecuteStageResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

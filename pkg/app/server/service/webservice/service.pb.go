@@ -38,7 +38,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// RegisterPipedRequest is the request for the RegisterPiped RPC.
 type RegisterPipedRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -96,13 +95,11 @@ func (x *RegisterPipedRequest) GetDesc() string {
 	return ""
 }
 
-// RegisterPipedResponse is the response for the RegisterPiped RPC.
 type RegisterPipedResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The generated unique identifier of the piped.
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// The base64 encoded piped key. Shown only once; the caller is
 	// responsible for storing it securely.
@@ -155,7 +152,6 @@ func (x *RegisterPipedResponse) GetKey() string {
 	return ""
 }
 
-// UpdatePipedRequest is the request for the UpdatePiped RPC.
 type UpdatePipedRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -219,7 +215,6 @@ func (x *UpdatePipedRequest) GetDesc() string {
 	return ""
 }
 
-// UpdatePipedResponse is the response for the UpdatePiped RPC.
 type UpdatePipedResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -258,7 +253,6 @@ func (*UpdatePipedResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{3}
 }
 
-// RecreatePipedKeyRequest is the request for the RecreatePipedKey RPC.
 type RecreatePipedKeyRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -307,7 +301,6 @@ func (x *RecreatePipedKeyRequest) GetId() string {
 	return ""
 }
 
-// RecreatePipedKeyResponse is the response for the RecreatePipedKey RPC.
 type RecreatePipedKeyResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -356,7 +349,6 @@ func (x *RecreatePipedKeyResponse) GetKey() string {
 	return ""
 }
 
-// DeleteOldPipedKeysRequest is the request for the DeleteOldPipedKeys RPC.
 type DeleteOldPipedKeysRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -404,7 +396,6 @@ func (x *DeleteOldPipedKeysRequest) GetPipedId() string {
 	return ""
 }
 
-// DeleteOldPipedKeysResponse is the response for the DeleteOldPipedKeys RPC.
 type DeleteOldPipedKeysResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -443,7 +434,6 @@ func (*DeleteOldPipedKeysResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{7}
 }
 
-// EnablePipedRequest is the request for the EnablePiped RPC.
 type EnablePipedRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -491,7 +481,6 @@ func (x *EnablePipedRequest) GetPipedId() string {
 	return ""
 }
 
-// EnablePipedResponse is the response for the EnablePiped RPC.
 type EnablePipedResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -530,7 +519,6 @@ func (*EnablePipedResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{9}
 }
 
-// DisablePipedRequest is the request for the DisablePiped RPC.
 type DisablePipedRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -578,7 +566,6 @@ func (x *DisablePipedRequest) GetPipedId() string {
 	return ""
 }
 
-// DisablePipedResponse is the response for the DisablePiped RPC.
 type DisablePipedResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -617,7 +604,6 @@ func (*DisablePipedResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{11}
 }
 
-// ListPipedsRequest is the request for the ListPipeds RPC.
 type ListPipedsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -674,7 +660,6 @@ func (x *ListPipedsRequest) GetOptions() *ListPipedsRequest_Options {
 	return nil
 }
 
-// ListPipedsResponse is the response for the ListPipeds RPC.
 type ListPipedsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -722,7 +707,6 @@ func (x *ListPipedsResponse) GetPipeds() []*model.Piped {
 	return nil
 }
 
-// GetPipedRequest is the request for the GetPiped RPC.
 type GetPipedRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -770,7 +754,6 @@ func (x *GetPipedRequest) GetPipedId() string {
 	return ""
 }
 
-// GetPipedResponse is the response for the GetPiped RPC.
 type GetPipedResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -818,7 +801,6 @@ func (x *GetPipedResponse) GetPiped() *model.Piped {
 	return nil
 }
 
-// UpdatePipedDesiredVersionRequest is the request for the UpdatePipedDesiredVersion RPC.
 type UpdatePipedDesiredVersionRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -876,7 +858,6 @@ func (x *UpdatePipedDesiredVersionRequest) GetPipedIds() []string {
 	return nil
 }
 
-// UpdatePipedDesiredVersionResponse is the response for the UpdatePipedDesiredVersion RPC.
 type UpdatePipedDesiredVersionResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -915,7 +896,6 @@ func (*UpdatePipedDesiredVersionResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{17}
 }
 
-// RestartPipedRequest is the request for the RestartPiped RPC.
 type RestartPipedRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -963,7 +943,6 @@ func (x *RestartPipedRequest) GetPipedId() string {
 	return ""
 }
 
-// RestartPipedResponse is the response for the RestartPiped RPC.
 type RestartPipedResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1013,7 +992,6 @@ func (x *RestartPipedResponse) GetCommandId() string {
 	return ""
 }
 
-// ListReleasedVersionsRequest is the request for the ListReleasedVersions RPC.
 type ListReleasedVersionsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1052,7 +1030,6 @@ func (*ListReleasedVersionsRequest) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{20}
 }
 
-// ListReleasedVersionsResponse is the response for the ListReleasedVersions RPC.
 type ListReleasedVersionsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1101,7 +1078,6 @@ func (x *ListReleasedVersionsResponse) GetVersions() []string {
 	return nil
 }
 
-// ListDeprecatedNotesRequest is the request for the ListDeprecatedNotes RPC.
 type ListDeprecatedNotesRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1149,7 +1125,6 @@ func (x *ListDeprecatedNotesRequest) GetProjectId() string {
 	return ""
 }
 
-// ListDeprecatedNotesResponse is the response for the ListDeprecatedNotes RPC.
 type ListDeprecatedNotesResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1198,7 +1173,6 @@ func (x *ListDeprecatedNotesResponse) GetNotes() string {
 	return ""
 }
 
-// AddApplicationRequest is the request for the AddApplication RPC.
 type AddApplicationRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1304,7 +1278,6 @@ func (x *AddApplicationRequest) GetLabels() map[string]string {
 	return nil
 }
 
-// AddApplicationResponse is the response for the AddApplication RPC.
 type AddApplicationResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1353,7 +1326,6 @@ func (x *AddApplicationResponse) GetApplicationId() string {
 	return ""
 }
 
-// UpdateApplicationRequest is the request for the UpdateApplication RPC.
 type UpdateApplicationRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1451,7 +1423,6 @@ func (x *UpdateApplicationRequest) GetConfigFilename() string {
 	return ""
 }
 
-// UpdateApplicationResponse is the response for the UpdateApplication RPC.
 type UpdateApplicationResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1490,7 +1461,6 @@ func (*UpdateApplicationResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{27}
 }
 
-// EnableApplicationRequest is the request for the EnableApplication RPC.
 type EnableApplicationRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1538,7 +1508,6 @@ func (x *EnableApplicationRequest) GetApplicationId() string {
 	return ""
 }
 
-// EnableApplicationResponse is the response for the EnableApplication RPC.
 type EnableApplicationResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1577,7 +1546,6 @@ func (*EnableApplicationResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{29}
 }
 
-// DisableApplicationRequest is the request for the DisableApplication RPC.
 type DisableApplicationRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1625,7 +1593,6 @@ func (x *DisableApplicationRequest) GetApplicationId() string {
 	return ""
 }
 
-// DisableApplicationResponse is the response for the DisableApplication RPC.
 type DisableApplicationResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1664,7 +1631,6 @@ func (*DisableApplicationResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{31}
 }
 
-// DeleteApplicationRequest is the request for the DeleteApplication RPC.
 type DeleteApplicationRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1712,7 +1678,6 @@ func (x *DeleteApplicationRequest) GetApplicationId() string {
 	return ""
 }
 
-// DeleteApplicationResponse is the response for the DeleteApplication RPC.
 type DeleteApplicationResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1751,7 +1716,6 @@ func (*DeleteApplicationResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{33}
 }
 
-// ListApplicationsRequest is the request for the ListApplications RPC.
 type ListApplicationsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1799,7 +1763,6 @@ func (x *ListApplicationsRequest) GetOptions() *ListApplicationsRequest_Options 
 	return nil
 }
 
-// ListApplicationsResponse is the response for the ListApplications RPC.
 type ListApplicationsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1847,7 +1810,6 @@ func (x *ListApplicationsResponse) GetApplications() []*model.Application {
 	return nil
 }
 
-// SyncApplicationRequest is the request for the SyncApplication RPC.
 type SyncApplicationRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1903,7 +1865,6 @@ func (x *SyncApplicationRequest) GetSyncStrategy() model.SyncStrategy {
 	return model.SyncStrategy(0)
 }
 
-// SyncApplicationResponse is the response for the SyncApplication RPC.
 type SyncApplicationResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1953,7 +1914,6 @@ func (x *SyncApplicationResponse) GetCommandId() string {
 	return ""
 }
 
-// GetApplicationRequest is the request for the GetApplication RPC.
 type GetApplicationRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2001,7 +1961,6 @@ func (x *GetApplicationRequest) GetApplicationId() string {
 	return ""
 }
 
-// GetApplicationResponse is the response for the GetApplication RPC.
 type GetApplicationResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2049,7 +2008,6 @@ func (x *GetApplicationResponse) GetApplication() *model.Application {
 	return nil
 }
 
-// GenerateApplicationSealedSecretRequest is the request for the GenerateApplicationSealedSecret RPC.
 type GenerateApplicationSealedSecretRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2114,7 +2072,6 @@ func (x *GenerateApplicationSealedSecretRequest) GetBase64Encoding() bool {
 	return false
 }
 
-// GenerateApplicationSealedSecretResponse is the response for the GenerateApplicationSealedSecret RPC.
 type GenerateApplicationSealedSecretResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2162,7 +2119,6 @@ func (x *GenerateApplicationSealedSecretResponse) GetData() string {
 	return ""
 }
 
-// ListUnregisteredApplicationsRequest is the request for the ListUnregisteredApplications RPC.
 type ListUnregisteredApplicationsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2201,7 +2157,6 @@ func (*ListUnregisteredApplicationsRequest) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{42}
 }
 
-// ListUnregisteredApplicationsResponse is the response for the ListUnregisteredApplications RPC.
 type ListUnregisteredApplicationsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2249,7 +2204,6 @@ func (x *ListUnregisteredApplicationsResponse) GetApplications() []*model.Applic
 	return nil
 }
 
-// ListDeploymentsRequest is the request for the ListDeployments RPC.
 type ListDeploymentsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2327,7 +2281,6 @@ func (x *ListDeploymentsRequest) GetPageMinUpdatedAt() int64 {
 	return 0
 }
 
-// ListDeploymentsResponse is the response for the ListDeployments RPC.
 type ListDeploymentsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2385,7 +2338,6 @@ func (x *ListDeploymentsResponse) GetCursor() string {
 	return ""
 }
 
-// GetDeploymentRequest is the request for the GetDeployment RPC.
 type GetDeploymentRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2433,7 +2385,6 @@ func (x *GetDeploymentRequest) GetDeploymentId() string {
 	return ""
 }
 
-// GetDeploymentResponse is the response for the GetDeployment RPC.
 type GetDeploymentResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2481,7 +2432,6 @@ func (x *GetDeploymentResponse) GetDeployment() *model.Deployment {
 	return nil
 }
 
-// GetStageLogRequest is the request for the GetStageLog RPC.
 type GetStageLogRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2556,7 +2506,6 @@ func (x *GetStageLogRequest) GetOffsetIndex() int64 {
 	return 0
 }
 
-// GetStageLogResponse is the response for the GetStageLog RPC.
 type GetStageLogResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2614,7 +2563,6 @@ func (x *GetStageLogResponse) GetCompleted() bool {
 	return false
 }
 
-// CancelDeploymentRequest is the request for the CancelDeployment RPC.
 type CancelDeploymentRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2682,7 +2630,6 @@ func (x *CancelDeploymentRequest) GetForceNoRollback() bool {
 	return false
 }
 
-// CancelDeploymentResponse is the response for the CancelDeployment RPC.
 type CancelDeploymentResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2732,7 +2679,6 @@ func (x *CancelDeploymentResponse) GetCommandId() string {
 	return ""
 }
 
-// SkipStageRequest is the request for the SkipStage RPC.
 type SkipStageRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2788,7 +2734,6 @@ func (x *SkipStageRequest) GetStageId() string {
 	return ""
 }
 
-// SkipStageResponse is the response for the SkipStage RPC.
 type SkipStageResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2838,7 +2783,6 @@ func (x *SkipStageResponse) GetCommandId() string {
 	return ""
 }
 
-// ApproveStageRequest is the request for the ApproveStage RPC.
 type ApproveStageRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2894,7 +2838,6 @@ func (x *ApproveStageRequest) GetStageId() string {
 	return ""
 }
 
-// ApproveStageResponse is the response for the ApproveStage RPC.
 type ApproveStageResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2944,7 +2887,6 @@ func (x *ApproveStageResponse) GetCommandId() string {
 	return ""
 }
 
-// ListDeploymentTracesRequest is the request for the ListDeploymentTraces RPC.
 type ListDeploymentTracesRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3022,7 +2964,6 @@ func (x *ListDeploymentTracesRequest) GetPageMinUpdatedAt() int64 {
 	return 0
 }
 
-// ListDeploymentTracesResponse is the response for the ListDeploymentTraces RPC.
 type ListDeploymentTracesResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3080,7 +3021,6 @@ func (x *ListDeploymentTracesResponse) GetCursor() string {
 	return ""
 }
 
-// GetApplicationLiveStateRequest is the request for the GetApplicationLiveState RPC.
 type GetApplicationLiveStateRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3128,7 +3068,6 @@ func (x *GetApplicationLiveStateRequest) GetApplicationId() string {
 	return ""
 }
 
-// GetApplicationLiveStateResponse is the response for the GetApplicationLiveState RPC.
 type GetApplicationLiveStateResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3178,7 +3117,6 @@ func (x *GetApplicationLiveStateResponse) GetSnapshot() *model.ApplicationLiveSt
 	return nil
 }
 
-// GetProjectRequest is the request for the GetProject RPC.
 type GetProjectRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3217,7 +3155,6 @@ func (*GetProjectRequest) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{60}
 }
 
-// GetProjectResponse is the response for the GetProject RPC.
 type GetProjectResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3265,13 +3202,11 @@ func (x *GetProjectResponse) GetProject() *model.Project {
 	return nil
 }
 
-// UpdateProjectStaticAdminRequest is the request for the UpdateProjectStaticAdmin RPC.
 type UpdateProjectStaticAdminRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The new username of the static admin user.
 	Username string `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
 	// The new plaintext password of the static admin user. The server hashes
 	// it before persisting; the plaintext value is never stored or returned.
@@ -3324,7 +3259,6 @@ func (x *UpdateProjectStaticAdminRequest) GetPassword() string {
 	return ""
 }
 
-// UpdateProjectStaticAdminResponse is the response for the UpdateProjectStaticAdmin RPC.
 type UpdateProjectStaticAdminResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3363,7 +3297,6 @@ func (*UpdateProjectStaticAdminResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{63}
 }
 
-// UpdateProjectSSOConfigRequest is the request for the UpdateProjectSSOConfig RPC.
 type UpdateProjectSSOConfigRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3411,7 +3344,6 @@ func (x *UpdateProjectSSOConfigRequest) GetSso() *model.ProjectSSOConfig {
 	return nil
 }
 
-// UpdateProjectSSOConfigResponse is the response for the UpdateProjectSSOConfig RPC.
 type UpdateProjectSSOConfigResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3450,7 +3382,6 @@ func (*UpdateProjectSSOConfigResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{65}
 }
 
-// UpdateProjectRBACConfigRequest is the request for the UpdateProjectRBACConfig RPC.
 type UpdateProjectRBACConfigRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3498,7 +3429,6 @@ func (x *UpdateProjectRBACConfigRequest) GetRbac() *model.ProjectRBACConfig {
 	return nil
 }
 
-// UpdateProjectRBACConfigResponse is the response for the UpdateProjectRBACConfig RPC.
 type UpdateProjectRBACConfigResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3537,7 +3467,6 @@ func (*UpdateProjectRBACConfigResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{67}
 }
 
-// EnableStaticAdminRequest is the request for the EnableStaticAdmin RPC.
 type EnableStaticAdminRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3576,7 +3505,6 @@ func (*EnableStaticAdminRequest) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{68}
 }
 
-// EnableStaticAdminResponse is the response for the EnableStaticAdmin RPC.
 type EnableStaticAdminResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3615,7 +3543,6 @@ func (*EnableStaticAdminResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{69}
 }
 
-// DisableStaticAdminRequest is the request for the DisableStaticAdmin RPC.
 type DisableStaticAdminRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3654,7 +3581,6 @@ func (*DisableStaticAdminRequest) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{70}
 }
 
-// DisableStaticAdminResponse is the response for the DisableStaticAdmin RPC.
 type DisableStaticAdminResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3693,7 +3619,6 @@ func (*DisableStaticAdminResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{71}
 }
 
-// GetMeRequest is the request for the GetMe RPC.
 type GetMeRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3732,7 +3657,6 @@ func (*GetMeRequest) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{72}
 }
 
-// GetMeResponse is the response for the GetMe RPC.
 type GetMeResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3797,7 +3721,6 @@ func (x *GetMeResponse) GetProjectId() string {
 	return ""
 }
 
-// AddProjectRBACRoleRequest is the request for the AddProjectRBACRole RPC.
 type AddProjectRBACRoleRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3853,7 +3776,6 @@ func (x *AddProjectRBACRoleRequest) GetPolicies() []*model.ProjectRBACPolicy {
 	return nil
 }
 
-// AddProjectRBACRoleResponse is the response for the AddProjectRBACRole RPC.
 type AddProjectRBACRoleResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3892,7 +3814,6 @@ func (*AddProjectRBACRoleResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{75}
 }
 
-// UpdateProjectRBACRoleRequest is the request for the UpdateProjectRBACRole RPC.
 type UpdateProjectRBACRoleRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3948,7 +3869,6 @@ func (x *UpdateProjectRBACRoleRequest) GetPolicies() []*model.ProjectRBACPolicy 
 	return nil
 }
 
-// UpdateProjectRBACRoleResponse is the response for the UpdateProjectRBACRole RPC.
 type UpdateProjectRBACRoleResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3987,7 +3907,6 @@ func (*UpdateProjectRBACRoleResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{77}
 }
 
-// DeleteProjectRBACRoleRequest is the request for the DeleteProjectRBACRole RPC.
 type DeleteProjectRBACRoleRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -4035,7 +3954,6 @@ func (x *DeleteProjectRBACRoleRequest) GetName() string {
 	return ""
 }
 
-// DeleteProjectRBACRoleResponse is the response for the DeleteProjectRBACRole RPC.
 type DeleteProjectRBACRoleResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -4074,7 +3992,6 @@ func (*DeleteProjectRBACRoleResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{79}
 }
 
-// AddProjectUserGroupRequest is the request for the AddProjectUserGroup RPC.
 type AddProjectUserGroupRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -4130,7 +4047,6 @@ func (x *AddProjectUserGroupRequest) GetRole() string {
 	return ""
 }
 
-// AddProjectUserGroupResponse is the response for the AddProjectUserGroup RPC.
 type AddProjectUserGroupResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -4169,7 +4085,6 @@ func (*AddProjectUserGroupResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{81}
 }
 
-// DeleteProjectUserGroupRequest is the request for the DeleteProjectUserGroup RPC.
 type DeleteProjectUserGroupRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -4217,7 +4132,6 @@ func (x *DeleteProjectUserGroupRequest) GetSsoGroup() string {
 	return ""
 }
 
-// DeleteProjectUserGroupResponse is the response for the DeleteProjectUserGroup RPC.
 type DeleteProjectUserGroupResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -4256,7 +4170,6 @@ func (*DeleteProjectUserGroupResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{83}
 }
 
-// GetCommandRequest is the request for the GetCommand RPC.
 type GetCommandRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -4304,7 +4217,6 @@ func (x *GetCommandRequest) GetCommandId() string {
 	return ""
 }
 
-// GetCommandResponse is the response for the GetCommand RPC.
 type GetCommandResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -4352,7 +4264,6 @@ func (x *GetCommandResponse) GetCommand() *model.Command {
 	return nil
 }
 
-// GenerateAPIKeyRequest is the request for the GenerateAPIKey RPC.
 type GenerateAPIKeyRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -4408,7 +4319,6 @@ func (x *GenerateAPIKeyRequest) GetRole() model.APIKey_Role {
 	return model.APIKey_Role(0)
 }
 
-// GenerateAPIKeyResponse is the response for the GenerateAPIKey RPC.
 type GenerateAPIKeyResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -4458,7 +4368,6 @@ func (x *GenerateAPIKeyResponse) GetKey() string {
 	return ""
 }
 
-// DisableAPIKeyRequest is the request for the DisableAPIKey RPC.
 type DisableAPIKeyRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -4506,7 +4415,6 @@ func (x *DisableAPIKeyRequest) GetId() string {
 	return ""
 }
 
-// DisableAPIKeyResponse is the response for the DisableAPIKey RPC.
 type DisableAPIKeyResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -4545,7 +4453,6 @@ func (*DisableAPIKeyResponse) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{89}
 }
 
-// ListAPIKeysRequest is the request for the ListAPIKeys RPC.
 type ListAPIKeysRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -4593,7 +4500,6 @@ func (x *ListAPIKeysRequest) GetOptions() *ListAPIKeysRequest_Options {
 	return nil
 }
 
-// ListAPIKeysResponse is the response for the ListAPIKeys RPC.
 type ListAPIKeysResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -4641,7 +4547,6 @@ func (x *ListAPIKeysResponse) GetKeys() []*model.APIKey {
 	return nil
 }
 
-// GetInsightDataRequest is the request for the GetInsightData RPC.
 type GetInsightDataRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -4737,7 +4642,6 @@ func (x *GetInsightDataRequest) GetLabels() map[string]string {
 	return nil
 }
 
-// GetInsightDataResponse is the response for the GetInsightData RPC.
 type GetInsightDataResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -4812,7 +4716,6 @@ func (x *GetInsightDataResponse) GetMatrix() []*model.InsightSampleStream {
 	return nil
 }
 
-// GetInsightApplicationCountRequest is the request for the GetInsightApplicationCount RPC.
 type GetInsightApplicationCountRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -4851,7 +4754,6 @@ func (*GetInsightApplicationCountRequest) Descriptor() ([]byte, []int) {
 	return file_pkg_app_server_service_webservice_service_proto_rawDescGZIP(), []int{94}
 }
 
-// GetInsightApplicationCountResponse is the response for the GetInsightApplicationCount RPC.
 type GetInsightApplicationCountResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -4908,7 +4810,6 @@ func (x *GetInsightApplicationCountResponse) GetCounts() []*model.InsightApplica
 	return nil
 }
 
-// ListDeploymentChainsRequest is the request for the ListDeploymentChains RPC.
 type ListDeploymentChainsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -4986,7 +4887,6 @@ func (x *ListDeploymentChainsRequest) GetPageMinUpdatedAt() int64 {
 	return 0
 }
 
-// ListDeploymentChainsResponse is the response for the ListDeploymentChains RPC.
 type ListDeploymentChainsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -5044,7 +4944,6 @@ func (x *ListDeploymentChainsResponse) GetCursor() string {
 	return ""
 }
 
-// GetDeploymentChainRequest is the request for the GetDeploymentChain RPC.
 type GetDeploymentChainRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -5092,7 +4991,6 @@ func (x *GetDeploymentChainRequest) GetDeploymentChainId() string {
 	return ""
 }
 
-// GetDeploymentChainResponse is the response for the GetDeploymentChain RPC.
 type GetDeploymentChainResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -5140,7 +5038,6 @@ func (x *GetDeploymentChainResponse) GetDeploymentChain() *model.DeploymentChain
 	return nil
 }
 
-// ListEventsRequest is the request for the ListEvents RPC.
 type ListEventsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -5218,7 +5115,6 @@ func (x *ListEventsRequest) GetPageMinUpdatedAt() int64 {
 	return 0
 }
 
-// ListEventsResponse is the response for the ListEvents RPC.
 type ListEventsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -5339,9 +5235,8 @@ type ListApplicationsRequest_Options struct {
 	// Filter by exact application name.
 	Name string `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`
 	// Filter by labels; an application must have all the given key/value pairs.
-	Labels map[string]string `protobuf:"bytes,6,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// Filter by the piped that manages the application.
-	PipedId string `protobuf:"bytes,7,opt,name=piped_id,json=pipedId,proto3" json:"piped_id,omitempty"`
+	Labels  map[string]string `protobuf:"bytes,6,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	PipedId string            `protobuf:"bytes,7,opt,name=piped_id,json=pipedId,proto3" json:"piped_id,omitempty"`
 }
 
 func (x *ListApplicationsRequest_Options) Reset() {

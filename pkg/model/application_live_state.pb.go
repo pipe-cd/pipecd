@@ -623,7 +623,6 @@ func (x *ApplicationLiveStateVersion) GetIndex() int64 {
 	return 0
 }
 
-// KubernetesApplicationLiveState is the live state of a Kubernetes application.
 type KubernetesApplicationLiveState struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -711,7 +710,6 @@ func (*TerraformApplicationLiveState) Descriptor() ([]byte, []int) {
 	return file_pkg_model_application_live_state_proto_rawDescGZIP(), []int{3}
 }
 
-// CloudRunApplicationLiveState is the live state of a CloudRun application.
 type CloudRunApplicationLiveState struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -759,7 +757,6 @@ func (x *CloudRunApplicationLiveState) GetResources() []*CloudRunResourceState {
 	return nil
 }
 
-// ECSApplicationLiveState is the live state of an ECS application.
 type ECSApplicationLiveState struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -807,7 +804,6 @@ func (x *ECSApplicationLiveState) GetResources() []*ECSResourceState {
 	return nil
 }
 
-// LambdaApplicationLiveState is the live state of a Lambda application.
 type LambdaApplicationLiveState struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

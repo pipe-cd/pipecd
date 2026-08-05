@@ -26,7 +26,6 @@ type WebServiceClient interface {
 	// its generated ID together with a newly issued piped key.
 	// The returned key is shown to the user only once and must be stored by the piped.
 	RegisterPiped(ctx context.Context, in *RegisterPipedRequest, opts ...grpc.CallOption) (*RegisterPipedResponse, error)
-	// UpdatePiped updates the name and description of an already registered piped.
 	UpdatePiped(ctx context.Context, in *UpdatePipedRequest, opts ...grpc.CallOption) (*UpdatePipedResponse, error)
 	// RecreatePipedKey issues a new key for the given piped without removing the
 	// existing ones, allowing key rotation without downtime. Old keys must be
@@ -36,15 +35,9 @@ type WebServiceClient interface {
 	// This is intended to be called after a key rotation initiated by RecreatePipedKey
 	// has been confirmed to be in use.
 	DeleteOldPipedKeys(ctx context.Context, in *DeleteOldPipedKeysRequest, opts ...grpc.CallOption) (*DeleteOldPipedKeysResponse, error)
-	// EnablePiped re-enables a previously disabled piped so that it can connect
-	// to the control plane and be assigned applications again.
 	EnablePiped(ctx context.Context, in *EnablePipedRequest, opts ...grpc.CallOption) (*EnablePipedResponse, error)
-	// DisablePiped disables the given piped, preventing it from being usable
-	// until it is enabled again via EnablePiped. Existing keys are left intact.
 	DisablePiped(ctx context.Context, in *DisablePipedRequest, opts ...grpc.CallOption) (*DisablePipedResponse, error)
-	// ListPipeds returns the pipeds that belong to the caller's project.
 	ListPipeds(ctx context.Context, in *ListPipedsRequest, opts ...grpc.CallOption) (*ListPipedsResponse, error)
-	// GetPiped returns the piped for the given ID.
 	GetPiped(ctx context.Context, in *GetPipedRequest, opts ...grpc.CallOption) (*GetPipedResponse, error)
 	// UpdatePipedDesiredVersion sets the version that the given pipeds should be
 	// running. Piped launcher periodically checks this value and restarts the
@@ -53,17 +46,10 @@ type WebServiceClient interface {
 	// RestartPiped requests the given piped to restart itself by enqueueing a
 	// RESTART_PIPED command that the piped will pick up and execute.
 	RestartPiped(ctx context.Context, in *RestartPipedRequest, opts ...grpc.CallOption) (*RestartPipedResponse, error)
-	// ListReleasedVersions returns the list of piped versions that have been released.
 	ListReleasedVersions(ctx context.Context, in *ListReleasedVersionsRequest, opts ...grpc.CallOption) (*ListReleasedVersionsResponse, error)
-	// ListDeprecatedNotes returns the deprecation notices that should be shown
-	// to the given project, e.g. about configuration or features going away.
 	ListDeprecatedNotes(ctx context.Context, in *ListDeprecatedNotesRequest, opts ...grpc.CallOption) (*ListDeprecatedNotesResponse, error)
-	// AddApplication registers a new application to be managed by the given piped.
 	AddApplication(ctx context.Context, in *AddApplicationRequest, opts ...grpc.CallOption) (*AddApplicationResponse, error)
-	// UpdateApplication updates the configuration of an already registered application.
 	UpdateApplication(ctx context.Context, in *UpdateApplicationRequest, opts ...grpc.CallOption) (*UpdateApplicationResponse, error)
-	// EnableApplication re-enables a previously disabled application so that it
-	// becomes visible and manageable again.
 	EnableApplication(ctx context.Context, in *EnableApplicationRequest, opts ...grpc.CallOption) (*EnableApplicationResponse, error)
 	// DisableApplication disables the given application. A disabled application
 	// is excluded from the list piped fetches to manage and from sync operations.
@@ -72,14 +58,11 @@ type WebServiceClient interface {
 	// registration from the project. This does not affect resources already
 	// deployed to the target platform.
 	DeleteApplication(ctx context.Context, in *DeleteApplicationRequest, opts ...grpc.CallOption) (*DeleteApplicationResponse, error)
-	// ListApplications returns the applications that belong to the caller's project,
-	// optionally filtered by the given options.
 	ListApplications(ctx context.Context, in *ListApplicationsRequest, opts ...grpc.CallOption) (*ListApplicationsResponse, error)
 	// SyncApplication triggers a new deployment to sync the given application to
 	// its latest configured state. It returns the ID of the command that piped
 	// must pick up and execute asynchronously.
 	SyncApplication(ctx context.Context, in *SyncApplicationRequest, opts ...grpc.CallOption) (*SyncApplicationResponse, error)
-	// GetApplication returns the application for the given ID.
 	GetApplication(ctx context.Context, in *GetApplicationRequest, opts ...grpc.CallOption) (*GetApplicationResponse, error)
 	// GenerateApplicationSealedSecret encrypts the given plaintext data using the
 	// public key/service account of the specified piped so that it can be safely
@@ -89,10 +72,7 @@ type WebServiceClient interface {
 	// configured in Git repositories but that have not been registered to the
 	// control plane yet.
 	ListUnregisteredApplications(ctx context.Context, in *ListUnregisteredApplicationsRequest, opts ...grpc.CallOption) (*ListUnregisteredApplicationsResponse, error)
-	// ListDeployments returns the deployments that belong to the caller's project,
-	// optionally filtered by the given options, ordered from newest to oldest.
 	ListDeployments(ctx context.Context, in *ListDeploymentsRequest, opts ...grpc.CallOption) (*ListDeploymentsResponse, error)
-	// GetDeployment returns the deployment for the given ID.
 	GetDeployment(ctx context.Context, in *GetDeploymentRequest, opts ...grpc.CallOption) (*GetDeploymentResponse, error)
 	// GetStageLog returns the log blocks recorded so far for the given stage
 	// execution, starting from the given offset index. Callers should poll this
@@ -102,41 +82,23 @@ type WebServiceClient interface {
 	// At most one of `force_rollback` and `force_no_rollback` may be set to
 	// override the default rollback behavior configured for the pipeline.
 	CancelDeployment(ctx context.Context, in *CancelDeploymentRequest, opts ...grpc.CallOption) (*CancelDeploymentResponse, error)
-	// SkipStage requests skipping the given manually-operable stage of a
-	// running deployment, allowing the deployment to proceed to the next stage.
 	SkipStage(ctx context.Context, in *SkipStageRequest, opts ...grpc.CallOption) (*SkipStageResponse, error)
-	// ApproveStage approves the given manually-operable stage of a running
-	// deployment, allowing the deployment to proceed to the next stage.
 	ApproveStage(ctx context.Context, in *ApproveStageRequest, opts ...grpc.CallOption) (*ApproveStageResponse, error)
 	// ListDeploymentTraces returns the deployment traces that belong to the
 	// caller's project together with the deployments each trace produced,
 	// optionally filtered by the given options.
 	ListDeploymentTraces(ctx context.Context, in *ListDeploymentTracesRequest, opts ...grpc.CallOption) (*ListDeploymentTracesResponse, error)
-	// GetApplicationLiveState returns the most recent live state snapshot of
-	// the given application as observed by its piped.
 	GetApplicationLiveState(ctx context.Context, in *GetApplicationLiveStateRequest, opts ...grpc.CallOption) (*GetApplicationLiveStateResponse, error)
-	// GetProject returns the project the caller belongs to.
 	GetProject(ctx context.Context, in *GetProjectRequest, opts ...grpc.CallOption) (*GetProjectResponse, error)
-	// UpdateProjectStaticAdmin updates the username and password of the
-	// project's static admin user.
 	UpdateProjectStaticAdmin(ctx context.Context, in *UpdateProjectStaticAdminRequest, opts ...grpc.CallOption) (*UpdateProjectStaticAdminResponse, error)
-	// EnableStaticAdmin re-enables login via the static admin username/password
-	// for the caller's project.
 	EnableStaticAdmin(ctx context.Context, in *EnableStaticAdminRequest, opts ...grpc.CallOption) (*EnableStaticAdminResponse, error)
 	// DisableStaticAdmin disables login via the static admin username/password
 	// for the caller's project. This is expected to be used once SSO has been
 	// configured and verified.
 	DisableStaticAdmin(ctx context.Context, in *DisableStaticAdminRequest, opts ...grpc.CallOption) (*DisableStaticAdminResponse, error)
-	// UpdateProjectSSOConfig updates the single sign-on configuration of the
-	// caller's project.
 	UpdateProjectSSOConfig(ctx context.Context, in *UpdateProjectSSOConfigRequest, opts ...grpc.CallOption) (*UpdateProjectSSOConfigResponse, error)
-	// UpdateProjectRBACConfig updates the mapping from RBAC role name to the
-	// built-in admin/editor/viewer level for the caller's project.
 	UpdateProjectRBACConfig(ctx context.Context, in *UpdateProjectRBACConfigRequest, opts ...grpc.CallOption) (*UpdateProjectRBACConfigResponse, error)
-	// GetMe returns the identity of the currently authenticated caller.
 	GetMe(ctx context.Context, in *GetMeRequest, opts ...grpc.CallOption) (*GetMeResponse, error)
-	// AddProjectRBACRole creates a new custom RBAC role with the given policies
-	// for the caller's project.
 	AddProjectRBACRole(ctx context.Context, in *AddProjectRBACRoleRequest, opts ...grpc.CallOption) (*AddProjectRBACRoleResponse, error)
 	// UpdateProjectRBACRole replaces the policies of an existing custom RBAC role.
 	UpdateProjectRBACRole(ctx context.Context, in *UpdateProjectRBACRoleRequest, opts ...grpc.CallOption) (*UpdateProjectRBACRoleResponse, error)
@@ -146,7 +108,6 @@ type WebServiceClient interface {
 	// AddProjectUserGroup maps an SSO group to an RBAC role so that members of
 	// that SSO group are granted the role upon login.
 	AddProjectUserGroup(ctx context.Context, in *AddProjectUserGroupRequest, opts ...grpc.CallOption) (*AddProjectUserGroupResponse, error)
-	// DeleteProjectUserGroup removes an existing SSO group to RBAC role mapping.
 	DeleteProjectUserGroup(ctx context.Context, in *DeleteProjectUserGroupRequest, opts ...grpc.CallOption) (*DeleteProjectUserGroupResponse, error)
 	// GetCommand returns the current status and result of a previously issued
 	// command, identified by the command ID returned from the RPC that created it.
@@ -159,7 +120,6 @@ type WebServiceClient interface {
 	// DisableAPIKey disables the given API key, preventing it from
 	// authenticating future requests. Disabling is permanent and cannot be undone.
 	DisableAPIKey(ctx context.Context, in *DisableAPIKeyRequest, opts ...grpc.CallOption) (*DisableAPIKeyResponse, error)
-	// ListAPIKeys returns the API keys that belong to the caller's project.
 	ListAPIKeys(ctx context.Context, in *ListAPIKeysRequest, opts ...grpc.CallOption) (*ListAPIKeysResponse, error)
 	// GetInsightData returns time-series insight metrics, such as deployment
 	// frequency or change failure rate, for the caller's project within the
@@ -171,10 +131,7 @@ type WebServiceClient interface {
 	// ListDeploymentChains returns the deployment chains that belong to the
 	// caller's project, ordered from newest to oldest.
 	ListDeploymentChains(ctx context.Context, in *ListDeploymentChainsRequest, opts ...grpc.CallOption) (*ListDeploymentChainsResponse, error)
-	// GetDeploymentChain returns the deployment chain for the given ID.
 	GetDeploymentChain(ctx context.Context, in *GetDeploymentChainRequest, opts ...grpc.CallOption) (*GetDeploymentChainResponse, error)
-	// ListEvents returns the events that belong to the caller's project,
-	// optionally filtered by the given options.
 	ListEvents(ctx context.Context, in *ListEventsRequest, opts ...grpc.CallOption) (*ListEventsResponse, error)
 }
 
@@ -653,7 +610,6 @@ type WebServiceServer interface {
 	// its generated ID together with a newly issued piped key.
 	// The returned key is shown to the user only once and must be stored by the piped.
 	RegisterPiped(context.Context, *RegisterPipedRequest) (*RegisterPipedResponse, error)
-	// UpdatePiped updates the name and description of an already registered piped.
 	UpdatePiped(context.Context, *UpdatePipedRequest) (*UpdatePipedResponse, error)
 	// RecreatePipedKey issues a new key for the given piped without removing the
 	// existing ones, allowing key rotation without downtime. Old keys must be
@@ -663,15 +619,9 @@ type WebServiceServer interface {
 	// This is intended to be called after a key rotation initiated by RecreatePipedKey
 	// has been confirmed to be in use.
 	DeleteOldPipedKeys(context.Context, *DeleteOldPipedKeysRequest) (*DeleteOldPipedKeysResponse, error)
-	// EnablePiped re-enables a previously disabled piped so that it can connect
-	// to the control plane and be assigned applications again.
 	EnablePiped(context.Context, *EnablePipedRequest) (*EnablePipedResponse, error)
-	// DisablePiped disables the given piped, preventing it from being usable
-	// until it is enabled again via EnablePiped. Existing keys are left intact.
 	DisablePiped(context.Context, *DisablePipedRequest) (*DisablePipedResponse, error)
-	// ListPipeds returns the pipeds that belong to the caller's project.
 	ListPipeds(context.Context, *ListPipedsRequest) (*ListPipedsResponse, error)
-	// GetPiped returns the piped for the given ID.
 	GetPiped(context.Context, *GetPipedRequest) (*GetPipedResponse, error)
 	// UpdatePipedDesiredVersion sets the version that the given pipeds should be
 	// running. Piped launcher periodically checks this value and restarts the
@@ -680,17 +630,10 @@ type WebServiceServer interface {
 	// RestartPiped requests the given piped to restart itself by enqueueing a
 	// RESTART_PIPED command that the piped will pick up and execute.
 	RestartPiped(context.Context, *RestartPipedRequest) (*RestartPipedResponse, error)
-	// ListReleasedVersions returns the list of piped versions that have been released.
 	ListReleasedVersions(context.Context, *ListReleasedVersionsRequest) (*ListReleasedVersionsResponse, error)
-	// ListDeprecatedNotes returns the deprecation notices that should be shown
-	// to the given project, e.g. about configuration or features going away.
 	ListDeprecatedNotes(context.Context, *ListDeprecatedNotesRequest) (*ListDeprecatedNotesResponse, error)
-	// AddApplication registers a new application to be managed by the given piped.
 	AddApplication(context.Context, *AddApplicationRequest) (*AddApplicationResponse, error)
-	// UpdateApplication updates the configuration of an already registered application.
 	UpdateApplication(context.Context, *UpdateApplicationRequest) (*UpdateApplicationResponse, error)
-	// EnableApplication re-enables a previously disabled application so that it
-	// becomes visible and manageable again.
 	EnableApplication(context.Context, *EnableApplicationRequest) (*EnableApplicationResponse, error)
 	// DisableApplication disables the given application. A disabled application
 	// is excluded from the list piped fetches to manage and from sync operations.
@@ -699,14 +642,11 @@ type WebServiceServer interface {
 	// registration from the project. This does not affect resources already
 	// deployed to the target platform.
 	DeleteApplication(context.Context, *DeleteApplicationRequest) (*DeleteApplicationResponse, error)
-	// ListApplications returns the applications that belong to the caller's project,
-	// optionally filtered by the given options.
 	ListApplications(context.Context, *ListApplicationsRequest) (*ListApplicationsResponse, error)
 	// SyncApplication triggers a new deployment to sync the given application to
 	// its latest configured state. It returns the ID of the command that piped
 	// must pick up and execute asynchronously.
 	SyncApplication(context.Context, *SyncApplicationRequest) (*SyncApplicationResponse, error)
-	// GetApplication returns the application for the given ID.
 	GetApplication(context.Context, *GetApplicationRequest) (*GetApplicationResponse, error)
 	// GenerateApplicationSealedSecret encrypts the given plaintext data using the
 	// public key/service account of the specified piped so that it can be safely
@@ -716,10 +656,7 @@ type WebServiceServer interface {
 	// configured in Git repositories but that have not been registered to the
 	// control plane yet.
 	ListUnregisteredApplications(context.Context, *ListUnregisteredApplicationsRequest) (*ListUnregisteredApplicationsResponse, error)
-	// ListDeployments returns the deployments that belong to the caller's project,
-	// optionally filtered by the given options, ordered from newest to oldest.
 	ListDeployments(context.Context, *ListDeploymentsRequest) (*ListDeploymentsResponse, error)
-	// GetDeployment returns the deployment for the given ID.
 	GetDeployment(context.Context, *GetDeploymentRequest) (*GetDeploymentResponse, error)
 	// GetStageLog returns the log blocks recorded so far for the given stage
 	// execution, starting from the given offset index. Callers should poll this
@@ -729,41 +666,23 @@ type WebServiceServer interface {
 	// At most one of `force_rollback` and `force_no_rollback` may be set to
 	// override the default rollback behavior configured for the pipeline.
 	CancelDeployment(context.Context, *CancelDeploymentRequest) (*CancelDeploymentResponse, error)
-	// SkipStage requests skipping the given manually-operable stage of a
-	// running deployment, allowing the deployment to proceed to the next stage.
 	SkipStage(context.Context, *SkipStageRequest) (*SkipStageResponse, error)
-	// ApproveStage approves the given manually-operable stage of a running
-	// deployment, allowing the deployment to proceed to the next stage.
 	ApproveStage(context.Context, *ApproveStageRequest) (*ApproveStageResponse, error)
 	// ListDeploymentTraces returns the deployment traces that belong to the
 	// caller's project together with the deployments each trace produced,
 	// optionally filtered by the given options.
 	ListDeploymentTraces(context.Context, *ListDeploymentTracesRequest) (*ListDeploymentTracesResponse, error)
-	// GetApplicationLiveState returns the most recent live state snapshot of
-	// the given application as observed by its piped.
 	GetApplicationLiveState(context.Context, *GetApplicationLiveStateRequest) (*GetApplicationLiveStateResponse, error)
-	// GetProject returns the project the caller belongs to.
 	GetProject(context.Context, *GetProjectRequest) (*GetProjectResponse, error)
-	// UpdateProjectStaticAdmin updates the username and password of the
-	// project's static admin user.
 	UpdateProjectStaticAdmin(context.Context, *UpdateProjectStaticAdminRequest) (*UpdateProjectStaticAdminResponse, error)
-	// EnableStaticAdmin re-enables login via the static admin username/password
-	// for the caller's project.
 	EnableStaticAdmin(context.Context, *EnableStaticAdminRequest) (*EnableStaticAdminResponse, error)
 	// DisableStaticAdmin disables login via the static admin username/password
 	// for the caller's project. This is expected to be used once SSO has been
 	// configured and verified.
 	DisableStaticAdmin(context.Context, *DisableStaticAdminRequest) (*DisableStaticAdminResponse, error)
-	// UpdateProjectSSOConfig updates the single sign-on configuration of the
-	// caller's project.
 	UpdateProjectSSOConfig(context.Context, *UpdateProjectSSOConfigRequest) (*UpdateProjectSSOConfigResponse, error)
-	// UpdateProjectRBACConfig updates the mapping from RBAC role name to the
-	// built-in admin/editor/viewer level for the caller's project.
 	UpdateProjectRBACConfig(context.Context, *UpdateProjectRBACConfigRequest) (*UpdateProjectRBACConfigResponse, error)
-	// GetMe returns the identity of the currently authenticated caller.
 	GetMe(context.Context, *GetMeRequest) (*GetMeResponse, error)
-	// AddProjectRBACRole creates a new custom RBAC role with the given policies
-	// for the caller's project.
 	AddProjectRBACRole(context.Context, *AddProjectRBACRoleRequest) (*AddProjectRBACRoleResponse, error)
 	// UpdateProjectRBACRole replaces the policies of an existing custom RBAC role.
 	UpdateProjectRBACRole(context.Context, *UpdateProjectRBACRoleRequest) (*UpdateProjectRBACRoleResponse, error)
@@ -773,7 +692,6 @@ type WebServiceServer interface {
 	// AddProjectUserGroup maps an SSO group to an RBAC role so that members of
 	// that SSO group are granted the role upon login.
 	AddProjectUserGroup(context.Context, *AddProjectUserGroupRequest) (*AddProjectUserGroupResponse, error)
-	// DeleteProjectUserGroup removes an existing SSO group to RBAC role mapping.
 	DeleteProjectUserGroup(context.Context, *DeleteProjectUserGroupRequest) (*DeleteProjectUserGroupResponse, error)
 	// GetCommand returns the current status and result of a previously issued
 	// command, identified by the command ID returned from the RPC that created it.
@@ -786,7 +704,6 @@ type WebServiceServer interface {
 	// DisableAPIKey disables the given API key, preventing it from
 	// authenticating future requests. Disabling is permanent and cannot be undone.
 	DisableAPIKey(context.Context, *DisableAPIKeyRequest) (*DisableAPIKeyResponse, error)
-	// ListAPIKeys returns the API keys that belong to the caller's project.
 	ListAPIKeys(context.Context, *ListAPIKeysRequest) (*ListAPIKeysResponse, error)
 	// GetInsightData returns time-series insight metrics, such as deployment
 	// frequency or change failure rate, for the caller's project within the
@@ -798,10 +715,7 @@ type WebServiceServer interface {
 	// ListDeploymentChains returns the deployment chains that belong to the
 	// caller's project, ordered from newest to oldest.
 	ListDeploymentChains(context.Context, *ListDeploymentChainsRequest) (*ListDeploymentChainsResponse, error)
-	// GetDeploymentChain returns the deployment chain for the given ID.
 	GetDeploymentChain(context.Context, *GetDeploymentChainRequest) (*GetDeploymentChainResponse, error)
-	// ListEvents returns the events that belong to the caller's project,
-	// optionally filtered by the given options.
 	ListEvents(context.Context, *ListEventsRequest) (*ListEventsResponse, error)
 	mustEmbedUnimplementedWebServiceServer()
 }

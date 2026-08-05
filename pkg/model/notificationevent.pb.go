@@ -201,8 +201,6 @@ func (NotificationEventGroup) EnumDescriptor() ([]byte, []int) {
 	return file_pkg_model_notificationevent_proto_rawDescGZIP(), []int{1}
 }
 
-// NotificationEventDeploymentTriggered is the payload for a
-// EVENT_DEPLOYMENT_TRIGGERED notification.
 type NotificationEventDeploymentTriggered struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -266,8 +264,6 @@ func (x *NotificationEventDeploymentTriggered) GetMentionedGroups() []string {
 	return nil
 }
 
-// NotificationEventDeploymentPlanned is the payload for a
-// EVENT_DEPLOYMENT_PLANNED notification.
 type NotificationEventDeploymentPlanned struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -339,8 +335,6 @@ func (x *NotificationEventDeploymentPlanned) GetMentionedGroups() []string {
 	return nil
 }
 
-// NotificationEventDeploymentStarted is the payload for a
-// EVENT_DEPLOYMENT_STARTED notification.
 type NotificationEventDeploymentStarted struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -404,8 +398,6 @@ func (x *NotificationEventDeploymentStarted) GetMentionedGroups() []string {
 	return nil
 }
 
-// NotificationEventDeploymentApproved is the payload for a
-// EVENT_DEPLOYMENT_APPROVED notification.
 type NotificationEventDeploymentApproved struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -478,8 +470,6 @@ func (x *NotificationEventDeploymentApproved) GetMentionedGroups() []string {
 	return nil
 }
 
-// NotificationEventDeploymentRollingBack is the payload for a
-// EVENT_DEPLOYMENT_ROLLING_BACK notification.
 type NotificationEventDeploymentRollingBack struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -527,8 +517,6 @@ func (x *NotificationEventDeploymentRollingBack) GetDeployment() *Deployment {
 	return nil
 }
 
-// NotificationEventDeploymentSucceeded is the payload for a
-// EVENT_DEPLOYMENT_SUCCEEDED notification.
 type NotificationEventDeploymentSucceeded struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -592,8 +580,6 @@ func (x *NotificationEventDeploymentSucceeded) GetMentionedGroups() []string {
 	return nil
 }
 
-// NotificationEventDeploymentFailed is the payload for a
-// EVENT_DEPLOYMENT_FAILED notification.
 type NotificationEventDeploymentFailed struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -666,8 +652,6 @@ func (x *NotificationEventDeploymentFailed) GetMentionedGroups() []string {
 	return nil
 }
 
-// NotificationEventDeploymentCancelled is the payload for a
-// EVENT_DEPLOYMENT_CANCELLED notification.
 type NotificationEventDeploymentCancelled struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -740,8 +724,6 @@ func (x *NotificationEventDeploymentCancelled) GetMentionedGroups() []string {
 	return nil
 }
 
-// NotificationEventDeploymentWaitApproval is the payload for a
-// EVENT_DEPLOYMENT_WAIT_APPROVAL notification.
 type NotificationEventDeploymentWaitApproval struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -896,8 +878,6 @@ func (x *NotificationEventDeploymentTriggerFailed) GetMentionedGroups() []string
 	return nil
 }
 
-// NotificationEventApplicationSynced is the payload for a
-// EVENT_APPLICATION_SYNCED notification.
 type NotificationEventApplicationSynced struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -953,8 +933,6 @@ func (x *NotificationEventApplicationSynced) GetState() *ApplicationSyncState {
 	return nil
 }
 
-// NotificationEventApplicationOutOfSync is the payload for a
-// EVENT_APPLICATION_OUT_OF_SYNC notification.
 type NotificationEventApplicationOutOfSync struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1010,7 +988,6 @@ func (x *NotificationEventApplicationOutOfSync) GetState() *ApplicationSyncState
 	return nil
 }
 
-// NotificationEventPipedStarted is the payload for a EVENT_PIPED_STARTED notification.
 type NotificationEventPipedStarted struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1082,7 +1059,6 @@ func (x *NotificationEventPipedStarted) GetProjectId() string {
 	return ""
 }
 
-// NotificationEventPipedStopped is the payload for a EVENT_PIPED_STOPPED notification.
 type NotificationEventPipedStopped struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1154,7 +1130,6 @@ func (x *NotificationEventPipedStopped) GetProjectId() string {
 	return ""
 }
 
-// NotificationEventStageStarted is the payload for a EVENT_STAGE_STARTED notification.
 type NotificationEventStageStarted struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1210,7 +1185,6 @@ func (x *NotificationEventStageStarted) GetStage() *PipelineStage {
 	return nil
 }
 
-// NotificationEventStageSkipped is the payload for a EVENT_STAGE_SKIPPED notification.
 type NotificationEventStageSkipped struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1266,7 +1240,6 @@ func (x *NotificationEventStageSkipped) GetStage() *PipelineStage {
 	return nil
 }
 
-// NotificationEventStageSucceeded is the payload for a EVENT_STAGE_SUCCEEDED notification.
 type NotificationEventStageSucceeded struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1322,7 +1295,6 @@ func (x *NotificationEventStageSucceeded) GetStage() *PipelineStage {
 	return nil
 }
 
-// NotificationEventStageFailed is the payload for a EVENT_STAGE_FAILED notification.
 type NotificationEventStageFailed struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1378,7 +1350,6 @@ func (x *NotificationEventStageFailed) GetStage() *PipelineStage {
 	return nil
 }
 
-// NotificationEventStageCancelled is the payload for a EVENT_STAGE_CANCELLED notification.
 type NotificationEventStageCancelled struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
