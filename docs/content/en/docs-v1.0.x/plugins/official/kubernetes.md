@@ -221,7 +221,7 @@ spec:
 
 ### KubernetesApplicationSpec
 
-The `spec` of a Kubernetes `Application` shares the [common application fields](../user-guide/managing-application/configuration-reference/) (`name`, `labels`, `pipeline`, ...) and adds the following under `plugins.kubernetes`:
+The `spec` of a Kubernetes `Application` shares the [common application fields](../../user-guide/managing-application/configuration-reference/) (`name`, `labels`, `pipeline`, ...) and adds the following under `plugins.kubernetes`:
 
 | Field | Type | Description | Required |
 |-------|------|-------------|----------|
