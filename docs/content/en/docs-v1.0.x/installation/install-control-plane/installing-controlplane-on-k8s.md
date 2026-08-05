@@ -106,7 +106,7 @@ If your installation includes an [ingress](https://github.com/pipe-cd/pipecd/blo
 Otherwise, private PipeCD web can be accessed by using `kubectl port-forward` to expose the installed Control Plane on your localhost:
 
 ``` console
-kubectl port-forward svc/pipecd 8080 --namespace={NAMESPACE}
+kubectl port-forward svc/controlplane 8080 --namespace={NAMESPACE}
 ```
 
 Now go to [http://localhost:8080](http://localhost:8080) on your browser, you will see a page to log in to your project.
@@ -118,7 +118,7 @@ Up to here, you have an installed PipeCD's Control Plane. To log in, you need to
 To create a new project, you need to access the `ops` pod in your installed PipeCD control plane, using `kubectl port-forward` command:
 
 ``` console
-kubectl port-forward service/pipecd-ops 9082 --namespace={NAMESPACE}
+kubectl port-forward service/controlplane-ops 9082 --namespace={NAMESPACE}
 ```
 
 Then, access [http://localhost:9082](http://localhost:9082).

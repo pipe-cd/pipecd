@@ -42,7 +42,7 @@ The Control Plane pods pull their container images on the first run, which can t
 The PipeCD Control Plane will be installed with a default project named `quickstart`. To access the PipeCD Control Plane UI, run the following command:
 
 ```bash
-kubectl port-forward -n pipecd svc/pipecd 8080
+kubectl port-forward -n pipecd svc/controlplane 8080
 ```
 
 You can access the PipeCD console at [http://localhost:8080?project=quickstart](http://localhost:8080?project=quickstart)
@@ -93,14 +93,14 @@ You can check the readiness of all PipeCD components via the command:
 
 ```bash
 kubectl get pod -n pipecd
-NAME                              READY   STATUS    RESTARTS      AGE
-pipecd-cache-56c7c65ddc-xqcst     1/1     Running   0             38m
-pipecd-gateway-58589b55f9-9nbrv   1/1     Running   0             38m
-pipecd-minio-677999d5bb-xnb78     1/1     Running   0             38m
-pipecd-mysql-6fff49fbc7-hkvt4     1/1     Running   0             38m
-pipecd-ops-779d6844db-nvbwn       1/1     Running   0             38m
-pipecd-server-5769df7fcb-9hc45    1/1     Running   1 (38m ago)   38m
-piped-8477b5d55d-74s5v            1/1     Running   0             97s
+NAME                                    READY   STATUS    RESTARTS      AGE
+controlplane-cache-56c7c65ddc-xqcst     1/1     Running   0             38m
+controlplane-gateway-58589b55f9-9nbrv   1/1     Running   0             38m
+controlplane-minio-677999d5bb-xnb78     1/1     Running   0             38m
+controlplane-mysql-6fff49fbc7-hkvt4     1/1     Running   0             38m
+controlplane-ops-779d6844db-nvbwn       1/1     Running   0             38m
+controlplane-server-5769df7fcb-9hc45    1/1     Running   1 (38m ago)   38m
+piped-8477b5d55d-74s5v                  1/1     Running   0             97s
 ```
 
 ---
