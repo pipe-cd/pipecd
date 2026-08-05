@@ -56,7 +56,6 @@ message ApplicationLiveStateVersion {
     int64 index = 2 [(validate.rules).int64.gte = 0];
 }
 
-// KubernetesApplicationLiveState is the live state of a Kubernetes application.
 message KubernetesApplicationLiveState {
     repeated KubernetesResourceState resources = 1;
 }
@@ -66,17 +65,14 @@ message KubernetesApplicationLiveState {
 message TerraformApplicationLiveState {
 }
 
-// CloudRunApplicationLiveState is the live state of a CloudRun application.
 message CloudRunApplicationLiveState {
     repeated CloudRunResourceState resources = 1;
 }
 
-// ECSApplicationLiveState is the live state of an ECS application.
 message ECSApplicationLiveState{
     repeated ECSResourceState resources = 1;
 }
 
-// LambdaApplicationLiveState is the live state of a Lambda application.
 message LambdaApplicationLiveState {
     repeated LambdaResourceState resources = 1;
 }

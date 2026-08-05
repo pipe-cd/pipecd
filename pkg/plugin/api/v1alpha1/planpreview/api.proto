@@ -26,7 +26,6 @@ service PlanPreviewService {
     rpc GetPlanPreview(GetPlanPreviewRequest) returns (GetPlanPreviewResponse) {}
 }
 
-// GetPlanPreviewRequest is the request for the GetPlanPreview RPC.
 message GetPlanPreviewRequest {
     // ID of the application
     string application_id = 1;
@@ -42,7 +41,6 @@ message GetPlanPreviewRequest {
     string piped_id = 6;
 }
 
-// GetPlanPreviewResponse is the response for the GetPlanPreview RPC.
 message GetPlanPreviewResponse {
     // Results for each deploy target.
     repeated PlanPreviewResult results = 1;

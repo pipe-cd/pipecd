@@ -142,11 +142,8 @@ message ProjectSSOConfig {
 // ProjectRBACConfig maps each built-in RBAC level to the name of the custom
 // role that should be treated as having that level's permissions.
 message ProjectRBACConfig {
-    // The name of the RBAC role treated as admin.
     string admin = 1;
-    // The name of the RBAC role treated as editor.
     string editor = 2;
-    // The name of the RBAC role treated as viewer.
     string viewer = 3;
 }
 

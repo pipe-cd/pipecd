@@ -200,20 +200,17 @@ enum ListOrder {
     DESC = 2;
 }
 
-// ReportStatRequest is the request for the ReportStat RPC.
 message ReportStatRequest {
     // Metrics byte sequence in OpenMetrics format.
     bytes piped_stats = 1;
 }
 
-// ReportStatResponse is the response for the ReportStat RPC.
 message ReportStatResponse {
     // The number of seconds the piped should wait before sending the next
     // ReportStat request.
     int64 report_interval = 1;
 }
 
-// ReportPipedMetaRequest is the request for the ReportPipedMeta RPC.
 message ReportPipedMetaRequest {
     string version = 1;
     repeated model.Piped.CloudProvider cloud_providers = 2;
@@ -224,7 +221,6 @@ message ReportPipedMetaRequest {
     string config = 5;
 }
 
-// ReportPipedMetaResponse is the response for the ReportPipedMeta RPC.
 message ReportPipedMetaResponse {
     // The name of the piped as registered in the control plane.
     string name = 1 [(validate.rules).string.min_len = 1];
@@ -233,87 +229,70 @@ message ReportPipedMetaResponse {
     string web_base_url = 2;
 }
 
-// ListApplicationsRequest is the request for the ListApplications RPC.
 message ListApplicationsRequest {
 }
 
-// ListApplicationsResponse is the response for the ListApplications RPC.
 message ListApplicationsResponse {
     repeated model.Application applications = 1;
 }
 
-// ReportApplicationSyncStateRequest is the request for the ReportApplicationSyncState RPC.
 message ReportApplicationSyncStateRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
     model.ApplicationSyncState state = 2 [(validate.rules).message.required = true];
 }
 
-// ReportApplicationSyncStateResponse is the response for the ReportApplicationSyncState RPC.
 message ReportApplicationSyncStateResponse {
 }
 
-// ReportApplicationDeployingStatusRequest is the request for the ReportApplicationDeployingStatus RPC.
 message ReportApplicationDeployingStatusRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
     bool deploying = 2;
 }
 
-// ReportApplicationDeployingStatusResponse is the response for the ReportApplicationDeployingStatus RPC.
 message ReportApplicationDeployingStatusResponse {
 }
 
-// ReportApplicationMostRecentDeploymentRequest is the request for the ReportApplicationMostRecentDeployment RPC.
 message ReportApplicationMostRecentDeploymentRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
     model.DeploymentStatus status = 2 [(validate.rules).enum.defined_only = true];
     model.ApplicationDeploymentReference deployment = 3 [(validate.rules).message.required = true];
 }
 
-// ReportApplicationMostRecentDeploymentResponse is the response for the ReportApplicationMostRecentDeployment RPC.
 message ReportApplicationMostRecentDeploymentResponse {
 }
 
-// GetApplicationMostRecentDeploymentRequest is the request for the GetApplicationMostRecentDeployment RPC.
 message GetApplicationMostRecentDeploymentRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
     model.DeploymentStatus status = 2 [(validate.rules).enum.defined_only = true];
 }
 
-// GetApplicationMostRecentDeploymentResponse is the response for the GetApplicationMostRecentDeployment RPC.
 message GetApplicationMostRecentDeploymentResponse {
     model.ApplicationDeploymentReference deployment = 1 [(validate.rules).message.required = true];
 }
 
-// GetDeploymentRequest is the request for the GetDeployment RPC.
 message GetDeploymentRequest {
     string id = 1 [(validate.rules).string.min_len = 1];
 }
 
-// GetDeploymentResponse is the response for the GetDeployment RPC.
 message GetDeploymentResponse {
     model.Deployment deployment = 1 [(validate.rules).message.required = true];
 }
 
-// ListNotCompletedDeploymentsRequest is the request for the ListNotCompletedDeployments RPC.
 message ListNotCompletedDeploymentsRequest {
 }
 
-// ListNotCompletedDeploymentsResponse is the response for the ListNotCompletedDeployments RPC.
 message ListNotCompletedDeploymentsResponse {
     repeated model.Deployment deployments = 1;
     string cursor = 2;
 }
 
-// CreateDeploymentRequest is the request for the CreateDeployment RPC.
 message CreateDeploymentRequest {
     model.Deployment deployment = 1 [(validate.rules).message.required = true];
 }
 
-// CreateDeploymentResponse is the response for the CreateDeployment RPC.
 message CreateDeploymentResponse {
 }
 
-// ReportDeploymentPlannedRequest is the request for the ReportDeploymentPlanned RPC.
 message ReportDeploymentPlannedRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     // Simple description about what this deployment does.
@@ -343,11 +322,9 @@ message ReportDeploymentPlannedRequest {
     uint32 deployment_chain_block_index = 8;
 }
 
-// ReportDeploymentPlannedResponse is the response for the ReportDeploymentPlanned RPC.
 message ReportDeploymentPlannedResponse {
 }
 
-// ReportDeploymentStatusChangedRequest is the request for the ReportDeploymentStatusChanged RPC.
 message ReportDeploymentStatusChangedRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     // We only accept RUNNING or ROLLING_BACK.
@@ -362,11 +339,9 @@ message ReportDeploymentStatusChangedRequest {
     uint32 deployment_chain_block_index = 5;
 }
 
-// ReportDeploymentStatusChangedResponse is the response for the ReportDeploymentStatusChanged RPC.
 message ReportDeploymentStatusChangedResponse {
 }
 
-// ReportDeploymentCompletedRequest is the request for the ReportDeploymentCompleted RPC.
 message ReportDeploymentCompletedRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     // The status of deployment.
@@ -385,53 +360,43 @@ message ReportDeploymentCompletedRequest {
     int64 completed_at = 13 [(validate.rules).int64.gt = 0];
 }
 
-// ReportDeploymentCompletedResponse is the response for the ReportDeploymentCompleted RPC.
 message ReportDeploymentCompletedResponse {
 }
 
-// SaveDeploymentMetadataRequest is the request for the SaveDeploymentMetadata RPC.
 message SaveDeploymentMetadataRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     map<string,string> metadata = 2;
 }
 
-// SaveDeploymentMetadataResponse is the response for the SaveDeploymentMetadata RPC.
 message SaveDeploymentMetadataResponse {
 }
 
-// SaveDeploymentSharedMetadataRequest is the request for the SaveDeploymentSharedMetadata RPC.
 message SaveDeploymentSharedMetadataRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     map<string,string> metadata = 2;
 }
 
-// SaveDeploymentSharedMetadataResponse is the response for the SaveDeploymentSharedMetadata RPC.
 message SaveDeploymentSharedMetadataResponse {
 }
 
-// SaveDeploymentPluginMetadataRequest is the request for the SaveDeploymentPluginMetadata RPC.
 message SaveDeploymentPluginMetadataRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string plugin_name = 2 [(validate.rules).string.min_len = 1];
     map<string,string> metadata = 3;
 }
 
-// SaveDeploymentPluginMetadataResponse is the response for the SaveDeploymentPluginMetadata RPC.
 message SaveDeploymentPluginMetadataResponse {
 }
 
-// SaveStageMetadataRequest is the request for the SaveStageMetadata RPC.
 message SaveStageMetadataRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
     map<string,string> metadata = 3;
 }
 
-// SaveStageMetadataResponse is the response for the SaveStageMetadata RPC.
 message SaveStageMetadataResponse {
 }
 
-// ReportStageLogsRequest is the request for the ReportStageLogs RPC.
 message ReportStageLogsRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
@@ -439,11 +404,9 @@ message ReportStageLogsRequest {
     repeated model.LogBlock blocks = 4;
 }
 
-// ReportStageLogsResponse is the response for the ReportStageLogs RPC.
 message ReportStageLogsResponse {
 }
 
-// ReportStageLogsFromLastCheckpointRequest is the request for the ReportStageLogsFromLastCheckpoint RPC.
 message ReportStageLogsFromLastCheckpointRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
@@ -452,11 +415,9 @@ message ReportStageLogsFromLastCheckpointRequest {
     bool completed = 5;
 }
 
-// ReportStageLogsFromLastCheckpointResponse is the response for the ReportStageLogsFromLastCheckpoint RPC.
 message ReportStageLogsFromLastCheckpointResponse {
 }
 
-// ReportStageStatusChangedRequest is the request for the ReportStageStatusChanged RPC.
 message ReportStageStatusChangedRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
@@ -469,20 +430,16 @@ message ReportStageStatusChangedRequest {
     int64 completed_at = 13 [(validate.rules).int64.gt = 0];
 }
 
-// ReportStageStatusChangedResponse is the response for the ReportStageStatusChanged RPC.
 message ReportStageStatusChangedResponse {
 }
 
-// ListUnhandledCommandsRequest is the request for the ListUnhandledCommands RPC.
 message ListUnhandledCommandsRequest {
 }
 
-// ListUnhandledCommandsResponse is the response for the ListUnhandledCommands RPC.
 message ListUnhandledCommandsResponse {
     repeated model.Command commands = 1;
 }
 
-// ReportCommandHandledRequest is the request for the ReportCommandHandled RPC.
 message ReportCommandHandledRequest {
     string command_id = 1 [(validate.rules).string.min_len = 1];
     model.CommandStatus status = 2 [(validate.rules).enum.defined_only = true];
@@ -492,30 +449,24 @@ message ReportCommandHandledRequest {
     bytes output = 5;
 }
 
-// ReportCommandHandledResponse is the response for the ReportCommandHandled RPC.
 message ReportCommandHandledResponse {
 }
 
-// ReportApplicationLiveStateRequest is the request for the ReportApplicationLiveState RPC.
 message ReportApplicationLiveStateRequest {
     model.ApplicationLiveStateSnapshot snapshot = 1 [(validate.rules).message.required = true];
 }
 
-// ReportApplicationLiveStateResponse is the response for the ReportApplicationLiveState RPC.
 message ReportApplicationLiveStateResponse {
 }
 
-// ReportApplicationLiveStateEventsRequest is the request for the ReportApplicationLiveStateEvents RPC.
 message ReportApplicationLiveStateEventsRequest {
     repeated model.KubernetesResourceStateEvent kubernetes_events = 1;
 }
 
-// ReportApplicationLiveStateEventsResponse is the response for the ReportApplicationLiveStateEvents RPC.
 message ReportApplicationLiveStateEventsResponse {
     repeated string failed_ids = 1;
 }
 
-// GetLatestEventRequest is the request for the GetLatestEvent RPC.
 message GetLatestEventRequest {
     // Filter by exact event name.
     string name = 1 [(validate.rules).string.min_len = 1];
@@ -523,13 +474,11 @@ message GetLatestEventRequest {
     map<string,string> labels = 2;
 }
 
-// GetLatestEventResponse is the response for the GetLatestEvent RPC.
 message GetLatestEventResponse {
     model.Event event = 1 [(validate.rules).message.required = true];
 }
 
 
-// ListEventsRequest is the request for the ListEvents RPC.
 message ListEventsRequest {
     enum Status {
         ALL = 0;
@@ -550,12 +499,10 @@ message ListEventsRequest {
     Status status = 4 [(validate.rules).enum.defined_only = true];
 }
 
-// ListEventsResponse is the response for the ListEvents RPC.
 message ListEventsResponse {
     repeated model.Event events = 1;
 }
 
-// ReportEventStatusesRequest is the request for the ReportEventStatuses RPC.
 message ReportEventStatusesRequest {
     message Event {
         string id = 1 [(validate.rules).string.min_len = 1];
@@ -565,35 +512,28 @@ message ReportEventStatusesRequest {
     repeated Event events = 1;
 }
 
-// ReportEventStatusesResponse is the response for the ReportEventStatuses RPC.
 message ReportEventStatusesResponse {
 }
 
-// GetLatestAnalysisResultRequest is the request for the GetLatestAnalysisResult RPC.
 message GetLatestAnalysisResultRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
 }
 
-// GetLatestAnalysisResultResponse is the response for the GetLatestAnalysisResult RPC.
 message GetLatestAnalysisResultResponse {
     model.AnalysisResult analysis_result = 1 [(validate.rules).message.required = true];
 }
 
-// PutLatestAnalysisResultRequest is the request for the PutLatestAnalysisResult RPC.
 message PutLatestAnalysisResultRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
     model.AnalysisResult analysis_result = 2 [(validate.rules).message.required = true];
 }
 
-// PutLatestAnalysisResultResponse is the response for the PutLatestAnalysisResult RPC.
 message PutLatestAnalysisResultResponse {
 }
 
-// GetDesiredVersionRequest is the request for the GetDesiredVersion RPC.
 message GetDesiredVersionRequest {
 }
 
-// GetDesiredVersionResponse is the response for the GetDesiredVersion RPC.
 message GetDesiredVersionResponse {
     // The version the piped should be running, e.g. "v0.50.0". Empty means no
     // desired version has been set and the piped may keep running as is.
@@ -601,28 +541,23 @@ message GetDesiredVersionResponse {
 }
 
 
-// UpdateApplicationConfigurationsRequest is the request for the UpdateApplicationConfigurations RPC.
 message UpdateApplicationConfigurationsRequest {
     // The application configurations that should be updated.
     repeated model.ApplicationInfo applications = 1;
 }
 
-// UpdateApplicationConfigurationsResponse is the response for the UpdateApplicationConfigurations RPC.
 message UpdateApplicationConfigurationsResponse {
 }
 
-// ReportUnregisteredApplicationConfigurationsRequest is the request for the ReportUnregisteredApplicationConfigurations RPC.
 message ReportUnregisteredApplicationConfigurationsRequest {
     // All the latest application configurations that isn't registered yet.
     // Note that ALL configs are always be contained every time.
     repeated model.ApplicationInfo applications = 1;
 }
 
-// ReportUnregisteredApplicationConfigurationsResponse is the response for the ReportUnregisteredApplicationConfigurations RPC.
 message ReportUnregisteredApplicationConfigurationsResponse {
 }
 
-// CreateDeploymentChainRequest is the request for the CreateDeploymentChain RPC.
 message CreateDeploymentChainRequest {
     // Note: The matcher use AND operator to merge all conditions used to determine
     // which apps should be trigger as node in chain.
@@ -639,11 +574,9 @@ message CreateDeploymentChainRequest {
     repeated ApplicationMatcher matchers = 2;
 }
 
-// CreateDeploymentChainResponse is the response for the CreateDeploymentChain RPC.
 message CreateDeploymentChainResponse {
 }
 
-// InChainDeploymentPlannableRequest is the request for the InChainDeploymentPlannable RPC.
 message InChainDeploymentPlannableRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string deployment_chain_id = 2 [(validate.rules).string.min_len = 1];
@@ -651,7 +584,6 @@ message InChainDeploymentPlannableRequest {
     uint32 deployment_chain_block_index = 3;
 }
 
-// InChainDeploymentPlannableResponse is the response for the InChainDeploymentPlannable RPC.
 message InChainDeploymentPlannableResponse {
     // plannable used to determine whether piped should start planning the given development.
     bool plannable = 1;
@@ -660,7 +592,6 @@ message InChainDeploymentPlannableResponse {
     string cancel_reason = 3;
 }
 
-// GetApplicationSharedObjectRequest is the request for the GetApplicationSharedObject RPC.
 message GetApplicationSharedObjectRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
     // The plugin that originally stored the object.
@@ -669,23 +600,18 @@ message GetApplicationSharedObjectRequest {
     string key = 3 [(validate.rules).string.min_len = 1];
 }
 
-// GetApplicationSharedObjectResponse is the response for the GetApplicationSharedObject RPC.
 message GetApplicationSharedObjectResponse {
-    // The raw bytes of the stored object.
     bytes object = 1;
 }
 
-// PutApplicationSharedObjectRequest is the request for the PutApplicationSharedObject RPC.
 message PutApplicationSharedObjectRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
     // The plugin storing the object.
     string plugin_name = 2 [(validate.rules).string.min_len = 1];
     // The key to store the object under.
     string key = 3 [(validate.rules).string.min_len = 1];
-    // The raw bytes of the object to store.
     bytes object = 4;
 }
 
-// PutApplicationSharedObjectResponse is the response for the PutApplicationSharedObject RPC.
 message PutApplicationSharedObjectResponse {
 }

@@ -67,9 +67,7 @@ message ApplicationGitPath {
 message ApplicationGitRepository {
     // The unique identifier of the repository, as configured in the piped config.
     string id = 1 [(validate.rules).string.min_len = 1];
-    // The remote URL of the repository.
     string remote = 2;
-    // The branch to fetch application manifests from.
     string branch = 3;
 }
 
@@ -119,7 +117,6 @@ message ArtifactVersion {
     Kind kind = 1 [(validate.rules).enum.defined_only = true, deprecated = true];
     // The version string of the artifact, e.g. a container image tag.
     string version = 2;
-    // The name of the artifact.
     string name = 3;
     // The URL to view the artifact, if applicable.
     string url = 4;
