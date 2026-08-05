@@ -1,0 +1,54 @@
+# Netlify configuration for PipeCD documentation site.
+# Ref: https://docs.netlify.com/configure-builds/file-based-configuration/
+
+[build]
+  # Build command reads the RELEASE tag from the root RELEASE file
+  # and passes it as an env var to Hugo (used by the latest_version shortcode).
+  command = "npm ci && RELEASE=$(grep '^tag:' ../RELEASE | awk '{print $2}') hugo --gc --minify"
+  publish = "public"
+
+[build.environment]
+  HUGO_VERSION = "0.148.2"
+  HUGO_ENV = "production"
+  NODE_VERSION = "24"
+
+# Redirect /docs/ to the latest released version.
+# Don't update here manually. hack/gen-release-docs.sh does.
+[[redirects]]
+  from = "/docs/*"
+  to = "/docs-v1.0.x/:splat"
+  status = 302
+  force = true
+
+# Redirect /docs (without trailing slash) as well.
+[[redirects]]
+  from = "/docs"
+  to = "/docs-v1.0.x/"
+  status = 302
+  force = true
+
+# Custom 404 page.
+[[redirects]]
+  from = "/*"
+  to = "/404.html"
+  status = 404
+
+# Headers for security and caching.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Cache static assets aggressively.
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/favicons/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

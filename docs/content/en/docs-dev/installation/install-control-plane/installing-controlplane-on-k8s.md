@@ -74,7 +74,7 @@ helm upgrade -i pipecd oci://ghcr.io/pipe-cd/chart/pipecd --version {{< blocks/l
 
 Currently, besides `Firestore` PipeCD supports other databases as its datastore such as `MySQL`. Also as for filestore, PipeCD supports `AWS S3` and `MINIO` either.
 
-For example, in case of using `MySQL` as datastore and `MINIO` as filestore, the ControlPlane configuration will be as follow:
+For example, in case of using `MySQL` as datastore and `MINIO` as filestore, the Control Plane configuration will be as follow:
 
 ```yaml
 apiVersion: "pipecd.dev/v1beta1"

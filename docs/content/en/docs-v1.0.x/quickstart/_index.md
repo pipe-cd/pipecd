@@ -12,18 +12,18 @@ PipeCD consists of two core components: The Control Plane and `piped` (see [Pipe
 
 - **`piped`** is a lightweight binary agent that connects your infrastructure to the Control Plane. `piped` runs plugins internally which implement the deployment and synchronization logic for a specific application kind, such as Kubernetes or Terraform.
 
-In this quickstart, you’ll install both components on a Kubernetes cluster and deploy a sample “hello world” application.
+In this quickstart, you'll install both components on a Kubernetes cluster and deploy a sample "hello world" application.
 
 > **Note:**
 >
->- It's not required to install the PipeCD control plane to the cluster where your applications are running (See [PipeCD best practices](/blog/2021/12/29/pipecd-best-practice-01-operate-your-own-pipecd-cluster/) to understand more about PipeCD in real-life use cases).
+>- It's not required to install the PipeCD Control Plane to the cluster where your applications are running (See [PipeCD best practices](/blog/2021/12/29/pipecd-best-practice-01-operate-your-own-pipecd-cluster/) to understand more about PipeCD in real-life use cases).
 >- If you want to experiment with PipeCD freely or don't have a Kubernetes cluster, we recommend using [this tutorial](https://github.com/pipe-cd/tutorial).
 
 ---
 
 ### Prerequisites
 
-- A running Kubernetes cluster.  
+- A running Kubernetes cluster.
 - [`kubectl`](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and configured to connect to your cluster.
 
 ---
@@ -37,7 +37,9 @@ kubectl create namespace pipecd
 kubectl apply -n pipecd -f https://raw.githubusercontent.com/pipe-cd/pipecd/master/quickstart/manifests/control-plane.yaml
 ```
 
-The PipeCD control plane will be installed with a default project named `quickstart`. To access the PipeCD Control Plane UI, run the following command:
+The Control Plane pods pull their container images on the first run, which can take a few minutes. Wait until all pods are `1/1 Running` with `kubectl get pod -n pipecd`.
+
+The PipeCD Control Plane will be installed with a default project named `quickstart`. To access the PipeCD Control Plane UI, run the following command:
 
 ```bash
 kubectl port-forward -n pipecd svc/pipecd 8080
@@ -49,14 +51,14 @@ For this quickstart setup, the project name is fixed to `quickstart`. If you ope
 
 To log in, you can use the configured static admin account as below:
 
-- username: `hello-pipecd`
-- password: `hello-pipecd`
+- **username**: `hello-pipecd`
+- **password**: `hello-pipecd`
 
 And you will access the main page of PipeCD Control Plane console, which looks like this:
 
 ![An image of the Control Plane](/images/pipecd-control-plane-mainpage.png)
 
-For more about PipeCD control plane management, please check [Managing Control Plane](../user-guide/managing-controlplane/).
+For more about PipeCD Control Plane management, please check [Managing Control Plane](../user-guide/managing-controlplane/).
 
 #### 1.2. Installing piped
 
@@ -72,23 +74,25 @@ Click on the `Save` button, and then you can see the piped-id and secret-key.
 
 ![A successfully registered `piped`](/images/quickstart-piped-registered.png)
 
-You need to copy two values, ``piped Id`` and ``Base64 Encoded piped Key``, and fill in `<COPIED_PIPED_ID>` and `<COPIED_ENCODED_PIPED_KEY>` respectively in this command:
+> **Note:** The `piped Id` is the UUID generated after you click `Save` (for example, `7c17c8f8-...`), not the name you entered while registering. Using the name instead of the UUID causes an `unable to find piped from datastore` error in the piped logs.
+
+You need to copy two values, `piped Id` and `Base64 Encoded piped Key`, and fill in `<COPIED_PIPED_ID>` and `<COPIED_ENCODED_PIPED_KEY>` respectively in this command:
 
 ```bash
-$ curl -s https://raw.githubusercontent.com/pipe-cd/pipecd/refs/heads/master/quickstart/manifests/pipedv1-exp.yaml | \
+curl -s https://raw.githubusercontent.com/pipe-cd/pipecd/master/quickstart/manifests/pipedv1-exp.yaml | \
   sed -e 's/<YOUR_PIPED_ID>/<COPIED_PIPED_ID>/g' \
       -e 's/<YOUR_PIPED_KEY_DATA>/<COPIED_ENCODED_PIPED_KEY>/g' | \
   kubectl apply -n pipecd -f -
 ```
 
-For more information about `piped` management, please check [Managing piped](/docs/user-guide/managing-piped/).
+For more information about `piped` management, please check [Managing piped](../user-guide/managing-piped/).
 
 That's all! You are ready to use PipeCD to manage your application's deployment.
 
 You can check the readiness of all PipeCD components via the command:
 
 ```bash
-$ kubectl get pod -n pipecd
+kubectl get pod -n pipecd
 NAME                              READY   STATUS    RESTARTS      AGE
 pipecd-cache-56c7c65ddc-xqcst     1/1     Running   0             38m
 pipecd-gateway-58589b55f9-9nbrv   1/1     Running   0             38m
@@ -103,14 +107,14 @@ piped-8477b5d55d-74s5v            1/1     Running   0             97s
 
 ### 2. Deploy a Kubernetes application with PipeCD
 
-The above is all that is necessary to set up your own PipeCD (both control plane and agent), let's use the installed one to deploy your first Kubernetes application with PipeCD.
+The above is all that is necessary to set up your own PipeCD (both Control Plane and agent), let's use the installed one to deploy your first Kubernetes application with PipeCD.
 
 Navigate to the `Applications` page, click on the `+ADD` button on the top left corner.
 
 Go to the `PIPED v1 ADD FROM SUGGESTIONS` tab, then select:
 
 - `piped` that you have just registered (e.g. `dev`)
-- The deployment target (e.g. 'kubernetes')
+- The deployment target (e.g. `kubernetes`)
 
 You should see a lot of suggested applications. Select one of the listed applications and click the `SAVE` button to register.
 
