@@ -31,6 +31,11 @@ func (p *Plugin) executeApplyStage(ctx context.Context, input *sdk.ExecuteStageI
 		input.Logger.Error("No stage log persister available", zap.Error(err))
 		return sdk.StageStatusFailure
 	}
+
+	if len(dts) == 0 {
+		slp.Errorf("No deploy targets provided")
+		return sdk.StageStatusFailure
+	}
 	cmd, err := provider.NewTerraformCommand(ctx, input.Client, input.Request.TargetDeploymentSource, dts[0])
 	if err != nil {
 		slp.Errorf("Failed to initialize Terraform command (%v)", err)

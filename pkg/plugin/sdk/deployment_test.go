@@ -20,6 +20,7 @@ import (
 	"strings"
 	"testing"
 
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
 	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister/logpersistertest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -69,6 +70,7 @@ func newTestStagePluginServiceServer(t *testing.T, plugin *mockStagePlugin) *Sta
 	return &StagePluginServiceServer[struct{}, struct{}, struct{}]{
 		base: plugin,
 		commonFields: commonFields[struct{}, struct{}]{
+			config:       &config.PipedPlugin{Name: "test-plugin"},
 			logger:       zaptest.NewLogger(t),
 			logPersister: logpersistertest.NewTestLogPersister(t),
 		},

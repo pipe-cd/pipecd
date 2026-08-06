@@ -33,6 +33,10 @@ var (
 type Plugin struct{}
 
 func (p *Plugin) GetPlanPreview(ctx context.Context, _ *kubeconfig.KubernetesPluginConfig, dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.GetPlanPreviewInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.GetPlanPreviewResponse, error) {
+	if len(dts) == 0 {
+		return nil, fmt.Errorf("no deploy targets provided")
+	}
+
 	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
 	loader := provider.NewLoader(toolRegistry)
 
