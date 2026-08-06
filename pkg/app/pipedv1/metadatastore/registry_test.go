@@ -16,6 +16,8 @@ package metadatastore
 
 import (
 	"context"
+	"fmt"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -290,4 +292,54 @@ func TestRegistry(t *testing.T) {
 			assert.Error(t, err)
 		}
 	}
+}
+
+// TestRegistryConcurrentAccess ensures that the stores map of MetadataStoreRegistry
+// can be safely accessed by concurrent Register/Delete calls (writers, driven by the
+// deployment lifecycle) and gRPC handler calls (readers), without data races.
+// Run with `go test -race` to verify.
+func TestRegistryConcurrentAccess(t *testing.T) {
+	t.Parallel()
+
+	ac := &fakeAPIClient{
+		shared:  make(map[string]string, 0),
+		plugins: make(map[string]metadata, 0),
+		stages:  make(map[string]metadata, 0),
+	}
+	r := NewMetadataStoreRegistry(ac)
+	ctx := context.Background()
+
+	var wg sync.WaitGroup
+	const deployments = 20
+	const opsPerDeployment = 8
+
+	for i := 0; i < deployments; i++ {
+		wg.Add(1)
+		go func(idx int) {
+			defer wg.Done()
+			id := fmt.Sprintf("deploy-%d", idx)
+			d := &model.Deployment{
+				Id: id,
+				MetadataV2: &model.DeploymentMetadata{
+					Shared:  &model.DeploymentMetadata_KeyValues{KeyValues: map[string]string{}},
+					Plugins: map[string]*model.DeploymentMetadata_KeyValues{},
+				},
+				Stages: []*model.PipelineStage{{Id: "stage-1"}},
+			}
+			r.Register(d)
+			r.Delete(id)
+		}(i)
+
+		for j := 0; j < opsPerDeployment; j++ {
+			wg.Add(1)
+			go func(idx int) {
+				defer wg.Done()
+				id := fmt.Sprintf("deploy-%d", idx)
+				_, _ = r.PutStageMetadata(ctx, &service.PutStageMetadataRequest{
+					DeploymentId: id, StageId: "stage-1", Key: "k", Value: "v",
+				})
+			}(i)
+		}
+	}
+	wg.Wait()
 }
