@@ -1,7 +1,7 @@
 ---
 title: "Terraform plugin"
 linkTitle: "Terraform"
-weight: 20
+weight: 30
 description: >
   Apply infrastructure changes with Terraform.
 ---
@@ -105,7 +105,7 @@ Before a pipeline runs, plan preview runs `terraform plan` and shows the changes
 
 ### TerraformApplicationSpec
 
-The `spec` of a Terraform `Application` shares the [common application fields](../user-guide/managing-application/configuration-reference/) (`name`, `labels`, `pipeline`, ...) and adds the following under `plugins.terraform`:
+The `spec` of a Terraform `Application` shares the [common application fields](../../user-guide/managing-application/configuration-reference/) (`name`, `labels`, `pipeline`, ...) and adds the following under `plugins.terraform`:
 
 | Field | Type | Description | Required |
 |-------|------|-------------|----------|
