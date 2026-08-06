@@ -19,6 +19,9 @@ option go_package = "github.com/pipe-cd/pipecd/pkg/model";
 
 import "validate/validate.proto";
 
+// DeploymentTrace groups every deployment triggered, directly or through a
+// deployment chain, by a single commit. It is used to show a unified view of
+// all deployments that resulted from one change.
 message DeploymentTrace {
     string id = 1 [(validate.rules).string.min_len = 1];
     string project_id = 2 [(validate.rules).string.min_len = 1];

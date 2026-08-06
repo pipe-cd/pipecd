@@ -46,6 +46,7 @@ message GetPlanPreviewResponse {
     repeated PlanPreviewResult results = 1;
 }
 
+// PlanPreviewResult is the plan preview result for a single deploy target.
 message PlanPreviewResult{
     // Name of the deploy target.
     string deploy_target = 1;

@@ -251,8 +251,11 @@ type BuildPipelineSyncStagesRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Rollback bool                                          `protobuf:"varint,1,opt,name=rollback,proto3" json:"rollback,omitempty"`
-	Stages   []*BuildPipelineSyncStagesRequest_StageConfig `protobuf:"bytes,2,rep,name=stages,proto3" json:"stages,omitempty"`
+	// Whether to build the rollback stages instead of the forward stages.
+	Rollback bool `protobuf:"varint,1,opt,name=rollback,proto3" json:"rollback,omitempty"`
+	// The non-rollback stages, listed in execution order, whose names are
+	// among those returned by FetchDefinedStages for this plugin.
+	Stages []*BuildPipelineSyncStagesRequest_StageConfig `protobuf:"bytes,2,rep,name=stages,proto3" json:"stages,omitempty"`
 }
 
 func (x *BuildPipelineSyncStagesRequest) Reset() {
@@ -354,6 +357,7 @@ type BuildQuickSyncStagesRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Whether to build the rollback stages instead of the forward stages.
 	Rollback bool `protobuf:"varint,1,opt,name=rollback,proto3" json:"rollback,omitempty"`
 }
 
@@ -634,6 +638,8 @@ func (x *ExecuteStageResponse) GetMessage() string {
 	return ""
 }
 
+// PlanPluginInput carries the data a plugin needs to determine artifact
+// versions, sync strategy, or pipeline stages for a deployment being planned.
 type PlanPluginInput struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -700,6 +706,8 @@ func (x *PlanPluginInput) GetTargetDeploymentSource() *common.DeploymentSource {
 	return nil
 }
 
+// ExecutePluginInput carries the data a plugin needs to execute a single
+// stage of a deployment.
 type ExecutePluginInput struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -784,6 +792,8 @@ func (x *ExecutePluginInput) GetTargetDeploymentSource() *common.DeploymentSourc
 	return nil
 }
 
+// StageConfig describes one non-rollback stage as listed in the
+// application's pipeline configuration.
 type BuildPipelineSyncStagesRequest_StageConfig struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

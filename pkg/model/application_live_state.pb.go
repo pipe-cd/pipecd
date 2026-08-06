@@ -564,6 +564,8 @@ func (x *ApplicationLiveStateSnapshot) GetApplicationLiveState() *ApplicationLiv
 	return nil
 }
 
+// ApplicationLiveStateVersion identifies a specific live state snapshot so
+// that out-of-order or duplicate reports can be detected and discarded.
 type ApplicationLiveStateVersion struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -668,6 +670,8 @@ func (x *KubernetesApplicationLiveState) GetResources() []*KubernetesResourceSta
 	return nil
 }
 
+// TerraformApplicationLiveState is the live state of a Terraform application.
+// Terraform does not expose per-resource live state, so this is currently empty.
 type TerraformApplicationLiveState struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -847,6 +851,9 @@ func (x *LambdaApplicationLiveState) GetResources() []*LambdaResourceState {
 	return nil
 }
 
+// ApplicationLiveState is the plugin-arch representation of an application's
+// live state, used in place of the platform-specific *ApplicationLiveState
+// messages for plugin-based pipeds.
 type ApplicationLiveState struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -903,6 +910,8 @@ func (x *ApplicationLiveState) GetHealthStatus() ApplicationLiveState_Status {
 	return ApplicationLiveState_UNKNOWN
 }
 
+// ResourceState is the plugin-arch representation of the state of a single
+// deployed resource, used in place of the platform-specific *ResourceState messages.
 type ResourceState struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1180,6 +1189,9 @@ func (x *KubernetesResourceState) GetUpdatedAt() int64 {
 	return 0
 }
 
+// KubernetesResourceStateEvent represents an incremental change to a single
+// Kubernetes resource's state, used to update the cached application-resource-tree
+// without requiring a full ApplicationLiveStateSnapshot report.
 type KubernetesResourceStateEvent struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

@@ -36,6 +36,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// ListOrder specifies the sort direction for list-style RPCs that support ordering.
 type ListOrder int32
 
 const (
@@ -193,6 +194,8 @@ type ReportStatResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// The number of seconds the piped should wait before sending the next
+	// ReportStat request.
 	ReportInterval int64 `protobuf:"varint,1,opt,name=report_interval,json=reportInterval,proto3" json:"report_interval,omitempty"`
 }
 
@@ -335,7 +338,10 @@ type ReportPipedMetaResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Name       string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// The name of the piped as registered in the control plane.
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// The base URL of the web console, used by piped to build links back to
+	// the control plane.
 	WebBaseUrl string `protobuf:"bytes,2,opt,name=web_base_url,json=webBaseUrl,proto3" json:"web_base_url,omitempty"`
 }
 
@@ -2727,7 +2733,9 @@ type GetLatestEventRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Name   string            `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// Filter by exact event name.
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// Filter by labels; a matching event must have all the given key/value pairs.
 	Labels map[string]string `protobuf:"bytes,2,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
@@ -2829,9 +2837,15 @@ type ListEventsRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	From   int64                    `protobuf:"varint,1,opt,name=from,proto3" json:"from,omitempty"`
-	To     int64                    `protobuf:"varint,2,opt,name=to,proto3" json:"to,omitempty"`
-	Order  ListOrder                `protobuf:"varint,3,opt,name=order,proto3,enum=grpc.service.pipedservice.ListOrder" json:"order,omitempty"`
+	// Unix time (seconds), inclusive start of the creation-time range. Zero
+	// means no lower bound.
+	From int64 `protobuf:"varint,1,opt,name=from,proto3" json:"from,omitempty"`
+	// Unix time (seconds), inclusive end of the creation-time range. Zero
+	// means no upper bound.
+	To int64 `protobuf:"varint,2,opt,name=to,proto3" json:"to,omitempty"`
+	// The order in which to sort the returned events by creation time.
+	Order ListOrder `protobuf:"varint,3,opt,name=order,proto3,enum=grpc.service.pipedservice.ListOrder" json:"order,omitempty"`
+	// Filter by handle status. ALL means no filtering.
 	Status ListEventsRequest_Status `protobuf:"varint,4,opt,name=status,proto3,enum=grpc.service.pipedservice.ListEventsRequest_Status" json:"status,omitempty"`
 }
 
@@ -3257,6 +3271,8 @@ type GetDesiredVersionResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// The version the piped should be running, e.g. "v0.50.0". Empty means no
+	// desired version has been set and the piped may keep running as is.
 	Version string `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`
 }
 
@@ -3570,8 +3586,9 @@ type InChainDeploymentPlannableRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	DeploymentId              string `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
-	DeploymentChainId         string `protobuf:"bytes,2,opt,name=deployment_chain_id,json=deploymentChainId,proto3" json:"deployment_chain_id,omitempty"`
+	DeploymentId      string `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
+	DeploymentChainId string `protobuf:"bytes,2,opt,name=deployment_chain_id,json=deploymentChainId,proto3" json:"deployment_chain_id,omitempty"`
+	// The index of the block the deployment belongs to within the chain.
 	DeploymentChainBlockIndex uint32 `protobuf:"varint,3,opt,name=deployment_chain_block_index,json=deploymentChainBlockIndex,proto3" json:"deployment_chain_block_index,omitempty"`
 }
 
@@ -3699,8 +3716,10 @@ type GetApplicationSharedObjectRequest struct {
 	unknownFields protoimpl.UnknownFields
 
 	ApplicationId string `protobuf:"bytes,1,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
-	PluginName    string `protobuf:"bytes,2,opt,name=plugin_name,json=pluginName,proto3" json:"plugin_name,omitempty"`
-	Key           string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+	// The plugin that originally stored the object.
+	PluginName string `protobuf:"bytes,2,opt,name=plugin_name,json=pluginName,proto3" json:"plugin_name,omitempty"`
+	// The key the object was stored under.
+	Key string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
 }
 
 func (x *GetApplicationSharedObjectRequest) Reset() {
@@ -3809,9 +3828,11 @@ type PutApplicationSharedObjectRequest struct {
 	unknownFields protoimpl.UnknownFields
 
 	ApplicationId string `protobuf:"bytes,1,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
-	PluginName    string `protobuf:"bytes,2,opt,name=plugin_name,json=pluginName,proto3" json:"plugin_name,omitempty"`
-	Key           string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
-	Object        []byte `protobuf:"bytes,4,opt,name=object,proto3" json:"object,omitempty"`
+	// The plugin storing the object.
+	PluginName string `protobuf:"bytes,2,opt,name=plugin_name,json=pluginName,proto3" json:"plugin_name,omitempty"`
+	// The key to store the object under.
+	Key    string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+	Object []byte `protobuf:"bytes,4,opt,name=object,proto3" json:"object,omitempty"`
 }
 
 func (x *PutApplicationSharedObjectRequest) Reset() {

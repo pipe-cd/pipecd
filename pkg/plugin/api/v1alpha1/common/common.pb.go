@@ -36,6 +36,9 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// DeploymentSource points to one version (running or target) of an
+// application's manifests and configuration inside a Git repository, used as
+// input for plugins to plan and execute deployments.
 type DeploymentSource struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

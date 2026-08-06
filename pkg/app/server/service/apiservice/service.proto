@@ -30,12 +30,21 @@ import "pkg/model/piped.proto";
 // All of these RPCs are authenticated by using API key.
 service APIService {
     rpc AddApplication(AddApplicationRequest) returns (AddApplicationResponse) {}
+    // SyncApplication triggers a new deployment to sync the given application
+    // to its latest configured state. It returns the ID of the command that
+    // piped must pick up and execute asynchronously.
     rpc SyncApplication(SyncApplicationRequest) returns (SyncApplicationResponse) {}
     rpc GetApplication(GetApplicationRequest) returns (GetApplicationResponse) {}
     rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {}
     rpc UpdateApplication(UpdateApplicationRequest) returns (UpdateApplicationResponse) {}
+    // DeleteApplication permanently removes the given application and its
+    // registration from the project. This does not affect resources already
+    // deployed to the target platform.
     rpc DeleteApplication(DeleteApplicationRequest) returns (DeleteApplicationResponse) {}
     rpc EnableApplication(EnableApplicationRequest) returns (EnableApplicationResponse) {}
+    // DisableApplication disables the given application. A disabled
+    // application is excluded from the list piped fetches to manage and from
+    // sync operations.
     rpc DisableApplication(DisableApplicationRequest) returns (DisableApplicationResponse) {}
     rpc RenameApplicationConfigFile(RenameApplicationConfigFileRequest) returns (RenameApplicationConfigFileResponse) {}
     rpc UpdateApplicationDeployTargets(UpdateApplicationDeployTargetsRequest) returns (UpdateApplicationDeployTargetsResponse) {}
@@ -43,9 +52,15 @@ service APIService {
     rpc GetDeployment(GetDeploymentRequest) returns (GetDeploymentResponse) {}
     rpc ListDeployments(ListDeploymentsRequest) returns (ListDeploymentsResponse) {}
 
+    // GetCommand returns the current status and result of a previously issued
+    // command, identified by the command ID returned from the RPC that
+    // created it (e.g. SyncApplication).
     rpc GetCommand(GetCommandRequest) returns (GetCommandResponse) {}
 
     rpc GetPiped(GetPipedRequest) returns (GetPipedResponse) {}
+    // RegisterPiped registers a new piped to the caller's project and returns
+    // its generated ID together with a newly issued piped key. The returned
+    // key is shown only once and must be stored by the caller.
     rpc RegisterPiped(RegisterPipedRequest) returns (RegisterPipedResponse) {}
     rpc UpdatePiped(UpdatePipedRequest) returns (UpdatePipedResponse) {}
     rpc EnablePiped(EnablePipedRequest) returns (EnablePipedResponse) {}
@@ -53,9 +68,16 @@ service APIService {
 
     rpc RegisterEvent(RegisterEventRequest) returns (RegisterEventResponse) {}
 
+    // RequestPlanPreview asks the pipeds responsible for the affected
+    // applications to build a plan preview for the given commit range. It
+    // returns the IDs of the generated commands; use GetPlanPreviewResults to
+    // fetch the results once the commands are handled.
     rpc RequestPlanPreview(RequestPlanPreviewRequest) returns (RequestPlanPreviewResponse) {}
     rpc GetPlanPreviewResults(GetPlanPreviewResultsRequest) returns (GetPlanPreviewResultsResponse) {}
 
+    // Encrypt encrypts the given plaintext data using the public
+    // key/service account of the specified piped so that it can be safely
+    // committed to Git as a sealed secret and later decrypted only by that piped.
     rpc Encrypt(EncryptRequest) returns (EncryptResponse) {}
 
     rpc ListStageLogs(ListStageLogsRequest) returns (ListStageLogsResponse) {}
@@ -82,6 +104,8 @@ message SyncApplicationRequest {
 }
 
 message SyncApplicationResponse {
+    // The ID of the generated SYNC_APPLICATION command. Use GetCommand to
+    // poll for its handling result.
     string command_id = 1;
 }
 
@@ -96,17 +120,26 @@ message GetApplicationResponse {
 message ListApplicationsRequest {
     reserved 3, 5;
 
+    // Filter by exact application name. Empty means no filtering.
     string name = 1;
+    // Filter by application kind, e.g. "KUBERNETES". Empty means no filtering.
     string kind = 2;
     bool disabled = 4;
+    // Filter by labels; an application must have all the given key/value pairs.
     map<string, string> labels = 6;
+    // Maximum number of applications to return. If unset or zero, a
+    // server-defined default page size is used.
     int32 limit = 7;
     string piped_id = 8;
+    // Opaque cursor returned by a previous call used to fetch the next page.
+    // Empty to start from the first page.
     string cursor = 10;
 }
 
 message ListApplicationsResponse {
     repeated model.Application applications = 1;
+    // Opaque cursor to pass to a subsequent call to fetch the next page.
+    // Empty when there are no more results.
     string cursor = 2;
 }
 
@@ -125,6 +158,8 @@ message RegisterPipedRequest {
 
 message RegisterPipedResponse {
     string id  = 1;
+    // The base64 encoded piped key. Shown only once; the caller is
+    // responsible for storing it securely.
     string key = 2;
 }
 
@@ -198,17 +233,26 @@ message GetDeploymentResponse {
 }
 
 message ListDeploymentsRequest {
+    // Filter by deployment status, e.g. "SUCCESS". Empty means no filtering.
     repeated string statuses = 1;
+    // Filter by application kind, e.g. "KUBERNETES". Empty means no filtering.
     repeated string kinds = 2;
     repeated string application_ids = 3;
     string application_name = 4;
+    // Filter by labels; a deployment must have all the given key/value pairs.
     map<string, string> labels = 5;
+    // Maximum number of deployments to return. If unset or zero, a
+    // server-defined default page size is used.
     int32 limit = 6;
+    // Opaque cursor returned by a previous call used to fetch the next page.
+    // Empty to start from the first page.
     string cursor = 7;
 }
 
 message ListDeploymentsResponse {
     repeated model.Deployment deployments = 1;
+    // Opaque cursor to pass to a subsequent call to fetch the next page.
+    // Empty when there are no more results.
     string cursor = 2;
 }
 
@@ -235,9 +279,16 @@ message DisablePipedResponse {
 }
 
 message RegisterEventRequest {
+    // The name of event, used together with labels to build the event key
+    // that piped's event watcher matches against.
     string name = 1 [(validate.rules).string.min_len = 1];
+    // The data of the event, made available to the event watcher's replacer.
     string data = 2 [(validate.rules).string.min_len = 1];
+    // The key/value pairs that are attached to the event; combined with name
+    // to build the event key.
     map<string,string> labels = 3 [(validate.rules).map.keys.string.min_len = 1, (validate.rules).map.values.string.min_len = 1];
+    // Additional key/value pairs made available to the event watcher's
+    // replacer without being part of the event key.
     map<string,string> contexts = 4 [(validate.rules).map.keys.string.min_len = 1, (validate.rules).map.keys.string.pattern = "^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$", (validate.rules).map.values.string.min_len = 1];
     // Information of the commit that trigger this event.
     string commit_hash = 5;
@@ -262,10 +313,13 @@ message RequestPlanPreviewRequest {
 }
 
 message RequestPlanPreviewResponse {
+    // The IDs of the generated BUILD_PLAN_PREVIEW commands, one per affected
+    // piped. Pass these to GetPlanPreviewResults to fetch the results.
     repeated string commands = 1;
 }
 
 message GetPlanPreviewResultsRequest {
+    // The command IDs returned by RequestPlanPreview to fetch results for.
     repeated string commands = 1;
     // Maximum number of seconds a Piped can take to handle a command.
     int64 command_handle_timeout = 2;
@@ -286,8 +340,10 @@ message EncryptResponse {
     string ciphertext = 1 [(validate.rules).string.min_len = 1];
 }
 
+// StageLog holds the logs of a single stage execution.
 message StageLog {
     repeated model.LogBlock blocks = 1;
+    // Whether the stage has finished producing logs.
     bool completed = 2;
 }
 
@@ -296,5 +352,6 @@ message ListStageLogsRequest {
 }
 
 message ListStageLogsResponse {
+    // The logs of each stage of the deployment, keyed by stage ID.
     map<string, StageLog> stage_logs = 1;
 }

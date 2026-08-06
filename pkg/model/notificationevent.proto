@@ -21,6 +21,9 @@ import "validate/validate.proto";
 import "pkg/model/application.proto";
 import "pkg/model/deployment.proto";
 
+// NotificationEventType enumerates every kind of internal event that can
+// trigger a notification (e.g. to Slack) once matched against the project's
+// configured notification routes.
 enum NotificationEventType {
     EVENT_DEPLOYMENT_TRIGGERED = 0;
     EVENT_DEPLOYMENT_PLANNED = 1;
@@ -50,6 +53,9 @@ enum NotificationEventType {
     EVENT_STAGE_CANCELLED = 404;
 }
 
+// NotificationEventGroup categorizes NotificationEventType values into
+// broader groups, used to route notifications by group instead of listing
+// every individual event type.
 enum NotificationEventGroup {
     EVENT_NONE = 0;
     EVENT_DEPLOYMENT = 1;
@@ -80,6 +86,7 @@ message NotificationEventDeploymentStarted {
 
 message NotificationEventDeploymentApproved {
     Deployment deployment = 1 [(validate.rules).message.required = true];
+    // The user who approved the stage.
     string approver = 3;
     repeated string mentioned_accounts = 4;
     repeated string mentioned_groups = 5;
@@ -97,6 +104,7 @@ message NotificationEventDeploymentSucceeded {
 
 message NotificationEventDeploymentFailed {
     Deployment deployment = 1 [(validate.rules).message.required = true];
+    // The human-readable reason why the deployment failed.
     string reason = 3;
     repeated string mentioned_accounts = 4;
     repeated string mentioned_groups = 5;
@@ -104,6 +112,7 @@ message NotificationEventDeploymentFailed {
 
 message NotificationEventDeploymentCancelled {
     Deployment deployment = 1 [(validate.rules).message.required = true];
+    // The user who cancelled the deployment.
     string commander = 3;
     repeated string mentioned_accounts = 4;
     repeated string mentioned_groups = 5;
@@ -115,10 +124,14 @@ message NotificationEventDeploymentWaitApproval {
     repeated string mentioned_groups = 4;
 }
 
+// NotificationEventDeploymentTriggerFailed is the payload for a
+// EVENT_DEPLOYMENT_TRIGGER_FAILED notification, sent when piped fails to
+// trigger a deployment for a commit, e.g. due to an invalid configuration.
 message NotificationEventDeploymentTriggerFailed {
     Application application = 1 [(validate.rules).message.required = true];
     string commit_hash = 2 [(validate.rules).string.min_len = 1];
     string commit_message = 3 [(validate.rules).string.min_len = 1];
+    // The human-readable reason why triggering failed.
     string reason = 4 [(validate.rules).string.min_len = 1];
     repeated string mentioned_accounts = 5;
     repeated string mentioned_groups = 6;

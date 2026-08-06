@@ -193,6 +193,7 @@ service PipedService {
     rpc PutApplicationSharedObject(PutApplicationSharedObjectRequest) returns (PutApplicationSharedObjectResponse) {}
 }
 
+// ListOrder specifies the sort direction for list-style RPCs that support ordering.
 enum ListOrder {
     NONE = 0;
     ASC = 1;
@@ -205,6 +206,8 @@ message ReportStatRequest {
 }
 
 message ReportStatResponse {
+    // The number of seconds the piped should wait before sending the next
+    // ReportStat request.
     int64 report_interval = 1;
 }
 
@@ -219,7 +222,10 @@ message ReportPipedMetaRequest {
 }
 
 message ReportPipedMetaResponse {
+    // The name of the piped as registered in the control plane.
     string name = 1 [(validate.rules).string.min_len = 1];
+    // The base URL of the web console, used by piped to build links back to
+    // the control plane.
     string web_base_url = 2;
 }
 
@@ -463,7 +469,9 @@ message ReportApplicationLiveStateEventsResponse {
 }
 
 message GetLatestEventRequest {
+    // Filter by exact event name.
     string name = 1 [(validate.rules).string.min_len = 1];
+    // Filter by labels; a matching event must have all the given key/value pairs.
     map<string,string> labels = 2;
 }
 
@@ -480,9 +488,15 @@ message ListEventsRequest {
         FAILURE = 3;
         OUTDATED = 4;
     }
+    // Unix time (seconds), inclusive start of the creation-time range. Zero
+    // means no lower bound.
     int64 from = 1;
+    // Unix time (seconds), inclusive end of the creation-time range. Zero
+    // means no upper bound.
     int64 to = 2;
+    // The order in which to sort the returned events by creation time.
     ListOrder order = 3 [(validate.rules).enum.defined_only = true];
+    // Filter by handle status. ALL means no filtering.
     Status status = 4 [(validate.rules).enum.defined_only = true];
 }
 
@@ -522,6 +536,8 @@ message GetDesiredVersionRequest {
 }
 
 message GetDesiredVersionResponse {
+    // The version the piped should be running, e.g. "v0.50.0". Empty means no
+    // desired version has been set and the piped may keep running as is.
     string version = 1;
 }
 
@@ -565,6 +581,7 @@ message CreateDeploymentChainResponse {
 message InChainDeploymentPlannableRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string deployment_chain_id = 2 [(validate.rules).string.min_len = 1];
+    // The index of the block the deployment belongs to within the chain.
     uint32 deployment_chain_block_index = 3;
 }
 
@@ -578,7 +595,9 @@ message InChainDeploymentPlannableResponse {
 
 message GetApplicationSharedObjectRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
+    // The plugin that originally stored the object.
     string plugin_name = 2 [(validate.rules).string.min_len = 1];
+    // The key the object was stored under.
     string key = 3 [(validate.rules).string.min_len = 1];
 }
 
@@ -588,7 +607,9 @@ message GetApplicationSharedObjectResponse {
 
 message PutApplicationSharedObjectRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
+    // The plugin storing the object.
     string plugin_name = 2 [(validate.rules).string.min_len = 1];
+    // The key to store the object under.
     string key = 3 [(validate.rules).string.min_len = 1];
     bytes object = 4;
 }

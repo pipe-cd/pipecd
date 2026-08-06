@@ -230,6 +230,8 @@ type SyncApplicationResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// The ID of the generated SYNC_APPLICATION command. Use GetCommand to
+	// poll for its handling result.
 	CommandId string `protobuf:"bytes,1,opt,name=command_id,json=commandId,proto3" json:"command_id,omitempty"`
 }
 
@@ -371,13 +373,20 @@ type ListApplicationsRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Name     string            `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Kind     string            `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
-	Disabled bool              `protobuf:"varint,4,opt,name=disabled,proto3" json:"disabled,omitempty"`
-	Labels   map[string]string `protobuf:"bytes,6,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	Limit    int32             `protobuf:"varint,7,opt,name=limit,proto3" json:"limit,omitempty"`
-	PipedId  string            `protobuf:"bytes,8,opt,name=piped_id,json=pipedId,proto3" json:"piped_id,omitempty"`
-	Cursor   string            `protobuf:"bytes,10,opt,name=cursor,proto3" json:"cursor,omitempty"`
+	// Filter by exact application name. Empty means no filtering.
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// Filter by application kind, e.g. "KUBERNETES". Empty means no filtering.
+	Kind     string `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
+	Disabled bool   `protobuf:"varint,4,opt,name=disabled,proto3" json:"disabled,omitempty"`
+	// Filter by labels; an application must have all the given key/value pairs.
+	Labels map[string]string `protobuf:"bytes,6,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	// Maximum number of applications to return. If unset or zero, a
+	// server-defined default page size is used.
+	Limit   int32  `protobuf:"varint,7,opt,name=limit,proto3" json:"limit,omitempty"`
+	PipedId string `protobuf:"bytes,8,opt,name=piped_id,json=pipedId,proto3" json:"piped_id,omitempty"`
+	// Opaque cursor returned by a previous call used to fetch the next page.
+	// Empty to start from the first page.
+	Cursor string `protobuf:"bytes,10,opt,name=cursor,proto3" json:"cursor,omitempty"`
 }
 
 func (x *ListApplicationsRequest) Reset() {
@@ -467,7 +476,9 @@ type ListApplicationsResponse struct {
 	unknownFields protoimpl.UnknownFields
 
 	Applications []*model.Application `protobuf:"bytes,1,rep,name=applications,proto3" json:"applications,omitempty"`
-	Cursor       string               `protobuf:"bytes,2,opt,name=cursor,proto3" json:"cursor,omitempty"`
+	// Opaque cursor to pass to a subsequent call to fetch the next page.
+	// Empty when there are no more results.
+	Cursor string `protobuf:"bytes,2,opt,name=cursor,proto3" json:"cursor,omitempty"`
 }
 
 func (x *ListApplicationsResponse) Reset() {
@@ -670,7 +681,9 @@ type RegisterPipedResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id  string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// The base64 encoded piped key. Shown only once; the caller is
+	// responsible for storing it securely.
 	Key string `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
 }
 
@@ -1508,13 +1521,20 @@ type ListDeploymentsRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Statuses        []string          `protobuf:"bytes,1,rep,name=statuses,proto3" json:"statuses,omitempty"`
-	Kinds           []string          `protobuf:"bytes,2,rep,name=kinds,proto3" json:"kinds,omitempty"`
-	ApplicationIds  []string          `protobuf:"bytes,3,rep,name=application_ids,json=applicationIds,proto3" json:"application_ids,omitempty"`
-	ApplicationName string            `protobuf:"bytes,4,opt,name=application_name,json=applicationName,proto3" json:"application_name,omitempty"`
-	Labels          map[string]string `protobuf:"bytes,5,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	Limit           int32             `protobuf:"varint,6,opt,name=limit,proto3" json:"limit,omitempty"`
-	Cursor          string            `protobuf:"bytes,7,opt,name=cursor,proto3" json:"cursor,omitempty"`
+	// Filter by deployment status, e.g. "SUCCESS". Empty means no filtering.
+	Statuses []string `protobuf:"bytes,1,rep,name=statuses,proto3" json:"statuses,omitempty"`
+	// Filter by application kind, e.g. "KUBERNETES". Empty means no filtering.
+	Kinds           []string `protobuf:"bytes,2,rep,name=kinds,proto3" json:"kinds,omitempty"`
+	ApplicationIds  []string `protobuf:"bytes,3,rep,name=application_ids,json=applicationIds,proto3" json:"application_ids,omitempty"`
+	ApplicationName string   `protobuf:"bytes,4,opt,name=application_name,json=applicationName,proto3" json:"application_name,omitempty"`
+	// Filter by labels; a deployment must have all the given key/value pairs.
+	Labels map[string]string `protobuf:"bytes,5,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	// Maximum number of deployments to return. If unset or zero, a
+	// server-defined default page size is used.
+	Limit int32 `protobuf:"varint,6,opt,name=limit,proto3" json:"limit,omitempty"`
+	// Opaque cursor returned by a previous call used to fetch the next page.
+	// Empty to start from the first page.
+	Cursor string `protobuf:"bytes,7,opt,name=cursor,proto3" json:"cursor,omitempty"`
 }
 
 func (x *ListDeploymentsRequest) Reset() {
@@ -1604,7 +1624,9 @@ type ListDeploymentsResponse struct {
 	unknownFields protoimpl.UnknownFields
 
 	Deployments []*model.Deployment `protobuf:"bytes,1,rep,name=deployments,proto3" json:"deployments,omitempty"`
-	Cursor      string              `protobuf:"bytes,2,opt,name=cursor,proto3" json:"cursor,omitempty"`
+	// Opaque cursor to pass to a subsequent call to fetch the next page.
+	// Empty when there are no more results.
+	Cursor string `protobuf:"bytes,2,opt,name=cursor,proto3" json:"cursor,omitempty"`
 }
 
 func (x *ListDeploymentsResponse) Reset() {
@@ -1922,9 +1944,16 @@ type RegisterEventRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Name     string            `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Data     string            `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
-	Labels   map[string]string `protobuf:"bytes,3,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	// The name of event, used together with labels to build the event key
+	// that piped's event watcher matches against.
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// The data of the event, made available to the event watcher's replacer.
+	Data string `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	// The key/value pairs that are attached to the event; combined with name
+	// to build the event key.
+	Labels map[string]string `protobuf:"bytes,3,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	// Additional key/value pairs made available to the event watcher's
+	// replacer without being part of the event key.
 	Contexts map[string]string `protobuf:"bytes,4,rep,name=contexts,proto3" json:"contexts,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// Information of the commit that trigger this event.
 	CommitHash      string `protobuf:"bytes,5,opt,name=commit_hash,json=commitHash,proto3" json:"commit_hash,omitempty"`
@@ -2169,6 +2198,8 @@ type RequestPlanPreviewResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// The IDs of the generated BUILD_PLAN_PREVIEW commands, one per affected
+	// piped. Pass these to GetPlanPreviewResults to fetch the results.
 	Commands []string `protobuf:"bytes,1,rep,name=commands,proto3" json:"commands,omitempty"`
 }
 
@@ -2216,6 +2247,7 @@ type GetPlanPreviewResultsRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// The command IDs returned by RequestPlanPreview to fetch results for.
 	Commands []string `protobuf:"bytes,1,rep,name=commands,proto3" json:"commands,omitempty"`
 	// Maximum number of seconds a Piped can take to handle a command.
 	CommandHandleTimeout int64 `protobuf:"varint,2,opt,name=command_handle_timeout,json=commandHandleTimeout,proto3" json:"command_handle_timeout,omitempty"`
@@ -2425,13 +2457,15 @@ func (x *EncryptResponse) GetCiphertext() string {
 	return ""
 }
 
+// StageLog holds the logs of a single stage execution.
 type StageLog struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Blocks    []*model.LogBlock `protobuf:"bytes,1,rep,name=blocks,proto3" json:"blocks,omitempty"`
-	Completed bool              `protobuf:"varint,2,opt,name=completed,proto3" json:"completed,omitempty"`
+	Blocks []*model.LogBlock `protobuf:"bytes,1,rep,name=blocks,proto3" json:"blocks,omitempty"`
+	// Whether the stage has finished producing logs.
+	Completed bool `protobuf:"varint,2,opt,name=completed,proto3" json:"completed,omitempty"`
 }
 
 func (x *StageLog) Reset() {
@@ -2532,6 +2566,7 @@ type ListStageLogsResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// The logs of each stage of the deployment, keyed by stage ID.
 	StageLogs map[string]*StageLog `protobuf:"bytes,1,rep,name=stage_logs,json=stageLogs,proto3" json:"stage_logs,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 

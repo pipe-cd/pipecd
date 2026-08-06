@@ -19,6 +19,8 @@ option go_package = "github.com/pipe-cd/pipecd/pkg/model";
 
 import "validate/validate.proto";
 
+// ApplicationKind represents the platform an application is deployed to.
+// This is used by pipedv0; plugin-arch piped uses deploy_targets_by_plugin instead.
 enum ApplicationKind {
     KUBERNETES = 0;
     TERRAFORM = 1;
@@ -27,6 +29,8 @@ enum ApplicationKind {
     ECS = 5;
 }
 
+// RollbackKind mirrors ApplicationKind to select which built-in rollback
+// stage should be used when a deployment needs to be rolled back.
 enum RollbackKind {
     Rollback_KUBERNETES = 0;
     Rollback_TERRAFORM = 1;
@@ -37,12 +41,16 @@ enum RollbackKind {
     Rollback_CUSTOM_SYNC = 15;
 }
 
+// ApplicationActiveStatus represents the lifecycle status of an application
+// registration, independent of its current sync/health state.
 enum ApplicationActiveStatus {
     ENABLED = 0;
     DISABLED = 1;
     DELETED = 2;
 }
 
+// ApplicationGitPath points to the location of an application's
+// configuration and manifests inside a Git repository.
 message ApplicationGitPath {
     reserved 3;
 
@@ -54,18 +62,29 @@ message ApplicationGitPath {
     string url = 5;
 }
 
+// ApplicationGitRepository identifies a Git repository that piped is
+// configured to watch for application manifests.
 message ApplicationGitRepository {
+    // The unique identifier of the repository, as configured in the piped config.
     string id = 1 [(validate.rules).string.min_len = 1];
     string remote = 2;
     string branch = 3;
 }
 
+// SyncStrategy determines how a deployment should be executed.
 enum SyncStrategy {
+    // Let piped decide QUICK_SYNC or PIPELINE based on the detected changes.
     AUTO = 0;
+    // Apply all changes at once without going through the defined pipeline stages.
     QUICK_SYNC = 1;
+    // Apply changes by going through the pipeline stages defined in the application configuration.
     PIPELINE = 2;
 }
 
+// ApplicationInfo represents an application's configuration as discovered by
+// piped from the Git repository, before or without being registered to the
+// control plane. It is used to keep the control plane's view of application
+// configurations in sync with what is actually defined in Git.
 message ApplicationInfo {
     reserved 14;
 
@@ -84,6 +103,8 @@ message ApplicationInfo {
     string description = 9;
 }
 
+// ArtifactVersion represents one artifact (e.g. container image, Terraform
+// module) that is part of a deployment.
 message ArtifactVersion {
     enum Kind {
         UNKNOWN = 0;
@@ -94,7 +115,9 @@ message ArtifactVersion {
     }
     // TODO: This should be removed since the value is not used anywhere.
     Kind kind = 1 [(validate.rules).enum.defined_only = true, deprecated = true];
+    // The version string of the artifact, e.g. a container image tag.
     string version = 2;
     string name = 3;
+    // The URL to view the artifact, if applicable.
     string url = 4;
 }

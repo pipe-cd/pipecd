@@ -35,11 +35,14 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// AnalysisResult stores the outcome of the most recent successful automated
+// analysis stage for an application, used as a baseline for future analyses.
 type AnalysisResult struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Unix time when the analyzed metrics range starts.
 	StartTime int64 `protobuf:"varint,1,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
 }
 

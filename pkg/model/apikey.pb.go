@@ -35,6 +35,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// Role restricts which operations a key can perform.
 type APIKey_Role int32
 
 const (
@@ -81,6 +82,8 @@ func (APIKey_Role) EnumDescriptor() ([]byte, []int) {
 	return file_pkg_model_apikey_proto_rawDescGZIP(), []int{0, 0}
 }
 
+// APIKey represents a key used to authenticate external callers, such as
+// pipectl, against the control plane's API service.
 type APIKey struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

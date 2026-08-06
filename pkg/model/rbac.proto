@@ -20,10 +20,14 @@ option go_package = "github.com/pipe-cd/pipecd/pkg/model";
 import "google/protobuf/descriptor.proto";
 import "pkg/model/project.proto";
 
-// Authorization represents whether a specific RPC is ignored or not.
-message RBAC { 
+// RBAC is a gRPC method option describing the RBAC resource/action an RPC
+// requires, or that the RPC should bypass RBAC checks entirely.
+message RBAC {
+    // The resource type the caller must be authorized on. Ignored if `ignored` is true.
     model.ProjectRBACResource.ResourceType resource = 1;
+    // The action the caller must be authorized to perform. Ignored if `ignored` is true.
     model.ProjectRBACPolicy.Action action = 2;
+    // Whether the RBAC check should be skipped entirely for this RPC.
     bool ignored = 3;
 }
 

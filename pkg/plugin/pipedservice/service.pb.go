@@ -36,6 +36,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// NOTE: DecryptSecretRequest/Response are not currently wired to a PluginService RPC.
 type DecryptSecretRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -263,8 +264,9 @@ type ReportStageLogsRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	DeploymentId string            `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
-	StageId      string            `protobuf:"bytes,2,opt,name=stage_id,json=stageId,proto3" json:"stage_id,omitempty"`
+	DeploymentId string `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
+	StageId      string `protobuf:"bytes,2,opt,name=stage_id,json=stageId,proto3" json:"stage_id,omitempty"`
+	// The retry attempt number of the stage these logs belong to.
 	RetriedCount int32             `protobuf:"varint,3,opt,name=retried_count,json=retriedCount,proto3" json:"retried_count,omitempty"`
 	Blocks       []*model.LogBlock `protobuf:"bytes,4,rep,name=blocks,proto3" json:"blocks,omitempty"`
 }
@@ -372,11 +374,14 @@ type ReportStageLogsFromLastCheckpointRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	DeploymentId string            `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
-	StageId      string            `protobuf:"bytes,2,opt,name=stage_id,json=stageId,proto3" json:"stage_id,omitempty"`
-	RetriedCount int32             `protobuf:"varint,3,opt,name=retried_count,json=retriedCount,proto3" json:"retried_count,omitempty"`
-	Blocks       []*model.LogBlock `protobuf:"bytes,4,rep,name=blocks,proto3" json:"blocks,omitempty"`
-	Completed    bool              `protobuf:"varint,5,opt,name=completed,proto3" json:"completed,omitempty"`
+	DeploymentId string `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
+	StageId      string `protobuf:"bytes,2,opt,name=stage_id,json=stageId,proto3" json:"stage_id,omitempty"`
+	// The retry attempt number of the stage these logs belong to.
+	RetriedCount int32 `protobuf:"varint,3,opt,name=retried_count,json=retriedCount,proto3" json:"retried_count,omitempty"`
+	// The full log blocks recorded since the most recently saved checkpoint.
+	Blocks []*model.LogBlock `protobuf:"bytes,4,rep,name=blocks,proto3" json:"blocks,omitempty"`
+	// Whether the stage has finished producing logs.
+	Completed bool `protobuf:"varint,5,opt,name=completed,proto3" json:"completed,omitempty"`
 }
 
 func (x *ReportStageLogsFromLastCheckpointRequest) Reset() {
@@ -491,7 +496,8 @@ type GetStageMetadataRequest struct {
 
 	DeploymentId string `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
 	StageId      string `protobuf:"bytes,2,opt,name=stage_id,json=stageId,proto3" json:"stage_id,omitempty"`
-	Key          string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+	// The metadata key to look up.
+	Key string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
 }
 
 func (x *GetStageMetadataRequest) Reset() {
@@ -552,8 +558,10 @@ type GetStageMetadataResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// The stored value. Meaningful only when found is true.
 	Value string `protobuf:"bytes,1,opt,name=value,proto3" json:"value,omitempty"`
-	Found bool   `protobuf:"varint,2,opt,name=found,proto3" json:"found,omitempty"`
+	// Whether a value was found for the given key.
+	Found bool `protobuf:"varint,2,opt,name=found,proto3" json:"found,omitempty"`
 }
 
 func (x *GetStageMetadataResponse) Reset() {
@@ -609,8 +617,9 @@ type PutStageMetadataRequest struct {
 
 	DeploymentId string `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
 	StageId      string `protobuf:"bytes,2,opt,name=stage_id,json=stageId,proto3" json:"stage_id,omitempty"`
-	Key          string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
-	Value        string `protobuf:"bytes,4,opt,name=value,proto3" json:"value,omitempty"`
+	// The metadata key to set. An existing value for the same key is overwritten.
+	Key   string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+	Value string `protobuf:"bytes,4,opt,name=value,proto3" json:"value,omitempty"`
 }
 
 func (x *PutStageMetadataRequest) Reset() {
@@ -716,9 +725,11 @@ type PutStageMetadataMultiRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	DeploymentId string            `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
-	StageId      string            `protobuf:"bytes,2,opt,name=stage_id,json=stageId,proto3" json:"stage_id,omitempty"`
-	Metadata     map[string]string `protobuf:"bytes,3,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	DeploymentId string `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
+	StageId      string `protobuf:"bytes,2,opt,name=stage_id,json=stageId,proto3" json:"stage_id,omitempty"`
+	// The metadata key/value pairs to set. Existing values for the same keys
+	// are overwritten.
+	Metadata map[string]string `protobuf:"bytes,3,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
 func (x *PutStageMetadataMultiRequest) Reset() {
@@ -821,7 +832,8 @@ type GetDeploymentPluginMetadataRequest struct {
 	// Plugin name to distinguish which plugin manages the metadata.
 	// e.g. "plugin-kubernetes", "plugin-wait-stage"
 	PluginName string `protobuf:"bytes,2,opt,name=plugin_name,json=pluginName,proto3" json:"plugin_name,omitempty"`
-	Key        string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+	// The metadata key to look up.
+	Key string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
 }
 
 func (x *GetDeploymentPluginMetadataRequest) Reset() {
@@ -882,8 +894,10 @@ type GetDeploymentPluginMetadataResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// The stored value. Meaningful only when found is true.
 	Value string `protobuf:"bytes,1,opt,name=value,proto3" json:"value,omitempty"`
-	Found bool   `protobuf:"varint,2,opt,name=found,proto3" json:"found,omitempty"`
+	// Whether a value was found for the given key.
+	Found bool `protobuf:"varint,2,opt,name=found,proto3" json:"found,omitempty"`
 }
 
 func (x *GetDeploymentPluginMetadataResponse) Reset() {
@@ -941,8 +955,9 @@ type PutDeploymentPluginMetadataRequest struct {
 	// Plugin name to distinguish which plugin manages the metadata.
 	// e.g. "plugin-kubernetes", "plugin-wait-stage"
 	PluginName string `protobuf:"bytes,2,opt,name=plugin_name,json=pluginName,proto3" json:"plugin_name,omitempty"`
-	Key        string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
-	Value      string `protobuf:"bytes,4,opt,name=value,proto3" json:"value,omitempty"`
+	// The metadata key to set. An existing value for the same key is overwritten.
+	Key   string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+	Value string `protobuf:"bytes,4,opt,name=value,proto3" json:"value,omitempty"`
 }
 
 func (x *PutDeploymentPluginMetadataRequest) Reset() {
@@ -1051,8 +1066,10 @@ type PutDeploymentPluginMetadataMultiRequest struct {
 	DeploymentId string `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
 	// Plugin name to distinguish which plugin manages the metadata.
 	// e.g. "plugin-kubernetes", "plugin-wait-stage"
-	PluginName string            `protobuf:"bytes,2,opt,name=plugin_name,json=pluginName,proto3" json:"plugin_name,omitempty"`
-	Metadata   map[string]string `protobuf:"bytes,3,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	PluginName string `protobuf:"bytes,2,opt,name=plugin_name,json=pluginName,proto3" json:"plugin_name,omitempty"`
+	// The metadata key/value pairs to set. Existing values for the same keys
+	// are overwritten.
+	Metadata map[string]string `protobuf:"bytes,3,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
 func (x *PutDeploymentPluginMetadataMultiRequest) Reset() {
@@ -1152,7 +1169,8 @@ type GetDeploymentSharedMetadataRequest struct {
 	unknownFields protoimpl.UnknownFields
 
 	DeploymentId string `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
-	Key          string `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+	// The metadata key to look up.
+	Key string `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
 }
 
 func (x *GetDeploymentSharedMetadataRequest) Reset() {
@@ -1206,8 +1224,10 @@ type GetDeploymentSharedMetadataResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// The stored value. Meaningful only when found is true.
 	Value string `protobuf:"bytes,1,opt,name=value,proto3" json:"value,omitempty"`
-	Found bool   `protobuf:"varint,2,opt,name=found,proto3" json:"found,omitempty"`
+	// Whether a value was found for the given key.
+	Found bool `protobuf:"varint,2,opt,name=found,proto3" json:"found,omitempty"`
 }
 
 func (x *GetDeploymentSharedMetadataResponse) Reset() {
@@ -1364,8 +1384,10 @@ type GetApplicationSharedObjectRequest struct {
 	unknownFields protoimpl.UnknownFields
 
 	ApplicationId string `protobuf:"bytes,1,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
-	PluginName    string `protobuf:"bytes,2,opt,name=plugin_name,json=pluginName,proto3" json:"plugin_name,omitempty"`
-	Key           string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+	// The plugin that originally stored the object.
+	PluginName string `protobuf:"bytes,2,opt,name=plugin_name,json=pluginName,proto3" json:"plugin_name,omitempty"`
+	// The key the object was stored under.
+	Key string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
 }
 
 func (x *GetApplicationSharedObjectRequest) Reset() {
@@ -1474,9 +1496,11 @@ type PutApplicationSharedObjectRequest struct {
 	unknownFields protoimpl.UnknownFields
 
 	ApplicationId string `protobuf:"bytes,1,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
-	PluginName    string `protobuf:"bytes,2,opt,name=plugin_name,json=pluginName,proto3" json:"plugin_name,omitempty"`
-	Key           string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
-	Object        []byte `protobuf:"bytes,4,opt,name=object,proto3" json:"object,omitempty"`
+	// The plugin storing the object.
+	PluginName string `protobuf:"bytes,2,opt,name=plugin_name,json=pluginName,proto3" json:"plugin_name,omitempty"`
+	// The key to store the object under.
+	Key    string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+	Object []byte `protobuf:"bytes,4,opt,name=object,proto3" json:"object,omitempty"`
 }
 
 func (x *PutApplicationSharedObjectRequest) Reset() {

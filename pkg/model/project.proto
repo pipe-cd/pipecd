@@ -67,7 +67,10 @@ message ProjectStaticUser {
     string password_hash = 2 [(validate.rules).string.min_len = 6];
 }
 
+// ProjectSSOConfig holds the single sign-on configuration for a project.
+// Only the section matching `provider` is used; the others are ignored.
 message ProjectSSOConfig {
+    // Provider selects which single sign-on backend is used.
     enum Provider {
         // The old deprecated enum values are marked as reserved.
         reserved 1;
@@ -77,6 +80,7 @@ message ProjectSSOConfig {
         OIDC = 3;
     }
 
+    // GitHub holds the configuration for authenticating via a GitHub OAuth app.
     message GitHub {
         // The client id string of GitHub oauth app.
         string client_id = 1 [(validate.rules).string.min_len = 1];
@@ -90,6 +94,7 @@ message ProjectSSOConfig {
         string proxy_url = 5;
     }
 
+    // Google holds the configuration for authenticating via a Google OAuth app.
     message Google {
         // The client id string of Google oauth app.
         string client_id = 1 [(validate.rules).string.min_len = 1];
@@ -97,6 +102,8 @@ message ProjectSSOConfig {
         string client_secret = 2 [(validate.rules).string.min_len = 1];
     }
 
+    // Oidc holds the configuration for authenticating via a generic OpenID
+    // Connect provider.
     message Oidc {
         // The client id string of OpenID Connect oauth app.
         string client_id = 1 [(validate.rules).string.min_len = 1];
@@ -132,6 +139,8 @@ message ProjectSSOConfig {
     Oidc oidc = 12;
 }
 
+// ProjectRBACConfig maps each built-in RBAC level to the name of the custom
+// role that should be treated as having that level's permissions.
 message ProjectRBACConfig {
     string admin = 1;
     string editor = 2;
@@ -176,7 +185,10 @@ message ProjectRBACResource {
     map<string, string> labels = 2 [(validate.rules).map.keys.string.min_len = 1, (validate.rules).map.values.string.min_len = 1];
 }
 
+// ProjectRBACPolicy grants the given actions on the given resources; it is
+// one clause of a ProjectRBACRole.
 message ProjectRBACPolicy {
+    // Action represents an operation that can be permitted on a resource.
     enum Action {
       ALL = 0;
       GET = 1;
