@@ -16,6 +16,8 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 
 	"github.com/creasty/defaults"
 )
@@ -72,7 +74,35 @@ func (s *KubernetesApplicationSpec) UnmarshalJSON(data []byte) error {
 }
 
 func (s *KubernetesApplicationSpec) Validate() error {
-	// TODO: Validate KubernetesApplicationSpec fields.
+	if s.Input.HelmChart != nil && len(s.Input.KustomizeOptions) > 0 {
+		return errors.New("helmChart and kustomizeOptions are mutually exclusive")
+	}
+
+	if s.TrafficRouting != nil {
+		switch s.TrafficRouting.Method {
+		case "", KubernetesTrafficRoutingMethodPodSelector, KubernetesTrafficRoutingMethodIstio:
+		default:
+			return fmt.Errorf("unsupported trafficRouting.method %q", s.TrafficRouting.Method)
+		}
+	}
+
+	if s.VariantLabel.Key == "" {
+		return errors.New("variantLabel.key must not be empty")
+	}
+	if s.VariantLabel.PrimaryValue == "" {
+		return errors.New("variantLabel.primaryValue must not be empty")
+	}
+	if s.VariantLabel.CanaryValue == "" {
+		return errors.New("variantLabel.canaryValue must not be empty")
+	}
+	if s.VariantLabel.BaselineValue == "" {
+		return errors.New("variantLabel.baselineValue must not be empty")
+	}
+	if s.VariantLabel.PrimaryValue == s.VariantLabel.CanaryValue ||
+		s.VariantLabel.PrimaryValue == s.VariantLabel.BaselineValue ||
+		s.VariantLabel.CanaryValue == s.VariantLabel.BaselineValue {
+		return errors.New("variantLabel primaryValue, canaryValue, and baselineValue must be unique")
+	}
 	return nil
 }
 
