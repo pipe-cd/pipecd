@@ -834,19 +834,21 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 		}
 	}
 
-	for retry.WaitNext(ctx) {
-		if res, err := client.ReportPipedMeta(ctx, req); err == nil {
+	_, err = retry.Do(ctx, func() (interface{}, error) {
+		res, err := client.ReportPipedMeta(ctx, req)
+		if err == nil {
 			cfg.Name = res.Name
 			if cfg.WebAddress == "" {
 				cfg.WebAddress = res.WebBaseUrl
 			}
-			return nil
+			return nil, nil
 		}
 		logger.Warn("failed to report piped meta to control-plane, wait to the next retry",
 			zap.Int("calls", retry.Calls()),
 			zap.Error(err),
 		)
-	}
+		return nil, err
+	})
 
 	return err
 }

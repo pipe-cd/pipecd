@@ -44,7 +44,6 @@ type Backoff interface {
 
 type Retry interface {
 	Do(ctx context.Context, operation func() (interface{}, error)) (interface{}, error)
-	WaitNext(ctx context.Context) bool
 	Calls() int
 }
 
@@ -62,8 +61,7 @@ type retry struct {
 	backoff Backoff
 }
 
-// TODO: Find all using of WaitNext and replace by Do to avoid panic.
-func (r *retry) WaitNext(ctx context.Context) bool {
+func (r *retry) waitNext(ctx context.Context) bool {
 	defer func() {
 		r.calls++
 	}()
@@ -98,7 +96,7 @@ func (r *retry) WaitNext(ctx context.Context) bool {
 func (r *retry) Do(ctx context.Context, operation func() (interface{}, error)) (interface{}, error) {
 	var err error
 
-	for r.WaitNext(ctx) {
+	for r.waitNext(ctx) {
 		var data interface{}
 		data, err = operation()
 		if err == nil {
