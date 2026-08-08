@@ -304,9 +304,20 @@ where the `CONFIG_FILE` is the path to your piped configuration file and the `IN
 
 Replace `path/to/piped-config.yaml` with the actual path to your configuration file.
 
-### Online one-click setup for contributing
+### Using the Dev Container
 
-We are preparing Gitpod and Codespace to facilitate the setup process for contributing.
+A [Dev Container](.devcontainer/devcontainer.json) is available if you prefer not to
+install the toolchain yourself. It provides Go, Node.js, Docker, kubectl, Helm and kind,
+pinned to the versions used by CI.
+
+- **GitHub Codespaces**: click `Code` > `Codespaces` > `Create codespace` on GitHub.
+- **VS Code**: run `Dev Containers: Reopen in Container` with the
+  [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+  extension installed.
+
+The Go and web dependencies are installed when the container is created, so you can run
+`make build`, `make test` and `make check` right away. Hugo is not included, so preview
+the docs site with the setup in [docs/README.md](./docs/README.md).
 
 ## Contributor License Agreement
 

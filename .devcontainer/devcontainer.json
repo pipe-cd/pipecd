@@ -1,0 +1,33 @@
+{
+  "name": "PipeCD",
+  "image": "mcr.microsoft.com/devcontainers/go:1.26-trixie",
+
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "24.10.0" },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": { "moby": false }
+  },
+  "onCreateCommand": {
+    "tools": "ARCH=$(dpkg --print-architecture) && curl -fsSLo /tmp/kind https://kind.sigs.k8s.io/dl/v0.32.0/kind-linux-${ARCH} && curl -fsSLo /tmp/kubectl https://dl.k8s.io/release/$(curl -fsSL https://dl.k8s.io/release/stable.txt)/bin/linux/${ARCH}/kubectl && sudo install -m 755 /tmp/kind /tmp/kubectl /usr/local/bin/ && rm /tmp/kind /tmp/kubectl && curl -fsSL https://get.helm.sh/helm-v3.17.3-linux-${ARCH}.tar.gz | sudo tar -xz --strip-components=1 -C /usr/local/bin linux-${ARCH}/helm",
+    // setup-envtest is required by `make test/go`.
+    "go-deps": "go mod download && make setup-envtest",
+    "web-deps": "make update/web-deps"
+  },
+
+  // 8080: Control Plane via `kubectl port-forward -n pipecd svc/pipecd 8080`
+  // 9090: web dev server via `make run/web`
+  "forwardPorts": [8080, 9090],
+
+  "hostRequirements": { "cpus": 4 },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  },
+
+  "remoteUser": "vscode"
+}
