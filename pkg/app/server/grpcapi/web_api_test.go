@@ -16,6 +16,8 @@ package grpcapi
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"testing"
 
@@ -28,6 +30,98 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/datastore/datastoretest"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
+
+func TestAppendLabelMatchedEvents(t *testing.T) {
+	labels := map[string]string{"env": "prod"}
+
+	tests := []struct {
+		name       string
+		filtered   []*model.Event
+		events     []*model.Event
+		pageSize   int
+		wantIDs    []string
+		wantFull   bool
+		wantCursor map[string]interface{}
+	}{
+		{
+			name:     "dense matches stop at page size",
+			pageSize: 2,
+			events: []*model.Event{
+				eventWithLabels("event-1", 300, labels),
+				eventWithLabels("event-2", 200, labels),
+				eventWithLabels("event-3", 100, labels),
+			},
+			wantIDs:  []string{"event-1", "event-2"},
+			wantFull: true,
+			wantCursor: map[string]interface{}{
+				"Id":        "event-2",
+				"UpdatedAt": float64(200),
+			},
+		},
+		{
+			name:     "sparse matches append until page size",
+			pageSize: 2,
+			filtered: []*model.Event{
+				eventWithLabels("event-1", 400, labels),
+			},
+			events: []*model.Event{
+				eventWithLabels("event-2", 300, map[string]string{"env": "dev"}),
+				eventWithLabels("event-3", 200, labels),
+				eventWithLabels("event-4", 100, labels),
+			},
+			wantIDs:  []string{"event-1", "event-3"},
+			wantFull: true,
+			wantCursor: map[string]interface{}{
+				"Id":        "event-3",
+				"UpdatedAt": float64(200),
+			},
+		},
+		{
+			name:     "zero matches does not fill page",
+			pageSize: 2,
+			events: []*model.Event{
+				eventWithLabels("event-1", 300, map[string]string{"env": "dev"}),
+				eventWithLabels("event-2", 200, map[string]string{"env": "staging"}),
+			},
+			wantIDs:  []string{},
+			wantFull: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, cursor, full := appendLabelMatchedEvents(tt.filtered, tt.events, labels, tt.pageSize)
+			assert.Equal(t, tt.wantIDs, eventIDs(got))
+			assert.Equal(t, tt.wantFull, full)
+			if tt.wantCursor == nil {
+				assert.Empty(t, cursor)
+				return
+			}
+
+			data, err := base64.StdEncoding.DecodeString(cursor)
+			assert.NoError(t, err)
+			gotCursor := make(map[string]interface{})
+			assert.NoError(t, json.Unmarshal(data, &gotCursor))
+			assert.Equal(t, tt.wantCursor, gotCursor)
+		})
+	}
+}
+
+func eventWithLabels(id string, updatedAt int64, labels map[string]string) *model.Event {
+	return &model.Event{
+		Id:        id,
+		UpdatedAt: updatedAt,
+		Labels:    labels,
+	}
+}
+
+func eventIDs(events []*model.Event) []string {
+	ids := make([]string, 0, len(events))
+	for _, e := range events {
+		ids = append(ids, e.Id)
+	}
+	return ids
+}
 
 func TestValidateAppBelongsToProject(t *testing.T) {
 	ctrl := gomock.NewController(t)
