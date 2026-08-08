@@ -6,5 +6,5 @@
   </div>
   <p class="h4">{{ .Get "title" | markdownify }}</p>
   <p class="mb-0">{{ .Inner }}</p>
-  {{ with .Get "url" }}<p><a href="{{ . }}">{{ with $url_text }}{{ $url_text }}{{ else }}{{ T "ui_read_more" }}{{ end }} …</a></p>{{ end }}
+  {{ with .Get "url" }}<p><a href="{{ . }}" aria-label="{{ with $url_text }}{{ $url_text }}{{ else }}{{ T "ui_read_more" }}{{ end }} - {{ $.Get "title" }}">{{ with $url_text }}{{ $url_text }}{{ else }}{{ T "ui_read_more" }}{{ end }} …</a></p>{{ end }}
 </div>
