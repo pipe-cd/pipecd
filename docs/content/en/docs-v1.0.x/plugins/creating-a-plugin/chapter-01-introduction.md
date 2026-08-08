@@ -6,7 +6,7 @@ description: >
   What you build in this tutorial and how the chapters fit together.
 ---
 
-You start with an empty directory and finish with a file plugin that `piped` can load and run.
+You start with an empty directory and finish with a simple plugin that `piped` can load and run.
 
 ## What you build
 
@@ -34,4 +34,4 @@ Each chapter builds on the previous one:
 
 ## A note on versions
 
-The plugin SDK (`github.com/pipe-cd/piped-plugin-sdk-go`) still changes between releases. The code here tracks the SDK version this documentation targets. If a snippet does not compile, trust the [`pipecd`](https://github.com/pipe-cd/pipecd) source and SDK reference over the text.
+The plugin SDK ([`github.com/pipe-cd/piped-plugin-sdk-go`](https://pkg.go.dev/github.com/pipe-cd/piped-plugin-sdk-go)) still changes between releases. The code here tracks the SDK version this documentation targets. If a snippet does not compile, trust the [`pipecd`](https://github.com/pipe-cd/pipecd) source and SDK reference over the text.
