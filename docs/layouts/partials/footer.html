@@ -4,13 +4,14 @@
 {{ $text_color := "text-white" }}
 {{ if .IsHome }} {{ $text_color = "text-dark" }} {{ end }}
 {{ $cncf_logo := "https://www.cncf.io/wp-content/uploads/2022/05/CNCF_logo_white.svg" }}
-{{ if .IsHome }} {{ $cncf_logo = "https://www.cncf.io/wp-content/uploads/2022/07/cncf-color-bg.svg" }} {{ end }}
+{{ $cncf_logo_height := "40" }}
+{{ if .IsHome }} {{ $cncf_logo = "https://www.cncf.io/wp-content/uploads/2022/07/cncf-color-bg.svg" }} {{ $cncf_logo_height = "48" }} {{ end }}
 <div class="{{ $bg_color }} row d-print-none">
   <div class="container-fluid py-3 mx-sm-5">
     <div class="row">
       <div class="col-8 py-3 order-sm-2 {{ $text_color }}">
         <a href="https://www.cncf.io/projects/pipecd/" target="_blank">
-          <img src="{{ $cncf_logo }}" alt="cncf logo" width="250">
+          <img src="{{ $cncf_logo }}" alt="cncf logo" width="250" height="{{ $cncf_logo_height }}" style="height: auto;">
           <div class="py-2 {{ $text_color }}">PipeCD is a Cloud Native Computing Foundation sandbox project.</div>
         </a>
       </div>
