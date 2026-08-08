@@ -1626,3 +1626,48 @@ func TestPipeGitValidate(t *testing.T) {
 		})
 	}
 }
+
+func TestPipedPlatformProvider_MarshalJSON_UnsupportedType(t *testing.T) {
+	t.Parallel()
+	p := PipedPlatformProvider{
+		Name: "my-provider",
+		Type: "UNKNOWN_TYPE",
+	}
+	_, err := p.MarshalJSON()
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "UNKNOWN_TYPE", "error must contain the unsupported type value")
+	assert.NotContains(t, err.Error(), "my-provider", "error must not contain the provider name")
+}
+
+func TestPipedPlatformProvider_UnmarshalJSON_UnsupportedType(t *testing.T) {
+	t.Parallel()
+	data := []byte(`{"name":"my-provider","type":"UNKNOWN_TYPE"}`)
+	var p PipedPlatformProvider
+	err := p.UnmarshalJSON(data)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "UNKNOWN_TYPE", "error must contain the unsupported type value")
+	assert.NotContains(t, err.Error(), "my-provider", "error must not contain the provider name")
+}
+
+func TestPipedAnalysisProvider_MarshalJSON_UnsupportedType(t *testing.T) {
+	t.Parallel()
+	p := PipedAnalysisProvider{
+		Name: "analysis-provider",
+		Type: "UNKNOWN_TYPE",
+	}
+	_, err := p.MarshalJSON()
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "UNKNOWN_TYPE", "error must contain the unsupported type value")
+	assert.NotContains(t, err.Error(), "analysis-provider", "error must not contain the provider name")
+}
+
+func TestPipedAnalysisProvider_UnmarshalJSON_UnsupportedType(t *testing.T) {
+	t.Parallel()
+	data := []byte(`{"name":"analysis-provider","type":"UNKNOWN_TYPE"}`)
+	var p PipedAnalysisProvider
+	err := p.UnmarshalJSON(data)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "UNKNOWN_TYPE", "error must contain the unsupported type value")
+	assert.NotContains(t, err.Error(), "analysis-provider", "error must not contain the provider name")
+}
+
