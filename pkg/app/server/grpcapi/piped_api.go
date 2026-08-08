@@ -238,10 +238,17 @@ func (a *PipedAPI) ListApplications(ctx context.Context, req *pipedservice.ListA
 			},
 		},
 	}
-	// TODO: Support pagination in ListApplications
-	apps, _, err := a.applicationStore.List(ctx, opts)
-	if err != nil {
-		return nil, gRPCStoreError(err, "fetch applications")
+	var apps []*model.Application
+	for {
+		page, cursor, err := a.applicationStore.List(ctx, opts)
+		if err != nil {
+			return nil, gRPCStoreError(err, "fetch applications")
+		}
+		apps = append(apps, page...)
+		if cursor == "" {
+			break
+		}
+		opts.Cursor = cursor
 	}
 
 	return &pipedservice.ListApplicationsResponse{

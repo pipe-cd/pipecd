@@ -17,17 +17,33 @@ package grpcapi
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"go.uber.org/zap"
+	"google.golang.org/grpc/metadata"
 
+	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/cache/cachetest"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
 	"github.com/pipe-cd/pipecd/pkg/datastore/datastoretest"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 )
+
+type testPipedTokenVerifier struct {
+	pipedKey string
+}
+
+func (v testPipedTokenVerifier) Verify(_ context.Context, _, _, pipedKey string) error {
+	if pipedKey != v.pipedKey {
+		return fmt.Errorf("invalid piped key, want: %s, got: %s", v.pipedKey, pipedKey)
+	}
+	return nil
+}
 
 func TestValidateAppBelongsToPiped(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -119,6 +135,67 @@ func TestValidateAppBelongsToPiped(t *testing.T) {
 			assert.Equal(t, tt.wantErr, err != nil)
 		})
 	}
+}
+
+func TestPipedAPIListApplicationsFetchesAllPages(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	store := datastoretest.NewMockApplicationStore(ctrl)
+	firstPage := make([]*model.Application, 0, 1)
+	firstPage = append(firstPage, &model.Application{Id: "app-1"})
+	secondPage := make([]*model.Application, 0, 1)
+	secondPage = append(secondPage, &model.Application{Id: "app-2"})
+
+	firstOpts := datastore.ListOptions{
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "ProjectId",
+				Operator: datastore.OperatorEqual,
+				Value:    "test-project-id",
+			},
+			{
+				Field:    "PipedId",
+				Operator: datastore.OperatorEqual,
+				Value:    "test-piped-id",
+			},
+			{
+				Field:    "Disabled",
+				Operator: datastore.OperatorEqual,
+				Value:    false,
+			},
+		},
+	}
+	secondOpts := firstOpts
+	secondOpts.Cursor = "next-page"
+
+	store.EXPECT().
+		List(gomock.Any(), firstOpts).
+		Return(firstPage, "next-page", nil)
+	store.EXPECT().
+		List(gomock.Any(), secondOpts).
+		Return(secondPage, "", nil)
+
+	api := &PipedAPI{
+		applicationStore: store,
+	}
+	ctx := metadata.NewIncomingContext(context.Background(), metadata.MD{
+		"authorization": []string{"PIPED-TOKEN " + rpcauth.MakePipedToken("test-project-id", "test-piped-id", "test-piped-key")},
+	})
+
+	got, err := rpcauth.PipedTokenUnaryServerInterceptor(testPipedTokenVerifier{pipedKey: "test-piped-key"}, zap.NewNop())(
+		ctx,
+		nil,
+		nil,
+		func(ctx context.Context, req interface{}) (interface{}, error) {
+			return api.ListApplications(ctx, nil)
+		},
+	)
+
+	assert.NoError(t, err)
+	resp, ok := got.(*pipedservice.ListApplicationsResponse)
+	assert.True(t, ok)
+	assert.Equal(t, append(firstPage, secondPage...), resp.Applications)
 }
 
 func TestValidateDeploymentBelongsToPiped(t *testing.T) {
