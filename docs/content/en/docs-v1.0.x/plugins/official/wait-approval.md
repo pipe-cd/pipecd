@@ -1,7 +1,7 @@
 ---
 title: "Wait approval plugin"
 linkTitle: "Wait approval"
-weight: 50
+weight: 60
 description: >
   Pause the pipeline until a user approves.
 ---
