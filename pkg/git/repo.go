@@ -71,6 +71,11 @@ type repo struct {
 	username string
 	email    string
 
+	// httpAuthHeader is the HTTP "Authorization" header value used to authenticate
+	// with the remote when it's accessed over HTTP(S). It's empty when username/password
+	// based authentication isn't configured. It's set in the `setHTTPAuthHeader` method.
+	httpAuthHeader string
+
 	dir          string
 	gitPath      string
 	remote       string
@@ -205,6 +210,14 @@ func (r *repo) CopyToModify(dest string) (Repo, error) {
 	if r.username != "" || r.email != "" {
 		if err := cloned.setUser(context.Background(), r.username, r.email); err != nil {
 			return nil, fmt.Errorf("failed to set user: %v", err)
+		}
+	}
+
+	// the cloned repo doesn't inherit custom config from the source one,
+	// so we need to set the http auth header again if it was configured.
+	if r.httpAuthHeader != "" {
+		if err := cloned.setHTTPAuthHeader(context.Background(), r.httpAuthHeader); err != nil {
+			return nil, fmt.Errorf("failed to set up http auth: %v", err)
 		}
 	}
 
@@ -459,6 +472,18 @@ func (r *repo) setUser(ctx context.Context, username, email string) error {
 	if out, err := r.runGitCommand(ctx, "config", "user.email", email); err != nil {
 		return formatCommandError(err, out)
 	}
+	return nil
+}
+
+// setHTTPAuthHeader persists the given HTTP "Authorization" header value into the
+// repo's git config, so that it's automatically included by git in every future
+// git command run against this repo directory, not just the command it was
+// originally issued with via a one-off `-c` flag.
+func (r *repo) setHTTPAuthHeader(ctx context.Context, header string) error {
+	if out, err := r.runGitCommand(ctx, "config", "http.extraHeader", header); err != nil {
+		return formatCommandError(err, out)
+	}
+	r.httpAuthHeader = header
 	return nil
 }
 
