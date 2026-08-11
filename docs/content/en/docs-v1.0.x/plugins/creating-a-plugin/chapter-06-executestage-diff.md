@@ -50,9 +50,16 @@ The `FILE_DIFF` stage compares the files in the deployment source, which come fr
 
 ### List the files in a directory
 
-`listFiles` walks a filesystem and returns the set of file paths it contains. Save the following test as `main_test.go`:
+`listFiles` walks a filesystem and returns the set of file paths it contains. Save the following as `main_test.go`, starting with the imports this first test needs:
 
 ```go
+package main
+
+import (
+	"os"
+	"testing"
+)
+
 func TestListFiles(t *testing.T) {
 	path := "./testdata/list_files"
 	expectedFiles := []string{"file1.txt", "file2.txt", "subdir/file3.txt"}
@@ -228,7 +235,7 @@ func TestIsFileContentDifferent(t *testing.T) {
 }
 ```
 
-Create the files:
+The test's cases hold `fs.FS` values, so add `io/fs` to the test file's imports. Create the files:
 
 ```bash
 mkdir -p testdata/difference_file_content/path1 testdata/difference_file_content/path2
