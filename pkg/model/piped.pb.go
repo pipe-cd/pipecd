@@ -35,8 +35,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// ConnectionStatus represents whether the piped is currently connected to
-// the control plane.
 type Piped_ConnectionStatus int32
 
 const (
@@ -549,7 +547,6 @@ type Piped_SecretEncryption struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The encryption method: one of "KEY_PAIR", "GCP_KMS", "AWS_KMS", "NONE".
 	Type string `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
 	// The public key used to encrypt secrets when type is "KEY_PAIR".
 	PublicKey string `protobuf:"bytes,2,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`

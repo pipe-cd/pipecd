@@ -18,9 +18,6 @@ syntax = "proto3";
 package grpc.plugin.common.v1alpha1;
 option go_package = "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/common";
 
-// DeploymentSource points to one version (running or target) of an
-// application's manifests and configuration inside a Git repository, used as
-// input for plugins to plan and execute deployments.
 message DeploymentSource {
   // The application directory where the source code is located.
   string application_directory = 1;

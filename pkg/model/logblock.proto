@@ -19,15 +19,12 @@ option go_package = "github.com/pipe-cd/pipecd/pkg/model";
 
 import "validate/validate.proto";
 
-// LogSeverity represents the severity level of a single log block.
 enum LogSeverity {
     INFO = 0;
     SUCCESS = 1;
     ERROR = 2;
 }
 
-// LogBlock is one chunk of a stage's execution log, ordered by index within
-// the stage and appended to incrementally as the stage runs.
 message LogBlock {
     // The index of log block.
     int64 index = 1;

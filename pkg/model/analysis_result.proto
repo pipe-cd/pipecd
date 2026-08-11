@@ -31,10 +31,7 @@ message DataPoint {
 }
 */
 
-// AnalysisResult stores the outcome of the most recent successful automated
-// analysis stage for an application, used as a baseline for future analyses.
 message AnalysisResult {
-    // Unix time when the analyzed metrics range starts.
     int64 start_time  = 1 [(validate.rules).int64.gt = 0];
     // TODO: Support previous analysis by saving the latest successful metrics
     //AnalysisDataSourceType data_source_type = 2 [(validate.rules).enum.defined_only = true];

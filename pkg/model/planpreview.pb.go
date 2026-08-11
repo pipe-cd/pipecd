@@ -35,8 +35,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// PlanPreviewCommandResult is the result of a single BUILD_PLAN_PREVIEW
-// command handled by one piped, covering every application that piped manages.
 type PlanPreviewCommandResult struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -128,7 +126,6 @@ func (x *PlanPreviewCommandResult) GetPipedName() string {
 	return ""
 }
 
-// ApplicationPlanPreviewResult is the plan preview result for a single application.
 type ApplicationPlanPreviewResult struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -332,9 +329,6 @@ func (x *ApplicationPlanPreviewResult) GetCreatedAt() int64 {
 	return 0
 }
 
-// PluginPlanPreviewResult is the plan preview result produced by a single
-// plugin for one application, since an application may be managed by
-// multiple plugins (e.g. deployment plugin and analysis plugin).
 type PluginPlanPreviewResult struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

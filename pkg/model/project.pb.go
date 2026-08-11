@@ -36,7 +36,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Provider selects which single sign-on backend is used.
 type ProjectSSOConfig_Provider int32
 
 const (
@@ -153,7 +152,6 @@ func (ProjectRBACResource_ResourceType) EnumDescriptor() ([]byte, []int) {
 	return file_pkg_model_project_proto_rawDescGZIP(), []int{6, 0}
 }
 
-// Action represents an operation that can be permitted on a resource.
 type ProjectRBACPolicy_Action int32
 
 const (
@@ -424,8 +422,6 @@ func (x *ProjectStaticUser) GetPasswordHash() string {
 	return ""
 }
 
-// ProjectSSOConfig holds the single sign-on configuration for a project.
-// Only the section matching `provider` is used; the others are ignored.
 type ProjectSSOConfig struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -506,8 +502,6 @@ func (x *ProjectSSOConfig) GetOidc() *ProjectSSOConfig_Oidc {
 	return nil
 }
 
-// ProjectRBACConfig maps each built-in RBAC level to the name of the custom
-// role that should be treated as having that level's permissions.
 type ProjectRBACConfig struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -754,8 +748,6 @@ func (x *ProjectRBACResource) GetLabels() map[string]string {
 	return nil
 }
 
-// ProjectRBACPolicy grants the given actions on the given resources; it is
-// one clause of a ProjectRBACRole.
 type ProjectRBACPolicy struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -813,7 +805,6 @@ func (x *ProjectRBACPolicy) GetActions() []ProjectRBACPolicy_Action {
 	return nil
 }
 
-// GitHub holds the configuration for authenticating via a GitHub OAuth app.
 type ProjectSSOConfig_GitHub struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -898,7 +889,6 @@ func (x *ProjectSSOConfig_GitHub) GetProxyUrl() string {
 	return ""
 }
 
-// Google holds the configuration for authenticating via a Google OAuth app.
 type ProjectSSOConfig_Google struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -956,8 +946,6 @@ func (x *ProjectSSOConfig_Google) GetClientSecret() string {
 	return ""
 }
 
-// Oidc holds the configuration for authenticating via a generic OpenID
-// Connect provider.
 type ProjectSSOConfig_Oidc struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

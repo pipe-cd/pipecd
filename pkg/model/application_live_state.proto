@@ -47,8 +47,6 @@ message ApplicationLiveStateSnapshot {
     ApplicationLiveState application_live_state = 16;
 }
 
-// ApplicationLiveStateVersion identifies a specific live state snapshot so
-// that out-of-order or duplicate reports can be detected and discarded.
 message ApplicationLiveStateVersion {
     // Timestamp when the snapshot is created.
     int64 timestamp = 1 [(validate.rules).int64.gt = 0];
@@ -60,8 +58,6 @@ message KubernetesApplicationLiveState {
     repeated KubernetesResourceState resources = 1;
 }
 
-// TerraformApplicationLiveState is the live state of a Terraform application.
-// Terraform does not expose per-resource live state, so this is currently empty.
 message TerraformApplicationLiveState {
 }
 
@@ -77,9 +73,6 @@ message LambdaApplicationLiveState {
     repeated LambdaResourceState resources = 1;
 }
 
-// ApplicationLiveState is the plugin-arch representation of an application's
-// live state, used in place of the platform-specific *ApplicationLiveState
-// messages for plugin-based pipeds.
 message ApplicationLiveState {
     repeated ResourceState resources = 1;
 
@@ -92,8 +85,6 @@ message ApplicationLiveState {
     Status health_status = 2;
 }
 
-// ResourceState is the plugin-arch representation of the state of a single
-// deployed resource, used in place of the platform-specific *ResourceState messages.
 message ResourceState {
     enum HealthStatus {
         UNKNOWN = 0;
@@ -160,9 +151,6 @@ message KubernetesResourceState {
     int64 updated_at = 15 [(validate.rules).int64.gt = 0];
 }
 
-// KubernetesResourceStateEvent represents an incremental change to a single
-// Kubernetes resource's state, used to update the cached application-resource-tree
-// without requiring a full ApplicationLiveStateSnapshot report.
 message KubernetesResourceStateEvent {
     enum Type {
         ADD_OR_UPDATED = 0;

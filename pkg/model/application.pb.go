@@ -91,8 +91,6 @@ func (ApplicationSyncStatus) EnumDescriptor() ([]byte, []int) {
 	return file_pkg_model_application_proto_rawDescGZIP(), []int{0}
 }
 
-// Application represents a registered deployment target managed by a piped.
-// It is the top-level unit users interact with to trigger and track deployments.
 type Application struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -418,9 +416,6 @@ func (x *ApplicationSyncState) GetTimestamp() int64 {
 	return 0
 }
 
-// ApplicationDeploymentReference holds a lightweight summary of one
-// deployment, embedded in Application to describe its most recently
-// successful or triggered deployment without requiring a separate lookup.
 type ApplicationDeploymentReference struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

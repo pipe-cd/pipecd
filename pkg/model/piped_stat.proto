@@ -19,12 +19,8 @@ option go_package = "github.com/pipe-cd/pipecd/pkg/model";
 
 import "validate/validate.proto";
 
-// PipedStat holds the raw metrics snapshot periodically reported by a piped
-// via ReportStat, pushed to the metrics collector for monitoring.
 message PipedStat {
     string piped_id = 1 [(validate.rules).string.min_len = 1];
-    // The metrics byte sequence, in OpenMetrics format.
     bytes metrics = 2;
-    // Unix time when the snapshot was taken.
     int64 timestamp = 10 [(validate.rules).int64.gt = 0];
 }

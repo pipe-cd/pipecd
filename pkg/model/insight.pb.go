@@ -35,8 +35,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// InsightMetricsKind represents a DORA/productivity metric that can be
-// requested via GetInsightData.
 type InsightMetricsKind int32
 
 const (
@@ -92,8 +90,6 @@ func (InsightMetricsKind) EnumDescriptor() ([]byte, []int) {
 	return file_pkg_model_insight_proto_rawDescGZIP(), []int{0}
 }
 
-// InsightResultType indicates whether an insight query result is a single
-// vector or a matrix of multiple labeled sample streams.
 type InsightResultType int32
 
 const (
@@ -140,7 +136,6 @@ func (InsightResultType) EnumDescriptor() ([]byte, []int) {
 	return file_pkg_model_insight_proto_rawDescGZIP(), []int{1}
 }
 
-// InsightResolution is the time granularity of the returned insight data points.
 type InsightResolution int32
 
 const (
@@ -187,8 +182,6 @@ func (InsightResolution) EnumDescriptor() ([]byte, []int) {
 	return file_pkg_model_insight_proto_rawDescGZIP(), []int{2}
 }
 
-// InsightApplicationCountLabelKey enumerates the well-known label keys used
-// in InsightApplicationCount.labels.
 type InsightApplicationCountLabelKey int32
 
 const (
@@ -235,16 +228,13 @@ func (InsightApplicationCountLabelKey) EnumDescriptor() ([]byte, []int) {
 	return file_pkg_model_insight_proto_rawDescGZIP(), []int{3}
 }
 
-// InsightDataPoint is a single metric value at a specific point in time.
 type InsightDataPoint struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Unix time (seconds) this data point represents.
-	Timestamp int64 `protobuf:"varint,1,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	// The metric value at this timestamp.
-	Value float32 `protobuf:"fixed32,2,opt,name=value,proto3" json:"value,omitempty"`
+	Timestamp int64   `protobuf:"varint,1,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Value     float32 `protobuf:"fixed32,2,opt,name=value,proto3" json:"value,omitempty"`
 }
 
 func (x *InsightDataPoint) Reset() {
@@ -293,8 +283,6 @@ func (x *InsightDataPoint) GetValue() float32 {
 	return 0
 }
 
-// InsightSample is a single labeled data point, used when the query result
-// type is VECTOR.
 type InsightSample struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -350,8 +338,6 @@ func (x *InsightSample) GetDataPoint() *InsightDataPoint {
 	return nil
 }
 
-// InsightSampleStream is a labeled series of data points over time, used
-// when the query result type is MATRIX.
 type InsightSampleStream struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -407,8 +393,6 @@ func (x *InsightSampleStream) GetDataPoints() []*InsightDataPoint {
 	return nil
 }
 
-// InsightApplicationCount is the number of applications matching a given set
-// of labels, e.g. grouped by kind or active status.
 type InsightApplicationCount struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

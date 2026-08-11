@@ -35,7 +35,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// CommandStatus represents the handling status of a command.
 type CommandStatus int32
 
 const (
@@ -366,7 +365,6 @@ func (x *Command) GetUpdatedAt() int64 {
 	return 0
 }
 
-// SyncApplication is the payload for a SYNC_APPLICATION command.
 type Command_SyncApplication struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -422,7 +420,6 @@ func (x *Command_SyncApplication) GetSyncStrategy() SyncStrategy {
 	return SyncStrategy_AUTO
 }
 
-// UpdateApplicationConfig is the payload for an UPDATE_APPLICATION_CONFIG command.
 type Command_UpdateApplicationConfig struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -486,7 +483,6 @@ func (x *Command_UpdateApplicationConfig) GetConfig() string {
 	return ""
 }
 
-// CancelDeployment is the payload for a CANCEL_DEPLOYMENT command.
 type Command_CancelDeployment struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -554,7 +550,6 @@ func (x *Command_CancelDeployment) GetForceNoRollback() bool {
 	return false
 }
 
-// ApproveStage is the payload for an APPROVE_STAGE command.
 type Command_ApproveStage struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -610,7 +605,6 @@ func (x *Command_ApproveStage) GetStageId() string {
 	return ""
 }
 
-// BuildPlanPreview is the payload for a BUILD_PLAN_PREVIEW command.
 type Command_BuildPlanPreview struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -691,7 +685,6 @@ func (x *Command_BuildPlanPreview) GetTimeout() int64 {
 	return 0
 }
 
-// ChainSyncApplication is the payload for a CHAIN_SYNC_APPLICATION command.
 type Command_ChainSyncApplication struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -765,7 +758,6 @@ func (x *Command_ChainSyncApplication) GetSyncStrategy() SyncStrategy {
 	return SyncStrategy_AUTO
 }
 
-// SkipStage is the payload for a SKIP_STAGE command.
 type Command_SkipStage struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -821,7 +813,6 @@ func (x *Command_SkipStage) GetStageId() string {
 	return ""
 }
 
-// RestartPiped is the payload for a RESTART_PIPED command.
 type Command_RestartPiped struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

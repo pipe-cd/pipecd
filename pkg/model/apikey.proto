@@ -19,10 +19,7 @@ option go_package = "github.com/pipe-cd/pipecd/pkg/model";
 
 import "validate/validate.proto";
 
-// APIKey represents a key used to authenticate external callers, such as
-// pipectl, against the control plane's API service.
 message APIKey {
-    // Role restricts which operations a key can perform.
     enum Role {
         READ_ONLY = 0;
         READ_WRITE = 1;

@@ -122,8 +122,6 @@ message Deployment {
     int64 updated_at = 102 [(validate.rules).int64.gte = 0];
 }
 
-// DeployTargets lists the deploy target names a single plugin should use
-// when deploying an application.
 message DeployTargets {
     repeated string deploy_targets = 1;
 }

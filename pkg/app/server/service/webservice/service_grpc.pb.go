@@ -22,116 +22,67 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type WebServiceClient interface {
-	// RegisterPiped registers a new piped to the caller's project and returns
-	// its generated ID together with a newly issued piped key.
-	// The returned key is shown to the user only once and must be stored by the piped.
+	// Piped
 	RegisterPiped(ctx context.Context, in *RegisterPipedRequest, opts ...grpc.CallOption) (*RegisterPipedResponse, error)
 	UpdatePiped(ctx context.Context, in *UpdatePipedRequest, opts ...grpc.CallOption) (*UpdatePipedResponse, error)
-	// RecreatePipedKey issues a new key for the given piped without removing the
-	// existing ones, allowing key rotation without downtime. Old keys must be
-	// removed afterward via DeleteOldPipedKeys once the piped has adopted the new key.
 	RecreatePipedKey(ctx context.Context, in *RecreatePipedKeyRequest, opts ...grpc.CallOption) (*RecreatePipedKeyResponse, error)
-	// DeleteOldPipedKeys removes all but the most recently created key of the given piped.
-	// This is intended to be called after a key rotation initiated by RecreatePipedKey
-	// has been confirmed to be in use.
 	DeleteOldPipedKeys(ctx context.Context, in *DeleteOldPipedKeysRequest, opts ...grpc.CallOption) (*DeleteOldPipedKeysResponse, error)
 	EnablePiped(ctx context.Context, in *EnablePipedRequest, opts ...grpc.CallOption) (*EnablePipedResponse, error)
 	DisablePiped(ctx context.Context, in *DisablePipedRequest, opts ...grpc.CallOption) (*DisablePipedResponse, error)
 	ListPipeds(ctx context.Context, in *ListPipedsRequest, opts ...grpc.CallOption) (*ListPipedsResponse, error)
 	GetPiped(ctx context.Context, in *GetPipedRequest, opts ...grpc.CallOption) (*GetPipedResponse, error)
-	// UpdatePipedDesiredVersion sets the version that the given pipeds should be
-	// running. Piped launcher periodically checks this value and restarts the
-	// piped process with the desired version when it differs from the current one.
 	UpdatePipedDesiredVersion(ctx context.Context, in *UpdatePipedDesiredVersionRequest, opts ...grpc.CallOption) (*UpdatePipedDesiredVersionResponse, error)
-	// RestartPiped requests the given piped to restart itself by enqueueing a
-	// RESTART_PIPED command that the piped will pick up and execute.
 	RestartPiped(ctx context.Context, in *RestartPipedRequest, opts ...grpc.CallOption) (*RestartPipedResponse, error)
 	ListReleasedVersions(ctx context.Context, in *ListReleasedVersionsRequest, opts ...grpc.CallOption) (*ListReleasedVersionsResponse, error)
 	ListDeprecatedNotes(ctx context.Context, in *ListDeprecatedNotesRequest, opts ...grpc.CallOption) (*ListDeprecatedNotesResponse, error)
+	// Application
 	AddApplication(ctx context.Context, in *AddApplicationRequest, opts ...grpc.CallOption) (*AddApplicationResponse, error)
 	UpdateApplication(ctx context.Context, in *UpdateApplicationRequest, opts ...grpc.CallOption) (*UpdateApplicationResponse, error)
 	EnableApplication(ctx context.Context, in *EnableApplicationRequest, opts ...grpc.CallOption) (*EnableApplicationResponse, error)
-	// DisableApplication disables the given application. A disabled application
-	// is excluded from the list piped fetches to manage and from sync operations.
 	DisableApplication(ctx context.Context, in *DisableApplicationRequest, opts ...grpc.CallOption) (*DisableApplicationResponse, error)
-	// DeleteApplication permanently removes the given application and its
-	// registration from the project. This does not affect resources already
-	// deployed to the target platform.
 	DeleteApplication(ctx context.Context, in *DeleteApplicationRequest, opts ...grpc.CallOption) (*DeleteApplicationResponse, error)
 	ListApplications(ctx context.Context, in *ListApplicationsRequest, opts ...grpc.CallOption) (*ListApplicationsResponse, error)
-	// SyncApplication triggers a new deployment to sync the given application to
-	// its latest configured state. It returns the ID of the command that piped
-	// must pick up and execute asynchronously.
 	SyncApplication(ctx context.Context, in *SyncApplicationRequest, opts ...grpc.CallOption) (*SyncApplicationResponse, error)
 	GetApplication(ctx context.Context, in *GetApplicationRequest, opts ...grpc.CallOption) (*GetApplicationResponse, error)
-	// GenerateApplicationSealedSecret encrypts the given plaintext data using the
-	// public key/service account of the specified piped so that it can be safely
-	// committed to Git as a sealed secret and later decrypted only by that piped.
 	GenerateApplicationSealedSecret(ctx context.Context, in *GenerateApplicationSealedSecretRequest, opts ...grpc.CallOption) (*GenerateApplicationSealedSecretResponse, error)
-	// ListUnregisteredApplications returns the applications that piped has found
-	// configured in Git repositories but that have not been registered to the
-	// control plane yet.
 	ListUnregisteredApplications(ctx context.Context, in *ListUnregisteredApplicationsRequest, opts ...grpc.CallOption) (*ListUnregisteredApplicationsResponse, error)
+	// Deployment
 	ListDeployments(ctx context.Context, in *ListDeploymentsRequest, opts ...grpc.CallOption) (*ListDeploymentsResponse, error)
 	GetDeployment(ctx context.Context, in *GetDeploymentRequest, opts ...grpc.CallOption) (*GetDeploymentResponse, error)
-	// GetStageLog returns the log blocks recorded so far for the given stage
-	// execution, starting from the given offset index. Callers should poll this
-	// RPC and use the returned `completed` flag to know when no more logs will arrive.
 	GetStageLog(ctx context.Context, in *GetStageLogRequest, opts ...grpc.CallOption) (*GetStageLogResponse, error)
-	// CancelDeployment requests the cancellation of the given running deployment.
-	// At most one of `force_rollback` and `force_no_rollback` may be set to
-	// override the default rollback behavior configured for the pipeline.
 	CancelDeployment(ctx context.Context, in *CancelDeploymentRequest, opts ...grpc.CallOption) (*CancelDeploymentResponse, error)
 	SkipStage(ctx context.Context, in *SkipStageRequest, opts ...grpc.CallOption) (*SkipStageResponse, error)
 	ApproveStage(ctx context.Context, in *ApproveStageRequest, opts ...grpc.CallOption) (*ApproveStageResponse, error)
-	// ListDeploymentTraces returns the deployment traces that belong to the
-	// caller's project together with the deployments each trace produced,
-	// optionally filtered by the given options.
+	// Deployment tracing
 	ListDeploymentTraces(ctx context.Context, in *ListDeploymentTracesRequest, opts ...grpc.CallOption) (*ListDeploymentTracesResponse, error)
+	// ApplicationLiveState
 	GetApplicationLiveState(ctx context.Context, in *GetApplicationLiveStateRequest, opts ...grpc.CallOption) (*GetApplicationLiveStateResponse, error)
+	// Account
 	GetProject(ctx context.Context, in *GetProjectRequest, opts ...grpc.CallOption) (*GetProjectResponse, error)
 	UpdateProjectStaticAdmin(ctx context.Context, in *UpdateProjectStaticAdminRequest, opts ...grpc.CallOption) (*UpdateProjectStaticAdminResponse, error)
 	EnableStaticAdmin(ctx context.Context, in *EnableStaticAdminRequest, opts ...grpc.CallOption) (*EnableStaticAdminResponse, error)
-	// DisableStaticAdmin disables login via the static admin username/password
-	// for the caller's project. This is expected to be used once SSO has been
-	// configured and verified.
 	DisableStaticAdmin(ctx context.Context, in *DisableStaticAdminRequest, opts ...grpc.CallOption) (*DisableStaticAdminResponse, error)
 	UpdateProjectSSOConfig(ctx context.Context, in *UpdateProjectSSOConfigRequest, opts ...grpc.CallOption) (*UpdateProjectSSOConfigResponse, error)
 	UpdateProjectRBACConfig(ctx context.Context, in *UpdateProjectRBACConfigRequest, opts ...grpc.CallOption) (*UpdateProjectRBACConfigResponse, error)
 	GetMe(ctx context.Context, in *GetMeRequest, opts ...grpc.CallOption) (*GetMeResponse, error)
 	AddProjectRBACRole(ctx context.Context, in *AddProjectRBACRoleRequest, opts ...grpc.CallOption) (*AddProjectRBACRoleResponse, error)
-	// UpdateProjectRBACRole replaces the policies of an existing custom RBAC role.
 	UpdateProjectRBACRole(ctx context.Context, in *UpdateProjectRBACRoleRequest, opts ...grpc.CallOption) (*UpdateProjectRBACRoleResponse, error)
-	// DeleteProjectRBACRole removes an existing custom RBAC role from the
-	// caller's project. Built-in roles cannot be removed this way.
 	DeleteProjectRBACRole(ctx context.Context, in *DeleteProjectRBACRoleRequest, opts ...grpc.CallOption) (*DeleteProjectRBACRoleResponse, error)
-	// AddProjectUserGroup maps an SSO group to an RBAC role so that members of
-	// that SSO group are granted the role upon login.
 	AddProjectUserGroup(ctx context.Context, in *AddProjectUserGroupRequest, opts ...grpc.CallOption) (*AddProjectUserGroupResponse, error)
 	DeleteProjectUserGroup(ctx context.Context, in *DeleteProjectUserGroupRequest, opts ...grpc.CallOption) (*DeleteProjectUserGroupResponse, error)
-	// GetCommand returns the current status and result of a previously issued
-	// command, identified by the command ID returned from the RPC that created it.
-	// This RPC is intentionally excluded from RBAC checks so any authenticated
-	// caller can poll for the outcome of a command they triggered.
+	// Command
 	GetCommand(ctx context.Context, in *GetCommandRequest, opts ...grpc.CallOption) (*GetCommandResponse, error)
-	// GenerateAPIKey issues a new API key with the given role for the caller's
-	// project. The returned key value is shown only once and must be stored by the caller.
+	// API Key
 	GenerateAPIKey(ctx context.Context, in *GenerateAPIKeyRequest, opts ...grpc.CallOption) (*GenerateAPIKeyResponse, error)
-	// DisableAPIKey disables the given API key, preventing it from
-	// authenticating future requests. Disabling is permanent and cannot be undone.
 	DisableAPIKey(ctx context.Context, in *DisableAPIKeyRequest, opts ...grpc.CallOption) (*DisableAPIKeyResponse, error)
 	ListAPIKeys(ctx context.Context, in *ListAPIKeysRequest, opts ...grpc.CallOption) (*ListAPIKeysResponse, error)
-	// GetInsightData returns time-series insight metrics, such as deployment
-	// frequency or change failure rate, for the caller's project within the
-	// given time range and resolution.
+	// Insights
 	GetInsightData(ctx context.Context, in *GetInsightDataRequest, opts ...grpc.CallOption) (*GetInsightDataResponse, error)
-	// GetInsightApplicationCount returns the current number of applications in
-	// the caller's project, grouped by attributes such as kind and active status.
 	GetInsightApplicationCount(ctx context.Context, in *GetInsightApplicationCountRequest, opts ...grpc.CallOption) (*GetInsightApplicationCountResponse, error)
-	// ListDeploymentChains returns the deployment chains that belong to the
-	// caller's project, ordered from newest to oldest.
+	// DeploymentChain
 	ListDeploymentChains(ctx context.Context, in *ListDeploymentChainsRequest, opts ...grpc.CallOption) (*ListDeploymentChainsResponse, error)
 	GetDeploymentChain(ctx context.Context, in *GetDeploymentChainRequest, opts ...grpc.CallOption) (*GetDeploymentChainResponse, error)
+	// Events
 	ListEvents(ctx context.Context, in *ListEventsRequest, opts ...grpc.CallOption) (*ListEventsResponse, error)
 }
 
@@ -606,116 +557,67 @@ func (c *webServiceClient) ListEvents(ctx context.Context, in *ListEventsRequest
 // All implementations must embed UnimplementedWebServiceServer
 // for forward compatibility
 type WebServiceServer interface {
-	// RegisterPiped registers a new piped to the caller's project and returns
-	// its generated ID together with a newly issued piped key.
-	// The returned key is shown to the user only once and must be stored by the piped.
+	// Piped
 	RegisterPiped(context.Context, *RegisterPipedRequest) (*RegisterPipedResponse, error)
 	UpdatePiped(context.Context, *UpdatePipedRequest) (*UpdatePipedResponse, error)
-	// RecreatePipedKey issues a new key for the given piped without removing the
-	// existing ones, allowing key rotation without downtime. Old keys must be
-	// removed afterward via DeleteOldPipedKeys once the piped has adopted the new key.
 	RecreatePipedKey(context.Context, *RecreatePipedKeyRequest) (*RecreatePipedKeyResponse, error)
-	// DeleteOldPipedKeys removes all but the most recently created key of the given piped.
-	// This is intended to be called after a key rotation initiated by RecreatePipedKey
-	// has been confirmed to be in use.
 	DeleteOldPipedKeys(context.Context, *DeleteOldPipedKeysRequest) (*DeleteOldPipedKeysResponse, error)
 	EnablePiped(context.Context, *EnablePipedRequest) (*EnablePipedResponse, error)
 	DisablePiped(context.Context, *DisablePipedRequest) (*DisablePipedResponse, error)
 	ListPipeds(context.Context, *ListPipedsRequest) (*ListPipedsResponse, error)
 	GetPiped(context.Context, *GetPipedRequest) (*GetPipedResponse, error)
-	// UpdatePipedDesiredVersion sets the version that the given pipeds should be
-	// running. Piped launcher periodically checks this value and restarts the
-	// piped process with the desired version when it differs from the current one.
 	UpdatePipedDesiredVersion(context.Context, *UpdatePipedDesiredVersionRequest) (*UpdatePipedDesiredVersionResponse, error)
-	// RestartPiped requests the given piped to restart itself by enqueueing a
-	// RESTART_PIPED command that the piped will pick up and execute.
 	RestartPiped(context.Context, *RestartPipedRequest) (*RestartPipedResponse, error)
 	ListReleasedVersions(context.Context, *ListReleasedVersionsRequest) (*ListReleasedVersionsResponse, error)
 	ListDeprecatedNotes(context.Context, *ListDeprecatedNotesRequest) (*ListDeprecatedNotesResponse, error)
+	// Application
 	AddApplication(context.Context, *AddApplicationRequest) (*AddApplicationResponse, error)
 	UpdateApplication(context.Context, *UpdateApplicationRequest) (*UpdateApplicationResponse, error)
 	EnableApplication(context.Context, *EnableApplicationRequest) (*EnableApplicationResponse, error)
-	// DisableApplication disables the given application. A disabled application
-	// is excluded from the list piped fetches to manage and from sync operations.
 	DisableApplication(context.Context, *DisableApplicationRequest) (*DisableApplicationResponse, error)
-	// DeleteApplication permanently removes the given application and its
-	// registration from the project. This does not affect resources already
-	// deployed to the target platform.
 	DeleteApplication(context.Context, *DeleteApplicationRequest) (*DeleteApplicationResponse, error)
 	ListApplications(context.Context, *ListApplicationsRequest) (*ListApplicationsResponse, error)
-	// SyncApplication triggers a new deployment to sync the given application to
-	// its latest configured state. It returns the ID of the command that piped
-	// must pick up and execute asynchronously.
 	SyncApplication(context.Context, *SyncApplicationRequest) (*SyncApplicationResponse, error)
 	GetApplication(context.Context, *GetApplicationRequest) (*GetApplicationResponse, error)
-	// GenerateApplicationSealedSecret encrypts the given plaintext data using the
-	// public key/service account of the specified piped so that it can be safely
-	// committed to Git as a sealed secret and later decrypted only by that piped.
 	GenerateApplicationSealedSecret(context.Context, *GenerateApplicationSealedSecretRequest) (*GenerateApplicationSealedSecretResponse, error)
-	// ListUnregisteredApplications returns the applications that piped has found
-	// configured in Git repositories but that have not been registered to the
-	// control plane yet.
 	ListUnregisteredApplications(context.Context, *ListUnregisteredApplicationsRequest) (*ListUnregisteredApplicationsResponse, error)
+	// Deployment
 	ListDeployments(context.Context, *ListDeploymentsRequest) (*ListDeploymentsResponse, error)
 	GetDeployment(context.Context, *GetDeploymentRequest) (*GetDeploymentResponse, error)
-	// GetStageLog returns the log blocks recorded so far for the given stage
-	// execution, starting from the given offset index. Callers should poll this
-	// RPC and use the returned `completed` flag to know when no more logs will arrive.
 	GetStageLog(context.Context, *GetStageLogRequest) (*GetStageLogResponse, error)
-	// CancelDeployment requests the cancellation of the given running deployment.
-	// At most one of `force_rollback` and `force_no_rollback` may be set to
-	// override the default rollback behavior configured for the pipeline.
 	CancelDeployment(context.Context, *CancelDeploymentRequest) (*CancelDeploymentResponse, error)
 	SkipStage(context.Context, *SkipStageRequest) (*SkipStageResponse, error)
 	ApproveStage(context.Context, *ApproveStageRequest) (*ApproveStageResponse, error)
-	// ListDeploymentTraces returns the deployment traces that belong to the
-	// caller's project together with the deployments each trace produced,
-	// optionally filtered by the given options.
+	// Deployment tracing
 	ListDeploymentTraces(context.Context, *ListDeploymentTracesRequest) (*ListDeploymentTracesResponse, error)
+	// ApplicationLiveState
 	GetApplicationLiveState(context.Context, *GetApplicationLiveStateRequest) (*GetApplicationLiveStateResponse, error)
+	// Account
 	GetProject(context.Context, *GetProjectRequest) (*GetProjectResponse, error)
 	UpdateProjectStaticAdmin(context.Context, *UpdateProjectStaticAdminRequest) (*UpdateProjectStaticAdminResponse, error)
 	EnableStaticAdmin(context.Context, *EnableStaticAdminRequest) (*EnableStaticAdminResponse, error)
-	// DisableStaticAdmin disables login via the static admin username/password
-	// for the caller's project. This is expected to be used once SSO has been
-	// configured and verified.
 	DisableStaticAdmin(context.Context, *DisableStaticAdminRequest) (*DisableStaticAdminResponse, error)
 	UpdateProjectSSOConfig(context.Context, *UpdateProjectSSOConfigRequest) (*UpdateProjectSSOConfigResponse, error)
 	UpdateProjectRBACConfig(context.Context, *UpdateProjectRBACConfigRequest) (*UpdateProjectRBACConfigResponse, error)
 	GetMe(context.Context, *GetMeRequest) (*GetMeResponse, error)
 	AddProjectRBACRole(context.Context, *AddProjectRBACRoleRequest) (*AddProjectRBACRoleResponse, error)
-	// UpdateProjectRBACRole replaces the policies of an existing custom RBAC role.
 	UpdateProjectRBACRole(context.Context, *UpdateProjectRBACRoleRequest) (*UpdateProjectRBACRoleResponse, error)
-	// DeleteProjectRBACRole removes an existing custom RBAC role from the
-	// caller's project. Built-in roles cannot be removed this way.
 	DeleteProjectRBACRole(context.Context, *DeleteProjectRBACRoleRequest) (*DeleteProjectRBACRoleResponse, error)
-	// AddProjectUserGroup maps an SSO group to an RBAC role so that members of
-	// that SSO group are granted the role upon login.
 	AddProjectUserGroup(context.Context, *AddProjectUserGroupRequest) (*AddProjectUserGroupResponse, error)
 	DeleteProjectUserGroup(context.Context, *DeleteProjectUserGroupRequest) (*DeleteProjectUserGroupResponse, error)
-	// GetCommand returns the current status and result of a previously issued
-	// command, identified by the command ID returned from the RPC that created it.
-	// This RPC is intentionally excluded from RBAC checks so any authenticated
-	// caller can poll for the outcome of a command they triggered.
+	// Command
 	GetCommand(context.Context, *GetCommandRequest) (*GetCommandResponse, error)
-	// GenerateAPIKey issues a new API key with the given role for the caller's
-	// project. The returned key value is shown only once and must be stored by the caller.
+	// API Key
 	GenerateAPIKey(context.Context, *GenerateAPIKeyRequest) (*GenerateAPIKeyResponse, error)
-	// DisableAPIKey disables the given API key, preventing it from
-	// authenticating future requests. Disabling is permanent and cannot be undone.
 	DisableAPIKey(context.Context, *DisableAPIKeyRequest) (*DisableAPIKeyResponse, error)
 	ListAPIKeys(context.Context, *ListAPIKeysRequest) (*ListAPIKeysResponse, error)
-	// GetInsightData returns time-series insight metrics, such as deployment
-	// frequency or change failure rate, for the caller's project within the
-	// given time range and resolution.
+	// Insights
 	GetInsightData(context.Context, *GetInsightDataRequest) (*GetInsightDataResponse, error)
-	// GetInsightApplicationCount returns the current number of applications in
-	// the caller's project, grouped by attributes such as kind and active status.
 	GetInsightApplicationCount(context.Context, *GetInsightApplicationCountRequest) (*GetInsightApplicationCountResponse, error)
-	// ListDeploymentChains returns the deployment chains that belong to the
-	// caller's project, ordered from newest to oldest.
+	// DeploymentChain
 	ListDeploymentChains(context.Context, *ListDeploymentChainsRequest) (*ListDeploymentChainsResponse, error)
 	GetDeploymentChain(context.Context, *GetDeploymentChainRequest) (*GetDeploymentChainResponse, error)
+	// Events
 	ListEvents(context.Context, *ListEventsRequest) (*ListEventsResponse, error)
 	mustEmbedUnimplementedWebServiceServer()
 }

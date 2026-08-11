@@ -35,7 +35,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// LogSeverity represents the severity level of a single log block.
 type LogSeverity int32
 
 const (
@@ -85,8 +84,6 @@ func (LogSeverity) EnumDescriptor() ([]byte, []int) {
 	return file_pkg_model_logblock_proto_rawDescGZIP(), []int{0}
 }
 
-// LogBlock is one chunk of a stage's execution log, ordered by index within
-// the stage and appended to incrementally as the stage runs.
 type LogBlock struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

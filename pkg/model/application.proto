@@ -21,8 +21,6 @@ import "validate/validate.proto";
 import "pkg/model/common.proto";
 import "pkg/model/deployment.proto";
 
-// Application represents a registered deployment target managed by a piped.
-// It is the top-level unit users interact with to trigger and track deployments.
 message Application {
     reserved 3;
 
@@ -106,9 +104,6 @@ message ApplicationSyncState {
     int64 timestamp = 5 [(validate.rules).int64.gt = 0];
 }
 
-// ApplicationDeploymentReference holds a lightweight summary of one
-// deployment, embedded in Application to describe its most recently
-// successful or triggered deployment without requiring a separate lookup.
 message ApplicationDeploymentReference {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     DeploymentTrigger trigger = 2 [(validate.rules).message.required = true];

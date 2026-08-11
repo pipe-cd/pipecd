@@ -50,7 +50,6 @@ message Piped {
     // SecretEncryption holds the configuration used to encrypt application
     // secrets so that only this piped can decrypt them.
     message SecretEncryption {
-        // The encryption method: one of "KEY_PAIR", "GCP_KMS", "AWS_KMS", "NONE".
         string type = 1 [(validate.rules).string = {in: ["KEY_PAIR", "GCP_KMS", "AWS_KMS", "NONE"]}];
         // The public key used to encrypt secrets when type is "KEY_PAIR".
         string public_key = 2;
@@ -58,8 +57,6 @@ message Piped {
         string encrypt_service_account = 3;
     }
 
-    // ConnectionStatus represents whether the piped is currently connected to
-    // the control plane.
     enum ConnectionStatus {
         UNKNOWN = 0;
         ONLINE = 1;

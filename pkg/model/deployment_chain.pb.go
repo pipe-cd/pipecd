@@ -167,8 +167,6 @@ func (ChainBlockStatus) EnumDescriptor() ([]byte, []int) {
 	return file_pkg_model_deployment_chain_proto_rawDescGZIP(), []int{1}
 }
 
-// DeploymentChain groups the deployments of multiple applications that must
-// be rolled out together in an ordered sequence of blocks.
 type DeploymentChain struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -272,7 +270,6 @@ func (x *DeploymentChain) GetUpdatedAt() int64 {
 	return 0
 }
 
-// ChainApplicationRef identifies the application a deployment chain node targets.
 type ChainApplicationRef struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -328,8 +325,6 @@ func (x *ChainApplicationRef) GetApplicationName() string {
 	return ""
 }
 
-// ChainDeploymentRef references the deployment triggered for a deployment
-// chain node, once it has been created.
 type ChainDeploymentRef struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -393,16 +388,13 @@ func (x *ChainDeploymentRef) GetStatusReason() string {
 	return ""
 }
 
-// ChainNode represents one application within a deployment chain block,
-// together with the deployment triggered for it, if any.
 type ChainNode struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
 	ApplicationRef *ChainApplicationRef `protobuf:"bytes,1,opt,name=application_ref,json=applicationRef,proto3" json:"application_ref,omitempty"`
-	// Set once the deployment for this node has been triggered.
-	DeploymentRef *ChainDeploymentRef `protobuf:"bytes,2,opt,name=deployment_ref,json=deploymentRef,proto3" json:"deployment_ref,omitempty"`
+	DeploymentRef  *ChainDeploymentRef  `protobuf:"bytes,2,opt,name=deployment_ref,json=deploymentRef,proto3" json:"deployment_ref,omitempty"`
 }
 
 func (x *ChainNode) Reset() {
@@ -451,9 +443,6 @@ func (x *ChainNode) GetDeploymentRef() *ChainDeploymentRef {
 	return nil
 }
 
-// ChainBlock represents one group of applications that are deployed
-// concurrently as a unit within a deployment chain. Blocks are processed in
-// order; a block only starts once the previous block has completed successfully.
 type ChainBlock struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

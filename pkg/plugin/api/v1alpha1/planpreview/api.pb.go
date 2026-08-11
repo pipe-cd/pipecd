@@ -176,7 +176,6 @@ func (x *GetPlanPreviewResponse) GetResults() []*PlanPreviewResult {
 	return nil
 }
 
-// PlanPreviewResult is the plan preview result for a single deploy target.
 type PlanPreviewResult struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

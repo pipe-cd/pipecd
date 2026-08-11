@@ -35,9 +35,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// DeploymentTrace groups every deployment triggered, directly or through a
-// deployment chain, by a single commit. It is used to show a unified view of
-// all deployments that resulted from one change.
 type DeploymentTrace struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

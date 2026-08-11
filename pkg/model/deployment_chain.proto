@@ -39,8 +39,6 @@ enum ChainStatus {
     DEPLOYMENT_CHAIN_CANCELLED = 4;
 }
 
-// DeploymentChain groups the deployments of multiple applications that must
-// be rolled out together in an ordered sequence of blocks.
 message DeploymentChain {
     // The generated unique identifier.
     string id = 1 [(validate.rules).string.min_len = 1];
@@ -59,25 +57,19 @@ message DeploymentChain {
     int64 updated_at = 102 [(validate.rules).int64.gt = 0];
 }
 
-// ChainApplicationRef identifies the application a deployment chain node targets.
 message ChainApplicationRef {
     string application_id = 1 [(validate.rules).string.min_len = 1];
     string application_name = 2;
 }
 
-// ChainDeploymentRef references the deployment triggered for a deployment
-// chain node, once it has been created.
 message ChainDeploymentRef {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     DeploymentStatus status = 2 [(validate.rules).enum.defined_only = true];
     string status_reason = 3;
 }
 
-// ChainNode represents one application within a deployment chain block,
-// together with the deployment triggered for it, if any.
 message ChainNode {
     ChainApplicationRef application_ref = 1 [(validate.rules).message.required = true];
-    // Set once the deployment for this node has been triggered.
     ChainDeploymentRef deployment_ref = 2;
 }
 
@@ -100,9 +92,6 @@ enum ChainBlockStatus {
     DEPLOYMENT_BLOCK_CANCELLED = 4;
 }
 
-// ChainBlock represents one group of applications that are deployed
-// concurrently as a unit within a deployment chain. Blocks are processed in
-// order; a block only starts once the previous block has completed successfully.
 message ChainBlock {
     // List of applications which should be deployed at the same time in chain.
     repeated ChainNode nodes = 1;

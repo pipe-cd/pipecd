@@ -19,8 +19,6 @@ option go_package = "github.com/pipe-cd/pipecd/pkg/app/helloworld/service";
 
 import "validate/validate.proto";
 
-// HelloWorld is a minimal example service used to verify gRPC wiring and as a
-// reference implementation for new services.
 service HelloWorld {
     rpc Hello(HelloRequest) returns (HelloResponse) {}
 }

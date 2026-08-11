@@ -74,8 +74,6 @@ message DetermineStrategyResponse {
 }
 
 message BuildPipelineSyncStagesRequest {
-    // StageConfig describes one non-rollback stage as listed in the
-    // application's pipeline configuration.
     message StageConfig {
         reserved 1;
 
@@ -91,10 +89,7 @@ message BuildPipelineSyncStagesRequest {
         // The configuration of the stage.
         bytes config = 6;
     }
-    // Whether to build the rollback stages instead of the forward stages.
     bool rollback = 1;
-    // The non-rollback stages, listed in execution order, whose names are
-    // among those returned by FetchDefinedStages for this plugin.
     repeated StageConfig stages = 2;
 }
 
@@ -104,7 +99,6 @@ message BuildPipelineSyncStagesResponse {
 }
 
 message BuildQuickSyncStagesRequest {
-    // Whether to build the rollback stages instead of the forward stages.
     bool rollback = 1;
 }
 
@@ -131,8 +125,6 @@ message ExecuteStageResponse {
     string message = 2;
 }
 
-// PlanPluginInput carries the data a plugin needs to determine artifact
-// versions, sync strategy, or pipeline stages for a deployment being planned.
 message PlanPluginInput {
     // The deployment to build a plan for.
     model.Deployment deployment = 1 [(validate.rules).message.required = true];
@@ -142,8 +134,6 @@ message PlanPluginInput {
     grpc.plugin.common.v1alpha1.DeploymentSource target_deployment_source = 3;
 }
 
-// ExecutePluginInput carries the data a plugin needs to execute a single
-// stage of a deployment.
 message ExecutePluginInput {
     // The deployment to execute the stage for.
     model.Deployment deployment = 1 [(validate.rules).message.required = true];

@@ -35,9 +35,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// NotificationEventType enumerates every kind of internal event that can
-// trigger a notification (e.g. to Slack) once matched against the project's
-// configured notification routes.
 type NotificationEventType int32
 
 const (
@@ -140,9 +137,6 @@ func (NotificationEventType) EnumDescriptor() ([]byte, []int) {
 	return file_pkg_model_notificationevent_proto_rawDescGZIP(), []int{0}
 }
 
-// NotificationEventGroup categorizes NotificationEventType values into
-// broader groups, used to route notifications by group instead of listing
-// every individual event type.
 type NotificationEventGroup int32
 
 const (
@@ -403,11 +397,10 @@ type NotificationEventDeploymentApproved struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Deployment *Deployment `protobuf:"bytes,1,opt,name=deployment,proto3" json:"deployment,omitempty"`
-	// The user who approved the stage.
-	Approver          string   `protobuf:"bytes,3,opt,name=approver,proto3" json:"approver,omitempty"`
-	MentionedAccounts []string `protobuf:"bytes,4,rep,name=mentioned_accounts,json=mentionedAccounts,proto3" json:"mentioned_accounts,omitempty"`
-	MentionedGroups   []string `protobuf:"bytes,5,rep,name=mentioned_groups,json=mentionedGroups,proto3" json:"mentioned_groups,omitempty"`
+	Deployment        *Deployment `protobuf:"bytes,1,opt,name=deployment,proto3" json:"deployment,omitempty"`
+	Approver          string      `protobuf:"bytes,3,opt,name=approver,proto3" json:"approver,omitempty"`
+	MentionedAccounts []string    `protobuf:"bytes,4,rep,name=mentioned_accounts,json=mentionedAccounts,proto3" json:"mentioned_accounts,omitempty"`
+	MentionedGroups   []string    `protobuf:"bytes,5,rep,name=mentioned_groups,json=mentionedGroups,proto3" json:"mentioned_groups,omitempty"`
 }
 
 func (x *NotificationEventDeploymentApproved) Reset() {
@@ -585,11 +578,10 @@ type NotificationEventDeploymentFailed struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Deployment *Deployment `protobuf:"bytes,1,opt,name=deployment,proto3" json:"deployment,omitempty"`
-	// The human-readable reason why the deployment failed.
-	Reason            string   `protobuf:"bytes,3,opt,name=reason,proto3" json:"reason,omitempty"`
-	MentionedAccounts []string `protobuf:"bytes,4,rep,name=mentioned_accounts,json=mentionedAccounts,proto3" json:"mentioned_accounts,omitempty"`
-	MentionedGroups   []string `protobuf:"bytes,5,rep,name=mentioned_groups,json=mentionedGroups,proto3" json:"mentioned_groups,omitempty"`
+	Deployment        *Deployment `protobuf:"bytes,1,opt,name=deployment,proto3" json:"deployment,omitempty"`
+	Reason            string      `protobuf:"bytes,3,opt,name=reason,proto3" json:"reason,omitempty"`
+	MentionedAccounts []string    `protobuf:"bytes,4,rep,name=mentioned_accounts,json=mentionedAccounts,proto3" json:"mentioned_accounts,omitempty"`
+	MentionedGroups   []string    `protobuf:"bytes,5,rep,name=mentioned_groups,json=mentionedGroups,proto3" json:"mentioned_groups,omitempty"`
 }
 
 func (x *NotificationEventDeploymentFailed) Reset() {
@@ -657,11 +649,10 @@ type NotificationEventDeploymentCancelled struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Deployment *Deployment `protobuf:"bytes,1,opt,name=deployment,proto3" json:"deployment,omitempty"`
-	// The user who cancelled the deployment.
-	Commander         string   `protobuf:"bytes,3,opt,name=commander,proto3" json:"commander,omitempty"`
-	MentionedAccounts []string `protobuf:"bytes,4,rep,name=mentioned_accounts,json=mentionedAccounts,proto3" json:"mentioned_accounts,omitempty"`
-	MentionedGroups   []string `protobuf:"bytes,5,rep,name=mentioned_groups,json=mentionedGroups,proto3" json:"mentioned_groups,omitempty"`
+	Deployment        *Deployment `protobuf:"bytes,1,opt,name=deployment,proto3" json:"deployment,omitempty"`
+	Commander         string      `protobuf:"bytes,3,opt,name=commander,proto3" json:"commander,omitempty"`
+	MentionedAccounts []string    `protobuf:"bytes,4,rep,name=mentioned_accounts,json=mentionedAccounts,proto3" json:"mentioned_accounts,omitempty"`
+	MentionedGroups   []string    `protobuf:"bytes,5,rep,name=mentioned_groups,json=mentionedGroups,proto3" json:"mentioned_groups,omitempty"`
 }
 
 func (x *NotificationEventDeploymentCancelled) Reset() {
@@ -787,21 +778,17 @@ func (x *NotificationEventDeploymentWaitApproval) GetMentionedGroups() []string 
 	return nil
 }
 
-// NotificationEventDeploymentTriggerFailed is the payload for a
-// EVENT_DEPLOYMENT_TRIGGER_FAILED notification, sent when piped fails to
-// trigger a deployment for a commit, e.g. due to an invalid configuration.
 type NotificationEventDeploymentTriggerFailed struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Application   *Application `protobuf:"bytes,1,opt,name=application,proto3" json:"application,omitempty"`
-	CommitHash    string       `protobuf:"bytes,2,opt,name=commit_hash,json=commitHash,proto3" json:"commit_hash,omitempty"`
-	CommitMessage string       `protobuf:"bytes,3,opt,name=commit_message,json=commitMessage,proto3" json:"commit_message,omitempty"`
-	// The human-readable reason why triggering failed.
-	Reason            string   `protobuf:"bytes,4,opt,name=reason,proto3" json:"reason,omitempty"`
-	MentionedAccounts []string `protobuf:"bytes,5,rep,name=mentioned_accounts,json=mentionedAccounts,proto3" json:"mentioned_accounts,omitempty"`
-	MentionedGroups   []string `protobuf:"bytes,6,rep,name=mentioned_groups,json=mentionedGroups,proto3" json:"mentioned_groups,omitempty"`
+	Application       *Application `protobuf:"bytes,1,opt,name=application,proto3" json:"application,omitempty"`
+	CommitHash        string       `protobuf:"bytes,2,opt,name=commit_hash,json=commitHash,proto3" json:"commit_hash,omitempty"`
+	CommitMessage     string       `protobuf:"bytes,3,opt,name=commit_message,json=commitMessage,proto3" json:"commit_message,omitempty"`
+	Reason            string       `protobuf:"bytes,4,opt,name=reason,proto3" json:"reason,omitempty"`
+	MentionedAccounts []string     `protobuf:"bytes,5,rep,name=mentioned_accounts,json=mentionedAccounts,proto3" json:"mentioned_accounts,omitempty"`
+	MentionedGroups   []string     `protobuf:"bytes,6,rep,name=mentioned_groups,json=mentionedGroups,proto3" json:"mentioned_groups,omitempty"`
 }
 
 func (x *NotificationEventDeploymentTriggerFailed) Reset() {

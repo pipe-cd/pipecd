@@ -57,7 +57,6 @@ service PluginService {
     rpc PutApplicationSharedObject(PutApplicationSharedObjectRequest) returns (PutApplicationSharedObjectResponse) {}
 }
 
-// NOTE: DecryptSecretRequest/Response are not currently wired to a PluginService RPC.
 message DecryptSecretRequest {
     string secret = 1 [(validate.rules).string.min_len = 1];
 }
@@ -97,7 +96,6 @@ message InstallToolResponse {
 message ReportStageLogsRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
-    // The retry attempt number of the stage these logs belong to.
     int32 retried_count = 3;
     repeated model.LogBlock blocks = 4;
 }
@@ -108,11 +106,8 @@ message ReportStageLogsResponse {
 message ReportStageLogsFromLastCheckpointRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
-    // The retry attempt number of the stage these logs belong to.
     int32 retried_count = 3;
-    // The full log blocks recorded since the most recently saved checkpoint.
     repeated model.LogBlock blocks = 4;
-    // Whether the stage has finished producing logs.
     bool completed = 5;
 }
 
@@ -122,21 +117,17 @@ message ReportStageLogsFromLastCheckpointResponse {
 message GetStageMetadataRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
-    // The metadata key to look up.
     string key = 3 [(validate.rules).string.min_len = 1];
 }
 
 message GetStageMetadataResponse {
-    // The stored value. Meaningful only when found is true.
     string value = 1;
-    // Whether a value was found for the given key.
     bool found = 2;
 }
 
 message PutStageMetadataRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
-    // The metadata key to set. An existing value for the same key is overwritten.
     string key = 3 [(validate.rules).string.min_len = 1];
     string value = 4;
 }
@@ -147,8 +138,6 @@ message PutStageMetadataResponse {
 message PutStageMetadataMultiRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
-    // The metadata key/value pairs to set. Existing values for the same keys
-    // are overwritten.
     map<string, string> metadata = 3;
 }
 
@@ -160,14 +149,11 @@ message GetDeploymentPluginMetadataRequest {
     // Plugin name to distinguish which plugin manages the metadata.
     // e.g. "plugin-kubernetes", "plugin-wait-stage"
     string plugin_name = 2;
-    // The metadata key to look up.
     string key = 3 [(validate.rules).string.min_len = 1];
 }
 
 message GetDeploymentPluginMetadataResponse {
-    // The stored value. Meaningful only when found is true.
     string value = 1;
-    // Whether a value was found for the given key.
     bool found = 2;
 }
 
@@ -176,7 +162,6 @@ message PutDeploymentPluginMetadataRequest {
     // Plugin name to distinguish which plugin manages the metadata.
     // e.g. "plugin-kubernetes", "plugin-wait-stage"
     string plugin_name = 2 [(validate.rules).string.min_len = 1];
-    // The metadata key to set. An existing value for the same key is overwritten.
     string key = 3 [(validate.rules).string.min_len = 1];
     string value = 4;
 }
@@ -189,8 +174,6 @@ message PutDeploymentPluginMetadataMultiRequest {
     // Plugin name to distinguish which plugin manages the metadata.
     // e.g. "plugin-kubernetes", "plugin-wait-stage"
     string plugin_name = 2 [(validate.rules).string.min_len = 1];
-    // The metadata key/value pairs to set. Existing values for the same keys
-    // are overwritten.
     map<string, string> metadata = 3;
 }
 
@@ -199,14 +182,11 @@ message PutDeploymentPluginMetadataMultiResponse {
 
 message GetDeploymentSharedMetadataRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
-    // The metadata key to look up.
     string key = 2 [(validate.rules).string.min_len = 1];
 }
 
 message GetDeploymentSharedMetadataResponse {
-    // The stored value. Meaningful only when found is true.
     string value = 1;
-    // Whether a value was found for the given key.
     bool found = 2;
 }
 
@@ -221,9 +201,7 @@ message ListStageCommandsResponse {
 
 message GetApplicationSharedObjectRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
-    // The plugin that originally stored the object.
     string plugin_name = 2 [(validate.rules).string.min_len = 1];
-    // The key the object was stored under.
     string key = 3 [(validate.rules).string.min_len = 1];
 }
 
@@ -233,9 +211,7 @@ message GetApplicationSharedObjectResponse {
 
 message PutApplicationSharedObjectRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
-    // The plugin storing the object.
     string plugin_name = 2 [(validate.rules).string.min_len = 1];
-    // The key to store the object under.
     string key = 3 [(validate.rules).string.min_len = 1];
     bytes object = 4;
 }

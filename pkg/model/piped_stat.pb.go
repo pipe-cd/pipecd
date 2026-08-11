@@ -35,18 +35,14 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// PipedStat holds the raw metrics snapshot periodically reported by a piped
-// via ReportStat, pushed to the metrics collector for monitoring.
 type PipedStat struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	PipedId string `protobuf:"bytes,1,opt,name=piped_id,json=pipedId,proto3" json:"piped_id,omitempty"`
-	// The metrics byte sequence, in OpenMetrics format.
-	Metrics []byte `protobuf:"bytes,2,opt,name=metrics,proto3" json:"metrics,omitempty"`
-	// Unix time when the snapshot was taken.
-	Timestamp int64 `protobuf:"varint,10,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	PipedId   string `protobuf:"bytes,1,opt,name=piped_id,json=pipedId,proto3" json:"piped_id,omitempty"`
+	Metrics   []byte `protobuf:"bytes,2,opt,name=metrics,proto3" json:"metrics,omitempty"`
+	Timestamp int64  `protobuf:"varint,10,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 }
 
 func (x *PipedStat) Reset() {

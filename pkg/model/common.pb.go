@@ -311,8 +311,6 @@ func (ArtifactVersion_Kind) EnumDescriptor() ([]byte, []int) {
 	return file_pkg_model_common_proto_rawDescGZIP(), []int{3, 0}
 }
 
-// ApplicationGitPath points to the location of an application's
-// configuration and manifests inside a Git repository.
 type ApplicationGitPath struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -393,7 +391,6 @@ type ApplicationGitRepository struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The unique identifier of the repository, as configured in the piped config.
 	Id     string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Remote string `protobuf:"bytes,2,opt,name=remote,proto3" json:"remote,omitempty"`
 	Branch string `protobuf:"bytes,3,opt,name=branch,proto3" json:"branch,omitempty"`
@@ -581,12 +578,10 @@ type ArtifactVersion struct {
 	// TODO: This should be removed since the value is not used anywhere.
 	//
 	// Deprecated: Do not use.
-	Kind ArtifactVersion_Kind `protobuf:"varint,1,opt,name=kind,proto3,enum=model.ArtifactVersion_Kind" json:"kind,omitempty"`
-	// The version string of the artifact, e.g. a container image tag.
-	Version string `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
-	Name    string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	// The URL to view the artifact, if applicable.
-	Url string `protobuf:"bytes,4,opt,name=url,proto3" json:"url,omitempty"`
+	Kind    ArtifactVersion_Kind `protobuf:"varint,1,opt,name=kind,proto3,enum=model.ArtifactVersion_Kind" json:"kind,omitempty"`
+	Version string               `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
+	Name    string               `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Url     string               `protobuf:"bytes,4,opt,name=url,proto3" json:"url,omitempty"`
 }
 
 func (x *ArtifactVersion) Reset() {

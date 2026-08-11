@@ -581,8 +581,6 @@ func (x *Deployment) GetUpdatedAt() int64 {
 	return 0
 }
 
-// DeployTargets lists the deploy target names a single plugin should use
-// when deploying an application.
 type DeployTargets struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

@@ -49,8 +49,6 @@ enum ApplicationActiveStatus {
     DELETED = 2;
 }
 
-// ApplicationGitPath points to the location of an application's
-// configuration and manifests inside a Git repository.
 message ApplicationGitPath {
     reserved 3;
 
@@ -65,7 +63,6 @@ message ApplicationGitPath {
 // ApplicationGitRepository identifies a Git repository that piped is
 // configured to watch for application manifests.
 message ApplicationGitRepository {
-    // The unique identifier of the repository, as configured in the piped config.
     string id = 1 [(validate.rules).string.min_len = 1];
     string remote = 2;
     string branch = 3;
@@ -115,9 +112,7 @@ message ArtifactVersion {
     }
     // TODO: This should be removed since the value is not used anywhere.
     Kind kind = 1 [(validate.rules).enum.defined_only = true, deprecated = true];
-    // The version string of the artifact, e.g. a container image tag.
     string version = 2;
     string name = 3;
-    // The URL to view the artifact, if applicable.
     string url = 4;
 }
