@@ -30,7 +30,7 @@ PipeCD consists of several components:
 
 | Component | Description |
 |-----------|-------------|
-| [cmd/pipecd](https://github.com/pipe-cd/pipecd/tree/master/cmd/pipecd) | Control Plane — manages deployment data and provides gRPC API |
+| [cmd/controlplane](https://github.com/pipe-cd/pipecd/tree/master/cmd/controlplane) | Control Plane — manages deployment data and provides gRPC API |
 | [cmd/piped](https://github.com/pipe-cd/pipecd/tree/master/cmd/piped) | Piped agent — runs in your cluster |
 | [cmd/pipectl](https://github.com/pipe-cd/pipecd/tree/master/cmd/pipectl) | Command-line tool |
 | [cmd/launcher](https://github.com/pipe-cd/pipecd/tree/master/cmd/launcher) | Command executor for remote upgrade |
@@ -73,13 +73,13 @@ make down/local-cluster
 #### 3. Run Control Plane
 
 ```bash
-make run/pipecd
+make run/controlplane
 ```
 
 To stop:
 
 ```bash
-make stop/pipecd
+make stop/controlplane
 ```
 
 #### 4. Port Forward
@@ -87,7 +87,7 @@ make stop/pipecd
 In a separate terminal:
 
 ```bash
-kubectl port-forward -n pipecd svc/pipecd 8080
+kubectl port-forward -n pipecd svc/controlplane 8080
 ```
 
 #### 5. Access the UI
