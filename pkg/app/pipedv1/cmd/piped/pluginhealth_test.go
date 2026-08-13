@@ -48,12 +48,12 @@ func TestPluginHealthConcurrentAccess(t *testing.T) {
 	var wg sync.WaitGroup
 	for i := 0; i < 50; i++ {
 		wg.Add(1)
-		go func(i int) {
+		go func() {
 			defer wg.Done()
 			h.MarkUnhealthy("plugin", errors.New("boom"))
 			h.Healthy()
 			h.UnhealthyNames()
-		}(i)
+		}()
 	}
 	wg.Wait()
 
