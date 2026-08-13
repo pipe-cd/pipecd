@@ -42,7 +42,7 @@ type store struct {
 	resources map[string]appResource
 	mu        sync.RWMutex
 
-	events         []model.KubernetesResourceStateEvent
+	events         []*model.KubernetesResourceStateEvent
 	iterators      map[int]int
 	nextIteratorID int
 	eventMu        sync.Mutex
@@ -120,8 +120,9 @@ func (s *store) addResource(obj *unstructured.Unstructured, appID string) {
 				appID:         appID,
 				managingNodes: make(map[string]node),
 				dependedNodes: make(map[string]node),
-				version: model.ApplicationLiveStateVersion{
+				version: &model.ApplicationLiveStateVersion{
 					Timestamp: now.Unix(),
+					Index:     0,
 				},
 			}
 			s.apps[appID] = app
@@ -130,7 +131,7 @@ func (s *store) addResource(obj *unstructured.Unstructured, appID string) {
 
 		// Append the resource to the application's managingNodes.
 		if event, ok := app.addManagingResource(uid, key, obj, now); ok {
-			s.addEvent(event)
+			s.addEvent(&event)
 		}
 
 		// And update the resources.
@@ -154,7 +155,7 @@ func (s *store) addResource(obj *unstructured.Unstructured, appID string) {
 		s.mu.RUnlock()
 		if ok {
 			if event, ok := app.addDependedResource(uid, key, obj, now); ok {
-				s.addEvent(event)
+				s.addEvent(&event)
 			}
 		}
 	}
@@ -206,7 +207,7 @@ func (s *store) onDeleteResource(obj *unstructured.Unstructured) {
 		s.mu.RUnlock()
 		if ok {
 			if event, ok := app.deleteManagingResource(uid, key, now); ok {
-				s.addEvent(event)
+				s.addEvent(&event)
 			}
 		}
 		return
@@ -240,7 +241,7 @@ func (s *store) onDeleteResource(obj *unstructured.Unstructured) {
 	s.mu.RUnlock()
 	if ok {
 		if event, ok := app.deleteDependedResource(uid, key, now); ok {
-			s.addEvent(event)
+			s.addEvent(&event)
 		}
 	}
 }
@@ -289,8 +290,7 @@ func (s *store) getAppLiveState(appID string) (AppState, bool) {
 		resources      = make([]*model.KubernetesResourceState, 0, len(nodes))
 	)
 	for i := range nodes {
-		state := nodes[i].state
-		resources = append(resources, &state)
+		resources = append(resources, nodes[i].state)
 	}
 
 	return AppState{
@@ -315,7 +315,7 @@ func (s *store) GetAppLiveManifests(appID string) []provider.Manifest {
 	return manifests
 }
 
-func (s *store) addEvent(event model.KubernetesResourceStateEvent) {
+func (s *store) addEvent(event *model.KubernetesResourceStateEvent) {
 	s.eventMu.Lock()
 	defer s.eventMu.Unlock()
 
@@ -328,7 +328,7 @@ func (s *store) addEvent(event model.KubernetesResourceStateEvent) {
 	s.removeOldEvents(num)
 }
 
-func (s *store) nextEvents(iteratorID, maxNum int) []model.KubernetesResourceStateEvent {
+func (s *store) nextEvents(iteratorID, maxNum int) []*model.KubernetesResourceStateEvent {
 	s.eventMu.Lock()
 	defer s.eventMu.Unlock()
 

@@ -36,10 +36,10 @@ func TestResourceMatcher(t *testing.T) {
 			name: "empty config",
 			cfg:  config.KubernetesAppStateInformer{},
 			gvks: map[schema.GroupVersionKind]bool{
-				{"pipecd.dev", "v1beta1", "Foo"}:       false,
-				{"", "v1", "Foo"}:                      false,
-				{"", "v1", "Service"}:                  true,
-				{"networking.k8s.io", "v1", "Ingress"}: true,
+				{Group: "pipecd.dev", Version: "v1beta1", Kind: "Foo"}:       false,
+				{Group: "", Version: "v1", Kind: "Foo"}:                      false,
+				{Group: "", Version: "v1", Kind: "Service"}:                  true,
+				{Group: "networking.k8s.io", Version: "v1", Kind: "Ingress"}: true,
 			},
 		},
 		{
@@ -51,9 +51,9 @@ func TestResourceMatcher(t *testing.T) {
 				},
 			},
 			gvks: map[schema.GroupVersionKind]bool{
-				{"pipecd.dev", "v1beta1", "Foo"}:  true,
-				{"pipecd.dev", "v1alpha1", "Foo"}: true,
-				{"pipecd.dev", "v1alpha1", "Bar"}: false,
+				{Group: "pipecd.dev", Version: "v1beta1", Kind: "Foo"}:  true,
+				{Group: "pipecd.dev", Version: "v1alpha1", Kind: "Foo"}: true,
+				{Group: "pipecd.dev", Version: "v1alpha1", Kind: "Bar"}: false,
 			},
 		},
 		{
@@ -65,9 +65,9 @@ func TestResourceMatcher(t *testing.T) {
 				},
 			},
 			gvks: map[schema.GroupVersionKind]bool{
-				{"apps", "v1", "ReplicaSet"}:           true,
-				{"apps", "v1", "Deployment"}:           false,
-				{"networking.k8s.io", "v1", "Ingress"}: false,
+				{Group: "apps", Version: "v1", Kind: "ReplicaSet"}:           true,
+				{Group: "apps", Version: "v1", Kind: "Deployment"}:           false,
+				{Group: "networking.k8s.io", Version: "v1", Kind: "Ingress"}: false,
 			},
 		},
 	}
