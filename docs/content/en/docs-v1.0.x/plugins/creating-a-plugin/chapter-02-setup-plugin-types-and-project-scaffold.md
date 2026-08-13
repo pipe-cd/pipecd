@@ -50,7 +50,7 @@ A DeploymentPlugin has three type parameters. They let the SDK decode configurat
 - **DeployTargetConfig** is configuration for a single deploy target, such as the connection details for a cluster.
 - **ApplicationConfigSpec** is per-application configuration, such as the files an application deploys.
 
-The file plugin needs neither plugin-wide nor deploy-target configuration, so its Config and DeployTargetConfig are empty. You define all three types in the next chapter.
+The file plugin needs neither plugin-wide nor deploy-target configuration, so its Config and DeployTargetConfig are empty. You define all three types in the [next chapter](../chapter-03-config-types-and-empty-implementation/#define-the-configuration-types).
 
 To satisfy the DeploymentPlugin interface, you implement the following methods:
 
