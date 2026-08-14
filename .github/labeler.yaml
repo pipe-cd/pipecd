@@ -1,35 +1,60 @@
 area/go:
   - changed-files:
-      - any-glob-to-any-file: ['cmd/*', 'cmd/**/*', 'pkg/*', 'pkg/**/*']
+      - any-glob-to-any-file:
+          - 'cmd/*'
+          - 'cmd/**/*'
+          - 'pkg/*'
+          - 'pkg/**/*'
 
 area/web:
   - changed-files:
-      - any-glob-to-any-file: ['web/*', 'web/**/*']
+      - any-glob-to-any-file:
+          - 'web/*'
+          - 'web/**/*'
 
 area/build:
   - changed-files:
-      - any-glob-to-any-file: ['hack/*', '.github/*', '.github/**/*', 'Makefile', 'local/*']
+      - any-glob-to-any-file:
+          - 'hack/*'
+          - '.github/*'
+          - '.github/**/*'
+          - 'Makefile'
+          - 'local/*'
 
 area/manifests:
   - changed-files:
-      - any-glob-to-any-file: ['manifests/**/*']
+      - any-glob-to-any-file:
+          - 'manifests/**/*'
 
 area/docs:
   - changed-files:
-      - any-glob-to-any-file: ['docs/*', 'docs/**/*', 'README.md', 'CONTRIBUTING.md', 'RELEASES.md']
+      - any-glob-to-any-file:
+          - 'docs/*'
+          - 'docs/**/*'
+          - 'README.md'
+          - 'CONTRIBUTING.md'
+          - 'RELEASES.md'
 
 area/examples:
   - changed-files:
-      - any-glob-to-any-file: ['examples/*', 'examples/**/*']
+      - any-glob-to-any-file:
+          - 'examples/*'
+          - 'examples/**/*'
 
 area/tool:
   - changed-files:
-      - any-glob-to-any-file: ['tool/*', 'tool/**/*']
+      - any-glob-to-any-file:
+          - 'tool/*'
+          - 'tool/**/*'
 
 area/pipedv1:
   - changed-files:
-      - any-glob-to-any-file: ['pkg/app/pipedv1/**/*', 'pkg/configv1/*', 'pkg/configv1/**/*']
+      - any-glob-to-any-file:
+          - 'pkg/app/pipedv1/**/*'
+          - 'pkg/configv1/*'
+          - 'pkg/configv1/**/*'
 
 area/plugin-sdk:
   - changed-files:
-      - any-glob-to-any-file: ['pkg/plugin/sdk/**/*']
+      - any-glob-to-any-file:
+          - 'pkg/plugin/sdk/**/*'
