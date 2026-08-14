@@ -23,8 +23,7 @@ import (
 func TestPullFileFromRegistry(t *testing.T) {
 	t.Parallel()
 
-	// OCI_REGISTRY_HOST is set by TestMain in main_test.go
-	ociURL := fmt.Sprintf("oci://%s/test-pull", os.Getenv("OCI_REGISTRY_HOST"))
+	ociURL := requireOCIRegistry(t, "test-pull")
 
 	testcases := pushTestFiles(t, t.TempDir(), ociURL)
 
