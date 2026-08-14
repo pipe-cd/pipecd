@@ -18,7 +18,10 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/exec"
 	"path"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -43,6 +46,49 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
+
+var requiredEnvtestBinaries = []string{
+	"etcd",
+	"kube-apiserver",
+}
+
+func envtestAssetsDir() string {
+	if dir := os.Getenv("KUBEBUILDER_ASSETS"); dir != "" {
+		return dir
+	}
+	return "/usr/local/kubebuilder/bin"
+}
+
+func missingEnvtestBinaries(dir string) []string {
+	missing := make([]string, 0, len(requiredEnvtestBinaries))
+	for _, binary := range requiredEnvtestBinaries {
+		if _, err := os.Stat(filepath.Join(dir, binary)); err != nil {
+			missing = append(missing, binary)
+		}
+	}
+	return missing
+}
+
+func requireEnvtestAssets(t *testing.T) {
+	t.Helper()
+
+	dir := envtestAssetsDir()
+	missing := missingEnvtestBinaries(dir)
+	if len(missing) == 0 {
+		return
+	}
+
+	if os.Getenv("KUBEBUILDER_ASSETS") == "" {
+		for _, binary := range requiredEnvtestBinaries {
+			if _, err := exec.LookPath(binary); err != nil {
+				t.Skipf("skipping envtest-dependent test: missing envtest binaries in %q (%s); run `make test/go` or set KUBEBUILDER_ASSETS", dir, strings.Join(missing, ", "))
+			}
+		}
+		return
+	}
+
+	t.Skipf("skipping envtest-dependent test: KUBEBUILDER_ASSETS=%q is missing %s; run `make test/go` or reinstall envtest assets", dir, strings.Join(missing, ", "))
+}
 
 func TestEnsureSync(t *testing.T) {
 	t.Parallel()
@@ -184,6 +230,8 @@ func TestEnsureSync(t *testing.T) {
 }
 
 func TestExecutor_ensureSync(t *testing.T) {
+	requireEnvtestAssets(t)
+
 	ctrl := gomock.NewController(t)
 
 	// initialize tool registry
@@ -280,6 +328,16 @@ func TestExecutor_ensureSync(t *testing.T) {
 	assert.Equal(t, "apps/v1", deployment.GetAnnotations()["pipecd.dev/original-api-version"])
 	assert.Equal(t, "apps/v1:Deployment:default:simple", deployment.GetAnnotations()["pipecd.dev/resource-key"])
 	assert.Equal(t, "0123456789", deployment.GetAnnotations()["pipecd.dev/commit-hash"])
+}
+
+func TestMissingEnvtestBinaries(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	err := os.WriteFile(filepath.Join(dir, "etcd"), []byte("#!/bin/sh\n"), 0755)
+	require.NoError(t, err)
+
+	assert.Equal(t, []string{"kube-apiserver"}, missingEnvtestBinaries(dir))
 }
 
 func kubeconfigFromRestConfig(restConfig *rest.Config) (string, error) {
