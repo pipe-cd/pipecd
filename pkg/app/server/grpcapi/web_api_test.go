@@ -18,15 +18,22 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 
+	"github.com/pipe-cd/pipecd/pkg/app/server/service/webservice"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/cache/cachetest"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
 	"github.com/pipe-cd/pipecd/pkg/datastore/datastoretest"
+	"github.com/pipe-cd/pipecd/pkg/jwt"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 )
 
 func TestValidateAppBelongsToProject(t *testing.T) {
@@ -389,4 +396,207 @@ func TestValidateApprover(t *testing.T) {
 			assert.Equal(t, tt.wantErr, err != nil)
 		})
 	}
+}
+
+func TestListDeploymentsWithLabelsReturnsStableFilteredPages(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	firstOpts := datastore.ListOptions{
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "ProjectId",
+				Operator: datastore.OperatorEqual,
+				Value:    "project-id",
+			},
+			{
+				Field:    "UpdatedAt",
+				Operator: datastore.OperatorGreaterThanOrEqual,
+				Value:    int64(0),
+			},
+		},
+		Orders: []datastore.Order{
+			{
+				Field:     "UpdatedAt",
+				Direction: datastore.Desc,
+			},
+			{
+				Field:     "Id",
+				Direction: datastore.Asc,
+			},
+		},
+		Limit:  2,
+		Cursor: "",
+	}
+	secondOpts := firstOpts
+	secondOpts.Cursor = "page-2"
+	thirdOpts := firstOpts
+	thirdOpts.Cursor = "page-3"
+
+	store := datastoretest.NewMockDeploymentStore(ctrl)
+	store.EXPECT().
+		List(gomock.Any(), firstOpts).
+		Return([]*model.Deployment{
+			testDeployment("dep-1", 300, map[string]string{"team": "backend"}),
+			testDeployment("dep-2", 299, map[string]string{"team": "frontend"}),
+		}, "page-2", nil)
+	store.EXPECT().
+		List(gomock.Any(), secondOpts).
+		Return([]*model.Deployment{
+			testDeployment("dep-3", 298, map[string]string{"team": "backend"}),
+			testDeployment("dep-4", 297, map[string]string{"team": "backend"}),
+		}, "page-3", nil)
+	store.EXPECT().
+		List(gomock.Any(), secondOpts).
+		Return([]*model.Deployment{
+			testDeployment("dep-3", 298, map[string]string{"team": "backend"}),
+			testDeployment("dep-4", 297, map[string]string{"team": "backend"}),
+		}, "page-3", nil)
+	store.EXPECT().
+		List(gomock.Any(), thirdOpts).
+		Return([]*model.Deployment{}, "", nil)
+
+	api := &WebAPI{
+		deploymentStore: store,
+		logger:          zap.NewNop(),
+	}
+
+	firstResp, err := listDeploymentsWithClaims(t, api, &webservice.ListDeploymentsRequest{
+		PageSize: 2,
+		Options: &webservice.ListDeploymentsRequest_Options{
+			Labels: map[string]string{"team": "backend"},
+		},
+	})
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"dep-1", "dep-3"}, deploymentIDs(firstResp.Deployments))
+
+	cursor, ok, err := decodeListDeploymentsCursor(firstResp.Cursor)
+	assert.NoError(t, err)
+	assert.True(t, ok)
+	assert.Equal(t, listDeploymentsCursor{
+		DatastoreCursor: "page-2",
+		Skip:            1,
+	}, cursor)
+
+	secondResp, err := listDeploymentsWithClaims(t, api, &webservice.ListDeploymentsRequest{
+		PageSize: 2,
+		Cursor:   firstResp.Cursor,
+		Options: &webservice.ListDeploymentsRequest_Options{
+			Labels: map[string]string{"team": "backend"},
+		},
+	})
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"dep-4"}, deploymentIDs(secondResp.Deployments))
+	assert.Equal(t, "", secondResp.Cursor)
+}
+
+func TestListDeploymentsWithLabelsKeepsDatastoreCursorAtPageBoundary(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	opts := datastore.ListOptions{
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "ProjectId",
+				Operator: datastore.OperatorEqual,
+				Value:    "project-id",
+			},
+			{
+				Field:    "UpdatedAt",
+				Operator: datastore.OperatorGreaterThanOrEqual,
+				Value:    int64(0),
+			},
+		},
+		Orders: []datastore.Order{
+			{
+				Field:     "UpdatedAt",
+				Direction: datastore.Desc,
+			},
+			{
+				Field:     "Id",
+				Direction: datastore.Asc,
+			},
+		},
+		Limit:  2,
+		Cursor: "",
+	}
+
+	store := datastoretest.NewMockDeploymentStore(ctrl)
+	store.EXPECT().
+		List(gomock.Any(), opts).
+		Return([]*model.Deployment{
+			testDeployment("dep-1", 300, map[string]string{"team": "backend"}),
+			testDeployment("dep-2", 299, map[string]string{"team": "backend"}),
+		}, "page-2", nil)
+
+	api := &WebAPI{
+		deploymentStore: store,
+		logger:          zap.NewNop(),
+	}
+
+	resp, err := listDeploymentsWithClaims(t, api, &webservice.ListDeploymentsRequest{
+		PageSize: 2,
+		Options: &webservice.ListDeploymentsRequest_Options{
+			Labels: map[string]string{"team": "backend"},
+		},
+	})
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"dep-1", "dep-2"}, deploymentIDs(resp.Deployments))
+	assert.Equal(t, "page-2", resp.Cursor)
+}
+
+func listDeploymentsWithClaims(t *testing.T, api *WebAPI, req *webservice.ListDeploymentsRequest) (*webservice.ListDeploymentsResponse, error) {
+	t.Helper()
+
+	interceptor := rpcauth.JWTUnaryServerInterceptor(
+		staticJWTVerifier{
+			claims: jwt.NewClaims("user-id", "", time.Minute, model.Role{ProjectId: "project-id"}),
+		},
+		allowAllAuthorizer{},
+		zap.NewNop(),
+	)
+
+	ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs("cookie", "token=test-token"))
+	resp, err := interceptor(
+		ctx,
+		req,
+		&grpc.UnaryServerInfo{FullMethod: "/webservice.WebService/ListDeployments"},
+		func(ctx context.Context, req interface{}) (interface{}, error) {
+			return api.ListDeployments(ctx, req.(*webservice.ListDeploymentsRequest))
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return resp.(*webservice.ListDeploymentsResponse), nil
+}
+
+func deploymentIDs(deployments []*model.Deployment) []string {
+	ids := make([]string, 0, len(deployments))
+	for _, d := range deployments {
+		ids = append(ids, d.Id)
+	}
+	return ids
+}
+
+func testDeployment(id string, updatedAt int64, labels map[string]string) *model.Deployment {
+	return &model.Deployment{
+		Id:        id,
+		UpdatedAt: updatedAt,
+		Labels:    labels,
+	}
+}
+
+type staticJWTVerifier struct {
+	claims *jwt.Claims
+}
+
+func (v staticJWTVerifier) Verify(string) (*jwt.Claims, error) {
+	return v.claims, nil
+}
+
+type allowAllAuthorizer struct{}
+
+func (allowAllAuthorizer) Authorize(context.Context, string, model.Role) bool {
+	return true
 }
