@@ -65,11 +65,11 @@ export const TEXT_TO_RBAC_ACTION_TYPE: Record<
   delete: ProjectRBACPolicy.Action.DELETE,
 };
 
-// example: resources=(\*|application|deployment|event|piped|deploymentChain|project|apiKey|insight|,)+;\s*actions=(\*|get|list|create|update|delete|,)+
+// example: resources=(\*|application(\{[^}]*\})?|deployment(\{[^}]*\})?|...|,)+;\s*actions=(\*|get|list|create|update|delete|,)+
 export const POLICIES_STRING_REGEX = new RegExp(
   "resources=(" +
     rbacResourceTypes()
-      .map((v) => v.replace(/\*/, "\\*"))
+      .map((v) => v.replace(/\*/, "\\*") + "(\\{[^}]*\\})?")
       .join("|") +
     "|,)+;\\s*actions=(" +
     rbacActionTypes()
