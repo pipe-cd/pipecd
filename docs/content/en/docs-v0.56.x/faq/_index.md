@@ -51,7 +51,7 @@ You can create a new Piped key. Go to the `Piped` tab at `Settings` page, and cl
 ### 7. What is the strong point if PipeCD is used only for Kubernetes?
 
 - Simple interface, easy to understand no extra CRD required
-- Easy to install, upgrade, and manage (both the ControlPlane and the agent Piped)
+- Easy to install, upgrade, and manage (both the Control Plane and the agent Piped)
 - Not strict depend on any Kubernetes API, not being part of issues for your Kubernetes cluster versioning upgrade
 - Easy to interact with any CI; Plan preview feature gives you an early look at what will be changed in your cluster even before manifests update
 - Insights show metrics like lead time, deployment frequency, MTTR, and change failure rate to measure delivery performance

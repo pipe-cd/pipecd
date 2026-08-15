@@ -1,11 +1,7 @@
----
-title: "CI Overview"
-linkTitle: "CI Overview"
-weight: 30
-description: >
-  An overview of PipeCD’s GitHub Actions CI workflows, what each workflow does,
-  and when it runs.
----
+# CI Overview
+
+An overview of PipeCD’s GitHub Actions CI workflows, what each workflow does,
+and when it runs.
 
 ## Who Is This Document For?
 

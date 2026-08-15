@@ -20,7 +20,7 @@ permissions:
 
 env:
   GO_VERSION: 1.26.2
-  NODE_VERSION: 20.19.0
+  NODE_VERSION: 24.10.0
 
 jobs:
   list-go-modules:
