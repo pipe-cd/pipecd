@@ -47,7 +47,11 @@ The [full contributor guide](https://pipecd.dev/docs-dev/contribution-guidelines
 
 Every Newcomers meeting ends the same way: with people asking where to go next. Here's what I tell them.
 
-`#pipecd` on [CNCF Slack](https://cloud-native.slack.com/) is where most of the day-to-day questions get answered. The broader [PipeCD Development and Community Meeting](https://zoom-lfx.platform.linuxfoundation.org/meeting/96831504919?password=2f60b8ec-5896-40c8-aa1d-d551ab339d00) runs every two weeks with project news and issue triage, notes are at [bit.ly/pipecd-mtg-notes](https://bit.ly/pipecd-mtg-notes). Newcomers meetings themselves happen periodically, not on a fixed schedule, so Slack and the meeting notes are the place to watch for the next date. If you want something more structured, [LFX Mentorship](https://github.com/cncf/mentoring/blob/main/programs/lfx-mentorship/README.md#program-guidelines) is worth a look, and [one mentee wrote honestly about her first month](https://pipecd.dev/blog/2026/04/08/my-first-30-days-as-an-lfx-mentee-with-pipecd/) if you want to know what that actually feels like. And once you've merged 5 PRs across the pipe-cd organization and attended a public community meeting, you're eligible for membership in the GitHub org, though plenty of people contribute happily without ever going that route.
+- `#pipecd` on [CNCF Slack](https://cloud-native.slack.com/) is where most of the day-to-day questions get answered.
+- The broader [PipeCD Development and Community Meeting](https://zoom-lfx.platform.linuxfoundation.org/meeting/96831504919?password=2f60b8ec-5896-40c8-aa1d-d551ab339d00) runs every two weeks with project news and issue triage. Notes are at [bit.ly/pipecd-mtg-notes](https://bit.ly/pipecd-mtg-notes).
+- Newcomers meetings themselves happen periodically, not on a fixed schedule, so Slack and the meeting notes are the place to watch for the next date.
+- If you want something more structured, [LFX Mentorship](https://github.com/cncf/mentoring/blob/main/programs/lfx-mentorship/README.md#program-guidelines) is worth a look, and [one mentee wrote honestly about her first month](https://pipecd.dev/blog/2026/04/08/my-first-30-days-as-an-lfx-mentee-with-pipecd/) if you want to know what that actually feels like.
+- Once you've merged 5 PRs across the pipe-cd organization and attended a public community meeting, you're eligible for membership in the GitHub org, though plenty of people contribute happily without ever going that route.
 
 ## See you at the next one
 
