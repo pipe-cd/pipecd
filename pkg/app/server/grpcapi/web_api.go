@@ -16,6 +16,8 @@ package grpcapi
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"regexp"
@@ -1889,10 +1891,12 @@ func (a *WebAPI) ListEvents(ctx context.Context, req *webservice.ListEventsReque
 	// NOTE: Filtering by labels is done by the application-side because we need to create composite indexes for every combination in the filter.
 	// We don't want to depend on any other search engine, that's why it filters here.
 	filtered := make([]*model.Event, 0, len(events))
-	for _, e := range events {
-		if e.ContainLabels(labels) {
-			filtered = append(filtered, e)
-		}
+	filtered, eventCursor, ok := appendLabelMatchedEvents(filtered, events, labels, pageSize)
+	if ok {
+		return &webservice.ListEventsResponse{
+			Events: filtered,
+			Cursor: eventCursor,
+		}, nil
 	}
 	// Stop running additional queries for more data, and return filtered events immediately with
 	// current cursor if the size before filtering is already less than the page size.
@@ -1914,21 +1918,43 @@ func (a *WebAPI) ListEvents(ctx context.Context, req *webservice.ListEventsReque
 		if len(events) == 0 {
 			break
 		}
-		for _, e := range events {
-			if e.ContainLabels(labels) {
-				filtered = append(filtered, e)
-			}
+		filtered, eventCursor, ok = appendLabelMatchedEvents(filtered, events, labels, pageSize)
+		if ok {
+			return &webservice.ListEventsResponse{
+				Events: filtered,
+				Cursor: eventCursor,
+			}, nil
 		}
 		// We've already specified UpdatedAt >= req.PageMinUpdatedAt, so we need to check just equality.
 		if events[len(events)-1].UpdatedAt == req.PageMinUpdatedAt {
 			break
 		}
 	}
-	// TODO: Think about possibility that the response of ListEvents exceeds the page size
 	return &webservice.ListEventsResponse{
 		Events: filtered,
 		Cursor: cursor,
 	}, nil
+}
+
+func appendLabelMatchedEvents(filtered []*model.Event, events []*model.Event, labels map[string]string, pageSize int) ([]*model.Event, string, bool) {
+	for _, e := range events {
+		if !e.ContainLabels(labels) {
+			continue
+		}
+		filtered = append(filtered, e)
+		if pageSize > 0 && len(filtered) == pageSize {
+			return filtered, makeEventCursor(e), true
+		}
+	}
+	return filtered, "", false
+}
+
+func makeEventCursor(e *model.Event) string {
+	b, _ := json.Marshal(map[string]interface{}{
+		"UpdatedAt": e.UpdatedAt,
+		"Id":        e.Id,
+	})
+	return base64.StdEncoding.EncodeToString(b)
 }
 
 func (a *WebAPI) ListReleasedVersions(ctx context.Context, req *webservice.ListReleasedVersionsRequest) (*webservice.ListReleasedVersionsResponse, error) {
