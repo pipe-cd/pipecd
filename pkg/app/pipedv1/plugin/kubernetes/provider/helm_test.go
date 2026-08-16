@@ -16,6 +16,8 @@ package provider
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -25,6 +27,7 @@ import (
 
 	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry/toolregistrytest"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
 )
 
@@ -82,6 +85,43 @@ func TestTemplateLocalChart_WithNamespace(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, namespace, metadata["namespace"])
 	}
+}
+
+func TestLoginToOCIRegistry_PasswordUsesStdin(t *testing.T) {
+	t.Parallel()
+
+	execPath, argsPath, stdinPath := newFakeHelm(t)
+	helm := NewHelm(execPath, zaptest.NewLogger(t))
+
+	err := helm.LoginToOCIRegistry(t.Context(), "ghcr.io", "test-user", "super-secret")
+	require.NoError(t, err)
+
+	args := readFakeHelmOutput(t, argsPath)
+	assert.NotContains(t, args, "super-secret")
+	assert.Contains(t, args, "--password-stdin")
+	assert.Equal(t, "super-secret", strings.TrimSpace(readFakeHelmOutput(t, stdinPath)))
+}
+
+func TestAddRepository_PasswordUsesStdin(t *testing.T) {
+	t.Parallel()
+
+	execPath, argsPath, stdinPath := newFakeHelm(t)
+	helm := NewHelm(execPath, zaptest.NewLogger(t))
+
+	err := helm.AddRepository(t.Context(), config.HelmChartRepository{
+		Name:     "test-repo",
+		Address:  "https://example.com/charts",
+		Username: "test-user",
+		Password: "super-secret",
+	})
+	require.NoError(t, err)
+
+	args := readFakeHelmOutput(t, argsPath)
+	assert.NotContains(t, args, "super-secret")
+	assert.Contains(t, args, "--username")
+	assert.Contains(t, args, "test-user")
+	assert.Contains(t, args, "--password-stdin")
+	assert.Equal(t, "super-secret", strings.TrimSpace(readFakeHelmOutput(t, stdinPath)))
 }
 
 func TestVerifyHelmValueFilePath(t *testing.T) {
@@ -209,4 +249,30 @@ func TestTemplateRemoteChart(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, "testapp-helloworld", name)
 	}
+}
+
+func newFakeHelm(t *testing.T) (execPath, argsPath, stdinPath string) {
+	t.Helper()
+
+	dir := t.TempDir()
+	argsPath = filepath.Join(dir, "args.txt")
+	stdinPath = filepath.Join(dir, "stdin.txt")
+	execPath = filepath.Join(dir, "helm")
+
+	script := strings.Join([]string{
+		"#!/bin/sh",
+		"printf '%s\\n' \"$@\" > \"" + argsPath + "\"",
+		"cat > \"" + stdinPath + "\"",
+	}, "\n")
+
+	require.NoError(t, os.WriteFile(execPath, []byte(script), 0o755))
+	return execPath, argsPath, stdinPath
+}
+
+func readFakeHelmOutput(t *testing.T, path string) string {
+	t.Helper()
+
+	data, err := os.ReadFile(path)
+	require.NoError(t, err)
+	return string(data)
 }
