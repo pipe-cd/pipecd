@@ -28,6 +28,8 @@ describe("POLICIES_STRING_REGEX", () => {
     "resources=bogus;actions=get", // unknown resource type
     "resources=application;actions=bogus", // unknown action
     "resources=application", // missing actions
+    "resources=application{a=b;c:d};actions=get", // semicolon escapes the label block
+    "resources=application{};actions=get", // empty label block
   ])("does not match invalid policy: %s", (policy) => {
     expect(POLICIES_STRING_REGEX.test(policy)).toBe(false);
   });
