@@ -283,51 +283,48 @@ func (c *client) UpdateFunctionFromSource(ctx context.Context, fm FunctionManife
 }
 
 func (c *client) updateFunctionConfiguration(ctx context.Context, fm FunctionManifest) error {
-	retry := backoff.NewRetry(RequestRetryTime, backoff.NewConstant(RetryIntervalDuration))
-	updateFunctionConfigurationSucceed := false
-	var err error
-	for retry.WaitNext(ctx) {
-		configInput := &lambda.UpdateFunctionConfigurationInput{
-			FunctionName: aws.String(fm.Spec.Name),
-			Role:         aws.String(fm.Spec.Role),
-			MemorySize:   aws.Int32(fm.Spec.Memory),
-			Timeout:      aws.Int32(fm.Spec.Timeout),
-			Runtime:      types.Runtime(fm.Spec.Runtime),
-			Environment: &types.Environment{
-				Variables: fm.Spec.Environments,
-			},
-			Layers: fm.Spec.Layers,
-		}
-		// For zip packing Lambda function code, allow update the function handler
-		// on update the function's manifest.
-		if fm.Spec.Handler != "" {
-			configInput.Handler = aws.String(fm.Spec.Handler)
-		}
-		if fm.Spec.EphemeralStorage != nil {
-			configInput.EphemeralStorage = &types.EphemeralStorage{
-				Size: aws.Int32(fm.Spec.EphemeralStorage.Size),
-			}
-		}
-		if fm.Spec.VPCConfig != nil {
-			configInput.VpcConfig = &types.VpcConfig{
-				SecurityGroupIds: fm.Spec.VPCConfig.SecurityGroupIDs,
-				SubnetIds:        fm.Spec.VPCConfig.SubnetIDs,
-			}
-		}
-		_, err = c.client.UpdateFunctionConfiguration(ctx, configInput)
-		if err != nil {
-			c.logger.Error("Failed to update function configuration")
-		} else {
-			updateFunctionConfigurationSucceed = true
-			break
+	configInput := &lambda.UpdateFunctionConfigurationInput{
+		FunctionName: aws.String(fm.Spec.Name),
+		Role:         aws.String(fm.Spec.Role),
+		MemorySize:   aws.Int32(fm.Spec.Memory),
+		Timeout:      aws.Int32(fm.Spec.Timeout),
+		Runtime:      types.Runtime(fm.Spec.Runtime),
+		Environment: &types.Environment{
+			Variables: fm.Spec.Environments,
+		},
+		Layers: fm.Spec.Layers,
+	}
+	// For zip packing Lambda function code, allow update the function handler
+	// on update the function's manifest.
+	if fm.Spec.Handler != "" {
+		configInput.Handler = aws.String(fm.Spec.Handler)
+	}
+	if fm.Spec.EphemeralStorage != nil {
+		configInput.EphemeralStorage = &types.EphemeralStorage{
+			Size: aws.Int32(fm.Spec.EphemeralStorage.Size),
 		}
 	}
-	if !updateFunctionConfigurationSucceed {
+	if fm.Spec.VPCConfig != nil {
+		configInput.VpcConfig = &types.VpcConfig{
+			SecurityGroupIds: fm.Spec.VPCConfig.SecurityGroupIDs,
+			SubnetIds:        fm.Spec.VPCConfig.SubnetIDs,
+		}
+	}
+
+	_, err := backoff.NewRetry(RequestRetryTime, backoff.NewConstant(RetryIntervalDuration)).Do(ctx, func() (interface{}, error) {
+		_, err := c.client.UpdateFunctionConfiguration(ctx, configInput)
+		if err != nil {
+			c.logger.Error("Failed to update function configuration")
+			return nil, err
+		}
+		return nil, nil
+	})
+	if err != nil {
 		return fmt.Errorf("failed to update configuration for Lambda function %s: %w", fm.Spec.Name, err)
 	}
 
 	// Wait until function updated successfully.
-	retry = backoff.NewRetry(RequestRetryTime, backoff.NewConstant(RetryIntervalDuration))
+	retry := backoff.NewRetry(RequestRetryTime, backoff.NewConstant(RetryIntervalDuration))
 	input := &lambda.GetFunctionInput{
 		FunctionName: aws.String(fm.Spec.Name),
 	}
