@@ -23,28 +23,28 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestWaitNext(t *testing.T) {
+func TestWaitNextInternal(t *testing.T) {
 	var (
 		bo          = NewConstant(time.Millisecond)
-		r           = NewRetry(10, bo)
+		r           = NewRetry(10, bo).(*retry)
 		ctx, cancel = context.WithCancel(context.TODO())
 	)
-	ok := r.WaitNext(ctx)
+	ok := r.waitNext(ctx)
 	assert.Equal(t, true, ok)
 
 	cancel()
-	ok = r.WaitNext(ctx)
+	ok = r.waitNext(ctx)
 	assert.Equal(t, false, ok)
 }
 
-func TestWaitNextCancel(t *testing.T) {
+func TestWaitNextCancelInternal(t *testing.T) {
 	var (
 		bo          = NewConstant(time.Minute)
-		r           = NewRetry(3, bo)
+		r           = NewRetry(3, bo).(*retry)
 		ctx, cancel = context.WithCancel(context.TODO())
 	)
 	cancel()
-	ok := r.WaitNext(ctx)
+	ok := r.waitNext(ctx)
 	assert.Equal(t, false, ok)
 }
 

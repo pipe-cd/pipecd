@@ -674,8 +674,6 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 
 func (c *controller) getMostRecentlySuccessfulDeployment(ctx context.Context, applicationID string) (*model.ApplicationDeploymentReference, error) {
 	var (
-		err   error
-		resp  *pipedservice.GetApplicationMostRecentDeploymentResponse
 		retry = pipedservice.NewRetry(3)
 		req   = &pipedservice.GetApplicationMostRecentDeploymentRequest{
 			ApplicationId: applicationID,
@@ -683,15 +681,17 @@ func (c *controller) getMostRecentlySuccessfulDeployment(ctx context.Context, ap
 		}
 	)
 
-	for retry.WaitNext(ctx) {
-		if resp, err = c.apiClient.GetApplicationMostRecentDeployment(ctx, req); err == nil {
-			return resp.Deployment, nil
+	d, err := retry.Do(ctx, func() (interface{}, error) {
+		resp, err := c.apiClient.GetApplicationMostRecentDeployment(ctx, req)
+		if err != nil {
+			return nil, pipedservice.NewRetriableErr(err)
 		}
-		if !pipedservice.Retriable(err) {
-			return nil, err
-		}
+		return resp.Deployment, nil
+	})
+	if err != nil {
+		return nil, err
 	}
-	return nil, err
+	return d.(*model.ApplicationDeploymentReference), nil
 }
 
 func (c *controller) shouldStartPlanningDeployment(ctx context.Context, d *model.Deployment) (plannable, cancel bool, cancelReason string, err error) {
@@ -715,7 +715,6 @@ func (c *controller) shouldStartPlanningDeployment(ctx context.Context, d *model
 
 func (c *controller) cancelDeployment(ctx context.Context, d *model.Deployment, reason string) error {
 	var (
-		err error
 		req = &pipedservice.ReportDeploymentCompletedRequest{
 			DeploymentId:              d.Id,
 			Status:                    model.DeploymentStatus_DEPLOYMENT_CANCELLED,
@@ -728,12 +727,13 @@ func (c *controller) cancelDeployment(ctx context.Context, d *model.Deployment, 
 		retry = pipedservice.NewRetry(10)
 	)
 
-	for retry.WaitNext(ctx) {
-		if _, err = c.apiClient.ReportDeploymentCompleted(ctx, req); err == nil {
-			return nil
+	_, err := retry.Do(ctx, func() (interface{}, error) {
+		_, err := c.apiClient.ReportDeploymentCompleted(ctx, req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to report deployment status to control-plane: %v", err)
 		}
-		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
-	}
+		return nil, nil
+	})
 	return err
 }
 
@@ -749,7 +749,6 @@ func (l appLiveResourceLister) ListKubernetesResources() ([]provider.Manifest, b
 
 func reportApplicationDeployingStatus(ctx context.Context, c apiClient, appID string, deploying bool) error {
 	var (
-		err   error
 		retry = pipedservice.NewRetry(10)
 		req   = &pipedservice.ReportApplicationDeployingStatusRequest{
 			ApplicationId: appID,
@@ -757,11 +756,12 @@ func reportApplicationDeployingStatus(ctx context.Context, c apiClient, appID st
 		}
 	)
 
-	for retry.WaitNext(ctx) {
-		if _, err = c.ReportApplicationDeployingStatus(ctx, req); err == nil {
-			return nil
+	_, err := retry.Do(ctx, func() (interface{}, error) {
+		_, err := c.ReportApplicationDeployingStatus(ctx, req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to report application deploying status to control-plane: %w", err)
 		}
-		err = fmt.Errorf("failed to report application deploying status to control-plane: %w", err)
-	}
+		return nil, nil
+	})
 	return err
 }

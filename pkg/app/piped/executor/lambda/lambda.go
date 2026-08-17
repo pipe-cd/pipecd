@@ -308,9 +308,8 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, fm p
 
 	in.LogPersister.Info("Waiting to update lambda function in progress...")
 	retry := backoff.NewRetry(provider.RequestRetryTime, backoff.NewConstant(provider.RetryIntervalDuration))
-	publishFunctionSucceed := false
 	startWaitingStamp := time.Now()
-	for retry.WaitNext(ctx) {
+	_, err = retry.Do(ctx, func() (interface{}, error) {
 		// Commit version for applied Lambda function.
 		// Note: via the current docs of [Lambda.PublishVersion](https://docs.aws.amazon.com/sdk-for-go/api/service/lambda/#Lambda.PublishVersion)
 		// AWS Lambda doesn't publish a version if the function's configuration and code haven't changed since the last version.
@@ -318,12 +317,11 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, fm p
 		version, err = client.PublishFunction(ctx, fm)
 		if err != nil {
 			in.Logger.Error("Failed publish new version for Lambda function")
-		} else {
-			publishFunctionSucceed = true
-			break
+			return nil, err
 		}
-	}
-	if !publishFunctionSucceed {
+		return nil, nil
+	})
+	if err != nil {
 		in.LogPersister.Errorf("Failed to commit new version for Lambda function %s: %v", fm.Spec.Name, err)
 		return
 	}
