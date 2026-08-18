@@ -8,7 +8,7 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/pipe-cd/pipecd v0.57.0
 	github.com/pipe-cd/piped-plugin-sdk-go v0.4.0
-	github.com/stretchr/testify v1.11.1
+	github.com/stretchr/testify v1.12.0
 	go.uber.org/zap v1.28.0
 	golang.org/x/mod v0.38.0
 	golang.org/x/sync v0.22.0
