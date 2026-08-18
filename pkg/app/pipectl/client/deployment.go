@@ -49,13 +49,13 @@ func WaitDeploymentStatuses(
 		req := &apiservice.GetDeploymentRequest{
 			DeploymentId: deploymentID,
 		}
-		resp, err := cli.GetDeployment(ctx, req)
-		if err != nil {
-			if status.Code(err) == codes.NotFound {
+		resp, getErr := cli.GetDeployment(ctx, req)
+		if getErr != nil {
+			if status.Code(getErr) == codes.NotFound {
 				err = status.Errorf(codes.NotFound, "deployment %q not found", deploymentID)
 				return
 			}
-			logger.Error(fmt.Sprintf("Failed while retrieving deployment information. Try again. (%v)", err))
+			logger.Error(fmt.Sprintf("Failed while retrieving deployment information. Try again. (%v)", getErr))
 			shouldRetry = true
 			return
 		}

@@ -53,13 +53,13 @@ func SyncApplication(
 	defer ticker.Stop()
 
 	check := func() (deploymentID string, shouldRetry bool, err error) {
-		cmd, err := getCommand(ctx, cli, resp.CommandId)
-		if err != nil {
-			if status.Code(err) == codes.NotFound {
+		cmd, getErr := getCommand(ctx, cli, resp.CommandId)
+		if getErr != nil {
+			if status.Code(getErr) == codes.NotFound {
 				err = status.Errorf(codes.NotFound, "command %q not found", resp.CommandId)
 				return
 			}
-			logger.Error(fmt.Sprintf("Failed while retrieving command information. Try again. (%v)", err))
+			logger.Error(fmt.Sprintf("Failed while retrieving command information. Try again. (%v)", getErr))
 			shouldRetry = true
 			return
 		}
