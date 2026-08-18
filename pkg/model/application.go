@@ -27,6 +27,7 @@ const (
 	applicationConfigFileExtention      = ".pipecd.yaml"
 )
 
+// GetApplicationConfigFilePath returns the path to application configuration file.
 func (p *ApplicationGitPath) GetApplicationConfigFilePath() string {
 	return filepath.Join(p.Path, p.GetApplicationConfigFilename())
 }
