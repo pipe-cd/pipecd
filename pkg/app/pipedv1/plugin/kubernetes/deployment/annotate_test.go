@@ -332,6 +332,158 @@ data:
   one: "MQ=="
 `,
 		},
+		{
+			name: "StatefulSet config",
+			manifests: `
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: canary-by-statefulset-change
+  labels:
+    app: canary-by-statefulset-change
+spec:
+  serviceName: "nginx"
+  replicas: 2
+  selector:
+    matchLabels:
+      app: canary-by-statefulset-change
+  template:
+    metadata:
+      labels:
+        app: canary-by-statefulset-change
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.14.2
+          volumeMounts:
+            - name: config
+              mountPath: /etc/nginx-config
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: canary-by-statefulset-change
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: canary-by-statefulset-change
+data:
+  two: "2"
+`,
+			expected: `
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: canary-by-statefulset-change
+  labels:
+    app: canary-by-statefulset-change
+spec:
+  serviceName: "nginx"
+  replicas: 2
+  selector:
+    matchLabels:
+      app: canary-by-statefulset-change
+  template:
+    metadata:
+      labels:
+        app: canary-by-statefulset-change
+      annotations:
+        pipecd.dev/config-hash: 77ck6gt828
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.14.2
+          volumeMounts:
+            - name: config
+              mountPath: /etc/nginx-config
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: canary-by-statefulset-change
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: canary-by-statefulset-change
+data:
+  two: "2"
+`,
+		},
+		{
+			name: "DaemonSet config",
+			manifests: `
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: canary-by-daemonset-change
+  labels:
+    app: canary-by-daemonset-change
+spec:
+  selector:
+    matchLabels:
+      app: canary-by-daemonset-change
+  template:
+    metadata:
+      labels:
+        app: canary-by-daemonset-change
+    spec:
+      containers:
+        - name: fluentd-elasticsearch
+          image: fluentd:v1.8
+          volumeMounts:
+            - name: config
+              mountPath: /var/log
+      volumes:
+        - name: config
+          configMap:
+            name: canary-by-daemonset-change
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: canary-by-daemonset-change
+data:
+  two: "2"
+`,
+			expected: `
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: canary-by-daemonset-change
+  labels:
+    app: canary-by-daemonset-change
+spec:
+  selector:
+    matchLabels:
+      app: canary-by-daemonset-change
+  template:
+    metadata:
+      labels:
+        app: canary-by-daemonset-change
+      annotations:
+        pipecd.dev/config-hash: bm69558hh6
+    spec:
+      containers:
+        - name: fluentd-elasticsearch
+          image: fluentd:v1.8
+          volumeMounts:
+            - name: config
+              mountPath: /var/log
+      volumes:
+        - name: config
+          configMap:
+            name: canary-by-daemonset-change
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: canary-by-daemonset-change
+data:
+  two: "2"
+`,
+		},
 	}
 
 	for _, tc := range testcases {
