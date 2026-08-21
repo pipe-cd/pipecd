@@ -53,6 +53,7 @@ pkg/app/web/.env
 .rendered-manifests
 
 # manfiests
+manifests/controlplane/charts
 manifests/pipecd/charts
 manifests/piped/charts
 manifests/site/charts
