@@ -3,7 +3,7 @@ title: "Metrics"
 linkTitle: "Metrics"
 weight: 995
 description: >
-  This page describes how to enable monitoring system for collecting PipeCD' metrics.
+  This page describes how to enable monitoring system for collecting PipeCD's metrics.
 ---
 
 PipeCD comes with a monitoring system including Prometheus, Alertmanager, and Grafana.
