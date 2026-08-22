@@ -27,7 +27,7 @@ jobs:
           - helloworld
           - launcher
           - launcher-okd
-          - pipecd
+          - controlplane
           - piped
           - piped-okd
           - pipectl
@@ -38,8 +38,8 @@ jobs:
             dockerfile: cmd/launcher/Dockerfile
           - image: launcher-okd
             dockerfile: cmd/launcher/Dockerfile-okd
-          - image: pipecd
-            dockerfile: cmd/pipecd/Dockerfile
+          - image: controlplane
+            dockerfile: cmd/controlplane/Dockerfile
           - image: piped
             dockerfile: cmd/piped/Dockerfile
           - image: piped-okd
@@ -49,7 +49,7 @@ jobs:
         exclude:
           - image: launcher-okd
             container_registry: gcr.io/pipecd
-          - image: pipecd
+          - image: controlplane
             container_registry: gcr.io/pipecd
           - image: piped-okd
             container_registry: gcr.io/pipecd
@@ -57,7 +57,7 @@ jobs:
             container_registry: gcr.io/pipecd
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
       - name: Determine version
@@ -65,7 +65,7 @@ jobs:
 
       # Setup QEMU and Buildx.
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4.0.0
+        uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # v3.7.1
 
@@ -105,10 +105,12 @@ jobs:
       - name: Login to OCI using Helm
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${{ env.GHCR }} --username ${{ github.repository_owner }} --password-stdin
+      # NOTE: 'pipecd' chart is kept for backwards compatibility, both charts use 'controlplane' image internally
       - name: Publish helm charts
         run: |
           make build/chart VERSION=${{ env.PIPECD_VERSION }}
           helm push .artifacts/pipecd-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.GHCR }}/pipe-cd/chart
+          helm push .artifacts/controlplane-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.GHCR }}/pipe-cd/chart
           helm push .artifacts/piped-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.GHCR }}/pipe-cd/chart
           helm push .artifacts/helloworld-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.GHCR }}/pipe-cd/chart
 
@@ -116,7 +118,7 @@ jobs:
     runs-on: ubuntu-24.04
     needs: artifacts
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
       - name: Determine version
@@ -148,7 +150,7 @@ jobs:
         uses: azure/setup-helm@v4
         with:
           version: ${{ env.HELM_VERSION }}
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           ref: master
@@ -157,7 +159,7 @@ jobs:
       # we use `github.ref_name` to get the tag name without the `refs/tags/` prefix.
       - name: Build quickstart manifests
         run: |
-          helm template pipecd oci://ghcr.io/pipe-cd/chart/pipecd --version ${{ github.ref_name }} -n pipecd -f quickstart/control-plane-values.yaml > quickstart/manifests/control-plane.yaml
+          helm template controlplane oci://ghcr.io/pipe-cd/chart/controlplane --version ${{ github.ref_name }} -n pipecd -f quickstart/controlplane-values.yaml > quickstart/manifests/control-plane.yaml
           helm template piped oci://ghcr.io/pipe-cd/chart/piped --version ${{ github.ref_name }} -n pipecd --set quickstart.enabled=true --set quickstart.pipedId=\<YOUR_PIPED_ID\> --set quickstart.pipedKeyData=\<YOUR_PIPED_KEY_DATA\> > quickstart/manifests/piped.yaml
       - name: Publish quickstart manifests
         uses: peter-evans/create-pull-request@v6

@@ -1,7 +1,7 @@
 ---
 title: "ECS Plugin"
 linkTitle: "ECS"
-weight: 2
+weight: 40
 description: >
   Specific guide to configuring deployment for Amazon ECS application using the ECS plugin.
 ---
@@ -419,7 +419,7 @@ spec:
 
 ## Migrating from v0
 
-This section covers the steps specific to ECS applications. For the general migration process (updating `pipectl`, migrating the Control Plane database, installing pipedv1), follow the [Migrate to PipeCD v1](../../migrating-from-v0-to-v1/) guide first.
+This section covers the steps specific to ECS applications. For the general migration process (updating `pipectl`, migrating the Control Plane database, installing pipedv1), follow the [Migrate to PipeCD v1](../../../migrating-from-v0-to-v1/) guide first.
 
 ### 1. Update the piped configuration
 
