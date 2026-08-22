@@ -480,7 +480,7 @@ func (r *repo) setUser(ctx context.Context, username, email string) error {
 // git command run against this repo directory, not just the command it was
 // originally issued with via a one-off `-c` flag.
 func (r *repo) setHTTPAuthHeader(ctx context.Context, header string) error {
-	if out, err := r.runGitCommand(ctx, "config", "http.extraHeader", header); err != nil {
+	if out, err := r.runGitCommand(ctx, "config", "--local", "--replace-all", "http.extraHeader", header); err != nil {
 		return formatCommandError(err, out)
 	}
 	r.httpAuthHeader = header
