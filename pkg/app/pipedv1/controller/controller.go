@@ -96,7 +96,7 @@ type controller struct {
 	commandReporter       commandstore.Reporter
 	notifier              notifier
 	secretDecrypter       secretDecrypter
-	metadataStoreRegistry metadatastore.MetadataStoreRegistry
+	metadataStoreRegistry *metadatastore.MetadataStoreRegistry
 
 	// The registry of all plugins.
 	pluginRegistry plugin.PluginRegistry
@@ -138,7 +138,7 @@ func NewController(
 	commandReporter commandstore.Reporter,
 	notifier notifier,
 	secretDecrypter secretDecrypter,
-	metadataStoreRegistry metadatastore.MetadataStoreRegistry,
+	metadataStoreRegistry *metadatastore.MetadataStoreRegistry,
 	gracePeriod time.Duration,
 	logger *zap.Logger,
 	tracerProvider trace.TracerProvider,

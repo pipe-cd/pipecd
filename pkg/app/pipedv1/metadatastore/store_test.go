@@ -16,6 +16,7 @@ package metadatastore
 
 import (
 	"context"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -25,13 +26,21 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
+// fakeAPIClient is a fake apiClient used in tests. Its maps are guarded by mu
+// since it may be shared by metadataStore instances of multiple deployments
+// exercised concurrently, e.g. in TestRegistryConcurrentAccess.
 type fakeAPIClient struct {
+	mu sync.Mutex
+
 	shared  metadata
 	plugins map[string]metadata
 	stages  map[string]metadata
 }
 
 func (c *fakeAPIClient) SaveDeploymentSharedMetadata(ctx context.Context, req *pipedservice.SaveDeploymentSharedMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveDeploymentSharedMetadataResponse, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	md := make(map[string]string, len(c.shared)+len(req.Metadata))
 	for k, v := range c.shared {
 		md[k] = v
@@ -44,6 +53,9 @@ func (c *fakeAPIClient) SaveDeploymentSharedMetadata(ctx context.Context, req *p
 }
 
 func (c *fakeAPIClient) SaveDeploymentPluginMetadata(ctx context.Context, req *pipedservice.SaveDeploymentPluginMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveDeploymentPluginMetadataResponse, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	ori := c.plugins[req.PluginName]
 	md := make(map[string]string, len(ori)+len(req.Metadata))
 	for k, v := range ori {
@@ -57,6 +69,9 @@ func (c *fakeAPIClient) SaveDeploymentPluginMetadata(ctx context.Context, req *p
 }
 
 func (c *fakeAPIClient) SaveStageMetadata(ctx context.Context, req *pipedservice.SaveStageMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveStageMetadataResponse, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	ori := c.stages[req.StageId]
 	md := make(map[string]string, len(ori)+len(req.Metadata))
 	for k, v := range ori {
