@@ -12,12 +12,12 @@ config:
       datastore:
         type: MYSQL
         config:
-          url: root:test@tcp(pipecd-mysql:3306)
+          url: root:test@tcp(controlplane-mysql:3306)
           database: quickstart
       filestore:
         type: MINIO
         config:
-          endpoint: http://pipecd-minio:9000
+          endpoint: http://controlplane-minio:9000
           bucket: quickstart
           accessKeyFile: /etc/pipecd-secret/minio-access-key
           secretKeyFile: /etc/pipecd-secret/minio-secret-key
