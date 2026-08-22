@@ -15,7 +15,7 @@ Here are what will be included currently in the result of plan-preview process:
 - which deployment strategy (QUICK_SYNC or PIPELINE_SYNC) will be used
 - which resources will be added, deleted, or modified
 
-This feature will available for all application kinds: KUBERNETES, TERRAFORM, CLOUD_RUN, LAMBDA and Amazon ECS.
+This feature will be available for all application kinds: KUBERNETES, TERRAFORM, CLOUD_RUN, LAMBDA and Amazon ECS.
 
 ![](/images/plan-preview-comment.png)
 <p style="text-align: center;">
