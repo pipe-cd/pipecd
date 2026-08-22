@@ -78,7 +78,7 @@
     "dagre": "^0.8.5",
     "dayjs": "^1.11.19",
     "dotenv": "^8.6.0",
-    "echarts": "^5.6.0",
+    "echarts": "^6.1.0",
     "formik": "^2.4.8",
     "github-markdown-css": "^5.8.1",
     "google-protobuf": "^3.21.4",
