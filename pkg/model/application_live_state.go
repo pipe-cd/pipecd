@@ -46,13 +46,13 @@ func (s KubernetesResourceState) HasDiff(a KubernetesResourceState) bool {
 
 	for i := range s.OwnerIds {
 		if s.OwnerIds[i] != a.OwnerIds[i] {
-			return false
+			return true
 		}
 	}
 
 	for i := range s.ParentIds {
 		if s.ParentIds[i] != a.ParentIds[i] {
-			return false
+			return true
 		}
 	}
 

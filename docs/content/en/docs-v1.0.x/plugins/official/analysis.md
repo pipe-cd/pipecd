@@ -1,7 +1,7 @@
 ---
 title: "Analysis plugin"
 linkTitle: "Analysis"
-weight: 30
+weight: 70
 description: >
   Evaluate a deployment by analyzing metrics, logs, and HTTP responses.
 ---
@@ -74,7 +74,7 @@ analysisProviders:
 
 See [AnalysisProviderDatadogConfig](#analysisproviderdatadogconfig) for all fields.
 
-If you install `piped` with Helm, use `--set-file` to mount the key files during the [upgrade process](../installation/install-piped/installing-on-kubernetes/#in-the-cluster-wide-mode):
+If you install `piped` with Helm, use `--set-file` to mount the key files during the [upgrade process](../../installation/install-piped/installing-on-kubernetes/#in-the-cluster-wide-mode):
 
 ```bash
 --set-file secret.data.datadog-api-key={PATH_TO_API_KEY_FILE} \
@@ -237,7 +237,7 @@ Configured under `config.analysisProviders[].config` in the **piped** configurat
 
 ### AnalysisApplicationSpec
 
-The `spec` of an application using analysis shares the [common application fields](../user-guide/managing-application/configuration-reference/) and adds the following under `plugins.analysis`:
+The `spec` of an application using analysis shares the [common application fields](../../user-guide/managing-application/configuration-reference/) and adds the following under `plugins.analysis`:
 
 | Field | Type | Description | Required |
 |-------|------|-------------|----------|
