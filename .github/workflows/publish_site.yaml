@@ -60,7 +60,7 @@ jobs:
 
       # Building and pushing Helm charts.
       - name: Install helm
-        uses: azure/setup-helm@v4
+        uses: azure/setup-helm@v5
         with:
           version: ${{ env.HELM_VERSION }}
       - name: Login to OCI using Helm
