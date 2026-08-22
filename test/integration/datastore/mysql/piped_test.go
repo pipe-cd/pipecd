@@ -146,6 +146,7 @@ func listPipeds(it datastore.Iterator) ([]*model.Piped, error) {
 	if it == nil {
 		return ret, nil
 	}
+	defer it.Close()
 	for {
 		var v model.Piped
 		err := it.Next(&v)

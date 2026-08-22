@@ -90,6 +90,12 @@ type DataStore interface {
 type Iterator interface {
 	Next(dst interface{}) error
 	Cursor() (string, error)
+	// Close releases the resources held by the iterator, such as the
+	// underlying database rows or Firestore iterator. It is safe to call
+	// Close multiple times, and callers should always close an iterator
+	// once they are done with it, regardless of whether iteration
+	// completed successfully or ended early because of an error.
+	Close() error
 }
 
 type ListFilter struct {
