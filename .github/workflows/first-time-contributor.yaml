@@ -10,10 +10,9 @@ permissions:
 jobs:
   welcome:
     runs-on: ubuntu-latest
-
     steps:
       - name: Welcome first-time contributor
-        uses: actions/github-script@v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const owner = context.repo.owner;
@@ -21,69 +20,66 @@ jobs:
             const prAuthor = context.payload.pull_request.user.login;
             const prNumber = context.payload.pull_request.number;
 
-            // List PRs created by this user in this repo
-            const { data: pulls } = await github.rest.pulls.list({
-              owner,
-              repo,
-              state: "all",
-              creator: prAuthor,
+            // Search PRs created by this user in this repo
+            const query = `repo:${owner}/${repo} type:pr author:${prAuthor}`;
+            const { data: result } = await github.request("GET /search/issues", {
+              q: query,
               per_page: 2,
             });
 
             // If more than one PR exists, this is not the first one
-            if (pulls.length > 1) {
+            if (result.total_count > 1) {
               console.log(`User ${prAuthor} is not a first-time contributor.`);
               return;
             }
 
             const body = `👋 Hi @${prAuthor}, welcome to **PipeCD** and thanks for opening your first pull request!
-
-We’re really happy to have you here 🚀  
-Before your PR gets merged, please check a few important things below.
-
----
-
-### Helpful resources
-- Contributing guide: https://github.com/pipe-cd/pipecd/blob/master/CONTRIBUTING.md
-- Development setup: https://github.com/pipe-cd/pipecd/blob/master/CONTRIBUTING.md#development
-
----
-
-### DCO Sign-off
-All commits must include a \`Signed-off-by\` line to comply with the Developer Certificate of Origin (DCO).
-
-In case you forget to sign-off your commit(s), follow these steps:
-
-For the last commit:
-\`\`\`bash
-git commit --amend --signoff
-git push --force-with-lease
-\`\`\`
-
-For multiple commits:
-\`\`\`bash
-git rebase --signoff origin/master
-git push --force-with-lease
-\`\`\`
-
----
-
-### Run checks locally
-Before pushing updates, please run:
-\`\`\`bash
-make check
-\`\`\`
-This runs the same checks as CI and helps catch issues early.
-
----
-
-### 💬 Need help?
-If anything is unclear, feel free to ask in this PR or join us on the CNCF Slack in the **#pipecd** channel.
-You can get your Slack invite from: https://communityinviter.com/apps/cloud-native/cncf
-
-
-Thanks for contributing to PipeCD! ❤️
-`;
+            
+            We’re really happy to have you here 
+            
+            Before your PR gets merged, please check a few important things below.
+            
+            ---
+            
+            ### Helpful resources
+            - Contributing guide: https://github.com/pipe-cd/pipecd/blob/master/CONTRIBUTING.md
+            - Development setup: https://github.com/pipe-cd/pipecd/blob/master/CONTRIBUTING.md#development
+            
+            ---
+            
+            ### DCO Sign-off
+            All commits must include a \`Signed-off-by\` line to comply with the Developer Certificate of Origin (DCO).
+            
+            In case you forget to sign-off your commit(s), follow these steps:
+            
+            **For the last commit:**
+            \`\`\`bash
+            git commit --amend --signoff
+            git push --force-with-lease
+            \`\`\`
+            
+            **For multiple commits:**
+            \`\`\`bash
+            git rebase --signoff origin/master
+            git push --force-with-lease
+            \`\`\`
+            
+            ---
+            
+            ### Run checks locally
+            Before pushing updates, please run:
+            \`\`\`bash
+            make check
+            \`\`\`
+            This runs the same checks as CI and helps catch issues early.
+            
+            ---
+            
+            ### 💬 Need help?
+            If anything is unclear, feel free to ask in this PR or join us on the CNCF Slack in the **#pipecd** channel.
+            You can get your Slack invite from: https://communityinviter.com/apps/cloud-native/cncf
+            
+            Thanks for contributing to PipeCD! ❤️`;
 
             await github.rest.issues.createComment({
               owner,

@@ -71,7 +71,7 @@ func TestPlugin_executeK8sMultiSyncStage(t *testing.T) {
 
 	plugin := &Plugin{}
 
-	status := plugin.executeK8sMultiSyncStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+	status, _ := plugin.executeK8sMultiSyncStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{
 			Name:   "default",
 			Config: *dtConfig,
@@ -136,7 +136,7 @@ func TestPlugin_executeK8sMultiSyncStage_withInputNamespace(t *testing.T) {
 
 	plugin := &Plugin{}
 
-	status := plugin.executeK8sMultiSyncStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+	status, _ := plugin.executeK8sMultiSyncStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 		{
 			Name:   "default",
 			Config: *dtConfig,
@@ -202,7 +202,7 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune(t *testing.T) {
 		}
 
 		plugin := &Plugin{}
-		status := plugin.executeK8sMultiSyncStage(ctx, runningInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		status, _ := plugin.executeK8sMultiSyncStage(ctx, runningInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 			{
 				Name:   "default",
 				Config: *dtConfig,
@@ -261,7 +261,7 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune(t *testing.T) {
 		}
 
 		plugin := &Plugin{}
-		status := plugin.executeK8sMultiSyncStage(ctx, targetInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		status, _ := plugin.executeK8sMultiSyncStage(ctx, targetInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 			{
 				Name:   "default",
 				Config: *dtConfig,
@@ -314,7 +314,7 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_changesNamespace(t *testing.T
 		}
 
 		plugin := &Plugin{}
-		status := plugin.executeK8sMultiSyncStage(ctx, runningInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		status, _ := plugin.executeK8sMultiSyncStage(ctx, runningInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 			{
 				Name:   "default",
 				Config: *dtConfig,
@@ -373,7 +373,7 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_changesNamespace(t *testing.T
 		}
 
 		plugin := &Plugin{}
-		status := plugin.executeK8sMultiSyncStage(ctx, targetInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		status, _ := plugin.executeK8sMultiSyncStage(ctx, targetInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 			{
 				Name:   "default",
 				Config: *dtConfig,
@@ -444,7 +444,7 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_clusterScoped(t *testing.T) {
 		}
 
 		plugin := &Plugin{}
-		status := plugin.executeK8sMultiSyncStage(ctx, prepareInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		status, _ := plugin.executeK8sMultiSyncStage(ctx, prepareInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 			{
 				Name:   "default",
 				Config: *dtConfig,
@@ -479,7 +479,7 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_clusterScoped(t *testing.T) {
 		}
 
 		plugin := &Plugin{}
-		status := plugin.executeK8sMultiSyncStage(ctx, runningInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		status, _ := plugin.executeK8sMultiSyncStage(ctx, runningInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 			{
 				Name:   "default",
 				Config: *dtConfig,
@@ -527,7 +527,7 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_clusterScoped(t *testing.T) {
 		}
 
 		plugin := &Plugin{}
-		status := plugin.executeK8sMultiSyncStage(ctx, targetInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		status, _ := plugin.executeK8sMultiSyncStage(ctx, targetInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 			{
 				Name:   "default",
 				Config: *dtConfig,
@@ -595,7 +595,7 @@ func TestPlugin_executeK8sMultiSyncStage_multiCluster(t *testing.T) {
 	}
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiSyncStage(t.Context(), input, dts)
+	status, _ := plugin.executeK8sMultiSyncStage(t.Context(), input, dts)
 
 	require.Equal(t, sdk.StageStatusSuccess, status)
 
@@ -666,7 +666,7 @@ func TestPlugin_executeK8sMultiSyncStage_multiCluster_templateNone(t *testing.T)
 	}
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiSyncStage(t.Context(), input, dts)
+	status, _ := plugin.executeK8sMultiSyncStage(t.Context(), input, dts)
 
 	require.Equal(t, sdk.StageStatusSuccess, status)
 
@@ -737,7 +737,7 @@ func TestPlugin_executeK8sMultiSyncStage_multiCluster_failed_one_of_the_sync(t *
 	}
 
 	plugin := &Plugin{}
-	status := plugin.executeK8sMultiSyncStage(t.Context(), input, dts)
+	status, _ := plugin.executeK8sMultiSyncStage(t.Context(), input, dts)
 
 	require.Equal(t, sdk.StageStatusFailure, status)
 }
@@ -782,7 +782,7 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_withStageConfig(t *testing.T)
 		}
 
 		plugin := &Plugin{}
-		status := plugin.executeK8sMultiSyncStage(ctx, runningInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		status, _ := plugin.executeK8sMultiSyncStage(ctx, runningInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 			{
 				Name:   "default",
 				Config: *dtConfig,
@@ -842,7 +842,7 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_withStageConfig(t *testing.T)
 		}
 
 		plugin := &Plugin{}
-		status := plugin.executeK8sMultiSyncStage(ctx, targetInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		status, _ := plugin.executeK8sMultiSyncStage(ctx, targetInput, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
 			{
 				Name:   "default",
 				Config: *dtConfig,

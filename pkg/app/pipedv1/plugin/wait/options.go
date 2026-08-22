@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/creasty/defaults"
 	"github.com/pipe-cd/piped-plugin-sdk-go/unit"
 )
 
@@ -38,6 +39,9 @@ func decode(data json.RawMessage) (WaitStageOptions, error) {
 	var opts WaitStageOptions
 	if err := json.Unmarshal(data, &opts); err != nil {
 		return WaitStageOptions{}, fmt.Errorf("failed to unmarshal the config: %w", err)
+	}
+	if err := defaults.Set(&opts); err != nil {
+		return WaitStageOptions{}, fmt.Errorf("failed to set default values for stage config: %w", err)
 	}
 	if err := opts.validate(); err != nil {
 		return WaitStageOptions{}, fmt.Errorf("failed to validate the config: %w", err)

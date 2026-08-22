@@ -1,0 +1,19 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  name: baseline-clean
+  labels:
+    env: example
+    team: product
+  description: |
+    This app is test data for baseline clean without create service.
+  pipeline:
+    stages:
+      - name: K8S_BASELINE_ROLLOUT
+      - name: K8S_BASELINE_CLEAN
+  plugins:
+    kubernetes_multicluster:
+      input:
+        manifests:
+          - deployment.yaml
+        kubectlVersion: 1.32.2

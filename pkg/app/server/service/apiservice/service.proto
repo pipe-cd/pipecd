@@ -70,6 +70,7 @@ message AddApplicationRequest {
     model.ApplicationKind kind = 5 [(validate.rules).enum.defined_only = true];
     string platform_provider = 8;
     string description = 7;
+    map<string, string> labels = 9;
 }
 
 message AddApplicationResponse {

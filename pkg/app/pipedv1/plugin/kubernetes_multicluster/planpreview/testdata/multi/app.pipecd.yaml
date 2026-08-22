@@ -1,0 +1,16 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  name: simple
+  plugins:
+    kubernetes_multicluster:
+      input:
+        multiTargets:
+          - target:
+              name: cluster1
+            manifests:
+              - cluster1/deployment.yaml
+          - target:
+              name: cluster2
+            manifests:
+              - cluster2/deployment.yaml

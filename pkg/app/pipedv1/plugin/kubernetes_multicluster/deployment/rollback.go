@@ -132,7 +132,6 @@ func (p *Plugin) rollback(ctx context.Context, input *sdk.ExecuteStageInput[kube
 
 	lp.Infof("Loading manifests at commit %s for handling", input.Request.RunningDeploymentSource.CommitHash)
 	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
-	// TODO: consider multiTarget later
 	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.RunningDeploymentSource, provider.NewLoader(toolRegistry), input.Logger, multiTarget)
 	if err != nil {
 		lp.Errorf("Failed while loading manifests (%v)", err)
@@ -147,8 +146,10 @@ func (p *Plugin) rollback(ctx context.Context, input *sdk.ExecuteStageInput[kube
 	// When addVariantLabelToSelector is true, ensure that all workloads
 	// have the variant label in their selector.
 	var (
-		variantLabel   = cfg.Spec.VariantLabel.Key
-		primaryVariant = cfg.Spec.VariantLabel.PrimaryValue
+		variantLabel    = cfg.Spec.VariantLabel.Key
+		primaryVariant  = cfg.Spec.VariantLabel.PrimaryValue
+		canaryVariant   = cfg.Spec.VariantLabel.CanaryValue
+		baselineVariant = cfg.Spec.VariantLabel.BaselineValue
 	)
 	// TODO: Consider other fields to configure whether to add a variant label to the selector
 	// because the rollback stage is executed in both quick sync and pipeline sync strategies.
@@ -186,7 +187,8 @@ func (p *Plugin) rollback(ctx context.Context, input *sdk.ExecuteStageInput[kube
 	}
 
 	// Create the applier for the target cluster.
-	applier := provider.NewApplier(provider.NewKubectl(kubectlPath), cfg.Spec.Input, deployTargetConfig, input.Logger)
+	kubectl := provider.NewKubectl(kubectlPath)
+	applier := provider.NewApplier(kubectl, cfg.Spec.Input, deployTargetConfig, input.Logger)
 
 	// Start applying all manifests to add or update running resources.
 	if err := applyManifests(ctx, applier, manifests, cfg.Spec.Input.Namespace, lp); err != nil {
@@ -194,9 +196,46 @@ func (p *Plugin) rollback(ctx context.Context, input *sdk.ExecuteStageInput[kube
 		return sdk.StageStatusFailure
 	}
 
-	// TODO: implement prune resources
-	// TODO: delete all resources of CANARY variant
-	// TODO: delete all resources of BASELINE variant
+	var failed bool
 
+	lp.Info("Start removing CANARY variant resources if exists")
+	if err := deleteVariantResources(ctx, lp, kubectl, deployTargetConfig.KubeConfigPath, applier, input.Request.Deployment.ApplicationID, variantLabel, canaryVariant); err != nil {
+		lp.Errorf("Failed while deleting CANARY variant resources (%v)", err)
+		failed = true
+	}
+
+	lp.Info("Start removing BASELINE variant resources if exists")
+	if err := deleteVariantResources(ctx, lp, kubectl, deployTargetConfig.KubeConfigPath, applier, input.Request.Deployment.ApplicationID, variantLabel, baselineVariant); err != nil {
+		lp.Errorf("Failed while deleting BASELINE variant resources (%v)", err)
+		failed = true
+	}
+
+	lp.Info("Start finding and pruning resources that no longer exist in the running manifests")
+	namespacedLiveResources, clusterScopedLiveResources, err := provider.GetLiveResources(ctx, kubectl, deployTargetConfig.KubeConfigPath, input.Request.Deployment.ApplicationID)
+	switch {
+	case err != nil:
+		lp.Errorf("Failed while getting live resources (%v)", err)
+		failed = true
+	case len(namespacedLiveResources)+len(clusterScopedLiveResources) > 0:
+		removeKeys := provider.FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveResources)
+		if len(removeKeys) == 0 {
+			lp.Info("There are no live resources to prune")
+		} else {
+			lp.Infof("Start pruning %d resources", len(removeKeys))
+			deletedCount, err := deleteResources(ctx, lp, applier, removeKeys)
+			if err != nil {
+				lp.Errorf("Failed to delete some resources, %d/%d resources were deleted (%v)", deletedCount, len(removeKeys), err)
+				failed = true
+			} else {
+				lp.Successf("Successfully deleted %d resources", deletedCount)
+			}
+		}
+	default:
+		lp.Info("There are no live resources to prune")
+	}
+
+	if failed {
+		return sdk.StageStatusFailure
+	}
 	return sdk.StageStatusSuccess
 }

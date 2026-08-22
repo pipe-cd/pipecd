@@ -1,35 +1,60 @@
 area/go:
-- cmd/*
-- cmd/**/*
-- pkg/*
-- pkg/**/*
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'cmd/*'
+          - 'cmd/**/*'
+          - 'pkg/*'
+          - 'pkg/**/*'
 
 area/web:
-- web/*
-- web/**/*
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'web/*'
+          - 'web/**/*'
 
 area/build:
-- hack/*
-- .github/*
-- .github/**/*
-- Makefile
-- local/*
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'hack/*'
+          - '.github/*'
+          - '.github/**/*'
+          - 'Makefile'
+          - 'local/*'
 
 area/manifests:
-- manifests/**/*
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'manifests/**/*'
+
+area/docs:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'docs/*'
+          - 'docs/**/*'
+          - 'README.md'
+          - 'CONTRIBUTING.md'
+          - 'RELEASES.md'
 
 area/examples:
-- examples/*
-- examples/**/*
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'examples/*'
+          - 'examples/**/*'
 
 area/tool:
-- tool/*
-- tool/**/*
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'tool/*'
+          - 'tool/**/*'
 
 area/pipedv1:
-- pkg/app/pipedv1/**/*
-- pkg/configv1/*
-- pkg/configv1/**/*
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'pkg/app/pipedv1/**/*'
+          - 'pkg/configv1/*'
+          - 'pkg/configv1/**/*'
 
 area/plugin-sdk:
-- pkg/plugin/sdk/**/*
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'pkg/plugin/sdk/**/*'

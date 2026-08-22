@@ -76,28 +76,28 @@ func (r *Renderer) Render(ns Nodes) string {
 
 		switch {
 		case lastStep.Type == SliceIndexPathStep:
-			b.WriteString(fmt.Sprintf("%s%*s- ", mark, depth*2-1, ""))
+			fmt.Fprintf(&b, "%s%*s- ", mark, depth*2-1, "")
 		case nl:
-			b.WriteString(fmt.Sprintf("%s%*s%s:\n", mark, depth*2-1, "", lastStep.String()))
+			fmt.Fprintf(&b, "%s%*s%s:\n", mark, depth*2-1, "", lastStep.String())
 		default:
-			b.WriteString(fmt.Sprintf("%s%*s%s: ", mark, depth*2-1, "", lastStep.String()))
+			fmt.Fprintf(&b, "%s%*s%s: ", mark, depth*2-1, "", lastStep.String())
 		}
 
 		parts := strings.Split(nodeString, "\n")
 		for i, p := range parts {
 			if lastStep.Type != SliceIndexPathStep {
 				if nl {
-					b.WriteString(fmt.Sprintf("%s%*s%s\n", mark, depth*2+1, "", p))
+					fmt.Fprintf(&b, "%s%*s%s\n", mark, depth*2+1, "", p)
 				} else {
-					b.WriteString(fmt.Sprintf("%s\n", p))
+					fmt.Fprintf(&b, "%s\n", p)
 				}
 				continue
 			}
 			if i == 0 {
-				b.WriteString(fmt.Sprintf("%s\n", p))
+				fmt.Fprintf(&b, "%s\n", p)
 				continue
 			}
-			b.WriteString(fmt.Sprintf("%s%*s%s\n", mark, depth*2+1, "", p))
+			fmt.Fprintf(&b, "%s%*s%s\n", mark, depth*2+1, "", p)
 		}
 	}
 
@@ -109,16 +109,16 @@ func (r *Renderer) Render(ns Nodes) string {
 		var array bool
 		for i := duplicateDepth; i < pathLen-1; i++ {
 			if n.Path[i].Type == SliceIndexPathStep {
-				b.WriteString(fmt.Sprintf("%*s-", (r.leftPadding+i)*2, ""))
+				fmt.Fprintf(&b, "%*s-", (r.leftPadding+i)*2, "")
 				array = true
 				continue
 			}
 			if array {
-				b.WriteString(fmt.Sprintf(" %s:\n", n.Path[i].String()))
+				fmt.Fprintf(&b, " %s:\n", n.Path[i].String())
 				array = false
 				continue
 			}
-			b.WriteString(fmt.Sprintf("%*s%s:\n", (r.leftPadding+i)*2, "", n.Path[i].String()))
+			fmt.Fprintf(&b, "%*s%s:\n", (r.leftPadding+i)*2, "", n.Path[i].String())
 		}
 		if array {
 			b.WriteString("\n")
@@ -131,7 +131,7 @@ func (r *Renderer) Render(ns Nodes) string {
 			valueY = reflect.ValueOf(maskString)
 		}
 
-		b.WriteString(fmt.Sprintf("%*s#%s\n", (r.leftPadding+pathLen-1)*2, "", n.PathString))
+		fmt.Fprintf(&b, "%*s#%s\n", (r.leftPadding+pathLen-1)*2, "", n.PathString)
 		printValue("-", valueX, lastStep, r.leftPadding+pathLen-1)
 		printValue("+", valueY, lastStep, r.leftPadding+pathLen-1)
 		b.WriteString("\n")

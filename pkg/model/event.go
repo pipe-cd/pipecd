@@ -65,7 +65,7 @@ func MakeEventKey(name string, labels map[string]string) string {
 	}
 	sort.Strings(keys)
 	for _, key := range keys {
-		b.WriteString(fmt.Sprintf("/%s:%s", key, labels[key]))
+		fmt.Fprintf(&b, "/%s:%s", key, labels[key])
 	}
 
 	// Make a hash to be fixed length regardless of the length of the event key.

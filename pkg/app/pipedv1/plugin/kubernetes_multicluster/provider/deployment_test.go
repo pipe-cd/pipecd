@@ -527,6 +527,105 @@ spec:
 `,
 			expected: []string{"gcr.io/pipecd/helloworld:v0.5.0", "gcr.io/pipecd/sidecar:v0.5.0"},
 		},
+		{
+			name: "deployment with initContainers returns images from both containers and initContainers",
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: with-init
+  labels:
+    app: with-init
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: with-init
+  template:
+    metadata:
+      labels:
+        app: with-init
+    spec:
+      initContainers:
+        - name: init-migrator
+          image: gcr.io/pipecd/migrator:v1.0.0
+      containers:
+        - name: app
+          image: gcr.io/pipecd/helloworld:v0.5.0
+          ports:
+            - containerPort: 9085
+`,
+			expected: []string{"gcr.io/pipecd/helloworld:v0.5.0", "gcr.io/pipecd/migrator:v1.0.0"},
+		},
+		{
+			name: "cronjob returns images from spec.jobTemplate.spec.template.spec.containers",
+			manifest: `
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: hello
+spec:
+  schedule: "*/5 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: hello
+              image: gcr.io/pipecd/hello-job:v2.0.0
+          restartPolicy: OnFailure
+`,
+			expected: []string{"gcr.io/pipecd/hello-job:v2.0.0"},
+		},
+		{
+			name: "cronjob with initContainers returns images from all jobTemplate paths",
+			manifest: `
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: hello-with-init
+spec:
+  schedule: "0 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          initContainers:
+            - name: init-job
+              image: gcr.io/pipecd/init-job:v1.1.0
+          containers:
+            - name: main-job
+              image: gcr.io/pipecd/main-job:v1.2.0
+          restartPolicy: OnFailure
+`,
+			expected: []string{"gcr.io/pipecd/init-job:v1.1.0", "gcr.io/pipecd/main-job:v1.2.0"},
+		},
+		{
+			name: "duplicates across paths are deduplicated",
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dedup-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dedup-test
+  template:
+    metadata:
+      labels:
+        app: dedup-test
+    spec:
+      initContainers:
+        - name: init-a
+          image: gcr.io/pipecd/shared:v1.0.0
+      containers:
+        - name: main
+          image: gcr.io/pipecd/shared:v1.0.0
+`,
+			expected: []string{"gcr.io/pipecd/shared:v1.0.0"},
+		},
 	}
 
 	for _, tc := range testcases {

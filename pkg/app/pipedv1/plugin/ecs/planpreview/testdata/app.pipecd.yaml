@@ -1,0 +1,11 @@
+apiVersion: pipecd.dev/v1beta1
+kind: Application
+spec:
+  name: simple-app
+  plugin: ecs
+  deployTarget: ecs-dev
+  plugins:
+    ecs:
+      input:
+        serviceDefinitionFile: servicedef.yaml
+        taskDefinitionFile: taskdef.yaml

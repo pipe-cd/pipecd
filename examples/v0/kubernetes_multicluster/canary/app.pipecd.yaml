@@ -1,0 +1,44 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  name: canary-multicluster
+  labels:
+    env: example
+    team: product
+  description: |
+    This app demonstrates how to deploy a Kubernetes application across multiple clusters
+    using a Canary strategy with the kubernetes_multicluster plugin.
+    The canary variant is first rolled out to cluster-us only, then after approval
+    the primary rollout is applied to all clusters, and finally the canary resources
+    are cleaned up with K8S_CANARY_CLEAN.
+  plugins:
+    kubernetes_multicluster:
+      input:
+        multiTargets:
+          - target:
+              name: cluster-us
+            manifests:
+              - cluster-us/deployment.yaml
+              - cluster-us/service.yaml
+          - target:
+              name: cluster-eu
+            manifests:
+              - cluster-eu/deployment.yaml
+              - cluster-eu/service.yaml
+      pipeline:
+        stages:
+          # Deploy the canary variant to cluster-us only (10% of replicas).
+          - name: K8S_CANARY_ROLLOUT
+            with:
+              replicas: 10%
+              multiTarget:
+                - target:
+                    name: cluster-us
+          # Wait for approval before rolling out to all clusters.
+          - name: WAIT_APPROVAL
+          # Roll out the new version as primary to all clusters.
+          - name: K8S_PRIMARY_ROLLOUT
+            with:
+              prune: true
+          # Remove the canary variant resources from all clusters.
+          - name: K8S_CANARY_CLEAN

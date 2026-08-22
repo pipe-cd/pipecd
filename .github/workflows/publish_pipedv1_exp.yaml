@@ -10,7 +10,7 @@ on:
 permissions: {}
 
 env:
-  GO_VERSION: 1.25.0
+  GO_VERSION: 1.26.2
   GHCR: ghcr.io
   GCR: gcr.io
   HELM_VERSION: 3.8.2
@@ -21,10 +21,10 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
           cache: true
@@ -36,7 +36,7 @@ jobs:
           make build/go MOD=pipedv1 BUILD_VERSION=${{ inputs.version }} BUILD_OS=darwin BUILD_ARCH=arm64 BIN_SUFFIX=_${{ inputs.version }}_darwin_arm64
 
       - name: Publish binary artifacts
-        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda #v2.2.1
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
         with:
           tag_name: pipedv1/exp/${{ inputs.version }}
           name: pipedv1 experimental ${{ inputs.version }}
@@ -67,7 +67,7 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
@@ -92,7 +92,7 @@ jobs:
       # Build and push image by digest (without tag)
       - name: Build and push pipedv1 experimental image (${{ matrix.platform.arch }})
         id: build
-        uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355 # v6.10.0
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
         with:
           context: .
           file: cmd/pipedv1/Dockerfile
@@ -109,7 +109,7 @@ jobs:
           touch "/tmp/digests/${digest#sha256:}"
 
       - name: Upload digest
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: digests-pipedv1-exp-${{ matrix.platform.arch }}-${{ matrix.container_registry == 'ghcr.io/pipe-cd' && 'ghcr' || 'gcr' }}
           path: /tmp/digests/*
@@ -129,12 +129,12 @@ jobs:
           - ghcr.io/pipe-cd
           - gcr.io/pipecd
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
       - name: Download digests
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           path: /tmp/digests
           pattern: digests-pipedv1-exp-*-${{ matrix.container_registry == 'ghcr.io/pipe-cd' && 'ghcr' || 'gcr' }}
@@ -178,7 +178,7 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 

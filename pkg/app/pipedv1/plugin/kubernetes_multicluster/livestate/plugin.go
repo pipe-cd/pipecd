@@ -32,7 +32,7 @@ import (
 
 type Plugin struct{}
 
-func (p Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTargets []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.GetLivestateResponse, error) {
+func (p Plugin) GetLivestate(ctx context.Context, _ *kubeconfig.KubernetesPluginConfig, deployTargets []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.GetLivestateResponse, error) {
 	cfg, err := input.Request.DeploymentSource.AppConfig()
 	if err != nil {
 		input.Logger.Error("Failed to load application config", zap.Error(err))
@@ -79,7 +79,7 @@ func (p Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTarge
 	}
 
 	// TODO: find the way to hold the tool registry and loader in the plugin.
-	// Currently, we create them every time the stage is executed beucause we can't pass input.Client.toolRegistry to the plugin when starting the plugin.
+	// Currently, we create them every time the stage is executed because we can't pass input.Client.toolRegistry to the plugin when starting the plugin.
 	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
 
 	liveStates := make([]sdk.ApplicationLiveState, 0, len(targetConfigs))
@@ -95,13 +95,16 @@ func (p Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, deployTarge
 		// Create the kubectl wrapper for the target cluster.
 		kubectl := provider.NewKubectl(kubectlPath)
 
-		// TODO: We need to implement including/excluding resources.
-		// ref; https://pipecd.dev/docs-v0.50.x/user-guide/managing-piped/configuration-reference/#kubernetesappstateinformer
 		namespacedLiveResources, clusterScopedLiveResources, err := provider.GetLiveResources(ctx, kubectl, tc.deployTarget.Config.KubeConfigPath, input.Request.ApplicationID)
 		if err != nil {
 			input.Logger.Error("Failed to get live resources", zap.Error(err))
 			return nil, err
 		}
+
+		// Filter live resources by include/exclude rules from the deploy target's AppStateInformer config.
+		informer := tc.deployTarget.Config.AppStateInformer
+		namespacedLiveResources = filterByAppStateInformer(namespacedLiveResources, informer)
+		clusterScopedLiveResources = filterByAppStateInformer(clusterScopedLiveResources, informer)
 
 		liveState := p.makeAppLivestate(namespacedLiveResources, clusterScopedLiveResources, tc.deployTarget)
 		liveStates = append(liveStates, liveState)
@@ -157,9 +160,11 @@ func (p Plugin) makeAppLivestate(namespacedLiveResources, clusterScopedLiveResou
 }
 
 func (p Plugin) makeAppSyncState(liveManifests, gitManifests []provider.Manifest, dt *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], commit string, logger *zap.Logger) (sdk.ApplicationSyncState, error) {
-	// Calculate SyncState by comparing live manifests with desired manifests
-	// TODO: Implement drift detection ignore configs
-	diffResult, err := provider.DiffList(liveManifests, gitManifests, logger,
+	// Filter out resources annotated to be ignored from drift detection.
+	diffResult, err := provider.DiffList(
+		filterIgnoringManifests(liveManifests),
+		filterIgnoringManifests(gitManifests),
+		logger,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),
 		diff.WithCompareNumberAndNumericString(),
@@ -169,6 +174,72 @@ func (p Plugin) makeAppSyncState(liveManifests, gitManifests []provider.Manifest
 	}
 
 	return calculateSyncState(diffResult, commit, dt), nil
+}
+
+// filterIgnoringManifests removes manifests that are annotated to be excluded from drift detection.
+// Resources with the annotation pipecd.dev/ignore-drift-detection=true are skipped.
+func filterIgnoringManifests(manifests []provider.Manifest) []provider.Manifest {
+	out := make([]provider.Manifest, 0, len(manifests))
+	for _, m := range manifests {
+		if m.GetAnnotations()[provider.LabelIgnoreDriftDirection] == provider.IgnoreDriftDetectionTrue {
+			continue
+		}
+		out = append(out, m)
+	}
+	return out
+}
+
+// filterByAppStateInformer filters live resources based on include/exclude rules
+// from the deploy target's AppStateInformer config.
+// If IncludeResources is set, only resources matching at least one entry are kept.
+// If ExcludeResources is set, resources matching any entry are removed.
+// If neither is set, all resources are returned unchanged.
+func filterByAppStateInformer(manifests []provider.Manifest, informer kubeconfig.KubernetesAppStateInformer) []provider.Manifest {
+	if len(informer.IncludeResources) == 0 && len(informer.ExcludeResources) == 0 {
+		return manifests
+	}
+
+	out := make([]provider.Manifest, 0, len(manifests))
+	for _, m := range manifests {
+		if len(informer.IncludeResources) > 0 {
+			included := false
+			for _, matcher := range informer.IncludeResources {
+				if matchesResourceMatcher(m, matcher) {
+					included = true
+					break
+				}
+			}
+			if !included {
+				continue
+			}
+		}
+
+		excluded := false
+		for _, matcher := range informer.ExcludeResources {
+			if matchesResourceMatcher(m, matcher) {
+				excluded = true
+				break
+			}
+		}
+		if excluded {
+			continue
+		}
+
+		out = append(out, m)
+	}
+	return out
+}
+
+// matchesResourceMatcher returns true if the manifest matches the given resource matcher.
+// An empty APIVersion or Kind in the matcher acts as a wildcard for that field.
+func matchesResourceMatcher(m provider.Manifest, matcher kubeconfig.KubernetesResourceMatcher) bool {
+	if matcher.APIVersion != "" && m.APIVersion() != matcher.APIVersion {
+		return false
+	}
+	if matcher.Kind != "" && m.Kind() != matcher.Kind {
+		return false
+	}
+	return true
 }
 
 func calculateSyncState(diffResult *provider.DiffListResult, commit string, dt *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]) sdk.ApplicationSyncState {
@@ -193,7 +264,7 @@ func calculateSyncState(diffResult *provider.DiffListResult, commit string, dt *
 	}
 
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("Diff between the defined state in Git at commit %s and actual state in cluster: %s\n\n", commit, dt.Name))
+	fmt.Fprintf(&b, "Diff between the defined state in Git at commit %s and actual state in cluster: %s\n\n", commit, dt.Name)
 	b.WriteString("--- Actual   (LiveState)\n+++ Expected (Git)\n\n")
 
 	details := diffResult.Render(provider.DiffRenderOptions{
@@ -249,14 +320,15 @@ type loader interface {
 	LoadManifests(ctx context.Context, input provider.LoaderInput) ([]provider.Manifest, error)
 }
 
-// TODO: share this implementation with the deployment plugin
 func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec], spec *kubeconfig.KubernetesApplicationSpec, loader loader, logger *zap.Logger, multiTarget *kubeconfig.KubernetesMultiTarget) ([]provider.Manifest, error) {
 	// override values if multiTarget has value.
 	manifestPathes := spec.Input.Manifests
+	kustomizeDir := ""
 	if multiTarget != nil {
 		if len(multiTarget.Manifests) > 0 {
 			manifestPathes = multiTarget.Manifests
 		}
+		kustomizeDir = multiTarget.KustomizeDir
 	}
 
 	manifests, err := loader.LoadManifests(ctx, provider.LoaderInput{
@@ -269,6 +341,7 @@ func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[
 		Manifests:        manifestPathes,
 		Namespace:        spec.Input.Namespace,
 		KustomizeVersion: spec.Input.KustomizeVersion,
+		KustomizeDir:     kustomizeDir,
 		KustomizeOptions: spec.Input.KustomizeOptions,
 		HelmVersion:      spec.Input.HelmVersion,
 		HelmChart:        spec.Input.HelmChart,
@@ -278,6 +351,24 @@ func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[
 
 	if err != nil {
 		return nil, err
+	}
+
+	// Add builtin labels and annotations for tracking application live state.
+	for i := range manifests {
+		manifests[i].AddLabels(map[string]string{
+			provider.LabelManagedBy:   provider.ManagedByPiped,
+			provider.LabelPiped:       input.Request.PipedID,
+			provider.LabelApplication: input.Request.ApplicationID,
+			provider.LabelCommitHash:  input.Request.DeploymentSource.CommitHash,
+		})
+		manifests[i].AddAnnotations(map[string]string{
+			provider.LabelManagedBy:          provider.ManagedByPiped,
+			provider.LabelPiped:              input.Request.PipedID,
+			provider.LabelApplication:        input.Request.ApplicationID,
+			provider.LabelOriginalAPIVersion: manifests[i].APIVersion(),
+			provider.LabelResourceKey:        manifests[i].Key().String(),
+			provider.LabelCommitHash:         input.Request.DeploymentSource.CommitHash,
+		})
 	}
 
 	return manifests, nil

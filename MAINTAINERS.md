@@ -8,6 +8,8 @@
 | Shinnosuke Sawada-Dazai | [@Warashi](https://github.com/Warashi)           | shin@warashi.dev                             |
 | Tetsuya Kikuchi         | [@t-kikuc](https://github.com/t-kikuc)           | tkikuchi07f@gmail.com                        |
 | Eeshaan Sawant          | [eeshaanSA](https://github.com/eeshaanSA)        | eeshaans1@gmail.com                          |
+| Ngo Le Hoang            | [@armistcxy](https://github.com/armistcxy)       | adlehoang118@gmail.com                       |
+| Mohammed Firdous Araoye       | [@mohammedfirdouss](https://github.com/mohammedfirdouss) | mohammedfirdousaraoye@gmail.com      |
 
 
 E-mail addresses are expected to be used for reporting security issues. ref [SECURITY.md](./SECURITY.md) \

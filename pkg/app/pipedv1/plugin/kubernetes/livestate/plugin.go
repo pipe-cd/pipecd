@@ -83,7 +83,7 @@ func (p *Plugin) GetLivestate(ctx context.Context, _ *kubeconfig.KubernetesPlugi
 	}
 
 	// TODO: find the way to hold the tool registry and loader in the plugin.
-	// Currently, we create them every time the stage is executed beucause we can't pass input.Client.toolRegistry to the plugin when starting the plugin.
+	// Currently, we create them every time the stage is executed because we can't pass input.Client.toolRegistry to the plugin when starting the plugin.
 	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
 
 	manifests, err := p.loadManifests(ctx, input, cfg.Spec, provider.NewLoader(toolRegistry), input.Logger)
@@ -150,7 +150,7 @@ func calculateSyncState(diffResult *provider.DiffListResult, commit string) sdk.
 	}
 
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("Diff between the defined state in Git at commit %s and actual state in cluster:\n\n", commit))
+	fmt.Fprintf(&b, "Diff between the defined state in Git at commit %s and actual state in cluster:\n\n", commit)
 	b.WriteString("--- Actual   (LiveState)\n+++ Expected (Git)\n\n")
 
 	details := diffResult.Render(provider.DiffRenderOptions{

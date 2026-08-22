@@ -414,7 +414,7 @@ func (l *launcher) launchNewPiped(ctx context.Context, version string, config []
 		binaryDir   = filepath.Join(workingDir, "bin")
 		downloadURL = makeDownloadURL(version)
 	)
-	pipedPath, err := lifecycle.DownloadBinary(downloadURL, binaryDir, pipedBinaryFileName, logger)
+	pipedPath, err := lifecycle.DownloadBinary(downloadURL, binaryDir, pipedBinaryFileName, false, logger)
 	if err != nil {
 		return nil, fmt.Errorf("failed to download Piped from %s to %s (%w)", downloadURL, binaryDir, err)
 	}

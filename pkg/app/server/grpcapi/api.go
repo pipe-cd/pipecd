@@ -166,6 +166,7 @@ func (a *API) AddApplication(ctx context.Context, req *apiservice.AddApplication
 		PlatformProvider: req.PlatformProvider,
 		CloudProvider:    req.PlatformProvider,
 		Description:      req.Description,
+		Labels:           req.Labels,
 	}
 	if err := a.applicationStore.Add(ctx, &app); err != nil {
 		return nil, gRPCStoreError(err, fmt.Sprintf("add application %s", app.Id))
@@ -308,6 +309,7 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 	if len(req.Labels) == 0 {
 		return &apiservice.ListApplicationsResponse{
 			Applications: apps,
+			Cursor:       cursor,
 		}, nil
 	}
 

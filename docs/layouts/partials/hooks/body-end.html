@@ -1,0 +1,6 @@
+{{/* Docsy hook: body-end */}}
+{{/* This hook is called at the end of the body, after all content */}}
+
+{{/* Load copy button script for code snippets */}}
+{{ $jsCopyButton := resources.Get "js/copy-button.js" }}
+<script defer src="{{ $jsCopyButton.RelPermalink }}"></script>

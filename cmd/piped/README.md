@@ -3,7 +3,7 @@
 
 ## Prerequisites
 
-- [Go 1.24 or later](https://go.dev/)
+- [Go 1.26 or later](https://go.dev/)
 
 ## Repositories
 - [pipecd](https://github.com/pipe-cd/pipecd): contains all source code and documentation of PipeCD project.
@@ -19,7 +19,7 @@ For the full list of available commands, please see the Makefile at the root of 
 
 ## Setup Control Plane
 
-1. Prepare Control Plane that piped connects. If you want to run a control plane locally, see [How to run Control Plane locally](https://github.com/pipe-cd/pipecd/tree/master/cmd/pipecd#how-to-run-control-plane-locally).
+1. Prepare Control Plane that piped connects. If you want to run a control plane locally, see [How to run Control Plane locally](https://github.com/pipe-cd/pipecd/tree/master/cmd/controlplane#how-to-run-control-plane-locally).
 
 2. Access to Control Plane console, go to Piped list page and add a new piped. Then, copy generated Piped ID and key for `piped-config.yaml`
 

@@ -25,6 +25,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/piped"
 	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/planpreview"
 	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/plugin"
+	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/transfer"
 	"github.com/pipe-cd/pipecd/pkg/cli"
 )
 
@@ -43,6 +44,7 @@ func main() {
 		encrypt.NewCommand(),
 		migrate.NewCommand(),
 		plugin.NewCommand(),
+		transfer.NewCommand(),
 	)
 
 	if err := app.Run(); err != nil {

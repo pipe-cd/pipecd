@@ -10,7 +10,7 @@
                 }
                 const version = paths[0].replace('docs-', '');
                 if (version) {
-                    $('.navbar-version-menu')[0].text = version;
+                    $('.navbar-version-menu').text(version);
                 };
             });
         },

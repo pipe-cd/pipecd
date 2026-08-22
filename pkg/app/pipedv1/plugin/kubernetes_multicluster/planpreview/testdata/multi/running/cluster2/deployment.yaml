@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-cluster2
+  labels:
+    app: simple-cluster2
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: simple-cluster2
+  template:
+    metadata:
+      labels:
+        app: simple-cluster2
+    spec:
+      containers:
+      - name: helloworld
+        image: ghcr.io/pipe-cd/helloworld:v0.1.0
+        ports:
+        - containerPort: 9085

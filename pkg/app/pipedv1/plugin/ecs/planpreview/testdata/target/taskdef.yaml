@@ -1,0 +1,12 @@
+family: pipecd-ecs-test
+executionRoleArn: arn:aws:iam::123456789012:role/ECSTaskExecutionRole
+containerDefinitions:
+  - name: web
+    image: nginx:2.0
+    cpu: 256
+    memory: 512
+requiresCompatibilities:
+  - FARGATE
+networkMode: awsvpc
+cpu: "256"
+memory: "512"
