@@ -27,5 +27,5 @@ To add a plugin to your `piped` and register deploy targets, see [Configuring a 
 
 ## Writing your own plugin
 
-Anyone can develop a plugin for PipeCD. See the [plugin development guide](../contribution-guidelines/contributing-plugins/) to get started.
+Anyone can develop a plugin for PipeCD. See [Creating a Plugin](./creating-a-plugin/) for a hands-on tutorial that builds one from scratch.
 

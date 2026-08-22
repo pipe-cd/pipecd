@@ -24,6 +24,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 var (
@@ -80,6 +81,10 @@ type repo struct {
 	remote       string
 	clonedBranch string
 	gitEnvs      []string
+
+	// worktreeMu protects git worktree operations (add, prune, remove)
+	// from race conditions when multiple goroutines operate on the same repository.
+	worktreeMu sync.Mutex
 }
 
 // worktree is a git worktree.
@@ -97,6 +102,12 @@ func (r *worktree) runGitCommand(ctx context.Context, args ...string) ([]byte, e
 }
 
 func (r *worktree) Copy(dest string) (Worktree, error) {
+	// Serialize worktree operations to avoid race conditions.
+	// Multiple concurrent "git worktree add" commands on the same repository
+	// can cause "failed to read commondir" or "could not open gitdir" errors.
+	r.base.worktreeMu.Lock()
+	defer r.base.worktreeMu.Unlock()
+
 	// garbage collecting worktrees
 	_, _ = r.runGitCommand(context.Background(), "worktree", "prune") // ignore the error
 
@@ -115,6 +126,10 @@ func (r *worktree) GetPath() string {
 }
 
 func (r *worktree) Clean() error {
+	// Serialize worktree operations to avoid race conditions.
+	r.base.worktreeMu.Lock()
+	defer r.base.worktreeMu.Unlock()
+
 	if out, err := r.base.runGitCommand(context.Background(), "worktree", "remove", r.worktreePath); err != nil {
 		return formatCommandError(err, out)
 	}
@@ -152,9 +167,15 @@ func (r *repo) GetClonedBranch() string {
 
 // Copy does copying the repository to the given destination using git worktree.
 // The repository is cloned to the given destination with the detached HEAD.
-// NOTE: the given “dest” must be a path that doesn’t exist yet.
+// NOTE: the given "dest" must be a path that doesn't exist yet.
 // If you don't, you will get an error.
 func (r *repo) Copy(dest string) (Worktree, error) {
+	// Serialize worktree operations to avoid race conditions.
+	// Multiple concurrent "git worktree add" commands on the same repository
+	// can cause "failed to read commondir" or "could not open gitdir" errors.
+	r.worktreeMu.Lock()
+	defer r.worktreeMu.Unlock()
+
 	// garbage collecting worktrees
 	_, _ = r.runGitCommand(context.Background(), "worktree", "prune") // ignore the error
 
@@ -387,12 +408,12 @@ func (r *repo) CommitChanges(ctx context.Context, branch, message string, newBra
 }
 
 // Clean deletes all local git data.
-func (r repo) Clean() error {
+func (r *repo) Clean() error {
 	return os.RemoveAll(r.dir)
 }
 
 // CleanPath deletes data in the given relative path in the repo with git clean.
-func (r repo) CleanPath(ctx context.Context, relativePath string) error {
+func (r *repo) CleanPath(ctx context.Context, relativePath string) error {
 	out, err := r.runGitCommand(ctx, "clean", "-f", relativePath)
 	if err != nil {
 		return formatCommandError(err, out)
@@ -408,7 +429,7 @@ func (r *repo) checkoutNewBranch(ctx context.Context, branch string) error {
 	return nil
 }
 
-func (r repo) addCommit(ctx context.Context, message string, trailers map[string]string) error {
+func (r *repo) addCommit(ctx context.Context, message string, trailers map[string]string) error {
 	out, err := r.runGitCommand(ctx, "add", ".")
 	if err != nil {
 		return formatCommandError(err, out)
