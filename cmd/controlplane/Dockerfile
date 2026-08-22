@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # web builder
 # because this stage builds only web assets, we can use any platform
-FROM --platform=$BUILDPLATFORM node:20.19.0-alpine3.21 AS web
+FROM --platform=$BUILDPLATFORM node:24.10.0-alpine AS web
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ RUN apk add --no-cache make git
 RUN make update/web-deps
 RUN make build/web
 
-# pipecd builder
+# controlplane builder
 FROM --platform=$BUILDPLATFORM golang:1.26.2 AS builder
 
 ARG TARGETOS
@@ -25,7 +25,7 @@ RUN go mod download
 
 COPY . ./
 
-RUN make build/go MOD=pipecd BUILD_OS=${TARGETOS} BUILD_ARCH=${TARGETARCH}
+RUN make build/go MOD=controlplane BUILD_OS=${TARGETOS} BUILD_ARCH=${TARGETARCH}
 
 FROM alpine:3.22.2
 
@@ -44,7 +44,7 @@ ENV PATH="/google-cloud-sdk/bin:${PATH}"
 
 RUN mkdir -p web/static
 
-COPY --from=builder /app/.artifacts/pipecd /usr/local/bin/pipecd
+COPY --from=builder /app/.artifacts/controlplane /usr/local/bin/controlplane
 COPY --from=web /app/.artifacts/web-static web/static
 
-ENTRYPOINT ["pipecd"]
+ENTRYPOINT ["controlplane"]

@@ -1,7 +1,7 @@
 ---
 title: "Script run plugin"
 linkTitle: "Script run"
-weight: 70
+weight: 80
 description: >
   Run arbitrary commands as a pipeline stage.
 ---

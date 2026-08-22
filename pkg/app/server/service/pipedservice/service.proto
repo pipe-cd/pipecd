@@ -273,6 +273,7 @@ message GetDeploymentResponse {
 }
 
 message ListNotCompletedDeploymentsRequest {
+    string cursor = 1;
 }
 
 message ListNotCompletedDeploymentsResponse {
