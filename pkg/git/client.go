@@ -33,6 +33,14 @@ const (
 	defaultEmail    = "pipecd.dev@gmail.com"
 )
 
+// basicAuthHeader builds the value of an HTTP "Authorization" header
+// for basic authentication with the given username and password.
+func basicAuthHeader(username, password string) string {
+	token := fmt.Sprintf("%s:%s", username, password)
+	encodedToken := base64.StdEncoding.EncodeToString([]byte(token))
+	return fmt.Sprintf("Authorization: Basic %s", encodedToken)
+}
+
 // Client is a git client for cloning/fetching git repo.
 // It keeps a local cache for faster future cloning.
 type Client interface {
@@ -148,9 +156,7 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 	_, err, _ := c.repoSingleFlights.Do(repoID, func() (interface{}, error) {
 		authArgs := []string{}
 		if c.username != "" && c.password != "" {
-			token := fmt.Sprintf("%s:%s", c.username, c.password)
-			encodedToken := base64.StdEncoding.EncodeToString([]byte(token))
-			header := fmt.Sprintf("Authorization: Basic %s", encodedToken)
+			header := basicAuthHeader(c.username, c.password)
 			authArgs = append(authArgs, "-c", fmt.Sprintf("http.extraHeader=%s", header))
 		}
 
@@ -239,6 +245,14 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 	if c.username != "" || c.email != "" {
 		if err := r.setUser(ctx, c.username, c.email); err != nil {
 			return nil, fmt.Errorf("failed to set user: %v", err)
+		}
+	}
+	// Persist the basic auth header into the checked-out repo's git config so that
+	// subsequent git operations (e.g. pull, fetch, push) run directly against the
+	// remote continue to be authenticated, not just this initial clone.
+	if c.username != "" && c.password != "" {
+		if err := r.setHTTPAuthHeader(ctx, basicAuthHeader(c.username, c.password)); err != nil {
+			return nil, fmt.Errorf("failed to set up http auth: %v", err)
 		}
 	}
 
