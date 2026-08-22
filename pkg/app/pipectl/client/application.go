@@ -20,6 +20,8 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/apiservice"
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -50,10 +52,14 @@ func SyncApplication(
 	ticker := time.NewTicker(checkInterval)
 	defer ticker.Stop()
 
-	check := func() (deploymentID string, shouldRetry bool) {
-		cmd, err := getCommand(ctx, cli, resp.CommandId)
-		if err != nil {
-			logger.Error(fmt.Sprintf("Failed while retrieving command information. Try again. (%v)", err))
+	check := func() (deploymentID string, shouldRetry bool, err error) {
+		cmd, getErr := getCommand(ctx, cli, resp.CommandId)
+		if getErr != nil {
+			if status.Code(getErr) == codes.NotFound {
+				err = status.Errorf(codes.NotFound, "command %q not found", resp.CommandId)
+				return
+			}
+			logger.Error(fmt.Sprintf("Failed while retrieving command information. Try again. (%v)", getErr))
 			shouldRetry = true
 			return
 		}
@@ -88,7 +94,10 @@ func SyncApplication(
 			return "", ctx.Err()
 
 		case <-ticker.C:
-			deploymentID, shouldRetry := check()
+			deploymentID, shouldRetry, err := check()
+			if err != nil {
+				return "", err
+			}
 			if shouldRetry {
 				logger.Info("...")
 				continue
