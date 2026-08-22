@@ -3,7 +3,7 @@ module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes
 go 1.26.2
 
 require (
-	github.com/creasty/defaults v1.6.0
+	github.com/creasty/defaults v1.8.0
 	github.com/goccy/go-yaml v1.9.8
 	github.com/google/go-cmp v0.7.0
 	github.com/pipe-cd/piped-plugin-sdk-go v0.4.0
