@@ -20,7 +20,7 @@ The Control Plane `server` component exposes three separate gRPC services. Each 
 | `WebService`   | PipeCD web browser client      | Signed JWT (session) | `token` cookie           |
 | `PipedService` | `piped` / `pipedv1` agent      | Piped token          | `authorization` metadata |
 
-Each service is registered and started independently in `cmd/pipecd/server.go`, with its own port option (`apiPort`, `webAPIPort`, `pipedAPIPort`) and its own auth interceptor (`rpc.WithAPIKeyAuthUnaryInterceptor`, `rpc.WithJWTAuthUnaryInterceptor`, `rpc.WithPipedTokenAuthUnaryInterceptor`). A request that reaches the wrong port, or presents the wrong credential type for that port, is rejected before it reaches any handler code.
+Each service is registered and started independently in `cmd/controlplane/server.go`, with its own port option (`apiPort`, `webAPIPort`, `pipedAPIPort`) and its own auth interceptor (`rpc.WithAPIKeyAuthUnaryInterceptor`, `rpc.WithJWTAuthUnaryInterceptor`, `rpc.WithPipedTokenAuthUnaryInterceptor`). A request that reaches the wrong port, or presents the wrong credential type for that port, is rejected before it reaches any handler code.
 
 Every unary request also passes through `rpc.WithRequestValidationUnaryInterceptor()`: if the request message implements a `Validate() error` method (generated from the `(validate.rules)` field options declared in the `.proto` files), that validation runs first, and a failure short-circuits the call with `InvalidArgument`.
 
