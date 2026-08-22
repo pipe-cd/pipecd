@@ -65,4 +65,10 @@ mv docs/config.toml.tmp docs/config.toml
 sed "s/const latestPath.*/const latestPath = \"\/docs-"$VERSION"\/\"/g" docs/main.go > docs/main.go.tmp
 mv docs/main.go.tmp docs/main.go
 
+# Update docs/netlify.toml redirect to point to new latest version
+sed "s|to = \"/docs-.*/:splat\"|to = \"/docs-$VERSION/:splat\"|g" docs/netlify.toml > docs/netlify.toml.tmp
+mv docs/netlify.toml.tmp docs/netlify.toml
+sed "s|to = \"/docs-.*/\"|to = \"/docs-$VERSION/\"|g" docs/netlify.toml > docs/netlify.toml.tmp
+mv docs/netlify.toml.tmp docs/netlify.toml
+
 echo "Version docs has been prepared successfully at $CONTENT_DIR/docs-$VERSION/"
