@@ -13,6 +13,7 @@ src
 │     ├── index.test.ts
 │     └── index.stories.ts
 ├── constants # shared constants
+├── contexts # shared react contexts
 ├── hooks # shared hooks
 ├── mocks # API mock files
 │  └── services
@@ -29,7 +30,7 @@ src
 
 ### Prerequisites
 
-- [NodeJS v20.19.0 or later](https://nodejs.org/en/)
+- [NodeJS v24.10.0 or later](https://nodejs.org/en/)
 - [Yarn](https://yarnpkg.com/)
 
 ### Running with Mocks(msw)

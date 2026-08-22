@@ -15,25 +15,7 @@ There are two types of plugins:
 
 ## Official plugins
 
-The PipeCD maintainers develop and maintain the following plugins. Each plugin is versioned and released independently. You can download the plugin binaries from the [releases page](https://github.com/pipe-cd/pipecd/releases).
-
-### Deployment plugins
-
-| Plugin | Description |
-|--------|-------------|
-| Kubernetes | Deploys applications to a Kubernetes cluster. Supports quick sync and pipeline sync with canary, baseline, and blue-green strategies. |
-| Kubernetes multi-cluster | Deploys a single application to multiple Kubernetes clusters with one pipeline. |
-| Terraform | Applies infrastructure changes by running `terraform plan` and `terraform apply` in a pipeline. |
-| Amazon ECS | Deploys applications to Amazon ECS. |
-
-### Stage plugins
-
-| Plugin | Stage | Description |
-|--------|-------|-------------|
-| Wait | `WAIT` | Waits for a specified duration before continuing the pipeline. |
-| Wait approval | `WAIT_APPROVAL` | Pauses the pipeline until a user approves the deployment. |
-| Analysis | `ANALYSIS` | Evaluates the deployment by querying metrics, logs, or HTTP endpoints. |
-| Script run | `SCRIPT_RUN` | Runs arbitrary commands as a pipeline stage. |
+The PipeCD maintainers develop and maintain a set of official plugins, each versioned and released independently. See [Official Plugins](official/) for the full list and configuration guides.
 
 ## Community plugins
 
@@ -45,4 +27,5 @@ To add a plugin to your `piped` and register deploy targets, see [Configuring a 
 
 ## Writing your own plugin
 
-Anyone can develop a plugin for PipeCD. See the [plugin development guide](../contribution-guidelines/contributing-plugins/) to get started.
+Anyone can develop a plugin for PipeCD. See [Creating a Plugin](./creating-a-plugin/) for a hands-on tutorial that builds one from scratch.
+
