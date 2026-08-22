@@ -37,7 +37,7 @@ import (
 // fresher one for the same resource is not a made-up scenario.
 func TestPatchKubernetesApplicationLiveState_OutOfOrderEvents(t *testing.T) {
 	s := &store{
-		cache: &applicationLiveStateCache{backend: memorycache.NewCache()},
+		cache:  &applicationLiveStateCache{backend: memorycache.NewCache()},
 		logger: zap.NewNop(),
 	}
 
