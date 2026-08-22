@@ -65,6 +65,9 @@ func ParseRSAPublicKeyFromPem(data []byte) (*rsa.PublicKey, error) {
 	var err error
 	data = bytes.TrimSpace(data)
 	block, _ := pem.Decode(data)
+	if block == nil {
+		return nil, errors.New("failed to decode PEM block")
+	}
 	bytes := block.Bytes
 
 	if x509.IsEncryptedPEMBlock(block) {
@@ -89,6 +92,9 @@ func ParseRSAPrivateKeyFromPem(data []byte) (*rsa.PrivateKey, error) {
 	var err error
 	data = bytes.TrimSpace(data)
 	block, _ := pem.Decode(data)
+	if block == nil {
+		return nil, errors.New("failed to decode PEM block")
+	}
 	bytes := block.Bytes
 
 	if x509.IsEncryptedPEMBlock(block) {

@@ -52,6 +52,7 @@ func (s *scheduler) shouldSkipStage(ctx context.Context, in executor.Input) (ski
 	if err != nil {
 		return false, err
 	}
+	defer repo.Clean()
 
 	// Check by path pattern
 	skip, err = skipByPathPattern(ctx, skipOptions, repo, in.RunningDSP.Revision(), in.TargetDSP.Revision())
