@@ -14,6 +14,12 @@ Component Architecture
 
 ### Control Plane
 
+![Control Plane Architecture Overview](/images/control-plane-components.png)
+<p style="text-align: center;"
+>
+Control Plane Architecture
+</p>
+
 The Control Plane is the centralized management service of PipeCD. It coordinates all activities between users, projects, and `piped` instances.
 
 The Control Plane remains the backbone of the system but is now fully plugin-aware. Instead of directly handling deployment logic for specific platforms, it interacts with `piped` agents that run plugin binaries, allowing the Control Plane to manage deployments across any platform supported by plugins.
