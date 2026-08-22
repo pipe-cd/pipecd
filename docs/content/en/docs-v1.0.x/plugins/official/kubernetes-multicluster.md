@@ -1,7 +1,7 @@
 ---
 title: "Kubernetes multi-cluster plugin"
 linkTitle: "Kubernetes multi-cluster"
-weight: 10
+weight: 20
 description: >
   Deploy a single Kubernetes application to multiple clusters with one pipeline.
 ---
