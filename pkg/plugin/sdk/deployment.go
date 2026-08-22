@@ -193,6 +193,10 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 
 	// Get the deploy targets set on the deployment from the piped plugin config.
 	dtNames := request.GetInput().GetDeployment().GetDeployTargets(s.config.Name)
+	if len(dtNames) == 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "no deploy targets provided")
+	}
+
 	deployTargets := make([]*DeployTarget[DeployTargetConfig], 0, len(dtNames))
 	for _, name := range dtNames {
 		dt, ok := s.deployTargets[name]
