@@ -15,10 +15,12 @@
 package livestate
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap/zaptest"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
@@ -657,6 +659,129 @@ func Test_calculateSyncStatus(t *testing.T) {
 			t.Parallel()
 			got := calculateSyncStatus(tt.args.states)
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+type capturingLoader struct {
+	capturedInput provider.LoaderInput
+}
+
+func (c *capturingLoader) LoadManifests(_ context.Context, input provider.LoaderInput) ([]provider.Manifest, error) {
+	c.capturedInput = input
+	return nil, nil
+}
+
+func TestLoadManifests_KustomizeOverrides(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name        string
+		specInput   kubeconfig.KubernetesDeploymentInput
+		multiTarget *kubeconfig.KubernetesMultiTarget
+		wantVersion string
+		wantOptions map[string]string
+	}{
+		{
+			name: "top-level values are used when multiTarget is nil",
+			specInput: kubeconfig.KubernetesDeploymentInput{
+				KustomizeVersion: "5.3.0",
+				KustomizeOptions: map[string]string{
+					"flag": "value",
+				},
+			},
+			multiTarget: nil,
+			wantVersion: "5.3.0",
+			wantOptions: map[string]string{
+				"flag": "value",
+			},
+		},
+		{
+			name: "multiTarget kustomizeVersion overrides top-level",
+			specInput: kubeconfig.KubernetesDeploymentInput{
+				KustomizeVersion: "5.3.0",
+			},
+			multiTarget: &kubeconfig.KubernetesMultiTarget{
+				KustomizeVersion: "5.4.3",
+			},
+			wantVersion: "5.4.3",
+			wantOptions: nil,
+		},
+		{
+			name: "multiTarget kustomizeOptions override top-level",
+			specInput: kubeconfig.KubernetesDeploymentInput{
+				KustomizeOptions: map[string]string{
+					"original": "value",
+				},
+			},
+			multiTarget: &kubeconfig.KubernetesMultiTarget{
+				KustomizeOptions: map[string]string{
+					"enable-helm": "",
+				},
+			},
+			wantVersion: "",
+			wantOptions: map[string]string{
+				"enable-helm": "",
+			},
+		},
+		{
+			name: "multiTarget overrides both version and options",
+			specInput: kubeconfig.KubernetesDeploymentInput{
+				KustomizeVersion: "5.3.0",
+				KustomizeOptions: map[string]string{
+					"original": "value",
+				},
+			},
+			multiTarget: &kubeconfig.KubernetesMultiTarget{
+				KustomizeVersion: "5.4.3",
+				KustomizeOptions: map[string]string{
+					"enable-helm": "",
+				},
+			},
+			wantVersion: "5.4.3",
+			wantOptions: map[string]string{
+				"enable-helm": "",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			cl := &capturingLoader{}
+			p := &Plugin{}
+
+			spec := &kubeconfig.KubernetesApplicationSpec{
+				Input: tt.specInput,
+			}
+
+			input := &sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec]{
+				Request: sdk.GetLivestateRequest[kubeconfig.KubernetesApplicationSpec]{
+					PipedID:         "piped-id",
+					ApplicationID:   "app-id",
+					ApplicationName: "app-name",
+					DeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+						CommitHash:                "commit-hash",
+						ApplicationDirectory:      "testdata",
+						ApplicationConfigFilename: "app.pipecd.yaml",
+					},
+				},
+			}
+
+			_, err := p.loadManifests(
+				context.Background(),
+				input,
+				spec,
+				cl,
+				zaptest.NewLogger(t),
+				tt.multiTarget,
+			)
+
+			require.NoError(t, err)
+
+			assert.Equal(t, tt.wantVersion, cl.capturedInput.KustomizeVersion)
+			assert.Equal(t, tt.wantOptions, cl.capturedInput.KustomizeOptions)
 		})
 	}
 }
