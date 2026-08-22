@@ -1,4 +1,4 @@
-// Copyright 2024 The PipeCD Authors.
+// Copyright 2026 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,24 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package deployment
 
 import (
-	"log"
+	"os"
+	"testing"
 
-	"github.com/pipe-cd/pipecd/pkg/cli"
+	"github.com/go-logr/logr"
+	crlog "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-func main() {
-	app := cli.NewApp(
-		"pipecd",
-		"Control-plane component for PipeCD.",
-	)
-	app.AddCommands(
-		NewServerCommand(),
-		NewOpsCommand(),
-	)
-	if err := app.Run(); err != nil {
-		log.Fatal(err)
-	}
+func TestMain(m *testing.M) {
+	crlog.SetLogger(logr.Discard())
+	os.Exit(m.Run())
 }
