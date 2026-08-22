@@ -51,6 +51,22 @@ func (c *Command) IsRunning() bool {
 	}
 }
 
+// Done returns a channel that is closed once the process has exited,
+// no matter whether it was stopped on purpose (GracefulStop) or it
+// exited/crashed on its own.
+func (c *Command) Done() <-chan struct{} {
+	return c.stoppedCh
+}
+
+// Err returns the error the process exited with, if any. It is only
+// meaningful after the channel returned by Done has been closed.
+func (c *Command) Err() error {
+	if perr := c.result.Load(); perr != nil {
+		return *perr
+	}
+	return nil
+}
+
 func (c *Command) GracefulStop(period time.Duration) error {
 	// For graceful shutdown, we send SIGTERM signal to old Piped process
 	// and wait grace-period of time before force killing it.
