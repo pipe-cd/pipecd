@@ -1,0 +1,55 @@
+name: docs-link-checker
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "docs/**"
+  pull_request:
+    branches:
+      - master
+      - "release-v*"
+      - "feat/*"
+    paths:
+      - "docs/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  link-check:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Get files to check
+        id: files-to-check
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin master --depth=1
+            # Get list of changed .md files in the docs directory compared to origin/master
+            files=$(git diff --name-only origin/master...HEAD | grep -E '^docs/.*\.md$' | xargs)
+            if [ -n "$files" ]; then
+              echo "files=$files" >> $GITHUB_OUTPUT
+              echo "run_check=true" >> $GITHUB_OUTPUT
+            else
+              echo "No markdown files changed in docs/."
+              echo "run_check=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            # On master push or other events, check all markdown files in docs/content/ and docs/README.md
+            echo "files=docs/content/**/*.md docs/README.md" >> $GITHUB_OUTPUT
+            echo "run_check=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Link Checker
+        if: steps.files-to-check.outputs.run_check == 'true'
+        uses: lycheeverse/lychee-action@f613c4a64e50d792e0b31ec34bbcbba12263c6a6 # v2.3.0
+        with:
+          args: --verbose --no-progress --config lychee.toml ${{ steps.files-to-check.outputs.files }}
+          fail: true
