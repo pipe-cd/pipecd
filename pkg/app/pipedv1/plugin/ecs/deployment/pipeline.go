@@ -90,9 +90,18 @@ func buildPipelineStages(input *sdk.BuildPipelineSyncStagesInput) []sdk.Pipeline
 	}
 
 	if input.Request.Rollback {
+		// The rollback stage must reuse one of the requested indexes and
+		// piped runs rollback stages as a trail sorted by index.
+		// Use the smallest requested index so our rollback runs first among all plugins' rollbacks.
+		minIndex := stages[0].Index
+		for _, s := range stages[1:] {
+			if s.Index < minIndex {
+				minIndex = s.Index
+			}
+		}
 		out = append(out, sdk.PipelineStage{
 			Name:     StageECSRollback,
-			Index:    len(stages) + 1,
+			Index:    minIndex,
 			Rollback: true,
 		})
 	}
