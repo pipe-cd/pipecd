@@ -1,5 +1,3 @@
-Pulled: ghcr.io/pipe-cd/chart/piped:v0.58.0
-Digest: sha256:908ed9a06f531fc97eda097899cf18c91004c34439542ba1d5840f94557411db
 ---
 # Source: piped/templates/rbac.yaml
 apiVersion: v1

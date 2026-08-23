@@ -1,5 +1,3 @@
-Pulled: ghcr.io/pipe-cd/chart/controlplane:v0.58.0
-Digest: sha256:3eed85bbc435f45bd9cd0e52470557526482fe1b086cd94c7f9afdcb32e471c7
 ---
 # Source: controlplane/templates/secret.yaml
 apiVersion: v1
