@@ -81,7 +81,8 @@ func TestBuildPipelineStages(t *testing.T) {
 					Rollback: tc.rollback,
 				},
 			}
-			got := buildPipelineStages(input)
+			got, err := buildPipelineStages(input)
+			require.NoError(t, err)
 
 			require.Len(t, got, len(tc.wantNames))
 			for i, s := range got {
@@ -91,6 +92,21 @@ func TestBuildPipelineStages(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestBuildPipelineStagesRollbackWithoutStages ensures a rollback request with
+// no stages returns an error instead of panicking on stages[0].
+func TestBuildPipelineStagesRollbackWithoutStages(t *testing.T) {
+	t.Parallel()
+
+	got, err := buildPipelineStages(&sdk.BuildPipelineSyncStagesInput{
+		Request: sdk.BuildPipelineSyncStagesRequest{
+			Stages:   []sdk.StageConfig{},
+			Rollback: true,
+		},
+	})
+	assert.Nil(t, got)
+	assert.ErrorIs(t, err, ErrRollbackRequiresStages)
 }
 
 // replica of piped's controller.validateStageIndexes (unexported there), kept in sync manually.
@@ -117,14 +133,15 @@ func TestBuildPipelineStagesRollbackIndexContract(t *testing.T) {
 		{Name: StageECSPrimaryRollout, Index: 0},
 		{Name: StageECSCanaryRollout, Index: 1},
 	}
-	got := buildPipelineStages(&sdk.BuildPipelineSyncStagesInput{
+	got, err := buildPipelineStages(&sdk.BuildPipelineSyncStagesInput{
 		Request: sdk.BuildPipelineSyncStagesRequest{
 			Stages:   reqStages,
 			Rollback: true,
 		},
 	})
+	require.NoError(t, err)
 
-	err := validateStageIndexes(reqStages, got)
+	err = validateStageIndexes(reqStages, got)
 	assert.NoError(t, err, "rollback stage index must be one of the requested indexes")
 }
 
