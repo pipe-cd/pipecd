@@ -529,3 +529,93 @@ func TestMergeMetadata(t *testing.T) {
 		})
 	}
 }
+
+func newTestDeployment() *model.Deployment {
+	return &model.Deployment{
+		Id:              "deployment-id",
+		ApplicationId:   "application-id",
+		ApplicationName: "application-name",
+		PipedId:         "piped-id",
+		ProjectId:       "project-id",
+		Kind:            model.ApplicationKind_KUBERNETES,
+		GitPath: &model.ApplicationGitPath{
+			Repo: &model.ApplicationGitRepository{Id: "repo-id"},
+			Path: "path",
+		},
+		PlatformProvider: "platform-provider",
+		Trigger: &model.DeploymentTrigger{
+			Commit: &model.Commit{
+				Hash:      "hash",
+				Message:   "message",
+				Author:    "author",
+				Branch:    "branch",
+				CreatedAt: 1,
+			},
+			Timestamp: 1,
+		},
+		Status:      model.DeploymentStatus_DEPLOYMENT_PENDING,
+		CompletedAt: 1,
+		CreatedAt:   1,
+		UpdatedAt:   1,
+	}
+}
+
+func TestUpdateMetadataWithNilMetadataV2(t *testing.T) {
+	tests := []struct {
+		name   string
+		update func(DeploymentStore, context.Context, string, map[string]string) error
+		check  func(*testing.T, *model.Deployment)
+	}{
+		{
+			name: "shared metadata",
+			update: func(s DeploymentStore, ctx context.Context, id string, metadata map[string]string) error {
+				return s.UpdateSharedMetadata(ctx, id, metadata)
+			},
+			check: func(t *testing.T, d *model.Deployment) {
+				require.NotNil(t, d.MetadataV2)
+				require.NotNil(t, d.MetadataV2.Shared)
+				assert.Equal(t, map[string]string{"key": "value"}, d.MetadataV2.Shared.KeyValues)
+			},
+		},
+		{
+			name: "plugin metadata",
+			update: func(s DeploymentStore, ctx context.Context, id string, metadata map[string]string) error {
+				return s.UpdatePluginMetadata(ctx, id, "test-plugin", metadata)
+			},
+			check: func(t *testing.T, d *model.Deployment) {
+				require.NotNil(t, d.MetadataV2)
+				require.NotNil(t, d.MetadataV2.Plugins)
+				require.NotNil(t, d.MetadataV2.Plugins["test-plugin"])
+				assert.Equal(t, map[string]string{"key": "value"}, d.MetadataV2.Plugins["test-plugin"].KeyValues)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			deployment := newTestDeployment()
+
+			ds := NewMockDataStore(ctrl)
+			ds.EXPECT().
+				Update(gomock.Any(), gomock.Any(), deployment.Id, gomock.Any()).
+				DoAndReturn(func(ctx context.Context, col Collection, id string, updater Updater) error {
+					return updater(deployment)
+				})
+
+			s := NewDeploymentStore(ds)
+
+			err := tt.update(
+				s,
+				context.Background(),
+				deployment.Id,
+				map[string]string{"key": "value"},
+			)
+			require.NoError(t, err)
+
+			tt.check(t, deployment)
+		})
+	}
+}
