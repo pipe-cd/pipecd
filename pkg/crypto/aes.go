@@ -86,7 +86,7 @@ func (a *AESEncryptDecrypter) Decrypt(encryptedText string) (string, error) {
 	}
 
 	if len(encrypted) < gcm.NonceSize() {
-		return "", fmt.Errorf("ciphertext too short")
+		return "", fmt.Errorf("ciphertext too short: got %d bytes, need at least %d", len(encrypted), gcm.NonceSize())
 	}
 
 	nonce := encrypted[:gcm.NonceSize()]
