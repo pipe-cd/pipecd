@@ -184,7 +184,7 @@ jobs:
 
       # Building and pushing Helm charts.
       - name: Install helm
-        uses: azure/setup-helm@v4
+        uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
         with:
           version: ${{ env.HELM_VERSION }}
       - name: Login to OCI using Helm
@@ -200,7 +200,7 @@ jobs:
         run: |
           helm template pipedv1-exp .artifacts/pipedv1-exp-${{ inputs.version }}.tgz --version ${{ inputs.version }} -n pipecd --set quickstart.enabled=true --set quickstart.pipedId=\<YOUR_PIPED_ID\> --set quickstart.pipedKeyData=\<YOUR_PIPED_KEY_DATA\> > quickstart/manifests/pipedv1-exp.yaml
       - name: Publish pipedv1 experimental quickstart manifests
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           title: '[bot] Publish pipedv1 experimental quickstart manifests'
           commit-message: '[bot] Publish pipedv1 experimental quickstart manifests'
