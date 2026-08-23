@@ -35,7 +35,7 @@ const (
 )
 
 type client interface {
-	QueryRange(ctx context.Context, query string, r v1.Range) (model.Value, v1.Warnings, error)
+	QueryRange(ctx context.Context, query string, r v1.Range, opts ...v1.Option) (model.Value, v1.Warnings, error)
 }
 
 // Provider is a client for prometheus.
@@ -65,7 +65,11 @@ func NewProvider(address string, opts ...Option) (*Provider, error) {
 		Address: address,
 	}
 	if p.username != "" && p.password != "" {
-		cfg.RoundTripper = config.NewBasicAuthRoundTripper(p.username, config.Secret(p.password), "", api.DefaultRoundTripper)
+		cfg.RoundTripper = config.NewBasicAuthRoundTripper(
+			config.NewInlineSecret(p.username),
+			config.NewInlineSecret(p.password),
+			api.DefaultRoundTripper,
+		)
 	}
 	client, err := api.NewClient(cfg)
 	if err != nil {

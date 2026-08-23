@@ -125,7 +125,7 @@ spec: {}
 			result:         &GetLivestateResponse{},
 			err:            errors.New("some error"),
 			expectErr:      true,
-			expectedStatus: codes.Internal,
+			expectedStatus: codes.InvalidArgument,
 		},
 	}
 
