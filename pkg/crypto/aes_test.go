@@ -48,11 +48,10 @@ func TestAESDecryptShortCiphertext(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, ed)
 
-	// Short base64 encoded string (less than 12 bytes nonce)
+	// Short base64 encoded string (smaller than GCM nonce size)
 	_, err = ed.Decrypt("c2hvcnQ=")
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Contains(t, err.Error(), "ciphertext is shorter than nonce size")
-
 	// Empty string
 	_, err = ed.Decrypt("")
 	assert.Error(t, err)
