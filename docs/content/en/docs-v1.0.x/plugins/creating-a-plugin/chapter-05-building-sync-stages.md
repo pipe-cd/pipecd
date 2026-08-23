@@ -12,11 +12,41 @@ In the previous chapter the plugin told `piped` which stages it provides and whi
 
 `piped` calls `BuildPipelineSyncStages` for a pipeline sync deployment. It passes the stages the user defined in the application's pipeline, and the plugin returns the stage list `piped` runs.
 
+For example, suppose the user defines this pipeline:
+
+```yaml
+pipeline:
+  stages:
+    - name: FILE_DIFF
+    - name: FILE_SYNC
+```
+
+`piped` passes those stages to the plugin with their positions as indexes:
+
+```go
+// input.Request.Stages
+[]sdk.StageConfig{
+    {Name: "FILE_DIFF", Index: 0},
+    {Name: "FILE_SYNC", Index: 1},
+}
+```
+
+`BuildPipelineSyncStages` returns them unchanged. When `Rollback` is true, it also appends a rollback stage:
+
+```go
+// returned Stages, Rollback = true
+[]sdk.PipelineStage{
+    {Name: "FILE_DIFF", Index: 0},
+    {Name: "FILE_SYNC", Index: 1},
+    {Name: "FILE_ROLLBACK", Index: 0, Rollback: true}, // Index matches a requested stage; piped still runs it last
+}
+```
+
 Three rules shape the result:
 
 - Each returned stage carries an `Index`, which sets the order the stage runs in. Return the same `Index` that came in on the matching request stage. Returning an `Index` that was not in the request is an error, so copy it straight through.
 - The file plugin only knows two pipeline stages, `FILE_DIFF` and `FILE_SYNC`. Treat any other name as an error rather than passing it on.
-- When `input.Request.Rollback` is true, append a rollback stage in addition to the user's stages. Its `Index` decides the order `piped` runs rollback stages across plugins, so set it to the smallest `Index` among the defined stages. That runs the rollback in line with the plugin's first stage.
+- When `input.Request.Rollback` is true, append a rollback stage in addition to the user's stages. `piped` always runs rollback stages after every normal stage, so this `Index` does not position the rollback within the pipeline. It must match one of the `Index` values from the request, and it only orders rollback stages relative to one another when several plugins contribute them. Set it to the smallest requested `Index` as a safe, valid choice.
 
 Replace the empty method with the following:
 
@@ -26,7 +56,7 @@ func (p *plugin) BuildPipelineSyncStages(ctx context.Context, _ *sdk.ConfigNone,
 		return nil, fmt.Errorf("no stages defined in the request")
 	}
 
-	stages := make([]sdk.PipelineStage, 0, len(input.Request.Stages)+1)
+	stages := make([]sdk.PipelineStage, 0, len(input.Request.Stages)+1) // +1 leaves room for the rollback stage without a second allocation
 	for _, s := range input.Request.Stages {
 		switch s.Name {
 		case stageDiff, stageSync:
@@ -40,6 +70,8 @@ func (p *plugin) BuildPipelineSyncStages(ctx context.Context, _ *sdk.ConfigNone,
 	}
 
 	if input.Request.Rollback {
+		// The rollback stage's Index must match one from the request; it only orders
+		// rollback stages across plugins, since piped runs them after the normal stages.
 		minIndex := input.Request.Stages[0].Index
 		for _, s := range input.Request.Stages[1:] {
 			if s.Index < minIndex {
@@ -56,8 +88,6 @@ func (p *plugin) BuildPipelineSyncStages(ctx context.Context, _ *sdk.ConfigNone,
 	return &sdk.BuildPipelineSyncStagesResponse{Stages: stages}, nil
 }
 ```
-
-Building the slice with a capacity of `len(input.Request.Stages)+1` leaves room for the rollback stage without a second allocation.
 
 ## Build the quick sync stages
 
