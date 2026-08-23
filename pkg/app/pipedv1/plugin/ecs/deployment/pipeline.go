@@ -96,14 +96,12 @@ func buildPipelineStages(input *sdk.BuildPipelineSyncStagesInput) ([]sdk.Pipelin
 	}
 
 	if input.Request.Rollback {
-		// Guard against a rollback request without any stage, which would
-		// panic on stages[0] below.
+		// Guard against a rollback request without any stage
 		if len(stages) == 0 {
 			return nil, ErrRollbackRequiresStages
 		}
 		// The rollback stage must reuse one of the requested indexes and
 		// piped runs rollback stages as a trail sorted by index.
-		// Use the smallest requested index so our rollback runs first among all plugins' rollbacks.
 		minIndex := stages[0].Index
 		for _, s := range stages[1:] {
 			if s.Index < minIndex {
