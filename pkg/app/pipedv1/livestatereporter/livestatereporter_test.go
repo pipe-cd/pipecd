@@ -234,7 +234,7 @@ func Test_reporter_flush(t *testing.T) {
 
 	const (
 		repoID     = "repo-id"
-		appPath    = "examples/v0/kubernetes/canary"
+		appPath    = "examples/v1/kubernetes/canary"
 		configFile = "app.pipecd.yaml"
 	)
 
