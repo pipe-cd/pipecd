@@ -109,7 +109,8 @@ func TestBuildPipelineStagesRollbackWithoutStages(t *testing.T) {
 	assert.ErrorIs(t, err, ErrRollbackRequiresStages)
 }
 
-// replica of piped's controller.validateStageIndexes (unexported there), kept in sync manually.
+// validateStageIndexes is a minimal subset of piped's controller.validateStageIndexes (unexported there).
+// It only enforces the "range" rule: every response Index must exist in the request.
 func validateStageIndexes(req []sdk.StageConfig, res []sdk.PipelineStage) error {
 	reqIndexes := make(map[int]struct{})
 	for _, s := range req {
