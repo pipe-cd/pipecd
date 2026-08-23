@@ -19,9 +19,8 @@ package livestatereporter
 import (
 	"context"
 	"fmt"
-	"os"
-	"os/exec"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -220,35 +219,14 @@ func Test_reporter_flushSnapshots(t *testing.T) {
 	pr.flushSnapshots(context.Background())
 }
 
-// createLocalTestRepo creates a local git repository with the required files for testing.
-// It returns the path to the repository.
-func createLocalTestRepo(t *testing.T, repoDir string, files map[string]string) {
+// repoRoot returns the root of the pipecd repository, which contains the examples/ directory.
+func repoRoot(t *testing.T) string {
 	t.Helper()
-
-	gitPath, err := exec.LookPath("git")
-	require.NoError(t, err)
-
-	require.NoError(t, os.MkdirAll(repoDir, 0o755))
-
-	run := func(args ...string) {
-		cmd := exec.Command(gitPath, args...)
-		cmd.Dir = repoDir
-		out, err := cmd.CombinedOutput()
-		require.NoError(t, err, "git %v failed: %s", args, out)
-	}
-
-	run("init", "--initial-branch", "master")
-	run("config", "user.email", "test@example.com")
-	run("config", "user.name", "Test User")
-
-	for path, content := range files {
-		fullPath := filepath.Join(repoDir, path)
-		require.NoError(t, os.MkdirAll(filepath.Dir(fullPath), 0o755))
-		require.NoError(t, os.WriteFile(fullPath, []byte(content), 0o644))
-	}
-
-	run("add", ".")
-	run("commit", "-m", "Initial commit")
+	_, filename, _, ok := runtime.Caller(0)
+	require.True(t, ok)
+	// This file is at pkg/app/pipedv1/livestatereporter/livestatereporter_test.go,
+	// so the repo root is 4 directories up.
+	return filepath.Join(filepath.Dir(filename), "..", "..", "..", "..")
 }
 
 func Test_reporter_flush(t *testing.T) {
@@ -256,30 +234,21 @@ func Test_reporter_flush(t *testing.T) {
 
 	const (
 		repoID     = "repo-id"
-		appPath    = "kubernetes/canary"
+		appPath    = "examples/v0/kubernetes/canary"
 		configFile = "app.pipecd.yaml"
 	)
 
-	appPipecdYAML := `apiVersion: pipecd.dev/v1beta1
-kind: Application
-spec:
-  plugins:
-    k8s: {}
-`
-
-	remoteDir := t.TempDir()
-	repoDir := filepath.Join(remoteDir, repoID)
-	createLocalTestRepo(t, repoDir, map[string]string{
-		filepath.Join(appPath, configFile): appPipecdYAML,
-	})
+	// Use the pipecd repo root as the remote — it contains the examples/ directory
+	// which is synced to the pipe-cd/examples repository.
+	remote := repoRoot(t)
 
 	gitClient, err := git.NewClient()
 	require.NoError(t, err)
 
 	cfgRepo := config.PipedRepository{
 		RepoID: repoID,
-		Remote: repoDir,
-		Branch: "master",
+		Remote: remote,
+		Branch: "",
 	}
 
 	repo, err := gitClient.Clone(context.Background(), cfgRepo.RepoID, cfgRepo.Remote, cfgRepo.Branch, fmt.Sprintf("%s/%s", workingDir, cfgRepo.RepoID))
@@ -329,8 +298,8 @@ spec:
 			Repositories: []config.PipedRepository{
 				{
 					RepoID: repoID,
-					Remote: repoDir,
-					Branch: "master",
+					Remote: remote,
+					Branch: "",
 				},
 			},
 		},
@@ -345,8 +314,8 @@ spec:
 		GitPath: &model.ApplicationGitPath{
 			Repo: &model.ApplicationGitRepository{
 				Id:     repoID,
-				Remote: repoDir,
-				Branch: "master",
+				Remote: remote,
+				Branch: "",
 			},
 			Path:           appPath,
 			ConfigFilename: configFile,
