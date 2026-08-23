@@ -19,6 +19,9 @@ package livestatereporter
 import (
 	"context"
 	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -217,15 +220,65 @@ func Test_reporter_flushSnapshots(t *testing.T) {
 	pr.flushSnapshots(context.Background())
 }
 
+// createLocalTestRepo creates a local git repository with the required files for testing.
+// It returns the path to the repository.
+func createLocalTestRepo(t *testing.T, repoDir string, files map[string]string) {
+	t.Helper()
+
+	gitPath, err := exec.LookPath("git")
+	require.NoError(t, err)
+
+	require.NoError(t, os.MkdirAll(repoDir, 0o755))
+
+	run := func(args ...string) {
+		cmd := exec.Command(gitPath, args...)
+		cmd.Dir = repoDir
+		out, err := cmd.CombinedOutput()
+		require.NoError(t, err, "git %v failed: %s", args, out)
+	}
+
+	run("init", "--initial-branch", "master")
+	run("config", "user.email", "test@example.com")
+	run("config", "user.name", "Test User")
+
+	for path, content := range files {
+		fullPath := filepath.Join(repoDir, path)
+		require.NoError(t, os.MkdirAll(filepath.Dir(fullPath), 0o755))
+		require.NoError(t, os.WriteFile(fullPath, []byte(content), 0o644))
+	}
+
+	run("add", ".")
+	run("commit", "-m", "Initial commit")
+}
+
 func Test_reporter_flush(t *testing.T) {
 	workingDir := t.TempDir()
+
+	const (
+		repoID     = "repo-id"
+		appPath    = "kubernetes/canary"
+		configFile = "app.pipecd.yaml"
+	)
+
+	appPipecdYAML := `apiVersion: pipecd.dev/v1beta1
+kind: Application
+spec:
+  plugins:
+    k8s: {}
+`
+
+	remoteDir := t.TempDir()
+	repoDir := filepath.Join(remoteDir, repoID)
+	createLocalTestRepo(t, repoDir, map[string]string{
+		filepath.Join(appPath, configFile): appPipecdYAML,
+	})
 
 	gitClient, err := git.NewClient()
 	require.NoError(t, err)
 
 	cfgRepo := config.PipedRepository{
-		RepoID: "repo-id",
-		Remote: "https://github.com/pipe-cd/examples.git",
+		RepoID: repoID,
+		Remote: repoDir,
 		Branch: "master",
 	}
 
@@ -275,8 +328,8 @@ func Test_reporter_flush(t *testing.T) {
 		pipedConfig: &config.PipedSpec{
 			Repositories: []config.PipedRepository{
 				{
-					RepoID: "repo-id",
-					Remote: "https://github.com/pipe-cd/examples.git",
+					RepoID: repoID,
+					Remote: repoDir,
 					Branch: "master",
 				},
 			},
@@ -291,12 +344,12 @@ func Test_reporter_flush(t *testing.T) {
 		Name: "app-name",
 		GitPath: &model.ApplicationGitPath{
 			Repo: &model.ApplicationGitRepository{
-				Id:     "repo-id",
-				Remote: "https://github.com/pipe-cd/examples.git",
+				Id:     repoID,
+				Remote: repoDir,
 				Branch: "master",
 			},
-			Path:           "kubernetes/canary",
-			ConfigFilename: "app.pipecd.yaml",
+			Path:           appPath,
+			ConfigFilename: configFile,
 		},
 	}
 
