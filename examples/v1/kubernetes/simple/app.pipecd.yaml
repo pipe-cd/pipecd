@@ -13,5 +13,5 @@ spec:
           - service.yaml
   description: |
     This app demonstrates how to deploy a Kubernetes application with [Quick Sync](https://pipecd.dev/docs-v1.0.x/concepts/#sync-strategy) strategy.
-    No pipeline is specified then in each deployment PipeCD will roll out the new version and switch all traffic to it immediately.
+    When no pipeline is specified, PipeCD will roll out the new version and switch all traffic to it immediately.
     References: [adding a new app](https://pipecd.dev/docs-v1.0.x/user-guide/managing-application/adding-an-application/), [app configuration](https://pipecd.dev/docs-v1.0.x/user-guide/managing-application/configuration-reference/)
