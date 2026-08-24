@@ -4,6 +4,116 @@
     "queryScope": "COLLECTION",
     "fields": [
       {
+        "fieldPath": "ProjectId",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "PipedId",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Disabled",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Id",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
+    "collectionGroup": "Application",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "ProjectId",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Id",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
+    "collectionGroup": "Application",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "ProjectId",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Name",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Id",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
+    "collectionGroup": "Application",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "ProjectId",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Kind",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Id",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
+    "collectionGroup": "Application",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "ProjectId",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Name",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Kind",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Id",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
+    "collectionGroup": "Application",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
         "fieldPath": "CreatedAt",
         "order": "ASCENDING",
         "arrayConfig": ""
@@ -132,6 +242,27 @@
       {
         "fieldPath": "UpdatedAt",
         "order": "DESCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Id",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
+    "collectionGroup": "Application",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "ProjectId",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Disabled",
+        "order": "ASCENDING",
         "arrayConfig": ""
       },
       {
@@ -541,6 +672,53 @@
       {
         "fieldPath": "CreatedAt",
         "order": "DESCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Id",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
+    "collectionGroup": "Event",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "ProjectId",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "CreatedAt",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Id",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
+    "collectionGroup": "Event",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "ProjectId",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Status",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "CreatedAt",
+        "order": "ASCENDING",
         "arrayConfig": ""
       },
       {

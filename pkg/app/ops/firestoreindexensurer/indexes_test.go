@@ -1,4 +1,4 @@
-// Copyright 2024 The PipeCD Authors.
+// Copyright 2026 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,6 +23,116 @@ import (
 
 func TestParseIndexes(t *testing.T) {
 	want := []index{
+		{
+			CollectionGroup: "Application",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				{
+					FieldPath:   "ProjectId",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "PipedId",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Disabled",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+			},
+		},
+		{
+			CollectionGroup: "Application",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				{
+					FieldPath:   "ProjectId",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+			},
+		},
+		{
+			CollectionGroup: "Application",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				{
+					FieldPath:   "ProjectId",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Name",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+			},
+		},
+		{
+			CollectionGroup: "Application",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				{
+					FieldPath:   "ProjectId",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Kind",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+			},
+		},
+		{
+			CollectionGroup: "Application",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				{
+					FieldPath:   "ProjectId",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Name",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Kind",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+			},
+		},
 		{
 			CollectionGroup: "Application",
 			QueryScope:      "COLLECTION",
@@ -156,6 +266,27 @@ func TestParseIndexes(t *testing.T) {
 				{
 					FieldPath:   "UpdatedAt",
 					Order:       "DESCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+			},
+		},
+		{
+			CollectionGroup: "Application",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				{
+					FieldPath:   "ProjectId",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Disabled",
+					Order:       "ASCENDING",
 					ArrayConfig: "",
 				},
 				{
@@ -565,6 +696,53 @@ func TestParseIndexes(t *testing.T) {
 				{
 					FieldPath:   "CreatedAt",
 					Order:       "DESCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+			},
+		},
+		{
+			CollectionGroup: "Event",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				{
+					FieldPath:   "ProjectId",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "CreatedAt",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+			},
+		},
+		{
+			CollectionGroup: "Event",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				{
+					FieldPath:   "ProjectId",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Status",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "CreatedAt",
+					Order:       "ASCENDING",
 					ArrayConfig: "",
 				},
 				{
