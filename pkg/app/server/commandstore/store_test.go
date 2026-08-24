@@ -140,3 +140,73 @@ func TestGetCommand_NotPoisonedAfterUpdateHandledGetFailure(t *testing.T) {
 	assert.Equal(t, realCommand, got)
 	assert.NotEmpty(t, got.PipedId, "cached/returned command must not be a poisoned zero-value with an empty PipedId")
 }
+
+// TestGetCommand_FallsBackToDatastoreWhenCacheEntryIsPoisoned covers a cache
+// entry that was already poisoned before this fix (e.g. by the JSON "null"
+// bug), independent of how it got there. It proves GetCommand never returns
+// the poisoned zero-value Command and instead falls back to the datastore
+// for the real one, which is exactly what ReportCommandHandled's
+// pipedID != cmd.PipedId check depends on to avoid a spurious PermissionDenied.
+func TestGetCommand_FallsBackToDatastoreWhenCacheEntryIsPoisoned(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	realCommand := &model.Command{
+		Id:      "command-id",
+		PipedId: "legit-piped-id",
+		Status:  model.CommandStatus_COMMAND_SUCCEEDED,
+	}
+
+	backend := &fakeCommandStore{
+		getFunc: func(ctx context.Context, id string) (*model.Command, error) {
+			return realCommand, nil
+		},
+	}
+
+	c := cachetest.NewMockCache(ctrl)
+	key := cacheKey("command-id")
+	// Simulate a previously poisoned entry: raw JSON null in the cache.
+	c.EXPECT().Get(key).Return([]byte("null"), nil)
+	c.EXPECT().Delete(key).Return(nil)
+	c.EXPECT().Put(key, gomock.Any()).Return(nil)
+
+	s := &store{
+		backend: backend,
+		cache:   &commandCache{backend: c},
+		logger:  zap.NewNop(),
+	}
+
+	got, err := s.GetCommand(context.Background(), "command-id")
+	assert.NoError(t, err)
+	assert.Equal(t, realCommand, got)
+	assert.NotEmpty(t, got.PipedId, "must not return the poisoned zero-value command with an empty PipedId")
+}
+
+// TestGetCommand_ReturnsValidCachedCommandWithoutQueryingDatastore ensures the
+// fix doesn't overreach: a genuinely valid cache entry is still served
+// directly from the cache, without hitting the datastore.
+func TestGetCommand_ReturnsValidCachedCommandWithoutQueryingDatastore(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	backend := &fakeCommandStore{
+		getFunc: func(ctx context.Context, id string) (*model.Command, error) {
+			t.Fatal("datastore must not be queried when the cache holds a valid command")
+			return nil, nil
+		},
+	}
+
+	c := cachetest.NewMockCache(ctrl)
+	key := cacheKey("command-id")
+	c.EXPECT().Get(key).Return([]byte(`{"id":"command-id","piped_id":"legit-piped-id","created_at":1700000000,"updated_at":1700000000}`), nil)
+
+	s := &store{
+		backend: backend,
+		cache:   &commandCache{backend: c},
+		logger:  zap.NewNop(),
+	}
+
+	got, err := s.GetCommand(context.Background(), "command-id")
+	assert.NoError(t, err)
+	assert.Equal(t, &model.Command{Id: "command-id", PipedId: "legit-piped-id", CreatedAt: 1700000000, UpdatedAt: 1700000000}, got)
+}

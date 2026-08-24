@@ -36,6 +36,15 @@ func (c *commandCache) Get(commandID string) (*model.Command, error) {
 	if err := json.Unmarshal(item.([]byte), &s); err != nil {
 		return nil, err
 	}
+	// A cached entry that doesn't satisfy the same validation required to
+	// store a command (e.g. a zero-value Command decoded from a JSON null
+	// written before Put started rejecting nil commands) must not be
+	// treated as a valid cache hit. Evict it on a best-effort basis and
+	// report a miss so the caller falls back to the datastore.
+	if err := s.Validate(); err != nil {
+		_ = c.backend.Delete(key)
+		return nil, cache.ErrNotFound
+	}
 	return &s, nil
 }
 
