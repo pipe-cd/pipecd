@@ -111,6 +111,7 @@ func (s *store) UpdateCommandHandled(ctx context.Context, id string, status mode
 	cmd, err := s.backend.Get(ctx, id)
 	if err != nil {
 		s.logger.Error("failed to get command from datastore", zap.Error(err))
+		return nil
 	}
 
 	if err := s.cache.Put(id, cmd); err != nil {

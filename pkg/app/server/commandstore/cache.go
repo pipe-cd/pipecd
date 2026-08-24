@@ -40,6 +40,9 @@ func (c *commandCache) Get(commandID string) (*model.Command, error) {
 }
 
 func (c *commandCache) Put(commandID string, command *model.Command) error {
+	if command == nil {
+		return fmt.Errorf("command must not be nil")
+	}
 	key := cacheKey(commandID)
 	data, err := json.Marshal(command)
 	if err != nil {
