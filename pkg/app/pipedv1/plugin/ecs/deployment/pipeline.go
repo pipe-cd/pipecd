@@ -15,8 +15,14 @@
 package deployment
 
 import (
+	"errors"
+
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
+
+// ErrRollbackRequiresStages is returned when a rollback is requested but no
+// stage was provided in the request.
+var ErrRollbackRequiresStages = errors.New("rollback requires at least one stage")
 
 const (
 	// StageECSSync represents the ECS sync stage.
@@ -76,7 +82,7 @@ func buildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
 	return out
 }
 
-func buildPipelineStages(input *sdk.BuildPipelineSyncStagesInput) []sdk.PipelineStage {
+func buildPipelineStages(input *sdk.BuildPipelineSyncStagesInput) ([]sdk.PipelineStage, error) {
 	stages := input.Request.Stages
 
 	out := make([]sdk.PipelineStage, 0, len(stages)+1)
@@ -90,12 +96,24 @@ func buildPipelineStages(input *sdk.BuildPipelineSyncStagesInput) []sdk.Pipeline
 	}
 
 	if input.Request.Rollback {
+		// Guard against a rollback request without any stage
+		if len(stages) == 0 {
+			return nil, ErrRollbackRequiresStages
+		}
+		// The rollback stage must reuse one of the requested indexes and
+		// piped runs rollback stages as a trail sorted by index.
+		minIndex := stages[0].Index
+		for _, s := range stages[1:] {
+			if s.Index < minIndex {
+				minIndex = s.Index
+			}
+		}
 		out = append(out, sdk.PipelineStage{
 			Name:     StageECSRollback,
-			Index:    len(stages) + 1,
+			Index:    minIndex,
 			Rollback: true,
 		})
 	}
 
-	return out
+	return out, nil
 }
