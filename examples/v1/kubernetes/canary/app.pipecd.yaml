@@ -7,8 +7,7 @@ spec:
     team: product
   pipeline:
     stages:
-      # Deploy the workloads of CANARY variant. In this case, the number of
-      # workload replicas of CANARY variant is 10% of the replicas number of PRIMARY variant.
+      # Roll out CANARY variant at 10% of PRIMARY replicas.
       - name: K8S_CANARY_ROLLOUT
         with:
           replicas: 10%
@@ -16,16 +15,12 @@ spec:
       - name: WAIT
         with:
           duration: 10s
-      # Update the workload of PRIMARY variant to the new version.
+      # Roll out PRIMARY variant to the new version.
       - name: K8S_PRIMARY_ROLLOUT
-      # Destroy all workloads of CANARY variant.
+      # Clean up CANARY variant workloads.
       - name: K8S_CANARY_CLEAN
   plugins:
-    kubernetes:
-      input:
-        manifests:
-          - deployment.yaml
-          - service.yaml
+    kubernetes: {}
   description: |
     This app demonstrates how to deploy a Kubernetes app by Canary strategy without requiring any mesh.
-    References: [adding a new app](https://pipecd.dev/docs/user-guide/managing-application/adding-an-application/), [app configuration](https://pipecd.dev/docs/user-guide/configuration-reference/)
+    References: [adding a new app](https://pipecd.dev/docs-v1.0.x/user-guide/managing-application/adding-an-application/), [app configuration](https://pipecd.dev/docs-v1.0.x/user-guide/managing-application/configuration-reference/)
