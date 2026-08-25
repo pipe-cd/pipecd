@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bluegreen
+  labels:
+    app: bluegreen
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: bluegreen
+      pipecd.dev/variant: primary
+  template:
+    metadata:
+      labels:
+        app: bluegreen
+        pipecd.dev/variant: primary
+    spec:
+      containers:
+      - name: helloworld
+        image: ghcr.io/pipe-cd/helloworld:v0.30.0
+        args:
+          - server
+        ports:
+        - containerPort: 9085
