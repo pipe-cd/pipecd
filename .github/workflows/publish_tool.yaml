@@ -38,7 +38,7 @@ jobs:
 
       # Login to push container images.
       - name: Log in to the container registry
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           registry: ${{ env.GHCR }}
           username: ${{ github.actor }}
