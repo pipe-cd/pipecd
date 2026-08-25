@@ -17,14 +17,14 @@
 # Don't update here manually. hack/gen-release-docs.sh does.
 [[redirects]]
   from = "/docs/*"
-  to = "/docs-v1.0.x/:splat"
+  to = "/docs-v0.58.x/:splat"
   status = 302
   force = true
 
 # Redirect /docs (without trailing slash) as well.
 [[redirects]]
   from = "/docs"
-  to = "/docs-v1.0.x/"
+  to = "/docs-v0.58.x/"
   status = 302
   force = true
 
