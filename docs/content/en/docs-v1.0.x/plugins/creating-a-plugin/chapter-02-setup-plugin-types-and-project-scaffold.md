@@ -40,6 +40,8 @@ The SDK provides the plugin server, the interfaces you implement, and the reques
 - **DeploymentPlugin** has something to deploy and syncs it. The `kubernetes` plugin is a DeploymentPlugin. A DeploymentPlugin also provides everything a StagePlugin does.
 - **LivestatePlugin** reports the live state of deployed resources, so the web UI can show the difference between what is running and what is defined in Git. It is often implemented alongside a DeploymentPlugin.
 
+- **PlanPreviewPlugin** returns a plan preview for an application (for example, a Terraform plan/diff shown before applying changes).
+
 The file plugin treats copying files as its deployment, so it is a **DeploymentPlugin**.
 
 ## The DeploymentPlugin interface
