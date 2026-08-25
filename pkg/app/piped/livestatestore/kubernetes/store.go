@@ -290,6 +290,7 @@ func (s *store) getAppLiveState(appID string) (AppState, bool) {
 		resources      = make([]*model.KubernetesResourceState, 0, len(nodes))
 	)
 	for i := range nodes {
+		// Note: The returned states are pointers shared with the store's internal data, treat them as read-only
 		resources = append(resources, nodes[i].state)
 	}
 
