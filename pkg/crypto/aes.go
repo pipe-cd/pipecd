@@ -85,8 +85,13 @@ func (a *AESEncryptDecrypter) Decrypt(encryptedText string) (string, error) {
 		return "", err
 	}
 
-	nonce := encrypted[:gcm.NonceSize()]
-	text, err := gcm.Open(nil, nonce, encrypted[gcm.NonceSize():], nil)
+	nonceSize := gcm.NonceSize()
+	if len(encrypted) < nonceSize {
+		return "", fmt.Errorf("ciphertext is shorter than nonce size")
+	}
+
+	nonce := encrypted[:nonceSize]
+	text, err := gcm.Open(nil, nonce, encrypted[nonceSize:], nil)
 	if err != nil {
 		return "", err
 	}
