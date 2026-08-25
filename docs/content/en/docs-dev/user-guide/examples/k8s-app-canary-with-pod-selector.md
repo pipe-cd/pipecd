@@ -92,7 +92,7 @@ That is all, now let try to send a PR to update the container image version in t
 Deployment Details Page
 </p>
 
-Complete source code for this example is hosted in [pipe-cd/examples](https://github.com/pipe-cd/examples/tree/master/kubernetes/canary) repository.
+Complete source code for this example is hosted in [pipe-cd/examples](https://github.com/pipe-cd/examples/tree/master/v0/kubernetes/canary) repository.
 
 ## Understanding what happened
 

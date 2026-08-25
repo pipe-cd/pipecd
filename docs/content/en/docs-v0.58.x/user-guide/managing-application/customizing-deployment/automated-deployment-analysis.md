@@ -233,7 +233,7 @@ spec:
 
 The full list of configurable `ANALYSIS` stage fields are [here](../../../configuration-reference/#analysisstageoptions).
 
-See more the [example](https://github.com/pipe-cd/examples/blob/master/kubernetes/analysis-by-metrics/app.pipecd.yaml).
+See more the [example](https://github.com/pipe-cd/examples/blob/master/v0/kubernetes/analysis-by-metrics/app.pipecd.yaml).
 
 ## Analysis by logs
 
