@@ -62,4 +62,4 @@ See examples for detail.
 
 ## Examples
 
-- [examples/ecs/attachment](https://github.com/pipe-cd/examples/tree/master/v0/ecs/attachment)
+- [examples/v0/ecs/attachment](https://github.com/pipe-cd/examples/tree/master/v0/ecs/attachment)
