@@ -6,7 +6,7 @@ require (
 	github.com/DataDog/datadog-api-client-go v1.16.0
 	github.com/creasty/defaults v1.8.0
 	github.com/pipe-cd/piped-plugin-sdk-go v0.4.0
-	github.com/prometheus/client_golang v1.23.2
+	github.com/prometheus/client_golang v1.24.1
 	github.com/prometheus/common v0.70.1
 	github.com/stretchr/testify v1.12.0
 	go.uber.org/zap v1.19.1
@@ -44,7 +44,7 @@ require (
 	github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f // indirect
 	github.com/pipe-cd/pipecd v0.54.0-rc1.0.20250912082650-0b949bb7aac9 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
-	github.com/prometheus/procfs v0.21.0 // indirect
+	github.com/prometheus/procfs v0.21.1 // indirect
 	github.com/spf13/cobra v1.9.1 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
 	go.opencensus.io v0.24.0 // indirect
