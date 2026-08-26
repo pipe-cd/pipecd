@@ -30,6 +30,7 @@ describe("POLICIES_STRING_REGEX", () => {
     "resources=application", // missing actions
     "resources=application{a=b;c:d};actions=get", // semicolon escapes the label block
     "resources=application{};actions=get", // empty label block
+    "resources=application{env:pr\n\nod};actions=get", // newline injection in label value
   ])("does not match invalid policy: %s", (policy) => {
     expect(POLICIES_STRING_REGEX.test(policy)).toBe(false);
   });

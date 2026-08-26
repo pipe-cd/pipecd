@@ -66,9 +66,11 @@ export const TEXT_TO_RBAC_ACTION_TYPE: Record<
 };
 
 // A single label pair, e.g. "env:prod". Key/value exclude the characters
-// that are structurally significant elsewhere in the grammar (`;{}:,`) so a
-// label block can't accidentally swallow the resources/actions separator.
-const LABEL_PAIR = "[^;{}:,]+:[^;{}:,]+";
+// that are structurally significant elsewhere in the grammar (`;{}:,`), as
+// well as whitespace, so a label block can't accidentally swallow the
+// resources/actions separator or use a newline (policies are split on
+// blank lines) to escape the label block.
+const LABEL_PAIR = "[^;{}:,\\s]+:[^;{}:,\\s]+";
 // A label block requires at least one valid key:value pair; empty ("{}")
 // or malformed ("{garbage}") label content is rejected.
 const LABEL_BLOCK = `(\\{${LABEL_PAIR}(,${LABEL_PAIR})*\\})?`;
