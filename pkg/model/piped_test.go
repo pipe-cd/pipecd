@@ -164,10 +164,11 @@ func TestPipedDeleteOldPipedKeys(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for i := range testcases {
+		tc := &testcases[i]
 		t.Run(tc.name, func(t *testing.T) {
 			tc.piped.DeleteOldPipedKeys()
-			assert.Equal(t, tc.expected, tc.piped)
+			assert.Equal(t, &tc.expected, &tc.piped)
 		})
 	}
 }
@@ -221,10 +222,11 @@ func TestPipedRedactSensitiveData(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for i := range testcases {
+		tc := &testcases[i]
 		t.Run(tc.name, func(t *testing.T) {
 			tc.piped.RedactSensitiveData()
-			assert.Equal(t, tc.expected, tc.piped)
+			assert.Equal(t, &tc.expected, &tc.piped)
 		})
 	}
 }
