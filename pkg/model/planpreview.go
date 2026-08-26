@@ -23,7 +23,7 @@ func (r *PlanPreviewCommandResult) FillURLs(baseURL string) {
 	}
 }
 
-func MakeApplicationPlanPreviewResult(app Application) *ApplicationPlanPreviewResult {
+func MakeApplicationPlanPreviewResult(app *Application) *ApplicationPlanPreviewResult {
 	r := &ApplicationPlanPreviewResult{
 		ApplicationId:        app.Id,
 		ApplicationName:      app.Name,
