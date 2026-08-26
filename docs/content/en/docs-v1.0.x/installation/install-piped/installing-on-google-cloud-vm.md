@@ -45,6 +45,11 @@ spec:
       branch: {GIT_BRANCH}
   syncInterval: 1m
   plugins: []
+  # To add a plugin, replace the above with entries, e.g.:
+  # plugins:
+  #   - name: terraform
+  #     port: 7002
+  #     url: https://github.com/pipe-cd/pipecd/releases/download/<version>/piped-plugin-terraform-<os>-<arch>
 
   # Optional
   # Uncomment this if you want to enable Secret Management.
