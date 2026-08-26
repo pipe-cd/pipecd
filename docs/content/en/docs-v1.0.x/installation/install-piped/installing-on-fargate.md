@@ -75,7 +75,7 @@ Store the above configuration data in [AWS Secrets Manager](https://aws.amazon.c
 ```bash
 aws secretsmanager create-secret --name PipedConfig \
   --description "Configuration of piped running as ECS Fargate task" \
-  --secret-string "$(base64 piped-config.yaml)"
+  --secret-string "$(base64 piped-config.yaml | tr -d '\n')"
 ```
 
 Make sure your task role has `secretsmanager:GetSecretValue` permission for the created secret. See [IAM permissions for Secrets Manager](https://docs.aws.amazon.com/secretsmanager/latest/userguide/auth-and-access.html) for details.
