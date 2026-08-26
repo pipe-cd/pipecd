@@ -47,7 +47,7 @@ type secretDecrypter interface {
 }
 
 type reporter interface {
-	ReportApplicationSyncState(ctx context.Context, appID string, state model.ApplicationSyncState) error
+	ReportApplicationSyncState(ctx context.Context, appID string, state *model.ApplicationSyncState) error
 }
 
 type Detector interface {
@@ -382,9 +382,9 @@ func filterIgnoringManifests(manifests []provider.Manifest) []provider.Manifest 
 	return out
 }
 
-func makeSyncState(r *provider.DiffListResult, commit string) model.ApplicationSyncState {
+func makeSyncState(r *provider.DiffListResult, commit string) *model.ApplicationSyncState {
 	if r.NoChange() {
-		return model.ApplicationSyncState{
+		return &model.ApplicationSyncState{
 			Status:      model.ApplicationSyncStatus_SYNCED,
 			ShortReason: "",
 			Reason:      "",
@@ -413,7 +413,7 @@ func makeSyncState(r *provider.DiffListResult, commit string) model.ApplicationS
 	})
 	b.WriteString(details)
 
-	return model.ApplicationSyncState{
+	return &model.ApplicationSyncState{
 		Status:      model.ApplicationSyncStatus_OUT_OF_SYNC,
 		ShortReason: shortReason,
 		Reason:      b.String(),

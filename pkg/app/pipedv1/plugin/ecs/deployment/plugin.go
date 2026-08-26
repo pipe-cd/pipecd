@@ -55,8 +55,12 @@ func (p *ECSPlugin) BuildPipelineSyncStages(
 	_ *ecsconfig.ECSPluginConfig,
 	input *sdk.BuildPipelineSyncStagesInput,
 ) (*sdk.BuildPipelineSyncStagesResponse, error) {
+	stages, err := buildPipelineStages(input)
+	if err != nil {
+		return nil, err
+	}
 	return &sdk.BuildPipelineSyncStagesResponse{
-		Stages: buildPipelineStages(input),
+		Stages: stages,
 	}, nil
 }
 
