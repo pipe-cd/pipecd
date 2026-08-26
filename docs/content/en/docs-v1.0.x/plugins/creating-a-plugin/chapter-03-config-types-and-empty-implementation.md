@@ -10,10 +10,10 @@ In this chapter you define the configuration types the plugin uses and add an em
 
 ## Define the configuration types
 
-Recall the three type parameters of a DeploymentPlugin: Config, DeployTargetConfig, and ApplicationConfigSpec. The file plugin needs only one of them.
+Recall the three type parameters of a `DeploymentPlugin`: `Config`, `DeployTargetConfig`, and `ApplicationConfigSpec`. The file plugin needs only one of them.
 
-- It has no plugin-wide configuration, so it uses `sdk.ConfigNone`, the SDK's type for an empty configuration, in place of a Config type.
-- It has no deploy targets, so its DeployTargetConfig is an empty struct.
+- It has no plugin-wide configuration, so it uses `sdk.ConfigNone`, the SDK's type for an empty configuration, in place of a `Config` type.
+- It has no deploy targets, so its `DeployTargetConfig` is an empty struct.
 - It deploys to a directory that is chosen per application, so its application configuration holds a single `Path` field.
 
 Create `plugin.go` with the configuration types:
