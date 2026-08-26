@@ -23,7 +23,7 @@ import (
 
 // listEventsPageSize is the number of events fetched per datastore query
 // while aggregating the full list.
-const listEventsPageSize = 100
+const listEventsPageSize = 1000
 
 // eventLister is the subset of the event stores needed to page
 // through events.

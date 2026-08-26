@@ -23,7 +23,7 @@ import (
 
 // listApplicationsPageSize is the number of applications fetched per datastore
 // query while aggregating the full application list.
-const listApplicationsPageSize = 100
+const listApplicationsPageSize = 1000
 
 // applicationLister is the subset of the application stores needed to page
 // through applications.
