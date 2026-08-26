@@ -52,12 +52,19 @@ func (c *commandCache) Put(commandID string, command *model.Command) error {
 	if command == nil {
 		return fmt.Errorf("command must not be nil")
 	}
+	if err := command.Validate(); err != nil {
+		return fmt.Errorf("command is invalid: %w", err)
+	}
 	key := cacheKey(commandID)
 	data, err := json.Marshal(command)
 	if err != nil {
 		return err
 	}
 	return c.backend.Put(key, data)
+}
+
+func (c *commandCache) Delete(commandID string) error {
+	return c.backend.Delete(cacheKey(commandID))
 }
 
 func cacheKey(commandID string) string {

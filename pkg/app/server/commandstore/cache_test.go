@@ -45,10 +45,25 @@ func TestCommandCachePut(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "command failing Validate() is rejected before reaching the cache backend",
+			command: &model.Command{
+				Id: "command-id",
+				// PipedId, CreatedAt and UpdatedAt are left unset, so
+				// Validate() fails.
+			},
+			prepare: func(c *cachetest.MockCache) {
+				// No EXPECT() set: the mock fails the test if an invalid
+				// command ever reaches the backend.
+			},
+			wantErr: true,
+		},
+		{
 			name: "valid command is stored as before",
 			command: &model.Command{
-				Id:      "command-id",
-				PipedId: "piped-id",
+				Id:        "command-id",
+				PipedId:   "piped-id",
+				CreatedAt: 1700000000,
+				UpdatedAt: 1700000000,
 			},
 			prepare: func(c *cachetest.MockCache) {
 				c.EXPECT().Put(cacheKey("command-id"), gomock.Any()).Return(nil)

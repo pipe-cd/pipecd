@@ -16,6 +16,7 @@ package commandstore
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"testing"
 
@@ -55,9 +56,10 @@ func (f *fakeCommandStore) UpdateStatus(ctx context.Context, id string, status m
 // TestUpdateCommandHandled_BackendGetFailureAfterSuccessfulUpdateStatus reproduces
 // the reported cache poisoning scenario: UpdateStatus succeeds, but the
 // subsequent backend.Get fails transiently. It verifies that the failed Get
-// never results in a command being written to the cache, and that the
-// original UpdateCommandHandled behavior (returning nil once the status
-// update itself succeeded) is preserved.
+// never results in a command being written to the cache, that the now-stale
+// cache entry is deleted instead, and that the original UpdateCommandHandled
+// behavior (returning nil once the status update itself succeeded) is
+// preserved.
 func TestUpdateCommandHandled_BackendGetFailureAfterSuccessfulUpdateStatus(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -65,6 +67,7 @@ func TestUpdateCommandHandled_BackendGetFailureAfterSuccessfulUpdateStatus(t *te
 	// No EXPECT() is set on Put: if the fix regresses and a nil/zero-value
 	// command reaches the cache, this mock call will fail the test.
 	c := cachetest.NewMockCache(ctrl)
+	c.EXPECT().Delete(cacheKey("command-id")).Return(nil)
 
 	backend := &fakeCommandStore{
 		updateStatusFunc: func(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64) error {
@@ -85,21 +88,35 @@ func TestUpdateCommandHandled_BackendGetFailureAfterSuccessfulUpdateStatus(t *te
 	assert.NoError(t, err)
 }
 
-// TestGetCommand_NotPoisonedAfterUpdateHandledGetFailure exercises the full
-// UpdateCommandHandled -> GetCommand flow that ReportCommandHandled relies on
-// (it calls GetCommand and rejects the request with PermissionDenied when
-// cmd.PipedId doesn't match the requesting piped). It proves that after a
-// transient backend.Get failure during UpdateCommandHandled, a later
-// GetCommand call still returns the real, non-zero-value command instead of
-// a cached zero-value Command{} with an empty PipedId.
-func TestGetCommand_NotPoisonedAfterUpdateHandledGetFailure(t *testing.T) {
+// TestGetCommand_StaleCacheDeletedAfterUpdateHandledGetFailure exercises the
+// full regression scenario reported against the earlier fix: an old command
+// is already cached (as GetCommand would leave it, e.g. from
+// ReportCommandHandled's lookup), UpdateStatus then succeeds against the
+// datastore, but the subsequent backend.Get fails transiently. It proves the
+// now-stale cache entry is deleted (rather than left in place until its TTL
+// expires), so a later GetCommand call misses the cache, falls back to the
+// datastore, and observes the updated command/status instead of the stale
+// one.
+func TestGetCommand_StaleCacheDeletedAfterUpdateHandledGetFailure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	realCommand := &model.Command{
-		Id:      "command-id",
-		PipedId: "legit-piped-id",
-		Status:  model.CommandStatus_COMMAND_SUCCEEDED,
+	oldCommand := &model.Command{
+		Id:        "command-id",
+		PipedId:   "legit-piped-id",
+		Status:    model.CommandStatus_COMMAND_NOT_HANDLED_YET,
+		CreatedAt: 1700000000,
+		UpdatedAt: 1700000000,
+	}
+	oldCommandData, err := json.Marshal(oldCommand)
+	assert.NoError(t, err)
+
+	updatedCommand := &model.Command{
+		Id:        "command-id",
+		PipedId:   "legit-piped-id",
+		Status:    model.CommandStatus_COMMAND_SUCCEEDED,
+		CreatedAt: 1700000000,
+		UpdatedAt: 1700000100,
 	}
 
 	getCalls := 0
@@ -110,21 +127,29 @@ func TestGetCommand_NotPoisonedAfterUpdateHandledGetFailure(t *testing.T) {
 		getFunc: func(ctx context.Context, id string) (*model.Command, error) {
 			getCalls++
 			if getCalls == 1 {
-				// First Get (triggered by UpdateCommandHandled) fails transiently.
+				// The Get triggered by UpdateCommandHandled fails transiently,
+				// even though UpdateStatus above it already succeeded.
 				return nil, errors.New("transient datastore error")
 			}
-			// Second Get (triggered by GetCommand's cache-miss fallback)
-			// succeeds and returns the real command.
-			return realCommand, nil
+			// The later Get, triggered by GetCommand's cache-miss fallback,
+			// succeeds and returns the now-updated command.
+			return updatedCommand, nil
 		},
 	}
 
 	c := cachetest.NewMockCache(ctrl)
 	key := cacheKey("command-id")
-	// The cache must have never been populated by UpdateCommandHandled, so
-	// GetCommand's cache lookup misses and falls back to the backend.
-	c.EXPECT().Get(key).Return(nil, cache.ErrNotFound)
-	c.EXPECT().Put(key, gomock.Any()).Return(nil)
+	gomock.InOrder(
+		// Old command is cached, e.g. by an earlier GetCommand call.
+		c.EXPECT().Get(key).Return(oldCommandData, nil),
+		// UpdateStatus succeeds but backend.Get fails: the stale entry must
+		// be deleted instead of being left in place.
+		c.EXPECT().Delete(key).Return(nil),
+		// Subsequent GetCommand call misses the now-deleted cache entry.
+		c.EXPECT().Get(key).Return(nil, cache.ErrNotFound),
+		// ...and falls back to the datastore, re-caching the fresh result.
+		c.EXPECT().Put(key, gomock.Any()).Return(nil),
+	)
 
 	s := &store{
 		backend: backend,
@@ -132,13 +157,16 @@ func TestGetCommand_NotPoisonedAfterUpdateHandledGetFailure(t *testing.T) {
 		logger:  zap.NewNop(),
 	}
 
-	err := s.UpdateCommandHandled(context.Background(), "command-id", model.CommandStatus_COMMAND_SUCCEEDED, nil, 12345)
-	assert.NoError(t, err)
-
 	got, err := s.GetCommand(context.Background(), "command-id")
 	assert.NoError(t, err)
-	assert.Equal(t, realCommand, got)
-	assert.NotEmpty(t, got.PipedId, "cached/returned command must not be a poisoned zero-value with an empty PipedId")
+	assert.Equal(t, oldCommand, got)
+
+	err = s.UpdateCommandHandled(context.Background(), "command-id", model.CommandStatus_COMMAND_SUCCEEDED, nil, 12345)
+	assert.NoError(t, err)
+
+	got, err = s.GetCommand(context.Background(), "command-id")
+	assert.NoError(t, err)
+	assert.Equal(t, updatedCommand, got)
 }
 
 // TestGetCommand_FallsBackToDatastoreWhenCacheEntryIsPoisoned covers a cache
@@ -152,9 +180,11 @@ func TestGetCommand_FallsBackToDatastoreWhenCacheEntryIsPoisoned(t *testing.T) {
 	defer ctrl.Finish()
 
 	realCommand := &model.Command{
-		Id:      "command-id",
-		PipedId: "legit-piped-id",
-		Status:  model.CommandStatus_COMMAND_SUCCEEDED,
+		Id:        "command-id",
+		PipedId:   "legit-piped-id",
+		Status:    model.CommandStatus_COMMAND_SUCCEEDED,
+		CreatedAt: 1700000000,
+		UpdatedAt: 1700000000,
 	}
 
 	backend := &fakeCommandStore{
