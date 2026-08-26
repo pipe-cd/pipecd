@@ -35,18 +35,7 @@
         "arrayConfig": ""
       },
       {
-        "fieldPath": "Id",
-        "order": "ASCENDING",
-        "arrayConfig": ""
-      }
-    ]
-  },
-  {
-    "collectionGroup": "Application",
-    "queryScope": "COLLECTION",
-    "fields": [
-      {
-        "fieldPath": "ProjectId",
+        "fieldPath": "Disabled",
         "order": "ASCENDING",
         "arrayConfig": ""
       },
@@ -72,6 +61,11 @@
         "arrayConfig": ""
       },
       {
+        "fieldPath": "Disabled",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
         "fieldPath": "Kind",
         "order": "ASCENDING",
         "arrayConfig": ""
@@ -89,6 +83,11 @@
     "fields": [
       {
         "fieldPath": "ProjectId",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Disabled",
         "order": "ASCENDING",
         "arrayConfig": ""
       },
