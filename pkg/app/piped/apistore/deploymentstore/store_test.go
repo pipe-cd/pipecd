@@ -36,14 +36,20 @@ import (
 // If err is set, it is returned instead of a page on the call index
 // identified by errAt (0-based), letting a test simulate a failure that
 // happens partway through pagination rather than on the very first call.
+//
+// gotCursors records the Cursor field of every request received, in order,
+// so tests can assert that each response cursor is threaded into the next
+// request ("" -> "page2" -> "page3").
 type fakeAPIClient struct {
-	pages []*pipedservice.ListNotCompletedDeploymentsResponse
-	call  int
-	err   error
-	errAt int
+	pages      []*pipedservice.ListNotCompletedDeploymentsResponse
+	call       int
+	err        error
+	errAt      int
+	gotCursors []string
 }
 
-func (f *fakeAPIClient) ListNotCompletedDeployments(_ context.Context, _ *pipedservice.ListNotCompletedDeploymentsRequest, _ ...grpc.CallOption) (*pipedservice.ListNotCompletedDeploymentsResponse, error) {
+func (f *fakeAPIClient) ListNotCompletedDeployments(_ context.Context, req *pipedservice.ListNotCompletedDeploymentsRequest, _ ...grpc.CallOption) (*pipedservice.ListNotCompletedDeploymentsResponse, error) {
+	f.gotCursors = append(f.gotCursors, req.GetCursor())
 	if f.err != nil && f.call == f.errAt {
 		return nil, f.err
 	}
@@ -75,6 +81,9 @@ func TestSync(t *testing.T) {
 		wantPlanneds []*model.Deployment
 		wantRunnings []*model.Deployment
 		wantHeads    map[string]*model.Deployment
+		// wantCursors is the ordered sequence of Cursor values sync() is
+		// expected to send. The first request always carries "".
+		wantCursors []string
 	}{
 		{
 			name: "empty_response",
@@ -85,6 +94,7 @@ func TestSync(t *testing.T) {
 			wantPlanneds: nil,
 			wantRunnings: nil,
 			wantHeads:    map[string]*model.Deployment{},
+			wantCursors:  []string{""},
 		},
 		{
 			name: "single_page_classifies_each_status",
@@ -100,6 +110,7 @@ func TestSync(t *testing.T) {
 				"app-3": running,
 				"app-4": rollingBack,
 			},
+			wantCursors: []string{""},
 		},
 		{
 			name: "paginates_across_multiple_pages",
@@ -115,6 +126,7 @@ func TestSync(t *testing.T) {
 				"app-2": planned,
 				"app-3": running,
 			},
+			wantCursors: []string{"", "page2"},
 		},
 		{
 			name: "rolling_back_is_classified_as_running",
@@ -127,6 +139,7 @@ func TestSync(t *testing.T) {
 			wantHeads: map[string]*model.Deployment{
 				"app-4": rollingBack,
 			},
+			wantCursors: []string{""},
 		},
 		// Three pages forces at least two follow-up requests, which a
 		// "call once more if the first cursor is non-empty" shortcut
@@ -146,25 +159,30 @@ func TestSync(t *testing.T) {
 				"app-2": planned,
 				"app-3": running,
 			},
+			wantCursors: []string{"", "page2", "page3"},
 		},
 		// Page 1 succeeds and yields a cursor; page 2 fails. sync() must
 		// return the error and must not apply the partial results already
 		// accumulated from page 1 — Lister() should reflect nothing new.
+		// The cursor from page 1 must still have been threaded into the
+		// failing request.
 		{
 			name: "fails_on_mid_pagination_error",
 			pages: []*pipedservice.ListNotCompletedDeploymentsResponse{
 				{Deployments: []*model.Deployment{pending}, Cursor: "page2"},
 			},
-			apiErr:  errors.New("unavailable"),
-			errAt:   1,
-			wantErr: true,
+			apiErr:      errors.New("unavailable"),
+			errAt:       1,
+			wantErr:     true,
+			wantCursors: []string{"", "page2"},
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			fc := &fakeAPIClient{pages: tc.pages, err: tc.apiErr, errAt: tc.errAt}
 			s := &store{
-				apiClient: &fakeAPIClient{pages: tc.pages, err: tc.apiErr, errAt: tc.errAt},
+				apiClient: fc,
 				logger:    zap.NewNop(),
 			}
 
@@ -179,6 +197,7 @@ func TestSync(t *testing.T) {
 			assert.Equal(t, tc.wantPlanneds, s.ListPlanneds())
 			assert.Equal(t, tc.wantRunnings, s.ListRunnings())
 			assert.Equal(t, tc.wantHeads, s.ListAppHeadDeployments())
+			assert.Equal(t, tc.wantCursors, fc.gotCursors)
 		})
 	}
 }

@@ -189,6 +189,18 @@ func (s *deploymentStore) List(ctx context.Context, opts ListOptions) ([]*model.
 	if len(ds) == 0 {
 		return ds, "", nil
 	}
+
+	// A cursor is only usable on a follow-up request when the query is
+	// ordered: the datastore rejects a cursor when Orders is empty, and
+	// Iterator.Cursor() cannot build a meaningful paging key without any
+	// ordering fields (the empty key it builds still serializes to a
+	// non-empty string). Callers that page through results always set
+	// Orders; those that don't - e.g. ListNotCompletedDeployments - get the
+	// whole result set in a single call and need no cursor.
+	if len(opts.Orders) == 0 {
+		return ds, "", nil
+	}
+
 	cursor, err := it.Cursor()
 	if err != nil {
 		return nil, "", err
