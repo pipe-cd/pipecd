@@ -65,7 +65,7 @@ type GenericApplicationSpec struct {
 
 type DeploymentPlanner struct {
 	// Disable auto-detecting to use QUICK_SYNC or PROGRESSIVE_SYNC.
-	// Always use the speficied pipeline for all deployments.
+	// Always use the specified pipeline for all deployments.
 	AlwaysUsePipeline bool `json:"alwaysUsePipeline"`
 	// Automatically reverts all deployment changes on failure.
 	// Default is true.

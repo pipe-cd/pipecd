@@ -169,6 +169,52 @@ func TestApplicationLiveStateSnapshot_DetermineAppHealthStatus(t *testing.T) {
 	}
 }
 
+func TestKubernetesResourceState_HasDiff(t *testing.T) {
+	testcases := []struct {
+		name string
+		s    KubernetesResourceState
+		a    KubernetesResourceState
+		want bool
+	}{
+		{
+			name: "no diff",
+			s:    KubernetesResourceState{OwnerIds: []string{"owner-1"}, ParentIds: []string{"parent-1"}},
+			a:    KubernetesResourceState{OwnerIds: []string{"owner-1"}, ParentIds: []string{"parent-1"}},
+			want: false,
+		},
+		{
+			name: "api version differs",
+			s:    KubernetesResourceState{ApiVersion: "v1"},
+			a:    KubernetesResourceState{ApiVersion: "v2"},
+			want: true,
+		},
+		{
+			name: "owner ids differ in content, same length",
+			s:    KubernetesResourceState{OwnerIds: []string{"owner-1"}},
+			a:    KubernetesResourceState{OwnerIds: []string{"owner-2"}},
+			want: true,
+		},
+		{
+			name: "parent ids differ in content, same length",
+			s:    KubernetesResourceState{ParentIds: []string{"parent-1"}},
+			a:    KubernetesResourceState{ParentIds: []string{"parent-2"}},
+			want: true,
+		},
+		{
+			name: "owner ids differ in length",
+			s:    KubernetesResourceState{OwnerIds: []string{"owner-1"}},
+			a:    KubernetesResourceState{OwnerIds: []string{"owner-1", "owner-2"}},
+			want: true,
+		},
+	}
+	for i := range testcases {
+		tc := &testcases[i]
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.want, tc.s.HasDiff(&tc.a))
+		})
+	}
+}
+
 func TestApplicationLiveStateSnapshot_DetermineApplicationHealthStatus(t *testing.T) {
 	testcases := []struct {
 		name     string
