@@ -123,6 +123,12 @@ func (s *store) sync(ctx context.Context) error {
 				runnings = append(runnings, d)
 			}
 		}
+		// Safety guard against a misbehaving server: if a page carries no
+		// deployments, stop paging even when a non-empty cursor is returned.
+		// Without this, such a response would spin this loop forever.
+		if len(resp.Deployments) == 0 {
+			break
+		}
 		if resp.Cursor == "" {
 			break
 		}

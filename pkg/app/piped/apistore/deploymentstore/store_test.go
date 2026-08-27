@@ -161,6 +161,24 @@ func TestSync(t *testing.T) {
 			},
 			wantCursors: []string{"", "page2", "page3"},
 		},
+		// A misbehaving server returns a page with no deployments but still
+		// hands back a non-empty cursor. sync() must stop paging on the empty
+		// page instead of looping forever, so the bogus "page3" cursor is
+		// never threaded into a follow-up request.
+		{
+			name: "stops_on_empty_page_with_non_empty_cursor",
+			pages: []*pipedservice.ListNotCompletedDeploymentsResponse{
+				{Deployments: []*model.Deployment{pending}, Cursor: "page2"},
+				{Deployments: nil, Cursor: "page3"},
+			},
+			wantPendings: []*model.Deployment{pending},
+			wantPlanneds: nil,
+			wantRunnings: nil,
+			wantHeads: map[string]*model.Deployment{
+				"app-1": pending,
+			},
+			wantCursors: []string{"", "page2"},
+		},
 		// Page 1 succeeds and yields a cursor; page 2 fails. sync() must
 		// return the error and must not apply the partial results already
 		// accumulated from page 1 — Lister() should reflect nothing new.
