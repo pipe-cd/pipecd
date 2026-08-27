@@ -229,11 +229,12 @@ func TestHasChanged(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
+	for i := range tests {
+		tt := &tests[i]
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			actual := tt.current.HasChanged(tt.next)
+			actual := tt.current.HasChanged(&tt.next)
 			assert.Equal(t, tt.expected, actual)
 		})
 	}
@@ -259,7 +260,8 @@ func TestGetApplicationConfigFilename(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
+	for i := range tests {
+		tt := &tests[i]
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 

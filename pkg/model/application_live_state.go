@@ -14,7 +14,7 @@
 
 package model
 
-func (v ApplicationLiveStateVersion) IsBefore(a ApplicationLiveStateVersion) bool {
+func (v *ApplicationLiveStateVersion) IsBefore(a *ApplicationLiveStateVersion) bool {
 	if v.Timestamp < a.Timestamp {
 		return true
 	}
@@ -24,7 +24,7 @@ func (v ApplicationLiveStateVersion) IsBefore(a ApplicationLiveStateVersion) boo
 	return v.Index < a.Index
 }
 
-func (s KubernetesResourceState) HasDiff(a KubernetesResourceState) bool {
+func (s *KubernetesResourceState) HasDiff(a *KubernetesResourceState) bool {
 	if s.ApiVersion != a.ApiVersion {
 		return true
 	}
@@ -46,13 +46,13 @@ func (s KubernetesResourceState) HasDiff(a KubernetesResourceState) bool {
 
 	for i := range s.OwnerIds {
 		if s.OwnerIds[i] != a.OwnerIds[i] {
-			return false
+			return true
 		}
 	}
 
 	for i := range s.ParentIds {
 		if s.ParentIds[i] != a.ParentIds[i] {
-			return false
+			return true
 		}
 	}
 

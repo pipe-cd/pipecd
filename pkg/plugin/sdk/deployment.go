@@ -17,6 +17,7 @@ package sdk
 import (
 	"context"
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/pipe-cd/piped-plugin-sdk-go/signalhandler"
@@ -193,6 +194,10 @@ func (s *DeploymentPluginServiceServer[Config, DeployTargetConfig, ApplicationCo
 
 	// Get the deploy targets set on the deployment from the piped plugin config.
 	dtNames := request.GetInput().GetDeployment().GetDeployTargets(s.config.Name)
+	if len(dtNames) == 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "no deploy targets provided")
+	}
+
 	deployTargets := make([]*DeployTarget[DeployTargetConfig], 0, len(dtNames))
 	for _, name := range dtNames {
 		dt, ok := s.deployTargets[name]
@@ -493,6 +498,25 @@ func (p *PipelineStage) toModel(description string, now time.Time) *model.Pipeli
 		AvailableOperation:  p.AvailableOperation.toModelEnum(),
 		AuthorizedOperators: p.AuthorizedOperators,
 	}
+}
+
+// AppendRollbackStage appends a rollback stage with the given name to stages.
+//
+// The rollback stage reuses the minimum index of the request stages
+// so that it satisfies piped's stage index validation
+// and runs first among all plugins' rollback stages.
+func AppendRollbackStage(input *BuildPipelineSyncStagesInput, stages []PipelineStage, name string) []PipelineStage {
+	req := input.Request.Stages
+
+	minIndex := slices.MinFunc(req, func(a, b StageConfig) int {
+		return a.Index - b.Index
+	}).Index
+
+	return append(stages, PipelineStage{
+		Name:     name,
+		Index:    minIndex,
+		Rollback: true,
+	})
 }
 
 // QuickSyncStage represents a stage in the pipeline.
