@@ -111,6 +111,14 @@ func (s *store) UpdateCommandHandled(ctx context.Context, id string, status mode
 	cmd, err := s.backend.Get(ctx, id)
 	if err != nil {
 		s.logger.Error("failed to get command from datastore", zap.Error(err))
+		// The datastore was already updated by UpdateStatus above, so any
+		// cache entry for this command (e.g. cached prior to the update) is
+		// now stale. Evict it so callers don't keep observing the old status
+		// until the TTL expires.
+		if delErr := s.cache.Delete(id); delErr != nil {
+			s.logger.Error("failed to delete command from cache", zap.Error(delErr))
+		}
+		return nil
 	}
 
 	if err := s.cache.Put(id, cmd); err != nil {
