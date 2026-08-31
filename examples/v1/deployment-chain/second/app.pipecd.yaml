@@ -1,0 +1,21 @@
+apiVersion: pipecd.dev/v1beta1
+kind: Application
+spec:
+  name: deployment-chain-second
+  labels:
+    env: example
+    team: product
+  trigger:
+    # Allow this app to be triggered as part of a chain. onChain defaults to
+    # disabled, so downstream apps must opt in.
+    onChain:
+      disabled: false
+  plugins:
+    kubernetes: {}
+  postSync:
+    chain:
+      applications:
+        - name: deployment-chain-third
+  description: |
+    Second link in the deployment chain: triggered by deployment-chain-first, and once it succeeds it triggers deployment-chain-third.\
+    References: [adding a new app](https://pipecd.dev/docs-v1.0.x/user-guide/managing-application/adding-an-application/), [app configuration](https://pipecd.dev/docs-v1.0.x/user-guide/managing-application/configuration-reference/)
