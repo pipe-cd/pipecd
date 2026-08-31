@@ -35,6 +35,8 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// ApplicationKind represents the platform an application is deployed to.
+// This is used by pipedv0; plugin-arch piped uses deploy_targets_by_plugin instead.
 type ApplicationKind int32
 
 const (
@@ -90,6 +92,8 @@ func (ApplicationKind) EnumDescriptor() ([]byte, []int) {
 	return file_pkg_model_common_proto_rawDescGZIP(), []int{0}
 }
 
+// RollbackKind mirrors ApplicationKind to select which built-in rollback
+// stage should be used when a deployment needs to be rolled back.
 type RollbackKind int32
 
 const (
@@ -148,6 +152,8 @@ func (RollbackKind) EnumDescriptor() ([]byte, []int) {
 	return file_pkg_model_common_proto_rawDescGZIP(), []int{1}
 }
 
+// ApplicationActiveStatus represents the lifecycle status of an application
+// registration, independent of its current sync/health state.
 type ApplicationActiveStatus int32
 
 const (
@@ -197,12 +203,16 @@ func (ApplicationActiveStatus) EnumDescriptor() ([]byte, []int) {
 	return file_pkg_model_common_proto_rawDescGZIP(), []int{2}
 }
 
+// SyncStrategy determines how a deployment should be executed.
 type SyncStrategy int32
 
 const (
-	SyncStrategy_AUTO       SyncStrategy = 0
+	// Let piped decide QUICK_SYNC or PIPELINE based on the detected changes.
+	SyncStrategy_AUTO SyncStrategy = 0
+	// Apply all changes at once without going through the defined pipeline stages.
 	SyncStrategy_QUICK_SYNC SyncStrategy = 1
-	SyncStrategy_PIPELINE   SyncStrategy = 2
+	// Apply changes by going through the pipeline stages defined in the application configuration.
+	SyncStrategy_PIPELINE SyncStrategy = 2
 )
 
 // Enum value maps for SyncStrategy.
@@ -374,6 +384,8 @@ func (x *ApplicationGitPath) GetUrl() string {
 	return ""
 }
 
+// ApplicationGitRepository identifies a Git repository that piped is
+// configured to watch for application manifests.
 type ApplicationGitRepository struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -437,6 +449,10 @@ func (x *ApplicationGitRepository) GetBranch() string {
 	return ""
 }
 
+// ApplicationInfo represents an application's configuration as discovered by
+// piped from the Git repository, before or without being registered to the
+// control plane. It is used to keep the control plane's view of application
+// configurations in sync with what is actually defined in Git.
 type ApplicationInfo struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -552,6 +568,8 @@ func (x *ApplicationInfo) GetDescription() string {
 	return ""
 }
 
+// ArtifactVersion represents one artifact (e.g. container image, Terraform
+// module) that is part of a deployment.
 type ArtifactVersion struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

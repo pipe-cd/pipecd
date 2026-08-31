@@ -35,15 +35,19 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Authorization represents whether a specific RPC is ignored or not.
+// RBAC is a gRPC method option describing the RBAC resource/action an RPC
+// requires, or that the RPC should bypass RBAC checks entirely.
 type RBAC struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// The resource type the caller must be authorized on. Ignored if `ignored` is true.
 	Resource ProjectRBACResource_ResourceType `protobuf:"varint,1,opt,name=resource,proto3,enum=model.ProjectRBACResource_ResourceType" json:"resource,omitempty"`
-	Action   ProjectRBACPolicy_Action         `protobuf:"varint,2,opt,name=action,proto3,enum=model.ProjectRBACPolicy_Action" json:"action,omitempty"`
-	Ignored  bool                             `protobuf:"varint,3,opt,name=ignored,proto3" json:"ignored,omitempty"`
+	// The action the caller must be authorized to perform. Ignored if `ignored` is true.
+	Action ProjectRBACPolicy_Action `protobuf:"varint,2,opt,name=action,proto3,enum=model.ProjectRBACPolicy_Action" json:"action,omitempty"`
+	// Whether the RBAC check should be skipped entirely for this RPC.
+	Ignored bool `protobuf:"varint,3,opt,name=ignored,proto3" json:"ignored,omitempty"`
 }
 
 func (x *RBAC) Reset() {

@@ -151,22 +151,28 @@ func (Command_Type) EnumDescriptor() ([]byte, []int) {
 	return file_pkg_model_command_proto_rawDescGZIP(), []int{0, 0}
 }
 
+// Command represents an asynchronous instruction for a piped to execute,
+// such as syncing an application or approving a stage. Web/API clients
+// create commands, which piped then polls for, handles, and reports the
+// result of via ReportCommandHandled.
 type Command struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
 	// The generated unique identifier.
-	Id                      string                           `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	PipedId                 string                           `protobuf:"bytes,2,opt,name=piped_id,json=pipedId,proto3" json:"piped_id,omitempty"`
-	ApplicationId           string                           `protobuf:"bytes,3,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
-	DeploymentId            string                           `protobuf:"bytes,4,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
-	StageId                 string                           `protobuf:"bytes,5,opt,name=stage_id,json=stageId,proto3" json:"stage_id,omitempty"`
-	Commander               string                           `protobuf:"bytes,6,opt,name=commander,proto3" json:"commander,omitempty"`
-	ProjectId               string                           `protobuf:"bytes,7,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
-	Status                  CommandStatus                    `protobuf:"varint,20,opt,name=status,proto3,enum=model.CommandStatus" json:"status,omitempty"`
-	Metadata                map[string]string                `protobuf:"bytes,21,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	HandledAt               int64                            `protobuf:"varint,22,opt,name=handled_at,json=handledAt,proto3" json:"handled_at,omitempty"` // TODO: Add a new field to show why command was failed.
+	Id            string        `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	PipedId       string        `protobuf:"bytes,2,opt,name=piped_id,json=pipedId,proto3" json:"piped_id,omitempty"`
+	ApplicationId string        `protobuf:"bytes,3,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
+	DeploymentId  string        `protobuf:"bytes,4,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
+	StageId       string        `protobuf:"bytes,5,opt,name=stage_id,json=stageId,proto3" json:"stage_id,omitempty"`
+	Commander     string        `protobuf:"bytes,6,opt,name=commander,proto3" json:"commander,omitempty"`
+	ProjectId     string        `protobuf:"bytes,7,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
+	Status        CommandStatus `protobuf:"varint,20,opt,name=status,proto3,enum=model.CommandStatus" json:"status,omitempty"`
+	// Additional handling result data reported alongside the status.
+	Metadata  map[string]string `protobuf:"bytes,21,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	HandledAt int64             `protobuf:"varint,22,opt,name=handled_at,json=handledAt,proto3" json:"handled_at,omitempty"` // TODO: Add a new field to show why command was failed.
+	// The kind of command; determines which of the payload fields below is set.
 	Type                    Command_Type                     `protobuf:"varint,30,opt,name=type,proto3,enum=model.Command_Type" json:"type,omitempty"`
 	SyncApplication         *Command_SyncApplication         `protobuf:"bytes,31,opt,name=sync_application,json=syncApplication,proto3" json:"sync_application,omitempty"`
 	UpdateApplicationConfig *Command_UpdateApplicationConfig `protobuf:"bytes,32,opt,name=update_application_config,json=updateApplicationConfig,proto3" json:"update_application_config,omitempty"`
@@ -482,9 +488,13 @@ type Command_CancelDeployment struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	DeploymentId    string `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
-	ForceRollback   bool   `protobuf:"varint,2,opt,name=force_rollback,json=forceRollback,proto3" json:"force_rollback,omitempty"`
-	ForceNoRollback bool   `protobuf:"varint,3,opt,name=force_no_rollback,json=forceNoRollback,proto3" json:"force_no_rollback,omitempty"`
+	DeploymentId string `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
+	// Force rollback regardless of the pipeline's configured on-cancel
+	// behavior. Mutually exclusive with force_no_rollback.
+	ForceRollback bool `protobuf:"varint,2,opt,name=force_rollback,json=forceRollback,proto3" json:"force_rollback,omitempty"`
+	// Force skipping rollback regardless of the pipeline's configured
+	// on-cancel behavior. Mutually exclusive with force_rollback.
+	ForceNoRollback bool `protobuf:"varint,3,opt,name=force_no_rollback,json=forceNoRollback,proto3" json:"force_no_rollback,omitempty"`
 }
 
 func (x *Command_CancelDeployment) Reset() {
@@ -604,7 +614,8 @@ type Command_BuildPlanPreview struct {
 	HeadBranch   string `protobuf:"bytes,2,opt,name=head_branch,json=headBranch,proto3" json:"head_branch,omitempty"`
 	HeadCommit   string `protobuf:"bytes,3,opt,name=head_commit,json=headCommit,proto3" json:"head_commit,omitempty"`
 	BaseBranch   string `protobuf:"bytes,4,opt,name=base_branch,json=baseBranch,proto3" json:"base_branch,omitempty"`
-	Timeout      int64  `protobuf:"varint,5,opt,name=timeout,proto3" json:"timeout,omitempty"`
+	// Maximum number of seconds a Piped can take to handle this command.
+	Timeout int64 `protobuf:"varint,5,opt,name=timeout,proto3" json:"timeout,omitempty"`
 }
 
 func (x *Command_BuildPlanPreview) Reset() {
@@ -679,10 +690,12 @@ type Command_ChainSyncApplication struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	DeploymentChainId string       `protobuf:"bytes,1,opt,name=deployment_chain_id,json=deploymentChainId,proto3" json:"deployment_chain_id,omitempty"`
-	BlockIndex        uint32       `protobuf:"varint,2,opt,name=block_index,json=blockIndex,proto3" json:"block_index,omitempty"`
-	ApplicationId     string       `protobuf:"bytes,3,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
-	SyncStrategy      SyncStrategy `protobuf:"varint,4,opt,name=sync_strategy,json=syncStrategy,proto3,enum=model.SyncStrategy" json:"sync_strategy,omitempty"`
+	// The deployment chain this sync request belongs to.
+	DeploymentChainId string `protobuf:"bytes,1,opt,name=deployment_chain_id,json=deploymentChainId,proto3" json:"deployment_chain_id,omitempty"`
+	// The index of the block within the chain this application belongs to.
+	BlockIndex    uint32       `protobuf:"varint,2,opt,name=block_index,json=blockIndex,proto3" json:"block_index,omitempty"`
+	ApplicationId string       `protobuf:"bytes,3,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
+	SyncStrategy  SyncStrategy `protobuf:"varint,4,opt,name=sync_strategy,json=syncStrategy,proto3,enum=model.SyncStrategy" json:"sync_strategy,omitempty"`
 }
 
 func (x *Command_ChainSyncApplication) Reset() {

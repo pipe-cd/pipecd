@@ -168,13 +168,18 @@ func (StageStatus) EnumDescriptor() ([]byte, []int) {
 	return file_pkg_model_deployment_proto_rawDescGZIP(), []int{1}
 }
 
+// TriggerKind represents what caused a deployment to be created.
 type TriggerKind int32
 
 const (
-	TriggerKind_ON_COMMIT      TriggerKind = 0
-	TriggerKind_ON_COMMAND     TriggerKind = 1
+	// Triggered by a new commit that changed the application configuration.
+	TriggerKind_ON_COMMIT TriggerKind = 0
+	// Triggered manually via a command, e.g. clicking Sync on the web page.
+	TriggerKind_ON_COMMAND TriggerKind = 1
+	// Triggered because the application's live state drifted out of sync.
 	TriggerKind_ON_OUT_OF_SYNC TriggerKind = 2
-	TriggerKind_ON_CHAIN       TriggerKind = 3
+	// Triggered as a node in a deployment chain.
+	TriggerKind_ON_CHAIN TriggerKind = 3
 )
 
 // Enum value maps for TriggerKind.
@@ -623,6 +628,8 @@ func (x *DeployTargets) GetDeployTargets() []string {
 	return nil
 }
 
+// DeploymentTrigger describes what caused a deployment to be created and
+// which commit/strategy it targets.
 type DeploymentTrigger struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -703,6 +710,8 @@ func (x *DeploymentTrigger) GetStrategySummary() string {
 	return ""
 }
 
+// PipelineStage represents a single stage in a deployment's pipeline,
+// tracking its execution order, status, and any manual operation available on it.
 type PipelineStage struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -895,15 +904,17 @@ func (x *PipelineStage) GetAuthorizedOperators() []string {
 	return nil
 }
 
+// Commit represents the Git commit that triggered a deployment.
 type Commit struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Hash        string `protobuf:"bytes,1,opt,name=hash,proto3" json:"hash,omitempty"`
-	Message     string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
-	Author      string `protobuf:"bytes,3,opt,name=author,proto3" json:"author,omitempty"`
-	Branch      string `protobuf:"bytes,4,opt,name=branch,proto3" json:"branch,omitempty"`
+	Hash    string `protobuf:"bytes,1,opt,name=hash,proto3" json:"hash,omitempty"`
+	Message string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Author  string `protobuf:"bytes,3,opt,name=author,proto3" json:"author,omitempty"`
+	Branch  string `protobuf:"bytes,4,opt,name=branch,proto3" json:"branch,omitempty"`
+	// The pull request number this commit belongs to, if any. Zero means none.
 	PullRequest int64  `protobuf:"varint,5,opt,name=pull_request,json=pullRequest,proto3" json:"pull_request,omitempty"`
 	Url         string `protobuf:"bytes,6,opt,name=url,proto3" json:"url,omitempty"`
 	CreatedAt   int64  `protobuf:"varint,14,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
@@ -990,6 +1001,9 @@ func (x *Commit) GetCreatedAt() int64 {
 	return 0
 }
 
+// DeploymentMetadata stores arbitrary key/value metadata produced while
+// planning and executing a deployment, split between data shared by piped
+// itself and data owned by individual plugins.
 type DeploymentMetadata struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
