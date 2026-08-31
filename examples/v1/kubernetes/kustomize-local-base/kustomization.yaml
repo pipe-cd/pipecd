@@ -1,0 +1,11 @@
+bases:
+- ../../local-modules/kustomize-bases/helloworld
+
+nameSuffix: -local-base
+
+commonLabels:
+  app: kustomize-local-base
+
+images:
+- name: gcr.io/pipecd/helloworld
+  newTag: v0.6.0
