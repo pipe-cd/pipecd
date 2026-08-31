@@ -1,6 +1,6 @@
 {{ $_hugo_config := `{ "version": 1 }` }}
 {{ $value_image := resources.GetMatch (printf "**%s*" .Params.image) }}
-{{ $value_title := .Params.title }}
+{{ $value_title := .Params.title | plainify }}
 
 <div class="row justify-content-center core-value {{ if eq .Params.image_position "right" }} flex-row-reverse {{ end }} border-bottom">
 
