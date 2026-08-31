@@ -1,4 +1,4 @@
-bases:
+resources:
 - ../../local-modules/kustomize-bases/helloworld
 
 nameSuffix: -local-base
