@@ -15,7 +15,13 @@ spec:
       - name: K8S_TRAFFIC_ROUTING
         with:
           canary: 100
+      # Wait for a manual approval on the web console before promoting.
       - name: WAIT_APPROVAL
+        with:
+          minApproverNum: 1
+          # Replace with real usernames.
+          approvers:
+            - example-user
       # Roll out PRIMARY variant to the new version.
       - name: K8S_PRIMARY_ROLLOUT
       # Route all traffic back to PRIMARY variant.
