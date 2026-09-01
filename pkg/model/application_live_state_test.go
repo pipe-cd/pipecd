@@ -207,9 +207,10 @@ func TestKubernetesResourceState_HasDiff(t *testing.T) {
 			want: true,
 		},
 	}
-	for _, tc := range testcases {
+	for i := range testcases {
+		tc := &testcases[i]
 		t.Run(tc.name, func(t *testing.T) {
-			assert.Equal(t, tc.want, tc.s.HasDiff(tc.a))
+			assert.Equal(t, tc.want, tc.s.HasDiff(&tc.a))
 		})
 	}
 }
