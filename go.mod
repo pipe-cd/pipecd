@@ -3,7 +3,7 @@ module github.com/pipe-cd/pipecd
 go 1.26.2
 
 require (
-	cloud.google.com/go/firestore v1.22.0
+	cloud.google.com/go/firestore v1.25.0
 	cloud.google.com/go/profiler v0.3.1
 	cloud.google.com/go/secretmanager v1.20.0
 	cloud.google.com/go/storage v1.65.0
@@ -59,8 +59,8 @@ require (
 	golang.org/x/mod v0.36.0
 	golang.org/x/net v0.56.0
 	golang.org/x/oauth2 v0.36.0
-	google.golang.org/api v0.287.1
 	golang.org/x/sync v0.22.0
+	google.golang.org/api v0.287.1
 	google.golang.org/grpc v1.82.1
 	google.golang.org/protobuf v1.36.11
 	istio.io/api v0.0.0-20200710191538-00b73d23c685
