@@ -58,7 +58,7 @@
     "ts-jest": "^29.4.11",
     "ts-loader": "^9.6.2",
     "typescript": "^5.8.3",
-    "webpack": "^5.94.0",
+    "webpack": "^5.110.1",
     "webpack-cli": "^6.0.0",
     "webpack-dev-server": "^v5.2.6",
     "webpack-merge": "^5.7.3"
