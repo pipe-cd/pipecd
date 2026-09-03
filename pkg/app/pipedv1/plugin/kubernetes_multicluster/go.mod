@@ -12,7 +12,7 @@ require (
 	go.uber.org/zap v1.28.0
 	golang.org/x/mod v0.40.0
 	golang.org/x/sync v0.22.0
-	istio.io/api v1.30.3
+	istio.io/api v1.31.0
 	k8s.io/api v0.36.4
 	k8s.io/apimachinery v0.36.4
 	k8s.io/client-go v0.36.4
