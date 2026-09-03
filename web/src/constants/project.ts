@@ -65,11 +65,21 @@ export const TEXT_TO_RBAC_ACTION_TYPE: Record<
   delete: ProjectRBACPolicy.Action.DELETE,
 };
 
-// example: resources=(\*|application|deployment|event|piped|deploymentChain|project|apiKey|insight|,)+;\s*actions=(\*|get|list|create|update|delete|,)+
+// A single label pair, e.g. "env:prod". Key/value exclude the characters
+// that are structurally significant elsewhere in the grammar (`;{}:,`), as
+// well as whitespace, so a label block can't accidentally swallow the
+// resources/actions separator or use a newline (policies are split on
+// blank lines) to escape the label block.
+const LABEL_PAIR = "[^;{}:,\\s]+:[^;{}:,\\s]+";
+// A label block requires at least one valid key:value pair; empty ("{}")
+// or malformed ("{garbage}") label content is rejected.
+const LABEL_BLOCK = `(\\{${LABEL_PAIR}(,${LABEL_PAIR})*\\})?`;
+
+// example: resources=(\*|application(\{key:value(,key:value)*\})?|deployment(\{key:value(,key:value)*\})?|...|,)+;\s*actions=(\*|get|list|create|update|delete|,)+
 export const POLICIES_STRING_REGEX = new RegExp(
   "resources=(" +
     rbacResourceTypes()
-      .map((v) => v.replace(/\*/, "\\*"))
+      .map((v) => v.replace(/\*/, "\\*") + LABEL_BLOCK)
       .join("|") +
     "|,)+;\\s*actions=(" +
     rbacActionTypes()
