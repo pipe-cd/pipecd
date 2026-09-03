@@ -59,6 +59,11 @@ func TestSync(t *testing.T) {
 	running := makeDeployment("d-running", "app-3", model.DeploymentStatus_DEPLOYMENT_RUNNING)
 	rollingBack := makeDeployment("d-rolling-back", "app-4", model.DeploymentStatus_DEPLOYMENT_ROLLING_BACK)
 
+	oldestRunning := &model.Deployment{Id: "d-oldest-running", ApplicationId: "app-5", Status: model.DeploymentStatus_DEPLOYMENT_RUNNING, CreatedAt: 100}
+	newestPending := &model.Deployment{Id: "d-newest-pending", ApplicationId: "app-5", Status: model.DeploymentStatus_DEPLOYMENT_PENDING, CreatedAt: 200}
+	oldestPending := &model.Deployment{Id: "d-oldest-pending", ApplicationId: "app-6", Status: model.DeploymentStatus_DEPLOYMENT_PENDING, CreatedAt: 100}
+	newestRunning := &model.Deployment{Id: "d-newest-running", ApplicationId: "app-6", Status: model.DeploymentStatus_DEPLOYMENT_RUNNING, CreatedAt: 200}
+
 	tests := []struct {
 		name         string
 		pages        []*pipedservice.ListNotCompletedDeploymentsResponse
@@ -117,6 +122,30 @@ func TestSync(t *testing.T) {
 			wantRunnings: []*model.Deployment{rollingBack},
 			wantHeads: map[string]*model.Deployment{
 				"app-4": rollingBack,
+			},
+		},
+		{
+			name: "head_deployment_is_the_oldest_one_running_older",
+			pages: []*pipedservice.ListNotCompletedDeploymentsResponse{
+				{Deployments: []*model.Deployment{newestPending, oldestRunning}, Cursor: ""},
+			},
+			wantPendings: []*model.Deployment{newestPending},
+			wantPlanneds: nil,
+			wantRunnings: []*model.Deployment{oldestRunning},
+			wantHeads: map[string]*model.Deployment{
+				"app-5": oldestRunning,
+			},
+		},
+		{
+			name: "head_deployment_is_the_oldest_one_pending_older",
+			pages: []*pipedservice.ListNotCompletedDeploymentsResponse{
+				{Deployments: []*model.Deployment{oldestPending, newestRunning}, Cursor: ""},
+			},
+			wantPendings: []*model.Deployment{oldestPending},
+			wantPlanneds: nil,
+			wantRunnings: []*model.Deployment{newestRunning},
+			wantHeads: map[string]*model.Deployment{
+				"app-6": oldestPending,
 			},
 		},
 	}
