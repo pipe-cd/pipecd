@@ -1,8 +1,9 @@
 import userEvent from "@testing-library/user-event";
 import { dummyDeployment } from "~/__fixtures__/dummy-deployment";
+import { dummyTrigger } from "~/__fixtures__/dummy-trigger";
 import { render, screen, MemoryRouter, waitFor, act } from "~~/test-utils";
 import { DeploymentDetail } from ".";
-import { DeploymentStatus } from "~~/model/deployment_pb";
+import { Deployment, DeploymentStatus } from "~~/model/deployment_pb";
 import * as deploymentsApi from "~/api/deployments";
 import { server } from "~/mocks/server";
 
@@ -36,6 +37,32 @@ describe("DeploymentDetail", () => {
       screen.getByText(dummyDeployment.applicationName)
     ).toBeInTheDocument();
     expect(screen.getByText(dummyDeployment.summary)).toBeInTheDocument();
+  });
+
+  it("renders gracefully when commit hash is undefined", async () => {
+    const deploymentWithoutHash: Deployment.AsObject = {
+      ...dummyDeployment,
+      trigger: {
+        ...dummyTrigger,
+        commit: {
+          ...dummyTrigger.commit,
+          hash: (undefined as unknown) as string,
+        } as NonNullable<typeof dummyTrigger.commit>,
+      },
+    };
+
+    render(
+      <MemoryRouter>
+        <DeploymentDetail
+          deploymentId={dummyDeployment.id}
+          deployment={deploymentWithoutHash}
+        />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("SUCCESS")).toBeInTheDocument();
+    });
   });
 
   describe("status: RUNNING", () => {

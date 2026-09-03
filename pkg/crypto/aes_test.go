@@ -42,3 +42,15 @@ func TestAESEncryptDecrypt(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, text, decrypted)
 }
+
+func TestAESEncryptDecryptShortCiphertext(t *testing.T) {
+	ed, err := NewAESEncryptDecrypter("testdata/key")
+	require.NoError(t, err)
+	require.NotNil(t, ed)
+
+	_, err = ed.Decrypt("")
+	require.Error(t, err)
+
+	_, err = ed.Decrypt("YQ==")
+	require.Error(t, err)
+}

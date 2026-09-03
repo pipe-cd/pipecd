@@ -14,11 +14,20 @@
 #   up:      prepare local environment (registry, kind cluster)
 #   down:    shutdown/cleanup local environment (registry, kind cluster)
 ####################
+.PHONY: help
+
+help: ## Show available make targets and their descriptions
+	@echo ""
+	@echo "Available make targets:"
+	@echo ""
+	@grep -E '^[a-zA-Z0-9_/.-]+:.*?## ' $(MAKEFILE_LIST) | \
+		awk 'BEGIN {FS = ":.*?## "}; {printf "  %-35s %s\n", $$1, $$2}'
+	@echo ""
 
 # Build commands
 
 .PHONY: build
-build: build/go build/web
+build: build/go build/web ## Build all artifacts (Go binaries and web)
 
 .PHONY: build/go
 build/go: BUILD_VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7 --match 'v[0-9]*.*')
@@ -98,8 +107,8 @@ push/chart:
 
 # Test commands
 
-.PHONY: test
-test: test/go test/web
+..PHONY: test
+test: test/go test/web ## Run all tests (Go and web)
 
 .PHONY: test/go
 test/go: COVERAGE ?= false
@@ -185,6 +194,7 @@ stop/controlplane:
 	helm -n pipecd uninstall controlplane
 
 .PHONY: run/piped
+run/piped: ## Run piped agent locally
 run/piped: CONFIG_FILE ?=
 run/piped: INSECURE ?= false
 run/piped: LAUNCHER ?= false
@@ -200,6 +210,7 @@ else
 endif
 
 .PHONY: run/web
+run/web: ## Run web UI locally
 run/web:
 	yarn --cwd web dev
 
@@ -210,11 +221,12 @@ run/site:
 # Lint commands
 
 .PHONY: lint
-lint: lint/go lint/web lint/helm
+lint: lint/go lint/web lint/helm ## Run all linters (Go, web, helm)
+
 
 .PHONY: lint/go
 lint/go: FIX ?= false
-lint/go: VERSION ?= sha256:91460846c43b3de53eb77e968b17363e8747e6f3fc190575b52be60c49446e23 # golangci/golangci-lint:v2.4.0
+lint/go: VERSION ?= sha256:67dfc9eeeb0eb13fc1a36329c2c378197dc561f1edf1a7792e3f771606bb0e15 # golangci/golangci-lint:v2.11.4
 lint/go: FLAGS ?= --rm -e GOCACHE=/repo/.cache/go-build -e GOLANGCI_LINT_CACHE=/repo/.cache/golangci-lint -v ${PWD}:/repo
 lint/go: MODULES ?= $(shell find . -name go.mod | while read -r dir; do dirname "$$dir"; done | paste -sd, -) # comma separated list of modules. eg: MODULES=.,pkg/plugin/sdk
 lint/go:
@@ -302,6 +314,7 @@ up/kind-cluster:
 	./hack/create-kind-cluster.sh pipecd
 
 .PHONY: up/local-cluster
+up/local-cluster: ## Start local registry and kind cluster
 up/local-cluster: up/local-registry up/kind-cluster
 
 .PHONY: down/kind-cluster
@@ -313,6 +326,7 @@ down/local-registry:
 	docker container rm -f kind-registry 2>/dev/null
 
 .PHONY: down/local-cluster
+down/local-cluster: ## Stop and clean up local registry and kind cluster
 down/local-cluster: down/kind-cluster down/local-registry
 
 .PHONY: delete/local-volumes
@@ -329,7 +343,7 @@ setup-envtest: ## Download setup-envtest locally if necessary.
 
 # Check commands
 .PHONY: check
-check: build lint test check/gen/code check/dco
+check: build lint test check/gen/code check/dco ## Run all checks
 
 .PHONY: check/gen/code
 check/gen: gen/code
