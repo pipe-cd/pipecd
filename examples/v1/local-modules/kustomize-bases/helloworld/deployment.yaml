@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kustomize
+  labels:
+    app: kustomize
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kustomize
+  template:
+    metadata:
+      labels:
+        app: kustomize
+    spec:
+      containers:
+      - name: helloworld
+        image: gcr.io/pipecd/helloworld
+        args:
+          - server
+        ports:
+        - containerPort: 9085
