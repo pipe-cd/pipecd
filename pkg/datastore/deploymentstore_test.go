@@ -529,3 +529,109 @@ func TestMergeMetadata(t *testing.T) {
 		})
 	}
 }
+
+// validDeployment returns the minimum deployment that passes Validate, so the
+// metadata tests below exercise the updater rather than tripping validation.
+// MetadataV2 is deliberately left nil.
+func validDeployment() *model.Deployment {
+	return &model.Deployment{
+		Id:              "id",
+		ApplicationId:   "app-id",
+		ApplicationName: "app-name",
+		PipedId:         "piped-id",
+		ProjectId:       "project-id",
+		Kind:            model.ApplicationKind_KUBERNETES,
+		GitPath: &model.ApplicationGitPath{
+			Repo: &model.ApplicationGitRepository{Id: "id"},
+			Path: "path",
+		},
+		PlatformProvider: "platform-provider",
+		Trigger: &model.DeploymentTrigger{
+			Commit: &model.Commit{
+				Hash:      "hash",
+				Message:   "message",
+				Author:    "author",
+				Branch:    "branch",
+				CreatedAt: 1,
+			},
+			Timestamp: 1,
+		},
+		Status:      model.DeploymentStatus_DEPLOYMENT_PENDING,
+		CompletedAt: 1,
+		CreatedAt:   1,
+		UpdatedAt:   1,
+	}
+}
+
+// A deployment triggered by pipedv0 never sets MetadataV2, and the store's own
+// Factory decodes into &model.Deployment{}, so the field arrives nil. Both
+// update methods guarded the inner fields but not the pointer itself.
+func TestUpdateSharedMetadataWithNilMetadataV2(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	d := validDeployment()
+
+	ds := NewMockDataStore(ctrl)
+	ds.EXPECT().
+		Update(gomock.Any(), gomock.Any(), "id", gomock.Any()).
+		DoAndReturn(func(_ context.Context, _ Collection, _ string, updater Updater) error {
+			return updater(d)
+		})
+
+	s := NewDeploymentStore(ds)
+	err := s.UpdateSharedMetadata(context.Background(), "id", map[string]string{"k": "v"})
+
+	require.NoError(t, err)
+	require.NotNil(t, d.MetadataV2)
+	require.NotNil(t, d.MetadataV2.Shared)
+	assert.Equal(t, "v", d.MetadataV2.Shared.KeyValues["k"])
+}
+
+func TestUpdatePluginMetadataWithNilMetadataV2(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	d := validDeployment()
+
+	ds := NewMockDataStore(ctrl)
+	ds.EXPECT().
+		Update(gomock.Any(), gomock.Any(), "id", gomock.Any()).
+		DoAndReturn(func(_ context.Context, _ Collection, _ string, updater Updater) error {
+			return updater(d)
+		})
+
+	s := NewDeploymentStore(ds)
+	err := s.UpdatePluginMetadata(context.Background(), "id", "kubernetes", map[string]string{"k": "v"})
+
+	require.NoError(t, err)
+	require.NotNil(t, d.MetadataV2)
+	require.NotNil(t, d.MetadataV2.Plugins["kubernetes"])
+	assert.Equal(t, "v", d.MetadataV2.Plugins["kubernetes"].KeyValues["k"])
+}
+
+// Existing metadata must survive the merge rather than being replaced.
+func TestUpdateSharedMetadataMergesExisting(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	d := validDeployment()
+	d.MetadataV2 = &model.DeploymentMetadata{
+		Shared: &model.DeploymentMetadata_KeyValues{
+			KeyValues: map[string]string{"existing": "1"},
+		},
+	}
+
+	ds := NewMockDataStore(ctrl)
+	ds.EXPECT().
+		Update(gomock.Any(), gomock.Any(), "id", gomock.Any()).
+		DoAndReturn(func(_ context.Context, _ Collection, _ string, updater Updater) error {
+			return updater(d)
+		})
+
+	s := NewDeploymentStore(ds)
+	require.NoError(t, s.UpdateSharedMetadata(context.Background(), "id", map[string]string{"new": "2"}))
+
+	assert.Equal(t, "1", d.MetadataV2.Shared.KeyValues["existing"])
+	assert.Equal(t, "2", d.MetadataV2.Shared.KeyValues["new"])
+}
