@@ -22,6 +22,8 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"syscall"
+	"time"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
@@ -30,7 +32,13 @@ const (
 	stageScriptRun         = "SCRIPT_RUN"
 	stageScriptRunRollback = "SCRIPT_RUN_ROLLBACK"
 	metadataKeyPrefix      = "started-"
-	nonEmptyValue          = "_"
+
+	// commandTerminationGracePeriod is how long the script's process group gets
+	// after SIGTERM before it is SIGKILLed. Long-running commands such as
+	// terraform apply may want this configurable; it is a constant for now
+	// because nothing in the stage config exposes it yet.
+	commandTerminationGracePeriod = 2 * time.Second
+	nonEmptyValue                 = "_"
 )
 
 type ContextInfo struct {
@@ -110,7 +118,7 @@ func executeScriptRun(ctx context.Context, request sdk.ExecuteStageRequest[struc
 	}
 	c := make(chan sdk.StageStatus, 1)
 	go func() {
-		c <- executeCommand(opts.Run, opts.Env, request, lp)
+		c <- executeCommand(ctx, opts.Run, opts.Env, request, lp)
 	}()
 	select {
 	case result := <-c:
@@ -143,7 +151,7 @@ func executeRollback(ctx context.Context, request sdk.ExecuteStageRequest[struct
 	}
 	c := make(chan sdk.StageStatus, 1)
 	go func() {
-		c <- executeCommand(opts.OnRollback, opts.Env, request, lp)
+		c <- executeCommand(ctx, opts.OnRollback, opts.Env, request, lp)
 	}()
 	select {
 	case result := <-c:
@@ -158,7 +166,7 @@ func executeRollback(ctx context.Context, request sdk.ExecuteStageRequest[struct
 func (p *plugin) FetchDefinedStages() []string {
 	return []string{stageScriptRun, stageScriptRunRollback}
 }
-func executeCommand(commands string, customEnv map[string]string, request sdk.ExecuteStageRequest[struct{}], lp sdk.StageLogPersister) sdk.StageStatus {
+func executeCommand(ctx context.Context, commands string, customEnv map[string]string, request sdk.ExecuteStageRequest[struct{}], lp sdk.StageLogPersister) sdk.StageStatus {
 	lp.Infof("Running commands...")
 	for _, v := range strings.Split(commands, "\n") {
 		if v != "" {
@@ -191,13 +199,43 @@ func executeCommand(commands string, customEnv map[string]string, request sdk.Ex
 		envs = append(envs, key+"="+value)
 	}
 
-	cmd := exec.Command("/bin/sh", "-l", "-c", commands)
+	cmd := exec.CommandContext(ctx, "/bin/sh", "-l", "-c", commands)
 	cmd.Env = append(os.Environ(), envs...)
 	cmd.Dir = request.TargetDeploymentSource.ApplicationDirectory
 	cmd.Stdout = lp
 	cmd.Stderr = lp
-	if err := cmd.Run(); err != nil {
-		lp.Errorf("failed to exec command: %w", err)
+
+	// Run the shell as its own process group leader so the whole tree can be
+	// signalled. Without this, cancelling the stage kills /bin/sh and leaves
+	// whatever it spawned still running against the cluster.
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+
+	// exec.CommandContext's default cancel only signals the direct child, and
+	// its WaitDelay fallback calls Process.Kill(), which is also just the
+	// child. Signal the group instead, then escalate to SIGKILL on the group so
+	// a grandchild that ignores SIGTERM cannot outlive the stage.
+	stopEscalation := make(chan struct{})
+	cmd.Cancel = func() error {
+		pgid := cmd.Process.Pid
+		lp.Infof("Cancelling script, sending SIGTERM to process group %d", pgid)
+		if err := syscall.Kill(-pgid, syscall.SIGTERM); err != nil {
+			return err
+		}
+		go func() {
+			select {
+			case <-stopEscalation:
+			case <-time.After(commandTerminationGracePeriod):
+				lp.Infof("Script did not exit within %s, sending SIGKILL to process group %d", commandTerminationGracePeriod, pgid)
+				_ = syscall.Kill(-pgid, syscall.SIGKILL)
+			}
+		}()
+		return nil
+	}
+
+	err = cmd.Run()
+	close(stopEscalation)
+	if err != nil {
+		lp.Errorf("failed to exec command: %v", err)
 		return sdk.StageStatusFailure
 	} else {
 		return sdk.StageStatusSuccess
