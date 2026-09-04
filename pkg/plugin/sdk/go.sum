@@ -218,8 +218,8 @@ github.com/modern-go/reflect2 v1.0.3-0.20250322232337-35a7c28c31ee h1:W5t00kpgFd
 github.com/modern-go/reflect2 v1.0.3-0.20250322232337-35a7c28c31ee/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
 github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
 github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
-github.com/pipe-cd/pipecd v0.57.0 h1:GxxCJ2R/rCb6Mz6ka1UdMsOA1HagNEtTF6zFT7lurtA=
-github.com/pipe-cd/pipecd v0.57.0/go.mod h1:6fKCaNC7ptWetjkJvhgXQmE04Q9xu8ZfSCQOKdFYMIY=
+github.com/pipe-cd/pipecd v0.58.0 h1:mec3z7FRLx/R6JK02gTxxY3MPU57WWfCPvQB1zT1hFc=
+github.com/pipe-cd/pipecd v0.58.0/go.mod h1:THSW4KEM5NPK1cqVsYWLf0mKDpGqqbquYB6OzXizd0I=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=

@@ -3,7 +3,7 @@ module github.com/pipe-cd/piped-plugin-sdk-go
 go 1.26.2
 
 require (
-	github.com/pipe-cd/pipecd v0.57.0
+	github.com/pipe-cd/pipecd v0.58.0
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.12.1
 	go.uber.org/atomic v1.11.0
