@@ -139,7 +139,10 @@ func (c *applicationConfig) migrateApplicationConfig(_ context.Context, configFi
 		"driftDetection",
 	}
 
-	oldSpec := cfg["spec"].(map[string]any)
+	oldSpec, ok := cfg["spec"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("invalid application config: missing or invalid spec")
+	}
 	for _, key := range keys {
 		if _, ok := oldSpec[key]; ok {
 			spec[key] = oldSpec[key]

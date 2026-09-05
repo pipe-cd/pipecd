@@ -259,6 +259,13 @@ func TestApplicationConfig_migrateApplicationConfig(t *testing.T) {
 			expectError: true,
 		},
 		{
+			name: "missing spec",
+			inputConfig: map[string]interface{}{
+				"kind": "KubernetesApp",
+			},
+			expectError: true,
+		},
+		{
 			name: "pipeline with timeout and skipOn migration",
 			inputConfig: map[string]interface{}{
 				"kind":       "KubernetesApp",
