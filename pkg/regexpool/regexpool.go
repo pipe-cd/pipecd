@@ -31,7 +31,7 @@ var (
 // Pool is the representation of a pool of regular expression.
 type Pool struct {
 	cache *memorycache.LRUCache
-	fails map[string]struct{}
+	fails map[string]error
 	mu    sync.RWMutex
 }
 
@@ -54,7 +54,7 @@ func NewPool(size int) (*Pool, error) {
 		return nil, err
 	}
 	return &Pool{
-		fails: make(map[string]struct{}),
+		fails: make(map[string]error),
 		cache: cache,
 	}, nil
 }
@@ -69,10 +69,10 @@ func (p *Pool) Get(expr string) (*regexp.Regexp, error) {
 	// Check if the given expression was unable to compile before
 	// then return the error fast.
 	p.mu.RLock()
-	_, ok := p.fails[expr]
+	err, ok := p.fails[expr]
 	p.mu.RUnlock()
 	if ok {
-		return nil, fmt.Errorf("unable to compile: %s", expr)
+		return nil, fmt.Errorf("unable to compile %q: %w", expr, err)
 	}
 	// Compile the expression string and cache its result.
 	reg, err := regexp.Compile(expr)
@@ -81,7 +81,7 @@ func (p *Pool) Get(expr string) (*regexp.Regexp, error) {
 		return reg, nil
 	}
 	p.mu.Lock()
-	p.fails[expr] = struct{}{}
+	p.fails[expr] = err
 	p.mu.Unlock()
-	return nil, fmt.Errorf("unable to compile: %s", expr)
+	return nil, fmt.Errorf("unable to compile %q: %w", expr, err)
 }
