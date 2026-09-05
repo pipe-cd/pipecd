@@ -677,9 +677,10 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 		}
 	}
 
-	apps, _, err := a.applicationStore.List(ctx, datastore.ListOptions{
+	apps, err := listAllApplications(ctx, a.applicationStore, datastore.ListOptions{
 		Filters: filters,
 		Orders:  orders,
+		Limit:   listApplicationsPageSize,
 	})
 	if err != nil {
 		return nil, gRPCStoreError(err, "list applications")
