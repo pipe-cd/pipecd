@@ -139,7 +139,12 @@ func (c *applicationConfig) migrateApplicationConfig(_ context.Context, configFi
 		"driftDetection",
 	}
 
-	oldSpec := cfg["spec"].(map[string]any)
+	oldSpec, ok := cfg["spec"].(map[string]any)
+	if !ok {
+		err := fmt.Errorf("spec must be a mapping, got %T", cfg["spec"])
+		logger.Error("invalid application config", zap.String("config-file", configFile), zap.Error(err))
+		return err
+	}
 	for _, key := range keys {
 		if _, ok := oldSpec[key]; ok {
 			spec[key] = oldSpec[key]
@@ -151,7 +156,19 @@ func (c *applicationConfig) migrateApplicationConfig(_ context.Context, configFi
 	if oldPipelineCfg, ok := oldSpec["pipeline"]; ok {
 		pipelineCfg := make(map[string][]any)
 
-		for _, oldStage := range oldPipelineCfg.(map[string]any)["stages"].([]any) {
+		oldPipeline, ok := oldPipelineCfg.(map[string]any)
+		if !ok {
+			err := fmt.Errorf("spec.pipeline must be a mapping, got %T", oldPipelineCfg)
+			logger.Error("invalid application config", zap.String("config-file", configFile), zap.Error(err))
+			return err
+		}
+		oldStages, ok := oldPipeline["stages"].([]any)
+		if !ok && oldPipeline["stages"] != nil {
+			err := fmt.Errorf("spec.pipeline.stages must be a list, got %T", oldPipeline["stages"])
+			logger.Error("invalid application config", zap.String("config-file", configFile), zap.Error(err))
+			return err
+		}
+		for _, oldStage := range oldStages {
 			if oldStageCfg, ok := oldStage.(map[string]any); ok {
 				// Check if the stage is the analysis stage to determine if we need to fill plugins.analysis config
 				if oldStageCfg["name"] == string(model.StageAnalysis) {
@@ -177,7 +194,13 @@ func (c *applicationConfig) migrateApplicationConfig(_ context.Context, configFi
 		spec["pipeline"] = pipelineCfg
 	}
 
-	switch config.Kind(cfg["kind"].(string)) {
+	kind, ok := cfg["kind"].(string)
+	if !ok {
+		err := fmt.Errorf("kind must be a string, got %T", cfg["kind"])
+		logger.Error("invalid application config", zap.String("config-file", configFile), zap.Error(err))
+		return err
+	}
+	switch config.Kind(kind) {
 	case config.KindKubernetesApp:
 		logger.Info("migrating kubernetes application config", zap.String("config-file", configFile))
 		keys := []string{
