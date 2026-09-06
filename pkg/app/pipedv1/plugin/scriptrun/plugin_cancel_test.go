@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"syscall"
 	"testing"
@@ -110,4 +111,22 @@ func TestExecuteCommandSucceedsWithoutCancel(t *testing.T) {
 	assert.Equal(t, sdk.StageStatusSuccess, status)
 	assert.Less(t, time.Since(start), commandTerminationGracePeriod,
 		"a command that exits on its own must not wait for the termination grace period")
+}
+
+// TestSignalGroupReportsExitedGroupAsProcessDone covers the race where the
+// script finishes on its own just as the stage is cancelled. Kill then returns
+// ESRCH, and reporting that as a Cancel error would turn a successful script
+// into a stage failure.
+func TestSignalGroupReportsExitedGroupAsProcessDone(t *testing.T) {
+	t.Parallel()
+
+	cmd := exec.Command("/bin/sh", "-c", "exit 0")
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	require.NoError(t, cmd.Start())
+	pgid := cmd.Process.Pid
+	require.NoError(t, cmd.Wait())
+
+	// The group is reaped, so the signal cannot land.
+	err := signalGroup(pgid, syscall.SIGTERM)
+	require.ErrorIs(t, err, os.ErrProcessDone)
 }

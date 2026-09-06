@@ -17,6 +17,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -166,6 +167,20 @@ func executeRollback(ctx context.Context, request sdk.ExecuteStageRequest[struct
 func (p *plugin) FetchDefinedStages() []string {
 	return []string{stageScriptRun, stageScriptRunRollback}
 }
+
+// signalGroup sends sig to the process group led by pgid. An already-exited
+// group reports as os.ErrProcessDone, because os/exec keeps the command's own
+// exit status only when Cancel returns an error wrapping that.
+func signalGroup(pgid int, sig syscall.Signal) error {
+	if err := syscall.Kill(-pgid, sig); err != nil {
+		if errors.Is(err, syscall.ESRCH) {
+			return os.ErrProcessDone
+		}
+		return err
+	}
+	return nil
+}
+
 func executeCommand(ctx context.Context, commands string, customEnv map[string]string, request sdk.ExecuteStageRequest[struct{}], lp sdk.StageLogPersister) sdk.StageStatus {
 	lp.Infof("Running commands...")
 	for _, v := range strings.Split(commands, "\n") {
@@ -218,7 +233,7 @@ func executeCommand(ctx context.Context, commands string, customEnv map[string]s
 	cmd.Cancel = func() error {
 		pgid := cmd.Process.Pid
 		lp.Infof("Cancelling script, sending SIGTERM to process group %d", pgid)
-		if err := syscall.Kill(-pgid, syscall.SIGTERM); err != nil {
+		if err := signalGroup(pgid, syscall.SIGTERM); err != nil {
 			return err
 		}
 		go func() {
@@ -226,7 +241,7 @@ func executeCommand(ctx context.Context, commands string, customEnv map[string]s
 			case <-stopEscalation:
 			case <-time.After(commandTerminationGracePeriod):
 				lp.Infof("Script did not exit within %s, sending SIGKILL to process group %d", commandTerminationGracePeriod, pgid)
-				_ = syscall.Kill(-pgid, syscall.SIGKILL)
+				_ = signalGroup(pgid, syscall.SIGKILL)
 			}
 		}()
 		return nil
