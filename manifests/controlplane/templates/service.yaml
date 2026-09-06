@@ -1,0 +1,155 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pipecd.fullname" . }}
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ingress
+  annotations:
+  {{- with .Values.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- if .Values.backendConfig.enabled }}
+    beta.cloud.google.com/backend-config: '{"ports": {"internal-service": "{{ include "pipecd.fullname" . }}" }}'
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - name: service
+      port: {{ .Values.service.port }}
+      targetPort: ingress
+    {{- if .Values.service.internalPort }}
+    - name: internal-service
+      port: {{ .Values.service.internalPort }}
+      targetPort: ingress
+    {{- end }}
+  selector:
+    {{- include "pipecd.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: gateway
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pipecd.fullname" . }}-gateway
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+    app.kubernetes.io/component: gateway
+spec:
+  type: ClusterIP
+  ports:
+    - name: envoy-admin
+      port: 9095
+      targetPort: envoy-admin
+  selector:
+    {{- include "pipecd.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: gateway
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pipecd.fullname" . }}-server
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+    app.kubernetes.io/component: server
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: piped-api
+      port: 9080
+      targetPort: piped-api
+    - name: web-api
+      port: 9081
+      targetPort: web-api
+    - name: http
+      port: 9082
+      targetPort: http
+    - name: api
+      port: 9083
+      targetPort: api
+    - name: admin
+      port: 9085
+      targetPort: admin
+  selector:
+    {{- include "pipecd.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: server
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pipecd.fullname" . }}-cache
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cache
+spec:
+  type: ClusterIP
+  ports:
+    - name: service
+      port: 6379
+      targetPort: redis
+  selector:
+    {{- include "pipecd.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: cache
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pipecd.fullname" . }}-ops
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ops
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: http
+      port: 9082
+      targetPort: http
+    - name: admin
+      port: 9085
+      targetPort: admin
+  selector:
+    {{- include "pipecd.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: ops
+
+{{- if .Values.quickstart.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pipecd.fullname" . }}-mysql
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mysql
+spec:
+  type: ClusterIP
+  ports:
+    - name: service
+      port: {{ .Values.mysql.port }}
+      targetPort: mysql
+  selector:
+    {{- include "pipecd.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: mysql
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pipecd.fullname" . }}-minio
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+    app.kubernetes.io/component: minio
+spec:
+  type: ClusterIP
+  ports:
+    - name: service
+      port: {{ .Values.minio.port }}
+      targetPort: minio
+  selector:
+    {{- include "pipecd.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: minio
+{{- end }}

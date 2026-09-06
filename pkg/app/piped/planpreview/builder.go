@@ -212,7 +212,7 @@ func (b *builder) buildApp(ctx context.Context, worker int, command string, app 
 
 	logger.Info("will decide sync strategy for an application")
 
-	r := model.MakeApplicationPlanPreviewResult(*app)
+	r := model.MakeApplicationPlanPreviewResult(app)
 
 	var preCommit string
 	// Find the commit of the last successful deployment.
@@ -321,7 +321,7 @@ func (b *builder) findTriggerApps(ctx context.Context, repo git.Repo, apps []*mo
 			continue
 		}
 
-		r := model.MakeApplicationPlanPreviewResult(*app)
+		r := model.MakeApplicationPlanPreviewResult(app)
 		r.Error = fmt.Sprintf("failed while determining the application should be triggered or not, %v", err)
 		failedResults = append(failedResults, r)
 	}

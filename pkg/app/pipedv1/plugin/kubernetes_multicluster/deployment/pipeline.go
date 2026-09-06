@@ -15,6 +15,7 @@
 package deployment
 
 import (
+	"errors"
 	"slices"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
@@ -70,6 +71,8 @@ const (
 	StageDescriptionK8sMultiTrafficRouting = "Update traffic routing percentages for all targets"
 )
 
+var errRollbackRequiresStages = errors.New("rollback requires at least one stage")
+
 func buildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
 	out := make([]sdk.QuickSyncStage, 0, 2)
 
@@ -96,7 +99,7 @@ func buildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
 }
 
 // buildPipelineStages builds the pipeline stages with the given SDK stages.
-func buildPipelineStages(stages []sdk.StageConfig, autoRollback bool) []sdk.PipelineStage {
+func buildPipelineStages(stages []sdk.StageConfig, autoRollback bool) ([]sdk.PipelineStage, error) {
 	out := make([]sdk.PipelineStage, 0, len(stages)+1)
 
 	for _, s := range stages {
@@ -110,6 +113,9 @@ func buildPipelineStages(stages []sdk.StageConfig, autoRollback bool) []sdk.Pipe
 	}
 
 	if autoRollback {
+		if len(stages) == 0 {
+			return nil, errRollbackRequiresStages
+		}
 		// we set the index of the rollback stage to the minimum index of all stages.
 		minIndex := slices.MinFunc(stages, func(a, b sdk.StageConfig) int {
 			return a.Index - b.Index
@@ -124,5 +130,5 @@ func buildPipelineStages(stages []sdk.StageConfig, autoRollback bool) []sdk.Pipe
 		})
 	}
 
-	return out
+	return out, nil
 }

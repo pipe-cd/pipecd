@@ -150,7 +150,7 @@ spec: {}
 			mockResp:       &GetPlanPreviewResponse{},
 			err:            errors.New("some error"),
 			expectErr:      true,
-			expectedStatus: codes.Internal,
+			expectedStatus: codes.InvalidArgument,
 		},
 	}
 

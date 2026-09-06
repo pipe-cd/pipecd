@@ -28,7 +28,6 @@ metadata:
   name: simple-canary
   annotations:
     pipecd.dev/resource-key: apps:Deployment::simple-canary
-  creationTimestamp: 
 spec:
   replicas: 9
   selector:
@@ -38,7 +37,6 @@ spec:
   strategy: {}
   template:
     metadata:
-      creationTimestamp: 
       labels:
         app: simple
         pipecd.dev/variant: canary-variant

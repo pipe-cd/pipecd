@@ -16,6 +16,7 @@ package deployment
 
 import (
 	"encoding/json"
+	"errors"
 	"slices"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
@@ -68,6 +69,8 @@ const (
 	StageDescriptionK8sRollback = "Rollback the deployment"
 )
 
+var errRollbackRequiresStages = errors.New("rollback requires at least one stage")
+
 func buildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
 	out := make([]sdk.QuickSyncStage, 0, 2)
 
@@ -116,6 +119,9 @@ func buildPipelineStages(input *sdk.BuildPipelineSyncStagesInput) ([]sdk.Pipelin
 	}
 
 	if autoRollback {
+		if len(stages) == 0 {
+			return nil, errRollbackRequiresStages
+		}
 		// we set the index of the rollback stage to the minimum index of all stages.
 		minIndex := slices.MinFunc(stages, func(a, b sdk.StageConfig) int {
 			return a.Index - b.Index
