@@ -167,7 +167,11 @@ func (d *detector) check(ctx context.Context) {
 		// Start checking all applications in this repository.
 		for _, app := range apps {
 			if err := d.checkApplication(ctx, app, gitRepo, headCommit); err != nil {
-				d.logger.Error(fmt.Sprintf("failed to check application: %s", app.Id), zap.Error(err))
+				// Ignore the error caused by the context being canceled (e.g. piped is
+				// shutting down); it's an expected cancellation, not a real failure.
+				if ctx.Err() == nil {
+					d.logger.Error(fmt.Sprintf("failed to check application: %s", app.Id), zap.Error(err))
+				}
 			}
 
 			// Reset the app dir to the head commit.
@@ -180,11 +184,15 @@ func (d *detector) check(ctx context.Context) {
 				zap.String("app-path", app.GitPath.Path),
 			)
 			if err := gitRepo.CleanPath(ctx, app.GitPath.Path); err != nil {
-				d.logger.Error("failed to clean partially cloned repository",
-					zap.String("repo-id", repoID),
-					zap.String("app-id", app.Id),
-					zap.String("app-path", app.GitPath.Path),
-					zap.Error(err))
+				// This clean is only partial; the entire cleanup is performed elsewhere,
+				// so ignore the error when it's caused by the context being canceled.
+				if ctx.Err() == nil {
+					d.logger.Error("failed to clean partially cloned repository",
+						zap.String("repo-id", repoID),
+						zap.String("app-id", app.Id),
+						zap.String("app-path", app.GitPath.Path),
+						zap.Error(err))
+				}
 			}
 		}
 	}
