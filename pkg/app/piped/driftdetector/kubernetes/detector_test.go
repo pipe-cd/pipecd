@@ -65,6 +65,12 @@ func (fakeStateGetter) WaitForReady(ctx context.Context, timeout time.Duration) 
 	return nil
 }
 
+type fakeReporter struct{}
+
+func (fakeReporter) ReportApplicationSyncState(ctx context.Context, appID string, state *model.ApplicationSyncState) error {
+	return nil
+}
+
 // TestCheck_ContextCanceled verifies that check() does not log the per-application
 // failures as errors when the given context has already been canceled, e.g. during
 // piped shutdown, while it still logs them as errors otherwise.
@@ -115,6 +121,7 @@ func TestCheck_ContextCanceled(t *testing.T) {
 				provider:          config.PipedPlatformProvider{Name: "kubernetes-default"},
 				appLister:         &fakeAppLister{apps: []*model.Application{app}},
 				stateGetter:       fakeStateGetter{},
+				reporter:          fakeReporter{},
 				appManifestsCache: memorycache.NewCache(),
 				config:            &config.PipedSpec{},
 				logger:            logger,
