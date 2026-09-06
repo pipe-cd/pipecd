@@ -295,8 +295,8 @@ func (c *applicationConfig) migrateApplicationConfig(_ context.Context, configFi
 		}
 		spec["plugins"] = pluginCfg
 	default:
-		logger.Error("unsupported application kind", zap.String("config-file", configFile), zap.String("kind", cfg["kind"].(string)))
-		return fmt.Errorf("unsupported application kind: %s", cfg["kind"])
+		logger.Error("unsupported application kind", zap.String("config-file", configFile), zap.String("kind", kind))
+		return fmt.Errorf("unsupported application kind: %s", kind)
 	}
 
 	migrated["spec"] = spec
