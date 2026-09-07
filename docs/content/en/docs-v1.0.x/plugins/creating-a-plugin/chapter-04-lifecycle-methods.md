@@ -6,7 +6,7 @@ description: >
   Implement `FetchDefinedStages`, `DetermineVersions`, and `DetermineStrategy`.
 ---
 
-In this chapter you replace the first three empty methods with real ones. Together they tell `piped` which stages the plugin provides, what version it is deploying, and which deployment strategy to use. None of them run a deployment yet; they give `piped` the information it needs before a deployment starts.
+In this chapter you replace the first three empty methods with real ones. Together they tell `piped` which stages the plugin provides, which versions it is deploying, and which deployment strategy to use. None of them run a deployment yet; they give `piped` the information it needs before a deployment starts.
 
 ## Declare the stages
 
