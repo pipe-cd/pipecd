@@ -45,9 +45,9 @@ describe("DeploymentDetail", () => {
       trigger: {
         ...dummyTrigger,
         commit: {
-          ...dummyTrigger.commit!,
+          ...dummyTrigger.commit,
           hash: (undefined as unknown) as string,
-        },
+        } as NonNullable<typeof dummyTrigger.commit>,
       },
     };
 

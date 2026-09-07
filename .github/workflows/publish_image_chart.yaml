@@ -86,7 +86,7 @@ jobs:
 
       # Building and pushing container images.
       - name: Build and push ${{ matrix.image }} image
-        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           push: true
           context: .
@@ -96,6 +96,22 @@ jobs:
           # parameter to use inline cache. ref; https://docs.docker.com/build/ci/github-actions/cache/#inline-cache
           cache-from: type=registry,ref=${{ matrix.container_registry }}/${{ matrix.image }}:latest
           cache-to: type=inline
+
+  # Publish Helm charts once, only after every image in the artifacts matrix has
+  # been pushed. This keeps charts from being published before their images exist,
+  # avoids concurrent duplicate pushes, and blocks the publish if a build fails.
+  charts:
+    runs-on: ubuntu-24.04
+    needs: artifacts
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+      - name: Determine version
+        run: echo "PIPECD_VERSION=$(git describe --tags --always --abbrev=7 --match 'v[0-9]*.*')" >> $GITHUB_ENV
 
       # Building and pushing Helm charts.
       - name: Install helm
@@ -116,7 +132,7 @@ jobs:
 
   trigger-event-watcher:
     runs-on: ubuntu-24.04
-    needs: artifacts
+    needs: charts
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -138,7 +154,7 @@ jobs:
 
   release-quickstart-manifests:
     runs-on: ubuntu-24.04
-    needs: artifacts
+    needs: charts
     # ignore release candidates
     if: startsWith(github.ref, 'refs/tags/') && !contains(github.ref, '-rc')
     permissions:
