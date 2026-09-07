@@ -52,7 +52,7 @@ make gen/code           # Regenerate .pb.go and .pb.validate.go from .proto file
 make up/local-cluster   # Start local kind cluster + registry
 make run/controlplane   # Build and deploy control plane to local cluster
 # In another terminal:
-kubectl port-forward -n pipecd svc/pipecd 8080
+kubectl port-forward -n pipecd svc/controlplane 8080
 # Access UI at http://localhost:8080?project=quickstart
 # Login: hello-pipecd / hello-pipecd
 
@@ -218,7 +218,7 @@ Every new Go file must start with this header (the year should be the year first
 ### Working on Control Plane
 1. Make code changes in `cmd/controlplane/` or `pkg/app/server/`
 2. Run `make run/controlplane` (builds, pushes to local registry, deploys to kind cluster)
-3. Port-forward: `kubectl port-forward -n pipecd svc/pipecd 8080`
+3. Port-forward: `kubectl port-forward -n pipecd svc/controlplane 8080`
 4. Access UI at `http://localhost:8080?project=quickstart`
 
 ### Working on Piped

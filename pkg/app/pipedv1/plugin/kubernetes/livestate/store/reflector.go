@@ -213,7 +213,7 @@ func (r *reflector) start(ctx context.Context) ([]schema.GroupVersionKind, error
 }
 
 // OnAdd implements cache.ResourceEventHandler.
-func (r *reflector) OnAdd(obj interface{}) {
+func (r *reflector) OnAdd(obj interface{}, isInInitialList bool) {
 	u, ok := obj.(*unstructured.Unstructured)
 	if !ok {
 		r.logger.Error("failed to convert object to unstructured", zap.Any("object", obj))
