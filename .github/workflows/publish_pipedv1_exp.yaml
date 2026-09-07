@@ -36,7 +36,7 @@ jobs:
           make build/go MOD=pipedv1 BUILD_VERSION=${{ inputs.version }} BUILD_OS=darwin BUILD_ARCH=arm64 BIN_SUFFIX=_${{ inputs.version }}_darwin_arm64
 
       - name: Publish binary artifacts
-        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           tag_name: pipedv1/exp/${{ inputs.version }}
           name: pipedv1 experimental ${{ inputs.version }}
@@ -92,7 +92,7 @@ jobs:
       # Build and push image by digest (without tag)
       - name: Build and push pipedv1 experimental image (${{ matrix.platform.arch }})
         id: build
-        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           context: .
           file: cmd/pipedv1/Dockerfile
