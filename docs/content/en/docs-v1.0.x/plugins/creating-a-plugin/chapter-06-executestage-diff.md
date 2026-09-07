@@ -41,7 +41,7 @@ func (p *plugin) executeStageRollback(ctx context.Context, input *sdk.ExecuteSta
 
 Two things matter before you implement a stage:
 
-- The logs a user sees on the web UI come from the log persister, which you get with `input.Client.LogPersister()`, not from `input.Logger`. `input.Logger` writes to the plugin's own logs, which the user does not see.
+- The logs a user sees on the web UI come from the log persister, which you get with `input.Client.StageLogPersister()`, not from `input.Logger`. `input.Logger` writes to the plugin's own logs, which the user does not see.
 - To fail a stage, do not return an error. Set `Status` on the response to `sdk.StageStatusFailure` and return it. Returning an error is for unexpected problems, not for a stage that ran and failed.
 
 ## Implement the DIFF stage
@@ -287,7 +287,10 @@ Replace the empty `executeStageDiff` with the following:
 
 ```go
 func (p *plugin) executeStageDiff(ctx context.Context, input *sdk.ExecuteStageInput[applicationConfig]) (*sdk.ExecuteStageResponse, error) {
-	lp := input.Client.LogPersister()
+	lp, err := input.Client.StageLogPersister()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get log persister: %w", err)
+	}
 
 	lp.Info("Listing files in the git repository...")
 	sourceFiles, err := listFiles(os.DirFS(input.Request.TargetDeploymentSource.ApplicationDirectory))
