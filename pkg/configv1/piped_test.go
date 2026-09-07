@@ -15,6 +15,7 @@
 package config
 
 import (
+	"encoding/json"
 	"errors"
 	"testing"
 	"time"
@@ -1051,6 +1052,54 @@ func TestPipeGitValidate(t *testing.T) {
 			t.Parallel()
 			err := tc.git.Validate()
 			assert.Equal(t, tc.err, err)
+		})
+	}
+}
+
+func TestSecretManagementUnmarshalJSON(t *testing.T) {
+	testcases := []struct {
+		name      string
+		data      string
+		want      *SecretManagement
+		wantError string
+	}{
+		{
+			name:      "unsupported type",
+			data:      `{"type":"UNKNOWN_TYPE","config":{}}`,
+			wantError: "unsupported secret management type: UNKNOWN_TYPE",
+		},
+		{
+			name: "key pair type",
+			data: `{"type":"KEY_PAIR","config":{"privateKeyFile":"/tmp/private.pem","publicKeyFile":"/tmp/public.pem"}}`,
+			want: &SecretManagement{
+				Type: model.SecretManagementTypeKeyPair,
+				KeyPair: &SecretManagementKeyPair{
+					PrivateKeyFile: "/tmp/private.pem",
+					PublicKeyFile:  "/tmp/public.pem",
+				},
+			},
+		},
+		{
+			name: "gcp kms type",
+			data: `{"type":"GCP_KMS","config":{"keyName":"projects/p/secret"}}`,
+			want: &SecretManagement{
+				Type: model.SecretManagementTypeGCPKMS,
+				GCPKMS: &SecretManagementGCPKMS{
+					KeyName: "projects/p/secret",
+				},
+			},
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			var got SecretManagement
+			err := json.Unmarshal([]byte(tc.data), &got)
+			if tc.wantError != "" {
+				assert.EqualError(t, err, tc.wantError)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, tc.want, &got)
 		})
 	}
 }
