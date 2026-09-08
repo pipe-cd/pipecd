@@ -15,13 +15,13 @@ export const formalizePoliciesList = ({
   policiesList: ProjectRBACPolicy.AsObject[];
 }): string => {
   const policies: string[] = [];
-  policiesList.map((policy) => {
+  policiesList.forEach((policy) => {
     const resources: string[] = [];
-    policy.resourcesList.map((resource) => {
+    policy.resourcesList.forEach((resource) => {
       let rsc = RBAC_RESOURCE_TYPE_TEXT[resource.type];
       if (resource.labelsMap.length > 0) {
         rsc += "{";
-        resource.labelsMap.map((label) => {
+        resource.labelsMap.forEach((label) => {
           rsc += label[0] + ":" + label[1] + ",";
         });
         rsc = rsc.slice(0, -1); // remove last comma
@@ -31,7 +31,7 @@ export const formalizePoliciesList = ({
     });
 
     const actions: string[] = [];
-    policy.actionsList.map((action) => {
+    policy.actionsList.forEach((action) => {
       actions.push(RBAC_ACTION_TYPE_TEXT[action]);
     });
 

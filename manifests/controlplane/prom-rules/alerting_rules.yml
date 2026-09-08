@@ -1,0 +1,17 @@
+# TODO: Add Aleting rules
+groups:
+  - name: IncomingRequests
+    rules:
+      - alert: gRPCErrorRate
+        expr: |
+          (
+            sum by (pipecd_grpc_service) (rate(grpc_server_handled_total{pipecd_component="server", grpc_code!="OK", grpc_code!="NotFound", grpc_code!="InvalidArgument", grpc_code!="PermissionDenied"}[5m]))
+            /
+            sum by (pipecd_grpc_service) (rate(grpc_server_handled_total{pipecd_component="server"}[5m]))
+          ) > 0.05
+        for: 0s
+        labels:
+          severity: critical
+        annotations:
+          description: 'The error rate of {{ $labels.pipecd_grpc_service }} API exceeded 5%.'
+          summary: 'The error rate of {{ $labels.pipecd_grpc_service }} API is getting higher.'

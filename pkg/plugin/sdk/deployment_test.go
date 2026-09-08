@@ -800,3 +800,20 @@ func TestSyncStrategy_toModelEnum(t *testing.T) {
 		})
 	}
 }
+
+func TestAppendRollbackStage(t *testing.T) {
+	input := &BuildPipelineSyncStagesInput{
+		Request: BuildPipelineSyncStagesRequest{
+			Rollback: true,
+			Stages: []StageConfig{
+				{Index: 2, Name: "stage-a"},
+				{Index: 5, Name: "stage-b"},
+				{Index: 0, Name: "stage-c"},
+			},
+		},
+	}
+	base := []PipelineStage{{Index: 2, Name: "stage-a"}}
+	got := AppendRollbackStage(input, base, "rollback")
+	require.Len(t, got, len(base)+1)
+	assert.Equal(t, PipelineStage{Name: "rollback", Index: 0, Rollback: true}, got[len(got)-1])
+}

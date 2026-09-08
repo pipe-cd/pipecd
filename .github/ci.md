@@ -80,6 +80,18 @@ Below is a brief description of each GitHub Actions workflow under
 
 ---
 
+### `first-time-contributor.yaml`
+**What it does:** Posts a welcome comment with helpful resources (contributing guide, DCO sign-off instructions, local check commands) for first-time contributors.  
+**When it runs:** When a pull request is opened by a user with no previous pull requests in the repository.
+
+---
+
+### `thank-you.yaml`
+**What it does:** Posts a thank-you comment to the pull request author, skipping bots and maintainers.  
+**When it runs:** When a pull request is merged.
+
+---
+
 ### `cherry_pick.yaml`
 **What it does:** Automates cherry-picking changes into release branches.  
 **When it runs:** When manually triggered by maintainers.

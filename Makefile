@@ -14,11 +14,20 @@
 #   up:      prepare local environment (registry, kind cluster)
 #   down:    shutdown/cleanup local environment (registry, kind cluster)
 ####################
+.PHONY: help
+
+help: ## Show available make targets and their descriptions
+	@echo ""
+	@echo "Available make targets:"
+	@echo ""
+	@grep -E '^[a-zA-Z0-9_/.-]+:.*?## ' $(MAKEFILE_LIST) | \
+		awk 'BEGIN {FS = ":.*?## "}; {printf "  %-35s %s\n", $$1, $$2}'
+	@echo ""
 
 # Build commands
 
 .PHONY: build
-build: build/go build/web
+build: build/go build/web ## Build all artifacts (Go binaries and web)
 
 .PHONY: build/go
 build/go: BUILD_VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7 --match 'v[0-9]*.*')
@@ -32,7 +41,7 @@ build/go: BUILD_ENV ?= GOOS=$(BUILD_OS) GOARCH=$(BUILD_ARCH) CGO_ENABLED=0
 build/go: BIN_SUFFIX ?=
 build/go:
 ifndef MOD
-	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipecd$(BIN_SUFFIX) ./cmd/pipecd
+	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/controlplane$(BIN_SUFFIX) ./cmd/controlplane
 	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/piped$(BIN_SUFFIX) ./cmd/piped
 	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/launcher$(BIN_SUFFIX) ./cmd/launcher
 	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipectl$(BIN_SUFFIX) ./cmd/pipectl
@@ -51,6 +60,7 @@ build/chart:
 	mkdir -p .artifacts
 ifndef MOD
 	helm package manifests/pipecd --version $(VERSION) --app-version $(VERSION) --dependency-update --destination .artifacts
+	helm package manifests/controlplane --version $(VERSION) --app-version $(VERSION) --dependency-update --destination .artifacts
 	helm package manifests/piped --version $(VERSION) --app-version $(VERSION) --dependency-update --destination .artifacts
 	helm package manifests/site --version $(VERSION) --app-version $(VERSION) --dependency-update --destination .artifacts
 	helm package manifests/helloworld --version $(VERSION) --app-version $(VERSION) --dependency-update --destination .artifacts
@@ -88,6 +98,7 @@ push/chart: VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7 -
 push/chart: CREDENTIALS_FILE ?= ~/.config/gcloud/application_default_credentials.json
 push/chart:
 	@yq -i '.version = "${VERSION}" | .appVersion = "${VERSION}"' manifests/pipecd/Chart.yaml
+	@yq -i '.version = "${VERSION}" | .appVersion = "${VERSION}"' manifests/controlplane/Chart.yaml
 	@yq -i '.version = "${VERSION}" | .appVersion = "${VERSION}"' manifests/piped/Chart.yaml
 	@yq -i '.version = "${VERSION}" | .appVersion = "${VERSION}"' manifests/site/Chart.yaml
 	@yq -i '.version = "${VERSION}" | .appVersion = "${VERSION}"' manifests/helloworld/Chart.yaml
@@ -96,8 +107,8 @@ push/chart:
 
 # Test commands
 
-.PHONY: test
-test: test/go test/web
+..PHONY: test
+test: test/go test/web ## Run all tests (Go and web)
 
 .PHONY: test/go
 test/go: COVERAGE ?= false
@@ -148,41 +159,42 @@ test/integration:
 
 # Run commands
 
-.PHONY: run/pipecd
-run/pipecd: $(eval TIMESTAMP = $(shell date +%s))
+.PHONY: run/controlplane
+run/controlplane: $(eval TIMESTAMP = $(shell date +%s))
 # NOTE: previously `git describe --tags` was used to determine the version for running locally
 # However, this does not work on a forked branch, so the decision was made to hardcode at version 0.0.0
 # see: https://github.com/pipe-cd/pipecd/issues/4845
-run/pipecd: BUILD_VERSION ?= "v0.0.0-$(shell git rev-parse --short HEAD)-$(TIMESTAMP)"
-run/pipecd: BUILD_COMMIT ?= $(shell git rev-parse HEAD)
-run/pipecd: BUILD_DATE ?= $(shell date -u '+%Y%m%d-%H%M%S')
-run/pipecd: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
-run/pipecd: BUILD_OPTS ?= -ldflags "$(BUILD_LDFLAGS_PREFIX).version=$(BUILD_VERSION) $(BUILD_LDFLAGS_PREFIX).gitCommit=$(BUILD_COMMIT) $(BUILD_LDFLAGS_PREFIX).buildDate=$(BUILD_DATE) -w"
-run/pipecd: CONTROL_PLANE_VALUES ?= ./quickstart/control-plane-values.yaml
-run/pipecd:
+run/controlplane: BUILD_VERSION ?= "v0.0.0-$(shell git rev-parse --short HEAD)-$(TIMESTAMP)"
+run/controlplane: BUILD_COMMIT ?= $(shell git rev-parse HEAD)
+run/controlplane: BUILD_DATE ?= $(shell date -u '+%Y%m%d-%H%M%S')
+run/controlplane: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
+run/controlplane: BUILD_OPTS ?= -ldflags "$(BUILD_LDFLAGS_PREFIX).version=$(BUILD_VERSION) $(BUILD_LDFLAGS_PREFIX).gitCommit=$(BUILD_COMMIT) $(BUILD_LDFLAGS_PREFIX).buildDate=$(BUILD_DATE) -w"
+run/controlplane: CONTROL_PLANE_VALUES ?= ./quickstart/controlplane-values.yaml
+run/controlplane:
 	@echo "Building go binary of Control Plane..."
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 $(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipecd ./cmd/pipecd
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 $(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/controlplane ./cmd/controlplane
 
 	@echo "Building web static files..."
 	yarn --cwd web build
 
 	@echo "Building docker image and pushing it to local registry..."
-	docker build -f cmd/pipecd/Dockerfile -t localhost:5001/pipecd:$(BUILD_VERSION) .
-	docker push localhost:5001/pipecd:$(BUILD_VERSION)
+	docker build -f cmd/controlplane/Dockerfile -t localhost:5001/controlplane:$(BUILD_VERSION) .
+	docker push localhost:5001/controlplane:$(BUILD_VERSION)
 
 	@echo "Installing Control Plane in kind..."
 	mkdir -p .artifacts
-	helm package manifests/pipecd --version $(BUILD_VERSION) --app-version $(BUILD_VERSION) --dependency-update --destination .artifacts
-	helm -n pipecd upgrade --install pipecd .artifacts/pipecd-$(BUILD_VERSION).tgz --create-namespace \
-		--set server.image.repository=localhost:5001/pipecd \
-		--set ops.image.repository=localhost:5001/pipecd \
+	helm package manifests/controlplane --version $(BUILD_VERSION) --app-version $(BUILD_VERSION) --dependency-update --destination .artifacts
+	helm -n pipecd upgrade --install controlplane .artifacts/controlplane-$(BUILD_VERSION).tgz --create-namespace \
+		--set server.image.repository=localhost:5001/controlplane \
+		--set ops.image.repository=localhost:5001/controlplane \
 		--values $(CONTROL_PLANE_VALUES)
 
-.PHONY: stop/pipecd
-stop/pipecd:
-	helm -n pipecd uninstall pipecd
+.PHONY: stop/controlplane
+stop/controlplane:
+	helm -n pipecd uninstall controlplane
 
 .PHONY: run/piped
+run/piped: ## Run piped agent locally
 run/piped: CONFIG_FILE ?=
 run/piped: INSECURE ?= false
 run/piped: LAUNCHER ?= false
@@ -198,6 +210,7 @@ else
 endif
 
 .PHONY: run/web
+run/web: ## Run web UI locally
 run/web:
 	yarn --cwd web dev
 
@@ -208,11 +221,12 @@ run/site:
 # Lint commands
 
 .PHONY: lint
-lint: lint/go lint/web lint/helm
+lint: lint/go lint/web lint/helm ## Run all linters (Go, web, helm)
+
 
 .PHONY: lint/go
 lint/go: FIX ?= false
-lint/go: VERSION ?= sha256:91460846c43b3de53eb77e968b17363e8747e6f3fc190575b52be60c49446e23 # golangci/golangci-lint:v2.4.0
+lint/go: VERSION ?= sha256:67dfc9eeeb0eb13fc1a36329c2c378197dc561f1edf1a7792e3f771606bb0e15 # golangci/golangci-lint:v2.11.4
 lint/go: FLAGS ?= --rm -e GOCACHE=/repo/.cache/go-build -e GOLANGCI_LINT_CACHE=/repo/.cache/golangci-lint -v ${PWD}:/repo
 lint/go: MODULES ?= $(shell find . -name go.mod | while read -r dir; do dirname "$$dir"; done | paste -sd, -) # comma separated list of modules. eg: MODULES=.,pkg/plugin/sdk
 lint/go:
@@ -300,6 +314,7 @@ up/kind-cluster:
 	./hack/create-kind-cluster.sh pipecd
 
 .PHONY: up/local-cluster
+up/local-cluster: ## Start local registry and kind cluster
 up/local-cluster: up/local-registry up/kind-cluster
 
 .PHONY: down/kind-cluster
@@ -311,6 +326,7 @@ down/local-registry:
 	docker container rm -f kind-registry 2>/dev/null
 
 .PHONY: down/local-cluster
+down/local-cluster: ## Stop and clean up local registry and kind cluster
 down/local-cluster: down/kind-cluster down/local-registry
 
 .PHONY: delete/local-volumes
@@ -327,7 +343,7 @@ setup-envtest: ## Download setup-envtest locally if necessary.
 
 # Check commands
 .PHONY: check
-check: build lint test check/gen/code check/dco
+check: build lint test check/gen/code check/dco ## Run all checks
 
 .PHONY: check/gen/code
 check/gen: gen/code

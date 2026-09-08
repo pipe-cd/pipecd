@@ -309,6 +309,7 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 	if len(req.Labels) == 0 {
 		return &apiservice.ListApplicationsResponse{
 			Applications: apps,
+			Cursor:       cursor,
 		}, nil
 	}
 

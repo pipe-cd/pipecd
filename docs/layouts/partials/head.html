@@ -1,5 +1,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<!-- Preconnect to origins serving render-blocking assets in <head> to cut connection setup time -->
+<link rel="preconnect" href="https://code.jquery.com" crossorigin>
+<link rel="preconnect" href="https://unpkg.com" crossorigin>
 {{ hugo.Generator }}
 {{ if eq (getenv "HUGO_ENV") "production" }}
 <META NAME="ROBOTS" CONTENT="INDEX, FOLLOW">
@@ -31,10 +34,11 @@
   defer
   ></script>
 {{ end }}
-<script 
-  src="https://unpkg.com/medium-zoom@1.0.6/dist/medium-zoom.min.js" 
+<script
+  src="https://unpkg.com/medium-zoom@1.0.6/dist/medium-zoom.min.js"
   integrity="sha384-vXRaoKYMBDPb5PpsIJM2Vm00aBW5eV9iCza59Nhntsn7KSDO7q+1yQEQWoLpYmaf"
   crossorigin="anonymous"
+  defer
   ></script>
 <meta name="google-site-verification" content="eyAD8gRYGv-Uw5nHkjGFPtdbi3LpbjFF4hiFw_UpikY" />
 {{ partial "hooks/head-end.html" . }}
