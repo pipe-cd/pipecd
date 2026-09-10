@@ -10,7 +10,7 @@ require (
 	github.com/prometheus/common v0.70.1
 	github.com/stretchr/testify v1.12.1
 	go.uber.org/zap v1.19.1
-	golang.org/x/sync v0.22.0
+	golang.org/x/sync v0.23.0
 	sigs.k8s.io/yaml v1.5.0
 )
 
