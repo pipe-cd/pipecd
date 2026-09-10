@@ -181,11 +181,23 @@ func (p *Pattern) regexpString() string {
 		escSL += `\`
 	}
 
+	inClass := false
+
 	for scan.Peek() != scanner.EOF {
 		ch := scan.Next()
 
 		switch ch {
+		case '[':
+			inClass = true
+			regStr += string(ch)
+		case ']':
+			inClass = false
+			regStr += string(ch)
 		case '*':
+			if inClass {
+				regStr += string(ch)
+				continue
+			}
 			if scan.Peek() == '*' {
 				// Is some flavor of "**".
 				scan.Next()
@@ -209,12 +221,19 @@ func (p *Pattern) regexpString() string {
 				regStr += "[^" + escSL + "]*"
 			}
 		case '?':
+			if inClass {
+				regStr += string(ch)
+				continue
+			}
 			// "?" is any char except "/".
 			regStr += "[^" + escSL + "]"
-		case '.', '$':
-			// Escape some regexp special chars that have no meaning
-			// in golang's filepath.Match.
-			regStr += `\` + string(ch)
+		case '.', '$', '+', '(', ')', '{', '}', '|', '^':
+			if inClass {
+				regStr += string(ch)
+			} else {
+				// Escape regexp special chars that have no meaning in filepath.Match.
+				regStr += `\` + string(ch)
+			}
 		case '\\':
 			// Escape next char. Note that a trailing \ in the pattern
 			// will be left alone (but need to escape it).
