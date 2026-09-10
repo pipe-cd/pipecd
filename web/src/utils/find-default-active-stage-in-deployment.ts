@@ -40,5 +40,5 @@ export const findDefaultActiveStageInDeployment = (
     return runningStage;
   }
 
-  return stages[stages.length - 1];
+  return stages[stages.length - 1] ?? null;
 };
