@@ -166,3 +166,89 @@ func TestListApplicationsCursor(t *testing.T) {
 		})
 	}
 }
+
+func TestListApplicationsFilterDeleted(t *testing.T) {
+	testcases := []struct {
+		name           string
+		req            *apiservice.ListApplicationsRequest
+		pages          [][]*model.Application
+		expectedAppIDs []string
+	}{
+		{
+			name: "deleted applications are filtered out",
+			req:  &apiservice.ListApplicationsRequest{Limit: 10},
+			pages: [][]*model.Application{
+				{
+					{Id: "app-1", ProjectId: "project-id", Deleted: false},
+					{Id: "app-2", ProjectId: "project-id", Deleted: true},
+					{Id: "app-3", ProjectId: "project-id", Deleted: false},
+				},
+			},
+			expectedAppIDs: []string{"app-1", "app-3"},
+		},
+		{
+			name: "pagination continues when page contains only deleted apps",
+			req:  &apiservice.ListApplicationsRequest{Limit: 2},
+			pages: [][]*model.Application{
+				// First page: all deleted
+				{
+					{Id: "app-1", ProjectId: "project-id", Deleted: true},
+					{Id: "app-2", ProjectId: "project-id", Deleted: true},
+				},
+				// Second page: mix of deleted and non-deleted
+				{
+					{Id: "app-3", ProjectId: "project-id", Deleted: false},
+					{Id: "app-4", ProjectId: "project-id", Deleted: true},
+				},
+				// Third page: non-deleted
+				{
+					{Id: "app-5", ProjectId: "project-id", Deleted: false},
+				},
+			},
+			expectedAppIDs: []string{"app-3", "app-5"},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			pageIndex := 0
+			store := datastoretest.NewMockApplicationStore(ctrl)
+			store.EXPECT().
+				List(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, opts datastore.ListOptions) ([]*model.Application, string, error) {
+					if pageIndex >= len(tc.pages) {
+						return nil, "", nil
+					}
+					apps := tc.pages[pageIndex]
+					pageIndex++
+					cursor := ""
+					if pageIndex < len(tc.pages) {
+						cursor = "next-cursor"
+					}
+					return apps, cursor, nil
+				}).
+				AnyTimes()
+
+			api := &API{
+				applicationStore: store,
+				logger:           zap.NewNop(),
+			}
+			ctx := rpcauth.ContextWithAPIKey(context.TODO(), &model.APIKey{
+				ProjectId: "project-id",
+				Role:      model.APIKey_READ_ONLY,
+			})
+
+			resp, err := api.ListApplications(ctx, tc.req)
+			assert.NoError(t, err)
+
+			gotIDs := make([]string, len(resp.Applications))
+			for i, app := range resp.Applications {
+				gotIDs[i] = app.Id
+			}
+			assert.ElementsMatch(t, tc.expectedAppIDs, gotIDs)
+		})
+	}
+}
