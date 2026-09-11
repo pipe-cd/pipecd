@@ -21,13 +21,23 @@ import (
 // FindContainerImages finds all container images that are referenced by the given manifest.
 //
 // It looks for container images in the following fields:
-// - spec.template.spec.containers.image
-//
-// TODO: we should consider other fields like spec.template.spec.initContainers.image, spec.jobTempate.spec.template.spec.containers.image
+// - spec.template.spec.containers[*].image
+// - spec.template.spec.initContainers[*].image
+// - spec.jobTemplate.spec.template.spec.containers[*].image
+// - spec.jobTemplate.spec.template.spec.initContainers[*].image
 func FindContainerImages(m Manifest) []string {
 	var images []string
 
 	if n := nestedStringSlice(m.body.Object, "spec", "template", "spec", "containers", "image"); len(n) > 0 {
+		images = append(images, n...)
+	}
+	if n := nestedStringSlice(m.body.Object, "spec", "template", "spec", "initContainers", "image"); len(n) > 0 {
+		images = append(images, n...)
+	}
+	if n := nestedStringSlice(m.body.Object, "spec", "jobTemplate", "spec", "template", "spec", "containers", "image"); len(n) > 0 {
+		images = append(images, n...)
+	}
+	if n := nestedStringSlice(m.body.Object, "spec", "jobTemplate", "spec", "template", "spec", "initContainers", "image"); len(n) > 0 {
 		images = append(images, n...)
 	}
 
