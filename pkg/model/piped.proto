@@ -20,27 +20,40 @@ option go_package = "github.com/pipe-cd/pipecd/pkg/model";
 import "validate/validate.proto";
 import "pkg/model/common.proto";
 
+// Piped represents an agent process registered to a project that performs
+// deployments on behalf of the control plane. It periodically reports its
+// metadata and status, and polls for commands to execute.
 message Piped {
     reserved 4, 6;
 
+    // CloudProvider is a deprecated, pre-plugin-arch representation of a
+    // configured cloud provider. Use Plugin instead.
     message CloudProvider {
         string name = 1 [(validate.rules).string.min_len = 1];
         string type = 2 [(validate.rules).string.min_len = 1];
     }
 
+    // PlatformProvider is a deprecated, pre-plugin-arch representation of a
+    // configured platform provider. Use Plugin instead.
     message PlatformProvider {
         string name = 1 [(validate.rules).string.min_len = 1];
         string type = 2 [(validate.rules).string.min_len = 1];
     }
 
+    // Plugin describes one plugin loaded by the piped and the deploy targets
+    // it is configured to manage.
     message Plugin {
         string name = 1 [(validate.rules).string.min_len = 1];
         repeated string deploy_targets = 2;
     }
 
+    // SecretEncryption holds the configuration used to encrypt application
+    // secrets so that only this piped can decrypt them.
     message SecretEncryption {
         string type = 1 [(validate.rules).string = {in: ["KEY_PAIR", "GCP_KMS", "AWS_KMS", "NONE"]}];
+        // The public key used to encrypt secrets when type is "KEY_PAIR".
         string public_key = 2;
+        // The service account used to encrypt secrets when type is "GCP_KMS".
         string encrypt_service_account = 3;
     }
 
@@ -98,6 +111,9 @@ message Piped {
     int64 updated_at = 15 [(validate.rules).int64.gt = 0];
 }
 
+// PipedKey represents one credential a piped can use to authenticate to the
+// control plane. A piped may hold multiple keys at once to allow rotation
+// without downtime.
 message PipedKey {
     // The hash value of the key.
     string hash = 1 [(validate.rules).string.min_len = 1];

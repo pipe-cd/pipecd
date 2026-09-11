@@ -35,13 +35,16 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// EventStatus represents the handling status of an event by piped's event watcher.
 type EventStatus int32
 
 const (
 	EventStatus_EVENT_NOT_HANDLED EventStatus = 0
 	EventStatus_EVENT_SUCCESS     EventStatus = 1
 	EventStatus_EVENT_FAILURE     EventStatus = 2
-	EventStatus_EVENT_OUTDATED    EventStatus = 3
+	// EVENT_OUTDATED means a newer event with the same event_key has been
+	// registered, making this one obsolete.
+	EventStatus_EVENT_OUTDATED EventStatus = 3
 )
 
 // Enum value maps for EventStatus.
@@ -87,6 +90,10 @@ func (EventStatus) EnumDescriptor() ([]byte, []int) {
 	return file_pkg_model_event_proto_rawDescGZIP(), []int{0}
 }
 
+// Event represents a fact registered by an external system (e.g. a new
+// artifact was built) that piped's event watcher can match against
+// configured event-watcher rules to trigger actions such as updating
+// application configuration.
 type Event struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

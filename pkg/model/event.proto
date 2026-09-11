@@ -19,13 +19,20 @@ option go_package = "github.com/pipe-cd/pipecd/pkg/model";
 
 import "validate/validate.proto";
 
+// EventStatus represents the handling status of an event by piped's event watcher.
 enum EventStatus {
     EVENT_NOT_HANDLED = 0;
     EVENT_SUCCESS = 1;
     EVENT_FAILURE = 2;
+    // EVENT_OUTDATED means a newer event with the same event_key has been
+    // registered, making this one obsolete.
     EVENT_OUTDATED = 3;
 }
 
+// Event represents a fact registered by an external system (e.g. a new
+// artifact was built) that piped's event watcher can match against
+// configured event-watcher rules to trigger actions such as updating
+// application configuration.
 message Event {
     reserved 7;
 
