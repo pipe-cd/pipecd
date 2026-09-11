@@ -104,10 +104,6 @@ func (s *applicationStore) List(ctx context.Context, opts ListOptions) ([]*model
 		if err != nil {
 			return nil, "", err
 		}
-		// Soft-deleted applications should never be returned from list queries.
-		if app.Deleted {
-			continue
-		}
 		apps = append(apps, &app)
 	}
 

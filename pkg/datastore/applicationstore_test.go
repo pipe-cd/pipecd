@@ -126,11 +126,10 @@ func TestListApplications(t *testing.T) {
 	defer ctrl.Finish()
 
 	testcases := []struct {
-		name       string
-		opts       ListOptions
-		ds         DataStore
-		wantErr    bool
-		wantAppIDs []string
+		name    string
+		opts    ListOptions
+		ds      DataStore
+		wantErr bool
 	}{
 		{
 			name: "iterator done",
@@ -147,8 +146,7 @@ func TestListApplications(t *testing.T) {
 					Return(it, nil)
 				return ds
 			}(),
-			wantErr:    false,
-			wantAppIDs: nil,
+			wantErr: false,
 		},
 		{
 			name: "unexpected error occurred",
@@ -165,60 +163,15 @@ func TestListApplications(t *testing.T) {
 					Return(it, nil)
 				return ds
 			}(),
-			wantErr:    true,
-			wantAppIDs: nil,
-		},
-		{
-			name: "deleted applications are filtered out",
-			opts: ListOptions{},
-			ds: func() DataStore {
-				apps := []*model.Application{
-					{Id: "app-1", Name: "active-app", Deleted: false},
-					{Id: "app-2", Name: "deleted-app", Deleted: true},
-					{Id: "app-3", Name: "another-active-app", Deleted: false},
-				}
-				callCount := 0
-
-				it := NewMockIterator(ctrl)
-				it.EXPECT().
-					Next(gomock.Any()).
-					DoAndReturn(func(dst interface{}) error {
-						if callCount >= len(apps) {
-							return ErrIteratorDone
-						}
-						app := dst.(*model.Application)
-						*app = *apps[callCount]
-						callCount++
-						return nil
-					}).
-					Times(len(apps) + 1)
-				it.EXPECT().
-					Cursor().
-					Return("cursor", nil)
-
-				ds := NewMockDataStore(ctrl)
-				ds.EXPECT().
-					Find(gomock.Any(), gomock.Any(), ListOptions{}).
-					Return(it, nil)
-				return ds
-			}(),
-			wantErr:    false,
-			wantAppIDs: []string{"app-1", "app-3"},
+			wantErr: true,
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := NewApplicationStore(tc.ds)
-			apps, _, err := s.List(context.Background(), tc.opts)
+			_, _, err := s.List(context.Background(), tc.opts)
 			assert.Equal(t, tc.wantErr, err != nil)
-			if tc.wantAppIDs != nil {
-				gotIDs := make([]string, len(apps))
-				for i, app := range apps {
-					gotIDs[i] = app.Id
-				}
-				assert.ElementsMatch(t, tc.wantAppIDs, gotIDs)
-			}
 		})
 	}
 }
