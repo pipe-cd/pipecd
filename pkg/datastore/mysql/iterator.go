@@ -51,6 +51,12 @@ func (it *Iterator) Next(dst interface{}) error {
 	return decodeJSONValue(val, dst)
 }
 
+// Close closes the underlying sql.Rows, releasing the connection back to
+// the pool. It is safe to call Close multiple times.
+func (it *Iterator) Close() error {
+	return it.rows.Close()
+}
+
 // Cursor builds a base64 string (encode from string in map[string]interface{} format).
 // The cursor contains only values attached with the fields used
 // as ordering fields.

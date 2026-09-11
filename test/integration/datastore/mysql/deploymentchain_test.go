@@ -185,6 +185,7 @@ func listDeploymentChains(it datastore.Iterator) ([]*model.DeploymentChain, erro
 	if it == nil {
 		return ret, nil
 	}
+	defer it.Close()
 	for {
 		var v model.DeploymentChain
 		err := it.Next(&v)

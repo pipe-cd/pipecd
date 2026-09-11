@@ -172,6 +172,7 @@ func (s *deploymentStore) List(ctx context.Context, opts ListOptions) ([]*model.
 	if err != nil {
 		return nil, "", err
 	}
+	defer it.Close()
 	ds := make([]*model.Deployment, 0)
 	for {
 		var d model.Deployment

@@ -75,6 +75,7 @@ func (s *eventStore) List(ctx context.Context, opts ListOptions) ([]*model.Event
 	if err != nil {
 		return nil, "", err
 	}
+	defer it.Close()
 	es := make([]*model.Event, 0)
 	for {
 		var e model.Event

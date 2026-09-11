@@ -178,6 +178,20 @@ func (m *MockIterator) EXPECT() *MockIteratorMockRecorder {
 	return m.recorder
 }
 
+// Close mocks base method.
+func (m *MockIterator) Close() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Close")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Close indicates an expected call of Close.
+func (mr *MockIteratorMockRecorder) Close() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockIterator)(nil).Close))
+}
+
 // Cursor mocks base method.
 func (m *MockIterator) Cursor() (string, error) {
 	m.ctrl.T.Helper()
