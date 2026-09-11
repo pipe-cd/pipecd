@@ -77,7 +77,10 @@ func (s *SharedSSOConfig) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	provider := m["provider"].(string)
+	provider, ok := m["provider"].(string)
+	if !ok {
+		return fmt.Errorf("provider field in SharedSSOConfig must be a string, got %T", m["provider"])
+	}
 	v, ok := model.ProjectSSOConfig_Provider_value[provider]
 	if !ok {
 		return fmt.Errorf("unsupported provider %s", provider)
@@ -88,7 +91,11 @@ func (s *SharedSSOConfig) UnmarshalJSON(data []byte) error {
 	if !ok {
 		return fmt.Errorf("name field in SharedSSOConfig is required")
 	}
-	s.Name = name.(string)
+	nameStr, ok := name.(string)
+	if !ok {
+		return fmt.Errorf("name field in SharedSSOConfig must be a string, got %T", name)
+	}
+	s.Name = nameStr
 	delete(m, "name")
 
 	data, err := json.Marshal(m)
