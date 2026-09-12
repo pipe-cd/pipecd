@@ -50,6 +50,9 @@ func NewProcessor(data []byte) (*Processor, error) {
 //
 // e.g. "$.foo.bar[0].baz"
 func (p *Processor) GetValue(path string) (interface{}, error) {
+	if p == nil || p.file == nil {
+		return nil, errors.New("processor or file is uninitialized")
+	}
 	if path == "" {
 		return nil, fmt.Errorf("no path given")
 	}
@@ -75,6 +78,9 @@ func (p *Processor) GetValue(path string) (interface{}, error) {
 // ReplaceString replaces the value placed at a given path with
 // a given string value.
 func (p *Processor) ReplaceString(path, value string) error {
+	if p == nil || p.file == nil {
+		return errors.New("processor or file is uninitialized")
+	}
 	if path == "" {
 		return errors.New("no path given")
 	}
@@ -104,5 +110,8 @@ func (p *Processor) ReplaceString(path, value string) error {
 }
 
 func (p *Processor) Bytes() []byte {
+	if p == nil || p.file == nil {
+		return nil
+	}
 	return []byte(p.file.String())
 }

@@ -272,3 +272,27 @@ foo:
 		})
 	}
 }
+
+func TestNilProcessor(t *testing.T) {
+	var nilProc *Processor
+	val, err := nilProc.GetValue("$.foo")
+	assert.Error(t, err)
+	assert.Nil(t, val)
+
+	err = nilProc.ReplaceString("$.foo", "bar")
+	assert.Error(t, err)
+
+	bytes := nilProc.Bytes()
+	assert.Nil(t, bytes)
+
+	uninitProc := &Processor{}
+	val, err = uninitProc.GetValue("$.foo")
+	assert.Error(t, err)
+	assert.Nil(t, val)
+
+	err = uninitProc.ReplaceString("$.foo", "bar")
+	assert.Error(t, err)
+
+	bytes = uninitProc.Bytes()
+	assert.Nil(t, bytes)
+}
