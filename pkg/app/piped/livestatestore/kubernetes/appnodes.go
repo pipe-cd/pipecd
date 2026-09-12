@@ -29,7 +29,7 @@ type appNodes struct {
 	appID         string
 	managingNodes map[string]node
 	dependedNodes map[string]node
-	version       model.ApplicationLiveStateVersion
+	version       *model.ApplicationLiveStateVersion
 	mu            sync.RWMutex
 }
 
@@ -39,7 +39,7 @@ type node struct {
 	appID        string
 	key          provider.ResourceKey
 	unstructured *unstructured.Unstructured
-	state        model.KubernetesResourceState
+	state        *model.KubernetesResourceState
 }
 
 func (n node) Manifest() provider.Manifest {
@@ -64,7 +64,10 @@ func (a *appNodes) addManagingResource(uid string, key provider.ResourceKey, obj
 
 	a.mu.Lock()
 	oriNode, hasOriNode := a.managingNodes[uid]
-	version := a.version
+	version := &model.ApplicationLiveStateVersion{
+		Timestamp: a.version.Timestamp,
+		Index:     a.version.Index,
+	}
 	a.managingNodes[uid] = n
 	a.updateVersion(now)
 	a.mu.Unlock()
@@ -78,8 +81,8 @@ func (a *appNodes) addManagingResource(uid string, key provider.ResourceKey, obj
 		Id:              uuid.New().String(),
 		ApplicationId:   a.appID,
 		Type:            model.KubernetesResourceStateEvent_ADD_OR_UPDATED,
-		State:           &n.state,
-		SnapshotVersion: &version,
+		State:           n.state,
+		SnapshotVersion: version,
 		CreatedAt:       now.Unix(),
 	}, true
 }
@@ -92,7 +95,10 @@ func (a *appNodes) deleteManagingResource(uid string, _ provider.ResourceKey, no
 		return model.KubernetesResourceStateEvent{}, false
 	}
 
-	version := a.version
+	version := &model.ApplicationLiveStateVersion{
+		Timestamp: a.version.Timestamp,
+		Index:     a.version.Index,
+	}
 	delete(a.managingNodes, uid)
 	a.updateVersion(now)
 	a.mu.Unlock()
@@ -101,8 +107,8 @@ func (a *appNodes) deleteManagingResource(uid string, _ provider.ResourceKey, no
 		Id:              uuid.New().String(),
 		ApplicationId:   a.appID,
 		Type:            model.KubernetesResourceStateEvent_DELETED,
-		State:           &n.state,
-		SnapshotVersion: &version,
+		State:           n.state,
+		SnapshotVersion: version,
 		CreatedAt:       now.Unix(),
 	}, true
 }
@@ -118,7 +124,10 @@ func (a *appNodes) addDependedResource(uid string, key provider.ResourceKey, obj
 
 	a.mu.Lock()
 	oriNode, hasOriNode := a.dependedNodes[uid]
-	version := a.version
+	version := &model.ApplicationLiveStateVersion{
+		Timestamp: a.version.Timestamp,
+		Index:     a.version.Index,
+	}
 	a.dependedNodes[uid] = n
 	a.updateVersion(now)
 	a.mu.Unlock()
@@ -132,8 +141,8 @@ func (a *appNodes) addDependedResource(uid string, key provider.ResourceKey, obj
 		Id:              uuid.New().String(),
 		ApplicationId:   a.appID,
 		Type:            model.KubernetesResourceStateEvent_ADD_OR_UPDATED,
-		State:           &n.state,
-		SnapshotVersion: &version,
+		State:           n.state,
+		SnapshotVersion: version,
 		CreatedAt:       now.Unix(),
 	}, true
 }
@@ -146,7 +155,10 @@ func (a *appNodes) deleteDependedResource(uid string, _ provider.ResourceKey, no
 		return model.KubernetesResourceStateEvent{}, false
 	}
 
-	version := a.version
+	version := &model.ApplicationLiveStateVersion{
+		Timestamp: a.version.Timestamp,
+		Index:     a.version.Index,
+	}
 	delete(a.dependedNodes, uid)
 	a.updateVersion(now)
 	a.mu.Unlock()
@@ -155,8 +167,8 @@ func (a *appNodes) deleteDependedResource(uid string, _ provider.ResourceKey, no
 		Id:              uuid.New().String(),
 		ApplicationId:   a.appID,
 		Type:            model.KubernetesResourceStateEvent_DELETED,
-		State:           &n.state,
-		SnapshotVersion: &version,
+		State:           n.state,
+		SnapshotVersion: version,
 		CreatedAt:       now.Unix(),
 	}, true
 }
@@ -168,13 +180,17 @@ func (a *appNodes) getManagingNodes() map[string]node {
 	return a.managingNodes
 }
 
-func (a *appNodes) getNodes() (map[string]node, model.ApplicationLiveStateVersion) {
+func (a *appNodes) getNodes() (map[string]node, *model.ApplicationLiveStateVersion) {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
 
 	var (
-		version = a.version
-		nodes   = make(map[string]node, len(a.managingNodes)+len(a.dependedNodes))
+		// return a value copy so the caller can't mutate a.version outside the lock
+		version = model.ApplicationLiveStateVersion{
+			Timestamp: a.version.Timestamp,
+			Index:     a.version.Index,
+		}
+		nodes = make(map[string]node, len(a.managingNodes)+len(a.dependedNodes))
 	)
 	for k, n := range a.dependedNodes {
 		nodes[k] = n
@@ -182,7 +198,7 @@ func (a *appNodes) getNodes() (map[string]node, model.ApplicationLiveStateVersio
 	for k, n := range a.managingNodes {
 		nodes[k] = n
 	}
-	return nodes, version
+	return nodes, &version
 }
 
 func (a *appNodes) updateVersion(now time.Time) {

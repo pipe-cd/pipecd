@@ -203,10 +203,10 @@ func TestExecutor_ensureSync(t *testing.T) {
 	err = os.WriteFile(kubeconfigPath, []byte(kubeconfig), 0755)
 	require.NoError(t, err)
 
-	manifests, err := provider.LoadManifestsFromYAMLFile("../../../../../examples/kubernetes/simple/deployment.yaml")
+	manifests, err := provider.LoadManifestsFromYAMLFile("../../../../../examples/v0/kubernetes/simple/deployment.yaml")
 	require.NoError(t, err)
 
-	appCfg, err := config.LoadFromYAML("../../../../../examples/kubernetes/simple/app.pipecd.yaml")
+	appCfg, err := config.LoadFromYAML("../../../../../examples/v0/kubernetes/simple/app.pipecd.yaml")
 	require.NoError(t, err)
 
 	executor := &deployExecutor{

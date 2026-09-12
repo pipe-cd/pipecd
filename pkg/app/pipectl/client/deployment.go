@@ -20,6 +20,8 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/apiservice"
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -41,13 +43,19 @@ func WaitDeploymentStatuses(
 	ticker := time.NewTicker(checkInterval)
 	defer ticker.Stop()
 
-	check := func() (status string, shouldRetry bool) {
+	// packaged named status is imported so it shadows the "status" variable
+	// that's why we use "deploymentStatus" instead of "status"
+	check := func() (deploymentStatus string, shouldRetry bool, err error) {
 		req := &apiservice.GetDeploymentRequest{
 			DeploymentId: deploymentID,
 		}
-		resp, err := cli.GetDeployment(ctx, req)
-		if err != nil {
-			logger.Error(fmt.Sprintf("Failed while retrieving deployment information. Try again. (%v)", err))
+		resp, getErr := cli.GetDeployment(ctx, req)
+		if getErr != nil {
+			if status.Code(getErr) == codes.NotFound {
+				err = status.Errorf(codes.NotFound, "deployment %q not found", deploymentID)
+				return
+			}
+			logger.Error(fmt.Sprintf("Failed while retrieving deployment information. Try again. (%v)", getErr))
 			shouldRetry = true
 			return
 		}
@@ -57,14 +65,17 @@ func WaitDeploymentStatuses(
 			return
 		}
 
-		status = resp.Deployment.Status.String()
+		deploymentStatus = resp.Deployment.Status.String()
 		return
 	}
 
 	// Do the first check immediately.
-	status, shouldRetry := check()
+	deploymentStatus, shouldRetry, err := check()
+	if err != nil {
+		return err
+	}
 	if !shouldRetry {
-		logger.Info(fmt.Sprintf("Deployment is at %s status", status))
+		logger.Info(fmt.Sprintf("Deployment is at %s status", deploymentStatus))
 		return nil
 	}
 
@@ -74,13 +85,16 @@ func WaitDeploymentStatuses(
 			return ctx.Err()
 
 		case <-ticker.C:
-			status, shouldRetry := check()
+			deploymentStatus, shouldRetry, err := check()
+			if err != nil {
+				return err
+			}
 			if shouldRetry {
 				logger.Info("...")
 				continue
 			}
 
-			logger.Info(fmt.Sprintf("Deployment is at %s status", status))
+			logger.Info(fmt.Sprintf("Deployment is at %s status", deploymentStatus))
 			return nil
 		}
 	}
