@@ -1,10 +1,14 @@
 import debounce from "./debounce";
 
-beforeEach(() => {
+beforeAll(() => {
   jest.useFakeTimers();
 });
 
 afterEach(() => {
+  jest.clearAllTimers();
+});
+
+afterAll(() => {
   jest.useRealTimers();
 });
 
@@ -64,6 +68,7 @@ describe("debounce", () => {
     debounced("second");
     jest.advanceTimersByTime(300);
 
+    expect(fn).toHaveBeenCalledTimes(1);
     expect(fn).toHaveBeenCalledWith("second");
   });
 
