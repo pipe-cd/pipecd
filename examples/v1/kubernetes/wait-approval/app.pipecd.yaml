@@ -1,0 +1,29 @@
+apiVersion: pipecd.dev/v1beta1
+kind: Application
+spec:
+  name: wait-approval
+  labels:
+    env: example
+    team: product
+  pipeline:
+    stages:
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 10%
+      - name: WAIT_APPROVAL
+        with:
+          minApproverNum: 1
+          approvers:
+            - example-user
+      - name: K8S_PRIMARY_ROLLOUT
+      - name: K8S_CANARY_CLEAN
+  plugins:
+    kubernetes:
+      input:
+        manifests:
+          - deployment.yaml
+          - service.yaml
+  description: |
+    This app demonstrates how to configure a Kubernetes app with a WAIT_APPROVAL stage.
+    This ensures that every deployment of this app must be approved manually on the web console.
+    References: [adding a new app](https://pipecd.dev/docs-v1.0.x/user-guide/managing-application/adding-an-application/), [app configuration](https://pipecd.dev/docs-v1.0.x/user-guide/managing-application/configuration-reference/)

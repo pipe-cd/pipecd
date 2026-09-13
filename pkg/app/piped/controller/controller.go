@@ -732,7 +732,7 @@ func (c *controller) cancelDeployment(ctx context.Context, d *model.Deployment, 
 		if _, err = c.apiClient.ReportDeploymentCompleted(ctx, req); err == nil {
 			return nil
 		}
-		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
+		err = fmt.Errorf("failed to report deployment status to control-plane: %w", err)
 	}
 	return err
 }

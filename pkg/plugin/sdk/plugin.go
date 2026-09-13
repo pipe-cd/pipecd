@@ -340,6 +340,13 @@ func (p *Plugin[Config, DeployTargetConfig, ApplicationConfigSpec]) run(ctx cont
 			}
 		}
 
+		if len(commonFields.deployTargets) == 0 {
+			if p.deploymentPlugin != nil || p.livestatePlugin != nil || p.planPreviewPlugin != nil {
+				logger.Error("plugin requires at least one deploy target to be configured", zap.String("name", cfg.Name))
+				return fmt.Errorf("plugin requires at least one deploy target to be configured")
+			}
+		}
+
 		client := &Client{
 			base:         commonFields.client,
 			pluginName:   commonFields.name,
