@@ -305,22 +305,27 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 		return nil, gRPCStoreError(err, "failed to list applications")
 	}
 
+	// Filter applications based on labels and deleted status.
+	// NOTE: Filtering is done application-side to avoid requiring new composite indexes.
 	labels := req.Labels
-	if len(req.Labels) == 0 {
-		return &apiservice.ListApplicationsResponse{
-			Applications: apps,
-			Cursor:       cursor,
-		}, nil
+	filterApp := func(app *model.Application) bool {
+		if app.Deleted {
+			return false
+		}
+		if len(labels) > 0 && !app.ContainLabels(labels) {
+			return false
+		}
+		return true
 	}
 
-	// NOTE: Filtering by labels is done by the application-side because we need to create composite indexes for every combination in the filter.
 	filtered := make([]*model.Application, 0, len(apps))
-	for _, a := range apps {
-		if a.ContainLabels(req.Labels) {
-			filtered = append(filtered, a)
+	for _, app := range apps {
+		if filterApp(app) {
+			filtered = append(filtered, app)
 		}
 	}
-	// Stop running additional queries for more data, and return filtered deployments immediately with
+
+	// Stop running additional queries for more data, and return filtered applications immediately with
 	// current cursor if the size before filtering is already less than the page size.
 	if len(apps) < limit {
 		return &apiservice.ListApplicationsResponse{
@@ -328,8 +333,8 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 			Cursor:       cursor,
 		}, nil
 	}
-	// Repeat the query until the number of filtered deployments reaches the page size,
-	// or until it finishes scanning to page_min_updated_at.
+	// Repeat the query until the number of filtered applications reaches the page size,
+	// or until it finishes scanning all pages.
 	for len(filtered) < limit {
 		options.Cursor = cursor
 		apps, cursor, err = a.applicationStore.List(ctx, options)
@@ -340,9 +345,9 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 		if len(apps) == 0 {
 			break
 		}
-		for _, d := range apps {
-			if d.ContainLabels(labels) {
-				filtered = append(filtered, d)
+		for _, app := range apps {
+			if filterApp(app) {
+				filtered = append(filtered, app)
 			}
 		}
 	}
