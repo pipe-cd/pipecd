@@ -35,7 +35,7 @@ require (
 	github.com/google/go-github/v29 v29.0.3
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
-	github.com/hashicorp/golang-lru v0.5.3
+	github.com/hashicorp/golang-lru v1.0.2
 	github.com/hashicorp/hcl/v2 v2.0.0
 	github.com/minio/minio-go/v7 v7.0.5
 	github.com/opencontainers/image-spec v1.1.1
