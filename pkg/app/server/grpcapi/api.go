@@ -337,6 +337,8 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 	// or until it finishes scanning all pages.
 	for len(filtered) < limit {
 		options.Cursor = cursor
+		// Fetch only the remaining number of applications to keep the response within the requested limit.
+		options.Limit = limit - len(filtered)
 		apps, cursor, err = a.applicationStore.List(ctx, options)
 		if err != nil {
 			a.logger.Error("failed to get applications", zap.Error(err))

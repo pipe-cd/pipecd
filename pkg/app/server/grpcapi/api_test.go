@@ -207,6 +207,25 @@ func TestListApplicationsFilterDeleted(t *testing.T) {
 			},
 			expectedAppIDs: []string{"app-3", "app-5"},
 		},
+		{
+			name: "the number of returned applications does not exceed the limit",
+			req:  &apiservice.ListApplicationsRequest{Limit: 3},
+			pages: [][]*model.Application{
+				// First page: one of them is deleted, so an additional query is needed.
+				{
+					{Id: "app-1", ProjectId: "project-id", Deleted: false},
+					{Id: "app-2", ProjectId: "project-id", Deleted: true},
+					{Id: "app-3", ProjectId: "project-id", Deleted: false},
+				},
+				// Second page: only the remaining one should be taken.
+				{
+					{Id: "app-4", ProjectId: "project-id", Deleted: false},
+					{Id: "app-5", ProjectId: "project-id", Deleted: false},
+					{Id: "app-6", ProjectId: "project-id", Deleted: false},
+				},
+			},
+			expectedAppIDs: []string{"app-1", "app-3", "app-4"},
+		},
 	}
 
 	for _, tc := range testcases {
@@ -224,6 +243,10 @@ func TestListApplicationsFilterDeleted(t *testing.T) {
 					}
 					apps := tc.pages[pageIndex]
 					pageIndex++
+					// Mimic the datastore behavior of returning at most the requested number of rows.
+					if opts.Limit > 0 && len(apps) > opts.Limit {
+						apps = apps[:opts.Limit]
+					}
 					cursor := ""
 					if pageIndex < len(tc.pages) {
 						cursor = "next-cursor"
