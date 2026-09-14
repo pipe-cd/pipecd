@@ -673,6 +673,22 @@ func TestFilterIndexes(t *testing.T) {
 		want     []index
 	}{
 		{
+			name: "nil indexes",
+			excludes: []index{
+				{
+					CollectionGroup: "collection-group",
+					QueryScope:      "COLLECTION",
+					Fields: []field{
+						{
+							FieldPath: "field-path",
+							Order:     "ASCENDING",
+						},
+					},
+				},
+			},
+			want: nil,
+		},
+		{
 			name: "no excludes given",
 			indexes: []index{
 				{
