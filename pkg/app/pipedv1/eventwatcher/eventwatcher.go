@@ -320,12 +320,30 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 	if err != nil {
 		return fmt.Errorf("failed to create a new temporary directory: %w", err)
 	}
-	tmpRepo, err := repo.CopyToModify(filepath.Join(tmpDir, "tmp-repo"))
+
+	var tmpRepo git.Repo
+	defer func() {
+		if tmpRepo != nil {
+			if err := tmpRepo.Clean(); err != nil {
+				w.logger.Error("failed to clean temporary repository",
+					zap.String("path", tmpRepo.GetPath()),
+					zap.Error(err),
+				)
+			}
+		}
+
+		if err := os.RemoveAll(tmpDir); err != nil {
+			w.logger.Error("failed to clean temporary directory",
+				zap.String("path", tmpDir),
+				zap.Error(err),
+			)
+		}
+	}()
+
+	tmpRepo, err = repo.CopyToModify(filepath.Join(tmpDir, "tmp-repo"))
 	if err != nil {
 		return fmt.Errorf("failed to copy the repository to the temporary directory: %w", err)
 	}
-	// nolint: errcheck
-	defer tmpRepo.Clean()
 
 	var milestone int64
 	firstRead := true
