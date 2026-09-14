@@ -88,6 +88,48 @@ func TestGracefulStopCommandResult(t *testing.T) {
 	}
 }
 
+func TestCommandDone(t *testing.T) {
+	t.Run("Done is closed when the process exits on its own", func(t *testing.T) {
+		cmd, err := RunBinary(context.TODO(), "sh", []string{"-c", "exit 0"})
+		require.NoError(t, err)
+		require.NotNil(t, cmd)
+
+		select {
+		case <-cmd.Done():
+		case <-time.After(time.Second):
+			t.Fatal("Done was not closed after the process exited")
+		}
+		assert.NoError(t, cmd.Err())
+	})
+
+	t.Run("Err reflects a non-zero exit", func(t *testing.T) {
+		cmd, err := RunBinary(context.TODO(), "sh", []string{"-c", "exit 1"})
+		require.NoError(t, err)
+		require.NotNil(t, cmd)
+
+		select {
+		case <-cmd.Done():
+		case <-time.After(time.Second):
+			t.Fatal("Done was not closed after the process exited")
+		}
+		assert.Error(t, cmd.Err())
+	})
+
+	t.Run("Done is already closed once GracefulStop returns", func(t *testing.T) {
+		cmd, err := RunBinary(context.TODO(), "sh", []string{"/bin/sleep", "1m"})
+		require.NoError(t, err)
+		require.NotNil(t, cmd)
+
+		cmd.GracefulStop(time.Nanosecond)
+
+		select {
+		case <-cmd.Done():
+		default:
+			t.Fatal("Done should already be closed once GracefulStop returns")
+		}
+	})
+}
+
 func TestDownloadBinary(t *testing.T) {
 	server := httpTestServer()
 	defer server.Close()
