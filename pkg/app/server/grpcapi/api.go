@@ -548,11 +548,15 @@ func (a *API) ListDeployments(ctx context.Context, req *apiservice.ListDeploymen
 			}
 		}
 
-		filters = append(filters, datastore.ListFilter{
-			Field:    "Status",
-			Operator: datastore.OperatorEqual,
-			Value:    statuses[0],
-		})
+		// Empty values are skipped above, so the request may contain no usable
+		// status at all. In that case no status filter should be added.
+		if len(statuses) > 0 {
+			filters = append(filters, datastore.ListFilter{
+				Field:    "Status",
+				Operator: datastore.OperatorEqual,
+				Value:    statuses[0],
+			})
+		}
 	}
 	if len(req.Kinds) > 0 {
 		kinds := []model.ApplicationKind{}
@@ -566,11 +570,15 @@ func (a *API) ListDeployments(ctx context.Context, req *apiservice.ListDeploymen
 			}
 		}
 
-		filters = append(filters, datastore.ListFilter{
-			Field:    "Kind",
-			Operator: datastore.OperatorEqual,
-			Value:    kinds[0],
-		})
+		// Empty values are skipped above, so the request may contain no usable
+		// kind at all. In that case no kind filter should be added.
+		if len(kinds) > 0 {
+			filters = append(filters, datastore.ListFilter{
+				Field:    "Kind",
+				Operator: datastore.OperatorEqual,
+				Value:    kinds[0],
+			})
+		}
 	}
 	if len(req.ApplicationIds) > 0 {
 		filters = append(filters, datastore.ListFilter{
