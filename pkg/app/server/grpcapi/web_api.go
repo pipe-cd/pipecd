@@ -687,7 +687,10 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 
 	// Filter applications based on labels and deleted status.
 	// NOTE: Filtering is done application-side to avoid requiring new composite indexes.
-	labels := req.Options.Labels
+	var labels map[string]string
+	if o := req.Options; o != nil {
+		labels = o.Labels
+	}
 	filtered := make([]*model.Application, 0, len(apps))
 	for _, app := range apps {
 		if app.Deleted {
