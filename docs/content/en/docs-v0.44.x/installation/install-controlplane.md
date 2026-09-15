@@ -62,7 +62,7 @@ spec:
 
 See [ConfigurationReference](../../user-guide/managing-controlplane/configuration-reference/) for the full configuration.
 
-After all, install the Control Plane as bellow:
+After that, install the Control Plane as below:
 
 ``` console
 helm upgrade -i pipecd oci://ghcr.io/pipe-cd/chart/pipecd --version {{< blocks/latest_version >}} --namespace={NAMESPACE} \
