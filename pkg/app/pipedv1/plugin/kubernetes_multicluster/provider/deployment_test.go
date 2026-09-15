@@ -239,6 +239,43 @@ spec:
 				"init-configmap-1",
 			},
 		},
+		{
+			name: "configmap in cronjob",
+			manifest: `
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cronjob-with-configmap
+spec:
+  schedule: "*/5 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: helloworld
+              image: gcr.io/pipecd/helloworld:v0.5.0
+              env:
+                - name: env1
+                  valueFrom:
+                    configMapKeyRef:
+                      name: cronjob-configmap-1
+                      key: key1
+              volumeMounts:
+                - name: config
+                  mountPath: /etc/pipecd-config
+                  readOnly: true
+          volumes:
+            - name: config
+              configMap:
+                name: cronjob-configmap-2
+          restartPolicy: OnFailure
+`,
+			expected: []string{
+				"cronjob-configmap-1",
+				"cronjob-configmap-2",
+			},
+		},
 	}
 
 	for _, tc := range testcases {
@@ -402,6 +439,43 @@ spec:
 				"init-secret-1",
 				"secret-1",
 				"secret-2",
+			},
+		},
+		{
+			name: "secret in cronjob",
+			manifest: `
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cronjob-with-secret
+spec:
+  schedule: "*/5 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: helloworld
+              image: gcr.io/pipecd/helloworld:v0.5.0
+              env:
+                - name: env1
+                  valueFrom:
+                    secretKeyRef:
+                      name: cronjob-secret-1
+                      key: key1
+              volumeMounts:
+                - name: config
+                  mountPath: /etc/pipecd-config
+                  readOnly: true
+          volumes:
+            - name: config
+              secret:
+                secretName: cronjob-secret-2
+          restartPolicy: OnFailure
+`,
+			expected: []string{
+				"cronjob-secret-1",
+				"cronjob-secret-2",
 			},
 		},
 	}
