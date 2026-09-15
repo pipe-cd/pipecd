@@ -40,17 +40,20 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          python scripts/generate_contributors.py --repo "${{ github.repository }}" --output CONTRIBUTORS.md
+          python scripts/generate_contributors.py \
+            --repo "${{ github.repository }}" \
+            --output CONTRIBUTORS.md \
+            --docs-output docs/content/en/docs-dev/contribution-guidelines/contributor-ladder.md
 
       - name: Commit and push changes
         run: |
-          if git diff --quiet CONTRIBUTORS.md; then
-            echo "No changes detected in CONTRIBUTORS.md."
+          if git diff --quiet CONTRIBUTORS.md docs/content/en/docs-dev/contribution-guidelines/contributor-ladder.md; then
+            echo "No changes detected."
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add CONTRIBUTORS.md
-          git commit -m "docs: update CONTRIBUTORS.md [skip ci]"
+          git add CONTRIBUTORS.md docs/content/en/docs-dev/contribution-guidelines/contributor-ladder.md
+          git commit -m "docs: update contributors ladder and documentation [skip ci]"
           git push

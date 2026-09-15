@@ -348,8 +348,129 @@ def generate_markdown(
     return "\n".join(lines)
 
 
+def generate_docs_markdown(
+    repo: str,
+    total_merged: int,
+    contributors: Dict[str, Dict[str, Any]],
+    tiered: Dict[str, List[Dict[str, Any]]],
+    timestamp: datetime.datetime,
+) -> str:
+    """Generate Hugo-compatible Markdown for docs contributor ladder page."""
+    utc_str = timestamp.strftime("%Y-%m-%d %H:%M UTC")
+    total_contributors = len(contributors)
+
+    lines = [
+        "---",
+        'title: "Contributor Ladder"',
+        'linkTitle: "Contributor Ladder"',
+        "weight: 5",
+        "description: >",
+        "  How PipeCD recognizes and celebrates community contributors through our contributor ladder.",
+        "---",
+        "",
+        "The **PipeCD Contributor Ladder** is designed to welcome new contributors, recognize ongoing contributions, and celebrate everyone who helps build PipeCD.",
+        "",
+        "Every merged contribution makes a difference to PipeCD — whether fixing a bug, improving documentation, designing features, or enhancing test coverage.",
+        "",
+        "---",
+        "",
+        "## Ladder Tiers",
+        "",
+        f"The contributor ladder tracks contributions based on **merged pull requests** to the [`pipe-cd/pipecd`](https://github.com/{repo}) repository:",
+        "",
+        "| Tier | Merged PRs | Description & Recognition |",
+        "| :--- | :---: | :--- |",
+        "| 🌱 **Newcomer** | **1** | Welcome to the community! Listed in the Newcomers tier. |",
+        "| 🛠️ **Contributor** | **2–4** | Continued active involvement and consistent contributions across any part of the project. |",
+        "| 🚀 **Core Contributor** | **5+** | Established and trusted contributors with a strong track record. Eligible to apply for membership in the `pipe-cd` GitHub organization. |",
+        "",
+        "---",
+        "",
+        "## Current Contributors",
+        "",
+        f"> **Last updated:** {utc_str}  ",
+        f"> **Total Merged PRs:** {total_merged:,} | **Total Contributors:** {total_contributors:,}  ",
+        "> *Auto-refreshed daily via GitHub Actions.*",
+        "",
+    ]
+
+    for tier in TIERS:
+        name = tier["name"]
+        badge = tier["badge"]
+        desc = tier["description"]
+        users = tiered.get(name, [])
+
+        lines.append(f"### {badge} {name}s ({desc})")
+        lines.append("")
+
+        if not users:
+            lines.append("*No contributors in this tier yet.*")
+            lines.append("")
+            continue
+
+        lines.append(f"*{len(users)} contributor{'s' if len(users) != 1 else ''} in this tier*")
+        lines.append("")
+        lines.append("| Contributor | Merged PRs |")
+        lines.append("|:---|:---:|")
+
+        for user in users:
+            login = user["login"]
+            html_url = user["html_url"]
+            count = user["count"]
+            lines.append(f"| [@{login}]({html_url}) | {count} |")
+
+        lines.append("")
+
+    lines.extend(
+        [
+            "---",
+            "",
+            "## How Counting Works",
+            "",
+            "- **Merged PRs Only:** Only pull requests that have been reviewed, approved, and merged are counted toward ladder tiers. Merely opening a PR does not count until it is merged.",
+            "- **Automated Daily Refresh:** The contributor ladder is regenerated automatically every day via a GitHub Actions workflow.",
+            "- **No Manual Edits:** The list is maintained by automation; please do not submit manual pull requests to edit contributor lists.",
+            "- **Bot Exclusions:** Automated bots and service accounts (such as `dependabot[bot]` and `github-actions[bot]`) are excluded from the ladder.",
+            "",
+            "---",
+            "",
+            "## Becoming a Member of the PipeCD GitHub Organization",
+            "",
+            "Once you reach the **Core Contributor** tier (5+ merged PRs), you are invited to apply for membership in the `pipe-cd` GitHub organization!",
+            "",
+            "### Requirements:",
+            "1. Have at least **5 merged PRs** in repositories under the `pipe-cd` organization.",
+            "2. Have attended a [PipeCD Community Meeting](https://zoom-lfx.platform.linuxfoundation.org/meeting/96831504919?password=2f60b8ec-5896-40c8-aa1d-d551ab339d00).",
+            "3. Reach out to the maintainers in the `#pipecd` channel on [CNCF Slack](https://cloud-native.slack.com/) or during a community meeting.",
+            "",
+            "---",
+            "",
+            "## Getting Started",
+            "",
+            "Looking for ways to begin or climb the ladder?",
+            '- Check out issues labeled [**good first issue**](https://github.com/pipe-cd/pipecd/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22) for beginner-friendly tasks.',
+            "- Help improve our docs by reviewing the [Contribute to PipeCD Documentation](../contributing-documentation/) guide.",
+            "- Read our [General Contribution Guide](../contributing/) for details on local environment setup, testing, and DCO sign-off.",
+            "- Join the discussion in our `#pipecd` channel on [CNCF Slack](https://cloud-native.slack.com/).",
+            "",
+            "---",
+            "",
+            "## Future Roadmap",
+            "",
+            "This contributor ladder is being rolled out in iterative phases as discussed in [GitHub Issue #6548](https://github.com/pipe-cd/pipecd/issues/6548):",
+            "",
+            "- **Phase 1 (Current):** Automated tier ladder based on merged PR count.",
+            "- **Phase 2 (Planned):** A comprehensive contribution scoring model taking into account issue triage, code reviews, blog posts, and architectural proposals.",
+            "- **Phase 3 (Planned):** Community leaderboard announcements and recognition in the PipeCD Slack channel.",
+            "",
+        ]
+    )
+
+    return "\n".join(lines)
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Generate PipeCD CONTRIBUTORS.md")
+    parser = argparse.ArgumentParser(description="Generate PipeCD CONTRIBUTORS.md and Docs")
     parser.add_argument(
         "--repo",
         default=DEFAULT_REPO,
@@ -359,6 +480,11 @@ def main():
         "--output",
         default="CONTRIBUTORS.md",
         help="Path to output markdown file. Default: CONTRIBUTORS.md",
+    )
+    parser.add_argument(
+        "--docs-output",
+        default=None,
+        help="Optional path to output docs contributor ladder page (e.g. docs/content/en/docs-dev/contribution-guidelines/contributor-ladder.md)",
     )
     parser.add_argument(
         "--token",
@@ -416,6 +542,15 @@ def main():
         f.write(markdown_content)
 
     print(f"Successfully generated {args.output}")
+
+    if args.docs_output:
+        docs_dir = os.path.dirname(args.docs_output)
+        if docs_dir:
+            os.makedirs(docs_dir, exist_ok=True)
+        docs_markdown = generate_docs_markdown(args.repo, total_merged, contributors, tiered, now)
+        with open(args.docs_output, "w", encoding="utf-8") as f:
+            f.write(docs_markdown)
+        print(f"Successfully generated {args.docs_output}")
 
 
 if __name__ == "__main__":

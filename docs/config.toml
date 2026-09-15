@@ -49,8 +49,13 @@ anchor = "smart"
 id = "G-QDHG400SFD"
 
 [security]
+allowContent = ['text/html', 'text/markdown', 'text/org', 'text/plain']
 [security.funcs]
 getenv = ['^HUGO_', 'RELEASE']
+
+[author]
+  name = "PipeCD Authors"
+  email = "pipecd.dev@gmail.com"
 
 # Language configuration
 
