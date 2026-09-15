@@ -3,17 +3,17 @@
 
 # PipeCD Contributors
 
-This contributor ladder recognizes and celebrates everyone who has contributed merged pull requests to [PipeCD](https://github.com/pipe-cd/pipecd).
+This contributor ladder recognizes community contributors based on merged pull requests to [pipe-cd/pipecd](https://github.com/pipe-cd/pipecd).
 
-> **Last updated:** 2026-09-15 11:28 UTC  
+> **Last updated:** 2026-09-15 11:30 UTC  
 > **Total Merged PRs:** 5,029 | **Total Contributors:** 152  
-> *Auto-refreshed daily via GitHub Actions.*
+> *Updated daily via GitHub Actions.*
 
 ---
 
 ## 🚀 Core Contributors (5+ merged PRs)
 
-*44 contributors in this tier*
+*44 contributors*
 
 | Contributor | Merged PRs |
 |:---|:---:|
@@ -64,7 +64,7 @@ This contributor ladder recognizes and celebrates everyone who has contributed m
 
 ## 🛠️ Contributors (2–4 merged PRs)
 
-*37 contributors in this tier*
+*37 contributors*
 
 | Contributor | Merged PRs |
 |:---|:---:|
@@ -108,7 +108,7 @@ This contributor ladder recognizes and celebrates everyone who has contributed m
 
 ## 🌱 Newcomers (1 merged PR)
 
-*71 contributors in this tier*
+*71 contributors*
 
 | Contributor | Merged PRs |
 |:---|:---:|
@@ -186,9 +186,9 @@ This contributor ladder recognizes and celebrates everyone who has contributed m
 
 ---
 
-### How the Contributor Ladder Works
+### How this list works
 
-- **Merged PRs Only:** Only merged pull requests are counted (opening a PR does not count until merged).
-- **Sorting:** Contributors within each tier are ordered by merged PR count (descending), with username alphabetically as a tiebreaker.
-- **Daily Updates:** This file is updated daily via automated workflow. If your pull request was recently merged, your profile will be added in the next scheduled run.
-- **Full Guidelines:** Learn more about contributor roles and progression in our [Contributor Ladder Guide](https://pipecd.dev/docs-dev/contribution-guidelines/contributor-ladder/).
+- **Merged PRs only:** Counts reflect merged pull requests in this repository.
+- **Sorting:** Contributors in each tier are ordered by merged PR count, then alphabetically.
+- **Automation:** This file is generated daily by a GitHub Actions workflow.
+- **Guidelines:** See the [Contributor Ladder guide](https://pipecd.dev/docs-dev/contribution-guidelines/contributor-ladder/) for tier details and organization membership requirements.

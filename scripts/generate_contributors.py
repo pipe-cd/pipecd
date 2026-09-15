@@ -296,13 +296,11 @@ def generate_markdown(
         "",
         "# PipeCD Contributors",
         "",
-        "This contributor ladder recognizes and celebrates everyone who has contributed merged pull requests to [PipeCD](https://github.com/{repo}).".format(
-            repo=repo
-        ),
+        f"This contributor ladder recognizes community contributors based on merged pull requests to [{repo}](https://github.com/{repo}).",
         "",
         f"> **Last updated:** {utc_str}  ",
         f"> **Total Merged PRs:** {total_merged:,} | **Total Contributors:** {total_contributors:,}  ",
-        "> *Auto-refreshed daily via GitHub Actions.*",
+        "> *Updated daily via GitHub Actions.*",
         "",
         "---",
         "",
@@ -322,7 +320,7 @@ def generate_markdown(
             lines.append("")
             continue
 
-        lines.append(f"*{len(users)} contributor{'s' if len(users) != 1 else ''} in this tier*")
+        lines.append(f"*{len(users)} contributor{'s' if len(users) != 1 else ''}*")
         lines.append("")
         lines.append("| Contributor | Merged PRs |")
         lines.append("|:---|:---:|")
@@ -339,12 +337,12 @@ def generate_markdown(
         [
             "---",
             "",
-            "### How the Contributor Ladder Works",
+            "### How this list works",
             "",
-            "- **Merged PRs Only:** Only merged pull requests are counted (opening a PR does not count until merged).",
-            "- **Sorting:** Contributors within each tier are ordered by merged PR count (descending), with username alphabetically as a tiebreaker.",
-            "- **Daily Updates:** This file is updated daily via automated workflow. If your pull request was recently merged, your profile will be added in the next scheduled run.",
-            "- **Full Guidelines:** Learn more about contributor roles and progression in our [Contributor Ladder Guide](https://pipecd.dev/docs-dev/contribution-guidelines/contributor-ladder/).",
+            "- **Merged PRs only:** Counts reflect merged pull requests in this repository.",
+            "- **Sorting:** Contributors in each tier are ordered by merged PR count, then alphabetically.",
+            "- **Automation:** This file is generated daily by a GitHub Actions workflow.",
+            "- **Guidelines:** See the [Contributor Ladder guide](https://pipecd.dev/docs-dev/contribution-guidelines/contributor-ladder/) for tier details and organization membership requirements.",
             "",
         ]
     )
@@ -369,24 +367,22 @@ def generate_docs_markdown(
         'linkTitle: "Contributor Ladder"',
         "weight: 5",
         "description: >",
-        "  How PipeCD recognizes and celebrates community contributors through our contributor ladder.",
+        "  Community contributor tiers and progression guidelines for PipeCD.",
         "---",
         "",
-        "The **PipeCD Contributor Ladder** is designed to welcome new contributors, recognize ongoing contributions, and celebrate everyone who helps build PipeCD.",
-        "",
-        "Every merged contribution makes a difference to PipeCD — whether fixing a bug, improving documentation, designing features, or enhancing test coverage.",
+        "The **PipeCD Contributor Ladder** recognizes community members who contribute to the project and outlines paths for contributor progression.",
         "",
         "---",
         "",
         "## Ladder Tiers",
         "",
-        f"The contributor ladder tracks contributions based on **merged pull requests** to the [`pipe-cd/pipecd`](https://github.com/{repo}) repository:",
+        f"Tiers are based on merged pull requests to [`pipe-cd/pipecd`](https://github.com/{repo}):",
         "",
-        "| Tier | Merged PRs | Description & Recognition |",
+        "| Tier | Merged PRs | Description |",
         "| :--- | :---: | :--- |",
-        "| 🌱 **Newcomer** | **1** | Welcome to the community! Listed in the Newcomers tier. |",
-        "| 🛠️ **Contributor** | **2–4** | Continued active involvement and consistent contributions across any part of the project. |",
-        "| 🚀 **Core Contributor** | **5+** | Established and trusted contributors with a strong track record. Eligible to apply for membership in the `pipe-cd` GitHub organization. |",
+        "| 🌱 **Newcomer** | **1** | First-time contributors with their first merged PR. |",
+        "| 🛠️ **Contributor** | **2–4** | Contributors with regular contributions to the project. |",
+        "| 🚀 **Core Contributor** | **5+** | Established contributors eligible to apply for `pipe-cd` GitHub organization membership. |",
         "",
         "---",
         "",
@@ -394,7 +390,7 @@ def generate_docs_markdown(
         "",
         f"> **Last updated:** {utc_str}  ",
         f"> **Total Merged PRs:** {total_merged:,} | **Total Contributors:** {total_contributors:,}  ",
-        "> *Auto-refreshed daily via GitHub Actions.*",
+        "> *Updated daily via GitHub Actions.*",
         "",
     ]
 
@@ -412,7 +408,7 @@ def generate_docs_markdown(
             lines.append("")
             continue
 
-        lines.append(f"*{len(users)} contributor{'s' if len(users) != 1 else ''} in this tier*")
+        lines.append(f"*{len(users)} contributor{'s' if len(users) != 1 else ''}*")
         lines.append("")
         lines.append("| Contributor | Merged PRs |")
         lines.append("|:---|:---:|")
@@ -429,43 +425,31 @@ def generate_docs_markdown(
         [
             "---",
             "",
-            "## How Counting Works",
+            "## Details & Automation",
             "",
-            "- **Merged PRs Only:** Only merged pull requests are counted toward ladder tiers. Merely opening a PR does not count until it is merged.",
-            "- **Automated Daily Refresh:** The contributor ladder is regenerated automatically every day via a GitHub Actions workflow.",
-            "- **No Manual Edits:** The list is maintained by automation; please do not submit manual pull requests to edit contributor lists.",
-            "- **Bot Exclusions:** Automated bots and service accounts (such as `dependabot[bot]` and `github-actions[bot]`) are excluded from the ladder.",
+            "- **Merged PRs only:** Only merged pull requests are counted. Open or draft pull requests do not count until merged.",
+            "- **Daily sync:** The contributor ladder is updated daily via GitHub Actions.",
+            "- **Bot exclusions:** Automated service accounts and bots (e.g. `dependabot[bot]`, `github-actions[bot]`) are excluded.",
             "",
             "---",
             "",
-            "## Becoming a Member of the PipeCD GitHub Organization",
+            "## GitHub Organization Membership",
             "",
-            "Once you reach the **Core Contributor** tier (5+ merged PRs), you are invited to apply for membership in the `pipe-cd` GitHub organization!",
+            "Contributors who reach the **Core Contributor** tier (5+ merged PRs) can request membership in the `pipe-cd` GitHub organization.",
             "",
             "### Requirements:",
-            "1. Have at least **5 merged PRs** in repositories under the `pipe-cd` organization.",
-            "2. Have attended a [PipeCD Community Meeting](https://zoom-lfx.platform.linuxfoundation.org/meeting/96831504919?password=2f60b8ec-5896-40c8-aa1d-d551ab339d00).",
-            "3. Reach out to the maintainers in the `#pipecd` channel on [CNCF Slack](https://cloud-native.slack.com/) or during a community meeting.",
+            "1. At least **5 merged PRs** in repositories under the `pipe-cd` organization.",
+            "2. Attendance at least one [PipeCD Community Meeting](https://zoom-lfx.platform.linuxfoundation.org/meeting/96831504919?password=2f60b8ec-5896-40c8-aa1d-d551ab339d00).",
+            "3. Reach out to maintainers in the `#pipecd` channel on [CNCF Slack](https://cloud-native.slack.com/) or during a community meeting.",
             "",
             "---",
             "",
             "## Getting Started",
             "",
-            "Looking for ways to begin or climb the ladder?",
-            '- Check out issues labeled [**good first issue**](https://github.com/pipe-cd/pipecd/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22) for beginner-friendly tasks.',
-            "- Help improve our docs by reviewing the [Contribute to PipeCD Documentation](../contributing-documentation/) guide.",
-            "- Read our [General Contribution Guide](../contributing/) for details on local environment setup, testing, and DCO sign-off.",
-            "- Join the discussion in our `#pipecd` channel on [CNCF Slack](https://cloud-native.slack.com/).",
-            "",
-            "---",
-            "",
-            "## Future Roadmap",
-            "",
-            "This contributor ladder is being rolled out in iterative phases as discussed in [GitHub Issue #6548](https://github.com/pipe-cd/pipecd/issues/6548):",
-            "",
-            "- **Phase 1 (Current):** Automated tier ladder based on merged PR count.",
-            "- **Phase 2 (Planned):** A comprehensive contribution scoring model taking into account issue triage, code reviews, blog posts, and architectural proposals.",
-            "- **Phase 3 (Planned):** Community leaderboard announcements and recognition in the PipeCD Slack channel.",
+            "- Find [**good first issues**](https://github.com/pipe-cd/pipecd/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22) for beginner-friendly tasks.",
+            "- Read the [Documentation Contribution Guide](../contributing-documentation/) to contribute to docs.",
+            "- Review the [Contributing Guide](../contributing/) for local environment setup, tests, and DCO sign-off requirements.",
+            "- Join the `#pipecd` channel on [CNCF Slack](https://cloud-native.slack.com/).",
             "",
         ]
     )
