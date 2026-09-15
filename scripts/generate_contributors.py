@@ -125,7 +125,7 @@ def fetch_merged_prs_via_pulls(
 
     print(f"Fetching pull requests for {repo} via pulls API...")
     while True:
-        resp = session.get(url, headers=headers, params=params)
+        resp = session.get(url, headers=headers, params=params, timeout=30)
 
         # Handle rate limiting
         if resp.status_code == 403 and "rate limit" in resp.text.lower():
@@ -180,7 +180,7 @@ def fetch_merged_prs_via_search(
     """
     Fetch merged pull requests via GitHub Search API (/search/issues).
     Note: GitHub Search API limits total results to 1,000 items per query.
-    If total_count > 1000, prompts switching to the pulls API.
+    If total_count > 1000 or HTTP 422 is encountered, falls back to pulls API.
     """
     url = "https://api.github.com/search/issues"
     query = f"repo:{repo} is:pr is:merged"
@@ -195,7 +195,7 @@ def fetch_merged_prs_via_search(
 
     print(f"Fetching merged pull requests for {repo} via Search API...")
     while True:
-        resp = session.get(url, headers=headers, params=params)
+        resp = session.get(url, headers=headers, params=params, timeout=30)
 
         if resp.status_code == 403 and "rate limit" in resp.text.lower():
             reset_time = int(resp.headers.get("X-RateLimit-Reset", time.time() + 60))
@@ -205,12 +205,16 @@ def fetch_merged_prs_via_search(
             continue
 
         if resp.status_code == 422:
-            print("Notice: GitHub Search API limit (1,000 results) reached.")
-            break
+            print("Notice: GitHub Search API returned 422. Falling back to pulls API to ensure complete counts...")
+            return fetch_merged_prs_via_pulls(repo, headers, session)
 
         resp.raise_for_status()
         data = resp.json()
         total_count = data.get("total_count", 0)
+
+        if total_count > 1000:
+            print(f"Notice: Repository has {total_count} merged PRs (> 1,000 Search API cap). Falling back to pulls API...")
+            return fetch_merged_prs_via_pulls(repo, headers, session)
 
         items = data.get("items", [])
         if not items:
@@ -240,8 +244,8 @@ def fetch_merged_prs_via_search(
 
         params["page"] += 1
         if params["page"] > 10:  # Search API max 1000 items
-            print(f"Notice: Reached 1,000 items cap in Search API (total_count in repo: {total_count}).")
-            break
+            print(f"Notice: Reached 1,000 items cap in Search API. Falling back to pulls API...")
+            return fetch_merged_prs_via_pulls(repo, headers, session)
 
     return contributors, total_merged
 
@@ -427,7 +431,7 @@ def generate_docs_markdown(
             "",
             "## How Counting Works",
             "",
-            "- **Merged PRs Only:** Only pull requests that have been reviewed, approved, and merged are counted toward ladder tiers. Merely opening a PR does not count until it is merged.",
+            "- **Merged PRs Only:** Only merged pull requests are counted toward ladder tiers. Merely opening a PR does not count until it is merged.",
             "- **Automated Daily Refresh:** The contributor ladder is regenerated automatically every day via a GitHub Actions workflow.",
             "- **No Manual Edits:** The list is maintained by automation; please do not submit manual pull requests to edit contributor lists.",
             "- **Bot Exclusions:** Automated bots and service accounts (such as `dependabot[bot]` and `github-actions[bot]`) are excluded from the ladder.",

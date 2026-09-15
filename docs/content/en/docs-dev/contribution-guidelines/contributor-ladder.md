@@ -26,7 +26,7 @@ The contributor ladder tracks contributions based on **merged pull requests** to
 
 ## Current Contributors
 
-> **Last updated:** 2026-09-15 09:42 UTC  
+> **Last updated:** 2026-09-15 11:28 UTC  
 > **Total Merged PRs:** 5,029 | **Total Contributors:** 152  
 > *Auto-refreshed daily via GitHub Actions.*
 
@@ -207,7 +207,7 @@ The contributor ladder tracks contributions based on **merged pull requests** to
 
 ## How Counting Works
 
-- **Merged PRs Only:** Only pull requests that have been reviewed, approved, and merged are counted toward ladder tiers. Merely opening a PR does not count until it is merged.
+- **Merged PRs Only:** Only merged pull requests are counted toward ladder tiers. Merely opening a PR does not count until it is merged.
 - **Automated Daily Refresh:** The contributor ladder is regenerated automatically every day via a GitHub Actions workflow.
 - **No Manual Edits:** The list is maintained by automation; please do not submit manual pull requests to edit contributor lists.
 - **Bot Exclusions:** Automated bots and service accounts (such as `dependabot[bot]` and `github-actions[bot]`) are excluded from the ladder.

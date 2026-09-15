@@ -5,7 +5,7 @@
 
 This contributor ladder recognizes and celebrates everyone who has contributed merged pull requests to [PipeCD](https://github.com/pipe-cd/pipecd).
 
-> **Last updated:** 2026-09-15 09:42 UTC  
+> **Last updated:** 2026-09-15 11:28 UTC  
 > **Total Merged PRs:** 5,029 | **Total Contributors:** 152  
 > *Auto-refreshed daily via GitHub Actions.*
 
