@@ -1,0 +1,6 @@
+[build]
+  base = "docs"
+
+[build.environment]
+  HUGO_VERSION = "0.148.2"
+  NODE_VERSION = "20"
