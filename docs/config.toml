@@ -53,7 +53,7 @@ allowContent = ['text/html', 'text/markdown', 'text/org', 'text/plain']
 [security.funcs]
 getenv = ['^HUGO_', 'RELEASE']
 
-[author]
+[params.author]
   name = "PipeCD Authors"
   email = "pipecd.dev@gmail.com"
 
