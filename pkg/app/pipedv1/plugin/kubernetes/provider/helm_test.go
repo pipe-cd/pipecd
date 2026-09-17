@@ -132,19 +132,19 @@ func TestVerifyHelmValueFilePath(t *testing.T) {
 		{
 			name:          "Values file locates allowed remote URL (http)",
 			appDir:        "testdata/testhelm/appconfdir",
-			valueFilePath: "http://exmaple.com/values.yaml",
+			valueFilePath: "http://example.com/values.yaml",
 			wantErr:       false,
 		},
 		{
 			name:          "Values file locates allowed remote URL (https)",
 			appDir:        "testdata/testhelm/appconfdir",
-			valueFilePath: "https://exmaple.com/values.yaml",
+			valueFilePath: "https://example.com/values.yaml",
 			wantErr:       false,
 		},
 		{
 			name:          "Values file locates disallowed remote URL (ftp)",
 			appDir:        "testdata/testhelm/appconfdir",
-			valueFilePath: "ftp://exmaple.com/values.yaml",
+			valueFilePath: "ftp://example.com/values.yaml",
 			wantErr:       true,
 		},
 		{
