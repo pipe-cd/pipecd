@@ -685,18 +685,21 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 		return nil, gRPCStoreError(err, "list applications")
 	}
 
-	if len(req.Options.Labels) == 0 {
-		return &webservice.ListApplicationsResponse{
-			Applications: apps,
-		}, nil
+	// Filter applications based on labels and deleted status.
+	// NOTE: Filtering is done application-side to avoid requiring new composite indexes.
+	var labels map[string]string
+	if o := req.Options; o != nil {
+		labels = o.Labels
 	}
-
-	// NOTE: Filtering by labels is done by the application-side because we need to create composite indexes for every combination in the filter.
 	filtered := make([]*model.Application, 0, len(apps))
-	for _, a := range apps {
-		if a.ContainLabels(req.Options.Labels) {
-			filtered = append(filtered, a)
+	for _, app := range apps {
+		if app.Deleted {
+			continue
 		}
+		if len(labels) > 0 && !app.ContainLabels(labels) {
+			continue
+		}
+		filtered = append(filtered, app)
 	}
 	return &webservice.ListApplicationsResponse{
 		Applications: filtered,
