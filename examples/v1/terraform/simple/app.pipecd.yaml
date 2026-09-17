@@ -1,0 +1,17 @@
+apiVersion: pipecd.dev/v1beta1
+kind: Application
+spec:
+  name: simple
+  labels:
+    env: example
+    team: infra
+  plugins:
+    # Terraform config lives directly on the plugin spec - there is no `input:`
+    # wrapper like the kubernetes plugin uses.
+    terraform:
+      terraformVersion: 1.5.7
+  description: |
+    This app demonstrates how to deploy a Terraform application with [Quick Sync](https://pipecd.dev/docs-v1.0.x/concepts/#sync-strategy) strategy.\
+    No pipeline is specified then in each deployment PipeCD does terraform plan and if there are any changes detected it applies those changes automatically.\
+    This example is cloud-free (writes a local file) so it runs without provider credentials. It needs a terraform deploy target defined in the piped config.\
+    References: [adding a new app](https://pipecd.dev/docs-v1.0.x/user-guide/managing-application/adding-an-application/), [app configuration](https://pipecd.dev/docs-v1.0.x/user-guide/managing-application/configuration-reference/)
