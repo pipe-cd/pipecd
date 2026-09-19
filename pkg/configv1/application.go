@@ -157,6 +157,12 @@ func (s *GenericApplicationSpec) Validate() error {
 		}
 	}
 
+	for _, ew := range s.EventWatcher {
+		if err := ew.Validate(); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
