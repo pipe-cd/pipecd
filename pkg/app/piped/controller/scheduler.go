@@ -402,7 +402,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		// A received cancel command wins even if the stage finished successfully,
 		// otherwise the loop would continue to the next stage after the user cancelled.
 		// Cancel stops progression, it does not rewrite an already-committed stage outcome.
-		if cancelCommand != nil {
+		if cancelCommand != nil && (result == model.StageStatus_STAGE_SUCCESS || result == model.StageStatus_STAGE_SKIPPED) {
 			deploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
 			statusReason = fmt.Sprintf("Cancelled by %s while executing stage %s", cancelCommander, ps.Id)
 			break
