@@ -243,6 +243,49 @@ func Test_setGCAutoDetach(t *testing.T) {
 	assert.Equal(t, false, got)
 }
 
+func Test_setHTTPAuthHeader(t *testing.T) {
+	getHTTPExtraHeader := func(ctx context.Context, repo *repo) (string, error) {
+		cmd := exec.CommandContext(ctx, repo.gitPath, "config", "--get", "http.extraHeader")
+		cmd.Dir = repo.dir
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			return "", err
+		}
+		return strings.TrimSuffix(string(out), "\n"), nil
+	}
+
+	faker, err := newFaker()
+	require.NoError(t, err)
+	defer faker.clean()
+
+	var (
+		org      = "test-repo-org"
+		repoName = "repo-set-http-auth-header"
+		ctx      = context.Background()
+	)
+
+	err = faker.makeRepo(org, repoName)
+	require.NoError(t, err)
+
+	r := &repo{
+		dir:     faker.repoDir(org, repoName),
+		gitPath: faker.gitPath,
+	}
+
+	// Before being set, the repo has no http.extraHeader configured.
+	_, err = getHTTPExtraHeader(ctx, r)
+	require.Error(t, err)
+
+	header := "Authorization: Basic dXNlcjpwYXNz"
+	err = r.setHTTPAuthHeader(ctx, header)
+	require.NoError(t, err)
+	assert.Equal(t, header, r.httpAuthHeader)
+
+	got, err := getHTTPExtraHeader(ctx, r)
+	require.NoError(t, err)
+	assert.Equal(t, header, got)
+}
+
 func TestCopy(t *testing.T) {
 	faker, err := newFaker()
 	require.NoError(t, err)
@@ -293,6 +336,10 @@ func TestCopyToModify(t *testing.T) {
 		remote:  faker.repoDir(org, repoName), // use the same directory as remote, it's not a real remote. it's strange but it's ok for testing.
 	}
 
+	header := "Authorization: Basic dXNlcjpwYXNz"
+	err = r.setHTTPAuthHeader(ctx, header)
+	require.NoError(t, err)
+
 	commits, err := r.ListCommits(ctx, "")
 	require.NoError(t, err)
 	assert.Equal(t, 1, len(commits))
@@ -300,6 +347,15 @@ func TestCopyToModify(t *testing.T) {
 	tmpDir := filepath.Join(faker.dir, "tmp-repo")
 	newRepo, err := r.CopyToModify(tmpDir)
 	require.NoError(t, err)
+
+	// The http auth header must be propagated to the cloned repo too,
+	// since it's not carried over by a plain `git clone`.
+	assert.Equal(t, header, newRepo.(*repo).httpAuthHeader)
+	cmd := exec.CommandContext(ctx, r.gitPath, "config", "--get", "http.extraHeader")
+	cmd.Dir = tmpDir
+	out, err := cmd.CombinedOutput()
+	require.NoError(t, err)
+	assert.Equal(t, header, strings.TrimSuffix(string(out), "\n"))
 
 	// we can copy the repo to another directory multiple times
 	tmpDir2 := filepath.Join(faker.dir, "tmp-repo2")
