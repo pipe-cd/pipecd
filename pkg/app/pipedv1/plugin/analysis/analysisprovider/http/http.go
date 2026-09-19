@@ -51,6 +51,10 @@ func NewProvider(timeout time.Duration) *Provider {
 
 // Run sends an HTTP request and then evaluate whether the response is expected one.
 func (p *Provider) Run(ctx context.Context, cfg *config.AnalysisHTTP) (bool, string, error) {
+	if len(cfg.ExpectedResponse) > maxResponseBodySize {
+		return false, "", fmt.Errorf("expected response exceeds maximum size of %d bytes", maxResponseBodySize)
+	}
+
 	req, err := p.makeRequest(ctx, cfg)
 	if err != nil {
 		return false, "", err
