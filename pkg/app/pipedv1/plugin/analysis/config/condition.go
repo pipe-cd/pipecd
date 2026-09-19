@@ -158,10 +158,12 @@ type AnalysisHTTP struct {
 	URL    string `json:"url"`
 	Method string `json:"method"`
 	// Custom headers to set in the request. HTTP allows repeated headers.
-	Headers          []AnalysisHTTPHeader `json:"headers"`
-	ExpectedCode     int                  `json:"expectedCode"`
-	ExpectedResponse string               `json:"expectedResponse"`
-	Interval         unit.Duration        `json:"interval"`
+	Headers      []AnalysisHTTPHeader `json:"headers"`
+	ExpectedCode int                  `json:"expectedCode"`
+	// ExpectedResponse is the exact response body expected from the request.
+	// An empty value disables response-body validation.
+	ExpectedResponse string        `json:"expectedResponse"`
+	Interval         unit.Duration `json:"interval"`
 	// Maximum number of failed checks before the response is considered as failure.
 	FailureLimit int `json:"failureLimit"`
 	// If true, it considers as success when no data returned from the analysis provider.
