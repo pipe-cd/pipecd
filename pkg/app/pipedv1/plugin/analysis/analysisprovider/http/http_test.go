@@ -105,3 +105,16 @@ func TestProviderRun(t *testing.T) {
 		})
 	}
 }
+
+func TestProviderRunExpectedResponseExceedsLimit(t *testing.T) {
+	t.Parallel()
+
+	ok, _, err := NewProvider(0).Run(context.Background(), &analysisconfig.AnalysisHTTP{
+		URL:              "://invalid-url",
+		Method:           http.MethodGet,
+		ExpectedResponse: strings.Repeat("a", maxResponseBodySize+1),
+	})
+
+	assert.False(t, ok)
+	assert.EqualError(t, err, "expected response exceeds maximum size of 1048576 bytes")
+}
