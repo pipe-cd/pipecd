@@ -689,9 +689,9 @@ func (w *watcher) commitFiles(ctx context.Context, latestEvent *model.Event, eve
 		case r.YAMLField != "":
 			newContent, upToDate, err = modifyYAML(path, r.YAMLField, latestEvent.Data)
 		case r.JSONField != "":
-			// TODO: Empower Event watcher to parse JSON format
+			return "", fmt.Errorf("jsonField replacements are not supported")
 		case r.HCLField != "":
-			// TODO: Empower Event watcher to parse HCL format
+			return "", fmt.Errorf("HCLField replacements are not supported")
 		case r.Regex != "":
 			newContent, upToDate, err = modifyText(path, r.Regex, latestEvent.Data)
 		}
@@ -703,10 +703,6 @@ func (w *watcher) commitFiles(ctx context.Context, latestEvent *model.Event, eve
 			continue
 		}
 
-		if err := os.WriteFile(path, newContent, os.ModePerm); err != nil {
-			w.logger.Error("failed to write file", zap.Error(err))
-			return "", err
-		}
 		changes[filePath] = newContent
 	}
 	if len(changes) == 0 {

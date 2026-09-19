@@ -70,6 +70,22 @@ type EventWatcherHandlerConfig struct {
 	Replacements []EventWatcherReplacement `json:"replacements"`
 }
 
+func (c EventWatcherConfig) Validate() error {
+	if err := c.Handler.Config.Validate(); err != nil {
+		return fmt.Errorf("invalid event watcher handler config: %w", err)
+	}
+	return nil
+}
+
+func (c EventWatcherHandlerConfig) Validate() error {
+	for _, r := range c.Replacements {
+		if err := r.Validate(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 type EventWatcherReplacement struct {
 	// The path to the file to be updated.
 	File string `json:"file"`
@@ -86,6 +102,33 @@ type EventWatcherReplacement struct {
 	// Only the first capturing group enclosed by `()` will be replaced with the new value.
 	// e.g. "host.xz/foo/bar:(v[0-9].[0-9].[0-9])"
 	Regex string `json:"regex"`
+}
+
+func (r EventWatcherReplacement) Validate() error {
+	if r.File == "" {
+		return fmt.Errorf("replacement has no file name")
+	}
+	if r.JSONField != "" {
+		return fmt.Errorf("replacement has an unsupported jsonField")
+	}
+	if r.HCLField != "" {
+		return fmt.Errorf("replacement has an unsupported HCLField")
+	}
+
+	count := 0
+	if r.YAMLField != "" {
+		count++
+	}
+	if r.Regex != "" {
+		count++
+	}
+	if count == 0 {
+		return fmt.Errorf("replacement has no field")
+	}
+	if count > 1 {
+		return fmt.Errorf("replacement has multiple fields")
+	}
+	return nil
 }
 
 // EventWatcherHandlerType represents the type of an event watcher handler.
@@ -202,28 +245,8 @@ func (e *EventWatcherEvent) Validate() error {
 		return fmt.Errorf("there must be at least one replacement to an event")
 	}
 	for _, r := range e.Replacements {
-		if r.File == "" {
-			return fmt.Errorf("event %q has a replacement with no file name", e.Name)
-		}
-
-		var count int
-		if r.YAMLField != "" {
-			count++
-		}
-		if r.JSONField != "" {
-			count++
-		}
-		if r.HCLField != "" {
-			count++
-		}
-		if r.Regex != "" {
-			count++
-		}
-		if count == 0 {
-			return fmt.Errorf("event %q has a replacement with no field", e.Name)
-		}
-		if count > 2 {
-			return fmt.Errorf("event %q has multiple fields", e.Name)
+		if err := r.Validate(); err != nil {
+			return fmt.Errorf("event %q: %w", e.Name, err)
 		}
 	}
 	return nil

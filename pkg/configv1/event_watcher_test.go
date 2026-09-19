@@ -167,6 +167,58 @@ func TestEventWatcherValidate(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "json field given",
+			eventWatcherSpec: EventWatcherSpec{
+				Events: []EventWatcherEvent{
+					{
+						Name: "event-a",
+						Replacements: []EventWatcherReplacement{
+							{
+								File:      "file.json",
+								JSONField: "$.value",
+							},
+						},
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "HCL field given",
+			eventWatcherSpec: EventWatcherSpec{
+				Events: []EventWatcherEvent{
+					{
+						Name: "event-a",
+						Replacements: []EventWatcherReplacement{
+							{
+								File:     "file.hcl",
+								HCLField: "value",
+							},
+						},
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "both supported fields given",
+			eventWatcherSpec: EventWatcherSpec{
+				Events: []EventWatcherEvent{
+					{
+						Name: "event-a",
+						Replacements: []EventWatcherReplacement{
+							{
+								File:      "file",
+								YAMLField: "$.value",
+								Regex:     "(value)",
+							},
+						},
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
 			name: "valid config given",
 			eventWatcherSpec: EventWatcherSpec{
 				Events: []EventWatcherEvent{
