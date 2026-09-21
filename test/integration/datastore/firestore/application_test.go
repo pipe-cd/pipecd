@@ -292,3 +292,146 @@ func TestUpdateApplication(t *testing.T) {
 		})
 	}
 }
+
+func TestDeleteApplication(t *testing.T) {
+	appStore := datastore.NewApplicationStore(store)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	fakeApplication := &model.Application{
+		Id:        "delete-id",
+		Name:      "name",
+		PipedId:   "piped-id",
+		ProjectId: "project-id",
+		Kind:      model.ApplicationKind_KUBERNETES,
+		GitPath: &model.ApplicationGitPath{
+			Repo: &model.ApplicationGitRepository{Id: "id"},
+			Path: "path",
+		},
+		CloudProvider: "cloud-provider",
+		CreatedAt:     1,
+		UpdatedAt:     1,
+	}
+	err := appStore.Add(ctx, fakeApplication)
+	require.NoError(t, err)
+
+	testcases := []struct {
+		name    string
+		id      string
+		wantErr error
+	}{
+		{
+			name:    "successful delete",
+			id:      "delete-id",
+			wantErr: nil,
+		},
+		{
+			name:    "not found",
+			id:      "id-wrong",
+			wantErr: datastore.ErrNotFound,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := appStore.Delete(ctx, tc.id)
+			assert.Equal(t, tc.wantErr, err)
+		})
+	}
+}
+
+func TestEnableApplication(t *testing.T) {
+	appStore := datastore.NewApplicationStore(store)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	fakeApplication := &model.Application{
+		Id:        "enable-id",
+		Name:      "name",
+		PipedId:   "piped-id",
+		ProjectId: "project-id",
+		Kind:      model.ApplicationKind_KUBERNETES,
+		GitPath: &model.ApplicationGitPath{
+			Repo: &model.ApplicationGitRepository{Id: "id"},
+			Path: "path",
+		},
+		CloudProvider: "cloud-provider",
+		CreatedAt:     1,
+		UpdatedAt:     1,
+		Disabled:      true,
+	}
+	err := appStore.Add(ctx, fakeApplication)
+	require.NoError(t, err)
+
+	testcases := []struct {
+		name    string
+		id      string
+		wantErr error
+	}{
+		{
+			name:    "successful enable",
+			id:      "enable-id",
+			wantErr: nil,
+		},
+		{
+			name:    "not found",
+			id:      "id-wrong",
+			wantErr: datastore.ErrNotFound,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := appStore.Enable(ctx, tc.id)
+			assert.Equal(t, tc.wantErr, err)
+		})
+	}
+}
+
+func TestDisableApplication(t *testing.T) {
+	appStore := datastore.NewApplicationStore(store)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	fakeApplication := &model.Application{
+		Id:        "disable-id",
+		Name:      "name",
+		PipedId:   "piped-id",
+		ProjectId: "project-id",
+		Kind:      model.ApplicationKind_KUBERNETES,
+		GitPath: &model.ApplicationGitPath{
+			Repo: &model.ApplicationGitRepository{Id: "id"},
+			Path: "path",
+		},
+		CloudProvider: "cloud-provider",
+		CreatedAt:     1,
+		UpdatedAt:     1,
+		Disabled:      false,
+	}
+	err := appStore.Add(ctx, fakeApplication)
+	require.NoError(t, err)
+
+	testcases := []struct {
+		name    string
+		id      string
+		wantErr error
+	}{
+		{
+			name:    "successful disable",
+			id:      "disable-id",
+			wantErr: nil,
+		},
+		{
+			name:    "not found",
+			id:      "id-wrong",
+			wantErr: datastore.ErrNotFound,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := appStore.Disable(ctx, tc.id)
+			assert.Equal(t, tc.wantErr, err)
+		})
+	}
+}
