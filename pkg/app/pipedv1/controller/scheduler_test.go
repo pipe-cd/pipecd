@@ -16,6 +16,7 @@ package controller
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"testing"
 	"time"
@@ -87,6 +88,31 @@ type fakeAPIClient struct {
 
 func (f *fakeAPIClient) ReportStageStatusChanged(ctx context.Context, req *pipedservice.ReportStageStatusChangedRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageStatusChangedResponse, error) {
 	return nil, nil
+}
+
+func (f *fakeAPIClient) ReportDeploymentCompleted(ctx context.Context, req *pipedservice.ReportDeploymentCompletedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentCompletedResponse, error) {
+	return &pipedservice.ReportDeploymentCompletedResponse{}, nil
+}
+
+type fakeMetadataStore struct {
+	shared map[string]string
+}
+
+func (f *fakeMetadataStore) SharedGet(key string) (string, bool) {
+	v, ok := f.shared[key]
+	return v, ok
+}
+
+func (f *fakeMetadataStore) StageGet(stageID, key string) (string, bool) {
+	return "", false
+}
+
+type fakeNotifier struct {
+	events []model.NotificationEvent
+}
+
+func (f *fakeNotifier) Notify(event model.NotificationEvent) {
+	f.events = append(f.events, event)
 }
 
 func TestExecuteStage(t *testing.T) {
@@ -330,4 +356,62 @@ func TestExecuteStage_SignalCancelled(t *testing.T) {
 	handler.Cancel()
 	finalStatus := s.executeStage(sig, s.deployment.Stages[0])
 	assert.Equal(t, model.StageStatus_STAGE_CANCELLED, finalStatus)
+}
+
+func TestReportDeploymentCompleted_MentionsMatchEvent(t *testing.T) {
+	noti := &config.DeploymentNotification{
+		Mentions: []config.NotificationMention{
+			{Event: "DEPLOYMENT_SUCCEEDED", SlackUsers: []string{"user-success"}},
+			{Event: "DEPLOYMENT_FAILED", SlackUsers: []string{"user-failed"}},
+			{Event: "DEPLOYMENT_CANCELLED", SlackUsers: []string{"user-cancelled"}},
+		},
+	}
+	raw, err := json.Marshal(noti)
+	require.NoError(t, err)
+
+	testcases := []struct {
+		status    model.DeploymentStatus
+		wantEvent model.NotificationEventType
+		wantUsers []string
+	}{
+		{model.DeploymentStatus_DEPLOYMENT_SUCCESS, model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED, []string{"user-success"}},
+		{model.DeploymentStatus_DEPLOYMENT_FAILURE, model.NotificationEventType_EVENT_DEPLOYMENT_FAILED, []string{"user-failed"}},
+		{model.DeploymentStatus_DEPLOYMENT_CANCELLED, model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED, []string{"user-cancelled"}},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.status.String(), func(t *testing.T) {
+			notifier := &fakeNotifier{}
+			s := &scheduler{
+				deployment: &model.Deployment{Id: "deployment-id"},
+				apiClient:  &fakeAPIClient{},
+				notifier:   notifier,
+				metadataStore: &fakeMetadataStore{
+					shared: map[string]string{model.MetadataKeyDeploymentNotification: string(raw)},
+				},
+				stageStatuses: map[string]model.StageStatus{},
+				logger:        zaptest.NewLogger(t),
+				nowFunc:       time.Now,
+			}
+
+			require.NoError(t, s.reportDeploymentCompleted(context.Background(), tc.status, "some reason", ""))
+			require.Len(t, notifier.events, 1)
+
+			event := notifier.events[0]
+			assert.Equal(t, tc.wantEvent, event.Type)
+
+			var gotUsers []string
+			switch md := event.Metadata.(type) {
+			case *model.NotificationEventDeploymentSucceeded:
+				gotUsers = md.MentionedAccounts
+			case *model.NotificationEventDeploymentFailed:
+				gotUsers = md.MentionedAccounts
+			case *model.NotificationEventDeploymentCancelled:
+				gotUsers = md.MentionedAccounts
+			default:
+				t.Fatalf("unexpected notification metadata type %T", event.Metadata)
+			}
+			assert.Equal(t, tc.wantUsers, gotUsers)
+		})
+	}
 }
