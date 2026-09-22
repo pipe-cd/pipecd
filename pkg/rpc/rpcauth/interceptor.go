@@ -95,43 +95,6 @@ func PipedTokenUnaryServerInterceptor(verifier PipedTokenVerifier, logger *zap.L
 	}
 }
 
-// PipedTokenStreamServerInterceptor extracts credentials from gRPC metadata
-// and set the extracted credentials to the context with a fixed key.
-// This interceptor will returns a gRPC error when the credentials
-// was not set or was malformed.
-func PipedTokenStreamServerInterceptor(verifier PipedTokenVerifier, logger *zap.Logger) grpc.StreamServerInterceptor {
-	return func(srv interface{}, stream grpc.ServerStream, _ *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		ctx := stream.Context()
-		creds, err := extractCredentials(ctx)
-		if err != nil {
-			return err
-		}
-		if creds.Type != PipedTokenCredentials {
-			logger.Warn("wrong credentials type for PipedTokenCredentials", zap.Any("credentials", creds))
-			return errUnauthenticated
-		}
-		projectID, pipedID, pipedKey, err := parsePipedToken(creds.Data)
-		if err != nil {
-			logger.Warn(fmt.Sprintf("malformed credentials: %s, err: %v", creds.Data, err))
-			return errUnauthenticated
-		}
-		if err := verifier.Verify(ctx, projectID, pipedID, pipedKey); err != nil {
-			logger.Warn("unable to verify piped token", zap.Error(err))
-			return errUnauthenticated
-		}
-		ctx = context.WithValue(ctx, pipedTokenKey, pipedTokenContextValue{
-			ProjectID: projectID,
-			PipedID:   pipedID,
-			PipedKey:  pipedKey,
-		})
-		wrappedStream := &wrappedServerStream{
-			ServerStream: stream,
-			ctx:          ctx,
-		}
-		return handler(srv, wrappedStream)
-	}
-}
-
 // ExtractPipedToken returns the verified piped key inside a given context.
 func ExtractPipedToken(ctx context.Context) (projectID, pipedID, pipedKey string, err error) {
 	v, ok := ctx.Value(pipedTokenKey).(pipedTokenContextValue)

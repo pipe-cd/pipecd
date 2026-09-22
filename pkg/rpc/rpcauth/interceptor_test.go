@@ -23,20 +23,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
-
-type fakeServerStream struct {
-	grpc.ServerStream
-	ctx context.Context
-}
-
-func (s *fakeServerStream) Context() context.Context {
-	return s.ctx
-}
 
 type testPipedTokenVerifier struct {
 	pipedKey string
@@ -100,68 +90,6 @@ func TestPipedTokenUnaryServerInterceptor(t *testing.T) {
 					return nil, errors.New("invalid piped key")
 				}
 				return nil, nil
-			})
-			assert.Equal(t, tc.failed, err != nil)
-		})
-	}
-}
-
-func TestPipedTokenStreamServerInterceptor(t *testing.T) {
-	verifier := testPipedTokenVerifier{"test-piped-key"}
-	in := PipedTokenStreamServerInterceptor(verifier, zap.NewNop())
-	testcases := []struct {
-		name             string
-		ctx              context.Context
-		expectedPipedKey string
-		failed           bool
-	}{
-		{
-			name:             "missing credentials",
-			ctx:              context.TODO(),
-			expectedPipedKey: "",
-			failed:           true,
-		},
-		{
-			name: "wrong credentials type",
-			ctx: metadata.NewIncomingContext(context.Background(), metadata.MD{
-				"authorization": []string{"ID-TOKEN test-project-id,test-piped-id,test-piped-key"},
-			}),
-			expectedPipedKey: "",
-			failed:           true,
-		},
-		{
-			name: "malformed piped token",
-			ctx: metadata.NewIncomingContext(context.Background(), metadata.MD{
-				"authorization": []string{"PIPED-TOKEN test-piped-key"},
-			}),
-			expectedPipedKey: "",
-			failed:           true,
-		},
-		{
-			name: "should be ok with PipedToken",
-			ctx: metadata.NewIncomingContext(context.Background(), metadata.MD{
-				"authorization": []string{"PIPED-TOKEN test-project-id,test-piped-id,test-piped-key"},
-			}),
-			expectedPipedKey: "test-piped-key",
-			failed:           false,
-		},
-	}
-
-	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			stream := &fakeServerStream{
-				ctx: tc.ctx,
-			}
-			err := in(nil, stream, nil, func(srv interface{}, stream grpc.ServerStream) error {
-				ctx := stream.Context()
-				_, _, pipedKey, err := ExtractPipedToken(ctx)
-				if err != nil {
-					return err
-				}
-				if pipedKey != tc.expectedPipedKey {
-					return errors.New("invalid piped key")
-				}
-				return nil
 			})
 			assert.Equal(t, tc.failed, err != nil)
 		})
