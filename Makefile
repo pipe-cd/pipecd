@@ -213,7 +213,7 @@ lint: lint/go lint/web lint/helm ## Run all linters (Go, web, helm)
 
 .PHONY: lint/go
 lint/go: FIX ?= false
-lint/go: VERSION ?= sha256:67dfc9eeeb0eb13fc1a36329c2c378197dc561f1edf1a7792e3f771606bb0e15 # golangci/golangci-lint:v2.11.4
+lint/go: VERSION ?= sha256:ba07dffad130794ae79ebaa0056809d18c0168f3f846480ffd3eb6c04578b83d # golangci/golangci-lint:v2.13.2
 lint/go: FLAGS ?= --rm -e GOCACHE=/repo/.cache/go-build -e GOLANGCI_LINT_CACHE=/repo/.cache/golangci-lint -v ${PWD}:/repo
 lint/go: MODULES ?= $(shell find . -name go.mod | while read -r dir; do dirname "$$dir"; done | paste -sd, -) # comma separated list of modules. eg: MODULES=.,pkg/plugin/sdk
 lint/go:
