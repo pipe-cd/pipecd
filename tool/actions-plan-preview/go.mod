@@ -2,6 +2,8 @@ module github.com/pipe-cd/actions-plan-preview
 
 go 1.26.2
 
+toolchain go1.27.1
+
 require (
 	github.com/google/go-github/v36 v36.0.0
 	github.com/pipe-cd/pipecd v0.53.0

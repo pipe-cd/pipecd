@@ -2,6 +2,8 @@ module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster
 
 go 1.26.2
 
+toolchain go1.27.1
+
 require (
 	github.com/creasty/defaults v1.6.0
 	github.com/go-logr/logr v1.4.4

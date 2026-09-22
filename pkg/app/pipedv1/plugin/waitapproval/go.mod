@@ -2,6 +2,8 @@ module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/waitapproval
 
 go 1.26.2
 
+toolchain go1.27.1
+
 require (
 	github.com/creasty/defaults v1.6.0
 	github.com/pipe-cd/piped-plugin-sdk-go v0.4.0

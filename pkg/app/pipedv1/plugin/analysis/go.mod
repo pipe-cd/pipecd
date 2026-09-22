@@ -2,6 +2,8 @@ module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis
 
 go 1.26.2
 
+toolchain go1.27.1
+
 require (
 	github.com/DataDog/datadog-api-client-go v1.16.0
 	github.com/creasty/defaults v1.8.0
