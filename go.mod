@@ -28,7 +28,6 @@ require (
 	github.com/go-sql-driver/mysql v1.10.0
 	github.com/goccy/go-yaml v1.9.8
 	github.com/golang-jwt/jwt/v5 v5.2.2
-	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.4
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/go-cmp v0.7.0
