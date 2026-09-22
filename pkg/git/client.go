@@ -145,7 +145,7 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		)
 	)
 
-	_, err, _ := c.repoSingleFlights.Do(repoID, func() (interface{}, error) {
+	_, err, _ := c.repoSingleFlights.Do(repoID, func() (any, error) {
 		authArgs := []string{}
 		if c.username != "" && c.password != "" {
 			token := fmt.Sprintf("%s:%s", c.username, c.password)

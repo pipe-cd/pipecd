@@ -216,8 +216,8 @@ func refineFiltersField(filters []datastore.ListFilter) []datastore.ListFilter {
 }
 
 // refineFiltersValue destructs all slide/array type values and makes an array of all element values.
-func refineFiltersValue(filters []datastore.ListFilter) []interface{} {
-	var filtersVals []interface{}
+func refineFiltersValue(filters []datastore.ListFilter) []any {
+	var filtersVals []any
 	for _, filter := range filters {
 		fv := reflect.ValueOf(filter.Value)
 		switch fv.Kind() {
@@ -233,7 +233,7 @@ func refineFiltersValue(filters []datastore.ListFilter) []interface{} {
 }
 
 // makePaginationCursorValues builds array of element values used on pagination condition check.
-func makePaginationCursorValues(opts datastore.ListOptions) ([]interface{}, error) {
+func makePaginationCursorValues(opts datastore.ListOptions) ([]any, error) {
 	// Skip pagination on cursor is empty.
 	if len(opts.Cursor) == 0 {
 		return nil, nil
@@ -245,7 +245,7 @@ func makePaginationCursorValues(opts datastore.ListOptions) ([]interface{}, erro
 		return nil, err
 	}
 	// Encode cursor data string to map[string]interface{} format for further process.
-	obj := make(map[string]interface{})
+	obj := make(map[string]any)
 	if err := json.Unmarshal(data, &obj); err != nil {
 		return nil, err
 	}
@@ -253,7 +253,7 @@ func makePaginationCursorValues(opts datastore.ListOptions) ([]interface{}, erro
 	// The cursorVals contains values used for pagination condition.
 	// For each field except Id, it should be duplicated as for using in outer set and subset.
 	// The Id field value should be one, and it's the last value in this list.
-	cursorVals := make([]interface{}, 0, 2*len(opts.Orders)-1)
+	cursorVals := make([]any, 0, 2*len(opts.Orders)-1)
 	for _, o := range opts.Orders {
 		// Skip the Id field value to add it at last.
 		if o.Field == "Id" {

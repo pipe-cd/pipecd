@@ -624,7 +624,7 @@ func (c *controller) getMostRecentlySuccessfulDeployment(ctx context.Context, ap
 		Status:        model.DeploymentStatus_DEPLOYMENT_SUCCESS,
 	}
 
-	d, err := pipedservice.NewRetry(3).Do(ctx, func() (interface{}, error) {
+	d, err := pipedservice.NewRetry(3).Do(ctx, func() (any, error) {
 		resp, err := c.apiClient.GetApplicationMostRecentDeployment(ctx, req)
 		if err == nil {
 			return resp.Deployment, nil
@@ -667,7 +667,7 @@ func (c *controller) cancelDeployment(ctx context.Context, d *model.Deployment, 
 		CompletedAt:               time.Now().Unix(),
 	}
 
-	_, err := pipedservice.NewRetry(10).Do(ctx, func() (interface{}, error) {
+	_, err := pipedservice.NewRetry(10).Do(ctx, func() (any, error) {
 		_, err := c.apiClient.ReportDeploymentCompleted(ctx, req)
 		if err != nil {
 			return nil, fmt.Errorf("failed to report deployment status to control-plane: %w", err)
@@ -683,7 +683,7 @@ func reportApplicationDeployingStatus(ctx context.Context, c apiClient, appID st
 		Deploying:     deploying,
 	}
 
-	_, err := pipedservice.NewRetry(10).Do(ctx, func() (interface{}, error) {
+	_, err := pipedservice.NewRetry(10).Do(ctx, func() (any, error) {
 		_, err := c.ReportApplicationDeployingStatus(ctx, req)
 		if err != nil {
 			return nil, fmt.Errorf("failed to report application deploying status to control-plane: %w", err)

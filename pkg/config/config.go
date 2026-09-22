@@ -78,7 +78,7 @@ var (
 type Config struct {
 	Kind       Kind
 	APIVersion string
-	spec       interface{}
+	spec       any
 
 	KubernetesApplicationSpec *KubernetesApplicationSpec
 	TerraformApplicationSpec  *TerraformApplicationSpec
@@ -146,7 +146,7 @@ func (c *Config) init(kind Kind, apiVersion string) error {
 }
 
 func mergeRawMessages(a, b json.RawMessage) (json.RawMessage, error) {
-	var mapA, mapB map[string]interface{}
+	var mapA, mapB map[string]any
 
 	// Unmarshal both RawMessages into maps
 	if err := json.Unmarshal(a, &mapA); err != nil {

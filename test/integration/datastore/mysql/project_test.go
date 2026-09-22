@@ -208,7 +208,7 @@ func TestCreateProject(t *testing.T) {
 func TestUpdateProject(t *testing.T) {
 	col := &collection{
 		kind: "Project",
-		factory: func() interface{} {
+		factory: func() any {
 			return &model.Project{}
 		},
 	}
@@ -231,7 +231,7 @@ func TestUpdateProject(t *testing.T) {
 	testcases := []struct {
 		name    string
 		id      string
-		updater func(interface{}) error
+		updater func(any) error
 		wantErr error
 	}{
 		{
@@ -242,7 +242,7 @@ func TestUpdateProject(t *testing.T) {
 		{
 			name: "unable to update",
 			id:   "update-id",
-			updater: func(interface{}) error {
+			updater: func(any) error {
 				return fmt.Errorf("error")
 			},
 			wantErr: fmt.Errorf("error"),
@@ -250,7 +250,7 @@ func TestUpdateProject(t *testing.T) {
 		{
 			name: "successful update",
 			id:   "update-id",
-			updater: func(e interface{}) error {
+			updater: func(e any) error {
 				v := e.(*model.Project)
 				v.Desc = "new-desc"
 				return nil

@@ -24,9 +24,9 @@ func ChainUnaryServerInterceptors(is ...grpc.UnaryServerInterceptor) grpc.UnaryS
 	if len(is) == 1 {
 		return is[0]
 	}
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		chain := func(interceptor grpc.UnaryServerInterceptor, next grpc.UnaryHandler) grpc.UnaryHandler {
-			return func(ctx context.Context, req interface{}) (interface{}, error) {
+			return func(ctx context.Context, req any) (any, error) {
 				return interceptor(ctx, req, info, next)
 			}
 		}

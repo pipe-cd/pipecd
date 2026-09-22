@@ -30,7 +30,7 @@ func (e *eventCollection) Kind() string {
 }
 
 func (e *eventCollection) Factory() Factory {
-	return func() interface{} {
+	return func() any {
 		return &model.Event{}
 	}
 }
@@ -100,7 +100,7 @@ func (s *eventStore) List(ctx context.Context, opts ListOptions) ([]*model.Event
 }
 
 func (s *eventStore) UpdateStatus(ctx context.Context, eventID string, status model.EventStatus, statusDescription string) error {
-	return s.ds.Update(ctx, s.col, eventID, func(e interface{}) error {
+	return s.ds.Update(ctx, s.col, eventID, func(e any) error {
 		event := e.(*model.Event)
 		event.Status = status
 		event.StatusDescription = statusDescription

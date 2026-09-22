@@ -37,7 +37,7 @@ type apiKeyStore interface {
 }
 
 type apiKeyLastUsedTimeCache interface {
-	Get(k string) (interface{}, error)
+	Get(k string) (any, error)
 }
 
 type APIKeyLastUsedTimeUpdater struct {

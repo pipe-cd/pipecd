@@ -44,7 +44,7 @@ func (g *fakeAPIKeyGetter) Get(_ context.Context, id string) (*model.APIKey, err
 
 type fakeRedisHashCache struct{}
 
-func (f *fakeRedisHashCache) Put(k string, v interface{}) error {
+func (f *fakeRedisHashCache) Put(k string, v any) error {
 	return nil
 }
 

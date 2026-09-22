@@ -208,7 +208,7 @@ func (r *reflector) start(_ context.Context) error {
 	return nil
 }
 
-func (r *reflector) onObjectAdd(obj interface{}) {
+func (r *reflector) onObjectAdd(obj any) {
 	u := obj.(*unstructured.Unstructured)
 	key := provider.MakeResourceKey(u)
 
@@ -230,7 +230,7 @@ func (r *reflector) onObjectAdd(obj interface{}) {
 	)
 }
 
-func (r *reflector) onObjectUpdate(oldObj, obj interface{}) {
+func (r *reflector) onObjectUpdate(oldObj, obj any) {
 	u := obj.(*unstructured.Unstructured)
 	oldU := oldObj.(*unstructured.Unstructured)
 
@@ -254,7 +254,7 @@ func (r *reflector) onObjectUpdate(oldObj, obj interface{}) {
 	)
 }
 
-func (r *reflector) onObjectDelete(obj interface{}) {
+func (r *reflector) onObjectDelete(obj any) {
 	u := obj.(*unstructured.Unstructured)
 	key := provider.MakeResourceKey(u)
 

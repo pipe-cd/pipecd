@@ -132,7 +132,7 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 							APIVersion: "apps/v1",
 							Kind:       provider.KindDeployment,
 						}, &unstructured.Unstructured{
-							Object: map[string]interface{}{"spec": map[string]interface{}{}},
+							Object: map[string]any{"spec": map[string]any{}},
 						}),
 					}, nil)
 					return p
@@ -180,14 +180,14 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 							APIVersion: "apps/v1",
 							Kind:       provider.KindDeployment,
 						}, &unstructured.Unstructured{
-							Object: map[string]interface{}{"spec": map[string]interface{}{}},
+							Object: map[string]any{"spec": map[string]any{}},
 						}),
 						provider.MakeManifest(provider.ResourceKey{
 							APIVersion: "v1",
 							Kind:       provider.KindService,
 							Name:       "foo",
 						}, &unstructured.Unstructured{
-							Object: map[string]interface{}{"spec": map[string]interface{}{}},
+							Object: map[string]any{"spec": map[string]any{}},
 						}),
 					}, nil)
 					return p
@@ -241,7 +241,7 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 							APIVersion: "apps/v1",
 							Kind:       "VirtualService",
 						}, &unstructured.Unstructured{
-							Object: map[string]interface{}{"spec": map[string]interface{}{}},
+							Object: map[string]any{"spec": map[string]any{}},
 						}),
 					}, nil)
 					return p
@@ -286,7 +286,7 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 							APIVersion: "apps/v1",
 							Kind:       provider.KindDeployment,
 						}, &unstructured.Unstructured{
-							Object: map[string]interface{}{"spec": map[string]interface{}{}},
+							Object: map[string]any{"spec": map[string]any{}},
 						}),
 					}, nil)
 					return p

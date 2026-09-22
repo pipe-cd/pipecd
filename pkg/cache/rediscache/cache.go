@@ -42,7 +42,7 @@ func NewTTLCache(redis redis.Redis, ttl time.Duration) *RedisCache {
 	}
 }
 
-func (c *RedisCache) Get(k string) (interface{}, error) {
+func (c *RedisCache) Get(k string) (any, error) {
 	conn := c.redis.Get()
 	defer conn.Close()
 	reply, err := conn.Do("GET", k)
@@ -78,7 +78,7 @@ func (c *RedisCache) Get(k string) (interface{}, error) {
 }
 
 // It is caller's responsibility to encode Go struct.
-func (c *RedisCache) Put(k string, v interface{}) error {
+func (c *RedisCache) Put(k string, v any) error {
 	conn := c.redis.Get()
 	defer conn.Close()
 	var err error
@@ -97,6 +97,6 @@ func (c *RedisCache) Delete(k string) error {
 	return err
 }
 
-func (c *RedisCache) GetAll() (map[string]interface{}, error) {
+func (c *RedisCache) GetAll() (map[string]any, error) {
 	return nil, cache.ErrUnimplemented
 }

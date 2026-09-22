@@ -42,7 +42,7 @@ func (p Percentage) MarshalJSON() ([]byte, error) {
 	return json.Marshal(p.String())
 }
 
-func (p Percentage) MarshalYAML() (interface{}, error) {
+func (p Percentage) MarshalYAML() (any, error) {
 	return p.Number, nil
 }
 

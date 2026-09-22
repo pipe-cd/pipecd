@@ -232,13 +232,13 @@ func TestHandleResetPassword(t *testing.T) {
 func TestApplicationCountsTmpl(t *testing.T) {
 	testcases := []struct {
 		name        string
-		data        []map[string]interface{}
+		data        []map[string]any
 		expected    string
 		expectedErr error
 	}{
 		{
 			name: "ok",
-			data: []map[string]interface{}{
+			data: []map[string]any{
 				{
 					"Project": "one-count",
 					"Total":   5,

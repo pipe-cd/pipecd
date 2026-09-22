@@ -29,13 +29,13 @@ import (
 
 type fakeLogPersister struct{}
 
-func (l *fakeLogPersister) Write(_ []byte) (int, error)         { return 0, nil }
-func (l *fakeLogPersister) Info(_ string)                       {}
-func (l *fakeLogPersister) Infof(_ string, _ ...interface{})    {}
-func (l *fakeLogPersister) Success(_ string)                    {}
-func (l *fakeLogPersister) Successf(_ string, _ ...interface{}) {}
-func (l *fakeLogPersister) Error(_ string)                      {}
-func (l *fakeLogPersister) Errorf(_ string, _ ...interface{})   {}
+func (l *fakeLogPersister) Write(_ []byte) (int, error) { return 0, nil }
+func (l *fakeLogPersister) Info(_ string)               {}
+func (l *fakeLogPersister) Infof(_ string, _ ...any)    {}
+func (l *fakeLogPersister) Success(_ string)            {}
+func (l *fakeLogPersister) Successf(_ string, _ ...any) {}
+func (l *fakeLogPersister) Error(_ string)              {}
+func (l *fakeLogPersister) Errorf(_ string, _ ...any)   {}
 
 type metadata map[string]string
 

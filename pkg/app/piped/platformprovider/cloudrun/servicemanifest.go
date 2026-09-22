@@ -42,7 +42,7 @@ type RevisionTraffic struct {
 }
 
 func (m ServiceManifest) UpdateTraffic(revisions []RevisionTraffic) error {
-	items := []interface{}{}
+	items := []any{}
 	for i := range revisions {
 		out, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&revisions[i])
 		if err != nil {
