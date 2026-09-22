@@ -2018,7 +2018,7 @@ func (a *WebAPI) ListDeprecatedNotes(ctx context.Context, req *webservice.ListDe
 		return nil, status.Error(codes.Internal, "Failed to list released versions")
 	}
 
-	notes := ""
+	var notes strings.Builder
 	for _, release := range releases {
 		// Ignore pre-release tagged or draft release.
 		if *release.Prerelease || *release.Draft {
@@ -2035,10 +2035,10 @@ func (a *WebAPI) ListDeprecatedNotes(ctx context.Context, req *webservice.ListDe
 			continue
 		}
 
-		notes += fmt.Sprintf("## %s\n%s\n", *release.TagName, matches[1])
+		fmt.Fprintf(&notes, "## %s\n%s\n", *release.TagName, matches[1])
 	}
 
 	return &webservice.ListDeprecatedNotesResponse{
-		Notes: notes,
+		Notes: notes.String(),
 	}, nil
 }

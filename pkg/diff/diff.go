@@ -499,15 +499,15 @@ func (d *differ) ignoredValue(v reflect.Value, prefix string) reflect.Value {
 }
 
 func (d *differ) isIgnoredPath(pathString string) bool {
-	var pathSubStr string
+	var pathSubStr strings.Builder
 	pathElms := strings.Split(pathString, ".")
 
 	for i, path := range pathElms {
 		if i != 0 {
-			pathSubStr += "."
+			pathSubStr.WriteString(".")
 		}
-		pathSubStr += path
-		if _, found := d.ignoredPaths[pathSubStr]; found {
+		pathSubStr.WriteString(path)
+		if _, found := d.ignoredPaths[pathSubStr.String()]; found {
 			return true
 		}
 	}

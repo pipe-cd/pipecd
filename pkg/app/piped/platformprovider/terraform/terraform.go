@@ -187,7 +187,7 @@ func (r PlanResult) Render() (string, error) {
 
 	out := r.PlanOutput[startIndex:endIndex]
 
-	rendered := ""
+	var rendered strings.Builder
 	var curlyBracketStack []rune
 	var squareBracketStack []rune
 
@@ -235,11 +235,11 @@ func (r PlanResult) Render() (string, error) {
 			r[0] = signMatchBracket(&squareBracketStack, r[0])
 		}
 
-		rendered += string(r)
-		rendered += "\n"
+		rendered.WriteString(string(r))
+		rendered.WriteString("\n")
 	}
 
-	return rendered, nil
+	return rendered.String(), nil
 }
 
 // Return rune at the top of the stack, or r in case of error.
