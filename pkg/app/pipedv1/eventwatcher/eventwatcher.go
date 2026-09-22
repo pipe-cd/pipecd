@@ -429,7 +429,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 	}
 	if len(failedEvents) > 0 {
 		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: failedEvents}); err != nil {
-			w.logger.Error("failed to report event statuses", zap.Error(err))
+			return fmt.Errorf("failed to report event statuses: %w", err)
 		}
 	}
 
@@ -613,6 +613,12 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 
 // commitFiles commits changes if the data in Git is different from the latest event.
 func (w *watcher) commitFiles(ctx context.Context, latestEvent *model.Event, eventName, commitMsg, gitPath string, replacements []config.EventWatcherReplacement, repo git.Repo, newBranch bool) (string, error) {
+	for _, r := range replacements {
+		if err := r.Validate(); err != nil {
+			return "", err
+		}
+	}
+
 	// Determine files to be changed by comparing with the latest event.
 	changes := make(map[string][]byte, len(replacements))
 	for _, r := range replacements {

@@ -103,7 +103,7 @@ func TestCommitFilesDoesNotTruncateUnsupportedReplacementFiles(t *testing.T) {
 				File:      "version.json",
 				JSONField: "$.image",
 			},
-			wantError: "jsonField replacements are not supported",
+			wantError: "replacement has an unsupported jsonField",
 		},
 		{
 			name: "HCL field",
@@ -111,7 +111,7 @@ func TestCommitFilesDoesNotTruncateUnsupportedReplacementFiles(t *testing.T) {
 				File:     "version.hcl",
 				HCLField: "image",
 			},
-			wantError: "HCLField replacements are not supported",
+			wantError: "replacement has an unsupported HCLField",
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -124,8 +124,6 @@ func TestCommitFilesDoesNotTruncateUnsupportedReplacementFiles(t *testing.T) {
 
 			ctrl := gomock.NewController(t)
 			repo := gittest.NewMockRepo(ctrl)
-			repo.EXPECT().GetPath().Return(dir)
-
 			w := &watcher{}
 			_, err := w.commitFiles(
 				context.Background(),

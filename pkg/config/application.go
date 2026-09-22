@@ -177,6 +177,12 @@ func (s *GenericApplicationSpec) Validate() error {
 		}
 	}
 
+	for _, ew := range s.EventWatcher {
+		if err := ew.Handler.Config.Validate(); err != nil {
+			return fmt.Errorf("invalid event watcher handler config: %w", err)
+		}
+	}
+
 	return nil
 }
 
