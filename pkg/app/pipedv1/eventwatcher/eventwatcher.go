@@ -339,6 +339,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 		outDatedDuration    = time.Hour
 		gitUpdateEvent      = false
 		branchHandledEvents = make(map[string][]*pipedservice.ReportEventStatusesRequest_Event, len(eventCfgs))
+		failedEvents        = make([]*pipedservice.ReportEventStatusesRequest_Event, 0)
 	)
 	for _, e := range eventCfgs {
 		for _, cfg := range e.Configs {
@@ -398,7 +399,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 						Status:            model.EventStatus_EVENT_FAILURE,
 						StatusDescription: fmt.Sprintf("Failed to change files: %v", err),
 					}
-					branchHandledEvents[branchName] = append(branchHandledEvents[branchName], handledEvent)
+					failedEvents = append(failedEvents, handledEvent)
 					continue
 				}
 				handledEvent := &pipedservice.ReportEventStatusesRequest_Event{
@@ -425,6 +426,11 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 			return fmt.Errorf("failed to report event statuses: %w", err)
 		}
 		w.logger.Info(fmt.Sprintf("successfully made %d events OUTDATED", len(outDatedEvents)))
+	}
+	if len(failedEvents) > 0 {
+		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: failedEvents}); err != nil {
+			w.logger.Error("failed to report event statuses", zap.Error(err))
+		}
 	}
 
 	if !gitUpdateEvent {
@@ -636,6 +642,9 @@ func (w *watcher) commitFiles(ctx context.Context, latestEvent *model.Event, eve
 		}
 		if upToDate {
 			continue
+		}
+		if err := os.WriteFile(path, newContent, os.ModePerm); err != nil {
+			return "", fmt.Errorf("failed to write file: %w", err)
 		}
 
 		changes[filePath] = newContent
