@@ -17,6 +17,7 @@ package kubernetes
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"strings"
@@ -70,9 +71,7 @@ func (m Manifest) AddAnnotations(annotations map[string]string) {
 		m.u.SetAnnotations(annotations)
 		return
 	}
-	for k, v := range annotations {
-		annos[k] = v
-	}
+	maps.Copy(annos, annotations)
 	m.u.SetAnnotations(annos)
 }
 
@@ -109,9 +108,7 @@ func (m Manifest) AddStringMapValues(values map[string]string, fields ...string)
 	if curMap == nil {
 		return unstructured.SetNestedStringMap(m.u.Object, values, fields...)
 	}
-	for k, v := range values {
-		curMap[k] = v
-	}
+	maps.Copy(curMap, values)
 	return unstructured.SetNestedStringMap(m.u.Object, curMap, fields...)
 }
 

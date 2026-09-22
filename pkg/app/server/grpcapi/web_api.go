@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -1264,10 +1265,8 @@ func validateApprover(stages []*model.PipelineStage, commander, stageID string) 
 		// Anyone can approve the deployment pipeline
 		return nil
 	}
-	for _, ap := range approvers {
-		if ap == commander {
-			return nil
-		}
+	if slices.Contains(approvers, commander) {
+		return nil
 	}
 	return status.Error(codes.PermissionDenied, fmt.Sprintf("You can't approve this deployment because you (%s) are not in the approver list: %v", commander, approvers))
 }
