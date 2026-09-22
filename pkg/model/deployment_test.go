@@ -453,7 +453,8 @@ func TestTriggeredBy(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
+	for i := range tests {
+		tt := &tests[i]
 		t.Run(tt.name, func(t *testing.T) {
 			d := &Deployment{
 				Trigger: &tt.trigger,
@@ -554,7 +555,8 @@ func TestTriggerBefore(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
+	for i := range tests {
+		tt := &tests[i]
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.d.TriggerBefore(&tt.other)
 			assert.Equal(t, tt.want, got)

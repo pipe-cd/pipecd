@@ -12,7 +12,6 @@ permissions: {}
 env:
   GO_VERSION: 1.26.2
   GHCR: ghcr.io
-  GCR: gcr.io
   HELM_VERSION: 3.8.2
 
 jobs:
@@ -36,7 +35,7 @@ jobs:
           make build/go MOD=pipedv1 BUILD_VERSION=${{ inputs.version }} BUILD_OS=darwin BUILD_ARCH=arm64 BIN_SUFFIX=_${{ inputs.version }}_darwin_arm64
 
       - name: Publish binary artifacts
-        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           tag_name: pipedv1/exp/${{ inputs.version }}
           name: pipedv1 experimental ${{ inputs.version }}
@@ -59,9 +58,6 @@ jobs:
             arch: amd64
           - runner: ubuntu-24.04-arm
             arch: arm64
-        container_registry:
-          - ghcr.io/pipe-cd
-          - gcr.io/pipecd
     runs-on: ${{ matrix.platform.runner }}
     permissions:
       contents: read
@@ -72,33 +68,26 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # v3.7.1
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
 
       # Login to push container images.
       - name: Log in to GHCR
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           registry: ${{ env.GHCR }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Log in to GCR
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
-        with:
-          registry: ${{ env.GCR }}
-          username: _json_key
-          password: ${{ secrets.GCR_SA }}
-
       # Build and push image by digest (without tag)
       - name: Build and push pipedv1 experimental image (${{ matrix.platform.arch }})
         id: build
-        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           context: .
           file: cmd/pipedv1/Dockerfile
           platforms: linux/${{ matrix.platform.arch }}
-          outputs: type=image,name=${{ matrix.container_registry }}/pipedv1-exp,push-by-digest=true,name-canonical=true,push=true
-          cache-from: type=registry,ref=${{ matrix.container_registry }}/pipedv1-exp:latest
+          outputs: type=image,name=${{ env.GHCR }}/pipe-cd/pipedv1-exp,push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=registry,ref=${{ env.GHCR }}/pipe-cd/pipedv1-exp:latest
           cache-to: type=inline
 
       # Export digest as artifact for merge job
@@ -111,7 +100,7 @@ jobs:
       - name: Upload digest
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: digests-pipedv1-exp-${{ matrix.platform.arch }}-${{ matrix.container_registry == 'ghcr.io/pipe-cd' && 'ghcr' || 'gcr' }}
+          name: digests-pipedv1-exp-${{ matrix.platform.arch }}
           path: /tmp/digests/*
           if-no-files-found: error
           retention-days: 1
@@ -123,11 +112,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-    strategy:
-      matrix:
-        container_registry:
-          - ghcr.io/pipe-cd
-          - gcr.io/pipecd
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -137,38 +121,31 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           path: /tmp/digests
-          pattern: digests-pipedv1-exp-*-${{ matrix.container_registry == 'ghcr.io/pipe-cd' && 'ghcr' || 'gcr' }}
+          pattern: digests-pipedv1-exp-*
           merge-multiple: true
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # v3.7.1
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
 
       # Login to push manifest.
       - name: Log in to GHCR
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           registry: ${{ env.GHCR }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Log in to GCR
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
-        with:
-          registry: ${{ env.GCR }}
-          username: _json_key
-          password: ${{ secrets.GCR_SA }}
 
       # Create and push multi-arch manifest
       - name: Create manifest list and push
         working-directory: /tmp/digests
         run: |
           docker buildx imagetools create \
-            -t ${{ matrix.container_registry }}/pipedv1-exp:${{ inputs.version }} \
-            $(printf '${{ matrix.container_registry }}/pipedv1-exp@sha256:%s ' *)
+            -t ${{ env.GHCR }}/pipe-cd/pipedv1-exp:${{ inputs.version }} \
+            $(printf '${{ env.GHCR }}/pipe-cd/pipedv1-exp@sha256:%s ' *)
 
       - name: Inspect image
         run: |
-          docker buildx imagetools inspect ${{ matrix.container_registry }}/pipedv1-exp:${{ inputs.version }}
+          docker buildx imagetools inspect ${{ env.GHCR }}/pipe-cd/pipedv1-exp:${{ inputs.version }}
 
   image_chart:
     runs-on: ubuntu-24.04
@@ -184,7 +161,7 @@ jobs:
 
       # Building and pushing Helm charts.
       - name: Install helm
-        uses: azure/setup-helm@v4
+        uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
         with:
           version: ${{ env.HELM_VERSION }}
       - name: Login to OCI using Helm
@@ -200,7 +177,7 @@ jobs:
         run: |
           helm template pipedv1-exp .artifacts/pipedv1-exp-${{ inputs.version }}.tgz --version ${{ inputs.version }} -n pipecd --set quickstart.enabled=true --set quickstart.pipedId=\<YOUR_PIPED_ID\> --set quickstart.pipedKeyData=\<YOUR_PIPED_KEY_DATA\> > quickstart/manifests/pipedv1-exp.yaml
       - name: Publish pipedv1 experimental quickstart manifests
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           title: '[bot] Publish pipedv1 experimental quickstart manifests'
           commit-message: '[bot] Publish pipedv1 experimental quickstart manifests'

@@ -47,7 +47,7 @@ type secretDecrypter interface {
 }
 
 type reporter interface {
-	ReportApplicationSyncState(ctx context.Context, appID string, state model.ApplicationSyncState) error
+	ReportApplicationSyncState(ctx context.Context, appID string, state *model.ApplicationSyncState) error
 }
 
 type Detector interface {
@@ -312,9 +312,9 @@ func (d *detector) loadApplicationConfiguration(repoPath string, app *model.Appl
 	return cfg, nil
 }
 
-func makeSyncState(r *provider.DiffResult, commit string) model.ApplicationSyncState {
+func makeSyncState(r *provider.DiffResult, commit string) *model.ApplicationSyncState {
 	if r.NoChange() {
-		return model.ApplicationSyncState{
+		return &model.ApplicationSyncState{
 			Status:    model.ApplicationSyncStatus_SYNCED,
 			Timestamp: time.Now().Unix(),
 		}
@@ -337,7 +337,7 @@ func makeSyncState(r *provider.DiffResult, commit string) model.ApplicationSyncS
 	})
 	b.WriteString(details)
 
-	return model.ApplicationSyncState{
+	return &model.ApplicationSyncState{
 		Status:      model.ApplicationSyncStatus_OUT_OF_SYNC,
 		ShortReason: shortReason,
 		Reason:      b.String(),

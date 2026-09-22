@@ -108,7 +108,7 @@ func (s *store) PatchKubernetesApplicationLiveState(ctx context.Context, events 
 			snapshot = ss
 			snapshots[ev.ApplicationId] = ss
 		}
-		if ev.SnapshotVersion.IsBefore(*snapshot.Version) {
+		if ev.SnapshotVersion.IsBefore(snapshot.Version) {
 			continue
 		}
 		switch ev.Type {

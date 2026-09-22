@@ -56,7 +56,7 @@ type reporter struct {
 	snapshotFlushInterval time.Duration
 	logger                *zap.Logger
 
-	snapshotVersions map[string]model.ApplicationLiveStateVersion
+	snapshotVersions map[string]*model.ApplicationLiveStateVersion
 }
 
 func NewReporter(cp config.PipedPlatformProvider, appLister applicationLister, stateGetter kubernetes.Getter, apiClient apiClient, logger *zap.Logger) Reporter {
@@ -72,7 +72,7 @@ func NewReporter(cp config.PipedPlatformProvider, appLister applicationLister, s
 		flushInterval:         5 * time.Second,
 		snapshotFlushInterval: 10 * time.Minute,
 		logger:                logger,
-		snapshotVersions:      make(map[string]model.ApplicationLiveStateVersion),
+		snapshotVersions:      make(map[string]*model.ApplicationLiveStateVersion),
 	}
 }
 
@@ -128,7 +128,7 @@ func (r *reporter) flushSnapshots(ctx context.Context) {
 			Kubernetes: &model.KubernetesApplicationLiveState{
 				Resources: state.Resources,
 			},
-			Version: &state.Version,
+			Version: state.Version,
 		}
 		snapshot.DetermineAppHealthStatus()
 		req := &pipedservice.ReportApplicationLiveStateRequest{
@@ -154,12 +154,12 @@ func (r *reporter) flushEvents(ctx context.Context) error {
 	}
 
 	filteredEvents := make([]*model.KubernetesResourceStateEvent, 0, len(events))
-	for i, event := range events {
+	for _, event := range events {
 		snapshotVersion, ok := r.snapshotVersions[event.ApplicationId]
 		if ok && event.SnapshotVersion.IsBefore(snapshotVersion) {
 			continue
 		}
-		filteredEvents = append(filteredEvents, &events[i])
+		filteredEvents = append(filteredEvents, event)
 	}
 	if len(filteredEvents) == 0 {
 		return nil
