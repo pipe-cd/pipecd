@@ -158,11 +158,9 @@ func (r *reporter) flushSnapshots(ctx context.Context) {
 
 	r.logger.Info("flushing snapshots", zap.Int("total-applications", len(apps)), zap.Int("parallel-count", len(appsGrouped)))
 	for _, apps := range appsGrouped {
-		wg.Add(1)
-		go func() {
+		wg.Go(func() {
 			r.flushAll(ctx, apps, r.repoMap)
-			wg.Done()
-		}()
+		})
 	}
 
 	wg.Wait()

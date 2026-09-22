@@ -416,8 +416,7 @@ func (c *client) ServiceExists(ctx context.Context, clusterName string, serviceN
 	}
 	output, err := c.ecsClient.DescribeServices(ctx, input)
 	if err != nil {
-		var nfe *types.ResourceNotFoundException
-		if errors.As(err, &nfe) {
+		if _, ok := errors.AsType[*types.ResourceNotFoundException](err); ok {
 			// Only in case ResourceNotFound error occurred, the FunctionName is available for create so do not raise error.
 			return false, nil
 		}
