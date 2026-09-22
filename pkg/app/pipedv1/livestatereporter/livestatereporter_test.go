@@ -335,7 +335,7 @@ func Benchmark_reporter_flushSnapshots(b *testing.B) {
 		appLister: &fakeAPILister{
 			apps: func() []*model.Application {
 				apps := make([]*model.Application, 0, 100)
-				for i := 0; i < 100; i++ {
+				for range 100 {
 					apps = append(apps, &model.Application{
 						Id:   "app-id",
 						Name: "app-name",
