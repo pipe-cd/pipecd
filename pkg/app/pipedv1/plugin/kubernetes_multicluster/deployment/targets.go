@@ -78,7 +78,6 @@ func runOnTargets(
 	results := make([]result, len(targets))
 	eg, ctx := errgroup.WithContext(ctx)
 	for i, tc := range targets {
-		i, tc := i, tc
 		eg.Go(func() error {
 			status := fn(ctx, tc.deployTarget, tc.multiTarget)
 			results[i] = result{name: tc.deployTarget.Name, status: status}

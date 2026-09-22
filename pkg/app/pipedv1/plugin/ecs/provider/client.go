@@ -386,7 +386,7 @@ func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskD
 	}
 
 	retry := backoff.NewRetry(maxTaskSetStableRetries, backoff.NewConstant(retryTaskSetStableInterval))
-	_, err = retry.Do(ctx, func() (interface{}, error) {
+	_, err = retry.Do(ctx, func() (any, error) {
 		output, err := c.ecsClient.DescribeTaskSets(ctx, waitInput)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get ECS task set %s: %w", *taskDefinition.TaskDefinitionArn, err)
@@ -464,10 +464,7 @@ func (c *client) GetTasks(ctx context.Context, service types.Service) ([]types.T
 	// Max number of tasks in each run of DescribeTasks is 100
 	const batchSize = 100
 	for i := 0; i < len(taskArns); i += batchSize {
-		end := i + batchSize
-		if end > len(taskArns) {
-			end = len(taskArns)
-		}
+		end := min(i+batchSize, len(taskArns))
 
 		batch := taskArns[i:end]
 		out, err := c.ecsClient.DescribeTasks(ctx, &ecs.DescribeTasksInput{
@@ -512,7 +509,7 @@ func (c *client) WaitServiceStable(ctx context.Context, clusterArn, service stri
 	}
 
 	retry := backoff.NewRetry(retryServiceStable, backoff.NewConstant(retryServiceStableInterval))
-	_, err := retry.Do(ctx, func() (interface{}, error) {
+	_, err := retry.Do(ctx, func() (any, error) {
 		output, err := c.ecsClient.DescribeServices(ctx, input)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get service %s: %w", service, err)

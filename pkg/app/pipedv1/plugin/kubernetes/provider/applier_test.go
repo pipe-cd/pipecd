@@ -141,7 +141,6 @@ func TestApplier_ApplyManifest(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -167,8 +166,8 @@ func TestApplier_ApplyManifest(t *testing.T) {
 
 			manifest := Manifest{
 				body: &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"metadata": map[string]interface{}{
+					Object: map[string]any{
+						"metadata": map[string]any{
 							"namespace": "test-namespace",
 						},
 					},
@@ -235,7 +234,6 @@ func TestApplier_CreateManifest(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -261,8 +259,8 @@ func TestApplier_CreateManifest(t *testing.T) {
 
 			manifest := Manifest{
 				body: &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"metadata": map[string]interface{}{
+					Object: map[string]any{
+						"metadata": map[string]any{
 							"namespace": "test-namespace",
 						},
 					},
@@ -306,7 +304,6 @@ func TestApplier_ReplaceManifest(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -327,8 +324,8 @@ func TestApplier_ReplaceManifest(t *testing.T) {
 
 			manifest := Manifest{
 				body: &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"metadata": map[string]interface{}{
+					Object: map[string]any{
+						"metadata": map[string]any{
 							"namespace": "test-namespace",
 						},
 					},
@@ -371,7 +368,6 @@ func TestApplier_ForceReplaceManifest(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -392,8 +388,8 @@ func TestApplier_ForceReplaceManifest(t *testing.T) {
 
 			manifest := Manifest{
 				body: &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"metadata": map[string]interface{}{
+					Object: map[string]any{
+						"metadata": map[string]any{
 							"namespace": "test-namespace",
 						},
 					},
@@ -549,7 +545,6 @@ metadata:
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
