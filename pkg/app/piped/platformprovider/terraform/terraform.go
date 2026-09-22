@@ -205,7 +205,7 @@ func (r PlanResult) Render() (string, error) {
 		if tail == '{' && len(curlyBracketStack) == 0 {
 			// Terraform's outermost block would be resource block.
 			deadline := strings.Index(string(r), "resource")
-			for i := 0; i < deadline; i++ {
+			for i := range deadline {
 				r[i] = ' '
 			}
 		}

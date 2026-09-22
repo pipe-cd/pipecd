@@ -150,10 +150,7 @@ func (r *reporter) flushSnapshots(ctx context.Context) {
 
 	appsGrouped := make([][]*model.Application, 0)
 	for i := 0; i < len(apps); i += appsPerReporter {
-		end := i + appsPerReporter
-		if end > len(apps) {
-			end = len(apps)
-		}
+		end := min(i+appsPerReporter, len(apps))
 		appsGrouped = append(appsGrouped, apps[i:end])
 	}
 
