@@ -82,9 +82,11 @@ func ParseServiceDefinition(appDir, serviceDefinition string) (types.Service, er
 	return loadServiceDefinition(path)
 }
 
-// LoadServiceDefinition returns Service object from a given service definition file.
-func LoadServiceDefinition(appDir, serviceDefinition string, input *sdk.ExecuteStageInput[config.ECSApplicationSpec]) (types.Service, error) {
-	path := filepath.Join(appDir, serviceDefinition)
+// LoadServiceDefinition returns Service object from a given service definition file
+// in the given deployment source. The commit hash tag is taken from that same source,
+// so a service loaded from the running source (e.g. on rollback) carries the running commit.
+func LoadServiceDefinition(ds sdk.DeploymentSource[config.ECSApplicationSpec], serviceDefinition string, input *sdk.ExecuteStageInput[config.ECSApplicationSpec]) (types.Service, error) {
+	path := filepath.Join(ds.ApplicationDirectory, serviceDefinition)
 	service, err := loadServiceDefinition(path)
 	if err != nil {
 		return types.Service{}, err
@@ -95,7 +97,7 @@ func LoadServiceDefinition(appDir, serviceDefinition string, input *sdk.ExecuteS
 			LabelManagedBy:   ManagedByECSPlugin,
 			LabelPiped:       input.Request.Deployment.PipedID,
 			LabelApplication: input.Request.Deployment.ApplicationID,
-			LabelCommitHash:  input.Request.TargetDeploymentSource.CommitHash,
+			LabelCommitHash:  ds.CommitHash,
 		})...,
 	)
 	return service, nil
