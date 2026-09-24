@@ -186,13 +186,13 @@ func (b *builder) build(ctx context.Context, id string, cmd model.Command_BuildP
 	}
 
 	// Add all applications into the channel for start handling.
-	for i := 0; i < numApps; i++ {
+	for i := range numApps {
 		appCh <- triggerApps[i]
 	}
 	close(appCh)
 
 	// Wait and collect all results.
-	for i := 0; i < numApps; i++ {
+	for range numApps {
 		r := <-resultCh
 		results = append(results, r)
 	}

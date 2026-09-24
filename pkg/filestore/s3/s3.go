@@ -122,8 +122,7 @@ func (s *Store) GetReader(ctx context.Context, path string) (io.ReadCloser, erro
 	}
 	out, err := s.client.GetObject(ctx, input)
 	if err != nil {
-		var nfe *types.NoSuchKey
-		if errors.As(err, &nfe) {
+		if _, ok := errors.AsType[*types.NoSuchKey](err); ok {
 			return nil, filestore.ErrNotFound
 		}
 		return nil, err

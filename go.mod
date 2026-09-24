@@ -28,14 +28,13 @@ require (
 	github.com/go-sql-driver/mysql v1.10.0
 	github.com/goccy/go-yaml v1.9.8
 	github.com/golang-jwt/jwt/v5 v5.2.2
-	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.4
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/go-cmp v0.7.0
 	github.com/google/go-github/v29 v29.0.3
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
-	github.com/hashicorp/golang-lru v0.5.3
+	github.com/hashicorp/golang-lru v1.0.2
 	github.com/hashicorp/hcl/v2 v2.0.0
 	github.com/minio/minio-go/v7 v7.0.5
 	github.com/opencontainers/image-spec v1.1.1
