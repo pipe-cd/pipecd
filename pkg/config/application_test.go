@@ -297,7 +297,6 @@ func TestValidateEncryption(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			s := &SecretEncryption{
 				EncryptedSecrets:  tc.encryptedSecrets,
@@ -341,7 +340,6 @@ func TestValidateAttachment(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			a := &Attachment{
 				Sources: tc.sources,

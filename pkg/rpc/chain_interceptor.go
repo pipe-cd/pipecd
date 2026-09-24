@@ -16,6 +16,7 @@ package rpc
 
 import (
 	"context"
+	"slices"
 
 	"google.golang.org/grpc"
 )
@@ -31,8 +32,8 @@ func ChainUnaryServerInterceptors(is ...grpc.UnaryServerInterceptor) grpc.UnaryS
 			}
 		}
 		next := handler
-		for i := len(is) - 1; i >= 0; i-- {
-			next = chain(is[i], next)
+		for _, i := range slices.Backward(is) {
+			next = chain(i, next)
 		}
 		return next(ctx, req)
 	}

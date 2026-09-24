@@ -16,6 +16,7 @@ package model
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"google.golang.org/protobuf/proto"
@@ -175,9 +176,9 @@ func (d *Deployment) TriggerBefore(other *Deployment) bool {
 
 // FindRollbackStage finds the rollback stage in stage list.
 func (d *Deployment) FindRollbackStage() (*PipelineStage, bool) {
-	for i := len(d.Stages) - 1; i >= 0; i-- {
-		if d.Stages[i].Name == StageRollback.String() || d.Stages[i].Name == StageCustomSyncRollback.String() {
-			return d.Stages[i], true
+	for _, v := range slices.Backward(d.Stages) {
+		if v.Name == StageRollback.String() || v.Name == StageCustomSyncRollback.String() {
+			return v, true
 		}
 	}
 	return nil, false

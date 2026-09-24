@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -176,11 +177,9 @@ func (e *Executor) validateApproverNum(ctx context.Context, approver string, min
 		approvedUsers = strings.Split(as, delimiter)
 	}
 
-	for _, u := range approvedUsers {
-		if u == approver {
-			e.LogPersister.Infof("Approval from the same user (%s) will not be counted", approver)
-			return false
-		}
+	if slices.Contains(approvedUsers, approver) {
+		e.LogPersister.Infof("Approval from the same user (%s) will not be counted", approver)
+		return false
 	}
 	e.LogPersister.Infof("Got approval from %q", approver)
 	approvedUsers = append(approvedUsers, approver)

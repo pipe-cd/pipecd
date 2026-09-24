@@ -17,6 +17,7 @@ package kubernetes
 import (
 	"context"
 	"fmt"
+	"slices"
 	"time"
 
 	"go.uber.org/zap"
@@ -277,21 +278,11 @@ func (r *reflector) onObjectDelete(obj interface{}) {
 }
 
 func isSupportedWatch(r metav1.APIResource) bool {
-	for _, v := range r.Verbs {
-		if v == "watch" {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(r.Verbs, "watch")
 }
 
 func isSupportedList(r metav1.APIResource) bool {
-	for _, v := range r.Verbs {
-		if v == "list" {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(r.Verbs, "list")
 }
 
 type resourceMatcher struct {

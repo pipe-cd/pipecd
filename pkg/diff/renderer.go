@@ -141,10 +141,7 @@ func (r *Renderer) Render(ns Nodes) string {
 }
 
 func pathDuplicateDepth(x, y []PathStep) int {
-	minLen := len(x)
-	if minLen > len(y) {
-		minLen = len(y)
-	}
+	minLen := min(len(x), len(y))
 
 	for i := 0; i < minLen; i++ {
 		if x[i] == y[i] {
