@@ -1,4 +1,4 @@
-ARG GOOGLE_CLOUD_SDK_VERSION=392.0.0-alpine
+ARG GOOGLE_CLOUD_SDK_VERSION=586.0.0-alpine
 
 FROM gcr.io/google.com/cloudsdktool/google-cloud-cli:$GOOGLE_CLOUD_SDK_VERSION
 
