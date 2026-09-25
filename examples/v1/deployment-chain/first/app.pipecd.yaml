@@ -1,0 +1,20 @@
+apiVersion: pipecd.dev/v1beta1
+kind: Application
+spec:
+  name: deployment-chain-first
+  labels:
+    env: example
+    team: product
+  plugins:
+    # No input block: deployment.yaml + service.yaml are auto-discovered.
+    kubernetes: {}
+  postSync:
+    # Once this app finishes deploying, PipeCD triggers the next app in the
+    # chain (matched by application name). That app can then trigger the one
+    # after it, forming a sequence.
+    chain:
+      applications:
+        - name: deployment-chain-second
+  description: |
+    This app is the first link in a deployment chain. When it deploys successfully, PipeCD triggers deployment-chain-second, which in turn triggers deployment-chain-third - one commit rolls out three apps in order.\
+    References: [adding a new app](https://pipecd.dev/docs-v1.0.x/user-guide/managing-application/adding-an-application/), [app configuration](https://pipecd.dev/docs-v1.0.x/user-guide/managing-application/configuration-reference/)
