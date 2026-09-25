@@ -130,14 +130,19 @@ func (s *store) sync(ctx context.Context) error {
 	}
 
 	headDeployments := make(map[string]*model.Deployment)
+	updateHead := func(d *model.Deployment) {
+		if existing, ok := headDeployments[d.ApplicationId]; !ok || d.CreatedAt < existing.CreatedAt {
+			headDeployments[d.ApplicationId] = d
+		}
+	}
 	for _, d := range pendings {
-		headDeployments[d.ApplicationId] = d
+		updateHead(d)
 	}
 	for _, d := range planneds {
-		headDeployments[d.ApplicationId] = d
+		updateHead(d)
 	}
 	for _, d := range runnings {
-		headDeployments[d.ApplicationId] = d
+		updateHead(d)
 	}
 
 	s.plannedDeployments.Store(planneds)
