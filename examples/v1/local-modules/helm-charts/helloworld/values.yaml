@@ -6,6 +6,7 @@ replicaCount: 1
 
 image:
   repository: ghcr.io/pipe-cd/helloworld
+  tag: v0.48.0
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
