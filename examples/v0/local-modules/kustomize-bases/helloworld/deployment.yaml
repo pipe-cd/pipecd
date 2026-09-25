@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: helloworld
-        image: gcr.io/pipecd/helloworld
+        image: ghcr.io/pipe-cd/helloworld
         args:
           - server
         ports:

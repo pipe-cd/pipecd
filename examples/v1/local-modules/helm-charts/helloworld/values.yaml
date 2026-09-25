@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: gcr.io/pipecd/helloworld
+  repository: ghcr.io/pipe-cd/helloworld
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
