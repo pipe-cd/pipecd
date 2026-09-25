@@ -77,11 +77,20 @@ func (c *TTLCache) Get(key string) (interface{}, error) {
 		)
 		return nil, cache.ErrNotFound
 	}
+	e := item.(*entry)
+	if c.ttl > 0 && e.expiration.Before(time.Now()) {
+		c.entries.Delete(key)
+		cachemetrics.IncGetOperationCounter(
+			cachemetrics.LabelSourceInmemory,
+			cachemetrics.LabelStatusMiss,
+		)
+		return nil, cache.ErrNotFound
+	}
 	cachemetrics.IncGetOperationCounter(
 		cachemetrics.LabelSourceInmemory,
 		cachemetrics.LabelStatusHit,
 	)
-	return item.(*entry).value, nil
+	return e.value, nil
 }
 
 func (c *TTLCache) Put(key string, value interface{}) error {
