@@ -16,6 +16,7 @@ package deploymentstore
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -32,19 +33,24 @@ import (
 // returned so misconfigured tests fail with a clear assertion mismatch
 // instead of an index-out-of-range panic.
 //
+// If err is set, it is returned instead of a page on the call index
+// identified by errAt (0-based), letting a test simulate a failure that
+// happens partway through pagination rather than on the very first call.
+//
 // gotCursors records the Cursor field of every request received, in order,
 // so tests can assert that each response cursor is threaded into the next
-// request.
+// request ("" -> "page2" -> "page3").
 type fakeAPIClient struct {
 	pages      []*pipedservice.ListNotCompletedDeploymentsResponse
 	call       int
 	err        error
+	errAt      int
 	gotCursors []string
 }
 
 func (f *fakeAPIClient) ListNotCompletedDeployments(_ context.Context, req *pipedservice.ListNotCompletedDeploymentsRequest, _ ...grpc.CallOption) (*pipedservice.ListNotCompletedDeploymentsResponse, error) {
 	f.gotCursors = append(f.gotCursors, req.GetCursor())
-	if f.err != nil {
+	if f.err != nil && f.call == f.errAt {
 		return nil, f.err
 	}
 	if f.call >= len(f.pages) {
@@ -68,6 +74,9 @@ func TestSync(t *testing.T) {
 	tests := []struct {
 		name         string
 		pages        []*pipedservice.ListNotCompletedDeploymentsResponse
+		apiErr       error
+		errAt        int
+		wantErr      bool
 		wantPendings []*model.Deployment
 		wantPlanneds []*model.Deployment
 		wantRunnings []*model.Deployment
@@ -132,18 +141,15 @@ func TestSync(t *testing.T) {
 			},
 			wantCursors: []string{""},
 		},
-		// Regression guard for the server-side pagination contract: the
-		// ListNotCompletedDeployments handler runs an unordered query, so
-		// deploymentStore.List returns the whole result set in one page
-		// with an empty cursor even when deployments exist. The sync loop
-		// must treat that as "done" after a single request rather than
-		// following a bogus non-empty cursor into a second request the
-		// datastore would reject with "opts.Cursor also requires Orders to
-		// be set".
+		// Three pages forces at least two follow-up requests, which a
+		// "call once more if the first cursor is non-empty" shortcut
+		// would not satisfy — only a genuine loop passes this case.
 		{
-			name: "server_returns_all_deployments_in_a_single_page",
+			name: "paginates_across_three_or_more_pages",
 			pages: []*pipedservice.ListNotCompletedDeploymentsResponse{
-				{Deployments: []*model.Deployment{pending, planned, running}, Cursor: ""},
+				{Deployments: []*model.Deployment{pending}, Cursor: "page2"},
+				{Deployments: []*model.Deployment{planned}, Cursor: "page3"},
+				{Deployments: []*model.Deployment{running}, Cursor: ""},
 			},
 			wantPendings: []*model.Deployment{pending},
 			wantPlanneds: []*model.Deployment{planned},
@@ -153,20 +159,57 @@ func TestSync(t *testing.T) {
 				"app-2": planned,
 				"app-3": running,
 			},
-			wantCursors: []string{""},
+			wantCursors: []string{"", "page2", "page3"},
+		},
+		// A misbehaving server returns a page with no deployments but still
+		// hands back a non-empty cursor. sync() must stop paging on the empty
+		// page instead of looping forever, so the bogus "page3" cursor is
+		// never threaded into a follow-up request.
+		{
+			name: "stops_on_empty_page_with_non_empty_cursor",
+			pages: []*pipedservice.ListNotCompletedDeploymentsResponse{
+				{Deployments: []*model.Deployment{pending}, Cursor: "page2"},
+				{Deployments: nil, Cursor: "page3"},
+			},
+			wantPendings: []*model.Deployment{pending},
+			wantPlanneds: nil,
+			wantRunnings: nil,
+			wantHeads: map[string]*model.Deployment{
+				"app-1": pending,
+			},
+			wantCursors: []string{"", "page2"},
+		},
+		// Page 1 succeeds and yields a cursor; page 2 fails. sync() must
+		// return the error and must not apply the partial results already
+		// accumulated from page 1 — Lister() should reflect nothing new.
+		// The cursor from page 1 must still have been threaded into the
+		// failing request.
+		{
+			name: "fails_on_mid_pagination_error",
+			pages: []*pipedservice.ListNotCompletedDeploymentsResponse{
+				{Deployments: []*model.Deployment{pending}, Cursor: "page2"},
+			},
+			apiErr:      errors.New("unavailable"),
+			errAt:       1,
+			wantErr:     true,
+			wantCursors: []string{"", "page2"},
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			fc := &fakeAPIClient{pages: tc.pages}
+			fc := &fakeAPIClient{pages: tc.pages, err: tc.apiErr, errAt: tc.errAt}
 			s := &store{
 				apiClient: fc,
 				logger:    zap.NewNop(),
 			}
 
 			err := s.sync(context.Background())
-			require.NoError(t, err)
+			if tc.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
 
 			assert.Equal(t, tc.wantPendings, s.ListPendings())
 			assert.Equal(t, tc.wantPlanneds, s.ListPlanneds())
