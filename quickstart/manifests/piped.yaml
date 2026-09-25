@@ -1,3 +1,5 @@
+Pulled: ghcr.io/pipe-cd/chart/piped:v0.58.0
+Digest: sha256:908ed9a06f531fc97eda097899cf18c91004c34439542ba1d5840f94557411db
 ---
 # Source: piped/templates/rbac.yaml
 apiVersion: v1
@@ -5,10 +7,10 @@ kind: ServiceAccount
 metadata:
   name: piped
   labels:
-    helm.sh/chart: piped-v0.56.0
+    helm.sh/chart: piped-v0.58.0
     app.kubernetes.io/name: piped
     app.kubernetes.io/instance: piped
-    app.kubernetes.io/version: "v0.56.0"
+    app.kubernetes.io/version: "v0.58.0"
     app.kubernetes.io/managed-by: Helm
 ---
 # Source: piped/templates/secret.yaml
@@ -17,13 +19,14 @@ kind: Secret
 metadata:
   name: piped
   labels:
-    helm.sh/chart: piped-v0.56.0
+    helm.sh/chart: piped-v0.58.0
     app.kubernetes.io/name: piped
     app.kubernetes.io/instance: piped
-    app.kubernetes.io/version: "v0.56.0"
+    app.kubernetes.io/version: "v0.58.0"
     app.kubernetes.io/managed-by: Helm
 type: Opaque
 data:
+
 ---
 # Source: piped/templates/configmap.yaml
 apiVersion: v1
@@ -31,10 +34,10 @@ kind: ConfigMap
 metadata:
   name: piped
   labels:
-    helm.sh/chart: piped-v0.56.0
+    helm.sh/chart: piped-v0.58.0
     app.kubernetes.io/name: piped
     app.kubernetes.io/instance: piped
-    app.kubernetes.io/version: "v0.56.0"
+    app.kubernetes.io/version: "v0.58.0"
     app.kubernetes.io/managed-by: Helm
 data:
   piped-config.yaml: |-
@@ -50,6 +53,7 @@ data:
         - repoId: examples
           remote: https://github.com/pipe-cd/examples.git
           branch: master
+
 ---
 # Source: piped/templates/rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -57,10 +61,10 @@ kind: ClusterRole
 metadata:
   name: piped
   labels:
-    helm.sh/chart: piped-v0.56.0
+    helm.sh/chart: piped-v0.58.0
     app.kubernetes.io/name: piped
     app.kubernetes.io/instance: piped
-    app.kubernetes.io/version: "v0.56.0"
+    app.kubernetes.io/version: "v0.58.0"
     app.kubernetes.io/managed-by: Helm
 rules:
   
@@ -74,6 +78,7 @@ rules:
     - '*'
     verbs:
     - '*'
+
 ---
 # Source: piped/templates/rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -81,10 +86,10 @@ kind: ClusterRoleBinding
 metadata:
   name: piped
   labels:
-    helm.sh/chart: piped-v0.56.0
+    helm.sh/chart: piped-v0.58.0
     app.kubernetes.io/name: piped
     app.kubernetes.io/instance: piped
-    app.kubernetes.io/version: "v0.56.0"
+    app.kubernetes.io/version: "v0.58.0"
     app.kubernetes.io/managed-by: Helm
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -101,10 +106,10 @@ kind: Service
 metadata:
   name: piped
   labels:
-    helm.sh/chart: piped-v0.56.0
+    helm.sh/chart: piped-v0.58.0
     app.kubernetes.io/name: piped
     app.kubernetes.io/instance: piped
-    app.kubernetes.io/version: "v0.56.0"
+    app.kubernetes.io/version: "v0.58.0"
     app.kubernetes.io/managed-by: Helm
 spec:
   type: ClusterIP
@@ -115,6 +120,7 @@ spec:
   selector:
     app.kubernetes.io/name: piped
     app.kubernetes.io/instance: piped
+
 ---
 # Source: piped/templates/deployment.yaml
 apiVersion: apps/v1
@@ -122,10 +128,10 @@ kind: Deployment
 metadata:
   name: piped
   labels:
-    helm.sh/chart: piped-v0.56.0
+    helm.sh/chart: piped-v0.58.0
     app.kubernetes.io/name: piped
     app.kubernetes.io/instance: piped
-    app.kubernetes.io/version: "v0.56.0"
+    app.kubernetes.io/version: "v0.58.0"
     app.kubernetes.io/managed-by: Helm
 spec:
   replicas: 1
@@ -142,13 +148,13 @@ spec:
         app.kubernetes.io/instance: piped
       annotations:
         sidecar.istio.io/inject: "false"
-        rollme: "CLXzm"
+        rollme: "k2Wed"
     spec:
       serviceAccountName: piped
       containers:
         - name: piped
           imagePullPolicy: IfNotPresent
-          image: "ghcr.io/pipe-cd/piped:v0.56.0"
+          image: "ghcr.io/pipe-cd/piped:v0.58.0"
           args:
             - piped
             - --config-file=/etc/piped-config/piped-config.yaml
