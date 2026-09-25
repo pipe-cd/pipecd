@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"maps"
 	"mime"
 	"net/http"
 	"net/url"
@@ -127,9 +128,7 @@ func (c *OAuthClient) GetUser(ctx context.Context) (*model.User, error) {
 			return nil, err
 		}
 
-		for k, v := range userInfoClaims {
-			claims[k] = v
-		}
+		maps.Copy(claims, userInfoClaims)
 	}
 
 	role, err := c.decideRole(claims, c.sharedSSOConfig.RolesClaimKey)

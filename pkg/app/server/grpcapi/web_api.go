@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -1264,10 +1265,8 @@ func validateApprover(stages []*model.PipelineStage, commander, stageID string) 
 		// Anyone can approve the deployment pipeline
 		return nil
 	}
-	for _, ap := range approvers {
-		if ap == commander {
-			return nil
-		}
+	if slices.Contains(approvers, commander) {
+		return nil
 	}
 	return status.Error(codes.PermissionDenied, fmt.Sprintf("You can't approve this deployment because you (%s) are not in the approver list: %v", commander, approvers))
 }
@@ -2019,7 +2018,7 @@ func (a *WebAPI) ListDeprecatedNotes(ctx context.Context, req *webservice.ListDe
 		return nil, status.Error(codes.Internal, "Failed to list released versions")
 	}
 
-	notes := ""
+	var notes strings.Builder
 	for _, release := range releases {
 		// Ignore pre-release tagged or draft release.
 		if *release.Prerelease || *release.Draft {
@@ -2036,10 +2035,10 @@ func (a *WebAPI) ListDeprecatedNotes(ctx context.Context, req *webservice.ListDe
 			continue
 		}
 
-		notes += fmt.Sprintf("## %s\n%s\n", *release.TagName, matches[1])
+		fmt.Fprintf(&notes, "## %s\n%s\n", *release.TagName, matches[1])
 	}
 
 	return &webservice.ListDeprecatedNotesResponse{
-		Notes: notes,
+		Notes: notes.String(),
 	}, nil
 }

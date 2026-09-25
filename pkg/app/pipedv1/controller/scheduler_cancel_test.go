@@ -183,7 +183,7 @@ func newCancelRaceDeployment() *model.Deployment {
 func TestSchedulerCancelWhileStageFinishes(t *testing.T) {
 	logger := zaptest.NewLogger(t)
 
-	for i := 0; i < 30; i++ {
+	for range 30 {
 		d := newCancelRaceDeployment()
 		p := &cancelRacePlugin{}
 

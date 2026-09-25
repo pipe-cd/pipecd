@@ -17,6 +17,7 @@ package datastore
 import (
 	"context"
 	"fmt"
+	"maps"
 	"strings"
 	"time"
 
@@ -276,11 +277,7 @@ func (s *deploymentStore) UpdatePluginMetadata(ctx context.Context, id string, p
 
 func mergeMetadata(ori map[string]string, new map[string]string) map[string]string {
 	out := make(map[string]string, len(ori)+len(new))
-	for k, v := range ori {
-		out[k] = v
-	}
-	for k, v := range new {
-		out[k] = v
-	}
+	maps.Copy(out, ori)
+	maps.Copy(out, new)
 	return out
 }

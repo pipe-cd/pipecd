@@ -73,7 +73,6 @@ func TestResourceMatcher(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
 		m := newResourceMatcher(tc.cfg)
 		for gvk, expected := range tc.gvks {
 			desc := fmt.Sprintf("%s: %v", tc.name, gvk)

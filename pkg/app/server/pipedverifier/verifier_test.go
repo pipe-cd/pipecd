@@ -60,8 +60,7 @@ func (g *fakePipedGetter) Get(_ context.Context, id string) (*model.Piped, error
 }
 
 func TestVerify(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	hashGenerator := func(k string) string {
 		h, err := bcrypt.GenerateFromPassword([]byte(k), bcrypt.DefaultCost)
