@@ -543,6 +543,29 @@ func TestGenericPostSyncConfiguration(t *testing.T) {
 	}
 }
 
+func TestGenericApplicationSpecValidatesEventWatcher(t *testing.T) {
+	t.Parallel()
+
+	spec := GenericApplicationSpec{
+		EventWatcher: []EventWatcherConfig{
+			{
+				Handler: EventWatcherHandler{
+					Config: EventWatcherHandlerConfig{
+						Replacements: []EventWatcherReplacement{
+							{
+								File:      "version.json",
+								JSONField: "$.image",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	assert.Error(t, spec.Validate())
+}
+
 func TestGetStageConfigByte(t *testing.T) {
 	testcases := []struct {
 		name   string
