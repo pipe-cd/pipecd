@@ -28,6 +28,115 @@ func TestParseIndexes(t *testing.T) {
 			QueryScope:      "COLLECTION",
 			Fields: []field{
 				{
+					FieldPath:   "ProjectId",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "PipedId",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Disabled",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+			},
+		},
+		{
+			CollectionGroup: "Application",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				{
+					FieldPath:   "ProjectId",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Disabled",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Name",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+			},
+		},
+		{
+			CollectionGroup: "Application",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				{
+					FieldPath:   "ProjectId",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Disabled",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Kind",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+			},
+		},
+		{
+			CollectionGroup: "Application",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				{
+					FieldPath:   "ProjectId",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Disabled",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Name",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Kind",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+			},
+		},
+		{
+			CollectionGroup: "Application",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				{
 					FieldPath:   "CreatedAt",
 					Order:       "ASCENDING",
 					ArrayConfig: "",
@@ -156,6 +265,27 @@ func TestParseIndexes(t *testing.T) {
 				{
 					FieldPath:   "UpdatedAt",
 					Order:       "DESCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+			},
+		},
+		{
+			CollectionGroup: "Application",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				{
+					FieldPath:   "ProjectId",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Disabled",
+					Order:       "ASCENDING",
 					ArrayConfig: "",
 				},
 				{
@@ -565,6 +695,53 @@ func TestParseIndexes(t *testing.T) {
 				{
 					FieldPath:   "CreatedAt",
 					Order:       "DESCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+			},
+		},
+		{
+			CollectionGroup: "Event",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				{
+					FieldPath:   "ProjectId",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "CreatedAt",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+			},
+		},
+		{
+			CollectionGroup: "Event",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				{
+					FieldPath:   "ProjectId",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Status",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "CreatedAt",
+					Order:       "ASCENDING",
 					ArrayConfig: "",
 				},
 				{
