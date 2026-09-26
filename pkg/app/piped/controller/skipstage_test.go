@@ -55,7 +55,6 @@ func TestSkipByCommitMessagePrefixes(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -139,7 +138,6 @@ func TestSkipByPathPattern(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			// We do not use t.Parallel() here due to https://pkg.go.dev/github.com/pipe-cd/pipecd/pkg/filematcher#PatternMatcher.Matches.
 			ctrl := gomock.NewController(t)

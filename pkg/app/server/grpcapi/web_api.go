@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -685,18 +686,21 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 		return nil, gRPCStoreError(err, "list applications")
 	}
 
-	if len(req.Options.Labels) == 0 {
-		return &webservice.ListApplicationsResponse{
-			Applications: apps,
-		}, nil
+	// Filter applications based on labels and deleted status.
+	// NOTE: Filtering is done application-side to avoid requiring new composite indexes.
+	var labels map[string]string
+	if o := req.Options; o != nil {
+		labels = o.Labels
 	}
-
-	// NOTE: Filtering by labels is done by the application-side because we need to create composite indexes for every combination in the filter.
 	filtered := make([]*model.Application, 0, len(apps))
-	for _, a := range apps {
-		if a.ContainLabels(req.Options.Labels) {
-			filtered = append(filtered, a)
+	for _, app := range apps {
+		if app.Deleted {
+			continue
 		}
+		if len(labels) > 0 && !app.ContainLabels(labels) {
+			continue
+		}
+		filtered = append(filtered, app)
 	}
 	return &webservice.ListApplicationsResponse{
 		Applications: filtered,
@@ -1261,10 +1265,8 @@ func validateApprover(stages []*model.PipelineStage, commander, stageID string) 
 		// Anyone can approve the deployment pipeline
 		return nil
 	}
-	for _, ap := range approvers {
-		if ap == commander {
-			return nil
-		}
+	if slices.Contains(approvers, commander) {
+		return nil
 	}
 	return status.Error(codes.PermissionDenied, fmt.Sprintf("You can't approve this deployment because you (%s) are not in the approver list: %v", commander, approvers))
 }
@@ -2016,7 +2018,7 @@ func (a *WebAPI) ListDeprecatedNotes(ctx context.Context, req *webservice.ListDe
 		return nil, status.Error(codes.Internal, "Failed to list released versions")
 	}
 
-	notes := ""
+	var notes strings.Builder
 	for _, release := range releases {
 		// Ignore pre-release tagged or draft release.
 		if *release.Prerelease || *release.Draft {
@@ -2033,10 +2035,10 @@ func (a *WebAPI) ListDeprecatedNotes(ctx context.Context, req *webservice.ListDe
 			continue
 		}
 
-		notes += fmt.Sprintf("## %s\n%s\n", *release.TagName, matches[1])
+		fmt.Fprintf(&notes, "## %s\n%s\n", *release.TagName, matches[1])
 	}
 
 	return &webservice.ListDeprecatedNotesResponse{
-		Notes: notes,
+		Notes: notes.String(),
 	}, nil
 }

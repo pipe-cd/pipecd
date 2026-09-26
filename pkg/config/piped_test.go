@@ -1618,7 +1618,6 @@ func TestPipeGitValidate(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.git.SSHKeyData, func(t *testing.T) {
 			t.Parallel()
 			err := tc.git.Validate()

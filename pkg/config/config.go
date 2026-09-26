@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 
 	"github.com/creasty/defaults"
@@ -157,9 +158,7 @@ func mergeRawMessages(a, b json.RawMessage) (json.RawMessage, error) {
 	}
 
 	// Merge mapB into mapA (mapB overwrites mapA)
-	for k, v := range mapB {
-		mapA[k] = v
-	}
+	maps.Copy(mapA, mapB)
 
 	// Marshal back to RawMessage
 	merged, err := json.Marshal(mapA)

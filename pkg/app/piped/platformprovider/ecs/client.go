@@ -416,8 +416,7 @@ func (c *client) ServiceExists(ctx context.Context, clusterName string, serviceN
 	}
 	output, err := c.ecsClient.DescribeServices(ctx, input)
 	if err != nil {
-		var nfe *types.ResourceNotFoundException
-		if errors.As(err, &nfe) {
+		if _, ok := errors.AsType[*types.ResourceNotFoundException](err); ok {
 			// Only in case ResourceNotFound error occurred, the FunctionName is available for create so do not raise error.
 			return false, nil
 		}
@@ -594,10 +593,7 @@ func (c *client) GetServices(ctx context.Context, clusterName string) ([]*types.
 	services := make([]*types.Service, 0, len(serviceArns))
 	// Split serviceArns into chunks of 10 to avoid the limitation in a single request of DescribeServices.
 	for i := 0; i < len(serviceArns); i += 10 {
-		end := i + 10
-		if end > len(serviceArns) {
-			end = len(serviceArns)
-		}
+		end := min(i+10, len(serviceArns))
 		describeIn := &ecs.DescribeServicesInput{
 			Cluster:  aws.String(clusterName),
 			Services: serviceArns[i:end],
@@ -631,10 +627,7 @@ func (c *client) GetTaskSetTasks(ctx context.Context, taskSet types.TaskSet) ([]
 	tasks := make([]*types.Task, 0, len(taskArns))
 	// Split taskArns into chunks of 100 to avoid the limitation in a single request of DescribeTasks.
 	for i := 0; i < len(taskArns); i += 100 {
-		end := i + 100
-		if end > len(taskArns) {
-			end = len(taskArns)
-		}
+		end := min(i+100, len(taskArns))
 
 		describeIn := &ecs.DescribeTasksInput{
 			Cluster: taskSet.ClusterArn,

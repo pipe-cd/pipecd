@@ -107,7 +107,7 @@ jobs:
         module: ${{ fromJSON(needs.list-go-modules.outputs.modules) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version: ${{ env.GO_VERSION }}
       - name: Install govulncheck
