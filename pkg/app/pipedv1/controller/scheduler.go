@@ -370,18 +370,42 @@ func (s *scheduler) Run(ctx context.Context) error {
 			<-doneCh
 
 		case cmd := <-s.cancelledCh:
+			// A nil command means the channel was closed after delivering
+			// a cancel command, so treat it as a cancellation as well.
 			if cmd != nil {
 				cancelCommand = cmd
 				cancelCommander = cmd.Commander
-				handler.Cancel()
-				<-doneCh
 			}
+			handler.Cancel()
+			<-doneCh
 
 		case <-timeout:
 			handler.Timeout()
 			<-doneCh
 
 		case <-doneCh:
+			break
+		}
+
+		// The select may have picked doneCh while a cancel command was already
+		// waiting, so check it before deciding to move on.
+		if cancelCommand == nil {
+			select {
+			case cmd := <-s.cancelledCh:
+				if cmd != nil {
+					cancelCommand = cmd
+					cancelCommander = cmd.Commander
+				}
+			default:
+			}
+		}
+
+		// A received cancel command wins even if the stage finished successfully,
+		// otherwise the loop would continue to the next stage after the user cancelled.
+		// Cancel stops progression, it does not rewrite an already-committed stage outcome.
+		if cancelCommand != nil && (result == model.StageStatus_STAGE_SUCCESS || result == model.StageStatus_STAGE_SKIPPED) {
+			deploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
+			statusReason = fmt.Sprintf("Cancelled by %s while executing stage %s", cancelCommander, ps.Id)
 			break
 		}
 
@@ -761,7 +785,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	defer func() {
 		switch status {
 		case model.DeploymentStatus_DEPLOYMENT_SUCCESS:
-			users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
+			users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED)
 			if err != nil {
 				s.logger.Error("failed to get the list of users", zap.Error(err))
 			}
@@ -775,7 +799,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 			})
 
 		case model.DeploymentStatus_DEPLOYMENT_FAILURE:
-			users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
+			users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_FAILED)
 			if err != nil {
 				s.logger.Error("failed to get the list of users", zap.Error(err))
 			}

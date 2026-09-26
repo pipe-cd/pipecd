@@ -49,8 +49,7 @@ func (f *fakeRedisHashCache) Put(k string, v interface{}) error {
 }
 
 func TestVerify(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	var id1 = "test-api-key"
 	key1, hash1, err := model.GenerateAPIKey(id1)

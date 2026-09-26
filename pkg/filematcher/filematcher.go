@@ -33,6 +33,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"text/scanner"
 )
@@ -118,12 +119,7 @@ func (pm *PatternMatcher) Matches(file string) bool {
 }
 
 func (pm *PatternMatcher) MatchesAny(files []string) bool {
-	for _, file := range files {
-		if pm.Matches(file) {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(files, pm.Matches)
 }
 
 func matches(file string, patterns []*Pattern) bool {

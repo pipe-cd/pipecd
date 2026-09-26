@@ -309,7 +309,7 @@ func runGitCommand(ctx context.Context, execPath, dir string, envs []string, arg
 //
 //nolint:unparam
 func retryCommand(retries int, interval time.Duration, logger *zap.Logger, commander func() ([]byte, error)) (out []byte, err error) {
-	for i := 0; i < retries; i++ {
+	for i := range retries {
 		out, err = commander()
 		if err == nil {
 			return

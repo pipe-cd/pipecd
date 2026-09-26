@@ -39,7 +39,7 @@ spec:
         - args:
             - hi
             - hello
-          image: gcr.io/pipecd/helloworld:v1.0.0
+          image: ghcr.io/pipe-cd/helloworld:v0.48.0
           name: helloworld
 ```
 

@@ -16,6 +16,7 @@ package metadatastore
 
 import (
 	"context"
+	"maps"
 	"sync"
 
 	"google.golang.org/grpc"
@@ -61,9 +62,7 @@ func newMetadataStore(apiClient apiClient, d *model.Deployment) *metadataStore {
 	}
 
 	// Initialize shared metadata of deployment.
-	for k, v := range d.GetMetadataV2().GetShared().GetKeyValues() {
-		s.shared[k] = v
-	}
+	maps.Copy(s.shared, d.GetMetadataV2().GetShared().GetKeyValues())
 
 	// Initialize metadata of plugins of the deployment.
 	for plugin, md := range d.GetMetadataV2().GetPlugins() {
@@ -103,12 +102,8 @@ func (s *metadataStore) pluginGet(pluginName, key string) (value string, found b
 func (s *metadataStore) pluginPutMulti(ctx context.Context, pluginName string, md map[string]string) error {
 	s.pluginsMu.Lock()
 	merged := make(map[string]string, len(md)+len(s.plugins[pluginName]))
-	for k, v := range s.plugins[pluginName] {
-		merged[k] = v
-	}
-	for k, v := range md {
-		merged[k] = v
-	}
+	maps.Copy(merged, s.plugins[pluginName])
+	maps.Copy(merged, md)
 	s.plugins[pluginName] = merged
 	s.pluginsMu.Unlock()
 
@@ -137,12 +132,8 @@ func (s *metadataStore) StageGet(stageID, key string) (value string, found bool)
 func (s *metadataStore) stagePutMulti(ctx context.Context, stageID string, md map[string]string) error {
 	s.stagesMu.Lock()
 	merged := make(map[string]string, len(md)+len(s.stages[stageID]))
-	for k, v := range s.stages[stageID] {
-		merged[k] = v
-	}
-	for k, v := range md {
-		merged[k] = v
-	}
+	maps.Copy(merged, s.stages[stageID])
+	maps.Copy(merged, md)
 	s.stages[stageID] = merged
 	s.stagesMu.Unlock()
 

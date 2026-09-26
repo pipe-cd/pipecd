@@ -110,11 +110,11 @@ func convertKeys(j json.RawMessage, convertFunc func(string) string) json.RawMes
 }
 
 func convertSnakeToCamel(key string) string {
-	var out string
+	var out strings.Builder
 	isToUpper := true
 	for _, v := range key {
 		if isToUpper {
-			out += strings.ToUpper(string(v))
+			out.WriteString(strings.ToUpper(string(v)))
 			isToUpper = false
 			continue
 		}
@@ -122,7 +122,7 @@ func convertSnakeToCamel(key string) string {
 			isToUpper = true
 			continue
 		}
-		out += string(v)
+		out.WriteString(string(v))
 	}
-	return out
+	return out.String()
 }
