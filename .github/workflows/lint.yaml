@@ -39,11 +39,16 @@ jobs:
         module: ${{ fromJSON(needs.list-go-modules.outputs.modules) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: false
       - name: golangci-lint
         uses: reviewdog/action-golangci-lint@c76cceaaab89abe74e649d2e34c6c9adc26662d2 #v2.10.0
         with:
           workdir: ${{ matrix.module }}
-          go_version_file: go.mod
+          go_version: ${{ steps.go.outputs.go-version }}
           golangci_lint_version: ${{ env.GOLANGCI_LINT_VERSION }}
           golangci_lint_flags: --config ${{ github.workspace }}/.golangci.yml
           fail_level: error
