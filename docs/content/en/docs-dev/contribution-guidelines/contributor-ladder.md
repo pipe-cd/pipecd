@@ -10,17 +10,17 @@ The **PipeCD Contributor Ladder** outlines how community members can engage with
 
 Every contribution makes a difference to PipeCD — whether fixing bugs, adding new features, improving documentation, assisting users in Slack, triaging issues, or enhancing test coverage.
 
+> **Note:** PR counts listed for each tier are minimums. Maintainers retain final judgment on tier progression and GitHub organization membership, based on overall contribution quality and community engagement.
+
 ---
 
 ## Ladder Tiers
 
-The contributor ladder defines progressive tiers based on engagement, sustained contribution, and community trust:
-
-| Tier | Prerequisites | Description & Responsibilities | Privileges |
-| :--- | :---: | :--- | :--- |
-| 🌱 **Newcomer** | 1 merged PR | First-time contributor getting familiar with the codebase, submission workflows, and community norms. | Recognized community member; welcome to join community meetings and CNCF Slack. |
-| 🛠️ **Contributor** | 2–4 merged PRs | Regular contributor actively submitting improvements, helping review issues, and participating in discussions. | Can be assigned issues directly; community peer recognition. |
-| 🚀 **Core Contributor** | 5+ merged PRs | Experienced, trusted contributor with a sustained track record of quality contributions across the project. | Eligible to apply for `pipe-cd` GitHub organization membership; eligible for subproject reviewer roles. |
+| Tier | Merged PRs (minimum) | Description |
+| :--- | :---: | :--- |
+| 🌱 **Newcomer** | 1 | First-time contributors who have had their first pull request merged. |
+| 🛠️ **Contributor** | 2–4 | Community members actively and regularly contributing to the project. |
+| 🚀 **Core Contributor** | 5+ | Established contributors with a sustained track record, eligible to apply for `pipe-cd` GitHub organization membership. |
 
 ---
 
@@ -28,16 +28,15 @@ The contributor ladder defines progressive tiers based on engagement, sustained 
 
 ### 🌱 Newcomer
 
-**Newcomers** are individuals who have taken their first step into contributing to PipeCD by getting their first pull request merged or actively assisting with community discussions.
+**Newcomers** are individuals who have taken their first step into contributing to PipeCD by getting their first pull request merged.
 
 - **Requirements:**
   - 1 merged pull request to any repository under the [`pipe-cd`](https://github.com/pipe-cd) organization.
   - Agreement to uphold the CNCF and PipeCD [Code of Conduct](https://github.com/pipe-cd/pipecd/blob/master/CODE_OF_CONDUCT.md).
 - **Responsibilities:**
-  - Adhere to the contribution guidelines, developer certificate of origin (DCO) sign-off, and PR submission templates.
-- **Privileges:**
-  - Welcomed into the PipeCD contributor community.
-  - Access to community Slack channels and bi-weekly community meetings.
+  - Adhere to the contribution guidelines, [DCO sign-off](https://github.com/pipe-cd/pipecd/blob/master/CONTRIBUTING.md), and PR submission templates.
+- **Recognition:**
+  - Listed on the PipeCD contributors roster as a recognized community member.
 
 ---
 
@@ -51,9 +50,9 @@ The contributor ladder defines progressive tiers based on engagement, sustained 
 - **Responsibilities:**
   - Submit well-tested pull requests that follow project code style and design patterns.
   - Participate in issue discussions and help clarify bugs or feature requests.
-- **Privileges:**
-  - Issue assignment upon request.
-  - Peer review participation on related pull requests.
+- **Recognition:**
+  - GitHub issues can be directly assigned to you upon request, so you can officially take ownership of work items.
+  - Peer acknowledgment within the community for sustained contributions.
 
 ---
 
@@ -63,29 +62,30 @@ The contributor ladder defines progressive tiers based on engagement, sustained 
 
 - **Requirements:**
   - At least 5 merged pull requests to repositories in the `pipe-cd` organization.
-  - Demonstrated understanding of PipeCD's core design (Control Plane, Piped agent, plugins).
-  - Attendance at one or more [PipeCD Community Meetings](https://zoom-lfx.platform.linuxfoundation.org/meeting/96831504919?password=2f60b8ec-5896-40c8-aa1d-d551ab339d00).
+  - Attended at least one [PipeCD Community Meeting](https://zoom-lfx.platform.linuxfoundation.org/meeting/96831504919?password=2f60b8ec-5896-40c8-aa1d-d551ab339d00).
+  - Demonstrated understanding of PipeCD's core design and contribution workflows.
 - **Responsibilities:**
   - Author and review substantial features, bug fixes, or architecture documentation.
   - Help guide and mentor newcomers and contributors in Slack and PR reviews.
   - Actively participate in project discussions and roadmap planning.
-- **Privileges:**
-  - Eligible to request official membership in the [`pipe-cd`](https://github.com/pipe-cd) GitHub organization.
-  - Organization member badge on GitHub.
-  - Pathway toward becoming an official Reviewer or Subproject Maintainer.
+- **Recognition:**
+  - Eligible to apply for `pipe-cd` GitHub organization membership (see below). Membership is granted at maintainer discretion and is not guaranteed solely based on PR count.
 
 ---
 
 ## GitHub Organization Membership
 
-Once a contributor reaches the **Core Contributor** tier, they are encouraged to apply for membership in the `pipe-cd` GitHub organization.
+Once a contributor reaches the **Core Contributor** tier, they are encouraged to apply for membership in the `pipe-cd` GitHub organization. Membership is helpful if you want to contribute over a long period or take responsibility for a feature.
+
+### Minimum Requirements (per [CONTRIBUTING.md](https://github.com/pipe-cd/pipecd/blob/master/CONTRIBUTING.md#join-our-team-on-github)):
+1. At least **5 merged PRs** in repositories under the `pipe-cd` organization.
+2. Attendance at at least one [PipeCD Community Meeting](https://zoom-lfx.platform.linuxfoundation.org/meeting/96831504919?password=2f60b8ec-5896-40c8-aa1d-d551ab339d00).
+
+> **Note:** These are minimum requirements. Maintainers will use their judgment to evaluate overall engagement, contribution quality, and community participation before granting membership.
 
 ### How to Apply:
-1. Verify that you meet the requirements:
-   - At least **5 merged PRs** in `pipe-cd` repositories.
-   - Attendance at least one community meeting.
-2. Open an issue or reach out to the project maintainers in the `#pipecd` channel on [CNCF Slack](https://slack.cncf.io/) or during a community meeting.
-3. Two existing maintainers will sponsor and approve the membership invitation.
+- Attend a community meeting and introduce yourself, **or**
+- Reach out in the `#pipecd` channel on [CNCF Slack](https://slack.cncf.io/).
 
 ---
 
