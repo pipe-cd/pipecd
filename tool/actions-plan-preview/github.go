@@ -19,6 +19,7 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"math"
 	"strings"
 
 	"github.com/google/go-github/v36/github"
@@ -179,6 +180,9 @@ var errNotFound = errors.New("not found")
 // find the latest plan preview comment in the specified issue
 // if there is no plan preview comment, return errNotFound err
 func findLatestPlanPreviewComment(ctx context.Context, client GraphQLClient, owner, repo string, prNumber int, key string) (*issueCommentQuery, error) {
+	if prNumber < 0 || prNumber > math.MaxInt32 {
+		return nil, fmt.Errorf("invalid pull request number: %d", prNumber)
+	}
 	variables := map[string]interface{}{
 		"repositoryOwner": githubv4.String(owner),
 		"repositoryName":  githubv4.String(repo),
