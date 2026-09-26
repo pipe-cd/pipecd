@@ -32,6 +32,7 @@ func TestProviderQueryPoints(t *testing.T) {
 	t.Parallel()
 
 	toInt64Pointer := func(i int64) *int64 { return &i }
+	toFloat64Pointer := func(f float64) *float64 { return &f }
 	type queryResponse struct {
 		res        datadog.MetricsQueryResponse
 		httpStatus int
@@ -76,12 +77,12 @@ func TestProviderQueryPoints(t *testing.T) {
 			name: "multiple data points given",
 			queryResponse: queryResponse{
 				res: datadog.MetricsQueryResponse{
-					Series: &[]datadog.MetricsQueryMetadata{
+					Series: []datadog.MetricsQueryMetadata{
 						{
 							Length: toInt64Pointer(2),
-							Pointlist: &[][]float64{
-								{1600000000, 0.1},
-								{1600000001, 0.2},
+							Pointlist: [][]*float64{
+								{toFloat64Pointer(1600000000), toFloat64Pointer(0.1)},
+								{toFloat64Pointer(1600000001), toFloat64Pointer(0.2)},
 							},
 						},
 					},
@@ -103,7 +104,7 @@ func TestProviderQueryPoints(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			provider := Provider{
 				client: datadog.NewAPIClient(datadog.NewConfiguration()),
-				runQuery: func(_ datadog.ApiQueryMetricsRequest) (datadog.MetricsQueryResponse, *http.Response, error) {
+				runQuery: func(_ context.Context, _, _ int64, _ string) (datadog.MetricsQueryResponse, *http.Response, error) {
 					return tc.queryResponse.res, &http.Response{StatusCode: tc.queryResponse.httpStatus, Request: &http.Request{}}, tc.queryResponse.err
 				},
 				timeout: defaultTimeout,

@@ -33,7 +33,7 @@ func TestNewProcessor(t *testing.T) {
 		},
 		{
 			name:    "invalid",
-			yml:     "::",
+			yml:     "foo: [bar",
 			wantErr: true,
 		},
 		{
@@ -190,7 +190,7 @@ func TestReplaceString(t *testing.T) {
 			yml:     "foo: bar",
 			path:    "$.foo",
 			value:   "",
-			want:    []byte("foo: \n"),
+			want:    []byte("foo:\n"),
 			wantErr: false,
 		},
 		{
