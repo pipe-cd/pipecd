@@ -2,6 +2,7 @@ import {
   Box,
   Collapse,
   IconButton,
+  Link,
   List,
   ListItemButton,
   Typography,
@@ -14,6 +15,7 @@ import { ArrowDropDown } from "@mui/icons-material";
 import DeploymentItem from "./deployment-item";
 import { Link as RouterLink } from "react-router-dom";
 import { PAGE_PATH_DEPLOYMENTS } from "~/constants/path";
+import { getSafeExternalUrl } from "~/utils/safe-url";
 
 type Props = {
   trace: ListDeploymentTracesResponse.DeploymentTraceRes.AsObject["trace"];
@@ -23,6 +25,7 @@ type Props = {
 const DeploymentTraceItem: FC<Props> = ({ trace, deploymentList }) => {
   const [visibleMessage, setVisibleMessage] = useState(false);
   const [visibleDeployments, setVisibleDeployments] = useState(false);
+  const commitUrl = getSafeExternalUrl(trace?.commitUrl);
 
   const onViewCommitMessage = (
     e: React.MouseEvent<HTMLButtonElement>
@@ -118,11 +121,17 @@ const DeploymentTraceItem: FC<Props> = ({ trace, deploymentList }) => {
                 display: "flex",
               }}
             >
-              <RouterLink to={trace?.commitUrl || "#"} target="_blank">
+              {commitUrl ? (
+                <Link href={commitUrl} target="_blank" rel="noreferrer">
+                  <Typography variant="body2" color="textSecondary">
+                    {trace?.commitHash}
+                  </Typography>
+                </Link>
+              ) : (
                 <Typography variant="body2" color="textSecondary">
                   {trace?.commitHash}
                 </Typography>
-              </RouterLink>
+              )}
             </Box>
           </Box>
 
