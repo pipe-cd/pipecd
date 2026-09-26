@@ -49,6 +49,13 @@ func (it *Iterator) Next(dst interface{}) error {
 	return doc.DataTo(dst)
 }
 
+// Close stops the underlying Firestore DocumentIterator, releasing its
+// resources. It is safe to call Close multiple times.
+func (it *Iterator) Close() error {
+	it.it.Stop()
+	return nil
+}
+
 // Cursor builds a base 64 string (encode from string in map[string]interface{} format).
 // The cursor contains only values attached with the fields used
 // as ordering fields.

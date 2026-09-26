@@ -94,6 +94,7 @@ func (s *applicationStore) List(ctx context.Context, opts ListOptions) ([]*model
 	if err != nil {
 		return nil, "", err
 	}
+	defer it.Close()
 	apps := make([]*model.Application, 0)
 	for {
 		var app model.Application
