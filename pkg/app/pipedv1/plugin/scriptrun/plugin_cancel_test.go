@@ -58,7 +58,7 @@ func TestExecuteCommandKillsProcessGroupOnCancel(t *testing.T) {
 
 	script := fmt.Sprintf(`
 trap '' TERM
-( trap '' TERM; echo $$ > %q; while true; do sleep 0.05; done ) &
+sh -c 'trap "" TERM; echo $$ > %q; while true; do sleep 0.05; done' &
 while true; do sleep 0.05; done
 `, pidFile)
 
