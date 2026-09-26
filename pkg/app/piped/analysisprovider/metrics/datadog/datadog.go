@@ -35,7 +35,7 @@ const (
 // Provider works as an HTTP client for datadog.
 type Provider struct {
 	client   *datadog.APIClient
-	runQuery func(request datadog.ApiQueryMetricsRequest) (datadog.MetricsQueryResponse, *http.Response, error)
+	runQuery func(ctx context.Context, from, to int64, query string) (datadog.MetricsQueryResponse, *http.Response, error)
 
 	address        string
 	apiKey         string
@@ -52,11 +52,10 @@ func NewProvider(apiKey, applicationKey string, opts ...Option) (*Provider, erro
 		return nil, fmt.Errorf("application-key is required")
 	}
 
+	client := datadog.NewAPIClient(datadog.NewConfiguration())
 	p := &Provider{
-		client: datadog.NewAPIClient(datadog.NewConfiguration()),
-		runQuery: func(request datadog.ApiQueryMetricsRequest) (datadog.MetricsQueryResponse, *http.Response, error) {
-			return request.Execute()
-		},
+		client:         client,
+		runQuery:       client.MetricsApi.QueryMetrics,
 		address:        defaultAddress,
 		apiKey:         apiKey,
 		applicationKey: applicationKey,
@@ -118,11 +117,7 @@ func (p *Provider) QueryPoints(ctx context.Context, query string, queryRange met
 		},
 	)
 
-	req := p.client.MetricsApi.QueryMetrics(ctx).
-		From(queryRange.From.Unix()).
-		To(queryRange.To.Unix()).
-		Query(query)
-	resp, httpResp, err := p.runQuery(req)
+	resp, httpResp, err := p.runQuery(ctx, queryRange.From.Unix(), queryRange.To.Unix(), query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to call \"MetricsApi.QueryMetrics\": %w", err)
 	}
@@ -132,23 +127,23 @@ func (p *Provider) QueryPoints(ctx context.Context, query string, queryRange met
 
 	// Collect data points given by the provider.
 	var size int
-	for _, s := range *resp.Series {
-		size += int(*s.Length)
+	for _, s := range resp.Series {
+		size += int(s.GetLength())
 	}
 	out := make([]metrics.DataPoint, 0, size)
-	for _, s := range *resp.Series {
+	for _, s := range resp.Series {
 		points := s.Pointlist
-		if points == nil || len(*points) == 0 {
+		if len(points) == 0 {
 			return nil, fmt.Errorf("invalid response: no data points found within the queried range: %w", metrics.ErrNoDataFound)
 		}
-		for _, point := range *points {
-			if len(point) < 2 {
+		for _, point := range points {
+			if len(point) < 2 || point[0] == nil || point[1] == nil {
 				return nil, fmt.Errorf("invalid response: invalid data point found")
 			}
 			// NOTE: A data point is assumed to be kind of like [unix-time, value].
 			out = append(out, metrics.DataPoint{
-				Timestamp: int64(point[0]),
-				Value:     point[1],
+				Timestamp: int64(*point[0]),
+				Value:     *point[1],
 			})
 		}
 	}
