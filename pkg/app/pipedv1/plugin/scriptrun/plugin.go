@@ -160,7 +160,7 @@ func (p *plugin) FetchDefinedStages() []string {
 }
 func executeCommand(commands string, customEnv map[string]string, request sdk.ExecuteStageRequest[struct{}], lp sdk.StageLogPersister) sdk.StageStatus {
 	lp.Infof("Running commands...")
-	for _, v := range strings.Split(commands, "\n") {
+	for v := range strings.SplitSeq(commands, "\n") {
 		if v != "" {
 			lp.Infof("   %s", v)
 		}

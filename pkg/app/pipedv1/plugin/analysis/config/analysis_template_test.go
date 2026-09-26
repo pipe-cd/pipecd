@@ -28,7 +28,7 @@ func TestLoadAnalysisTemplate(t *testing.T) {
 	testcases := []struct {
 		name            string
 		sharedConfigDir string
-		expectedSpec    interface{}
+		expectedSpec    any
 		expectedError   error
 	}{
 		{

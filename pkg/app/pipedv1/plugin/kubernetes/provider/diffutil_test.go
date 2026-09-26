@@ -25,162 +25,162 @@ func TestRemoveMapFields(t *testing.T) {
 
 	testcases := []struct {
 		name     string
-		config   map[string]interface{}
-		live     map[string]interface{}
-		expected map[string]interface{}
+		config   map[string]any
+		live     map[string]any
+		expected map[string]any
 	}{
 		{
 			name:     "Empty map",
-			config:   make(map[string]interface{}, 0),
-			live:     make(map[string]interface{}, 0),
-			expected: make(map[string]interface{}, 0),
+			config:   make(map[string]any, 0),
+			live:     make(map[string]any, 0),
+			expected: make(map[string]any, 0),
 		},
 		{
 			name: "Not nested 1",
-			config: map[string]interface{}{
+			config: map[string]any{
 				"key a": "value a",
 			},
-			live: map[string]interface{}{
+			live: map[string]any{
 				"key a": "value a",
 				"key b": "value b",
 			},
-			expected: map[string]interface{}{
+			expected: map[string]any{
 				"key a": "value a",
 			},
 		},
 		{
 			name: "Not nested 2",
-			config: map[string]interface{}{
+			config: map[string]any{
 				"key a": "value a",
 				"key b": "value b",
 			},
-			live: map[string]interface{}{
+			live: map[string]any{
 				"key a": "value a",
 			},
-			expected: map[string]interface{}{
+			expected: map[string]any{
 				"key a": "value a",
 			},
 		},
 		{
 			name: "Nested live deleted",
-			config: map[string]interface{}{
+			config: map[string]any{
 				"key a": "value a",
 			},
-			live: map[string]interface{}{
+			live: map[string]any{
 				"key a": "value a",
-				"key b": map[string]interface{}{
+				"key b": map[string]any{
 					"nested key a": "nested value a",
 				},
 			},
-			expected: map[string]interface{}{
+			expected: map[string]any{
 				"key a": "value a",
 			},
 		},
 		{
 			name: "Nested same",
-			config: map[string]interface{}{
+			config: map[string]any{
 				"key a": "value a",
-				"key b": map[string]interface{}{
+				"key b": map[string]any{
 					"nested key a": "nested value a",
 				},
 			},
-			live: map[string]interface{}{
+			live: map[string]any{
 				"key a": "value a",
-				"key b": map[string]interface{}{
+				"key b": map[string]any{
 					"nested key a": "nested value a",
 				},
 			},
-			expected: map[string]interface{}{
+			expected: map[string]any{
 				"key a": "value a",
-				"key b": map[string]interface{}{
+				"key b": map[string]any{
 					"nested key a": "nested value a",
 				},
 			},
 		},
 		{
 			name: "Nested nested live deleted",
-			config: map[string]interface{}{
+			config: map[string]any{
 				"key a": "value a",
-				"key b": map[string]interface{}{
+				"key b": map[string]any{
 					"nested key a": "nested value a",
 				},
 			},
-			live: map[string]interface{}{
+			live: map[string]any{
 				"key a": "value a",
-				"key b": map[string]interface{}{
+				"key b": map[string]any{
 					"nested key a": "nested value a",
 					"nested key b": "nested value b",
 				},
 			},
-			expected: map[string]interface{}{
+			expected: map[string]any{
 				"key a": "value a",
-				"key b": map[string]interface{}{
+				"key b": map[string]any{
 					"nested key a": "nested value a",
 				},
 			},
 		},
 		{
 			name: "Nested array",
-			config: map[string]interface{}{
+			config: map[string]any{
 				"key a": "value a",
-				"key b": []interface{}{
+				"key b": []any{
 					"a", "b", 3,
 				},
 			},
-			live: map[string]interface{}{
+			live: map[string]any{
 				"key a": "value a",
-				"key b": []interface{}{
+				"key b": []any{
 					"a", "b", 3,
 				},
 			},
-			expected: map[string]interface{}{
+			expected: map[string]any{
 				"key a": "value a",
-				"key b": []interface{}{
+				"key b": []any{
 					"a", "b", 3,
 				},
 			},
 		},
 		{
 			name: "Nested array 2",
-			config: map[string]interface{}{
+			config: map[string]any{
 				"key a": "value a",
-				"key b": []interface{}{
+				"key b": []any{
 					"a", "b", 3, 4,
 				},
 			},
-			live: map[string]interface{}{
+			live: map[string]any{
 				"key a": "value a",
-				"key b": []interface{}{
+				"key b": []any{
 					"a", "b", 3,
 				},
 			},
-			expected: map[string]interface{}{
+			expected: map[string]any{
 				"key a": "value a",
-				"key b": []interface{}{
+				"key b": []any{
 					"a", "b", 3,
 				},
 			},
 		},
 		{
 			name: "Nested array remain",
-			config: map[string]interface{}{
+			config: map[string]any{
 				"key a": "value a",
-				"key b": []interface{}{
+				"key b": []any{
 					"a", "b",
 				},
 			},
-			live: map[string]interface{}{
+			live: map[string]any{
 				"key a": "value a",
-				"key b": []interface{}{
-					"a", "b", map[string]interface{}{
+				"key b": []any{
+					"a", "b", map[string]any{
 						"aa": "aa",
 					},
 				},
 			},
-			expected: map[string]interface{}{
+			expected: map[string]any{
 				"key a": "value a",
-				"key b": []interface{}{
-					"a", "b", map[string]interface{}{
+				"key b": []any{
+					"a", "b", map[string]any{
 						"aa": "aa",
 					},
 				},
@@ -188,21 +188,21 @@ func TestRemoveMapFields(t *testing.T) {
 		},
 		{
 			name: "Nested array same",
-			config: map[string]interface{}{
+			config: map[string]any{
 				"key a": "value a",
-				"key b": []interface{}{
+				"key b": []any{
 					"a", "b", 3,
 				},
 			},
-			live: map[string]interface{}{
+			live: map[string]any{
 				"key a": "value a",
-				"key b": []interface{}{
+				"key b": []any{
 					"b", "a", 3,
 				},
 			},
-			expected: map[string]interface{}{
+			expected: map[string]any{
 				"key a": "value a",
-				"key b": []interface{}{
+				"key b": []any{
 					"b", "a", 3,
 				},
 			},
