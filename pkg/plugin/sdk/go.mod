@@ -2,6 +2,8 @@ module github.com/pipe-cd/piped-plugin-sdk-go
 
 go 1.26.2
 
+toolchain go1.27.1
+
 require (
 	github.com/pipe-cd/pipecd v0.57.0
 	github.com/spf13/cobra v1.9.1

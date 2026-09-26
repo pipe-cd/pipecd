@@ -2,6 +2,8 @@ module github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes
 
 go 1.26.2
 
+toolchain go1.27.1
+
 require (
 	github.com/creasty/defaults v1.8.0
 	github.com/goccy/go-yaml v1.19.2

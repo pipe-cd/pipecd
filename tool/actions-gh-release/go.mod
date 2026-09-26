@@ -2,6 +2,8 @@ module github.com/pipe-cd/actions-gh-release
 
 go 1.26.2
 
+toolchain go1.27.1
+
 require (
 	github.com/creasty/defaults v1.5.2
 	github.com/google/go-github/v39 v39.2.0
