@@ -25,7 +25,7 @@ type Signer interface {
 }
 
 type signer struct {
-	key    interface{}
+	key    any
 	method jwtgo.SigningMethod
 }
 

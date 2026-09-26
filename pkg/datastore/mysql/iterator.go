@@ -24,7 +24,7 @@ import (
 )
 
 type dataConverter interface {
-	Data() map[string]interface{}
+	Data() map[string]any
 }
 
 // Iterator for MySQL result set
@@ -35,7 +35,7 @@ type Iterator struct {
 }
 
 // Next implementation for MySQL Iterator
-func (it *Iterator) Next(dst interface{}) error {
+func (it *Iterator) Next(dst any) error {
 	if !it.rows.Next() {
 		return datastore.ErrIteratorDone
 	}
@@ -61,7 +61,7 @@ func (it *Iterator) Cursor() (string, error) {
 
 	lastObjData := it.last.Data()
 
-	cursor := make(map[string]interface{}, len(it.orders))
+	cursor := make(map[string]any, len(it.orders))
 	for _, o := range it.orders {
 		val, ok := lastObjData[o.Field]
 		if !ok {
@@ -80,9 +80,9 @@ type rowDataConverter struct {
 }
 
 // Data make JSON object with key in CamelCase format.
-func (r *rowDataConverter) Data() map[string]interface{} {
+func (r *rowDataConverter) Data() map[string]any {
 	jsonRaw := convertKeys(json.RawMessage(r.val), convertSnakeToCamel)
-	obj := make(map[string]interface{})
+	obj := make(map[string]any)
 	json.Unmarshal(jsonRaw, &obj)
 	return obj
 }

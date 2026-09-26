@@ -111,9 +111,9 @@ func DiffUnstructureds(x, y unstructured.Unstructured, key string, opts ...Optio
 
 // DiffStructureds calulates the diff between non-k8s manifests.
 // If you compare k8s manifests, use DiffUnstructureds instead.
-func DiffStructureds(x, y interface{}, opts ...Option) (*Result, error) {
-	mapX := map[string]interface{}{}
-	mapY := map[string]interface{}{}
+func DiffStructureds(x, y any, opts ...Option) (*Result, error) {
+	mapX := map[string]any{}
+	mapY := map[string]any{}
 	ymlX, err := yaml.Marshal(x)
 	if err != nil {
 		return nil, err

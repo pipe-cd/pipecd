@@ -29,7 +29,7 @@ func NewCache() *Cache {
 	return &Cache{}
 }
 
-func (c *Cache) Get(key string) (interface{}, error) {
+func (c *Cache) Get(key string) (any, error) {
 	item, ok := c.values.Load(key)
 	if !ok {
 		cachemetrics.IncGetOperationCounter(
@@ -45,7 +45,7 @@ func (c *Cache) Get(key string) (interface{}, error) {
 	return item, nil
 }
 
-func (c *Cache) Put(key string, value interface{}) error {
+func (c *Cache) Put(key string, value any) error {
 	c.values.Store(key, value)
 	return nil
 }
@@ -55,6 +55,6 @@ func (c *Cache) Delete(key string) error {
 	return nil
 }
 
-func (c *Cache) GetAll() (map[string]interface{}, error) {
+func (c *Cache) GetAll() (map[string]any, error) {
 	return nil, cache.ErrUnimplemented
 }

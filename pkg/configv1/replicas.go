@@ -51,7 +51,7 @@ func (r Replicas) MarshalJSON() ([]byte, error) {
 }
 
 func (r *Replicas) UnmarshalJSON(b []byte) error {
-	var v interface{}
+	var v any
 	if err := json.Unmarshal(b, &v); err != nil {
 		return err
 	}

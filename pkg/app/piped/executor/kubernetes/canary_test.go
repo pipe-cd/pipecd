@@ -162,12 +162,12 @@ func TestEnsureCanaryRollout(t *testing.T) {
 							APIVersion: "apps/v1",
 							Kind:       provider.KindDeployment,
 						}, &unstructured.Unstructured{
-							Object: map[string]interface{}{
+							Object: map[string]any{
 								"apiVersion": "apps/v1",
 								"kind":       "Deployment",
-								"spec": map[string]interface{}{
-									"selector": map[string]interface{}{
-										"matchLabels": map[string]interface{}{"app": "foo"},
+								"spec": map[string]any{
+									"selector": map[string]any{
+										"matchLabels": map[string]any{"app": "foo"},
 									},
 								},
 							},
@@ -217,12 +217,12 @@ func TestEnsureCanaryRollout(t *testing.T) {
 							APIVersion: "apps/v1",
 							Kind:       provider.KindDeployment,
 						}, &unstructured.Unstructured{
-							Object: map[string]interface{}{
+							Object: map[string]any{
 								"apiVersion": "apps/v1",
 								"kind":       "Deployment",
-								"spec": map[string]interface{}{
-									"selector": map[string]interface{}{
-										"matchLabels": map[string]interface{}{"app": "foo"},
+								"spec": map[string]any{
+									"selector": map[string]any{
+										"matchLabels": map[string]any{"app": "foo"},
 									},
 								},
 							},

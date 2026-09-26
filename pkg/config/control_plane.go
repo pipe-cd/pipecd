@@ -72,7 +72,7 @@ type SharedSSOConfig struct {
 }
 
 func (s *SharedSSOConfig) UnmarshalJSON(data []byte) error {
-	m := make(map[string]interface{})
+	m := make(map[string]any)
 	if err := json.Unmarshal(data, &m); err != nil {
 		return err
 	}

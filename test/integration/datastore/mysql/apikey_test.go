@@ -212,7 +212,7 @@ func TestCreateAPIKey(t *testing.T) {
 func TestUpdateAPIKey(t *testing.T) {
 	col := &collection{
 		kind: "APIKey",
-		factory: func() interface{} {
+		factory: func() any {
 			return &model.APIKey{}
 		},
 	}
@@ -236,7 +236,7 @@ func TestUpdateAPIKey(t *testing.T) {
 	testcases := []struct {
 		name    string
 		id      string
-		updater func(interface{}) error
+		updater func(any) error
 		wantErr error
 	}{
 		{
@@ -247,7 +247,7 @@ func TestUpdateAPIKey(t *testing.T) {
 		{
 			name: "unable to update",
 			id:   "update-id",
-			updater: func(interface{}) error {
+			updater: func(any) error {
 				return fmt.Errorf("error")
 			},
 			wantErr: fmt.Errorf("error"),
@@ -255,7 +255,7 @@ func TestUpdateAPIKey(t *testing.T) {
 		{
 			name: "successful update",
 			id:   "update-id",
-			updater: func(e interface{}) error {
+			updater: func(e any) error {
 				v := e.(*model.APIKey)
 				v.Name = "new-name"
 				return nil

@@ -207,7 +207,7 @@ func TestCreateCommand(t *testing.T) {
 func TestUpdateCommand(t *testing.T) {
 	col := &collection{
 		kind: "Command",
-		factory: func() interface{} {
+		factory: func() any {
 			return &model.Command{}
 		},
 	}
@@ -229,7 +229,7 @@ func TestUpdateCommand(t *testing.T) {
 	testcases := []struct {
 		name    string
 		id      string
-		updater func(interface{}) error
+		updater func(any) error
 		wantErr error
 	}{
 		{
@@ -240,7 +240,7 @@ func TestUpdateCommand(t *testing.T) {
 		{
 			name: "unable to update",
 			id:   "update-id",
-			updater: func(interface{}) error {
+			updater: func(any) error {
 				return fmt.Errorf("error")
 			},
 			wantErr: fmt.Errorf("error"),
@@ -248,7 +248,7 @@ func TestUpdateCommand(t *testing.T) {
 		{
 			name: "successful update",
 			id:   "update-id",
-			updater: func(e interface{}) error {
+			updater: func(e any) error {
 				v := e.(*model.Command)
 				v.Status = model.CommandStatus_COMMAND_SUCCEEDED
 				return nil

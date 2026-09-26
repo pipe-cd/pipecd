@@ -31,7 +31,7 @@ type apiKeyGetter interface {
 }
 
 type apiKeyLastUsedPutter interface {
-	Put(k string, v interface{}) error
+	Put(k string, v any) error
 }
 
 type Verifier struct {

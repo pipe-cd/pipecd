@@ -32,7 +32,7 @@ type requestValidator interface {
 // An InvalidArgument with the detail message will be returned to client if
 // the validation was not passed.
 func RequestValidationUnaryServerInterceptor() grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		if v, ok := req.(requestValidator); ok {
 			if err := v.Validate(); err != nil {
 				return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid request: %v", err))

@@ -270,7 +270,7 @@ func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskD
 	}
 
 	retry := backoff.NewRetry(retryTaskSetStable, backoff.NewConstant(retryTaskSetStableInterval))
-	_, err = retry.Do(ctx, func() (interface{}, error) {
+	_, err = retry.Do(ctx, func() (any, error) {
 		output, err := c.ecsClient.DescribeTaskSets(ctx, waitInput)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get ECS task set %s: %w", *taskDefinition.TaskDefinitionArn, err)
@@ -355,7 +355,7 @@ func (c *client) WaitServiceStable(ctx context.Context, service types.Service) e
 	}
 
 	retry := backoff.NewRetry(retryServiceStable, backoff.NewConstant(retryServiceStableInterval))
-	_, err := retry.Do(ctx, func() (interface{}, error) {
+	_, err := retry.Do(ctx, func() (any, error) {
 		output, err := c.ecsClient.DescribeServices(ctx, input)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get service %s: %w", *service.ServiceName, err)

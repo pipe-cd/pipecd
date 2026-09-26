@@ -91,7 +91,7 @@ func TestPipedTokenUnaryServerInterceptor(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := in(tc.ctx, nil, nil, func(ctx context.Context, req interface{}) (interface{}, error) {
+			_, err := in(tc.ctx, nil, nil, func(ctx context.Context, req any) (any, error) {
 				_, _, pipedKey, err := ExtractPipedToken(ctx)
 				if err != nil {
 					return nil, err
@@ -152,7 +152,7 @@ func TestPipedTokenStreamServerInterceptor(t *testing.T) {
 			stream := &fakeServerStream{
 				ctx: tc.ctx,
 			}
-			err := in(nil, stream, nil, func(srv interface{}, stream grpc.ServerStream) error {
+			err := in(nil, stream, nil, func(srv any, stream grpc.ServerStream) error {
 				ctx := stream.Context()
 				_, _, pipedKey, err := ExtractPipedToken(ctx)
 				if err != nil {
@@ -218,7 +218,7 @@ func TestAPIKeyUnaryServerInterceptor(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := in(tc.ctx, nil, nil, func(ctx context.Context, req interface{}) (interface{}, error) {
+			_, err := in(tc.ctx, nil, nil, func(ctx context.Context, req any) (any, error) {
 				apiKey, err := ExtractAPIKey(ctx)
 				if err != nil {
 					return nil, err

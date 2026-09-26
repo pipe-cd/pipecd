@@ -584,7 +584,7 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, out *plannerOutpu
 		DeploymentChainBlockIndex: p.deployment.DeploymentChainBlockIndex,
 	}
 
-	_, err = pipedservice.NewRetry(10).Do(ctx, func() (interface{}, error) {
+	_, err = pipedservice.NewRetry(10).Do(ctx, func() (any, error) {
 		_, err := p.apiClient.ReportDeploymentPlanned(ctx, req)
 		if err != nil {
 			return nil, fmt.Errorf("failed to report deployment status to control-plane: %w", err)
@@ -625,7 +625,7 @@ func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) err
 		CompletedAt:               p.nowFunc().Unix(),
 	}
 
-	_, err = pipedservice.NewRetry(10).Do(ctx, func() (interface{}, error) {
+	_, err = pipedservice.NewRetry(10).Do(ctx, func() (any, error) {
 		_, err := p.apiClient.ReportDeploymentCompleted(ctx, req)
 		if err != nil {
 			return nil, fmt.Errorf("failed to report deployment status to control-plane: %w", err)
@@ -667,7 +667,7 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 		CompletedAt:               p.nowFunc().Unix(),
 	}
 
-	_, err = pipedservice.NewRetry(10).Do(ctx, func() (interface{}, error) {
+	_, err = pipedservice.NewRetry(10).Do(ctx, func() (any, error) {
 		_, err := p.apiClient.ReportDeploymentCompleted(ctx, req)
 		if err != nil {
 			return nil, fmt.Errorf("failed to report deployment status to control-plane: %w", err)

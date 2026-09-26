@@ -28,7 +28,7 @@ func TestParseFunctionManifest(t *testing.T) {
 	testcases := []struct {
 		name     string
 		data     string
-		wantSpec interface{}
+		wantSpec any
 		wantErr  bool
 	}{
 		{

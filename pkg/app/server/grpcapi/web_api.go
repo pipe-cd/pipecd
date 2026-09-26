@@ -116,7 +116,7 @@ type webAPIAPIKeyStore interface {
 }
 
 type webAPIAPIKeyLastUsedStore interface {
-	Get(k string) (interface{}, error)
+	Get(k string) (any, error)
 }
 
 // WebAPI implements the behaviors for the gRPC definitions of WebAPI.

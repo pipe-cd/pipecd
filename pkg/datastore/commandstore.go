@@ -29,7 +29,7 @@ func (c *commandCollection) Kind() string {
 }
 
 func (c *commandCollection) Factory() Factory {
-	return func() interface{} {
+	return func() any {
 		return &model.Command{}
 	}
 }
@@ -100,7 +100,7 @@ func (s *commandStore) List(ctx context.Context, opts ListOptions) ([]*model.Com
 
 func (s *commandStore) update(ctx context.Context, id string, updater func(piped *model.Command) error) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
+	return s.ds.Update(ctx, s.col, id, func(e any) error {
 		p := e.(*model.Command)
 		if err := updater(p); err != nil {
 			return err
