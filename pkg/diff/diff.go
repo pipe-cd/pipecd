@@ -111,9 +111,9 @@ func DiffUnstructureds(x, y unstructured.Unstructured, key string, opts ...Optio
 
 // DiffStructureds calulates the diff between non-k8s manifests.
 // If you compare k8s manifests, use DiffUnstructureds instead.
-func DiffStructureds(x, y interface{}, opts ...Option) (*Result, error) {
-	mapX := map[string]interface{}{}
-	mapY := map[string]interface{}{}
+func DiffStructureds(x, y any, opts ...Option) (*Result, error) {
+	mapX := map[string]any{}
+	mapY := map[string]any{}
 	ymlX, err := yaml.Marshal(x)
 	if err != nil {
 		return nil, err
@@ -334,7 +334,16 @@ func (d *differ) diffNumber(path []PathStep, vx, vy reflect.Value) error {
 
 // isEmptyInterface reports whether v is nil or zero value or its element is an empty map, an empty slice.
 func isEmptyInterface(v reflect.Value) bool {
-	if !v.IsValid() || v.IsNil() || v.IsZero() {
+	if !v.IsValid() {
+		return true
+	}
+	switch v.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Map, reflect.Pointer, reflect.UnsafePointer, reflect.Interface, reflect.Slice:
+		if v.IsNil() {
+			return true
+		}
+	}
+	if v.IsZero() {
 		return true
 	}
 	if v.Kind() != reflect.Interface {

@@ -24,7 +24,7 @@ import (
 )
 
 type entry struct {
-	value      interface{}
+	value      any
 	expiration time.Time
 }
 
@@ -59,7 +59,7 @@ func (c *TTLCache) startEvicter(interval time.Duration) {
 }
 
 func (c *TTLCache) evictExpired(t time.Time) {
-	c.entries.Range(func(key interface{}, value interface{}) bool {
+	c.entries.Range(func(key any, value any) bool {
 		e := value.(*entry)
 		if e.expiration.Before(t) {
 			c.entries.Delete(key)
@@ -68,7 +68,7 @@ func (c *TTLCache) evictExpired(t time.Time) {
 	})
 }
 
-func (c *TTLCache) Get(key string) (interface{}, error) {
+func (c *TTLCache) Get(key string) (any, error) {
 	item, ok := c.entries.Load(key)
 	if !ok {
 		cachemetrics.IncGetOperationCounter(
@@ -84,7 +84,7 @@ func (c *TTLCache) Get(key string) (interface{}, error) {
 	return item.(*entry).value, nil
 }
 
-func (c *TTLCache) Put(key string, value interface{}) error {
+func (c *TTLCache) Put(key string, value any) error {
 	e := &entry{
 		value:      value,
 		expiration: time.Now().Add(c.ttl),
@@ -98,6 +98,6 @@ func (c *TTLCache) Delete(key string) error {
 	return nil
 }
 
-func (c *TTLCache) GetAll() (map[string]interface{}, error) {
+func (c *TTLCache) GetAll() (map[string]any, error) {
 	return nil, cache.ErrUnimplemented
 }

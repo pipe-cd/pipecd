@@ -16,7 +16,7 @@ package model
 
 type NotificationEvent struct {
 	Type     NotificationEventType
-	Metadata interface{}
+	Metadata any
 }
 
 func (e NotificationEvent) Group() NotificationEventGroup {

@@ -348,7 +348,7 @@ func TestGenericTriggerConfiguration(t *testing.T) {
 		fileName           string
 		expectedKind       Kind
 		expectedAPIVersion string
-		expectedSpec       interface{}
+		expectedSpec       any
 		expectedError      error
 	}{
 		{
@@ -398,7 +398,7 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 		fileName           string
 		expectedKind       Kind
 		expectedAPIVersion string
-		expectedSpec       interface{}
+		expectedSpec       any
 		expectedError      error
 	}{
 		{
@@ -486,7 +486,7 @@ func TestGenericPostSyncConfiguration(t *testing.T) {
 		fileName           string
 		expectedKind       Kind
 		expectedAPIVersion string
-		expectedSpec       interface{}
+		expectedSpec       any
 		expectedError      error
 	}{
 		{
