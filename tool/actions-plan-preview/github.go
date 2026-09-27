@@ -50,8 +50,8 @@ type PullRequestsService interface {
 }
 
 type GraphQLClient interface {
-	Query(ctx context.Context, q interface{}, variables map[string]interface{}) error
-	Mutate(ctx context.Context, m interface{}, input githubv4.Input, variables map[string]interface{}) error
+	Query(ctx context.Context, q any, variables map[string]any) error
+	Mutate(ctx context.Context, m any, input githubv4.Input, variables map[string]any) error
 }
 
 // parsePullRequestEvent uses the given environment variables
@@ -183,7 +183,7 @@ func findLatestPlanPreviewComment(ctx context.Context, client GraphQLClient, own
 	if prNumber < 0 || prNumber > math.MaxInt32 {
 		return nil, fmt.Errorf("invalid pull request number: %d", prNumber)
 	}
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"repositoryOwner": githubv4.String(owner),
 		"repositoryName":  githubv4.String(repo),
 		"prNumber":        githubv4.Int(prNumber),

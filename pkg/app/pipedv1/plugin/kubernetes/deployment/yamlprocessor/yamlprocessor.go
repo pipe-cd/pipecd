@@ -49,7 +49,7 @@ func NewProcessor(data []byte) (*Processor, error) {
 // [num] : object/element of array by number
 //
 // e.g. "$.foo.bar[0].baz"
-func (p *Processor) GetValue(path string) (interface{}, error) {
+func (p *Processor) GetValue(path string) (any, error) {
 	if path == "" {
 		return nil, fmt.Errorf("no path given")
 	}
@@ -64,7 +64,7 @@ func (p *Processor) GetValue(path string) (interface{}, error) {
 		return nil, err
 	}
 
-	var value interface{}
+	var value any
 	if err := goyaml.Unmarshal([]byte(node.String()), &value); err != nil {
 		return nil, err
 	}
