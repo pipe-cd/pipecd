@@ -1,12 +1,17 @@
 import { useState, useCallback } from "react";
-import { parse, stringify } from "query-string";
+import queryString from "query-string";
+
+const { parse, stringify } = queryString;
 
 export const getQueryStringValue = (
   key: string,
   queryString = window.location.search
 ): string | string[] | null => {
-  const values = parse(queryString);
-  return values[key];
+  const value = parse(queryString)[key];
+  if (Array.isArray(value)) {
+    return value.filter((v): v is string => v !== null);
+  }
+  return value;
 };
 
 const setQueryStringWithoutPageReload = (qsValue: string): void => {
