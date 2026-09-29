@@ -228,3 +228,38 @@ func TestPlugin_GetPlanPreview_MultiTarget(t *testing.T) {
 		})
 	}
 }
+
+func TestPlugin_GetPlanPreview_MultiTarget_KustomizeDir(t *testing.T) {
+	t.Parallel()
+
+	appCfgFile := filepath.Join("testdata", "kustomize", "app.pipecd.yaml")
+	runningDir := filepath.Join("testdata", "kustomize", "running")
+	targetDir := filepath.Join("testdata", "kustomize", "target")
+	p := &Plugin{}
+	dts := makeDeployTargets("cluster1", "cluster2")
+
+	input := makeInput(t, appCfgFile, targetDir, runningDir)
+
+	resp, err := p.GetPlanPreview(context.Background(), nil, dts, input)
+	require.NoError(t, err)
+	require.Len(t, resp.Results, 2)
+
+	results := make(map[string]sdk.PlanPreviewResult, len(resp.Results))
+	for _, r := range resp.Results {
+		results[r.DeployTarget] = r
+	}
+
+	// Only the overlay of cluster1 changes the image tag.
+	cluster1, ok := results["cluster1"]
+	require.True(t, ok, "result for deploy target cluster1 not found")
+	assert.False(t, cluster1.NoChange)
+	assert.Equal(t, "0 added manifests, 1 changed manifests, 0 deleted manifests", cluster1.Summary)
+	assert.Contains(t, string(cluster1.Details), "v0.1.0")
+	assert.Contains(t, string(cluster1.Details), "v0.2.0")
+
+	cluster2, ok := results["cluster2"]
+	require.True(t, ok, "result for deploy target cluster2 not found")
+	assert.True(t, cluster2.NoChange)
+	assert.Equal(t, "No changes were detected", cluster2.Summary)
+	assert.Nil(t, cluster2.Details)
+}

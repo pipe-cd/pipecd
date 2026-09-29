@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+commonLabels:
+  cluster: cluster1
+images:
+  - name: ghcr.io/pipe-cd/helloworld
+    newTag: v0.2.0
