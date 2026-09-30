@@ -16,6 +16,7 @@ package cloudrun
 
 import (
 	"fmt"
+	"maps"
 	"os"
 	"strings"
 
@@ -42,7 +43,7 @@ type RevisionTraffic struct {
 }
 
 func (m ServiceManifest) UpdateTraffic(revisions []RevisionTraffic) error {
-	items := []interface{}{}
+	items := []any{}
 	for i := range revisions {
 		out, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&revisions[i])
 		if err != nil {
@@ -94,9 +95,7 @@ func (m ServiceManifest) AddLabels(labels map[string]string) {
 		m.u.SetLabels(labels)
 		return
 	}
-	for k, v := range labels {
-		lbls[k] = v
-	}
+	maps.Copy(lbls, labels)
 	m.u.SetLabels(lbls)
 }
 
@@ -114,9 +113,7 @@ func (m ServiceManifest) AddRevisionLabels(labels map[string]string) error {
 		return unstructured.SetNestedStringMap(m.u.Object, labels, fields...)
 	}
 
-	for k, v := range labels {
-		lbls[k] = v
-	}
+	maps.Copy(lbls, labels)
 	return unstructured.SetNestedStringMap(m.u.Object, lbls, fields...)
 }
 

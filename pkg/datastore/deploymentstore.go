@@ -17,6 +17,7 @@ package datastore
 import (
 	"context"
 	"fmt"
+	"maps"
 	"strings"
 	"time"
 
@@ -31,7 +32,7 @@ func (d *deploymentCollection) Kind() string {
 }
 
 func (d *deploymentCollection) Factory() Factory {
-	return func() interface{} {
+	return func() any {
 		return &model.Deployment{}
 	}
 }
@@ -198,7 +199,7 @@ func (s *deploymentStore) List(ctx context.Context, opts ListOptions) ([]*model.
 
 func (s *deploymentStore) update(ctx context.Context, id string, updater func(*model.Deployment) error) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
+	return s.ds.Update(ctx, s.col, id, func(e any) error {
 		d := e.(*model.Deployment)
 		if err := updater(d); err != nil {
 			return err
@@ -276,11 +277,7 @@ func (s *deploymentStore) UpdatePluginMetadata(ctx context.Context, id string, p
 
 func mergeMetadata(ori map[string]string, new map[string]string) map[string]string {
 	out := make(map[string]string, len(ori)+len(new))
-	for k, v := range ori {
-		out[k] = v
-	}
-	for k, v := range new {
-		out[k] = v
-	}
+	maps.Copy(out, ori)
+	maps.Copy(out, new)
 	return out
 }

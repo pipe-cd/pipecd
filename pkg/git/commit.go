@@ -84,8 +84,8 @@ func parseCommit(log string) (Commit, error) {
 }
 
 func (c *Commit) GetTrailerValueByKey(key string) string {
-	lines := strings.Split(c.Body, "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(c.Body, "\n")
+	for line := range lines {
 		if !strings.HasPrefix(line, key+":") {
 			continue
 		}

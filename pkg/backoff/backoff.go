@@ -43,7 +43,7 @@ type Backoff interface {
 }
 
 type Retry interface {
-	Do(ctx context.Context, operation func() (interface{}, error)) (interface{}, error)
+	Do(ctx context.Context, operation func() (any, error)) (any, error)
 	WaitNext(ctx context.Context) bool
 	Calls() int
 }
@@ -95,11 +95,11 @@ func (r *retry) WaitNext(ctx context.Context) bool {
 // It automatically retries if the operation returns an error.
 // To control which error should be retriable or not,
 // you can wrap the error from operation with NewError function.
-func (r *retry) Do(ctx context.Context, operation func() (interface{}, error)) (interface{}, error) {
+func (r *retry) Do(ctx context.Context, operation func() (any, error)) (any, error) {
 	var err error
 
 	for r.WaitNext(ctx) {
-		var data interface{}
+		var data any
 		data, err = operation()
 		if err == nil {
 			return data, nil
