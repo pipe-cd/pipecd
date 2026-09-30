@@ -62,7 +62,7 @@ func (s *lastTriggeredCommitStore) getLastTriggeredDeployment(ctx context.Contex
 		Status:        model.DeploymentStatus_DEPLOYMENT_PENDING,
 	}
 
-	d, err := pipedservice.NewRetry(3).Do(ctx, func() (interface{}, error) {
+	d, err := pipedservice.NewRetry(3).Do(ctx, func() (any, error) {
 		resp, err := s.apiClient.GetApplicationMostRecentDeployment(ctx, req)
 		if err == nil {
 			return resp.Deployment, nil

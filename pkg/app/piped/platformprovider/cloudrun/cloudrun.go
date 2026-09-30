@@ -147,7 +147,7 @@ func (r *registry) Client(ctx context.Context, name string, cfg *config.Platform
 		return client, nil
 	}
 
-	c, err, _ := r.newGroup.Do(name, func() (interface{}, error) {
+	c, err, _ := r.newGroup.Do(name, func() (any, error) {
 		return newClient(ctx, cfg.Project, cfg.Region, cfg.CredentialsFile, logger)
 	})
 	if err != nil {

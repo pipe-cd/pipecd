@@ -16,6 +16,7 @@ package metadatastore
 
 import (
 	"context"
+	"maps"
 	"sync"
 
 	"google.golang.org/grpc"
@@ -77,9 +78,7 @@ func NewMetadataStore(apiClient apiClient, d *model.Deployment) MetadataStore {
 	}
 
 	// Initialize shared metadata of deployment.
-	for k, v := range d.Metadata {
-		s.shared[k] = v
-	}
+	maps.Copy(s.shared, d.Metadata)
 
 	// Initialize metadata of all stages.
 	for _, stage := range d.Stages {
@@ -112,9 +111,7 @@ func (s *metadataStore) Put(ctx context.Context, key, value string) error {
 
 func (s *metadataStore) PutMulti(ctx context.Context, md map[string]string) error {
 	s.sharedMu.Lock()
-	for key, value := range md {
-		s.shared[key] = value
-	}
+	maps.Copy(s.shared, md)
 	s.sharedMu.Unlock()
 
 	return s.syncSharedMetadata(ctx)
@@ -123,9 +120,7 @@ func (s *metadataStore) PutMulti(ctx context.Context, md map[string]string) erro
 func (s *metadataStore) syncSharedMetadata(ctx context.Context) error {
 	s.sharedMu.RLock()
 	md := make(map[string]string, len(s.shared))
-	for k, v := range s.shared {
-		md[k] = v
-	}
+	maps.Copy(md, s.shared)
 	s.sharedMu.RUnlock()
 
 	// Send full list of metadata to ensure that they will be synced.
@@ -139,12 +134,8 @@ func (s *metadataStore) syncSharedMetadata(ctx context.Context) error {
 func (s *metadataStore) stagePutMulti(ctx context.Context, stageID string, md map[string]string) error {
 	s.stagesMu.Lock()
 	merged := make(map[string]string, len(md)+len(s.stages[stageID]))
-	for k, v := range s.stages[stageID] {
-		merged[k] = v
-	}
-	for k, v := range md {
-		merged[k] = v
-	}
+	maps.Copy(merged, s.stages[stageID])
+	maps.Copy(merged, md)
 	s.stages[stageID] = merged
 	s.stagesMu.Unlock()
 

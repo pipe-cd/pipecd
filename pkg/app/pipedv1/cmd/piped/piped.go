@@ -347,13 +347,11 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			<-ctx.Done()
 			wg := &sync.WaitGroup{}
 			for _, plg := range plugins {
-				wg.Add(1)
-				go func() {
-					defer wg.Done()
+				wg.Go(func() {
 					if err := plg.GracefulStop(p.gracePeriod); err != nil {
 						input.Logger.Error("failed to stop plugin", zap.Error(err))
 					}
-				}()
+				})
 			}
 			wg.Wait()
 			return nil
@@ -821,7 +819,7 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 	}
 
 	retry := pipedservice.NewRetry(5)
-	_, err = retry.Do(ctx, func() (interface{}, error) {
+	_, err = retry.Do(ctx, func() (any, error) {
 		if res, err := client.ReportPipedMeta(ctx, req); err == nil {
 			cfg.Name = res.Name
 			if cfg.WebAddress == "" {

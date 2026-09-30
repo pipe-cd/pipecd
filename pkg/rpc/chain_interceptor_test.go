@@ -32,21 +32,21 @@ func TestChainUnaryServerInterceptors(t *testing.T) {
 	}
 	out := "out"
 	var firstRun, secondRun, handlerRun bool
-	first := func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+	first := func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
 		require.Equal(t, serverInfo, info)
 		require.Equal(t, "", ctx.Value(parent).(string))
 		ctx = context.WithValue(ctx, parent, "first")
 		firstRun = true
 		return handler(ctx, req)
 	}
-	second := func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+	second := func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
 		require.Equal(t, serverInfo, info)
 		require.Equal(t, "first", ctx.Value(parent).(string))
 		ctx = context.WithValue(ctx, parent, "second")
 		secondRun = true
 		return handler(ctx, req)
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		require.Equal(t, "second", ctx.Value(parent).(string))
 		handlerRun = true
 		return out, nil
