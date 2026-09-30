@@ -245,8 +245,28 @@ func (e *EventWatcherEvent) Validate() error {
 		return fmt.Errorf("there must be at least one replacement to an event")
 	}
 	for _, r := range e.Replacements {
-		if err := r.Validate(); err != nil {
-			return fmt.Errorf("event %q: %w", e.Name, err)
+		if r.File == "" {
+			return fmt.Errorf("event %q has a replacement with no file name", e.Name)
+		}
+
+		var count int
+		if r.YAMLField != "" {
+			count++
+		}
+		if r.JSONField != "" {
+			count++
+		}
+		if r.HCLField != "" {
+			count++
+		}
+		if r.Regex != "" {
+			count++
+		}
+		if count == 0 {
+			return fmt.Errorf("event %q has a replacement with no field", e.Name)
+		}
+		if count > 2 {
+			return fmt.Errorf("event %q has multiple fields", e.Name)
 		}
 	}
 	return nil
