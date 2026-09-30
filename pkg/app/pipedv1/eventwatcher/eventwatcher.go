@@ -339,6 +339,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 		outDatedDuration    = time.Hour
 		gitUpdateEvent      = false
 		branchHandledEvents = make(map[string][]*pipedservice.ReportEventStatusesRequest_Event, len(eventCfgs))
+		failedEvents        = make([]*pipedservice.ReportEventStatusesRequest_Event, 0)
 	)
 	for _, e := range eventCfgs {
 		for _, cfg := range e.Configs {
@@ -398,7 +399,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 						Status:            model.EventStatus_EVENT_FAILURE,
 						StatusDescription: fmt.Sprintf("Failed to change files: %v", err),
 					}
-					branchHandledEvents[branchName] = append(branchHandledEvents[branchName], handledEvent)
+					failedEvents = append(failedEvents, handledEvent)
 					continue
 				}
 				handledEvent := &pipedservice.ReportEventStatusesRequest_Event{
@@ -425,6 +426,11 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 			return fmt.Errorf("failed to report event statuses: %w", err)
 		}
 		w.logger.Info(fmt.Sprintf("successfully made %d events OUTDATED", len(outDatedEvents)))
+	}
+	if len(failedEvents) > 0 {
+		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: failedEvents}); err != nil {
+			return fmt.Errorf("failed to report event statuses: %w", err)
+		}
 	}
 
 	if !gitUpdateEvent {
@@ -607,6 +613,12 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 
 // commitFiles commits changes if the data in Git is different from the latest event.
 func (w *watcher) commitFiles(ctx context.Context, latestEvent *model.Event, eventName, commitMsg, gitPath string, replacements []config.EventWatcherReplacement, repo git.Repo, newBranch bool) (string, error) {
+	for _, r := range replacements {
+		if err := r.Validate(); err != nil {
+			return "", err
+		}
+	}
+
 	// Determine files to be changed by comparing with the latest event.
 	changes := make(map[string][]byte, len(replacements))
 	for _, r := range replacements {
@@ -625,9 +637,9 @@ func (w *watcher) commitFiles(ctx context.Context, latestEvent *model.Event, eve
 		case r.YAMLField != "":
 			newContent, upToDate, err = modifyYAML(path, r.YAMLField, latestEvent.Data)
 		case r.JSONField != "":
-			// TODO: Empower Event watcher to parse JSON format
+			return "", fmt.Errorf("jsonField replacements are not supported")
 		case r.HCLField != "":
-			// TODO: Empower Event watcher to parse HCL format
+			return "", fmt.Errorf("HCLField replacements are not supported")
 		case r.Regex != "":
 			newContent, upToDate, err = modifyText(path, r.Regex, latestEvent.Data)
 		}
@@ -637,10 +649,10 @@ func (w *watcher) commitFiles(ctx context.Context, latestEvent *model.Event, eve
 		if upToDate {
 			continue
 		}
-
 		if err := os.WriteFile(path, newContent, os.ModePerm); err != nil {
 			return "", fmt.Errorf("failed to write file: %w", err)
 		}
+
 		changes[filePath] = newContent
 	}
 	if len(changes) == 0 {
