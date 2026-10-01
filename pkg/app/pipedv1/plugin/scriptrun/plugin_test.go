@@ -347,7 +347,7 @@ func TestPlugin_ExecuteRollback(t *testing.T) {
 		})
 	}
 }
-func mustMarshalJSON(t *testing.T, v interface{}) []byte {
+func mustMarshalJSON(t *testing.T, v any) []byte {
 	data, err := json.Marshal(v)
 	if err != nil {
 		t.Fatalf("failed to marshal json: %v", err)

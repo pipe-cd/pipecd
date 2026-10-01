@@ -76,7 +76,7 @@ func (e *indexEnsurer) CreateIndexes(ctx context.Context) error {
 	}
 
 	e.logger.Info(fmt.Sprintf("%d missing Firebase composite indexes found", len(filtered)))
-	for i := 0; i < len(filtered); i++ {
+	for i := range filtered {
 		if err := e.createIndex(ctx, &filtered[i]); err != nil {
 			e.logger.Error("failed to create a Firestore composite index",
 				zap.Any("index", filtered[i]),

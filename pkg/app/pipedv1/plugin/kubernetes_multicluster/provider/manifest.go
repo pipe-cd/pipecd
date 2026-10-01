@@ -193,9 +193,7 @@ func (m Manifest) AddLabels(labels map[string]string) {
 		m.body.SetLabels(labels)
 		return
 	}
-	for k, v := range labels {
-		lbs[k] = v
-	}
+	maps.Copy(lbs, labels)
 	m.body.SetLabels(lbs)
 }
 
@@ -209,9 +207,7 @@ func (m Manifest) AddAnnotations(annotations map[string]string) {
 		m.body.SetAnnotations(annotations)
 		return
 	}
-	for k, v := range annotations {
-		annos[k] = v
-	}
+	maps.Copy(annos, annotations)
 	m.body.SetAnnotations(annos)
 }
 

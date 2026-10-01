@@ -157,7 +157,7 @@ func (u *updater) Run(ctx context.Context) error {
 }
 
 func (u *updater) listAllMissingDeployments(ctx context.Context) ([]*model.Deployment, error) {
-	noDeploymentApps := make(map[string]interface{}, len(u.applicationRefs))
+	noDeploymentApps := make(map[string]any, len(u.applicationRefs))
 	for _, appRef := range u.applicationRefs {
 		if _, ok := u.deploymentRefs[appRef.ApplicationId]; !ok {
 			noDeploymentApps[appRef.ApplicationId] = nil

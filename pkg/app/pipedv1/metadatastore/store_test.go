@@ -16,6 +16,7 @@ package metadatastore
 
 import (
 	"context"
+	"maps"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -33,12 +34,8 @@ type fakeAPIClient struct {
 
 func (c *fakeAPIClient) SaveDeploymentSharedMetadata(ctx context.Context, req *pipedservice.SaveDeploymentSharedMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveDeploymentSharedMetadataResponse, error) {
 	md := make(map[string]string, len(c.shared)+len(req.Metadata))
-	for k, v := range c.shared {
-		md[k] = v
-	}
-	for k, v := range req.Metadata {
-		md[k] = v
-	}
+	maps.Copy(md, c.shared)
+	maps.Copy(md, req.Metadata)
 	c.shared = md
 	return &pipedservice.SaveDeploymentSharedMetadataResponse{}, nil
 }
@@ -46,12 +43,8 @@ func (c *fakeAPIClient) SaveDeploymentSharedMetadata(ctx context.Context, req *p
 func (c *fakeAPIClient) SaveDeploymentPluginMetadata(ctx context.Context, req *pipedservice.SaveDeploymentPluginMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveDeploymentPluginMetadataResponse, error) {
 	ori := c.plugins[req.PluginName]
 	md := make(map[string]string, len(ori)+len(req.Metadata))
-	for k, v := range ori {
-		md[k] = v
-	}
-	for k, v := range req.Metadata {
-		md[k] = v
-	}
+	maps.Copy(md, ori)
+	maps.Copy(md, req.Metadata)
 	c.plugins[req.PluginName] = md
 	return &pipedservice.SaveDeploymentPluginMetadataResponse{}, nil
 }
@@ -59,12 +52,8 @@ func (c *fakeAPIClient) SaveDeploymentPluginMetadata(ctx context.Context, req *p
 func (c *fakeAPIClient) SaveStageMetadata(ctx context.Context, req *pipedservice.SaveStageMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveStageMetadataResponse, error) {
 	ori := c.stages[req.StageId]
 	md := make(map[string]string, len(ori)+len(req.Metadata))
-	for k, v := range ori {
-		md[k] = v
-	}
-	for k, v := range req.Metadata {
-		md[k] = v
-	}
+	maps.Copy(md, ori)
+	maps.Copy(md, req.Metadata)
 	c.stages[req.StageId] = md
 	return &pipedservice.SaveStageMetadataResponse{}, nil
 }
