@@ -69,7 +69,7 @@
     "@loadable/component": "^5.16.7",
     "@mui/icons-material": "^7.3.6",
     "@mui/material": "^7.3.6",
-    "@primer/octicons-react": "^14.2.2",
+    "@primer/octicons-react": "^19.38.0",
     "@tanstack/react-query": "4.42.0",
     "@tanstack/react-query-devtools": "4.42.0",
     "@types/dagre": "^0.7.54",
