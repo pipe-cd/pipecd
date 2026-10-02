@@ -1451,10 +1451,10 @@
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.8.tgz#6b79032e760a0899cd4204710beede972a3a185f"
   integrity sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==
 
-"@primer/octicons-react@^14.2.2":
-  version "14.2.2"
-  resolved "https://registry.yarnpkg.com/@primer/octicons-react/-/octicons-react-14.2.2.tgz#f63f4258261f0f3dcbffd156171988749a29ec92"
-  integrity sha512-CB+D1cgWe1na0VPgt/Mg9Hrk6I3lcrJghz1eKQAiv1OPo19gQxR9GQ69ltMQ71HUKfy3af501hX5cxkVNF1kcQ==
+"@primer/octicons-react@^19.38.0":
+  version "19.38.0"
+  resolved "https://registry.yarnpkg.com/@primer/octicons-react/-/octicons-react-19.38.0.tgz#8c0fa7d82a39bde0345ce25fe3bdd53d4067bc09"
+  integrity sha512-ZzWVrX6kluBaCepsDj/jAxagBOMaRX18LEf723IKpr4E/jdkTdCOtlsN+60Oj7IV9YEVrlUpo9Oky0Tn1heSCA==
 
 "@remix-run/router@1.23.4":
   version "1.23.4"
