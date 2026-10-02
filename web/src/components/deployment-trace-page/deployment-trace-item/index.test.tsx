@@ -19,7 +19,7 @@ describe("DeploymentTraceItem", () => {
       author: "user",
       commitMessage: "commit-message",
       commitHash: "commit-hash",
-      commitUrl: "/commit-url",
+      commitUrl: "https://github.com/pipe-cd/pipecd/commit/commit-hash",
     };
 
     expect(screen.getByText(expectedValues.title)).toBeInTheDocument();
@@ -35,6 +35,23 @@ describe("DeploymentTraceItem", () => {
       screen.getByRole("button", { name: /btn-commit-message/i })
     );
     expect(screen.getByText(expectedValues.commitMessage)).toBeInTheDocument();
+  });
+
+  it("should not render a link for a non-http(s) commit url", () => {
+    render(
+      <MemoryRouter>
+        <DeploymentTraceItem
+          trace={{
+            ...dummyDeploymentTrace.trace!,
+            commitUrl: "javascript:alert(1)",
+          }}
+          deploymentList={dummyDeploymentTrace.deploymentsList}
+        />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText("commit-hash")).toBeInTheDocument();
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
   });
 
   it("should render deployment items", () => {
