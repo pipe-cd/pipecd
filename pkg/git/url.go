@@ -127,7 +127,7 @@ func MakeFileCreationURL(repoURL, dir, branch, filename, value string) (string, 
 }
 
 var (
-	knownSchemes = map[string]interface{}{
+	knownSchemes = map[string]any{
 		"ssh":     struct{}{},
 		"git":     struct{}{},
 		"git+ssh": struct{}{},

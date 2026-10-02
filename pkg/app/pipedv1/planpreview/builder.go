@@ -451,7 +451,7 @@ func (b *builder) listApplications(repo config.PipedRepository) []*model.Applica
 func (b *builder) getMostRecentlySuccessfulDeployment(ctx context.Context, applicationID string) (*model.ApplicationDeploymentReference, error) {
 	retry := pipedservice.NewRetry(3)
 
-	deploy, err := retry.Do(ctx, func() (interface{}, error) {
+	deploy, err := retry.Do(ctx, func() (any, error) {
 		resp, err := b.apiClient.GetApplicationMostRecentDeployment(ctx, &pipedservice.GetApplicationMostRecentDeploymentRequest{
 			ApplicationId: applicationID,
 			Status:        model.DeploymentStatus_DEPLOYMENT_SUCCESS,

@@ -31,8 +31,7 @@ type Store struct {
 	logger *zap.Logger
 }
 
-type Getter interface {
-}
+type Getter any
 
 func NewStore(cfg *config.PlatformProviderTerraformConfig, platformProvider string, appLister applicationLister, logger *zap.Logger) *Store {
 	logger = logger.Named("terraform").

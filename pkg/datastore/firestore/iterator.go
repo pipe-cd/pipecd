@@ -25,7 +25,7 @@ import (
 )
 
 type dataConverter interface {
-	Data() map[string]interface{}
+	Data() map[string]any
 }
 
 type Iterator struct {
@@ -34,7 +34,7 @@ type Iterator struct {
 	last   dataConverter
 }
 
-func (it *Iterator) Next(dst interface{}) error {
+func (it *Iterator) Next(dst any) error {
 	doc, err := it.it.Next()
 	if err != nil {
 		if err == iterator.Done {
@@ -59,7 +59,7 @@ func (it *Iterator) Cursor() (string, error) {
 
 	lastObjData := it.last.Data()
 
-	cursor := make(map[string]interface{}, len(it.orders))
+	cursor := make(map[string]any, len(it.orders))
 	for _, o := range it.orders {
 		val, ok := lastObjData[o.Field]
 		if !ok {

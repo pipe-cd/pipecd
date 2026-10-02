@@ -819,7 +819,7 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 	}
 
 	retry := pipedservice.NewRetry(5)
-	_, err = retry.Do(ctx, func() (interface{}, error) {
+	_, err = retry.Do(ctx, func() (any, error) {
 		if res, err := client.ReportPipedMeta(ctx, req); err == nil {
 			cfg.Name = res.Name
 			if cfg.WebAddress == "" {
