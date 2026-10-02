@@ -3,9 +3,9 @@ module github.com/pipe-cd/pipecd
 go 1.26.2
 
 require (
-	cloud.google.com/go/firestore v1.25.0
-	cloud.google.com/go/profiler v0.6.0
-	cloud.google.com/go/secretmanager v1.21.0
+	cloud.google.com/go/firestore v1.26.0
+	cloud.google.com/go/profiler v0.7.0
+	cloud.google.com/go/secretmanager v1.22.0
 	cloud.google.com/go/storage v1.68.0
 	github.com/DataDog/datadog-api-client-go v1.0.0-beta.16
 	github.com/Masterminds/sprig/v3 v3.2.2
@@ -140,7 +140,7 @@ require (
 	github.com/google/gnostic v0.5.7-v3refs // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
-	github.com/google/pprof v0.0.0-20260402051712-545e8a4df936 // indirect
+	github.com/google/pprof v0.0.0-20260604005048-7023385849c0 // indirect
 	github.com/google/s2a-go v0.1.10 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.22 // indirect
