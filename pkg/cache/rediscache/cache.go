@@ -29,12 +29,6 @@ type RedisCache struct {
 	ttl   uint
 }
 
-func NewCache(redis redis.Redis) *RedisCache {
-	return &RedisCache{
-		redis: redis,
-	}
-}
-
 func NewTTLCache(redis redis.Redis, ttl time.Duration) *RedisCache {
 	return &RedisCache{
 		redis: redis,

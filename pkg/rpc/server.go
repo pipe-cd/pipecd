@@ -49,7 +49,6 @@ type Server struct {
 	maxRecvMsgSize       int
 
 	pipedKeyAuthUnaryInterceptor      grpc.UnaryServerInterceptor
-	pipedKeyAuthStreamInterceptor     grpc.StreamServerInterceptor
 	apiKeyAuthUnaryInterceptor        grpc.UnaryServerInterceptor
 	jwtAuthUnaryInterceptor           grpc.UnaryServerInterceptor
 	requestValidationUnaryInterceptor grpc.UnaryServerInterceptor
@@ -72,13 +71,6 @@ func WithPort(port int) Option {
 func WithPipedTokenAuthUnaryInterceptor(verifier rpcauth.PipedTokenVerifier, logger *zap.Logger) Option {
 	return func(s *Server) {
 		s.pipedKeyAuthUnaryInterceptor = rpcauth.PipedTokenUnaryServerInterceptor(verifier, logger)
-	}
-}
-
-// WithPipedTokenAuthStreamInterceptor sets an interceptor for validating piped key.
-func WithPipedTokenAuthStreamInterceptor(verifier rpcauth.PipedTokenVerifier, logger *zap.Logger) Option {
-	return func(s *Server) {
-		s.pipedKeyAuthStreamInterceptor = rpcauth.PipedTokenStreamServerInterceptor(verifier, logger)
 	}
 }
 
@@ -234,9 +226,6 @@ func (s *Server) init() error {
 	if len(unaryInterceptors) > 0 {
 		c := ChainUnaryServerInterceptors(unaryInterceptors...)
 		opts = append(opts, grpc.UnaryInterceptor(c))
-	}
-	if s.pipedKeyAuthStreamInterceptor != nil {
-		opts = append(opts, grpc.StreamInterceptor(s.pipedKeyAuthStreamInterceptor))
 	}
 	if s.maxRecvMsgSize != 0 {
 		opts = append(opts, grpc.MaxRecvMsgSize(s.maxRecvMsgSize))

@@ -16,6 +16,10 @@ package crypto
 
 import (
 	"bytes"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"os"
 	"strings"
 	"testing"
@@ -24,13 +28,49 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// generateRSAPems generates RSA key pair and the PEM encoding of them.
+func generateRSAPems(size int) (private, public []byte, err error) {
+	privateKey, err := rsa.GenerateKey(rand.Reader, size)
+	if err != nil {
+		return
+	}
+	err = privateKey.Validate()
+	if err != nil {
+		return
+	}
+
+	publicBytes, err := x509.MarshalPKIXPublicKey(&privateKey.PublicKey)
+	if err != nil {
+		return
+	}
+	public = pem.EncodeToMemory(
+		&pem.Block{
+			Type:  "PUBLIC KEY",
+			Bytes: publicBytes,
+		},
+	)
+
+	privateBytes, err := x509.MarshalPKCS8PrivateKey(privateKey)
+	if err != nil {
+		return
+	}
+	private = pem.EncodeToMemory(
+		&pem.Block{
+			Type:  "PRIVATE KEY",
+			Bytes: privateBytes,
+		},
+	)
+
+	return
+}
+
 func TestGenerateRSAPems(t *testing.T) {
-	private, public, err := GenerateRSAPems(0)
+	private, public, err := generateRSAPems(0)
 	require.Error(t, err)
 	assert.Nil(t, private)
 	assert.Nil(t, public)
 
-	private, public, err = GenerateRSAPems(2048)
+	private, public, err = generateRSAPems(2048)
 	require.NoError(t, err)
 
 	public = bytes.TrimSpace(public)
