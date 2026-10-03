@@ -84,8 +84,7 @@ Once a contributor reaches the **Core Contributor** tier, they are encouraged to
 > **Note:** These are minimum requirements. Maintainers will use their judgment to evaluate overall engagement, contribution quality, and community participation before granting membership.
 
 ### How to Apply:
-- Attend a community meeting and introduce yourself, **or**
-- Reach out in the `#pipecd` channel on [CNCF Slack](https://slack.cncf.io/).
+- Attend a community meeting and introduce yourself, or reach out in the `#pipecd` channel on [CNCF Slack](https://slack.cncf.io/).
 
 ---
 
