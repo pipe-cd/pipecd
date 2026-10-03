@@ -54,19 +54,11 @@ func MakeCommitURL(repoURL, hash string) (string, error) {
 }
 
 func normalizeDir(dir string) string {
-	dir = strings.TrimSpace(dir)
-	if dir == "" {
-		return ""
-	}
-	cleaned := path.Clean(dir)
+	cleaned := path.Clean(strings.TrimSpace(dir))
 	if cleaned == "." || cleaned == "/" {
 		return ""
 	}
-	cleaned = strings.Trim(cleaned, "/")
-	if cleaned == "." {
-		return ""
-	}
-	return cleaned
+	return strings.Trim(cleaned, "/")
 }
 
 // MakeDirURL builds a link to the HTML page of the directory.
