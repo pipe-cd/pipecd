@@ -83,6 +83,7 @@ func (s *commandStore) List(ctx context.Context, opts ListOptions) ([]*model.Com
 	if err != nil {
 		return nil, err
 	}
+	defer it.Close()
 	cmds := make([]*model.Command, 0)
 	for {
 		var cmd model.Command

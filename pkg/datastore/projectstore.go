@@ -94,6 +94,7 @@ func (s *projectStore) List(ctx context.Context, opts ListOptions) ([]model.Proj
 	if err != nil {
 		return nil, err
 	}
+	defer it.Close()
 	ps := make([]model.Project, 0)
 	for {
 		var p model.Project

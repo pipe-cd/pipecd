@@ -136,6 +136,7 @@ func TestListApplications(t *testing.T) {
 			opts: ListOptions{},
 			ds: func() DataStore {
 				it := NewMockIterator(ctrl)
+				it.EXPECT().Close().Return(nil)
 				it.EXPECT().
 					Next(&model.Application{}).
 					Return(ErrIteratorDone)
@@ -153,6 +154,7 @@ func TestListApplications(t *testing.T) {
 			opts: ListOptions{},
 			ds: func() DataStore {
 				it := NewMockIterator(ctrl)
+				it.EXPECT().Close().Return(nil)
 				it.EXPECT().
 					Next(&model.Application{}).
 					Return(fmt.Errorf("err"))

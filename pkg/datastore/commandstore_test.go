@@ -128,6 +128,7 @@ func TestListCommands(t *testing.T) {
 			opts: ListOptions{},
 			ds: func() DataStore {
 				it := NewMockIterator(ctrl)
+				it.EXPECT().Close().Return(nil)
 				it.EXPECT().
 					Next(&model.Command{}).
 					Return(ErrIteratorDone)
@@ -145,6 +146,7 @@ func TestListCommands(t *testing.T) {
 			opts: ListOptions{},
 			ds: func() DataStore {
 				it := NewMockIterator(ctrl)
+				it.EXPECT().Close().Return(nil)
 				it.EXPECT().
 					Next(&model.Command{}).
 					Return(fmt.Errorf("err"))
