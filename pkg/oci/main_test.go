@@ -19,6 +19,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -36,6 +37,13 @@ const (
 func TestMain(m *testing.M) {
 	pool, err := dockertest.NewPool("")
 	if err != nil {
+		// Check if the error indicates Docker daemon is down or unreachable
+		errMsg := err.Error()
+		if strings.Contains(errMsg, "docker.sock") || strings.Contains(errMsg, "Connection refused") || strings.Contains(errMsg, "is the daemon running") {
+			log.Printf("Docker daemon is not available: %s. Skipping pkg/oci tests.", err)
+			os.Exit(0)
+		}
+		// If it's some other initialization error, fail loudly
 		log.Fatalf("Failed to connect to docker: %s", err)
 	}
 
@@ -64,6 +72,13 @@ func TestMain(m *testing.M) {
 	}
 	res, err := pool.RunWithOptions(opts, hcOpts)
 	if err != nil {
+		// Check if the error indicates Docker daemon is down or unreachable
+		errMsg := err.Error()
+		if strings.Contains(errMsg, "docker.sock") || strings.Contains(errMsg, "Connection refused") || strings.Contains(errMsg, "is the daemon running") {
+			log.Printf("Docker daemon is unavailable: %s. Skipping pkg/oci tests.", err)
+			os.Exit(0)
+		}
+		// If it's some other unexpected error (e.g., config error), fail loudly as expected
 		log.Fatalf("Failed to start resource: %s", err)
 	}
 
