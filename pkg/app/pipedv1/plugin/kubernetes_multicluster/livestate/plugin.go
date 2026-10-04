@@ -354,12 +354,13 @@ func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[
 	}
 
 	// Add builtin labels and annotations for tracking application live state.
+	// The commit hash is not added because it is the commit of the deployment that applied the resource,
+	// which differs from the head commit whenever the repository has a commit that does not trigger a deployment.
 	for i := range manifests {
 		manifests[i].AddLabels(map[string]string{
 			provider.LabelManagedBy:   provider.ManagedByPiped,
 			provider.LabelPiped:       input.Request.PipedID,
 			provider.LabelApplication: input.Request.ApplicationID,
-			provider.LabelCommitHash:  input.Request.DeploymentSource.CommitHash,
 		})
 		manifests[i].AddAnnotations(map[string]string{
 			provider.LabelManagedBy:          provider.ManagedByPiped,
@@ -367,7 +368,6 @@ func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[
 			provider.LabelApplication:        input.Request.ApplicationID,
 			provider.LabelOriginalAPIVersion: manifests[i].APIVersion(),
 			provider.LabelResourceKey:        manifests[i].Key().String(),
-			provider.LabelCommitHash:         input.Request.DeploymentSource.CommitHash,
 		})
 	}
 
