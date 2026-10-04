@@ -115,3 +115,55 @@ func TestSyncApplicationReturnsErrorWhenCommandFails(t *testing.T) {
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "unable to be handled")
 }
+
+func TestSyncApplicationReturnsErrorOnTimeoutOrUnexpectedType(t *testing.T) {
+	tests := []struct {
+		name    string
+		cmd     *model.Command
+		wantErr string
+	}{
+		{
+			name: "command timed out",
+			cmd: &model.Command{
+				Type:   model.Command_SYNC_APPLICATION,
+				Status: model.CommandStatus_COMMAND_TIMEOUT,
+			},
+			wantErr: "timed out",
+		},
+		{
+			name: "unexpected command type",
+			cmd: &model.Command{
+				Type:   model.Command_CANCEL_DEPLOYMENT,
+				Status: model.CommandStatus_COMMAND_SUCCEEDED,
+			},
+			wantErr: "unexpected command type",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			cli := &fakeAPIClient{
+				syncApplication: func(context.Context, *apiservice.SyncApplicationRequest, ...grpc.CallOption) (*apiservice.SyncApplicationResponse, error) {
+					return &apiservice.SyncApplicationResponse{
+						CommandId: "command-id",
+					}, nil
+				},
+				getCommand: func(context.Context, *apiservice.GetCommandRequest, ...grpc.CallOption) (*apiservice.GetCommandResponse, error) {
+					return &apiservice.GetCommandResponse{Command: tc.cmd}, nil
+				},
+			}
+
+			_, err := SyncApplication(
+				context.Background(),
+				cli,
+				"app-id",
+				model.SyncStrategy_AUTO,
+				time.Millisecond,
+				time.Second,
+				zap.NewNop(),
+			)
+			require.Error(t, err)
+			require.Contains(t, err.Error(), tc.wantErr)
+		})
+	}
+}
