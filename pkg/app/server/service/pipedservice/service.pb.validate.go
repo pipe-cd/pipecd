@@ -655,6 +655,10 @@ func (m *ListApplicationsRequest) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for Limit
+
+	// no validation rules for Cursor
+
 	if len(errors) > 0 {
 		return ListApplicationsRequestMultiError(errors)
 	}
@@ -790,6 +794,8 @@ func (m *ListApplicationsResponse) validate(all bool) error {
 		}
 
 	}
+
+	// no validation rules for Cursor
 
 	if len(errors) > 0 {
 		return ListApplicationsResponseMultiError(errors)

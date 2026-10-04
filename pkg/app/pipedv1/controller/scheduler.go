@@ -508,13 +508,16 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 	var (
 		ctx            = sig.Context()
 		originalStatus = ps.Status
+		statusReason   string
 	)
 
 	defer func() {
 		// Ensure reporting the status even if the stage is cancelled.
-		if err := s.reportStageStatus(context.Background(), ps.Id, finalStatus, ps.Requires); err != nil {
+		if err := s.reportStageStatus(context.Background(), ps.Id, finalStatus, statusReason, ps.Requires); err != nil {
 			s.logger.Error("failed to report stage status", zap.Error(err))
 		}
+		// Keep the local stage in sync so that notifiers can refer to the reason.
+		ps.StatusReason = statusReason
 	}()
 
 	tds, err := s.targetDSP.Get(ctx, io.Discard)
@@ -533,7 +536,8 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 	}
 
 	// Skip the stage if needed based on the skip config.
-	if skipOrError, status := s.shouldSkipStage(ctx, ps); skipOrError {
+	if skipOrError, status, reason := s.shouldSkipStage(ctx, ps); skipOrError {
+		statusReason = reason
 		return status
 	}
 
@@ -559,7 +563,7 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 
 	// Update stage status to RUNNING if needed.
 	if model.CanUpdateStageStatus(ps.Status, model.StageStatus_STAGE_RUNNING) {
-		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_RUNNING, ps.Requires); err != nil {
+		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_RUNNING, "", ps.Requires); err != nil {
 			if sig.Signal() == StopSignalCancel {
 				return model.StageStatus_STAGE_CANCELLED
 			}
@@ -664,41 +668,36 @@ func determineStageStatus(sig StopSignalType, ori, got model.StageStatus) model.
 	}
 }
 
-// shouldSkipStage checks whether the stage should be skipped based on the skip config of the stage, and reports the stage status.
-func (s *scheduler) shouldSkipStage(ctx context.Context, ps *model.PipelineStage) (skipOrError bool, status model.StageStatus) {
+// shouldSkipStage checks whether the stage should be skipped based on the skip config of the stage.
+// In case the stage should be skipped or the skip conditions could not be evaluated, it returns the
+// final status together with the human-readable reason so that the caller can report it to the control-plane.
+func (s *scheduler) shouldSkipStage(ctx context.Context, ps *model.PipelineStage) (skipOrError bool, status model.StageStatus, statusReason string) {
 	stage, found := s.genericApplicationConfig.GetStage(ps.Index)
 	if !found {
-		return false, model.StageStatus_STAGE_RUNNING
+		return false, model.StageStatus_STAGE_RUNNING, ""
 	}
 
 	skip, err := s.determineSkipStage(ctx, stage.SkipOn)
 	if err != nil {
 		s.logger.Error("failed to check whether to skip the stage", zap.Error(err))
-		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
-			s.logger.Error("failed to report stage status", zap.Error(err))
-		}
-		return true, model.StageStatus_STAGE_FAILURE
+		return true, model.StageStatus_STAGE_FAILURE, fmt.Sprintf("failed to check whether to skip the stage: %v", err)
 	}
 	if skip {
-		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_SKIPPED, ps.Requires); err != nil {
-			s.logger.Error("failed to report stage status", zap.Error(err))
-			return true, model.StageStatus_STAGE_FAILURE
-		}
-		// TODO: Send this log message to the control-plane. (e.g. Use the statusReason field and show it on UI)
 		s.logger.Info("The stage was successfully skipped due to the skip configuration of the stage.")
-		return true, model.StageStatus_STAGE_SKIPPED
+		return true, model.StageStatus_STAGE_SKIPPED, "The stage was successfully skipped due to the skip configuration of the stage."
 	}
 
-	return false, model.StageStatus_STAGE_RUNNING
+	return false, model.StageStatus_STAGE_RUNNING, ""
 }
 
-func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, status model.StageStatus, requires []string) error {
+func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, status model.StageStatus, statusReason string, requires []string) error {
 	var (
 		now = s.nowFunc()
 		req = &pipedservice.ReportStageStatusChangedRequest{
 			DeploymentId: s.deployment.Id,
 			StageId:      stageID,
 			Status:       status,
+			StatusReason: statusReason,
 			Requires:     requires,
 			CompletedAt:  now.Unix(),
 		}

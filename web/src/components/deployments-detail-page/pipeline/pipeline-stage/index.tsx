@@ -11,6 +11,7 @@ export interface PipelineStageProps {
   isDeploymentRunning: boolean;
   metadata: [string, string][];
   displayMetadataText?: string;
+  statusReason?: string;
   onClick: (stageId: string, stageName: string) => void;
 }
 
@@ -71,6 +72,7 @@ export const PipelineStage: FC<PipelineStageProps> = memo(
     metadata,
     isDeploymentRunning,
     displayMetadataText,
+    statusReason,
   }) {
     const disabled =
       isDeploymentRunning === false &&
@@ -159,6 +161,29 @@ export const PipelineStage: FC<PipelineStageProps> = memo(
           >
             <Typography variant="body2" color="inherit">
               {trafficPercentage}
+            </Typography>
+          </Box>
+        )}
+        {statusReason && (
+          <Box
+            sx={{
+              color: "text.secondary",
+              marginLeft: 4,
+              textAlign: "left",
+              maxWidth: 200,
+            }}
+          >
+            <Typography
+              variant="body2"
+              color="inherit"
+              title={statusReason}
+              sx={{
+                whiteSpace: "nowrap",
+                textOverflow: "ellipsis",
+                overflow: "hidden",
+              }}
+            >
+              {statusReason}
             </Typography>
           </Box>
         )}

@@ -224,10 +224,13 @@ message ReportPipedMetaResponse {
 }
 
 message ListApplicationsRequest {
+    int32 limit = 1;
+    string cursor = 2;
 }
 
 message ListApplicationsResponse {
     repeated model.Application applications = 1;
+    string cursor = 2;
 }
 
 message ReportApplicationSyncStateRequest {

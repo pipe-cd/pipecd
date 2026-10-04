@@ -306,6 +306,7 @@ export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
                         displayMetadataText={
                           displayMetadataText || approver || skipper
                         }
+                        statusReason={stage.statusReason}
                       />
                     )}
                   </Box>
