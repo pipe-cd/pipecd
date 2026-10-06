@@ -183,7 +183,7 @@ Because login happens in `Initialize`, it runs once at startup, not on every dep
 
 ![piped startup log adding the chart repository and logging in to the OCI registry, with helm pull failing before and succeeding after](/images/multicluster-part2-helm-oci-initialize.png)
 
-This prepares the plugin for remote charts. Today the plugin only renders local charts (`helmChart.path`). Rendering a chart directly from a repository or registry is the next step, and the login it needs is already done.
+This login is what makes remote charts possible. When this post was written the plugin only rendered local charts (`helmChart.path`); rendering a chart straight from a repository or OCI registry through `helmChart.repository` is added in [#7465](https://github.com/pipe-cd/pipecd/pull/7465), which reuses the login done here.
 
 ---
 
@@ -326,7 +326,7 @@ To migrate, find and replace the stage names in your pipeline YAML:
 
 ## Where Things Stand
 
-The plugin now covers most of what the single-cluster plugin does. It has six progressive delivery stages, per-stage cluster filtering, per-cluster status, plan preview, Helm/OCI login, config validation, health checks for all five workload types, better rollback, drift detection, and per-cluster settings. The main piece still missing is templating Helm charts straight from a chart repository or OCI registry; the plugin templates local charts today, and the login added in the initializer is the groundwork for that. In total, 39 PRs were merged during the mentorship term.
+The plugin now covers most of what the single-cluster plugin does. It has six progressive delivery stages, per-stage cluster filtering, per-cluster status, plan preview, Helm/OCI login, config validation, health checks for all five workload types, better rollback, drift detection, and per-cluster settings. Templating Helm charts straight from a chart repository or OCI registry, the last large gap, is in review in [#7465](https://github.com/pipe-cd/pipecd/pull/7465). In total, 39 PRs were merged during the mentorship term.
 
 The plugin is part of the open-source PipeCD project. Contributions are welcome.
 
