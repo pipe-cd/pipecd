@@ -44,7 +44,7 @@ stages:
 
 Each stage keeps only the clusters that are both in its `multiTargets` list and in the application's deploy targets. If `multiTargets` is empty, the stage runs on all clusters. This is the same as the old behaviour, so existing pipelines keep working.
 
-The filtering happens before the stage starts applying changes. Clusters that are not in the list are never touched. This means no partial changes and no rollout to a cluster by mistake. In the config code, every stage options type has an optional `MultiTargets []string` field:
+The filtering happens before the stage starts applying changes. Clusters that are not in the list are never touched. This prevents rollout to an unintended cluster; selected clusters can still be partially updated if an apply fails after earlier resources have succeeded. In the config code, every stage options type has an optional `MultiTargets []string` field:
 
 ```go
 type K8sCanaryRolloutStageOptions struct {
