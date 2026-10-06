@@ -84,7 +84,7 @@ type DeployTargetStatus struct {
 }
 ```
 
-PR [#6812](https://github.com/pipe-cd/pipecd/pull/6812) used this field in every stage of the plugin. The stage dispatch in `plugin.go` now looks like this:
+PR [#6812](https://github.com/pipe-cd/pipecd/pull/6812) used this field in the five stages that run on clusters in parallel: sync, canary rollout, baseline rollout, primary rollout and traffic routing. The cleanup and rollback stages still return only the overall status. The stage dispatch in `plugin.go` now looks like this:
 
 ```go
 case StageK8sMultiCanaryRollout:
@@ -95,7 +95,7 @@ case StageK8sMultiCanaryRollout:
     }, nil
 ```
 
-Each stage now returns a status for each cluster, together with the overall status. The stage log also names the cluster that failed. In the run below, `cluster-us` got a manifest that the API server rejects. The stage fails, and the log shows which cluster caused the failure. The apply that was still running on `cluster-eu` is cancelled instead of being left to finish:
+Those stages now return a status for each cluster, together with the overall status. The stage log also names the cluster that failed. In the run below, `cluster-us` got a manifest that the API server rejects. The stage fails, and the log shows which cluster caused the failure. The apply that was still running on `cluster-eu` is cancelled instead of being left to finish:
 
 ![Failed K8S_MULTI_CANARY_ROLLOUT stage: the log names cluster-us as the failed target](/images/multicluster-part2-per-cluster-failure-canary-log.png)
 
@@ -127,7 +127,7 @@ In this example, a branch changes the replica count for `cluster-eu` only:
 
 ![pipectl plan-preview output showing 1 changed manifest for cluster-eu and no changes for cluster-us](/images/multicluster-part2-plan-preview-per-cluster.png)
 
-One gap turned up while taking that screenshot: the preview applied the per-cluster `manifests` override but not the per-cluster `kustomizeDir`, `kustomizeVersion` and `kustomizeOptions` that the deployment path already used, so applications with per-cluster Kustomize overlays always previewed as "No changes". [#7437](https://github.com/pipe-cd/pipecd/pull/7437) makes the preview use the same per-cluster settings as the deployment.
+One gap turned up while taking that screenshot: the preview applied the per-cluster `manifests` override but not the per-cluster `kustomizeDir`, `kustomizeVersion` and `kustomizeOptions` that the deployment path already used, so applications with per-cluster Kustomize overlays always previewed as "No changes". A fix that makes the preview use the same per-cluster settings as the deployment is proposed in [#7437](https://github.com/pipe-cd/pipecd/pull/7437); until it is merged, per-cluster Kustomize overlays are not reflected in the preview.
 
 ---
 
@@ -239,9 +239,9 @@ The screenshot below shows the rollback after the failed canary stage from earli
 
 The plugin checked the health of Deployments and StatefulSets, but it skipped DaemonSets, ReplicaSets, and Pods without any warning. PR [#6807](https://github.com/pipe-cd/pipecd/pull/6807) added the missing checks:
 
-- **DaemonSet**: healthy when `NumberReady == DesiredNumberScheduled`
-- **ReplicaSet**: healthy when `ReadyReplicas >= Replicas`
-- **Pod**: healthy when all containers are running and none are in a crash loop
+- **DaemonSet**: unhealthy while the observed generation is behind, while fewer pods are updated or available than `DesiredNumberScheduled`, or while any pod is misscheduled or unavailable. Healthy otherwise.
+- **ReplicaSet**: unhealthy while the observed generation is behind, when a `ReplicaFailure` condition is set, or while the available or ready replicas are not equal to the desired count. Healthy otherwise.
+- **Pod**: unhealthy when a container is waiting with an error reason such as `CrashLoopBackOff` or `ErrImagePull`, or when the pod phase is anything other than `Running` or `Succeeded`.
 
 Without these checks, a DaemonSet that could not start on half of the nodes would still show as healthy.
 
@@ -265,7 +265,7 @@ The screenshot also shows the two things that make this report noisier than it s
 
 ## Per-Cluster Settings
 
-Three PRs added settings that you can now set for each cluster instead of only once for all clusters. In each case, the plugin starts with the top-level `spec.input` value and uses the per-cluster value instead if one is set:
+Two PRs added settings that you can now set for each cluster instead of only once for all clusters. In each case, the plugin starts with the top-level `spec.input` value and uses the per-cluster value instead if one is set:
 
 ```go
 kustomizeVersion := spec.Input.KustomizeVersion  // global default
@@ -274,11 +274,12 @@ if multiTarget != nil && multiTarget.KustomizeVersion != "" {
 }
 ```
 
-The three additions:
+The two additions:
 
 - **`kustomizeDir`** ([#6718](https://github.com/pipe-cd/pipecd/pull/6718)): the folder to use for Kustomize. This helps when each cluster uses a different overlay from the same repo.
 - **`kustomizeVersion` and `kustomizeOptions`** ([#6749](https://github.com/pipe-cd/pipecd/pull/6749)): use a different Kustomize version or options for each cluster.
-- **Config hash for StatefulSet and DaemonSet** ([#6697](https://github.com/pipe-cd/pipecd/pull/6697)): StatefulSets and DaemonSets now roll out again when a ConfigMap or Secret they use changes, as Deployments already did. The plugin does this by adding a hash of the config data as a pod annotation.
+
+A related change that is not a setting: with [#6697](https://github.com/pipe-cd/pipecd/pull/6697), StatefulSets and DaemonSets now roll out again when a ConfigMap or Secret they mount changes, as Deployments already did. The plugin adds a hash of the config data as a pod template annotation, on every cluster, with nothing to configure.
 
 A full multi-cluster config with per-cluster settings looks like this:
 
