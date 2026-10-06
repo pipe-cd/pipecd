@@ -127,7 +127,7 @@ In this example, a branch changes the replica count for `cluster-eu` only:
 
 ![pipectl plan-preview output showing 1 changed manifest for cluster-eu and no changes for cluster-us](/images/multicluster-part2-plan-preview-per-cluster.png)
 
-One gap turned up while taking that screenshot: the preview applied the per-cluster `manifests` override but not the per-cluster `kustomizeDir`, `kustomizeVersion` and `kustomizeOptions` that the deployment path already used, so applications with per-cluster Kustomize overlays always previewed as "No changes". A fix that makes the preview use the same per-cluster settings as the deployment is proposed in [#7437](https://github.com/pipe-cd/pipecd/pull/7437); until it is merged, per-cluster Kustomize overlays are not reflected in the preview.
+One gap turned up while taking that screenshot: the preview applied the per-cluster `manifests` override but not the per-cluster `kustomizeDir`, `kustomizeVersion` and `kustomizeOptions` that the deployment path already used, so applications with per-cluster Kustomize overlays always previewed as "No changes". [#7437](https://github.com/pipe-cd/pipecd/pull/7437) makes the preview use the same per-cluster settings as the deployment, so per-cluster Kustomize overlays show up in the preview too.
 
 ---
 
@@ -183,7 +183,7 @@ Because login happens in `Initialize`, it runs once at startup, not on every dep
 
 ![piped startup log adding the chart repository and logging in to the OCI registry, with helm pull failing before and succeeding after](/images/multicluster-part2-helm-oci-initialize.png)
 
-This login is what makes remote charts possible. When this post was written the plugin only rendered local charts (`helmChart.path`); rendering a chart straight from a repository or OCI registry through `helmChart.repository` is added in [#7465](https://github.com/pipe-cd/pipecd/pull/7465), which reuses the login done here.
+This login is what makes remote charts possible. Besides local charts (`helmChart.path`), the plugin renders a chart straight from a repository or OCI registry through `helmChart.repository`, `name` and `version` ([#7465](https://github.com/pipe-cd/pipecd/pull/7465)), reusing the login done here.
 
 ---
 
@@ -326,7 +326,7 @@ To migrate, find and replace the stage names in your pipeline YAML:
 
 ## Where Things Stand
 
-The plugin now covers most of what the single-cluster plugin does. It has six progressive delivery stages, per-stage cluster filtering, per-cluster status, plan preview, Helm/OCI login, config validation, health checks for all five workload types, better rollback, drift detection, and per-cluster settings. Templating Helm charts straight from a chart repository or OCI registry, the last large gap, is in review in [#7465](https://github.com/pipe-cd/pipecd/pull/7465). In total, 39 PRs were merged during the mentorship term.
+The plugin now covers what the single-cluster plugin does for Kubernetes manifests, Kustomize and Helm charts. It has six progressive delivery stages, per-stage cluster filtering, per-cluster status, plan preview, Helm/OCI login, config validation, health checks for all five workload types, better rollback, drift detection, and per-cluster settings. Helm charts can come from the application directory, a chart repository or an OCI registry. In total, 39 PRs were merged during the mentorship term.
 
 The plugin is part of the open-source PipeCD project. Contributions are welcome.
 
