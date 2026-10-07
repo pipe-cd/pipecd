@@ -207,7 +207,13 @@ func (p *Pattern) regexpString() string {
 		case '?':
 			// "?" is any char except "/".
 			regStr += "[^" + escSL + "]"
-		case '.', '$':
+		case '[':
+			regStr += "["
+			if scan.Peek() == '^' {
+				scan.Next()
+				regStr += "^"
+			}
+		case '.', '$', '+', '(', ')', '{', '}', '^', '|':
 			// Escape some regexp special chars that have no meaning
 			// in golang's filepath.Match.
 			regStr += `\` + string(ch)
