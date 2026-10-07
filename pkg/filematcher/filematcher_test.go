@@ -172,6 +172,11 @@ func TestMatches(t *testing.T) {
 		{"abc/**", "abc/def/ghi", true},
 		{"**/.foo", ".foo", true},
 		{"**/.foo", "bar.foo", false},
+		{"a+b.txt", "a+b.txt", true},
+		{"foo(1).txt", "foo(1).txt", true},
+		{"foo{1}.txt", "foo{1}.txt", true},
+		{"foo|bar.txt", "foo|bar.txt", true},
+		{"^foo.txt", "^foo.txt", true},
 	}
 
 	for _, test := range tests {
