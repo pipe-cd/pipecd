@@ -79,11 +79,11 @@ const LABEL_BLOCK = `(\\{${LABEL_PAIR}(,${LABEL_PAIR})*\\})?`;
 export const POLICIES_STRING_REGEX = new RegExp(
   "resources=(" +
     rbacResourceTypes()
-      .map((v) => v.replace(/\*/, "\\*") + LABEL_BLOCK)
+      .map((v) => v.replace(/\*/g, "\\*") + LABEL_BLOCK)
       .join("|") +
     "|,)+;\\s*actions=(" +
     rbacActionTypes()
-      .map((v) => v.replace(/\*/, "\\*"))
+      .map((v) => v.replace(/\*/g, "\\*"))
       .join("|") +
     "|,)+"
 );

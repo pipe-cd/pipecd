@@ -24,10 +24,10 @@ import (
 )
 
 type dummyDoc struct {
-	val map[string]interface{}
+	val map[string]any
 }
 
-func (d *dummyDoc) Data() map[string]interface{} {
+func (d *dummyDoc) Data() map[string]any {
 	return d.val
 }
 
@@ -47,7 +47,7 @@ func TestCursor(t *testing.T) {
 			name: "valid last cursor",
 			iter: Iterator{
 				last: &dummyDoc{
-					val: map[string]interface{}{
+					val: map[string]any{
 						"Id":        "object-id",
 						"CreatedAt": 100,
 						"UpdatedAt": 100,
@@ -73,7 +73,7 @@ func TestCursor(t *testing.T) {
 			name: "invalid last cursor: field name of cursor data in snake_case",
 			iter: Iterator{
 				last: &dummyDoc{
-					val: map[string]interface{}{
+					val: map[string]any{
 						"id":         "object-id",
 						"created_at": 100,
 						"updated_at": 100,

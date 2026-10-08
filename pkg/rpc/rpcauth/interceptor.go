@@ -68,7 +68,7 @@ var (
 // and validates it by the specified Verifier.
 // If the token was valid the parsed ProjectID, PipedID, PipedKey will be set to the context.
 func PipedTokenUnaryServerInterceptor(verifier PipedTokenVerifier, logger *zap.Logger) grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		creds, err := extractCredentials(ctx)
 		if err != nil {
 			return nil, err
@@ -100,7 +100,7 @@ func PipedTokenUnaryServerInterceptor(verifier PipedTokenVerifier, logger *zap.L
 // This interceptor will returns a gRPC error when the credentials
 // was not set or was malformed.
 func PipedTokenStreamServerInterceptor(verifier PipedTokenVerifier, logger *zap.Logger) grpc.StreamServerInterceptor {
-	return func(srv interface{}, stream grpc.ServerStream, _ *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+	return func(srv any, stream grpc.ServerStream, _ *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		ctx := stream.Context()
 		creds, err := extractCredentials(ctx)
 		if err != nil {
@@ -149,7 +149,7 @@ func ExtractPipedToken(ctx context.Context) (projectID, pipedID, pipedKey string
 // and validates it by the specified Verifier.
 // The valid API key will be set to the context.
 func APIKeyUnaryServerInterceptor(verifier APIKeyVerifier, logger *zap.Logger) grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		creds, err := extractCredentials(ctx)
 		if err != nil {
 			return nil, err
@@ -185,7 +185,7 @@ func ExtractAPIKey(ctx context.Context) (*model.APIKey, error) {
 // JWTUnaryServerInterceptor ensures that the JWT credentials included in the context
 // must be verified by verifier.
 func JWTUnaryServerInterceptor(verifier jwt.Verifier, authorizer RBACAuthorizer, logger *zap.Logger) grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		cookie, err := extractCookie(ctx)
 		if err != nil {
 			logger.Warn("failed to extract cookie", zap.Error(err))

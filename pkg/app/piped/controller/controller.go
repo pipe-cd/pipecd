@@ -517,14 +517,12 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 	}
 
 	// Start running planner.
-	c.wg.Add(1)
-	go func() {
-		defer c.wg.Done()
+	c.wg.Go(func() {
 		defer cleanup()
 		if err := planner.Run(ctx); err != nil {
 			logger.Error("failed to run planner", zap.Error(err))
 		}
-	}()
+	})
 
 	return planner, nil
 }
@@ -660,14 +658,12 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 	}
 
 	// Start running scheduler.
-	c.wg.Add(1)
-	go func() {
-		defer c.wg.Done()
+	c.wg.Go(func() {
 		defer cleanup()
 		if err := scheduler.Run(ctx); err != nil {
 			logger.Error("failed to run scheduler", zap.Error(err))
 		}
-	}()
+	})
 
 	return scheduler, nil
 }

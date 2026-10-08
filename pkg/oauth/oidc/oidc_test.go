@@ -33,7 +33,7 @@ func TestDecideRole(t *testing.T) {
 	}{
 		{
 			claims: jwt.MapClaims{
-				"groups": []interface{}{model.BuiltinRBACRoleAdmin.String(), model.BuiltinRBACRoleEditor.String()},
+				"groups": []any{model.BuiltinRBACRoleAdmin.String(), model.BuiltinRBACRoleEditor.String()},
 			},
 			oc: &OAuthClient{
 				project: &model.Project{
@@ -50,7 +50,7 @@ func TestDecideRole(t *testing.T) {
 		},
 		{
 			claims: jwt.MapClaims{
-				"roles": []interface{}{model.BuiltinRBACRoleEditor.String()},
+				"roles": []any{model.BuiltinRBACRoleEditor.String()},
 			},
 			oc: &OAuthClient{
 				project: &model.Project{
@@ -67,7 +67,7 @@ func TestDecideRole(t *testing.T) {
 		},
 		{
 			claims: jwt.MapClaims{
-				"custom:groups": []interface{}{model.BuiltinRBACRoleViewer.String()},
+				"custom:groups": []any{model.BuiltinRBACRoleViewer.String()},
 			},
 			oc: &OAuthClient{
 				project: &model.Project{

@@ -30,7 +30,7 @@ func (d *deploymentTraceCollection) Kind() string {
 }
 
 func (d *deploymentTraceCollection) Factory() Factory {
-	return func() interface{} {
+	return func() any {
 		return &model.DeploymentTrace{}
 	}
 }
