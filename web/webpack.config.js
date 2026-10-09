@@ -1,6 +1,6 @@
 /* eslint @typescript-eslint/no-var-requires: 0 */
 "use strict";
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 const path = require("path");
 const webpack = require("webpack");
 const { merge } = require("webpack-merge");
