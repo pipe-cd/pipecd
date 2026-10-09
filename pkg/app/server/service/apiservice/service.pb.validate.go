@@ -366,6 +366,17 @@ func (m *SyncApplicationRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if _, ok := model.SyncStrategy_name[int32(m.GetSyncStrategy())]; !ok {
+		err := SyncApplicationRequestValidationError{
+			field:  "SyncStrategy",
+			reason: "value must be one of the defined enum values",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if len(errors) > 0 {
 		return SyncApplicationRequestMultiError(errors)
 	}

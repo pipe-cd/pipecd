@@ -64,7 +64,7 @@ func TestRPCRequestOK(t *testing.T) {
 	var cli service.Client
 	var err error
 	// Waiting the gRPC server.
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		ctx, cancel := context.WithTimeout(ctx, 100*time.Millisecond)
 		defer cancel()
 		cli, err = service.NewClient(
@@ -97,7 +97,7 @@ func TestRPCRequestWithoutCredentials(t *testing.T) {
 	var cli service.Client
 	var err error
 	// Waiting the gRPC server.
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		ctx, cancel := context.WithTimeout(ctx, 100*time.Millisecond)
 		defer cancel()
 		cli, err = service.NewClient(

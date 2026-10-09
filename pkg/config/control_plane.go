@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang/protobuf/jsonpb"
+	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -72,7 +72,7 @@ type SharedSSOConfig struct {
 }
 
 func (s *SharedSSOConfig) UnmarshalJSON(data []byte) error {
-	m := make(map[string]interface{})
+	m := make(map[string]any)
 	if err := json.Unmarshal(data, &m); err != nil {
 		return err
 	}
@@ -103,10 +103,10 @@ func (s *SharedSSOConfig) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	// Using jsonpb instead of the standard json to unmarshal because
+	// Using protojson instead of the standard json to unmarshal because
 	// json is unmarshaling with the underscored tags.
 	// https://github.com/golang/protobuf/issues/183
-	if err := jsonpb.UnmarshalString(string(data), &s.ProjectSSOConfig); err != nil {
+	if err := protojson.Unmarshal(data, &s.ProjectSSOConfig); err != nil {
 		return err
 	}
 	return nil

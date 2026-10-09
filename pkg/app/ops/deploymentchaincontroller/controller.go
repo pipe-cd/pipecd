@@ -133,10 +133,7 @@ func (d *DeploymentChainController) syncDeploymentChains(ctx context.Context) {
 		updaterCh   = make(chan *updater, updatersNum)
 		wg          sync.WaitGroup
 	)
-	updaterWorkerNum := maxUpdaterWorkerNum
-	if updaterWorkerNum > updatersNum {
-		updaterWorkerNum = updatersNum
-	}
+	updaterWorkerNum := min(maxUpdaterWorkerNum, updatersNum)
 
 	d.logger.Info(fmt.Sprintf("there are %d running deployment chain updaters", updatersNum))
 	for w := 0; w < updaterWorkerNum; w++ {

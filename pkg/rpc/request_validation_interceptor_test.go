@@ -36,7 +36,7 @@ func TestRequestValidationUnaryServerInterceptor(t *testing.T) {
 
 	testcases := []struct {
 		name  string
-		req   interface{}
+		req   any
 		fails bool
 	}{
 		{
@@ -57,7 +57,7 @@ func TestRequestValidationUnaryServerInterceptor(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := in(context.TODO(), tc.req, nil, func(ctx context.Context, req interface{}) (interface{}, error) {
+			_, err := in(context.TODO(), tc.req, nil, func(ctx context.Context, req any) (any, error) {
 				return nil, nil
 			})
 			assert.Equal(t, tc.fails, err != nil)

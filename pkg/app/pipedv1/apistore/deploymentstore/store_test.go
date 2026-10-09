@@ -31,13 +31,19 @@ import (
 // If the test code calls beyond len(pages), an empty terminal response is
 // returned so misconfigured tests fail with a clear assertion mismatch
 // instead of an index-out-of-range panic.
+//
+// gotCursors records the Cursor field of every request received, in order,
+// so tests can assert that each response cursor is threaded into the next
+// request.
 type fakeAPIClient struct {
-	pages []*pipedservice.ListNotCompletedDeploymentsResponse
-	call  int
-	err   error
+	pages      []*pipedservice.ListNotCompletedDeploymentsResponse
+	call       int
+	err        error
+	gotCursors []string
 }
 
-func (f *fakeAPIClient) ListNotCompletedDeployments(_ context.Context, _ *pipedservice.ListNotCompletedDeploymentsRequest, _ ...grpc.CallOption) (*pipedservice.ListNotCompletedDeploymentsResponse, error) {
+func (f *fakeAPIClient) ListNotCompletedDeployments(_ context.Context, req *pipedservice.ListNotCompletedDeploymentsRequest, _ ...grpc.CallOption) (*pipedservice.ListNotCompletedDeploymentsResponse, error) {
+	f.gotCursors = append(f.gotCursors, req.GetCursor())
 	if f.err != nil {
 		return nil, f.err
 	}
@@ -66,6 +72,9 @@ func TestSync(t *testing.T) {
 		wantPlanneds []*model.Deployment
 		wantRunnings []*model.Deployment
 		wantHeads    map[string]*model.Deployment
+		// wantCursors is the ordered sequence of Cursor values sync() is
+		// expected to send. The first request always carries "".
+		wantCursors []string
 	}{
 		{
 			name: "empty_response",
@@ -76,6 +85,7 @@ func TestSync(t *testing.T) {
 			wantPlanneds: nil,
 			wantRunnings: nil,
 			wantHeads:    map[string]*model.Deployment{},
+			wantCursors:  []string{""},
 		},
 		{
 			name: "single_page_classifies_each_status",
@@ -91,6 +101,7 @@ func TestSync(t *testing.T) {
 				"app-3": running,
 				"app-4": rollingBack,
 			},
+			wantCursors: []string{""},
 		},
 		{
 			name: "paginates_across_multiple_pages",
@@ -106,6 +117,7 @@ func TestSync(t *testing.T) {
 				"app-2": planned,
 				"app-3": running,
 			},
+			wantCursors: []string{"", "page2"},
 		},
 		{
 			name: "rolling_back_is_classified_as_running",
@@ -118,13 +130,38 @@ func TestSync(t *testing.T) {
 			wantHeads: map[string]*model.Deployment{
 				"app-4": rollingBack,
 			},
+			wantCursors: []string{""},
+		},
+		// Regression guard for the server-side pagination contract: the
+		// ListNotCompletedDeployments handler runs an unordered query, so
+		// deploymentStore.List returns the whole result set in one page
+		// with an empty cursor even when deployments exist. The sync loop
+		// must treat that as "done" after a single request rather than
+		// following a bogus non-empty cursor into a second request the
+		// datastore would reject with "opts.Cursor also requires Orders to
+		// be set".
+		{
+			name: "server_returns_all_deployments_in_a_single_page",
+			pages: []*pipedservice.ListNotCompletedDeploymentsResponse{
+				{Deployments: []*model.Deployment{pending, planned, running}, Cursor: ""},
+			},
+			wantPendings: []*model.Deployment{pending},
+			wantPlanneds: []*model.Deployment{planned},
+			wantRunnings: []*model.Deployment{running},
+			wantHeads: map[string]*model.Deployment{
+				"app-1": pending,
+				"app-2": planned,
+				"app-3": running,
+			},
+			wantCursors: []string{""},
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			fc := &fakeAPIClient{pages: tc.pages}
 			s := &store{
-				apiClient: &fakeAPIClient{pages: tc.pages},
+				apiClient: fc,
 				logger:    zap.NewNop(),
 			}
 
@@ -135,6 +172,7 @@ func TestSync(t *testing.T) {
 			assert.Equal(t, tc.wantPlanneds, s.ListPlanneds())
 			assert.Equal(t, tc.wantRunnings, s.ListRunnings())
 			assert.Equal(t, tc.wantHeads, s.ListAppHeadDeployments())
+			assert.Equal(t, tc.wantCursors, fc.gotCursors)
 		})
 	}
 }

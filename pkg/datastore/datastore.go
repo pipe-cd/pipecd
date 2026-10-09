@@ -63,8 +63,8 @@ var (
 	ErrUserDefined     = errors.New("user defined error")
 )
 
-type Factory func() interface{}
-type Updater func(interface{}) error
+type Factory func() any
+type Updater func(any) error
 
 type Collection interface {
 	Kind() string
@@ -76,10 +76,10 @@ type DataStore interface {
 	Find(ctx context.Context, col Collection, opts ListOptions) (Iterator, error)
 	// Get gets one document specified with ID, and unmarshal it to typed struct.
 	// If the document can not be found in datastore, ErrNotFound will be returned.
-	Get(ctx context.Context, col Collection, id string, entity interface{}) error
+	Get(ctx context.Context, col Collection, id string, entity any) error
 	// Create saves a new entity to the datastore.
 	// If an entity with the same ID is already existing, ErrAlreadyExists will be returned.
-	Create(ctx context.Context, col Collection, id string, entity interface{}) error
+	Create(ctx context.Context, col Collection, id string, entity any) error
 	// Update updates an existing entity in the datastore.
 	// If updating entity was not found in the datastore, ErrNotFound will be returned.
 	Update(ctx context.Context, col Collection, id string, updater Updater) error
@@ -88,14 +88,14 @@ type DataStore interface {
 }
 
 type Iterator interface {
-	Next(dst interface{}) error
+	Next(dst any) error
 	Cursor() (string, error)
 }
 
 type ListFilter struct {
 	Field    string
 	Operator Operator
-	Value    interface{}
+	Value    any
 }
 
 type Order struct {

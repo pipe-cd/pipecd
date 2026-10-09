@@ -59,10 +59,10 @@ metadata:
 			want: []Manifest{
 				{
 					body: &unstructured.Unstructured{
-						Object: map[string]interface{}{
+						Object: map[string]any{
 							"apiVersion": "v1",
 							"kind":       "ConfigMap",
-							"metadata": map[string]interface{}{
+							"metadata": map[string]any{
 								"name": "test-config",
 							},
 						},
@@ -87,10 +87,10 @@ metadata:
 			want: []Manifest{
 				{
 					body: &unstructured.Unstructured{
-						Object: map[string]interface{}{
+						Object: map[string]any{
 							"apiVersion": "v1",
 							"kind":       "ConfigMap",
-							"metadata": map[string]interface{}{
+							"metadata": map[string]any{
 								"name": "test-config",
 							},
 						},
@@ -98,10 +98,10 @@ metadata:
 				},
 				{
 					body: &unstructured.Unstructured{
-						Object: map[string]interface{}{
+						Object: map[string]any{
 							"apiVersion": "v1",
 							"kind":       "Service",
-							"metadata": map[string]interface{}{
+							"metadata": map[string]any{
 								"name": "test-service",
 							},
 						},
@@ -175,10 +175,10 @@ metadata:
 			want: []Manifest{
 				{
 					body: &unstructured.Unstructured{
-						Object: map[string]interface{}{
+						Object: map[string]any{
 							"apiVersion": "v1",
 							"kind":       "ConfigMap",
-							"metadata": map[string]interface{}{
+							"metadata": map[string]any{
 								"name": "test-config",
 							},
 						},
@@ -212,10 +212,10 @@ metadata:
 			want: []Manifest{
 				{
 					body: &unstructured.Unstructured{
-						Object: map[string]interface{}{
+						Object: map[string]any{
 							"apiVersion": "v1",
 							"kind":       "Service",
-							"metadata": map[string]interface{}{
+							"metadata": map[string]any{
 								"name": "test-service",
 							},
 						},
@@ -248,10 +248,10 @@ metadata:
 			want: []Manifest{
 				{
 					body: &unstructured.Unstructured{
-						Object: map[string]interface{}{
+						Object: map[string]any{
 							"apiVersion": "v1",
 							"kind":       "ConfigMap",
-							"metadata": map[string]interface{}{
+							"metadata": map[string]any{
 								"name": "test-config",
 							},
 						},
@@ -259,10 +259,10 @@ metadata:
 				},
 				{
 					body: &unstructured.Unstructured{
-						Object: map[string]interface{}{
+						Object: map[string]any{
 							"apiVersion": "v1",
 							"kind":       "Service",
-							"metadata": map[string]interface{}{
+							"metadata": map[string]any{
 								"name": "test-service",
 							},
 						},
