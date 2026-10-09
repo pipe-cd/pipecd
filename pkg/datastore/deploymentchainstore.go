@@ -30,7 +30,7 @@ func (d *deploymentChainCollection) Kind() string {
 }
 
 func (d *deploymentChainCollection) Factory() Factory {
-	return func() interface{} {
+	return func() any {
 		return &model.DeploymentChain{}
 	}
 }
@@ -175,7 +175,7 @@ func (s *deploymentChainStore) List(ctx context.Context, opts ListOptions) ([]*m
 
 func (s *deploymentChainStore) update(ctx context.Context, id string, updater func(*model.DeploymentChain) error) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
+	return s.ds.Update(ctx, s.col, id, func(e any) error {
 		dc := e.(*model.DeploymentChain)
 		if err := updater(dc); err != nil {
 			return err

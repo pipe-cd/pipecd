@@ -15,6 +15,7 @@
 package kubernetes
 
 import (
+	"maps"
 	"sync"
 	"time"
 
@@ -192,12 +193,8 @@ func (a *appNodes) getNodes() (map[string]node, *model.ApplicationLiveStateVersi
 		}
 		nodes = make(map[string]node, len(a.managingNodes)+len(a.dependedNodes))
 	)
-	for k, n := range a.dependedNodes {
-		nodes[k] = n
-	}
-	for k, n := range a.managingNodes {
-		nodes[k] = n
-	}
+	maps.Copy(nodes, a.dependedNodes)
+	maps.Copy(nodes, a.managingNodes)
 	return nodes, &version
 }
 

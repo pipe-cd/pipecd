@@ -64,7 +64,7 @@ func (p *ECSPlugin) executeECSRollbackStage(
 	}
 
 	serviceDef, err := provider.LoadServiceDefinition(
-		runningSource.ApplicationDirectory,
+		runningSource,
 		cfg.Spec.Input.ServiceDefinitionFile,
 		input,
 	)

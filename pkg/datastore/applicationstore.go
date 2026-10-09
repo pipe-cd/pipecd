@@ -30,7 +30,7 @@ func (a *applicationCollection) Kind() string {
 }
 
 func (a *applicationCollection) Factory() Factory {
-	return func() interface{} {
+	return func() any {
 		return &model.Application{}
 	}
 }
@@ -119,7 +119,7 @@ func (s *applicationStore) List(ctx context.Context, opts ListOptions) ([]*model
 }
 
 func (s *applicationStore) Delete(ctx context.Context, id string) error {
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
+	return s.ds.Update(ctx, s.col, id, func(e any) error {
 		now := s.nowFunc().Unix()
 		app := e.(*model.Application)
 		app.Deleted = true
@@ -131,7 +131,7 @@ func (s *applicationStore) Delete(ctx context.Context, id string) error {
 }
 
 func (s *applicationStore) Enable(ctx context.Context, id string) error {
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
+	return s.ds.Update(ctx, s.col, id, func(e any) error {
 		app := e.(*model.Application)
 		if app.Deleted {
 			return fmt.Errorf("cannot enable a deleted application: %w", ErrInvalidArgument)
@@ -143,7 +143,7 @@ func (s *applicationStore) Enable(ctx context.Context, id string) error {
 }
 
 func (s *applicationStore) Disable(ctx context.Context, id string) error {
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
+	return s.ds.Update(ctx, s.col, id, func(e any) error {
 		app := e.(*model.Application)
 		if app.Deleted {
 			return fmt.Errorf("cannot disable a deleted application: %w", ErrInvalidArgument)
@@ -156,7 +156,7 @@ func (s *applicationStore) Disable(ctx context.Context, id string) error {
 
 func (s *applicationStore) update(ctx context.Context, id string, updater func(*model.Application) error) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
+	return s.ds.Update(ctx, s.col, id, func(e any) error {
 		a := e.(*model.Application)
 		if a.Deleted {
 			return fmt.Errorf("cannot update a deleted application: %w", ErrInvalidArgument)

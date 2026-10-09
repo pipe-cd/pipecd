@@ -29,7 +29,7 @@ func TestRenderNodeValue(t *testing.T) {
 			"one": "1",
 			"two": "2",
 		}
-		mapOfMap = map[string]interface{}{
+		mapOfMap = map[string]any{
 			"one": map[string]string{
 				"one": "1-1",
 				"two": "1-2",
@@ -39,11 +39,11 @@ func TestRenderNodeValue(t *testing.T) {
 				"two": "2-2",
 			},
 		}
-		mapOfSlice = map[string]interface{}{
+		mapOfSlice = map[string]any{
 			"one": []string{"one-1", "one-2"},
 			"two": []string{"two-1", "two-2"},
 		}
-		mapOfBool = map[string]interface{}{
+		mapOfBool = map[string]any{
 			"false": false,
 			"true":  true,
 		}
@@ -92,7 +92,7 @@ func TestRenderNodeValue(t *testing.T) {
 		{
 			name: "slice of interface",
 			value: func() reflect.Value {
-				v := []interface{}{
+				v := []any{
 					map[string]int{
 						"1-one": 1,
 						"2-two": 2,
@@ -121,7 +121,7 @@ two: two-value`,
 		{
 			name: "nested map",
 			value: func() reflect.Value {
-				v := map[string]interface{}{
+				v := map[string]any{
 					"1-number":           1,
 					"2-string":           "hello",
 					"3-map-of-primitive": mapOfPrimative,
@@ -189,7 +189,7 @@ func TestRenderNodeValueComplex(t *testing.T) {
 func TestRenderPrimitiveValue(t *testing.T) {
 	testcases := []struct {
 		name     string
-		value    interface{}
+		value    any
 		expected string
 	}{
 		{

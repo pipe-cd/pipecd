@@ -7,5 +7,5 @@ commonLabels:
   app: kustomize-local-base
 
 images:
-- name: gcr.io/pipecd/helloworld
-  newTag: v0.6.0
+- name: ghcr.io/pipe-cd/helloworld
+  newTag: v0.48.0

@@ -84,7 +84,7 @@ func DiffList(olds, news []Manifest, logger *zap.Logger, opts ...diff.Option) (*
 		Changes: make([]DiffListChange, 0, len(newChanges)),
 	}
 
-	for i := 0; i < len(newChanges); i++ {
+	for i := range newChanges {
 		result, err := Diff(oldChanges[i], newChanges[i], logger, opts...)
 		if err != nil {
 			return nil, err

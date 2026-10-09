@@ -85,7 +85,7 @@ func TestDiffDefinitions(t *testing.T) {
 			}
 
 			if tc.wantNoRemovals {
-				for _, line := range strings.Split(diff, "\n") {
+				for line := range strings.SplitSeq(diff, "\n") {
 					if strings.HasPrefix(line, "---") {
 						continue
 					}

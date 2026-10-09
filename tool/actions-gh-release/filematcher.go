@@ -33,6 +33,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"text/scanner"
 )
@@ -118,12 +119,7 @@ func (pm *PatternMatcher) Matches(file string) bool {
 }
 
 func (pm *PatternMatcher) MatchesAny(files []string) bool {
-	for _, file := range files {
-		if pm.Matches(file) {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(files, pm.Matches)
 }
 
 func matches(file string, patterns []*Pattern) bool {
@@ -168,7 +164,8 @@ func (p *Pattern) String() string {
 }
 
 func (p *Pattern) regexpString() string {
-	regStr := "^"
+	var regStr strings.Builder
+	regStr.WriteString("^")
 	pattern := p.cleanedPattern
 	// Go through the pattern and convert it to a regexp.
 	// We use a scanner so we can support utf-8 chars.
@@ -197,24 +194,24 @@ func (p *Pattern) regexpString() string {
 
 				if scan.Peek() == scanner.EOF {
 					// Is "**EOF" - to align with .gitignore just accept all.
-					regStr += ".*"
+					regStr.WriteString(".*")
 				} else {
 					// Is "**".
 					// Note that this allows for any # of /'s (even 0) because
 					// the .* will eat everything, even /'s.
-					regStr += "(.*" + escSL + ")?"
+					regStr.WriteString("(.*" + escSL + ")?")
 				}
 			} else {
 				// Is "*" so map it to anything but "/".
-				regStr += "[^" + escSL + "]*"
+				regStr.WriteString("[^" + escSL + "]*")
 			}
 		case '?':
 			// "?" is any char except "/".
-			regStr += "[^" + escSL + "]"
+			regStr.WriteString("[^" + escSL + "]")
 		case '.', '$':
 			// Escape some regexp special chars that have no meaning
 			// in golang's filepath.Match.
-			regStr += `\` + string(ch)
+			regStr.WriteString(`\` + string(ch))
 		case '\\':
 			// Escape next char. Note that a trailing \ in the pattern
 			// will be left alone (but need to escape it).
@@ -222,20 +219,20 @@ func (p *Pattern) regexpString() string {
 				// On windows map "\" to "\\", meaning an escaped backslash,
 				// and then just continue because filepath.Match on
 				// Windows doesn't allow escaping at all.
-				regStr += escSL
+				regStr.WriteString(escSL)
 				continue
 			}
 			if scan.Peek() != scanner.EOF {
-				regStr += `\` + string(scan.Next())
+				regStr.WriteString(`\` + string(scan.Next()))
 			} else {
-				regStr += `\`
+				regStr.WriteString(`\`)
 			}
 		default:
-			regStr += string(ch)
+			regStr.WriteString(string(ch))
 		}
 	}
-	regStr += "$"
-	return regStr
+	regStr.WriteString("$")
+	return regStr.String()
 }
 
 // Matches returns true if file matches any of the patterns

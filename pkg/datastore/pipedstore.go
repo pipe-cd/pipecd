@@ -29,7 +29,7 @@ func (p *pipedCollection) Kind() string {
 }
 
 func (p *pipedCollection) Factory() Factory {
-	return func() interface{} {
+	return func() any {
 		return &model.Piped{}
 	}
 }
@@ -106,7 +106,7 @@ func (s *pipedStore) List(ctx context.Context, opts ListOptions) ([]*model.Piped
 
 func (s *pipedStore) update(ctx context.Context, id string, updater func(piped *model.Piped) error) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
+	return s.ds.Update(ctx, s.col, id, func(e any) error {
 		p := e.(*model.Piped)
 		if err := updater(p); err != nil {
 			return err
