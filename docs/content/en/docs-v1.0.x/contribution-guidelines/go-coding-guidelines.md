@@ -97,14 +97,10 @@ identify the failed operation and investigate its cause. Record the
 cause even when a normal execution failure is represented by a failed
 stage result rather than an RPC error.
 
-Keep conversion to gRPC status errors at the SDK boundary.
-Plugin-specific sentinel errors do not need to retain their identity
-across RPC calls.
-
-Do not add a shared error-classification API or a new error wrapper
-without a concrete diagnostic need or a caller that acts on an error
-category. These guidelines do not prescribe `codes.Internal` for every
-failure.
+Plugin implementations should return ordinary Go errors. The SDK
+translates them to gRPC status errors at the RPC handler, choosing a
+status code that reflects the error’s meaning and the API contract,
+this guidance does not require codes.Internal for every failure.
 
 ## Concurrency and context
 
