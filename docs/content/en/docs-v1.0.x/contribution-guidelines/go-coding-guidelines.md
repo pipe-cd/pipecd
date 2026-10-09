@@ -122,7 +122,9 @@ process-root contexts and work deliberately detached from parent
 cancellation for graceful shutdown. Explain the latter case in a
 comment.
 
-Use `go.uber.org/atomic` rather than `sync/atomic`.
+Use `go.uber.org/atomic` to follow PipeCD's established convention,
+enforced by depguard. This is a project-specific choice, not a general
+claim that `sync/atomic` is unsuitable.
 
 Name mutex fields `mu` by default; use purpose-specific prefixes when
 a struct has more than one mutex.
