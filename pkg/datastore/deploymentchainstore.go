@@ -48,6 +48,12 @@ var (
 				if node.ApplicationRef.ApplicationId != deployment.ApplicationId {
 					continue
 				}
+				// The node is already linked to this deployment; keep the status which
+				// has been reported so far instead of resetting it to the status of the
+				// just created deployment. This makes retries of CreateDeployment safe.
+				if node.DeploymentRef != nil && node.DeploymentRef.DeploymentId == deployment.Id {
+					return nil
+				}
 				node.DeploymentRef = &model.ChainDeploymentRef{
 					DeploymentId: deployment.Id,
 					Status:       deployment.Status,
