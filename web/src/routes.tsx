@@ -30,6 +30,7 @@ import {
   BANNER_VERSION_KEY,
   USER_PROJECTS,
 } from "~/constants/localstorage";
+import { getSafeRedirectPath } from "~/utils/safe-url";
 import useQueryString from "./hooks/use-query-string";
 import { sortedSet } from "~/utils/sorted-set";
 import DeploymentTracePage from "./components/deployment-trace-page";
@@ -206,8 +207,10 @@ export const Routes: FC = () => {
         <Route
           path="*"
           Component={() => {
-            const path =
-              localStorage.getItem(REDIRECT_PATH_KEY) || PAGE_PATH_APPLICATIONS;
+            const path = getSafeRedirectPath(
+              localStorage.getItem(REDIRECT_PATH_KEY),
+              PAGE_PATH_APPLICATIONS
+            );
             localStorage.removeItem(REDIRECT_PATH_KEY);
             return <Navigate to={path} replace />;
           }}
