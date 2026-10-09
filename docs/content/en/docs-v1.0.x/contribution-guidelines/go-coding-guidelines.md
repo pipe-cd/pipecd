@@ -249,6 +249,10 @@ indiscriminately through `testifylint`'s `require-error` rule.
 
 ## Module boundaries
 
+Some parts of PipeCD, including pipedv1 plugins, are maintained as
+separate Go modules. The following conventions help keep module
+dependencies clear and builds reproducible.
+
 Independent plugin modules under `pkg/app/pipedv1/plugin/` must not
 import the PipeCD main module, `github.com/pipe-cd/pipecd`. Use
 `github.com/pipe-cd/piped-plugin-sdk-go` for integration with PipeCD.
