@@ -35,7 +35,7 @@ jobs:
           echo "modules=$(find . -name go.mod -exec dirname {} \; | sort | jq -R -s -c 'split("\n") | map(select(length > 0))')" >> $GITHUB_OUTPUT
 
   go:
-    runs-on: oracle-vm-8cpu-32gb-x86-64
+    runs-on: ubuntu-26.04
     needs: list-go-modules
     strategy:
       fail-fast: false
