@@ -15,7 +15,6 @@
 package regexpool
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -36,6 +35,14 @@ func TestPool(t *testing.T) {
 	assert.NotNil(t, regex)
 
 	regex, err = pool.Get("(abc")
-	assert.Equal(t, fmt.Errorf("unable to compile: (abc"), err)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), `unable to compile "(abc":`)
+	assert.Contains(t, err.Error(), "error parsing regexp")
+	assert.Nil(t, regex)
+
+	regex, err = pool.Get("(abc")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), `unable to compile "(abc":`)
+	assert.Contains(t, err.Error(), "error parsing regexp")
 	assert.Nil(t, regex)
 }
