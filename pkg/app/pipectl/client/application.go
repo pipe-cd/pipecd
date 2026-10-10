@@ -33,6 +33,7 @@ func SyncApplication(
 	ctx context.Context,
 	cli apiservice.Client,
 	appID string,
+	syncStrategy model.SyncStrategy,
 	checkInterval, timeout time.Duration,
 	logger *zap.Logger,
 ) (string, error) {
@@ -41,6 +42,7 @@ func SyncApplication(
 
 	req := &apiservice.SyncApplicationRequest{
 		ApplicationId: appID,
+		SyncStrategy:  syncStrategy,
 	}
 	resp, err := cli.SyncApplication(ctx, req)
 	if err != nil {

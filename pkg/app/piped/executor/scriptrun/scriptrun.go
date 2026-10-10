@@ -96,7 +96,7 @@ func (e *Executor) executeCommand() model.StageStatus {
 	opts := e.StageConfig.ScriptRunStageOptions
 
 	e.LogPersister.Infof("Runnnig commands...")
-	for _, v := range strings.Split(opts.Run, "\n") {
+	for v := range strings.SplitSeq(opts.Run, "\n") {
 		if v != "" {
 			e.LogPersister.Infof("   %s", v)
 		}

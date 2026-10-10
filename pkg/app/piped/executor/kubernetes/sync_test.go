@@ -107,7 +107,7 @@ func TestEnsureSync(t *testing.T) {
 							APIVersion: "apps/v1",
 							Kind:       provider.KindDeployment,
 						}, &unstructured.Unstructured{
-							Object: map[string]interface{}{"spec": map[string]interface{}{}},
+							Object: map[string]any{"spec": map[string]any{}},
 						}),
 					}, nil)
 					return p
@@ -153,7 +153,7 @@ func TestEnsureSync(t *testing.T) {
 							APIVersion: "apps/v1",
 							Kind:       provider.KindDeployment,
 						}, &unstructured.Unstructured{
-							Object: map[string]interface{}{"spec": map[string]interface{}{}},
+							Object: map[string]any{"spec": map[string]any{}},
 						}),
 					}, nil)
 					return p
