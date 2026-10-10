@@ -75,7 +75,7 @@ jobs:
       - name: Run unit tests
         run: make test/go COVERAGE=true MODULES=${{ matrix.module }}
       - name: Save Go cache
-        if: (github.ref == 'refs/heads/master' || github.head_ref == 'test-speedup') && steps.go-cache-restore.outputs.cache-hit != 'true'
+        if: github.ref == 'refs/heads/master' && steps.go-cache-restore.outputs.cache-hit != 'true'
         uses: actions/cache/save@v6
         with:
           path: |
