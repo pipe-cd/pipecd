@@ -21,9 +21,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -425,16 +425,18 @@ func TestListDeployments(t *testing.T) {
 	defer ctrl.Finish()
 
 	testcases := []struct {
-		name    string
-		opts    ListOptions
-		ds      DataStore
-		wantErr bool
+		name       string
+		opts       ListOptions
+		ds         DataStore
+		wantCursor string
+		wantErr    bool
 	}{
 		{
 			name: "iterator done",
 			opts: ListOptions{},
 			ds: func() DataStore {
 				it := NewMockIterator(ctrl)
+				it.EXPECT().Close().Return(nil)
 				it.EXPECT().
 					Next(&model.Deployment{}).
 					Return(ErrIteratorDone)
@@ -452,6 +454,7 @@ func TestListDeployments(t *testing.T) {
 			opts: ListOptions{},
 			ds: func() DataStore {
 				it := NewMockIterator(ctrl)
+				it.EXPECT().Close().Return(nil)
 				it.EXPECT().
 					Next(&model.Deployment{}).
 					Return(fmt.Errorf("err"))
@@ -464,13 +467,71 @@ func TestListDeployments(t *testing.T) {
 			}(),
 			wantErr: true,
 		},
+		{
+			// Queries with no Orders (e.g. ListNotCompletedDeployments)
+			// must not advertise a cursor: Iterator.Cursor() is never
+			// consulted and the returned cursor is empty, so a client that
+			// loops until the cursor is empty stops after a single call
+			// instead of issuing a follow-up request the datastore would
+			// reject with "opts.Cursor also requires Orders to be set".
+			name: "no orders returns empty cursor without calling Iterator.Cursor",
+			opts: ListOptions{},
+			ds: func() DataStore {
+				it := NewMockIterator(ctrl)
+				gomock.InOrder(
+					it.EXPECT().Next(gomock.Any()).Return(nil),
+					it.EXPECT().Next(gomock.Any()).Return(nil),
+					it.EXPECT().Next(gomock.Any()).Return(ErrIteratorDone),
+				)
+
+				ds := NewMockDataStore(ctrl)
+				ds.EXPECT().
+					Find(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(it, nil)
+				return ds
+			}(),
+			wantCursor: "",
+			wantErr:    false,
+		},
+		{
+			// When the query is ordered, pagination is meaningful and the
+			// cursor built from the last read row is passed through to the
+			// caller unchanged.
+			name: "ordered query returns cursor from iterator",
+			opts: ListOptions{
+				Orders: []Order{
+					{Field: "UpdatedAt", Direction: Desc},
+					{Field: "Id", Direction: Asc},
+				},
+			},
+			ds: func() DataStore {
+				it := NewMockIterator(ctrl)
+				gomock.InOrder(
+					it.EXPECT().Next(gomock.Any()).Return(nil),
+					it.EXPECT().Next(gomock.Any()).Return(nil),
+					it.EXPECT().Next(gomock.Any()).Return(ErrIteratorDone),
+				)
+				it.EXPECT().Cursor().Return("next-cursor", nil)
+
+				ds := NewMockDataStore(ctrl)
+				ds.EXPECT().
+					Find(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(it, nil)
+				return ds
+			}(),
+			wantCursor: "next-cursor",
+			wantErr:    false,
+		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := NewDeploymentStore(tc.ds)
-			_, _, err := s.List(context.Background(), tc.opts)
+			_, cursor, err := s.List(context.Background(), tc.opts)
 			assert.Equal(t, tc.wantErr, err != nil)
+			if !tc.wantErr {
+				assert.Equal(t, tc.wantCursor, cursor)
+			}
 		})
 	}
 }

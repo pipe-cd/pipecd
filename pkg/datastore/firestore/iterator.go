@@ -25,7 +25,7 @@ import (
 )
 
 type dataConverter interface {
-	Data() map[string]interface{}
+	Data() map[string]any
 }
 
 type Iterator struct {
@@ -34,7 +34,7 @@ type Iterator struct {
 	last   dataConverter
 }
 
-func (it *Iterator) Next(dst interface{}) error {
+func (it *Iterator) Next(dst any) error {
 	doc, err := it.it.Next()
 	if err != nil {
 		if err == iterator.Done {
@@ -49,6 +49,13 @@ func (it *Iterator) Next(dst interface{}) error {
 	return doc.DataTo(dst)
 }
 
+// Close stops the underlying Firestore DocumentIterator, releasing its
+// resources. It is safe to call Close multiple times.
+func (it *Iterator) Close() error {
+	it.it.Stop()
+	return nil
+}
+
 // Cursor builds a base 64 string (encode from string in map[string]interface{} format).
 // The cursor contains only values attached with the fields used
 // as ordering fields.
@@ -59,7 +66,7 @@ func (it *Iterator) Cursor() (string, error) {
 
 	lastObjData := it.last.Data()
 
-	cursor := make(map[string]interface{}, len(it.orders))
+	cursor := make(map[string]any, len(it.orders))
 	for _, o := range it.orders {
 		val, ok := lastObjData[o.Field]
 		if !ok {

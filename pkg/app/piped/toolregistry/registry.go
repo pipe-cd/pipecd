@@ -120,7 +120,7 @@ func (r *registry) Kubectl(ctx context.Context, version string) (string, bool, e
 		return path, false, nil
 	}
 
-	_, err, _ := r.installGroup.Do(name, func() (interface{}, error) {
+	_, err, _ := r.installGroup.Do(name, func() (any, error) {
 		return nil, r.installKubectl(ctx, version)
 	})
 	if err != nil {
@@ -148,7 +148,7 @@ func (r *registry) Kustomize(ctx context.Context, version string) (string, bool,
 		return path, false, nil
 	}
 
-	_, err, _ := r.installGroup.Do(name, func() (interface{}, error) {
+	_, err, _ := r.installGroup.Do(name, func() (any, error) {
 		return nil, r.installKustomize(ctx, version)
 	})
 	if err != nil {
@@ -176,7 +176,7 @@ func (r *registry) Helm(ctx context.Context, version string) (string, bool, erro
 		return path, false, nil
 	}
 
-	_, err, _ := r.installGroup.Do(name, func() (interface{}, error) {
+	_, err, _ := r.installGroup.Do(name, func() (any, error) {
 		return nil, r.installHelm(ctx, version)
 	})
 	if err != nil {
@@ -204,7 +204,7 @@ func (r *registry) Terraform(ctx context.Context, version string) (string, bool,
 		return path, false, nil
 	}
 
-	_, err, _ := r.installGroup.Do(name, func() (interface{}, error) {
+	_, err, _ := r.installGroup.Do(name, func() (any, error) {
 		return nil, r.installTerraform(ctx, version)
 	})
 	if err != nil {

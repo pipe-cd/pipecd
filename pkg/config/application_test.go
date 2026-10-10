@@ -297,7 +297,6 @@ func TestValidateEncryption(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			s := &SecretEncryption{
 				EncryptedSecrets:  tc.encryptedSecrets,
@@ -341,7 +340,6 @@ func TestValidateAttachment(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			a := &Attachment{
 				Sources: tc.sources,
@@ -402,7 +400,7 @@ func TestGenericTriggerConfiguration(t *testing.T) {
 		fileName           string
 		expectedKind       Kind
 		expectedAPIVersion string
-		expectedSpec       interface{}
+		expectedSpec       any
 		expectedError      error
 	}{
 		{
@@ -462,7 +460,7 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 		fileName           string
 		expectedKind       Kind
 		expectedAPIVersion string
-		expectedSpec       interface{}
+		expectedSpec       any
 		expectedError      error
 	}{
 		{
@@ -580,7 +578,7 @@ func TestGenericPostSyncConfiguration(t *testing.T) {
 		fileName           string
 		expectedKind       Kind
 		expectedAPIVersion string
-		expectedSpec       interface{}
+		expectedSpec       any
 		expectedError      error
 	}{
 		{
@@ -652,7 +650,7 @@ func TestGenericAnalysisConfiguration(t *testing.T) {
 		fileName           string
 		expectedKind       Kind
 		expectedAPIVersion string
-		expectedSpec       interface{}
+		expectedSpec       any
 		expectedError      error
 	}{
 		{
@@ -778,7 +776,7 @@ func TestCustomSyncConfig(t *testing.T) {
 		fileName           string
 		expectedKind       Kind
 		expectedAPIVersion string
-		expectedSpec       interface{}
+		expectedSpec       any
 		expectedError      error
 	}{
 		{

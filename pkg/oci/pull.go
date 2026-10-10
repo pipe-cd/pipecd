@@ -45,12 +45,12 @@ func PullFileFromRegistry(ctx context.Context, workdir string, dst io.Writer, so
 
 	repo, ref, err := parseOCIURL(sourceURL)
 	if err != nil {
-		return fmt.Errorf("could not parse OCI URL %s (%w)", sourceURL, err)
+		return fmt.Errorf("could not parse OCI URL %s: %w", sourceURL, err)
 	}
 
 	r, err := remote.NewRepository(repo)
 	if err != nil {
-		return fmt.Errorf("could not create repository (%w)", err)
+		return fmt.Errorf("could not create repository %s: %w", repo, err)
 	}
 
 	r.PlainHTTP = options.insecure
@@ -72,13 +72,13 @@ func PullFileFromRegistry(ctx context.Context, workdir string, dst io.Writer, so
 
 	d, err := os.MkdirTemp(workdir, "oci-pull")
 	if err != nil {
-		return fmt.Errorf("could not create temporary directory (%w)", err)
+		return fmt.Errorf("could not create temporary directory: %w", err)
 	}
 	defer os.RemoveAll(d)
 
 	store, err := file.New(d)
 	if err != nil {
-		return fmt.Errorf("could not create file system (%w)", err)
+		return fmt.Errorf("could not create file system: %w", err)
 	}
 	defer store.Close()
 
@@ -87,7 +87,7 @@ func PullFileFromRegistry(ctx context.Context, workdir string, dst io.Writer, so
 
 	desc, err := oras.Copy(ctx, r, ref, store, "", oras.DefaultCopyOptions)
 	if err != nil {
-		return fmt.Errorf("could not copy OCI image (%w)", err)
+		return fmt.Errorf("could not copy OCI image: %w", err)
 	}
 
 	return copyOCIArtifact(ctx, dst, desc, store, options.targetOS, options.targetArch, options.mediaType, options.artifactType)
@@ -97,7 +97,7 @@ func PullFileFromRegistry(ctx context.Context, workdir string, dst io.Writer, so
 func parseOCIURL(sourceURL string) (repo string, ref string, _ error) {
 	u, err := url.Parse(sourceURL)
 	if err != nil {
-		return "", "", fmt.Errorf("could not parse URL %s (%w)", sourceURL, err)
+		return "", "", fmt.Errorf("could not parse URL %s: %w", sourceURL, err)
 	}
 
 	if u.Scheme != "oci" {
@@ -137,13 +137,13 @@ func copyOCIArtifact(ctx context.Context, dst io.Writer, desc ocispec.Descriptor
 	case ocispec.MediaTypeImageIndex:
 		r, err := fetcher.Fetch(ctx, desc)
 		if err != nil {
-			return fmt.Errorf("could not fetch OCI image index (%w)", err)
+			return fmt.Errorf("could not fetch OCI image index: %w", err)
 		}
 		defer r.Close()
 
 		var idx ocispec.Index
 		if err := json.NewDecoder(r).Decode(&idx); err != nil {
-			return fmt.Errorf("could not decode OCI image index (%w)", err)
+			return fmt.Errorf("could not decode OCI image index: %w", err)
 		}
 
 		for _, m := range idx.Manifests {
@@ -161,13 +161,13 @@ func copyOCIArtifact(ctx context.Context, dst io.Writer, desc ocispec.Descriptor
 	case ocispec.MediaTypeImageManifest:
 		r, err := fetcher.Fetch(ctx, desc)
 		if err != nil {
-			return fmt.Errorf("could not fetch OCI image manifest (%w)", err)
+			return fmt.Errorf("could not fetch OCI image manifest: %w", err)
 		}
 		defer r.Close()
 
 		var manifest ocispec.Manifest
 		if err := json.NewDecoder(r).Decode(&manifest); err != nil {
-			return fmt.Errorf("could not decode OCI image manifest (%w)", err)
+			return fmt.Errorf("could not decode OCI image manifest: %w", err)
 		}
 
 		if artifactType != "" && artifactType != manifest.ArtifactType {
@@ -181,12 +181,12 @@ func copyOCIArtifact(ctx context.Context, dst io.Writer, desc ocispec.Descriptor
 
 			r, err = fetcher.Fetch(ctx, layer)
 			if err != nil {
-				return fmt.Errorf("could not fetch OCI layer (%w)", err)
+				return fmt.Errorf("could not fetch OCI layer: %w", err)
 			}
 			defer r.Close()
 
 			if _, err := io.Copy(dst, r); err != nil {
-				return fmt.Errorf("could not copy OCI layer (%w)", err)
+				return fmt.Errorf("could not copy OCI layer: %w", err)
 			}
 		}
 
