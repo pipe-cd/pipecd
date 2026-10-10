@@ -96,6 +96,7 @@ describe("ApplicationDetail", () => {
           applicationId: dummyApplication.id,
           syncStrategy: SyncStrategy.AUTO,
         });
+        expect(screen.getByRole("button", { name: /sync$/i })).toBeEnabled();
       });
     });
 
@@ -132,6 +133,9 @@ describe("ApplicationDetail", () => {
           applicationId: dummyApplication.id,
           syncStrategy: SyncStrategy.PIPELINE,
         });
+        expect(
+          screen.getByRole("button", { name: /pipeline sync/i })
+        ).toBeEnabled();
       });
     });
   });
