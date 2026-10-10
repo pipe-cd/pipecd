@@ -64,7 +64,7 @@ For more details, explore the [PipeCD Documentation](https://pipecd.dev/docs).
 - Create Github [Issues](https://github.com/pipe-cd/pipecd/issues) or [Discussions](https://github.com/pipe-cd/pipecd/discussions/) to report bugs or request features.
 - Join the [PipeCD Development and Community Meetings](https://zoom-lfx.platform.linuxfoundation.org/meeting/96831504919?password=2f60b8ec-5896-40c8-aa1d-d551ab339d00) where we share the latest project news, demos, answer questions, and help triage issues. You can also view the [Meeting Notes and Agenda](https://bit.ly/pipecd-mtg-notes).
 
-Participation in PipeCD project is governed by the CNCF [Code of Conduct](CODE_OF_CONDUCT.md).
+Participation in PipeCD project is governed by the CNCF [Code of Conduct](.github/CODE_OF_CONDUCT.md).
 
 ---
 
