@@ -44,6 +44,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-go@v7
+        id: setup-go
         with:
           go-version: ${{ env.GO_VERSION }}
           cache: false
@@ -57,17 +58,16 @@ jobs:
         id: go-cache
         run: |
           {
-            echo "paths<<EOF"
-            go env GOMODCACHE GOCACHE
-            echo "EOF"
-            echo "prefix=go-test-${{ runner.os }}-${{ runner.arch }}-${{ env.GO_VERSION }}-${{ matrix.module }}-"
+            echo "prefix=go-test-${{ runner.os }}-${{ runner.arch }}-${{ steps.setup-go.outputs.go-version }}-${{ matrix.module }}-"
             echo "date=$(date -u +%Y%m%d)"
           } >> "$GITHUB_OUTPUT"
       - name: Restore Go cache
         id: go-cache-restore
         uses: actions/cache/restore@v6
         with:
-          path: ${{ steps.go-cache.outputs.paths }}
+          path: |
+            ${{ steps.setup-go.outputs.GOMODCACHE }}
+            ${{ steps.setup-go.outputs.GOCACHE }}
           key: ${{ steps.go-cache.outputs.prefix }}${{ hashFiles(format('{0}/go.sum', matrix.module)) }}-${{ steps.go-cache.outputs.date }}
           restore-keys: |
             ${{ steps.go-cache.outputs.prefix }}${{ hashFiles(format('{0}/go.sum', matrix.module)) }}-
@@ -78,7 +78,9 @@ jobs:
         if: (github.ref == 'refs/heads/master' || github.head_ref == 'test-speedup') && steps.go-cache-restore.outputs.cache-hit != 'true'
         uses: actions/cache/save@v6
         with:
-          path: ${{ steps.go-cache.outputs.paths }}
+          path: |
+            ${{ steps.setup-go.outputs.GOMODCACHE }}
+            ${{ steps.setup-go.outputs.GOCACHE }}
           key: ${{ steps.go-cache-restore.outputs.cache-primary-key }}
       - name: make flag
         id: make-flag
