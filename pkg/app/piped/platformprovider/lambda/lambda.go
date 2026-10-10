@@ -76,7 +76,7 @@ func (r *registry) Client(name string, cfg *config.PlatformProviderLambdaConfig,
 		return client, nil
 	}
 
-	c, err, _ := r.newGroup.Do(name, func() (interface{}, error) {
+	c, err, _ := r.newGroup.Do(name, func() (any, error) {
 		return newClient(cfg.Region, cfg.Profile, cfg.CredentialsFile, cfg.RoleARN, cfg.TokenFile, logger)
 	})
 	if err != nil {

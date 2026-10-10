@@ -354,7 +354,6 @@ func TestDiffStructureds(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			diff, err := DiffStructureds(tc.old, tc.new)
@@ -367,7 +366,7 @@ func TestDiffStructureds(t *testing.T) {
 func TestIsEmptyInterface(t *testing.T) {
 	testcases := []struct {
 		name     string
-		v        interface{}
+		v        any
 		expected bool
 	}{
 		{
@@ -403,7 +402,7 @@ func TestIsEmptyInterface(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := []interface{}{tc.v}
+			s := []any{tc.v}
 			v := reflect.ValueOf(s)
 
 			got := isEmptyInterface(v.Index(0))

@@ -19,8 +19,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -130,6 +130,7 @@ func TestListProjects(t *testing.T) {
 			opts: ListOptions{},
 			ds: func() DataStore {
 				it := NewMockIterator(ctrl)
+				it.EXPECT().Close().Return(nil)
 				it.EXPECT().
 					Next(&model.Project{}).
 					Return(ErrIteratorDone)
@@ -147,6 +148,7 @@ func TestListProjects(t *testing.T) {
 			opts: ListOptions{},
 			ds: func() DataStore {
 				it := NewMockIterator(ctrl)
+				it.EXPECT().Close().Return(nil)
 				it.EXPECT().
 					Next(&model.Project{}).
 					Return(fmt.Errorf("err"))

@@ -26,6 +26,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/apiservice"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 func TestSyncApplicationRetriesUnavailableCommandUntilTimeout(t *testing.T) {
@@ -48,6 +49,7 @@ func TestSyncApplicationRetriesUnavailableCommandUntilTimeout(t *testing.T) {
 		context.Background(),
 		cli,
 		"app-id",
+		model.SyncStrategy_AUTO,
 		time.Millisecond,
 		50*time.Millisecond,
 		zap.NewNop(),
@@ -74,6 +76,7 @@ func TestSyncApplicationReturnsNotFoundForMissingCommand(t *testing.T) {
 		context.Background(),
 		cli,
 		"app-id",
+		model.SyncStrategy_AUTO,
 		time.Nanosecond,
 		time.Hour,
 		zap.NewNop(),

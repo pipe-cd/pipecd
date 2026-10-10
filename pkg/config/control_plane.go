@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang/protobuf/jsonpb"
+	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -72,12 +72,15 @@ type SharedSSOConfig struct {
 }
 
 func (s *SharedSSOConfig) UnmarshalJSON(data []byte) error {
-	m := make(map[string]interface{})
+	m := make(map[string]any)
 	if err := json.Unmarshal(data, &m); err != nil {
 		return err
 	}
 
-	provider := m["provider"].(string)
+	provider, ok := m["provider"].(string)
+	if !ok {
+		return fmt.Errorf("provider field in SharedSSOConfig must be a string, got %T", m["provider"])
+	}
 	v, ok := model.ProjectSSOConfig_Provider_value[provider]
 	if !ok {
 		return fmt.Errorf("unsupported provider %s", provider)
@@ -88,7 +91,11 @@ func (s *SharedSSOConfig) UnmarshalJSON(data []byte) error {
 	if !ok {
 		return fmt.Errorf("name field in SharedSSOConfig is required")
 	}
-	s.Name = name.(string)
+	nameStr, ok := name.(string)
+	if !ok {
+		return fmt.Errorf("name field in SharedSSOConfig must be a string, got %T", name)
+	}
+	s.Name = nameStr
 	delete(m, "name")
 
 	data, err := json.Marshal(m)
@@ -96,10 +103,10 @@ func (s *SharedSSOConfig) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	// Using jsonpb instead of the standard json to unmarshal because
+	// Using protojson instead of the standard json to unmarshal because
 	// json is unmarshaling with the underscored tags.
 	// https://github.com/golang/protobuf/issues/183
-	if err := jsonpb.UnmarshalString(string(data), &s.ProjectSSOConfig); err != nil {
+	if err := protojson.Unmarshal(data, &s.ProjectSSOConfig); err != nil {
 		return err
 	}
 	return nil

@@ -216,6 +216,14 @@ func TestExtractCookie(t *testing.T) {
 			failed:         true,
 		},
 		{
+			name: "malformed cookie: segment without equal sign",
+			ctx: metadata.NewIncomingContext(context.Background(), metadata.MD{
+				"cookie": []string{"token=xxx;"},
+			}),
+			expectedCookie: nil,
+			failed:         true,
+		},
+		{
 			name: "allow cookie with equal sign",
 			ctx: metadata.NewIncomingContext(context.Background(), metadata.MD{
 				"cookie": []string{"token=xxx; another=yyy=zzz"},

@@ -82,7 +82,7 @@ func TestDecideStrategy(t *testing.T) {
 					Kind:       provider.KindDeployment,
 					Name:       "name",
 				}, &unstructured.Unstructured{
-					Object: map[string]interface{}{"spec": map[string]interface{}{"template": "foo"}}},
+					Object: map[string]any{"spec": map[string]any{"template": "foo"}}},
 				)
 				return []provider.Manifest{m}
 			}(),
@@ -92,7 +92,7 @@ func TestDecideStrategy(t *testing.T) {
 					Kind:       provider.KindDeployment,
 					Name:       "name",
 				}, &unstructured.Unstructured{
-					Object: map[string]interface{}{"spec": map[string]interface{}{"template": "bar"}}},
+					Object: map[string]any{"spec": map[string]any{"template": "bar"}}},
 				)
 				return []provider.Manifest{m}
 			}(),
@@ -107,14 +107,14 @@ func TestDecideStrategy(t *testing.T) {
 					Kind:       provider.KindDeployment,
 					Name:       "name-1",
 				}, &unstructured.Unstructured{
-					Object: map[string]interface{}{"spec": map[string]interface{}{"template": "foo-1"}}},
+					Object: map[string]any{"spec": map[string]any{"template": "foo-1"}}},
 				)
 				m2 := provider.MakeManifest(provider.ResourceKey{
 					APIVersion: "apps/v1",
 					Kind:       provider.KindDeployment,
 					Name:       "name-2",
 				}, &unstructured.Unstructured{
-					Object: map[string]interface{}{"spec": map[string]interface{}{"template": "foo-2"}}},
+					Object: map[string]any{"spec": map[string]any{"template": "foo-2"}}},
 				)
 				return []provider.Manifest{m1, m2}
 			}(),
@@ -124,14 +124,14 @@ func TestDecideStrategy(t *testing.T) {
 					Kind:       provider.KindDeployment,
 					Name:       "name-1",
 				}, &unstructured.Unstructured{
-					Object: map[string]interface{}{"spec": map[string]interface{}{"template": "foo-1"}}},
+					Object: map[string]any{"spec": map[string]any{"template": "foo-1"}}},
 				)
 				m2 := provider.MakeManifest(provider.ResourceKey{
 					APIVersion: "apps/v1",
 					Kind:       provider.KindDeployment,
 					Name:       "name-2",
 				}, &unstructured.Unstructured{
-					Object: map[string]interface{}{"spec": map[string]interface{}{"template": "bar-2"}}},
+					Object: map[string]any{"spec": map[string]any{"template": "bar-2"}}},
 				)
 				return []provider.Manifest{m1, m2}
 			}(),
@@ -146,14 +146,14 @@ func TestDecideStrategy(t *testing.T) {
 					Kind:       provider.KindDeployment,
 					Name:       "name-1",
 				}, &unstructured.Unstructured{
-					Object: map[string]interface{}{"spec": map[string]interface{}{"template": "foo-1"}}},
+					Object: map[string]any{"spec": map[string]any{"template": "foo-1"}}},
 				)
 				m2 := provider.MakeManifest(provider.ResourceKey{
 					APIVersion: "apps/v1",
 					Kind:       provider.KindDeployment,
 					Name:       "name-2",
 				}, &unstructured.Unstructured{
-					Object: map[string]interface{}{"spec": map[string]interface{}{"template": "foo-2"}}},
+					Object: map[string]any{"spec": map[string]any{"template": "foo-2"}}},
 				)
 				return []provider.Manifest{m1, m2}
 			}(),
@@ -163,14 +163,14 @@ func TestDecideStrategy(t *testing.T) {
 					Kind:       provider.KindDeployment,
 					Name:       "name-1",
 				}, &unstructured.Unstructured{
-					Object: map[string]interface{}{"spec": map[string]interface{}{"template": "foo-1"}}},
+					Object: map[string]any{"spec": map[string]any{"template": "foo-1"}}},
 				)
 				m2 := provider.MakeManifest(provider.ResourceKey{
 					APIVersion: "apps/v1",
 					Kind:       provider.KindDeployment,
 					Name:       "name-2",
 				}, &unstructured.Unstructured{
-					Object: map[string]interface{}{"spec": map[string]interface{}{"template": "bar-2"}}},
+					Object: map[string]any{"spec": map[string]any{"template": "bar-2"}}},
 				)
 				return []provider.Manifest{m1, m2}
 			}(),
@@ -191,7 +191,7 @@ func TestDecideStrategy(t *testing.T) {
 					Kind:       provider.KindDeployment,
 					Name:       "name",
 				}, &unstructured.Unstructured{
-					Object: map[string]interface{}{"spec": map[string]interface{}{
+					Object: map[string]any{"spec": map[string]any{
 						"template": "foo",
 						"replicas": 1,
 					}}},
@@ -204,7 +204,7 @@ func TestDecideStrategy(t *testing.T) {
 					Kind:       provider.KindDeployment,
 					Name:       "name",
 				}, &unstructured.Unstructured{
-					Object: map[string]interface{}{"spec": map[string]interface{}{
+					Object: map[string]any{"spec": map[string]any{
 						"template": "foo",
 						"replicas": 2,
 					}}},
@@ -222,7 +222,7 @@ func TestDecideStrategy(t *testing.T) {
 					Kind:       provider.KindDeployment,
 					Name:       "name-1",
 				}, &unstructured.Unstructured{
-					Object: map[string]interface{}{"spec": map[string]interface{}{
+					Object: map[string]any{"spec": map[string]any{
 						"template": "foo",
 						"replicas": 1,
 					}}},
@@ -232,7 +232,7 @@ func TestDecideStrategy(t *testing.T) {
 					Kind:       provider.KindDeployment,
 					Name:       "name-2",
 				}, &unstructured.Unstructured{
-					Object: map[string]interface{}{"spec": map[string]interface{}{
+					Object: map[string]any{"spec": map[string]any{
 						"template": "bar",
 						"replicas": 20,
 					}}},
@@ -245,7 +245,7 @@ func TestDecideStrategy(t *testing.T) {
 					Kind:       provider.KindDeployment,
 					Name:       "name-1",
 				}, &unstructured.Unstructured{
-					Object: map[string]interface{}{"spec": map[string]interface{}{
+					Object: map[string]any{"spec": map[string]any{
 						"template": "foo",
 						"replicas": 5,
 					}}},
@@ -255,7 +255,7 @@ func TestDecideStrategy(t *testing.T) {
 					Kind:       provider.KindDeployment,
 					Name:       "name-2",
 				}, &unstructured.Unstructured{
-					Object: map[string]interface{}{"spec": map[string]interface{}{
+					Object: map[string]any{"spec": map[string]any{
 						"template": "bar",
 						"replicas": 10,
 					}}},
@@ -323,14 +323,14 @@ func TestDecideStrategy(t *testing.T) {
 					Kind:       provider.KindConfigMap,
 					Name:       "configmap1",
 				}, &unstructured.Unstructured{
-					Object: map[string]interface{}{"data": "foo"}},
+					Object: map[string]any{"data": "foo"}},
 				)
 				m3 := provider.MakeManifest(provider.ResourceKey{
 					APIVersion: "v1",
 					Kind:       provider.KindConfigMap,
 					Name:       "configmap2",
 				}, &unstructured.Unstructured{
-					Object: map[string]interface{}{"data": "baz"}},
+					Object: map[string]any{"data": "baz"}},
 				)
 				return []provider.Manifest{m1, m2, m3}
 			}(),
@@ -344,14 +344,14 @@ func TestDecideStrategy(t *testing.T) {
 					Kind:       provider.KindConfigMap,
 					Name:       "configmap1",
 				}, &unstructured.Unstructured{
-					Object: map[string]interface{}{"data": "bar"}},
+					Object: map[string]any{"data": "bar"}},
 				)
 				m3 := provider.MakeManifest(provider.ResourceKey{
 					APIVersion: "v1",
 					Kind:       provider.KindConfigMap,
 					Name:       "configmap2",
 				}, &unstructured.Unstructured{
-					Object: map[string]interface{}{"data": "baz"}},
+					Object: map[string]any{"data": "baz"}},
 				)
 				return []provider.Manifest{m1, m2, m3}
 			}(),
@@ -370,14 +370,14 @@ func TestDecideStrategy(t *testing.T) {
 					Kind:       provider.KindConfigMap,
 					Name:       "configmap1",
 				}, &unstructured.Unstructured{
-					Object: map[string]interface{}{"data": "foo"}},
+					Object: map[string]any{"data": "foo"}},
 				)
 				m3 := provider.MakeManifest(provider.ResourceKey{
 					APIVersion: "v1",
 					Kind:       provider.KindConfigMap,
 					Name:       "configmap2",
 				}, &unstructured.Unstructured{
-					Object: map[string]interface{}{"data": "baz"}},
+					Object: map[string]any{"data": "baz"}},
 				)
 				return []provider.Manifest{m1, m2, m3}
 			}(),
@@ -391,14 +391,14 @@ func TestDecideStrategy(t *testing.T) {
 					Kind:       provider.KindConfigMap,
 					Name:       "configmap1",
 				}, &unstructured.Unstructured{
-					Object: map[string]interface{}{"data": "foo"}},
+					Object: map[string]any{"data": "foo"}},
 				)
 				m3 := provider.MakeManifest(provider.ResourceKey{
 					APIVersion: "v1",
 					Kind:       provider.KindConfigMap,
 					Name:       "configmap2",
 				}, &unstructured.Unstructured{
-					Object: map[string]interface{}{"data": "baz"}},
+					Object: map[string]any{"data": "baz"}},
 				)
 				return []provider.Manifest{m1, m2, m3}
 			}(),
