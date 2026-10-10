@@ -58,6 +58,9 @@ jobs:
         id: go-cache
         run: |
           {
+            echo "paths<<EOF"
+            go env GOMODCACHE GOCACHE
+            echo "EOF"
             echo "prefix=go-test-${{ runner.os }}-${{ runner.arch }}-${{ steps.setup-go.outputs.go-version }}-${{ matrix.module }}-"
             echo "date=$(date -u +%Y%m%d)"
           } >> "$GITHUB_OUTPUT"
@@ -65,9 +68,7 @@ jobs:
         id: go-cache-restore
         uses: actions/cache/restore@v6
         with:
-          path: |
-            ${{ steps.setup-go.outputs.GOMODCACHE }}
-            ${{ steps.setup-go.outputs.GOCACHE }}
+          path: ${{ steps.go-cache.outputs.paths }}
           key: ${{ steps.go-cache.outputs.prefix }}${{ hashFiles(format('{0}/go.sum', matrix.module)) }}-${{ steps.go-cache.outputs.date }}
           restore-keys: |
             ${{ steps.go-cache.outputs.prefix }}${{ hashFiles(format('{0}/go.sum', matrix.module)) }}-
@@ -78,9 +79,7 @@ jobs:
         if: github.ref == 'refs/heads/master' && steps.go-cache-restore.outputs.cache-hit != 'true'
         uses: actions/cache/save@v6
         with:
-          path: |
-            ${{ steps.setup-go.outputs.GOMODCACHE }}
-            ${{ steps.setup-go.outputs.GOCACHE }}
+          path: ${{ steps.go-cache.outputs.paths }}
           key: ${{ steps.go-cache-restore.outputs.cache-primary-key }}
       - name: make flag
         id: make-flag
