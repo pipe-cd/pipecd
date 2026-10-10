@@ -15,12 +15,14 @@
 package livestate
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/provider"
 )
 
@@ -98,4 +100,24 @@ func TestMakeSyncState(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 		})
 	}
+}
+
+func TestGetLivestate_DriftDetectionDisabled(t *testing.T) {
+	t.Parallel()
+
+	disabled := false
+	dts := []*sdk.DeployTarget[config.DeployTargetConfig]{
+		{
+			Name:   "tf-target",
+			Config: config.DeployTargetConfig{DriftDetectionEnabled: &disabled},
+		},
+	}
+
+	// No client or deployment source is set: a target with drift detection
+	// disabled must return before any terraform command is created or run.
+	p := &Plugin{}
+	got, err := p.GetLivestate(context.Background(), nil, dts, &sdk.GetLivestateInput[config.ApplicationConfigSpec]{})
+	assert.NoError(t, err)
+	assert.Equal(t, sdk.ApplicationSyncStateUnknown, got.SyncState.Status)
+	assert.Equal(t, "Drift detection is disabled for deploy target tf-target", got.SyncState.ShortReason)
 }
