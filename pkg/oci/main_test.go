@@ -40,8 +40,10 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Failed to create Docker client: %s", err)
 	}
 	if err := pool.Client.Ping(); err != nil {
-		if errors.Is(err, os.ErrNotExist) ||
-			errors.Is(err, docker.ErrConnectionRefused) {
+		if errors.Is(err, os.ErrNotExist) || errors.Is(err, docker.ErrConnectionRefused) {
+			if os.Getenv("CI") == "true" {
+				log.Fatalf("Docker is required in CI but is unavailable: %s", err)
+			}
 			log.Printf("Docker is unavailable; skipping pkg/oci tests: %s", err)
 			os.Exit(0)
 		}
