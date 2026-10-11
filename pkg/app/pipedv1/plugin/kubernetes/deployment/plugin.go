@@ -62,7 +62,10 @@ func (p *Plugin) BuildPipelineSyncStages(ctx context.Context, _ *kubeconfig.Kube
 }
 
 // ExecuteStage executes the stage.
-func (p *Plugin) ExecuteStage(ctx context.Context, _ *kubeconfig.KubernetesPluginConfig, dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.ExecuteStageResponse, error) {
+func (p *Plugin) ExecuteStage(ctx context.Context, pluginCfg *kubeconfig.KubernetesPluginConfig, dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.ExecuteStageResponse, error) {
+	setHelmChartInsecure(pluginCfg, &input.Request.TargetDeploymentSource)
+	setHelmChartInsecure(pluginCfg, &input.Request.RunningDeploymentSource)
+
 	switch input.Request.StageName {
 	case StageK8sSync:
 		return &sdk.ExecuteStageResponse{
@@ -99,6 +102,14 @@ func (p *Plugin) ExecuteStage(ctx context.Context, _ *kubeconfig.KubernetesPlugi
 	default:
 		return nil, errors.New("unimplemented or unsupported stage")
 	}
+}
+
+// setHelmChartInsecure sets HelmChart.Insecure in the application config of the given deployment source.
+func setHelmChartInsecure(pluginCfg *kubeconfig.KubernetesPluginConfig, ds *sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]) {
+	if ds.ApplicationConfig == nil || ds.ApplicationConfig.Spec == nil {
+		return
+	}
+	pluginCfg.SetHelmChartInsecure(ds.ApplicationConfig.Spec.Input.HelmChart)
 }
 
 func (p *Plugin) loadManifests(ctx context.Context, deploy *sdk.Deployment, spec *kubeconfig.KubernetesApplicationSpec, deploymentSource *sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec], loader loader, logger *zap.Logger) ([]provider.Manifest, error) {
@@ -146,7 +157,7 @@ func (p *Plugin) loadManifests(ctx context.Context, deploy *sdk.Deployment, spec
 }
 
 // DetermineVersions determines the versions of the application.
-func (p *Plugin) DetermineVersions(ctx context.Context, _ *kubeconfig.KubernetesPluginConfig, input *sdk.DetermineVersionsInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.DetermineVersionsResponse, error) {
+func (p *Plugin) DetermineVersions(ctx context.Context, pluginCfg *kubeconfig.KubernetesPluginConfig, input *sdk.DetermineVersionsInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.DetermineVersionsResponse, error) {
 	logger := input.Logger
 
 	cfg, err := input.Request.DeploymentSource.AppConfig()
@@ -154,6 +165,8 @@ func (p *Plugin) DetermineVersions(ctx context.Context, _ *kubeconfig.Kubernetes
 		logger.Error("Failed while loading application config", zap.Error(err))
 		return nil, err
 	}
+
+	pluginCfg.SetHelmChartInsecure(cfg.Spec.Input.HelmChart)
 
 	manifests, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.DeploymentSource, provider.NewLoader(toolregistry.NewRegistry(input.Client.ToolRegistry())), logger)
 	if err != nil {
@@ -167,7 +180,7 @@ func (p *Plugin) DetermineVersions(ctx context.Context, _ *kubeconfig.Kubernetes
 }
 
 // DetermineStrategy determines the strategy for the deployment.
-func (p *Plugin) DetermineStrategy(ctx context.Context, _ *kubeconfig.KubernetesPluginConfig, input *sdk.DetermineStrategyInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.DetermineStrategyResponse, error) {
+func (p *Plugin) DetermineStrategy(ctx context.Context, pluginCfg *kubeconfig.KubernetesPluginConfig, input *sdk.DetermineStrategyInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.DetermineStrategyResponse, error) {
 	logger := input.Logger
 	loader := provider.NewLoader(toolregistry.NewRegistry(input.Client.ToolRegistry()))
 
@@ -176,6 +189,8 @@ func (p *Plugin) DetermineStrategy(ctx context.Context, _ *kubeconfig.Kubernetes
 		logger.Error("Failed while loading application config", zap.Error(err))
 		return nil, err
 	}
+
+	pluginCfg.SetHelmChartInsecure(cfg.Spec.Input.HelmChart)
 
 	runnings, err := p.loadManifests(ctx, &input.Request.Deployment, cfg.Spec, &input.Request.RunningDeploymentSource, loader, logger)
 	if err != nil {
