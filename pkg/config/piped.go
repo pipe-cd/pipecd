@@ -493,7 +493,7 @@ func (p *PipedPlatformProvider) MarshalJSON() ([]byte, error) {
 	case model.PlatformProviderECS:
 		config, err = json.Marshal(p.ECSConfig)
 	default:
-		err = fmt.Errorf("unsupported platform provider type: %s", p.Name)
+		err = fmt.Errorf("unsupported platform provider type: %s", p.Type)
 	}
 
 	if err != nil {
@@ -545,7 +545,7 @@ func (p *PipedPlatformProvider) UnmarshalJSON(data []byte) error {
 			err = json.Unmarshal(gp.Config, p.ECSConfig)
 		}
 	default:
-		err = fmt.Errorf("unsupported platform provider type: %s", p.Name)
+		err = fmt.Errorf("unsupported platform provider type: %s", p.Type)
 	}
 	return err
 }
@@ -725,7 +725,7 @@ func (p *PipedAnalysisProvider) MarshalJSON() ([]byte, error) {
 	case model.AnalysisProviderStackdriver:
 		config, err = json.Marshal(p.StackdriverConfig)
 	default:
-		err = fmt.Errorf("unsupported analysis provider type: %s", p.Name)
+		err = fmt.Errorf("unsupported analysis provider type: %s", p.Type)
 	}
 
 	if err != nil {
@@ -765,7 +765,7 @@ func (p *PipedAnalysisProvider) UnmarshalJSON(data []byte) error {
 			err = json.Unmarshal(gp.Config, p.StackdriverConfig)
 		}
 	default:
-		err = fmt.Errorf("unsupported analysis provider type: %s", p.Name)
+		err = fmt.Errorf("unsupported analysis provider type: %s", p.Type)
 	}
 	return err
 }
