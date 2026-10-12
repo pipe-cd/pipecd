@@ -27,7 +27,7 @@ import (
 	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry/toolregistrytest"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
-	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
 )
 
 func TestTemplateLocalChart(t *testing.T) {
