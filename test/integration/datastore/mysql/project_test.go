@@ -149,6 +149,7 @@ func listProjects(it datastore.Iterator) ([]*model.Project, error) {
 	if it == nil {
 		return ret, nil
 	}
+	defer it.Close()
 	for {
 		var v model.Project
 		err := it.Next(&v)

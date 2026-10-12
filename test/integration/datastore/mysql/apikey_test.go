@@ -152,6 +152,7 @@ func listAPIKeys(it datastore.Iterator) ([]*model.APIKey, error) {
 	if it == nil {
 		return ret, nil
 	}
+	defer it.Close()
 	for {
 		var v model.APIKey
 		err := it.Next(&v)
