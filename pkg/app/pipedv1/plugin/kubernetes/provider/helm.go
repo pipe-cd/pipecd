@@ -50,27 +50,27 @@ func NewHelm(path string, logger *zap.Logger) *Helm {
 }
 
 func (h *Helm) LoginToOCIRegistry(ctx context.Context, address, username, password string) error {
-    args := []string{
-        "registry",
-        "login",
-        "-u",
-        username,
-        "--password-stdin",
-        address,
-    }
+	args := []string{
+		"registry",
+		"login",
+		"-u",
+		username,
+		"--password-stdin",
+		address,
+	}
 
-    var stderr bytes.Buffer
-    cmd := exec.CommandContext(ctx, h.execPath, args...)
-    // Pass the password securely via stdin instead of argv
-    cmd.Stdin = strings.NewReader(password)
-    cmd.Stderr = &stderr
+	var stderr bytes.Buffer
+	cmd := exec.CommandContext(ctx, h.execPath, args...)
+	// Pass the password securely via stdin instead of argv
+	cmd.Stdin = strings.NewReader(password)
+	cmd.Stderr = &stderr
 
-    h.logger.Info("login to oci registry", zap.String("address", address))
-    if err := cmd.Run(); err != nil {
-        h.logger.Error("failed to login to oci registry", zap.String("address", address), zap.Error(err))
-        return fmt.Errorf("%w: %s", err, stderr.String())
-    }
-    return nil
+	h.logger.Info("login to oci registry", zap.String("address", address))
+	if err := cmd.Run(); err != nil {
+		h.logger.Error("failed to login to oci registry", zap.String("address", address), zap.Error(err))
+		return fmt.Errorf("%w: %s", err, stderr.String())
+	}
+	return nil
 }
 
 func (h *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, namespace, chartPath string, opts *config.InputHelmOptions) (string, error) {
