@@ -133,7 +133,7 @@ func (h *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, namespac
 // Add installs all specified Helm Chart repositories.
 // https://helm.sh/docs/topics/chart_repository/
 // helm repo add fantastic-charts https://fantastic-charts.storage.googleapis.com
-// helm repo add fantastic-charts https://fantastic-charts.storage.googleapis.com --username my-username --password my-password
+// helm repo add fantastic-charts https://fantastic-charts.storage.googleapis.com --username my-username --password-stdin
 func (h *Helm) AddRepository(ctx context.Context, repo config.HelmChartRepository) error {
     args := []string{"repo", "add", repo.Name, repo.Address}
     if repo.Insecure {
