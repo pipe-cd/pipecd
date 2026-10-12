@@ -1674,3 +1674,20 @@ func TestSecretManagementUnmarshalJSON(t *testing.T) {
 		})
 	}
 }
+
+func TestUnsupportedProviderTypeErrorMessages(t *testing.T) {
+	// The error should report the invalid provider type, not the provider name.
+	p := &PipedPlatformProvider{Name: "my-provider", Type: model.PlatformProviderType("UNKNOWN_TYPE")}
+	_, err := json.Marshal(p)
+	assert.ErrorContains(t, err, "unsupported platform provider type: UNKNOWN_TYPE")
+
+	err = json.Unmarshal([]byte(`{"name":"my-provider","type":"UNKNOWN_TYPE","config":{}}`), p)
+	assert.ErrorContains(t, err, "unsupported platform provider type: UNKNOWN_TYPE")
+
+	a := &PipedAnalysisProvider{Name: "my-provider", Type: model.AnalysisProviderType("UNKNOWN_TYPE")}
+	_, err = json.Marshal(a)
+	assert.ErrorContains(t, err, "unsupported analysis provider type: UNKNOWN_TYPE")
+
+	err = json.Unmarshal([]byte(`{"name":"my-provider","type":"UNKNOWN_TYPE","config":{}}`), a)
+	assert.ErrorContains(t, err, "unsupported analysis provider type: UNKNOWN_TYPE")
+}
