@@ -135,30 +135,30 @@ func (h *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, namespac
 // helm repo add fantastic-charts https://fantastic-charts.storage.googleapis.com
 // helm repo add fantastic-charts https://fantastic-charts.storage.googleapis.com --username my-username --password-stdin
 func (h *Helm) AddRepository(ctx context.Context, repo config.HelmChartRepository) error {
-    args := []string{"repo", "add", repo.Name, repo.Address}
-    if repo.Insecure {
-        args = append(args, "--insecure-skip-tls-verify")
-    }
-    if repo.Username != "" {
-        args = append(args, "--username", repo.Username)
-    }
-    if repo.Password != "" {
-        args = append(args, "--password-stdin")
-    }
-    
-    cmd := exec.CommandContext(ctx, h.execPath, args...)
-    // Pass the password securely via stdin instead of argv
-    if repo.Password != "" {
-        cmd.Stdin = strings.NewReader(repo.Password)
-    }
-    
-    out, err := cmd.CombinedOutput()
-    if err != nil {
-        h.logger.Error("failed to add chart repository", zap.String("name", repo.Name), zap.Error(err))
-        return fmt.Errorf("failed to add chart repository %s: %s (%w)", repo.Name, string(out), err)
-    }
-    h.logger.Info("successfully added chart repository", zap.String("name", repo.Name))
-    return nil
+	args := []string{"repo", "add", repo.Name, repo.Address}
+	if repo.Insecure {
+		args = append(args, "--insecure-skip-tls-verify")
+	}
+	if repo.Username != "" {
+		args = append(args, "--username", repo.Username)
+	}
+	if repo.Password != "" {
+		args = append(args, "--password-stdin")
+	}
+
+	cmd := exec.CommandContext(ctx, h.execPath, args...)
+	// Pass the password securely via stdin instead of argv
+	if repo.Password != "" {
+		cmd.Stdin = strings.NewReader(repo.Password)
+	}
+
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		h.logger.Error("failed to add chart repository", zap.String("name", repo.Name), zap.Error(err))
+		return fmt.Errorf("failed to add chart repository %s: %s (%w)", repo.Name, string(out), err)
+	}
+	h.logger.Info("successfully added chart repository", zap.String("name", repo.Name))
+	return nil
 }
 
 func (h *Helm) UpdateRepositories(ctx context.Context) error {
