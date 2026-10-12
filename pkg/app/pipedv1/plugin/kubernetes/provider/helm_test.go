@@ -26,8 +26,8 @@ import (
 
 	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry/toolregistrytest"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/config"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes/toolregistry"
 )
 
 func TestTemplateLocalChart(t *testing.T) {
@@ -268,4 +268,30 @@ exit 0
 	}
 	f.Close()
 	return f.Name()
+}
+
+func TestLoginToOCIRegistry_PasswordUsesStdin(t *testing.T) {
+	t.Parallel()
+	fakeHelmPath := createFakeHelm(t)
+	defer os.Remove(fakeHelmPath)
+
+	h := NewHelm(fakeHelmPath, zaptest.NewLogger(t))
+	err := h.LoginToOCIRegistry(t.Context(), "address", "user", "secret-password")
+	assert.NoError(t, err)
+}
+
+func TestAddRepository_PasswordUsesStdin(t *testing.T) {
+	t.Parallel()
+	fakeHelmPath := createFakeHelm(t)
+	defer os.Remove(fakeHelmPath)
+
+	h := NewHelm(fakeHelmPath, zaptest.NewLogger(t))
+	repo := config.HelmChartRepository{
+		Name:     "my-repo",
+		Address:  "http://my-repo",
+		Username: "user",
+		Password: "secret-password",
+	}
+	err := h.AddRepository(t.Context(), repo)
+	assert.NoError(t, err)
 }
