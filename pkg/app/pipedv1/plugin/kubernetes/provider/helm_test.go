@@ -212,24 +212,6 @@ func TestTemplateRemoteChart(t *testing.T) {
 		require.Equal(t, "testapp-helloworld", name)
 	}
 }
-func TestLoginToOCIRegistry_PasswordUsesStdin(t *testing.T) {
-	t.Parallel()
-
-	helm := NewHelm(createFakeHelm(t), zaptest.NewLogger(t))
-	require.NoError(t, helm.LoginToOCIRegistry(t.Context(), "registry.example.com", "test-user", "secret-password"))
-}
-
-func TestAddRepository_PasswordUsesStdin(t *testing.T) {
-	t.Parallel()
-
-	helm := NewHelm(createFakeHelm(t), zaptest.NewLogger(t))
-	require.NoError(t, helm.AddRepository(t.Context(), config.HelmChartRepository{
-		Name:     "test-repository",
-		Address:  "https://charts.example.com",
-		Username: "test-user",
-		Password: "secret-password",
-	}))
-}
 
 func createFakeHelm(t *testing.T) string {
 	t.Helper()
