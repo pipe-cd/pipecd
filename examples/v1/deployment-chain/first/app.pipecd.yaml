@@ -16,5 +16,5 @@ spec:
       applications:
         - name: deployment-chain-second
   description: |
-    This app is the first link in a deployment chain. When it deploys successfully, PipeCD triggers deployment-chain-second, which in turn triggers deployment-chain-third - one commit rolls out three apps in order.\
+    This app is the first link in a deployment chain. When it deploys successfully, PipeCD triggers deployment-chain-second, which in turn triggers deployment-chain-third - one commit rolls out three apps in order.
     References: [adding a new app](https://pipecd.dev/docs-v1.0.x/user-guide/managing-application/adding-an-application/), [app configuration](https://pipecd.dev/docs-v1.0.x/user-guide/managing-application/configuration-reference/)
