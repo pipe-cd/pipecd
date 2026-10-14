@@ -34,7 +34,7 @@ var (
 type Plugin struct{}
 
 // GetPlanPreview returns the plan preview result showing what will change across all deploy targets.
-func (p *Plugin) GetPlanPreview(ctx context.Context, _ *kubeconfig.KubernetesPluginConfig, dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.GetPlanPreviewInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.GetPlanPreviewResponse, error) {
+func (p *Plugin) GetPlanPreview(ctx context.Context, pluginCfg *kubeconfig.KubernetesPluginConfig, dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.GetPlanPreviewInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.GetPlanPreviewResponse, error) {
 	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
 	loader := provider.NewLoader(toolRegistry)
 
@@ -44,6 +44,7 @@ func (p *Plugin) GetPlanPreview(ctx context.Context, _ *kubeconfig.KubernetesPlu
 		return nil, err
 	}
 	targetSpec := targetAppCfg.Spec
+	pluginCfg.SetHelmChartInsecure(targetSpec.Input.HelmChart)
 
 	runningDS := input.Request.RunningDeploymentSource
 
@@ -62,6 +63,7 @@ func (p *Plugin) GetPlanPreview(ctx context.Context, _ *kubeconfig.KubernetesPlu
 			if err != nil {
 				return nil, err
 			}
+			pluginCfg.SetHelmChartInsecure(runningAppCfg.Spec.Input.HelmChart)
 			oldManifests, err = loadManifests(ctx, loader, input, &runningDS, runningAppCfg.Spec, nil)
 			if err != nil {
 				return nil, err
@@ -117,6 +119,7 @@ func (p *Plugin) GetPlanPreview(ctx context.Context, _ *kubeconfig.KubernetesPlu
 			if err != nil {
 				return nil, err
 			}
+			pluginCfg.SetHelmChartInsecure(runningAppCfg.Spec.Input.HelmChart)
 			oldManifests, err = loadManifests(ctx, loader, input, &runningDS, runningAppCfg.Spec, mt)
 			if err != nil {
 				results = append(results, sdk.PlanPreviewResult{
