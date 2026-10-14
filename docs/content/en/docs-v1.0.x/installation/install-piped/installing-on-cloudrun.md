@@ -16,7 +16,7 @@ description: >
 ### SSH key for Git repositories
 
 - If your Git repositories are private, `piped` requires a private SSH key to access those repositories.
-- Please check out [this documentation](https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) for how to generate a new SSH key pair. Then add the public key to your repositories. (If you are using GitHub, you can add it to Deploy Keys at the repository’s **Settings** page.)
+- Check out [this documentation](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) for how to generate a new SSH key pair. Then add the public key to your repositories. (If you are using GitHub, you can add it to Deploy Keys at the repository's **Settings** page.)
 
 ## Installation
 
@@ -45,11 +45,16 @@ spec:
       branch: {GIT_BRANCH}
   syncInterval: 1m
   plugins: []
-  # To add a plugin, replace the above with entries, e.g.:
+  # To add a plugin, replace the above with entries, for example:
+  # (plugin releases are tagged like pkg/app/pipedv1/plugin/terraform/v0.2.1,
+  # pick the version and platform you need from the releases page)
   # plugins:
   #   - name: terraform
   #     port: 7002
-  #     url: https://github.com/pipe-cd/pipecd/releases/download/<version>/piped-plugin-terraform-<os>-<arch>
+  #     url: https://github.com/pipe-cd/pipecd/releases/download/pkg/app/pipedv1/plugin/terraform/v0.2.1/terraform_v0.2.1_linux_amd64
+  #     deployTargets:
+  #       - name: dev
+  #         config: {}
 
   # Optional
   # Uncomment this if you want to enable Secret Management.
@@ -89,7 +94,6 @@ metadata:
   name: piped
   annotations:
     run.googleapis.com/ingress: internal
-    run.googleapis.com/ingress-status: internal
 spec:
   template:
     metadata:
@@ -113,7 +117,7 @@ spec:
 ```
 
 >**Note:**
-> Replace `<version>` with the piped version you want to use. You can find the list of published versions here:
+> Replace `<version>` with the `piped` version you want to use. You can find the list of published versions here:
 > [ghcr.io/pipe-cd/pipedv1-exp](https://github.com/pipe-cd/pipecd/pkgs/container/pipedv1-exp)
 
 Note: Be sure to add `- --insecure=true` to the args if your Control Plane does not have TLS enabled yet.
@@ -124,4 +128,4 @@ Apply the Cloud Run service:
 gcloud run services replace {PATH_TO_CLOUD_RUN_SERVICE_MANIFEST}
 ```
 
-Once the service is created, Cloud Run will run the `piped` agent as a stateless service that connects to your PipeCD Control Plane and deploys applications according to your configuration. Make sure that the created secret is accessible from this `piped` service as described in the [Cloud Run secret access guide](https://cloud.google.com/run/docs/configuring/secrets#access-secret).
+Once the service is created, Cloud Run runs the `piped` agent as a stateless service that connects to your PipeCD Control Plane and deploys applications according to your configuration.

@@ -16,7 +16,7 @@ description: >
 ### SSH key for Git repositories
 
 - If your Git repositories are private, `piped` requires a private SSH key to access those repositories.
-- Please check out [this documentation](https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) for how to generate a new SSH key pair. Then add the public key to your repositories. (If you are using GitHub, you can add it to Deploy Keys at the repository's **Settings** page.)
+- Check out [this documentation](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) for how to generate a new SSH key pair. Then add the public key to your repositories. (If you are using GitHub, you can add it to Deploy Keys at the repository's **Settings** page.)
 
 ## Installation
 
@@ -45,11 +45,16 @@ spec:
       branch: {GIT_BRANCH}
   syncInterval: 1m
   plugins: []
-  # To add a plugin, replace the above with entries, e.g.:
+  # To add a plugin, replace the above with entries, for example:
+  # (plugin releases are tagged like pkg/app/pipedv1/plugin/terraform/v0.2.1,
+  # pick the version and platform you need from the releases page)
   # plugins:
   #   - name: terraform
   #     port: 7002
-  #     url: https://github.com/pipe-cd/pipecd/releases/download/<version>/piped-plugin-terraform-<os>-<arch>
+  #     url: https://github.com/pipe-cd/pipecd/releases/download/pkg/app/pipedv1/plugin/terraform/v0.2.1/terraform_v0.2.1_linux_amd64
+  #     deployTargets:
+  #       - name: dev
+  #         config: {}
 
   # Optional
   # Uncomment this if you want to enable Secret Management.
@@ -75,7 +80,7 @@ Store the above configuration data in [AWS Secrets Manager](https://aws.amazon.c
 ```bash
 aws secretsmanager create-secret --name PipedConfig \
   --description "Configuration of piped running as ECS Fargate task" \
-  --secret-string "$(base64 piped-config.yaml | tr -d '\n')"
+  --secret-string "$(base64 < piped-config.yaml | tr -d '\n')"
 ```
 
 Make sure your task role has `secretsmanager:GetSecretValue` permission for the created secret. See [IAM permissions for Secrets Manager](https://docs.aws.amazon.com/secretsmanager/latest/userguide/auth-and-access.html) for details.
@@ -110,7 +115,7 @@ Prepare a task definition for your `piped` task. The following example shows how
 ```
 
 >**Note:**
-> Replace `<version>` with the piped version you want to use. You can find the list of published versions here:
+> Replace `<version>` with the `piped` version you want to use. You can find the list of published versions here:
 > [ghcr.io/pipe-cd/pipedv1-exp](https://github.com/pipe-cd/pipecd/pkgs/container/pipedv1-exp)
 
 Note: The task role (`taskRoleArn`) must have `secretsmanager:GetSecretValue` permission for the secret ARN specified above. Be sure to add `"--insecure=true"` to the `command` array if your Control Plane does not have TLS enabled yet.
@@ -119,10 +124,11 @@ Register the task definition and run a `piped` task:
 
 ```console
 aws ecs register-task-definition --cli-input-json file://taskdef.json
-aws ecs run-task --cluster {ECS_CLUSTER} --task-definition piped
+aws ecs run-task --cluster {ECS_CLUSTER} --task-definition piped --launch-type FARGATE \
+  --network-configuration '{"awsvpcConfiguration":{"subnets":["{SUBNET_ID}"],"securityGroups":["{SECURITY_GROUP_ID}"],"assignPublicIp":"ENABLED"}}'
 ```
 
-Once the task is created, it will run continuously because of the `piped` execution. Since this task is run without [`startedBy`](https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_StartTask.html#API_StartTask_RequestSyntax), if `piped` stops, it will not automatically be restarted. To keep `piped` running, define an ECS service to control the task deployment.
+Once the task starts, `piped` runs continuously. Since this task is started with `aws ecs run-task` and is not managed by an ECS service, it is not restarted automatically if `piped` stops. To keep `piped` running, define an ECS service to control the task deployment.
 
 ### Defining the ECS service
 
@@ -142,8 +148,9 @@ The following is a sample ECS service definition to control the `piped` task dep
   "launchType": "FARGATE",
   "networkConfiguration": {
     "awsvpcConfiguration": {
-      "assignPublicIp": "ENABLED",
-      "...": "..."
+      "subnets": ["{SUBNET_ID}"],
+      "securityGroups": ["{SECURITY_GROUP_ID}"],
+      "assignPublicIp": "ENABLED"
     }
   }
 }
@@ -158,4 +165,4 @@ aws ecs create-service \
   --cli-input-json file://service.json
 ```
 
-When the service is running, ECS will ensure that exactly one `piped` task is running (because `desiredCount` is 1), keeping your `piped` agent available on Fargate.
+While the service is running, ECS keeps exactly one `piped` task running because `desiredCount` is `1`, so your `piped` agent stays available on Fargate.
