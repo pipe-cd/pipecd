@@ -267,7 +267,7 @@ deployTargets:
 
 And a single resource can opt out of the comparison with the annotation `pipecd.dev/ignore-drift-detection: "true"`.
 
-PR [#6672](https://github.com/pipe-cd/pipecd/pull/6672) updated `DetermineStrategy` to handle multiple clusters. Before, it looked only at the first cluster to decide between QuickSync and the full pipeline. Now it uses the full pipeline if *any* cluster has a workload change.
+PR [#6672](https://github.com/pipe-cd/pipecd/pull/6672) updated `DetermineStrategy` to handle multiple clusters. Before, it loaded the manifests once without any per-cluster override, so with per-cluster `manifests` or `kustomizeDir` a change in one cluster's manifests could be missed and the deployment would run as a QuickSync, skipping the canary and baseline stages. Now it loads the manifests for each cluster and uses the full pipeline if *any* cluster has a workload change.
 
 Drift is shown for each cluster. In this example, someone ran `kubectl scale` on `cluster-us` only. The diff for `cluster-us` shows `replicas: 4`, while Git says `2`:
 
