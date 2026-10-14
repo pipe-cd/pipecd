@@ -275,10 +275,9 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
                                 target="_blank"
                                 rel="noreferrer"
                               >
-                                {`${deployment.trigger.commit.hash.slice(
-                                  0,
-                                  7
-                                )}`}
+                                {`${(
+                                  deployment.trigger.commit.hash ?? ""
+                                ).slice(0, 7)}`}
                                 <OpenInNewIcon
                                   sx={{
                                     fontSize: 16,

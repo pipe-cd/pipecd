@@ -1,0 +1,27 @@
+# Deploy a helm chart sourced from the same Git repository
+# without using pipeline.
+apiVersion: pipecd.dev/v1beta1
+kind: Application
+spec:
+  name: helm-local-chart
+  labels:
+    env: example
+    team: product
+  trigger:
+    onCommit:
+      paths:
+        - local-modules/helm-charts/helloworld/*
+  plugins:
+    kubernetes:
+      input:
+        # Helm chart sourced from current Git repo.
+        helmChart:
+          path: ../../local-modules/helm-charts/helloworld
+        helmOptions:
+          releaseName: helm-local-chart
+          valueFiles:
+            - values.yaml
+        helmVersion: 3.8.2
+  description: |
+    This app demonstrates how to deploy a Kubernetes app that uses a Helm chart sourced from the same Git repository.
+    References: [adding a new app](https://pipecd.dev/docs-v1.0.x/user-guide/managing-application/adding-an-application/), [app configuration](https://pipecd.dev/docs-v1.0.x/user-guide/managing-application/configuration-reference/)

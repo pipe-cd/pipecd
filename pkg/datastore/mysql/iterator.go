@@ -24,7 +24,7 @@ import (
 )
 
 type dataConverter interface {
-	Data() map[string]interface{}
+	Data() map[string]any
 }
 
 // Iterator for MySQL result set
@@ -35,7 +35,7 @@ type Iterator struct {
 }
 
 // Next implementation for MySQL Iterator
-func (it *Iterator) Next(dst interface{}) error {
+func (it *Iterator) Next(dst any) error {
 	if !it.rows.Next() {
 		return datastore.ErrIteratorDone
 	}
@@ -51,6 +51,12 @@ func (it *Iterator) Next(dst interface{}) error {
 	return decodeJSONValue(val, dst)
 }
 
+// Close closes the underlying sql.Rows, releasing the connection back to
+// the pool. It is safe to call Close multiple times.
+func (it *Iterator) Close() error {
+	return it.rows.Close()
+}
+
 // Cursor builds a base64 string (encode from string in map[string]interface{} format).
 // The cursor contains only values attached with the fields used
 // as ordering fields.
@@ -61,7 +67,7 @@ func (it *Iterator) Cursor() (string, error) {
 
 	lastObjData := it.last.Data()
 
-	cursor := make(map[string]interface{}, len(it.orders))
+	cursor := make(map[string]any, len(it.orders))
 	for _, o := range it.orders {
 		val, ok := lastObjData[o.Field]
 		if !ok {
@@ -80,9 +86,9 @@ type rowDataConverter struct {
 }
 
 // Data make JSON object with key in CamelCase format.
-func (r *rowDataConverter) Data() map[string]interface{} {
+func (r *rowDataConverter) Data() map[string]any {
 	jsonRaw := convertKeys(json.RawMessage(r.val), convertSnakeToCamel)
-	obj := make(map[string]interface{})
+	obj := make(map[string]any)
 	json.Unmarshal(jsonRaw, &obj)
 	return obj
 }
@@ -110,11 +116,11 @@ func convertKeys(j json.RawMessage, convertFunc func(string) string) json.RawMes
 }
 
 func convertSnakeToCamel(key string) string {
-	var out string
+	var out strings.Builder
 	isToUpper := true
 	for _, v := range key {
 		if isToUpper {
-			out += strings.ToUpper(string(v))
+			out.WriteString(strings.ToUpper(string(v)))
 			isToUpper = false
 			continue
 		}
@@ -122,7 +128,7 @@ func convertSnakeToCamel(key string) string {
 			isToUpper = true
 			continue
 		}
-		out += string(v)
+		out.WriteString(string(v))
 	}
-	return out
+	return out.String()
 }

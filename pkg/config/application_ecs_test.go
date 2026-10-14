@@ -29,7 +29,7 @@ func TestECSApplicationConfig(t *testing.T) {
 		expectedKind       Kind
 		expectedAPIVersion string
 		expectedLaunchType string
-		expectedSpec       interface{}
+		expectedSpec       any
 		expectedError      error
 	}{
 		{

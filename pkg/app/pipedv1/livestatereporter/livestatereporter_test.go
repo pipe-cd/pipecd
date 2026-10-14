@@ -19,6 +19,8 @@ package livestatereporter
 import (
 	"context"
 	"fmt"
+	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -217,16 +219,36 @@ func Test_reporter_flushSnapshots(t *testing.T) {
 	pr.flushSnapshots(context.Background())
 }
 
+// repoRoot returns the root of the pipecd repository, which contains the examples/ directory.
+func repoRoot(t *testing.T) string {
+	t.Helper()
+	_, filename, _, ok := runtime.Caller(0)
+	require.True(t, ok)
+	// This file is at pkg/app/pipedv1/livestatereporter/livestatereporter_test.go,
+	// so the repo root is 4 directories up.
+	return filepath.Join(filepath.Dir(filename), "..", "..", "..", "..")
+}
+
 func Test_reporter_flush(t *testing.T) {
 	workingDir := t.TempDir()
+
+	const (
+		repoID     = "repo-id"
+		appPath    = "examples/v1/kubernetes/canary"
+		configFile = "app.pipecd.yaml"
+	)
+
+	// Use the pipecd repo root as the remote — it contains the examples/ directory
+	// which is synced to the pipe-cd/examples repository.
+	remote := repoRoot(t)
 
 	gitClient, err := git.NewClient()
 	require.NoError(t, err)
 
 	cfgRepo := config.PipedRepository{
-		RepoID: "repo-id",
-		Remote: "https://github.com/pipe-cd/examples.git",
-		Branch: "master",
+		RepoID: repoID,
+		Remote: remote,
+		Branch: "",
 	}
 
 	repo, err := gitClient.Clone(context.Background(), cfgRepo.RepoID, cfgRepo.Remote, cfgRepo.Branch, fmt.Sprintf("%s/%s", workingDir, cfgRepo.RepoID))
@@ -275,9 +297,9 @@ func Test_reporter_flush(t *testing.T) {
 		pipedConfig: &config.PipedSpec{
 			Repositories: []config.PipedRepository{
 				{
-					RepoID: "repo-id",
-					Remote: "https://github.com/pipe-cd/examples.git",
-					Branch: "master",
+					RepoID: repoID,
+					Remote: remote,
+					Branch: "",
 				},
 			},
 		},
@@ -291,12 +313,12 @@ func Test_reporter_flush(t *testing.T) {
 		Name: "app-name",
 		GitPath: &model.ApplicationGitPath{
 			Repo: &model.ApplicationGitRepository{
-				Id:     "repo-id",
-				Remote: "https://github.com/pipe-cd/examples.git",
-				Branch: "master",
+				Id:     repoID,
+				Remote: remote,
+				Branch: "",
 			},
-			Path:           "kubernetes/canary",
-			ConfigFilename: "app.pipecd.yaml",
+			Path:           appPath,
+			ConfigFilename: configFile,
 		},
 	}
 
@@ -313,7 +335,7 @@ func Benchmark_reporter_flushSnapshots(b *testing.B) {
 		appLister: &fakeAPILister{
 			apps: func() []*model.Application {
 				apps := make([]*model.Application, 0, 100)
-				for i := 0; i < 100; i++ {
+				for range 100 {
 					apps = append(apps, &model.Application{
 						Id:   "app-id",
 						Name: "app-name",

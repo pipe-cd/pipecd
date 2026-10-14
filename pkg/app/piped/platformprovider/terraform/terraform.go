@@ -187,7 +187,7 @@ func (r PlanResult) Render() (string, error) {
 
 	out := r.PlanOutput[startIndex:endIndex]
 
-	rendered := ""
+	var rendered strings.Builder
 	var curlyBracketStack []rune
 	var squareBracketStack []rune
 
@@ -205,7 +205,7 @@ func (r PlanResult) Render() (string, error) {
 		if tail == '{' && len(curlyBracketStack) == 0 {
 			// Terraform's outermost block would be resource block.
 			deadline := strings.Index(string(r), "resource")
-			for i := 0; i < deadline; i++ {
+			for i := range deadline {
 				r[i] = ' '
 			}
 		}
@@ -235,11 +235,11 @@ func (r PlanResult) Render() (string, error) {
 			r[0] = signMatchBracket(&squareBracketStack, r[0])
 		}
 
-		rendered += string(r)
-		rendered += "\n"
+		rendered.WriteString(string(r))
+		rendered.WriteString("\n")
 	}
 
-	return rendered, nil
+	return rendered.String(), nil
 }
 
 // Return rune at the top of the stack, or r in case of error.

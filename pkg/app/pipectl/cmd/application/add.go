@@ -87,8 +87,8 @@ func (c *add) run(ctx context.Context, input cli.Input) error {
 
 	labels := make(map[string]string)
 	if c.labels != "" {
-		labelsList := strings.Split(c.labels, ",")
-		for _, label := range labelsList {
+		labelsList := strings.SplitSeq(c.labels, ",")
+		for label := range labelsList {
 			parts := strings.Split(label, "=")
 			if len(parts) == 2 {
 				labels[parts[0]] = parts[1]

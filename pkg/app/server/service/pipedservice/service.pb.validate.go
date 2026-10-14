@@ -2187,6 +2187,8 @@ func (m *ListNotCompletedDeploymentsRequest) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for Cursor
+
 	if len(errors) > 0 {
 		return ListNotCompletedDeploymentsRequestMultiError(errors)
 	}

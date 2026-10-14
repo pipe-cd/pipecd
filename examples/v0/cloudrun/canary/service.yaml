@@ -1,0 +1,21 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: canary
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: '2'
+    spec:
+      containerConcurrency: 80
+      containers:
+      - args:
+        - server
+        image: ghcr.io/pipe-cd/helloworld:v0.48.0
+        ports:
+        - containerPort: 9085
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 128Mi

@@ -392,7 +392,7 @@ func TestRefineFiltersValue(t *testing.T) {
 	testcases := []struct {
 		name               string
 		filters            []datastore.ListFilter
-		expectedFiltersVal []interface{}
+		expectedFiltersVal []any
 	}{
 		{
 			name: "mixed types",
@@ -413,7 +413,7 @@ func TestRefineFiltersValue(t *testing.T) {
 					Value: [3]int32{1, 2, 3},
 				},
 			},
-			expectedFiltersVal: []interface{}{
+			expectedFiltersVal: []any{
 				1,
 				"app-1",
 				"app-1", "app-2", "app-3",
@@ -487,7 +487,7 @@ func TestMakePaginationCursorValues(t *testing.T) {
 	testcases := []struct {
 		name               string
 		opts               datastore.ListOptions
-		expectedCursorVals []interface{}
+		expectedCursorVals []any
 		wantErr            bool
 	}{
 		{
@@ -511,7 +511,7 @@ func TestMakePaginationCursorValues(t *testing.T) {
 					return base64.StdEncoding.EncodeToString([]byte(`{"Id":"object-id","UpdatedAt":100,"CreatedAt":99}`))
 				}(),
 			},
-			expectedCursorVals: []interface{}{
+			expectedCursorVals: []any{
 				float64(100),
 				float64(99),
 				float64(100),

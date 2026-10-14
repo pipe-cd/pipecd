@@ -36,7 +36,7 @@ func NewHashCache(redis redis.Redis, key string) *RedisHashCache {
 	}
 }
 
-func (r *RedisHashCache) Get(k string) (interface{}, error) {
+func (r *RedisHashCache) Get(k string) (any, error) {
 	conn := r.redis.Get()
 	defer conn.Close()
 	reply, err := conn.Do("HGET", r.key, k)
@@ -62,7 +62,7 @@ func (r *RedisHashCache) Get(k string) (interface{}, error) {
 // TTL time for the whole hashkey.
 //
 // It is caller's responsibility to encode Go struct.
-func (r *RedisHashCache) Put(k string, v interface{}) error {
+func (r *RedisHashCache) Put(k string, v any) error {
 	conn := r.redis.Get()
 	defer conn.Close()
 	_, err := conn.Do("HSET", r.key, k, v)
@@ -94,7 +94,7 @@ func (r *RedisHashCache) Delete(k string) error {
 	return err
 }
 
-func (r *RedisHashCache) GetAll() (map[string]interface{}, error) {
+func (r *RedisHashCache) GetAll() (map[string]any, error) {
 	conn := r.redis.Get()
 	defer conn.Close()
 	reply, err := redigo.Values(conn.Do("HGETALL", r.key))
@@ -111,7 +111,7 @@ func (r *RedisHashCache) GetAll() (map[string]interface{}, error) {
 		return nil, errors.New("invalid key-value pair contained")
 	}
 
-	out := make(map[string]interface{}, len(reply)/2)
+	out := make(map[string]any, len(reply)/2)
 	for i := 0; i < len(reply); i += 2 {
 		key, okKey := reply[i].([]byte)
 		if !okKey {

@@ -141,10 +141,7 @@ func (r *Renderer) Render(ns Nodes) string {
 }
 
 func pathDuplicateDepth(x, y []PathStep) int {
-	minLen := len(x)
-	if minLen > len(y) {
-		minLen = len(y)
-	}
+	minLen := min(len(x), len(y))
 
 	for i := 0; i < minLen; i++ {
 		if x[i] == y[i] {
@@ -232,7 +229,7 @@ func RenderPrimitiveValue(v reflect.Value) string {
 }
 
 // RenderByCommand converts the given objects into yaml and then runs the command to compare them.
-func RenderByCommand(command string, old, new interface{}) ([]byte, error) {
+func RenderByCommand(command string, old, new any) ([]byte, error) {
 	_, err := exec.LookPath(command)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find the command '%s', err = %w", command, err)

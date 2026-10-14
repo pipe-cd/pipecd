@@ -180,7 +180,7 @@ func TestPlugin_executeK8sMultiBaselineRolloutStage_SingleCluster(t *testing.T) 
 	assert.Equal(t, "baseline", deployment.GetAnnotations()["pipecd.dev/variant"])
 
 	// Verify replica count is 1 (50% of 2 = 1).
-	spec, ok := deployment.Object["spec"].(map[string]interface{})
+	spec, ok := deployment.Object["spec"].(map[string]any)
 	require.True(t, ok)
 	replicas, ok := spec["replicas"].(int64)
 	require.True(t, ok)

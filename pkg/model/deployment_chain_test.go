@@ -104,8 +104,8 @@ func TestDeploymentChainDesireStatus(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
-		tc := tc
+	for i := range testcases {
+		tc := &testcases[i]
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			desireStatus := tc.deploymentChain.DesiredStatus()
@@ -232,7 +232,6 @@ func TestIsCompleted(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			b := &ChainBlock{Status: tt.status}
@@ -299,7 +298,6 @@ func TestDesiredStatus(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			gotDesired := tt.block.DesiredStatus()
@@ -351,7 +349,6 @@ func TestGetNodeByDeploymentID(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			gotNode, err := block.GetNodeByDeploymentID(tt.deploymentID)

@@ -7,6 +7,7 @@ export const sortFunc = (
   b: string | number,
   direction: "ASC" | "DESC" = "ASC"
 ): number => {
+  if (a === b) return 0;
   if (direction === "ASC") return a > b ? 1 : -1;
   return a > b ? -1 : 1;
 };

@@ -196,7 +196,7 @@ func verifyServiceSelector(t *testing.T, dynamicClient dynamic.Interface, servic
 	}).Namespace("default").Get(t.Context(), serviceName, metav1.GetOptions{})
 	require.NoError(t, err)
 
-	selector := service.Object["spec"].(map[string]interface{})["selector"].(map[string]interface{})
+	selector := service.Object["spec"].(map[string]any)["selector"].(map[string]any)
 	assert.Equal(t, expectedVariant, selector[variantLabel])
 }
 
@@ -333,7 +333,7 @@ func TestPlugin_executeK8sTrafficRoutingStagePodSelector(t *testing.T) {
 					Resource: "services",
 				}).Namespace("default").Get(t.Context(), "traffic-test-2", metav1.GetOptions{})
 				require.NoError(t, err)
-				selector2 := service2.Object["spec"].(map[string]interface{})["selector"].(map[string]interface{})
+				selector2 := service2.Object["spec"].(map[string]any)["selector"].(map[string]any)
 				assert.Equal(t, "canary", selector2["pipecd.dev/variant"])
 			},
 		},
@@ -670,7 +670,6 @@ spec:
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -962,7 +961,7 @@ spec:
 				require.NoError(t, err)
 				require.True(t, found)
 
-				hosts, ok := spec["hosts"].([]interface{})
+				hosts, ok := spec["hosts"].([]any)
 				require.True(t, ok, "hosts should be a slice")
 				hostStrings := make([]string, len(hosts))
 				for i, h := range hosts {
@@ -1030,7 +1029,7 @@ spec:
 				metadata, found, err := converted.NestedMap("metadata")
 				require.NoError(t, err)
 				require.True(t, found)
-				if labels, ok := metadata["labels"].(map[string]interface{}); ok {
+				if labels, ok := metadata["labels"].(map[string]any); ok {
 					assert.Equal(t, "test", labels["app"])
 				}
 
@@ -1039,7 +1038,7 @@ spec:
 				require.NoError(t, err)
 				require.True(t, found)
 
-				hosts, ok := spec["hosts"].([]interface{})
+				hosts, ok := spec["hosts"].([]any)
 				require.True(t, ok, "hosts should be a slice")
 				hostStrings := make([]string, len(hosts))
 				for i, h := range hosts {
@@ -1048,7 +1047,7 @@ spec:
 				assert.Equal(t, original.Spec.Hosts, hostStrings)
 
 				// Check gateways are preserved using NestedMap
-				if gateways, ok := spec["gateways"].([]interface{}); ok {
+				if gateways, ok := spec["gateways"].([]any); ok {
 					gatewayStrings := make([]string, len(gateways))
 					for i, g := range gateways {
 						gatewayStrings[i] = g.(string)
@@ -1095,7 +1094,7 @@ spec:
 				require.NoError(t, err)
 				require.True(t, found)
 
-				hosts, ok := spec["hosts"].([]interface{})
+				hosts, ok := spec["hosts"].([]any)
 				require.True(t, ok, "hosts should be a slice")
 				hostStrings := make([]string, len(hosts))
 				for i, h := range hosts {
@@ -1133,7 +1132,7 @@ spec:
 				require.NoError(t, err)
 				require.True(t, found)
 
-				hosts, ok := spec["hosts"].([]interface{})
+				hosts, ok := spec["hosts"].([]any)
 				require.True(t, ok, "hosts should be a slice")
 				hostStrings := make([]string, len(hosts))
 				for i, h := range hosts {
@@ -1782,17 +1781,17 @@ func verifyVirtualServiceRouting(t *testing.T, dynamicClient dynamic.Interface, 
 	}).Namespace("default").Get(t.Context(), vsName, metav1.GetOptions{})
 	require.NoError(t, err)
 
-	spec := virtualService.Object["spec"].(map[string]interface{})
-	httpRoutes := spec["http"].([]interface{})
+	spec := virtualService.Object["spec"].(map[string]any)
+	httpRoutes := spec["http"].([]any)
 	require.Len(t, httpRoutes, 1, "Expected exactly one HTTP route")
 
-	httpRoute := httpRoutes[0].(map[string]interface{})
-	routes := httpRoute["route"].([]interface{})
+	httpRoute := httpRoutes[0].(map[string]any)
+	routes := httpRoute["route"].([]any)
 	require.Len(t, routes, len(expectedRoutes), "Number of routes should match expected")
 
 	for i, expectedRoute := range expectedRoutes {
-		route := routes[i].(map[string]interface{})
-		destination := route["destination"].(map[string]interface{})
+		route := routes[i].(map[string]any)
+		destination := route["destination"].(map[string]any)
 
 		assert.Equal(t, expectedRoute.host, destination["host"], "Host should match for route %d", i)
 		assert.Equal(t, expectedRoute.subset, destination["subset"], "Subset should match for route %d", i)
@@ -1823,22 +1822,22 @@ func verifyVirtualServiceEditableRoutes(t *testing.T, dynamicClient dynamic.Inte
 	}).Namespace("default").Get(t.Context(), vsName, metav1.GetOptions{})
 	require.NoError(t, err)
 
-	spec := virtualService.Object["spec"].(map[string]interface{})
-	httpRoutes := spec["http"].([]interface{})
+	spec := virtualService.Object["spec"].(map[string]any)
+	httpRoutes := spec["http"].([]any)
 	require.Len(t, httpRoutes, 2, "Expected exactly two HTTP routes")
 
 	// Check api-route (editable) was modified
-	apiRoute := httpRoutes[0].(map[string]interface{})
+	apiRoute := httpRoutes[0].(map[string]any)
 	assert.Equal(t, "api-route", apiRoute["name"])
-	apiRoutes := apiRoute["route"].([]interface{})
+	apiRoutes := apiRoute["route"].([]any)
 	assert.Len(t, apiRoutes, 2, "api-route should have 2 destinations (primary + canary)")
 
 	// Check web-route (non-editable) was not modified
-	webRoute := httpRoutes[1].(map[string]interface{})
+	webRoute := httpRoutes[1].(map[string]any)
 	assert.Equal(t, "web-route", webRoute["name"])
-	webRoutes := webRoute["route"].([]interface{})
+	webRoutes := webRoute["route"].([]any)
 	assert.Len(t, webRoutes, 1, "web-route should remain unchanged with 1 destination")
 
-	webDestination := webRoutes[0].(map[string]interface{})["destination"].(map[string]interface{})
+	webDestination := webRoutes[0].(map[string]any)["destination"].(map[string]any)
 	assert.Equal(t, "primary", webDestination["subset"], "web-route should still point to primary only")
 }

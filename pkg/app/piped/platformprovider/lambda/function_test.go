@@ -28,7 +28,7 @@ func TestParseFunctionManifest(t *testing.T) {
 	testcases := []struct {
 		name     string
 		data     string
-		wantSpec interface{}
+		wantSpec any
 		wantErr  bool
 	}{
 		{
@@ -328,7 +328,6 @@ func TestParseFunctionManifest(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			fm, err := parseFunctionManifest([]byte(tc.data))
@@ -521,7 +520,6 @@ spec:
 	}
 
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			fm, _ := parseFunctionManifest(tc.input)

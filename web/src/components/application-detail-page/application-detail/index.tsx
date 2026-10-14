@@ -137,7 +137,7 @@ const MostRecentlySuccessfulDeployment: FC<{
     return <Skeleton height={105} width={500} />;
   }
 
-  const date = dayjs(deployment.startedAt * 1000);
+  const date = deployment.startedAt ? dayjs(deployment.startedAt * 1000) : null;
 
   return (
     <>
@@ -171,7 +171,13 @@ const MostRecentlySuccessfulDeployment: FC<{
           <tbody>
             <DetailTableRow
               label="Deployed At"
-              value={<span title={date.format()}>{date.fromNow()}</span>}
+              value={
+                date ? (
+                  <span title={date.format()}>{date.fromNow()}</span>
+                ) : (
+                  <span>{"—"}</span>
+                )
+              }
             />
             <DetailTableRow
               label="Artifact Versions"

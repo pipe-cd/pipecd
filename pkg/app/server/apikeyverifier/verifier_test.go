@@ -44,13 +44,12 @@ func (g *fakeAPIKeyGetter) Get(_ context.Context, id string) (*model.APIKey, err
 
 type fakeRedisHashCache struct{}
 
-func (f *fakeRedisHashCache) Put(k string, v interface{}) error {
+func (f *fakeRedisHashCache) Put(k string, v any) error {
 	return nil
 }
 
 func TestVerify(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	var id1 = "test-api-key"
 	key1, hash1, err := model.GenerateAPIKey(id1)

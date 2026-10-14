@@ -17,6 +17,7 @@ package kubernetes
 import (
 	"context"
 	"fmt"
+	"slices"
 	"time"
 
 	"go.uber.org/zap"
@@ -208,7 +209,7 @@ func (r *reflector) start(_ context.Context) error {
 	return nil
 }
 
-func (r *reflector) onObjectAdd(obj interface{}) {
+func (r *reflector) onObjectAdd(obj any) {
 	u := obj.(*unstructured.Unstructured)
 	key := provider.MakeResourceKey(u)
 
@@ -230,7 +231,7 @@ func (r *reflector) onObjectAdd(obj interface{}) {
 	)
 }
 
-func (r *reflector) onObjectUpdate(oldObj, obj interface{}) {
+func (r *reflector) onObjectUpdate(oldObj, obj any) {
 	u := obj.(*unstructured.Unstructured)
 	oldU := oldObj.(*unstructured.Unstructured)
 
@@ -254,7 +255,7 @@ func (r *reflector) onObjectUpdate(oldObj, obj interface{}) {
 	)
 }
 
-func (r *reflector) onObjectDelete(obj interface{}) {
+func (r *reflector) onObjectDelete(obj any) {
 	u := obj.(*unstructured.Unstructured)
 	key := provider.MakeResourceKey(u)
 
@@ -277,21 +278,11 @@ func (r *reflector) onObjectDelete(obj interface{}) {
 }
 
 func isSupportedWatch(r metav1.APIResource) bool {
-	for _, v := range r.Verbs {
-		if v == "watch" {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(r.Verbs, "watch")
 }
 
 func isSupportedList(r metav1.APIResource) bool {
-	for _, v := range r.Verbs {
-		if v == "list" {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(r.Verbs, "list")
 }
 
 type resourceMatcher struct {

@@ -124,7 +124,6 @@ func (p *Plugin) executeK8sMultiTrafficRoutingStagePodSelector(
 
 	eg, ctx := errgroup.WithContext(ctx)
 	for i, tc := range targetConfigs {
-		i, tc := i, tc
 		eg.Go(func() error {
 			lp.Infof("Start updating traffic routing on target %s", tc.deployTarget.Name)
 			if err := p.podSelectorTrafficRouting(ctx, input, tc.deployTarget, tc.multiTarget, cfg, targetVariant); err != nil {
@@ -269,7 +268,6 @@ func (p *Plugin) executeK8sMultiTrafficRoutingStageIstio(
 
 	eg, ctx := errgroup.WithContext(ctx)
 	for i, tc := range targetConfigs {
-		i, tc := i, tc
 		eg.Go(func() error {
 			lp.Infof("Start updating Istio traffic routing on target %s", tc.deployTarget.Name)
 			if err := p.istioTrafficRouting(ctx, input, tc.deployTarget, tc.multiTarget, cfg, int32(canaryPercent), int32(baselinePercent)); err != nil {

@@ -24,7 +24,7 @@ const (
 	PipedStatsRetention = 2 * time.Minute
 )
 
-func UnmarshalPipedStat(data interface{}, ps *PipedStat) error {
+func UnmarshalPipedStat(data any, ps *PipedStat) error {
 	value, okValue := data.([]byte)
 	if !okValue {
 		return errors.New("error value not a bulk of string value")

@@ -7,7 +7,7 @@ jobs:
   stale:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/stale@v10
+      - uses: actions/stale@v11
         with:
           operations-per-run: 1000
           # Issues

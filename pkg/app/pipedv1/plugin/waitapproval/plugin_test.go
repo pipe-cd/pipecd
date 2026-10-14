@@ -105,7 +105,7 @@ func Test_FetchDefinedStages(t *testing.T) {
 	assert.Equal(t, want, got)
 }
 
-func mustMarshalJSON(t *testing.T, v interface{}) []byte {
+func mustMarshalJSON(t *testing.T, v any) []byte {
 	t.Helper()
 	data, err := json.Marshal(v)
 	if err != nil {

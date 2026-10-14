@@ -26,7 +26,7 @@ import (
 // this added `_extra` field will be shadowed by table column `extra` so that
 // we could create indexes (FULLTEXT or normal) on that column for search features.
 // ref: https://github.com/pipe-cd/pipecd/blob/master/docs/rfcs/0003-sql-datastore.md#text-search-operations-on-specific-json-field
-func wrapModel(entity interface{}) (interface{}, error) {
+func wrapModel(entity any) (any, error) {
 	switch e := entity.(type) {
 	case *model.Project:
 		if e == nil {
@@ -105,7 +105,7 @@ func wrapModel(entity interface{}) (interface{}, error) {
 	}
 }
 
-func encodeJSONValue(entity interface{}) (string, error) {
+func encodeJSONValue(entity any) (string, error) {
 	wrapper, err := wrapModel(entity)
 	if err != nil {
 		return "", err
@@ -117,7 +117,7 @@ func encodeJSONValue(entity interface{}) (string, error) {
 	return string(encodedEntity), nil
 }
 
-func decodeJSONValue(val string, target interface{}) error {
+func decodeJSONValue(val string, target any) error {
 	return json.Unmarshal([]byte(val), target)
 }
 

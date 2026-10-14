@@ -186,13 +186,13 @@ func (b *builder) build(ctx context.Context, id string, cmd model.Command_BuildP
 	}
 
 	// Add all applications into the channel for start handling.
-	for i := 0; i < numApps; i++ {
+	for i := range numApps {
 		appCh <- triggerApps[i]
 	}
 	close(appCh)
 
 	// Wait and collect all results.
-	for i := 0; i < numApps; i++ {
+	for range numApps {
 		r := <-resultCh
 		results = append(results, r)
 	}
@@ -212,7 +212,7 @@ func (b *builder) buildApp(ctx context.Context, worker int, command string, app 
 
 	logger.Info("will decide sync strategy for an application")
 
-	r := model.MakeApplicationPlanPreviewResult(*app)
+	r := model.MakeApplicationPlanPreviewResult(app)
 
 	var preCommit string
 	// Find the commit of the last successful deployment.
@@ -321,7 +321,7 @@ func (b *builder) findTriggerApps(ctx context.Context, repo git.Repo, apps []*mo
 			continue
 		}
 
-		r := model.MakeApplicationPlanPreviewResult(*app)
+		r := model.MakeApplicationPlanPreviewResult(app)
 		r.Error = fmt.Sprintf("failed while determining the application should be triggered or not, %v", err)
 		failedResults = append(failedResults, r)
 	}
@@ -395,7 +395,7 @@ func (b *builder) listApplications(repo config.PipedRepository) []*model.Applica
 func (b *builder) getMostRecentlySuccessfulDeployment(ctx context.Context, applicationID string) (*model.ApplicationDeploymentReference, error) {
 	retry := pipedservice.NewRetry(3)
 
-	deploy, err := retry.Do(ctx, func() (interface{}, error) {
+	deploy, err := retry.Do(ctx, func() (any, error) {
 		resp, err := b.apiClient.GetApplicationMostRecentDeployment(ctx, &pipedservice.GetApplicationMostRecentDeploymentRequest{
 			ApplicationId: applicationID,
 			Status:        model.DeploymentStatus_DEPLOYMENT_SUCCESS,

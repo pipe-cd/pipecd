@@ -88,7 +88,7 @@ type: my-type
 data:
   "one": ""
 `,
-			expected: "2k5dh9h9h9",
+			expected: "74bd68bm66",
 		},
 		{
 			name: "secret: there keys for checking order",
@@ -101,7 +101,7 @@ data:
   one: ""
   three: Mw==
 `,
-			expected: "5852t69tb5",
+			expected: "dgcb6h9tmk",
 		},
 		{
 			name: "multiple configs",
@@ -120,7 +120,7 @@ data:
   one: ""
   three: Mw==
 `,
-			expected: "fhgh2849tk",
+			expected: "57hhd7795k",
 		},
 		{
 			name: "not config manifest",

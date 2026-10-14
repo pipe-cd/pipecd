@@ -25,7 +25,7 @@ spec:
       containers:
       - args:
         - server
-        image: gcr.io/pipecd/helloworld:v0.5
+        image: ghcr.io/pipe-cd/helloworld:v0.48.0
         ports:
         - containerPort: 9085
         resources:

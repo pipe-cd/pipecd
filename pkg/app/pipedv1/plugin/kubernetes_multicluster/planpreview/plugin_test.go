@@ -228,3 +228,103 @@ func TestPlugin_GetPlanPreview_MultiTarget(t *testing.T) {
 		})
 	}
 }
+
+func TestPlugin_GetPlanPreview_MultiTarget_KustomizeDir(t *testing.T) {
+	t.Parallel()
+
+	appCfgFile := filepath.Join("testdata", "kustomize", "app.pipecd.yaml")
+	runningDir := filepath.Join("testdata", "kustomize", "running")
+	targetDir := filepath.Join("testdata", "kustomize", "target")
+	p := &Plugin{}
+	dts := makeDeployTargets("cluster1", "cluster2")
+
+	input := makeInput(t, appCfgFile, targetDir, runningDir)
+
+	resp, err := p.GetPlanPreview(context.Background(), nil, dts, input)
+	require.NoError(t, err)
+	require.Len(t, resp.Results, 2)
+
+	results := make(map[string]sdk.PlanPreviewResult, len(resp.Results))
+	for _, r := range resp.Results {
+		results[r.DeployTarget] = r
+	}
+
+	// Only the overlay of cluster1 changes the image tag.
+	cluster1, ok := results["cluster1"]
+	require.True(t, ok, "result for deploy target cluster1 not found")
+	assert.False(t, cluster1.NoChange)
+	assert.Equal(t, "0 added manifests, 1 changed manifests, 0 deleted manifests", cluster1.Summary)
+	assert.Contains(t, string(cluster1.Details), "v0.1.0")
+	assert.Contains(t, string(cluster1.Details), "v0.2.0")
+
+	cluster2, ok := results["cluster2"]
+	require.True(t, ok, "result for deploy target cluster2 not found")
+	assert.True(t, cluster2.NoChange)
+	assert.Equal(t, "No changes were detected", cluster2.Summary)
+	assert.Nil(t, cluster2.Details)
+}
+
+func TestBuildLoaderInput_KustomizeOverrides(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name        string
+		input       kubeconfig.KubernetesDeploymentInput
+		multiTarget *kubeconfig.KubernetesMultiTarget
+		wantDir     string
+		wantVersion string
+		wantOptions map[string]string
+	}{
+		{
+			name: "no multiTarget uses the top-level values",
+			input: kubeconfig.KubernetesDeploymentInput{
+				KustomizeVersion: "5.3.0",
+				KustomizeOptions: map[string]string{"flag": "val"},
+			},
+			wantVersion: "5.3.0",
+			wantOptions: map[string]string{"flag": "val"},
+		},
+		{
+			name: "multiTarget without overrides falls back to the top-level values",
+			input: kubeconfig.KubernetesDeploymentInput{
+				KustomizeVersion: "5.3.0",
+				KustomizeOptions: map[string]string{"flag": "val"},
+			},
+			multiTarget: &kubeconfig.KubernetesMultiTarget{},
+			wantVersion: "5.3.0",
+			wantOptions: map[string]string{"flag": "val"},
+		},
+		{
+			name: "multiTarget overrides dir, version and options",
+			input: kubeconfig.KubernetesDeploymentInput{
+				KustomizeVersion: "5.3.0",
+				KustomizeOptions: map[string]string{"flag": "val"},
+			},
+			multiTarget: &kubeconfig.KubernetesMultiTarget{
+				KustomizeDir:     "overlays/cluster1",
+				KustomizeVersion: "5.4.3",
+				KustomizeOptions: map[string]string{"load-restrictor": "LoadRestrictionsNone"},
+			},
+			wantDir:     "overlays/cluster1",
+			wantVersion: "5.4.3",
+			wantOptions: map[string]string{"load-restrictor": "LoadRestrictionsNone"},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			input := &sdk.GetPlanPreviewInput[kubeconfig.KubernetesApplicationSpec]{
+				Logger: zaptest.NewLogger(t),
+			}
+			ds := &sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{}
+			spec := &kubeconfig.KubernetesApplicationSpec{Input: tc.input}
+
+			got := buildLoaderInput(input, ds, spec, tc.multiTarget)
+			assert.Equal(t, tc.wantDir, got.KustomizeDir)
+			assert.Equal(t, tc.wantVersion, got.KustomizeVersion)
+			assert.Equal(t, tc.wantOptions, got.KustomizeOptions)
+		})
+	}
+}

@@ -111,7 +111,7 @@ kind create cluster --name cluster2
 kind export kubeconfig --name cluster2 --kubeconfig /path/to/kubeconfig/for/cluster2
 ```
 
-Refer to [cmd/pipecd/README.md](../../../../../cmd/pipecd/README.md) to set up the PipeCD control plane, and [cmd/pipedv1/README.md](../../../../../cmd/pipedv1/README.md) to run piped locally.
+Refer to [cmd/controlplane/README.md](../../../../../cmd/controlplane/README.md) to set up the PipeCD control plane, and [cmd/pipedv1/README.md](../../../../../cmd/pipedv1/README.md) to run piped locally.
 
 ## How to Test
 

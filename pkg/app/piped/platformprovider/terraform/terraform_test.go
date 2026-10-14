@@ -41,7 +41,6 @@ func TestPlanHasChangeRegex(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			assert.Equal(t, tc.expected, planHasChangeRegex.FindStringSubmatch(tc.input))
@@ -186,7 +185,6 @@ Note: You didn't use the -out option to save this plan, so Terraform can't guara
 	}
 
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			result, err := parsePlanResult(tc.input, false)
@@ -288,7 +286,6 @@ guarantee to take exactly these actions if you run "terraform apply" now.`,
 	}
 
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			actual, err := tc.planResult.Render()
