@@ -338,7 +338,7 @@ To migrate, find and replace the stage names in your pipeline YAML:
 
 ## Where Things Stand
 
-The plugin now covers what the single-cluster plugin does for Kubernetes manifests, Kustomize and Helm charts. It has six progressive delivery stages, per-stage cluster filtering, per-cluster status, plan preview, Helm/OCI login, config validation, health checks for all five workload types, better rollback, drift detection, and per-cluster settings. Helm charts can come from the application directory, a chart repository or an OCI registry. In total, 39 PRs were merged during the mentorship term.
+The plugin now covers what the single-cluster plugin does for Kubernetes manifests, Kustomize and Helm charts. It has six progressive delivery stages, per-stage cluster filtering, per-cluster status, plan preview, Helm/OCI login, config validation, health checks for all five workload types, better rollback, drift detection, and per-cluster settings. Helm charts can come from the application directory, a chart repository or an OCI registry.
 
 The plugin is part of the open-source PipeCD project. Contributions are welcome.
 
