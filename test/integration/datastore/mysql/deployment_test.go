@@ -218,6 +218,7 @@ func listDeployments(it datastore.Iterator) ([]*model.Deployment, error) {
 	if it == nil {
 		return ret, nil
 	}
+	defer it.Close()
 	for {
 		var v model.Deployment
 		err := it.Next(&v)

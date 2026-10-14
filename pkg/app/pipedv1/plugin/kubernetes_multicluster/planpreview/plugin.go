@@ -153,14 +153,32 @@ func (p *Plugin) GetPlanPreview(ctx context.Context, _ *kubeconfig.KubernetesPlu
 }
 
 // loadManifests loads manifests from the given deployment source, optionally overriding
-// the manifest paths from the multiTarget config.
+// the manifest paths and kustomize settings from the multiTarget config.
 func loadManifests(ctx context.Context, loader *provider.Loader, input *sdk.GetPlanPreviewInput[kubeconfig.KubernetesApplicationSpec], ds *sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec], spec *kubeconfig.KubernetesApplicationSpec, mt *kubeconfig.KubernetesMultiTarget) ([]provider.Manifest, error) {
+	return loader.LoadManifests(ctx, buildLoaderInput(input, ds, spec, mt))
+}
+
+// buildLoaderInput builds the input to load manifests of the given deployment source.
+func buildLoaderInput(input *sdk.GetPlanPreviewInput[kubeconfig.KubernetesApplicationSpec], ds *sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec], spec *kubeconfig.KubernetesApplicationSpec, mt *kubeconfig.KubernetesMultiTarget) provider.LoaderInput {
+	// Start with top-level input values, then override with per-target values when set.
 	manifestPaths := spec.Input.Manifests
-	if mt != nil && len(mt.Manifests) > 0 {
-		manifestPaths = mt.Manifests
+	kustomizeDir := ""
+	kustomizeVersion := spec.Input.KustomizeVersion
+	kustomizeOptions := spec.Input.KustomizeOptions
+	if mt != nil {
+		if len(mt.Manifests) > 0 {
+			manifestPaths = mt.Manifests
+		}
+		kustomizeDir = mt.KustomizeDir
+		if mt.KustomizeVersion != "" {
+			kustomizeVersion = mt.KustomizeVersion
+		}
+		if len(mt.KustomizeOptions) > 0 {
+			kustomizeOptions = mt.KustomizeOptions
+		}
 	}
 
-	return loader.LoadManifests(ctx, provider.LoaderInput{
+	return provider.LoaderInput{
 		PipedID:          input.Request.PipedID,
 		AppID:            input.Request.ApplicationID,
 		CommitHash:       ds.CommitHash,
@@ -169,13 +187,14 @@ func loadManifests(ctx context.Context, loader *provider.Loader, input *sdk.GetP
 		ConfigFilename:   ds.ApplicationConfigFilename,
 		Manifests:        manifestPaths,
 		Namespace:        spec.Input.Namespace,
-		KustomizeVersion: spec.Input.KustomizeVersion,
-		KustomizeOptions: spec.Input.KustomizeOptions,
+		KustomizeVersion: kustomizeVersion,
+		KustomizeDir:     kustomizeDir,
+		KustomizeOptions: kustomizeOptions,
 		HelmVersion:      spec.Input.HelmVersion,
 		HelmChart:        spec.Input.HelmChart,
 		HelmOptions:      spec.Input.HelmOptions,
 		Logger:           input.Logger,
-	})
+	}
 }
 
 // toResult converts a DiffListResult into a PlanPreviewResult for the given deploy target.
