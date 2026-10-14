@@ -243,7 +243,7 @@ The plugin checked the health of Deployments and StatefulSets, but it skipped Da
 - **ReplicaSet**: unhealthy while the observed generation is behind, when a `ReplicaFailure` condition is set, or while the available or ready replicas are not equal to the desired count. Healthy otherwise.
 - **Pod**: unhealthy when a container is waiting with an error reason such as `CrashLoopBackOff` or `ErrImagePull`, or when the pod phase is anything other than `Running` or `Succeeded`.
 
-Without these checks, a DaemonSet that could not start on half of the nodes would still show as healthy.
+Before this change, those kinds fell through to `Unknown` with the reason "Unimplemented or unknown resource", so a DaemonSet that could not start on half of the nodes looked the same as one that was fine. Kinds that still have no health check show up that way; the `Endpoints` and `EndpointSlice` objects in the drift screenshot below are an example.
 
 ![PipeCD application view: daemonset-demo reported Synced and Healthy, with a tab per cluster](/images/multicluster-part2-daemonset-health-livestate.png)
 
@@ -251,7 +251,21 @@ Without these checks, a DaemonSet that could not start on half of the nodes woul
 
 ## Drift Detection
 
-When the plugin read the live state of a cluster, it loaded all resources but did not correctly keep only the ones that belong to the application. PR [#6673](https://github.com/pipe-cd/pipecd/pull/6673) fixed this. The plugin now selects resources using the labels PipeCD adds at deploy time: `pipecd.dev/managed-by`, `pipecd.dev/piped`, and `pipecd.dev/application`.
+The plugin reads the live state of a cluster by selecting the resources that carry the `pipecd.dev/managed-by` and `pipecd.dev/application` labels PipeCD adds at deploy time. That selection is the same on every cluster, so PR [#6673](https://github.com/pipe-cd/pipecd/pull/6673) added two ways to narrow it. A deploy target can list which kinds to watch or skip with `appStateInformer.includeResources` and `excludeResources` in the piped config:
+
+```yaml
+deployTargets:
+  - name: cluster-eu
+    config:
+      kubeConfigPath: /path/to/cluster-eu.yaml
+      appStateInformer:
+        excludeResources:
+          - kind: Endpoints
+          - apiVersion: discovery.k8s.io/v1
+            kind: EndpointSlice
+```
+
+And a single resource can opt out of the comparison with the annotation `pipecd.dev/ignore-drift-detection: "true"`.
 
 PR [#6672](https://github.com/pipe-cd/pipecd/pull/6672) updated `DetermineStrategy` to handle multiple clusters. Before, it looked only at the first cluster to decide between QuickSync and the full pipeline. Now it uses the full pipeline if *any* cluster has a workload change.
 
@@ -307,14 +321,12 @@ Here `overlays/eu` sets 2 replicas and `overlays/us` sets 3. One sync gives a di
 
 ## Stage Rename
 
-PR [#6880](https://github.com/pipe-cd/pipecd/pull/6880) added a `K8S_MULTI_` prefix to all stage names. This was needed because the single-cluster Kubernetes plugin uses the same stage names (`K8S_CANARY_ROLLOUT`, `K8S_PRIMARY_ROLLOUT`, and so on). When both plugins were loaded together, the names clashed, and PipeCD could not tell which plugin should run the stage.
+PR [#6880](https://github.com/pipe-cd/pipecd/pull/6880) added a `K8S_MULTI_` prefix to the six stage names that still clashed with the single-cluster plugin (`K8S_MULTI_SYNC` and `K8S_MULTI_ROLLBACK` already had it). This was needed because the single-cluster Kubernetes plugin uses the same stage names (`K8S_CANARY_ROLLOUT`, `K8S_PRIMARY_ROLLOUT`, and so on). When both plugins were loaded together, the names clashed, and PipeCD could not tell which plugin should run the stage.
 
 To migrate, find and replace the stage names in your pipeline YAML:
 
 | Old name | New name |
 |---|---|
-| `K8S_SYNC` | `K8S_MULTI_SYNC` |
-| `K8S_ROLLBACK` | `K8S_MULTI_ROLLBACK` |
 | `K8S_CANARY_ROLLOUT` | `K8S_MULTI_CANARY_ROLLOUT` |
 | `K8S_CANARY_CLEAN` | `K8S_MULTI_CANARY_CLEAN` |
 | `K8S_BASELINE_ROLLOUT` | `K8S_MULTI_BASELINE_ROLLOUT` |
