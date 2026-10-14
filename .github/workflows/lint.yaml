@@ -79,16 +79,16 @@ jobs:
   go-lint-completed:
     runs-on: ubuntu-24.04
     if: always()
-    needs: go
+    needs: [changes, go]
     steps:
       - name: Check if all go lint jobs succeeded
-        # if jobs in the 'go' job matrix failed or were cancelled, this job will fail
+        # if the 'changes' job or any job in the 'go' matrix failed or was cancelled, this job will fail
         # otherwise this job is marked as successful because all steps are skipped
         run: exit 1
         if: >-
           ${{
-               needs.go.result == 'failure'
-            || needs.go.result == 'cancelled'
+               contains(needs.*.result, 'failure')
+            || contains(needs.*.result, 'cancelled')
           }}
 
   web:
