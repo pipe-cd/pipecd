@@ -61,7 +61,7 @@ func Add(ctx context.Context, repos []config.HelmChartRepository, reg registry, 
 }
 
 func Update(ctx context.Context, reg registry, logger *zap.Logger) error {
-	_, err, _ := updateGroup.Do("update", func() (interface{}, error) {
+	_, err, _ := updateGroup.Do("update", func() (any, error) {
 		return nil, update(ctx, reg, logger)
 	})
 	return err

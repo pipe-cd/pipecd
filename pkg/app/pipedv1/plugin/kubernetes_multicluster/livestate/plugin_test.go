@@ -15,10 +15,12 @@
 package livestate
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap/zaptest"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
@@ -659,4 +661,77 @@ func Test_calculateSyncStatus(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 		})
 	}
+}
+
+type fakeLoader struct {
+	manifests []provider.Manifest
+}
+
+func (l *fakeLoader) LoadManifests(_ context.Context, _ provider.LoaderInput) ([]provider.Manifest, error) {
+	return l.manifests, nil
+}
+
+func TestSyncState_UnrelatedCommit(t *testing.T) {
+	t.Parallel()
+
+	const (
+		deployedCommit = "c3fc924fcb8570b32a6078d2089af9c3e744a381"
+		headCommit     = "e2274af3caed2f2fe23bf9c0ee7a8b830758c356"
+	)
+
+	// The live resource was deployed at deployedCommit, so it carries that commit hash.
+	live := makeTestManifest(t, `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+  namespace: default
+  labels:
+    app: simple
+    pipecd.dev/managed-by: piped
+    pipecd.dev/piped: piped-id
+    pipecd.dev/application: app-id
+    pipecd.dev/commit-hash: `+deployedCommit+`
+  annotations:
+    pipecd.dev/managed-by: piped
+    pipecd.dev/piped: piped-id
+    pipecd.dev/application: app-id
+    pipecd.dev/original-api-version: apps/v1
+    pipecd.dev/resource-key: apps:Deployment::simple
+    pipecd.dev/commit-hash: `+deployedCommit+`
+spec:
+  replicas: 2
+`)
+
+	// The manifest in Git has not been changed, but the repository has a newer commit.
+	git := makeTestManifest(t, `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+  labels:
+    app: simple
+spec:
+  replicas: 2
+`)
+
+	p := Plugin{}
+	input := &sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec]{
+		Request: sdk.GetLivestateRequest[kubeconfig.KubernetesApplicationSpec]{
+			PipedID:       "piped-id",
+			ApplicationID: "app-id",
+			DeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+				CommitHash: headCommit,
+			},
+		},
+	}
+
+	gitManifests, err := p.loadManifests(t.Context(), input, &kubeconfig.KubernetesApplicationSpec{}, &fakeLoader{manifests: []provider.Manifest{git}}, zaptest.NewLogger(t), nil)
+	require.NoError(t, err)
+
+	dt := &sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{Name: "cluster1"}
+	got, err := p.makeAppSyncState([]provider.Manifest{live}, gitManifests, dt, headCommit, zaptest.NewLogger(t))
+	require.NoError(t, err)
+
+	assert.Equal(t, sdk.ApplicationSyncStateSynced, got.Status, got.Reason)
 }

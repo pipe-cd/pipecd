@@ -17,6 +17,7 @@ package store
 import (
 	"context"
 	"fmt"
+	"slices"
 	"time"
 
 	"go.uber.org/zap"
@@ -213,7 +214,7 @@ func (r *reflector) start(ctx context.Context) ([]schema.GroupVersionKind, error
 }
 
 // OnAdd implements cache.ResourceEventHandler.
-func (r *reflector) OnAdd(obj interface{}, isInInitialList bool) {
+func (r *reflector) OnAdd(obj any, isInInitialList bool) {
 	u, ok := obj.(*unstructured.Unstructured)
 	if !ok {
 		r.logger.Error("failed to convert object to unstructured", zap.Any("object", obj))
@@ -227,7 +228,7 @@ func (r *reflector) OnAdd(obj interface{}, isInInitialList bool) {
 }
 
 // OnUpdate implements cache.ResourceEventHandler.
-func (r *reflector) OnUpdate(oldObj, newObj interface{}) {
+func (r *reflector) OnUpdate(oldObj, newObj any) {
 	u, ok := newObj.(*unstructured.Unstructured)
 	if !ok {
 		r.logger.Error("failed to convert object to unstructured", zap.Any("object", newObj))
@@ -247,7 +248,7 @@ func (r *reflector) OnUpdate(oldObj, newObj interface{}) {
 }
 
 // OnDelete implements cache.ResourceEventHandler.
-func (r *reflector) OnDelete(obj interface{}) {
+func (r *reflector) OnDelete(obj any) {
 	u, ok := obj.(*unstructured.Unstructured)
 	if !ok {
 		r.logger.Error("failed to convert object to unstructured", zap.Any("object", obj))
@@ -261,21 +262,11 @@ func (r *reflector) OnDelete(obj interface{}) {
 }
 
 func isSupportedWatch(r metav1.APIResource) bool {
-	for _, v := range r.Verbs {
-		if v == "watch" {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(r.Verbs, "watch")
 }
 
 func isSupportedList(r metav1.APIResource) bool {
-	for _, v := range r.Verbs {
-		if v == "list" {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(r.Verbs, "list")
 }
 
 type resourceMatcher struct {

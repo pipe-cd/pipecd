@@ -44,11 +44,11 @@ type Persister interface {
 type StageLogPersister interface {
 	Write(log []byte) (int, error)
 	Info(log string)
-	Infof(format string, a ...interface{})
+	Infof(format string, a ...any)
 	Success(log string)
-	Successf(format string, a ...interface{})
+	Successf(format string, a ...any)
 	Error(log string)
-	Errorf(format string, a ...interface{})
+	Errorf(format string, a ...any)
 	Complete(timeout time.Duration) error
 }
 
@@ -135,7 +135,7 @@ func (p *persister) flush(ctx context.Context) (flushes, deletes int) {
 	completedKeys := make([]key, 0)
 
 	// Check new log entries and flush them if needed.
-	p.stagePersisters.Range(func(_, v interface{}) bool {
+	p.stagePersisters.Range(func(_, v any) bool {
 		sp := v.(*stageLogPersister)
 
 		if sp.isStale(p.stalePeriod) {
@@ -161,7 +161,7 @@ func (p *persister) flushAll(ctx context.Context) int {
 	group, ctx := errgroup.WithContext(ctx)
 	var num = 0
 
-	p.stagePersisters.Range(func(_, v interface{}) bool {
+	p.stagePersisters.Range(func(_, v any) bool {
 		sp := v.(*stageLogPersister)
 		if !sp.isStale(p.stalePeriod) {
 			group.Go(func() error {

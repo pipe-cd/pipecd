@@ -93,7 +93,7 @@ func (r *toolRegistry) outPath() (string, error) {
 }
 
 func (r *toolRegistry) InstallTool(ctx context.Context, name, version, script string) (string, error) {
-	out, err, _ := r.group.Do(fmt.Sprintf("%s-%s", name, version), func() (interface{}, error) {
+	out, err, _ := r.group.Do(fmt.Sprintf("%s-%s", name, version), func() (any, error) {
 		return r.installTool(ctx, name, version, script)
 	})
 	if err != nil {

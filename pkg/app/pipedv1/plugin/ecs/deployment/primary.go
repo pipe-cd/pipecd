@@ -51,7 +51,7 @@ func (p *ECSPlugin) executeECSPrimaryRolloutStage(
 	}
 
 	serviceDef, err := provider.LoadServiceDefinition(
-		input.Request.TargetDeploymentSource.ApplicationDirectory,
+		input.Request.TargetDeploymentSource,
 		cfg.Spec.Input.ServiceDefinitionFile,
 		input,
 	)

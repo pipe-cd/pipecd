@@ -26,7 +26,7 @@ func TestLoadAnalysisTemplate(t *testing.T) {
 	testcases := []struct {
 		name          string
 		repoDir       string
-		expectedSpec  interface{}
+		expectedSpec  any
 		expectedError error
 	}{
 		{

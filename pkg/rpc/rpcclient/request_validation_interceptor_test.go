@@ -37,7 +37,7 @@ func TestRequestValidationUnaryClientInterceptor(t *testing.T) {
 
 	testcases := []struct {
 		name  string
-		req   interface{}
+		req   any
 		fails bool
 	}{
 		{
@@ -64,7 +64,7 @@ func TestRequestValidationUnaryClientInterceptor(t *testing.T) {
 				tc.req,
 				nil,
 				nil,
-				func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, opts ...grpc.CallOption) error {
+				func(ctx context.Context, method string, req, reply any, cc *grpc.ClientConn, opts ...grpc.CallOption) error {
 					return nil
 				},
 			)

@@ -169,6 +169,7 @@ func listApplications(it datastore.Iterator) ([]*model.Application, error) {
 	if it == nil {
 		return ret, nil
 	}
+	defer it.Close()
 	for {
 		var v model.Application
 		err := it.Next(&v)
@@ -234,7 +235,7 @@ func TestCreateApplication(t *testing.T) {
 func TestUpdateApplication(t *testing.T) {
 	col := &collection{
 		kind: "Application",
-		factory: func() interface{} {
+		factory: func() any {
 			return &model.Application{}
 		},
 	}
@@ -263,7 +264,7 @@ func TestUpdateApplication(t *testing.T) {
 	testcases := []struct {
 		name    string
 		id      string
-		updater func(interface{}) error
+		updater func(any) error
 		wantErr error
 	}{
 		{
@@ -274,7 +275,7 @@ func TestUpdateApplication(t *testing.T) {
 		{
 			name: "unable to update",
 			id:   "update-id",
-			updater: func(interface{}) error {
+			updater: func(any) error {
 				return fmt.Errorf("error")
 			},
 			wantErr: fmt.Errorf("error"),
@@ -282,7 +283,7 @@ func TestUpdateApplication(t *testing.T) {
 		{
 			name: "successful update",
 			id:   "update-id",
-			updater: func(e interface{}) error {
+			updater: func(e any) error {
 				v := e.(*model.Application)
 				v.Name = "new-name"
 				return nil

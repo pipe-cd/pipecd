@@ -114,7 +114,7 @@ func DiffList(liveManifests, desiredManifests []Manifest, logger *zap.Logger, op
 		Changes: make([]DiffListChange, 0, len(newChanges)),
 	}
 
-	for i := 0; i < len(newChanges); i++ {
+	for i := range newChanges {
 		diffResult, err := Diff(oldChanges[i], newChanges[i], logger, opts...)
 		if err != nil {
 			logger.Error("Failed to diff manifests", zap.Error(err))

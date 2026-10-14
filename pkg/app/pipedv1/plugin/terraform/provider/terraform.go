@@ -25,7 +25,13 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
+
+// applyInterruptGracePeriod is how long a cancelled apply is given to exit after
+// it is interrupted. Terraform uses that time to write its state and release the
+// state lock, and it is only killed if it is still running afterwards.
+var applyInterruptGracePeriod = time.Minute
 
 type options struct {
 	noColor  bool
@@ -187,7 +193,7 @@ func (r PlanResult) Render() (string, error) {
 
 	out := r.PlanOutput[startIndex:endIndex]
 
-	rendered := ""
+	var rendered strings.Builder
 	var curlyBracketStack []rune
 	var squareBracketStack []rune
 
@@ -205,7 +211,7 @@ func (r PlanResult) Render() (string, error) {
 		if tail == '{' && len(curlyBracketStack) == 0 {
 			// Terraform's outermost block would be resource block.
 			deadline := strings.Index(string(r), "resource")
-			for i := 0; i < deadline; i++ {
+			for i := range deadline {
 				r[i] = ' '
 			}
 		}
@@ -235,11 +241,11 @@ func (r PlanResult) Render() (string, error) {
 			r[0] = signMatchBracket(&squareBracketStack, r[0])
 		}
 
-		rendered += string(r)
-		rendered += "\n"
+		rendered.WriteString(string(r))
+		rendered.WriteString("\n")
 	}
 
-	return rendered, nil
+	return rendered.String(), nil
 }
 
 // Return rune at the top of the stack, or r in case of error.
@@ -398,6 +404,13 @@ func (t *Terraform) Apply(ctx context.Context, w io.Writer) error {
 	cmd.Dir = t.dir
 	cmd.Stdout = w
 	cmd.Stderr = w
+	// Killing terraform in the middle of an apply leaves the state lock held on
+	// remote backends and drops the resources it had not yet saved to the state,
+	// so interrupt it instead when ctx is cancelled.
+	cmd.Cancel = func() error {
+		return cmd.Process.Signal(os.Interrupt)
+	}
+	cmd.WaitDelay = applyInterruptGracePeriod
 
 	env := append(os.Environ(), t.options.sharedEnvs...)
 	env = append(env, t.options.applyEnvs...)

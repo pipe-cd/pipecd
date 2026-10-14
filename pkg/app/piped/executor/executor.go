@@ -39,11 +39,11 @@ type Factory func(in Input) Executor
 type LogPersister interface {
 	Write(log []byte) (int, error)
 	Info(log string)
-	Infof(format string, a ...interface{})
+	Infof(format string, a ...any)
 	Success(log string)
-	Successf(format string, a ...interface{})
+	Successf(format string, a ...any)
 	Error(log string)
-	Errorf(format string, a ...interface{})
+	Errorf(format string, a ...any)
 }
 
 type CommandLister interface {

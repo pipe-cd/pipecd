@@ -88,7 +88,7 @@ func (m Manifest) GetNestedStringMap(fields ...string) (map[string]string, error
 	return sm, nil
 }
 
-func (m Manifest) GetNestedMap(fields ...string) (map[string]interface{}, error) {
+func (m Manifest) GetNestedMap(fields ...string) (map[string]any, error) {
 	sm, _, err := unstructured.NestedMap(m.u.Object, fields...)
 	if err != nil {
 		return nil, err
@@ -112,7 +112,7 @@ func (m Manifest) AddStringMapValues(values map[string]string, fields ...string)
 	return unstructured.SetNestedStringMap(m.u.Object, curMap, fields...)
 }
 
-func (m Manifest) GetSpec() (interface{}, error) {
+func (m Manifest) GetSpec() (any, error) {
 	spec, ok, err := unstructured.NestedFieldNoCopy(m.u.Object, "spec")
 	if err != nil {
 		return nil, err
@@ -123,13 +123,13 @@ func (m Manifest) GetSpec() (interface{}, error) {
 	return spec, nil
 }
 
-func (m Manifest) SetStructuredSpec(spec interface{}) error {
+func (m Manifest) SetStructuredSpec(spec any) error {
 	data, err := yaml.Marshal(spec)
 	if err != nil {
 		return err
 	}
 
-	unstructuredSpec := make(map[string]interface{})
+	unstructuredSpec := make(map[string]any)
 	if err := yaml.Unmarshal(data, &unstructuredSpec); err != nil {
 		return err
 	}
@@ -137,7 +137,7 @@ func (m Manifest) SetStructuredSpec(spec interface{}) error {
 	return unstructured.SetNestedField(m.u.Object, unstructuredSpec, "spec")
 }
 
-func (m Manifest) ConvertToStructuredObject(o interface{}) error {
+func (m Manifest) ConvertToStructuredObject(o any) error {
 	data, err := m.MarshalJSON()
 	if err != nil {
 		return err
@@ -145,7 +145,7 @@ func (m Manifest) ConvertToStructuredObject(o interface{}) error {
 	return json.Unmarshal(data, o)
 }
 
-func ParseFromStructuredObject(s interface{}) (Manifest, error) {
+func ParseFromStructuredObject(s any) (Manifest, error) {
 	data, err := json.Marshal(s)
 	if err != nil {
 		return Manifest{}, err

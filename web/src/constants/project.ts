@@ -69,11 +69,11 @@ export const TEXT_TO_RBAC_ACTION_TYPE: Record<
 export const POLICIES_STRING_REGEX = new RegExp(
   "resources=(" +
     rbacResourceTypes()
-      .map((v) => v.replace(/\*/, "\\*"))
+      .map((v) => v.replace(/\*/g, "\\*"))
       .join("|") +
     "|,)+;\\s*actions=(" +
     rbacActionTypes()
-      .map((v) => v.replace(/\*/, "\\*"))
+      .map((v) => v.replace(/\*/g, "\\*"))
       .join("|") +
     "|,)+"
 );

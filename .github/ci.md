@@ -152,11 +152,6 @@ Below is a brief description of each GitHub Actions workflow under
 
 ---
 
-### `code-butler.yaml`
-**What it does:** Runs automated code maintenance tasks.  
-**When it runs:** On a scheduled basis or when triggered by maintainers.
-
----
 ## Debugging CI Failures
 
 When a CI check fails:

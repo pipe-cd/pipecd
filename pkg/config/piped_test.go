@@ -15,6 +15,7 @@
 package config
 
 import (
+	"encoding/json"
 	"errors"
 	"testing"
 	"time"
@@ -30,7 +31,7 @@ func TestPipedConfig(t *testing.T) {
 		fileName           string
 		expectedKind       Kind
 		expectedAPIVersion string
-		expectedSpec       interface{}
+		expectedSpec       any
 		expectedError      error
 	}{
 		{
@@ -1624,4 +1625,69 @@ func TestPipeGitValidate(t *testing.T) {
 			assert.Equal(t, tc.err, err)
 		})
 	}
+}
+
+func TestSecretManagementUnmarshalJSON(t *testing.T) {
+	testcases := []struct {
+		name      string
+		data      string
+		want      *SecretManagement
+		wantError string
+	}{
+		{
+			name:      "unsupported type",
+			data:      `{"type":"UNKNOWN_TYPE","config":{}}`,
+			wantError: "unsupported secret management type: UNKNOWN_TYPE",
+		},
+		{
+			name: "key pair type",
+			data: `{"type":"KEY_PAIR","config":{"privateKeyFile":"/tmp/private.pem","publicKeyFile":"/tmp/public.pem"}}`,
+			want: &SecretManagement{
+				Type: model.SecretManagementTypeKeyPair,
+				KeyPair: &SecretManagementKeyPair{
+					PrivateKeyFile: "/tmp/private.pem",
+					PublicKeyFile:  "/tmp/public.pem",
+				},
+			},
+		},
+		{
+			name: "gcp kms type",
+			data: `{"type":"GCP_KMS","config":{"keyName":"projects/p/secret"}}`,
+			want: &SecretManagement{
+				Type: model.SecretManagementTypeGCPKMS,
+				GCPKMS: &SecretManagementGCPKMS{
+					KeyName: "projects/p/secret",
+				},
+			},
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			var got SecretManagement
+			err := json.Unmarshal([]byte(tc.data), &got)
+			if tc.wantError != "" {
+				assert.EqualError(t, err, tc.wantError)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, tc.want, &got)
+		})
+	}
+}
+
+func TestUnsupportedProviderTypeErrorMessages(t *testing.T) {
+	// The error should report the invalid provider type, not the provider name.
+	p := &PipedPlatformProvider{Name: "my-provider", Type: model.PlatformProviderType("UNKNOWN_TYPE")}
+	_, err := json.Marshal(p)
+	assert.ErrorContains(t, err, "unsupported platform provider type: UNKNOWN_TYPE")
+
+	err = json.Unmarshal([]byte(`{"name":"my-provider","type":"UNKNOWN_TYPE","config":{}}`), p)
+	assert.ErrorContains(t, err, "unsupported platform provider type: UNKNOWN_TYPE")
+
+	a := &PipedAnalysisProvider{Name: "my-provider", Type: model.AnalysisProviderType("UNKNOWN_TYPE")}
+	_, err = json.Marshal(a)
+	assert.ErrorContains(t, err, "unsupported analysis provider type: UNKNOWN_TYPE")
+
+	err = json.Unmarshal([]byte(`{"name":"my-provider","type":"UNKNOWN_TYPE","config":{}}`), a)
+	assert.ErrorContains(t, err, "unsupported analysis provider type: UNKNOWN_TYPE")
 }

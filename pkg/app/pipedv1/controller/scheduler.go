@@ -732,7 +732,7 @@ func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, statu
 	// Update stage status at local.
 	s.stageStatuses[stageID] = status
 
-	_, err := retry.Do(ctx, func() (interface{}, error) {
+	_, err := retry.Do(ctx, func() (any, error) {
 		_, err := s.apiClient.ReportStageStatusChanged(ctx, req)
 		if err != nil {
 			return nil, fmt.Errorf("failed to report stage status to control-plane: %v", err)
@@ -756,7 +756,7 @@ func (s *scheduler) reportDeploymentStatusChanged(ctx context.Context, status mo
 	)
 
 	// Update deployment status on remote.
-	_, err := retry.Do(ctx, func() (interface{}, error) {
+	_, err := retry.Do(ctx, func() (any, error) {
 		_, err := s.apiClient.ReportDeploymentStatusChanged(ctx, req)
 		if err != nil {
 			return nil, fmt.Errorf("failed to report deployment status to control-plane: %v", err)
@@ -832,7 +832,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	}()
 
 	// Update deployment status on remote.
-	_, err := retry.Do(ctx, func() (interface{}, error) {
+	_, err := retry.Do(ctx, func() (any, error) {
 		_, err := s.apiClient.ReportDeploymentCompleted(ctx, req)
 		if err != nil {
 			return nil, fmt.Errorf("failed to report deployment status to control-plane: %v", err)
@@ -876,7 +876,7 @@ func (s *scheduler) reportMostRecentlySuccessfulDeployment(ctx context.Context) 
 		retry = pipedservice.NewRetry(10)
 	)
 
-	_, err := retry.Do(ctx, func() (interface{}, error) {
+	_, err := retry.Do(ctx, func() (any, error) {
 		_, err := s.apiClient.ReportApplicationMostRecentDeployment(ctx, req)
 		if err != nil {
 			return nil, fmt.Errorf("failed to report most recent successful deployment: %v", err)

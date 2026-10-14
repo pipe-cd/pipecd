@@ -25,7 +25,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/config"
 )
 
-func mustMarshalJSON(t *testing.T, v interface{}) []byte {
+func mustMarshalJSON(t *testing.T, v any) []byte {
 	t.Helper()
 	data, err := json.Marshal(v)
 	if err != nil {

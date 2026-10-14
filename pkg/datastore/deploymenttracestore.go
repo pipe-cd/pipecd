@@ -30,7 +30,7 @@ func (d *deploymentTraceCollection) Kind() string {
 }
 
 func (d *deploymentTraceCollection) Factory() Factory {
-	return func() interface{} {
+	return func() any {
 		return &model.DeploymentTrace{}
 	}
 }
@@ -74,6 +74,7 @@ func (s *deploymentTraceStore) List(ctx context.Context, opts ListOptions) ([]*m
 	if err != nil {
 		return nil, "", err
 	}
+	defer it.Close()
 	dts := make([]*model.DeploymentTrace, 0)
 	for {
 		var dt model.DeploymentTrace

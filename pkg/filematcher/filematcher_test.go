@@ -172,6 +172,21 @@ func TestMatches(t *testing.T) {
 		{"abc/**", "abc/def/ghi", true},
 		{"**/.foo", ".foo", true},
 		{"**/.foo", "bar.foo", false},
+		{"+file", "+file", true},
+		{"+file", "file", false},
+		{"a+b", "a+b", true},
+		{"a+b", "ab", false},
+		{"a+b", "aaab", false},
+		{"dir(1)/file", "dir(1)/file", true},
+		{"dir(1)/file", "dir1/file", false},
+		{"a{b}c", "a{b}c", true},
+		{"a{b}c", "abc", false},
+		{"^file", "^file", true},
+		{"^file", "file", false},
+		{"a^b", "a^b", true},
+		{"a|b", "a|b", true},
+		{"a|b", "a", false},
+		{"a|b", "b", false},
 	}
 
 	for _, test := range tests {
@@ -288,6 +303,18 @@ var matchTests = []matchTest{
 	{"a[", "a", false, filepath.ErrBadPattern}, // was nil but IMO its wrong.
 	{"a[", "ab", false, filepath.ErrBadPattern},
 	{"*x", "xxx", true, nil},
+	{"+file", "+file", true, nil},
+	{"a+b", "a+b", true, nil},
+	{"a(b)", "a(b)", true, nil},
+	{"a{b}", "a{b}", true, nil},
+	{"a|b", "a|b", true, nil},
+	{"^a", "^a", true, nil},
+	{"[a^b]", "^", true, nil},
+	{"[a^b]", "a", true, nil},
+	{"[a^b]", "b", true, nil},
+	{"[a^b]", "c", false, nil},
+	{"dir+(1)/*", "dir+(1)/foo.txt", true, nil},
+	{"+dir/+file.txt", "+dir/+file.txt", true, nil},
 }
 
 // TestMatch test's our version of filepath.Match, called regexpMatch.
