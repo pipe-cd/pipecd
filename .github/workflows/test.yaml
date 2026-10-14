@@ -23,7 +23,31 @@ env:
   NODE_VERSION: 24.10.0
 
 jobs:
+  # Reports whether the pull request touches anything outside documentation.
+  # The output is empty on push/tag events so the jobs below always run there.
+  changes:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      - id: filter
+        if: github.event_name == 'pull_request'
+        uses: dorny/paths-filter@0e4a8c6effa4802afeda77dc8d303f8176d7dfad # v3.0.4
+        with:
+          # 'every' makes the negated patterns below act as real exclusions.
+          predicate-quantifier: every
+          filters: |
+            code:
+              - '!docs/**'
+              - '!**/*.md'
+              - '**'
+
   list-go-modules:
+    needs: changes
+    if: github.event_name != 'pull_request' || needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
     outputs:
       modules: ${{ steps.list-go-modules.outputs.modules }}
@@ -110,6 +134,8 @@ jobs:
           }}
 
   web:
+    needs: changes
+    if: github.event_name != 'pull_request' || needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -132,6 +158,8 @@ jobs:
         run: make test/web
 
   integration:
+    needs: changes
+    if: github.event_name != 'pull_request' || needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

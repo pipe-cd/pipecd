@@ -20,7 +20,31 @@ env:
   HELM_VERSION: 3.17.3
 
 jobs:
+  # Reports whether the pull request touches anything outside documentation.
+  # The output is empty on push/tag events so the jobs below always run there.
+  changes:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      - id: filter
+        if: github.event_name == 'pull_request'
+        uses: dorny/paths-filter@0e4a8c6effa4802afeda77dc8d303f8176d7dfad # v3.0.4
+        with:
+          # 'every' makes the negated patterns below act as real exclusions.
+          predicate-quantifier: every
+          filters: |
+            code:
+              - '!docs/**'
+              - '!**/*.md'
+              - '**'
+
   list-go-modules:
+    needs: changes
+    if: github.event_name != 'pull_request' || needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
     outputs:
       modules: ${{ steps.list-go-modules.outputs.modules }}
@@ -61,9 +85,15 @@ jobs:
         # if jobs in the 'go' job matrix failed or were cancelled, this job will fail
         # otherwise this job is marked as successful because all steps are skipped
         run: exit 1
-        if: needs.go.result != 'success'
+        if: >-
+          ${{
+               needs.go.result == 'failure'
+            || needs.go.result == 'cancelled'
+          }}
 
   web:
+    needs: changes
+    if: github.event_name != 'pull_request' || needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -85,6 +115,8 @@ jobs:
       - name: Run lint
         run: make lint/web
   helm:
+    needs: changes
+    if: github.event_name != 'pull_request' || needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
@@ -125,7 +157,10 @@ jobs:
     steps:
       - name: Check govulncheck status
         # Warn-only for now until vulnerabilities are fixed (see #6600)
-        # Change 'skipped' back to 'success' once fixed
         run: |
           echo "::warning::govulncheck found vulnerabilities - see issue #6600 for tracking"
-        if: needs.govulncheck.result != 'success'
+        if: >-
+          ${{
+               needs.govulncheck.result == 'failure'
+            || needs.govulncheck.result == 'cancelled'
+          }}
