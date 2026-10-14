@@ -32,7 +32,7 @@ var (
 
 type Plugin struct{}
 
-func (p *Plugin) GetPlanPreview(ctx context.Context, _ *kubeconfig.KubernetesPluginConfig, dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.GetPlanPreviewInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.GetPlanPreviewResponse, error) {
+func (p *Plugin) GetPlanPreview(ctx context.Context, pluginCfg *kubeconfig.KubernetesPluginConfig, dts []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.GetPlanPreviewInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.GetPlanPreviewResponse, error) {
 	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
 	loader := provider.NewLoader(toolRegistry)
 
@@ -49,6 +49,7 @@ func (p *Plugin) GetPlanPreview(ctx context.Context, _ *kubeconfig.KubernetesPlu
 		return nil, err
 	}
 	tagetSpec := targetAppCfg.Spec
+	pluginCfg.SetHelmChartInsecure(tagetSpec.Input.HelmChart)
 
 	newManifests, err = loader.LoadManifests(ctx, provider.LoaderInput{
 		PipedID:          input.Request.PipedID,
@@ -77,6 +78,7 @@ func (p *Plugin) GetPlanPreview(ctx context.Context, _ *kubeconfig.KubernetesPlu
 			return nil, err
 		}
 		runningSpec := runningAppCfg.Spec
+		pluginCfg.SetHelmChartInsecure(runningSpec.Input.HelmChart)
 		oldManifests, err = loader.LoadManifests(ctx, provider.LoaderInput{
 			PipedID:          input.Request.PipedID,
 			AppID:            input.Request.ApplicationID,
