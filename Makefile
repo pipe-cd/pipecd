@@ -220,7 +220,7 @@ lint/go:
 	@echo "Linting go modules..."
 	@for module in $(shell echo $(MODULES) | tr ',' ' '); do \
 		echo "Linting module: $$module"; \
-		docker run ${FLAGS} -w /repo/$$module golangci/golangci-lint@${VERSION} golangci-lint run -v --config /repo/.golangci.yml --fix=$(FIX); \
+		docker run ${FLAGS} -w /repo/$$module golangci/golangci-lint@${VERSION} golangci-lint run -v --config /repo/.golangci.yml --fix=$(FIX) || exit 1; \
 	done
 
 .PHONY: lint/web
