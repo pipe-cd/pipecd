@@ -66,10 +66,10 @@ jobs:
   go-lint-completed:
     runs-on: ubuntu-24.04
     if: always()
-    needs: [changes, go]
+    needs: [changes, list-go-modules, go]
     steps:
       - name: Check if all go lint jobs succeeded
-        # if the 'changes' job or any job in the 'go' matrix failed or was cancelled, this job will fail
+        # if the 'changes', 'list-go-modules', or any job in the 'go' matrix failed or was cancelled, this job will fail
         # otherwise this job is marked as successful because all steps are skipped
         run: exit 1
         if: >-
