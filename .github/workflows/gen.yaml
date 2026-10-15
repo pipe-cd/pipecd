@@ -10,27 +10,12 @@ concurrency:
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   # Reports whether the pull request touches anything outside documentation.
   changes:
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-      pull-requests: read
-    outputs:
-      code: ${{ steps.filter.outputs.code }}
-    steps:
-      - id: filter
-        uses: dorny/paths-filter@0e4a8c6effa4802afeda77dc8d303f8176d7dfad # v3.0.4
-        with:
-          # 'every' makes the negated patterns below act as real exclusions.
-          predicate-quantifier: every
-          filters: |
-            code:
-              - '!docs/**'
-              - '!**/*.md'
-              - '**'
+    uses: ./.github/workflows/changes.yaml
 
   code:
     needs: changes

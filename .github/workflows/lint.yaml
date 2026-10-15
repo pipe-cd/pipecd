@@ -13,6 +13,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+permissions:
+  contents: read
+  pull-requests: read
+
 env:
   GO_VERSION: 1.26.2
   NODE_VERSION: 24.10.0
@@ -23,24 +27,7 @@ jobs:
   # Reports whether the pull request touches anything outside documentation.
   # The output is empty on push/tag events so the jobs below always run there.
   changes:
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-      pull-requests: read
-    outputs:
-      code: ${{ steps.filter.outputs.code }}
-    steps:
-      - id: filter
-        if: github.event_name == 'pull_request'
-        uses: dorny/paths-filter@0e4a8c6effa4802afeda77dc8d303f8176d7dfad # v3.0.4
-        with:
-          # 'every' makes the negated patterns below act as real exclusions.
-          predicate-quantifier: every
-          filters: |
-            code:
-              - '!docs/**'
-              - '!**/*.md'
-              - '**'
+    uses: ./.github/workflows/changes.yaml
 
   list-go-modules:
     needs: changes
