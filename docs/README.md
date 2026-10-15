@@ -4,7 +4,7 @@ The source files for the documentation are located in the [content](https://gith
 
 # Website
 
-The PipeCD documentation website is built with [hugo](https://gohugo.io/) and hosted on [Netlify](https://www.netlify.com/), published at https://pipecd.dev
+The PipeCD documentation website is built with [hugo](https://gohugo.io/) and hosted on [Netlify](https://www.netlify.com/), published at https://pipecd.dev.
 
 # Docs workflow and versioning
 
