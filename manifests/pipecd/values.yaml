@@ -81,7 +81,7 @@ mysql:
   port: 3306
 
 minio:
-  imageTag: "RELEASE.2020-08-26T00-00-49Z"
+  imageTag: "RELEASE.2025-09-07T16-13-09Z"
   resources: {}
   port: 9000
 

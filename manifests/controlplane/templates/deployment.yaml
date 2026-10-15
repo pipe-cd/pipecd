@@ -422,17 +422,17 @@ spec:
       {{- end }}
       containers:
         - name: minio
-          image: minio/minio:{{ .Values.minio.imageTag }}
+          image: quay.io/minio/minio:{{ .Values.minio.imageTag }}
           args:
           - server
           - /data
           env:
-          - name: MINIO_ACCESS_KEY
+          - name: MINIO_ROOT_USER
             valueFrom:
               secretKeyRef:
                 name: {{ include "pipecd.secretName" . }}
                 key: {{ .Values.secret.minioAccessKey.fileName }}
-          - name: MINIO_SECRET_KEY
+          - name: MINIO_ROOT_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: {{ include "pipecd.secretName" . }}
