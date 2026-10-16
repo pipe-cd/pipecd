@@ -136,7 +136,7 @@ mockSources=(
 )
 mockInterfaces=(
   "Redis"
-  "ProjectStore,PipedStore,ApplicationStore,DeploymentStore,CommandStore"
+  "ProjectStore,PipedStore,ApplicationStore,DeploymentStore,CommandStore,DeploymentChainStore"
   "Store"
   "Applier,Loader"
   "Getter,Putter,Deleter,Cache"

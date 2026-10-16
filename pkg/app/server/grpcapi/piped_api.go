@@ -70,6 +70,8 @@ type pipedAPIDeploymentStore interface {
 type pipedAPIDeploymentChainStore interface {
 	Add(ctx context.Context, d *model.DeploymentChain) error
 	Get(ctx context.Context, id string) (*model.DeploymentChain, error)
+	AddNodeDeployment(ctx context.Context, chainID string, deployment *model.Deployment) error
+	UpdateNodeDeploymentStatus(ctx context.Context, chainID string, blockIndex uint32, deploymentID string, status model.DeploymentStatus, reason string) error
 }
 
 type pipedAPIPipedStore interface {
@@ -398,6 +400,17 @@ func (a *PipedAPI) CreateDeployment(ctx context.Context, req *pipedservice.Creat
 		return nil, err
 	}
 
+	// Link the deployment to its node in the deployment chain before creating it.
+	// Doing it in this order means a failure here leaves nothing behind, so the
+	// trigger is safe to retry; linking itself is idempotent.
+	// Note: the first deployment of a chain is linked while the chain is being
+	// created in CreateDeploymentChain, it does not come through this path.
+	if req.Deployment.DeploymentChainId != "" {
+		if err := a.deploymentChainStore.AddNodeDeployment(ctx, req.Deployment.DeploymentChainId, req.Deployment); err != nil {
+			return nil, gRPCStoreError(err, fmt.Sprintf("add deployment %s to its deployment chain %s", req.Deployment.Id, req.Deployment.DeploymentChainId))
+		}
+	}
+
 	if err := a.deploymentStore.Add(ctx, req.Deployment); err != nil {
 		return nil, gRPCStoreError(err, fmt.Sprintf("add deployment %s", req.Deployment.Id))
 	}
@@ -431,6 +444,18 @@ func (a *PipedAPI) ReportDeploymentPlanned(ctx context.Context, req *pipedservic
 	); err != nil {
 		return nil, gRPCStoreError(err, fmt.Sprintf("update deployment %s as planned", req.DeploymentId))
 	}
+
+	// Note: this request has no status field, the deployment is PLANNED by definition here.
+	if err := a.updateDeploymentChainNodeStatus(
+		ctx,
+		req.DeploymentChainId,
+		req.DeploymentChainBlockIndex,
+		req.DeploymentId,
+		model.DeploymentStatus_DEPLOYMENT_PLANNED,
+		req.StatusReason,
+	); err != nil {
+		return nil, err
+	}
 	return &pipedservice.ReportDeploymentPlannedResponse{}, nil
 }
 
@@ -447,6 +472,17 @@ func (a *PipedAPI) ReportDeploymentStatusChanged(ctx context.Context, req *piped
 
 	if err = a.deploymentStore.UpdateStatus(ctx, req.DeploymentId, req.Status, req.StatusReason); err != nil {
 		return nil, gRPCStoreError(err, fmt.Sprintf("update status of deployment %s", req.DeploymentId))
+	}
+
+	if err := a.updateDeploymentChainNodeStatus(
+		ctx,
+		req.DeploymentChainId,
+		req.DeploymentChainBlockIndex,
+		req.DeploymentId,
+		req.Status,
+		req.StatusReason,
+	); err != nil {
+		return nil, err
 	}
 	return &pipedservice.ReportDeploymentStatusChangedResponse{}, nil
 }
@@ -465,7 +501,61 @@ func (a *PipedAPI) ReportDeploymentCompleted(ctx context.Context, req *pipedserv
 	if err = a.deploymentStore.UpdateToCompleted(ctx, req.DeploymentId, req.Status, req.StageStatuses, req.StatusReason, req.CompletedAt); err != nil {
 		return nil, gRPCStoreError(err, fmt.Sprintf("update deployment %s as completed", req.DeploymentId))
 	}
+
+	// This is the update which settles the containing block and, when it is the last
+	// remaining deployment, the whole deployment chain.
+	if err := a.updateDeploymentChainNodeStatus(
+		ctx,
+		req.DeploymentChainId,
+		req.DeploymentChainBlockIndex,
+		req.DeploymentId,
+		req.Status,
+		req.StatusReason,
+	); err != nil {
+		return nil, err
+	}
 	return &pipedservice.ReportDeploymentCompletedResponse{}, nil
+}
+
+// updateDeploymentChainNodeStatus reflects the reported status of an in chain deployment
+// to the deployment chain model it belongs to. Storing that status recalculates the status
+// of both the containing block and the deployment chain itself.
+//
+// It is a no-op for deployments which do not belong to any deployment chain.
+//
+// An error is returned to the caller so that the piped which made the report retries it.
+// Since reporting a deployment status is idempotent, the retry also redrives this update,
+// which is what guarantees the deployment chain eventually reaches its terminal status.
+func (a *PipedAPI) updateDeploymentChainNodeStatus(
+	ctx context.Context,
+	deploymentChainID string,
+	blockIndex uint32,
+	deploymentID string,
+	status model.DeploymentStatus,
+	statusReason string,
+) error {
+	if deploymentChainID == "" {
+		return nil
+	}
+
+	if err := a.deploymentChainStore.UpdateNodeDeploymentStatus(
+		ctx,
+		deploymentChainID,
+		blockIndex,
+		deploymentID,
+		status,
+		statusReason,
+	); err != nil {
+		a.logger.Error("failed to update status of deployment in its deployment chain",
+			zap.String("deployment-chain-id", deploymentChainID),
+			zap.Uint32("block-index", blockIndex),
+			zap.String("deployment-id", deploymentID),
+			zap.String("status", status.String()),
+			zap.Error(err),
+		)
+		return gRPCStoreError(err, fmt.Sprintf("update status of deployment %s in its deployment chain %s", deploymentID, deploymentChainID))
+	}
+	return nil
 }
 
 // SaveDeploymentMetadata used by piped to persist the metadata of a specific deployment.
