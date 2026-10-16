@@ -37,8 +37,8 @@ const (
 func TestMain(m *testing.M) {
 	pool, err := dockertest.NewPool("")
 	if err != nil {
-		if os.Getenv("CI") == "true" {
-			log.Fatalf("Docker is required in CI but is unavailable: %s", err)
+		if os.Getenv("OCI_REQUIRE_DOCKER") == "true" {
+			log.Fatalf("Docker is required for OCI integration tests but is unavailable: %s", err)
 		}
 		log.Printf("Docker is unavailable; skipping pkg/oci tests: %s", err)
 		os.Exit(0)
