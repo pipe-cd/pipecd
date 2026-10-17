@@ -478,6 +478,7 @@ func TestListDeployments(t *testing.T) {
 			opts: ListOptions{},
 			ds: func() DataStore {
 				it := NewMockIterator(ctrl)
+				it.EXPECT().Close().Return(nil)
 				gomock.InOrder(
 					it.EXPECT().Next(gomock.Any()).Return(nil),
 					it.EXPECT().Next(gomock.Any()).Return(nil),
@@ -512,6 +513,7 @@ func TestListDeployments(t *testing.T) {
 					it.EXPECT().Next(gomock.Any()).Return(ErrIteratorDone),
 				)
 				it.EXPECT().Cursor().Return("next-cursor", nil)
+				it.EXPECT().Close().Return(nil)
 
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
