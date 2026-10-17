@@ -412,7 +412,7 @@ func (t *Trigger) listCommandCandidates() []candidate {
 func (t *Trigger) listOutOfSyncCandidates() []candidate {
 	var (
 		list = t.applicationLister.List()
-		apps = make([]candidate, 0)
+		apps = make([]candidate, 0, len(list))
 	)
 	for _, app := range list {
 		if !app.IsOutOfSync() {
@@ -432,7 +432,7 @@ func (t *Trigger) listOutOfSyncCandidates() []candidate {
 func (t *Trigger) listCommitCandidates() []candidate {
 	var (
 		list = t.applicationLister.List()
-		apps = make([]candidate, 0)
+		apps = make([]candidate, 0, len(list))
 	)
 	for _, app := range list {
 		apps = append(apps, candidate{
@@ -493,7 +493,7 @@ func (t *Trigger) notifyDeploymentTriggerFailed(app *model.Application, appCfg *
 	var groups []string
 	if n := appCfg.DeploymentNotification; n != nil {
 		users = n.FindSlackUsers(model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED)
-		groups = n.FindSlackUsers(model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED)
+		groups = n.FindSlackGroups(model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED)
 	}
 
 	t.notifier.Notify(model.NotificationEvent{

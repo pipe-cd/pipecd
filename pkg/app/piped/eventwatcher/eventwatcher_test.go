@@ -25,7 +25,7 @@ func TestConvertStr(t *testing.T) {
 
 	testcases := []struct {
 		name    string
-		value   interface{}
+		value   any
 		want    string
 		wantErr bool
 	}{
@@ -67,7 +67,7 @@ func TestConvertStr(t *testing.T) {
 		},
 		{
 			name:    "map",
-			value:   make(map[string]interface{}),
+			value:   make(map[string]any),
 			want:    "",
 			wantErr: true,
 		},
@@ -287,7 +287,6 @@ func TestGetBranchName(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			got := makeBranchName(tc.newBranch, tc.eventName, tc.branch)

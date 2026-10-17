@@ -91,16 +91,17 @@ type piped struct {
 	configGCPSecret string
 	configAWSSecret string
 
-	insecure             bool
-	certFile             string
-	adminPort            int
-	pluginServicePort    int
-	toolsDir             string
-	pluginsDir           string
-	gracePeriod          time.Duration
-	addLoginUserToPasswd bool
-	launcherVersion      string
-	maxRecvMsgSize       int
+	insecure              bool
+	certFile              string
+	adminPort             int
+	pluginServicePort     int
+	toolsDir              string
+	pluginsDir            string
+	gracePeriod           time.Duration
+	addLoginUserToPasswd  bool
+	launcherVersion       string
+	maxRecvMsgSize        int
+	forcePluginRedownload bool
 }
 
 func NewCommand() *cobra.Command {
@@ -141,6 +142,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().DurationVar(&p.gracePeriod, "grace-period", p.gracePeriod, "How long to wait for graceful shutdown.")
 
 	cmd.Flags().StringVar(&p.launcherVersion, "launcher-version", p.launcherVersion, "The version of launcher which initialized this Piped.")
+	cmd.Flags().BoolVar(&p.forcePluginRedownload, "force-plugin-redownload", p.forcePluginRedownload, "If true, always re-download plugin binaries instead of using cached ones. Useful during plugin development.")
 
 	return cmd
 }
@@ -345,13 +347,11 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			<-ctx.Done()
 			wg := &sync.WaitGroup{}
 			for _, plg := range plugins {
-				wg.Add(1)
-				go func() {
-					defer wg.Done()
+				wg.Go(func() {
 					if err := plg.GracefulStop(p.gracePeriod); err != nil {
 						input.Logger.Error("failed to stop plugin", zap.Error(err))
 					}
-				}()
+				})
 			}
 			wg.Wait()
 			return nil
@@ -489,6 +489,13 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			input.Logger.Info("successfully cleaned gitClient for plan-preview")
 		}()
 
+		ppOpts := []planpreview.Option{
+			planpreview.WithLogger(input.Logger),
+			planpreview.WithWorkerNum(cfg.PlanPreview.WorkerNum),
+			planpreview.WithCommandQueueBufferSize(cfg.PlanPreview.CommandQueueBufferSize),
+			planpreview.WithCommandCheckInterval(cfg.PlanPreview.CommandCheckInterval.Duration()),
+			planpreview.WithCommandHandleTimeout(cfg.PlanPreview.CommandHandleTimeout.Duration()),
+		}
 		h := planpreview.NewHandler(
 			gc,
 			apiClient,
@@ -498,7 +505,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			decrypter,
 			cfg,
 			pluginRegistry,
-			planpreview.WithLogger(input.Logger),
+			ppOpts...,
 		)
 		group.Go(func() error {
 			return h.Run(ctx)
@@ -697,7 +704,7 @@ func (p *piped) runPlugins(ctx context.Context, pluginsCfg []config.PipedPlugin,
 	plugins := make([]*lifecycle.Command, 0, len(pluginsCfg))
 	for _, pCfg := range pluginsCfg {
 		// Download plugin binary to piped's pluginsDir.
-		pPath, err := lifecycle.DownloadBinary(pCfg.URL, p.pluginsDir, pCfg.Name, logger)
+		pPath, err := lifecycle.DownloadBinary(pCfg.URL, p.pluginsDir, pCfg.Name, p.forcePluginRedownload, logger)
 		if err != nil {
 			return nil, fmt.Errorf("failed to download plugin %s: %w", pCfg.Name, err)
 		}
@@ -812,7 +819,7 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 	}
 
 	retry := pipedservice.NewRetry(5)
-	_, err = retry.Do(ctx, func() (interface{}, error) {
+	_, err = retry.Do(ctx, func() (any, error) {
 		if res, err := client.ReportPipedMeta(ctx, req); err == nil {
 			cfg.Name = res.Name
 			if cfg.WebAddress == "" {

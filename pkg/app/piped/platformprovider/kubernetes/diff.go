@@ -84,7 +84,7 @@ func DiffList(olds, news []Manifest, logger *zap.Logger, opts ...diff.Option) (*
 		Changes: make([]DiffListChange, 0, len(newChanges)),
 	}
 
-	for i := 0; i < len(newChanges); i++ {
+	for i := range newChanges {
 		result, err := Diff(oldChanges[i], newChanges[i], logger, opts...)
 		if err != nil {
 			return nil, err
@@ -150,11 +150,11 @@ func (r *DiffListResult) Render(opt DiffRenderOptions) string {
 	index := 0
 	for _, delete := range r.Deletes {
 		index++
-		b.WriteString(fmt.Sprintf("- %d. %s\n\n", index, delete.Key.ReadableString()))
+		fmt.Fprintf(&b, "- %d. %s\n\n", index, delete.Key.ReadableString())
 	}
 	for _, add := range r.Adds {
 		index++
-		b.WriteString(fmt.Sprintf("+ %d. %s\n\n", index, add.Key.ReadableString()))
+		fmt.Fprintf(&b, "+ %d. %s\n\n", index, add.Key.ReadableString())
 	}
 
 	maxPrintDiffs := len(r.Changes)
@@ -180,7 +180,7 @@ func (r *DiffListResult) Render(opt DiffRenderOptions) string {
 		renderer := diff.NewRenderer(opts...)
 
 		index++
-		b.WriteString(fmt.Sprintf("# %d. %s\n\n", index, key.ReadableString()))
+		fmt.Fprintf(&b, "# %d. %s\n\n", index, key.ReadableString())
 
 		// Use our diff check in one of the following cases:
 		// - not explicit set useDiffCommand option.
@@ -191,7 +191,7 @@ func (r *DiffListResult) Render(opt DiffRenderOptions) string {
 			// TODO: Find a way to mask values in case of using unix `diff` command.
 			d, err := diffByCommand(diffCommand, change.Old, change.New)
 			if err != nil {
-				b.WriteString(fmt.Sprintf("An error occurred while rendering diff (%v)", err))
+				fmt.Fprintf(&b, "An error occurred while rendering diff (%v)", err)
 			} else {
 				b.Write(d)
 			}
@@ -205,7 +205,7 @@ func (r *DiffListResult) Render(opt DiffRenderOptions) string {
 	}
 
 	if prints < len(r.Changes) {
-		b.WriteString(fmt.Sprintf("... (omitted %d other changed manifests\n", len(r.Changes)-prints))
+		fmt.Fprintf(&b, "... (omitted %d other changed manifests\n", len(r.Changes)-prints)
 	}
 
 	return b.String()

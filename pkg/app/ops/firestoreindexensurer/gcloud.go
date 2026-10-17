@@ -76,12 +76,13 @@ func (c *gcloud) createIndex(ctx context.Context, idx *index) error {
 	// For that, seems like additional permission is required. We have to look out for.
 
 	// Run gcloud command in async mode, which returns immediately without waiting for the operation in progress to complete.
-	args := []string{
+	args := make([]string, 0, 9+2*len(idx.Fields))
+	args = append(args,
 		"firestore", "indexes", "composite", "create",
 		"--async",
 		"--project", c.projectID,
 		"--collection-group", idx.CollectionGroup,
-	}
+	)
 	for _, f := range idx.Fields {
 		fieldCfg := fmt.Sprintf("field-path=%s", f.FieldPath)
 		if f.Order != "" {

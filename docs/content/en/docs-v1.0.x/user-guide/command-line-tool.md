@@ -11,7 +11,7 @@ You can use pipectl to add and sync applications, wait for a deployment status.
 
 ## Installation
 
-The Pipectl command-line tool can be installed using one of the following methods:
+The pipectl command-line tool can be installed using one of the following methods:
 
 ### Directly download and set up binary
 
@@ -47,7 +47,7 @@ The Pipectl command-line tool can be installed using one of the following method
 
 About [Asdf](https://asdf-vm.com/)
 
-1. Add pipectl plugin to asdf. (If you have not yet `asdf add plugin add pipectl`.)
+1. Add pipectl plugin to asdf. (If you have not yet added the plugin, run `asdf plugin add pipectl`.)
     ```console
     asdf plugin add pipectl
     ```
@@ -271,6 +271,17 @@ pipectl application disable \
     --app-id={APPLICATION_ID}
 ```
 
+### Enable an application
+
+Enable an application with given id:
+
+``` console
+pipectl application enable \
+    --address={CONTROL_PLANE_API_ADDRESS} \
+    --api-key={API_KEY} \
+    --app-id={APPLICATION_ID}
+```
+
 ### Deleting an application
 
 Delete an application with given id:
@@ -325,10 +336,10 @@ pipectl event register \
     --address={CONTROL_PLANE_API_ADDRESS} \
     --api-key={API_KEY} \
     --name=example-image-pushed \
-    --data=gcr.io/pipecd/example:v0.1.0
+    --data=ghcr.io/pipe-cd/helloworld:v0.48.0
 ```
 
-See more on [usage of Event Watcher](./event-watcher.md).
+See more on [usage of Event Watcher](./managing-application/event-watcher).
 
 ### Encrypting the data you want to use when deploying
 
@@ -355,7 +366,7 @@ You can encrypt it the same way you do [from the web](../managing-application/se
       --input-file={PATH_TO_SECRET_FILE}
   ```
 
-Note: The docs for pipectl available command is maybe outdated, we suggest users use the `help` command for the updated usage while using pipectl.
+> **Note:** The docs for pipectl available command may be outdated. We suggest users use the `help` command for the updated usage while using pipectl.
 
 ### You want more?
 

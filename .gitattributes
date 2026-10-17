@@ -1,1 +1,21 @@
+# Generated files: collapsed in pull request diffs and excluded from language statistics.
+
+# Protobuf and gRPC outputs (make gen/code)
+*.pb.go linguist-generated=true
+*.pb.validate.go linguist-generated=true
+*.pb.auth.go linguist-generated=true
 **/*_pb.js linguist-generated=true
+**/*_pb.d.ts linguist-generated=true
+
+# mockgen outputs (make gen/code)
+*.mock.go linguist-generated=true
+pkg/datastore/mock.go linguist-generated=true
+
+# Mock Service Worker script (npx msw init)
+web/public/mockServiceWorker.js linguist-generated=true
+
+# Lockfiles
+go.sum linguist-generated=true
+yarn.lock linguist-generated=true
+package-lock.json linguist-generated=true
+Chart.lock linguist-generated=true

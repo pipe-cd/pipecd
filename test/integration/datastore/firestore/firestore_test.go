@@ -154,6 +154,7 @@ func listEntities(it datastore.Iterator) ([]*Entity, error) {
 	if it == nil {
 		return entity, nil
 	}
+	defer it.Close()
 	for {
 		var e Entity
 		err := it.Next(&e)
@@ -204,7 +205,7 @@ func TestCreate(t *testing.T) {
 func TestUpdate(t *testing.T) {
 	col := &collection{
 		kind: "UpdateEntity",
-		factory: func() interface{} {
+		factory: func() any {
 			return &Entity{}
 		},
 	}
@@ -218,7 +219,7 @@ func TestUpdate(t *testing.T) {
 	testcases := []struct {
 		name    string
 		id      string
-		updater func(interface{}) error
+		updater func(any) error
 		wantErr error
 	}{
 		{
@@ -229,7 +230,7 @@ func TestUpdate(t *testing.T) {
 		{
 			name: "unable to update",
 			id:   "id",
-			updater: func(interface{}) error {
+			updater: func(any) error {
 				return fmt.Errorf("error")
 			},
 			wantErr: fmt.Errorf("error"),
@@ -237,7 +238,7 @@ func TestUpdate(t *testing.T) {
 		{
 			name: "successful update",
 			id:   "id",
-			updater: func(e interface{}) error {
+			updater: func(e any) error {
 				entity := e.(*Entity)
 				entity.Name = "new-name"
 				return nil

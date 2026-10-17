@@ -54,14 +54,17 @@ func (a *AESEncryptDecrypter) Encrypt(text string) (string, error) {
 		return "", err
 	}
 
-	nonce := make([]byte, gcm.NonceSize())
+	nonceSize := gcm.NonceSize()
+	nonce := make([]byte, nonceSize)
 	_, err = rand.Read(nonce)
 	if err != nil {
 		return "", err
 	}
 
-	encrypted := gcm.Seal(nil, nonce, []byte(text), nil)
-	encrypted = append(nonce, encrypted...)
+	ciphertext := gcm.Seal(nil, nonce, []byte(text), nil)
+	encrypted := make([]byte, 0, nonceSize+len(ciphertext))
+	encrypted = append(encrypted, nonce...)
+	encrypted = append(encrypted, ciphertext...)
 
 	return base64.StdEncoding.EncodeToString(encrypted), nil
 }
@@ -80,6 +83,10 @@ func (a *AESEncryptDecrypter) Decrypt(encryptedText string) (string, error) {
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
 		return "", err
+	}
+
+	if len(encrypted) < gcm.NonceSize() {
+		return "", fmt.Errorf("ciphertext too short: got %d bytes, need at least %d", len(encrypted), gcm.NonceSize())
 	}
 
 	nonce := encrypted[:gcm.NonceSize()]

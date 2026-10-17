@@ -19,8 +19,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -86,6 +86,7 @@ func TestListAPIKeys(t *testing.T) {
 			opts: ListOptions{},
 			ds: func() DataStore {
 				it := NewMockIterator(ctrl)
+				it.EXPECT().Close().Return(nil)
 				it.EXPECT().
 					Next(&model.APIKey{}).
 					Return(ErrIteratorDone)
@@ -103,6 +104,7 @@ func TestListAPIKeys(t *testing.T) {
 			opts: ListOptions{},
 			ds: func() DataStore {
 				it := NewMockIterator(ctrl)
+				it.EXPECT().Close().Return(nil)
 				it.EXPECT().
 					Next(&model.APIKey{}).
 					Return(errors.New("test-error"))

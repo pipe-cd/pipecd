@@ -373,14 +373,38 @@ func (s *scheduler) Run(ctx context.Context) error {
 			<-doneCh
 
 		case cmd := <-s.cancelledCh:
+			// A nil command means the channel was closed after delivering
+			// a cancel command, so treat it as a cancellation as well.
 			if cmd != nil {
 				cancelCommand = cmd
 				cancelCommander = cmd.Commander
-				handler.Cancel()
-				<-doneCh
 			}
+			handler.Cancel()
+			<-doneCh
 
 		case <-doneCh:
+			break
+		}
+
+		// The select may have picked doneCh while a cancel command was already
+		// waiting, so check it before deciding to move on.
+		if cancelCommand == nil {
+			select {
+			case cmd := <-s.cancelledCh:
+				if cmd != nil {
+					cancelCommand = cmd
+					cancelCommander = cmd.Commander
+				}
+			default:
+			}
+		}
+
+		// A received cancel command wins even if the stage finished successfully,
+		// otherwise the loop would continue to the next stage after the user cancelled.
+		// Cancel stops progression, it does not rewrite an already-committed stage outcome.
+		if cancelCommand != nil && (result == model.StageStatus_STAGE_SUCCESS || result == model.StageStatus_STAGE_SKIPPED) {
+			deploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
+			statusReason = fmt.Sprintf("Cancelled by %s while executing stage %s", cancelCommander, ps.Id)
 			break
 		}
 
@@ -612,7 +636,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 	// Skip the stage if needed based on the skip config.
 	skip, err := s.shouldSkipStage(sig.Context(), input)
 	if err != nil {
-		lp.Errorf("failed to check whether skipping the stage: %w", err.Error())
+		lp.Errorf("failed to check whether skipping the stage: %s", err.Error())
 		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
 			s.logger.Error("failed to report stage status", zap.Error(err))
 		}

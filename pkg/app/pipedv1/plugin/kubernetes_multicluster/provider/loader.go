@@ -55,6 +55,7 @@ type LoaderInput struct {
 	Namespace string
 
 	KustomizeVersion string
+	KustomizeDir     string
 	KustomizeOptions map[string]string
 
 	HelmVersion string
@@ -85,10 +86,22 @@ func (l *Loader) determineTemplatingMethod(input LoaderInput) TemplatingMethod {
 	if input.HelmChart != nil {
 		return TemplatingMethodHelm
 	}
-	if isKustomizationFileExists(input.AppDir) {
+	if isKustomizationFileExists(resolveKustomizeDir(input.AppDir, input.KustomizeDir)) {
 		return TemplatingMethodKustomize
 	}
 	return TemplatingMethodNone
+}
+
+// resolveKustomizeDir returns the effective kustomize directory.
+// If kustomizeDir is empty, appDir is used. If kustomizeDir is relative, it is joined with appDir.
+func resolveKustomizeDir(appDir, kustomizeDir string) string {
+	if kustomizeDir == "" {
+		return appDir
+	}
+	if filepath.IsAbs(kustomizeDir) {
+		return kustomizeDir
+	}
+	return filepath.Join(appDir, kustomizeDir)
 }
 
 // isKustomizationFileExists checks if a kustomization file exists in the given directory.
@@ -200,7 +213,7 @@ func (l *Loader) templateKustomizeManifests(ctx context.Context, input LoaderInp
 
 	k := NewKustomize(input.KustomizeVersion, kustomizePath, input.Logger)
 
-	return k.Template(ctx, input.AppName, input.AppDir, input.KustomizeOptions, h)
+	return k.Template(ctx, input.AppName, resolveKustomizeDir(input.AppDir, input.KustomizeDir), input.KustomizeOptions, h)
 }
 
 func LoadPlainYAMLManifests(dir string, names []string, configFilename string) ([]Manifest, error) {

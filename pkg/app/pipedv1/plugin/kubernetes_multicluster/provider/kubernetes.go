@@ -36,8 +36,11 @@ const (
 	AnnotationOrder      = "pipecd.dev/order"       // The order number of resource used to sort them before using.
 	AnnotationConfigHash = "pipecd.dev/config-hash" // The hash value of all mouting config resources.
 
+	LabelIgnoreDriftDirection = "pipecd.dev/ignore-drift-detection" // Whether the drift detection should ignore this resource.
+
 	// label/annotation values
-	ManagedByPiped     = "piped"
-	UseReplaceEnabled  = "enabled"
-	UseServerSideApply = "true"
+	ManagedByPiped           = "piped"
+	UseReplaceEnabled        = "enabled"
+	UseServerSideApply       = "true"
+	IgnoreDriftDetectionTrue = "true"
 )

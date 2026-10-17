@@ -193,7 +193,7 @@ Usage:
 
 Flags:
       --app-dir string            The relative path from the root of repository to the application directory.
-      --app-kind string           The kind of application. (KUBERNETES|TERRAFORM|LAMBDA|CLOUDRUN)
+      --app-kind string           The kind of application. (KUBERNETES|TERRAFORM|LAMBDA|CLOUDRUN|ECS)
       --app-name string           The application name.
       --platform-provider string  The platform provider name. One of the registered providers in the piped configuration. The previous name of this field is cloud-provider.
       --config-file-name string   The configuration file name. (default "app.pipecd.yaml")
@@ -271,6 +271,17 @@ pipectl application disable \
     --app-id={APPLICATION_ID}
 ```
 
+### Enable an application
+
+Enable an application with given id:
+
+``` console
+pipectl application enable \
+    --address={CONTROL_PLANE_API_ADDRESS} \
+    --api-key={API_KEY} \
+    --app-id={APPLICATION_ID}
+```
+
 ### Deleting an application
 
 Delete an application with given id:
@@ -325,7 +336,7 @@ pipectl event register \
     --address={CONTROL_PLANE_API_ADDRESS} \
     --api-key={API_KEY} \
     --name=example-image-pushed \
-    --data=gcr.io/pipecd/example:v0.1.0
+    --data=ghcr.io/pipe-cd/helloworld:v0.48.0
 ```
 
 See more on [usage of Event Watcher](./event-watcher.md).

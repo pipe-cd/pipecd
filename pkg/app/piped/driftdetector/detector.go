@@ -67,7 +67,7 @@ type Detector interface {
 type detector struct {
 	apiClient  apiClient
 	detectors  []providerDetector
-	syncStates map[string]model.ApplicationSyncState
+	syncStates map[string]*model.ApplicationSyncState
 	mu         sync.RWMutex
 	logger     *zap.Logger
 }
@@ -91,7 +91,7 @@ func NewDetector(
 	d := &detector{
 		apiClient:  apiClient,
 		detectors:  make([]providerDetector, 0, len(cfg.PlatformProviders)),
-		syncStates: make(map[string]model.ApplicationSyncState),
+		syncStates: make(map[string]*model.ApplicationSyncState),
 		logger:     logger.Named("drift-detector"),
 	}
 
@@ -198,7 +198,6 @@ func (d *detector) Run(ctx context.Context) error {
 	group, ctx := errgroup.WithContext(ctx)
 
 	for i, detector := range d.detectors {
-		detector := detector
 		// Avoid starting all detectors at the same time to reduce the API call burst.
 		time.Sleep(time.Duration(i) * 10 * time.Second)
 		d.logger.Info(fmt.Sprintf("starting drift detector for cloud provider: %s", detector.ProviderName()))
@@ -219,7 +218,7 @@ func (d *detector) Run(ctx context.Context) error {
 	return nil
 }
 
-func (d *detector) ReportApplicationSyncState(ctx context.Context, appID string, state model.ApplicationSyncState) error {
+func (d *detector) ReportApplicationSyncState(ctx context.Context, appID string, state *model.ApplicationSyncState) error {
 	d.mu.RLock()
 	curState, ok := d.syncStates[appID]
 	d.mu.RUnlock()
@@ -230,7 +229,7 @@ func (d *detector) ReportApplicationSyncState(ctx context.Context, appID string,
 
 	_, err := d.apiClient.ReportApplicationSyncState(ctx, &pipedservice.ReportApplicationSyncStateRequest{
 		ApplicationId: appID,
-		State:         &state,
+		State:         state,
 	})
 	if err != nil {
 		d.logger.Error("failed to report application sync state",

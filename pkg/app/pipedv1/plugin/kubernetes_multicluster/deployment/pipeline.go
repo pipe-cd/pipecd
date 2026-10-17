@@ -15,6 +15,7 @@
 package deployment
 
 import (
+	"errors"
 	"slices"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
@@ -26,11 +27,29 @@ const (
 	StageK8sMultiSync = "K8S_MULTI_SYNC"
 	// StageK8sMultiRollback represents the state where all deployed resources should be rollbacked.
 	StageK8sMultiRollback = "K8S_MULTI_ROLLBACK"
+	// StageK8sMultiCanaryRollout represents the state where the new version is deployed as CANARY to all targets.
+	StageK8sMultiCanaryRollout = "K8S_MULTI_CANARY_ROLLOUT"
+	// StageK8sMultiCanaryClean represents the state where all canary resources should be removed.
+	StageK8sMultiCanaryClean = "K8S_MULTI_CANARY_CLEAN"
+	// StageK8sMultiPrimaryRollout represents the state where the new version is promoted as PRIMARY to all targets.
+	StageK8sMultiPrimaryRollout = "K8S_MULTI_PRIMARY_ROLLOUT"
+	// StageK8sMultiBaselineRollout represents the state where the current version is deployed as BASELINE to all targets.
+	StageK8sMultiBaselineRollout = "K8S_MULTI_BASELINE_ROLLOUT"
+	// StageK8sMultiBaselineClean represents the state where all baseline resources should be removed.
+	StageK8sMultiBaselineClean = "K8S_MULTI_BASELINE_CLEAN"
+	// StageK8sMultiTrafficRouting represents the state where traffic is routed between variants.
+	StageK8sMultiTrafficRouting = "K8S_MULTI_TRAFFIC_ROUTING"
 )
 
 var allStages = []string{
 	StageK8sMultiSync,
 	StageK8sMultiRollback,
+	StageK8sMultiCanaryRollout,
+	StageK8sMultiCanaryClean,
+	StageK8sMultiPrimaryRollout,
+	StageK8sMultiBaselineRollout,
+	StageK8sMultiBaselineClean,
+	StageK8sMultiTrafficRouting,
 }
 
 const (
@@ -38,7 +57,21 @@ const (
 	StageDescriptionK8sMultiSync = "Sync by applying all manifests"
 	// StageDescriptionK8sMultiRollback represents the description of the K8sRollback stage.
 	StageDescriptionK8sMultiRollback = "Rollback the deployment"
+	// StageDescriptionK8sMultiCanaryRollout represents the description of the K8sCanaryRollout stage.
+	StageDescriptionK8sMultiCanaryRollout = "Rollout the new version as CANARY to all targets"
+	// StageDescriptionK8sMultiCanaryClean represents the description of the K8sCanaryClean stage.
+	StageDescriptionK8sMultiCanaryClean = "Remove all canary resources"
+	// StageDescriptionK8sMultiPrimaryRollout represents the description of the K8sPrimaryRollout stage.
+	StageDescriptionK8sMultiPrimaryRollout = "Rollout the new version as PRIMARY to all targets"
+	// StageDescriptionK8sMultiBaselineRollout represents the description of the K8sBaselineRollout stage.
+	StageDescriptionK8sMultiBaselineRollout = "Rollout the current version as BASELINE to all targets"
+	// StageDescriptionK8sMultiBaselineClean represents the description of the K8sBaselineClean stage.
+	StageDescriptionK8sMultiBaselineClean = "Remove all baseline resources"
+	// StageDescriptionK8sMultiTrafficRouting represents the description of the K8sTrafficRouting stage.
+	StageDescriptionK8sMultiTrafficRouting = "Update traffic routing percentages for all targets"
 )
+
+var errRollbackRequiresStages = errors.New("rollback requires at least one stage")
 
 func buildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
 	out := make([]sdk.QuickSyncStage, 0, 2)
@@ -66,7 +99,7 @@ func buildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
 }
 
 // buildPipelineStages builds the pipeline stages with the given SDK stages.
-func buildPipelineStages(stages []sdk.StageConfig, autoRollback bool) []sdk.PipelineStage {
+func buildPipelineStages(stages []sdk.StageConfig, autoRollback bool) ([]sdk.PipelineStage, error) {
 	out := make([]sdk.PipelineStage, 0, len(stages)+1)
 
 	for _, s := range stages {
@@ -80,6 +113,9 @@ func buildPipelineStages(stages []sdk.StageConfig, autoRollback bool) []sdk.Pipe
 	}
 
 	if autoRollback {
+		if len(stages) == 0 {
+			return nil, errRollbackRequiresStages
+		}
 		// we set the index of the rollback stage to the minimum index of all stages.
 		minIndex := slices.MinFunc(stages, func(a, b sdk.StageConfig) int {
 			return a.Index - b.Index
@@ -94,5 +130,5 @@ func buildPipelineStages(stages []sdk.StageConfig, autoRollback bool) []sdk.Pipe
 		})
 	}
 
-	return out
+	return out, nil
 }

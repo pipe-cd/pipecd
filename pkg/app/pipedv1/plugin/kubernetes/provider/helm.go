@@ -152,7 +152,7 @@ func (h *Helm) AddRepository(ctx context.Context, repo config.HelmChartRepositor
 }
 
 func (h *Helm) UpdateRepositories(ctx context.Context) error {
-	_, err, _ := updateGroup.Do("update", func() (interface{}, error) {
+	_, err, _ := updateGroup.Do("update", func() (any, error) {
 		args := []string{"repo", "update"}
 		cmd := exec.CommandContext(ctx, h.execPath, args...)
 		out, err := cmd.CombinedOutput()

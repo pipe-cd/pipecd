@@ -26,7 +26,8 @@ export const ResourceNode: FC<Props> = memo(function ResourceNode({
       onClick={() => onClick(resource)}
     >
       <Typography variant="caption">
-        {findMetadataByKey(resource.resourceMetadataMap, "Kind")}
+        {findMetadataByKey(resource.resourceMetadataMap, "Kind") ??
+          resource.resourceType}
       </Typography>
       <Box sx={{ display: "flex" }}>
         <HealthStatusIcon health={resource.healthStatus} />

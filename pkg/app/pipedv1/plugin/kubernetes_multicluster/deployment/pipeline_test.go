@@ -83,6 +83,7 @@ func Test_buildPipelineStages(t *testing.T) {
 		stages       []sdk.StageConfig
 		autoRollback bool
 		expected     []sdk.PipelineStage
+		expectedErr  bool
 	}{
 		{
 			name: "without auto rollback",
@@ -151,13 +152,23 @@ func Test_buildPipelineStages(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:         "with auto rollback and no stages",
+			autoRollback: true,
+			expectedErr:  true,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			actual := buildPipelineStages(tt.stages, tt.autoRollback)
+			actual, err := buildPipelineStages(tt.stages, tt.autoRollback)
+			if tt.expectedErr {
+				assert.ErrorIs(t, err, errRollbackRequiresStages)
+				return
+			}
+			assert.NoError(t, err)
 			assert.Equal(t, tt.expected, actual)
 		})
 	}

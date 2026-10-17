@@ -59,9 +59,11 @@ spec:
             - name: piped-secret
               mountPath: {{ .Values.secret.mountPath }}
               readOnly: true
+            {{- if not (and .Values.launcher.enabled .Values.launcher.configFromGitRepo.enabled) }}
             - name: piped-config
               mountPath: /etc/piped-config
               readOnly: true
+            {{- end }}
             {{- if include "piped.temporaryVolumeName" . }}
             - name: {{ include "piped.temporaryVolumeName" . }}
               mountPath: "/tmp"
@@ -78,9 +80,11 @@ spec:
           secret:
             secretName: {{ include "piped.secretName" . }}
             defaultMode: 0400
+        {{- if not (and .Values.launcher.enabled .Values.launcher.configFromGitRepo.enabled) }}
         - name: piped-config
           configMap:
             name: {{ include "piped.configMapName" . }}
+        {{- end }}
         {{- if include "piped.temporaryVolumeName" . }}
         - name: {{ include "piped.temporaryVolumeName" . }}
           persistentVolumeClaim:

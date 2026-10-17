@@ -38,12 +38,12 @@ func TestDiff(t *testing.T) {
 	}{
 		{
 			name: "Secret no diff 1",
-			manifests: `apiVersion: apps/v1
+			manifests: `apiVersion: v1
 kind: Secret
 metadata:
   name: secret-management
 ---
-apiVersion: apps/v1
+apiVersion: v1
 kind: Secret
 metadata:
   name: secret-management
@@ -53,7 +53,7 @@ metadata:
 		},
 		{
 			name: "Secret no diff 2",
-			manifests: `apiVersion: apps/v1
+			manifests: `apiVersion: v1
 kind: Secret
 metadata:
   name: secret-management
@@ -62,7 +62,7 @@ data:
 stringData:
   foo: bar
 ---
-apiVersion: apps/v1
+apiVersion: v1
 kind: Secret
 metadata:
   name: secret-management
@@ -76,7 +76,7 @@ stringData:
 		},
 		{
 			name: "Secret no diff with merge",
-			manifests: `apiVersion: apps/v1
+			manifests: `apiVersion: v1
 kind: Secret
 metadata:
   name: secret-management
@@ -84,7 +84,7 @@ data:
   password: hoge
   foo: YmFy
 ---
-apiVersion: apps/v1
+apiVersion: v1
 kind: Secret
 metadata:
   name: secret-management
@@ -98,7 +98,7 @@ stringData:
 		},
 		{
 			name: "Secret no diff override false-positive",
-			manifests: `apiVersion: apps/v1
+			manifests: `apiVersion: v1
 kind: Secret
 metadata:
   name: secret-management
@@ -106,7 +106,7 @@ data:
   password: hoge
   foo: YmFy
 ---
-apiVersion: apps/v1
+apiVersion: v1
 kind: Secret
 metadata:
   name: secret-management
@@ -122,14 +122,14 @@ stringData:
 		},
 		{
 			name: "Secret has diff",
-			manifests: `apiVersion: apps/v1
+			manifests: `apiVersion: v1
 kind: Secret
 metadata:
   name: secret-management
 data:
   foo: YmFy
 ---
-apiVersion: apps/v1
+apiVersion: v1
 kind: Secret
 metadata:
   name: secret-management
@@ -640,10 +640,10 @@ func TestDiffListResult_Render(t *testing.T) {
 				Deletes: []Manifest{
 					{
 						body: &unstructured.Unstructured{
-							Object: map[string]interface{}{
+							Object: map[string]any{
 								"apiVersion": "apps/v1",
 								"kind":       "Deployment",
-								"metadata": map[string]interface{}{
+								"metadata": map[string]any{
 									"name":      "test-deployment",
 									"namespace": "default",
 								},
@@ -661,10 +661,10 @@ func TestDiffListResult_Render(t *testing.T) {
 				Adds: []Manifest{
 					{
 						body: &unstructured.Unstructured{
-							Object: map[string]interface{}{
+							Object: map[string]any{
 								"apiVersion": "apps/v1",
 								"kind":       "Deployment",
-								"metadata": map[string]interface{}{
+								"metadata": map[string]any{
 									"name":      "test-deployment",
 									"namespace": "default",
 								},
@@ -681,14 +681,14 @@ func TestDiffListResult_Render(t *testing.T) {
 			result: func(t *testing.T) *DiffListResult {
 				old := Manifest{
 					body: &unstructured.Unstructured{
-						Object: map[string]interface{}{
+						Object: map[string]any{
 							"apiVersion": "v1",
 							"kind":       "Secret",
-							"metadata": map[string]interface{}{
+							"metadata": map[string]any{
 								"name":      "test-secret",
 								"namespace": "default",
 							},
-							"data": map[string]interface{}{
+							"data": map[string]any{
 								"password": "old-password",
 							},
 						},
@@ -696,14 +696,14 @@ func TestDiffListResult_Render(t *testing.T) {
 				}
 				new := Manifest{
 					body: &unstructured.Unstructured{
-						Object: map[string]interface{}{
+						Object: map[string]any{
 							"apiVersion": "v1",
 							"kind":       "Secret",
-							"metadata": map[string]interface{}{
+							"metadata": map[string]any{
 								"name":      "test-secret",
 								"namespace": "default",
 							},
-							"data": map[string]interface{}{
+							"data": map[string]any{
 								"password": "new-password",
 							},
 						},
@@ -735,14 +735,14 @@ func TestDiffListResult_Render(t *testing.T) {
 				for i := 1; i <= 2; i++ {
 					old := Manifest{
 						body: &unstructured.Unstructured{
-							Object: map[string]interface{}{
+							Object: map[string]any{
 								"apiVersion": "v1",
 								"kind":       "ConfigMap",
-								"metadata": map[string]interface{}{
+								"metadata": map[string]any{
 									"name":      fmt.Sprintf("test-cm-%d", i),
 									"namespace": "default",
 								},
-								"data": map[string]interface{}{
+								"data": map[string]any{
 									"key": "value1",
 								},
 							},
@@ -750,14 +750,14 @@ func TestDiffListResult_Render(t *testing.T) {
 					}
 					new := Manifest{
 						body: &unstructured.Unstructured{
-							Object: map[string]interface{}{
+							Object: map[string]any{
 								"apiVersion": "v1",
 								"kind":       "ConfigMap",
-								"metadata": map[string]interface{}{
+								"metadata": map[string]any{
 									"name":      fmt.Sprintf("test-cm-%d", i),
 									"namespace": "default",
 								},
-								"data": map[string]interface{}{
+								"data": map[string]any{
 									"key": "value2",
 								},
 							},

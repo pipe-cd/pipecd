@@ -345,7 +345,7 @@ func determineCommitCategory(commit Commit, mergeCommit *Commit, categories []Re
 
 func renderReleaseNote(p ReleaseProposal, cfg ReleaseConfig) []byte {
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("## Release %s with changes since %s\n\n", p.Tag, p.PreTag))
+	fmt.Fprintf(&b, "## Release %s with changes since %s\n\n", p.Tag, p.PreTag)
 
 	gen := cfg.ReleaseNoteGenerator
 	renderCommit := func(c ReleaseCommit) {
@@ -363,23 +363,23 @@ func renderReleaseNote(p ReleaseProposal, cfg ReleaseConfig) []byte {
 				}
 			}
 		}
-		b.WriteString(fmt.Sprintf("* %s", c.ReleaseNote))
+		fmt.Fprintf(&b, "* %s", c.ReleaseNote)
 
 		// If using a merge commit, prepares another options to add extra info.
 		if gen.UsePullRequestMetadata && c.PullRequestNumber != 0 {
-			b.WriteString(fmt.Sprintf(" ([#%d](https://github.com/%s/%s/pull/%d))", c.PullRequestNumber, p.Owner, p.Repo, c.PullRequestNumber))
+			fmt.Fprintf(&b, " ([#%d](https://github.com/%s/%s/pull/%d))", c.PullRequestNumber, p.Owner, p.Repo, c.PullRequestNumber)
 			if !gen.UseReleaseNoteBlock && c.PullRequestOwner != "" {
-				b.WriteString(fmt.Sprintf(" - by @%s", c.PullRequestOwner))
+				fmt.Fprintf(&b, " - by @%s", c.PullRequestOwner)
 			}
 			b.WriteString("\n")
 			return
 		}
 
 		if gen.ShowAbbrevHash {
-			b.WriteString(fmt.Sprintf(" [%s](https://github.com/%s/%s/commit/%s)", c.AbbreviatedHash, p.Owner, p.Repo, c.Hash))
+			fmt.Fprintf(&b, " [%s](https://github.com/%s/%s/commit/%s)", c.AbbreviatedHash, p.Owner, p.Repo, c.Hash)
 		}
 		if gen.ShowCommitter != nil && *gen.ShowCommitter {
-			b.WriteString(fmt.Sprintf(" - by %s", c.Committer))
+			fmt.Fprintf(&b, " - by %s", c.Committer)
 		}
 		b.WriteString("\n")
 	}
@@ -435,7 +435,7 @@ func renderReleaseNote(p ReleaseProposal, cfg ReleaseConfig) []byte {
 		if len(commits) == 0 {
 			continue
 		}
-		b.WriteString(fmt.Sprintf("### %s\n\n", ctg.Title))
+		fmt.Fprintf(&b, "### %s\n\n", ctg.Title)
 		for _, c := range commits {
 			renderCommit(c)
 		}

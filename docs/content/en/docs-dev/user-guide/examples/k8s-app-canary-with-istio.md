@@ -14,12 +14,12 @@ And with PipeCD, you can enable and automate the canary strategy for your Kubern
 
 In this guide, we will show you how to configure the application configuration file to send 10% of traffic to the new version and keep 90% to the primary variant. Then after waiting for manual approval, you will complete the migration by sending 100% of traffic to the new version.
 
-Complete source code for this example is hosted in [pipe-cd/examples](https://github.com/pipe-cd/examples/tree/master/kubernetes/mesh-istio-canary) repository.
+Complete source code for this example is hosted in [pipe-cd/examples](https://github.com/pipe-cd/examples/tree/master/v0/kubernetes/mesh-istio-canary) repository.
 
 ## Before you begin
 
 - Add a new Kubernetes application by following the instructions in [this guide](../../managing-application/adding-an-application/)
-- Ensure having `pipecd.dev/variant: primary` [label](https://github.com/pipe-cd/examples/blob/master/kubernetes/mesh-istio-canary/deployment.yaml#L17) and [selector](https://github.com/pipe-cd/examples/blob/master/kubernetes/mesh-istio-canary/deployment.yaml#L12) in the workload template
+- Ensure having `pipecd.dev/variant: primary` [label](https://github.com/pipe-cd/examples/blob/master/v0/kubernetes/mesh-istio-canary/deployment.yaml#L17) and [selector](https://github.com/pipe-cd/examples/blob/master/v0/kubernetes/mesh-istio-canary/deployment.yaml#L12) in the workload template
 - Ensure having at least one Istio's `DestinationRule` and defining the needed subsets (`primary` and `canary`) with `pipecd.dev/variant` label
 
 ``` yaml

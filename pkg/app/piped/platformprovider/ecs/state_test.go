@@ -57,7 +57,6 @@ func TestMakeServiceResourceState(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.title, func(t *testing.T) {
 			t.Parallel()
 			service := &types.Service{
@@ -118,7 +117,6 @@ func TestMakeTaskSetResourceState(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.title, func(t *testing.T) {
 			t.Parallel()
 			now := time.Now()
@@ -176,7 +174,6 @@ func TestMakeTaskResourceState(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.title, func(t *testing.T) {
 			t.Parallel()
 			now := time.Now()

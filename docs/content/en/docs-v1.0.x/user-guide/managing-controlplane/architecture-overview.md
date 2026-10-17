@@ -11,11 +11,11 @@ description: >
 Component Architecture
 </p>
 
-The control plane is a centralized part of PipeCD. It contains several services as below to manage the application, deployment data and handle all requests from `piped`s and web clients:
+The control plane is a centralized part of PipeCD. It contains several services as below to manage the application, deployment data and handle all requests from `piped` instances and web clients:
 
 ##### Server
 
-`server` handles all incoming gRPC requests from `piped`s, web clients, incoming HTTP requests such as auth callback from third party services.
+`server` handles all incoming gRPC requests from `piped` instances, web clients, incoming HTTP requests such as auth callback from third party services.
 It also serves all web assets including HTML, JS, CSS...
 This service can be easily scaled by updating the pod number.
 

@@ -208,7 +208,7 @@ func (e *rollbackExecutor) ensureScriptRunRollback(ctx context.Context) model.St
 		_ = json.Unmarshal([]byte(envStr), &env)
 	}
 
-	for _, v := range strings.Split(onRollback, "\n") {
+	for v := range strings.SplitSeq(onRollback, "\n") {
 		if v != "" {
 			e.LogPersister.Infof("   %s", v)
 		}

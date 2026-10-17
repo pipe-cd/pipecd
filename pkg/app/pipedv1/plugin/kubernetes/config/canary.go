@@ -14,7 +14,12 @@
 
 package config
 
-import "github.com/pipe-cd/piped-plugin-sdk-go/unit"
+import (
+	"encoding/json"
+
+	"github.com/creasty/defaults"
+	"github.com/pipe-cd/piped-plugin-sdk-go/unit"
+)
 
 // K8sCanaryRolloutStageOptions contains all configurable values for a K8S_CANARY_ROLLOUT stage.
 type K8sCanaryRolloutStageOptions struct {
@@ -30,6 +35,19 @@ type K8sCanaryRolloutStageOptions struct {
 	CreateService bool `json:"createService"`
 	// List of patches used to customize manifests for CANARY variant.
 	Patches []K8sResourcePatch
+}
+
+func (o *K8sCanaryRolloutStageOptions) UnmarshalJSON(data []byte) error {
+	type alias K8sCanaryRolloutStageOptions
+	var a alias
+	if err := json.Unmarshal(data, &a); err != nil {
+		return err
+	}
+	*o = K8sCanaryRolloutStageOptions(a)
+	if err := defaults.Set(o); err != nil {
+		return err
+	}
+	return nil
 }
 
 // K8sCanaryCleanStageOptions contains all configurable values for a K8S_CANARY_CLEAN stage.

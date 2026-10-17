@@ -44,8 +44,8 @@ func newMockBuilderBackend() *mockBuilderBackend {
 	}
 }
 
-func (m *mockBuilderBackend) GetAll() (map[string]interface{}, error) {
-	out := make(map[string]interface{}, len(m.srcs))
+func (m *mockBuilderBackend) GetAll() (map[string]any, error) {
+	out := make(map[string]any, len(m.srcs))
 	for _, file := range m.srcs {
 		data, err := os.ReadFile(file)
 		if err != nil {

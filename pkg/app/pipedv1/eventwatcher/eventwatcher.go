@@ -434,7 +434,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 	var responseError error
 	retry := backoff.NewRetry(retryPushNum, backoff.NewConstant(retryPushInterval))
 	for branch, events := range branchHandledEvents {
-		_, err = retry.Do(ctx, func() (interface{}, error) {
+		_, err = retry.Do(ctx, func() (any, error) {
 			err := tmpRepo.Push(ctx, branch)
 			return nil, err
 		})
@@ -572,7 +572,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 	}
 
 	retry := backoff.NewRetry(retryPushNum, backoff.NewConstant(retryPushInterval))
-	_, err = retry.Do(ctx, func() (interface{}, error) {
+	_, err = retry.Do(ctx, func() (any, error) {
 		err := tmpRepo.Push(ctx, tmpRepo.GetClonedBranch())
 		return nil, err
 	})
@@ -701,7 +701,7 @@ func modifyYAML(path, field, newValue string) ([]byte, bool, error) {
 }
 
 // convertStr converts a given value into a string.
-func convertStr(value interface{}) (out string, err error) {
+func convertStr(value any) (out string, err error) {
 	switch v := value.(type) {
 	case string:
 		out = v

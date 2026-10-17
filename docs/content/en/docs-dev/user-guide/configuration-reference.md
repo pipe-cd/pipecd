@@ -517,7 +517,7 @@ See [Configuring Lambda application](../managing-application/defining-app-config
 | taskDefinitionFile | string | The path to ECS TaskDefinition configuration file. Allow file in both `yaml` and `json` format. The default value is `taskdef.json`. See [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html) and [Restrictions](#restrictions-of-task-definition) for parameters. | No |
 | targetGroups | [ECSTargetGroupInput](#ecstargetgroupinput) | The target groups configuration, will be used to routing traffic to created task sets. | Yes (if you want to perform progressive delivery) |
 | runStandaloneTask | bool | Run standalone tasks during deployments. About standalone task, see [here](https://docs.aws.amazon.com/AmazonECS/latest/userguide/ecs_run_task-v2.html). The default value is `true`. |
-| accessType | string | How the ECS service is accessed. One of `ELB` or `SERVICE_DISCOVERY`. See examples [here](https://github.com/pipe-cd/examples/tree/master/ecs/servicediscovery/simple). The default value is `ELB`. |
+| accessType | string | How the ECS service is accessed. One of `ELB` or `SERVICE_DISCOVERY`. See examples [here](https://github.com/pipe-cd/examples/tree/master/v0/ecs/servicediscovery/simple). The default value is `ELB`. |
 
 ### Restrictions of Service Definition
 
@@ -574,9 +574,9 @@ Note: The available values are identical to those found in the aws-sdk-go-v2 Typ
 | failureLimit | int | Acceptable number of failures. e.g. If 1 is set, the `ANALYSIS` stage will end with failure after two queries results failed. Defaults to 1. | No |
 | skipOnNoData | bool | If true, it considers as a success when no data returned from the analysis provider. Defaults to false. | No |
 | deviation | string | The stage fails on deviation in the specified direction. One of `LOW` or `HIGH` or `EITHER` is available. This can be used only for `PREVIOUS`, `CANARY_BASELINE` or `CANARY_PRIMARY`. Defaults to `EITHER`. | No |
-| baselineArgs | map[string][string] | The custom arguments to be populated for the Baseline query. They can be reffered as `{{ .VariantCustomArgs.xxx }}`. | No |
-| canaryArgs | map[string][string] | The custom arguments to be populated for the Canary query. They can be reffered as `{{ .VariantCustomArgs.xxx }}`. | No |
-| primaryArgs | map[string][string] | The custom arguments to be populated for the Primary query. They can be reffered as `{{ .VariantCustomArgs.xxx }}`. | No |
+| baselineArgs | map[string][string] | The custom arguments to be populated for the Baseline query. They can be referred as `{{ .VariantCustomArgs.xxx }}`. | No |
+| canaryArgs | map[string][string] | The custom arguments to be populated for the Canary query. They can be referred as `{{ .VariantCustomArgs.xxx }}`. | No |
+| primaryArgs | map[string][string] | The custom arguments to be populated for the Primary query. They can be referred as `{{ .VariantCustomArgs.xxx }}`. | No |
 | timeout | duration | How long after which the query times out. | No |
 | template | [AnalysisTemplateRef](#analysistemplateref) | Reference to the template to be used. | No |
 

@@ -102,7 +102,7 @@ It attempts to retrieve credentials in the following order:
 3. From the pod running in EKS cluster via STS (SecurityTokenService).
 4. From the EC2 Instance Role.
 
-Therefore, you don't have to set credentialsFile if you use the environment variables or the EC2 Instance Role. Keep in mind the IAM role/user that you use with your Piped must possess the IAM policy permission for at least `Lambda.Function` and `Lambda.Alias` resources controll (list/read/write).
+Therefore, you don't have to set credentialsFile if you use the environment variables or the EC2 Instance Role. Keep in mind the IAM role/user that you use with your Piped must possess the IAM policy permission for at least `Lambda.Function` and `Lambda.Alias` resources control (list/read/write).
 
 See [ConfigurationReference](../configuration-reference/#cloudproviderlambdaconfig) for the full configuration.
 

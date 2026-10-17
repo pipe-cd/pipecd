@@ -98,7 +98,7 @@ func TestDownloadBinary(t *testing.T) {
 		destDir := t.TempDir()
 		destFile := "test-binary"
 		url := server.URL + "/binary"
-		path, err := DownloadBinary(url, destDir, destFile, logger)
+		path, err := DownloadBinary(url, destDir, destFile, false, logger)
 		require.NoError(t, err)
 		assert.FileExists(t, path)
 	})
@@ -107,12 +107,12 @@ func TestDownloadBinary(t *testing.T) {
 		destDir := t.TempDir()
 		destFile := "test-binary"
 		url := server.URL + "/binary"
-		path, err := DownloadBinary(url, destDir, destFile, logger)
+		path, err := DownloadBinary(url, destDir, destFile, false, logger)
 		require.NoError(t, err)
 		assert.FileExists(t, path)
 
 		// Try downloading again, should not error and file should still exist
-		path, err = DownloadBinary(url, destDir, destFile, logger)
+		path, err = DownloadBinary(url, destDir, destFile, false, logger)
 		require.NoError(t, err)
 		assert.FileExists(t, path)
 	})
@@ -128,7 +128,7 @@ func TestDownloadBinary(t *testing.T) {
 		destFile := "test-binary"
 		url := "file://" + sourcePath
 
-		path, err := DownloadBinary(url, destDir, destFile, logger)
+		path, err := DownloadBinary(url, destDir, destFile, false, logger)
 		require.NoError(t, err)
 		assert.FileExists(t, path)
 		content, err := os.ReadFile(path)
@@ -141,7 +141,7 @@ func TestDownloadBinary(t *testing.T) {
 		destFile := "test-binary"
 		url := "ftp://invalid-url"
 
-		path, err := DownloadBinary(url, destDir, destFile, logger)
+		path, err := DownloadBinary(url, destDir, destFile, false, logger)
 		require.Error(t, err)
 		assert.Empty(t, path)
 	})

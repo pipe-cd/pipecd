@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM --platform=$BUILDPLATFORM golang:1.25.0 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.26.2 AS builder
 
 ARG TARGETOS
 ARG TARGETARCH
@@ -13,7 +13,7 @@ COPY . ./
 
 RUN make build/go MOD=helloworld BUILD_OS=${TARGETOS} BUILD_ARCH=${TARGETARCH}
 
-FROM alpine:3.22.2
+FROM alpine:3.24.2
 
 COPY --from=builder /app/.artifacts/helloworld /usr/local/bin/helloworld
 

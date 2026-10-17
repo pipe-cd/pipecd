@@ -54,6 +54,10 @@ func (s *LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec
 // GetLivestate returns the live state of the resources in the given application.
 func (s *LivestatePluginServer[Config, DeployTargetConfig, ApplicationConfigSpec]) GetLivestate(ctx context.Context, request *livestate.GetLivestateRequest) (*livestate.GetLivestateResponse, error) {
 	// Get the deploy targets set on the deployment from the piped plugin config.
+	if len(request.GetDeployTargets()) == 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "no deploy targets provided")
+	}
+
 	deployTargets := make([]*DeployTarget[DeployTargetConfig], 0, len(request.GetDeployTargets()))
 	for _, name := range request.GetDeployTargets() {
 		dt, ok := s.deployTargets[name]

@@ -30,7 +30,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-func MakeKubernetesResourceState(uid string, key ResourceKey, obj *unstructured.Unstructured, now time.Time) model.KubernetesResourceState {
+func MakeKubernetesResourceState(uid string, key ResourceKey, obj *unstructured.Unstructured, now time.Time) *model.KubernetesResourceState {
 	var (
 		owners       = obj.GetOwnerReferences()
 		ownerIDs     = make([]string, 0, len(owners))
@@ -43,7 +43,7 @@ func MakeKubernetesResourceState(uid string, key ResourceKey, obj *unstructured.
 	}
 	sort.Strings(ownerIDs)
 
-	state := model.KubernetesResourceState{
+	state := &model.KubernetesResourceState{
 		Id:       uid,
 		OwnerIds: ownerIDs,
 		// TODO: Think about adding more parents by using label selectors

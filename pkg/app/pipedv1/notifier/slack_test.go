@@ -40,7 +40,6 @@ func Test_getAccountsAsString(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			got := getAccountsAsString(tt.accounts)
@@ -80,7 +79,6 @@ func Test_getGroupsAsString(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			got := getGroupsAsString(tt.groups)

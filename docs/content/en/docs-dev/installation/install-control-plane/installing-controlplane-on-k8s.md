@@ -62,7 +62,7 @@ spec:
 
 See [ConfigurationReference](../../../user-guide/managing-controlplane/configuration-reference/) for the full configuration.
 
-After all, install the Control Plane as bellow:
+After that, install the Control Plane as below:
 
 ``` console
 helm upgrade -i pipecd oci://ghcr.io/pipe-cd/chart/pipecd --version {{< blocks/latest_version >}} --namespace={NAMESPACE} \
@@ -74,7 +74,7 @@ helm upgrade -i pipecd oci://ghcr.io/pipe-cd/chart/pipecd --version {{< blocks/l
 
 Currently, besides `Firestore` PipeCD supports other databases as its datastore such as `MySQL`. Also as for filestore, PipeCD supports `AWS S3` and `MINIO` either.
 
-For example, in case of using `MySQL` as datastore and `MINIO` as filestore, the ControlPlane configuration will be as follow:
+For example, in case of using `MySQL` as datastore and `MINIO` as filestore, the Control Plane configuration will be as follow:
 
 ```yaml
 apiVersion: "pipecd.dev/v1beta1"
@@ -129,7 +129,7 @@ Once a new project has been registered, a static admin (username, password) will
 
 For more about adding a new project in detail, please read the following [docs](../../../user-guide/managing-controlplane/adding-a-project/).
 
-### 4'. Upgrade Control Plane version
+### 5. Upgrade Control Plane version
 
 To upgrade the PipeCD Control Plane, preparations and commands remain as you do when installing PipeCD Control Plane. Only need to change the version flag in command to the specified version you want to upgrade your PipeCD Control Plane to.
 

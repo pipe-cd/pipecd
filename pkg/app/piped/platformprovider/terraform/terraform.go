@@ -116,10 +116,10 @@ func (t *Terraform) Version(ctx context.Context) (string, error) {
 }
 
 func (t *Terraform) Init(ctx context.Context, w io.Writer) error {
-	args := []string{
-		"init",
-	}
-	args = append(args, t.makeCommonCommandArgs()...)
+	commonArgs := t.makeCommonCommandArgs()
+	args := make([]string, 0, 1+len(commonArgs)+len(t.options.initFlags))
+	args = append(args, "init")
+	args = append(args, commonArgs...)
 	args = append(args, t.options.initFlags...)
 
 	cmd := exec.CommandContext(ctx, t.execPath, args...)
@@ -187,7 +187,7 @@ func (r PlanResult) Render() (string, error) {
 
 	out := r.PlanOutput[startIndex:endIndex]
 
-	rendered := ""
+	var rendered strings.Builder
 	var curlyBracketStack []rune
 	var squareBracketStack []rune
 
@@ -205,7 +205,7 @@ func (r PlanResult) Render() (string, error) {
 		if tail == '{' && len(curlyBracketStack) == 0 {
 			// Terraform's outermost block would be resource block.
 			deadline := strings.Index(string(r), "resource")
-			for i := 0; i < deadline; i++ {
+			for i := range deadline {
 				r[i] = ' '
 			}
 		}
@@ -235,11 +235,11 @@ func (r PlanResult) Render() (string, error) {
 			r[0] = signMatchBracket(&squareBracketStack, r[0])
 		}
 
-		rendered += string(r)
-		rendered += "\n"
+		rendered.WriteString(string(r))
+		rendered.WriteString("\n")
 	}
 
-	return rendered, nil
+	return rendered.String(), nil
 }
 
 // Return rune at the top of the stack, or r in case of error.
@@ -274,12 +274,10 @@ func GetExitCode(err error) int {
 }
 
 func (t *Terraform) Plan(ctx context.Context, w io.Writer) (PlanResult, error) {
-	args := []string{
-		"plan",
-		"-lock=false",
-		"-detailed-exitcode",
-	}
-	args = append(args, t.makeCommonCommandArgs()...)
+	commonArgs := t.makeCommonCommandArgs()
+	args := make([]string, 0, 3+len(commonArgs)+len(t.options.planFlags))
+	args = append(args, "plan", "-lock=false", "-detailed-exitcode")
+	args = append(args, commonArgs...)
 	args = append(args, t.options.planFlags...)
 
 	var buf bytes.Buffer
@@ -390,12 +388,10 @@ func parsePlanResult(out string, ansiIncluded bool) (PlanResult, error) {
 }
 
 func (t *Terraform) Apply(ctx context.Context, w io.Writer) error {
-	args := []string{
-		"apply",
-		"-auto-approve",
-		"-input=false",
-	}
-	args = append(args, t.makeCommonCommandArgs()...)
+	commonArgs := t.makeCommonCommandArgs()
+	args := make([]string, 0, 3+len(commonArgs)+len(t.options.applyFlags))
+	args = append(args, "apply", "-auto-approve", "-input=false")
+	args = append(args, commonArgs...)
 	args = append(args, t.options.applyFlags...)
 
 	cmd := exec.CommandContext(ctx, t.execPath, args...)

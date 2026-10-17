@@ -146,6 +146,7 @@ func listPipeds(it datastore.Iterator) ([]*model.Piped, error) {
 	if it == nil {
 		return ret, nil
 	}
+	defer it.Close()
 	for {
 		var v model.Piped
 		err := it.Next(&v)
@@ -203,7 +204,7 @@ func TestCreatePiped(t *testing.T) {
 func TestUpdatePiped(t *testing.T) {
 	col := &collection{
 		kind: "Piped",
-		factory: func() interface{} {
+		factory: func() any {
 			return &model.Piped{}
 		},
 	}
@@ -224,7 +225,7 @@ func TestUpdatePiped(t *testing.T) {
 	testcases := []struct {
 		name    string
 		id      string
-		updater func(interface{}) error
+		updater func(any) error
 		wantErr error
 	}{
 		{
@@ -235,7 +236,7 @@ func TestUpdatePiped(t *testing.T) {
 		{
 			name: "unable to update",
 			id:   "update-id",
-			updater: func(interface{}) error {
+			updater: func(any) error {
 				return fmt.Errorf("error")
 			},
 			wantErr: fmt.Errorf("error"),
@@ -243,7 +244,7 @@ func TestUpdatePiped(t *testing.T) {
 		{
 			name: "successful update",
 			id:   "update-id",
-			updater: func(e interface{}) error {
+			updater: func(e any) error {
 				v := e.(*model.Piped)
 				v.Name = "new-name"
 				return nil

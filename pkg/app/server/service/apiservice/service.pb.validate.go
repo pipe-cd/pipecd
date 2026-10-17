@@ -138,6 +138,8 @@ func (m *AddApplicationRequest) validate(all bool) error {
 
 	// no validation rules for Description
 
+	// no validation rules for Labels
+
 	if len(errors) > 0 {
 		return AddApplicationRequestMultiError(errors)
 	}
@@ -357,6 +359,17 @@ func (m *SyncApplicationRequest) validate(all bool) error {
 		err := SyncApplicationRequestValidationError{
 			field:  "ApplicationId",
 			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if _, ok := model.SyncStrategy_name[int32(m.GetSyncStrategy())]; !ok {
+		err := SyncApplicationRequestValidationError{
+			field:  "SyncStrategy",
+			reason: "value must be one of the defined enum values",
 		}
 		if !all {
 			return err

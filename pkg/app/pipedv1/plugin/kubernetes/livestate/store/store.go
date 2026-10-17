@@ -223,9 +223,16 @@ func (s *deployTargetResources) initialize() {
 // getApplicationResources returns the application resources by the application ID.
 func (s *deployTargetResources) getApplicationResources(appID string) *applicationResources {
 	s.mu.RLock()
-	defer s.mu.RUnlock()
-
 	app, ok := s.applications[appID]
+	s.mu.RUnlock()
+	if ok {
+		return app
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	app, ok = s.applications[appID]
 	if !ok {
 		app = newApplicationResources(s.deployTarget)
 		s.applications[appID] = app

@@ -16,8 +16,6 @@ defaultContentLanguageInSubdir = false
 # Useful when translating.
 enableMissingTranslationPlaceholders = true
 
-disableKinds = ["taxonomy", "taxonomyTerm"]
-
 # Highlighting config
 pygmentsCodeFences = true
 pygmentsUseClasses = false
@@ -170,6 +168,18 @@ no = 'Sorry to hear that. Please <a href="https://github.com/pipe-cd/pipecd/issu
 [[params.versions]]
   version = "v1.0.x"
   url = "/docs-v1.0.x/"
+
+[[params.versions]]
+  version = "v0.58.x"
+  url = "/docs-v0.58.x/"
+
+[[params.versions]]
+  version = "v0.57.x"
+  url = "/docs-v0.57.x/"
+
+[[params.versions]]
+  version = "v0.56.x"
+  url = "/docs-v0.56.x/"
 
 [[params.versions]]
   version = "v0.55.x"

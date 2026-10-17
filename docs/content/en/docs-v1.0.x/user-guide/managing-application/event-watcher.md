@@ -12,14 +12,14 @@ The only way to upgrade your application with PipeCD is modifying configuration 
 It brings benefits quite a bit, but it can be painful to manually update them every time in some cases (e.g. continuous deployment to your development environment for debugging, the latest prerelease to the staging environment).
 
 If you're experiencing any of the above pains, Event watcher is for you.
-Event watcher works as a helper facility to seamlessly link CI and CD. This feature lets you automatically update files managed by your Piped when an arbitrary event has occurred.
+Event watcher works as a helper facility to seamlessly link CI and CD. This feature lets you automatically update files managed by your `piped` when an arbitrary event has occurred.
 While it empowers you to build pretty versatile workflows, the canonical use case is that you trigger a new deployment by image updates, package releases, etc.
 
 This guide walks you through configuring Event watcher and how to push an Event.
 
 ## Prerequisites
 
-Before we get into configuring EventWatcher, be sure to configure Piped. See [here](../managing-piped/configuring-event-watcher/) for more details.
+Before we get into configuring EventWatcher, be sure to configure `piped`. See [here](../managing-piped/configuring-event-watcher/) for more details.
 
 ## Usage
 
@@ -35,7 +35,7 @@ Therefore, you mainly need to:
 #### Use the `.pipe/` directory
 
 Prepare EventWatcher configuration files under the `.pipe/` directory at the root of your Git repository.
-In that files, you define which values in which files should be updated when the Piped found out a new Event.
+In those files, you define which values in which files should be updated when `piped` finds a new Event.
 
 For instance, suppose you want to update the Kubernetes manifest defined in `helloworld/deployment.yaml` when an Event with the name `helloworld-image-update` occurs:
 
@@ -98,7 +98,7 @@ pipectl event register \
     --address={CONTROL_PLANE_API_ADDRESS} \
     --api-key={API_KEY} \
     --name=helloworld-image-update \
-    --data=gcr.io/pipecd/helloworld:v0.2.0
+    --data=ghcr.io/pipe-cd/helloworld:v0.48.0
 ```
 
 You can see the status on the event list page.
@@ -106,17 +106,17 @@ You can see the status on the event list page.
 ![](/images/event-list-page.png)
 
 
-After a while, Piped will create a commit as shown below:
+After a while, `piped` will create a commit as shown below:
 
 ```diff
      spec:
        containers:
        - name: helloworld
--        image: gcr.io/pipecd/helloworld:v0.1.0
-+        image: gcr.io/pipecd/helloworld:v0.2.0
+-        image: ghcr.io/pipe-cd/helloworld:v0.47.0
++        image: ghcr.io/pipe-cd/helloworld:v0.48.0
 ```
 
-NOTE: Keep in mind that it may take a little while because Piped periodically fetches the new events from the Control Plane. You can change its interval according to [here](../managing-piped/configuration-reference/#eventwatcher).
+> **Note:** Keep in mind that it may take a little while because `piped` periodically fetches the new events from the Control Plane. You can change its interval according to [here](../managing-piped/configuration-reference/#eventwatcher).
 
 ### [optional] Using labels
 Event watcher is a project-wide feature, hence an event name is unique inside a project. That is, you can update multiple repositories at the same time if you use the same event name for different events.
@@ -171,7 +171,7 @@ pipectl event register \
     --api-key=API_KEY \
     --name=image-update \
     --labels env=dev,appName=helloworld \
-    --data=gcr.io/pipecd/helloworld:v0.2.0
+    --data=ghcr.io/pipe-cd/helloworld:v0.48.0
 ```
 
 Note that it is considered a match only when labels are an exact match.
@@ -189,7 +189,7 @@ pipectl event register \
     --address=CONTROL_PLANE_API_ADDRESS \
     --api-key=API_KEY \
     --name=sample \
-    --data=gcr.io/pipecd/helloworld:v0.48.0 \
+    --data=ghcr.io/pipe-cd/helloworld:v0.48.0 \
     --contexts Source-Commit-Hash=xxxxxxx,Source-Commit-URL=https://github.com/pipe-cd/pipecd/commit/xxxxxxx
 ```
 
@@ -200,7 +200,7 @@ commit ff46cdc9a3ce87a9a66436269251a4870ac55183 (HEAD -> main, origin/main, orig
 Author: ffjlabo <pipecd.dev@gmail.com>
 Date:   Wed Oct 30 16:56:36 2024 +0900
 
-    Replace values with "gcr.io/pipecd/helloworld:v0.48.0" set by Event "simple"
+    Replace values with "ghcr.io/pipe-cd/helloworld:v0.48.0" set by Event "simple"
 
     Source-Commit-Hash: xxxxxxx
     Source-Commit-URL: https://github.com/pipe-cd/pipecd/commit/xxxxxxx
@@ -220,12 +220,12 @@ pipectl event register \
     --address=CONTROL_PLANE_API_ADDRESS \
     --api-key=API_KEY \
     --name=sample \
-    --data=gcr.io/pipecd/helloworld:v0.48.0 \
+    --data=ghcr.io/pipe-cd/helloworld:v0.48.0 \
     --commit-hash=20c98a503062021720b2fcf2058276b3245xxxxx
     --commit-url=https://github.com/pipe-cd/pipecd/commit/20c98a503062021720b2fcf2058276b3245xxxxx
 ```
 
-NOTE: There are few more information of the triggered commit you can attach as event metadata, find more in [DeploymentTrace](./deployment-trace) docs.
+> **Note:** There is a bit more information about the triggered commit you can attach as event metadata. Find more in [Deployment Trace](./deployment-trace) docs.
 
 ## Examples
 Suppose you want to update your configuration file after releasing a new Helm chart.
@@ -267,7 +267,7 @@ pipectl event register \
     --data=0.2.0
 ```
 
-Then you'll see that Piped updates as:
+Then you'll see that `piped` updates as:
 
 ```diff
 apiVersion: pipecd.dev/v1beta1

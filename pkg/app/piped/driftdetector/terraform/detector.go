@@ -48,7 +48,7 @@ type secretDecrypter interface {
 }
 
 type reporter interface {
-	ReportApplicationSyncState(ctx context.Context, appID string, state model.ApplicationSyncState) error
+	ReportApplicationSyncState(ctx context.Context, appID string, state *model.ApplicationSyncState) error
 }
 
 type Detector interface {
@@ -281,7 +281,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		return err
 	}
 
-	return d.reporter.ReportApplicationSyncState(ctx, app.Id, *state)
+	return d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
 }
 
 func makeSyncState(r provider.PlanResult, commit string) (*model.ApplicationSyncState, error) {
@@ -301,7 +301,7 @@ func makeSyncState(r provider.PlanResult, commit string) (*model.ApplicationSync
 	}
 
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("Diff between the defined state in Git at commit %s and actual live state:\n\n", commit))
+	fmt.Fprintf(&b, "Diff between the defined state in Git at commit %s and actual live state:\n\n", commit)
 	b.WriteString("--- Actual   (LiveState)\n+++ Expected (Git)\n\n")
 
 	details, err := r.Render()

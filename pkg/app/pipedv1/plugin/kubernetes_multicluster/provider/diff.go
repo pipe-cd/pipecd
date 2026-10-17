@@ -114,7 +114,7 @@ func DiffList(liveManifests, desiredManifests []Manifest, logger *zap.Logger, op
 		Changes: make([]DiffListChange, 0, len(newChanges)),
 	}
 
-	for i := 0; i < len(newChanges); i++ {
+	for i := range newChanges {
 		diffResult, err := Diff(oldChanges[i], newChanges[i], logger, opts...)
 		if err != nil {
 			logger.Error("Failed to diff manifests", zap.Error(err))
@@ -184,11 +184,11 @@ func (r *DiffListResult) Render(opt DiffRenderOptions) string {
 	index := 0
 	for _, delete := range r.Deletes {
 		index++
-		b.WriteString(fmt.Sprintf("- %d. %s\n\n", index, delete.Key().ReadableString()))
+		fmt.Fprintf(&b, "- %d. %s\n\n", index, delete.Key().ReadableString())
 	}
 	for _, add := range r.Adds {
 		index++
-		b.WriteString(fmt.Sprintf("+ %d. %s\n\n", index, add.Key().ReadableString()))
+		fmt.Fprintf(&b, "+ %d. %s\n\n", index, add.Key().ReadableString())
 	}
 
 	maxPrintDiffs := len(r.Changes)
@@ -210,14 +210,14 @@ func (r *DiffListResult) Render(opt DiffRenderOptions) string {
 		renderer := diff.NewRenderer(opts...)
 
 		index++
-		b.WriteString(fmt.Sprintf("# %d. %s\n\n", index, key.ReadableString()))
+		fmt.Fprintf(&b, "# %d. %s\n\n", index, key.ReadableString())
 
 		b.WriteString(renderer.Render(change.Diff.Nodes()))
 		b.WriteString("\n")
 	}
 
 	if maxPrintDiffs < len(r.Changes) {
-		b.WriteString(fmt.Sprintf("... (omitted %d other changed manifests)\n", len(r.Changes)-maxPrintDiffs))
+		fmt.Fprintf(&b, "... (omitted %d other changed manifests)\n", len(r.Changes)-maxPrintDiffs)
 	}
 
 	return b.String()

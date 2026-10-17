@@ -41,6 +41,17 @@ func (p *Plugin) GetLivestate(ctx context.Context, _ *sdk.ConfigNone, dts []*sdk
 	}
 	dt := dts[0]
 
+	// Skip drift detection entirely when it is disabled for this deploy target,
+	// so that no terraform plan is run against it.
+	if dt.Config.DriftDetectionEnabled != nil && !*dt.Config.DriftDetectionEnabled {
+		return &sdk.GetLivestateResponse{
+			SyncState: sdk.ApplicationSyncState{
+				Status:      sdk.ApplicationSyncStateUnknown,
+				ShortReason: fmt.Sprintf("Drift detection is disabled for deploy target %s", dt.Name),
+			},
+		}, nil
+	}
+
 	cmd, err := provider.NewTerraformCommand(ctx, input.Client, input.Request.DeploymentSource, dt)
 	if err != nil {
 		input.Logger.Error("Failed to initialize Terraform command", zap.Error(err))
@@ -82,7 +93,7 @@ func makeSyncState(r provider.PlanResult, commit string) (sdk.ApplicationSyncSta
 	}
 
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("Diff between the defined state in Git at commit %s and actual live state:\n\n", commit))
+	fmt.Fprintf(&b, "Diff between the defined state in Git at commit %s and actual live state:\n\n", commit)
 	b.WriteString("--- Actual   (LiveState)\n+++ Expected (Git)\n\n")
 
 	details, err := r.Render()

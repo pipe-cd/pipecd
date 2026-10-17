@@ -48,6 +48,7 @@ func TestPlugin_BuildPipelineSyncStages(t *testing.T) {
 		name  string
 		input *sdk.BuildPipelineSyncStagesInput
 		want  *sdk.BuildPipelineSyncStagesResponse
+		err   error
 	}{
 		{
 			name: "single stage without rollback",
@@ -153,6 +154,15 @@ func TestPlugin_BuildPipelineSyncStages(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "rollback without stages",
+			input: &sdk.BuildPipelineSyncStagesInput{
+				Request: sdk.BuildPipelineSyncStagesRequest{
+					Rollback: true,
+				},
+			},
+			err: errRollbackRequiresStages,
+		},
 	}
 
 	p := &Plugin{}
@@ -162,7 +172,7 @@ func TestPlugin_BuildPipelineSyncStages(t *testing.T) {
 			t.Parallel()
 
 			got, err := p.BuildPipelineSyncStages(t.Context(), nil, tt.input)
-			assert.NoError(t, err)
+			assert.ErrorIs(t, err, tt.err)
 			assert.Equal(t, tt.want, got)
 		})
 	}

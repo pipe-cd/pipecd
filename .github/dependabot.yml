@@ -1,0 +1,58 @@
+version: 2
+updates:
+  - package-ecosystem: "gomod"
+    directories:
+      - "/"
+      - "/pkg/plugin/sdk"
+      - "/tool/actions-gh-release"
+      - "/tool/actions-plan-preview"
+      - "/tool/codegen/protoc-gen-auth"
+      - "/pkg/app/pipedv1/plugin/*"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 5
+    groups:
+      google:
+        patterns:
+          - "google.golang.org/*"
+          - "cloud.google.com/*"
+      aws-sdk:
+        patterns:
+          - "github.com/aws/aws-sdk-go-v2*"
+      k8s:
+        patterns:
+          - "k8s.io/*"
+          - "sigs.k8s.io/*"
+      go-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "npm"
+    directory: "/web"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 5
+    groups:
+      npm-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "npm"
+    directory: "/docs"
+    schedule:
+      interval: "monthly"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      actions:
+        patterns:
+          - "*"

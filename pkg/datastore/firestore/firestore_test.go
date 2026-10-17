@@ -27,7 +27,7 @@ func TestProcessCursorArg(t *testing.T) {
 	testcases := []struct {
 		name       string
 		opts       datastore.ListOptions
-		expectVals []interface{}
+		expectVals []any
 		expectErr  bool
 	}{
 		{
@@ -47,7 +47,7 @@ func TestProcessCursorArg(t *testing.T) {
 					return base64.StdEncoding.EncodeToString([]byte(`{"UpdatedAt":100,"Id":"object-id"}`))
 				}(),
 			},
-			expectVals: []interface{}{float64(100), "object-id"},
+			expectVals: []any{float64(100), "object-id"},
 			expectErr:  false,
 		},
 		{

@@ -33,9 +33,7 @@ type applicationLister interface {
 	List() []*model.Application
 }
 
-type Getter interface {
-	// TODO: generic getter methods
-}
+type Getter any
 
 type Store interface {
 	Run(ctx context.Context) error

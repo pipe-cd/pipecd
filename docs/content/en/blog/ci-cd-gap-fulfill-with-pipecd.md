@@ -73,7 +73,7 @@ spec:
               yamlField: $.spec.template.spec.containers[0].image
 ```
 
-Then, in the last step of your CI pipeline, you need to use pipectl to send an event to PipeCD controlplane like this
+Then, in the last step of your CI pipeline, you need to use pipectl to send an event to PipeCD Control Plane like this
 
 ```bash
 $ pipectl event register --name=event-test --data=ghcr.io/pipecd/helloworld:v0.49.0

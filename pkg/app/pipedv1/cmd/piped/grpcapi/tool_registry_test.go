@@ -81,6 +81,27 @@ func TestToolRegistry_InstallTool(t *testing.T) {
 	}
 }
 
+func TestToolRegistry_LoadPreinstalledTools(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	toolsDir, err := os.MkdirTemp(t.TempDir(), "tools")
+	require.NoError(t, err)
+
+	toolName := "tool-a"
+	toolVersion := "1.0.0"
+	toolPath := toolsDir + "/" + toolName + "-" + toolVersion
+	require.NoError(t, os.WriteFile(toolPath, []byte("binary"), 0o755))
+
+	registry, err := newToolRegistry(toolsDir)
+	require.NoError(t, err)
+
+	out, err := registry.InstallTool(ctx, toolName, toolVersion, "exit 1")
+	require.NoError(t, err)
+	assert.Equal(t, toolPath, out)
+}
+
 func TestToolRegistry_InstallTool_CacheHit(t *testing.T) {
 	t.Parallel()
 

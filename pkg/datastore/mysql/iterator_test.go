@@ -24,10 +24,10 @@ import (
 )
 
 type dummyDoc struct {
-	val map[string]interface{}
+	val map[string]any
 }
 
-func (d *dummyDoc) Data() map[string]interface{} {
+func (d *dummyDoc) Data() map[string]any {
 	return d.val
 }
 
@@ -47,7 +47,7 @@ func TestCursor(t *testing.T) {
 			name: "valid last cursor",
 			iter: Iterator{
 				last: &dummyDoc{
-					val: map[string]interface{}{
+					val: map[string]any{
 						"Id":        "object-id",
 						"CreatedAt": 100,
 						"UpdatedAt": 100,
@@ -73,7 +73,7 @@ func TestCursor(t *testing.T) {
 			name: "invalid last cursor: field name of cursor data in snake_case",
 			iter: Iterator{
 				last: &dummyDoc{
-					val: map[string]interface{}{
+					val: map[string]any{
 						"id":         "object-id",
 						"created_at": 100,
 						"updated_at": 100,
@@ -107,12 +107,12 @@ func TestData(t *testing.T) {
 	testcases := []struct {
 		name         string
 		rowData      string
-		expectedData map[string]interface{}
+		expectedData map[string]any
 	}{
 		{
 			name:    "valid data",
 			rowData: `{"id": "object-id", "name": "app-1", "updated_at": 100, "created_at": 100}`,
-			expectedData: map[string]interface{}{
+			expectedData: map[string]any{
 				"Id":        "object-id",
 				"Name":      "app-1",
 				"UpdatedAt": float64(100),
@@ -122,9 +122,9 @@ func TestData(t *testing.T) {
 		{
 			name:    "valid nested data",
 			rowData: `{"id": "object-id", "sync_state": { "status": 1 }, "updated_at": 100, "created_at": 100}`,
-			expectedData: map[string]interface{}{
+			expectedData: map[string]any{
 				"Id": "object-id",
-				"SyncState": map[string]interface{}{
+				"SyncState": map[string]any{
 					"Status": float64(1),
 				},
 				"UpdatedAt": float64(100),

@@ -31,16 +31,16 @@ import (
 // https://github.com/argoproj/gitops-engine/blob/b0c5e00ccfa5d1e73087a18dc59e2e4c72f5f175/pkg/diff/diff.go#L685-L723
 
 // https://github.com/ksonnet/ksonnet/blob/master/pkg/kubecfg/diff.go
-func removeFields(config, live interface{}) interface{} {
+func removeFields(config, live any) any {
 	switch c := config.(type) {
-	case map[string]interface{}:
-		l, ok := live.(map[string]interface{})
+	case map[string]any:
+		l, ok := live.(map[string]any)
 		if ok {
 			return removeMapFields(c, l)
 		}
 		return live
-	case []interface{}:
-		l, ok := live.([]interface{})
+	case []any:
+		l, ok := live.([]any)
 		if ok {
 			return removeListFields(c, l)
 		}
@@ -52,8 +52,8 @@ func removeFields(config, live interface{}) interface{} {
 }
 
 // removeMapFields remove all non-existent fields in the live that don't exist in the config
-func removeMapFields(config, live map[string]interface{}) map[string]interface{} {
-	result := map[string]interface{}{}
+func removeMapFields(config, live map[string]any) map[string]any {
+	result := map[string]any{}
 	for k, v1 := range config {
 		v2, ok := live[k]
 		if !ok {
@@ -67,10 +67,10 @@ func removeMapFields(config, live map[string]interface{}) map[string]interface{}
 	return result
 }
 
-func removeListFields(config, live []interface{}) []interface{} {
+func removeListFields(config, live []any) []any {
 	// If live is longer than config, then the extra elements at the end of the
 	// list will be returned as-is so they appear in the diff.
-	result := make([]interface{}, 0, len(live))
+	result := make([]any, 0, len(live))
 	for i, v2 := range live {
 		if len(config) > i {
 			if v2 != nil {
