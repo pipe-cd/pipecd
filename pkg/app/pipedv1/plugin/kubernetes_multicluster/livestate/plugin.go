@@ -324,11 +324,19 @@ func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[
 	// override values if multiTarget has value.
 	manifestPathes := spec.Input.Manifests
 	kustomizeDir := ""
+	kustomizeVersion := spec.Input.KustomizeVersion
+	kustomizeOptions := spec.Input.KustomizeOptions
 	if multiTarget != nil {
 		if len(multiTarget.Manifests) > 0 {
 			manifestPathes = multiTarget.Manifests
 		}
 		kustomizeDir = multiTarget.KustomizeDir
+		if multiTarget.KustomizeVersion != "" {
+			kustomizeVersion = multiTarget.KustomizeVersion
+		}
+		if len(multiTarget.KustomizeOptions) > 0 {
+			kustomizeOptions = multiTarget.KustomizeOptions
+		}
 	}
 
 	manifests, err := loader.LoadManifests(ctx, provider.LoaderInput{
@@ -340,9 +348,9 @@ func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[
 		ConfigFilename:   input.Request.DeploymentSource.ApplicationConfigFilename,
 		Manifests:        manifestPathes,
 		Namespace:        spec.Input.Namespace,
-		KustomizeVersion: spec.Input.KustomizeVersion,
+		KustomizeVersion: kustomizeVersion,
 		KustomizeDir:     kustomizeDir,
-		KustomizeOptions: spec.Input.KustomizeOptions,
+		KustomizeOptions: kustomizeOptions,
 		HelmVersion:      spec.Input.HelmVersion,
 		HelmChart:        spec.Input.HelmChart,
 		HelmOptions:      spec.Input.HelmOptions,
