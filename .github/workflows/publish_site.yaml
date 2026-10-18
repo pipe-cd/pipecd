@@ -9,7 +9,7 @@ on:
 
 env:
   GHCR: ghcr.io
-  HELM_VERSION: 3.8.2
+  HELM_VERSION: 3.22.0
 
 jobs:
   site:

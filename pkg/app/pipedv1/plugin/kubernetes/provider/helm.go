@@ -55,13 +55,14 @@ func (h *Helm) LoginToOCIRegistry(ctx context.Context, address, username, passwo
 		"login",
 		"-u",
 		username,
-		"-p",
-		password,
+		"--password-stdin",
 		address,
 	}
 
 	var stderr bytes.Buffer
 	cmd := exec.CommandContext(ctx, h.execPath, args...)
+	// Pass the password securely via stdin instead of argv
+	cmd.Stdin = strings.NewReader(password)
 	cmd.Stderr = &stderr
 
 	h.logger.Info("login to oci registry", zap.String("address", address))
@@ -132,16 +133,25 @@ func (h *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, namespac
 // Add installs all specified Helm Chart repositories.
 // https://helm.sh/docs/topics/chart_repository/
 // helm repo add fantastic-charts https://fantastic-charts.storage.googleapis.com
-// helm repo add fantastic-charts https://fantastic-charts.storage.googleapis.com --username my-username --password my-password
+// helm repo add fantastic-charts https://fantastic-charts.storage.googleapis.com --username my-username --password-stdin
 func (h *Helm) AddRepository(ctx context.Context, repo config.HelmChartRepository) error {
 	args := []string{"repo", "add", repo.Name, repo.Address}
 	if repo.Insecure {
 		args = append(args, "--insecure-skip-tls-verify")
 	}
-	if repo.Username != "" || repo.Password != "" {
-		args = append(args, "--username", repo.Username, "--password", repo.Password)
+	if repo.Username != "" {
+		args = append(args, "--username", repo.Username)
 	}
+	if repo.Password != "" {
+		args = append(args, "--password-stdin")
+	}
+
 	cmd := exec.CommandContext(ctx, h.execPath, args...)
+	// Pass the password securely via stdin instead of argv
+	if repo.Password != "" {
+		cmd.Stdin = strings.NewReader(repo.Password)
+	}
+
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		h.logger.Error("failed to add chart repository", zap.String("name", repo.Name), zap.Error(err))
