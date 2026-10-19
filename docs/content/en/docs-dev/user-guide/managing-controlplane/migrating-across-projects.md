@@ -46,7 +46,7 @@ NOTE:
 
 ## Migration Workflow Overview
 
-<!-- TODO: Add architecture diagram showing source/target control plane relationship and data flow -->
+![Architecture diagram showing migration between source and target PipeCD control planes](/images/pipecd-migration-architecture.png)
 
 The migration process consists of three main phases:
 
