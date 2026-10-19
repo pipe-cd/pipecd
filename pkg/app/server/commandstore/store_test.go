@@ -34,7 +34,7 @@ import (
 // control exactly what the backend returns for Get/UpdateStatus in each test.
 type fakeCommandStore struct {
 	getFunc          func(ctx context.Context, id string) (*model.Command, error)
-	updateStatusFunc func(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64) error
+	updateHandledFunc func(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64, handledReason string) error
 }
 
 func (f *fakeCommandStore) Add(ctx context.Context, cmd *model.Command) error {
@@ -49,8 +49,9 @@ func (f *fakeCommandStore) List(ctx context.Context, opts datastore.ListOptions)
 	return nil, nil
 }
 
-func (f *fakeCommandStore) UpdateStatus(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64) error {
-	return f.updateStatusFunc(ctx, id, status, metadata, handledAt)
+func (f *fakeCommandStore) UpdateCommandHandled(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64, handledReason string) error {
+	return f.updateHandledFunc(ctx, id, status, metadata, handledAt, handledReason)
+}
 }
 
 // TestUpdateCommandHandled_BackendGetFailureAfterSuccessfulUpdateStatus reproduces
@@ -70,7 +71,7 @@ func TestUpdateCommandHandled_BackendGetFailureAfterSuccessfulUpdateStatus(t *te
 	c.EXPECT().Delete(cacheKey("command-id")).Return(nil)
 
 	backend := &fakeCommandStore{
-		updateStatusFunc: func(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64) error {
+		updateHandledFunc: func(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64, handledReason string) error {
 			return nil
 		},
 		getFunc: func(ctx context.Context, id string) (*model.Command, error) {
@@ -84,7 +85,7 @@ func TestUpdateCommandHandled_BackendGetFailureAfterSuccessfulUpdateStatus(t *te
 		logger:  zap.NewNop(),
 	}
 
-	err := s.UpdateCommandHandled(context.Background(), "command-id", model.CommandStatus_COMMAND_SUCCEEDED, nil, 12345)
+	err := s.UpdateCommandHandled(context.Background(), "command-id", model.CommandStatus_COMMAND_SUCCEEDED, nil, 12345, "")
 	assert.NoError(t, err)
 }
 
@@ -121,7 +122,7 @@ func TestGetCommand_StaleCacheDeletedAfterUpdateHandledGetFailure(t *testing.T) 
 
 	getCalls := 0
 	backend := &fakeCommandStore{
-		updateStatusFunc: func(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64) error {
+		updateHandledFunc: func(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64, handledReason string) error {
 			return nil
 		},
 		getFunc: func(ctx context.Context, id string) (*model.Command, error) {
@@ -161,7 +162,7 @@ func TestGetCommand_StaleCacheDeletedAfterUpdateHandledGetFailure(t *testing.T) 
 	assert.NoError(t, err)
 	assert.Equal(t, oldCommand, got)
 
-	err = s.UpdateCommandHandled(context.Background(), "command-id", model.CommandStatus_COMMAND_SUCCEEDED, nil, 12345)
+	err = s.UpdateCommandHandled(context.Background(), "command-id", model.CommandStatus_COMMAND_SUCCEEDED, nil, 12345, "")
 	assert.NoError(t, err)
 
 	got, err = s.GetCommand(context.Background(), "command-id")
