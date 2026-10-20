@@ -52,7 +52,7 @@ func (f *fakeCommandStore) List(ctx context.Context, opts datastore.ListOptions)
 func (f *fakeCommandStore) UpdateCommandHandled(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64, handledReason string) error {
 	return f.updateHandledFunc(ctx, id, status, metadata, handledAt, handledReason)
 }
-}
+
 
 // TestUpdateCommandHandled_BackendGetFailureAfterSuccessfulUpdateStatus reproduces
 // the reported cache poisoning scenario: UpdateStatus succeeds, but the

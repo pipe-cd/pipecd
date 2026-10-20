@@ -316,3 +316,44 @@ func TestReportStageCommandsHandled(t *testing.T) {
 		})
 	}
 }
+
+type fakeAPIClient struct {
+	reportFunc func(ctx context.Context, req *pipedservice.ReportCommandHandledRequest) (*pipedservice.ReportCommandHandledResponse, error)
+}
+
+func (f *fakeAPIClient) ListUnhandledCommands(ctx context.Context, in *pipedservice.ListUnhandledCommandsRequest, opts ...grpc.CallOption) (*pipedservice.ListUnhandledCommandsResponse, error) {
+	return &pipedservice.ListUnhandledCommandsResponse{}, nil
+}
+
+func (f *fakeAPIClient) ReportCommandHandled(ctx context.Context, req *pipedservice.ReportCommandHandledRequest, opts ...grpc.CallOption) (*pipedservice.ReportCommandHandledResponse, error) {
+	return f.reportFunc(ctx, req)
+}
+
+func TestReportError(t *testing.T) {
+	cmd := &model.Command{
+		Id: "test-command-id",
+	}
+	expectedOutput := []byte("error details")
+	commandError := errors.New("something went wrong")
+	apiError := errors.New("api failure")
+
+	fakeClient := &fakeAPIClient{
+		reportFunc: func(ctx context.Context, req *pipedservice.ReportCommandHandledRequest) (*pipedservice.ReportCommandHandledResponse, error) {
+			assert.Equal(t, cmd.Id, req.CommandId)
+			assert.Equal(t, model.CommandStatus_COMMAND_FAILED, req.Status)
+			assert.Equal(t, expectedOutput, req.Output)
+			assert.Equal(t, commandError.Error(), req.HandledReason)
+			return nil, apiError
+		},
+	}
+
+	s := &store{
+		apiClient:       fakeClient,
+		handledCommands: make(map[string]time.Time),
+	}
+
+	reportableCmd := s.makeReportableCommand(cmd)
+	err := reportableCmd.ReportError(context.Background(), model.CommandStatus_COMMAND_FAILED, commandError, expectedOutput)
+
+	assert.Equal(t, apiError, err)
+}
