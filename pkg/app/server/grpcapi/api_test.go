@@ -315,6 +315,14 @@ func TestListDeploymentsFilters(t *testing.T) {
 			},
 		},
 		{
+			name: "both filters are applied when a valid status and kind are given",
+			req:  &apiservice.ListDeploymentsRequest{Statuses: []string{"DEPLOYMENT_SUCCESS"}, Kinds: []string{"KUBERNETES"}},
+			expectedFilter: []datastore.ListFilter{
+				{Field: "Status", Operator: datastore.OperatorEqual, Value: model.DeploymentStatus_DEPLOYMENT_SUCCESS},
+				{Field: "Kind", Operator: datastore.OperatorEqual, Value: model.ApplicationKind_KUBERNETES},
+			},
+		},
+		{
 			name:           "invalid status name is rejected",
 			req:            &apiservice.ListDeploymentsRequest{Statuses: []string{"BOGUS"}},
 			expectedErr:    "rpc error: code = InvalidArgument desc = BOGUS is invalid deployment status",
@@ -358,7 +366,9 @@ func TestListDeploymentsFilters(t *testing.T) {
 
 			_, err := api.ListDeployments(ctx, tc.req)
 			if tc.expectedErr != "" {
-				assert.Equal(t, tc.expectedErr, err.Error())
+				if assert.Error(t, err) {
+					assert.Equal(t, tc.expectedErr, err.Error())
+				}
 				return
 			}
 			assert.NoError(t, err)
