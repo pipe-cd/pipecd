@@ -36,7 +36,7 @@ type containerImage struct {
 
 // parseContainerImage parses a container image reference into its components.
 //
-// Supported formats: [registry/]name[:tag|@digest]
+// Supported formats: [registry/]name[:tag][@digest]
 func parseContainerImage(image string) (img containerImage) {
 	ref := image
 
@@ -48,12 +48,9 @@ func parseContainerImage(image string) (img containerImage) {
 	parts := strings.Split(ref, "/")
 	last := parts[len(parts)-1]
 
-	// Extract tag from the last segment only when there is no digest
-	if img.digest == "" {
-		if idx := strings.LastIndex(last, ":"); idx != -1 {
-			img.tag = last[idx+1:]
-			last = last[:idx]
-		}
+	if idx := strings.LastIndex(last, ":"); idx != -1 {
+		img.tag = last[idx+1:]
+		last = last[:idx]
 	}
 
 	img.name = last
@@ -73,9 +70,9 @@ func determineVersions(manifests []provider.Manifest) []sdk.ArtifactVersion {
 	versions := make([]sdk.ArtifactVersion, 0, len(imageMap))
 	for i := range imageMap {
 		image := parseContainerImage(i)
-		version := image.tag
+		version := image.digest
 		if version == "" {
-			version = image.digest
+			version = image.tag
 		}
 		versions = append(versions, sdk.ArtifactVersion{
 			Version: version,
@@ -138,13 +135,13 @@ func checkImageChange(ns diff.Nodes) (string, bool) {
 		beforeImg := parseContainerImage(n.StringX())
 		afterImg := parseContainerImage(n.StringY())
 
-		beforeVer := beforeImg.tag
+		beforeVer := beforeImg.digest
 		if beforeVer == "" {
-			beforeVer = beforeImg.digest
+			beforeVer = beforeImg.tag
 		}
-		afterVer := afterImg.tag
+		afterVer := afterImg.digest
 		if afterVer == "" {
-			afterVer = afterImg.digest
+			afterVer = afterImg.tag
 		}
 
 		if beforeImg.name == afterImg.name {
