@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-control-regex
-const ANSI_COLOR_REGEX = /[\u001B\u009B][[()#;?]*(\d{1,4}(?:;\d{0,4})*)?[\dA-PRZcf-nqry=><]/g;
+const ANSI_COLOR_REGEX = /[\u001B\u009B][[()#?]*(\d{0,4}(?:;\d{0,4})*)?[\dA-PRZcf-nqry=><]/g;
 const NON_BREAK_SPACE = "\u00a0";
 
 export interface Cell {
@@ -94,10 +94,11 @@ const TERM_COLOR_BG: Record<string, TERM_COLOR> = {
   107: TERM_COLOR.BR_WHITE,
 };
 
-// Codes that select a 256-color or a true color take extra arguments ("5;n" or
-// "2;r;g;b"). Those colors aren't supported, but the arguments must be skipped so
-// that a 0 in them isn't taken as a reset.
-const EXTENDED_COLOR_CODES = ["38", "48"];
+// Codes that select a 256-color or a true color for the text, the background or
+// the underline take extra arguments ("5;n" or "2;r;g;b"). Those colors aren't
+// supported, but the arguments must be skipped so that a 0 in them isn't taken
+// as a reset.
+const EXTENDED_COLOR_CODES = ["38", "48", "58"];
 const EXTENDED_COLOR_ARGS: Record<string, number> = { 5: 2, 2: 4 };
 
 export function parseLog(logStr: string): Cell[] {
@@ -137,8 +138,7 @@ export function parseLog(logStr: string): Cell[] {
         underline = true;
         break;
       case ANSI_CODE.REVERSED:
-        fg = 7 - fg;
-        bg = 7 - bg;
+        [fg, bg] = [bg, fg];
         break;
     }
 
@@ -164,7 +164,8 @@ export function parseLog(logStr: string): Cell[] {
       continue;
     }
 
-    // Set code for next cell process. "ESC[m" is the same as "ESC[0m".
+    // Set code for next cell process. An empty code is a reset, so "ESC[m" is
+    // the same as "ESC[0m" and "ESC[;32m" the same as "ESC[0;32m".
     const code = match[1] ?? ANSI_CODE.RESET;
     const isKnownCode =
       typeof TERM_COLOR_FG[code] !== "undefined" ||

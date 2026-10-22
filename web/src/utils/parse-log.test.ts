@@ -48,6 +48,7 @@ test("multi lines contained in a single log block", () => {
 });
 
 // Indexes of the colors in TERM_COLORS.
+const BLACK = 0;
 const RED = 1;
 const GREEN = 2;
 const YELLOW = 3;
@@ -108,4 +109,38 @@ test("escape sequences that don't set a style leave it unchanged", () => {
   expect(cells).toHaveLength(2);
   expect(cells[0]).toMatchObject({ content: "downloading", fg: RED });
   expect(cells[1]).toMatchObject({ content: "done", fg: RED, bold: false });
+});
+
+test("skips the arguments of underline color codes", () => {
+  const cells = parseLog("\u001b[1;4;31mfail\u001b[58;5;0mstill");
+
+  expect(cells[1]).toMatchObject({
+    content: "still",
+    fg: RED,
+    bold: true,
+    underline: true,
+  });
+});
+
+test("reversed swaps the text and background colors", () => {
+  const cells = parseLog(
+    "\u001b[91;7mdebug\u001b[0m\u001b[101;7malert\u001b[0m"
+  );
+
+  expect(cells[0]).toMatchObject({ content: "debug", fg: BLACK, bg: BR_RED });
+  expect(cells[1]).toMatchObject({ content: "alert", fg: BR_RED, bg: WHITE });
+});
+
+test("an empty code at the start of a sequence is a reset", () => {
+  const cells = parseLog("\u001b[1;44mbold\u001b[;32mok");
+
+  expect(cells[1]).toMatchObject({
+    content: "ok",
+    fg: GREEN,
+    bg: BLACK,
+    bold: false,
+  });
+  expect(parseLog("\u001b[1;44mbold\u001b[;32mok")).toEqual(
+    parseLog("\u001b[1;44mbold\u001b[0;32mok")
+  );
 });
