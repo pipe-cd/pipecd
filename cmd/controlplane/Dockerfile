@@ -13,7 +13,7 @@ RUN make update/web-deps
 RUN make build/web
 
 # controlplane builder
-FROM --platform=$BUILDPLATFORM golang:1.26.2 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.27.1 AS builder
 
 ARG TARGETOS
 ARG TARGETARCH

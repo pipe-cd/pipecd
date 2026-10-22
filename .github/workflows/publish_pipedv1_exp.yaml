@@ -10,7 +10,6 @@ on:
 permissions: {}
 
 env:
-  GO_VERSION: 1.26.2
   GHCR: ghcr.io
   HELM_VERSION: 3.8.2
 
@@ -25,7 +24,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-go@v7
         with:
-          go-version: ${{ env.GO_VERSION }}
+          go-version-file: go.mod
           cache: true
       - name: Build binary artifacts
         run: |
