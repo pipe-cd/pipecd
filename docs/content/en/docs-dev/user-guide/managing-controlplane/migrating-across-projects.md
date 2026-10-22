@@ -46,7 +46,7 @@ NOTE:
 
 ## Migration Workflow Overview
 
-![Architecture diagram showing migration between source and target PipeCD control planes](/images/pipecd-migration-architecture.svg)
+![Architecture diagram showing migration between source and target PipeCD control planes](/images/pipecd-migration-architecture.png)
 
 The migration process consists of three main phases:
 
