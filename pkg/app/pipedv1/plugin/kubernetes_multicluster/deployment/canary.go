@@ -385,13 +385,7 @@ func (p *Plugin) canaryClean(
 
 	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
 
-	// Resolve kubectl version: multiTarget > spec > deployTarget
-	kubectlVersion := cmp.Or(appCfg.Input.KubectlVersion, dt.Config.KubectlVersion)
-	if multiTarget != nil {
-		kubectlVersion = cmp.Or(multiTarget.KubectlVersion, kubectlVersion)
-	}
-
-	kubectlPath, err := toolRegistry.Kubectl(ctx, kubectlVersion)
+	kubectlPath, err := toolRegistry.Kubectl(ctx, appCfg.Input.KubectlVersionFor(dt.Config, multiTarget))
 	if err != nil {
 		return fmt.Errorf("failed while getting kubectl tool: %w", err)
 	}

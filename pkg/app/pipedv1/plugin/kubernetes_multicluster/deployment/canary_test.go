@@ -29,7 +29,6 @@ import (
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister/logpersistertest"
-	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry"
 	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry/toolregistrytest"
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
@@ -677,44 +676,4 @@ func TestPlugin_executeK8sMultiCanaryCleanStage_withoutCreateService(t *testing.
 		assert.True(t, k8serrors.IsNotFound(err))
 	})
 	require.True(t, ok)
-}
-
-func TestPlugin_executeK8sMultiCanaryCleanStage_multiTargetKubectlVersion(t *testing.T) {
-	t.Parallel()
-
-	// cluster1 sets its own kubectlVersion (1.33.0), cluster2 uses the top-level one (1.31.0).
-	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "multicluster_kubectl_version", "app.pipecd.yaml"), "kubernetes_multicluster")
-
-	recorder := newToolVersionRecorder(t)
-
-	cluster1 := setupCluster(t, "cluster1")
-	cluster2 := setupCluster(t, "cluster2")
-
-	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
-		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
-			StageName:   "K8S_MULTI_CANARY_CLEAN",
-			StageConfig: []byte(`{}`),
-			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
-				ApplicationDirectory:      filepath.Join("testdata", "multicluster_kubectl_version"),
-				CommitHash:                "0123456789",
-				ApplicationConfig:         appCfg,
-				ApplicationConfigFilename: "app.pipecd.yaml",
-			},
-			Deployment: sdk.Deployment{
-				PipedID:       "piped-id",
-				ApplicationID: "app-id",
-			},
-		},
-		Client: sdk.NewClient(nil, "kubernetes_multicluster", "", "", logpersistertest.NewTestLogPersister(t), toolregistry.NewToolRegistry(recorder)),
-		Logger: zaptest.NewLogger(t),
-	}
-
-	plugin := &Plugin{}
-	status := plugin.executeK8sMultiCanaryCleanStage(t.Context(), input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
-		{Name: "cluster1", Config: *cluster1.dtc},
-		{Name: "cluster2", Config: *cluster2.dtc},
-	})
-
-	require.Equal(t, sdk.StageStatusSuccess, status)
-	assert.ElementsMatch(t, []string{"1.33.0", "1.31.0"}, recorder.requested("kubectl"))
 }

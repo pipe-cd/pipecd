@@ -15,7 +15,6 @@
 package deployment
 
 import (
-	"cmp"
 	"context"
 	"encoding/json"
 	"time"
@@ -122,14 +121,8 @@ func (p *Plugin) sync(
 
 	deployTargetConfig := dt.Config
 
-	// Resolve kubectl version: multiTarget > spec > deployTarget
-	kubectlVersion := cmp.Or(cfg.Spec.Input.KubectlVersion, deployTargetConfig.KubectlVersion)
-	if multiTarget != nil {
-		kubectlVersion = cmp.Or(multiTarget.KubectlVersion, kubectlVersion)
-	}
-
 	// Get the kubectl tool path.
-	kubectlPath, err := toolRegistry.Kubectl(ctx, kubectlVersion)
+	kubectlPath, err := toolRegistry.Kubectl(ctx, cfg.Spec.Input.KubectlVersionFor(deployTargetConfig, multiTarget))
 	if err != nil {
 		lp.Errorf("Failed while getting kubectl tool (%v)", err)
 		return sdk.StageStatusFailure
