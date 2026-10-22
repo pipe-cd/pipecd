@@ -29,20 +29,34 @@ import (
 )
 
 type containerImage struct {
-	name string
-	tag  string
+	name   string
+	tag    string
+	digest string
 }
 
-// parseContainerImage splits the container image into name and tag.
-// The image should be in the format of "name:tag".
-// If the tag is not specified, it will be empty.
+// parseContainerImage parses a container image reference into its components.
+//
+// Supported formats: [registry/]name[:tag|@digest]
 func parseContainerImage(image string) (img containerImage) {
-	parts := strings.Split(image, ":")
-	if len(parts) == 2 {
-		img.tag = parts[1]
+	ref := image
+
+	if idx := strings.Index(ref, "@"); idx != -1 {
+		img.digest = ref[idx+1:]
+		ref = ref[:idx]
 	}
-	paths := strings.Split(parts[0], "/")
-	img.name = paths[len(paths)-1]
+
+	parts := strings.Split(ref, "/")
+	last := parts[len(parts)-1]
+
+	// Extract tag from the last segment only when there is no digest
+	if img.digest == "" {
+		if idx := strings.LastIndex(last, ":"); idx != -1 {
+			img.tag = last[idx+1:]
+			last = last[:idx]
+		}
+	}
+
+	img.name = last
 	return
 }
 
@@ -59,8 +73,12 @@ func determineVersions(manifests []provider.Manifest) []sdk.ArtifactVersion {
 	versions := make([]sdk.ArtifactVersion, 0, len(imageMap))
 	for i := range imageMap {
 		image := parseContainerImage(i)
+		version := image.tag
+		if version == "" {
+			version = image.digest
+		}
 		versions = append(versions, sdk.ArtifactVersion{
-			Version: image.tag,
+			Version: version,
 			Name:    image.name,
 			URL:     i,
 		})
@@ -120,10 +138,19 @@ func checkImageChange(ns diff.Nodes) (string, bool) {
 		beforeImg := parseContainerImage(n.StringX())
 		afterImg := parseContainerImage(n.StringY())
 
+		beforeVer := beforeImg.tag
+		if beforeVer == "" {
+			beforeVer = beforeImg.digest
+		}
+		afterVer := afterImg.tag
+		if afterVer == "" {
+			afterVer = afterImg.digest
+		}
+
 		if beforeImg.name == afterImg.name {
-			images = append(images, fmt.Sprintf("image %s from %s to %s", beforeImg.name, beforeImg.tag, afterImg.tag))
+			images = append(images, fmt.Sprintf("image %s from %s to %s", beforeImg.name, beforeVer, afterVer))
 		} else {
-			images = append(images, fmt.Sprintf("image %s:%s to %s:%s", beforeImg.name, beforeImg.tag, afterImg.name, afterImg.tag))
+			images = append(images, fmt.Sprintf("image %s:%s to %s:%s", beforeImg.name, beforeVer, afterImg.name, afterVer))
 		}
 	}
 	desc := fmt.Sprintf("Sync progressively because of updating %s", strings.Join(images, ", "))
