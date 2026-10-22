@@ -18,20 +18,24 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
+	"google.golang.org/grpc"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister/logpersistertest"
+	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry"
 	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry/toolregistrytest"
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
+	"github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
 )
 
 func TestPlugin_executeK8sMultiSyncStage(t *testing.T) {
@@ -854,4 +858,79 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_withStageConfig(t *testing.T)
 		require.Error(t, err)
 		require.Truef(t, apierrors.IsNotFound(err), "expected error to be NotFound, but got %v", err)
 	})
+}
+
+// toolVersionRecorder installs tools with the test tool registry and records the requested versions by tool name.
+type toolVersionRecorder struct {
+	pipedservice.PluginServiceClient
+	registry *toolregistry.ToolRegistry
+
+	mu       sync.Mutex
+	versions map[string][]string
+}
+
+func newToolVersionRecorder(t *testing.T) *toolVersionRecorder {
+	return &toolVersionRecorder{
+		registry: toolregistrytest.NewTestToolRegistry(t),
+		versions: make(map[string][]string),
+	}
+}
+
+func (r *toolVersionRecorder) InstallTool(ctx context.Context, in *pipedservice.InstallToolRequest, _ ...grpc.CallOption) (*pipedservice.InstallToolResponse, error) {
+	r.mu.Lock()
+	r.versions[in.GetName()] = append(r.versions[in.GetName()], in.GetVersion())
+	r.mu.Unlock()
+
+	path, err := r.registry.InstallTool(ctx, in.GetName(), in.GetVersion(), in.GetInstallScript())
+	if err != nil {
+		return nil, err
+	}
+	return &pipedservice.InstallToolResponse{InstalledPath: path}, nil
+}
+
+func (r *toolVersionRecorder) requested(name string) []string {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return append([]string(nil), r.versions[name]...)
+}
+
+func TestPlugin_executeK8sMultiSyncStage_multiTargetKubectlVersion(t *testing.T) {
+	t.Parallel()
+
+	// cluster1 sets its own kubectlVersion (1.33.0), cluster2 uses the top-level one (1.31.0).
+	cfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join("testdata", "multicluster_kubectl_version", "app.pipecd.yaml"), "kubernetes_multicluster")
+
+	recorder := newToolVersionRecorder(t)
+
+	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
+			StageName: "K8S_MULTI_SYNC",
+			Deployment: sdk.Deployment{
+				PipedID:       "piped-id",
+				ApplicationID: "app-id",
+			},
+			StageConfig:             []byte(``),
+			RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{},
+			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+				ApplicationDirectory:      filepath.Join("testdata", "multicluster_kubectl_version"),
+				CommitHash:                "0123456789",
+				ApplicationConfig:         cfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+		},
+		Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), toolregistry.NewToolRegistry(recorder)),
+		Logger: zaptest.NewLogger(t),
+	}
+
+	cluster1 := setupCluster(t, "cluster1")
+	cluster2 := setupCluster(t, "cluster2")
+
+	plugin := &Plugin{}
+	status, _ := plugin.executeK8sMultiSyncStage(t.Context(), input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		{Name: "cluster1", Config: *cluster1.dtc},
+		{Name: "cluster2", Config: *cluster2.dtc},
+	})
+
+	require.Equal(t, sdk.StageStatusSuccess, status)
+	assert.ElementsMatch(t, []string{"1.33.0", "1.31.0"}, recorder.requested("kubectl"))
 }

@@ -16,18 +16,22 @@ package livestate
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
+	"google.golang.org/grpc"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"github.com/pipe-cd/piped-plugin-sdk-go/diff"
+	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry"
 
 	kubeconfig "github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/kubernetes_multicluster/provider"
+	"github.com/pipe-cd/pipecd/pkg/plugin/pipedservice"
 )
 
 func makeTestManifest(t *testing.T, yaml string) provider.Manifest {
@@ -659,6 +663,76 @@ func Test_calculateSyncStatus(t *testing.T) {
 			t.Parallel()
 			got := calculateSyncStatus(tt.args.states)
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+// kubectlVersionRecorder records the requested kubectl versions and fails every install,
+// so GetLivestate stops right after resolving the version of the first target.
+type kubectlVersionRecorder struct {
+	pipedservice.PluginServiceClient
+	versions []string
+}
+
+func (r *kubectlVersionRecorder) InstallTool(_ context.Context, in *pipedservice.InstallToolRequest, _ ...grpc.CallOption) (*pipedservice.InstallToolResponse, error) {
+	if in.GetName() == "kubectl" {
+		r.versions = append(r.versions, in.GetVersion())
+	}
+	return nil, errors.New("install is not supported in this test")
+}
+
+func TestGetLivestate_MultiTargetKubectlVersion(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name        string
+		multiTarget kubeconfig.KubernetesMultiTarget
+		want        string
+	}{
+		{
+			name: "multiTarget kubectlVersion overrides the top-level one",
+			multiTarget: kubeconfig.KubernetesMultiTarget{
+				Target:         kubeconfig.KubernetesMultiTargetDeployTarget{Name: "cluster1"},
+				KubectlVersion: "1.33.0",
+			},
+			want: "1.33.0",
+		},
+		{
+			name: "empty multiTarget kubectlVersion falls back to the top-level one",
+			multiTarget: kubeconfig.KubernetesMultiTarget{
+				Target: kubeconfig.KubernetesMultiTargetDeployTarget{Name: "cluster1"},
+			},
+			want: "1.31.0",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			recorder := &kubectlVersionRecorder{}
+			input := &sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec]{
+				Request: sdk.GetLivestateRequest[kubeconfig.KubernetesApplicationSpec]{
+					ApplicationID: "app-id",
+					DeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+						ApplicationConfig: &sdk.ApplicationConfig[kubeconfig.KubernetesApplicationSpec]{
+							Spec: &kubeconfig.KubernetesApplicationSpec{
+								Input: kubeconfig.KubernetesDeploymentInput{
+									KubectlVersion: "1.31.0",
+									MultiTargets:   []kubeconfig.KubernetesMultiTarget{tt.multiTarget},
+								},
+							},
+						},
+					},
+				},
+				Client: sdk.NewClient(nil, "kubernetes_multicluster", "app-id", "", nil, toolregistry.NewToolRegistry(recorder)),
+				Logger: zaptest.NewLogger(t),
+			}
+			dts := []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{{Name: "cluster1"}}
+
+			_, err := Plugin{}.GetLivestate(t.Context(), nil, dts, input)
+			require.Error(t, err)
+			assert.Equal(t, []string{tt.want}, recorder.versions)
 		})
 	}
 }

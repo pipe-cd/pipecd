@@ -343,7 +343,7 @@ func (p *Plugin) executeK8sMultiCanaryCleanStage(ctx context.Context, input *sdk
 				lp.Infof("Ignore multi target '%s': not matched any deployTarget", mt.Target.Name)
 				continue
 			}
-			targetConfigs = append(targetConfigs, stageTarget{deployTarget: dt})
+			targetConfigs = append(targetConfigs, stageTarget{deployTarget: dt, multiTarget: &mt})
 		}
 	}
 
@@ -353,7 +353,7 @@ func (p *Plugin) executeK8sMultiCanaryCleanStage(ctx context.Context, input *sdk
 	for _, tc := range targetConfigs {
 		eg.Go(func() error {
 			lp.Infof("Start cleaning CANARY variant on target %s", tc.deployTarget.Name)
-			if err := p.canaryClean(ctx, input, tc.deployTarget, cfg); err != nil {
+			if err := p.canaryClean(ctx, input, tc.deployTarget, tc.multiTarget, cfg); err != nil {
 				return fmt.Errorf("failed to clean CANARY variant on target %s: %w", tc.deployTarget.Name, err)
 			}
 			return nil
@@ -372,6 +372,7 @@ func (p *Plugin) canaryClean(
 	ctx context.Context,
 	input *sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec],
 	dt *sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig],
+	multiTarget *kubeconfig.KubernetesMultiTarget,
 	cfg *sdk.ApplicationConfig[kubeconfig.KubernetesApplicationSpec],
 ) error {
 	lp := input.Client.LogPersister()
@@ -384,7 +385,13 @@ func (p *Plugin) canaryClean(
 
 	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
 
-	kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(appCfg.Input.KubectlVersion, dt.Config.KubectlVersion))
+	// Resolve kubectl version: multiTarget > spec > deployTarget
+	kubectlVersion := cmp.Or(appCfg.Input.KubectlVersion, dt.Config.KubectlVersion)
+	if multiTarget != nil {
+		kubectlVersion = cmp.Or(multiTarget.KubectlVersion, kubectlVersion)
+	}
+
+	kubectlPath, err := toolRegistry.Kubectl(ctx, kubectlVersion)
 	if err != nil {
 		return fmt.Errorf("failed while getting kubectl tool: %w", err)
 	}
