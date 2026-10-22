@@ -664,6 +664,16 @@ func TestApplicationConfig_run_dirs(t *testing.T) {
 
 			c := &applicationConfig{directories: []string{dir}}
 			err := c.run(context.Background(), cli.Input{Logger: zap.NewNop()})
+			for rel, content := range tc.files {
+				if content != validConfig {
+					continue
+				}
+				data, readErr := os.ReadFile(filepath.Join(dir, rel))
+				require.NoError(t, readErr)
+				var migrated map[string]any
+				require.NoError(t, yaml.Unmarshal(data, &migrated))
+				assert.Equal(t, "Application", migrated["kind"], "valid config %s should be migrated", rel)
+			}
 
 			if !tc.expectError {
 				assert.NoError(t, err)
