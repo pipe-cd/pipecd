@@ -32,6 +32,8 @@ const (
 	KindDaemonSet   = "DaemonSet"
 	KindPod         = "Pod"
 	KindStatefulSet = "StatefulSet"
+	KindJob         = "Job"
+	KindCronJob     = "CronJob"
 
 	// ConfigMap and Secret
 	KindSecret    = "Secret"
