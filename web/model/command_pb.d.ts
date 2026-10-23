@@ -35,6 +35,9 @@ export class Command extends jspb.Message {
   getHandledAt(): number;
   setHandledAt(value: number): Command;
 
+  getHandledReason(): string;
+  setHandledReason(value: string): Command;
+
   getType(): Command.Type;
   setType(value: Command.Type): Command;
 
@@ -104,6 +107,7 @@ export namespace Command {
     status: CommandStatus,
     metadataMap: Array<[string, string]>,
     handledAt: number,
+    handledReason: string,
     type: Command.Type,
     syncApplication?: Command.SyncApplication.AsObject,
     updateApplicationConfig?: Command.UpdateApplicationConfig.AsObject,

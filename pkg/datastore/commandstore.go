@@ -38,7 +38,7 @@ type CommandStore interface {
 	Add(ctx context.Context, cmd *model.Command) error
 	Get(ctx context.Context, id string) (*model.Command, error)
 	List(ctx context.Context, opts ListOptions) ([]*model.Command, error)
-	UpdateStatus(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64) error
+	UpdateCommandHandled(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64, handledReason string) error
 }
 
 type commandStore struct {
@@ -111,11 +111,12 @@ func (s *commandStore) update(ctx context.Context, id string, updater func(piped
 	})
 }
 
-func (s *commandStore) UpdateStatus(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64) error {
+func (s *commandStore) UpdateCommandHandled(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64, handledReason string) error {
 	return s.update(ctx, id, func(c *model.Command) error {
 		c.Status = status
 		c.Metadata = metadata
 		c.HandledAt = handledAt
+		c.HandledReason = handledReason
 		return nil
 	})
 }

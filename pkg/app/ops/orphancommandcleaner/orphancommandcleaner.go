@@ -31,8 +31,8 @@ var (
 )
 
 type commandStore interface {
-	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Command, error)
-	UpdateStatus(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64) error
+    List(ctx context.Context, opts datastore.ListOptions) ([]*model.Command, error)
+    UpdateCommandHandled(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64, handledReason string) error
 }
 
 type OrphanCommandCleaner struct {
@@ -98,7 +98,7 @@ func (c *OrphanCommandCleaner) updateOrphanCommandsStatus(ctx context.Context) e
 
 	handledAt := time.Now().Unix()
 	for _, command := range commands {
-		if err := c.commandstore.UpdateStatus(ctx, command.Id, model.CommandStatus_COMMAND_TIMEOUT, nil, handledAt); err != nil {
+		if err := c.commandstore.UpdateCommandHandled(ctx, command.Id, model.CommandStatus_COMMAND_TIMEOUT, nil, handledAt, ""); err != nil {
 			c.logger.Error("failed to mark orphan command as timed out",
 				zap.String("id", command.Id),
 				zap.String("type", command.Type.String()),
