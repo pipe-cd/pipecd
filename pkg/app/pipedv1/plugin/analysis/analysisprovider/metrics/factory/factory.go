@@ -29,12 +29,12 @@ import (
 )
 
 // NewProvider generates an appropriate provider according to analysis provider config.
-func NewProvider(analysisTempCfg *config.TemplatableAnalysisMetrics, providerCfg *config.PipedAnalysisProvider, logger *zap.Logger) (metrics.Provider, error) {
+func NewProvider(metricsCfg *config.AnalysisMetrics, providerCfg *config.PipedAnalysisProvider, logger *zap.Logger) (metrics.Provider, error) {
 	switch providerCfg.Type {
 	case config.AnalysisProviderPrometheus:
 		options := []prometheus.Option{
 			prometheus.WithLogger(logger),
-			prometheus.WithTimeout(analysisTempCfg.Timeout.Duration()),
+			prometheus.WithTimeout(metricsCfg.Timeout.Duration()),
 		}
 		cfg := providerCfg.PrometheusConfig
 		if cfg.UsernameFile != "" && cfg.PasswordFile != "" {
@@ -82,7 +82,7 @@ func NewProvider(analysisTempCfg *config.TemplatableAnalysisMetrics, providerCfg
 		}
 		options := []datadog.Option{
 			datadog.WithLogger(logger),
-			datadog.WithTimeout(analysisTempCfg.Timeout.Duration()),
+			datadog.WithTimeout(metricsCfg.Timeout.Duration()),
 		}
 		if cfg.Address != "" {
 			options = append(options, datadog.WithAddress(cfg.Address))
