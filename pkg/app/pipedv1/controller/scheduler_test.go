@@ -299,7 +299,8 @@ func TestExecuteStage_SignalTerminated(t *testing.T) {
 
 	handler.Terminate()
 	finalStatus := s.executeStage(sig, s.deployment.Stages[0])
-	assert.Equal(t, model.StageStatus_STAGE_FAILURE, finalStatus)
+	// A stage stopped by piped shutting down keeps its status, so that it is resumed after piped restarts.
+	assert.Equal(t, model.StageStatus_STAGE_NOT_STARTED_YET, finalStatus)
 }
 
 func TestExecuteStage_SignalCancelled(t *testing.T) {
