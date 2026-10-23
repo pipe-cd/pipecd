@@ -15,7 +15,6 @@
 package livestate
 
 import (
-	"cmp"
 	"context"
 	"fmt"
 	"strings"
@@ -86,7 +85,7 @@ func (p Plugin) GetLivestate(ctx context.Context, _ *kubeconfig.KubernetesPlugin
 	syncStates := make([]sdk.ApplicationSyncState, 0, len(targetConfigs))
 	for _, tc := range targetConfigs {
 		// Get the kubectl tool path.
-		kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, tc.deployTarget.Config.KubectlVersion))
+		kubectlPath, err := toolRegistry.Kubectl(ctx, cfg.Spec.Input.KubectlVersionFor(tc.deployTarget.Config, tc.multiTarget))
 		if err != nil {
 			input.Logger.Error("Failed to get kubectl tool", zap.Error(err))
 			return nil, err

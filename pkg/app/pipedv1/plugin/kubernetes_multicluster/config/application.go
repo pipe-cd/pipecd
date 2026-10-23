@@ -15,6 +15,7 @@
 package config
 
 import (
+	"cmp"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -209,6 +210,15 @@ type KubernetesMultiTarget struct {
 	KustomizeDir     string                            `json:"kustomizeDir,omitempty"`
 	KustomizeVersion string                            `json:"kustomizeVersion,omitempty"`
 	KustomizeOptions map[string]string                 `json:"kustomizeOptions,omitempty"`
+}
+
+// KubectlVersionFor returns the kubectl version to use for the given deploy target:
+// the multi-target's version when set, then the input's, then the deploy target config's.
+func (in KubernetesDeploymentInput) KubectlVersionFor(dt KubernetesDeployTargetConfig, mt *KubernetesMultiTarget) string {
+	if mt != nil && mt.KubectlVersion != "" {
+		return mt.KubectlVersion
+	}
+	return cmp.Or(in.KubectlVersion, dt.KubectlVersion)
 }
 
 type KubernetesMultiTargetDeployTarget struct {
