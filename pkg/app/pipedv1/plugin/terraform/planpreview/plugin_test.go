@@ -16,11 +16,18 @@ package planpreview
 
 import (
 	"bytes"
+	"context"
+	"os"
+	"path/filepath"
 	"testing"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+	"github.com/pipe-cd/piped-plugin-sdk-go/toolregistry/toolregistrytest"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/config"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/terraform/provider"
 )
 
@@ -95,4 +102,37 @@ Note: You didn't use the -out option to save this plan, so Terraform can't guara
 			assert.Equal(t, tt.want, got)
 		})
 	}
+}
+
+func TestGetPlanPreview_WithoutColor(t *testing.T) {
+	t.Parallel()
+
+	appDir := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(appDir, "main.tf"), []byte(`resource "terraform_data" "example" {
+  input = "hello"
+}
+`), 0o644))
+
+	p := &Plugin{}
+	got, err := p.GetPlanPreview(context.Background(), nil, []*sdk.DeployTarget[config.DeployTargetConfig]{{Name: "dt-1"}}, &sdk.GetPlanPreviewInput[config.ApplicationConfigSpec]{
+		Request: sdk.GetPlanPreviewRequest[config.ApplicationConfigSpec]{
+			TargetDeploymentSource: sdk.DeploymentSource[config.ApplicationConfigSpec]{
+				ApplicationDirectory: appDir,
+				ApplicationConfig: &sdk.ApplicationConfig[config.ApplicationConfigSpec]{
+					Spec: &config.ApplicationConfigSpec{TerraformVersion: "1.12.0"},
+				},
+			},
+		},
+		// Plan preview runs outside a deployment, so there is no stage log persister.
+		Client: sdk.NewClient(nil, "terraform", "app-id", "", nil, toolregistrytest.NewTestToolRegistry(t)),
+		Logger: zap.NewNop(),
+	})
+	require.NoError(t, err)
+	require.Len(t, got.Results, 1)
+
+	result := got.Results[0]
+	assert.False(t, result.NoChange)
+	assert.Equal(t, "0 to import, 1 to add, 0 to change, 0 to destroy", result.Summary)
+	assert.Contains(t, string(result.Details), "Plan: 1 to add, 0 to change, 0 to destroy.")
+	assert.NotContains(t, string(result.Details), "\x1b[", "plan preview details must not contain ANSI escape codes")
 }

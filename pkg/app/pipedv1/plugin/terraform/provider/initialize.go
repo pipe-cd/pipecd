@@ -26,7 +26,8 @@ import (
 )
 
 // NewTerraformCommand initializes a Terraform command, including `terraform init`.
-func NewTerraformCommand(ctx context.Context, client *sdk.Client, ds sdk.DeploymentSource[config.ApplicationConfigSpec], dt *sdk.DeployTarget[config.DeployTargetConfig]) (*Terraform, error) {
+// The given opts are applied after the options built from the application config.
+func NewTerraformCommand(ctx context.Context, client *sdk.Client, ds sdk.DeploymentSource[config.ApplicationConfigSpec], dt *sdk.DeployTarget[config.DeployTargetConfig], opts ...Option) (*Terraform, error) {
 	var (
 		appSpec = ds.ApplicationConfig.Spec
 		flags   = appSpec.CommandFlags
@@ -52,10 +53,12 @@ func NewTerraformCommand(ctx context.Context, client *sdk.Client, ds sdk.Deploym
 	cmd := newTerraform(
 		terraformPath,
 		ds.ApplicationDirectory,
-		WithVars(mergeVars(dt.Config.Vars, appSpec.Vars)),
-		WithVarFiles(appSpec.VarFiles),
-		WithAdditionalFlags(flags.Shared, flags.Init, flags.Plan, flags.Apply),
-		WithAdditionalEnvs(envs.Shared, envs.Init, envs.Plan, envs.Apply),
+		append([]Option{
+			WithVars(mergeVars(dt.Config.Vars, appSpec.Vars)),
+			WithVarFiles(appSpec.VarFiles),
+			WithAdditionalFlags(flags.Shared, flags.Init, flags.Plan, flags.Apply),
+			WithAdditionalEnvs(envs.Shared, envs.Init, envs.Plan, envs.Apply),
+		}, opts...)...,
 	)
 
 	if err := showUsingVersion(ctx, cmd, infoWriter); err != nil {
