@@ -92,7 +92,7 @@ func (pr *pluginRegistry) GetPluginClientsByAppConfig(cfg *config.GenericApplica
 		return pr.getPluginClientsByNames(cfg.Plugins)
 	}
 
-	return nil, fmt.Errorf("no plugin specified")
+	return nil, fmt.Errorf("no plugin specified: pipedv1 requires spec.plugins or spec.pipeline to be configured in the application configuration")
 }
 
 func (pr *pluginRegistry) getPluginClientsByPipeline(pipeline *config.DeploymentPipeline) ([]pluginapi.PluginClient, error) {
