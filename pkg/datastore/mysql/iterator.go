@@ -18,13 +18,14 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/pipe-cd/pipecd/pkg/datastore"
 )
 
 type dataConverter interface {
-	Data() map[string]any
+	Data() (map[string]any, error)
 }
 
 // Iterator for MySQL result set
@@ -65,7 +66,10 @@ func (it *Iterator) Cursor() (string, error) {
 		return "", datastore.ErrInvalidCursor
 	}
 
-	lastObjData := it.last.Data()
+	lastObjData, err := it.last.Data()
+	if err != nil {
+		return "", err
+	}
 
 	cursor := make(map[string]any, len(it.orders))
 	for _, o := range it.orders {
@@ -86,11 +90,14 @@ type rowDataConverter struct {
 }
 
 // Data make JSON object with key in CamelCase format.
-func (r *rowDataConverter) Data() map[string]any {
+// It returns an error if the stored row is not a valid JSON object.
+func (r *rowDataConverter) Data() (map[string]any, error) {
 	jsonRaw := convertKeys(json.RawMessage(r.val), convertSnakeToCamel)
 	obj := make(map[string]any)
-	json.Unmarshal(jsonRaw, &obj)
-	return obj
+	if err := json.Unmarshal(jsonRaw, &obj); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal row data: %w", err)
+	}
+	return obj, nil
 }
 
 // convertKeys convert all keys of json object with convert function.
