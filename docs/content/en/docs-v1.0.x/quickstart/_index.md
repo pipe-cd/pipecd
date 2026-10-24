@@ -118,7 +118,7 @@ Go to the `PIPED v1 ADD FROM SUGGESTIONS` tab, then select:
 
 You should see a lot of suggested applications. Select one of the listed applications and click the `SAVE` button to register.
 
-> **Note:** If you are using `pipedv1` (`pipedv1-exp`), registering certain legacy example applications from `pipe-cd/examples` (such as `kubernetes/kustomize-local-base`) via **PIPED v1 ADD FROM SUGGESTIONS** may fail to sync with `Unable to plan the deployment (no plugin specified)`. This occurs when the application configuration lacks explicit `spec.plugins` or matching pipeline stage definitions. To deploy successfully, ensure your `app.pipecd.yaml` configures the appropriate plugins or stages.
+> **Note:** Both `v0/` and `v1/` example applications from `pipe-cd/examples` appear in the suggestions list with the same name. Make sure to select an application with a path starting with `v1/` (such as `v1/kubernetes/kustomize-local-base`), as `v0/` configs do not define `spec.plugins` or v1 pipeline stages and will fail to sync with `Unable to plan the deployment (no plugin specified)`.
 
 ![Adding the application](/images/quickstart-adding-application-from-suggestions-v1.png)
 

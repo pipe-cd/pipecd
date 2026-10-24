@@ -461,7 +461,7 @@ func (a *WebAPI) validatePipedBelongsToProject(ctx context.Context, pipedID, pro
 	return nil
 }
 
-func (a *WebAPI) ListUnregisteredApplications(ctx context.Context, req *webservice.ListUnregisteredApplicationsRequest) (*webservice.ListUnregisteredApplicationsResponse, error) {
+func (a *WebAPI) ListUnregisteredApplications(ctx context.Context, _ *webservice.ListUnregisteredApplicationsRequest) (*webservice.ListUnregisteredApplicationsResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
 		a.logger.Error("failed to authenticate the current user", zap.Error(err))
@@ -480,15 +480,6 @@ func (a *WebAPI) ListUnregisteredApplications(ctx context.Context, req *webservi
 	if len(allApps) == 0 {
 		return &webservice.ListUnregisteredApplicationsResponse{}, nil
 	}
-
-	// Filter out legacy v0 examples from suggestions
-	var filteredApps []*model.ApplicationInfo
-	for _, app := range allApps {
-		if !strings.HasPrefix(app.Path, "v0/") {
-			filteredApps = append(filteredApps, app)
-		}
-	}
-	allApps = filteredApps
 
 	sort.Slice(allApps, func(i, j int) bool {
 		return allApps[i].Path < allApps[j].Path
