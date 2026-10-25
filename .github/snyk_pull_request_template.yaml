@@ -5,7 +5,7 @@
 # The commit message ends with a sign-off for the Snyk bot so that the DCO check passes,
 # in the same way Dependabot signs off its own commits.
 #
-# Snyk uses this file only after a Snyk admin has applied it to the project.
+# Snyk reads this file from the repository; all Snyk pull requests for the project use it.
 commitMessage: |
   Upgrade {{ package_name }} from {{ package_from }} to {{ package_to }}
 

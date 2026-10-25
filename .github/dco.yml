@@ -2,9 +2,12 @@
 #
 # Commits made by bots that are plain user accounts (for example snyk-bot) do not carry
 # a Signed-off-by line. Allowing remediation commits lets a maintainer add the sign-off
-# with a follow-up commit instead of rewriting the branch:
+# with a follow-up commit instead of rewriting the branch. The follow-up commit must be
+# signed off as well (git commit -s), for example:
 #
 #   On behalf of snyk-bot <snyk-bot@snyk.io>, I, Your Name <you@example.com>, hereby add my Signed-off-by to this commit: <sha>
+#
+#   Signed-off-by: Your Name <you@example.com>
 allowRemediationCommits:
   individual: true
   thirdParty: true
