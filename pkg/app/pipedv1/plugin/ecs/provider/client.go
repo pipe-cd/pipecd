@@ -16,6 +16,7 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -34,6 +35,9 @@ import (
 )
 
 const (
+	// WaitServiceDeploymentComplete's constants.
+	serviceDeploymentPollInterval = 10 * time.Second
+
 	// WaitServiceStable's constants.
 	retryServiceStable         = 40
 	retryServiceStableInterval = 15 * time.Second
@@ -495,6 +499,81 @@ func (c *client) ServiceExists(ctx context.Context, cluster, serviceName string)
 		return false, nil
 	}
 	return true, nil
+}
+
+// GetLatestServiceDeployment returns the most recently created service deployment of the service.
+// It returns nil when the service does not exist or has no service deployment yet.
+func (c *client) GetLatestServiceDeployment(ctx context.Context, cluster, serviceName string) (*types.ServiceDeploymentBrief, error) {
+	input := &ecs.ListServiceDeploymentsInput{
+		Cluster: aws.String(cluster),
+		Service: aws.String(serviceName),
+	}
+
+	// The order of the result is not guaranteed, so look through all of them.
+	var latest *types.ServiceDeploymentBrief
+	for {
+		output, err := c.ecsClient.ListServiceDeployments(ctx, input)
+		if err != nil {
+			var notFound *types.ServiceNotFoundException
+			if errors.As(err, &notFound) {
+				return nil, nil
+			}
+			return nil, fmt.Errorf("failed to list service deployments of service %s: %w", serviceName, err)
+		}
+		for i := range output.ServiceDeployments {
+			d := &output.ServiceDeployments[i]
+			if latest == nil || (d.CreatedAt != nil && latest.CreatedAt != nil && d.CreatedAt.After(*latest.CreatedAt)) {
+				latest = d
+			}
+		}
+		if output.NextToken == nil {
+			return latest, nil
+		}
+		input.NextToken = output.NextToken
+	}
+}
+
+// WaitServiceDeploymentComplete blocks until a service deployment other than prevDeploymentArn
+// reaches a terminal status. It returns nil only when that deployment is SUCCESSFUL.
+// There is no timeout: the caller bounds the wait with ctx.
+func (c *client) WaitServiceDeploymentComplete(ctx context.Context, cluster, serviceName string, prevDeploymentArn *string) error {
+	for {
+		latest, err := c.GetLatestServiceDeployment(ctx, cluster, serviceName)
+		if err != nil {
+			return err
+		}
+		done, err := evaluateServiceDeployment(latest, prevDeploymentArn)
+		if done || err != nil {
+			return err
+		}
+
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(serviceDeploymentPollInterval):
+		}
+	}
+}
+
+// evaluateServiceDeployment decides whether the wait is over. A deployment that is the same as
+// prevDeploymentArn is not the one being waited for, so it is ignored.
+func evaluateServiceDeployment(latest *types.ServiceDeploymentBrief, prevDeploymentArn *string) (done bool, err error) {
+	if latest == nil || aws.ToString(latest.ServiceDeploymentArn) == aws.ToString(prevDeploymentArn) {
+		return false, nil
+	}
+
+	switch latest.Status {
+	case types.ServiceDeploymentStatusSuccessful:
+		return true, nil
+	case types.ServiceDeploymentStatusStopped,
+		types.ServiceDeploymentStatusRollbackSuccessful,
+		types.ServiceDeploymentStatusRollbackFailed:
+		// A rolled back deployment means the new revision is not the one running.
+		return true, fmt.Errorf("service deployment %s ended with status %s: %s",
+			aws.ToString(latest.ServiceDeploymentArn), latest.Status, aws.ToString(latest.StatusReason))
+	default:
+		return false, nil
+	}
 }
 
 // WaitServiceStable blocks until the ECS service is stable.
