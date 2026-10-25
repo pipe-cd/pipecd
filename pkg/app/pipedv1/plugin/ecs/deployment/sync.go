@@ -91,6 +91,12 @@ func (p *ECSPlugin) executeECSSyncStage(
 	// With the ECS controller, load balancers are defined in the service definition,
 	// so the target groups of the application config are not used.
 	if controller == types.DeploymentControllerTypeEcs {
+		// Recreate stops all tasks before starting new ones, which only the EXTERNAL controller does.
+		// Reject it rather than silently running old and new tasks together under rolling update.
+		if cfg.Spec.QuickSyncOptions.Recreate {
+			lp.Error("quickSync.recreate is not supported with the ECS deployment controller: to stop old tasks before starting new ones, set deploymentConfiguration minimumHealthyPercent: 0 and maximumPercent: 100 in the service definition instead")
+			return sdk.StageStatusFailure
+		}
 		if err := syncECSController(ctx, lp, client, taskDef, serviceDef); err != nil {
 			lp.Errorf("Failed to sync ECS service: %v", err)
 			return sdk.StageStatusFailure
