@@ -69,9 +69,11 @@ func (c *applicationConfig) run(ctx context.Context, input cli.Input) error {
 		input.Logger.Info("successfully migrated application config", zap.String("config-file", configFile))
 	}
 
+	var errs []error
 	for _, directory := range c.directories {
 		input.Logger.Info("migrating application configs in directory", zap.String("directory", directory))
 
+		var failedCount int
 		fileSystem := os.DirFS(directory)
 		// Scan all files under the repository.
 		err := fs.WalkDir(fileSystem, ".", func(path string, d fs.DirEntry, err error) error {
@@ -88,7 +90,9 @@ func (c *applicationConfig) run(ctx context.Context, input cli.Input) error {
 			input.Logger.Info("migrating application config", zap.String("config-file", path))
 			if err := c.migrateApplicationConfig(ctx, filepath.Join(directory, path), input.Logger); err != nil {
 				input.Logger.Error("failed to migrate application config", zap.String("config-file", path), zap.Error(err))
-				// Continue to migrate other application configs.
+				// Continue to migrate other application configs, and record the failure for later reporting.
+				errs = append(errs, fmt.Errorf("%s: %w", filepath.Join(directory, path), err))
+				failedCount++
 				return nil
 			}
 			input.Logger.Info("successfully migrated application config", zap.String("config-file", path))
@@ -98,9 +102,13 @@ func (c *applicationConfig) run(ctx context.Context, input cli.Input) error {
 			input.Logger.Error("failed to migrate application configs in directory", zap.String("directory", directory), zap.Error(err))
 			return err
 		}
+		if failedCount > 0 {
+			input.Logger.Error("failed to migrate some application configs in directory", zap.String("directory", directory), zap.Int("failed", failedCount))
+			continue
+		}
 		input.Logger.Info("successfully migrated application configs in directory", zap.String("directory", directory))
 	}
-	return nil
+	return errors.Join(errs...)
 }
 
 func (c *applicationConfig) migrateApplicationConfig(_ context.Context, configFile string, logger *zap.Logger) error {
