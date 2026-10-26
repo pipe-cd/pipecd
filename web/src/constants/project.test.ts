@@ -34,4 +34,22 @@ describe("POLICIES_STRING_REGEX", () => {
   ])("does not match invalid policy: %s", (policy) => {
     expect(POLICIES_STRING_REGEX.test(policy)).toBe(false);
   });
+
+  it.each([
+    "resources=application;actions=get\n\nresources=piped;actions=list",
+    "resources=application;actions=get\n\n\nresources=piped{env:prod};actions=*",
+    "\nresources=application;actions=get  \n\n  resources=piped;actions=list\n",
+  ])("matches policies separated by blank lines: %j", (policies) => {
+    expect(POLICIES_STRING_REGEX.test(policies)).toBe(true);
+  });
+
+  it.each([
+    "resources=application;actions=gett", // typo after a valid action
+    "resources=application;actions=get,delet", // typo in the second action
+    "resources=application;actions=get;", // trailing text
+    "resources=application;actions=get\n\nresources=bogus;actions=get", // typo in a later policy
+    "resources=application;actions=get\nresources=piped;actions=list", // no blank line between policies
+  ])("does not match text with an invalid part: %j", (policies) => {
+    expect(POLICIES_STRING_REGEX.test(policies)).toBe(false);
+  });
 });
