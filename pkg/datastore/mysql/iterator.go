@@ -93,9 +93,14 @@ type rowDataConverter struct {
 // It returns an error if the stored row is not a valid JSON object.
 func (r *rowDataConverter) Data() (map[string]any, error) {
 	jsonRaw := convertKeys(json.RawMessage(r.val), convertSnakeToCamel)
-	obj := make(map[string]any)
+	var obj map[string]any
 	if err := json.Unmarshal(jsonRaw, &obj); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal row data: %w", err)
+	}
+	// The JSON null value unmarshals into a nil map without any error,
+	// but it is not an object, so it can never hold the ordering fields.
+	if obj == nil {
+		return nil, fmt.Errorf("failed to unmarshal row data: row data is not a JSON object")
 	}
 	return obj, nil
 }

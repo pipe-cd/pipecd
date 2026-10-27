@@ -153,6 +153,11 @@ func TestData(t *testing.T) {
 			rowData:   `["object-id"]`,
 			expectErr: true,
 		},
+		{
+			name:      "data is a json null",
+			rowData:   `null`,
+			expectErr: true,
+		},
 	}
 
 	for _, tc := range testcases {
