@@ -25,6 +25,11 @@ describe("getSafeRedirectPath", () => {
     ["/deployments\\..\\"],
     ["https://evil.example.com"],
     ["javascript:alert(1)"],
+    ["/\t/evil.example.com"],
+    ["/\n/evil.example.com"],
+    ["/\r\n/evil.example.com"],
+    ["/\u0000/evil.example.com"],
+    ["/deployments\u007f"],
   ])("given unsafe path %p, returns the fallback", (path) => {
     expect(getSafeRedirectPath(path, fallback)).toBe(fallback);
   });

@@ -1,7 +1,16 @@
+// ASCII control characters (tab, newline, ...) are stripped by URL parsing,
+// so a path such as "/\t/host" would resolve to "//host".
+const hasControlCharacter = (value: string): boolean =>
+  Array.from(value).some((char) => {
+    const code = char.charCodeAt(0);
+    return code <= 0x1f || code === 0x7f;
+  });
+
 /**
  * Returns the given path if it is a same-origin absolute path, otherwise the fallback.
- * Rejects protocol-relative paths ("//host") and backslash variants ("/\host")
- * that browsers and routers may resolve to another origin.
+ * Rejects protocol-relative paths ("//host"), backslash variants ("/\host") and
+ * paths containing control characters, which browsers and routers may resolve
+ * to another origin.
  */
 export const getSafeRedirectPath = (
   path: string | null | undefined,
@@ -9,6 +18,7 @@ export const getSafeRedirectPath = (
 ): string => {
   if (!path || !path.startsWith("/") || path.includes("\\")) return fallback;
   if (path.startsWith("//")) return fallback;
+  if (hasControlCharacter(path)) return fallback;
   return path;
 };
 
