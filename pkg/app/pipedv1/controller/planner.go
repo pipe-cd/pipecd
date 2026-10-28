@@ -28,6 +28,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
@@ -214,7 +215,7 @@ func (p *planner) Run(ctx context.Context) error {
 		runningDSP := deploysource.NewProvider(
 			filepath.Join(p.workingDir, "running-deploysource"),
 			deploysource.NewGitSourceCloner(p.gitClient, repoCfg, "running", p.lastSuccessfulCommitHash),
-			p.deployment.GetGitPath(),
+			runningGitPath(p.deployment.GetGitPath(), p.lastSuccessfulConfigFilename),
 			p.secretDecrypter,
 		)
 		rds, err := runningDSP.Get(ctx, io.Discard)
@@ -246,6 +247,18 @@ func (p *planner) Run(ctx context.Context) error {
 
 	p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_PLANNED
 	return p.reportDeploymentPlanned(ctx, out)
+}
+
+// runningGitPath returns the git path to load the running deploy source with.
+// The application config file may have been renamed since the running commit was deployed,
+// so the config filename used by that deployment is set when it is known.
+func runningGitPath(gp *model.ApplicationGitPath, runningConfigFilename string) *model.ApplicationGitPath {
+	if runningConfigFilename == "" {
+		return gp
+	}
+	rgp := proto.Clone(gp).(*model.ApplicationGitPath)
+	rgp.ConfigFilename = runningConfigFilename
+	return rgp
 }
 
 // buildPlan builds the deployment plan.
