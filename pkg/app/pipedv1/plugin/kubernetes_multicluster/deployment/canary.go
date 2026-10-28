@@ -349,7 +349,7 @@ func (p *Plugin) executeK8sMultiCanaryCleanStage(ctx context.Context, input *sdk
 
 	targetConfigs = filterStageTargets(targetConfigs, stageCfg.MultiTargets)
 
-	eg, ctx := errgroup.WithContext(ctx)
+	var eg errgroup.Group
 	for _, tc := range targetConfigs {
 		eg.Go(func() error {
 			lp.Infof("Start cleaning CANARY variant on target %s", tc.deployTarget.Name)
