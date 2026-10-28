@@ -19,9 +19,15 @@ serviceAccount:
   # Annotations to add to the service account
   annotations: {}
 
+# Image of the init containers that wait for the dependencies to be ready.
+initImage:
+  image: alpine
+  imageTag: "3.20"
+
 # Workloads.
 gateway:
   replicasCount: 1
+  image: envoyproxy/envoy
   imageTag: v1.31.0
   resources: {}
   internalTLS:
@@ -46,6 +52,7 @@ server:
   env: []
 
 cache:
+  image: redis
   imageTag: "5.0.5-alpine3.9"
   password: ""
   resources: {}
@@ -66,6 +73,9 @@ ops:
 
 cloudSQLProxy:
   enabled: false
+  image: gcr.io/cloudsql-docker/gce-proxy
+  # Overrides the image tag, which defaults to `version`.
+  # imageTag: "1.17"
   version: 1.17
   args:
     instanceConnectionName: ""
