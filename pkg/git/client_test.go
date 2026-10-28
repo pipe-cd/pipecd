@@ -20,6 +20,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -90,6 +91,43 @@ func TestClone(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 2, len(commits12))
 	assert.Equal(t, "Added note.txt", commits12[0].Message)
+}
+
+func TestClonePersistsHTTPAuthHeader(t *testing.T) {
+	faker, err := newFaker()
+	require.NoError(t, err)
+	defer faker.clean()
+
+	c, err := NewClient(WithUserName("git-user"), WithPassword("git-pass"))
+	require.NoError(t, err)
+	require.NotNil(t, c)
+	defer c.Clean()
+
+	err = faker.makeRepo("test-clone-org", "repo-auth")
+	require.NoError(t, err)
+
+	ctx := context.Background()
+	destPath, err := os.MkdirTemp("", "repo-auth-dest")
+	require.NoError(t, err)
+
+	repo, err := c.Clone(ctx, "repo-auth", filepath.Join(faker.dir, "test-clone-org/repo-auth"), "", destPath)
+	require.NoError(t, err)
+	require.NotNil(t, repo)
+	defer func() {
+		assert.NoError(t, repo.Clean())
+	}()
+
+	// Simulates what happens after the initial clone: a plain `git pull` run
+	// directly against the checked-out repo, as done by e.g. the event watcher.
+	// This must be able to find the credentials without any extra args, otherwise
+	// it fails with "could not read Username" for an HTTP(S) remote requiring auth.
+	cmd := exec.CommandContext(ctx, c.(*client).gitPath, "config", "--get", "http.extraHeader")
+	cmd.Dir = destPath
+	out, err := cmd.CombinedOutput()
+	require.NoError(t, err, string(out))
+
+	wantHeader := basicAuthHeader("git-user", "git-pass")
+	assert.Equal(t, wantHeader, strings.TrimSuffix(string(out), "\n"))
 }
 
 type faker struct {
