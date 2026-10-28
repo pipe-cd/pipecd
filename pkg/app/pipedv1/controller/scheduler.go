@@ -535,6 +535,12 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 	)
 
 	defer func() {
+		// When piped is shutting down, a stage that failed or did not finish keeps its
+		// original status and is not reported, so that it is resumed after piped restarts.
+		if sig.Terminated() && (finalStatus == model.StageStatus_STAGE_FAILURE || !finalStatus.IsCompleted()) {
+			finalStatus = originalStatus
+			return
+		}
 		// Ensure reporting the status even if the stage is cancelled.
 		if err := s.reportStageStatus(context.Background(), ps.Id, finalStatus, ps.Requires); err != nil {
 			s.logger.Error("failed to report stage status", zap.Error(err))
@@ -629,17 +635,11 @@ func (s *scheduler) executeStage(sig StopSignal, ps *model.PipelineStage) (final
 	})
 
 	// Handle context error.
+	// The context is cancelled by the stop signal for a cancel, a timeout and a termination alike,
+	// so the signal, not the context error, tells why the stage was stopped.
 	if ctx.Err() != nil {
-		if ctx.Err() == context.Canceled {
-			s.logger.Info("stage execution cancelled", zap.String("stage-name", ps.Name))
-			return model.StageStatus_STAGE_CANCELLED
-		}
-		if ctx.Err() == context.DeadlineExceeded {
-			s.logger.Info("stage execution timed out", zap.String("stage-name", ps.Name))
-			return model.StageStatus_STAGE_FAILURE
-		}
-		s.logger.Error("stage execution context failed", zap.String("stage-name", ps.Name), zap.Error(ctx.Err()))
-		return model.StageStatus_STAGE_FAILURE
+		s.logger.Info("stage execution stopped", zap.String("stage-name", ps.Name), zap.String("signal", string(sig.Signal())))
+		return determineStageStatus(sig.Signal(), originalStatus, model.StageStatus_STAGE_FAILURE)
 	}
 
 	// Handle plugin execution failure.
