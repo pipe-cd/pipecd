@@ -20,6 +20,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -909,6 +910,124 @@ func TestPodHealthStatus(t *testing.T) {
 			t.Parallel()
 
 			got, gotMsg := podHealthStatus(tt.obj)
+			assert.Equal(t, tt.health, got)
+			assert.Equal(t, tt.msg, gotMsg)
+		})
+	}
+}
+
+func TestJobHealthStatus(t *testing.T) {
+	tests := []struct {
+		name   string
+		obj    *batchv1.Job
+		health sdk.ResourceHealthStatus
+		msg    string
+	}{
+		{
+			name:   "in progress",
+			obj:    &batchv1.Job{},
+			health: sdk.ResourceHealthStateHealthy,
+			msg:    "Job is in progress",
+		},
+		{
+			name: "completed",
+			obj: &batchv1.Job{
+				Status: batchv1.JobStatus{
+					Conditions: []batchv1.JobCondition{{
+						Type:    batchv1.JobComplete,
+						Status:  corev1.ConditionTrue,
+						Message: "Job completed",
+					}},
+				},
+			},
+			health: sdk.ResourceHealthStateHealthy,
+			msg:    "Job completed",
+		},
+		{
+			name: "failed",
+			obj: &batchv1.Job{
+				Status: batchv1.JobStatus{
+					Conditions: []batchv1.JobCondition{{
+						Type:    batchv1.JobFailed,
+						Status:  corev1.ConditionTrue,
+						Message: "Job has reached the specified backoff limit",
+					}},
+				},
+			},
+			health: sdk.ResourceHealthStateUnhealthy,
+			msg:    "Job has reached the specified backoff limit",
+		},
+		{
+			name: "failed condition not true",
+			obj: &batchv1.Job{
+				Status: batchv1.JobStatus{
+					Conditions: []batchv1.JobCondition{{
+						Type:    batchv1.JobFailed,
+						Status:  corev1.ConditionFalse,
+						Message: "Job has reached the specified backoff limit",
+					}},
+				},
+			},
+			health: sdk.ResourceHealthStateHealthy,
+			msg:    "Job is in progress",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, gotMsg := jobHealthStatus(tt.obj)
+			assert.Equal(t, tt.health, got)
+			assert.Equal(t, tt.msg, gotMsg)
+		})
+	}
+}
+
+func TestCalculateHealthStatus_batch(t *testing.T) {
+	tests := []struct {
+		name     string
+		manifest string
+		health   sdk.ResourceHealthStatus
+		msg      string
+	}{
+		{
+			name: "job",
+			manifest: `
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: migrate
+status:
+  conditions:
+  - type: Complete
+    status: "True"
+    message: done
+`,
+			health: sdk.ResourceHealthStateHealthy,
+			msg:    "done",
+		},
+		{
+			name: "cronjob",
+			manifest: `
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cleanup
+`,
+			health: sdk.ResourceHealthStateHealthy,
+			msg:    `"cleanup" was applied successfully`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			manifests := mustParseManifests(t, tt.manifest)
+			require.Len(t, manifests, 1)
+
+			got, gotMsg := manifests[0].calculateHealthStatus()
 			assert.Equal(t, tt.health, got)
 			assert.Equal(t, tt.msg, gotMsg)
 		})

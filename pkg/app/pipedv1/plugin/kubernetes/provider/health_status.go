@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
@@ -56,6 +57,14 @@ func (m Manifest) calculateHealthStatus() (sdk.ResourceHealthStatus, string) {
 			return sdk.ResourceHealthStateUnknown, ""
 		}
 		return podHealthStatus(obj)
+	case m.IsJob():
+		obj := &batchv1.Job{}
+		if err := m.ConvertToStructuredObject(obj); err != nil {
+			return sdk.ResourceHealthStateUnknown, ""
+		}
+		return jobHealthStatus(obj)
+	case m.IsCronJob():
+		return sdk.ResourceHealthStateHealthy, fmt.Sprintf("%q was applied successfully", m.Name())
 	default:
 		// TODO: Implement health status calculation for other resource types.
 		return sdk.ResourceHealthStateUnknown, fmt.Sprintf("Unimplemented or unknown resource: %s", m.body.GroupVersionKind())
@@ -201,4 +210,19 @@ func podHealthStatus(obj *corev1.Pod) (sdk.ResourceHealthStatus, string) {
 	}
 
 	return sdk.ResourceHealthStateUnhealthy, obj.Status.Message
+}
+
+func jobHealthStatus(obj *batchv1.Job) (sdk.ResourceHealthStatus, string) {
+	for _, cond := range obj.Status.Conditions {
+		if cond.Status != corev1.ConditionTrue {
+			continue
+		}
+		switch cond.Type {
+		case batchv1.JobFailed:
+			return sdk.ResourceHealthStateUnhealthy, cond.Message
+		case batchv1.JobComplete:
+			return sdk.ResourceHealthStateHealthy, cond.Message
+		}
+	}
+	return sdk.ResourceHealthStateHealthy, "Job is in progress"
 }
