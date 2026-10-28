@@ -25,7 +25,7 @@ spec:
       {{- end }}
       containers:
         - name: envoy
-          image: envoyproxy/envoy:{{ .Values.gateway.imageTag }}
+          image: {{ .Values.gateway.image }}:{{ .Values.gateway.imageTag }}
           imagePullPolicy: IfNotPresent
           command:
           - envoy
@@ -95,7 +95,7 @@ spec:
       {{- if .Values.quickstart.enabled }}
       initContainers:
         - name: dep-waiter
-          image: alpine:3.20
+          image: {{ .Values.initImage.image }}:{{ .Values.initImage.imageTag }}
           command: ["sh", "-c"]
           args:
             - |
@@ -107,7 +107,7 @@ spec:
       containers:
 {{- if .Values.cloudSQLProxy.enabled }}
         - name: cloud-sql-proxy
-          image: "gcr.io/cloudsql-docker/gce-proxy:{{ .Values.cloudSQLProxy.version }}"
+          image: "{{ .Values.cloudSQLProxy.image }}:{{ .Values.cloudSQLProxy.imageTag | default .Values.cloudSQLProxy.version }}"
           command:
             - "/cloud_sql_proxy"
             - "-instances={{ .Values.cloudSQLProxy.args.instanceConnectionName }}=tcp:{{ .Values.cloudSQLProxy.args.port }}"
@@ -216,7 +216,7 @@ spec:
       {{- end }}
       containers:
         - name: cache
-          image: redis:{{ .Values.cache.imageTag }}
+          image: {{ .Values.cache.image }}:{{ .Values.cache.imageTag }}
           imagePullPolicy: IfNotPresent
   {{- if .Values.cache.password }}
           args:
@@ -273,7 +273,7 @@ spec:
       {{- if .Values.quickstart.enabled }}
       initContainers:
         - name: dep-waiter
-          image: alpine:3.20
+          image: {{ .Values.initImage.image }}:{{ .Values.initImage.imageTag }}
           command: ["sh", "-c"]
           args:
             - |
@@ -285,7 +285,7 @@ spec:
       containers:
 {{- if .Values.cloudSQLProxy.enabled }}
         - name: cloud-sql-proxy
-          image: "gcr.io/cloudsql-docker/gce-proxy:{{ .Values.cloudSQLProxy.version }}"
+          image: "{{ .Values.cloudSQLProxy.image }}:{{ .Values.cloudSQLProxy.imageTag | default .Values.cloudSQLProxy.version }}"
           command:
             - "/cloud_sql_proxy"
             - "-instances={{ .Values.cloudSQLProxy.args.instanceConnectionName }}=tcp:{{ .Values.cloudSQLProxy.args.port }}"
