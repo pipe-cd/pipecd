@@ -543,36 +543,34 @@ func (a *API) ListDeployments(ctx context.Context, req *apiservice.ListDeploymen
 	}
 	// Allowing multiple so that it can do In Query later.
 	// Currently only the first value is used.
-	if len(req.Statuses) > 0 {
-		statuses := []model.DeploymentStatus{}
-		for _, s := range req.Statuses {
-			if s != "" {
-				depstatus, ok := model.DeploymentStatus_value[s]
-				if !ok {
-					return nil, status.Errorf(codes.InvalidArgument, "%s is invalid deployment status", s)
-				}
-				statuses = append(statuses, model.DeploymentStatus(depstatus))
+	statuses := []model.DeploymentStatus{}
+	for _, s := range req.Statuses {
+		if s != "" {
+			depstatus, ok := model.DeploymentStatus_value[s]
+			if !ok {
+				return nil, status.Errorf(codes.InvalidArgument, "%s is invalid deployment status", s)
 			}
+			statuses = append(statuses, model.DeploymentStatus(depstatus))
 		}
-
+	}
+	if len(statuses) > 0 {
 		filters = append(filters, datastore.ListFilter{
 			Field:    "Status",
 			Operator: datastore.OperatorEqual,
 			Value:    statuses[0],
 		})
 	}
-	if len(req.Kinds) > 0 {
-		kinds := []model.ApplicationKind{}
-		for _, k := range req.Kinds {
-			if k != "" {
-				kind, ok := model.ApplicationKind_value[k]
-				if !ok {
-					return nil, status.Errorf(codes.InvalidArgument, "%s is invalid application kind", k)
-				}
-				kinds = append(kinds, model.ApplicationKind(kind))
+	kinds := []model.ApplicationKind{}
+	for _, k := range req.Kinds {
+		if k != "" {
+			kind, ok := model.ApplicationKind_value[k]
+			if !ok {
+				return nil, status.Errorf(codes.InvalidArgument, "%s is invalid application kind", k)
 			}
+			kinds = append(kinds, model.ApplicationKind(kind))
 		}
-
+	}
+	if len(kinds) > 0 {
 		filters = append(filters, datastore.ListFilter{
 			Field:    "Kind",
 			Operator: datastore.OperatorEqual,
