@@ -23,6 +23,7 @@ export const dummyCommand: Command.AsObject = {
   createdAt: createdAt.unix(),
   updatedAt: handledAt.unix(),
   handledAt: handledAt.unix(),
+  handledReason: "",
 };
 
 export const dummySyncSucceededCommand: Command.AsObject = {
