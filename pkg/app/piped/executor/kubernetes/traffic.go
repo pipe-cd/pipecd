@@ -290,7 +290,7 @@ func (e *deployExecutor) generateVirtualServiceManifest(m provider.Manifest, hos
 			canaryWeight   = canaryPercent * variantsWeight / 100
 			baselineWeight = baselinePercent * variantsWeight / 100
 			primaryWeight  = variantsWeight - canaryWeight - baselineWeight
-			routes         = make([]*istiov1beta1.HTTPRouteDestination, 0, len(otherHostRoutes)+3)
+			routes         = make([]*istiov1beta1.HTTPRouteDestination, 0, len(otherHostRoutes))
 		)
 
 		routes = append(routes, &istiov1beta1.HTTPRouteDestination{
@@ -376,7 +376,7 @@ func (e *deployExecutor) generateVirtualServiceManifestV1Alpha3(m provider.Manif
 			canaryWeight   = canaryPercent * variantsWeight / 100
 			baselineWeight = baselinePercent * variantsWeight / 100
 			primaryWeight  = variantsWeight - canaryWeight - baselineWeight
-			routes         = make([]*istiov1alpha3.HTTPRouteDestination, 0, len(otherHostRoutes)+3)
+			routes         = make([]*istiov1alpha3.HTTPRouteDestination, 0, len(otherHostRoutes))
 		)
 
 		routes = append(routes, &istiov1alpha3.HTTPRouteDestination{
