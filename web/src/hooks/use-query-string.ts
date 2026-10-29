@@ -1,11 +1,11 @@
 import { useState, useCallback } from "react";
-import { parse, stringify } from "query-string";
+import queryString from "query-string";
 
 export const getQueryStringValue = (
   key: string,
-  queryString = window.location.search
+  search = window.location.search
 ): string | string[] | null => {
-  const values = parse(queryString);
+  const values = queryString.parse(search);
   return values[key];
 };
 
@@ -23,10 +23,10 @@ const setQueryStringWithoutPageReload = (qsValue: string): void => {
 const setQueryStringValue = (
   key: string,
   value: string,
-  queryString = window.location.search
+  search = window.location.search
 ): void => {
-  const values = parse(queryString);
-  const newQsValue = stringify({ ...values, [key]: value });
+  const values = queryString.parse(search);
+  const newQsValue = queryString.stringify({ ...values, [key]: value });
   setQueryStringWithoutPageReload(`?${newQsValue}`);
 };
 
