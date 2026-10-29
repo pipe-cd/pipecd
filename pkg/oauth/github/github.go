@@ -20,7 +20,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/google/go-github/v29/github"
+	"github.com/google/go-github/v93/github"
 	"golang.org/x/oauth2"
 	oauth2github "golang.org/x/oauth2/github"
 
@@ -76,7 +76,11 @@ func NewOAuthClient(ctx context.Context,
 			return nil, err
 		}
 
-		cli, err := github.NewEnterpriseClient(sso.BaseUrl, sso.UploadUrl, cfg.Client(ctx, token))
+		uploadURL := sso.UploadUrl
+		if uploadURL == "" {
+			uploadURL = sso.BaseUrl
+		}
+		cli, err := github.NewClient(github.WithEnterpriseURLs(sso.BaseUrl, uploadURL), github.WithHTTPClient(cfg.Client(ctx, token)))
 		if err != nil {
 			return nil, err
 		}
@@ -90,7 +94,12 @@ func NewOAuthClient(ctx context.Context,
 		return nil, err
 	}
 
-	c.Client = github.NewClient(cfg.Client(ctx, token))
+	cli, err := github.NewClient(github.WithHTTPClient(cfg.Client(ctx, token)))
+	if err != nil {
+		return nil, err
+	}
+
+	c.Client = cli
 	return c, nil
 }
 
