@@ -1,6 +1,6 @@
 module github.com/pipe-cd/actions-gh-release
 
-go 1.26.10
+go 1.26.2
 
 require (
 	github.com/creasty/defaults v1.11.0

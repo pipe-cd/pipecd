@@ -1,6 +1,6 @@
 module github.com/pipe-cd/piped-plugin-sdk-go
 
-go 1.26.10
+go 1.26.2
 
 require (
 	github.com/pipe-cd/pipecd v0.58.0
