@@ -23,7 +23,7 @@ import (
 	"strings"
 
 	"github.com/creasty/defaults"
-	"github.com/google/go-github/v39/github"
+	"github.com/google/go-github/v93/github"
 	"sigs.k8s.io/yaml"
 )
 

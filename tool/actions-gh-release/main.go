@@ -24,7 +24,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/google/go-github/v39/github"
+	"github.com/google/go-github/v93/github"
 )
 
 const (
@@ -61,7 +61,11 @@ func _main() int {
 	}
 
 	cfg := &githubClientConfig{Token: args.Token}
-	ghClient := newGitHubClient(ctx, cfg)
+	ghClient, err := newGitHubClient(ctx, cfg)
+	if err != nil {
+		log.Printf("Failed to create GitHub client: %v\n", err)
+		return 1
+	}
 
 	event, err := ghClient.parseGitHubEvent(ctx)
 	if err != nil {
