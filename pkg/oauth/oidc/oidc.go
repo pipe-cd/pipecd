@@ -199,12 +199,12 @@ func (c *OAuthClient) decideRole(claims jwt.MapClaims, roleClaimKey string) (rol
 	// In case the current user does not have any role
 	// if AllowStrayAsViewer option is set, assign Viewer role
 	// as user's role.
-	if c.project.AllowStrayAsViewer && len(roleStrings) == 0 {
+	if c.project.AllowStrayAsViewer && len(role.ProjectRbacRoles) == 0 {
 		role.ProjectRbacRoles = []string{model.BuiltinRBACRoleViewer.String()}
 		return
 	}
 
-	if len(roleStrings) == 0 {
+	if len(role.ProjectRbacRoles) == 0 {
 		err = fmt.Errorf("no role found in claims")
 		return
 	}
