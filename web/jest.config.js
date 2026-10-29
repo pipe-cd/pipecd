@@ -1,7 +1,7 @@
 module.exports = {
   roots: ["<rootDir>/src"],
   transform: {
-    "^.+\\.tsx?$": [
+    "^.+\\.[jt]sx?$": [
       "ts-jest",
       {
         isolatedModules: true,
@@ -10,6 +10,10 @@ module.exports = {
     "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga|ico)$":
       "<rootDir>/file-transformer.js",
   },
+  // query-string and some of its dependencies are published as ESM only.
+  transformIgnorePatterns: [
+    "/node_modules/(?!(query-string|filter-obj|split-on-first|decode-uri-component)/)",
+  ],
   moduleNameMapper: {
     "^pipecd/(.*)$": "<rootDir>/../$1",
     "^~/(.*)$": "<rootDir>/src/$1",

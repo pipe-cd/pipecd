@@ -5,8 +5,12 @@ export const getQueryStringValue = (
   key: string,
   search = window.location.search
 ): string | string[] | null => {
-  const values = queryString.parse(search);
-  return values[key];
+  const value = queryString.parse(search)[key];
+  // query-string v9 may return null entries for array values such as "?key".
+  if (Array.isArray(value)) {
+    return value.filter((v): v is string => v !== null);
+  }
+  return value ?? null;
 };
 
 const setQueryStringWithoutPageReload = (qsValue: string): void => {
