@@ -21,7 +21,7 @@ import (
 	"os"
 	"regexp"
 
-	"github.com/google/go-github/v39/github"
+	"github.com/google/go-github/v93/github"
 	"golang.org/x/oauth2"
 )
 
@@ -92,17 +92,21 @@ func (p PullRequestDirection) String() string {
 	return string(p)
 }
 
-func newGitHubClient(ctx context.Context, cfg *githubClientConfig) *githubClient {
-	var httpClient *http.Client
+func newGitHubClient(ctx context.Context, cfg *githubClientConfig) (*githubClient, error) {
+	var opts []github.ClientOptionsFunc
 	if cfg.Token != "" {
 		t := &oauth2.Token{AccessToken: cfg.Token}
 		ts := oauth2.StaticTokenSource(t)
-		httpClient = oauth2.NewClient(ctx, ts)
+		opts = append(opts, github.WithHTTPClient(oauth2.NewClient(ctx, ts)))
 	}
 
-	return &githubClient{
-		restClient: github.NewClient(httpClient),
+	restClient, err := github.NewClient(opts...)
+	if err != nil {
+		return nil, err
 	}
+	return &githubClient{
+		restClient: restClient,
+	}, nil
 }
 
 // parsePullRequestEvent uses the given environment variables
@@ -181,15 +185,15 @@ func (g *githubClient) parseGitHubEvent(ctx context.Context) (*githubEvent, erro
 }
 
 func (g *githubClient) sendComment(ctx context.Context, owner, repo string, prNum int, body string) (*github.IssueComment, error) {
-	c, _, err := g.restClient.Issues.CreateComment(ctx, owner, repo, prNum, &github.IssueComment{
-		Body: &body,
+	c, _, err := g.restClient.Issues.CreateComment(ctx, owner, repo, prNum, github.IssueCommentRequest{
+		Body: body,
 	})
 	return c, err
 }
 
 func (g *githubClient) createRelease(ctx context.Context, owner, repo string, p ReleaseProposal) (*github.RepositoryRelease, error) {
-	release, _, err := g.restClient.Repositories.CreateRelease(ctx, owner, repo, &github.RepositoryRelease{
-		TagName:         &p.Tag,
+	release, _, err := g.restClient.Repositories.CreateRelease(ctx, owner, repo, github.CreateReleaseRequest{
+		TagName:         p.Tag,
 		Name:            &p.Title,
 		TargetCommitish: &p.TargetCommitish,
 		Body:            &p.ReleaseNote,
