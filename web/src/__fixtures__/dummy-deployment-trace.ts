@@ -13,7 +13,7 @@ export const dummyDeploymentTrace: ListDeploymentTracesResponse.DeploymentTraceR
     commitTimestamp: createdAt.unix(),
     commitMessage: "commit-message",
     commitHash: "commit-hash",
-    commitUrl: "commit-url",
+    commitUrl: "https://github.com/pipe-cd/pipecd/commit/commit-hash",
     createdAt: createdAt.unix(),
     updatedAt: completedAt.unix(),
   },
