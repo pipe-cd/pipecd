@@ -22,7 +22,7 @@ import (
 	"math"
 	"strings"
 
-	"github.com/google/go-github/v36/github"
+	"github.com/google/go-github/v93/github"
 	"github.com/shurcooL/githubv4"
 )
 
@@ -42,7 +42,7 @@ type githubEvent struct {
 }
 
 type IssuesService interface {
-	CreateComment(ctx context.Context, owner string, repo string, number int, comment *github.IssueComment) (*github.IssueComment, *github.Response, error)
+	CreateComment(ctx context.Context, owner string, repo string, number int, comment github.IssueCommentRequest) (*github.IssueComment, *github.Response, error)
 }
 
 type PullRequestsService interface {
@@ -58,9 +58,9 @@ type GraphQLClient interface {
 // to parse and build githubEvent struct.
 // Currently, we support 2 kinds of event as below:
 //   - PullRequestEvent
-//     https://pkg.go.dev/github.com/google/go-github/v36/github#PullRequestEvent
+//     https://pkg.go.dev/github.com/google/go-github/v93/github#PullRequestEvent
 //   - IssueCommentEvent
-//     https://pkg.go.dev/github.com/google/go-github/v36/github#IssueCommentEvent
+//     https://pkg.go.dev/github.com/google/go-github/v93/github#IssueCommentEvent
 func parseGitHubEvent(
 	ctx context.Context,
 	pullSvc PullRequestsService,
@@ -143,8 +143,8 @@ func parseGitHubEvent(
 }
 
 func sendComment(ctx context.Context, svc IssuesService, owner, repo string, prNum int, body string) (*github.IssueComment, error) {
-	c, _, err := svc.CreateComment(ctx, owner, repo, prNum, &github.IssueComment{
-		Body: &body,
+	c, _, err := svc.CreateComment(ctx, owner, repo, prNum, github.IssueCommentRequest{
+		Body: body,
 	})
 	return c, err
 }

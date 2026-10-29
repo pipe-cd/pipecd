@@ -25,7 +25,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/google/go-github/v36/github"
+	"github.com/google/go-github/v93/github"
 	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
 )
@@ -84,7 +84,11 @@ func _main() int {
 		&oauth2.Token{AccessToken: args.Token},
 	)
 	tc := oauth2.NewClient(ctx, ts)
-	ghClient := github.NewClient(tc)
+	ghClient, err := github.NewClient(github.WithHTTPClient(tc))
+	if err != nil {
+		log.Println(err)
+		return 1
+	}
 	ghGraphQLClient := githubv4.NewClient(tc)
 
 	event, err := parseGitHubEvent(ctx, ghClient.PullRequests, eventName, payload, args.PRNum)

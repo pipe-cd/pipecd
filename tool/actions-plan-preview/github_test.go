@@ -19,7 +19,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-github/v36/github"
+	"github.com/google/go-github/v93/github"
 	"github.com/shurcooL/githubv4"
 	"github.com/stretchr/testify/assert"
 )
@@ -35,7 +35,7 @@ type dummyPullRequestsService struct {
 func (d dummyPullRequestsService) Get(_ context.Context, _ string, _ string, _ int) (*github.PullRequest, *github.Response, error) {
 	return &github.PullRequest{
 		Mergeable: &d.mergeable,
-		CreatedAt: &d.createdAt,
+		CreatedAt: &github.Timestamp{Time: d.createdAt},
 		Head: &github.PullRequestBranch{
 			Ref: &d.headBranch,
 			SHA: &d.headCommit,
