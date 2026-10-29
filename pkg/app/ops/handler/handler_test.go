@@ -98,7 +98,7 @@ func TestGetProjectByIDOrReturnErrorError(t *testing.T) {
 	defer res.Body.Close()
 	data, _ := io.ReadAll(res.Body)
 
-	assert.Equal(t, "Unable to retrieve existing project (example error)\n", string(data))
+	assert.Equal(t, "Unable to retrieve existing project\n", string(data))
 }
 
 func TestRun(t *testing.T) {
