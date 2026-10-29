@@ -1,6 +1,6 @@
 module github.com/pipe-cd/pipecd
 
-go 1.26.2
+go 1.26.10
 
 require (
 	cloud.google.com/go/firestore v1.26.0
@@ -54,7 +54,7 @@ require (
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.57.0
 	golang.org/x/mod v0.41.0
-	golang.org/x/net v0.59.0
+	golang.org/x/net v0.60.0
 	golang.org/x/oauth2 v0.37.0
 	golang.org/x/sync v0.23.0
 	google.golang.org/api v0.299.0
