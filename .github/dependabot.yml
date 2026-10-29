@@ -23,9 +23,28 @@ updates:
         patterns:
           - "k8s.io/*"
           - "sigs.k8s.io/*"
+      # Clients of the analysis providers. Their minor releases have changed
+      # the API, so they are kept apart from the bulk minor/patch group.
+      analysis-clients:
+        patterns:
+          - "github.com/DataDog/datadog-api-client-go*"
+          - "github.com/prometheus/*"
+      # Minor releases of go-yaml have changed how YAML is rendered.
+      go-yaml:
+        patterns:
+          - "github.com/goccy/go-yaml"
+      # Minor releases of fake-gcs-server have changed its API.
+      fake-gcs-server:
+        patterns:
+          - "github.com/fsouza/fake-gcs-server"
       go-minor-patch:
         patterns:
           - "*"
+        exclude-patterns:
+          - "github.com/DataDog/datadog-api-client-go*"
+          - "github.com/prometheus/*"
+          - "github.com/goccy/go-yaml"
+          - "github.com/fsouza/fake-gcs-server"
         update-types:
           - "minor"
           - "patch"
