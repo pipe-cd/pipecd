@@ -76,7 +76,11 @@ func NewOAuthClient(ctx context.Context,
 			return nil, err
 		}
 
-		cli, err := github.NewClient(github.WithEnterpriseURLs(sso.BaseUrl, sso.UploadUrl), github.WithHTTPClient(cfg.Client(ctx, token)))
+		uploadURL := sso.UploadUrl
+		if uploadURL == "" {
+			uploadURL = sso.BaseUrl
+		}
+		cli, err := github.NewClient(github.WithEnterpriseURLs(sso.BaseUrl, uploadURL), github.WithHTTPClient(cfg.Client(ctx, token)))
 		if err != nil {
 			return nil, err
 		}
