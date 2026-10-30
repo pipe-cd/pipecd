@@ -872,6 +872,117 @@ guarantee to take exactly these actions if you run "terraform apply" now.`,
 	}
 }
 
+func TestTerraformPlanToDiff(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name    string
+		details string
+		want    string
+	}{
+		{
+			name:    "empty",
+			details: "",
+			want:    "",
+		},
+		{
+			name: "markers are moved to the start of the line and the indentation is kept",
+			details: `Terraform will perform the following actions:
+
+  # google_dns_record_set.xxx will be created
+  + resource "google_dns_record_set" "xxxxx" {
+      + id           = (known after apply)
+      + rrdatas      = [
+          + "xx.xxx.xx.x",
+        ]
+    }
+
+  # aws_instance.old will be destroyed
+  - resource "aws_instance" "old" {
+      - ami = "ami-1" -> null
+    }
+
+  # aws_instance.web must be replaced
+-/+ resource "aws_instance" "web" {
+      ~ ami = "ami-1" -> "ami-2" # forces replacement
+    }
+
+Plan: 2 to add, 0 to change, 1 to destroy.`,
+			want: `Terraform will perform the following actions:
+
+  # google_dns_record_set.xxx will be created
++   resource "google_dns_record_set" "xxxxx" {
++       id           = (known after apply)
++       rrdatas      = [
++           "xx.xxx.xx.x",
+        ]
+    }
+
+  # aws_instance.old will be destroyed
+-   resource "aws_instance" "old" {
+-       ami = "ami-1" -> null
+    }
+
+  # aws_instance.web must be replaced
+-/+ resource "aws_instance" "web" {
+      ~ ami = "ami-1" -> "ami-2" # forces replacement
+    }
+
+Plan: 2 to add, 0 to change, 1 to destroy.`,
+		},
+		{
+			name: "literal heredoc content is kept, markers around it are moved",
+			details: `  # aws_instance.web will be created
+  + resource "aws_instance" "web" {
+      + ami       = "ami-1"
+      + user_data = <<-EOT
+            #cloud-config
+            packages:
+              - nginx
+              - curl
+            runcmd:
+              - systemctl start nginx
+        EOT
+      + tags      = {
+          + "Name" = "web"
+        }
+    }`,
+			want: `  # aws_instance.web will be created
++   resource "aws_instance" "web" {
++       ami       = "ami-1"
++       user_data = <<-EOT
+            #cloud-config
+            packages:
+              - nginx
+              - curl
+            runcmd:
+              - systemctl start nginx
+        EOT
++       tags      = {
++           "Name" = "web"
+        }
+    }`,
+		},
+		{
+			name: "a marker without a following space is not a change marker",
+			details: `  +not-a-marker
+  text with - inside
+-already-at-start`,
+			want: `  +not-a-marker
+  text with - inside
+-already-at-start`,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			got := terraformPlanToDiff(tc.details)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
 func TestMakeTitleText(t *testing.T) {
 	t.Parallel()
 
