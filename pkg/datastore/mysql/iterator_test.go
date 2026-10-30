@@ -16,6 +16,7 @@ package mysql
 
 import (
 	"encoding/base64"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -25,10 +26,11 @@ import (
 
 type dummyDoc struct {
 	val map[string]any
+	err error
 }
 
-func (d *dummyDoc) Data() map[string]any {
-	return d.val
+func (d *dummyDoc) Data() (map[string]any, error) {
+	return d.val, d.err
 }
 
 func TestCursor(t *testing.T) {
@@ -41,6 +43,15 @@ func TestCursor(t *testing.T) {
 		{
 			name:      "invalid cursor error returns on last is nil",
 			iter:      Iterator{},
+			expectErr: true,
+		},
+		{
+			name: "error on converting the last row data",
+			iter: Iterator{
+				last: &dummyDoc{
+					err: errors.New("failed to unmarshal row data"),
+				},
+			},
 			expectErr: true,
 		},
 		{
@@ -108,6 +119,7 @@ func TestData(t *testing.T) {
 		name         string
 		rowData      string
 		expectedData map[string]any
+		expectErr    bool
 	}{
 		{
 			name:    "valid data",
@@ -131,12 +143,33 @@ func TestData(t *testing.T) {
 				"CreatedAt": float64(100),
 			},
 		},
+		{
+			name:      "invalid json data",
+			rowData:   `{"id": "object-id", "name": "app-1", "updated_at": 100, "created_at": 100`,
+			expectErr: true,
+		},
+		{
+			name:      "data is not a json object",
+			rowData:   `["object-id"]`,
+			expectErr: true,
+		},
+		{
+			name:      "data is a json null",
+			rowData:   `null`,
+			expectErr: true,
+		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			converter := &rowDataConverter{val: tc.rowData}
-			data := converter.Data()
+			data, err := converter.Data()
+			if tc.expectErr {
+				assert.Error(t, err)
+				assert.Nil(t, data)
+				return
+			}
+			assert.NoError(t, err)
 			assert.Equal(t, tc.expectedData, data)
 		})
 	}
