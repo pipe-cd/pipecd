@@ -931,6 +931,39 @@ Plan: 2 to add, 0 to change, 1 to destroy.`,
 Plan: 2 to add, 0 to change, 1 to destroy.`,
 		},
 		{
+			name: "literal heredoc content is kept, markers around it are moved",
+			details: `  # aws_instance.web will be created
+  + resource "aws_instance" "web" {
+      + ami       = "ami-1"
+      + user_data = <<-EOT
+            #cloud-config
+            packages:
+              - nginx
+              - curl
+            runcmd:
+              - systemctl start nginx
+        EOT
+      + tags      = {
+          + "Name" = "web"
+        }
+    }`,
+			want: `  # aws_instance.web will be created
++   resource "aws_instance" "web" {
++       ami       = "ami-1"
++       user_data = <<-EOT
+            #cloud-config
+            packages:
+              - nginx
+              - curl
+            runcmd:
+              - systemctl start nginx
+        EOT
++       tags      = {
++           "Name" = "web"
+        }
+    }`,
+		},
+		{
 			name: "a marker without a following space is not a change marker",
 			details: `  +not-a-marker
   text with - inside
