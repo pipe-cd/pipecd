@@ -192,6 +192,65 @@ func TestEventWatcherValidate(t *testing.T) {
 	}
 }
 
+func TestEventWatcherReplacementValidate(t *testing.T) {
+	for _, tc := range []struct {
+		name        string
+		replacement EventWatcherReplacement
+		wantErr     string
+	}{
+		{
+			name:    "no file name",
+			wantErr: "replacement has no file name",
+		},
+		{
+			name: "JSON field",
+			replacement: EventWatcherReplacement{
+				File:      "file",
+				JSONField: "$.image",
+			},
+			wantErr: "replacement has an unsupported jsonField",
+		},
+		{
+			name: "HCL field",
+			replacement: EventWatcherReplacement{
+				File:     "file",
+				HCLField: "image",
+			},
+			wantErr: "replacement has an unsupported HCLField",
+		},
+		{
+			name: "no field",
+			replacement: EventWatcherReplacement{
+				File: "file",
+			},
+			wantErr: "replacement has no field",
+		},
+		{
+			name: "YAML field and regex",
+			replacement: EventWatcherReplacement{
+				File:      "file",
+				YAMLField: "$.image",
+				Regex:     `image: (.+)`,
+			},
+		},
+		{
+			name: "regex",
+			replacement: EventWatcherReplacement{
+				File:  "file",
+				Regex: `image: (.+)`,
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.wantErr == "" {
+				assert.NoError(t, tc.replacement.Validate())
+				return
+			}
+			assert.EqualError(t, tc.replacement.Validate(), tc.wantErr)
+		})
+	}
+}
+
 func TestFilterEventWatcherFiles(t *testing.T) {
 	testcases := []struct {
 		name     string
