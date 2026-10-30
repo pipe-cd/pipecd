@@ -19,6 +19,7 @@ package http
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -26,8 +27,9 @@ import (
 )
 
 const (
-	ProviderType   = "HTTP"
-	defaultTimeout = 30 * time.Second
+	ProviderType        = "HTTP"
+	defaultTimeout      = 30 * time.Second
+	maxResponseBodySize = 1 << 20 // 1 MiB
 )
 
 type Provider struct {
@@ -49,6 +51,10 @@ func NewProvider(timeout time.Duration) *Provider {
 
 // Run sends an HTTP request and then evaluate whether the response is expected one.
 func (p *Provider) Run(ctx context.Context, cfg *config.AnalysisHTTP) (bool, string, error) {
+	if len(cfg.ExpectedResponse) > maxResponseBodySize {
+		return false, "", fmt.Errorf("expected response exceeds maximum size of %d bytes", maxResponseBodySize)
+	}
+
 	req, err := p.makeRequest(ctx, cfg)
 	if err != nil {
 		return false, "", err
@@ -63,7 +69,22 @@ func (p *Provider) Run(ctx context.Context, cfg *config.AnalysisHTTP) (bool, str
 	if res.StatusCode != cfg.ExpectedCode {
 		return false, "", fmt.Errorf("unexpected status code %d", res.StatusCode)
 	}
-	// TODO: Decide how to check if the body is expected one.
+
+	if cfg.ExpectedResponse == "" {
+		return true, "", nil
+	}
+
+	body, err := io.ReadAll(io.LimitReader(res.Body, maxResponseBodySize+1))
+	if err != nil {
+		return false, "", fmt.Errorf("failed to read response body: %w", err)
+	}
+	if len(body) > maxResponseBodySize {
+		return false, "", fmt.Errorf("response body exceeds maximum size of %d bytes", maxResponseBodySize)
+	}
+	if string(body) != cfg.ExpectedResponse {
+		return false, "", fmt.Errorf("unexpected response body")
+	}
+
 	return true, "", nil
 }
 
