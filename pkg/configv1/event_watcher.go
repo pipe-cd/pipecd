@@ -70,22 +70,6 @@ type EventWatcherHandlerConfig struct {
 	Replacements []EventWatcherReplacement `json:"replacements"`
 }
 
-func (c EventWatcherConfig) Validate() error {
-	if err := c.Handler.Config.Validate(); err != nil {
-		return fmt.Errorf("invalid event watcher handler config: %w", err)
-	}
-	return nil
-}
-
-func (c EventWatcherHandlerConfig) Validate() error {
-	for _, r := range c.Replacements {
-		if err := r.Validate(); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 type EventWatcherReplacement struct {
 	// The path to the file to be updated.
 	File string `json:"file"`
@@ -115,18 +99,8 @@ func (r EventWatcherReplacement) Validate() error {
 		return fmt.Errorf("replacement has an unsupported HCLField")
 	}
 
-	count := 0
-	if r.YAMLField != "" {
-		count++
-	}
-	if r.Regex != "" {
-		count++
-	}
-	if count == 0 {
+	if r.YAMLField == "" && r.Regex == "" {
 		return fmt.Errorf("replacement has no field")
-	}
-	if count > 1 {
-		return fmt.Errorf("replacement has multiple fields")
 	}
 	return nil
 }

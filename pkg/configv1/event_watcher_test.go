@@ -192,6 +192,22 @@ func TestEventWatcherValidate(t *testing.T) {
 	}
 }
 
+func TestEventWatcherReplacementValidate(t *testing.T) {
+	for _, replacement := range []EventWatcherReplacement{
+		{
+			File:      "file",
+			YAMLField: "$.image",
+			Regex:     `image: (.+)`,
+		},
+		{
+			File:  "file",
+			Regex: `image: (.+)`,
+		},
+	} {
+		assert.NoError(t, replacement.Validate())
+	}
+}
+
 func TestFilterEventWatcherFiles(t *testing.T) {
 	testcases := []struct {
 		name     string
