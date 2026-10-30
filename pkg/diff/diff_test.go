@@ -558,6 +558,179 @@ func TestDiff_Array(t *testing.T) {
 	}
 }
 
+func TestDiff_Uint(t *testing.T) {
+	testcases := []struct {
+		name    string
+		old     unstructured.Unstructured
+		new     unstructured.Unstructured
+		options []Option
+		diffNum int
+	}{
+		{
+			name: "identical uint values have no diff",
+			old: unstructured.Unstructured{
+				Object: map[string]any{
+					"spec": map[string]any{
+						"port": uint(8080),
+					},
+				},
+			},
+			new: unstructured.Unstructured{
+				Object: map[string]any{
+					"spec": map[string]any{
+						"port": uint(8080),
+					},
+				},
+			},
+			diffNum: 0,
+		},
+		{
+			name: "differing uint values report diff",
+			old: unstructured.Unstructured{
+				Object: map[string]any{
+					"spec": map[string]any{
+						"port": uint(8080),
+					},
+				},
+			},
+			new: unstructured.Unstructured{
+				Object: map[string]any{
+					"spec": map[string]any{
+						"port": uint(9090),
+					},
+				},
+			},
+			diffNum: 1,
+		},
+		{
+			name: "uint and numeric string equated with WithCompareNumberAndNumericString",
+			old: unstructured.Unstructured{
+				Object: map[string]any{
+					"spec": map[string]any{
+						"port": uint64(8080),
+					},
+				},
+			},
+			new: unstructured.Unstructured{
+				Object: map[string]any{
+					"spec": map[string]any{
+						"port": "8080",
+					},
+				},
+			},
+			options: []Option{WithCompareNumberAndNumericString()},
+			diffNum: 0,
+		},
+		{
+			name: "large uint64 values (> 2^53) that differ produce a diff without float64 precision loss",
+			old: unstructured.Unstructured{
+				Object: map[string]any{
+					"spec": map[string]any{
+						"id": uint64(9007199254740992),
+					},
+				},
+			},
+			new: unstructured.Unstructured{
+				Object: map[string]any{
+					"spec": map[string]any{
+						"id": uint64(9007199254740993),
+					},
+				},
+			},
+			diffNum: 1,
+		},
+		{
+			name: "identical large uint64 values (> 2^53) produce no diff",
+			old: unstructured.Unstructured{
+				Object: map[string]any{
+					"spec": map[string]any{
+						"id": uint64(9007199254740993),
+					},
+				},
+			},
+			new: unstructured.Unstructured{
+				Object: map[string]any{
+					"spec": map[string]any{
+						"id": uint64(9007199254740993),
+					},
+				},
+			},
+			diffNum: 0,
+		},
+		{
+			name: "mixed signed int and unsigned uint with same value produce no diff",
+			old: unstructured.Unstructured{
+				Object: map[string]any{
+					"spec": map[string]any{
+						"port": int64(8080),
+					},
+				},
+			},
+			new: unstructured.Unstructured{
+				Object: map[string]any{
+					"spec": map[string]any{
+						"port": uint(8080),
+					},
+				},
+			},
+			diffNum: 0,
+		},
+		{
+			name: "large uint64 and matching numeric string equated with WithCompareNumberAndNumericString",
+			old: unstructured.Unstructured{
+				Object: map[string]any{
+					"spec": map[string]any{
+						"id": uint64(9007199254740993),
+					},
+				},
+			},
+			new: unstructured.Unstructured{
+				Object: map[string]any{
+					"spec": map[string]any{
+						"id": "9007199254740993",
+					},
+				},
+			},
+			options: []Option{WithCompareNumberAndNumericString()},
+			diffNum: 0,
+		},
+		{
+			name: "large uint64 and differing numeric string produce diff with WithCompareNumberAndNumericString",
+			old: unstructured.Unstructured{
+				Object: map[string]any{
+					"spec": map[string]any{
+						"id": uint64(9007199254740992),
+					},
+				},
+			},
+			new: unstructured.Unstructured{
+				Object: map[string]any{
+					"spec": map[string]any{
+						"id": "9007199254740993",
+					},
+				},
+			},
+			options: []Option{WithCompareNumberAndNumericString()},
+			diffNum: 1,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := DiffUnstructureds(tc.old, tc.new, "", tc.options...)
+			require.NoError(t, err)
+			assert.Equal(t, tc.diffNum, result.NumNodes())
+		})
+	}
+}
+
+func TestDiff_BothInvalid(t *testing.T) {
+	d := &differ{result: &Result{}}
+	err := d.diff(nil, reflect.Value{}, reflect.Value{})
+	require.NoError(t, err)
+	assert.Equal(t, 0, d.result.NumNodes())
+}
+
 func TestIsEmptyInterface(t *testing.T) {
 	testcases := []struct {
 		name     string
