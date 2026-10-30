@@ -80,19 +80,72 @@ describe("DeploymentTracePage", () => {
     expect(mockFetchMoreDeploymentTraces).toHaveBeenCalledTimes(1);
   });
 
-  it("should not render the More button when hasMore is false", () => {
-    mockQueryResult.data.pages[0].hasMore = false;
+  it.each([10, 0])(
+    "should allow loading older traces after a short page of %i traces",
+    (traceCount) => {
+      mockInView = true;
+      mockQueryResult.data.pages[0] = {
+        tracesList: Array.from({ length: traceCount }, (_, index) => ({
+          ...dummyDeploymentTrace,
+          trace: {
+            ...dummyDeploymentTrace.trace!,
+            id: `trace-${index}`,
+          },
+        })),
+        hasMore: false,
+      };
 
-    render(
-      <MemoryRouter>
-        <DeploymentTracePage />
-      </MemoryRouter>
-    );
+      const { rerender } = render(
+        <MemoryRouter>
+          <DeploymentTracePage />
+        </MemoryRouter>
+      );
 
-    expect(
-      screen.queryByRole("button", { name: UI_TEXT_MORE })
-    ).not.toBeInTheDocument();
-  });
+      expect(mockFetchMoreDeploymentTraces).not.toHaveBeenCalled();
+      const moreButton = screen.getByRole("button", { name: UI_TEXT_MORE });
+      expect(moreButton).toBeEnabled();
+      fireEvent.click(moreButton);
+      expect(mockFetchMoreDeploymentTraces).toHaveBeenCalledTimes(1);
+
+      mockQueryResult = { ...mockQueryResult, isFetching: true };
+      rerender(
+        <MemoryRouter>
+          <DeploymentTracePage />
+        </MemoryRouter>
+      );
+      expect(moreButton).toBeDisabled();
+      fireEvent.click(moreButton);
+      expect(mockFetchMoreDeploymentTraces).toHaveBeenCalledTimes(1);
+
+      mockQueryResult = { ...mockQueryResult, isFetching: false };
+      rerender(
+        <MemoryRouter>
+          <DeploymentTracePage />
+        </MemoryRouter>
+      );
+      expect(moreButton).toBeEnabled();
+      fireEvent.click(moreButton);
+      expect(mockFetchMoreDeploymentTraces).toHaveBeenCalledTimes(2);
+    }
+  );
+
+  it.each([true, false])(
+    "should hide the More button before a successful query (isFetching: %s)",
+    (isFetching) => {
+      mockQueryResult.isSuccess = false;
+      mockQueryResult.isFetching = isFetching;
+
+      render(
+        <MemoryRouter>
+          <DeploymentTracePage />
+        </MemoryRouter>
+      );
+
+      expect(
+        screen.queryByRole("button", { name: UI_TEXT_MORE })
+      ).not.toBeInTheDocument();
+    }
+  );
 
   it("should invoke fetchMoreDeploymentTraces when inView and hasMore are true", () => {
     mockInView = true;

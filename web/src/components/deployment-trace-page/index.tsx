@@ -193,7 +193,8 @@ const DeploymentTracePage: FC = () => {
             </Box>
           ))}
           {isSuccess && <div ref={ref} />}
-          {hasMore && (
+          {/* A short page ends the current time window; More searches older traces. */}
+          {isSuccess && (
             <Button
               color="primary"
               variant="outlined"
