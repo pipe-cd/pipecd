@@ -220,10 +220,10 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult, title string) str
 				details = app.PlanDetails
 			)
 			if app.ApplicationKind == "TERRAFORM" {
-				lang = "hcl"
 				if shortened, err := generateTerraformShortPlanDetails(details); err == nil {
 					details = shortened
 				}
+				details = terraformPlanToDiff(details)
 			}
 
 			l := utf8.RuneCountInString(details)
@@ -256,6 +256,8 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult, title string) str
 					if shortened, err := generateTerraformShortPlanDetails(details); err == nil {
 						details = shortened
 					}
+					details = terraformPlanToDiff(details)
+					ppr.DiffLanguage = "diff"
 				}
 
 				l := utf8.RuneCountInString(details)
@@ -410,6 +412,34 @@ func generateTerraformShortPlanDetails(details string) (string, error) {
 		return "", err
 	}
 	return details[start:], nil
+}
+
+// terraformChangeMarkers are the markers Terraform puts in front of a changed
+// line of a plan, longest first so that "-/+" is not matched as "-".
+var terraformChangeMarkers = []string{"-/+", "+/-", "+", "-"}
+
+// terraformPlanToDiff rewrites a Terraform plan so that GitHub renders its
+// added and removed lines in color inside a "diff" code block. GitHub colors a
+// line only when its first character is "+" or "-", but Terraform indents the
+// marker, so the marker is moved to the start of the line and the indentation
+// is kept after it. Lines without a marker, such as "~" updates and "#"
+// comments, are returned unchanged.
+func terraformPlanToDiff(details string) string {
+	lines := strings.Split(details, "\n")
+	for i, line := range lines {
+		trimmed := strings.TrimLeft(line, " ")
+		indent := line[:len(line)-len(trimmed)]
+		if indent == "" {
+			continue
+		}
+		for _, marker := range terraformChangeMarkers {
+			if strings.HasPrefix(trimmed, marker+" ") {
+				lines[i] = marker + indent + trimmed[len(marker):]
+				break
+			}
+		}
+	}
+	return strings.Join(lines, "\n")
 }
 
 func minimizePreviousComment(ctx context.Context, ghGraphQLClient *githubv4.Client, event *githubEvent, key string) {
