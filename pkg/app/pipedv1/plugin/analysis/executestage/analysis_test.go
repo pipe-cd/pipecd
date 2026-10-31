@@ -15,10 +15,19 @@
 package executestage
 
 import (
+	"context"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/analysisprovider/metrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/config"
 )
 
@@ -244,4 +253,80 @@ func TestExecutor_buildAppArgs_MapsCloning(t *testing.T) {
 	result.AppCustomArgs["env"] = "modified"
 	assert.Equal(t, "development", originalAppCustomArgs["env"]) // should remain unchanged
 	assert.Equal(t, "production", originalCustomArgs["env"])     // should remain unchanged
+}
+
+func TestExecutor_newMetricsProvider_timeout(t *testing.T) {
+	t.Parallel()
+
+	// A Prometheus server that answers only after a delay much longer than the configured timeout.
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		select {
+		case <-time.After(time.Second):
+		case <-r.Context().Done():
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"status":"success","data":{"resultType":"matrix","result":[]}}`))
+	}))
+	t.Cleanup(srv.Close)
+
+	sharedConfigDir := t.TempDir()
+	template := `apiVersion: pipecd.dev/v1beta1
+kind: AnalysisTemplate
+spec:
+  metrics:
+    slow_query:
+      provider: prometheus
+      query: up
+      expected:
+        max: 10
+      interval: 1m
+      timeout: 100ms
+`
+	require.NoError(t, os.WriteFile(filepath.Join(sharedConfigDir, "analysis-template.yaml"), []byte(template), 0o644))
+	templateCfg, err := config.LoadAnalysisTemplate(sharedConfigDir)
+	require.NoError(t, err)
+
+	tests := []struct {
+		name        string
+		stageConfig string
+	}{
+		{
+			name:        "timeout set inline",
+			stageConfig: `{"duration":"10m","metrics":[{"provider":"prometheus","query":"up","expected":{"max":10},"interval":"1m","timeout":"100ms"}]}`,
+		},
+		{
+			name:        "timeout set in the referenced template",
+			stageConfig: `{"duration":"10m","metrics":[{"template":{"name":"slow_query"}}]}`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			opts, err := decodeStageConfig([]byte(tt.stageConfig))
+			require.NoError(t, err)
+			e := &executor{
+				stageConfig: opts,
+				pluginConfig: &config.PluginConfig{
+					AnalysisProviders: []config.PipedAnalysisProvider{
+						{
+							Name:             "prometheus",
+							Type:             config.AnalysisProviderPrometheus,
+							PrometheusConfig: &config.AnalysisProviderPrometheusConfig{Address: srv.URL},
+						},
+					},
+				},
+				logger: zap.NewNop(),
+			}
+			cfg, err := e.getMetricsConfig(opts.Metrics[0], templateCfg)
+			require.NoError(t, err)
+			provider, err := e.newMetricsProvider(cfg)
+			require.NoError(t, err)
+
+			now := time.Now()
+			_, err = provider.QueryPoints(context.Background(), "up", metrics.QueryRange{From: now.Add(-5 * time.Minute), To: now})
+			assert.ErrorIs(t, err, context.DeadlineExceeded)
+		})
+	}
 }

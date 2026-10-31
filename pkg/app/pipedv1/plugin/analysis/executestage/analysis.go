@@ -157,7 +157,7 @@ func (e *executor) execute(ctx context.Context) sdk.StageStatus {
 			e.logPersister.Errorf("Failed to get metrics config: %v", err)
 			return sdk.StageStatusFailure
 		}
-		provider, err := e.newMetricsProvider(cfg.Provider, options.Metrics[i])
+		provider, err := e.newMetricsProvider(cfg)
 		if err != nil {
 			e.logPersister.Errorf("Failed to generate metrics provider: %v", err)
 			return sdk.StageStatusFailure
@@ -278,12 +278,12 @@ func (e *executor) newAnalyzerForHTTP(i int, templatable *config.TemplatableAnal
 	return newAnalyzer(id, provider.Type(), "", runner, time.Duration(cfg.Interval), cfg.FailureLimit, cfg.SkipOnNoData, e.logger, e.logPersister), nil
 }
 
-func (e *executor) newMetricsProvider(providerName string, templatable config.TemplatableAnalysisMetrics) (metrics.Provider, error) {
-	cfg, ok := e.pluginConfig.GetAnalysisProvider(providerName)
+func (e *executor) newMetricsProvider(metricsCfg *config.AnalysisMetrics) (metrics.Provider, error) {
+	cfg, ok := e.pluginConfig.GetAnalysisProvider(metricsCfg.Provider)
 	if !ok {
-		return nil, fmt.Errorf("unknown provider name %s", providerName)
+		return nil, fmt.Errorf("unknown provider name %s", metricsCfg.Provider)
 	}
-	provider, err := metricsfactory.NewProvider(&templatable, &cfg, e.logger)
+	provider, err := metricsfactory.NewProvider(metricsCfg, &cfg, e.logger)
 	if err != nil {
 		return nil, err
 	}
