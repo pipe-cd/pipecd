@@ -169,3 +169,50 @@ func TestKubernetesApplicationSpecValidate(t *testing.T) {
 		})
 	}
 }
+
+func TestKubernetesDeploymentInputKubectlVersionFor(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    KubernetesDeploymentInput
+		dt       KubernetesDeployTargetConfig
+		mt       *KubernetesMultiTarget
+		expected string
+	}{
+		{
+			name:     "multi-target version overrides input and deploy target",
+			input:    KubernetesDeploymentInput{KubectlVersion: "1.31.0"},
+			dt:       KubernetesDeployTargetConfig{KubectlVersion: "1.30.0"},
+			mt:       &KubernetesMultiTarget{KubectlVersion: "1.33.0"},
+			expected: "1.33.0",
+		},
+		{
+			name:     "empty multi-target version falls back to input",
+			input:    KubernetesDeploymentInput{KubectlVersion: "1.31.0"},
+			dt:       KubernetesDeployTargetConfig{KubectlVersion: "1.30.0"},
+			mt:       &KubernetesMultiTarget{},
+			expected: "1.31.0",
+		},
+		{
+			name:     "empty multi-target and input versions fall back to deploy target",
+			dt:       KubernetesDeployTargetConfig{KubectlVersion: "1.30.0"},
+			mt:       &KubernetesMultiTarget{},
+			expected: "1.30.0",
+		},
+		{
+			name:     "nil multi-target uses input",
+			input:    KubernetesDeploymentInput{KubectlVersion: "1.31.0"},
+			dt:       KubernetesDeployTargetConfig{KubectlVersion: "1.30.0"},
+			expected: "1.31.0",
+		},
+		{
+			name:     "nothing set returns empty so the tool registry default is used",
+			mt:       &KubernetesMultiTarget{},
+			expected: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, tt.input.KubectlVersionFor(tt.dt, tt.mt))
+		})
+	}
+}

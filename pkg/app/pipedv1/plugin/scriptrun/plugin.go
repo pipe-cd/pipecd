@@ -182,7 +182,7 @@ func executeCommand(commands string, customEnv map[string]string, request sdk.Ex
 		lp.Errorf("failed to encode the stage config: %v", err)
 		return sdk.StageStatusFailure
 	}
-	envs := make([]string, 0, len(ciEnv)+len(customEnv))
+	envs := make([]string, 0, len(ciEnv))
 	for key, value := range ciEnv {
 		envs = append(envs, key+"="+value)
 	}

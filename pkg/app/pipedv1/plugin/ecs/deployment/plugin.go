@@ -71,6 +71,17 @@ func (p *ECSPlugin) ExecuteStage(
 	deployTargets []*sdk.DeployTarget[ecsconfig.ECSDeployTargetConfig],
 	input *sdk.ExecuteStageInput[ecsconfig.ECSApplicationSpec],
 ) (*sdk.ExecuteStageResponse, error) {
+	// Rollout, canary and traffic routing stages are EXTERNAL-controller-only: with the ECS controller,
+	// AWS performs the rollout. The controller is declared in the service definition, which is unknown
+	// when the pipeline is built, so these stages are rejected here at execution time.
+	switch input.Request.StageName {
+	case StageECSPrimaryRollout, StageECSCanaryRollout, StageECSCanaryClean, StageECSTrafficRouting:
+		if err := checkExternalOnlyStageAllowed(input); err != nil {
+			input.Client.LogPersister().Error(err.Error())
+			return &sdk.ExecuteStageResponse{Status: sdk.StageStatusFailure}, nil
+		}
+	}
+
 	switch input.Request.StageName {
 	case StageECSSync:
 		return &sdk.ExecuteStageResponse{
