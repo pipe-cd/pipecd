@@ -142,7 +142,7 @@ func (s *FireStore) Find(ctx context.Context, col datastore.Collection, opts dat
 	}, nil
 }
 
-func (s *FireStore) Get(ctx context.Context, col datastore.Collection, id string, v interface{}) error {
+func (s *FireStore) Get(ctx context.Context, col datastore.Collection, id string, v any) error {
 	kind := col.Kind()
 	colName := makeCollectionName(s.collectionNamePrefix, kind)
 	ds, err := s.client.Collection(s.namespace).Doc(s.environment).Collection(colName).Doc(id).Get(ctx)
@@ -169,7 +169,7 @@ func (s *FireStore) Get(ctx context.Context, col datastore.Collection, id string
 	return nil
 }
 
-func (s *FireStore) Create(ctx context.Context, col datastore.Collection, id string, entity interface{}) error {
+func (s *FireStore) Create(ctx context.Context, col datastore.Collection, id string, entity any) error {
 	kind := col.Kind()
 	colName := makeCollectionName(s.collectionNamePrefix, kind)
 	ref := s.client.Collection(s.namespace).Doc(s.environment).Collection(colName).Doc(id)
@@ -250,19 +250,19 @@ func (s *FireStore) Close() error {
 	return s.client.Close()
 }
 
-func makeCursorValues(opts datastore.ListOptions) ([]interface{}, error) {
+func makeCursorValues(opts datastore.ListOptions) ([]any, error) {
 	// Decode last object of previous page stored as opts.Cursor to string.
 	data, err := base64.StdEncoding.DecodeString(opts.Cursor)
 	if err != nil {
 		return nil, err
 	}
 	// Encode cursor data string to map[string]interface{} format for further process.
-	obj := make(map[string]interface{})
+	obj := make(map[string]any)
 	if err := json.Unmarshal(data, &obj); err != nil {
 		return nil, err
 	}
 
-	cursorVals := make([]interface{}, 0, len(opts.Orders))
+	cursorVals := make([]any, 0, len(opts.Orders))
 	hasIDFieldInOrdering := false
 	for _, o := range opts.Orders {
 		if o.Field == "Id" {

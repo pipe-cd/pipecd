@@ -30,11 +30,13 @@ func newEmulator(bucket string, objects map[string]string, now time.Time) (*fake
 	initialObjects := make([]fakestorage.Object, 0, len(objects))
 	for k, v := range objects {
 		initialObjects = append(initialObjects, fakestorage.Object{
-			BucketName: bucket,
-			Name:       k,
-			Content:    []byte(v),
-			Created:    now,
-			Updated:    now,
+			ObjectAttrs: fakestorage.ObjectAttrs{
+				BucketName: bucket,
+				Name:       k,
+				Created:    now,
+				Updated:    now,
+			},
+			Content: []byte(v),
 		})
 	}
 	return fakestorage.NewServerWithOptions(fakestorage.Options{
@@ -168,14 +170,17 @@ func TestList(t *testing.T) {
 			name:   "found contents",
 			prefix: "path/to",
 			want: []filestore.ObjectAttrs{
+				// Etag is the base64-encoded MD5 hash of the content, computed by the emulator.
 				{
 					Path:      "path/to/fileA.txt",
 					Size:      3,
+					Etag:      "rL0Y20zC+Fzt72VPzMSk2A==",
 					UpdatedAt: now.Unix(),
 				},
 				{
 					Path:      "path/to/fileB.txt",
 					Size:      5,
+					Etag:      "XUFAKrxLKna5cZ2REBfFkg==",
 					UpdatedAt: now.Unix(),
 				},
 			},

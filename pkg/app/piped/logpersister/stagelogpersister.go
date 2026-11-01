@@ -79,7 +79,7 @@ func (sp *stageLogPersister) Info(log string) {
 }
 
 // Infof formats and appends a new INFO log block.
-func (sp *stageLogPersister) Infof(format string, a ...interface{}) {
+func (sp *stageLogPersister) Infof(format string, a ...any) {
 	sp.append(fmt.Sprintf(format, a...), model.LogSeverity_INFO)
 }
 
@@ -89,7 +89,7 @@ func (sp *stageLogPersister) Success(log string) {
 }
 
 // Successf formats and appends a new SUCCESS log block.
-func (sp *stageLogPersister) Successf(format string, a ...interface{}) {
+func (sp *stageLogPersister) Successf(format string, a ...any) {
 	sp.append(fmt.Sprintf(format, a...), model.LogSeverity_SUCCESS)
 }
 
@@ -99,7 +99,7 @@ func (sp *stageLogPersister) Error(log string) {
 }
 
 // Errorf formats and appends a new ERROR log block.
-func (sp *stageLogPersister) Errorf(format string, a ...interface{}) {
+func (sp *stageLogPersister) Errorf(format string, a ...any) {
 	sp.append(fmt.Sprintf(format, a...), model.LogSeverity_ERROR)
 }
 

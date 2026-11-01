@@ -54,7 +54,7 @@ func NewClaims(githubUserID, avatarURL string, ttl time.Duration, role model.Rol
 	}
 }
 
-func readKeyFile(method jwtgo.SigningMethod, keyFile string, isSigningKey bool) (interface{}, error) {
+func readKeyFile(method jwtgo.SigningMethod, keyFile string, isSigningKey bool) (any, error) {
 	data, err := os.ReadFile(keyFile)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read key file: %v", err)

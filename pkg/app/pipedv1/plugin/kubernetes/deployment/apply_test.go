@@ -37,7 +37,7 @@ func (m *mockStageLogPersister) Info(log string) {
 	m.logs = append(m.logs, log)
 }
 
-func (m *mockStageLogPersister) Infof(format string, a ...interface{}) {
+func (m *mockStageLogPersister) Infof(format string, a ...any) {
 	m.logs = append(m.logs, fmt.Sprintf(format, a...))
 }
 
@@ -45,7 +45,7 @@ func (m *mockStageLogPersister) Success(log string) {
 	m.logs = append(m.logs, log)
 }
 
-func (m *mockStageLogPersister) Successf(format string, a ...interface{}) {
+func (m *mockStageLogPersister) Successf(format string, a ...any) {
 	m.logs = append(m.logs, fmt.Sprintf(format, a...))
 }
 
@@ -53,7 +53,7 @@ func (m *mockStageLogPersister) Error(log string) {
 	m.logs = append(m.logs, log)
 }
 
-func (m *mockStageLogPersister) Errorf(format string, a ...interface{}) {
+func (m *mockStageLogPersister) Errorf(format string, a ...any) {
 	m.logs = append(m.logs, fmt.Sprintf(format, a...))
 }
 

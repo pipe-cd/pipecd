@@ -25,7 +25,7 @@ type Verifier interface {
 }
 
 type verifier struct {
-	key    interface{}
+	key    any
 	method jwtgo.SigningMethod
 }
 
@@ -50,7 +50,7 @@ func (v *verifier) Verify(tokenString string) (*Claims, error) {
 		jwtgo.WithExpirationRequired(),
 	)
 
-	token, err := parser.ParseWithClaims(tokenString, &Claims{}, func(token *jwtgo.Token) (interface{}, error) {
+	token, err := parser.ParseWithClaims(tokenString, &Claims{}, func(token *jwtgo.Token) (any, error) {
 		if v.method != token.Method {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Method.Alg())
 		}

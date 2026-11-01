@@ -371,10 +371,7 @@ func (s *store) removeOldEvents(num int) {
 	}
 	s.events = s.events[num-1:]
 	for k := range s.iterators {
-		newIndex := s.iterators[k] - num
-		if newIndex < 0 {
-			newIndex = 0
-		}
+		newIndex := max(s.iterators[k]-num, 0)
 		s.iterators[k] = newIndex
 	}
 }

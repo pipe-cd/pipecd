@@ -16,6 +16,7 @@ package waitapproval
 
 import (
 	"context"
+	"maps"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -29,13 +30,13 @@ import (
 
 type fakeLogPersister struct{}
 
-func (l *fakeLogPersister) Write(_ []byte) (int, error)         { return 0, nil }
-func (l *fakeLogPersister) Info(_ string)                       {}
-func (l *fakeLogPersister) Infof(_ string, _ ...interface{})    {}
-func (l *fakeLogPersister) Success(_ string)                    {}
-func (l *fakeLogPersister) Successf(_ string, _ ...interface{}) {}
-func (l *fakeLogPersister) Error(_ string)                      {}
-func (l *fakeLogPersister) Errorf(_ string, _ ...interface{})   {}
+func (l *fakeLogPersister) Write(_ []byte) (int, error) { return 0, nil }
+func (l *fakeLogPersister) Info(_ string)               {}
+func (l *fakeLogPersister) Infof(_ string, _ ...any)    {}
+func (l *fakeLogPersister) Success(_ string)            {}
+func (l *fakeLogPersister) Successf(_ string, _ ...any) {}
+func (l *fakeLogPersister) Error(_ string)              {}
+func (l *fakeLogPersister) Errorf(_ string, _ ...any)   {}
 
 type metadata map[string]string
 
@@ -46,12 +47,8 @@ type fakeAPIClient struct {
 
 func (c *fakeAPIClient) SaveDeploymentMetadata(_ context.Context, req *pipedservice.SaveDeploymentMetadataRequest, _ ...grpc.CallOption) (*pipedservice.SaveDeploymentMetadataResponse, error) {
 	md := make(map[string]string, len(c.shared)+len(req.Metadata))
-	for k, v := range c.shared {
-		md[k] = v
-	}
-	for k, v := range req.Metadata {
-		md[k] = v
-	}
+	maps.Copy(md, c.shared)
+	maps.Copy(md, req.Metadata)
 	c.shared = md
 	return &pipedservice.SaveDeploymentMetadataResponse{}, nil
 }
@@ -59,12 +56,8 @@ func (c *fakeAPIClient) SaveDeploymentMetadata(_ context.Context, req *pipedserv
 func (c *fakeAPIClient) SaveStageMetadata(_ context.Context, req *pipedservice.SaveStageMetadataRequest, _ ...grpc.CallOption) (*pipedservice.SaveStageMetadataResponse, error) {
 	ori := c.stages[req.StageId]
 	md := make(map[string]string, len(ori)+len(req.Metadata))
-	for k, v := range ori {
-		md[k] = v
-	}
-	for k, v := range req.Metadata {
-		md[k] = v
-	}
+	maps.Copy(md, ori)
+	maps.Copy(md, req.Metadata)
 	c.stages[req.StageId] = md
 	return &pipedservice.SaveStageMetadataResponse{}, nil
 }

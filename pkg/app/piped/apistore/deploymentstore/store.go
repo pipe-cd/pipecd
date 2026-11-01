@@ -103,23 +103,36 @@ func (s *store) Lister() Lister {
 }
 
 func (s *store) sync(ctx context.Context) error {
-	// TODO: Call ListNotCompletedDeployments itervally until all required deployments are fetched.
-	resp, err := s.apiClient.ListNotCompletedDeployments(ctx, &pipedservice.ListNotCompletedDeploymentsRequest{})
-	if err != nil {
-		s.logger.Error("failed to list unhandled deployment", zap.Error(err))
-		return err
-	}
-
 	var pendings, planneds, runnings []*model.Deployment
-	for _, d := range resp.Deployments {
-		switch d.Status {
-		case model.DeploymentStatus_DEPLOYMENT_PENDING:
-			pendings = append(pendings, d)
-		case model.DeploymentStatus_DEPLOYMENT_PLANNED:
-			planneds = append(planneds, d)
-		case model.DeploymentStatus_DEPLOYMENT_RUNNING, model.DeploymentStatus_DEPLOYMENT_ROLLING_BACK:
-			runnings = append(runnings, d)
+	cursor := ""
+	for {
+		resp, err := s.apiClient.ListNotCompletedDeployments(ctx, &pipedservice.ListNotCompletedDeploymentsRequest{
+			Cursor: cursor,
+		})
+		if err != nil {
+			s.logger.Error("failed to list unhandled deployment", zap.Error(err))
+			return err
 		}
+		for _, d := range resp.Deployments {
+			switch d.Status {
+			case model.DeploymentStatus_DEPLOYMENT_PENDING:
+				pendings = append(pendings, d)
+			case model.DeploymentStatus_DEPLOYMENT_PLANNED:
+				planneds = append(planneds, d)
+			case model.DeploymentStatus_DEPLOYMENT_RUNNING, model.DeploymentStatus_DEPLOYMENT_ROLLING_BACK:
+				runnings = append(runnings, d)
+			}
+		}
+		// Safety guard against a misbehaving server: if a page carries no
+		// deployments, stop paging even when a non-empty cursor is returned.
+		// Without this, such a response would spin this loop forever.
+		if len(resp.Deployments) == 0 {
+			break
+		}
+		if resp.Cursor == "" {
+			break
+		}
+		cursor = resp.Cursor
 	}
 
 	headDeployments := make(map[string]*model.Deployment)

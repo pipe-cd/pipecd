@@ -98,8 +98,7 @@ func (c *client) IsFunctionExist(ctx context.Context, name string) (bool, error)
 	}
 	_, err := c.client.GetFunction(ctx, input)
 	if err != nil {
-		var nfe *types.ResourceNotFoundException
-		if errors.As(err, &nfe) {
+		if _, ok := errors.AsType[*types.ResourceNotFoundException](err); ok {
 			// Only in case ResourceNotFound error occurred, the FunctionName is available for create so do not raise error.
 			return false, nil
 		}
@@ -396,8 +395,7 @@ func (c *client) GetTrafficConfig(ctx context.Context, fm FunctionManifest) (rou
 
 	cfg, err := c.client.GetAlias(ctx, input)
 	if err != nil {
-		var nfe *types.ResourceNotFoundException
-		if errors.As(err, &nfe) {
+		if _, ok := errors.AsType[*types.ResourceNotFoundException](err); ok {
 			err = ErrNotFound
 		}
 		return

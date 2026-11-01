@@ -54,6 +54,12 @@ type ECS interface {
 	ServiceExists(ctx context.Context, cluster, serviceName string) (bool, error)
 	GetServiceStatus(ctx context.Context, cluster, serviceName string) (string, error)
 	WaitServiceStable(ctx context.Context, cluster, serviceName string) error
+	// GetLatestServiceDeployment returns the most recently created service deployment of the service.
+	// It returns nil when the service does not exist yet or has no deployment.
+	GetLatestServiceDeployment(ctx context.Context, cluster, serviceName string) (*types.ServiceDeploymentBrief, error)
+	// WaitServiceDeploymentComplete blocks until a service deployment other than prevDeploymentArn
+	// reaches a terminal status. It returns nil only when that deployment is SUCCESSFUL.
+	WaitServiceDeploymentComplete(ctx context.Context, cluster, serviceName string, prevDeploymentArn *string) error
 	RegisterTaskDefinition(ctx context.Context, taskDef types.TaskDefinition) (*types.TaskDefinition, error)
 	RunTask(ctx context.Context, taskDefinition types.TaskDefinition, clusterArn string, launchType string, awsVpcConfiguration *config.ECSVpcConfiguration, tags []types.Tag) error
 	PruneServiceTasks(ctx context.Context, service types.Service) error
@@ -82,9 +88,11 @@ func ParseServiceDefinition(appDir, serviceDefinition string) (types.Service, er
 	return loadServiceDefinition(path)
 }
 
-// LoadServiceDefinition returns Service object from a given service definition file.
-func LoadServiceDefinition(appDir, serviceDefinition string, input *sdk.ExecuteStageInput[config.ECSApplicationSpec]) (types.Service, error) {
-	path := filepath.Join(appDir, serviceDefinition)
+// LoadServiceDefinition returns Service object from a given service definition file
+// in the given deployment source. The commit hash tag is taken from that same source,
+// so a service loaded from the running source (e.g. on rollback) carries the running commit.
+func LoadServiceDefinition(ds sdk.DeploymentSource[config.ECSApplicationSpec], serviceDefinition string, input *sdk.ExecuteStageInput[config.ECSApplicationSpec]) (types.Service, error) {
+	path := filepath.Join(ds.ApplicationDirectory, serviceDefinition)
 	service, err := loadServiceDefinition(path)
 	if err != nil {
 		return types.Service{}, err
@@ -95,7 +103,7 @@ func LoadServiceDefinition(appDir, serviceDefinition string, input *sdk.ExecuteS
 			LabelManagedBy:   ManagedByECSPlugin,
 			LabelPiped:       input.Request.Deployment.PipedID,
 			LabelApplication: input.Request.Deployment.ApplicationID,
-			LabelCommitHash:  input.Request.TargetDeploymentSource.CommitHash,
+			LabelCommitHash:  ds.CommitHash,
 		})...,
 	)
 	return service, nil
@@ -125,7 +133,7 @@ func (r *registry) Client(name string, cfg config.ECSDeployTargetConfig) (Client
 		return client, nil
 	}
 
-	c, err, _ := r.newGroup.Do(name, func() (interface{}, error) {
+	c, err, _ := r.newGroup.Do(name, func() (any, error) {
 		return newClient(cfg.Region, cfg.Profile, cfg.CredentialsFile, cfg.RoleARN, cfg.TokenFile)
 	})
 	if err != nil {

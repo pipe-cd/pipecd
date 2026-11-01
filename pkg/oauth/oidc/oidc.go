@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"maps"
 	"mime"
 	"net/http"
 	"net/url"
@@ -122,14 +123,12 @@ func (c *OAuthClient) GetUser(ctx context.Context) (*model.User, error) {
 			return nil, err
 		}
 
-		var userInfoClaims map[string]interface{}
+		var userInfoClaims map[string]any
 		if err := userInfo.Claims(&userInfoClaims); err != nil {
 			return nil, err
 		}
 
-		for k, v := range userInfoClaims {
-			claims[k] = v
-		}
+		maps.Copy(claims, userInfoClaims)
 	}
 
 	role, err := c.decideRole(claims, c.sharedSSOConfig.RolesClaimKey)
@@ -169,7 +168,7 @@ func (c *OAuthClient) decideRole(claims jwt.MapClaims, roleClaimKey string) (rol
 			continue
 		}
 		switch val := val.(type) {
-		case []interface{}:
+		case []any:
 			for _, item := range val {
 				if str, ok := item.(string); ok {
 					roleStrings = append(roleStrings, str)
@@ -352,7 +351,7 @@ type providerJSON struct {
 	Algorithms    []string `json:"id_token_signing_alg_values_supported"`
 }
 
-func unmarshalResp(r *http.Response, body []byte, v interface{}) error {
+func unmarshalResp(r *http.Response, body []byte, v any) error {
 	err := json.Unmarshal(body, &v)
 	if err == nil {
 		return nil

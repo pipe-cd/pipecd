@@ -23,7 +23,7 @@ import (
 )
 
 func TestParseManifests(t *testing.T) {
-	maker := func(name, kind string, metadata map[string]interface{}) Manifest {
+	maker := func(name, kind string, metadata map[string]any) Manifest {
 		return Manifest{
 			Key: ResourceKey{
 				APIVersion: "v1",
@@ -32,7 +32,7 @@ func TestParseManifests(t *testing.T) {
 				Namespace:  "default",
 			},
 			u: &unstructured.Unstructured{
-				Object: map[string]interface{}{
+				Object: map[string]any{
 					"apiVersion": "v1",
 					"kind":       kind,
 					"metadata":   metadata,
@@ -75,7 +75,7 @@ metadata:
   creationTimestamp: "2022-12-09T01:23:45Z"
 `,
 			want: []Manifest{
-				maker("envoy-config", "ConfigMap", map[string]interface{}{
+				maker("envoy-config", "ConfigMap", map[string]any{
 					"name":              "envoy-config",
 					"creationTimestamp": "2022-12-09T01:23:45Z",
 				}),
@@ -92,7 +92,7 @@ metadata:
     single-new-line
 `,
 			want: []Manifest{
-				maker("config", "Kind1", map[string]interface{}{
+				maker("config", "Kind1", map[string]any{
 					"name":  "config",
 					"extra": "single-new-line\n",
 				}),
@@ -108,7 +108,7 @@ metadata:
   extra: |
     no-new-line`,
 			want: []Manifest{
-				maker("config", "Kind1", map[string]interface{}{
+				maker("config", "Kind1", map[string]any{
 					"name":  "config",
 					"extra": "no-new-line",
 				}),
@@ -159,23 +159,23 @@ metadata:
 
 `,
 			want: []Manifest{
-				maker("config1", "Kind1", map[string]interface{}{
+				maker("config1", "Kind1", map[string]any{
 					"name":  "config1",
 					"extra": "no-new-line",
 				}),
-				maker("config2", "Kind2", map[string]interface{}{
+				maker("config2", "Kind2", map[string]any{
 					"name":  "config2",
 					"extra": "single-new-line-1\n",
 				}),
-				maker("config3", "Kind3", map[string]interface{}{
+				maker("config3", "Kind3", map[string]any{
 					"name":  "config3",
 					"extra": "single-new-line-2\n",
 				}),
-				maker("config4", "Kind4", map[string]interface{}{
+				maker("config4", "Kind4", map[string]any{
 					"name":  "config4",
 					"extra": "multiple-new-line-1\n\n\n",
 				}),
-				maker("config5", "Kind5", map[string]interface{}{
+				maker("config5", "Kind5", map[string]any{
 					"name":  "config5",
 					"extra": "multiple-new-line-2\n\n\n",
 				}),

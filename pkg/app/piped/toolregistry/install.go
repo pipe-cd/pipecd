@@ -53,7 +53,7 @@ func (r *registry) installKubectl(ctx context.Context, version string) error {
 
 	var (
 		buf  bytes.Buffer
-		data = map[string]interface{}{
+		data = map[string]any{
 			"WorkingDir": workingDir,
 			"Version":    version,
 			"BinDir":     r.binDir,
@@ -100,7 +100,7 @@ func (r *registry) installKustomize(ctx context.Context, version string) error {
 
 	var (
 		buf  bytes.Buffer
-		data = map[string]interface{}{
+		data = map[string]any{
 			"WorkingDir": workingDir,
 			"Version":    version,
 			"BinDir":     r.binDir,
@@ -147,7 +147,7 @@ func (r *registry) installHelm(ctx context.Context, version string) error {
 
 	var (
 		buf  bytes.Buffer
-		data = map[string]interface{}{
+		data = map[string]any{
 			"WorkingDir": workingDir,
 			"Version":    version,
 			"BinDir":     r.binDir,
@@ -194,7 +194,7 @@ func (r *registry) installTerraform(ctx context.Context, version string) error {
 
 	var (
 		buf  bytes.Buffer
-		data = map[string]interface{}{
+		data = map[string]any{
 			"WorkingDir": workingDir,
 			"Version":    version,
 			"BinDir":     r.binDir,

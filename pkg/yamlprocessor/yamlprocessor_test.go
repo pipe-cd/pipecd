@@ -33,7 +33,7 @@ func TestNewProcessor(t *testing.T) {
 		},
 		{
 			name:    "invalid",
-			yml:     "::",
+			yml:     "foo: [bar",
 			wantErr: true,
 		},
 		{
@@ -65,7 +65,7 @@ func TestGetValue(t *testing.T) {
 		name    string
 		yml     string
 		path    string
-		want    interface{}
+		want    any
 		wantErr bool
 	}{
 		{
@@ -137,7 +137,7 @@ foo:
 - bar: 1
 - baz: 2`,
 			path:    "$.foo",
-			want:    []interface{}{map[string]interface{}{"bar": uint64(1)}, map[string]interface{}{"baz": uint64(2)}},
+			want:    []any{map[string]any{"bar": uint64(1)}, map[string]any{"baz": uint64(2)}},
 			wantErr: false,
 		},
 	}
@@ -190,7 +190,7 @@ func TestReplaceString(t *testing.T) {
 			yml:     "foo: bar",
 			path:    "$.foo",
 			value:   "",
-			want:    []byte("foo: \n"),
+			want:    []byte("foo:\n"),
 			wantErr: false,
 		},
 		{

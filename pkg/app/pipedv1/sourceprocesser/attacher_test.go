@@ -105,7 +105,6 @@ func TestAttachData(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			appDir, err := os.MkdirTemp(workspace, "app-dir")
 			require.NoError(t, err)

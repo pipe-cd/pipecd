@@ -370,18 +370,42 @@ func (s *scheduler) Run(ctx context.Context) error {
 			<-doneCh
 
 		case cmd := <-s.cancelledCh:
+			// A nil command means the channel was closed after delivering
+			// a cancel command, so treat it as a cancellation as well.
 			if cmd != nil {
 				cancelCommand = cmd
 				cancelCommander = cmd.Commander
-				handler.Cancel()
-				<-doneCh
 			}
+			handler.Cancel()
+			<-doneCh
 
 		case <-timeout:
 			handler.Timeout()
 			<-doneCh
 
 		case <-doneCh:
+			break
+		}
+
+		// The select may have picked doneCh while a cancel command was already
+		// waiting, so check it before deciding to move on.
+		if cancelCommand == nil {
+			select {
+			case cmd := <-s.cancelledCh:
+				if cmd != nil {
+					cancelCommand = cmd
+					cancelCommander = cmd.Commander
+				}
+			default:
+			}
+		}
+
+		// A received cancel command wins even if the stage finished successfully,
+		// otherwise the loop would continue to the next stage after the user cancelled.
+		// Cancel stops progression, it does not rewrite an already-committed stage outcome.
+		if cancelCommand != nil && (result == model.StageStatus_STAGE_SUCCESS || result == model.StageStatus_STAGE_SKIPPED) {
+			deploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
+			statusReason = fmt.Sprintf("Cancelled by %s while executing stage %s", cancelCommander, ps.Id)
 			break
 		}
 
@@ -708,7 +732,7 @@ func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, statu
 	// Update stage status at local.
 	s.stageStatuses[stageID] = status
 
-	_, err := retry.Do(ctx, func() (interface{}, error) {
+	_, err := retry.Do(ctx, func() (any, error) {
 		_, err := s.apiClient.ReportStageStatusChanged(ctx, req)
 		if err != nil {
 			return nil, fmt.Errorf("failed to report stage status to control-plane: %v", err)
@@ -732,7 +756,7 @@ func (s *scheduler) reportDeploymentStatusChanged(ctx context.Context, status mo
 	)
 
 	// Update deployment status on remote.
-	_, err := retry.Do(ctx, func() (interface{}, error) {
+	_, err := retry.Do(ctx, func() (any, error) {
 		_, err := s.apiClient.ReportDeploymentStatusChanged(ctx, req)
 		if err != nil {
 			return nil, fmt.Errorf("failed to report deployment status to control-plane: %v", err)
@@ -761,7 +785,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	defer func() {
 		switch status {
 		case model.DeploymentStatus_DEPLOYMENT_SUCCESS:
-			users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
+			users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED)
 			if err != nil {
 				s.logger.Error("failed to get the list of users", zap.Error(err))
 			}
@@ -775,7 +799,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 			})
 
 		case model.DeploymentStatus_DEPLOYMENT_FAILURE:
-			users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
+			users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_FAILED)
 			if err != nil {
 				s.logger.Error("failed to get the list of users", zap.Error(err))
 			}
@@ -808,7 +832,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	}()
 
 	// Update deployment status on remote.
-	_, err := retry.Do(ctx, func() (interface{}, error) {
+	_, err := retry.Do(ctx, func() (any, error) {
 		_, err := s.apiClient.ReportDeploymentCompleted(ctx, req)
 		if err != nil {
 			return nil, fmt.Errorf("failed to report deployment status to control-plane: %v", err)
@@ -852,7 +876,7 @@ func (s *scheduler) reportMostRecentlySuccessfulDeployment(ctx context.Context) 
 		retry = pipedservice.NewRetry(10)
 	)
 
-	_, err := retry.Do(ctx, func() (interface{}, error) {
+	_, err := retry.Do(ctx, func() (any, error) {
 		_, err := s.apiClient.ReportApplicationMostRecentDeployment(ctx, req)
 		if err != nil {
 			return nil, fmt.Errorf("failed to report most recent successful deployment: %v", err)

@@ -15,7 +15,6 @@
 package grpcapi
 
 import (
-	"context"
 	"errors"
 	"testing"
 
@@ -33,8 +32,7 @@ func TestValidateAppBelongsToProject(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	tests := []struct {
 		name             string
@@ -125,8 +123,7 @@ func TestValidateDeploymentBelongsToProject(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	tests := []struct {
 		name                   string
@@ -217,8 +214,7 @@ func TestValidatePipedBelongsToProject(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	tests := []struct {
 		name              string

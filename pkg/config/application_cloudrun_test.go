@@ -27,7 +27,7 @@ func TestCloudRunApplicationConfig(t *testing.T) {
 		fileName           string
 		expectedKind       Kind
 		expectedAPIVersion string
-		expectedSpec       interface{}
+		expectedSpec       any
 		expectedError      error
 	}{
 		{

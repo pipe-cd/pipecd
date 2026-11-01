@@ -1,0 +1,15 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  name: simple
+  plugins:
+    kubernetes_multicluster:
+      input:
+        kustomizeVersion: 5.6.0
+        multiTargets:
+          - target:
+              name: cluster1
+            kustomizeDir: overlays/cluster1
+          - target:
+              name: cluster2
+            kustomizeDir: overlays/cluster2

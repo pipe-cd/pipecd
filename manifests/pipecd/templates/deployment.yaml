@@ -422,17 +422,24 @@ spec:
       {{- end }}
       containers:
         - name: minio
-          image: minio/minio:{{ .Values.minio.imageTag }}
+          image: {{ .Values.minio.image }}:{{ .Values.minio.imageTag }}
+{{- if .Values.localStorageVolumes.enabled }}
+          # The host path is created by the kubelet as root, so the image's non-root user cannot write to it.
+          securityContext:
+            runAsUser: 0
+{{- end }}
+          command:
+          - minio
           args:
           - server
           - /data
           env:
-          - name: MINIO_ACCESS_KEY
+          - name: MINIO_ROOT_USER
             valueFrom:
               secretKeyRef:
                 name: {{ include "pipecd.secretName" . }}
                 key: {{ .Values.secret.minioAccessKey.fileName }}
-          - name: MINIO_SECRET_KEY
+          - name: MINIO_ROOT_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: {{ include "pipecd.secretName" . }}
@@ -441,21 +448,21 @@ spec:
             - name: minio
               containerPort: {{ .Values.minio.port }}
               protocol: TCP
-{{- if .Values.localStorageVolumes.enabled }}
           volumeMounts:
             - name: minio-data
               mountPath: /data
-{{- end }}
 {{- if .Values.minio.resources }}
           resources:
             {{- toYaml .Values.minio.resources | nindent 12 }}
 {{- end }}
-{{- if .Values.localStorageVolumes.enabled }}
       volumes:
         - name: minio-data
+{{- if .Values.localStorageVolumes.enabled }}
           hostPath:
             path: /tmp/pipecd-data/minio
             type: DirectoryOrCreate
+{{- else }}
+          emptyDir: {}
 {{- end }}
 
 {{- end }}

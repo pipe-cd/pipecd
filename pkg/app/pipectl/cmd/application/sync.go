@@ -31,6 +31,7 @@ type sync struct {
 	root *command
 
 	appID         string
+	syncStrategy  string
 	statuses      []string
 	checkInterval time.Duration
 	timeout       time.Duration
@@ -39,6 +40,7 @@ type sync struct {
 func newSyncCommand(root *command) *cobra.Command {
 	c := &sync{
 		root:          root,
+		syncStrategy:  model.SyncStrategy_AUTO.String(),
 		checkInterval: 15 * time.Second,
 		timeout:       5 * time.Minute,
 	}
@@ -49,6 +51,7 @@ func newSyncCommand(root *command) *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&c.appID, "app-id", c.appID, "The application ID.")
+	cmd.Flags().StringVar(&c.syncStrategy, "sync-strategy", c.syncStrategy, fmt.Sprintf("The sync strategy to use. (%s)", strings.Join(model.SyncStrategyStrings(), "|")))
 	cmd.Flags().StringSliceVar(&c.statuses, "wait-status", c.statuses, fmt.Sprintf("The list of waiting statuses. Empty means returning immediately after triggered. (%s)", strings.Join(model.DeploymentStatusStrings(), "|")))
 	cmd.Flags().DurationVar(&c.checkInterval, "check-interval", c.checkInterval, "The interval of checking the requested command.")
 	cmd.Flags().DurationVar(&c.timeout, "timeout", c.timeout, "Maximum execution time.")
@@ -64,13 +67,18 @@ func (c *sync) run(ctx context.Context, input cli.Input) error {
 		return fmt.Errorf("invalid deployment status: %w", err)
 	}
 
+	syncStrategy, err := model.SyncStrategyFromString(c.syncStrategy)
+	if err != nil {
+		return err
+	}
+
 	cli, err := c.root.clientOptions.NewClient(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to initialize client: %w", err)
 	}
 	defer cli.Close()
 
-	deploymentID, err := client.SyncApplication(ctx, cli, c.appID, c.checkInterval, c.timeout, input.Logger)
+	deploymentID, err := client.SyncApplication(ctx, cli, c.appID, syncStrategy, c.checkInterval, c.timeout, input.Logger)
 	if err != nil {
 		return err
 	}

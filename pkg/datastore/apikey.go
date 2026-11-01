@@ -30,7 +30,7 @@ func (a *apiKeyCollection) Kind() string {
 }
 
 func (a *apiKeyCollection) Factory() Factory {
-	return func() interface{} {
+	return func() any {
 		return &model.APIKey{}
 	}
 }
@@ -85,6 +85,7 @@ func (s *apiKeyStore) List(ctx context.Context, opts ListOptions) ([]*model.APIK
 	if err != nil {
 		return nil, err
 	}
+	defer it.Close()
 	ks := make([]*model.APIKey, 0)
 	for {
 		var k model.APIKey
@@ -102,7 +103,7 @@ func (s *apiKeyStore) List(ctx context.Context, opts ListOptions) ([]*model.APIK
 
 func (s *apiKeyStore) Disable(ctx context.Context, id, projectID string) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
+	return s.ds.Update(ctx, s.col, id, func(e any) error {
 		k := e.(*model.APIKey)
 		if k.ProjectId != projectID {
 			return fmt.Errorf("invalid project id, expected %s, got %s", k.ProjectId, projectID)
@@ -115,7 +116,7 @@ func (s *apiKeyStore) Disable(ctx context.Context, id, projectID string) error {
 }
 
 func (s *apiKeyStore) UpdateLastUsedAt(ctx context.Context, id string, time int64) error {
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
+	return s.ds.Update(ctx, s.col, id, func(e any) error {
 		k := e.(*model.APIKey)
 		if time < k.LastUsedAt {
 			return fmt.Errorf("unable to update last used at time earlier than current last used at time")

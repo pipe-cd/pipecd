@@ -120,7 +120,7 @@ func (m *MySQL) Find(ctx context.Context, col datastore.Collection, opts datasto
 }
 
 // Get implementation for MySQL
-func (m *MySQL) Get(ctx context.Context, col datastore.Collection, id string, v interface{}) error {
+func (m *MySQL) Get(ctx context.Context, col datastore.Collection, id string, v any) error {
 	kind := col.Kind()
 	row := m.client.QueryRowContext(ctx, buildGetQuery(kind), makeRowID(id))
 	var val string
@@ -141,7 +141,7 @@ func (m *MySQL) Get(ctx context.Context, col datastore.Collection, id string, v 
 }
 
 // Create implementation for MySQL
-func (m *MySQL) Create(ctx context.Context, col datastore.Collection, id string, entity interface{}) error {
+func (m *MySQL) Create(ctx context.Context, col datastore.Collection, id string, entity any) error {
 	kind := col.Kind()
 	stmt, err := m.client.PrepareContext(ctx, buildCreateQuery(kind))
 	if err != nil {

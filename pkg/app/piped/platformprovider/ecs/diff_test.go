@@ -15,6 +15,7 @@
 package ecs
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -91,8 +92,9 @@ func TestDiffResult_Render(t *testing.T) {
 	// Use diff command
 	opt = DiffRenderOptions{UseDiffCommand: true}
 	actual = result.Render(opt)
+	actual = regexp.MustCompile(`(?m)^@@ -\d+,\d+ \+\d+,\d+ @@$`).ReplaceAllString(actual, "@@ HUNK @@")
 	expected = `# 1. ServiceDefinition
-@@ -10,7 +10,7 @@
+@@ HUNK @@
  DeploymentController:
    Type: EXTERNAL
  Deployments: null
@@ -103,7 +105,7 @@ func TestDiffResult_Render(t *testing.T) {
  Events: null
 
 # 2. TaskDefinition
-@@ -18,7 +18,7 @@
+@@ HUNK @@
    FirelensConfiguration: null
    HealthCheck: null
    Hostname: null

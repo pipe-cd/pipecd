@@ -20,7 +20,7 @@ test("should not called callback if passed null to delay", () => {
 
   jest.runAllTimers();
 
-  expect(callback).not.toBeCalled();
+  expect(callback).not.toHaveBeenCalled();
 });
 
 it("should call callback with passed delay", () => {
@@ -30,7 +30,7 @@ it("should call callback with passed delay", () => {
 
   jest.advanceTimersByTime(99);
 
-  expect(callback).not.toBeCalled();
+  expect(callback).not.toHaveBeenCalled();
 
   jest.advanceTimersByTime(100);
 
@@ -44,7 +44,7 @@ it("should call callback with passed delay", () => {
 
   jest.advanceTimersByTime(99);
 
-  expect(callback).not.toBeCalled();
+  expect(callback).not.toHaveBeenCalled();
 
   jest.advanceTimersByTime(100);
 
@@ -56,13 +56,13 @@ it("should clear interval on unmount", () => {
 
   const { unmount } = renderHook(() => useInterval(callback, 100));
 
-  expect(callback).not.toBeCalled();
+  expect(callback).not.toHaveBeenCalled();
 
   unmount();
 
   jest.runAllTimers();
 
-  expect(callback).not.toBeCalled();
+  expect(callback).not.toHaveBeenCalled();
 });
 
 it("should update interval if updated delay value", () => {

@@ -456,15 +456,13 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 	}
 
 	// Start running planner.
-	c.wg.Add(1)
-	go func() {
-		defer c.wg.Done()
+	c.wg.Go(func() {
 		defer cleanup()
 		defer c.metadataStoreRegistry.Delete(d.Id)
 		if err := planner.Run(ctx); err != nil {
 			logger.Error("failed to run planner", zap.Error(err))
 		}
-	}()
+	})
 
 	return planner, nil
 }
@@ -605,15 +603,13 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 	}
 
 	// Start running scheduler.
-	c.wg.Add(1)
-	go func() {
-		defer c.wg.Done()
+	c.wg.Go(func() {
 		defer cleanup()
 		defer c.metadataStoreRegistry.Delete(d.Id)
 		if err := scheduler.Run(ctx); err != nil {
 			logger.Error("failed to run scheduler", zap.Error(err))
 		}
-	}()
+	})
 
 	return scheduler, nil
 }
@@ -624,7 +620,7 @@ func (c *controller) getMostRecentlySuccessfulDeployment(ctx context.Context, ap
 		Status:        model.DeploymentStatus_DEPLOYMENT_SUCCESS,
 	}
 
-	d, err := pipedservice.NewRetry(3).Do(ctx, func() (interface{}, error) {
+	d, err := pipedservice.NewRetry(3).Do(ctx, func() (any, error) {
 		resp, err := c.apiClient.GetApplicationMostRecentDeployment(ctx, req)
 		if err == nil {
 			return resp.Deployment, nil
@@ -667,7 +663,7 @@ func (c *controller) cancelDeployment(ctx context.Context, d *model.Deployment, 
 		CompletedAt:               time.Now().Unix(),
 	}
 
-	_, err := pipedservice.NewRetry(10).Do(ctx, func() (interface{}, error) {
+	_, err := pipedservice.NewRetry(10).Do(ctx, func() (any, error) {
 		_, err := c.apiClient.ReportDeploymentCompleted(ctx, req)
 		if err != nil {
 			return nil, fmt.Errorf("failed to report deployment status to control-plane: %w", err)
@@ -683,7 +679,7 @@ func reportApplicationDeployingStatus(ctx context.Context, c apiClient, appID st
 		Deploying:     deploying,
 	}
 
-	_, err := pipedservice.NewRetry(10).Do(ctx, func() (interface{}, error) {
+	_, err := pipedservice.NewRetry(10).Do(ctx, func() (any, error) {
 		_, err := c.ReportApplicationDeployingStatus(ctx, req)
 		if err != nil {
 			return nil, fmt.Errorf("failed to report application deploying status to control-plane: %w", err)

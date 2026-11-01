@@ -12,10 +12,11 @@ You start with an empty directory and finish with a simple plugin that `piped` c
 
 The plugin copies a directory of files from a Git repository onto the machine where `piped` runs. This is a common way to deploy to virtual machines and bare-metal hosts.
 
-The plugin implements two deployment stages:
+The plugin implements two pipeline stages and one rollback stage:
 
 - `FILE_DIFF` compares the files in the Git repository against the files already on the machine and prints the difference to the deployment log, without changing anything.
 - `FILE_SYNC` applies the change. It copies the files that exist in the Git repository and removes any files on the machine that are no longer in Git.
+- `FILE_ROLLBACK` runs when a deployment fails. It restores the target directory to the state from the previously running deployment.
 
 The plugin stays small and uses only the Go standard library and the plugin SDK.
 

@@ -33,16 +33,16 @@ import (
 func TestManifest_AddStringMapValues(t *testing.T) {
 	tests := []struct {
 		name     string
-		initial  map[string]interface{}
+		initial  map[string]any
 		values   map[string]string
 		fields   []string
-		expected map[string]interface{}
+		expected map[string]any
 	}{
 		{
 			name: "add new values to empty map",
-			initial: map[string]interface{}{
-				"metadata": map[string]interface{}{
-					"annotations": map[string]interface{}{},
+			initial: map[string]any{
+				"metadata": map[string]any{
+					"annotations": map[string]any{},
 				},
 			},
 			values: map[string]string{
@@ -50,9 +50,9 @@ func TestManifest_AddStringMapValues(t *testing.T) {
 				"key2": "value2",
 			},
 			fields: []string{"metadata", "annotations"},
-			expected: map[string]interface{}{
-				"metadata": map[string]interface{}{
-					"annotations": map[string]interface{}{
+			expected: map[string]any{
+				"metadata": map[string]any{
+					"annotations": map[string]any{
 						"key1": "value1",
 						"key2": "value2",
 					},
@@ -61,9 +61,9 @@ func TestManifest_AddStringMapValues(t *testing.T) {
 		},
 		{
 			name: "override existing values",
-			initial: map[string]interface{}{
-				"metadata": map[string]interface{}{
-					"annotations": map[string]interface{}{
+			initial: map[string]any{
+				"metadata": map[string]any{
+					"annotations": map[string]any{
 						"key1": "oldvalue1",
 					},
 				},
@@ -73,9 +73,9 @@ func TestManifest_AddStringMapValues(t *testing.T) {
 				"key2": "value2",
 			},
 			fields: []string{"metadata", "annotations"},
-			expected: map[string]interface{}{
-				"metadata": map[string]interface{}{
-					"annotations": map[string]interface{}{
+			expected: map[string]any{
+				"metadata": map[string]any{
+					"annotations": map[string]any{
 						"key1": "newvalue1",
 						"key2": "value2",
 					},
@@ -84,16 +84,16 @@ func TestManifest_AddStringMapValues(t *testing.T) {
 		},
 		{
 			name: "add values to non-existing map",
-			initial: map[string]interface{}{
-				"metadata": map[string]interface{}{},
+			initial: map[string]any{
+				"metadata": map[string]any{},
 			},
 			values: map[string]string{
 				"key1": "value1",
 			},
 			fields: []string{"metadata", "annotations"},
-			expected: map[string]interface{}{
-				"metadata": map[string]interface{}{
-					"annotations": map[string]interface{}{
+			expected: map[string]any{
+				"metadata": map[string]any{
+					"annotations": map[string]any{
 						"key1": "value1",
 					},
 				},
@@ -820,9 +820,9 @@ func TestIsManagedByPiped(t *testing.T) {
 			name: "managed by Piped",
 			manifest: Manifest{
 				body: &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"metadata": map[string]interface{}{
-							"annotations": map[string]interface{}{
+					Object: map[string]any{
+						"metadata": map[string]any{
+							"annotations": map[string]any{
 								LabelManagedBy: ManagedByPiped,
 							},
 						},
@@ -835,9 +835,9 @@ func TestIsManagedByPiped(t *testing.T) {
 			name: "not managed by Piped",
 			manifest: Manifest{
 				body: &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"metadata": map[string]interface{}{
-							"annotations": map[string]interface{}{
+					Object: map[string]any{
+						"metadata": map[string]any{
+							"annotations": map[string]any{
 								"some-other-label": "some-value",
 							},
 						},
@@ -850,13 +850,13 @@ func TestIsManagedByPiped(t *testing.T) {
 			name: "has owner references",
 			manifest: Manifest{
 				body: &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"metadata": map[string]interface{}{
-							"annotations": map[string]interface{}{
+					Object: map[string]any{
+						"metadata": map[string]any{
+							"annotations": map[string]any{
 								LabelManagedBy: ManagedByPiped,
 							},
-							"ownerReferences": []interface{}{
-								map[string]interface{}{
+							"ownerReferences": []any{
+								map[string]any{
 									"apiVersion": "v1",
 									"kind":       "ReplicaSet",
 									"name":       "example-replicaset",
@@ -889,8 +889,8 @@ func TestManifest_ToResourceState(t *testing.T) {
 			name: "no owner references",
 			manifest: Manifest{
 				body: &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"metadata": map[string]interface{}{
+					Object: map[string]any{
+						"metadata": map[string]any{
 							"name":              "nginx-deployment",
 							"namespace":         "default",
 							"uid":               "12345",
@@ -922,14 +922,14 @@ func TestManifest_ToResourceState(t *testing.T) {
 			name: "with owner references",
 			manifest: Manifest{
 				body: &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"metadata": map[string]interface{}{
+					Object: map[string]any{
+						"metadata": map[string]any{
 							"name":              "nginx-deployment",
 							"namespace":         "default",
 							"uid":               "12345",
 							"creationTimestamp": "2023-10-01T00:00:00Z",
-							"ownerReferences": []interface{}{
-								map[string]interface{}{
+							"ownerReferences": []any{
+								map[string]any{
 									"apiVersion": "apps/v1",
 									"kind":       "ReplicaSet",
 									"name":       "nginx-replicaset",
@@ -975,7 +975,7 @@ func TestManifest_ConvertToStructuredObject(t *testing.T) {
 	tests := []struct {
 		name    string
 		yaml    string
-		want    interface{}
+		want    any
 		wantErr bool
 	}{
 		{

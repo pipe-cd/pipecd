@@ -84,8 +84,7 @@ func (p *Plugin) executeK8sMultiRollbackStage(ctx context.Context, input *sdk.Ex
 	)
 
 	for _, tc := range targetConfigs {
-		wg.Add(1)
-		go func() {
+		wg.Go(func() {
 			lp.Infof("Start rollbacking the deployment for the target %s", tc.deployTarget.Name)
 
 			status := p.rollback(ctx, input, tc.deployTarget, tc.multiTarget)
@@ -95,8 +94,7 @@ func (p *Plugin) executeK8sMultiRollbackStage(ctx context.Context, input *sdk.Ex
 				status: status,
 			})
 			mu.Unlock()
-			wg.Done()
-		}()
+		})
 	}
 
 	wg.Wait()

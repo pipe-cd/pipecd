@@ -91,7 +91,7 @@ pipectl event register \
     --address={CONTROL_PLANE_API_ADDRESS} \
     --api-key={API_KEY} \
     --name=helloworld-image-update \
-    --data=gcr.io/pipecd/helloworld:v0.2.0
+    --data=ghcr.io/pipe-cd/helloworld:v0.48.0
 ```
 
 You can see the status on the event list page.
@@ -105,8 +105,8 @@ After a while, Piped will create a commit as shown below:
      spec:
        containers:
        - name: helloworld
--        image: gcr.io/pipecd/helloworld:v0.1.0
-+        image: gcr.io/pipecd/helloworld:v0.2.0
+-        image: ghcr.io/pipe-cd/helloworld:v0.47.0
++        image: ghcr.io/pipe-cd/helloworld:v0.48.0
 ```
 
 NOTE: Keep in mind that it may take a little while because Piped periodically fetches the new events from the Control Plane. You can change its interval according to [here](../managing-piped/configuration-reference/#eventwatcher).
@@ -160,7 +160,7 @@ pipectl event register \
     --api-key=API_KEY \
     --name=image-update \
     --labels env=dev,appName=helloworld \
-    --data=gcr.io/pipecd/helloworld:v0.2.0
+    --data=ghcr.io/pipe-cd/helloworld:v0.48.0
 ```
 
 Note that it is considered a match only when labels are an exact match.
@@ -178,7 +178,7 @@ pipectl event register \
     --address=CONTROL_PLANE_API_ADDRESS \
     --api-key=API_KEY \
     --name=sample \
-    --data=gcr.io/pipecd/helloworld:v0.48.0 \
+    --data=ghcr.io/pipe-cd/helloworld:v0.48.0 \
     --contexts Source-Commit-Hash=xxxxxxx,Source-Commit-URL=https://github.com/pipe-cd/pipecd/commit/xxxxxxx
 ```
 
@@ -189,7 +189,7 @@ commit ff46cdc9a3ce87a9a66436269251a4870ac55183 (HEAD -> main, origin/main, orig
 Author: ffjlabo <pipecd.dev@gmail.com>
 Date:   Wed Oct 30 16:56:36 2024 +0900
 
-    Replace values with "gcr.io/pipecd/helloworld:v0.48.0" set by Event "simple"
+    Replace values with "ghcr.io/pipe-cd/helloworld:v0.48.0" set by Event "simple"
 
     Source-Commit-Hash: xxxxxxx
     Source-Commit-URL: https://github.com/pipe-cd/pipecd/commit/xxxxxxx
@@ -209,7 +209,7 @@ pipectl event register \
     --address=CONTROL_PLANE_API_ADDRESS \
     --api-key=API_KEY \
     --name=sample \
-    --data=gcr.io/pipecd/helloworld:v0.48.0 \
+    --data=ghcr.io/pipe-cd/helloworld:v0.48.0 \
     --commit-hash=20c98a503062021720b2fcf2058276b3245xxxxx
     --commit-url=https://github.com/pipe-cd/pipecd/commit/20c98a503062021720b2fcf2058276b3245xxxxx
 ```

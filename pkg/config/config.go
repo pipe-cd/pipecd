@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 
 	"github.com/creasty/defaults"
@@ -78,7 +79,7 @@ var (
 type Config struct {
 	Kind       Kind
 	APIVersion string
-	spec       interface{}
+	spec       any
 
 	KubernetesApplicationSpec *KubernetesApplicationSpec
 	TerraformApplicationSpec  *TerraformApplicationSpec
@@ -146,7 +147,7 @@ func (c *Config) init(kind Kind, apiVersion string) error {
 }
 
 func mergeRawMessages(a, b json.RawMessage) (json.RawMessage, error) {
-	var mapA, mapB map[string]interface{}
+	var mapA, mapB map[string]any
 
 	// Unmarshal both RawMessages into maps
 	if err := json.Unmarshal(a, &mapA); err != nil {
@@ -157,9 +158,7 @@ func mergeRawMessages(a, b json.RawMessage) (json.RawMessage, error) {
 	}
 
 	// Merge mapB into mapA (mapB overwrites mapA)
-	for k, v := range mapB {
-		mapA[k] = v
-	}
+	maps.Copy(mapA, mapB)
 
 	// Marshal back to RawMessage
 	merged, err := json.Marshal(mapA)

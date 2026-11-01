@@ -25,13 +25,13 @@ var (
 
 // Getter wraps a method to read from cache.
 type Getter interface {
-	Get(key string) (interface{}, error)
-	GetAll() (map[string]interface{}, error)
+	Get(key string) (any, error)
+	GetAll() (map[string]any, error)
 }
 
 // Putter wraps a method to write to cache.
 type Putter interface {
-	Put(key string, value interface{}) error
+	Put(key string, value any) error
 }
 
 // Deleter wraps a method to delete from cache.
@@ -65,7 +65,7 @@ func MultiGetter(getters ...Getter) Getter {
 	}
 }
 
-func (mg *multiGetter) Get(key string) (interface{}, error) {
+func (mg *multiGetter) Get(key string) (any, error) {
 	if len(mg.getters) == 0 {
 		return nil, ErrNotFound
 	}
@@ -85,6 +85,6 @@ func (mg *multiGetter) Get(key string) (interface{}, error) {
 	return nil, firstErr
 }
 
-func (mg *multiGetter) GetAll() (map[string]interface{}, error) {
+func (mg *multiGetter) GetAll() (map[string]any, error) {
 	return nil, ErrUnimplemented
 }

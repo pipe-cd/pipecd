@@ -145,7 +145,7 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		)
 	)
 
-	_, err, _ := c.repoSingleFlights.Do(repoID, func() (interface{}, error) {
+	_, err, _ := c.repoSingleFlights.Do(repoID, func() (any, error) {
 		authArgs := []string{}
 		if c.username != "" && c.password != "" {
 			token := fmt.Sprintf("%s:%s", c.username, c.password)
@@ -295,7 +295,7 @@ func runGitCommand(ctx context.Context, execPath, dir string, envs []string, arg
 //
 //nolint:unparam
 func retryCommand(retries int, interval time.Duration, logger *zap.Logger, commander func() ([]byte, error)) (out []byte, err error) {
-	for i := 0; i < retries; i++ {
+	for i := range retries {
 		out, err = commander()
 		if err == nil {
 			return

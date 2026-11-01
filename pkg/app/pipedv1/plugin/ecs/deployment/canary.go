@@ -62,7 +62,7 @@ func (p *ECSPlugin) executeECSCanaryRolloutStage(
 	}
 
 	serviceDef, err := provider.LoadServiceDefinition(
-		input.Request.TargetDeploymentSource.ApplicationDirectory,
+		input.Request.TargetDeploymentSource,
 		cfg.Spec.Input.ServiceDefinitionFile,
 		input,
 	)
@@ -191,8 +191,7 @@ func canaryClean(ctx context.Context, lp sdk.StageLogPersister, client provider.
 	lp.Infof("Deleting canary task set %s", *taskSet.TaskSetArn)
 	if err := client.DeleteTaskSet(ctx, taskSet); err != nil {
 		// If the task set is already gone, treat as success
-		var notFound *types.TaskSetNotFoundException
-		if errors.As(err, &notFound) {
+		if _, ok := errors.AsType[*types.TaskSetNotFoundException](err); ok {
 			lp.Infof("Canary task set %s already deleted, skipping", *taskSet.TaskSetArn)
 			return nil
 		}

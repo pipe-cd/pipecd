@@ -30,7 +30,7 @@ func TestSortManifests(t *testing.T) {
 		m := Manifest{
 			Key: ResourceKey{Name: name},
 			u: &unstructured.Unstructured{
-				Object: map[string]interface{}{},
+				Object: map[string]any{},
 			},
 		}
 		m.AddAnnotations(annotations)

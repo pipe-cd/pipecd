@@ -54,15 +54,15 @@ func TestDo(t *testing.T) {
 	testcases := []struct {
 		name          string
 		canceled      bool
-		operation     func() (interface{}, error)
-		expected      interface{}
+		operation     func() (any, error)
+		expected      any
 		expectedErr   error
 		expectedCalls int
 	}{
 		{
 			name:     "canceled context",
 			canceled: true,
-			operation: func() (interface{}, error) {
+			operation: func() (any, error) {
 				calls++
 				return 1, nil
 			},
@@ -72,7 +72,7 @@ func TestDo(t *testing.T) {
 		},
 		{
 			name: "retriable error",
-			operation: func() (interface{}, error) {
+			operation: func() (any, error) {
 				calls++
 				return nil, NewError(errors.New("retriable-error"), true)
 			},
@@ -82,7 +82,7 @@ func TestDo(t *testing.T) {
 		},
 		{
 			name: "non-retriable error",
-			operation: func() (interface{}, error) {
+			operation: func() (any, error) {
 				calls++
 				return nil, NewError(errors.New("non-retriable-error"), false)
 			},
@@ -92,7 +92,7 @@ func TestDo(t *testing.T) {
 		},
 		{
 			name: "not using Error type",
-			operation: func() (interface{}, error) {
+			operation: func() (any, error) {
 				calls++
 				return nil, errors.New("test-error")
 			},
@@ -102,7 +102,7 @@ func TestDo(t *testing.T) {
 		},
 		{
 			name: "ok",
-			operation: func() (interface{}, error) {
+			operation: func() (any, error) {
 				calls++
 				return 1, nil
 			},
@@ -112,7 +112,7 @@ func TestDo(t *testing.T) {
 		},
 		{
 			name: "ok after a retry",
-			operation: func() (interface{}, error) {
+			operation: func() (any, error) {
 				calls++
 				if calls == 1 {
 					return nil, NewError(errors.New("retriable-error"), true)

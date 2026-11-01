@@ -45,7 +45,7 @@ func WithIgnoreAddingMapKeys() Option {
 	}
 }
 
-// WithEquateEmpty configures differ to consider all maps/slides with a length of zero and nil to be equal.
+// WithEquateEmpty configures differ to consider all maps/slices with a length of zero and nil to be equal.
 func WithEquateEmpty() Option {
 	return func(d *differ) {
 		d.equateEmpty = true
@@ -111,9 +111,9 @@ func DiffUnstructureds(x, y unstructured.Unstructured, key string, opts ...Optio
 
 // DiffStructureds calulates the diff between non-k8s manifests.
 // If you compare k8s manifests, use DiffUnstructureds instead.
-func DiffStructureds(x, y interface{}, opts ...Option) (*Result, error) {
-	mapX := map[string]interface{}{}
-	mapY := map[string]interface{}{}
+func DiffStructureds(x, y any, opts ...Option) (*Result, error) {
+	mapX := map[string]any{}
+	mapY := map[string]any{}
 	ymlX, err := yaml.Marshal(x)
 	if err != nil {
 		return nil, err
@@ -225,7 +225,22 @@ func (d *differ) diff(path []PathStep, vx, vy reflect.Value) error {
 }
 
 func (d *differ) diffSlice(path []PathStep, vx, vy reflect.Value) error {
-	if vx.IsNil() || vy.IsNil() {
+	xIsNil := vx.Kind() == reflect.Slice && vx.IsNil()
+	yIsNil := vy.Kind() == reflect.Slice && vy.IsNil()
+
+	if xIsNil && yIsNil {
+		return nil
+	}
+
+	if d.equateEmpty {
+		xIsEmpty := xIsNil || vx.Len() == 0
+		yIsEmpty := yIsNil || vy.Len() == 0
+		if xIsEmpty && yIsEmpty {
+			return nil
+		}
+	}
+
+	if xIsNil || yIsNil {
 		d.addNode(path, vx.Type(), vy.Type(), vx, vy)
 		return nil
 	}
@@ -260,7 +275,22 @@ func (d *differ) diffSlice(path []PathStep, vx, vy reflect.Value) error {
 }
 
 func (d *differ) diffMap(path []PathStep, vx, vy reflect.Value) error {
-	if vx.IsNil() || vy.IsNil() {
+	xIsNil := vx.IsNil()
+	yIsNil := vy.IsNil()
+
+	if xIsNil && yIsNil {
+		return nil
+	}
+
+	if d.equateEmpty {
+		xIsEmpty := xIsNil || vx.Len() == 0
+		yIsEmpty := yIsNil || vy.Len() == 0
+		if xIsEmpty && yIsEmpty {
+			return nil
+		}
+	}
+
+	if xIsNil || yIsNil {
 		d.addNode(path, vx.Type(), vy.Type(), vx, vy)
 		return nil
 	}
@@ -294,7 +324,11 @@ func (d *differ) diffMap(path []PathStep, vx, vy reflect.Value) error {
 }
 
 func (d *differ) diffInterface(path []PathStep, vx, vy reflect.Value) error {
-	if isEmptyInterface(vx) && isEmptyInterface(vy) {
+	if vx.IsNil() && vy.IsNil() {
+		return nil
+	}
+
+	if d.equateEmpty && isEmptyInterface(vx) && isEmptyInterface(vy) {
 		return nil
 	}
 
@@ -334,7 +368,16 @@ func (d *differ) diffNumber(path []PathStep, vx, vy reflect.Value) error {
 
 // isEmptyInterface reports whether v is nil or zero value or its element is an empty map, an empty slice.
 func isEmptyInterface(v reflect.Value) bool {
-	if !v.IsValid() || v.IsNil() || v.IsZero() {
+	if !v.IsValid() {
+		return true
+	}
+	switch v.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Map, reflect.Pointer, reflect.UnsafePointer, reflect.Interface, reflect.Slice:
+		if v.IsNil() {
+			return true
+		}
+	}
+	if v.IsZero() {
 		return true
 	}
 	if v.Kind() != reflect.Interface {
@@ -456,7 +499,7 @@ func (d *differ) ignoredValue(v reflect.Value, prefix string) reflect.Value {
 		}
 		return nv
 
-	case reflect.Slice, reflect.Array:
+	case reflect.Slice:
 		nv := reflect.MakeSlice(v.Type(), 0, 0)
 		for i := 0; i < v.Len(); i++ {
 			nprefix := prefix + "." + strconv.Itoa(i)
@@ -469,6 +512,22 @@ func (d *differ) ignoredValue(v reflect.Value, prefix string) reflect.Value {
 				continue
 			}
 			nv = reflect.Append(nv, filtered)
+		}
+		return nv
+
+	case reflect.Array:
+		nv := reflect.New(v.Type()).Elem()
+		for i := 0; i < v.Len(); i++ {
+			nprefix := prefix + "." + strconv.Itoa(i)
+			if d.isIgnoredPath(nprefix) {
+				continue
+			}
+
+			filtered := d.ignoredValue(v.Index(i), nprefix)
+			if !filtered.IsValid() {
+				continue
+			}
+			nv.Index(i).Set(filtered)
 		}
 		return nv
 
@@ -499,15 +558,15 @@ func (d *differ) ignoredValue(v reflect.Value, prefix string) reflect.Value {
 }
 
 func (d *differ) isIgnoredPath(pathString string) bool {
-	var pathSubStr string
+	var pathSubStr strings.Builder
 	pathElms := strings.Split(pathString, ".")
 
 	for i, path := range pathElms {
 		if i != 0 {
-			pathSubStr += "."
+			pathSubStr.WriteString(".")
 		}
-		pathSubStr += path
-		if _, found := d.ignoredPaths[pathSubStr]; found {
+		pathSubStr.WriteString(path)
+		if _, found := d.ignoredPaths[pathSubStr.String()]; found {
 			return true
 		}
 	}

@@ -17,6 +17,7 @@ package git
 import (
 	"fmt"
 	"net/url"
+	"path"
 	"regexp"
 	"strings"
 )
@@ -52,6 +53,14 @@ func MakeCommitURL(repoURL, hash string) (string, error) {
 	return fmt.Sprintf("%s://%s/%s/%s/%s", scheme, u.Host, repoPath, subPath, hash), nil
 }
 
+func normalizeDir(dir string) string {
+	cleaned := path.Clean(strings.TrimSpace(dir))
+	if cleaned == "." || cleaned == "/" {
+		return ""
+	}
+	return strings.Trim(cleaned, "/")
+}
+
 // MakeDirURL builds a link to the HTML page of the directory.
 func MakeDirURL(repoURL, dir, branch string) (string, error) {
 	if branch == "" {
@@ -78,10 +87,15 @@ func MakeDirURL(repoURL, dir, branch string) (string, error) {
 		subPath = "src"
 	default:
 		// TODO: Allow users to specify git host
+		//   Currently, the same subPath as Github is applied for all of unsupported hosts,
+		//   to support GHE where its host could be customized
 		subPath = "tree"
 	}
 
-	dir = strings.Trim(dir, "/")
+	dir = normalizeDir(dir)
+	if dir == "" {
+		return fmt.Sprintf("%s://%s/%s/%s/%s", scheme, u.Host, repoPath, subPath, branch), nil
+	}
 
 	return fmt.Sprintf("%s://%s/%s/%s/%s/%s", scheme, u.Host, repoPath, subPath, branch, dir), nil
 }
@@ -101,11 +115,16 @@ func MakeFileCreationURL(repoURL, dir, branch, filename, value string) (string, 
 		u.User = nil
 	}
 	repoPath := strings.TrimSuffix(strings.Trim(u.Path, "/"), ".git")
-	dir = strings.Trim(dir, "/")
+	dir = normalizeDir(dir)
+
+	newPath := fmt.Sprintf("%s/new/%s", repoPath, branch)
+	if dir != "" {
+		newPath = fmt.Sprintf("%s/%s", newPath, dir)
+	}
 
 	switch u.Host {
 	case "github.com":
-		u.Path = fmt.Sprintf("%s/%s/%s/%s", repoPath, "new", branch, dir)
+		u.Path = newPath
 		params := &url.Values{}
 		if filename != "" {
 			// NOTE: We're getting an issue with specifying a filename: https://github.com/isaacs/github/issues/1527
@@ -120,21 +139,21 @@ func MakeFileCreationURL(repoURL, dir, branch, filename, value string) (string, 
 		u.RawQuery = params.Encode()
 	default:
 		// TODO: Allow users to specify git host
-		u.Path = fmt.Sprintf("%s/%s/%s/%s", repoPath, "new", branch, dir)
+		u.Path = newPath
 	}
 
 	return u.String(), nil
 }
 
 var (
-	knownSchemes = map[string]interface{}{
-		"ssh":     struct{}{},
-		"git":     struct{}{},
-		"git+ssh": struct{}{},
-		"http":    struct{}{},
-		"https":   struct{}{},
-		"rsync":   struct{}{},
-		"file":    struct{}{},
+	knownSchemes = map[string]struct{}{
+		"ssh":     {},
+		"git":     {},
+		"git+ssh": {},
+		"http":    {},
+		"https":   {},
+		"rsync":   {},
+		"file":    {},
 	}
 	scpRegex = regexp.MustCompile(`^([a-zA-Z0-9_]+@)?([a-zA-Z0-9._-]+):(.*)$`)
 )

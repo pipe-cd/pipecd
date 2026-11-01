@@ -59,11 +59,11 @@ func (p *Percentage) UnmarshalJSON(b []byte) error {
 		percentage.HasSuffix = true
 		raw = strings.TrimSuffix(raw, "%")
 	}
-	value, err := strconv.ParseInt(raw, 10, 64)
+	value, err := strconv.Atoi(raw)
 	if err != nil {
 		return fmt.Errorf("invalid percentage: %w", err)
 	}
-	percentage.Number = int(value)
+	percentage.Number = value
 	*p = percentage
 	return nil
 }

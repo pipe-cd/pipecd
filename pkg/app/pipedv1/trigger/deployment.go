@@ -125,7 +125,7 @@ func reportMostRecentlyTriggeredDeployment(ctx context.Context, client apiClient
 			CompletedAt:  d.CompletedAt,
 		},
 	}
-	_, err := pipedservice.NewRetry(10).Do(ctx, func() (interface{}, error) {
+	_, err := pipedservice.NewRetry(10).Do(ctx, func() (any, error) {
 		_, err := client.ReportApplicationMostRecentDeployment(ctx, req)
 		if err != nil {
 			return nil, fmt.Errorf("failed to report most recent successful deployment: %w", err)

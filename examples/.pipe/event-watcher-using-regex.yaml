@@ -6,4 +6,4 @@ spec:
     - name: image-update-with-regex
       replacements:
         - file: kubernetes/simple/deployment.yaml
-          regex: "image: gcr.io/pipecd/helloworld:(v[0-9].[0-9].[0-9])"
+          regex: "image: ghcr.io/pipe-cd/helloworld:(v[0-9].[0-9].[0-9])"

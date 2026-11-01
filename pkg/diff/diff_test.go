@@ -354,7 +354,6 @@ func TestDiffStructureds(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			diff, err := DiffStructureds(tc.old, tc.new)
@@ -364,10 +363,205 @@ func TestDiffStructureds(t *testing.T) {
 	}
 }
 
+func TestDiff_NilAndEmpty(t *testing.T) {
+	testcases := []struct {
+		name    string
+		old     unstructured.Unstructured
+		new     unstructured.Unstructured
+		options []Option
+		diffNum int
+	}{
+		{
+			name: "two nil slices have no diff",
+			old: unstructured.Unstructured{
+				Object: map[string]any{
+					"spec": map[string]any{
+						"containers": []any(nil),
+					},
+				},
+			},
+			new: unstructured.Unstructured{
+				Object: map[string]any{
+					"spec": map[string]any{
+						"containers": []any(nil),
+					},
+				},
+			},
+			diffNum: 0,
+		},
+		{
+			name: "two nil maps have no diff",
+			old: unstructured.Unstructured{
+				Object: map[string]any{
+					"metadata": map[string]any{
+						"labels": map[string]any(nil),
+					},
+				},
+			},
+			new: unstructured.Unstructured{
+				Object: map[string]any{
+					"metadata": map[string]any{
+						"labels": map[string]any(nil),
+					},
+				},
+			},
+			diffNum: 0,
+		},
+		{
+			name: "nil slice and empty slice equated with WithEquateEmpty",
+			old: unstructured.Unstructured{
+				Object: map[string]any{
+					"spec": map[string]any{
+						"containers": []any(nil),
+					},
+				},
+			},
+			new: unstructured.Unstructured{
+				Object: map[string]any{
+					"spec": map[string]any{
+						"containers": []any{},
+					},
+				},
+			},
+			options: []Option{WithEquateEmpty()},
+			diffNum: 0,
+		},
+		{
+			name: "nil slice and empty slice differ without WithEquateEmpty",
+			old: unstructured.Unstructured{
+				Object: map[string]any{
+					"spec": map[string]any{
+						"containers": []any(nil),
+					},
+				},
+			},
+			new: unstructured.Unstructured{
+				Object: map[string]any{
+					"spec": map[string]any{
+						"containers": []any{},
+					},
+				},
+			},
+			diffNum: 1,
+		},
+		{
+			name: "nil map and empty map equated with WithEquateEmpty",
+			old: unstructured.Unstructured{
+				Object: map[string]any{
+					"metadata": map[string]any{
+						"labels": map[string]any(nil),
+					},
+				},
+			},
+			new: unstructured.Unstructured{
+				Object: map[string]any{
+					"metadata": map[string]any{
+						"labels": map[string]any{},
+					},
+				},
+			},
+			options: []Option{WithEquateEmpty()},
+			diffNum: 0,
+		},
+		{
+			name: "nil map and empty map differ without WithEquateEmpty",
+			old: unstructured.Unstructured{
+				Object: map[string]any{
+					"metadata": map[string]any{
+						"labels": map[string]any(nil),
+					},
+				},
+			},
+			new: unstructured.Unstructured{
+				Object: map[string]any{
+					"metadata": map[string]any{
+						"labels": map[string]any{},
+					},
+				},
+			},
+			diffNum: 1,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := DiffUnstructureds(tc.old, tc.new, "", tc.options...)
+			require.NoError(t, err)
+			assert.Equal(t, tc.diffNum, result.NumNodes())
+		})
+	}
+}
+
+func TestDiff_Array(t *testing.T) {
+	testcases := []struct {
+		name    string
+		old     unstructured.Unstructured
+		new     unstructured.Unstructured
+		options []Option
+		diffNum int
+	}{
+		{
+			name: "identical arrays have no diff",
+			old: unstructured.Unstructured{
+				Object: map[string]any{
+					"arr": [3]int{1, 2, 3},
+				},
+			},
+			new: unstructured.Unstructured{
+				Object: map[string]any{
+					"arr": [3]int{1, 2, 3},
+				},
+			},
+			diffNum: 0,
+		},
+		{
+			name: "differing arrays report diff",
+			old: unstructured.Unstructured{
+				Object: map[string]any{
+					"arr": [3]int{1, 2, 3},
+				},
+			},
+			new: unstructured.Unstructured{
+				Object: map[string]any{
+					"arr": [3]int{1, 5, 3},
+				},
+			},
+			diffNum: 1,
+		},
+		{
+			name: "differing arrays with ignored path",
+			old: unstructured.Unstructured{
+				Object: map[string]any{
+					"arr": [3]int{1, 2, 3},
+				},
+			},
+			new: unstructured.Unstructured{
+				Object: map[string]any{
+					"arr": [3]int{1, 5, 3},
+				},
+			},
+			options: []Option{
+				WithIgnoreConfig(map[string][]string{
+					"arr-key": {"arr.1"},
+				}),
+			},
+			diffNum: 0,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := DiffUnstructureds(tc.old, tc.new, "arr-key", tc.options...)
+			require.NoError(t, err)
+			assert.Equal(t, tc.diffNum, result.NumNodes())
+		})
+	}
+}
+
 func TestIsEmptyInterface(t *testing.T) {
 	testcases := []struct {
 		name     string
-		v        interface{}
+		v        any
 		expected bool
 	}{
 		{
@@ -403,7 +597,7 @@ func TestIsEmptyInterface(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := []interface{}{tc.v}
+			s := []any{tc.v}
 			v := reflect.ValueOf(s)
 
 			got := isEmptyInterface(v.Index(0))
