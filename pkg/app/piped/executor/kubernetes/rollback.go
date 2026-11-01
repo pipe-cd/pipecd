@@ -221,7 +221,7 @@ func (e *rollbackExecutor) ensureScriptRunRollback(ctx context.Context) model.St
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	envs := make([]string, 0, len(ciEnv)+len(env))
+	envs := make([]string, 0, len(ciEnv))
 	for key, value := range ciEnv {
 		envs = append(envs, key+"="+value)
 	}
