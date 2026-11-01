@@ -85,9 +85,19 @@ aws secretsmanager create-secret --name PipedConfig \
 
 Make sure your task role has `secretsmanager:GetSecretValue` permission for the created secret. See [IAM permissions for Secrets Manager](https://docs.aws.amazon.com/secretsmanager/latest/userguide/auth-and-access.html) for details.
 
+### Creating the log group
+
+Create a CloudWatch Logs log group for `piped`. Without a log configuration, a task that fails to start or a `piped` that exits leaves no logs to debug with.
+
+```console
+aws logs create-log-group --log-group-name /ecs/piped
+```
+
+The task execution role (`executionRoleArn`) needs `logs:CreateLogStream` and `logs:PutLogEvents` to write to the log group. The AWS managed policy `AmazonECSTaskExecutionRolePolicy` grants both, but not `logs:CreateLogGroup`, so create the log group before you register the task definition.
+
 ### Defining the task definition
 
-Prepare a task definition for your `piped` task. The following example shows how to configure `piped` to read its configuration from AWS Secrets Manager.
+Prepare a task definition for your `piped` task. The following example shows how to configure `piped` to read its configuration from AWS Secrets Manager and to send its logs to the log group created above.
 
 ```json
 {
@@ -98,11 +108,19 @@ Prepare a task definition for your `piped` task. The following example shows how
     {
       "name": "piped",
       "essential": true,
-      "image": "ghcr.io/pipe-cd/pipedv1-exp:<version>",
+      "image": "ghcr.io/pipe-cd/pipedv1-exp:v1.0.0-rc6",
       "command": [
         "run",
         "--config-aws-secret={PIPED_SECRET_MANAGER_ARN}"
-      ]
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/piped",
+          "awslogs-region": "{AWS_REGION}",
+          "awslogs-stream-prefix": "piped"
+        }
+      }
     }
   ],
   "requiresCompatibilities": [
@@ -115,10 +133,13 @@ Prepare a task definition for your `piped` task. The following example shows how
 ```
 
 >**Note:**
-> Replace `<version>` with the `piped` version you want to use. You can find the list of published versions here:
+> The example uses `v1.0.0-rc6`. Replace it with the `piped` version you want to use. You can find the list of published versions here:
 > [ghcr.io/pipe-cd/pipedv1-exp](https://github.com/pipe-cd/pipecd/pkgs/container/pipedv1-exp)
 
 Note: The task role (`taskRoleArn`) must have `secretsmanager:GetSecretValue` permission for the secret ARN specified above. Be sure to add `"--insecure=true"` to the `command` array if your Control Plane does not have TLS enabled yet.
+
+>**Note:**
+> The task must be able to reach the internet: Fargate pulls the `piped` image from `ghcr.io`, and `piped` connects to the Control Plane. Run the task in a public subnet that routes to an Internet Gateway with `assignPublicIp` set to `ENABLED` (as in the examples below), or in a private subnet that routes through a NAT gateway.
 
 Register the task definition and run a `piped` task:
 
@@ -132,14 +153,14 @@ Once the task starts, `piped` runs continuously. Since this task is started with
 
 ### Defining the ECS service
 
-The following is a sample ECS service definition to control the `piped` task deployment:
+The following is a sample ECS service definition to control the `piped` task deployment. `taskDefinition` is the task definition family registered above, so ECS uses its latest `ACTIVE` revision when it creates the service:
 
 ```json
 {
   "cluster": "{ECS_CLUSTER}",
   "serviceName": "piped",
   "desiredCount": 1,
-  "taskDefinition": "{PIPED_TASK_DEFINITION_ARN}",
+  "taskDefinition": "piped",
   "deploymentConfiguration": {
     "minimumHealthyPercent": 0,
     "maximumPercent": 100
@@ -159,10 +180,7 @@ The following is a sample ECS service definition to control the `piped` task dep
 Then create the ECS service:
 
 ```console
-aws ecs create-service \
-  --cluster {ECS_CLUSTER} \
-  --service-name piped \
-  --cli-input-json file://service.json
+aws ecs create-service --cli-input-json file://service.json
 ```
 
 While the service is running, ECS keeps exactly one `piped` task running because `desiredCount` is `1`, so your `piped` agent stays available on Fargate.
