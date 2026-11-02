@@ -306,13 +306,16 @@ func (e *executor) newLogProvider(providerName string) (log.Provider, error) {
 // Just returns metrics config if no template specified.
 func (e *executor) getMetricsConfig(templatableCfg config.TemplatableAnalysisMetrics, templateCfg *config.AnalysisTemplateSpec) (*config.AnalysisMetrics, error) {
 	name := templatableCfg.Template.Name
-	if name == "" {
-		return &templatableCfg.AnalysisMetrics, nil
+	cfg := templatableCfg.AnalysisMetrics
+	if name != "" {
+		var ok bool
+		cfg, ok = templateCfg.Metrics[name]
+		if !ok {
+			return nil, fmt.Errorf("analysis template %s not found despite template specified", name)
+		}
 	}
-
-	cfg, ok := templateCfg.Metrics[name]
-	if !ok {
-		return nil, fmt.Errorf("analysis template %s not found despite template specified", name)
+	if err := cfg.ValidateForDuration(e.stageConfig.Duration); err != nil {
+		return nil, err
 	}
 	return &cfg, nil
 }

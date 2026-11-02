@@ -85,8 +85,22 @@ func (m *AnalysisMetrics) Validate() error {
 	if m.Interval == 0 {
 		return fmt.Errorf("missing \"interval\" field")
 	}
+	if m.Interval < 0 {
+		return fmt.Errorf("interval must be positive")
+	}
 	if m.Deviation != AnalysisDeviationEither && m.Deviation != AnalysisDeviationHigh && m.Deviation != AnalysisDeviationLow {
 		return fmt.Errorf("\"deviation\" have to be one of %s, %s or %s", AnalysisDeviationEither, AnalysisDeviationHigh, AnalysisDeviationLow)
+	}
+	return nil
+}
+
+// ValidateForDuration checks that the metrics configuration allows a query during the stage.
+func (m *AnalysisMetrics) ValidateForDuration(duration unit.Duration) error {
+	if err := m.Validate(); err != nil {
+		return err
+	}
+	if m.Interval > duration {
+		return fmt.Errorf("metrics interval %s exceeds the analysis duration %s", m.Interval.Duration(), duration.Duration())
 	}
 	return nil
 }
