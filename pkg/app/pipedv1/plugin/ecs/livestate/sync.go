@@ -41,6 +41,10 @@ func computeSyncState(result *queryResourcesResult, desiredService types.Service
 		}
 	}
 
+	if deploymentControllerType(result.Service) == types.DeploymentControllerTypeEcs {
+		return computeECSControllerSyncState(result.Service, commitHash)
+	}
+
 	// Under the EXTERNAL deployment controller model PipeCD uses,
 	// exactly one task set carries the PRIMARY status at any point in time.
 	// Its absence means no successful deployment has ever completed, or the service is in a broken intermediate state.
@@ -81,4 +85,43 @@ func computeSyncState(result *queryResourcesResult, desiredService types.Service
 	}
 
 	return sdk.ApplicationSyncState{Status: sdk.ApplicationSyncStateSynced}
+}
+
+// deploymentControllerType returns the deployment controller of the live service.
+// A service without a deployment controller is managed by the ECS controller.
+func deploymentControllerType(svc *types.Service) types.DeploymentControllerType {
+	if svc.DeploymentController == nil || svc.DeploymentController.Type == "" {
+		return types.DeploymentControllerTypeEcs
+	}
+	return svc.DeploymentController.Type
+}
+
+// computeECSControllerSyncState compares the commit hash tag of a service managed by the ECS controller.
+// PipeCD writes this tag on the service only after a service deployment succeeds, so it is
+// the commit that is actually running, even when a newer rollout is in progress or has failed.
+func computeECSControllerSyncState(svc *types.Service, commitHash string) sdk.ApplicationSyncState {
+	// Without a commit to compare against, the check is skipped to avoid a false OUT_OF_SYNC.
+	if commitHash == "" {
+		return sdk.ApplicationSyncState{Status: sdk.ApplicationSyncStateSynced}
+	}
+
+	for _, tag := range svc.Tags {
+		if aws.ToString(tag.Key) != provider.LabelCommitHash {
+			continue
+		}
+		if liveCommit := aws.ToString(tag.Value); liveCommit != commitHash {
+			return sdk.ApplicationSyncState{
+				Status:      sdk.ApplicationSyncStateOutOfSync,
+				ShortReason: "Deployed commit does not match current commit",
+				Reason:      fmt.Sprintf("deployed: %s, expected: %s", liveCommit, commitHash),
+			}
+		}
+		return sdk.ApplicationSyncState{Status: sdk.ApplicationSyncStateSynced}
+	}
+
+	// The tag is written only after a successful deployment, so its absence means none has succeeded yet.
+	return sdk.ApplicationSyncState{
+		Status:      sdk.ApplicationSyncStateOutOfSync,
+		ShortReason: "No successful deployment found for the service",
+	}
 }
