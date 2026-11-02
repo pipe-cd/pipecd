@@ -23,6 +23,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -220,10 +221,10 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult, title string) str
 				details = app.PlanDetails
 			)
 			if app.ApplicationKind == "TERRAFORM" {
-				lang = "hcl"
 				if shortened, err := generateTerraformShortPlanDetails(details); err == nil {
 					details = shortened
 				}
+				details = terraformPlanToDiff(details)
 			}
 
 			l := utf8.RuneCountInString(details)
@@ -256,6 +257,8 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult, title string) str
 					if shortened, err := generateTerraformShortPlanDetails(details); err == nil {
 						details = shortened
 					}
+					details = terraformPlanToDiff(details)
+					ppr.DiffLanguage = "diff"
 				}
 
 				l := utf8.RuneCountInString(details)
@@ -410,6 +413,54 @@ func generateTerraformShortPlanDetails(details string) (string, error) {
 		return "", err
 	}
 	return details[start:], nil
+}
+
+// terraformChangeMarkers are the markers Terraform puts in front of a changed
+// line of a plan, longest first so that "-/+" is not matched as "-".
+var terraformChangeMarkers = []string{"-/+", "+/-", "+", "-"}
+
+// terraformHeredocStart matches the start of a heredoc value in a plan, such
+// as `user_data = <<-EOT`, and captures the delimiter that ends it.
+var terraformHeredocStart = regexp.MustCompile(`<<-?([A-Za-z_][A-Za-z0-9_]*)\s*$`)
+
+// terraformPlanToDiff rewrites a Terraform plan so that GitHub renders its
+// added and removed lines in color inside a "diff" code block. GitHub colors a
+// line only when its first character is "+" or "-", but Terraform indents the
+// marker, so the marker is moved to the start of the line and the indentation
+// is kept after it. Lines without a marker, such as "~" updates and "#"
+// comments, are returned unchanged. Lines inside a heredoc value are returned
+// unchanged as well, because their content is literal and a YAML list item
+// such as "- nginx" is not a change marker.
+func terraformPlanToDiff(details string) string {
+	var (
+		lines            = strings.Split(details, "\n")
+		heredocDelimiter string
+	)
+	for i, line := range lines {
+		trimmed := strings.TrimLeft(line, " ")
+
+		if heredocDelimiter != "" {
+			if trimmed == heredocDelimiter {
+				heredocDelimiter = ""
+			}
+			continue
+		}
+		if m := terraformHeredocStart.FindStringSubmatch(line); m != nil {
+			heredocDelimiter = m[1]
+		}
+
+		indent := line[:len(line)-len(trimmed)]
+		if indent == "" {
+			continue
+		}
+		for _, marker := range terraformChangeMarkers {
+			if strings.HasPrefix(trimmed, marker+" ") {
+				lines[i] = marker + indent + trimmed[len(marker):]
+				break
+			}
+		}
+	}
+	return strings.Join(lines, "\n")
 }
 
 func minimizePreviousComment(ctx context.Context, ghGraphQLClient *githubv4.Client, event *githubEvent, key string) {

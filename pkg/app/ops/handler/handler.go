@@ -166,7 +166,7 @@ func (h *Handler) getProjectByIDOrReturnError(id string, w http.ResponseWriter) 
 			zap.String("id", id),
 			zap.Error(err),
 		)
-		http.Error(w, fmt.Sprintf("Unable to retrieve existing project (%v)", err), http.StatusInternalServerError)
+		http.Error(w, "Unable to retrieve existing project", http.StatusInternalServerError)
 		return nil
 	}
 	return project

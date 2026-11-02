@@ -133,7 +133,7 @@ func (s *metadataStore) syncSharedMetadata(ctx context.Context) error {
 
 func (s *metadataStore) stagePutMulti(ctx context.Context, stageID string, md map[string]string) error {
 	s.stagesMu.Lock()
-	merged := make(map[string]string, len(md)+len(s.stages[stageID]))
+	merged := make(map[string]string, len(s.stages[stageID]))
 	maps.Copy(merged, s.stages[stageID])
 	maps.Copy(merged, md)
 	s.stages[stageID] = merged
