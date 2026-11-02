@@ -306,6 +306,8 @@ func (c *client) DescribeService(ctx context.Context, service types.Service) (*t
 		Services: []string{
 			*service.ServiceName,
 		},
+		// Tags are needed to read the deployed commit hash of a service managed by the ECS controller.
+		Include: []types.ServiceField{types.ServiceFieldTags},
 	}
 	output, err := c.ecsClient.DescribeServices(ctx, input)
 	if err != nil {
