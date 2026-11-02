@@ -36,6 +36,7 @@ type APIServiceClient interface {
 	ListDeployments(ctx context.Context, in *ListDeploymentsRequest, opts ...grpc.CallOption) (*ListDeploymentsResponse, error)
 	GetCommand(ctx context.Context, in *GetCommandRequest, opts ...grpc.CallOption) (*GetCommandResponse, error)
 	GetPiped(ctx context.Context, in *GetPipedRequest, opts ...grpc.CallOption) (*GetPipedResponse, error)
+	ListPipeds(ctx context.Context, in *ListPipedsRequest, opts ...grpc.CallOption) (*ListPipedsResponse, error)
 	RegisterPiped(ctx context.Context, in *RegisterPipedRequest, opts ...grpc.CallOption) (*RegisterPipedResponse, error)
 	UpdatePiped(ctx context.Context, in *UpdatePipedRequest, opts ...grpc.CallOption) (*UpdatePipedResponse, error)
 	EnablePiped(ctx context.Context, in *EnablePipedRequest, opts ...grpc.CallOption) (*EnablePipedResponse, error)
@@ -181,6 +182,15 @@ func (c *aPIServiceClient) GetPiped(ctx context.Context, in *GetPipedRequest, op
 	return out, nil
 }
 
+func (c *aPIServiceClient) ListPipeds(ctx context.Context, in *ListPipedsRequest, opts ...grpc.CallOption) (*ListPipedsResponse, error) {
+	out := new(ListPipedsResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.apiservice.APIService/ListPipeds", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *aPIServiceClient) RegisterPiped(ctx context.Context, in *RegisterPipedRequest, opts ...grpc.CallOption) (*RegisterPipedResponse, error) {
 	out := new(RegisterPipedResponse)
 	err := c.cc.Invoke(ctx, "/grpc.service.apiservice.APIService/RegisterPiped", in, out, opts...)
@@ -280,6 +290,7 @@ type APIServiceServer interface {
 	ListDeployments(context.Context, *ListDeploymentsRequest) (*ListDeploymentsResponse, error)
 	GetCommand(context.Context, *GetCommandRequest) (*GetCommandResponse, error)
 	GetPiped(context.Context, *GetPipedRequest) (*GetPipedResponse, error)
+	ListPipeds(context.Context, *ListPipedsRequest) (*ListPipedsResponse, error)
 	RegisterPiped(context.Context, *RegisterPipedRequest) (*RegisterPipedResponse, error)
 	UpdatePiped(context.Context, *UpdatePipedRequest) (*UpdatePipedResponse, error)
 	EnablePiped(context.Context, *EnablePipedRequest) (*EnablePipedResponse, error)
@@ -337,6 +348,9 @@ func (UnimplementedAPIServiceServer) GetCommand(context.Context, *GetCommandRequ
 }
 func (UnimplementedAPIServiceServer) GetPiped(context.Context, *GetPipedRequest) (*GetPipedResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPiped not implemented")
+}
+func (UnimplementedAPIServiceServer) ListPipeds(context.Context, *ListPipedsRequest) (*ListPipedsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListPipeds not implemented")
 }
 func (UnimplementedAPIServiceServer) RegisterPiped(context.Context, *RegisterPipedRequest) (*RegisterPipedResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterPiped not implemented")
@@ -630,6 +644,24 @@ func _APIService_GetPiped_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _APIService_ListPipeds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPipedsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(APIServiceServer).ListPipeds(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.apiservice.APIService/ListPipeds",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(APIServiceServer).ListPipeds(ctx, req.(*ListPipedsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _APIService_RegisterPiped_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RegisterPipedRequest)
 	if err := dec(in); err != nil {
@@ -854,6 +886,10 @@ var APIService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetPiped",
 			Handler:    _APIService_GetPiped_Handler,
+		},
+		{
+			MethodName: "ListPipeds",
+			Handler:    _APIService_ListPipeds_Handler,
 		},
 		{
 			MethodName: "RegisterPiped",
