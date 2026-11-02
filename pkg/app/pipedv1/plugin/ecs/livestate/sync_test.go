@@ -25,13 +25,14 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/ecs/provider"
 )
 
-func ecsControllerService(commit string) *types.Service {
+func ecsControllerService(commit string, deployments ...types.Deployment) *types.Service {
 	svc := &types.Service{
 		ServiceArn:   aws.String("arn:service"),
 		ServiceName:  aws.String("svc"),
 		Status:       aws.String("ACTIVE"),
 		DesiredCount: 2,
 		RunningCount: 2,
+		Deployments:  deployments,
 	}
 	if commit != "" {
 		svc.Tags = []types.Tag{{Key: aws.String(provider.LabelCommitHash), Value: aws.String(commit)}}
@@ -98,4 +99,47 @@ func TestComputeSyncState_ExternalControllerUnchanged(t *testing.T) {
 	got := computeSyncState(&queryResourcesResult{Service: svc}, types.Service{ServiceName: aws.String("svc")}, "abc")
 	assert.Equal(t, sdk.ApplicationSyncStateOutOfSync, got.Status)
 	assert.Equal(t, "No PRIMARY task set found", got.ShortReason)
+}
+
+func TestServiceHealthStatus_ECSController(t *testing.T) {
+	t.Parallel()
+
+	primary := func(state types.DeploymentRolloutState) types.Deployment {
+		return types.Deployment{Status: aws.String("PRIMARY"), RolloutState: state, RolloutStateReason: aws.String("reason")}
+	}
+
+	tests := []struct {
+		name string
+		svc  *types.Service
+		want sdk.ResourceHealthStatus
+	}{
+		{"completed", ecsControllerService("abc", primary(types.DeploymentRolloutStateCompleted)), sdk.ResourceHealthStateHealthy},
+		{"in progress", ecsControllerService("abc", primary(types.DeploymentRolloutStateInProgress)), sdk.ResourceHealthStateUnhealthy},
+		{"failed", ecsControllerService("abc", primary(types.DeploymentRolloutStateFailed)), sdk.ResourceHealthStateUnhealthy},
+		{"no deployments", ecsControllerService("abc"), sdk.ResourceHealthStateHealthy},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			got, _ := serviceHealthStatus(tc.svc)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestBuildResourceStates_ECSController(t *testing.T) {
+	t.Parallel()
+
+	result := &queryResourcesResult{
+		Service: ecsControllerService("abc"),
+		Tasks: []types.Task{
+			{TaskArn: aws.String("arn:task/1"), StartedBy: aws.String("ecs-svc/123"), LastStatus: aws.String("RUNNING")},
+		},
+	}
+	got := buildResourceStates(result, "dt")
+
+	assert.Len(t, got, 2)
+	assert.Equal(t, "ECS", got[0].ResourceMetadata["deploymentController"])
+	// Tasks have no task set parent, so they hang off the service.
+	assert.Equal(t, []string{"arn:service"}, got[1].ParentIDs)
 }

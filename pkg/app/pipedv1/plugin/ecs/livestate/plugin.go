@@ -168,10 +168,11 @@ func buildResourceStates(result *queryResourcesResult, deployTarget string) []sd
 		Name:         aws.ToString(svc.ServiceName),
 		ResourceType: resourceTypeService,
 		ResourceMetadata: map[string]string{
-			"status":       aws.ToString(svc.Status),
-			"runningCount": strconv.Itoa(int(svc.RunningCount)),
-			"desiredCount": strconv.Itoa(int(svc.DesiredCount)),
-			"pendingCount": strconv.Itoa(int(svc.PendingCount)),
+			"status":               aws.ToString(svc.Status),
+			"runningCount":         strconv.Itoa(int(svc.RunningCount)),
+			"desiredCount":         strconv.Itoa(int(svc.DesiredCount)),
+			"pendingCount":         strconv.Itoa(int(svc.PendingCount)),
+			"deploymentController": string(deploymentControllerType(svc)),
 		},
 		HealthStatus:      svcHealth,
 		HealthDescription: svcDesc,
@@ -264,6 +265,15 @@ func derefTime(t *time.Time) time.Time {
 func serviceHealthStatus(svc *types.Service) (sdk.ResourceHealthStatus, string) {
 	switch aws.ToString(svc.Status) {
 	case "ACTIVE":
+		// With the ECS controller, the PRIMARY service deployment reports the rollout progress.
+		if d := primaryDeployment(svc); d != nil && deploymentControllerType(svc) == types.DeploymentControllerTypeEcs {
+			switch d.RolloutState {
+			case types.DeploymentRolloutStateInProgress:
+				return sdk.ResourceHealthStateUnhealthy, "Service deployment is in progress"
+			case types.DeploymentRolloutStateFailed:
+				return sdk.ResourceHealthStateUnhealthy, fmt.Sprintf("Service deployment failed: %s", aws.ToString(d.RolloutStateReason))
+			}
+		}
 		if svc.PendingCount == 0 && svc.RunningCount >= svc.DesiredCount {
 			return sdk.ResourceHealthStateHealthy, ""
 		}
@@ -276,6 +286,15 @@ func serviceHealthStatus(svc *types.Service) (sdk.ResourceHealthStatus, string) 
 	default:
 		return sdk.ResourceHealthStateUnknown, ""
 	}
+}
+
+func primaryDeployment(svc *types.Service) *types.Deployment {
+	for i := range svc.Deployments {
+		if aws.ToString(svc.Deployments[i].Status) == "PRIMARY" {
+			return &svc.Deployments[i]
+		}
+	}
+	return nil
 }
 
 func taskSetHealthStatus(ts *types.TaskSet) (sdk.ResourceHealthStatus, string) {
