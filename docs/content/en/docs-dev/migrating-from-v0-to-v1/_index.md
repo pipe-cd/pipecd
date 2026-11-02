@@ -8,7 +8,7 @@ description: >
 
 This page explains how to safely migrate your existing PipeCD System to the RC version of **PipeCD V1**, the new plugin-based architecture that brings modularity and extensibility to PipeCD.
 
-In case you are using PipeCD V0, follow the setps on this page to migrate to **PipeCD V1**.
+In case you are using PipeCD V0, follow the steps on this page to migrate to **PipeCD V1**.
 
 ## Overview
 
