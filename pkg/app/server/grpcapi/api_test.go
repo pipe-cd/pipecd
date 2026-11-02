@@ -275,3 +275,104 @@ func TestListApplicationsFilterDeleted(t *testing.T) {
 		})
 	}
 }
+
+func TestListDeploymentsFilters(t *testing.T) {
+	testcases := []struct {
+		name           string
+		req            *apiservice.ListDeploymentsRequest
+		expectedErr    string
+		expectedFilter []datastore.ListFilter
+	}{
+		{
+			name:           "no status filter when all given statuses are empty",
+			req:            &apiservice.ListDeploymentsRequest{Statuses: []string{"", ""}},
+			expectedFilter: nil,
+		},
+		{
+			name:           "no kind filter when all given kinds are empty",
+			req:            &apiservice.ListDeploymentsRequest{Kinds: []string{""}},
+			expectedFilter: nil,
+		},
+		{
+			name: "status filter uses the first non-empty status",
+			req:  &apiservice.ListDeploymentsRequest{Statuses: []string{"", "DEPLOYMENT_SUCCESS"}},
+			expectedFilter: []datastore.ListFilter{
+				{Field: "Status", Operator: datastore.OperatorEqual, Value: model.DeploymentStatus_DEPLOYMENT_SUCCESS},
+			},
+		},
+		{
+			name: "status filter is applied when a single status is given",
+			req:  &apiservice.ListDeploymentsRequest{Statuses: []string{"DEPLOYMENT_RUNNING"}},
+			expectedFilter: []datastore.ListFilter{
+				{Field: "Status", Operator: datastore.OperatorEqual, Value: model.DeploymentStatus_DEPLOYMENT_RUNNING},
+			},
+		},
+		{
+			name: "kind filter is applied when a valid kind is given",
+			req:  &apiservice.ListDeploymentsRequest{Kinds: []string{"KUBERNETES"}},
+			expectedFilter: []datastore.ListFilter{
+				{Field: "Kind", Operator: datastore.OperatorEqual, Value: model.ApplicationKind_KUBERNETES},
+			},
+		},
+		{
+			name: "both filters are applied when a valid status and kind are given",
+			req:  &apiservice.ListDeploymentsRequest{Statuses: []string{"DEPLOYMENT_SUCCESS"}, Kinds: []string{"KUBERNETES"}},
+			expectedFilter: []datastore.ListFilter{
+				{Field: "Status", Operator: datastore.OperatorEqual, Value: model.DeploymentStatus_DEPLOYMENT_SUCCESS},
+				{Field: "Kind", Operator: datastore.OperatorEqual, Value: model.ApplicationKind_KUBERNETES},
+			},
+		},
+		{
+			name:           "invalid status name is rejected",
+			req:            &apiservice.ListDeploymentsRequest{Statuses: []string{"BOGUS"}},
+			expectedErr:    "rpc error: code = InvalidArgument desc = BOGUS is invalid deployment status",
+			expectedFilter: nil,
+		},
+		{
+			name:           "invalid kind name is rejected",
+			req:            &apiservice.ListDeploymentsRequest{Kinds: []string{"BOGUS"}},
+			expectedErr:    "rpc error: code = InvalidArgument desc = BOGUS is invalid application kind",
+			expectedFilter: nil,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			var gotFilter []datastore.ListFilter
+			store := datastoretest.NewMockDeploymentStore(ctrl)
+			store.EXPECT().
+				List(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, opts datastore.ListOptions) ([]*model.Deployment, string, error) {
+					for _, f := range opts.Filters {
+						if f.Field != "ProjectId" {
+							gotFilter = append(gotFilter, f)
+						}
+					}
+					return nil, "", nil
+				}).
+				AnyTimes()
+
+			api := &API{
+				deploymentStore: store,
+				logger:          zap.NewNop(),
+			}
+			ctx := rpcauth.ContextWithAPIKey(context.TODO(), &model.APIKey{
+				ProjectId: "project-id",
+				Role:      model.APIKey_READ_ONLY,
+			})
+
+			_, err := api.ListDeployments(ctx, tc.req)
+			if tc.expectedErr != "" {
+				if assert.Error(t, err) {
+					assert.Equal(t, tc.expectedErr, err.Error())
+				}
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expectedFilter, gotFilter)
+		})
+	}
+}
