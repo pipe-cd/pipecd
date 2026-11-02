@@ -26,8 +26,8 @@ import (
 
 // computeSyncState determines whether the live ECS state matches what was declared in Git.
 //
-// Rather than diffing configuration fields directly,
-// it relies on the commit hash that PipeCD stamps onto the PRIMARY task set during deployment.
+// Rather than diffing configuration fields directly, it relies on the commit hash that PipeCD
+// stamps during deployment. Where the hash is stored depends on the deployment controller of the service.
 //
 // This keeps the check resilient to AWS-side mutations (e.g. auto-scaling adjustments) that are intentional
 // and should not be treated as drift.
@@ -41,10 +41,17 @@ func computeSyncState(result *queryResourcesResult, desiredService types.Service
 		}
 	}
 
-	if deploymentControllerType(result.Service) == types.DeploymentControllerTypeEcs {
+	switch deploymentControllerType(result.Service) {
+	case types.DeploymentControllerTypeEcs:
 		return computeECSControllerSyncState(result.Service, commitHash)
+	default:
+		return computeExternalControllerSyncState(result, commitHash)
 	}
+}
 
+// computeExternalControllerSyncState compares the commit hash tag of the PRIMARY task set,
+// which PipeCD manages itself with the EXTERNAL deployment controller.
+func computeExternalControllerSyncState(result *queryResourcesResult, commitHash string) sdk.ApplicationSyncState {
 	// Under the EXTERNAL deployment controller model PipeCD uses,
 	// exactly one task set carries the PRIMARY status at any point in time.
 	// Its absence means no successful deployment has ever completed, or the service is in a broken intermediate state.
