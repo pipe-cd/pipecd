@@ -14,7 +14,17 @@
 
 package notifier
 
-import "testing"
+import (
+	"encoding/base64"
+	"os"
+	"path/filepath"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/pipe-cd/pipecd/pkg/config"
+)
 
 func Test_getAccountsAsString(t *testing.T) {
 	t.Parallel()
@@ -85,6 +95,67 @@ func Test_getGroupsAsString(t *testing.T) {
 			if got != tt.want {
 				t.Errorf("getGroupsAsString(): got %s, want %s", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestLoadOAuthToken(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	tokenFile := filepath.Join(dir, "token")
+	require.NoError(t, os.WriteFile(tokenFile, []byte("xoxb-token\n"), 0600))
+	crlfTokenFile := filepath.Join(dir, "crlf-token")
+	require.NoError(t, os.WriteFile(crlfTokenFile, []byte("xoxb-token\r\n"), 0600))
+
+	tests := []struct {
+		name    string
+		cfg     config.NotificationReceiverSlack
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "oauthToken",
+			cfg:  config.NotificationReceiverSlack{OAuthToken: "xoxb-token"},
+			want: "xoxb-token",
+		},
+		{
+			name: "oauthTokenData",
+			cfg:  config.NotificationReceiverSlack{OAuthTokenData: base64.StdEncoding.EncodeToString([]byte("xoxb-token"))},
+			want: "xoxb-token",
+		},
+		{
+			name: "oauthTokenData with a trailing newline",
+			cfg:  config.NotificationReceiverSlack{OAuthTokenData: base64.StdEncoding.EncodeToString([]byte("xoxb-token\n"))},
+			want: "xoxb-token",
+		},
+		{
+			name: "oauthTokenFile with a trailing newline",
+			cfg:  config.NotificationReceiverSlack{OAuthTokenFile: tokenFile},
+			want: "xoxb-token",
+		},
+		{
+			name: "oauthTokenFile with a trailing CRLF",
+			cfg:  config.NotificationReceiverSlack{OAuthTokenFile: crlfTokenFile},
+			want: "xoxb-token",
+		},
+		{
+			name:    "invalid oauthTokenData",
+			cfg:     config.NotificationReceiverSlack{OAuthTokenData: "not base64"},
+			wantErr: true,
+		},
+		{
+			name:    "missing oauthTokenFile",
+			cfg:     config.NotificationReceiverSlack{OAuthTokenFile: filepath.Join(dir, "missing")},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got, err := loadOAuthToken(tt.cfg)
+			assert.Equal(t, tt.wantErr, err != nil)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

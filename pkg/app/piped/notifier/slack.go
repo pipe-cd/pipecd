@@ -53,23 +53,9 @@ type slack struct {
 }
 
 func newSlackSender(name string, cfg config.NotificationReceiverSlack, webURL string, logger *zap.Logger) (*slack, error) {
-	var oauthtoken string
-	if cfg.OAuthTokenData != "" {
-		oauthTokenData, err := base64.StdEncoding.DecodeString(cfg.OAuthTokenData)
-		if err != nil {
-			return nil, fmt.Errorf("failed to decode the oauth token data: %w", err)
-		}
-		oauthtoken = string(oauthTokenData)
-	}
-	if cfg.OAuthToken != "" {
-		oauthtoken = cfg.OAuthToken
-	}
-	if cfg.OAuthTokenFile != "" {
-		oauthTokenFileData, err := os.ReadFile(cfg.OAuthTokenFile)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read the oauth token file: %w", err)
-		}
-		oauthtoken = string(oauthTokenFileData)
+	oauthtoken, err := loadOAuthToken(cfg)
+	if err != nil {
+		return nil, err
 	}
 	return &slack{
 		name:   name,
@@ -82,6 +68,31 @@ func newSlackSender(name string, cfg config.NotificationReceiverSlack, webURL st
 		eventCh:     make(chan model.NotificationEvent, 100),
 		logger:      logger.Named("slack"),
 	}, nil
+}
+
+// loadOAuthToken returns the OAuth token given by one of oauthToken, oauthTokenData and oauthTokenFile.
+// The surrounding whitespace is removed because a token file or base64 encoded data
+// usually ends with a newline, and Slack does not accept the token with it.
+func loadOAuthToken(cfg config.NotificationReceiverSlack) (string, error) {
+	var oauthtoken string
+	if cfg.OAuthTokenData != "" {
+		oauthTokenData, err := base64.StdEncoding.DecodeString(cfg.OAuthTokenData)
+		if err != nil {
+			return "", fmt.Errorf("failed to decode the oauth token data: %w", err)
+		}
+		oauthtoken = string(oauthTokenData)
+	}
+	if cfg.OAuthToken != "" {
+		oauthtoken = cfg.OAuthToken
+	}
+	if cfg.OAuthTokenFile != "" {
+		oauthTokenFileData, err := os.ReadFile(cfg.OAuthTokenFile)
+		if err != nil {
+			return "", fmt.Errorf("failed to read the oauth token file: %w", err)
+		}
+		oauthtoken = string(oauthTokenFileData)
+	}
+	return strings.TrimSpace(oauthtoken), nil
 }
 
 func (s *slack) Run(ctx context.Context) error {
