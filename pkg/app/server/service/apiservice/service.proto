@@ -46,6 +46,7 @@ service APIService {
     rpc GetCommand(GetCommandRequest) returns (GetCommandResponse) {}
 
     rpc GetPiped(GetPipedRequest) returns (GetPipedResponse) {}
+    rpc ListPipeds(ListPipedsRequest) returns (ListPipedsResponse) {}
     rpc RegisterPiped(RegisterPipedRequest) returns (RegisterPipedResponse) {}
     rpc UpdatePiped(UpdatePipedRequest) returns (UpdatePipedResponse) {}
     rpc EnablePiped(EnablePipedRequest) returns (EnablePipedResponse) {}
@@ -117,6 +118,15 @@ message GetPipedRequest {
 
 message GetPipedResponse {
     model.Piped piped = 1;
+}
+
+message ListPipedsRequest {
+    // Whether to include the connection status of each piped.
+    bool with_status = 1;
+}
+
+message ListPipedsResponse {
+    repeated model.Piped pipeds = 1;
 }
 
 message RegisterPipedRequest {
