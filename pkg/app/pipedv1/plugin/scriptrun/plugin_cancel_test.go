@@ -97,6 +97,54 @@ while true; do sleep 0.05; done
 		"grandchild %d survived cancellation; the process group was not terminated", childPID)
 }
 
+// The shell can exit on SIGTERM while a background child ignores it. With its
+// output redirected the child holds none of the command's pipes, so cmd.Run
+// returns straight away and the SIGKILL must still reach the group.
+func TestExecuteCommandKillsSurvivorAfterShellExits(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	pidFile := filepath.Join(dir, "child.pid")
+
+	script := fmt.Sprintf(`
+sh -c 'trap "" TERM; echo $$ > %q; while true; do sleep 0.05; done' >/dev/null 2>&1 &
+wait
+`, pidFile)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	done := make(chan sdk.StageStatus, 1)
+	go func() {
+		done <- executeCommand(ctx, script, nil, sdk.ExecuteStageRequest[struct{}]{
+			StageName:  stageScriptRun,
+			Deployment: sdk.Deployment{ID: "deployment-1", ApplicationID: "app-1"},
+		}, logpersistertest.NewTestLogPersister(t))
+	}()
+
+	var childPID int
+	require.Eventually(t, func() bool {
+		b, err := os.ReadFile(pidFile)
+		if err != nil {
+			return false
+		}
+		_, err = fmt.Sscanf(string(b), "%d", &childPID)
+		return err == nil && childPID > 0
+	}, 10*time.Second, 20*time.Millisecond, "child never started")
+	t.Cleanup(func() { _ = syscall.Kill(childPID, syscall.SIGKILL) })
+
+	cancel()
+
+	select {
+	case <-done:
+	case <-time.After(30 * time.Second):
+		t.Fatal("executeCommand did not return after cancel")
+	}
+
+	assert.True(t, waitGone(childPID, 5*time.Second),
+		"child %d survived after the shell exited", childPID)
+}
+
 // The normal path must be unaffected: a command that finishes on its own still
 // reports success and does not wait out the grace period.
 func TestExecuteCommandSucceedsWithoutCancel(t *testing.T) {

@@ -181,6 +181,24 @@ func signalGroup(pgid int, sig syscall.Signal) error {
 	return nil
 }
 
+// killGroupAfterGrace waits for the process group to empty and sends it SIGKILL
+// if it has not after grace. It reports whether it sent the signal.
+func killGroupAfterGrace(pgid int, grace time.Duration) bool {
+	deadline := time.After(grace)
+	ticker := time.NewTicker(50 * time.Millisecond)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			if errors.Is(syscall.Kill(-pgid, 0), syscall.ESRCH) {
+				return false
+			}
+		case <-deadline:
+			return signalGroup(pgid, syscall.SIGKILL) == nil
+		}
+	}
+}
+
 func executeCommand(ctx context.Context, commands string, customEnv map[string]string, request sdk.ExecuteStageRequest[struct{}], lp sdk.StageLogPersister) sdk.StageStatus {
 	lp.Infof("Running commands...")
 	for _, v := range strings.Split(commands, "\n") {
@@ -229,26 +247,32 @@ func executeCommand(ctx context.Context, commands string, customEnv map[string]s
 	// its WaitDelay fallback calls Process.Kill(), which is also just the
 	// child. Signal the group instead, then escalate to SIGKILL on the group so
 	// a grandchild that ignores SIGTERM cannot outlive the stage.
-	stopEscalation := make(chan struct{})
+	//
+	// os/exec finishes calling Cancel before cmd.Run returns, so reading
+	// escalationDone afterwards is safe.
+	var escalationDone chan struct{}
 	cmd.Cancel = func() error {
 		pgid := cmd.Process.Pid
 		lp.Infof("Cancelling script, sending SIGTERM to process group %d", pgid)
 		if err := signalGroup(pgid, syscall.SIGTERM); err != nil {
 			return err
 		}
+		escalationDone = make(chan struct{})
 		go func() {
-			select {
-			case <-stopEscalation:
-			case <-time.After(commandTerminationGracePeriod):
-				lp.Infof("Script did not exit within %s, sending SIGKILL to process group %d", commandTerminationGracePeriod, pgid)
-				_ = signalGroup(pgid, syscall.SIGKILL)
+			defer close(escalationDone)
+			if killGroupAfterGrace(pgid, commandTerminationGracePeriod) {
+				lp.Infof("Script did not exit within %s, sent SIGKILL to process group %d", commandTerminationGracePeriod, pgid)
 			}
 		}()
 		return nil
 	}
 
 	err = cmd.Run()
-	close(stopEscalation)
+	// The shell can exit while a child that ignored SIGTERM lives on, so the
+	// group still gets its grace period and SIGKILL after cmd.Run returns.
+	if escalationDone != nil {
+		<-escalationDone
+	}
 	if err != nil {
 		lp.Errorf("failed to exec command: %v", err)
 		return sdk.StageStatusFailure
