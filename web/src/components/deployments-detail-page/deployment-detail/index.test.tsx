@@ -96,7 +96,7 @@ describe("DeploymentDetail", () => {
       expect(cancelButton).toBeInTheDocument();
 
       await act(async () => {
-        userEvent.click(cancelButton);
+        await userEvent.click(cancelButton);
       });
 
       expect(deploymentsApi.cancelDeployment).toHaveBeenCalledWith({

@@ -4,18 +4,18 @@ import { resourcesApplicationList } from "~/__fixtures__/dummy-application-live-
 import { act, render, screen } from "~~/test-utils";
 import { LiveStateView } from ".";
 
-test("render resources on tab local", () => {
+test("render resources on tab local", async () => {
   render(<LiveStateView resources={resourcesApplicationList} />, {});
 
-  userEvent.click(screen.getByRole("tab", { name: "local" }));
+  await userEvent.click(screen.getByRole("tab", { name: "local" }));
 
   expect(screen.queryAllByTestId("application-resource")).toHaveLength(2);
 });
 
-test("render resources on tab kubernetes", () => {
+test("render resources on tab kubernetes", async () => {
   render(<LiveStateView resources={resourcesApplicationList} />, {});
 
-  userEvent.click(screen.getByRole("tab", { name: "kubernetes" }));
+  await userEvent.click(screen.getByRole("tab", { name: "kubernetes" }));
 
   expect(screen.queryAllByTestId("application-resource")).toHaveLength(3);
 });
@@ -23,12 +23,12 @@ test("render resources on tab kubernetes", () => {
 test("filter resources on tab kubernetes", async () => {
   render(<LiveStateView resources={resourcesApplicationList} />, {});
 
-  userEvent.click(screen.getByRole("tab", { name: "kubernetes" }));
-  userEvent.click(screen.getByRole("button", { name: UI_TEXT_FILTER }));
-  userEvent.click(screen.getByRole("checkbox", { name: "ReplicaSet" }));
+  await userEvent.click(screen.getByRole("tab", { name: "kubernetes" }));
+  await userEvent.click(screen.getByRole("button", { name: UI_TEXT_FILTER }));
+  await userEvent.click(screen.getByRole("checkbox", { name: "ReplicaSet" }));
 
   await act(async () => {
-    userEvent.click(screen.getByRole("button", { name: "APPLY" }));
+    await userEvent.click(screen.getByRole("button", { name: "APPLY" }));
   });
 
   expect(screen.queryAllByTestId("application-resource")).toHaveLength(2);

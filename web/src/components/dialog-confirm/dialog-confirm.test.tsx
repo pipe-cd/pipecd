@@ -22,18 +22,18 @@ describe("DialogConfirm component", () => {
     expect(screen.getByText("description")).toBeInTheDocument();
   });
 
-  it("calls onCancel when cancel button is clicked", () => {
+  it("calls onCancel when cancel button is clicked", async () => {
     render(<DialogConfirm {...props} />, {});
     const button = screen.getByRole("button", { name: "cancel" });
-    userEvent.click(button);
+    await userEvent.click(button);
     expect(button).toBeInTheDocument();
     expect(onCancelMock).toHaveBeenCalledTimes(1);
   });
 
-  it("calls onConfirm when confirm button is clicked", () => {
+  it("calls onConfirm when confirm button is clicked", async () => {
     render(<DialogConfirm {...props} />, {});
     const button = screen.getByRole("button", { name: "confirm" });
-    userEvent.click(button);
+    await userEvent.click(button);
     expect(button).toBeInTheDocument();
     expect(onConfirmMock).toHaveBeenCalledTimes(1);
   });
