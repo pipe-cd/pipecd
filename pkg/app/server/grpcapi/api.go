@@ -738,6 +738,45 @@ func (a *API) GetPiped(ctx context.Context, req *apiservice.GetPipedRequest) (*a
 	}, nil
 }
 
+// ListPipeds returns all pipeds of the project that the API key belongs to.
+func (a *API) ListPipeds(ctx context.Context, req *apiservice.ListPipedsRequest) (*apiservice.ListPipedsResponse, error) {
+	key, err := requireAPIKey(ctx, model.APIKey_READ_ONLY, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	pipeds, err := a.pipedStore.List(ctx, datastore.ListOptions{
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "ProjectId",
+				Operator: datastore.OperatorEqual,
+				Value:    key.ProjectId,
+			},
+		},
+	})
+	if err != nil {
+		return nil, gRPCStoreError(err, "list pipeds")
+	}
+
+	for i := range pipeds {
+		// The connection status is determined by the stats that piped reports.
+		if req.WithStatus {
+			pipedStatus, err := getPipedStatus(a.pipedStatCache, pipeds[i].Id)
+			if err != nil {
+				a.logger.Error("failed to get or unmarshal piped stat", zap.Error(err))
+				pipedStatus = model.Piped_UNKNOWN
+			}
+			pipeds[i].Status = pipedStatus
+		}
+		// Redact all sensitive data inside piped message before sending to the client.
+		pipeds[i].RedactSensitiveData()
+	}
+
+	return &apiservice.ListPipedsResponse{
+		Pipeds: pipeds,
+	}, nil
+}
+
 func (a *API) RegisterPiped(ctx context.Context, req *apiservice.RegisterPipedRequest) (*apiservice.RegisterPipedResponse, error) {
 	key, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
 	if err != nil {
