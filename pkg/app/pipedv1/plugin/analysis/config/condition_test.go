@@ -16,8 +16,11 @@ package config
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+
+	unit "github.com/pipe-cd/piped-plugin-sdk-go/unit"
 )
 
 func floatPointer(v float64) *float64 {
@@ -60,6 +63,49 @@ func TestAnalysisExpectedString(t *testing.T) {
 			}
 			got := e.String()
 			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestAnalysisLogValidate(t *testing.T) {
+	testcases := []struct {
+		name     string
+		interval unit.Duration
+		wantErr  bool
+	}{
+		{name: "valid", interval: unit.Duration(time.Minute), wantErr: false},
+		{name: "missing interval", interval: 0, wantErr: true},
+		{name: "negative interval", interval: -unit.Duration(time.Minute), wantErr: true},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			l := &AnalysisLog{Query: "query", Interval: tc.interval}
+			err := l.Validate()
+			assert.Equal(t, tc.wantErr, err != nil)
+		})
+	}
+}
+
+func TestAnalysisHTTPValidate(t *testing.T) {
+	testcases := []struct {
+		name     string
+		interval unit.Duration
+		wantErr  bool
+	}{
+		{name: "valid", interval: unit.Duration(time.Minute), wantErr: false},
+		{name: "missing interval", interval: 0, wantErr: true},
+		{name: "negative interval", interval: -unit.Duration(time.Minute), wantErr: true},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			h := &AnalysisHTTP{
+				URL:          "http://example.com",
+				Method:       "GET",
+				ExpectedCode: 200,
+				Interval:     tc.interval,
+			}
+			err := h.Validate()
+			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}
 }

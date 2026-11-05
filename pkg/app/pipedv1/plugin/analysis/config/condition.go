@@ -150,6 +150,13 @@ type AnalysisLog struct {
 }
 
 func (a *AnalysisLog) Validate() error {
+	// The analyzer runs the check on a ticker, which needs a positive interval.
+	if a.Interval == 0 {
+		return fmt.Errorf("missing \"interval\" field")
+	}
+	if a.Interval < 0 {
+		return fmt.Errorf("interval must be positive")
+	}
 	return nil
 }
 
@@ -171,6 +178,13 @@ type AnalysisHTTP struct {
 }
 
 func (a *AnalysisHTTP) Validate() error {
+	// The analyzer runs the check on a ticker, which needs a positive interval.
+	if a.Interval == 0 {
+		return fmt.Errorf("missing \"interval\" field")
+	}
+	if a.Interval < 0 {
+		return fmt.Errorf("interval must be positive")
+	}
 	return nil
 }
 
