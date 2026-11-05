@@ -124,7 +124,9 @@ test("Encrypt Secret", async () => {
   );
 
   await userEvent.click(screen.getByRole("button", { name: "Open menu" }));
-  await userEvent.click(screen.getByRole("menuitem", { name: "Encrypt Secret" }));
+  await userEvent.click(
+    screen.getByRole("menuitem", { name: "Encrypt Secret" })
+  );
 
   expect(handleGenerateSecret).toHaveBeenCalled();
 });

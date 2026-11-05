@@ -33,7 +33,7 @@ describe("AddUserGroupDialog", () => {
   it("calls onClose when Close button is clicked", async () => {
     render(<AddUserGroupDialog {...defaultProps} />);
     await screen.findByRole("dialog");
-    userEvent.click(screen.getByRole("button", { name: /close/i }));
+    await userEvent.click(screen.getByRole("button", { name: /close/i }));
     expect(defaultProps.onClose).toHaveBeenCalled();
   });
 
@@ -42,17 +42,17 @@ describe("AddUserGroupDialog", () => {
     await screen.findByRole("dialog");
 
     const textInput = screen.getByRole("textbox", { name: /team\/group/i });
-    userEvent.type(textInput, "dev-team");
+    await userEvent.type(textInput, "dev-team");
 
-    userEvent.click(screen.getByRole("combobox"));
+    await userEvent.click(screen.getByRole("combobox"));
     const adminOption = await screen.findByRole("option", { name: "Admin" });
-    userEvent.click(adminOption);
+    await userEvent.click(adminOption);
 
     await waitFor(() => {
       expect(screen.getByText("Admin")).toBeInTheDocument();
     });
 
-    userEvent.click(screen.getByRole("button", { name: /add/i }));
+    await userEvent.click(screen.getByRole("button", { name: /add/i }));
 
     await waitFor(() => {
       expect(defaultProps.onSubmit).toHaveBeenCalledWith({
@@ -68,11 +68,11 @@ describe("AddUserGroupDialog", () => {
     expect(addButton).toBeDisabled();
 
     const textInput = screen.getByRole("textbox", { name: /team\/group/i });
-    userEvent.type(textInput, "dev-team");
+    await userEvent.type(textInput, "dev-team");
 
-    userEvent.click(screen.getByRole("combobox"));
+    await userEvent.click(screen.getByRole("combobox"));
     const adminOption = await screen.findByRole("option", { name: "Admin" });
-    userEvent.click(adminOption);
+    await userEvent.click(adminOption);
 
     await waitFor(() => {
       expect(screen.getByText("Admin")).toBeInTheDocument();
