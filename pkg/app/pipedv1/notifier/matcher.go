@@ -76,7 +76,7 @@ func (m *matcher) Match(event model.NotificationEvent) bool {
 		supportLabels = true
 	}
 	for k, v := range labels {
-		if m.ignoreLabels[k] == v {
+		if ignored, ok := m.ignoreLabels[k]; ok && ignored == v {
 			return false
 		}
 	}
