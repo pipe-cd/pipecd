@@ -107,8 +107,8 @@ In all cases, `piped` decrypts the encrypted secrets and renders the decryption 
 
 <!-- ## Examples
 
-- [examples/kubernetes/secret-management](https://github.com/pipe-cd/examples/tree/master/kubernetes/secret-management)
-- [examples/cloudrun/secret-management](https://github.com/pipe-cd/examples/tree/master/cloudrun/secret-management)
-- [examples/terraform/secret-management](https://github.com/pipe-cd/examples/tree/master/terraform/secret-management)
-- [examples/ecs/secret-management](https://github.com/pipe-cd/examples/tree/master/ecs/secret-management) -->
+- [examples/v0/kubernetes/secret-management](https://github.com/pipe-cd/examples/tree/master/v0/kubernetes/secret-management)
+- [examples/v0/cloudrun/secret-management](https://github.com/pipe-cd/examples/tree/master/v0/cloudrun/secret-management)
+- [examples/v0/terraform/secret-management](https://github.com/pipe-cd/examples/tree/master/v0/terraform/secret-management)
+- [examples/v0/ecs/secret-management](https://github.com/pipe-cd/examples/tree/master/v0/ecs/secret-management) -->
 
