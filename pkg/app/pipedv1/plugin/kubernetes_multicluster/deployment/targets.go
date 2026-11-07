@@ -63,6 +63,8 @@ func buildStageTargets(
 }
 
 // runOnTargets fans out fn across targets in parallel using errgroup.
+// A failure on one target does not cancel the others, so every target runs to
+// the end and reports its own status.
 // fn receives each target's deploy target and multiTarget (may be nil).
 // Returns the overall status and per-target statuses.
 func runOnTargets(
@@ -76,7 +78,7 @@ func runOnTargets(
 		status sdk.StageStatus
 	}
 	results := make([]result, len(targets))
-	eg, ctx := errgroup.WithContext(ctx)
+	var eg errgroup.Group
 	for i, tc := range targets {
 		eg.Go(func() error {
 			status := fn(ctx, tc.deployTarget, tc.multiTarget)
