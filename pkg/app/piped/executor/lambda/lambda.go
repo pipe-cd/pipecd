@@ -376,7 +376,7 @@ func prepareZipFromSource(ctx context.Context, gc executor.GitClient, fm provide
 	defer w.Close()
 
 	source := filepath.Join(repo.GetPath(), fm.Spec.SourceCode.Path)
-	filepath.Walk(source, func(fp string, fi os.FileInfo, err error) error {
+	err = filepath.Walk(source, func(fp string, fi os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -410,6 +410,9 @@ func prepareZipFromSource(ctx context.Context, gc executor.GitClient, fm provide
 		_, err = io.Copy(headerWriter, f)
 		return err
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	return buf, nil
 }
