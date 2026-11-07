@@ -658,7 +658,7 @@ func (a *PipedAPI) ReportCommandHandled(ctx context.Context, req *pipedservice.R
 		}
 	}
 
-	if err = a.commandStore.UpdateCommandHandled(ctx, req.CommandId, req.Status, req.Metadata, req.HandledAt); err != nil {
+	if err = a.commandStore.UpdateCommandHandled(ctx, req.CommandId, req.Status, req.Metadata, req.HandledAt, req.HandledReason); err != nil {
 		return nil, gRPCStoreError(err, fmt.Sprintf("update command %s as handled", req.CommandId))
 	}
 

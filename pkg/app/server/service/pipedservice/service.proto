@@ -442,6 +442,7 @@ message ReportCommandHandledRequest {
     int64 handled_at = 4 [(validate.rules).int64.gt = 0];
     // Additional output data to be stored in filestore.
     bytes output = 5;
+    string handled_reason = 6;
 }
 
 message ReportCommandHandledResponse {

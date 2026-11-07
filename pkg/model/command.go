@@ -22,7 +22,8 @@ const (
 
 type ReportableCommand struct {
 	*Command
-	Report func(ctx context.Context, status CommandStatus, metadata map[string]string, output []byte) error
+	Report      func(ctx context.Context, status CommandStatus, metadata map[string]string, output []byte) error
+	ReportError func(ctx context.Context, status CommandStatus, err error, output []byte) error
 }
 
 func (c *Command) IsHandled() bool {

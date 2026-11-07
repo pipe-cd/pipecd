@@ -248,26 +248,34 @@ func (s *store) makeReportableCommand(c *model.Command) model.ReportableCommand 
 	return model.ReportableCommand{
 		Command: c,
 		Report: func(ctx context.Context, status model.CommandStatus, metadata map[string]string, output []byte) error {
-			return s.reportCommandHandled(ctx, c, status, metadata, output)
+			return s.reportCommandHandled(ctx, c, status, metadata, output, nil)
+		},
+		ReportError: func(ctx context.Context, status model.CommandStatus, err error, output []byte) error {
+			return s.reportCommandHandled(ctx, c, status, nil, output, err)
 		},
 	}
 }
 
-func (s *store) reportCommandHandled(ctx context.Context, c *model.Command, status model.CommandStatus, metadata map[string]string, output []byte) error {
+func (s *store) reportCommandHandled(ctx context.Context, c *model.Command, status model.CommandStatus, metadata map[string]string, output []byte, err error) error {
 	now := time.Now()
 
 	s.mu.Lock()
 	s.handledCommands[c.Id] = now
 	s.mu.Unlock()
 
-	_, err := s.apiClient.ReportCommandHandled(ctx, &pipedservice.ReportCommandHandledRequest{
+	req := &pipedservice.ReportCommandHandledRequest{
 		CommandId: c.Id,
 		Status:    status,
 		Metadata:  metadata,
 		HandledAt: now.Unix(),
 		Output:    output,
-	})
-	return err
+	}
+	if err != nil {
+		req.HandledReason = err.Error()
+	}
+
+	_, apiErr := s.apiClient.ReportCommandHandled(ctx, req)
+	return apiErr
 }
 
 func (s *store) ReportStageCommandsHandled(ctx context.Context, deploymentID, stageID string) error {
@@ -285,7 +293,7 @@ func (s *store) ReportStageCommandsHandled(ctx context.Context, deploymentID, st
 	for _, c := range commands {
 		// The stage can be succeeded or failed.
 		// But the command handling is considered as successful, since it has been handled.
-		if err := s.reportCommandHandled(ctx, c, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil); err != nil {
+		if err := s.reportCommandHandled(ctx, c, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil, nil); err != nil {
 			return err
 		}
 	}
