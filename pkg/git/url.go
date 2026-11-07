@@ -30,8 +30,8 @@ func MakeCommitURL(repoURL, hash string) (string, error) {
 	}
 
 	scheme := "https"
-	if u.Scheme != "ssh" {
-		scheme = u.Scheme
+	if u.Scheme == "http" {
+		scheme = "http"
 	}
 
 	repoPath := strings.Trim(u.Path, "/")
@@ -72,8 +72,8 @@ func MakeDirURL(repoURL, dir, branch string) (string, error) {
 	}
 
 	scheme := "https"
-	if u.Scheme != "ssh" {
-		scheme = u.Scheme
+	if u.Scheme == "http" {
+		scheme = "http"
 	}
 
 	repoPath := strings.Trim(u.Path, "/")
@@ -110,10 +110,12 @@ func MakeFileCreationURL(repoURL, dir, branch, filename, value string) (string, 
 		return "", err
 	}
 
-	if u.Scheme == "ssh" {
+	if u.Scheme == "http" {
+		u.Scheme = "http"
+	} else {
 		u.Scheme = "https"
-		u.User = nil
 	}
+	u.User = nil
 	repoPath := strings.TrimSuffix(strings.Trim(u.Path, "/"), ".git")
 	dir = normalizeDir(dir)
 
@@ -155,11 +157,12 @@ var (
 		"rsync":   {},
 		"file":    {},
 	}
-	scpRegex = regexp.MustCompile(`^([a-zA-Z0-9_]+@)?([a-zA-Z0-9._-]+):(.*)$`)
+	scpRegex = regexp.MustCompile(`^([a-zA-Z0-9_.-]+@)?([a-zA-Z0-9._-]+):(.*)$`)
 )
 
 // parseGitURL parses git url into a URL structure.
 func parseGitURL(rawURL string) (u *url.URL, err error) {
+	rawURL = strings.TrimSpace(rawURL)
 	u, err = parseTransport(rawURL)
 	if err == nil {
 		return
@@ -178,9 +181,11 @@ func parseTransport(rawURL string) (*url.URL, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse git url: %w", err)
 	}
-	if _, ok := knownSchemes[u.Scheme]; !ok {
+	scheme := strings.ToLower(u.Scheme)
+	if _, ok := knownSchemes[scheme]; !ok {
 		return nil, fmt.Errorf("unknown scheme %q", u.Scheme)
 	}
+	u.Scheme = scheme
 	return u, nil
 }
 
