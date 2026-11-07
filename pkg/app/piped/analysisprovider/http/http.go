@@ -74,7 +74,13 @@ func (p *Provider) makeRequest(ctx context.Context, cfg *config.AnalysisHTTP) (*
 	}
 	req.Header = make(http.Header, len(cfg.Headers))
 	for _, h := range cfg.Headers {
-		req.Header.Set(h.Key, h.Value)
+		// The client takes the Host header from req.Host and ignores a "Host" entry in req.Header.
+		if http.CanonicalHeaderKey(h.Key) == "Host" {
+			req.Host = h.Value
+			continue
+		}
+		// Add keeps every value of a repeated header, Set would keep only the last one.
+		req.Header.Add(h.Key, h.Value)
 	}
 	return req, nil
 }
