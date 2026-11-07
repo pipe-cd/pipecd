@@ -25,7 +25,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/go-github/v29/github"
+	"github.com/google/go-github/v93/github"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"golang.org/x/mod/semver"
@@ -163,7 +163,12 @@ func NewWebAPI(
 	projs map[string]config.ControlPlaneProject,
 	encrypter encrypter,
 	logger *zap.Logger,
-) *WebAPI {
+) (*WebAPI, error) {
+	githubCli, err := github.NewClient()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create a GitHub client: %w", err)
+	}
+
 	a := &WebAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
 		deploymentChainStore:      datastore.NewDeploymentChainStore(ds),
@@ -181,14 +186,14 @@ func NewWebAPI(
 		unregisteredAppStore:      uas,
 		projectsInConfig:          projs,
 		encrypter:                 encrypter,
-		githubCli:                 github.NewClient(nil),
+		githubCli:                 githubCli,
 		appProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		deploymentProjectCache:    memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedProjectCache:         memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedStatCache:            psc,
 		logger:                    logger.Named("web-api"),
 	}
-	return a
+	return a, nil
 }
 
 // Register registers all handling of this service into the specified gRPC server.
@@ -1952,16 +1957,16 @@ func (a *WebAPI) ListReleasedVersions(ctx context.Context, req *webservice.ListR
 	versions := make([]string, 0, len(releases))
 	for _, release := range releases {
 		// Ignore pre-release tagged or draft release.
-		if *release.Prerelease || *release.Draft {
+		if release.Prerelease || release.Draft {
 			continue
 		}
 		// Ignore module's release.
 		// Eg. pkg/app/pipedv1/plugin/kubernetes/v0.1.0
-		if !semver.IsValid(*release.TagName) {
+		if !semver.IsValid(release.TagName) {
 			continue
 		}
 
-		versions = append(versions, *release.TagName)
+		versions = append(versions, release.TagName)
 	}
 
 	return &webservice.ListReleasedVersionsResponse{
@@ -2021,12 +2026,12 @@ func (a *WebAPI) ListDeprecatedNotes(ctx context.Context, req *webservice.ListDe
 	var notes strings.Builder
 	for _, release := range releases {
 		// Ignore pre-release tagged or draft release.
-		if *release.Prerelease || *release.Draft {
+		if release.Prerelease || release.Draft {
 			continue
 		}
 
 		// Ignore the release that is older than the oldest version of the piped.
-		if semver.Compare(*release.TagName, oldestVersion) < 0 {
+		if semver.Compare(release.TagName, oldestVersion) < 0 {
 			continue
 		}
 
@@ -2035,7 +2040,7 @@ func (a *WebAPI) ListDeprecatedNotes(ctx context.Context, req *webservice.ListDe
 			continue
 		}
 
-		fmt.Fprintf(&notes, "## %s\n%s\n", *release.TagName, matches[1])
+		fmt.Fprintf(&notes, "## %s\n%s\n", release.TagName, matches[1])
 	}
 
 	return &webservice.ListDeprecatedNotesResponse{
