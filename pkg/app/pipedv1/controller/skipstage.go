@@ -38,13 +38,16 @@ func (s *scheduler) determineSkipStage(ctx context.Context, skipOpts config.Skip
 	}
 	defer repo.Clean()
 
-	// Check by path pattern
-	skip, err = skipByPathPattern(ctx, skipOpts, repo, s.runningDSP.Revision(), s.targetDSP.Revision())
-	if err != nil {
-		return false, err
-	}
-	if skip {
-		return true, nil
+	// Check by path pattern.
+	// The first deployment has no running commit to compare with, so it is never skipped by path pattern.
+	if s.runningDSP != nil {
+		skip, err = skipByPathPattern(ctx, skipOpts, repo, s.runningDSP.Revision(), s.targetDSP.Revision())
+		if err != nil {
+			return false, err
+		}
+		if skip {
+			return true, nil
+		}
 	}
 
 	// Check by prefix of commit message
