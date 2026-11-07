@@ -1,6 +1,8 @@
 import { useMemo } from "react";
 import { useLocation } from "react-router-dom";
-import { parse, stringify, ParsedQuery } from "query-string";
+import queryString, { ParsedQuery } from "query-string";
+
+const { parse, stringify } = queryString;
 
 export function useSearchParams(): ParsedQuery<string> {
   const location = useLocation();

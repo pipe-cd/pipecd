@@ -7,9 +7,19 @@ module.exports = {
         isolatedModules: true,
       },
     ],
+    // Transpile ESM-only dependencies (e.g. query-string) to CommonJS.
+    "^.+/node_modules/.+\\.js$": [
+      "ts-jest",
+      {
+        isolatedModules: true,
+      },
+    ],
     "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga|ico)$":
       "<rootDir>/file-transformer.js",
   },
+  transformIgnorePatterns: [
+    "/node_modules/(?!(query-string|decode-uri-component|split-on-first|filter-obj)/)",
+  ],
   moduleNameMapper: {
     "^pipecd/(.*)$": "<rootDir>/../$1",
     "^~/(.*)$": "<rootDir>/src/$1",
