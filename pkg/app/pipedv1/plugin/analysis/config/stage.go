@@ -36,6 +36,9 @@ func (a *AnalysisStageOptions) Validate() error {
 	if a.Duration == 0 {
 		return fmt.Errorf("the ANALYSIS stage requires duration field")
 	}
+	if a.Duration < 0 {
+		return fmt.Errorf("the ANALYSIS stage duration must be positive")
+	}
 
 	for _, m := range a.Metrics {
 		if m.Template.Name != "" {
@@ -44,7 +47,7 @@ func (a *AnalysisStageOptions) Validate() error {
 			}
 			continue
 		}
-		if err := m.Validate(); err != nil {
+		if err := m.ValidateForDuration(a.Duration); err != nil {
 			return fmt.Errorf("one of metrics configurations of ANALYSIS stage is invalid: %w", err)
 		}
 	}

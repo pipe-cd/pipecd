@@ -65,12 +65,14 @@ func newMetricsAnalyzer(id string, cfg config.AnalysisMetrics, stageStartTime ti
 }
 
 // run starts an analysis which runs the query at the given interval, until the context is done.
-// It returns an error when the number of failures exceeds the the failureLimit.
+// It returns an error when failures exceed failureLimit or no query completes before the deadline.
 func (a *metricsAnalyzer) run(ctx context.Context) error {
 	ticker := time.NewTicker(a.cfg.Interval.Duration())
 	defer ticker.Stop()
 
 	failureCount := 0
+	queryCompleted := false
+loop:
 	for {
 		select {
 		case <-ticker.C:
@@ -95,10 +97,11 @@ func (a *metricsAnalyzer) run(ctx context.Context) error {
 			default:
 				return fmt.Errorf("unknown strategy %q given", a.cfg.Strategy)
 			}
-			// Ignore parent's context deadline exceeded error, and return immediately.
-			if errors.Is(err, context.DeadlineExceeded) && ctx.Err() == context.DeadlineExceeded {
-				return nil
+			// A query interrupted by the stage deadline does not count as a completed check.
+			if ctx.Err() == context.DeadlineExceeded && (errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled)) {
+				break loop
 			}
+			queryCompleted = true
 			if errors.Is(err, metrics.ErrNoDataFound) && a.cfg.SkipOnNoData {
 				a.logPersister.Infof("[%s] The query result evaluation was skipped because \"skipOnNoData\" is true though no data returned. Reason: %v", a.id, err)
 				continue
@@ -115,9 +118,13 @@ func (a *metricsAnalyzer) run(ctx context.Context) error {
 				return fmt.Errorf("analysis '%s' failed because the failure number exceeded the failure limit (%d)", a.id, a.cfg.FailureLimit)
 			}
 		case <-ctx.Done():
-			return nil
+			break loop
 		}
 	}
+	if !queryCompleted && ctx.Err() == context.DeadlineExceeded {
+		return fmt.Errorf("analysis '%s' failed because no query completed before the analysis duration elapsed", a.id)
+	}
+	return nil
 }
 
 // analyzeWithThreshold returns false if any data point is out of the prediction range.
