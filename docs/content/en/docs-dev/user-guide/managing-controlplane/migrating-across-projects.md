@@ -46,13 +46,20 @@ NOTE:
 
 ## Migration Workflow Overview
 
-<!-- TODO: Add architecture diagram showing source/target control plane relationship and data flow -->
+The migration process consists of three main phases, each illustrated with its own architecture diagram:
 
-The migration process consists of three main phases:
+1. **Preparation & Backup**: Stop source pipeds, save configurations, and export data from the source control plane
+2. **Target Setup & Credential Regeneration**: Restore pipeds on the target control plane with new IDs and API keys
+3. **Reconnection & Validation**: Restart pipeds with updated configs, sync repositories, restore applications, and verify
 
-1. **Backup**: Export data from source control plane/project to a local JSON file
-2. **Restore Pipeds**: Register pipeds on target control plane/project with new IDs and keys
-3. **Restore Applications**: Create applications on target control plane/project after pipeds connect
+#### Phase 1: Preparation & Backup
+![Phase 1 – Preparation and backup for migration](/images/pipecd-migration-preparation.png)
+
+#### Phase 2: Target Setup & Credential Regeneration
+![Phase 2 – Target setup and credential regeneration](/images/pipecd-migration-credential-regeneration.png)
+
+#### Phase 3: Reconnection & Validation
+![Phase 3 – Reconnection and validation](/images/pipecd-migration-reconnection.png)
 
 **Expected Timeline**:
 - Backup: Minutes (depending on number of applications)
@@ -67,6 +74,8 @@ NOTE:
 ## Step-by-Step Migration Guide
 
 ### Phase 1: Preparation
+
+![Preparation and backup workflow](/images/pipecd-migration-preparation.png)
 
 #### 1.1 Create API keys with appropriate permissions
 
@@ -129,6 +138,8 @@ Expected output:
 ```
 
 ### Phase 3: Restore Pipeds
+
+![Target setup and credential regeneration workflow](/images/pipecd-migration-credential-regeneration.png)
 
 #### 3.1 Register pipeds on target control plane
 
@@ -299,6 +310,8 @@ Applications transition from "managed by source control plane" to "managed by ta
 - Application appears as "new" with no previous deployment records
 
 ## Validation and Testing (optional)
+
+![Reconnection and validation workflow](/images/pipecd-migration-reconnection.png)
 
 After completing the migration, perform these validation steps:
 
