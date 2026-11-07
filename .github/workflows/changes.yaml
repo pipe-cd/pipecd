@@ -1,0 +1,30 @@
+name: changes
+
+on:
+  workflow_call:
+    outputs:
+      code:
+        description: Whether the pull request changes anything other than documentation
+        value: ${{ jobs.changes.outputs.code }}
+
+jobs:
+  changes:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      - id: filter
+        if: github.event_name == 'pull_request'
+        uses: dorny/paths-filter@0e4a8c6effa4802afeda77dc8d303f8176d7dfad # v3.0.4
+        with:
+          # 'every' makes the negated patterns below act as real exclusions,
+          # so the output is true only when something outside docs changed.
+          predicate-quantifier: every
+          filters: |
+            code:
+              - '!docs/**'
+              - '!**/*.md'
+              - '**'
