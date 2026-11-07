@@ -21,7 +21,7 @@ spec:
           releaseName: helm-local-chart
           valueFiles:
             - values.yaml
-        helmVersion: 3.8.2
+        helmVersion: 3.22.0
   description: |
     This app demonstrates how to deploy a Kubernetes app that uses a Helm chart sourced from the same Git repository.
     References: [adding a new app](https://pipecd.dev/docs-v1.0.x/user-guide/managing-application/adding-an-application/), [app configuration](https://pipecd.dev/docs-v1.0.x/user-guide/managing-application/configuration-reference/)
