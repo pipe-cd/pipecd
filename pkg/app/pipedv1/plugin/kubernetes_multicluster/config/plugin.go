@@ -105,3 +105,17 @@ type HelmChartRegistry struct {
 func (r *HelmChartRegistry) IsOCI() bool {
 	return r.Type == OCIHelmChartRegistry
 }
+
+// SetHelmChartInsecure sets the Insecure field of the given Helm chart from the
+// chart repository it uses, because that field is not read from the application config.
+func (c *KubernetesPluginConfig) SetHelmChartInsecure(chart *InputHelmChart) {
+	if c == nil || chart == nil || chart.Repository == "" {
+		return
+	}
+	for _, r := range c.ChartRepositories {
+		if r.Name == chart.Repository {
+			chart.Insecure = r.Insecure
+			return
+		}
+	}
+}

@@ -19,6 +19,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -327,9 +328,10 @@ func TestLoader_templateHelmChart(t *testing.T) {
 	}
 
 	tests := []struct {
-		name    string
-		input   LoaderInput
-		wantErr bool
+		name     string
+		input    LoaderInput
+		wantErr  bool
+		wantName string // expected metadata.name of every rendered manifest, checked when set
 	}{
 		{
 			name: "local chart",
@@ -358,7 +360,25 @@ func TestLoader_templateHelmChart(t *testing.T) {
 			wantErr: true, // it's not implemented yet
 		},
 		{
-			name: "helm chart from repository",
+			name: "helm chart from OCI registry",
+			input: LoaderInput{
+				AppName:     "test-app",
+				AppDir:      "testdata/testhelm/appconfdir",
+				Namespace:   "default",
+				HelmVersion: "3.16.1",
+				HelmChart: &config.InputHelmChart{
+					Repository: "oci://ghcr.io/pipe-cd",
+					Name:       "chart/helloworld",
+					Version:    "v0.53.0",
+				},
+				HelmOptions: &config.InputHelmOptions{},
+				Logger:      zap.NewNop(),
+			},
+			wantErr:  false,
+			wantName: "test-app-helloworld",
+		},
+		{
+			name: "helm chart from repository without chart name and version",
 			input: LoaderInput{
 				AppName:     "test-app",
 				AppDir:      "testdata/testhelm/appconfdir",
@@ -368,17 +388,30 @@ func TestLoader_templateHelmChart(t *testing.T) {
 				HelmOptions: &config.InputHelmOptions{},
 				Logger:      zap.NewNop(),
 			},
-			wantErr: true, // it's not implemented yet
+			wantErr: true, // helm rejects the incomplete chart reference
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := loader.templateHelmChart(context.Background(), tt.input)
+			out, err := loader.templateHelmChart(context.Background(), tt.input)
 			if tt.wantErr {
 				require.Error(t, err)
-			} else {
+				return
+			}
+			require.NoError(t, err)
+
+			if tt.wantName == "" {
+				return
+			}
+			manifests, err := ParseManifests(strings.TrimPrefix(out, "---"))
+			require.NoError(t, err)
+			require.NotEmpty(t, manifests)
+			for _, m := range manifests {
+				name, ok, err := m.NestedString("metadata", "name")
 				require.NoError(t, err)
+				require.True(t, ok)
+				require.Equal(t, tt.wantName, name)
 			}
 		})
 	}
