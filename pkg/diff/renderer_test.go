@@ -203,6 +203,16 @@ func TestRenderPrimitiveValue(t *testing.T) {
 			expected: "1",
 		},
 		{
+			name:     "uint",
+			value:    uint(42),
+			expected: "42",
+		},
+		{
+			name:     "uint64",
+			value:    uint64(100),
+			expected: "100",
+		},
+		{
 			name:     "float",
 			value:    1.25,
 			expected: "1.25",
