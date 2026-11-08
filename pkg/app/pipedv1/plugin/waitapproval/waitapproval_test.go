@@ -16,8 +16,10 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"sort"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -38,6 +40,8 @@ type mockStageClient struct {
 	// keepPolling makes ListStageCommands wait for new commands until the
 	// context is done after returning the existing ones, as the SDK client does.
 	keepPolling bool
+	// waiting is closed when ListStageCommands starts waiting for new commands.
+	waiting chan struct{}
 }
 
 func newMockStageClient(t *testing.T) *mockStageClient {
@@ -68,9 +72,32 @@ func (m *mockStageClient) ListStageCommands(ctx context.Context, _ ...sdk.Comman
 		if !m.keepPolling {
 			return
 		}
+		if m.waiting != nil {
+			close(m.waiting)
+		}
 		<-ctx.Done()
 		yield(nil, ctx.Err())
 	}
+}
+
+// recordingLogPersister records the info logs written to the stage log.
+type recordingLogPersister struct {
+	sdk.StageLogPersister
+	mu    sync.Mutex
+	infos []string
+}
+
+func (lp *recordingLogPersister) Infof(format string, a ...interface{}) {
+	lp.mu.Lock()
+	lp.infos = append(lp.infos, fmt.Sprintf(format, a...))
+	lp.mu.Unlock()
+	lp.StageLogPersister.Infof(format, a...)
+}
+
+func (lp *recordingLogPersister) infoLogs() []string {
+	lp.mu.Lock()
+	defer lp.mu.Unlock()
+	return slices.Clone(lp.infos)
 }
 
 func Test_checkApproval(t *testing.T) {
@@ -110,15 +137,6 @@ func Test_checkApproval(t *testing.T) {
 			minApprovers: 2,
 			existing:     "",
 			commands:     []*sdk.StageCommand{{Commander: "alice", Type: sdk.CommandTypeApproveStage}},
-			wantApproved: false,
-			wantUsers:    []string{"alice"},
-		},
-		{
-			name:         "not enough approvals persists progress while waiting for more commands",
-			minApprovers: 2,
-			existing:     "",
-			commands:     []*sdk.StageCommand{{Commander: "alice", Type: sdk.CommandTypeApproveStage}},
-			keepPolling:  true,
 			wantApproved: false,
 			wantUsers:    []string{"alice"},
 		},
@@ -176,6 +194,39 @@ func Test_checkApproval(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_checkApproval_reportsProgressWhileWaiting(t *testing.T) {
+	t.Parallel()
+	p := &plugin{}
+
+	m := newMockStageClient(t)
+	m.commands = []*sdk.StageCommand{{Commander: "alice", Type: sdk.CommandTypeApproveStage}}
+	m.keepPolling = true
+	m.waiting = make(chan struct{})
+	lp := &recordingLogPersister{StageLogPersister: m.lp}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	done := make(chan bool, 1)
+	go func() {
+		done <- p.checkApproval(ctx, 2, lp, m)
+	}()
+
+	select {
+	case <-m.waiting:
+	case <-time.After(5 * time.Second):
+		t.Fatal("ListStageCommands did not start waiting for new commands")
+	}
+
+	// The progress must be reported while ListStageCommands is still waiting.
+	assert.Equal(t, "alice", m.stageMetadata[sdk.MetadataKeyStageApprovedUsers])
+	assert.Equal(t, "Approved by: alice", m.stageMetadata[sdk.MetadataKeyStageDisplay])
+	assert.Contains(t, lp.infoLogs(), "Waiting for 1 more approver(s)...")
+
+	cancel()
+	assert.False(t, <-done)
 }
 
 func Test_getApprovedUsers(t *testing.T) {
