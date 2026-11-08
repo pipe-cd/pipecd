@@ -19,6 +19,7 @@ import (
 	"sort"
 	"strings"
 	"testing"
+	"time"
 
 	"iter"
 
@@ -34,6 +35,9 @@ type mockStageClient struct {
 	lp            sdk.StageLogPersister
 	stageMetadata map[string]string
 	commands      []*sdk.StageCommand
+	// keepPolling makes ListStageCommands wait for new commands until the
+	// context is done after returning the existing ones, as the SDK client does.
+	keepPolling bool
 }
 
 func newMockStageClient(t *testing.T) *mockStageClient {
@@ -54,26 +58,31 @@ func (m *mockStageClient) PutStageMetadata(_ context.Context, key, value string)
 	return nil
 }
 
-func (m *mockStageClient) ListStageCommands(_ context.Context, _ ...sdk.CommandType) iter.Seq2[*sdk.StageCommand, error] {
+func (m *mockStageClient) ListStageCommands(ctx context.Context, _ ...sdk.CommandType) iter.Seq2[*sdk.StageCommand, error] {
 	return func(yield func(*sdk.StageCommand, error) bool) {
 		for _, c := range m.commands {
 			if !yield(c, nil) {
 				return
 			}
 		}
+		if !m.keepPolling {
+			return
+		}
+		<-ctx.Done()
+		yield(nil, ctx.Err())
 	}
 }
 
 func Test_checkApproval(t *testing.T) {
 	t.Parallel()
 	p := &plugin{}
-	ctx := context.Background()
 
 	testcases := []struct {
 		name         string
 		minApprovers int
 		existing     string
 		commands     []*sdk.StageCommand
+		keepPolling  bool
 		wantApproved bool
 		wantUsers    []string
 	}{
@@ -104,6 +113,39 @@ func Test_checkApproval(t *testing.T) {
 			wantApproved: false,
 			wantUsers:    []string{"alice"},
 		},
+		{
+			name:         "not enough approvals persists progress while waiting for more commands",
+			minApprovers: 2,
+			existing:     "",
+			commands:     []*sdk.StageCommand{{Commander: "alice", Type: sdk.CommandTypeApproveStage}},
+			keepPolling:  true,
+			wantApproved: false,
+			wantUsers:    []string{"alice"},
+		},
+		{
+			name:         "enough approvals while waiting for more commands",
+			minApprovers: 2,
+			existing:     "",
+			commands: []*sdk.StageCommand{
+				{Commander: "alice", Type: sdk.CommandTypeApproveStage},
+				{Commander: "bob", Type: sdk.CommandTypeApproveStage},
+			},
+			keepPolling:  true,
+			wantApproved: true,
+			wantUsers:    []string{"alice", "bob"},
+		},
+		{
+			name:         "existing approvals already meet threshold",
+			minApprovers: 2,
+			existing:     "alice, bob",
+			commands: []*sdk.StageCommand{
+				{Commander: "alice", Type: sdk.CommandTypeApproveStage},
+				{Commander: "bob", Type: sdk.CommandTypeApproveStage},
+			},
+			keepPolling:  true,
+			wantApproved: true,
+			wantUsers:    []string{"alice", "bob"},
+		},
 	}
 
 	for _, tc := range testcases {
@@ -114,6 +156,10 @@ func Test_checkApproval(t *testing.T) {
 				m.stageMetadata[sdk.MetadataKeyStageApprovedUsers] = tc.existing
 			}
 			m.commands = tc.commands
+			m.keepPolling = tc.keepPolling
+
+			ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+			defer cancel()
 
 			approved := p.checkApproval(ctx, tc.minApprovers, m.lp, m)
 			assert.Equal(t, tc.wantApproved, approved)
