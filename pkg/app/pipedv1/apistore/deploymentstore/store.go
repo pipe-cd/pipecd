@@ -35,10 +35,6 @@ type Lister interface {
 	ListPlanneds() []*model.Deployment
 	// ListRunnings lists all running deployments that should be handled by this piped.
 	ListRunnings() []*model.Deployment
-	// ListAppHeadDeployments returns the map from application ID to its head of deploying deployments.
-	// Application that currently has not any uncompleted deployments will not be in this list.
-	// Head deployment is same with the oldest uncompleted one.
-	ListAppHeadDeployments() map[string]*model.Deployment
 }
 
 type apiClient interface {
@@ -57,7 +53,6 @@ type store struct {
 	pendingDeployments atomic.Value
 	plannedDeployments atomic.Value
 	runningDeployments atomic.Value
-	headDeployments    atomic.Value
 	syncInterval       time.Duration
 	gracePeriod        time.Duration
 	logger             *zap.Logger
@@ -129,26 +124,9 @@ func (s *store) sync(ctx context.Context) error {
 		cursor = resp.Cursor
 	}
 
-	headDeployments := make(map[string]*model.Deployment)
-	updateHead := func(d *model.Deployment) {
-		if existing, ok := headDeployments[d.ApplicationId]; !ok || d.CreatedAt < existing.CreatedAt {
-			headDeployments[d.ApplicationId] = d
-		}
-	}
-	for _, d := range pendings {
-		updateHead(d)
-	}
-	for _, d := range planneds {
-		updateHead(d)
-	}
-	for _, d := range runnings {
-		updateHead(d)
-	}
-
 	s.plannedDeployments.Store(planneds)
 	s.runningDeployments.Store(runnings)
 	s.pendingDeployments.Store(pendings)
-	s.headDeployments.Store(headDeployments)
 
 	return nil
 }
@@ -178,12 +156,4 @@ func (s *store) ListRunnings() []*model.Deployment {
 		return nil
 	}
 	return list.([]*model.Deployment)
-}
-
-func (s *store) ListAppHeadDeployments() map[string]*model.Deployment {
-	m := s.headDeployments.Load()
-	if m == nil {
-		return nil
-	}
-	return m.(map[string]*model.Deployment)
 }
