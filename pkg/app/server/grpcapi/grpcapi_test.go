@@ -20,11 +20,13 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"github.com/pipe-cd/pipecd/pkg/datastore"
 	"github.com/pipe-cd/pipecd/pkg/filestore"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 func TestGRPCStoreError(t *testing.T) {
@@ -87,6 +89,44 @@ func TestGRPCStoreError(t *testing.T) {
 			t.Parallel()
 			err := gRPCStoreError(tt.inputErr, tt.inputMsg)
 			assert.Equal(t, tt.expected, err)
+		})
+	}
+}
+
+func TestMakeGitPath(t *testing.T) {
+	t.Parallel()
+
+	piped := &model.Piped{
+		Repositories: []*model.ApplicationGitRepository{
+			{Id: "repo-1", Remote: "git@github.com:org/repo.git", Branch: "main"},
+		},
+	}
+
+	tests := []struct {
+		name         string
+		repoID       string
+		path         string
+		cfgFilename  string
+		expectedCode codes.Code
+	}{
+		{name: "valid", repoID: "repo-1", path: "apps/foo", cfgFilename: "app.pipecd.yaml", expectedCode: codes.OK},
+		{name: "path escapes repository", repoID: "repo-1", path: "../../etc", expectedCode: codes.InvalidArgument},
+		{name: "nested path escapes repository", repoID: "repo-1", path: "apps/../../etc", expectedCode: codes.InvalidArgument},
+		{name: "config filename is parent dir", repoID: "repo-1", path: "apps/foo", cfgFilename: "..", expectedCode: codes.InvalidArgument},
+		{name: "config filename is a path", repoID: "repo-1", path: "apps/foo", cfgFilename: "../app.pipecd.yaml", expectedCode: codes.InvalidArgument},
+		{name: "unknown repository", repoID: "repo-2", path: "apps/foo", expectedCode: codes.NotFound},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			gitPath, err := makeGitPath(tt.repoID, tt.path, tt.cfgFilename, piped, zap.NewNop())
+			assert.Equal(t, tt.expectedCode, status.Code(err))
+			if tt.expectedCode == codes.OK {
+				assert.Equal(t, tt.path, gitPath.Path)
+				assert.Equal(t, tt.cfgFilename, gitPath.ConfigFilename)
+			}
 		})
 	}
 }
