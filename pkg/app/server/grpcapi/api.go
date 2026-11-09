@@ -465,6 +465,10 @@ func (a *API) RenameApplicationConfigFile(ctx context.Context, req *apiservice.R
 		return nil, err
 	}
 
+	if err := model.ValidateApplicationConfigFilename(req.NewFilename); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
 	for _, appID := range req.ApplicationIds {
 		app, err := a.applicationStore.Get(ctx, appID)
 		if err != nil {
