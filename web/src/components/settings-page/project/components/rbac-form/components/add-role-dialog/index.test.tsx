@@ -28,7 +28,7 @@ describe("AddRoleDialog", () => {
     await waitFor(() => {
       screen.findByRole("dialog");
     });
-    userEvent.click(screen.getByRole("button", { name: /close/i }));
+    await userEvent.click(screen.getByRole("button", { name: /close/i }));
     expect(defaultProps.onClose).toHaveBeenCalled();
   });
 
@@ -38,14 +38,14 @@ describe("AddRoleDialog", () => {
     const textInput = screen.getByRole("textbox", { name: /role/i });
     const policiesInput = screen.getByRole("textbox", { name: /policies/i });
 
-    userEvent.type(textInput, "dev-team");
-    userEvent.type(policiesInput, "resources=application;actions=get");
+    await userEvent.type(textInput, "dev-team");
+    await userEvent.type(policiesInput, "resources=application;actions=get");
 
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /add/i })).toBeEnabled();
     });
 
-    userEvent.click(screen.getByRole("button", { name: /add/i }));
+    await userEvent.click(screen.getByRole("button", { name: /add/i }));
 
     await waitFor(() => {
       expect(defaultProps.onSubmit).toHaveBeenCalledWith({

@@ -118,6 +118,8 @@ Go to the `PIPED v1 ADD FROM SUGGESTIONS` tab, then select:
 
 You should see a lot of suggested applications. Select one of the listed applications and click the `SAVE` button to register.
 
+> **Note:** Both `v0/` and `v1/` example applications from `pipe-cd/examples` appear in the suggestions list with the same name. Make sure to select an application with a path starting with `v1/` (such as `v1/kubernetes/kustomize-local-base`), as `v0/` configs do not define `spec.plugins` or v1 pipeline stages and will fail to sync with `Unable to plan the deployment (no plugin specified)`.
+
 ![Adding the application](/images/quickstart-adding-application-from-suggestions-v1.png)
 
 After a bit, the first deployment is complete and will automatically sync the application to the state specified in the current Git commit.

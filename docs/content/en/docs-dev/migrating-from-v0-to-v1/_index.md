@@ -8,7 +8,7 @@ description: >
 
 This page explains how to safely migrate your existing PipeCD System to the RC version of **PipeCD V1**, the new plugin-based architecture that brings modularity and extensibility to PipeCD.
 
-Incase you are using PipeCD V0, follow the setps on this page to migrate to **PipeCD V1**.
+In case you are using PipeCD V0, follow the steps on this page to migrate to **PipeCD V1**.
 
 ## Overview
 
@@ -156,7 +156,7 @@ In pipedv1, **platform providers** have been replaced by **plugins**. Each plugi
 
 ### Example (Old piped config)
 
-Your exisiting `piped` config may look similar to the following:
+Your existing `piped` config may look similar to the following:
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -274,7 +274,7 @@ If your Control Plane is running locally, append the `--insecure=true` flag to s
 
 ### Option 3 - Run `pipedv1` as a Container
 
-In addtion to running piped using Helm or as a standalone binary, you can also run it as a container. This is useful for environments such as CloudRun, ECS Fargate or more.
+In addition to running piped using Helm or as a standalone binary, you can also run it as a container. This is useful for environments such as CloudRun, ECS Fargate or more.
 
 A prebuilt container image of `pipedv1` is available on GitHub Container Registry:
 

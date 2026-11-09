@@ -83,7 +83,7 @@ spec:
 
 Currently, you can use the commands which are installed in the environment for the piped.
 
-For example, If you are using the container platform and the offcial piped container image, you can use the command below.
+For example, If you are using the container platform and the official piped container image, you can use the command below.
 - git
 - ssh
 - jq

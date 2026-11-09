@@ -56,6 +56,6 @@ The public piped image available in PipeCD main repo (ref: [Dockerfile](https://
 When `autoRollback` is enabled, the deployment will be rolled back in the same way as [Rolling Back](../../rolling-back-a-deployment).
 
 When the rolling back process is triggered in the pipeline including `CUSTOM_SYNC`, `CUSTOM_SYNC_ROLLBACK` stage will be added to the deployment pipeline.
-`CUSTOM_SYNC_ROLLBACK` is different from `ROLLBACK` that applications set defaultly, it runs the same commands as `CUSTOM_SYNC` in the runnning commit to reverts all the applied changes.
+`CUSTOM_SYNC_ROLLBACK` is different from `ROLLBACK` that applications set by default, it runs the same commands as `CUSTOM_SYNC` in the running commit to reverts all the applied changes.
 
 ![](/images/custom-sync-rollback.png)
