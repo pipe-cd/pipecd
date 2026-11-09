@@ -85,6 +85,7 @@ func (s *apiKeyStore) List(ctx context.Context, opts ListOptions) ([]*model.APIK
 	if err != nil {
 		return nil, err
 	}
+	defer it.Close()
 	ks := make([]*model.APIKey, 0)
 	for {
 		var k model.APIKey

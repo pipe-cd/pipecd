@@ -35,8 +35,11 @@ describe("EditRoleDialog", () => {
 
     const policiesInput = screen.getByRole("textbox", { name: "Policies" });
 
-    userEvent.clear(policiesInput);
-    userEvent.type(policiesInput, "resources=application,deployment;actions=*");
+    await userEvent.clear(policiesInput);
+    await userEvent.type(
+      policiesInput,
+      "resources=application,deployment;actions=*"
+    );
 
     await waitFor(() =>
       expect(policiesInput).toHaveValue(

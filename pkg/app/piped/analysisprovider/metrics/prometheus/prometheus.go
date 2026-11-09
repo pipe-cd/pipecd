@@ -35,7 +35,7 @@ const (
 )
 
 type client interface {
-	QueryRange(ctx context.Context, query string, r v1.Range) (model.Value, v1.Warnings, error)
+	QueryRange(ctx context.Context, query string, r v1.Range, opts ...v1.Option) (model.Value, v1.Warnings, v1.Infos, error)
 }
 
 // Provider is a client for prometheus.
@@ -65,7 +65,7 @@ func NewProvider(address string, opts ...Option) (*Provider, error) {
 		Address: address,
 	}
 	if p.username != "" && p.password != "" {
-		cfg.RoundTripper = config.NewBasicAuthRoundTripper(p.username, config.Secret(p.password), "", api.DefaultRoundTripper)
+		cfg.RoundTripper = config.NewBasicAuthRoundTripper(config.NewInlineSecret(p.username), config.NewInlineSecret(p.password), api.DefaultRoundTripper)
 	}
 	client, err := api.NewClient(cfg)
 	if err != nil {
@@ -114,7 +114,7 @@ func (p *Provider) QueryPoints(ctx context.Context, query string, queryRange met
 	}
 
 	p.logger.Info("run query", zap.String("query", query))
-	response, warnings, err := p.api.QueryRange(ctx, query, v1.Range{
+	response, warnings, _, err := p.api.QueryRange(ctx, query, v1.Range{
 		Start: queryRange.From,
 		End:   queryRange.To,
 		Step:  step,

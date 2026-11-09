@@ -101,7 +101,7 @@ Deployment Details Page
 In this example, you configured the application configuration file to migrate traffic from an old to a new version of the application using Istio's weighted routing feature.
 
 - Stage 1: `K8S_CANARY_ROLLOUT` ensures that the workloads of canary variant (new version) should be deployed. But at this time, they still handle nothing, all traffic are handled by workloads of primary variant.
-The number of workloads (e.g. pod) for canary variant is configured to be 50% of the replicas number of primary varant.
+The number of workloads (e.g. pod) for canary variant is configured to be 50% of the replicas number of primary variant.
 
 ![](/images/example-canary-kubernetes-istio-stage-1.png)
 

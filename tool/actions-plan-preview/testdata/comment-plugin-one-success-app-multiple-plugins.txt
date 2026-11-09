@@ -29,7 +29,7 @@ details-1
 <summary>Details (Click me)</summary>
 <p>
 
-``` hcl
+``` diff
 details-2
 ```
 </p>

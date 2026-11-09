@@ -26,6 +26,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/apiservice"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 func TestSyncApplicationRetriesUnavailableCommandUntilTimeout(t *testing.T) {
@@ -48,6 +49,7 @@ func TestSyncApplicationRetriesUnavailableCommandUntilTimeout(t *testing.T) {
 		context.Background(),
 		cli,
 		"app-id",
+		model.SyncStrategy_AUTO,
 		time.Millisecond,
 		50*time.Millisecond,
 		zap.NewNop(),
@@ -74,6 +76,7 @@ func TestSyncApplicationReturnsNotFoundForMissingCommand(t *testing.T) {
 		context.Background(),
 		cli,
 		"app-id",
+		model.SyncStrategy_AUTO,
 		time.Nanosecond,
 		time.Hour,
 		zap.NewNop(),
@@ -81,4 +84,64 @@ func TestSyncApplicationReturnsNotFoundForMissingCommand(t *testing.T) {
 	require.Error(t, err)
 	require.Equal(t, codes.NotFound, status.Code(err))
 	require.Contains(t, err.Error(), commandID)
+}
+
+func TestSyncApplicationReturnsErrorOnUnsuccessfulCommand(t *testing.T) {
+	tests := []struct {
+		name    string
+		cmd     *model.Command
+		wantErr string
+	}{
+		{
+			name: "command failed",
+			cmd: &model.Command{
+				Type:   model.Command_SYNC_APPLICATION,
+				Status: model.CommandStatus_COMMAND_FAILED,
+			},
+			wantErr: "unable to be handled",
+		},
+		{
+			name: "command timed out",
+			cmd: &model.Command{
+				Type:   model.Command_SYNC_APPLICATION,
+				Status: model.CommandStatus_COMMAND_TIMEOUT,
+			},
+			wantErr: "timed out",
+		},
+		{
+			name: "unexpected command type",
+			cmd: &model.Command{
+				Type:   model.Command_CANCEL_DEPLOYMENT,
+				Status: model.CommandStatus_COMMAND_SUCCEEDED,
+			},
+			wantErr: "unexpected command type",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			cli := &fakeAPIClient{
+				syncApplication: func(context.Context, *apiservice.SyncApplicationRequest, ...grpc.CallOption) (*apiservice.SyncApplicationResponse, error) {
+					return &apiservice.SyncApplicationResponse{
+						CommandId: "command-id",
+					}, nil
+				},
+				getCommand: func(context.Context, *apiservice.GetCommandRequest, ...grpc.CallOption) (*apiservice.GetCommandResponse, error) {
+					return &apiservice.GetCommandResponse{Command: tc.cmd}, nil
+				},
+			}
+
+			_, err := SyncApplication(
+				context.Background(),
+				cli,
+				"app-id",
+				model.SyncStrategy_AUTO,
+				time.Millisecond,
+				time.Second,
+				zap.NewNop(),
+			)
+			require.Error(t, err)
+			require.Contains(t, err.Error(), tc.wantErr)
+		})
+	}
 }

@@ -1,0 +1,11 @@
+resources:
+- ../../local-modules/kustomize-bases/helloworld
+
+nameSuffix: -local-base
+
+commonLabels:
+  app: kustomize-local-base
+
+images:
+- name: ghcr.io/pipe-cd/helloworld
+  newTag: v0.48.0

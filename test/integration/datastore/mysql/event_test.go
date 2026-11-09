@@ -152,6 +152,7 @@ func listEvents(it datastore.Iterator) ([]*model.Event, error) {
 	if it == nil {
 		return ret, nil
 	}
+	defer it.Close()
 	for {
 		var v model.Event
 		err := it.Next(&v)

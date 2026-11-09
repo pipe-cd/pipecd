@@ -149,6 +149,7 @@ func listCommands(it datastore.Iterator) ([]*model.Command, error) {
 	if it == nil {
 		return ret, nil
 	}
+	defer it.Close()
 	for {
 		var v model.Command
 		err := it.Next(&v)

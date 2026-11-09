@@ -9,7 +9,7 @@ Kubernetes plugin supports the Deployment for Kubernetes.
 
 ### Quick sync
 
-Quick sync just applies all the defined manifiests to sync the application.
+Quick sync just applies all the defined manifests to sync the application.
 
 It will be planned in one of the following cases:
 - no pipeline was specified in the application configuration file
@@ -232,7 +232,7 @@ spec:
 |-|-|-|-|
 | kind | string | The resource kind. e.g. `ConfigMap` | Yes |
 | name | string | The resource name. e.g. `config-map-name` | Yes |
-| documentRoot | string | In case you want to manipulate the YAML or JSON data specified in a field of the manfiest, specify that field's path. The string value of that field will be used as input for the patch operations. Otherwise, the whole manifest will be the target of patch operations. e.g. `$.data.envoy-config` | No |
+| documentRoot | string | In case you want to manipulate the YAML or JSON data specified in a field of the manifest, specify that field's path. The string value of that field will be used as input for the patch operations. Otherwise, the whole manifest will be the target of patch operations. e.g. `$.data.envoy-config` | No |
 
 ##### K8sResourcePatchOp
 

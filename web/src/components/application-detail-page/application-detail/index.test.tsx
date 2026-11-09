@@ -112,13 +112,13 @@ describe("ApplicationDetail", () => {
           />
         </MemoryRouter>
       );
-      act(() => {
-        userEvent.click(
+      await act(async () => {
+        await userEvent.click(
           screen.getByRole("button", { name: /select sync strategy/i })
         );
       });
-      act(() => {
-        userEvent.click(
+      await act(async () => {
+        await userEvent.click(
           screen.getByRole("menuitem", { name: /pipeline sync/i })
         );
       });

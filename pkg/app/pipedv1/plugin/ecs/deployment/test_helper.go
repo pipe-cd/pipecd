@@ -39,26 +39,28 @@ func (f *fakeLogPersister) Complete(time.Duration) error      { return nil }
 
 // mockECSClient is used to mock the provider.Client interface
 type mockECSClient struct {
-	CreateServiceFunc               func(ctx context.Context, service types.Service) (*types.Service, error)
-	UpdateServiceFunc               func(ctx context.Context, service types.Service) (*types.Service, error)
-	DescribeServiceFunc             func(ctx context.Context, service types.Service) (*types.Service, error)
-	GetServiceTaskSetsFunc          func(ctx context.Context, service types.Service) ([]types.TaskSet, error)
-	GetPrimaryTaskSetFunc           func(ctx context.Context, service types.Service) (*types.TaskSet, error)
-	CreateTaskSetFunc               func(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup *types.LoadBalancer, scale float64) (*types.TaskSet, error)
-	UpdateServicePrimaryTaskSetFunc func(ctx context.Context, service types.Service, taskSet types.TaskSet) (*types.TaskSet, error)
-	DeleteTaskSetFunc               func(ctx context.Context, taskSet types.TaskSet) error
-	GetTasksFunc                    func(ctx context.Context, service types.Service) ([]types.Task, error)
-	ServiceExistsFunc               func(ctx context.Context, cluster, serviceName string) (bool, error)
-	GetServiceStatusFunc            func(ctx context.Context, cluster, serviceName string) (string, error)
-	WaitServiceStableFunc           func(ctx context.Context, cluster, serviceName string) error
-	RegisterTaskDefinitionFunc      func(ctx context.Context, taskDef types.TaskDefinition) (*types.TaskDefinition, error)
-	RunTaskFunc                     func(ctx context.Context, taskDefinition types.TaskDefinition, clusterArn string, launchType string, awsVpcConfiguration *appconfig.ECSVpcConfiguration, tags []types.Tag) error
-	PruneServiceTasksFunc           func(ctx context.Context, service types.Service) error
-	ListTagsFunc                    func(ctx context.Context, resourceArn string) ([]types.Tag, error)
-	TagResourceFunc                 func(ctx context.Context, resourceArn string, tags []types.Tag) error
-	UntagResourceFunc               func(ctx context.Context, resourceArn string, tagKeys []string) error
-	GetListenerArnsFunc             func(ctx context.Context, targetGroup types.LoadBalancer) ([]string, error)
-	ModifyListenersFunc             func(ctx context.Context, listenerArns []string, routingTrafficCfg provider.RoutingTrafficConfig) ([]string, error)
+	CreateServiceFunc                 func(ctx context.Context, service types.Service) (*types.Service, error)
+	UpdateServiceFunc                 func(ctx context.Context, service types.Service) (*types.Service, error)
+	DescribeServiceFunc               func(ctx context.Context, service types.Service) (*types.Service, error)
+	GetServiceTaskSetsFunc            func(ctx context.Context, service types.Service) ([]types.TaskSet, error)
+	GetPrimaryTaskSetFunc             func(ctx context.Context, service types.Service) (*types.TaskSet, error)
+	CreateTaskSetFunc                 func(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup *types.LoadBalancer, scale float64) (*types.TaskSet, error)
+	UpdateServicePrimaryTaskSetFunc   func(ctx context.Context, service types.Service, taskSet types.TaskSet) (*types.TaskSet, error)
+	DeleteTaskSetFunc                 func(ctx context.Context, taskSet types.TaskSet) error
+	GetTasksFunc                      func(ctx context.Context, service types.Service) ([]types.Task, error)
+	ServiceExistsFunc                 func(ctx context.Context, cluster, serviceName string) (bool, error)
+	GetServiceStatusFunc              func(ctx context.Context, cluster, serviceName string) (string, error)
+	WaitServiceStableFunc             func(ctx context.Context, cluster, serviceName string) error
+	GetLatestServiceDeploymentFunc    func(ctx context.Context, cluster, serviceName string) (*types.ServiceDeploymentBrief, error)
+	WaitServiceDeploymentCompleteFunc func(ctx context.Context, cluster, serviceName string, prevDeploymentArn *string) error
+	RegisterTaskDefinitionFunc        func(ctx context.Context, taskDef types.TaskDefinition) (*types.TaskDefinition, error)
+	RunTaskFunc                       func(ctx context.Context, taskDefinition types.TaskDefinition, clusterArn string, launchType string, awsVpcConfiguration *appconfig.ECSVpcConfiguration, tags []types.Tag) error
+	PruneServiceTasksFunc             func(ctx context.Context, service types.Service) error
+	ListTagsFunc                      func(ctx context.Context, resourceArn string) ([]types.Tag, error)
+	TagResourceFunc                   func(ctx context.Context, resourceArn string, tags []types.Tag) error
+	UntagResourceFunc                 func(ctx context.Context, resourceArn string, tagKeys []string) error
+	GetListenerArnsFunc               func(ctx context.Context, targetGroup types.LoadBalancer) ([]string, error)
+	ModifyListenersFunc               func(ctx context.Context, listenerArns []string, routingTrafficCfg provider.RoutingTrafficConfig) ([]string, error)
 }
 
 var _ provider.Client = (*mockECSClient)(nil)
@@ -98,6 +100,12 @@ func (m *mockECSClient) GetServiceStatus(ctx context.Context, cluster, serviceNa
 }
 func (m *mockECSClient) WaitServiceStable(ctx context.Context, cluster, serviceName string) error {
 	return m.WaitServiceStableFunc(ctx, cluster, serviceName)
+}
+func (m *mockECSClient) GetLatestServiceDeployment(ctx context.Context, cluster, serviceName string) (*types.ServiceDeploymentBrief, error) {
+	return m.GetLatestServiceDeploymentFunc(ctx, cluster, serviceName)
+}
+func (m *mockECSClient) WaitServiceDeploymentComplete(ctx context.Context, cluster, serviceName string, prevDeploymentArn *string) error {
+	return m.WaitServiceDeploymentCompleteFunc(ctx, cluster, serviceName, prevDeploymentArn)
 }
 func (m *mockECSClient) RegisterTaskDefinition(ctx context.Context, taskDef types.TaskDefinition) (*types.TaskDefinition, error) {
 	return m.RegisterTaskDefinitionFunc(ctx, taskDef)

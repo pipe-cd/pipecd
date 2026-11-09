@@ -205,6 +205,8 @@ Note that if it's a new breaking change, make sure to complete the two latter qu
 
 ## Development
 
+For writing and reviewing Go code, follow the [Go Coding Guidelines](docs/content/en/docs-v1.0.x/contribution-guidelines/go-coding-guidelines.md).
+
 PipeCD consists of several components and docs:
 
 - **cmd/controlplane**: A centralized component that manages deployment data and provides a gRPC API for connecting pipeds, as well as web functionalities such as authentication. [README.md](./cmd/controlplane/README.md)
