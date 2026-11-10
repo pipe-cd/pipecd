@@ -57,7 +57,7 @@ func TestResourceKey_normalizeNamespace(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			actual := tt.resourceKey.normalizeNamespace()
+			actual := tt.resourceKey.normalizeNamespace(DefaultNamespace)
 			assert.Equal(t, tt.expected, actual)
 		})
 	}
@@ -204,8 +204,46 @@ metadata:
 
 			clusterScopedLiveResources := mustParseManifests(t, tt.clusterScopedLiveResourcesYAML)
 
-			removeKeys := FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveResources)
+			removeKeys := FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveResources, DefaultNamespace)
 			assert.ElementsMatch(t, tt.expectedRemoveKeys, removeKeys)
 		})
 	}
+}
+
+func TestFindRemoveResources_defaultNamespace(t *testing.T) {
+	// The manifests in Git do not specify a namespace, and the deploy target
+	// places them in "team-a" because of its kubeconfig context.
+	manifests := mustParseManifests(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-configmap
+`)
+	live := mustParseManifests(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-configmap
+  namespace: team-a
+  annotations:
+    pipecd.dev/managed-by: piped
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-configmap
+  namespace: default
+  annotations:
+    pipecd.dev/managed-by: piped
+`)
+
+	// The one in "team-a" is the applied manifest, so only the one in "default" is removed.
+	removeKeys := FindRemoveResources(manifests, live, nil, "team-a")
+	assert.ElementsMatch(t, []ResourceKey{
+		{
+			groupKind: schema.GroupKind{Group: "", Kind: "ConfigMap"},
+			namespace: "default",
+			name:      "test-configmap",
+		},
+	}, removeKeys)
 }

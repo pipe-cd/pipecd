@@ -163,6 +163,7 @@ func (p Plugin) makeAppSyncState(liveManifests, gitManifests []provider.Manifest
 	diffResult, err := provider.DiffList(
 		filterIgnoringManifests(liveManifests),
 		filterIgnoringManifests(gitManifests),
+		provider.ResolveDefaultNamespace(dt.Config.KubeConfigPath),
 		logger,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),

@@ -171,7 +171,7 @@ func (p *Plugin) sync(
 
 	lp.Successf("Successfully loaded %d live resources", len(namespacedLiveResources)+len(clusterScopedLiveResources))
 
-	removeKeys := provider.FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveResources)
+	removeKeys := provider.FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveResources, provider.ResolveDefaultNamespace(deployTargetConfig.KubeConfigPath))
 	if len(removeKeys) == 0 {
 		lp.Info("There are no live resources should be removed")
 		return sdk.StageStatusSuccess
