@@ -104,6 +104,7 @@ func (p *Plugin) GetPlanPreview(ctx context.Context, pluginCfg *kubeconfig.Kuber
 	result, err := provider.DiffList(
 		oldManifests,
 		newManifests,
+		provider.DefaultNamespace,
 		input.Logger,
 		diff.WithEquateEmpty(),
 		diff.WithCompareNumberAndNumericString(),
