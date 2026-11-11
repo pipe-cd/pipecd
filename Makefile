@@ -333,7 +333,7 @@ setup-envtest: ## Download setup-envtest locally if necessary.
 check: build lint test check/gen/code check/dco ## Run all checks
 
 .PHONY: check/gen/code
-check/gen: gen/code
+check/gen/code: gen/code
 	git add -N .
 	git diff --exit-code --quiet HEAD
 
