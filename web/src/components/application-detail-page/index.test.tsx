@@ -41,7 +41,7 @@ describe("ApplicationDetailPage", () => {
     expect(
       screen.getByRole("button", { name: "Open menu" })
     ).toBeInTheDocument();
-    userEvent.click(screen.getByRole("button", { name: "Open menu" }));
+    await userEvent.click(screen.getByRole("button", { name: "Open menu" }));
     expect(
       screen.getByRole("menuitem", { name: "Disable" })
     ).toBeInTheDocument();

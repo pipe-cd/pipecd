@@ -24,6 +24,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 	"sigs.k8s.io/yaml"
+
+	"github.com/pipe-cd/pipecd/pkg/cli"
 )
 
 func TestApplicationConfig_migrateApplicationConfig(t *testing.T) {
@@ -604,4 +606,86 @@ func TestApplicationConfig_migrateApplicationConfig_GenericFields(t *testing.T) 
 	assert.NotNil(t, plugins["kubernetes"])
 	kubernetesPlugin := plugins["kubernetes"].(map[string]any)
 	assert.Equal(t, inputConfig["spec"].(map[string]any)["input"], kubernetesPlugin["input"])
+}
+func TestApplicationConfig_run_dirs(t *testing.T) {
+	t.Parallel()
+
+	const validConfig = "apiVersion: pipecd.dev/v1beta1\nkind: KubernetesApp\nspec:\n  name: ok\n"
+	const brokenConfig = "kind: [\n"
+
+	tests := []struct {
+		name           string
+		files          map[string]string // path relative to the temp dir -> content
+		expectError    bool
+		errContains    []string
+		errNotContains []string
+	}{
+		{
+			name:  "all files migrate",
+			files: map[string]string{"good/.pipe.yaml": validConfig},
+		},
+		{
+			name:        "one broken file returns an error",
+			files:       map[string]string{"bad/.pipe.yaml": brokenConfig},
+			expectError: true,
+			errContains: []string{"bad/.pipe.yaml"},
+		},
+		{
+			name: "broken file next to a valid one only reports the broken one",
+			files: map[string]string{
+				"good/.pipe.yaml": validConfig,
+				"bad/.pipe.yaml":  brokenConfig,
+			},
+			expectError:    true,
+			errContains:    []string{"bad/.pipe.yaml"},
+			errNotContains: []string{"good/.pipe.yaml"},
+		},
+		{
+			name: "every failed file is reported",
+			files: map[string]string{
+				"a/.pipe.yaml": brokenConfig,
+				"b/.pipe.yaml": brokenConfig,
+			},
+			expectError: true,
+			errContains: []string{"a/.pipe.yaml", "b/.pipe.yaml"},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			dir := t.TempDir()
+			for rel, content := range tc.files {
+				path := filepath.Join(dir, rel)
+				require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+				require.NoError(t, os.WriteFile(path, []byte(content), 0o644))
+			}
+
+			c := &applicationConfig{directories: []string{dir}}
+			err := c.run(context.Background(), cli.Input{Logger: zap.NewNop()})
+			for rel, content := range tc.files {
+				if content != validConfig {
+					continue
+				}
+				data, readErr := os.ReadFile(filepath.Join(dir, rel))
+				require.NoError(t, readErr)
+				var migrated map[string]any
+				require.NoError(t, yaml.Unmarshal(data, &migrated))
+				assert.Equal(t, "Application", migrated["kind"], "valid config %s should be migrated", rel)
+			}
+
+			if !tc.expectError {
+				assert.NoError(t, err)
+				return
+			}
+			require.Error(t, err)
+			for _, s := range tc.errContains {
+				assert.Contains(t, err.Error(), filepath.Join(dir, s))
+			}
+			for _, s := range tc.errNotContains {
+				assert.NotContains(t, err.Error(), filepath.Join(dir, s))
+			}
+		})
+	}
 }

@@ -555,6 +555,10 @@ func (a *WebAPI) UpdateApplication(ctx context.Context, req *webservice.UpdateAp
 		return nil, status.Error(codes.PermissionDenied, "Requested piped does not belong to your project")
 	}
 
+	if err := model.ValidateApplicationConfigFilename(req.ConfigFilename); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
 	if err := a.applicationStore.UpdateConfiguration(ctx, req.ApplicationId, req.PipedId, req.PlatformProvider, req.ConfigFilename, req.DeployTargetsByPlugin); err != nil {
 		return nil, gRPCStoreError(err, fmt.Sprintf("failed to update application %s", req.ApplicationId))
 	}

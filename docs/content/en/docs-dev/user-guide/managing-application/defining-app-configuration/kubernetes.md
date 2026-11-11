@@ -10,7 +10,7 @@ Based on the application configuration and the pull request changes, PipeCD plan
 
 Note:
 
-You can generate an application config file easily and interactively by [`pipectl init`](../../command-line-tool.md#generating-an-application-config-apppipecdyaml).
+You can generate an application config file easily and interactively by [`pipectl init`](/docs-dev/user-guide/command-line-tool/#generating-an-application-config-apppipecdyaml).
 
 
 ## Quick sync
