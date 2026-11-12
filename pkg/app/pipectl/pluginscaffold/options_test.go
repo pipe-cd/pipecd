@@ -48,6 +48,11 @@ func TestNewModel(t *testing.T) {
 			wantStages: []string{"A_STAGE", "B_STAGE"},
 		},
 		{
+			name:       "a module path without a domain is fine, go accepts it",
+			opts:       Options{Name: "myplugin", Module: "myplugin"},
+			wantStages: []string{"MYPLUGIN_RUN"},
+		},
+		{
 			name:       "names that Go treats specially in a file name are fine",
 			opts:       Options{Name: "myplugin", Module: module, Stages: []string{"RUN_TEST", "RUN_LINUX_ARM64", "PLUGIN", "MAIN"}},
 			wantStages: []string{"RUN_TEST", "RUN_LINUX_ARM64", "PLUGIN", "MAIN"},
@@ -80,22 +85,32 @@ func TestNewModel(t *testing.T) {
 		{
 			name:    "module path has a space",
 			opts:    Options{Name: "myplugin", Module: "example.com/my plugin"},
-			wantErr: "not allowed in a Go module path",
+			wantErr: "module path \"example.com/my plugin\" is invalid",
 		},
 		{
 			name:    "module path has a line break",
 			opts:    Options{Name: "myplugin", Module: "example.com/plugin\nreplace x => y"},
-			wantErr: "not allowed in a Go module path",
+			wantErr: "is invalid",
 		},
 		{
 			name:    "module path has an empty element",
 			opts:    Options{Name: "myplugin", Module: "example.com//plugin"},
-			wantErr: "must not be empty",
+			wantErr: "is invalid",
 		},
 		{
-			name:    "module path has an element that starts with a dot",
-			opts:    Options{Name: "myplugin", Module: "example.com/.hidden"},
-			wantErr: "must not be empty or start or end with a dot",
+			name:    "module path ends with a dot",
+			opts:    Options{Name: "myplugin", Module: "example.com/plugin."},
+			wantErr: "is invalid",
+		},
+		{
+			name:    "module path has a name that Go reserves on Windows",
+			opts:    Options{Name: "myplugin", Module: "example.com/aux"},
+			wantErr: "disallowed as path element component on Windows",
+		},
+		{
+			name:    "module path has a reserved name with an extension",
+			opts:    Options{Name: "myplugin", Module: "example.com/Com1.txt"},
+			wantErr: "disallowed as path element component on Windows",
 		},
 		{
 			name:    "stage name is empty",

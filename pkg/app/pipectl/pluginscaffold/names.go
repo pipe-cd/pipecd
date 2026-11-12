@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"golang.org/x/mod/module"
 )
 
 var (
@@ -30,8 +32,6 @@ var (
 	// A stage name is UPPER_SNAKE_CASE, like the stages of the official plugins
 	// (WAIT, SCRIPT_RUN, TERRAFORM_APPLY).
 	stageNameRe = regexp.MustCompile(`^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$`)
-	// One element of a Go module path.
-	modulePathElemRe = regexp.MustCompile(`^[A-Za-z0-9._~-]+$`)
 )
 
 func validatePluginName(name string) error {
@@ -54,17 +54,18 @@ func validateStageName(name string) error {
 	return nil
 }
 
-func validateModulePath(module string) error {
-	if module == "" {
+func validateModulePath(path string) error {
+	if path == "" {
 		return errors.New("module path must be set, for example github.com/your-org/your-plugin")
 	}
-	for _, elem := range strings.Split(module, "/") {
-		if elem == "" || strings.HasPrefix(elem, ".") || strings.HasSuffix(elem, ".") {
-			return fmt.Errorf("module path %q is invalid: a path element must not be empty or start or end with a dot", module)
+	// Go's own check of an import path. It also rejects the names Go reserves on
+	// Windows (aux, con, nul, com1...), on every system.
+	if err := module.CheckImportPath(path); err != nil {
+		var perr *module.InvalidPathError
+		if errors.As(err, &perr) {
+			err = perr.Err
 		}
-		if !modulePathElemRe.MatchString(elem) {
-			return fmt.Errorf("module path %q is invalid: %q contains characters that are not allowed in a Go module path", module, elem)
-		}
+		return fmt.Errorf("module path %q is invalid: %w", path, err)
 	}
 	return nil
 }
