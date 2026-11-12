@@ -59,7 +59,7 @@ const (
 	StageECSCanaryRolloutDescription  = "Roll out new task set as canary"
 	StageECSCanaryCleanDescription    = "Clean up canary task set"
 	StageECSTrafficRoutingDescription = "Route traffic between primary and canary task sets"
-	StageECSRollbackDescription       = "Rollback to previous task set"
+	StageECSRollbackDescription       = "Roll back to the previous deployment"
 )
 
 func buildQuickSyncPipeline(autoRollback bool) []sdk.QuickSyncStage {
