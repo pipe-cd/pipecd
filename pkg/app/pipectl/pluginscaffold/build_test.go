@@ -66,6 +66,10 @@ func TestGeneratedPluginBuilds(t *testing.T) {
 			name: "stages named like files that Go treats specially",
 			opts: Options{Name: "myplugin", Module: "example.com/myplugin", Stages: []string{"RUN_TEST", "RUN_LINUX_ARM64", "PLUGIN", "MAIN"}},
 		},
+		{
+			name: "a stage named like the unknown stage the generated test uses",
+			opts: Options{Name: "myplugin", Module: "example.com/myplugin", Stages: []string{"NOT_A_STAGE_OF_THIS_PLUGIN"}},
+		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {

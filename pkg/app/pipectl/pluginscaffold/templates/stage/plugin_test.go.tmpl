@@ -63,8 +63,9 @@ func TestBuildPipelineSyncStages(t *testing.T) {
 func TestExecuteStageRejectsUnknownStage(t *testing.T) {
 	t.Parallel()
 
+	// The stages of this plugin are UPPER_SNAKE_CASE, so this name is not one of them.
 	input := &sdk.ExecuteStageInput[struct{}]{
-		Request: sdk.ExecuteStageRequest[struct{}]{StageName: "NOT_A_STAGE_OF_THIS_PLUGIN"},
+		Request: sdk.ExecuteStageRequest[struct{}]{StageName: "unknown-stage"},
 	}
 
 	if _, err := (&plugin{}).ExecuteStage(context.Background(), nil, nil, input); err == nil {

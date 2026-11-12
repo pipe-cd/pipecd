@@ -104,7 +104,7 @@ func TestGenerate_content(t *testing.T) {
 	assert.Contains(t, content["my_check_stage.go"], "func (p *plugin) executeMyCheck(")
 
 	assert.Contains(t, content["README.md"], tutorialURL)
-	assert.Contains(t, content["README.md"], "- name: MY_PREPARE")
+	assert.Contains(t, content["README.md"], `- name: "MY_PREPARE"`)
 }
 
 func TestGenerate_isDeterministic(t *testing.T) {
@@ -126,4 +126,21 @@ func TestGenerate_invalidOptions(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Nil(t, files)
+}
+
+func TestGenerate_readmeQuotesNames(t *testing.T) {
+	t.Parallel()
+
+	// Unquoted, YAML reads these as a boolean or null, not as the name.
+	files, err := Generate(Options{Name: "yes", Module: "example.com/yes", Stages: []string{"NULL"}})
+	require.NoError(t, err)
+
+	var readme string
+	for _, f := range files {
+		if f.Path == "README.md" {
+			readme = string(f.Content)
+		}
+	}
+	assert.Contains(t, readme, `- name: "yes"`)
+	assert.Contains(t, readme, `- name: "NULL"`)
 }

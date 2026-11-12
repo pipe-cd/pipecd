@@ -31,7 +31,7 @@ apiVersion: pipecd.dev/v1beta1
 kind: Piped
 spec:
   plugins:
-    - name: {{.Name}}
+    - name: {{quote .Name}}
       port: 7100 # any unused port
       url: file:///path/to/{{.Name}}
 ```
@@ -45,7 +45,7 @@ plugin that deploys it (the Kubernetes plugin in this example):
 pipeline:
   stages:
     - name: K8S_SYNC
-    - name: {{(index .Stages 0).Name}}
+    - name: {{quote (index .Stages 0).Name}}
 ```
 
 Stage names must be unique across all the plugins registered in a piped. Piped
