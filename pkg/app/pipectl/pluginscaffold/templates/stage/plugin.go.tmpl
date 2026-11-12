@@ -1,0 +1,66 @@
+package main
+
+import (
+	"context"
+	"fmt"
+
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+)
+
+// The stages this plugin defines. Piped routes a stage to the plugin that
+// reports its name in FetchDefinedStages, and it keeps only one plugin per
+// stage name, so keep the names unique across every plugin you register.
+const (
+{{- range .Stages}}
+	{{.Const}} = {{quote .Name}}
+{{- end}}
+)
+
+// plugin is a stage-only plugin: it runs stages that are listed in the
+// pipeline of an application but does not deploy anything by itself.
+type plugin struct{}
+
+var _ sdk.StagePlugin[struct{}, struct{}, struct{}] = (*plugin)(nil)
+
+// FetchDefinedStages implements sdk.StagePlugin.
+func (p *plugin) FetchDefinedStages() []string {
+	return []string{
+{{- range .Stages}}
+		{{.Const}},
+{{- end}}
+	}
+}
+
+// BuildPipelineSyncStages implements sdk.StagePlugin.
+// It turns the stages of the application config that this plugin owns into the
+// stages of the pipeline. Add rollback stages here if the plugin needs them.
+func (p *plugin) BuildPipelineSyncStages(ctx context.Context, _ *struct{}, input *sdk.BuildPipelineSyncStagesInput) (*sdk.BuildPipelineSyncStagesResponse, error) {
+	stages := make([]sdk.PipelineStage, 0, len(input.Request.Stages))
+	for _, rs := range input.Request.Stages {
+		stages = append(stages, sdk.PipelineStage{
+			Index:              rs.Index,
+			Name:               rs.Name,
+			Rollback:           false,
+			Metadata:           map[string]string{},
+			AvailableOperation: sdk.ManualOperationNone,
+		})
+	}
+
+	return &sdk.BuildPipelineSyncStagesResponse{
+		Stages: stages,
+	}, nil
+}
+
+// ExecuteStage implements sdk.StagePlugin.
+func (p *plugin) ExecuteStage(ctx context.Context, _ *struct{}, _ []*sdk.DeployTarget[struct{}], input *sdk.ExecuteStageInput[struct{}]) (*sdk.ExecuteStageResponse, error) {
+	switch input.Request.StageName {
+{{- range .Stages}}
+	case {{.Const}}:
+		return &sdk.ExecuteStageResponse{
+			Status: p.{{.Method}}(ctx, input),
+		}, nil
+{{- end}}
+	default:
+		return nil, fmt.Errorf("unsupported stage %q", input.Request.StageName)
+	}
+}
