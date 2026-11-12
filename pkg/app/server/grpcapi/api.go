@@ -374,6 +374,10 @@ func (a *API) UpdateApplication(ctx context.Context, req *apiservice.UpdateAppli
 		return nil, status.Error(codes.InvalidArgument, "Requested piped does not belong to your project")
 	}
 
+	if err := model.ValidateApplicationConfigFilename(req.GitPath.ConfigFilename); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
 	if err := a.applicationStore.UpdateConfiguration(ctx, req.ApplicationId, req.PipedId, req.PlatformProvider, req.GitPath.ConfigFilename, nil); err != nil {
 		return nil, gRPCStoreError(err, fmt.Sprintf("failed to update application %s", req.ApplicationId))
 	}
@@ -459,6 +463,10 @@ func (a *API) RenameApplicationConfigFile(ctx context.Context, req *apiservice.R
 	key, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
 	if err != nil {
 		return nil, err
+	}
+
+	if err := model.ValidateApplicationConfigFilename(req.NewFilename); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	for _, appID := range req.ApplicationIds {

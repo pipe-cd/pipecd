@@ -29,7 +29,7 @@ RUN make build/go MOD=controlplane BUILD_OS=${TARGETOS} BUILD_ARCH=${TARGETARCH}
 
 FROM alpine:3.24.3
 
-ARG GOOGLE_CLOUD_SDK_VERSION=477.0.0
+ARG GOOGLE_CLOUD_SDK_VERSION=586.0.0
 
 RUN \
     apk add --no-cache \
