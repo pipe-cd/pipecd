@@ -12,6 +12,6 @@
 | Mohammed Firdous Araoye       | [@mohammedfirdouss](https://github.com/mohammedfirdouss) | mohammedfirdousaraoye@gmail.com      |
 
 
-E-mail addresses are expected to be used for reporting security issues. ref [SECURITY.md](./SECURITY.md) \
+E-mail addresses are expected to be used for reporting security issues. ref [SECURITY.md](./.github/SECURITY.md) \
 Please use [GitHub Issues](https://github.com/pipe-cd/pipecd/issues) for reporting non-security issues,
 and [GitHub Discussions](https://github.com/pipe-cd/pipecd/discussions) or channel [#pipecd](https://cloud-native.slack.com/archives/C01B27F9T0X) on CNCF Slack for asking questions.
