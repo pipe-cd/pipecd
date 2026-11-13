@@ -80,7 +80,7 @@ If you are an **operator** wanting to install and configure PipeCD for other dev
 If you are a **user** using PipeCD to deploy your application/infrastructure:
 
 - [User Guide](../user-guide/)
-- [Examples](../user-guide/examples)
+- [Examples](https://github.com/pipe-cd/examples)
 
 If you want to be a **contributor**:
 
