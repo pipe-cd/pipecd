@@ -156,6 +156,7 @@ func restoreApplications(ctx context.Context, cli apiservice.Client, application
 			Kind:             app.Kind,             //nolint:staticcheck // deprecated but still used in AddApplicationRequest
 			PlatformProvider: app.PlatformProvider, //nolint:staticcheck
 			Description:      app.Description,
+			Labels:           app.Labels,
 		}
 
 		resp, err := cli.AddApplication(ctx, req)
