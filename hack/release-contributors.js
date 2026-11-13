@@ -311,7 +311,24 @@ async function run({ github, context, core, tag, dryRun }) {
     return;
   }
   const marker = commentMarker(current.tag);
-  const pending = merged.filter((pr) => !pr.comments.nodes.some((c) => c.body.includes(marker)));
+  const pending = [];
+  for (const pr of merged) {
+    let alreadyCommented = pr.comments.nodes.some((c) => c.body.includes(marker));
+    if (!alreadyCommented && pr.comments.nodes.length === 50) {
+      for (let page = 1; ; page++) {
+        const { data: comments } = await github.request('GET /repos/{owner}/{repo}/issues/{issue_number}/comments', {
+          owner, repo, issue_number: pr.number, per_page: 100, page,
+        });
+        alreadyCommented = comments.some((c) => c.body.includes(marker));
+        if (alreadyCommented || comments.length < 100) {
+          break;
+        }
+      }
+    }
+    if (!alreadyCommented) {
+      pending.push(pr);
+    }
+  }
   core.info(`Commenting on ${pending.length} pull requests (${merged.length - pending.length} already done)`);
   let failed = 0;
   for (const pr of pending) {
