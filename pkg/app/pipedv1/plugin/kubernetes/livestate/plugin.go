@@ -99,6 +99,7 @@ func (p *Plugin) GetLivestate(ctx context.Context, pluginCfg *kubeconfig.Kuberne
 	diffResult, err := provider.DiffList(
 		filterIgnoringManifests(managedResources), // live manifests are already filtered by watchingResourceKinds in the store
 		filterIgnoringManifests(onlyWatchingResourceKinds(manifests, watchingResourceKinds)),
+		provider.ResolveDefaultNamespace(deployTarget.Config.KubeConfigPath),
 		input.Logger,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),

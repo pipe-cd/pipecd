@@ -185,7 +185,7 @@ func (p *Plugin) executeK8sPrimaryRolloutStage(ctx context.Context, input *sdk.E
 
 	lp.Successf("Successfully loaded %d live resources", len(namespacedLiveResources)+len(clusterScopedLiveResources))
 
-	removeKeys := provider.FindRemoveResources(primaryManifests, namespacedLiveResources, clusterScopedLiveResources)
+	removeKeys := provider.FindRemoveResources(primaryManifests, namespacedLiveResources, clusterScopedLiveResources, provider.ResolveDefaultNamespace(deployTargetConfig.KubeConfigPath))
 	if len(removeKeys) == 0 {
 		lp.Info("There are no live resources should be removed")
 		return sdk.StageStatusSuccess

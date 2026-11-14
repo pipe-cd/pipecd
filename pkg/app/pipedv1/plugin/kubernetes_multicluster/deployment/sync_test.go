@@ -17,6 +17,7 @@ package deployment
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -25,7 +26,10 @@ import (
 	"go.uber.org/zap/zaptest"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/tools/clientcmd"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 	"github.com/pipe-cd/piped-plugin-sdk-go/logpersister/logpersistertest"
@@ -864,4 +868,78 @@ func TestPlugin_executeK8sMultiSyncStage_withPrune_withStageConfig(t *testing.T)
 		require.Error(t, err)
 		require.Truef(t, apierrors.IsNotFound(err), "expected error to be NotFound, but got %v", err)
 	})
+}
+
+func TestPlugin_executeK8sMultiSyncStage_withPrune_contextNamespace(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	// initialize tool registry
+	testRegistry := toolregistrytest.NewTestToolRegistry(t)
+
+	kubeCfg := setupEnvTest(t)
+	dynamicClient, err := dynamic.NewForConfig(kubeCfg)
+	require.NoError(t, err)
+
+	// prepare the kubeconfig whose current context has a namespace other than "default"
+	const contextNamespace = "test-context-namespace"
+
+	namespace := &unstructured.Unstructured{}
+	namespace.SetAPIVersion("v1")
+	namespace.SetKind("Namespace")
+	namespace.SetName(contextNamespace)
+	_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(ctx, namespace, metav1.CreateOptions{})
+	require.NoError(t, err)
+
+	kubeconfigText, err := kubeconfigFromRestConfig(kubeCfg)
+	require.NoError(t, err)
+	clientConfig, err := clientcmd.Load([]byte(kubeconfigText))
+	require.NoError(t, err)
+	clientConfig.Contexts[clientConfig.CurrentContext].Namespace = contextNamespace
+	kubeconfigData, err := clientcmd.Write(*clientConfig)
+	require.NoError(t, err)
+	kubeconfigPath := filepath.Join(t.TempDir(), "kubeconfig")
+	require.NoError(t, os.WriteFile(kubeconfigPath, kubeconfigData, 0600))
+
+	// The manifests in this testdata do not specify the namespace.
+	appDir := filepath.Join("./", "testdata", "prune", "running")
+	appCfg := sdk.LoadApplicationConfigForTest[kubeconfig.KubernetesApplicationSpec](t, filepath.Join(appDir, "app.pipecd.yaml"), "kubernetes_multicluster")
+
+	input := &sdk.ExecuteStageInput[kubeconfig.KubernetesApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[kubeconfig.KubernetesApplicationSpec]{
+			StageName:               "K8S_MULTI_SYNC",
+			StageConfig:             []byte(``),
+			RunningDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{},
+			TargetDeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+				ApplicationDirectory:      appDir,
+				CommitHash:                "0123456789",
+				ApplicationConfig:         appCfg,
+				ApplicationConfigFilename: "app.pipecd.yaml",
+			},
+			Deployment: sdk.Deployment{
+				PipedID:       "piped-id",
+				ApplicationID: "app-id",
+			},
+		},
+		Client: sdk.NewClient(nil, "kubernetes", "app-id", "stage-id", logpersistertest.NewTestLogPersister(t), testRegistry),
+		Logger: zaptest.NewLogger(t),
+	}
+
+	plugin := &Plugin{}
+	status, _ := plugin.executeK8sMultiSyncStage(ctx, input, []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{
+		{
+			Name: "default",
+			Config: kubeconfig.KubernetesDeployTargetConfig{
+				KubeConfigPath: kubeconfigPath,
+			},
+		},
+	})
+	require.Equal(t, sdk.StageStatusSuccess, status)
+
+	// The applied resources are still defined in Git, so they must not be pruned.
+	_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace(contextNamespace).Get(ctx, "simple", metav1.GetOptions{})
+	require.NoError(t, err)
+	_, err = dynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}).Namespace(contextNamespace).Get(ctx, "simple", metav1.GetOptions{})
+	require.NoError(t, err)
 }

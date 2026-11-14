@@ -69,16 +69,24 @@ func (k ResourceKey) Namespace() string {
 }
 
 // normalize converts the group and kind to lower case.
-// It also converts the default namespace to an empty string.
-func (k ResourceKey) normalize() ResourceKey {
+// It also converts the given default namespace to an empty string.
+//
+// defaultNamespace is the namespace where a namespaced resource is placed
+// when its manifest does not specify one. It is "default" unless the
+// kubeconfig context or the in-cluster configuration of the deploy target
+// says otherwise, see ResolveDefaultNamespace.
+func (k ResourceKey) normalize(defaultNamespace string) ResourceKey {
 	k.groupKind.Group = strings.ToLower(k.groupKind.Group)
 	k.groupKind.Kind = strings.ToLower(k.groupKind.Kind)
-	return k.normalizeNamespace()
+	return k.normalizeNamespace(defaultNamespace)
 }
 
-// normalizeNamespace converts the default namespace to an empty string.
-func (k ResourceKey) normalizeNamespace() ResourceKey {
-	if k.namespace == DefaultNamespace {
+// normalizeNamespace converts the given default namespace to an empty string.
+func (k ResourceKey) normalizeNamespace(defaultNamespace string) ResourceKey {
+	if defaultNamespace == "" {
+		defaultNamespace = DefaultNamespace
+	}
+	if k.namespace == defaultNamespace {
 		return k.withoutNamespace()
 	}
 	return k
@@ -108,7 +116,8 @@ func makeResourceKey(obj *unstructured.Unstructured) ResourceKey {
 
 // FindRemoveResources identifies resources that are present in the live state but not in the desired manifests.
 // It doesn't return the resources that are not managed by Piped.
-func FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveResources []Manifest) []ResourceKey {
+// defaultNamespace is the namespace where the manifests without a namespace were applied to.
+func FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveResources []Manifest, defaultNamespace string) []ResourceKey {
 	var (
 		removeKeys = make([]ResourceKey, 0, len(namespacedLiveResources)+len(clusterScopedLiveResources))
 	)
@@ -116,11 +125,11 @@ func FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveRe
 	{
 		normalizedKeys := make(map[ResourceKey]struct{}, len(manifests))
 		for _, m := range manifests {
-			normalizedKeys[m.Key().normalize()] = struct{}{}
+			normalizedKeys[m.Key().normalize(defaultNamespace)] = struct{}{}
 		}
 
 		for _, r := range namespacedLiveResources {
-			if _, ok := normalizedKeys[r.Key().normalize()]; !ok && r.IsManagedByPiped() {
+			if _, ok := normalizedKeys[r.Key().normalize(defaultNamespace)]; !ok && r.IsManagedByPiped() {
 				removeKeys = append(removeKeys, r.Key())
 			}
 		}
@@ -130,11 +139,11 @@ func FindRemoveResources(manifests, namespacedLiveResources, clusterScopedLiveRe
 		normalizedKeys := make(map[ResourceKey]struct{}, len(manifests))
 		for _, m := range manifests {
 			// We don't care about the namespace of the cluster-scoped resources.
-			normalizedKeys[m.Key().normalize().withoutNamespace()] = struct{}{}
+			normalizedKeys[m.Key().normalize(defaultNamespace).withoutNamespace()] = struct{}{}
 		}
 		for _, r := range clusterScopedLiveResources {
 			// We don't care about the namespace of the cluster-scoped resources.
-			if _, ok := normalizedKeys[r.Key().normalize().withoutNamespace()]; !ok && r.IsManagedByPiped() {
+			if _, ok := normalizedKeys[r.Key().normalize(defaultNamespace).withoutNamespace()]; !ok && r.IsManagedByPiped() {
 				removeKeys = append(removeKeys, r.Key())
 			}
 		}

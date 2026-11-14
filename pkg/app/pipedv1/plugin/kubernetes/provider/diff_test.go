@@ -378,7 +378,7 @@ spec:
 			desiredManifests, err := ParseManifests(tc.desired)
 			require.NoError(t, err)
 
-			result, err := DiffList(liveManifests, desiredManifests, zap.NewNop(), diff.WithEquateEmpty(), diff.WithIgnoreAddingMapKeys(), diff.WithCompareNumberAndNumericString())
+			result, err := DiffList(liveManifests, desiredManifests, DefaultNamespace, zap.NewNop(), diff.WithEquateEmpty(), diff.WithIgnoreAddingMapKeys(), diff.WithCompareNumberAndNumericString())
 			require.NoError(t, err)
 
 			assert.Equal(t, tc.wantAdds, len(result.Adds))
@@ -606,7 +606,7 @@ metadata:
 				require.NoError(t, err)
 			}
 
-			adds, deletes, newChanges, oldChanges := groupManifests(olds, news)
+			adds, deletes, newChanges, oldChanges := groupManifests(olds, news, DefaultNamespace)
 			assert.Equal(t, tc.wantAdds, len(adds))
 			assert.Equal(t, tc.wantDeletes, len(deletes))
 			assert.Equal(t, tc.wantChanges, len(newChanges))
@@ -791,4 +791,32 @@ func TestDiffListResult_Render(t *testing.T) {
 			assert.Equal(t, tc.expected, got)
 		})
 	}
+}
+
+func TestDiffList_defaultNamespace(t *testing.T) {
+	t.Parallel()
+
+	// The manifest in Git does not specify a namespace, and the deploy target
+	// placed it in "team-a" because of its kubeconfig context.
+	live := mustParseManifests(t, `apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-configmap
+  namespace: team-a
+data:
+  key: value
+`)
+	desired := mustParseManifests(t, `apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-configmap
+data:
+  key: value
+`)
+
+	result, err := DiffList(live, desired, "team-a", zap.NewNop(), diff.WithEquateEmpty(), diff.WithIgnoreAddingMapKeys(), diff.WithCompareNumberAndNumericString())
+	require.NoError(t, err)
+	assert.Empty(t, result.Adds)
+	assert.Empty(t, result.Deletes)
+	assert.Empty(t, result.Changes)
 }
