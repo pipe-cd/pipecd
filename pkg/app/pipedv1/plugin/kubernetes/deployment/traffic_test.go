@@ -1664,6 +1664,38 @@ func TestPlugin_executeK8sTrafficRoutingStageIstio(t *testing.T) {
 			},
 		},
 		{
+			name:        "configured istio host",
+			testdataDir: "traffic_routing_istio_host",
+			stageCfg: kubeconfig.K8sTrafficRoutingStageOptions{
+				Canary: unit.Percentage{Number: 30},
+			},
+			shouldApplySync: true,
+			expectedStatus:  sdk.StageStatusSuccess,
+			verifyFunc: func(t *testing.T, dynamicClient dynamic.Interface) {
+				verifyVirtualServiceRouting(t, dynamicClient, "traffic-test-vs",
+					[]expectedRoute{
+						{host: "traffic-test.default.svc.cluster.local", subset: "primary", weight: int32(70)},
+						{host: "traffic-test.default.svc.cluster.local", subset: "canary", weight: int32(30)},
+					})
+			},
+		},
+		{
+			name:        "missing istio config",
+			testdataDir: "traffic_routing_istio_no_config",
+			stageCfg: kubeconfig.K8sTrafficRoutingStageOptions{
+				Canary: unit.Percentage{Number: 30},
+			},
+			shouldApplySync: true,
+			expectedStatus:  sdk.StageStatusSuccess,
+			verifyFunc: func(t *testing.T, dynamicClient dynamic.Interface) {
+				verifyVirtualServiceRouting(t, dynamicClient, "traffic-test",
+					[]expectedRoute{
+						{host: "traffic-test", subset: "primary", weight: int32(70)},
+						{host: "traffic-test", subset: "canary", weight: int32(30)},
+					})
+			},
+		},
+		{
 			name:        "no virtual service found",
 			testdataDir: "traffic_routing_istio_no_virtualservice",
 			stageCfg: kubeconfig.K8sTrafficRoutingStageOptions{
