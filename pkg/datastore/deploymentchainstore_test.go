@@ -15,12 +15,16 @@
 package datastore
 
 import (
+	"context"
 	"fmt"
+	"sync"
 	"testing"
 
-	"github.com/pipe-cd/pipecd/pkg/model"
-
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/proto"
+
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 func TestDeploymentChainNodeDeploymentStatusUpdater(t *testing.T) {
@@ -325,4 +329,362 @@ func TestDeploymentChainNodeDeploymentStatusUpdater(t *testing.T) {
 			assert.Equal(t, tc.expectedChainStatus, tc.deploymentChain.Status)
 		})
 	}
+}
+
+func TestDeploymentChainAddDeploymentToBlock(t *testing.T) {
+	testcases := []struct {
+		name            string
+		deploymentChain model.DeploymentChain
+		deployment      *model.Deployment
+
+		expectedErr    bool
+		expectedRefID  string
+		expectedStatus model.DeploymentStatus
+	}{
+		{
+			name: "invalid block index given",
+			deploymentChain: model.DeploymentChain{
+				Blocks: []*model.ChainBlock{{}},
+			},
+			deployment: &model.Deployment{
+				Id:                        "deploy-1",
+				ApplicationId:             "app-1",
+				DeploymentChainBlockIndex: 5,
+			},
+			expectedErr: true,
+		},
+		{
+			name: "no node of the given application in block",
+			deploymentChain: model.DeploymentChain{
+				Blocks: []*model.ChainBlock{
+					{
+						Nodes: []*model.ChainNode{
+							{ApplicationRef: &model.ChainApplicationRef{ApplicationId: "app-other"}},
+						},
+					},
+				},
+			},
+			deployment: &model.Deployment{
+				Id:                        "deploy-1",
+				ApplicationId:             "app-1",
+				DeploymentChainBlockIndex: 0,
+			},
+			expectedErr: true,
+		},
+		{
+			name: "link deployment to its node",
+			deploymentChain: model.DeploymentChain{
+				Blocks: []*model.ChainBlock{
+					{
+						Nodes: []*model.ChainNode{
+							{ApplicationRef: &model.ChainApplicationRef{ApplicationId: "app-1"}},
+						},
+					},
+				},
+			},
+			deployment: &model.Deployment{
+				Id:                        "deploy-1",
+				ApplicationId:             "app-1",
+				DeploymentChainBlockIndex: 0,
+				Status:                    model.DeploymentStatus_DEPLOYMENT_PENDING,
+			},
+			expectedRefID:  "deploy-1",
+			expectedStatus: model.DeploymentStatus_DEPLOYMENT_PENDING,
+		},
+		{
+			// Retrying CreateDeployment must not reset a status which has
+			// already been advanced by a status report.
+			name: "relinking the same deployment keeps the reported status",
+			deploymentChain: model.DeploymentChain{
+				Blocks: []*model.ChainBlock{
+					{
+						Nodes: []*model.ChainNode{
+							{
+								ApplicationRef: &model.ChainApplicationRef{ApplicationId: "app-1"},
+								DeploymentRef: &model.ChainDeploymentRef{
+									DeploymentId: "deploy-1",
+									Status:       model.DeploymentStatus_DEPLOYMENT_RUNNING,
+								},
+							},
+						},
+					},
+				},
+			},
+			deployment: &model.Deployment{
+				Id:                        "deploy-1",
+				ApplicationId:             "app-1",
+				DeploymentChainBlockIndex: 0,
+				Status:                    model.DeploymentStatus_DEPLOYMENT_PENDING,
+			},
+			expectedRefID:  "deploy-1",
+			expectedStatus: model.DeploymentStatus_DEPLOYMENT_RUNNING,
+		},
+		{
+			name: "a newly triggered deployment of the same application overwrites the ref",
+			deploymentChain: model.DeploymentChain{
+				Blocks: []*model.ChainBlock{
+					{
+						Nodes: []*model.ChainNode{
+							{
+								ApplicationRef: &model.ChainApplicationRef{ApplicationId: "app-1"},
+								DeploymentRef: &model.ChainDeploymentRef{
+									DeploymentId: "deploy-old",
+									Status:       model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+								},
+							},
+						},
+					},
+				},
+			},
+			deployment: &model.Deployment{
+				Id:                        "deploy-new",
+				ApplicationId:             "app-1",
+				DeploymentChainBlockIndex: 0,
+				Status:                    model.DeploymentStatus_DEPLOYMENT_PENDING,
+			},
+			expectedRefID:  "deploy-new",
+			expectedStatus: model.DeploymentStatus_DEPLOYMENT_PENDING,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			updater := addDeploymentToBlockUpdateFunc(tc.deployment)
+			err := updater(&tc.deploymentChain)
+			if tc.expectedErr {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+
+			ref := tc.deploymentChain.Blocks[tc.deployment.DeploymentChainBlockIndex].Nodes[0].DeploymentRef
+			assert.Equal(t, tc.expectedRefID, ref.DeploymentId)
+			assert.Equal(t, tc.expectedStatus, ref.Status)
+		})
+	}
+}
+
+// TestDeploymentChainSettlesOnLastDeploymentCompletion is the regression test for the
+// deployment chain which never reached a terminal status. Previously nothing wrote the
+// chain status once every deployment had settled; now the report which completes the
+// last deployment recalculates and settles both its block and the chain.
+func TestDeploymentChainSettlesOnLastDeploymentCompletion(t *testing.T) {
+	// A two block chain, the first block already succeeded and the second one has a
+	// single remaining running deployment.
+	dc := &model.DeploymentChain{
+		Status: model.ChainStatus_DEPLOYMENT_CHAIN_RUNNING,
+		Blocks: []*model.ChainBlock{
+			{
+				Status: model.ChainBlockStatus_DEPLOYMENT_BLOCK_SUCCESS,
+				Nodes: []*model.ChainNode{
+					{
+						ApplicationRef: &model.ChainApplicationRef{ApplicationId: "app-1"},
+						DeploymentRef: &model.ChainDeploymentRef{
+							DeploymentId: "deploy-1",
+							Status:       model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						},
+					},
+				},
+			},
+			{
+				Status: model.ChainBlockStatus_DEPLOYMENT_BLOCK_RUNNING,
+				Nodes: []*model.ChainNode{
+					{
+						ApplicationRef: &model.ChainApplicationRef{ApplicationId: "app-2"},
+						DeploymentRef: &model.ChainDeploymentRef{
+							DeploymentId: "deploy-2",
+							Status:       model.DeploymentStatus_DEPLOYMENT_RUNNING,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	err := nodeDeploymentStatusUpdateFunc(1, "deploy-2", model.DeploymentStatus_DEPLOYMENT_SUCCESS, "")(dc)
+	assert.NoError(t, err)
+
+	assert.Equal(t, model.ChainBlockStatus_DEPLOYMENT_BLOCK_SUCCESS, dc.Blocks[1].Status)
+	assert.Equal(t, model.ChainStatus_DEPLOYMENT_CHAIN_SUCCESS, dc.Status)
+	assert.NotZero(t, dc.CompletedAt, "a settled chain must have CompletedAt set")
+
+	// Applying the very same report again must not change anything.
+	completedAt := dc.CompletedAt
+	err = nodeDeploymentStatusUpdateFunc(1, "deploy-2", model.DeploymentStatus_DEPLOYMENT_SUCCESS, "")(dc)
+	assert.NoError(t, err)
+	assert.Equal(t, model.ChainStatus_DEPLOYMENT_CHAIN_SUCCESS, dc.Status)
+	assert.Equal(t, completedAt, dc.CompletedAt, "reapplying a terminal report must not move CompletedAt")
+}
+
+// TestDeploymentChainBlockNeedsEveryNodeLinked locks in the reason restoring the linking
+// in CreateDeployment is load-bearing: a block holding a node without a deployment ref
+// can never be counted as succeeded.
+func TestDeploymentChainBlockNeedsEveryNodeLinked(t *testing.T) {
+	dc := &model.DeploymentChain{
+		Status: model.ChainStatus_DEPLOYMENT_CHAIN_RUNNING,
+		Blocks: []*model.ChainBlock{
+			{
+				Status: model.ChainBlockStatus_DEPLOYMENT_BLOCK_RUNNING,
+				Nodes: []*model.ChainNode{
+					{
+						ApplicationRef: &model.ChainApplicationRef{ApplicationId: "app-1"},
+						DeploymentRef: &model.ChainDeploymentRef{
+							DeploymentId: "deploy-1",
+							Status:       model.DeploymentStatus_DEPLOYMENT_RUNNING,
+						},
+					},
+					// Never linked, e.g. its piped has not triggered the deployment yet.
+					{ApplicationRef: &model.ChainApplicationRef{ApplicationId: "app-2"}},
+				},
+			},
+		},
+	}
+
+	err := nodeDeploymentStatusUpdateFunc(0, "deploy-1", model.DeploymentStatus_DEPLOYMENT_SUCCESS, "")(dc)
+	assert.NoError(t, err)
+
+	assert.NotEqual(t, model.ChainBlockStatus_DEPLOYMENT_BLOCK_SUCCESS, dc.Blocks[0].Status)
+	assert.NotEqual(t, model.ChainStatus_DEPLOYMENT_CHAIN_SUCCESS, dc.Status)
+}
+
+// TestDeploymentChainUpdateUnknownDeployment locks in that reporting a status for a
+// deployment which is not linked to any node fails instead of silently doing nothing.
+func TestDeploymentChainUpdateUnknownDeployment(t *testing.T) {
+	dc := &model.DeploymentChain{
+		Status: model.ChainStatus_DEPLOYMENT_CHAIN_RUNNING,
+		Blocks: []*model.ChainBlock{
+			{
+				Status: model.ChainBlockStatus_DEPLOYMENT_BLOCK_RUNNING,
+				Nodes: []*model.ChainNode{
+					{ApplicationRef: &model.ChainApplicationRef{ApplicationId: "app-1"}},
+				},
+			},
+		},
+	}
+
+	err := nodeDeploymentStatusUpdateFunc(0, "deploy-unknown", model.DeploymentStatus_DEPLOYMENT_SUCCESS, "")(dc)
+	assert.Error(t, err)
+	assert.Equal(t, model.ChainStatus_DEPLOYMENT_CHAIN_RUNNING, dc.Status)
+}
+
+// lockingDataStore is an in-memory DataStore whose Update holds a per-store lock
+// for the whole read-modify-write, the same guarantee the MySQL backend gets from
+// SELECT ... FOR UPDATE and the Firestore backend from its transactions.
+type lockingDataStore struct {
+	DataStore
+
+	mu       sync.Mutex
+	entities map[string]proto.Message
+}
+
+func (s *lockingDataStore) Get(_ context.Context, _ Collection, id string, entity any) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	e, ok := s.entities[id]
+	if !ok {
+		return ErrNotFound
+	}
+	proto.Merge(entity.(proto.Message), e)
+	return nil
+}
+
+func (s *lockingDataStore) Update(_ context.Context, col Collection, id string, updater Updater) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	stored, ok := s.entities[id]
+	if !ok {
+		return ErrNotFound
+	}
+	// Work on a copy so a failed updater leaves the stored entity untouched.
+	entity := col.Factory()().(proto.Message)
+	proto.Merge(entity, stored)
+	if err := updater(entity); err != nil {
+		return err
+	}
+	s.entities[id] = entity
+	return nil
+}
+
+// TestDeploymentChainStoreConcurrentUpdates makes sure that concurrent updates of the
+// same deployment chain, as done by the piped API handlers for the deployments of one
+// block, do not lose each other's changes as long as the datastore serializes Update.
+func TestDeploymentChainStoreConcurrentUpdates(t *testing.T) {
+	const (
+		chainID = "chain-1"
+		numApps = 20
+	)
+
+	nodes := make([]*model.ChainNode, 0, numApps)
+	for i := 0; i < numApps; i++ {
+		nodes = append(nodes, &model.ChainNode{
+			ApplicationRef: &model.ChainApplicationRef{ApplicationId: fmt.Sprintf("app-%d", i)},
+		})
+	}
+	ds := &lockingDataStore{
+		entities: map[string]proto.Message{
+			chainID: &model.DeploymentChain{
+				Id:        chainID,
+				ProjectId: "project",
+				Status:    model.ChainStatus_DEPLOYMENT_CHAIN_RUNNING,
+				Blocks: []*model.ChainBlock{
+					{
+						Status: model.ChainBlockStatus_DEPLOYMENT_BLOCK_RUNNING,
+						Nodes:  nodes,
+					},
+				},
+				CreatedAt: 1,
+				UpdatedAt: 1,
+			},
+		},
+	}
+	store := NewDeploymentChainStore(ds)
+	ctx := context.Background()
+
+	runConcurrently := func(fn func(i int) error) {
+		var wg sync.WaitGroup
+		errs := make([]error, numApps)
+		for i := 0; i < numApps; i++ {
+			wg.Add(1)
+			go func(i int) {
+				defer wg.Done()
+				errs[i] = fn(i)
+			}(i)
+		}
+		wg.Wait()
+		for i, err := range errs {
+			require.NoError(t, err, "update for app-%d", i)
+		}
+	}
+
+	// Every deployment of the block is created at the same time.
+	runConcurrently(func(i int) error {
+		return store.AddNodeDeployment(ctx, chainID, &model.Deployment{
+			Id:                        fmt.Sprintf("deploy-%d", i),
+			ApplicationId:             fmt.Sprintf("app-%d", i),
+			DeploymentChainId:         chainID,
+			DeploymentChainBlockIndex: 0,
+			Status:                    model.DeploymentStatus_DEPLOYMENT_PENDING,
+		})
+	})
+
+	dc, err := store.Get(ctx, chainID)
+	require.NoError(t, err)
+	for i, node := range dc.Blocks[0].Nodes {
+		require.NotNil(t, node.DeploymentRef, "deployment link of app-%d was lost", i)
+		assert.Equal(t, fmt.Sprintf("deploy-%d", i), node.DeploymentRef.DeploymentId)
+	}
+
+	// Then every deployment of the block completes at the same time.
+	runConcurrently(func(i int) error {
+		return store.UpdateNodeDeploymentStatus(ctx, chainID, 0, fmt.Sprintf("deploy-%d", i), model.DeploymentStatus_DEPLOYMENT_SUCCESS, "")
+	})
+
+	dc, err = store.Get(ctx, chainID)
+	require.NoError(t, err)
+	for i, node := range dc.Blocks[0].Nodes {
+		assert.Equal(t, model.DeploymentStatus_DEPLOYMENT_SUCCESS, node.DeploymentRef.Status, "status of app-%d was lost", i)
+	}
+	assert.Equal(t, model.ChainBlockStatus_DEPLOYMENT_BLOCK_SUCCESS, dc.Blocks[0].Status)
+	assert.Equal(t, model.ChainStatus_DEPLOYMENT_CHAIN_SUCCESS, dc.Status)
+	assert.NotZero(t, dc.CompletedAt)
 }

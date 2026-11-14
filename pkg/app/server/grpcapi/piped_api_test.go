@@ -20,6 +20,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/cache/cachetest"
@@ -205,6 +206,81 @@ func TestValidateDeploymentBelongsToPiped(t *testing.T) {
 				deploymentStore:      tt.deploymentStore,
 			}
 			err := api.validateDeploymentBelongsToPiped(ctx, tt.deploymentID, tt.pipedID)
+			assert.Equal(t, tt.wantErr, err != nil)
+		})
+	}
+}
+
+func TestUpdateDeploymentChainNodeStatus(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	ctx := t.Context()
+
+	tests := []struct {
+		name                 string
+		deploymentChainID    string
+		deploymentChainStore pipedAPIDeploymentChainStore
+		wantErr              bool
+	}{
+		{
+			// The vast majority of deployments do not belong to any chain, they must
+			// not touch the deployment chain store at all.
+			name:              "no-op for a deployment which is not in a chain",
+			deploymentChainID: "",
+			deploymentChainStore: func() pipedAPIDeploymentChainStore {
+				s := datastoretest.NewMockDeploymentChainStore(ctrl)
+				s.EXPECT().
+					UpdateNodeDeploymentStatus(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					Times(0)
+				return s
+			}(),
+			wantErr: false,
+		},
+		{
+			name:              "updates the node of an in chain deployment",
+			deploymentChainID: "chain-1",
+			deploymentChainStore: func() pipedAPIDeploymentChainStore {
+				s := datastoretest.NewMockDeploymentChainStore(ctrl)
+				s.EXPECT().
+					UpdateNodeDeploymentStatus(gomock.Any(), "chain-1", uint32(2), "deploy-1", model.DeploymentStatus_DEPLOYMENT_SUCCESS, "reason").
+					Return(nil).
+					Times(1)
+				return s
+			}(),
+			wantErr: false,
+		},
+		{
+			// Returning the error makes the piped retry its report, which redrives
+			// this update. Swallowing it could leave the chain non terminal forever.
+			name:              "fails the request when the chain could not be updated",
+			deploymentChainID: "chain-1",
+			deploymentChainStore: func() pipedAPIDeploymentChainStore {
+				s := datastoretest.NewMockDeploymentChainStore(ctrl)
+				s.EXPECT().
+					UpdateNodeDeploymentStatus(gomock.Any(), "chain-1", uint32(2), "deploy-1", model.DeploymentStatus_DEPLOYMENT_SUCCESS, "reason").
+					Return(errors.New("something went wrong")).
+					Times(1)
+				return s
+			}(),
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			api := &PipedAPI{
+				deploymentChainStore: tt.deploymentChainStore,
+				logger:               zap.NewNop(),
+			}
+			err := api.updateDeploymentChainNodeStatus(
+				ctx,
+				tt.deploymentChainID,
+				2,
+				"deploy-1",
+				model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+				"reason",
+			)
 			assert.Equal(t, tt.wantErr, err != nil)
 		})
 	}
