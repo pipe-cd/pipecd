@@ -16,6 +16,7 @@ package client
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -61,6 +62,16 @@ func WaitDeploymentStatuses(
 		}
 
 		if _, ok := statusMap[resp.Deployment.Status]; !ok {
+			// A completed deployment never changes its status again,
+			// so it will never reach any of the waiting statuses.
+			if resp.Deployment.Status.IsCompleted() {
+				msg := fmt.Sprintf("deployment %q has already completed with status %s, so it will never reach any of the waiting statuses", deploymentID, resp.Deployment.Status)
+				if reason := resp.Deployment.StatusReason; reason != "" {
+					msg += fmt.Sprintf(" (reason: %s)", reason)
+				}
+				err = errors.New(msg)
+				return
+			}
 			shouldRetry = true
 			return
 		}
