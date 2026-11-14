@@ -420,7 +420,7 @@ Configured under `plugins[].deployTargets[].config` in the **piped** configurati
 | Field | Type | Description | Required |
 |-------|------|-------------|----------|
 | editableRoutes | []string | Routes in the VirtualService that may be updated. Empty means all routes. | No |
-| host | string | The service host. | No |
+| host | string | The service host. Empty means `service.name`. | No |
 | virtualService | [K8sResourceReference](#k8sresourcereference) | Reference to the VirtualService manifest. Empty means the first one. | No |
 
 ### K8sResourcePatch
