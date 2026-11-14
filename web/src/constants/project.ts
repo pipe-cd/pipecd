@@ -76,14 +76,20 @@ const LABEL_PAIR = "[^;{}:,\\s]+:[^;{}:,\\s]+";
 const LABEL_BLOCK = `(\\{${LABEL_PAIR}(,${LABEL_PAIR})*\\})?`;
 
 // example: resources=(\*|application(\{key:value(,key:value)*\})?|deployment(\{key:value(,key:value)*\})?|...|,)+;\s*actions=(\*|get|list|create|update|delete|,)+
-export const POLICIES_STRING_REGEX = new RegExp(
+const POLICY =
   "resources=(" +
-    rbacResourceTypes()
-      .map((v) => v.replace(/\*/g, "\\*") + LABEL_BLOCK)
-      .join("|") +
-    "|,)+;\\s*actions=(" +
-    rbacActionTypes()
-      .map((v) => v.replace(/\*/g, "\\*"))
-      .join("|") +
-    "|,)+"
+  rbacResourceTypes()
+    .map((v) => v.replace(/\*/g, "\\*") + LABEL_BLOCK)
+    .join("|") +
+  "|,)+;\\s*actions=(" +
+  rbacActionTypes()
+    .map((v) => v.replace(/\*/g, "\\*"))
+    .join("|") +
+  "|,)+";
+
+// The whole text must be policies separated by blank lines, the way
+// parseRBACPolicies splits them. Without the anchors, only the first policy
+// was checked, and a typo after it (an unknown resource or action) passed.
+export const POLICIES_STRING_REGEX = new RegExp(
+  `^\\s*${POLICY}([ \\t]*\\n\\n\\s*${POLICY})*\\s*$`
 );
