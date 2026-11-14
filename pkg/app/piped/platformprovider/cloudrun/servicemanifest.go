@@ -164,14 +164,29 @@ func DecideRevisionName(sm ServiceManifest, commit string) (string, error) {
 }
 
 // FindImageTag returns the tag of the service's container image.
-// It is empty when the image has no tag, e.g. when it is referenced only by digest.
+// It is only used to build the revision name.
+//
+// It keeps the original parsing on purpose: the executor recomputes the name of
+// the running revision from the running commit, so changing how the tag is
+// parsed would change the names of revisions that are already deployed, and
+// traffic would be routed to a revision that does not exist.
+// Use FindImageVersion to get the version of the image.
 func FindImageTag(sm ServiceManifest) (string, error) {
 	image, err := findContainerImage(sm)
 	if err != nil {
 		return "", err
 	}
-	_, tag, _ := parseContainerImage(image)
-	return tag, nil
+	return legacyImageTag(image), nil
+}
+
+// legacyImageTag returns the image tag the way it has always been parsed for revision names.
+// Do not change it, see FindImageTag.
+func legacyImageTag(image string) string {
+	parts := strings.Split(image, ":")
+	if len(parts) == 2 {
+		return parts[1]
+	}
+	return ""
 }
 
 // FindImageVersion returns the version of the service's container image.
