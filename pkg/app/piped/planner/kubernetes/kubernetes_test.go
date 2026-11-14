@@ -608,14 +608,16 @@ func TestParseContainerImage(t *testing.T) {
 	t.Parallel()
 
 	testcases := []struct {
-		name  string
-		image string
-		want  containerImage
+		name        string
+		image       string
+		want        containerImage
+		wantVersion string
 	}{
 		{
-			name:  "image with tag",
-			image: "gcr.io/pipecd/helloworld:v0.1.0",
-			want:  containerImage{name: "helloworld", tag: "v0.1.0"},
+			name:        "image with tag",
+			image:       "gcr.io/pipecd/helloworld:v0.1.0",
+			want:        containerImage{name: "helloworld", tag: "v0.1.0"},
+			wantVersion: "v0.1.0",
 		},
 		{
 			name:  "image without tag",
@@ -623,9 +625,10 @@ func TestParseContainerImage(t *testing.T) {
 			want:  containerImage{name: "helloworld"},
 		},
 		{
-			name:  "registry with port and tag",
-			image: "localhost:5000/helloworld:v0.1.0",
-			want:  containerImage{name: "helloworld", tag: "v0.1.0"},
+			name:        "registry with port and tag",
+			image:       "localhost:5000/helloworld:v0.1.0",
+			want:        containerImage{name: "helloworld", tag: "v0.1.0"},
+			wantVersion: "v0.1.0",
 		},
 		{
 			name:  "registry with port, no tag",
@@ -633,25 +636,30 @@ func TestParseContainerImage(t *testing.T) {
 			want:  containerImage{name: "helloworld"},
 		},
 		{
-			name:  "image with tag and digest",
-			image: "nginx:1.27@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
-			want:  containerImage{name: "nginx", tag: "1.27"},
+			name:        "image with tag and digest",
+			image:       "nginx:1.27@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+			want:        containerImage{name: "nginx", tag: "1.27", digest: "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"},
+			wantVersion: "1.27",
 		},
 		{
-			name:  "image with digest only",
-			image: "nginx@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
-			want:  containerImage{name: "nginx"},
+			name:        "image with digest only",
+			image:       "nginx@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+			want:        containerImage{name: "nginx", digest: "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"},
+			wantVersion: "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
 		},
 		{
-			name:  "registry with port, tag and digest",
-			image: "localhost:5000/helloworld:v0.1.0@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
-			want:  containerImage{name: "helloworld", tag: "v0.1.0"},
+			name:        "registry with port, tag and digest",
+			image:       "localhost:5000/helloworld:v0.1.0@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+			want:        containerImage{name: "helloworld", tag: "v0.1.0", digest: "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"},
+			wantVersion: "v0.1.0",
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			assert.Equal(t, tc.want, parseContainerImage(tc.image))
+			got := parseContainerImage(tc.image)
+			assert.Equal(t, tc.want, got)
+			assert.Equal(t, tc.wantVersion, got.version())
 		})
 	}
 }

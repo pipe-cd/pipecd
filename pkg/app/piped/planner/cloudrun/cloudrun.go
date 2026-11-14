@@ -143,7 +143,7 @@ func (p *Planner) determineVersion(appDir, serviceManifestFile string) (string, 
 		return "", err
 	}
 
-	return provider.FindImageTag(sm)
+	return provider.FindImageVersion(sm)
 }
 
 func (p *Planner) determineVersions(appDir, serviceManifestFile string) ([]*model.ArtifactVersion, error) {

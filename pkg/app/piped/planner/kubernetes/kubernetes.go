@@ -412,9 +412,9 @@ func checkImageChange(ns diff.Nodes) (string, bool) {
 		afterImg := parseContainerImage(n.StringY())
 
 		if beforeImg.name == afterImg.name {
-			images = append(images, fmt.Sprintf("image %s from %s to %s", beforeImg.name, beforeImg.tag, afterImg.tag))
+			images = append(images, fmt.Sprintf("image %s from %s to %s", beforeImg.name, beforeImg.version(), afterImg.version()))
 		} else {
-			images = append(images, fmt.Sprintf("image %s:%s to %s:%s", beforeImg.name, beforeImg.tag, afterImg.name, afterImg.tag))
+			images = append(images, fmt.Sprintf("image %s:%s to %s:%s", beforeImg.name, beforeImg.version(), afterImg.name, afterImg.version()))
 		}
 	}
 	desc := fmt.Sprintf("Sync progressively because of updating %s", strings.Join(images, ", "))
@@ -448,13 +448,25 @@ func checkReplicasChange(ns diff.Nodes) (before, after string, changed bool) {
 }
 
 type containerImage struct {
-	name string
-	tag  string
+	name   string
+	tag    string
+	digest string
 }
 
+// version returns the tag, or the digest when the image has no tag.
+func (img containerImage) version() string {
+	if img.tag != "" {
+		return img.tag
+	}
+	return img.digest
+}
+
+// parseContainerImage parses an image reference in the format of
+// [registry/]name[:tag][@digest] into its name, tag and digest.
 func parseContainerImage(image string) (img containerImage) {
-	// Drop the digest first, so that "@sha256:<digest>" is not taken as the tag.
+	// Split off the digest first, so that "@sha256:<digest>" is not taken as the tag.
 	if idx := strings.Index(image, "@"); idx != -1 {
+		img.digest = image[idx+1:]
 		image = image[:idx]
 	}
 	// Look for the tag only in the last path segment, so that a registry
@@ -502,16 +514,16 @@ func determineVersion(manifests []provider.Manifest) (string, error) {
 	// In case the workload is containing only one container
 	// return only the tag name.
 	if len(images) == 1 {
-		return images[0].tag, nil
+		return images[0].version(), nil
 	}
 
 	// In case multiple containers are used
 	// return version in format: "tag-1 (name-1), tag-2 (name-2)"
 	var b strings.Builder
-	fmt.Fprintf(&b, "%s (%s)", images[0].tag, images[0].name)
+	fmt.Fprintf(&b, "%s (%s)", images[0].version(), images[0].name)
 
 	for _, img := range images[1:] {
-		fmt.Fprintf(&b, ", %s (%s)", img.tag, img.name)
+		fmt.Fprintf(&b, ", %s (%s)", img.version(), img.name)
 	}
 
 	return b.String(), nil
@@ -547,7 +559,7 @@ func determineVersions(manifests []provider.Manifest) ([]*model.ArtifactVersion,
 		image := parseContainerImage(i)
 		versions = append(versions, &model.ArtifactVersion{
 			Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
-			Version: image.tag,
+			Version: image.version(),
 			Name:    image.name,
 			Url:     i,
 		})
