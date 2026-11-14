@@ -73,6 +73,21 @@ func (p *ECSPlugin) executeECSRollbackStage(
 		return sdk.StageStatusFailure
 	}
 
+	controller, err := resolveController(ctx, client, serviceDef)
+	if err != nil {
+		lp.Errorf("Failed to determine the deployment controller: %v", err)
+		return sdk.StageStatusFailure
+	}
+
+	if controller == types.DeploymentControllerTypeEcs {
+		if err := syncECSController(ctx, lp, client, taskDef, serviceDef); err != nil {
+			lp.Errorf("Failed to rollback ECS service: %v", err)
+			return sdk.StageStatusFailure
+		}
+		lp.Successf("Successfully rolled back ECS service %s to commit %s", *serviceDef.ServiceName, runningSource.CommitHash)
+		return sdk.StageStatusSuccess
+	}
+
 	var primary *types.LoadBalancer
 	if cfg.Spec.Input.AccessType == "ELB" {
 		primary, _, err = provider.LoadTargetGroups(cfg.Spec.Input.TargetGroups)
