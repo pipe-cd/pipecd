@@ -15,12 +15,97 @@
 package executestage
 
 import (
+	"context"
 	"testing"
+	"time"
 
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+	"github.com/pipe-cd/piped-plugin-sdk-go/unit"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/analysis/config"
 )
+
+func TestExecuteAnalysisStageRejectsLongMetricsInterval(t *testing.T) {
+	t.Parallel()
+
+	input := &sdk.ExecuteStageInput[config.AnalysisApplicationSpec]{
+		Request: sdk.ExecuteStageRequest[config.AnalysisApplicationSpec]{
+			StageConfig: []byte(`{
+				"duration": "30s",
+				"metrics": [{
+					"provider": "prometheus",
+					"query": "errors_total",
+					"interval": "1m",
+					"expected": {"max": 1}
+				}]
+			}`),
+		},
+		Client: sdk.NewClient(nil, "analysis", "", "", &fakeLogPersister{}, nil),
+	}
+
+	// Invalid intervals must fail before the executor accesses providers or deployment data.
+	assert.Equal(t, sdk.StageStatusFailure, ExecuteAnalysisStage(context.Background(), input, nil))
+}
+
+func TestExecutor_getMetricsConfig(t *testing.T) {
+	t.Parallel()
+
+	for _, tc := range []struct {
+		name     string
+		interval time.Duration
+		wantErr  string
+	}{
+		{name: "shorter interval", interval: time.Second},
+		{name: "equal interval", interval: time.Minute},
+		{name: "longer interval", interval: 2 * time.Minute, wantErr: "exceeds the analysis duration"},
+		{name: "missing interval", wantErr: "missing \"interval\""},
+		{name: "negative interval", interval: -time.Second, wantErr: "interval must be positive"},
+	} {
+		for _, useTemplate := range []bool{false, true} {
+			name := tc.name + "/inline"
+			if useTemplate {
+				name = tc.name + "/template"
+			}
+			t.Run(name, func(t *testing.T) {
+				t.Parallel()
+
+				cfg := config.AnalysisMetrics{
+					Provider:  "prometheus",
+					Query:     "query",
+					Deviation: config.AnalysisDeviationEither,
+					Interval:  unit.Duration(tc.interval),
+				}
+				templatable := config.TemplatableAnalysisMetrics{AnalysisMetrics: cfg}
+				templates := &config.AnalysisTemplateSpec{Metrics: map[string]config.AnalysisMetrics{"errors": cfg}}
+				if useTemplate {
+					templatable = config.TemplatableAnalysisMetrics{
+						Template: config.AnalysisTemplateRef{Name: "errors"},
+					}
+				}
+				e := &executor{stageConfig: &config.AnalysisStageOptions{Duration: unit.Duration(time.Minute)}}
+				got, err := e.getMetricsConfig(templatable, templates)
+				if tc.wantErr != "" {
+					assert.ErrorContains(t, err, tc.wantErr)
+					return
+				}
+				require.NoError(t, err)
+				assert.Equal(t, &cfg, got)
+			})
+		}
+	}
+
+	t.Run("missing template", func(t *testing.T) {
+		t.Parallel()
+
+		e := &executor{stageConfig: &config.AnalysisStageOptions{Duration: unit.Duration(time.Minute)}}
+		_, err := e.getMetricsConfig(config.TemplatableAnalysisMetrics{
+			Template: config.AnalysisTemplateRef{Name: "errors"},
+		}, &config.AnalysisTemplateSpec{})
+		assert.ErrorContains(t, err, "analysis template errors not found")
+	})
+}
 
 func TestExecutor_buildAppArgs(t *testing.T) {
 	t.Parallel()
