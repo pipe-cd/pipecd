@@ -4839,10 +4839,10 @@ globby@^11.1.0:
     merge2 "^1.4.1"
     slash "^3.0.0"
 
-google-protobuf@^3.21.4:
-  version "3.21.4"
-  resolved "https://registry.yarnpkg.com/google-protobuf/-/google-protobuf-3.21.4.tgz#2f933e8b6e5e9f8edde66b7be0024b68f77da6c9"
-  integrity sha512-MnG7N936zcKTco4Jd2PX2U96Kf9PxygAPKBug+74LHzmHXmceN16MmRcdgZv+DGef/S9YvQAfRsNCn4cjf9yyQ==
+google-protobuf@^4.0.2:
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/google-protobuf/-/google-protobuf-4.0.3.tgz#10894e7dccf3b3cd5338922da0e1366f81987163"
+  integrity sha512-DI6iiRmF8fE/EzvGK5F9b8RxZeumHC2AAhi3xwOEh+GT5eRhJeW1aOtkDxn0W7cVCFQAtwK+ZDwIO1BYz+9WMA==
 
 gopd@^1.0.1:
   version "1.0.1"
