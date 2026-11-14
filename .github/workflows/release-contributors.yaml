@@ -1,0 +1,55 @@
+name: release_contributors
+
+# Credits the contributors of a release once it is published:
+# adds a "Contributors" section to the release notes and comments on every
+# pull request in the release to say which release it shipped in.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v0.58.0 or pkg/app/pipedv1/plugin/kubernetes/v0.4.0)"
+        required: true
+        type: string
+      dry_run:
+        description: "Only log what would be changed"
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.release.tag_name || inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  credit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      # Always use the script from the default branch, with the full history
+      # and all tags so that the commits of the release can be listed.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        with:
+          script: |
+            const run = require('./hack/release-contributors.js');
+            await run({
+              github,
+              context,
+              core,
+              tag: process.env.RELEASE_TAG,
+              dryRun: process.env.DRY_RUN === 'true',
+            });
