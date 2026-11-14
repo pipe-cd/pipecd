@@ -412,9 +412,9 @@ func checkImageChange(ns diff.Nodes) (string, bool) {
 		afterImg := parseContainerImage(n.StringY())
 
 		if beforeImg.name == afterImg.name {
-			images = append(images, fmt.Sprintf("image %s from %s to %s", beforeImg.name, beforeImg.tag, afterImg.tag))
+			images = append(images, fmt.Sprintf("image %s from %s to %s", beforeImg.name, beforeImg.version(), afterImg.version()))
 		} else {
-			images = append(images, fmt.Sprintf("image %s:%s to %s:%s", beforeImg.name, beforeImg.tag, afterImg.name, afterImg.tag))
+			images = append(images, fmt.Sprintf("image %s:%s to %s:%s", beforeImg.name, beforeImg.version(), afterImg.name, afterImg.version()))
 		}
 	}
 	desc := fmt.Sprintf("Sync progressively because of updating %s", strings.Join(images, ", "))
@@ -448,23 +448,44 @@ func checkReplicasChange(ns diff.Nodes) (before, after string, changed bool) {
 }
 
 type containerImage struct {
-	name string
-	tag  string
+	name   string
+	tag    string
+	digest string
 }
 
-func parseContainerImage(image string) (img containerImage) {
-	parts := strings.Split(image, ":")
-	if len(parts) == 2 {
-		img.tag = parts[1]
+// version returns the digest, or the tag when the image has no digest.
+// The digest is preferred because it decides which image is actually deployed,
+// as the v1 Kubernetes plugin does.
+func (img containerImage) version() string {
+	if img.digest != "" {
+		return img.digest
 	}
-	paths := strings.Split(parts[0], "/")
+	return img.tag
+}
+
+// parseContainerImage parses an image reference in the format of
+// [registry/]name[:tag][@digest] into its name, tag and digest.
+func parseContainerImage(image string) (img containerImage) {
+	// Split off the digest first, so that "@sha256:<digest>" is not taken as the tag.
+	if idx := strings.Index(image, "@"); idx != -1 {
+		img.digest = image[idx+1:]
+		image = image[:idx]
+	}
+	// Look for the tag only in the last path segment, so that a registry
+	// port such as "localhost:5000" is not taken as the tag.
+	paths := strings.Split(image, "/")
 	img.name = paths[len(paths)-1]
+	if idx := strings.LastIndex(img.name, ":"); idx != -1 {
+		img.tag = img.name[idx+1:]
+		img.name = img.name[:idx]
+	}
 	return
 }
 
 // determineVersion decides running version of an application based on its manifests.
-// Currently, this shows the tag values of using container images.
-// In case only one container is used, its tag value will be returned.
+// Currently, this shows the versions of using container images,
+// which are their digests, or their tags when they have no digest.
+// In case only one container is used, its version will be returned.
 //
 // TODO: Add ability to configure how to determine application version.
 func determineVersion(manifests []provider.Manifest) (string, error) {
@@ -494,18 +515,18 @@ func determineVersion(manifests []provider.Manifest) (string, error) {
 	}
 
 	// In case the workload is containing only one container
-	// return only the tag name.
+	// return only its version.
 	if len(images) == 1 {
-		return images[0].tag, nil
+		return images[0].version(), nil
 	}
 
 	// In case multiple containers are used
-	// return version in format: "tag-1 (name-1), tag-2 (name-2)"
+	// return version in format: "version-1 (name-1), version-2 (name-2)"
 	var b strings.Builder
-	fmt.Fprintf(&b, "%s (%s)", images[0].tag, images[0].name)
+	fmt.Fprintf(&b, "%s (%s)", images[0].version(), images[0].name)
 
 	for _, img := range images[1:] {
-		fmt.Fprintf(&b, ", %s (%s)", img.tag, img.name)
+		fmt.Fprintf(&b, ", %s (%s)", img.version(), img.name)
 	}
 
 	return b.String(), nil
@@ -541,7 +562,7 @@ func determineVersions(manifests []provider.Manifest) ([]*model.ArtifactVersion,
 		image := parseContainerImage(i)
 		versions = append(versions, &model.ArtifactVersion{
 			Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
-			Version: image.tag,
+			Version: image.version(),
 			Name:    image.name,
 			Url:     i,
 		})
