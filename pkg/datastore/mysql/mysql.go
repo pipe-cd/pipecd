@@ -198,7 +198,10 @@ func (m *MySQL) Update(ctx context.Context, col datastore.Collection, id string,
 		return err
 	}
 
-	row := tx.QueryRowContext(ctx, buildGetQuery(kind), makeRowID(id))
+	// Lock the row so that concurrent updaters of the same entity wait for this
+	// transaction to finish instead of reading a stale snapshot and overwriting
+	// each other's changes (lost update).
+	row := tx.QueryRowContext(ctx, buildGetForUpdateQuery(kind), makeRowID(id))
 	var val string
 	err = row.Scan(&val)
 	if err == sql.ErrNoRows {

@@ -40,6 +40,13 @@ func buildGetQuery(table string) string {
 	return fmt.Sprintf("SELECT Data FROM %s WHERE Id = UUID_TO_BIN(?,true)", table)
 }
 
+// buildGetForUpdateQuery builds the query to read an entity while locking its row
+// until the enclosing transaction ends, so that concurrent read-modify-write updates
+// of the same entity are serialized instead of overwriting each other.
+func buildGetForUpdateQuery(table string) string {
+	return buildGetQuery(table) + " FOR UPDATE"
+}
+
 func buildUpdateQuery(table string) string {
 	return fmt.Sprintf("UPDATE %s SET Data = ? WHERE Id = UUID_TO_BIN(?,true)", table)
 }
