@@ -737,9 +737,19 @@ func TestPlugin_executeK8sMultiSyncStage_multiCluster_failed_one_of_the_sync(t *
 	}
 
 	plugin := &Plugin{}
-	status, _ := plugin.executeK8sMultiSyncStage(t.Context(), input, dts)
+	status, dtStatuses := plugin.executeK8sMultiSyncStage(t.Context(), input, dts)
 
 	require.Equal(t, sdk.StageStatusFailure, status)
+
+	// The failure of cluster2 must not stop the sync on cluster1.
+	assert.ElementsMatch(t, []sdk.DeployTargetStatus{
+		{Name: "cluster1", Status: sdk.StageStatusSuccess},
+		{Name: "cluster2", Status: sdk.StageStatusFailure},
+	}, dtStatuses)
+
+	deployment, err := cluster1.cli.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("test-1").Get(context.Background(), "simple-cluster1", metav1.GetOptions{})
+	require.NoError(t, err)
+	assert.Equal(t, "simple-cluster1", deployment.GetName())
 }
 
 func TestPlugin_executeK8sMultiSyncStage_withPrune_withStageConfig(t *testing.T) {
