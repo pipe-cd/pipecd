@@ -1,0 +1,30 @@
+package main
+
+import (
+	"context"
+
+	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
+	"go.uber.org/zap"
+)
+
+// {{.Stage.Method}} executes the {{.Stage.Name}} stage.
+func (p *plugin) {{.Stage.Method}}(ctx context.Context, input *sdk.ExecuteStageInput[struct{}]) sdk.StageStatus {
+	slp, err := input.Client.StageLogPersister()
+	if err != nil {
+		input.Logger.Error("failed to get the stage log persister", zap.Error(err))
+		return sdk.StageStatusFailure
+	}
+	slp.Infof("Start executing the %s stage", {{.Stage.Const}})
+
+	// TODO: implement the stage.
+	//
+	// input.Request.StageConfig holds the JSON encoded options of the stage, that
+	// is the "with" block of the stage in the application config. Decode and
+	// validate it here, see the wait plugin for an example.
+	//
+	// Everything written to slp shows up in the log of the stage in the UI.
+	// Return sdk.StageStatusFailure when the stage fails.
+
+	slp.Success("The stage finished successfully")
+	return sdk.StageStatusSuccess
+}
