@@ -287,7 +287,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 			return err
 		}
 
-		service := grpcapi.NewWebAPI(
+		service, err := grpcapi.NewWebAPI(
 			ctx,
 			ds,
 			cache,
@@ -301,6 +301,10 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 			encryptDecrypter,
 			input.Logger,
 		)
+		if err != nil {
+			input.Logger.Error("failed to create a new WebAPI service", zap.Error(err))
+			return err
+		}
 		opts := []rpc.Option{
 			rpc.WithPort(s.webAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),
