@@ -14,7 +14,7 @@ data:
       projectID: quickstart
       pipedID: {{ .Values.quickstart.pipedId }}
       pipedKeyData: {{ .Values.quickstart.pipedKeyData }}
-      apiAddress: pipecd:8080
+      apiAddress: controlplane:8080
       syncInterval: 1m
       repositories:
         - repoId: examples
