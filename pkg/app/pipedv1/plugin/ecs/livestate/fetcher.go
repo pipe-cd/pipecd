@@ -34,11 +34,16 @@ func (w *ECSFetcher) FetchResources(ctx context.Context, service types.Service) 
 		return nil, err
 	}
 
-	// GetServiceTaskSets filters out DRAINING task sets and task sets not created by Pipecd,
-	// so the result only contains task sets that Pipecd is responsible for
-	tasksets, err := w.client.GetServiceTaskSets(ctx, *liveService)
-	if err != nil {
-		return nil, err
+	// Task sets exist only with the EXTERNAL controller. With the ECS controller,
+	// AWS manages the rollout through service deployments and there is nothing to fetch.
+	var tasksets []types.TaskSet
+	if deploymentControllerType(liveService) == types.DeploymentControllerTypeExternal {
+		// GetServiceTaskSets filters out DRAINING task sets and task sets not created by Pipecd,
+		// so the result only contains task sets that Pipecd is responsible for
+		tasksets, err = w.client.GetServiceTaskSets(ctx, *liveService)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Tasks are fetched for the whole service rather than per task set.
