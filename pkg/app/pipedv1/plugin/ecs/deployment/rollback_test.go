@@ -478,3 +478,45 @@ func TestRestoreELBWeights(t *testing.T) {
 		})
 	}
 }
+
+func TestRollbackECSController(t *testing.T) {
+	t.Parallel()
+
+	var (
+		taskDef = types.TaskDefinition{
+			Family:            aws.String("my-family"),
+			TaskDefinitionArn: aws.String("arn:aws:ecs:us-east-1:123456789012:task-definition/my-family:1"),
+		}
+		serviceDef = ecsServiceDef(nil)
+	)
+
+	t.Run("successfully rolls back ecs controller service", func(t *testing.T) {
+		t.Parallel()
+		var gotPrev *string
+		c := happyPathClient(
+			&types.TaskDefinition{TaskDefinitionArn: aws.String("arn:aws:ecs:us-east-1:123456789012:task-definition/my-family:1")},
+			&types.Service{ServiceName: aws.String("svc"), ServiceArn: aws.String("svc-arn"), ClusterArn: aws.String("cluster")},
+			nil,
+			nil,
+		)
+		c.ServiceExistsFunc = func(context.Context, string, string) (bool, error) { return true, nil }
+		c.GetLatestServiceDeploymentFunc = func(context.Context, string, string) (*types.ServiceDeploymentBrief, error) {
+			return &types.ServiceDeploymentBrief{ServiceDeploymentArn: aws.String("deploy-1")}, nil
+		}
+		c.WaitServiceDeploymentCompleteFunc = func(_ context.Context, _, _ string, prev *string) error {
+			gotPrev = prev
+			return nil
+		}
+		c.ListTagsFunc = func(context.Context, string) ([]types.Tag, error) {
+			return nil, nil
+		}
+		c.TagResourceFunc = func(context.Context, string, []types.Tag) error {
+			return nil
+		}
+
+		err := syncECSController(context.Background(), &fakeLogPersister{}, c, taskDef, serviceDef)
+		require.NoError(t, err)
+		assert.Equal(t, aws.String("deploy-1"), gotPrev)
+	})
+}
+
