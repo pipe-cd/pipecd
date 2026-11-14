@@ -632,6 +632,21 @@ func TestParseContainerImage(t *testing.T) {
 			image: "localhost:5000/helloworld",
 			want:  containerImage{name: "helloworld"},
 		},
+		{
+			name:  "image with tag and digest",
+			image: "nginx:1.27@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+			want:  containerImage{name: "nginx", tag: "1.27"},
+		},
+		{
+			name:  "image with digest only",
+			image: "nginx@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+			want:  containerImage{name: "nginx"},
+		},
+		{
+			name:  "registry with port, tag and digest",
+			image: "localhost:5000/helloworld:v0.1.0@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+			want:  containerImage{name: "helloworld", tag: "v0.1.0"},
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {

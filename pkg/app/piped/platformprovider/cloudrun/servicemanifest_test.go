@@ -457,6 +457,23 @@ func TestParseContainerImage(t *testing.T) {
 			image:    "localhost:5000/helloworld",
 			wantName: "helloworld",
 		},
+		{
+			name:     "image with tag and digest",
+			image:    "gcr.io/pipecd/helloworld:v0.1.0@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+			wantName: "helloworld",
+			wantTag:  "v0.1.0",
+		},
+		{
+			name:     "image with digest only",
+			image:    "gcr.io/pipecd/helloworld@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+			wantName: "helloworld",
+		},
+		{
+			name:     "registry with port, tag and digest",
+			image:    "localhost:5000/helloworld:v0.1.0@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+			wantName: "helloworld",
+			wantTag:  "v0.1.0",
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {

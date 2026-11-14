@@ -190,6 +190,10 @@ func FindImageTag(sm ServiceManifest) (string, error) {
 }
 
 func parseContainerImage(image string) (name, tag string) {
+	// Drop the digest first, so that "@sha256:<digest>" is not taken as the tag.
+	if idx := strings.Index(image, "@"); idx != -1 {
+		image = image[:idx]
+	}
 	// Look for the tag only in the last path segment, so that a registry
 	// port such as "localhost:5000" is not taken as the tag.
 	paths := strings.Split(image, "/")
