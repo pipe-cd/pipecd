@@ -690,6 +690,12 @@ func determineStageStatus(sig StopSignalType, ori, got model.StageStatus) model.
 
 // shouldSkipStage checks whether the stage should be skipped based on the skip config of the stage, and reports the stage status.
 func (s *scheduler) shouldSkipStage(ctx context.Context, ps *model.PipelineStage) (skipOrError bool, status model.StageStatus) {
+	// Quick sync and rollback stages are not configured in the pipeline. They only reuse the index of a pipeline stage,
+	// so the skip config of that pipeline stage must not be applied to them.
+	if s.deployment.IsQuickSync() || ps.Rollback {
+		return false, model.StageStatus_STAGE_RUNNING
+	}
+
 	stage, found := s.genericApplicationConfig.GetStage(ps.Index)
 	if !found {
 		return false, model.StageStatus_STAGE_RUNNING
