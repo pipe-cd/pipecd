@@ -1,4 +1,4 @@
-FROM golang:1.26.2-alpine3.22 AS builder
+FROM golang:1.27.1-alpine3.23 AS builder
 COPY main.go .
 RUN go build -o /server main.go
 

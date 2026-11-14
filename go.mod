@@ -2,6 +2,8 @@ module github.com/pipe-cd/pipecd
 
 go 1.26.2
 
+toolchain go1.27.1
+
 require (
 	cloud.google.com/go/firestore v1.29.2
 	cloud.google.com/go/profiler v0.7.1
