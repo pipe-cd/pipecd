@@ -24,6 +24,7 @@ spec:
 | pipedKeyFile | string | The path to the file containing the generated key string for this piped. | Yes |
 | pipedKeyData | string | Base64 encoded string of Piped key. Either pipedKeyFile or pipedKeyData must be set. | Yes |
 | apiAddress | string | The address used to connect to the Control Plane's API in format `host:port`. | Yes |
+| webAddress | string | The address of the Control Plane's web UI, used to build the links in notifications. When empty, piped uses the web base URL reported by the Control Plane. | No |
 | syncInterval | duration | How often to check whether an application should be synced. Default is `1m`. | No |
 | appConfigSyncInterval | duration | How often to check whether application configuration files should be synced. Default is `1m`. | No |
 | git | [Git](#git) | Git configuration needed for Git commands. | No |
@@ -33,6 +34,7 @@ spec:
 | platformProviders | [][PlatformProvider](#platformprovider) | List of platform providers can be used by this piped. | No |
 | analysisProviders | [][AnalysisProvider](#analysisprovider) | List of analysis providers can be used by this piped. | No |
 | eventWatcher | [EventWatcher](#eventwatcher) | Optional Event watcher settings. | No |
+| planPreview | [PlanPreview](#planpreview) | Optional settings for handling plan-preview commands. | No |
 | secretManagement | [SecretManagement](#secretmanagement) | The using secret management method. | No |
 | notifications | [Notifications](#notifications) | Sending notifications to Slack, Webhook... | No |
 | appSelector | map[string]string | List of labels to filter all applications this piped will handle. Currently, it is only be used to filter the applications suggested for adding from the control plane. | No |
@@ -218,7 +220,22 @@ Must be one of the following structs:
 
 ### SecretManagementGCPKMS
 
-> WIP
+> Note: GCP KMS secret management is only supported by the legacy `piped`. `pipedv1` currently fails to start with `type "GCP_KMS" is not implemented yet` when this type is configured.
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| keyName | string | The resource name of the Cloud KMS key used to decrypt the sealed secrets, in the form `projects/{project}/locations/{location}/keyRings/{keyRing}/cryptoKeys/{key}`. | Yes |
+| decryptServiceAccountFile | string | Path to the service account key file piped uses to decrypt secrets. | Yes |
+| encryptServiceAccountFile | string | Path to the service account key file used to encrypt secrets. | Yes |
+
+## PlanPreview
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| workerNum | int | Number of workers that handle plan-preview commands concurrently. Default is `3`. | No |
+| commandQueueBufferSize | int | Size of the internal queue of plan-preview commands waiting for a worker. Default is `10`. | No |
+| commandCheckInterval | duration | How often the plan-preview handler checks piped's local command store for new plan-preview commands. The command store itself fetches commands from the Control Plane on its own fixed 5-second cycle, so this does not change the API polling frequency. Default is `5s`. | No |
+| commandHandleTimeout | duration | Default timeout for building one plan-preview result when the command does not set its own. Default is `5m`. | No |
 
 ## Notifications
 
