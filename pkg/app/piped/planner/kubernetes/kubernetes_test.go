@@ -603,3 +603,40 @@ func TestCheckImageChange(t *testing.T) {
 		})
 	}
 }
+
+func TestParseContainerImage(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name  string
+		image string
+		want  containerImage
+	}{
+		{
+			name:  "image with tag",
+			image: "gcr.io/pipecd/helloworld:v0.1.0",
+			want:  containerImage{name: "helloworld", tag: "v0.1.0"},
+		},
+		{
+			name:  "image without tag",
+			image: "gcr.io/pipecd/helloworld",
+			want:  containerImage{name: "helloworld"},
+		},
+		{
+			name:  "registry with port and tag",
+			image: "localhost:5000/helloworld:v0.1.0",
+			want:  containerImage{name: "helloworld", tag: "v0.1.0"},
+		},
+		{
+			name:  "registry with port, no tag",
+			image: "localhost:5000/helloworld",
+			want:  containerImage{name: "helloworld"},
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, tc.want, parseContainerImage(tc.image))
+		})
+	}
+}

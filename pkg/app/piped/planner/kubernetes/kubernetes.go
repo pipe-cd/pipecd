@@ -453,12 +453,14 @@ type containerImage struct {
 }
 
 func parseContainerImage(image string) (img containerImage) {
-	parts := strings.Split(image, ":")
-	if len(parts) == 2 {
-		img.tag = parts[1]
-	}
-	paths := strings.Split(parts[0], "/")
+	// Look for the tag only in the last path segment, so that a registry
+	// port such as "localhost:5000" is not taken as the tag.
+	paths := strings.Split(image, "/")
 	img.name = paths[len(paths)-1]
+	if idx := strings.LastIndex(img.name, ":"); idx != -1 {
+		img.tag = img.name[idx+1:]
+		img.name = img.name[:idx]
+	}
 	return
 }
 

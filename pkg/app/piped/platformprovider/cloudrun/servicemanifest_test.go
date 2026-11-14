@@ -425,3 +425,45 @@ spec:
 		})
 	}
 }
+
+func TestParseContainerImage(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name     string
+		image    string
+		wantName string
+		wantTag  string
+	}{
+		{
+			name:     "image with tag",
+			image:    "gcr.io/pipecd/helloworld:v0.1.0",
+			wantName: "helloworld",
+			wantTag:  "v0.1.0",
+		},
+		{
+			name:     "image without tag",
+			image:    "gcr.io/pipecd/helloworld",
+			wantName: "helloworld",
+		},
+		{
+			name:     "registry with port and tag",
+			image:    "localhost:5000/helloworld:v0.1.0",
+			wantName: "helloworld",
+			wantTag:  "v0.1.0",
+		},
+		{
+			name:     "registry with port, no tag",
+			image:    "localhost:5000/helloworld",
+			wantName: "helloworld",
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			name, tag := parseContainerImage(tc.image)
+			assert.Equal(t, tc.wantName, name)
+			assert.Equal(t, tc.wantTag, tag)
+		})
+	}
+}

@@ -190,12 +190,14 @@ func FindImageTag(sm ServiceManifest) (string, error) {
 }
 
 func parseContainerImage(image string) (name, tag string) {
-	parts := strings.Split(image, ":")
-	if len(parts) == 2 {
-		tag = parts[1]
-	}
-	paths := strings.Split(parts[0], "/")
+	// Look for the tag only in the last path segment, so that a registry
+	// port such as "localhost:5000" is not taken as the tag.
+	paths := strings.Split(image, "/")
 	name = paths[len(paths)-1]
+	if idx := strings.LastIndex(name, ":"); idx != -1 {
+		tag = name[idx+1:]
+		name = name[:idx]
+	}
 	return
 }
 
