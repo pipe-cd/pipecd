@@ -15,9 +15,17 @@
 package eventwatcher
 
 import (
+	"context"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
+
+	config "github.com/pipe-cd/pipecd/pkg/configv1"
+	"github.com/pipe-cd/pipecd/pkg/git/gittest"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 func TestConvertStr(t *testing.T) {
@@ -77,6 +85,61 @@ func TestConvertStr(t *testing.T) {
 			got, err := convertStr(tc.value)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestCommitFilesDoesNotTruncateUnsupportedReplacementFiles(t *testing.T) {
+	t.Parallel()
+
+	for _, tc := range []struct {
+		name        string
+		replacement config.EventWatcherReplacement
+		wantError   string
+	}{
+		{
+			name: "JSON field",
+			replacement: config.EventWatcherReplacement{
+				File:      "version.json",
+				JSONField: "$.image",
+			},
+			wantError: "replacement has an unsupported jsonField",
+		},
+		{
+			name: "HCL field",
+			replacement: config.EventWatcherReplacement{
+				File:     "version.hcl",
+				HCLField: "image",
+			},
+			wantError: "replacement has an unsupported HCLField",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			dir := t.TempDir()
+			path := filepath.Join(dir, tc.replacement.File)
+			original := []byte("must not be truncated\n")
+			assert.NoError(t, os.WriteFile(path, original, 0o600))
+
+			ctrl := gomock.NewController(t)
+			repo := gittest.NewMockRepo(ctrl)
+			w := &watcher{}
+			_, err := w.commitFiles(
+				context.Background(),
+				&model.Event{Data: "new-value"},
+				"image-update",
+				"",
+				"",
+				[]config.EventWatcherReplacement{tc.replacement},
+				repo,
+				false,
+			)
+			assert.EqualError(t, err, tc.wantError)
+
+			actual, readErr := os.ReadFile(path)
+			assert.NoError(t, readErr)
+			assert.Equal(t, original, actual)
 		})
 	}
 }

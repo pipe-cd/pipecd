@@ -88,6 +88,23 @@ type EventWatcherReplacement struct {
 	Regex string `json:"regex"`
 }
 
+func (r EventWatcherReplacement) Validate() error {
+	if r.File == "" {
+		return fmt.Errorf("replacement has no file name")
+	}
+	if r.JSONField != "" {
+		return fmt.Errorf("replacement has an unsupported jsonField")
+	}
+	if r.HCLField != "" {
+		return fmt.Errorf("replacement has an unsupported HCLField")
+	}
+
+	if r.YAMLField == "" && r.Regex == "" {
+		return fmt.Errorf("replacement has no field")
+	}
+	return nil
+}
+
 // EventWatcherHandlerType represents the type of an event watcher handler.
 type EventWatcherHandlerType string
 
