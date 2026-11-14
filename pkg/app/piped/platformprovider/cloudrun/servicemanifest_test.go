@@ -521,7 +521,7 @@ spec:
 			name:        "image with tag and digest",
 			image:       "gcr.io/pipecd/helloworld:v0.1.0@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
 			wantTag:     "v0.1.0",
-			wantVersion: "v0.1.0",
+			wantVersion: "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
 		},
 		{
 			name:        "image with digest only",

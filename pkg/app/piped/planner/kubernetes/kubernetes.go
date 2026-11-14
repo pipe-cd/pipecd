@@ -453,12 +453,14 @@ type containerImage struct {
 	digest string
 }
 
-// version returns the tag, or the digest when the image has no tag.
+// version returns the digest, or the tag when the image has no digest.
+// The digest is preferred because it decides which image is actually deployed,
+// as the v1 Kubernetes plugin does.
 func (img containerImage) version() string {
-	if img.tag != "" {
-		return img.tag
+	if img.digest != "" {
+		return img.digest
 	}
-	return img.digest
+	return img.tag
 }
 
 // parseContainerImage parses an image reference in the format of
@@ -481,8 +483,9 @@ func parseContainerImage(image string) (img containerImage) {
 }
 
 // determineVersion decides running version of an application based on its manifests.
-// Currently, this shows the tag values of using container images.
-// In case only one container is used, its tag value will be returned.
+// Currently, this shows the versions of using container images,
+// which are their digests, or their tags when they have no digest.
+// In case only one container is used, its version will be returned.
 //
 // TODO: Add ability to configure how to determine application version.
 func determineVersion(manifests []provider.Manifest) (string, error) {
@@ -512,13 +515,13 @@ func determineVersion(manifests []provider.Manifest) (string, error) {
 	}
 
 	// In case the workload is containing only one container
-	// return only the tag name.
+	// return only its version.
 	if len(images) == 1 {
 		return images[0].version(), nil
 	}
 
 	// In case multiple containers are used
-	// return version in format: "tag-1 (name-1), tag-2 (name-2)"
+	// return version in format: "version-1 (name-1), version-2 (name-2)"
 	var b strings.Builder
 	fmt.Fprintf(&b, "%s (%s)", images[0].version(), images[0].name)
 

@@ -175,7 +175,7 @@ func FindImageTag(sm ServiceManifest) (string, error) {
 }
 
 // FindImageVersion returns the version of the service's container image.
-// It is the image tag, or the image digest when the image has no tag.
+// It is the image digest, or the image tag when the image has no digest.
 func FindImageVersion(sm ServiceManifest) (string, error) {
 	image, err := findContainerImage(sm)
 	if err != nil {
@@ -228,12 +228,13 @@ func parseContainerImage(image string) (name, tag, digest string) {
 	return
 }
 
-// imageVersion returns the tag, or the digest when the image has no tag.
+// imageVersion returns the digest, or the tag when the image has no digest.
+// The digest is preferred because it decides which image is actually deployed.
 func imageVersion(tag, digest string) string {
-	if tag != "" {
-		return tag
+	if digest != "" {
+		return digest
 	}
-	return digest
+	return tag
 }
 
 func FindArtifactVersions(sm ServiceManifest) ([]*model.ArtifactVersion, error) {
