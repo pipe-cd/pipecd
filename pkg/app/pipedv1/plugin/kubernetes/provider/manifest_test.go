@@ -168,9 +168,9 @@ spec:
 			},
 			want: map[ResourceKey]Manifest{
 				{
-					groupKind: schema.ParseGroupKind("ConfigMap"),
+					groupKind: schema.ParseGroupKind("configmap"),
 					name:      "my-config",
-					namespace: "default",
+					namespace: "",
 				}: mustParseManifests(t, `
 apiVersion: v1
 kind: ConfigMap
@@ -181,9 +181,9 @@ data:
   key: value
 `)[0],
 				{
-					groupKind: schema.ParseGroupKind("Secret"),
+					groupKind: schema.ParseGroupKind("secret"),
 					name:      "my-secret",
-					namespace: "default",
+					namespace: "",
 				}: mustParseManifests(t, `
 apiVersion: v1
 kind: Secret
@@ -228,9 +228,9 @@ data:
 			},
 			want: map[ResourceKey]Manifest{
 				{
-					groupKind: schema.ParseGroupKind("ConfigMap"),
+					groupKind: schema.ParseGroupKind("configmap"),
 					name:      "my-config",
-					namespace: "default",
+					namespace: "",
 				}: mustParseManifests(t, `
 apiVersion: v1
 kind: ConfigMap
@@ -257,9 +257,9 @@ data:
 			},
 			want: map[ResourceKey]Manifest{
 				{
-					groupKind: schema.ParseGroupKind("Secret"),
+					groupKind: schema.ParseGroupKind("secret"),
 					name:      "my-secret",
-					namespace: "default",
+					namespace: "",
 				}: mustParseManifests(t, `
 apiVersion: v1
 kind: Secret
@@ -295,7 +295,7 @@ data:
 			},
 			want: map[ResourceKey]Manifest{
 				{
-					groupKind: schema.ParseGroupKind("ConfigMap"),
+					groupKind: schema.ParseGroupKind("configmap"),
 					name:      "my-config",
 					namespace: "custom-namespace",
 				}: mustParseManifests(t, `
@@ -308,7 +308,7 @@ data:
   key: value
 `)[0],
 				{
-					groupKind: schema.ParseGroupKind("Secret"),
+					groupKind: schema.ParseGroupKind("secret"),
 					name:      "my-secret",
 					namespace: "custom-namespace",
 				}: mustParseManifests(t, `
@@ -319,6 +319,64 @@ metadata:
   namespace: custom-namespace
 data:
   key: dmFsdWU=
+`)[0],
+			},
+		},
+		{
+			name: "ConfigMap with omitted namespace normalized to empty namespace",
+			manifests: []string{
+				`
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+data:
+  key: value
+`,
+			},
+			want: map[ResourceKey]Manifest{
+				{
+					groupKind: schema.ParseGroupKind("configmap"),
+					name:      "my-config",
+					namespace: "",
+				}: mustParseManifests(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+data:
+  key: value
+`)[0],
+			},
+		},
+		{
+			name: "omitted namespace and explicit default namespace produce identical ResourceKey",
+			manifests: []string{
+				`
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+data:
+  key: value
+`,
+			},
+			want: map[ResourceKey]Manifest{
+				mustParseManifests(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+  namespace: default
+data:
+  key: value
+`)[0].Key().normalize(): mustParseManifests(t, `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+data:
+  key: value
 `)[0],
 			},
 		},
