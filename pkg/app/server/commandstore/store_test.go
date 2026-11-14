@@ -34,7 +34,7 @@ import (
 // control exactly what the backend returns for Get/UpdateStatus in each test.
 type fakeCommandStore struct {
 	getFunc          func(ctx context.Context, id string) (*model.Command, error)
-	updateStatusFunc func(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64) error
+	updateHandledFunc func(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64, handledReason string) error
 }
 
 func (f *fakeCommandStore) Add(ctx context.Context, cmd *model.Command) error {
@@ -49,9 +49,10 @@ func (f *fakeCommandStore) List(ctx context.Context, opts datastore.ListOptions)
 	return nil, nil
 }
 
-func (f *fakeCommandStore) UpdateStatus(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64) error {
-	return f.updateStatusFunc(ctx, id, status, metadata, handledAt)
+func (f *fakeCommandStore) UpdateCommandHandled(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64, handledReason string) error {
+	return f.updateHandledFunc(ctx, id, status, metadata, handledAt, handledReason)
 }
+
 
 // TestUpdateCommandHandled_BackendGetFailureAfterSuccessfulUpdateStatus reproduces
 // the reported cache poisoning scenario: UpdateStatus succeeds, but the
@@ -70,7 +71,7 @@ func TestUpdateCommandHandled_BackendGetFailureAfterSuccessfulUpdateStatus(t *te
 	c.EXPECT().Delete(cacheKey("command-id")).Return(nil)
 
 	backend := &fakeCommandStore{
-		updateStatusFunc: func(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64) error {
+		updateHandledFunc: func(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64, handledReason string) error {
 			return nil
 		},
 		getFunc: func(ctx context.Context, id string) (*model.Command, error) {
@@ -84,7 +85,7 @@ func TestUpdateCommandHandled_BackendGetFailureAfterSuccessfulUpdateStatus(t *te
 		logger:  zap.NewNop(),
 	}
 
-	err := s.UpdateCommandHandled(context.Background(), "command-id", model.CommandStatus_COMMAND_SUCCEEDED, nil, 12345)
+	err := s.UpdateCommandHandled(context.Background(), "command-id", model.CommandStatus_COMMAND_SUCCEEDED, nil, 12345, "")
 	assert.NoError(t, err)
 }
 
@@ -121,7 +122,7 @@ func TestGetCommand_StaleCacheDeletedAfterUpdateHandledGetFailure(t *testing.T) 
 
 	getCalls := 0
 	backend := &fakeCommandStore{
-		updateStatusFunc: func(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64) error {
+		updateHandledFunc: func(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64, handledReason string) error {
 			return nil
 		},
 		getFunc: func(ctx context.Context, id string) (*model.Command, error) {
@@ -161,7 +162,7 @@ func TestGetCommand_StaleCacheDeletedAfterUpdateHandledGetFailure(t *testing.T) 
 	assert.NoError(t, err)
 	assert.Equal(t, oldCommand, got)
 
-	err = s.UpdateCommandHandled(context.Background(), "command-id", model.CommandStatus_COMMAND_SUCCEEDED, nil, 12345)
+	err = s.UpdateCommandHandled(context.Background(), "command-id", model.CommandStatus_COMMAND_SUCCEEDED, nil, 12345, "")
 	assert.NoError(t, err)
 
 	got, err = s.GetCommand(context.Background(), "command-id")
@@ -239,4 +240,37 @@ func TestGetCommand_ReturnsValidCachedCommandWithoutQueryingDatastore(t *testing
 	got, err := s.GetCommand(context.Background(), "command-id")
 	assert.NoError(t, err)
 	assert.Equal(t, &model.Command{Id: "command-id", PipedId: "legit-piped-id", CreatedAt: 1700000000, UpdatedAt: 1700000000}, got)
+}
+
+// TestUpdateCommandHandled_PassesHandledReason ensures that the handledReason
+// parameter successfully propagates down to the underlying backend datastore.
+func TestUpdateCommandHandled_PassesHandledReason(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	expectedReason := "plan preview failed due to syntax error"
+
+	backend := &fakeCommandStore{
+		updateHandledFunc: func(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64, handledReason string) error {
+			assert.Equal(t, expectedReason, handledReason, "HandledReason must be passed to backend")
+			return nil
+		},
+		getFunc: func(ctx context.Context, id string) (*model.Command, error) {
+			return &model.Command{Id: id}, nil
+		},
+	}
+
+	c := cachetest.NewMockCache(ctrl)
+	// Use AnyTimes() so the mock won't fail whether the store decides to Put, Delete, or do nothing.
+	c.EXPECT().Put(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	c.EXPECT().Delete(gomock.Any()).Return(nil).AnyTimes()
+
+	s := &store{
+		backend: backend,
+		cache:   &commandCache{backend: c},
+		logger:  zap.NewNop(),
+	}
+
+	err := s.UpdateCommandHandled(context.Background(), "test-cmd-id", model.CommandStatus_COMMAND_FAILED, nil, 12345, expectedReason)
+	assert.NoError(t, err)
 }

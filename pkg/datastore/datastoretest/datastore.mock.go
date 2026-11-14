@@ -865,16 +865,16 @@ func (mr *MockCommandStoreMockRecorder) List(ctx, opts any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockCommandStore)(nil).List), ctx, opts)
 }
 
-// UpdateStatus mocks base method.
-func (m *MockCommandStore) UpdateStatus(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64) error {
+// UpdateCommandHandled mocks base method.
+func (m *MockCommandStore) UpdateCommandHandled(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64, handledReason string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateStatus", ctx, id, status, metadata, handledAt)
+	ret := m.ctrl.Call(m, "UpdateCommandHandled", ctx, id, status, metadata, handledAt, handledReason)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateStatus indicates an expected call of UpdateStatus.
-func (mr *MockCommandStoreMockRecorder) UpdateStatus(ctx, id, status, metadata, handledAt any) *gomock.Call {
+// UpdateCommandHandled indicates an expected call of UpdateCommandHandled.
+func (mr *MockCommandStoreMockRecorder) UpdateCommandHandled(ctx, id, status, metadata, handledAt, handledReason any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockCommandStore)(nil).UpdateStatus), ctx, id, status, metadata, handledAt)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCommandHandled", reflect.TypeOf((*MockCommandStore)(nil).UpdateCommandHandled), ctx, id, status, metadata, handledAt, handledReason)
 }
