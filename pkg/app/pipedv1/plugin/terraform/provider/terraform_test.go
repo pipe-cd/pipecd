@@ -15,9 +15,15 @@
 package provider
 
 import (
+	"context"
+	"io"
+	"os"
+	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPlanHasChangeRegex(t *testing.T) {
@@ -293,4 +299,64 @@ guarantee to take exactly these actions if you run "terraform apply" now.`,
 			assert.Equal(t, tc.expectedErr, err != nil)
 		})
 	}
+}
+
+// fakeTerraform writes a script that stands in for terraform during a long apply.
+// It records when it has started and, when it traps the interrupt, that it was
+// interrupted.
+func fakeTerraform(t *testing.T, trapInterrupt bool) (execPath, dir string) {
+	dir = t.TempDir()
+	trap := `trap 'echo > interrupted; exit 1' INT`
+	if !trapInterrupt {
+		trap = `trap '' INT`
+	}
+	script := "#!/bin/sh\n" + trap + "\necho > started\nwhile true; do sleep 0.05; done\n"
+	execPath = filepath.Join(dir, "terraform")
+	require.NoError(t, os.WriteFile(execPath, []byte(script), 0o755))
+	return execPath, dir
+}
+
+func cancelApplyAfterStart(t *testing.T, execPath, dir string) (time.Duration, error) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	done := make(chan error, 1)
+	go func() {
+		done <- newTerraform(execPath, dir).Apply(ctx, io.Discard)
+	}()
+	require.Eventually(t, func() bool {
+		_, err := os.Stat(filepath.Join(dir, "started"))
+		return err == nil
+	}, 10*time.Second, 10*time.Millisecond)
+
+	start := time.Now()
+	cancel()
+	select {
+	case err := <-done:
+		return time.Since(start), err
+	case <-time.After(30 * time.Second):
+		t.Fatal("Apply did not return after ctx was cancelled")
+		return 0, nil
+	}
+}
+
+func TestApplyInterruptsTerraformOnCancel(t *testing.T) {
+	execPath, dir := fakeTerraform(t, true)
+
+	_, err := cancelApplyAfterStart(t, execPath, dir)
+	require.Error(t, err)
+	assert.FileExists(t, filepath.Join(dir, "interrupted"), "terraform must be interrupted, not killed, so it can release the state lock")
+}
+
+func TestApplyKillsTerraformThatIgnoresTheInterrupt(t *testing.T) {
+	orig := applyInterruptGracePeriod
+	applyInterruptGracePeriod = 200 * time.Millisecond
+	t.Cleanup(func() { applyInterruptGracePeriod = orig })
+
+	execPath, dir := fakeTerraform(t, false)
+
+	elapsed, err := cancelApplyAfterStart(t, execPath, dir)
+	require.Error(t, err)
+	assert.NoFileExists(t, filepath.Join(dir, "interrupted"))
+	assert.Less(t, elapsed, 10*time.Second, "terraform must be killed once the grace period has passed")
 }

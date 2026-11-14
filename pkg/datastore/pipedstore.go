@@ -89,6 +89,7 @@ func (s *pipedStore) List(ctx context.Context, opts ListOptions) ([]*model.Piped
 	if err != nil {
 		return nil, err
 	}
+	defer it.Close()
 	ps := make([]*model.Piped, 0)
 	for {
 		var p model.Piped

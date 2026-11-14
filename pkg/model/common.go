@@ -14,6 +14,8 @@
 
 package model
 
+import "fmt"
+
 // ApplicationKindStrings returns a list of available deployment kinds in string.
 func ApplicationKindStrings() []string {
 	out := make([]string, 0, len(ApplicationKind_value))
@@ -56,4 +58,22 @@ func (a *ApplicationInfo) ContainLabels(labels map[string]string) bool {
 		}
 	}
 	return true
+}
+
+// SyncStrategyFromString converts a string to SyncStrategy.
+func SyncStrategyFromString(s string) (SyncStrategy, error) {
+	strategy, ok := SyncStrategy_value[s]
+	if !ok {
+		return SyncStrategy_AUTO, fmt.Errorf("invalid sync strategy %s", s)
+	}
+	return SyncStrategy(strategy), nil
+}
+
+// SyncStrategyStrings returns a list of available sync strategies in string.
+func SyncStrategyStrings() []string {
+	out := make([]string, 0, len(SyncStrategy_value))
+	for s := range SyncStrategy_value {
+		out = append(out, s)
+	}
+	return out
 }

@@ -15,10 +15,12 @@
 package livestate
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap/zaptest"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
@@ -657,6 +659,187 @@ func Test_calculateSyncStatus(t *testing.T) {
 			t.Parallel()
 			got := calculateSyncStatus(tt.args.states)
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+type fakeLoader struct {
+	manifests []provider.Manifest
+}
+
+func (l *fakeLoader) LoadManifests(_ context.Context, _ provider.LoaderInput) ([]provider.Manifest, error) {
+	return l.manifests, nil
+}
+
+func TestSyncState_UnrelatedCommit(t *testing.T) {
+	t.Parallel()
+
+	const (
+		deployedCommit = "c3fc924fcb8570b32a6078d2089af9c3e744a381"
+		headCommit     = "e2274af3caed2f2fe23bf9c0ee7a8b830758c356"
+	)
+
+	// The live resource was deployed at deployedCommit, so it carries that commit hash.
+	live := makeTestManifest(t, `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+  namespace: default
+  labels:
+    app: simple
+    pipecd.dev/managed-by: piped
+    pipecd.dev/piped: piped-id
+    pipecd.dev/application: app-id
+    pipecd.dev/commit-hash: `+deployedCommit+`
+  annotations:
+    pipecd.dev/managed-by: piped
+    pipecd.dev/piped: piped-id
+    pipecd.dev/application: app-id
+    pipecd.dev/original-api-version: apps/v1
+    pipecd.dev/resource-key: apps:Deployment::simple
+    pipecd.dev/commit-hash: `+deployedCommit+`
+spec:
+  replicas: 2
+`)
+
+	// The manifest in Git has not been changed, but the repository has a newer commit.
+	git := makeTestManifest(t, `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+  labels:
+    app: simple
+spec:
+  replicas: 2
+`)
+
+	p := Plugin{}
+	input := &sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec]{
+		Request: sdk.GetLivestateRequest[kubeconfig.KubernetesApplicationSpec]{
+			PipedID:       "piped-id",
+			ApplicationID: "app-id",
+			DeploymentSource: sdk.DeploymentSource[kubeconfig.KubernetesApplicationSpec]{
+				CommitHash: headCommit,
+			},
+		},
+	}
+
+	gitManifests, err := p.loadManifests(t.Context(), input, &kubeconfig.KubernetesApplicationSpec{}, &fakeLoader{manifests: []provider.Manifest{git}}, zaptest.NewLogger(t), nil)
+	require.NoError(t, err)
+
+	dt := &sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig]{Name: "cluster1"}
+	got, err := p.makeAppSyncState([]provider.Manifest{live}, gitManifests, dt, headCommit, zaptest.NewLogger(t))
+	require.NoError(t, err)
+
+	assert.Equal(t, sdk.ApplicationSyncStateSynced, got.Status, got.Reason)
+}
+
+// capturingLoader records the LoaderInput it receives so tests can assert on it.
+type capturingLoader struct {
+	capturedInput provider.LoaderInput
+}
+
+func (c *capturingLoader) LoadManifests(_ context.Context, input provider.LoaderInput) ([]provider.Manifest, error) {
+	c.capturedInput = input
+	return nil, nil
+}
+
+func TestLoadManifests_KustomizeOverrides(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name        string
+		specInput   kubeconfig.KubernetesDeploymentInput
+		multiTarget *kubeconfig.KubernetesMultiTarget
+		wantVersion string
+		wantOptions map[string]string
+	}{
+		{
+			name: "top-level version and options used when multiTarget has none",
+			specInput: kubeconfig.KubernetesDeploymentInput{
+				KustomizeVersion: "5.3.0",
+				KustomizeOptions: map[string]string{"flag": "val"},
+			},
+			multiTarget: &kubeconfig.KubernetesMultiTarget{},
+			wantVersion: "5.3.0",
+			wantOptions: map[string]string{"flag": "val"},
+		},
+		{
+			name: "multiTarget version overrides top-level version",
+			specInput: kubeconfig.KubernetesDeploymentInput{
+				KustomizeVersion: "5.3.0",
+			},
+			multiTarget: &kubeconfig.KubernetesMultiTarget{
+				KustomizeVersion: "5.4.3",
+			},
+			wantVersion: "5.4.3",
+			wantOptions: nil,
+		},
+		{
+			name: "multiTarget options override top-level options",
+			specInput: kubeconfig.KubernetesDeploymentInput{
+				KustomizeOptions: map[string]string{"original": "val"},
+			},
+			multiTarget: &kubeconfig.KubernetesMultiTarget{
+				KustomizeOptions: map[string]string{"load-restrictor": "LoadRestrictionsNone"},
+			},
+			wantVersion: "",
+			wantOptions: map[string]string{"load-restrictor": "LoadRestrictionsNone"},
+		},
+		{
+			name: "multiTarget version and options both override top-level",
+			specInput: kubeconfig.KubernetesDeploymentInput{
+				KustomizeVersion: "5.3.0",
+				KustomizeOptions: map[string]string{"flag": "val"},
+			},
+			multiTarget: &kubeconfig.KubernetesMultiTarget{
+				KustomizeVersion: "5.4.3",
+				KustomizeOptions: map[string]string{"enable-helm": ""},
+			},
+			wantVersion: "5.4.3",
+			wantOptions: map[string]string{"enable-helm": ""},
+		},
+		{
+			name: "empty multiTarget version falls back to top-level version",
+			specInput: kubeconfig.KubernetesDeploymentInput{
+				KustomizeVersion: "5.3.0",
+			},
+			multiTarget: &kubeconfig.KubernetesMultiTarget{
+				KustomizeVersion: "",
+			},
+			wantVersion: "5.3.0",
+		},
+		{
+			name: "nil multiTarget uses top-level values",
+			specInput: kubeconfig.KubernetesDeploymentInput{
+				KustomizeVersion: "5.3.0",
+				KustomizeOptions: map[string]string{"key": "val"},
+			},
+			multiTarget: nil,
+			wantVersion: "5.3.0",
+			wantOptions: map[string]string{"key": "val"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			cl := &capturingLoader{}
+			p := &Plugin{}
+
+			input := &sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec]{}
+			spec := &kubeconfig.KubernetesApplicationSpec{
+				Input: tt.specInput,
+			}
+
+			_, err := p.loadManifests(context.Background(), input, spec, cl, zaptest.NewLogger(t), tt.multiTarget)
+			require.NoError(t, err)
+
+			assert.Equal(t, tt.wantVersion, cl.capturedInput.KustomizeVersion)
+			assert.Equal(t, tt.wantOptions, cl.capturedInput.KustomizeOptions)
 		})
 	}
 }

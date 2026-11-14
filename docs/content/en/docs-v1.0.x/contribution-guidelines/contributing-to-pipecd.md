@@ -24,6 +24,8 @@ There are many ways to contribute, and many don't involve writing code:
 
 ## Development Setup
 
+For writing and reviewing Go code, follow the [Go Coding Guidelines](../go-coding-guidelines/).
+
 ### Project Structure
 
 PipeCD consists of several components:

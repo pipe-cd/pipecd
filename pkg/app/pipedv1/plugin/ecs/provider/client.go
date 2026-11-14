@@ -16,6 +16,7 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -34,6 +35,9 @@ import (
 )
 
 const (
+	// WaitServiceDeploymentComplete's constants.
+	serviceDeploymentPollInterval = 10 * time.Second
+
 	// WaitServiceStable's constants.
 	retryServiceStable         = 40
 	retryServiceStableInterval = 15 * time.Second
@@ -187,9 +191,15 @@ func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, rou
 }
 
 func (c *client) CreateService(ctx context.Context, service types.Service) (*types.Service, error) {
-	if service.DeploymentController == nil || service.DeploymentController.Type != types.DeploymentControllerTypeExternal {
-		return nil, fmt.Errorf("failed to create ECS service %s: deployment controller of type EXTERNAL is required", *service.ServiceName)
+	controller := deploymentControllerType(service)
+	switch controller {
+	case types.DeploymentControllerTypeEcs, types.DeploymentControllerTypeExternal:
+	case types.DeploymentControllerTypeCodeDeploy:
+		return nil, fmt.Errorf("failed to create ECS service %s: deployment controller of type CODE_DEPLOY is not supported", *service.ServiceName)
+	default:
+		return nil, fmt.Errorf("failed to create ECS service %s: unknown deployment controller type %q", *service.ServiceName, controller)
 	}
+
 	input := &ecs.CreateServiceInput{
 		Cluster:                       service.ClusterArn,
 		ServiceName:                   service.ServiceName,
@@ -207,23 +217,37 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 		SchedulingStrategy:            service.SchedulingStrategy,
 		Tags:                          service.Tags,
 	}
+	if controller == types.DeploymentControllerTypeEcs {
+		// With the ECS controller the service itself runs the tasks, so it needs the full definition.
+		input.TaskDefinition = service.TaskDefinition
+		input.LaunchType = service.LaunchType
+		input.NetworkConfiguration = service.NetworkConfiguration
+		input.LoadBalancers = service.LoadBalancers
+		input.ServiceRegistries = service.ServiceRegistries
+		input.CapacityProviderStrategy = service.CapacityProviderStrategy
+	}
+
 	output, err := c.ecsClient.CreateService(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create ECS service %s: %w", *service.ServiceName, err)
 	}
 
-	// Hack: Since we use EXTERNAL deployment controller, the below configurations are not allowed to be passed
-	// in CreateService step, but it required in further step (CreateTaskSet step). We reassign those values
-	// as part of service definition for that purpose.
-	// ref: https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CreateService.html
-	output.Service.LaunchType = service.LaunchType
-	output.Service.NetworkConfiguration = service.NetworkConfiguration
-	output.Service.ServiceRegistries = service.ServiceRegistries
+	if controller == types.DeploymentControllerTypeExternal {
+		// Hack: Since we use EXTERNAL deployment controller, the below configurations are not allowed to be passed
+		// in CreateService step, but it required in further step (CreateTaskSet step). We reassign those values
+		// as part of service definition for that purpose.
+		// ref: https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CreateService.html
+		output.Service.LaunchType = service.LaunchType
+		output.Service.NetworkConfiguration = service.NetworkConfiguration
+		output.Service.ServiceRegistries = service.ServiceRegistries
+	}
 
 	return output.Service, nil
 }
 
 func (c *client) UpdateService(ctx context.Context, service types.Service) (*types.Service, error) {
+	controller := deploymentControllerType(service)
+
 	// TODO: Support other properties (current only support the properties that v0 supports)
 	// This should be delegated to user to decide which properties to update by defining in service definition file.
 	input := &ecs.UpdateServiceInput{
@@ -233,6 +257,15 @@ func (c *client) UpdateService(ctx context.Context, service types.Service) (*typ
 		PlacementStrategy:    service.PlacementStrategy,
 		PropagateTags:        service.PropagateTags,
 		EnableECSManagedTags: aws.Bool(service.EnableECSManagedTags),
+	}
+	if controller == types.DeploymentControllerTypeEcs {
+		// With the ECS controller, updating the task definition is what starts a new service deployment.
+		input.TaskDefinition = service.TaskDefinition
+		input.DeploymentConfiguration = service.DeploymentConfiguration
+		input.NetworkConfiguration = service.NetworkConfiguration
+		input.LoadBalancers = service.LoadBalancers
+		input.ServiceRegistries = service.ServiceRegistries
+		input.CapacityProviderStrategy = service.CapacityProviderStrategy
 	}
 
 	// If desiredCount is 0 or not set, keep current desiredCount because a user might use AutoScaling.
@@ -245,15 +278,26 @@ func (c *client) UpdateService(ctx context.Context, service types.Service) (*typ
 		return nil, fmt.Errorf("failed to update ECS service %s: %w", *service.ServiceName, err)
 	}
 
-	// Hack: Since we use EXTERNAL deployment controller, the below configurations are not allowed to be passed
-	// in UpdateService step, but it required in further step (CreateTaskSet step). We reassign those values
-	// as part of service definition for that purpose.
-	// ref: https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CreateService.html
-	output.Service.LaunchType = service.LaunchType
-	output.Service.NetworkConfiguration = service.NetworkConfiguration
-	output.Service.ServiceRegistries = service.ServiceRegistries
+	if controller == types.DeploymentControllerTypeExternal {
+		// Hack: Since we use EXTERNAL deployment controller, the below configurations are not allowed to be passed
+		// in UpdateService step, but it required in further step (CreateTaskSet step). We reassign those values
+		// as part of service definition for that purpose.
+		// ref: https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CreateService.html
+		output.Service.LaunchType = service.LaunchType
+		output.Service.NetworkConfiguration = service.NetworkConfiguration
+		output.Service.ServiceRegistries = service.ServiceRegistries
+	}
 
 	return output.Service, nil
+}
+
+// deploymentControllerType returns the deployment controller type of the service.
+// A service without deploymentController uses the ECS controller, which is the AWS default.
+func deploymentControllerType(service types.Service) types.DeploymentControllerType {
+	if service.DeploymentController == nil || service.DeploymentController.Type == "" {
+		return types.DeploymentControllerTypeEcs
+	}
+	return service.DeploymentController.Type
 }
 
 func (c *client) DescribeService(ctx context.Context, service types.Service) (*types.Service, error) {
@@ -495,6 +539,81 @@ func (c *client) ServiceExists(ctx context.Context, cluster, serviceName string)
 		return false, nil
 	}
 	return true, nil
+}
+
+// GetLatestServiceDeployment returns the most recently created service deployment of the service.
+// It returns nil when the service does not exist or has no service deployment yet.
+func (c *client) GetLatestServiceDeployment(ctx context.Context, cluster, serviceName string) (*types.ServiceDeploymentBrief, error) {
+	input := &ecs.ListServiceDeploymentsInput{
+		Cluster: aws.String(cluster),
+		Service: aws.String(serviceName),
+	}
+
+	// The order of the result is not guaranteed, so look through all of them.
+	var latest *types.ServiceDeploymentBrief
+	for {
+		output, err := c.ecsClient.ListServiceDeployments(ctx, input)
+		if err != nil {
+			var notFound *types.ServiceNotFoundException
+			if errors.As(err, &notFound) {
+				return nil, nil
+			}
+			return nil, fmt.Errorf("failed to list service deployments of service %s: %w", serviceName, err)
+		}
+		for i := range output.ServiceDeployments {
+			d := &output.ServiceDeployments[i]
+			if latest == nil || (d.CreatedAt != nil && latest.CreatedAt != nil && d.CreatedAt.After(*latest.CreatedAt)) {
+				latest = d
+			}
+		}
+		if output.NextToken == nil {
+			return latest, nil
+		}
+		input.NextToken = output.NextToken
+	}
+}
+
+// WaitServiceDeploymentComplete blocks until a service deployment other than prevDeploymentArn
+// reaches a terminal status. It returns nil only when that deployment is SUCCESSFUL.
+// There is no timeout: the caller bounds the wait with ctx.
+func (c *client) WaitServiceDeploymentComplete(ctx context.Context, cluster, serviceName string, prevDeploymentArn *string) error {
+	for {
+		latest, err := c.GetLatestServiceDeployment(ctx, cluster, serviceName)
+		if err != nil {
+			return err
+		}
+		done, err := evaluateServiceDeployment(latest, prevDeploymentArn)
+		if done || err != nil {
+			return err
+		}
+
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(serviceDeploymentPollInterval):
+		}
+	}
+}
+
+// evaluateServiceDeployment decides whether the wait is over. A deployment that is the same as
+// prevDeploymentArn is not the one being waited for, so it is ignored.
+func evaluateServiceDeployment(latest *types.ServiceDeploymentBrief, prevDeploymentArn *string) (done bool, err error) {
+	if latest == nil || aws.ToString(latest.ServiceDeploymentArn) == aws.ToString(prevDeploymentArn) {
+		return false, nil
+	}
+
+	switch latest.Status {
+	case types.ServiceDeploymentStatusSuccessful:
+		return true, nil
+	case types.ServiceDeploymentStatusStopped,
+		types.ServiceDeploymentStatusRollbackSuccessful,
+		types.ServiceDeploymentStatusRollbackFailed:
+		// A rolled back deployment means the new revision is not the one running.
+		return true, fmt.Errorf("service deployment %s ended with status %s: %s",
+			aws.ToString(latest.ServiceDeploymentArn), latest.Status, aws.ToString(latest.StatusReason))
+	default:
+		return false, nil
+	}
 }
 
 // WaitServiceStable blocks until the ECS service is stable.

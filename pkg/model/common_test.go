@@ -140,3 +140,58 @@ func TestApplicationInfo_ContainLabels(t *testing.T) {
 		})
 	}
 }
+
+func TestSyncStrategyFromString(t *testing.T) {
+	testcases := []struct {
+		name     string
+		input    string
+		expected SyncStrategy
+		wantErr  bool
+	}{
+		{
+			name:     "auto",
+			input:    "AUTO",
+			expected: SyncStrategy_AUTO,
+		},
+		{
+			name:     "quick sync",
+			input:    "QUICK_SYNC",
+			expected: SyncStrategy_QUICK_SYNC,
+		},
+		{
+			name:     "pipeline",
+			input:    "PIPELINE",
+			expected: SyncStrategy_PIPELINE,
+		},
+		{
+			name:     "unknown strategy",
+			input:    "UNKNOWN",
+			expected: SyncStrategy_AUTO,
+			wantErr:  true,
+		},
+		{
+			name:     "empty",
+			input:    "",
+			expected: SyncStrategy_AUTO,
+			wantErr:  true,
+		},
+		{
+			name:     "lowercase is not accepted",
+			input:    "auto",
+			expected: SyncStrategy_AUTO,
+			wantErr:  true,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := SyncStrategyFromString(tc.input)
+			assert.Equal(t, tc.wantErr, err != nil)
+			assert.Equal(t, tc.expected, got)
+		})
+	}
+}
+
+func TestSyncStrategyStrings(t *testing.T) {
+	assert.ElementsMatch(t, []string{"AUTO", "QUICK_SYNC", "PIPELINE"}, SyncStrategyStrings())
+}

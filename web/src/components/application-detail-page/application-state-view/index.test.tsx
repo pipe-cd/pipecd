@@ -4,7 +4,7 @@ import { dummyApplication } from "~/__fixtures__/dummy-application";
 import { render, screen } from "~~/test-utils";
 import { ApplicationStateView } from ".";
 
-it("shows refresh button if live state fetching has error", () => {
+it("shows refresh button if live state fetching has error", async () => {
   const mockFn = jest.fn();
   render(
     <ApplicationStateView
@@ -20,6 +20,6 @@ it("shows refresh button if live state fetching has error", () => {
   expect(
     screen.getByRole("button", { name: UI_TEXT_REFRESH })
   ).toBeInTheDocument();
-  userEvent.click(screen.getByRole("button", { name: UI_TEXT_REFRESH }));
+  await userEvent.click(screen.getByRole("button", { name: UI_TEXT_REFRESH }));
   expect(mockFn).toHaveBeenCalledTimes(1);
 });

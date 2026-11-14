@@ -484,7 +484,7 @@ func (s *SecretManagement) UnmarshalJSON(data []byte) error {
 			err = json.Unmarshal(g.Config, s.GCPKMS)
 		}
 	default:
-		err = fmt.Errorf("unsupported secret management type: %s", s.Type)
+		err = fmt.Errorf("unsupported secret management type: %s", g.Type)
 	}
 	return err
 }

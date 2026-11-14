@@ -154,6 +154,7 @@ func listEntities(it datastore.Iterator) ([]*Entity, error) {
 	if it == nil {
 		return entity, nil
 	}
+	defer it.Close()
 	for {
 		var e Entity
 		err := it.Next(&e)

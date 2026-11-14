@@ -79,7 +79,9 @@ mysql:
   port: 3306
 
 minio:
-  imageTag: "RELEASE.2020-08-26T00-00-49Z"
+  # minio/minio is no longer published on Docker Hub or Quay, so the Bitnami build is used.
+  image: bitnamilegacy/minio
+  imageTag: "2025.7.23-debian-12-r5"
   resources: {}
   port: 9000
 

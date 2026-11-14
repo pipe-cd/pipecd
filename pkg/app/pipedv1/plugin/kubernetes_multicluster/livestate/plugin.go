@@ -15,7 +15,6 @@
 package livestate
 
 import (
-	"cmp"
 	"context"
 	"fmt"
 	"strings"
@@ -86,7 +85,7 @@ func (p Plugin) GetLivestate(ctx context.Context, _ *kubeconfig.KubernetesPlugin
 	syncStates := make([]sdk.ApplicationSyncState, 0, len(targetConfigs))
 	for _, tc := range targetConfigs {
 		// Get the kubectl tool path.
-		kubectlPath, err := toolRegistry.Kubectl(ctx, cmp.Or(cfg.Spec.Input.KubectlVersion, tc.deployTarget.Config.KubectlVersion))
+		kubectlPath, err := toolRegistry.Kubectl(ctx, cfg.Spec.Input.KubectlVersionFor(tc.deployTarget.Config, tc.multiTarget))
 		if err != nil {
 			input.Logger.Error("Failed to get kubectl tool", zap.Error(err))
 			return nil, err
@@ -324,11 +323,19 @@ func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[
 	// override values if multiTarget has value.
 	manifestPathes := spec.Input.Manifests
 	kustomizeDir := ""
+	kustomizeVersion := spec.Input.KustomizeVersion
+	kustomizeOptions := spec.Input.KustomizeOptions
 	if multiTarget != nil {
 		if len(multiTarget.Manifests) > 0 {
 			manifestPathes = multiTarget.Manifests
 		}
 		kustomizeDir = multiTarget.KustomizeDir
+		if multiTarget.KustomizeVersion != "" {
+			kustomizeVersion = multiTarget.KustomizeVersion
+		}
+		if len(multiTarget.KustomizeOptions) > 0 {
+			kustomizeOptions = multiTarget.KustomizeOptions
+		}
 	}
 
 	manifests, err := loader.LoadManifests(ctx, provider.LoaderInput{
@@ -340,9 +347,9 @@ func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[
 		ConfigFilename:   input.Request.DeploymentSource.ApplicationConfigFilename,
 		Manifests:        manifestPathes,
 		Namespace:        spec.Input.Namespace,
-		KustomizeVersion: spec.Input.KustomizeVersion,
+		KustomizeVersion: kustomizeVersion,
 		KustomizeDir:     kustomizeDir,
-		KustomizeOptions: spec.Input.KustomizeOptions,
+		KustomizeOptions: kustomizeOptions,
 		HelmVersion:      spec.Input.HelmVersion,
 		HelmChart:        spec.Input.HelmChart,
 		HelmOptions:      spec.Input.HelmOptions,
@@ -354,12 +361,13 @@ func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[
 	}
 
 	// Add builtin labels and annotations for tracking application live state.
+	// The commit hash is not added because it is the commit of the deployment that applied the resource,
+	// which differs from the head commit whenever the repository has a commit that does not trigger a deployment.
 	for i := range manifests {
 		manifests[i].AddLabels(map[string]string{
 			provider.LabelManagedBy:   provider.ManagedByPiped,
 			provider.LabelPiped:       input.Request.PipedID,
 			provider.LabelApplication: input.Request.ApplicationID,
-			provider.LabelCommitHash:  input.Request.DeploymentSource.CommitHash,
 		})
 		manifests[i].AddAnnotations(map[string]string{
 			provider.LabelManagedBy:          provider.ManagedByPiped,
@@ -367,7 +375,6 @@ func (p Plugin) loadManifests(ctx context.Context, input *sdk.GetLivestateInput[
 			provider.LabelApplication:        input.Request.ApplicationID,
 			provider.LabelOriginalAPIVersion: manifests[i].APIVersion(),
 			provider.LabelResourceKey:        manifests[i].Key().String(),
-			provider.LabelCommitHash:         input.Request.DeploymentSource.CommitHash,
 		})
 	}
 

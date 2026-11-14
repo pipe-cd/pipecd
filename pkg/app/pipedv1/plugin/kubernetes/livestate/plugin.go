@@ -57,7 +57,7 @@ func (p *Plugin) Initialize(ctx context.Context, input *sdk.InitializeInput[kube
 }
 
 // GetLivestate implements sdk.LivestatePlugin.
-func (p *Plugin) GetLivestate(ctx context.Context, _ *kubeconfig.KubernetesPluginConfig, deployTargets []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.GetLivestateResponse, error) {
+func (p *Plugin) GetLivestate(ctx context.Context, pluginCfg *kubeconfig.KubernetesPluginConfig, deployTargets []*sdk.DeployTarget[kubeconfig.KubernetesDeployTargetConfig], input *sdk.GetLivestateInput[kubeconfig.KubernetesApplicationSpec]) (*sdk.GetLivestateResponse, error) {
 	if len(deployTargets) != 1 {
 		return nil, fmt.Errorf("only 1 deploy target is allowed but got %d", len(deployTargets))
 	}
@@ -85,6 +85,8 @@ func (p *Plugin) GetLivestate(ctx context.Context, _ *kubeconfig.KubernetesPlugi
 	// TODO: find the way to hold the tool registry and loader in the plugin.
 	// Currently, we create them every time the stage is executed because we can't pass input.Client.toolRegistry to the plugin when starting the plugin.
 	toolRegistry := toolregistry.NewRegistry(input.Client.ToolRegistry())
+
+	pluginCfg.SetHelmChartInsecure(cfg.Spec.Input.HelmChart)
 
 	manifests, err := p.loadManifests(ctx, input, cfg.Spec, provider.NewLoader(toolRegistry), input.Logger)
 	if err != nil {

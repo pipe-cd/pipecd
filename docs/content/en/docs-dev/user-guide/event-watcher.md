@@ -200,7 +200,7 @@ Date:   Wed Oct 30 16:56:36 2024 +0900
 ### [optional] Using commit-hash and commit-url for Deployment Trace
 
 You can attach `commit-hash` and `commit-url` of the commit that trigger the event as metadata to the event.
-Once you added these data to your event on registering, you would have a better way to understand what deployments are triggered by your application commit via PipeCD [Deployment Trace feature](./deployment-trace).
+Once you added these data to your event on registering, you would have a better way to understand what deployments are triggered by your application commit via PipeCD [Deployment Trace feature](/docs-dev/user-guide/deployment-trace/).
 
 To attach these values
 
@@ -214,7 +214,7 @@ pipectl event register \
     --commit-url=https://github.com/pipe-cd/pipecd/commit/20c98a503062021720b2fcf2058276b3245xxxxx
 ```
 
-NOTE: There are few more information of the triggered commit you can attach as event metadata, find more in [DeploymentTrace](./deployment-trace) docs.
+NOTE: There are few more information of the triggered commit you can attach as event metadata, find more in [DeploymentTrace](/docs-dev/user-guide/deployment-trace/) docs.
 
 ## Examples
 Suppose you want to update your configuration file after releasing a new Helm chart.

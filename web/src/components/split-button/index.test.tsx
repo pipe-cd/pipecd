@@ -15,14 +15,14 @@ it("calls onClick handler with option's index if clicked", async () => {
     {}
   );
 
-  userEvent.click(screen.getByRole("button", { name: "option1" }));
+  await userEvent.click(screen.getByRole("button", { name: "option1" }));
 
   expect(onClick).toHaveBeenCalledWith(0);
 
-  userEvent.click(screen.getByRole("button", { name: "select option" }));
-  userEvent.click(screen.getByRole("menuitem", { name: "option2" }));
+  await userEvent.click(screen.getByRole("button", { name: "select option" }));
+  await userEvent.click(screen.getByRole("menuitem", { name: "option2" }));
   await act(async () => {
-    userEvent.click(screen.getByRole("button", { name: "option2" }));
+    await userEvent.click(screen.getByRole("button", { name: "option2" }));
   });
 
   expect(onClick).toHaveBeenCalledWith(1);

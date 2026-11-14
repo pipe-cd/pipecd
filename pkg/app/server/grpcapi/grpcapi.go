@@ -108,6 +108,13 @@ func addCommand(ctx context.Context, store commandstore.Store, cmd *model.Comman
 
 // makeGitPath returns an ApplicationGitPath by adding Repository info and GitPath URL to given args.
 func makeGitPath(repoID, path, cfgFilename string, piped *model.Piped, logger *zap.Logger) (*model.ApplicationGitPath, error) {
+	if err := (&model.ApplicationGitPath{Path: path}).ValidatePath(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+	if err := model.ValidateApplicationConfigFilename(cfgFilename); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
 	var repo *model.ApplicationGitRepository
 	for _, r := range piped.Repositories {
 		if r.Id == repoID {

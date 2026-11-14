@@ -1,0 +1,18 @@
+apiVersion: pipecd.dev/v1beta1
+kind: Application
+spec:
+  name: kustomize-local-base
+  labels:
+    env: example
+    team: product
+  trigger:
+    onCommit:
+      paths:
+        - local-modules/kustomize-bases/helloworld/*
+  plugins:
+    kubernetes:
+      input:
+        kustomizeVersion: 5.4.3
+  description: |
+    This app demonstrates how to deploy a Kubernetes app that uses a Kustomize package sourced from the same Git repository.
+    References: [adding a new app](https://pipecd.dev/docs-v1.0.x/user-guide/managing-application/adding-an-application/), [app configuration](https://pipecd.dev/docs-v1.0.x/user-guide/managing-application/configuration-reference/)

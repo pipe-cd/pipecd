@@ -48,18 +48,18 @@ describe("LabelAutoComplete", () => {
     expect(screen.queryByText("urgent")).not.toBeInTheDocument();
   });
 
-  it("accept new label that match 'key:value' event if inputValue not in options", () => {
+  it("accept new label that match 'key:value' event if inputValue not in options", async () => {
     const handleChange = jest.fn();
     render(<LabelAutoComplete options={labels} onChange={handleChange} />);
     const input = screen.getByRole("combobox");
-    userEvent.type(input, "new:label{enter}");
+    await userEvent.type(input, "new:label{enter}");
     expect(handleChange).toHaveBeenCalledWith(["new:label"]);
   });
-  it("not accept new label that does not match 'key:value'", () => {
+  it("not accept new label that does not match 'key:value'", async () => {
     const handleChange = jest.fn();
     render(<LabelAutoComplete options={labels} onChange={handleChange} />);
     const input = screen.getByRole("combobox");
-    userEvent.type(input, "new-label{enter}");
+    await userEvent.type(input, "new-label{enter}");
     expect(handleChange).toHaveBeenCalledWith([]);
   });
 });
