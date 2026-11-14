@@ -369,6 +369,50 @@ spec:
 			expectedErr: false,
 		},
 		{
+			name: "[From container image] ok: using container image from registry with port",
+			input: []byte(`
+apiVersion: pipecd.dev/v1beta1
+kind: LambdaFunction
+spec:
+  name: SimpleFunction
+  image: localhost:5000/lambda-test:v0.0.1
+  role: arn:aws:iam::76xxxxxxx:role/lambda-role
+  memory: 512
+  timeout: 30
+`),
+			expected: []*model.ArtifactVersion{
+				{
+					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Version: "v0.0.1",
+					Name:    "lambda-test",
+					Url:     "localhost:5000/lambda-test:v0.0.1",
+				},
+			},
+			expectedErr: false,
+		},
+		{
+			name: "[From container image] ok: using container image without tag from registry with port",
+			input: []byte(`
+apiVersion: pipecd.dev/v1beta1
+kind: LambdaFunction
+spec:
+  name: SimpleFunction
+  image: localhost:5000/lambda-test
+  role: arn:aws:iam::76xxxxxxx:role/lambda-role
+  memory: 512
+  timeout: 30
+`),
+			expected: []*model.ArtifactVersion{
+				{
+					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Version: "",
+					Name:    "lambda-test",
+					Url:     "localhost:5000/lambda-test",
+				},
+			},
+			expectedErr: false,
+		},
+		{
 			name: "[From container image] error: no image name",
 			input: []byte(`
 apiVersion: pipecd.dev/v1beta1
