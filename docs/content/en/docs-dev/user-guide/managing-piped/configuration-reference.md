@@ -220,11 +220,11 @@ Must be one of the following structs:
 
 ### SecretManagementGCPKMS
 
-> Note: GCP KMS secret management is only supported by the legacy `piped`. `pipedv1` currently fails to start with `type "GCP_KMS" is not implemented yet` when this type is configured.
+> Note: GCP KMS secret management is not implemented yet. Both `piped` and `pipedv1` accept these fields but return `type "GCP_KMS" is not implemented yet` when initializing the secret decrypter, and piped exits at startup. Use `KEY_PAIR` for now.
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| keyName | string | The resource name of the Cloud KMS key used to decrypt the sealed secrets, in the form `projects/{project}/locations/{location}/keyRings/{keyRing}/cryptoKeys/{key}`. | Yes |
+| keyName | string | The Cloud KMS key resource name. | Yes |
 | decryptServiceAccountFile | string | Path to the service account key file piped uses to decrypt secrets. | Yes |
 | encryptServiceAccountFile | string | Path to the service account key file used to encrypt secrets. | Yes |
 
