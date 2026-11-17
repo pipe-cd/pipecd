@@ -1,0 +1,12 @@
+# Custom template for the pull requests opened by Snyk.
+# https://docs.snyk.io/scan-fix-and-prevent/fix/snyk-pull-or-merge-requests/customize-pr-templates
+#
+# Only the commit message is customized; the title and description keep Snyk's defaults.
+# The commit message ends with a sign-off for the Snyk bot so that the DCO check passes,
+# in the same way Dependabot signs off its own commits.
+#
+# Snyk reads this file from the repository; all Snyk pull requests for the project use it.
+commitMessage: |
+  Upgrade {{ package_name }} from {{ package_from }} to {{ package_to }}
+
+  Signed-off-by: snyk-bot <snyk-bot@snyk.io>

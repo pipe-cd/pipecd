@@ -32,6 +32,27 @@ func (p *ApplicationGitPath) GetApplicationConfigFilePath() string {
 	return filepath.Join(p.Path, p.GetApplicationConfigFilename())
 }
 
+// ValidatePath checks that the application directory stays inside the repository.
+// It rejects empty, absolute and parent-escaping (e.g. "../foo") paths.
+func (p *ApplicationGitPath) ValidatePath() error {
+	if !filepath.IsLocal(p.Path) {
+		return fmt.Errorf("invalid application path %q: must be a relative path inside the repository", p.Path)
+	}
+	return nil
+}
+
+// ValidateApplicationConfigFilename checks that the given name is a plain file name.
+// An empty name is allowed and means the default file name.
+func ValidateApplicationConfigFilename(name string) error {
+	if name == "" {
+		return nil
+	}
+	if name == "." || name == ".." || strings.ContainsAny(name, `/\`) {
+		return fmt.Errorf("invalid application config filename %q: must be a file name, not a path", name)
+	}
+	return nil
+}
+
 func (p *ApplicationGitPath) GetApplicationConfigFilename() string {
 	// The config file name used to allow to be empty until the default name got changed.
 	// So empty means the old default name.

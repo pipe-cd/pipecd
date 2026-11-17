@@ -13,8 +13,8 @@ COPY . ./
 
 RUN make build/go MOD=piped BUILD_OS=${TARGETOS} BUILD_ARCH=${TARGETARCH}
 
-# https://github.com/pipe-cd/pipecd/pkgs/container/piped-base/459025001?tag=v0.52.0-97-g3e3df6d
-FROM ghcr.io/pipe-cd/piped-base@sha256:fc2bde38211a80ee0df6d90ed168c817f30a7d0dbe8a0aff872a93ffb7d40a66
+# ghcr.io/pipe-cd/piped-base:v0.58.0-193-g4253e54
+FROM ghcr.io/pipe-cd/piped-base@sha256:054891ce4d2216def0b5a4067cca264e0733582700be8b0e65cc5707e151c464
 
 COPY --from=builder /app/.artifacts/piped /usr/local/bin/piped
 
