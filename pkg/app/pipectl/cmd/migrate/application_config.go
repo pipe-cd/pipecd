@@ -151,7 +151,7 @@ func (c *applicationConfig) migrateApplicationConfig(_ context.Context, configFi
 
 	var hasAnalysisStage bool
 
-	if oldPipelineCfg, ok := oldSpec["pipeline"]; ok {
+	if oldPipelineCfg, ok := oldSpec["pipeline"]; ok && oldPipelineCfg != nil {
 		pipelineCfg := make(map[string][]any)
 
 		oldPipeline, ok := oldPipelineCfg.(map[string]any)

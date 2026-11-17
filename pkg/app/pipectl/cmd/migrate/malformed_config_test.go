@@ -18,6 +18,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"go.uber.org/zap"
@@ -52,5 +53,27 @@ func TestMigrateApplicationConfigMalformed(t *testing.T) {
 				t.Error("expected an error for a malformed config, got nil")
 			}
 		})
+	}
+}
+
+// The v0 loader accepts an empty `pipeline:` the same as no pipeline at all,
+// so the migration has to keep those files working.
+func TestMigrateApplicationConfigEmptyPipeline(t *testing.T) {
+	dir := t.TempDir()
+	f := filepath.Join(dir, "app.pipecd.yaml")
+	body := "apiVersion: pipecd.dev/v1beta1\nkind: KubernetesApp\nspec:\n  name: x\n  pipeline:\n"
+	if err := os.WriteFile(f, []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	c := &applicationConfig{}
+	if err := c.migrateApplicationConfig(context.Background(), f, zap.NewNop()); err != nil {
+		t.Fatalf("expected an empty pipeline to migrate, got %v", err)
+	}
+	out, err := os.ReadFile(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(out), "pipeline") {
+		t.Errorf("expected no pipeline in the migrated config, got:\n%s", out)
 	}
 }
