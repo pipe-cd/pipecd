@@ -35,7 +35,7 @@ jobs:
           echo "modules=$(find . -name go.mod -exec dirname {} \; | sort | jq -R -s -c 'split("\n") | map(select(length > 0))')" >> $GITHUB_OUTPUT
 
   go:
-    runs-on: oracle-vm-8cpu-32gb-x86-64
+    runs-on: ubuntu-26.04
     needs: list-go-modules
     strategy:
       fail-fast: false
@@ -44,11 +44,43 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-go@v7
+        id: setup-go
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache: true
+          cache: false
+      # The Go cache is saved only on master because caches saved in a pull request
+      # are visible only to that pull request but still count toward the repository
+      # cache storage limit. The key contains the date so that master refreshes the
+      # cache at most once a day; saving on every push would repeatedly write a full
+      # cache set and evict other caches, while keying only on go.sum would leave
+      # the build and test caches stale until the dependencies change.
+      - name: Compute Go cache parameters
+        id: go-cache
+        run: |
+          {
+            echo "paths<<EOF"
+            go env GOMODCACHE GOCACHE
+            echo "EOF"
+            echo "prefix=go-test-${{ runner.os }}-${{ runner.arch }}-${{ steps.setup-go.outputs.go-version }}-${{ matrix.module }}-"
+            echo "date=$(date -u +%Y%m%d)"
+          } >> "$GITHUB_OUTPUT"
+      - name: Restore Go cache
+        id: go-cache-restore
+        uses: actions/cache/restore@v6
+        with:
+          path: ${{ steps.go-cache.outputs.paths }}
+          key: ${{ steps.go-cache.outputs.prefix }}${{ hashFiles(format('{0}/go.sum', matrix.module)) }}-${{ steps.go-cache.outputs.date }}
+          restore-keys: |
+            ${{ steps.go-cache.outputs.prefix }}${{ hashFiles(format('{0}/go.sum', matrix.module)) }}-
+            ${{ steps.go-cache.outputs.prefix }}
       - name: Run unit tests
         run: make test/go COVERAGE=true MODULES=${{ matrix.module }}
+      - name: Save Go cache
+        if: github.ref == 'refs/heads/master' && steps.go-cache-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ${{ steps.go-cache.outputs.paths }}
+          key: ${{ steps.go-cache-restore.outputs.cache-primary-key }}
       - name: make flag
         id: make-flag
         run: |

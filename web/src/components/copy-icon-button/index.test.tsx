@@ -6,7 +6,7 @@ import { CopyIconButton } from "./";
 test("copy text", async () => {
   jest.spyOn(navigator.clipboard, "writeText");
   render(<CopyIconButton name="ID" value="id" />);
-  userEvent.click(screen.getByRole("button"));
+  await userEvent.click(screen.getByRole("button"));
 
   expect(navigator.clipboard.writeText).toHaveBeenCalledWith("id");
   await waitFor(() =>

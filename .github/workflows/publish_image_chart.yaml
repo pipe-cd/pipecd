@@ -110,28 +110,6 @@ jobs:
           helm push .artifacts/piped-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.GHCR }}/pipe-cd/chart
           helm push .artifacts/helloworld-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.GHCR }}/pipe-cd/chart
 
-  trigger-event-watcher:
-    runs-on: ubuntu-24.04
-    needs: charts
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-      - name: Determine version
-        run: echo "PIPECD_VERSION=$(git describe --tags --always --abbrev=7 --match 'v[0-9]*.*')" >> $GITHUB_ENV
-      # Notify PipeCD to trigger update pipecd.dev website via EventWatcher.
-      - uses: pipe-cd/actions-event-register@v1.2.1
-        with:
-          api-address: ${{ secrets.PIPECD_API_ADDRESS }}
-          api-key: ${{ secrets.PIPECD_API_KEY }}
-          event-name: helm-release
-          labels: helmRepo=pipecd,env=dev
-          data: ${{ env.PIPECD_VERSION }}
-          commit-hash: ${{ github.sha }}
-          commit-url: https://github.com/pipe-cd/pipecd/commit/${{ github.sha }}
-          commit-author: ${{ github.actor }}
-          contexts: Source-Commit-URL=https://github.com/pipe-cd/pipecd/commit/${{ github.sha }}
-
   release-quickstart-manifests:
     runs-on: ubuntu-24.04
     needs: charts

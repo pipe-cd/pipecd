@@ -98,7 +98,7 @@ func TestDownloadBinary(t *testing.T) {
 		destDir := t.TempDir()
 		destFile := "test-binary"
 		url := server.URL + "/binary"
-		path, err := DownloadBinary(url, destDir, destFile, false, logger)
+		path, err := DownloadBinary(context.TODO(), url, destDir, destFile, false, logger)
 		require.NoError(t, err)
 		assert.FileExists(t, path)
 	})
@@ -107,12 +107,12 @@ func TestDownloadBinary(t *testing.T) {
 		destDir := t.TempDir()
 		destFile := "test-binary"
 		url := server.URL + "/binary"
-		path, err := DownloadBinary(url, destDir, destFile, false, logger)
+		path, err := DownloadBinary(context.TODO(), url, destDir, destFile, false, logger)
 		require.NoError(t, err)
 		assert.FileExists(t, path)
 
 		// Try downloading again, should not error and file should still exist
-		path, err = DownloadBinary(url, destDir, destFile, false, logger)
+		path, err = DownloadBinary(context.TODO(), url, destDir, destFile, false, logger)
 		require.NoError(t, err)
 		assert.FileExists(t, path)
 	})
@@ -128,7 +128,7 @@ func TestDownloadBinary(t *testing.T) {
 		destFile := "test-binary"
 		url := "file://" + sourcePath
 
-		path, err := DownloadBinary(url, destDir, destFile, false, logger)
+		path, err := DownloadBinary(context.TODO(), url, destDir, destFile, false, logger)
 		require.NoError(t, err)
 		assert.FileExists(t, path)
 		content, err := os.ReadFile(path)
@@ -136,12 +136,25 @@ func TestDownloadBinary(t *testing.T) {
 		assert.Equal(t, "test binary content", string(content))
 	})
 
+	t.Run("context canceled", func(t *testing.T) {
+		destDir := t.TempDir()
+		destFile := "test-binary"
+		url := server.URL + "/binary"
+
+		ctx, cancel := context.WithCancel(context.TODO())
+		cancel()
+
+		path, err := DownloadBinary(ctx, url, destDir, destFile, false, logger)
+		require.ErrorIs(t, err, context.Canceled)
+		assert.Empty(t, path)
+	})
+
 	t.Run("not valid source url given", func(t *testing.T) {
 		destDir := t.TempDir()
 		destFile := "test-binary"
 		url := "ftp://invalid-url"
 
-		path, err := DownloadBinary(url, destDir, destFile, false, logger)
+		path, err := DownloadBinary(context.TODO(), url, destDir, destFile, false, logger)
 		require.Error(t, err)
 		assert.Empty(t, path)
 	})

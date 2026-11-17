@@ -169,6 +169,7 @@ func listApplications(it datastore.Iterator) ([]*model.Application, error) {
 	if it == nil {
 		return ret, nil
 	}
+	defer it.Close()
 	for {
 		var v model.Application
 		err := it.Next(&v)

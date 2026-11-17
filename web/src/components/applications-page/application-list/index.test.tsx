@@ -27,8 +27,8 @@ test("delete", async () => {
     </MemoryRouter>
   );
 
-  userEvent.click(screen.getByRole("button", { name: "Open menu" }));
-  userEvent.click(screen.getByRole("menuitem", { name: "Delete" }));
+  await userEvent.click(screen.getByRole("button", { name: "Open menu" }));
+  await userEvent.click(screen.getByRole("menuitem", { name: "Delete" }));
 
   await waitFor(() =>
     expect(
@@ -36,7 +36,7 @@ test("delete", async () => {
     ).toBeInTheDocument()
   );
 
-  userEvent.click(screen.getByRole("button", { name: "Delete" }));
+  await userEvent.click(screen.getByRole("button", { name: "Delete" }));
 
   await waitFor(() =>
     expect(
@@ -85,8 +85,8 @@ test("edit", async () => {
     </MemoryRouter>
   );
 
-  userEvent.click(screen.getByRole("button", { name: "Open menu" }));
-  userEvent.click(screen.getByRole("menuitem", { name: "Edit" }));
+  await userEvent.click(screen.getByRole("button", { name: "Open menu" }));
+  await userEvent.click(screen.getByRole("menuitem", { name: "Edit" }));
 
   await waitFor(() =>
     expect(screen.getByRole("textbox", { name: "Name" })).toHaveValue(
@@ -103,10 +103,10 @@ test("disable", async () => {
     </MemoryRouter>
   );
 
-  userEvent.click(screen.getByRole("button", { name: "Open menu" }));
-  userEvent.click(screen.getByRole("menuitem", { name: "Disable" }));
+  await userEvent.click(screen.getByRole("button", { name: "Open menu" }));
+  await userEvent.click(screen.getByRole("menuitem", { name: "Disable" }));
 
-  userEvent.click(screen.getByRole("button", { name: "Disable" }));
+  await userEvent.click(screen.getByRole("button", { name: "Disable" }));
 
   await waitFor(() => {
     expect(applicationApi.disableApplication).toHaveBeenCalledWith({
@@ -133,8 +133,8 @@ test("enable", async () => {
     </MemoryRouter>
   );
 
-  userEvent.click(screen.getByRole("button", { name: "Open menu" }));
-  userEvent.click(screen.getByRole("menuitem", { name: "Enable" }));
+  await userEvent.click(screen.getByRole("button", { name: "Open menu" }));
+  await userEvent.click(screen.getByRole("menuitem", { name: "Enable" }));
 
   await waitFor(() => {
     expect(applicationApi.enableApplication).toHaveBeenCalledWith({
@@ -151,15 +151,17 @@ test("Encrypt Secret", async () => {
     </MemoryRouter>
   );
 
-  userEvent.click(screen.getByRole("button", { name: "Open menu" }));
-  userEvent.click(screen.getByRole("menuitem", { name: "Encrypt Secret" }));
+  await userEvent.click(screen.getByRole("button", { name: "Open menu" }));
+  await userEvent.click(
+    screen.getByRole("menuitem", { name: "Encrypt Secret" })
+  );
 
-  userEvent.type(
+  await userEvent.type(
     screen.getByRole("textbox", { name: "Secret Data" }),
     "secret data"
   );
 
-  userEvent.click(screen.getByRole("button", { name: "Encrypt" }));
+  await userEvent.click(screen.getByRole("button", { name: "Encrypt" }));
 
   await waitFor(() => {
     expect(pipedApi.generateApplicationSealedSecret).toHaveBeenCalledWith({

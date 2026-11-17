@@ -1299,6 +1299,246 @@ var _ interface {
 	ErrorName() string
 } = GetPipedResponseValidationError{}
 
+// Validate checks the field values on ListPipedsRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *ListPipedsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListPipedsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListPipedsRequestMultiError, or nil if none found.
+func (m *ListPipedsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListPipedsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for WithStatus
+
+	if len(errors) > 0 {
+		return ListPipedsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListPipedsRequestMultiError is an error wrapping multiple validation errors
+// returned by ListPipedsRequest.ValidateAll() if the designated constraints
+// aren't met.
+type ListPipedsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListPipedsRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListPipedsRequestMultiError) AllErrors() []error { return m }
+
+// ListPipedsRequestValidationError is the validation error returned by
+// ListPipedsRequest.Validate if the designated constraints aren't met.
+type ListPipedsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListPipedsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListPipedsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListPipedsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListPipedsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListPipedsRequestValidationError) ErrorName() string {
+	return "ListPipedsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListPipedsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListPipedsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListPipedsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListPipedsRequestValidationError{}
+
+// Validate checks the field values on ListPipedsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListPipedsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListPipedsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListPipedsResponseMultiError, or nil if none found.
+func (m *ListPipedsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListPipedsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetPipeds() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListPipedsResponseValidationError{
+						field:  fmt.Sprintf("Pipeds[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListPipedsResponseValidationError{
+						field:  fmt.Sprintf("Pipeds[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListPipedsResponseValidationError{
+					field:  fmt.Sprintf("Pipeds[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return ListPipedsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListPipedsResponseMultiError is an error wrapping multiple validation errors
+// returned by ListPipedsResponse.ValidateAll() if the designated constraints
+// aren't met.
+type ListPipedsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListPipedsResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListPipedsResponseMultiError) AllErrors() []error { return m }
+
+// ListPipedsResponseValidationError is the validation error returned by
+// ListPipedsResponse.Validate if the designated constraints aren't met.
+type ListPipedsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListPipedsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListPipedsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListPipedsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListPipedsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListPipedsResponseValidationError) ErrorName() string {
+	return "ListPipedsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListPipedsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListPipedsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListPipedsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListPipedsResponseValidationError{}
+
 // Validate checks the field values on RegisterPipedRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.

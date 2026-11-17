@@ -43,6 +43,20 @@ func (c *KubernetesPluginConfig) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// SetHelmChartInsecure sets the Insecure field of the given Helm chart from the
+// chart repository it uses, because that field is not read from the application config.
+func (c *KubernetesPluginConfig) SetHelmChartInsecure(chart *InputHelmChart) {
+	if c == nil || chart == nil || chart.Repository == "" {
+		return
+	}
+	for _, r := range c.ChartRepositories {
+		if r.Name == chart.Repository {
+			chart.Insecure = r.Insecure
+			return
+		}
+	}
+}
+
 func (c *KubernetesPluginConfig) HTTPHelmChartRepositories() []HelmChartRepository {
 	repos := make([]HelmChartRepository, 0, len(c.ChartRepositories))
 	for _, r := range c.ChartRepositories {
