@@ -1,6 +1,6 @@
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
 import ApplicationFormV0 from ".";
-import { render, screen, waitFor } from "~~/test-utils";
+import { render, screen } from "~~/test-utils";
 import userEvent from "@testing-library/user-event";
 import { dummyApplication } from "~/__fixtures__/dummy-application";
 import { server } from "~/mocks/server";
@@ -80,23 +80,29 @@ describe("ApplicationFormV0", () => {
     });
 
     it("form contain correct input by Step", async () => {
-      userEvent.click(screen.getByRole("combobox", { name: /piped/i }));
+      await userEvent.click(screen.getByRole("combobox", { name: /piped/i }));
 
       const optionName = `${dummyPiped.name} (${dummyPiped.id})`;
-      await waitFor(() => {
-        userEvent.click(screen.getByRole("option", { name: optionName }));
-      });
+      await userEvent.click(
+        await screen.findByRole("option", { name: optionName })
+      );
 
       // select Platform Provider
       const platFormName = "Platform Provider";
       const optionPlatformName = dummyPiped.cloudProvidersList[0].name;
-      userEvent.click(screen.getByRole("combobox", { name: platFormName }));
-      userEvent.click(screen.getByRole("option", { name: optionPlatformName }));
+      await userEvent.click(
+        screen.getByRole("combobox", { name: platFormName })
+      );
+      await userEvent.click(
+        screen.getByRole("option", { name: optionPlatformName })
+      );
 
       // select Application
-      userEvent.click(screen.getByRole("combobox", { name: "Application" }));
+      await userEvent.click(
+        screen.getByRole("combobox", { name: "Application" })
+      );
       const optionApplicationName = `name: ${dummyUnregisteredApplication.name}, repo: ${dummyUnregisteredApplication.repoId}`;
-      userEvent.click(
+      await userEvent.click(
         screen.getByRole("option", { name: optionApplicationName })
       );
 
@@ -113,8 +119,10 @@ describe("ApplicationFormV0", () => {
 
       // click save
       expect(screen.getByRole("button", { name: UI_TEXT_SAVE })).toBeEnabled();
-      act(() => {
-        userEvent.click(screen.getByRole("button", { name: UI_TEXT_SAVE }));
+      await act(async () => {
+        await userEvent.click(
+          screen.getByRole("button", { name: UI_TEXT_SAVE })
+        );
       });
       expect(screen.getByText("Add Application")).toBeInTheDocument();
     });

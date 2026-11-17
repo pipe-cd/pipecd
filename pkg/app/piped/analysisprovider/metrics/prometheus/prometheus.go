@@ -35,7 +35,7 @@ const (
 )
 
 type client interface {
-	QueryRange(ctx context.Context, query string, r v1.Range, opts ...v1.Option) (model.Value, v1.Warnings, error)
+	QueryRange(ctx context.Context, query string, r v1.Range, opts ...v1.Option) (model.Value, v1.Warnings, v1.Infos, error)
 }
 
 // Provider is a client for prometheus.
@@ -114,7 +114,7 @@ func (p *Provider) QueryPoints(ctx context.Context, query string, queryRange met
 	}
 
 	p.logger.Info("run query", zap.String("query", query))
-	response, warnings, err := p.api.QueryRange(ctx, query, v1.Range{
+	response, warnings, _, err := p.api.QueryRange(ctx, query, v1.Range{
 		Start: queryRange.From,
 		End:   queryRange.To,
 		Step:  step,

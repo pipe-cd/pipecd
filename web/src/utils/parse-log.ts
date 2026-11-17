@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-control-regex
-const ANSI_COLOR_REGEX = /[\u001B\u009B][[()#;?]*(\d{1,4}(?:;\d{0,4})*)?[\dA-PRZcf-nqry=><]/g;
+const ANSI_COLOR_REGEX = /[\u001B\u009B][[()#?]*(\d{0,4}(?:;\d{0,4})*)?[\dA-PRZcf-nqry=><]/g;
 const NON_BREAK_SPACE = "\u00a0";
 
 export interface Cell {
@@ -55,6 +55,14 @@ const TERM_COLOR_FG: Record<string, TERM_COLOR> = {
   "1;35": TERM_COLOR.BR_MAGENTA,
   "1;36": TERM_COLOR.BR_CYAN,
   "1;37": TERM_COLOR.BR_WHITE,
+  90: TERM_COLOR.BR_BLACK,
+  91: TERM_COLOR.BR_RED,
+  92: TERM_COLOR.BR_GREEN,
+  93: TERM_COLOR.BR_YELLOW,
+  94: TERM_COLOR.BR_BLUE,
+  95: TERM_COLOR.BR_MAGENTA,
+  96: TERM_COLOR.BR_CYAN,
+  97: TERM_COLOR.BR_WHITE,
 };
 
 const TERM_COLOR_BG: Record<string, TERM_COLOR> = {
@@ -76,7 +84,22 @@ const TERM_COLOR_BG: Record<string, TERM_COLOR> = {
   "1;45": TERM_COLOR.BR_MAGENTA,
   "1;46": TERM_COLOR.BR_CYAN,
   "1;47": TERM_COLOR.BR_WHITE,
+  100: TERM_COLOR.BR_BLACK,
+  101: TERM_COLOR.BR_RED,
+  102: TERM_COLOR.BR_GREEN,
+  103: TERM_COLOR.BR_YELLOW,
+  104: TERM_COLOR.BR_BLUE,
+  105: TERM_COLOR.BR_MAGENTA,
+  106: TERM_COLOR.BR_CYAN,
+  107: TERM_COLOR.BR_WHITE,
 };
+
+// Codes that select a 256-color or a true color for the text, the background or
+// the underline take extra arguments ("5;n" or "2;r;g;b"). Those colors aren't
+// supported, but the arguments must be skipped so that a 0 in them isn't taken
+// as a reset.
+const EXTENDED_COLOR_CODES = ["38", "48", "58"];
+const EXTENDED_COLOR_ARGS: Record<string, number> = { 5: 2, 2: 4 };
 
 export function parseLog(logStr: string): Cell[] {
   let match = null;
@@ -99,16 +122,9 @@ export function parseLog(logStr: string): Cell[] {
     }
   };
 
-  while ((match = ANSI_COLOR_REGEX.exec(logStr))) {
-    if (match.index > 0) {
-      const content = logStr.slice(prev, match.index);
-      pushToCells(content);
-    }
-    prev = match.index + match[0].length;
-
-    // Set code for next cell process.
-    const code = match[1];
+  const applyCode = (code: string): void => {
     switch (code) {
+      case "":
       case ANSI_CODE.RESET:
         fg = TERM_COLOR.WHITE;
         bg = TERM_COLOR.BLACK;
@@ -122,8 +138,7 @@ export function parseLog(logStr: string): Cell[] {
         underline = true;
         break;
       case ANSI_CODE.REVERSED:
-        fg = 7 - fg;
-        bg = 7 - bg;
+        [fg, bg] = [bg, fg];
         break;
     }
 
@@ -133,6 +148,41 @@ export function parseLog(logStr: string): Cell[] {
 
     if (typeof TERM_COLOR_BG[code] !== "undefined") {
       bg = TERM_COLOR_BG[code];
+    }
+  };
+
+  while ((match = ANSI_COLOR_REGEX.exec(logStr))) {
+    if (match.index > 0) {
+      const content = logStr.slice(prev, match.index);
+      pushToCells(content);
+    }
+    prev = match.index + match[0].length;
+
+    // Only sequences ending with "m" set the style. Others, like the ones that
+    // move the cursor or erase the line, are dropped without changing it.
+    if (!match[0].endsWith("m")) {
+      continue;
+    }
+
+    // Set code for next cell process. An empty code is a reset, so "ESC[m" is
+    // the same as "ESC[0m" and "ESC[;32m" the same as "ESC[0;32m".
+    const code = match[1] ?? ANSI_CODE.RESET;
+    const isKnownCode =
+      typeof TERM_COLOR_FG[code] !== "undefined" ||
+      typeof TERM_COLOR_BG[code] !== "undefined";
+    if (isKnownCode || !code.includes(";")) {
+      applyCode(code);
+      continue;
+    }
+
+    // A sequence such as "ESC[0;32m" or "ESC[1;4;31m" sets several codes at once.
+    const codes = code.split(";");
+    for (let i = 0; i < codes.length; i++) {
+      if (EXTENDED_COLOR_CODES.includes(codes[i])) {
+        i += EXTENDED_COLOR_ARGS[codes[i + 1]] ?? 0;
+        continue;
+      }
+      applyCode(codes[i]);
     }
   }
 

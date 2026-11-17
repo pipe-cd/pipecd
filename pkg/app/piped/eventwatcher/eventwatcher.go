@@ -815,8 +815,9 @@ func modifyText(path, regexText, newValue string) ([]byte, bool, error) {
 		return nil, false, fmt.Errorf("failed to compile regex text (%s): %w", regexText, err)
 	}
 
-	// Extract the first capturing group.
+	// Extract the first capturing group at the top level of the regex.
 	firstGroup := ""
+	groupIndex := 0
 	re, err := syntax.Parse(regexText, syntax.Perl)
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to parse the first capturing group regex: %w", err)
@@ -824,6 +825,7 @@ func modifyText(path, regexText, newValue string) ([]byte, bool, error) {
 	for _, s := range re.Sub {
 		if s.Op == syntax.OpCapture {
 			firstGroup = s.String()
+			groupIndex = s.Cap
 			break
 		}
 	}
@@ -833,14 +835,17 @@ func modifyText(path, regexText, newValue string) ([]byte, bool, error) {
 
 	var touched, outDated bool
 	newText := regex.ReplaceAllFunc(content, func(match []byte) []byte {
-		touched = true
 		submatches := regex.FindSubmatchIndex(match)
-
-		if len(submatches) < 4 {
+		if len(submatches) < 2*groupIndex+2 {
 			return match
 		}
 
-		groupStart, groupEnd := submatches[2], submatches[3]
+		// The group is -1 when it did not take part in this match, e.g. it is in an alternative that did not match.
+		groupStart, groupEnd := submatches[2*groupIndex], submatches[2*groupIndex+1]
+		if groupStart < 0 || groupEnd < 0 {
+			return match
+		}
+		touched = true
 
 		// no update on the value
 		if string(match[groupStart:groupEnd]) == newValue {

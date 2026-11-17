@@ -634,7 +634,7 @@ func annotateConfigHashToDeployment(m provider.Manifest, managedConfigMaps, mana
 		return nil
 	}
 
-	cfgs := make([]provider.Manifest, 0, len(configMaps)+len(secrets))
+	cfgs := make([]provider.Manifest, 0, len(configMaps))
 	for _, cm := range configMaps {
 		m, ok := managedConfigMaps[cm]
 		if !ok {

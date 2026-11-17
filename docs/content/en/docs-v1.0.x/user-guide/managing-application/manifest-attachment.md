@@ -60,4 +60,4 @@ In all cases, `piped` will perform attaching the attachment file content at last
 
 <!-- ## Examples
 
-- [examples/ecs/attachment](https://github.com/pipe-cd/examples/tree/master/ecs/attachment) -->
+- [examples/v0/ecs/attachment](https://github.com/pipe-cd/examples/tree/master/v0/ecs/attachment) -->
