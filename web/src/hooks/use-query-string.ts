@@ -1,12 +1,16 @@
 import { useState, useCallback } from "react";
-import { parse, stringify } from "query-string";
+import queryString from "query-string";
 
 export const getQueryStringValue = (
   key: string,
-  queryString = window.location.search
+  search = window.location.search
 ): string | string[] | null => {
-  const values = parse(queryString);
-  return values[key];
+  const value = queryString.parse(search)[key];
+  // query-string v9 may return null entries for array values such as "?key".
+  if (Array.isArray(value)) {
+    return value.filter((v): v is string => v !== null);
+  }
+  return value ?? null;
 };
 
 const setQueryStringWithoutPageReload = (qsValue: string): void => {
@@ -23,10 +27,10 @@ const setQueryStringWithoutPageReload = (qsValue: string): void => {
 const setQueryStringValue = (
   key: string,
   value: string,
-  queryString = window.location.search
+  search = window.location.search
 ): void => {
-  const values = parse(queryString);
-  const newQsValue = stringify({ ...values, [key]: value });
+  const values = queryString.parse(search);
+  const newQsValue = queryString.stringify({ ...values, [key]: value });
   setQueryStringWithoutPageReload(`?${newQsValue}`);
 };
 

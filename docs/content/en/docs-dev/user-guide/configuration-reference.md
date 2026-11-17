@@ -203,12 +203,14 @@ spec:
 | replacements | [][EventWatcherReplacement](#eventwatcherreplacement) | List of places where will be replaced when the new event matches. | Yes |
 
 ### EventWatcherReplacement
-One of `yamlField` or `regex` is required.
+One of `yamlField` or `regex` is required. `jsonField` and `HCLField` are accepted by the configuration but not implemented yet; do not use them (see below).
 
 | Field | Type | Description | Required |
 |-|-|-|-|
 | file | string | The relative path from the repository root to the file to be updated. | Yes |
 | yamlField | string | The yaml path to the field to be updated. It requires to start with `$` which represents the root element. e.g. `$.foo.bar[0].baz`. | No |
+| jsonField | string | Reserved for JSON files. **Not implemented yet**: the event watcher accepts the field but has no JSON handler, and a matching event overwrites the target file with empty content. Use `regex` for JSON files instead. | No |
+| HCLField | string | Reserved for HCL files. **Not implemented yet**: same behaviour as `jsonField`; a matching event overwrites the target file with empty content. Use `regex` for HCL files instead. | No |
 | regex | string | The regex string that specify what should be replaced. The only first capturing group enclosed by `()` will be replaced with the new value. e.g. `host.xz/foo/bar:(v[0-9].[0-9].[0-9])`, `host.xz/foo/bar:([0-9a-z]+)` | No |
 
 ## CommitMatcher

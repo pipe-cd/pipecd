@@ -91,6 +91,41 @@ func TestParseContainerImage(t *testing.T) {
 			image: "docker.io/myrepo/nginx",
 			want:  containerImage{name: "nginx", tag: ""},
 		},
+		{
+			name:  "registry with port and tag",
+			image: "my-registry:5000/app:latest",
+			want:  containerImage{name: "app", tag: "latest"},
+		},
+		{
+			name:  "registry with port, no tag",
+			image: "my-registry:5000/app",
+			want:  containerImage{name: "app"},
+		},
+		{
+			name:  "digest only, no tag",
+			image: "nginx@sha256:abcdef1234567890",
+			want:  containerImage{name: "nginx", digest: "sha256:abcdef1234567890"},
+		},
+		{
+			name:  "registry with digest",
+			image: "gcr.io/myproject/myapp@sha256:abcdef1234567890",
+			want:  containerImage{name: "myapp", digest: "sha256:abcdef1234567890"},
+		},
+		{
+			name:  "multi-level path with tag",
+			image: "gcr.io/project-id/subpath/app:1.0",
+			want:  containerImage{name: "app", tag: "1.0"},
+		},
+		{
+			name:  "name with tag and digest",
+			image: "nginx:1.27@sha256:abcdef1234567890",
+			want:  containerImage{name: "nginx", tag: "1.27", digest: "sha256:abcdef1234567890"},
+		},
+		{
+			name:  "registry with port, tag and digest",
+			image: "my-registry:5000/app:1.0@sha256:abcdef1234567890",
+			want:  containerImage{name: "app", tag: "1.0", digest: "sha256:abcdef1234567890"},
+		},
 	}
 
 	for _, tt := range tests {
