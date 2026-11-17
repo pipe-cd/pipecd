@@ -21,6 +21,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 
 	sdk "github.com/pipe-cd/piped-plugin-sdk-go"
 )
@@ -65,6 +66,18 @@ func (m Manifest) calculateHealthStatus() (sdk.ResourceHealthStatus, string) {
 		return jobHealthStatus(obj)
 	case m.IsCronJob():
 		return sdk.ResourceHealthStateHealthy, fmt.Sprintf("%q was applied successfully", m.Name())
+	case m.IsService():
+		obj := &corev1.Service{}
+		if err := m.ConvertToStructuredObject(obj); err != nil {
+			return sdk.ResourceHealthStateUnknown, ""
+		}
+		return serviceHealthStatus(obj)
+	case m.IsIngress():
+		obj := &networkingv1.Ingress{}
+		if err := m.ConvertToStructuredObject(obj); err != nil {
+			return sdk.ResourceHealthStateUnknown, ""
+		}
+		return ingressHealthStatus(obj)
 	default:
 		// TODO: Implement health status calculation for other resource types.
 		return sdk.ResourceHealthStateUnknown, fmt.Sprintf("Unimplemented or unknown resource: %s", m.body.GroupVersionKind())
@@ -225,4 +238,21 @@ func jobHealthStatus(obj *batchv1.Job) (sdk.ResourceHealthStatus, string) {
 		}
 	}
 	return sdk.ResourceHealthStateHealthy, "Job is in progress"
+}
+
+func serviceHealthStatus(obj *corev1.Service) (sdk.ResourceHealthStatus, string) {
+	if obj.Spec.Type != corev1.ServiceTypeLoadBalancer {
+		return sdk.ResourceHealthStateHealthy, ""
+	}
+	if len(obj.Status.LoadBalancer.Ingress) == 0 {
+		return sdk.ResourceHealthStateUnknown, "Ingress points for the load-balancer are in progress"
+	}
+	return sdk.ResourceHealthStateHealthy, ""
+}
+
+func ingressHealthStatus(obj *networkingv1.Ingress) (sdk.ResourceHealthStatus, string) {
+	if len(obj.Status.LoadBalancer.Ingress) == 0 {
+		return sdk.ResourceHealthStateUnknown, "Ingress points for the load-balancer are in progress"
+	}
+	return sdk.ResourceHealthStateHealthy, ""
 }

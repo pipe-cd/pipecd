@@ -159,6 +159,13 @@ func (m Manifest) IsService() bool {
 	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindService
 }
 
+// IsIngress returns true if the manifest is an Ingress.
+// It checks the API group and the kind of the manifest.
+func (m Manifest) IsIngress() bool {
+	// TODO: check the API group more strictly.
+	return isBuiltinAPIGroup(m.body.GroupVersionKind().Group) && m.body.GetKind() == KindIngress
+}
+
 // IsDeployment returns true if the manifest is a Deployment.
 // It checks the API group and the kind of the manifest.
 func (m Manifest) IsDeployment() bool {
