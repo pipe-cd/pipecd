@@ -176,3 +176,32 @@ func TestPlannerKeepsDeploymentPendingWhenShuttingDown(t *testing.T) {
 	assert.Empty(t, ac.completed)
 	assert.Empty(t, n.events)
 }
+
+func TestPlannerReportsCancelledWhenCancelledWhilePreparingDeploySource(t *testing.T) {
+	t.Parallel()
+
+	ac := &deploySourceAPIClient{}
+	n := &fakeNotifier{}
+	p := newDeploySourcePlanner(t, &deploySourceGitClient{failCommit: deploySourceTargetCommit}, ac, n, "")
+
+	var reportedStatus model.CommandStatus
+	p.Cancel(model.ReportableCommand{
+		Command: &model.Command{Id: "command-id", Commander: "commander"},
+		Report: func(ctx context.Context, status model.CommandStatus, metadata map[string]string, output []byte) error {
+			reportedStatus = status
+			return nil
+		},
+	})
+
+	require.NoError(t, p.Run(context.Background()))
+
+	assert.True(t, p.IsDone())
+	assert.Equal(t, model.DeploymentStatus_DEPLOYMENT_CANCELLED, p.DoneDeploymentStatus())
+	assert.Equal(t, model.CommandStatus_COMMAND_SUCCEEDED, reportedStatus)
+
+	require.Len(t, ac.completed, 1)
+	assert.Equal(t, model.DeploymentStatus_DEPLOYMENT_CANCELLED, ac.completed[0].Status)
+
+	require.Len(t, n.events, 1)
+	assert.Equal(t, model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED, n.events[0].Type)
+}

@@ -228,15 +228,8 @@ func (p *planner) Run(ctx context.Context) error {
 	out, err := p.buildPlan(ctx, runningDS, targetDS)
 
 	// If the deployment was already cancelled, we ignore the plan result.
-	select {
-	case cmd := <-p.cancelledCh:
-		if cmd != nil {
-			p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
-			desc := fmt.Sprintf("Deployment was cancelled by %s while planning", cmd.Commander)
-			p.reportDeploymentCancelled(ctx, cmd.Commander, desc)
-			return cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil)
-		}
-	default:
+	if cancelled, cancelErr := p.handleCancelledWhilePlanning(ctx); cancelled {
+		return cancelErr
 	}
 
 	if err != nil {
@@ -605,8 +598,30 @@ func (p *planner) reportDeploySourceFailed(ctx context.Context, name string, err
 	if ctx.Err() != nil {
 		return err
 	}
+	// The deployment was cancelled while preparing the deploy source,
+	// so report it as cancelled rather than failed.
+	if cancelled, cancelErr := p.handleCancelledWhilePlanning(ctx); cancelled {
+		return cancelErr
+	}
 	p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
 	return p.reportDeploymentFailed(ctx, fmt.Sprintf("Unable to prepare the %s deploy source (%v)", name, err))
+}
+
+// handleCancelledWhilePlanning reports the deployment as cancelled and marks the cancel
+// command as handled when the deployment was cancelled while planning.
+// It returns true when the deployment was cancelled.
+func (p *planner) handleCancelledWhilePlanning(ctx context.Context) (bool, error) {
+	select {
+	case cmd := <-p.cancelledCh:
+		if cmd != nil {
+			p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
+			desc := fmt.Sprintf("Deployment was cancelled by %s while planning", cmd.Commander)
+			p.reportDeploymentCancelled(ctx, cmd.Commander, desc)
+			return true, cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil)
+		}
+	default:
+	}
+	return false, nil
 }
 
 func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) error {
