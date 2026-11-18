@@ -16,6 +16,7 @@ package insight
 
 import (
 	"context"
+	"sort"
 	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -73,6 +74,10 @@ func buildDeploymentFrequencyDataPoints(ds []*DeploymentData, appID string, labe
 		return []*model.InsightDataPoint{}
 	}
 
+	sort.Slice(ds, func(i, j int) bool {
+		return ds[i].CompletedAt < ds[j].CompletedAt
+	})
+
 	var (
 		out      = make([]*model.InsightDataPoint, 0)
 		curPoint *model.InsightDataPoint
@@ -96,6 +101,10 @@ func buildDeploymentChangeFailureRateDataPoints(ds []*DeploymentData, appID stri
 	if len(ds) == 0 {
 		return []*model.InsightDataPoint{}
 	}
+
+	sort.Slice(ds, func(i, j int) bool {
+		return ds[i].CompletedAt < ds[j].CompletedAt
+	})
 
 	var (
 		out                              = make([]*model.InsightDataPoint, 0)
@@ -206,6 +215,9 @@ func fillUpDataPoints(ds []*model.InsightDataPoint, from, to int64, resolution m
 	)
 
 	for ts := fromStep; ts <= toStep; ts = nextStep(ts, resolution) {
+		for index < len(ds) && ds[index].Timestamp < ts {
+			index++
+		}
 		if index < len(ds) && ds[index].Timestamp == ts {
 			out = append(out, ds[index])
 			index++
