@@ -17,10 +17,12 @@ package backoff
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestWaitNext(t *testing.T) {
@@ -46,6 +48,29 @@ func TestWaitNextCancel(t *testing.T) {
 	cancel()
 	ok := r.WaitNext(ctx)
 	assert.Equal(t, false, ok)
+}
+
+func TestWaitNext_ContextCancelDuringWait(t *testing.T) {
+	t.Parallel()
+
+	bo := NewConstant(time.Minute)
+	r := NewRetry(3, bo)
+	ctx, cancel := context.WithCancel(context.Background())
+
+	// First call has 0 delay.
+	ok := r.WaitNext(ctx)
+	assert.True(t, ok)
+
+	// Second call waits for 1 minute; cancel context during wait.
+	go func() {
+		time.Sleep(10 * time.Millisecond)
+		cancel()
+	}()
+
+	start := time.Now()
+	ok = r.WaitNext(ctx)
+	assert.False(t, ok)
+	assert.True(t, time.Since(start) < time.Second)
 }
 
 func TestDo(t *testing.T) {
@@ -123,6 +148,26 @@ func TestDo(t *testing.T) {
 			expectedErr:   nil,
 			expectedCalls: 2,
 		},
+		{
+			name: "wrapped non-retriable error stops retry",
+			operation: func() (any, error) {
+				calls++
+				return nil, fmt.Errorf("wrapped: %w", NewError(errors.New("non-retriable"), false))
+			},
+			expected:      nil,
+			expectedErr:   fmt.Errorf("wrapped: %w", NewError(errors.New("non-retriable"), false)),
+			expectedCalls: 1,
+		},
+		{
+			name: "wrapped retriable error continues retry",
+			operation: func() (any, error) {
+				calls++
+				return nil, fmt.Errorf("wrapped: %w", NewError(errors.New("retriable"), true))
+			},
+			expected:      nil,
+			expectedErr:   fmt.Errorf("wrapped: %w", NewError(errors.New("retriable"), true)),
+			expectedCalls: 3,
+		},
 	}
 
 	for _, tc := range testcases {
@@ -142,8 +187,65 @@ func TestDo(t *testing.T) {
 
 			data, err := r.Do(ctx, tc.operation)
 			assert.Equal(t, tc.expected, data)
-			assert.Equal(t, tc.expectedErr, err)
+			if tc.expectedErr != nil {
+				require.Error(t, err)
+				assert.Equal(t, tc.expectedErr.Error(), err.Error())
+			} else {
+				assert.NoError(t, err)
+			}
 			assert.Equal(t, tc.expectedCalls, calls)
 		})
 	}
+}
+
+func TestError_Unwrap(t *testing.T) {
+	t.Parallel()
+
+	baseErr := errors.New("base error")
+	bErr := NewError(baseErr, true)
+
+	assert.Equal(t, baseErr, bErr.Unwrap())
+	assert.True(t, errors.Is(bErr, baseErr))
+
+	var target *Error
+	assert.True(t, errors.As(bErr, &target))
+	assert.Equal(t, true, target.Retriable)
+
+	wrapped := fmt.Errorf("outer: %w", bErr)
+	assert.True(t, errors.Is(wrapped, baseErr))
+	var targetFromWrapped *Error
+	assert.True(t, errors.As(wrapped, &targetFromWrapped))
+	assert.Equal(t, true, targetFromWrapped.Retriable)
+}
+
+func TestError_NilErr(t *testing.T) {
+	t.Parallel()
+
+	bErr := NewError(nil, false)
+	assert.Equal(t, "", bErr.Error())
+	assert.Nil(t, bErr.Unwrap())
+}
+
+func TestRetry_Calls(t *testing.T) {
+	t.Parallel()
+
+	r := NewRetry(5, NewConstant(time.Millisecond))
+	assert.Equal(t, 0, r.Calls())
+
+	ctx := context.Background()
+	r.WaitNext(ctx)
+	assert.Equal(t, 1, r.Calls())
+}
+
+func TestConstant_Clone(t *testing.T) {
+	t.Parallel()
+
+	c := NewConstant(10 * time.Millisecond)
+	_ = c.Next()
+	assert.Equal(t, 1, c.Calls())
+
+	clone := c.Clone()
+	assert.Equal(t, 0, clone.Calls())
+	assert.Equal(t, time.Duration(0), clone.Next())
+	assert.Equal(t, 10*time.Millisecond, clone.Next())
 }
