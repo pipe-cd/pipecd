@@ -15,6 +15,7 @@
 package oci
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -36,7 +37,21 @@ const (
 func TestMain(m *testing.M) {
 	pool, err := dockertest.NewPool("")
 	if err != nil {
-		log.Fatalf("Failed to connect to docker: %s", err)
+		if os.Getenv("OCI_REQUIRE_DOCKER") == "true" {
+			log.Fatalf("Docker is required for OCI integration tests but is unavailable: %s", err)
+		}
+		log.Printf("Docker is unavailable; skipping pkg/oci tests: %s", err)
+		os.Exit(0)
+	}
+	if err := pool.Client.Ping(); err != nil {
+		if errors.Is(err, os.ErrNotExist) || errors.Is(err, docker.ErrConnectionRefused) {
+			if os.Getenv("OCI_REQUIRE_DOCKER") == "true" {
+				log.Fatalf("Docker is required for OCI integration tests but is unavailable: %s", err)
+			}
+			log.Printf("Docker is unavailable; skipping pkg/oci tests: %s", err)
+			os.Exit(0)
+		}
+		log.Fatalf("Failed to check Docker availability: %s", err)
 	}
 
 	wd, err := os.Getwd()
